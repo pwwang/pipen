@@ -8,7 +8,9 @@
   - [Requirements](#requirements)
   - [Installation](#installation)
   - [First script](#first-script)
-  - [Using parameters](#using-parameters)
+  - [Using arguments](#using-arguments)
+  - [Using a different interpreter:](#using-a-different-interpreter)
+  - [See documentations.](#see-documentations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -24,82 +26,84 @@ python setup.py install
 
 ### First script
 ```python
-import pyppl, sys
+import sys
+from pyppl.pyppl import pyppl
+from pyppl.helpers.proc import proc
+from pyppl.helpers.channel import channel
 
-insrc = list('Hello world!')
+inchan = channel.create (list("Hello"))
 
-p_upper        = pyppl.Process('upper')
-p_upper.insrc  = insrc
-p_upper.input  = "in"
-p_upper.output = "{stdout}"
-p_upper.script = """
-  echo {in} | tr '[:lower:]' '[:upper:]' 
+p_upper           = proc('upper')
+p_upper.input     = {"in": inchan}
+p_upper.output    = "outfile:file:{{in}}.txt"
+p_upper.exportdir = "./"
+p_upper.script    = """
+  echo {{in}} | tr '[:lower:]' '[:upper:]' > {{outfile}}
 """ 
 
-p_save         = pyppl.Process('save')
-p_save.depends = p_upper
-p_save.input   = "in"
-p_save.export  = "./save/"
-p_save.output  = "file:{in}.txt"
-p_save.script  = """
-  echo {in} > {in}.txt 
-""" 
-
-pipeline = pyppl.Pipeline()
-pipeline.add (p_upper)
-pipeline.run()
-
+pyppl().starts(p_upper).run()
 ```
 
 It will output:
 ```
-[2016-11-14 12:00:52,288] [RUNNING] p_upper.upper: /tmp/pyppl-78de1c05-4d91-44cf-8775-dcd198a33c29
-[2016-11-14 12:00:52,405] [RUNNING] p_save.save: /tmp/pyppl-b1b76a19-9dc9-462f-90ea-87a4f3eacf77
-[2016-11-14 12:00:52,511] [ EXPORT] p_save.save: ./save/H.txt
-[2016-11-14 12:00:52,513] [ EXPORT] p_save.save: ./save/E.txt
-[2016-11-14 12:00:52,513] [ EXPORT] p_save.save: ./save/L.txt
-[2016-11-14 12:00:52,514] [ EXPORT] p_save.save: ./save/L.txt
-[2016-11-14 12:00:52,515] [ EXPORT] p_save.save: ./save/O.txt
-[2016-11-14 12:00:52,516] [ EXPORT] p_save.save: ./save/.txt
-[2016-11-14 12:00:52,517] [ EXPORT] p_save.save: ./save/W.txt
-[2016-11-14 12:00:52,518] [ EXPORT] p_save.save: ./save/O.txt
-[2016-11-14 12:00:52,519] [ EXPORT] p_save.save: ./save/R.txt
-[2016-11-14 12:00:52,520] [ EXPORT] p_save.save: ./save/L.txt
-[2016-11-14 12:00:52,521] [ EXPORT] p_save.save: ./save/D.txt
-[2016-11-14 12:00:52,522] [ EXPORT] p_save.save: ./save/!.txt
+[2017-02-02 16:23:32,515] [  PyPPL] Version: 0.1.0
+[2017-02-02 16:23:32,515] [   TIPS] You can find the stderr in <workdir>/.scripts/script.<index>.stderr
+[2017-02-02 16:23:32,517] [RUNNING] p_upper.upper: /tmp/PyPPL_p_upper_upper.6bf016ac
+[2017-02-02 16:23:33,056] [ EXPORT] p_upper.upper: ./H.txt (copy)
+[2017-02-02 16:23:33,058] [ EXPORT] p_upper.upper: ./e.txt (copy)
+[2017-02-02 16:23:33,058] [ EXPORT] p_upper.upper: ./l.txt (copy)
+[2017-02-02 16:23:33,059] [ EXPORT] p_upper.upper: ./l.txt (copy)
+[2017-02-02 16:23:33,060] [ EXPORT] p_upper.upper: ./o.txt (copy)
+[2017-02-02 16:23:33,061] [   DONE]
 ```
 
 The first process tries to uppercase all letters, the second then write them to files and export them.
 
-### Using parameters
+### Using arguments
 Say we save the script as first.py:
 
 ```python
-import pyppl, sys
-
-p_upper        = pyppl.Process('upper')
-p_upper.input  = "in"
-p_upper.output = "{stdout}"
-p_upper.script = """
-  echo {in} | tr '[:lower:]' '[:upper:]' 
+p_upper           = proc('upper')
+p_upper.input     = "in" # no channels assigned
+p_upper.output    = "outfile:file:{{in}}.txt"
+p_upper.exportdir = "./"
+p_upper.script    = """
+  echo {{in}} | tr '[:lower:]' '[:upper:]' > {{outfile}}
 """ 
 
-p_save         = pyppl.Process('save')
-p_save.depends = p_upper
-p_save.input   = "in"
-p_save.export  = "./save/"
-p_save.output  = "file:{in}.txt"
-p_save.script  = """
-  echo {in} > {in}.txt 
-""" 
-
-pipeline = pyppl.Pipeline()
-pipeline.add (p_upper)
-pipeline.run()
-
+pyppl().starts(p_upper).run()
 ```
 then run the script:
 ```shell
-python first.py "Hello, world!"
+python first.py w
 ```
-will have the same output.
+will only have `w` capitalized and saved.
+
+To have more letters involved, you have to specify the `input` as:
+```python
+p_upper.input  = {"in": channel.fromArgv(1)}
+```
+Then run:
+```bash
+python first.py H e l l o
+```
+will have the same output as the first script.
+
+### Using a different interpreter:
+```python
+p_python = proc()
+p_python.input = "in"
+p_python.output = "out:{{in}}"
+p_python.defaultSh = "python"
+p_python.script = "print {{in}}"
+""" or you can also specify a shebang in script:
+p_python.script = "
+#!/usr/bin/env python
+print "{{in}}"
+"
+"""
+pyppl().starts(p_python).run()
+```
+
+### See [documentations](DOC.md).
+

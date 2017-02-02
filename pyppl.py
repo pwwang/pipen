@@ -7,7 +7,7 @@ VERSION = "0.1.0"
 class pyppl (object):
 
 	def __init__(self, config = {}):
-		loglevel = 'debug'
+		loglevel = 'info'
 		if config.has_key('loglevel'):
 			loglevel = config['loglevel']
 			del config['loglevel'] 
@@ -63,7 +63,7 @@ class pyppl (object):
 				next2run2 += p.props['nexts']
 			next2run = [n for n in list(set(next2run2)) if n not in finished and all(x in finished for x in n.props['depends'])]
 			#next2run = list(set(next2run2)) # unique
-
+		self.logger.info ('[   DONE]')
 		
 
 	

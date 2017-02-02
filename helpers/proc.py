@@ -14,6 +14,8 @@ from md5 import md5
 from re import split
 from subprocess import Popen, PIPE
 from Queue import Queue
+from collections import OrderedDict
+from inspect import getsource
 
 class proc (object):
 
@@ -51,6 +53,8 @@ class proc (object):
 		self.config['beforeCmd']  = ""
 		self.config['afterCmd']   = ""
 		self.config['workdir']    = ''
+		self.config['args']       = {}
+		self.config['callback']   = None
 		# init props
 
 		# id of the process, actually it's the variable name of the process
@@ -100,6 +104,8 @@ class proc (object):
 		self.props['procvars']   = {}
 		self.props['workdir']    = ''
 		self.props['logger']     = logging.getLogger()
+		self.props['args']       = self.config['args']
+		self.props['callback']   = self.config['callback']
 
 
 	def __getattr__ (self, name):
@@ -113,6 +119,10 @@ class proc (object):
 		self.config[name] = value
 		self.props [name] = value
 		self.props['sets'].append(name)
+		if (name == 'output' or name == 'input') and isinstance(value, list) and isinstance(value[0], tuple):
+			self.config[name] = OrderedDict(value)
+			self.props [name] = OrderedDict(value)
+
 		if name == 'depends':
 			if isinstance(self.depends, proc):
 				self.props['depends'] = [self.depends]
@@ -126,6 +136,7 @@ class proc (object):
 		config = copy.copy(self.config)
 		if config.has_key('workdir'):
 			del config['workdir']
+
 		if config.has_key('depends'):
 			depends = config['depends']
 			pickable_depends = []
@@ -134,6 +145,7 @@ class proc (object):
 			for depend in depends:
 				pickable_depends.append(depend.id + '.' + depend.tag)
 			config['depends'] = pickable_depends
+
 		if config.has_key('nexts'):
 			nexts = config['nexts']
 			pickable_nexts = []
@@ -142,6 +154,15 @@ class proc (object):
 			for n in nexts:
 				pickable_nexts.append(ndepend.id + '.' + n.tag)
 			config['nexts'] = pickable_nexts
+
+		if config.has_key ('callback'):
+			if callable (config['callback']):
+				try:
+					config['callback'] = getsource(config['callback'])
+				except:
+					config['callback'] = config['callback'].__name__
+			else:
+				config['callback'] = 'None'
 
 		signature = pickle.dumps(config) + '@' + pickle.dumps(sorted(sys.argv))
 		return md5(signature).hexdigest()[:8]
@@ -156,10 +177,14 @@ class proc (object):
 		if self._checkStatus ():
 			self._export ()
 			self._doCache ()
+		if callable (self.callback):
+			self.callback (self)
 
 	def _init (self, config):
 		self._readConfig (config)
 		if self._isCached(): return False
+		for n in self.nexts: # if i am not cached, then none of depends
+			n.cache = False
 		self._tidyBeforeRun ()
 		return True
 
@@ -229,7 +254,7 @@ class proc (object):
 		if isinstance(input0, list):
 			input0 = ', '.join(input0)
 		if isinstance(input0, str):
-			cs = channel.fromChannels(*[d.channel for d in self.depends]) if self.depends else channel.fromArgv()
+			cs = channel.fromChannels(*[d.channel for d in self.depends]) if self.depends else channel.fromArgv(None)
 			input0 = {input0: cs}
 		
 		if not isinstance(input0, dict):
@@ -238,7 +263,7 @@ class proc (object):
 		self.props['input'] = {}
 		for key, val in input0.iteritems():
 			if not isinstance (val, channel):
-				val = channel(val)
+				val = channel.create(val)
 
 			keys = split(r'\s*,\s*', key)
 			if self.length == 0:
@@ -246,15 +271,15 @@ class proc (object):
 			elif self.length != val.length():
 				raise Exception ('Expection same lengths for input channels')
 			vals = val.split()
-
 			if len(keys) > len(vals):
-				raise Exception('Not enough data for input variables.')
+				raise Exception('Not enough data for input variables.\nVarialbes: %s\nData: %s' % (keys, vals))
 
 			for i, k in enumerate(keys):
-				vv = vals[i]				
+				vv = vals[i]
 				if k.endswith (':file') or k.endswith(':path'):
 					k = k[:-5]
 					for j, v in enumerate(vv):
+						(v, ) = v
 						if not os.path.exists (v):
 							raise Exception('Input file %s does not exist.' % v)
 						v = os.path.realpath(v)
@@ -264,12 +289,12 @@ class proc (object):
 						
 						if os.path.exists (vv[j]):
 							self.logger.debug ('[WARNING] %s.%s: Input file %s exists in <workdir>.' % (self.id, self.tag, vv[j]))
-							if os.path.isdir(vv[j]):
-								shutil.rmtree(vv[j])
-							else:
+							if os.path.islink(vv[j]) or os.path.isfile(vv[j]):
 								os.remove (vv[j])
+							else:
+								shutil.rmtree(vv[j])
 						os.symlink (v, vv[j])
-					self.props['input'][k] = vv
+					self.props['input'][k] = channel.create(vv)
 					self.props['input'][k + '.bn'] = vv.map (lambda x: os.path.basename(x))
 					self.props['input'][k + '.fn'] = vv.map (lambda x: os.path.basename(os.path.splitext(x)[0]))
 					self.props['input'][k + '.ext'] = vv.map (lambda x: os.path.splitext(x)[1])
@@ -281,8 +306,12 @@ class proc (object):
 		# also add proc.props, mostly scalar values
 
 		for prop, val in self.props.iteritems():
-			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow']: continue
-			self.props['procvars']['proc.' + prop] = val
+			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow', 'args']: continue
+			if prop == 'args':
+				for k, v in val.iteritems():
+					self.props['procvars']['proc.args.' + k] = v
+			else:
+				self.props['procvars']['proc.' + prop] = val
 
 	"""
 	Output could be:
@@ -297,7 +326,9 @@ class proc (object):
 	for 1,2 channels will be the property channel for this proc (i.e. p.channel)
 	"""
 	def _buildOutput (self):
+
 		output = self.config['output']
+
 		if isinstance(output, list):
 			output = ', '.join(output)
 		if isinstance(output, str):
@@ -326,7 +357,7 @@ class proc (object):
 		self.props['output'] = {}
 		for key, val in output.iteritems():
 			keys    = strtpl.split(key, ',')
-
+			
 			for k in keys:
 				(oname, otype, oexp) = sanitizeKey(k)
 				if self.input.has_key(oname):
@@ -339,12 +370,12 @@ class proc (object):
 				for i in range(self.length):
 					data = {}
 					for ink, inv in self.input.iteritems():
-						data[ink] = inv[i]
+						(data[ink], ) = inv[i]
 					data.update (self.procvars)
 					chv.append (strtpl.format (oexp, data))
 				if otype in ['file', 'path']:
 					self.props['outfiles'] += chv
-				chv = channel (chv)
+				chv = channel.create (chv)
 				val.merge(chv)
 				if val != self.channel:
 					self.props['channel'].merge (chv)
@@ -354,7 +385,7 @@ class proc (object):
 	def _buildScript (self): # make self.jobs
 		if not self.script:
 			raise Exception ('Please specify script to run')
-
+		
 		scriptdir = os.path.join (self.workdir, '.scripts')
 		if not os.path.exists (scriptdir):
 			os.makedirs(scriptdir)
@@ -375,7 +406,7 @@ class proc (object):
 			data = {'#': i}
 			d   = {}
 			for k,v in self.input.iteritems():
-				d[k] = v[i]
+				(d[k], ) = v[i]
 			for k,v in self.output.iteritems():
 				(d[k], ) = channel._tuplize(v[i])
 			data.update(d)
@@ -404,10 +435,10 @@ class proc (object):
 					else:
 						os.remove (target)
 				else:
-					self.logger.debug ('[ EXPORT] %s.%s: %s (target exists, skipped)' % (self.id, self.tag, target))
+					self.logger.info ('[ EXPORT] %s.%s: %s (target exists, skipped)' % (self.id, self.tag, target))
 			
 			if not os.path.exists (target):
-				self.logger.debug ('[ EXPORT] %s.%s: %s (%s)' % (self.id, self.tag, target, self.exporthow))
+				self.logger.info ('[ EXPORT] %s.%s: %s (%s)' % (self.id, self.tag, target, self.exporthow))
 				if self.exporthow == 'copy':
 					if os.path.isdir (outfile):
 						shutil.copytree (outfile, target)
@@ -444,6 +475,8 @@ class proc (object):
 				del props['depends']
 			if props.has_key('nexts'):
 				del props['nexts']
+			if props.has_key ('callback'):
+				del props['callback']
 			pickle.dump(props, f)
 	
 	def _isCached (self):

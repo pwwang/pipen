@@ -6,10 +6,12 @@
 #
 import os, stat, sys, logging
 from subprocess import Popen, PIPE
+from time import sleep
 
 class runner_local (object):
 
 	def __init__ (self, script, config = {}):
+		self.index   = script.split('.')[-1]
 		self.script  = runner_local.chmod_x(script)
 		self.outfile = script + '.stdout'
 		self.errfile = script + '.stderr'
@@ -55,16 +57,16 @@ class runner_local (object):
 
 		if os.path.exists(self.rcfile):
 			os.remove(self.rcfile)
-
+		
 		try:
+			sleep(.1) # not sleeping causes text file busy. Why?
 			p      = Popen (self.script, stdin=PIPE, stderr=PIPE, stdout=PIPE)
 			fout   = open (self.outfile, 'w')
 			ferr   = open (self.errfile, 'w')
 			#stdstr = ""
 			for line in iter(p.stderr.readline, ''):
 				ferr.write(line)
-				if self._config('echo', False):
-					sys.stderr.write(line)
+				sys.stderr.write(line)
 
 			for line in iter(p.stdout.readline, ''):
 				fout.write(line)
@@ -81,13 +83,12 @@ class runner_local (object):
 				f.write (str(ex))
 			with open (self.rcfile, 'w') as f:
 				f.write('1')
-			import traceback
-			traceback.print_exc()
-			raise Exception(str(ex))
+			self._config('logger', logging).debug ('[  ERROR] %s.%s#%s: %s' % (self._config('id'), self._config('tag'), self.index, str(ex)))
 		
 		self.ntry += 1
-		if not self.isValid() and self._config('errorhow') == 'retry' and self.ntry < self._config('errorntry'):
-			self._config('logger', logging).info ('[RETRY %s] %s.%s: %s' % (self.ntry, self._config('id'), self._config('tag'), self._config('workdir')))
+		if not self.isValid() and self._config('errorhow') == 'retry' and self.ntry <= self._config('errorntry'):
+			self._config('logger', logging).info ('[RETRY %s] %s.%s#%s: %s' % (self.ntry, self._config('id'), self._config('tag'), self.index, self._config('workdir')))
+			sleep (.1)
 			self.run()
 
 

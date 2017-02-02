@@ -63,10 +63,10 @@ def split (s, delimter):
 
 def format (tpl, args):
 	s = tpl
-	m = re.findall ("{.+?}", s)
+	m = re.findall ("{{.+?}}", s)
 	
 	for n in m:
-		nneat = n[1:-1]
+		nneat = n.strip("{}")
 		parts = split(nneat, "|")
 		key   = parts.pop(0).strip()
 		value = args[key]

@@ -3,7 +3,10 @@ class channel (list):
   
 	@staticmethod
 	def create (l = []):
-		return channel(l)
+		ret = channel()
+		for e in l:
+			ret.append (channel._tuplize(e))
+		return ret
 
 	@staticmethod
 	def fromChannels (*args):
@@ -17,7 +20,7 @@ class channel (list):
 	# type = 'dir', 'file', 'link' or 'any'
 	def fromPath (pattern, type = 'any'):
 		from glob import glob
-		ret = channel (glob(pattern))
+		ret = channel.create(glob(pattern))
 		if type != 'any':
 			from os import path
 		if type == 'dir':
@@ -38,9 +41,21 @@ class channel (list):
 		return c
 
 	@staticmethod
-	def fromArgv ():
+	def fromArgv (width = 1):
 		from sys import argv
-		return channel(argv[1:])
+		args = argv[1:]
+		alen = len (args)
+		if width == None: width = alen
+		if alen % width != 0:
+			raise Exception('Length (%s) of argv[1:] must be exactly divided by width (%s)' % (alen, width))
+		
+		ret = channel()
+		for i in xrange(0, alen, width):
+			tmp = ()
+			for j in range(width):
+				tmp += (args[i+j], )
+			ret.append (tmp)
+		return ret
 	
 	@staticmethod
 	def _tuplize (tu):
@@ -65,23 +80,23 @@ class channel (list):
 		return len (self)
 
 	def map (self, func):
-		return channel(map(func, self))
+		return channel.create(map(func, self))
 
 	def filter (self, func):
-		return channel(filter(func, self))
+		return channel.create(filter(func, self))
 
 	def reduce (self, func):
-		return channel(reduce(func, self))
+		return channel.create(reduce(func, self))
 
 	def merge (self, *args):
 		if not args: return
 		maxlen = max(map(len, args))
 		minlen = min(map(len, args))
 		if maxlen != minlen:
-			raise Exception('Cannot merge channels with different length.')
+			raise Exception('Cannot merge channels with different length (%s, %s).' % (maxlen, minlen))
 		clen = len (self)
 		if clen != 0 and clen != maxlen:
-			raise Exception('Cannot merge channels with different length.')
+			raise Exception('Cannot merge channels with different length (%s, %s).' % (maxlen, clen))
 
 		for i in range(maxlen):
 			tu = () if clen==0 else channel._tuplize(self[i])
@@ -106,10 +121,11 @@ class channel (list):
 				iter(tu)
 			except:
 				tu = (tu, )
-			for t in tu:
-				if i==0: ret.append(channel.create())
+			if i == 0:
+				for t in tu: ret.append(channel())
+
 			for j, t in enumerate(tu):
-				ret[j].append(t)
+				ret[j].append(channel._tuplize(t))
 		return ret
 			
 

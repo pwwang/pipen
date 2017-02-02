@@ -52,13 +52,11 @@ class runner_sge (runner_local):
 		except Exception as ex:
 			with open (self.rcfile, 'w') as f:
 				f.write('1')
-			import traceback
-			traceback.print_exc()
-			raise Exception(str(ex))
+			self._config('logger', logging).debug ('[   ERROR] %s.%s#%s: %s' % (self._config('id'), self._config('tag'), self.index, ex))
 			
 		self.ntry += 1
-		if not self.isValid() and self._config('errorhow') == 'retry' and self.ntry < self._config('errorntry'):
-			self._config('logger', logging).info ('[RETRY %s] %s.%s: %s' % (self.ntry, self._config('id'), self._config('tag'), self._config('workdir')))
+		if not self.isValid() and self._config('errorhow') == 'retry' and self.ntry <= self._config('errorntry'):
+			self._config('logger', logging).info ('[RETRY %s] %s.%s#%s: %s' % (self.ntry, self._config('id'), self._config('tag'), self.index, self._config('workdir')))
 			self.run()
 		
 

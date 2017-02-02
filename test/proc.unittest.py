@@ -10,6 +10,7 @@ from helpers.proc import proc
 from helpers.channel import channel
 from md5 import md5
 from StringIO import StringIO
+from inspect import getsource
 
 class TestProc (unittest.TestCase):
 
@@ -37,6 +38,14 @@ class runner_test (runner_local):
 		p = proc ('tag_unique')
 		config = copy.copy(p.config)
 		del config['workdir']
+		if config.has_key ('callback'):
+			if callable (config['callback']):
+				try:
+					config['callback'] = getsource(config['callback'])
+				except:
+					config['callback'] = config['callback'].__name__
+			else:
+				config['callback'] = 'None'
 		signature = pickle.dumps (config) + '@' + pickle.dumps(sorted(sys.argv))
 		self.assertEqual (p._suffix(), md5(signature).hexdigest()[:8])
 
@@ -80,6 +89,7 @@ class runner_test (runner_local):
 	def testReadconfig (self):
 		p = proc ('tag')
 		p.tag = 'notag'
+		p.forks = 1
 		config = {
 			'tag': 'whatevertag',
 			'forks': 10
@@ -87,7 +97,7 @@ class runner_test (runner_local):
 		p._readConfig (config)
 		self.assertEqual (p.tag, 'notag')
 		self.assertEqual (p.forks, 1)  # props not changed
-		self.assertEqual (p.config['forks'], 10)
+		self.assertEqual (p.config['forks'], 1) # props not changed
 
 		self.assertEqual (p.cachefile, "PyPPL.%s.%s.%s.cache" % (
 			p.id,
@@ -138,47 +148,47 @@ class runner_test (runner_local):
 		p2.input   = ["char", "number"]
 		p2._buildProps()
 		p2._buildInput()
-		self.assertEqual (p2.input, {"char": ["aa", "bb"], "number": [1, 2]})
+		self.assertEqual (p2.input, {"char": [("aa", ), ("bb", )], "number": [(1, ), (2, )]})
 
 		p2.input   = "c, n"
 		p2._buildProps()
 		p2._buildInput()
-		self.assertEqual (p2.input, {"c": ["aa", "bb"], "n": [1, 2]})
+		self.assertEqual (p2.input, {"c": [("aa", ), ("bb", )], "n": [(1, ), (2, )]})
 
-		c1 = channel (["aa", "bb"])
-		c2 = channel ([1, 2])
+		c1 = channel.create (["aa", "bb"])
+		c2 = channel.create ([1, 2])
 		p2.input   = {"x": c1, "y": c2}
 		p2._buildProps()
 		p2._buildInput()
-		self.assertEqual (p2.input, {"x": ["aa", "bb"], "y": [1, 2]})
+		self.assertEqual (p2.input, {"x": [("aa", ), ("bb", )], "y": [(1, ), (2, )]})
 
 		p2.input   = {"a,b": channel.fromChannels(c1,c2)}
 		p2._buildProps()
 		p2._buildInput()
-		self.assertEqual (p2.input, {"a": ["aa", "bb"], "b": [1, 2]})
+		self.assertEqual (p2.input, {"a": [("aa", ), ("bb", )], "b": [(1, ), (2, )]})
 
-		c2 = channel (sorted(["channel.unittest.py", "proc.unittest.py"]))
-		c1 = c2.map (lambda x: x[:-12])
+		c2 = channel.create (sorted(["channel.unittest.py", "proc.unittest.py"]))
+		c1 = c2.map (lambda x: x[0][:-12])
 		p2.input   = {"c1, c2:file": channel.fromChannels(c1, c2)}
 		p2._buildProps()
 		p2._buildInput()
 		self.assertEqual (p2.input, {
-			"c1": ["channel", "proc"], 
-			"c2": sorted(c2.map(lambda x: os.path.join(p2.workdir, x))), 
+			"c1": [("channel",), ("proc",)], 
+			"c2": channel.create(sorted(c2.map(lambda x: os.path.join(p2.workdir, x[0])))), 
 			"c2.bn": c2, 
-			"c2.fn": c2.map(lambda x: x[:-3]), 
-			"c2.ext": [".py", ".py"]
+			"c2.fn": c2.map(lambda x: x[0][:-3]), 
+			"c2.ext": channel.create([".py", ".py"])
 		})
 
 		p2.input = {"c1:var": c1, "c2:file": c2}
 		p2._buildProps()
 		p2._buildInput()
 		self.assertEqual (p2.input, {
-			"c1": ["channel", "proc"], 
-			"c2": sorted(c2.map(lambda x: os.path.join(p2.workdir, x))), 
+			"c1": [("channel",), ("proc",)], 
+			"c2": sorted(c2.map(lambda x: os.path.join(p2.workdir, x[0]))), 
 			"c2.bn": c2, 
-			"c2.fn": c2.map(lambda x: x[:-3]), 
-			"c2.ext": [".py", ".py"]
+			"c2.fn": c2.map(lambda x: x[0][:-3]), 
+			"c2.ext": channel.create([".py", ".py"])
 		})
 
 	def testBuildOutput (self):
@@ -187,47 +197,50 @@ class runner_test (runner_local):
 		c3 = channel (sorted(["channel.unittest.py", "proc.unittest.py"]))
 		pOP = proc()
 		pOP.input = {'c1': c1, 'c2': c2, 'c3:file': c3}
-		pOP.output = ["o1:var:{c1}", "o2:var:{c2 | __import__('math').pow(float(_), 2.0)}", "o3:file:{c3.fn}2{c3.ext}"]
+		
+		pOP.output = ["o1:var:{{c1}}", "o2:var:{{c2 | __import__('math').pow(float(_), 2.0)}}", "o3:file:{{c3.fn}}2{{c3.ext}}"]
 		pOP._buildProps()
 		pOP._buildInput()
 		pOP._buildOutput()
-		self.assertEqual (pOP.output['o1'], ['aa', 'bb'])
-		self.assertEqual (pOP.output['o2'], ['1.0', '4.0'])
-		self.assertEqual (pOP.output['o3'], [os.path.join(pOP.workdir, "channel.unittest2.py"), os.path.join(pOP.workdir, "proc.unittest2.py")])
+		self.assertEqual (pOP.output['o1'], [('aa', ), ('bb', )])
+
+		self.assertEqual (pOP.output['o2'], [('1.0',), ('4.0',)])
+		self.assertEqual (pOP.output['o3'], [(os.path.join(pOP.workdir, "channel.unittest2.py"),), (os.path.join(pOP.workdir, "proc.unittest2.py"),)])
 		self.assertEqual (pOP.channel, [
 			('aa', '1.0', os.path.join(pOP.workdir, "channel.unittest2.py")), 
 			('bb', '4.0', os.path.join(pOP.workdir, "proc.unittest2.py"))
 		])
-		self.assertEqual (pOP.outfiles, pOP.output['o3'])
+		self.assertEqual (channel.create(pOP.outfiles), pOP.output['o3'])
 
 		pOP.props['channel'] = channel()
 		pOP.props['outfiles'] = []
-		pOP.output = "{c1}, o2:var:{c2 | __import__('math').pow(float(_), 2.0)}, o3:file:{c3.fn}2{c3.ext}"
+		pOP.output = "{{c1}}, o2:var:{{c2 | __import__('math').pow(float(_), 2.0)}}, o3:file:{{c3.fn}}2{{c3.ext}}"
 		pOP._buildProps()
 		pOP._buildInput()
 		pOP._buildOutput()
-		self.assertEqual (pOP.output['__out1__'], ['aa', 'bb'])
-		self.assertEqual (pOP.output['o2'], ['1.0', '4.0'])
-		self.assertEqual (pOP.output['o3'], [os.path.join(pOP.workdir, "channel.unittest2.py"), os.path.join(pOP.workdir, "proc.unittest2.py")])
+		self.assertEqual (pOP.output['__out1__'], channel.create(['aa', 'bb']))
+		self.assertEqual (pOP.output['o2'], channel.create(['1.0', '4.0']))
+		self.assertEqual (pOP.output['o3'], channel.create([os.path.join(pOP.workdir, "channel.unittest2.py"), os.path.join(pOP.workdir, "proc.unittest2.py")]))
 
 		self.assertEqual (pOP.channel, [
 			('aa', '1.0', os.path.join(pOP.workdir, "channel.unittest2.py")), 
 			('bb', '4.0', os.path.join(pOP.workdir, "proc.unittest2.py"))
 		])
-		self.assertEqual (pOP.outfiles, pOP.output['o3'])
-
+		self.assertEqual (channel.create(pOP.outfiles), pOP.output['o3'])
+		
 		pOP.props['channel'] = channel()
 		pOP.props['outfiles'] = []
 		pOP.forks = 5
 		c1 = channel()
 		c2 = channel()
-		pOP.output = {"cc:{c1}": c1, "var:{c2 | __import__('math').pow(float(_), 2.0)}, file:{c3.fn}{proc.forks}{c3.ext}": c2}
+		d = [("cc:{{c1}}", c1), ("var:{{c2 | __import__('math').pow(float(_), 2.0)}}, file:{{c3.fn}}{{proc.forks}}{{c3.ext}}", c2)]
+		pOP.output = d
 		pOP._buildProps()
 		pOP._buildInput()
 		pOP._buildOutput()
-		self.assertEqual (pOP.output['cc'], ['aa', 'bb'])
-		self.assertEqual (pOP.output['__out1__'], ['1.0', '4.0'])
-		self.assertEqual (pOP.output['__out2__'], [os.path.join(pOP.workdir, "channel.unittest5.py"), os.path.join(pOP.workdir, "proc.unittest5.py")])	
+		self.assertEqual (pOP.output['cc'], channel.create(['aa', 'bb']))
+		self.assertEqual (pOP.output['__out1__'], channel.create(['1.0', '4.0']))
+		self.assertEqual (pOP.output['__out2__'], channel.create([os.path.join(pOP.workdir, "channel.unittest5.py"), os.path.join(pOP.workdir, "proc.unittest5.py")]))
 		
 		self.assertEqual (c1, [('aa',), ('bb', )])
 		self.assertEqual (c2, [
@@ -238,8 +251,7 @@ class runner_test (runner_local):
 			('aa', '1.0', os.path.join(pOP.workdir, "channel.unittest5.py")), 
 			('bb', '4.0', os.path.join(pOP.workdir, "proc.unittest5.py"))
 		])
-		self.assertEqual (pOP.outfiles, pOP.output['__out2__'])
-
+		self.assertEqual (channel.create(pOP.outfiles), pOP.output['__out2__'])
 
 
 	def testBuildScript(self):
@@ -277,13 +289,16 @@ class runner_test (runner_local):
 		self.assertTrue (open(ps.jobs[0]).read().startswith("#!/usr/bin/env bash"))
 		os.remove (tplfile)
 
-		ps.output = "output:var:{input}2"
-		ps.script = "ls {proc.workdir}\necho {#} {input}\necho {output}"
+		ps.output = "output:var:{{input}}2"
+		ps.args   = {'var1': 1, 'var2': '2'}
+		ps.script = "ls {{proc.workdir}}\necho {{#}} {{input}}\necho {{output}}\necho {{proc.args.var1}} {{proc.args.var2}}"
 		ps.props['jobs'] = []
 		ps._tidyBeforeRun ()
-
 		self.assertEqual (ps.jobs, [os.path.join(scriptdir, 'script.0')])
-		self.assertEqual (open(ps.jobs[0]).read(), "#!/usr/bin/env bash\n\nls %s\necho 0 input\necho input2" % ps.workdir)
+		self.assertEqual (open(ps.jobs[0]).read(), "#!/usr/bin/env bash\n\nls %s\necho 0 input\necho input2\necho 1 2" % ps.workdir)
+
+
+
 
 	def testRunCmd (self):
 		prc = proc ()
@@ -324,7 +339,7 @@ class runner_test (runner_local):
 
 	def testRunJobs (self):
 		pr = proc()
-		pr.script = 'echo {#}'
+		pr.script = 'echo {{#}}'
 		pr.input  = {'input': range(3)}
 		pr._tidyBeforeRun ()
 		
@@ -341,10 +356,10 @@ class runner_test (runner_local):
 		
 	def testExport (self):
 		p = proc('export')
-		p.script = 'cp {infile} {outfile}'
+		p.script = 'cp {{infile}} {{outfile}}'
 
 		p.input  = {'infile:file': channel.fromPath ("*.py")}
-		p.output = 'outfile:file:{infile.fn}2{infile.ext}, var:{infile.fn}2{infile.ext}'
+		p.output = 'outfile:file:{{infile.fn}}2{{infile.ext}}, var:{{infile.fn}}2{{infile.ext}}'
 		p.exportdir = rootdir
 		p._tidyBeforeRun ()
 		
@@ -362,7 +377,7 @@ class runner_test (runner_local):
 		p.script = 'echo {#}'
 
 		p.input  = {'infile:file': channel.fromPath ("*.py")}
-		p.output = 'outfile:file:{infile.fn}2{infile.ext}, var:{infile.fn}2{infile.ext}'
+		p.output = 'outfile:file:{{infile.fn}}2{{infile.ext}}, var:{{infile.fn}}2{{infile.ext}}'
 		p.exportdir = rootdir
 		p._tidyBeforeRun ()
 		
@@ -372,10 +387,10 @@ class runner_test (runner_local):
 
 	def testDoCache (self):
 		p = proc('cache')
-		p.script = 'cp {infile} {outfile}'
+		p.script = 'cp {{infile}} {{outfile}}'
 
 		p.input  = {'infile:file': channel.fromPath ("*.py")}
-		p.output = 'outfile:file:{infile.fn}2{infile.ext}, var:{infile.fn}2{infile.ext}'
+		p.output = 'outfile:file:{{infile.fn}}2{{infile.ext}}, var:{{infile.fn}}2{{infile.ext}}'
 		p._readConfig({})
 		cachefile = os.path.join (p.tmpdir, p.cachefile)
 		if os.path.exists (cachefile):
@@ -387,7 +402,6 @@ class runner_test (runner_local):
 			p._tidyBeforeRun()
 			p._runJobs()
 			p._tidyAfterRun()
-
 
 
 

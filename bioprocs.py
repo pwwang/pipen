@@ -95,7 +95,7 @@ write (paste(deg, opv, sep="\\t"), file = "{{degfile}}", append=T)
 """
 DEG_CallerByLimmaFromFiles = proc ()
 DEG_CallerByLimmaFromFiles.input     = "expdir:file, group1, group2, group1name, group2name"
-DEG_CallerByLimmaFromFiles.output    = "degfile:file:{{matfile.fn}}.deg"
+DEG_CallerByLimmaFromFiles.output    = "degfile:file:{{expdir.fn}}.deg"
 DEG_CallerByLimmaFromFiles.args      = {'pval': 0.05}
 DEG_CallerByLimmaFromFiles.defaultSh = "Rscript"
 DEG_CallerByLimmaFromFiles.script    = """
@@ -105,17 +105,22 @@ group2  = strsplit("{{group2}}", ",")[[1]]
 
 expmatrix = matrix()
 for (i in 1:length (group1)) {
-	file = paste ("{{expdir}}/", group1[i])
-	if (grepl ('\\.gz$', group1[i])) {
+	file = paste ("{{expdir}}/", group1[i], sep="")
+	if (grepl ('.gz$', group1[i])) {
 		file = gzfile(file)
 	}
 	tmp  = read.table (file, sep="\\t", header=F, row.names = 1)
-	expmatrix = cbind (expmatrix, tmp)
+	if (i==1) {
+		expmatrix = as.matrix(tmp)
+	}
+	else {
+		expmatrix = cbind (expmatrix, tmp)
+	}
 }
 
 for (i in 1:length (group2)) {
-	file = paste ("{{expdir}}/", group2[i])
-	if (grepl ('\\.gz$', group2[i])) {
+	file = paste ("{{expdir}}/", group2[i], sep="")
+	if (grepl ('.gz$', group2[i])) {
 		file = gzfile(file)
 	}
 	tmp  = read.table (file, sep="\\t", header=F, row.names = 1)
@@ -127,10 +132,8 @@ design = model.matrix (~group)
 fit    = lmFit (expmatrix, design)
 fit    = eBayes(fit)
 ret    = topTable(fit, n=length(fit$p.value))
-out    = ret [ret$P.Value < {proc.args.pval}, ]
-deg    = paste (rownames(out), collapse=',')
-opv    = paste (format(out$P.Value, digits=3, scientific=T), collapse=',')
-write (paste(deg, opv, sep="\\t"), file = "{degfile}", append=T)
+out    = ret [ret$P.Value < {{proc.args.pval}}, ]
+write.table (out, "{{degfile}}", quote=F, sep="\t")
 """
 
 
