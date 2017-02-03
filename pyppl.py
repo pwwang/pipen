@@ -44,7 +44,7 @@ class pyppl (object):
 			config.update(self.config['proc'])
 		
 		if self.config.has_key(profile):
-			config.update(self.config[profile]['proc'])
+			config.update(self.config[profile])
 
 		config['runner'] = profile
 

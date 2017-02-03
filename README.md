@@ -4,27 +4,24 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-- [Get started](#get-started)
-  - [Requirements](#requirements)
-  - [Installation](#installation)
-  - [First script](#first-script)
-  - [Using arguments](#using-arguments)
-  - [Using a different interpreter:](#using-a-different-interpreter)
-  - [See documentations.](#see-documentations)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [First script](#first-script)
+- [Using arguments](#using-arguments)
+- [Using a different interpreter:](#using-a-different-interpreter)
+- [See documentations.](#see-documentations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## Get started
-
-### Requirements
+## Requirements
 - Python 2.7
 
-### Installation
+## Installation
 ```python
 python setup.py install
 ```
 
-### First script
+## First script
 ```python
 import sys
 from pyppl.pyppl import pyppl
@@ -59,7 +56,7 @@ It will output:
 
 The first process tries to uppercase all letters, the second then write them to files and export them.
 
-### Using arguments
+## Using arguments
 Say we save the script as first.py:
 
 ```python
@@ -89,7 +86,7 @@ python first.py H e l l o
 ```
 will have the same output as the first script.
 
-### Using a different interpreter:
+## Using a different interpreter:
 ```python
 p_python = proc()
 p_python.input = "in"
@@ -105,5 +102,5 @@ print "{{in}}"
 pyppl().starts(p_python).run()
 ```
 
-### See [documentations](DOC.md).
+## See [documentations](DOC.md).
 
