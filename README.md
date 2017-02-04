@@ -9,6 +9,7 @@
 - [First script](#first-script)
 - [Using arguments](#using-arguments)
 - [Using a different interpreter:](#using-a-different-interpreter)
+- [Draw the pipeline chart](#draw-the-pipeline-chart)
 - [See documentations.](#see-documentations)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -101,6 +102,88 @@ print "{{in}}"
 """
 pyppl().starts(p_python).run()
 ```
+
+## Draw the pipeline chart
+`pyppl` can generate the graph in [dot language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)). `def dot(self)` 
+```python
+ppl = pyppl ()
+p1 = proc("A")
+p2 = proc("B")
+p3 = proc("C")
+p4 = proc("D")
+p5 = proc("E")
+p6 = proc("F")
+p7 = proc("G")
+p8 = proc("H")
+p9 = proc("I")
+p1.script = "echo 1"
+p1.input  = {"input": channel(['a'])}
+p1.output = "{{input}}" 
+p2.script = "echo 1"
+p2.output = "{{input}}" 
+p3.script = "echo 1"
+p3.output = "{{input}}" 
+p4.script = "echo 1"
+p4.output = "{{input}}" 
+p5.script = "echo 1"
+p5.output = "{{input}}" 
+p6.script = "echo 1"
+p6.output = "{{input}}" 
+p7.script = "echo 1"
+p7.output = "{{input}}" 
+p8.script = "echo 1"
+p8.output = "{{input}}" 
+p9.script = "echo 1"
+p9.output = "{{input}}" 
+
+"""
+          1A         8H
+      /      \      /
+      2B         3C
+        \      /
+        4D(e)       9I
+      /      \      /
+      5E          6F(e)
+        \      /
+        7G(e)
+"""
+p2.depends = p1
+p3.depends = [p1, p8]
+p4.depends = [p2, p3]
+p4.exportdir  = "./"
+p5.depends = p4
+p6.depends = [p4, p9]
+p6.exportdir  = "./"
+p7.depends = [p5, p6]
+p7.exportdir  = "./"
+ppl.starts(p1, p8, p9)
+print ppl.dot() # save it in pyppl.dot
+```
+`pyppl.dot`:
+```dot
+digraph PyPPL {
+	"p1.A" -> "p2.B"
+	"p1.A" -> "p3.C"
+	"p8.H" -> "p3.C"
+	"p2.B" -> "p4.D"
+	"p3.C" -> "p4.D"
+	"p4.D" -> "p5.E"
+	"p4.D" -> "p6.F"
+	"p9.I" -> "p6.F"
+	"p5.E" -> "p7.G"
+	"p6.F" -> "p7.G"
+	"p6.F" [shape=box, style=filled, color="#f0f998", fontcolor=red]
+	"p1.A" [shape=box, style=filled, color="#c9fcb3"]
+	"p8.H" [shape=box, style=filled, color="#c9fcb3"]
+	"p9.I" [shape=box, style=filled, color="#c9fcb3"]
+	"p7.G" [shape=box, style=filled, color="#fcc9b3" fontcolor=red]
+	"p4.D" [shape=box, style=filled, color="#f0f998", fontcolor=red]
+}
+```
+You can use different dot [renderers](https://en.wikipedia.org/wiki/DOT_(graph_description_language)#Layout_programs) to render and visualize it.
+
+![PyPPL chart](pyppl.png)
+
 
 ## See [documentations](DOC.md).
 

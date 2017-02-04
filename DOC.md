@@ -2,10 +2,10 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-- [Documentataion of pyppl](#documentataion-of-pyppl)
+- [Documentataion for pyppl](#documentataion-for-pyppl)
   - [`proc`](#proc)
     - [Initialize `proc`](#initialize-proc)
-    - [Properties of a `proc`](#properties-of-a-proc)
+    - [Properties of `proc`](#properties-of-proc)
       - [Property `tag`](#property-tag)
       - [Property `tmpdir`](#property-tmpdir)
       - [Property `workdir`](#property-workdir)
@@ -15,10 +15,65 @@
       - [Property `cache`](#property-cache)
       - [Property `echo`](#property-echo)
       - [Property `forks`](#property-forks)
+      - [Property `defaultSh`](#property-defaultsh)
+      - [Property `exportdir`](#property-exportdir)
+      - [Property `exporthow`](#property-exporthow)
+      - [Property `exportow`](#property-exportow)
+      - [Property `beforeCmd`](#property-beforecmd)
+      - [Property `afterCmd`](#property-aftercmd)
+      - [Property `input`](#property-input)
+      - [Property `output`](#property-output)
+      - [Property `script`](#property-script)
+      - [Property `args`](#property-args)
+      - [Property `depends`](#property-depends)
+      - [Property `callback`](#property-callback)
+      - [Property `runner`](#property-runner)
+  - [Runners](#runners)
+    - [Base class `runner_local`](#base-class-runner_local)
+      - [Initialize `runner_local`](#initialize-runner_local)
+      - [Static method `chmod_x`](#static-method-chmod_x)
+      - [Get configuration values `_config`](#get-configuration-values-_config)
+      - [Get return code `rc`](#get-return-code-rc)
+      - [Tell whether the job completes expectedly `isValid`](#tell-whether-the-job-completes-expectedly-isvalid)
+      - [Run the job `run`](#run-the-job-run)
+    - [ssh runner](#ssh-runner)
+    - [sge runner](#sge-runner)
+    - [custom runner](#custom-runner)
+  - [`channel`](#channel)
+    - [Initialize a `channel`](#initialize-a-channel)
+      - [`create`](#create)
+      - [`fromChannels`](#fromchannels)
+      - [`fromPath`](#frompath)
+      - [`fromPairs`](#frompairs)
+      - [`fromArgv`](#fromargv)
+    - [Methods of `channel`](#methods-of-channel)
+      - [`width`](#width)
+      - [`length`](#length)
+      - [`map`](#map)
+      - [`filter`](#filter)
+      - [`reduce`](#reduce)
+      - [`merge`](#merge)
+      - [`mergeCopy`](#mergecopy)
+      - [`split`](#split)
+    - [Assign data of a channel to variables of `input/output` of a `proc`](#assign-data-of-a-channel-to-variables-of-inputoutput-of-a-proc)
+  - [`strtpl`](#strtpl)
+    - [Use template without interplolation](#use-template-without-interplolation)
+    - [Use string interplolation](#use-string-interplolation)
+      - [Use methods of `str`](#use-methods-of-str)
+      - [Use independent functions](#use-independent-functions)
+      - [Use lambda functions](#use-lambda-functions)
+      - [Get sub-strings](#get-sub-strings)
+      - [Use modules](#use-modules)
+      - [Use a chain of interplolations](#use-a-chain-of-interplolations)
+  - [`pyppl`](#pyppl)
+    - [Initialize `pyppl`](#initialize-pyppl)
+    - [Select start processes](#select-start-processes)
+    - [Run the pipeline](#run-the-pipeline)
+    - [Draw the pipeline chart](#draw-the-pipeline-chart)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# Documentataion of pyppl
+# Documentataion for pyppl
 
 ## `proc`
 `proc` is the basic unit in `pyppl`, it defines process running within a pipeline.
@@ -454,7 +509,7 @@ c => [3, 6, ..., z]
 """
 ```
 
-## strtpl
+## `strtpl`
 A string template not only uses placeholders to format a string but also takes function for string interplolation.
 
 To use it: `strtpl.format(tpl, data)`
@@ -530,9 +585,9 @@ You can set configs when initialize `pyppl`: `def __init__(self, config={})`
 - You can set values of properties for processes in `proc`: 
 ```json
 { 
-  'proc': {
-    'args': {'nthread': 8},
-    'tmpdir': '/path/to/tmp'
+  "proc": {
+    "args": {"nthread": 8},
+    "tmpdir": "/path/to/tmp"
   }
 }
 ```
@@ -540,18 +595,18 @@ You can set configs when initialize `pyppl`: `def __init__(self, config={})`
 - You can also set different profiles for the processes:
 ```json
 {
-  'loglevel': 'debug',
-  'proc': { // defaults
-    'args': {'nthread': 16}
+  "loglevel": "debug",
+  "proc": { // defaults
+    "args": {"nthread": 16}
   }, 
-  'local': { // profile
-    'tmpdir': '/tmp',
-    'args': {'nthread': 8}
+  "local": { // profile
+    "tmpdir": "/tmp",
+    "args": {"nthread": 8}
   },
-  'sge': { // profile
-    'sgeRunner': {...},
-    'tmpdir': '/sge/tmp',
-    'args': {'nthread': 1}
+  "sge": { // profile
+    "sgeRunner": {...},
+    "tmpdir": "/sge/tmp",
+    "args": {"nthread": 1}
   } 
 }
 ```
@@ -561,12 +616,12 @@ Set the start process(es). `def starts(self. *args)`
 You can select multiple processes to start with: `ppl.starts(p1, p2)`
 > For a pipeline, you could even select some middle processes to start with, but you have to specify the input for them.
 
-### Run the pipline
+### Run the pipeline
 You can specify the profile to run. `def run(self, profile = 'local')`  
 For previous configs, you can just switch the runner from `pyppl.run('local')` to `pyppl.run('sge')`.
 
-### Draw the piplie chart
-`pyppl` can generate the grash in [dot language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)). `def dot(self)` 
+### Draw the pipeline chart
+`pyppl` can generate the graph in [dot language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)). `def dot(self)` 
 ```python
 ppl = pyppl ()
 p1 = proc("A")
@@ -601,7 +656,7 @@ p9.output = "{{input}}"
 """
           1A         8H
       /      \      /
-      2B           3C
+      2B         3C
         \      /
         4D(e)       9I
       /      \      /
@@ -645,7 +700,6 @@ digraph PyPPL {
 You can use different dot [renderers](https://en.wikipedia.org/wiki/DOT_(graph_description_language)#Layout_programs) to render and visualize it.
 
 ![PyPPL chart](pyppl.png)
-
 
 
 
