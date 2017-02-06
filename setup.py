@@ -5,7 +5,6 @@ setup (
 	name             = 'pyppl',
 	version          = pyppl.VERSION,
 	description      = "A python lightweight pipeline framework",
-	long_description = open('README.md').read(),
 	url              = "https://github.com/pwwang/pyppl",
 	author           = "pwwang",
 	author_email     = "pwwang@pwwang.com",

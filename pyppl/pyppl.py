@@ -1,7 +1,7 @@
 import logging, os, sys, random
 from helpers import *
 from runners import *
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 
 class pyppl (object):
 
