@@ -25,9 +25,9 @@ python setup.py install
 ## First script
 ```python
 import sys
-from pyppl.pyppl import pyppl
-from pyppl.helpers.proc import proc
-from pyppl.helpers.channel import channel
+from pyppl import pyppl
+from pyppl import proc
+from pyppl import channel
 
 inchan = channel.create (list("Hello"))
 
