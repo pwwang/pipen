@@ -142,7 +142,7 @@ Whether we should cache the process or not. `pyppl` will not cache a process whe
 - Process failed
 
 #### Property `echo`
-Whether to show the stdout of the process (including `script`, `beforeCmd` and `afterCmd`) (stderr is always showing).
+Whether to show the stdout and stderr of the process (including `script`, `beforeCmd` and `afterCmd`).
 
 #### Property `forks`
 How many processes are allow to run simultaneously.
@@ -192,10 +192,10 @@ The output of the process.
 >- `<type>` could be omitted if `type` is `var`.
 >- `<name>` could not be set as `var` unless you set `<type>` explictly. Because `var:whatever` will be expanded to `whatever:var:whatever`
 >- `<content>` is allowed to used templates (see [strtpl](#strtpl)). Data can be used include `input`, some scalar `proc` properties and values set in property `args` (see [Property args](#property-args)).
->>- If there is a `file/path` variable in `input`, say `infile` (key for `input` should be `infile:file`), you can also use `{{infile.bn}}`, `{{infile.fn}}` and `{{infile.ext}}` to get basename, filename and ext of `infile` respectively. Of cause you can get the whole path of `infile` by using `{{infile}}`.
->>- If `infile` is `/a/b/c.txt` then `{{infile.bn}}`, `{{infile.fn}}` and `{{infile.ext}}` should be `c.txt`, `c` and `.txt` respectively.
->>- Note that if you use the whole path of `infile` then you are not supposed to use `type` `file/path`, because the default output directory is the work directory of the process.
->>- Availble placeholder for `proc` properties: `{{proc.id}}`, `{{proc.tag}}`, `{{proc.tmpdir}}`, `{{proc.forks}}`, `{{proc.cache}}`, `{{proc.workdir}}`, `{{proc.echo}}`, `{{proc.errorhow}}`, `{{proc.errorntry}}`, `{{proc.defaultSh}}`, `{{proc.exportdir}}`, `{{proc.exporhow}}`, `{{proc.exportow}}`
+>   - If there is a `file/path` variable in `input`, say `infile` (key for `input` should be `infile:file`), you can also use `{{infile.bn}}`, `{{infile.fn}}` and `{{infile.ext}}` to get basename, filename and ext of `infile` respectively. Of cause you can get the whole path of `infile` by using `{{infile}}`.
+>   - If `infile` is `/a/b/c.txt` then `{{infile.bn}}`, `{{infile.fn}}` and `{{infile.ext}}` should be `c.txt`, `c` and `.txt` respectively.
+>   - Note that if you use the whole path of `infile` then you are not supposed to use `type` `file/path`, because the default output directory is the work directory of the process.
+>   - Availble placeholder for `proc` properties: `{{proc.id}}`, `{{proc.tag}}`, `{{proc.tmpdir}}`, `{{proc.forks}}`, `{{proc.cache}}`, `{{proc.workdir}}`, `{{proc.echo}}`, `{{proc.errorhow}}`, `{{proc.errorntry}}`, `{{proc.defaultSh}}`, `{{proc.exportdir}}`, `{{proc.exporhow}}`, `{{proc.exportow}}`
 >- `output` could also be `str` or `list`, that is, a string of a comma (,) concatenated keys or a list of keys. If then, the output data will be stored in property `channel` (see [Property channel](property-channel)).
 >- Even you specify the channels you want to save the data to, another copy of data will be still saved in `proc.channel`. In order to keep the sequence when you specify in `output`, we have to use `OrderedDict`. So instead of using `dict` (i.e. `{"key2": channel1, "key1": channel2}`), which does not guarantee the sequence of data stored in `proc.channel` is the save as `key2` and then `key1`, we use items of `OrderedDict` (i.e. `[("key2", channel1), ("key1": channel1)]`).
 >- Examples:
@@ -338,9 +338,14 @@ def run (self)
 The ssh script can be found at: `<workdir>/.scripts/script.<index>.ssh`.
 
 ### sge runner
-You can also use sge runner. To configure the runner, you can do `p.sgeRunner = {<options>}`. Typically, the options is according to the arguments needed by `qsub`. For example, `qsub` takes `-q` to specify the queue, then you can set the options: `p.sgeRunner = {'q': '1-day', ...}`.
->- In case an option has multiple values, for example, you can set multiple values for `-l`: `-l h_vmem=20G` and `-l h_stack=128M`, you can add some spaces right after `l` in the options: `p.sgeRunner = {'q': '1-day', 'l': 'h_vmem=20G', 'l ': 'h_stack=128M', ...}`. Note that the second `l` has one space followed so that `h_vmem=20G` would not be override by the latter value.  
->- For bool options, you can use `True` as value. For example, for `-notify`, you can set `{'notify': True}`
+You can also use sge runner. To configure the runner, you can do `p.sgeRunner = {<options>}`. Typically, the options is according to the arguments needed by `qsub`. For example, `qsub` takes `-q` to specify the queue, then you can set the options: `p.sgeRunner = {'sge_q': '1-day', ...}`.
+>- Options for `qsub` must start with `sge_`.
+>- In case an option has multiple values, for example, you can set multiple values for `-l`: `-l h_vmem=20G` and `-l h_stack=128M`, you can add some spaces right after `sge_l` in the options: `p.sgeRunner = {'sge_q': '1-day', 'sge_l': 'h_vmem=20G', 'sge_l ': 'h_stack=128M', ...}`. Note that the second `sge_l` has one space followed so that `h_vmem=20G` would not be override by the latter value.  
+>- For bool options, you can use `True` as value. For example, for `-notify`, you can set `{'sge_notify': True}`
+>- You can set some scripts (`bash`) before and after the main job runs on the cluster (`p.sgerunner: {'preScript': ..., 'postScript': ..., 'sge_q', '1-hour', ...}`. NOTE:
+>    - `preScript` and `postScript` are different from `beforeCmd` and `afterCmd`. The former ones run on clusters, while latter ones just run locally.
+>    - You cannot use placeholders with `strtpl` for `preScript` and `postScript`.
+
 
 ### custom runner
 Yes, you can write your own runners, just write a class (i.e. `runner_custom`) extending `runner_local`, import it, and register it before use (`proc.registerRunner(runner_custom)`). 

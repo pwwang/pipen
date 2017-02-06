@@ -1,7 +1,7 @@
 from runner_local import runner_local
 from time import sleep
 from subprocess import Popen, list2cmdline 
-import os, shlex
+import os, shlex, logging
 
 
 class runner_sge (runner_local):
@@ -14,22 +14,26 @@ class runner_sge (runner_local):
 		sgesrc  = [
 			'#!/usr/bin/env bash',
 			''
-			'#$ -N ' + self._config('id', os.path.basename (script)) + '.' + self._config('tag', 'notag'),
 			'#$ -o ' + self.outfile,
 			'#$ -e ' + self.errfile,
 			'#$ -cwd'
 		]
 
 		for k, v in self._config('sgeRunner', {}).iteritems():
-			if k == 'N': continue
-			src = '#$ -' + k.strip()
+			if not k.startswith ('sge_'): continue
+			k = k[4:].strip()
+			src = '#$ -' + k
 			if v != True: # {'notify': True} ==> -notify
 				src += ' ' + v
 			sgesrc.append(src)
+		if not self._config('sgeRunner').has_key ('sge_N'):
+			sgesrc.append('#$ -N ' + self._config('id', os.path.basename (script)) + '.' + self._config('tag', 'notag'))
 		sgesrc.append ('')
 		sgesrc.append ('trap "status=\$?; echo \$status > %s; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.rcfile)
+		sgesrc.append (self._config('preScript', ''))
 		sgesrc.append ('')
 		sgesrc.append (list2cmdline(self.script))
+		sgesrc.append (self._config('postScript', ''))
 		
 		with open (sgefile, 'w') as f:
 			f.write ('\n'.join(sgesrc) + '\n')

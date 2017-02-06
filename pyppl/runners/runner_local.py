@@ -66,7 +66,8 @@ class runner_local (object):
 			#stdstr = ""
 			for line in iter(p.stderr.readline, ''):
 				ferr.write(line)
-				sys.stderr.write(line)
+				if self._config('echo', False):
+					sys.stderr.write(line)
 
 			for line in iter(p.stdout.readline, ''):
 				fout.write(line)

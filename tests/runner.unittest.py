@@ -1,7 +1,7 @@
 import unittest, os
 import sys
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(rootdir)
+sys.path.insert(0, rootdir)
 from pyppl import runner_local, runner_sge, runner_ssh
 
 def tryRemove (file):
@@ -151,13 +151,13 @@ class TestRunner (unittest.TestCase):
 	@unittest.skip("Skipping SGE test...")
 	def testSGERun (self):
 		r0 = runner_sge(self.scripts[0], {
-			'sgeRunner': {'N': 'r0', 'q': '1-hour'}
+			'sgeRunner': {'sge_N': 'job_r0', 'sge_q': '1-hour', 'sge_M': 'Wang.Panwen@mayo.edu'}
 		})
 		r1 = runner_sge(self.scripts[1], {
-			'sgeRunner': {'N': 'r1', 'q': '1-hour'}
+			'sgeRunner': {'sge_N': 'job_r1', 'sge_q': '1-hour'}
 		})
 		r2 = runner_sge(self.scripts[4], {
-			'sgeRunner': {'N': 'r4', 'q': '1-hour'}
+			'sgeRunner': {'sge_N': 'job_r4', 'sge_q': '1-hour'}
 		})
 
 		r0.run()
