@@ -19,15 +19,14 @@
 
 ## Installation
 ```python
-python setup.py install
+pip install pyppl
+# or python setup.py install
 ```
 
 ## First script
 ```python
 import sys
-from pyppl import pyppl
-from pyppl import proc
-from pyppl import channel
+from pyppl import pyppl, proc, channel
 
 inchan = channel.create (list("Hello"))
 
@@ -185,5 +184,5 @@ You can use different dot [renderers](https://en.wikipedia.org/wiki/DOT_(graph_d
 ![PyPPL chart](pyppl.png)
 
 
-## See [documentations](DOC.md).
+## See [documentations](docs/DOCS.md).
 
