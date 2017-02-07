@@ -104,13 +104,13 @@ The work directory of the process. You can, but not recommended to, set `workdir
 
 The structure of work directory:
 - work directory
-  - Symbol links of input files/directories
-  - Output files
-  - `.scripts`
+  - `input`: input files/directories
+  - `output`: output files/directories
+  - `scripts`
     - `script.<index>` (scripts for the process)
-	- `script.<index>.stdout`
-	- `script.<index>.stderr`
-	- `script.<index>.rc` (return value) 
+    - `script.<index>.stdout`
+    - `script.<index>.stderr`
+    - `script.<index>.rc` (return value) 
 
 > You can check and run `script.<index>` to debug the script for the process
 
@@ -195,7 +195,7 @@ The output of the process.
 >   - If there is a `file/path` variable in `input`, say `infile` (key for `input` should be `infile:file`), you can also use `{{infile.bn}}`, `{{infile.fn}}` and `{{infile.ext}}` to get basename, filename and ext of `infile` respectively. Of cause you can get the whole path of `infile` by using `{{infile}}`.
 >   - If `infile` is `/a/b/c.txt` then `{{infile.bn}}`, `{{infile.fn}}` and `{{infile.ext}}` should be `c.txt`, `c` and `.txt` respectively.
 >   - Note that if you use the whole path of `infile` then you are not supposed to use `type` `file/path`, because the default output directory is the work directory of the process.
->   - Availble placeholder for `proc` properties: `{{proc.id}}`, `{{proc.tag}}`, `{{proc.tmpdir}}`, `{{proc.forks}}`, `{{proc.cache}}`, `{{proc.workdir}}`, `{{proc.echo}}`, `{{proc.errorhow}}`, `{{proc.errorntry}}`, `{{proc.defaultSh}}`, `{{proc.exportdir}}`, `{{proc.exporhow}}`, `{{proc.exportow}}`
+>   - Availble placeholder for `proc` properties: `{{proc.id}}`, `{{proc.tag}}`, `{{proc.tmpdir}}`, `{{proc.forks}}`, `{{proc.cache}}`, `{{proc.workdir}}`, `{{proc.echo}}`, `{{proc.errorhow}}`, `{{proc.errorntry}}`, `{{proc.defaultSh}}`, `{{proc.exportdir}}`, `{{proc.exporhow}}`, `{{proc.exportow}}`, `{{proc.indir}}`, `{{proc.outdir}}`
 >- `output` could also be `str` or `list`, that is, a string of a comma (,) concatenated keys or a list of keys. If then, the output data will be stored in property `channel` (see [Property channel](property-channel)).
 >- Even you specify the channels you want to save the data to, another copy of data will be still saved in `proc.channel`. In order to keep the sequence when you specify in `output`, we have to use `OrderedDict`. So instead of using `dict` (i.e. `{"key2": channel1, "key1": channel2}`), which does not guarantee the sequence of data stored in `proc.channel` is the save as `key2` and then `key1`, we use items of `OrderedDict` (i.e. `[("key2", channel1), ("key1": channel1)]`).
 >- Examples:
@@ -205,7 +205,7 @@ The output of the process.
 >
 >p.output = ["{{input}}2", "outfile:file:{{infile.fn}}2{{infile.ext}}"]
 ># input: [('a', '/a/b/a.txt'), ('b', '/a/b/b.txt'), ('c', '/a/b/c.txt')]
-># => p.channel: a channel of [('a2', '<workdir>/a2.txt'), ('b2', '<workdir>/b2.txt'), ('c2', '<workdir>/c2.txt')]
+># => p.channel: a channel of [('a2', '<workdir>/output/a2.txt'), ('b2', '<workdir>/output/b2.txt'), ('c2', '<workdir>/output/c2.txt')]
 ># you can use `{{outfile}}` in `script` for the whole path of output file.
 >
 >p.output = {"out:var:{{input}}2": outchannel}
@@ -315,7 +315,7 @@ def _config(self, key, default=None)
 
 #### Get return code `rc`
 ```python
-# Try to read the return code from the rc file: <workdir>/.scripts/script.<index>.rc
+# Try to read the return code from the rc file: <workdir>/scripts/script.<index>.rc
 # If it does not exist or is empty, return -99
 def rc (self)
 ```
@@ -328,14 +328,14 @@ def isValid(self)
 
 #### Run the job `run`
 ```python
-# Try to run the job, and write stdout to <workdir>/.scripts/script.<index>.stdout, stderr to <workdir>/.scripts/script.<index>.stderr and return code to <workdir>/.scripts/script.<index>.rc.
+# Try to run the job, and write stdout to <workdir>/scripts/script.<index>.stdout, stderr to <workdir>/scripts/script.<index>.stderr and return code to <workdir>/scripts/script.<index>.rc.
 # If it fails, try to rerun the job according to _config('errorhow') and _config('errorntry')
 def run (self)
 ```
 
 ### ssh runner
 `runner_ssh` extends `runner_local`. It tries to send jobs via ssh channel. You have to set servers in the config: `{'sshRunner': {'servers': [<available servers>]}}`. For those servers, you have to setup so that you can login without password prompt (maybe by following [steps](https://linuxconfig.org/passwordless-ssh)).  
-The ssh script can be found at: `<workdir>/.scripts/script.<index>.ssh`.
+The ssh script can be found at: `<workdir>/scripts/script.<index>.ssh`.
 
 ### sge runner
 You can also use sge runner. To configure the runner, you can do `p.sgeRunner = {<options>}`. Typically, the options is according to the arguments needed by `qsub`. For example, `qsub` takes `-q` to specify the queue, then you can set the options: `p.sgeRunner = {'sge_q': '1-day', ...}`.

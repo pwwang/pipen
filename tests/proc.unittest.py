@@ -1,6 +1,6 @@
 import os, sys, unittest, pickle, shutil, copy
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(rootdir)
+sys.path.insert(0, rootdir)
 from pyppl import proc
 from pyppl import channel
 from md5 import md5
@@ -173,7 +173,7 @@ class runner_test (runner_local):
 		p2._buildInput()
 		self.assertEqual (p2.input, {
 			"c1": [("channel",), ("proc",)], 
-			"c2": channel.create(sorted(c2.map(lambda x: os.path.join(p2.workdir, x[0])))), 
+			"c2": channel.create(sorted(c2.map(lambda x: os.path.join(p2.indir, x[0])))), 
 			"c2.bn": c2, 
 			"c2.fn": c2.map(lambda x: x[0][:-3]), 
 			"c2.ext": channel.create([".py", ".py"])
@@ -184,7 +184,7 @@ class runner_test (runner_local):
 		p2._buildInput()
 		self.assertEqual (p2.input, {
 			"c1": [("channel",), ("proc",)], 
-			"c2": sorted(c2.map(lambda x: os.path.join(p2.workdir, x[0]))), 
+			"c2": sorted(c2.map(lambda x: os.path.join(p2.indir, x[0]))), 
 			"c2.bn": c2, 
 			"c2.fn": c2.map(lambda x: x[0][:-3]), 
 			"c2.ext": channel.create([".py", ".py"])
@@ -204,10 +204,10 @@ class runner_test (runner_local):
 		self.assertEqual (pOP.output['o1'], [('aa', ), ('bb', )])
 
 		self.assertEqual (pOP.output['o2'], [('1.0',), ('4.0',)])
-		self.assertEqual (pOP.output['o3'], [(os.path.join(pOP.workdir, "channel.unittest2.py"),), (os.path.join(pOP.workdir, "proc.unittest2.py"),)])
+		self.assertEqual (pOP.output['o3'], [(os.path.join(pOP.outdir, "channel.unittest2.py"),), (os.path.join(pOP.outdir, "proc.unittest2.py"),)])
 		self.assertEqual (pOP.channel, [
-			('aa', '1.0', os.path.join(pOP.workdir, "channel.unittest2.py")), 
-			('bb', '4.0', os.path.join(pOP.workdir, "proc.unittest2.py"))
+			('aa', '1.0', os.path.join(pOP.outdir, "channel.unittest2.py")), 
+			('bb', '4.0', os.path.join(pOP.outdir, "proc.unittest2.py"))
 		])
 		self.assertEqual (channel.create(pOP.outfiles), pOP.output['o3'])
 
@@ -219,11 +219,11 @@ class runner_test (runner_local):
 		pOP._buildOutput()
 		self.assertEqual (pOP.output['__out1__'], channel.create(['aa', 'bb']))
 		self.assertEqual (pOP.output['o2'], channel.create(['1.0', '4.0']))
-		self.assertEqual (pOP.output['o3'], channel.create([os.path.join(pOP.workdir, "channel.unittest2.py"), os.path.join(pOP.workdir, "proc.unittest2.py")]))
+		self.assertEqual (pOP.output['o3'], channel.create([os.path.join(pOP.outdir, "channel.unittest2.py"), os.path.join(pOP.outdir, "proc.unittest2.py")]))
 
 		self.assertEqual (pOP.channel, [
-			('aa', '1.0', os.path.join(pOP.workdir, "channel.unittest2.py")), 
-			('bb', '4.0', os.path.join(pOP.workdir, "proc.unittest2.py"))
+			('aa', '1.0', os.path.join(pOP.outdir, "channel.unittest2.py")), 
+			('bb', '4.0', os.path.join(pOP.outdir, "proc.unittest2.py"))
 		])
 		self.assertEqual (channel.create(pOP.outfiles), pOP.output['o3'])
 		
@@ -239,16 +239,16 @@ class runner_test (runner_local):
 		pOP._buildOutput()
 		self.assertEqual (pOP.output['cc'], channel.create(['aa', 'bb']))
 		self.assertEqual (pOP.output['__out1__'], channel.create(['1.0', '4.0']))
-		self.assertEqual (pOP.output['__out2__'], channel.create([os.path.join(pOP.workdir, "channel.unittest5.py"), os.path.join(pOP.workdir, "proc.unittest5.py")]))
+		self.assertEqual (pOP.output['__out2__'], channel.create([os.path.join(pOP.outdir, "channel.unittest5.py"), os.path.join(pOP.outdir, "proc.unittest5.py")]))
 		
 		self.assertEqual (c1, [('aa',), ('bb', )])
 		self.assertEqual (c2, [
-			('1.0', os.path.join(pOP.workdir, "channel.unittest5.py")), 
-			('4.0', os.path.join(pOP.workdir, "proc.unittest5.py"))
+			('1.0', os.path.join(pOP.outdir, "channel.unittest5.py")), 
+			('4.0', os.path.join(pOP.outdir, "proc.unittest5.py"))
 		])
 		self.assertEqual (pOP.channel, [
-			('aa', '1.0', os.path.join(pOP.workdir, "channel.unittest5.py")), 
-			('bb', '4.0', os.path.join(pOP.workdir, "proc.unittest5.py"))
+			('aa', '1.0', os.path.join(pOP.outdir, "channel.unittest5.py")), 
+			('bb', '4.0', os.path.join(pOP.outdir, "proc.unittest5.py"))
 		])
 		self.assertEqual (channel.create(pOP.outfiles), pOP.output['__out2__'])
 
@@ -258,7 +258,7 @@ class runner_test (runner_local):
 		self.assertRaises (Exception, ps._tidyBeforeRun)
 		ps.input = {"input": ["input"]}
 		ps.script = "ls"
-		scriptdir = os.path.join (ps.workdir, '.scripts')
+		scriptdir = os.path.join (ps.workdir, 'scripts')
 		if os.path.exists (scriptdir):
 			shutil.rmtree (scriptdir)
 		ps._tidyBeforeRun()
@@ -347,11 +347,11 @@ class runner_test (runner_local):
 
 		pr._runJobs()
 		for i in range(3):
-			self.assertTrue (os.path.exists( os.path.join(pr.workdir, '.scripts', 'script.%s' % i) ))
-			self.assertTrue (os.path.exists( os.path.join(pr.workdir, '.scripts', 'script.%s.stderr' % i) ))
-			self.assertTrue (os.path.exists( os.path.join(pr.workdir, '.scripts', 'script.%s.stdout' % i) ))
-			self.assertTrue (os.path.exists( os.path.join(pr.workdir, '.scripts', 'script.%s.rc' % i) ))
-			self.assertEqual (open( os.path.join(pr.workdir, '.scripts', 'script.%s.stdout' % i)).read().strip(), str(i))
+			self.assertTrue (os.path.exists( os.path.join(pr.workdir, 'scripts', 'script.%s' % i) ))
+			self.assertTrue (os.path.exists( os.path.join(pr.workdir, 'scripts', 'script.%s.stderr' % i) ))
+			self.assertTrue (os.path.exists( os.path.join(pr.workdir, 'scripts', 'script.%s.stdout' % i) ))
+			self.assertTrue (os.path.exists( os.path.join(pr.workdir, 'scripts', 'script.%s.rc' % i) ))
+			self.assertEqual (open( os.path.join(pr.workdir, 'scripts', 'script.%s.stdout' % i)).read().strip(), str(i))
 		
 	def testExport (self):
 		p = proc('export')

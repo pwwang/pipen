@@ -26,7 +26,7 @@ class runner_sge (runner_local):
 			if v != True: # {'notify': True} ==> -notify
 				src += ' ' + v
 			sgesrc.append(src)
-		if not self._config('sgeRunner').has_key ('sge_N'):
+		if not self._config('sgeRunner', {}).has_key ('sge_N'):
 			sgesrc.append('#$ -N ' + self._config('id', os.path.basename (script)) + '.' + self._config('tag', 'notag'))
 		sgesrc.append ('')
 		sgesrc.append ('trap "status=\$?; echo \$status > %s; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.rcfile)

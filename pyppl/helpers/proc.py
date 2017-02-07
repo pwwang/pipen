@@ -100,6 +100,8 @@ class proc (object):
 		self.props['logger']     = logging.getLogger()
 		self.props['args']       = self.config['args']
 		self.props['callback']   = self.config['callback']
+		self.props['indir']      = ''
+		self.props['outdir']     = ''
 
 
 	def __getattr__ (self, name):
@@ -199,12 +201,18 @@ class proc (object):
 
 	def _checkStatus (self): # whether return values allowed or outfiles generated
 		for i in range(self.length):
-			rcfile = os.path.join (self.workdir, '.scripts', 'script.%s.rc' % i)
+			rcfile = os.path.join (self.workdir, 'scripts', 'script.%s.rc' % i)
 			rc = 0
 			with open (rcfile, 'r') as f:
 				rc = f.read().strip()
 			rc = -1 if rc == '' else int(rc)
 			if rc not in self.retcodes:
+				errfile = os.path.join (self.workdir, 'scripts', 'script.%s.stderr' % i)
+				errmsgs = ['[  ERROR]   ' + line.strip() for line in open(errfile)]
+				if not errmsgs: errmsgs = ['[  ERROR]   <EMPTY STDERR>']
+				self.logger.info ('[  ERROR] %s.%s: See STDERR below.' % (self.id, self.tag))
+				for errmsg in errmsgs:
+					self.logger.info (errmsg)
 				raise Exception ('Return code is: %s, but %s expected' % (rc, self.retcodes))
 
 		for of in self.outfiles:
@@ -219,8 +227,6 @@ class proc (object):
 		if isinstance (self.retcodes, str):
 			self.props['retcodes'] = [int(i) for i in split(r'\s*,\s*', self.retcodes)]
 
-		
-
 		key = self.id + '.' + self.tag
 		if key in proc.ids and proc.ids[key] != self:
 			raise Exception ('A proc with id %s and tag %s already exists.' % (self.id, self.tag))
@@ -230,8 +236,17 @@ class proc (object):
 		if not 'workdir' in self.sets and not self.workdir:
 			self.props['workdir'] = os.path.join(self.tmpdir, "PyPPL_%s_%s.%s" % (self.id, self.tag, self._suffix()))
 
+		self.props['indir']   = os.path.join(self.workdir, 'input')
+		self.props['outdir']  = os.path.join(self.workdir, 'output')
+		
 		if not os.path.exists (self.workdir):
 			os.makedirs (self.workdir)
+		if not os.path.exists (self.indir):
+			os.makedirs (self.indir)
+		if not os.path.exists (self.outdir):
+			os.makedirs (self.outdir)
+		if not os.path.exists (os.path.join(self.workdir, 'scripts')):
+			os.makedirs (os.path.join(self.workdir, 'scripts'))
 
 	"""
 	Input could be:
@@ -279,8 +294,7 @@ class proc (object):
 						v = os.path.realpath(v)
 						self.props['infiles'].append (v)
 						self.props['infiletime'] = max (self.infiletime, os.path.getmtime(v))
-						vv[j] = os.path.join(self.workdir, os.path.basename(v))
-						
+						vv[j] = os.path.join(self.indir, os.path.basename(v))
 						if os.path.exists (vv[j]):
 							self.logger.debug ('[WARNING] %s.%s: Input file %s exists in <workdir>.' % (self.id, self.tag, vv[j]))
 							if os.path.islink(vv[j]) or os.path.isfile(vv[j]):
@@ -300,7 +314,7 @@ class proc (object):
 		# also add proc.props, mostly scalar values
 
 		for prop, val in self.props.iteritems():
-			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow', 'args']: continue
+			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow', 'args', 'indir', 'outdir']: continue
 			if prop == 'args':
 				for k, v in val.iteritems():
 					self.props['procvars']['proc.args.' + k] = v
@@ -358,7 +372,7 @@ class proc (object):
 					raise Exception ('Ouput variable name %s is already taken by input' % oname)
 
 				if otype in ['file', 'path']:
-					oexp = os.path.join (self.workdir, oexp)
+					oexp = os.path.join (self.outdir, oexp)
 				# build channels
 				chv = []
 				for i in range(self.length):
@@ -375,14 +389,11 @@ class proc (object):
 					self.props['channel'].merge (chv)
 				self.props['output'][oname] = chv
 
-
 	def _buildScript (self): # make self.jobs
 		if not self.script:
 			raise Exception ('Please specify script to run')
 		
-		scriptdir = os.path.join (self.workdir, '.scripts')
-		if not os.path.exists (scriptdir):
-			os.makedirs(scriptdir)
+		scriptdir = os.path.join (self.workdir, 'scripts')
 		
 		script = self.script.strip()
 		if script.startswith ('template:'):

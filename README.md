@@ -44,7 +44,7 @@ pyppl().starts(p_upper).run()
 It will output:
 ```
 [2017-02-02 16:23:32,515] [  PyPPL] Version: 0.1.0
-[2017-02-02 16:23:32,515] [   TIPS] You can find the stderr in <workdir>/.scripts/script.<index>.stderr
+[2017-02-02 16:23:32,515] [   TIPS] You can find the stderr in <workdir>/scripts/script.<index>.stderr
 [2017-02-02 16:23:32,517] [RUNNING] p_upper.upper: /tmp/PyPPL_p_upper_upper.6bf016ac
 [2017-02-02 16:23:33,056] [ EXPORT] p_upper.upper: ./H.txt (copy)
 [2017-02-02 16:23:33,058] [ EXPORT] p_upper.upper: ./e.txt (copy)

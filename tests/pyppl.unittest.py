@@ -1,6 +1,6 @@
 import unittest, tempfile, sys, pickle, os, shutil
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(rootdir)
+sys.path.insert(0, rootdir)
 from md5 import md5
 from multiprocessing import cpu_count
 from pyppl import pyppl
@@ -152,9 +152,9 @@ sorted("""digraph PyPPL {
 		ppl.starts(pr1, pr2).run()
 		
 
-		self.assertEqual (open(os.path.join(pr3.workdir, '.scripts/script.0.stdout')).read().strip(), 'a1')
-		self.assertEqual (open(os.path.join(pr3.workdir, '.scripts/script.1.stdout')).read().strip(), 'b2')
-		self.assertEqual (open(os.path.join(pr3.workdir, '.scripts/script.2.stdout')).read().strip(), 'c3')
+		self.assertEqual (open(os.path.join(pr3.workdir, 'scripts/script.0.stdout')).read().strip(), 'a1')
+		self.assertEqual (open(os.path.join(pr3.workdir, 'scripts/script.1.stdout')).read().strip(), 'b2')
+		self.assertEqual (open(os.path.join(pr3.workdir, 'scripts/script.2.stdout')).read().strip(), 'c3')
 		
 	@unittest.skip('')
 	def test_sge (self):
@@ -169,7 +169,7 @@ sorted("""digraph PyPPL {
 	def test_batchjobs (self):
 		p = proc ('batch')
 		p.input = {'input': channel([5, 2, 5, 2, 5, 2])}
-		p.script = "cat {{proc.workdir}}/.scripts/script.{{#}}.ssh | grep franklin"
+		p.script = "cat {{proc.workdir}}/scripts/script.{{#}}.ssh | grep franklin"
 		p.echo = True
 		p.cache = False
 		p.forks = 3
