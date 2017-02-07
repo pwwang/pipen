@@ -20,7 +20,7 @@ class pyppl (object):
 			"You can find the stdout in <workdir>/scripts/script.<index>.stdout",
 			"You can find the stderr in <workdir>/scripts/script.<index>.stderr",
 			"You can find the script in <workdir>/scripts/script.<index>",
-			"If 'wdir' is not set for a process, it will be PyPPL_<proc-id>_<proc-tag>.<uuid> under default <tmpdir>"
+			"If 'workdir' is not set for a process, it will be PyPPL_<proc-id>_<proc-tag>.<uuid> under default <tmpdir>"
 		]
 		logger.info ('[  PyPPL] Version: %s' % (VERSION))
 		logger.info ('[   TIPS] %s' % (random.choice(tips)))

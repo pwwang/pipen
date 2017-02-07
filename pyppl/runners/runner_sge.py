@@ -1,7 +1,7 @@
 from runner_local import runner_local
 from time import sleep
 from subprocess import Popen, list2cmdline 
-import os, shlex, logging
+import os, shlex, logging, sys
 
 
 class runner_sge (runner_local):
@@ -30,10 +30,10 @@ class runner_sge (runner_local):
 			sgesrc.append('#$ -N ' + self._config('id', os.path.basename (script)) + '.' + self._config('tag', 'notag'))
 		sgesrc.append ('')
 		sgesrc.append ('trap "status=\$?; echo \$status > %s; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.rcfile)
-		sgesrc.append (self._config('preScript', ''))
+		sgesrc.append (self._config('sgeRunner.preScript', ''))
 		sgesrc.append ('')
 		sgesrc.append (list2cmdline(self.script))
-		sgesrc.append (self._config('postScript', ''))
+		sgesrc.append (self._config('sgeRunner.postScript', ''))
 		
 		with open (sgefile, 'w') as f:
 			f.write ('\n'.join(sgesrc) + '\n')
@@ -53,6 +53,13 @@ class runner_sge (runner_local):
 			
 			while self.rc() == -99:
 				sleep (5)
+			
+			if self._config('echo', False):
+				for line in ['  ' + l.strip() for l in open(self.outfile)]:
+					sys.stdout.write (line + '\n')
+				for line in ['  ' + l.strip() for l in open(self.errfile)]:
+					sys.stderr.write (line + '\n')
+
 		except Exception as ex:
 			with open (self.rcfile, 'w') as f:
 				f.write('1')

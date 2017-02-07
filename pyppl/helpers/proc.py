@@ -207,12 +207,13 @@ class proc (object):
 				rc = f.read().strip()
 			rc = -1 if rc == '' else int(rc)
 			if rc not in self.retcodes:
-				errfile = os.path.join (self.workdir, 'scripts', 'script.%s.stderr' % i)
-				errmsgs = ['[  ERROR]   ' + line.strip() for line in open(errfile)]
-				if not errmsgs: errmsgs = ['[  ERROR]   <EMPTY STDERR>']
-				self.logger.info ('[  ERROR] %s.%s: See STDERR below.' % (self.id, self.tag))
-				for errmsg in errmsgs:
-					self.logger.info (errmsg)
+				if not self.echo:
+					errfile = os.path.join (self.workdir, 'scripts', 'script.%s.stderr' % i)
+					errmsgs = ['[  ERROR]   ' + line.strip() for line in open(errfile)]
+					if not errmsgs: errmsgs = ['[  ERROR]   <EMPTY STDERR>']
+					self.logger.info ('[  ERROR] %s.%s: See STDERR below.' % (self.id, self.tag))
+					for errmsg in errmsgs:
+						self.logger.info (errmsg)
 				raise Exception ('Return code is: %s, but %s expected' % (rc, self.retcodes))
 
 		for of in self.outfiles:
