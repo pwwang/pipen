@@ -214,7 +214,7 @@ class proc (object):
 					self.logger.info ('[  ERROR] %s.%s: See STDERR below.' % (self.id, self.tag))
 					for errmsg in errmsgs:
 						self.logger.info (errmsg)
-				raise Exception ('Return code is: %s, but %s expected' % (rc, self.retcodes))
+				raise Exception ('[#%s]: Return code is %s, but %s expected.' % (i, rc, self.retcodes))
 
 		for of in self.outfiles:
 			if not os.path.exists (of):
