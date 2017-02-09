@@ -27,7 +27,7 @@ class runner_sge (runner_local):
 				src += ' ' + v
 			sgesrc.append(src)
 		if not self._config('sgeRunner', {}).has_key ('sge_N'):
-			sgesrc.append('#$ -N ' + self._config('id', os.path.basename (script)) + '.' + self._config('tag', 'notag'))
+			sgesrc.append('#$ -N %s_%s.%s' % (self._config('id', os.path.basename (script) [:-len(self.index)-1]), self._config('tag', 'notag'), self.index)) # + self._config('id', os.path.basename (script)) + '.' + self._config('tag', 'notag'))
 		sgesrc.append ('')
 		sgesrc.append ('trap "status=\$?; echo \$status > %s; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.rcfile)
 		sgesrc.append (self._config('sgeRunner.preScript', ''))
@@ -51,14 +51,20 @@ class runner_sge (runner_local):
 			if rc != 0:
 				raise RuntimeError ('Failed to submit job %s' % self._config('N', os.basename(self.rcfile)[:-3]))
 			
+			outp = errp = 0
 			while self.rc() == -99:
+				if self._config('echo', False):
+					outs = ['  ' + l.strip() for l in open(self.outfile)][outp:]
+					outp += len (outs)
+					for line in outs:
+						sys.stdout.write (line + '\n')
+						
+					errs = ['  ' + l.strip() for l in open(self.errfile)][errp:]
+					errp += len (errs)
+					for line in errs:
+						sys.stderr.write (line + '\n')
 				sleep (5)
 			
-			if self._config('echo', False):
-				for line in ['  ' + l.strip() for l in open(self.outfile)]:
-					sys.stdout.write (line + '\n')
-				for line in ['  ' + l.strip() for l in open(self.errfile)]:
-					sys.stderr.write (line + '\n')
 
 		except Exception as ex:
 			with open (self.rcfile, 'w') as f:

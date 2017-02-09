@@ -39,7 +39,7 @@ class proc (object):
 		self.config['depends']    = []
 		self.config['tag']        = tag
 		self.config['exportdir']  = ''
-		self.config['exporthow']  = 'copy' # symlink, move
+		self.config['exporthow']  = 'copy' # symlink, move, gzip (TODO)
 		self.config['exportow']   = True # overwrite
 		self.config['errorhow']   = "terminate" # retry, ignore
 		self.config['errorntry']  = 1
@@ -165,6 +165,7 @@ class proc (object):
 
 	def _tidyBeforeRun (self):
 		self._buildProps ()
+		self.logger.info ('[RUNNING] %s.%s: %s' % (self.id, self.tag, self.workdir))
 		self._buildInput ()
 		self._buildOutput ()
 		self._buildScript ()
@@ -190,7 +191,6 @@ class proc (object):
 			self._tidyAfterRun ()
 			return
 
-		self.logger.info ('[RUNNING] %s.%s: %s' % (self.id, self.tag, self.workdir))
 		if self._runCmd('beforeCmd') != 0:
 			raise Exception ('Failed to run <beforeCmd>')
 		self._runJobs()
@@ -218,7 +218,7 @@ class proc (object):
 
 		for of in self.outfiles:
 			if not os.path.exists (of):
-				raise Exception ('Output file %s not generated.' % (self.id, self.tag, of))
+				raise Exception ('Output file %s not generated.' % (of))
 		return True
 
 	def _buildProps (self):
@@ -296,9 +296,12 @@ class proc (object):
 						self.props['infiles'].append (v)
 						self.props['infiletime'] = max (self.infiletime, os.path.getmtime(v))
 						vv[j] = os.path.join(self.indir, os.path.basename(v))
+						if os.path.islink(vv[j]):
+							self.logger.info ('[WARNING] %s.%s: Overwriting existing input file (link) %s.' % (self.id, self.tag, vv[j]))
+							os.remove (vv[j])
 						if os.path.exists (vv[j]):
-							self.logger.debug ('[WARNING] %s.%s: Input file %s exists in <workdir>.' % (self.id, self.tag, vv[j]))
-							if os.path.islink(vv[j]) or os.path.isfile(vv[j]):
+							self.logger.info ('[WARNING] %s.%s: Overwriting existing file/dir %s in <indir>.' % (self.id, self.tag, vv[j]))
+							if os.path.isfile(vv[j]):
 								os.remove (vv[j])
 							else:
 								shutil.rmtree(vv[j])
@@ -315,7 +318,7 @@ class proc (object):
 		# also add proc.props, mostly scalar values
 
 		for prop, val in self.props.iteritems():
-			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow', 'args', 'indir', 'outdir']: continue
+			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'runner', 'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow', 'args', 'indir', 'outdir']: continue
 			if prop == 'args':
 				for k, v in val.iteritems():
 					self.props['procvars']['proc.args.' + k] = v
