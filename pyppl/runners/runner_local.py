@@ -67,12 +67,12 @@ class runner_local (object):
 			for line in iter(p.stderr.readline, ''):
 				ferr.write(line)
 				if self._config('echo', False):
-					sys.stderr.write('  ' + line)
+					sys.stderr.write('! ' + line)
 
 			for line in iter(p.stdout.readline, ''):
 				fout.write(line)
 				if self._config('echo', False):
-					sys.stdout.write('  ' + line)
+					sys.stdout.write('- ' + line)
 			
 			fout.close()
 			ferr.close()

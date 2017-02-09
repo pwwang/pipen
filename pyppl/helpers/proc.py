@@ -181,6 +181,7 @@ class proc (object):
 		self._readConfig (config)
 		if self._isCached(): return False
 		for n in self.nexts: # if i am not cached, then none of depends
+			self.logger.debug ('[  DEBUG] %s.%s: I`m not cached, so my dependent %s have to rerun.' % (self.id, self.tag, n.id))
 			n.cache = False
 		self._tidyBeforeRun ()
 		return True
@@ -209,8 +210,8 @@ class proc (object):
 			if rc not in self.retcodes:
 				if not self.echo:
 					errfile = os.path.join (self.workdir, 'scripts', 'script.%s.stderr' % i)
-					errmsgs = ['[  ERROR]   ' + line.strip() for line in open(errfile)]
-					if not errmsgs: errmsgs = ['[  ERROR]   <EMPTY STDERR>']
+					errmsgs = ['[  ERROR] !  ' + line.strip() for line in open(errfile)]
+					if not errmsgs: errmsgs = ['[  ERROR] ! <EMPTY STDERR>']
 					self.logger.info ('[  ERROR] %s.%s: See STDERR below.' % (self.id, self.tag))
 					for errmsg in errmsgs:
 						self.logger.info (errmsg)
@@ -297,10 +298,10 @@ class proc (object):
 						self.props['infiletime'] = max (self.infiletime, os.path.getmtime(v))
 						vv[j] = os.path.join(self.indir, os.path.basename(v))
 						if os.path.islink(vv[j]):
-							self.logger.info ('[WARNING] %s.%s: Overwriting existing input file (link) %s.' % (self.id, self.tag, vv[j]))
+							self.logger.info ('[WARNING] %s.%s: Overwriting existing input file (link) %s' % (self.id, self.tag, vv[j]))
 							os.remove (vv[j])
 						if os.path.exists (vv[j]):
-							self.logger.info ('[WARNING] %s.%s: Overwriting existing file/dir %s in <indir>.' % (self.id, self.tag, vv[j]))
+							self.logger.info ('[WARNING] %s.%s: Overwriting existing file/dir %s' % (self.id, self.tag, vv[j]))
 							if os.path.isfile(vv[j]):
 								os.remove (vv[j])
 							else:
@@ -489,23 +490,30 @@ class proc (object):
 			pickle.dump(props, f)
 	
 	def _isCached (self):
-		if not self.cache:	return False
+		if not self.cache:	
+			self.logger.debug ('[  DEBUG] %s.%s: Not cached, because proc.cache = False.' % (self.id, self.tag))
+			return False
 
 		cachefile = os.path.join (self.tmpdir, self.cachefile)
-		if not os.path.exists(cachefile): return False
+		if not os.path.exists(cachefile): 
+			self.logger.debug ('[  DEBUG] %s.%s: Not cached, cache file %s not exists.' % (self.id, self.tag, cachefile))
+			return False
 		
 		with open(cachefile, 'r') as f:
 			props = pickle.load(f)
 		self.props.update(props)
 		# check input files, outputfiles
 		for infile in self.infiles:
-			if not os.path.exists(infile):
+			if not os.path.exists(infile):	
+				self.logger.debug ('[  DEBUG] %s.%s: Not cached, input file %s not exists.' % (self.id, self.tag, infile))
 				return False
 			if os.path.getmtime(infile) > self.infiletime and self.infiletime != 0:
+				self.logger.debug ('[  DEBUG] %s.%s: Not cached, input file %s is newer.' % (self.id, self.tag, infile))
 				return False
 		
 		for outfile in self.outfiles:
 			if not os.path.exists(outfile):
+				self.logger.debug ('[  DEBUG] %s.%s: Not cached, output file %s not exists' % (self.id, self.tag, outfile))
 				return False
 		return True
 

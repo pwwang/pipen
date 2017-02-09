@@ -54,12 +54,12 @@ class runner_sge (runner_local):
 			outp = errp = 0
 			while self.rc() == -99:
 				if self._config('echo', False):
-					outs = ['  ' + l.strip() for l in open(self.outfile)][outp:]
+					outs = ['- ' + l.strip() for l in open(self.outfile)][outp:]
 					outp += len (outs)
 					for line in outs:
 						sys.stdout.write (line + '\n')
-						
-					errs = ['  ' + l.strip() for l in open(self.errfile)][errp:]
+
+					errs = ['! ' + l.strip() for l in open(self.errfile)][errp:]
 					errp += len (errs)
 					for line in errs:
 						sys.stderr.write (line + '\n')
