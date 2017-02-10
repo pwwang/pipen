@@ -180,9 +180,11 @@ class proc (object):
 	def _init (self, config):
 		self._readConfig (config)
 		if self._isCached(): return False
+		'''
 		for n in self.nexts: # if i am not cached, then none of depends
 			self.logger.debug ('[  DEBUG] %s.%s: I`m not cached, so my dependent %s have to rerun.' % (self.id, self.tag, n.id))
 			n.cache = False
+		'''
 		self._tidyBeforeRun ()
 		return True
 
@@ -515,6 +517,12 @@ class proc (object):
 			if not os.path.exists(outfile):
 				self.logger.debug ('[  DEBUG] %s.%s: Not cached, output file %s not exists' % (self.id, self.tag, outfile))
 				return False
+		
+		for d in self.depends:
+			if not d._isCached():
+				self.logger.debug ('[  DEBUG] %s.%s: Not cached, because my dependent %s is not cached.' % (self.id, self.tag, d.id))
+				return False
+
 		return True
 
 	def _runCmd (self, key):

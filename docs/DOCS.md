@@ -706,7 +706,7 @@ digraph PyPPL {
 ```
 You can use different dot [renderers](https://en.wikipedia.org/wiki/DOT_(graph_description_language)#Layout_programs) to render and visualize it.
 
-![PyPPL chart](pyppl.png)
+![PyPPL chart](../pyppl.png)
 
 
 
