@@ -402,9 +402,17 @@ class runner_test (runner_local):
 			p._runJobs()
 			p._tidyAfterRun()
 
+	def testCopy (self):
+		p = proc('copy')
+		p.script = 'echo {#}'
 
+		p.exportdir = rootdir
 
-
+		pCopy = p.copy('procCopy')
+		self.assertEqual (pCopy.pid, 'pCopy')
+		self.assertEqual (pCopy.tag, 'procCopy')
+		self.assertEqual (pCopy.exportdir, rootdir)
+		self.assertEqual (pCopy.script, p.script)
 
 	
 

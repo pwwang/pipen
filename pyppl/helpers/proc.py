@@ -1,4 +1,5 @@
-import logging, os, strtpl, copy, pickle, shlex, shutil, threading, sys
+import logging, os, strtpl, pickle, shlex, shutil, threading, sys
+import copy as pycopy
 from traceback import extract_stack
 from channel import channel
 import strtpl
@@ -128,8 +129,18 @@ class proc (object):
 	def setLogger (self, logger):
 		self.props['logger'] = logger
 
+	def copy (self, tag=None):
+		newproc = pycopy.deepcopy (self)
+		if tag is not None:
+			newproc.tag = tag
+		pid                  = extract_stack()[-2][3]
+		if pid is None: pid  = extract_stack()[-4][3]
+		pid                  = pid[:pid.find('=')].strip()	
+		newproc.props['pid'] = pid
+		return newproc
+
 	def _suffix (self):
-		config = copy.copy(self.config)
+		config = pycopy.copy(self.config)
 		if config.has_key('workdir'):
 			del config['workdir']
 
@@ -463,7 +474,7 @@ class proc (object):
 					os.symlink (outfile, target)
 
 	def _readConfig (self, config):
-		conf = copy.copy (config)
+		conf = pycopy.copy (config)
 		for s in self.sets:
 			if conf.has_key(s): del conf[s]
 		self.config.update (conf)
@@ -480,7 +491,7 @@ class proc (object):
 	def _doCache (self):
 		cachefile = os.path.join (self.tmpdir, self.cachefile)
 		with open (cachefile, 'w') as f:
-			props = copy.copy(self.props)
+			props = pycopy.copy(self.props)
 			if props.has_key('logger'):
 				del props['logger']
 			if props.has_key('depends'):
