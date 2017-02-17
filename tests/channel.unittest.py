@@ -1,6 +1,6 @@
 import sys, unittest, os
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(rootdir)
+sys.path.insert(0, rootdir)
 from pyppl import channel
 
 class TestChannel (unittest.TestCase):
@@ -157,6 +157,13 @@ class TestChannel (unittest.TestCase):
 		self.assertEqual (c2.length(), 4)
 		self.assertEqual (c3.length(), 4)
 		self.assertEqual (c4.length(), 4)
+
+	def testCopy(self):
+		c1 = channel.create([("a", "b", "c")])
+		c2 = c1.copy()
+		c2[0] = ("x", "y", "z")
+		self.assertEqual (c1, [("a", "b", "c")])		
+		self.assertEqual (c2, [("x", "y", "z")])
 
 
 

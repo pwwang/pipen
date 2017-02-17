@@ -103,6 +103,7 @@ class proc (object):
 		self.props['callback']   = self.config['callback']
 		self.props['indir']      = ''
 		self.props['outdir']     = ''
+		self.props['cached']     = False
 
 
 	def __getattr__ (self, name):
@@ -190,7 +191,11 @@ class proc (object):
 
 	def _init (self, config):
 		self._readConfig (config)
-		if self._isCached(): return False
+		self.props['cached']   = self._isCached()
+		if self.cached: return False
+		self.props['infiles']  = []
+		self.props['outfiles'] = []
+		self.props['jobs']     = []
 		'''
 		for n in self.nexts: # if i am not cached, then none of depends
 			self.logger.debug ('[  DEBUG] %s.%s: I`m not cached, so my dependent %s have to rerun.' % (self.id, self.tag, n.id))
@@ -274,7 +279,7 @@ class proc (object):
 	def _buildInput (self):
 		# if config.input is list, build channel from depends
 		# else read from config.input
-		input0 = self.input
+		input0 = self.config['input']
 		if isinstance(input0, list):
 			input0 = ', '.join(input0)
 		if isinstance(input0, str):
@@ -515,6 +520,7 @@ class proc (object):
 		with open(cachefile, 'r') as f:
 			props = pickle.load(f)
 		self.props.update(props)
+		
 		# check input files, outputfiles
 		for infile in self.infiles:
 			if not os.path.exists(infile):	
@@ -523,6 +529,10 @@ class proc (object):
 			if os.path.getmtime(infile) > self.infiletime and self.infiletime != 0:
 				self.logger.debug ('[  DEBUG] %s.%s: Not cached, input file %s is newer.' % (self.id, self.tag, infile))
 				return False
+			inlink =  os.path.join(self.indir, os.path.basename (infile))
+			if not os.path.islink (inlink):
+				self.logger.debug ('[  DEBUG] %s.%s: Not cached, input file link %s not exists.' % (self.id, self.tag, inlink))
+				return False
 		
 		for outfile in self.outfiles:
 			if not os.path.exists(outfile):
@@ -530,7 +540,7 @@ class proc (object):
 				return False
 		
 		for d in self.depends:
-			if not d._isCached():
+			if not d.cached:
 				self.logger.debug ('[  DEBUG] %s.%s: Not cached, because my dependent %s is not cached.' % (self.id, self.tag, d.id))
 				return False
 

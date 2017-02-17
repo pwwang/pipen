@@ -1,3 +1,4 @@
+from copy import copy as pycopy
 
 class channel (list):
   
@@ -67,6 +68,9 @@ class channel (list):
 			except:
 				tu = (tu, )
 		return tu
+	
+	def copy (self):
+		return pycopy(self)
 
 	def width (self):
 		if not self:

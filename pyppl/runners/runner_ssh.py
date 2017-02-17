@@ -12,8 +12,10 @@ class runner_ssh (runner_local):
 		super(runner_ssh, self).__init__(script, config)
 		# construct an ssh cmd
 		sshfile = script + '.ssh'
-		
+
 		servers  = self._config('sshRunner.servers')
+		if not servers:
+			raise Exception ("No servers found.")
 		serverid = runner_ssh.serverid % len (servers)
 		sshsrc  = [
 			'#!/usr/bin/env bash',
