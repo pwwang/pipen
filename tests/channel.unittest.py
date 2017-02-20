@@ -165,6 +165,14 @@ class TestChannel (unittest.TestCase):
 		self.assertEqual (c1, [("a", "b", "c")])		
 		self.assertEqual (c2, [("x", "y", "z")])
 
+	def testToList (self):
+		l = ["abc", "def", "ghi", "opq"]
+		c1 = channel.create (["abc", "def", "ghi", "opq"])
+		self.assertEqual (c1.toList(), l)
+		
+		c2 = channel.create([("abc", "1", 5), ("def", '2', 6), ("ghi", '3', 7), ("opq", '4', 8)])
+		self.assertRaises (Exception, c2.toList)
+		
 
 
 if __name__ == '__main__':

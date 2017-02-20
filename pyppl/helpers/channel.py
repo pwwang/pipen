@@ -4,6 +4,7 @@ class channel (list):
   
 	@staticmethod
 	def create (l = []):
+		if l is None: l = []
 		ret = channel()
 		for e in l:
 			ret.append (channel._tuplize(e))
@@ -131,7 +132,16 @@ class channel (list):
 			for j, t in enumerate(tu):
 				ret[j].append(channel._tuplize(t))
 		return ret
-			
+	
+	def toList (self): # [(a,), (b,)] to [a, b], only applicable when width =1
+		if self.width() != 1:
+			raise Exception ('Width = %s, but expect width = 1.' % self.width())
+		
+		ret = []
+		for e in self:
+			(v, ) = e
+			ret.append(v)
+		return ret
 
 	
   

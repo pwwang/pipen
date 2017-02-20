@@ -147,6 +147,8 @@ class TestRunner (unittest.TestCase):
 		self.assertEqual (open(r2.outfile).read().strip(), '2')
 		self.assertEqual (open(r2.errfile).read().strip(), '3')
 		self.assertFalse (r2.isValid())
+
+		
 	
 	@unittest.skip("Skipping SGE test...")
 	def testSGERun (self):

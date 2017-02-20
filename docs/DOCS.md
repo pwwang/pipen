@@ -543,7 +543,8 @@ strtpl.format("{{v | .upper()}}", {'v': 'hello'})
 strtpl.format("{{v | .find('|')}}", {'v': 'hel|lo'})
 # => "3" 
 # Note: | is inside '' so it's not used as a delimiter
-#       strtpl.format always returns str
+#       strtpl.format always returns str. But inside the chain, it could return other types. 
+#       For example: {{v | sum(_)}} while v = [1,2,3,4] returns "10"
 ```
 
 #### Use independent functions

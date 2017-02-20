@@ -203,5 +203,25 @@ sorted("""digraph PyPPL {
 		p2.output = "output:{{input}}.{{in1}}.{{in2}}"
 		pyppl ().starts(p1).run()
 
+	def testCallfront (self):
+		p1 = proc ('callfront')
+		p2 = proc ('callfront')
+
+		sys.argv = [0, 1, 2]
+		p1.input = {"input": channel.fromArgv(1)}
+		p1.output = "output:{{input}}2"
+		p1.script = "echo {{output}}"
+
+		def callfront (s):
+			ch = channel.create ([('a1','b'), ('x', 'y')])
+			p1.channel.merge(ch)
+
+		p2.depends = p1
+		p2.input = "input, in1, in2"
+		p2.script = "echo {{output}}"
+		p2.output = "output:{{input}}.{{in1}}.{{in2}}"
+		p2.callfront = callfront
+		pyppl ({'loglevel':'debug'}).starts(p1).run()
+
 if __name__ == '__main__':
 	unittest.main()

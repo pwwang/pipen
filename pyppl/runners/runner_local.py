@@ -54,28 +54,28 @@ class runner_local (object):
 			return self.config[key]
 
 	def run (self):
-
 		if os.path.exists(self.rcfile):
 			os.remove(self.rcfile)
 		
 		try:
-			sleep(.1) # not sleeping causes text file busy. Why?
-			p      = Popen (self.script, stdin=PIPE, stderr=PIPE, stdout=PIPE)
-			fout   = open (self.outfile, 'w')
-			ferr   = open (self.errfile, 'w')
+			#sleep(.1) # not sleeping causes text file busy. Why? solved by add close_fds = True
+			p      = Popen (self.script, stdin=PIPE, stderr=PIPE, stdout=PIPE, close_fds=True)
+			#fout   = open (self.outfile, 'w')
+			#ferr   = open (self.errfile, 'w')
 			#stdstr = ""
-			for line in iter(p.stderr.readline, ''):
-				ferr.write(line)
-				if self._config('echo', False):
-					sys.stderr.write('! ' + line)
+			with open (self.outfile, 'w') as fout, open(self.errfile, 'w') as ferr:
+				for line in iter(p.stderr.readline, ''):
+					ferr.write(line)
+					if self._config('echo', False):
+						sys.stderr.write('! ' + line)
 
-			for line in iter(p.stdout.readline, ''):
-				fout.write(line)
-				if self._config('echo', False):
-					sys.stdout.write('- ' + line)
+				for line in iter(p.stdout.readline, ''):
+					fout.write(line)
+					if self._config('echo', False):
+						sys.stdout.write('- ' + line)
 			
-			fout.close()
-			ferr.close()
+			#fout.close()
+			#ferr.close()
 
 			with open (self.rcfile, 'w') as f:
 				f.write(str(p.wait()))
@@ -89,7 +89,7 @@ class runner_local (object):
 		self.ntry += 1
 		if not self.isValid() and self._config('errorhow') == 'retry' and self.ntry <= self._config('errorntry'):
 			self._config('logger', logging).info ('[RETRY %s] %s.%s#%s: %s' % (self.ntry, self._config('id'), self._config('tag'), self.index, self._config('workdir')))
-			sleep (.1)
+			#sleep (.1)
 			self.run()
 
 

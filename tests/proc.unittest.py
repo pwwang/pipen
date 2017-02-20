@@ -139,55 +139,61 @@ class runner_test (runner_local):
 
 
 	def testBuildInput (self):
+		self.maxDiff = None
 		p1 = proc('tag1')
 		p1.props['channel'] = [("aa", 1), ("bb", 2)]
 
 		p2 = proc('tag2')
 		p2.depends = p1
+		
 		p2.input   = ["char", "number"]
 		p2._buildProps()
 		p2._buildInput()
-		self.assertEqual (p2.input, {"char": [("aa", ), ("bb", )], "number": [(1, ), (2, )]})
+		self.assertEqual (p2.input, {"char": ["aa", "bb"], "number": [1, 2]})
 
 		p2.input   = "c, n"
 		p2._buildProps()
 		p2._buildInput()
-		self.assertEqual (p2.input, {"c": [("aa", ), ("bb", )], "n": [(1, ), (2, )]})
+		self.assertEqual (p2.input, {"c": ["aa", "bb"], "n": [1, 2]})
 
 		c1 = channel.create (["aa", "bb"])
 		c2 = channel.create ([1, 2])
 		p2.input   = {"x": c1, "y": c2}
 		p2._buildProps()
 		p2._buildInput()
-		self.assertEqual (p2.input, {"x": [("aa", ), ("bb", )], "y": [(1, ), (2, )]})
+		self.assertEqual (p2.input, {"x": ["aa","bb"], "y": [1, 2]})
 
 		p2.input   = {"a,b": channel.fromChannels(c1,c2)}
 		p2._buildProps()
 		p2._buildInput()
-		self.assertEqual (p2.input, {"a": [("aa", ), ("bb", )], "b": [(1, ), (2, )]})
-
+		self.assertEqual (p2.input, {"a": ["aa", "bb"], "b": [1, 2]})
+		
+		p2.tag = "file"
+		
 		c2 = channel.create (sorted(["channel.unittest.py", "proc.unittest.py"]))
 		c1 = c2.map (lambda x: x[0][:-12])
+		
 		p2.input   = {"c1, c2:file": channel.fromChannels(c1, c2)}
 		p2._buildProps()
 		p2._buildInput()
 		self.assertEqual (p2.input, {
-			"c1": [("channel",), ("proc",)], 
-			"c2": channel.create(sorted(c2.map(lambda x: os.path.join(p2.indir, x[0])))), 
-			"c2.bn": c2, 
-			"c2.fn": c2.map(lambda x: x[0][:-3]), 
-			"c2.ext": channel.create([".py", ".py"])
+			"c1": ["channel","proc"], 
+			"c2": c2.map(lambda x: os.path.join(p2.indir, x[0])).toList(), 
+			"c2.bn": c2.toList(), 
+			"c2.fn": c2.map(lambda x: x[0][:-3]).toList(), 
+			"c2.ext": [".py", ".py"]
 		})
-
+		
+		p2.tag   = 'varfile'
 		p2.input = {"c1:var": c1, "c2:file": c2}
 		p2._buildProps()
 		p2._buildInput()
 		self.assertEqual (p2.input, {
-			"c1": [("channel",), ("proc",)], 
-			"c2": sorted(c2.map(lambda x: os.path.join(p2.indir, x[0]))), 
-			"c2.bn": c2, 
-			"c2.fn": c2.map(lambda x: x[0][:-3]), 
-			"c2.ext": channel.create([".py", ".py"])
+			"c1": ["channel","proc"], 
+			"c2": c2.map(lambda x: os.path.join(p2.indir, x[0])).toList(), 
+			"c2.bn": c2.toList(), 
+			"c2.fn": c2.map(lambda x: x[0][:-3]).toList(), 
+			"c2.ext": channel.create([".py", ".py"]).toList()
 		})
 
 	def testBuildOutput (self):
@@ -201,15 +207,15 @@ class runner_test (runner_local):
 		pOP._buildProps()
 		pOP._buildInput()
 		pOP._buildOutput()
-		self.assertEqual (pOP.output['o1'], [('aa', ), ('bb', )])
+		self.assertEqual (pOP.output['o1'], ['aa', 'bb'])
 
-		self.assertEqual (pOP.output['o2'], [('1.0',), ('4.0',)])
-		self.assertEqual (pOP.output['o3'], [(os.path.join(pOP.outdir, "channel.unittest2.py"),), (os.path.join(pOP.outdir, "proc.unittest2.py"),)])
+		self.assertEqual (pOP.output['o2'], ['1.0', '4.0'])
+		self.assertEqual (pOP.output['o3'], [os.path.join(pOP.outdir, "channel.unittest2.py"), os.path.join(pOP.outdir, "proc.unittest2.py")])
 		self.assertEqual (pOP.channel, [
 			('aa', '1.0', os.path.join(pOP.outdir, "channel.unittest2.py")), 
 			('bb', '4.0', os.path.join(pOP.outdir, "proc.unittest2.py"))
 		])
-		self.assertEqual (channel.create(pOP.outfiles), pOP.output['o3'])
+		self.assertEqual (pOP.outfiles, pOP.output['o3'])
 
 		pOP.props['channel'] = channel()
 		pOP.props['outfiles'] = []
@@ -217,15 +223,15 @@ class runner_test (runner_local):
 		pOP._buildProps()
 		pOP._buildInput()
 		pOP._buildOutput()
-		self.assertEqual (pOP.output['__out1__'], channel.create(['aa', 'bb']))
-		self.assertEqual (pOP.output['o2'], channel.create(['1.0', '4.0']))
-		self.assertEqual (pOP.output['o3'], channel.create([os.path.join(pOP.outdir, "channel.unittest2.py"), os.path.join(pOP.outdir, "proc.unittest2.py")]))
+		self.assertEqual (pOP.output['__out1__'], ['aa', 'bb'])
+		self.assertEqual (pOP.output['o2'], ['1.0', '4.0'])
+		self.assertEqual (pOP.output['o3'], [os.path.join(pOP.outdir, "channel.unittest2.py"), os.path.join(pOP.outdir, "proc.unittest2.py")])
 
 		self.assertEqual (pOP.channel, [
 			('aa', '1.0', os.path.join(pOP.outdir, "channel.unittest2.py")), 
 			('bb', '4.0', os.path.join(pOP.outdir, "proc.unittest2.py"))
 		])
-		self.assertEqual (channel.create(pOP.outfiles), pOP.output['o3'])
+		self.assertEqual (pOP.outfiles, pOP.output['o3'])
 		
 		pOP.props['channel'] = channel()
 		pOP.props['outfiles'] = []
@@ -237,9 +243,9 @@ class runner_test (runner_local):
 		pOP._buildProps()
 		pOP._buildInput()
 		pOP._buildOutput()
-		self.assertEqual (pOP.output['cc'], channel.create(['aa', 'bb']))
-		self.assertEqual (pOP.output['__out1__'], channel.create(['1.0', '4.0']))
-		self.assertEqual (pOP.output['__out2__'], channel.create([os.path.join(pOP.outdir, "channel.unittest5.py"), os.path.join(pOP.outdir, "proc.unittest5.py")]))
+		self.assertEqual (pOP.output['cc'], ['aa', 'bb'])
+		self.assertEqual (pOP.output['__out1__'], ['1.0', '4.0'])
+		self.assertEqual (pOP.output['__out2__'], [os.path.join(pOP.outdir, "channel.unittest5.py"), os.path.join(pOP.outdir, "proc.unittest5.py")])
 		
 		self.assertEqual (c1, [('aa',), ('bb', )])
 		self.assertEqual (c2, [
@@ -250,7 +256,7 @@ class runner_test (runner_local):
 			('aa', '1.0', os.path.join(pOP.outdir, "channel.unittest5.py")), 
 			('bb', '4.0', os.path.join(pOP.outdir, "proc.unittest5.py"))
 		])
-		self.assertEqual (channel.create(pOP.outfiles), pOP.output['__out2__'])
+		self.assertEqual (pOP.outfiles, pOP.output['__out2__'])
 
 
 	def testBuildScript(self):

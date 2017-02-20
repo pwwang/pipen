@@ -73,11 +73,12 @@ def format (tpl, args):
 
 		while parts:
 			func = parts.pop(0).strip()
-
+			val2replace = ("'%s'" % value) if isinstance(value, basestring) else ("%s" % value)
+			func = re.sub("(?<=\(|\s|,)_(?=\)|,|\s)", val2replace, func, 1)
+			
 			if func.startswith(".") or func.startswith("["):
-				value = eval ('"%s"%s' % (value, func))
+				value = eval ('%s%s' % (val2replace, func))
 			else:
-				func = re.sub("(?<=\(|\s|,)_(?=\)|,|\s)", "'%s'" % value, func, 1)
 				value = eval (func)
 
 		s     = s.replace (n, str(value))

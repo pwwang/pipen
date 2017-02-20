@@ -1,5 +1,6 @@
 import logging, os, strtpl, pickle, shlex, shutil, threading, sys
 import copy as pycopy
+from random import randint
 from traceback import extract_stack
 from channel import channel
 import strtpl
@@ -11,6 +12,9 @@ from Queue import Queue
 from collections import OrderedDict
 from inspect import getsource
 from ..runners import runner_local, runner_sge, runner_ssh
+
+# logging.basicConfig(level=logging.INFO)
+# deepcopy does not work if this is ON
 
 class proc (object):
 
@@ -50,6 +54,7 @@ class proc (object):
 		self.config['workdir']    = ''
 		self.config['args']       = {}
 		self.config['callback']   = None
+		self.config['callfront']  = None
 		# init props
 
 		# id of the process, actually it's the variable name of the process
@@ -98,9 +103,10 @@ class proc (object):
 		self.props['infiles']    = []
 		self.props['procvars']   = {}
 		self.props['workdir']    = ''
-		self.props['logger']     = logging.getLogger()
+		self.props['logger']     = logging.getLogger(__name__)
 		self.props['args']       = self.config['args']
 		self.props['callback']   = self.config['callback']
+		self.props['callfront']  = self.config['callfront']
 		self.props['indir']      = ''
 		self.props['outdir']     = ''
 		self.props['cached']     = False
@@ -171,6 +177,15 @@ class proc (object):
 					config['callback'] = config['callback'].__name__
 			else:
 				config['callback'] = 'None'
+	
+		if config.has_key ('callfront'):
+			if callable (config['callfront']):
+				try:
+					config['callfront'] = getsource(config['callfront'])
+				except:
+					config['callfront'] = config['callfront'].__name__
+			else:
+				config['callfront'] = 'None'
 
 		signature = pickle.dumps(config) + '@' + pickle.dumps(sorted(sys.argv))
 		return md5(signature).hexdigest()[:8]
@@ -192,6 +207,8 @@ class proc (object):
 	def _init (self, config):
 		self._readConfig (config)
 		self.props['cached']   = self._isCached()
+		if callable (self.callfront):
+			self.callfront (self)		
 		if self.cached: return False
 		self.props['infiles']  = []
 		self.props['outfiles'] = []
@@ -304,45 +321,52 @@ class proc (object):
 				raise Exception('Not enough data for input variables.\nVarialbes: %s\nData: %s' % (keys, vals))
 
 			for i, k in enumerate(keys):
-				vv = vals[i]
+				vv = vals[i].toList()
 				if k.endswith (':file') or k.endswith(':path'):
 					k = k[:-5]
 					for j, v in enumerate(vv):
-						(v, ) = v
+						#(v, ) = v
 						if not os.path.exists (v):
 							raise Exception('Input file %s does not exist.' % v)
 						v = os.path.realpath(v)
-						self.props['infiles'].append (v)
-						self.props['infiletime'] = max (self.infiletime, os.path.getmtime(v))
 						vv[j] = os.path.join(self.indir, os.path.basename(v))
-						if os.path.islink(vv[j]):
-							self.logger.info ('[WARNING] %s.%s: Overwriting existing input file (link) %s' % (self.id, self.tag, vv[j]))
-							os.remove (vv[j])
-						if os.path.exists (vv[j]):
-							self.logger.info ('[WARNING] %s.%s: Overwriting existing file/dir %s' % (self.id, self.tag, vv[j]))
-							if os.path.isfile(vv[j]):
+						if v not in self.infiles: # doesn't need to do repeatedly
+							self.props['infiles'].append (v)
+							self.props['infiletime'] = max (self.infiletime, os.path.getmtime(v))
+							
+							if os.path.islink(vv[j]):
+								self.logger.info ('[WARNING] %s.%s: Overwriting existing input file (link) %s' % (self.id, self.tag, vv[j]))
 								os.remove (vv[j])
-							else:
-								shutil.rmtree(vv[j])
-						os.symlink (v, vv[j])
-					self.props['input'][k] = channel.create(vv)
-					self.props['input'][k + '.bn'] = vv.map (lambda x: os.path.basename(x))
-					self.props['input'][k + '.fn'] = vv.map (lambda x: os.path.basename(os.path.splitext(x)[0]))
-					self.props['input'][k + '.ext'] = vv.map (lambda x: os.path.splitext(x)[1])
+							if os.path.exists (vv[j]):
+								self.logger.info ('[WARNING] %s.%s: Overwriting existing file/dir %s' % (self.id, self.tag, vv[j]))
+								if os.path.isfile(vv[j]):
+									os.remove (vv[j])
+								else:
+									shutil.rmtree(vv[j])
+							os.symlink (v, vv[j])
+					self.props['input'][k] = vv
+					self.props['input'][k + '.bn']  = map (lambda x: os.path.basename(x), vv)
+					self.props['input'][k + '.fn']  = map (lambda x: os.path.basename(os.path.splitext(x)[0]), vv)
+					self.props['input'][k + '.ext'] = map (lambda x: os.path.splitext(x)[1], vv)
 					
 				else:
 					if k.endswith(":var"): k = k[:-4]
-					self.props['input'][k] = vals[i]
-		
-		# also add proc.props, mostly scalar values
+					self.props['input'][k] = vv
 
+		ridx = randint(0, self.length-1)
+		for key, val in self.input.iteritems():
+			self.logger.debug ('[  DEBUG] %s.%s INPUT [%s/%s]: %s => %s' % (self.id, self.tag, ridx, self.length-1, key, val[ridx]))
+
+		# also add proc.props, mostly scalar values
 		for prop, val in self.props.iteritems():
 			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'runner', 'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow', 'args', 'indir', 'outdir']: continue
 			if prop == 'args':
 				for k, v in val.iteritems():
 					self.props['procvars']['proc.args.' + k] = v
+					self.logger.debug ('[  DEBUG] %s.%s PROC_ARGS: %s => %s' % (self.id, self.tag, k, v))
 			else:
 				self.props['procvars']['proc.' + prop] = val
+				self.logger.debug ('[  DEBUG] %s.%s PROC_VARS: %s => %s' % (self.id, self.tag, prop, val))
 
 	"""
 	Output could be:
@@ -401,7 +425,7 @@ class proc (object):
 				for i in range(self.length):
 					data = {}
 					for ink, inv in self.input.iteritems():
-						(data[ink], ) = inv[i]
+						data[ink] = inv[i]
 					data.update (self.procvars)
 					chv.append (strtpl.format (oexp, data))
 				if otype in ['file', 'path']:
@@ -410,7 +434,11 @@ class proc (object):
 				val.merge(chv)
 				if val != self.channel:
 					self.props['channel'].merge (chv)
-				self.props['output'][oname] = chv
+				self.props['output'][oname] = chv.toList()
+		
+		ridx = randint(0, self.length-1)
+		for key, val in self.output.iteritems():
+			self.logger.debug ('[  DEBUG] %s.%s OUTPUT [%s/%s]: %s => %s' % (self.id, self.tag, ridx, self.length-1, key, val[ridx]))
 
 	def _buildScript (self): # make self.jobs
 		if not self.script:
@@ -434,9 +462,9 @@ class proc (object):
 			data = {'#': i}
 			d   = {}
 			for k,v in self.input.iteritems():
-				(d[k], ) = v[i]
+				d[k] = v[i]
 			for k,v in self.output.iteritems():
-				(d[k], ) = channel._tuplize(v[i])
+				d[k] = v[i]
 			data.update(d)
 			data.update(self.procvars)
 			script1 = strtpl.format (script, data)
@@ -505,6 +533,8 @@ class proc (object):
 				del props['nexts']
 			if props.has_key ('callback'):
 				del props['callback']
+			if props.has_key ('callfront'):
+				del props['callfront']
 			pickle.dump(props, f)
 	
 	def _isCached (self):
