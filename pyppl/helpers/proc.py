@@ -53,6 +53,7 @@ class proc (object):
 		self.config['afterCmd']   = ""
 		self.config['workdir']    = ''
 		self.config['args']       = {}
+		self.config['channel']    = channel()
 		self.config['callback']   = None
 		self.config['callfront']  = None
 		# init props
@@ -200,16 +201,16 @@ class proc (object):
 	def _tidyAfterRun (self):
 		if self._checkStatus ():
 			self._export ()
+			if callable (self.callback):
+				self.callback (self)			
 			self._doCache ()
-		if callable (self.callback):
-			self.callback (self)
 
 	def _init (self, config):
 		self._readConfig (config)
 		self.props['cached']   = self._isCached()
+		if self.cached: return False
 		if callable (self.callfront):
 			self.callfront (self)		
-		if self.cached: return False
 		self.props['infiles']  = []
 		self.props['outfiles'] = []
 		self.props['jobs']     = []
@@ -224,7 +225,7 @@ class proc (object):
 	def run (self, config = {}):
 		if not self._init(config): 
 			self.logger.info ('[ CACHED] %s.%s: %s' % (self.id, self.tag, self.workdir))
-			self._tidyAfterRun ()
+			#self._tidyAfterRun ()
 			return
 
 		if self._runCmd('beforeCmd') != 0:
@@ -271,19 +272,16 @@ class proc (object):
 			proc.ids[key] = self
 
 		if not 'workdir' in self.sets and not self.workdir:
-			self.props['workdir'] = os.path.join(self.tmpdir, "PyPPL_%s_%s.%s" % (self.id, self.tag, self._suffix()))
+			self.props['workdir'] = os.path.join(self.tmpdir, "PyPPL.%s.%s.%s" % (self.id, self.tag, self._suffix()))
 
 		self.props['indir']   = os.path.join(self.workdir, 'input')
 		self.props['outdir']  = os.path.join(self.workdir, 'output')
 		
-		if not os.path.exists (self.workdir):
-			os.makedirs (self.workdir)
-		if not os.path.exists (self.indir):
-			os.makedirs (self.indir)
-		if not os.path.exists (self.outdir):
-			os.makedirs (self.outdir)
-		if not os.path.exists (os.path.join(self.workdir, 'scripts')):
-			os.makedirs (os.path.join(self.workdir, 'scripts'))
+		if os.path.exists (self.workdir):
+			shutil.rmtree (self.workdir)
+		os.makedirs (self.indir)
+		os.makedirs (self.outdir)
+		os.makedirs (os.path.join(self.workdir, 'scripts'))
 
 	"""
 	Input could be:
@@ -315,11 +313,12 @@ class proc (object):
 			if self.length == 0:
 				self.props['length'] = val.length()
 			elif self.length != val.length():
-				raise Exception ('Expection same lengths for input channels')
+				raise Exception ('Expect same lengths for input channels, but got %s and %s (keys: %s).' % (self.length, val.length(), keys))
 			vals = val.split()
 			if len(keys) > len(vals):
 				raise Exception('Not enough data for input variables.\nVarialbes: %s\nData: %s' % (keys, vals))
-
+			
+			self.props['input']['#'] = range(self.length)
 			for i, k in enumerate(keys):
 				vv = vals[i].toList()
 				if k.endswith (':file') or k.endswith(':path'):
@@ -328,7 +327,7 @@ class proc (object):
 						#(v, ) = v
 						if not os.path.exists (v):
 							raise Exception('Input file %s does not exist.' % v)
-						v = os.path.realpath(v)
+						v = os.path.abspath(v)
 						vv[j] = os.path.join(self.indir, os.path.basename(v))
 						if v not in self.infiles: # doesn't need to do repeatedly
 							self.props['infiles'].append (v)
@@ -359,7 +358,7 @@ class proc (object):
 
 		# also add proc.props, mostly scalar values
 		for prop, val in self.props.iteritems():
-			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'runner', 'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow', 'args', 'indir', 'outdir']: continue
+			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'runner', 'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow', 'args', 'indir', 'outdir', 'length']: continue
 			if prop == 'args':
 				for k, v in val.iteritems():
 					self.props['procvars']['proc.args.' + k] = v
@@ -459,17 +458,16 @@ class proc (object):
 
 		
 		for i in range(self.length):
-			data = {'#': i}
-			d   = {}
+			data = {}
+			idx  = self.input['#'][i]
 			for k,v in self.input.iteritems():
-				d[k] = v[i]
+				data[k] = v[idx]
 			for k,v in self.output.iteritems():
-				d[k] = v[i]
-			data.update(d)
+				data[k] = v[idx]
 			data.update(self.procvars)
 			script1 = strtpl.format (script, data)
 		
-			scriptfile = os.path.join (scriptdir, 'script.%s' % i)
+			scriptfile = os.path.join (scriptdir, 'script.%s' % idx)
 			with open(scriptfile, 'w') as f:
 				f.write (script1)
 
@@ -594,7 +592,7 @@ class proc (object):
 				q.task_done()
 		
 		q = Queue()
-		for i in range (self.forks):
+		for i in range (min(self.forks, len(self.jobs))):
 			t = threading.Thread(target = worker, args = (q, ))
 			t.daemon = True
 			t.start ()
