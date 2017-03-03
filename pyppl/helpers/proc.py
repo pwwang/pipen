@@ -202,6 +202,7 @@ class proc (object):
 		if self._checkStatus ():
 			self._export ()
 			if callable (self.callback):
+				self.logger.info ('[  DEBUG] %s.%s: Calling callback ...' % (self.id, self.tag))
 				self.callback (self)			
 			self._doCache ()
 
@@ -210,6 +211,7 @@ class proc (object):
 		self.props['cached']   = self._isCached()
 		if self.cached: return False
 		if callable (self.callfront):
+			self.logger.info ('[  DEBUG] %s.%s: Calling callfront ...' % (self.id, self.tag))
 			self.callfront (self)		
 		self.props['infiles']  = []
 		self.props['outfiles'] = []

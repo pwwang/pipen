@@ -1,7 +1,7 @@
 from copy import copy as pycopy
 
 class channel (list):
-  
+	
 	@staticmethod
 	def create (l = []):
 		if l is None: l = []
@@ -17,7 +17,7 @@ class channel (list):
 			return ret
 		ret.merge (*args)
 		return ret
-  
+	
 	@staticmethod
 	# type = 'dir', 'file', 'link' or 'any'
 	def fromPath (pattern, type = 'any'):
@@ -61,7 +61,7 @@ class channel (list):
 	
 	@staticmethod
 	def _tuplize (tu):
-		if isinstance(tu, str):
+		if isinstance(tu, str) or isinstance(tu, unicode):
 			tu = (tu, )
 		else:
 			try:
@@ -69,6 +69,35 @@ class channel (list):
 			except:
 				tu = (tu, )
 		return tu
+	
+	# expand the channel according to the files in <col>, other cols will keep the same
+	# [(dir1/dir2, 1)].expand (0, "*") will expand to
+	# [(dir1/dir2/file1, 1), (dir1/dir2/file2, 1), ...]
+	# length: 1 -> N
+	# width:  M -> M
+	def expand (self, col = 0, pattern = "*"):
+		from glob import glob
+		import os
+		folder = self[0][col]
+		files  = glob (os.path.join(folder, pattern))
+		
+		tmp = list (self[0])
+		for i, f in enumerate(files):
+			n = pycopy(tmp)
+			n [col] = f
+			if i == 0:
+				self[i] = tuple(n)
+			else:
+				self.append (tuple(n))
+		
+	# do the reverse of expand
+	# length: N -> 1
+	# width:  M -> M
+	def collapse (self, col = 0):
+		from os.path import dirname
+		tmp = list (self[0])
+		tmp[col] = dirname (tmp[col])
+		self = channel.create([tuple(tmp)])
 	
 	def copy (self):
 		return pycopy(self)

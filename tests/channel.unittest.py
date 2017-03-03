@@ -172,8 +172,27 @@ class TestChannel (unittest.TestCase):
 		
 		c2 = channel.create([("abc", "1", 5), ("def", '2', 6), ("ghi", '3', 7), ("opq", '4', 8)])
 		self.assertRaises (Exception, c2.toList)
+	
+	def testExpand (self):
+		import glob
+		ch1 = channel.create (["./"])
+		ch1.expand()
+		self.assertEqual (sorted(ch1), channel.create(sorted(glob.glob("./*"))))
 		
+		ch2 = channel.create ([(1, "./", 2)])
+		ch2.expand(1, "channel.*")
+		self.assertEqual (ch2, [(1, "./channel.unittest.py", 2)])
 
+	def textCollapse (self):
+		ch1 = channel.fromPath("./*.py")
+		ch1.collapse()
+		self.assertEqual (ch1, [("./", )])
+		
+		ch2 = channel.fromPath("./*.py")
+		for i, c in enumerate(ch2):
+			c = tuple (1, c[0], 2)
+		ch1.collapse(1)
+		self.assertEqual (ch1, [(1, "./", 2)])
 
 if __name__ == '__main__':
 	unittest.main()
