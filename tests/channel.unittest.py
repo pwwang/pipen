@@ -95,12 +95,12 @@ class TestChannel (unittest.TestCase):
 		self.assertRaises (Exception, c1.merge, c2)
 
 		c3 = channel.create(["1", '2', '3', '4'])	
-		c4 = c2.mergeCopy(c3)
+		c4 = c2.copy().merge(c3)
 		self.assertEqual (c4, [("abc", "1"), ("def", '2'), ("ghi", '3'), ("opq", '4')])
 
 		c5 = [5,6,7,8]
-		self.assertEqual (c2.mergeCopy(c3,c5), [("abc", "1", 5), ("def", '2', 6), ("ghi", '3', 7), ("opq", '4', 8)])
-		self.assertEqual (c4.mergeCopy(c5), [("abc", "1", 5), ("def", '2', 6), ("ghi", '3', 7), ("opq", '4', 8)])
+		self.assertEqual (c2.copy().merge(c3,c5), [("abc", "1", 5), ("def", '2', 6), ("ghi", '3', 7), ("opq", '4', 8)])
+		self.assertEqual (c4.copy().merge(c5), [("abc", "1", 5), ("def", '2', 6), ("ghi", '3', 7), ("opq", '4', 8)])
 		c6 = channel.create()
 		c6.merge (c2, c3 ,c5)
 		self.assertEqual (c6, [("abc", "1", 5), ("def", '2', 6), ("ghi", '3', 7), ("opq", '4', 8)])
@@ -126,7 +126,7 @@ class TestChannel (unittest.TestCase):
 		self.assertEqual (c4, [("abc", "1"), ("def", '2'), ("ghi", '3'), ("opq", '4')])
 
 		c5 = [5,6,7,8]
-		self.assertEqual (c4.mergeCopy(c5), [("abc", "1", 5), ("def", '2', 6), ("ghi", '3', 7), ("opq", '4', 8)])
+		self.assertEqual (c4.copy().merge(c5), [("abc", "1", 5), ("def", '2', 6), ("ghi", '3', 7), ("opq", '4', 8)])
 		c4.merge(c5)
 		self.assertEqual (c4, [("abc", "1", 5), ("def", '2', 6), ("ghi", '3', 7), ("opq", '4', 8)])
 
@@ -134,7 +134,7 @@ class TestChannel (unittest.TestCase):
 		self.assertEqual (c6, [("abc",), ("def",), ("ghi",), ("opq",)])
 		self.assertEqual (c7, [("1",), ('2',), ('3',), ('4',)])
 		self.assertEqual (c8, [(5,), (6,), (7,), (8,)])
-		c12, c9, c10 = c2.mergeCopy(c3, c5).split()
+		c12, c9, c10 = c2.copy().merge(c3, c5).split()
 		self.assertEqual (c12, c6)
 		self.assertEqual (c9, c7)
 		self.assertEqual (c10, c8)
@@ -149,7 +149,7 @@ class TestChannel (unittest.TestCase):
 	def testLengthAndWidth (self):
 		c2 = channel.create (["abc", "def", "ghi", "opq"])
 		c3 = channel.create(["1", '2', '3', '4'])
-		c4 = c2.mergeCopy(c3)
+		c4 = c2.copy().merge(c3)
 
 		self.assertEqual (c2.width(), 1)
 		self.assertEqual (c3.width(), 1)
@@ -193,6 +193,22 @@ class TestChannel (unittest.TestCase):
 			c = tuple (1, c[0], 2)
 		ch1.collapse(1)
 		self.assertEqual (ch1, [(1, "./", 2)])
+	
+	def testInsert (self):
+		self.maxDiff = None
+		import glob
+		ch1 = channel.fromPath("./*.py")
+		ch1.insert (0, 1)
+		ret = [(1, x) for x in sorted(glob.glob("./*.py"))]
+		self.assertEqual (sorted(ch1), ret)
+		
+		ch1.insert (None, [1])
+		ret = [(1, x, 1) for x in sorted(glob.glob("./*.py"))]
+		self.assertEqual (sorted(ch1), ret)
+		
+		ch1.insert (None, range(len(ch1)))
+		ret = [(1, x, 1, i) for i,x in enumerate(sorted(glob.glob("./*.py")))]
+		self.assertEqual (sorted(ch1), ret)
 
 if __name__ == '__main__':
 	unittest.main()

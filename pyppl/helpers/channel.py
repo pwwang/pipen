@@ -22,7 +22,7 @@ class channel (list):
 	# type = 'dir', 'file', 'link' or 'any'
 	def fromPath (pattern, type = 'any'):
 		from glob import glob
-		ret = channel.create(glob(pattern))
+		ret = channel.create(sorted(glob(pattern)))
 		if type != 'any':
 			from os import path
 		if type == 'dir':
@@ -89,6 +89,7 @@ class channel (list):
 				self[i] = tuple(n)
 			else:
 				self.append (tuple(n))
+		return self
 		
 	# do the reverse of expand
 	# length: N -> 1
@@ -98,6 +99,7 @@ class channel (list):
 		tmp = list (self[0])
 		tmp[col] = dirname (tmp[col])
 		self = channel.create([tuple(tmp)])
+		return self
 	
 	def copy (self):
 		return pycopy(self)
@@ -140,11 +142,21 @@ class channel (list):
 				self.append(tu)
 			else:
 				self[i] = tu
+		return self
 	
-	def mergeCopy (self, *args):
-		ret = channel.create(self)
-		ret.merge(*args)
-		return ret
+	def insert (self, idx, val):
+		idx = self.width() if idx is None else idx
+		if not isinstance(val, list):
+			val = [val]
+		if len (val) == 1:
+			val = val * len (self)
+		elif len(val) != len(self):
+			raise Exception('Cannot merge channels with different length (%s, %s).' % (len(self), len(val)))
+		for i in range(len(self)):
+			ele     = list (self[i])
+			newele  = ele[:idx] + list(channel._tuplize(val[i])) + ele[idx:]
+			self[i] = tuple (newele)
+		return self
 	
 	def split (self):
 		ret = []

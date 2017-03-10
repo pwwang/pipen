@@ -175,6 +175,8 @@ sorted("""digraph PyPPL {
 		p.forks = 3
 		p.errorhow = 'retry'
 		p.runner = 'ssh'
+		p.beforeCmd = 'mkdir ./test_batchjobs -p'
+		p.tmpdir = './test_batchjobs'
 		pyppl({
 			'proc': {
 				'sshRunner': {	
@@ -183,6 +185,7 @@ sorted("""digraph PyPPL {
 			},
 			'loglevel': 'debug'
 		}).starts(p).run()
+		shutil.rmtree ('./test_batchjobs')
 
 	def testCallback (self):
 		p1 = proc ('callback')

@@ -37,14 +37,26 @@ class runner_test (runner_local):
 		p = proc ('tag_unique')
 		config = copy.copy(p.config)
 		del config['workdir']
-		if config.has_key ('callback'):
-			if callable (config['callback']):
+		def getFuncSig (func):
+			if callable (func):
 				try:
-					config['callback'] = getsource(config['callback'])
+					sig = getsource(func)
 				except:
-					config['callback'] = config['callback'].__name__
+					sig = func.__name__
 			else:
-				config['callback'] = 'None'
+				sig = 'None'
+			return sig
+				
+		if config.has_key ('callback'):
+			config['callback'] = getFuncSig(config['callback'])
+	
+		if config.has_key ('callfront'):
+			config['callfront'] = getFuncSig(config['callfront'])
+		
+		if config.has_key ('input') and isinstance(config['input'], dict):
+			config['input'] = copy.deepcopy(config['input'])
+			for key, val in config['input'].iteritems():
+				config['input'][key] = getFuncSig(val) if callable(val) else val
 		signature = pickle.dumps (config) + '@' + pickle.dumps(sorted(sys.argv))
 		self.assertEqual (p._suffix(), md5(signature).hexdigest()[:8])
 
@@ -149,24 +161,24 @@ class runner_test (runner_local):
 		p2.input   = ["char", "number"]
 		p2._buildProps()
 		p2._buildInput()
-		self.assertEqual (p2.input, {"char": ["aa", "bb"], "number": [1, 2]})
+		self.assertEqual (p2.input, {"char": ["aa", "bb"], '#': [0, 1], "number": [1, 2]})
 
 		p2.input   = "c, n"
 		p2._buildProps()
 		p2._buildInput()
-		self.assertEqual (p2.input, {"c": ["aa", "bb"], "n": [1, 2]})
+		self.assertEqual (p2.input, {"c": ["aa", "bb"], '#': [0, 1], "n": [1, 2]})
 
 		c1 = channel.create (["aa", "bb"])
 		c2 = channel.create ([1, 2])
 		p2.input   = {"x": c1, "y": c2}
 		p2._buildProps()
 		p2._buildInput()
-		self.assertEqual (p2.input, {"x": ["aa","bb"], "y": [1, 2]})
+		self.assertEqual (p2.input, {"x": ["aa","bb"], '#': [0, 1], "y": [1, 2]})
 
 		p2.input   = {"a,b": channel.fromChannels(c1,c2)}
 		p2._buildProps()
 		p2._buildInput()
-		self.assertEqual (p2.input, {"a": ["aa", "bb"], "b": [1, 2]})
+		self.assertEqual (p2.input, {"a": ["aa", "bb"], "b": [1, 2], '#': [0, 1]})
 		
 		p2.tag = "file"
 		
@@ -177,6 +189,7 @@ class runner_test (runner_local):
 		p2._buildProps()
 		p2._buildInput()
 		self.assertEqual (p2.input, {
+			'#': [0, 1],
 			"c1": ["channel","proc"], 
 			"c2": c2.map(lambda x: os.path.join(p2.indir, x[0])).toList(), 
 			"c2.bn": c2.toList(), 
@@ -189,6 +202,7 @@ class runner_test (runner_local):
 		p2._buildProps()
 		p2._buildInput()
 		self.assertEqual (p2.input, {
+			'#': [0, 1],
 			"c1": ["channel","proc"], 
 			"c2": c2.map(lambda x: os.path.join(p2.indir, x[0])).toList(), 
 			"c2.bn": c2.toList(), 
@@ -307,6 +321,7 @@ class runner_test (runner_local):
 
 	def testRunCmd (self):
 		prc = proc ()
+		prc.input  = {"input": ["a"]}
 		prc.script = 'ls'
 		prc._tidyBeforeRun ()
 		self.assertEqual (prc._runCmd('beforeCmd'), 0)

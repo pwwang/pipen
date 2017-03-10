@@ -4,7 +4,6 @@ from random import randint
 from traceback import extract_stack
 from channel import channel
 import strtpl
-from tempfile import gettempdir
 from md5 import md5
 from re import split
 from subprocess import Popen, PIPE
@@ -34,7 +33,7 @@ class proc (object):
 		self.config['input']      = {'input': sys.argv[1:] if len(sys.argv)>1 else []}
 		self.config['output']     = {}
 		# where cache file and wdir located
-		self.config['tmpdir']     = gettempdir()
+		self.config['tmpdir']     = "./workdir"
 		self.config['forks']      = 1
 		self.config['cache']      = True
 		self.config['retcodes']   = [0]
@@ -169,25 +168,28 @@ class proc (object):
 			for n in nexts:
 				pickable_nexts.append(ndepend.id + '.' + n.tag)
 			config['nexts'] = pickable_nexts
-
-		if config.has_key ('callback'):
-			if callable (config['callback']):
+		
+		def getFuncSig (func):
+			if callable (func):
 				try:
-					config['callback'] = getsource(config['callback'])
+					sig = getsource(func)
 				except:
-					config['callback'] = config['callback'].__name__
+					sig = func.__name__
 			else:
-				config['callback'] = 'None'
+				sig = 'None'
+			return sig
+				
+		if config.has_key ('callback'):
+			config['callback'] = getFuncSig(config['callback'])
 	
 		if config.has_key ('callfront'):
-			if callable (config['callfront']):
-				try:
-					config['callfront'] = getsource(config['callfront'])
-				except:
-					config['callfront'] = config['callfront'].__name__
-			else:
-				config['callfront'] = 'None'
-
+			config['callfront'] = getFuncSig(config['callfront'])
+		
+		if config.has_key ('input') and isinstance(config['input'], dict):
+			config['input'] = pycopy.deepcopy(config['input'])
+			for key, val in config['input'].iteritems():
+				config['input'][key] = getFuncSig(val) if callable(val) else val
+		
 		signature = pickle.dumps(config) + '@' + pickle.dumps(sorted(sys.argv))
 		return md5(signature).hexdigest()[:8]
 
@@ -261,6 +263,7 @@ class proc (object):
 		return True
 
 	def _buildProps (self):
+		#print getsource(self.input.values()[0])
 		if isinstance (self.retcodes, int):
 			self.props['retcodes'] = [self.retcodes]
 		
@@ -308,6 +311,9 @@ class proc (object):
 
 		self.props['input'] = {}
 		for key, val in input0.iteritems():
+			if callable (val):
+				#print getsource(val)
+				val = val (*[d.channel.copy() for d in self.depends]) if self.depends else val (channel.fromArgv(None))
 			if not isinstance (val, channel):
 				val = channel.create(val)
 
@@ -384,7 +390,7 @@ class proc (object):
 	def _buildOutput (self):
 
 		output = self.config['output']
-
+		
 		if isinstance(output, list):
 			output = ', '.join(output)
 		if isinstance(output, str):
@@ -409,7 +415,7 @@ class proc (object):
 				raise Exception ('Expect type: var, file or path instead of %s' % items[1])
 			return tuple (its)
 		sanitizeKey.out_idx = 1
-
+		
 		self.props['output'] = {}
 		for key, val in output.iteritems():
 			keys    = strtpl.split(key, ',')
@@ -432,7 +438,10 @@ class proc (object):
 				if otype in ['file', 'path']:
 					self.props['outfiles'] += chv
 				chv = channel.create (chv)
-				val.merge(chv)
+				try:
+					val.merge(chv)
+				except Exception as e:
+					raise Exception('%s.%s: %s\nChannel 1: %s\nChannel 2: %s' % (self.id, self.tag, e, val[:3], chv[:3]))
 				if val != self.channel:
 					self.props['channel'].merge (chv)
 				self.props['output'][oname] = chv.toList()
@@ -535,9 +544,12 @@ class proc (object):
 				del props['callback']
 			if props.has_key ('callfront'):
 				del props['callfront']
+			if props.has_key ('input'):
+				del props['input']
 			pickle.dump(props, f)
 	
 	def _isCached (self):
+		
 		if not self.cache:	
 			self.logger.debug ('[  DEBUG] %s.%s: Not cached, because proc.cache = False.' % (self.id, self.tag))
 			return False
