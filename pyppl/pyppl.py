@@ -1,11 +1,19 @@
-import logging, os, sys, random
+import logging, os, sys, random, json, copy
 from helpers import *
 from runners import *
-VERSION = "0.1.2"
+VERSION = "0.2.0"
 
 class pyppl (object):
 
-	def __init__(self, config = {}):
+	def __init__(self, config = {}, cfile = None):
+		
+		cfile    = os.path.join (os.path.expanduser('~'), ".pyppl") if cfile is None else cfile
+		if os.path.exists(cfile):
+			
+			hconfig  = json.load(open(cfile))
+			hconfig.update(config)
+			config   = copy.copy(hconfig)
+
 		loglevel = 'info'
 		if config.has_key('loglevel'):
 			loglevel = config['loglevel']
@@ -23,10 +31,13 @@ class pyppl (object):
 			"Check documentation at: https://github.com/pwwang/pyppl/blob/master/docs/DOCS.md",
 			"You cannot have two processes with same id(variable name) and tag",
 			"beforeCmd and afterCmd only run locally",
-			"If 'workdir' is not set for a process, it will be PyPPL_<proc-id>_<proc-tag>.<uuid> under default <tmpdir>"
+			"If 'workdir' is not set for a process, it will be PyPPL.<proc-id>.<proc-tag>.<uuid> under default <tmpdir>"
 		]
 		logger.info ('[  PyPPL] Version: %s' % (VERSION))
 		logger.info ('[   TIPS] %s' % (random.choice(tips)))
+		if os.path.exists (cfile):
+			logger.info ('[ CONFIG] Read from %s' % cfile)
+			
 		self.logger = logger
 		self.config = config
 		self.heads  = []
