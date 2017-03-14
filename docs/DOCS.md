@@ -30,6 +30,7 @@
       - [Property `args`](#property-args)
       - [Property `depends`](#property-depends)
       - [Property `callback`](#property-callback)
+      - [Property `callfront`](#property-callfront)
       - [Property `runner`](#property-runner)
   - [Runners](#runners)
     - [Base class `runner_local`](#base-class-runner_local)
@@ -56,8 +57,11 @@
       - [`filter`](#filter)
       - [`reduce`](#reduce)
       - [`merge`](#merge)
-      - [`mergeCopy`](#mergecopy)
       - [`split`](#split)
+      - [`insert`](#insert)
+      - [`expand`](#expand)
+      - [`collapse`](#collapse)
+      - [`copy`](#copy)
     - [Assign data of a channel to variables of `input/output` of a `proc`](#assign-data-of-a-channel-to-variables-of-inputoutput-of-a-proc)
   - [`strtpl`](#strtpl)
     - [Use template without interplolation](#use-template-without-interplolation)
@@ -85,7 +89,8 @@ someproc = proc (tag = 'notag')
 ```
 When initialize a `proc`, you can specify a `tag`. Processes are identified by `id` and `tag`. `Id` is the variable name of the instance (`someproc` here for example)
 
-> Basically, `pyppl` doesn't allow to declare two processes with the same `id` and `tag`, but you can use different `tag`s with the same `id`
+> - Basically, `pyppl` doesn't allow to declare two processes with the same `id` and `tag`, but you can use different `tag`s with the same `id`
+> - You can clone a `proc` by `copy` method: `p1 = proc(); p2=p1.copy("newtag")`
 
 ### Properties of `proc`
 You can set the property of a `proc` instance simply by:
@@ -286,6 +291,9 @@ p2.output   = "output:{{input}}.{{in1}}.{{in2}}"
 pyppl ().starts(p1).run()
 ```
 
+#### Property `callfront`
+`callfront` is similar as `callback`, but is called before process runs.
+
 #### Property `runner`
 Set the `runner` for the process. The default `runner` is `local`. `pyppl` has 3 built-in runners: `local`, `sge` and `ssh` (see [Runners](#Runners)).
 
@@ -473,18 +481,6 @@ c6.merge (c2, c3 ,c5)
 # c6 == [("abc", "1", 5), ("def", '2', 6), ("ghi", '3', 7), ("opq", '4', 8)]
 ```
 
-#### `mergeCopy`
-Merge myself with other channels and return the new channel: `c.mergeCopy(*channels)`
-```python
-c2 = channel.create (["abc", "def", "ghi", "opq"])
-c3 = channel.create(["1", '2', '3', '4'])	
-c5 = [5,6,7,8]
-c6 = channel.create()
-c7 = c6.mergeCopy (c2, c3 ,c5)
-# c6 is not chaned!
-# c7 == [("abc", "1", 5), ("def", '2', 6), ("ghi", '3', 7), ("opq", '4', 8)]
-```
-
 #### `split`
 Split a channel into multiple channels with width equals to 1
 ```python
@@ -494,6 +490,38 @@ Split a channel into multiple channels with width equals to 1
 # cc == c5
 # ca.split() == [ca]
 ```
+
+#### `insert`
+Insert a column: `c.insert(idx, val)`
+- Use `idx=None` to append
+- None-tuple value will be extended to equal-length channel and then merged.
+```python
+c1 = channel.create([1,2,3,4,5])
+c1.insert(0, 1)
+# c1 == [(1,1), (1,2), (1,3), (1,4), (1,5)]
+```
+
+#### `expand`
+Expand the channel: `c.expand(col = 0, pattern = "*")` according to the files `col`th column, other cols will keep the same
+```
+# [(dir1/dir2, 1)].expand (0, "*") will expand to
+# [(dir1/dir2/file1, 1), (dir1/dir2/file2, 1), ...]
+# length: 1 -> N
+# width:  M -> M
+```
+
+#### `collapse`
+Do the reverse of expand: `c.collapse (col = 0)`
+```
+# length: N -> 1
+# width:  M -> M
+```
+> NOTE: it will not check whether the items at `col`th column are in the same directory. It will only take the first element and take the dirname.
+
+#### `copy`
+Make a copy of the channel: `c.copy()`
+> NOTE: it uses `copy.copy` instead of `copy.deepcopy`
+
 
 ### Assign data of a channel to variables of `input/output` of a `proc`
 ```python
@@ -587,8 +615,9 @@ strtpl.format ("{{v | .upper() | (lambda x: x+'123')(_) | [2:] | len(_) | __impo
 `pyppl` is used to assemble the processes and run them.
 
 ### Initialize `pyppl`
-You can set configs when initialize `pyppl`: `def __init__(self, config={})`
+You can set configs when initialize `pyppl`: `def __init__(self, config={}, cfile=None)`
 
+- You can set a config file in JSON format, then all `pyppl` instances can share the same configuration. If it is not given, it will try to use `os.path.join(os.path.expanduser('~'), '.pyppl')`, for example, on linux: `$HOME/.pyppl`
 - You can set `loglevel` in `config`, the default is `info`, available level could be `critical`, `error`, `warning`, `info`, `debug`, `notset`.
 - You can set values of properties for processes in `proc`: 
 ```json
