@@ -33,7 +33,7 @@ class proc (object):
 		self.config['input']      = {'input': sys.argv[1:] if len(sys.argv)>1 else []}
 		self.config['output']     = {}
 		# where cache file and wdir located
-		self.config['tmpdir']     = "./workdir"
+		self.config['tmpdir']     = os.path.abspath("./workdir")
 		self.config['forks']      = 1
 		self.config['cache']      = True
 		self.config['retcodes']   = [0]
@@ -142,7 +142,7 @@ class proc (object):
 			newproc.tag = tag
 		pid                  = extract_stack()[-2][3]
 		if pid is None: pid  = extract_stack()[-4][3]
-		pid                  = pid[:pid.find('=')].strip()	
+		pid                  = pid[:pid.find('=')].strip()
 		newproc.props['pid'] = pid
 		return newproc
 
