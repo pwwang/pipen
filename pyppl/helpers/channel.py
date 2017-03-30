@@ -180,7 +180,10 @@ class channel (list):
 		
 		ret = []
 		for e in self:
-			(v, ) = e
+			if isinstance(e, list):
+				v = e # support list elements
+			else:
+				(v, ) = e
 			ret.append(v)
 		return ret
 

@@ -1,6 +1,7 @@
 import logging, os, strtpl, pickle, shlex, shutil, threading, sys
 import copy as pycopy
 from random import randint
+from glob import glob
 from traceback import extract_stack
 from channel import channel
 import strtpl
@@ -329,7 +330,35 @@ class proc (object):
 			self.props['input']['#'] = range(self.length)
 			for i, k in enumerate(keys):
 				vv = vals[i].toList()
-				if k.endswith (':file') or k.endswith(':path'):
+				if k.endswith (':files') or k.endswith (':paths'):
+					k = k[:-6]
+					for j, vs in enumerate(vv):
+						if not isinstance(vs, list):
+							vv[j] = glob(vs) # allow wildcard
+						for m, v in enumerate(vv[j]):
+							if not os.path.exists (v):
+								raise Exception('Input file %s does not exist.' % v)
+							v = os.path.abspath(v)
+							vv[j][m] = os.path.join(self.indir, os.path.basename(v))
+							if v not in self.infiles: # doesn't need to do repeatedly
+								self.props['infiles'].append (v)
+								self.props['infiletime'] = max (self.infiletime, os.path.getmtime(v))
+								
+								if os.path.islink(vv[j][m]):
+									self.logger.info ('[WARNING] %s.%s: Overwriting existing input file (link) %s' % (self.id, self.tag, vv[j][m]))
+									os.remove (vv[j][m])
+								if os.path.exists (vv[j][m]):
+									self.logger.info ('[WARNING] %s.%s: Overwriting existing file/dir %s' % (self.id, self.tag, vv[j][m]))
+									if os.path.isfile(vv[j][m]):
+										os.remove (vv[j][m])
+									else:
+										shutil.rmtree(vv[j][m])
+								os.symlink (v, vv[j][m])	
+					self.props['input'][k] = vv
+					self.props['input'][k + '.bn']  = [map (lambda x: os.path.basename(x), x) for x in vv]
+					self.props['input'][k + '.fn']  = [map (lambda x: os.path.basename(os.path.splitext(x)[0]), x) for x in vv]
+					self.props['input'][k + '.ext'] = [map (lambda x: os.path.splitext(x)[1], x) for x in vv]
+				elif k.endswith (':file') or k.endswith(':path'):
 					k = k[:-5]
 					for j, v in enumerate(vv):
 						#(v, ) = v

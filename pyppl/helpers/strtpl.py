@@ -53,7 +53,7 @@ def split (s, delimter):
 				wrap3 -= 1
 				slash = 0
 		elif c == delimter:
-			if slash % 2 == 0 and wrap1 % 2 == 0 and wrap2 % 2 == 0 and wrap3 % 2 == 0 and wrap4 % 2 == 0 and wrap5 % 2 ==0:
+			if slash % 2 == 0 and wrap1 == 0 and wrap2 == 0 and wrap3 == 0 and wrap4 %2 == 0 and wrap5 % 2 == 0:
 				ret.append (s[start:i])
 				start = i + 1
 		else: 

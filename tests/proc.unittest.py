@@ -72,7 +72,7 @@ class runner_test (runner_local):
 		self.assertEqual (p.input, {})
 		self.assertEqual (p.output, {})
 		self.assertEqual (p.nexts, [])
-		self.assertEqual (p.tmpdir, gettempdir())
+		self.assertEqual (p.tmpdir, os.path.abspath("./workdir"))
 		self.assertEqual (p.forks, 1)
 		self.assertEqual (p.cache, True)
 		self.assertEqual (p.retcodes, [0])
@@ -208,6 +208,23 @@ class runner_test (runner_local):
 			"c2.bn": c2.toList(), 
 			"c2.fn": c2.map(lambda x: x[0][:-3]).toList(), 
 			"c2.ext": channel.create([".py", ".py"]).toList()
+		})
+	
+	def testInputFiles (self):
+		self.maxDiff = None
+		c2 = channel.create([(["channel.unittest.py", "proc.unittest.py"], )])
+		c1 = [([1,2,3,4], )]
+		p2 = proc('if')
+		p2.input = {"c1:var": c1, "c2:files": c2}
+		p2._buildProps()
+		p2._buildInput()
+		self.assertEqual (p2.input, {
+			'#': [0],
+			"c1": [[1,2,3,4]], 
+			"c2": [map(lambda x: os.path.join(p2.indir, x), y) for y in c2[0]],
+			"c2.bn": [["channel.unittest.py", "proc.unittest.py"]], 
+			"c2.fn": [["channel.unittest", "proc.unittest"]], 
+			"c2.ext": [[".py"]*2]
 		})
 
 	def testBuildOutput (self):
@@ -434,6 +451,7 @@ class runner_test (runner_local):
 		self.assertEqual (pCopy.tag, 'procCopy')
 		self.assertEqual (pCopy.exportdir, rootdir)
 		self.assertEqual (pCopy.script, p.script)
+		
 
 	
 

@@ -32,6 +32,7 @@ class TestStrtpl (unittest.TestCase):
 			("{{genefile.fn | .split('_') | [1] }}", '4', {"genefile.fn": "gene_4"}),
 			("{{genefile.fn | .split('_')[0] }}", 'gene', {"genefile.fn": "gene_4"}),
 			("{{v | sum(_)}}", "10", {"v": [1,2,3,4]}),
+			("{{v | map(str, _) | (lambda x: '_'.join(x))(_)}}", "1_2_3_4", {"v": [1,2,3,4]}),
 		]
 		for d in data:
 			self.assertEqual (strtpl.format(d[0], d[2]), d[1])

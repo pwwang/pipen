@@ -3,15 +3,22 @@ from helpers import *
 from runners import *
 VERSION = "0.2.0"
 
+def dictUpdate(origDict, newDict):
+	for k, v in newDict.iteritems():
+		if not isinstance(v, dict) or not origDict.has_key(k) or not isinstance(origDict[k], dict):
+			origDict[k] = newDict[k]
+		else:
+			dictUpdate(origDict[k], newDict[k])
+			
 class pyppl (object):
 
 	def __init__(self, config = {}, cfile = None):
 		
 		cfile    = os.path.join (os.path.expanduser('~'), ".pyppl") if cfile is None else cfile
-		if os.path.exists(cfile):
-			
+		if os.path.exists(cfile):			
 			hconfig  = json.load(open(cfile))
-			hconfig.update(config)
+			#hconfig.update(config)
+			dictUpdate(hconfig, config)			
 			config   = copy.copy(hconfig)
 
 		loglevel = 'info'
@@ -54,12 +61,15 @@ class pyppl (object):
 	def run (self, profile = 'local'):
 		config = {}
 		if self.config.has_key('proc'):
-			config.update(self.config['proc'])
+			#config.update(self.config['proc'])
+			dictUpdate(config, self.config['proc'])
 		
 		if self.config.has_key(profile):
-			config.update(self.config[profile])
-
-		config['runner'] = profile
+			#config.update(self.config[profile])
+			dictUpdate(config, self.config[profile])
+		
+		if not config.has_key('runner'):
+			config['runner'] = profile
 
 		next2run = self.heads
 		finished = []
