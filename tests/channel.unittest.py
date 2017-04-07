@@ -18,6 +18,7 @@ class TestChannel (unittest.TestCase):
 	def testFromPath (self):
 		c = channel.fromPath (os.path.join(rootdir, 'tests', '*.py'))
 		self.assertEqual (sorted(c), sorted([
+			(os.path.join (rootdir, 'tests', 'aggr.unittest.py'),),
 			(os.path.join (rootdir, 'tests', 'runner.unittest.py'),),
 			(os.path.join (rootdir, 'tests', 'pyppl.unittest.py'),),
 			(os.path.join (rootdir, 'tests', 'proc.unittest.py'),),

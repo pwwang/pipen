@@ -1,5 +1,6 @@
 from pyppl import pyppl
 from pyppl import proc
+from pyppl import aggr
 from pyppl import channel
 from pyppl import strtpl
 from pyppl import runner_local

@@ -1,7 +1,7 @@
 import logging, os, sys, random, json, copy
 from helpers import *
 from runners import *
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 
 def dictUpdate(origDict, newDict):
 	for k, v in newDict.iteritems():
@@ -51,11 +51,18 @@ class pyppl (object):
 		#print config, 'config--------'
 
 	def starts (self, *arg):
-		for p in arg:
-			if p in self.heads:
-				raise ValueError('Proc %s already added.', p.id)
-
-			self.heads.append(p)
+		for pa in arg:
+			if isinstance(pa, proc):
+				if pa in self.heads:
+					raise ValueError('Proc %s already added.', pa.id)
+				self.heads.append(pa)
+			elif isinstance(pa, aggr):
+				for p in pa.procs:
+					if p in self.heads:
+						raise ValueError('Proc %s already added.', p.id)
+					self.heads.append(p)
+			else:
+				raise ValueError('An "proc" or "aggr" instance required.')
 		return self
 	
 	def run (self, profile = 'local'):

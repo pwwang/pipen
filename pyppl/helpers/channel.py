@@ -47,6 +47,7 @@ class channel (list):
 		from sys import argv
 		args = argv[1:]
 		alen = len (args)
+		if alen == 0: return channel()
 		if width == None: width = alen
 		if alen % width != 0:
 			raise Exception('Length (%s) of argv[1:] must be exactly divided by width (%s)' % (alen, width))

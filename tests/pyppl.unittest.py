@@ -6,11 +6,12 @@ from multiprocessing import cpu_count
 from pyppl import pyppl
 from pyppl import proc
 from pyppl import channel
+from pyppl import aggr
 
 class TestPipelineMethods (unittest.TestCase):
 
 	def test_init (self):
-		ppl = pyppl()
+		ppl = pyppl({}, '')
 
 		self.assertTrue (isinstance(ppl, pyppl))
 		self.assertEqual (ppl.config, {})
@@ -225,6 +226,23 @@ sorted("""digraph PyPPL {
 		p2.output = "output:{{input}}.{{in1}}.{{in2}}"
 		p2.callfront = callfront
 		pyppl ({'loglevel':'debug'}).starts(p1).run()
+		
+	def testAggr (self):
+		pa = proc ('aggr')
+		pb = proc ('aggr')
+		a  = aggr (pa, pb)
+		pe = proc('end')
+		pe.depends = a
+		a.pa_aggr.input  = "input"
+		a.pa_aggr.output = "out:{{input}}.{{proc.id}}.{{proc.tag}}"
+		a.pb_aggr.input  = "input"
+		a.pb_aggr.output = "out:{{input}}.{{proc.id}}.{{proc.tag}}"
+		a.input          = [("AGGR", )]
+		pe.input         = "input"
+		pe.output        = "out:{{input}}.{{proc.id}}.{{proc.tag}}"
+		
+		pyppl ().starts(a).run()
+		
 
 if __name__ == '__main__':
 	unittest.main()

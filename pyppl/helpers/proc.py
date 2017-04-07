@@ -2,8 +2,10 @@ import logging, os, strtpl, pickle, shlex, shutil, threading, sys
 import copy as pycopy
 from random import randint
 from glob import glob
+from time import sleep
 from traceback import extract_stack
 from channel import channel
+from aggr import aggr
 import strtpl
 from md5 import md5
 from re import split
@@ -56,6 +58,7 @@ class proc (object):
 		self.config['channel']    = channel()
 		self.config['callback']   = None
 		self.config['callfront']  = None
+		self.config['aggr']       = None
 		# init props
 
 		# id of the process, actually it's the variable name of the process
@@ -111,6 +114,7 @@ class proc (object):
 		self.props['indir']      = ''
 		self.props['outdir']     = ''
 		self.props['cached']     = False
+		self.props['aggr']       = self.config['aggr']
 
 
 	def __getattr__ (self, name):
@@ -131,20 +135,22 @@ class proc (object):
 		if name == 'depends':
 			if isinstance(self.depends, proc):
 				self.props['depends'] = [self.depends]
+			elif isinstance(self.depends, aggr):
+				self.props['depends'] = self.depends.ends
 			for depend in self.props['depends']:
 				depend.props['nexts'].append (self)
 	
 	def setLogger (self, logger):
 		self.props['logger'] = logger
 
-	def copy (self, tag=None):
+	def copy (self, tag=None, newid=None):
 		newproc = pycopy.deepcopy (self)
 		if tag is not None:
 			newproc.tag = tag
 		pid                  = extract_stack()[-2][3]
 		if pid is None: pid  = extract_stack()[-4][3]
 		pid                  = pid[:pid.find('=')].strip()
-		newproc.props['pid'] = pid
+		newproc.props['pid'] = pid if newid is None else newid
 		return newproc
 
 	def _suffix (self):
@@ -157,6 +163,8 @@ class proc (object):
 			pickable_depends = []
 			if isinstance(depends, proc):
 				depends = [depends]
+			elif isinstance(depends, aggr):
+				depends = depends.procs
 			for depend in depends:
 				pickable_depends.append(depend.id + '.' + depend.tag)
 			config['depends'] = pickable_depends
@@ -196,7 +204,7 @@ class proc (object):
 
 	def _tidyBeforeRun (self):
 		self._buildProps ()
-		self.logger.info ('[RUNNING] %s.%s: %s' % (self.id, self.tag, self.workdir))
+		self.logger.info ('[RUNNING] %s%s.%s: %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, self.workdir))
 		self._buildInput ()
 		self._buildOutput ()
 		self._buildScript ()
@@ -205,7 +213,7 @@ class proc (object):
 		if self._checkStatus ():
 			self._export ()
 			if callable (self.callback):
-				self.logger.info ('[  DEBUG] %s.%s: Calling callback ...' % (self.id, self.tag))
+				self.logger.info ('[  DEBUG] %s%s.%s: Calling callback ...' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag))
 				self.callback (self)			
 			self._doCache ()
 
@@ -214,14 +222,14 @@ class proc (object):
 		self.props['cached']   = self._isCached()
 		if self.cached: return False
 		if callable (self.callfront):
-			self.logger.info ('[  DEBUG] %s.%s: Calling callfront ...' % (self.id, self.tag))
+			self.logger.info ('[  DEBUG] %s%s.%s: Calling callfront ...' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag))
 			self.callfront (self)		
 		self.props['infiles']  = []
 		self.props['outfiles'] = []
 		self.props['jobs']     = []
 		'''
 		for n in self.nexts: # if i am not cached, then none of depends
-			self.logger.debug ('[  DEBUG] %s.%s: I`m not cached, so my dependent %s have to rerun.' % (self.id, self.tag, n.id))
+			self.logger.debug ('[  DEBUG] %s%s.%s: I`m not cached, so my dependent %s have to rerun.' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, n.id))
 			n.cache = False
 		'''
 		self._tidyBeforeRun ()
@@ -229,7 +237,7 @@ class proc (object):
 
 	def run (self, config = {}):
 		if not self._init(config): 
-			self.logger.info ('[ CACHED] %s.%s: %s' % (self.id, self.tag, self.workdir))
+			self.logger.info ('[ CACHED] %s%s.%s: %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, self.workdir))
 			#self._tidyAfterRun ()
 			return
 
@@ -253,7 +261,7 @@ class proc (object):
 					errfile = os.path.join (self.workdir, 'scripts', 'script.%s.stderr' % i)
 					errmsgs = ['[  ERROR] !  ' + line.strip() for line in open(errfile)]
 					if not errmsgs: errmsgs = ['[  ERROR] ! <EMPTY STDERR>']
-					self.logger.info ('[  ERROR] %s.%s: See STDERR below.' % (self.id, self.tag))
+					self.logger.info ('[  ERROR] %s%s.%s: See STDERR below.' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag))
 					for errmsg in errmsgs:
 						self.logger.info (errmsg)
 				raise Exception ('[#%s]: Return code is %s, but %s expected.' % (i, rc, self.retcodes))
@@ -325,7 +333,7 @@ class proc (object):
 				raise Exception ('Expect same lengths for input channels, but got %s and %s (keys: %s).' % (self.length, val.length(), keys))
 			vals = val.split()
 			if len(keys) > len(vals):
-				raise Exception('Not enough data for input variables.\nVarialbes: %s\nData: %s' % (keys, vals))
+				raise Exception('%s%s.%s: Not enough data for input variables.\nVarialbes: %s\nData: %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, keys, vals))
 			
 			self.props['input']['#'] = range(self.length)
 			for i, k in enumerate(keys):
@@ -345,10 +353,10 @@ class proc (object):
 								self.props['infiletime'] = max (self.infiletime, os.path.getmtime(v))
 								
 								if os.path.islink(vv[j][m]):
-									self.logger.info ('[WARNING] %s.%s: Overwriting existing input file (link) %s' % (self.id, self.tag, vv[j][m]))
+									self.logger.info ('[WARNING] %s%s.%s: Overwriting existing input file (link) %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, vv[j][m]))
 									os.remove (vv[j][m])
 								if os.path.exists (vv[j][m]):
-									self.logger.info ('[WARNING] %s.%s: Overwriting existing file/dir %s' % (self.id, self.tag, vv[j][m]))
+									self.logger.info ('[WARNING] %s%s.%s: Overwriting existing file/dir %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, vv[j][m]))
 									if os.path.isfile(vv[j][m]):
 										os.remove (vv[j][m])
 									else:
@@ -371,10 +379,10 @@ class proc (object):
 							self.props['infiletime'] = max (self.infiletime, os.path.getmtime(v))
 							
 							if os.path.islink(vv[j]):
-								self.logger.info ('[WARNING] %s.%s: Overwriting existing input file (link) %s' % (self.id, self.tag, vv[j]))
+								self.logger.info ('[WARNING] %s%s.%s: Overwriting existing input file (link) %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, vv[j]))
 								os.remove (vv[j])
 							if os.path.exists (vv[j]):
-								self.logger.info ('[WARNING] %s.%s: Overwriting existing file/dir %s' % (self.id, self.tag, vv[j]))
+								self.logger.info ('[WARNING] %s%s.%s: Overwriting existing file/dir %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, vv[j]))
 								if os.path.isfile(vv[j]):
 									os.remove (vv[j])
 								else:
@@ -391,7 +399,7 @@ class proc (object):
 
 		ridx = randint(0, self.length-1)
 		for key, val in self.input.iteritems():
-			self.logger.debug ('[  DEBUG] %s.%s INPUT [%s/%s]: %s => %s' % (self.id, self.tag, ridx, self.length-1, key, val[ridx]))
+			self.logger.debug ('[  DEBUG] %s%s.%s INPUT [%s/%s]: %s => %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, ridx, self.length-1, key, val[ridx]))
 
 		# also add proc.props, mostly scalar values
 		for prop, val in self.props.iteritems():
@@ -399,10 +407,10 @@ class proc (object):
 			if prop == 'args':
 				for k, v in val.iteritems():
 					self.props['procvars']['proc.args.' + k] = v
-					self.logger.debug ('[  DEBUG] %s.%s PROC_ARGS: %s => %s' % (self.id, self.tag, k, v))
+					self.logger.debug ('[  DEBUG] %s%s.%s PROC_ARGS: %s => %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, k, v))
 			else:
 				self.props['procvars']['proc.' + prop] = val
-				self.logger.debug ('[  DEBUG] %s.%s PROC_VARS: %s => %s' % (self.id, self.tag, prop, val))
+				self.logger.debug ('[  DEBUG] %s%s.%s PROC_VARS: %s => %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, prop, val))
 
 	"""
 	Output could be:
@@ -477,11 +485,12 @@ class proc (object):
 		
 		ridx = randint(0, self.length-1)
 		for key, val in self.output.iteritems():
-			self.logger.debug ('[  DEBUG] %s.%s OUTPUT [%s/%s]: %s => %s' % (self.id, self.tag, ridx, self.length-1, key, val[ridx]))
+			self.logger.debug ('[  DEBUG] %s%s.%s OUTPUT [%s/%s]: %s => %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, ridx, self.length-1, key, val[ridx]))
 
 	def _buildScript (self): # make self.jobs
 		if not self.script:
-			raise Exception ('Please specify script to run')
+			#raise Exception ('Please specify script to run')
+			self.logger.warning ('[WARNING] %s%s.%s No script specified' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag))
 		
 		scriptdir = os.path.join (self.workdir, 'scripts')
 		
@@ -529,10 +538,10 @@ class proc (object):
 					else:
 						os.remove (target)
 				else:
-					self.logger.info ('[ EXPORT] %s.%s: %s (target exists, skipped)' % (self.id, self.tag, target))
+					self.logger.info ('[ EXPORT] %s%s.%s: %s (target exists, skipped)' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, target))
 			
 			if not os.path.exists (target):
-				self.logger.info ('[ EXPORT] %s.%s: %s (%s)' % (self.id, self.tag, target, self.exporthow))
+				self.logger.info ('[ EXPORT] %s%s.%s: %s (%s)' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, target, self.exporthow))
 				if self.exporthow == 'copy':
 					if os.path.isdir (outfile):
 						shutil.copytree (outfile, target)
@@ -580,12 +589,12 @@ class proc (object):
 	def _isCached (self):
 		
 		if not self.cache:	
-			self.logger.debug ('[  DEBUG] %s.%s: Not cached, because proc.cache = False.' % (self.id, self.tag))
+			self.logger.debug ('[  DEBUG] %s%s.%s: Not cached, because proc.cache = False.' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag))
 			return False
 
 		cachefile = os.path.join (self.tmpdir, self.cachefile)
 		if not os.path.exists(cachefile): 
-			self.logger.debug ('[  DEBUG] %s.%s: Not cached, cache file %s not exists.' % (self.id, self.tag, cachefile))
+			self.logger.debug ('[  DEBUG] %s%s.%s: Not cached, cache file %s not exists.' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, cachefile))
 			return False
 		
 		with open(cachefile, 'r') as f:
@@ -595,24 +604,24 @@ class proc (object):
 		# check input files, outputfiles
 		for infile in self.infiles:
 			if not os.path.exists(infile):	
-				self.logger.debug ('[  DEBUG] %s.%s: Not cached, input file %s not exists.' % (self.id, self.tag, infile))
+				self.logger.debug ('[  DEBUG] %s%s.%s: Not cached, input file %s not exists.' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, infile))
 				return False
 			if os.path.getmtime(infile) > self.infiletime and self.infiletime != 0:
-				self.logger.debug ('[  DEBUG] %s.%s: Not cached, input file %s is newer.' % (self.id, self.tag, infile))
+				self.logger.debug ('[  DEBUG] %s%s.%s: Not cached, input file %s is newer.' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, infile))
 				return False
 			inlink =  os.path.join(self.indir, os.path.basename (infile))
 			if not os.path.islink (inlink):
-				self.logger.debug ('[  DEBUG] %s.%s: Not cached, input file link %s not exists.' % (self.id, self.tag, inlink))
+				self.logger.debug ('[  DEBUG] %s%s.%s: Not cached, input file link %s not exists.' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, inlink))
 				return False
 		
 		for outfile in self.outfiles:
 			if not os.path.exists(outfile):
-				self.logger.debug ('[  DEBUG] %s.%s: Not cached, output file %s not exists' % (self.id, self.tag, outfile))
+				self.logger.debug ('[  DEBUG] %s%s.%s: Not cached, output file %s not exists' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, outfile))
 				return False
 		
 		for d in self.depends:
 			if not d.cached:
-				self.logger.debug ('[  DEBUG] %s.%s: Not cached, because my dependent %s is not cached.' % (self.id, self.tag, d.id))
+				self.logger.debug ('[  DEBUG] %s%s.%s: Not cached, because my dependent %s is not cached.' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, d.id))
 				return False
 
 		return True
@@ -632,6 +641,7 @@ class proc (object):
 		def worker (q):
 			while True:
 				q.get().run()
+				sleep (.1)
 				q.task_done()
 		
 		q = Queue()
