@@ -33,6 +33,8 @@ class TestStrtpl (unittest.TestCase):
 			("{{genefile.fn | .split('_')[0] }}", 'gene', {"genefile.fn": "gene_4"}),
 			("{{v | sum(_)}}", "10", {"v": [1,2,3,4]}),
 			("{{v | map(str, _) | (lambda x: '_'.join(x))(_)}}", "1_2_3_4", {"v": [1,2,3,4]}),
+			("{{v | (lambda x: x['a'] if x.has_key('a') else '')(_)}}", '1', {"v": {"a": 1, "b": 2}}),
+			("{{v | __import__('json').dumps(_)}}", '{"a": 1, "b": 2}', {"v": {"a": 1, "b": 2}}),
 		]
 		for d in data:
 			self.assertEqual (strtpl.format(d[0], d[2]), d[1])
