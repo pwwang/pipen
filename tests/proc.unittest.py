@@ -2,7 +2,7 @@ import os, sys, unittest, pickle, shutil, copy
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
 from pyppl import proc
-from pyppl import channel
+from pyppl import channel, utils
 from md5 import md5
 from StringIO import StringIO
 from inspect import getsource
@@ -25,7 +25,7 @@ class runner_test (runner_local):
 		from runner_test import runner_test
 		proc.registerRunner(runner_test)
 		
-		self.assertTrue (callable (proc.runners['test'].run))
+		self.assertTrue (callable (proc.runners['test'].submit))
 		os.remove (testfile)
 		try: 
 			os.remove (testfile + 'c')
@@ -37,28 +37,19 @@ class runner_test (runner_local):
 		p = proc ('tag_unique')
 		config = copy.copy(p.config)
 		del config['workdir']
-		def getFuncSig (func):
-			if callable (func):
-				try:
-					sig = getsource(func)
-				except:
-					sig = func.__name__
-			else:
-				sig = 'None'
-			return sig
 				
 		if config.has_key ('callback'):
-			config['callback'] = getFuncSig(config['callback'])
+			config['callback'] = utils.funcSig(config['callback'])
 	
 		if config.has_key ('callfront'):
-			config['callfront'] = getFuncSig(config['callfront'])
+			config['callfront'] = utils.funcSig(config['callfront'])
 		
 		if config.has_key ('input') and isinstance(config['input'], dict):
 			config['input'] = copy.deepcopy(config['input'])
 			for key, val in config['input'].iteritems():
-				config['input'][key] = getFuncSig(val) if callable(val) else val
+				config['input'][key] = utils.funcSig(val) if callable(val) else val
 		signature = pickle.dumps (config) + '@' + pickle.dumps(sorted(sys.argv))
-		self.assertEqual (p._suffix(), md5(signature).hexdigest()[:8])
+		self.assertEqual (p._suffix(), utils.uid(signature))
 
 	def testInit (self):
 		p = proc ('tag')
@@ -146,6 +137,9 @@ class runner_test (runner_local):
 		self.assertEqual (p2.retcodes, [0, 1])
 		self.assertTrue (os.path.exists(p2.workdir))
 		self.assertEqual (p1.nexts, [p2])
+		self.assertEqual (p1.id, 'p1')
+		self.assertEqual (p2.id, 'p2')
+		
 		p2 = proc('tag')
 		self.assertRaises (Exception, p2._buildProps)
 

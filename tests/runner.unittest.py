@@ -29,6 +29,8 @@ class TestRunner (unittest.TestCase):
 		with open (self.scripts[1], 'w') as f:
 			f.write ('#!/usr/bin/env python\n')
 			f.write ('print "1"\n')
+			f.write ('__import__("time").sleep(8)\n')
+			f.write ('print "2"\n')
 		with open (self.scripts[4], 'w') as f:
 			f.write ('#!/usr/bin/env python\n')
 			f.write ('import sys\n')
@@ -87,7 +89,8 @@ class TestRunner (unittest.TestCase):
 		r1 = runner_local(self.scripts[1])
 		r2 = runner_local(self.scripts[4])
 
-		r0.run()
+		r0.submit()
+		r0.wait()
 		self.assertTrue (os.path.exists(r0.rcfile))
 		self.assertTrue (os.path.exists(r0.outfile))
 		self.assertTrue (os.path.exists(r0.errfile))
@@ -95,15 +98,17 @@ class TestRunner (unittest.TestCase):
 		self.assertEqual (open(r0.outfile).read().strip(), '0')
 		self.assertTrue (r0.isValid())
 
-		r1.run()
+		r1.submit()
+		r1.wait()
 		self.assertTrue (os.path.exists(r1.rcfile))
 		self.assertTrue (os.path.exists(r1.outfile))
 		self.assertTrue (os.path.exists(r1.errfile))
 		self.assertEqual (r1.rc(), 0)
-		self.assertEqual (open(r1.outfile).read().strip(), '1')
+		self.assertEqual (open(r1.outfile).read().strip(), '1\n2')
 		self.assertTrue (r1.isValid())
 
-		r2.run()
+		r2.submit()
+		r2.wait()
 		self.assertTrue (os.path.exists(r2.rcfile))
 		self.assertTrue (os.path.exists(r2.outfile))
 		self.assertTrue (os.path.exists(r2.errfile))
@@ -123,7 +128,8 @@ class TestRunner (unittest.TestCase):
 			'sshRunner': {'servers': ['franklin03']}
 		})
 
-		r0.run()
+		r0.submit()
+		r0.wait()
 		self.assertTrue (os.path.exists(r0.rcfile))
 		self.assertTrue (os.path.exists(r0.outfile))
 		self.assertTrue (os.path.exists(r0.errfile))
@@ -131,15 +137,17 @@ class TestRunner (unittest.TestCase):
 		self.assertEqual (open(r0.outfile).read().strip(), '0')
 		self.assertTrue (r0.isValid())
 
-		r1.run()
+		r1.submit()
+		r1.wait()
 		self.assertTrue (os.path.exists(r1.rcfile))
 		self.assertTrue (os.path.exists(r1.outfile))
 		self.assertTrue (os.path.exists(r1.errfile))
 		self.assertEqual (r1.rc(), 0)
-		self.assertEqual (open(r1.outfile).read().strip(), '1')
+		self.assertEqual (open(r1.outfile).read().strip(), '1\n2')
 		self.assertTrue (r1.isValid())
 
-		r2.run()
+		r2.submit()
+		r2.wait()
 		self.assertTrue (os.path.exists(r2.rcfile))
 		self.assertTrue (os.path.exists(r2.outfile))
 		self.assertTrue (os.path.exists(r2.errfile))
@@ -150,19 +158,21 @@ class TestRunner (unittest.TestCase):
 
 		
 	
-	@unittest.skip("Skipping SGE test...")
+	#@unittest.skip("Skipping SGE test...")
 	def testSGERun (self):
 		r0 = runner_sge(self.scripts[0], {
 			'sgeRunner': {'sge_N': 'job_r0', 'sge_q': '1-hour', 'sge_M': 'Wang.Panwen@mayo.edu'}
 		})
 		r1 = runner_sge(self.scripts[1], {
+			'echo': True,
 			'sgeRunner': {'sge_N': 'job_r1', 'sge_q': '1-hour'}
 		})
 		r2 = runner_sge(self.scripts[4], {
 			'sgeRunner': {'sge_N': 'job_r4', 'sge_q': '1-hour'}
 		})
 
-		r0.run()
+		r0.submit()
+		r0.wait()
 		self.assertTrue (os.path.exists(r0.rcfile))
 		self.assertTrue (os.path.exists(r0.outfile))
 		self.assertTrue (os.path.exists(r0.errfile))
@@ -170,15 +180,17 @@ class TestRunner (unittest.TestCase):
 		self.assertEqual (open(r0.outfile).read().strip(), '0')
 		self.assertTrue (r0.isValid())
 
-		r1.run()
+		r1.submit()
+		r1.wait()
 		self.assertTrue (os.path.exists(r1.rcfile))
 		self.assertTrue (os.path.exists(r1.outfile))
 		self.assertTrue (os.path.exists(r1.errfile))
 		self.assertEqual (r1.rc(), 0)
-		self.assertEqual (open(r1.outfile).read().strip(), '1')
+		self.assertEqual (open(r1.outfile).read().strip(), '1\n2')
 		self.assertTrue (r1.isValid())
 
-		r2.run()
+		r2.submit()
+		r2.wait()
 		self.assertTrue (os.path.exists(r2.rcfile))
 		self.assertTrue (os.path.exists(r2.outfile))
 		self.assertTrue (os.path.exists(r2.errfile))

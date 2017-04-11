@@ -2,13 +2,6 @@ import logging, os, sys, random, json, copy
 from helpers import *
 from runners import *
 VERSION = "0.3.0"
-
-def dictUpdate(origDict, newDict):
-	for k, v in newDict.iteritems():
-		if not isinstance(v, dict) or not origDict.has_key(k) or not isinstance(origDict[k], dict):
-			origDict[k] = newDict[k]
-		else:
-			dictUpdate(origDict[k], newDict[k])
 			
 class pyppl (object):
 
@@ -18,7 +11,7 @@ class pyppl (object):
 		if os.path.exists(cfile):			
 			hconfig  = json.load(open(cfile))
 			#hconfig.update(config)
-			dictUpdate(hconfig, config)			
+			utils.dictUpdate(hconfig, config)			
 			config   = copy.copy(hconfig)
 
 		loglevel = 'info'
@@ -69,11 +62,11 @@ class pyppl (object):
 		config = {}
 		if self.config.has_key('proc'):
 			#config.update(self.config['proc'])
-			dictUpdate(config, self.config['proc'])
+			utils.dictUpdate(config, self.config['proc'])
 		
 		if self.config.has_key(profile):
 			#config.update(self.config[profile])
-			dictUpdate(config, self.config[profile])
+			utils.dictUpdate(config, self.config[profile])
 		
 		if not config.has_key('runner'):
 			config['runner'] = profile

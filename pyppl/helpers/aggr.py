@@ -1,6 +1,6 @@
-from traceback import extract_stack
+
 from channel import channel
-import strtpl
+import utils
 
 class aggr (object):
 	
@@ -10,10 +10,7 @@ class aggr (object):
 	def __init__ (self, *arg):
 		self.starts    = []
 		self.ends      = []
-		name    = extract_stack()[-2][3]
-		name    = extract_stack()[-4][3] if name is None else name
-		name    = name[:name.find('=')].strip()
-		self.id = name
+		self.id = utils.varname(self.__class__.__name__, 50)
 		
 		depends = True
 		arg     = list(arg)
@@ -47,7 +44,7 @@ class aggr (object):
 				if not isinstance (inkey, str) and not isinstance(inkey, unicode):
 					raise RuntimeError('Expect list or str for proc keys for aggregation: %s, you may have already set the input channels?' % (self.id))
 				
-				inkeys = map(lambda x: x.strip(), strtpl.split(inkey, ','))
+				inkeys = map(lambda x: x.strip(), utils.split(inkey, ','))
 				if len(inkeys) > len(chans) - i:
 					raise RuntimeError('Not enough data column for aggregation "%s"\nKeys: %s\n#Col: %s' % (self.id, inkeys, (len(chans)-1)))
 				proc.input = {}
@@ -67,10 +64,7 @@ class aggr (object):
 			raise AttributeError('Cannot set property "%s" of aggregation "%s"' % (name, self.id))
 		
 	def copy (self, tag='aggr', newid=None):
-		name   = extract_stack()[-2][3]
-		name   = extract_stack()[-4][3] if name is None else name
-		name   = name[:name.find('=')].strip()
-		name   = name if newid is None else newid
+		name   = utils.varname('\w\.'+self.copy.__name__, 2) if newid is None else newid
 		
 		args   = []
 		fordeps= {}

@@ -29,6 +29,7 @@ class runner_ssh (runner_local):
 			f.write ('\n'.join(sshsrc) + '\n')
 		
 		self.script = self.chmod_x(sshfile)
-
+	
+	
 
 

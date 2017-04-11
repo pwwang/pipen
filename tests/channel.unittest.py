@@ -22,7 +22,7 @@ class TestChannel (unittest.TestCase):
 			(os.path.join (rootdir, 'tests', 'runner.unittest.py'),),
 			(os.path.join (rootdir, 'tests', 'pyppl.unittest.py'),),
 			(os.path.join (rootdir, 'tests', 'proc.unittest.py'),),
-			(os.path.join (rootdir, 'tests', 'strtpl.unittest.py'),),
+			(os.path.join (rootdir, 'tests', 'utils.unittest.py'),),
 			(os.path.join (rootdir, 'tests', 'channel.unittest.py'),),
 		]))
 	

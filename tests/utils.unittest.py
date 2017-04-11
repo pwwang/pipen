@@ -3,9 +3,9 @@ import sys
 import os
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
-from pyppl import strtpl
+from pyppl import utils
 
-class TestStrtpl (unittest.TestCase):
+class TestUtils (unittest.TestCase):
 
 	def testSplit (self):
 		data = [
@@ -16,7 +16,7 @@ class TestStrtpl (unittest.TestCase):
 			('a|b\|c|(\)\\\'|)', ["a", "b\\|c", "(\\)\\'|)"]),
 		]
 		for d in data:
-			self.assertEqual (strtpl.split(d[0], "|"), d[1])
+			self.assertEqual (utils.split(d[0], "|"), d[1])
 
 	def testFormat (self):
 		data = [
@@ -37,8 +37,33 @@ class TestStrtpl (unittest.TestCase):
 			("{{v | __import__('json').dumps(_)}}", '{"a": 1, "b": 2}', {"v": {"a": 1, "b": 2}}),
 		]
 		for d in data:
-			self.assertEqual (strtpl.format(d[0], d[2]), d[1])
+			self.assertEqual (utils.format(d[0], d[2]), d[1])
 
-
+	def testVarname (self):
+		def func ():
+			return utils.varname(func.__name__)
+		
+		funcName = func()
+		self.assertEqual(funcName, 'funcName')
+		self.assertTrue(func().startswith('func_')) 
+		
+		funcName2= func (
+			
+		)
+		self.assertEqual(funcName2, 'funcName2')
+		
+		class aclass (object):
+			def __init__ (self):
+				self.id = utils.varname (self.__class__.__name__)
+				
+			def method (self):
+				return utils.varname ('\w+\.' + self.method.__name__)
+		obj = aclass()
+		self.assertEqual (obj.id, 'obj')
+		
+		objMethod = obj.method()
+		self.assertEqual (objMethod, 'objMethod')
+		
+		
 if __name__ == '__main__':
 	unittest.main()
