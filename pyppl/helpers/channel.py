@@ -1,4 +1,5 @@
 from copy import copy as pycopy
+import utils
 
 class channel (list):
 	
@@ -13,8 +14,6 @@ class channel (list):
 	@staticmethod
 	def fromChannels (*args):
 		ret = channel.create()
-		if not args:
-			return ret
 		ret.merge (*args)
 		return ret
 	
@@ -43,33 +42,30 @@ class channel (list):
 		return c
 
 	@staticmethod
-	def fromArgv (width = 1):
+	def fromArgv ():
 		from sys import argv
+		ret  = channel.create()
 		args = argv[1:]
 		alen = len (args)
-		if alen == 0: return channel()
-		if width == None: width = alen
-		if alen % width != 0:
-			raise Exception('Length (%s) of argv[1:] must be exactly divided by width (%s)' % (alen, width))
+		if alen == 0: return ret
 		
-		ret = channel()
-		for i in xrange(0, alen, width):
-			tmp = ()
-			for j in range(width):
-				tmp += (args[i+j], )
-			ret.append (tmp)
+		width = None
+		for arg in args:
+			items = channel._tuplize(utils.split(arg, ','))
+			if width is not None and width != len(items):
+				raise ValueError('Width %s (%s) is not consistent with previous %s' % (len(items), arg, width))
+			width = len(items)
+			ret.append (items)
 		return ret
 	
 	@staticmethod
 	def _tuplize (tu):
-		if isinstance(tu, str) or isinstance(tu, unicode):
+		if isinstance(tu, (str, unicode)):
 			tu = (tu, )
 		else:
-			try:
-				iter(tu)
-			except:
-				tu = (tu, )
-		return tu
+			try: iter(tu)
+			except:	tu = (tu, )
+		return tuple(tu)
 	
 	# expand the channel according to the files in <col>, other cols will keep the same
 	# [(dir1/dir2, 1)].expand (0, "*") will expand to
@@ -106,11 +102,9 @@ class channel (list):
 		return pycopy(self)
 
 	def width (self):
-		if not self:
-			return 0
+		if not self: return 0
 		ele = self[0]
-		if not isinstance(ele, tuple):
-			return 1
+		if not isinstance(ele, tuple): return 1
 		return len(ele)
 	
 	def length (self):
@@ -124,69 +118,76 @@ class channel (list):
 
 	def reduce (self, func):
 		return channel.create(reduce(func, self))
-
-	def merge (self, *args):
-		if not args: return
-		maxlen = max(map(len, args))
-		minlen = min(map(len, args))
-		if maxlen != minlen:
-			raise Exception('Cannot merge channels with different length (%s, %s).' % (maxlen, minlen))
-		clen = len (self)
-		if clen != 0 and clen != maxlen:
-			raise Exception('Cannot merge channels with different length (%s, %s).' % (maxlen, clen))
-
-		for i in range(maxlen):
-			tu = () if clen==0 else channel._tuplize(self[i])
-			for arg in args:
-				tu += channel._tuplize (arg[i])
-			if clen == 0:
-				self.append(tu)
-			else:
-				self[i] = tu
+	
+	def rbind (self, row):
+		row = channel._tuplize(row)
+		if self.length() != 0 and self.width() != len(row):
+			raise ValueError ('Cannot bind row (len: %s) to channel (width: %s): width is different.' % (len(row), self.width()))
+		self.append (row)
 		return self
 	
-	def insert (self, idx, val):
-		idx = self.width() if idx is None else idx
-		if not isinstance(val, list):
-			val = [val]
-		if len (val) == 1:
-			val = val * len (self)
-		elif len(val) != len(self):
-			raise Exception('Cannot merge channels with different length (%s, %s).' % (len(self), len(val)))
-		for i in range(len(self)):
-			ele     = list (self[i])
-			newele  = ele[:idx] + list(channel._tuplize(val[i])) + ele[idx:]
-			self[i] = tuple (newele)
+	def rbindMany (self, *rows):
+		for row in rows: self.rbind(row)
+		return self
+	
+	def cbind (self, col):
+		if not isinstance(col, list): col = [col]
+		if len (col) == 1: col = col * max(1, self.length())
+		if self.length() == 0 :
+			for ele in col: self.append (channel._tuplize(ele))
+		elif self.length() == len (col):
+			for i in range (self.length()):
+				self[i] += channel._tuplize(col[i])
+		else:
+			raise ValueError ('Cannot bind column (len: %s) to channel (length: %s): length is different.' % (len(col), self.length()))
+		return self
+	
+	def cbindMany (self, *cols):
+		for col in cols:
+			self.cbind(col)
+		return self
+		
+	def merge (self, *chans):
+		for chan in chans:
+			if not isinstance(chan, channel): chan = channel.create(chan)
+			cols = [x.toList() for x in chan.split()]
+			self.cbindMany (*cols)
+		return self
+	
+	def colAt (self, index):
+		return self.slice (index, 1)
+	
+	def slice (self, start, length = None):
+		if start is None: start = self.width()
+		if length is None: length = self.width()
+		if start < 0: start = start + self.width()
+		if start >= self.width(): return channel.create()
+		ret = channel.create()
+		if length == 0: return ret
+		for ele in self:
+			row = tuple (ele[start:start+length])
+			ret.rbind (row)
+		return ret
+	
+	def insert (self, index, col):
+		if not isinstance(col, list): col = [col]
+		if len (col) == 1: col = col * max(1, self.length())
+		part1 = self.slice (0, index)
+		part2 = self.slice (index)
+		del self[:]
+		self.merge (part1)
+		self.cbind (col)
+		self.merge (part2)
 		return self
 	
 	def split (self):
-		ret = []
-		for i, tu in enumerate(self):
-			if isinstance(tu, str):
-				tu = (tu, )
-			try:
-				iter(tu)
-			except:
-				tu = (tu, )
-			if i == 0:
-				for t in tu: ret.append(channel())
-
-			for j, t in enumerate(tu):
-				ret[j].append(channel._tuplize(t))
-		return ret
+		return [ self.colAt(i) for i in range(self.width()) ]
 	
 	def toList (self): # [(a,), (b,)] to [a, b], only applicable when width =1
 		if self.width() != 1:
-			raise Exception ('Width = %s, but expect width = 1.' % self.width())
+			raise ValueError ('Width = %s, but expect width = 1.' % self.width())
 		
-		ret = []
-		for e in self:
-			if isinstance(e, list):
-				v = e # support list elements
-			else:
-				(v, ) = e
-			ret.append(v)
-		return ret
+		return [ e[0] if isinstance(e, tuple) else e for e in self ]
 
 	
   

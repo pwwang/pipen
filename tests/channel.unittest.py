@@ -1,4 +1,4 @@
-import sys, unittest, os
+import sys, unittest, os, glob
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
 from pyppl import channel
@@ -17,14 +17,7 @@ class TestChannel (unittest.TestCase):
 
 	def testFromPath (self):
 		c = channel.fromPath (os.path.join(rootdir, 'tests', '*.py'))
-		self.assertEqual (sorted(c), sorted([
-			(os.path.join (rootdir, 'tests', 'aggr.unittest.py'),),
-			(os.path.join (rootdir, 'tests', 'runner.unittest.py'),),
-			(os.path.join (rootdir, 'tests', 'pyppl.unittest.py'),),
-			(os.path.join (rootdir, 'tests', 'proc.unittest.py'),),
-			(os.path.join (rootdir, 'tests', 'utils.unittest.py'),),
-			(os.path.join (rootdir, 'tests', 'channel.unittest.py'),),
-		]))
+		self.assertEqual (sorted(c), sorted(map(channel._tuplize, glob.glob(os.path.join(rootdir, 'tests', '*.py')))))
 	
 	def testFromPairs (self):
 		files = [
@@ -52,15 +45,17 @@ class TestChannel (unittest.TestCase):
 	
 	def testFromArgv (self):
 		sys.argv = ["0", "11", "22", "33", "44"]
-		c = channel.fromArgv(None)
-		self.assertEqual (c, [("11", "22", "33", "44")])
-		c = channel.fromArgv(2)
+		c = channel.fromArgv()
+		self.assertEqual (c, [("11",), ("22",), ("33",), ("44",)])
+		sys.argv = ["0", "11,22", "33,44"]
+		c = channel.fromArgv()
 		self.assertEqual (c, [("11", "22"), ("33", "44")])
-		self.assertRaises (Exception, channel.fromArgv, 3)
+		sys.argv = ["0", "11,22", "33"]
+		self.assertRaises (ValueError, channel.fromArgv)
 
 	def testFromChannels (self):
 		c1 = channel.create([("abc", "def"), ("ghi", "opq")])
-		c2 = channel([("abc", "def"), ("ghi", "opq")])
+		c2 = channel.create([("abc", "def"), ("ghi", "opq")])
 		c3 = channel.fromChannels (c1, c2)
 		self.assertEqual (c3, [("abc", "def", "abc", "def"), ("ghi", "opq", "ghi", "opq")])
 
@@ -120,25 +115,12 @@ class TestChannel (unittest.TestCase):
 	
 	def testSplit(self):
 		
-		c2 = channel.create (["abc", "def", "ghi", "opq"])
-		c3 = channel.create(["1", '2', '3', '4'])	
-		c4 = channel()
-		c4.merge(c2, c3)
-		self.assertEqual (c4, [("abc", "1"), ("def", '2'), ("ghi", '3'), ("opq", '4')])
-
-		c5 = [5,6,7,8]
-		self.assertEqual (c4.copy().merge(c5), [("abc", "1", 5), ("def", '2', 6), ("ghi", '3', 7), ("opq", '4', 8)])
-		c4.merge(c5)
-		self.assertEqual (c4, [("abc", "1", 5), ("def", '2', 6), ("ghi", '3', 7), ("opq", '4', 8)])
+		c4 = channel.create( [("abc", "1", 5), ("def", '2', 6), ("ghi", '3', 7), ("opq", '4', 8)] )
 
 		c6,c7,c8 = c4.split()
 		self.assertEqual (c6, [("abc",), ("def",), ("ghi",), ("opq",)])
 		self.assertEqual (c7, [("1",), ('2',), ('3',), ('4',)])
 		self.assertEqual (c8, [(5,), (6,), (7,), (8,)])
-		c12, c9, c10 = c2.copy().merge(c3, c5).split()
-		self.assertEqual (c12, c6)
-		self.assertEqual (c9, c7)
-		self.assertEqual (c10, c8)
 
 		c11 = channel.create ([("abc",), ("def",), ("ghi",), ("opq",)])
 		self.assertEqual (c11.split(), [c11])
@@ -203,13 +185,39 @@ class TestChannel (unittest.TestCase):
 		ret = [(1, x) for x in sorted(glob.glob("./*.py"))]
 		self.assertEqual (sorted(ch1), ret)
 		
+		#print channel.create(ret).insert(None, [1])
 		ch1.insert (None, [1])
 		ret = [(1, x, 1) for x in sorted(glob.glob("./*.py"))]
 		self.assertEqual (sorted(ch1), ret)
 		
-		ch1.insert (None, range(len(ch1)))
+		ch1.insert (None, range(ch1.length()))
 		ret = [(1, x, 1, i) for i,x in enumerate(sorted(glob.glob("./*.py")))]
 		self.assertEqual (sorted(ch1), ret)
 
+	def testCbind (self):
+		
+		chan  = channel.create ([1,2,3,4,5])
+		col1 = [2,4,6,8,10]
+		chan.cbind (col1)
+		self.assertEqual (chan, [(1,2), (2,4), (3,6), (4,8), (5,10)])
+		col2 = [5,4,3,2,1]
+		chan.cbindMany (col1, col2)
+		self.assertEqual (chan, [(1,2,2,5), (2,4,4,4), (3,6,6,3), (4,8,8,2), (5,10,10,1)])
+		chan.cbind(0)
+		self.assertEqual (chan, [(1,2,2,5,0), (2,4,4,4,0), (3,6,6,3,0), (4,8,8,2,0), (5,10,10,1,0)])
+		
+		self.assertEqual (channel.create([(),(),(),(),()]).cbind(1), [(1,), (1,), (1,), (1,), (1,)])
+		
+	def testSlice (self):
+		chan = channel.create([(1,2,2,5), (2,4,4,4), (3,6,6,3), (4,8,8,2), (5,10,10,1)])
+		self.assertEqual (chan.slice(0,0), [])
+		self.assertEqual (chan.slice(0,1), [(1,),(2,),(3,),(4,),(5,)])
+		self.assertEqual (chan.slice(0), chan)
+		self.assertEqual (chan.slice(2), [(2,5),(4,4),(6,3),(8,2),(10,1)])
+		self.assertEqual (chan.slice(-2), [(2,5),(4,4),(6,3),(8,2),(10,1)])
+		self.assertEqual (chan.colAt(-2), [(2,),(4,),(6,),(8,),(10,)])
+		
+	
+		
 if __name__ == '__main__':
 	unittest.main()

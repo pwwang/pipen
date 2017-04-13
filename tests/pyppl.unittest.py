@@ -9,7 +9,7 @@ from pyppl import channel
 from pyppl import aggr
 
 class TestPipelineMethods (unittest.TestCase):
-
+	
 	def test_init (self):
 		ppl = pyppl({}, '')
 
@@ -18,13 +18,14 @@ class TestPipelineMethods (unittest.TestCase):
 		self.assertEqual (ppl.heads, [])
 	
 	def test_factory (self):
+	
 		ppl = pyppl ({'proc' : {'tmpdir': '/local2/tmp/m161047/abc'}})
 		
 		p1 = proc('TAG')
 		self.assertTrue (isinstance (p1, proc))
 		self.assertEqual (p1.tag, 'TAG')
-
-		inch = channel(['a', 'b', 'c'])
+		
+		inch = channel.create(['a', 'b', 'c'])
 		p1.tag = 'CREATE_FILE'
 		p1.input = {'input':inch}
 		p1.script = "echo {{input}} > {{outfile}}"
@@ -34,26 +35,21 @@ class TestPipelineMethods (unittest.TestCase):
 		p2 = proc("MOVE_FILE")
 		p2.input = "input, infile:file"
 		p2.output = "outfile:file:{{infile.fn}}-2.txt"
-		p2.script = "mv {{infile}} {{outfile}}"
+		p2.script = "mv {{infile}} {{outfile}}; ln -s {{outfile}} {{infile}}"
 		p2.depends = p1
-		p2.exportdir = './'
+		p2.exportdir = './test/'
 		p2.cache  = False
-
+		
 		ppl.starts (p1)
+		
 		ppl.run()
-
-		self.assertTrue (os.path.exists('./a-2.txt'))
-		self.assertTrue (os.path.exists('./b-2.txt'))
-		self.assertTrue (os.path.exists('./c-2.txt'))
-
-		os.remove ('./a-2.txt')
-		os.remove ('./b-2.txt')
-		os.remove ('./c-2.txt')
-
-		self.assertFalse (os.path.exists('./a-2.txt'))
-		self.assertFalse (os.path.exists('./b-2.txt'))
-		self.assertFalse (os.path.exists('./c-2.txt'))
-
+		
+		self.assertTrue (os.path.exists('./test/a-2.txt'))
+		self.assertTrue (os.path.exists('./test/b-2.txt'))
+		self.assertTrue (os.path.exists('./test/c-2.txt'))
+		
+		shutil.rmtree('./test')
+	
 	def test_dot (self):
 		self.maxDiff = None
 		ppl = pyppl ()
@@ -67,7 +63,7 @@ class TestPipelineMethods (unittest.TestCase):
 		p8 = proc("H")
 		p9 = proc("I")
 		p1.script = "echo 1"
-		p1.input  = {"input": channel(['a'])}
+		p1.input  = {"input": channel.create(['a'])}
 		p1.output = "{{input}}" 
 		p2.script = "echo 1"
 		p2.output = "{{input}}" 
@@ -127,7 +123,7 @@ sorted("""digraph PyPPL {
 	"p4.D" [shape=box, style=filled, color="#f0f998", fontcolor=red]
 }
 """.split("\n")))
-
+	
 	def test_multideps (self):
 		ppl = pyppl ()
 		pr1 = proc("A")
@@ -136,8 +132,8 @@ sorted("""digraph PyPPL {
 		
 		p1ch = [('a',), ('b',), ('c',)]
 		p2ch = [(1,), (2,), (3,)]
-		pr1.input = {'input': channel(p1ch)}
-		pr2.input = {'input': channel(p2ch)}
+		pr1.input = {'input': channel.create(p1ch)}
+		pr2.input = {'input': channel.create(p2ch)}
 		pr1.output = '{{input}}'
 		pr2.output = '{{input}}'
 		pr3.input = 'in1, in2'
@@ -161,15 +157,15 @@ sorted("""digraph PyPPL {
 	def test_sge (self):
 		ppl = pyppl ()
 		p1 = proc ()
-		p1.input = {"input": channel([('a')] * 10)}
+		p1.input = {"input": channel.create([('a')] * 10)}
 		p1.workdir = './test-sge'
 		p1.forks = 3
 		p1.script = "echo {input}"
 		#ppl.add(p1).run('sge')
-
+	
 	def test_batchjobs (self):
 		p = proc ('batch')
-		p.input = {'input': channel([5, 2, 5, 2, 5, 2])}
+		p.input = {'input': channel.create([5, 2, 5, 2, 5, 2])}
 		p.script = "cat {{proc.workdir}}/scripts/script.{{#}}.ssh | grep franklin"
 		p.echo = True
 		p.cache = False
@@ -187,17 +183,17 @@ sorted("""digraph PyPPL {
 			'loglevel': 'debug'
 		}).starts(p).run()
 		shutil.rmtree ('./test_batchjobs')
-
+	
 	def testCallback (self):
 		p1 = proc ('callback')
 		p2 = proc ('callback')
-
+		
 		def callback2 (s):
 			ch = channel.create ([('a1','b'), ('x', 'y')])
 			s.channel.merge (ch)
-
-		sys.argv = [0, 1, 2]
-		p1.input = {"input": channel.fromArgv(1)}
+		argv     = sys.argv[:]
+		sys.argv = ['0', '1', '2']
+		p1.input = {"input": channel.fromArgv()}
 		p1.output = "output:{{input}}2"
 		p1.script = "echo {{output}}"
 		p1.callback = callback2
@@ -206,27 +202,8 @@ sorted("""digraph PyPPL {
 		p2.script = "echo {{output}}"
 		p2.output = "output:{{input}}.{{in1}}.{{in2}}"
 		pyppl ().starts(p1).run()
-
-	def testCallfront (self):
-		p1 = proc ('callfront')
-		p2 = proc ('callfront')
-
-		sys.argv = [0, 1, 2]
-		p1.input = {"input": channel.fromArgv(1)}
-		p1.output = "output:{{input}}2"
-		p1.script = "echo {{output}}"
-
-		def callfront (s):
-			ch = channel.create ([('a1','b'), ('x', 'y')])
-			p1.channel.merge(ch)
-
-		p2.depends = p1
-		p2.input = "input, in1, in2"
-		p2.script = "echo {{output}}"
-		p2.output = "output:{{input}}.{{in1}}.{{in2}}"
-		p2.callfront = callfront
-		pyppl ({'loglevel':'debug'}).starts(p1).run()
-		
+		sys.argv  = argv[:]
+	
 	def testAggr (self):
 		pa = proc ('aggr')
 		pb = proc ('aggr')

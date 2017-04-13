@@ -34,12 +34,9 @@ Get the variable name inside the function or class __init__
 	```
 """
 def varname (func, maxline = 20):
-	import re, random, inspect
+	import re, inspect
 	frame   = inspect.currentframe()
 	frames  = inspect.getouterframes(frame)
-	# frames[0] : this frame
-	# frames[1] : the func/method calling this one
-	# frames[2] : assignment
 	frame   = frames[2]
 	src     = ''.join(frame[4])
 
@@ -50,7 +47,7 @@ def varname (func, maxline = 20):
 	
 	m       = re.search(varpat, src)
 	if m: return m.group(2)
-	suffix  = ''.join([random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkllmnopqrstuvwxyz1234567890") for _ in range(8)])
+	suffix  = utils.randstr(8)
 	thefunc = func if not '\\.' in func else func.split('\\.')[1]
 	m       = re.search(funcpat, src)
 	if m: return thefunc + '_' + suffix
@@ -64,6 +61,9 @@ def varname (func, maxline = 20):
 	
 	return thefunc + '_' + suffix
 
+def randstr (length = 8):
+	import random
+	return ''.join([random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkllmnopqrstuvwxyz1234567890") for _ in range(length)])
 
 def split (s, delimter):
 	ret = []
@@ -115,7 +115,7 @@ def split (s, delimter):
 				start = i + 1
 		else: 
 			slash = 0
-	ret.append (s[start:])
+	ret.append (s[start:].strip())
 	return ret
 
 def format (tpl, args):
@@ -172,3 +172,119 @@ def uid(s, l = 8, alphabet='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop
 		base = alphabet[i] + base
 
 	return base[:l]
+
+def targz (tgzfile, srcdir):
+	from tarfile import open as taropen
+	from glob import glob
+	from os import chdir, getcwd
+	cwd = getcwd()
+	tar = taropen(tgzfile, 'w:gz')
+	chdir (srcdir)
+	for name in glob ('./*'):
+		tar.add(name)
+	tar.close()
+	chdir (cwd)
+	
+def untargz (tfile, dstdir):
+	import tarfile
+	tar = tarfile.open (tfile, 'r:gz')
+	tar.extractall (dstdir)
+	tar.close()
+	
+def gz (gzfile, srcfile):
+	from gzip import open as gzopen
+	from shutil import copyfileobj
+	fin  = open (srcfile, 'rb')
+	fout = gzopen (gzfile, 'wb')
+	copyfileobj (fin, fout)
+	
+def ungz (gzfile, dstfile):
+	from gzip import open as gzopen
+	from shutil import copyfileobj
+	fin  = gzopen (gzfile, 'rb')
+	fout = open (dstfile, 'wb')
+	copyfileobj (fin, fout)
+
+# file signature, use absolute path and mtime
+def fileSig (fn):
+	from os.path import realpath, abspath, getmtime
+	from hashlib import md5
+	fn    = abspath(realpath(fn))
+	mtime = str(getmtime(fn))
+	return md5(fn + '@' + mtime).hexdigest()
+
+# convert str to list separated by ,
+def alwaysList (data):
+	if isinstance(data, (str, unicode)):
+		ret = split (data, ',')
+	elif isinstance(data, list):
+		ret = []
+		for d in data:
+			if ',' in d: ret += split(d, ',')
+			else: ret.append (d)
+	else:
+		raise ValueError('Expect string or list to convert to list.')
+	return map (lambda x: x.strip(), ret)
+
+# sanitize output key
+def sanitizeOutKey (key):
+	parts = split(key, ':')
+	
+	if len(parts) == 1:
+		sanitizeOutKey.index += 1
+		return ('__out.%s__' % sanitizeOutKey.index, 'var', key)
+	
+	if len(parts) == 2:
+		if parts[0] in ['var', 'file', 'path', 'dir']:
+			sanitizeOutKey.index += 1
+			return ('__out.%s__' % sanitizeOutKey.index, parts[0], parts[1])
+		else:
+			return (parts[0], 'var', parts[1])
+	
+	if len(parts) == 3:
+		if parts[1] not in ['var', 'file', 'path', 'dir']:
+			raise ValueError ('Expect type: var, file or path instead of %s' % parts[1])
+	else:
+		raise ValueError ('You have extra colons in output key: %s' % key)
+	
+	return tuple (parts)
+sanitizeOutKey.index = 0
+
+# convert script file to executable or add extract shebang to cmd line
+def chmodX (thefile):
+	import os, stat
+	thefile = os.path.realpath(thefile)
+	ret = [thefile]
+	try:
+		st = os.stat (thefile)
+		os.chmod (thefile, st.st_mode | stat.S_IEXEC)
+	except Exception as e1:
+		try:
+			shebang = open (thefile).read().strip().split("\n")[0]
+			if not shebang.startswith("#!"):
+				raise Exception()
+			ret = shebang[2:].strip().split() + [thefile]
+		except Exception as e2:
+			raise Exception("Cannot change %s as executable or read the shebang from it:\n%s\n%s" % (thefile, e1, e2))
+	return ret
+
+def getLogger (level = 'info', name='PyPPL'):
+	import logging
+	ch = logging.StreamHandler()
+	ch.setFormatter (logging.Formatter("[%(asctime)-15s] %(message)s"))
+	logger = logging.getLogger (name)
+	logger.setLevel (getattr(logging, level.upper()))
+	logger.addHandler (ch)
+	return logger
+
+def padBoth (s, length, left, right = None):
+	if right is None: right = left
+	padlen = length - len (s)
+	if padlen%2 == 1:
+		llen = (padlen - 1)/2
+		rlen = (padlen + 1)/2
+	else:
+		llen = rlen = padlen/2
+	lstr = (left * (llen/len (left)))[:llen]
+	rstr = (right * (rlen/len(right)))[:rlen]
+	return lstr + s + rstr

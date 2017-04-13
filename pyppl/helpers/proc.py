@@ -1,14 +1,11 @@
-import logging, os, pickle, shlex, shutil, threading, sys
+import os, pickle, shlex, shutil, threading, sys
 import copy as pycopy
-from random import randint
-from glob import glob
 from time import sleep
-from traceback import extract_stack
+from random import randint
 from channel import channel
 from aggr import aggr
+from job import job as pjob
 import utils
-from md5 import md5
-from re import split
 from subprocess import Popen, PIPE
 from multiprocessing import cpu_count
 from Queue import Queue
@@ -22,8 +19,18 @@ class proc (object):
 
 	runners = {}
 	ids     = {}
+	alias   = {
+		'exdir':   'exportdir',
+		'exhow':   'exporthow',
+		'exow':    'exportow',
+		'errhow':  'errorhow',
+		'errntry': 'errorntry',
+		'lang':    'defaultSh',
+		'rc':      'retcodes',
+	}
 
 	def __init__ (self, tag = 'notag'):
+		
 		# computed props
 		self.__dict__['props']    = {}
 		# configs
@@ -36,7 +43,7 @@ class proc (object):
 		# where cache file and wdir located
 		self.config['tmpdir']     = os.path.abspath("./workdir")
 		self.config['forks']      = 1
-		self.config['cache']      = True
+		self.config['cache']      = True # False or 'export' or 'export+' (do True if failed do export)
 		self.config['retcodes']   = [0]
 		self.config['echo']       = False
 		self.config['runner']     = 'local'
@@ -53,16 +60,13 @@ class proc (object):
 		self.config['afterCmd']   = ""
 		self.config['workdir']    = ''
 		self.config['args']       = {}
-		self.config['channel']    = channel()
-		self.config['callback']   = None
-		self.config['callfront']  = None
+		self.config['channel']    = channel.create()
 		self.config['aggr']       = None
+		self.config['callback']   = None
 		# init props
 
 		# id of the process, actually it's the variable name of the process
 		self.props['id']         =  pid  
-		# whether the process is cached or not
-		#self.props['cached']     = True
 		# the tag
 		self.props['tag']        = tag
 
@@ -72,10 +76,6 @@ class proc (object):
 		self.props['depends']    = []
 		# the script
 		self.props['script']     = ""
-		# the script prepend to the script
-		self.props['preScript']  = ""
-		# the script append to the script
-		self.props['postScript'] = ""
 
 		self.props['input']      = {}
 		self.props['output']     = {}
@@ -95,37 +95,36 @@ class proc (object):
 		self.props['errorhow']   = self.config['errorhow']
 		self.props['errorntry']  = self.config['errorntry']
 		self.props['jobs']       = []
+		self.props['ncjobids']   = [] # non-cached job ids
 		self.props['defaultSh']  = self.config['defaultSh']
-		self.props['isValid']    = True
-		self.props['channel']    = channel()
+		self.props['channel']    = channel.create()
 		self.props['length']     = 0
 		self.props['sets']       = []
-		self.props['infiletime'] = 0
-		self.props['outfiles']   = []
-		self.props['infiles']    = []
 		self.props['procvars']   = {}
 		self.props['workdir']    = ''
-		self.props['logger']     = logging.getLogger(__name__)
+		self.props['logger']     = utils.getLogger('debug', self.__class__.__name__ + utils.randstr())
 		self.props['args']       = self.config['args']
-		self.props['callback']   = self.config['callback']
-		self.props['callfront']  = self.config['callfront']
 		self.props['indir']      = ''
 		self.props['outdir']     = ''
-		self.props['cached']     = False
 		self.props['aggr']       = self.config['aggr']
+		self.props['callback']   = self.config['callback']
 
 
 	def __getattr__ (self, name):
-		if not self.props.has_key(name) and not name.endswith ('Runner'):
-			raise AttributeError('Property %s not found in <proc>' % name)
+		if not self.props.has_key(name) and not proc.alias.has_key(name) and not name.endswith ('Runner'):
+			raise ValueError('Property %s not found in pyppl.proc' % name)
+		if proc.alias.has_key(name): name = proc.alias[name]
 		return self.props[name]
 
 	def __setattr__ (self, name, value):
-		if not self.config.has_key(name) and not name.endswith ('Runner'):
-			raise AttributeError('Cannot set %s for <proc>' % name)
+		if not self.config.has_key(name) and not proc.alias.has_key(name) and not name.endswith ('Runner'):
+			raise ValueError('Cannot set property "%s" for <proc>' % name)
+		if proc.alias.has_key(name): name = proc.alias[name]
+		
 		self.config[name] = value
 		self.props [name] = value
-		self.props['sets'].append(name)
+		self.sets.append(name)
+		
 		if (name == 'output' or name == 'input') and isinstance(value, list) and isinstance(value[0], tuple):
 			self.config[name] = OrderedDict(value)
 			self.props [name] = OrderedDict(value)
@@ -135,33 +134,34 @@ class proc (object):
 				self.props['depends'] = [self.depends]
 			elif isinstance(self.depends, aggr):
 				self.props['depends'] = self.depends.ends
-			for depend in self.props['depends']:
-				depend.props['nexts'].append (self)
+			for depend in self.depends:
+				depend.nexts.append (self)
 	
 	def setLogger (self, logger):
 		self.props['logger'] = logger
 		
 	def log (self, msg, level="info", flag=None):
-		flag  = level.upper().rjust(7) if flag is None else flag
+		if flag is None: flag = level
+		flag = flag.upper().rjust(7)
 		flag  = "[%s]" % flag
 		title = "%s%s.%s:" % (("%s -> " % self.aggr if self.aggr else ""), self.id, self.tag)
 		func  = getattr(self.logger, level)
 		func ("%s %s %s" % (flag, title, msg))
 
 	def copy (self, tag=None, newid=None):
-		newproc = pycopy.deepcopy (self)
-		if tag is not None:
-			newproc.tag = tag
-		
+		newproc = pycopy.copy (self)
+		if tag is not None:	newproc.tag = tag
 		pid                  = utils.varname('\w+\.' + self.copy.__name__, 3)
 		newproc.props['pid'] = pid if newid is None else newid
 		return newproc
 
 	def _suffix (self):
-		config = pycopy.copy(self.config)
-		if config.has_key('workdir'):
-			del config['workdir']
-
+		config = { key:val for key, val in self.config.iteritems() if key not in ['workdir'] }
+		
+		if config.has_key ('callback'):
+			config['callback'] = utils.funcSig(config['callback'])
+			
+		# proc is not picklable
 		if config.has_key('depends'):
 			depends = config['depends']
 			pickable_depends = []
@@ -172,116 +172,119 @@ class proc (object):
 			for depend in depends:
 				pickable_depends.append(depend.id + '.' + depend.tag)
 			config['depends'] = pickable_depends
-
-		if config.has_key('nexts'):
-			nexts = config['nexts']
-			pickable_nexts = []
-			if isinstance(nexts, proc):
-				nexts = [nexts]
-			for n in nexts:
-				pickable_nexts.append(ndepend.id + '.' + n.tag)
-			config['nexts'] = pickable_nexts
-				
-		if config.has_key ('callback'):
-			config['callback'] = utils.funcSig(config['callback'])
-	
-		if config.has_key ('callfront'):
-			config['callfront'] = utils.funcSig(config['callfront'])
 		
+		# lambda not pickable
 		if config.has_key ('input') and isinstance(config['input'], dict):
 			config['input'] = pycopy.deepcopy(config['input'])
 			for key, val in config['input'].iteritems():
 				config['input'][key] = utils.funcSig(val) if callable(val) else val
-		
-		signature = pickle.dumps(config) + '@' + pickle.dumps(sorted(sys.argv))
+
+		signature = pickle.dumps(config)
 		return utils.uid(signature)
 
 	def _tidyBeforeRun (self):
 		self._buildProps ()
-		self.log (self.workdir, 'info', 'RUNNING')
 		self._buildInput ()
 		self._buildOutput ()
 		self._buildScript ()
 
 	def _tidyAfterRun (self):
-		if self._checkStatus ():
-			self._export ()
+		sucJids = self._checkStatus ()
+		if sucJids == False: return
+		self._doCache (sucJids)
+		if len (sucJids) != self.length:
+			log ('Export and callback will not be performed until all jobs run successfully.', 'warning')
+		else:
+			self._export ()		
 			if callable (self.callback):
-				self.log ('Calling callback ...', 'debug')
-				#self.logger.info ('[  DEBUG] %s%s.%s: Calling callback ...' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag))
-				self.callback (self)			
-			self._doCache ()
-
-	def _init (self, config):
-		self._readConfig (config)
-		self.props['cached']   = self._isCached()
-		if self.cached: return False
-		if callable (self.callfront):
-			self.log ('Calling callfront ...', 'debug')
-			#self.logger.info ('[  DEBUG] %s%s.%s: Calling callfront ...' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag))
-			self.callfront (self)		
-		self.props['infiles']  = []
-		self.props['outfiles'] = []
-		self.props['jobs']     = []
-		'''
-		for n in self.nexts: # if i am not cached, then none of depends
-			self.logger.debug ('[  DEBUG] %s%s.%s: I`m not cached, so my dependent %s have to rerun.' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, n.id))
-			n.cache = False
-		'''
-		self._tidyBeforeRun ()
-		return True
+				self.log('Calling callback ...', 'debug')
+				self.callback (self)
 
 	def run (self, config = {}):
-		if not self._init(config):
-			self.log ('Calling callfront ...', 'debug')
-			#self.logger.info ('[ CACHED] %s%s.%s: %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, self.workdir))
-			#self._tidyAfterRun ()
-			return
-
+		self.logger.info ('[  START] ' + utils.padBoth(' ' + self.id + '.' + self.tag + ' ', 70, '>', '<'))
+		self._readConfig (config)
+		self._tidyBeforeRun ()
 		if self._runCmd('beforeCmd') != 0:
-			raise Exception ('Failed to run <beforeCmd>')
-		self._runJobs()
-		self._runCmd('afterCmd')
+			raise Exception ('Failed to run beforeCmd: %s' % self.beforeCmd)
+		if not self._isCached():
+			self.log (self.workdir, 'info', 'RUNNING')
+			self._runJobs()
 		if self._runCmd('afterCmd') != 0:
-			raise Exception ('Failed to run <afterCmd>')
+			raise Exception ('Failed to run afterCmd: %s' % self.afterCmd)
 		self._tidyAfterRun ()
 
-	def _checkStatus (self): # whether return values allowed or outfiles generated
-		for i in range(self.length):
-			rcfile = os.path.join (self.workdir, 'scripts', 'script.%s.rc' % i)
-			rc = 0
-			with open (rcfile, 'r') as f:
-				rc = f.read().strip()
-			rc = -1 if rc == '' else int(rc)
-			if rc not in self.retcodes:
-				if not self.echo:
-					errfile = os.path.join (self.workdir, 'scripts', 'script.%s.stderr' % i)
-					errmsgs = ['[  ERROR] !  ' + line.strip() for line in open(errfile)]
-					if not errmsgs: errmsgs = ['[  ERROR] ! <EMPTY STDERR>']
-					self.log('See STDERR below', 'error')
-					#self.logger.info ('[  ERROR] %s%s.%s: See STDERR below.' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag))
-					for errmsg in errmsgs:
-						self.logger.error (errmsg)
-				raise Exception ('[#%s]: Return code is %s, but %s expected.' % (i, rc, self.retcodes))
+	# False: totally failed
+	# [1,2,3,...]: successful, successful job indices
+	def _checkStatus (self):
+		ret = []
+		for i in self.input['#']:
+			job   = self.jobs[i]
+			job.outfileGenerated()
+			rc    = job.rc ()
+			if rc in self.retcodes:
+				ret.append (i)
+				continue
 
-		for of in self.outfiles:
-			if not os.path.exists (of):
-				raise Exception ('Output file %s not generated.' % (of))
-		return True
+			if not self.echo: # if echo is on, errors are already printed
+				self.log('See STDERR below for job#%s' % i, 'error')
+				errmsgs = []
+				if os.path.exists (job.errfile):
+					errmsgs = ['[  ERROR] !  ' + line.strip() for line in open(job.errfile)]					
+				if not errmsgs: errmsgs = ['[  ERROR] ! <EMPTY STDERR>']
+				for errmsg in errmsgs: self.logger.error(errmsg)
+			raise Exception ('[Job#%s]: Return code is %s, but %s expected.' % (i, rc, self.retcodes))
 
+		if not ret: return False
+		return ret		
+	
+	# create link in indir and set input
+	def _prepInfile (self, infile, key, index, multi=False):
+		if not self.input.has_key(key): self.input[key] = [''] * self.length
+		if not self.input.has_key(key + '.bn'):  self.input[key + '.bn']  = [''] * self.length
+		if not self.input.has_key(key + '.fn'):  self.input[key + '.fn']  = [''] * self.length
+		if not self.input.has_key(key + '.ext'): self.input[key + '.ext'] = [''] * self.length
+		
+		job     = self.jobs[index]
+		srcfile = os.path.abspath(infile)
+		bn      = os.path.basename(srcfile)
+		infile  = os.path.join (self.indir, bn)
+		fn, ext = os.path.splitext (os.path.basename(infile))
+		if not os.path.exists (infile):
+			os.symlink (srcfile, infile)
+		else:
+			log ('Input file already exists: %s' % infile, 'warning')
+		
+		if multi:
+			if not isinstance(self.input[key][index], list):
+				self.input[key][index]          = [infile]
+				self.input[key + '.bn'][index]  = [bn]
+				self.input[key + '.fn'][index]  = [fn]
+				self.input[key + '.ext'][index] = [ext]
+			else:
+				self.input[key][index].append(infile)
+				self.input[key + '.bn'][index].append(bn)
+				self.input[key + '.fn'][index].append(fn)
+				self.input[key + '.ext'][index].append(ext)
+			job.input['files'].append(infile)
+		else:
+			self.input[key][index]          = infile
+			self.input[key + '.bn'][index]  = bn
+			self.input[key + '.fn'][index]  = fn
+			self.input[key + '.ext'][index] = ext
+			job.input['file'].append(infile)
+				
 	def _buildProps (self):
 		#print getsource(self.input.values()[0])
 		if isinstance (self.retcodes, int):
 			self.props['retcodes'] = [self.retcodes]
 		
 		if isinstance (self.retcodes, str):
-			self.props['retcodes'] = [int(i) for i in split(r'\s*,\s*', self.retcodes)]
+			self.props['retcodes'] = [int(i) for i in utils.split(self.retcodes, ',')]
 
 		key = self.id + '.' + self.tag
 		if key in proc.ids and proc.ids[key] != self:
 			raise Exception ('A proc with id %s and tag %s already exists.' % (self.id, self.tag))
-		else:
-			proc.ids[key] = self
+		proc.ids[key] = self
 
 		if not 'workdir' in self.sets and not self.workdir:
 			self.props['workdir'] = os.path.join(self.tmpdir, "PyPPL.%s.%s.%s" % (self.id, self.tag, self._suffix()))
@@ -306,117 +309,94 @@ class proc (object):
 	def _buildInput (self):
 		# if config.input is list, build channel from depends
 		# else read from config.input
-		input0 = self.config['input']
-		if isinstance(input0, list):
-			input0 = ', '.join(input0)
-		if isinstance(input0, str):
-			cs = channel.fromChannels(*[d.channel for d in self.depends]) if self.depends else channel.fromArgv(None)
-			input0 = {input0: cs}
+		input    = self.config['input']
 		
-		if not isinstance(input0, dict):
-			raise Exception('Expect <list>, <str> or <dict> as input.')
-
-		self.props['input'] = {}
-		for key, val in input0.iteritems():
-			if callable (val):
-				#print getsource(val)
-				val = val (*[d.channel.copy() for d in self.depends]) if self.depends else val (channel.fromArgv(None))
-			if not isinstance (val, channel):
-				val = channel.create(val)
-
-			keys = split(r'\s*,\s*', key)
-			if self.length == 0:
-				self.props['length'] = val.length()
-			elif self.length != val.length():
-				raise Exception ('Expect same lengths for input channels, but got %s and %s (keys: %s).' % (self.length, val.length(), keys))
-			vals = val.split()
-			if len(keys) > len(vals):
-				raise Exception('%s%s.%s: Not enough data for input variables.\nVarialbes: %s\nData: %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, keys, vals))
+		argvchan = channel.fromArgv()
+		depdchan = channel.fromChannels (*[d.channel for d in self.depends])
+		if not isinstance (input, dict):
+			input = ','.join(utils.alwaysList (input))
+			input = {input: depdchan if self.depends else argvchan}
+		
+		# expand to one key-channel pairs
+		inputs = {}
+		for keys, vals in input.iteritems():
+			keys   = utils.split(keys, ',')
+			if callable (vals):
+				vals  = vals (depdchan if self.depends else argv)
+				vals  = vals.split()
+			elif isinstance (vals, (str, unicode)): # only for files: "/a/b/*.txt, /a/c/*.txt"
+				vals  = utils.split(vals, ',')
+			elif isinstance (vals, channel):
+				vals  = vals.split()
+			elif isinstance (vals, list):
+				vals  = channel.create(vals)
+				vals  = vals.split()
+			else:
+				raise ValueError ("%s%s.%s: Unexpected values for input. Expect dict, list, str, channel, callable." % (
+					("%s -> " % self.aggr if self.aggr else ""),
+					 self.id, self.tag))
 			
-			self.props['input']['#'] = range(self.length)
-			for i, k in enumerate(keys):
-				vv = vals[i].toList()
-				if k.endswith (':files') or k.endswith (':paths'):
-					k = k[:-6]
-					for j, vs in enumerate(vv):
-						if not isinstance(vs, list):
-							vv[j] = glob(vs) # allow wildcard
-						for m, v in enumerate(vv[j]):
-							if not os.path.exists (v):
-								raise Exception('Input file %s does not exist.' % v)
-							v = os.path.abspath(v)
-							vv[j][m] = os.path.join(self.indir, os.path.basename(v))
-							if v not in self.infiles: # doesn't need to do repeatedly
-								self.props['infiles'].append (v)
-								self.props['infiletime'] = max (self.infiletime, os.path.getmtime(v))
-								
-								if os.path.islink(vv[j][m]):
-									self.log('Overwriting existing input file (link) %s' % vv[j][m], 'warning')
-									#self.logger.info ('[WARNING] %s%s.%s: Overwriting existing input file (link) %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, vv[j][m]))
-									os.remove (vv[j][m])
-								if os.path.exists (vv[j][m]):
-									self.log('Overwriting existing file/dir %s' % vv[j][m], 'warning')
-									#self.logger.info ('[WARNING] %s%s.%s: Overwriting existing file/dir %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, vv[j][m]))
-									if os.path.isfile(vv[j][m]):
-										os.remove (vv[j][m])
-									else:
-										shutil.rmtree(vv[j][m])
-								os.symlink (v, vv[j][m])	
-					self.props['input'][k] = vv
-					self.props['input'][k + '.bn']  = [map (lambda x: os.path.basename(x), x) for x in vv]
-					self.props['input'][k + '.fn']  = [map (lambda x: os.path.basename(os.path.splitext(x)[0]), x) for x in vv]
-					self.props['input'][k + '.ext'] = [map (lambda x: os.path.splitext(x)[1], x) for x in vv]
-				elif k.endswith (':file') or k.endswith(':path'):
-					k = k[:-5]
-					for j, v in enumerate(vv):
-						#(v, ) = v
-						if not os.path.exists (v):
-							raise Exception('Input file %s does not exist.' % v)
-						v = os.path.abspath(v)
-						vv[j] = os.path.join(self.indir, os.path.basename(v))
-						if v not in self.infiles: # doesn't need to do repeatedly
-							self.props['infiles'].append (v)
-							self.props['infiletime'] = max (self.infiletime, os.path.getmtime(v))
-							
-							if os.path.islink(vv[j]):
-								self.log('Overwriting existing input file (link) %s' % vv[j], 'warning')
-								#self.logger.info ('[WARNING] %s%s.%s: Overwriting existing input file (link) %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, vv[j]))
-								os.remove (vv[j])
-							if os.path.exists (vv[j]):
-								self.log('Overwriting existing file/dir %s' % vv[j], 'warning')
-								#self.logger.info ('[WARNING] %s%s.%s: Overwriting existing file/dir %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, vv[j]))
-								if os.path.isfile(vv[j]):
-									os.remove (vv[j])
-								else:
-									shutil.rmtree(vv[j])
-							os.symlink (v, vv[j])
-					self.props['input'][k] = vv
-					self.props['input'][k + '.bn']  = map (lambda x: os.path.basename(x), vv)
-					self.props['input'][k + '.fn']  = map (lambda x: os.path.basename(os.path.splitext(x)[0]), vv)
-					self.props['input'][k + '.ext'] = map (lambda x: os.path.splitext(x)[1], vv)
-					
-				else:
-					if k.endswith(":var"): k = k[:-4]
-					self.props['input'][k] = vv
+			width = len (vals)
+			if len (keys) > width:
+				raise ValueError ('%s%s.%s: Not enough data for input variables.\nVarialbes: %s\nData: %s' % (
+					("%s -> " % self.aggr if self.aggr else ""),
+					 self.id, self.tag,
+					 keys, vals))
+			for i in range(width):
+				key = keys[i]
+				toExpand = (key.endswith(':files') or key.endswith(':paths')) and isinstance(vals[i], (str, unicode))
+				chan = channel.fromPath(vals[i]) if toExpand else vals[i]
+				if self.length == 0: self.props['length'] = chan.length()
+				if self.length != chan.length():
+					raise ValueError ('%s%s.%s: Expect same lengths for input channels, but got %s and %s (keys: %s).' % (
+					("%s -> " % self.aggr if self.aggr else ""),
+					 self.id, self.tag,
+					self.length, chan.length(), key))
+				inputs[key] = chan
+			
+		self.input = {'#': []}
+		for i in range (self.length):
+			self.jobs.append (pjob (i, self.workdir))
+			self.input['#'].append(i)
+			self.ncjobids.append (i)
+			
+		for keyinfo, chan in inputs.iteritems():
+			if keyinfo.endswith (':files') or keyinfo.endswith (':paths'):
+				key = keyinfo[:-6]				
+				# [([f1,f2],), ([f3,f4],)] => [[f1,f2], [f3,f4]]
+				for i, ch in enumerate(chan.toList()):
+					for infile in ch: self._prepInfile (infile, key, i, True)
+				
+			elif keyinfo.endswith (':file') or keyinfo.endswith (':path'):
+				key = keyinfo[:-5]
+				for i, ch in enumerate(chan.toList()):
+					self._prepInfile (ch, key, i)
+			else: # var
+				if not keyinfo.endswith(':var'): keyinfo = keyinfo + ':var'
+				key = keyinfo[:-4]
+				self.input[key] = []
+				for i, ch in enumerate(chan.toList()):
+					job = self.jobs[i]
+					job.input['var'].append (ch)
+					self.input[key].append (ch)
 
 		ridx = randint(0, self.length-1)
 		for key, val in self.input.iteritems():
 			self.log ('INPUT [%s/%s]: %s => %s' % (ridx, self.length-1, key, val[ridx]), 'debug')
-			#self.logger.debug ('[  DEBUG] %s%s.%s INPUT [%s/%s]: %s => %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, ridx, self.length-1, key, val[ridx]))
 
 		# also add proc.props, mostly scalar values
+		alias = {val:key for key, val in proc.alias.iteritems()}
 		for prop, val in self.props.iteritems():
 			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'runner', 'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow', 'args', 'indir', 'outdir', 'length']: continue
 			if prop == 'args':
 				for k, v in val.iteritems():
 					self.props['procvars']['proc.args.' + k] = v
 					self.log('PROC_ARGS: %s => %s' % (k, v), 'debug')
-					#self.logger.debug ('[  DEBUG] %s%s.%s PROC_ARGS: %s => %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, k, v))
 			else:
+				if alias.has_key (prop): prop = alias[prop]
+				else: self.log ('PROC_VARS: %s => %s' % (prop, val), 'debug')
 				self.props['procvars']['proc.' + prop] = val
-				self.log ('PROC_VARS: %s => %s' % (prop, val), 'debug')
-				#self.logger.debug ('[  DEBUG] %s%s.%s PROC_VARS: %s => %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, prop, val))
-
+				
 	"""
 	Output could be:
 	1. list: ['output:var:{input}', 'outfile:file:{infile.bn}.txt']
@@ -433,139 +413,66 @@ class proc (object):
 
 		output = self.config['output']
 		
-		if isinstance(output, list):
-			output = ', '.join(output)
-		if isinstance(output, str):
-			output = {output: self.props['channel']}
-
-		if not isinstance(output, dict):
-			raise Exception('Expect <list>, <str> or <dict> as output.')
-		
-		def sanitizeKey (key):
-			its = [it.strip() for it in utils.split(key, ':')]
+		if not isinstance (output, dict):
+			output = ','.join(utils.alwaysList (output))
+		else:
+			output = ','.join([key + ':' + val for key, val in output.iteritems()])
 			
-			if len(its) == 1:
-				its = ['__out%s__' % sanitizeKey.out_idx, 'var', its[0]]
-				sanitizeKey.out_idx += 1
-			elif len(its) == 2:
-				if its[0] in ['var', 'file', 'path']:
-					its = ['__out%s__' % sanitizeKey.out_idx, its[0], its[1]]
-					sanitizeKey.out_idx += 1
-				else:
-					its = [its[0], 'var', its[1]]
-			elif its[1] not in ['var', 'file', 'path']:
-				raise Exception ('Expect type: var, file or path instead of %s' % items[1])
-			return tuple (its)
-		sanitizeKey.out_idx = 1
-		
 		self.props['output'] = {}
-		for key, val in output.iteritems():
-			keys    = utils.split(key, ',')
+		for key in utils.split(output, ','):
+			(oname, otype, oexp) = utils.sanitizeOutKey(key)
+			if otype in ['file', 'path', 'dir']: oexp = os.path.join (self.outdir, oexp)
+			self.props['output'][oname] = []
 			
-			for k in keys:
-				(oname, otype, oexp) = sanitizeKey(k)
-				if self.input.has_key(oname):
-					raise Exception ('Ouput variable name %s is already taken by input' % oname)
-
-				if otype in ['file', 'path']:
-					oexp = os.path.join (self.outdir, oexp)
-				# build channels
-				chv = []
-				for i in range(self.length):
-					data = {}
-					for ink, inv in self.input.iteritems():
-						data[ink] = inv[i]
-					data.update (self.procvars)
-					chv.append (utils.format (oexp, data))
-				if otype in ['file', 'path']:
-					self.props['outfiles'] += chv
-				chv = channel.create (chv)
-				try:
-					val.merge(chv)
-				except Exception as e:
-					raise Exception('%s.%s: %s\nChannel 1: %s\nChannel 2: %s' % (self.id, self.tag, e, val[:3], chv[:3]))
-				if val != self.channel:
-					self.props['channel'].merge (chv)
-				self.props['output'][oname] = chv.toList()
+			for i in self.input['#']:
+				data = {key:val[i] for key, val in self.input.iteritems()}
+				data.update (self.procvars)
+				val  = utils.format(oexp, data)
+				if otype == 'dir' and not os.path.exists (val):
+					os.makedirs (val)
+				self.props['output'][oname].append (val)
+				self.props['jobs'][i].output['var' if otype == 'var' else 'file'].append(val)
+			self.props['channel'].merge(self.props['output'][oname])
+		
+		utils.sanitizeOutKey.index = 0
 		
 		ridx = randint(0, self.length-1)
 		for key, val in self.output.iteritems():
 			self.log ('OUTPUT [%s/%s]: %s => %s' % (ridx, self.length-1, key, val[ridx]), 'debug')
-			#self.logger.debug ('[  DEBUG] %s%s.%s OUTPUT [%s/%s]: %s => %s' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, ridx, self.length-1, key, val[ridx]))
 
 	def _buildScript (self): # make self.jobs
-		if not self.script:
-			#raise Exception ('Please specify script to run')
-			self.log ('No script specified', 'warning')
-			#self.logger.warning ('[WARNING] %s%s.%s No script specified' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag))
+		if not self.script:	self.log ('No script specified', 'warning')
 		
 		scriptdir = os.path.join (self.workdir, 'scripts')
+		script    = self.script.strip()
 		
-		script = self.script.strip()
 		if script.startswith ('template:'):
 			tplfile = script[9:].strip()
 			if not os.path.exists (tplfile):
-				raise Exception ('Script template file %s does not exist.' % tplfile)
-			with open (tplfile, 'r') as f:
-				script = f.read().strip()
+				raise ValueError ('Script template file "%s" does not exist.' % tplfile)
+			script = open(tplfile).read().strip()
 		
 		if not script.startswith ("#!"):
 			script = "#!/usr/bin/env " + self.defaultSh + "\n\n" + script
 
-		
-		for i in range(self.length):
-			data = {}
-			idx  = self.input['#'][i]
-			for k,v in self.input.iteritems():
-				data[k] = v[idx]
-			for k,v in self.output.iteritems():
-				data[k] = v[idx]
+		for index in self.input['#']:
+			data    = {key:val[index] for key, val in self.input.iteritems()}
+			data.update({key:val[index] for key, val in self.output.iteritems()})
 			data.update(self.procvars)
-			script1 = utils.format (script, data)
+			jscript = utils.format (script, data)
 		
-			scriptfile = os.path.join (scriptdir, 'script.%s' % idx)
-			with open(scriptfile, 'w') as f:
-				f.write (script1)
-
-			self.jobs.append (scriptfile)
+			scriptfile = os.path.join (scriptdir, 'script.%s' % index)
+			open (scriptfile, 'w').write (jscript)
 	
 	def _export (self):
 		if not self.exportdir: return
 		if not os.path.exists(self.exportdir):
 			os.makedirs (self.exportdir)
-		
-		for outfile in self.outfiles:
-			bn = os.path.basename (outfile)
-			target = os.path.join (self.exportdir, bn)
-
-			if os.path.exists (target):
-				if self.exportow == True:
-					if os.path.isdir (target):
-						shutil.rmtree (target)
-					else:
-						os.remove (target)
-				else:
-					self.log('%s (target exists, skipped)' % target, 'warning')
-					#self.logger.info ('[ EXPORT] %s%s.%s: %s (target exists, skipped)' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, target))
-			
-			if not os.path.exists (target):
-				self.log ('%s (%s)' % (target, self.exporthow), 'info')
-				#self.logger.info ('[ EXPORT] %s%s.%s: %s (%s)' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, target, self.exporthow))
-				if self.exporthow == 'copy':
-					if os.path.isdir (outfile):
-						shutil.copytree (outfile, target)
-					else:
-						shutil.copyfile (outfile, target)
-				elif self.exporthow == 'move':
-					shutil.move (outfile, target)
-					os.symlink(target, outfile) # make sure dependent proc can run
-				elif self.exporthow == 'symlink':
-					os.symlink (outfile, target)
+		for job in self.jobs:
+			job.export (self.exportdir, self.exporthow, self.exportow, self.log)
 
 	def _readConfig (self, config):
-		conf = pycopy.copy (config)
-		for s in self.sets:
-			if conf.has_key(s): del conf[s]
+		conf = { key:val for key, val in config.iteritems() if key not in self.sets }
 		self.config.update (conf)
 
 		for key, val in conf.iteritems():
@@ -577,80 +484,61 @@ class proc (object):
 			self._suffix()
 		)
 
-	def _doCache (self):
+	def _doCache (self, jids):
 		cachefile = os.path.join (self.tmpdir, self.cachefile)
-		with open (cachefile, 'w') as f:
-			props = pycopy.copy(self.props)
-			if props.has_key('logger'):
-				del props['logger']
-			if props.has_key('depends'):
-				del props['depends']
-			if props.has_key('nexts'):
-				del props['nexts']
-			if props.has_key ('callback'):
-				del props['callback']
-			if props.has_key ('callfront'):
-				del props['callfront']
-			if props.has_key ('input'):
-				del props['input']
-			pickle.dump(props, f)
+		jobsigs   = [None] * self.length
+		for i in jids:
+			jobsigs[i] = self.jobs[i].signature()
+		with open(cachefile, 'w') as f:
+			pickle.dump(jobsigs, f)
 	
 	def _isCached (self):
-		
-		if not self.cache:
+		if self.cache == False:
 			self.log ('Not cached, because proc.cache = False', 'debug')
-			#self.logger.debug ('[  DEBUG] %s%s.%s: Not cached, because proc.cache = False.' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag))
 			return False
-
-		cachefile = os.path.join (self.tmpdir, self.cachefile)
-		if not os.path.exists(cachefile):
-			self.log ('Not cached, cache file %s not exists.' % cachefile, 'debug')
-			#self.logger.debug ('[  DEBUG] %s%s.%s: Not cached, cache file %s not exists.' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, cachefile))
+	
+		sigCachedJids = []
+		exCachedJids  = []
+		if self.cache in [True, 'export+']:
+			cachefile = os.path.join (self.tmpdir, self.cachefile)
+			if not os.path.exists(cachefile):
+				self.log ('Not cached, cache file %s not exists.' % cachefile, 'debug')
+				return False
+			jobsigs       = pickle.load(open(cachefile))
+			sigCachedJids = [i for i in self.input['#'] if jobsigs[i] == self.jobs[i].signature()]
+			
+		elif self.cache in ['export', 'export+']:
+			exCachedJids  = [i for i in self.input['#'] if self.jobs[i].exportCached(self.exportdir, self.exporthow, self.log)]
+			
+		else:
+			raise ValueError ('Cache option expects True/False/"export"/"export+"')
+		
+		cachedJids = [i for i in sigCachedJids if i not in exCachedJids] + exCachedJids
+		if not cachedJids:
+			self.log ('Not cached, none of the jobs are cached.', 'debug')
 			return False
 		
-		with open(cachefile, 'r') as f:
-			props = pickle.load(f)
-		self.props.update(props)
+		if len (cachedJids) < self.length:
+			self.log ('Partly cached, only run non-cached jobs.', 'debug')
+			self.props['ncjobids'] = [i for i in self.input['#'] if i not in cachedJids]
+			self.log ('Truely cached jobs: %s' % sigCachedJids, 'debug')
+			self.log ('Export cached jobs: %s' % exCachedJids, 'debug')
+			self.log ('Jobs to be running: %s' % self.ncjobids, 'debug')
+			return False
 		
-		# check input files, outputfiles
-		for infile in self.infiles:
-			if not os.path.exists(infile):
-				self.log ('Not cached, input file %s not exists.' % infile, 'debug')
-				#self.logger.debug ('[  DEBUG] %s%s.%s: Not cached, input file %s not exists.' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, infile))
-				return False
-			if os.path.getmtime(infile) > self.infiletime and self.infiletime != 0:
-				self.log ('Not cached, input file %s is newer.' % infile, 'debug')				
-				#self.logger.debug ('[  DEBUG] %s%s.%s: Not cached, input file %s is newer.' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, infile))
-				return False
-			inlink =  os.path.join(self.indir, os.path.basename (infile))
-			if not os.path.islink (inlink):
-				self.log ('Not cached, input file link %s not exists.' % inlink, 'debug')				
-				#self.logger.debug ('[  DEBUG] %s%s.%s: Not cached, input file link %s not exists.' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, inlink))
-				return False
-		
-		for outfile in self.outfiles:
-			if not os.path.exists(outfile):
-				self.log ('Not cached, output file %s not exists.' % outfile, 'debug')				
-				#self.logger.debug ('[  DEBUG] %s%s.%s: Not cached, output file %s not exists' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, outfile))
-				return False
-		
-		for d in self.depends:
-			if not d.cached:
-				self.log ('Not cached, because my dependent %s.%s is not cached.' % (d.id, d.tag), 'debug')				
-				#self.logger.debug ('[  DEBUG] %s%s.%s: Not cached, because my dependent %s is not cached.' % (("[AGGR: %s] " % self.aggr if self.aggr else ""), self.id, self.tag, d.id))
-				return False
-
+		self.log ('Skip running jobs.', 'info', 'CACHED')
 		return True
 
 	def _runCmd (self, key):
-		if not self.props[key]:
-			return 0
-		p = Popen (shlex.split(utils.format(self.props[key], self.procvars)), stdin=PIPE, stderr=PIPE, stdout=PIPE)
+		if not self.props[key]:	return 0
+		cmd = utils.format(self.props[key], self.procvars)
+		self.log ('Running <%s>: %s' % (key, cmd), 'info')
+		p = Popen (shlex.split(cmd), stdin=PIPE, stderr=PIPE, stdout=PIPE)
 		if self.echo:
 			for line in iter(p.stdout.readline, ''):
-				sys.stdout.write (line)
+				self.logger.info ('[ STDOUT] - ' + line.rstrip("\n"))
 		for line in iter(p.stderr.readline, ''):
-			sys.stderr.write (line)
+			self.logger.error ('[  ERROR] ! ' + line.rstrip("\n"))
 		return p.wait()
 
 	def _runJobs (self):
@@ -658,21 +546,23 @@ class proc (object):
 		def sworker (q):
 			while True:
 				q.get().submit()
+				sleep(.1)
 				q.task_done()
 		
 		# run and wait jobs to finish
 		def rworker(q):
 			while True:
 				q.get().wait ()
+				sleep(.1)
 				q.task_done()
 		
 		sq = Queue()
 		rq = Queue()
-		for job in self.jobs:
-			rjob = proc.runners[self.runner] (job, self.props)
+		for i in self.ncjobids:
+			rjob = proc.runners[self.runner] (self.jobs[i], self.props)
 			sq.put (rjob)
 			rq.put (rjob)
-			
+
 		# submit jobs
 		nojobs2submit = min (self.forks, len(self.jobs), int(cpu_count()/2))
 		for i in range (nojobs2submit):

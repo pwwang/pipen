@@ -1,10 +1,21 @@
 import logging, os, sys, random, json, copy
 from helpers import *
 from runners import *
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 			
 class pyppl (object):
 
+	tips = [
+		"You can find the stdout in <workdir>/scripts/script.<index>.stdout",
+		"You can find the stderr in <workdir>/scripts/script.<index>.stderr",
+		"You can find the script in <workdir>/scripts/script.<index>",
+		"Check documentation at: https://github.com/pwwang/pyppl/blob/master/docs/DOCS.md",
+		"You cannot have two processes with same id(variable name) and tag",
+		"beforeCmd and afterCmd only run locally",
+		"If 'workdir' is not set for a process, it will be PyPPL.<proc-id>.<proc-tag>.<uuid> under default <tmpdir>",
+		"The default <tmpdir> will be './workdir'",
+	]
+	
 	def __init__(self, config = {}, cfile = None):
 		
 		cfile    = os.path.join (os.path.expanduser('~'), ".pyppl") if cfile is None else cfile
@@ -18,30 +29,15 @@ class pyppl (object):
 		if config.has_key('loglevel'):
 			loglevel = config['loglevel']
 			del config['loglevel'] 
-		ch = logging.StreamHandler()
-		ch.setFormatter (logging.Formatter("[%(asctime)-15s] %(message)s"))
-		logger = logging.getLogger ('PyPPL')
-		logger.setLevel (getattr(logging, loglevel.upper()))
-		logger.addHandler (ch)
-
-		tips = [
-			"You can find the stdout in <workdir>/scripts/script.<index>.stdout",
-			"You can find the stderr in <workdir>/scripts/script.<index>.stderr",
-			"You can find the script in <workdir>/scripts/script.<index>",
-			"Check documentation at: https://github.com/pwwang/pyppl/blob/master/docs/DOCS.md",
-			"You cannot have two processes with same id(variable name) and tag",
-			"beforeCmd and afterCmd only run locally",
-			"If 'workdir' is not set for a process, it will be PyPPL.<proc-id>.<proc-tag>.<uuid> under default <tmpdir>"
-		]
-		logger.info ('[  PyPPL] Version: %s' % (VERSION))
-		logger.info ('[   TIPS] %s' % (random.choice(tips)))
+		suffix  = utils.randstr ()
+		self.logger = utils.getLogger (loglevel, self.__class__.__name__ + suffix)
+		self.logger.info ('[  PyPPL] Version: %s' % (VERSION))
+		self.logger.info ('[   TIPS] %s' % (random.choice(pyppl.tips)))
 		if os.path.exists (cfile):
-			logger.info ('[ CONFIG] Read from %s' % cfile)
+			self.logger.info ('[ CONFIG] Read from %s' % cfile)
 			
-		self.logger = logger
 		self.config = config
 		self.heads  = []
-		#print config, 'config--------'
 
 	def starts (self, *arg):
 		for pa in arg:
@@ -61,11 +57,9 @@ class pyppl (object):
 	def run (self, profile = 'local'):
 		config = {}
 		if self.config.has_key('proc'):
-			#config.update(self.config['proc'])
 			utils.dictUpdate(config, self.config['proc'])
 		
 		if self.config.has_key(profile):
-			#config.update(self.config[profile])
 			utils.dictUpdate(config, self.config[profile])
 		
 		if not config.has_key('runner'):
@@ -75,17 +69,13 @@ class pyppl (object):
 		finished = []
 		
 		while next2run:
-			#print [x.id for x in next2run]
 			next2run2 = []
 			for p in next2run:
-				#print hex(id(p.nexts[0])), p.nexts[0].id, 'changed'
-				#print config, 'xxxxxxxxxxxxxxxxxxxxx'
 				p.setLogger(self.logger)
 				p.run (config)
 				finished.append (p)
 				next2run2 += p.props['nexts']
 			next2run = [n for n in list(set(next2run2)) if n not in finished and all(x in finished for x in n.props['depends'])]
-			#next2run = list(set(next2run2)) # unique
 		self.logger.info ('[   DONE]')
 		
 

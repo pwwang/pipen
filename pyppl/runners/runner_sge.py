@@ -6,10 +6,10 @@ import os, shlex, logging, sys, copy
 
 class runner_sge (runner_local):
 
-	def __init__ (self, script, config = {}):
-		super(runner_sge, self).__init__(script, config)
+	def __init__ (self, job, config = {}):
+		super(runner_sge, self).__init__(job, config)
 		# construct an sge script
-		sgefile = os.path.realpath(script + '.sge')
+		sgefile = os.path.realpath(self.job.script + '.sge')
 		
 		sgesrc  = [
 			'#!/usr/bin/env bash',
@@ -18,10 +18,15 @@ class runner_sge (runner_local):
 			#'#$ -e ' + self.errfile,
 			#'#$ -cwd'
 		]
+		defaultName = '%s_%s.%s' % (
+			self._config('id'),
+			self._config('tag'),
+			self.job.index
+		)
 		
 		conf = copy.copy (self._config ('sgeRunner', {}))
 		if not conf.has_key ('sge_N'):
-			sgesrc.append('#$ -N %s_%s.%s' % (self._config('id', os.path.basename (script) [:-len(self.index)-1]), self._config('tag', 'notag'), self.index)) # + self._config('id', os.path.basename (script)) + '.' + self._config('tag', 'notag'))
+			sgesrc.append('#$ -N %s' % defaultName) 
 		else:
 			sgesrc.append('#$ -N %s' % conf['sge_N'])
 			del conf['sge_N']
@@ -38,13 +43,13 @@ class runner_sge (runner_local):
 			sgesrc.append('#$ -o %s' % conf['sge_o'])
 			del conf['sge_o']
 		else:
-			sgesrc.append('#$ -o %s' % self.outfile)
+			sgesrc.append('#$ -o %s' % self.job.outfile)
 			
 		if conf.has_key('sge_e'):
 			sgesrc.append('#$ -e %s' % conf['sge_e'])
 			del conf['sge_e']
 		else:
-			sgesrc.append('#$ -e %s' % self.errfile)
+			sgesrc.append('#$ -e %s' % self.job.errfile)
 			
 		sgesrc.append('#$ -cwd')
 		
@@ -65,38 +70,35 @@ class runner_sge (runner_local):
 				src += ' ' + str(v)
 			sgesrc.append(src)
 		sgesrc.append ('')
-		sgesrc.append ('trap "status=\$?; echo \$status > %s; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.rcfile)
+		sgesrc.append ('trap "status=\$?; echo \$status > %s; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile)
 		sgesrc.append (self._config('sgeRunner.preScript', ''))
 		sgesrc.append ('')
 		sgesrc.append (list2cmdline(self.script))
 		sgesrc.append (self._config('sgeRunner.postScript', ''))
 		
-		with open (sgefile, 'w') as f:
-			f.write ('\n'.join(sgesrc) + '\n')
+		open (sgefile, 'w').write ('\n'.join(sgesrc) + '\n')
 		
 		self.script = ['qsub', sgefile]
 		
 	def submit (self):
-		if os.path.exists(self.rcfile):
-			os.remove(self.rcfile)
+		if os.path.exists(self.job.rcfile):
+			os.remove(self.job.rcfile)
 		try:
 			self.p = Popen (self.script)
 			rc = self.p.wait()
 			if rc != 0:
-				open (self.errfile, 'w').write('Failed to submit job: %s.%s#%s' % (self._config('id'), self._config('tag'), self.index))
-				open (self.rcfile, 'w').write('-1')
+				open (self.job.errfile, 'w').write('Failed to submit job: %s.%s#%s' % (self._config('id'), self._config('tag'), self.index))
+				open (self.job.rcfile, 'w').write('-1')
 				
 		except Exception as ex:
-			open (self.errfile, 'w').write(str(ex))
-			open (self.rcfile, 'w').write('-1') # not able to submit
-			# don't retry if failed to submit
-		sleep (0.1)
+			open (self.job.errfile, 'w').write(str(ex))
+			open (self.job.rcfile, 'w').write('-1') # not able to submit
 		
 	def wait(self):
-		if self.rc() == -1: return
+		if self.job.rc() == -1: return
 		while self.p is None: sleep (1)
 		
-		while self.rc() == -99:
+		while self.job.rc() == -99:
 			if self._config('echo', False):
 				self.flushFile('stdout')
 				self.flushFile('stderr')

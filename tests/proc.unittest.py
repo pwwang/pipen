@@ -1,7 +1,7 @@
 import os, sys, unittest, pickle, shutil, copy
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
-from pyppl import proc
+from pyppl import proc, aggr
 from pyppl import channel, utils
 from md5 import md5
 from StringIO import StringIO
@@ -37,19 +37,25 @@ class runner_test (runner_local):
 		p = proc ('tag_unique')
 		config = copy.copy(p.config)
 		del config['workdir']
-				
-		if config.has_key ('callback'):
-			config['callback'] = utils.funcSig(config['callback'])
-	
-		if config.has_key ('callfront'):
-			config['callfront'] = utils.funcSig(config['callfront'])
-		
+		# proc is not picklable
+		if config.has_key('depends'):
+			depends = config['depends']
+			pickable_depends = []
+			if isinstance(depends, proc):
+				depends = [depends]
+			elif isinstance(depends, aggr):
+				depends = depends.procs
+			for depend in depends:
+				pickable_depends.append(depend.id + '.' + depend.tag)
+			config['depends'] = pickable_depends
+			
 		if config.has_key ('input') and isinstance(config['input'], dict):
 			config['input'] = copy.deepcopy(config['input'])
 			for key, val in config['input'].iteritems():
 				config['input'][key] = utils.funcSig(val) if callable(val) else val
-		signature = pickle.dumps (config) + '@' + pickle.dumps(sorted(sys.argv))
-		self.assertEqual (p._suffix(), utils.uid(signature))
+				
+		signature = pickle.dumps (config)
+		self.assertEqual (len(p._suffix()), 8)
 
 	def testInit (self):
 		p = proc ('tag')
@@ -82,7 +88,7 @@ class runner_test (runner_local):
 	def testSetattr (self):
 		p = proc ('tag')
 
-		self.assertRaises (AttributeError, p.__setattr__, 'a', 1)
+		self.assertRaises (ValueError, p.__setattr__, 'a', 1)
 		p. tag = 'notag'
 		self.assertEqual (p.tag, 'notag')
 		self.assertEqual (p.config['tag'], 'notag')
@@ -120,10 +126,35 @@ class runner_test (runner_local):
 		except:
 			pass
 		self.assertFalse (p._isCached())
-		with open (cachefile, 'w') as f:
-			pickle.dump(config, f)
+		
+		p.input = {"a": [1,2,3,4,5]}
+		#p._tidyBeforeRun()
+		p.run()
 		self.assertTrue (p._isCached())
-		self.assertEqual (p.forks, 100)
+		
+		open (p.workdir + '/scripts/script.3', 'w').write('')
+		self.assertFalse (p._isCached())
+		self.assertEqual (p.ncjobids, [3])
+		
+	def testExportCache (self):
+		p = proc ('ec')
+		p.cache = 'export'
+		p.input = {"a": [1,2,3,4,5]}
+		p.output = "outfile:file:{{a}}.txt"
+		p._buildProps()
+		p._buildInput()
+		p._buildOutput()
+		exdir   = "./test/"
+		p.exdir = exdir
+		if not os.path.isdir (exdir):
+			os.makedirs (exdir)
+		for i in [1,2,4,5]:
+			open (exdir + "%s.txt" % i, 'w').write ('')
+		self.assertFalse (p._isCached())
+		self.assertEqual (p.ncjobids, [2]) # a==3
+		shutil.rmtree (exdir)
+		
+		
 
 	def testBuildProps (self):
 		p1 = proc ('tag1')
@@ -222,9 +253,9 @@ class runner_test (runner_local):
 		})
 
 	def testBuildOutput (self):
-		c1 = channel (["aa", "bb"])
-		c2 = channel ([1, 2])
-		c3 = channel (sorted(["channel.unittest.py", "proc.unittest.py"]))
+		c1 = channel.create (["aa", "bb"])
+		c2 = channel.create ([1, 2])
+		c3 = channel.create (sorted(["channel.unittest.py", "proc.unittest.py"]))
 		pOP = proc()
 		pOP.input = {'c1': c1, 'c2': c2, 'c3:file': c3}
 		
@@ -240,7 +271,6 @@ class runner_test (runner_local):
 			('aa', '1.0', os.path.join(pOP.outdir, "channel.unittest2.py")), 
 			('bb', '4.0', os.path.join(pOP.outdir, "proc.unittest2.py"))
 		])
-		self.assertEqual (pOP.outfiles, pOP.output['o3'])
 
 		pOP.props['channel'] = channel()
 		pOP.props['outfiles'] = []
@@ -248,7 +278,8 @@ class runner_test (runner_local):
 		pOP._buildProps()
 		pOP._buildInput()
 		pOP._buildOutput()
-		self.assertEqual (pOP.output['__out1__'], ['aa', 'bb'])
+		print pOP.output
+		self.assertEqual (pOP.output['__out.1__'], ['aa', 'bb'])
 		self.assertEqual (pOP.output['o2'], ['1.0', '4.0'])
 		self.assertEqual (pOP.output['o3'], [os.path.join(pOP.outdir, "channel.unittest2.py"), os.path.join(pOP.outdir, "proc.unittest2.py")])
 
@@ -256,43 +287,35 @@ class runner_test (runner_local):
 			('aa', '1.0', os.path.join(pOP.outdir, "channel.unittest2.py")), 
 			('bb', '4.0', os.path.join(pOP.outdir, "proc.unittest2.py"))
 		])
-		self.assertEqual (pOP.outfiles, pOP.output['o3'])
 		
 		pOP.props['channel'] = channel()
 		pOP.props['outfiles'] = []
 		pOP.forks = 5
-		c1 = channel()
-		c2 = channel()
-		d = [("cc:{{c1}}", c1), ("var:{{c2 | __import__('math').pow(float(_), 2.0)}}, file:{{c3.fn}}{{proc.forks}}{{c3.ext}}", c2)]
+
+		d = ["cc:{{c1}}", "var:{{c2 | __import__('math').pow(float(_), 2.0)}}, file:{{c3.fn}}{{proc.forks}}{{c3.ext}}"]
 		pOP.output = d
 		pOP._buildProps()
 		pOP._buildInput()
 		pOP._buildOutput()
 		self.assertEqual (pOP.output['cc'], ['aa', 'bb'])
-		self.assertEqual (pOP.output['__out1__'], ['1.0', '4.0'])
-		self.assertEqual (pOP.output['__out2__'], [os.path.join(pOP.outdir, "channel.unittest5.py"), os.path.join(pOP.outdir, "proc.unittest5.py")])
+		self.assertEqual (pOP.output['__out.1__'], ['1.0', '4.0'])
+		self.assertEqual (pOP.output['__out.2__'], [os.path.join(pOP.outdir, "channel.unittest5.py"), os.path.join(pOP.outdir, "proc.unittest5.py")])
 		
-		self.assertEqual (c1, [('aa',), ('bb', )])
-		self.assertEqual (c2, [
-			('1.0', os.path.join(pOP.outdir, "channel.unittest5.py")), 
-			('4.0', os.path.join(pOP.outdir, "proc.unittest5.py"))
-		])
 		self.assertEqual (pOP.channel, [
 			('aa', '1.0', os.path.join(pOP.outdir, "channel.unittest5.py")), 
 			('bb', '4.0', os.path.join(pOP.outdir, "proc.unittest5.py"))
 		])
-		self.assertEqual (pOP.outfiles, pOP.output['__out2__'])
 
 
 	def testBuildScript(self):
 		ps = proc ('script')
-		self.assertRaises (Exception, ps._tidyBeforeRun)
+		# empty script does not raise Exception any more
+		#self.assertRaises (Exception, ps._tidyBeforeRun)
 		ps.input = {"input": ["input"]}
 		ps.script = "ls"
-		scriptdir = os.path.join (ps.workdir, 'scripts')
-		if os.path.exists (scriptdir):
-			shutil.rmtree (scriptdir)
+		
 		ps._tidyBeforeRun()
+		scriptdir = os.path.join (ps.workdir, 'scripts')
 		self.assertTrue (os.path.exists(scriptdir))
 
 		ps.script = "template:" + __file__ + '_notexist'
@@ -305,8 +328,8 @@ class runner_test (runner_local):
 		ps.props['jobs'] = []
 		ps._tidyBeforeRun ()
 
-		self.assertEqual (ps.jobs, [os.path.join(scriptdir, 'script.0')])
-		self.assertTrue (open(ps.jobs[0]).read().startswith("#!/usr/bin/env bash"))
+		self.assertEqual (map(lambda x: x.script, ps.jobs), [os.path.join(scriptdir, 'script.0')])
+		self.assertTrue (open(ps.jobs[0].script).read().startswith("#!/usr/bin/env bash"))
 		os.remove (tplfile)
 
 		with open (tplfile, 'w') as f:
@@ -315,8 +338,8 @@ class runner_test (runner_local):
 		ps.props['jobs'] = []
 		ps._tidyBeforeRun ()
 
-		self.assertEqual (ps.jobs, [os.path.join(scriptdir, 'script.0')])
-		self.assertTrue (open(ps.jobs[0]).read().startswith("#!/usr/bin/env bash"))
+		self.assertEqual (map(lambda x: x.script, ps.jobs), [os.path.join(scriptdir, 'script.0')])
+		self.assertTrue (open(ps.jobs[0].script).read().startswith("#!/usr/bin/env bash"))
 		os.remove (tplfile)
 
 		ps.output = "output:var:{{input}}2"
@@ -324,8 +347,8 @@ class runner_test (runner_local):
 		ps.script = "ls {{proc.workdir}}\necho {{#}} {{input}}\necho {{output}}\necho {{proc.args.var1}} {{proc.args.var2}}"
 		ps.props['jobs'] = []
 		ps._tidyBeforeRun ()
-		self.assertEqual (ps.jobs, [os.path.join(scriptdir, 'script.0')])
-		self.assertEqual (open(ps.jobs[0]).read(), "#!/usr/bin/env bash\n\nls %s\necho 0 input\necho input2\necho 1 2" % ps.workdir)
+		self.assertEqual (map(lambda x: x.script, ps.jobs), [os.path.join(scriptdir, 'script.0')])
+		self.assertEqual (open(ps.jobs[0].script).read(), "#!/usr/bin/env bash\n\nls %s\necho 0 input\necho input2\necho 1 2" % ps.workdir)
 
 
 
@@ -344,29 +367,16 @@ class runner_test (runner_local):
 		self.assertEqual (prc._runCmd('beforeCmd'), 0)
 		self.assertEqual (prc._runCmd('afterCmd'), 1)
 
-		saved_stdout = sys.stdout
-		try:
-			out = StringIO()
-			sys.stdout = out
-			prc.beforeCmd = 'ls'
-			prc.echo = True
-			prc._tidyBeforeRun ()
-			self.assertEqual (prc._runCmd('beforeCmd'), 0)
-			self.assertTrue ("proc.unittest.py" in out.getvalue())
-		finally:
-			sys.stdout = saved_stdout
+		prc.beforeCmd = 'ls'
+		prc.echo = True
+		prc._tidyBeforeRun ()
+		self.assertEqual (prc._runCmd('beforeCmd'), 0)
 
-		saved_stderr = sys.stderr
-		try:
-			out = StringIO()
-			sys.stderr = out
-			prc.afterCmd = 'bash -c "echo 2 >&2; exit 1"'
-			prc.echo = False # anyway print stderr
-			prc._tidyBeforeRun ()
-			self.assertEqual (prc._runCmd('afterCmd'), 1)
-			self.assertTrue ("2" in out.getvalue())
-		finally:
-			sys.stderr = saved_stderr
+
+		prc.afterCmd = 'bash -c "echo 2 >&2; exit 1"'
+		prc.echo = False # anyway print stderr
+		prc._tidyBeforeRun ()
+		self.assertEqual (prc._runCmd('afterCmd'), 1)
 
 	def testRunJobs (self):
 		pr = proc()
@@ -391,17 +401,25 @@ class runner_test (runner_local):
 
 		p.input  = {'infile:file': channel.fromPath ("*.py")}
 		p.output = 'outfile:file:{{infile.fn}}2{{infile.ext}}, var:{{infile.fn}}2{{infile.ext}}'
-		p.exportdir = rootdir
+		testdir  = "./test/"
+		if not os.path.exists(testdir):
+			os.makedirs (testdir)
+		p.exdir = testdir
 		p._tidyBeforeRun ()
 		
 		self.assertEqual (p.forks, 1)
 
 		p._runJobs()
 		p._export()
-		for (_, bn) in p.channel:
-			exfile = os.path.join (rootdir, bn)
-			self.assertTrue (os.path.exists (exfile))
-			os.remove(exfile)
+		for outfile in p.output['outfile']:
+			self.assertTrue (os.path.exists (os.path.join(testdir, os.path.basename(outfile))))
+		
+		p.exhow = 'gzip'
+		p._export()
+		for outfile in p.output['outfile']:
+			self.assertTrue (os.path.exists (os.path.join(testdir, os.path.basename(outfile) + '.gz')))
+		
+		shutil.rmtree(testdir)
 	
 	def testCheckStatus (self):
 		p = proc('cs')
@@ -425,14 +443,12 @@ class runner_test (runner_local):
 		p._readConfig({})
 		cachefile = os.path.join (p.tmpdir, p.cachefile)
 		if os.path.exists (cachefile):
-			self.assertTrue (p._isCached())
-			#os.utime (p.infiles[0], None)
-			#self.assertFalse (p._isCached())
-		else:			
-			self.assertFalse (p._isCached())
-			p._tidyBeforeRun()
-			p._runJobs()
-			p._tidyAfterRun()
+			os.remove (cachefile)			
+		self.assertFalse (p._isCached())
+		p._tidyBeforeRun()
+		p._runJobs()
+		p._tidyAfterRun()
+		self.assertTrue (p._isCached())
 
 	def testCopy (self):
 		p = proc('copy')
@@ -446,8 +462,20 @@ class runner_test (runner_local):
 		self.assertEqual (pCopy.exportdir, rootdir)
 		self.assertEqual (pCopy.script, p.script)
 		
-
-	
+	def testAlias (self):
+		p = proc ('alias')
+		p.input = {'a':[1]}
+		testv = {}
+		for k,v in proc.alias.iteritems():
+			testv[v] = utils.randstr()
+			if v == 'retcodes': testv[v] = [0,1,2]
+			p.__setattr__ (k, testv[v])
+		p._tidyBeforeRun()
+		for k,v in proc.alias.iteritems():
+			val1 = p.__getattr__(k)
+			val2 = p.__getattr__(v)
+			self.assertEqual (val1, testv[v])
+			self.assertEqual (val2, testv[v])
 
 if __name__ == '__main__':
 	unittest.main()

@@ -7,39 +7,18 @@
 import os, stat, sys, logging
 from subprocess import Popen, PIPE
 from time import sleep
+from ..helpers import utils
 
 class runner_local (object):
 
-	def __init__ (self, script, config = {}):
-		self.index     = script.split('.')[-1]
-		self.script    = runner_local.chmod_x(script)
-		self.outfile   = script + '.stdout'
-		self.errfile   = script + '.stderr'
-		self.rcfile    = script + '.rc'
+	def __init__ (self, job, config = {}):
+		self.job       = job
+		self.script    = utils.chmodX(self.job.script)
 		self.ntry      = 0
 		self.config    = config
 		self.p         = None
 		self.outp      = 0
 		self.errp      = 0
-
-	@staticmethod
-	def chmod_x (thefile):
-		thefile = os.path.realpath(thefile)
-		ret = [thefile]
-		try:
-			st = os.stat (thefile)
-			os.chmod (thefile, st.st_mode | stat.S_IEXEC)
-		except:
-			try:
-				shebang = ''
-				with open (thefile, 'r') as f:
-					shebang = f.read().strip().split("\n")[0]
-				if not shebang.startswith("#!"):
-					raise Exception()
-				ret = shebang[2:].strip().split() + [thefile]
-			except Exception as e:
-				raise Exception("Cannot change %s as executable or read the shebang from it." % thefile)
-		return ret
 	
 	def _config (self, key, default = None):
 		if '.' in key:
@@ -57,22 +36,20 @@ class runner_local (object):
 			return self.config[key]
 	
 	def submit (self):
-		if os.path.exists(self.rcfile):
-			os.remove(self.rcfile)
+		if os.path.exists(self.job.rcfile):
+			os.remove(self.job.rcfile)
 			
 		try:
 			self.p = Popen (self.script, stdin=PIPE, stderr=PIPE, stdout=PIPE, close_fds=True)
 		except Exception as ex:
-			open (self.errfile, 'w').write(str(ex))
-			open (self.rcfile, 'w').write('-1') # not able to submit
-			# don't retry if failed to submit
-		sleep (0.1)
+			open (self.job.errfile, 'w').write(str(ex))
+			open (self.job.rcfile, 'w').write('-1') # not able to submit
 			
 	def wait (self):
-		if self.rc() == -1: return
+		if self.job.rc() == -1: return
 		while self.p is None: sleep (1)
-		open (self.rcfile, 'w').write(str(self.p.wait()))
-		with open (self.outfile, 'w') as fout, open(self.errfile, 'w') as ferr:
+		open (self.job.rcfile, 'w').write(str(self.p.wait()))
+		with open (self.job.outfile, 'w') as fout, open(self.job.errfile, 'w') as ferr:
 			for line in iter(self.p.stderr.readline, ''):
 				ferr.write(line)
 				if self._config('echo', False):
@@ -100,17 +77,9 @@ class runner_local (object):
 		self.submit()
 		self.wait()
 
-	def rc (self):
-		if not os.path.exists (self.rcfile):
-			return -99 
-		rccodestr  = ''
-		with open (self.rcfile, 'r') as f:
-			rccodestr = f.read().strip()
-		
-		return -99 if rccodestr == '' else int(rccodestr)
 		
 	def isValid (self):
-		return self.rc () in self._config('retcodes', [0])
+		return self.job.rc () in self._config('retcodes', [0])
 
 
 	def flushFile (self, fn = 'stdout'):
