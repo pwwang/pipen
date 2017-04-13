@@ -165,13 +165,13 @@ sorted("""digraph PyPPL {
 	
 	def test_batchjobs (self):
 		p = proc ('batch')
-		p.input = {'input': channel.create([5, 2, 5, 2, 5, 2])}
-		p.script = "cat {{proc.workdir}}/scripts/script.{{#}}.ssh | grep franklin"
+		p.input = {'input': channel.create(range(100))}
+		p.script = "cat {{proc.workdir}}/scripts/script.{{#}}.ssh | grep franklin; sleep 10"
 		p.echo = True
 		p.cache = False
-		p.forks = 3
-		p.errorhow = 'retry'
-		p.runner = 'ssh'
+		p.forks = 32
+		#p.errorhow = 'retry'
+		#p.runner = 'ssh'
 		p.beforeCmd = 'mkdir ./test_batchjobs -p'
 		p.tmpdir = './test_batchjobs'
 		pyppl({
@@ -181,7 +181,7 @@ sorted("""digraph PyPPL {
 				}
 			},
 			'loglevel': 'debug'
-		}).starts(p).run()
+		}).starts(p).run('ssh')
 		shutil.rmtree ('./test_batchjobs')
 	
 	def testCallback (self):

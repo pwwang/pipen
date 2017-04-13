@@ -41,6 +41,8 @@ class runner_local (object):
 			
 		try:
 			self.p = Popen (self.script, stdin=PIPE, stderr=PIPE, stdout=PIPE, close_fds=True)
+			# have to wait, otherwise it'll continue submitting jobs
+			open (self.job.rcfile, 'w').write(str(self.p.wait())) 
 		except Exception as ex:
 			open (self.job.errfile, 'w').write(str(ex))
 			open (self.job.rcfile, 'w').write('-1') # not able to submit
@@ -48,7 +50,7 @@ class runner_local (object):
 	def wait (self):
 		if self.job.rc() == -1: return
 		while self.p is None: sleep (1)
-		open (self.job.rcfile, 'w').write(str(self.p.wait()))
+
 		with open (self.job.outfile, 'w') as fout, open(self.job.errfile, 'w') as ferr:
 			for line in iter(self.p.stderr.readline, ''):
 				ferr.write(line)
