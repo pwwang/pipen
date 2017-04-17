@@ -27,10 +27,10 @@ class TestJob (unittest.TestCase):
 		os.makedirs ("./test/scripts")
 		j = job (0, "./test/")
 		open (j.script, 'w').write('')
-		sig = j.signature()
+		sig = j.signature(utils.getLogger())
 		sleep (.1)
 		open (j.script, 'w').write('')
-		self.assertNotEqual (sig, j.signature())
+		self.assertNotEqual (sig, j.signature(utils.getLogger()))
 		shutil.rmtree ("./test/")
 	
 	def testRc (self):

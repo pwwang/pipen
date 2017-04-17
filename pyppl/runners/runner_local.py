@@ -36,16 +36,13 @@ class runner_local (object):
 			return self.config[key]
 	
 	def submit (self):
-		if os.path.exists(self.job.rcfile):
-			os.remove(self.job.rcfile)
-			
 		try:
 			self.p = Popen (self.script, stdin=PIPE, stderr=PIPE, stdout=PIPE, close_fds=True)
 			# have to wait, otherwise it'll continue submitting jobs
-			open (self.job.rcfile, 'w').write(str(self.p.wait())) 
+			self.job.rc(self.p.wait())
 		except Exception as ex:
 			open (self.job.errfile, 'w').write(str(ex))
-			open (self.job.rcfile, 'w').write('-1') # not able to submit
+			self.job.rc(-1)
 			
 	def wait (self):
 		if self.job.rc() == -1: return

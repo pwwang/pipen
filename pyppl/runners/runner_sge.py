@@ -1,11 +1,15 @@
 from runner_local import runner_local
 from time import sleep
 from subprocess import Popen, list2cmdline 
+from multiprocessing import cpu_count
 import os, shlex, logging, sys, copy
 
 
 class runner_sge (runner_local):
-
+	
+	maxsubmit = int (cpu_count()/2)
+	interval  = 5 # how long should I wait if maxsubmit reached
+	
 	def __init__ (self, job, config = {}):
 		super(runner_sge, self).__init__(job, config)
 		# construct an sge script
@@ -18,7 +22,7 @@ class runner_sge (runner_local):
 			#'#$ -e ' + self.errfile,
 			#'#$ -cwd'
 		]
-		defaultName = '%s_%s.%s' % (
+		defaultName = '%s.%s.%s' % (
 			self._config('id'),
 			self._config('tag'),
 			self.job.index
@@ -81,18 +85,16 @@ class runner_sge (runner_local):
 		self.script = ['qsub', sgefile]
 		
 	def submit (self):
-		if os.path.exists(self.job.rcfile):
-			os.remove(self.job.rcfile)
 		try:
 			self.p = Popen (self.script)
 			rc = self.p.wait()
 			if rc != 0:
 				open (self.job.errfile, 'w').write('Failed to submit job: %s.%s#%s' % (self._config('id'), self._config('tag'), self.index))
-				open (self.job.rcfile, 'w').write('-1')
+				self.job.rc(-1)
 				
 		except Exception as ex:
 			open (self.job.errfile, 'w').write(str(ex))
-			open (self.job.rcfile, 'w').write('-1') # not able to submit
+			self.job.rc(-1) # not able to submit
 		
 	def wait(self):
 		if self.job.rc() == -1: return

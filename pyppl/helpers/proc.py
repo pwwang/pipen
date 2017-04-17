@@ -7,7 +7,6 @@ from aggr import aggr
 from job import job as pjob
 import utils
 from subprocess import Popen, PIPE
-from multiprocessing import cpu_count
 from Queue import Queue
 from collections import OrderedDict
 from ..runners import runner_local, runner_sge, runner_ssh
@@ -38,7 +37,7 @@ class proc (object):
 
 		pid                       = utils.varname(self.__class__.__name__, 2)
 
-		self.config['input']      = {'input': sys.argv[1:] if len(sys.argv)>1 else []}
+		self.config['input']      = ''
 		self.config['output']     = {}
 		# where cache file and wdir located
 		self.config['tmpdir']     = os.path.abspath("./workdir")
@@ -84,6 +83,7 @@ class proc (object):
 		self.props['tmpdir']     = self.config['tmpdir']
 		self.props['forks']      = self.config['forks']
 		self.props['cache']      = self.config['cache']
+		self.props['cached']     = True
 		self.props['retcodes']   = self.config['retcodes']
 		self.props['beforeCmd']  = self.config['beforeCmd']
 		self.props['afterCmd']   = self.config['afterCmd']
@@ -157,10 +157,9 @@ class proc (object):
 
 	def _suffix (self):
 		config = { key:val for key, val in self.config.iteritems() if key not in ['workdir'] }
-		
+		"""	
 		if config.has_key ('callback'):
 			config['callback'] = utils.funcSig(config['callback'])
-			
 		# proc is not picklable
 		if config.has_key('depends'):
 			depends = config['depends']
@@ -175,11 +174,11 @@ class proc (object):
 		
 		# lambda not pickable
 		if config.has_key ('input') and isinstance(config['input'], dict):
-			config['input'] = pycopy.deepcopy(config['input'])
+			config['input'] = pycopy.copy(config['input'])
 			for key, val in config['input'].iteritems():
 				config['input'][key] = utils.funcSig(val) if callable(val) else val
-
-		signature = pickle.dumps(config)
+		"""
+		signature = pickle.dumps(str(config))
 		return utils.uid(signature)
 
 	def _tidyBeforeRun (self):
@@ -190,23 +189,29 @@ class proc (object):
 
 	def _tidyAfterRun (self):
 		sucJids = self._checkStatus ()
+		self.log ('Successful jobs: %s' % (sucJids if len(sucJids) < len(self.ncjobids) else 'ALL'), 'debug')
 		if sucJids == False: return
-		self._doCache (sucJids)
-		if len (sucJids) != self.length:
-			log ('Export and callback will not be performed until all jobs run successfully.', 'warning')
+		self._doCache ()
+		if len (sucJids) < len(self.ncjobids):
+			self.log ('Export and callback will not be performed until all jobs run successfully.', 'warning')
 		else:
 			self._export ()		
 			if callable (self.callback):
 				self.log('Calling callback ...', 'debug')
 				self.callback (self)
+		self.log ('Done.', 'info')
 
 	def run (self, config = {}):
-		self.logger.info ('[  START] ' + utils.padBoth(' ' + self.id + '.' + self.tag + ' ', 70, '>', '<'))
+		self.logger.info ('[  START] ' + utils.padBoth(' ' + ("%s -> " % self.aggr if self.aggr else "") + self.id + '.' + self.tag + ' ', 80, '-'))
 		self._readConfig (config)
 		self._tidyBeforeRun ()
 		if self._runCmd('beforeCmd') != 0:
 			raise Exception ('Failed to run beforeCmd: %s' % self.beforeCmd)
 		if not self._isCached():
+			# I am not cached, touch the input of my nexts
+			# but my nexts are not initized, how?
+			# set cached to False, then my nexts will access it
+			self.props['cached'] = False
 			self.log (self.workdir, 'info', 'RUNNING')
 			self._runJobs()
 		if self._runCmd('afterCmd') != 0:
@@ -217,11 +222,11 @@ class proc (object):
 	# [1,2,3,...]: successful, successful job indices
 	def _checkStatus (self):
 		ret = []
-		for i in self.input['#']:
+		for i in self.ncjobids:
 			job   = self.jobs[i]
-			job.outfileGenerated()
 			rc    = job.rc ()
 			if rc in self.retcodes:
+				job.outfileGenerated()
 				ret.append (i)
 				continue
 
@@ -234,11 +239,10 @@ class proc (object):
 				for errmsg in errmsgs: self.logger.error(errmsg)
 			raise Exception ('[Job#%s]: Return code is %s, but %s expected.' % (i, rc, self.retcodes))
 
-		if not ret: return False
 		return ret		
 	
 	# create link in indir and set input
-	def _prepInfile (self, infile, key, index, multi=False):
+	def _prepInfile (self, infile, key, index, warnings, multi=False):
 		if not self.input.has_key(key): self.input[key] = [''] * self.length
 		if not self.input.has_key(key + '.bn'):  self.input[key + '.bn']  = [''] * self.length
 		if not self.input.has_key(key + '.fn'):  self.input[key + '.fn']  = [''] * self.length
@@ -250,9 +254,11 @@ class proc (object):
 		infile  = os.path.join (self.indir, bn)
 		fn, ext = os.path.splitext (os.path.basename(infile))
 		if not os.path.exists (infile):
+			# make sure it's not a link to non-exist file
+			if os.path.islink(infile): os.remove (infile)
 			os.symlink (srcfile, infile)
 		else:
-			log ('Input file already exists: %s' % infile, 'warning')
+			warnings.append (infile)
 		
 		if multi:
 			if not isinstance(self.input[key][index], list):
@@ -292,12 +298,12 @@ class proc (object):
 		self.props['indir']   = os.path.join(self.workdir, 'input')
 		self.props['outdir']  = os.path.join(self.workdir, 'output')
 		
-		if os.path.exists (self.workdir):
-			shutil.rmtree (self.workdir)
-		os.makedirs (self.indir)
-		os.makedirs (self.outdir)
-		os.makedirs (os.path.join(self.workdir, 'scripts'))
-
+		if not os.path.exists (self.workdir): os.makedirs (self.workdir)
+		if not os.path.exists (self.indir):   os.makedirs (self.indir)
+		if not os.path.exists (self.outdir):  os.makedirs (self.outdir)
+		if not os.path.exists (os.path.join(self.workdir, 'scripts')):
+			os.makedirs (os.path.join(self.workdir, 'scripts'))
+		
 	"""
 	Input could be:
 	1. list: ['input', 'infile:file'] <=> ['input:var', 'infile:path']
@@ -310,13 +316,13 @@ class proc (object):
 		# if config.input is list, build channel from depends
 		# else read from config.input
 		input    = self.config['input']
-		
+
 		argvchan = channel.fromArgv()
 		depdchan = channel.fromChannels (*[d.channel for d in self.depends])
-		if not isinstance (input, dict):
-			input = ','.join(utils.alwaysList (input))
-			input = {input: depdchan if self.depends else argvchan}
 		
+		if not isinstance (input, dict):
+			input = ','.join(utils.alwaysList (input))			
+			input = {input: depdchan if self.depends else argvchan}
 		# expand to one key-channel pairs
 		inputs = {}
 		for keys, vals in input.iteritems():
@@ -335,15 +341,13 @@ class proc (object):
 				raise ValueError ("%s%s.%s: Unexpected values for input. Expect dict, list, str, channel, callable." % (
 					("%s -> " % self.aggr if self.aggr else ""),
 					 self.id, self.tag))
-			
 			width = len (vals)
 			if len (keys) > width:
 				raise ValueError ('%s%s.%s: Not enough data for input variables.\nVarialbes: %s\nData: %s' % (
 					("%s -> " % self.aggr if self.aggr else ""),
 					 self.id, self.tag,
 					 keys, vals))
-			for i in range(width):
-				key = keys[i]
+			for i, key in enumerate(keys):
 				toExpand = (key.endswith(':files') or key.endswith(':paths')) and isinstance(vals[i], (str, unicode))
 				chan = channel.fromPath(vals[i]) if toExpand else vals[i]
 				if self.length == 0: self.props['length'] = chan.length()
@@ -360,17 +364,18 @@ class proc (object):
 			self.input['#'].append(i)
 			self.ncjobids.append (i)
 			
+		warnings = []
 		for keyinfo, chan in inputs.iteritems():
 			if keyinfo.endswith (':files') or keyinfo.endswith (':paths'):
 				key = keyinfo[:-6]				
 				# [([f1,f2],), ([f3,f4],)] => [[f1,f2], [f3,f4]]
 				for i, ch in enumerate(chan.toList()):
-					for infile in ch: self._prepInfile (infile, key, i, True)
+					for infile in ch: self._prepInfile (infile, key, i, warnings, True)
 				
 			elif keyinfo.endswith (':file') or keyinfo.endswith (':path'):
 				key = keyinfo[:-5]
 				for i, ch in enumerate(chan.toList()):
-					self._prepInfile (ch, key, i)
+					self._prepInfile (ch, key, i, warnings, False)
 			else: # var
 				if not keyinfo.endswith(':var'): keyinfo = keyinfo + ':var'
 				key = keyinfo[:-4]
@@ -379,6 +384,8 @@ class proc (object):
 					job = self.jobs[i]
 					job.input['var'].append (ch)
 					self.input[key].append (ch)
+		if warnings:
+			self.log ("Some input files exist, use them: '%s' and %s others ..." % (warnings[0], len(warnings)-1), 'warning')
 
 		ridx = randint(0, self.length-1)
 		for key, val in self.input.iteritems():
@@ -462,12 +469,15 @@ class proc (object):
 			jscript = utils.format (script, data)
 		
 			scriptfile = os.path.join (scriptdir, 'script.%s' % index)
+			if os.path.exists(scriptfile) and open(scriptfile).read() == jscript:
+				continue # don't touch it if contest is the same
 			open (scriptfile, 'w').write (jscript)
 	
 	def _export (self):
 		if not self.exportdir: return
 		if not os.path.exists(self.exportdir):
 			os.makedirs (self.exportdir)
+		
 		for job in self.jobs:
 			job.export (self.exportdir, self.exporthow, self.exportow, self.log)
 
@@ -484,11 +494,11 @@ class proc (object):
 			self._suffix()
 		)
 
-	def _doCache (self, jids):
+	def _doCache (self):
 		cachefile = os.path.join (self.tmpdir, self.cachefile)
 		jobsigs   = [None] * self.length
-		for i in jids:
-			jobsigs[i] = self.jobs[i].signature()
+		for i, job in enumerate(self.jobs):
+			jobsigs[i] = job.signature(self.log)
 		with open(cachefile, 'w') as f:
 			pickle.dump(jobsigs, f)
 	
@@ -501,28 +511,41 @@ class proc (object):
 		exCachedJids  = []
 		if self.cache in [True, 'export+']:
 			cachefile = os.path.join (self.tmpdir, self.cachefile)
-			if not os.path.exists(cachefile):
+			jobsigs   = [''] * self.length
+			
+			if os.path.exists (cachefile): jobsigs = pickle.load(open(cachefile))
+			elif self.cache == True:
 				self.log ('Not cached, cache file %s not exists.' % cachefile, 'debug')
 				return False
-			jobsigs       = pickle.load(open(cachefile))
-			sigCachedJids = [i for i in self.input['#'] if jobsigs[i] == self.jobs[i].signature()]
 			
-		elif self.cache in ['export', 'export+']:
+			# check my depends
+			if self.cache == True:
+				for depend in self.depends:
+					if depend.cached: continue
+					self.log ('Not cached, my dependent %s not cached.' % depend.id + '.' + depend.tag, 'debug')
+					return False
+			sigCachedJids = [i for i in self.input['#'] if jobsigs[i] == self.jobs[i].signature(self.log) and jobsigs[i] != False]
+
+		if self.cache in ['export', 'export+']:
 			exCachedJids  = [i for i in self.input['#'] if self.jobs[i].exportCached(self.exportdir, self.exporthow, self.log)]
 			
-		else:
+		elif not isinstance(self.cache, bool):
 			raise ValueError ('Cache option expects True/False/"export"/"export+"')
 		
 		cachedJids = [i for i in sigCachedJids if i not in exCachedJids] + exCachedJids
+		
 		if not cachedJids:
 			self.log ('Not cached, none of the jobs are cached.', 'debug')
 			return False
 		
+		self.props['ncjobids'] = [i for i in self.input['#'] if i not in cachedJids]
+		# in case some programs don't overwrite output files
+		for i in self.ncjobids: self.jobs[i].clearOutput()
+		
+		self.log ('Truely cached jobs: %s' % (sigCachedJids if len(sigCachedJids) < self.length else 'ALL'), 'debug')
+		self.log ('Export cached jobs: %s' % (exCachedJids  if len (exCachedJids) < self.length else 'ALL'), 'debug')
 		if len (cachedJids) < self.length:
-			self.log ('Partly cached, only run non-cached jobs.', 'debug')
-			self.props['ncjobids'] = [i for i in self.input['#'] if i not in cachedJids]
-			self.log ('Truely cached jobs: %s' % sigCachedJids, 'debug')
-			self.log ('Export cached jobs: %s' % exCachedJids, 'debug')
+			self.log ('Partly cached, only run non-cached jobs.', 'info')
 			self.log ('Jobs to be running: %s' % self.ncjobids, 'debug')
 			return False
 		
@@ -531,9 +554,13 @@ class proc (object):
 
 	def _runCmd (self, key):
 		if not self.props[key]:	return 0
-		cmd = utils.format(self.props[key], self.procvars)
+		data = {key:val for key,val in self.procvars.iteritems()}
+		data.update (self.input)
+		data.update (self.output)
+		cmd = utils.format(self.props[key], data)
 		self.log ('Running <%s>: %s' % (key, cmd), 'info')
-		p = Popen (shlex.split(cmd), stdin=PIPE, stderr=PIPE, stdout=PIPE)
+		
+		p = Popen (cmd, shell=True, stdin=PIPE, stderr=PIPE, stdout=PIPE)
 		if self.echo:
 			for line in iter(p.stdout.readline, ''):
 				self.logger.info ('[ STDOUT] - ' + line.rstrip("\n"))
@@ -545,37 +572,33 @@ class proc (object):
 		# submit jobs
 		def sworker (q):
 			while True:
-				q.get().submit()
-				sleep(.1)
+				(job, i) = q.get()
+				sleep (i)
+				job.submit()
+				job.wait()
 				q.task_done()
 		
-		# run and wait jobs to finish
-		def rworker(q):
-			while True:
-				q.get().wait ()
-				sleep(.1)
-				q.task_done()
+		runner    = proc.runners[self.runner]
+		maxsubmit = self.forks
+		if hasattr(runner, 'maxsubmit'): maxsubmit = runner.maxsubmit
+		interval  = .1
+		if hasattr(runner, 'interval'): interval = runner.interval
 		
 		sq = Queue()
-		rq = Queue()
 		for i in self.ncjobids:
-			rjob = proc.runners[self.runner] (self.jobs[i], self.props)
-			sq.put (rjob)
-			rq.put (rjob)
+			rjob = runner (self.jobs[i], self.props)
+			tm = int(i/maxsubmit) * interval
+			sq.put ((rjob, tm))
 
 		# submit jobs
-		nojobs2submit = min (self.forks, len(self.jobs), int(cpu_count()/2))
+		
+		nojobs2submit = min (self.forks, len(self.jobs))
 		for i in range (nojobs2submit):
 			t = threading.Thread(target = sworker, args = (sq, ))
 			t.daemon = True
 			t.start ()
-		for i in range (min(self.forks, len(self.jobs))):
-			t = threading.Thread(target = rworker, args = (rq, ))
-			t.daemon = True
-			t.start ()
 		
 		sq.join()
-		rq.join()
 
 	@staticmethod
 	def registerRunner (runner):

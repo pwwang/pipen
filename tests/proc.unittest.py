@@ -114,7 +114,7 @@ class runner_test (runner_local):
 		))
 
 	def testIscached (self):
-		p = proc ('tag')
+		p = proc ('iscached')
 		p.cache = False
 		self.assertFalse (p._isCached())
 		p.cache = True
@@ -132,9 +132,9 @@ class runner_test (runner_local):
 		p.run()
 		self.assertTrue (p._isCached())
 		
-		open (p.workdir + '/scripts/script.3', 'w').write('')
-		self.assertFalse (p._isCached())
-		self.assertEqual (p.ncjobids, [3])
+		#open (p.workdir + '/scripts/script.3', 'w').write('')
+		#self.assertFalse (p._isCached())
+		#self.assertEqual (p.ncjobids, [3])
 		
 	def testExportCache (self):
 		p = proc ('ec')

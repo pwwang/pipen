@@ -47,7 +47,7 @@ def varname (func, maxline = 20):
 	
 	m       = re.search(varpat, src)
 	if m: return m.group(2)
-	suffix  = utils.randstr(8)
+	suffix  = randstr(8)
 	thefunc = func if not '\\.' in func else func.split('\\.')[1]
 	m       = re.search(funcpat, src)
 	if m: return thefunc + '_' + suffix
@@ -111,7 +111,7 @@ def split (s, delimter):
 				slash = 0
 		elif c == delimter:
 			if slash % 2 == 0 and wrap1 == 0 and wrap2 == 0 and wrap3 == 0 and wrap4 %2 == 0 and wrap5 % 2 == 0:
-				ret.append (s[start:i])
+				ret.append (s[start:i].strip())
 				start = i + 1
 		else: 
 			slash = 0
@@ -205,13 +205,29 @@ def ungz (gzfile, dstfile):
 	fout = open (dstfile, 'wb')
 	copyfileobj (fin, fout)
 
+def dirmtime (d):
+	from os.path import getmtime, join
+	from os import walk
+	mtime = 0
+	for root, dirs, files in walk(d):
+		m = getmtime (root)
+		if m > mtime: mtime = m
+		for dr in dirs:
+			m = dirmtime (join (root, dr))
+			if m > mtime: mtime = m
+		for f in files:
+			m = getmtime (join (root, f))
+			if m > mtime: mtime = m
+	return mtime
+
 # file signature, use absolute path and mtime
 def fileSig (fn):
-	from os.path import realpath, abspath, getmtime
+	from os.path import realpath, abspath, getmtime, isdir
 	from hashlib import md5
 	fn    = abspath(realpath(fn))
-	mtime = str(getmtime(fn))
-	return md5(fn + '@' + mtime).hexdigest()
+	mtime = dirmtime(fn) if isdir (fn) else getmtime(fn)
+
+	return md5(fn + '@' + str(mtime)).hexdigest()
 
 # convert str to list separated by ,
 def alwaysList (data):

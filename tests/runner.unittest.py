@@ -160,7 +160,7 @@ class TestRunner (unittest.TestCase):
 
 		
 	
-	@unittest.skip("Skipping SGE test...")
+	#@unittest.skip("Skipping SGE test...")
 	def testSGERun (self):
 		r0 = runner_sge(self.jobs[0], {
 			'sgeRunner': {'sge_N': 'job_r0', 'sge_q': '1-hour', 'sge_M': 'Wang.Panwen@mayo.edu'}

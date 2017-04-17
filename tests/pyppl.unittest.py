@@ -35,7 +35,7 @@ class TestPipelineMethods (unittest.TestCase):
 		p2 = proc("MOVE_FILE")
 		p2.input = "input, infile:file"
 		p2.output = "outfile:file:{{infile.fn}}-2.txt"
-		p2.script = "mv {{infile}} {{outfile}}; ln -s {{outfile}} {{infile}}"
+		p2.script = "mv {{infile}} {{outfile}}; cp {{outfile}} {{infile}}"
 		p2.depends = p1
 		p2.exportdir = './test/'
 		p2.cache  = False
@@ -64,6 +64,14 @@ class TestPipelineMethods (unittest.TestCase):
 		p9 = proc("I")
 		p1.script = "echo 1"
 		p1.input  = {"input": channel.create(['a'])}
+		p8.input  = {"input": channel.create(['a'])}
+		p9.input  = {"input": channel.create(['a'])}
+		p2.input  = "input"
+		p3.input  = "input"
+		p4.input  = "input"
+		p5.input  = "input"
+		p6.input  = "input"
+		p7.input  = "input"
 		p1.output = "{{input}}" 
 		p2.script = "echo 1"
 		p2.output = "{{input}}" 
@@ -81,7 +89,7 @@ class TestPipelineMethods (unittest.TestCase):
 		p8.output = "{{input}}" 
 		p9.script = "echo 1"
 		p9.output = "{{input}}" 
-
+		
 		"""
 					   1A         8H
 					/      \      /
@@ -161,12 +169,12 @@ sorted("""digraph PyPPL {
 		p1.workdir = './test-sge'
 		p1.forks = 3
 		p1.script = "echo {input}"
-		#ppl.add(p1).run('sge')
+		ppl.starts(p1).run('sge')
 	
 	def test_batchjobs (self):
 		p = proc ('batch')
 		p.input = {'input': channel.create(range(100))}
-		p.script = "cat {{proc.workdir}}/scripts/script.{{#}}.ssh | grep franklin; sleep 10"
+		p.script = "cat {{proc.workdir}}/scripts/script.{{#}}.ssh | grep franklin; sleep 3"
 		p.echo = True
 		p.cache = False
 		p.forks = 32
@@ -219,7 +227,7 @@ sorted("""digraph PyPPL {
 		pe.output        = "out:{{input}}.{{proc.id}}.{{proc.tag}}"
 		
 		pyppl ().starts(a).run()
-		
+	
 
 if __name__ == '__main__':
 	unittest.main()

@@ -2,9 +2,9 @@ from hashlib import md5
 from glob import glob
 from os import path, remove, symlink, makedirs
 from shutil import rmtree, copytree, copyfile, move
+from collections import OrderedDict
 import gzip
 import utils
-
 
 class job (object):
 	
@@ -18,30 +18,37 @@ class job (object):
 		self.output  = {'var':[], 'file':[]} if output is None else input
 		self.index   = index
 		
-	def signature (self):
-		sSig = utils.fileSig(self.script)
-		iSig = ''
-		oSig = ''
-		for val in self.input['var']:
-			val = str(val)
-			iSig += "|var:" + md5(val).hexdigest()
-		for val in self.input['file']:
-			iSig += "|file:" + utils.fileSig(val)
-		iSig += "|files"
-		for val in self.input['files']:
-			for v in val: iSig += ':' + utils.fileSig(v)
-					
-		for val in self.output['var']:
-			val = str(val)
-			oSig += "|var:" + md5(val).hexdigest()
-		for val in self.output['file']:
-			oSig += "|file:" + utils.fileSig(val)
-		return md5(sSig + ';' + iSig + ';' + oSig).hexdigest()
+	def signature (self, log):
+		def obj2sig (obj, k = ''):
+			if isinstance (obj, dict):
+				return {key:obj2sig(val, key) for key, val in obj.iteritems()}
+			elif isinstance (obj, list):
+				return [obj2sig (o, k) for o in obj]
+			else:
+				if 'var' in k: return md5(str(obj)).hexdigest()
+				if not path.exists(obj):
+					log ("Job #%s, %s not exists: %s" % (self.index, k, obj), 'debug')
+					return False
+				return utils.fileSig (obj)
+						
+		sigobj = {
+			'script': self.script,
+			'input':  {'in' +key:val for key, val in self.input.iteritems()},
+			'output': {'out'+key:val for key, val in self.output.iteritems()},
+		}
+		sigobj = OrderedDict(obj2sig (sigobj))
+		if sigobj == False: return sigobj
+		return md5 (str(sigobj)).hexdigest()
 	
-	def rc (self):
-		if not path.exists (self.rcfile): return -99 
-		rccodestr = open (self.rcfile).read().strip()		
-		return int(rccodestr) if rccodestr else -99
+	def rc (self, val = None):
+		if val is None:
+			ret = -99
+			if not path.exists (self.rcfile): return ret
+			else:
+				rcstr = open (self.rcfile).read().strip()
+				return ret if not rcstr else int (rcstr)
+		else:
+			open (self.rcfile, 'w').write (str(val))
 	
 	# whether output files are generated
 	def outfileGenerated (self):
@@ -78,20 +85,24 @@ class job (object):
 					log ('Overwrite file/dir to use export for caching: %s' % outfile, 'warning')
 					if path.isdir (outfile): rmtree (outfile)
 					else: remove (outfile)
-				symlink (exfile, outfile)
+				symlink (path.realpath(exfile), outfile)
 		return True
 			
 	def export (self, exdir, how, ow, log):
 		for outfile in self.output['file']:
 			bn     = path.basename (outfile)
 			target = path.join (exdir, bn)
-
+			if how == 'gzip':
+				target += ('.tgz' if path.isdir(outfile) else '.gz')
+			
 			if path.exists (target):
-				if ow:
+				if ow and (not path.islink (outfile) or path.realpath(outfile) != path.realpath(target)):
 					if path.isdir (target):rmtree (target)
-					else: remove (target)
+					else:
+						remove (target)
 				else:
-					log('%s (target exists, skipped)' % target, 'warning')
+					log('%s (target exists, skipped)' % target, 'warning', 'EXPORT')
+			
 			if not path.exists (target):
 				log ('%s (%s)' % (target, how), 'info', 'EXPORT')
 				if how == 'copy':
@@ -103,9 +114,12 @@ class job (object):
 				elif how == 'symlink':
 					symlink (outfile, target)
 				elif how == 'gzip':
-					
 					if path.isdir (outfile):
-						utils.targz (target + '.tgz', outfile)
+						utils.targz (target, outfile)
 					else:
-						utils.gz (target + '.gz', outfile)
-						
+						utils.gz (target, outfile)
+	
+	def clearOutput (self):
+		for outfile in self.output['file']:
+			if not path.exists(outfile): continue
+			remove (outfile)

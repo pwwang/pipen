@@ -1,10 +1,11 @@
 
 from channel import channel
 import utils
+import traceback
 
 class aggr (object):
 	
-	commprops = ['tmpdir', 'forks', 'cache', 'retcodes', 'echo', 'runner', 'errorhow', 'errorntry']
+	commprops = ['tag', 'tmpdir', 'forks', 'cache', 'retcodes', 'rc', 'echo', 'runner', 'errorhow', 'errhow', 'errorntry', 'errntry']
 	
 	# aggr (p1, p2, p3, ..., depends = True)
 	def __init__ (self, *arg):
@@ -55,7 +56,7 @@ class aggr (object):
 		elif name == 'depends':
 			for proc in self.ends:
 				proc.depends = value
-		elif name.startswith ('export'):
+		elif name.startswith ('ex'): # export
 			for proc in self.ends:
 				proc.__setattr__(name, value)
 		elif name in ['starts', 'ends', 'id']:
