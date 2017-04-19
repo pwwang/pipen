@@ -23,6 +23,7 @@ class TestRunner (unittest.TestCase):
 			os.path.join('/data2/junwenwang/jeffc/grna/bagel-for-knockout-screens-code', 'BAGEL.py'),
 			os.path.join('/data2/junwenwang/jeffc/luna/test1', 'test2.R'),
 			os.path.join(tmpdir, 'runner3.py'),
+			os.path.join(tmpdir, 'runner4.bash'),
 		]
 
 		with open (self.scripts[0], 'w') as f:
@@ -39,6 +40,9 @@ class TestRunner (unittest.TestCase):
 			f.write ('print "2"\n')
 			f.write ('sys.stderr.write("3")\n')
 			f.write ('sys.exit(1)\n')
+		with open (self.scripts[5], 'w') as f:
+			f.write ('#!/usr/bin/env bash\n')
+			f.write ('sleep 3\n')
 			
 		self.jobs = []
 		for i, script in enumerate(self.scripts):
@@ -55,7 +59,7 @@ class TestRunner (unittest.TestCase):
 
 	def tearDown (self):
 		super(TestRunner, self).tearDown()
-		shutil.rmtree (os.path.join(os.path.dirname(__file__), 'test'))
+		#shutil.rmtree (os.path.join(os.path.dirname(__file__), 'test'))
 
 	def testLocalInit (self):
 		for j in self.jobs[:2]:
@@ -160,7 +164,7 @@ class TestRunner (unittest.TestCase):
 
 		
 	
-	#@unittest.skip("Skipping SGE test...")
+	@unittest.skip("Skipping SGE test...")
 	def testSGERun (self):
 		r0 = runner_sge(self.jobs[0], {
 			'sgeRunner': {'sge_N': 'job_r0', 'sge_q': '1-hour', 'sge_M': 'Wang.Panwen@mayo.edu'}
@@ -175,31 +179,56 @@ class TestRunner (unittest.TestCase):
 
 		r0.submit()
 		r0.wait()
-		self.assertTrue (os.path.exists(r0.rcfile))
-		self.assertTrue (os.path.exists(r0.outfile))
-		self.assertTrue (os.path.exists(r0.errfile))
-		self.assertEqual (r0.rc(), 0)
-		self.assertEqual (open(r0.outfile).read().strip(), '0')
+		self.assertTrue (os.path.exists(r0.job.rcfile))
+		self.assertTrue (os.path.exists(r0.job.outfile))
+		self.assertTrue (os.path.exists(r0.job.errfile))
+		self.assertEqual (r0.job.rc(), 0)
+		self.assertEqual (open(r0.job.outfile).read().strip(), '0')
 		self.assertTrue (r0.isValid())
 
 		r1.submit()
 		r1.wait()
-		self.assertTrue (os.path.exists(r1.rcfile))
-		self.assertTrue (os.path.exists(r1.outfile))
-		self.assertTrue (os.path.exists(r1.errfile))
-		self.assertEqual (r1.rc(), 0)
-		self.assertEqual (open(r1.outfile).read().strip(), '1\n2')
+		self.assertTrue (os.path.exists(r1.job.rcfile))
+		self.assertTrue (os.path.exists(r1.job.outfile))
+		self.assertTrue (os.path.exists(r1.job.errfile))
+		self.assertEqual (r1.job.rc(), 0)
+		self.assertEqual (open(r1.job.outfile).read().strip(), '1\n2')
 		self.assertTrue (r1.isValid())
 
 		r2.submit()
 		r2.wait()
-		self.assertTrue (os.path.exists(r2.rcfile))
-		self.assertTrue (os.path.exists(r2.outfile))
-		self.assertTrue (os.path.exists(r2.errfile))
-		self.assertEqual (r2.rc(), 1)
-		self.assertEqual (open(r2.outfile).read().strip(), '2')
-		self.assertEqual (open(r2.errfile).read().strip(), '3')
+		self.assertTrue (os.path.exists(r2.job.rcfile))
+		self.assertTrue (os.path.exists(r2.job.outfile))
+		self.assertTrue (os.path.exists(r2.job.errfile))
+		self.assertEqual (r2.job.rc(), 1)
+		self.assertEqual (open(r2.job.outfile).read().strip(), '2')
+		self.assertEqual (open(r2.job.errfile).read().strip(), '3')
 		self.assertFalse (r2.isValid())
+	
+	@unittest.skip("Skipping isRunning test...")	
+	def testIsRunning (self):
+		r0 = runner_local (self.jobs[5])
+		r0.job.clearOutput()
+		r0.submit ()
+		self.assertFalse (r0.isRunning())
+		r0.job.clearOutput()
+		
+		r1 = runner_sge (self.jobs[5])
+		if not r1.isRunning(): 
+			r1.job.clearOutput()
+			r1.submit ()
+			self.assertTrue (r1.isRunning())
+		r1.job.clearOutput()
+			
+		r2 = runner_ssh (self.jobs[5], {
+			'sshRunner': {'servers': ['franklin03']}	
+		})
+		if not r2.isRunning(): 
+			r2.job.clearOutput()
+			from subprocess import Popen
+			Popen (r2.script)
+			self.assertTrue (r2.isRunning())
+		
 
 if __name__ == '__main__':
 	unittest.main()

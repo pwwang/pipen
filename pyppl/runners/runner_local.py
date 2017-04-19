@@ -44,20 +44,31 @@ class runner_local (object):
 			open (self.job.errfile, 'w').write(str(ex))
 			self.job.rc(-1)
 			
-	def wait (self):
+	def wait (self, checkP = True):
 		if self.job.rc() == -1: return
-		while self.p is None: sleep (1)
-
-		with open (self.job.outfile, 'w') as fout, open(self.job.errfile, 'w') as ferr:
-			for line in iter(self.p.stderr.readline, ''):
-				ferr.write(line)
+		while checkP and self.p is None: sleep (1)
+		
+		if checkP:
+			with open (self.job.outfile, 'w') as fout, open(self.job.errfile, 'w') as ferr:
+				for line in iter(self.p.stderr.readline, ''):
+					ferr.write(line)
+					if self._config('echo', False):
+						sys.stderr.write('! ' + line)
+	
+				for line in iter(self.p.stdout.readline, ''):
+					fout.write(line)
+					if self._config('echo', False):
+						sys.stdout.write('- ' + line)
+		else:
+			while self.job.rc() == -99:
 				if self._config('echo', False):
-					sys.stderr.write('! ' + line)
-
-			for line in iter(self.p.stdout.readline, ''):
-				fout.write(line)
-				if self._config('echo', False):
-					sys.stdout.write('- ' + line)
+					self.flushFile('stdout')
+					self.flushFile('stderr')
+				sleep (5)
+		# IMPORTANT:
+		# flush the output files, otherwise will cause output files not generated
+		# If the job is running via ssh, the stat will not be flushed!
+		os.utime (self._config('outdir', os.path.dirname(os.path.dirname(self.job.script))), None)
 		self.p = None
 		self.retry ()
 		
@@ -66,7 +77,7 @@ class runner_local (object):
 		if self.isValid(): return
 		if self._config('errorhow') != 'retry': return
 		if self.ntry > self._config('errorntry'): return
-		logger = self._config('logger', logging)
+		logger = self._config('logger')
 		paggr  = self._config('aggr')
 		ptag   = self._config('tar')
 		pwd    = self._config('workdir')
@@ -75,14 +86,17 @@ class runner_local (object):
 		
 		self.submit()
 		self.wait()
-
+	
+	# if you leave the main thread, the job will quite
+	def isRunning (self):
+		return False
 		
 	def isValid (self):
 		return self.job.rc () in self._config('retcodes', [0])
 
 
 	def flushFile (self, fn = 'stdout'):
-		fname = self.outfile if fn == 'stdout' else self.errfile
+		fname = self.job.outfile if fn == 'stdout' else self.job.errfile
 		if not os.path.exists(fname): return
 		point = self.outp if fn == 'stdout' else self.errp
 		def wfunc (line):

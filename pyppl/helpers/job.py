@@ -17,6 +17,8 @@ class job (object):
 		self.input   = {'var':[], 'file':[], 'files':[]} if input is None else input
 		self.output  = {'var':[], 'file':[]} if output is None else input
 		self.index   = index
+		# Whether I am newly created
+		self.new     = False
 		
 	def signature (self, log):
 		def obj2sig (obj, k = ''):
@@ -36,9 +38,11 @@ class job (object):
 			'input':  {'in' +key:val for key, val in self.input.iteritems()},
 			'output': {'out'+key:val for key, val in self.output.iteritems()},
 		}
+
 		sigobj = OrderedDict(obj2sig (sigobj))
 		if sigobj == False: return sigobj
 		return md5 (str(sigobj)).hexdigest()
+		
 	
 	def rc (self, val = None):
 		if val is None:
@@ -51,7 +55,7 @@ class job (object):
 			open (self.rcfile, 'w').write (str(val))
 	
 	# whether output files are generated
-	def outfileGenerated (self):
+	def checkOutFiles (self):
 		for outfile in self.output['file']:
 			if not path.exists (outfile):
 				raise Exception ('[Job#%s]: Output file not generated: %s' % (self.index, outfile))
@@ -95,31 +99,40 @@ class job (object):
 			if how == 'gzip':
 				target += ('.tgz' if path.isdir(outfile) else '.gz')
 			
-			if path.exists (target):
-				if ow and (not path.islink (outfile) or path.realpath(outfile) != path.realpath(target)):
-					if path.isdir (target):rmtree (target)
-					else:
-						remove (target)
-				else:
-					log('%s (target exists, skipped)' % target, 'warning', 'EXPORT')
+			doExport = True
+			# remove the target if exportow == True and NOT
+			#   outfile is a link and it links to the target
+			# cuz removing target makes it a dead link
+			if ow and path.exists(target) and not utils.isSameFile(outfile, target):
+				if path.isdir (target):rmtree (target)
+				else: remove (target)
+			elif path.exists(target):
+				log('%s (target exists, skipped)' % target, 'info', 'EXPORT')
+				doExport = False
 			
-			if not path.exists (target):
+			if doExport:
 				log ('%s (%s)' % (target, how), 'info', 'EXPORT')
 				if how == 'copy':
 					if path.isdir (outfile): copytree (outfile, target)
 					else: copyfile (outfile, target)
 				elif how == 'move':
 					move (outfile, target)
-					symlink(target, outfile) # make sure dependent proc can run
+					symlink(path.abspath(target), outfile) # make sure dependent proc can run
 				elif how == 'symlink':
 					symlink (outfile, target)
+					log ('%s (%s)' % (target, how), 'info', 'EXPORT')
 				elif how == 'gzip':
 					if path.isdir (outfile):
 						utils.targz (target, outfile)
 					else:
 						utils.gz (target, outfile)
-	
+						
 	def clearOutput (self):
-		for outfile in self.output['file']:
+		if path.exists (self.rcfile):  remove(self.rcfile)
+		if path.exists (self.outfile): remove(self.outfile)
+		if path.exists (self.errfile): remove(self.errfile)
+		for outfile in self.output['file']: 
 			if not path.exists(outfile): continue
 			remove (outfile)
+			
+			

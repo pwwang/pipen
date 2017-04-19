@@ -1,6 +1,6 @@
 import os, pickle, shlex, shutil, threading, sys
 import copy as pycopy
-from time import sleep
+from time import sleep, time
 from random import randint
 from channel import channel
 from aggr import aggr
@@ -50,7 +50,7 @@ class proc (object):
 		self.config['depends']    = []
 		self.config['tag']        = tag
 		self.config['exportdir']  = ''
-		self.config['exporthow']  = 'copy' # symlink, move, gzip (TODO)
+		self.config['exporthow']  = 'move' # symlink, copy, gzip 
 		self.config['exportow']   = True # overwrite
 		self.config['errorhow']   = "terminate" # retry, ignore
 		self.config['errorntry']  = 1
@@ -151,13 +151,16 @@ class proc (object):
 	def copy (self, tag=None, newid=None):
 		newproc = pycopy.copy (self)
 		if tag is not None:	newproc.tag = tag
-		pid                  = utils.varname('\w+\.' + self.copy.__name__, 3)
-		newproc.props['pid'] = pid if newid is None else newid
+		pid                       = utils.varname('\w+\.' + self.copy.__name__, 3)
+		newproc.props['id']       = pid if newid is None else newid
+		newproc.props['workdir']  = '' # force the newproc to calcuate a new workdir
 		return newproc
 
 	def _suffix (self):
-		config = { key:val for key, val in self.config.iteritems() if key not in ['workdir'] }
-		"""	
+		config        = { key:val for key, val in self.config.iteritems() if key not in ['workdir'] }
+		config['id']  = self.id
+		config['tag'] = self.tag
+		
 		if config.has_key ('callback'):
 			config['callback'] = utils.funcSig(config['callback'])
 		# proc is not picklable
@@ -177,7 +180,7 @@ class proc (object):
 			config['input'] = pycopy.copy(config['input'])
 			for key, val in config['input'].iteritems():
 				config['input'][key] = utils.funcSig(val) if callable(val) else val
-		"""
+			
 		signature = pickle.dumps(str(config))
 		return utils.uid(signature)
 
@@ -199,10 +202,10 @@ class proc (object):
 			if callable (self.callback):
 				self.log('Calling callback ...', 'debug')
 				self.callback (self)
-		self.log ('Done.', 'info')
 
 	def run (self, config = {}):
 		self.logger.info ('[  START] ' + utils.padBoth(' ' + ("%s -> " % self.aggr if self.aggr else "") + self.id + '.' + self.tag + ' ', 80, '-'))
+		timer = time()
 		self._readConfig (config)
 		self._tidyBeforeRun ()
 		if self._runCmd('beforeCmd') != 0:
@@ -217,6 +220,7 @@ class proc (object):
 		if self._runCmd('afterCmd') != 0:
 			raise Exception ('Failed to run afterCmd: %s' % self.afterCmd)
 		self._tidyAfterRun ()
+		self.log ('Done (time: %s).' % utils.formatTime(time() - timer), 'info')
 
 	# False: totally failed
 	# [1,2,3,...]: successful, successful job indices
@@ -226,7 +230,7 @@ class proc (object):
 			job   = self.jobs[i]
 			rc    = job.rc ()
 			if rc in self.retcodes:
-				job.outfileGenerated()
+				job.checkOutFiles()
 				ret.append (i)
 				continue
 
@@ -303,6 +307,8 @@ class proc (object):
 		if not os.path.exists (self.outdir):  os.makedirs (self.outdir)
 		if not os.path.exists (os.path.join(self.workdir, 'scripts')):
 			os.makedirs (os.path.join(self.workdir, 'scripts'))
+		
+		self.props['jobs'] = [] # in case the proc is reused, maybe other properties to reset ?
 		
 	"""
 	Input could be:
@@ -461,7 +467,8 @@ class proc (object):
 		
 		if not script.startswith ("#!"):
 			script = "#!/usr/bin/env " + self.defaultSh + "\n\n" + script
-
+		
+		scriptExists = []
 		for index in self.input['#']:
 			data    = {key:val[index] for key, val in self.input.iteritems()}
 			data.update({key:val[index] for key, val in self.output.iteritems()})
@@ -470,8 +477,12 @@ class proc (object):
 		
 			scriptfile = os.path.join (scriptdir, 'script.%s' % index)
 			if os.path.exists(scriptfile) and open(scriptfile).read() == jscript:
+				scriptExists.append (index)
 				continue # don't touch it if contest is the same
+			self.jobs[index].new = True
 			open (scriptfile, 'w').write (jscript)
+		if scriptExists:
+			self.log ("Script files exist and contents are the same, didn't touch them for job #%s and %s others." % (scriptExists.pop(0), len(scriptExists)), 'debug')
 	
 	def _export (self):
 		if not self.exportdir: return
@@ -540,7 +551,9 @@ class proc (object):
 		
 		self.props['ncjobids'] = [i for i in self.input['#'] if i not in cachedJids]
 		# in case some programs don't overwrite output files
-		for i in self.ncjobids: self.jobs[i].clearOutput()
+		## This caused problems for jobs running, cuz output files cleared
+		## Ask the job itself to clear the output when it tries to run
+		# for i in self.ncjobids: self.jobs[i].clearOutput()
 		
 		self.log ('Truely cached jobs: %s' % (sigCachedJids if len(sigCachedJids) < self.length else 'ALL'), 'debug')
 		self.log ('Export cached jobs: %s' % (exCachedJids  if len (exCachedJids) < self.length else 'ALL'), 'debug')
@@ -572,10 +585,15 @@ class proc (object):
 		# submit jobs
 		def sworker (q):
 			while True:
-				(job, i) = q.get()
+				(ru, i) = q.get()
 				sleep (i)
-				job.submit()
-				job.wait()
+				if not ru.isRunning():
+					ru.job.clearOutput()
+					ru.submit()
+					ru.wait()
+				else:
+					self.log ("Job #%s is already running, skip submitting." % ru.job.index, 'info')
+					ru.wait(False) # don't check submision
 				q.task_done()
 		
 		runner    = proc.runners[self.runner]

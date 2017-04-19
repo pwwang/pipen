@@ -224,9 +224,10 @@ def dirmtime (d):
 def fileSig (fn):
 	from os.path import realpath, abspath, getmtime, isdir
 	from hashlib import md5
-	fn    = abspath(realpath(fn))
-	mtime = dirmtime(fn) if isdir (fn) else getmtime(fn)
-
+	fname = abspath(realpath(fn))
+	mtime = dirmtime(fname) if isdir (fname) else getmtime(fname)
+	# not using fname, because we intend to allow links to replace the original file
+	# say in case of export using move
 	return md5(fn + '@' + str(mtime)).hexdigest()
 
 # convert str to list separated by ,
@@ -304,3 +305,14 @@ def padBoth (s, length, left, right = None):
 	lstr = (left * (llen/len (left)))[:llen]
 	rstr = (right * (rlen/len(right)))[:rlen]
 	return lstr + s + rstr
+
+def formatTime (seconds):
+	m, s = divmod(seconds, 60)
+	h, m = divmod(m, 60)
+	return "%02d:%02d:%02d,%03d" % (h, m, s, 1000*(s-int(s)))
+
+def isSameFile (f1, f2):
+	from os import path
+	if not path.exists (f1) or not path.exists(f2):
+		return False
+	return path.realpath(f1) == path.realpath(f2)

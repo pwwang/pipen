@@ -1,6 +1,6 @@
 from runner_local import runner_local
 from time import sleep
-from subprocess import Popen, list2cmdline 
+from subprocess import Popen, list2cmdline, check_output 
 from multiprocessing import cpu_count
 import os, shlex, logging, sys, copy
 
@@ -22,7 +22,7 @@ class runner_sge (runner_local):
 			#'#$ -e ' + self.errfile,
 			#'#$ -cwd'
 		]
-		defaultName = '%s.%s.%s' % (
+		self.jobname = '%s.%s.%s' % (
 			self._config('id'),
 			self._config('tag'),
 			self.job.index
@@ -30,9 +30,10 @@ class runner_sge (runner_local):
 		
 		conf = copy.copy (self._config ('sgeRunner', {}))
 		if not conf.has_key ('sge_N'):
-			sgesrc.append('#$ -N %s' % defaultName) 
+			sgesrc.append('#$ -N %s' % self.jobname) 
 		else:
-			sgesrc.append('#$ -N %s' % conf['sge_N'])
+			self.jobname = conf['sge_N']
+			sgesrc.append('#$ -N %s' % self.jobname)
 			del conf['sge_N']
 		
 		if conf.has_key('sge_q'):
@@ -96,9 +97,9 @@ class runner_sge (runner_local):
 			open (self.job.errfile, 'w').write(str(ex))
 			self.job.rc(-1) # not able to submit
 		
-	def wait(self):
+	def wait(self, checkP = True):
 		if self.job.rc() == -1: return
-		while self.p is None: sleep (1)
+		while checkP and self.p is None: sleep (1)
 		
 		while self.job.rc() == -99:
 			if self._config('echo', False):
@@ -109,3 +110,15 @@ class runner_sge (runner_local):
 		self.p = None
 		self.retry ()
 		
+
+	# if you leave the main thread, the job will quite
+	def isRunning (self):
+		# you didn't leave the main thread, cuz the job was created by the main thread.
+		if self.job.new: return False
+		# rcfile already generated
+		if self.job.rc() != -99: return False
+
+		qstout = check_output (['qstat', '-xml'])
+		#  <JB_name>pMuTect2.nothread.3</JB_name>
+		qstout = [line.strip() for line in qstout.split("\n") if ">" + self.jobname + "<" in line]
+		return bool (qstout)

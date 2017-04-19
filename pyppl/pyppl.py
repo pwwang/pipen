@@ -1,7 +1,8 @@
 import logging, os, sys, random, json, copy
 from helpers import *
 from runners import *
-VERSION = "0.4.0"
+from time import time
+VERSION = "0.5.0"
 			
 class pyppl (object):
 
@@ -55,6 +56,7 @@ class pyppl (object):
 		return self
 	
 	def run (self, profile = 'local'):
+		timer = time()
 		config = {}
 		if self.config.has_key('proc'):
 			utils.dictUpdate(config, self.config['proc'])
@@ -63,7 +65,10 @@ class pyppl (object):
 			utils.dictUpdate(config, self.config[profile])
 		
 		if not config.has_key('runner'):
-			config['runner'] = profile
+			if proc.runners.has_key (profile):
+				config['runner'] = profile
+			else:
+				config['runner'] = 'local'
 
 		next2run = self.heads
 		finished = []
@@ -76,7 +81,7 @@ class pyppl (object):
 				finished.append (p)
 				next2run2 += p.props['nexts']
 			next2run = [n for n in list(set(next2run2)) if n not in finished and all(x in finished for x in n.props['depends'])]
-		self.logger.info ('[   DONE]')
+		self.logger.info ('[   DONE] Total time: %s' % utils.formatTime (time()-timer))
 		
 
 	

@@ -76,7 +76,7 @@ class runner_test (runner_local):
 		self.assertEqual (p.echo, False)
 		self.assertEqual (p.runner, 'local')
 		self.assertEqual (p.exportdir, '')
-		self.assertEqual (p.exporthow, 'copy')
+		self.assertEqual (p.exporthow, 'move')
 		self.assertEqual (p.exportow, True)
 		self.assertEqual (p.errorhow, 'terminate')
 		self.assertEqual (p.errorntry, 1)
@@ -409,10 +409,17 @@ class runner_test (runner_local):
 		
 		self.assertEqual (p.forks, 1)
 
+		p.exhow = 'move'
 		p._runJobs()
+		sigs1 = [j.signature(p.log) for j in p.jobs]
+		#print sorted(sigs)
 		p._export()
 		for outfile in p.output['outfile']:
 			self.assertTrue (os.path.exists (os.path.join(testdir, os.path.basename(outfile))))
+		sigs2 = [j.signature(p.log) for j in p.jobs]
+		# expect export doesn't change signature, so the jobs can be cached
+		self.assertEqual (sorted(sigs2), sorted(sigs1))
+		#print sorted(sigs)
 		
 		p.exhow = 'gzip'
 		p._export()
@@ -457,7 +464,7 @@ class runner_test (runner_local):
 		p.exportdir = rootdir
 
 		pCopy = p.copy('procCopy')
-		self.assertEqual (pCopy.pid, 'pCopy')
+		self.assertEqual (pCopy.id, 'pCopy')
 		self.assertEqual (pCopy.tag, 'procCopy')
 		self.assertEqual (pCopy.exportdir, rootdir)
 		self.assertEqual (pCopy.script, p.script)

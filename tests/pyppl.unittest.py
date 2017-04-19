@@ -227,7 +227,39 @@ sorted("""digraph PyPPL {
 		pe.output        = "out:{{input}}.{{proc.id}}.{{proc.tag}}"
 		
 		pyppl ().starts(a).run()
+		
+	def testConfig (self):
+		config = {
+			'proc': {},
+			'sge': {'runner': 'ssh', 'sshRunner': {'servers':['franklin01']}},
+			'ssh2': {'runner': 'local'},
+			'ssh': {'sshRunner': {'servers':['franklin01']}}
+		}
+		p = proc()
+		p.input = {'a':[1]}
+		pyppl (config, '').starts(p).run()
+		self.assertEqual (p.runner, 'local')
+		pyppl (config, '').starts(p).run('ssh')
+		self.assertEqual (p.runner, 'ssh')
+		pyppl (config, '').starts(p).run('ssh2')
+		self.assertEqual (p.runner, 'local')
+		pyppl (config, '').starts(p).run('sge')
+		self.assertEqual (p.runner, 'ssh')
+		
 	
+	# To test if comment out the @skip statement
+	# run: python pyppl.unittest.py TestPipelineMethods.testIsRunning
+	# and then CTRL+C to quite the main thread
+	# run it again see whether it shows job is already running
+	@unittest.skip('')
+	def testIsRunning (self):
+		pIsRunning = proc ()
+		pIsRunning.input  = {"a": [1,2,3,4,5]}
+		pIsRunning.script = "sleep 5"  # takes time to start
+		pIsRunning.runner = "sge"
+		pIsRunning.forks  = 5
+		
+		pyppl ().starts(pIsRunning).run()
 
 if __name__ == '__main__':
 	unittest.main()
