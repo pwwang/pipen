@@ -7,7 +7,9 @@ import gzip
 import utils
 
 class job (object):
-	
+
+
+		
 	def __init__(self, index, workdir, input = None, output = None):
 		
 		self.script  = path.join (workdir, "scripts", "script.%s" % index)
@@ -20,27 +22,15 @@ class job (object):
 		# Whether I am newly created
 		self.new     = False
 		
-	def signature (self, log):
-		def obj2sig (obj, k = ''):
-			if isinstance (obj, dict):
-				return {key:obj2sig(val, key) for key, val in obj.iteritems()}
-			elif isinstance (obj, list):
-				return [obj2sig (o, k) for o in obj]
-			else:
-				if 'var' in k: return md5(str(obj)).hexdigest()
-				if not path.exists(obj):
-					log ("Job #%s, %s not exists: %s" % (self.index, k, obj), 'debug')
-					return False
-				return utils.fileSig (obj)
-						
+	def signature (self, log):		
 		sigobj = {
 			'script': self.script,
 			'input':  {'in' +key:val for key, val in self.input.iteritems()},
 			'output': {'out'+key:val for key, val in self.output.iteritems()},
 		}
-
-		sigobj = OrderedDict(obj2sig (sigobj))
-		if sigobj == False: return sigobj
+		sigobj = self._obj2sig (sigobj, '', log)
+		if sigobj == False: return False
+		sigobj = OrderedDict(sigobj)
 		return md5 (str(sigobj)).hexdigest()
 		
 	
@@ -55,11 +45,48 @@ class job (object):
 			open (self.rcfile, 'w').write (str(val))
 	
 	# whether output files are generated
-	def checkOutFiles (self):
+	def _checkOutFiles (self):
 		for outfile in self.output['file']:
 			if not path.exists (outfile):
-				raise Exception ('[Job#%s]: Output file not generated: %s' % (self.index, outfile))
-			
+				return outfile
+		return True
+	
+	# return:
+	#   True: successful
+	#   <rc>: not the right retcode, see .stderr file
+	#   '<outfile>': outfile not generated
+	def status (self, validRetcodes = [0]):
+		rc = self.rc()
+		if rc not in validRetcodes:
+			return rc
+		return self._checkOutFiles()
+	
+	def cache (self, cachefile, log):
+		sig = self.signature(log)
+		open(cachefile, 'a').write ("%s\t%s\n" % (self.index, sig))
+		
+	def _obj2sig (self, obj, k, log):
+		if isinstance (obj, dict):
+			ret = {}
+			for key, val in obj.iteritems():
+				sig = self._obj2sig (val, key, log)
+				if sig == False: return False
+				ret[key] = sig
+			return ret
+		elif isinstance (obj, list):
+			ret = []
+			for o in obj:
+				sig = self._obj2sig (o, k, log)
+				if sig == False: return False
+				ret.append (sig)
+			return ret
+		else:
+			if 'var' in k: return md5(str(obj)).hexdigest()
+			if not path.exists(obj):
+				log ("Generating signature for job #%s, but %s not exists: %s" % (self.index, k, obj), 'debug')
+				return False
+			return utils.fileSig (obj)
+		
 	# use export as cache
 	def exportCached (self, exdir, how, log):
 		if how == 'symlink':
@@ -93,6 +120,7 @@ class job (object):
 		return True
 			
 	def export (self, exdir, how, ow, log):
+		if not exdir: return
 		for outfile in self.output['file']:
 			bn     = path.basename (outfile)
 			target = path.join (exdir, bn)
@@ -131,8 +159,15 @@ class job (object):
 		if path.exists (self.rcfile):  remove(self.rcfile)
 		if path.exists (self.outfile): remove(self.outfile)
 		if path.exists (self.errfile): remove(self.errfile)
-		for outfile in self.output['file']: 
+		for outfile in self.output['file']:
+			if not path.exists (outfile) and path.islink (outfile):
+				remove (outfile) # remove dead links
+				continue
 			if not path.exists(outfile): continue
-			remove (outfile)
+			if path.isdir (outfile):
+				rmtree (outfile)
+				# keep the directory, in case the output is "outdir:dir" to force create dir
+				makedirs(outfile)  
+			else: remove (outfile)
 			
 			

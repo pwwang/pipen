@@ -65,7 +65,7 @@ class runner_test (runner_local):
 		# check initial varialbles
 		self.assertEqual (p.id, 'p')
 		self.assertEqual (p.tag, 'tag')
-		self.assertEqual (p.cachefile, '')
+		self.assertEqual (p.cachefile, 'cached.jobs')
 		self.assertEqual (p.input, {})
 		self.assertEqual (p.output, {})
 		self.assertEqual (p.nexts, [])
@@ -107,11 +107,7 @@ class runner_test (runner_local):
 		self.assertEqual (p.forks, 1)  # props not changed
 		self.assertEqual (p.config['forks'], 1) # props not changed
 
-		self.assertEqual (p.cachefile, "PyPPL.%s.%s.%s.cache" % (
-			p.id,
-			p.tag,
-			p._suffix()
-		))
+		self.assertEqual (p.cachefile, "cached.jobs")
 
 	def testIscached (self):
 		p = proc ('iscached')
@@ -144,7 +140,7 @@ class runner_test (runner_local):
 		p._buildProps()
 		p._buildInput()
 		p._buildOutput()
-		exdir   = "./test/"
+		exdir   = p.outdir + '/export/'
 		p.exdir = exdir
 		if not os.path.isdir (exdir):
 			os.makedirs (exdir)
@@ -152,7 +148,6 @@ class runner_test (runner_local):
 			open (exdir + "%s.txt" % i, 'w').write ('')
 		self.assertFalse (p._isCached())
 		self.assertEqual (p.ncjobids, [2]) # a==3
-		shutil.rmtree (exdir)
 		
 		
 
@@ -278,7 +273,7 @@ class runner_test (runner_local):
 		pOP._buildProps()
 		pOP._buildInput()
 		pOP._buildOutput()
-		print pOP.output
+
 		self.assertEqual (pOP.output['__out.1__'], ['aa', 'bb'])
 		self.assertEqual (pOP.output['o2'], ['1.0', '4.0'])
 		self.assertEqual (pOP.output['o3'], [os.path.join(pOP.outdir, "channel.unittest2.py"), os.path.join(pOP.outdir, "proc.unittest2.py")])
@@ -394,39 +389,21 @@ class runner_test (runner_local):
 			self.assertTrue (os.path.exists( os.path.join(pr.workdir, 'scripts', 'script.%s.stdout' % i) ))
 			self.assertTrue (os.path.exists( os.path.join(pr.workdir, 'scripts', 'script.%s.rc' % i) ))
 			self.assertEqual (open( os.path.join(pr.workdir, 'scripts', 'script.%s.stdout' % i)).read().strip(), str(i))
-		
+	
 	def testExport (self):
+		exdir    = "./test/"
 		p = proc('export')
-		p.script = 'cp {{infile}} {{outfile}}'
-
-		p.input  = {'infile:file': channel.fromPath ("*.py")}
-		p.output = 'outfile:file:{{infile.fn}}2{{infile.ext}}, var:{{infile.fn}}2{{infile.ext}}'
-		testdir  = "./test/"
-		if not os.path.exists(testdir):
-			os.makedirs (testdir)
-		p.exdir = testdir
-		p._tidyBeforeRun ()
+		p.input  = {"rc": [0,1,0,0]} # job #1 failed
+		p.output = "outfile:file:{{#}}.txt"
+		p.script = 'echo {{rc}} > {{outfile}}; exit {{rc}}'
+		p.exdir  = exdir
+		self.assertRaises(SystemExit, p.run)
+		self.assertTrue (os.path.exists(exdir + "0.txt"))
+		self.assertTrue (os.path.exists(exdir + "2.txt"))
+		self.assertTrue (os.path.exists(exdir + "3.txt"))
+		self.assertFalse (os.path.exists(exdir + "1.txt"))
+		shutil.rmtree (exdir)
 		
-		self.assertEqual (p.forks, 1)
-
-		p.exhow = 'move'
-		p._runJobs()
-		sigs1 = [j.signature(p.log) for j in p.jobs]
-		#print sorted(sigs)
-		p._export()
-		for outfile in p.output['outfile']:
-			self.assertTrue (os.path.exists (os.path.join(testdir, os.path.basename(outfile))))
-		sigs2 = [j.signature(p.log) for j in p.jobs]
-		# expect export doesn't change signature, so the jobs can be cached
-		self.assertEqual (sorted(sigs2), sorted(sigs1))
-		#print sorted(sigs)
-		
-		p.exhow = 'gzip'
-		p._export()
-		for outfile in p.output['outfile']:
-			self.assertTrue (os.path.exists (os.path.join(testdir, os.path.basename(outfile) + '.gz')))
-		
-		shutil.rmtree(testdir)
 	
 	def testCheckStatus (self):
 		p = proc('cs')
@@ -434,12 +411,13 @@ class runner_test (runner_local):
 
 		p.input  = {'infile:file': channel.fromPath ("*.py")}
 		p.output = 'outfile:file:{{infile.fn}}2{{infile.ext}}, var:{{infile.fn}}2{{infile.ext}}'
-		p.exportdir = rootdir
 		p._tidyBeforeRun ()
+		p.exportdir = p.outdir + '/export'
 		
 		self.assertEqual (p.forks, 1)
 		p._runJobs()
-		self.assertRaises (Exception, p._checkStatus)
+		# output file not generated
+		self.assertRaises (SystemExit, p._checkStatus)
 
 	def testDoCache (self):
 		p = proc('cache')
@@ -448,11 +426,12 @@ class runner_test (runner_local):
 		p.input  = {'infile:file': channel.fromPath ("*.py")}
 		p.output = 'outfile:file:{{infile.fn}}2{{infile.ext}}, var:{{infile.fn}}2{{infile.ext}}'
 		p._readConfig({})
-		cachefile = os.path.join (p.tmpdir, p.cachefile)
+		p._tidyBeforeRun()
+		
+		cachefile = os.path.join (p.workdir, p.cachefile)
 		if os.path.exists (cachefile):
 			os.remove (cachefile)			
 		self.assertFalse (p._isCached())
-		p._tidyBeforeRun()
 		p._runJobs()
 		p._tidyAfterRun()
 		self.assertTrue (p._isCached())

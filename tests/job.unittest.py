@@ -56,9 +56,9 @@ class TestJob (unittest.TestCase):
 		os.makedirs ("./test/scripts")
 		j2 = job (1, "./test/")
 		j2.output['file'].append ("./test/output/out.txt")
-		self.assertRaisesRegexp(Exception, "Output file", j2.checkOutFiles)
+		self.assertTrue(j2._checkOutFiles(), "./test/output/out.txt")
 		open ("./test/output/out.txt", 'w').write('')
-		j2.checkOutFiles()
+		self.assertTrue(j2._checkOutFiles())
 		shutil.rmtree ("./test/")
 		
 		

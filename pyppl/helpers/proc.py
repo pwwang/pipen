@@ -25,7 +25,7 @@ class proc (object):
 		'errhow':  'errorhow',
 		'errntry': 'errorntry',
 		'lang':    'defaultSh',
-		'rc':      'retcodes',
+		'rc':      'retcodes'
 	}
 
 	def __init__ (self, tag = 'notag'):
@@ -70,7 +70,7 @@ class proc (object):
 		self.props['tag']        = tag
 
 		# the cachefile, cache file will be in <tmpdir>/<cachefile>
-		self.props['cachefile']  = ''
+		self.props['cachefile']  = 'cached.jobs'
 		# which processes this one depents on
 		self.props['depends']    = []
 		# the script
@@ -192,13 +192,12 @@ class proc (object):
 
 	def _tidyAfterRun (self):
 		sucJids = self._checkStatus ()
-		self.log ('Successful jobs: %s' % (sucJids if len(sucJids) < len(self.ncjobids) else 'ALL'), 'debug')
 		if sucJids == False: return
-		self._doCache ()
+		self.log ('Successful jobs: %s' % (sucJids if len(sucJids) < len(self.ncjobids) else 'ALL'), 'debug')
+		#self._doCache (sucJids) # cached in check status
 		if len (sucJids) < len(self.ncjobids):
-			self.log ('Export and callback will not be performed until all jobs run successfully.', 'warning')
+			self.log ('Callback will not be called until all non-cached jobs run successfully.', 'warning')
 		else:
-			self._export ()		
 			if callable (self.callback):
 				self.log('Calling callback ...', 'debug')
 				self.callback (self)
@@ -225,25 +224,49 @@ class proc (object):
 	# False: totally failed
 	# [1,2,3,...]: successful, successful job indices
 	def _checkStatus (self):
-		ret = []
+		cachefile = os.path.join (self.workdir, self.cachefile)
+		ret       = []
+		fjobs     = [] # failed jobs
+		errs      = []
+
+		if self.exportdir and not os.path.exists(self.exportdir):
+			os.makedirs (self.exportdir)
+			
 		for i in self.ncjobids:
 			job   = self.jobs[i]
-			rc    = job.rc ()
-			if rc in self.retcodes:
-				job.checkOutFiles()
+			st    = job.status(self.retcodes)
+			if isinstance(st, bool) and st == True:
+				job.cache(cachefile, self.log)
+				job.export (self.exportdir, self.exporthow, self.exportow, self.log)
 				ret.append (i)
-				continue
-
-			if not self.echo: # if echo is on, errors are already printed
-				self.log('See STDERR below for job#%s' % i, 'error')
+			else:
+				fjobs.append (job)
+				errs.append  (st)
+		
+		if not fjobs: return ret  # all jobs successfully finished
+		
+		errlogs = []
+		stderrPrinted = False # just print one stderr file
+		for i, failedJob in enumerate(fjobs):
+			error = errs[i]    
+			if isinstance(error, int) and not self.echo and not stderrPrinted:
+				stderrPrinted = True
+				self.log('Job #%s: return code %s expected, but get %s. See STDERR below:' % (failedJob.index, self.retcodes, error), 'error')
 				errmsgs = []
-				if os.path.exists (job.errfile):
-					errmsgs = ['[  ERROR] !  ' + line.strip() for line in open(job.errfile)]					
+				if os.path.exists (failedJob.errfile):
+					errmsgs = ['[  ERROR] !  ' + line.strip() for line in open(failedJob.errfile)]					
 				if not errmsgs: errmsgs = ['[  ERROR] ! <EMPTY STDERR>']
 				for errmsg in errmsgs: self.logger.error(errmsg)
-			raise Exception ('[Job#%s]: Return code is %s, but %s expected.' % (i, rc, self.retcodes))
-
-		return ret		
+			else: # out file not generated
+				errlogs.append ('Job #%s: outfile not generated: %s' % (failedJob.index, error))
+		nerr = len (errlogs)
+		for errlog in errlogs[:3]:
+			self.log(errlog, 'error')
+		if nerr > 3:
+			self.log("...... (%s omitted)" % (nerr - 3), 'error')
+		
+		sys.exit (1) # Don't goto next proc
+	
 	
 	# create link in indir and set input
 	def _prepInfile (self, infile, key, index, warnings, multi=False):
@@ -483,14 +506,6 @@ class proc (object):
 			open (scriptfile, 'w').write (jscript)
 		if scriptExists:
 			self.log ("Script files exist and contents are the same, didn't touch them for job #%s and %s others." % (scriptExists.pop(0), len(scriptExists)), 'debug')
-	
-	def _export (self):
-		if not self.exportdir: return
-		if not os.path.exists(self.exportdir):
-			os.makedirs (self.exportdir)
-		
-		for job in self.jobs:
-			job.export (self.exportdir, self.exporthow, self.exportow, self.log)
 
 	def _readConfig (self, config):
 		conf = { key:val for key, val in config.iteritems() if key not in self.sets }
@@ -499,20 +514,6 @@ class proc (object):
 		for key, val in conf.iteritems():
 			self.props[key] = val
 
-		self.props['cachefile'] = "PyPPL.%s.%s.%s.cache" % (
-			self.id,
-			self.tag,
-			self._suffix()
-		)
-
-	def _doCache (self):
-		cachefile = os.path.join (self.tmpdir, self.cachefile)
-		jobsigs   = [None] * self.length
-		for i, job in enumerate(self.jobs):
-			jobsigs[i] = job.signature(self.log)
-		with open(cachefile, 'w') as f:
-			pickle.dump(jobsigs, f)
-	
 	def _isCached (self):
 		if self.cache == False:
 			self.log ('Not cached, because proc.cache = False', 'debug')
@@ -521,10 +522,16 @@ class proc (object):
 		sigCachedJids = []
 		exCachedJids  = []
 		if self.cache in [True, 'export+']:
-			cachefile = os.path.join (self.tmpdir, self.cachefile)
+			cachefile = os.path.join (self.workdir, self.cachefile)
 			jobsigs   = [''] * self.length
 			
-			if os.path.exists (cachefile): jobsigs = pickle.load(open(cachefile))
+			if os.path.exists (cachefile): #jobsigs = pickle.load(open(cachefile))
+				with open (cachefile) as f:
+					for line in f:
+						line = line.strip()
+						if not line: continue
+						jid, sig = line.split("\t")
+						jobsigs[int(jid)] = sig
 			elif self.cache == True:
 				self.log ('Not cached, cache file %s not exists.' % cachefile, 'debug')
 				return False
@@ -535,7 +542,9 @@ class proc (object):
 					if depend.cached: continue
 					self.log ('Not cached, my dependent %s not cached.' % depend.id + '.' + depend.tag, 'debug')
 					return False
-			sigCachedJids = [i for i in self.input['#'] if jobsigs[i] == self.jobs[i].signature(self.log) and jobsigs[i] != False]
+			# sigCachedJids = [i for i in self.input['#'] if jobsigs[i] == self.jobs[i].signature(self.log) and jobsigs[i] != False]
+			# job.signature() can't be "False" just can be False
+			sigCachedJids = [i for i in self.input['#'] if jobsigs[i] == self.jobs[i].signature(self.log)]
 
 		if self.cache in ['export', 'export+']:
 			exCachedJids  = [i for i in self.input['#'] if self.jobs[i].exportCached(self.exportdir, self.exporthow, self.log)]

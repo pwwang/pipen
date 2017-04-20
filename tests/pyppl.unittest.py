@@ -31,7 +31,7 @@ class TestPipelineMethods (unittest.TestCase):
 		p1.script = "echo {{input}} > {{outfile}}"
 		p1.output = "{{input}}, outfile:file:{{input}}.txt"
 		p1.cache  = False
-
+		
 		p2 = proc("MOVE_FILE")
 		p2.input = "input, infile:file"
 		p2.output = "outfile:file:{{infile.fn}}-2.txt"
