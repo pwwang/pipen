@@ -547,7 +547,13 @@ class proc (object):
 			sigCachedJids = [i for i in self.input['#'] if jobsigs[i] == self.jobs[i].signature(self.log)]
 
 		if self.cache in ['export', 'export+']:
-			exCachedJids  = [i for i in self.input['#'] if self.jobs[i].exportCached(self.exportdir, self.exporthow, self.log)]
+			warnings      = []
+			exCachedJids  = [i for i in self.input['#'] if self.jobs[i].exportCached(self.exportdir, self.exporthow, warnings)]
+			nwarn         = len (warnings)
+			for warnings in warnings[:3]:
+				self.log(warnings, 'warning')
+			if nwarn > 3:
+				self.log("...... (%s omitted)" % (nwarn - 3), 'warning')
 			
 		elif not isinstance(self.cache, bool):
 			raise ValueError ('Cache option expects True/False/"export"/"export+"')

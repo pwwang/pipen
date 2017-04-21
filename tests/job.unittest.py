@@ -67,7 +67,7 @@ class TestJob (unittest.TestCase):
 			shutil.rmtree ("./test/")
 			
 		logger = logging.getLogger()
-		def log (a, b="", c=""):
+		def logfunc (a, b="", c=""):
 			logger.info ("%s %s %s" % (a,b,c))
 		os.makedirs ("./test/input")
 		os.makedirs ("./test/output")
@@ -76,14 +76,14 @@ class TestJob (unittest.TestCase):
 		j3.output['file'].append ("./test/output/out.txt")
 		open ("./test/output/out.txt", 'w').write('')
 		
-		
+		log = []
 		self.assertRaisesRegexp(ValueError, "Unable to use export cache", j3.exportCached, "", "symlink", log)
 		self.assertRaisesRegexp(ValueError, "Output files not exported", j3.exportCached, "", "copy", log)
 		
 		e = j3.exportCached ("./test/", "copy", log)
 		self.assertFalse (e)
 		
-		j3.export ("./test/", "copy", True, log)
+		j3.export ("./test/", "copy", True, logfunc)
 		self.assertTrue (os.path.exists ("./test/out.txt"))
 		e = j3.exportCached ("./test/", "copy", log)
 		self.assertTrue (e)
@@ -99,7 +99,7 @@ class TestJob (unittest.TestCase):
 		open ("./test/output/out.txt", 'w').write('')
 		os.makedirs ("./test/output/outdir")
 
-		j4.export ("./test/", "gzip", True, log)
+		j4.export ("./test/", "gzip", True, logfunc)
 		
 		self.assertTrue (os.path.exists ("./test/out.txt.gz"))
 		self.assertTrue (os.path.exists ("./test/outdir.tgz"))

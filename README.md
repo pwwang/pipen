@@ -15,97 +15,112 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Requirements
+- Linux (Maybe work on OSX, not tested)
 - Python 2.7
 
 ## Installation
 ```python
-pip install pyppl
-# or python setup.py install
+git clone https://github.com/pwwang/pyppl
+cd pyppl
+python setup.py install
+# or pip install pyppl
 ```
 
 ## First script
 ```python
-import sys
-from pyppl import pyppl, proc, channel
+from pyppl import pyppl, proc
 
-inchan = channel.create (list("Hello"))
-
-p_upper           = proc('upper')
-p_upper.input     = {"in": inchan}
-p_upper.output    = "outfile:file:{{in}}.txt"
-p_upper.exportdir = "./"
-p_upper.script    = """
-  echo {{in}} | tr '[:lower:]' '[:upper:]' > {{outfile}}
+pSort         = proc()
+# use sys.argv as input channel
+pSort.input   = "infile:file"
+pSort.output  = "outfile:file:{{infile.fn}}.sorted"
+pSort.script  = """
+  sort -k1r {{infile}} > {{outfile}}
 """ 
 
-pyppl().starts(p_upper).run()
+pyppl().starts(pSort).run()
 ```
 
-It will output:
+run `python test.py test1.txt test2.txt test3.txt test4.txt test5.txt` will output:
 ```
-[2017-02-02 16:23:32,515] [  PyPPL] Version: 0.1.0
-[2017-02-02 16:23:32,515] [   TIPS] You can find the stderr in <workdir>/scripts/script.<index>.stderr
-[2017-02-02 16:23:32,517] [RUNNING] p_upper.upper: /tmp/PyPPL_p_upper_upper.6bf016ac
-[2017-02-02 16:23:33,056] [ EXPORT] p_upper.upper: ./H.txt (copy)
-[2017-02-02 16:23:33,058] [ EXPORT] p_upper.upper: ./e.txt (copy)
-[2017-02-02 16:23:33,058] [ EXPORT] p_upper.upper: ./l.txt (copy)
-[2017-02-02 16:23:33,059] [ EXPORT] p_upper.upper: ./l.txt (copy)
-[2017-02-02 16:23:33,060] [ EXPORT] p_upper.upper: ./o.txt (copy)
-[2017-02-02 16:23:33,061] [   DONE]
+[2017-04-21 16:44:35,003] [  PyPPL] Version: 0.5.1
+[2017-04-21 16:44:35,003] [   TIPS] beforeCmd and afterCmd only run locally
+[2017-04-21 16:44:35,003] [ CONFIG] Read from /home/user/.pyppl
+[2017-04-21 16:44:35,003] [  START] --------------------------------- pSort.notag ----------------------------------
+[2017-04-21 16:44:35,007] [  DEBUG] pSort.notag: INPUT [4/4]: infile.ext => .txt
+[2017-04-21 16:44:35,007] [  DEBUG] pSort.notag: INPUT [4/4]: # => 4
+[2017-04-21 16:44:35,007] [  DEBUG] pSort.notag: INPUT [4/4]: infile.bn => test5.txt
+[2017-04-21 16:44:35,007] [  DEBUG] pSort.notag: INPUT [4/4]: infile => /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1/input/test5.txt
+[2017-04-21 16:44:35,007] [  DEBUG] pSort.notag: INPUT [4/4]: infile.fn => test5
+[2017-04-21 16:44:35,007] [  DEBUG] pSort.notag: PROC_VARS: runner => local
+[2017-04-21 16:44:35,007] [  DEBUG] pSort.notag: PROC_VARS: echo => False
+[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: tag => notag
+[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: tmpdir => /home/user/tests/workdir
+[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: indir => /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1/input
+[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: cache => True
+[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: id => pSort
+[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: forks => 1
+[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: workdir => /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1
+[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: outdir => /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1/output
+[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: length => 5
+[2017-04-21 16:44:35,009] [  DEBUG] pSort.notag: OUTPUT [0/4]: outfile => /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1/output/test1.sorted
+[2017-04-21 16:44:35,011] [  DEBUG] pSort.notag: Not cached, cache file /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1/cached.jobs not exists.
+[2017-04-21 16:44:35,011] [RUNNING] pSort.notag: /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1
+[2017-04-21 16:44:36,069] [  DEBUG] pSort.notag: Successful jobs: ALL
+[2017-04-21 16:44:36,069] [   INFO] pSort.notag: Done (time: 00:00:01,066).
+[2017-04-21 16:44:36,070] [   DONE] Total time: 00:00:01,066
 ```
 
-The first process tries to uppercase all letters, the second then write them to files and export them.
-
-## Using arguments
-Say we save the script as first.py:
-
-```python
-p_upper           = proc('upper')
-p_upper.input     = "in" # no channels assigned
-p_upper.output    = "outfile:file:{{in}}.txt"
-p_upper.exportdir = "./"
-p_upper.script    = """
-  echo {{in}} | tr '[:lower:]' '[:upper:]' > {{outfile}}
-""" 
-
-pyppl().starts(p_upper).run()
-```
-then run the script:
-```shell
-python first.py w
-```
-will only have `w` capitalized and saved.
-
-To have more letters involved, you have to specify the `input` as:
-```python
-p_upper.input  = {"in": channel.fromArgv(1)}
-```
-Then run:
-```bash
-python first.py H e l l o
-```
-will have the same output as the first script.
+Then you will see your sorted files in `/home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1/output/`:  
+`test1.sorted  test2.sorted  test3.sorted  test4.sorted  test5.sorted`
 
 ## Using a different interpreter:
 ```python
-p_python = proc()
-p_python.input = "in"
-p_python.output = "out:{{in}}"
-p_python.defaultSh = "python"
-p_python.script = "print {{in}}"
-""" or you can also specify a shebang in script:
-p_python.script = "
-#!/usr/bin/env python
-print "{{in}}"
-"
+pPlot = proc()
+pPlot.input   = "infile:file"
+pPlot.output  = "outfile:file:{{infile.fn}}.png"
+pPlot.lang    = "Rscript"
+# use the output of pSort as input
+pPlot.depends = pSort
+pPlot.script  = """
+data <- read.table ("{{infile}}")
+H    <- hclust(dist(data))
+png (figure = “{{outfile}}”)
+plot(H)
+dev.off()
 """
-pyppl().starts(p_python).run()
+```
+
+## Using a different runner:
+```python
+pPlot = proc()
+pPlot.input   = "infile:file"
+pPlot.output  = "outfile:file:{{infile.fn}}.png"
+pPlot.lang    = "Rscript"
+pPlot.runner  = "sge"
+# run 5 jobs at the same time
+pPlot.forks   = 5
+pPlot.depends = pSort
+pPlot.script  = """
+data <- read.table ("{{infile}}")
+H    <- hclust(dist(data))
+png (figure = “{{outfile}}”)
+plot(H)
+dev.off()
+"""
+pyppl({
+	"proc": {
+		"sgeRunner": {
+			"sge_q" : "1-day"
+		}
+	}
+}).starts(pPlot).run()
 ```
 
 ## Draw the pipeline chart
-`pyppl` can generate the graph in [dot language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)). `def dot(self)` 
+`pyppl` can generate the graph in [dot language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)). 
 ```python
-ppl = pyppl ()
+ppl = pyppl()
 p1 = proc("A")
 p2 = proc("B")
 p3 = proc("C")
@@ -116,7 +131,15 @@ p7 = proc("G")
 p8 = proc("H")
 p9 = proc("I")
 p1.script = "echo 1"
-p1.input  = {"input": channel(['a'])}
+p1.input  = {"input": channel.create(['a'])}
+p8.input  = {"input": channel.create(['a'])}
+p9.input  = {"input": channel.create(['a'])}
+p2.input  = "input"
+p3.input  = "input"
+p4.input  = "input"
+p5.input  = "input"
+p6.input  = "input"
+p7.input  = "input"
 p1.output = "{{input}}" 
 p2.script = "echo 1"
 p2.output = "{{input}}" 
@@ -134,17 +157,16 @@ p8.script = "echo 1"
 p8.output = "{{input}}" 
 p9.script = "echo 1"
 p9.output = "{{input}}" 
-
 """
-          1A         8H
-      /      \      /
-      2B         3C
-        \      /
-        4D(e)       9I
-      /      \      /
-      5E          6F(e)
-        \      /
-        7G(e)
+			   1A         8H
+			/      \      /
+		 2B           3C
+			\      /
+			  4D(e)       9I
+			/      \      /
+		 5E          6F(e)
+			\      /
+			  7G(e)
 """
 p2.depends = p1
 p3.depends = [p1, p8]

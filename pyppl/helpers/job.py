@@ -88,13 +88,13 @@ class job (object):
 			return utils.fileSig (obj)
 		
 	# use export as cache
-	def exportCached (self, exdir, how, log):
+	def exportCached (self, exdir, how, warnings):
 		if how == 'symlink':
 			raise ValueError ('Unable to use export cache when you export using symlink.')
 		if not exdir:
 			raise ValueError ('Output files not exported, cannot use them for caching.')
 		
-		exfiles = [path.join (exdir, path.basename(outfile)) for outfile in self.output['file']]
+		exfiles  = [path.join (exdir, path.basename(outfile)) for outfile in self.output['file']]
 		for i, exfile in enumerate(exfiles):
 			outfile = self.output['file'][i]
 			if how == 'gzip':
@@ -102,7 +102,8 @@ class job (object):
 				tgzfile = exfile + '.tgz'
 				if not path.exists(gzfile) and not path.exists(tgzfile): return False
 				if path.exists(outfile):
-					log ('Overwrite file/dir to use export for caching: %s' % outfile, 'warning')
+					#log ('Overwrite file/dir to use export for caching: %s' % outfile, 'warning')
+					warnings.append ('Overwrite file to use export for caching: %s' % outfile)
 					if path.isdir (outfile): rmtree (outfile)
 					else: remove (outfile)	
 				if path.exists(gzfile):
@@ -113,7 +114,8 @@ class job (object):
 			else:
 				if not path.exists (exfile): return False
 				if path.exists(outfile):
-					log ('Overwrite file/dir to use export for caching: %s' % outfile, 'warning')
+					#log ('Overwrite file/dir to use export for caching: %s' % outfile, 'warning')
+					warnings.append ('Overwrite file to use export for caching: %s' % outfile)
 					if path.isdir (outfile): rmtree (outfile)
 					else: remove (outfile)
 				symlink (path.realpath(exfile), outfile)
