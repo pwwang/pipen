@@ -206,5 +206,5 @@ You can use different dot [renderers](https://en.wikipedia.org/wiki/DOT_(graph_d
 ![PyPPL chart](pyppl.png)
 
 
-## See [documentations](docs/DOCS.md).
+## See [documentations](http://pyppl.readthedocs.io/en/latest/).
 
