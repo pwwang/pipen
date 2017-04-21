@@ -16,7 +16,15 @@ If we specify this channel to the input of a `proc`:
 p = proc()
 p.input = {"v1,v2,v3": c}
 ```
-Then for job#0 `"{{v1}}"` will be replaced by `a1`
+Then the values for different variables in different jobs wil be:
+
+| Job Index | v1 | v2  | v3 |
+|-----------|----|-----|----|
+| 0         | a1 | b1  | c1 |
+| 1         | a2 | b2  | c2 |
+| ...       |... | ... |... |
+
+
 
 
 
