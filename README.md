@@ -15,7 +15,7 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Requirements
-- Linux (Maybe work on OSX, not tested)
+- Linux (Maybe works on OSX, not tested)
 - Python 2.7
 
 ## Installation
