@@ -7,8 +7,8 @@
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [First script](#first-script)
-- [Using arguments](#using-arguments)
 - [Using a different interpreter:](#using-a-different-interpreter)
+- [Using a different runner:](#using-a-different-runner)
 - [Draw the pipeline chart](#draw-the-pipeline-chart)
 - [See documentations.](#see-documentations)
 
