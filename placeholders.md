@@ -1,5 +1,5 @@
 # Placeholders
-`pyppl` uses placeholders from `input`, `output` and some properties of a `proc` to hold the values in `beforeCmd`, `afterCmd` and `script`. For example:
+`pyppl` uses placeholders from `input`, `output` and some properties of a `proc` to hold the values in `output`, `beforeCmd`, `afterCmd` and `script`. For example:
 ```python
 p = proc()
 p.input  = {"v":[0,1,2]}
