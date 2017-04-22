@@ -27,19 +27,19 @@ Then the values for different variables in different jobs wil be:
 
 ## Initialize a channel
 There are several ways to initialize a channel:
-- From a `list`:   
-```
+- From a `list`:  
+```python
 c = channel.create([0,1,2])
 # produce [(0,), (1,), (2,)]
 ```
 - From other `channel`s:   
-```
+```python
 c = channel.fromChannels(ch1, ch2, ...)
 #This will do column bind, 
 #requires channels have the same length
 ```
 - From a file path pattern: 
-```
+```python
 c = channel.fromPath ("/a/b/*.txt", "any")
 # You can specify type to filter the file list
 # Possible file type: any(default), file, dir and link
