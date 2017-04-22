@@ -32,17 +32,47 @@ There are several ways to initialize a channel:
 c = channel.create([0,1,2])
 # produce [(0,), (1,), (2,)]
 ```
-- From other `channel`s:   
+
+- From other `channels`:   
 ```python
 c = channel.fromChannels(ch1, ch2, ...)
-#This will do column bind, 
-#requires channels have the same length
+# This will do column bind, 
+# requires channels have the same length
+# ch1 == [(1,2,3), (4,5,6)]
+# ch2 == [('a'), ('b')]
+# c   == [(1,2,3,'a'), (4,5,6, 'b')]
 ```
+
 - From a file path pattern: 
 ```python
 c = channel.fromPath ("/a/b/*.txt", "any")
 # You can specify type to filter the file list
 # Possible file type: any(default), file, dir and link
+# ls /a/b/
+# 1.txt 2.txt 3.txt 4.txt
+# c == [("/a/b/1.txt",), ("/a/b/2.txt",), ("/a/b/3.txt",), ("/a/b/4.txt",)]
 ```
+
+- From file pairs:
+```python
+c = channel.fromPath ("/a/b/*.txt")
+# the files will be sorted and then split into pairs
+# c == [("/a/b/1.txt", "/a/b/2.txt"), ("/a/b/3.txt", "/a/b/4.txt")]
+```
+
+- From `sys.argv` (command line arguments):
+```python
+c == channel.fromArgv()
+# python whatever.py /a/b/*.txt
+# c == [("/a/b/1.txt",), ("/a/b/2.txt",), ("/a/b/3.txt",), ("/a/b/4.txt",)]
+# Make a multple-variable channel:
+# python whatever.py /a/b/1.txt,/a/b/2.txt /a/b/3.txt,/a/b/4.txt
+# c == [("/a/b/1.txt", "/a/b/2.txt"), ("/a/b/3.txt", "/a/b/4.txt")]
+```
+
+## Available methods for channels
+### Expand a channel by directory
+Sometimes we prepare files in one job (for example, split a big file into small ones in a directory), then handle these files by different jobs in a process, so that they can be processed simultaneously. 
+
 
 
