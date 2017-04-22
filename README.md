@@ -203,7 +203,7 @@ digraph PyPPL {
 ```
 You can use different dot [renderers](https://en.wikipedia.org/wiki/DOT_(graph_description_language)#Layout_programs) to render and visualize it.
 
-![PyPPL chart](docs/pyppl.png)
+![PyPPL chart](https://github.com/pwwang/pyppl/raw/master/docs/pyppl.png)
 
 
 ## See [documentations](https://pwwang.gitbooks.io/pyppl/).
