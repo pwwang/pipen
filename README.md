@@ -201,9 +201,9 @@ digraph PyPPL {
 	"p4.D" [shape=box, style=filled, color="#f0f998", fontcolor=red]
 }
 ```
-You can use different dot [renderers](https://en.wikipedia.org/wiki/DOT_(graph_description_language)#Layout_programs) to render and visualize it.
+You can use different dot renderers (<https://en.wikipedia.org/wiki/DOT_(graph_description_language)#Layout_programs>) to render and visualize it.
 
-![PyPPL chart](docs/pyppl.png)
+![PyPPL chart](https://github.com/pwwang/pyppl/raw/master/docs/pyppl.png)
 
 
 ## See [documentations](https://pwwang.gitbooks.io/pyppl/).
