@@ -6,10 +6,28 @@ The pipeline consists of channels and processes. A process may have many jobs. E
 Actually, what you need to do is just specify the first input channel, and then tell `pyppl` the dependencies of the processes. The later processes will use the output channel of the processes they depend on.
 
 ## Folder structure
+```
+./
+|-- pipeline.py
+|-- workdir/                      <- Can be configured by proc.tmpdir
+    |-- PyPPL.<id>.<tag>.<uid>/   <- Can be configured by proc.workdir
+        |-- cached.jobs
+        |-- input/
+        |-- output/
+        |-- scripts/
+            |-- script.<index>
+            |-- script.<index>.rc
+            |-- script.<index>.stdout
+            |-- script.<index>.stderr
+            |-- [script.<index>.ssh]
+            |-- [script.<index>.sge]
+```
+
 | Path | Content | Memo |
 |------|---------|------|
-|`./workdir/`|Where the work directories of all processes of current pipeline locate.|If `proc.tmpdir` is not specified, `workdir` in current directory will be created and used.|
+|`./workdir/`|Where the work directories of all processes of current pipeline locate.||
 |`./workdir/PyPPL.<id>.<tag>.<uid>/`|The work directory of current process.|The `uid` is a unique id of the process according to its configuration.|
+|`./workdir/PyPPL.<id>.<tag>.<uid>/cached.jobs`|Saves the signatures of cached jobs||
 |`./workdir/PyPPL.<id>.<tag>.<uid>/scripts/`|Where you can find all the scripts, stdout file, stderr file and return code file and also other help files for other runners.|-  `script.<index>`: the real script to run, you can also use it to debug<br />- `script.<index>.stdout`: the stdout file<br />- `script.<index>.stderr`: the stderr file<br />- `script.<index>.rc`: the file contains return code<br />- `script.<index>.ssh`: the file for ssh runner<br />- `script.<index>.sge`: the file for sge runner|
 |`./workdir/PyPPL.<id>.<tag>.<uid>/input/`|Where you can find the links to all the input files||
 |`./workdir/PyPPL.<id>.<tag>.<uid>/output/`|Where you can find all the output files||

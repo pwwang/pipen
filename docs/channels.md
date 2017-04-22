@@ -31,6 +31,7 @@ There are several ways to initialize a channel:
 ```python
 c = channel.create([0,1,2])
 # produce [(0,), (1,), (2,)]
+# You can ignore the tuple sign (,) for single-variable (single-column) channel
 ```
 
 - From other `channels`:   
@@ -71,8 +72,117 @@ c == channel.fromArgv()
 ```
 
 ## Available methods for channels
+### Get the length and width of a channel
+```python
+chan = channel.create ([(1,2,3), (4,5,6)])
+chan.length() == 2 == len(chan)
+chan.width()  == 3
+```
+
 ### Expand a channel by directory
+`channel.expand (index = 0, pattern = '*')`
+
 Sometimes we prepare files in one job (for example, split a big file into small ones in a directory), then handle these files by different jobs in a process, so that they can be processed simultaneously. 
 
+![channel.expand](https://github.com/pwwang/pyppl/raw/master/docs/channel-expand.png) 
 
+For example:
+```python
+# the original file: a.txt
+p1 = proc()
+p1.input  = {"infile:file": ["a.txt"]}
+p1.output = {"outdir:dir": "{{infile.fn}}"}
+p1.script = "# the script to split a.txt to 1.txt, 2.txt, 3.txt ... to {{outdir}}"
+
+p2 = proc()
+p2.depends = p1
+# expand channel [("<outdir>/a/",)] to channel:
+# [("<outdir>/a/1.txt",), ("<outdir>/a/2.txt",), ("<outdir>/a/3.txt",), ...]
+p2.input   = {"infile:file": lambda ch: ch.expand()}
+p2.output  = {"outfile:file:{{infile.fn}}.result"}
+p2.script  = "# handle each file (1.txt, 2.txt, 3.txt, ...) to result file (1.result, 2.result, 3.result, ...)"
+
+pyppl().starts(p1).run()
+```
+If a channel is a multi-variable channel (containing 2 or more columns), you may specify the index of the column, which is the directory.
+```python
+p1.input   = {"invar, infile:file": [("a", "a.txt")]}
+# ...
+p2.input   = {"invar, infile:file": lambda ch: ch.expand(1)}
+# expands to: 
+# [("a", "<outdir>/a/1.txt"), ("a", "<outdir>/a/2.txt"), ("a", "<outdir>/a/3.txt"), ...]
+# ...
+```
+You may also filter the files with a pattern:
+```python
+p2.input   = {"invar, infile:file": lambda ch: ch.expand(1, "*.txt")}
+# only incude .txt files
+```
+> NOTE: `expand` only works for original channels with length is 1, which will expand to `N` (number of files included)
+
+### Collapse a channel by files in the same directory
+`channel.collapse(index=0)`
+
+It's basically the reverse process of `expand`. It applies when you deal with different files and in next process you want to combine the results:
+
+![channel.expand](https://github.com/pwwang/pyppl/raw/master/docs/channel-collapse.png) 
+
+For example:
+```python
+# the original file: a.txt
+p1 = proc()
+p1.input  = {"infile:file": ["/a/b/1.txt", "/a/b/2.txt", "/a/b/3.txt"]}
+p1.output = {"outdir:dir": "{{infile.fn}}.txt2"}
+p1.script = """
+# the script to deal with each input file:
+# /a/b/1.txt -> <outdir>/1.txt2
+# /a/b/2.txt -> <outdir>/2.txt2
+# /a/b/3.txt -> <outdir>/3.txt2
+"""
+
+p2 = proc()
+p2.depends = p1
+# collapse channel [("<outdir>/1.txt2",), ("<outdir>/2.txt2",), ("<outdir>/3.txt2",)] to channel:
+# [("<outdir>/", )]
+p2.input   = {"indir:file": lambda ch: ch.collapse()}
+p2.output  = {"outfile:file:{{indir.fn}}.result"}
+p2.script  = """
+# combine 1.txt2, 2.txt2, 3.txt3 in {{indir}} to {{outfile}}
+"""
+pyppl().starts(p1).run()
+```
+If the files in the channel are not at column 0, you have to specify it: 
+```python
+p1.input  = {"infile:file": [("a", "/a/b/1.txt"), ("a", "/a/b/2.txt"), ("a", "/a/b/3.txt")]}
+# ...
+p2.input  = {"indir:file": lambda ch: ch.collapse(1)}
+# collapse to: [("a", "<outdir>/")]
+# ...
+```
+> NOTE: 
+> 1. the files have to be in the same directory, `pyppl` won't check it, the directory of the first file will be used.
+> 2. values at other columns should be the same, `pyppl` won't check it, the first value at the column will be used.
+
+### Insert a column to a channel
+`channel.insert(index, data)`
+
+Insert a column to a channel, the `data` can be a `list` or scalar value. If it is a scalar value, it'll be extended to a list with the same length of the channel.
+```python
+chan = channel.create([(1,2,3), (4,5,6)])
+chan.insert(1, [7,8])
+# chan == [(1,7,2,3), (4,8,5,6)]
+chan.insert(None, 0)
+# chan == [(1,7,2,3,0), (4,8,5,6,0)]
+```
+If original channel is an empty channel:
+```python
+chan = channel.create()
+chan.insert (0, 1)
+# chan == [(1, )]
+chan = channel.create()
+chan.insert (0, [1,2,3])
+# chan == [(1,), (2,), (3,)]
+```
+
+### Fetch columns from a channel
 
