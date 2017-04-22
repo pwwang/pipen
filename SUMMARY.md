@@ -1,6 +1,6 @@
 # Summary
 
 * [Introduction](README.md)
-* [Placeholders](placeholders.md)
+* [Placeholders1](placeholders.md)
 * [Channels](channels.md)
 
