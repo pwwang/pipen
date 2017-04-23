@@ -163,10 +163,72 @@ p2.input  = {"indir:file": lambda ch: ch.collapse(1)}
 > 1. the files have to be in the same directory, `pyppl` won't check it, the directory of the first file will be used.
 > 2. values at other columns should be the same, `pyppl` won't check it, the first value at the column will be used.
 
-### Insert a column to a channel
-`channel.insert(index, data)`
+### Fetch column(s) from a channel
+- `channel.slice(start, length=None)`
+```
+chan1 = channel.create ([(1,2,3,4), (4,5,6,7)])
+chan2 = chan1.slice(1,2)
+# chan2 == [(2,3), (5,6)]
+chan3 = chan1.slice(2)
+# chan3 == [(3,4), (6,7)]
+chan4 = chan1.slice(-1)
+# chan4 == [(4,), (7,)]
+```
 
-Insert a column to a channel, the `data` can be a `list` or scalar value. If it is a scalar value, it'll be extended to a list with the same length of the channel.
+- `channel.colAt(index)`
+`chan.colAt(index) == chan.slice(index, 1)`
+
+### Split a channel to channels with width = 1
+`channel.split()`
+```python
+chan  = channel.create ([(1,2,3), (4,5,6)])
+chans = chan.split()
+# isinstance (chans, list) == True
+# isinstance (chans, channel) == False
+# chans == [
+#   [(1,), (4,)],
+#   [(2,), (5,)],
+#   [(3,), (6,)],
+# ]
+```
+
+### `map`, `filter`, `reduce`
+- `channel.map(func)`
+- `channel.filter(func)`
+- `channel.reduce(func)`
+
+They act as the same as the python's builtin functions `map`, `filter` and `reduce`. `chan.map(func) == map(func, chan)` 
+
+### Add rows/columns to a channel
+
+- `channel.rbindMany(*rows)`
+```python
+chan = channel.create([(1,2,3), (4,5,6)])
+col1 = ['a', 'b', 'c']
+col2 = [7, 8, 9]
+chan.cbindMany(col1, col2)
+# chan == [(1,2,3), (4,5,6), ('a','b','c'), (7,8,9)]
+```
+
+- `channel.rbind(row)`
+It is a single-argument version of `channel.rbindMany`.
+
+- `channel.cbindMany(*cols)`
+```python
+chan = channel.create([(1,2,3), (4,5,6)])
+col1 = ['a', 'b']
+col2 = [7, 8]
+chan.cbindMany(col1, col2)
+# chan == [(1,2,3,'a',7), (4,5,6,'b',8)]
+```
+
+- `channel.cbind(col)`
+It is a single-argument version of `channel.cbindMany`.
+- `channel.merge(*chans)`
+It actually does similarly as `cbindMany`. The difference is that `chan` in `chans` can have multiple columns; while `col` in `cols` can just have one column. The channels to be merged must have the same length. `channel.fromChannels` actually does the same as `merge`, but with an empty channel.
+
+- `channel.insert(index, col)`
+Insert a column to a channel, the `col` can be a `list` or scalar value. If it is a scalar value, it'll be extended to a list with the same length of the channel.
 ```python
 chan = channel.create([(1,2,3), (4,5,6)])
 chan.insert(1, [7,8])
@@ -184,30 +246,31 @@ chan.insert (0, [1,2,3])
 # chan == [(1,), (2,), (3,)]
 ```
 
-### Fetch column(s) from a channel
-`channel.slice(start, length=None)`
-`channel.colAt(index)`
-
-### Split a channel to channels with width = 1
-`channel.split()`
-
-### `map`, `filter`, `reduce`
-`channel.map(func)`
-`channel.filter(func)`
-`channel.reduce(func)`
-
-### Add rows/columns to a channel
-`channel.rbind(row)`
-`channel.rbindMany(*rows)`
-`channel.cbind(col)`
-`channel.cbindMany(*cols)`
-`channel.merge(*channels)`
-
-### Convert a width 1 channel to `list`
+### Convert a width=1 channel to `list`
 `channel.toList()`
+
+```python
+chan = channel.create([1,2,3])
+# chan == [(1,), (2,), (3,)]
+l    = chan.toList()
+# l == [1,2,3]
+```
+
+> NOTE: it only works with width=1 channels. If `chan.width() != 1`, a `ValueError` will be raised.
 
 ### Copy a channel
 `channel.copy()`
 
+Remember, when you try to add row(s)/column(s) to a channel, the functions not only return the changed channel, but the channel itself will also be changed. To keep it unchanged:
+```python
+chan    = channel.create()
+chan1   = chan.insert (0, [1,2,3])
+# chan  == [(1,), (2,), (3,)]
+# chan1 =  [(1,), (2,), (3,)]
+chan    = channel.create()
+chan1   = chan.copy().insert(0, [1,2,3])
+# chan  == []
+# chan1 =  [(1,), (2,), (3,)]
+```
 
 
