@@ -9,8 +9,9 @@ Actually, what you need to do is just specify the first input channel, and then 
 ```
 ./
 |-- pipeline.py
-|-- workdir/                      <- Can be configured by proc.tmpdir
-    |-- PyPPL.<id>.<tag>.<uid>/   <- Can be configured by proc.workdir
+|-- workdir/                      # Can be configured by proc.tmpdir
+    |-- PyPPL.<id>.<tag>.<uid>/   # Can be configured by proc.workdir. 
+        |                         # All `<workdir>`s in this doc refer to this directory
         |-- cached.jobs
         |-- input/
         |-- output/

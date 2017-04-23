@@ -5,7 +5,7 @@
 * [Placeholders](placeholders.md)
 * [Channels](channels.md)
 * [Specify input and output of a process](specify-input-and-output-of-a-process.md)
-* Export output files
+* [Export output files](export-output-files.md)
 * [Caching](caching.md)
 * Runners
 * Set other properties of a process
@@ -14,3 +14,4 @@
 * Draw flowchart of a pipeline
 * Set starting processes of a pipeline
 * Aggregations
+
