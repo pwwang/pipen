@@ -35,7 +35,7 @@ Use `lambda` functions:
 {{ v | (lambda x: x*2)(_) }}
 # "0", "2", "4"
 ```
-> NOTE: always call the function instead of just define the function (`(lambda ...)(_)` instead of `lambda ...`). 
+> NOTE: always call the function instead of just define the function (`(lambda ...)(_)` instead of `lambda ...`).
 
 ## File placeholders
 If an `input` or `output` as a file: `infile:file`, then `{{infile}}` will be the link path that links to the input file in the input directory of a process (`proc`). `{{infile.bn}}` is the basename (without extension), `{{infile.fn}}` holds the filename (with extension), and `{{infile.ext}}` indicates the extensions. Examples:
