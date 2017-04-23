@@ -5,4 +5,13 @@
 * [Placeholders](placeholders.md)
 * [Channels](channels.md)
 * [Specify input and output of a process](specify-input-and-output-of-a-process.md)
-
+* Export output files
+* [Caching](caching.md)
+* Runners
+* Set other properties of a process
+* Configure pyppl
+* Set starting processes of a pipeline
+* Draw flowchart of a pipeline
+* Set other properties of a process
+* Set starting processes of a pipeline
+* Aggregations

@@ -57,6 +57,8 @@ p.output = "outvar:var:{{invar}}2, outfile:file:{{infile.bn}}2, outdir:dir:{{ind
 # The output channel (p.channel) will be:
 # [("12", "c.txt2", "c-dir")]
 ```
+You cannot only use the placeholders from input, but the placeholders with process property values. For example: `proc.indir` points to the input directory of the process (`<workdir>/input`). Check [all available process property placeholders](https://pwwang.gitbooks.io/pyppl/placeholders.html#proc-property-placeholders).
+
 The available types `var`, `file`, `path` and `dir`. `path` is actually an alias of `file`. If your output is a directory, and you want `pyppl` to automatically create it, you should use `dir`.
 > NOTE: always the basename of your output files/directories, so that they will be generated in the `<workdir>/output/`. Later `pyppl` is able to export them and cache the jobs.
 > So don't use `infile` and `indir` directly in output unless you want to use the path of the links linking the input files, Instead, use `infile.fn`, `infile.bn`, `indir.fn` and `indir.bn`.
