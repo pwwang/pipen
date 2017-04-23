@@ -20,7 +20,7 @@
 
 ## Installation
 ```python
-git clone https://github.com/pwwang/pyppl
+git clone https://github.com/pwwang/pyppl.git
 cd pyppl
 python setup.py install
 # or pip install pyppl
