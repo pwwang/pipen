@@ -184,5 +184,30 @@ chan.insert (0, [1,2,3])
 # chan == [(1,), (2,), (3,)]
 ```
 
-### Fetch columns from a channel
+### Fetch column(s) from a channel
+`channel.slice(start, length=None)`
+`channel.colAt(index)`
+
+### Split a channel to channels with width = 1
+`channel.split()`
+
+### `map`, `filter`, `reduce`
+`channel.map(func)`
+`channel.filter(func)`
+`channel.reduce(func)`
+
+### Add rows/columns to a channel
+`channel.rbind(row)`
+`channel.rbindMany(*rows)`
+`channel.cbind(col)`
+`channel.cbindMany(*cols)`
+`channel.merge(*channels)`
+
+### Convert a width 1 channel to `list`
+`channel.toList()`
+
+### Copy a channel
+`channel.copy()`
+
+
 
