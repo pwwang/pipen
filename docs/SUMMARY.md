@@ -5,6 +5,7 @@
 * [Placeholders](placeholders.md)
 * [Channels](channels.md)
 * [Specify input and output of a process](specify-input-and-output-of-a-process.md)
+* Write your script
 * [Export output files](export-output-files.md)
 * [Caching](caching.md)
 * Runners
