@@ -9,9 +9,8 @@
 * [Caching](caching.md)
 * Runners
 * Set other properties of a process
-* Configure pyppl
+* Configure a pipeline
 * Set starting processes of a pipeline
 * Draw flowchart of a pipeline
-* Set other properties of a process
 * Set starting processes of a pipeline
 * Aggregations
