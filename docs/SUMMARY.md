@@ -8,11 +8,10 @@
 * [Write your script](write-your-script.md)
 * [Export output files](export-output-files.md)
 * [Caching](caching.md)
-* Runners
+* [Runners](runners.md)
 * Set other properties of a process
 * Configure a pipeline
 * Set starting processes of a pipeline
 * Draw flowchart of a pipeline
-* Set starting processes of a pipeline
 * Aggregations
 
