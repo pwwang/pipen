@@ -47,7 +47,7 @@ p.script = """
 {{bedtools}} intersect -a {{infile1}} -b {{infile2}} > {{outfile}}
 """
 ```
-Of course, you can do that, but a common argument is not usually generated from prior processes, then you have to modify the input channels. If the argument is a file, and you put it in `input` with type `file`, `pyppl` will try to create a link in `<workdir>/input`. If you have 100 jobs, we need to do that 100 times or to determine whether the link exists for 100 times. You may not want that to happen.
+Of course, you can do that, but a common argument is not usually generated from prior processes, then you have to modify the input channels. If the argument is a file, and you put it in `input` with type `file`, `pyppl` will try to create a link in `<workdir>/input`. If you have 100 jobs, we need to do that 100 times or to determine whether the link exists for 100 times. You may not want that to happen.  
 > NOTE: never use a key with dot `.` in `p.args`, since we use `{{proc.args.<key>}}` to access it.
 
 ## Set the valid return/exit codes `p.rc`:
@@ -58,14 +58,14 @@ p.rc = [0, 1]
 ```
 
 ## Command to run before/after jobs run `p.beforeCmd`/`p.afterCmd`:
-You can run some commands before and after the jobs run. The commands should be fit for [`Popen`](https://docs.python.org/2/library/subprocess.html#popen-constructor) with `shell=True`. For example, you can set up some environment before the jobs start to run, and remove it when they finish.
+You can run some commands before and after the jobs run. The commands should be fit for [`Popen`](https://docs.python.org/2/library/subprocess.html#popen-constructor) with `shell=True`. For example, you can set up some environment before the jobs start to run, and remove it when they finish.  
 > NOTE: `beforeCmd`/`afterCmd` only run locally, no matter which runner you choose to run the jobs.
 
 ## Error handling `p.errhow`/`p.errntry`:
 When a job finishes, it should generate a `script.<index>.rc` file containing the return code. When compare with the valid return codes `p.rc`, the error triggered if it not in `p.rc`. `p.errhow` determines what's next if errors happen. 
-- "`terminate`": when errors happen, terminate the entire pipeline
-- "`ignore`": ignore the errors, continuing run the next process
-- "`retry`": re-submit and run the job again. `p.errntry` defines how many time to retry.
+- `"terminate"`: when errors happen, terminate the entire pipeline
+- `"ignore"`: ignore the errors, continuing run the next process
+- `"retry"`: re-submit and run the job again. `p.errntry` defines how many time to retry.
 
 ## Set the processes current process depends on `p.depends`:
 A process can not only depend on a single process: 
