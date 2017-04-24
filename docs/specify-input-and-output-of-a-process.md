@@ -10,18 +10,38 @@ p.input = {"ph1":[1,2,3], "ph2":[4,5,6]}
 
 The complete form of an input key is `<placeholder>:<type>`. The `<type>` could be `var`, `file` or `path`(exactly the same as `file`). A type of `var` can be omitted. So `{"ph1":[1,2,3], "ph2":[4,5,6]}` is the same as `{"ph1:var":[1,2,3], "ph2:var":[4,5,6]}`
 
-if a process depends on a prior process, it will automatically use the output channel of the prior process. For example:
+You can also use a `str` or a `list` if a process depends on a prior process, it will automatically use the output channel of the prior process, or you want to use the arguments from command line as input channel (in most case for starting processes, which do not depend on any other processes). For example:
+
+Use output channel of prior process:
 ```python
 p1 = proc()
 p1.input  = {"ph1":[1,2,3], "ph2":[4,5,6]}
 p1.output = "out1:{{ph1}},out2:{{ph2}}"
+# same as p.output = ["out1:{{ph1}}", "out2:{{ph2}}"]
 p1.script = "# your logic here"
 
+p2 = proc()
 p2.depends = p1
 p2.input   = "in1, in2"  
 # will automatically use output channel of p1
 ```
 > NOTE: the number of placeholders should be no more than that of the output from the prior process. Otherwise, there is not enough data for the placeholders.
+
+Use `sys.argv` (see details for [`channel.fromArgv`](https://pwwang.gitbooks.io/pyppl/content/channels.html#initialize-a-channel)):
+```python
+p3 = proc()
+p3.input = "in1"
+# same as p3.input = {"in1": channel.fromArgv ()}
+# python test.py 1 2 3
+# p3.input = {"in1": ["1", "2", "3"]}
+
+p4 = proc()
+p3.input = "in1, in2"
+# same as p3.input = {"in1, in2": channel.fromArgv ()}
+# python test.py 1,a 2,b 3,c
+# p3.input = {"in1": [("1", "a"), ("2", "b"), ("3", "c")]}
+```
+
 
 ## Specify files as input
 When you specify files as input, you should use `file` or `dir` flag for the placeholder: 

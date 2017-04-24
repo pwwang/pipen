@@ -11,7 +11,6 @@
 * [Runners](runners.md)
 * [Set other properties of a process](set-other-properties-of-a-process.md)
 * [Configure a pipeline](configure-a-pipeline.md)
-* [Set starting processes of a pipeline](set-starting-processes-of-a-pipeline.md)
 * [Draw flowchart of a pipeline](draw-flowchart-of-a-pipeline.md)
 * [Aggregations](aggregations.md)
 * [API](api.md)
