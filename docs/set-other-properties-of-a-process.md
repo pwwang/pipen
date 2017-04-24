@@ -50,7 +50,7 @@ p.script = """
 ```
 Of course, you can do that, but a common argument is not usually generated from prior processes, then you have to modify the input channels. If the argument is a file, and you put it in `input` with type `file`, `pyppl` will try to create a link in `<workdir>/input`. If you have 100 jobs, we need to do that 100 times or to determine whether the link exists for 100 times. You may not want that to happen.  
 
-** NOTE: never use a key with dot `.` in `p.args`, since we use `{{proc.args.<key>}}` to access it. **
+> NOTE: never use a key with dot `.` in `p.args`, since we use `{{proc.args.[key]}}` to access it. 
 
 ## Set the valid return/exit codes `p.rc`:
 When a program exits, it will return a code (or [exit status](https://en.wikipedia.org/wiki/Exit_status)), usually a small integer to exhibit it's status. Generally if a program finishes successfully, it will return `0`, which is the default value of `p.rc`. `pyppl` relies on this return code to determine whether a job finishes successfully.  If not, `p.errorhow` will be triggered. You can set multiple valid return codes for a process: 
