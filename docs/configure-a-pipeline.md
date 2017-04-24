@@ -1,4 +1,6 @@
 # Configure your pipeline
+<!-- toc -->
+
 To configure your pipeline, you just pass the configurations (a `dict`) to the constructor:
 ```python
 ppl = pyppl (config)

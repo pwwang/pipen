@@ -1,5 +1,7 @@
 # API
 
+<!-- toc -->
+
 ## `pyppl`
 
 ## `aggr`

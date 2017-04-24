@@ -1,4 +1,8 @@
-# Specify input of a process
+# Specify input and output of a process
+<!-- toc -->
+
+## Specify input of a process
+
 The input of a process of basically a `dict` with keys the placeholders and the values the input channels:
 
 ```python
@@ -43,14 +47,14 @@ p3.input = "in1, in2"
 ```
 
 
-## Specify files as input
+### Specify files as input
 When you specify files as input, you should use `file` or `dir` flag for the placeholder: 
 ```python
 p.input = {"infile:file": channel.fromPath("./*.txt")}
 ```
 Then `pyppl` will create symbol links in `<workdir>/input/` and an extra set of placeholders will be created: `infile.fn`, `infile.bn` and `infile.ext`. See [File placeholders](https://pwwang.gitbooks.io/pyppl/placeholders.html#file-placeholders).
 
-## Use a callback to modify the output channel of the prior process.
+### Use a callback to modify the output channel of the prior process.
 You can modify the output channel of the prior process by a callback for the input value. For example:
 ```python
 p1 = proc()
@@ -67,7 +71,7 @@ You can check more examples in some channel methods: [channel.expand](https://pw
 
 > NOTE: If you use callback to modify the channel, you have to combine the keys
 
-# Specify output of a process
+## Specify output of a process
 Different from input, instead of channels, you have to tell how `pyppl` will calculate the values for the placeholders. The output can be a `list` or `str`. If it's `str`, a comma (`,`) is used to separate different placeholders:
 ```python
 p.input  = {"invar":[1], "infile:file": ["/a/b/c.txt"]}

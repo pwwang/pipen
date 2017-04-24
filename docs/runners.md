@@ -1,4 +1,5 @@
 # Runners
+<!-- toc -->
 
 We have 3 built-in runners (`runner_local`, `runner_ssh`, `runner_sge`), you can also define you own runners.
 

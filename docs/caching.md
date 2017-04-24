@@ -1,4 +1,6 @@
 # Caching
+<!-- toc -->
+
 Once a job is cached, `pyppl` will skip running this job. But you have to tell a process how to cache its jobs by setting `p.cache` with a valid caching method:
 
 |Caching method (`p.cache=?`)|How|

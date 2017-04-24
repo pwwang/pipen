@@ -1,5 +1,7 @@
 # Basic concepts and folder structure
 
+<!-- toc -->
+
 ## Layers of a pipeline
 ![Basic concepts](https://github.com/pwwang/pyppl/raw/master/docs/concept.png)
 The pipeline consists of channels and processes. A process may have many jobs. Each job uses the corresponding element from the input channel of the process, and generates values for output channel of the output.  

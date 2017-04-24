@@ -1,4 +1,6 @@
 # Placeholders
+<!-- toc -->
+
 `pyppl` uses placeholders from `input`, `output` and some properties of a `proc` to hold the values in `output`, `beforeCmd`, `afterCmd` and `script`. For example:
 ```python
 p = proc()

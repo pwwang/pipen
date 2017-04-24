@@ -1,18 +1,6 @@
 # pyppl - A python lightweight pipeline framework
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
-
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [First script](#first-script)
-- [Using a different interpreter:](#using-a-different-interpreter)
-- [Using a different runner:](#using-a-different-runner)
-- [Draw the pipeline chart](#draw-the-pipeline-chart)
-- [See documentations.](#see-documentations)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!-- toc -->
 
 ## Requirements
 - Linux (Maybe works on OSX, not tested)

@@ -1,4 +1,6 @@
 # Export output files
+<!-- toc -->
+
 Output files are generated in `<outdir>`(`<workdir>/output`) if you specify the basename for a `file/path/dir` output placeholder. You can export them to a specific directory by specify the directory to `exportdir`(alias: `exdir`) of a process: `p.exdir = <exdir>`.
 
 You can use different ways (specify it to `exporthow`(alias: `exhow`) of a process) to export output files:

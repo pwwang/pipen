@@ -1,4 +1,5 @@
 # Write your script
+<!-- toc -->
 
 ## Choose your language
 You can either specify the path of interpreter to `p.lang` or `p.defaultSh`, if the interpreter is in `$PATH`, you can directly give the basename of the interpreter.  
