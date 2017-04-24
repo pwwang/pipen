@@ -1,5 +1,6 @@
 # Configure your pipeline
 
-## Configurations
+
+## Use a configuration file
 
 ## Starting processes
