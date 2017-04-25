@@ -10,8 +10,17 @@ from time import sleep
 from ..helpers import utils
 
 class runner_local (object):
+	"""
+	The local runner
+	"""
 
 	def __init__ (self, job, config = {}):
+		"""
+		Constructor
+		@params:
+			`job`:    The job object
+			`config`: The properties of the process
+		"""
 		self.job       = job
 		self.script    = utils.chmodX(self.job.script)
 		self.ntry      = 0
@@ -21,6 +30,14 @@ class runner_local (object):
 		self.errp      = 0
 	
 	def _config (self, key, default = None):
+		"""
+		Get the configuration value by a key
+		@params:
+			`key`:     The key
+			`default`: The default value to be used if the key is not found.
+		@returns:
+			The configuration value
+		"""
 		if '.' in key:
 			config = self.config
 			keys   = key.split('.')
@@ -36,6 +53,9 @@ class runner_local (object):
 			return self.config[key]
 	
 	def submit (self):
+		"""
+		Try to submit the job use Popen
+		"""
 		try:
 			self.p = Popen (self.script, stdin=PIPE, stderr=PIPE, stdout=PIPE, close_fds=True)
 			# have to wait, otherwise it'll continue submitting jobs
@@ -45,6 +65,11 @@ class runner_local (object):
 			self.job.rc(-1)
 			
 	def wait (self, checkP = True):
+		"""
+		Wait for the job to finish
+		@params:
+			`checkP`:  Whether to check the Popen handler or not
+		"""
 		if self.job.rc() == -1: return
 		while checkP and self.p is None: sleep (1)
 		
@@ -73,6 +98,9 @@ class runner_local (object):
 		self.retry ()
 		
 	def retry (self):
+		"""
+		Retry to submit and run the job if failed
+		"""
 		self.ntry += 1
 		if self.isValid(): return
 		if self._config('errorhow') != 'retry': return
@@ -87,15 +115,31 @@ class runner_local (object):
 		self.submit()
 		self.wait()
 	
-	# if you leave the main thread, the job will quite
+	
 	def isRunning (self):
+		"""
+		Try to tell whether the job is still running.
+		For local runner, if you leave the main thread, the job will quite
+		@returns:
+			`True` if yes, otherwise `False`
+		"""
 		return False
 		
 	def isValid (self):
+		"""
+		Tell the return code is valid
+		@returns:
+			`True` if yes, otherwise `False`
+		"""
 		return self.job.rc () in self._config('retcodes', [0])
 
 
 	def flushFile (self, fn = 'stdout'):
+		"""
+		Flush the stdout/stderr file
+		@params:
+			`fn`:  `stdout` or `stderr`, default: `stdout`
+		"""
 		fname = self.job.outfile if fn == 'stdout' else self.job.errfile
 		if not os.path.exists(fname): return
 		point = self.outp if fn == 'stdout' else self.errp

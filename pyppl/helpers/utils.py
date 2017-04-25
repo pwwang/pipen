@@ -1,39 +1,41 @@
+"""
+A set of utitities for pyppl
+"""
 
-"""
-Get the variable name inside the function or class __init__
-@params
-	func: the name of the function. Use self.__class__.__name__ for __init__, func.__name__ for functions
-	maxline: max no. of lines to retrieve if it cannot be retrived in current line (i.e. line breaks between arguments)
-	- Note: use less number to avoid:
-	```
-		a = func ()
-		...
-		func ()
-	```
-	No variable used in second call, but if maxline to large, it will be wrongly report varable name as `a`
-@examples:
-	```
-	def func (a, b):
-		print varname (func.__name__)
-	funcVar = func(1,2) # prints funcVar
-	funcVar2 = func (1,
-	2)   # prints funcVar2
-	func(3,3) # also prints funcVar2, as it retrieve 10 lines above this line!
-	
-	def func2 ():
-		print varname(func.__name__, 0) # no args, don't retrive
-	funcVar3 = func2() # prints funcVar3
-	func2() # prints func2_xxxxxxxx, don't retrieve
-	
-	class stuff (object):
-		def __init__ (self):
-			print varname (self.__class__.__name__)
-		
-		def method (self):
-			print varname ('\w+\.' + self.method.__name__, 0)
-	```
-"""
 def varname (func, maxline = 20):
+	"""
+	Get the variable name inside the function or class __init__
+	@params
+		`func`: the name of the function. Use self.__class__.__name__ for __init__, func.__name__ for functions
+		`maxline`: max no. of lines to retrieve if it cannot be retrived in current line (i.e. line breaks between arguments)
+		**Note:** use less number to avoid:
+		```python
+			a = func ()
+			...
+			func ()
+		```
+		No variable used in second call, but if maxline to large, it will be wrongly report varable name as `a`
+	@examples:
+		```python
+		def func (a, b):
+			print varname (func.__name__)
+		funcVar = func(1,2) # prints funcVar
+		funcVar2 = func (1,
+		2)   # prints funcVar2
+		func(3,3) # also prints funcVar2, as it retrieve 10 lines above this line!
+		def func2 ():
+			print varname(func.__name__, 0) # no args, don't retrive
+		funcVar3 = func2() # prints funcVar3
+		func2() # prints func2_xxxxxxxx, don't retrieve
+		class stuff (object):
+			def __init__ (self):
+				print varname (self.__class__.__name__)
+			def method (self):
+				print varname ('\w+\.' + self.method.__name__, 0)
+		```
+	@returns:
+		The variable name
+	"""
 	import re, inspect
 	frame   = inspect.currentframe()
 	frames  = inspect.getouterframes(frame)
@@ -62,10 +64,31 @@ def varname (func, maxline = 20):
 	return thefunc + '_' + suffix
 
 def randstr (length = 8):
+	"""
+	Generate a random string
+	@params:
+		`length`: the length of the string, default: 8
+	@returns:
+		The random string
+	"""
 	import random
 	return ''.join([random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkllmnopqrstuvwxyz1234567890") for _ in range(length)])
 
 def split (s, delimter):
+	"""
+	Split a string using a single-character delimter
+	@params:
+		`s`: the string
+		`delimter`: the single-character delimter
+	@examples:
+		```python
+		ret = split("'a,b',c", ",")
+		# ret == ["'a,b'", "c"]
+		# ',' inside quotes will be recognized.
+		```
+	@returns:
+		The list of substrings
+	"""
 	ret = []
 	wrap1 = 0 # (
 	wrap2 = 0 # [
@@ -119,6 +142,14 @@ def split (s, delimter):
 	return ret
 
 def format (tpl, args):
+	"""
+	Format a string with placeholders
+	@params:
+		`tpl`:  The string with placeholders
+		`args`: The data for the placeholders
+	@returns:
+		The formatted string
+	"""
 	import re
 	s = tpl
 	m = re.findall ("{{.+?}}", s)
@@ -143,6 +174,22 @@ def format (tpl, args):
 	return s
 
 def dictUpdate(origDict, newDict):
+	"""
+	Update a dictionary recursively. 
+	@params:
+		`origDict`: The original dictionary
+		`newDict`:  The new dictionary
+	@examples:
+		```python
+		od1 = {"a": {"b": {"c": 1, "d":1}}}
+		od2 = {key:value for key:value in od1.iteritems()}
+		nd  = {"a": {"b": {"d": 2}}}
+		od1.update(nd)
+		# od1 == {"a": {"b": {"d": 2}}}, od1["a"]["b"] is lost
+		dictUpdate(od2, nd)
+		# od2 == {"a": {"b": {"c": 1, "d": 2}}}
+		```
+	"""
 	for k, v in newDict.iteritems():
 		if not isinstance(v, dict) or not origDict.has_key(k) or not isinstance(origDict[k], dict):
 			origDict[k] = newDict[k]
@@ -150,6 +197,14 @@ def dictUpdate(origDict, newDict):
 			dictUpdate(origDict[k], newDict[k])
 			
 def funcSig (func):
+	"""
+	Get the signature of a function
+	Try to get the source first, if failed, try to get its name, otherwise return None
+	@params:
+		`func`: The function
+	@returns:
+		The signature
+	"""
 	if callable (func):
 		try:
 			from inspect import getsource
@@ -160,8 +215,18 @@ def funcSig (func):
 		sig = 'None'
 	return sig
 
-# safe enough, tested on 1000000 32-char strings, no repeated uid found.
 def uid(s, l = 8, alphabet='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'):
+	"""
+	Calculate a short uid based on a string.
+	Safe enough, tested on 1000000 32-char strings, no repeated uid found.
+	This is used to calcuate a uid for a process
+	@params:
+		`s`: the base string
+		`l`: the length of the uid
+		`alphabet`: the charset used to generate the uid
+	@returns:
+		The uid
+	"""
 	from hashlib import md5
 	s = md5(s).hexdigest()
 	number = int (s, 16)
@@ -174,6 +239,12 @@ def uid(s, l = 8, alphabet='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop
 	return base[:l]
 
 def targz (tgzfile, srcdir):
+	"""
+	Do a "tar zcf"-like for a directory
+	@params:
+		`tgzfile`: the final .tgz file
+		`srcdir`:  the source directory
+	"""
 	from tarfile import open as taropen
 	from glob import glob
 	from os import chdir, getcwd
@@ -186,12 +257,24 @@ def targz (tgzfile, srcdir):
 	chdir (cwd)
 	
 def untargz (tfile, dstdir):
+	"""
+	Do a "tar zxf"-like for .tgz file
+	@params:
+		`tfile`:  the .tgz file
+		`dstdir`: which directory to extract the file to
+	"""
 	import tarfile
 	tar = tarfile.open (tfile, 'r:gz')
 	tar.extractall (dstdir)
 	tar.close()
 	
 def gz (gzfile, srcfile):
+	"""
+	Do a "gzip"-like for a file
+	@params:
+		`gzfile`:  the final .gz file
+		`srcfile`: the source file
+	"""
 	from gzip import open as gzopen
 	from shutil import copyfileobj
 	fin  = open (srcfile, 'rb')
@@ -199,6 +282,12 @@ def gz (gzfile, srcfile):
 	copyfileobj (fin, fout)
 	
 def ungz (gzfile, dstfile):
+	"""
+	Do a "gunzip"-like for a .gz file
+	@params:
+		`gzfile`:  the .gz file
+		`dstfile`: the extracted file
+	"""
 	from gzip import open as gzopen
 	from shutil import copyfileobj
 	fin  = gzopen (gzfile, 'rb')
@@ -206,6 +295,14 @@ def ungz (gzfile, dstfile):
 	copyfileobj (fin, fout)
 
 def dirmtime (d):
+	"""
+	Calculate the mtime for a directory.
+	Should be the max mtime of all files in it.
+	@params:
+		`d`:  the directory
+	@returns:
+		The mtime.
+	"""
 	from os.path import getmtime, join
 	from os import walk
 	mtime = 0
@@ -220,8 +317,15 @@ def dirmtime (d):
 			if m > mtime: mtime = m
 	return mtime
 
-# file signature, use absolute path and mtime
+
 def fileSig (fn):
+	"""
+	Calculate a signature for a file according to its path and mtime
+	@params:
+		`fn`: the file
+	@returns:
+		The md5 deigested signature.
+	"""
 	from os.path import realpath, abspath, getmtime, isdir
 	from hashlib import md5
 	fname = abspath(realpath(fn))
@@ -230,8 +334,20 @@ def fileSig (fn):
 	# say in case of export using move
 	return md5(fn + '@' + str(mtime)).hexdigest()
 
-# convert str to list separated by ,
 def alwaysList (data):
+	"""
+	Convert a string or a list with element 
+	@params:
+		`data`: the data to be converted
+	@examples:
+		```python
+		data = ["a, b, c", "d"]
+		ret  = alwaysList (data)
+		# ret == ["a", "b", "c", "d"]
+		```
+	@returns:
+		The split list
+	"""
 	if isinstance(data, (str, unicode)):
 		ret = split (data, ',')
 	elif isinstance(data, list):
@@ -243,8 +359,24 @@ def alwaysList (data):
 		raise ValueError('Expect string or list to convert to list.')
 	return map (lambda x: x.strip(), ret)
 
-# sanitize output key
 def sanitizeOutKey (key):
+	"""
+	Sanitize the output keys, put them into standard format: "key:type:expression"
+	If the key is missing, '__out.[index]__' will be used, the index is incremental and starts from 0, reset for each process.
+	If the type is var, it can be omitted.
+	@static variables:
+		`index`: The index for unnamed keys, incremental. default: 0
+	@params:
+		`key`: the key to be sanitized
+	@examples:
+		```python
+		data = ["a, b, c", "d"]
+		ret  = alwaysList (data)
+		# ret == ["a", "b", "c", "d"]
+		```
+	@returns:
+		The split list
+	"""
 	parts = split(key, ':')
 	
 	if len(parts) == 1:
@@ -267,8 +399,14 @@ def sanitizeOutKey (key):
 	return tuple (parts)
 sanitizeOutKey.index = 0
 
-# convert script file to executable or add extract shebang to cmd line
 def chmodX (thefile):
+	"""
+	Convert script file to executable or add extract shebang to cmd line
+	@params:
+		`thefile`: the script file
+	@returns:
+		A list with or without the path of the interpreter as the first element and the script file as the last element
+	"""
 	import os, stat
 	thefile = os.path.realpath(thefile)
 	ret = [thefile]
@@ -286,6 +424,14 @@ def chmodX (thefile):
 	return ret
 
 def getLogger (level = 'info', name='PyPPL'):
+	"""
+	Get the default logger
+	@params:
+		`level`: The log level, default: info
+		`name`:  The name of the logger, default: PyPPL
+	@returns:
+		The logger
+	"""
 	import logging
 	ch = logging.StreamHandler()
 	ch.setFormatter (logging.Formatter("[%(asctime)-15s] %(message)s"))
@@ -295,6 +441,17 @@ def getLogger (level = 'info', name='PyPPL'):
 	return logger
 
 def padBoth (s, length, left, right = None):
+	"""
+	Pad at left and right sides of a string with different strings
+	@params:
+		`s`:      The string to be padded
+		`length`: The total length of the final string
+		`left`:   The string to be added on the left side
+		`right`:  The string to be added on the right side.
+		        If it is None, will be the same as `left`. 
+	@returns:
+		The logger
+	"""
 	if right is None: right = left
 	padlen = length - len (s)
 	if padlen%2 == 1:
@@ -307,11 +464,28 @@ def padBoth (s, length, left, right = None):
 	return lstr + s + rstr
 
 def formatTime (seconds):
+	"""
+	Format a time duration
+	@params:
+		`seconds`: the time duration in seconds
+	@returns:
+		The formated string.
+		For example: "01:01:01.001" stands for 1 hour 1 min 1 sec and 1 minisec.
+	"""
 	m, s = divmod(seconds, 60)
 	h, m = divmod(m, 60)
-	return "%02d:%02d:%02d,%03d" % (h, m, s, 1000*(s-int(s)))
+	return "%02d:%02d:%02d.%03d" % (h, m, s, 1000*(s-int(s)))
 
 def isSameFile (f1, f2):
+	"""
+	Tell whether two paths pointing to the same file
+	@params:
+		`f1`: the first path
+		`f2`: the second path
+	@returns:
+		True if yes, otherwise False
+		If any of the path does not exist, return False
+	"""
 	from os import path
 	if not path.exists (f1) or not path.exists(f2):
 		return False

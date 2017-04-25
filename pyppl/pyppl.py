@@ -5,12 +5,18 @@ from time import time
 VERSION = "0.5.1"
 			
 class pyppl (object):
-
+	"""
+	The pyppl class
+	
+	@static variables:
+		`tips`: The tips for users
+	"""
+	
 	tips = [
 		"You can find the stdout in <workdir>/scripts/script.<index>.stdout",
 		"You can find the stderr in <workdir>/scripts/script.<index>.stderr",
 		"You can find the script in <workdir>/scripts/script.<index>",
-		"Check documentation at: https://github.com/pwwang/pyppl/blob/master/docs/DOCS.md",
+		"Check documentation at: https://www.gitbook.com/book/pwwang/pyppl",
 		"You cannot have two processes with same id(variable name) and tag",
 		"beforeCmd and afterCmd only run locally",
 		"If 'workdir' is not set for a process, it will be PyPPL.<proc-id>.<proc-tag>.<uuid> under default <tmpdir>",
@@ -18,7 +24,12 @@ class pyppl (object):
 	]
 	
 	def __init__(self, config = {}, cfile = None):
-		
+		"""
+		Constructor
+		@params:
+			`config`: the configurations for the pipeline, default: {}
+			`cfile`:  the configuration file for the pipeline, default: `~/.pyppl`
+		"""
 		cfile    = os.path.join (os.path.expanduser('~'), ".pyppl") if cfile is None else cfile
 		if os.path.exists(cfile):			
 			hconfig  = json.load(open(cfile))
@@ -41,6 +52,13 @@ class pyppl (object):
 		self.heads  = []
 
 	def starts (self, *arg):
+		"""
+		Set the starting processes of the pipeline
+		@params:
+			`args`: the starting processes
+		@returns:
+			The pipeline object itself.
+		"""
 		for pa in arg:
 			if isinstance(pa, proc):
 				if pa in self.heads:
@@ -56,6 +74,11 @@ class pyppl (object):
 		return self
 	
 	def run (self, profile = 'local'):
+		"""
+		Run the pipeline
+		@params:
+			`profile`: the profile used to run, if not found, it'll be used as runner name. default: 'local'
+		"""
 		timer = time()
 		config = {}
 		if self.config.has_key('proc'):
@@ -86,6 +109,11 @@ class pyppl (object):
 
 	
 	def dot (self):
+		"""
+		Generate graph in dot language
+		@returns:
+			The dot graph string.
+		"""
 		ret  = "digraph PyPPL {\n"
 		next2run = self.heads 
 		finished = []

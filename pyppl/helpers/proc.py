@@ -11,10 +11,20 @@ from Queue import Queue
 from collections import OrderedDict
 from ..runners import runner_local, runner_sge, runner_ssh
 
-# logging.basicConfig(level=logging.INFO)
-# deepcopy does not work if this is ON
 
 class proc (object):
+	"""
+	The proc class defining a process
+	
+	@static variables:
+		`runners`: The regiested runners
+		`ids`:     The "<id>.<tag>" initialized processes, used to detected whether there are two processes with the same id and tag.
+		`alias`:   The alias for the properties
+		
+	@magic methods:
+		`__getattr__(self, name)`: get the value of a property in `self.props`
+		`__setattr__(self, name, value)`: set the value of a property in `self.config`
+	"""
 
 	runners = {}
 	ids     = {}
@@ -29,6 +39,11 @@ class proc (object):
 	}
 
 	def __init__ (self, tag = 'notag'):
+		"""
+		Constructor
+		@params:
+			`tag`: The tag of the process
+		"""
 		
 		# computed props
 		self.__dict__['props']    = {}
@@ -138,9 +153,21 @@ class proc (object):
 				depend.nexts.append (self)
 	
 	def setLogger (self, logger):
+		"""
+		Set the pipeline logger to the process
+		@params:
+			`logger`: The logger
+		"""
 		self.props['logger'] = logger
 		
 	def log (self, msg, level="info", flag=None):
+		"""
+		The log function with aggregation name, process id and tag integrated.
+		@params:
+			`msg`:   The message to log
+			`levle`: The log level
+			`flag`:  The flag
+		"""
 		if flag is None: flag = level
 		flag = flag.upper().rjust(7)
 		flag  = "[%s]" % flag
@@ -149,6 +176,14 @@ class proc (object):
 		func ("%s %s %s" % (flag, title, msg))
 
 	def copy (self, tag=None, newid=None):
+		"""
+		Copy a process
+		@params:
+			`tag`:   The tag of the new process, default: `None` (used the old one)
+			`newid`: Set the id if you don't want to use the variable name
+		@returns:
+			The new process
+		"""
 		newproc = pycopy.copy (self)
 		if tag is not None:	newproc.tag = tag
 		pid                       = utils.varname('\w+\.' + self.copy.__name__, 3)
@@ -157,6 +192,11 @@ class proc (object):
 		return newproc
 
 	def _suffix (self):
+		"""
+		Calcuate a uid for the process according to the configuration
+		@returns:
+			The uid
+		"""
 		config        = { key:val for key, val in self.config.iteritems() if key not in ['workdir'] }
 		config['id']  = self.id
 		config['tag'] = self.tag
@@ -185,12 +225,18 @@ class proc (object):
 		return utils.uid(signature)
 
 	def _tidyBeforeRun (self):
+		"""
+		Do some preparation before running jobs
+		"""
 		self._buildProps ()
 		self._buildInput ()
 		self._buildOutput ()
 		self._buildScript ()
 
 	def _tidyAfterRun (self):
+		"""
+		Do some cleaning after running jobs
+		"""
 		sucJids = self._checkStatus ()
 		if sucJids == False: return
 		self.log ('Successful jobs: %s' % (sucJids if len(sucJids) < len(self.ncjobids) else 'ALL'), 'debug')
@@ -203,6 +249,11 @@ class proc (object):
 				self.callback (self)
 
 	def run (self, config = {}):
+		"""
+		Run the jobs with a configuration
+		@params:
+			`config`: The configuration
+		"""
 		self.logger.info ('[  START] ' + utils.padBoth(' ' + ("%s -> " % self.aggr if self.aggr else "") + self.id + '.' + self.tag + ' ', 80, '-'))
 		timer = time()
 		self._readConfig (config)
@@ -221,9 +272,13 @@ class proc (object):
 		self._tidyAfterRun ()
 		self.log ('Done (time: %s).' % utils.formatTime(time() - timer), 'info')
 
-	# False: totally failed
-	# [1,2,3,...]: successful, successful job indices
 	def _checkStatus (self):
+		"""
+		Check the status of each job
+		@returns
+			False if jobs are completely failed
+			Otherwise return the successful job indices.
+		"""
 		cachefile = os.path.join (self.workdir, self.cachefile)
 		ret       = []
 		fjobs     = [] # failed jobs
@@ -268,8 +323,16 @@ class proc (object):
 		sys.exit (1) # Don't goto next proc
 	
 	
-	# create link in indir and set input
 	def _prepInfile (self, infile, key, index, warnings, multi=False):
+		"""
+		Prepare input file, create link to it and set other placeholders
+		@params:
+			`infile`:    The input files
+			`key`:       The base placeholder
+			`index`:     The index of the job
+			`warnings`:  The warnings during the process
+			`multi`:     Whether it's a list of files or not
+		"""
 		if not self.input.has_key(key): self.input[key] = [''] * self.length
 		if not self.input.has_key(key + '.bn'):  self.input[key + '.bn']  = [''] * self.length
 		if not self.input.has_key(key + '.fn'):  self.input[key + '.fn']  = [''] * self.length
@@ -307,6 +370,9 @@ class proc (object):
 			job.input['file'].append(infile)
 				
 	def _buildProps (self):
+		"""
+		Compute some properties
+		"""
 		#print getsource(self.input.values()[0])
 		if isinstance (self.retcodes, int):
 			self.props['retcodes'] = [self.retcodes]
@@ -333,17 +399,17 @@ class proc (object):
 		
 		self.props['jobs'] = [] # in case the proc is reused, maybe other properties to reset ?
 		
-	"""
-	Input could be:
-	1. list: ['input', 'infile:file'] <=> ['input:var', 'infile:path']
-	2. str : "input, infile:file" <=> input:var, infile:path
-	3. dict: {"input": channel1, "infile:file": channel2}
-	   or    {"input:var, input:file" : channel3}
-	for 1,2 channels will be the combined channel from dependents, if there is not dependents, it will be sys.argv[1:]
-	"""
 	def _buildInput (self):
-		# if config.input is list, build channel from depends
-		# else read from config.input
+		"""
+		Build the input data
+		Input could be:
+		1. list: ['input', 'infile:file'] <=> ['input:var', 'infile:path']
+		2. str : "input, infile:file" <=> input:var, infile:path
+		3. dict: {"input": channel1, "infile:file": channel2}
+		   or    {"input:var, input:file" : channel3}
+		for 1,2 channels will be the combined channel from dependents, if there is not dependents, it will be sys.argv[1:]
+		"""
+
 		input    = self.config['input']
 
 		argvchan = channel.fromArgv()
@@ -432,21 +498,22 @@ class proc (object):
 				if alias.has_key (prop): prop = alias[prop]
 				else: self.log ('PROC_VARS: %s => %s' % (prop, val), 'debug')
 				self.props['procvars']['proc.' + prop] = val
+		
 				
-	"""
-	Output could be:
-	1. list: ['output:var:{input}', 'outfile:file:{infile.bn}.txt']
-	   or you can ignore the name if you don't put it in script:
-	         ['var:{input}', 'path:{infile.bn}.txt']
-	   or even (only var type can be ignored):
-	         ['{input}', 'file:{infile.bn}.txt']
-	2. str : 'output:var:{input}, outfile:file:{infile.bn}.txt'
-	3. dict: {"output:var:{input}": channel1, "outfile:file:{infile.bn}.txt": channel2}
-	   or    {"output:var:{input}, output:file:{infile.bn}.txt" : channel3}
-	for 1,2 channels will be the property channel for this proc (i.e. p.channel)
-	"""
 	def _buildOutput (self):
-
+		"""
+		Build the output data.
+		Output could be:
+		1. list: ['output:var:{{input}}', 'outfile:file:{{infile.bn}}.txt']
+		   or you can ignore the name if you don't put it in script:
+				 ['var:{{input}}', 'path:{{infile.bn}}.txt']
+		   or even (only var type can be ignored):
+				 ['{{input}}', 'file:{{infile.bn}}.txt']
+		2. str : 'output:var:{{input}}, outfile:file:{{infile.bn}}.txt'
+		3. dict: {"output:var:{{input}}": channel1, "outfile:file:{{infile.bn}}.txt": channel2}
+		   or    {"output:var:{{input}}, output:file:{{infile.bn}}.txt" : channel3}
+		for 1,2 channels will be the property channel for this proc (i.e. p.channel)
+		"""
 		output = self.config['output']
 		
 		if not isinstance (output, dict):
@@ -477,6 +544,9 @@ class proc (object):
 			self.log ('OUTPUT [%s/%s]: %s => %s' % (ridx, self.length-1, key, val[ridx]), 'debug')
 
 	def _buildScript (self): # make self.jobs
+		"""
+		Build the script, interpret the placeholders
+		"""
 		if not self.script:	self.log ('No script specified', 'warning')
 		
 		scriptdir = os.path.join (self.workdir, 'scripts')
@@ -508,6 +578,11 @@ class proc (object):
 			self.log ("Script files exist and contents are the same, didn't touch them for job #%s and %s others." % (scriptExists.pop(0), len(scriptExists)), 'debug')
 
 	def _readConfig (self, config):
+		"""
+		Read the configuration
+		@params:
+			`config`: The configuration
+		"""
 		conf = { key:val for key, val in config.iteritems() if key not in self.sets }
 		self.config.update (conf)
 
@@ -515,6 +590,11 @@ class proc (object):
 			self.props[key] = val
 
 	def _isCached (self):
+		"""
+		Tell whether the jobs are cached
+		@returns:
+			True if all jobs are cached, otherwise False
+		"""
 		if self.cache == False:
 			self.log ('Not cached, because proc.cache = False', 'debug')
 			return False
@@ -581,6 +661,13 @@ class proc (object):
 		return True
 
 	def _runCmd (self, key):
+		"""
+		Run the `beforeCmd` or `afterCmd`
+		@params:
+			`key`: "beforeCmd" or "afterCmd"
+		@returns:
+			The return code of the command
+		"""
 		if not self.props[key]:	return 0
 		data = {key:val for key,val in self.procvars.iteritems()}
 		data.update (self.input)
@@ -597,6 +684,9 @@ class proc (object):
 		return p.wait()
 
 	def _runJobs (self):
+		"""
+		Submit and run the jobs
+		"""
 		# submit jobs
 		def sworker (q):
 			while True:
@@ -635,6 +725,11 @@ class proc (object):
 
 	@staticmethod
 	def registerRunner (runner):
+		"""
+		Register a runner
+		@params:
+			`runner`: The runner to be registered.
+		"""
 		runner_name = runner.__name__
 		if runner_name.startswith ('runner_'):
 			runner_name = runner_name[7:]

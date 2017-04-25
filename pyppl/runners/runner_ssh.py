@@ -5,10 +5,24 @@ import os, shlex
 from ..helpers import utils
 
 class runner_ssh (runner_local):
+	"""
+	The sge runner
 
+	@static variables:
+		`serverid`: The incremental number used to calculate which server should be used.
+		- Don't touch unless you know what's going on!
+
+	"""
 	serverid = 0
 
 	def __init__ (self, job, config = {}):
+		"""
+		Constructor
+		@params:
+			`job`:    The job object
+			`config`: The properties of the process
+		"""
+		
 		super(runner_ssh, self).__init__(job, config)
 		# construct an ssh cmd
 		sshfile      = os.path.realpath(self.job.script + '.ssh')
@@ -31,8 +45,12 @@ class runner_ssh (runner_local):
 		
 		self.script = utils.chmodX(sshfile)
 
-	# if you leave the main thread, the job will quite
 	def isRunning (self):
+		"""
+		Try to tell whether the job is still running using `ps`
+		@returns:
+			`True` if yes, otherwise `False`
+		"""
 		# you didn't leave the main thread, cuz the job was created by the main thread.
 		if self.job.new: return False
 		# rcfile already generated

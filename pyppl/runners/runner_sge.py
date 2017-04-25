@@ -6,11 +6,25 @@ import os, shlex, logging, sys, copy
 
 
 class runner_sge (runner_local):
+	"""
+	The sge runner
+
+	@static variables:
+		`maxsubmit`: how many job to submit at one time. Default: `int (multiprocess.cpu_count()/2)`
+		`interval`:  how long should I wait in seconds if maxsubmit reached
+
+	"""
 	
 	maxsubmit = int (cpu_count()/2)
-	interval  = 5 # how long should I wait if maxsubmit reached
+	interval  = 5 
 	
 	def __init__ (self, job, config = {}):
+		"""
+		Constructor
+		@params:
+			`job`:    The job object
+			`config`: The properties of the process
+		"""
 		super(runner_sge, self).__init__(job, config)
 		# construct an sge script
 		sgefile = os.path.realpath(self.job.script + '.sge')
@@ -86,6 +100,9 @@ class runner_sge (runner_local):
 		self.script = ['qsub', sgefile]
 		
 	def submit (self):
+		"""
+		Try to submit the job use Popen
+		"""
 		try:
 			self.p = Popen (self.script)
 			rc = self.p.wait()
@@ -98,6 +115,11 @@ class runner_sge (runner_local):
 			self.job.rc(-1) # not able to submit
 		
 	def wait(self, checkP = True):
+		"""
+		Wait for the job to finish
+		@params:
+			`checkP`:  Whether to check the Popen handler or not
+		"""
 		if self.job.rc() == -1: return
 		while checkP and self.p is None: sleep (1)
 		
@@ -111,8 +133,12 @@ class runner_sge (runner_local):
 		self.retry ()
 		
 
-	# if you leave the main thread, the job will quite
 	def isRunning (self):
+		"""
+		Try to tell whether the job is still running using qstat.
+		@returns:
+			`True` if yes, otherwise `False`
+		"""
 		# you didn't leave the main thread, cuz the job was created by the main thread.
 		if self.job.new: return False
 		# rcfile already generated

@@ -5,13 +5,22 @@ from shutil import rmtree, copytree, copyfile, move
 from collections import OrderedDict
 import gzip
 import utils
+import pydoc
 
 class job (object):
-
-
+	"""
+	The job class, defining a job in a process
+	"""
 		
 	def __init__(self, index, workdir, input = None, output = None):
-		
+		"""
+		Constructor
+		@params:
+			`index`:   The index of the job in a process
+			`workdir`: The workdir of the process
+			`input`:   The input of the job
+			`output`:  The output of the job
+		"""
 		self.script  = path.join (workdir, "scripts", "script.%s" % index)
 		self.rcfile  = path.join (workdir, "scripts", "script.%s.rc" % index)
 		self.outfile = path.join (workdir, "scripts", "script.%s.stdout" % index)
@@ -22,7 +31,14 @@ class job (object):
 		# Whether I am newly created
 		self.new     = False
 		
-	def signature (self, log):		
+	def signature (self, log):
+		"""
+		Calculate the signature of the job based on the input/output and the script
+		@params:
+			`log`: The log function of a process
+		@returns:
+			The signature of the job
+		"""
 		sigobj = {
 			'script': self.script,
 			'input':  {'in' +key:val for key, val in self.input.iteritems()},
@@ -35,6 +51,13 @@ class job (object):
 		
 	
 	def rc (self, val = None):
+		"""
+		Get/Set the return code
+		@params:
+			`val`: The return code to be set. If it is None, return the return code. Default: `None`
+		@returns:
+			The return code if `val` is `None`
+		"""
 		if val is None:
 			ret = -99
 			if not path.exists (self.rcfile): return ret
@@ -44,28 +67,53 @@ class job (object):
 		else:
 			open (self.rcfile, 'w').write (str(val))
 	
-	# whether output files are generated
 	def _checkOutFiles (self):
+		"""
+		Check whether output files are generated
+		@returns:
+			True if yes, else return the file that is not generated
+		"""
 		for outfile in self.output['file']:
 			if not path.exists (outfile):
 				return outfile
 		return True
 	
-	# return:
-	#   True: successful
-	#   <rc>: not the right retcode, see .stderr file
-	#   '<outfile>': outfile not generated
 	def status (self, validRetcodes = [0]):
+		"""
+		Get the status of the job
+		If return code is not valid, return the code
+		Otherwise return `self._checkOutFiles()`
+		@params:
+			`validRetcodes`: the valid return codes, default: [0]
+		@returns:
+			The return code if it's not in `validRetcodes`
+			Otherwise `self._checkOutFiles()`
+		"""
 		rc = self.rc()
 		if rc not in validRetcodes:
 			return rc
 		return self._checkOutFiles()
 	
 	def cache (self, cachefile, log):
+		"""
+		Cache the job, write the signature to the cache file
+		@params:
+			`cachefile`: The cachefile used to save the signature
+			`log`:       The log function of the process
+		"""
 		sig = self.signature(log)
 		open(cachefile, 'a').write ("%s\t%s\n" % (self.index, sig))
 		
 	def _obj2sig (self, obj, k, log):
+		"""
+		Convert an object to a signature
+		@params:
+			`obj`: The object
+			`k`:   The key if the object is a value of a dictionary
+			`log`: The log function of the process
+		@returns:
+			The signature
+		"""
 		if isinstance (obj, dict):
 			ret = {}
 			for key, val in obj.iteritems():
@@ -86,9 +134,17 @@ class job (object):
 				log ("Generating signature for job #%s, but %s not exists: %s" % (self.index, k, obj), 'debug')
 				return False
 			return utils.fileSig (obj)
-		
-	# use export as cache
+
 	def exportCached (self, exdir, how, warnings):
+		"""
+		Prepare to use export files as cached information
+		@params:
+			`exdir`: The export directory
+			`how`:   How the export files are exported
+			`warnings`: The warnings generated during the process
+		@returns:
+			True if succeed, otherwise False
+		"""
 		if how == 'symlink':
 			raise ValueError ('Unable to use export cache when you export using symlink.')
 		if not exdir:
@@ -122,6 +178,14 @@ class job (object):
 		return True
 			
 	def export (self, exdir, how, ow, log):
+		"""
+		Export the output files
+		@params:
+			`exdir`: The export directory
+			`how`:   How the export files are exported
+			`ow`:    Whether to overwrite the existing files
+			`log`:   The log function of the process
+		"""
 		if not exdir: return
 		for outfile in self.output['file']:
 			bn     = path.basename (outfile)
@@ -156,8 +220,11 @@ class job (object):
 						utils.targz (target, outfile)
 					else:
 						utils.gz (target, outfile)
-						
+				
 	def clearOutput (self):
+		"""
+		Clear the intermediate files and output files
+		"""
 		if path.exists (self.rcfile):  remove(self.rcfile)
 		if path.exists (self.outfile): remove(self.outfile)
 		if path.exists (self.errfile): remove(self.errfile)
