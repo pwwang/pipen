@@ -118,7 +118,7 @@ You may also filter the files with a pattern:
 p2.input   = {"invar, infile:file": lambda ch: ch.expand(1, "*.txt")}
 # only incude .txt files
 ```
-> NOTE: `expand` only works for original channels with length is 1, which will expand to `N` (number of files included)
+> **Caution** `expand` only works for original channels with length is 1, which will expand to `N` (number of files included)
 
 ### Collapse a channel by files in the same directory
 `channel.collapse(index=0)`
@@ -159,7 +159,7 @@ p2.input  = {"indir:file": lambda ch: ch.collapse(1)}
 # collapse to: [("a", "<outdir>/")]
 # ...
 ```
-> NOTE: 
+> **Caution** 
 > 1. the files have to be in the same directory, `pyppl` won't check it, the directory of the first file will be used.
 > 2. values at other columns should be the same, `pyppl` won't check it, the first value at the column will be used.
 
@@ -256,7 +256,7 @@ l    = chan.toList()
 # l == [1,2,3]
 ```
 
-> NOTE: it only works with width=1 channels. If `chan.width() != 1`, a `ValueError` will be raised.
+> **Caution** it only works with width=1 channels. If `chan.width() != 1`, a `ValueError` will be raised.
 
 ### Copy a channel
 `channel.copy()`

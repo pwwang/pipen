@@ -8,7 +8,7 @@ You can either tell a process to user a runner, or even, you can tell the pipeli
 ## Configurations for `runner_ssh`
 Ssh runner take the advantage to use the computing resources from other servers that can be connected via `ssh`. The `ssh` command allows us to pass the command to the server and execute it: `ssh [options] [command]`
 
-> NOTE: 
+> **Caution** 
 1. ssh runner only works when the servers share the same file system.
 2. you have to [configure](http://www.linuxproblem.org/art_9.html) so that you don't need a password to log onto the servers.
 3. The jobs will be distributed equally to the servers.
@@ -128,7 +128,7 @@ class runner_delay(runner_local):
 
 - Submit the job: `submit (self)`
 The defines how you submit your job. You may use `Popen` to run the script and assign the `Popen` object to `self.p`.
-> NOTE: 
+> **Caution**
 > 1. make sure write "-1" if you fail to submit the job. Always use a `try-except` block.
 > 2. confirm whether you need to wait until the script finishes or not:
 ```python

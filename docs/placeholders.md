@@ -18,7 +18,7 @@ You can apply some function to transform values by placeholders:
 # "1","2","4"
 ```
 `|` separates the placeholder and the function, `_` represents the value on the left.
-> NOTE: a placeholder always returns a string.
+> **Caution** a placeholder always returns a string.
 
 You can also apply a set of functions:
 ```python
@@ -37,7 +37,7 @@ Use `lambda` functions:
 {{ v | (lambda x: x*2)(_) }}
 # "0", "2", "4"
 ```
-> NOTE: always call the function instead of just define the function (`(lambda ...)(_)` instead of `lambda ...`).
+> **Caution** always call the function instead of just define the function (`(lambda ...)(_)` instead of `lambda ...`).
 
 ## File placeholders
 If an `input` or `output` as a file: `infile:file`, then `{{infile}}` will be the link path that links to the input file in the input directory of a process (`proc`). `{{infile.bn}}` is the basename (without extension), `{{infile.fn}}` holds the filename (with extension), and `{{infile.ext}}` indicates the extensions. Examples:
@@ -47,7 +47,7 @@ If an `input` or `output` as a file: `infile:file`, then `{{infile}}` will be th
 |`/a/b/c.txt`|`c`           |`c.txt`        | `.txt`      |
 |`./dir`     |`dir`         |`dir`          | [EMPTY STRING]     |
 
->NOTE: `filevar:file` is almost the same as `filevar:dir`, the only difference is that if `filevar:dir` is in the output, the directory will be created automatically.
+> **Note** `filevar:file` is almost the same as `filevar:dir`, the only difference is that if `filevar:dir` is in the output, the directory will be created automatically.
 
 ## `Proc` property placeholders
 You can also use some `proc` property values with placeholders: `{{proc.<property>}}`. Available properties:
