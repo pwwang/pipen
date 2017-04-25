@@ -88,6 +88,5 @@ ENV/
 # Rope project settings
 .ropeproject
 
-pyppl_old.py
-
 workdir/
+node_modules/
