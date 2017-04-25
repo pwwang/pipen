@@ -10,4 +10,4 @@ Once a job is cached, `pyppl` will skip running this job. But you have to tell a
 |`"export+"`|Try to use `p.cache = True` first, if failed then use `p.cache = "export"`|
 |False|Disable caching, always run jobs.|
 
-<sup>*</sup>: A file signature is calculated based on the path and last modified time of the file.
+> **Info** <sup>*</sup>: A file signature is calculated based on the path and last modified time of the file.
