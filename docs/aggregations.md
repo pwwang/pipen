@@ -117,7 +117,7 @@ Like previous example shows, you just need to give the constructor all the proce
     a.ends   = [p2, p3]
     ```
 
-> **Hint** You can also access the processes using `a.p1`, `a.p2` and `a.p3`.
+> **Hint** You can also access the processes using `a.p1`, `a.p2` and `a.p3`. If the tags of `p1`, `p2` and `p3` are not `notag`, you should access them by `p.p1_tag`, `p.p2_tag` and `p.p3_tag`
     
 ## Set properties of an aggregation
 Basically, most of the properties available for a process are available for an aggregation, which just passes the values to the processes. However, some properties are just passed to starting processes, some just to ending processes, some to all of the processes, and some just affect the aggregation itself:
