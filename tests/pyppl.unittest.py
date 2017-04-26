@@ -173,11 +173,11 @@ sorted("""digraph PyPPL {
 	
 	def test_batchjobs (self):
 		p = proc ('batch')
-		p.input = {'input': channel.create(range(100))}
+		p.input = {'input': channel.create(range(10))}
 		p.script = "cat {{proc.workdir}}/scripts/script.{{#}}.ssh | grep franklin; sleep 3"
 		p.echo = True
 		p.cache = False
-		p.forks = 32
+		p.forks = 3
 		#p.errorhow = 'retry'
 		#p.runner = 'ssh'
 		p.beforeCmd = 'mkdir ./test_batchjobs -p'
@@ -260,6 +260,39 @@ sorted("""digraph PyPPL {
 		pIsRunning.forks  = 5
 		
 		pyppl ().starts(pIsRunning).run()
+		
+	@unittest.skip('')	
+	def testFlushFile (self):
+		pFF = proc ()
+		pFF.input = {"input": [1]}
+		pFF.script = """
+		for i in $(seq 1 60); do
+		echo $i
+		sleep 1
+		done
+		"""
+		pFF.echo  = True
+		
+		pyppl().starts(pFF).run('sge')
+		
+	def testError (self):
+		pError = proc ()
+		pError.input  = {"input": [1]}
+		pError.output = "outfile:file:a.txt"
+		pError.script = "echo {{input}} > {{outfile}}; exit $(($RANDOM % 4))"
+		pError.errhow = "retry"
+		pError.errntry= 10
+		pError.cache  = False
+		pyppl().starts(pError).run()
+		
+	def testIgnore (self):
+		pIgnore = proc ()
+		pIgnore.input  = {"input": [1]}
+		pIgnore.output = "outfile:file:a.txt"
+		pIgnore.script = "echo {{input}} > {{outfile}}; exit $(($RANDOM % 4))"
+		pIgnore.errhow = "ignore"
+		pIgnore.cache  = False
+		pyppl().starts(pIgnore).run()
 
 if __name__ == '__main__':
 	unittest.main()

@@ -2,7 +2,7 @@ import logging, os, sys, random, json, copy
 from helpers import *
 from runners import *
 from time import time
-VERSION = "0.5.1"
+VERSION = "0.6.0"
 			
 class pyppl (object):
 	"""

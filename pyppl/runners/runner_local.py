@@ -5,8 +5,9 @@
 #	@see runner.unittest.py
 #
 import os, stat, sys, logging
-from subprocess import Popen, PIPE
+from subprocess import Popen, check_output, list2cmdline, PIPE
 from time import sleep
+from getpass import getuser
 from ..helpers import utils
 
 class runner_local (object):
@@ -23,11 +24,31 @@ class runner_local (object):
 		"""
 		self.job       = job
 		self.script    = utils.chmodX(self.job.script)
+		self.cmd2run   = list2cmdline (self.job.script)
 		self.ntry      = 0
 		self.config    = config
 		self.p         = None
 		self.outp      = 0
 		self.errp      = 0
+		self.submitRun = True
+	
+	def log (self, msg, level="info", flag=None):
+		"""
+		The log function with aggregation name, process id and tag integrated.
+		@params:
+			`msg`:   The message to log
+			`levle`: The log level
+			`flag`:  The flag
+		"""
+		if flag is None: flag = level
+		flag  = flag.upper().rjust(7)
+		flag  = "[%s]" % flag
+		aggr  = self._config('aggr', '')
+		pid   = self._config('id')
+		tag   = self._config('tag')
+		title = "%s%s.%s:" % (("%s -> " % aggr if aggr else ""), pid, tag)
+		func  = getattr(self._config('logger', utils.getLogger(name = "%s.%s.%s" % (pid, tag, self.job.index))), level)
+		func ("%s %s %s" % (flag, title, msg))
 	
 	def _config (self, key, default = None):
 		"""
@@ -56,44 +77,57 @@ class runner_local (object):
 		"""
 		Try to submit the job use Popen
 		"""
+		self.job.clearOutput()
 		try:
+			self.log ('Submitting job #%s ...' % self.job.index, 'debug')
 			self.p = Popen (self.script, stdin=PIPE, stderr=PIPE, stdout=PIPE, close_fds=True)
-			# have to wait, otherwise it'll continue submitting jobs
-			self.job.rc(self.p.wait())
 		except Exception as ex:
+			#self.log ('Failed to submit job #%s' % self.job.index, 'error')
 			open (self.job.errfile, 'w').write(str(ex))
 			self.job.rc(-1)
+			self.p = None
 			
-	def wait (self, checkP = True):
+	def wait(self):
 		"""
 		Wait for the job to finish
-		@params:
-			`checkP`:  Whether to check the Popen handler or not
 		"""
 		if self.job.rc() == -1: return
-		while checkP and self.p is None: sleep (1)
-		
-		if checkP:
+		if self.p:
 			with open (self.job.outfile, 'w') as fout, open(self.job.errfile, 'w') as ferr:
 				for line in iter(self.p.stderr.readline, ''):
-					ferr.write(line)
-					if self._config('echo', False):
-						sys.stderr.write('! ' + line)
+					if self._config('echo', False):	sys.stderr.write('STDERR: ' + line)
+					if self.submitRun: ferr.write(line)
 	
 				for line in iter(self.p.stdout.readline, ''):
-					fout.write(line)
-					if self._config('echo', False):
-						sys.stdout.write('- ' + line)
-		else:
-			while self.job.rc() == -99:
+					if self._config('echo', False): sys.stdout.write('STDOUT: ' + line)
+					if self.submitRun: fout.write(line)
+			rc = self.p.wait()
+			if self.submitRun: self.job.rc(rc)
+		
+		if not self.submitRun:
+			if not self.isRunning(): return 		
+			while self.job.rc() == -9999:
+				sleep (30)
 				if self._config('echo', False):
 					self.flushFile('stdout')
 					self.flushFile('stderr')
-				sleep (5)
+				if not self.isRunning():
+					break
+			
+			
+	def finish (self):
+		"""
+		Do some cleanup work when jobs finish
+		"""
 		# IMPORTANT:
 		# flush the output files, otherwise will cause output files not generated
 		# If the job is running via ssh, the stat will not be flushed!
-		os.utime (self._config('outdir', os.path.dirname(os.path.dirname(self.job.script))), None)
+		workdir   = os.path.dirname ( os.path.dirname ( self.job.script ) )
+		outdir    = os.path.join    ( workdir, "output" )
+		scriptdir = os.path.join    ( workdir, "scripts" )
+		os.utime (outdir, None)
+		os.utime (scriptdir, None)
+		self.job.checkOutFiles ()
 		self.p = None
 		self.retry ()
 		
@@ -102,37 +136,38 @@ class runner_local (object):
 		Retry to submit and run the job if failed
 		"""
 		self.ntry += 1
-		if self.isValid(): return
-		if self._config('errorhow') != 'retry': return
-		if self.ntry > self._config('errorntry'): return
+		rc = self.job.rc ()
+		if rc in self._config('retcodes', [0]) or self._config('errorhow') != 'retry' or self.ntry > self._config('errorntry'):
+			return
+		
 		logger = self._config('logger')
 		paggr  = self._config('aggr')
 		ptag   = self._config('tar')
 		pwd    = self._config('workdir')
 		# retrying
-		logger.info ('[RETRY%s] %s%s.%s#%s: retrying ...' % (str(self.ntry).rjust(2), (paggr + ' -> ' if paggr else ''), pid, ptag, pwd))
+		#logger.info ('[RETRY%s] %s%s.%s#%s: retrying ...' % (str(self.ntry).rjust(2), (paggr + ' -> ' if paggr else ''), pid, ptag, pwd))
+		self.log ("Retrying job #%s ... (%s)" % (self.job.index, self.ntry))
 		
 		self.submit()
 		self.wait()
-	
+		self.finish()
 	
 	def isRunning (self):
 		"""
 		Try to tell whether the job is still running.
-		For local runner, if you leave the main thread, the job will quite
 		@returns:
 			`True` if yes, otherwise `False`
 		"""
-		return False
 		
-	def isValid (self):
-		"""
-		Tell the return code is valid
-		@returns:
-			`True` if yes, otherwise `False`
-		"""
-		return self.job.rc () in self._config('retcodes', [0])
-
+		# rcfile already generated
+		if self.job.rc() != -9999: return False
+		
+		uname = getuser()
+		psout = check_output (['ps', '-u%s' % uname, '-o', 'args'])
+		psout = psout.split("\n")[1:]
+		if self.cmd2run in psout:
+			return True
+		return False
 
 	def flushFile (self, fn = 'stdout'):
 		"""
@@ -145,7 +180,7 @@ class runner_local (object):
 		point = self.outp if fn == 'stdout' else self.errp
 		def wfunc (line):
 			rit  = sys.stdout.write if fn == 'stdout' else sys.stderr.write
-			sign = '- ' if fn == 'stdout' else '! '
+			sign = 'STDOUT: ' if fn == 'stdout' else 'STDERR: '
 			rit ("%s%s" % (sign, line))
 			
 		def point2 (n):

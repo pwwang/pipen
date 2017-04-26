@@ -279,46 +279,52 @@ class proc (object):
 			False if jobs are completely failed
 			Otherwise return the successful job indices.
 		"""
-		cachefile = os.path.join (self.workdir, self.cachefile)
-		ret       = []
-		fjobs     = [] # failed jobs
-		errs      = []
+		cachefile  = os.path.join (self.workdir, self.cachefile)
+		ret        = []
+		failedjobs = []
+		failedrcs  = []
 
 		if self.exportdir and not os.path.exists(self.exportdir):
 			os.makedirs (self.exportdir)
 			
 		for i in self.ncjobids:
 			job   = self.jobs[i]
-			st    = job.status(self.retcodes)
-			if isinstance(st, bool) and st == True:
-				job.cache(cachefile, self.log)
-				job.export (self.exportdir, self.exporthow, self.exportow, self.log)
+			#st    = job.status(self.retcodes)
+			rc    = job.rc()
+			if rc in self.retcodes:
+				job.cache(cachefile)
+				job.export (self.exportdir, self.exporthow, self.exportow)
 				ret.append (i)
 			else:
-				fjobs.append (job)
-				errs.append  (st)
+				failedjobs.append (job)
+				failedrcs.append  (rc)
+				
+		def rc2msg (rc):
+			msg = "Program error!"
+			if rc == -9999:	msg = "No rcfile generated!"
+			elif rc == -1:	msg = "Failed to submit the jobs!"
+			elif rc < 0:	msg = "Output files not generated!"
+			return msg
 		
-		if not fjobs: return ret  # all jobs successfully finished
+		if self.errorhow == 'ignore' and failedjobs:
+			for i, fjob in enumerate(failedjobs):
+				self.log ("Job #%s failed but ignored with return code: %s (%s)" % (fjob.index, failedrcs[i], rc2msg(failedrcs[i])) , "warning")
+			return ret + [j.index for j in failedjobs]
 		
-		errlogs = []
-		stderrPrinted = False # just print one stderr file
-		for i, failedJob in enumerate(fjobs):
-			error = errs[i]    
-			if isinstance(error, int) and not self.echo and not stderrPrinted:
-				stderrPrinted = True
-				self.log('Job #%s: return code %s expected, but get %s. See STDERR below:' % (failedJob.index, self.retcodes, error), 'error')
-				errmsgs = []
-				if os.path.exists (failedJob.errfile):
-					errmsgs = ['[  ERROR] !  ' + line.strip() for line in open(failedJob.errfile)]					
-				if not errmsgs: errmsgs = ['[  ERROR] ! <EMPTY STDERR>']
-				for errmsg in errmsgs: self.logger.error(errmsg)
-			else: # out file not generated
-				errlogs.append ('Job #%s: outfile not generated: %s' % (failedJob.index, error))
-		nerr = len (errlogs)
-		for errlog in errlogs[:3]:
-			self.log(errlog, 'error')
-		if nerr > 3:
-			self.log("...... (%s omitted)" % (nerr - 3), 'error')
+		if not failedjobs: return ret  # all jobs successfully finished
+		# just inform the first failed job
+		failedjob = failedjobs[0]
+		failedrc  = failedrcs [0]
+			
+		self.log('Job #%s: return code %s expected, but get %s: %s' % (failedjob.index, self.retcodes, failedrc, rc2msg(failedrc)), 'error')
+		
+		if not self.echo:
+			self.log('Job #%s: check STDERR below:' % (failedjob.index), 'error')
+			errmsgs = []
+			if os.path.exists (failedjob.errfile):
+				errmsgs = ['[  ERROR] !  ' + line.strip() for line in open(failedjob.errfile)]					
+			if not errmsgs: errmsgs = ['[  ERROR] ! <EMPTY STDERR>']
+			for errmsg in errmsgs: self.logger.error(errmsg)
 		
 		sys.exit (1) # Don't goto next proc
 	
@@ -455,7 +461,7 @@ class proc (object):
 			
 		self.input = {'#': []}
 		for i in range (self.length):
-			self.jobs.append (pjob (i, self.workdir))
+			self.jobs.append (pjob (i, self.workdir, self.log))
 			self.input['#'].append(i)
 			self.ncjobids.append (i)
 			
@@ -480,7 +486,10 @@ class proc (object):
 					job.input['var'].append (ch)
 					self.input[key].append (ch)
 		if warnings:
-			self.log ("Some input files exist, use them: '%s' and %s others ..." % (warnings[0], len(warnings)-1), 'warning')
+			warn = warnings.pop(0)
+			self.log ("Some input files exist, use them: %s" % warn, 'warning')
+			if warnings:
+				self.log ("  and %s others ..." % len(warnings), 'warning')
 
 		ridx = randint(0, self.length-1)
 		for key, val in self.input.iteritems():
@@ -572,10 +581,12 @@ class proc (object):
 			if os.path.exists(scriptfile) and open(scriptfile).read() == jscript:
 				scriptExists.append (index)
 				continue # don't touch it if contest is the same
-			self.jobs[index].new = True
 			open (scriptfile, 'w').write (jscript)
 		if scriptExists:
-			self.log ("Script files exist and contents are the same, didn't touch them for job #%s and %s others." % (scriptExists.pop(0), len(scriptExists)), 'debug')
+			se = scriptExists.pop(0)
+			self.log ("Script files exist and contents are the same, didn't touch them for job #%s" % se, 'debug')
+			if scriptExists:
+				self.log ("  and %s others ..." % len(scriptExists), 'debug')
 
 	def _readConfig (self, config):
 		"""
@@ -624,7 +635,7 @@ class proc (object):
 					return False
 			# sigCachedJids = [i for i in self.input['#'] if jobsigs[i] == self.jobs[i].signature(self.log) and jobsigs[i] != False]
 			# job.signature() can't be "False" just can be False
-			sigCachedJids = [i for i in self.input['#'] if jobsigs[i] == self.jobs[i].signature(self.log)]
+			sigCachedJids = [i for i in self.input['#'] if jobsigs[i] == self.jobs[i].signature()]
 
 		if self.cache in ['export', 'export+']:
 			warnings      = []
@@ -693,12 +704,11 @@ class proc (object):
 				(ru, i) = q.get()
 				sleep (i)
 				if not ru.isRunning():
-					ru.job.clearOutput()
 					ru.submit()
-					ru.wait()
 				else:
 					self.log ("Job #%s is already running, skip submitting." % ru.job.index, 'info')
-					ru.wait(False) # don't check submision
+				ru.wait() # don't check submision
+				ru.finish()
 				q.task_done()
 		
 		runner    = proc.runners[self.runner]

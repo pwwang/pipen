@@ -10,7 +10,7 @@ from pyppl import utils, job
 class TestJob (unittest.TestCase):
 
 	def testInit (self):
-		j = job (0, "./")
+		j = job (0, "./", None)
 		self.assertEqual (j.script, "./scripts/script.0")
 		self.assertEqual (j.rcfile, "./scripts/script.0.rc")
 		self.assertEqual (j.outfile, "./scripts/script.0.stdout")
@@ -25,12 +25,12 @@ class TestJob (unittest.TestCase):
 		os.makedirs ("./test/input")
 		os.makedirs ("./test/output")
 		os.makedirs ("./test/scripts")
-		j = job (0, "./test/")
+		j = job (0, "./test/", None)
 		open (j.script, 'w').write('')
-		sig = j.signature(utils.getLogger())
+		sig = j.signature()
 		sleep (.1)
 		open (j.script, 'w').write('')
-		self.assertNotEqual (sig, j.signature(utils.getLogger()))
+		self.assertNotEqual (sig, j.signature())
 		shutil.rmtree ("./test/")
 	
 	def testRc (self):
@@ -39,12 +39,18 @@ class TestJob (unittest.TestCase):
 		os.makedirs ("./test/input")
 		os.makedirs ("./test/output")
 		os.makedirs ("./test/scripts")
-		j = job (0, "./test/")
-		self.assertEqual (j.rc(), -99)
+		j = job (0, "./test/", None)
+		j.output['file'].append("./test/output/a")
+		self.assertEqual (j.rc(), -9999)
 		open (j.rcfile, 'w').write('')
-		self.assertEqual (j.rc(), -99)
-		open (j.rcfile, 'w').write('140')
+		self.assertEqual (j.rc(), -9999)
+		#open (j.rcfile, 'w').write('140')
+		j.rc (140)
+		self.assertEqual (open(j.rcfile).read().strip(), "1140")
 		self.assertEqual (j.rc(), 140)
+		j.checkOutFiles ()
+		self.assertEqual (open(j.rcfile).read().strip(), "-140")
+		self.assertEqual (j.rc(), -140)
 		
 		shutil.rmtree ("./test/")
 		
@@ -54,11 +60,13 @@ class TestJob (unittest.TestCase):
 		os.makedirs ("./test/input")
 		os.makedirs ("./test/output")
 		os.makedirs ("./test/scripts")
-		j2 = job (1, "./test/")
+		j2 = job (1, "./test/", None)
 		j2.output['file'].append ("./test/output/out.txt")
-		self.assertTrue(j2._checkOutFiles(), "./test/output/out.txt")
+		open (j2.rcfile, 'w').write('1000')
+		j2.checkOutFiles()
+		self.assertEqual (j2.rc(), -1000)
 		open ("./test/output/out.txt", 'w').write('')
-		self.assertTrue(j2._checkOutFiles())
+		j2.checkOutFiles()
 		shutil.rmtree ("./test/")
 		
 		
@@ -72,7 +80,7 @@ class TestJob (unittest.TestCase):
 		os.makedirs ("./test/input")
 		os.makedirs ("./test/output")
 		os.makedirs ("./test/scripts")
-		j3 = job (1, "./test/")
+		j3 = job (1, "./test/", logfunc)
 		j3.output['file'].append ("./test/output/out.txt")
 		open ("./test/output/out.txt", 'w').write('')
 		
@@ -83,7 +91,7 @@ class TestJob (unittest.TestCase):
 		e = j3.exportCached ("./test/", "copy", log)
 		self.assertFalse (e)
 		
-		j3.export ("./test/", "copy", True, logfunc)
+		j3.export ("./test/", "copy", True)
 		self.assertTrue (os.path.exists ("./test/out.txt"))
 		e = j3.exportCached ("./test/", "copy", log)
 		self.assertTrue (e)
@@ -93,13 +101,13 @@ class TestJob (unittest.TestCase):
 		os.makedirs ("./test/input")
 		os.makedirs ("./test/output")
 		os.makedirs ("./test/scripts")
-		j4 = job (4, "./test/")
+		j4 = job (4, "./test/", logfunc)
 		j4.output['file'].append ("./test/output/out.txt")
 		j4.output['file'].append ("./test/output/outdir")
 		open ("./test/output/out.txt", 'w').write('')
 		os.makedirs ("./test/output/outdir")
 
-		j4.export ("./test/", "gzip", True, logfunc)
+		j4.export ("./test/", "gzip", True)
 		
 		self.assertTrue (os.path.exists ("./test/out.txt.gz"))
 		self.assertTrue (os.path.exists ("./test/outdir.tgz"))

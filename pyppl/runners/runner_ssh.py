@@ -51,10 +51,8 @@ class runner_ssh (runner_local):
 		@returns:
 			`True` if yes, otherwise `False`
 		"""
-		# you didn't leave the main thread, cuz the job was created by the main thread.
-		if self.job.new: return False
 		# rcfile already generated
-		if self.job.rc() != -99: return False
+		if self.job.rc() != -9999: return False
 		
 		uname = getuser()
 		psout = check_output (['ssh', self.server, 'ps -u%s -o args' % uname])

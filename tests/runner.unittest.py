@@ -3,6 +3,7 @@ import sys, shutil
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
 from pyppl import runner_local, runner_sge, runner_ssh, utils, job
+import subprocess
 
 def tryRemove (file):
 	try: 
@@ -32,7 +33,7 @@ class TestRunner (unittest.TestCase):
 		with open (self.scripts[1], 'w') as f:
 			f.write ('#!/usr/bin/env python\n')
 			f.write ('print "1"\n')
-			f.write ('__import__("time").sleep(8)\n')
+			f.write ('__import__("time").sleep(3)\n')
 			f.write ('print "2"\n')
 		with open (self.scripts[4], 'w') as f:
 			f.write ('#!/usr/bin/env python\n')
@@ -89,39 +90,57 @@ class TestRunner (unittest.TestCase):
 			'sshRunner': {'servers': ['franklin01']}
 		})
 		self.assertEqual (r2._config('sshRunner.servers', ['franklin02']), ['franklin01'])
+		
+	def testLocalIsRunning (self):
+		from getpass import getuser
+		tmpdir = "./test/"
+		if not os.path.exists(tmpdir): os.makedirs(tmpdir)
+		cmd = ["sleep", "1"]
+		j = job (0, tmpdir)
+		r = runner_local (j, {})
+		r.script = cmd
+		r.cmd2run =subprocess.list2cmdline(cmd)
+		r.submit ()
+		#os.system ('ps -u%s | grep sleep' % getuser())
+		self.assertTrue (r.isRunning())
+		r.wait()
+		self.assertFalse (r.isRunning())
+		shutil.rmtree(tmpdir)
 
 	def testLocalRun (self):
 		r0 = runner_local(self.jobs[0])
 		r1 = runner_local(self.jobs[1])
 		r2 = runner_local(self.jobs[4])
-
+		os.makedirs ( os.path.join ( os.path.dirname (os.path.dirname(r0.job.script) ), 'output'  ))
 		r0.submit()
 		r0.wait()
+		r0.finish()
 		self.assertTrue (os.path.exists(r0.job.rcfile))
 		self.assertTrue (os.path.exists(r0.job.outfile))
 		self.assertTrue (os.path.exists(r0.job.errfile))
 		self.assertEqual (r0.job.rc(), 0)
 		self.assertEqual (open(r0.job.outfile).read().strip(), '0')
-		self.assertTrue (r0.isValid())
 
 		r1.submit()
 		r1.wait()
+		r1.finish()
 		self.assertTrue (os.path.exists(r1.job.rcfile))
 		self.assertTrue (os.path.exists(r1.job.outfile))
 		self.assertTrue (os.path.exists(r1.job.errfile))
 		self.assertEqual (r1.job.rc(), 0)
 		self.assertEqual (open(r1.job.outfile).read().strip(), '1\n2')
-		self.assertTrue (r1.isValid())
+		#self.assertTrue (r1.isValid())
 
 		r2.submit()
 		r2.wait()
+		r2.finish()
 		self.assertTrue (os.path.exists(r2.job.rcfile))
 		self.assertTrue (os.path.exists(r2.job.outfile))
 		self.assertTrue (os.path.exists(r2.job.errfile))
 		self.assertEqual (r2.job.rc(), 1)
 		self.assertEqual (open(r2.job.outfile).read().strip(), '2')
 		self.assertEqual (open(r2.job.errfile).read().strip(), '3')
-		self.assertFalse (r2.isValid())
+		#self.assertFalse (r2.isValid())
 
 	def testSSHRun (self):
 		r0 = runner_ssh(self.jobs[0], {
@@ -141,7 +160,7 @@ class TestRunner (unittest.TestCase):
 		self.assertTrue (os.path.exists(r0.job.errfile))
 		self.assertEqual (r0.job.rc(), 0)
 		self.assertEqual (open(r0.job.outfile).read().strip(), '0')
-		self.assertTrue (r0.isValid())
+		#self.assertTrue (r0.isValid())
 
 		r1.submit()
 		r1.wait()
@@ -150,7 +169,7 @@ class TestRunner (unittest.TestCase):
 		self.assertTrue (os.path.exists(r1.job.errfile))
 		self.assertEqual (r1.job.rc(), 0)
 		self.assertEqual (open(r1.job.outfile).read().strip(), '1\n2')
-		self.assertTrue (r1.isValid())
+		#self.assertTrue (r1.isValid())
 
 		r2.submit()
 		r2.wait()
@@ -160,7 +179,7 @@ class TestRunner (unittest.TestCase):
 		self.assertEqual (r2.job.rc(), 1)
 		self.assertEqual (open(r2.job.outfile).read().strip(), '2')
 		self.assertEqual (open(r2.job.errfile).read().strip(), '3')
-		self.assertFalse (r2.isValid())
+		#self.assertFalse (r2.isValid())
 
 		
 	
@@ -179,55 +198,57 @@ class TestRunner (unittest.TestCase):
 
 		r0.submit()
 		r0.wait()
+		r0.finish()
+		#os.system ("ls test/scripts/")
 		self.assertTrue (os.path.exists(r0.job.rcfile))
 		self.assertTrue (os.path.exists(r0.job.outfile))
 		self.assertTrue (os.path.exists(r0.job.errfile))
 		self.assertEqual (r0.job.rc(), 0)
 		self.assertEqual (open(r0.job.outfile).read().strip(), '0')
-		self.assertTrue (r0.isValid())
+		#self.assertTrue (r0.isValid())
 
 		r1.submit()
 		r1.wait()
+		r1.finish()
 		self.assertTrue (os.path.exists(r1.job.rcfile))
 		self.assertTrue (os.path.exists(r1.job.outfile))
 		self.assertTrue (os.path.exists(r1.job.errfile))
 		self.assertEqual (r1.job.rc(), 0)
 		self.assertEqual (open(r1.job.outfile).read().strip(), '1\n2')
-		self.assertTrue (r1.isValid())
+		#self.assertTrue (r1.isValid())
 
 		r2.submit()
 		r2.wait()
+		r2.finish()
 		self.assertTrue (os.path.exists(r2.job.rcfile))
 		self.assertTrue (os.path.exists(r2.job.outfile))
 		self.assertTrue (os.path.exists(r2.job.errfile))
 		self.assertEqual (r2.job.rc(), 1)
 		self.assertEqual (open(r2.job.outfile).read().strip(), '2')
 		self.assertEqual (open(r2.job.errfile).read().strip(), '3')
-		self.assertFalse (r2.isValid())
+		#self.assertFalse (r2.isValid())
 	
 	@unittest.skip("Skipping isRunning test...")	
 	def testIsRunning (self):
-		r0 = runner_local (self.jobs[5])
-		r0.job.clearOutput()
-		r0.submit ()
-		self.assertFalse (r0.isRunning())
-		r0.job.clearOutput()
-		
-		r1 = runner_sge (self.jobs[5])
-		if not r1.isRunning(): 
-			r1.job.clearOutput()
-			r1.submit ()
-			self.assertTrue (r1.isRunning())
-		r1.job.clearOutput()
 			
 		r2 = runner_ssh (self.jobs[5], {
 			'sshRunner': {'servers': ['franklin03']}	
 		})
 		if not r2.isRunning(): 
-			r2.job.clearOutput()
-			from subprocess import Popen
-			Popen (r2.script)
+			r2.submit()
 			self.assertTrue (r2.isRunning())
+			r2.wait()
+			r2.finish()
+			self.assertFalse (r2.isRunning())
+			
+		r1 = runner_sge (self.jobs[5])
+		if not r1.isRunning(): 
+			r1.submit ()
+			self.assertTrue (r1.isRunning())
+			r1.wait()
+			r1.finish()
+			self.assertFalse (r1.isRunning())
+	
 		
 
 if __name__ == '__main__':

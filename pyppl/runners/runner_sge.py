@@ -26,6 +26,7 @@ class runner_sge (runner_local):
 			`config`: The properties of the process
 		"""
 		super(runner_sge, self).__init__(job, config)
+		self.submitRun = False
 		# construct an sge script
 		sgefile = os.path.realpath(self.job.script + '.sge')
 		
@@ -89,7 +90,7 @@ class runner_sge (runner_local):
 				src += ' ' + str(v)
 			sgesrc.append(src)
 		sgesrc.append ('')
-		sgesrc.append ('trap "status=\$?; echo \$status > %s; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile)
+		sgesrc.append ('trap "status=\$?; echo \$((1000+\$status)) > %s; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile)
 		sgesrc.append (self._config('sgeRunner.preScript', ''))
 		sgesrc.append ('')
 		sgesrc.append (list2cmdline(self.script))
@@ -98,40 +99,7 @@ class runner_sge (runner_local):
 		open (sgefile, 'w').write ('\n'.join(sgesrc) + '\n')
 		
 		self.script = ['qsub', sgefile]
-		
-	def submit (self):
-		"""
-		Try to submit the job use Popen
-		"""
-		try:
-			self.p = Popen (self.script)
-			rc = self.p.wait()
-			if rc != 0:
-				open (self.job.errfile, 'w').write('Failed to submit job: %s.%s#%s' % (self._config('id'), self._config('tag'), self.index))
-				self.job.rc(-1)
-				
-		except Exception as ex:
-			open (self.job.errfile, 'w').write(str(ex))
-			self.job.rc(-1) # not able to submit
-		
-	def wait(self, checkP = True):
-		"""
-		Wait for the job to finish
-		@params:
-			`checkP`:  Whether to check the Popen handler or not
-		"""
-		if self.job.rc() == -1: return
-		while checkP and self.p is None: sleep (1)
-		
-		while self.job.rc() == -99:
-			if self._config('echo', False):
-				self.flushFile('stdout')
-				self.flushFile('stderr')
-			sleep (5)
-			
-		self.p = None
-		self.retry ()
-		
+
 
 	def isRunning (self):
 		"""
@@ -139,10 +107,8 @@ class runner_sge (runner_local):
 		@returns:
 			`True` if yes, otherwise `False`
 		"""
-		# you didn't leave the main thread, cuz the job was created by the main thread.
-		if self.job.new: return False
 		# rcfile already generated
-		if self.job.rc() != -99: return False
+		if self.job.rc() != -9999: return False
 
 		qstout = check_output (['qstat', '-xml'])
 		#  <JB_name>pMuTect2.nothread.3</JB_name>

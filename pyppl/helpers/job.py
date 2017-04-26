@@ -6,18 +6,21 @@ from collections import OrderedDict
 import gzip
 import utils
 import pydoc
+from multiprocessing import Lock
+lock = Lock()
 
 class job (object):
 	"""
 	The job class, defining a job in a process
 	"""
 		
-	def __init__(self, index, workdir, input = None, output = None):
+	def __init__(self, index, workdir, log = None, input = None, output = None):
 		"""
 		Constructor
 		@params:
 			`index`:   The index of the job in a process
 			`workdir`: The workdir of the process
+			`log`:     The log function
 			`input`:   The input of the job
 			`output`:  The output of the job
 		"""
@@ -28,14 +31,11 @@ class job (object):
 		self.input   = {'var':[], 'file':[], 'files':[]} if input is None else input
 		self.output  = {'var':[], 'file':[]} if output is None else input
 		self.index   = index
-		# Whether I am newly created
-		self.new     = False
+		self.log     = log
 		
-	def signature (self, log):
+	def signature (self):
 		"""
 		Calculate the signature of the job based on the input/output and the script
-		@params:
-			`log`: The log function of a process
 		@returns:
 			The signature of the job
 		"""
@@ -44,7 +44,7 @@ class job (object):
 			'input':  {'in' +key:val for key, val in self.input.iteritems()},
 			'output': {'out'+key:val for key, val in self.output.iteritems()},
 		}
-		sigobj = self._obj2sig (sigobj, '', log)
+		sigobj = self._obj2sig (sigobj, '')
 		if sigobj == False: return False
 		sigobj = OrderedDict(sigobj)
 		return md5 (str(sigobj)).hexdigest()
@@ -55,83 +55,75 @@ class job (object):
 		Get/Set the return code
 		@params:
 			`val`: The return code to be set. If it is None, return the return code. Default: `None`
+			The value saved in the rcfile should be the real rc + 1000
+			If output files are not generated, val = -1000, and the value in the rcfile changed to - (real rc + 1000)
 		@returns:
 			The return code if `val` is `None`
+			If rcfile does not exist, return -9999, otherwise return (rc - 1000)
+			A negative rc (except -9999 [empty rcfile] and -1 [job failed to submit]) means output files not exist
 		"""
 		if val is None:
-			ret = -99
+			ret = -9999
 			if not path.exists (self.rcfile): return ret
 			else:
 				rcstr = open (self.rcfile).read().strip()
-				return ret if not rcstr else int (rcstr)
+				if not rcstr: return ret
+				rc = int (rcstr)
+				return rc if rc < 0 else rc - 1000
 		else:
+			r = self.rc ()
+			if val == -1000 and r < 0: return   # outfile already not exists
+			if val == -1000 and r > 0: val = -r
+			else: val += 1000
+			lock.acquire()
 			open (self.rcfile, 'w').write (str(val))
+			lock.release()
 	
-	def _checkOutFiles (self):
+	def checkOutFiles (self):
 		"""
 		Check whether output files are generated
-		@returns:
-			True if yes, else return the file that is not generated
 		"""
 		for outfile in self.output['file']:
 			if not path.exists (outfile):
-				return outfile
-		return True
+				self.rc (-1000)
+				return
 	
-	def status (self, validRetcodes = [0]):
-		"""
-		Get the status of the job
-		If return code is not valid, return the code
-		Otherwise return `self._checkOutFiles()`
-		@params:
-			`validRetcodes`: the valid return codes, default: [0]
-		@returns:
-			The return code if it's not in `validRetcodes`
-			Otherwise `self._checkOutFiles()`
-		"""
-		rc = self.rc()
-		if rc not in validRetcodes:
-			return rc
-		return self._checkOutFiles()
-	
-	def cache (self, cachefile, log):
+	def cache (self, cachefile):
 		"""
 		Cache the job, write the signature to the cache file
 		@params:
 			`cachefile`: The cachefile used to save the signature
-			`log`:       The log function of the process
 		"""
-		sig = self.signature(log)
+		sig = self.signature()
 		open(cachefile, 'a').write ("%s\t%s\n" % (self.index, sig))
 		
-	def _obj2sig (self, obj, k, log):
+	def _obj2sig (self, obj, k):
 		"""
 		Convert an object to a signature
 		@params:
 			`obj`: The object
 			`k`:   The key if the object is a value of a dictionary
-			`log`: The log function of the process
 		@returns:
 			The signature
 		"""
 		if isinstance (obj, dict):
 			ret = {}
 			for key, val in obj.iteritems():
-				sig = self._obj2sig (val, key, log)
+				sig = self._obj2sig (val, key)
 				if sig == False: return False
 				ret[key] = sig
 			return ret
 		elif isinstance (obj, list):
 			ret = []
 			for o in obj:
-				sig = self._obj2sig (o, k, log)
+				sig = self._obj2sig (o, k)
 				if sig == False: return False
 				ret.append (sig)
 			return ret
 		else:
 			if 'var' in k: return md5(str(obj)).hexdigest()
 			if not path.exists(obj):
-				log ("Generating signature for job #%s, but %s not exists: %s" % (self.index, k, obj), 'debug')
+				if callable (self.log): self.log ("Generating signature for job #%s, but %s not exists: %s" % (self.index, k, obj), 'debug')
 				return False
 			return utils.fileSig (obj)
 
@@ -177,14 +169,13 @@ class job (object):
 				symlink (path.realpath(exfile), outfile)
 		return True
 			
-	def export (self, exdir, how, ow, log):
+	def export (self, exdir, how, ow):
 		"""
 		Export the output files
 		@params:
 			`exdir`: The export directory
 			`how`:   How the export files are exported
 			`ow`:    Whether to overwrite the existing files
-			`log`:   The log function of the process
 		"""
 		if not exdir: return
 		for outfile in self.output['file']:
@@ -201,11 +192,11 @@ class job (object):
 				if path.isdir (target):rmtree (target)
 				else: remove (target)
 			elif path.exists(target):
-				log('%s (target exists, skipped)' % target, 'info', 'EXPORT')
+				if callable (self.log): self.log('%s (target exists, skipped)' % target, 'info', 'EXPORT')
 				doExport = False
 			
 			if doExport:
-				log ('%s (%s)' % (target, how), 'info', 'EXPORT')
+				if callable (self.log): self.log ('%s (%s)' % (target, how), 'info', 'EXPORT')
 				if how == 'copy':
 					if path.isdir (outfile): copytree (outfile, target)
 					else: copyfile (outfile, target)
@@ -214,7 +205,7 @@ class job (object):
 					symlink(path.abspath(target), outfile) # make sure dependent proc can run
 				elif how == 'symlink':
 					symlink (outfile, target)
-					log ('%s (%s)' % (target, how), 'info', 'EXPORT')
+					if callable (self.log): self.log ('%s (%s)' % (target, how), 'info', 'EXPORT')
 				elif how == 'gzip':
 					if path.isdir (outfile):
 						utils.targz (target, outfile)
