@@ -1,4 +1,4 @@
 {
   "root": "./docs",
-  "plugins": ["toc", "richquotes"]
+  "plugins": ["toc", "anchors", "richquotes"]
 }
