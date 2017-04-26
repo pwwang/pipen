@@ -32,7 +32,7 @@ pyppl().starts(pSort).run()
 
 run `python test.py test1.txt test2.txt test3.txt test4.txt test5.txt` will output:
 ```
-[2017-04-21 16:44:35,003] [  PyPPL] Version: 0.5.1
+[2017-04-21 16:44:35,003] [  PyPPL] Version: 0.6.0
 [2017-04-21 16:44:35,003] [   TIPS] beforeCmd and afterCmd only run locally
 [2017-04-21 16:44:35,003] [ CONFIG] Read from /home/user/.pyppl
 [2017-04-21 16:44:35,003] [  START] --------------------------------- pSort.notag ----------------------------------
@@ -55,6 +55,11 @@ run `python test.py test1.txt test2.txt test3.txt test4.txt test5.txt` will outp
 [2017-04-21 16:44:35,009] [  DEBUG] pSort.notag: OUTPUT [0/4]: outfile => /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1/output/test1.sorted
 [2017-04-21 16:44:35,011] [  DEBUG] pSort.notag: Not cached, cache file /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1/cached.jobs not exists.
 [2017-04-21 16:44:35,011] [RUNNING] pSort.notag: /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1
+[2017-04-21 16:44:35,011] [  DEBUG] pSort.notag: Submitting job #0 ...
+[2017-04-21 16:44:35,011] [  DEBUG] pSort.notag: Submitting job #1 ...
+[2017-04-21 16:44:35,011] [  DEBUG] pSort.notag: Submitting job #2 ...
+[2017-04-21 16:44:35,011] [  DEBUG] pSort.notag: Submitting job #3 ...
+[2017-04-21 16:44:35,011] [  DEBUG] pSort.notag: Submitting job #4 ...
 [2017-04-21 16:44:36,069] [  DEBUG] pSort.notag: Successful jobs: ALL
 [2017-04-21 16:44:36,069] [   INFO] pSort.notag: Done (time: 00:00:01,066).
 [2017-04-21 16:44:36,070] [   DONE] Total time: 00:00:01,066
