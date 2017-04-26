@@ -11,19 +11,18 @@ Actually, what you need to do is just specify the first input channel, and then 
 ```
 ./
 |-- pipeline.py
-|-- workdir/                      # Can be configured by proc.tmpdir
-    |-- PyPPL.<id>.<tag>.<uid>/   # Can be configured by proc.workdir. 
-        |                         # All `<workdir>`s in this doc refer to this directory
+`-- workdir/                      
+    `-- PyPPL.<id>.<tag>.<uid>/   
         |-- cached.jobs
         |-- input/
         |-- output/
-        |-- scripts/
+        `-- scripts/
             |-- script.<index>
             |-- script.<index>.rc
             |-- script.<index>.stdout
             |-- script.<index>.stderr
             |-- [script.<index>.ssh]
-            |-- [script.<index>.sge]
+            `-- [script.<index>.sge]
 ```
 
 | Path | Content | Memo |
@@ -34,3 +33,6 @@ Actually, what you need to do is just specify the first input channel, and then 
 |`./workdir/PyPPL.<id>.<tag>.<uid>/scripts/`|Where you can find all the scripts, stdout file, stderr file and return code file and also other help files for other runners.|-  `script.<index>`: the real script to run, you can also use it to debug<br />- `script.<index>.stdout`: the stdout file<br />- `script.<index>.stderr`: the stderr file<br />- `script.<index>.rc`: the file contains return code<br />- `script.<index>.ssh`: the file for ssh runner<br />- `script.<index>.sge`: the file for sge runner|
 |`./workdir/PyPPL.<id>.<tag>.<uid>/input/`|Where you can find the links to all the input files||
 |`./workdir/PyPPL.<id>.<tag>.<uid>/output/`|Where you can find all the output files||
+
+> **Note** You can set the `./workdir` to somewhere else by `p.tmpdir`, also the `<workdir>` for a process (`./workdir/PyPPL.<id>.<tag>.<uid>`) to somewhere else by `p.workdir`. You are encouraged to set `p.tmpdir` **BUT NOT** `p.workdir`, as it contains a `uid` if it is automatically computed. It is specially useful when you try to detect whether the job is still running as the command has the `uid` in the path.
+All `<workdir>` refers to `./workdir/PyPPL.<id>.<tag>.<uid>/`, `<indir>` to `./workdir/PyPPL.<id>.<tag>.<uid>/input/` and `<outdir>` to `./workdir/PyPPL.<id>.<tag>.<uid>/output/` in this documentation.

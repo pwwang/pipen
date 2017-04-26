@@ -118,6 +118,7 @@ For example, you want to delay to submit jobs:
 class runner_delay(runner_local):
     def __init__ (self, job, config = {}):
         super(runner_sge, self).__init__(job, config)
+        self.submitRun = True # submitting is running
         scriptfile = self.job.script + ".delay"
         with open (scriptfile, "w") as f:
             f.write ("#!/usr/bin/env bash\n")
@@ -125,20 +126,36 @@ class runner_delay(runner_local):
             f.write ("%s\n" % subprocess.list2cmd(self.script)) # submit the job
         self.script = utils.chmodX (scriptfile)
 ```
+> **Note** If the job runs immediately after you submit it (local/ssh runner, for example), you should specify `self.submitRun` to `True`. Well if the job is put into a queue, and needs some time to start, then you should set it to `False`, and you may also have to specify the static variables `maxsubmit` and `interval` (see below).
+> 
+> **Checklist (What you have to do in the constructor):**
+> - `super(runner_sge, self).__init__(job, config)`
+> - set `self.submitRun` to tell `pyppl` whether submitting job is actually running a job
+> - setup the right `self.script` for submission.
+
 
 - Submit the job: `submit (self)`
 The defines how you submit your job. You may use `Popen` to run the script and assign the `Popen` object to `self.p`.
-> **Caution**
-> 1. make sure write "-1" if you fail to submit the job. Always use a `try-except` block.
-> 2. confirm whether you need to wait until the script finishes or not:
-```python
-p  = Popen (self.script, ...)
-rc = p.wait()
-```
-> If the job runs immediately after you submit it (local/ssh runner, for example), you should wait until it finishes. Well if the job is put into a queue, and needs some time to start, then you should be do `p.wait()`, just keep submitting, but you may have to specify the static variables `maxsubmit` and `interval` (see below).
+> **Caution** make sure set `-1` as return code (`self.job.rc(-1)`) if you fail to submit the job. Always use a `try-except` block.
+> `runner_local` has already done pretty much for the submission if you have the right `self.script`. You don't to rewrite the function, however, you can also do it if you want to add more actions there.
 
-- Wait for the job to finish: `wait (self, checkP = True)`
-Wait until the job finishes. If `checkP` is `True`, then it will check `self.p` and make sure it's not `None`, so that we can extract `stdout` and `stderr` from it. If it is `False`, we directly detect the return code from `script.<index>.rc` and wait until it's not `-99` (no return code generated).
+- Wait for the job to finish: `wait (self)`
+Wait until the job finishes. The basic work it does is to wait and write the `stdout` and `stderr` to `script.<index>.stdout` and `script.<index>.stderr`, respectively.
+
+  | `self.p` | `self.submitRun` | When this happens? | What to do? | Where to get `stdout`/`stderr`? |
+  |-|-|-|-|
+  | `None` | `True` | Main thread dead | Nothing to do, jobs also quit | - |
+  | `None` | `False` | Main thread dead, jobs alive | Use `self.isRunning()` to tell whether jobs are truly alive. If yes, wait; otherwise quit | `.stdout/.stderr` files |
+  | `Not None` | `True` | All alive | `p.wait()` | `p.stdout`/`p.stderr` (also write them to `.stdout`/`.stderr` files |
+  | `Not None` | `False` | All alive | Use `self.isRunning()` to tell whether jobs are truly alive. If yes, wait; otherwise quit | `.stdout/.stderr` files |
+  `runner_local` has also done most of the job, in general case you don't need to rewrite it.
+
+- Finish the job: `finish (self)`
+The work it does:
+  - Flush the output and scripts directory so that the output and return code file can be detected (the `stat` caches).
+  - Check the output files whether they are generated or not
+  - Retry the job if needed.
+  `runner_local` has also done them, generally you don't need to rewrite it.
 
 - Tell whether a job is still running: `isRunning(self)`
 This function is used to detect whether a job is running. 
@@ -152,6 +169,27 @@ This variable defines how many jobs to submit at one time. It defaults to `p.for
 - How long should I wait if `maxsubmit` reached (static variable): `interval` 
 As explained in `maxsubmit`, this value is used for wait some time when submitting different batches of jobs. The default value is `0.1` if you don't have one.
 
+** Key points in writing your own runner **:
+1. Make sure by using this runner, whether when you submiting your job is actually running the job (`self.submitRun`).
+2. Compose the right script to submit the job (`self.script`).
+3. Tell `pyppl` how to judge when the jobs are still running (`self.isRunning()`).
+4. Set the static value for `maxsubmit` and `interval` if necessary (mostly when `self.submitRun == False`).
+5. If `self.submitRun` is `False`, make sure the `stdout`/`stderr` will be written to the right file (`.stdout`/`.stderr` file), and the right return code (the actual return code + `1000`, see below) to `.rc` file.
+
+## Return code in `pyppl` and the actual number in `script.<index>.rc`
+When you try to set return code using `job.rc(val)`, it will basically add `1000` to `val` and write the sum to `script.<index>.rc`. If `val == -1000` (output file is not generated, in this case) and the number in `script.<index>.rc` is possitive, then make if negative; if it is negative, keep it unchanged. When try to get the return code from the file, just minus `1000` from the number in the file. When the file does not exist or is empty, return `-9999`. This make sure you get the original return code when output files are normally generated (first `+1000` and then `-1000`). If any of the output files are not generated, the number will just become negative, you will get a negative number using `job.rc()` as it will `-1000` to the number. So this makes sure a negative number from `job.rc()` meaning output file not generated.
+
+
+| `pyppl` return code got from `job.rc()` | Content of `script.<index>.rc` | Meaning |
+|-|-|-|-|
+| `-9999` | "" or the file not exists | return code file not generated or empty |
+| `0` | `1000` | job return code 0 with output files generated |
+| `1` |  `1001` | job return code 1 with output files generated |
+| `-1` | `999` | job failed to submit |
+| `0` | `-1000` | job return 0 but output file not generated |
+| `1` | `-1001` | job return 1 but output file not generated |
+| `>0` | `<0` | job return `job.rc()` but output file not generated |
+
 ## Register your runner
 It very easy to register your runner, just do `proc.registerRunner (runner_my)` (static method) before you define run the pipeline.
 The 3 built-in runners have already been registered: 
@@ -161,3 +199,4 @@ proc.registerRunner (runner_ssh)
 proc.registerRunner (runner_sge)
 ```
 After registration, you are able to ask a process to use it: `p.runner = "my"`
+
