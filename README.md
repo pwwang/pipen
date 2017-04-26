@@ -1,4 +1,5 @@
 # pyppl - A python lightweight pipeline framework
+[Documentations](https://pwwang.gitbooks.io/pyppl/) | [Github Repos](https://github.com/pwwang/pyppl/)
 
 <!-- toc -->
 
@@ -193,6 +194,4 @@ You can use different [dot renderers][1] to render and visualize it.
 
 ![PyPPL chart](https://github.com/pwwang/pyppl/raw/master/docs/pyppl.png)
 
-
-## See [documentations](https://pwwang.gitbooks.io/pyppl/).
 [1]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)#Layout_programs
