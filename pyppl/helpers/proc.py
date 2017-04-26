@@ -141,17 +141,17 @@ class proc (object):
 		self.sets.append(name)
 		
 		if name == 'depends':
-			depends = value
-			if not isinstance (value, list) depends = [value]
+			depends               = value
+			self.props['depends'] = []
+			if not isinstance (value, list): depends = [value]
 			for depend in depends:
-				if isinstance (depend, proc):
+				if isinstance (depend, proc):					
 					self.props['depends'].append (depend)
+					depend.nexts.append (self)
 				elif isinstance (depend, aggr):
 					for p in depend.ends:
 						self.props['depends'].append (p)
-				
-			for depend in self.depends:
-				depend.nexts.append (self)
+						p.nexts.append (self)
 	
 	def setLogger (self, logger):
 		"""
@@ -301,10 +301,10 @@ class proc (object):
 				failedrcs.append  (rc)
 				
 		def rc2msg (rc):
-			msg = "Program error!"
-			if rc == -9999:	msg = "No rcfile generated!"
-			elif rc == -1:	msg = "Failed to submit the jobs!"
-			elif rc < 0:	msg = "Output files not generated!"
+			msg = "Program error."
+			if rc == -9999:	msg = "No rcfile generated."
+			elif rc == -1:	msg = "Failed to submit the jobs."
+			elif rc < 0:	msg = "Output files not generated."
 			return msg
 		
 		if self.errorhow == 'ignore' and failedjobs:
@@ -323,8 +323,8 @@ class proc (object):
 			self.log('Job #%s: check STDERR below:' % (failedjob.index), 'error')
 			errmsgs = []
 			if os.path.exists (failedjob.errfile):
-				errmsgs = ['[  ERROR] !  ' + line.strip() for line in open(failedjob.errfile)]					
-			if not errmsgs: errmsgs = ['[  ERROR] ! <EMPTY STDERR>']
+				errmsgs = ['[  ERROR] ' + line.strip() for line in open(failedjob.errfile)]					
+			if not errmsgs: errmsgs = ['[ STDERR] <EMPTY STDERR>']
 			for errmsg in errmsgs: self.logger.error(errmsg)
 		
 		sys.exit (1) # Don't goto next proc
@@ -490,7 +490,7 @@ class proc (object):
 			warn = warnings.pop(0)
 			self.log ("Some input files exist, use them: %s" % warn, 'warning')
 			if warnings:
-				self.log ("  and %s others ..." % len(warnings), 'warning')
+				self.log ("... and %s others" % len(warnings), 'warning')
 
 		ridx = randint(0, self.length-1)
 		for key, val in self.input.iteritems():
@@ -587,7 +587,7 @@ class proc (object):
 			se = scriptExists.pop(0)
 			self.log ("Script files exist and contents are the same, didn't touch them for job #%s" % se, 'debug')
 			if scriptExists:
-				self.log ("  and %s others ..." % len(scriptExists), 'debug')
+				self.log ("... and %s others" % len(scriptExists), 'debug')
 
 	def _readConfig (self, config):
 		"""
@@ -645,7 +645,7 @@ class proc (object):
 			for warnings in warnings[:3]:
 				self.log(warnings, 'warning')
 			if nwarn > 3:
-				self.log("...... (%s omitted)" % (nwarn - 3), 'warning')
+				self.log("... and %s others" % (nwarn - 3), 'warning')
 			
 		elif not isinstance(self.cache, bool):
 			raise ValueError ('Cache option expects True/False/"export"/"export+"')
@@ -690,9 +690,9 @@ class proc (object):
 		p = Popen (cmd, shell=True, stdin=PIPE, stderr=PIPE, stdout=PIPE)
 		if self.echo:
 			for line in iter(p.stdout.readline, ''):
-				self.logger.info ('[ STDOUT] - ' + line.rstrip("\n"))
+				self.logger.info ('[ STDOUT] ' + line.rstrip("\n"))
 		for line in iter(p.stderr.readline, ''):
-			self.logger.error ('[  ERROR] ! ' + line.rstrip("\n"))
+			self.logger.error ('[ STDERR] ' + line.rstrip("\n"))
 		return p.wait()
 
 	def _runJobs (self):
