@@ -24,6 +24,7 @@ Then the values for different variables in different jobs wil be:
 | 1         | a2 | b2  | c2 |
 | ...       |... | ... |... |
 
+> **Note** Since `channel` is extended from `list`, all methods apply to `list` are also applicable to `channel`
 
 ## Initialize a channel
 There are several ways to initialize a channel:
@@ -70,6 +71,8 @@ c == channel.fromArgv()
 # python whatever.py /a/b/1.txt,/a/b/2.txt /a/b/3.txt,/a/b/4.txt
 # c == [("/a/b/1.txt", "/a/b/2.txt"), ("/a/b/3.txt", "/a/b/4.txt")]
 ```
+
+> **Note** Since `channel` is extended from `list`, all methods apply to `list` are also applicable to `channel`
 
 ## Available methods for channels
 ### Get the length and width of a channel
@@ -178,7 +181,7 @@ chan4 = chan1.slice(-1)
 - `channel.colAt(index)`
 `chan.colAt(index) == chan.slice(index, 1)`
 
-### Split a channel to channels with width = 1
+### Split a channel to single-width channels
 `channel.split()`
 ```python
 chan  = channel.create ([(1,2,3), (4,5,6)])
@@ -246,7 +249,7 @@ chan.insert (0, [1,2,3])
 # chan == [(1,), (2,), (3,)]
 ```
 
-### Convert a width=1 channel to `list`
+### Convert a single-width channel to `list`
 `channel.toList()`
 
 ```python

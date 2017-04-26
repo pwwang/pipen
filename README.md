@@ -1,5 +1,5 @@
 # pyppl - A python lightweight pipeline framework
-[Documentations](https://pwwang.gitbooks.io/pyppl/) | [Github Repos](https://github.com/pwwang/pyppl/)
+[Documentation](https://pwwang.gitbooks.io/pyppl/) | [Github Repos](https://github.com/pwwang/pyppl/)
 
 <!-- toc -->
 

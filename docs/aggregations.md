@@ -140,6 +140,19 @@ a.ends   = [p3]
 a.input = [(1,4), (2,5), (3,6)]
 ```
 
+## Set an aggregation as starting aggregation for a pipeline
+You can do it just like setting a process as the starting process of pipeline (see [here][1]). Actually the starting processes in the aggregation (`agg.starts`) will be set as the starting processes of the pipeline.
+
+## The dependency of aggregations and processes
+An aggregation can depend on aggregations and/or processes, you just treat the aggregations as processes. A process can also depend on aggregations and/or processes. 
+
+| What am I? | Whom I am depending on? | Real relations |
+|-|-|-|
+| `aggr` (`a1`) | `aggr` (`a2`) | `a1.starts` depends on `a2.ends` |
+| `aggr` (`a`) | `proc` (`p`) | `a.starts` depends on `p` |
+| `proc` (`p`) | `aggr` (`a`) | `p` depends on `a.ends` |
+
+
 ## Copy an aggregation
 You may copy an aggregation, all the processes in the aggregation will be copied, and the dependencies will be switched to the corresponding copied processes, as well as the starting and ending processes.
 
@@ -156,3 +169,4 @@ a2 = a.copy('copied')
 a2 = a.copy('copied', 'newAggr')
 # a2.id == 'newAggr'
 ```
+[1]: https://pwwang.gitbooks.io/pyppl/configure-a-pipeline.html#starting-processes

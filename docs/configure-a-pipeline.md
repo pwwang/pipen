@@ -48,9 +48,9 @@ pyppl ({
 ```
 All other options will be inherited from `~/.pyppl`.
 
-## Priority of configure items
-Now you have 3 ways to set options for a process: directly set the process properties (1), set in the first argument of `pyppl` constructor (2) and set in a configuration file (3). 
-The priority is: (1) > (2) > (3).
+## Priority of configuration items
+Now you have 3 ways to set options for a process: directly set the process properties _(1)_, set in the first argument of `pyppl` constructor _(2)_ and set in a configuration file _(3)_. 
+**The priority is: (1) > (2) > (3).**
 Once you set the property of the process, it will never be changed by `pyppl` constructor or the configuration file. But the first argument can overwrite the options in configuration files.
 Here are an examples to illustrate the priority:
 

@@ -140,15 +140,16 @@ class proc (object):
 		self.props [name] = value
 		self.sets.append(name)
 		
-		if (name == 'output' or name == 'input') and isinstance(value, list) and isinstance(value[0], tuple):
-			self.config[name] = OrderedDict(value)
-			self.props [name] = OrderedDict(value)
-
 		if name == 'depends':
-			if isinstance(self.depends, proc):
-				self.props['depends'] = [self.depends]
-			elif isinstance(self.depends, aggr):
-				self.props['depends'] = self.depends.ends
+			depends = value
+			if not isinstance (value, list) depends = [value]
+			for depend in depends:
+				if isinstance (depend, proc):
+					self.props['depends'].append (depend)
+				elif isinstance (depend, aggr):
+					for p in depend.ends:
+						self.props['depends'].append (p)
+				
 			for depend in self.depends:
 				depend.nexts.append (self)
 	
