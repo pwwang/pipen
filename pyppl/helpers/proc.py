@@ -500,15 +500,16 @@ class proc (object):
 
 		# also add proc.props, mostly scalar values
 		alias = {val:key for key, val in proc.alias.iteritems()}
-		for prop, val in self.props.iteritems():
-			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'runner', 'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow', 'args', 'indir', 'outdir', 'length']: continue
+		for prop in sorted(self.props.keys()):
+			val = self.props[prop]
+			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'runner', 'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow', 'indir', 'outdir', 'length', 'args']: continue
 			if prop == 'args':
 				for k, v in val.iteritems():
 					self.props['procvars']['proc.args.' + k] = v
 					self.log('%s => %s' % (k, v), 'info', 'p.args')
 			else:
 				if alias.has_key (prop): prop = alias[prop]
-				else: self.log ('%s => %s' % (prop, val), 'info', 'p.args')
+				else: self.log ('%s => %s' % (prop, val), 'info', 'p.props')
 				self.props['procvars']['proc.' + prop] = val
 	
 	def _buildBrings (self):
