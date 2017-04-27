@@ -71,7 +71,7 @@ You can also use some `proc` property values with placeholders: `{{proc.<propert
 |indir||The input directory for the process|
 |outdir||The output directory for the process|
 |length||How many jobs are there for the process|
-|args||Additional arguments for the process, typically a `dict`. For example: `p.args={"a":1}` you may use `{{proc.args.a}}` to access it.|
+|args||Additional arguments for the process, typically a `dict`. For example: `p.args={"a":1}` you may use {% raw %}`{{proc.args.a}}`{% endraw %} to access it.|
 
 ## Job index placeholders
 You can use `{{#}}` to replace the job index. For example:
