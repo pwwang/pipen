@@ -44,9 +44,10 @@ def varname (func, maxline = 20):
 
 	file    = frame[1]
 	lino    = frame[2]
-	varpat  = r'(^|[^\w])([A-Za-z]\w*)\s*=\s*%s\s*\(' % func
-	funcpat = r'(^|[^\w])%s\s*\(' % func
-	
+	#            ;         ab             =    pyppl.proc (
+	varpat  = r'(^|[^\w])([A-Za-z_]\w*)\s*=\s*([A-Za-z_][\w_]+\.)*%s\s*\(' % func
+	#            ;         pyppl.proc (
+	funcpat = r'(^|[^\w])([A-Za-z_][\w_]+\.)*%s\s*\(' % func
 	m       = re.search(varpat, src)
 	if m: return m.group(2)
 	suffix  = randstr(8)

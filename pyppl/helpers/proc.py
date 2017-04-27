@@ -323,7 +323,7 @@ class proc (object):
 			self.log('Job #%s: check STDERR below:' % (failedjob.index), 'error')
 			errmsgs = []
 			if os.path.exists (failedjob.errfile):
-				errmsgs = ['[  ERROR] ' + line.strip() for line in open(failedjob.errfile)]					
+				errmsgs = ['[  ERROR] ' + line.rstrip() for line in open(failedjob.errfile)]					
 			if not errmsgs: errmsgs = ['[ STDERR] <EMPTY STDERR>']
 			for errmsg in errmsgs: self.logger.error(errmsg)
 		
@@ -354,7 +354,9 @@ class proc (object):
 			# make sure it's not a link to non-exist file
 			if os.path.islink(infile): os.remove (infile)
 			os.symlink (srcfile, infile)
-		else:
+		elif not utils.isSameFile (srcfile, infile):
+			os.remove (infile)
+			os.symlink (srcfile, infile)
 			warnings.append (infile)
 		
 		if multi:
@@ -488,7 +490,7 @@ class proc (object):
 					self.input[key].append (ch)
 		if warnings:
 			warn = warnings.pop(0)
-			self.log ("Some input files exist, use them: %s" % warn, 'warning')
+			self.log ("Overwriting existing input file: %s" % warn, 'warning')
 			if warnings:
 				self.log ("... and %s others" % len(warnings), 'warning')
 
