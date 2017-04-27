@@ -562,14 +562,14 @@ class proc (object):
 		"""
 		Build the output data.
 		Output could be:
-		1. list: ['output:var:{{input}}', 'outfile:file:{{infile.bn}}.txt']
+		1. list: `['output:var:{{input}}', 'outfile:file:{{infile.bn}}.txt']`
 		   or you can ignore the name if you don't put it in script:
-				 ['var:{{input}}', 'path:{{infile.bn}}.txt']
+				 `['var:{{input}}', 'path:{{infile.bn}}.txt']`
 		   or even (only var type can be ignored):
-				 ['{{input}}', 'file:{{infile.bn}}.txt']
-		2. str : 'output:var:{{input}}, outfile:file:{{infile.bn}}.txt'
-		3. dict: {"output:var:{{input}}": channel1, "outfile:file:{{infile.bn}}.txt": channel2}
-		   or    {"output:var:{{input}}, output:file:{{infile.bn}}.txt" : channel3}
+				 `['{{input}}', 'file:{{infile.bn}}.txt']`
+		2. str : `'output:var:{{input}}, outfile:file:{{infile.bn}}.txt'`
+		3. dict: `{"output:var:{{input}}": channel1, "outfile:file:{{infile.bn}}.txt": channel2}`
+		   or    `{"output:var:{{input}}, output:file:{{infile.bn}}.txt" : channel3}`
 		for 1,2 channels will be the property channel for this proc (i.e. p.channel)
 		"""
 		output = self.config['output']

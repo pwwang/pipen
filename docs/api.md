@@ -399,6 +399,16 @@ Constructor
 - **params:**  
 `tag`: The tag of the process  
   
+#### `_buildBrings (self) `
+  
+Build the brings to bring some files to indir  
+The brings can be set as: `p.brings = {"infile": "{{infile.bn}}*.bai"}`  
+If you have multiple files to bring in:  
+`p.brings = {"infile": "{{infile.bn}}*.bai", "infile#": "{{infile.bn}}*.fai"}`  
+You can use wildcards to search the files, but only the first file will return  
+To access the brings in your script: `{{ infile.bring }}`, `{{ infile#.bring }}`  
+If original input file is a link, will try to find it along each directory the link is in.  
+  
 #### `_buildInput (self) `
   
 Build the input data  
@@ -413,14 +423,14 @@ for 1,2 channels will be the combined channel from dependents, if there is not d
   
 Build the output data.  
 Output could be:  
-1. list: ['output:var:{{input}}', 'outfile:file:{{infile.bn}}.txt']  
+1. list: `['output:var:{{input}}', 'outfile:file:{{infile.bn}}.txt']`  
 or you can ignore the name if you don't put it in script:  
-['var:{{input}}', 'path:{{infile.bn}}.txt']  
+`['var:{{input}}', 'path:{{infile.bn}}.txt']`  
 or even (only var type can be ignored):  
-['{{input}}', 'file:{{infile.bn}}.txt']  
-2. str : 'output:var:{{input}}, outfile:file:{{infile.bn}}.txt'  
-3. dict: {"output:var:{{input}}": channel1, "outfile:file:{{infile.bn}}.txt": channel2}  
-or    {"output:var:{{input}}, output:file:{{infile.bn}}.txt" : channel3}  
+`['{{input}}', 'file:{{infile.bn}}.txt']`  
+2. str : `'output:var:{{input}}, outfile:file:{{infile.bn}}.txt'`  
+3. dict: `{"output:var:{{input}}": channel1, "outfile:file:{{infile.bn}}.txt": channel2}`  
+or    `{"output:var:{{input}}, output:file:{{infile.bn}}.txt" : channel3}`  
 for 1,2 channels will be the property channel for this proc (i.e. p.channel)  
   
 #### `_buildProps (self) `
