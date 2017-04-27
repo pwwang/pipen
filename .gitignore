@@ -90,3 +90,4 @@ ENV/
 
 workdir/
 node_modules/
+_book/
