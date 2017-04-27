@@ -79,7 +79,7 @@ class runner_local (object):
 		"""
 		self.job.clearOutput()
 		try:
-			self.log ('Submitting job #%s ...' % self.job.index, 'debug')
+			self.log ('Submitting job #%s ...' % self.job.index)
 			self.p = Popen (self.script, stdin=PIPE, stderr=PIPE, stdout=PIPE, close_fds=True)
 		except Exception as ex:
 			#self.log ('Failed to submit job #%s' % self.job.index, 'error')

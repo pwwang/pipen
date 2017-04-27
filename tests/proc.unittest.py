@@ -462,6 +462,32 @@ class runner_test (runner_local):
 			val2 = p.__getattr__(v)
 			self.assertEqual (val1, testv[v])
 			self.assertEqual (val2, testv[v])
+			
+	def testScriptTpl (self):
+		p = proc('tpl')
+		p.input  = {"a":[1]}
+		p.script = "template:a.py"
+		self.assertRaises(ValueError, p._buildScript)
+		cwd      = os.path.dirname (os.path.abspath(__file__))
+		tplfile  = os.path.join (cwd, "test", "a.py")
+		if not os.path.exists(os.path.join(cwd, "test")):
+			os.makedirs (os.path.join(cwd, "test"))
+		open (tplfile, "w").write ("ls")
+		p.script = "template:test/a.py"
+		p.run()
+		sfile    = os.path.join (p.workdir, "scripts", "script.0")
+		self.assertEqual (open(sfile).read().strip(), "#!/usr/bin/env bash\n\nls")
+		
+		p.script = "template:../tests/test/a.py"
+		p.run()
+		self.assertEqual (open(sfile).read().strip(), "#!/usr/bin/env bash\n\nls")
+		
+		tplfile  = os.path.abspath(tplfile)
+		p.script = "template:%s" % tplfile
+		p.run()
+		self.assertEqual (open(sfile).read().strip(), "#!/usr/bin/env bash\n\nls")
+		
+		shutil.rmtree (os.path.join(cwd, "test"))
 
 if __name__ == '__main__':
 	unittest.main()

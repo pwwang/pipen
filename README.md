@@ -49,37 +49,37 @@ pyppl().starts(pSort).run()
 
 run `python test.py test1.txt test2.txt test3.txt test4.txt test5.txt` will output:
 ```
-[2017-04-21 16:44:35,003] [  PyPPL] Version: 0.6.1
-[2017-04-21 16:44:35,003] [   TIPS] beforeCmd and afterCmd only run locally
-[2017-04-21 16:44:35,003] [ CONFIG] Read from /home/user/.pyppl
-[2017-04-21 16:44:35,003] [  START] --------------------------------- pSort.notag ----------------------------------
-[2017-04-21 16:44:35,007] [  DEBUG] pSort.notag: INPUT [4/4]: infile.ext => .txt
-[2017-04-21 16:44:35,007] [  DEBUG] pSort.notag: INPUT [4/4]: # => 4
-[2017-04-21 16:44:35,007] [  DEBUG] pSort.notag: INPUT [4/4]: infile.bn => test5.txt
-[2017-04-21 16:44:35,007] [  DEBUG] pSort.notag: INPUT [4/4]: infile => /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1/input/test5.txt
-[2017-04-21 16:44:35,007] [  DEBUG] pSort.notag: INPUT [4/4]: infile.fn => test5
-[2017-04-21 16:44:35,007] [  DEBUG] pSort.notag: PROC_VARS: runner => local
-[2017-04-21 16:44:35,007] [  DEBUG] pSort.notag: PROC_VARS: echo => False
-[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: tag => notag
-[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: tmpdir => /home/user/tests/workdir
-[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: indir => /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1/input
-[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: cache => True
-[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: id => pSort
-[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: forks => 1
-[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: workdir => /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1
-[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: outdir => /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1/output
-[2017-04-21 16:44:35,008] [  DEBUG] pSort.notag: PROC_VARS: length => 5
-[2017-04-21 16:44:35,009] [  DEBUG] pSort.notag: OUTPUT [0/4]: outfile => /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1/output/test1.sorted
-[2017-04-21 16:44:35,011] [  DEBUG] pSort.notag: Not cached, cache file /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1/cached.jobs not exists.
-[2017-04-21 16:44:35,011] [RUNNING] pSort.notag: /home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1
-[2017-04-21 16:44:35,011] [  DEBUG] pSort.notag: Submitting job #0 ...
-[2017-04-21 16:44:35,011] [  DEBUG] pSort.notag: Submitting job #1 ...
-[2017-04-21 16:44:35,011] [  DEBUG] pSort.notag: Submitting job #2 ...
-[2017-04-21 16:44:35,011] [  DEBUG] pSort.notag: Submitting job #3 ...
-[2017-04-21 16:44:35,011] [  DEBUG] pSort.notag: Submitting job #4 ...
-[2017-04-21 16:44:36,069] [  DEBUG] pSort.notag: Successful jobs: ALL
-[2017-04-21 16:44:36,069] [   INFO] pSort.notag: Done (time: 00:00:01,066).
-[2017-04-21 16:44:36,070] [   DONE] Total time: 00:00:01,066
+[2017-04-27 15:43:32,037] [  PyPPL] Version: 0.6.1
+[2017-04-27 15:43:32,037] [   TIPS] The default <tmpdir> will be './workdir'
+[2017-04-27 15:43:32,037] [ CONFIG] Read from /home/m161047/.pyppl
+[2017-04-27 15:43:32,037] [  START] --------------------------------- pSort.notag ----------------------------------
+[2017-04-27 15:43:32,040] [ P.ARGS] pSort.notag: runner => local
+[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: echo => False
+[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: tag => notag
+[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: tmpdir => /home/m161047/tests/workdir
+[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: indir => /home/m161047/tests/workdir/PyPPL.pSort.notag.QEzMTado/input
+[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: cache => True
+[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: id => pSort
+[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: forks => 1
+[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: workdir => /home/m161047/tests/workdir/PyPPL.pSort.notag.QEzMTado
+[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: outdir => /home/m161047/tests/workdir/PyPPL.pSort.notag.QEzMTado/output
+[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: length => 5
+[2017-04-27 15:43:32,041] [  INPUT] pSort.notag: [4/4]: infile.ext => .txt
+[2017-04-27 15:43:32,041] [  INPUT] pSort.notag: [4/4]: # => 4
+[2017-04-27 15:43:32,041] [  INPUT] pSort.notag: [4/4]: infile.bn => test5.txt
+[2017-04-27 15:43:32,042] [  INPUT] pSort.notag: [4/4]: infile => /home/m161047/tests/workdir/PyPPL.pSort.notag.QEzMTado/input/test5.txt
+[2017-04-27 15:43:32,042] [  INPUT] pSort.notag: [4/4]: infile.fn => test5
+[2017-04-27 15:43:32,042] [ OUTPUT] pSort.notag: [4/4]: outfile => /home/m161047/tests/workdir/PyPPL.pSort.notag.QEzMTado/output/test5.sorted
+[2017-04-27 15:43:32,045] [  DEBUG] pSort.notag: Not cached, cache file /home/m161047/tests/workdir/PyPPL.pSort.notag.QEzMTado/cached.jobs not exists.
+[2017-04-27 15:43:32,045] [RUNNING] pSort.notag: /home/m161047/tests/workdir/PyPPL.pSort.notag.QEzMTado
+[2017-04-27 15:43:32,111] [   INFO] pSort.notag: Submitting job #0 ...
+[2017-04-27 15:43:32,273] [   INFO] pSort.notag: Submitting job #1 ...
+[2017-04-27 15:43:32,534] [   INFO] pSort.notag: Submitting job #2 ...
+[2017-04-27 15:43:32,895] [   INFO] pSort.notag: Submitting job #3 ...
+[2017-04-27 15:43:33,357] [   INFO] pSort.notag: Submitting job #4 ...
+[2017-04-27 15:43:33,371] [  DEBUG] pSort.notag: Successful jobs: ALL
+[2017-04-27 15:43:33,371] [   INFO] pSort.notag: Done (time: 00:00:01.333).
+[2017-04-27 15:43:33,371] [   DONE] Total time: 00:00:01.334
 ```
 
 Then you will see your sorted files in `/home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1/output/`:  

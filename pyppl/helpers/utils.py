@@ -491,3 +491,4 @@ def isSameFile (f1, f2):
 	if not path.exists (f1) or not path.exists(f2):
 		return False
 	return path.realpath(f1) == path.realpath(f2)
+

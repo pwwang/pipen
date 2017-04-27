@@ -505,10 +505,10 @@ class proc (object):
 			if prop == 'args':
 				for k, v in val.iteritems():
 					self.props['procvars']['proc.args.' + k] = v
-					self.log('PROC_ARGS: %s => %s' % (k, v), 'debug')
+					self.log('%s => %s' % (k, v), 'info', 'p.args')
 			else:
 				if alias.has_key (prop): prop = alias[prop]
-				else: self.log ('PROC_VARS: %s => %s' % (prop, val), 'debug')
+				else: self.log ('%s => %s' % (prop, val), 'info', 'p.args')
 				self.props['procvars']['proc.' + prop] = val
 	
 	def _buildBrings (self):
@@ -556,7 +556,7 @@ class proc (object):
 
 		ridx = randint(0, self.length-1)
 		for key, val in self.input.iteritems():
-			self.log ('INPUT [%s/%s]: %s => %s' % (ridx, self.length-1, key, val[ridx]), 'debug')
+			self.log ('[%s/%s]: %s => %s' % (ridx, self.length-1, key, val[ridx]), 'info', 'input')
 				
 	def _buildOutput (self):
 		"""
@@ -599,7 +599,7 @@ class proc (object):
 		
 		ridx = randint(0, self.length-1)
 		for key, val in self.output.iteritems():
-			self.log ('OUTPUT [%s/%s]: %s => %s' % (ridx, self.length-1, key, val[ridx]), 'debug')
+			self.log ('[%s/%s]: %s => %s' % (ridx, self.length-1, key, val[ridx]), 'info', 'output')
 
 	def _buildScript (self): # make self.jobs
 		"""
@@ -612,8 +612,11 @@ class proc (object):
 		
 		if script.startswith ('template:'):
 			tplfile = script[9:].strip()
+			if not os.path.isabs(tplfile):
+				tplfile = os.path.join (os.path.dirname(sys.argv[0]), tplfile)
 			if not os.path.exists (tplfile):
 				raise ValueError ('Script template file "%s" does not exist.' % tplfile)
+			self.log ("Using template file: %s" % tplfile)
 			script = open(tplfile).read().strip()
 		
 		if not script.startswith ("#!"):

@@ -31,7 +31,7 @@ Run the pipeline
 - **params:**  
 `profile`: the profile used to run, if not found, it'll be used as runner name. default: 'local'  
   
-#### `starts (self) `
+#### `starts (self, *arg) `
   
 Set the starting processes of the pipeline  
 
@@ -71,7 +71,7 @@ Like R's cbind, do a column bind to a channel
 The combined channel  
 Note, self is also changed  
   
-#### `cbindMany (self) `
+#### `cbindMany (self, *cols) `
   
 The multiple-argument versoin of `cbind`  
 
@@ -157,7 +157,7 @@ Create a channel from `sys.argv[1:]`
 - **returns:**  
 The channel created from the command line arguments  
   
-#### `fromChannels () [@staticmethod]`
+#### `fromChannels (*args) [@staticmethod]`
   
 Create a channel from channels  
 
@@ -218,7 +218,7 @@ Alias of python builtin `map`
 - **returns:**  
 The transformed channel  
   
-#### `merge (self) `
+#### `merge (self, *chans) `
   
 Also do column bind, but with channels, and also you can have multiple with channels as arguments  
 
@@ -240,7 +240,7 @@ Like R's rbind, do a row bind to a channel
 The combined channel  
 Note, self is also changed  
   
-#### `rbindMany (self) `
+#### `rbindMany (self, *rows) `
   
 The multiple-argument versoin of `rbind`  
 
@@ -549,7 +549,7 @@ Set the pipeline logger to the process
 > A set of utitities for pyppl
 
 
-#### `alwaysList (data) [@staticmethod]`
+#### `alwaysList (data) `
   
 Convert a string or a list with element  
 
@@ -566,7 +566,7 @@ ret  = alwaysList (data)
 - **returns:**  
 The split list  
   
-#### `chmodX (thefile) [@staticmethod]`
+#### `chmodX (thefile) `
   
 Convert script file to executable or add extract shebang to cmd line  
 
@@ -576,7 +576,7 @@ Convert script file to executable or add extract shebang to cmd line
 - **returns:**  
 A list with or without the path of the interpreter as the first element and the script file as the last element  
   
-#### `dictUpdate (origDict, newDict) [@staticmethod]`
+#### `dictUpdate (origDict, newDict) `
   
 Update a dictionary recursively.  
 
@@ -595,7 +595,7 @@ dictUpdate(od2, nd)
 # od2 == {"a": {"b": {"c": 1, "d": 2}}}  
 ```  
   
-#### `dirmtime (d) [@staticmethod]`
+#### `dirmtime (d) `
   
 Calculate the mtime for a directory.  
 Should be the max mtime of all files in it.  
@@ -606,7 +606,7 @@ Should be the max mtime of all files in it.
 - **returns:**  
 The mtime.  
   
-#### `fileSig (fn) [@staticmethod]`
+#### `fileSig (fn) `
   
 Calculate a signature for a file according to its path and mtime  
 
@@ -616,7 +616,7 @@ Calculate a signature for a file according to its path and mtime
 - **returns:**  
 The md5 deigested signature.  
   
-#### `format (tpl, args) [@staticmethod]`
+#### `format (tpl, args) `
   
 Format a string with placeholders  
 
@@ -627,7 +627,7 @@ Format a string with placeholders
 - **returns:**  
 The formatted string  
   
-#### `formatTime (seconds) [@staticmethod]`
+#### `formatTime (seconds) `
   
 Format a time duration  
 
@@ -638,7 +638,7 @@ Format a time duration
 The formated string.  
 For example: "01:01:01.001" stands for 1 hour 1 min 1 sec and 1 minisec.  
   
-#### `funcSig (func) [@staticmethod]`
+#### `funcSig (func) `
   
 Get the signature of a function  
 Try to get the source first, if failed, try to get its name, otherwise return None  
@@ -649,7 +649,7 @@ Try to get the source first, if failed, try to get its name, otherwise return No
 - **returns:**  
 The signature  
   
-#### `getLogger (level, name) [@staticmethod]`
+#### `getLogger (level, name) `
   
 Get the default logger  
 
@@ -660,7 +660,7 @@ Get the default logger
 - **returns:**  
 The logger  
   
-#### `gz (gzfile, srcfile) [@staticmethod]`
+#### `gz (gzfile, srcfile) `
   
 Do a "gzip"-like for a file  
 
@@ -668,7 +668,7 @@ Do a "gzip"-like for a file
 `gzfile`:  the final .gz file  
 `srcfile`: the source file  
   
-#### `isSameFile (f1, f2) [@staticmethod]`
+#### `isSameFile (f1, f2) `
   
 Tell whether two paths pointing to the same file  
 
@@ -680,7 +680,7 @@ Tell whether two paths pointing to the same file
 True if yes, otherwise False  
 If any of the path does not exist, return False  
   
-#### `padBoth (s, length, left, right) [@staticmethod]`
+#### `padBoth (s, length, left, right) `
   
 Pad at left and right sides of a string with different strings  
 
@@ -694,7 +694,7 @@ If it is None, will be the same as `left`.
 - **returns:**  
 The logger  
   
-#### `randstr (length) [@staticmethod]`
+#### `randstr (length) `
   
 Generate a random string  
 
@@ -704,7 +704,7 @@ Generate a random string
 - **returns:**  
 The random string  
   
-#### `sanitizeOutKey (key) [@staticmethod]`
+#### `sanitizeOutKey (key) `
   
 Sanitize the output keys, put them into standard format: "key:type:expression"  
 If the key is missing, '__out.[index]__' will be used, the index is incremental and starts from 0, reset for each process.  
@@ -726,7 +726,7 @@ ret  = alwaysList (data)
 - **returns:**  
 The split list  
   
-#### `split (s, delimter) [@staticmethod]`
+#### `split (s, delimter) `
   
 Split a string using a single-character delimter  
 
@@ -744,7 +744,7 @@ ret = split("'a,b',c", ",")
 - **returns:**  
 The list of substrings  
   
-#### `targz (tgzfile, srcdir) [@staticmethod]`
+#### `targz (tgzfile, srcdir) `
   
 Do a "tar zcf"-like for a directory  
 
@@ -752,7 +752,7 @@ Do a "tar zcf"-like for a directory
 `tgzfile`: the final .tgz file  
 `srcdir`:  the source directory  
   
-#### `uid (s, l, alphabet) [@staticmethod]`
+#### `uid (s, l, alphabet) `
   
 Calculate a short uid based on a string.  
 Safe enough, tested on 1000000 32-char strings, no repeated uid found.  
@@ -766,7 +766,7 @@ This is used to calcuate a uid for a process
 - **returns:**  
 The uid  
   
-#### `ungz (gzfile, dstfile) [@staticmethod]`
+#### `ungz (gzfile, dstfile) `
   
 Do a "gunzip"-like for a .gz file  
 
@@ -774,7 +774,7 @@ Do a "gunzip"-like for a .gz file
 `gzfile`:  the .gz file  
 `dstfile`: the extracted file  
   
-#### `untargz (tfile, dstdir) [@staticmethod]`
+#### `untargz (tfile, dstdir) `
   
 Do a "tar zxf"-like for .tgz file  
 
@@ -782,7 +782,7 @@ Do a "tar zxf"-like for .tgz file
 `tfile`:  the .tgz file  
 `dstdir`: which directory to extract the file to  
   
-#### `varname (func, maxline) [@staticmethod]`
+#### `varname (func, maxline) `
   
 Get the variable name inside the function or class __init__  
 
@@ -837,7 +837,7 @@ The variable name
 
 	
 
-#### `__init__ (self) `
+#### `__init__ (self, *arg) `
   
 Constructor  
 

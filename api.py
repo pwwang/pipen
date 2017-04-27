@@ -2,7 +2,7 @@
 """
 Generate API docs for pyppl
 """
-import sys, os
+import sys, os, inspect
 sys.path.insert (0, os.path.dirname(__file__))
 import pyppl
 
@@ -24,11 +24,15 @@ for modname in modules:
 		if m.startswith('__') and m!='__init__': continue
 		mobj = getattr(module, m)
 		if not callable (mobj): continue
-		args = "" if not callable (mobj) or not hasattr(mobj, '__code__') else str(mobj.__code__.co_varnames[:mobj.__code__.co_argcount])
-		if args.endswith (",)"): args = args[:-2] + ')'
-		args = args.replace ("'", "")
-		isstatic = "[@staticmethod]" if type(mobj) == type(lambda x:x) else ""
-		doc += "#### `" + m + " %s %s`\n" % (args, isstatic)			
+		#args = "" if not callable (mobj) or not hasattr(mobj, '__code__') else str(mobj.__code__.co_varnames[:mobj.__code__.co_argcount])
+		args = tuple(inspect.getargspec(mobj))
+		#if args.endswith (",)"): args = args[:-2] + ')'
+		#args = args.replace ("'", "")
+		strargs  = args[0]
+		if args[1] is not None: strargs.append ("*" + args[1])
+		if args[2] is not None: strargs.append ("**" + args[1])
+		isstatic = "[@staticmethod]" if type(mobj) == type(lambda x:x) and modname!="utils" else ""
+		doc += "#### `" + m + " (%s) %s`\n" % (", ".join(strargs), isstatic)			
 		modoc = mobj.__doc__ if mobj.__doc__ is not None else ""
 		modoc = modoc.split("\n")
 		for line in modoc:
