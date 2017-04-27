@@ -279,7 +279,7 @@ sorted("""digraph PyPPL {
 		pError = proc ()
 		pError.input  = {"input": [1]}
 		pError.output = "outfile:file:a.txt"
-		pError.script = "echo {{input}} > {{outfile}}; exit $(($RANDOM % 4))"
+		pError.script = "echo {{input}} > {{outfile}}; exit $(($RANDOM % 3))"
 		pError.errhow = "retry"
 		pError.errntry= 10
 		pError.cache  = False
@@ -293,6 +293,25 @@ sorted("""digraph PyPPL {
 		pIgnore.errhow = "ignore"
 		pIgnore.cache  = False
 		pyppl().starts(pIgnore).run()
+		
+	def testBrings (self):
+		tdir = "./test/"
+		if not os.path.exists (tdir):
+			os.makedirs(tdir)
+		if not os.path.exists ("./test/aaa"):
+			os.makedirs ("./test/aaa")
+		infile = os.path.abspath("./test/aaa/1.txt")
+		open (infile, 'w').write('')
+		if not os.path.exists ("./test/1.txt"):
+			os.symlink (infile, os.path.abspath("./test/1.txt"))
+		brfile = "./test/aaa/1.txi"
+		open (brfile, 'w').write('')
+		pBrings = proc ()
+		pBrings.input  = {"infile:file": ["./test/1.txt"]}
+		pBrings.brings = {"infile": "{{infile.fn}}.txi"}
+		pyppl().starts(pBrings).run()
+		self.assertTrue (os.path.exists( os.path.join(pBrings.indir, "1.txi") ))
+		shutil.rmtree(tdir)
 
 if __name__ == '__main__':
 	unittest.main()

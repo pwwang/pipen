@@ -1,6 +1,7 @@
 import os, pickle, shlex, shutil, threading, sys
 import copy as pycopy
 from time import sleep, time
+from glob import glob
 from random import randint
 from channel import channel
 from aggr import aggr
@@ -77,6 +78,7 @@ class proc (object):
 		self.config['channel']    = channel.create()
 		self.config['aggr']       = None
 		self.config['callback']   = None
+		self.config['brings']     = {}
 		# init props
 
 		# id of the process, actually it's the variable name of the process
@@ -123,6 +125,7 @@ class proc (object):
 		self.props['outdir']     = ''
 		self.props['aggr']       = self.config['aggr']
 		self.props['callback']   = self.config['callback']
+		self.props['brings']     = self.config['brings']
 
 
 	def __getattr__ (self, name):
@@ -231,6 +234,7 @@ class proc (object):
 		"""
 		self._buildProps ()
 		self._buildInput ()
+		self._buildBrings ()
 		self._buildOutput ()
 		self._buildScript ()
 
@@ -361,18 +365,18 @@ class proc (object):
 		
 		if multi:
 			if not isinstance(self.input[key][index], list):
-				self.input[key][index]          = [infile]
+				self.input[key][index]          = [srcfile]
 				self.input[key + '.bn'][index]  = [bn]
 				self.input[key + '.fn'][index]  = [fn]
 				self.input[key + '.ext'][index] = [ext]
 			else:
-				self.input[key][index].append(infile)
+				self.input[key][index].append(srcfile)
 				self.input[key + '.bn'][index].append(bn)
 				self.input[key + '.fn'][index].append(fn)
 				self.input[key + '.ext'][index].append(ext)
 			job.input['files'].append(infile)
 		else:
-			self.input[key][index]          = infile
+			self.input[key][index]          = srcfile
 			self.input[key + '.bn'][index]  = bn
 			self.input[key + '.fn'][index]  = fn
 			self.input[key + '.ext'][index] = ext
@@ -490,13 +494,9 @@ class proc (object):
 					self.input[key].append (ch)
 		if warnings:
 			warn = warnings.pop(0)
-			self.log ("Overwriting existing input file: %s" % warn, 'warning')
+			self.log ("Overwriting existing input file: %s" % warn, 'debug', 'warning')
 			if warnings:
-				self.log ("... and %s others" % len(warnings), 'warning')
-
-		ridx = randint(0, self.length-1)
-		for key, val in self.input.iteritems():
-			self.log ('INPUT [%s/%s]: %s => %s' % (ridx, self.length-1, key, val[ridx]), 'debug')
+				self.log ("... and %s others" % len(warnings), 'debug', 'warning')
 
 		# also add proc.props, mostly scalar values
 		alias = {val:key for key, val in proc.alias.iteritems()}
@@ -510,7 +510,53 @@ class proc (object):
 				if alias.has_key (prop): prop = alias[prop]
 				else: self.log ('PROC_VARS: %s => %s' % (prop, val), 'debug')
 				self.props['procvars']['proc.' + prop] = val
-		
+	
+	def _buildBrings (self):
+		"""
+		Build the brings to bring some files to indir
+		The brings can be set as: `p.brings = {"infile": "{{infile.bn}}*.bai"}`
+		If you have multiple files to bring in:
+		`p.brings = {"infile": "{{infile.bn}}*.bai", "infile#": "{{infile.bn}}*.fai"}`
+		You can use wildcards to search the files, but only the first file will return
+		To access the brings in your script: `{{ infile.bring }}`, `{{ infile#.bring }}`
+		If original input file is a link, will try to find it along each directory the link is in.
+		"""
+		warnings = []
+		for key, val in self.config['brings'].iteritems():
+			brkey   = key + ".bring"
+			self.input [brkey] = [""] * self.length
+			for i in self.input['#']:
+				data = {key:val[i] for key, val in self.input.iteritems()}
+				data.update (self.procvars)
+				
+				pattern = utils.format (val, data)
+				inkey   = key.replace("#", "")
+				infile  = self.input[inkey][i]
+				while os.path.exists(infile):
+					bring = glob (os.path.join (os.path.dirname(infile), pattern))
+					if bring:
+						self.input[brkey][i] = bring[0]
+						dstfile = os.path.join (self.indir, os.path.basename(bring[0]))
+						if os.path.exists(dstfile) and not utils.isSameFile (dstfile, bring[0]):
+							warnings.append (dstfile)
+							os.remove (dstfile)
+							os.symlink (bring[0], dstfile)
+						elif not os.path.exists(dstfile):
+							if os.path.islink (dstfile): os.remove (dstfile)
+							os.symlink (bring[0], dstfile)
+						break
+					if not os.path.islink (infile): break
+					infile = os.readlink(infile)
+					
+		if warnings:
+			warn = warnings.pop(0)
+			self.log ("Overwriting existing bring file: %s" % warn, 'debug', 'warning')
+			if warnings:
+				self.log ("... and %s others" % len(warnings), 'debug', 'warning')		
+
+		ridx = randint(0, self.length-1)
+		for key, val in self.input.iteritems():
+			self.log ('INPUT [%s/%s]: %s => %s' % (ridx, self.length-1, key, val[ridx]), 'debug')
 				
 	def _buildOutput (self):
 		"""
