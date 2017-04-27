@@ -365,18 +365,18 @@ class proc (object):
 		
 		if multi:
 			if not isinstance(self.input[key][index], list):
-				self.input[key][index]          = [srcfile]
+				self.input[key][index]          = [infile]
 				self.input[key + '.bn'][index]  = [bn]
 				self.input[key + '.fn'][index]  = [fn]
 				self.input[key + '.ext'][index] = [ext]
 			else:
-				self.input[key][index].append(srcfile)
+				self.input[key][index].append(infile)
 				self.input[key + '.bn'][index].append(bn)
 				self.input[key + '.fn'][index].append(fn)
 				self.input[key + '.ext'][index].append(ext)
 			job.input['files'].append(infile)
 		else:
-			self.input[key][index]          = srcfile
+			self.input[key][index]          = infile
 			self.input[key + '.bn'][index]  = bn
 			self.input[key + '.fn'][index]  = fn
 			self.input[key + '.ext'][index] = ext
@@ -535,8 +535,8 @@ class proc (object):
 				while os.path.exists(infile):
 					bring = glob (os.path.join (os.path.dirname(infile), pattern))
 					if bring:
-						self.input[brkey][i] = bring[0]
 						dstfile = os.path.join (self.indir, os.path.basename(bring[0]))
+						self.input[brkey][i] = dstfile
 						if os.path.exists(dstfile) and not utils.isSameFile (dstfile, bring[0]):
 							warnings.append (dstfile)
 							os.remove (dstfile)

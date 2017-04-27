@@ -1,18 +1,35 @@
 # pyppl - A python lightweight pipeline framework
-[Documentation](https://pwwang.gitbooks.io/pyppl/) | [Github Repos](https://github.com/pwwang/pyppl/)
+[Documentation][1] | [API][2] | [Github repos.][3]
 
 <!-- toc -->
+## Features
+- Supports of any language to run you processes.
+- Automatic deduction of input based on the process dependencies. [Details][4]
+- Different ways of exporting output files (including `gzip`). [Details][5]
+- Process caching. [Details][6]
+- Flexible placeholder handling in output and script settings. [Details][7]
+- APIs to modify channels. [Details][8]
+- Different runners to run you processes on different platforms. [Details][9]
+- Runner customization (you can define your own runner). [Details][10]
+- Callbacks of processes. [Details][11]
+- Error handling for processes. [Details][12]
+- Configuration file support for pipelines. [Details][13]
+- Flowchat in [DOT][14] for your pipelines. [Details][15]
+- Aggregations (a set of processes predefined). [Details][16]
+- Detailed [documentation][1] and [API documentation][2].
 
 ## Requirements
 - Linux (Maybe works on OSX, not tested)
 - Python 2.7
 
 ## Installation
-```python
+```bash
+# install latest version
 git clone https://github.com/pwwang/pyppl.git
 cd pyppl
 python setup.py install
-# or pip install pyppl
+# install released version
+pip install pyppl
 ```
 
 ## First script
@@ -32,7 +49,7 @@ pyppl().starts(pSort).run()
 
 run `python test.py test1.txt test2.txt test3.txt test4.txt test5.txt` will output:
 ```
-[2017-04-21 16:44:35,003] [  PyPPL] Version: 0.6.0
+[2017-04-21 16:44:35,003] [  PyPPL] Version: 0.6.1
 [2017-04-21 16:44:35,003] [   TIPS] beforeCmd and afterCmd only run locally
 [2017-04-21 16:44:35,003] [ CONFIG] Read from /home/user/.pyppl
 [2017-04-21 16:44:35,003] [  START] --------------------------------- pSort.notag ----------------------------------
@@ -112,7 +129,7 @@ pyppl({
 ```
 
 ## Draw the pipeline chart
-`pyppl` can generate the graph in [dot language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)). 
+`pyppl` can generate the graph in [DOT language][14]. 
 ```python
 ppl = pyppl()
 p1 = proc("A")
@@ -195,8 +212,25 @@ digraph PyPPL {
 	"p4.D" [shape=box, style=filled, color="#f0f998", fontcolor=red]
 }
 ```
-You can use different [dot renderers][1] to render and visualize it.
+You can use different [dot renderers][17] to render and visualize it.
 
-![PyPPL chart](https://github.com/pwwang/pyppl/raw/master/docs/pyppl.png)
+![PyPPL chart][18]
 
-[1]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)#Layout_programs
+[1]: https://pwwang.gitbooks.io/pyppl/
+[2]: https://pwwang.gitbooks.io/pyppl/api.html
+[3]: https://github.com/pwwang/pyppl/
+[4]: https://pwwang.gitbooks.io/pyppl/specify-input-and-output-of-a-process.html#specify-input-of-a-process
+[5]: https://pwwang.gitbooks.io/pyppl/export-output-files.html
+[6]: https://pwwang.gitbooks.io/pyppl/caching.html
+[7]: https://pwwang.gitbooks.io/pyppl/placeholders.html
+[8]: https://pwwang.gitbooks.io/pyppl/channels.html
+[9]: https://pwwang.gitbooks.io/pyppl/runners.html
+[10]: https://pwwang.gitbooks.io/pyppl/runners.html#define-your-own-runner
+[11]: https://pwwang.gitbooks.io/pyppl/set-other-properties-of-a-process.html#use-callback-to-modify-the-process-pcallback
+[12]: https://pwwang.gitbooks.io/pyppl/set-other-properties-of-a-process.html#error-handling-perrhowperrntry
+[13]: https://pwwang.gitbooks.io/pyppl/configure-a-pipeline.html#use-a-configuration-file
+[14]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
+[15]: https://pwwang.gitbooks.io/pyppl/draw-flowchart-of-a-pipeline.html
+[16]: https://pwwang.gitbooks.io/pyppl/aggregations.html
+[17]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)#Layout_programs
+[18]: https://github.com/pwwang/pyppl/raw/master/docs/pyppl.png

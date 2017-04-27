@@ -54,6 +54,37 @@ p.input = {"infile:file": channel.fromPath("./*.txt")}
 ```
 Then `pyppl` will create symbol links in `<workdir>/input/` and an extra set of placeholders will be created: `infile.fn`, `infile.bn` and `infile.ext`. See [File placeholders](https://pwwang.gitbooks.io/pyppl/placeholders.html#file-placeholders).
 
+> **Note** The `{{infile}}` will return the path of the link in `<indir>` pointing to the actual input file. If you want to get the path of the actual path: `{{ infile | __import__('os').readline(_) }}`
+
+### Bring related files to input directory
+Some programs, for example, mutation calling programs, take genome reference file as input. However, during the process, they actually need the reference file to be indexed with an index file, which will not be explicitly specified with program options. Usually, they will try to find the index file according to the reference file. For example, index file `hg19.fai` or `hg19.fa.fai` for reference file `hg19.fa`. Sometimes, we will generate the index file in advance and put it together with the reference file. When you specify the reference file to `pyppl` process, we will create a link for the reference file in `<indir>`, but not for the index file. If the index file is not found, some programs will try to generate the index file, some will not and just quit. To avoid that, you can use `p.brings` to bring the index file in.
+```python
+# ls -l /a/b/
+# <permission, size, time infomation> /a/b/hg19.fa -> /c/d/hg19.fa
+#
+# Suppose you have two index files to bring in:
+# /c/d/hg19.fa.fai1 (sometimes can be /c/d/hg19.fai1)
+# /c/d/hg19.fa.fai2 (sometimes can be /c/d/hg19.fai2)
+p.input  = {"hg19fa:file": ["/a/b/hg19.fa"]}
+p.brings = {
+	"hg19fa":  "{{hg19fa.fn}}*.fai1",   # .fn gets the filename without extension
+	"hg19fa#": "{{hg19fa.fn}}*.fai2"    # the pound sign avoids the first item to be overwritten
+	                                    # but still connects the index file to hg19fa
+}
+# The we will find the matched index file with the pattern in the directory of the input file,
+# in this case: /a/b/hg19.fa
+# However, we can't find them and it's actually a link, so we will parse the link (/a/b/hg19.fa)
+# and try to find whether the index files are in the directory of the parsed path of the link.
+# We find them in /a/b/, then bring them to the <indir>
+
+# To access the bring-in file in beforeCmd/afterCmd/output/script:
+# {{hg19fa.bring}}, {{hg19fa#.bring}}
+# An empty string will be returned if the index file can't be found.
+# You may use some other programs to generate the index file in your script.
+```
+
+> **Caution**: If your pattern matches multiple files, only the first one by `glob.glob` will be return. So try to write more specfic pattern for bring-in files.
+
 ### Use a callback to modify the output channel of the prior process.
 You can modify the output channel of the prior process by a callback for the input value. For example:
 ```python
