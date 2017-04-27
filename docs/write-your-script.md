@@ -17,6 +17,7 @@ You can use all available placeholders in the script. Each job will have its own
 ## Use a template
 You can also put the script into a file, and use it with a `template:` prefix: `p.script = "template:/a/b/c.pl"`  
 You may also use the placeholders in the template, where everything should be the same when you put the script directly to `p.script`.
+> **Note**: You may also use a relative-path template, which is relative to `os.path.dirname (sys.argv[0])`
 
 ## Debug your script
 If you need to debug your script, you just need to find the real running script, which is at: `<workdir>/scripts/script.<index>`. All the placeholders in the script have been replaced with actual values. You can debug it using the tool according to the language you used for the script.
