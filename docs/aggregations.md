@@ -152,7 +152,6 @@ An aggregation can depend on aggregations and/or processes, you just treat the a
 | `aggr` (`a`) | `proc` (`p`) | `a.starts` depends on `p` |
 | `proc` (`p`) | `aggr` (`a`) | `p` depends on `a.ends` |
 
-
 ## Copy an aggregation
 You may copy an aggregation, all the processes in the aggregation will be copied, and the dependencies will be switched to the corresponding copied processes, as well as the starting and ending processes.
 
@@ -161,9 +160,9 @@ You can keep the ids of processes unchanged but give a new tag and also give the
 a = aggr(p1, p2, p3)
 a2 = a.copy('copied')
 # a2.procs == [
-#    <proc with id "p1" and tag "copied">,
-#    <proc with id "p2" and tag "copied">,
-#    <proc with id "p3" and tag "copied">,
+# <proc with id "p1" and tag "copied">,
+# <proc with id "p2" and tag "copied">,
+# <proc with id "p3" and tag "copied">,
 # ]
 # a2.id == 'a2'
 a2 = a.copy('copied', 'newAggr')

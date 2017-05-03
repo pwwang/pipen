@@ -72,6 +72,27 @@ class channel (list):
 		for i in range(0, len(ret), 2):
 			c.append ((ret[i], ret[i+1]))
 		return c
+	
+	@staticmethod
+	def fromFile (file, delimit = "\t"):
+		"""
+		Create channel from the file content
+		It's like a matrix file, each row is a row for a channel.
+		And each column is a column for a channel.
+		@params:
+			`file`:    the file
+			`delimit`: the delimit for columns
+		@returns:
+			A channel created from the file
+		"""
+		ret = channel.create()
+		with open (file) as f:
+			for line in f:
+				line = line.strip()
+				if not line: continue
+				row = line.split(delimit)
+				ret.rbind (row)
+		return ret
 
 	@staticmethod
 	def fromArgv ():

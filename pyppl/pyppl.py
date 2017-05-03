@@ -2,6 +2,7 @@ import logging, os, sys, random, json, copy
 from helpers import *
 from runners import *
 from time import time
+from subprocess import Popen
 VERSION = "0.6.1"
 			
 class pyppl (object):
@@ -62,12 +63,12 @@ class pyppl (object):
 		for pa in arg:
 			if isinstance(pa, proc):
 				if pa in self.heads:
-					raise ValueError('Proc %s already added.', pa.id)
+					raise ValueError('Proc %s already added.', pa._name(False))
 				self.heads.append(pa)
 			elif isinstance(pa, aggr):
-				for p in pa.procs:
+				for p in pa.starts:
 					if p in self.heads:
-						raise ValueError('Proc %s already added.', p.id)
+						raise ValueError('Proc %s already added.', p._name(False))
 					self.heads.append(p)
 			else:
 				raise ValueError('An "proc" or "aggr" instance required.')
@@ -78,6 +79,8 @@ class pyppl (object):
 		Run the pipeline
 		@params:
 			`profile`: the profile used to run, if not found, it'll be used as runner name. default: 'local'
+		@returns:
+			The pipeline object itself.
 		"""
 		timer = time()
 		config = {}
@@ -105,37 +108,53 @@ class pyppl (object):
 				next2run2 += p.props['nexts']
 			next2run = [n for n in list(set(next2run2)) if n not in finished and all(x in finished for x in n.props['depends'])]
 		self.logger.info ('[   DONE] Total time: %s' % utils.formatTime (time()-timer))
-		
+		return self
 
 	
-	def dot (self):
+	def flowchart (self, dotfile = None, fcfile = None, dot = "dot -Tsvg {{dotfile}} > {{fcfile}}"):
 		"""
-		Generate graph in dot language
+		Generate graph in dot language and visualize it.
+		@params:
+			`dotfile`: Where to same the dot graph. Default: `None` (`os.path.splitext(sys.argv[0])[0] + ".pyppl.dot"`)
+			`fcfile`:  The flowchart file. Default: `None` (`os.path.splitext(sys.argv[0])[0] + ".pyppl.svg"`)
+			- For example: run `python pipeline.py` will save it to `pipeline.svg`
+			`dot`:     The dot visulizer. Default: "dot -Tsvg {{dotfile}} > {{fcfile}}"
 		@returns:
-			The dot graph string.
+			The pipeline object itself.
 		"""
 		ret  = "digraph PyPPL {\n"
 		next2run = self.heads 
 		finished = []
 		shapes = {}
 		for p in next2run:
-			shapes["%s.%s" % (p.id, p.tag)] = '[shape=box, style=filled, color="#c9fcb3"]'
+			shapes[p._name()] = '[shape=box, style=filled, color="#c9fcb3"]'
 		while next2run:
 			next2run2 = []
 			for p in next2run:
 				finished.append (p)
-				if p.exportdir and not shapes.has_key(p.id+'.'+p.tag):
-					shapes["%s.%s" % (p.id, p.tag)] = '[shape=box, style=filled, color="#f0f998", fontcolor=red]'
+				if p.exportdir and not shapes.has_key(p._name()):
+					shapes[p._name()] = '[shape=box, style=filled, color="#f0f998", fontcolor=red]'
 				for n in p.props['nexts']:
-					ret += '	"%s.%s" -> "%s.%s"\n' % (p.id, p.tag, n.id, n.tag)
+					ret += '	"%s" -> "%s"\n' % (p._name(), n._name())
 					if not n.props['nexts']:
-						shapes["%s.%s" % (n.id, n.tag)] = '[shape=box, style=filled, color="#fcc9b3" %s]' % ("fontcolor=red" if n.exportdir else "")
+						shapes[n._name()] = '[shape=box, style=filled, color="#fcc9b3" %s]' % ("fontcolor=red" if n.exportdir else "")
 				next2run2 += p.props['nexts']
 			next2run = [n for n in list(set(next2run2)) if n not in finished and all(x in finished for x in n.props['depends'])]
 		for node, shape in shapes.iteritems():
 			ret += '	"%s" %s\n' % (node, shape)
 		ret += '}\n'
-		return ret
+		if dotfile is None: dotfile = os.path.splitext(sys.argv[0])[0] + ".pyppl.dot"
+		if fcfile  is None: fcfile  = os.path.splitext(sys.argv[0])[0] + ".pyppl.svg"
+		open (dotfile, "w").write (ret)
+		self.logger.info ('[   INFO] DOT file saved to: %s' % dotfile)
+		try:
+			dotcmd = utils.format (dot, {"dotfile": dotfile, "fcfile":fcfile})
+			Popen (dotcmd, shell=True).wait()
+			self.logger.info ('[   INFO] Flowchart file saved to: %s' % fcfile)
+		except Exception as ex:
+			self.logger.error ('[  ERROR] %s' % ex)
+			self.logger.error ('[  ERROR] Skipped to generate flowchart to: %s' % fcfile)
+		return self
 
 
 

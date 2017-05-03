@@ -150,11 +150,11 @@ class proc (object):
 			for depend in depends:
 				if isinstance (depend, proc):					
 					self.props['depends'].append (depend)
-					depend.nexts.append (self)
+					if self not in depend.nexts: depend.nexts.append (self)
 				elif isinstance (depend, aggr):
 					for p in depend.ends:
 						self.props['depends'].append (p)
-						p.nexts.append (self)
+						if self not in p.nexts: p.nexts.append (self)
 	
 	def setLogger (self, logger):
 		"""
@@ -175,24 +175,39 @@ class proc (object):
 		if flag is None: flag = level
 		flag = flag.upper().rjust(7)
 		flag  = "[%s]" % flag
-		title = "%s%s.%s:" % (("%s -> " % self.aggr if self.aggr else ""), self.id, self.tag)
+		title = self._name()
 		func  = getattr(self.logger, level)
-		func ("%s %s %s" % (flag, title, msg))
+		func ("%s %s: %s" % (flag, title, msg))
 
 	def copy (self, tag=None, newid=None):
 		"""
 		Copy a process
 		@params:
+			`newid`: The new id of the process, default: `None` (use the varname)
 			`tag`:   The tag of the new process, default: `None` (used the old one)
-			`newid`: Set the id if you don't want to use the variable name
 		@returns:
 			The new process
 		"""
-		newproc = pycopy.copy (self)
-		if tag is not None:	newproc.tag = tag
-		pid                       = utils.varname('\w+\.' + self.copy.__name__, 3)
-		newproc.props['id']       = pid if newid is None else newid
-		newproc.props['workdir']  = '' # force the newproc to calcuate a new workdir
+		newproc = proc (tag if tag is not None else self.tag)
+		config = {key:val for key, val in self.config.iteritems() if key not in ['tag', 'workdir', 'aggr']}
+		config['tag']      = newproc.tag
+		config['aggr']     = ''
+		config['workdir']  = ''
+		props   = {key:val for key, val in self.props.iteritems() if key not in ['cached', 'procvars', 'ncjobids', 'sets', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
+		props['cached']    = True
+		props['procvars']  = {}
+		props['channel']   = channel.create()
+		props['depends']   = []
+		props['nexts']     = []
+		props['jobs']      = []
+		props['ncjobids']  = []
+		props['sets']      = []
+		props['workdir']   = ''
+		props['args']      = pycopy.copy(self.props['args'])
+		props['id']        = utils.varname('\w+\.' + self.copy.__name__, 3) if newid is None else newid
+		newproc.__dict__['config'].update(config)
+		newproc.__dict__['props'].update(props)
+		
 		return newproc
 
 	def _suffix (self):
@@ -252,6 +267,16 @@ class proc (object):
 			if callable (self.callback):
 				self.log('Calling callback ...', 'debug')
 				self.callback (self)
+	
+	def _name (self, incAggr = True):
+		"""
+		Get my name include `aggr`, `id`, `tag`
+		@returns:
+			the name
+		"""
+		aggr  = "@%s" % self.aggr if self.aggr and incAggr else ""
+		tag   = ".%s" % self.tag  if self.tag != "notag" else ""
+		return "%s%s%s" % (self.id, tag, aggr)
 
 	def run (self, config = {}):
 		"""
@@ -259,8 +284,10 @@ class proc (object):
 		@params:
 			`config`: The configuration
 		"""
-		self.logger.info ('[  START] ' + utils.padBoth(' ' + ("%s -> " % self.aggr if self.aggr else "") + self.id + '.' + self.tag + ' ', 80, '-'))
 		timer = time()
+		self.logger.info ('[  START] ' + utils.padBoth(' ' + self._name() + ' ', 80, '-'))
+		# log the dependencies
+		self.log ("%s => %s => %s" % ([p._name() for p in self.depends] if self.depends else "START", self._name(), [p._name() for p in self.nexts] if self.nexts else "END"), "info", "depends")
 		self._readConfig (config)
 		self._tidyBeforeRun ()
 		if self._runCmd('beforeCmd') != 0:
@@ -327,13 +354,14 @@ class proc (object):
 			self.log('Job #%s: check STDERR below:' % (failedjob.index), 'error')
 			errmsgs = []
 			if os.path.exists (failedjob.errfile):
-				errmsgs = ['[  ERROR] ' + line.rstrip() for line in open(failedjob.errfile)]					
+				errmsgs = ['[ STDERR] ' + line.rstrip() for line in open(failedjob.errfile)]					
 			if not errmsgs: errmsgs = ['[ STDERR] <EMPTY STDERR>']
-			for errmsg in errmsgs: self.logger.error(errmsg)
+			for errmsg in errmsgs[:20]: self.logger.error(errmsg)
+			if len (errmsgs) > 20:
+				self.logger.error ('[ STDERR] ... and %s lines omitted (see all in "%s").' % (len(errmsgs)-20, failedjob.errfile))
 		
 		sys.exit (1) # Don't goto next proc
-	
-	
+		
 	def _prepInfile (self, infile, key, index, warnings, multi=False):
 		"""
 		Prepare input file, create link to it and set other placeholders
@@ -412,6 +440,8 @@ class proc (object):
 		
 		self.props['jobs'] = [] # in case the proc is reused, maybe other properties to reset ?
 		
+		# if it is a copy, make sure the "nexts" are
+		
 	def _buildInput (self):
 		"""
 		Build the input data
@@ -424,7 +454,6 @@ class proc (object):
 		"""
 
 		input    = self.config['input']
-
 		argvchan = channel.fromArgv()
 		depdchan = channel.fromChannels (*[d.channel for d in self.depends])
 		
@@ -446,24 +475,16 @@ class proc (object):
 				vals  = channel.create(vals)
 				vals  = vals.split()
 			else:
-				raise ValueError ("%s%s.%s: Unexpected values for input. Expect dict, list, str, channel, callable." % (
-					("%s -> " % self.aggr if self.aggr else ""),
-					 self.id, self.tag))
+				raise ValueError ("%s: Unexpected values for input. Expect dict, list, str, channel, callable." % self._name())
 			width = len (vals)
 			if len (keys) > width:
-				raise ValueError ('%s%s.%s: Not enough data for input variables.\nVarialbes: %s\nData: %s' % (
-					("%s -> " % self.aggr if self.aggr else ""),
-					 self.id, self.tag,
-					 keys, vals))
+				raise ValueError ('%s: Not enough data for input variables.\nVarialbes: %s\nData: %s' % (self._name(), keys, vals))
 			for i, key in enumerate(keys):
 				toExpand = (key.endswith(':files') or key.endswith(':paths')) and isinstance(vals[i], (str, unicode))
 				chan = channel.fromPath(vals[i]) if toExpand else vals[i]
 				if self.length == 0: self.props['length'] = chan.length()
 				if self.length != chan.length():
-					raise ValueError ('%s%s.%s: Expect same lengths for input channels, but got %s and %s (keys: %s).' % (
-					("%s -> " % self.aggr if self.aggr else ""),
-					 self.id, self.tag,
-					self.length, chan.length(), key))
+					raise ValueError ('%s: Expect same lengths for input channels, but got %s and %s (keys: %s).' % (self._name(), self.length, chan.length(), key))
 				inputs[key] = chan
 			
 		self.input = {'#': []}
@@ -504,12 +525,13 @@ class proc (object):
 			val = self.props[prop]
 			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'runner', 'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow', 'indir', 'outdir', 'length', 'args']: continue
 			if prop == 'args':
+				self.props['procvars']['proc.args'] = val
 				for k, v in val.iteritems():
 					self.props['procvars']['proc.args.' + k] = v
 					self.log('%s => %s' % (k, v), 'info', 'p.args')
 			else:
 				if alias.has_key (prop): prop = alias[prop]
-				else: self.log ('%s => %s' % (prop, val), 'info', 'p.props')
+				else: self.log ('%s => %s' % (prop, val), 'debug', 'p.props')
 				self.props['procvars']['proc.' + prop] = val
 	
 	def _buildBrings (self):
@@ -574,7 +596,6 @@ class proc (object):
 		for 1,2 channels will be the property channel for this proc (i.e. p.channel)
 		"""
 		output = self.config['output']
-		
 		if not isinstance (output, dict):
 			output = ','.join(utils.alwaysList (output))
 		else:
@@ -591,6 +612,7 @@ class proc (object):
 				data.update (self.procvars)
 				val  = utils.format(oexp, data)
 				if otype == 'dir' and not os.path.exists (val):
+					if os.path.islink (val): os.remove (val)
 					os.makedirs (val)
 				self.props['output'][oname].append (val)
 				self.props['jobs'][i].output['var' if otype == 'var' else 'file'].append(val)
@@ -607,7 +629,6 @@ class proc (object):
 		Build the script, interpret the placeholders
 		"""
 		if not self.script:	self.log ('No script specified', 'warning')
-		
 		scriptdir = os.path.join (self.workdir, 'scripts')
 		script    = self.script.strip()
 		

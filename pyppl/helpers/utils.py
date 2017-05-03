@@ -50,7 +50,8 @@ def varname (func, maxline = 20):
 	funcpat = r'(^|[^\w])([A-Za-z_][\w_]+\.)*%s\s*\(' % func
 	m       = re.search(varpat, src)
 	if m: return m.group(2)
-	suffix  = randstr(8)
+	varname.index += 1
+	suffix  = str(varname.index)
 	thefunc = func if not '\\.' in func else func.split('\\.')[1]
 	m       = re.search(funcpat, src)
 	if m: return thefunc + '_' + suffix
@@ -63,6 +64,7 @@ def varname (func, maxline = 20):
 		if m: return thefunc + '_' + suffix
 	
 	return thefunc + '_' + suffix
+varname.index = 0
 
 def randstr (length = 8):
 	"""

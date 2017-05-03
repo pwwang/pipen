@@ -110,8 +110,8 @@ class TestPipelineMethods (unittest.TestCase):
 		p6.exportdir  = "./"
 		p7.depends = [p5, p6]
 		p7.exportdir  = "./"
-		ppl.starts(p1, p8, p9).run()
-		self.assertEqual(sorted(ppl.dot().split("\n")), 
+		ppl.starts(p1, p8, p9).flowchart(None, "/tmp/pyppl.flowchart.dot", "")
+		self.assertEqual(sorted(open("/tmp/pyppl.flowchart.dot").read().strip().split("\n")), 
 sorted("""digraph PyPPL {
 	"p1.A" -> "p2.B"
 	"p1.A" -> "p3.C"
@@ -129,8 +129,7 @@ sorted("""digraph PyPPL {
 	"p9.I" [shape=box, style=filled, color="#c9fcb3"]
 	"p7.G" [shape=box, style=filled, color="#fcc9b3" fontcolor=red]
 	"p4.D" [shape=box, style=filled, color="#f0f998", fontcolor=red]
-}
-""".split("\n")))
+}""".split("\n")))
 	
 	def test_multideps (self):
 		ppl = pyppl ()

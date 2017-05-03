@@ -44,10 +44,12 @@ class runner_local (object):
 		flag  = flag.upper().rjust(7)
 		flag  = "[%s]" % flag
 		aggr  = self._config('aggr', '')
+		aggr  = "@%s" % aggr if aggr else ""
 		pid   = self._config('id')
 		tag   = self._config('tag')
-		title = "%s%s.%s:" % (("%s -> " % aggr if aggr else ""), pid, tag)
-		func  = getattr(self._config('logger', utils.getLogger(name = "%s.%s.%s" % (pid, tag, self.job.index))), level)
+		tag   = ".%s" % tag if tag != "notag" else ""
+		title = "%s%s%s:" % (pid, tag, aggr)
+		func  = getattr(self._config('logger', utils.getLogger(name = title)), level)
 		func ("%s %s %s" % (flag, title, msg))
 	
 	def _config (self, key, default = None):

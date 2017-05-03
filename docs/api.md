@@ -17,12 +17,18 @@ Constructor
 `config`: the configurations for the pipeline, default: {}  
 `cfile`:  the configuration file for the pipeline, default: `~/.pyppl`  
   
-#### `dot (self) `
+#### `flowchart (self, dotfile, fcfile, dot) `
   
-Generate graph in dot language  
+Generate graph in dot language and visualize it.  
+
+- **params:**  
+`dotfile`: Where to same the dot graph. Default: `None` (`os.path.splitext(sys.argv[0])[0] + ".pyppl.dot"`)  
+`fcfile`:  The flowchart file. Default: `None` (`os.path.splitext(sys.argv[0])[0] + ".pyppl.svg"`)  
+- For example: run `python pipeline.py` will save it to `pipeline.svg`  
+`dot`:     The dot visulizer. Default: "dot -Tsvg {{dotfile}} > {{fcfile}}"  
 
 - **returns:**  
-The dot graph string.  
+The pipeline object itself.  
   
 #### `run (self, profile) `
   
@@ -30,6 +36,9 @@ Run the pipeline
 
 - **params:**  
 `profile`: the profile used to run, if not found, it'll be used as runner name. default: 'local'  
+
+- **returns:**  
+The pipeline object itself.  
   
 #### `starts (self, *arg) `
   
@@ -166,6 +175,19 @@ Create a channel from channels
 
 - **returns:**  
 The channel merged from other channels  
+  
+#### `fromFile (file, delimit) [@staticmethod]`
+  
+Create channel from the file content  
+It's like a matrix file, each row is a row for a channel.  
+And each column is a column for a channel.  
+
+- **params:**  
+`file`:    the file  
+`delimit`: the delimit for columns  
+
+- **returns:**  
+A channel created from the file  
   
 #### `fromPairs (pattern) [@staticmethod]`
   
@@ -456,6 +478,13 @@ Tell whether the jobs are cached
 - **returns:**  
 True if all jobs are cached, otherwise False  
   
+#### `_name (self, incAggr) `
+  
+Get my name include `aggr`, `id`, `tag`  
+
+- **returns:**  
+the name  
+  
 #### `_prepInfile (self, infile, key, index, warnings, multi) `
   
 Prepare input file, create link to it and set other placeholders  
@@ -508,8 +537,8 @@ Do some preparation before running jobs
 Copy a process  
 
 - **params:**  
+`newid`: The new id of the process, default: `None` (use the varname)  
 `tag`:   The tag of the new process, default: `None` (used the old one)  
-`newid`: Set the id if you don't want to use the variable name  
 
 - **returns:**  
 The new process  
@@ -844,13 +873,27 @@ Constructor
 - **params:**  
 `arg`: the set of processes  
   
-#### `copy (self, tag, newid) `
+#### `addProc (self, p, where) `
+  
+Add a process to the aggregation.  
+Note that you have to adjust the dependencies after you add processes.  
+
+- **params:**  
+`p`:     The process  
+`where`: Add to where: 'starts', 'ends', 'both' or None (default)  
+
+- **returns:**  
+the aggregation itself  
+  
+#### `copy (self, tag, copyDeps, newid) `
   
 Like `proc`'s `copy` function, copy an aggregation. Each processes will be copied.  
 
 - **params:**  
-`tag`:   The new tag of all copied processes  
-`newid`: Use a different id if you don't want to use the variant name  
+`tag`:      The new tag of all copied processes  
+`copyDeps`: Whether to copy the dependencies or not. Default: True  
+- dependences for processes in starts will not be copied  
+`newid`:    Use a different id if you don't want to use the variant name  
 
 - **returns:**  
 The new aggregation  

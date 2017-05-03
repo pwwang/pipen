@@ -49,37 +49,40 @@ pyppl().starts(pSort).run()
 
 run `python test.py test1.txt test2.txt test3.txt test4.txt test5.txt` will output:
 ```
-[2017-04-27 15:43:32,037] [  PyPPL] Version: 0.6.1
-[2017-04-27 15:43:32,037] [   TIPS] The default <tmpdir> will be './workdir'
-[2017-04-27 15:43:32,037] [ CONFIG] Read from /home/m161047/.pyppl
-[2017-04-27 15:43:32,037] [  START] --------------------------------- pSort.notag ----------------------------------
-[2017-04-27 15:43:32,040] [ P.ARGS] pSort.notag: runner => local
-[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: echo => False
-[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: tag => notag
-[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: tmpdir => /home/m161047/tests/workdir
-[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: indir => /home/m161047/tests/workdir/PyPPL.pSort.notag.QEzMTado/input
-[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: cache => True
-[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: id => pSort
-[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: forks => 1
-[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: workdir => /home/m161047/tests/workdir/PyPPL.pSort.notag.QEzMTado
-[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: outdir => /home/m161047/tests/workdir/PyPPL.pSort.notag.QEzMTado/output
-[2017-04-27 15:43:32,041] [ P.ARGS] pSort.notag: length => 5
-[2017-04-27 15:43:32,041] [  INPUT] pSort.notag: [4/4]: infile.ext => .txt
-[2017-04-27 15:43:32,041] [  INPUT] pSort.notag: [4/4]: # => 4
-[2017-04-27 15:43:32,041] [  INPUT] pSort.notag: [4/4]: infile.bn => test5.txt
-[2017-04-27 15:43:32,042] [  INPUT] pSort.notag: [4/4]: infile => /home/m161047/tests/workdir/PyPPL.pSort.notag.QEzMTado/input/test5.txt
-[2017-04-27 15:43:32,042] [  INPUT] pSort.notag: [4/4]: infile.fn => test5
-[2017-04-27 15:43:32,042] [ OUTPUT] pSort.notag: [4/4]: outfile => /home/m161047/tests/workdir/PyPPL.pSort.notag.QEzMTado/output/test5.sorted
-[2017-04-27 15:43:32,045] [  DEBUG] pSort.notag: Not cached, cache file /home/m161047/tests/workdir/PyPPL.pSort.notag.QEzMTado/cached.jobs not exists.
-[2017-04-27 15:43:32,045] [RUNNING] pSort.notag: /home/m161047/tests/workdir/PyPPL.pSort.notag.QEzMTado
-[2017-04-27 15:43:32,111] [   INFO] pSort.notag: Submitting job #0 ...
-[2017-04-27 15:43:32,273] [   INFO] pSort.notag: Submitting job #1 ...
-[2017-04-27 15:43:32,534] [   INFO] pSort.notag: Submitting job #2 ...
-[2017-04-27 15:43:32,895] [   INFO] pSort.notag: Submitting job #3 ...
-[2017-04-27 15:43:33,357] [   INFO] pSort.notag: Submitting job #4 ...
-[2017-04-27 15:43:33,371] [  DEBUG] pSort.notag: Successful jobs: ALL
-[2017-04-27 15:43:33,371] [   INFO] pSort.notag: Done (time: 00:00:01.333).
-[2017-04-27 15:43:33,371] [   DONE] Total time: 00:00:01.334
+[2017-05-02 20:38:53,837] [  PyPPL] Version: 0.6.1
+[2017-05-02 20:38:53,837] [   TIPS] beforeCmd and afterCmd only run locally
+[2017-05-02 20:38:53,838] [ CONFIG] Read from /home/m161047/.pyppl
+[2017-05-02 20:38:53,838] [   INFO] DOT file saved to: test.pyppl.dot
+[2017-05-02 20:38:53,848] [   INFO] Flowchart file saved to: test.pyppl.svg
+[2017-05-02 20:38:53,848] [  START] ------------------------------------ pSort -------------------------------------
+[2017-05-02 20:38:53,848] [DEPENDS] pSort: START => pSort => END
+[2017-05-02 20:38:53,850] [P.PROPS] pSort: cache => True
+[2017-05-02 20:38:53,850] [P.PROPS] pSort: echo => False
+[2017-05-02 20:38:53,851] [P.PROPS] pSort: forks => 1
+[2017-05-02 20:38:53,851] [P.PROPS] pSort: id => pSort
+[2017-05-02 20:38:53,851] [P.PROPS] pSort: indir => /home/m161047/tests/workdir/PyPPL.pSort.notag.1Uncltkc/input
+[2017-05-02 20:38:53,851] [P.PROPS] pSort: length => 5
+[2017-05-02 20:38:53,851] [P.PROPS] pSort: outdir => /home/m161047/tests/workdir/PyPPL.pSort.notag.1Uncltkc/output
+[2017-05-02 20:38:53,851] [P.PROPS] pSort: runner => local
+[2017-05-02 20:38:53,851] [P.PROPS] pSort: tag => notag
+[2017-05-02 20:38:53,851] [P.PROPS] pSort: tmpdir => /home/m161047/tests/workdir
+[2017-05-02 20:38:53,851] [P.PROPS] pSort: workdir => /home/m161047/tests/workdir/PyPPL.pSort.notag.1Uncltkc
+[2017-05-02 20:38:53,851] [  INPUT] pSort: [0/4]: infile.ext => .txt
+[2017-05-02 20:38:53,851] [  INPUT] pSort: [0/4]: # => 0
+[2017-05-02 20:38:53,851] [  INPUT] pSort: [0/4]: infile.bn => test1.txt
+[2017-05-02 20:38:53,851] [  INPUT] pSort: [0/4]: infile => /home/m161047/tests/workdir/PyPPL.pSort.notag.1Uncltkc/input/test1.txt
+[2017-05-02 20:38:53,852] [  INPUT] pSort: [0/4]: infile.fn => test1
+[2017-05-02 20:38:53,852] [ OUTPUT] pSort: [4/4]: outfile => /home/m161047/tests/workdir/PyPPL.pSort.notag.1Uncltkc/output/test5.sorted
+[2017-05-02 20:38:53,855] [  DEBUG] pSort: Not cached, cache file /home/m161047/tests/workdir/PyPPL.pSort.notag.1Uncltkc/cached.jobs not exists.
+[2017-05-02 20:38:53,855] [RUNNING] pSort: /home/m161047/tests/workdir/PyPPL.pSort.notag.1Uncltkc
+[2017-05-02 20:38:53,913] [   INFO] pSort: Submitting job #0 ...
+[2017-05-02 20:38:54,074] [   INFO] pSort: Submitting job #1 ...
+[2017-05-02 20:38:54,328] [   INFO] pSort: Submitting job #2 ...
+[2017-05-02 20:38:54,681] [   INFO] pSort: Submitting job #3 ...
+[2017-05-02 20:38:55,136] [   INFO] pSort: Submitting job #4 ...
+[2017-05-02 20:38:55,149] [  DEBUG] pSort: Successful jobs: ALL
+[2017-05-02 20:38:55,149] [   INFO] pSort: Done (time: 00:00:01.301).
+[2017-05-02 20:38:55,150] [   DONE] Total time: 00:00:01.301
 ```
 
 Then you will see your sorted files in `/home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1/output/`:  
@@ -131,7 +134,6 @@ pyppl({
 ## Draw the pipeline chart
 `pyppl` can generate the graph in [DOT language][14]. 
 ```python
-ppl = pyppl()
 p1 = proc("A")
 p2 = proc("B")
 p3 = proc("C")
@@ -188,10 +190,11 @@ p6.depends = [p4, p9]
 p6.exportdir  = "./"
 p7.depends = [p5, p6]
 p7.exportdir  = "./"
-ppl.starts(p1, p8, p9)
-print ppl.dot() # save it in pyppl.dot
+pyppl().starts(p1, p8, p9).flowchart()
+# saved to dot file: test.pyppl.dot
+# saved to svg file: test.pyppl.svg
 ```
-`pyppl.dot`:
+`test.pyppl.dot`:
 ```dot
 digraph PyPPL {
 	"p1.A" -> "p2.B"
@@ -214,6 +217,7 @@ digraph PyPPL {
 ```
 You can use different [dot renderers][17] to render and visualize it.
 
+`test.pyppl.svg`:  
 ![PyPPL chart][18]
 
 [1]: https://pwwang.gitbooks.io/pyppl/

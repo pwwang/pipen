@@ -58,6 +58,19 @@ class TestChannel (unittest.TestCase):
 		c2 = channel.create([("abc", "def"), ("ghi", "opq")])
 		c3 = channel.fromChannels (c1, c2)
 		self.assertEqual (c3, [("abc", "def", "abc", "def"), ("ghi", "opq", "ghi", "opq")])
+		
+	def testFromFile (self):
+		testfile = "./tests/chan.txt"
+		if not os.path.exists("./tests"):
+			os.makedirs ("./tests")
+		with open (testfile, "w") as f:
+			f.write ("""
+			1	2	4
+			a	b	c
+			4	1	0
+			""")
+		c = channel.fromFile (testfile)
+		self.assertEqual (c, [("1", "2", "4"), ("a", "b", "c"), ("4", "1", "0")])
 
 	def testTuplize (self):
 		data = [

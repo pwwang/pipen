@@ -220,12 +220,12 @@ class job (object):
 		if path.exists (self.outfile): remove(self.outfile)
 		if path.exists (self.errfile): remove(self.errfile)
 		for outfile in self.output['file']:
-			if not path.exists (outfile) and path.islink (outfile):
-				remove (outfile) # remove dead links
+			if not path.exists(outfile):
+				if path.islink (outfile): remove(outfile) # dead link
 				continue
-			if not path.exists(outfile): continue
 			if path.isdir (outfile):
-				rmtree (outfile)
+				if path.islink (outfile): remove(outfile)
+				else: rmtree (outfile)
 				# keep the directory, in case the output is "outdir:dir" to force create dir
 				makedirs(outfile)  
 			else: remove (outfile)

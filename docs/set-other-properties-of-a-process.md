@@ -79,6 +79,7 @@ but multiple processes
 p2.depends = [p1, p0]
 ```
 To set prior processes not only let the process use the output channel as input for current process, but also determines when the process starts to run (right after the prior processes finish).
+> **Caution** You can copy a process by `p2 = p.copy()`, but remember `depends` will not be copied, you have to specify it for the copied processes.
 
 ## Use callback to modify the process `p.callback`:
 The processes **NOT** initialized until it's ready to run. So you may not be able to modify some of the values until it is initialized. For example, you may want to change the output channel before it passes to the its dependent process:

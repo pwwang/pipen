@@ -1,7 +1,6 @@
 
 from channel import channel
 import utils
-import traceback
 
 class aggr (object):
 	"""
@@ -85,39 +84,74 @@ class aggr (object):
 		else:
 			raise AttributeError('Cannot set property "%s" of aggregation "%s"' % (name, self.id))
 		
-	def copy (self, tag='aggr', newid=None):
+	def addProc (self, p, where = None):
+		"""
+		Add a process to the aggregation.
+		Note that you have to adjust the dependencies after you add processes.
+		@params:
+			`p`:     The process
+			`where`: Add to where: 'starts', 'ends', 'both' or None (default)
+		@returns:
+			the aggregation itself
+		"""
+		p.aggr  = self.id
+		self.procs.append (p)
+		if where == 'starts' or where == 'both':
+			self.starts.append (p)
+		if where == 'ends' or where == 'both':
+			self.ends.append (p)
+		tag = "_%s" % p.tag if p.tag != "notag" else ""
+		self.__dict__ [p.id + tag] = p
+		return self
+		
+	def copy (self, tag='aggr', copyDeps=True, newid=None):
 		"""
 		Like `proc`'s `copy` function, copy an aggregation. Each processes will be copied.
 		@params:
-			`tag`:   The new tag of all copied processes
-			`newid`: Use a different id if you don't want to use the variant name
+			`tag`:      The new tag of all copied processes
+			`copyDeps`: Whether to copy the dependencies or not. Default: True
+			- dependences for processes in starts will not be copied
+			`newid`:    Use a different id if you don't want to use the variant name
 		@returns:
 			The new aggregation
 		"""
-		name   = utils.varname('\w\.'+self.copy.__name__, 2) if newid is None else newid
-		
-		args   = []
-		fordeps= {}
+		name     = utils.varname('\w+\.'+self.copy.__name__, 2) if newid is None else newid
+		tagstr   = '_' + tag if tag != 'notag' else ''
+		args     = []
+		depends  = {}
+		newprocs = {}
+		copy2    = {}
+		starts   = []
+		ends     = []
 		for proc in self.procs:
 			if tag == proc.tag:
 				raise ValueError('Tag "%s" is used by proc "%s" before, cannot copy with the same tag for aggregation: %s.' % (tag, proc.id, self.id))
 			newproc = proc.copy (tag, proc.id)
-			newproc.aggr = name
 			args.append (newproc)
-			key = proc.id + '_' + proc.tag
-			fordeps[key] = newproc
-			
-		for proc in args:
-			newdeps = []
-			for dep in proc.depends:
-				key = dep.id + '_' + dep.tag
-				newdeps.append (fordeps[key])
-			newproc.depends = newdeps
-		args.append (False)
-		ret    = aggr (*args)
-		ret.id = name
-		return ret
+			key = newproc._name(False)
+			depends[key]  = proc.depends
+			newprocs[key] = newproc
+			copy2[proc._name(False)] = key
+			if proc in self.starts: starts.append (newproc)
+			if proc in self.ends:   ends.append (newproc)
 		
+		if copyDeps:	
+			for proc in args:
+				if proc in starts: continue
+				newdeps = []
+				for dep in depends[proc._name(False)]:
+					dn = dep._name(False)
+					if not copy2.has_key(dn): newdeps.append (dep)
+					else: newdeps.append (newprocs[copy2[dn]])
+				proc.depends = newdeps
+
+		args.append (False)
+		ret        = aggr (*args)
+		ret.starts = starts
+		ret.ends   = ends
+		ret.id     = name
+		for p in ret.procs: p.aggr = name
+		return ret
 		
 	
 

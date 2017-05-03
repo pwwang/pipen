@@ -4,7 +4,6 @@
 `pyppl` will generate a graph in [DOT language][1], according to the process dependencies. 
 You can have multiple [renderers][2] to visualize to graph. A typical one is [Graphviz][3]. Once you have Graphviz installed, you will have a command line tool `dot` available, which takes the dot file as input and can output to a bunch of figure format. For example, if we have a pipeline written in `pipeline.py`:
 ```python
-ppl = pyppl()
 p1 = proc("A")
 p2 = proc("B")
 p3 = proc("C")
@@ -61,14 +60,21 @@ p6.depends = [p4, p9]
 p6.exportdir  = "./"
 p7.depends = [p5, p6]
 p7.exportdir  = "./"
-ppl.starts(p1, p8, p9)
-print ppl.dot()
+pyppl().starts(p1, p8, p9).flowchart()
 ```
-We can draw the graph with `dot` and save the figure to `pipeline.svg`:
-```bash
-python pipeline.py | dot -Tsvg > pipeline.svg
+
+You can specify different files to store the dot and svg file:
+```python
+pyppl().starts(p1, p8, p9).flowchart("/another/dot/file", "/another/svg/file")
 ```
-The graph will be like:
+> **Note** The svg file will be only generated if you specify the right command to do it.
+
+For example, if you have [Graphviz](http://www.graphviz.org/) installed, you will have `dot` available to convert the dot file to svg file:
+```python
+pyppl().starts(p1, p8, p9).flowchart("/another/dot/file", "/another/svg/file", "dot -Tsvg {{dotfile}} > {{svgfile}}")
+```
+
+The graph (`fcfile`) will be like:  
 ![Pipeline][4]
 
 The green processes are the starting processes; ones with red text are processes that will export the output files; and nodes in red are the end processes of the pipeline.
