@@ -141,7 +141,6 @@ class job (object):
 			raise ValueError ('Unable to use export cache when you export using symlink.')
 		if not exdir:
 			raise ValueError ('Output files not exported, cannot use them for caching.')
-		
 		exfiles  = [path.join (exdir, path.basename(outfile)) for outfile in self.output['file']]
 		for i, exfile in enumerate(exfiles):
 			outfile = self.output['file'][i]
@@ -164,7 +163,7 @@ class job (object):
 				if path.exists(outfile):
 					#log ('Overwrite file/dir to use export for caching: %s' % outfile, 'warning')
 					warnings.append ('Overwrite file to use export for caching: %s' % outfile)
-					if path.isdir (outfile): rmtree (outfile)
+					if path.isdir (outfile) and not path.islink(outfile): rmtree (outfile)
 					else: remove (outfile)
 				symlink (path.realpath(exfile), outfile)
 		return True

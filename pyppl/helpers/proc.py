@@ -414,7 +414,6 @@ class proc (object):
 		"""
 		Compute some properties
 		"""
-		#print getsource(self.input.values()[0])
 		if isinstance (self.retcodes, int):
 			self.props['retcodes'] = [self.retcodes]
 		
@@ -455,17 +454,18 @@ class proc (object):
 
 		input    = self.config['input']
 		argvchan = channel.fromArgv()
-		depdchan = channel.fromChannels (*[d.channel for d in self.depends])
 		
 		if not isinstance (input, dict):
 			input = ','.join(utils.alwaysList (input))			
+			depdchan = channel.fromChannels (*[d.channel for d in self.depends])
 			input = {input: depdchan if self.depends else argvchan}
 		# expand to one key-channel pairs
 		inputs = {}
 		for keys, vals in input.iteritems():
 			keys   = utils.split(keys, ',')
 			if callable (vals):
-				vals  = vals (depdchan if self.depends else argv)
+				#vals  = vals (depdchan if self.depends else argv)
+				vals  = vals (*[d.channel.copy() for d in self.depends] if self.depends else argv)
 				vals  = vals.split()
 			elif isinstance (vals, (str, unicode)): # only for files: "/a/b/*.txt, /a/c/*.txt"
 				vals  = utils.split(vals, ',')
@@ -531,7 +531,7 @@ class proc (object):
 					self.log('%s => %s' % (k, v), 'info', 'p.args')
 			else:
 				if alias.has_key (prop): prop = alias[prop]
-				else: self.log ('%s => %s' % (prop, val), 'debug', 'p.props')
+				self.log ('%s => %s' % (prop, val), 'debug', 'p.props')
 				self.props['procvars']['proc.' + prop] = val
 	
 	def _buildBrings (self):

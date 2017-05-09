@@ -127,7 +127,7 @@ class pyppl (object):
 		finished = []
 		shapes = {}
 		for p in next2run:
-			shapes[p._name()] = '[shape=box, style=filled, color="#c9fcb3"]'
+			shapes[p._name()] = '[shape=box, style=filled, color="#c9fcb3" %s]' % ("fontcolor=red" if p.exportdir else "")
 		while next2run:
 			next2run2 = []
 			for p in next2run:

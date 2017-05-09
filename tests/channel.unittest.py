@@ -60,9 +60,7 @@ class TestChannel (unittest.TestCase):
 		self.assertEqual (c3, [("abc", "def", "abc", "def"), ("ghi", "opq", "ghi", "opq")])
 		
 	def testFromFile (self):
-		testfile = "./tests/chan.txt"
-		if not os.path.exists("./tests"):
-			os.makedirs ("./tests")
+		testfile = "/tmp/chan.txt"
 		with open (testfile, "w") as f:
 			f.write ("""
 			1	2	4
@@ -125,6 +123,11 @@ class TestChannel (unittest.TestCase):
 		for cs in ccs.split():
 			cc.merge(cs)
 		self.assertEqual(cc, ccs)
+	
+	def testMergeList (self):
+		c1 = channel.create(["1", '2', '3', '4'])
+		c2 = channel.create (["abc", "def", "ghi", ["opq", 1]])
+		self.assertEqual (c2.merge(c1), [("abc", "1"), ("def", '2'), ("ghi", '3'), (["opq", 1], '4')])
 	
 	def testSplit(self):
 		

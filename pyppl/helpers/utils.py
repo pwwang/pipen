@@ -161,6 +161,13 @@ def format (tpl, args):
 		nneat = n.strip("{}")
 		parts = split(nneat, "|")
 		key   = parts.pop(0).strip()
+		if not args.has_key (key):
+			print "[KEY]      ->", key
+			print "[DATA]     ->", args
+			print "[TEMPLATE] ->"
+			print tpl
+			print "-" * 80
+			raise KeyError ("No key found in the data!")
 		value = args[key]
 
 		while parts:

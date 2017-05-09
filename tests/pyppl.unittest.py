@@ -110,7 +110,7 @@ class TestPipelineMethods (unittest.TestCase):
 		p6.exportdir  = "./"
 		p7.depends = [p5, p6]
 		p7.exportdir  = "./"
-		ppl.starts(p1, p8, p9).flowchart(None, "/tmp/pyppl.flowchart.dot", "")
+		ppl.starts(p1, p8, p9).flowchart("/tmp/pyppl.flowchart.dot", None, "")
 		self.assertEqual(sorted(open("/tmp/pyppl.flowchart.dot").read().strip().split("\n")), 
 sorted("""digraph PyPPL {
 	"p1.A" -> "p2.B"
@@ -124,9 +124,9 @@ sorted("""digraph PyPPL {
 	"p5.E" -> "p7.G"
 	"p6.F" -> "p7.G"
 	"p6.F" [shape=box, style=filled, color="#f0f998", fontcolor=red]
-	"p1.A" [shape=box, style=filled, color="#c9fcb3"]
-	"p8.H" [shape=box, style=filled, color="#c9fcb3"]
-	"p9.I" [shape=box, style=filled, color="#c9fcb3"]
+	"p1.A" [shape=box, style=filled, color="#c9fcb3" ]
+	"p8.H" [shape=box, style=filled, color="#c9fcb3" ]
+	"p9.I" [shape=box, style=filled, color="#c9fcb3" ]
 	"p7.G" [shape=box, style=filled, color="#fcc9b3" fontcolor=red]
 	"p4.D" [shape=box, style=filled, color="#f0f998", fontcolor=red]
 }""".split("\n")))

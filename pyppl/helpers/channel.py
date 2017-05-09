@@ -111,7 +111,7 @@ class channel (list):
 		
 		width = None
 		for arg in args:
-			items = channel._tuplize(utils.split(arg, ','))
+			items = tuple(utils.split(arg, ','))
 			if width is not None and width != len(items):
 				raise ValueError('Width %s (%s) is not consistent with previous %s' % (len(items), arg, width))
 			width = len(items)
@@ -136,7 +136,8 @@ class channel (list):
 		else:
 			try: iter(tu)
 			except:	tu = (tu, )
-		return tuple(tu)
+		#return tuple(tu)
+		return (tu, ) if isinstance(tu, list) else tuple (tu) 
 	
 	def expand (self, col = 0, pattern = "*"):
 		"""
@@ -251,7 +252,7 @@ class channel (list):
 			The combined channel
 			Note, self is also changed
 		"""
-		row = channel._tuplize(row)
+		row = tuple(row)
 		if self.length() != 0 and self.width() != len(row):
 			raise ValueError ('Cannot bind row (len: %s) to channel (width: %s): width is different.' % (len(row), self.width()))
 		self.append (row)
