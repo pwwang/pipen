@@ -158,6 +158,8 @@ You may copy an aggregation, all the processes in the aggregation will be copied
 You can keep the ids of processes unchanged but give a new tag and also give the aggregation an new id instead of the variable name:
 ```python
 a = aggr(p1, p2, p3)
+# access the processes:
+# a.p1, a.p2, a.p3
 a2 = a.copy('copied')
 # a2.procs == [
 # <proc with id "p1" and tag "copied">,
@@ -165,6 +167,8 @@ a2 = a.copy('copied')
 # <proc with id "p3" and tag "copied">,
 # ]
 # a2.id == 'a2'
+# to access the processes:
+# a2.p1_copied, a2.p2_copied, a2.p3_copied
 a2 = a.copy('copied', 'newAggr')
 # a2.id == 'newAggr'
 ```
