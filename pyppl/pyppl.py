@@ -117,7 +117,7 @@ class pyppl (object):
 		@params:
 			`dotfile`: Where to same the dot graph. Default: `None` (`os.path.splitext(sys.argv[0])[0] + ".pyppl.dot"`)
 			`fcfile`:  The flowchart file. Default: `None` (`os.path.splitext(sys.argv[0])[0] + ".pyppl.svg"`)
-			- For example: run `python pipeline.py` will save it to `pipeline.svg`
+			- For example: run `python pipeline.py` will save it to `pipeline.pyppl.svg`
 			`dot`:     The dot visulizer. Default: "dot -Tsvg {{dotfile}} > {{fcfile}}"
 		@returns:
 			The pipeline object itself.
