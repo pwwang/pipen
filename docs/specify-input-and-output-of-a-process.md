@@ -99,13 +99,18 @@ p1.output = "out1:{{ph1}},out2:{{ph2}}"
 p1.script = "# your logic here"
 # the output channel is [(1,2,3), (4,5,6)]
 p2.depends = p1
-p2.input   = {"in1, in2": lambda ch: ch.colAt(1)}  
-# just use the second column: [(2,), (5,)]
+p2.input   = {"in1, in2": lambda ch: ch.slice(1)}  
+# just use the last 2 columns: [(2,3), (5,6)]
 # p1.channel keeps intact
 ```
 You can check more examples in some channel methods: [channel.expand](https://pwwang.gitbooks.io/pyppl/channels.html#expand-a-channel-by-directory) and [channel.collapse](https://pwwang.gitbooks.io/pyppl/channels.html#collapse-a-channel-by-files-in-the-same-directory).
 
-> **Caution** If you use callback to modify the channel, you have to combine the keys
+> **Caution** If you use callback to modify the channel, you may combine the keys: in the above case `"in1, in2": ...`, or specify them independently: `p2.input = {"in1": lambda ch: ch.slice(1,1), "in2": lambda ch: ch.slice(2)}`. But remember, **all channels** from `p2.depends` will be passed to each function. For example:
+```python
+p2.depends = [p0, p1]
+p2.input   = {"in1": lambda ch0, ch1: ..., "in2": labmda ch0, ch1: ...}
+# all channels from p2.depends are passed to each function
+```
 
 ## Specify output of a process
 Different from input, instead of channels, you have to tell how `pyppl` will calculate the values for the placeholders. The output can be a `list` or `str`. If it's `str`, a comma (`,`) is used to separate different placeholders:
