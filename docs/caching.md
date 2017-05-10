@@ -10,4 +10,6 @@ Once a job is cached, `pyppl` will skip running this job. But you have to tell a
 |`"export+"`|Try to use `p.cache = True` first, if failed then use `p.cache = "export"`|
 |False|Disable caching, always run jobs.|
 
-> **Info** <sup>*</sup>: A file signature is calculated based on the path and last modified time of the file.
+> **Info** <sup>*</sup>: A file signature is calculated based on the path and last modified time of the file.  
+  
+> **Hint**: `p.cache = "export"` or `p.cache = "export+"` is extremely useful for a process that you only want it to run successfully once, export the result files and never run the process again. You can even delete the `<workdir>` of the process, but `pyppl` will find the exported files and use them as the input for its dependent processes. So you don't need to modify the pipeline.
