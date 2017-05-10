@@ -465,7 +465,7 @@ class proc (object):
 			keys   = utils.split(keys, ',')
 			if callable (vals):
 				#vals  = vals (depdchan if self.depends else argv)
-				vals  = vals (*[d.channel.copy() for d in self.depends] if self.depends else argv)
+				vals  = vals (*[d.channel.copy() for d in self.depends] if self.depends else argvchan)
 				vals  = vals.split()
 			elif isinstance (vals, (str, unicode)): # only for files: "/a/b/*.txt, /a/c/*.txt"
 				vals  = utils.split(vals, ',')
