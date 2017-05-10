@@ -62,6 +62,19 @@ c = channel.fromPath ("/a/b/*.txt")
 # c == [("/a/b/1.txt", "/a/b/2.txt"), ("/a/b/3.txt", "/a/b/4.txt")]
 ```
 
+- From file content
+For example, we have a file `"chan.txt"` with content:
+```
+a1<tab>b1<tab>c1
+a2<tab>b2<tab>c2
+```
+Read the file as a channel:
+```python
+c = channel.fromFile ("chan.txt")
+# c == [("a1", "b1", "c1"), ("a2", "b2", "c2")]
+```
+
+
 - From `sys.argv` (command line arguments):
 ```python
 c == channel.fromArgv()
