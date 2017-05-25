@@ -16,7 +16,7 @@ class runner_sge (runner_local):
 	"""
 	
 	maxsubmit = int (cpu_count()/2)
-	interval  = 5 
+	interval  = 30 
 	
 	def __init__ (self, job, config = {}):
 		"""
@@ -112,5 +112,5 @@ class runner_sge (runner_local):
 
 		qstout = check_output (['qstat', '-xml'])
 		#  <JB_name>pMuTect2.nothread.3</JB_name>
-		qstout = [line.strip() for line in qstout.split("\n") if ">" + self.jobname + "<" in line]
+		qstout = [line for line in qstout.split("\n") if "<JB_name>" + self.jobname + "</JB_name>" in line]
 		return bool (qstout)

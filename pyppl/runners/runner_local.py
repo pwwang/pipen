@@ -9,6 +9,7 @@ from subprocess import Popen, check_output, list2cmdline, PIPE
 from time import sleep
 from getpass import getuser
 from ..helpers import utils
+from random import randint
 
 class runner_local (object):
 	"""
@@ -82,7 +83,7 @@ class runner_local (object):
 		self.job.clearOutput()
 		try:
 			self.log ('Submitting job #%s ...' % self.job.index)
-			self.p = Popen (self.script, stdin=PIPE, stderr=PIPE, stdout=PIPE, close_fds=True)
+			self.p = Popen (self.script, stderr=open(self.job.errfile, "w"), stdout=open(self.job.outfile, "w"), close_fds=True)
 		except Exception as ex:
 			#self.log ('Failed to submit job #%s' % self.job.index, 'error')
 			open (self.job.errfile, 'w').write(str(ex))
@@ -95,24 +96,19 @@ class runner_local (object):
 		"""
 		if self.job.rc() == -1: return
 		if self.p:
-			with open (self.job.outfile, 'w') as fout, open(self.job.errfile, 'w') as ferr:
-				for line in iter(self.p.stderr.readline, ''):
-					if self._config('echo', False):	sys.stderr.write('STDERR: ' + line)
-					if self.submitRun: ferr.write(line)
-	
-				for line in iter(self.p.stdout.readline, ''):
-					if self._config('echo', False): sys.stdout.write('STDOUT: ' + line)
-					if self.submitRun: fout.write(line)
 			rc = self.p.wait()
+			if self._config('echo', False):
+				self.flushFile('stderr')
+				self.flushFile('stdout')
 			if self.submitRun: self.job.rc(rc)
 		
 		if not self.submitRun:
 			if not self.isRunning(): return 		
 			while self.job.rc() == -9999:
-				sleep (30)
+				sleep (randint(20, 40))
 				if self._config('echo', False):
-					self.flushFile('stdout')
 					self.flushFile('stderr')
+					self.flushFile('stdout')
 				if not self.isRunning():
 					break
 			

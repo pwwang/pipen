@@ -368,6 +368,46 @@ class channel (list):
 		self.merge (part2)
 		return self
 	
+	def fold (self, n = 1):
+		"""
+		Fold a channel. Make a row to n-length chunk rows
+		```
+		a1	a2	a3	a4
+		b1	b2	b3	b4
+		if n==2, fold(2) will change it to:
+		a1	a2
+		a3	a4
+		b1	b2
+		b3	b4		
+		```
+		@params:
+			`n`: the size of the chunk
+		@returns
+			The new channel
+		"""
+		if self.width()%n != 0:
+			raise ValueError ('Failed to fold, the width %s cannot be divided by %s' % (self.width(), n))
+		ret = channel.create()
+		for row in self:
+			for i in xrange(0, self.width(), n):
+				ret.rbind (row[i:i+n])
+		return ret
+	
+	def unfold (self, n = 2):
+		"""
+		Do the reverse thing as self.fold does
+		@params:
+			`n`: How many rows to combind each time. default: 2
+		@returns:
+			The unfolded channel
+		"""
+		if self.length()%n != 0:
+			raise ValueError ('Failed to unfold, the length %s cannot be divided by %s' % (self.width(), n))
+		ret = channel.create()
+		for i in xrange(0, self.length(), n):
+			ret.rbind (reduce (lambda x, y: x+y, self[i:i+n]))
+		return ret
+	
 	def split (self):
 		"""
 		Split a channel to single-column channels

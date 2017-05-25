@@ -94,8 +94,20 @@ class job (object):
 		@params:
 			`cachefile`: The cachefile used to save the signature
 		"""
-		sig = self.signature()
-		open(cachefile, 'a').write ("%s\t%s\n" % (self.index, sig))
+		sig  = self.signature()
+		if sig == False: return
+		if callable (self.log): self.log ("Caching job #%-3s with signature: %s" % (self.index, sig), 'debug')
+		lock.acquire()
+		sigs = {}
+		if path.exists(cachefile):
+			with open (cachefile) as f:
+				for line in f:
+					line    = line.strip()
+					(i, s)  = line.split()
+					sigs[i] = s
+		sigs[str(self.index)] = sig
+		open(cachefile, 'w').write ("\n".join([k + "\t" + str(v) for k,v in sigs.iteritems()]))
+		lock.release()
 		
 	def _obj2sig (self, obj, k):
 		"""
@@ -123,7 +135,7 @@ class job (object):
 		else:
 			if 'var' in k: return md5(str(obj)).hexdigest()
 			if not path.exists(obj):
-				if callable (self.log): self.log ("Generating signature for job #%s, but %s not exists: %s" % (self.index, k, obj), 'debug')
+				if callable (self.log): self.log ("Generating signature for job #%-3s, but %s not exists: %s" % (self.index, k, obj), 'debug')
 				return False
 			return utils.fileSig (obj)
 

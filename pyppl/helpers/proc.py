@@ -139,13 +139,19 @@ class proc (object):
 			raise ValueError('Cannot set property "%s" for <proc>' % name)
 		if proc.alias.has_key(name): name = proc.alias[name]
 		
-		self.config[name] = value
-		self.props [name] = value
+		
 		self.sets.append(name)
+		self.config[name] = value
 		
 		if name == 'depends':
 			depends               = value
+			# remove me from nexts of my previous depends
+			if self.depends:
+				for depend in self.depends:
+					if not self in depend.nexts: continue
+					del depend.props['nexts'][depend.nexts.index(self)]
 			self.props['depends'] = []
+			
 			if not isinstance (value, list): depends = [value]
 			for depend in depends:
 				if isinstance (depend, proc):					
@@ -155,6 +161,8 @@ class proc (object):
 					for p in depend.ends:
 						self.props['depends'].append (p)
 						if self not in p.nexts: p.nexts.append (self)
+		else:
+			self.props [name] = value
 	
 	def setLogger (self, logger):
 		"""
@@ -216,7 +224,7 @@ class proc (object):
 		@returns:
 			The uid
 		"""
-		config        = { key:val for key, val in self.config.iteritems() if key not in ['workdir'] }
+		config        = { key:val for key, val in self.config.iteritems() if key not in ['workdir', 'forks', 'cache', 'retcodes', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
 		config['id']  = self.id
 		config['tag'] = self.tag
 		
@@ -311,25 +319,29 @@ class proc (object):
 			False if jobs are completely failed
 			Otherwise return the successful job indices.
 		"""
-		cachefile  = os.path.join (self.workdir, self.cachefile)
+		#cachefile  = os.path.join (self.workdir, self.cachefile)
 		ret        = []
 		failedjobs = []
 		failedrcs  = []
 
 		if self.exportdir and not os.path.exists(self.exportdir):
 			os.makedirs (self.exportdir)
-			
-		for i in self.ncjobids:
+		
+		for i in range(self.length):
 			job   = self.jobs[i]
-			#st    = job.status(self.retcodes)
-			rc    = job.rc()
-			if rc in self.retcodes:
-				job.cache(cachefile)
-				job.export (self.exportdir, self.exporthow, self.exportow)
-				ret.append (i)
+			if i in self.ncjobids:
+				#st    = job.status(self.retcodes)
+				rc    = job.rc()
+				if rc in self.retcodes:
+					#job.cache(cachefile) # must do right after job finishes
+					job.export (self.exportdir, self.exporthow, self.exportow)
+					ret.append (i)
+				else:
+					failedjobs.append (job)
+					failedrcs.append  (rc)
 			else:
-				failedjobs.append (job)
-				failedrcs.append  (rc)
+				# also do export for cached jobs
+				job.export (self.exportdir, self.exporthow, self.exportow)
 				
 		def rc2msg (rc):
 			msg = "Program error."
@@ -376,20 +388,25 @@ class proc (object):
 		if not self.input.has_key(key + '.bn'):  self.input[key + '.bn']  = [''] * self.length
 		if not self.input.has_key(key + '.fn'):  self.input[key + '.fn']  = [''] * self.length
 		if not self.input.has_key(key + '.ext'): self.input[key + '.ext'] = [''] * self.length
+		if not self.input.has_key(key + '.dir'): self.input[key + '.dir'] = [''] * self.length
 		
-		job     = self.jobs[index]
-		srcfile = os.path.abspath(infile)
-		bn      = os.path.basename(srcfile)
-		infile  = os.path.join (self.indir, bn)
-		fn, ext = os.path.splitext (os.path.basename(infile))
-		if not os.path.exists (infile):
-			# make sure it's not a link to non-exist file
-			if os.path.islink(infile): os.remove (infile)
-			os.symlink (srcfile, infile)
-		elif not utils.isSameFile (srcfile, infile):
-			os.remove (infile)
-			os.symlink (srcfile, infile)
-			warnings.append (infile)
+		try:
+			job     = self.jobs[index]
+			srcfile = os.path.abspath(infile)
+			rd      = os.path.dirname(os.path.realpath(srcfile))
+			bn      = os.path.basename(srcfile)
+			infile  = os.path.join (self.indir, bn)
+			fn, ext = os.path.splitext (os.path.basename(infile))
+			if not os.path.exists (infile):
+				# make sure it's not a link to non-exist file
+				if os.path.islink(infile): os.remove (infile)
+				os.symlink (srcfile, infile)
+			elif not utils.isSameFile (srcfile, infile):
+				os.remove (infile)
+				os.symlink (srcfile, infile)
+				warnings.append (infile)
+		except Exception, ex:
+			raise Exception("Failed to prepare input file: %s\n%s" % (infile, str(ex)))
 		
 		if multi:
 			if not isinstance(self.input[key][index], list):
@@ -397,17 +414,20 @@ class proc (object):
 				self.input[key + '.bn'][index]  = [bn]
 				self.input[key + '.fn'][index]  = [fn]
 				self.input[key + '.ext'][index] = [ext]
+				self.input[key + '.dir'][index] = [rd]
 			else:
 				self.input[key][index].append(infile)
 				self.input[key + '.bn'][index].append(bn)
 				self.input[key + '.fn'][index].append(fn)
 				self.input[key + '.ext'][index].append(ext)
+				self.input[key + '.dir'][index].append(rd)
 			job.input['files'].append(infile)
 		else:
 			self.input[key][index]          = infile
 			self.input[key + '.bn'][index]  = bn
 			self.input[key + '.fn'][index]  = fn
 			self.input[key + '.ext'][index] = ext
+			self.input[key + '.dir'][index] = rd
 			job.input['file'].append(infile)
 				
 	def _buildProps (self):
@@ -453,19 +473,18 @@ class proc (object):
 		"""
 
 		input    = self.config['input']
-		argvchan = channel.fromArgv()
 		
 		if not isinstance (input, dict):
 			input = ','.join(utils.alwaysList (input))			
 			depdchan = channel.fromChannels (*[d.channel for d in self.depends])
-			input = {input: depdchan if self.depends else argvchan}
+			input = {input: depdchan if self.depends else channel.fromArgv()}
 		# expand to one key-channel pairs
 		inputs = {}
 		for keys, vals in input.iteritems():
 			keys   = utils.split(keys, ',')
 			if callable (vals):
 				#vals  = vals (depdchan if self.depends else argv)
-				vals  = vals (*[d.channel.copy() for d in self.depends] if self.depends else argvchan)
+				vals  = vals (*[d.channel.copy() for d in self.depends] if self.depends else channel.fromArgv())
 				vals  = vals.split()
 			elif isinstance (vals, (str, unicode)): # only for files: "/a/b/*.txt, /a/c/*.txt"
 				vals  = utils.split(vals, ',')
@@ -578,8 +597,8 @@ class proc (object):
 				self.log ("... and %s others" % len(warnings), 'debug', 'warning')		
 
 		ridx = randint(0, self.length-1)
-		for key, val in self.input.iteritems():
-			self.log ('[%s/%s]: %s => %s' % (ridx, self.length-1, key, val[ridx]), 'info', 'input')
+		for key in sorted(self.input.keys()):
+			self.log ('[%s/%s]: %s => %s' % (ridx, self.length-1, key, self.input[key][ridx]), 'info', 'input')
 				
 	def _buildOutput (self):
 		"""
@@ -606,6 +625,7 @@ class proc (object):
 			(oname, otype, oexp) = utils.sanitizeOutKey(key)
 			if otype in ['file', 'path', 'dir']: oexp = os.path.join (self.outdir, oexp)
 			self.props['output'][oname] = []
+			self.props['output'][oname + '.prefix'] = []
 			
 			for i in self.input['#']:
 				data = {key:val[i] for key, val in self.input.iteritems()}
@@ -615,14 +635,15 @@ class proc (object):
 					if os.path.islink (val): os.remove (val)
 					os.makedirs (val)
 				self.props['output'][oname].append (val)
+				self.props['output'][oname + '.prefix'].append (os.path.splitext(val)[0])
 				self.props['jobs'][i].output['var' if otype == 'var' else 'file'].append(val)
 			self.props['channel'].merge(self.props['output'][oname])
 		
 		utils.sanitizeOutKey.index = 0
 		
 		ridx = randint(0, self.length-1)
-		for key, val in self.output.iteritems():
-			self.log ('[%s/%s]: %s => %s' % (ridx, self.length-1, key, val[ridx]), 'info', 'output')
+		for key in sorted(self.output.keys()):
+			self.log ('[%s/%s]: %s => %s' % (ridx, self.length-1, key, self.output[key][ridx]), 'info', 'output')
 
 	def _buildScript (self): # make self.jobs
 		"""
@@ -696,7 +717,9 @@ class proc (object):
 						line = line.strip()
 						if not line: continue
 						jid, sig = line.split("\t")
-						jobsigs[int(jid)] = sig
+						iid = int(jid)
+						if (iid >= self.length): continue
+						jobsigs[iid] = sig
 			elif self.cache == True:
 				self.log ('Not cached, cache file %s not exists.' % cachefile, 'debug')
 				return False
@@ -783,6 +806,8 @@ class proc (object):
 					self.log ("Job #%s is already running, skip submitting." % ru.job.index, 'info')
 				ru.wait() # don't check submision
 				ru.finish()
+				if ru.job.rc() in self.retcodes:
+					ru.job.cache(os.path.join (self.workdir, self.cachefile))
 				q.task_done()
 		
 		runner    = proc.runners[self.runner]
@@ -799,7 +824,8 @@ class proc (object):
 
 		# submit jobs
 		
-		nojobs2submit = min (self.forks, len(self.jobs))
+		#nojobs2submit = min (self.forks, len(self.jobs))
+		nojobs2submit = min (self.forks, len(self.ncjobids))
 		for i in range (nojobs2submit):
 			t = threading.Thread(target = sworker, args = (sq, ))
 			t.daemon = True

@@ -157,6 +157,25 @@ Alias of python builtin `filter`
 - **returns:**  
 The transformed channel  
   
+#### `fold (self, n) `
+  
+Fold a channel. Make a row to n-length chunk rows  
+```  
+a1	a2	a3	a4  
+b1	b2	b3	b4  
+if n==2, fold(2) will change it to:  
+a1	a2  
+a3	a4  
+b1	b2  
+b3	b4  
+```  
+
+- **params:**  
+`n`: the size of the chunk  
+
+- **returns**  
+The new channel  
+  
 #### `fromArgv () [@staticmethod]`
   
 Create a channel from `sys.argv[1:]`  
@@ -308,6 +327,16 @@ Convert a single-column channel to a list (remove the tuple signs)
 
 - **returns:**  
 The list converted from the channel.  
+  
+#### `unfold (self, n) `
+  
+Do the reverse thing as self.fold does  
+
+- **params:**  
+`n`: How many rows to combind each time. default: 2  
+
+- **returns:**  
+The unfolded channel  
   
 #### `width (self) `
   

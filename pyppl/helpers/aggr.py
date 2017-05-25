@@ -74,7 +74,7 @@ class aggr (object):
 					i = i + 1
 					
 		elif name == 'depends':
-			for proc in self.ends:
+			for proc in self.starts:
 				proc.depends = value
 		elif name.startswith ('ex'): # export
 			for proc in self.ends:
