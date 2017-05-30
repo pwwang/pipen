@@ -347,8 +347,7 @@ The width of the channel
   
 
 ## Module `job`  
-> The job class, defining a job in a process
-	
+> .
 
 #### `__init__ (self, index, workdir, log, input, output) `
   
@@ -414,13 +413,12 @@ Get/Set the return code
 
 - **params:**  
 `val`: The return code to be set. If it is None, return the return code. Default: `None`  
-The value saved in the rcfile should be the real rc + 1000  
-If output files are not generated, val = -1000, and the value in the rcfile changed to - (real rc + 1000)  
+If val == -1000: the return code will be negative of current one. 0 will be '-0'  
 
 - **returns:**  
 The return code if `val` is `None`  
-If rcfile does not exist, return -9999, otherwise return (rc - 1000)  
-A negative rc (except -9999 [empty rcfile] and -1 [job failed to submit]) means output files not exist  
+If rcfile does not exist or is empty, return 9999, otherwise return -rc  
+A negative rc (including -0) means output files not generated  
   
 #### `signature (self) `
   
