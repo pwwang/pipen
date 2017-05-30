@@ -13,6 +13,7 @@
 * [Configure a pipeline](configure-a-pipeline.md)
 * [Draw flowchart of a pipeline](draw-flowchart-of-a-pipeline.md)
 * [Aggregations](aggregations.md)
+* [Command line tool](command-line-tool.md)
 * [API](api.md)
 * [Change log](change-log.md)
 
