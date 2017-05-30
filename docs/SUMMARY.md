@@ -14,4 +14,5 @@
 * [Draw flowchart of a pipeline](draw-flowchart-of-a-pipeline.md)
 * [Aggregations](aggregations.md)
 * [API](api.md)
+* [Change log](change-log.md)
 
