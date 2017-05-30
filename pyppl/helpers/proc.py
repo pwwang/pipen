@@ -345,14 +345,14 @@ class proc (object):
 				
 		def rc2msg (rc):
 			msg = "Program error."
-			if rc == -9999:	msg = "No rcfile generated."
-			elif rc == -1:	msg = "Failed to submit the jobs."
-			elif rc < 0:	msg = "Output files not generated."
+			if rc == pjob.emptyRc:    msg = "No rcfile generated or empty."
+			elif rc == pjob.failedRc: msg = "Failed to submit/run the jobs."
+			elif rc < 0:              msg = "Output files not generated."
 			return msg
 		
 		if self.errorhow == 'ignore' and failedjobs:
 			for i, fjob in enumerate(failedjobs):
-				self.log ("Job #%s failed but ignored with return code: %s (%s)" % (fjob.index, failedrcs[i], rc2msg(failedrcs[i])) , "warning")
+				self.log ("Job #%s failed but ignored with return code: %s (%s)" % (fjob.index, failedrcs[i] if failedrcs[i] != pjob.noOutRc else "-0", rc2msg(failedrcs[i])) , "warning")
 			return ret + [j.index for j in failedjobs]
 		
 		if not failedjobs: return ret  # all jobs successfully finished
@@ -360,7 +360,7 @@ class proc (object):
 		failedjob = failedjobs[0]
 		failedrc  = failedrcs [0]
 			
-		self.log('Job #%s: return code %s expected, but get %s: %s' % (failedjob.index, self.retcodes, failedrc, rc2msg(failedrc)), 'error')
+		self.log('Job #%s: return code %s expected, but get %s: %s' % (failedjob.index, self.retcodes, failedrc if failedrc != pjob.noOutRc else "-0", rc2msg(failedrc)), 'error')
 		
 		if not self.echo:
 			self.log('Job #%s: check STDERR below:' % (failedjob.index), 'error')

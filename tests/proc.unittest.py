@@ -212,7 +212,8 @@ class runner_test (runner_local):
 			'#': [0, 1],
 			"c1": ["channel","proc"], 
 			"c2": c2.map(lambda x: os.path.join(p2.indir, x[0])).toList(), 
-			"c2.bn": c2.toList(), 
+			"c2.bn": c2.toList(),
+			"c2.dir": c2.collapse().map(lambda t: (os.path.realpath(t[0]), )).toList() * 2,
 			"c2.fn": c2.map(lambda x: x[0][:-3]).toList(), 
 			"c2.ext": [".py", ".py"]
 		})
@@ -225,7 +226,8 @@ class runner_test (runner_local):
 			'#': [0, 1],
 			"c1": ["channel","proc"], 
 			"c2": c2.map(lambda x: os.path.join(p2.indir, x[0])).toList(), 
-			"c2.bn": c2.toList(), 
+			"c2.bn": c2.toList(),
+			"c2.dir": c2.collapse().map(lambda t: (os.path.realpath(t[0]), )).toList() * 2, 
 			"c2.fn": c2.map(lambda x: x[0][:-3]).toList(), 
 			"c2.ext": channel.create([".py", ".py"]).toList()
 		})
@@ -243,6 +245,7 @@ class runner_test (runner_local):
 			"c1": [[1,2,3,4]], 
 			"c2": [map(lambda x: os.path.join(p2.indir, x), y) for y in c2[0]],
 			"c2.bn": [["channel.unittest.py", "proc.unittest.py"]], 
+			"c2.dir": [[os.path.abspath(os.path.dirname(__file__)), os.path.abspath(os.path.dirname(__file__))]],
 			"c2.fn": [["channel.unittest", "proc.unittest"]], 
 			"c2.ext": [[".py"]*2]
 		})

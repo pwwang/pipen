@@ -10,6 +10,22 @@ from multiprocessing import Lock
 lock = Lock()
 
 class job (object):
+	
+	failedRc = 9999
+	"""
+	Jobs failed to submit, no return code available
+	"""
+	
+	emptyRc  = 9998
+	"""
+	Rc file not generated, not is empty
+	"""
+	
+	noOutRc  = -1000
+	"""
+	Outfile not generated
+	"""
+	
 	"""
 	The job class, defining a job in a process
 	"""
@@ -55,26 +71,25 @@ class job (object):
 		Get/Set the return code
 		@params:
 			`val`: The return code to be set. If it is None, return the return code. Default: `None`
-			The value saved in the rcfile should be the real rc + 1000
-			If output files are not generated, val = -1000, and the value in the rcfile changed to - (real rc + 1000)
+			If val == -1000: the return code will be negative of current one. 0 will be '-0'
 		@returns:
 			The return code if `val` is `None`
-			If rcfile does not exist, return -9999, otherwise return (rc - 1000)
-			A negative rc (except -9999 [empty rcfile] and -1 [job failed to submit]) means output files not exist
+			If rcfile does not exist or is empty, return 9999, otherwise return -rc 
+			A negative rc (including -0) means output files not generated
 		"""
 		if val is None:
-			ret = -9999
-			if not path.exists (self.rcfile): return ret
+			if not path.exists (self.rcfile): return job.emptyRc
 			else:
 				rcstr = open (self.rcfile).read().strip()
-				if not rcstr: return ret
-				rc = int (rcstr)
-				return rc if rc < 0 else rc - 1000
+				if not rcstr: return job.emptyRc
+				if rcstr == '-0': return job.noOutRc
+				return int (rcstr)
 		else:
 			r = self.rc ()
-			if val == -1000 and r < 0: return   # outfile already not exists
-			if val == -1000 and r > 0: val = -r
-			else: val += 1000
+			if val == job.noOutRc:
+				if r < 0 or r == job.failedRc: return
+				if r > 0: val = -r
+				elif r == 0: val = "-0"
 			lock.acquire()
 			open (self.rcfile, 'w').write (str(val))
 			lock.release()
@@ -85,7 +100,7 @@ class job (object):
 		"""
 		for outfile in self.output['file']:
 			if not path.exists (outfile):
-				self.rc (-1000)
+				self.rc (job.noOutRc)
 				return
 	
 	def cache (self, cachefile):

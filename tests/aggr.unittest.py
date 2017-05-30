@@ -78,7 +78,7 @@ class TestAggr (unittest.TestCase):
 		p4 = proc('dep')
 		a  = aggr (p1, p2)
 		a.depends = [p3, p4]
-		self.assertEqual (p2.depends, [p3, p4])
+		self.assertEqual (p1.depends, [p3, p4])
 		
 		p5 = proc('dep')
 		p5.depends = a

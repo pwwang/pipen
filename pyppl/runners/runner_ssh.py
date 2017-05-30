@@ -3,6 +3,7 @@ from getpass import getuser
 from subprocess import check_output, list2cmdline 
 import os, shlex
 from ..helpers import utils
+from ..helpers.job import job as pjob
 
 class runner_ssh (runner_local):
 	"""
@@ -52,7 +53,7 @@ class runner_ssh (runner_local):
 			`True` if yes, otherwise `False`
 		"""
 		# rcfile already generated
-		if self.job.rc() != -9999: return False
+		if self.job.rc() != pjob.emptyRc: return False
 		
 		uname = getuser()
 		psout = check_output (['ssh', self.server, 'ps -u%s -o args' % uname])

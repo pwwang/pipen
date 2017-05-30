@@ -9,6 +9,7 @@ from subprocess import Popen, check_output, list2cmdline, PIPE
 from time import sleep
 from getpass import getuser
 from ..helpers import utils
+from ..helpers.job import job as pjob
 from random import randint
 
 class runner_local (object):
@@ -87,14 +88,14 @@ class runner_local (object):
 		except Exception as ex:
 			#self.log ('Failed to submit job #%s' % self.job.index, 'error')
 			open (self.job.errfile, 'w').write(str(ex))
-			self.job.rc(-1)
+			self.job.rc(pjob.failedRc)
 			self.p = None
 			
 	def wait(self):
 		"""
 		Wait for the job to finish
 		"""
-		if self.job.rc() == -1: return
+		if self.job.rc() == pjob.failedRc: return
 		if self.p:
 			rc = self.p.wait()
 			if self._config('echo', False):
@@ -104,7 +105,7 @@ class runner_local (object):
 		
 		if not self.submitRun:
 			if not self.isRunning(): return 		
-			while self.job.rc() == -9999:
+			while self.job.rc() == pjob.emptyRc:
 				sleep (randint(20, 40))
 				if self._config('echo', False):
 					self.flushFile('stderr')
@@ -156,9 +157,8 @@ class runner_local (object):
 		@returns:
 			`True` if yes, otherwise `False`
 		"""
-		
 		# rcfile already generated
-		if self.job.rc() != -9999: return False
+		if self.job.rc() != pjob.emptyRc: return False
 		
 		uname = getuser()
 		psout = check_output (['ps', '-u%s' % uname, '-o', 'args'])
