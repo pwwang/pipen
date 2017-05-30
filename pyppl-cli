@@ -1,0 +1,95 @@
+#!/usr/bin/env python
+
+import argparse, glob, datetime
+from glob  import glob
+from pyppl import utils
+from os    import path
+from shutil import rmtree
+
+parser           = argparse.ArgumentParser(description='A set of CLI tools for pyppl.')
+parser.add_argument('-w', '--workdir', help="The path of workdir, default: %(default)s", required=False, default="./workdir")
+cmdparsers       = parser.add_subparsers(dest='command')
+parser_clean     = cmdparsers.add_parser('clean', help="Clean a workdir")
+parser_clean.add_argument ('-f', '--force', help="Force cleaning, don't ask for confirmation.", action='store_true')
+parser_clean.set_defaults(force = False)
+parser_list      = cmdparsers.add_parser('list', help="List the status of a workdir")
+args             = parser.parse_args()
+
+print ""
+if args.command == 'list':
+	print "WORKDIR: " + args.workdir + " (Yellow processes are to be cleaned!)"
+	print "-" * (len (args.workdir) + 47)
+	procs = sorted(map(path.basename, glob (path.join(args.workdir, 'PyPPL.*'))))
+	if not procs:
+		print "No processes found!"
+		print ""
+	
+	# group procs
+	gprocs = {}
+	for proc in procs:
+		ppath = path.join (args.workdir, proc)
+		if not path.isdir (ppath): continue
+		parts = proc.split('.')
+		pn    = '.'.join(parts[1:3])
+		if not gprocs.has_key (pn): gprocs[pn] = []
+		gprocs[pn].append (parts[3])
+
+	for g, sufs in gprocs.iteritems():
+		print "\n- PROCESSES: %s" % g
+		print "  " + "-" * 36
+		mtimes = {}
+		for suf in sufs:
+			procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
+			mtime    = datetime.datetime.fromtimestamp(utils.dirmtime (procpath))
+			mtimes[suf] = mtime.strftime("%Y-%m-%d %H:%I:%S %f")
+		for i, suf in enumerate(sorted(mtimes, key=mtimes.get, reverse=True)):
+			if i == 0:
+				print '\033[92m  ' + suf + ': ' + mtimes[suf] + '\033[0m'
+			else:
+				print '\033[93m  ' + suf + ': ' + mtimes[suf] + '\033[0m'
+				
+elif args.command == 'clean':
+	print "WORKDIR: " + args.workdir 
+	print "-" * (len (args.workdir) + 9)
+	procs = sorted(map(path.basename, glob (path.join(args.workdir, 'PyPPL.*'))))
+	if not procs:
+		print "No processes found!"
+		print ""
+	
+	# group procs
+	gprocs = {}
+	for proc in procs:
+		ppath = path.join (args.workdir, proc)
+		if not path.isdir (ppath): continue
+		parts = proc.split('.')
+		pn    = '.'.join(parts[1:3])
+		if not gprocs.has_key (pn): gprocs[pn] = []
+		gprocs[pn].append (parts[3])
+
+	for g, sufs in gprocs.iteritems():
+		print "\n- PROCESSES: %s" % g
+		print "  " + "-" * 36
+		mtimes = {}
+		for suf in sufs:
+			procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
+			mtime    = datetime.datetime.fromtimestamp(utils.dirmtime (procpath))
+			mtimes[suf] = mtime.strftime("%Y-%m-%d %H:%I:%S %f")
+				
+		for i, suf in enumerate(sorted(mtimes, key=mtimes.get, reverse=True)):
+			if i == 0:
+				print '\033[92m  ' + suf + ': ' + mtimes[suf] + '\033[0m'
+			else:
+				#print '\033[93m  ' + suf + ': ' + mtimes[suf] + '\033[0m, clean it? [Y/n]',
+				procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
+				if not args.force:
+					dists = ['', 'Y', 'y', 'N', 'n']
+					r     = raw_input('\033[93m  ' + suf + ': ' + mtimes[suf] + '\033[0m, clean it? [Y/n] ')
+					while r not in dists:
+						r     = raw_input('\033[93m  ' + suf + ': ' + mtimes[suf] + '\033[0m, clean it? [Y/n] ')
+					if r in ['', 'Y', 'y']:
+						rmtree(procpath)
+						print "  Removed: " + procpath
+				else:
+					rmtree(procpath)
+					print '  Cleaned: \033[93m  ' + suf + ': ' + mtimes[suf] + '\033[0m'
+		

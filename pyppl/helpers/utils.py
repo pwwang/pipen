@@ -313,17 +313,17 @@ def dirmtime (d):
 	@returns:
 		The mtime.
 	"""
-	from os.path import getmtime, join
+	from os.path import getmtime, join, exists
 	from os import walk
 	mtime = 0
 	for root, dirs, files in walk(d):
-		m = getmtime (root)
+		m = getmtime (root) if exists(root) else 0
 		if m > mtime: mtime = m
 		for dr in dirs:
 			m = dirmtime (join (root, dr))
 			if m > mtime: mtime = m
 		for f in files:
-			m = getmtime (join (root, f))
+			m = getmtime (join (root, f)) if exists(join(root, f)) else 0
 			if m > mtime: mtime = m
 	return mtime
 
