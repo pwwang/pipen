@@ -136,7 +136,7 @@ class runner_delay(runner_local):
 
 - Submit the job: `submit (self)`
 The defines how you submit your job. You may use `Popen` to run the script and assign the `Popen` object to `self.p`.
-> **Caution** make sure set `-1` as return code (`self.job.rc(-1)`) if you fail to submit the job. Always use a `try-except` block.
+> **Caution** make sure set `job.failedRc` as return code (`self.job.rc(job.failedRc)`) if you fail to submit the job. Always use a `try-except` block.
 > `runner_local` has already done pretty much for the submission if you have the right `self.script`. You don't to rewrite the function, however, you can also do it if you want to add more actions there.
 
 - Wait for the job to finish: `wait (self)`
@@ -148,6 +148,7 @@ Wait until the job finishes. The basic work it does is to wait and write the `st
   | `None` | `False` | Main thread dead, jobs alive | Use `self.isRunning()` to tell whether jobs are truly alive. If yes, wait; otherwise quit | `.stdout/.stderr` files |
   | `Not None` | `True` | All alive | `p.wait()` | `p.stdout`/`p.stderr` (also write them to `.stdout`/`.stderr` files |
   | `Not None` | `False` | All alive | Use `self.isRunning()` to tell whether jobs are truly alive. If yes, wait; otherwise quit | `.stdout/.stderr` files |
+  
   `runner_local` has also done most of the job, in general case you don't need to rewrite it.
 
 - Finish the job: `finish (self)`
@@ -174,21 +175,21 @@ As explained in `maxsubmit`, this value is used for wait some time when submitti
 2. Compose the right script to submit the job (`self.script`).
 3. Tell `pyppl` how to judge when the jobs are still running (`self.isRunning()`).
 4. Set the static value for `maxsubmit` and `interval` if necessary (mostly when `self.submitRun == False`).
-5. If `self.submitRun` is `False`, make sure the `stdout`/`stderr` will be written to the right file (`.stdout`/`.stderr` file), and the right return code (the actual return code + `1000`, see below) to `.rc` file.
+5. If `self.submitRun` is `False`, make sure the `stdout`/`stderr` will be written to the right file (`.stdout`/`.stderr` file), and the right return code to `.rc` file.
 
 ## Return code in `pyppl` and the actual number in `script.<index>.rc`
-When you try to set return code using `job.rc(val)`, it will basically add `1000` to `val` and write the sum to `script.<index>.rc`. If `val == -1000` (output file is not generated, in this case) and the number in `script.<index>.rc` is possitive, then make if negative; if it is negative, keep it unchanged. When try to get the return code from the file, just minus `1000` from the number in the file. When the file does not exist or is empty, return `-9999`. This make sure you get the original return code when output files are normally generated (first `+1000` and then `-1000`). If any of the output files are not generated, the number will just become negative, you will get a negative number using `job.rc()` as it will `-1000` to the number. So this makes sure a negative number from `job.rc()` meaning output file not generated.
+When you try to set return code using `job.rc(val)`, it will basically write the number to `script.<index>.rc`. If `val == -1000` (output file is not generated, in this case) and the number in `script.<index>.rc` is positive, then make if negative; if it is negative, `job.failedRc`, or `job.emptyRc`, keep it unchanged. When try to get the return code from the file, just get the number from the file. When the file does not exist or is empty, return `job.emptyRc`. If any of the output files are not generated, the number will just become negative, you will get a negative number using `job.rc()`. So this makes sure a negative number from `job.rc()` (`-0` from the file will return `-1000`) meaning output file not generated.
 
 
 | `pyppl` return code got from `job.rc()` | Content of `script.<index>.rc` | Meaning |
 |-|-|-|-|
-| `-9999` | "" or the file not exists | return code file not generated or empty |
-| `0` | `1000` | job return code 0 with output files generated |
-| `1` |  `1001` | job return code 1 with output files generated |
-| `-1` | `999` | job failed to submit |
-| `0` | `-1000` | job return 0 but output file not generated |
-| `1` | `-1001` | job return 1 but output file not generated |
-| `>0` | `<0` | job return `job.rc()` but output file not generated |
+| `job.emptyRc (9999)` | "" or the file not exists | return code file not generated or empty |
+| `0` | `0` | job return code 0 with output files generated |
+| `1` |  `1` | job return code 1 with output files generated |
+| `job.failedRc (9998)` | `job.failedRc (9998)` | job failed to submit |
+| `job.noOutRc (-1000)` | `-0` | job return 0 but output file not generated |
+| `-1` | `-1` | job return 1 but output file not generated |
+| `-x` | `-x` | job return `x` but output file not generated |
 
 ## Register your runner
 It very easy to register your runner, just do `proc.registerRunner (runner_my)` (static method) before you define run the pipeline.
