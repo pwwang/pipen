@@ -11,24 +11,18 @@ lock = Lock()
 
 class job (object):
 	
+	"""
+	Job class, defining a job in a process
+
+	@static variables:
+		`failedRc`: Jobs failed to submit, no return code available
+		`emptyRc`:  Rc file not generated, not is empty
+		`noOutRc`:  Outfile not generated
+	"""
+	
 	failedRc = 9999
-	"""
-	Jobs failed to submit, no return code available
-	"""
-	
 	emptyRc  = 9998
-	"""
-	Rc file not generated, not is empty
-	"""
-	
 	noOutRc  = -1000
-	"""
-	Outfile not generated
-	"""
-	
-	"""
-	The job class, defining a job in a process
-	"""
 		
 	def __init__(self, index, workdir, log = None, input = None, output = None):
 		"""

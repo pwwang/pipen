@@ -30,7 +30,8 @@ class runner_sge (runner_local):
 		self.submitRun = False
 		# construct an sge script
 		sgefile = os.path.realpath(self.job.script + '.sge')
-		
+		# get suffix
+		suffix  = os.path.basename (os.path.dirname(os.path.dirname(self.job.script))).split('.')[-1]
 		sgesrc  = [
 			'#!/usr/bin/env bash',
 			#'',
@@ -38,9 +39,10 @@ class runner_sge (runner_local):
 			#'#$ -e ' + self.errfile,
 			#'#$ -cwd'
 		]
-		self.jobname = '%s.%s.%s' % (
+		self.jobname = '%s.%s.%s.%s' % (
 			self._config('id'),
 			self._config('tag'),
+			suffix,
 			self.job.index
 		)
 		

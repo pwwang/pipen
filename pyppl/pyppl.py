@@ -41,9 +41,15 @@ class pyppl (object):
 		loglevel = 'info'
 		if config.has_key('loglevel'):
 			loglevel = config['loglevel']
-			del config['loglevel'] 
+			del config['loglevel']
+			
+		logcolor = True
+		if config.has_key('logcolor'):
+			logcolor = config['logcolor']
+			del config['logcolor']
+			
 		suffix  = utils.randstr ()
-		self.logger = utils.getLogger (loglevel, self.__class__.__name__ + suffix)
+		self.logger = utils.getLogger (loglevel, self.__class__.__name__ + suffix, logcolor)
 		self.logger.info ('[  PyPPL] Version: %s' % (VERSION))
 		self.logger.info ('[   TIPS] %s' % (random.choice(pyppl.tips)))
 		if os.path.exists (cfile):

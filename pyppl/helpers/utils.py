@@ -2,6 +2,78 @@
 A set of utitities for pyppl
 """
 
+import logging
+
+class PyPPLLogFormatter (logging.Formatter):
+	color_black       = '\033[0;30m'
+	color_red         = '\033[0;31m'
+	color_green       = '\033[0;32m'
+	color_orange      = '\033[0;33m'
+	color_blue        = '\033[0;34m'
+	color_purple      = '\033[0;35m'
+	color_cyan        = '\033[0;36m'
+	color_lightgray   = '\033[0;37m'
+	color_darkgray    = '\033[1;30m'
+	color_lightred    = '\033[1;31m'
+	color_lightgreen  = '\033[1;32m'
+	color_yellow      = '\033[1;33m'
+	color_lightblue   = '\033[1;34m'
+	color_lightpurple = '\033[1;35m'
+	color_lightcyan   = '\033[1;36m'
+	color_white       = '\033[1;37m'
+	color_clear       = '\033[0m'
+	
+	def __init__(self, fmt="[%(asctime)-15s] %(message)s"):
+		logging.Formatter.__init__(self, fmt)
+	
+	def format(self, record):
+		level       = record.levelno
+		if level    == logging.DEBUG:
+			level   = 'DEBUG'
+		elif level  == logging.INFO:
+			level   = 'INFO'
+		elif level  == logging.WARNING:
+			level   = 'WARNING'
+		elif level  == logging.ERROR:
+			level   = 'ERROR'
+		if record.msg.startswith ("[") and "]" in record.msg:
+			level   = record.msg[1:].split(']')[0].strip()
+		
+		if level == 'DONE':
+			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_lightgreen, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_lightgreen, record.msg[9:], PyPPLLogFormatter.color_clear)
+		elif level == 'DEBUG':
+			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_darkgray, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_darkgray, record.msg[9:], PyPPLLogFormatter.color_clear)
+		elif level in ['INFO', 'P.PROPS', 'DEPENDS', 'OUTPUT']:
+			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_green, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_green, record.msg[9:], PyPPLLogFormatter.color_clear)
+		elif level == 'START':
+			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_lightcyan, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_lightcyan, record.msg[9:], PyPPLLogFormatter.color_clear)
+		elif level in ['INPUT', 'P.ARGS']:
+			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_cyan, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_cyan, record.msg[9:], PyPPLLogFormatter.color_clear)
+		elif level == 'ERROR':
+			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_red, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_red, record.msg[9:], PyPPLLogFormatter.color_clear)
+		elif level == 'WARNING':
+			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_yellow, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_yellow, record.msg[9:], PyPPLLogFormatter.color_clear)
+		elif level in ['CACHED', 'RUNNING']:
+			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_orange, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_orange, record.msg[9:], PyPPLLogFormatter.color_clear)
+		
+		return logging.Formatter.format(self, record)
+
+def getLogger (level = 'info', name='PyPPL', colored=True):
+	"""
+	Get the default logger
+	@params:
+		`level`: The log level, default: info
+		`name`:  The name of the logger, default: PyPPL
+	@returns:
+		The logger
+	"""
+	ch = logging.StreamHandler()
+	ch.setFormatter (PyPPLLogFormatter() if colored else logging.Formatter("[%(asctime)-15s] %(message)s"))
+	logger = logging.getLogger (name)
+	logger.setLevel (getattr(logging, level.upper()))
+	logger.addHandler (ch)
+	return logger
+
 def varname (func, maxline = 20):
 	"""
 	Get the variable name inside the function or class __init__
@@ -432,23 +504,6 @@ def chmodX (thefile):
 		except Exception as e2:
 			raise Exception("Cannot change %s as executable or read the shebang from it:\n%s\n%s" % (thefile, e1, e2))
 	return ret
-
-def getLogger (level = 'info', name='PyPPL'):
-	"""
-	Get the default logger
-	@params:
-		`level`: The log level, default: info
-		`name`:  The name of the logger, default: PyPPL
-	@returns:
-		The logger
-	"""
-	import logging
-	ch = logging.StreamHandler()
-	ch.setFormatter (logging.Formatter("[%(asctime)-15s] %(message)s"))
-	logger = logging.getLogger (name)
-	logger.setLevel (getattr(logging, level.upper()))
-	logger.addHandler (ch)
-	return logger
 
 def padBoth (s, length, left, right = None):
 	"""

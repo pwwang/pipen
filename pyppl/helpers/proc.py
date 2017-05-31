@@ -765,7 +765,7 @@ class proc (object):
 			self.log ('Jobs to be running: %s' % self.ncjobids, 'debug')
 			return False
 		
-		self.log ('Skip running jobs.', 'info', 'CACHED')
+		self.log ('Skip running jobs: %s' % self.workdir, 'info', 'CACHED')
 		return True
 
 	def _runCmd (self, key):
