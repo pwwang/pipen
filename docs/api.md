@@ -347,7 +347,13 @@ The width of the channel
   
 
 ## Module `job`  
-> .
+> Job class, defining a job in a process
+
+	@static variables:
+		`failedRc`: Jobs failed to submit, no return code available
+		`emptyRc`:  Rc file not generated, not is empty
+		`noOutRc`:  Outfile not generated
+	
 
 #### `__init__ (self, index, workdir, log, input, output) `
   
@@ -605,6 +611,10 @@ Set the pipeline logger to the process
 > A set of utitities for pyppl
 
 
+#### `class: PyPPLLogFormatter`
+```
+PyPPL log formatter
+```
 #### `alwaysList (data) `
   
 Convert a string or a list with element  
@@ -705,7 +715,7 @@ Try to get the source first, if failed, try to get its name, otherwise return No
 - **returns:**  
 The signature  
   
-#### `getLogger (level, name) `
+#### `getLogger (level, name, colored) `
   
 Get the default logger  
 

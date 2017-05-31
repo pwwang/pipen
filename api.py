@@ -24,6 +24,10 @@ for modname in modules:
 		if m.startswith('__') and m!='__init__': continue
 		mobj = getattr(module, m)
 		if not callable (mobj): continue
+		if inspect.isclass (mobj):
+			doc += "#### `class: " + m + "`\n"
+			doc += "```\n" + (mobj.__doc__.strip() if mobj.__doc__ is not None else "") + "\n```\n"
+			continue
 		#args = "" if not callable (mobj) or not hasattr(mobj, '__code__') else str(mobj.__code__.co_varnames[:mobj.__code__.co_argcount])
 		args = tuple(inspect.getargspec(mobj))
 		#if args.endswith (",)"): args = args[:-2] + ')'

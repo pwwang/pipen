@@ -5,6 +5,9 @@ A set of utitities for pyppl
 import logging
 
 class PyPPLLogFormatter (logging.Formatter):
+	"""
+	PyPPL log formatter
+	"""
 	color_black       = '\033[0;30m'
 	color_red         = '\033[0;31m'
 	color_green       = '\033[0;32m'
