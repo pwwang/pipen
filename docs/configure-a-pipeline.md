@@ -9,6 +9,7 @@ Here is the full structure of the configurations:
 ```json
 {
     "loglevel": "info",  // the log level
+    "logcolor": true,    // use colored log information
     "proc": {            // shared configuration of processes
         "forks": 10,
         "runner": "sge",
@@ -29,6 +30,7 @@ Here is the full structure of the configurations:
 }
 ```
 - `loglevel` defines which level of log information to output, please refer to [python logging levels][1]. You may just use the lowercase. 
+- `logcolor` whether to use colored log information or not.
 - `proc` defines the shared configurations of processes in this pipeline. [All the properties][2] of a process can be set here, but just some common one are recommended. Obviously, `input` is not suitable to be set here, except some extreme cases.
 - `profiles` defines some profiles that may be shared by the processes. To use a profile, just specify the profile name to `run`: `pyppl (config).starts(process).run(<profile>)`.
 
