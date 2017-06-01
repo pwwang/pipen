@@ -1,5 +1,5 @@
 # pyppl - A python lightweight pipeline framework
-[Documentation][1] | [API][2] | [Github repos.][3]
+[Documentation][1] | [API][2] | [Change log][19] | [Fork me][3]
 
 <!-- toc -->
 ## Features
@@ -238,3 +238,4 @@ You can use different [dot renderers][17] to render and visualize it.
 [16]: https://pwwang.gitbooks.io/pyppl/aggregations.html
 [17]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)#Layout_programs
 [18]: https://github.com/pwwang/pyppl/raw/master/docs/pyppl.png
+[19]: https://pwwang.gitbooks.io/pyppl/change-log.html

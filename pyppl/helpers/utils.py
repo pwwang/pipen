@@ -46,13 +46,13 @@ class PyPPLLogFormatter (logging.Formatter):
 			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_lightgreen, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_lightgreen, record.msg[9:], PyPPLLogFormatter.color_clear)
 		elif level == 'DEBUG':
 			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_darkgray, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_darkgray, record.msg[9:], PyPPLLogFormatter.color_clear)
-		elif level in ['INFO', 'P.PROPS', 'DEPENDS', 'OUTPUT']:
+		elif level in ['INFO', 'P.PROPS', 'DEPENDS', 'OUTPUT', 'EXPORT']:
 			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_green, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_green, record.msg[9:], PyPPLLogFormatter.color_clear)
 		elif level == 'START':
 			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_lightcyan, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_lightcyan, record.msg[9:], PyPPLLogFormatter.color_clear)
 		elif level in ['INPUT', 'P.ARGS']:
-			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_cyan, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_cyan, record.msg[9:], PyPPLLogFormatter.color_clear)
-		elif level == 'ERROR':
+			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_green, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_green, record.msg[9:], PyPPLLogFormatter.color_clear)
+		elif level in ['ERROR', 'STDERR']:
 			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_red, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_red, record.msg[9:], PyPPLLogFormatter.color_clear)
 		elif level == 'WARNING':
 			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_yellow, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_yellow, record.msg[9:], PyPPLLogFormatter.color_clear)
