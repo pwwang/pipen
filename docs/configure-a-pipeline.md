@@ -1,6 +1,7 @@
 # Configure your pipeline
 <!-- toc -->
 
+{% raw %}
 To configure your pipeline, you just pass the configurations (a `dict`) to the constructor:
 ```python
 ppl = pyppl (config)
@@ -34,7 +35,7 @@ Here is the full structure of the configurations:
 ```
 - `loglevel` defines which level of log information to output, please refer to [python logging levels][1]. You may just use the lowercase. 
 - `logcolor` whether to use colored log information or not.
-- `checkrun` check if the jobs are running (using runner.isRunning)
+- `checkrun` check if the jobs are running (using `runner.isRunning`)
 - `proc` defines the shared configurations of processes in this pipeline. [All the properties][2] of a process can be set here, but just some common one are recommended. Obviously, `input` is not suitable to be set here, except some extreme cases.
 - `profiles` defines some profiles that may be shared by the processes. To use a profile, just specify the profile name to `run`: `pyppl (config).starts(process).run(<profile>)`.
 
@@ -55,7 +56,11 @@ pyppl ({
 All other options will be inherited from `~/.pyppl`.
 
 ## Priority of configuration items
-Now you have 3 ways to set options for a process: directly set the process properties _(1)_, set in the first argument of `pyppl` constructor _(2)_ and set in a configuration file _(3)_. 
+Now you have 3 ways to set options for a process: 
+- directly set the process properties _(1)_, 
+- set in the first argument of `pyppl` constructor _(2)_, and 
+- set in a configuration file _(3)_.  
+
 **The priority is: (1) > (2) > (3).**
 Once you set the property of the process, it will never be changed by `pyppl` constructor or the configuration file. But the first argument can overwrite the options in configuration files.
 Here are an examples to illustrate the priority:
@@ -102,8 +107,10 @@ pyppl ().starts(p1,p2,p3).run()
 ```
 > **Caution** 
 > 1. If a process is depending on other processes, you don't need to set it as starting process.
-> 2. If a process is not depending on any other processes, you have to set it as starting process. Otherwise, it won't start.
-
+> 2. If a process is not depending on any other processes, you have to set it as starting process. Otherwise, it won't start to run.
 
 [1]: https://docs.python.org/2/library/logging.html#logging-levels
 [2]: https://pwwang.gitbooks.io/pyppl/content/set-other-properties-of-a-process.html
+
+{% endraw %}
+
