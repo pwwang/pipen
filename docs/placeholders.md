@@ -1,6 +1,7 @@
 # Placeholders
 <!-- toc -->
 
+{% raw %}
 `pyppl` uses placeholders from `input`, `output` and some properties of a `proc` to hold the values in `output`, `beforeCmd`, `afterCmd` and `script`. For example:
 ```python
 p = proc()
@@ -67,7 +68,7 @@ You can define your own shortcut functions for placeholders:
 ```python
 from pyppl import utils
 utils.format.shorts['replace'] = "lambda x: x.replace('aaa', 'bbb')"
-
+# utils.format("{{a | replace}}", {"a": "1aaa2"}) == "1bbb2"
 ```
 
 ## `Proc` and `Job` property placeholders
@@ -90,7 +91,7 @@ You can also use some `proc`/`job` property values with placeholders: `{{proc.<p
 |`proc.exporthow`|`proc.exhow`|How to export output files|
 |`proc.exportow`|`proc.exow`|Whether to overwrite existing files when export|
 |`proc.length`||How many jobs are there for the process|
-|`proc.args`||Additional arguments for the process, typically a `dict`. For example: `p.args={"a":1}` you may use {% raw %}`{{proc.args.a}}`{% endraw %} to access it.|
+|`proc.args`||Additional arguments for the process, typically a `dict`. For example: `p.args={"a":1}` you may use `{{proc.args.a}}` to access it.|
 |`job.id`|`#`|The job id|
 |`job.indir`||The input directory of the job|
 |`job.outdir`||The output directory of the job|
@@ -98,4 +99,4 @@ You can also use some `proc`/`job` property values with placeholders: `{{proc.<p
 |`job.outfile`||The file with the STDOUT|
 |`job.errfile`||The file with the STDERR|
 
-
+{% endraw %}
