@@ -156,12 +156,12 @@ The defines how you submit your job. You may use `Popen` to run the script and a
 - Wait for the job to finish: `wait (self)`
 Wait until the job finishes. The basic work it does is to wait and write the `stdout` and `stderr` to `self.job.outfile` and `self.job.errfile`, respectively.  
 
-  | `self.p` | Base class | When this happens? | What to do? | Where to get `stdout`/`stderr`? |  
-  |----------|------------|--------------------|-------------|---------------------------------|  
-  | `None` | `runner` | Main thread dead | Nothing to do, jobs also quit | - |  
-  | `None` | `runner_queue` | Main thread dead, jobs alive | Use `self.isRunning()` to tell whether jobs are truly alive. If yes, wait; otherwise quit | `.stdout/.stderr` files |  
-  | `Not None` | `runner` | All alive | `p.wait()` | `.stdout`/`.stderr` files |  
-  | `Not None` | `runner_queue` | All alive | Use `self.isRunning()` to tell whether jobs are truly alive. If yes, wait; otherwise quit | `.stdout/.stderr` files |
+| `self.p` | Base class | When this happens? | What to do? | Where to get `stdout`/`stderr`? |  
+|----------|------------|--------------------|-------------|---------------------------------|  
+| `None` | `runner` | Main thread dead | Nothing to do, jobs also quit | - |  
+| `None` | `runner_queue` | Main thread dead, jobs alive | Use `self.isRunning()` to tell whether jobs are truly alive. If yes, wait; otherwise quit | `.stdout/.stderr` files |  
+| `Not None` | `runner` | All alive | `p.wait()` | `.stdout`/`.stderr` files |  
+| `Not None` | `runner_queue` | All alive | Use `self.isRunning()` to tell whether jobs are truly alive. If yes, wait; otherwise quit | `.stdout/.stderr` files |
   
   `runner`/`runner_queue` has also done most of the job, in general case you don't need to rewrite it.
 

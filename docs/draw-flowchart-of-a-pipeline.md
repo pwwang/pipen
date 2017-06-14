@@ -75,7 +75,11 @@ pyppl().starts(p1, p8, p9).flowchart("/another/dot/file", "/another/svg/file")
 
 For example, if you have [Graphviz](http://www.graphviz.org/) installed, you will have `dot` available to convert the dot file to svg file:
 ```python
-pyppl().starts(p1, p8, p9).flowchart("/another/dot/file", "/another/svg/file", "dot -Tsvg {{dotfile}} > {{svgfile}}")
+pyppl().starts(p1, p8, p9).flowchart(
+	"/another/dot/file", 
+	"/another/svg/file", 
+	"dot -Tsvg {{dotfile}} > {{svgfile}}"
+)
 ```
 
 The graph (`fcfile`) will be like:  
