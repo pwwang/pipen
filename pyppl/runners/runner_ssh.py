@@ -8,7 +8,7 @@ from ..helpers import utils
 
 class runner_ssh (runner):
 	"""
-	The sge runner
+	The ssh runner
 
 	@static variables:
 		`serverid`: The incremental number used to calculate which server should be used.

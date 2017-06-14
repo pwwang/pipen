@@ -68,7 +68,7 @@ You can define your own shortcut functions for placeholders:
 from pyppl import utils
 utils.format.shorts['replace'] = "lambda x: x.replace('aaa', 'bbb')"
 
-assert (utils.format("{{a|replace}}", {"a": "1aaa2"}) == "1bbb2")
+assert (utils.format("{{a | replace}}", {"a": "1aaa2"}) == "1bbb2")
 ```
 
 ## `Proc`/`Job` property placeholders

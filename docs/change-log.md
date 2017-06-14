@@ -1,6 +1,16 @@
 # Change log
 <!-- toc -->
 
+## June 13, 2017: 0.7.0
+- Add colored log
+- Put jobs in different directories (files with same basename can be used as input files, otherwise it will be overwritten).
+- Add configuration `checkrun` for `pyppl` allow `runner.isRunning` to be disabled (save resources on local machine).
+- Add built-in functions for placeholders; lambda functions do not need to call (just define)
+- File placeholders (.fn, .bn, .prefix, etc) removed, please use built-in functions instead.
+- Add an alias `p.ppldir` for `p.tmpdir` to avoid confusion.
+- Update command line tool accordingly
+- Split base runner class into two.
+
 ## May 30, 2017: 0.6.2
 - Update docs and fix compilation errors from gitbook
 - Change pyppl.dot to pyppl.pyppl.dot; 

@@ -960,7 +960,7 @@ Try to tell whether the job is still running.
   
 
 ## Module `runner_ssh`  
-> The sge runner
+> The ssh runner
 
 	@static variables:
 		`serverid`: The incremental number used to calculate which server should be used.
