@@ -17,7 +17,7 @@ Currently we introduced in previous chapters to set a set of properties of a pro
 | `exow` | Whether to overwrite existing files when export | `bool` | `True` | `exportow`| [Link][4] |
 | `cache` | Whether to cache the process | `True`, `False`, `"export"`, `"export+"` | `True` ||[Link][5] |
 | `runner` | Which runner to use | `str` | `"local"` ||[Link][6] |
-| `tmpdir` | The directory to store `<workdir>s` for all processes in this pipeline | `str` | `"./workdir"`||[Link][7]|
+| `ppldir` | The directory to store `<workdir>s` for all processes in this pipeline | `str` | `"./workdir"`|tmpdir|[Link][7]|
 | `workdir` | The work directory of the process | `str` | `"<id>.<tag>.<uid>"`||[Link][7]|
 | `args` | The arguments for the process | `dict` | `{}` || This chapter |
 | `rc` | Valid return codes | `str`/`list`/`int` | `0` || This chapter |
@@ -79,7 +79,8 @@ but multiple processes
 p2.depends = [p1, p0]
 ```
 To set prior processes not only let the process use the output channel as input for current process, but also determines when the process starts to run (right after the prior processes finish).
-> **Caution** You can copy a process by `p2 = p.copy()`, but remember `depends` will not be copied, you have to specify it for the copied processes.
+> **Caution** You can copy a process by `p2 = p.copy()`, but remember `depends` will not be copied, you have to specify it for the copied processes.  
+> When you specify new dependents for a process, its orginal ones will be removed.
 
 ## Use callback to modify the process `p.callback`:
 The processes **NOT** initialized until it's ready to run. So you may not be able to modify some of the values until it is initialized. For example, you may want to change the output channel before it passes to the its dependent process:

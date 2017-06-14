@@ -11,7 +11,7 @@ doc = """
 <!-- toc -->
 """
 
-modules = ['pyppl', 'channel', 'job', 'proc', 'utils', 'aggr', 'runner_local', 'runner_ssh', 'runner_sge']
+modules = ['pyppl', 'channel', 'job', 'proc', 'utils', 'aggr', 'runner', 'runner_queue', 'runner_local', 'runner_ssh', 'runner_sge']
 
 for modname in modules:
 	

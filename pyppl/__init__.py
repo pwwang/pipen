@@ -7,4 +7,6 @@ from pyppl import utils
 from pyppl import runner_local
 from pyppl import runner_sge
 from pyppl import runner_ssh
+from pyppl import runner
+from pyppl import runner_queue
 from pyppl import VERSION

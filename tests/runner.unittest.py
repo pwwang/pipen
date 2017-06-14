@@ -1,255 +1,182 @@
-import unittest, os
-import sys, shutil
+import os
+import shutil
+import sys
+import unittest
+from time import sleep
+
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
-from pyppl import runner_local, runner_sge, runner_ssh, utils, job
-import subprocess
+from pyppl import proc, job, runner_local, runner_sge, runner_ssh, utils, runner, runner_queue
 
-def tryRemove (file):
-	try: 
-		os.remove(file)
-	except:
-		pass
+class TestRunner(unittest.TestCase):
 
-class TestRunner (unittest.TestCase):
-
+	testdir = "./tests"
+	logger  = utils.getLogger('debug', 'TestRunner')
 	def setUp (self):
-		super(TestRunner, self).setUp()
-		tmpdir = os.path.join(os.path.dirname(__file__), 'test')
-		if not os.path.exists  (os.path.join(tmpdir, 'scripts')):
-			os.makedirs (os.path.join(tmpdir, 'scripts'))
-		self.scripts = [
-			os.path.join(tmpdir, 'runner1.py'),
-			os.path.join(tmpdir, 'runner2.py'),
-			os.path.join('/data2/junwenwang/jeffc/grna/bagel-for-knockout-screens-code', 'BAGEL.py'),
-			os.path.join('/data2/junwenwang/jeffc/luna/test1', 'test2.R'),
-			os.path.join(tmpdir, 'runner3.py'),
-			os.path.join(tmpdir, 'runner4.bash'),
-		]
-
-		with open (self.scripts[0], 'w') as f:
-			f.write ('#!/usr/bin/env python\n')
-			f.write ('print "0"\n')
-		with open (self.scripts[1], 'w') as f:
-			f.write ('#!/usr/bin/env python\n')
-			f.write ('print "1"\n')
-			f.write ('__import__("time").sleep(3)\n')
-			f.write ('print "2"\n')
-		with open (self.scripts[4], 'w') as f:
-			f.write ('#!/usr/bin/env python\n')
-			f.write ('import sys\n')
-			f.write ('print "2"\n')
-			f.write ('sys.stderr.write("3")\n')
-			f.write ('sys.exit(1)\n')
-		with open (self.scripts[5], 'w') as f:
-			f.write ('#!/usr/bin/env bash\n')
-			f.write ('sleep 3\n')
-			
-		self.jobs = []
-		for i, script in enumerate(self.scripts):
-			if not os.path.exists(os.path.join(tmpdir, 'scripts', 'script.%s' % i)):
-				os.symlink (os.path.abspath(script), os.path.join(tmpdir, 'scripts', 'script.%s' % i))
-			self.jobs.append (job (i, tmpdir))
-
-		self.configs = [
-			{},
-			{
-				"retcodes": [0,1]
-			}
-		]
-
+		if not os.path.exists (self.testdir):
+			os.makedirs(self.testdir)
+	
 	def tearDown (self):
-		super(TestRunner, self).tearDown()
-		#shutil.rmtree (os.path.join(os.path.dirname(__file__), 'test'))
+		try:
+			if os.path.exists (self.testdir):
+				shutil.rmtree (self.testdir)
+		except:
+			sleep (1)
+			self.tearDown()
 
-	def testLocalInit (self):
-		for j in self.jobs[:2]:
-			r = runner_local(j)
-			self.assertTrue (isinstance(r, runner_local))
-		self.assertRaises (Exception, runner_local, self.jobs[3])
+	def testRunnerInit (self):
+		p = proc('init')
+		p.ppldir = self.testdir
+		p.script = "echo 1"
+		p.input = {'a': range(10)}
+		p.props['logger'] = self.logger
+		p._tidyBeforeRun ()
+		r = runner(p.jobs[0])
+		self.assertEqual (p.jobs[0], r.job)
+		self.assertEqual ([p.jobs[0].script], r.script)
+		self.assertEqual (p.jobs[0].script, r.cmd2run)
+		self.assertEqual (0, r.ntry)
+		self.assertEqual (None, r.p)
 
-	def testSGEInit (self):
-		for script in self.jobs[:2]:
-			r = runner_sge(script)
-			self.assertTrue (isinstance(r, runner_sge))
-		self.assertRaises (Exception, runner_sge, self.jobs[3])
+	def testRunnerSubmit (self):
+		p = proc('submit')
+		p.ppldir = self.testdir
+		p.script = "echo1 {{a}}"
+		p.input = {'a': range(10)}
+		p.props['logger'] = self.logger
+		p._tidyBeforeRun ()
+		r = runner(p.jobs[0])
+		script   = [x for x in r.script]
 
-	def testChmodX (self):
-		self.assertEqual ([os.path.realpath(self.scripts[0])], utils.chmodX(self.scripts[0]))
-		self.assertEqual ([os.path.realpath(self.scripts[1])], utils.chmodX(self.scripts[1]))
-		self.assertEqual (['/usr/bin/python', self.scripts[2]], utils.chmodX(self.scripts[2]))
-		self.assertRaises (Exception, utils.chmodX, self.scripts[3])
+		# exception
+		r.script = 1
+		r.submit()
+		self.assertIsNone (r.p)
+		self.assertEqual (r.job.rc(), r.job.FAILED_RC)
 
-	def testConfig (self):
-		r0 = runner_local(self.jobs[0], self.configs[0])
-		r1 = runner_local(self.jobs[1], self.configs[1])
-		self.assertEqual (r0._config('retcodes'), None)
-		self.assertEqual (r0._config('retcodes', [0]), [0])
-		self.assertEqual (r1._config('retcodes', [0]), [0, 1])
-		r2 = runner_ssh(self.jobs[0], {
-			'sshRunner': {'servers': ['franklin01']}
-		})
-		self.assertEqual (r2._config('sshRunner.servers', ['franklin02']), ['franklin01'])
-		
-	def testLocalIsRunning (self):
-		from getpass import getuser
-		tmpdir = "./test/"
-		if not os.path.exists(tmpdir): os.makedirs(tmpdir)
-		cmd = ["sleep", "1"]
-		j = job (0, tmpdir)
-		r = runner_local (j, {})
-		r.script = cmd
-		r.cmd2run =subprocess.list2cmdline(cmd)
+		# no exception
+		r.script = script
 		r.submit ()
-		#os.system ('ps -u%s | grep sleep' % getuser())
-		self.assertTrue (r.isRunning())
-		r.wait()
-		self.assertFalse (r.isRunning())
-		shutil.rmtree(tmpdir)
+		self.assertIsNotNone (r.p)
 
-	def testLocalRun (self):
-		r0 = runner_local(self.jobs[0])
-		r1 = runner_local(self.jobs[1])
-		r2 = runner_local(self.jobs[4])
-		os.makedirs ( os.path.join ( os.path.dirname (os.path.dirname(r0.job.script) ), 'output'  ))
-		r0.submit()
-		r0.wait()
-		r0.finish()
-		self.assertTrue (os.path.exists(r0.job.rcfile))
-		self.assertTrue (os.path.exists(r0.job.outfile))
-		self.assertTrue (os.path.exists(r0.job.errfile))
-		self.assertEqual (r0.job.rc(), 0)
-		self.assertEqual (open(r0.job.outfile).read().strip(), '0')
+	def testRunnerWait (self):
+		p = proc('wait')
+		p.ppldir = self.testdir
+		p.script = "echo {{a}}"
+		p.input = {'a': range(10)}
+		p.props['logger'] = self.logger
+		p._tidyBeforeRun ()
+		r = runner(p.jobs[0])
+		r.submit ()
+		r.wait ()
+		self.assertEqual (r.job.rc(), 0)
+		self.assertEqual (open(r.job.outfile).read().strip(), '0')
 
-		r1.submit()
-		r1.wait()
-		r1.finish()
-		self.assertTrue (os.path.exists(r1.job.rcfile))
-		self.assertTrue (os.path.exists(r1.job.outfile))
-		self.assertTrue (os.path.exists(r1.job.errfile))
-		self.assertEqual (r1.job.rc(), 0)
-		self.assertEqual (open(r1.job.outfile).read().strip(), '1\n2')
-		#self.assertTrue (r1.isValid())
-
-		r2.submit()
-		r2.wait()
-		r2.finish()
-		self.assertTrue (os.path.exists(r2.job.rcfile))
-		self.assertTrue (os.path.exists(r2.job.outfile))
-		self.assertTrue (os.path.exists(r2.job.errfile))
-		self.assertEqual (r2.job.rc(), 1)
-		self.assertEqual (open(r2.job.outfile).read().strip(), '2')
-		self.assertEqual (open(r2.job.errfile).read().strip(), '3')
-		#self.assertFalse (r2.isValid())
-
-	def testSSHRun (self):
-		r0 = runner_ssh(self.jobs[0], {
-			'sshRunner': {'servers': ['franklin01']}
-		})
-		r1 = runner_ssh(self.jobs[1], {
-			'sshRunner': {'servers': ['franklin02']}
-		})
-		r2 = runner_ssh(self.jobs[4], {
-			'sshRunner': {'servers': ['franklin03']}
-		})
-
-		r0.submit()
-		r0.wait()
-		self.assertTrue (os.path.exists(r0.job.rcfile))
-		self.assertTrue (os.path.exists(r0.job.outfile))
-		self.assertTrue (os.path.exists(r0.job.errfile))
-		self.assertEqual (r0.job.rc(), 0)
-		self.assertEqual (open(r0.job.outfile).read().strip(), '0')
-		#self.assertTrue (r0.isValid())
-
-		r1.submit()
-		r1.wait()
-		self.assertTrue (os.path.exists(r1.job.rcfile))
-		self.assertTrue (os.path.exists(r1.job.outfile))
-		self.assertTrue (os.path.exists(r1.job.errfile))
-		self.assertEqual (r1.job.rc(), 0)
-		self.assertEqual (open(r1.job.outfile).read().strip(), '1\n2')
-		#self.assertTrue (r1.isValid())
-
-		r2.submit()
-		r2.wait()
-		self.assertTrue (os.path.exists(r2.job.rcfile))
-		self.assertTrue (os.path.exists(r2.job.outfile))
-		self.assertTrue (os.path.exists(r2.job.errfile))
-		self.assertEqual (r2.job.rc(), 1)
-		self.assertEqual (open(r2.job.outfile).read().strip(), '2')
-		self.assertEqual (open(r2.job.errfile).read().strip(), '3')
-		#self.assertFalse (r2.isValid())
-
-		
+	def testRunnerRetry (self):
+		p = proc('retry')
+		p.ppldir = self.testdir
+		p.script = "echo1 {{a}}"
+		p.input = {'a': range(10)}
+		p.errhow = 'retry'
+		p.props['logger'] = self.logger
+		p._tidyBeforeRun ()
 	
-	@unittest.skip("Skipping SGE test...")
-	def testSGERun (self):
-		r0 = runner_sge(self.jobs[0], {
-			'sgeRunner': {'sge_N': 'job_r0', 'sge_q': '1-hour', 'sge_M': 'Wang.Panwen@mayo.edu'}
-		})
-		r1 = runner_sge(self.jobs[1], {
-			'echo': True,
-			'sgeRunner': {'sge_N': 'job_r1', 'sge_q': '1-hour'}
-		})
-		r2 = runner_sge(self.jobs[4], {
-			'sgeRunner': {'sge_N': 'job_r4', 'sge_q': '1-hour'}
-		})
+		r = runner(p.jobs[0])
+		r.submit ()
+		r.wait ()
+		r.finish ()
+		self.assertEqual (r.ntry, p.errntry + 1)
+		self.assertEqual (r.job.rc(), 127)
 
-		r0.submit()
-		r0.wait()
-		r0.finish()
-		#os.system ("ls test/scripts/")
-		self.assertTrue (os.path.exists(r0.job.rcfile))
-		self.assertTrue (os.path.exists(r0.job.outfile))
-		self.assertTrue (os.path.exists(r0.job.errfile))
-		self.assertEqual (r0.job.rc(), 0)
-		self.assertEqual (open(r0.job.outfile).read().strip(), '0')
-		#self.assertTrue (r0.isValid())
-
-		r1.submit()
-		r1.wait()
-		r1.finish()
-		self.assertTrue (os.path.exists(r1.job.rcfile))
-		self.assertTrue (os.path.exists(r1.job.outfile))
-		self.assertTrue (os.path.exists(r1.job.errfile))
-		self.assertEqual (r1.job.rc(), 0)
-		self.assertEqual (open(r1.job.outfile).read().strip(), '1\n2')
-		#self.assertTrue (r1.isValid())
-
-		r2.submit()
-		r2.wait()
-		r2.finish()
-		self.assertTrue (os.path.exists(r2.job.rcfile))
-		self.assertTrue (os.path.exists(r2.job.outfile))
-		self.assertTrue (os.path.exists(r2.job.errfile))
-		self.assertEqual (r2.job.rc(), 1)
-		self.assertEqual (open(r2.job.outfile).read().strip(), '2')
-		self.assertEqual (open(r2.job.errfile).read().strip(), '3')
-		#self.assertFalse (r2.isValid())
+	def testRunnerIsRunning (self):
+		p = proc('isrunning')
+		p.ppldir = self.testdir
+		p.script = "echo {{a}}"
+		p.input = {'a': range(10)}
+		p.props['logger'] = self.logger
+		p._tidyBeforeRun ()
 	
-	@unittest.skip("Skipping isRunning test...")	
-	def testIsRunning (self):
-			
-		r2 = runner_ssh (self.jobs[5], {
-			'sshRunner': {'servers': ['franklin03']}	
-		})
-		if not r2.isRunning(): 
-			r2.submit()
-			self.assertTrue (r2.isRunning())
-			r2.wait()
-			r2.finish()
-			self.assertFalse (r2.isRunning())
-			
-		r1 = runner_sge (self.jobs[5])
-		if not r1.isRunning(): 
-			r1.submit ()
-			self.assertTrue (r1.isRunning())
-			r1.wait()
-			r1.finish()
-			self.assertFalse (r1.isRunning())
+		r = runner(p.jobs[0])
+		self.assertTrue (r.isRunning(True))
+		self.assertFalse (r.isRunning(False))
+
+	def testSshInit (self):
+		p = proc('sshinit')
+		p.ppldir = self.testdir
+		p.script = "sleep 3; echo {{a}}"
+		p.input = {'a': range(4)}
+		p.props['logger'] = self.logger
+		p.sshRunner = {"servers": ['franklin01', 'franklin02']}
+		p._tidyBeforeRun ()
+
+		for j in p.jobs:
+			r = runner_ssh (j)
+			self.assertTrue (os.path.exists(j.script + '.ssh'))
+			self.assertEqual (r.script, [os.path.realpath(j.script) + '.ssh'])
+
+	def testSshIsRunning (self):
+		p = proc('sshisrunning')
+		p.ppldir = self.testdir
+		p.script = "sleep 3; echo {{a}}"
+		p.input = {'a': range(4)}
+		p.props['logger'] = self.logger
+		p.sshRunner = {"servers": ['franklin01', 'franklin02']}
+		p._tidyBeforeRun ()	
+		for j in p.jobs:
+			r = runner_ssh (j)
+			self.assertFalse (r.isRunning(False))
+			r.submit ()
+			self.assertTrue (r.isRunning(True))
+			r.wait ()
+			self.assertFalse (r.isRunning(False))
+
+	def testSgeInit (self):
+		p = proc('sgeinit')
+		p.ppldir = self.testdir
+		p.script = "sleep 3; echo {{a}}"
+		p.input = {'a': range(4)}
+		p.props['logger'] = self.logger
+		p.sgeRunner = {"sge_q": '1-hour'}
+		p._tidyBeforeRun ()
+
+		for j in p.jobs:
+			r = runner_sge (j)
+			self.assertTrue (os.path.exists(j.script + '.sge'))
+			self.assertEqual (r.script, ['qsub', os.path.realpath(j.script) + '.sge'])
+
+	def testSgeIsRunning (self):
+		p = proc('sgeisrunning')
+		p.ppldir = self.testdir
+		p.script = "sleep 3; echo {{a}}"
+		p.input = {'a': range(4)}
+		p.props['logger'] = self.logger
+		p.sgeRunner = {"sge_q": '1-hour'}
+		p._tidyBeforeRun ()
+
+		for j in p.jobs:
+			r = runner_sge (j)
+			self.assertFalse (r.isRunning(False))
+			r.submit ()
+			self.assertTrue (r.isRunning(True))
+			r.wait ()
+			self.assertFalse (r.isRunning(False))
+
+		# then delete the error jobs in queue
 	
-		
+	def testLocalIsRunning (self):
+		p = proc('localisrunning')
+		p.ppldir = self.testdir
+		p.script = "sleep 3; echo {{a}}"
+		p.input = {'a': range(4)}
+		p.props['logger'] = self.logger
+		p._tidyBeforeRun ()	
+		for j in p.jobs:
+			r = runner_local (j)
+			self.assertFalse (r.isRunning(False))
+			r.submit ()
+			self.assertTrue (r.isRunning(True))
+			r.wait ()
+			self.assertFalse (r.isRunning(False))
 
 if __name__ == '__main__':
 	unittest.main()

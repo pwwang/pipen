@@ -1,5 +1,8 @@
+"""
+Channel for pyppl
+"""
 from copy import copy as pycopy
-import utils
+from . import utils
 
 class channel (list):
 	"""
@@ -7,7 +10,7 @@ class channel (list):
 	"""
 	
 	@staticmethod
-	def create (l = []):
+	def create (l = None):
 		"""
 		Create a channel from a list
 		@params:
@@ -15,7 +18,8 @@ class channel (list):
 		@returns:
 			The channel created from the list
 		"""
-		if l is None: l = []
+		if l is None: 
+			l = []
 		ret = channel()
 		for e in l:
 			ret.append (channel._tuplize(e))
@@ -35,25 +39,25 @@ class channel (list):
 		return ret
 	
 	@staticmethod
-	# type = 'dir', 'file', 'link' or 'any'
-	def fromPath (pattern, type = 'any'):
+	# t = 'dir', 'file', 'link' or 'any'
+	def fromPath (pattern, t = 'any'):
 		"""
 		Create a channel from a path pattern
 		@params:
 			`pattern`: the pattern with wild cards
-			`type`:    the type of the files/dirs to include
+			`t`:       the type of the files/dirs to include
 		@returns:
 			The channel created from the path
 		"""
 		from glob import glob
 		ret = channel.create(sorted(glob(pattern)))
-		if type != 'any':
+		if t != 'any':
 			from os import path
-		if type == 'link':
+		if t == 'link':
 			return ret.filter (path.islink)
-		elif type == 'dir':
+		elif t == 'dir':
 			return ret.filter (path.isdir)
-		elif type == 'file':
+		elif t == 'file':
 			return ret.filter (path.isfile)
 		return ret
 
@@ -74,22 +78,23 @@ class channel (list):
 		return c
 	
 	@staticmethod
-	def fromFile (file, delimit = "\t"):
+	def fromFile (fn, delimit = "\t"):
 		"""
 		Create channel from the file content
 		It's like a matrix file, each row is a row for a channel.
 		And each column is a column for a channel.
 		@params:
-			`file`:    the file
+			`fn`:      the file
 			`delimit`: the delimit for columns
 		@returns:
 			A channel created from the file
 		"""
 		ret = channel.create()
-		with open (file) as f:
+		with open (fn) as f:
 			for line in f:
 				line = line.strip()
-				if not line: continue
+				if not line: 
+					continue
 				row = line.split(delimit)
 				ret.rbind (row)
 		return ret
@@ -107,7 +112,8 @@ class channel (list):
 		ret  = channel.create()
 		args = argv[1:]
 		alen = len (args)
-		if alen == 0: return ret
+		if alen == 0: 
+			return ret
 		
 		width = None
 		for arg in args:
@@ -134,8 +140,10 @@ class channel (list):
 		if isinstance(tu, (str, unicode)):
 			tu = (tu, )
 		else:
-			try: iter(tu)
-			except:	tu = (tu, )
+			try: 
+				iter(tu)
+			except Exception:	
+				tu = (tu, )
 		#return tuple(tu)
 		return (tu, ) if isinstance(tu, list) else tuple (tu) 
 	
@@ -199,9 +207,11 @@ class channel (list):
 		@returns:
 			The width of the channel
 		"""
-		if not self: return 0
+		if not self: 
+			return 0
 		ele = self[0]
-		if not isinstance(ele, tuple): return 1
+		if not isinstance(ele, tuple): 
+			return 1
 		return len(ele)
 	
 	def length (self):
@@ -267,7 +277,8 @@ class channel (list):
 			The combined channel
 			Note, self is also changed
 		"""
-		for row in rows: self.rbind(row)
+		for row in rows: 
+			self.rbind(row)
 		return self
 	
 	def cbind (self, col):
@@ -279,10 +290,13 @@ class channel (list):
 			The combined channel
 			Note, self is also changed
 		"""
-		if not isinstance(col, list): col = [col]
-		if len (col) == 1: col = col * max(1, self.length())
+		if not isinstance(col, list): 
+			col = [col]
+		if len (col) == 1: 
+			col = col * max(1, self.length())
 		if self.length() == 0 :
-			for ele in col: self.append (channel._tuplize(ele))
+			for ele in col: 
+				self.append (channel._tuplize(ele))
 		elif self.length() == len (col):
 			for i in range (self.length()):
 				self[i] += channel._tuplize(col[i])
@@ -313,7 +327,8 @@ class channel (list):
 			Note, self is also changed
 		"""
 		for chan in chans:
-			if not isinstance(chan, channel): chan = channel.create(chan)
+			if not isinstance(chan, channel): 
+				chan = channel.create(chan)
 			cols = [x.toList() for x in chan.split()]
 			self.cbindMany (*cols)
 		return self
@@ -337,12 +352,17 @@ class channel (list):
 		@returns:
 			The channel with fetched columns
 		"""
-		if start is None: start = self.width()
-		if length is None: length = self.width()
-		if start < 0: start = start + self.width()
-		if start >= self.width(): return channel.create()
+		if start is None: 
+			start = self.width()
+		if length is None: 
+			length = self.width()
+		if start < 0: 
+			start = start + self.width()
+		if start >= self.width(): 
+			return channel.create()
 		ret = channel.create()
-		if length == 0: return ret
+		if length == 0: 
+			return ret
 		for ele in self:
 			row = tuple (ele[start:start+length])
 			ret.rbind (row)
@@ -358,8 +378,10 @@ class channel (list):
 			The channel with the column inserted
 			Note, self is also changed
 		"""
-		if not isinstance(col, list): col = [col]
-		if len (col) == 1: col = col * max(1, self.length())
+		if not isinstance(col, list): 
+			col = [col]
+		if len (col) == 1: 
+			col = col * max(1, self.length())
 		part1 = self.slice (0, index)
 		part2 = self.slice (index)
 		del self[:]

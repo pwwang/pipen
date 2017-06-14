@@ -14,9 +14,9 @@ p7 = proc("G")
 p8 = proc("H")
 p9 = proc("I")
 p1.script = "echo 1"
-p1.input  = {"input": channel.create(['a'])}
-p8.input  = {"input": channel.create(['a'])}
-p9.input  = {"input": channel.create(['a'])}
+p1.input  = {"input": ['a']}
+p8.input  = {"input": ['a']}
+p9.input  = {"input": ['a']}
 p2.input  = "input"
 p3.input  = "input"
 p4.input  = "input"
@@ -54,13 +54,17 @@ p9.output = "{{input}}"
 p2.depends = p1
 p3.depends = [p1, p8]
 p4.depends = [p2, p3]
-p4.exportdir  = "./"
+p4.exdir   = "./"
 p5.depends = p4
 p6.depends = [p4, p9]
-p6.exportdir  = "./"
+p6.exdir   = "./"
 p7.depends = [p5, p6]
-p7.exportdir  = "./"
+p7.exdir   = "./"
 pyppl().starts(p1, p8, p9).flowchart()
+# ppl = pyppl().starts(p1, p8, p9).flowchart()
+# run it: ppl.run()
+# or:
+# pyppl().starts(p1, p8, p9).flowchart().run()
 ```
 
 You can specify different files to store the dot and svg file:

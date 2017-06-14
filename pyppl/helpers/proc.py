@@ -1,15 +1,21 @@
-import os, pickle, shlex, shutil, threading, sys
+"""
+proc module for pyppl
+"""
 import copy as pycopy
-from time import sleep, time
-from glob import glob
-from random import randint
-from channel import channel
-from aggr import aggr
-from job import job as pjob
-import utils
-from subprocess import Popen, PIPE
+import os
+import pickle
+import sys
+import threading
 from Queue import Queue
-from collections import OrderedDict
+from random import randint
+from subprocess import PIPE, Popen
+from time import sleep, time
+
+from . import utils
+from .aggr import aggr
+from .channel import channel
+from .job import job as pjob
+
 from ..runners import runner_local, runner_sge, runner_ssh
 
 
@@ -18,26 +24,52 @@ class proc (object):
 	The proc class defining a process
 	
 	@static variables:
-		`runners`: The regiested runners
-		`ids`:     The "<id>.<tag>" initialized processes, used to detected whether there are two processes with the same id and tag.
-		`alias`:   The alias for the properties
+		`RUNNERS`:       The regiested runners
+		`PROCS`:         The "<id>.<tag>" initialized processes, used to detected whether there are two processes with the same id and tag.
+		`ALIAS`:         The alias for the properties
+		`LOG_NLINE`:     The limit of lines of logging information of same type of messages
 		
 	@magic methods:
 		`__getattr__(self, name)`: get the value of a property in `self.props`
 		`__setattr__(self, name, value)`: set the value of a property in `self.config`
 	"""
 
-	runners = {}
-	ids     = {}
-	alias   = {
+	RUNNERS      = {}
+	PROCS        = {}
+	ALIAS        = {
 		'exdir':   'exportdir',
 		'exhow':   'exporthow',
 		'exow':    'exportow',
 		'errhow':  'errorhow',
 		'errntry': 'errorntry',
 		'lang':    'defaultSh',
-		'rc':      'retcodes'
+		'rc':      'retcodes',
+		'ppldir':  'tmpdir'
 	}
+	LOG_NLINE    = {
+		'': 999,
+		'EXPORT_CACHE_OUTFILE_EXISTS': -3,
+		'EXPORT_CACHE_USING_SYMLINK': 3,
+		'BRINGFILE_OVERWRITING': 3,
+		'OUTNAME_USING_OUTTYPES': 1,
+		'SCRIPT_USING_TEMPLATE': 1,
+		'SCRIPT_EXISTS': 1,
+		'NOSCRIPT': 1,
+		'INFILE_OVERWRITING': -3
+	}
+	
+	OUT_VARTYPE  = ['var']
+	OUT_FILETYPE = ['file', 'path']
+	OUT_DIRTYPE  = ['dir', 'folder']
+	
+	IN_VARTYPE   = ['var']
+	IN_FILETYPE  = ['file', 'path', 'dir', 'folder']
+	IN_FILESTYPE = ['files', 'paths', 'dirs', 'folders']
+	
+	EX_GZIP      = ['gzip', 'gz']
+	EX_COPY      = ['copy', 'cp']
+	EX_MOVE      = ['move', 'mv']
+	EX_SYMLINK   = ['link', 'symlink', 'symbol']
 
 	def __init__ (self, tag = 'notag'):
 		"""
@@ -69,7 +101,7 @@ class proc (object):
 		self.config['exporthow']  = 'move' # symlink, copy, gzip 
 		self.config['exportow']   = True # overwrite
 		self.config['errorhow']   = "terminate" # retry, ignore
-		self.config['errorntry']  = 1
+		self.config['errorntry']  = 3
 		self.config['defaultSh']  = 'bash'
 		self.config['beforeCmd']  = ""
 		self.config['afterCmd']   = ""
@@ -82,19 +114,20 @@ class proc (object):
 		# init props
 
 		# id of the process, actually it's the variable name of the process
-		self.props['id']         =  pid  
+		self.props['id']         = pid  
 		# the tag
 		self.props['tag']        = tag
 
 		# the cachefile, cache file will be in <tmpdir>/<cachefile>
-		self.props['cachefile']  = 'cached.jobs'
+		#self.props['cachefile']  = 'cached.jobs'
 		# which processes this one depents on
 		self.props['depends']    = []
 		# the script
 		self.props['script']     = ""
 
-		self.props['input']      = {}
-		self.props['output']     = {}
+		self.props['input']      = ''
+		self.props['indata']     = {}
+		self.props['output']     = ''
 		self.props['depends']    = self.config['depends']
 		self.props['nexts']      = []
 		self.props['tmpdir']     = self.config['tmpdir']
@@ -116,76 +149,84 @@ class proc (object):
 		self.props['defaultSh']  = self.config['defaultSh']
 		self.props['channel']    = channel.create()
 		self.props['length']     = 0
-		self.props['sets']       = []
+		# remember which property is set, then it won't be overwritten by configurations
+		self.props['sets']       = [] 
 		self.props['procvars']   = {}
 		self.props['workdir']    = ''
-		self.props['logger']     = utils.getLogger('debug', self.__class__.__name__ + utils.randstr())
+		# for unittest, in real case, the logger will be got from pyppl
+		self.props['logger']     = None
 		self.props['args']       = self.config['args']
-		self.props['indir']      = ''
-		self.props['outdir']     = ''
+		self.props['checkrun']   = True
 		self.props['aggr']       = self.config['aggr']
 		self.props['callback']   = self.config['callback']
 		self.props['brings']     = self.config['brings']
-
+		self.props['lognline']   = {key:0 for key in proc.LOG_NLINE.keys()}
+		self.props['suffix']     = ''
 
 	def __getattr__ (self, name):
-		if not self.props.has_key(name) and not proc.alias.has_key(name) and not name.endswith ('Runner'):
-			raise ValueError('Property %s not found in pyppl.proc' % name)
-		if proc.alias.has_key(name): name = proc.alias[name]
+		if not self.props.has_key(name) and not proc.ALIAS.has_key(name) and not name.endswith ('Runner'):
+			raise ValueError('Property "%s" of proc is not found' % name)
+		
+		if proc.ALIAS.has_key(name):
+			name = proc.ALIAS[name]
+			
 		return self.props[name]
 
 	def __setattr__ (self, name, value):
-		if not self.config.has_key(name) and not proc.alias.has_key(name) and not name.endswith ('Runner'):
-			raise ValueError('Cannot set property "%s" for <proc>' % name)
-		if proc.alias.has_key(name): name = proc.alias[name]
+		if not self.config.has_key(name) and not proc.ALIAS.has_key(name) and not name.endswith ('Runner'):
+			raise ValueError('Cannot set property "%s" for proc instance' % name)
 		
+		if proc.ALIAS.has_key(name):
+			name = proc.ALIAS[name]
 		
 		self.sets.append(name)
 		self.config[name] = value
 		
 		if name == 'depends':
-			depends               = value
 			# remove me from nexts of my previous depends
-			if self.depends:
-				for depend in self.depends:
-					if not self in depend.nexts: continue
-					del depend.props['nexts'][depend.nexts.index(self)]
+			for depend in self.depends:
+				if not self in depend.nexts: continue
+				del depend.props['nexts'][depend.nexts.index(self)]
 			self.props['depends'] = []
 			
+			depends = value
 			if not isinstance (value, list): depends = [value]
 			for depend in depends:
 				if isinstance (depend, proc):					
 					self.props['depends'].append (depend)
-					if self not in depend.nexts: depend.nexts.append (self)
+					if self not in depend.nexts:
+						depend.nexts.append (self)
+						
 				elif isinstance (depend, aggr):
 					for p in depend.ends:
 						self.props['depends'].append (p)
-						if self not in p.nexts: p.nexts.append (self)
+						if self not in p.nexts:
+							p.nexts.append (self)
 		else:
-			self.props [name] = value
-	
-	def setLogger (self, logger):
-		"""
-		Set the pipeline logger to the process
-		@params:
-			`logger`: The logger
-		"""
-		self.props['logger'] = logger
+			self.props[name] = value
 		
-	def log (self, msg, level="info", flag=None):
+	def log (self, msg, level="info", flag=None, key = ''):
 		"""
 		The log function with aggregation name, process id and tag integrated.
 		@params:
 			`msg`:   The message to log
 			`levle`: The log level
 			`flag`:  The flag
+			`key`:   The type of messages
 		"""
-		if flag is None: flag = level
-		flag = flag.upper().rjust(7)
+		if flag is None: 
+			flag = level
+		flag  = flag.upper().rjust(7)
 		flag  = "[%s]" % flag
 		title = self._name()
 		func  = getattr(self.logger, level)
-		func ("%s %s: %s" % (flag, title, msg))
+		
+		maxline = proc.LOG_NLINE[key]
+		if self.lognline[key] < abs(maxline):
+			func ("%s %s: %s" % (flag, title, msg))
+		elif self.lognline[key] == abs(maxline) and maxline < 0:
+			func ("%s %s: %s" % (flag, title, "... omitting the same type of coming logs"))
+		self.lognline[key] += 1
 
 	def copy (self, tag=None, newid=None):
 		"""
@@ -212,7 +253,7 @@ class proc (object):
 		props['sets']      = []
 		props['workdir']   = ''
 		props['args']      = pycopy.copy(self.props['args'])
-		props['id']        = utils.varname('\w+\.' + self.copy.__name__, 3) if newid is None else newid
+		props['id']        = utils.varname(r'\w+\.' + self.copy.__name__, 3) if newid is None else newid
 		newproc.__dict__['config'].update(config)
 		newproc.__dict__['props'].update(props)
 		
@@ -224,12 +265,15 @@ class proc (object):
 		@returns:
 			The uid
 		"""
+		if self.suffix:
+			return self.suffix
+
 		config        = { key:val for key, val in self.config.iteritems() if key not in ['workdir', 'forks', 'cache', 'retcodes', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
 		config['id']  = self.id
 		config['tag'] = self.tag
 		
 		if config.has_key ('callback'):
-			config['callback'] = utils.funcSig(config['callback'])
+			config['callback'] = utils.funcsig(config['callback'])
 		# proc is not picklable
 		if config.has_key('depends'):
 			depends = config['depends']
@@ -246,10 +290,11 @@ class proc (object):
 		if config.has_key ('input') and isinstance(config['input'], dict):
 			config['input'] = pycopy.copy(config['input'])
 			for key, val in config['input'].iteritems():
-				config['input'][key] = utils.funcSig(val) if callable(val) else val
-			
+				config['input'][key] = utils.funcsig(val) if callable(val) else val
+
 		signature = pickle.dumps(str(config))
-		return utils.uid(signature)
+		self.props['suffix'] = utils.uid(signature)
+		return self.suffix
 
 	def _tidyBeforeRun (self):
 		"""
@@ -257,24 +302,28 @@ class proc (object):
 		"""
 		self._buildProps ()
 		self._buildInput ()
-		self._buildBrings ()
-		self._buildOutput ()
-		self._buildScript ()
+		self._buildProcVars ()
+		self._buildJobs ()
 
 	def _tidyAfterRun (self):
 		"""
 		Do some cleaning after running jobs
 		"""
-		sucJids = self._checkStatus ()
-		if sucJids == False: return
-		self.log ('Successful jobs: %s' % (sucJids if len(sucJids) < len(self.ncjobids) else 'ALL'), 'debug')
-		#self._doCache (sucJids) # cached in check status
-		if len (sucJids) < len(self.ncjobids):
-			self.log ('Callback will not be called until all non-cached jobs run successfully.', 'warning')
-		else:
-			if callable (self.callback):
+		failedjobs = []
+		for i in self.ncjobids:
+			job = self.jobs[i]
+			if not job.succeed():
+				failedjobs.append (job)
+		
+		if not failedjobs:	
+			self.log ('Successful jobs: ALL', 'debug')
+			if callable (self.callback):		
 				self.log('Calling callback ...', 'debug')
 				self.callback (self)
+		else:
+			failedjobs[0].showError (len(failedjobs))
+			if self.errorhow != 'ignore': 
+				sys.exit (1) # don't go further
 	
 	def _name (self, incAggr = True):
 		"""
@@ -282,17 +331,20 @@ class proc (object):
 		@returns:
 			the name
 		"""
-		aggr  = "@%s" % self.aggr if self.aggr and incAggr else ""
+		aggrName  = "@%s" % self.aggr if self.aggr and incAggr else ""
 		tag   = ".%s" % self.tag  if self.tag != "notag" else ""
-		return "%s%s%s" % (self.id, tag, aggr)
+		return "%s%s%s" % (self.id, tag, aggrName)
 
-	def run (self, config = {}):
+	def run (self, config = None):
 		"""
 		Run the jobs with a configuration
 		@params:
 			`config`: The configuration
 		"""
 		timer = time()
+		if config is None:
+			config = {}
+
 		self.logger.info ('[  START] ' + utils.padBoth(' ' + self._name() + ' ', 80, '-'))
 		# log the dependencies
 		self.log ("%s => %s => %s" % ([p._name() for p in self.depends] if self.depends else "START", self._name(), [p._name() for p in self.nexts] if self.nexts else "END"), "info", "depends")
@@ -301,7 +353,7 @@ class proc (object):
 		if self._runCmd('beforeCmd') != 0:
 			raise Exception ('Failed to run beforeCmd: %s' % self.beforeCmd)
 		if not self._isCached():
-			# I am not cached, touch the input of my nexts
+			# I am not cached, touch the input of my nexts?
 			# but my nexts are not initized, how?
 			# set cached to False, then my nexts will access it
 			self.props['cached'] = False
@@ -311,124 +363,8 @@ class proc (object):
 			raise Exception ('Failed to run afterCmd: %s' % self.afterCmd)
 		self._tidyAfterRun ()
 		self.log ('Done (time: %s).' % utils.formatTime(time() - timer), 'info')
-
-	def _checkStatus (self):
-		"""
-		Check the status of each job
-		@returns
-			False if jobs are completely failed
-			Otherwise return the successful job indices.
-		"""
-		#cachefile  = os.path.join (self.workdir, self.cachefile)
-		ret        = []
-		failedjobs = []
-		failedrcs  = []
-
-		if self.exportdir and not os.path.exists(self.exportdir):
-			os.makedirs (self.exportdir)
 		
-		for i in range(self.length):
-			job   = self.jobs[i]
-			if i in self.ncjobids:
-				#st    = job.status(self.retcodes)
-				rc    = job.rc()
-				if rc in self.retcodes:
-					#job.cache(cachefile) # must do right after job finishes
-					job.export (self.exportdir, self.exporthow, self.exportow)
-					ret.append (i)
-				else:
-					failedjobs.append (job)
-					failedrcs.append  (rc)
-			else:
-				# also do export for cached jobs
-				job.export (self.exportdir, self.exporthow, self.exportow)
-				
-		def rc2msg (rc):
-			msg = "Program error."
-			if rc == pjob.emptyRc:    msg = "No rcfile generated or empty."
-			elif rc == pjob.failedRc: msg = "Failed to submit/run the jobs."
-			elif rc < 0:              msg = "Output files not generated."
-			return msg
-		
-		if self.errorhow == 'ignore' and failedjobs:
-			for i, fjob in enumerate(failedjobs):
-				self.log ("Job #%s failed but ignored with return code: %s (%s)" % (fjob.index, failedrcs[i] if failedrcs[i] != pjob.noOutRc else "-0", rc2msg(failedrcs[i])) , "warning")
-			return ret + [j.index for j in failedjobs]
-		
-		if not failedjobs: return ret  # all jobs successfully finished
-		# just inform the first failed job
-		failedjob = failedjobs[0]
-		failedrc  = failedrcs [0]
-			
-		self.log('Job #%s: return code %s expected, but get %s: %s' % (failedjob.index, self.retcodes, failedrc if failedrc != pjob.noOutRc else "-0", rc2msg(failedrc)), 'error')
-		
-		if not self.echo:
-			self.log('Job #%s: check STDERR below:' % (failedjob.index), 'error')
-			errmsgs = []
-			if os.path.exists (failedjob.errfile):
-				errmsgs = ['[ STDERR] ' + line.rstrip() for line in open(failedjob.errfile)]					
-			if not errmsgs: errmsgs = ['[ STDERR] <EMPTY STDERR>']
-			for errmsg in errmsgs[:20]: self.logger.error(errmsg)
-			if len (errmsgs) > 20:
-				self.logger.error ('[ STDERR] ... and %s lines omitted (see all in "%s").' % (len(errmsgs)-20, failedjob.errfile))
-		
-		sys.exit (1) # Don't goto next proc
-		
-	def _prepInfile (self, infile, key, index, warnings, multi=False):
-		"""
-		Prepare input file, create link to it and set other placeholders
-		@params:
-			`infile`:    The input files
-			`key`:       The base placeholder
-			`index`:     The index of the job
-			`warnings`:  The warnings during the process
-			`multi`:     Whether it's a list of files or not
-		"""
-		if not self.input.has_key(key): self.input[key] = [''] * self.length
-		if not self.input.has_key(key + '.bn'):  self.input[key + '.bn']  = [''] * self.length
-		if not self.input.has_key(key + '.fn'):  self.input[key + '.fn']  = [''] * self.length
-		if not self.input.has_key(key + '.ext'): self.input[key + '.ext'] = [''] * self.length
-		if not self.input.has_key(key + '.dir'): self.input[key + '.dir'] = [''] * self.length
-		
-		try:
-			job     = self.jobs[index]
-			srcfile = os.path.abspath(infile)
-			rd      = os.path.dirname(os.path.realpath(srcfile))
-			bn      = os.path.basename(srcfile)
-			infile  = os.path.join (self.indir, bn)
-			fn, ext = os.path.splitext (os.path.basename(infile))
-			if not os.path.exists (infile):
-				# make sure it's not a link to non-exist file
-				if os.path.islink(infile): os.remove (infile)
-				os.symlink (srcfile, infile)
-			elif not utils.isSameFile (srcfile, infile):
-				os.remove (infile)
-				os.symlink (srcfile, infile)
-				warnings.append (infile)
-		except Exception, ex:
-			raise Exception("Failed to prepare input file: %s\n%s" % (infile, str(ex)))
-		
-		if multi:
-			if not isinstance(self.input[key][index], list):
-				self.input[key][index]          = [infile]
-				self.input[key + '.bn'][index]  = [bn]
-				self.input[key + '.fn'][index]  = [fn]
-				self.input[key + '.ext'][index] = [ext]
-				self.input[key + '.dir'][index] = [rd]
-			else:
-				self.input[key][index].append(infile)
-				self.input[key + '.bn'][index].append(bn)
-				self.input[key + '.fn'][index].append(fn)
-				self.input[key + '.ext'][index].append(ext)
-				self.input[key + '.dir'][index].append(rd)
-			job.input['files'].append(infile)
-		else:
-			self.input[key][index]          = infile
-			self.input[key + '.bn'][index]  = bn
-			self.input[key + '.fn'][index]  = fn
-			self.input[key + '.ext'][index] = ext
-			self.input[key + '.dir'][index] = rd
-			job.input['file'].append(infile)
+	
 				
 	def _buildProps (self):
 		"""
@@ -438,29 +374,19 @@ class proc (object):
 			self.props['retcodes'] = [self.retcodes]
 		
 		if isinstance (self.retcodes, str):
-			self.props['retcodes'] = [int(i) for i in utils.split(self.retcodes, ',')]
+			self.props['retcodes'] = [int(i) for i in self.retcodes.split(',')]
 
-		key = self.id + '.' + self.tag
-		if key in proc.ids and proc.ids[key] != self:
-			raise Exception ('A proc with id %s and tag %s already exists.' % (self.id, self.tag))
-		proc.ids[key] = self
-
+		key = self._name(False)
+		if key in proc.PROCS and proc.PROCS[key] != self:
+			raise Exception ('A proc with id "%s" and tag "%s" already exists.' % (self.id, self.tag))
+		proc.PROCS[key] = self
+		
 		if not 'workdir' in self.sets and not self.workdir:
-			self.props['workdir'] = os.path.join(self.tmpdir, "PyPPL.%s.%s.%s" % (self.id, self.tag, self._suffix()))
-
-		self.props['indir']   = os.path.join(self.workdir, 'input')
-		self.props['outdir']  = os.path.join(self.workdir, 'output')
+			self.props['workdir'] = os.path.join(self.ppldir, "PyPPL.%s.%s.%s" % (self.id, self.tag, self._suffix()))
 		
-		if not os.path.exists (self.workdir): os.makedirs (self.workdir)
-		if not os.path.exists (self.indir):   os.makedirs (self.indir)
-		if not os.path.exists (self.outdir):  os.makedirs (self.outdir)
-		if not os.path.exists (os.path.join(self.workdir, 'scripts')):
-			os.makedirs (os.path.join(self.workdir, 'scripts'))
-		
-		self.props['jobs'] = [] # in case the proc is reused, maybe other properties to reset ?
-		
-		# if it is a copy, make sure the "nexts" are
-		
+		if not os.path.exists (self.workdir): 
+			os.makedirs (self.workdir)	
+				
 	def _buildInput (self):
 		"""
 		Build the input data
@@ -472,216 +398,87 @@ class proc (object):
 		for 1,2 channels will be the combined channel from dependents, if there is not dependents, it will be sys.argv[1:]
 		"""
 
-		input    = self.config['input']
-		
-		if not isinstance (input, dict):
-			input = ','.join(utils.alwaysList (input))			
+		indata    = self.config['input']
+		if not isinstance (indata, dict):
+			indata = ','.join(utils.alwaysList (indata))			
 			depdchan = channel.fromChannels (*[d.channel for d in self.depends])
-			input = {input: depdchan if self.depends else channel.fromArgv()}
+			indata = {indata: depdchan if self.depends else channel.fromArgv()}
+			
 		# expand to one key-channel pairs
-		inputs = {}
-		for keys, vals in input.iteritems():
-			keys   = utils.split(keys, ',')
-			if callable (vals):
-				#vals  = vals (depdchan if self.depends else argv)
-				vals  = vals (*[d.channel.copy() for d in self.depends] if self.depends else channel.fromArgv())
+		for inkeys, invals in indata.iteritems():
+			keys   = utils.split(inkeys, ',')
+			if callable (invals):
+				vals  = invals (*[d.channel.copy() for d in self.depends] if self.depends else channel.fromArgv())
 				vals  = vals.split()
-			elif isinstance (vals, (str, unicode)): # only for files: "/a/b/*.txt, /a/c/*.txt"
-				vals  = utils.split(vals, ',')
-			elif isinstance (vals, channel):
-				vals  = vals.split()
-			elif isinstance (vals, list):
-				vals  = channel.create(vals)
-				vals  = vals.split()
+			elif isinstance (invals, basestring): # only for files: "/a/b/*.txt, /a/c/*.txt"
+				vals  = utils.split(invals, ',')
+			elif isinstance (invals, channel):
+				vals  = invals.split()
+			elif isinstance (invals, list):
+				vals  = channel.create(invals).split()
 			else:
 				raise ValueError ("%s: Unexpected values for input. Expect dict, list, str, channel, callable." % self._name())
+			
 			width = len (vals)
 			if len (keys) > width:
 				raise ValueError ('%s: Not enough data for input variables.\nVarialbes: %s\nData: %s' % (self._name(), keys, vals))
+			
 			for i, key in enumerate(keys):
-				toExpand = (key.endswith(':files') or key.endswith(':paths')) and isinstance(vals[i], (str, unicode))
-				chan = channel.fromPath(vals[i]) if toExpand else vals[i]
-				if self.length == 0: self.props['length'] = chan.length()
-				if self.length != chan.length():
-					raise ValueError ('%s: Expect same lengths for input channels, but got %s and %s (keys: %s).' % (self._name(), self.length, chan.length(), key))
-				inputs[key] = chan
-			
-		self.input = {'#': []}
-		for i in range (self.length):
-			self.jobs.append (pjob (i, self.workdir, self.log))
-			self.input['#'].append(i)
-			self.ncjobids.append (i)
-			
-		warnings = []
-		for keyinfo, chan in inputs.iteritems():
-			if keyinfo.endswith (':files') or keyinfo.endswith (':paths'):
-				key = keyinfo[:-6]				
-				# [([f1,f2],), ([f3,f4],)] => [[f1,f2], [f3,f4]]
-				for i, ch in enumerate(chan.toList()):
-					for infile in ch: self._prepInfile (infile, key, i, warnings, True)
-				
-			elif keyinfo.endswith (':file') or keyinfo.endswith (':path'):
-				key = keyinfo[:-5]
-				for i, ch in enumerate(chan.toList()):
-					self._prepInfile (ch, key, i, warnings, False)
-			else: # var
-				if not keyinfo.endswith(':var'): keyinfo = keyinfo + ':var'
-				key = keyinfo[:-4]
-				self.input[key] = []
-				for i, ch in enumerate(chan.toList()):
-					job = self.jobs[i]
-					job.input['var'].append (ch)
-					self.input[key].append (ch)
-		if warnings:
-			warn = warnings.pop(0)
-			self.log ("Overwriting existing input file: %s" % warn, 'debug', 'warning')
-			if warnings:
-				self.log ("... and %s others" % len(warnings), 'debug', 'warning')
+				intype = key.split(':')[-1]
+				thekey = key.split(':')[0]
+				val    = vals[i].toList() #if isinstance(vals[i], channel) else vals[i]
 
-		# also add proc.props, mostly scalar values
-		alias = {val:key for key, val in proc.alias.iteritems()}
+				if intype not in proc.IN_VARTYPE + proc.IN_FILESTYPE + proc.IN_FILETYPE:
+					intype = proc.IN_VARTYPE[0]
+				
+				if intype in proc.IN_FILESTYPE:
+					for x, v in enumerate(val):
+						if isinstance (v, basestring):
+							val[x] = channel.fromPath (v).toList()
+				
+				if self.length == 0: 
+					self.props['length'] = len (val)
+				if self.length != len (val):
+					raise ValueError ('%s: Expect same lengths for input channels, but got %s and %s (keys: %s).' % (self._name(), self.length, len (val), key))
+				self.props['indata'][thekey] = {
+					'type': intype,
+					'data': val
+				}
+			self.props['jobs'] = [None] * self.length
+				
+	def _buildProcVars (self):
+		"""
+		also add proc.props, mostly scalar values
+		"""
+		alias = {val:key for key, val in proc.ALIAS.iteritems()}
 		for prop in sorted(self.props.keys()):
 			val = self.props[prop]
-			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'runner', 'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow', 'indir', 'outdir', 'length', 'args']: continue
+			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'runner',
+							'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow',
+							'indir', 'outdir', 'length', 'args']:
+				continue
+			
 			if prop == 'args':
 				self.props['procvars']['proc.args'] = val
 				for k, v in val.iteritems():
 					self.props['procvars']['proc.args.' + k] = v
 					self.log('%s => %s' % (k, v), 'info', 'p.args')
 			else:
-				if alias.has_key (prop): prop = alias[prop]
-				self.log ('%s => %s' % (prop, val), 'debug', 'p.props')
+				if alias.has_key (prop): 
+					prop = alias[prop]
 				self.props['procvars']['proc.' + prop] = val
-	
-	def _buildBrings (self):
-		"""
-		Build the brings to bring some files to indir
-		The brings can be set as: `p.brings = {"infile": "{{infile.bn}}*.bai"}`
-		If you have multiple files to bring in:
-		`p.brings = {"infile": "{{infile.bn}}*.bai", "infile#": "{{infile.bn}}*.fai"}`
-		You can use wildcards to search the files, but only the first file will return
-		To access the brings in your script: {% raw %}`{{ infile.bring }}`, `{{ infile#.bring }}`{% endraw %}
-		If original input file is a link, will try to find it along each directory the link is in.
-		"""
-		warnings = []
-		for key, val in self.config['brings'].iteritems():
-			brkey   = key + ".bring"
-			self.input [brkey] = [""] * self.length
-			for i in self.input['#']:
-				data = {key:val[i] for key, val in self.input.iteritems()}
-				data.update (self.procvars)
-				
-				pattern = utils.format (val, data)
-				inkey   = key.replace("#", "")
-				infile  = self.input[inkey][i]
-				while os.path.exists(infile):
-					bring = glob (os.path.join (os.path.dirname(infile), pattern))
-					if bring:
-						dstfile = os.path.join (self.indir, os.path.basename(bring[0]))
-						self.input[brkey][i] = dstfile
-						if os.path.exists(dstfile) and not utils.isSameFile (dstfile, bring[0]):
-							warnings.append (dstfile)
-							os.remove (dstfile)
-							os.symlink (bring[0], dstfile)
-						elif not os.path.exists(dstfile):
-							if os.path.islink (dstfile): os.remove (dstfile)
-							os.symlink (bring[0], dstfile)
-						break
-					if not os.path.islink (infile): break
-					infile = os.readlink(infile)
-					
-		if warnings:
-			warn = warnings.pop(0)
-			self.log ("Overwriting existing bring file: %s" % warn, 'debug', 'warning')
-			if warnings:
-				self.log ("... and %s others" % len(warnings), 'debug', 'warning')		
+				self.log ('%s => %s' % (prop, val), 'info', 'p.props')
 
-		ridx = randint(0, self.length-1)
-		for key in sorted(self.input.keys()):
-			self.log ('[%s/%s]: %s => %s' % (ridx, self.length-1, key, self.input[key][ridx]), 'info', 'input')
 				
-	def _buildOutput (self):
-		"""
-		Build the output data.
-		Output could be:
-		1. list: `['output:var:{{input}}', 'outfile:file:{{infile.bn}}.txt']`
-		   or you can ignore the name if you don't put it in script:
-				 `['var:{{input}}', 'path:{{infile.bn}}.txt']`
-		   or even (only var type can be ignored):
-				 `['{{input}}', 'file:{{infile.bn}}.txt']`
-		2. str : `'output:var:{{input}}, outfile:file:{{infile.bn}}.txt'`
-		3. dict: `{"output:var:{{input}}": channel1, "outfile:file:{{infile.bn}}.txt": channel2}`
-		   or    `{"output:var:{{input}}, output:file:{{infile.bn}}.txt" : channel3}`
-		for 1,2 channels will be the property channel for this proc (i.e. p.channel)
-		"""
-		output = self.config['output']
-		if not isinstance (output, dict):
-			output = ','.join(utils.alwaysList (output))
-		else:
-			output = ','.join([key + ':' + val for key, val in output.iteritems()])
-			
-		self.props['output'] = {}
-		for key in utils.split(output, ','):
-			(oname, otype, oexp) = utils.sanitizeOutKey(key)
-			if otype in ['file', 'path', 'dir']: oexp = os.path.join (self.outdir, oexp)
-			self.props['output'][oname] = []
-			self.props['output'][oname + '.prefix'] = []
-			
-			for i in self.input['#']:
-				data = {key:val[i] for key, val in self.input.iteritems()}
-				data.update (self.procvars)
-				val  = utils.format(oexp, data)
-				if otype == 'dir' and not os.path.exists (val):
-					if os.path.islink (val): os.remove (val)
-					os.makedirs (val)
-				self.props['output'][oname].append (val)
-				self.props['output'][oname + '.prefix'].append (os.path.splitext(val)[0])
-				self.props['jobs'][i].output['var' if otype == 'var' else 'file'].append(val)
-			self.props['channel'].merge(self.props['output'][oname])
-		
-		utils.sanitizeOutKey.index = 0
-		
-		ridx = randint(0, self.length-1)
-		for key in sorted(self.output.keys()):
-			self.log ('[%s/%s]: %s => %s' % (ridx, self.length-1, key, self.output[key][ridx]), 'info', 'output')
-
-	def _buildScript (self): # make self.jobs
-		"""
-		Build the script, interpret the placeholders
-		"""
-		if not self.script:	self.log ('No script specified', 'warning')
-		scriptdir = os.path.join (self.workdir, 'scripts')
-		script    = self.script.strip()
-		
-		if script.startswith ('template:'):
-			tplfile = script[9:].strip()
-			if not os.path.isabs(tplfile):
-				tplfile = os.path.join (os.path.dirname(sys.argv[0]), tplfile)
-			if not os.path.exists (tplfile):
-				raise ValueError ('Script template file "%s" does not exist.' % tplfile)
-			self.log ("Using template file: %s" % tplfile)
-			script = open(tplfile).read().strip()
-		
-		if not script.startswith ("#!"):
-			script = "#!/usr/bin/env " + self.defaultSh + "\n\n" + script
-		
-		scriptExists = []
-		for index in self.input['#']:
-			data    = {key:val[index] for key, val in self.input.iteritems()}
-			data.update({key:val[index] for key, val in self.output.iteritems()})
-			data.update(self.procvars)
-			jscript = utils.format (script, data)
-		
-			scriptfile = os.path.join (scriptdir, 'script.%s' % index)
-			if os.path.exists(scriptfile) and open(scriptfile).read() == jscript:
-				scriptExists.append (index)
-				continue # don't touch it if contest is the same
-			open (scriptfile, 'w').write (jscript)
-		if scriptExists:
-			se = scriptExists.pop(0)
-			self.log ("Script files exist and contents are the same, didn't touch them for job #%s" % se, 'debug')
-			if scriptExists:
-				self.log ("... and %s others" % len(scriptExists), 'debug')
+	def _buildJobs (self):
+		rptjob = randint(0, self.length-1)
+		for i in range(self.length):
+			job = pjob (i, self)
+			self.jobs[i] = job
+			job.init ()
+			row = [x['data'] for x in job.output.values()]
+			self.channel.rbind (row)
+		self.jobs[rptjob].report()
 
 	def _readConfig (self, config):
 		"""
@@ -701,72 +498,42 @@ class proc (object):
 		@returns:
 			True if all jobs are cached, otherwise False
 		"""
+		self.props['ncjobids'] = range(self.length)
 		if self.cache == False:
-			self.log ('Not cached, because proc.cache = False', 'debug')
+			self.log ('Not cached, because proc.cache is False', 'debug')
 			return False
-	
-		sigCachedJids = []
-		exCachedJids  = []
-		if self.cache in [True, 'export+']:
-			cachefile = os.path.join (self.workdir, self.cachefile)
-			jobsigs   = [''] * self.length
-			
-			if os.path.exists (cachefile): #jobsigs = pickle.load(open(cachefile))
-				with open (cachefile) as f:
-					for line in f:
-						line = line.strip()
-						if not line: continue
-						jid, sig = line.split("\t")
-						iid = int(jid)
-						if (iid >= self.length): continue
-						jobsigs[iid] = sig
-			elif self.cache == True:
-				self.log ('Not cached, cache file %s not exists.' % cachefile, 'debug')
+		
+		if self.cache == True:
+			for depend in self.depends:
+				if depend.cached: continue
+				self.log ('Not cached, my dependent "%s" not cached.' % depend._name(), 'debug')
 				return False
-			
-			# check my depends
-			if self.cache == True:
-				for depend in self.depends:
-					if depend.cached: continue
-					self.log ('Not cached, my dependent %s not cached.' % depend.id + '.' + depend.tag, 'debug')
-					return False
-			# sigCachedJids = [i for i in self.input['#'] if jobsigs[i] == self.jobs[i].signature(self.log) and jobsigs[i] != False]
-			# job.signature() can't be "False" just can be False
-			sigCachedJids = [i for i in self.input['#'] if jobsigs[i] == self.jobs[i].signature()]
-
-		if self.cache in ['export', 'export+']:
-			warnings      = []
-			exCachedJids  = [i for i in self.input['#'] if self.jobs[i].exportCached(self.exportdir, self.exporthow, warnings)]
-			nwarn         = len (warnings)
-			for warnings in warnings[:3]:
-				self.log(warnings, 'warning')
-			if nwarn > 3:
-				self.log("... and %s others" % (nwarn - 3), 'warning')
-			
-		elif not isinstance(self.cache, bool):
-			raise ValueError ('Cache option expects True/False/"export"/"export+"')
 		
-		cachedJids = [i for i in sigCachedJids if i not in exCachedJids] + exCachedJids
+		trulyCachedJids        = []
+		exptCachedJids         = []
+		self.props['ncjobids'] = []
+		for i, job in enumerate(self.jobs):
+			job = self.jobs[i]
+			if job.isTrulyCached ():
+				trulyCachedJids.append(i)
+			elif job.isExptCached ():
+				exptCachedJids.append (i)
+			else:
+				self.props['ncjobids'].append (i)
+				
+		self.log ('Truely cached jobs: %s' % (trulyCachedJids if len(trulyCachedJids) < self.length else 'ALL'), 'debug')
+		self.log ('Export cached jobs: %s' % (exptCachedJids  if len(exptCachedJids)  < self.length else 'ALL'), 'debug')
 		
-		if not cachedJids:
-			self.log ('Not cached, none of the jobs are cached.', 'debug')
+		if self.ncjobids:
+			if len(self.ncjobids) < self.length:
+				self.log ('Partly cached, only run non-cached jobs.', 'info')
+				self.log ('Jobs to be running: %s' % self.ncjobids, 'debug')
+			else:
+				self.log ('Not cached, none of the jobs are cached.', 'info')
 			return False
-		
-		self.props['ncjobids'] = [i for i in self.input['#'] if i not in cachedJids]
-		# in case some programs don't overwrite output files
-		## This caused problems for jobs running, cuz output files cleared
-		## Ask the job itself to clear the output when it tries to run
-		# for i in self.ncjobids: self.jobs[i].clearOutput()
-		
-		self.log ('Truely cached jobs: %s' % (sigCachedJids if len(sigCachedJids) < self.length else 'ALL'), 'debug')
-		self.log ('Export cached jobs: %s' % (exCachedJids  if len (exCachedJids) < self.length else 'ALL'), 'debug')
-		if len (cachedJids) < self.length:
-			self.log ('Partly cached, only run non-cached jobs.', 'info')
-			self.log ('Jobs to be running: %s' % self.ncjobids, 'debug')
-			return False
-		
-		self.log ('Skip running jobs: %s' % self.workdir, 'info', 'CACHED')
-		return True
+		else:
+			self.log (self.workdir, 'info', 'CACHED')
+			return True
 
 	def _runCmd (self, key):
 		"""
@@ -776,11 +543,9 @@ class proc (object):
 		@returns:
 			The return code of the command
 		"""
-		if not self.props[key]:	return 0
-		data = {key:val for key,val in self.procvars.iteritems()}
-		data.update (self.input)
-		data.update (self.output)
-		cmd = utils.format(self.props[key], data)
+		if not self.props[key]:	
+			return 0
+		cmd = utils.format(self.props[key], self.procvars)
 		self.log ('Running <%s>: %s' % (key, cmd), 'info')
 		
 		p = Popen (cmd, shell=True, stdin=PIPE, stderr=PIPE, stdout=PIPE)
@@ -797,34 +562,35 @@ class proc (object):
 		"""
 		# submit jobs
 		def sworker (q):
+			"""
+			The worker to run jobs
+			"""
 			while True:
-				(ru, i) = q.get()
+				(run, i) = q.get()
 				sleep (i)
-				if not ru.isRunning():
-					ru.submit()
+				if self.checkrun and run.isRunning(False):
+					self.log ("Job #%s is already running, skip submitting." % run.job.index, 'info')
 				else:
-					self.log ("Job #%s is already running, skip submitting." % ru.job.index, 'info')
-				ru.wait() # don't check submision
-				ru.finish()
-				if ru.job.rc() in self.retcodes:
-					ru.job.cache(os.path.join (self.workdir, self.cachefile))
+					run.submit()
+				run.wait() 
+				run.finish()
 				q.task_done()
 		
-		runner    = proc.runners[self.runner]
+		runner    = proc.RUNNERS[self.runner]
 		maxsubmit = self.forks
-		if hasattr(runner, 'maxsubmit'): maxsubmit = runner.maxsubmit
+		if hasattr(runner, 'maxsubmit'): 
+			maxsubmit = runner.maxsubmit
 		interval  = .1
-		if hasattr(runner, 'interval'): interval = runner.interval
+		if hasattr(runner, 'interval'): 
+			interval = runner.interval
 		
 		sq = Queue()
 		for i in self.ncjobids:
-			rjob = runner (self.jobs[i], self.props)
+			rjob = runner (self.jobs[i])
 			tm = int(i/maxsubmit) * interval
 			sq.put ((rjob, tm))
 
 		# submit jobs
-		
-		#nojobs2submit = min (self.forks, len(self.jobs))
 		nojobs2submit = min (self.forks, len(self.ncjobids))
 		for i in range (nojobs2submit):
 			t = threading.Thread(target = sworker, args = (sq, ))
@@ -844,12 +610,9 @@ class proc (object):
 		if runner_name.startswith ('runner_'):
 			runner_name = runner_name[7:]
 			
-		if not proc.runners.has_key(runner_name):
-			proc.runners[runner_name] = runner
+		if not proc.RUNNERS.has_key(runner_name):
+			proc.RUNNERS[runner_name] = runner
 			
 proc.registerRunner (runner_local)
 proc.registerRunner (runner_sge)
 proc.registerRunner (runner_ssh)
-
-
-

@@ -6,6 +6,11 @@ import logging
 
 class PyPPLLogFormatter (logging.Formatter):
 	"""
+	logging formatter for pyppl
+	"""
+
+	formatter        = "[%(asctime)s]%(message)s"
+	"""
 	PyPPL log formatter
 	"""
 	color_black       = '\033[0;30m'
@@ -26,8 +31,9 @@ class PyPPLLogFormatter (logging.Formatter):
 	color_white       = '\033[1;37m'
 	color_clear       = '\033[0m'
 	
-	def __init__(self, fmt="[%(asctime)-15s] %(message)s"):
-		logging.Formatter.__init__(self, fmt)
+	def __init__(self, fmt=None):
+		if fmt is None: fmt = self.formatter
+		logging.Formatter.__init__(self, fmt, "%Y-%m-%d %H:%M:%S")
 	
 	def format(self, record):
 		level       = record.levelno
@@ -50,7 +56,7 @@ class PyPPLLogFormatter (logging.Formatter):
 			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_green, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_green, record.msg[9:], PyPPLLogFormatter.color_clear)
 		elif level == 'START':
 			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_lightcyan, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_lightcyan, record.msg[9:], PyPPLLogFormatter.color_clear)
-		elif level in ['INPUT', 'P.ARGS']:
+		elif level in ['INPUT', 'P.ARGS', 'BRINGS']:
 			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_green, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_green, record.msg[9:], PyPPLLogFormatter.color_clear)
 		elif level in ['ERROR', 'STDERR']:
 			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_red, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_red, record.msg[9:], PyPPLLogFormatter.color_clear)
@@ -71,9 +77,10 @@ def getLogger (level = 'info', name='PyPPL', colored=True):
 		The logger
 	"""
 	ch = logging.StreamHandler()
-	ch.setFormatter (PyPPLLogFormatter() if colored else logging.Formatter("[%(asctime)-15s] %(message)s"))
+	ch.setFormatter (PyPPLLogFormatter() if colored else logging.Formatter(PyPPLLogFormatter.formatter, "%Y-%m-%d %H:%M:%S"))
 	logger = logging.getLogger (name)
 	logger.setLevel (getattr(logging, level.upper()))
+	#if ch not in logger.handlers:
 	logger.addHandler (ch)
 	return logger
 
@@ -106,37 +113,42 @@ def varname (func, maxline = 20):
 			def __init__ (self):
 				print varname (self.__class__.__name__)
 			def method (self):
-				print varname ('\w+\.' + self.method.__name__, 0)
+				print varname (r'\\w+\\.' + self.method.__name__, 0)
 		```
 	@returns:
 		The variable name
 	"""
-	import re, inspect
+	import re
+	import inspect
 	frame   = inspect.currentframe()
 	frames  = inspect.getouterframes(frame)
 	frame   = frames[2]
 	src     = ''.join(frame[4])
 
-	file    = frame[1]
+	fn      = frame[1]
 	lino    = frame[2]
 	#            ;         ab             =    pyppl.proc (
 	varpat  = r'(^|[^\w])([A-Za-z_]\w*)\s*=\s*([A-Za-z_][\w_]+\.)*%s\s*\(' % func
 	#            ;         pyppl.proc (
 	funcpat = r'(^|[^\w])([A-Za-z_][\w_]+\.)*%s\s*\(' % func
 	m       = re.search(varpat, src)
-	if m: return m.group(2)
+	if m: 
+		return m.group(2)
 	varname.index += 1
 	suffix  = str(varname.index)
 	thefunc = func if not '\\.' in func else func.split('\\.')[1]
 	m       = re.search(funcpat, src)
-	if m: return thefunc + '_' + suffix
+	if m: 
+		return thefunc + '_' + suffix
 	
-	lines   = open(file).readlines()[max(0, lino-maxline-1):lino-1]
+	lines   = open(fn).readlines()[max(0, lino-maxline-1):lino-1]
 	for line in reversed(lines):
 		m   = re.search(varpat, line)
-		if m: return m.group(2)
+		if m: 
+			return m.group(2)
 		m   = re.search(funcpat, line)
-		if m: return thefunc + '_' + suffix
+		if m: 
+			return thefunc + '_' + suffix
 	
 	return thefunc + '_' + suffix
 varname.index = 0
@@ -229,6 +241,7 @@ def format (tpl, args):
 		The formatted string
 	"""
 	import re
+	from sys import stderr
 	s = tpl
 	m = re.findall ("{{.+?}}", s)
 	
@@ -237,26 +250,57 @@ def format (tpl, args):
 		parts = split(nneat, "|")
 		key   = parts.pop(0).strip()
 		if not args.has_key (key):
-			print "[KEY]      ->", key
-			print "[DATA]     ->", args
-			print "[TEMPLATE] ->"
-			print tpl
-			print "-" * 80
+			stderr.write ("[KEY]      ->" + str(key) + "\n")
+			stderr.write ("[DATA]     ->" + str(args) + "\n")
+			stderr.write ("[TEMPLATE] ->\n")
+			stderr.write (tpl + "\n")
+			stderr.write ("-" * 80 + "\n")
 			raise KeyError ("No key found in the data!")
+		
 		value = args[key]
-
 		while parts:
 			func = parts.pop(0).strip()
 			val2replace = ("'%s'" % value) if isinstance(value, basestring) else ("%s" % value)
-			func = re.sub("(?<=\(|\s|,)_(?=\)|,|\s)", val2replace, func, 1)
+			func = re.sub(r"(?<=\(|\s|,)_(?=\)|,|\s)", val2replace, func, 1)
 			
 			if func.startswith(".") or func.startswith("["):
 				value = eval ('%s%s' % (val2replace, func))
+			elif func.startswith ('lambda'):
+				value = eval ('(%s)(%s)' % (func, val2replace))
+			elif format.shorts.has_key (func):
+				value = eval ('(%s)(%s)' % (format.shorts[func], val2replace))
 			else:
 				value = eval (func)
 
 		s     = s.replace (n, str(value))
 	return s
+
+format.shorts = {
+	# convert python bool to R bool
+	'Rbool':     "lambda x: str(bool(x)).upper()",
+	'realpath':  "lambda x: __import__('os').path.realpath (x)",
+	'readlink':  "lambda x: __import__('os').readlink (x)",
+	'dirname':   "lambda x: __import__('os').path.dirname (x)",
+	'basename':  "lambda x: __import__('os').path.basename (x)",
+	'bn':        "lambda x: __import__('os').path.basename (x)",
+	# /a/b/c.txt => c
+	'filename':  "lambda x: __import__('os').path.splitext (__import__('os').path.basename(x))[0]",
+	'fn':        "lambda x: __import__('os').path.splitext (__import__('os').path.basename(x))[0]",
+	# /a/b/c.txt => .txt
+	'ext':       "lambda x: __import__('os').path.splitext (__import__('os').path.basename(x))[1]",
+	# /a/b/c.d.txt => c
+	'fnnodot':   "lambda x: __import__('os').path.basename (x).split('.')[0]",
+	# /a/b/c.txt => /a/b/c
+	'prefix':    "lambda x: __import__('os').path.splitext (x)[0]",
+	# /a/b/c.d.txt => /a/b/c
+	'pxnodot':   "lambda x: __import__('os').path.join (__import__('os').path.dirname(x), __import__('os').path.basename (x).split('.')[0])",
+	# array-space quote
+	'asquote':   "lambda x: '\"' + '\" \"'.join(x) + '\"'",
+	# array-comma quote
+	'acquote':   "lambda x: '\"' + '\",\"'.join(x) + '\"'",
+	'quote':     "lambda x: '\"%s\"' % str(x)",
+	'squote':    "lambda x: \"'%s'\" % str(x)"
+}
 
 def dictUpdate(origDict, newDict):
 	"""
@@ -281,7 +325,7 @@ def dictUpdate(origDict, newDict):
 		else:
 			dictUpdate(origDict[k], newDict[k])
 			
-def funcSig (func):
+def funcsig (func):
 	"""
 	Get the signature of a function
 	Try to get the source first, if failed, try to get its name, otherwise return None
@@ -294,7 +338,7 @@ def funcSig (func):
 		try:
 			from inspect import getsource
 			sig = getsource(func)
-		except:
+		except Exception:
 			sig = func.__name__
 	else:
 		sig = 'None'
@@ -393,17 +437,20 @@ def dirmtime (d):
 	mtime = 0
 	for root, dirs, files in walk(d):
 		m = getmtime (root) if exists(root) else 0
-		if m > mtime: mtime = m
+		if m > mtime: 
+			mtime = m
 		for dr in dirs:
 			m = dirmtime (join (root, dr))
-			if m > mtime: mtime = m
+			if m > mtime: 
+				mtime = m
 		for f in files:
-			m = getmtime (join (root, f)) if exists(join(root, f)) else 0
-			if m > mtime: mtime = m
+			m = getmtime (join (root, f)) if exists(join(root, f)) else False
+			if m > mtime: 
+				mtime = m
 	return mtime
 
 
-def fileSig (fn):
+def filesig (fn):
 	"""
 	Calculate a signature for a file according to its path and mtime
 	@params:
@@ -411,13 +458,16 @@ def fileSig (fn):
 	@returns:
 		The md5 deigested signature.
 	"""
-	from os.path import realpath, abspath, getmtime, isdir
-	from hashlib import md5
+	from os.path import realpath, abspath, getmtime, isdir, exists
 	fname = abspath(realpath(fn))
+	if not exists (fname): 
+		return False
 	mtime = dirmtime(fname) if isdir (fname) else getmtime(fname)
 	# not using fname, because we intend to allow links to replace the original file
 	# say in case of export using move
-	return md5(fn + '@' + str(mtime)).hexdigest()
+	if not mtime: 
+		return False
+	return fn + '@' + str(mtime)
 
 def alwaysList (data):
 	"""
@@ -438,51 +488,13 @@ def alwaysList (data):
 	elif isinstance(data, list):
 		ret = []
 		for d in data:
-			if ',' in d: ret += split(d, ',')
-			else: ret.append (d)
+			if ',' in d: 
+				ret += split(d, ',')
+			else: 
+				ret.append (d)
 	else:
 		raise ValueError('Expect string or list to convert to list.')
-	return map (lambda x: x.strip(), ret)
-
-def sanitizeOutKey (key):
-	"""
-	Sanitize the output keys, put them into standard format: "key:type:expression"
-	If the key is missing, '__out.[index]__' will be used, the index is incremental and starts from 0, reset for each process.
-	If the type is var, it can be omitted.
-	@static variables:
-		`index`: The index for unnamed keys, incremental. default: 0
-	@params:
-		`key`: the key to be sanitized
-	@examples:
-		```python
-		data = ["a, b, c", "d"]
-		ret  = alwaysList (data)
-		# ret == ["a", "b", "c", "d"]
-		```
-	@returns:
-		The split list
-	"""
-	parts = split(key, ':')
-	
-	if len(parts) == 1:
-		sanitizeOutKey.index += 1
-		return ('__out.%s__' % sanitizeOutKey.index, 'var', key)
-	
-	if len(parts) == 2:
-		if parts[0] in ['var', 'file', 'path', 'dir']:
-			sanitizeOutKey.index += 1
-			return ('__out.%s__' % sanitizeOutKey.index, parts[0], parts[1])
-		else:
-			return (parts[0], 'var', parts[1])
-	
-	if len(parts) == 3:
-		if parts[1] not in ['var', 'file', 'path', 'dir']:
-			raise ValueError ('Expect type: var, file or path instead of %s' % parts[1])
-	else:
-		raise ValueError ('You have extra colons in output key: %s' % key)
-	
-	return tuple (parts)
-sanitizeOutKey.index = 0
+	return [x.strip() for x in ret]
 
 def chmodX (thefile):
 	"""
@@ -492,7 +504,8 @@ def chmodX (thefile):
 	@returns:
 		A list with or without the path of the interpreter as the first element and the script file as the last element
 	"""
-	import os, stat
+	import os
+	import stat
 	thefile = os.path.realpath(thefile)
 	ret = [thefile]
 	try:
@@ -520,7 +533,8 @@ def padBoth (s, length, left, right = None):
 	@returns:
 		The logger
 	"""
-	if right is None: right = left
+	if right is None: 
+		right = left
 	padlen = length - len (s)
 	if padlen%2 == 1:
 		llen = (padlen - 1)/2
@@ -544,7 +558,7 @@ def formatTime (seconds):
 	h, m = divmod(m, 60)
 	return "%02d:%02d:%02d.%03d" % (h, m, s, 1000*(s-int(s)))
 
-def isSameFile (f1, f2):
+def isSamefile (f1, f2):
 	"""
 	Tell whether two paths pointing to the same file
 	@params:

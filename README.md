@@ -33,69 +33,66 @@ pip install pyppl
 ```
 
 ## First script
+To sort 5 files: 
 ```python
 from pyppl import pyppl, proc
 
 pSort         = proc()
-# use sys.argv as input channel
+# Use sys.argv as input channel,
+# because this proc does not have any dependents
+# infile will be the placeholder to access it in your output assignment
+# and script.
+# The ":file" denotes the type of input, a symbol link will be created in 
+# the input directory
 pSort.input   = "infile:file"
-pSort.output  = "outfile:file:{{infile.fn}}.sorted"
+# Output file (the ":file" sign) will be generated in job output directory
+# "infile" is the full path of the input file, "fn" takes its filename (without extension)
+pSort.output  = "outfile:file:{{infile | fn}}.sorted"
+# You can use placeholders to access input and output
 pSort.script  = """
   sort -k1r {{infile}} > {{outfile}}
 """ 
 
+# Assign the entrance process
 pyppl().starts(pSort).run()
 ```
 
-run `python test.py test1.txt test2.txt test3.txt test4.txt test5.txt` will output:
-```
-[2017-05-02 20:38:53,837] [  PyPPL] Version: 0.6.1
-[2017-05-02 20:38:53,837] [   TIPS] beforeCmd and afterCmd only run locally
-[2017-05-02 20:38:53,838] [ CONFIG] Read from /home/m161047/.pyppl
-[2017-05-02 20:38:53,838] [   INFO] DOT file saved to: test.pyppl.dot
-[2017-05-02 20:38:53,848] [   INFO] Flowchart file saved to: test.pyppl.svg
-[2017-05-02 20:38:53,848] [  START] ------------------------------------ pSort -------------------------------------
-[2017-05-02 20:38:53,848] [DEPENDS] pSort: START => pSort => END
-[2017-05-02 20:38:53,850] [P.PROPS] pSort: cache => True
-[2017-05-02 20:38:53,850] [P.PROPS] pSort: echo => False
-[2017-05-02 20:38:53,851] [P.PROPS] pSort: forks => 1
-[2017-05-02 20:38:53,851] [P.PROPS] pSort: id => pSort
-[2017-05-02 20:38:53,851] [P.PROPS] pSort: indir => /home/m161047/tests/workdir/PyPPL.pSort.notag.1Uncltkc/input
-[2017-05-02 20:38:53,851] [P.PROPS] pSort: length => 5
-[2017-05-02 20:38:53,851] [P.PROPS] pSort: outdir => /home/m161047/tests/workdir/PyPPL.pSort.notag.1Uncltkc/output
-[2017-05-02 20:38:53,851] [P.PROPS] pSort: runner => local
-[2017-05-02 20:38:53,851] [P.PROPS] pSort: tag => notag
-[2017-05-02 20:38:53,851] [P.PROPS] pSort: tmpdir => /home/m161047/tests/workdir
-[2017-05-02 20:38:53,851] [P.PROPS] pSort: workdir => /home/m161047/tests/workdir/PyPPL.pSort.notag.1Uncltkc
-[2017-05-02 20:38:53,851] [  INPUT] pSort: [0/4]: infile.ext => .txt
-[2017-05-02 20:38:53,851] [  INPUT] pSort: [0/4]: # => 0
-[2017-05-02 20:38:53,851] [  INPUT] pSort: [0/4]: infile.bn => test1.txt
-[2017-05-02 20:38:53,851] [  INPUT] pSort: [0/4]: infile => /home/m161047/tests/workdir/PyPPL.pSort.notag.1Uncltkc/input/test1.txt
-[2017-05-02 20:38:53,852] [  INPUT] pSort: [0/4]: infile.fn => test1
-[2017-05-02 20:38:53,852] [ OUTPUT] pSort: [4/4]: outfile => /home/m161047/tests/workdir/PyPPL.pSort.notag.1Uncltkc/output/test5.sorted
-[2017-05-02 20:38:53,855] [  DEBUG] pSort: Not cached, cache file /home/m161047/tests/workdir/PyPPL.pSort.notag.1Uncltkc/cached.jobs not exists.
-[2017-05-02 20:38:53,855] [RUNNING] pSort: /home/m161047/tests/workdir/PyPPL.pSort.notag.1Uncltkc
-[2017-05-02 20:38:53,913] [   INFO] pSort: Submitting job #0 ...
-[2017-05-02 20:38:54,074] [   INFO] pSort: Submitting job #1 ...
-[2017-05-02 20:38:54,328] [   INFO] pSort: Submitting job #2 ...
-[2017-05-02 20:38:54,681] [   INFO] pSort: Submitting job #3 ...
-[2017-05-02 20:38:55,136] [   INFO] pSort: Submitting job #4 ...
-[2017-05-02 20:38:55,149] [  DEBUG] pSort: Successful jobs: ALL
-[2017-05-02 20:38:55,149] [   INFO] pSort: Done (time: 00:00:01.301).
-[2017-05-02 20:38:55,150] [   DONE] Total time: 00:00:01.301
-```
+Run `python test.py test?.txt` will output:
+![First-script-output][20]
 
-Then you will see your sorted files in `/home/user/tests/workdir/PyPPL.pSort.notag.2BNAjwU1/output/`:  
-`test1.sorted  test2.sorted  test3.sorted  test4.sorted  test5.sorted`
+## A toy example
+Sort each 5 file and then combine them into one file
+```python
+from pyppl import pyppl, proc
+
+pSort         = proc()
+pSort.input   = "infile:file"
+pSort.output  = "outfile:file:{{infile | fn}}.sorted"
+pSort.script  = """
+  sort -k1r {{infile}} > {{outfile}}
+""" 
+
+pCombine      = proc()
+# Will use pSort's output channel as input
+pCombine.depends  = pSort
+# Modify the channel, "collapse" returns the directory of the files
+pCombine.input    = {"indir:file": lambda ch: ch.collapse()}
+pCombine.output   = "outfile:file:{{indir | fn}}.sorted"
+# Export the final result file
+pCombine.exdir    = "./export" 
+
+pyppl().starts(pSort).run()
+```
+Run `python test.py test?.txt`, then you will find the combined file named `output.sorted` in `./export`.
 
 ## Using a different interpreter:
 ```python
 pPlot = proc()
-pPlot.input   = "infile:file"
-pPlot.output  = "outfile:file:{{infile.fn}}.png"
+# Specify input explicitly
+pPlot.input   = {"infile:file": ["./data.txt"]}
+# data.png
+pPlot.output  = "outfile:file:{{infile | fn}}.png"
 pPlot.lang    = "Rscript"
-# use the output of pSort as input
-pPlot.depends = pSort
 pPlot.script  = """
 data <- read.table ("{{infile}}")
 H    <- hclust(dist(data))
@@ -108,13 +105,12 @@ dev.off()
 ## Using a different runner:
 ```python
 pPlot = proc()
-pPlot.input   = "infile:file"
+pPlot.input   = {"infile:file": ["./data1.txt", "./data2.txt", "./data3.txt", "./data4.txt", "./data5.txt"]}
 pPlot.output  = "outfile:file:{{infile.fn}}.png"
 pPlot.lang    = "Rscript"
 pPlot.runner  = "sge"
-# run 5 jobs at the same time
+# run all 5 jobs at the same time
 pPlot.forks   = 5
-pPlot.depends = pSort
 pPlot.script  = """
 data <- read.table ("{{infile}}")
 H    <- hclust(dist(data))
@@ -144,9 +140,9 @@ p7 = proc("G")
 p8 = proc("H")
 p9 = proc("I")
 p1.script = "echo 1"
-p1.input  = {"input": channel.create(['a'])}
-p8.input  = {"input": channel.create(['a'])}
-p9.input  = {"input": channel.create(['a'])}
+p1.input  = {"input": ['a']}
+p8.input  = {"input": ['a']}
+p9.input  = {"input": ['a']}
 p2.input  = "input"
 p3.input  = "input"
 p4.input  = "input"
@@ -184,15 +180,17 @@ p9.output = "{{input}}"
 p2.depends = p1
 p3.depends = [p1, p8]
 p4.depends = [p2, p3]
-p4.exportdir  = "./"
+p4.exdir   = "./"
 p5.depends = p4
 p6.depends = [p4, p9]
-p6.exportdir  = "./"
+p6.exdir   = "./"
 p7.depends = [p5, p6]
-p7.exportdir  = "./"
+p7.exdir   = "./"
 pyppl().starts(p1, p8, p9).flowchart()
 # saved to dot file: test.pyppl.dot
 # saved to svg file: test.pyppl.svg
+# run it after the chart generated:
+# pyppl().starts(p1, p8, p9).flowchart().run()
 ```
 `test.pyppl.dot`:
 ```dot
@@ -239,3 +237,4 @@ You can use different [dot renderers][17] to render and visualize it.
 [17]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)#Layout_programs
 [18]: https://github.com/pwwang/pyppl/raw/master/docs/pyppl.png
 [19]: https://pwwang.gitbooks.io/pyppl/change-log.html
+[20]: https://github.com/pwwang/pyppl/raw/master/docs/firstScript.png

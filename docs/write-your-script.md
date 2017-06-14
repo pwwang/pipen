@@ -21,6 +21,6 @@ For example, in a template file, you use `"\t"` for a tab, but in script propert
 > **Note**: You may also use a relative-path template, which is relative to `os.path.dirname (sys.argv[0])`
 
 ## Debug your script
-If you need to debug your script, you just need to find the real running script, which is at: `<workdir>/scripts/script.<index>`. All the placeholders in the script have been replaced with actual values. You can debug it using the tool according to the language you used for the script.
+If you need to debug your script, you just need to find the real running script, which is at: `<workdir>/<index>/job.script`. All the placeholders in the script have been replaced with actual values. You can debug it using the tool according to the language you used for the script.
 
 [1]: https://en.wikipedia.org/wiki/Shebang_(Unix)

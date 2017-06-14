@@ -1,6 +1,8 @@
-import unittest
+import os
+import shutil
 import sys
-import os, shutil
+import unittest
+
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
 from pyppl import utils
@@ -21,7 +23,16 @@ class TestUtils (unittest.TestCase):
 	def testFormat (self):
 		data = [
 			("The directory is: {{path | __import__('os').path.dirname(_)}}", "The directory is: /a/b", {"path": "/a/b/c.txt"}),
+			("The directory is: {{path | dirname}}", "The directory is: /a/b", {"path": "/a/b/c.txt"}),
+			("The basename is: {{path | basename}}", "The basename is: c.txt", {"path": "/a/b/c.txt"}),
+			("The filename is: {{path | filename}}", "The filename is: c", {"path": "/a/b/c.txt"}),
+			("The filename is: {{path | fn}}", "The filename is: c", {"path": "/a/b/c.txt"}),
+			("The ext is: {{path | ext}}", "The ext is: .txt", {"path": "/a/b/c.txt"}),
+			("The fnnodot is: {{path | fnnodot}}", "The fnnodot is: c", {"path": "/a/b/c.d.txt"}),
+			("The prefix is: {{path | prefix}}", "The prefix is: /a/b/c.d", {"path": "/a/b/c.d.txt"}),
+			("The pxnodot is: {{path | pxnodot}}", "The pxnodot is: /a/b/c", {"path": "/a/b/c.d.txt"}),
 			("The directory is: {{path | __import__('os').path.dirname(_)}}", "The directory is: ../c/d", {"path": "../c/d/x.txt"}),
+			("The directory is: {{path | dirname}}", "The directory is: ../c/d", {"path": "../c/d/x.txt"}),
 			("{{v | .upper()}}", "HELLO", {"v": "hello"}),
 			("{{v | .find('|')}}", '3', {"v": "hel|lo"}),
 			("{{v | len(_)}}", '5', {"v": "world"}),
@@ -35,9 +46,19 @@ class TestUtils (unittest.TestCase):
 			("{{v | map(str, _) | (lambda x: '_'.join(x))(_)}}", "1_2_3_4", {"v": [1,2,3,4]}),
 			("{{v | (lambda x: x['a'] if x.has_key('a') else '')(_)}}", '1', {"v": {"a": 1, "b": 2}}),
 			("{{v | __import__('json').dumps(_)}}", '{"a": 1, "b": 2}', {"v": {"a": 1, "b": 2}}),
+			("{{a|Rbool}},{{b|Rbool}},{{c|Rbool}},{{d|Rbool}}", "TRUE,FALSE,TRUE,FALSE", {"a":1, "b":0, "c":True, "d":False}),
+			("{{a|realpath}}", os.path.realpath(__file__), {"a":__file__}),
+			("{{a|quote}}", '"a"', {"a":'a'}),
+			("{{a|asquote}}", '"a" "b" "c"', {"a":['a', 'b', 'c']}),
+			("{{a|acquote}}", '"a","b","c"', {"a":['a', 'b', 'c']}),
+			("{{a|squote}}", "'a'", {"a":'a'}),
 		]
 		for d in data:
 			self.assertEqual (utils.format(d[0], d[2]), d[1])
+
+	def testDefineFormatShortCuts (self):
+		utils.format.shorts['aaa'] = "lambda x: x.replace('aaa', 'bbb')"
+		self.assertEqual (utils.format("{{a|aaa}}", {"a": "1aaa2"}), "1bbb2")
 
 	def testVarname (self):
 		def func ():
@@ -82,9 +103,9 @@ class TestUtils (unittest.TestCase):
 		
 		func2 = lambda x: x
 		func3 = ""
-		self.assertEqual (utils.funcSig(func1).strip(), "def func1 ():\n\t\t\tpass")
-		self.assertEqual (utils.funcSig(func2).strip(), "func2 = lambda x: x")
-		self.assertEqual (utils.funcSig(func3), "None")
+		self.assertEqual (utils.funcsig(func1).strip(), "def func1 ():\n\t\t\tpass")
+		self.assertEqual (utils.funcsig(func2).strip(), "func2 = lambda x: x")
+		self.assertEqual (utils.funcsig(func3), "None")
 		
 	def testUid (self):
 		import random, string
@@ -143,11 +164,11 @@ class TestUtils (unittest.TestCase):
 		os.makedirs ("./test/")
 		thefile = "./test/filesig.txt"
 		open(thefile, 'w').write('')
-		sig = utils.fileSig (thefile)
+		sig = utils.filesig (thefile)
 		from time import sleep
 		sleep (.1)
 		open(thefile, 'w').write('')
-		self.assertNotEqual (sig, utils.fileSig(thefile))
+		self.assertNotEqual (sig, utils.filesig(thefile))
 		shutil.rmtree ("./test/")
 		
 	def testAlwaysList(self):
@@ -157,17 +178,7 @@ class TestUtils (unittest.TestCase):
 		string = ["o1:var:{{c1}}", "o2:var:{{c2 | __import__('math').pow(float(_), 2.0)}}", "o3:file:{{c3.fn}}2{{c3.ext}}"]
 		l = utils.alwaysList (string)
 		self.assertEqual (l, string)
-		
-	def testSanitizeOutKey (self):
-		testdata = [
-			["a", ('__out.1__', 'var', 'a')],
-			["key:val", ('key', 'var', 'val')],
-			["file:val", ('__out.2__', 'file', 'val')],
-			["a:var:c", ("a", "var", "c")]
-		]
-		for data in testdata:
-			self.assertEqual(utils.sanitizeOutKey(data[0]), data[1])
-			
+	
 	def testChmodX (self):
 		
 		if os.path.exists ("./test/"):

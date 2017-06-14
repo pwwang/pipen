@@ -34,45 +34,69 @@ Import modules in a placeholder:
 
 Use `lambda` functions:
 ```python
-{{ v | (lambda x: x*2)(_) }}
+{{ v | lambda x: x*2 }}
 # "0", "2", "4"
 ```
-> **Caution** always call the function instead of just define the function (`(lambda ...)(_)` instead of `lambda ...`).
+> **Note** Only one argument is allow for lambda function here.
 
-## File placeholders
-If an `input` or `output` as a file: `infile:file`, then `{{infile}}` will be the link path that links to the input file in the input directory of a process (`proc`). `{{infile.bn}}` is the basename (without extension), `{{infile.fn}}` holds the filename (with extension), and `{{infile.ext}}` indicates the extensions. Examples:
+## Built-in functions
+We have a set of built-in funcitons for placeholders, they are:
+| Function name | Function | Example-format | Example-data | Example-result |
+|-|-|-|-|-|
+|`Rbool`|Change python value to R bool value|`{{v|Rbool}}`|`{'v':1}`|`TRUE`|
+|`realpath`|Get the real path|`{{v|realpath}}`|`{'v':some/path}`|`<the real path of some/path>`|
+|`readlink`|Read the link|`{{v|readlink}}`|`{'v':some/link}`|`<the real path some/link links to`|
+|`dirname`|Get the directory path of given path|`{{v|dirname}}`|`{'v':/path/to/some/file}`|`/path/to/some/`|
+|`basename`|Get the basename of given path|`{{v|basename}}`|`{'v':/path/to/some/file.txt}`|`file.txt`|
+|`bn`|Alias of `basename`||||
+|`filename`|Basename without extension|`{{v|filename}}`|`{'v':'/a/b/c.txt'}`|`c`|
+|`fn`|Alias of `filename`||||
+|`ext`|Get the extension of a file|`{{v|ext}}`|`{'v':'/a/b/c.txt'}`|`.txt`|
+|`fnnodot`|Get the filename without a dot in it|`{{v|fnnodot}}`|`{'v':'/a/b/c.d.txt'}`|`c`|
+|`prefix`|Get the prefix of a path (no extension)|`{{v|prefix}}`|`{'v':'/a/b/c.d.txt'}`|`/a/b/c.d`|
+|`pxnodot`|Get the prefix without a dot in it|`{{v|pxnodot}}`|`{'v':'/a/b/c.d.txt'}`|`/a/b/c`|
+|`asquote`|Quote an array(list) with quote and joined with space|`{{v|asquote}}`|`{'v':['1','2']}`|`"1" "2"`|
+|`acquote`|Quote an array(list) with quote and joined with comma|`{{v|acquote}}`|`{'v':['1','2']}`|`"1","2"`|
+|`quote`|Quote a string|`{{v|quote}}`|`{'v':'1'}`|`"1"`|
+|`squote`|Single-quote a string|`{{v|quote}}`|`{'v':'1'}`|`'1'`|
 
-|`infile`    |`infile.fn`   |`infile.bn`    | `infile.ext`|
-|------------|--------------|---------------|-------------|
-|`/a/b/c.txt`|`c`           |`c.txt`        | `.txt`      |
-|`./dir`     |`dir`         |`dir`          | [EMPTY STRING]     |
+> **Hint** To get the extension without the leading dot: `{{v | ext | [1:]}}`
 
-> **Note** `filevar:file` is almost the same as `filevar:dir`, the only difference is that if `filevar:dir` is in the output, the directory will be created automatically.
+## Define your own shortcut functions
+You can define your own shortcut functions for placeholders:
+```python
+from pyppl import utils
+utils.format.shorts['replace'] = "lambda x: x.replace('aaa', 'bbb')"
 
-## `Proc` property placeholders
-You can also use some `proc` property values with placeholders: `{{proc.<property>}}`. Available properties:
+assert (utils.format("{{a|replace}}", {"a": "1aaa2"}) == "1bbb2")
+```
+
+## `Proc`/`Job` property placeholders
+You can also use some `proc`/`job` property values with placeholders: `{{proc.<property>}}`/`{{job.<property>}}`. Available properties:
 
 | property     | alias   |meaning               |
 |--------------|---------|----------------------|
-|id|| The id of the process, in most case the variable name. `p = proc() # p.id == "p"`|
-|tag||A tag of the process|
-|tmpdir||Where the workdir locates|
-|workdir||The work directory|
-|forks||How many jobs to run concurrently|
-|cache||The cache option|
-|echo||Whether to print stdout and stderr to the screen|
-|runner||The runner|
-|defaultSh|lang|The interpreter for the script|
-|errorhow|errhow|What to do if error happens|
-|errorntry|errntry|If `errorhow == 'retry'`, how many times to re-try|
-|exportdir|exdir|The export directory|
-|exporthow|exhow|How to export output files|
-|exportow|exow|Whether to overwrite existing files when export|
-|indir||The input directory for the process|
-|outdir||The output directory for the process|
-|length||How many jobs are there for the process|
-|args||Additional arguments for the process, typically a `dict`. For example: `p.args={"a":1}` you may use {% raw %}`{{proc.args.a}}`{% endraw %} to access it.|
+|`proc.id`|| The id of the process, in most case the variable name. `p = proc() # p.id == "p"`|
+|`proc.tag`||A tag of the process|
+|`proc.tmpdir`||Where the workdir locates|
+|`proc.workdir`||The work directory|
+|`proc.forks`||How many jobs to run concurrently|
+|`proc.cache`||The cache option|
+|`proc.echo`||Whether to print stdout and stderr to the screen|
+|`proc.runner`||The runner|
+|`proc.defaultSh`|`proc.lang`|The interpreter for the script|
+|`proc.errorhow`|`proc.errhow`|What to do if error happens|
+|`proc.errorntry`|`proc.errntry`|If `errorhow == 'retry'`, how many times to re-try|
+|`proc.exportdir`|`proc.exdir`|The export directory|
+|`proc.exporthow`|`proc.exhow`|How to export output files|
+|`proc.exportow`|`proc.exow`|Whether to overwrite existing files when export|
+|`proc.length`||How many jobs are there for the process|
+|`proc.args`||Additional arguments for the process, typically a `dict`. For example: `p.args={"a":1}` you may use {% raw %}`{{proc.args.a}}`{% endraw %} to access it.|
+|`job.id`|`#`|The job id|
+|`job.indir`||The input directory of the job|
+|`job.outdir`||The output directory of the job|
+|`job.dir`||The directory of the job|
+|`job.outfile`||The file with the STDOUT|
+|`job.errfile`||The file with the STDERR|
 
-## Job index placeholders
-You can use `{{#}}` to replace the job index. For example:
-`p.output = {"outfile:file:{{#}}.txt"}` specifies output file according to job index for each job.
+

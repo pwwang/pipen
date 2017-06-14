@@ -11,28 +11,34 @@ Actually, what you need to do is just specify the first input channel, and then 
 ```
 ./
 |-- pipeline.py
-`-- workdir/                      
-    `-- PyPPL.<id>.<tag>.<uid>/   
-        |-- cached.jobs
-        |-- input/
-        |-- output/
-        `-- scripts/
-            |-- script.<index>
-            |-- script.<index>.rc
-            |-- script.<index>.stdout
-            |-- script.<index>.stderr
-            |-- [script.<index>.ssh]
-            `-- [script.<index>.sge]
+`-- workdir/
+	`-- PyPPL.<id>.<tag>.<uid>/   
+		`-- <job.id>/
+			|-- input/
+			|-- output/
+			|-- job.cache
+			|-- job.script
+			|-- job.rc
+			|-- job.stdout
+			|-- job.stderr
+			|-- [job.script.ssh]
+			`-- [job.script.sge]
 ```
 
 | Path | Content | Memo |
 |------|---------|------|
-|`./workdir/`|Where the work directories of all processes of current pipeline locate.||
-|`./workdir/PyPPL.<id>.<tag>.<uid>/`|The work directory of current process.|The `uid` is a unique id of the process according to its configuration.|
-|`./workdir/PyPPL.<id>.<tag>.<uid>/cached.jobs`|Saves the signatures of cached jobs||
-|`./workdir/PyPPL.<id>.<tag>.<uid>/scripts/`|Where you can find all the scripts, stdout file, stderr file and return code file and also other help files for other runners.|-  `script.<index>`: the real script to run, you can also use it to debug<br />- `script.<index>.stdout`: the stdout file<br />- `script.<index>.stderr`: the stderr file<br />- `script.<index>.rc`: the file contains return code<br />- `script.<index>.ssh`: the file for ssh runner<br />- `script.<index>.sge`: the file for sge runner|
-|`./workdir/PyPPL.<id>.<tag>.<uid>/input/`|Where you can find the links to all the input files||
-|`./workdir/PyPPL.<id>.<tag>.<uid>/output/`|Where you can find all the output files||
+|`workdir/`|Where the pipeline directories of all processes of current pipeline locate.|Can be set by `p.ppldir`|
+|`PyPPL.<id>.<tag>.<uid>/`|The work directory of current process.|The `uid` is a unique id of the process according to its configuration.<br/>You may set it by `p.workdir`|
+|`<job.id>/`|The job directory||
+|`<job.id>/input/`|Where you can find the links to all the input files||
+|`<job.id>/output/`|Where you can find all the output files||
+|`<job.id>/job.cache`|The file containing the signature of the job||
+|`<job.id>/job.script`|To script file to be running||
+|`<job.id>/job.rc`|To file containing the return code||
+|`<job.id>/job.stdout`|The STDOUT of the script||
+|`<job.id>/job.stderr`|The STDERR of the script||
+|`<job.id>/job.script.ssh`|The script file for ssh runner||
+|`<job.id>/job.script.sge`|The script file for sge runner||
 
-> **Note** You can set the `./workdir` to somewhere else by `p.tmpdir`, also the `<workdir>` for a process (`./workdir/PyPPL.<id>.<tag>.<uid>`) to somewhere else by `p.workdir`. You are encouraged to set `p.tmpdir` **BUT NOT** `p.workdir`, as it contains a `uid` if it is automatically computed. It is specially useful when you try to detect whether the job is still running as the command has the `uid` in the path.
-All `<workdir>` refers to `./workdir/PyPPL.<id>.<tag>.<uid>/`, `<indir>` to `./workdir/PyPPL.<id>.<tag>.<uid>/input/` and `<outdir>` to `./workdir/PyPPL.<id>.<tag>.<uid>/output/` in this documentation.
+> **Note**  You are encouraged to set `p.ppldir` **BUT NOT** `p.workdir`, as it contains a `uid` if it is automatically computed. It is specially useful when you try to detect whether the job is still running as the command has the `uid` in the path.  
+All `<workdir>` refers to `./workdir/PyPPL.<id>.<tag>.<uid>/`, `<indir>` to `./workdir/PyPPL.<id>.<tag>.<uid>/<job.id>/input/` and `<outdir>` to `./workdir/PyPPL.<id>.<tag>.<uid>/<job.id>/output/` in this documentation.

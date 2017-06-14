@@ -1,14 +1,26 @@
-import unittest, tempfile, sys, pickle, os, shutil
+"""
+Test module pyppl
+"""
+import os
+import shutil
+import sys
+from time import sleep
+import unittest
+
+
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
-from md5 import md5
-from multiprocessing import cpu_count
-from pyppl import pyppl
-from pyppl import proc
-from pyppl import channel
-from pyppl import aggr
+from pyppl import aggr, channel, proc, pyppl
 
 class TestPipelineMethods (unittest.TestCase):
+
+	def tearDown (self):
+		try:
+			if os.path.exists ('./workdir'):
+				shutil.rmtree ('./workdir')
+		except:
+			sleep (1)
+			self.tearDown()
 	
 	def test_init (self):
 		ppl = pyppl({}, '')
@@ -19,7 +31,7 @@ class TestPipelineMethods (unittest.TestCase):
 	
 	def test_factory (self):
 	
-		ppl = pyppl ({'proc' : {'tmpdir': '/local2/tmp/m161047/abc'}})
+		ppl = pyppl ({'proc' : {'ppldir': './workdir'}})
 		
 		p1 = proc('TAG')
 		self.assertTrue (isinstance (p1, proc))
@@ -29,26 +41,25 @@ class TestPipelineMethods (unittest.TestCase):
 		p1.tag = 'CREATE_FILE'
 		p1.input = {'input':inch}
 		p1.script = "echo {{input}} > {{outfile}}"
-		p1.output = "{{input}}, outfile:file:{{input}}.txt"
+		p1.output = "o:{{input}}, outfile:file:{{input}}.txt"
 		p1.cache  = False
 		
 		p2 = proc("MOVE_FILE")
-		p2.input = "input, infile:file"
-		p2.output = "outfile:file:{{infile.fn}}-2.txt"
-		p2.script = "mv {{infile}} {{outfile}}; cp {{outfile}} {{infile}}"
-		p2.depends = p1
-		p2.exportdir = './test/'
-		p2.cache  = False
-		
+		p2.input     = "input, infile:file"
+		p2.output    = "outfile:file:{{infile | fn}}-2.txt"
+		p2.script    = "mv {{infile}} {{outfile}}; cp {{outfile}} {{infile}}"
+		p2.depends   = p1
+		p2.exportdir = './workdir'
+		p2.cache     = False
+		p2.forks     = 3
 		ppl.starts (p1)
 		
 		ppl.run()
 		
-		self.assertTrue (os.path.exists('./test/a-2.txt'))
-		self.assertTrue (os.path.exists('./test/b-2.txt'))
-		self.assertTrue (os.path.exists('./test/c-2.txt'))
+		self.assertTrue (os.path.exists('./workdir/a-2.txt'))
+		self.assertTrue (os.path.exists('./workdir/b-2.txt'))
+		self.assertTrue (os.path.exists('./workdir/c-2.txt'))
 		
-		shutil.rmtree('./test')
 	
 	def test_dot (self):
 		self.maxDiff = None
@@ -141,31 +152,38 @@ sorted("""digraph PyPPL {
 		p2ch = [(1,), (2,), (3,)]
 		pr1.input = {'input': channel.create(p1ch)}
 		pr2.input = {'input': channel.create(p2ch)}
-		pr1.output = '{{input}}'
-		pr2.output = '{{input}}'
+		pr1.output = 'o:{{input}}'
+		pr2.output = 'o:{{input}}'
 		pr3.input = 'in1, in2'
+		pr3.output = 'o:{{in1}}{{in2}}'
 		pr3.depends = [pr1, pr2]
 
 		pr1.script = "echo {{input}}"
 		pr2.script = "echo {{input}}"
 		pr3.script = "echo {{in1}}{{in2}}"
+		#pr3.echo   = True
 		#p1.echo = True
 		#p2.echo = True
 		#p3.echo = True
 		#print p3.props['indata'], 'xxxxxxxxxxxxxxxxxxxxxxx'
 		ppl.starts(pr1, pr2).run()
 		
-
-		self.assertEqual (open(os.path.join(pr3.workdir, 'scripts/script.0.stdout')).read().strip(), 'a1')
-		self.assertEqual (open(os.path.join(pr3.workdir, 'scripts/script.1.stdout')).read().strip(), 'b2')
-		self.assertEqual (open(os.path.join(pr3.workdir, 'scripts/script.2.stdout')).read().strip(), 'c3')
+		out1 = os.path.join(pr3.workdir, '0/job.stdout')
+		out2 = os.path.join(pr3.workdir, '1/job.stdout')
+		out3 = os.path.join(pr3.workdir, '2/job.stdout')
+		self.assertTrue (os.path.exists(out1))
+		self.assertTrue (os.path.exists(out2))
+		self.assertTrue (os.path.exists(out3))
+		self.assertEqual (open(out1).read().strip(), 'a1')
+		self.assertEqual (open(out2).read().strip(), 'b2')
+		self.assertEqual (open(out3).read().strip(), 'c3')
 		
 	@unittest.skip('')
 	def test_sge (self):
 		ppl = pyppl ()
 		p1 = proc ()
 		p1.input = {"input": channel.create([('a')] * 10)}
-		p1.workdir = './test-sge'
+		p1.workdir = './workdir'
 		p1.forks = 3
 		p1.script = "echo {input}"
 		ppl.starts(p1).run('sge')
@@ -173,14 +191,14 @@ sorted("""digraph PyPPL {
 	def test_batchjobs (self):
 		p = proc ('batch')
 		p.input = {'input': channel.create(range(10))}
-		p.script = "cat {{proc.workdir}}/scripts/script.{{#}}.ssh | grep franklin; sleep 3"
+		p.script = "cat {{proc.workdir}}/{{#}}/job.script.ssh | grep franklin; sleep 3"
 		p.echo = True
 		p.cache = False
 		p.forks = 3
 		#p.errorhow = 'retry'
 		#p.runner = 'ssh'
-		p.beforeCmd = 'mkdir ./test_batchjobs -p'
-		p.tmpdir = './test_batchjobs'
+		p.beforeCmd = 'mkdir ./workdir/test_batchjobs -p'
+		p.tmpdir = './workdir/test_batchjobs'
 		pyppl({
 			'proc': {
 				'sshRunner': {	
@@ -189,7 +207,7 @@ sorted("""digraph PyPPL {
 			},
 			'loglevel': 'debug'
 		}).starts(p).run('ssh')
-		shutil.rmtree ('./test_batchjobs')
+		shutil.rmtree ('./workdir/test_batchjobs')
 	
 	def testCallback (self):
 		p1 = proc ('callback')
@@ -214,6 +232,8 @@ sorted("""digraph PyPPL {
 	def testAggr (self):
 		pa = proc ('aggr')
 		pb = proc ('aggr')
+		pa.script = 'echo 1'
+		pb.script = 'echo 2'
 		a  = aggr (pa, pb)
 		pe = proc('end')
 		pe.depends = a
@@ -221,11 +241,11 @@ sorted("""digraph PyPPL {
 		a.pa_aggr.output = "out:{{input}}.{{proc.id}}.{{proc.tag}}"
 		a.pb_aggr.input  = "input"
 		a.pb_aggr.output = "out:{{input}}.{{proc.id}}.{{proc.tag}}"
-		a.input          = [("AGGR", )]
+		a.input          = ["AGGR"]
 		pe.input         = "input"
 		pe.output        = "out:{{input}}.{{proc.id}}.{{proc.tag}}"
-		
-		pyppl ().starts(a).run()
+		self.assertRaises (SystemExit,pyppl().starts(a).run)
+		self.assertEqual (pe.channel, [('AGGR.pa.aggr.pb.aggr.pe.end',)])
 		
 	def testConfig (self):
 		config = {
@@ -235,6 +255,7 @@ sorted("""digraph PyPPL {
 			'ssh': {'sshRunner': {'servers':['franklin01']}}
 		}
 		p = proc()
+		p.script = "echo 1"
 		p.input = {'a':[1]}
 		pyppl (config, '').starts(p).run()
 		self.assertEqual (p.runner, 'local')
@@ -294,23 +315,23 @@ sorted("""digraph PyPPL {
 		pyppl().starts(pIgnore).run()
 		
 	def testBrings (self):
-		tdir = "./test/"
+		tdir = "./workdir/"
 		if not os.path.exists (tdir):
 			os.makedirs(tdir)
-		if not os.path.exists ("./test/aaa"):
-			os.makedirs ("./test/aaa")
-		infile = os.path.abspath("./test/aaa/1.txt")
+		if not os.path.exists ("./workdir/aaa"):
+			os.makedirs ("./workdir/aaa")
+		infile = os.path.abspath("./workdir/aaa/1.txt")
 		open (infile, 'w').write('')
-		if not os.path.exists ("./test/1.txt"):
-			os.symlink (infile, os.path.abspath("./test/1.txt"))
-		brfile = "./test/aaa/1.txi"
+		if not os.path.exists ("./workdir/1.txt"):
+			os.symlink (infile, os.path.abspath("./workdir/1.txt"))
+		brfile = "./workdir/aaa/1.txi"
 		open (brfile, 'w').write('')
 		pBrings = proc ()
-		pBrings.input  = {"infile:file": ["./test/1.txt"]}
-		pBrings.brings = {"infile": "{{infile.fn}}.txi"}
+		pBrings.script = "echo 1"
+		pBrings.input  = {"infile:file": ["./workdir/1.txt"]}
+		pBrings.brings = {"infile": "{{infile | fn}}.txi"}
 		pyppl().starts(pBrings).run()
-		self.assertTrue (os.path.exists( os.path.join(pBrings.indir, "1.txi") ))
-		shutil.rmtree(tdir)
+		self.assertTrue (os.path.exists( os.path.join(pBrings.jobs[0].indir, "1.txi") ))
 
 if __name__ == '__main__':
 	unittest.main()

@@ -1,9 +1,16 @@
-import logging, os, sys, random, json, copy
+import copy
+import json
+import logging
+import os
+import random
+import sys
+from subprocess import Popen
+from time import time
+
 from helpers import *
 from runners import *
-from time import time
-from subprocess import Popen
-VERSION = "0.6.2"
+
+VERSION = "0.7.0"
 			
 class pyppl (object):
 	"""
@@ -20,8 +27,8 @@ class pyppl (object):
 		"Check documentation at: https://www.gitbook.com/book/pwwang/pyppl",
 		"You cannot have two processes with same id(variable name) and tag",
 		"beforeCmd and afterCmd only run locally",
-		"If 'workdir' is not set for a process, it will be PyPPL.<proc-id>.<proc-tag>.<uuid> under default <tmpdir>",
-		"The default <tmpdir> will be './workdir'",
+		"If 'workdir' is not set for a process, it will be PyPPL.<proc-id>.<proc-tag>.<uuid> under default <ppldir>",
+		"The default <ppldir> will be './workdir'",
 	]
 	
 	def __init__(self, config = {}, cfile = None):
@@ -97,7 +104,7 @@ class pyppl (object):
 			utils.dictUpdate(config, self.config[profile])
 		
 		if not config.has_key('runner'):
-			if proc.runners.has_key (profile):
+			if proc.RUNNERS.has_key (profile):
 				config['runner'] = profile
 			else:
 				config['runner'] = 'local'
@@ -108,7 +115,7 @@ class pyppl (object):
 		while next2run:
 			next2run2 = []
 			for p in next2run:
-				p.setLogger(self.logger)
+				p.props['logger'] = self.logger
 				p.run (config)
 				finished.append (p)
 				next2run2 += p.props['nexts']
@@ -161,7 +168,3 @@ class pyppl (object):
 			self.logger.error ('[  ERROR] %s' % ex)
 			self.logger.error ('[  ERROR] Skipped to generate flowchart to: %s' % fcfile)
 		return self
-
-
-
-

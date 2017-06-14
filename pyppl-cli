@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
-import argparse, glob, datetime
-from glob  import glob
-from pyppl import utils
-from os    import path
+import argparse
+import json
+from glob import glob
+from datetime import datetime
+
+from os import path
 from shutil import rmtree
 
 parser           = argparse.ArgumentParser(description='A set of CLI tools for pyppl.')
@@ -15,81 +17,114 @@ parser_clean.set_defaults(force = False)
 parser_list      = cmdparsers.add_parser('list', help="List the status of a workdir")
 args             = parser.parse_args()
 
-print ""
-if args.command == 'list':
-	print "WORKDIR: " + args.workdir + " (Yellow processes are to be cleaned!)"
-	print "-" * (len (args.workdir) + 47)
-	procs = sorted(map(path.basename, glob (path.join(args.workdir, 'PyPPL.*'))))
-	if not procs:
-		print "No processes found!"
-		print ""
-	
-	# group procs
-	gprocs = {}
-	for proc in procs:
-		ppath = path.join (args.workdir, proc)
-		if not path.isdir (ppath): continue
-		parts = proc.split('.')
-		pn    = '.'.join(parts[1:3])
-		if not gprocs.has_key (pn): gprocs[pn] = []
-		gprocs[pn].append (parts[3])
+def mtimeFromCacheFile (cachefile):
+	if not path.exists (cachefile):
+		return 0
+	cachestr  = open (cachefile).read().strip()
+	if not cachestr:
+		return 0
 
-	for g, sufs in gprocs.iteritems():
+	cache = json.loads(cachestr)
+	ret = float(cache['script'].split('@')[-1])
+
+	if  cache['in']['file'].values():
+		ret = max (ret, max([float(val.split('@')[-1]) for val in cache['in']['file'].values()]))
+
+	for val in cache['in']['files'].values():
+		if val:
+			ret = max (ret, max([float (v.split('@')[-1]) for v in val]))
+				
+	if cache['out']['file'].values():
+		ret = max (ret, max([float(val.split('@')[-1] if '@' in val else 0) for val in cache['out']['file'].values()])) 
+	if cache['out']['dir'].values():
+		ret = max (ret, max([float(val.split('@')[-1] if '@' in val else 0) for val in cache['out']['dir'].values()]))
+
+	return ret
+
+def mtime4proc (procdir):
+	jobdirs  = glob (path.join(procdir, "*"))
+	ret      = 0
+	for jobdir in jobdirs:
+		cachefile = path.join (jobdir, "job.cache")
+		mtime     = mtimeFromCacheFile(cachefile)
+		if mtime == 0:
+			return 0
+		if mtime > ret:
+			ret = mtime
+	return ret
+
+def getGroups (workdir):
+	ret = {}
+	procs = sorted ([path.basename(x) for x in glob (path.join(workdir, "PyPPL.*"))])
+	for proc in procs:
+		ppath = path.join (workdir, proc)
+		if not path.isdir (ppath):
+			continue
+		parts = proc.split ('.')
+		pname = '.'.join(parts[1:-1])
+		if not ret.has_key(pname):
+			ret[pname] = []
+		ret[pname].append(parts[-1])
+	return ret
+
+fmtTime = lambda x: datetime.fromtimestamp(x).strftime('%Y-%m-%d %H:%M:%S')
+		
+if args.command == 'list':
+	print "\nWORKDIR: " + args.workdir + " (Yellow processes are to be cleaned!)"
+	print "-" * (len (args.workdir) + 47)
+
+	groups = getGroups (args.workdir)
+	
+	if not groups:
+		print "No processes found!\n"
+	
+	for g, sufs in groups.iteritems():
 		print "\n- PROCESSES: %s" % g
 		print "  " + "-" * 36
-		mtimes = {}
+		
+		ptimes = {}
 		for suf in sufs:
 			procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
-			mtime    = datetime.datetime.fromtimestamp(utils.dirmtime (procpath))
-			mtimes[suf] = mtime.strftime("%Y-%m-%d %H:%I:%S %f")
-		for i, suf in enumerate(sorted(mtimes, key=mtimes.get, reverse=True)):
-			if i == 0:
-				print '\033[92m  ' + suf + ': ' + mtimes[suf] + '\033[0m'
+			ptimes[suf] = mtime4proc(procpath)
+
+		for i, suf in enumerate(sorted(ptimes, key=ptimes.get, reverse=True)):
+			if i == 0 and ptimes[suf] != 0:
+				print '\033[92m  ' + suf + ': ' + fmtTime(ptimes[suf]) + '\033[0m'
 			else:
-				print '\033[93m  ' + suf + ': ' + mtimes[suf] + '\033[0m'
+				print '\033[93m  ' + suf + ': ' + fmtTime(ptimes[suf]) + '\033[0m'
 				
 elif args.command == 'clean':
-	print "WORKDIR: " + args.workdir 
+	print "\nWORKDIR: " + args.workdir 
 	print "-" * (len (args.workdir) + 9)
-	procs = sorted(map(path.basename, glob (path.join(args.workdir, 'PyPPL.*'))))
-	if not procs:
-		print "No processes found!"
-		print ""
-	
-	# group procs
-	gprocs = {}
-	for proc in procs:
-		ppath = path.join (args.workdir, proc)
-		if not path.isdir (ppath): continue
-		parts = proc.split('.')
-		pn    = '.'.join(parts[1:3])
-		if not gprocs.has_key (pn): gprocs[pn] = []
-		gprocs[pn].append (parts[3])
 
-	for g, sufs in gprocs.iteritems():
+	groups = getGroups (args.workdir)
+	
+	if not groups:
+		print "No processes found!\n"
+	
+	for g, sufs in groups.iteritems():
 		print "\n- PROCESSES: %s" % g
 		print "  " + "-" * 36
-		mtimes = {}
+		
+		ptimes = {}
 		for suf in sufs:
 			procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
-			mtime    = datetime.datetime.fromtimestamp(utils.dirmtime (procpath))
-			mtimes[suf] = mtime.strftime("%Y-%m-%d %H:%I:%S %f")
+			ptimes[suf] = mtime4proc(procpath)
 				
-		for i, suf in enumerate(sorted(mtimes, key=mtimes.get, reverse=True)):
-			if i == 0:
-				print '\033[92m  ' + suf + ': ' + mtimes[suf] + '\033[0m'
+		for i, suf in enumerate(sorted(ptimes, key=ptimes.get, reverse=True)):
+			if i == 0 and ptimes[suf] != 0:
+				print '\033[92m  ' + suf + ': ' + fmtTime(ptimes[suf]) + '\033[0m'
 			else:
-				#print '\033[93m  ' + suf + ': ' + mtimes[suf] + '\033[0m, clean it? [Y/n]',
+				#print '\033[93m  ' + suf + ': ' + ptimes[suf] + '\033[0m, clean it? [Y/n]',
 				procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
 				if not args.force:
 					dists = ['', 'Y', 'y', 'N', 'n']
-					r     = raw_input('\033[93m  ' + suf + ': ' + mtimes[suf] + '\033[0m, clean it? [Y/n] ')
+					r     = raw_input('\033[93m  ' + suf + ': ' + fmtTime(ptimes[suf]) + '\033[0m, clean it? [Y/n] ')
 					while r not in dists:
-						r     = raw_input('\033[93m  ' + suf + ': ' + mtimes[suf] + '\033[0m, clean it? [Y/n] ')
+						r     = raw_input('\033[93m  ' + suf + ': ' + fmtTime(ptimes[suf]) + '\033[0m, clean it? [Y/n] ')
 					if r in ['', 'Y', 'y']:
 						rmtree(procpath)
 						print "  Removed: " + procpath
 				else:
 					rmtree(procpath)
-					print '  Cleaned: \033[93m  ' + suf + ': ' + mtimes[suf] + '\033[0m'
-		
+					print '  Cleaned: \033[93m  ' + suf + ': ' + fmtTime(ptimes[suf]) + '\033[0m'

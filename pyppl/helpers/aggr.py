@@ -1,6 +1,8 @@
-
-from channel import channel
-import utils
+"""
+The aggregation of procs
+"""
+from .channel import channel
+from . import utils
 
 class aggr (object):
 	"""
@@ -46,8 +48,10 @@ class aggr (object):
 			proc.aggr  = self.id
 			if depends and i>0:
 				proc.depends = self.procs[i-1]
-			if i==0: self.starts.append (proc)
-			if i==len(self.procs)-1: self.ends.append(proc)
+			if i==0: 
+				self.starts.append (proc)
+			if i==len(self.procs)-1: 
+				self.ends.append(proc)
 		
 	def __setattr__ (self, name, value):
 		if name in aggr.commprops or name.endswith('Runner'):
@@ -56,22 +60,18 @@ class aggr (object):
 		elif name == 'input':
 			if not isinstance(value, channel):
 				value  = channel.create(value)
-			chans = value.split()
-			i = 0
+			
+			start = 0
 			for proc in self.starts: # only str and list allowed: "input1, input2" or ["input1", "input2"]
-				inkey = proc.input
+				inkey = proc.config['input']
 				if isinstance(inkey, list):
 					inkey = ','.join (inkey)
-				if not isinstance (inkey, str) and not isinstance(inkey, unicode):
+				if not isinstance (inkey, basestring):
 					raise RuntimeError('Expect list or str for proc keys for aggregation: %s, you may have already set the input channels?' % (self.id))
-				
-				inkeys = map(lambda x: x.strip(), utils.split(inkey, ','))
-				if len(inkeys) > len(chans) - i:
-					raise RuntimeError('Not enough data column for aggregation "%s"\nKeys: %s\n#Col: %s' % (self.id, inkeys, (len(chans)-1)))
-				proc.input = {}
-				for inkey in inkeys:
-					proc.input[inkey] = chans[i]
-					i = i + 1
+				l = len (utils.split(inkey, ','))
+
+				proc.input = {inkey: value.slice(start, l)}
+				start += l
 					
 		elif name == 'depends':
 			for proc in self.starts:
@@ -115,7 +115,7 @@ class aggr (object):
 		@returns:
 			The new aggregation
 		"""
-		name     = utils.varname('\w+\.'+self.copy.__name__, 2) if newid is None else newid
+		name     = utils.varname(r'\w+\.'+self.copy.__name__, 2) if newid is None else newid
 		tagstr   = '_' + tag if tag != 'notag' else ''
 		args     = []
 		depends  = {}
