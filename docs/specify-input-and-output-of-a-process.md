@@ -1,6 +1,7 @@
 # Specify input and output of a process
 <!-- toc -->
 
+{% raw %}
 ## Specify input of a process
 
 The input of a process of basically a `dict` with keys the placeholders and the values the input channels:
@@ -54,12 +55,12 @@ p.input = {"infile:file": channel.fromPath("./*.txt")}
 ```
 Then `pyppl` will create symbol links in `<workdir>/input/`. See [File placeholders](https://pwwang.gitbooks.io/pyppl/placeholders.html#file-placeholders).
 
-> **Note** The {% raw %}`{{infile}}`{% endraw %}
- will return the path of the link in `<indir>` pointing to the actual input file. If you want to get the path of the actual path: {% raw %}
+> **Note** The `{{infile}}`
+ will return the path of the link in `<indir>` pointing to the actual input file. If you want to get the path of the actual path: 
 ```
 {{ infile | readlink }} or {{ infile.orig }}
 ```
-{% endraw %}
+
 
 ### Bring related files to input directory
 Some programs, for example, mutation calling programs, take genome reference file as input. However, during the process, they actually need the reference file to be indexed with an index file, which will not be explicitly specified with program options. Usually, they will try to find the index file according to the reference file. For example, index file `hg19.fai` or `hg19.fa.fai` for reference file `hg19.fa`. Sometimes, we will generate the index file in advance and put it together with the reference file. When you specify the reference file to `pyppl` process, we will create a link for the reference file in `<indir>`, but not for the index file. If the index file is not found, some programs will try to generate the index file, some will not and just quit. To avoid that, you can use `p.brings` to bring the index file in.
@@ -82,10 +83,13 @@ p.brings = {
 # and try to find whether the index files are in the directory of the parsed path of the link.
 # We find them in /a/b/, then bring them to the <indir>
 
-# To access the bring-in file in beforeCmd/afterCmd/output/script:
+# To access the bring-in file in beforeCmd/afterCmd/output/script in <indir>:
 # {{hg19fa.bring}}, {{hg19fa#.bring}}
 # An empty string will be returned if the index file can't be found.
-# You may use some other programs to generate the index file in your script.
+# You may use some other programs to generate the index file in your script in this case.
+#
+# To access the original path of the bring-file:
+# {{hg19fa.bring.orig}}, {{hg19fa#.bring.orig}}
 ```
 
 > **Caution**: If your pattern matches multiple files, only the first one by `glob.glob` will be return. So try to write more specfic pattern for bring-in files.
@@ -127,4 +131,5 @@ You cannot only use the placeholders from input, but the placeholders with proce
 The available types `var`, `file`, `path` and `dir`. `path` is actually an alias of `file`. If your output is a directory, and you want `pyppl` to automatically create it, you should use `dir`.
 > **Caution** always use the basename of your output files/directories, so that they will be generated in the `<workdir>/output/`. Later `pyppl` is able to export them and cache the jobs.
 > So don't use `infile` and `indir` directly in output unless you want to use the path of the links linking the input files, Instead, use `infile.fn`, `infile.bn`, `indir.fn` and `indir.bn`.
+{% endraw %}
 
