@@ -64,14 +64,11 @@ We have a set of built-in funcitons for placeholders, they are:
 
 ## Define your own shortcut functions
 You can define your own shortcut functions for placeholders:
-{% raw %}
 ```python
 from pyppl import utils
 utils.format.shorts['replace'] = "lambda x: x.replace('aaa', 'bbb')"
-
-assert (utils.format("{{a | replace}}", {"a": "1aaa2"}) == "1bbb2")
+# utils.format("{{a | replace}}", {"a": "1aaa2"}) == "1bbb2"
 ```
-{% endraw %}
 
 ## `Proc`/`Job` property placeholders
 You can also use some `proc`/`job` property values with placeholders: `{{proc.<property>}}`/`{{job.<property>}}`. Available properties:
