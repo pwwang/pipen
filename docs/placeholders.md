@@ -1,16 +1,17 @@
-# Placeholders
+#
+Placeholders
 <!-- toc -->
 
 {% raw %}
 `pyppl` uses placeholders from `input`, `output` and some properties of a `proc` to hold the values in `output`, `beforeCmd`, `afterCmd` and `script`. For example:
 ```python
 p = proc()
-p.input  = {"v":[0,1,2]}
+p.input = {"v":[0,1,2]}
 p.script = """
 echo {{v}}
 """
 ```
-`{{` and `}}` wrap a placeholder. the above example, there are 3 jobs, which will echo `0`, `1` and `2`, respectively. 
+`{{` and `}}` wrap a placeholder. the above example, there are 3 jobs, which will echo `0`, `1` and `2`, respectively.
 
 ## Transform values by placeholders
 You can apply some function to transform values by placeholders:
@@ -42,24 +43,25 @@ Use `lambda` functions:
 
 ## Built-in functions
 We have a set of built-in funcitons for placeholders, they are:
+
 | Function name | Function | Example-format | Example-data | Example-result |
-|-|-|-|-|-|
-|`Rbool`|Change python value to R bool value|`{{v|Rbool}}`|`{'v':1}`|`TRUE`|
-|`realpath`|Get the real path|`{{v|realpath}}`|`{'v':some/path}`|`<the real path of some/path>`|
-|`readlink`|Read the link|`{{v|readlink}}`|`{'v':some/link}`|`<the real path some/link links to`|
-|`dirname`|Get the directory path of given path|`{{v|dirname}}`|`{'v':/path/to/some/file}`|`/path/to/some/`|
-|`basename`|Get the basename of given path|`{{v|basename}}`|`{'v':/path/to/some/file.txt}`|`file.txt`|
+|---------------|----------|----------------|--------------|----------------|
+|`Rbool`|Change python value to R bool value|`{{v `&#x7c;` Rbool}}`|`{'v':1}`|`TRUE`|
+|`realpath`|Get the real path|`{{v `&#x7c;` realpath}}`|`{'v':some/path}`|`<the real path of some/path>`|
+|`readlink`|Read the link|`{{v `&#x7c;` readlink}}`|`{'v':some/link}`|`<the real path some/link links to`|
+|`dirname`|Get the directory path of given path|`{{v `&#x7c;` dirname}}`|`{'v':/path/to/some/file}`|`/path/to/some/`|
+|`basename`|Get the basename of given path|`{{v `&#x7c;` basename}}`|`{'v':/path/to/some/file.txt}`|`file.txt`|
 |`bn`|Alias of `basename`||||
-|`filename`|Basename without extension|`{{v|filename}}`|`{'v':'/a/b/c.txt'}`|`c`|
+|`filename`|Basename without extension|`{{v `&#x7c;` filename}}`|`{'v':'/a/b/c.txt'}`|`c`|
 |`fn`|Alias of `filename`||||
-|`ext`|Get the extension of a file|`{{v|ext}}`|`{'v':'/a/b/c.txt'}`|`.txt`|
-|`fnnodot`|Get the filename without a dot in it|`{{v|fnnodot}}`|`{'v':'/a/b/c.d.txt'}`|`c`|
-|`prefix`|Get the prefix of a path (no extension)|`{{v|prefix}}`|`{'v':'/a/b/c.d.txt'}`|`/a/b/c.d`|
-|`pxnodot`|Get the prefix without a dot in it|`{{v|pxnodot}}`|`{'v':'/a/b/c.d.txt'}`|`/a/b/c`|
-|`asquote`|Quote an array(list) with quote and joined with space|`{{v|asquote}}`|`{'v':['1','2']}`|`"1" "2"`|
-|`acquote`|Quote an array(list) with quote and joined with comma|`{{v|acquote}}`|`{'v':['1','2']}`|`"1","2"`|
-|`quote`|Quote a string|`{{v|quote}}`|`{'v':'1'}`|`"1"`|
-|`squote`|Single-quote a string|`{{v|quote}}`|`{'v':'1'}`|`'1'`|
+|`ext`|Get the extension of a file|`{{v `&#x7c;` ext}}`|`{'v':'/a/b/c.txt'}`|`.txt`|
+|`fnnodot`|Get the filename without a dot in it|`{{v `&#x7c;` fnnodot}}`|`{'v':'/a/b/c.d.txt'}`|`c`|
+|`prefix`|Get the prefix of a path (no extension)|`{{v `&#x7c;` prefix}}`|`{'v':'/a/b/c.d.txt'}`|`/a/b/c.d`|
+|`pxnodot`|Get the prefix without a dot in it|`{{v `&#x7c;` pxnodot}}`|`{'v':'/a/b/c.d.txt'}`|`/a/b/c`|
+|`asquote`|Quote an array(list) with quote and joined with space|`{{v `&#x7c;` asquote}}`|`{'v':['1','2']}`|`"1" "2"`|
+|`acquote`|Quote an array(list) with quote and joined with comma|`{{v `&#x7c;` acquote}}`|`{'v':['1','2']}`|`"1","2"`|
+|`quote`|Quote a string|`{{v `&#x7c;` quote}}`|`{'v':'1'}`|`"1"`|
+|`squote`|Single-quote a string|`{{v `&#x7c;` quote}}`|`{'v':'1'}`|`'1'`|
 
 > **Hint** To get the extension without the leading dot: `{{v | ext | [1:]}}`
 
@@ -74,7 +76,7 @@ utils.format.shorts['replace'] = "lambda x: x.replace('aaa', 'bbb')"
 ## `Proc` and `Job` property placeholders
 You can also use some `proc`/`job` property values with placeholders: `{{proc.<property>}}`/`{{job.<property>}}`. Available properties:
 
-| property     | alias   |meaning               |
+| property | alias |meaning |
 |--------------|---------|----------------------|
 |`proc.id`|| The id of the process, in most case the variable name. `p = proc() # p.id == "p"`|
 |`proc.tag`||A tag of the process|
