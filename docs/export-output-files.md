@@ -5,12 +5,12 @@ Output files are generated in `<outdir>`(`<job.id>/output`) if you specify the b
 
 You can use different ways (specify it to `exporthow`(alias: `exhow`) of a process) to export output files:
 
-| Ways to export (`p.exhow=?`) | What happens |
-|----------------|--------------|
-|`move`(default) |Move output files to the directory, leave links to them in `<outdir>` (make sure dependent processes can run).|
-|`copy`|Copy output files to the directory|
-|`symlink`|Create symbol links to the output files in the directory|
-|`gzip`|If output is a file, will do `gzip` of the file and save the gzipped file in the export directory; if output is a directory, will do `tar -zcvf` of the output directory and save the result file in the export directory.|
+| Ways to export (`p.exhow=?`) | Aliases | What happens |
+|------------------------------|---------|--------------|
+|`move`(default) |`mv`|Move output files to the directory, leave links to them in `<outdir>` (make sure dependent processes can run).|
+|`copy`|`cp`|Copy output files to the directory|
+|`symlink`|`link`, `symbol`|Create symbol links to the output files in the directory|
+|`gzip`|`gz`|If output is a file, will do `gzip` of the file and save the gzipped file in the export directory; if output is a directory, will do `tar -zcvf` of the output directory and save the result file in the export directory.|
 
 You can export the output files of any process. Note that even though the export directory is specified to a process, but the minimum unit is a `job`, whose output files are ready to be exported once it finishes successfully.
 
