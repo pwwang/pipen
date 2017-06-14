@@ -52,9 +52,12 @@ class proc (object):
 		'EXPORT_CACHE_USING_SYMLINK': 3,
 		'BRINGFILE_OVERWRITING': 3,
 		'OUTNAME_USING_OUTTYPES': 1,
+		'OUTDIR_CREATED': 1,
+		'OUTDIR_CREATED_AFTER_RESET': 1,
 		'SCRIPT_USING_TEMPLATE': 1,
-		'SCRIPT_EXISTS': 1,
+		'SCRIPT_EXISTS': -2,
 		'NOSCRIPT': 1,
+		'JOB_RESETTING': -1,
 		'INFILE_OVERWRITING': -3
 	}
 	
@@ -160,8 +163,9 @@ class proc (object):
 		self.props['aggr']       = self.config['aggr']
 		self.props['callback']   = self.config['callback']
 		self.props['brings']     = self.config['brings']
-		self.props['lognline']   = {key:0 for key in proc.LOG_NLINE.keys()}
 		self.props['suffix']     = ''
+		self.props['lognline']   = {key:0 for key in proc.LOG_NLINE.keys()}
+		self.props['lognline']['prevlog'] = ''
 
 	def __getattr__ (self, name):
 		if not self.props.has_key(name) and not proc.ALIAS.has_key(name) and not name.endswith ('Runner'):
@@ -185,12 +189,14 @@ class proc (object):
 		if name == 'depends':
 			# remove me from nexts of my previous depends
 			for depend in self.depends:
-				if not self in depend.nexts: continue
+				if not self in depend.nexts: 
+					continue
 				del depend.props['nexts'][depend.nexts.index(self)]
 			self.props['depends'] = []
 			
 			depends = value
-			if not isinstance (value, list): depends = [value]
+			if not isinstance (value, list): 
+				depends = [value]
 			for depend in depends:
 				if isinstance (depend, proc):					
 					self.props['depends'].append (depend)
@@ -210,7 +216,7 @@ class proc (object):
 		The log function with aggregation name, process id and tag integrated.
 		@params:
 			`msg`:   The message to log
-			`levle`: The log level
+			`level`: The log level
 			`flag`:  The flag
 			`key`:   The type of messages
 		"""
@@ -222,10 +228,21 @@ class proc (object):
 		func  = getattr(self.logger, level)
 		
 		maxline = proc.LOG_NLINE[key]
-		if self.lognline[key] < abs(maxline):
+		prevlog = self.lognline['prevlog']
+
+		if key == prevlog:
+			if self.lognline[key] < abs(maxline):
+				func ("%s %s: %s" % (flag, title, msg))
+		else:
+			n_omit = self.lognline[prevlog] - abs(proc.LOG_NLINE[prevlog])
+			if n_omit > 0: 
+				logname = 'logs' if n_omit > 1 else 'log'
+				maxinfo = ' (%s, max=%s)' % (prevlog, abs(proc.LOG_NLINE[prevlog])) if prevlog else ''
+				self.logger.debug ("[  DEBUG] %s: ... and %s %s omitted%s." % (title, n_omit, logname, maxinfo))
+			self.lognline[prevlog]   = 0
 			func ("%s %s: %s" % (flag, title, msg))
-		elif self.lognline[key] == abs(maxline) and maxline < 0:
-			func ("%s %s: %s" % (flag, title, "... omitting the same type of coming logs"))
+
+		self.lognline['prevlog'] = key
 		self.lognline[key] += 1
 
 	def copy (self, tag=None, newid=None):

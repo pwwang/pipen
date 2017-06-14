@@ -6,7 +6,7 @@
 - Supports of any language to run you processes.
 - Automatic deduction of input based on the process dependencies. [Details][4]
 - Different ways of exporting output files (including `gzip`). [Details][5]
-- Process caching. [Details][6]
+- Process caching (including caching using exported files). [Details][6]
 - Flexible placeholder handling in output and script settings. [Details][7]
 - APIs to modify channels. [Details][8]
 - Different runners to run you processes on different platforms. [Details][9]

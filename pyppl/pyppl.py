@@ -21,9 +21,9 @@ class pyppl (object):
 	"""
 	
 	tips = [
-		"You can find the stdout in <workdir>/scripts/script.<index>.stdout",
-		"You can find the stderr in <workdir>/scripts/script.<index>.stderr",
-		"You can find the script in <workdir>/scripts/script.<index>",
+		"You can find the stdout in <workdir>/<job.id>/job.stdout",
+		"You can find the stderr in <workdir>/<job.id>/job.stderr",
+		"You can find the script in <workdir>/<job.id>/job.script",
 		"Check documentation at: https://www.gitbook.com/book/pwwang/pyppl",
 		"You cannot have two processes with same id(variable name) and tag",
 		"beforeCmd and afterCmd only run locally",

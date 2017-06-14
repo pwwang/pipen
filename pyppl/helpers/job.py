@@ -82,9 +82,12 @@ class job (object):
 		Report the job information to logger
 		"""
 		for key in sorted(self.input.keys()):
-			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.input[key]['data']), 'info', 'input')	
+			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.input[key]['data']), 'info', 'input')
+			if self.input[key].has_key('orig'):
+				self.proc.log ("[%s/%s] %s.orig => %s" % (self.index, self.proc.length - 1, key, self.input[key]['orig']), 'info', 'input')
 		for key in sorted(self.brings.keys()):
 			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.brings[key]), 'info', 'brings')	
+			self.proc.log ("[%s/%s] %s.orig => %s" % (self.index, self.proc.length - 1, key, self.brings[key + '.orig']), 'info', 'brings')	
 		for key in sorted(self.output.keys()):
 			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.output[key]['data']), 'info', 'output')	
 	
@@ -365,6 +368,7 @@ class job (object):
 		"""
 		Clear the intermediate files and output files
 		"""
+		self.proc.log ('Resetting job #%s ...' % self.index, 'debug', 'debug', 'JOB_RESETTING')
 		if path.exists (self.rcfile) or path.islink (self.rcfile):
 			remove(self.rcfile)
 		if path.exists (self.outfile) or path.islink (self.outfile):
@@ -382,8 +386,9 @@ class job (object):
 					remove (out['data'])
 				else:
 					rmtree (out['data'])
-					if out['type'] in self.proc.OUT_DIRTYPE:
-						makedirs (out['data'])
+			if out['type'] in self.proc.OUT_DIRTYPE:
+				makedirs (out['data'])
+				self.proc.log ('Output directory created after reset: %s.' % out['data'], 'debug', 'debug', 'OUTDIR_CREATED_AFTER_RESET')
 
 	def _prepInput (self):
 		"""
@@ -395,15 +400,16 @@ class job (object):
 		for key, val in self.proc.indata.iteritems():
 			self.input[key] = {
 				'type': val['type'],
-				'data': val['data'][self.index]
+				'data': None
 			}
 			if val['type'] in self.proc.IN_FILETYPE:
 				origfile = path.abspath(val['data'][self.index])
-				self.input[key]['orig'] = origfile
 				basename = path.basename (origfile)
 				infile   = path.join (self.indir, basename)
 				self.data[key]           = infile
 				self.data[key + '.orig'] = origfile
+				self.input[key]['data']  = infile
+				self.input[key]['orig']  = origfile
 				if not path.exists (infile):
 					if path.islink (infile): 
 						remove (infile)
@@ -414,11 +420,13 @@ class job (object):
 					symlink (origfile, infile)
 			elif val['type'] in self.proc.IN_FILESTYPE:
 				self.input[key]['orig'] = []
+				self.input[key]['data'] = []
 				for origfile in val['data'][self.index]:
 					origfile = path.abspath(origfile)
-					self.input[key]['orig'].append (origfile)
 					basename = path.basename (origfile)
 					infile   = path.join (self.indir, basename)
+					self.input[key]['orig'].append (origfile)
+					self.input[key]['data'].append (infile)
 					if not self.data.has_key(key): 
 						self.data[key] = []
 					if not self.data.has_key(key + '.orig'): 
@@ -457,23 +465,32 @@ class job (object):
 			intype  = self.input[inkey]['type']
 			if intype not in self.proc.IN_FILETYPE:
 				raise ValueError ('Only can brings a file related to an input file.')
-			
+
+			# Anyway give an empty string, so that users can tell if bringing fails
+			self.data[brkey] = ''
+			self.data[brkey + ".orig"] = ''
+
 			while path.exists(infile):
 				bring = glob (path.join (path.dirname(infile), pattern))
 				if bring:
 					dstfile = path.join (self.indir, path.basename(bring[0]))
 					self.data[brkey] = dstfile
 					self.data[brkey + ".orig"] = bring[0]
-					self.brings[key] = bring[0]
+					self.brings[key] = dstfile
+					self.brings[key + ".orig"] = bring[0]
 					if path.exists(dstfile) and not utils.isSamefile (dstfile, bring[0]):
 						self.proc.log ("Overwriting bring file: %s" % infile, 'warning', 'warning', 'BRINGFILE_OVERWRITING')
-						remove (dstfile)
+						remove (dstfile) # a link
 						symlink (bring[0], dstfile)
 					elif not path.exists(dstfile):
-						if path.islink (dstfile): remove (dstfile)
+						if path.islink (dstfile): 
+							remove (dstfile)
 						symlink (bring[0], dstfile)
 					break
-				if not path.islink (infile): break
+				# should be a link, then can bring, otherwise it's in job.indir, 
+				# not possible to have the bring file
+				if not path.islink (infile): 
+					break
 				infile = readlink(infile)
 				
 	def _prepOutput (self):
@@ -529,6 +546,7 @@ class job (object):
 			val = utils.format (outexp, self.data)
 			if outtype in self.proc.OUT_DIRTYPE and not path.exists(val):
 				makedirs (val)
+				self.proc.log ('Output directory created: %s.' % val, 'debug', 'debug', 'OUTDIR_CREATED')
 
 			self.data[outkey]           = val
 			self.output[outkey]         = {
