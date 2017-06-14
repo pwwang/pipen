@@ -92,7 +92,7 @@ p.brings = {
 # {{hg19fa.bring.orig}}, {{hg19fa#.bring.orig}}
 ```
 
-> **Caution**: If your pattern matches multiple files, only the first one by `glob.glob` will be return. So try to write more specfic pattern for bring-in files.
+> **Caution**: If your pattern matches multiple files, only the first one by `glob.glob` will be returned. So try to write more specfic pattern for bring-in files.
 
 ### Use a callback to modify the output channel of the prior process.
 You can modify the output channel of the prior process by a callback for the input value. For example:
@@ -126,10 +126,18 @@ p.output = "outvar:var:{{invar}}2, outfile:file:{{infile.bn}}2, outdir:dir:{{ind
 # The output channel (p.channel) will be:
 # [("12", "c.txt2", "c-dir")]
 ```
-You cannot only use the placeholders from input, but the placeholders with process property values. For example: `proc.indir` points to the input directory of the process (`<workdir>/input`). Check [all available process property placeholders](https://pwwang.gitbooks.io/pyppl/placeholders.html#proc-property-placeholders).
+You cannot only use the placeholders from input, but the placeholders with process/job property values. For example: `job.indir` points to the input directory of the process (`<workdir>/<job.id>/input/`). Check [all available process property placeholders](https://pwwang.gitbooks.io/pyppl/placeholders.html#proc-property-placeholders).
 
-The available types `var`, `file`, `path` and `dir`. `path` is actually an alias of `file`. If your output is a directory, and you want `pyppl` to automatically create it, you should use `dir`.
-> **Caution** always use the basename of your output files/directories, so that they will be generated in the `<workdir>/output/`. Later `pyppl` is able to export them and cache the jobs.
-> So don't use `infile` and `indir` directly in output unless you want to use the path of the links linking the input files, Instead, use `infile.fn`, `infile.bn`, `indir.fn` and `indir.bn`.
+## Types of input and output
+|Input/Output|Type|Aliases|Behavior|Example-assignment (`p.input/output=?`)|Example-placeholder-value|
+|------------|----|-------|--------|-------|
+|Input|`var`|-|Use the value directly|`{"in:var": [1]}`|`{{in}} == 1`|
+|Input|`file`|`path`<br />`dir`<br />`folder`|Create link in `job.indir` and assign the original path to `in.orig`|`{"in:file": ["/path/to/file"]}`|`{{in}} == <job.indir>/file`<br />`{{in.orig}} == /path/to/file`|
+|Input|`files`|`paths`<br />`dirs`<br />`folders`|Same as `file` but do for multiple files|`{`<br />`"in:files": channel.create([`<br />`(["/path/to/file1", `<br />`"/path/to/file2"],)`<br />`])`<br />`}`|`{{in `&#124;` " ".join(_)}} == /path/to/file1 /path/to/file2`<br />`{{in `&#124;` asquote}} == "/path/to/file1" "/path/to/file2"`|
+|Output|`var`|-|Specify direct value|`"out:var:{{#}}"`|`{{out}} == {{#}}` (job.id)|
+|Output|`file`|`path`|Just specify the basename, output file will be generated in `job.outdir`|`"out:file:{{infile `&#124;` fn}}.out"`|`{{out}} == <job.outdir>/<filename of infile>.out`|
+|Output|`dir`|`folder`|Do the same thing as `file` but will create the directory|`"out:dir:{{infile `&#124;` fn}}-outdir"`|`{{out}} == <job.outdir>/<filename of infile>-outdir` <br />(automatically created)|
+
+
 {% endraw %}
 
