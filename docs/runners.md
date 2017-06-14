@@ -1,6 +1,7 @@
 # Runners
 <!-- toc -->
 
+{% raw %}
 We have 3 built-in runners (`runner_local`, `runner_ssh`, `runner_sge`), you can also define you own runners.
 
 You can either tell a process to use a runner, or even, you can tell the pipeline to use the runner for all the process. That means each process can have the same runner or a different one. To tell a process which runner to use, just specify the runner name to `p.runner` (for example, `p.runner = "sge"`: use the sge srunner). Each process may use different configuration for the runner (`p.sgeRunner`) or the same one by [configuring the pipeline](https://pwwang.gitbooks.io/pyppl/content/configure-a-pipeline.html).
@@ -155,11 +156,11 @@ The defines how you submit your job. You may use `Popen` to run the script and a
 - Wait for the job to finish: `wait (self)`
 Wait until the job finishes. The basic work it does is to wait and write the `stdout` and `stderr` to `self.job.outfile` and `self.job.errfile`, respectively.  
 
-  | `self.p` | Base class | When this happens? | What to do? | Where to get `stdout`/`stderr`? |
-  |----------|------------|--------------------|-------------|---------------------------------|
-  | `None` | `runner` | Main thread dead | Nothing to do, jobs also quit | - |
-  | `None` | `runner_queue` | Main thread dead, jobs alive | Use `self.isRunning()` to tell whether jobs are truly alive. If yes, wait; otherwise quit | `.stdout/.stderr` files |
-  | `Not None` | `runner` | All alive | `p.wait()` | `.stdout`/`.stderr` files |
+  | `self.p` | Base class | When this happens? | What to do? | Where to get `stdout`/`stderr`? |  
+  |----------|------------|--------------------|-------------|---------------------------------|  
+  | `None` | `runner` | Main thread dead | Nothing to do, jobs also quit | - |  
+  | `None` | `runner_queue` | Main thread dead, jobs alive | Use `self.isRunning()` to tell whether jobs are truly alive. If yes, wait; otherwise quit | `.stdout/.stderr` files |  
+  | `Not None` | `runner` | All alive | `p.wait()` | `.stdout`/`.stderr` files |  
   | `Not None` | `runner_queue` | All alive | Use `self.isRunning()` to tell whether jobs are truly alive. If yes, wait; otherwise quit | `.stdout/.stderr` files |
   
   `runner`/`runner_queue` has also done most of the job, in general case you don't need to rewrite it.
@@ -197,10 +198,10 @@ the number in `script.<index>.rc` is positive, then make if negative; if it is n
 
 | `job.rc()` | Content of `job.rcfile` | Value in log | Script return code | Meaning |
 |------------|-------------------------|--------------|--------------------|---------|
-| `-1` | `-1` | `-1` | `1` | Script returns `1` and output files not generated |
+| `-x` | `-x` | `-x` | `x` | Script returns `x` and output files not generated |
 | `-1000 (job.NOOUT_RC)` | `-1000` | `-0` | `0` | Script returns `0` and output files not generated |
 | `0` | `0` |`0`|`0`| job return code 0 with output files generated |
-| `1` |  `1` |`1`|`1`| job return code 1 with output files generated |
+| `x` |  `x` |`x`|`x`| job return code x with output files generated |
 | `9998 (job.EMPTY_RC)` |  `-` |`9998`|`-`| `rcfile` generated |
 | `9999 (job.FAILED_RC)` |  `9999` |`9999`|`-`| Failed to submit the job |
 
@@ -214,3 +215,4 @@ proc.registerRunner (runner_sge)
 ```
 After registration, you are able to ask a process to use it: `p.runner = "my"`
 
+{% endraw %}
