@@ -70,7 +70,7 @@ utils.format.shorts['replace'] = "lambda x: x.replace('aaa', 'bbb')"
 # utils.format("{{a | replace}}", {"a": "1aaa2"}) == "1bbb2"
 ```
 
-## `Proc`/`Job` property placeholders
+## `Proc` and `Job` property placeholders
 You can also use some `proc`/`job` property values with placeholders: `{{proc.<property>}}`/`{{job.<property>}}`. Available properties:
 
 | property     | alias   |meaning               |
