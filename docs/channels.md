@@ -2,6 +2,7 @@
 
 <!-- toc -->
 
+{% raw %}
 Channels are used to pass data from one `proc` to the other. It is basically a `list`, each element is a `tuple`. **So all python functions/methods that apply on `list` will also apply on `channel`.** The length a the `tuple` corresponds to the number of variables of the input or output of a `proc`.
 ```python
 # v1  v2  v3
@@ -288,6 +289,7 @@ chan1   = chan.copy().insert(0, [1,2,3])
 # chan  == []
 # chan1 =  [(1,), (2,), (3,)]
 ```
+{% endraw %}
 
 
 
