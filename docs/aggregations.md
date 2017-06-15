@@ -35,7 +35,7 @@ pyppl.pyppl({
         'forks': 100,
         'runner': 'sge',
         'sgeRunner': {
-            'sge_q': 'lg-mem'
+            'sge.q': 'lg-mem'
         }
     }
 }).starts(pTrimmomaticPE).run()
@@ -81,7 +81,7 @@ aFastqPE2Bam.exdir = exdir
 pyppl({
     'proc': {
         'sgeRunner': {
-            'sge_q' : '1-day'
+            'sge.q' : '1-day'
         }
     }
 }).starts(aFastqPE2Bam).run()

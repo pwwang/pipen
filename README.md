@@ -127,11 +127,11 @@ plot(H)
 dev.off()
 """
 pyppl({
-	"proc": {
-		"sgeRunner": {
-			"sge_q" : "1-day"
-		}
-	}
+  "proc": {
+    "sgeRunner": {
+      "sge.q" : "1-day"
+    }
+  }
 }).starts(pPlot).run()
 ```
 
