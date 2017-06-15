@@ -2,9 +2,9 @@
 <!-- toc -->
 
 ```bash
->  pyppl-cli --help
+>  pyppl --help
  
-usage: pyppl-cli [-h] [-w WORKDIR] {clean,list} ...
+usage: pyppl [-h] [-w WORKDIR] {clean,list} ...
 
 A set of CLI tools for pyppl.
 
@@ -22,7 +22,7 @@ optional arguments:
 ## List processes
 Example:
 ```
- >  pyppl-cli list  
+ >  pyppl list  
 
 WORKDIR: ./workdir (Yellow processes are to be cleaned!)
 --------------------------------------------------------
@@ -65,5 +65,5 @@ WORKDIR: ./workdir (Yellow processes are to be cleaned!)
 ```
 
 ## Clean processes
-If you run `pyppl-cli clean`, it will list all processes, and prompt you whether to remove the old processes with the same id and tag.  
-You can run `pyppl-cli clean -f` to clean the processes without prompt.
+If you run `pyppl clean`, it will list all processes, and prompt you whether to remove the old processes with the same id and tag.  
+You can run `pyppl clean -f` to clean the processes without prompt.
