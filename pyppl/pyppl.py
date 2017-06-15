@@ -10,7 +10,7 @@ from time import time
 from helpers import *
 from runners import *
 
-VERSION = "0.7.0"
+VERSION = "0.7.1"
 			
 class pyppl (object):
 	"""

@@ -1,6 +1,13 @@
 # Change log
 <!-- toc -->
 
+## June 15, 2017: 0.7.1
+- Move pyppl-cli to bin/pyppl
+- channel.collapse now return the most common directory of paths
+- Report oringinal file of input and bring files
+- Show number of omitted logs
+- But fixes
+
 ## June 13, 2017: 0.7.0
 - Add colored log
 - Put jobs in different directories (files with same basename can be used as input files, otherwise it will be overwritten).
