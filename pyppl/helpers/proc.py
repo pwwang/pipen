@@ -527,7 +527,7 @@ class proc (object):
 		if self.cache == True:
 			for depend in self.depends:
 				if depend.cached: continue
-				self.log ('Not cached, my dependent "%s" not cached.' % depend._name(), 'debug')
+				self.log ('Not cached, my dependent "%s" is not cached.' % depend._name(), 'debug')
 				return False
 		
 		trulyCachedJids        = []

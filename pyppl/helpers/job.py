@@ -96,7 +96,7 @@ class job (object):
 		Do some cleanup when job finished
 		"""
 		# have to touch the output directory so stat flushes and output files can be detected.
-		utime (self.outdir, None)
+		utime (self.dir, None)
 		self.checkOutfiles()
 		if not self.succeed():
 			return
@@ -289,7 +289,7 @@ class job (object):
 				return job.EMPTY_RC
 			else:
 				rcstr = open (self.rcfile).read().strip()
-				if not rcstr: 
+				if rcstr == '': 
 					return job.EMPTY_RC
 				if rcstr == '-0': 
 					return job.NOOUT_RC
@@ -336,18 +336,18 @@ class job (object):
 			
 			# don't overwrite existing files
 			if not self.proc.exportow and path.exists(exfile):
-				self.proc.log ('Skipped (target exists): %s' % exfile, 'info', 'export')
+				self.proc.log ('Job #%-3s: skipped (target exists): %s' % (self.index, exfile), 'info', 'export')
 				continue
 			
 			if path.exists(exfile):
-				self.proc.log ('Overwriting: %s' % exfile, 'info', 'export')
+				self.proc.log ('Job #%-3s: overwriting: %s' % (self.index, exfile), 'info', 'export')
 				if not path.isdir (exfile): 
 					remove (exfile)
 				else: rmtree (exfile)
 			else:
 				if path.islink (exfile): 
 					remove (exfile)
-				self.proc.log ('Exporting to: %s' % exfile, 'info', 'export')
+				self.proc.log ('Job #%-3s: exporting to: %s' % (self.index, exfile), 'info', 'export')
 			
 			if self.proc.exporthow in self.proc.EX_GZIP and out['type'] in self.proc.OUT_FILETYPE and not path.isdir(out['data']):
 				utils.gz (exfile, out['data'])

@@ -33,7 +33,7 @@ class runner (object):
 		"""
 		self.job.reset()
 		try:
-			self.job.proc.log ('Submitting job #%s ...' % self.job.index)
+			self.job.proc.log ('Submitting job #%-3s ...' % self.job.index)
 			self.p = Popen (self.script, stderr=open(self.job.errfile, "w"), stdout=open(self.job.outfile, "w"), close_fds=True)
 		except Exception as ex:
 			self.job.proc.log ('Failed to run job #%s' % self.job.index, 'error')
