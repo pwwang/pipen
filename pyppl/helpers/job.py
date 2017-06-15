@@ -87,7 +87,6 @@ class job (object):
 				self.proc.log ("[%s/%s] %s.orig => %s" % (self.index, self.proc.length - 1, key, self.input[key]['orig']), 'info', 'input')
 		for key in sorted(self.brings.keys()):
 			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.brings[key]), 'info', 'brings')	
-			self.proc.log ("[%s/%s] %s.orig => %s" % (self.index, self.proc.length - 1, key, self.brings[key + '.orig']), 'info', 'brings')	
 		for key in sorted(self.output.keys()):
 			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.output[key]['data']), 'info', 'output')	
 	
