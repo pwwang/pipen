@@ -80,6 +80,12 @@ pCombine.input    = {"indir:file": lambda ch: ch.collapse()}
 pCombine.output   = "outfile:file:{{indir | fn}}.sorted"
 # Export the final result file
 pCombine.exdir    = "./export" 
+pCombine.script   = """
+> {{outfile}}
+for infile in {{indir}}/*/output/*.sorted; do
+	cat $infile >> {{outfile}}
+done
+"""
 
 pyppl().starts(pSort).run()
 ```

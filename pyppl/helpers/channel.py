@@ -187,10 +187,20 @@ class channel (list):
 			The collapsed channel
 			Note, self is also changed
 		"""
-		from os.path import dirname
-		tmp = list (self[0])
-		tmp[col] = dirname (tmp[col])
-		self = channel.create([tuple(tmp)])
+		if self.length() == 0:
+			raise ValueError('Cannot collapse an empty channel.')
+		
+		from os.path import dirname, sep, commonprefix
+		compx = sep
+		row = list(self[0])
+		if self.length() == 1:
+			path  = row[col]
+			compx = dirname (path)
+		else:
+			paths = self.colAt(col).toList()
+			compx = dirname(commonprefix(paths))
+		row[col] = compx
+		self = channel.create([tuple(row)])
 		return self
 	
 	def copy (self):

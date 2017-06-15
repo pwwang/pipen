@@ -52,12 +52,12 @@ class proc (object):
 		'EXPORT_CACHE_USING_SYMLINK': 3,
 		'BRINGFILE_OVERWRITING': 3,
 		'OUTNAME_USING_OUTTYPES': 1,
-		'OUTDIR_CREATED': 1,
-		'OUTDIR_CREATED_AFTER_RESET': 1,
+		'OUTDIR_CREATED': 0,
+		'OUTDIR_CREATED_AFTER_RESET': 0,
 		'SCRIPT_USING_TEMPLATE': 1,
 		'SCRIPT_EXISTS': -2,
 		'NOSCRIPT': 1,
-		'JOB_RESETTING': -1,
+		'JOB_RESETTING': 0,
 		'INFILE_OVERWRITING': -3
 	}
 	
@@ -235,12 +235,14 @@ class proc (object):
 				func ("%s %s: %s" % (flag, title, msg))
 		else:
 			n_omit = self.lognline[prevlog] - abs(proc.LOG_NLINE[prevlog])
-			if n_omit > 0: 
+			if n_omit > 0 and proc.LOG_NLINE[prevlog] < 0: 
 				logname = 'logs' if n_omit > 1 else 'log'
 				maxinfo = ' (%s, max=%s)' % (prevlog, abs(proc.LOG_NLINE[prevlog])) if prevlog else ''
 				self.logger.debug ("[  DEBUG] %s: ... and %s %s omitted%s." % (title, n_omit, logname, maxinfo))
 			self.lognline[prevlog]   = 0
-			func ("%s %s: %s" % (flag, title, msg))
+
+			if self.lognline[key] < abs(maxline):
+				func ("%s %s: %s" % (flag, title, msg))
 
 		self.lognline['prevlog'] = key
 		self.lognline[key] += 1
@@ -481,10 +483,12 @@ class proc (object):
 					self.props['procvars']['proc.args.' + k] = v
 					self.log('%s => %s' % (k, v), 'info', 'p.args')
 			else:
-				if alias.has_key (prop): 
-					prop = alias[prop]
 				self.props['procvars']['proc.' + prop] = val
-				self.log ('%s => %s' % (prop, val), 'info', 'p.props')
+				if alias.has_key (prop): 
+					self.props['procvars']['proc.' + alias[prop]] = val
+					self.log ('%s (%s) => %s' % (prop, alias[prop], val), 'info', 'p.props')
+				else:
+					self.log ('%s => %s' % (prop, val), 'info', 'p.props')
 
 				
 	def _buildJobs (self):
@@ -543,7 +547,7 @@ class proc (object):
 		
 		if self.ncjobids:
 			if len(self.ncjobids) < self.length:
-				self.log ('Partly cached, only run non-cached jobs.', 'info')
+				self.log ('Partly cached, only run non-cached %s job(s).' % len(self.ncjobids), 'info')
 				self.log ('Jobs to be running: %s' % self.ncjobids, 'debug')
 			else:
 				self.log ('Not cached, none of the jobs are cached.', 'info')

@@ -192,6 +192,10 @@ class TestChannel (unittest.TestCase):
 			c = tuple (1, c[0], 2)
 		ch1.collapse(1)
 		self.assertEqual (ch1, [(1, "./", 2)])
+
+		ch = channel.create ([(1, "/a/b/x/c.1.txt", 2), (1, "/a/b/y/c.2.txt", 2)])
+		ch.collapse(1)
+		self.assertEqual(ch, [(1, "/a/b", 2)])
 	
 	def testInsert (self):
 		self.maxDiff = None

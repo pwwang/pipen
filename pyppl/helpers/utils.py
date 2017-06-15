@@ -571,5 +571,5 @@ def isSamefile (f1, f2):
 	from os import path
 	if not path.exists (f1) or not path.exists(f2):
 		return False
-	return path.realpath(f1) == path.realpath(f2)
+	return path.samefile (f1, f2)
 

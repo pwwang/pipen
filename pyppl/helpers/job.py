@@ -119,9 +119,9 @@ class job (object):
 			rc = "-0"
 		
 		if self.proc.errorhow == 'ignore':
-			self.proc.log ("Job #%s (total %s jobs) failed but ignored. Return code is %s (%s)." % (self.index, lenfailed, rc, rcmsg), "warning")
+			self.proc.log ("Job #%s (total %s) failed but ignored. Return code is %s (%s)." % (self.index, lenfailed, rc, rcmsg), "warning")
 		else:
-			self.proc.log ('Job #%s (total %s jobs) failed. Return code: %s (%s).' % (self.index, lenfailed, rc, rcmsg), 'error')
+			self.proc.log ('Job #%s (total %s) failed. Return code: %s (%s).' % (self.index, lenfailed, rc, rcmsg), 'error')
 		
 		if not self.proc.echo:
 			self.proc.log('Job #%s: check STDERR below:' % (self.index), 'error')
