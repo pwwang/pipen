@@ -75,7 +75,9 @@ pSort.script  = """
 pCombine      = proc()
 # Will use pSort's output channel as input
 pCombine.depends  = pSort
-# Modify the channel, "collapse" returns the directory of the files
+# Modify the channel, "collapse" returns the common directory of the files
+# The files are at: <workdir>/<job.id>/output/test?.txt.sorted
+# So the common directory is <workdir>/
 pCombine.input    = {"indir:file": lambda ch: ch.collapse()}
 pCombine.output   = "outfile:file:{{indir | fn}}.sorted"
 # Export the final result file
