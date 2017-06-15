@@ -6,7 +6,7 @@
 - channel.collapse now return the most common directory of paths
 - Report oringinal file of input and bring files
 - Show number of omitted logs
-- But fixes
+- Bug fixes
 
 ## June 13, 2017: 0.7.0
 - Add colored log
