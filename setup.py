@@ -10,7 +10,7 @@ setup (
 	author_email     = "pwwang@pwwang.com",
 	license          = "Apache License Version 2.0",
 	packages         = find_packages(),
-	scripts          = ['pyppl-cli'],
+	scripts          = ['bin/pyppl'],
 	classifiers      = [
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",
