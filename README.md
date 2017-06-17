@@ -1,5 +1,6 @@
 # pyppl - A python lightweight pipeline framework
-![Gitbook][21] ![Pypi][22]
+![Gitbook][21] ![Pypi][22]  
+
 [Documentation][1] | [API][2] | [Change log][19] | [Fork me][3]
 
 <!-- toc -->
