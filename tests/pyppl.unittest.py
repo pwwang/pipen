@@ -271,7 +271,7 @@ sorted("""digraph PyPPL {
 	# run: python pyppl.unittest.py TestPipelineMethods.testIsRunning
 	# and then CTRL+C to quite the main thread
 	# run it again see whether it shows job is already running
-	@unittest.skip('')
+	#@unittest.skip('')
 	def testIsRunning (self):
 		pIsRunning = proc ()
 		pIsRunning.input  = {"a": [1,2,3,4,5]}

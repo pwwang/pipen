@@ -3,6 +3,7 @@ import shutil
 import sys
 import unittest
 from time import sleep
+from subprocess import Popen
 
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
@@ -97,8 +98,12 @@ class TestRunner(unittest.TestCase):
 		p._tidyBeforeRun ()
 	
 		r = runner(p.jobs[0])
-		self.assertTrue (r.isRunning(True))
-		self.assertFalse (r.isRunning(False))
+		self.assertFalse (r.isRunning())
+		p = Popen (r.script, stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
+		r.job.id(str(p.pid))
+		self.assertTrue (r.isRunning())
+		p.wait()
+		self.assertFalse (r.isRunning())
 
 	def testSshInit (self):
 		p = proc('sshinit')
@@ -124,11 +129,12 @@ class TestRunner(unittest.TestCase):
 		p._tidyBeforeRun ()	
 		for j in p.jobs:
 			r = runner_ssh (j)
-			self.assertFalse (r.isRunning(False))
-			r.submit ()
-			self.assertTrue (r.isRunning(True))
-			r.wait ()
-			self.assertFalse (r.isRunning(False))
+			self.assertFalse (r.isRunning())
+			p = Popen (r.script, stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
+			r.job.id(str(p.pid))
+			self.assertTrue (r.isRunning())
+			p.wait()
+			self.assertFalse (r.isRunning())
 
 	def testSgeInit (self):
 		p = proc('sgeinit')
@@ -148,35 +154,40 @@ class TestRunner(unittest.TestCase):
 		p = proc('sgeisrunning')
 		p.ppldir = self.testdir
 		p.script = "sleep 3; echo {{a}}"
-		p.input = {'a': range(4)}
+		p.input = {'a': range(1)}
+		p.forks = 4
 		p.props['logger'] = self.logger
 		p.sgeRunner = {"sge_q": '1-hour'}
 		p._tidyBeforeRun ()
 
 		for j in p.jobs:
 			r = runner_sge (j)
-			self.assertFalse (r.isRunning(False))
+			self.assertFalse (r.isRunning())
 			r.submit ()
-			self.assertTrue (r.isRunning(True))
-			r.wait ()
-			self.assertFalse (r.isRunning(False))
+			self.assertFalse (r.isRunning())
+			r.p.wait()
+			r.getpid()
+			self.assertTrue (r.isRunning())
 
 		# then delete the error jobs in queue
 	
 	def testLocalIsRunning (self):
 		p = proc('localisrunning')
 		p.ppldir = self.testdir
-		p.script = "sleep 3; echo {{a}}"
+		p.script = "sleep 1; echo {{a}}"
 		p.input = {'a': range(4)}
+		p.forks = 4
 		p.props['logger'] = self.logger
 		p._tidyBeforeRun ()	
 		for j in p.jobs:
 			r = runner_local (j)
-			self.assertFalse (r.isRunning(False))
-			r.submit ()
-			self.assertTrue (r.isRunning(True))
-			r.wait ()
-			self.assertFalse (r.isRunning(False))
+			self.assertFalse (r.isRunning())
+			p = Popen (r.script, stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
+			r.job.id(str(p.pid))
+			self.assertTrue(r.isRunning())
+			p.wait()
+			self.assertFalse(r.isRunning())
+
 
 if __name__ == '__main__':
 	unittest.main()

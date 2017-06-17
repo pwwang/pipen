@@ -2,6 +2,7 @@
 The base runner class
 """
 import sys
+from os import devnull
 from multiprocessing import Lock
 from subprocess import Popen, list2cmdline
 
@@ -36,10 +37,16 @@ class runner (object):
 			self.job.proc.log ('Submitting job #%-3s ...' % self.job.index)
 			self.p = Popen (self.script, stderr=open(self.job.errfile, "w"), stdout=open(self.job.outfile, "w"), close_fds=True)
 		except Exception as ex:
-			self.job.proc.log ('Failed to run job #%s' % self.job.index, 'error')
+			self.job.proc.log ('Failed to run job #%s: %s' % (self.job.index, str(ex)), 'error')
 			open (self.job.errfile, 'a').write(str(ex))
 			self.job.rc(self.job.FAILED_RC)
 			self.p = None
+	
+	def getpid (self):
+		"""
+		Get the job id
+		"""
+		self.job.id (str(self.p.pid))
 
 	def wait(self):
 		"""
@@ -49,6 +56,7 @@ class runner (object):
 			return
 
 		if self.p:
+			self.getpid()
 			retcode = self.p.wait()
 			if self.job.proc.echo:
 				lock.acquire()
@@ -79,12 +87,13 @@ class runner (object):
 		self.wait()
 		self.finish()
 
-	def isRunning (self, suppose):
+	def isRunning (self):
 		"""
 		Try to tell whether the job is still running.
-		@params:
-			`suppose`: Whether the job is supposed to be running in the context
 		@returns:
 			`True` if yes, otherwise `False`
 		"""
-		return suppose
+		jobid = self.job.id()
+		if not jobid:
+			return False
+		return Popen (['kill', '-s', '0', jobid], stderr=open(devnull, 'w'), stdout=open(devnull, 'w')).wait() == 0

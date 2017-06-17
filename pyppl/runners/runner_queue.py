@@ -31,13 +31,14 @@ class runner_queue (runner):
 		fout = open (self.job.outfile)
 		if self.p:
 			self.p.wait()
+			self.getpid()
 			if self.job.proc.echo:
 				lock.acquire()
 				sys.stderr.write (ferr.read())
 				sys.stdout.write (fout.read())
 				lock.release()
 		
-		if not self.isRunning(True):
+		if not self.isRunning():
 			ferr.close()
 			fout.close()
 			return
@@ -50,7 +51,7 @@ class runner_queue (runner):
 				sys.stdout.write (''.join(fout.readlines()))
 				lock.release()
 				
-			if not self.isRunning(True):
+			if not self.isRunning():
 				break
 			
 		ferr.close()

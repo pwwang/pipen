@@ -52,7 +52,8 @@ class runner_test (runner):
 		# check initial varialbles
 		self.assertEqual (p.id, 'p')
 		self.assertEqual (p.tag, 'tag')
-		self.assertEqual (p.input, {})
+		self.assertEqual (p.input, '')
+		self.assertEqual (p.indata, {})
 		#self.assertEqual (p.output, {})
 		self.assertEqual (p.nexts, [])
 		self.assertEqual (p.ppldir, os.path.abspath("./workdir"))
@@ -75,10 +76,11 @@ class runner_test (runner):
 		self.assertEqual (p.logger, None)
 		self.assertEqual (p.args, {})
 		self.assertEqual (p.aggr, None)
-		self.assertEqual (p.checkrun, True)
 		self.assertEqual (p.callback, None)
 		self.assertEqual (p.brings, {})
-		self.assertEqual (p.lognline, {key:0 for key in proc.LOG_NLINE.keys()})
+		lognline = {key:0 for key in proc.LOG_NLINE.keys()}
+		lognline['prevlog']  = ''
+		self.assertEqual (p.lognline, lognline)
 
 	def testGetattr (self):
 		p = proc ('getattr')
@@ -103,7 +105,7 @@ class runner_test (runner):
 
 		# input
 		p.input = {"a": [1]}
-		self.assertEqual (p.input, {})
+		self.assertEqual (p.indata, {})
 		self.assertEqual (p.config['input'], {'a':[1]})
 
 		# depends
@@ -188,7 +190,7 @@ class runner_test (runner):
 		sys.argv = ["", '1', '2', '3']
 		p.input  = "a"
 		p._buildInput()
-		self.assertEqual (p.input, {"a": {'data': ['1', '2', '3'], 'type': 'var'}})
+		self.assertEqual (p.indata, {"a": {'data': ['1', '2', '3'], 'type': 'var'}})
 
 		# channels from depends
 		p2 = proc ('input')
@@ -198,7 +200,7 @@ class runner_test (runner):
 		p.depends = [p2, p3]
 		p.input   = "a,b"
 		p._buildInput()
-		self.assertEqual (p.input, {
+		self.assertEqual (p.indata, {
 			"a": {'data': [1, 2, 3], 'type': 'var'},
 			"b": {'data': [4, 5, 6], 'type': 'var'}
 		})
@@ -206,7 +208,7 @@ class runner_test (runner):
 		# callable input
 		p.input = {"a,b": lambda ch1, ch2: ch1.merge(ch2.map(lambda x: (x[0]*2, )))}
 		p._buildInput()
-		self.assertEqual (p.input, {
+		self.assertEqual (p.indata, {
 			"a": {'data': [1, 2, 3], 'type': 'var'},
 			"b": {'data': [8, 10, 12], 'type': 'var'}
 		})
@@ -214,7 +216,7 @@ class runner_test (runner):
 		# callable different keys
 		p.input = {"a": lambda ch1, ch2: ch1, "b": lambda ch1, ch2: ch2.map(lambda x: (x[0]*2,))}
 		p._buildInput()
-		self.assertEqual (p.input, {
+		self.assertEqual (p.indata, {
 			"a": {'data': [1, 2, 3], 'type': 'var'},
 			"b": {'data': [8, 10, 12], 'type': 'var'}
 		})
@@ -222,13 +224,13 @@ class runner_test (runner):
 		# files pattern
 		p.input = {"a,b":lambda ch1,ch2:ch1.merge(ch2.map(lambda x: (x[0]*2, ))), "c:files":["./*.py"]*3}
 		p._buildInput()
-		self.assertEqual (p.input['a'], {'data': [1, 2, 3], 'type': 'var'})
-		self.assertEqual (p.input['b'], {'data': [8, 10, 12], 'type': 'var'})
-		self.assertEqual (p.input['c']['type'], 'files')
-		self.assertEqual (len(p.input['c']['data']), 3)
-		self.assertItemsEqual (p.input['c']['data'][0], glob.glob("./*.py"))
-		self.assertItemsEqual (p.input['c']['data'][1], glob.glob("./*.py"))
-		self.assertItemsEqual (p.input['c']['data'][2], glob.glob("./*.py"))
+		self.assertEqual (p.indata['a'], {'data': [1, 2, 3], 'type': 'var'})
+		self.assertEqual (p.indata['b'], {'data': [8, 10, 12], 'type': 'var'})
+		self.assertEqual (p.indata['c']['type'], 'files')
+		self.assertEqual (len(p.indata['c']['data']), 3)
+		self.assertItemsEqual (p.indata['c']['data'][0], glob.glob("./*.py"))
+		self.assertItemsEqual (p.indata['c']['data'][1], glob.glob("./*.py"))
+		self.assertItemsEqual (p.indata['c']['data'][2], glob.glob("./*.py"))
 		self.assertEqual (p.length, 3)
 		self.assertEqual (p.jobs, [None] * 3)
 		
@@ -241,27 +243,36 @@ class runner_test (runner):
 		self.assertRaisesRegexp(ValueError, r"Expect same", p._buildInput)
 
 	def testBuildProcVars (self):
+		self.maxDiff = None
 		p = proc ('pvars')
+		p.props['logger'] = self.logger
 		p.args = {"a":1, "b":2}
 		p._buildProcVars()
 		#{'proc.errhow': 'terminate', 'proc.exow': True, 'proc.forks': 1, 'proc.echo': False, 'proc.exdir': '', 'proc.cache': True, 'proc.exhow': 'move', 'proc.errntry': 1, 'proc.workdir': '', 'proc.runner': 'local', 'proc.ppldir': '/data2/junwenwang/panwen/tools/pyppl/tests/workdir', 'proc.args': {}, 'proc.id': 'p', 'proc.lang': 'bash', 'proc.tag': 'pvars', 'proc.length': 0}
 		self.assertDictEqual (p.procvars, {
 			'proc.errhow': 'terminate', 
+			'proc.errorhow': 'terminate', 
 			'proc.exow': True, 
+			'proc.exportow': True, 
 			'proc.forks': 1, 
 			'proc.echo': False, 
 			'proc.exdir': '', 
+			'proc.exportdir': '', 
 			'proc.cache': True, 
 			'proc.exhow': 'move', 
+			'proc.exporthow': 'move', 
 			'proc.errntry': 3, 
+			'proc.errorntry': 3, 
 			'proc.workdir': '', 
 			'proc.runner': 'local', 
 			'proc.ppldir': '/data2/junwenwang/panwen/tools/pyppl/tests/workdir', 
+			'proc.tmpdir': '/data2/junwenwang/panwen/tools/pyppl/tests/workdir', 
 			'proc.args': {"a":1, "b":2}, 
 			'proc.args.a': 1,
 			'proc.args.b': 2,
 			'proc.id': 'p', 
 			'proc.lang': 'bash', 
+			'proc.defaultSh': 'bash', 
 			'proc.tag': 'pvars', 
 			'proc.length': 0})
 

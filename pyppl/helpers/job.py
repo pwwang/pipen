@@ -47,6 +47,7 @@ class job (object):
 		self.outfile   = path.join (self.dir, "job.stdout")
 		self.errfile   = path.join (self.dir, "job.stderr")
 		self.cachefile = path.join (self.dir, "job.cache")
+		self.idfile    = path.join (self.dir, "job.id")
 		#self.input   = {'var':[], 'file':[], 'files':[]} if input is None else input
 		#self.output  = {'var':[], 'file':[]} if output is None else input
 		self.index     = index
@@ -57,12 +58,14 @@ class job (object):
 		self.brings    = {}
 		self.data      = {
 			'#':           index,
-			'job.id':      index,
+			'job.index':   index,
+			'job.id':      '',
 			'job.indir':   self.indir,
 			'job.outdir':  self.outdir,
 			'job.dir':     self.dir,
 			'job.outfile': self.outfile,
-			'job.errfile': self.errfile
+			'job.errfile': self.errfile,
+			'job.idfile':  self.idfile
 		}
 		
 	def init (self):
@@ -286,13 +289,13 @@ class job (object):
 		if val is None:
 			if not path.exists (self.rcfile): 
 				return job.EMPTY_RC
-			else:
-				rcstr = open (self.rcfile).read().strip()
-				if rcstr == '': 
-					return job.EMPTY_RC
-				if rcstr == '-0': 
-					return job.NOOUT_RC
-				return int (rcstr)
+			
+			rcstr = open (self.rcfile).read().strip()
+			if rcstr == '': 
+				return job.EMPTY_RC
+			if rcstr == '-0': 
+				return job.NOOUT_RC
+			return int (rcstr)
 		else:
 			r = self.rc ()
 			if val == job.NOOUT_RC:
@@ -303,6 +306,21 @@ class job (object):
 				elif r == 0: 
 					val = "-0"
 			open (self.rcfile, 'w').write (str(val))
+
+	def id (self, val = None):
+		"""
+		Get/Set the job id (pid or the id from queue system)
+		@params:
+			`val`: The id to be set
+		"""
+		if val is None:
+			if not path.exists (self.idfile):
+				return ''
+			return open(self.idfile).read().strip()
+		else:
+			self.data['job.id'] = val
+			open (self.idfile, 'w').write (val)
+
 	
 	def checkOutfiles (self):
 		"""
@@ -374,6 +392,8 @@ class job (object):
 			remove(self.outfile)
 		if path.exists (self.errfile) or path.islink (self.errfile):
 			remove(self.errfile)
+		if path.exists (self.idfile) or path.islink (self.idfile):
+			remove(self.idfile)
 		
 		for _, out in self.output.iteritems():
 			if out['type'] in self.proc.OUT_VARTYPE: 
@@ -397,16 +417,14 @@ class job (object):
 			makedirs (self.indir)
 		
 		for key, val in self.proc.indata.iteritems():
-			self.input[key] = {
-				'type': val['type'],
-				'data': None
-			}
+			self.input[key] = {}
 			if val['type'] in self.proc.IN_FILETYPE:
 				origfile = path.abspath(val['data'][self.index])
 				basename = path.basename (origfile)
 				infile   = path.join (self.indir, basename)
 				self.data[key]           = infile
 				self.data[key + '.orig'] = origfile
+				self.input[key]['type']  = self.proc.IN_FILETYPE[0]
 				self.input[key]['data']  = infile
 				self.input[key]['orig']  = origfile
 				if not path.exists (infile):
@@ -418,6 +436,7 @@ class job (object):
 					remove (infile)  # it's a link
 					symlink (origfile, infile)
 			elif val['type'] in self.proc.IN_FILESTYPE:
+				self.input[key]['type'] = self.proc.IN_FILESTYPE[0]
 				self.input[key]['orig'] = []
 				self.input[key]['data'] = []
 				for origfile in val['data'][self.index]:
@@ -441,6 +460,8 @@ class job (object):
 						remove (infile)  # it's a link
 						symlink (origfile, infile)
 			else:
+				self.input[key]['type'] = self.proc.IN_VARTYPE[0]
+				self.input[key]['data'] = val['data'][self.index]
 				self.data[key] = val['data'][self.index]
 			
 	

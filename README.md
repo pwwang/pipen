@@ -138,6 +138,7 @@ pyppl({
 ## Draw the pipeline chart
 `pyppl` can generate the graph in [DOT language][14]. 
 ```python
+# "A" is the tag of p1
 p1 = proc("A")
 p2 = proc("B")
 p3 = proc("C")

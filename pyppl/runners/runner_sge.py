@@ -1,7 +1,7 @@
 import copy
-import os
-from subprocess import check_output, list2cmdline
-from time import sleep
+from os import devnull
+from subprocess import Popen
+from re import search
 
 from .runner_queue import runner_queue
 
@@ -98,23 +98,19 @@ class runner_sge (runner_queue):
 		
 		self.script = ['qsub', sgefile]
 
+	def getpid (self):
+		# Your job 6556149 ("pSort.notag.3omQ6NdZ.0") has been submitted
+		m = search (r"\s(\d+)\s", open(self.job.outfile).read())
+		if not m:
+			return
+		self.job.id (m.group(1))
 
-	def isRunning (self, suppose):
+	def isRunning (self):
 		"""
-		Try to tell whether the job is still running using qstat.
-		@params:
-			`suppose`: Whether the job is supposed to be running in the context
-		@returns:
-			`True` if yes, otherwise `False`
+		Tell whether the job is still running
 		"""
-		if not self.job.proc.checkrun:
-			return suppose
-		# rcfile already generated
-		if self.job.rc() != self.job.EMPTY_RC:
+		jobid = self.job.id ()
+		if not jobid:
 			return False
+		return Popen (['qstat', '-j', jobid], stdout=open(devnull, 'w'), stderr=open(devnull, 'w')).wait() == 0
 
-		sleep (3) # wait untile qsub really submit the job (in the queue)
-		qstout = check_output (['qstat', '-xml'])
-		#  <JB_name>pMuTect2.nothread.3</JB_name>
-		qstout = [line for line in qstout.split("\n") if "<JB_name>" + self.jobname + "</JB_name>" in line]
-		return bool (qstout)

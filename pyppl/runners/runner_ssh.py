@@ -63,21 +63,4 @@ class runner_ssh (runner):
 		
 		self.script = utils.chmodX(sshfile)
 
-	def isRunning (self, suppose):
-		"""
-		Try to tell whether the job is still running using `ps`
-		@params:
-			`suppose`: Whether the job is supposed to be running in the context		
-		@returns:
-			`True` if yes, otherwise `False`
-		"""
-		if not self.job.proc.checkrun:
-			return suppose
-		# rcfile already generated
-		if self.job.rc() != self.job.EMPTY_RC:
-			return False
-		
-		uname = getuser()
-		psout = check_output (['ssh', self.server, 'ps -u%s -o args' % uname])
-		psout = psout.split("\n")[1:]
-		return self.cmd2run in psout or "bash -c " + self.cmd2run in psout
+

@@ -18,6 +18,7 @@ class TestJob (unittest.TestCase):
 	logger  = utils.getLogger('debug', 'TestJob')
 
 	def testConstruct (self):
+		self.maxDiff = None
 		p = proc ()
 		p.ppldir = self.wdir
 		p.props['logger'] = self.logger
@@ -39,12 +40,14 @@ class TestJob (unittest.TestCase):
 		self.assertEqual (j.brings, {})
 		self.assertEqual (j.data, {
 			'#': j.index,
-			'job.id': j.index,
+			'job.id': '',
+			'job.index': j.index,
 			'job.indir': j.indir,
 			'job.outdir': j.outdir,
 			'job.dir': j.dir,
 			'job.outfile': j.outfile,
-			'job.errfile': j.errfile
+			'job.errfile': j.errfile,
+			'job.idfile': j.idfile
 		})
 		self.assertEqual (j.index,  0)
 		
@@ -80,26 +83,43 @@ class TestJob (unittest.TestCase):
 		j = job (0, p)
 		self.assertEqual (j.data, {
 			'#': j.index,
-			'job.id': j.index,
-			'job.indir': j.indir,
-			'job.outdir': j.outdir,
-			'job.dir': j.dir,
-			'job.outfile': j.outfile,
-			'job.errfile': j.errfile
-		})
-		j.init ()
-		self.assertEqual (j.data, {
-			'#': j.index,
-			'job.id': j.index,
+			'job.id': '',
+			'job.index': j.index,
 			'job.indir': j.indir,
 			'job.outdir': j.outdir,
 			'job.dir': j.dir,
 			'job.outfile': j.outfile,
 			'job.errfile': j.errfile,
+			'job.idfile': j.idfile
+		})
+		j.init ()
+		self.assertEqual (j.data, {
+			'#': j.index,
+			'job.id': '',
+			'job.index': j.index,
+			'job.indir': j.indir,
+			'job.outdir': j.outdir,
+			'job.dir': j.dir,
+			'job.outfile': j.outfile,
+			'job.errfile': j.errfile,
+			'job.idfile': j.idfile,
 			'a': '1'
 		})
+
+	def testId (self):
+		p = proc ('id')
+		p.ppldir = self.wdir
+		p.props['logger'] = self.logger
+		p.output = "a:1"
+		p._buildProps()
+		j = job (0, p)
+		j.init()
+		j.id ('aaa')
+		
+		self.assertEqual(j.id(), 'aaa')
 		
 	def testPrepInput (self):
+		self.maxDiff = None
 		p1 = proc ('prepinput')
 		p1.ppldir = self.wdir
 		p1.props['logger'] = self.logger
@@ -112,18 +132,19 @@ class TestJob (unittest.TestCase):
 			os.makedirs (j.dir)
 		j._prepInput()
 		self.assertEqual (j.input['a'], {'type': 'var', 'data': 1})
-		self.assertEqual (j.input['b'], {'type': 'file', 'orig': os.path.abspath(__file__), 'data': __file__})
+		self.assertEqual (j.input['b'], {'type': 'file', 'orig': os.path.realpath(__file__), 'data': os.path.join(j.indir, os.path.basename(__file__))})
 		self.assertEqual (j.input['c']['type'], 'files')
-		self.assertItemsEqual(map(os.path.abspath, j.input['c']['data']), glob.glob (self.dirname + "/*.py"))
+		self.assertItemsEqual(map(os.path.realpath, j.input['c']['data']), glob.glob (self.dirname + "/*.py"))
 		for infile in glob.glob (self.dirname + "/*.py"):
 			self.assertTrue (utils.isSamefile(infile, os.path.join(j.indir, os.path.basename(infile))))
 		self.assertEqual (j.data['#'], j.index)
-		self.assertEqual (j.data['job.id'], j.index)
+		self.assertEqual (j.data['job.index'], j.index)
 		self.assertEqual (j.data['job.indir'], j.indir)
 		self.assertEqual (j.data['job.outdir'], j.outdir)
 		self.assertEqual (j.data['job.dir'], j.dir)
 		self.assertEqual (j.data['job.outfile'], j.outfile)
 		self.assertEqual (j.data['job.errfile'], j.errfile)
+		self.assertEqual (j.data['job.idfile'], j.idfile)
 		self.assertEqual (j.data['a'], 1)
 		self.assertEqual (j.data['b'], os.path.join (j.indir, os.path.basename(__file__)))
 		self.assertEqual (j.data['b.orig'], os.path.join (self.dirname, os.path.basename(__file__)))
@@ -142,13 +163,13 @@ class TestJob (unittest.TestCase):
 			os.makedirs (j.dir)
 		j._prepInput()
 		self.assertEqual (j.input['a'], {'type': 'var', 'data': 1})
-		self.assertEqual (j.input['b'], {'type': 'file', 'orig': os.path.abspath(__file__), 'data': __file__})
+		self.assertEqual (j.input['b'], {'type': 'file', 'orig': os.path.abspath(__file__), 'data': os.path.join(j.indir, os.path.basename(__file__))})
 		self.assertEqual (j.input['c']['type'], 'files')
-		self.assertItemsEqual(map(os.path.abspath, j.input['c']['data']), glob.glob (self.dirname + "/*.py"))
+		self.assertItemsEqual(map(os.path.realpath, j.input['c']['data']), glob.glob (self.dirname + "/*.py"))
 		for infile in glob.glob (self.dirname + "/*.py"):
 			self.assertTrue (utils.isSamefile(infile, os.path.join(j.indir, os.path.basename(infile))))
 		self.assertEqual (j.data['#'], j.index)
-		self.assertEqual (j.data['job.id'], j.index)
+		self.assertEqual (j.data['job.index'], j.index)
 		self.assertEqual (j.data['job.indir'], j.indir)
 		self.assertEqual (j.data['job.outdir'], j.outdir)
 		self.assertEqual (j.data['job.dir'], j.dir)

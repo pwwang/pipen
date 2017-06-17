@@ -165,6 +165,12 @@ Wait until the job finishes. The basic work it does is to wait and write the `st
   
   `runner`/`runner_queue` has also done most of the job, in general case you don't need to rewrite it.
 
+- Get the job id: `getpid()`
+  - Get the job identity, which is used in `isRunning` detection
+  - You can set the job identity by `self.job.id(<jobid>)`.
+  - In `isRunning`, you can use `self.job.id()` to get it.
+  - For example, in `runner_local`, the job id is PID, but for `runner_sge`, it should be the job id from the grid.
+
 - Finish the job: `finish (self)`
 The work it does:
   - Cleanup for jobs
@@ -174,8 +180,7 @@ The work it does:
 
 - Tell whether a job is still running: `isRunning(self)`  
 This function is used to detect whether a job is running. 
-For example, ssh runner will use the command submitted to the server to detect whether a job is still running. Because the command actually running is `cd <cwd>; [interpreter] <workdir>/0/job.script`, which has a unique id in `<workdir>` and the job index `0`, so it won't be mixed with other running processes.  
-The sge runner uses `qstat` according to the `jobname`, which is compose of process id, process tag, process uid and job index: `<id>.<tag>.<uid>.<index>` if you don't specify the `jobname` through the configuration (`sge.N` in `sgeRunner`)(NOT recommended).
+Basically, it uses the job id got by `getpid()` to tell whether the job is still running.
 **This function is specially useful when you try to run the pipeline again if some of the jobs are still running but the main thread (pipeline) quite unintentionally.**
 
 - How many jobs to submit at one time (static variable): `maxsubmit` (only for `runner_queue`)  
@@ -187,9 +192,10 @@ As explained in `maxsubmit`, this value is used for wait some time when submitti
   **Key points in writing your own runner**:
   1. Choose the right base class (`pyppl.runner` or `pyppl.runner_queue`)
   2. Compose the right script to submit the job (`self.script`) in `__init__`.
-  3. Tell `pyppl` how to judge when the jobs are still running (`self.isRunning()`). (Not necessary if `pyppl.checkrun` is set as `False`)
-  4. Set the static value for `maxsubmit` and `interval` if necessary (only for `runner_queue`).
-  5. For queue runners, make sure the `stdout`/`stderr` will be written to the right file (`.stdout`/`.stderr` file), and the right return code to `.rc` file.
+  3. Use `getpid` to get the job id.
+  4. Tell `pyppl` how to judge when the jobs are still running (`self.isRunning()`). 
+  5. Set the static value for `maxsubmit` and `interval` if necessary (only for `runner_queue`).
+  6. For queue runners, make sure the `stdout`/`stderr` will be written to the right file (`.stdout`/`.stderr` file), and the right return code to `.rc` file.
 
 ## Return code in `pyppl` and the actual number in `job.rc`
 When you try to set return code using `job.rc(val)`, it will basically write the number to `job.rc`. If `rc < 0` (output file is not generated, in this case) and the script returns `abs(rc)`. If the script returns 0, but output files are not generated, a warning of return code `-0` will be shown, but in `job.rcfile`, the content is `-1000`

@@ -47,8 +47,8 @@ class TestAggr (unittest.TestCase):
 		p1.input = "i11, i12"
 		p2.input = "i21, i22"
 		a  = aggr (p1, p2)
-		self.assertRaisesRegexp(RuntimeError, r'Not enough data', a.__setattr__, 'input', [1])
 		a.input = [(1,2)]
+		self.assertEqual (p1.input, {"i11, i12": [(1,2)]})
 		
 		#multiple starts
 		p3 = proc('commp')
@@ -61,15 +61,15 @@ class TestAggr (unittest.TestCase):
 		a2.starts = [p3, p4]
 		self.assertEqual (a2.starts, [p3, p4])
 		self.assertEqual (a2.ends, [p5])
-		self.assertRaisesRegexp(RuntimeError, r'Not enough data', a2.__setattr__, 'input', [(1,2,3)])
+		p3.input = {p3.input: []}
+		self.assertIs (p3, a2.p3_commp)
+		#self.assertRaisesRegexp(RuntimeError, r'Not enough data', a2.__setattr__, 'input', [(1,2,3)])
 		self.assertRaisesRegexp(RuntimeError, r'Expect list or str for', a2.__setattr__, 'input', [(1,2,3,4)])
 		a2.p3_commp.input = "i31, i32"
 		a2.p4_commp.input = "i41, i42"
 		a2.input = [(1,2,3,4)]
-		self.assertEqual (p3.input["i31"], [(1,)])
-		self.assertEqual (p3.input["i32"], [(2,)])
-		self.assertEqual (p4.input["i41"], [(3,)])
-		self.assertEqual (p4.input["i42"], [(4,)])
+		self.assertEqual (p3.input["i31, i32"], [(1,2)])
+		self.assertEqual (p4.input["i41, i42"], [(3,4)])
 		
 	def testDepends (self):
 		p1 = proc('dep')

@@ -159,7 +159,6 @@ class proc (object):
 		# for unittest, in real case, the logger will be got from pyppl
 		self.props['logger']     = None
 		self.props['args']       = self.config['args']
-		self.props['checkrun']   = True
 		self.props['aggr']       = self.config['aggr']
 		self.props['callback']   = self.config['callback']
 		self.props['brings']     = self.config['brings']
@@ -589,7 +588,7 @@ class proc (object):
 			while True:
 				(run, i) = q.get()
 				sleep (i)
-				if self.checkrun and run.isRunning(False):
+				if run.isRunning():
 					self.log ("Job #%s is already running, skip submitting." % run.job.index, 'info')
 				else:
 					run.submit()
