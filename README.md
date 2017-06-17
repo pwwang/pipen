@@ -1,5 +1,5 @@
 # pyppl - A python lightweight pipeline framework
-![Gitbook][21] ![Pypi][22]  
+![Pypi][22] ![Github][23] ![Gitbook][21]   
 
 [Documentation][1] | [API][2] | [Change log][19] | [Fork me][3]
 
@@ -251,3 +251,4 @@ You can use different [dot renderers][17] to render and visualize it.
 [20]: https://github.com/pwwang/pyppl/raw/master/docs/firstScript.png
 [21]: https://www.gitbook.com/button/status/book/pwwang/pyppl
 [22]: https://badge.fury.io/py/pyppl.svg
+[23]: https://badge.fury.io/gh/pwwang%2Fpyppl.svg
