@@ -188,6 +188,7 @@ sorted("""digraph PyPPL {
 		p1.script = "echo {input}"
 		ppl.starts(p1).run('sge')
 	
+	@unittest.skip('')
 	def test_batchjobs (self):
 		p = proc ('batch')
 		p.input = {'input': channel.create(range(10))}
@@ -271,7 +272,7 @@ sorted("""digraph PyPPL {
 	# run: python pyppl.unittest.py TestPipelineMethods.testIsRunning
 	# and then CTRL+C to quite the main thread
 	# run it again see whether it shows job is already running
-	#@unittest.skip('')
+	@unittest.skip('')
 	def testIsRunning (self):
 		pIsRunning = proc ()
 		pIsRunning.input  = {"a": [1,2,3,4,5]}
