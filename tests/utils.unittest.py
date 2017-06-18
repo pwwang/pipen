@@ -2,6 +2,7 @@ import os
 import shutil
 import sys
 import unittest
+from os import utime
 
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
@@ -167,6 +168,7 @@ class TestUtils (unittest.TestCase):
 		sig = utils.filesig (thefile)
 		from time import sleep
 		sleep (.1)
+		utime (thefile, None)
 		open(thefile, 'w').write('')
 		self.assertNotEqual (sig, utils.filesig(thefile))
 		shutil.rmtree ("./test/")
