@@ -30,6 +30,9 @@
 git clone https://github.com/pwwang/pyppl.git
 cd pyppl
 python setup.py install
+# or simly:
+pip install git+git://github.com/pwwang/pyppl.git
+
 # install released version
 pip install pyppl
 ```
