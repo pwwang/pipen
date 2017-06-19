@@ -21,7 +21,7 @@
 - Detailed [documentation][1] and [API documentation][2].
 
 ## Requirements
-- Linux (Maybe works on OSX, not tested)
+- Linux, OSX or WSL (Windows Subsystem for Linux)
 - Python 2.7+ (python3 compatible)
 
 ## Installation

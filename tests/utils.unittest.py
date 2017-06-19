@@ -168,10 +168,8 @@ class TestUtils (unittest.TestCase):
 			f.write('')
 		sig = utils.filesig (thefile)
 		from time import sleep
-		sleep (.1)
+		sleep (1)
 		utime (thefile, None)
-		with open(thefile, 'w') as f:
-			f.write('')
 		self.assertNotEqual (sig, utils.filesig(thefile))
 		shutil.rmtree ("./test/")
 		
