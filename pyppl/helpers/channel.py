@@ -137,7 +137,7 @@ class channel (list):
 		@returns:
 			The converted element
 		"""
-		if isinstance(tu, (str, unicode)):
+		if isinstance(tu, utils.basestring):
 			tu = (tu, )
 		else:
 			try: 
@@ -146,6 +146,7 @@ class channel (list):
 				tu = (tu, )
 		#return tuple(tu)
 		return (tu, ) if isinstance(tu, list) else tuple (tu) 
+
 	
 	def expand (self, col = 0, pattern = "*"):
 		"""
@@ -261,7 +262,7 @@ class channel (list):
 		@returns:
 			The transformed channel
 		"""
-		return channel.create(reduce(func, self))
+		return channel.create(utils.reduce(func, self))
 	
 	def rbind (self, row):
 		"""
@@ -300,6 +301,7 @@ class channel (list):
 			The combined channel
 			Note, self is also changed
 		"""
+		col = utils.range2list(col)
 		if not isinstance(col, list): 
 			col = [col]
 		if len (col) == 1: 
@@ -388,6 +390,7 @@ class channel (list):
 			The channel with the column inserted
 			Note, self is also changed
 		"""
+		col = utils.range2list(col)
 		if not isinstance(col, list): 
 			col = [col]
 		if len (col) == 1: 

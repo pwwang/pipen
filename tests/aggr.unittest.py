@@ -64,7 +64,7 @@ class TestAggr (unittest.TestCase):
 		p3.input = {p3.input: []}
 		self.assertIs (p3, a2.p3_commp)
 		#self.assertRaisesRegexp(RuntimeError, r'Not enough data', a2.__setattr__, 'input', [(1,2,3)])
-		self.assertRaisesRegexp(RuntimeError, r'Expect list or str for', a2.__setattr__, 'input', [(1,2,3,4)])
+		self.assertRaises(RuntimeError, a2.__setattr__, 'input', [(1,2,3,4)])
 		a2.p3_commp.input = "i31, i32"
 		a2.p4_commp.input = "i41, i42"
 		a2.input = [(1,2,3,4)]

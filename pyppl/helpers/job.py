@@ -86,7 +86,7 @@ class job (object):
 		"""
 		for key in sorted(self.input.keys()):
 			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.input[key]['data']), 'info', 'input')
-			if self.input[key].has_key('orig'):
+			if 'orig' in self.input[key]:
 				self.proc.log ("[%s/%s] %s.orig => %s" % (self.index, self.proc.length - 1, key, self.input[key]['orig']), 'info', 'input')
 		for key in sorted(self.brings.keys()):
 			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.brings[key]), 'info', 'brings')	
@@ -110,7 +110,7 @@ class job (object):
 		Show the error message if the job failed.
 		"""
 		rc = self.rc()
-		if job.RC_MSGS.has_key(rc):
+		if rc in job.RC_MSGS:
 			rcmsg = job.RC_MSGS[rc]
 		elif rc < 0:
 			rcmsg = job.RC_MSGS[job.NOOUT_RC]
@@ -148,9 +148,10 @@ class job (object):
 		if not path.exists (self.cachefile):
 			return False
 		
-		sig = open (self.cachefile).read()
-		if not sig: return False
-		return json.loads(sig) == self.signature()
+		with open (self.cachefile) as f:
+			sig = f.read()
+			if not sig: return False
+			return json.loads(sig) == self.signature()
 	
 	def isExptCached (self):
 		"""
@@ -165,7 +166,7 @@ class job (object):
 		if not self.proc.exdir:
 			return False
 		
-		for _, out in self.output.iteritems():
+		for _, out in self.output.items():
 			if out['type'] in self.proc.OUT_VARTYPE: continue
 			exfile = path.join (self.proc.exdir, path.basename(out['data']))
 			
@@ -213,7 +214,8 @@ class job (object):
 			return
 		sig  = self.signature()
 		if sig: 
-			open (self.cachefile, 'w').write (sig if not sig else json.dumps(sig))
+			with open (self.cachefile, 'w') as f:
+				f.write (sig if not sig else json.dumps(sig))
 			
 	def succeed (self):
 		"""
@@ -243,7 +245,7 @@ class job (object):
 			self.proc.OUT_DIRTYPE[0]:  {}
 		}
 		
-		for key, val in self.input.iteritems():
+		for key, val in self.input.items():
 			if val['type'] in self.proc.IN_VARTYPE:
 				ret['in'][self.proc.IN_VARTYPE[0]][key] = val['data']
 			elif val['type'] in self.proc.IN_FILETYPE:
@@ -259,7 +261,7 @@ class job (object):
 						return ''
 					ret['in'][self.proc.IN_FILESTYPE[0]][key].append (sig)
 		
-		for key, val in self.output.iteritems():
+		for key, val in self.output.items():
 			if val['type'] in self.proc.OUT_VARTYPE:
 				ret['out'][self.proc.OUT_VARTYPE[0]][key] = val['data']
 			elif val['type'] in self.proc.OUT_FILETYPE:
@@ -290,12 +292,13 @@ class job (object):
 			if not path.exists (self.rcfile): 
 				return job.EMPTY_RC
 			
-			rcstr = open (self.rcfile).read().strip()
-			if rcstr == '': 
-				return job.EMPTY_RC
-			if rcstr == '-0': 
-				return job.NOOUT_RC
-			return int (rcstr)
+			with open (self.rcfile) as f:
+				rcstr = f.read().strip()
+				if rcstr == '': 
+					return job.EMPTY_RC
+				if rcstr == '-0': 
+					return job.NOOUT_RC
+				return int (rcstr)
 		else:
 			r = self.rc ()
 			if val == job.NOOUT_RC:
@@ -305,7 +308,8 @@ class job (object):
 					val = -r
 				elif r == 0: 
 					val = "-0"
-			open (self.rcfile, 'w').write (str(val))
+			with open (self.rcfile, 'w') as f:
+				f.write (str(val))
 
 	def id (self, val = None):
 		"""
@@ -316,17 +320,18 @@ class job (object):
 		if val is None:
 			if not path.exists (self.idfile):
 				return ''
-			return open(self.idfile).read().strip()
+			with open(self.idfile) as f:
+				return f.read().strip()
 		else:
 			self.data['job.id'] = val
-			open (self.idfile, 'w').write (val)
-
+			with open (self.idfile, 'w') as f:
+				f.write (val)
 	
 	def checkOutfiles (self):
 		"""
 		Check whether output files are generated, if not, add - to rc.
 		"""
-		for _, out in self.output.iteritems():
+		for _, out in self.output.items():
 			if out['type'] in self.proc.OUT_VARTYPE: continue
 			if not path.exists (out['data']):
 				self.rc (job.NOOUT_RC)
@@ -339,7 +344,7 @@ class job (object):
 		if not self.proc.exportdir: 
 			return
 
-		for _, out in self.output.iteritems():
+		for _, out in self.output.items():
 			if out['type'] in self.proc.OUT_VARTYPE: 
 				continue
 
@@ -395,7 +400,7 @@ class job (object):
 		if path.exists (self.idfile) or path.islink (self.idfile):
 			remove(self.idfile)
 		
-		for _, out in self.output.iteritems():
+		for _, out in self.output.items():
 			if out['type'] in self.proc.OUT_VARTYPE: 
 				continue
 			if path.islink (out['data']):
@@ -416,7 +421,7 @@ class job (object):
 		if not path.exists (self.indir):
 			makedirs (self.indir)
 		
-		for key, val in self.proc.indata.iteritems():
+		for key, val in self.proc.indata.items():
 			self.input[key] = {}
 			if val['type'] in self.proc.IN_FILETYPE:
 				origfile = path.abspath(val['data'][self.index])
@@ -445,9 +450,9 @@ class job (object):
 					infile   = path.join (self.indir, basename)
 					self.input[key]['orig'].append (origfile)
 					self.input[key]['data'].append (infile)
-					if not self.data.has_key(key): 
+					if not key in self.data: 
 						self.data[key] = []
-					if not self.data.has_key(key + '.orig'): 
+					if not key + '.orig' in self.data: 
 						self.data[key + '.orig'] = []
 					self.data[key].append (infile)
 					self.data[key + '.orig'].append (origfile)
@@ -475,7 +480,7 @@ class job (object):
 		To access the brings in your script: {% raw %}`{{ infile.bring }}`, `{{ infile#.bring }}`{% endraw %}
 		If original input file is a link, will try to find it along each directory the link is in.
 		"""
-		for key, val in self.proc.brings.iteritems():
+		for key, val in self.proc.brings.items():
 			
 			brkey   = key + ".bring"
 			pattern = utils.format (val, self.data)
@@ -538,7 +543,7 @@ class job (object):
 		if not isinstance (output, dict):
 			output = ','.join(utils.alwaysList (output))
 		else:
-			output = ','.join([key + ':' + val for key, val in output.iteritems()])
+			output = ','.join([key + ':' + val for key, val in output.items()])
 			
 		alltype = self.proc.OUT_VARTYPE + self.proc.OUT_FILETYPE + self.proc.OUT_DIRTYPE
 		for outitem in utils.split(output, ','):
@@ -582,7 +587,8 @@ class job (object):
 		script    = self.proc.script.strip()
 		if not script:
 			self.proc.log ('No script specified', 'warning', 'warning', 'NOSCRIPT')
-			open (self.script, 'w').write ('')
+			with open (self.script, 'w') as f:
+				f.write ('')
 			return
 		
 		if script.startswith ('template:'):
@@ -592,13 +598,23 @@ class job (object):
 			if not path.exists (tplfile):
 				raise ValueError ('Script template file "%s" does not exist.' % tplfile)
 			self.proc.log ("Using template file: %s" % tplfile, 'debug', 'debug', 'SCRIPT_USING_TEMPLATE')
-			script = open(tplfile).read().strip()
+			f = open(tplfile)
+			script = f.read().strip()
+			f.close()
 		
 		if not script.startswith ("#!"):
 			script = "#!/usr/bin/env " + self.proc.defaultSh + "\n\n" + script
 		
 		script = utils.format (script, self.data)
-		if path.exists (self.script) and open (self.script).read() == script:
-			self.proc.log ("Script file exists: %s" % self.script, 'debug', 'debug', 'SCRIPT_EXISTS')
+		if path.exists (self.script):
+			f = open(self.script)
+			oscript = f.read()
+			f.close()
+			if oscript == script:
+				self.proc.log ("Script file exists: %s" % self.script, 'debug', 'debug', 'SCRIPT_EXISTS')
+			else:
+				with open (self.script, 'w') as f:
+					f.write (script)
 		else:
-			open (self.script, 'w').write (script)
+			with open (self.script, 'w') as f:
+				f.write (script)

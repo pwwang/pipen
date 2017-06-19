@@ -6,10 +6,13 @@ import os
 import pickle
 import sys
 import threading
-from Queue import Queue
 from random import randint
 from subprocess import PIPE, Popen
 from time import sleep, time
+try:
+	from Queue import Queue
+except ImportError:
+	from queue import Queue
 
 from . import utils
 from .aggr import aggr
@@ -17,7 +20,6 @@ from .channel import channel
 from .job import job as pjob
 
 from ..runners import runner_local, runner_sge, runner_ssh
-
 
 class proc (object):
 	"""
@@ -167,19 +169,19 @@ class proc (object):
 		self.props['lognline']['prevlog'] = ''
 
 	def __getattr__ (self, name):
-		if not self.props.has_key(name) and not proc.ALIAS.has_key(name) and not name.endswith ('Runner'):
+		if not name in self.props and not name in proc.ALIAS and not name.endswith ('Runner'):
 			raise ValueError('Property "%s" of proc is not found' % name)
 		
-		if proc.ALIAS.has_key(name):
+		if name in proc.ALIAS:
 			name = proc.ALIAS[name]
 			
 		return self.props[name]
 
 	def __setattr__ (self, name, value):
-		if not self.config.has_key(name) and not proc.ALIAS.has_key(name) and not name.endswith ('Runner'):
+		if not name in self.config and not name in proc.ALIAS and not name.endswith ('Runner'):
 			raise ValueError('Cannot set property "%s" for proc instance' % name)
 		
-		if proc.ALIAS.has_key(name):
+		if name in proc.ALIAS:
 			name = proc.ALIAS[name]
 		
 		self.sets.append(name)
@@ -256,11 +258,11 @@ class proc (object):
 			The new process
 		"""
 		newproc = proc (tag if tag is not None else self.tag)
-		config = {key:val for key, val in self.config.iteritems() if key not in ['tag', 'workdir', 'aggr']}
+		config = {key:val for key, val in self.config.items() if key not in ['tag', 'workdir', 'aggr']}
 		config['tag']      = newproc.tag
 		config['aggr']     = ''
 		config['workdir']  = ''
-		props   = {key:val for key, val in self.props.iteritems() if key not in ['cached', 'procvars', 'ncjobids', 'sets', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
+		props   = {key:val for key, val in self.props.items() if key not in ['cached', 'procvars', 'ncjobids', 'sets', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
 		props['cached']    = True
 		props['procvars']  = {}
 		props['channel']   = channel.create()
@@ -286,14 +288,14 @@ class proc (object):
 		if self.suffix:
 			return self.suffix
 
-		config        = { key:val for key, val in self.config.iteritems() if key not in ['workdir', 'forks', 'cache', 'retcodes', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
+		config        = { key:val for key, val in self.config.items() if key not in ['workdir', 'forks', 'cache', 'retcodes', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
 		config['id']  = self.id
 		config['tag'] = self.tag
 		
-		if config.has_key ('callback'):
+		if 'callback' in config:
 			config['callback'] = utils.funcsig(config['callback'])
 		# proc is not picklable
-		if config.has_key('depends'):
+		if 'depends' in config:
 			depends = config['depends']
 			pickable_depends = []
 			if isinstance(depends, proc):
@@ -305,9 +307,9 @@ class proc (object):
 			config['depends'] = pickable_depends
 		
 		# lambda not pickable
-		if config.has_key ('input') and isinstance(config['input'], dict):
+		if 'input' in config and isinstance(config['input'], dict):
 			config['input'] = pycopy.copy(config['input'])
-			for key, val in config['input'].iteritems():
+			for key, val in config['input'].items():
 				config['input'][key] = utils.funcsig(val) if callable(val) else val
 
 		signature = pickle.dumps(str(config))
@@ -423,12 +425,13 @@ class proc (object):
 			indata = {indata: depdchan if self.depends else channel.fromArgv()}
 			
 		# expand to one key-channel pairs
-		for inkeys, invals in indata.iteritems():
+		for inkeys, invals in indata.items():
 			keys   = utils.split(inkeys, ',')
+			invals = utils.range2list(invals)
 			if callable (invals):
 				vals  = invals (*[d.channel.copy() for d in self.depends] if self.depends else channel.fromArgv())
 				vals  = vals.split()
-			elif isinstance (invals, basestring): # only for files: "/a/b/*.txt, /a/c/*.txt"
+			elif isinstance (invals, utils.basestring): # only for files: "/a/b/*.txt, /a/c/*.txt"
 				vals  = utils.split(invals, ',')
 			elif isinstance (invals, channel):
 				vals  = invals.split()
@@ -451,7 +454,7 @@ class proc (object):
 				
 				if intype in proc.IN_FILESTYPE:
 					for x, v in enumerate(val):
-						if isinstance (v, basestring):
+						if isinstance (v, utils.basestring):
 							val[x] = channel.fromPath (v).toList()
 				
 				if self.length == 0: 
@@ -468,7 +471,7 @@ class proc (object):
 		"""
 		also add proc.props, mostly scalar values
 		"""
-		alias = {val:key for key, val in proc.ALIAS.iteritems()}
+		alias = {val:key for key, val in proc.ALIAS.items()}
 		for prop in sorted(self.props.keys()):
 			val = self.props[prop]
 			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'runner',
@@ -478,12 +481,12 @@ class proc (object):
 			
 			if prop == 'args':
 				self.props['procvars']['proc.args'] = val
-				for k, v in val.iteritems():
+				for k, v in val.items():
 					self.props['procvars']['proc.args.' + k] = v
 					self.log('%s => %s' % (k, v), 'info', 'p.args')
 			else:
 				self.props['procvars']['proc.' + prop] = val
-				if alias.has_key (prop): 
+				if prop in alias: 
 					self.props['procvars']['proc.' + alias[prop]] = val
 					self.log ('%s (%s) => %s' % (prop, alias[prop], val), 'info', 'p.props')
 				else:
@@ -506,10 +509,10 @@ class proc (object):
 		@params:
 			`config`: The configuration
 		"""
-		conf = { key:val for key, val in config.iteritems() if key not in self.sets }
+		conf = { key:val for key, val in config.items() if key not in self.sets }
 		self.config.update (conf)
 
-		for key, val in conf.iteritems():
+		for key, val in conf.items():
 			self.props[key] = val
 
 	def _isCached (self):
@@ -568,12 +571,12 @@ class proc (object):
 		cmd = utils.format(self.props[key], self.procvars)
 		self.log ('Running <%s>: %s' % (key, cmd), 'info')
 		
-		p = Popen (cmd, shell=True, stdin=PIPE, stderr=PIPE, stdout=PIPE)
+		p = Popen (cmd, shell=True, stdin=PIPE, stderr=PIPE, stdout=PIPE, universal_newlines=True)
 		if self.echo:
 			for line in iter(p.stdout.readline, ''):
-				self.logger.info ('[ STDOUT] ' + line.rstrip("\n"))
+				self.logger.info ('[ STDOUT] %s' % line.rstrip("\n"))
 		for line in iter(p.stderr.readline, ''):
-			self.logger.error ('[ STDERR] ' + line.rstrip("\n"))
+			self.logger.error ('[ STDERR] %s' % line.rstrip("\n"))
 		return p.wait()
 
 	def _runJobs (self):
@@ -630,7 +633,7 @@ class proc (object):
 		if runner_name.startswith ('runner_'):
 			runner_name = runner_name[7:]
 			
-		if not proc.RUNNERS.has_key(runner_name):
+		if not runner_name in proc.RUNNERS:
 			proc.RUNNERS[runner_name] = runner
 			
 proc.registerRunner (runner_local)

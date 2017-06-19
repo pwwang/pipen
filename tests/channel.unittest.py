@@ -213,7 +213,7 @@ class TestChannel (unittest.TestCase):
 		ch1.insert (None, range(ch1.length()))
 		ret = [(1, x, 1, i) for i,x in enumerate(sorted(glob.glob("./*.py")))]
 		self.assertEqual (sorted(ch1), ret)
-
+		
 	def testCbind (self):
 		
 		chan  = channel.create ([1,2,3,4,5])

@@ -1,8 +1,18 @@
 """
 A set of utitities for pyppl
 """
-
 import logging
+
+try:
+	basestring = basestring
+except NameError:
+	basestring = str
+
+try:
+	reduce = reduce
+except NameError:
+	from functools import reduce
+
 
 class PyPPLLogFormatter (logging.Formatter):
 	"""
@@ -249,7 +259,7 @@ def format (tpl, args):
 		nneat = n.strip("{}")
 		parts = split(nneat, "|")
 		key   = parts.pop(0).strip()
-		if not args.has_key (key):
+		if not key in args:
 			stderr.write ("[KEY]      ->" + str(key) + "\n")
 			stderr.write ("[DATA]     ->" + str(args) + "\n")
 			stderr.write ("[TEMPLATE] ->\n")
@@ -267,7 +277,7 @@ def format (tpl, args):
 				value = eval ('%s%s' % (val2replace, func))
 			elif func.startswith ('lambda'):
 				value = eval ('(%s)(%s)' % (func, val2replace))
-			elif format.shorts.has_key (func):
+			elif func in format.shorts:
 				value = eval ('(%s)(%s)' % (format.shorts[func], val2replace))
 			else:
 				value = eval (func)
@@ -311,7 +321,7 @@ def dictUpdate(origDict, newDict):
 	@examples:
 		```python
 		od1 = {"a": {"b": {"c": 1, "d":1}}}
-		od2 = {key:value for key:value in od1.iteritems()}
+		od2 = {key:value for key:value in od1.items()}
 		nd  = {"a": {"b": {"d": 2}}}
 		od1.update(nd)
 		# od1 == {"a": {"b": {"d": 2}}}, od1["a"]["b"] is lost
@@ -319,8 +329,8 @@ def dictUpdate(origDict, newDict):
 		# od2 == {"a": {"b": {"c": 1, "d": 2}}}
 		```
 	"""
-	for k, v in newDict.iteritems():
-		if not isinstance(v, dict) or not origDict.has_key(k) or not isinstance(origDict[k], dict):
+	for k, v in newDict.items():
+		if not isinstance(v, dict) or not k in origDict or not isinstance(origDict[k], dict):
 			origDict[k] = newDict[k]
 		else:
 			dictUpdate(origDict[k], newDict[k])
@@ -409,6 +419,8 @@ def gz (gzfile, srcfile):
 	fin  = open (srcfile, 'rb')
 	fout = gzopen (gzfile, 'wb')
 	copyfileobj (fin, fout)
+	fin.close()
+	fout.close()
 	
 def ungz (gzfile, dstfile):
 	"""
@@ -422,6 +434,8 @@ def ungz (gzfile, dstfile):
 	fin  = gzopen (gzfile, 'rb')
 	fout = open (dstfile, 'wb')
 	copyfileobj (fin, fout)
+	fin.close()
+	fout.close()
 
 def dirmtime (d):
 	"""
@@ -483,7 +497,7 @@ def alwaysList (data):
 	@returns:
 		The split list
 	"""
-	if isinstance(data, (str, unicode)):
+	if isinstance(data, basestring):
 		ret = split (data, ',')
 	elif isinstance(data, list):
 		ret = []
@@ -537,12 +551,12 @@ def padBoth (s, length, left, right = None):
 		right = left
 	padlen = length - len (s)
 	if padlen%2 == 1:
-		llen = (padlen - 1)/2
-		rlen = (padlen + 1)/2
+		llen = int((padlen - 1)/2)
+		rlen = int((padlen + 1)/2)
 	else:
-		llen = rlen = padlen/2
-	lstr = (left * (llen/len (left)))[:llen]
-	rstr = (right * (rlen/len(right)))[:rlen]
+		llen = rlen = int(padlen/2)
+	lstr = (left * int(llen/len (left)))[:llen]
+	rstr = (right * int(rlen/len(right)))[:rlen]
 	return lstr + s + rstr
 
 def formatTime (seconds):
@@ -572,4 +586,18 @@ def isSamefile (f1, f2):
 	if not path.exists (f1) or not path.exists(f2):
 		return False
 	return path.samefile (f1, f2)
-
+	
+def range2list (r):
+	"""
+	Convert a range to list, because in python3, range is not a list
+	@params:
+		`r`: the range data
+	@returns:
+		The converted list
+	"""
+	try:
+		if isinstance (r, range):
+			r = list(r)
+	except TypeError:
+		pass
+	return r

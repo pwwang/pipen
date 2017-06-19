@@ -33,7 +33,7 @@ class runner_ssh (runner):
 		if hasattr (self.job.proc, 'sshRunner'):
 			conf     = self.job.proc.sshRunner
 			
-		if not conf.has_key('servers'):
+		if not 'servers' in conf:
 			raise Exception ("%s: No servers found." % self.job.proc._name())
 		
 		servers      = conf['servers']
@@ -49,17 +49,18 @@ class runner_ssh (runner):
 			'trap "status=\\$?; echo \\$status > %s; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile
 		]
 
-		if conf.has_key('preScript'):
+		if 'preScript' in conf:
 			sshsrc.append (conf['preScript'])
 		
 		sshsrc.append ('ssh %s "%s"' % (self.server, self.cmd2run))
 		
-		if conf.has_key('postScript'):
+		if 'postScript' in conf:
 			sshsrc.append (conf['postScript'])
 
 		runner_ssh.serverid += 1
 		
-		open (sshfile, 'w').write ('\n'.join(sshsrc) + '\n')
+		with open (sshfile, 'w') as f:
+			f.write ('\n'.join(sshsrc) + '\n')
 		
 		self.script = utils.chmodX(sshfile)
 

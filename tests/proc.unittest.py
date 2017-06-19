@@ -6,9 +6,8 @@ import shutil
 import sys
 import unittest
 from inspect import getsource
-from StringIO import StringIO
 
-from md5 import md5
+from hashlib import md5
 
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
@@ -134,13 +133,13 @@ class runner_test (runner):
 
 	def testSuffix (self):
 		p = proc ('tag_unique')
-		config        = { key:val for key, val in p.config.iteritems() if key not in ['workdir', 'forks', 'cache', 'retcodes', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
+		config        = { key:val for key, val in p.config.items() if key not in ['workdir', 'forks', 'cache', 'retcodes', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
 		config['id']  = p.id
 		config['tag'] = p.tag
-		if config.has_key ('callback'):
+		if 'callback' in config:
 			config['callback'] = utils.funcsig(config['callback'])
 		# proc is not picklable
-		if config.has_key('depends'):
+		if 'depends' in config:
 			depends = config['depends']
 			pickable_depends = []
 			if isinstance(depends, proc):
@@ -151,9 +150,9 @@ class runner_test (runner):
 				pickable_depends.append(depend.id + '.' + depend.tag)
 			config['depends'] = pickable_depends
 			
-		if config.has_key ('input') and isinstance(config['input'], dict):
+		if 'input' in config and isinstance(config['input'], dict):
 			config['input'] = copy.deepcopy(config['input'])
-			for key, val in config['input'].iteritems():
+			for key, val in config['input'].items():
 				config['input'][key] = utils.funcSig(val) if callable(val) else val
 		
 		signature = pickle.dumps (str(config))
@@ -228,15 +227,15 @@ class runner_test (runner):
 		self.assertEqual (p.indata['b'], {'data': [8, 10, 12], 'type': 'var'})
 		self.assertEqual (p.indata['c']['type'], 'files')
 		self.assertEqual (len(p.indata['c']['data']), 3)
-		self.assertItemsEqual (p.indata['c']['data'][0], glob.glob("./*.py"))
-		self.assertItemsEqual (p.indata['c']['data'][1], glob.glob("./*.py"))
-		self.assertItemsEqual (p.indata['c']['data'][2], glob.glob("./*.py"))
+		self.assertEqual (sorted(p.indata['c']['data'][0]), sorted(glob.glob("./*.py")))
+		self.assertEqual (sorted(p.indata['c']['data'][1]), sorted(glob.glob("./*.py")))
+		self.assertEqual (sorted(p.indata['c']['data'][2]), sorted(glob.glob("./*.py")))
 		self.assertEqual (p.length, 3)
 		self.assertEqual (p.jobs, [None] * 3)
 		
 		# not enough data
 		p.input = {"a,b":[1]}
-		self.assertRaisesRegexp(ValueError, r"Not enough", p._buildInput)
+		self.assertRaises(ValueError, p._buildInput)
 
 		# expect same length channels
 		p.input = {"a": [1], "b": [1,2,3]}
@@ -284,7 +283,7 @@ class runner_test (runner):
 		
 		p._tidyBeforeRun ()
 		self.assertEqual (len(p.jobs), 10)
-		self.assertEqual (p.channel.map(lambda x: (int(x[0]),)), channel.create(xrange(0, 20, 2)))
+		self.assertEqual (p.channel.map(lambda x: (int(x[0]),)), channel.create([x*2 for x in range(10)]))
 		
 
 	def testReadconfig (self):
@@ -321,13 +320,13 @@ class runner_test (runner):
 		p.input   = {'a': range(10)}
 		p._tidyBeforeRun()
 		self.assertFalse (p._isCached())
-		self.assertEqual (p.ncjobids, range(10))
+		self.assertEqual (p.ncjobids, list(range(10)))
 		
 		p.jobs[0].init()
 		p.jobs[0].cache()
 		self.assertTrue (p.jobs[0].isTrulyCached())
 		self.assertFalse (p._isCached())
-		self.assertEqual (p.ncjobids, range(1,10))
+		self.assertEqual (p.ncjobids, list(range(1,10)))
 
 	def testRunCmd (self):
 		prc = proc ()
@@ -363,13 +362,13 @@ class runner_test (runner):
 		p.props['logger'] = self.logger
 		p.input = {'a':[1]}
 		testv = {}
-		for k,v in proc.ALIAS.iteritems():
+		for k,v in proc.ALIAS.items():
 			testv[v] = utils.randstr()
 			if k == 'ppldir':   testv[v] = self.workdir
 			if v == 'retcodes': testv[v] = [0,1,2]
 			p.__setattr__ (k, testv[v])
 		p._tidyBeforeRun()
-		for k,v in proc.ALIAS.iteritems():
+		for k,v in proc.ALIAS.items():
 			val1 = p.__getattr__(k)
 			val2 = p.__getattr__(v)
 			self.assertEqual (val1, testv[v])

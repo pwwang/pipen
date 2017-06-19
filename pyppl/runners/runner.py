@@ -38,9 +38,11 @@ class runner (object):
 			self.p = Popen (self.script, stderr=open(self.job.errfile, "w"), stdout=open(self.job.outfile, "w"), close_fds=True)
 		except Exception as ex:
 			self.job.proc.log ('Failed to run job #%s: %s' % (self.job.index, str(ex)), 'error')
-			open (self.job.errfile, 'a').write(str(ex))
+			with open (self.job.errfile, 'a') as f:
+				f.write(str(ex))
 			self.job.rc(self.job.FAILED_RC)
 			self.p = None
+			
 	
 	def getpid (self):
 		"""

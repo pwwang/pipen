@@ -7,8 +7,7 @@ import sys
 from subprocess import Popen
 from time import time
 
-from helpers import *
-from runners import *
+from .helpers import aggr, proc, utils
 
 VERSION = "0.7.1"
 			
@@ -21,9 +20,9 @@ class pyppl (object):
 	"""
 	
 	tips = [
-		"You can find the stdout in <workdir>/<job.id>/job.stdout",
-		"You can find the stderr in <workdir>/<job.id>/job.stderr",
-		"You can find the script in <workdir>/<job.id>/job.script",
+		"You can find the stdout in <workdir>/<job.index>/job.stdout",
+		"You can find the stderr in <workdir>/<job.index>/job.stderr",
+		"You can find the script in <workdir>/<job.index>/job.script",
 		"Check documentation at: https://www.gitbook.com/book/pwwang/pyppl",
 		"You cannot have two processes with same id(variable name) and tag",
 		"beforeCmd and afterCmd only run locally",
@@ -46,12 +45,12 @@ class pyppl (object):
 			config   = copy.copy(hconfig)
 
 		loglevel = 'info'
-		if config.has_key('loglevel'):
+		if 'loglevel' in config:
 			loglevel = config['loglevel']
 			del config['loglevel']
 			
 		logcolor = True
-		if config.has_key('logcolor'):
+		if 'logcolor' in config:
 			logcolor = config['logcolor']
 			del config['logcolor']
 			
@@ -97,14 +96,14 @@ class pyppl (object):
 		"""
 		timer = time()
 		config = {}
-		if self.config.has_key('proc'):
+		if 'proc' in self.config:
 			utils.dictUpdate(config, self.config['proc'])
 		
-		if self.config.has_key(profile):
+		if profile in self.config:
 			utils.dictUpdate(config, self.config[profile])
 		
-		if not config.has_key('runner'):
-			if proc.RUNNERS.has_key (profile):
+		if not 'runner' in config:
+			if profile in proc.RUNNERS:
 				config['runner'] = profile
 			else:
 				config['runner'] = 'local'
@@ -145,7 +144,7 @@ class pyppl (object):
 			next2run2 = []
 			for p in next2run:
 				finished.append (p)
-				if p.exportdir and not shapes.has_key(p._name()):
+				if p.exportdir and not p._name() in shapes:
 					shapes[p._name()] = '[shape=box, style=filled, color="#f0f998", fontcolor=red]'
 				for n in p.props['nexts']:
 					ret += '	"%s" -> "%s"\n' % (p._name(), n._name())
@@ -153,7 +152,7 @@ class pyppl (object):
 						shapes[n._name()] = '[shape=box, style=filled, color="#fcc9b3" %s]' % ("fontcolor=red" if n.exportdir else "")
 				next2run2 += p.props['nexts']
 			next2run = [n for n in list(set(next2run2)) if n not in finished and all(x in finished for x in n.props['depends'])]
-		for node, shape in shapes.iteritems():
+		for node, shape in shapes.items():
 			ret += '	"%s" %s\n' % (node, shape)
 		ret += '}\n'
 		if dotfile is None: dotfile = os.path.splitext(sys.argv[0])[0] + ".pyppl.dot"

@@ -36,28 +36,28 @@ class runner_sge (runner_queue):
 		if hasattr(self.job.proc, 'sgeRunner'):
 			conf = copy.copy (self.job.proc.sgeRunner)
 
-		if not conf.has_key ('sge.N'):
+		if not 'sge.N' in conf:
 			sgesrc.append('#$ -N %s' % self.jobname) 
 		else:
 			self.jobname = conf['sge.N']
 			sgesrc.append('#$ -N %s' % self.jobname)
 			del conf['sge.N']
 		
-		if conf.has_key('sge.q'):
+		if 'sge.q' in conf:
 			sgesrc.append('#$ -q %s' % conf['sge.q'])
 			del conf['sge.q']
 			
-		if conf.has_key('sge.j'):
+		if 'sge.j' in conf:
 			sgesrc.append('#$ -j %s' % conf['sge.j'])
 			del conf['sge.j']
 		
-		if conf.has_key('sge.o'):
+		if 'sge.o' in conf:
 			sgesrc.append('#$ -o %s' % conf['sge.o'])
 			del conf['sge.o']
 		else:
 			sgesrc.append('#$ -o %s' % self.job.outfile)
 			
-		if conf.has_key('sge.e'):
+		if 'sge.e' in conf:
 			sgesrc.append('#$ -e %s' % conf['sge.e'])
 			del conf['sge.e']
 		else:
@@ -65,11 +65,11 @@ class runner_sge (runner_queue):
 			
 		sgesrc.append('#$ -cwd')
 		
-		if conf.has_key('sge.M'):
+		if 'sge.M' in conf:
 			sgesrc.append('#$ -M %s' % conf['sge.M'])
 			del conf['sge.M']
 		
-		if conf.has_key('sge.m'):
+		if 'sge.m' in conf:
 			sgesrc.append('#$ -m %s' % conf['sge.m'])
 			del conf['sge.m']
 		
@@ -85,16 +85,17 @@ class runner_sge (runner_queue):
 		sgesrc.append ('')
 		sgesrc.append ('trap "status=\\$?; echo \\$status > %s; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile)
 		
-		if conf.has_key('preScript'):
+		if 'preScript' in conf:
 			sgesrc.append (conf['preScript'])
 
 		sgesrc.append ('')
 		sgesrc.append (self.cmd2run)
 
-		if conf.has_key('postScript'):
+		if 'postScript' in conf:
 			sgesrc.append (conf['postScript'])
 		
-		open (sgefile, 'w').write ('\n'.join(sgesrc) + '\n')
+		with open (sgefile, 'w') as f:
+			f.write ('\n'.join(sgesrc) + '\n')
 		
 		self.script = ['qsub', sgefile]
 

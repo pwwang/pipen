@@ -44,9 +44,9 @@ class TestUtils (unittest.TestCase):
 			("{{genefile.fn | .split('_') | [1] }}", '4', {"genefile.fn": "gene_4"}),
 			("{{genefile.fn | .split('_')[0] }}", 'gene', {"genefile.fn": "gene_4"}),
 			("{{v | sum(_)}}", "10", {"v": [1,2,3,4]}),
-			("{{v | map(str, _) | (lambda x: '_'.join(x))(_)}}", "1_2_3_4", {"v": [1,2,3,4]}),
-			("{{v | (lambda x: x['a'] if x.has_key('a') else '')(_)}}", '1', {"v": {"a": 1, "b": 2}}),
-			("{{v | __import__('json').dumps(_)}}", '{"a": 1, "b": 2}', {"v": {"a": 1, "b": 2}}),
+			("{{v | list(map(str, _)) | (lambda x: '_'.join(x))(_)}}", "1_2_3_4", {"v": [1,2,3,4]}),
+			("{{v | (lambda x: x['a'] if 'a' in x else '')(_)}}", '1', {"v": {"a": 1, "b": 2}}),
+			("{{v | __import__('json').dumps(_)}}", '{"a": 1}', {"v": {"a": 1}}),
 			("{{a|Rbool}},{{b|Rbool}},{{c|Rbool}},{{d|Rbool}}", "TRUE,FALSE,TRUE,FALSE", {"a":1, "b":0, "c":True, "d":False}),
 			("{{a|realpath}}", os.path.realpath(__file__), {"a":__file__}),
 			("{{a|quote}}", '"a"', {"a":'a'}),
@@ -112,7 +112,7 @@ class TestUtils (unittest.TestCase):
 		import random, string
 		
 		def randomword(length):
-		   return ''.join(random.choice(string.lowercase) for i in range(length))
+		   return ''.join(random.choice(list('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')) for i in range(length)).encode('utf-8')
 		
 		uids = {}
 		for i in range (10000):
@@ -164,12 +164,14 @@ class TestUtils (unittest.TestCase):
 			shutil.rmtree ("./test/")
 		os.makedirs ("./test/")
 		thefile = "./test/filesig.txt"
-		open(thefile, 'w').write('')
+		with open(thefile, 'w') as f:
+			f.write('')
 		sig = utils.filesig (thefile)
 		from time import sleep
 		sleep (.1)
 		utime (thefile, None)
-		open(thefile, 'w').write('')
+		with open(thefile, 'w') as f:
+			f.write('')
 		self.assertNotEqual (sig, utils.filesig(thefile))
 		shutil.rmtree ("./test/")
 		

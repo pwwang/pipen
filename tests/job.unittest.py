@@ -134,7 +134,7 @@ class TestJob (unittest.TestCase):
 		self.assertEqual (j.input['a'], {'type': 'var', 'data': 1})
 		self.assertEqual (j.input['b'], {'type': 'file', 'orig': os.path.realpath(__file__), 'data': os.path.join(j.indir, os.path.basename(__file__))})
 		self.assertEqual (j.input['c']['type'], 'files')
-		self.assertItemsEqual(map(os.path.realpath, j.input['c']['data']), glob.glob (self.dirname + "/*.py"))
+		self.assertEqual(sorted(map(os.path.realpath, j.input['c']['data'])), sorted(glob.glob (self.dirname + "/*.py")))
 		for infile in glob.glob (self.dirname + "/*.py"):
 			self.assertTrue (utils.isSamefile(infile, os.path.join(j.indir, os.path.basename(infile))))
 		self.assertEqual (j.data['#'], j.index)
@@ -148,8 +148,8 @@ class TestJob (unittest.TestCase):
 		self.assertEqual (j.data['a'], 1)
 		self.assertEqual (j.data['b'], os.path.join (j.indir, os.path.basename(__file__)))
 		self.assertEqual (j.data['b.orig'], os.path.join (self.dirname, os.path.basename(__file__)))
-		self.assertItemsEqual (map(os.path.abspath, j.data['c.orig']), glob.glob (self.dirname + "/*.py"))
-		self.assertItemsEqual (j.data['c'], glob.glob (j.indir + "/*.py"))
+		self.assertEqual (sorted(map(os.path.abspath, j.data['c.orig'])), sorted(glob.glob (self.dirname + "/*.py")))
+		self.assertEqual (sorted(j.data['c']), sorted(glob.glob (j.indir + "/*.py")))
 		
 		p2 = proc ()
 		p2.ppldir = self.wdir
@@ -165,7 +165,7 @@ class TestJob (unittest.TestCase):
 		self.assertEqual (j.input['a'], {'type': 'var', 'data': 1})
 		self.assertEqual (j.input['b'], {'type': 'file', 'orig': os.path.abspath(__file__), 'data': os.path.join(j.indir, os.path.basename(__file__))})
 		self.assertEqual (j.input['c']['type'], 'files')
-		self.assertItemsEqual(map(os.path.realpath, j.input['c']['data']), glob.glob (self.dirname + "/*.py"))
+		self.assertEqual(sorted(map(os.path.realpath, j.input['c']['data'])), sorted(glob.glob (self.dirname + "/*.py")))
 		for infile in glob.glob (self.dirname + "/*.py"):
 			self.assertTrue (utils.isSamefile(infile, os.path.join(j.indir, os.path.basename(infile))))
 		self.assertEqual (j.data['#'], j.index)
@@ -178,8 +178,8 @@ class TestJob (unittest.TestCase):
 		self.assertEqual (j.data['a'], 1)
 		self.assertEqual (j.data['b'], os.path.join (j.indir, os.path.basename(__file__)))
 		self.assertEqual (j.data['b.orig'], os.path.join (self.dirname, os.path.basename(__file__)))
-		self.assertItemsEqual (map(os.path.abspath, j.data['c.orig']), glob.glob (self.dirname + "/*.py"))
-		self.assertItemsEqual (j.data['c'], glob.glob (j.indir + "/*.py"))
+		self.assertEqual (sorted(map(os.path.abspath, j.data['c.orig'])), sorted(glob.glob (self.dirname + "/*.py")))
+		self.assertEqual (sorted(j.data['c']), sorted(glob.glob (j.indir + "/*.py")))
 	
 	def testPrepBrings (self):
 		p1 = proc ()
@@ -240,7 +240,9 @@ class TestJob (unittest.TestCase):
 		j._prepBrings()
 		j._prepOutput()
 		j._prepScript()
-		self.assertEqual (open(j.script).read(), "#!/usr/bin/env bash\n\nls %s\necho 0 input\necho input2\necho 1 2" % ps.workdir)
+		f = open(j.script)
+		self.assertEqual (f.read(), "#!/usr/bin/env bash\n\nls %s\necho 0 input\necho input2\necho 1 2" % ps.workdir)
+		f.close()
 	
 	def testScriptTpl (self):
 		p = proc('tpl')
@@ -260,18 +262,24 @@ class TestJob (unittest.TestCase):
 		if not os.path.exists(self.wdir):
 			os.makedirs (self.wdir)
 		if not os.path.exists (p.script):
-			open ("%s/a.py" % self.wdir, "w").write("echo {{a}}")
+			f = open ("%s/a.py" % self.wdir, "w")
+			f.write("echo {{a}}")
+			f.close()
 		j = job (0, p)
 		j.init()
-		self.assertTrue ("echo 1" in open(j.script).read())
+		f = open (j.script)
+		self.assertTrue ("echo 1" in f.read())
+		f.close()
 		
 		# abspath
 		p.input  = {"a": [2]}
 		p._buildInput()
 		p.script = "template:%s/a.py" % os.path.abspath(self.wdir)
 		j.init()
-		self.assertTrue ("echo 2" in open(j.script).read())
-		
+		f = open(j.script)
+		self.assertTrue ("echo 2" in f.read())
+		f.close()
+		#print (open(j.script).read())
 		
 	def tearDown (self):
 		if os.path.isdir (self.testdir):
@@ -309,8 +317,10 @@ class TestJob (unittest.TestCase):
 		j.init()
 		sig = j.signature()
 		j.cache()
-		self.assertEqual (open(j.cachefile).read(), json.dumps(sig))
+		f = open(j.cachefile)
+		self.assertEqual (f.read(), json.dumps(sig))
 		self.assertTrue (j.isTrulyCached())
+		f.close()
 		
 	def testExptCached (self):
 		p = proc('exptcache')
@@ -344,7 +354,9 @@ class TestJob (unittest.TestCase):
 		j.init ()
 		self.assertFalse (j.isExptCached())
 		exfile = "%s/1.txt" % (self.wdir)
-		open (exfile, 'w').write('')
+		f = open (exfile, 'w')
+		f.write('')
+		f.close()
 		self.assertTrue (os.path.exists("%s" % exfile))
 		os.system ("gzip  -c %s > %s.%s.gz" % (exfile, exfile, p._name(False)))
 		self.assertTrue (os.path.exists("%s.%s.gz" % (exfile, p._name(False))))
@@ -378,8 +390,12 @@ class TestJob (unittest.TestCase):
 			j.output = {}
 			j.init ()
 			exfile   = "%s/%s.txt" % (self.wdir, i)
-			open (exfile, 'w').write('') # just test logs
-			open ("%s/%s.txt" % (j.outdir, i), 'w').write('')
+			f = open (exfile, 'w')
+			f.write('') # just test logs
+			f.close()
+			f = open ("%s/%s.txt" % (j.outdir, i), 'w')
+			f.write('')
+			f.close()
 			self.assertTrue (j.isExptCached())
 			self.assertTrue (os.path.islink("%s/%s.txt" % (j.outdir, i)))
 		
@@ -405,11 +421,16 @@ class TestJob (unittest.TestCase):
 		self.assertEqual (j.rc(), 0)
 		j.checkOutfiles ()
 		self.assertEqual (j.rc(), job.NOOUT_RC)
-		self.assertEqual (open(j.rcfile).read(), "-0")
+		f = open(j.rcfile)
+		rc = f.read()
+		f.close()
+		self.assertEqual (rc, "-0")
 		self.assertFalse (j.succeed())
 		
 		j.rc (0)
-		open (j.outdir + "/12", 'w').write('')
+		f = open (j.outdir + "/12", 'w')
+		f.write('')
+		f.close()
 		j.checkOutfiles ()
 		self.assertEqual (j.rc(), 0)
 		self.assertTrue (j.succeed())
@@ -429,7 +450,9 @@ class TestJob (unittest.TestCase):
 		p.exhow  = 'gzip'
 		j = job(0, p)
 		j.init ()
-		open (j.outdir + "/12.txt", 'w').write('')
+		f = open (j.outdir + "/12.txt", 'w')
+		f.write('')
+		f.close()
 		j.export()
 		self.assertTrue (os.path.exists(self.wdir + '/12.txt.%s.gz' % p._name(False)))
 		
@@ -445,7 +468,9 @@ class TestJob (unittest.TestCase):
 		p.output = "xfile:file:{{a}}2.txt"
 		j.output = {}
 		j.init ()
-		open (j.outdir + "/12.txt", 'w').write('')
+		f = open (j.outdir + "/12.txt", 'w')
+		f.write('')
+		f.close()
 		j.export()
 		self.assertTrue (os.path.isfile(self.wdir + '/12.txt'))
 		self.assertTrue (os.path.isfile(j.outdir + '/12.txt'))
@@ -481,10 +506,18 @@ class TestJob (unittest.TestCase):
 		self.assertFalse (os.path.exists(j.outfile))
 		self.assertFalse (os.path.exists(j.errfile))
 		self.assertFalse (os.path.exists(j.outdir + '/12.txt'))
-		open (j.rcfile, 'w').write('')
-		open (j.outfile, 'w').write('')
-		open (j.errfile, 'w').write('')
-		open (j.outdir + '/12.txt', 'w').write('')
+		f = open (j.rcfile, 'w')
+		f.write('')
+		f.close()
+		f = open (j.outfile, 'w')
+		f.write('')
+		f.close()
+		f = open (j.errfile, 'w')
+		f.write('')
+		f.close()
+		f = open (j.outdir + '/12.txt', 'w')
+		f.write('')
+		f.close()
 		self.assertTrue (os.path.exists(j.rcfile))
 		self.assertTrue (os.path.exists(j.outfile))
 		self.assertTrue (os.path.exists(j.errfile))

@@ -2,6 +2,7 @@ import os
 import shutil
 import sys
 import unittest
+import warnings
 from time import sleep
 from subprocess import Popen
 
@@ -184,11 +185,15 @@ class TestRunner(unittest.TestCase):
 		for j in p.jobs:
 			r = runner_local (j)
 			self.assertFalse (r.isRunning())
-			p = Popen (r.script, stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
+			stdout = open(os.devnull, 'w')
+			stderr = open(os.devnull, 'w')
+			p = Popen (r.script, stdout=stdout, stderr=stderr)
 			r.job.id(str(p.pid))
 			self.assertTrue(r.isRunning())
 			p.wait()
 			self.assertFalse(r.isRunning())
+			stdout.close()
+			stderr.close()
 
 
 if __name__ == '__main__':
