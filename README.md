@@ -22,7 +22,7 @@
 
 ## Requirements
 - Linux (Maybe works on OSX, not tested)
-- Python 2.7
+- Python 2.7+ (python3 compatible)
 
 ## Installation
 ```bash
