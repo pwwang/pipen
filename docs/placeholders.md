@@ -94,7 +94,8 @@ You can also use some `proc`/`job` property values with placeholders: `{{proc.<p
 |`proc.exportow`|`proc.exow`|Whether to overwrite existing files when export|
 |`proc.length`||How many jobs are there for the process|
 |`proc.args`||Additional arguments for the process, typically a `dict`. For example: `p.args={"a":1}` you may use `{{proc.args.a}}` to access it.|
-|`job.id`|`#`|The job id|
+|`job.id`||The pid or the id from a queue set by `job.pid`|
+|`job.index`|`#`|The job index|
 |`job.indir`||The input directory of the job|
 |`job.outdir`||The output directory of the job|
 |`job.dir`||The directory of the job|
