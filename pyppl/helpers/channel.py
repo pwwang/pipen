@@ -424,7 +424,7 @@ class channel (list):
 			raise ValueError ('Failed to fold, the width %s cannot be divided by %s' % (self.width(), n))
 		ret = channel.create()
 		for row in self:
-			for i in xrange(0, self.width(), n):
+			for i in [x*n for x in range(self.width()/n)]:
 				ret.rbind (row[i:i+n])
 		return ret
 	
@@ -439,7 +439,7 @@ class channel (list):
 		if self.length()%n != 0:
 			raise ValueError ('Failed to unfold, the length %s cannot be divided by %s' % (self.width(), n))
 		ret = channel.create()
-		for i in xrange(0, self.length(), n):
+		for i in [x*n for x in range(self.length()/n)]:
 			ret.rbind (reduce (lambda x, y: x+y, self[i:i+n]))
 		return ret
 	

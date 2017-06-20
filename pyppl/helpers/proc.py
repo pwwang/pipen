@@ -51,7 +51,20 @@ class proc (object):
 	LOG_NLINE    = {
 		'': 999,
 		'EXPORT_CACHE_OUTFILE_EXISTS': -3,
-		'EXPORT_CACHE_USING_SYMLINK': 3,
+		'EXPORT_CACHE_USING_SYMLINK': 1,
+		'EXPORT_CACHE_EXFILE_NOTEXISTS': 1,
+		'EXPORT_CACHE_EXDIR_NOTSET': 1,
+		'CACHE_EMPTY_PREVSIG': 1,
+		'CACHE_EMPTY_CURRSIG': 1,
+		'CACHE_SCRIPT_DIFFER': 1,
+		'CACHE_SIGKEYS_DIFFER': 1,
+		'CACHE_SIGINKEYS_DIFFER': 1,
+		'CACHE_SIGINTYPES_DIFFER': 1,
+		'CACHE_SIGINPUT_DIFFER': 1,
+		'CACHE_SIGOUTKEYS_DIFFER': 1,
+		'CACHE_SIGOUTTYPES_DIFFER': 1,
+		'CACHE_SIGOUTPUT_DIFFER': 1,
+		'CACHE_SIGFILE_NOTEXISTS': 1,
 		'BRINGFILE_OVERWRITING': 3,
 		'OUTNAME_USING_OUTTYPES': 1,
 		'OUTDIR_CREATED': 0,
@@ -90,33 +103,56 @@ class proc (object):
 
 		pid                       = utils.varname(self.__class__.__name__, 2)
 
+		# The input that user specified
 		self.config['input']      = ''
+		# The output that user specified
 		self.config['output']     = {}
-		# where cache file and wdir located
+		# Where cache file and wdir located
 		self.config['tmpdir']     = os.path.abspath("./workdir")
+		# How many jobs to run concurrently
 		self.config['forks']      = 1
-		self.config['cache']      = True # False or 'export' or 'export+' (do True if failed do export)
+		# The cache option
+		self.config['cache']      = True # False or 'export'
+		# Valid return code
 		self.config['retcodes']   = [0]
+		# Whether to print the stdout and stderr of the jobs to the screen
 		self.config['echo']       = False
+		# Select the runner
 		self.config['runner']     = 'local'
+		# The script of the jobs
 		self.config['script']     = ''
+		# The dependencies
 		self.config['depends']    = []
+		# The tag of the job
 		self.config['tag']        = tag
+		# The directory to export the output files
 		self.config['exportdir']  = ''
+		# How to export
 		self.config['exporthow']  = 'move' # symlink, copy, gzip 
+		# Whether to overwrite the existing files
 		self.config['exportow']   = True # overwrite
+		# How to deal with the errors
 		self.config['errorhow']   = "terminate" # retry, ignore
+		# How many times to retry to jobs once error occurs
 		self.config['errorntry']  = 3
+		# Default shell/language
 		self.config['defaultSh']  = 'bash'
+		# The command to run before jobs start
 		self.config['beforeCmd']  = ""
+		# The command to run after jobs start
 		self.config['afterCmd']   = ""
+		# The workdir for the process
 		self.config['workdir']    = ''
+		# The extra arguments for the process
 		self.config['args']       = {}
+		# The output channel of the process
 		self.config['channel']    = channel.create()
+		# The aggregation name of the process
 		self.config['aggr']       = None
+		# The callback function of the process
 		self.config['callback']   = None
+		# The bring files that user specified
 		self.config['brings']     = {}
-		# init props
 
 		# id of the process, actually it's the variable name of the process
 		self.props['id']         = pid  
@@ -406,6 +442,9 @@ class proc (object):
 		
 		if not os.path.exists (self.workdir): 
 			os.makedirs (self.workdir)	
+
+		if self.exdir and not os.path.exists (self.exdir):
+			os.makedirs (self.exdir)
 				
 	def _buildInput (self):
 		"""
@@ -430,6 +469,8 @@ class proc (object):
 			invals = utils.range2list(invals)
 			if callable (invals):
 				vals  = invals (*[d.channel.copy() for d in self.depends] if self.depends else channel.fromArgv())
+				if not isinstance (vals, channel):
+					vals = channel.create(vals)
 				vals  = vals.split()
 			elif isinstance (invals, utils.basestring): # only for files: "/a/b/*.txt, /a/c/*.txt"
 				vals  = utils.split(invals, ',')
@@ -552,7 +593,7 @@ class proc (object):
 				self.log ('Partly cached, only run non-cached %s job(s).' % len(self.ncjobids), 'info')
 				self.log ('Jobs to be running: %s' % self.ncjobids, 'debug')
 			else:
-				self.log ('Not cached, none of the jobs are cached.', 'info')
+				self.log ('Not cached, none of the jobs are cached.', 'debug')
 			return False
 		else:
 			self.log (self.workdir, 'info', 'CACHED')

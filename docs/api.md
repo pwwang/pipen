@@ -412,6 +412,13 @@ Do some cleanup when job finished
   
 Export the output files  
   
+#### `id (self, val) `
+  
+Get/Set the job id (pid or the id from queue system)  
+
+- **params:**  
+`val`: The id to be set  
+  
 #### `init (self) `
   
 Initiate a job, make directory and prepare input, brings, output and script.  
@@ -570,7 +577,7 @@ The log function with aggregation name, process id and tag integrated.
 
 - **params:**  
 `msg`:   The message to log  
-`levle`: The log level  
+`level`: The log level  
 `flag`:  The flag  
 `key`:   The type of messages  
   
@@ -614,6 +621,10 @@ ret  = alwaysList (data)
 - **returns:**  
 The split list  
   
+#### `class: basestring`
+```
+Type basestring cannot be instantiated; it is the base for str and unicode.
+```
 #### `chmodX (thefile) `
   
 Convert script file to executable or add extract shebang to cmd line  
@@ -635,7 +646,7 @@ Update a dictionary recursively.
 - **examples:**  
 ```python  
 od1 = {"a": {"b": {"c": 1, "d":1}}}  
-od2 = {key:value for key:value in od1.iteritems()}  
+od2 = {key:value for key:value in od1.items()}  
 nd  = {"a": {"b": {"d": 2}}}  
 od1.update(nd)  
 # od1 == {"a": {"b": {"d": 2}}}, od1["a"]["b"] is lost  
@@ -752,6 +763,25 @@ Generate a random string
 - **returns:**  
 The random string  
   
+#### `range2list (r) `
+  
+Convert a range to list, because in python3, range is not a list  
+
+- **params:**  
+`r`: the range data  
+
+- **returns:**  
+The converted list  
+  
+#### `reduce (r) `
+reduce(function, sequence[, initial]) -> value  
+  
+Apply a function of two arguments cumulatively to the items of a sequence,  
+from left to right, so as to reduce the sequence to a single value.  
+For example, reduce(lambda x, y: x+y, [1, 2, 3, 4, 5]) calculates  
+((((1+2)+3)+4)+5).  If initial is present, it is placed before the items  
+of the sequence in the calculation, and serves as a default when the  
+sequence is empty.  
 #### `split (s, delimter) `
   
 Split a string using a single-character delimter  
@@ -912,12 +942,13 @@ Constructor
   
 Do some cleanup work when jobs finish  
   
-#### `isRunning (self, suppose) `
+#### `getpid (self) `
+  
+Get the job id  
+  
+#### `isRunning (self) `
   
 Try to tell whether the job is still running.  
-
-- **params:**  
-`suppose`: Whether the job is supposed to be running in the context  
 
 - **returns:**  
 `True` if yes, otherwise `False`  
@@ -951,13 +982,6 @@ Wait for the job to finish
 > The local runner
 	
 
-#### `isRunning (self, suppose) `
-  
-Try to tell whether the job is still running.  
-
-- **returns:**  
-`True` if yes, otherwise `False`  
-  
 
 ## Module `runner_ssh`  
 > The ssh runner
@@ -976,16 +1000,6 @@ Constructor
 `job`:    The job object  
 `config`: The properties of the process  
   
-#### `isRunning (self, suppose) `
-  
-Try to tell whether the job is still running using `ps`  
-
-- **params:**  
-`suppose`: Whether the job is supposed to be running in the context  
-
-- **returns:**  
-`True` if yes, otherwise `False`  
-  
 
 ## Module `runner_sge`  
 > The sge runner
@@ -999,13 +1013,9 @@ Constructor
 `job`:    The job object  
 `config`: The properties of the process  
   
-#### `isRunning (self, suppose) `
+#### `getpid (self) `
   
-Try to tell whether the job is still running using qstat.  
-
-- **params:**  
-`suppose`: Whether the job is supposed to be running in the context  
-
-- **returns:**  
-`True` if yes, otherwise `False`  
+#### `isRunning (self) `
+  
+Tell whether the job is still running  
   

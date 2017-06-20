@@ -29,7 +29,10 @@ for modname in modules:
 			doc += "```\n" + (mobj.__doc__.strip() if mobj.__doc__ is not None else "") + "\n```\n"
 			continue
 		#args = "" if not callable (mobj) or not hasattr(mobj, '__code__') else str(mobj.__code__.co_varnames[:mobj.__code__.co_argcount])
-		args = tuple(inspect.getargspec(mobj))
+		try:
+			args = tuple(inspect.getargspec(mobj))
+		except Exception as ex:
+			pass
 		#if args.endswith (",)"): args = args[:-2] + ')'
 		#args = args.replace ("'", "")
 		strargs  = args[0]

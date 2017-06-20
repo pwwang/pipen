@@ -135,23 +135,75 @@ class job (object):
 			if not errmsgs:
 				errmsgs = ['[ STDERR] <EMPTY STDERR>']
 				
-			for errmsg in errmsgs[:-20] if len (errmsgs) > 20 else errmsgs:
+			for errmsg in errmsgs[-20:] if len (errmsgs) > 20 else errmsgs:
 				self.proc.logger.error(errmsg)
 				
 			if len (errmsgs) > 20:
-				self.proc.logger.error ('[ STDERR] ... top %s lines omitted (see all in "%s").' % (len(errmsgs)-20, self.errfile))
+				self.proc.logger.error ('[ STDERR] ... top %s line(s) omitted (see all in "%s").' % (len(errmsgs)-20, self.errfile))
 	
 	def isTrulyCached (self):
 		"""
 		Check whether a job is truly cached (by signature)
 		"""
 		if not path.exists (self.cachefile):
+			self.proc.log ("Job not cached as cache file not exists", "debug", "debug", "CACHE_SIGFILE_NOTEXISTS")
 			return False
 		
 		with open (self.cachefile) as f:
-			sig = f.read()
-			if not sig: return False
-			return json.loads(sig) == self.signature()
+			sig    = f.read()
+			if not sig: 
+				self.proc.log ("Job not cached because previous signature is empty.", "debug", "debug", "CACHE_EMPTY_PREVSIG")
+				return False
+
+			sigNow = self.signature()
+			if not sigNow:
+				self.proc.log ("Job not cached because current signature is empty.", "debug", "debug", "CACHE_EMPTY_CURRSIG")
+				return False
+
+			sigOld  = json.loads(sig)
+			keysNow = sigNow.keys()
+			keysOld = sigOld.keys()
+			if sorted(keysNow) != sorted(keysOld):
+				self.proc.log ("Job not cached due to key difference of signautres: %s (previous) and %s (current)" % (keysOld, keysNow), 'debug', 'debug', 'CACHE_SIGKEYS_DIFFER')
+				return False
+			for key in keysNow:
+				if key == 'script':
+					if sigOld[key] != sigNow[key]:
+						self.proc.log ("Job not cached due to script file difference: %s (previous) and %s (current)" % (sigOld[key], sigNow[key]), 'debug', 'debug', 'CACHE_SCRIPT_DIFFER')
+						return False
+				if key == 'in':
+					inTypesOld = sigOld[key].keys()
+					inTypesNow = sigNow[key].keys()
+					if sorted(inTypesNow) != sorted(inTypesOld):
+						self.proc.log ("Job not cached due to input type difference of signautres: %s (previous) and %s (current)" % (inTypesOld, inTypesNow), 'debug', 'debug', 'CACHE_SIGINTYPES_DIFFER')
+						return False
+					for intype in inTypesNow:
+						inKeysOld = sigOld[key][intype].keys()
+						inKeysNow = sigNow[key][intype].keys()
+						if sorted(inKeysOld) != sorted(inKeysNow):
+							self.proc.log ("Job not cached due to input key difference of signautres: %s (previous) and %s (current)" % (inKeysOld, inKeysNow), 'debug', 'debug', 'CACHE_SIGINKEYS_DIFFER')
+							return False
+						for inkey in inKeysNow:
+							if sigOld[key][intype][inkey] != sigNow[key][intype][inkey]:
+								self.proc.log ("Job not cached due to input difference for key %s: %s (previous) and %s (current)" % (inkey, sigOld[key][intype][inkey], sigNow[key][intype][inkey]), 'debug', 'debug', 'CACHE_SIGINPUT_DIFFER')
+								return False
+				if key == 'out':
+					outTypesOld = sigOld[key].keys()
+					outTypesNow = sigNow[key].keys()
+					if sorted(outTypesNow) != sorted(outTypesOld):
+						self.proc.log ("Job not cached due to output type difference of signautres: %s (previous) and %s (current)" % (outTypesOld, outTypesNow), 'debug', 'debug', 'CACHE_SIGOUTTYPES_DIFFER')
+						return False
+					for outtype in outTypesNow:
+						outKeysOld = sigOld[key][outtype].keys()
+						outKeysNow = sigNow[key][outtype].keys()
+						if sorted(outKeysOld) != sorted(outKeysNow):
+							self.proc.log ("Job not cached due to output key difference of signautres: %s (previous) and %s (current)" % (outKeysOld, outKeysNow), 'debug', 'debug', 'CACHE_SIGOUTKEYS_DIFFER')
+							return False
+						for outkey in outKeysNow:
+							if sigOld[key][outtype][outkey] != sigNow[key][outtype][outkey]:
+								self.proc.log ("Job not cached due to output difference for key %s: %s (previous) and %s (current)" % (outkey, sigOld[key][outtype][outkey], sigNow[key][outtype][outkey]), 'debug', 'debug', 'CACHE_SIGOUTPUT_DIFFER')
+								return False
+			return True
 	
 	def isExptCached (self):
 		"""
@@ -161,9 +213,10 @@ class job (object):
 		if self.proc.cache != 'export':
 			return False
 		if self.proc.exhow in self.proc.EX_SYMLINK:
-			self.proc.log ("Job will not be export-cached using symlink export.", "warning", "warning", "EXPORT_CACHE_USING_SYMLINK")
+			self.proc.log ("Job not export-cached using symlink export.", "warning", "warning", "EXPORT_CACHE_USING_SYMLINK")
 			return False
 		if not self.proc.exdir:
+			self.proc.log ("Job not export-cached since export directory is not set.", "debug", "debug", "EXPORT_CACHE_EXDIR_NOTSET")
 			return False
 		
 		for _, out in self.output.items():
@@ -173,7 +226,9 @@ class job (object):
 			if self.proc.exhow in self.proc.EX_GZIP:
 				if out['type'] in self.proc.OUT_FILETYPE:
 					exfile += '.%s.gz' % self.proc._name (False)
-					if not path.exists (exfile): return False
+					if not path.exists (exfile): 
+						self.proc.log ("Job not export-cached since exported file not exists: %s." % exfile, "debug", "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
+						return False
 					
 					if path.exists (out['data']) or path.islink (out['data']):
 						self.proc.log ('Overwrite file for export-caching: %s' % out['data'], 'warning', 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
@@ -183,7 +238,9 @@ class job (object):
 					
 				elif out['type'] in self.proc.OUT_DIRTYPE:
 					exfile += '.%s.tgz' % self.proc._name (False)
-					if not path.exists(exfile): return False
+					if not path.exists(exfile): 
+						self.proc.log ("Job not export-cached since exported file not exists: %s." % exfile, "debug", "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
+						return False
 					
 					if path.exists (out['data']) or path.islink (out['data']):
 						self.proc.log ('Overwrite file for export caching: %s' % out['data'], 'warning', 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
@@ -193,8 +250,11 @@ class job (object):
 					makedirs(out['data'])
 					utils.untargz (exfile, out['data'])
 			else:
-				if not path.exists (exfile) or utils.isSamefile (exfile, out['data']):
-					return False
+				if not path.exists (exfile):
+					self.proc.log ("Job not export-cached since exported file not exists: %s." % exfile, "debug", "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
+					return False	
+				if utils.isSamefile (exfile, out['data']):
+					continue
 				if path.exists (out['data']):
 					self.proc.log ('Overwrite file for export-caching: %s' % out['data'], 'warning', 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
 					if not path.isdir (out['data']): remove (out['data'])
@@ -331,6 +391,7 @@ class job (object):
 		"""
 		Check whether output files are generated, if not, add - to rc.
 		"""
+		utime (self.outdir, None)
 		for _, out in self.output.items():
 			if out['type'] in self.proc.OUT_VARTYPE: continue
 			if not path.exists (out['data']):

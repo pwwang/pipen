@@ -237,7 +237,18 @@ class TestChannel (unittest.TestCase):
 		self.assertEqual (chan.slice(-2), [(2,5),(4,4),(6,3),(8,2),(10,1)])
 		self.assertEqual (chan.colAt(-2), [(2,),(4,),(6,),(8,),(10,)])
 		
-	
+	def testFold (self):
+		chan  = channel.create([(1,2,2,5), (2,4,4,4), (3,6,6,3), (4,8,8,2), (5,10,10,1)])
+		chan1 = chan.fold(1)
+		self.assertEqual (chan1, channel.create([1,2,2,5,2,4,4,4,3,6,6,3,4,8,8,2,5,10,10,1]))
+		chan2 = chan1.unfold (4)
+		self.assertEqual (chan2, chan)
+		self.assertRaises (ValueError, chan1.unfold, 8)
+		chan3 = chan1.unfold(5)
+		self.assertEqual (chan3, [(1,2,2,5,2), (4,4,4,3,6), (6,3,4,8,8), (2,5,10,10,1)])
+		chan  = channel.create([(1,), (2,)])
+		chan2 = chan.unfold(2)
+		self.assertEqual (chan2, [(1,2)])
 		
 if __name__ == '__main__':
 	unittest.main()

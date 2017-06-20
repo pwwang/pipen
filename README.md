@@ -22,7 +22,7 @@
 
 ## Requirements
 - Linux, OSX or WSL (Windows Subsystem for Linux)
-- Python 2.7+ (python3 compatible)
+- Python 2.7+ (python3 supported)
 
 ## Installation
 ```bash
