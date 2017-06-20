@@ -1,5 +1,11 @@
 # Change log
 <!-- toc -->
+## June 20, 2017: 0.7.2
+- Optimize isRunning function (using specific job id)
+- Support python3 now
+- Test on OSX
+- More debug information for caching
+- Bug fixes
 
 ## June 15, 2017: 0.7.1
 - Move pyppl-cli to bin/pyppl
