@@ -17,6 +17,7 @@
 - Error handling for processes. [Details][12]
 - Configuration file support for pipelines. [Details][13]
 - Flowchat in [DOT][14] for your pipelines. [Details][15]
+- Processes are highly reusable. [A set of highly reusable bioinformatics processes][24]
 - Aggregations (a set of processes predefined). [Details][16]
 - Detailed [documentation][1] and [API documentation][2].
 
@@ -252,3 +253,4 @@ You can use different [dot renderers][17] to render and visualize it.
 [21]: https://www.gitbook.com/button/status/book/pwwang/pyppl
 [22]: https://badge.fury.io/py/pyppl.svg
 [23]: https://badge.fury.io/gh/pwwang%2Fpyppl.svg
+[24]: https://github.com/pwwang/bioprocs
