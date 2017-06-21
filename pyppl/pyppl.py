@@ -30,14 +30,22 @@ class pyppl (object):
 		"The default <ppldir> will be './workdir'",
 	]
 	
-	def __init__(self, config = {}, cfile = None):
+	def __init__(self, config = None, cfile = None):
 		"""
 		Constructor
 		@params:
 			`config`: the configurations for the pipeline, default: {}
-			`cfile`:  the configuration file for the pipeline, default: `~/.pyppl`
+			`cfile`:  the configuration file for the pipeline, default: `~/.pyppl.json`
 		"""
-		cfile    = os.path.join (os.path.expanduser('~'), ".pyppl") if cfile is None else cfile
+		dcfile1  = os.path.join (os.path.expanduser('~'), ".pyppl.json")
+		dcfile2  = os.path.join (os.path.expanduser('~'), ".pyppl")
+
+		if cfile is None:
+			cfile = dcfile1 if os.path.exists(dcfile1) else dcfile2
+
+		if config is None:
+			config = {}
+
 		if os.path.exists(cfile):			
 			hconfig  = json.load(open(cfile))
 			#hconfig.update(config)

@@ -366,6 +366,7 @@ class runner_test (runner):
 			testv[v] = utils.randstr()
 			if k == 'ppldir':   testv[v] = self.workdir
 			if v == 'retcodes': testv[v] = [0,1,2]
+			if k == 'exdir': testv[v] = ''
 			p.__setattr__ (k, testv[v])
 		p._tidyBeforeRun()
 		for k,v in proc.ALIAS.items():

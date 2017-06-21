@@ -66,7 +66,7 @@ class aggr (object):
 				inkey = proc.config['input']
 				if isinstance(inkey, list):
 					inkey = ','.join (inkey)
-				if not isinstance (inkey, basestring):
+				if not isinstance (inkey, utils.basestring):
 					raise RuntimeError('Expect list or str for proc keys for aggregation: %s, you may have already set the input channels?' % (self.id))
 				l = len (utils.split(inkey, ','))
 
@@ -141,7 +141,7 @@ class aggr (object):
 				newdeps = []
 				for dep in depends[proc._name(False)]:
 					dn = dep._name(False)
-					if not copy2.has_key(dn): newdeps.append (dep)
+					if not dn in copy2: newdeps.append (dep)
 					else: newdeps.append (newprocs[copy2[dn]])
 				proc.depends = newdeps
 

@@ -574,13 +574,20 @@ class proc (object):
 				return False
 		
 		trulyCachedJids        = []
+		notTrulyCachedJids     = []
 		exptCachedJids         = []
 		self.props['ncjobids'] = []
 		for i, job in enumerate(self.jobs):
 			job = self.jobs[i]
 			if job.isTrulyCached ():
+				# make sure logs have the same type
 				trulyCachedJids.append(i)
-			elif job.isExptCached ():
+			else:
+				notTrulyCachedJids.append(i)
+		
+		for i in notTrulyCachedJids:
+			job = self.jobs[i]
+			if job.isExptCached ():
 				exptCachedJids.append (i)
 			else:
 				self.props['ncjobids'].append (i)
