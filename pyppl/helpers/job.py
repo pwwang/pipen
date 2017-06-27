@@ -43,6 +43,7 @@ class job (object):
 		self.indir     = path.join (self.dir, "input")
 		self.outdir    = path.join (self.dir, "output")
 		self.script    = path.join (self.dir, "job.script")
+		self.oscript   = path.join (self.dir, "job.oscript")
 		self.rcfile    = path.join (self.dir, "job.rc")
 		self.outfile   = path.join (self.dir, "job.stdout")
 		self.errfile   = path.join (self.dir, "job.stderr")
@@ -146,62 +147,62 @@ class job (object):
 		Check whether a job is truly cached (by signature)
 		"""
 		if not path.exists (self.cachefile):
-			self.proc.log ("Job not cached as cache file not exists", "debug", "debug", "CACHE_SIGFILE_NOTEXISTS")
+			self.proc.log ("Job #%s not cached as cache file not exists." % (self.index), "debug", "debug", "CACHE_SIGFILE_NOTEXISTS")
 			return False
 		
 		with open (self.cachefile) as f:
 			sig    = f.read()
 			if not sig: 
-				self.proc.log ("Job not cached because previous signature is empty.", "debug", "debug", "CACHE_EMPTY_PREVSIG")
+				self.proc.log ("Job #%s not cached because previous signature is empty." % (self.index), "debug", "debug", "CACHE_EMPTY_PREVSIG")
 				return False
 
 			sigNow = self.signature()
 			if not sigNow:
-				self.proc.log ("Job not cached because current signature is empty.", "debug", "debug", "CACHE_EMPTY_CURRSIG")
+				self.proc.log ("Job #%s not cached because current signature is empty." % (self.index), "debug", "debug", "CACHE_EMPTY_CURRSIG")
 				return False
 
 			sigOld  = json.loads(sig)
 			keysNow = sigNow.keys()
 			keysOld = sigOld.keys()
 			if sorted(keysNow) != sorted(keysOld):
-				self.proc.log ("Job not cached due to key difference of signautres: %s (previous) and %s (current)" % (keysOld, keysNow), 'debug', 'debug', 'CACHE_SIGKEYS_DIFFER')
+				self.proc.log ("Job #%s not cached due to key difference of signautres: %s (previous) and %s (current)" % (self.index, keysOld, keysNow), 'debug', 'debug', 'CACHE_SIGKEYS_DIFFER')
 				return False
 			for key in keysNow:
 				if key == 'script':
 					if sigOld[key] != sigNow[key]:
-						self.proc.log ("Job not cached due to script file difference: %s (previous) and %s (current)" % (sigOld[key], sigNow[key]), 'debug', 'debug', 'CACHE_SCRIPT_DIFFER')
+						self.proc.log ("Job #%s not cached due to script file difference: %s (previous) and %s (current)" % (self.index, sigOld[key], sigNow[key]), 'debug', 'debug', 'CACHE_SCRIPT_DIFFER')
 						return False
 				if key == 'in':
 					inTypesOld = sigOld[key].keys()
 					inTypesNow = sigNow[key].keys()
 					if sorted(inTypesNow) != sorted(inTypesOld):
-						self.proc.log ("Job not cached due to input type difference of signautres: %s (previous) and %s (current)" % (inTypesOld, inTypesNow), 'debug', 'debug', 'CACHE_SIGINTYPES_DIFFER')
+						self.proc.log ("Job #%s not cached due to input type difference of signautres: %s (previous) and %s (current)" % (self.index, inTypesOld, inTypesNow), 'debug', 'debug', 'CACHE_SIGINTYPES_DIFFER')
 						return False
 					for intype in inTypesNow:
 						inKeysOld = sigOld[key][intype].keys()
 						inKeysNow = sigNow[key][intype].keys()
 						if sorted(inKeysOld) != sorted(inKeysNow):
-							self.proc.log ("Job not cached due to input key difference of signautres: %s (previous) and %s (current)" % (inKeysOld, inKeysNow), 'debug', 'debug', 'CACHE_SIGINKEYS_DIFFER')
+							self.proc.log ("Job #%s not cached due to input key difference of signautres: %s (previous) and %s (current)" % (self.index, inKeysOld, inKeysNow), 'debug', 'debug', 'CACHE_SIGINKEYS_DIFFER')
 							return False
 						for inkey in inKeysNow:
 							if sigOld[key][intype][inkey] != sigNow[key][intype][inkey]:
-								self.proc.log ("Job not cached due to input difference for key %s: %s (previous) and %s (current)" % (inkey, sigOld[key][intype][inkey], sigNow[key][intype][inkey]), 'debug', 'debug', 'CACHE_SIGINPUT_DIFFER')
+								self.proc.log ("Job #%s not cached due to input difference for key %s: %s (previous) and %s (current)" % (self.index, inkey, sigOld[key][intype][inkey], sigNow[key][intype][inkey]), 'debug', 'debug', 'CACHE_SIGINPUT_DIFFER')
 								return False
 				if key == 'out':
 					outTypesOld = sigOld[key].keys()
 					outTypesNow = sigNow[key].keys()
 					if sorted(outTypesNow) != sorted(outTypesOld):
-						self.proc.log ("Job not cached due to output type difference of signautres: %s (previous) and %s (current)" % (outTypesOld, outTypesNow), 'debug', 'debug', 'CACHE_SIGOUTTYPES_DIFFER')
+						self.proc.log ("Job #%s not cached due to output type difference of signautres: %s (previous) and %s (current)" % (self.index, outTypesOld, outTypesNow), 'debug', 'debug', 'CACHE_SIGOUTTYPES_DIFFER')
 						return False
 					for outtype in outTypesNow:
 						outKeysOld = sigOld[key][outtype].keys()
 						outKeysNow = sigNow[key][outtype].keys()
 						if sorted(outKeysOld) != sorted(outKeysNow):
-							self.proc.log ("Job not cached due to output key difference of signautres: %s (previous) and %s (current)" % (outKeysOld, outKeysNow), 'debug', 'debug', 'CACHE_SIGOUTKEYS_DIFFER')
+							self.proc.log ("Job #%s not cached due to output key difference of signautres: %s (previous) and %s (current)" % (self.index, outKeysOld, outKeysNow), 'debug', 'debug', 'CACHE_SIGOUTKEYS_DIFFER')
 							return False
 						for outkey in outKeysNow:
 							if sigOld[key][outtype][outkey] != sigNow[key][outtype][outkey]:
-								self.proc.log ("Job not cached due to output difference for key %s: %s (previous) and %s (current)" % (outkey, sigOld[key][outtype][outkey], sigNow[key][outtype][outkey]), 'debug', 'debug', 'CACHE_SIGOUTPUT_DIFFER')
+								self.proc.log ("Job #%s not cached due to output difference for key %s: %s (previous) and %s (current)" % (self.index, outkey, sigOld[key][outtype][outkey], sigNow[key][outtype][outkey]), 'debug', 'debug', 'CACHE_SIGOUTPUT_DIFFER')
 								return False
 			return True
 	
@@ -290,7 +291,7 @@ class job (object):
 			The signature of the job
 		"""
 		ret = {}
-		sig = utils.filesig (self.script)
+		sig = utils.filesig (self.oscript)
 		if not sig: 
 			return ''
 		ret['script'] = sig
@@ -543,19 +544,20 @@ class job (object):
 		"""
 		for key, val in self.proc.brings.items():
 			
-			brkey   = key + ".bring"
+			brkey   = "bring." + key
 			pattern = utils.format (val, self.data)
 			
-			inkey   = key.replace("#", "")
+			inkey   = key.split("#")[0]
 			infile  = self.input[inkey]['data']
 			intype  = self.input[inkey]['type']
 			if intype not in self.proc.IN_FILETYPE:
 				raise ValueError ('Only can brings a file related to an input file.')
 
 			# Anyway give an empty string, so that users can tell if bringing fails
-			self.data[brkey] = ''
+			self.data[brkey]           = ''
 			self.data[brkey + ".orig"] = ''
-
+			self.brings[key]           = ''
+			self.brings[key + ".orig"] = ''
 			while path.exists(infile):
 				bring = glob (path.join (path.dirname(infile), pattern))
 				if bring:
@@ -666,16 +668,22 @@ class job (object):
 		if not script.startswith ("#!"):
 			script = "#!/usr/bin/env " + self.proc.defaultSh + "\n\n" + script
 		
-		script = utils.format (script, self.data)
-		if path.exists (self.script):
-			f = open(self.script)
+		if path.exists (self.oscript):
+			f = open (self.oscript)
 			oscript = f.read()
 			f.close()
+			# no change to happen? script change will cause a different uid for a proc
 			if oscript == script:
 				self.proc.log ("Script file exists: %s" % self.script, 'debug', 'debug', 'SCRIPT_EXISTS')
 			else:
-				with open (self.script, 'w') as f:
+				with open (self.oscript, 'w') as f:
 					f.write (script)
 		else:
-			with open (self.script, 'w') as f:
+			with open (self.oscript, 'w') as f:
 				f.write (script)
+		
+		script = utils.format (script, self.data)
+		with open (self.script, 'w') as f:
+			f.write (script)
+			
+			

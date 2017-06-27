@@ -54,17 +54,17 @@ class proc (object):
 		'EXPORT_CACHE_USING_SYMLINK': 1,
 		'EXPORT_CACHE_EXFILE_NOTEXISTS': 1,
 		'EXPORT_CACHE_EXDIR_NOTSET': 1,
-		'CACHE_EMPTY_PREVSIG': 1,
-		'CACHE_EMPTY_CURRSIG': 1,
-		'CACHE_SCRIPT_DIFFER': 1,
-		'CACHE_SIGKEYS_DIFFER': 1,
-		'CACHE_SIGINKEYS_DIFFER': 1,
-		'CACHE_SIGINTYPES_DIFFER': 1,
-		'CACHE_SIGINPUT_DIFFER': 1,
-		'CACHE_SIGOUTKEYS_DIFFER': 1,
-		'CACHE_SIGOUTTYPES_DIFFER': 1,
-		'CACHE_SIGOUTPUT_DIFFER': 1,
-		'CACHE_SIGFILE_NOTEXISTS': 1,
+		'CACHE_EMPTY_PREVSIG': -1,
+		'CACHE_EMPTY_CURRSIG': -1,
+		'CACHE_SCRIPT_DIFFER': -1,
+		'CACHE_SIGKEYS_DIFFER': -1,
+		'CACHE_SIGINKEYS_DIFFER': -1,
+		'CACHE_SIGINTYPES_DIFFER': -1,
+		'CACHE_SIGINPUT_DIFFER': -1,
+		'CACHE_SIGOUTKEYS_DIFFER': -1,
+		'CACHE_SIGOUTTYPES_DIFFER': -1,
+		'CACHE_SIGOUTPUT_DIFFER': -1,
+		'CACHE_SIGFILE_NOTEXISTS': -1,
 		'BRINGFILE_OVERWRITING': 3,
 		'OUTNAME_USING_OUTTYPES': 1,
 		'OUTDIR_CREATED': 0,
@@ -149,6 +149,8 @@ class proc (object):
 		self.config['channel']    = channel.create()
 		# The aggregation name of the process
 		self.config['aggr']       = None
+		# The callfront function of the process
+		self.config['callfront']  = None
 		# The callback function of the process
 		self.config['callback']   = None
 		# The bring files that user specified
@@ -198,6 +200,7 @@ class proc (object):
 		self.props['logger']     = None
 		self.props['args']       = self.config['args']
 		self.props['aggr']       = self.config['aggr']
+		self.props['callfront']  = self.config['callfront']
 		self.props['callback']   = self.config['callback']
 		self.props['brings']     = self.config['brings']
 		self.props['suffix']     = ''
@@ -328,6 +331,8 @@ class proc (object):
 		config['id']  = self.id
 		config['tag'] = self.tag
 		
+		if 'callfront' in config:
+			config['callfront'] = utils.funcsig(config['callfront'])
 		if 'callback' in config:
 			config['callback'] = utils.funcsig(config['callback'])
 		# proc is not picklable
@@ -357,6 +362,9 @@ class proc (object):
 		Do some preparation before running jobs
 		"""
 		self._buildProps ()
+		if callable (self.callfront):
+			self.log ("Calling callfront ...", "debug")
+			self.callfront (self)
 		self._buildInput ()
 		self._buildProcVars ()
 		self._buildJobs ()
@@ -466,6 +474,10 @@ class proc (object):
 		# expand to one key-channel pairs
 		for inkeys, invals in indata.items():
 			keys   = utils.split(inkeys, ',')
+			# allow empty input
+			if len(keys) == 1 and keys[0] == '':
+				invals = ['']
+				
 			invals = utils.range2list(invals)
 			if callable (invals):
 				vals  = invals (*[d.channel.copy() for d in self.depends] if self.depends else channel.fromArgv())
@@ -480,7 +492,7 @@ class proc (object):
 				vals  = channel.create(invals).split()
 			else:
 				raise ValueError ("%s: Unexpected values for input. Expect dict, list, str, channel, callable." % self._name())
-			
+				
 			width = len (vals)
 			if len (keys) > width:
 				raise ValueError ('%s: Not enough data for input variables.\nVarialbes: %s\nData: %s' % (self._name(), keys, vals))

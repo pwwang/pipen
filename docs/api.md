@@ -15,7 +15,7 @@ Constructor
 
 - **params:**  
 `config`: the configurations for the pipeline, default: {}  
-`cfile`:  the configuration file for the pipeline, default: `~/.pyppl`  
+`cfile`:  the configuration file for the pipeline, default: `~/.pyppl.json`  
   
 #### `flowchart (self, dotfile, fcfile, dot) `
   
