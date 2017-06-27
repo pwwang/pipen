@@ -40,16 +40,16 @@ Here is the full structure of the configurations:
 ## Use a configuration file
 You can also put some commonly used configurations into a `json` file (for example, `/a/b/pyppl.config`), and then specify it to `pyppl` constructor:
 ```python
-pyppl ({}, "/a/b/pyppl.config")
+pyppl ({}, "/a/b/pyppl.config.json")
 ```
-If not configuration file is specified, it will look for one at `~/.pyppl`.  
+If not configuration file is specified, it will look for one at `~/.pyppl.json` (if not available, check `~/.pyppl`).  
 You can also overwrite some options in the configuration file by specify them in the first argument:
 ```python
 pyppl ({
     "proc": {forks: 5}
 })
 ```
-All other options will be inherited from `~/.pyppl`.
+All other options will be inherited from `~/.pyppl.json`.
 
 ## Priority of configuration items
 Now you have 3 ways to set options for a process: 
@@ -63,7 +63,7 @@ Here are an examples to illustrate the priority:
 
 ** Example 1:**
 ```python
-# ~/.pyppl
+# ~/.pyppl.json
 """
 {
     "proc": {"forks": 5}
@@ -79,7 +79,7 @@ ppl = pyppl ({"proc": {forks: 10}})
 ```
 ** Example 2:**
 ```python
-# we also have ~/.pyppl as previous example
+# we also have ~/.pyppl.json as previous example
 p = proc()
 
 ppl = pyppl ({"proc": {forks: 10}})
@@ -88,7 +88,7 @@ ppl = pyppl ({"proc": {forks: 10}})
 ```
 ** Example 3:**
 ```python
-# we also have ~/.pyppl as previous example
+# we also have ~/.pyppl.json as previous example
 p = proc()
 
 ppl = pyppl ()

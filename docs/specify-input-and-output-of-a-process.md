@@ -84,12 +84,12 @@ p.brings = {
 # We find them in /a/b/, then bring them to the <indir>
 
 # To access the bring-in file in beforeCmd/afterCmd/output/script in <indir>:
-# {{hg19fa.bring}}, {{hg19fa#.bring}}
+# {{bring.hg19fa}}, {{bring.hg19fa#}}
 # An empty string will be returned if the index file can't be found.
 # You may use some other programs to generate the index file in your script in this case.
 #
 # To access the original path of the bring-file:
-# {{hg19fa.bring.orig}}, {{hg19fa#.bring.orig}}
+# {{bring.hg19fa.orig}}, {{bring.hg19fa#.orig}}
 ```
 
 > **Caution**: If your pattern matches multiple files, only the first one by `glob.glob` will be returned. So try to write more specfic pattern for bring-in files.

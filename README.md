@@ -17,7 +17,7 @@
 - Error handling for processes. [Details][12]
 - Configuration file support for pipelines. [Details][13]
 - Flowchat in [DOT][14] for your pipelines. [Details][15]
-- Processes are highly reusable. [A set of highly reusable bioinformatics processes][24]
+- Highly reusable processes. [A set of highly reusable bioinformatics processes][24]
 - Aggregations (a set of processes predefined). [Details][16]
 - Detailed [documentation][1] and [API documentation][2].
 
