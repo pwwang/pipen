@@ -499,9 +499,17 @@ class job (object):
 						remove (infile)
 					symlink (origfile, infile)
 				elif not utils.isSamefile (origfile, infile):
-					self.proc.log ("Overwriting input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
-					remove (infile)  # it's a link
-					symlink (origfile, infile)
+					(prefix, ext) = path.splitext (basename)
+					infile = path.join (self.indir, "%s.%s%s" % (prefix, str(self.index), ext))
+					self.data[key]           = infile
+					self.input[key]['data']  = infile
+					if path.exists (infile):
+						self.proc.log ("Overwriting input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
+						remove (infile)  # it's a link
+						symlink (origfile, infile)
+					else:
+						self.proc.log ("Renaming input file: %s" % infile, 'warning', 'warning', 'INFILE_RENAMING')
+						symlink (origfile, infile)
 			elif val['type'] in self.proc.IN_FILESTYPE:
 				self.input[key]['type'] = self.proc.IN_FILESTYPE[0]
 				self.input[key]['orig'] = []

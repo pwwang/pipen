@@ -73,7 +73,8 @@ class proc (object):
 		'SCRIPT_EXISTS': -2,
 		'NOSCRIPT': 1,
 		'JOB_RESETTING': 0,
-		'INFILE_OVERWRITING': -3
+		'INFILE_OVERWRITING': -3,
+		'INFILE_RENAMING': -3
 	}
 	
 	OUT_VARTYPE  = ['var']
@@ -176,7 +177,7 @@ class proc (object):
 		self.props['tmpdir']     = self.config['tmpdir']
 		self.props['forks']      = self.config['forks']
 		self.props['cache']      = self.config['cache']
-		self.props['cached']     = True
+		#self.props['cached']     = True
 		self.props['retcodes']   = self.config['retcodes']
 		self.props['beforeCmd']  = self.config['beforeCmd']
 		self.props['afterCmd']   = self.config['afterCmd']
@@ -301,8 +302,9 @@ class proc (object):
 		config['tag']      = newproc.tag
 		config['aggr']     = ''
 		config['workdir']  = ''
-		props   = {key:val for key, val in self.props.items() if key not in ['cached', 'procvars', 'ncjobids', 'sets', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
-		props['cached']    = True
+		#props   = {key:val for key, val in self.props.items() if key not in ['cached', 'procvars', 'ncjobids', 'sets', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
+		props   = {key:val for key, val in self.props.items() if key not in ['procvars', 'ncjobids', 'sets', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
+		#props['cached']    = True
 		props['procvars']  = {}
 		props['channel']   = channel.create()
 		props['depends']   = []
@@ -420,7 +422,7 @@ class proc (object):
 			# I am not cached, touch the input of my nexts?
 			# but my nexts are not initized, how?
 			# set cached to False, then my nexts will access it
-			self.props['cached'] = False
+			#self.props['cached'] = False
 			self.log (self.workdir, 'info', 'RUNNING')
 			self._runJobs()
 		if self._runCmd('afterCmd') != 0:
@@ -579,11 +581,11 @@ class proc (object):
 			self.log ('Not cached, because proc.cache is False', 'debug')
 			return False
 		
-		if self.cache == True:
-			for depend in self.depends:
-				if depend.cached: continue
-				self.log ('Not cached, my dependent "%s" is not cached.' % depend._name(), 'debug')
-				return False
+		#if self.cache == True:
+		#	for depend in self.depends:
+		#		if depend.cached: continue
+		#		self.log ('Not cached, my dependent "%s" is not cached.' % depend._name(), 'debug')
+		#		return False
 		
 		trulyCachedJids        = []
 		notTrulyCachedJids     = []
