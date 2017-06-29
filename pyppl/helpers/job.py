@@ -5,7 +5,7 @@ import json
 import sys
 from collections import OrderedDict
 from glob import glob
-from os import makedirs, path, remove, symlink, utime, readlink
+from os import makedirs, path, remove, symlink, utime, readlink, listdir
 from shutil import copyfile, copytree, move, rmtree
 
 from . import utils
@@ -462,19 +462,15 @@ class job (object):
 		if path.exists (self.idfile) or path.islink (self.idfile):
 			remove(self.idfile)
 		
+		if listdir (self.outdir):
+			rmtree  (self.outdir)	
+			makedirs(self.outdir)
+			
 		for _, out in self.output.items():
-			if out['type'] in self.proc.OUT_VARTYPE: 
+			if out['type'] not in self.proc.OUT_DIRTYPE: 
 				continue
-			if path.islink (out['data']):
-				remove (out['data'])
-			elif path.exists(out['data']):
-				if not path.isdir (out['data']):
-					remove (out['data'])
-				else:
-					rmtree (out['data'])
-			if out['type'] in self.proc.OUT_DIRTYPE:
-				makedirs (out['data'])
-				self.proc.log ('Output directory created after reset: %s.' % out['data'], 'debug', 'debug', 'OUTDIR_CREATED_AFTER_RESET')
+			makedirs (out['data'])
+			self.proc.log ('Output directory created after reset: %s.' % out['data'], 'debug', 'debug', 'OUTDIR_CREATED_AFTER_RESET')
 
 	def _prepInput (self):
 		"""
@@ -489,27 +485,32 @@ class job (object):
 				origfile = path.abspath(val['data'][self.index])
 				basename = path.basename (origfile)
 				infile   = path.join (self.indir, basename)
-				self.data[key]           = infile
-				self.data[key + '.orig'] = origfile
-				self.input[key]['type']  = self.proc.IN_FILETYPE[0]
-				self.input[key]['data']  = infile
-				self.input[key]['orig']  = origfile
 				if not path.exists (infile):
 					if path.islink (infile): 
 						remove (infile)
 					symlink (origfile, infile)
 				elif not utils.isSamefile (origfile, infile):
-					(prefix, ext) = path.splitext (basename)
-					infile = path.join (self.indir, "%s.%s%s" % (prefix, str(self.index), ext))
-					self.data[key]           = infile
-					self.input[key]['data']  = infile
+					#bedir  = path.join (self.indir, basename + '.' + utils.uid(origfile, 4)) # basename exists
+					#infile = path.join (bedir, basename)
+					#if not path.exists(bedir):
+					#	makedirs (bedir)
+					(fn, _, ext) = basename.rpartition('.')
+					infile = path.join (self.indir, fn + '.' + utils.uid(origfile, 4) + '.' + ext)
+					
 					if path.exists (infile):
-						self.proc.log ("Overwriting input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
+						self.proc.log ("Overwriting renamed input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
 						remove (infile)  # it's a link
 						symlink (origfile, infile)
 					else:
 						self.proc.log ("Renaming input file: %s" % infile, 'warning', 'warning', 'INFILE_RENAMING')
 						symlink (origfile, infile)
+						
+				self.data[key]           = infile
+				self.data[key + '.orig'] = origfile
+				self.input[key]['type']  = self.proc.IN_FILETYPE[0]
+				self.input[key]['data']  = infile
+				self.input[key]['orig']  = origfile
+				
 			elif val['type'] in self.proc.IN_FILESTYPE:
 				self.input[key]['type'] = self.proc.IN_FILESTYPE[0]
 				self.input[key]['orig'] = []
@@ -518,28 +519,35 @@ class job (object):
 					origfile = path.abspath(origfile)
 					basename = path.basename (origfile)
 					infile   = path.join (self.indir, basename)
-					self.input[key]['orig'].append (origfile)
-					self.input[key]['data'].append (infile)
 					if not key in self.data: 
 						self.data[key] = []
 					if not key + '.orig' in self.data: 
 						self.data[key + '.orig'] = []
-					self.data[key].append (infile)
-					self.data[key + '.orig'].append (origfile)
 					if not path.exists (infile):
 						if path.islink (infile): 
 							remove (infile)
 						symlink (origfile, infile)
 					elif not utils.isSamefile (origfile, infile):
-						self.proc.log ("Overwriting input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
-						remove (infile)  # it's a link
-						symlink (origfile, infile)
+						(fn, _, ext) = basename.rpartition('.')
+						infile = path.join (self.indir, fn + '.' + utils.uid(origfile, 4) + '.' + ext)
+						
+						if path.exists (infile):
+							self.proc.log ("Overwriting renamed input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
+							remove (infile)  # it's a link
+							symlink (origfile, infile)
+						else:
+							self.proc.log ("Renaming input file: %s" % infile, 'warning', 'warning', 'INFILE_RENAMING')
+							symlink (origfile, infile)
+						
+					self.input[key]['orig'].append (origfile)
+					self.input[key]['data'].append (infile)
+					self.data[key].append (infile)
+					self.data[key + '.orig'].append (origfile)
 			else:
 				self.input[key]['type'] = self.proc.IN_VARTYPE[0]
 				self.input[key]['data'] = val['data'][self.index]
 				self.data[key] = val['data'][self.index]
-			
-	
+				
 	def _prepBrings (self):
 		"""
 		Build the brings to bring some files to indir
@@ -575,7 +583,7 @@ class job (object):
 					self.brings[key] = dstfile
 					self.brings[key + ".orig"] = bring[0]
 					if path.exists(dstfile) and not utils.isSamefile (dstfile, bring[0]):
-						self.proc.log ("Overwriting bring file: %s" % infile, 'warning', 'warning', 'BRINGFILE_OVERWRITING')
+						self.proc.log ("Overwriting bring file: %s" % dstfile, 'warning', 'warning', 'BRINGFILE_OVERWRITING')
 						remove (dstfile) # a link
 						symlink (bring[0], dstfile)
 					elif not path.exists(dstfile):
