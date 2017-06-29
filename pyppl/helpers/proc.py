@@ -90,7 +90,7 @@ class proc (object):
 	EX_MOVE      = ['move', 'mv']
 	EX_SYMLINK   = ['link', 'symlink', 'symbol']
 
-	def __init__ (self, tag = 'notag'):
+	def __init__ (self, tag = 'notag', desc = 'No description.'):
 		"""
 		Constructor
 		@params:
@@ -126,6 +126,8 @@ class proc (object):
 		self.config['depends']    = []
 		# The tag of the job
 		self.config['tag']        = tag
+		# The description of the job		
+		self.config['desc']       = desc
 		# The directory to export the output files
 		self.config['exportdir']  = ''
 		# How to export
@@ -161,6 +163,8 @@ class proc (object):
 		self.props['id']         = pid  
 		# the tag
 		self.props['tag']        = tag
+		# the description
+		self.props['desc']       = self.config['desc']
 
 		# the cachefile, cache file will be in <tmpdir>/<cachefile>
 		#self.props['cachefile']  = 'cached.jobs'
@@ -329,7 +333,7 @@ class proc (object):
 		if self.suffix:
 			return self.suffix
 
-		config        = { key:val for key, val in self.config.items() if key not in ['workdir', 'forks', 'cache', 'retcodes', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
+		config        = { key:val for key, val in self.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
 		config['id']  = self.id
 		config['tag'] = self.tag
 		
@@ -411,7 +415,13 @@ class proc (object):
 		if config is None:
 			config = {}
 
-		self.logger.info ('[  START] ' + utils.padBoth(' ' + self._name() + ' ', 80, '-'))
+		#self.logger.info ('[  START] ' + utils.padBoth(' ' + self._name() + ' ', 80, '-'))
+		#startinfo = self._name() + ': ' + self.desc
+		#infolen   = max(len(startinfo), 80)
+		#self.logger.info ('[  START] +%s+' % ('-' * infolen))
+		#self.logger.info ('[  START] | %s%s |' % (startinfo, ' ' * (infolen - len(startinfo) - 2)))
+		#self.logger.info ('[  START] +%s+' % ('-' * infolen))
+		self.logger.info ('[  START] ' + self._name() + ': ' + self.desc)
 		# log the dependencies
 		self.log ("%s => %s => %s" % ([p._name() for p in self.depends] if self.depends else "START", self._name(), [p._name() for p in self.nexts] if self.nexts else "END"), "info", "depends")
 		self._readConfig (config)
@@ -535,9 +545,9 @@ class proc (object):
 				continue
 			
 			if prop == 'args':
-				self.props['procvars']['proc.args'] = val
+				self.props['procvars']['args'] = val
 				for k, v in val.items():
-					self.props['procvars']['proc.args.' + k] = v
+					self.props['procvars']['args.' + k] = v
 					self.log('%s => %s' % (k, v), 'info', 'p.args')
 			else:
 				self.props['procvars']['proc.' + prop] = val

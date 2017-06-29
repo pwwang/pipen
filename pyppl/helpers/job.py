@@ -465,6 +465,10 @@ class job (object):
 		if listdir (self.outdir):
 			rmtree  (self.outdir)	
 			makedirs(self.outdir)
+		# do we really need to reset indir?
+		#if listdir (self.indir):
+		#	rmtree  (self.outdir)	
+		#	makedirs(self.outdir)
 			
 		for _, out in self.output.items():
 			if out['type'] not in self.proc.OUT_DIRTYPE: 
@@ -495,7 +499,7 @@ class job (object):
 					#if not path.exists(bedir):
 					#	makedirs (bedir)
 					(fn, _, ext) = basename.rpartition('.')
-					infile = path.join (self.indir, fn + '.' + utils.uid(origfile, 4) + '.' + ext)
+					infile = path.join (self.indir, fn + '._' + utils.uid(path.realpath(origfile), 4) + '_.' + ext)
 					
 					if path.exists (infile):
 						self.proc.log ("Overwriting renamed input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
@@ -529,7 +533,7 @@ class job (object):
 						symlink (origfile, infile)
 					elif not utils.isSamefile (origfile, infile):
 						(fn, _, ext) = basename.rpartition('.')
-						infile = path.join (self.indir, fn + '.' + utils.uid(origfile, 4) + '.' + ext)
+						infile = path.join (self.indir, fn + '._' + utils.uid(path.realpath(origfile), 4) + '_.' + ext)
 						
 						if path.exists (infile):
 							self.proc.log ("Overwriting renamed input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')

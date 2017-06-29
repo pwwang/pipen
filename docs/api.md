@@ -483,7 +483,7 @@ Tell if the job is successful by return code
 		`__setattr__(self, name, value)`: set the value of a property in `self.config`
 	
 
-#### `__init__ (self, tag) `
+#### `__init__ (self, tag, desc) `
   
 Constructor  
 
