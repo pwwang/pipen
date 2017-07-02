@@ -344,13 +344,18 @@ class proc (object):
 		# proc is not picklable
 		if 'depends' in config:
 			depends = config['depends']
-			pickable_depends = []
-			if isinstance(depends, proc):
+			if not isinstance (depends, list):
 				depends = [depends]
-			elif isinstance(depends, aggr):
-				depends = depends.procs
+				
+			pickable_depends = []			
 			for depend in depends:
-				pickable_depends.append(depend.id + '.' + depend.tag)
+				if isinstance(depend, proc):
+					# the suffix makes sure it's the dependent
+					pickable_depends.append (depend._name(False) + depend.suffix)
+				elif isinstance(depends, aggr):
+					for depend in depends.ends:
+						pickable_depends.append (depend._name(False) + depend.suffix)
+				
 			config['depends'] = pickable_depends
 		
 		# lambda not pickable

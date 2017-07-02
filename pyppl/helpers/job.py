@@ -465,10 +465,6 @@ class job (object):
 		if listdir (self.outdir):
 			rmtree  (self.outdir)	
 			makedirs(self.outdir)
-		# do we really need to reset indir?
-		#if listdir (self.indir):
-		#	rmtree  (self.outdir)	
-		#	makedirs(self.outdir)
 			
 		for _, out in self.output.items():
 			if out['type'] not in self.proc.OUT_DIRTYPE: 
