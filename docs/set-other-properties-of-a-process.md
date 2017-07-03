@@ -83,6 +83,16 @@ To set prior processes not only let the process use the output channel as input 
 > **Caution** You can copy a process by `p2 = p.copy()`, but remember `depends` will not be copied, you have to specify it for the copied processes.  
 > When you specify new dependents for a process, its orginal ones will be removed.
 
+## Set expectations of a process
+You can use commands to check whether you have expected output. For example:
+```python
+p = proc ()
+p.input = {"input": "1"}
+p.script = "echo {{input}}"
+# check the stdout
+p.expect = "grep 1 {{job.outfile}}"
+```
+
 ## Use callback to modify the process `p.callback`:
 The processes **NOT** initialized until it's ready to run. So you may not be able to modify some of the values until it is initialized. For example, you may want to change the output channel before it passes to the its dependent process:
 ```python
@@ -110,6 +120,7 @@ pyppl().starts (pSingle).run()
 ```
 You can also use a callback in `pCombine.input` to modify the channel, see [here][9], which is recommended. Because `p.callback` will change the original output channel of `pSingle`, but the `input` callback will keep the output channel intact. However, `p.callback` can not only change the output channel, but also change other properties of current process or even set the properties of coming processes.
 
+> **Hint** You can also use `callfront` before the properties are computed. The argument is the proc itself.
 
 [1]: https://pwwang.gitbooks.io/pyppl/content/specify-input-and-output-of-a-process.html#specify-input-of-a-process
 [2]: https://pwwang.gitbooks.io/pyppl/content/specify-input-and-output-of-a-process.html#specify-output-of-a-process

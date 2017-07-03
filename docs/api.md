@@ -483,7 +483,7 @@ Tell if the job is successful by return code
 		`__setattr__(self, name, value)`: set the value of a property in `self.config`
 	
 
-#### `__init__ (self, tag, desc) `
+#### `__init__ (self, tag, desc, id) `
   
 Constructor  
 
@@ -510,7 +510,7 @@ also add proc.props, mostly scalar values
   
 Compute some properties  
   
-#### `_isCached (self) `
+#### `_checkCached (self) `
   
 Tell whether the jobs are cached  
 

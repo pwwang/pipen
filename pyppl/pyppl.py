@@ -9,7 +9,7 @@ from time import time
 
 from .helpers import aggr, proc, utils
 
-VERSION = "0.7.2"
+VERSION = "0.7.3"
 			
 class pyppl (object):
 	"""

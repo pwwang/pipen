@@ -1,5 +1,17 @@
 # Change log
 <!-- toc -->
+
+## July 3, 2017: 0.7.3
+- Config file defaults to `~/.pyppl.json` (`~/.pyppl` also works)
+- Callfront added
+- Empty input allowed
+- Same basename name allowed for input files of a job
+- Description of a proc added
+- Aggr Optimized
+- #9 Fixed
+- Private key supported for ssh runner
+- #7 Implemented
+
 ## June 20, 2017: 0.7.2
 - Optimize isRunning function (using specific job id)
 - Support python3 now
