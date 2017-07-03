@@ -11,6 +11,7 @@ Here is the full structure of the configurations:
 {
     "loglevel": "info",  // the log level
     "logcolor": true,    // use colored log information
+	"logfile": false,    // disable logfile, to specify a different logfile
     "proc": {            // shared configuration of processes
         "forks": 10,
         "runner": "sge",
