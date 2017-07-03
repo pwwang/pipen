@@ -48,11 +48,12 @@ class runner_ssh (runner):
 			''
 			'trap "status=\\$?; echo \\$status > %s; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile
 		]
-
+		
 		if 'preScript' in conf:
 			sshsrc.append (conf['preScript'])
 		
-		sshsrc.append ('ssh %s "%s"' % (self.server, self.cmd2run))
+		keyfile = '-i "%s"' % conf['key'] if 'key' in conf else ''
+		sshsrc.append ('ssh %s %s "%s"' % (keyfile, self.server, self.cmd2run))
 		
 		if 'postScript' in conf:
 			sshsrc.append (conf['postScript'])
