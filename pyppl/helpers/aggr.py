@@ -37,7 +37,7 @@ class aggr (object):
 		
 		depends                         = True
 		arg                             = list(arg)
-		if isinstance(arg[-1], bool):
+		if len(arg) > 0 and isinstance(arg[-1], bool):
 			depends                     = arg.pop(-1)
 		
 		self.procs                      = []
@@ -49,8 +49,8 @@ class aggr (object):
 			self.procs.append (newproc)
 		
 		if depends:
-			self.starts = [self.procs[0]]
-			self.ends   = [self.procs[-1]]
+			self.starts = [self.procs[0]] if len(self.procs) > 0 else []
+			self.ends   = [self.procs[-1]] if len(self.procs) > 0 else []
 			for i, proc in enumerate(self.procs):
 				if i == 0: 
 					continue
@@ -87,7 +87,7 @@ class aggr (object):
 		
 	def __setattr__ (self, name, value):
 		if name in aggr.commprops or name.endswith('Runner'):
-			self.set (name, val)
+			self.set (name, value)
 		elif name == 'input':
 			if not isinstance(value, channel):
 				value  = channel.create(value)
@@ -125,7 +125,7 @@ class aggr (object):
 		@returns:
 			the aggregation itself
 		"""
-		newproc = proc.copy(utils.uid(self.id, 4), p.id)
+		newproc = p.copy(utils.uid(self.id, 4), p.id)
 		newproc.aggr = self.id
 		self.procs.append (newproc)
 		if where == 'starts' or where == 'both':
@@ -168,7 +168,7 @@ class aggr (object):
 			if proc in self.ends:
 				ret.ends.append (newproc)
 		
-		ret.setAll ('tag', tagstr)
+		ret.set ('tag', tagstr)
 		# copy dependences
 		for proc in self.procs:
 			if proc in self.starts:

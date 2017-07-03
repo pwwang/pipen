@@ -925,6 +925,23 @@ Like `proc`'s `copy` function, copy an aggregation. Each processes will be copie
 - **returns:**  
 The new aggregation  
   
+#### `set (self, propname, propval, procs) `
+  
+Set property for procs  
+
+- **params:**  
+propname: The property name  
+propval:  The property value  
+procs:    The ids of the procs to set  
+  
+#### `updateArgs (self, arg, procs) `
+  
+update args for procs  
+
+- **params:**  
+arg:   the arg to update  
+procs: The ids of the procs to update  
+  
 
 ## Module `runner`  
 > The base runner class

@@ -11,7 +11,7 @@ warnings.filterwarnings("ignore")
 
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
-from pyppl import aggr, channel, proc, pyppl
+from pyppl import aggr, channel, proc, pyppl, utils
 
 class TestPipelineMethods (unittest.TestCase):
 
@@ -239,15 +239,15 @@ sorted("""digraph PyPPL {
 		a  = aggr (pa, pb)
 		pe = proc('end')
 		pe.depends = a
-		a.pa_aggr.input  = "input"
-		a.pa_aggr.output = "out:{{input}}.{{proc.id}}.{{proc.tag}}"
-		a.pb_aggr.input  = "input"
-		a.pb_aggr.output = "out:{{input}}.{{proc.id}}.{{proc.tag}}"
+		a.pa.input  = "input"
+		a.pa.output = "out:{{input}}.{{proc.id}}.{{proc.tag}}"
+		a.pb.input  = "input"
+		a.pb.output = "out:{{input}}.{{proc.id}}.{{proc.tag}}"
 		a.input          = ["AGGR"]
 		pe.input         = "input"
 		pe.output        = "out:{{input}}.{{proc.id}}.{{proc.tag}}"
 		self.assertRaises (SystemExit,pyppl().starts(a).run)
-		self.assertEqual (pe.channel, [('AGGR.pa.aggr.pb.aggr.pe.end',)])
+		self.assertEqual (pe.channel, [('AGGR.pa.%s.pb.%s.pe.end' % (utils.uid(a.id, 4), utils.uid(a.id, 4)),)])
 		
 	def testConfig (self):
 		config = {
