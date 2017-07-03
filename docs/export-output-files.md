@@ -16,4 +16,4 @@ You can export the output files of any process. Note that even though the export
 
 You can ask `pyppl` whether to overwrite the existing files in the export directory by set `exportow`(alias:`exow`) to `True` (overwrite) or `False` (not overwrite).
 
-> **Note** Make sure that the directory exists when specify it to `p.exdir`
+> **Note** if the directory you specified to `p.exdir` does not exist, it will be created automatically.

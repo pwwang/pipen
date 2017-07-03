@@ -256,3 +256,4 @@ You can use different [dot renderers][17] to render and visualize it.
 [23]: https://badge.fury.io/gh/pwwang%2Fpyppl.svg
 [24]: https://github.com/pwwang/bioprocs
 [25]: https://pwwang.gitbooks.io/pyppl/content/set-other-properties-of-a-process.html#set-expectations-of-a-process
+[26]: https://pwwang.gitbooks.io/pyppl/content/faq.html

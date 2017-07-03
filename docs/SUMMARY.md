@@ -15,5 +15,6 @@
 * [Aggregations](aggregations.md)
 * [Command line tool](command-line-tool.md)
 * [API](api.md)
+* [FAQ](faq.md)
 * [Change log](change-log.md)
 
