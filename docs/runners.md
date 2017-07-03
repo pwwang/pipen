@@ -11,13 +11,13 @@ Ssh runner take the advantage to use the computing resources from other servers 
 
 > **Caution** 
 1. ssh runner only works when the servers share the same file system.
-2. you have to [configure](http://www.linuxproblem.org/art_9.html) so that you don't need a password to log onto the servers.
+2. you have to [configure](http://www.linuxproblem.org/art_9.html) so that you don't need a password to log onto the servers, or use a private key to connect the ssh servers.
 3. The jobs will be distributed equally to the servers.
 
 
 To tell a process the available ssh servers:
 ```python
-p.sshRunner: {"servers": ["server1", "server2", ...]}
+p.sshRunner: {"servers": ["server1", "server2", ...], "keys": ["/path/to/keyfile1", "/path/to/keyfile2", ...]}
 ``` 
 
 If you use different usernames to log on the servers, you may also specify the usernames as well:

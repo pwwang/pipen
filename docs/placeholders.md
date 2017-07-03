@@ -54,9 +54,14 @@ We have a set of built-in funcitons for placeholders, they are:
 |`bn`|Alias of `basename`||||
 |`filename`|Basename without extension|`{{v `&#x7c;` filename}}`|`{'v':'/a/b/c.txt'}`|`c`|
 |`fn`|Alias of `filename`||||
+|`filename2`|Basename without two extensions|`{{v `&#x7c;` filename}}`|`{'v':'/a/b/c.d.txt'}`|`c`|
+|`fn2`|Alias of `filename2`||||
 |`ext`|Get the extension of a file|`{{v `&#x7c;` ext}}`|`{'v':'/a/b/c.txt'}`|`.txt`|
+|`ext2`|Get two extensions of a file|`{{v `&#x7c;` ext}}`|`{'v':'/a/b/c.d.txt'}`|`.d.txt`|
+|`noext2`|Remove the 2nd last extension of a file|`{{v `&#x7c;` ext}}`|`{'v':'/a/b/c.d.txt'}`|`/a/b/c.txt`|
 |`fnnodot`|Get the filename without a dot in it|`{{v `&#x7c;` fnnodot}}`|`{'v':'/a/b/c.d.txt'}`|`c`|
 |`prefix`|Get the prefix of a path (no extension)|`{{v `&#x7c;` prefix}}`|`{'v':'/a/b/c.d.txt'}`|`/a/b/c.d`|
+|`prefix2`|Get the prefix of a path without last 2 extensions|`{{v `&#x7c;` prefix}}`|`{'v':'/a/b/c.d.txt'}`|`/a/b/c`|
 |`pxnodot`|Get the prefix without a dot in it|`{{v `&#x7c;` pxnodot}}`|`{'v':'/a/b/c.d.txt'}`|`/a/b/c`|
 |`asquote`|Quote an array(list) with quote and joined with space|`{{v `&#x7c;` asquote}}`|`{'v':['1','2']}`|`"1" "2"`|
 |`acquote`|Quote an array(list) with quote and joined with comma|`{{v `&#x7c;` acquote}}`|`{'v':['1','2']}`|`"1","2"`|

@@ -7,6 +7,7 @@ Currently we introduced in previous chapters to set a set of properties of a pro
 |-|-|-|-|-|-|
 | `id` | The id of the process | `str` | `<the variable name>` ||[Link][8]|
 | `tag` | The tag of the process, makes it possible to have two processes with the same `id` but different `tag`. | `str` | `"notag"` ||[Link][8]|
+| `desc` | The description of the process. | `str` | `"No description"` |||
 | `echo` | Whether to print out the `stdout` and `stderr` | `bool` | `False` || [Link][8] |
 | `input` | The input of the process | `dict`/`list`/`str` |||[Link][1]|
 | `output` | The output of the process | `list`/`str` |||[Link][2]|
