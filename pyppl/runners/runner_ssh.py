@@ -52,7 +52,11 @@ class runner_ssh (runner):
 		if 'preScript' in conf:
 			sshsrc.append (conf['preScript'])
 		
-		keyfile = '-i "%s"' % conf['key'] if 'key' in conf else ''
+		keyfile = ''
+		if 'key' in conf:
+			if not isinstance (conf['key'], list) or len (conf['key']) != len (servers):
+				raise Exception ("%s: Key files for ssh runners must be a list corresponding to the servers." % self.job.proc._name())
+			keyfile = '-i "%s"' % conf['key'][serverid]
 		sshsrc.append ('ssh %s %s "%s"' % (keyfile, self.server, self.cmd2run))
 		
 		if 'postScript' in conf:
