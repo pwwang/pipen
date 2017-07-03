@@ -133,7 +133,7 @@ class runner_test (runner):
 
 	def testSuffix (self):
 		p = proc ('tag_unique')
-		config        = { key:val for key, val in p.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
+		config        = { key:val for key, val in p.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'expect', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
 		config['id']  = p.id
 		config['tag'] = p.tag
 		if 'callback' in config:
@@ -266,6 +266,7 @@ class runner_test (runner):
 			'proc.errorntry': 3, 
 			'proc.workdir': '', 
 			'proc.runner': 'local', 
+			'proc.expect': '',
 			'proc.ppldir': os.path.join(rootdir, 'tests/workdir'), 
 			'proc.tmpdir': os.path.join(rootdir, 'tests/workdir'), 
 			'args': {"a":1, "b":2}, 
@@ -309,7 +310,7 @@ class runner_test (runner):
 
 		# cache is False
 		p.cache = False
-		self.assertFalse (p._isCached())
+		self.assertFalse (p._checkCached())
 
 		# dependent
 		p.cache = True
@@ -317,18 +318,18 @@ class runner_test (runner):
 		p2 = proc ('iscached')
 		p2.props['cached'] = False
 		p.depends = p2
-		self.assertFalse (p._isCached())
+		self.assertFalse (p._checkCached())
 		'''
 		p.depends = []
 		p.input   = {'a': range(10)}
 		p._tidyBeforeRun()
-		self.assertFalse (p._isCached())
+		self.assertFalse (p._checkCached())
 		self.assertEqual (p.ncjobids, list(range(10)))
 		
 		p.jobs[0].init()
 		p.jobs[0].cache()
 		self.assertTrue (p.jobs[0].isTrulyCached())
-		self.assertFalse (p._isCached())
+		self.assertFalse (p._checkCached())
 		self.assertEqual (p.ncjobids, list(range(1,10)))
 
 	def testRunCmd (self):

@@ -7,6 +7,7 @@ from collections import OrderedDict
 from glob import glob
 from os import makedirs, path, remove, symlink, utime, readlink, listdir
 from shutil import copyfile, copytree, move, rmtree
+from subprocess import Popen, PIPE
 
 from . import utils
 
@@ -28,7 +29,7 @@ class job (object):
 	RC_MSGS   = {
 		9998:  "No rcfile generated or empty",
 		9999:  "Failed to submit/run the jobs",
-		-1000: "Output files not generated",
+		-1000: "Output files not generated or expections didn't meet",
 		1:     "Script error"
 	}
 		
@@ -396,6 +397,13 @@ class job (object):
 		for _, out in self.output.items():
 			if out['type'] in self.proc.OUT_VARTYPE: continue
 			if not path.exists (out['data']):
+				self.rc (job.NOOUT_RC)
+				return
+				
+		if self.proc.expect:
+			expect = utils.format (self.proc.expect, self.data)
+			exrc   = Popen (expect, shell=True, stdout=PIPE, stderr=PIPE).wait()
+			if exrc != 0:
 				self.rc (job.NOOUT_RC)
 				return
 			

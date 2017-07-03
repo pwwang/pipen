@@ -90,7 +90,7 @@ class proc (object):
 	EX_MOVE      = ['move', 'mv']
 	EX_SYMLINK   = ['link', 'symlink', 'symbol']
 
-	def __init__ (self, tag = 'notag', desc = 'No description.'):
+	def __init__ (self, tag = 'notag', desc = 'No description.', id = None):
 		"""
 		Constructor
 		@params:
@@ -102,7 +102,7 @@ class proc (object):
 		# configs
 		self.__dict__['config']   = {}
 
-		pid                       = utils.varname(self.__class__.__name__, 2)
+		pid                       = utils.varname(self.__class__.__name__, 2) if id is None else id
 
 		# The input that user specified
 		self.config['input']      = ''
@@ -158,6 +158,8 @@ class proc (object):
 		self.config['callback']   = None
 		# The bring files that user specified
 		self.config['brings']     = {}
+		# expect
+		self.config['expect']     = ''
 
 		# id of the process, actually it's the variable name of the process
 		self.props['id']         = pid  
@@ -211,6 +213,7 @@ class proc (object):
 		self.props['suffix']     = ''
 		self.props['lognline']   = {key:0 for key in proc.LOG_NLINE.keys()}
 		self.props['lognline']['prevlog'] = ''
+		self.props['expect']     = self.config['expect']
 
 	def __getattr__ (self, name):
 		if not name in self.props and not name in proc.ALIAS and not name.endswith ('Runner'):
@@ -333,7 +336,7 @@ class proc (object):
 		if self.suffix:
 			return self.suffix
 
-		config        = { key:val for key, val in self.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
+		config        = { key:val for key, val in self.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'expect', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
 		config['id']  = self.id
 		config['tag'] = self.tag
 		
@@ -384,11 +387,7 @@ class proc (object):
 		"""
 		Do some cleaning after running jobs
 		"""
-		failedjobs = []
-		for i in self.ncjobids:
-			job = self.jobs[i]
-			if not job.succeed():
-				failedjobs.append (job)
+		failedjobs = [job for job in self.jobs if not job.succeed()]
 		
 		if not failedjobs:	
 			self.log ('Successful jobs: ALL', 'debug')
@@ -433,19 +432,16 @@ class proc (object):
 		self._tidyBeforeRun ()
 		if self._runCmd('beforeCmd') != 0:
 			raise Exception ('Failed to run beforeCmd: %s' % self.beforeCmd)
-		if not self._isCached():
-			# I am not cached, touch the input of my nexts?
-			# but my nexts are not initized, how?
-			# set cached to False, then my nexts will access it
-			#self.props['cached'] = False
+		if not self._checkCached():
 			self.log (self.workdir, 'info', 'RUNNING')
-			self._runJobs()
+		else:
+			self.log (self.workdir, 'info', 'CACHED')
+		self._runJobs()
 		if self._runCmd('afterCmd') != 0:
 			raise Exception ('Failed to run afterCmd: %s' % self.afterCmd)
 		self._tidyAfterRun ()
 		self.log ('Done (time: %s).' % utils.formatTime(time() - timer), 'info')
-		
-	
+
 				
 	def _buildProps (self):
 		"""
@@ -546,7 +542,7 @@ class proc (object):
 			val = self.props[prop]
 			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'runner',
 							'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow',
-							'indir', 'outdir', 'length', 'args']:
+							'indir', 'outdir', 'length', 'args', 'expect']:
 				continue
 			
 			if prop == 'args':
@@ -585,7 +581,7 @@ class proc (object):
 		for key, val in conf.items():
 			self.props[key] = val
 
-	def _isCached (self):
+	def _checkCached (self):
 		"""
 		Tell whether the jobs are cached
 		@returns:
@@ -632,7 +628,6 @@ class proc (object):
 				self.log ('Not cached, none of the jobs are cached.', 'debug')
 			return False
 		else:
-			self.log (self.workdir, 'info', 'CACHED')
 			return True
 
 	def _runCmd (self, key):
@@ -685,10 +680,13 @@ class proc (object):
 			interval = runner.interval
 		
 		sq = Queue()
-		for i in self.ncjobids:
-			rjob = runner (self.jobs[i])
-			tm = int(i/maxsubmit) * interval
-			sq.put ((rjob, tm))
+		for i, job in enumerate(self.jobs):
+			if i in self.ncjobids:
+				rjob = runner (job)
+				tm = int(i/maxsubmit) * interval
+				sq.put ((rjob, tm))
+			else:
+				job.done()
 
 		# submit jobs
 		nojobs2submit = min (self.forks, len(self.ncjobids))

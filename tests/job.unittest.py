@@ -528,6 +528,33 @@ class TestJob (unittest.TestCase):
 		self.assertFalse (os.path.exists(j.errfile))
 		self.assertFalse (os.path.exists(j.outdir + '/12.txt'))
 		
+	def testExpect (self):
+		p = proc('expect')
+		p.ppldir = self.wdir
+		#p.cache = False
+		p.input  = {"a":[1]}
+		p.output = "xfile:file:{{a}}2.txt"
+		p.script = "echo {{a}} > {{xfile}}"
+		p.props['logger'] = self.logger
+		p.run()
+		j = job (0, p)
+		self.assertEqual (j.rc(), 0)
+		
+		p.expect = "grep 1 {{xfile}}"
+		p.props['suffix'] = ''
+		p.run()
+		j = job (0, p)
+		self.assertEqual (j.rc(), 0)
+		
+		p.expect = "grep 2 {{xfile}}"
+		p.props['suffix'] = ''
+		try:
+			p.run()
+		except:
+			pass
+		j = job (0, p)
+		self.assertEqual (j.rc(), -1000)
+		
 		
 if __name__ == '__main__':
 	unittest.main()
