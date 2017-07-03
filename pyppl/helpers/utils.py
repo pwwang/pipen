@@ -77,7 +77,7 @@ class PyPPLLogFormatter (logging.Formatter):
 		
 		return logging.Formatter.format(self, record)
 
-def getLogger (level = 'info', name='PyPPL', colored=True):
+def getLogger (level = 'info', name='PyPPL', colored=True, logfile=None):
 	"""
 	Get the default logger
 	@params:
@@ -91,6 +91,12 @@ def getLogger (level = 'info', name='PyPPL', colored=True):
 	logger = logging.getLogger (name)
 	logger.setLevel (getattr(logging, level.upper()))
 	#if ch not in logger.handlers:
+	
+	if logfile:
+		fileCh = logging.FileHandler(logfile)
+		fileCh.setFormatter (logging.Formatter("[%(asctime)s] %(message)s", "%Y-%m-%d %H:%M:%S"))
+		logger.addHandler (fileCh)
+		
 	logger.addHandler (ch)
 	return logger
 

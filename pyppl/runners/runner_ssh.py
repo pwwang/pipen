@@ -53,10 +53,10 @@ class runner_ssh (runner):
 			sshsrc.append (conf['preScript'])
 		
 		keyfile = ''
-		if 'key' in conf:
-			if not isinstance (conf['key'], list) or len (conf['key']) != len (servers):
+		if 'keys' in conf:
+			if not isinstance (conf['keys'], list) or len (conf['keys']) != len (servers):
 				raise Exception ("%s: Key files for ssh runners must be a list corresponding to the servers." % self.job.proc._name())
-			keyfile = '-i "%s"' % conf['key'][serverid]
+			keyfile = '-i "%s"' % conf['keys'][serverid]
 		sshsrc.append ('ssh %s %s "%s"' % (keyfile, self.server, self.cmd2run))
 		
 		if 'postScript' in conf:
