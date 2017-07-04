@@ -33,7 +33,7 @@ class aggr (object):
 		"""
 		self.starts                     = []
 		self.ends                       = []
-		self.id                         = utils.varname(self.__class__.__name__, 50)
+		self.id                         = utils.varname(self.__class__.__name__, 100)
 		
 		depends                         = True
 		arg                             = list(arg)

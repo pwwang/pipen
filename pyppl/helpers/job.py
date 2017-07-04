@@ -101,11 +101,11 @@ class job (object):
 		"""
 		# have to touch the output directory so stat flushes and output files can be detected.
 		utime (self.dir, None)
-		self.checkOutfiles()
-		if not self.succeed():
-			return
-		self.export()
-		self.cache()		
+		if self.succeed():
+			self.checkOutfiles()
+		if self.succeed():
+			self.export()
+			self.cache()		
 			
 	def showError (self, lenfailed = 1):
 		"""
@@ -294,6 +294,7 @@ class job (object):
 		ret = {}
 		sig = utils.filesig (self.oscript)
 		if not sig: 
+			self.proc.log ('Job #%s: Empty signature because of oscript file: %s.' % (self.index, self.oscript), 'debug', 'debug', 'CACHE_EMPTY_CURRSIG')
 			return ''
 		ret['script'] = sig
 		ret['in']     = {
@@ -313,6 +314,7 @@ class job (object):
 			elif val['type'] in self.proc.IN_FILETYPE:
 				sig = utils.filesig (val['data'])
 				if not sig: 
+					self.proc.log ('Job #%s: Empty signature because of input file: %s.' % (self.index, val['data']), 'debug', 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
 				ret['in'][self.proc.IN_FILETYPE[0]][key] = sig
 			elif val['type'] in self.proc.IN_FILESTYPE:
@@ -320,6 +322,7 @@ class job (object):
 				for infile in sorted(val['data']):
 					sig = utils.filesig (infile)
 					if not sig: 
+						self.proc.log ('Job #%s: Empty signature because of one of input files: %s.' % (self.index, infile), 'debug', 'debug', 'CACHE_EMPTY_CURRSIG')
 						return ''
 					ret['in'][self.proc.IN_FILESTYPE[0]][key].append (sig)
 		
@@ -329,11 +332,13 @@ class job (object):
 			elif val['type'] in self.proc.OUT_FILETYPE:
 				sig = utils.filesig (val['data'])
 				if not sig: 
+					self.proc.log ('Job #%s: Empty signature because of output file: %s.' % (self.index, val['data']), 'debug', 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
 				ret['out'][self.proc.OUT_FILETYPE[0]][key] = sig
 			elif val['type'] in self.proc.OUT_DIRTYPE:
 				sig = utils.filesig (val['data'])
-				if not sig: 
+				if not sig:
+					self.proc.log ('Job #%s: Empty signature because of output dir: %s.' % (self.index, val['data']), 'debug', 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
 				ret['out'][self.proc.OUT_DIRTYPE[0]][key] = sig
 				
@@ -427,7 +432,7 @@ class job (object):
 				exfile += '.%s.tgz' % self.proc._name (False)
 			
 			# don't overwrite existing files
-			if not self.proc.exportow and path.exists(exfile):
+			if (not self.proc.exportow and path.exists(exfile)) or utils.isSamefile(out['data'], exfile):
 				self.proc.log ('Job #%-3s: skipped (target exists): %s' % (self.index, exfile), 'info', 'export')
 				continue
 			
