@@ -662,7 +662,9 @@ class proc (object):
 			"""
 			while True:
 				(run, i) = q.get()
-				sleep (i)
+				sleep (i)	
+				#if hasattr(run, 'checkRunning') and run.checkRunning and run.isRunning():
+				# anyway check whether the job is running before submit it
 				if run.isRunning():
 					self.log ("Job #%s is already running, skip submitting." % run.job.index, 'info')
 				else:

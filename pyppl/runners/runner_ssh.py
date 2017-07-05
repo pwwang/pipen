@@ -33,6 +33,9 @@ class runner_ssh (runner):
 		if hasattr (self.job.proc, 'sshRunner'):
 			conf     = self.job.proc.sshRunner
 			
+		if 'checkRunning' in conf:
+			self.checkRunning = bool (conf['checkRunning'])
+			
 		if not 'servers' in conf:
 			raise Exception ("%s: No servers found." % self.job.proc._name())
 		

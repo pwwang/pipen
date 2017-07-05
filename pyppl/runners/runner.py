@@ -20,7 +20,6 @@ class runner (object):
 		Constructor
 		@params:
 			`job`:    The job object
-			`config`: The properties of the process
 		"""
 		self.job       = job
 		self.script    = utils.chmodX(self.job.script)

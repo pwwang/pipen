@@ -20,6 +20,15 @@ class runner_queue (runner):
 	maxsubmit = int (cpu_count()/2)
 	interval  = 30 
 	
+	def __init__ (self, job):
+		"""
+		Constructor
+		@params:
+			`job`:    The job object
+		"""
+		super(runner_queue, self).__init__(job)
+		self.checkRunning = False
+	
 	def wait(self):
 		"""
 		Wait for the job to finish
@@ -38,7 +47,7 @@ class runner_queue (runner):
 				sys.stdout.write (fout.read())
 				lock.release()
 		
-		if not self.isRunning():
+		if self.checkRunning and not self.isRunning():
 			ferr.close()
 			fout.close()
 			return
@@ -51,7 +60,7 @@ class runner_queue (runner):
 				sys.stdout.write (''.join(fout.readlines()))
 				lock.release()
 				
-			if not self.isRunning():
+			if self.checkRunning and not self.isRunning():
 				break
 			
 		ferr.close()
