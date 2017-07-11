@@ -91,7 +91,7 @@ class job (object):
 			if 'orig' in self.input[key]:
 				self.proc.log ("[%s/%s] %s.orig => %s" % (self.index, self.proc.length - 1, key, self.input[key]['orig']), 'info', 'input')
 		for key in sorted(self.brings.keys()):
-			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.brings[key]), 'info', 'brings')	
+			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.brings[key]), 'info', 'brings')
 		for key in sorted(self.output.keys()):
 			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.output[key]['data']), 'info', 'output')	
 	
@@ -266,6 +266,10 @@ class job (object):
 		
 		# Make sure no need to calculate next time
 		self.cache ()
+		if not path.exists (self.rcfile):
+			with open (self.rcfile, 'w') as f:
+				f.write ('0')
+		
 		return True
 				
 	def cache (self):
@@ -572,10 +576,10 @@ class job (object):
 		If original input file is a link, will try to find it along each directory the link is in.
 		"""
 		for key, val in self.proc.brings.items():
-			
+			  
 			brkey   = "bring." + key
 			pattern = utils.format (val, self.data)
-			
+
 			inkey   = key.split("#")[0]
 			infile  = self.input[inkey]['data']
 			intype  = self.input[inkey]['type']

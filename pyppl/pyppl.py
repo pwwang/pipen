@@ -133,7 +133,7 @@ class pyppl (object):
 				next2run2 += p.props['nexts']
 			next2run2 = list(set(next2run2))
 			# next procs to run must be not finished and all their depends are finished
-			next2run = sorted([n for n in next2run2 if n not in finished and all(x in finished for x in n.depends)])
+			next2run = sorted([n for n in next2run2 if n not in finished and all(x in finished for x in n.depends)], lambda x,y: cmp(x._name(), y._name()))
 		self.logger.info ('[   DONE] Total time: %s' % utils.formatTime (time()-timer))
 		return self
 

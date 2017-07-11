@@ -18,6 +18,7 @@ from . import utils
 from .aggr import aggr
 from .channel import channel
 from .job import job as pjob
+from .doct import doct
 
 from ..runners import runner_local, runner_sge, runner_ssh
 
@@ -147,7 +148,7 @@ class proc (object):
 		# The workdir for the process
 		self.config['workdir']    = ''
 		# The extra arguments for the process
-		self.config['args']       = {}
+		self.config['args']       = doct()
 		# The output channel of the process
 		self.config['channel']    = channel.create()
 		# The aggregation name of the process
@@ -256,6 +257,9 @@ class proc (object):
 						self.props['depends'].append (p)
 						if self not in p.nexts:
 							p.nexts.append (self)
+		elif name == 'args':
+			self.config[name] = doct(value)
+			self.props[name]  = self.config[name]
 		else:
 			self.props[name] = value
 		
@@ -309,8 +313,9 @@ class proc (object):
 		config['tag']      = newproc.tag
 		config['aggr']     = ''
 		config['workdir']  = ''
+		config['args']     = doct (self.config['args'])
 		#props   = {key:val for key, val in self.props.items() if key not in ['cached', 'procvars', 'ncjobids', 'sets', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
-		props   = {key:val for key, val in self.props.items() if key not in ['procvars', 'ncjobids', 'sets', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
+		props   = {key:val for key, val in self.props.items() if key not in ['procvars', 'ncjobids', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
 		#props['cached']    = True
 		props['procvars']  = {}
 		props['channel']   = channel.create()
@@ -318,9 +323,9 @@ class proc (object):
 		props['nexts']     = []
 		props['jobs']      = []
 		props['ncjobids']  = []
-		props['sets']      = []
+		#props['sets']      = []
 		props['workdir']   = ''
-		props['args']      = pycopy.copy(self.props['args'])
+		props['args']      = config['args']
 		props['id']        = utils.varname(r'\w+\.' + self.copy.__name__, 3) if newid is None else newid
 		newproc.__dict__['config'].update(config)
 		newproc.__dict__['props'].update(props)
@@ -335,7 +340,7 @@ class proc (object):
 		"""
 		if self.suffix:
 			return self.suffix
-
+		
 		config        = { key:val for key, val in self.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'expect', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
 		config['id']  = self.id
 		config['tag'] = self.tag
@@ -366,7 +371,7 @@ class proc (object):
 			config['input'] = pycopy.copy(config['input'])
 			for key, val in config['input'].items():
 				config['input'][key] = utils.funcsig(val) if callable(val) else val
-
+		
 		signature = pickle.dumps(str(config))
 		self.props['suffix'] = utils.uid(signature)
 		return self.suffix
@@ -375,6 +380,7 @@ class proc (object):
 		"""
 		Do some preparation before running jobs
 		"""
+		
 		self._buildProps ()
 		if callable (self.callfront):
 			self.log ("Calling callfront ...", "debug")
@@ -415,6 +421,7 @@ class proc (object):
 		@params:
 			`config`: The configuration
 		"""
+		
 		timer = time()
 		if config is None:
 			config = {}
@@ -425,7 +432,7 @@ class proc (object):
 		#self.logger.info ('[  START] +%s+' % ('-' * infolen))
 		#self.logger.info ('[  START] | %s%s |' % (startinfo, ' ' * (infolen - len(startinfo) - 2)))
 		#self.logger.info ('[  START] +%s+' % ('-' * infolen))
-		self.logger.info ('[  START] ' + self._name() + ': ' + self.desc)
+		self.logger.info ('[>>>>>>>] ' + self._name() + ': ' + self.desc)
 		# log the dependencies
 		self.log ("%s => %s => %s" % ([p._name() for p in self.depends] if self.depends else "START", self._name(), [p._name() for p in self.nexts] if self.nexts else "END"), "info", "depends")
 		self._readConfig (config)
@@ -447,6 +454,7 @@ class proc (object):
 		"""
 		Compute some properties
 		"""
+		
 		if isinstance (self.retcodes, int):
 			self.props['retcodes'] = [self.retcodes]
 		
@@ -547,9 +555,10 @@ class proc (object):
 			
 			if prop == 'args':
 				self.props['procvars']['args'] = val
-				for k, v in val.items():
-					self.props['procvars']['args.' + k] = v
-					self.log('%s => %s' % (k, v), 'info', 'p.args')
+				for k in sorted(val.keys()):
+					self.props['procvars']['args.' + k] = val[k]
+					if not k.startswith('_'):
+						self.log('%s => %s' % (k, val[k]), 'info', 'p.args')
 			else:
 				self.props['procvars']['proc.' + prop] = val
 				if prop in alias: 
