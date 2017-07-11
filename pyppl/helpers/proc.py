@@ -315,7 +315,8 @@ class proc (object):
 		config['workdir']  = ''
 		config['args']     = doct (self.config['args'])
 		#props   = {key:val for key, val in self.props.items() if key not in ['cached', 'procvars', 'ncjobids', 'sets', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
-		props   = {key:val for key, val in self.props.items() if key not in ['procvars', 'ncjobids', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
+		props   = {key:val for key, val in self.props.items() if key not in ['procvars', 'sets', 'ncjobids', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
+		props['sets']      = [s for s in self.sets]
 		#props['cached']    = True
 		props['procvars']  = {}
 		props['channel']   = channel.create()
@@ -474,6 +475,8 @@ class proc (object):
 
 		if self.exdir and not os.path.exists (self.exdir):
 			os.makedirs (self.exdir)
+			
+		self.log ('Properties set explictly: %s' % str(self.sets), 'debug')
 				
 	def _buildInput (self):
 		"""
