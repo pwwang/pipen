@@ -221,12 +221,21 @@ class TestChannel (unittest.TestCase):
 		chan.cbind (col1)
 		self.assertEqual (chan, [(1,2), (2,4), (3,6), (4,8), (5,10)])
 		col2 = [5,4,3,2,1]
-		chan.cbindMany (col1, col2)
+		chan.cbind (col1, col2)
 		self.assertEqual (chan, [(1,2,2,5), (2,4,4,4), (3,6,6,3), (4,8,8,2), (5,10,10,1)])
 		chan.cbind(0)
 		self.assertEqual (chan, [(1,2,2,5,0), (2,4,4,4,0), (3,6,6,3,0), (4,8,8,2,0), (5,10,10,1,0)])
 		
 		self.assertEqual (channel.create([(),(),(),(),()]).cbind(1), [(1,), (1,), (1,), (1,), (1,)])
+		
+	def testRbind (self):
+		chan  = channel.create ([1,2,3,4,5])
+		chan.cbind(1)
+		self.assertEqual (chan.rbind(1), [(1,1), (2,1), (3,1), (4,1), (5,1), (1,1)])
+		chan2 = channel.create([(0,0)])
+		self.assertEqual (chan.rbind(chan2), [(1,1), (2,1), (3,1), (4,1), (5,1), (1,1), (0,0)])
+		
+		
 		
 	def testSlice (self):
 		chan = channel.create([(1,2,2,5), (2,4,4,4), (3,6,6,3), (4,8,8,2), (5,10,10,1)])

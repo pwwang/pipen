@@ -264,7 +264,7 @@ class channel (list):
 		"""
 		return channel.create(utils.reduce(func, self))
 	
-	def rbind (self, row):
+	def _rbindOne(self, row):
 		"""
 		Like R's rbind, do a row bind to a channel
 		@params:
@@ -273,13 +273,18 @@ class channel (list):
 			The combined channel
 			Note, self is also changed
 		"""
-		row = tuple(row)
-		if self.length() != 0 and self.width() != len(row):
+		row = utils.range2list (row)
+		if not isinstance (row, list) and not isinstance(row, tuple):
+			row = [row]
+		if len(row) == 1:
+			row = row * max(1, self.width())
+		if self.width() == 0 or self.width() == len (row):
+			self.append (tuple(row))
+		else:
 			raise ValueError ('Cannot bind row (len: %s) to channel (width: %s): width is different.' % (len(row), self.width()))
-		self.append (row)
 		return self
 	
-	def rbindMany (self, *rows):
+	def rbind (self, *rows):
 		"""
 		The multiple-argument versoin of `rbind`
 		@params:
@@ -289,10 +294,14 @@ class channel (list):
 			Note, self is also changed
 		"""
 		for row in rows: 
-			self.rbind(row)
+			if isinstance(row, channel):
+				for r in row:
+					self._rbindOne(r)
+			else:
+				self._rbindOne(row)
 		return self
 	
-	def cbind (self, col):
+	def _cbindOne (self, col):
 		"""
 		Like R's cbind, do a column bind to a channel
 		@params:
@@ -316,7 +325,7 @@ class channel (list):
 			raise ValueError ('Cannot bind column (len: %s) to channel (length: %s): length is different.' % (len(col), self.length()))
 		return self
 	
-	def cbindMany (self, *cols):
+	def cbind (self, *cols):
 		"""
 		The multiple-argument versoin of `cbind`
 		@params:
@@ -326,7 +335,7 @@ class channel (list):
 			Note, self is also changed
 		"""
 		for col in cols:
-			self.cbind(col)
+			self._cbindOne(col)
 		return self
 		
 	def merge (self, *chans):
@@ -342,7 +351,7 @@ class channel (list):
 			if not isinstance(chan, channel): 
 				chan = channel.create(chan)
 			cols = [x.toList() for x in chan.split()]
-			self.cbindMany (*cols)
+			self.cbind (*cols)
 		return self
 	
 	def colAt (self, index):
@@ -376,7 +385,7 @@ class channel (list):
 		if length == 0: 
 			return ret
 		for ele in self:
-			row = tuple (ele[start:start+length])
+			row = ele[start:start+length]
 			ret.rbind (row)
 		return ret
 	

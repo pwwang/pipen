@@ -232,7 +232,8 @@ class proc (object):
 		if name in proc.ALIAS:
 			name = proc.ALIAS[name]
 		
-		self.sets.append(name)
+		if name not in self.sets:
+			self.sets.append(name)
 		self.config[name] = value
 		
 		if name == 'depends':
@@ -678,7 +679,7 @@ class proc (object):
 				#if hasattr(run, 'checkRunning') and run.checkRunning and run.isRunning():
 				# anyway check whether the job is running before submit it
 				if run.isRunning():
-					self.log ("Job #%s is already running, skip submitting." % run.job.index, 'info')
+					self.log ("Job #%-3s is already running, skip submitting." % run.job.index, 'info')
 				else:
 					run.submit()
 				run.wait() 
