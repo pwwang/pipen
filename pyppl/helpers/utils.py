@@ -328,7 +328,10 @@ format.shorts = {
 	# array-comma quote
 	'acquote':   "lambda x: '\"' + '\",\"'.join(x) + '\"'",
 	'quote':     "lambda x: '\"%s\"' % str(x)",
-	'squote':    "lambda x: \"'%s'\" % str(x)"
+	'squote':    "lambda x: \"'%s'\" % str(x)",
+	'json':      "lambda x: __import__('json').dumps(x)",
+	'read':      "lambda x: open(x).read()",
+	'readlines': "lambda x: filter(None, [l.rstrip('\\n\\r') for l in open(x).readlines() if l.rstrip('\\n\\r')])"
 }
 
 def dictUpdate(origDict, newDict):
