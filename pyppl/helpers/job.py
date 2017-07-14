@@ -531,9 +531,10 @@ class job (object):
 					infile = path.join (self.indir, fn + '._' + utils.uid(path.realpath(origfile), 4) + '_.' + ext)
 					
 					if path.exists (infile):
-						self.proc.log ("Overwriting renamed input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
-						remove (infile)  # it's a link
-						symlink (origfile, infile)
+						if not utils.isSamefile(origfile, infile):
+							self.proc.log ("Overwriting renamed input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
+							remove (infile)  # it's a link
+							symlink (origfile, infile)
 					else:
 						self.proc.log ("Renaming input file: %s" % infile, 'warning', 'warning', 'INFILE_RENAMING')
 						symlink (origfile, infile)
@@ -565,9 +566,10 @@ class job (object):
 						infile = path.join (self.indir, fn + '._' + utils.uid(path.realpath(origfile), 4) + '_.' + ext)
 						
 						if path.exists (infile):
-							self.proc.log ("Overwriting renamed input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
-							remove (infile)  # it's a link
-							symlink (origfile, infile)
+							if not utils.isSamefile(origfile, infile): # it's anyway the same file?
+								self.proc.log ("Overwriting renamed input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
+								remove (infile)  # it's a link
+								symlink (origfile, infile)
 						else:
 							self.proc.log ("Renaming input file: %s" % infile, 'warning', 'warning', 'INFILE_RENAMING')
 							symlink (origfile, infile)
