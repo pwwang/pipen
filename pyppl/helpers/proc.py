@@ -554,7 +554,7 @@ class proc (object):
 			val = self.props[prop]
 			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'runner',
 							'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow',
-							'indir', 'outdir', 'length', 'args', 'expect']:
+							'indir', 'outdir', 'length', 'args', 'expect', 'suffix']:
 				continue
 			
 			if prop == 'args':
