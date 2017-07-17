@@ -15,15 +15,29 @@ Ssh runner take the advantage to use the computing resources from other servers 
 3. The jobs will be distributed equally to the servers.
 
 
+
 To tell a process the available ssh servers:
 ```python
 p.sshRunner: {"servers": ["server1", "server2", ...], "keys": ["/path/to/keyfile1", "/path/to/keyfile2", ...]}
 ``` 
 
+If you have complicated ssh configurations they can be stored using the system ssh config subsystem.
+
+~/.ssh/config
+
+# contents of $HOME/.ssh/config
+```Host dev
+    HostName dev.example.com
+    Port 22000
+    User fooey
+```
+
 If you use different usernames to log on the servers, you may also specify the usernames as well:
 ```python
 p.sshRunner= {"servers": ["user1@server1", "user2@server2", ...]}
 ```
+
+
 
 You can also add `preScript` and `postScript` for all jobs:
 ```python

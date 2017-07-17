@@ -49,7 +49,7 @@ pSort         = proc()
 # because this proc does not have any dependents
 # infile will be the placeholder to access it in your output assignment
 # and script.
-# The ":file" denotes the type of input, a symbol link will be created in 
+# The ":file" denotes the type of input, a symbolic link will be created in 
 # the input directory
 pSort.input   = "infile:file"
 # Output file (the ":file" sign) will be generated in job output directory

@@ -53,7 +53,7 @@ When you specify files as input, you should use `file` or `dir` flag for the pla
 ```python
 p.input = {"infile:file": channel.fromPath("./*.txt")}
 ```
-Then `pyppl` will create symbol links in `<workdir>/input/`. See [File placeholders](https://pwwang.gitbooks.io/pyppl/placeholders.html#file-placeholders).
+Then `pyppl` will create symbolic links in `<workdir>/input/`. See [File placeholders](https://pwwang.gitbooks.io/pyppl/placeholders.html#file-placeholders).
 
 > **Note** The `{{infile}}`
  will return the path of the link in `<indir>` pointing to the actual input file. If you want to get the path of the actual path: 
