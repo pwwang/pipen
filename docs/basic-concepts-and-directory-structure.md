@@ -27,7 +27,7 @@ Actually, what you need to do is just specify the first input channel, and then 
 
 | Path | Content | Memo |
 |------|---------|------|
-|`workdir/`|Where the pipeline directories of all processes of current pipeline locate.|Can be set by `p.ppldir`|
+|`workdir/`|Where the pipeline directories of all processes of current pipeline are located.|Can be set by `p.ppldir`|
 |`PyPPL.<id>.<tag>.<uid>/`|The work directory of current process.|The `uid` is a unique id of the process according to its configuration.<br/>You may set it by `p.workdir`|
 |`<job.id>/`|The job directory||
 |`<job.id>/input/`|Where you can find the links to all the input files||
