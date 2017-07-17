@@ -197,8 +197,8 @@ class TestJob (unittest.TestCase):
 		j._prepBrings()
 		self.assertTrue (utils.isSamefile(j.brings['b'], os.path.join (j.indir, "aggr.unittest.py")))
 		self.assertTrue (utils.isSamefile(j.brings['b#'], os.path.join (j.indir, "pyppl.unittest.py")))
-		self.assertTrue (utils.isSamefile(j.data['b.bring'], j.data['b.bring.orig']))
-		self.assertTrue (utils.isSamefile(j.data['b#.bring'], j.data['b#.bring.orig']))
+		self.assertTrue (utils.isSamefile(j.data['bring.b'], j.data['bring.b.orig']))
+		self.assertTrue (utils.isSamefile(j.data['bring.b#'], j.data['bring.b#.orig']))
 		
 	def testPrepOutput (self):
 		p1 = proc ('prepoutput')
@@ -226,7 +226,7 @@ class TestJob (unittest.TestCase):
 		#self.assertRaises (Exception, ps._tidyBeforeRun)
 		ps.input = {"input": ["input"]}
 		
-		ps.script = "ls {{proc.workdir}}\necho {{#}} {{input}}\necho {{output}}\necho {{proc.args.var1}} {{proc.args.var2}}"
+		ps.script = "ls {{proc.workdir}}\necho {{#}} {{input}}\necho {{output}}\necho {{args.var1}} {{args.var2}}"
 		ps.args   = {'var1': 1, 'var2': '2'}
 		ps.output = "output:var:{{input}}2"
 		ps._buildProps()
@@ -302,7 +302,7 @@ class TestJob (unittest.TestCase):
 		self.assertIsInstance(sig, dict)
 		self.assertEqual (sig['in'], {'var': {'a': 1}, 'files': {}, 'file': {}})
 		self.assertEqual (sig['out'], {'var': {'x': '12'}, 'dir': {}, 'file': {}})
-		self.assertTrue ('0/job.script@' in sig['script'])
+		self.assertTrue ('0/job.oscript@' in sig['script'])
 	
 	def testCache (self):
 		p = proc('cache')
@@ -527,6 +527,33 @@ class TestJob (unittest.TestCase):
 		self.assertFalse (os.path.exists(j.outfile))
 		self.assertFalse (os.path.exists(j.errfile))
 		self.assertFalse (os.path.exists(j.outdir + '/12.txt'))
+		
+	def testExpect (self):
+		p = proc('expect')
+		p.ppldir = self.wdir
+		#p.cache = False
+		p.input  = {"a":[1]}
+		p.output = "xfile:file:{{a}}2.txt"
+		p.script = "echo {{a}} > {{xfile}}"
+		p.props['logger'] = self.logger
+		p.run()
+		j = job (0, p)
+		self.assertEqual (j.rc(), 0)
+		
+		p.expect = "grep 1 {{xfile}}"
+		p.props['suffix'] = ''
+		p.run()
+		j = job (0, p)
+		self.assertEqual (j.rc(), 0)
+		
+		p.expect = "grep 2 {{xfile}}"
+		p.props['suffix'] = ''
+		try:
+			p.run()
+		except:
+			pass
+		j = job (0, p)
+		self.assertEqual (j.rc(), -1000)
 		
 		
 if __name__ == '__main__':

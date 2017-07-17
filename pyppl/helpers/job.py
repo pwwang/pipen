@@ -7,6 +7,7 @@ from collections import OrderedDict
 from glob import glob
 from os import makedirs, path, remove, symlink, utime, readlink, listdir
 from shutil import copyfile, copytree, move, rmtree
+from subprocess import Popen, PIPE
 
 from . import utils
 
@@ -28,7 +29,7 @@ class job (object):
 	RC_MSGS   = {
 		9998:  "No rcfile generated or empty",
 		9999:  "Failed to submit/run the jobs",
-		-1000: "Output files not generated",
+		-1000: "Output files not generated or expections didn't meet",
 		1:     "Script error"
 	}
 		
@@ -90,7 +91,7 @@ class job (object):
 			if 'orig' in self.input[key]:
 				self.proc.log ("[%s/%s] %s.orig => %s" % (self.index, self.proc.length - 1, key, self.input[key]['orig']), 'info', 'input')
 		for key in sorted(self.brings.keys()):
-			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.brings[key]), 'info', 'brings')	
+			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.brings[key]), 'info', 'brings')
 		for key in sorted(self.output.keys()):
 			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.output[key]['data']), 'info', 'output')	
 	
@@ -100,11 +101,11 @@ class job (object):
 		"""
 		# have to touch the output directory so stat flushes and output files can be detected.
 		utime (self.dir, None)
-		self.checkOutfiles()
-		if not self.succeed():
-			return
-		self.export()
-		self.cache()		
+		if self.succeed():
+			self.checkOutfiles()
+		if self.succeed():
+			self.export()
+			self.cache()		
 			
 	def showError (self, lenfailed = 1):
 		"""
@@ -165,44 +166,60 @@ class job (object):
 			keysNow = sigNow.keys()
 			keysOld = sigOld.keys()
 			if sorted(keysNow) != sorted(keysOld):
-				self.proc.log ("Job #%s not cached due to key difference of signautres: %s (previous) and %s (current)" % (self.index, keysOld, keysNow), 'debug', 'debug', 'CACHE_SIGKEYS_DIFFER')
+				self.proc.log ("Job #%s not cached due to key difference of signautres:" % (self.index), 'debug', 'debug', 'CACHE_SIGKEYS_DIFFER')
+				self.proc.log ("  Previous: %s" % (keysOld), 'debug', 'debug', 'CACHE_SIGKEYS_DIFFER')
+				self.proc.log ("  Current : %s" % (keysNow), 'debug', 'debug', 'CACHE_SIGKEYS_DIFFER')
 				return False
 			for key in keysNow:
 				if key == 'script':
 					if sigOld[key] != sigNow[key]:
-						self.proc.log ("Job #%s not cached due to script file difference: %s (previous) and %s (current)" % (self.index, sigOld[key], sigNow[key]), 'debug', 'debug', 'CACHE_SCRIPT_DIFFER')
+						self.proc.log ("Job #%s not cached due to script file difference:" % (self.index), 'debug', 'debug', 'CACHE_SCRIPT_DIFFER')
+						self.proc.log ("  Previous: %s" % (sigOld[key]), 'debug', 'debug', 'CACHE_SCRIPT_DIFFER')
+						self.proc.log ("  Current : %s" % (sigNow[key]), 'debug', 'debug', 'CACHE_SCRIPT_DIFFER')
 						return False
 				if key == 'in':
 					inTypesOld = sigOld[key].keys()
 					inTypesNow = sigNow[key].keys()
 					if sorted(inTypesNow) != sorted(inTypesOld):
-						self.proc.log ("Job #%s not cached due to input type difference of signautres: %s (previous) and %s (current)" % (self.index, inTypesOld, inTypesNow), 'debug', 'debug', 'CACHE_SIGINTYPES_DIFFER')
+						self.proc.log ("Job #%s not cached due to input type difference of signautres:" % (self.index), 'debug', 'debug', 'CACHE_SIGINTYPES_DIFFER')
+						self.proc.log ("  Previous: %s" % (inTypesOld), 'debug', 'debug', 'CACHE_SIGINTYPES_DIFFER')
+						self.proc.log ("  Current : %s" % (inTypesNow), 'debug', 'debug', 'CACHE_SIGINTYPES_DIFFER')
 						return False
 					for intype in inTypesNow:
 						inKeysOld = sigOld[key][intype].keys()
 						inKeysNow = sigNow[key][intype].keys()
 						if sorted(inKeysOld) != sorted(inKeysNow):
-							self.proc.log ("Job #%s not cached due to input key difference of signautres: %s (previous) and %s (current)" % (self.index, inKeysOld, inKeysNow), 'debug', 'debug', 'CACHE_SIGINKEYS_DIFFER')
+							self.proc.log ("Job #%s not cached due to input key difference of signautres:" % (self.index), 'debug', 'debug', 'CACHE_SIGINKEYS_DIFFER')
+							self.proc.log ("  Previous: %s" % (inKeysOld), 'debug', 'debug', 'CACHE_SIGINKEYS_DIFFER')
+							self.proc.log ("  Current : %s" % (inKeysNow), 'debug', 'debug', 'CACHE_SIGINKEYS_DIFFER')
 							return False
 						for inkey in inKeysNow:
 							if sigOld[key][intype][inkey] != sigNow[key][intype][inkey]:
-								self.proc.log ("Job #%s not cached due to input difference for key %s: %s (previous) and %s (current)" % (self.index, inkey, sigOld[key][intype][inkey], sigNow[key][intype][inkey]), 'debug', 'debug', 'CACHE_SIGINPUT_DIFFER')
+								self.proc.log ("Job #%s not cached due to input difference for key %s:" % (self.index, inkey), 'debug', 'debug', 'CACHE_SIGINPUT_DIFFER')
+								self.proc.log ("  Previous: %s" % (sigOld[key][intype][inkey]), 'debug', 'debug', 'CACHE_SIGINPUT_DIFFER')
+								self.proc.log ("  Current : %s" % (sigNow[key][intype][inkey]), 'debug', 'debug', 'CACHE_SIGINPUT_DIFFER')
 								return False
 				if key == 'out':
 					outTypesOld = sigOld[key].keys()
 					outTypesNow = sigNow[key].keys()
 					if sorted(outTypesNow) != sorted(outTypesOld):
-						self.proc.log ("Job #%s not cached due to output type difference of signautres: %s (previous) and %s (current)" % (self.index, outTypesOld, outTypesNow), 'debug', 'debug', 'CACHE_SIGOUTTYPES_DIFFER')
+						self.proc.log ("Job #%s not cached due to output type difference of signautres:" % (self.index), 'debug', 'debug', 'CACHE_SIGOUTTYPES_DIFFER')
+						self.proc.log ("  Previous: %s" % (outTypesOld), 'debug', 'debug', 'CACHE_SIGOUTTYPES_DIFFER')
+						self.proc.log ("  Current : %s" % (outTypesNow), 'debug', 'debug', 'CACHE_SIGOUTTYPES_DIFFER')
 						return False
 					for outtype in outTypesNow:
 						outKeysOld = sigOld[key][outtype].keys()
 						outKeysNow = sigNow[key][outtype].keys()
 						if sorted(outKeysOld) != sorted(outKeysNow):
-							self.proc.log ("Job #%s not cached due to output key difference of signautres: %s (previous) and %s (current)" % (self.index, outKeysOld, outKeysNow), 'debug', 'debug', 'CACHE_SIGOUTKEYS_DIFFER')
+							self.proc.log ("Job #%s not cached due to output key difference of signautres:" % (self.index), 'debug', 'debug', 'CACHE_SIGOUTKEYS_DIFFER')
+							self.proc.log ("  Previous: %s" % (outKeysOld), 'debug', 'debug', 'CACHE_SIGOUTKEYS_DIFFER')
+							self.proc.log ("  Current : %s" % (outKeysNow), 'debug', 'debug', 'CACHE_SIGOUTKEYS_DIFFER')
 							return False
 						for outkey in outKeysNow:
 							if sigOld[key][outtype][outkey] != sigNow[key][outtype][outkey]:
-								self.proc.log ("Job #%s not cached due to output difference for key %s: %s (previous) and %s (current)" % (self.index, outkey, sigOld[key][outtype][outkey], sigNow[key][outtype][outkey]), 'debug', 'debug', 'CACHE_SIGOUTPUT_DIFFER')
+								self.proc.log ("Job #%s not cached due to output difference for key %s:" % (self.index, outkey), 'debug', 'debug', 'CACHE_SIGOUTPUT_DIFFER')
+								self.proc.log ("  Previous: %s" % (sigOld[key][outtype][outkey]), 'debug', 'debug', 'CACHE_SIGOUTPUT_DIFFER')
+								self.proc.log ("  Current : %s" % (sigNow[key][outtype][outkey]), 'debug', 'debug', 'CACHE_SIGOUTPUT_DIFFER')
 								return False
 			return True
 	
@@ -265,6 +282,10 @@ class job (object):
 		
 		# Make sure no need to calculate next time
 		self.cache ()
+		if not path.exists (self.rcfile):
+			with open (self.rcfile, 'w') as f:
+				f.write ('0')
+		
 		return True
 				
 	def cache (self):
@@ -293,6 +314,7 @@ class job (object):
 		ret = {}
 		sig = utils.filesig (self.oscript)
 		if not sig: 
+			self.proc.log ('Job #%s: Empty signature because of oscript file: %s.' % (self.index, self.oscript), 'debug', 'debug', 'CACHE_EMPTY_CURRSIG')
 			return ''
 		ret['script'] = sig
 		ret['in']     = {
@@ -312,6 +334,7 @@ class job (object):
 			elif val['type'] in self.proc.IN_FILETYPE:
 				sig = utils.filesig (val['data'])
 				if not sig: 
+					self.proc.log ('Job #%s: Empty signature because of input file: %s.' % (self.index, val['data']), 'debug', 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
 				ret['in'][self.proc.IN_FILETYPE[0]][key] = sig
 			elif val['type'] in self.proc.IN_FILESTYPE:
@@ -319,6 +342,7 @@ class job (object):
 				for infile in sorted(val['data']):
 					sig = utils.filesig (infile)
 					if not sig: 
+						self.proc.log ('Job #%s: Empty signature because of one of input files: %s.' % (self.index, infile), 'debug', 'debug', 'CACHE_EMPTY_CURRSIG')
 						return ''
 					ret['in'][self.proc.IN_FILESTYPE[0]][key].append (sig)
 		
@@ -328,11 +352,13 @@ class job (object):
 			elif val['type'] in self.proc.OUT_FILETYPE:
 				sig = utils.filesig (val['data'])
 				if not sig: 
+					self.proc.log ('Job #%s: Empty signature because of output file: %s.' % (self.index, val['data']), 'debug', 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
 				ret['out'][self.proc.OUT_FILETYPE[0]][key] = sig
 			elif val['type'] in self.proc.OUT_DIRTYPE:
 				sig = utils.filesig (val['data'])
-				if not sig: 
+				if not sig:
+					self.proc.log ('Job #%s: Empty signature because of output dir: %s.' % (self.index, val['data']), 'debug', 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
 				ret['out'][self.proc.OUT_DIRTYPE[0]][key] = sig
 				
@@ -398,6 +424,13 @@ class job (object):
 			if not path.exists (out['data']):
 				self.rc (job.NOOUT_RC)
 				return
+				
+		if self.proc.expect:
+			expect = utils.format (self.proc.expect, self.data)
+			exrc   = Popen (expect, shell=True, stdout=PIPE, stderr=PIPE).wait()
+			if exrc != 0:
+				self.rc (job.NOOUT_RC)
+				return
 			
 	def export (self):
 		"""
@@ -419,7 +452,7 @@ class job (object):
 				exfile += '.%s.tgz' % self.proc._name (False)
 			
 			# don't overwrite existing files
-			if not self.proc.exportow and path.exists(exfile):
+			if (not self.proc.exportow and path.exists(exfile)) or utils.isSamefile(out['data'], exfile):
 				self.proc.log ('Job #%-3s: skipped (target exists): %s' % (self.index, exfile), 'info', 'export')
 				continue
 			
@@ -465,10 +498,6 @@ class job (object):
 		if listdir (self.outdir):
 			rmtree  (self.outdir)	
 			makedirs(self.outdir)
-		# do we really need to reset indir?
-		#if listdir (self.indir):
-		#	rmtree  (self.outdir)	
-		#	makedirs(self.outdir)
 			
 		for _, out in self.output.items():
 			if out['type'] not in self.proc.OUT_DIRTYPE: 
@@ -502,9 +531,10 @@ class job (object):
 					infile = path.join (self.indir, fn + '._' + utils.uid(path.realpath(origfile), 4) + '_.' + ext)
 					
 					if path.exists (infile):
-						self.proc.log ("Overwriting renamed input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
-						remove (infile)  # it's a link
-						symlink (origfile, infile)
+						if not utils.isSamefile(origfile, infile):
+							self.proc.log ("Overwriting renamed input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
+							remove (infile)  # it's a link
+							symlink (origfile, infile)
 					else:
 						self.proc.log ("Renaming input file: %s" % infile, 'warning', 'warning', 'INFILE_RENAMING')
 						symlink (origfile, infile)
@@ -536,9 +566,10 @@ class job (object):
 						infile = path.join (self.indir, fn + '._' + utils.uid(path.realpath(origfile), 4) + '_.' + ext)
 						
 						if path.exists (infile):
-							self.proc.log ("Overwriting renamed input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
-							remove (infile)  # it's a link
-							symlink (origfile, infile)
+							if not utils.isSamefile(origfile, infile): # it's anyway the same file?
+								self.proc.log ("Overwriting renamed input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
+								remove (infile)  # it's a link
+								symlink (origfile, infile)
 						else:
 							self.proc.log ("Renaming input file: %s" % infile, 'warning', 'warning', 'INFILE_RENAMING')
 							symlink (origfile, infile)
@@ -563,10 +594,10 @@ class job (object):
 		If original input file is a link, will try to find it along each directory the link is in.
 		"""
 		for key, val in self.proc.brings.items():
-			
+			  
 			brkey   = "bring." + key
 			pattern = utils.format (val, self.data)
-			
+
 			inkey   = key.split("#")[0]
 			infile  = self.input[inkey]['data']
 			intype  = self.input[inkey]['type']

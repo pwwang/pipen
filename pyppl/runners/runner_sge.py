@@ -35,6 +35,9 @@ class runner_sge (runner_queue):
 		conf = {}
 		if hasattr(self.job.proc, 'sgeRunner'):
 			conf = copy.copy (self.job.proc.sgeRunner)
+			
+		if 'checkRunning' in conf:
+			self.checkRunning = bool (conf['checkRunning'])
 
 		if not 'sge.N' in conf:
 			sgesrc.append('#$ -N %s' % self.jobname) 

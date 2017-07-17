@@ -18,6 +18,7 @@ from . import utils
 from .aggr import aggr
 from .channel import channel
 from .job import job as pjob
+from .doct import doct
 
 from ..runners import runner_local, runner_sge, runner_ssh
 
@@ -55,15 +56,15 @@ class proc (object):
 		'EXPORT_CACHE_EXFILE_NOTEXISTS': 1,
 		'EXPORT_CACHE_EXDIR_NOTSET': 1,
 		'CACHE_EMPTY_PREVSIG': -1,
-		'CACHE_EMPTY_CURRSIG': -1,
-		'CACHE_SCRIPT_DIFFER': -1,
-		'CACHE_SIGKEYS_DIFFER': -1,
-		'CACHE_SIGINKEYS_DIFFER': -1,
-		'CACHE_SIGINTYPES_DIFFER': -1,
-		'CACHE_SIGINPUT_DIFFER': -1,
-		'CACHE_SIGOUTKEYS_DIFFER': -1,
-		'CACHE_SIGOUTTYPES_DIFFER': -1,
-		'CACHE_SIGOUTPUT_DIFFER': -1,
+		'CACHE_EMPTY_CURRSIG': -2,
+		'CACHE_SCRIPT_DIFFER': -3,
+		'CACHE_SIGKEYS_DIFFER': -3,
+		'CACHE_SIGINKEYS_DIFFER': -3,
+		'CACHE_SIGINTYPES_DIFFER': -3,
+		'CACHE_SIGINPUT_DIFFER': -3,
+		'CACHE_SIGOUTKEYS_DIFFER': -3,
+		'CACHE_SIGOUTTYPES_DIFFER': -3,
+		'CACHE_SIGOUTPUT_DIFFER': -3,
 		'CACHE_SIGFILE_NOTEXISTS': -1,
 		'BRINGFILE_OVERWRITING': 3,
 		'OUTNAME_USING_OUTTYPES': 1,
@@ -90,7 +91,7 @@ class proc (object):
 	EX_MOVE      = ['move', 'mv']
 	EX_SYMLINK   = ['link', 'symlink', 'symbol']
 
-	def __init__ (self, tag = 'notag', desc = 'No description.'):
+	def __init__ (self, tag = 'notag', desc = 'No description.', id = None):
 		"""
 		Constructor
 		@params:
@@ -102,7 +103,7 @@ class proc (object):
 		# configs
 		self.__dict__['config']   = {}
 
-		pid                       = utils.varname(self.__class__.__name__, 2)
+		pid                       = utils.varname(self.__class__.__name__, 2) if id is None else id
 
 		# The input that user specified
 		self.config['input']      = ''
@@ -147,7 +148,7 @@ class proc (object):
 		# The workdir for the process
 		self.config['workdir']    = ''
 		# The extra arguments for the process
-		self.config['args']       = {}
+		self.config['args']       = doct()
 		# The output channel of the process
 		self.config['channel']    = channel.create()
 		# The aggregation name of the process
@@ -158,6 +159,8 @@ class proc (object):
 		self.config['callback']   = None
 		# The bring files that user specified
 		self.config['brings']     = {}
+		# expect
+		self.config['expect']     = ''
 
 		# id of the process, actually it's the variable name of the process
 		self.props['id']         = pid  
@@ -211,6 +214,7 @@ class proc (object):
 		self.props['suffix']     = ''
 		self.props['lognline']   = {key:0 for key in proc.LOG_NLINE.keys()}
 		self.props['lognline']['prevlog'] = ''
+		self.props['expect']     = self.config['expect']
 
 	def __getattr__ (self, name):
 		if not name in self.props and not name in proc.ALIAS and not name.endswith ('Runner'):
@@ -228,7 +232,8 @@ class proc (object):
 		if name in proc.ALIAS:
 			name = proc.ALIAS[name]
 		
-		self.sets.append(name)
+		if name not in self.sets:
+			self.sets.append(name)
 		self.config[name] = value
 		
 		if name == 'depends':
@@ -253,6 +258,9 @@ class proc (object):
 						self.props['depends'].append (p)
 						if self not in p.nexts:
 							p.nexts.append (self)
+		elif name == 'args':
+			self.config[name] = doct(value)
+			self.props[name]  = self.config[name]
 		else:
 			self.props[name] = value
 		
@@ -306,8 +314,10 @@ class proc (object):
 		config['tag']      = newproc.tag
 		config['aggr']     = ''
 		config['workdir']  = ''
+		config['args']     = doct (self.config['args'])
 		#props   = {key:val for key, val in self.props.items() if key not in ['cached', 'procvars', 'ncjobids', 'sets', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
-		props   = {key:val for key, val in self.props.items() if key not in ['procvars', 'ncjobids', 'sets', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
+		props   = {key:val for key, val in self.props.items() if key not in ['procvars', 'sets', 'ncjobids', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
+		props['sets']      = [s for s in self.sets]
 		#props['cached']    = True
 		props['procvars']  = {}
 		props['channel']   = channel.create()
@@ -315,9 +325,9 @@ class proc (object):
 		props['nexts']     = []
 		props['jobs']      = []
 		props['ncjobids']  = []
-		props['sets']      = []
+		#props['sets']      = []
 		props['workdir']   = ''
-		props['args']      = pycopy.copy(self.props['args'])
+		props['args']      = config['args']
 		props['id']        = utils.varname(r'\w+\.' + self.copy.__name__, 3) if newid is None else newid
 		newproc.__dict__['config'].update(config)
 		newproc.__dict__['props'].update(props)
@@ -332,8 +342,8 @@ class proc (object):
 		"""
 		if self.suffix:
 			return self.suffix
-
-		config        = { key:val for key, val in self.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
+		
+		config        = { key:val for key, val in self.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'expect', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
 		config['id']  = self.id
 		config['tag'] = self.tag
 		
@@ -344,13 +354,18 @@ class proc (object):
 		# proc is not picklable
 		if 'depends' in config:
 			depends = config['depends']
-			pickable_depends = []
-			if isinstance(depends, proc):
+			if not isinstance (depends, list):
 				depends = [depends]
-			elif isinstance(depends, aggr):
-				depends = depends.procs
+				
+			pickable_depends = []			
 			for depend in depends:
-				pickable_depends.append(depend.id + '.' + depend.tag)
+				if isinstance(depend, proc):
+					# the suffix makes sure it's the dependent
+					pickable_depends.append (depend._name(False) + depend.suffix)
+				elif isinstance(depends, aggr):
+					for depend in depends.ends:
+						pickable_depends.append (depend._name(False) + depend.suffix)
+				
 			config['depends'] = pickable_depends
 		
 		# lambda not pickable
@@ -358,7 +373,7 @@ class proc (object):
 			config['input'] = pycopy.copy(config['input'])
 			for key, val in config['input'].items():
 				config['input'][key] = utils.funcsig(val) if callable(val) else val
-
+		
 		signature = pickle.dumps(str(config))
 		self.props['suffix'] = utils.uid(signature)
 		return self.suffix
@@ -367,6 +382,7 @@ class proc (object):
 		"""
 		Do some preparation before running jobs
 		"""
+		
 		self._buildProps ()
 		if callable (self.callfront):
 			self.log ("Calling callfront ...", "debug")
@@ -379,11 +395,7 @@ class proc (object):
 		"""
 		Do some cleaning after running jobs
 		"""
-		failedjobs = []
-		for i in self.ncjobids:
-			job = self.jobs[i]
-			if not job.succeed():
-				failedjobs.append (job)
+		failedjobs = [job for job in self.jobs if not job.succeed()]
 		
 		if not failedjobs:	
 			self.log ('Successful jobs: ALL', 'debug')
@@ -411,6 +423,7 @@ class proc (object):
 		@params:
 			`config`: The configuration
 		"""
+		
 		timer = time()
 		if config is None:
 			config = {}
@@ -421,31 +434,29 @@ class proc (object):
 		#self.logger.info ('[  START] +%s+' % ('-' * infolen))
 		#self.logger.info ('[  START] | %s%s |' % (startinfo, ' ' * (infolen - len(startinfo) - 2)))
 		#self.logger.info ('[  START] +%s+' % ('-' * infolen))
-		self.logger.info ('[  START] ' + self._name() + ': ' + self.desc)
+		self.logger.info ('[>>>>>>>] ' + self._name() + ': ' + self.desc)
 		# log the dependencies
 		self.log ("%s => %s => %s" % ([p._name() for p in self.depends] if self.depends else "START", self._name(), [p._name() for p in self.nexts] if self.nexts else "END"), "info", "depends")
 		self._readConfig (config)
 		self._tidyBeforeRun ()
 		if self._runCmd('beforeCmd') != 0:
 			raise Exception ('Failed to run beforeCmd: %s' % self.beforeCmd)
-		if not self._isCached():
-			# I am not cached, touch the input of my nexts?
-			# but my nexts are not initized, how?
-			# set cached to False, then my nexts will access it
-			#self.props['cached'] = False
+		if not self._checkCached():
 			self.log (self.workdir, 'info', 'RUNNING')
-			self._runJobs()
+		else:
+			self.log (self.workdir, 'info', 'CACHED')
+		self._runJobs()
 		if self._runCmd('afterCmd') != 0:
 			raise Exception ('Failed to run afterCmd: %s' % self.afterCmd)
 		self._tidyAfterRun ()
 		self.log ('Done (time: %s).' % utils.formatTime(time() - timer), 'info')
-		
-	
+
 				
 	def _buildProps (self):
 		"""
 		Compute some properties
 		"""
+		
 		if isinstance (self.retcodes, int):
 			self.props['retcodes'] = [self.retcodes]
 		
@@ -465,6 +476,8 @@ class proc (object):
 
 		if self.exdir and not os.path.exists (self.exdir):
 			os.makedirs (self.exdir)
+			
+		self.log ('Properties set explictly: %s' % str(self.sets), 'debug')
 				
 	def _buildInput (self):
 		"""
@@ -541,14 +554,15 @@ class proc (object):
 			val = self.props[prop]
 			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'runner',
 							'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow',
-							'indir', 'outdir', 'length', 'args']:
+							'indir', 'outdir', 'length', 'args', 'expect']:
 				continue
 			
 			if prop == 'args':
 				self.props['procvars']['args'] = val
-				for k, v in val.items():
-					self.props['procvars']['args.' + k] = v
-					self.log('%s => %s' % (k, v), 'info', 'p.args')
+				for k in sorted(val.keys()):
+					self.props['procvars']['args.' + k] = val[k]
+					if not k.startswith('_'):
+						self.log('%s => %s' % (k, val[k]), 'info', 'p.args')
 			else:
 				self.props['procvars']['proc.' + prop] = val
 				if prop in alias: 
@@ -580,7 +594,7 @@ class proc (object):
 		for key, val in conf.items():
 			self.props[key] = val
 
-	def _isCached (self):
+	def _checkCached (self):
 		"""
 		Tell whether the jobs are cached
 		@returns:
@@ -627,7 +641,6 @@ class proc (object):
 				self.log ('Not cached, none of the jobs are cached.', 'debug')
 			return False
 		else:
-			self.log (self.workdir, 'info', 'CACHED')
 			return True
 
 	def _runCmd (self, key):
@@ -662,9 +675,11 @@ class proc (object):
 			"""
 			while True:
 				(run, i) = q.get()
-				sleep (i)
+				sleep (i)	
+				#if hasattr(run, 'checkRunning') and run.checkRunning and run.isRunning():
+				# anyway check whether the job is running before submit it
 				if run.isRunning():
-					self.log ("Job #%s is already running, skip submitting." % run.job.index, 'info')
+					self.log ("Job #%-3s is already running, skip submitting." % run.job.index, 'info')
 				else:
 					run.submit()
 				run.wait() 
@@ -680,10 +695,13 @@ class proc (object):
 			interval = runner.interval
 		
 		sq = Queue()
-		for i in self.ncjobids:
-			rjob = runner (self.jobs[i])
-			tm = int(i/maxsubmit) * interval
-			sq.put ((rjob, tm))
+		for i, job in enumerate(self.jobs):
+			if i in self.ncjobids:
+				rjob = runner (job)
+				tm = int(i/maxsubmit) * interval
+				sq.put ((rjob, tm))
+			else:
+				job.done()
 
 		# submit jobs
 		nojobs2submit = min (self.forks, len(self.ncjobids))

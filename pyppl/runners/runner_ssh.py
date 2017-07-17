@@ -33,6 +33,9 @@ class runner_ssh (runner):
 		if hasattr (self.job.proc, 'sshRunner'):
 			conf     = self.job.proc.sshRunner
 			
+		if 'checkRunning' in conf:
+			self.checkRunning = bool (conf['checkRunning'])
+			
 		if not 'servers' in conf:
 			raise Exception ("%s: No servers found." % self.job.proc._name())
 		
@@ -48,11 +51,16 @@ class runner_ssh (runner):
 			''
 			'trap "status=\\$?; echo \\$status > %s; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile
 		]
-
+		
 		if 'preScript' in conf:
 			sshsrc.append (conf['preScript'])
 		
-		sshsrc.append ('ssh %s "%s"' % (self.server, self.cmd2run))
+		keyfile = ''
+		if 'keys' in conf:
+			if not isinstance (conf['keys'], list) or len (conf['keys']) != len (servers):
+				raise Exception ("%s: Key files for ssh runners must be a list corresponding to the servers." % self.job.proc._name())
+			keyfile = '-i "%s"' % conf['keys'][serverid]
+		sshsrc.append ('ssh %s %s "%s"' % (keyfile, self.server, self.cmd2run))
 		
 		if 'postScript' in conf:
 			sshsrc.append (conf['postScript'])

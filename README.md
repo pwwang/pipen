@@ -1,7 +1,7 @@
 # pyppl - A python lightweight pipeline framework
 ![Pypi][22] ![Github][23] ![Gitbook][21]   
 
-[Documentation][1] | [API][2] | [Change log][19] | [Fork me][3]
+[Documentation][1] | [API][2] | [Change log][19] | [FAQ][26] | [Fork me][3]
 
 <!-- toc -->
 ## Features
@@ -9,6 +9,7 @@
 - Automatic deduction of input based on the process dependencies. [Details][4]
 - Different ways of exporting output files (including `gzip`). [Details][5]
 - Process caching (including caching using exported files). [Details][6]
+- Expectations of processes. [Details][25]
 - Flexible placeholder handling in output and script settings. [Details][7]
 - APIs to modify channels. [Details][8]
 - Different runners to run you processes on different platforms. [Details][9]
@@ -254,3 +255,5 @@ You can use different [dot renderers][17] to render and visualize it.
 [22]: https://badge.fury.io/py/pyppl.svg
 [23]: https://badge.fury.io/gh/pwwang%2Fpyppl.svg
 [24]: https://github.com/pwwang/bioprocs
+[25]: https://pwwang.gitbooks.io/pyppl/content/set-other-properties-of-a-process.html#set-expectations-of-a-process
+[26]: https://pwwang.gitbooks.io/pyppl/content/faq.html

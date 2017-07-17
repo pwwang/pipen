@@ -55,6 +55,28 @@ The pipeline object itself.
 > The channen class, extended from `list`
 	
 
+#### `_cbindOne (self, col) `
+  
+Like R's cbind, do a column bind to a channel  
+
+- **params:**  
+`col`: the column to be bound to channel  
+
+- **returns:**  
+The combined channel  
+Note, self is also changed  
+  
+#### `_rbindOne (self, row) `
+  
+Like R's rbind, do a row bind to a channel  
+
+- **params:**  
+`row`: the row to be bound to channel  
+
+- **returns:**  
+The combined channel  
+Note, self is also changed  
+  
 #### `_tuplize (tu) [@staticmethod]`
   
 A private method, try to convert an element to tuple  
@@ -69,18 +91,7 @@ Notice that string is also iterable.
 - **returns:**  
 The converted element  
   
-#### `cbind (self, col) `
-  
-Like R's cbind, do a column bind to a channel  
-
-- **params:**  
-`col`: the column to be bound to channel  
-
-- **returns:**  
-The combined channel  
-Note, self is also changed  
-  
-#### `cbindMany (self, *cols) `
+#### `cbind (self, *cols) `
   
 The multiple-argument versoin of `cbind`  
 
@@ -270,18 +281,7 @@ Also do column bind, but with channels, and also you can have multiple with chan
 The combined channel  
 Note, self is also changed  
   
-#### `rbind (self, row) `
-  
-Like R's rbind, do a row bind to a channel  
-
-- **params:**  
-`row`: the row to be bound to channel  
-
-- **returns:**  
-The combined channel  
-Note, self is also changed  
-  
-#### `rbindMany (self, *rows) `
+#### `rbind (self, *rows) `
   
 The multiple-argument versoin of `rbind`  
 
@@ -483,7 +483,7 @@ Tell if the job is successful by return code
 		`__setattr__(self, name, value)`: set the value of a property in `self.config`
 	
 
-#### `__init__ (self, tag, desc) `
+#### `__init__ (self, tag, desc, id) `
   
 Constructor  
 
@@ -510,7 +510,7 @@ also add proc.props, mostly scalar values
   
 Compute some properties  
   
-#### `_isCached (self) `
+#### `_checkCached (self) `
   
 Tell whether the jobs are cached  
 
@@ -708,7 +708,7 @@ Try to get the source first, if failed, try to get its name, otherwise return No
 - **returns:**  
 The signature  
   
-#### `getLogger (level, name, colored) `
+#### `getLogger (level, name, colored, logfile) `
   
 Get the default logger  
 
@@ -925,6 +925,23 @@ Like `proc`'s `copy` function, copy an aggregation. Each processes will be copie
 - **returns:**  
 The new aggregation  
   
+#### `set (self, propname, propval, procs) `
+  
+Set property for procs  
+
+- **params:**  
+propname: The property name  
+propval:  The property value  
+procs:    The ids of the procs to set  
+  
+#### `updateArgs (self, arg, procs) `
+  
+update args for procs  
+
+- **params:**  
+arg:   the arg to update  
+procs: The ids of the procs to update  
+  
 
 ## Module `runner`  
 > The base runner class
@@ -936,7 +953,6 @@ Constructor
 
 - **params:**  
 `job`:    The job object  
-`config`: The properties of the process  
   
 #### `finish (self) `
   
@@ -973,6 +989,13 @@ Wait for the job to finish
 		interval:  The interval to submit next batch of jobs. Default 30
 	
 
+#### `__init__ (self, job) `
+  
+Constructor  
+
+- **params:**  
+`job`:    The job object  
+  
 #### `wait (self) `
   
 Wait for the job to finish  

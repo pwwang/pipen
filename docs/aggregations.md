@@ -57,21 +57,21 @@ aFastqPE2Bam = aggr (
     pPrintReads
 )
 # dependency adjustment
-pIndelRealigner.depends   = [pIndexBam, pRealignerTargetCreator]
-pPrintReads.depends       = [pIndelRealigner, pBaseRecalibrator]
+aFastqPE2Bam.pIndelRealigner.depends   = [aFastqPE2Bam.pIndexBam, aFastqPE2Bam.pRealignerTargetCreator]
+aFastqPE2Bam.pPrintReads.depends       = [aFastqPE2Bam.pIndelRealigner, aFastqPE2Bam.pBaseRecalibrator]
 # input adjustment
 # args adjustment
-pMarkDuplicates.args['params']             += ' TMP_DIR="%s"' % params.tmpdir
-pAlignPEByBWA.args['reffile']                   = params.hg19fa
-pRealignerTargetCreator.args['reffile']     = params.hg19fa
-pRealignerTargetCreator.args['params'] += ' -Djava.io.tmpdir=%s' % params.tmpdir
-pIndelRealigner.args['reffile']                     = params.hg19fa
-pIndelRealigner.args['params']                += ' -Djava.io.tmpdir=%s' % params.tmpdir
-pBaseRecalibrator.args['reffile']                = params.hg19fa
-pBaseRecalibrator.args['knownSites']      = params.dbsnp
-pBaseRecalibrator.args['params']           += ' -Djava.io.tmpdir=%s' % params.tmpdir
-pPrintReads.args['reffile']                          = params.hg19fa
-pPrintReads.args['params']                     += ' -Djava.io.tmpdir=%s' % params.tmpdir
+aFastqPE2Bam.pMarkDuplicates.args['params']             += ' TMP_DIR="%s"' % params.tmpdir
+aFastqPE2Bam.pAlignPEByBWA.args['reffile']               = params.hg19fa
+aFastqPE2Bam.pRealignerTargetCreator.args['reffile']     = params.hg19fa
+aFastqPE2Bam.pRealignerTargetCreator.args['params']     += ' -Djava.io.tmpdir=%s' % params.tmpdir
+aFastqPE2Bam.pIndelRealigner.args['reffile']             = params.hg19fa
+aFastqPE2Bam.pIndelRealigner.args['params']             += ' -Djava.io.tmpdir=%s' % params.tmpdir
+aFastqPE2Bam.pBaseRecalibrator.args['reffile']           = params.hg19fa
+aFastqPE2Bam.pBaseRecalibrator.args['knownSites']        = params.dbsnp
+aFastqPE2Bam.pBaseRecalibrator.args['params']           += ' -Djava.io.tmpdir=%s' % params.tmpdir
+aFastqPE2Bam.pPrintReads.args['reffile']                 = params.hg19fa
+aFastqPE2Bam.pPrintReads.args['params']                 += ' -Djava.io.tmpdir=%s' % params.tmpdir
 ```
 
 Then every time you just need to call the aggregation:
@@ -138,6 +138,18 @@ p3.depends = [p1,p2]
 a.starts = [p1,p2]
 a.ends   = [p3]
 a.input = [(1,4), (2,5), (3,6)]
+```
+
+You may also set the value for a property for all processes of an aggregation:
+```python
+a = aggr(...)
+a.set ('runner', 'ssh')
+```
+
+And you are also able to update the `args` for all processes:
+```python
+a = aggr(...)
+a.updateArgs ('samtools', 'samtools')
 ```
 
 ## Set an aggregation as starting aggregation for a pipeline

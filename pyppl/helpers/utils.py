@@ -64,7 +64,7 @@ class PyPPLLogFormatter (logging.Formatter):
 			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_darkgray, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_darkgray, record.msg[9:], PyPPLLogFormatter.color_clear)
 		elif level in ['INFO', 'P.PROPS', 'DEPENDS', 'OUTPUT', 'EXPORT']:
 			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_green, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_green, record.msg[9:], PyPPLLogFormatter.color_clear)
-		elif level == 'START':
+		elif level == '>>>>>>>':
 			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_lightcyan, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_lightcyan, record.msg[9:], PyPPLLogFormatter.color_clear)
 		elif level in ['INPUT', 'P.ARGS', 'BRINGS']:
 			record.msg = "[%s%7s%s]%s%s%s" % (PyPPLLogFormatter.color_green, level, PyPPLLogFormatter.color_clear, PyPPLLogFormatter.color_green, record.msg[9:], PyPPLLogFormatter.color_clear)
@@ -77,7 +77,7 @@ class PyPPLLogFormatter (logging.Formatter):
 		
 		return logging.Formatter.format(self, record)
 
-def getLogger (level = 'info', name='PyPPL', colored=True):
+def getLogger (level = 'info', name='PyPPL', colored=True, logfile=None):
 	"""
 	Get the default logger
 	@params:
@@ -91,6 +91,12 @@ def getLogger (level = 'info', name='PyPPL', colored=True):
 	logger = logging.getLogger (name)
 	logger.setLevel (getattr(logging, level.upper()))
 	#if ch not in logger.handlers:
+	
+	if logfile:
+		fileCh = logging.FileHandler(logfile)
+		fileCh.setFormatter (logging.Formatter("[%(asctime)s] %(message)s", "%Y-%m-%d %H:%M:%S"))
+		logger.addHandler (fileCh)
+		
 	logger.addHandler (ch)
 	return logger
 
@@ -273,14 +279,18 @@ def format (tpl, args):
 			val2replace = ("'%s'" % value) if isinstance(value, basestring) else ("%s" % value)
 			func = re.sub(r"(?<=\(|\s|,)_(?=\)|,|\s)", val2replace, func, 1)
 			
-			if func.startswith(".") or func.startswith("["):
-				value = eval ('%s%s' % (val2replace, func))
-			elif func.startswith ('lambda'):
-				value = eval ('(%s)(%s)' % (func, val2replace))
-			elif func in format.shorts:
-				value = eval ('(%s)(%s)' % (format.shorts[func], val2replace))
-			else:
-				value = eval (func)
+			try:
+				if func.startswith(".") or func.startswith("["):
+					value = eval ('%s%s' % (val2replace, func))	
+				elif func.startswith ('lambda'):
+					value = eval ('(%s)(%s)' % (func, val2replace))
+				elif func in format.shorts:
+					value = eval ('(%s)(%s)' % (format.shorts[func], val2replace))
+				else:
+					value = eval (func)
+			except Exception as ex:
+				stderr.write ("Failed to interpret placeholder: %s\nin %s\nwith data: \n  %s\n" % (func, n, "\n  ".join([key + ": " + str(args[key]) for key in sorted(args.keys())])))
+				raise Exception (ex)
 
 		s     = s.replace (n, str(value))
 	return s
@@ -318,7 +328,10 @@ format.shorts = {
 	# array-comma quote
 	'acquote':   "lambda x: '\"' + '\",\"'.join(x) + '\"'",
 	'quote':     "lambda x: '\"%s\"' % str(x)",
-	'squote':    "lambda x: \"'%s'\" % str(x)"
+	'squote':    "lambda x: \"'%s'\" % str(x)",
+	'json':      "lambda x: __import__('json').dumps(x)",
+	'read':      "lambda x: open(x).read()",
+	'readlines': "lambda x: filter(None, [l.rstrip('\\n\\r') for l in open(x).readlines() if l.rstrip('\\n\\r')])"
 }
 
 def dictUpdate(origDict, newDict):
