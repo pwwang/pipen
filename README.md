@@ -152,43 +152,16 @@ p6 = proc("F")
 p7 = proc("G")
 p8 = proc("H")
 p9 = proc("I")
-p1.script = "echo 1"
-p1.input  = {"input": ['a']}
-p8.input  = {"input": ['a']}
-p9.input  = {"input": ['a']}
-p2.input  = "input"
-p3.input  = "input"
-p4.input  = "input"
-p5.input  = "input"
-p6.input  = "input"
-p7.input  = "input"
-p1.output = "{{input}}" 
-p2.script = "echo 1"
-p2.output = "{{input}}" 
-p3.script = "echo 1"
-p3.output = "{{input}}" 
-p4.script = "echo 1"
-p4.output = "{{input}}" 
-p5.script = "echo 1"
-p5.output = "{{input}}" 
-p6.script = "echo 1"
-p6.output = "{{input}}" 
-p7.script = "echo 1"
-p7.output = "{{input}}" 
-p8.script = "echo 1"
-p8.output = "{{input}}" 
-p9.script = "echo 1"
-p9.output = "{{input}}" 
 """
-			   1A         8H
-			/      \      /
-		 2B           3C
-			\      /
-			  4D(e)       9I
-			/      \      /
-		 5E          6F(e)
-			\      /
-			  7G(e)
+		   1A         8H
+		/      \      /
+	 2B           3C
+		\      /
+		  4D(e)       9I
+		/      \      /
+	 5E          6F(e)
+		\      /
+		  7G(e)
 """
 p2.depends = p1
 p3.depends = [p1, p8]
