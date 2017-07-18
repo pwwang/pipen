@@ -1,5 +1,12 @@
 # Change log
-<!-- toc -->
+
+## July 18, 2017: 0.7.4
+- Docs updated (thanks @marchon for some grammer corrections)
+- Some shortcut functions for placeholders added
+- Check running during polling removed
+- Logfile added
+- `p.args['key']` can be set also by `p.args.key` now
+- Bug fixes
 
 ## July 3, 2017: 0.7.3
 - Config file defaults to `~/.pyppl.json` (`~/.pyppl` also works)

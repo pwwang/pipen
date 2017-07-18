@@ -169,6 +169,8 @@ class runner_test (runner):
 	def testBuildProps (self):
 		p1 = proc ('tag1')
 		p2 = proc ('tag2')
+		p1.props['logger'] = self.logger
+		p2.props['logger'] = self.logger
 		p2.depends = p1
 		p2.retcodes = "0, 1"
 		p2._buildProps()
@@ -276,7 +278,8 @@ class runner_test (runner):
 			'proc.lang': 'bash', 
 			'proc.defaultSh': 'bash', 
 			'proc.tag': 'pvars', 
-			'proc.length': 0})
+			'proc.length': 0,
+			'proc.suffix': ''})
 
 	def testBuildJobs (self):
 		p = proc ('buildjobs')
