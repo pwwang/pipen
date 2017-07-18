@@ -9,7 +9,7 @@
 - [Automatic deduction of input based on the process dependencies.][4]
 - [Different ways of exporting output files (including `gzip`).][5]
 - [Process caching (including caching using exported files).][6]
-- [Expectations of process output][25]
+- [Expectations of process output.][25]
 - [Flexible placeholder handling in output and script settings.][7]
 - [APIs to modify channels.][8]
 - [Different runners to run you processes on different platforms.][9]
