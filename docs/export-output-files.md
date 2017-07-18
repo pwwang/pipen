@@ -1,7 +1,7 @@
 # Export output files
 <!-- toc -->
 
-Output files are generated in `<outdir>`(`<job.id>/output`) if you specify the basename for a `file/path/dir` output placeholder. You can export them to a specific directory by specify the directory to `exportdir` (alias: `exdir`) of a process: `p.exdir = <exdir>`.
+Output files are generated in `<outdir>`(`<job.index>/output`) if you specify the basename for a `file/path/dir` output placeholder. You can export them to a specific directory by specify the directory to `exportdir` (alias: `exdir`) of a process: `p.exdir = <exdir>`.
 
 You can use different ways (specify it to `exporthow` (alias: `exhow`) of a process) to export output files:
 
@@ -14,6 +14,6 @@ You can use different ways (specify it to `exporthow` (alias: `exhow`) of a proc
 
 You can export the output files of any process. Note that even though the export directory is specific to a process, the minimum unit is a `job`, whose output files are ready to be exported once it finishes successfully.
 
-You can ask `pyppl` whether to overwrite the existing files in the export directory by set `exportow`(alias:`exow`) to `True` (overwrite) or `False` (not overwrite).
+You can ask `pyppl` whether to overwrite the existing files in the export directory by set `exportow`(alias:`exow`) to `True` (overwrite) or `False` (do not overwrite).
 
-> **Note** if the directory you specified to `p.exdir` does not exist, it will be created automatically.
+> **Note** if the directory you specified to `p.exdir` does not exist, it will be created automatically, including those intermediate folders if necessary.
