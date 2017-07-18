@@ -11,7 +11,7 @@ Here is the full structure of the configurations:
 {
     "loglevel": "info",  // the log level
     "logcolor": true,    // use colored log information
-	"logfile": false,    // disable logfile, to specify a different logfile
+    "logfile": false,    // disable logfile, or specify a different logfile
     "proc": {            // shared configuration of processes
         "forks": 10,
         "runner": "sge",
@@ -33,13 +33,14 @@ Here is the full structure of the configurations:
 ```
 - `loglevel` defines which level of log information to output, please refer to [python logging levels][1]. You may just use the lowercase. 
 - `logcolor` whether to use colored log information or not.
+- `logfile`: The log file. Use `false` to disable using log file.
 - `proc` defines the shared configurations of processes in this pipeline. [All the properties][2] of a process can be set here, but just some common one are recommended. Obviously, `input` is not suitable to be set here, except some extreme cases.
 - `profiles` defines some profiles that may be shared by the processes. To use a profile, just specify the profile name to `run`: `pyppl (config).starts(process).run(<profile>)`.
 
-> **Info** `profiles` are actually the same as `proc`. They just make you easy to switch the profiles back and forth. For example, you want to run with sge runner this time, but ssh runner next time, what you need to do is just change from `...run()` to `...run("profile1")`
+> **Info** settings for `profiles` are actually the same as for `proc`. They just make you easy to switch the profiles back and forth. For example, you want to run with sge runner this time, but ssh runner next time, what you need to do is just change from `...run("profile_sge")` to `...run("profile_ssh")`
 
 ## Use a configuration file
-You can also put some commonly used configurations into a `json` file (for example, `/a/b/pyppl.config`), and then specify it to `pyppl` constructor:
+You can also put some commonly used configurations into a `json` file (for example, `/a/b/pyppl.config.json`), and then specify it to `pyppl` constructor:
 ```python
 pyppl ({}, "/a/b/pyppl.config.json")
 ```
@@ -103,7 +104,7 @@ It's very easy to set the starting processes of the pipeline, just pass them to 
 pyppl ().starts(p1,p2,p3).run()
 ```
 > **Caution** 
-> 1. If a process is depending on other processes, you don't need to set it as starting process.
+> 1. If a process is depending on other processes, you are not supposed to set it as starting process.
 > 2. If a process is not depending on any other processes, you have to set it as starting process. Otherwise, it won't start to run.
 
 [1]: https://docs.python.org/2/library/logging.html#logging-levels
