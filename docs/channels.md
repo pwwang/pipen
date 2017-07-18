@@ -3,7 +3,7 @@
 <!-- toc -->
 
 {% raw %}
-Channels are used to pass data from one `proc` to the other. It is basically a `list`, each element is a `tuple`. **So all python functions/methods that apply on `list` will also apply on `channel`.** The length a the `tuple` corresponds to the number of variables of the input or output of a `proc`.
+Channels are used to pass data from one `proc` (an instance of `proc`) to the other. It is basically a `list`, each element is a `tuple`. **So all python functions/methods that apply on `list` will also apply on `channel`.** The length a the `tuple` corresponds to the number of variables of the input or output of a `proc`.
 ```python
 # v1  v2  v3
 c = [
@@ -25,7 +25,7 @@ Then the values for different variables in different jobs wil be:
 | 1         | a2 | b2  | c2 |
 | ...       |... | ... |... |
 
-> **Note** Since `channel` is extended from `list`, all methods apply to `list` are also applicable to `channel`
+> **Hint** Since `channel` is extended from `list`, all methods apply to `list` are also applicable to `channel`
 
 ## Initialize a channel
 There are several ways to initialize a channel:
@@ -34,6 +34,11 @@ There are several ways to initialize a channel:
 c = channel.create([0,1,2])
 # produce [(0,), (1,), (2,)]
 # You can ignore the tuple sign (,) for single-variable (single-column) channel
+```
+> **Note** Please use `channel.create(...)` instead of `channel(...)` unless each element is 'tupled' properly. 
+```python
+channel.create([1,2,3]) != channel([1,2,3])
+channel.create([1,2,3]) == channel([(1,), (2,), (3,)])
 ```
 
 - From other `channels`:   
@@ -86,9 +91,7 @@ c == channel.fromArgv()
 # c == [("/a/b/1.txt", "/a/b/2.txt"), ("/a/b/3.txt", "/a/b/4.txt")]
 ```
 
-> **Note** Since `channel` is extended from `list`, all methods apply to `list` are also applicable to `channel`
-
-## Available methods for channels
+## Available methods of channels
 ### Get the length and width of a channel
 ```python
 chan = channel.create ([(1,2,3), (4,5,6)])
@@ -99,7 +102,7 @@ chan.width()  == 3
 ### Expand a channel by directory
 `channel.expand (index = 0, pattern = '*')`
 
-Sometimes we prepare files in one job (for example, split a big file into small ones in a directory), then handle these files by different jobs in a process, so that they can be processed simultaneously. 
+Sometimes we prepare files in one process (for example, split a big file into small ones in a directory), then handle these files by different jobs in another process, so that they can be processed simultaneously. 
 
 ![channel.expand](https://github.com/pwwang/pyppl/raw/master/docs/channel-expand.png) 
 
@@ -108,39 +111,40 @@ For example:
 # the original file: a.txt
 p1 = proc()
 p1.input  = {"infile:file": ["a.txt"]}
-p1.output = {"outdir:dir": "{{infile.fn}}"}
+p1.output = "outdir:dir:{{infile | fn}}"
 p1.script = "# the script to split a.txt to 1.txt, 2.txt, 3.txt ... to {{outdir}}"
 
 p2 = proc()
 p2.depends = p1
-# expand channel [("<outdir>/a/",)] to channel:
-# [("<outdir>/a/1.txt",), ("<outdir>/a/2.txt",), ("<outdir>/a/3.txt",), ...]
+# expand channel [("outdir/a/",)] to channel:
+# [("outdir/a/1.txt",), ("outdir/a/2.txt",), ("outdir/a/3.txt",), ...]
 p2.input   = {"infile:file": lambda ch: ch.expand()}
 p2.output  = {"outfile:file:{{infile.fn}}.result"}
 p2.script  = "# handle each file (1.txt, 2.txt, 3.txt, ...) to result file (1.result, 2.result, 3.result, ...)"
 
 pyppl().starts(p1).run()
 ```
-If a channel is a multi-variable channel (containing 2 or more columns), you may specify the index of the column, which is the directory.
+If a channel is a multi-variable channel (containing 2 or more columns), you may specify the index of the column, which should be a directory. For the previous example:
 ```python
-p1.input   = {"invar, infile:file": [("a", "a.txt")]}
+p1.output = "outvar:{{infile | ext | [1:]}}, outdir:dir:{{infile | fn}}"
 # ...
-p2.input   = {"invar, infile:file": lambda ch: ch.expand(1)}
+p2.depends = p1
+p2.input   = {"invar,infile:file": lambda ch: ch.expand(1)}
 # expands to: 
-# [("a", "<outdir>/a/1.txt"), ("a", "<outdir>/a/2.txt"), ("a", "<outdir>/a/3.txt"), ...]
+# [("txt", "outdir/a/1.txt"), ("txt", "outdir/a/2.txt"), ("txt", "outdir/a/3.txt"), ...]
 # ...
 ```
 You may also filter the files with a pattern:
 ```python
-p2.input   = {"invar, infile:file": lambda ch: ch.expand(1, "*.txt")}
+p2.input   = {"invar,infile:file": lambda ch: ch.expand(1, "*.txt")}
 # only incude .txt files
 ```
 > **Caution** `expand` only works for original channels with length is 1, which will expand to `N` (number of files included)
 
-### Collapse a channel by files in the same directory
+### Collapse a channel by files in a common ancestor directory
 `channel.collapse(index=0)`
 
-It's basically the reverse process of `expand`. It applies when you deal with different files and in next process you want to combine the results:
+It's basically the reverse process of `expand`. It applies when you deal with different files and in next process you need them all involved (i.e. combine the results):
 
 ![channel.expand](https://github.com/pwwang/pyppl/raw/master/docs/channel-collapse.png) 
 
@@ -149,7 +153,7 @@ For example:
 # the original file: a.txt
 p1 = proc()
 p1.input  = {"infile:file": ["/a/b/1.txt", "/a/b/2.txt", "/a/b/3.txt"]}
-p1.output = {"outdir:dir": "{{infile.fn}}.txt2"}
+p1.output = {"outdir:dir": "{{infile | fn}}.txt2"}
 p1.script = """
 # the script to deal with each input file:
 # /a/b/1.txt -> <outdir>/1.txt2
@@ -162,7 +166,7 @@ p2.depends = p1
 # collapse channel [("<outdir>/1.txt2",), ("<outdir>/2.txt2",), ("<outdir>/3.txt2",)] to channel:
 # [("<outdir>/", )]
 p2.input   = {"indir:file": lambda ch: ch.collapse()}
-p2.output  = {"outfile:file:{{indir.fn}}.result"}
+p2.output  = {"outfile:file:{{indir | fn}}.result"}
 p2.script  = """
 # combine 1.txt2, 2.txt2, 3.txt3 in {{indir}} to {{outfile}}
 """
@@ -177,7 +181,7 @@ p2.input  = {"indir:file": lambda ch: ch.collapse(1)}
 # ...
 ```
 > **Caution** 
-> 1. the files have to be in the same directory, `pyppl` won't check it, the directory of the first file will be used.
+> 1. `os.path.dirname(os.path.commonprefix(...))` is used to detect the common ancestor directory, so the files could be `['/a/1/1.file', '/a/2/1.file']`. In this case `/a/` will be returned.
 > 2. values at other columns should be the same, `pyppl` won't check it, the first value at the column will be used.
 
 ### Fetch column(s) from a channel
@@ -203,7 +207,7 @@ chans = chan.split()
 # isinstance (chans, list) == True
 # isinstance (chans, channel) == False
 # chans == [
-#   [(1,), (4,)],
+#   [(1,), (4,)],  # isinstance (chans[0], channel) == True
 #   [(2,), (5,)],
 #   [(3,), (6,)],
 # ]
@@ -218,29 +222,25 @@ They act as the same as the python's builtin functions `map`, `filter` and `redu
 
 ### Add rows/columns to a channel
 
-- `channel.rbindMany(*rows)`
+- `channel.rbind(*rows)`
 ```python
 chan = channel.create([(1,2,3), (4,5,6)])
 col1 = ['a', 'b', 'c']
 col2 = [7, 8, 9]
-chan.cbindMany(col1, col2)
+chan.cbind(col1, col2)
 # chan == [(1,2,3), (4,5,6), ('a','b','c'), (7,8,9)]
 ```
 
-- `channel.rbind(row)`
-It is a single-argument version of `channel.rbindMany`.
 
-- `channel.cbindMany(*cols)`
+- `channel.cbind(*cols)`
 ```python
 chan = channel.create([(1,2,3), (4,5,6)])
 col1 = ['a', 'b']
 col2 = [7, 8]
-chan.cbindMany(col1, col2)
+chan.cbind(col1, col2)
 # chan == [(1,2,3,'a',7), (4,5,6,'b',8)]
 ```
 
-- `channel.cbind(col)`
-It is a single-argument version of `channel.cbindMany`.
 - `channel.merge(*chans)`
 It actually does similarly as `cbindMany`. The difference is that `chan` in `chans` can have multiple columns; while `col` in `cols` can just have one column. The channels to be merged must have the same length. `channel.fromChannels` actually does the same as `merge`, but with an empty channel.
 
@@ -273,7 +273,28 @@ l    = chan.toList()
 # l == [1,2,3]
 ```
 
-> **Caution** it only works with width=1 channels. If `chan.width() != 1`, a `ValueError` will be raised.
+> **Caution** it only works with width=1 channels. If `chan.width() != 1`, a `ValueError` will be raised. You may use `colAt` to extract the column you want to convert to a `list`.
+
+### Fold a channel
+`channel.fold(n = 1)`
+Fold a `channel`, Make a row to n-length chunk rows
+For example, you have the following `channel`:
+
+|a1|a2|a3|a4|
+|-|-|-|-|
+|b1|b2|b3|b4|
+
+After apply `chan.fold(2)` you will get:
+
+|a1|a2|
+|-|-|
+|a3|a4|
+|b1|b2|
+|b3|b4|
+
+### Unfold a channel
+`channel.unfold(n=2)`
+Combine n-rows into one row; do the reverse thing as `channel.fold`. But note that the different meaning of `n`. In `fold`, `n` means the length of the chunk that a row is cut to; will in `unfold`, it means how many rows to combine.
 
 ### Copy a channel
 `channel.copy()`
