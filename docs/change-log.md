@@ -8,9 +8,9 @@
 - Same basename name allowed for input files of a job
 - Description of a proc added
 - Aggr Optimized
-- #9 Fixed
+- Bug #9 Fixed
 - Private key supported for ssh runner
-- #7 Implemented
+- Feature #7 Implemented
 
 ## June 20, 2017: 0.7.2
 - Optimize isRunning function (using specific job id)
