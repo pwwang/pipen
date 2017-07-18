@@ -1,9 +1,9 @@
-#
-Placeholders
+#Placeholders
+
 <!-- toc -->
 
 {% raw %}
-`pyppl` uses placeholders from `input`, `output` and some properties of a `proc` to hold the values in `output`, `beforeCmd`, `afterCmd` and `script`. For example:
+`pyppl` uses placeholders from `input`, `output` and some properties of `pyppl.proc`/`pyppl.job` to hold the values in `output`, `beforeCmd`, `afterCmd` and `script`. For example:
 ```python
 p = proc()
 p.input = {"v":[0,1,2]}
@@ -16,30 +16,33 @@ echo {{v}}
 ## Transform values by placeholders
 You can apply some function to transform values by placeholders:
 ```python
-{{ v | pow(2, _) }}
-# "1","2","4"
+#{{ v | pow(2, _) }}  # NOTE: this is deprecated!
+ph  = "{{ v | lambda x: pow(2, x) }}" # please use lambda function
+ret = pyppl.utils.format (ph, {v: 3})
+# ret == "9"
 ```
-`|` separates the placeholder and the function, `_` represents the value on the left.
-> **Caution** a placeholder always returns a string.
+- `|` connects the chains. The first chain is always the key of the data used to render the placeholder. The rest of the chains could be:
+  - A lambda function with one and only one argument
+  - `[i]`/`["key"]` to get value from `iter` objects
+  - `.func()` to call functions of an object. (i.e. `{{v | .lower()}}` for `{v: "A"}`)
+- ~~`_` represents the value of previous chain~~ is deprecated!.
+- `pyppl.utils.format(...)` always returns a **STRING**.
+  - but the value passed among chains remains its own type (i.e. `{{v | lambda x: "a" + x}}` for `{v:1}` will raise a `TypeError`).
+
 
 You can also apply a set of functions:
 ```python
-{{ v | pow(2, _) | pow(2, _) }}
+#{{ v | pow(2, _) | pow(2, _) }}
+{{ v | lambda x: pow(2,x) | lambda x: pow(2,x) }}
 # "2","4","16"
 ```
 
 Import modules in a placeholder:
 ```python
-{{ v | __import__('math').exp(_) }}
+#{{ v | __import__('math').exp(_) }}
+{{ v | lambda x: __import__('math').exp(x) }}
 # "1", "2.71828182846", "7.38905609893"
 ```
-
-Use `lambda` functions:
-```python
-{{ v | lambda x: x*2 }}
-# "0", "2", "4"
-```
-> **Note** Only one argument is allow for lambda function here.
 
 ## Built-in functions
 We have a set of built-in funcitons for placeholders, they are:
