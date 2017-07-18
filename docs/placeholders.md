@@ -57,19 +57,15 @@ We have a set of built-in funcitons for placeholders, they are:
 |`bn`|Alias of `basename`||||
 |`filename`|Basename without extension|`{{v `&#x7c;` filename}}`|`{'v':'/a/b/c.txt'}`|`c`|
 |`fn`|Alias of `filename`||||
-|`filename2`|Basename without two extensions|`{{v `&#x7c;` filename}}`|`{'v':'/a/b/c.d.txt'}`|`c`|
-|`fn2`|Alias of `filename2`||||
 |`ext`|Get the extension of a file|`{{v `&#x7c;` ext}}`|`{'v':'/a/b/c.txt'}`|`.txt`|
-|`ext2`|Get two extensions of a file|`{{v `&#x7c;` ext}}`|`{'v':'/a/b/c.d.txt'}`|`.d.txt`|
-|`noext2`|Remove the 2nd last extension of a file|`{{v `&#x7c;` ext}}`|`{'v':'/a/b/c.d.txt'}`|`/a/b/c.txt`|
-|`fnnodot`|Get the filename without a dot in it|`{{v `&#x7c;` fnnodot}}`|`{'v':'/a/b/c.d.txt'}`|`c`|
 |`prefix`|Get the prefix of a path (no extension)|`{{v `&#x7c;` prefix}}`|`{'v':'/a/b/c.d.txt'}`|`/a/b/c.d`|
-|`prefix2`|Get the prefix of a path without last 2 extensions|`{{v `&#x7c;` prefix}}`|`{'v':'/a/b/c.d.txt'}`|`/a/b/c`|
-|`pxnodot`|Get the prefix without a dot in it|`{{v `&#x7c;` pxnodot}}`|`{'v':'/a/b/c.d.txt'}`|`/a/b/c`|
 |`asquote`|Quote an array(list) with quote and joined with space|`{{v `&#x7c;` asquote}}`|`{'v':['1','2']}`|`"1" "2"`|
 |`acquote`|Quote an array(list) with quote and joined with comma|`{{v `&#x7c;` acquote}}`|`{'v':['1','2']}`|`"1","2"`|
 |`quote`|Quote a string|`{{v `&#x7c;` quote}}`|`{'v':'1'}`|`"1"`|
-|`squote`|Single-quote a string|`{{v `&#x7c;` quote}}`|`{'v':'1'}`|`'1'`|
+|`squote`|Single-quote a string|`{{v `&#x7c;` squote}}`|`{'v':'1'}`|`'1'`|
+|`json`|Dumps an python object to json string|`{{v `&#x7c;` quote}}`|`{'v':{'a':1}}`|`'{"a": 1}'`|
+|`read`|Read the content from a file|`{{v `&#x7c;` read}}`|`{'v':'/path/to/file'}`|`'<file content>'`|
+|`readlines`|Read the file content as lines (`EOL` stripped)|`{{v `&#x7c;` readlines `&#x7c;` json}}`|`{'v':'/path/to/file'}`|`'["<line1>", "<line2>", ...]'`|
 
 > **Hint** To get the extension without the leading dot: `{{v | ext | [1:]}}`
 
@@ -81,7 +77,7 @@ utils.format.shorts['replace'] = "lambda x: x.replace('aaa', 'bbb')"
 # utils.format("{{a | replace}}", {"a": "1aaa2"}) == "1bbb2"
 ```
 
-## `Proc` and `Job` property placeholders
+## `proc` and `job` property placeholders
 You can also use some `proc`/`job` property values with placeholders: `{{proc.<property>}}`/`{{job.<property>}}`. Available properties:
 
 | property | alias |meaning |
@@ -94,14 +90,15 @@ You can also use some `proc`/`job` property values with placeholders: `{{proc.<p
 |`proc.cache`||The cache option|
 |`proc.echo`||Whether to print stdout and stderr to the screen|
 |`proc.runner`||The runner|
-|`proc.defaultSh`|`proc.lang`|The interpreter for the script|
+|`proc.defaultSh`(deprecated)|`proc.lang`|The interpreter for the script|
 |`proc.errorhow`|`proc.errhow`|What to do if error happens|
 |`proc.errorntry`|`proc.errntry`|If `errorhow == 'retry'`, how many times to re-try|
 |`proc.exportdir`|`proc.exdir`|The export directory|
 |`proc.exporthow`|`proc.exhow`|How to export output files|
 |`proc.exportow`|`proc.exow`|Whether to overwrite existing files when export|
 |`proc.length`||How many jobs are there for the process|
-|`proc.args`||Additional arguments for the process, typically a `dict`. For example: `p.args={"a":1}` you may use `{{proc.args.a}}` to access it.|
+|`proc.suffix`||The suffix of the process|
+|`proc.args`||Additional arguments for the process, typically a `dict`. For example: `p.args={"a":1}` you may use `{{args.a}}` to access it.|
 |`job.id`||The pid or the id from a queue set by `job.pid`|
 |`job.index`|`#`|The job index|
 |`job.indir`||The input directory of the job|
