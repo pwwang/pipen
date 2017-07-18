@@ -67,3 +67,5 @@ WORKDIR: ./workdir (Yellow processes are to be cleaned!)
 ## Clean processes
 If you run `pyppl clean`, it will list all processes, and prompt you whether to remove the old processes with the same id and tag.  
 You can run `pyppl clean -f` to clean the processes without prompt.
+
+> **Caution** If you have multiple pipelines share the same `workdir`, make sure the processes don't share the same id and tag. Otherwise the clean command will just keep one of them.
