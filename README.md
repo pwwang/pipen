@@ -6,20 +6,20 @@
 <!-- toc -->
 ## Features
 - Supports of any language to run you processes.
-- Automatic deduction of input based on the process dependencies. [Details][4]
-- Different ways of exporting output files (including `gzip`). [Details][5]
-- Process caching (including caching using exported files). [Details][6]
-- Expectations of processes. [Details][25]
-- Flexible placeholder handling in output and script settings. [Details][7]
-- APIs to modify channels. [Details][8]
-- Different runners to run you processes on different platforms. [Details][9]
-- Runner customization (you can define your own runner). [Details][10]
-- Callbacks of processes. [Details][11]
-- Error handling for processes. [Details][12]
-- Configuration file support for pipelines. [Details][13]
-- Flowchat in [DOT][14] for your pipelines. [Details][15]
-- Highly reusable processes. [A set of highly reusable bioinformatics processes][24]
-- Aggregations (a set of processes predefined). [Details][16]
+- [Automatic deduction of input based on the process dependencies.][4]
+- [Different ways of exporting output files (including `gzip`).][5]
+- [Process caching (including caching using exported files).][6]
+- [Expectations of process output][25]
+- [Flexible placeholder handling in output and script settings.][7]
+- [APIs to modify channels.][8]
+- [Different runners to run you processes on different platforms.][9]
+- [Runner customization (you can define your own runner).][10]
+- [Callfronts/Callbacks of processes.][11]
+- [Error handling for processes.][12]
+- [Configuration file support for pipelines.][13]
+- Flowchat in [DOT][14] for your pipelines ([Details][15]).
+- Highly reusable processes (see [a set of highly reusable bioinformatics processes][24]).
+- [Aggregations (a set of processes predefined).][16]
 - Detailed [documentation][1] and [API documentation][2].
 
 ## Requirements
