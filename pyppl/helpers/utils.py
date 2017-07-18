@@ -305,24 +305,11 @@ format.shorts = {
 	'bn':        "lambda x: __import__('os').path.basename (x)",
 	# /a/b/c.txt => c
 	'filename':  "lambda x: __import__('os').path.splitext (__import__('os').path.basename(x))[0]",
-	# /a/b/c.d.e.ext2.txt => c.d.e
-	'filename2': "lambda x: __import__('os').path.splitext (__import__('os').path.splitext (__import__('os').path.basename(x))[0])[0]",
 	'fn':        "lambda x: __import__('os').path.splitext (__import__('os').path.basename(x))[0]",
-	'fn2':       "lambda x: __import__('os').path.splitext (__import__('os').path.splitext (__import__('os').path.basename(x))[0])[0]",
 	# /a/b/c.txt => .txt
 	'ext':       "lambda x: __import__('os').path.splitext (__import__('os').path.basename(x))[1]",
-	# /a/b/c.d.ext2.txt => ".ext2.txt"
-	'ext2':      "lambda x: __import__('os').path.splitext (__import__('os').path.splitext (__import__('os').path.basename(x))[0])[1] + __import__('os').path.splitext (__import__('os').path.basename(x))[1]",
-	# /a/b/c.d.ext2.txt => /a/b/c.d.txt
-	'noext2':    "lambda x: __import__('os').path.splitext (__import__('os').path.splitext (x)[0])[0] + __import__('os').path.splitext (x)[1]",
-	# /a/b/c.d.txt => c
-	'fnnodot':   "lambda x: __import__('os').path.basename (x).split('.')[0]",
 	# /a/b/c.txt => /a/b/c
 	'prefix':    "lambda x: __import__('os').path.splitext (x)[0]",
-	# /a/b/c.d.ext2.txt => /a/b/c.d
-	'prefix2':   "lambda x: __import__('os').path.splitext (__import__('os').path.splitext (x)[0])[0]",
-	# /a/b/c.d.txt => /a/b/c
-	'pxnodot':   "lambda x: __import__('os').path.join (__import__('os').path.dirname(x), __import__('os').path.basename (x).split('.')[0])",
 	# array-space quote
 	'asquote':   "lambda x: '\"' + '\" \"'.join(x) + '\"'",
 	# array-comma quote
