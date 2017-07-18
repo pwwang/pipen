@@ -2,7 +2,7 @@
 <!-- toc -->
 
 ## Choose your language
-You can either specify the path of interpreter to `p.lang` or `p.defaultSh`, if the interpreter is in `$PATH`, you can directly give the basename of the interpreter.  
+You can either specify the path of interpreter to `p.lang`~~or p.defaultSh~~ (deprecated), if the interpreter is in `$PATH`, you can directly give the basename of the interpreter.  
 For example, if you have your own perl installed at `/home/user/bin/perl`, then you need to tell `pyppl` where it is: `p.lang = "/home/user/bin/perl"`. If `/home/user/bin` is in your `$PATH`, you can simply do: `p.lang = "perl"`  
 You can also use [shebang][1] to specify the interperter:
 ```perl
@@ -17,8 +17,9 @@ You can use all available placeholders in the script. Each job will have its own
 ## Use a template
 You can also put the script into a file, and use it with a `template:` prefix: `p.script = "template:/a/b/c.pl"`  
 You may also use the placeholders in the template, where everything should be the same when you put the script directly to `p.script`, the only difference is the control characters.
-For example, in a template file, you use `"\t"` for a tab, but in script property, you have to use `"\\t"`
+For example, in a template file, you use `"\t"` for a tab, but when directly specified to `p.script` property, you have to use `"\\t"`
 > **Note**: You may also use a relative-path template, which is relative to `os.path.dirname (sys.argv[0])`
+> Template extension is not supported yet.
 
 ## Debug your script
 If you need to debug your script, you just need to find the real running script, which is at: `<workdir>/<index>/job.script`. All the placeholders in the script have been replaced with actual values. You can debug it using the tool according to the language you used for the script.
