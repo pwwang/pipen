@@ -6,7 +6,7 @@ A: No, you can use a different one by `pWhatever = proc (id=pYourId)`, or `pWhat
 
 **Q: When should I use `p.brings`?**
 
-A: In most cases, index files. You don't want those files to be involved in the caching.
+A: In most cases, index files. You don't want those files to be involved in the caching, and they somehow depend on input files but not explicmentioned.
 
 **Q: What's the difference between `input` and `args`?**
 
@@ -15,3 +15,23 @@ A: Basically, `args` are supposed to be arguments shared among all jobs in the p
 **Q: Does a `proc` remain the same after it's used to construct an `aggr`?**
 
 A: No, it will be a copy of the original one. So the original be used somewhere else.
+
+**Q: Can I skip a process, or run a process conditionally?**
+
+A: Yes, you may specify the directory of input files to `p.exdir`. 
+For conditional process, you can use `callfront` to specify the `p.exdir`:
+```python
+def condRun (p):
+    if <some conditions>:
+        p.exdir = <directory of input files>
+        p.cache = 'export'
+    else:
+        p.exdir = ''
+        p.cache = True
+
+condProc = pyppl.proc(desc = 'Conditional process.')
+#...
+condProc.callfront = condRun
+
+```
+
