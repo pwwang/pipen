@@ -654,7 +654,7 @@ class proc (object):
 		if not self.props[key]:	
 			return 0
 		cmd = utils.format(self.props[key], self.procvars)
-		self.log ('Running <%s>: %s' % (key, cmd), 'info')
+		self.log ('Running <%s> ...' % (key), 'info')
 		
 		p = Popen (cmd, shell=True, stdin=PIPE, stderr=PIPE, stdout=PIPE, universal_newlines=True)
 		if self.echo:
