@@ -9,6 +9,7 @@ from subprocess import Popen
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
 from pyppl import proc, job, runner_local, runner_sge, runner_ssh, utils, runner, runner_queue
+from pyppl.runners import runner_slurm
 
 class TestRunner(unittest.TestCase):
 
