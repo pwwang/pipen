@@ -371,7 +371,7 @@ The brings can be set as: `p.brings = {"infile": "{{infile.bn}}*.bai"}`
 If you have multiple files to bring in:  
 `p.brings = {"infile": "{{infile.bn}}*.bai", "infile#": "{{infile.bn}}*.fai"}`  
 You can use wildcards to search the files, but only the first file will return  
-To access the brings in your script: {% raw %}`{{ infile.bring }}`, `{{ infile#.bring }}`{% endraw %}  
+To access the brings in your script: {% raw %}`{{ brings.infile }}`, `{{ brings.infile# }}`{% endraw %}  
 If original input file is a link, will try to find it along each directory the link is in.  
   
 #### `_prepInput (self) `

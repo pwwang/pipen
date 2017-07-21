@@ -590,29 +590,45 @@ class job (object):
 		If you have multiple files to bring in:
 		`p.brings = {"infile": "{{infile.bn}}*.bai", "infile#": "{{infile.bn}}*.fai"}`
 		You can use wildcards to search the files, but only the first file will return
-		To access the brings in your script: {% raw %}`{{ infile.bring }}`, `{{ infile#.bring }}`{% endraw %}
+		To access the brings in your script: {% raw %}`{{ brings.infile }}`, `{{ brings.infile# }}`{% endraw %}
 		If original input file is a link, will try to find it along each directory the link is in.
 		"""
 		for key, val in self.proc.brings.items():
 			  
-			brkey   = "bring." + key
+			brkey   = "brings." + key
 			pattern = utils.format (val, self.data)
 
 			inkey   = key.split("#")[0]
 			infile  = self.input[inkey]['data']
+			ogfile  = self.input[inkey]['orig']
+			inbn    = path.basename (infile)
 			intype  = self.input[inkey]['type']
 			if intype not in self.proc.IN_FILETYPE:
-				raise ValueError ('Only can brings a file related to an input file.')
+				raise Exception ('Only can brings a file related to an input file.')
 
 			# Anyway give an empty string, so that users can tell if bringing fails
 			self.data[brkey]           = ''
 			self.data[brkey + ".orig"] = ''
 			self.brings[key]           = ''
 			self.brings[key + ".orig"] = ''
+			
+			# have to be a link
+			if not path.islink (infile): 
+				return
+			
+			infile = readlink (infile)
 			while path.exists(infile):
 				bring = glob (path.join (path.dirname(infile), pattern))
 				if bring:
-					dstfile = path.join (self.indir, path.basename(bring[0]))
+					# basename of infile could be changed in indir if a file with the same basename exists
+					dstbn = path.basename (bring[0])
+					if inbn != path.basename(infile): # name changed
+						uidpos = len (inbn.split('.')) - len (dstbn.split('.')) - 2
+						dstbn  = dstbn.split('.')
+						dstbn.insert(uidpos, '_' + utils.uid(path.realpath(ogfile), 4) + '_')
+						dstbn = '.'.join(dstbn)
+					
+					dstfile = path.join (self.indir, dstbn)
 					self.data[brkey] = dstfile
 					self.data[brkey + ".orig"] = bring[0]
 					self.brings[key] = dstfile
