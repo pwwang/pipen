@@ -427,6 +427,7 @@ class job (object):
 				
 		if self.proc.expect:
 			expect = utils.format (self.proc.expect, self.data)
+			self.proc.log ('Job #%-3s: check expectation: %s' % (self.index, expect), 'debug', 'debug', 'EXPECT_CHECKING')
 			exrc   = Popen (expect, shell=True, stdout=PIPE, stderr=PIPE).wait()
 			if exrc != 0:
 				self.rc (job.NOOUT_RC)
