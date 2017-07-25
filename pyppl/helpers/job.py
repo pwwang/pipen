@@ -715,11 +715,10 @@ class job (object):
 		"""
 		Build the script, interpret the placeholders
 		"""
-		script    = self.proc.script.strip()
+		script    = self.proc.script
 		if not script:
 			self.proc.log ('No script specified', 'warning', 'warning', 'NOSCRIPT')
-			with open (self.script, 'w') as f:
-				f.write ('')
+			open (self.script, 'w').close()
 			return
 		
 		if script.startswith ('template:'):
@@ -732,6 +731,29 @@ class job (object):
 			f = open(tplfile)
 			script = f.read().strip()
 			f.close()
+		
+		# deal with indent for python
+		scripts  = script.split("\n")
+		indent   = ''
+		hassth   = False
+		nscripts = []
+		for s in scripts:
+			if not hassth and not s.strip():
+				continue
+			hassth = True
+			
+			if '# Indent: remove' in s:
+				indent = s[0:s.find('# Indent: remove')]
+				nscripts.append (s[len(indent):])
+			elif '# Indent: keep' in s:
+				indent = ''
+				nscripts.append (s)
+			elif indent and s.startswith(indent):
+				nscripts.append(s[len(indent):])
+			else:
+				nscripts.append(s)
+		script  = "\n".join(nscripts)
+		del scripts
 		
 		if not script.startswith ("#!"):
 			script = "#!/usr/bin/env " + self.proc.defaultSh + "\n\n" + script
