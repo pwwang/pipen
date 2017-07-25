@@ -21,6 +21,34 @@ For example, in a template file, you use `"\t"` for a tab, but when directly spe
 > **Note**: You may also use a relative-path template, which is relative to `os.path.dirname (sys.argv[0])`
 > Template extension is not supported yet.
 
+> **HINT**: Indents are import in python, when you write your scripts, you have to follow exactly the indents in the script string, for example:
+```python
+def test():
+    p = proc()
+    p.lang = "python"
+    p.script = """
+import os
+import re
+def somefunc ():
+    pass
+"""
+```
+But with `'# Indent: remove'`, you can do it more elegantly:
+```python
+def test():
+    p = proc()
+    p.lang = "python"
+    p.script = """
+    # Indent: remove 
+    import os
+    import re
+    def somefunc():
+        pass
+    """
+```
+The leading white spaces of line `# Indent: remove` will be removed for each line (including itself) below it. In this case, the extra `<tab>` of pass will be kept.  
+You may use `# Indent: keep` to stop removing the white spaces for the following lines.
+
 ## Debug your script
 If you need to debug your script, you just need to find the real running script, which is at: `<workdir>/<index>/job.script`. All the placeholders in the script have been replaced with actual values. You can debug it using the tool according to the language you used for the script.
 
