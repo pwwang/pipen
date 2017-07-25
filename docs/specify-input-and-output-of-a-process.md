@@ -76,13 +76,13 @@ p.brings = {
 
 > **Note** 
 > 1. If `/a/b/tumor.bam` is a symbolic link to `/c/d/tumor.bam`, the index file `/c/d/tumor.bam.bai` will also be found.
-> 2. A link will be create in `<indir>`, of which the path can be got by `{{bring.bamfile}}`. To get the original path of the index file: `{{bring.bamfile.orig}}`
+> 2. A link will be create in `<indir>`, of which the path can be got by `{{brings.bamfile}}`. To get the original path of the index file: `{{brings.bamfile.orig}}`
 > 3. You can use wildcards to find the files, the first matched file will be brought in.
 > 4. You can bring in multiple files:
 > ```python
 > p.brings = {"bamfile": "{{bamfile | bn}}.bai", "bamfile#": "{{bamfile | bn}}.bai2"}
-> # to access path of the second bring-in file: {{bring.bamfile#}}
-> # its original path: {{bring.bamfile#.orig}}
+> # to access path of the second bring-in file: {{brings.bamfile#}}
+> # its original path: {{brings.bamfile#.orig}}
 > ```
 
 ### Use a callback to modify the output channel of the prior process.
