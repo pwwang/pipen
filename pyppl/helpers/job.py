@@ -128,6 +128,7 @@ class job (object):
 			self.proc.log ('Job #%s (total %s) failed. Return code: %s (%s).' % (self.index, lenfailed, rc, rcmsg), 'error')
 		
 		if not self.proc.echo:
+			self.proc.log('Job #%s: Script file: %s' % (self.index, self.script), 'error')
 			self.proc.log('Job #%s: check STDERR below:' % (self.index), 'error')
 			
 			errmsgs = []
