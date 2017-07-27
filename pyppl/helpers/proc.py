@@ -344,14 +344,14 @@ class proc (object):
 		if self.suffix:
 			return self.suffix
 		
-		config        = { key:val for key, val in self.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'expect', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
+		config        = { key:val for key, val in self.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'expect', 'callback', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
 		config['id']  = self.id
 		config['tag'] = self.tag
 		
 		if 'callfront' in config:
 			config['callfront'] = utils.funcsig(config['callfront'])
-		if 'callback' in config:
-			config['callback'] = utils.funcsig(config['callback'])
+		#if 'callback' in config:
+		#	config['callback'] = utils.funcsig(config['callback'])
 		# proc is not picklable
 		if 'depends' in config:
 			depends = config['depends']
@@ -477,7 +477,7 @@ class proc (object):
 
 		if self.exdir and not os.path.exists (self.exdir):
 			os.makedirs (self.exdir)
-			
+		
 		self.log ('Properties set explictly: %s' % str(self.sets), 'debug')
 				
 	def _buildInput (self):

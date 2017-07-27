@@ -128,7 +128,9 @@ class job (object):
 			self.proc.log ('Job #%s (total %s) failed. Return code: %s (%s).' % (self.index, lenfailed, rc, rcmsg), 'error')
 		
 		if not self.proc.echo:
-			self.proc.log('Job #%s: Script file: %s' % (self.index, self.script), 'error')
+			self.proc.log('Job #%s: Script: %s' % (self.index, self.script), 'error')
+			self.proc.log('Job #%s: Stdout: %s' % (self.index, self.outfile), 'error')
+			self.proc.log('Job #%s: Stderr: %s' % (self.index, self.errfile), 'error')
 			self.proc.log('Job #%s: check STDERR below:' % (self.index), 'error')
 			
 			errmsgs = []
@@ -525,21 +527,26 @@ class job (object):
 						remove (infile)
 					symlink (origfile, infile)
 				elif not utils.isSamefile (origfile, infile):
-					#bedir  = path.join (self.indir, basename + '.' + utils.uid(origfile, 4)) # basename exists
-					#infile = path.join (bedir, basename)
-					#if not path.exists(bedir):
-					#	makedirs (bedir)
 					(fn, _, ext) = basename.rpartition('.')
-					infile = path.join (self.indir, fn + '._' + utils.uid(path.realpath(origfile), 4) + '_.' + ext)
-					
-					if path.exists (infile):
-						if not utils.isSamefile(origfile, infile):
-							self.proc.log ("Overwriting renamed input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
-							remove (infile)  # it's a link
-							symlink (origfile, infile)
-					else:
-						self.proc.log ("Renaming input file: %s" % infile, 'warning', 'warning', 'INFILE_RENAMING')
+					existInfiles = glob (path.join(self.indir, fn + '[[]*[]].' + ext))
+					if not existInfiles:
+						infile = path.join (self.indir, fn + '[1].' + ext)
 						symlink (origfile, infile)
+					else:
+						num = 0
+						for eifile in existInfiles:
+							if utils.isSamefile (origfile, eifile):
+								infile = eifile
+								num    = 0
+								break
+							n   = int(path.basename(eifile)[len(fn)+1 : -len(ext)-2])
+							num = max (num, n)
+						
+						if num > 0:
+							infile = path.join (self.indir, fn + '[' + str(num+1) + '].' + ext)
+							symlink (origfile, infile)
+							
+					self.proc.log ("Input file renamed: %s -> %s" % (origfile, path.basename(infile)), 'warning', 'warning', 'INFILE_RENAMING')
 						
 				self.data[key]           = infile
 				self.data[key + '.orig'] = origfile
@@ -565,16 +572,25 @@ class job (object):
 						symlink (origfile, infile)
 					elif not utils.isSamefile (origfile, infile):
 						(fn, _, ext) = basename.rpartition('.')
-						infile = path.join (self.indir, fn + '._' + utils.uid(path.realpath(origfile), 4) + '_.' + ext)
-						
-						if path.exists (infile):
-							if not utils.isSamefile(origfile, infile): # it's anyway the same file?
-								self.proc.log ("Overwriting renamed input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
-								remove (infile)  # it's a link
-								symlink (origfile, infile)
-						else:
-							self.proc.log ("Renaming input file: %s" % infile, 'warning', 'warning', 'INFILE_RENAMING')
+						existInfiles = glob (path.join(self.indir, fn + '[[]*[]].' + ext))
+						if not existInfiles:
+							infile = path.join (self.indir, fn + '[1].' + ext)
 							symlink (origfile, infile)
+						else:
+							num = 0
+							for eifile in existInfiles:
+								if utils.isSamefile (origfile, eifile):
+									infile = eifile
+									num    = 0
+									break
+								n   = int(path.basename(eifile)[len(fn)+1 : -len(ext)-2])
+								num = max (num, n)
+							
+							if num > 0:
+								infile = path.join (self.indir, fn + '[' + str(num+1) + '].' + ext)
+								symlink (origfile, infile)
+								
+						self.proc.log ("Input file renamed: %s -> %s" % (origfile, path.basename(infile)), 'warning', 'warning', 'INFILE_RENAMING')
 						
 					self.input[key]['orig'].append (origfile)
 					self.input[key]['data'].append (infile)
@@ -625,10 +641,25 @@ class job (object):
 					# basename of infile could be changed in indir if a file with the same basename exists
 					dstbn = path.basename (bring[0])
 					if inbn != path.basename(infile): # name changed
-						uidpos = len (inbn.split('.')) - len (dstbn.split('.')) - 2
-						dstbn  = dstbn.split('.')
-						dstbn.insert(uidpos, '_' + utils.uid(path.realpath(ogfile), 4) + '_')
-						dstbn = '.'.join(dstbn)
+						inparts     = inbn.split('.')
+						dstparts    = dstbn.split('.')
+						chgpos      = -1 if len(dstparts) == 1 else len(inparts) - len(dstparts) - 2
+						existBfiles = glob (path.join(self.indir, '.'.join([x+'[[]*[]]' if i==chgpos else x for x in dstparts])))
+						if not existBfiles:
+							dstparts[chgpos] += '[1]'
+						else:
+							num = 0
+							for ebfile in existBfiles:
+								if utils.isSamefile(bring[0], ebfile):
+									dstbn = path.basename(ebfile)
+									num   = 0
+									break
+								n   = int(path.basename(ebfile)[len(fn)+1 : -len(ext)-2])
+								num = max (num, n)
+								
+							if num > 0:
+								dstparts[chgpos] += '[' + str(num) + ']'
+								dstbn = '.'.join(dstparts)
 					
 					dstfile = path.join (self.indir, dstbn)
 					self.data[brkey] = dstfile

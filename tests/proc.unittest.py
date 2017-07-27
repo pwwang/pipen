@@ -133,7 +133,7 @@ class runner_test (runner):
 
 	def testSuffix (self):
 		p = proc ('tag_unique')
-		config        = { key:val for key, val in p.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'expect', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
+		config        = { key:val for key, val in p.config.items() if key not in ['callback', 'desc', 'workdir', 'forks', 'cache', 'retcodes', 'expect', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
 		config['id']  = p.id
 		config['tag'] = p.tag
 		if 'callback' in config:
