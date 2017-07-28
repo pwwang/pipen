@@ -3,6 +3,7 @@ The base runner class
 """
 import sys
 from os import devnull
+from time import sleep
 from multiprocessing import Lock
 from subprocess import Popen, list2cmdline
 
@@ -55,16 +56,27 @@ class runner (object):
 		"""
 		if self.job.rc() == self.job.FAILED_RC: 
 			return
+			
+		ferr = open (self.job.errfile)
+		fout = open (self.job.outfile)
 
 		if self.p:
 			self.getpid()
-			retcode = self.p.wait()
-			if self.job.proc.echo:
-				lock.acquire()
-				sys.stderr.write (open(self.job.errfile).read())
-				sys.stdout.write (open(self.job.outfile).read())
-				lock.release()
+			while self.p.poll() is None:
+				if self.job.proc.echo:
+					lock.acquire()
+					sys.stderr.write (ferr.read())
+					sys.stdout.write (fout.read())
+					lock.release()
+				sleep (2)
+			lock.acquire()
+			sys.stderr.write (ferr.read())
+			sys.stdout.write (fout.read())
+			lock.release()
+			retcode = self.p.returncode
 			self.job.rc(retcode)
+		ferr.close()
+		fout.close()
 
 	def finish (self):
 		"""

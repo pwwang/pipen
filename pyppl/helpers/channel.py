@@ -446,7 +446,7 @@ class channel (list):
 			The unfolded channel
 		"""
 		if self.length()%n != 0:
-			raise ValueError ('Failed to unfold, the length %s cannot be divided by %s' % (self.width(), n))
+			raise ValueError ('Failed to unfold, the length %s cannot be divided by %s' % (self.length(), n))
 		ret = channel.create()
 		for i in [x*n for x in range(int(self.length()/n))]:
 			ret.rbind (utils.reduce (lambda x, y: x+y, self[i:i+n]))

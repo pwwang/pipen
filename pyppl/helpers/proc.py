@@ -440,15 +440,13 @@ class proc (object):
 		self.log ("%s => %s => %s" % ([p._name() for p in self.depends] if self.depends else "START", self._name(), [p._name() for p in self.nexts] if self.nexts else "END"), "info", "depends")
 		self._readConfig (config)
 		self._tidyBeforeRun ()
-		if self._runCmd('beforeCmd') != 0:
-			raise Exception ('Failed to run beforeCmd: %s' % self.beforeCmd)
+		self._runCmd('beforeCmd')
 		if not self._checkCached():
 			self.log (self.workdir, 'info', 'RUNNING')
 		else:
 			self.log (self.workdir, 'info', 'CACHED')
 		self._runJobs()
-		if self._runCmd('afterCmd') != 0:
-			raise Exception ('Failed to run afterCmd: %s' % self.afterCmd)
+		self._runCmd('afterCmd')
 		self._tidyAfterRun ()
 		self.log ('Done (time: %s).' % utils.formatTime(time() - timer), 'info')
 
@@ -663,7 +661,10 @@ class proc (object):
 				self.logger.info ('[ STDOUT] %s' % line.rstrip("\n"))
 		for line in iter(p.stderr.readline, ''):
 			self.logger.error ('[ STDERR] %s' % line.rstrip("\n"))
-		return p.wait()
+		rc = p.wait()
+		if rc != 0:
+			raise Exception ('Failed to run %s: \n----------------------------------\n%s' % (key, cmd))
+		return rc
 
 	def _runJobs (self):
 		"""
