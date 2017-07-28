@@ -229,13 +229,16 @@ Create a width = 2 channel from a pattern
 - **returns:**  
 The channel create from every 2 files match the pattern  
   
-#### `fromPath (pattern, t) [@staticmethod]`
+#### `fromPath (pattern, t, sortby, reverse) [@staticmethod]`
   
 Create a channel from a path pattern  
 
 - **params:**  
 `pattern`: the pattern with wild cards  
 `t`:       the type of the files/dirs to include  
+- 'dir', 'file', 'link' or 'any' (default)  
+`sortby`:  how the list is sorted  
+- 'name' (default), 'mtime', 'size'  
 
 - **returns:**  
 The channel created from the path  
