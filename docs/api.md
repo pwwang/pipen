@@ -403,7 +403,7 @@ Build the script, interpret the placeholders
   
 Truly cache the job (by signature)  
   
-#### `checkOutfiles (self) `
+#### `checkOutfiles (self, expect) `
   
 Check whether output files are generated, if not, add - to rc.  
   
@@ -946,6 +946,32 @@ arg:   the arg to update
 procs: The ids of the procs to update  
   
 
+## Module `doct`  
+> Extend dict so you can use dot (".") to access keys.
+	Refer to 
+	Examples:
+	```python
+	m = Map({'first_name': 'Eduardo'}, last_name='Pool', age=24, sports=['Soccer'])
+	# Add new key
+	m.new_key = 'Hello world!'
+	# Or
+	m['new_key'] = 'Hello world!'
+	print m.new_key
+	print m['new_key']
+	# Update values
+	m.new_key = 'Yay!'
+	# Or
+	m['new_key'] = 'Yay!'
+	# Delete key
+	del m.new_key
+	# Or
+	del m['new_key']
+	```
+	
+
+#### `__init__ (self, *args, **args) `
+  
+
 ## Module `runner`  
 > The base runner class
 	
@@ -1024,7 +1050,6 @@ Constructor
 
 - **params:**  
 `job`:    The job object  
-`config`: The properties of the process  
   
 
 ## Module `runner_sge`  
@@ -1044,4 +1069,20 @@ Constructor
 #### `isRunning (self) `
   
 Tell whether the job is still running  
+  
+
+## Module `runner_dry`  
+> The dry runner
+	
+
+#### `__init__ (self, job) `
+  
+Constructor  
+
+- **params:**  
+`job`:    The job object  
+  
+#### `finish (self) `
+  
+Do some cleanup work when jobs finish  
   

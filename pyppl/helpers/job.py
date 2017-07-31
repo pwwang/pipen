@@ -417,7 +417,7 @@ class job (object):
 			with open (self.idfile, 'w') as f:
 				f.write (val)
 	
-	def checkOutfiles (self):
+	def checkOutfiles (self, expect = True):
 		"""
 		Check whether output files are generated, if not, add - to rc.
 		"""
@@ -428,7 +428,7 @@ class job (object):
 				self.rc (job.NOOUT_RC)
 				return
 				
-		if self.proc.expect:
+		if self.proc.expect and expect:
 			expect = utils.format (self.proc.expect, self.data)
 			self.proc.log ('Job #%-3s: check expectation: %s' % (self.index, expect), 'debug', 'debug', 'EXPECT_CHECKING')
 			exrc   = Popen (expect, shell=True, stdout=PIPE, stderr=PIPE).wait()

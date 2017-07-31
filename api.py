@@ -11,10 +11,13 @@ doc = """
 <!-- toc -->
 """
 
-modules = ['pyppl', 'channel', 'job', 'proc', 'utils', 'aggr', 'runner', 'runner_queue', 'runner_local', 'runner_ssh', 'runner_sge']
+modules = ['pyppl', 'channel', 'job', 'proc', 'utils', 'aggr', 'doct', 'runner', 'runner_queue', 'runner_local', 'runner_ssh', 'runner_sge', 'runner_slurm', 'runner_dry']
 
 for modname in modules:
 	
+	if not hasattr(pyppl, modname):
+		continue
+
 	module = getattr (pyppl, modname)
 	doc += "\n## Module `" + modname + "`  \n"
 	doc += "> "

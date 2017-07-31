@@ -20,7 +20,7 @@ from .channel import channel
 from .job import job as pjob
 from .doct import doct
 
-from ..runners import runner_local, runner_sge, runner_ssh
+from ..runners import runner_local, runner_sge, runner_ssh, runner_dry
 
 class proc (object):
 	"""
@@ -713,6 +713,7 @@ class proc (object):
 			t.start ()
 		
 		sq.join()
+		self.log('Active threads: %s' % str(threading.activeCount()), 'error')
 
 	@staticmethod
 	def registerRunner (runner):
@@ -731,3 +732,4 @@ class proc (object):
 proc.registerRunner (runner_local)
 proc.registerRunner (runner_sge)
 proc.registerRunner (runner_ssh)
+proc.registerRunner (runner_dry)

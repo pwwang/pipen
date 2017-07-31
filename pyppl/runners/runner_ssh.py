@@ -22,7 +22,6 @@ class runner_ssh (runner):
 		Constructor
 		@params:
 			`job`:    The job object
-			`config`: The properties of the process
 		"""
 		
 		super(runner_ssh, self).__init__(job)
@@ -48,7 +47,7 @@ class runner_ssh (runner):
 		self.cmd2run = "cd %s; %s" % (os.getcwd(), self.cmd2run)
 		sshsrc       = [
 			'#!/usr/bin/env bash',
-			''
+			'',
 			'trap "status=\\$?; echo \\$status > %s; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile
 		]
 		

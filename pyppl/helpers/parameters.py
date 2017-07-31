@@ -20,7 +20,7 @@ class parameter (object):
 			'show'    : True,
 			'type'    : None,
 			'name'    : name,
-			'value'   : value
+			'value'   : value if not isinstance(value, unicode) else value.encode('utf-8')
 		}
 		self.setType(type(self.value))
 	
@@ -84,7 +84,7 @@ class parameter (object):
 		@params:
 			`v`: The value
 		"""
-		self.props['value'] = v
+		self.props['value'] = v if not isinstance(v, unicode) else v.encode('utf-8')
 		return self
 	
 	def setName (self, n):
@@ -306,7 +306,7 @@ class parameters (object):
 			ret += '----------------\n'
 			for key, val in requiredOptions.items():
 				descs = val.desc.split("\n")
-				ret  += '  {}:'.format(val._printName(self.props['_prefix'])).ljust(keylen) + (descs.pop(0) if descs else '') + '\n'
+				ret  += '  {}'.format(val._printName(self.props['_prefix'])).ljust(keylen) + (descs.pop(0) if descs else '') + '\n'
 				for desc in descs:
 					ret += ''.ljust(keylen) + desc + '\n'
 			ret += '\n'
@@ -317,7 +317,7 @@ class parameters (object):
 			for key, val in optionalOptions.items():
 				descs = (val.desc + ' ' if val.desc else '') + 'Default: ' + str(val)
 				descs = descs.split("\n")
-				ret  += '  {}:'.format(val._printName(self.props['_prefix'])).ljust(keylen) \
+				ret  += '  {}'.format(val._printName(self.props['_prefix'])).ljust(keylen) \
 					 + (descs.pop(0) if descs else '') + '\n'
 				for desc in descs:
 					ret += ''.ljust(keylen) + desc + '\n'
