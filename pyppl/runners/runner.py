@@ -41,7 +41,7 @@ class runner (object):
 			with open (self.job.errfile, 'a') as f:
 				f.write(str(ex))
 			self.job.rc(self.job.FAILED_RC)
-			self.p = None
+			self.finish()
 			
 	
 	def getpid (self):
@@ -95,7 +95,7 @@ class runner (object):
 			return
 
 		self.job.proc.log ("Retrying job #%s ... (%s)" % (self.job.index, self.ntry))
-
+		sleep (3)
 		self.submit()
 		self.wait()
 		self.finish()

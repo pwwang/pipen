@@ -39,18 +39,27 @@ class channel (list):
 		return ret
 	
 	@staticmethod
-	# t = 'dir', 'file', 'link' or 'any'
-	def fromPath (pattern, t = 'any'):
+	def fromPath (pattern, t = 'any', sortby = 'name', reverse=False):
 		"""
 		Create a channel from a path pattern
 		@params:
 			`pattern`: the pattern with wild cards
 			`t`:       the type of the files/dirs to include
+			  - 'dir', 'file', 'link' or 'any' (default)
+			`sortby`:  how the list is sorted
+			  - 'name' (default), 'mtime', 'size'
 		@returns:
 			The channel created from the path
 		"""
 		from glob import glob
-		ret = channel.create(sorted(glob(pattern)))
+		import os
+		if sortby == 'name':
+			key = str
+		elif sortby == 'mtime':
+			key = os.path.getmtime
+		elif sortby == 'size':	
+			key = os.path.getsize
+		ret = channel.create(sorted(glob(pattern), key=key, reverse=reverse))
 		if t != 'any':
 			from os import path
 		if t == 'link':
