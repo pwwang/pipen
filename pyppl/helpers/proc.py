@@ -587,9 +587,9 @@ class proc (object):
 		@params:
 			`config`: The configuration
 		"""
-		conf = { key:val for key, val in config.items() if key not in self.sets }
+		conf = { (key if not key in proc.ALIAS else proc.ALIAS[key]):val for key, val in config.items() if key not in self.sets }
 		self.config.update (conf)
-
+		
 		for key, val in conf.items():
 			self.props[key] = val
 
@@ -676,7 +676,12 @@ class proc (object):
 			The worker to run jobs
 			"""
 			while True:
-				(run, i) = q.get()
+				data = q.get()
+				
+				if data is None:
+					break
+					
+				(run, i) = data
 				sleep (i)	
 				#if hasattr(run, 'checkRunning') and run.checkRunning and run.isRunning():
 				# anyway check whether the job is running before submit it
@@ -706,14 +711,23 @@ class proc (object):
 				job.done()
 
 		# submit jobs
+		threads       = []
 		nojobs2submit = min (self.forks, len(self.ncjobids))
 		for i in range (nojobs2submit):
 			t = threading.Thread(target = sworker, args = (sq, ))
 			t.daemon = True
 			t.start ()
+			threads.append (t)
 		
 		sq.join()
-		self.log('Active threads: %s' % str(threading.activeCount()), 'error')
+		
+		for i in range(nojobs2submit):
+			sq.put (None)
+		for thr in threads:
+			thr.join()
+		
+		# make sure only one thread left
+		self.log('Active thread(s): %s' % str(threading.activeCount()), 'debug')
 
 	@staticmethod
 	def registerRunner (runner):
