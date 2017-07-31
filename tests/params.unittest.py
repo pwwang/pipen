@@ -76,13 +76,18 @@ class TestParameters (unittest.TestCase):
 		
 	def testParameterPrintName(self):
 		p = parameter('c', 9)
-		self.assertEquals (p._printName(), parameters.prefix + "c <int>")
+		self.assertEquals (p._printName('--param-'), "--param-c <int>")
 		p.type = bool
-		self.assertEquals (p._printName(), parameters.prefix + "c (bool)")
+		self.assertEquals (p._printName('--param-'), "--param-c (bool)")
 		
 	def testParametersInit (self):
 		ps = parameters()
-		self.assertEquals(ps.props, {'_usage':'', '_example':'', '_desc':''})
+		self.assertEquals(ps.props, {
+			'_usage':'', 
+			'_example':'', 
+			'_desc':'', 
+			'_hopts': ['-h', '--help', '-H', '-?', ''],
+			'_prefix': '--param-'})
 		self.assertEquals(ps.params, {})
 	
 	def testParametersSetAttr(self):
@@ -104,7 +109,7 @@ class TestParameters (unittest.TestCase):
 		self.assertEquals(ps.a.desc, '')
 		self.assertEquals(ps.a.required, False)
 		self.assertEquals(ps.a.show, True)
-		ps.a.setValue(1)
+		ps.a.setValue(1).setType(int)
 		self.assertIs(ps.a.value, 1)
 		self.assertEquals(ps.a.type, int)
 		
@@ -144,17 +149,99 @@ class TestParameters (unittest.TestCase):
 			'p2': [1,2,3],
 			'p2.show': True,
 			'p3': 2.3,
-			'p3.desc': 'The p3 params'
+			'p3.desc': 'The p3 params',
+			'p3.required': True,
+			'p3.show': True
 		}
-		self.assertEquals (ps._help(), """USAGE:
+		ps.loadDict(d2load)
+		self.assertEquals (ps._help().split("\n"), """\
+USAGE:
 -----
-  {} 
+  {} --param-p3 <float> [OPTIONS]
 
-""".format(sys.argv[0]))
+REQUIRED OPTIONS:
+----------------
+  --param-p3 <float>:                   The p3 params
+
+OPTIONAL OPTIONS:
+----------------
+  --param-p2 <list>:                    Default: [1, 2, 3]
+  -h, --help, -H, -?                    Print this help information.
+
+""".format(sys.argv[0]).split("\n"))
 	
 	def testParametersParse(self):
-		pass
+		sys.argv = [sys.argv[0], "--param-p3", "5.1", "--param-p2=4", "5", "6"]
+		ps = parameters()
+		d2load = {
+			'p1': 1,
+			'p1.required': True,
+			'p2': [1,2,3],
+			'p2.show': True,
+			'p3': 2.3,
+			'p3.desc': 'The p3 params',
+			'p3.required': True,
+			'p3.show': True
+		}
+		ps.loadDict(d2load)
+		ps.parse()
+		self.assertEquals(ps.p3.value, 5.1)
+		self.assertEquals(ps.p2.value, ['4', '5', '6'])
 		
+		from tempfile import NamedTemporaryFile
+		from json import dumps
+		
+		f = NamedTemporaryFile(delete = False, suffix='.json')
+		f.write(dumps(d2load))
+		f.close()
+		ps1 = parameters()
+		ps1.loadCfgfile(f.name)		
+		sys.argv = [sys.argv[0], "--param-p3", "2", "--param-p2=4"]
+		ps1.parse()
+		self.assertEquals(ps1.p3.value, 2.0)
+		self.assertEquals(ps1.p2.value, ['4'])
+		try: 
+			os.remove(f.name)
+		except:
+			pass
+		
+		f = NamedTemporaryFile(delete = False, suffix='.cfg')
+		f.write('[Config]\n')
+		for k,v in d2load.items():
+			f.write(k + '=' + str(v) + '\n')
+		f.write('p1.type: int\n')
+		f.write('p2.type: list\n')
+		f.write('p3.type: float\n')
+		f.close()
+		ps1 = parameters()
+		ps1.loadCfgfile(f.name)	
+		sys.argv = [sys.argv[0], "--param-p3", "10", "--param-p2", "9", "10"]
+		ps1.parse()
+		self.assertEquals(ps1.p3.value, 10.0)
+		self.assertEquals(ps1.p2.value, ['9', '10'])
+		try: 
+			os.remove(f.name)
+		except:
+			pass
+		
+	def testSetPrefix (self):
+		sys.argv = [sys.argv[0], "-p-p3", "5.1", "-p-p2=4", "5", "6"]
+		ps = parameters()
+		ps.prefix('-p-')
+		d2load = {
+			'p1': 1,
+			'p1.required': True,
+			'p2': [1,2,3],
+			'p2.show': True,
+			'p3': 2.3,
+			'p3.desc': 'The p3 params',
+			'p3.required': True,
+			'p3.show': True
+		}
+		ps.loadDict(d2load)
+		ps.parse()
+		self.assertEquals(ps.p3.value, 5.1)
+		self.assertEquals(ps.p2.value, ['4', '5', '6'])
 	
 if __name__ == '__main__':
 	unittest.main()
