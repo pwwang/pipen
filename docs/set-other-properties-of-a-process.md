@@ -4,7 +4,7 @@
 {% raw %}
 Currently we introduced in previous chapters to set a set of properties of a process and we will introduce the rest of them in this chapter:
 
-| Property | Meaning | Possibile values/types | Default value | alias | Where it's mentioned |
+| Property | Meaning | Possibile values/types | Default value | alias | Where it's first mentioned |
 |-|-|-|-|-|-|
 | `id` | The id of the process | `str` | `<the variable name>` ||[Link][8]|
 | `tag` | The tag of the process, makes it possible to have two processes with the same `id` but different `tag`. | `str` | `"notag"` ||[Link][8]|
@@ -33,7 +33,7 @@ Currently we introduced in previous chapters to set a set of properties of a pro
 | `expect` | A command to check whether expected results generated | `str` | | | This chapter |
 
 
-## Set arguments of a process `p.args`:
+## Set arguments of a process `p.args`
 It is a `dict` used to set some common arguments shared within the process (different jobs). For example, all jobs use the same program: `bedtools`. but to make the process portable and shareable, you may want others can give a different path of `bedtools` as well. Then you can use `p.args`:
 ```python
 p = proc()
@@ -59,24 +59,24 @@ Of course, you can do that, but a common argument is not usually generated from 
 
 > **Caution** never use a key with dot `.` in `p.args`, since we use `{{args.key}}` to access it. 
 
-## Set the valid return/exit codes `p.rc`:
+## Set the valid return/exit codes `p.rc`
 When a program exits, it will return a code (or [exit status](https://en.wikipedia.org/wiki/Exit_status)), usually a small integer to exhibit it's status. Generally if a program finishes successfully, it will return `0`, which is the default value of `p.rc`. `pyppl` relies on this return code to determine whether a job finishes successfully.  If not, `p.errorhow` will be triggered. You can set multiple valid return codes for a process: 
 ```python
 p.rc = [0, 1]
 # exit code with 0 or 1 will be both regarded as success
 ```
 
-## Command to run before/after jobs run `p.beforeCmd`/`p.afterCmd`:
+## Command to run before/after jobs run `p.beforeCmd`/`p.afterCmd`
 You can run some commands before and after the jobs run. The commands should be fit for [`Popen`](https://docs.python.org/2/library/subprocess.html#popen-constructor) with `shell=True`. For example, you can set up some environment before the jobs start to run, and remove it when they finish.  
 > **Caution** `beforeCmd`/`afterCmd` only run locally, no matter which runner you choose to run the jobs.
 
-## Error handling `p.errhow`/`p.errntry`:
+## Error handling `p.errhow`/`p.errntry`
 When a job finishes, it should generate a `job.rc` file containing the return code. When compare with the valid return codes `p.rc`, the error triggered if it is not in `p.rc`. `p.errhow` determines what's next if errors happen. 
 - `"terminate"`: when errors happen, terminate the entire pipeline
 - `"ignore"`: ignore the errors, continuing run the next process
 - `"retry"`: re-submit and run the job again. `p.errntry` defines how many time to retry.
 
-## Set the processes current process depends on `p.depends`:
+## Set the processes current process depends on `p.depends`
 A process can not only depend on a single process: 
 ```python
 p2.depends = p1
@@ -99,7 +99,7 @@ p.script = "echo {{input}}"
 p.expect = "grep 1 {{job.outfile}}"
 ```
 
-## Use callback to modify the process `p.callback`:
+## Use callback to modify the process `p.callback`
 The processes **NOT** initialized until it's ready to run. So you may not be able to modify some of the values until it is initialized. For example, you may want to change the output channel before it passes to the its dependent process:
 ```python
 pSingle = proc ()
@@ -124,7 +124,7 @@ pyppl().starts (pSingle).run()
 ```
 You can also use a callback in `pCombine.input` to modify the channel, see [here][9], which is recommended. Because `p.callback` will change the original output channel of `pSingle`, but the `input` callback will keep the output channel intact. However, `p.callback` can not only change the output channel, but also change other properties of current process or even set the properties of coming processes.
 
-## Use callfront to modify the process `p.callfront`:
+## Use callfront to modify the process `p.callfront`
 One possible scenario is that, value in  `p.args` depends on the other process.
 For example:
 ```python
@@ -142,11 +142,60 @@ pCall.depends   = [pBam, pRef]
 pCall.input     = {"bamfile:file": lambda ch1, ch2: ch1}
 pCall.callfront = lambda p: p.args.update({'reffile': pRef.channel[0][0]})
 
-# pCall also depends on pRef, as it needs the reference file to run. But you may not want to put it in input.
+# pCall also depends on pRef, as it needs the reference file to run. 
+# But you may not want to put it in input.
 
 pyppl().starts(pBam, pRef).run()
 ```
 
+## Echo job's stdout/stderr to log
+`p.echo` sets whether/how the job's stderr/stdout should be echoed to the log.  
+The full format of `p.echo` is:
+```json
+{
+    "jobs": [0],
+    "type": ["stdout", "stderr"],
+    "filter": r"^OUTPUT:"
+}
+```
+`filter` is a regular expression defining what kind of messages should be echoed out.
+You can also simply set it as:
+```python
+p.echo = False
+# same as {'jobs':0, 'type':[]}
+p.echo = True
+# same as {'jobs':0, 'type':['stdout', 'stderr']}
+p.echo = "stderr"
+# same as {'jobs':0, 'type': ['stderr']}
+p.echo = "stdout"
+# same as {'jobs':0, 'type': ['stdout']}
+```
+To echo for all jobs:
+```json
+{
+    "jobs": range(p.forks),
+    "type": ["stdout", "stderr"]
+}
+```
+To output some as a log message:  
+Even with `p.echo = False`, in your script:
+```python
+p.script = """
+echo "pyppl.log.error.hhh: I am a log message" 1>&2
+# The log level ^^^^^
+# The log flag        ^^^
+# The message              ^^^^^^^^^^^^^^^^^^
+# The log must be printed to stderr           ^^^^
+"""
+```
+Then on your screen:
+```
+...
+[2017-08-01 18:11:00][   INFO] p: Submitting job #0  
+[2017-08-01 18:11:03][    HHH] p: I am a log message
+...
+```
+>**NOTE** Only logs from jobs in `p.echo['jobs']` will be echoed. So if `p.echo = False`, only job #0 will have logs on your terminal or in log file.
 
 {% endraw %}
 
