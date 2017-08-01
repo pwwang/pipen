@@ -54,6 +54,11 @@ class runner (object):
 	def wait(self, rc = True, infout = None, inferr = None):
 		"""
 		Wait for the job to finish
+		@params:
+			`rc`: Whether to write return code in rcfile
+			`infout`: The file handler for stdout file
+			`inferr`: The file handler for stderr file
+			- If infout or inferr is None, will open the file and close it before function returns.
 		"""
 		if self.job.rc() == self.job.FAILED_RC: 
 			return

@@ -983,6 +983,16 @@ Constructor
 - **params:**  
 `job`:    The job object  
   
+#### `_flushOut (self, fout, ferr, lastout, lasterr) `
+  
+Flush stdout/stderr  
+
+- **params:**  
+`fout`: The stdout file handler  
+`ferr`: The stderr file handler  
+`lastout`: The leftovers of previously readlines of stdout  
+`lasterr`: The leftovers of previously readlines of stderr  
+  
 #### `finish (self) `
   
 Do some cleanup work when jobs finish  
@@ -1006,9 +1016,15 @@ Retry to submit and run the job if failed
   
 Try to submit the job use Popen  
   
-#### `wait (self) `
+#### `wait (self, rc, infout, inferr) `
   
 Wait for the job to finish  
+
+- **params:**  
+`rc`: Whether to write return code in rcfile  
+`infout`: The file handler for stdout file  
+`inferr`: The file handler for stderr file  
+- If infout or inferr is None, will open the file and close it before function returns.  
   
 
 ## Module `runner_queue`  
