@@ -1,5 +1,14 @@
 # Change log
 
+## Aug 1, 2017: 0.8.0
+- Add slurm and dry runner
+- Fix bugs when more than 2 input files have same basename
+- Add indent mark for script, specially useful for python
+- Make stdout/stderr flushes out for instant runners when p.echo = True
+- Add `sortby`, `reverse` for `channel.fromPath`
+- Add command line argument parse
+- Fix a bug that threads do not exit after process is done
+
 ## July 18, 2017: 0.7.4
 - Docs updated (thanks @marchon for some grammer corrections)
 - Some shortcut functions for placeholders added
