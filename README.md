@@ -6,6 +6,7 @@
 <!-- toc -->
 ## Features
 - Supports of any language to run you processes.
+- [Easy-to-use command line parser.][27]
 - [Automatic deduction of input based on the process dependencies.][4]
 - [Different ways of exporting output files (including `gzip`).][5]
 - [Process caching (including caching using exported files).][6]
@@ -108,7 +109,7 @@ Run the pipeline:
 python pipeline.py --param-infiles test?.txt
 ```
 
-## Using a different language:
+## Using a different language
 ```python
 pPlot = proc()
 # Specify input explicitly
@@ -125,7 +126,7 @@ dev.off()
 """
 ```
 
-## Using a different runner:
+## Using a different runner
 ```python
 pPlot = proc()
 pPlot.input   = {"infile:file": ["./data1.txt", "./data2.txt", "./data3.txt", "./data4.txt", "./data5.txt"]}
@@ -241,3 +242,4 @@ You can use different [dot renderers][17] to render and visualize it.
 [24]: https://github.com/pwwang/bioprocs
 [25]: https://pwwang.gitbooks.io/pyppl/content/set-other-properties-of-a-process.html#set-expectations-of-a-process
 [26]: https://pwwang.gitbooks.io/pyppl/content/faq.html
+[27]: https://pwwang.gitbooks.io/pyppl/content/command-line-argument-parser
