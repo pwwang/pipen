@@ -1071,6 +1071,25 @@ Constructor
 Tell whether the job is still running  
   
 
+## Module `runner_slurm`  
+> The slurm runner
+	
+
+#### `__init__ (self, job) `
+  
+Constructor  
+
+- **params:**  
+`job`:    The job object  
+`config`: The properties of the process  
+  
+#### `getpid (self) `
+  
+#### `isRunning (self) `
+  
+Tell whether the job is still running  
+  
+
 ## Module `runner_dry`  
 > The dry runner
 	
