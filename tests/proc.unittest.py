@@ -348,7 +348,7 @@ class runner_test (runner):
 		prc.afterCmd = 'bash -c "exit 1"' # error
 		prc._tidyBeforeRun ()
 		self.assertEqual (prc._runCmd('beforeCmd'), 0)
-		self.assertEqual (prc._runCmd('afterCmd'), 1)
+		self.assertRaises (Exception, prc._runCmd, 'afterCmd')
 
 		prc.beforeCmd = 'ls'
 		prc.echo = True
@@ -359,7 +359,7 @@ class runner_test (runner):
 		prc.afterCmd = 'bash -c "echo 2 >&2; exit 1"'
 		prc.echo = False # anyway print stderr
 		prc._tidyBeforeRun ()
-		self.assertEqual (prc._runCmd('afterCmd'), 1)
+		self.assertRaises (Exception, prc._runCmd, 'afterCmd')
 
 
 		

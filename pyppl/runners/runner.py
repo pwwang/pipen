@@ -69,10 +69,11 @@ class runner (object):
 					sys.stdout.write (fout.read())
 					lock.release()
 				sleep (2)
-			lock.acquire()
-			sys.stderr.write (ferr.read())
-			sys.stdout.write (fout.read())
-			lock.release()
+			if self.job.proc.echo:
+				lock.acquire()
+				sys.stderr.write (ferr.read())
+				sys.stdout.write (fout.read())
+				lock.release()
 			retcode = self.p.returncode
 			self.job.rc(retcode)
 		ferr.close()

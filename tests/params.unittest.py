@@ -161,11 +161,11 @@ USAGE:
 
 REQUIRED OPTIONS:
 ----------------
-  --param-p3 <float>:                   The p3 params
+  --param-p3 <float>                    The p3 params
 
 OPTIONAL OPTIONS:
 ----------------
-  --param-p2 <list>:                    Default: [1, 2, 3]
+  --param-p2 <list>                     Default: [1, 2, 3]
   -h, --help, -H, -?                    Print this help information.
 
 """.format(sys.argv[0]).split("\n"))

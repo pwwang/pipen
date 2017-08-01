@@ -20,7 +20,7 @@ from .channel import channel
 from .job import job as pjob
 from .doct import doct
 
-from ..runners import runner_local, runner_sge, runner_ssh, runner_dry
+from ..runners import runner_local, runner_sge, runner_ssh, runner_dry, runner_slurm
 
 class proc (object):
 	"""
