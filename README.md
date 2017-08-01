@@ -55,20 +55,19 @@ sort -k1r {{infile}} > {{outfile}}
 
 8. pyppl().starts(pSort).run()
 """
-Line 1: Import the modules.
-Line 2: Define the process with a description.
-Line 3: Define the input data for the process.
-- No data was specified, it will use `sys.argv`.
-- Full format should be: `{"infile:file": channel.fromArgv()}`.
-Line 4: Define the output. Placeholders and functions call be used.
-Line 5: Define how many jobs are running simultaneously.
-Line 6: Set the directory to export the output files.
-Line 7: Set Your script to run.
-Line 8: Set the starting processes and run the pipeline.
-
-# Assign the entrance process
-pyppl().starts(pSort).run()
 ```
+
+**Line 1**: Import the modules.  
+**Line 2**: Define the process with a description.  
+**Line 3**: Define the input data for the process.  
+* No data was specified, it will use `sys.argv`.   
+* Full format should be: `{"infile:file": channel.fromArgv()}`.  
+
+**Line 4**: Define the output. Placeholders and functions call be used.  
+**Line 5**: Define how many jobs are running simultaneously.  
+**Line 6**: Set the directory to export the output files.  
+**Line 7**: Set Your script to run.  
+**Line 8**: Set the starting processes and run the pipeline.  
 
 ![First-script-output][20]
 
