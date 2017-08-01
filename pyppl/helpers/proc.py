@@ -583,9 +583,8 @@ class proc (object):
 		alias = {val:key for key, val in proc.ALIAS.items()}
 		for prop in sorted(self.props.keys()):
 			val = self.props[prop]
-			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'echo', 'runner',
-							'errorhow', 'errorntry', 'defaultSh', 'exportdir', 'exporthow', 'exportow',
-							'indir', 'outdir', 'length', 'args', 'expect', 'suffix']:
+			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'runner', 'errorhow', 'errorntry', 
+							'defaultSh', 'exportdir', 'exporthow', 'exportow', 'echo', 'length', 'args', 'suffix']:
 				continue
 			
 			if prop == 'args':
