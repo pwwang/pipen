@@ -119,6 +119,15 @@ class proc (object):
 		# Valid return code
 		self.config['retcodes']   = [0]
 		# Whether to print the stdout and stderr of the jobs to the screen
+		# Could also be:
+		# {
+		#   'jobs':   0           # or [0, 1, 2], just echo output of those jobs.
+		#   'type':   'stderr'    # only echo stderr. (stdout: only echo stdout; [don't specify]: echo all)
+		#   'filter': r'^output:' # only echo string starting with "output:"
+		# }
+		# self.echo = True     <=> self.echo = { 'jobs': 0 }
+		# self.echo = False    <=> self.echo = { 'jobs': [] }
+		# self.echo = 'stderr' <=> self.echo = { 'jobs': 0, 'type': 'stderr' }
 		self.config['echo']       = False
 		# Select the runner
 		self.config['runner']     = 'local'
@@ -475,6 +484,29 @@ class proc (object):
 
 		if self.exdir and not os.path.exists (self.exdir):
 			os.makedirs (self.exdir)
+			
+		if self.echo in [True, False, 'stderr', 'stdout']:
+			if self.echo is True:
+				self.props['echo'] = { 'jobs': 0 }
+			elif self.echo is False:
+				self.props['echo'] = { 'jobs': 0, 'type': [] }
+			else:
+				self.props['echo'] = { 'jobs': 0, 'type': self.echo }
+				
+		if not 'jobs' in self.echo:
+			self.echo['jobs'] = 0
+		if isinstance(self.echo['jobs'], int):
+			self.echo['jobs'] = [self.echo['jobs']]
+		elif isinstance(self.echo['jobs'], utils.basestring):
+			self.echo['jobs'] = map(lambda x: int(x.strip()), self.echo['jobs'].split(','))
+				
+		if not 'type' in self.echo:
+			self.echo['type'] = ['stderr', 'stdout']
+		if not isinstance(self.echo['type'], list):
+			self.echo['type'] = [self.echo['type']]
+		
+		if not 'filter' in self.echo:
+			self.echo['filter'] = ''
 		
 		self.log ('Properties set explictly: %s' % str(self.sets), 'debug')
 				
@@ -656,11 +688,11 @@ class proc (object):
 		self.log ('Running <%s> ...' % (key), 'info')
 		
 		p = Popen (cmd, shell=True, stdin=PIPE, stderr=PIPE, stdout=PIPE, universal_newlines=True)
-		if self.echo:
-			for line in iter(p.stdout.readline, ''):
-				self.logger.info ('[ STDOUT] %s' % line.rstrip("\n"))
+
+		for line in iter(p.stdout.readline, ''):
+			self.logger.info ('[ CMDOUT] %s' % line.rstrip("\n"))
 		for line in iter(p.stderr.readline, ''):
-			self.logger.error ('[ STDERR] %s' % line.rstrip("\n"))
+			self.logger.error ('[ CMDERR] %s' % line.rstrip("\n"))
 		rc = p.wait()
 		if rc != 0:
 			raise Exception ('Failed to run %s: \n----------------------------------\n%s' % (key, cmd))

@@ -127,12 +127,12 @@ class job (object):
 		else:
 			self.proc.log ('Job #%s (total %s) failed. Return code: %s (%s).' % (self.index, lenfailed, rc, rcmsg), 'error')
 		
-		if not self.proc.echo:
-			self.proc.log('Job #%s: Script: %s' % (self.index, self.script), 'error')
-			self.proc.log('Job #%s: Stdout: %s' % (self.index, self.outfile), 'error')
-			self.proc.log('Job #%s: Stderr: %s' % (self.index, self.errfile), 'error')
-			self.proc.log('Job #%s: check STDERR below:' % (self.index), 'error')
+		self.proc.log('Job #%s: Script: %s' % (self.index, self.script), 'error')
+		self.proc.log('Job #%s: Stdout: %s' % (self.index, self.outfile), 'error')
+		self.proc.log('Job #%s: Stderr: %s' % (self.index, self.errfile), 'error')
 			
+		if self.index not in self.proc.echo['jobs'] or 'stderr' not in self.proc.echo['type']:
+			self.proc.log('Job #%s: check STDERR below:' % (self.index), 'error')
 			errmsgs = []
 			if path.exists (self.errfile):
 				errmsgs = ['[ STDERR] ' + line.rstrip("\n") for line in open(self.errfile)]

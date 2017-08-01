@@ -334,6 +334,77 @@ sorted("""digraph PyPPL {
 		pBrings.brings = {"infile": "{{infile | fn}}.txi"}
 		pyppl().starts(pBrings).run()
 		self.assertTrue (os.path.exists( os.path.join(pBrings.jobs[0].indir, "1.txi") ))
+		
+	def testEcho(self):
+		pFalse = proc(desc = 'Echo off')
+		pFalse.echo = False
+		pFalse.forks = 2
+		pFalse.input = {'in': [0, 1]}
+		pFalse.output = 'out:{{in}}'
+		pFalse.script = """
+		echo STDOUT:{{in}}
+		echo STDERR:{{in}} 1>&2
+		"""
+		
+		pTrue = proc(desc = 'Echo on')
+		pTrue.echo = True
+		pTrue.forks = 2
+		pTrue.depends = pFalse
+		pTrue.input = 'in'
+		pTrue.output = 'out:{{in}}'
+		pTrue.script = """
+		echo STDOUT:{{in}}
+		echo STDERR:{{in}} 1>&2
+		"""
+		
+		pJobs = proc(desc = 'Echo jobs')
+		pJobs.echo = {'jobs': [0, 1]}
+		pJobs.forks = 2
+		pJobs.depends = pTrue
+		pJobs.input = 'in'
+		pJobs.output = 'out:{{in}}'
+		pJobs.script = """
+		echo STDOUT:{{in}}
+		echo STDERR:{{in}} 1>&2
+		"""
+		
+		pStderrOnly = proc(desc = 'Echo StderrOnly')
+		pStderrOnly.echo = 'stderr'
+		pStderrOnly.forks = 2
+		pStderrOnly.depends = pJobs
+		pStderrOnly.input = 'in'
+		pStderrOnly.output = 'out:{{in}}'
+		pStderrOnly.script = """
+		echo STDOUT:{{in}}
+		echo STDERR:{{in}} 1>&2
+		"""
+		
+		pFilter = proc(desc = 'Echo filtered')
+		pFilter.echo = {'filter': r'ERR'}
+		pFilter.forks = 2
+		pFilter.depends = pStderrOnly
+		pFilter.input = 'in'
+		pFilter.output = 'out:{{in}}'
+		pFilter.script = """
+		echo STDOUT:{{in}}
+		echo STDERR:{{in}} 1>&2
+		"""
+		
+		pLog = proc(desc = 'Echo log')
+		pLog.echo = False
+		pLog.forks = 2
+		pLog.depends = pFilter
+		pLog.input = 'in'
+		pLog.output = 'out:{{in}}'
+		pLog.script = """
+		echo STDOUT:{{in}}
+		echo pyppl.log.error.hhh:{{in}} 1>&2
+		"""
+		
+		
+		pyppl().starts(pFalse).run()
+		
+		
 
 if __name__ == '__main__':
 	unittest.main()

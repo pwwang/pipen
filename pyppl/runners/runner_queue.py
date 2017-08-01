@@ -27,41 +27,24 @@ class runner_queue (runner):
 			`job`:    The job object
 		"""
 		super(runner_queue, self).__init__(job)
-		self.checkRunning = False
 	
 	def wait(self):
 		"""
 		Wait for the job to finish
 		"""
-		if self.job.rc() == pjob.FAILED_RC: 
-			return
-			
 		ferr = open (self.job.errfile)
 		fout = open (self.job.outfile)
-		if self.p:
-			self.p.wait()
-			self.getpid()
-			if self.job.proc.echo:
-				lock.acquire()
-				sys.stderr.write (ferr.read())
-				sys.stdout.write (fout.read())
-				lock.release()
 		
-		if self.checkRunning and not self.isRunning():
-			ferr.close()
-			fout.close()
-			return
-		
+		# wait for submission process first
+		super(runner_queue, self).wait(rc = False, fout = fout, ferr = ferr)
+			
+		lastout = ''
+		lasterr = ''
 		while self.job.rc() == pjob.EMPTY_RC:
-			sleep (randint(20, 40))
-			if self.job.proc.echo:
-				lock.acquire()
-				sys.stderr.write (''.join(ferr.readlines()))
-				sys.stdout.write (''.join(fout.readlines()))
-				lock.release()
-				
-			if self.checkRunning and not self.isRunning():
-				break
+			sleep (30)
+			(lastout, lasterr) = self._flushOut (fout, ferr, lastout, lasterr)
+			
+		self._flushOut(fout, ferr, lastout, lasterr)
 			
 		ferr.close()
 		fout.close()
