@@ -40,51 +40,58 @@ pip install pyppl
 ```
 
 ## First script
-To sort 5 files: 
+To sort 5 files simultaneously: 
 ```python
-from pyppl import pyppl, proc
+1. from pyppl import pyppl, proc, channel
 
-pSort         = proc()
-# Use sys.argv as input channel,
-# because this proc does not have any dependents
-# infile will be the placeholder to access it in your output assignment
-# and script.
-# The ":file" denotes the type of input, a symbolic link will be created in 
-# the input directory
-pSort.input   = "infile:file"
-# Output file (the ":file" sign) will be generated in job output directory
-# "infile" is the full path of the input file, "fn" takes its filename (without extension)
-pSort.output  = "outfile:file:{{infile | fn}}.sorted"
-# You can use placeholders to access input and output
-pSort.script  = """
-  sort -k1r {{infile}} > {{outfile}}
+2. pSort         = proc(desc = 'Sort files.')
+3. pSort.input   = "infile:file"
+4. pSort.output  = "outfile:file:{{infile | fn}}.sorted"
+5. pSort.forks   = 5
+6. pSort.exdir   = './'
+7. pSort.script  = """
+sort -k1r {{infile}} > {{outfile}}
 """ 
+
+8. pyppl().starts(pSort).run()
+"""
+Line 1: Import the modules.
+Line 2: Define the process with a description.
+Line 3: Define the input data for the process.
+- No data was specified, it will use `sys.argv`.
+- Full format should be: `{"infile:file": channel.fromArgv()}`.
+Line 4: Define the output. Placeholders and functions call be used.
+Line 5: Define how many jobs are running simultaneously.
+Line 6: Set the directory to export the output files.
+Line 7: Set Your script to run.
+Line 8: Set the starting processes and run the pipeline.
 
 # Assign the entrance process
 pyppl().starts(pSort).run()
 ```
 
-Run `python test.py test?.txt` will output:
 ![First-script-output][20]
 
-## A toy example
+## Multiple processes 
 Sort each 5 file and then combine them into one file
 ```python
-from pyppl import pyppl, proc
+from pyppl import pyppl, proc, channel, params
 
-pSort         = proc()
-pSort.input   = "infile:file"
+params.infiles = []
+params.infiles.desc = "Input files."
+params.parse()
+
+pSort         = proc(desc = "Sort files.")
+pSort.input   = {"infile:file": params.infiles.value}
 pSort.output  = "outfile:file:{{infile | fn}}.sorted"
 pSort.script  = """
   sort -k1r {{infile}} > {{outfile}}
 """ 
 
-pCombine      = proc()
-# Will use pSort's output channel as input
-pCombine.depends  = pSort
+pCombine          = proc(desc = "Combine files.")
+pCombine.depends  = pSort   # will automatically use pSort's output as input data
 pCombine.input    = {"infiles:files": lambda ch: [ch.toList()]}
 pCombine.output   = "outfile:file:{{infiles | [0] | fn}}_etc.sorted"
-# Export the final result file
 pCombine.exdir    = "./export" 
 pCombine.script   = """
 > {{outfile}}
@@ -93,11 +100,16 @@ for infile in {{infiles | asquote}}; do
 done
 """
 
+# Only need to specify start processes
 pyppl().starts(pSort).run()
 ```
-Run `python test.py test?.txt`, then you will find the combined file named `output.sorted` in `./export`.
 
-## Using a different interpreter:
+Run the pipeline: 
+```bash
+python pipeline.py --param-infiles test?.txt
+```
+
+## Using a different language:
 ```python
 pPlot = proc()
 # Specify input explicitly
