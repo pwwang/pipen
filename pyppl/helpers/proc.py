@@ -746,4 +746,5 @@ class proc (object):
 proc.registerRunner (runner_local)
 proc.registerRunner (runner_sge)
 proc.registerRunner (runner_ssh)
+proc.registerRunner (runner_slurm)
 proc.registerRunner (runner_dry)
