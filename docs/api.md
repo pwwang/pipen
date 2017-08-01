@@ -229,13 +229,16 @@ Create a width = 2 channel from a pattern
 - **returns:**  
 The channel create from every 2 files match the pattern  
   
-#### `fromPath (pattern, t) [@staticmethod]`
+#### `fromPath (pattern, t, sortby, reverse) [@staticmethod]`
   
 Create a channel from a path pattern  
 
 - **params:**  
 `pattern`: the pattern with wild cards  
 `t`:       the type of the files/dirs to include  
+- 'dir', 'file', 'link' or 'any' (default)  
+`sortby`:  how the list is sorted  
+- 'name' (default), 'mtime', 'size'  
 
 - **returns:**  
 The channel created from the path  
@@ -371,7 +374,7 @@ The brings can be set as: `p.brings = {"infile": "{{infile.bn}}*.bai"}`
 If you have multiple files to bring in:  
 `p.brings = {"infile": "{{infile.bn}}*.bai", "infile#": "{{infile.bn}}*.fai"}`  
 You can use wildcards to search the files, but only the first file will return  
-To access the brings in your script: {% raw %}`{{ infile.bring }}`, `{{ infile#.bring }}`{% endraw %}  
+To access the brings in your script: {% raw %}`{{ brings.infile }}`, `{{ brings.infile# }}`{% endraw %}  
 If original input file is a link, will try to find it along each directory the link is in.  
   
 #### `_prepInput (self) `
@@ -400,7 +403,7 @@ Build the script, interpret the placeholders
   
 Truly cache the job (by signature)  
   
-#### `checkOutfiles (self) `
+#### `checkOutfiles (self, expect) `
   
 Check whether output files are generated, if not, add - to rc.  
   
@@ -943,6 +946,32 @@ arg:   the arg to update
 procs: The ids of the procs to update  
   
 
+## Module `doct`  
+> Extend dict so you can use dot (".") to access keys.
+	Refer to 
+	Examples:
+	```python
+	m = Map({'first_name': 'Eduardo'}, last_name='Pool', age=24, sports=['Soccer'])
+	# Add new key
+	m.new_key = 'Hello world!'
+	# Or
+	m['new_key'] = 'Hello world!'
+	print m.new_key
+	print m['new_key']
+	# Update values
+	m.new_key = 'Yay!'
+	# Or
+	m['new_key'] = 'Yay!'
+	# Delete key
+	del m.new_key
+	# Or
+	del m['new_key']
+	```
+	
+
+#### `__init__ (self, *args, **args) `
+  
+
 ## Module `runner`  
 > The base runner class
 	
@@ -1021,7 +1050,6 @@ Constructor
 
 - **params:**  
 `job`:    The job object  
-`config`: The properties of the process  
   
 
 ## Module `runner_sge`  
@@ -1041,4 +1069,20 @@ Constructor
 #### `isRunning (self) `
   
 Tell whether the job is still running  
+  
+
+## Module `runner_dry`  
+> The dry runner
+	
+
+#### `__init__ (self, job) `
+  
+Constructor  
+
+- **params:**  
+`job`:    The job object  
+  
+#### `finish (self) `
+  
+Do some cleanup work when jobs finish  
   

@@ -197,8 +197,8 @@ class TestJob (unittest.TestCase):
 		j._prepBrings()
 		self.assertTrue (utils.isSamefile(j.brings['b'], os.path.join (j.indir, "aggr.unittest.py")))
 		self.assertTrue (utils.isSamefile(j.brings['b#'], os.path.join (j.indir, "pyppl.unittest.py")))
-		self.assertTrue (utils.isSamefile(j.data['bring.b'], j.data['bring.b.orig']))
-		self.assertTrue (utils.isSamefile(j.data['bring.b#'], j.data['bring.b#.orig']))
+		self.assertTrue (utils.isSamefile(j.data['brings.b'], j.data['brings.b.orig']))
+		self.assertTrue (utils.isSamefile(j.data['brings.b#'], j.data['brings.b#.orig']))
 		
 	def testPrepOutput (self):
 		p1 = proc ('prepoutput')

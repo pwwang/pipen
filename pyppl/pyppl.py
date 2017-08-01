@@ -120,7 +120,7 @@ class pyppl (object):
 				config['runner'] = profile
 			else:
 				config['runner'] = 'local'
-
+		
 		next2run = self.heads
 		finished = []
 		

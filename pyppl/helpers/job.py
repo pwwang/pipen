@@ -128,6 +128,9 @@ class job (object):
 			self.proc.log ('Job #%s (total %s) failed. Return code: %s (%s).' % (self.index, lenfailed, rc, rcmsg), 'error')
 		
 		if not self.proc.echo:
+			self.proc.log('Job #%s: Script: %s' % (self.index, self.script), 'error')
+			self.proc.log('Job #%s: Stdout: %s' % (self.index, self.outfile), 'error')
+			self.proc.log('Job #%s: Stderr: %s' % (self.index, self.errfile), 'error')
 			self.proc.log('Job #%s: check STDERR below:' % (self.index), 'error')
 			
 			errmsgs = []
@@ -414,7 +417,7 @@ class job (object):
 			with open (self.idfile, 'w') as f:
 				f.write (val)
 	
-	def checkOutfiles (self):
+	def checkOutfiles (self, expect = True):
 		"""
 		Check whether output files are generated, if not, add - to rc.
 		"""
@@ -425,8 +428,9 @@ class job (object):
 				self.rc (job.NOOUT_RC)
 				return
 				
-		if self.proc.expect:
+		if self.proc.expect and expect:
 			expect = utils.format (self.proc.expect, self.data)
+			self.proc.log ('Job #%-3s: check expectation: %s' % (self.index, expect), 'debug', 'debug', 'EXPECT_CHECKING')
 			exrc   = Popen (expect, shell=True, stdout=PIPE, stderr=PIPE).wait()
 			if exrc != 0:
 				self.rc (job.NOOUT_RC)
@@ -523,21 +527,26 @@ class job (object):
 						remove (infile)
 					symlink (origfile, infile)
 				elif not utils.isSamefile (origfile, infile):
-					#bedir  = path.join (self.indir, basename + '.' + utils.uid(origfile, 4)) # basename exists
-					#infile = path.join (bedir, basename)
-					#if not path.exists(bedir):
-					#	makedirs (bedir)
 					(fn, _, ext) = basename.rpartition('.')
-					infile = path.join (self.indir, fn + '._' + utils.uid(path.realpath(origfile), 4) + '_.' + ext)
-					
-					if path.exists (infile):
-						if not utils.isSamefile(origfile, infile):
-							self.proc.log ("Overwriting renamed input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
-							remove (infile)  # it's a link
-							symlink (origfile, infile)
-					else:
-						self.proc.log ("Renaming input file: %s" % infile, 'warning', 'warning', 'INFILE_RENAMING')
+					existInfiles = glob (path.join(self.indir, fn + '[[]*[]].' + ext))
+					if not existInfiles:
+						infile = path.join (self.indir, fn + '[1].' + ext)
 						symlink (origfile, infile)
+					else:
+						num = 0
+						for eifile in existInfiles:
+							if utils.isSamefile (origfile, eifile):
+								infile = eifile
+								num    = 0
+								break
+							n   = int(path.basename(eifile)[len(fn)+1 : -len(ext)-2])
+							num = max (num, n)
+						
+						if num > 0:
+							infile = path.join (self.indir, fn + '[' + str(num+1) + '].' + ext)
+							symlink (origfile, infile)
+							
+					self.proc.log ("Input file renamed: %s -> %s" % (origfile, path.basename(infile)), 'warning', 'warning', 'INFILE_RENAMING')
 						
 				self.data[key]           = infile
 				self.data[key + '.orig'] = origfile
@@ -563,16 +572,25 @@ class job (object):
 						symlink (origfile, infile)
 					elif not utils.isSamefile (origfile, infile):
 						(fn, _, ext) = basename.rpartition('.')
-						infile = path.join (self.indir, fn + '._' + utils.uid(path.realpath(origfile), 4) + '_.' + ext)
-						
-						if path.exists (infile):
-							if not utils.isSamefile(origfile, infile): # it's anyway the same file?
-								self.proc.log ("Overwriting renamed input file: %s" % infile, 'warning', 'warning', 'INFILE_OVERWRITING')
-								remove (infile)  # it's a link
-								symlink (origfile, infile)
-						else:
-							self.proc.log ("Renaming input file: %s" % infile, 'warning', 'warning', 'INFILE_RENAMING')
+						existInfiles = glob (path.join(self.indir, fn + '[[]*[]].' + ext))
+						if not existInfiles:
+							infile = path.join (self.indir, fn + '[1].' + ext)
 							symlink (origfile, infile)
+						else:
+							num = 0
+							for eifile in existInfiles:
+								if utils.isSamefile (origfile, eifile):
+									infile = eifile
+									num    = 0
+									break
+								n   = int(path.basename(eifile)[len(fn)+1 : -len(ext)-2])
+								num = max (num, n)
+							
+							if num > 0:
+								infile = path.join (self.indir, fn + '[' + str(num+1) + '].' + ext)
+								symlink (origfile, infile)
+								
+						self.proc.log ("Input file renamed: %s -> %s" % (origfile, path.basename(infile)), 'warning', 'warning', 'INFILE_RENAMING')
 						
 					self.input[key]['orig'].append (origfile)
 					self.input[key]['data'].append (infile)
@@ -590,29 +608,60 @@ class job (object):
 		If you have multiple files to bring in:
 		`p.brings = {"infile": "{{infile.bn}}*.bai", "infile#": "{{infile.bn}}*.fai"}`
 		You can use wildcards to search the files, but only the first file will return
-		To access the brings in your script: {% raw %}`{{ infile.bring }}`, `{{ infile#.bring }}`{% endraw %}
+		To access the brings in your script: {% raw %}`{{ brings.infile }}`, `{{ brings.infile# }}`{% endraw %}
 		If original input file is a link, will try to find it along each directory the link is in.
 		"""
 		for key, val in self.proc.brings.items():
 			  
-			brkey   = "bring." + key
+			brkey   = "brings." + key
 			pattern = utils.format (val, self.data)
 
 			inkey   = key.split("#")[0]
 			infile  = self.input[inkey]['data']
+			ogfile  = self.input[inkey]['orig']
+			inbn    = path.basename (infile)
 			intype  = self.input[inkey]['type']
 			if intype not in self.proc.IN_FILETYPE:
-				raise ValueError ('Only can brings a file related to an input file.')
+				raise Exception ('Only can brings a file related to an input file.')
 
 			# Anyway give an empty string, so that users can tell if bringing fails
 			self.data[brkey]           = ''
 			self.data[brkey + ".orig"] = ''
 			self.brings[key]           = ''
 			self.brings[key + ".orig"] = ''
+			
+			# have to be a link
+			if not path.islink (infile): 
+				return
+			
+			infile = readlink (infile)
 			while path.exists(infile):
 				bring = glob (path.join (path.dirname(infile), pattern))
 				if bring:
-					dstfile = path.join (self.indir, path.basename(bring[0]))
+					# basename of infile could be changed in indir if a file with the same basename exists
+					dstbn = path.basename (bring[0])
+					if inbn != path.basename(infile): # name changed
+						inparts     = inbn.split('.')
+						dstparts    = dstbn.split('.')
+						chgpos      = -1 if len(dstparts) == 1 else len(inparts) - len(dstparts) - 2
+						existBfiles = glob (path.join(self.indir, '.'.join([x+'[[]*[]]' if i==chgpos else x for x in dstparts])))
+						if not existBfiles:
+							dstparts[chgpos] += '[1]'
+						else:
+							num = 0
+							for ebfile in existBfiles:
+								if utils.isSamefile(bring[0], ebfile):
+									dstbn = path.basename(ebfile)
+									num   = 0
+									break
+								n   = int(path.basename(ebfile)[len(fn)+1 : -len(ext)-2])
+								num = max (num, n)
+								
+							if num > 0:
+								dstparts[chgpos] += '[' + str(num) + ']'
+								dstbn = '.'.join(dstparts)
+					
+					dstfile = path.join (self.indir, dstbn)
 					self.data[brkey] = dstfile
 					self.data[brkey + ".orig"] = bring[0]
 					self.brings[key] = dstfile
@@ -698,11 +747,10 @@ class job (object):
 		"""
 		Build the script, interpret the placeholders
 		"""
-		script    = self.proc.script.strip()
+		script    = self.proc.script
 		if not script:
 			self.proc.log ('No script specified', 'warning', 'warning', 'NOSCRIPT')
-			with open (self.script, 'w') as f:
-				f.write ('')
+			open (self.script, 'w').close()
 			return
 		
 		if script.startswith ('template:'):
@@ -715,6 +763,29 @@ class job (object):
 			f = open(tplfile)
 			script = f.read().strip()
 			f.close()
+		
+		# deal with indent for python
+		scripts  = script.split("\n")
+		indent   = ''
+		hassth   = False
+		nscripts = []
+		for s in scripts:
+			if not hassth and not s.strip():
+				continue
+			hassth = True
+			
+			if '# Indent: remove' in s:
+				indent = s[0:s.find('# Indent: remove')]
+				nscripts.append (s[len(indent):])
+			elif '# Indent: keep' in s:
+				indent = ''
+				nscripts.append (s)
+			elif indent and s.startswith(indent):
+				nscripts.append(s[len(indent):])
+			else:
+				nscripts.append(s)
+		script  = "\n".join(nscripts)
+		del scripts
 		
 		if not script.startswith ("#!"):
 			script = "#!/usr/bin/env " + self.proc.defaultSh + "\n\n" + script

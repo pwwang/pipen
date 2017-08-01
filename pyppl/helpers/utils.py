@@ -301,15 +301,40 @@ format.shorts = {
 	'realpath':  "lambda x: __import__('os').path.realpath (x)",
 	'readlink':  "lambda x: __import__('os').readlink (x)",
 	'dirname':   "lambda x: __import__('os').path.dirname (x)",
-	'basename':  "lambda x: __import__('os').path.basename (x)",
-	'bn':        "lambda x: __import__('os').path.basename (x)",
+	'basename':  "lambda x: [ \
+		[None for path in [__import__('os').path]], \
+		[None for dname in [path.dirname(x)]], \
+		[None for bname in [path.basename(x)]], \
+		[None for (fn, ext) in [tuple(path.splitext(bname))]], \
+		bname if not fn.endswith(']') else fn.rpartition('[')[0] + ext \
+		][-1]",
+	'bn':        "lambda x: [ \
+		[None for path in [__import__('os').path]], \
+		[None for bname in [path.basename(x)]], \
+		[None for (fn, ext) in [tuple(path.splitext(bname))]], \
+		bname if not fn.endswith(']') else fn.rpartition('[')[0] + ext \
+		][-1]",
+	'basename.orig': "lambda x: __import__('os').path.basename(x)",
+	'bn.orig':   "lambda x: __import__('os').path.basename(x)",
 	# /a/b/c.txt => c
-	'filename':  "lambda x: __import__('os').path.splitext (__import__('os').path.basename(x))[0]",
-	'fn':        "lambda x: __import__('os').path.splitext (__import__('os').path.basename(x))[0]",
+	'filename.orig':  "lambda x: __import__('os').path.splitext (__import__('os').path.basename(x))[0]",
+	'fn.orig':        "lambda x: __import__('os').path.splitext (__import__('os').path.basename(x))[0]",
+	'filename':  "lambda x: [\
+		[None for fn in [__import__('os').path.splitext (__import__('os').path.basename(x))[0]]], \
+		fn if not fn.endswith(']') else fn.rpartition('[')[0] \
+		][-1]",
+	'fn':        "lambda x: [\
+		[None for fn in [__import__('os').path.splitext (__import__('os').path.basename(x))[0]]], \
+		fn if not fn.endswith(']') else fn.rpartition('[')[0] \
+		][-1]",
 	# /a/b/c.txt => .txt
 	'ext':       "lambda x: __import__('os').path.splitext (__import__('os').path.basename(x))[1]",
 	# /a/b/c.txt => /a/b/c
-	'prefix':    "lambda x: __import__('os').path.splitext (x)[0]",
+	'prefix.orig':    "lambda x: __import__('os').path.splitext (x)[0]",
+	'prefix':    "lambda x: [\
+		[None for prefix in [__import__('os').path.splitext (x)[0]]], \
+		prefix if not prefix.endswith(']') else prefix.rpartition('[')[0] \
+		][-1]",
 	# array-space quote
 	'asquote':   "lambda x: '\"' + '\" \"'.join(x) + '\"'",
 	# array-comma quote

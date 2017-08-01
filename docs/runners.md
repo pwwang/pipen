@@ -2,7 +2,7 @@
 <!-- toc -->
 
 {% raw %}
-We have 3 built-in runners (`runner_local`, `runner_ssh`, `runner_sge`), you can also define you own runners.
+We have 5 built-in runners (`runner_local`, `runner_ssh`, `runner_sge`, `runner_slurm`, `runner_dry`), you can also define you own runners.
 
 You can either tell one process to use a runner, or even, you can tell the pipeline to use one runner for all the processes. That means each process can have the same runner or a different one. To tell a process which runner to use, just specify the runner name to `p.runner` (for example, `p.runner = "sge"` to use the sge runner). Each process may use different configuration for the runner (`p.sgeRunner`) or the same one by [configuring the pipeline](https://pwwang.gitbooks.io/pyppl/content/configure-a-pipeline.html).
 
@@ -116,6 +116,68 @@ source /home/whoever/.bash_profile >&/dev/null; mkdir /tmp/my
 <workdir>/0/job.script
 rm -rf /tmp/my
 ```
+
+## Configurations for runner_slurm
+**Where to configure it:**
+For single process:
+```python
+p.slurmRunner = {...}
+```
+For pipeline:
+```python
+config = {
+  "proc": {
+    ... # other configurations
+    "runner": "slurm", # all processes run with slurm
+    "slurmRunner": {
+       ...
+    }
+  }, # or you can also create a profile
+  "runWithSlurm": {
+    ... # other configurations
+    "runner": "slurm", 
+    "slurmRunner": {
+       ...
+    }
+  }
+}
+pyppl(config).starts(...).run() # uses configurations of 'proc'
+# for profile:
+# pyppl(config).starts(...).run('runWithSlurm')
+```
+
+**The full configuration:**
+```javascript
+"slurmRunner": {
+  "preScript": "export PATH=$PATH:/path/to/add", // default: ''
+  "postScript": "# some cleanup",                // default: ''
+  // commands (some slurm systems have variants of commands)
+  "sbatch": "yhbatch",                           // default: sbatch
+  "srun": "yhrun",                               // default: srun
+  "squeue": "yhqueue",                           // default: squeue
+  // the prefix add to command you want to run
+  // i.e "srun -n8 hostname"
+  // it defaults to the command you specified to slurmRunner['srun']
+  // In this case: "yhrun"
+  "cmdPrefix": "srun -n8",                       // default: slurmRunner['srun']
+  // sbatch options (with prefix "slurm."):
+  "slurm.p": "normal",
+  "slurm.mem": "1GB",
+  // other options
+  // ......
+  // Note that job name (slurm.J), stdout (slurm.o), stderr file (slurm.e) is calculated by the runner.
+  // Although you can, you are not recommended to set them here.
+}
+```
+
+## Dry-run a pipeline
+You can use dry runner to dry-run a pipeline. The real script will not be running, instead, it just tries to touch the output files and create the output directories.
+>**NOTE**: when `runner_dry` is being used:
+- All processes are running on local machine.
+- Expectations won't be checked.
+- Processes won't be cached.
+- Output files/directories won't be exported.
+- Better set runner of all processes in a pipeline to `dry`. (`pyppl().starts(...).run('dry')`)
 
 ## Define your own runner
 You are also able to define your own runner, which should be a class extends `runner` (jobs run immediately after submission) or `runner_queue` (jobs are put into a queue after submission). There are several methods and variables you may need to redefine (You may check the [API documentation](https://pwwang.gitbooks.io/pyppl/content/API.html#runner) for all available methods and variables).

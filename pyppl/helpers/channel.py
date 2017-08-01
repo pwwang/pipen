@@ -39,18 +39,27 @@ class channel (list):
 		return ret
 	
 	@staticmethod
-	# t = 'dir', 'file', 'link' or 'any'
-	def fromPath (pattern, t = 'any'):
+	def fromPath (pattern, t = 'any', sortby = 'name', reverse=False):
 		"""
 		Create a channel from a path pattern
 		@params:
 			`pattern`: the pattern with wild cards
 			`t`:       the type of the files/dirs to include
+			  - 'dir', 'file', 'link' or 'any' (default)
+			`sortby`:  how the list is sorted
+			  - 'name' (default), 'mtime', 'size'
 		@returns:
 			The channel created from the path
 		"""
 		from glob import glob
-		ret = channel.create(sorted(glob(pattern)))
+		import os
+		if sortby == 'name':
+			key = str
+		elif sortby == 'mtime':
+			key = os.path.getmtime
+		elif sortby == 'size':	
+			key = os.path.getsize
+		ret = channel.create(sorted(glob(pattern), key=key, reverse=reverse))
 		if t != 'any':
 			from os import path
 		if t == 'link':
@@ -446,7 +455,7 @@ class channel (list):
 			The unfolded channel
 		"""
 		if self.length()%n != 0:
-			raise ValueError ('Failed to unfold, the length %s cannot be divided by %s' % (self.width(), n))
+			raise ValueError ('Failed to unfold, the length %s cannot be divided by %s' % (self.length(), n))
 		ret = channel.create()
 		for i in [x*n for x in range(int(self.length()/n))]:
 			ret.rbind (utils.reduce (lambda x, y: x+y, self[i:i+n]))

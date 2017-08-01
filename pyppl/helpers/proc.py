@@ -20,7 +20,7 @@ from .channel import channel
 from .job import job as pjob
 from .doct import doct
 
-from ..runners import runner_local, runner_sge, runner_ssh
+from ..runners import runner_local, runner_sge, runner_ssh, runner_dry
 
 class proc (object):
 	"""
@@ -66,6 +66,7 @@ class proc (object):
 		'CACHE_SIGOUTTYPES_DIFFER': -3,
 		'CACHE_SIGOUTPUT_DIFFER': -3,
 		'CACHE_SIGFILE_NOTEXISTS': -1,
+		'EXPECT_CHECKING': -1,
 		'BRINGFILE_OVERWRITING': 3,
 		'OUTNAME_USING_OUTTYPES': 1,
 		'OUTDIR_CREATED': 0,
@@ -343,14 +344,14 @@ class proc (object):
 		if self.suffix:
 			return self.suffix
 		
-		config        = { key:val for key, val in self.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'expect', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
+		config        = { key:val for key, val in self.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'expect', 'callback', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
 		config['id']  = self.id
 		config['tag'] = self.tag
 		
 		if 'callfront' in config:
 			config['callfront'] = utils.funcsig(config['callfront'])
-		if 'callback' in config:
-			config['callback'] = utils.funcsig(config['callback'])
+		#if 'callback' in config:
+		#	config['callback'] = utils.funcsig(config['callback'])
 		# proc is not picklable
 		if 'depends' in config:
 			depends = config['depends']
@@ -439,15 +440,13 @@ class proc (object):
 		self.log ("%s => %s => %s" % ([p._name() for p in self.depends] if self.depends else "START", self._name(), [p._name() for p in self.nexts] if self.nexts else "END"), "info", "depends")
 		self._readConfig (config)
 		self._tidyBeforeRun ()
-		if self._runCmd('beforeCmd') != 0:
-			raise Exception ('Failed to run beforeCmd: %s' % self.beforeCmd)
+		self._runCmd('beforeCmd')
 		if not self._checkCached():
 			self.log (self.workdir, 'info', 'RUNNING')
 		else:
 			self.log (self.workdir, 'info', 'CACHED')
 		self._runJobs()
-		if self._runCmd('afterCmd') != 0:
-			raise Exception ('Failed to run afterCmd: %s' % self.afterCmd)
+		self._runCmd('afterCmd')
 		self._tidyAfterRun ()
 		self.log ('Done (time: %s).' % utils.formatTime(time() - timer), 'info')
 
@@ -476,7 +475,7 @@ class proc (object):
 
 		if self.exdir and not os.path.exists (self.exdir):
 			os.makedirs (self.exdir)
-			
+		
 		self.log ('Properties set explictly: %s' % str(self.sets), 'debug')
 				
 	def _buildInput (self):
@@ -588,9 +587,9 @@ class proc (object):
 		@params:
 			`config`: The configuration
 		"""
-		conf = { key:val for key, val in config.items() if key not in self.sets }
+		conf = { (key if not key in proc.ALIAS else proc.ALIAS[key]):val for key, val in config.items() if key not in self.sets }
 		self.config.update (conf)
-
+		
 		for key, val in conf.items():
 			self.props[key] = val
 
@@ -662,7 +661,10 @@ class proc (object):
 				self.logger.info ('[ STDOUT] %s' % line.rstrip("\n"))
 		for line in iter(p.stderr.readline, ''):
 			self.logger.error ('[ STDERR] %s' % line.rstrip("\n"))
-		return p.wait()
+		rc = p.wait()
+		if rc != 0:
+			raise Exception ('Failed to run %s: \n----------------------------------\n%s' % (key, cmd))
+		return rc
 
 	def _runJobs (self):
 		"""
@@ -674,7 +676,12 @@ class proc (object):
 			The worker to run jobs
 			"""
 			while True:
-				(run, i) = q.get()
+				data = q.get()
+				
+				if data is None:
+					break
+					
+				(run, i) = data
 				sleep (i)	
 				#if hasattr(run, 'checkRunning') and run.checkRunning and run.isRunning():
 				# anyway check whether the job is running before submit it
@@ -704,13 +711,23 @@ class proc (object):
 				job.done()
 
 		# submit jobs
+		threads       = []
 		nojobs2submit = min (self.forks, len(self.ncjobids))
 		for i in range (nojobs2submit):
 			t = threading.Thread(target = sworker, args = (sq, ))
 			t.daemon = True
 			t.start ()
+			threads.append (t)
 		
 		sq.join()
+		
+		for i in range(nojobs2submit):
+			sq.put (None)
+		for thr in threads:
+			thr.join()
+		
+		# make sure only one thread left
+		self.log('Active thread(s): %s' % str(threading.activeCount()), 'debug')
 
 	@staticmethod
 	def registerRunner (runner):
@@ -730,3 +747,4 @@ proc.registerRunner (runner_local)
 proc.registerRunner (runner_sge)
 proc.registerRunner (runner_ssh)
 proc.registerRunner (runner_slurm)
+proc.registerRunner (runner_dry)

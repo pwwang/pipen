@@ -12,6 +12,7 @@
 * [Set other properties of a process](set-other-properties-of-a-process.md)
 * [Configure a pipeline](configure-a-pipeline.md)
 * [Draw flowchart of a pipeline](draw-flowchart-of-a-pipeline.md)
+* [Command line argument parser](command-line-argument-parser.md)
 * [Aggregations](aggregations.md)
 * [Command line tool](command-line-tool.md)
 * [API](api.md)
