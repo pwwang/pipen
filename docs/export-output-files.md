@@ -17,3 +17,13 @@ You can export the output files of any process. Note that even though the export
 You can ask `pyppl` whether to overwrite the existing files in the export directory by set `exportow`(alias:`exow`) to `True` (overwrite) or `False` (do not overwrite).
 
 > **Note** if the directory you specified to `p.exdir` does not exist, it will be created automatically, including those intermediate folders if necessary.
+
+## Partial export
+You can also partially export the output files by set value to `p.expart`.  
+You have 2 ways to select the files:
+- Output key. For example, for `p.output = "outfile1:file:a.txt1, outfile2:file:b.txt2"`, you can export only `outfile1` by: `p.expart = "outfile1"`
+- Glob patterns. In the above example, you can also do: `p.expart = "*.txt1"`
+
+You can have multiple selectors: `p.expart = ["*.txt1", "outfile2"]` to export all files.
+
+>**NOTE**: Export-caching will not be allowed when using partial export.
