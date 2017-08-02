@@ -78,7 +78,8 @@ Sort each 5 file and then combine them into one file
 from pyppl import pyppl, proc, channel, params
 
 params.infiles = []
-params.infiles.desc = "Input files."
+params.infiles.desc     = "Input files."
+params.infiles.required = True
 params.parse()
 
 pSort         = proc(desc = "Sort files.")

@@ -12,16 +12,20 @@ from pyppl import params
 ```python
 params.opt = 'a'
 # or
-params.opt.setValue('a')
+# params.opt.setValue('a')
+params.opt2.setType(list).setRequired()
 
 # then don't forget to parse the command line arguments:
 params.parse()
 ```
-Then `python pipeline.py --param-opt b` will overwrite the value.  
+Then `python pipeline.py --param-opt b --param-opt2 1 2 3` will overwrite the value.  
+`list` option can also be specified as `--param-opt2 1 --param-opt2 2 --param-opt2 3`
 To use the value:
 ```python
 var = params.opt.value + '2'
 # var is 'b2'
+var2 = params.opt2.value + [4]
+# var2 is ['1', '2', '3', 4]
 ```
 
 ## Set properties of an option
