@@ -268,6 +268,7 @@ class runner_test (runner):
 			'proc.errorntry': 3, 
 			'proc.workdir': '', 
 			'proc.runner': 'local', 
+			'proc.expart': '',
 			'proc.expect': '',
 			'proc.ppldir': os.path.join(rootdir, 'tests/workdir'), 
 			'proc.tmpdir': os.path.join(rootdir, 'tests/workdir'), 

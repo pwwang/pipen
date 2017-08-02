@@ -236,6 +236,9 @@ class job (object):
 		if self.proc.exhow in self.proc.EX_SYMLINK:
 			self.proc.log ("Job not export-cached using symlink export.", "warning", "warning", "EXPORT_CACHE_USING_SYMLINK")
 			return False
+		if self.proc.expart:
+			self.proc.log ("Job not export-cached using partial export.", "warning", "warning", "EXPORT_CACHE_USING_EXPARTIAL")
+			return False
 		if not self.proc.exdir:
 			self.proc.log ("Job not export-cached since export directory is not set.", "debug", "debug", "EXPORT_CACHE_EXDIR_NOTSET")
 			return False
@@ -442,21 +445,32 @@ class job (object):
 		"""
 		if not self.proc.exportdir: 
 			return
-
-		for _, out in self.output.items():
-			if out['type'] in self.proc.OUT_VARTYPE: 
-				continue
-
-			bname  = path.basename (out['data'])
+		
+		files2ex = []
+		if not self.proc.expart:
+			for _, out in self.output.items():
+				if out['type'] in self.proc.OUT_VARTYPE: 
+					continue
+				files2ex.append (out['data'])
+		else:
+			for expart in self.proc.expart:
+				if expart in self.output:
+					files2ex.append (self.output[expart]['data'])
+				else:
+					files2ex.extend(glob(path.join(self.outdir, expart)))
+		files2ex = list(set(files2ex))
+		
+		for file2ex in files2ex:
+			bname  = path.basename (file2ex)
 			exfile = path.join (self.proc.exportdir, bname)
 			
-			if self.proc.exhow in self.proc.EX_GZIP and out['type'] in self.proc.OUT_FILETYPE:
+			if self.proc.exhow in self.proc.EX_GZIP and path.isfile(file2ex):
 				exfile += '.%s.gz' % self.proc._name (False)
-			elif self.proc.exhow in self.proc.EX_GZIP and out['type'] in self.proc.OUT_DIRTYPE:
+			elif self.proc.exhow in self.proc.EX_GZIP and path.isdir(file2ex):
 				exfile += '.%s.tgz' % self.proc._name (False)
 			
 			# don't overwrite existing files
-			if (not self.proc.exportow and path.exists(exfile)) or utils.isSamefile(out['data'], exfile):
+			if (not self.proc.exportow and path.exists(exfile)) or utils.isSamefile(file2ex, exfile):
 				self.proc.log ('Job #%-3s: skipped (target exists): %s' % (self.index, exfile), 'info', 'export')
 				continue
 			
@@ -470,20 +484,20 @@ class job (object):
 					remove (exfile)
 				self.proc.log ('Job #%-3s: exporting to: %s' % (self.index, exfile), 'info', 'export')
 			
-			if self.proc.exporthow in self.proc.EX_GZIP and out['type'] in self.proc.OUT_FILETYPE and not path.isdir(out['data']):
-				utils.gz (exfile, out['data'])
-			elif self.proc.exporthow in self.proc.EX_GZIP and (out['type'] in self.proc.OUT_DIRTYPE or (out['type'] in self.proc.OUT_FILETYPE and path.isdir(out['data']))):
-				utils.targz (exfile, out['data'])
-			elif self.proc.exporthow in self.proc.EX_COPY and out['type'] in self.proc.OUT_FILETYPE and not path.isdir(out['data']):
-				copyfile (out['data'], exfile)
-			elif self.proc.exporthow in self.proc.EX_COPY and (out['type'] in self.proc.OUT_DIRTYPE or (out['type'] in self.proc.OUT_FILETYPE and path.isdir(out['data']))):
-				copytree (out['data'], exfile)
+			if self.proc.exporthow in self.proc.EX_GZIP and path.isfile(file2ex):
+				utils.gz (exfile, file2ex)
+			elif self.proc.exporthow in self.proc.EX_GZIP and path.isdir(file2ex):
+				utils.targz (exfile, file2ex)
+			elif self.proc.exporthow in self.proc.EX_COPY and path.isfile(file2ex):
+				copyfile (file2ex, exfile)
+			elif self.proc.exporthow in self.proc.EX_COPY and path.isdir(file2ex):
+				copytree (file2ex, exfile)
 			elif self.proc.exporthow in self.proc.EX_MOVE:
-				move (out['data'], exfile)
+				move (file2ex, exfile)
 				# make sure dependent proc can run
-				symlink(path.abspath(exfile), out['data'])
+				symlink(path.abspath(exfile), file2ex)
 			elif self.proc.exporthow in self.proc.EX_SYMLINK:
-				symlink (out['data'], path.abspath(exfile))
+				symlink (file2ex, path.abspath(exfile))
 				
 	def reset (self):
 		"""

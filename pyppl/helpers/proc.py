@@ -53,6 +53,7 @@ class proc (object):
 		'': 999,
 		'EXPORT_CACHE_OUTFILE_EXISTS': -3,
 		'EXPORT_CACHE_USING_SYMLINK': 1,
+		'EXPORT_CACHE_USING_EXPARTIAL': 1,
 		'EXPORT_CACHE_EXFILE_NOTEXISTS': 1,
 		'EXPORT_CACHE_EXDIR_NOTSET': 1,
 		'CACHE_EMPTY_PREVSIG': -1,
@@ -171,6 +172,9 @@ class proc (object):
 		self.config['brings']     = {}
 		# expect
 		self.config['expect']     = ''
+		# partial export         
+		# Either the key of output file or the pattern
+		self.config['expart']     = ''
 
 		# id of the process, actually it's the variable name of the process
 		self.props['id']         = pid  
@@ -225,6 +229,7 @@ class proc (object):
 		self.props['lognline']   = {key:0 for key in proc.LOG_NLINE.keys()}
 		self.props['lognline']['prevlog'] = ''
 		self.props['expect']     = self.config['expect']
+		self.props['expart']     = self.config['expart']
 
 	def __getattr__ (self, name):
 		if not name in self.props and not name in proc.ALIAS and not name.endswith ('Runner'):
@@ -485,6 +490,10 @@ class proc (object):
 		if self.exdir and not os.path.exists (self.exdir):
 			os.makedirs (self.exdir)
 			
+		if not isinstance(self.expart, list):
+			self.props['expart'] = [self.expart]
+		self.props['expart'] = filter(None, self.expart)
+			
 		if self.echo in [True, False, 'stderr', 'stdout']:
 			if self.echo is True:
 				self.props['echo'] = { 'jobs': 0 }
@@ -583,8 +592,8 @@ class proc (object):
 		alias = {val:key for key, val in proc.ALIAS.items()}
 		for prop in sorted(self.props.keys()):
 			val = self.props[prop]
-			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'runner', 'errorhow', 'errorntry', 
-							'defaultSh', 'exportdir', 'exporthow', 'exportow', 'echo', 'length', 'args', 'suffix']:
+			if not prop in ['id', 'tag', 'tmpdir', 'forks', 'cache', 'workdir', 'runner', 'errorhow', 'errorntry', 'expart',
+							'defaultSh', 'exportdir', 'exporthow', 'exportow', 'echo', 'length', 'args', 'suffix', 'expect']:
 				continue
 			
 			if prop == 'args':
@@ -597,9 +606,11 @@ class proc (object):
 				self.props['procvars']['proc.' + prop] = val
 				if prop in alias: 
 					self.props['procvars']['proc.' + alias[prop]] = val
-					self.log ('%s (%s) => %s' % (prop, alias[prop], val), 'info', 'p.props')
+					if val is False or val:
+						self.log ('%s (%s) => %s' % (prop, alias[prop], val), 'info', 'p.props')
 				else:
-					self.log ('%s => %s' % (prop, val), 'info', 'p.props')
+					if val is False or val:
+						self.log ('%s => %s' % (prop, val), 'info', 'p.props')
 
 				
 	def _buildJobs (self):

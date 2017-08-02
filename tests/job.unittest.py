@@ -344,6 +344,11 @@ class TestJob (unittest.TestCase):
 		p.exdir  = ''
 		self.assertFalse (j.isExptCached())
 		p.cache  = 'export'
+		p.expart = '*.txt'
+		p.exdir  = self.wdir
+		self.assertFalse (j.isExptCached())
+		p.expart = ''
+		p.cache  = 'export'
 		p.exhow  = "gzip"
 		p.exdir  = self.wdir
 		
@@ -434,6 +439,53 @@ class TestJob (unittest.TestCase):
 		j.checkOutfiles ()
 		self.assertEqual (j.rc(), 0)
 		self.assertTrue (j.succeed())
+	
+	def testPartialExport (self):	
+		p = proc('expart')
+		p.ppldir = self.wdir
+		p.input  = {"a":[1]}
+		p.output = "xfile:file:{{a}}2.txt, outdir:dir:{{a}}"
+		p.props['logger'] = self.logger
+		p.exdir  = self.wdir
+		p.exhow  = 'copy'
+		p.script = "touch {{xfile}}"
+		p2 = p.copy()
+		p3 = p.copy()
+		p4 = p.copy()
+		p._buildProps()
+		p._buildInput()
+		p.run()
+		
+		self.assertTrue(os.path.isfile(self.wdir + '/12.txt'))
+		self.assertTrue(os.path.isdir(self.wdir + '/1'))
+		
+		os.remove (self.wdir + '/12.txt')
+		shutil.rmtree (self.wdir + '/1')
+		p2.expart = "*.txt"
+		p2._buildProps()
+		p2._buildInput()
+		p2.run()
+		
+		self.assertTrue(os.path.isfile(self.wdir + '/12.txt'))
+		self.assertFalse(os.path.isdir(self.wdir + '/1'))
+		
+		os.remove (self.wdir + '/12.txt')
+		p3.expart = "outdir"
+		p3._buildProps()
+		p3._buildInput()
+		p3.run()
+		
+		self.assertFalse(os.path.isfile(self.wdir + '/12.txt'))
+		self.assertTrue(os.path.isdir(self.wdir + '/1'))
+		
+		shutil.rmtree (self.wdir + '/1')
+		p4.expart = ["outdir", "*.txt"]
+		p4._buildProps()
+		p4._buildInput()
+		p4.run()
+		
+		self.assertTrue(os.path.isfile(self.wdir + '/12.txt'))
+		self.assertTrue(os.path.isdir(self.wdir + '/1'))
 		
 		
 	def testExport (self):
