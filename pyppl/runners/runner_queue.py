@@ -36,7 +36,7 @@ class runner_queue (runner):
 		fout = open (self.job.outfile)
 		
 		# wait for submission process first
-		super(runner_queue, self).wait(rc = False, fout = fout, ferr = ferr)
+		super(runner_queue, self).wait(False, fout, ferr)
 			
 		lastout = ''
 		lasterr = ''
