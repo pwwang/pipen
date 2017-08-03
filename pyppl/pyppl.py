@@ -64,7 +64,8 @@ class pyppl (object):
 			
 		logfile = os.path.splitext(sys.argv[0])[0] + ".pyppl.log"
 		if 'logfile' in config:
-			logfile = config['logfile']
+			if config['logfile'] is not True:
+				logfile = config['logfile']
 			del config['logfile']
 			
 		suffix  = utils.randstr ()

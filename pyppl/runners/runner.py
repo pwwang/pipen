@@ -154,7 +154,7 @@ class runner (object):
 					
 					line = line.strip()
 					if line.startswith('pyppl.log'):
-						logstrs  = line.split(':')
+						logstrs  = line.split(':', 1)
 						if len(logstrs) == 1:
 							logflags = logstrs[0]
 							logmsgs  = ''

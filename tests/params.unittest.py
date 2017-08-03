@@ -171,7 +171,7 @@ OPTIONAL OPTIONS:
 """.format(sys.argv[0]).split("\n"))
 	
 	def testParametersParse(self):
-		sys.argv = [sys.argv[0], "--param-p3", "5.1", "--param-p2=4", "5", "6"]
+		sys.argv = [sys.argv[0], "--param-p3", "5.1", "--param-p2=4", "5", "6", "--param-bamdir", "/a/b/c/mm/pipeline/workdir/bam.2ITurpH4.0", "--param-test"]
 		ps = parameters()
 		d2load = {
 			'p1': 1,
@@ -184,9 +184,13 @@ OPTIONAL OPTIONS:
 			'p3.show': True
 		}
 		ps.loadDict(d2load)
+		ps.bamdir.setRequired().setDesc('The temporary bam directory for this batch.')
+		ps.test.setType(bool).setValue(False).setDesc('Run a test instance?')
 		ps.parse()
 		self.assertEquals(ps.p3.value, 5.1)
 		self.assertEquals(ps.p2.value, ['4', '5', '6'])
+		self.assertEquals(ps.bamdir.value, "/a/b/c/mm/pipeline/workdir/bam.2ITurpH4.0")
+		self.assertEquals(ps.test.value, True)
 		
 		from tempfile import NamedTemporaryFile
 		from json import dumps

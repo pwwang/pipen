@@ -97,7 +97,9 @@ class proc (object):
 		"""
 		Constructor
 		@params:
-			`tag`: The tag of the process
+			`tag`:  The tag of the process
+			`desc`: The description of the process
+			`id`:   The identify of the process
 		"""
 		
 		# computed props
@@ -106,6 +108,9 @@ class proc (object):
 		self.__dict__['config']   = {}
 
 		pid                       = utils.varname(self.__class__.__name__, 2) if id is None else id
+		
+		if ' ' in tag:
+			raise ValueError("No space is allowed in %s's tag property. You probably mean 'desc' instead of 'tag'?" % pid)
 
 		# The input that user specified
 		self.config['input']      = ''
@@ -230,6 +235,7 @@ class proc (object):
 		self.props['lognline']['prevlog'] = ''
 		self.props['expect']     = self.config['expect']
 		self.props['expart']     = self.config['expart']
+		
 
 	def __getattr__ (self, name):
 		if not name in self.props and not name in proc.ALIAS and not name.endswith ('Runner'):
@@ -315,23 +321,26 @@ class proc (object):
 		self.lognline['prevlog'] = key
 		self.lognline[key] += 1
 
-	def copy (self, tag=None, newid=None):
+	def copy (self, tag=None, newid=None, desc=None):
 		"""
 		Copy a process
 		@params:
 			`newid`: The new id of the process, default: `None` (use the varname)
 			`tag`:   The tag of the new process, default: `None` (used the old one)
+			`desc`:  The desc of the new process, default: `None` (used the old one)
 		@returns:
 			The new process
 		"""
-		newproc = proc (tag if tag is not None else self.tag)
-		config = {key:val for key, val in self.config.items() if key not in ['tag', 'workdir', 'aggr']}
+		newproc = proc (tag if tag is not None else self.tag, desc if desc is not None else self.desc)
+		
+		config = {key:val for key, val in self.config.items() if key not in ['tag', 'workdir', 'aggr', 'desc']}
 		config['tag']      = newproc.tag
+		config['desc']     = newproc.desc
 		config['aggr']     = ''
 		config['workdir']  = ''
 		config['args']     = doct (self.config['args'])
 		#props   = {key:val for key, val in self.props.items() if key not in ['cached', 'procvars', 'ncjobids', 'sets', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
-		props   = {key:val for key, val in self.props.items() if key not in ['procvars', 'sets', 'ncjobids', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args']}
+		props   = {key:val for key, val in self.props.items() if key not in ['procvars', 'sets', 'ncjobids', 'channel', 'jobs', 'depends', 'nexts', 'tag', 'workdir', 'id', 'args', 'desc']}
 		props['sets']      = [s for s in self.sets]
 		#props['cached']    = True
 		props['procvars']  = {}
@@ -346,7 +355,6 @@ class proc (object):
 		props['id']        = utils.varname(r'\w+\.' + self.copy.__name__, 3) if newid is None else newid
 		newproc.__dict__['config'].update(config)
 		newproc.__dict__['props'].update(props)
-		
 		return newproc
 
 	def _suffix (self):

@@ -133,6 +133,8 @@ class parameters (object):
 		self.__dict__['params'] = {}
 			
 	def __setattr__(self, name, value):
+		if name in self.params:
+			self.params[name].setValue(value)
 		self.params[name] = parameter(name, value)
 		
 	def __getattr__(self, name):

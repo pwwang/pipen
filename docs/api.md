@@ -491,7 +491,9 @@ Tell if the job is successful by return code
 Constructor  
 
 - **params:**  
-`tag`: The tag of the process  
+`tag`:  The tag of the process  
+`desc`: The description of the process  
+`id`:   The identify of the process  
   
 #### `_buildInput (self) `
   
@@ -563,13 +565,14 @@ Do some cleaning after running jobs
   
 Do some preparation before running jobs  
   
-#### `copy (self, tag, newid) `
+#### `copy (self, tag, newid, desc) `
   
 Copy a process  
 
 - **params:**  
 `newid`: The new id of the process, default: `None` (use the varname)  
 `tag`:   The tag of the new process, default: `None` (used the old one)  
+`desc`:  The desc of the new process, default: `None` (used the old one)  
 
 - **returns:**  
 The new process  
