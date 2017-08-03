@@ -35,7 +35,7 @@ class runner (object):
 		"""
 		self.job.reset()
 		try:
-			self.job.proc.log ('Submitting job #%-3s ...' % self.job.index)
+			self.job.proc.log ('Submitting job #%-3s ...' % self.job.index, 'submit')
 			self.p = Popen (self.script, stderr=open(self.job.errfile, "w"), stdout=open(self.job.outfile, "w"), close_fds=True)
 		except Exception as ex:
 			self.job.proc.log ('Failed to run job #%s: %s' % (self.job.index, str(ex)), 'error')
@@ -100,7 +100,7 @@ class runner (object):
 		if self.job.succeed() or self.job.proc.errorhow != 'retry' or self.ntry > self.job.proc.errorntry:
 			return
 
-		self.job.proc.log ("Retrying job #%s ... (%s)" % (self.job.index, self.ntry))
+		self.job.proc.log ("Retrying job #%s ... (%s)" % (self.job.index, self.ntry), 'RETRY')
 		sleep (3)
 		self.submit()
 		self.wait()
@@ -154,20 +154,18 @@ class runner (object):
 					
 					line = line.strip()
 					if line.startswith('pyppl.log'):
-						logstrs  = line.split(':', 1)
+						logstrs  = line[9:].lstrip().split(':', 1)
 						if len(logstrs) == 1:
-							logflags = logstrs[0]
-							logmsgs  = ''
+							loglevel = logstrs[0]
+							logmsg   = ''
 						else:
-							(logflags, logmsgs) = logstrs
+							(loglevel, logmsg) = logstrs
 						
-						loglevel = 'info'
-						logflag  = 'info'
-						logflags = logflags.split('.')
-						if len(logflags) > 2:
-							loglevel = logflags[2]
-							logflag  = loglevel
-						if len(logflags) > 3:
-							logflag  = logflags[3]
-						self.job.proc.log (logmsgs.strip(), loglevel, logflag)
+						if not loglevel: 
+							loglevel = 'log'
+						else:
+							loglevel = loglevel[1:] # remove leading dot
+							
+						# '_' makes sure it's not filtered by log levels
+						self.job.proc.log (logmsg.lstrip(), '_' + loglevel)
 		return (lastout, lasterr)

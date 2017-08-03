@@ -103,7 +103,7 @@ class parameter (object):
 		"""
 		try:
 			self.value = self.type(self.value)
-		except TypeError:
+		except (ValueError, TypeError):
 			sys.stderr.write('Cannot coerce value "{}" to type "{}" for {}'.format(str(self.value), self.type.__name__, repr(self)))
 		
 	def _printName (self, prefix):

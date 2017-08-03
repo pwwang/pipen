@@ -14,7 +14,6 @@ from pyppl.runners import runner_slurm
 class TestRunner(unittest.TestCase):
 
 	testdir = "./tests"
-	logger  = utils.getLogger('debug', 'TestRunner')
 	def setUp (self):
 		if not os.path.exists (self.testdir):
 			os.makedirs(self.testdir)
@@ -32,7 +31,6 @@ class TestRunner(unittest.TestCase):
 		p.ppldir = self.testdir
 		p.script = "echo 1"
 		p.input = {'a': range(10)}
-		p.props['logger'] = self.logger
 		p._tidyBeforeRun ()
 		r = runner(p.jobs[0])
 		self.assertEqual (p.jobs[0], r.job)
@@ -46,7 +44,6 @@ class TestRunner(unittest.TestCase):
 		p.ppldir = self.testdir
 		p.script = "echo1 {{a}}"
 		p.input = {'a': range(10)}
-		p.props['logger'] = self.logger
 		p._tidyBeforeRun ()
 		r = runner(p.jobs[0])
 		script   = [x for x in r.script]
@@ -67,7 +64,6 @@ class TestRunner(unittest.TestCase):
 		p.ppldir = self.testdir
 		p.script = "echo {{a}}"
 		p.input = {'a': range(10)}
-		p.props['logger'] = self.logger
 		p._tidyBeforeRun ()
 		r = runner(p.jobs[0])
 		r.submit ()
@@ -81,7 +77,6 @@ class TestRunner(unittest.TestCase):
 		p.script = "echo1 {{a}}"
 		p.input = {'a': range(10)}
 		p.errhow = 'retry'
-		p.props['logger'] = self.logger
 		p._tidyBeforeRun ()
 	
 		r = runner(p.jobs[0])
@@ -96,7 +91,6 @@ class TestRunner(unittest.TestCase):
 		p.ppldir = self.testdir
 		p.script = "sleep .5;echo {{a}}"
 		p.input = {'a': range(10)}
-		p.props['logger'] = self.logger
 		p._tidyBeforeRun ()
 	
 		r = runner(p.jobs[0])
@@ -112,7 +106,6 @@ class TestRunner(unittest.TestCase):
 		p.ppldir = self.testdir
 		p.script = "sleep 3; echo {{a}}"
 		p.input = {'a': range(4)}
-		p.props['logger'] = self.logger
 		p.sshRunner = {"servers": ['franklin01', 'franklin02']}
 		p._tidyBeforeRun ()
 
@@ -127,7 +120,6 @@ class TestRunner(unittest.TestCase):
 		p.ppldir = self.testdir
 		p.script = "sleep 3; echo {{a}}"
 		p.input = {'a': range(4)}
-		p.props['logger'] = self.logger
 		p.sshRunner = {"servers": ['franklin01', 'franklin02']}
 		p._tidyBeforeRun ()	
 		for j in p.jobs:
@@ -144,7 +136,6 @@ class TestRunner(unittest.TestCase):
 		p.ppldir = self.testdir
 		p.script = "sleep 3; echo {{a}}"
 		p.input = {'a': range(4)}
-		p.props['logger'] = self.logger
 		p.sgeRunner = {"sge_q": '1-hour'}
 		p._tidyBeforeRun ()
 
@@ -160,7 +151,6 @@ class TestRunner(unittest.TestCase):
 		p.script = "sleep 3; echo {{a}}"
 		p.input = {'a': range(1)}
 		p.forks = 4
-		p.props['logger'] = self.logger
 		p.sgeRunner = {"sge_q": '1-hour'}
 		p._tidyBeforeRun ()
 
@@ -181,7 +171,6 @@ class TestRunner(unittest.TestCase):
 		p.script = "sleep 1; echo {{a}}"
 		p.input = {'a': range(4)}
 		p.forks = 4
-		p.props['logger'] = self.logger
 		p._tidyBeforeRun ()	
 		for j in p.jobs:
 			r = runner_local (j)

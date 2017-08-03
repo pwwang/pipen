@@ -8,20 +8,19 @@ from time import sleep
 
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
-from pyppl import job, proc, utils
+from pyppl import job, proc, utils, logger
+logger.getLogger(levels = 'all')
 
 class TestJob (unittest.TestCase):
 	
 	testdir = "./tests"
 	wdir    = "./workdir"
 	dirname = os.path.dirname (os.path.abspath(__file__))
-	logger  = utils.getLogger('debug', 'TestJob')
 
 	def testConstruct (self):
 		self.maxDiff = None
 		p = proc ()
 		p.ppldir = self.wdir
-		p.props['logger'] = self.logger
 		p.output = "a:1"
 		p._buildProps()
 		j = job (0, p)
@@ -54,7 +53,6 @@ class TestJob (unittest.TestCase):
 	def testMakeJobDir (self):
 		p = proc ('makejobdir')
 		p.ppldir = self.wdir
-		p.props['logger'] = self.logger
 		p.output = "a:1"
 		p._buildProps()
 		j = job (0, p)
@@ -67,7 +65,6 @@ class TestJob (unittest.TestCase):
 	def testMakeOutDir (self):
 		p = proc ('makeoutdir')
 		p.ppldir = self.wdir
-		p.props['logger'] = self.logger
 		p.input = {"a":[1]}
 		p.output = "outdir:dir:{{a}}"
 		p._tidyBeforeRun()
@@ -77,7 +74,6 @@ class TestJob (unittest.TestCase):
 	def testUpdateData (self):
 		p = proc ('dataupdate')
 		p.ppldir = self.wdir
-		p.props['logger'] = self.logger
 		p.output = "a:1"
 		p._buildProps()
 		j = job (0, p)
@@ -109,7 +105,6 @@ class TestJob (unittest.TestCase):
 	def testId (self):
 		p = proc ('id')
 		p.ppldir = self.wdir
-		p.props['logger'] = self.logger
 		p.output = "a:1"
 		p._buildProps()
 		j = job (0, p)
@@ -122,7 +117,6 @@ class TestJob (unittest.TestCase):
 		self.maxDiff = None
 		p1 = proc ('prepinput')
 		p1.ppldir = self.wdir
-		p1.props['logger'] = self.logger
 		p1.output = "o:1"
 		p1.input  = {"a, b:file, c:files": [(1, __file__, "./*.py")] * 3}
 		p1._buildProps()
@@ -153,7 +147,6 @@ class TestJob (unittest.TestCase):
 		
 		p2 = proc ()
 		p2.ppldir = self.wdir
-		p2.props['logger'] = self.logger
 		p2.output = "o:1"
 		p2.input  = {"a, b:file": [(1, __file__)], "c:files": ["./*.py"]}
 		p2._buildProps()
@@ -184,7 +177,6 @@ class TestJob (unittest.TestCase):
 	def testPrepBrings (self):
 		p1 = proc ()
 		p1.ppldir = self.wdir
-		p1.props['logger'] = self.logger
 		p1.output = "o:1"
 		p1.input  = {"a, b:file": [(1, os.path.abspath(__file__))] * 3}
 		p1.brings = {"b": "aggr.unittest{{b | ext}}", "b#": "pyppl.unittest{{b | ext}}"}
@@ -203,7 +195,6 @@ class TestJob (unittest.TestCase):
 	def testPrepOutput (self):
 		p1 = proc ('prepoutput')
 		p1.ppldir = self.wdir
-		p1.props['logger'] = self.logger
 		p1.output = "o:1, o2:file:{{b|fn}}.txt"
 		p1.input  = {"a, b:file": [(1, os.path.abspath(__file__))] * 3}
 		p1.brings = {"b": "aggr.unittest{{b | ext}}", "b#": "pyppl.unittest{{b | ext}}"}
@@ -221,7 +212,6 @@ class TestJob (unittest.TestCase):
 	def testPrepScript(self):
 		ps = proc ('script')
 		ps.ppldir = self.wdir
-		ps.props['logger'] = self.logger
 		# empty script does not raise Exception any more
 		#self.assertRaises (Exception, ps._tidyBeforeRun)
 		ps.input = {"input": ["input"]}
@@ -256,7 +246,6 @@ class TestJob (unittest.TestCase):
 		
 		# relpath
 		p.script = "template:%s/a.py" % self.wdir
-		p.props['logger'] = self.logger
 		p._buildProps()
 		p._buildInput()
 		if not os.path.exists(self.wdir):
@@ -292,7 +281,6 @@ class TestJob (unittest.TestCase):
 		p.ppldir = self.wdir
 		p.input  = {"a":[1]}
 		p.output = "x:{{a}}2"
-		p.props['logger'] = self.logger
 		p.script = "echo 123"
 		p._buildProps()
 		p._buildInput()
@@ -310,7 +298,6 @@ class TestJob (unittest.TestCase):
 		p.input  = {"a":[1]}
 		p.output = "x:{{a}}2"
 		p.script = "echo 888"
-		p.props['logger'] = self.logger
 		p._buildProps()
 		p._buildInput()
 		j = job (0, p)
@@ -327,7 +314,6 @@ class TestJob (unittest.TestCase):
 		p.ppldir = self.wdir
 		p.input  = {"a":[1]}
 		p.output = "x:{{a}}2"
-		p.props['logger'] = self.logger
 		p._buildProps()
 		p._buildInput()
 		p.cache  = True
@@ -411,7 +397,6 @@ class TestJob (unittest.TestCase):
 		p.ppldir = self.wdir
 		p.input  = {"a":[1]}
 		p.output = "xfile:file:{{a}}2"
-		p.props['logger'] = self.logger
 		p._buildProps()
 		p._buildInput()
 		j = job(0, p)
@@ -445,7 +430,6 @@ class TestJob (unittest.TestCase):
 		p.ppldir = self.wdir
 		p.input  = {"a":[1]}
 		p.output = "xfile:file:{{a}}2.txt, outdir:dir:{{a}}"
-		p.props['logger'] = self.logger
 		p.exdir  = self.wdir
 		p.exhow  = 'copy'
 		p.script = "touch {{xfile}}"
@@ -493,7 +477,6 @@ class TestJob (unittest.TestCase):
 		p.ppldir = self.wdir
 		p.input  = {"a":[1]}
 		p.output = "xfile:file:{{a}}2.txt"
-		p.props['logger'] = self.logger
 		p._buildProps()
 		p._buildInput()
 		p.exdir  = self.wdir
@@ -548,7 +531,6 @@ class TestJob (unittest.TestCase):
 		p.ppldir = self.wdir
 		p.input  = {"a":[1]}
 		p.output = "xfile:file:{{a}}2.txt"
-		p.props['logger'] = self.logger
 		p._buildProps()
 		p._buildInput()
 		j = job (0, p)
@@ -587,7 +569,6 @@ class TestJob (unittest.TestCase):
 		p.input  = {"a":[1]}
 		p.output = "xfile:file:{{a}}2.txt"
 		p.script = "echo {{a}} > {{xfile}}"
-		p.props['logger'] = self.logger
 		p.run()
 		j = job (0, p)
 		self.assertEqual (j.rc(), 0)

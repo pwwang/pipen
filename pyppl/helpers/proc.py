@@ -14,7 +14,7 @@ try:
 except ImportError:
 	from queue import Queue
 
-from . import utils
+from . import utils, logger
 from .aggr import aggr
 from .channel import channel
 from .job import job as pjob
@@ -224,7 +224,7 @@ class proc (object):
 		self.props['procvars']   = {}
 		self.props['workdir']    = ''
 		# for unittest, in real case, the logger will be got from pyppl
-		self.props['logger']     = None
+		#self.props['logger']     = None
 		self.props['args']       = self.config['args']
 		self.props['aggr']       = self.config['aggr']
 		self.props['callfront']  = self.config['callfront']
@@ -285,38 +285,33 @@ class proc (object):
 		else:
 			self.props[name] = value
 		
-	def log (self, msg, level="info", flag=None, key = ''):
+	def log (self, msg, level="info", key = ''):
 		"""
 		The log function with aggregation name, process id and tag integrated.
 		@params:
 			`msg`:   The message to log
 			`level`: The log level
-			`flag`:  The flag
 			`key`:   The type of messages
 		"""
-		if flag is None: 
-			flag = level
-		flag  = flag.upper().rjust(7)
-		flag  = "[%s]" % flag
-		title = self._name()
-		func  = getattr(self.logger, level)
+		level  = "[%s]" % level
+		name   = self._name()
 		
 		maxline = proc.LOG_NLINE[key]
 		prevlog = self.lognline['prevlog']
 
 		if key == prevlog:
 			if self.lognline[key] < abs(maxline):
-				func ("%s %s: %s" % (flag, title, msg))
+				logger.logger.info ("%s %s: %s" % (level, name, msg))
 		else:
 			n_omit = self.lognline[prevlog] - abs(proc.LOG_NLINE[prevlog])
 			if n_omit > 0 and proc.LOG_NLINE[prevlog] < 0: 
 				logname = 'logs' if n_omit > 1 else 'log'
 				maxinfo = ' (%s, max=%s)' % (prevlog, abs(proc.LOG_NLINE[prevlog])) if prevlog else ''
-				self.logger.debug ("[  DEBUG] %s: ... and %s %s omitted%s." % (title, n_omit, logname, maxinfo))
+				logger.logger.info ("[DEBUG] %s: ... and %s %s omitted%s." % (name, n_omit, logname, maxinfo))
 			self.lognline[prevlog]   = 0
 
 			if self.lognline[key] < abs(maxline):
-				func ("%s %s: %s" % (flag, title, msg))
+				logger.logger.info ("%s %s: %s" % (level, name, msg))
 
 		self.lognline['prevlog'] = key
 		self.lognline[key] += 1
@@ -450,23 +445,21 @@ class proc (object):
 		timer = time()
 		if config is None:
 			config = {}
-
-		#self.logger.info ('[  START] ' + utils.padBoth(' ' + self._name() + ' ', 80, '-'))
-		#startinfo = self._name() + ': ' + self.desc
-		#infolen   = max(len(startinfo), 80)
-		#self.logger.info ('[  START] +%s+' % ('-' * infolen))
-		#self.logger.info ('[  START] | %s%s |' % (startinfo, ' ' * (infolen - len(startinfo) - 2)))
-		#self.logger.info ('[  START] +%s+' % ('-' * infolen))
-		self.logger.info ('[>>>>>>>] ' + self._name() + ': ' + self.desc)
+		
+		self.log (self.desc, '>>>>>>>')
 		# log the dependencies
-		self.log ("%s => %s => %s" % ([p._name() for p in self.depends] if self.depends else "START", self._name(), [p._name() for p in self.nexts] if self.nexts else "END"), "info", "depends")
+		self.log ("%s => %s => %s" % (
+			[p._name() for p in self.depends] if self.depends else "START", 
+			self._name(), 
+			[p._name() for p in self.nexts] if self.nexts else "END"
+		), "depends")
 		self._readConfig (config)
 		self._tidyBeforeRun ()
 		self._runCmd('beforeCmd')
 		if not self._checkCached():
-			self.log (self.workdir, 'info', 'RUNNING')
+			self.log (self.workdir, 'RUNNING')
 		else:
-			self.log (self.workdir, 'info', 'CACHED')
+			self.log (self.workdir, 'CACHED')
 		self._runJobs()
 		self._runCmd('afterCmd')
 		self._tidyAfterRun ()
@@ -609,16 +602,16 @@ class proc (object):
 				for k in sorted(val.keys()):
 					self.props['procvars']['args.' + k] = val[k]
 					if not k.startswith('_'):
-						self.log('%s => %s' % (k, val[k]), 'info', 'p.args')
+						self.log('%s => %s' % (k, val[k]), 'p.args')
 			else:
 				self.props['procvars']['proc.' + prop] = val
 				if prop in alias: 
 					self.props['procvars']['proc.' + alias[prop]] = val
 					if val is False or val:
-						self.log ('%s (%s) => %s' % (prop, alias[prop], val), 'info', 'p.props')
+						self.log ('%s (%s) => %s' % (prop, alias[prop], val), 'p.props')
 				else:
 					if val is False or val:
-						self.log ('%s => %s' % (prop, val), 'info', 'p.props')
+						self.log ('%s => %s' % (prop, val), 'p.props')
 
 				
 	def _buildJobs (self):
@@ -653,13 +646,7 @@ class proc (object):
 		if self.cache == False:
 			self.log ('Not cached, because proc.cache is False', 'debug')
 			return False
-		
-		#if self.cache == True:
-		#	for depend in self.depends:
-		#		if depend.cached: continue
-		#		self.log ('Not cached, my dependent "%s" is not cached.' % depend._name(), 'debug')
-		#		return False
-		
+
 		trulyCachedJids        = []
 		notTrulyCachedJids     = []
 		exptCachedJids         = []
@@ -679,8 +666,8 @@ class proc (object):
 			else:
 				self.props['ncjobids'].append (i)
 				
-		self.log ('Truely cached jobs: %s' % (trulyCachedJids if len(trulyCachedJids) < self.length else 'ALL'), 'debug')
-		self.log ('Export cached jobs: %s' % (exptCachedJids  if len(exptCachedJids)  < self.length else 'ALL'), 'debug')
+		self.log ('Truely cached jobs: %s' % (trulyCachedJids if len(trulyCachedJids) < self.length else 'ALL'), 'info')
+		self.log ('Export cached jobs: %s' % (exptCachedJids  if len(exptCachedJids)  < self.length else 'ALL'), 'info')
 		
 		if self.ncjobids:
 			if len(self.ncjobids) < self.length:
@@ -708,9 +695,9 @@ class proc (object):
 		p = Popen (cmd, shell=True, stdin=PIPE, stderr=PIPE, stdout=PIPE, universal_newlines=True)
 
 		for line in iter(p.stdout.readline, ''):
-			self.logger.info ('[ CMDOUT] %s' % line.rstrip("\n"))
+			logger.logger.info ('[ CMDOUT] %s' % line.rstrip("\n"))
 		for line in iter(p.stderr.readline, ''):
-			self.logger.error ('[ CMDERR] %s' % line.rstrip("\n"))
+			logger.logger.info ('[ CMDERR] %s' % line.rstrip("\n"))
 		rc = p.wait()
 		if rc != 0:
 			raise Exception ('Failed to run %s: \n----------------------------------\n%s' % (key, cmd))
@@ -736,7 +723,7 @@ class proc (object):
 				#if hasattr(run, 'checkRunning') and run.checkRunning and run.isRunning():
 				# anyway check whether the job is running before submit it
 				if run.isRunning():
-					self.log ("Job #%-3s is already running, skip submitting." % run.job.index, 'info')
+					self.log ("Job #%-3s is already running, skip submitting." % run.job.index, 'submit')
 				else:
 					run.submit()
 				run.wait() 

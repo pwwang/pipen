@@ -7,7 +7,7 @@ import sys
 from subprocess import Popen
 from time import time
 
-from .helpers import aggr, proc, utils
+from .helpers import aggr, proc, utils, logger
 
 VERSION = "0.8.0"
 			
@@ -52,15 +52,20 @@ class pyppl (object):
 			utils.dictUpdate(hconfig, config)			
 			config   = copy.copy(hconfig)
 
-		loglevel = 'info'
-		if 'loglevel' in config:
-			loglevel = config['loglevel']
-			del config['loglevel']
+		loglevels = 'normal'
+		if 'loglevels' in config:
+			loglevels = config['loglevels']
+			del config['loglevels']
 			
-		logcolor = True
-		if 'logcolor' in config:
-			logcolor = config['logcolor']
-			del config['logcolor']
+		logtheme = True
+		if 'logtheme' in config:
+			logtheme = config['logtheme']
+			del config['logtheme']
+		
+		loglvldiff = []
+		if 'loglvldiff' in config:
+			loglvldiff = config['loglvldiff']
+			del config['loglvldiff']
 			
 		logfile = os.path.splitext(sys.argv[0])[0] + ".pyppl.log"
 		if 'logfile' in config:
@@ -68,12 +73,11 @@ class pyppl (object):
 				logfile = config['logfile']
 			del config['logfile']
 			
-		suffix  = utils.randstr ()
-		self.logger = utils.getLogger (loglevel, self.__class__.__name__ + suffix, logcolor, logfile)
-		self.logger.info ('[  PyPPL] Version: %s' % (VERSION))
-		self.logger.info ('[   TIPS] %s' % (random.choice(pyppl.tips)))
+		logger.getLogger (loglevels, logtheme, logfile, loglvldiff)
+		logger.logger.info ('[  PYPPL] Version: %s' % (VERSION))
+		logger.logger.info ('[   TIPS] %s' % (random.choice(pyppl.tips)))
 		if os.path.exists (cfile):
-			self.logger.info ('[ CONFIG] Read from %s' % cfile)
+			logger.logger.info ('[ CONFIG] Read from %s' % cfile)
 			
 		self.config = config
 		self.heads  = []
@@ -128,14 +132,13 @@ class pyppl (object):
 		while next2run:
 			next2run2 = []
 			for p in next2run:
-				p.props['logger'] = self.logger
 				p.run (config)
 				finished.append (p)
 				next2run2 += p.props['nexts']
 			next2run2 = list(set(next2run2))
 			# next procs to run must be not finished and all their depends are finished
 			next2run = sorted([n for n in next2run2 if n not in finished and all(x in finished for x in n.depends)], lambda x,y: cmp(x._name(), y._name()))
-		self.logger.info ('[   DONE] Total time: %s' % utils.formatTime (time()-timer))
+		logger.logger.info ('[   DONE] Total time: %s' % utils.formatTime (time()-timer))
 		return self
 
 	
@@ -174,12 +177,12 @@ class pyppl (object):
 		if dotfile is None: dotfile = os.path.splitext(sys.argv[0])[0] + ".pyppl.dot"
 		if fcfile  is None: fcfile  = os.path.splitext(sys.argv[0])[0] + ".pyppl.svg"
 		open (dotfile, "w").write (ret)
-		self.logger.info ('[   INFO] DOT file saved to: %s' % dotfile)
+		logger.logger.info ('[   INFO] DOT file saved to: %s' % dotfile)
 		try:
 			dotcmd = utils.format (dot, {"dotfile": dotfile, "fcfile":fcfile})
 			Popen (dotcmd, shell=True).wait()
-			self.logger.info ('[   INFO] Flowchart file saved to: %s' % fcfile)
+			logger.logger.info ('[   INFO] Flowchart file saved to: %s' % fcfile)
 		except Exception as ex:
-			self.logger.error ('[  ERROR] %s' % ex)
-			self.logger.error ('[  ERROR] Skipped to generate flowchart to: %s' % fcfile)
+			logger.logger.info ('[  ERROR] %s' % ex)
+			logger.logger.info ('[  ERROR] Skipped to generate flowchart to: %s' % fcfile)
 		return self

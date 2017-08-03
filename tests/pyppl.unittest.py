@@ -6,8 +6,8 @@ import shutil
 import sys
 from time import sleep
 import unittest
-import warnings
-warnings.filterwarnings("ignore")
+#import warnings
+#warnings.filterwarnings("ignore")
 
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
@@ -207,7 +207,7 @@ sorted("""digraph PyPPL {
 					'servers': ['franklin01', 'franklin02', 'franklin03', 'franklin04', 'franklin05', 'franklin06', 'franklin07', 'franklin08']
 				}
 			},
-			'loglevel': 'debug'
+			'loglevels': 'all'
 		}).starts(p).run('ssh')
 		shutil.rmtree ('./workdir/test_batchjobs')
 	
@@ -398,7 +398,8 @@ sorted("""digraph PyPPL {
 		pLog.output = 'out:{{in}}'
 		pLog.script = """
 		echo STDOUT:{{in}}
-		echo pyppl.log.error.hhh:{{in}} 1>&2
+		echo pyppl.log.hhh:{{in}} 1>&2
+		echo pyppl.log:The log 1>&2
 		"""
 		
 		

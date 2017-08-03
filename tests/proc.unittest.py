@@ -11,12 +11,12 @@ from hashlib import md5
 
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
-from pyppl import aggr, channel, proc, utils
+from pyppl import aggr, channel, proc, utils, logger
+logger.getLogger(levels='all')
 
 class TestProc (unittest.TestCase):
 
 	workdir = './workdir'
-	logger  = utils.getLogger('debug', 'TestProc')
 
 	def testRegisterRunner (self):
 		if not os.path.exists (self.workdir):
@@ -72,7 +72,6 @@ class runner_test (runner):
 		self.assertEqual (p.workdir, '')
 		self.assertEqual (p.sets, [])
 		self.assertEqual (p.procvars, {})
-		self.assertEqual (p.logger, None)
 		self.assertEqual (p.args, {})
 		self.assertEqual (p.aggr, None)
 		self.assertEqual (p.callback, None)
@@ -169,8 +168,6 @@ class runner_test (runner):
 	def testBuildProps (self):
 		p1 = proc ('tag1')
 		p2 = proc ('tag2')
-		p1.props['logger'] = self.logger
-		p2.props['logger'] = self.logger
 		p2.depends = p1
 		p2.retcodes = "0, 1"
 		p2._buildProps()
@@ -248,7 +245,6 @@ class runner_test (runner):
 	def testBuildProcVars (self):
 		self.maxDiff = None
 		p = proc ('pvars')
-		p.props['logger'] = self.logger
 		p.args = {"a":1, "b":2}
 		p._buildProcVars()
 		#{'proc.errhow': 'terminate', 'proc.exow': True, 'proc.forks': 1, 'proc.echo': False, 'proc.exdir': '', 'proc.cache': True, 'proc.exhow': 'move', 'proc.errntry': 1, 'proc.workdir': '', 'proc.runner': 'local', 'proc.ppldir': '/data2/junwenwang/panwen/tools/pyppl/tests/workdir', 'proc.args': {}, 'proc.id': 'p', 'proc.lang': 'bash', 'proc.tag': 'pvars', 'proc.length': 0}
@@ -284,7 +280,6 @@ class runner_test (runner):
 
 	def testBuildJobs (self):
 		p = proc ('buildjobs')
-		p.props['logger'] = self.logger
 		p.input = {"a": range(10)}
 		p.output = "x:{{a | lambda x: x*2}}"
 		
@@ -309,7 +304,6 @@ class runner_test (runner):
 
 	def testIscached (self):
 		p = proc ('iscached')
-		p.props['logger'] = self.logger
 		p.script = "echo 1"
 
 		# cache is False
@@ -338,7 +332,6 @@ class runner_test (runner):
 
 	def testRunCmd (self):
 		prc = proc ()
-		prc.props['logger'] = self.logger
 		prc.input  = {"input": ["a"]}
 		prc.script = 'ls'
 		prc._tidyBeforeRun ()
@@ -367,7 +360,6 @@ class runner_test (runner):
 	def testAlias (self):
 		p = proc ('alias')
 		p.ppldir = self.workdir
-		p.props['logger'] = self.logger
 		p.input = {'a':[1]}
 		testv = {}
 		for k,v in proc.ALIAS.items():

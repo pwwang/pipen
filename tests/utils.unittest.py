@@ -195,14 +195,5 @@ class TestUtils (unittest.TestCase):
 		self.assertEqual ([os.path.realpath(thefile)], utils.chmodX (thefile))
 		shutil.rmtree ("./test/")
 		
-	def testLogger (self):
-		logger1 = utils.getLogger(name='logger1')
-		logger2 = utils.getLogger(name='logger2')
-		logger1.info ('logger1')
-		logger2.info ('logger2')
-		
-		logger2 = logger1
-		logger2.info ('logger3')
-		
 if __name__ == '__main__':
 	unittest.main()

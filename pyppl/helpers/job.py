@@ -9,7 +9,7 @@ from os import makedirs, path, remove, symlink, utime, readlink, listdir
 from shutil import copyfile, copytree, move, rmtree
 from subprocess import Popen, PIPE
 
-from . import utils
+from . import utils, logger
 
 class job (object):
 	
@@ -87,13 +87,13 @@ class job (object):
 		Report the job information to logger
 		"""
 		for key in sorted(self.input.keys()):
-			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.input[key]['data']), 'info', 'input')
+			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.input[key]['data']), 'input')
 			if 'orig' in self.input[key]:
-				self.proc.log ("[%s/%s] %s.orig => %s" % (self.index, self.proc.length - 1, key, self.input[key]['orig']), 'info', 'input')
+				self.proc.log ("[%s/%s] %s.orig => %s" % (self.index, self.proc.length - 1, key, self.input[key]['orig']), 'input')
 		for key in sorted(self.brings.keys()):
-			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.brings[key]), 'info', 'brings')
+			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.brings[key]), 'brings')
 		for key in sorted(self.output.keys()):
-			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.output[key]['data']), 'info', 'output')	
+			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.output[key]['data']), 'output')	
 	
 	def done (self):
 		"""
@@ -105,7 +105,8 @@ class job (object):
 			self.checkOutfiles()
 		if self.succeed():
 			self.export()
-			self.cache()		
+			self.cache()	
+			self.proc.log ('Job #%s done!' % self.index, 'JOBDONE')
 			
 	def showError (self, lenfailed = 1):
 		"""
@@ -141,88 +142,88 @@ class job (object):
 				errmsgs = ['[ STDERR] <EMPTY STDERR>']
 				
 			for errmsg in errmsgs[-20:] if len (errmsgs) > 20 else errmsgs:
-				self.proc.logger.error(errmsg)
+				logger.logger.info(errmsg)
 				
 			if len (errmsgs) > 20:
-				self.proc.logger.error ('[ STDERR] ... top %s line(s) omitted (see all in "%s").' % (len(errmsgs)-20, self.errfile))
+				logger.logger.info ('[ STDERR] ... top %s line(s) omitted (see all in "%s").' % (len(errmsgs)-20, self.errfile))
 	
 	def isTrulyCached (self):
 		"""
 		Check whether a job is truly cached (by signature)
 		"""
 		if not path.exists (self.cachefile):
-			self.proc.log ("Job #%s not cached as cache file not exists." % (self.index), "debug", "debug", "CACHE_SIGFILE_NOTEXISTS")
+			self.proc.log ("Job #%s not cached as cache file not exists." % (self.index), "debug", "CACHE_SIGFILE_NOTEXISTS")
 			return False
 		
 		with open (self.cachefile) as f:
 			sig    = f.read()
 			if not sig: 
-				self.proc.log ("Job #%s not cached because previous signature is empty." % (self.index), "debug", "debug", "CACHE_EMPTY_PREVSIG")
+				self.proc.log ("Job #%s not cached because previous signature is empty." % (self.index), "debug", "CACHE_EMPTY_PREVSIG")
 				return False
 
 			sigNow = self.signature()
 			if not sigNow:
-				self.proc.log ("Job #%s not cached because current signature is empty." % (self.index), "debug", "debug", "CACHE_EMPTY_CURRSIG")
+				self.proc.log ("Job #%s not cached because current signature is empty." % (self.index), "debug", "CACHE_EMPTY_CURRSIG")
 				return False
 
 			sigOld  = json.loads(sig)
 			keysNow = sigNow.keys()
 			keysOld = sigOld.keys()
 			if sorted(keysNow) != sorted(keysOld):
-				self.proc.log ("Job #%s not cached due to key difference of signautres:" % (self.index), 'debug', 'debug', 'CACHE_SIGKEYS_DIFFER')
-				self.proc.log ("  Previous: %s" % (keysOld), 'debug', 'debug', 'CACHE_SIGKEYS_DIFFER')
-				self.proc.log ("  Current : %s" % (keysNow), 'debug', 'debug', 'CACHE_SIGKEYS_DIFFER')
+				self.proc.log ("Job #%s not cached due to key difference of signautres:" % (self.index), 'debug', 'CACHE_SIGKEYS_DIFFER')
+				self.proc.log ("  Previous: %s" % (keysOld), 'debug', 'CACHE_SIGKEYS_DIFFER')
+				self.proc.log ("  Current : %s" % (keysNow), 'debug', 'CACHE_SIGKEYS_DIFFER')
 				return False
 			for key in keysNow:
 				if key == 'script':
 					if sigOld[key] != sigNow[key]:
-						self.proc.log ("Job #%s not cached due to script file difference:" % (self.index), 'debug', 'debug', 'CACHE_SCRIPT_DIFFER')
-						self.proc.log ("  Previous: %s" % (sigOld[key]), 'debug', 'debug', 'CACHE_SCRIPT_DIFFER')
-						self.proc.log ("  Current : %s" % (sigNow[key]), 'debug', 'debug', 'CACHE_SCRIPT_DIFFER')
+						self.proc.log ("Job #%s not cached due to script file difference:" % (self.index), 'debug', 'CACHE_SCRIPT_DIFFER')
+						self.proc.log ("  Previous: %s" % (sigOld[key]), 'debug', 'CACHE_SCRIPT_DIFFER')
+						self.proc.log ("  Current : %s" % (sigNow[key]), 'debug', 'CACHE_SCRIPT_DIFFER')
 						return False
 				if key == 'in':
 					inTypesOld = sigOld[key].keys()
 					inTypesNow = sigNow[key].keys()
 					if sorted(inTypesNow) != sorted(inTypesOld):
-						self.proc.log ("Job #%s not cached due to input type difference of signautres:" % (self.index), 'debug', 'debug', 'CACHE_SIGINTYPES_DIFFER')
-						self.proc.log ("  Previous: %s" % (inTypesOld), 'debug', 'debug', 'CACHE_SIGINTYPES_DIFFER')
-						self.proc.log ("  Current : %s" % (inTypesNow), 'debug', 'debug', 'CACHE_SIGINTYPES_DIFFER')
+						self.proc.log ("Job #%s not cached due to input type difference of signautres:" % (self.index), 'debug', 'CACHE_SIGINTYPES_DIFFER')
+						self.proc.log ("  Previous: %s" % (inTypesOld), 'debug', 'CACHE_SIGINTYPES_DIFFER')
+						self.proc.log ("  Current : %s" % (inTypesNow), 'debug', 'CACHE_SIGINTYPES_DIFFER')
 						return False
 					for intype in inTypesNow:
 						inKeysOld = sigOld[key][intype].keys()
 						inKeysNow = sigNow[key][intype].keys()
 						if sorted(inKeysOld) != sorted(inKeysNow):
-							self.proc.log ("Job #%s not cached due to input key difference of signautres:" % (self.index), 'debug', 'debug', 'CACHE_SIGINKEYS_DIFFER')
-							self.proc.log ("  Previous: %s" % (inKeysOld), 'debug', 'debug', 'CACHE_SIGINKEYS_DIFFER')
-							self.proc.log ("  Current : %s" % (inKeysNow), 'debug', 'debug', 'CACHE_SIGINKEYS_DIFFER')
+							self.proc.log ("Job #%s not cached due to input key difference of signautres:" % (self.index), 'debug', 'CACHE_SIGINKEYS_DIFFER')
+							self.proc.log ("  Previous: %s" % (inKeysOld), 'debug', 'CACHE_SIGINKEYS_DIFFER')
+							self.proc.log ("  Current : %s" % (inKeysNow), 'debug', 'CACHE_SIGINKEYS_DIFFER')
 							return False
 						for inkey in inKeysNow:
 							if sigOld[key][intype][inkey] != sigNow[key][intype][inkey]:
-								self.proc.log ("Job #%s not cached due to input difference for key %s:" % (self.index, inkey), 'debug', 'debug', 'CACHE_SIGINPUT_DIFFER')
-								self.proc.log ("  Previous: %s" % (sigOld[key][intype][inkey]), 'debug', 'debug', 'CACHE_SIGINPUT_DIFFER')
-								self.proc.log ("  Current : %s" % (sigNow[key][intype][inkey]), 'debug', 'debug', 'CACHE_SIGINPUT_DIFFER')
+								self.proc.log ("Job #%s not cached due to input difference for key %s:" % (self.index, inkey), 'debug', 'CACHE_SIGINPUT_DIFFER')
+								self.proc.log ("  Previous: %s" % (sigOld[key][intype][inkey]), 'debug', 'CACHE_SIGINPUT_DIFFER')
+								self.proc.log ("  Current : %s" % (sigNow[key][intype][inkey]), 'debug', 'CACHE_SIGINPUT_DIFFER')
 								return False
 				if key == 'out':
 					outTypesOld = sigOld[key].keys()
 					outTypesNow = sigNow[key].keys()
 					if sorted(outTypesNow) != sorted(outTypesOld):
-						self.proc.log ("Job #%s not cached due to output type difference of signautres:" % (self.index), 'debug', 'debug', 'CACHE_SIGOUTTYPES_DIFFER')
-						self.proc.log ("  Previous: %s" % (outTypesOld), 'debug', 'debug', 'CACHE_SIGOUTTYPES_DIFFER')
-						self.proc.log ("  Current : %s" % (outTypesNow), 'debug', 'debug', 'CACHE_SIGOUTTYPES_DIFFER')
+						self.proc.log ("Job #%s not cached due to output type difference of signautres:" % (self.index), 'debug', 'CACHE_SIGOUTTYPES_DIFFER')
+						self.proc.log ("  Previous: %s" % (outTypesOld), 'debug', 'CACHE_SIGOUTTYPES_DIFFER')
+						self.proc.log ("  Current : %s" % (outTypesNow), 'debug', 'CACHE_SIGOUTTYPES_DIFFER')
 						return False
 					for outtype in outTypesNow:
 						outKeysOld = sigOld[key][outtype].keys()
 						outKeysNow = sigNow[key][outtype].keys()
 						if sorted(outKeysOld) != sorted(outKeysNow):
-							self.proc.log ("Job #%s not cached due to output key difference of signautres:" % (self.index), 'debug', 'debug', 'CACHE_SIGOUTKEYS_DIFFER')
-							self.proc.log ("  Previous: %s" % (outKeysOld), 'debug', 'debug', 'CACHE_SIGOUTKEYS_DIFFER')
-							self.proc.log ("  Current : %s" % (outKeysNow), 'debug', 'debug', 'CACHE_SIGOUTKEYS_DIFFER')
+							self.proc.log ("Job #%s not cached due to output key difference of signautres:" % (self.index), 'debug', 'CACHE_SIGOUTKEYS_DIFFER')
+							self.proc.log ("  Previous: %s" % (outKeysOld), 'debug', 'CACHE_SIGOUTKEYS_DIFFER')
+							self.proc.log ("  Current : %s" % (outKeysNow), 'debug', 'CACHE_SIGOUTKEYS_DIFFER')
 							return False
 						for outkey in outKeysNow:
 							if sigOld[key][outtype][outkey] != sigNow[key][outtype][outkey]:
-								self.proc.log ("Job #%s not cached due to output difference for key %s:" % (self.index, outkey), 'debug', 'debug', 'CACHE_SIGOUTPUT_DIFFER')
-								self.proc.log ("  Previous: %s" % (sigOld[key][outtype][outkey]), 'debug', 'debug', 'CACHE_SIGOUTPUT_DIFFER')
-								self.proc.log ("  Current : %s" % (sigNow[key][outtype][outkey]), 'debug', 'debug', 'CACHE_SIGOUTPUT_DIFFER')
+								self.proc.log ("Job #%s not cached due to output difference for key %s:" % (self.index, outkey), 'debug', 'CACHE_SIGOUTPUT_DIFFER')
+								self.proc.log ("  Previous: %s" % (sigOld[key][outtype][outkey]), 'debug', 'CACHE_SIGOUTPUT_DIFFER')
+								self.proc.log ("  Current : %s" % (sigNow[key][outtype][outkey]), 'debug', 'CACHE_SIGOUTPUT_DIFFER')
 								return False
 			return True
 	
@@ -234,13 +235,13 @@ class job (object):
 		if self.proc.cache != 'export':
 			return False
 		if self.proc.exhow in self.proc.EX_SYMLINK:
-			self.proc.log ("Job not export-cached using symlink export.", "warning", "warning", "EXPORT_CACHE_USING_SYMLINK")
+			self.proc.log ("Job not export-cached using symlink export.", "warning", "EXPORT_CACHE_USING_SYMLINK")
 			return False
 		if self.proc.expart:
-			self.proc.log ("Job not export-cached using partial export.", "warning", "warning", "EXPORT_CACHE_USING_EXPARTIAL")
+			self.proc.log ("Job not export-cached using partial export.", "warning", "EXPORT_CACHE_USING_EXPARTIAL")
 			return False
 		if not self.proc.exdir:
-			self.proc.log ("Job not export-cached since export directory is not set.", "debug", "debug", "EXPORT_CACHE_EXDIR_NOTSET")
+			self.proc.log ("Job not export-cached since export directory is not set.", "debug", "EXPORT_CACHE_EXDIR_NOTSET")
 			return False
 		
 		for _, out in self.output.items():
@@ -251,11 +252,11 @@ class job (object):
 				if out['type'] in self.proc.OUT_FILETYPE:
 					exfile += '.%s.gz' % self.proc._name (False)
 					if not path.exists (exfile): 
-						self.proc.log ("Job not export-cached since exported file not exists: %s." % exfile, "debug", "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
+						self.proc.log ("Job not export-cached since exported file not exists: %s." % exfile, "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
 						return False
 					
 					if path.exists (out['data']) or path.islink (out['data']):
-						self.proc.log ('Overwrite file for export-caching: %s' % out['data'], 'warning', 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
+						self.proc.log ('Overwrite file for export-caching: %s' % out['data'], 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
 						remove (out['data'])
 						
 					utils.ungz (exfile, out['data'])
@@ -263,11 +264,11 @@ class job (object):
 				elif out['type'] in self.proc.OUT_DIRTYPE:
 					exfile += '.%s.tgz' % self.proc._name (False)
 					if not path.exists(exfile): 
-						self.proc.log ("Job not export-cached since exported file not exists: %s." % exfile, "debug", "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
+						self.proc.log ("Job not export-cached since exported file not exists: %s." % exfile, "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
 						return False
 					
 					if path.exists (out['data']) or path.islink (out['data']):
-						self.proc.log ('Overwrite file for export caching: %s' % out['data'], 'warning', 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
+						self.proc.log ('Overwrite file for export caching: %s' % out['data'], 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
 						if path.islink (out['data']): remove (out['data'])
 						else: rmtree (out['data'])
 						
@@ -275,12 +276,12 @@ class job (object):
 					utils.untargz (exfile, out['data'])
 			else:
 				if not path.exists (exfile):
-					self.proc.log ("Job not export-cached since exported file not exists: %s." % exfile, "debug", "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
+					self.proc.log ("Job not export-cached since exported file not exists: %s." % exfile, "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
 					return False	
 				if utils.isSamefile (exfile, out['data']):
 					continue
 				if path.exists (out['data']):
-					self.proc.log ('Overwrite file for export-caching: %s' % out['data'], 'warning', 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
+					self.proc.log ('Overwrite file for export-caching: %s' % out['data'], 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
 					if not path.isdir (out['data']): remove (out['data'])
 					else: rmtree (out['data'])
 					
@@ -320,7 +321,7 @@ class job (object):
 		ret = {}
 		sig = utils.filesig (self.oscript)
 		if not sig: 
-			self.proc.log ('Job #%s: Empty signature because of oscript file: %s.' % (self.index, self.oscript), 'debug', 'debug', 'CACHE_EMPTY_CURRSIG')
+			self.proc.log ('Job #%s: Empty signature because of oscript file: %s.' % (self.index, self.oscript), 'debug', 'CACHE_EMPTY_CURRSIG')
 			return ''
 		ret['script'] = sig
 		ret['in']     = {
@@ -340,7 +341,7 @@ class job (object):
 			elif val['type'] in self.proc.IN_FILETYPE:
 				sig = utils.filesig (val['data'])
 				if not sig: 
-					self.proc.log ('Job #%s: Empty signature because of input file: %s.' % (self.index, val['data']), 'debug', 'debug', 'CACHE_EMPTY_CURRSIG')
+					self.proc.log ('Job #%s: Empty signature because of input file: %s.' % (self.index, val['data']), 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
 				ret['in'][self.proc.IN_FILETYPE[0]][key] = sig
 			elif val['type'] in self.proc.IN_FILESTYPE:
@@ -348,7 +349,7 @@ class job (object):
 				for infile in sorted(val['data']):
 					sig = utils.filesig (infile)
 					if not sig: 
-						self.proc.log ('Job #%s: Empty signature because of one of input files: %s.' % (self.index, infile), 'debug', 'debug', 'CACHE_EMPTY_CURRSIG')
+						self.proc.log ('Job #%s: Empty signature because of one of input files: %s.' % (self.index, infile), 'debug', 'CACHE_EMPTY_CURRSIG')
 						return ''
 					ret['in'][self.proc.IN_FILESTYPE[0]][key].append (sig)
 		
@@ -358,13 +359,13 @@ class job (object):
 			elif val['type'] in self.proc.OUT_FILETYPE:
 				sig = utils.filesig (val['data'])
 				if not sig: 
-					self.proc.log ('Job #%s: Empty signature because of output file: %s.' % (self.index, val['data']), 'debug', 'debug', 'CACHE_EMPTY_CURRSIG')
+					self.proc.log ('Job #%s: Empty signature because of output file: %s.' % (self.index, val['data']), 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
 				ret['out'][self.proc.OUT_FILETYPE[0]][key] = sig
 			elif val['type'] in self.proc.OUT_DIRTYPE:
 				sig = utils.filesig (val['data'])
 				if not sig:
-					self.proc.log ('Job #%s: Empty signature because of output dir: %s.' % (self.index, val['data']), 'debug', 'debug', 'CACHE_EMPTY_CURRSIG')
+					self.proc.log ('Job #%s: Empty signature because of output dir: %s.' % (self.index, val['data']), 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
 				ret['out'][self.proc.OUT_DIRTYPE[0]][key] = sig
 				
@@ -433,7 +434,7 @@ class job (object):
 				
 		if self.proc.expect and expect:
 			expect = utils.format (self.proc.expect, self.data)
-			self.proc.log ('Job #%-3s: check expectation: %s' % (self.index, expect), 'debug', 'debug', 'EXPECT_CHECKING')
+			self.proc.log ('Job #%-3s: check expectation: %s' % (self.index, expect), 'debug', 'EXPECT_CHECKING')
 			exrc   = Popen (expect, shell=True, stdout=PIPE, stderr=PIPE).wait()
 			if exrc != 0:
 				self.rc (job.NOOUT_RC)
@@ -471,18 +472,18 @@ class job (object):
 			
 			# don't overwrite existing files
 			if (not self.proc.exportow and path.exists(exfile)) or utils.isSamefile(file2ex, exfile):
-				self.proc.log ('Job #%-3s: skipped (target exists): %s' % (self.index, exfile), 'info', 'export')
+				self.proc.log ('Job #%-3s: skipped (target exists): %s' % (self.index, exfile),  'export')
 				continue
 			
 			if path.exists(exfile):
-				self.proc.log ('Job #%-3s: overwriting: %s' % (self.index, exfile), 'info', 'export')
+				self.proc.log ('Job #%-3s: overwriting: %s' % (self.index, exfile), 'export')
 				if not path.isdir (exfile): 
 					remove (exfile)
 				else: rmtree (exfile)
 			else:
 				if path.islink (exfile): 
 					remove (exfile)
-				self.proc.log ('Job #%-3s: exporting to: %s' % (self.index, exfile), 'info', 'export')
+				self.proc.log ('Job #%-3s: exporting to: %s' % (self.index, exfile), 'export')
 			
 			if self.proc.exporthow in self.proc.EX_GZIP and path.isfile(file2ex):
 				utils.gz (exfile, file2ex)
@@ -503,7 +504,7 @@ class job (object):
 		"""
 		Clear the intermediate files and output files
 		"""
-		self.proc.log ('Resetting job #%s ...' % self.index, 'debug', 'debug', 'JOB_RESETTING')
+		self.proc.log ('Resetting job #%s ...' % self.index, 'debug', 'JOB_RESETTING')
 		if path.exists (self.rcfile) or path.islink (self.rcfile):
 			remove(self.rcfile)
 		if path.exists (self.outfile) or path.islink (self.outfile):
@@ -521,7 +522,7 @@ class job (object):
 			if out['type'] not in self.proc.OUT_DIRTYPE: 
 				continue
 			makedirs (out['data'])
-			self.proc.log ('Output directory created after reset: %s.' % out['data'], 'debug', 'debug', 'OUTDIR_CREATED_AFTER_RESET')
+			self.proc.log ('Output directory created after reset: %s.' % out['data'], 'debug', 'OUTDIR_CREATED_AFTER_RESET')
 
 	def _prepInput (self):
 		"""
@@ -560,7 +561,7 @@ class job (object):
 							infile = path.join (self.indir, fn + '[' + str(num+1) + '].' + ext)
 							symlink (origfile, infile)
 							
-					self.proc.log ("Input file renamed: %s -> %s" % (origfile, path.basename(infile)), 'warning', 'warning', 'INFILE_RENAMING')
+					self.proc.log ("Input file renamed: %s -> %s" % (origfile, path.basename(infile)), 'warning', 'INFILE_RENAMING')
 						
 				self.data[key]           = infile
 				self.data[key + '.orig'] = origfile
@@ -604,7 +605,7 @@ class job (object):
 								infile = path.join (self.indir, fn + '[' + str(num+1) + '].' + ext)
 								symlink (origfile, infile)
 								
-						self.proc.log ("Input file renamed: %s -> %s" % (origfile, path.basename(infile)), 'warning', 'warning', 'INFILE_RENAMING')
+						self.proc.log ("Input file renamed: %s -> %s" % (origfile, path.basename(infile)), 'warning', 'INFILE_RENAMING')
 						
 					self.input[key]['orig'].append (origfile)
 					self.input[key]['data'].append (infile)
@@ -681,7 +682,7 @@ class job (object):
 					self.brings[key] = dstfile
 					self.brings[key + ".orig"] = bring[0]
 					if path.exists(dstfile) and not utils.isSamefile (dstfile, bring[0]):
-						self.proc.log ("Overwriting bring file: %s" % dstfile, 'warning', 'warning', 'BRINGFILE_OVERWRITING')
+						self.proc.log ("Overwriting bring file: %s" % dstfile, 'warning', 'BRINGFILE_OVERWRITING')
 						remove (dstfile) # a link
 						symlink (bring[0], dstfile)
 					elif not path.exists(dstfile):
@@ -733,7 +734,7 @@ class job (object):
 				outkey = parts[0]
 				outexp = parts[1]
 				if outkey in alltype:
-					self.proc.log ('You are using preseved types (%s) as output names.' % parts[0], 'warning', 'warning', 'OUTNAME_USING_OUTTYPES')
+					self.proc.log ('You are using preseved types (%s) as output names.' % parts[0], 'warning', 'OUTNAME_USING_OUTTYPES')
 			
 			else:  # len (parts) == 3
 				outkey  = parts[0]
@@ -748,7 +749,7 @@ class job (object):
 			val = utils.format (outexp, self.data)
 			if outtype in self.proc.OUT_DIRTYPE and not path.exists(val):
 				makedirs (val)
-				self.proc.log ('Output directory created: %s.' % val, 'debug', 'debug', 'OUTDIR_CREATED')
+				self.proc.log ('Output directory created: %s.' % val, 'debug', 'OUTDIR_CREATED')
 
 			self.data[outkey]           = val
 			self.output[outkey]         = {
@@ -763,7 +764,7 @@ class job (object):
 		"""
 		script    = self.proc.script
 		if not script:
-			self.proc.log ('No script specified', 'warning', 'warning', 'NOSCRIPT')
+			self.proc.log ('No script specified', 'warning', 'NOSCRIPT')
 			open (self.script, 'w').close()
 			return
 		
@@ -773,7 +774,7 @@ class job (object):
 				tplfile = path.join (path.dirname(sys.argv[0]), tplfile)
 			if not path.exists (tplfile):
 				raise ValueError ('Script template file "%s" does not exist.' % tplfile)
-			self.proc.log ("Using template file: %s" % tplfile, 'debug', 'debug', 'SCRIPT_USING_TEMPLATE')
+			self.proc.log ("Using template file: %s" % tplfile, 'debug', 'SCRIPT_USING_TEMPLATE')
 			f = open(tplfile)
 			script = f.read().strip()
 			f.close()
@@ -810,7 +811,7 @@ class job (object):
 			f.close()
 			# no change to happen? script change will cause a different uid for a proc
 			if oscript == script:
-				self.proc.log ("Script file exists: %s" % self.script, 'debug', 'debug', 'SCRIPT_EXISTS')
+				self.proc.log ("Script file exists: %s" % self.script, 'debug', 'SCRIPT_EXISTS')
 			else:
 				with open (self.oscript, 'w') as f:
 					f.write (script)
