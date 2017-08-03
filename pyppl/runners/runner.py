@@ -166,6 +166,7 @@ class runner (object):
 						logflags = logflags.split('.')
 						if len(logflags) > 2:
 							loglevel = logflags[2]
+							logflag  = loglevel
 						if len(logflags) > 3:
 							logflag  = logflags[3]
 						self.job.proc.log (logmsgs.strip(), loglevel, logflag)
