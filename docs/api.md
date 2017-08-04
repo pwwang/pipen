@@ -577,14 +577,13 @@ Copy a process
 - **returns:**  
 The new process  
   
-#### `log (self, msg, level, flag, key) `
+#### `log (self, msg, level, key) `
   
 The log function with aggregation name, process id and tag integrated.  
 
 - **params:**  
 `msg`:   The message to log  
 `level`: The log level  
-`flag`:  The flag  
 `key`:   The type of messages  
   
 #### `registerRunner (runner) [@staticmethod]`
@@ -606,10 +605,6 @@ Run the jobs with a configuration
 > A set of utitities for pyppl
 
 
-#### `class: PyPPLLogFormatter`
-```
-logging formatter for pyppl
-```
 #### `alwaysList (data) `
   
 Convert a string or a list with element  
@@ -714,17 +709,6 @@ Try to get the source first, if failed, try to get its name, otherwise return No
 - **returns:**  
 The signature  
   
-#### `getLogger (level, name, colored, logfile) `
-  
-Get the default logger  
-
-- **params:**  
-`level`: The log level, default: info  
-`name`:  The name of the logger, default: PyPPL  
-
-- **returns:**  
-The logger  
-  
 #### `gz (gzfile, srcfile) `
   
 Do a "gzip"-like for a file  
@@ -744,20 +728,6 @@ Tell whether two paths pointing to the same file
 - **returns:**  
 True if yes, otherwise False  
 If any of the path does not exist, return False  
-  
-#### `padBoth (s, length, left, right) `
-  
-Pad at left and right sides of a string with different strings  
-
-- **params:**  
-`s`:      The string to be padded  
-`length`: The total length of the final string  
-`left`:   The string to be added on the left side  
-`right`:  The string to be added on the right side.  
-If it is None, will be the same as `left`.  
-
-- **returns:**  
-The logger  
   
 #### `randstr (length) `
   
@@ -974,6 +944,69 @@ procs: The ids of the procs to update
 
 #### `__init__ (self, *args, **args) `
   
+
+## Module `logger`  
+> A customized logger for pyppl
+
+
+#### `_formatTheme (theme) [@staticmethod]`
+  
+#### `_getColorFromTheme (level, theme) [@staticmethod]`
+  
+#### `_getLevel (record) [@staticmethod]`
+  
+Get the flags of a record  
+
+- **params:**  
+`record`:  The logging record  
+  
+#### `class: doct`
+```
+Extend dict so you can use dot (".") to access keys.
+	Refer to 
+	Examples:
+	```python
+	m = Map({'first_name': 'Eduardo'}, last_name='Pool', age=24, sports=['Soccer'])
+	# Add new key
+	m.new_key = 'Hello world!'
+	# Or
+	m['new_key'] = 'Hello world!'
+	print m.new_key
+	print m['new_key']
+	# Update values
+	m.new_key = 'Yay!'
+	# Or
+	m['new_key'] = 'Yay!'
+	# Delete key
+	del m.new_key
+	# Or
+	del m['new_key']
+	```
+```
+#### `getLogger (levels, theme, logfile, lvldiff, name) [@staticmethod]`
+  
+Get the default logger  
+
+- **params:**  
+`levels`: The log levels(tags), default: basic  
+`theme`:  The theme of the logs on terminal. Default: True (default theme will be used)  
+- False to disable theme  
+`logfile`:The log file. Default: None (don't white to log file)  
+`lvldiff`:The diff levels for log  
+- ["-depends", "jobdone", "+debug"]: show jobdone, hide depends and debug  
+`name`:   The name of the logger, default: pyppl  
+
+- **returns:**  
+The logger  
+  
+#### `class: pFilter`
+```
+logging filter by levels (flags)
+```
+#### `class: pFormatter`
+```
+logging formatter for pyppl
+```
 
 ## Module `runner`  
 > The base runner class
