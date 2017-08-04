@@ -1,4 +1,5 @@
 # Configure your logs
+<!-- toc -->
 
 {% raw %}
 `pyppl` has fancy logs. You can define how they look like (theme) and what messages to show (levels).
@@ -169,6 +170,10 @@ If you define a theme in a configuration file, you may use the escape sequences 
     }
 }
 ```
+
+## Log to file
+By default, pyppl will not log to a file until you set a file path to `"logfile"` in the configuration. Or you can specfiy `False` to it to disable logging to file. If you set it to `True`, a default log file will be used, which is: `"./pipeline.pyppl.log"` if your pipeline is from file: `./pipeline.py`
+>**NOTE** Filters and themes are not applied to handler to log to file. So you can always find all logs in the log file if your have it enabled.
 
 {% endraw %}
 
