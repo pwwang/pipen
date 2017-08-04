@@ -121,7 +121,7 @@ For the keys, you may either directly use the level name or have some prefix to 
 - `in:` matches the messages with level name in the following list, which is separated by comma (`,`).
 - `has:` matches the messages with level name containing the following string.
 - `starts:` matches the messages with level name starting with the following string.
-- `re`: uses the following string as regular expression to match
+- `re`: uses the following string as regular expression to match  
 Then empty string key (`''`) defines the colors to use for the messages that can not match any of the above rules.
 
 For the values, basically it's a 2-element list, where the first one defines the color to show the level name; and the second is the color to render the message. If only one color offered, it will be used for both level name and message.
