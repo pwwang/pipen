@@ -7,6 +7,7 @@
 ## Features
 - Supports of any language to run you processes.
 - [Easy-to-use command line parser.][27]
+- [Fancy logs][28]
 - [Automatic deduction of input based on the process dependencies.][4]
 - [Different ways of exporting output files (including `gzip`).][5]
 - [Process caching (including caching using exported files).][6]
@@ -244,3 +245,4 @@ You can use different [dot renderers][17] to render and visualize it.
 [25]: https://pwwang.gitbooks.io/pyppl/content/set-other-properties-of-a-process.html#set-expectations-of-a-process
 [26]: https://pwwang.gitbooks.io/pyppl/content/faq.html
 [27]: https://pwwang.gitbooks.io/pyppl/command-line-argument-parser.html
+[28]: https://pwwang.gitbooks.io/pyppl/content/configure-your-logs.html
