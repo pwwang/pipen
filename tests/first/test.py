@@ -16,6 +16,8 @@ if len(sys.argv) == 2 and sys.argv[1] == 'clean':
 	except: 
 		pass
 	sys.exit(0)
+
+config = {'logtheme': 'greenOnWhite'}
 	
 # Copy the following code to README file
 from pyppl import pyppl, proc
@@ -29,4 +31,4 @@ pSort.script  = """
   sort -k1r {{infile}} > {{outfile}}
 """ 
 
-pyppl().starts(pSort).run()
+pyppl(config).starts(pSort).run()
