@@ -72,6 +72,22 @@ sort -k1r {{infile}} > {{outfile}}
 **Line 8**: Set the starting processes and run the pipeline.  
 
 ![First-script-output][20]
+```
+> ls -l
+total 163
+-rw-r--r-- 1 user group 56 Aug 4 00:29 test1.sorted
+-rw-r--r-- 1 user group 56 Jul 31 18:47 test1.txt
+-rw-r--r-- 1 user group 56 Aug 4 00:29 test2.sorted
+-rw-r--r-- 1 user group 56 Jul 31 18:47 test2.txt
+-rw-r--r-- 1 user group 59 Aug 4 00:29 test3.sorted
+-rw-r--r-- 1 user group 59 Jul 31 18:47 test3.txt
+-rw-r--r-- 1 user group 58 Aug 4 00:29 test4.sorted
+-rw-r--r-- 1 user group 58 Jul 31 18:47 test4.txt
+-rw-r--r-- 1 user group 58 Aug 4 00:29 test5.sorted
+-rw-r--r-- 1 user group 58 Jul 31 18:47 test5.txt
+-rw-r--r-- 1 user group 895 Aug 4 00:29 test.py
+drwxr-sr-x 3 user group 44 Aug 4 00:29 workdir/
+```
 
 ## Multiple processes 
 Sort each 5 file and then combine them into one file
