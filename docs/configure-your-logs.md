@@ -68,6 +68,7 @@ Please note that the levels are different from those of python's `logging` modul
 |`P.PROPS`|`all, normal, nodebug`|Show some properties of a process|
 |`P.ARGS`|`all, nodebug`|Show the args of a process|
 |`JOBDONE`|`all, nodebug`|Mark when a job is done|
+>**NOTE** The log levels are a little bit different from here, please see [debug your script].[27]
 
 You may also specify the group name in your pipeline configuration file:
 ```json
@@ -115,43 +116,59 @@ themes = {
   # other themes
 }
 ```
+For the keys, you may either directly use the level name or have some prefix to define how to match the level names:
+- `in:` matches the messages with level name in the following list, which is separated by comma (`,`).
+- `has:` matches the messages with level name containing the following string.
+- `starts:` matches the messages with level name starting with the following string.
+- `re`: uses the following string as regular expression to match
+Then empty string key (`''`) defines the colors to use for the messages that can not match any of the above rules.
 
-You can modify the theme before you specify it to the pyppl constructor:
+For the values, basically it's a 2-element list, where the first one defines the color to show the level name; and the second is the color to render the message. If only one color offered, it will be used for both level name and message.
+
+If you just want to modify the built-in themes, you can do it before you specify it to the pyppl constructor:
 ```python
-from pyppl import logger
+from pyppl import logger, pyppl
 logger.themes['greenOnBlack']['DONE'] = logger.colors.cyan
+# ... define some procs
+pyppl({'logtheme': 'greenOnBlack'}).starts(...).run()
 ```
 
+Yes, of course, you can also define a completely new theme:
+```python
+from pyppl import logger, pyppl
+# ... define procs
+pyppl({'logtheme': {
+    'DONE': logger.colors.green,
+    'DEBUG': logger.colors.black,
+    'starts:LOG': logger.colors.bgwhite + logger.colors.black,
+    # ...
+}}).starts(...).run()
+```
 
+Available colors in `logger.colors`:
 
+|Key|Color|Key|Color|Key|Color|Key|Color|Key|Color|
+|---|-----|---|-----|---|-----|---|-----|---|-----|
+|`none`|`''`<sup>1</sup>|`black`|![A][10]|`red`|![A][11]|`green`|![A][12]|`yellow`|![A][13]|
+|`end`|<sup>2</sup>|`blue`|![A][14]|`magenta`|![A][15]|`cyan`|![A][16]|`white`|![A][17]|
+|`bold`|**A**<sup>3</sup>|`bgblack`|![A][18]|`bgred`|![A][19]|`bggreen`|![A][20]|`bgyellow`|![A][21]|
+|`underline`|_<sup>4</sup>|`bgblue`|![A][22]|`bgmagenta`|![A][23]|`bgcyan`|![A][24]|`bgwhite`|![A][25]|
 
+1. An empty string; 2. End of coloring; 3. Show bold characters; 4. Show underline characters.
 
+You can also use the directly terminal escape sequences, like `\033[30m` for black (check [here][26]).
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+If you define a theme in a configuration file, you may use the escape sequences or also use the color names:
+```json
+{
+    "logtheme": {
+        "DONE": "colors.green",
+        "DEBUG": "colors.black",
+        "starts:LOG": "colors.bgwhite + colors.black",
+        # ...
+    }
+}
+```
 
 {% endraw %}
 
@@ -165,10 +182,21 @@ logger.themes['greenOnBlack']['DONE'] = logger.colors.cyan
 [7]: https://raw.githubusercontent.com/pwwang/pyppl/master/docs/noThemeOnBlack.png
 [8]: https://raw.githubusercontent.com/pwwang/pyppl/master/docs/noThemeOnWhite.png
 [9]: https://docs.python.org/2/library/logging.html#logging-levels
-
-
-
-
-
-
-
+[10]: https://placehold.it/32/eeeeee/000000?text=A
+[11]: https://placehold.it/32/eeeeee/ff0000?text=A
+[12]: https://placehold.it/32/eeeeee/00ff00?text=A
+[13]: https://placehold.it/32/eeeeee/ffff00?text=A
+[14]: https://placehold.it/32/eeeeee/0000ff?text=A
+[15]: https://placehold.it/32/eeeeee/ff00ff?text=A
+[16]: https://placehold.it/32/eeeeee/00ffff?text=A
+[17]: https://placehold.it/32/eeeeee/ffffff?text=A
+[18]: https://placehold.it/32/000000/eeeeee?text=A
+[19]: https://placehold.it/32/ff0000/eeeeee?text=A
+[20]: https://placehold.it/32/00ff00/eeeeee?text=A
+[21]: https://placehold.it/32/ffff00/eeeeee?text=A
+[22]: https://placehold.it/32/0000ff/eeeeee?text=A
+[23]: https://placehold.it/32/ff00ff/eeeeee?text=A
+[24]: https://placehold.it/32/00ffff/eeeeee?text=A
+[25]: https://placehold.it/32/ffffff/eeeeee?text=A
+[26]: https://en.wikipedia.org/wiki/ANSI_escape_code
+[27]: https://pwwang.gitbooks.io/pyppl/write-your-script.html#debug-your-script
