@@ -31,4 +31,4 @@ pSort.script  = """
   sort -k1r {{infile}} > {{outfile}}
 """ 
 
-pyppl(config).starts(pSort).run()
+pyppl({'loglevels': 'basic'}).starts(pSort).run()
