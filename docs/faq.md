@@ -34,4 +34,11 @@ condProc = pyppl.proc(desc = 'Conditional process.')
 condProc.callfront = condRun
 
 ```
+Remember that the process should have the same basenames for input and output files.
+
+**Q: Can I dry-run a process?**
+A: Yes, just use the dry  runner: `p.runner = "dry"`. The runner will just create empty files/directories for output, and skip to run the script.
+
+**Q: Can I disable the logs on the terminal?**
+A: Yes, just set `"loglevels"` to `None` in pipeline configurations.
 
