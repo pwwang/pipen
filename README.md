@@ -7,7 +7,7 @@
 ## Features
 - Supports of any language to run you processes.
 - [Easy-to-use command line parser.][27]
-- [Fancy logs][28]
+- [Fancy logs.][28]
 - [Automatic deduction of input based on the process dependencies.][4]
 - [Different ways of exporting output files (including `gzip`).][5]
 - [Process caching (including caching using exported files).][6]
