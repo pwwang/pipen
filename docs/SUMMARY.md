@@ -10,6 +10,7 @@
 * [Caching](caching.md)
 * [Runners](runners.md)
 * [Set other properties of a process](set-other-properties-of-a-process.md)
+* [Configure your logs](configure-your-logs.md)
 * [Configure a pipeline](configure-a-pipeline.md)
 * [Draw flowchart of a pipeline](draw-flowchart-of-a-pipeline.md)
 * [Command line argument parser](command-line-argument-parser.md)
