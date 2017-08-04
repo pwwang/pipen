@@ -1,4 +1,4 @@
-# Write your script
+# Write and debug your script
 <!-- toc -->
 
 ## Choose your language
@@ -50,6 +50,43 @@ The leading white spaces of line `# Indent: remove` will be removed for each lin
 You may use `# Indent: keep` to stop removing the white spaces for the following lines.
 
 ## Debug your script
-If you need to debug your script, you just need to find the real running script, which is at: `<workdir>/<index>/job.script`. All the placeholders in the script have been replaced with actual values. You can debug it using the tool according to the language you used for the script.
+If you need to debug your script, you just need to find the real running script, which is at: `<workdir>/<job.index>/job.script`. All the placeholders in the script have been replaced with actual values. You can debug it using the tool according to the language you used for the script.
+
+You may also add logs to pyppl's main logs on the screen or in log files. To do that, you just need to print you message starting with `pyppl.log` to STDERR:
+```python
+# python
+import sys
+sys.stderr.write('pyppl.log: Something for debug.')
+```
+
+```bash
+# bash
+echo "pyppl.log: Something for debug." 1>&2
+```
+
+```R
+# Rscript
+write("pyppl.log: Something for debug.", stderr())
+```
+Either one of the above will have a log message like:
+```
+[2017-01-01 01:01:01][    LOG] Something for debug.
+```
+You may also use a different log level (flag):
+```python
+# python
+import sys
+sys.stderr.write('pyppl.log.flag: Something for debug.')
+```
+Then the log message will be:
+```
+[2017-01-01 01:01:01][   FLAG] Something for debug.
+```
+
+>**NOTE** The level name you specified after `pyppl.log` does not apply to [normal log filters or themes][2], because the actual level is `_FLAG` in this case. So unless you set `loglevels` to `None`, it will be anyway printed out. For themes, the color at the empty string key will be used. 
+> You can define filters or themes for this kind of logs, just remember the actual level name has an `_` prefix. See [here][2] to learn how to define filters and themes.
+
+
 
 [1]: https://en.wikipedia.org/wiki/Shebang_(Unix)
+[2]: https://pwwang.gitbooks.io/pyppl/configure-your-logs.html
