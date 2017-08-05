@@ -1,8 +1,6 @@
 import os, sys
 
-sys.path.insert (0, "/home/m161047/tools/pyppl")
-sys.path.insert (0, "/home/m161047/tools/bioprocs")
-sys.path.insert (0, "/home/m161047/tools/bioaggrs")
+sys.path.insert (0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
 # `python test.py clean` to clean the data
 if len(sys.argv) == 2 and sys.argv[1] == 'clean':
@@ -28,7 +26,8 @@ pSort.output  = "outfile:file:{{infile | fn}}.sorted"
 pSort.forks   = 5
 pSort.exdir   = './'
 pSort.script  = """
-  sort -k1r {{infile}} > {{outfile}}
+  # difference
+  sort -k1r {{infile}} > {{outfile}} 
 """ 
 
 pyppl({'loglevels': 'basic'}).starts(pSort).run()

@@ -104,6 +104,7 @@ if args.command in ['list', 'clean']:
 						print msg
 					else:
 						ask2Remove(msg, procpath, not args.force)
+	print ''
 				
 if args.command == 'compare':
 	
@@ -120,7 +121,8 @@ if args.command == 'compare':
 	from difflib import unified_diff
 	
 	if args.p:
-		p = args.p if '.' in args.p else 'PyPPL.%s' % args.p
+		#p = args.p if '.' in args.p else 'PyPPL.%s' % args.p
+		p = args.p if len(args.p.split('.')) > 2 else 'PyPPL.%s' % args.p
 		prefix = p if not args.u else path.join(args.workdir, p)
 		procs  = glob (prefix + '.*')
 		if not procs:
