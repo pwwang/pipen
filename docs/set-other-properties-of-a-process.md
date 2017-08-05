@@ -181,18 +181,17 @@ To output some as a log message:
 Even with `p.echo = False`, in your script:
 ```python
 p.script = """
-echo "pyppl.log.error.hhh: I am a log message" 1>&2
+echo "pyppl.log.hhhhh: I am a log message" 1>&2
 # The log level ^^^^^
-# The log flag        ^^^
-# The message              ^^^^^^^^^^^^^^^^^^
-# The log must be printed to stderr           ^^^^
+# The message          ^^^^^^^^^^^^^^^^^^
+# The log must be printed to stderr        ^^^^
 """
 ```
 Then on your screen:
 ```
 ...
 [2017-08-01 18:11:00][   INFO] p: Submitting job #0  
-[2017-08-01 18:11:03][    HHH] p: I am a log message
+[2017-08-01 18:11:03][  HHHHH] p: I am a log message
 ...
 ```
 >**NOTE** Only logs from jobs in `p.echo['jobs']` will be echoed. So if `p.echo = False`, only job #0 will have logs on your terminal or in log file.
