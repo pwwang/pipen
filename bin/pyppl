@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
 import sys
-
 import argparse
+
 from glob import glob
 from datetime import datetime
+from shutil import rmtree
 
 from os import path
-from shutil import rmtree
+sys.path.insert(0, path.dirname(path.dirname(path.realpath(__file__))))
 from pyppl import logger
 
 parser           = argparse.ArgumentParser(description='A set of CLI tools for pyppl.')
