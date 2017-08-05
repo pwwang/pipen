@@ -12,7 +12,8 @@ Actually, what you need to do is just specify the first input channel, and then 
 ./
 |-- pipeline.py
 `-- workdir/
-	`-- PyPPL.<id>.<tag>.<suffix>/   
+	`-- PyPPL.<id>.<tag>.<suffix>/
+		`-- proc.settings
 		`-- <job.index>/
 			|-- input/
 			|-- output/
@@ -30,6 +31,7 @@ Actually, what you need to do is just specify the first input channel, and then 
 |------|---------|------|
 |`workdir/`|Where the pipeline directories of all processes of current pipeline are located.|Can be set by `p.ppldir`|
 |`PyPPL.<id>.<tag>.<suffix>/`|The work directory of current process.|The `suffix` is a unique identify of the process according to its configuration.<br/>You may set it by `p.workdir`|
+|`proc.settings/`|The settings of the process||
 |`<job.index>/`|The job directory||
 |`<job.index>/input/`|Where you can find the links to all the input files||
 |`<job.index>/output/`|Where you can find all the output files||
