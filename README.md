@@ -92,16 +92,12 @@ drwxr-sr-x 3 user group 44 Aug 4 00:29 workdir/
 ## Multiple processes 
 Sort each 5 file and then combine them into one file
 ```python
-from pyppl import pyppl, proc, channel, params
-
-params.infiles = []
-params.infiles.desc     = "Input files."
-params.infiles.required = True
-params.parse()
+from pyppl import pyppl, proc
 
 pSort         = proc(desc = "Sort files.")
-pSort.input   = {"infile:file": params.infiles.value}
+pSort.input   = "infile:file"
 pSort.output  = "outfile:file:{{infile | fn}}.sorted"
+pSort.forks   = 5
 pSort.script  = """
   sort -k1r {{infile}} > {{outfile}}
 """ 
@@ -118,13 +114,54 @@ for infile in {{infiles | asquote}}; do
 done
 """
 
-# Only need to specify start processes
+# Only need to specify starting processes
 pyppl().starts(pSort).run()
 ```
 
+## Using the command line argument parser
+```python
+from pyppl import pyppl, proc, params
+
+params.infiles.setType(list).setRequired().setDesc("Input files.")
+params.runner.setValue('local').setDesc('The runner.')
+params.forks.setValue(5).setType(int).setDesc('How many jobs to run simultaneously.')
+params.parse()
+
+pSort         = proc(desc = "Sort files.")
+pSort.input   = {"infile:file": params.infiles.value}
+pSort.output  = "outfile:file:{{infile | fn}}.sorted"
+pSort.forks   = params.forks.value
+pSort.runner  = params.runner.value
+pSort.script  = """
+  sort -k1r {{infile}} > {{outfile}}
+""" 
+
+pyppl().starts(pSort).run()
+```
 Run the pipeline: 
 ```bash
-python pipeline.py --param-infiles test?.txt
+pwwang@LAPTOP ~/p/t/first> python test2.py
+USAGE:
+-----
+  test2.py --param-infiles <list> [OPTIONS]
+
+REQUIRED OPTIONS:
+----------------
+  --param-infiles <list>                Input files.
+
+OPTIONAL OPTIONS:
+----------------
+  --param-runner <str>                  The runner. Default: local
+  --param-forks <int>                   How many jobs to run simultaneously. Default: 5
+  -h, --help, -H, -?                    Print this help information.
+
+
+pwwang@LAPTOP ~/p/t/first> python test2.py --param-infiles test?.txt
+[2017-08-04 23:06:39][  PYPPL] Version: 0.8.0
+[2017-08-04 23:06:39][   TIPS] You can find the stderr in <workdir>/<job.index>/job.stderr
+[2017-08-04 23:06:39][>>>>>>>] pSort: Sort files.
+[2017-08-04 23:06:39][DEPENDS] pSort: START => pSort => ['pCombine']
+... ...
 ```
 
 ## Using a different language
@@ -147,10 +184,15 @@ dev.off()
 ## Using a different runner
 ```python
 pPlot = proc()
-pPlot.input   = {"infile:file": ["./data1.txt", "./data2.txt", "./data3.txt", "./data4.txt", "./data5.txt"]}
+pPlot.input   = {"infile:file": ["./data1.txt", "./data2.txt", "./data3.txt"]}
 pPlot.output  = "outfile:file:{{infile.fn}}.png"
 pPlot.lang    = "Rscript"
 pPlot.runner  = "sge"
+pPlot.sgeRunner = {
+    "sgeRunner": {
+      "sge.q" : "1-day"
+    }		
+}
 # run all 5 jobs at the same time
 pPlot.forks   = 5
 pPlot.script  = """
@@ -160,13 +202,7 @@ png (figure = “{{outfile}}”)
 plot(H)
 dev.off()
 """
-pyppl({
-  "proc": {
-    "sgeRunner": {
-      "sge.q" : "1-day"
-    }
-  }
-}).starts(pPlot).run()
+pyppl().starts(pPlot).run()
 ```
 
 ## Draw the pipeline chart
