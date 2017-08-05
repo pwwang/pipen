@@ -88,6 +88,7 @@ total 163
 -rw-r--r-- 1 user group 895 Aug 4 00:29 test.py
 drwxr-sr-x 3 user group 44 Aug 4 00:29 workdir/
 ```
+If you don't like the theme, you can different one or define your own (see [here][28]).
 
 ## Multiple processes 
 Sort each 5 file and then combine them into one file
@@ -205,19 +206,137 @@ dev.off()
 pyppl().starts(pPlot).run()
 ```
 
+## Debug your script
+```python
+from pyppl import pyppl, proc
+p = proc(tag = 'Debug')
+p.input = {"a": [1]}
+p.script = """
+a={{a}}
+echo "pyppl.log: The value of a is $a" 1>&2
+a="someothervalue"
+echo "pyppl.log.avalue: The value of a is $a" 1>&2
+"""
+```
+You will get something like this in your log:
+```
+# other logs
+[2017-01-01 01:01:01][    LOG] The value of a is 1
+[2017-01-01 01:01:01][ AVALUE] The value of a is someothervalue
+# other logs
+```
+
+## Use exported files as cache
+```python
+from pyppl import pyppl, proc
+
+pDownload         = proc(desc = 'Download the genome reference.')
+pDownload.input   = {"url": ["http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz"]}
+pDownload.output  = "outfile:file:hg19.tar.gz"
+pDownload.exdir   = './export'
+pDownload.cache   = 'export'
+pDownload.script  = """
+wget "{{url}}" -O "{{outfile}}"
+""" 
+
+pyppl().starts(pSort).run()
+```
+For this kind of process, you just want to run it only once. Next time when you run it, it will use the exported files in `pDownload.exdir` as output file and skip running the script.
+
+## Dry-run a pipeline
+If you just want to generate the pipeline flowchart or test the process settings, you would like to dry-run a pipeline, which will generate empty output files and directories and skip running the script.  
+Dry runner is a built-in runner, so you just need to specify the runner name to the process:
+```python
+p.runner = 'dry'
+```
+To dry-run a whole pipeline:
+```python
+pyppl().starts().run('dry')
+```
+
+## Set expectations of a process output
+```python
+from pyppl import pyppl, proc
+
+pDownload         = proc(desc = 'Download the genome reference.')
+pDownload.input   = {"url": ["http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz"]}
+pDownload.output  = "outfile:file:hg19.tar.gz"
+pDownload.exdir   = './export'
+pDownload.cache   = 'export'
+# Expect the outfile contains "chr"
+pDownload.expect  = "grep chr {{outfile}}" 
+pDownload.script  = """
+wget "{{url}}" -O "{{outfile}}"
+""" 
+
+pyppl().starts(pSort).run()
+```
+
+## Switch runner profiles
+In your configuration file: (i.e. `/path/to/mypyppl.json`)
+```json
+{
+    "proc": {            // default profile
+        "runner": "ssh",
+        "sgeRunner": {
+            // sge options
+        }
+    },
+    "test" : {
+        "forks": 1,
+        "runner": "local"
+    },
+    "cluster": {
+       "forks": 100,
+       "runner": "sge",
+       "sgeRunner": {
+           "sge.q": "7-days",
+           // ...
+       }
+    },
+    "profile3": {...},
+    ...
+}
+```
+
+You can then switch them easily by:
+```python
+pyppl({}, "/path/to/mypyppl.json").starts(...).run('test')
+# or
+pyppl({}, "/path/to/mypyppl.json").starts(...).run('cluster')
+```
+You can use a command line option to control it by using the command line argument parser:
+```python
+from pyppl import pyppl, params
+
+params.runner.setValue('test').setDesc("The running profile.")
+params.parse()
+
+# process definitions
+# ...
+
+pyppl({}, "/path/to/mypyppl.json").starts(...).run(params.runner.value)
+```
+Then to switch the runner:
+```
+> python pipeline.py --param-runner test
+# or
+> python pipeline.py --param-runner cluster
+```
+
 ## Draw the pipeline chart
 `pyppl` can generate the graph in [DOT language][14]. 
 ```python
 # "A" is the tag of p1
-p1 = proc("A")
-p2 = proc("B")
-p3 = proc("C")
-p4 = proc("D")
-p5 = proc("E")
-p6 = proc("F")
-p7 = proc("G")
-p8 = proc("H")
-p9 = proc("I")
+p1 = proc(tag = "A")
+p2 = proc(tag = "B")
+p3 = proc(tag = "C")
+p4 = proc(tag = "D")
+p5 = proc(tag = "E")
+p6 = proc(tag = "F")
+p7 = proc(tag = "G")
+p8 = proc(tag = "H")
+p9 = proc(tag = "I")
 """
 		   1A         8H
 		/      \      /
