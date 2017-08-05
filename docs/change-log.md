@@ -1,5 +1,13 @@
 # Change log
 
+## Aug 4, 2017: 0.8.1
+- Add partial echo
+- Add interactive log from the script
+- Add partial export
+- Add log themes and filters
+- Add compare to command line tool
+- Fix bugs
+
 ## Aug 1, 2017: 0.8.0
 - Add slurm and dry runner
 - Fix bugs when more than 2 input files have same basename
