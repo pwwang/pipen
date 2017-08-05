@@ -53,12 +53,17 @@ We have a set of built-in funcitons for placeholders, they are:
 |`realpath`|Get the real path|`{{v `&#x7c;` realpath}}`|`{'v':some/path}`|`<the real path of some/path>`|
 |`readlink`|Read the link|`{{v `&#x7c;` readlink}}`|`{'v':some/link}`|`<the real path some/link links to`|
 |`dirname`|Get the directory path of given path|`{{v `&#x7c;` dirname}}`|`{'v':/path/to/some/file}`|`/path/to/some/`|
-|`basename`|Get the basename of given path|`{{v `&#x7c;` basename}}`|`{'v':/path/to/some/file.txt}`|`file.txt`|
+|`basename`|Get the basename of given path|`{{v `&#x7c;` basename}}`|`{'v':/path/to/some/file[1].txt}`|`file.txt`|
 |`bn`|Alias of `basename`||||
-|`filename`|Basename without extension|`{{v `&#x7c;` filename}}`|`{'v':'/a/b/c.txt'}`|`c`|
+|`basename.orig`|Get the original basename of given path|`{{v `&#x7c;` basename}}`|`{'v':/path/to/some/file[1].txt}`|`file[1].txt`|
+|`bn.orig`|Alias of `basename.orig`||||
+|`filename`|Basename without extension|`{{v `&#x7c;` filename}}`|`{'v':'/a/b/c[1].txt'}`|`c`|
 |`fn`|Alias of `filename`||||
+|`filename.orig`|Oringal basename without extension|`{{v `&#x7c;` filename}}`|`{'v':'/a/b/c[1].txt'}`|`c[1]`|
+|`fn.orig`|Alias of `filename.orig`||||
 |`ext`|Get the extension of a file|`{{v `&#x7c;` ext}}`|`{'v':'/a/b/c.txt'}`|`.txt`|
 |`prefix`|Get the prefix of a path (no extension)|`{{v `&#x7c;` prefix}}`|`{'v':'/a/b/c.d.txt'}`|`/a/b/c.d`|
+|`prefix.orig`|Get the prefix of a path (no extension)|`{{v `&#x7c;` prefix}}`|`{'v':'/a/b/c.d[1].txt'}`|`/a/b/c.d[1]`|
 |`asquote`|Quote an array(list) with quote and joined with space|`{{v `&#x7c;` asquote}}`|`{'v':['1','2']}`|`"1" "2"`|
 |`acquote`|Quote an array(list) with quote and joined with comma|`{{v `&#x7c;` acquote}}`|`{'v':['1','2']}`|`"1","2"`|
 |`quote`|Quote a string|`{{v `&#x7c;` quote}}`|`{'v':'1'}`|`"1"`|
