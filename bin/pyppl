@@ -19,10 +19,9 @@ parser_clean.add_argument ('-f', '--force', help="Force cleaning, don't ask for 
 parser_clean.set_defaults(force = False)
 parser_list      = cmdparsers.add_parser('list', help="List the status of a workdir")
 parser_compare   = cmdparsers.add_parser('compare', help="Compare the settings of two processes.")
-parser_compare.add_argument ('-u', help="Use the workdir by -w, use -p1, -p2 as path", action='store_true')
-parser_compare.add_argument ('-p1', '--process1', dest='p1', help="The first process, either full path or the basename (with -u)", required = False)
-parser_compare.add_argument ('-p2', '--process2', dest='p2', help="The first process, either full path or the basename (with -u)", required = False)
-parser_compare.add_argument ('-p', '--pprefix', dest='p', help="The process without suffix, will compare the most 2 recent processes (use -u for full path).", required = False)
+parser_compare.add_argument ('-p1', '--process1', dest='p1', help="The first process, either full path (with -d) or the basename (could be without 'PyPPL.')", required = False)
+parser_compare.add_argument ('-p2', '--process2', dest='p2', help="The second process, either full path (with -d) or the basename (could be without 'PyPPL.')", required = False)
+parser_compare.add_argument ('-p', '--pprefix', dest='p', help="The process without suffix, will compare the most 2 recent processes (with -d for full path).", required = False)
 args             = parser.parse_args()
 
 def mtime4proc (procdir):
@@ -77,29 +76,29 @@ if args.command in ['list', 'clean']:
 		print logger.colors.red + "No processes found!\n" + logger.colors.end
 	
 	maxlen = max([len(g) for g in groups.keys()])
-	maxlen = max(maxlen, 23)
+	maxlen = max(maxlen, 30)
 	for g, sufs in groups.iteritems():
-		print "\n- PROCESSES: PyPPL.%s" % (g)
-		print "  " + "-" * (maxlen + 17)
+		print "\n- PROCESSES: %s" % (g)
+		print "  " + "-" * (maxlen + 18)
 		
 		for i, suf in enumerate(sorted(sufs, key=lambda x: mtime4proc(path.join (args.workdir, "PyPPL.%s.%s" % (g, x))), reverse=True)):
 			procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
 			color    = logger.colors.green
 			ptime    = mtime4proc(procpath)
 			if i == 0 and ptime != 0:
-				print color + '  ' + suf + ': ' + fmtTime(ptime) + logger.colors.end
+				print color + '  ' + g + '.' + suf + ': ' + fmtTime(ptime) + logger.colors.end
 			else:
 				procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
 				if ptime == 0:
 					color = logger.colors.red
-					msg = color + '  ' + suf + ': ' + fmtTime(ptime) + logger.colors.end
+					msg = color + '  ' + g + '.' + suf + ': ' + fmtTime(ptime) + logger.colors.end
 					if args.command == 'list':
 						print msg
 					else:
 						ask2Remove(msg, procpath, not args.force)
 				else:
 					color = logger.colors.yellow
-					msg = color + '  ' + suf + ': ' + fmtTime(ptime) + logger.colors.end
+					msg = color + '  ' + g + '.' + suf + ': ' + fmtTime(ptime) + logger.colors.end
 					if args.command == 'list':
 						print msg
 					else:
@@ -121,9 +120,12 @@ if args.command == 'compare':
 	from difflib import unified_diff
 	
 	if args.p:
-		#p = args.p if '.' in args.p else 'PyPPL.%s' % args.p
-		p = args.p if len(args.p.split('.')) > 2 else 'PyPPL.%s' % args.p
-		prefix = p if not args.u else path.join(args.workdir, p)
+		if '/' in args.p[:-1]:
+			prefix = args.p
+		else:
+			prefix = 'PyPPL.' + args.p if not args.p.startswith('PyPPL.') else args.p
+			prefix = path.join(args.workdir, prefix)
+			
 		procs  = glob (prefix + '.*')
 		if not procs:
 			sfile1 = ''
@@ -136,10 +138,19 @@ if args.command == 'compare':
 			sfile1 = path.join(procs[0], 'proc.settings')
 			sfile2 = path.join(procs[1], 'proc.settings')
 	else:
-		proc1path = args.p1 if not args.u else path.join(args.workdir, args.p1)
-		proc2path = args.p2 if not args.u else path.join(args.workdir, args.p2)
-		sfile1    = path.join(proc1path, 'proc.settings')
-		sfile2    = path.join(proc2path, 'proc.settings')
+		if '/' in args.p1[:-1]:
+			p1 = args.p1
+		else:
+			p1 = 'PyPPL.' + args.p1 if not args.p1.startswith('PyPPL.') else args.p1
+			p1 = path.join(args.workdir, p1)
+			
+		if '/' in args.p2[:-1]:
+			p2 = args.p2
+		else:
+			p2 = 'PyPPL.' + args.p2 if not args.p2.startswith('PyPPL.') else args.p2
+			p2 = path.join(args.workdir, p2)
+		sfile1    = path.join(p1, 'proc.settings')
+		sfile2    = path.join(p2, 'proc.settings')
 	
 	print logger.colors.green + "1. " + sfile1 + logger.colors.end
 	print logger.colors.red   + "2. " + sfile2 + logger.colors.end
