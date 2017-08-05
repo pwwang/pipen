@@ -191,18 +191,23 @@ def format (tpl, args):
 			val2replace = ("'%s'" % value) if isinstance(value, basestring) else ("%s" % value)
 			func = re.sub(r"(?<=\(|\s|,)_(?=\)|,|\s)", val2replace, func, 1)
 			
+			if func.startswith(".") or func.startswith("["):
+				expstr = '%s%s' % (val2replace, func)
+			elif func.startswith ('lambda'):
+				expstr = '(%s)(%s)' % (func, val2replace)
+			elif func in format.shorts:
+				expstr = '(%s)(%s)' % (format.shorts[func], val2replace)
+			else:
+				expstr = func
+			
 			try:
-				if func.startswith(".") or func.startswith("["):
-					value = eval ('%s%s' % (val2replace, func))	
-				elif func.startswith ('lambda'):
-					value = eval ('(%s)(%s)' % (func, val2replace))
-				elif func in format.shorts:
-					value = eval ('(%s)(%s)' % (format.shorts[func], val2replace))
-				else:
-					value = eval (func)
-			except Exception as ex:
-				stderr.write ("Failed to interpret placeholder: %s\nin %s\nwith data: \n  %s\n" % (func, n, "\n  ".join([key + ": " + str(args[key]) for key in sorted(args.keys())])))
-				raise Exception (ex)
+				value  = eval (expstr)	
+			except:
+				stderr.write("Failed to evaluate: %s\n" % expstr)
+				stderr.write("- Key/Func:   %s\n" % func)
+				stderr.write("- Expression: %s\n" % n)
+				stderr.write("- Avail keys: %s\n" % args.keys())
+				raise
 
 		s     = s.replace (n, str(value))
 	return s
@@ -210,52 +215,44 @@ def format (tpl, args):
 format.shorts = {
 	# convert python bool to R bool
 	'Rbool':     "lambda x: str(bool(x)).upper()",
-	'realpath':  "lambda x: __import__('os').path.realpath (x)",
-	'readlink':  "lambda x: __import__('os').readlink (x)",
-	'dirname':   "lambda x: __import__('os').path.dirname (x)",
-	'basename':  "lambda x: [ \
-		[None for path in [__import__('os').path]], \
-		[None for dname in [path.dirname(x)]], \
-		[None for bname in [path.basename(x)]], \
-		[None for (fn, ext) in [tuple(path.splitext(bname))]], \
-		bname if not fn.endswith(']') else fn.rpartition('[')[0] + ext \
-		][-1]",
-	'bn':        "lambda x: [ \
-		[None for path in [__import__('os').path]], \
-		[None for bname in [path.basename(x)]], \
-		[None for (fn, ext) in [tuple(path.splitext(bname))]], \
-		bname if not fn.endswith(']') else fn.rpartition('[')[0] + ext \
-		][-1]",
-	'basename.orig': "lambda x: __import__('os').path.basename(x)",
-	'bn.orig':   "lambda x: __import__('os').path.basename(x)",
+	'realpath':  "lambda x, os = __import__('os'): os.path.realpath (x)",
+	'readlink':  "lambda x, os = __import__('os'): os.readlink (x)",
+	'dirname':   "lambda x, os = __import__('os'): os.path.dirname (x)",
+	# /a/b/c[1].txt => c.txt
+	'basename':  "lambda x, path = __import__('os').path: path.basename(x) \
+		if not path.splitext(path.basename(x))[0].endswith(']') \
+		else path.splitext(path.basename(x))[0].rpartition('[')[0] + path.splitext(path.basename(x))[1]",
+	'bn':        "lambda x, path = __import__('os').path: path.basename(x) \
+		if not path.splitext(path.basename(x))[0].endswith(']') \
+		else path.splitext(path.basename(x))[0].rpartition('[')[0] + path.splitext(path.basename(x))[1]",
+	'basename.orig': "lambda x, path = __import__('os').path: path.basename(x)",
+	'bn.orig':       "lambda x, path = __import__('os').path: path.basename(x)",
+	# /a/b/c[1].txt => c
+	'filename':  "lambda x, path = __import__('os').path: path.splitext(path.basename(x))[0] \
+		if not path.splitext(path.basename(x))[0].endswith(']') \
+		else path.splitext(path.basename(x))[0].rpartition('[')[0]",
+	'fn':        "lambda x, path = __import__('os').path: path.splitext(path.basename(x))[0] \
+		if not path.splitext(path.basename(x))[0].endswith(']') \
+		else path.splitext(path.basename(x))[0].rpartition('[')[0]",
 	# /a/b/c.txt => c
-	'filename.orig':  "lambda x: __import__('os').path.splitext (__import__('os').path.basename(x))[0]",
-	'fn.orig':        "lambda x: __import__('os').path.splitext (__import__('os').path.basename(x))[0]",
-	'filename':  "lambda x: [\
-		[None for fn in [__import__('os').path.splitext (__import__('os').path.basename(x))[0]]], \
-		fn if not fn.endswith(']') else fn.rpartition('[')[0] \
-		][-1]",
-	'fn':        "lambda x: [\
-		[None for fn in [__import__('os').path.splitext (__import__('os').path.basename(x))[0]]], \
-		fn if not fn.endswith(']') else fn.rpartition('[')[0] \
-		][-1]",
+	'filename.orig': "lambda x, path = __import__('os').path: path.splitext (path.basename(x))[0]",
+	'fn.orig':       "lambda x, path = __import__('os').path: path.splitext (path.basename(x))[0]",
 	# /a/b/c.txt => .txt
-	'ext':       "lambda x: __import__('os').path.splitext (__import__('os').path.basename(x))[1]",
+	'ext':       "lambda x, path = __import__('os').path: path.splitext (path.basename(x))[1]",
+	'prefix':    "lambda x, path = __import__('os').path: path.splitext (x)[0] \
+		if not path.splitext(x)[0].endswith(']') \
+		else path.splitext(x)[0].rpartition('[')[0]",
 	# /a/b/c.txt => /a/b/c
-	'prefix.orig':    "lambda x: __import__('os').path.splitext (x)[0]",
-	'prefix':    "lambda x: [\
-		[None for prefix in [__import__('os').path.splitext (x)[0]]], \
-		prefix if not prefix.endswith(']') else prefix.rpartition('[')[0] \
-		][-1]",
+	'prefix.orig':    "lambda x, path = __import__('os').path: path.splitext (x)[0]",
 	# array-space quote
 	'asquote':   "lambda x: '\"' + '\" \"'.join(x) + '\"'",
 	# array-comma quote
 	'acquote':   "lambda x: '\"' + '\",\"'.join(x) + '\"'",
 	'quote':     "lambda x: '\"%s\"' % str(x)",
 	'squote':    "lambda x: \"'%s'\" % str(x)",
-	'json':      "lambda x: __import__('json').dumps(x)",
+	'json':      "lambda x, json = __import__('json'): json.dumps(x)",
 	'read':      "lambda x: open(x).read()",
-	'readlines': "lambda x: filter(None, [l.rstrip('\\n\\r') for l in open(x).readlines() if l.rstrip('\\n\\r')])"
+	'readlines': "lambda x: list(filter(None, [l.rstrip('\\n\\r') for l in open(x).readlines() if l.rstrip('\\n\\r')]))"
 }
 
 def dictUpdate(origDict, newDict):
@@ -313,7 +310,7 @@ def uid(s, l = 8, alphabet='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop
 		The uid
 	"""
 	from hashlib import md5
-	s = md5(s).hexdigest()
+	s = md5(str(s).encode('utf-8')).hexdigest()
 	number = int (s, 16)
 	base = ''
 

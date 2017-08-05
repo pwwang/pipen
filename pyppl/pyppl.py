@@ -46,8 +46,9 @@ class pyppl (object):
 		if config is None:
 			config = {}
 
-		if os.path.exists(cfile):			
-			hconfig  = json.load(open(cfile))
+		if os.path.exists(cfile):
+			with open(cfile) as f:
+				hconfig  = json.load(f)
 			#hconfig.update(config)
 			utils.dictUpdate(hconfig, config)			
 			config   = copy.copy(hconfig)
@@ -137,7 +138,7 @@ class pyppl (object):
 				next2run2 += p.props['nexts']
 			next2run2 = list(set(next2run2))
 			# next procs to run must be not finished and all their depends are finished
-			next2run = sorted([n for n in next2run2 if n not in finished and all(x in finished for x in n.depends)], lambda x,y: cmp(x._name(), y._name()))
+			next2run = sorted([n for n in next2run2 if n not in finished and all(x in finished for x in n.depends)], key = lambda x: x._name())
 		logger.logger.info ('[   DONE] Total time: %s' % utils.formatTime (time()-timer))
 		return self
 
@@ -176,7 +177,8 @@ class pyppl (object):
 		ret += '}\n'
 		if dotfile is None: dotfile = os.path.splitext(sys.argv[0])[0] + ".pyppl.dot"
 		if fcfile  is None: fcfile  = os.path.splitext(sys.argv[0])[0] + ".pyppl.svg"
-		open (dotfile, "w").write (ret)
+		with open (dotfile, "w") as f:
+			f.write (ret)
 		logger.logger.info ('[   INFO] DOT file saved to: %s' % dotfile)
 		try:
 			dotcmd = utils.format (dot, {"dotfile": dotfile, "fcfile":fcfile})

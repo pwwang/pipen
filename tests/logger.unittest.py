@@ -7,15 +7,15 @@ class TestLogger (unittest.TestCase):
 	
 	def testGetColorFromTheme (self):
 		theme = logger.themes['greenOnBlack']
-		self.assertEquals (logger._getColorFromTheme('DONE', theme), tuple([logger.colors.bold + logger.colors.green]*2))
-		self.assertEquals (logger._getColorFromTheme('DEBUG', theme), tuple([logger.colors.bold + logger.colors.black]*2))
-		self.assertEquals (logger._getColorFromTheme('>>>>>>>', theme), tuple([logger.colors.bold + logger.colors.cyan, logger.colors.bold + logger.colors.underline + logger.colors.cyan]))
-		self.assertEquals (logger._getColorFromTheme('INFO', theme), tuple([logger.colors.green]*2))
-		self.assertEquals (logger._getColorFromTheme('DEPENDS', theme), tuple([logger.colors.green]*2))
-		self.assertEquals (logger._getColorFromTheme('ERRRRR', theme), tuple([logger.colors.red]*2))
-		self.assertEquals (logger._getColorFromTheme('WARNING', theme), tuple([logger.colors.bold + logger.colors.yellow]*2))
-		self.assertEquals (logger._getColorFromTheme('CACHED', theme), tuple([logger.colors.yellow]*2))
-		self.assertEquals (logger._getColorFromTheme('234', theme), tuple([logger.colors.white]*2))
+		self.assertEqual (logger._getColorFromTheme('DONE', theme), tuple([logger.colors.bold + logger.colors.green]*2))
+		self.assertEqual (logger._getColorFromTheme('DEBUG', theme), tuple([logger.colors.bold + logger.colors.black]*2))
+		self.assertEqual (logger._getColorFromTheme('>>>>>>>', theme), tuple([logger.colors.bold + logger.colors.cyan, logger.colors.bold + logger.colors.underline + logger.colors.cyan]))
+		self.assertEqual (logger._getColorFromTheme('INFO', theme), tuple([logger.colors.green]*2))
+		self.assertEqual (logger._getColorFromTheme('DEPENDS', theme), tuple([logger.colors.green]*2))
+		self.assertEqual (logger._getColorFromTheme('ERRRRR', theme), tuple([logger.colors.red]*2))
+		self.assertEqual (logger._getColorFromTheme('WARNING', theme), tuple([logger.colors.bold + logger.colors.yellow]*2))
+		self.assertEqual (logger._getColorFromTheme('CACHED', theme), tuple([logger.colors.yellow]*2))
+		self.assertEqual (logger._getColorFromTheme('234', theme), tuple([logger.colors.white]*2))
 	
 	def testFilter(self):
 		log = logger.getLogger(levels=None)
@@ -267,7 +267,7 @@ class TestLogger (unittest.TestCase):
 		log.info('[DEBUG]You don\'t see this')
 		
 	def testLogfile (self):
-		logger.getLogger(logfile = '/dev/stdout')
+		logger.getLogger(logfile = '/dev/null')
 		logger.logger.info('[>>>>>>>]testLogfile')
 		logger.logger.info('[NO]You don\'t see this')
 		logger.logger.info('[_NO]But you see this')

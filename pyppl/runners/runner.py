@@ -28,6 +28,14 @@ class runner (object):
 		self.cmd2run   = list2cmdline (self.script)
 		self.ntry      = 0
 		self.p         = None
+		self.ferrw     = None
+		self.foutw     = None
+		
+	def __del__(self):
+		if self.ferrw: 
+			self.ferrw.close()
+		if self.foutw: 
+			self.foutw.close()
 
 	def submit (self):
 		"""
@@ -36,7 +44,10 @@ class runner (object):
 		self.job.reset()
 		try:
 			self.job.proc.log ('Submitting job #%-3s ...' % self.job.index, 'submit')
-			self.p = Popen (self.script, stderr=open(self.job.errfile, "w"), stdout=open(self.job.outfile, "w"), close_fds=True)
+			# retry may open the files again
+			self.ferrw = open(self.job.errfile, 'w')
+			self.foutw = open(self.job.outfile, 'w')
+			self.p = Popen (self.script, stderr=self.ferrw, stdout=self.foutw, close_fds=True)
 		except Exception as ex:
 			self.job.proc.log ('Failed to run job #%s: %s' % (self.job.index, str(ex)), 'error')
 			with open (self.job.errfile, 'a') as f:
@@ -72,7 +83,7 @@ class runner (object):
 			lasterr = ''
 			while self.p.poll() is None:
 				(lastout, lasterr) = self._flushOut(fout, ferr, lastout, lasterr)
-				sleep (3)
+				sleep (2)
 			
 			self._flushOut(fout, ferr, lastout, lasterr)
 			if rc:
@@ -102,6 +113,7 @@ class runner (object):
 
 		self.job.proc.log ("Retrying job #%s ... (%s)" % (self.job.index, self.ntry), 'RETRY')
 		sleep (3)
+		self.__del__()
 		self.submit()
 		self.wait()
 		self.finish()
@@ -115,7 +127,8 @@ class runner (object):
 		jobid = self.job.id()
 		if not jobid:
 			return False
-		return Popen (['kill', '-s', '0', jobid], stderr=open(devnull, 'w'), stdout=open(devnull, 'w')).wait() == 0
+		with open(devnull, 'w') as f:
+			return Popen (['kill', '-s', '0', jobid], stderr=f, stdout=f).wait() == 0
 		
 	def _flushOut (self, fout, ferr, lastout, lasterr):
 		"""

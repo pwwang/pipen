@@ -6,8 +6,8 @@ import shutil
 import sys
 from time import sleep
 import unittest
-#import warnings
-#warnings.filterwarnings("ignore")
+import warnings
+warnings.filterwarnings("ignore")
 
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
@@ -19,6 +19,7 @@ class TestPipelineMethods (unittest.TestCase):
 		try:
 			if os.path.exists ('./workdir'):
 				shutil.rmtree ('./workdir')
+				#pass
 		except:
 			sleep (1)
 			self.tearDown()
@@ -123,7 +124,8 @@ class TestPipelineMethods (unittest.TestCase):
 		p7.depends = [p5, p6]
 		p7.exportdir  = "./"
 		ppl.starts(p1, p8, p9).flowchart("/tmp/pyppl.flowchart.dot", None, "")
-		self.assertEqual(sorted(open("/tmp/pyppl.flowchart.dot").read().strip().split("\n")), 
+		with open("/tmp/pyppl.flowchart.dot") as f:
+			self.assertEqual(sorted(f.read().strip().split("\n")), 
 sorted("""digraph PyPPL {
 	"p1.A" -> "p2.B"
 	"p1.A" -> "p3.C"
@@ -175,9 +177,12 @@ sorted("""digraph PyPPL {
 		self.assertTrue (os.path.exists(out1))
 		self.assertTrue (os.path.exists(out2))
 		self.assertTrue (os.path.exists(out3))
-		self.assertEqual (open(out1).read().strip(), 'a1')
-		self.assertEqual (open(out2).read().strip(), 'b2')
-		self.assertEqual (open(out3).read().strip(), 'c3')
+		with open(out1) as f:
+			self.assertEqual (f.read().strip(), 'a1')
+		with open(out2) as f:
+			self.assertEqual (f.read().strip(), 'b2')
+		with open(out3) as f:
+			self.assertEqual (f.read().strip(), 'c3')
 		
 	@unittest.skip('')
 	def test_sge (self):
@@ -323,11 +328,13 @@ sorted("""digraph PyPPL {
 		if not os.path.exists ("./workdir/aaa"):
 			os.makedirs ("./workdir/aaa")
 		infile = os.path.abspath("./workdir/aaa/1.txt")
-		open (infile, 'w').write('')
+		with open (infile, 'w') as f:
+			f.write('')
 		if not os.path.exists ("./workdir/1.txt"):
 			os.symlink (infile, os.path.abspath("./workdir/1.txt"))
 		brfile = "./workdir/aaa/1.txi"
-		open (brfile, 'w').write('')
+		with open (brfile, 'w') as f:
+			f.write('')
 		pBrings = proc ()
 		pBrings.script = "echo 1"
 		pBrings.input  = {"infile:file": ["./workdir/1.txt"]}

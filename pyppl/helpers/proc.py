@@ -191,7 +191,7 @@ class proc (object):
 		# the cachefile, cache file will be in <tmpdir>/<cachefile>
 		#self.props['cachefile']  = 'cached.jobs'
 		# which processes this one depents on
-		self.props['depends']    = []
+		#self.props['depends']    = []
 		# the script
 		self.props['script']     = ""
 
@@ -402,6 +402,7 @@ class proc (object):
 		"""
 		
 		self._buildProps ()
+		self._saveSettings()
 		if callable (self.callfront):
 			self.log ("Calling callfront ...", "debug")
 			self.callfront (self)
@@ -493,7 +494,7 @@ class proc (object):
 			
 		if not isinstance(self.expart, list):
 			self.props['expart'] = [self.expart]
-		self.props['expart'] = filter(None, self.expart)
+		self.props['expart'] = list(filter(None, self.expart))
 			
 		if self.echo in [True, False, 'stderr', 'stdout']:
 			if self.echo is True:
@@ -519,6 +520,58 @@ class proc (object):
 			self.echo['filter'] = ''
 		
 		self.log ('Properties set explictly: %s' % str(self.sets), 'debug')
+	
+	def _saveSettings (self):
+		"""
+		Save all settings in proc.settings, mostly for debug
+		"""
+		settingsfile = os.path.join(self.workdir, 'proc.settings')
+		with open(settingsfile, 'w') as f:
+			for key in sorted(self.props.keys()):
+				val = self.props[key]
+				# deal with lambda functions
+				if key == 'input':
+					f.write('\n[input]\n')
+					if not isinstance(val, dict):
+						f.write('key: ' + str(val) + '\n')
+					else:
+						for k in sorted(val.keys()):
+							v = val[k]
+							if callable(v):
+								f.write (k + ': ' + utils.funcsig(v) + '\n')
+							else:
+								f.write (k + ': ' + str(v) + '\n')
+				elif key in ['depends', 'nexts']:
+					f.write('\n['+ key +']\n')
+					f.write('procs: ' + str([p._name() for p in val]) + '\n')
+				elif key == 'jobs':
+					pass
+				elif key in ['callfront', 'callback']:
+					f.write('\n['+ key +']\n')
+					f.write('func: ' + utils.funcsig(val) + '\n')
+				elif key == 'indata':
+					f.write('\n['+ key +']\n')
+					for k in sorted(val.keys()):
+						v = val[k]
+						f.write (k + '.type: ' + str(v['type']) + '\n')
+						f.write (k + '.data: \n')
+						for _ in v['data']:
+							f.write ('  ' + str(_) + '\n')
+				elif key in ['lognline', 'args'] or key.endswith('Runner'):
+					f.write('\n['+ key +']\n')
+					for k in sorted(val.keys()):
+						v = val[k]
+						f.write ((k if k else "''") + ': ' + str(v) + '\n')
+				elif key == 'script':
+					f.write('\n['+ key +']\n')
+					f.write('value:\n')
+					f.write('  ' + val.replace('\n', '\n  ') + '\n')
+				else:
+					f.write('\n['+ key +']\n')
+					f.write('value: ' + str(val) + '\n')
+					
+		self.log ('Settings saved to: %s' % settingsfile, 'debug')
+					
 				
 	def _buildInput (self):
 		"""
@@ -692,13 +745,15 @@ class proc (object):
 		cmd = utils.format(self.props[key], self.procvars)
 		self.log ('Running <%s> ...' % (key), 'info')
 		
-		p = Popen (cmd, shell=True, stdin=PIPE, stderr=PIPE, stdout=PIPE, universal_newlines=True)
+		p = Popen (cmd, shell=True, stderr=PIPE, stdout=PIPE, universal_newlines=True)
 
 		for line in iter(p.stdout.readline, ''):
 			logger.logger.info ('[ CMDOUT] %s' % line.rstrip("\n"))
 		for line in iter(p.stderr.readline, ''):
 			logger.logger.info ('[ CMDERR] %s' % line.rstrip("\n"))
 		rc = p.wait()
+		p.stdout.close()
+		p.stderr.close()
 		if rc != 0:
 			raise Exception ('Failed to run %s: \n----------------------------------\n%s' % (key, cmd))
 		return rc

@@ -23,7 +23,8 @@ class TestProc (unittest.TestCase):
 			os.makedirs(self.workdir)
 
 		testfile = os.path.join(self.workdir, 'runner_test.py')
-		open(testfile, 'w').write ("""import os, sys
+		with open(testfile, 'w') as f:
+			f.write ("""import os, sys
 rootdir = "%s"
 sys.path.insert(0, rootdir)
 from pyppl import runner
@@ -240,7 +241,11 @@ class runner_test (runner):
 
 		# expect same length channels
 		p.input = {"a": [1], "b": [1,2,3]}
-		self.assertRaisesRegexp(ValueError, r"Expect same", p._buildInput)
+		try:
+			assertRaisesRegex = self.assertRaisesRegex
+		except AttributeError:
+			assertRaisesRegex = self.assertRaisesRegexp
+		assertRaisesRegex(ValueError, r"Expect same", p._buildInput)
 
 	def testBuildProcVars (self):
 		self.maxDiff = None

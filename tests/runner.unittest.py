@@ -56,6 +56,7 @@ class TestRunner(unittest.TestCase):
 
 		# no exception
 		r.script = script
+		r.__del__()
 		r.submit ()
 		self.assertIsNotNone (r.p)
 
@@ -64,12 +65,14 @@ class TestRunner(unittest.TestCase):
 		p.ppldir = self.testdir
 		p.script = "echo {{a}}"
 		p.input = {'a': range(10)}
+		p.forks = 10
 		p._tidyBeforeRun ()
 		r = runner(p.jobs[0])
 		r.submit ()
 		r.wait ()
 		self.assertEqual (r.job.rc(), 0)
-		self.assertEqual (open(r.job.outfile).read().strip(), '0')
+		with open(r.job.outfile) as f:
+			self.assertEqual (f.read().strip(), '0')
 
 	def testRunnerRetry (self):
 		p = proc('retry')
@@ -89,17 +92,18 @@ class TestRunner(unittest.TestCase):
 	def testRunnerIsRunning (self):
 		p = proc('isrunning')
 		p.ppldir = self.testdir
-		p.script = "sleep .5;echo {{a}}"
+		p.script = "sleep 1;echo {{a}}"
 		p.input = {'a': range(10)}
 		p._tidyBeforeRun ()
 	
 		r = runner(p.jobs[0])
-		self.assertFalse (r.isRunning())
-		p = Popen (r.script, stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'), shell=False)
-		r.job.id(str(p.pid))
-		self.assertTrue (r.isRunning())
-		p.wait()
-		self.assertFalse (r.isRunning())
+		self.assertFalse (r.isRunning()) 
+		with open(os.devnull, 'w') as  f:
+			p = Popen (r.script, stdout=f, stderr=f, shell=False)
+			r.job.id(str(p.pid))
+			self.assertTrue (r.isRunning())
+			p.wait()
+			self.assertFalse (r.isRunning())
 
 	def testSshInit (self):
 		p = proc('sshinit')
@@ -175,15 +179,12 @@ class TestRunner(unittest.TestCase):
 		for j in p.jobs:
 			r = runner_local (j)
 			self.assertFalse (r.isRunning())
-			stdout = open(os.devnull, 'w')
-			stderr = open(os.devnull, 'w')
-			p = Popen (r.script, stdout=stdout, stderr=stderr)
+			with open(os.devnull, 'w') as f:
+				p = Popen (r.script, stdout=f, stderr=f)
 			r.job.id(str(p.pid))
 			self.assertTrue(r.isRunning())
 			p.wait()
 			self.assertFalse(r.isRunning())
-			stdout.close()
-			stderr.close()
 
 
 if __name__ == '__main__':

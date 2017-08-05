@@ -63,7 +63,7 @@ class TestAggr (unittest.TestCase):
 		self.assertEqual (a2.starts, [a2.p3, a2.p4])
 		self.assertEqual (a2.ends, [])
 		a2.p3.input = {a2.p3.input: []}
-		self.assertNotEquals (p3, a2.p3)
+		self.assertNotEqual (p3, a2.p3)
 		#self.assertRaisesRegexp(RuntimeError, r'Not enough data', a2.__setattr__, 'input', [(1,2,3)])
 		self.assertRaises(RuntimeError, a2.__setattr__, 'input', [(1,2,3,4)])
 		a2.p3.input = "i31, i32"

@@ -136,7 +136,8 @@ class job (object):
 			self.proc.log('Job #%s: check STDERR below:' % (self.index), 'error')
 			errmsgs = []
 			if path.exists (self.errfile):
-				errmsgs = ['[ STDERR] ' + line.rstrip("\n") for line in open(self.errfile)]
+				with open(self.errfile) as f:
+					errmsgs = ['[ STDERR] ' + line.rstrip("\n") for line in f]
 				
 			if not errmsgs:
 				errmsgs = ['[ STDERR] <EMPTY STDERR>']
@@ -435,7 +436,10 @@ class job (object):
 		if self.proc.expect and expect:
 			expect = utils.format (self.proc.expect, self.data)
 			self.proc.log ('Job #%-3s: check expectation: %s' % (self.index, expect), 'debug', 'EXPECT_CHECKING')
-			exrc   = Popen (expect, shell=True, stdout=PIPE, stderr=PIPE).wait()
+			p      = Popen (expect, shell=True, stdout=PIPE, stderr=PIPE)
+			exrc   = p.wait()
+			#if p:
+				#p.close()
 			if exrc != 0:
 				self.rc (job.NOOUT_RC)
 				return

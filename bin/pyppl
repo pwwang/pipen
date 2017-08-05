@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
+import sys
+
 import argparse
-import json
 from glob import glob
 from datetime import datetime
 
 from os import path
 from shutil import rmtree
+from pyppl import logger
 
 parser           = argparse.ArgumentParser(description='A set of CLI tools for pyppl.')
 parser.add_argument('-w', '--workdir', help="The path of workdir, default: %(default)s", required=False, default="./workdir")
@@ -15,43 +17,18 @@ parser_clean     = cmdparsers.add_parser('clean', help="Clean a workdir")
 parser_clean.add_argument ('-f', '--force', help="Force cleaning, don't ask for confirmation.", action='store_true')
 parser_clean.set_defaults(force = False)
 parser_list      = cmdparsers.add_parser('list', help="List the status of a workdir")
+parser_compare   = cmdparsers.add_parser('compare', help="Compare the settings of two processes.")
+parser_compare.add_argument ('-u', help="Use the workdir by -w, use -p1, -p2 as path", action='store_true')
+parser_compare.add_argument ('-p1', '--process1', dest='p1', help="The first process, either full path or the basename (with -u)", required = False)
+parser_compare.add_argument ('-p2', '--process2', dest='p2', help="The first process, either full path or the basename (with -u)", required = False)
+parser_compare.add_argument ('-p', '--pprefix', dest='p', help="The process without suffix, will compare the most 2 recent processes (use -u for full path).", required = False)
 args             = parser.parse_args()
 
-def mtimeFromCacheFile (cachefile):
-	if not path.exists (cachefile):
-		return 0
-	cachestr  = open (cachefile).read().strip()
-	if not cachestr:
-		return 0
-
-	cache = json.loads(cachestr)
-	ret = float(cache['script'].split('@')[-1])
-
-	if  cache['in']['file'].values():
-		ret = max (ret, max([float(val.split('@')[-1]) for val in cache['in']['file'].values()]))
-
-	for val in cache['in']['files'].values():
-		if val:
-			ret = max (ret, max([float (v.split('@')[-1]) for v in val]))
-				
-	if cache['out']['file'].values():
-		ret = max (ret, max([float(val.split('@')[-1] if '@' in val else 0) for val in cache['out']['file'].values()])) 
-	if cache['out']['dir'].values():
-		ret = max (ret, max([float(val.split('@')[-1] if '@' in val else 0) for val in cache['out']['dir'].values()]))
-
-	return ret
-
 def mtime4proc (procdir):
-	jobdirs  = glob (path.join(procdir, "*"))
-	ret      = 0
-	for jobdir in jobdirs:
-		cachefile = path.join (jobdir, "job.cache")
-		mtime     = mtimeFromCacheFile(cachefile)
-		if mtime == 0:
-			return 0
-		if mtime > ret:
-			ret = mtime
-	return ret
+	settingsfile  = path.join(procdir, "proc.settings")
+	if not path.exists(settingsfile):
+		return 0
+	return path.getmtime(settingsfile)
 
 def getGroups (workdir):
 	ret = {}
@@ -66,65 +43,148 @@ def getGroups (workdir):
 			ret[pname] = []
 		ret[pname].append(parts[-1])
 	return ret
+	
+def ask2Remove (msg, path, ask = True):
+	def rm ():
+		rmtree(path)
+		print logger.colors.bold + logger.colors.yellow + "  Removed: " + procpath + logger.colors.end
+	
+	if not ask:
+		rm ()
+		return
+	
+	dists = ['', 'Y', 'y', 'N', 'n']
+	r     = raw_input(msg + ', clean it? [Y/n] ')
+	while r not in dists:
+		r     = raw_input(msg + ', clean it? [Y/n] ')
+	if r in ['', 'Y', 'y']:
+		rm()
 
 fmtTime = lambda x: datetime.fromtimestamp(x).strftime('%Y-%m-%d %H:%M:%S')
 		
-if args.command == 'list':
-	print "\nWORKDIR: " + args.workdir + " (Yellow processes are to be cleaned!)"
-	print "-" * (len (args.workdir) + 47)
-
-	groups = getGroups (args.workdir)
-	
-	if not groups:
-		print "No processes found!\n"
-	
-	for g, sufs in groups.iteritems():
-		print "\n- PROCESSES: %s" % g
-		print "  " + "-" * 36
-		
-		ptimes = {}
-		for suf in sufs:
-			procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
-			ptimes[suf] = mtime4proc(procpath)
-
-		for i, suf in enumerate(sorted(ptimes, key=ptimes.get, reverse=True)):
-			if i == 0 and ptimes[suf] != 0:
-				print '\033[92m  ' + suf + ': ' + fmtTime(ptimes[suf]) + '\033[0m'
-			else:
-				print '\033[93m  ' + suf + ': ' + fmtTime(ptimes[suf]) + '\033[0m'
-				
-elif args.command == 'clean':
-	print "\nWORKDIR: " + args.workdir 
+if args.command in ['list', 'clean']:
+	print ''
+	print logger.colors.green  + 'GREEN PROC : Latest processes' + logger.colors.end
+	print logger.colors.yellow + 'YELLOW PROC: Older processes' + logger.colors.end
+	print logger.colors.red    + 'RED PROC   : Settings file not exists' + logger.colors.end
+	print logger.colors.none + '\nWORKDIR: ' + args.workdir + logger.colors.end
 	print "-" * (len (args.workdir) + 9)
 
 	groups = getGroups (args.workdir)
 	
 	if not groups:
-		print "No processes found!\n"
+		print logger.colors.red + "No processes found!\n" + logger.colors.end
 	
+	maxlen = max([len(g) for g in groups.keys()])
+	maxlen = max(maxlen, 23)
 	for g, sufs in groups.iteritems():
-		print "\n- PROCESSES: %s" % g
-		print "  " + "-" * 36
+		print "\n- PROCESSES: PyPPL.%s" % (g)
+		print "  " + "-" * (maxlen + 17)
 		
-		ptimes = {}
-		for suf in sufs:
+		for i, suf in enumerate(sorted(sufs, key=lambda x: mtime4proc(path.join (args.workdir, "PyPPL.%s.%s" % (g, x))), reverse=True)):
 			procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
-			ptimes[suf] = mtime4proc(procpath)
-				
-		for i, suf in enumerate(sorted(ptimes, key=ptimes.get, reverse=True)):
-			if i == 0 and ptimes[suf] != 0:
-				print '\033[92m  ' + suf + ': ' + fmtTime(ptimes[suf]) + '\033[0m'
+			color    = logger.colors.green
+			ptime    = mtime4proc(procpath)
+			if i == 0 and ptime != 0:
+				print color + '  ' + suf + ': ' + fmtTime(ptime) + logger.colors.end
 			else:
-				#print '\033[93m  ' + suf + ': ' + ptimes[suf] + '\033[0m, clean it? [Y/n]',
 				procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
-				if not args.force:
-					dists = ['', 'Y', 'y', 'N', 'n']
-					r     = raw_input('\033[93m  ' + suf + ': ' + fmtTime(ptimes[suf]) + '\033[0m, clean it? [Y/n] ')
-					while r not in dists:
-						r     = raw_input('\033[93m  ' + suf + ': ' + fmtTime(ptimes[suf]) + '\033[0m, clean it? [Y/n] ')
-					if r in ['', 'Y', 'y']:
-						rmtree(procpath)
-						print "  Removed: " + procpath
+				if ptime == 0:
+					color = logger.colors.red
+					msg = color + '  ' + suf + ': ' + fmtTime(ptime) + logger.colors.end
+					if args.command == 'list':
+						print msg
+					else:
+						ask2Remove(msg, procpath, not args.force)
 				else:
-					rmtree(procpath)
-					print '  Cleaned: \033[93m  ' + suf + ': ' + fmtTime(ptimes[suf]) + '\033[0m'
+					color = logger.colors.yellow
+					msg = color + '  ' + suf + ': ' + fmtTime(ptime) + logger.colors.end
+					if args.command == 'list':
+						print msg
+					else:
+						ask2Remove(msg, procpath, not args.force)
+				
+if args.command == 'compare':
+	
+	if not args.p1 and not args.p2 and not args.p:
+		print "Expect paired processes (-p1 and -p2) OR the process prefix (-p)"
+		sys.exit (1)
+	if args.p and (args.p1 or args.p2):
+		print "Expect paired processes (-p1 and -p2) OR the process prefix (-p)"
+		sys.exit (1)
+	if (args.p1 and not args.p2) or (args.p2 and not args.p1):
+		print "Expect paired processes (both -p1 and -p2)"
+		sys.exit (1)
+	
+	from difflib import unified_diff
+	
+	if args.p:
+		p = args.p if '.' in args.p else 'PyPPL.%s' % args.p
+		prefix = p if not args.u else path.join(args.workdir, p)
+		procs  = glob (prefix + '.*')
+		if not procs:
+			sfile1 = ''
+			sfile2 = ''
+		elif len(procs) == 1:
+			sfile1 = path.join(procs[0], 'proc.settings')
+			sfile2 = ''
+		else:
+			procs = sorted(procs, key=mtime4proc, reverse=True)[:2]
+			sfile1 = path.join(procs[0], 'proc.settings')
+			sfile2 = path.join(procs[1], 'proc.settings')
+	else:
+		proc1path = args.p1 if not args.u else path.join(args.workdir, args.p1)
+		proc2path = args.p2 if not args.u else path.join(args.workdir, args.p2)
+		sfile1    = path.join(proc1path, 'proc.settings')
+		sfile2    = path.join(proc2path, 'proc.settings')
+	
+	print logger.colors.green + "1. " + sfile1 + logger.colors.end
+	print logger.colors.red   + "2. " + sfile2 + logger.colors.end
+	print '-' * (max(len(sfile1), len(sfile2)) + 3)
+	if path.exists(sfile1) and path.exists(sfile2):
+		def readSections (sfile):
+			ret = {}
+			sec = ''
+			with open(sfile) as f:
+				for line in f:
+					if line.startswith('['):
+						sec = line.strip()[1:-1]
+					elif sec:
+						if sec not in ret:
+							ret[sec] = []
+						ret[sec].append(line)
+			return ret
+		
+		seclines1 = readSections(sfile1)
+		seclines2 = readSections(sfile2)
+		
+		for sec in sorted(seclines1.keys()):
+			lines1 = seclines1[sec]
+			lines2 = seclines2[sec]
+			diff   = unified_diff(lines1, lines2, n=0)
+			toprnt = ''
+			for i, d in enumerate(diff): 
+				if i==0 and d.strip() == '---':
+					pass
+				elif i==1 and d.strip() == '+++':
+					pass
+				elif d.startswith('-'):
+					toprnt += logger.colors.green + d + logger.colors.end
+				elif d.startswith('+'):
+					toprnt += logger.colors.red   + d + logger.colors.end
+				elif d.startswith('@'):
+					toprnt += logger.colors.yellow + d + logger.colors.end
+				else:
+					toprnt += d
+			if toprnt: 
+				print "["+ sec +"]"
+				print toprnt
+		
+	elif not path.exists(sfile1) and not path.exists(sfile2):
+		print "None of the proc.settings files exist, nothing to compare.\n"
+		sys.exit(0)
+	else:
+		print "Only one of the processes' proc.settings exists, see the configuration in:"
+		print logger.colors.green + (sfile1 if path.exists(sfile1) else sfile2) + logger.colors.end + "\n"
+		sys.exit(0)
+		

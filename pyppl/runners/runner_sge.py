@@ -113,5 +113,6 @@ class runner_sge (runner_queue):
 		jobid = self.job.id ()
 		if not jobid:
 			return False
-		return Popen (['qstat', '-j', jobid], stdout=open(devnull, 'w'), stderr=open(devnull, 'w')).wait() == 0
+		with open(devnull, 'w') as f:
+			return Popen (['qstat', '-j', jobid], stdout=f, stderr=f).wait() == 0
 

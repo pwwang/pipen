@@ -550,6 +550,10 @@ The return code of the command
   
 Submit and run the jobs  
   
+#### `_saveSettings (self) `
+  
+Save all settings in proc.settings, mostly for debug  
+  
 #### `_suffix (self) `
   
 Calcuate a uid for the process according to the configuration  

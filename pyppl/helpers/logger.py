@@ -244,6 +244,8 @@ def getLogger (levels='normal', theme=True, logfile=None, lvldiff=[], name='pypp
 		The logger
 	"""
 	logger    = logging.getLogger (name)
+	for handler in logger.handlers:
+		handler.close()
 	logger.handlers = []
 	streamCh  = logging.StreamHandler()
 	streamCh.setFormatter (pFormatter(theme = theme))

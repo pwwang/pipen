@@ -11,27 +11,27 @@ class TestParameters (unittest.TestCase):
 		p = parameter('a', 1)
 		
 		self.assertIsInstance(p, parameter)
-		self.assertEquals(p.desc, '')
-		self.assertEquals(p.required, False)
-		self.assertEquals(p.show, True)
-		self.assertEquals(p.type, int)
+		self.assertEqual(p.desc, '')
+		self.assertEqual(p.required, False)
+		self.assertEqual(p.show, True)
+		self.assertEqual(p.type, int)
 		
-		self.assertEquals(str(p), '1')
+		self.assertEqual(str(p), '1')
 		
 	def testParameterSetDesc(self):
 		p = parameter('x', [1,2,3])
 		p.desc = "abcd whatever"
-		self.assertEquals(p.desc, "abcd whatever")
+		self.assertEqual(p.desc, "abcd whatever")
 		
 		p.setDesc('awlwaefwef')
-		self.assertEquals(p.desc, "awlwaefwef")
+		self.assertEqual(p.desc, "awlwaefwef")
 		
 	def testParameterSetRequired(self):
 		p = parameter('a.e', 1.1)
 		p.required = False
-		self.assertEquals(p.required, False)
+		self.assertEqual(p.required, False)
 		p.setRequired(True)
-		self.assertEquals(p.required, True)
+		self.assertEqual(p.required, True)
 		
 	def testParameterSetType(self):
 		p = parameter('A', 10)
@@ -72,53 +72,53 @@ class TestParameters (unittest.TestCase):
 		p = parameter('a', 4)
 		p.type = str
 		p._forceType()
-		self.assertIs (p.value, '4')
+		self.assertEqual (p.value, '4')
 		
 	def testParameterPrintName(self):
 		p = parameter('c', 9)
-		self.assertEquals (p._printName('--param-'), "--param-c <int>")
+		self.assertEqual (p._printName('--param-'), "--param-c <int>")
 		p.type = bool
-		self.assertEquals (p._printName('--param-'), "--param-c (bool)")
+		self.assertEqual (p._printName('--param-'), "--param-c (bool)")
 		
 	def testParametersInit (self):
 		ps = parameters()
-		self.assertEquals(ps.props, {
+		self.assertEqual(ps.props, {
 			'_usage':'', 
 			'_example':'', 
 			'_desc':'', 
 			'_hopts': ['-h', '--help', '-H', '-?', ''],
 			'_prefix': '--param-'})
-		self.assertEquals(ps.params, {})
+		self.assertEqual(ps.params, {})
 	
 	def testParametersSetAttr(self):
 		ps = parameters()
 		ps.a = 'a'
-		self.assertEquals(ps.a.name, 'a')
-		self.assertEquals(ps.a.value, 'a')
-		self.assertEquals(ps.a.type, str)
-		self.assertEquals(ps.a.desc, '')
-		self.assertEquals(ps.a.required, False)
-		self.assertEquals(ps.a.show, True)
+		self.assertEqual(ps.a.name, 'a')
+		self.assertEqual(ps.a.value, 'a')
+		self.assertEqual(ps.a.type, str)
+		self.assertEqual(ps.a.desc, '')
+		self.assertEqual(ps.a.required, False)
+		self.assertEqual(ps.a.show, True)
 		
 	def testParametersGetAttr(self):
 		ps = parameters()
 		ps.a
-		self.assertEquals(ps.a.name, 'a')
-		self.assertEquals(ps.a.value, '')
-		self.assertEquals(ps.a.type, str)
-		self.assertEquals(ps.a.desc, '')
-		self.assertEquals(ps.a.required, False)
-		self.assertEquals(ps.a.show, True)
+		self.assertEqual(ps.a.name, 'a')
+		self.assertEqual(ps.a.value, '')
+		self.assertEqual(ps.a.type, str)
+		self.assertEqual(ps.a.desc, '')
+		self.assertEqual(ps.a.required, False)
+		self.assertEqual(ps.a.show, True)
 		ps.a.setValue(1).setType(int)
 		self.assertIs(ps.a.value, 1)
-		self.assertEquals(ps.a.type, int)
+		self.assertEqual(ps.a.type, int)
 		
 	def testParametersProps(self):
 		ps = parameters()
 		ps.usage('Usage').example('Example').desc('Desc')
-		self.assertEquals(ps.props['_usage'], 'Usage')
-		self.assertEquals(ps.props['_example'], 'Example')
-		self.assertEquals(ps.props['_desc'], 'Desc')
+		self.assertEqual(ps.props['_usage'], 'Usage')
+		self.assertEqual(ps.props['_example'], 'Example')
+		self.assertEqual(ps.props['_desc'], 'Desc')
 	
 	def testParametersLoadDict(self):
 		ps = parameters()
@@ -134,7 +134,7 @@ class TestParameters (unittest.TestCase):
 		self.assertIs (ps.p1.value, 1)
 		self.assertIs (ps.p1.required, True)
 		self.assertIs (ps.p1.show, False)
-		self.assertEquals (ps.p2.value, [1,2,3])
+		self.assertEqual (ps.p2.value, [1,2,3])
 		self.assertIs (ps.p2.show, True)
 		self.assertIs (ps.p2.type, list)
 		self.assertIs (ps.p3.value, 2.3)
@@ -154,7 +154,7 @@ class TestParameters (unittest.TestCase):
 			'p3.show': True
 		}
 		ps.loadDict(d2load)
-		self.assertEquals (ps._help().split("\n"), """\
+		self.assertEqual (ps._help().split("\n"), """\
 USAGE:
 -----
   {} --param-p3 <float> [OPTIONS]
@@ -187,42 +187,42 @@ OPTIONAL OPTIONS:
 		ps.bamdir.setRequired().setDesc('The temporary bam directory for this batch.')
 		ps.test.setType(bool).setValue(False).setDesc('Run a test instance?')
 		ps.parse()
-		self.assertEquals(ps.p3.value, 5.1)
-		self.assertEquals(ps.p2.value, ['4', '5', '6'])
-		self.assertEquals(ps.bamdir.value, "/a/b/c/mm/pipeline/workdir/bam.2ITurpH4.0")
-		self.assertEquals(ps.test.value, True)
+		self.assertEqual(ps.p3.value, 5.1)
+		self.assertEqual(ps.p2.value, ['4', '5', '6'])
+		self.assertEqual(ps.bamdir.value, "/a/b/c/mm/pipeline/workdir/bam.2ITurpH4.0")
+		self.assertEqual(ps.test.value, True)
 		
 		from tempfile import NamedTemporaryFile
 		from json import dumps
 		
 		f = NamedTemporaryFile(delete = False, suffix='.json')
-		f.write(dumps(d2load))
+		f.write(str(dumps(d2load)).encode())
 		f.close()
 		ps1 = parameters()
 		ps1.loadCfgfile(f.name)		
 		sys.argv = [sys.argv[0], "--param-p3", "2", "--param-p2=4"]
 		ps1.parse()
-		self.assertEquals(ps1.p3.value, 2.0)
-		self.assertEquals(ps1.p2.value, ['4'])
+		self.assertEqual(ps1.p3.value, 2.0)
+		self.assertEqual(ps1.p2.value, ['4'])
 		try: 
 			os.remove(f.name)
 		except:
 			pass
 		
 		f = NamedTemporaryFile(delete = False, suffix='.cfg')
-		f.write('[Config]\n')
+		f.write('[Config]\n'.encode())
 		for k,v in d2load.items():
-			f.write(k + '=' + str(v) + '\n')
-		f.write('p1.type: int\n')
-		f.write('p2.type: list\n')
-		f.write('p3.type: float\n')
+			f.write((k + '=' + str(v) + '\n').encode())
+		f.write(('p1.type: int\n').encode())
+		f.write(('p2.type: list\n').encode())
+		f.write(('p3.type: float\n').encode())
 		f.close()
 		ps1 = parameters()
 		ps1.loadCfgfile(f.name)	
 		sys.argv = [sys.argv[0], "--param-p3", "10", "--param-p2", "9", "10"]
 		ps1.parse()
-		self.assertEquals(ps1.p3.value, 10.0)
-		self.assertEquals(ps1.p2.value, ['9', '10'])
+		self.assertEqual(ps1.p3.value, 10.0)
+		self.assertEqual(ps1.p2.value, ['9', '10'])
 		try: 
 			os.remove(f.name)
 		except:
@@ -244,8 +244,8 @@ OPTIONAL OPTIONS:
 		}
 		ps.loadDict(d2load)
 		ps.parse()
-		self.assertEquals(ps.p3.value, 5.1)
-		self.assertEquals(ps.p2.value, ['4', '5', '6'])
+		self.assertEqual(ps.p3.value, 5.1)
+		self.assertEqual(ps.p2.value, ['4', '5', '6'])
 	
 if __name__ == '__main__':
 	unittest.main()

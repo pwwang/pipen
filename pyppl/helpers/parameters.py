@@ -20,7 +20,7 @@ class parameter (object):
 			'show'    : True,
 			'type'    : None,
 			'name'    : name,
-			'value'   : value if not isinstance(value, unicode) else value.encode('utf-8')
+			'value'   : value# if not isinstance(value, unicode) else value.encode('utf-8')
 		}
 		self.setType(type(self.value))
 	
@@ -84,7 +84,7 @@ class parameter (object):
 		@params:
 			`v`: The value
 		"""
-		self.props['value'] = v if not isinstance(v, unicode) else v.encode('utf-8')
+		self.props['value'] = v# if not isinstance(v, unicode) else v.encode('utf-8')
 		return self
 	
 	def setName (self, n):
@@ -362,15 +362,19 @@ class parameters (object):
 			`show`:    Whether these parameters should be shown in help information
 			- It'll be overwritten by the `show` property inside the config file.
 		"""
-		from ConfigParser import ConfigParser
+		try:
+			from ConfigParser import ConfigParser
+		except ImportError:
+			from configparser import ConfigParser
 		from json import load
 		config = {} 
 		if cfgfile.endswith('.json'):
-			config = load (open(cfgfile))
+			with open(cfgfile) as f:
+				config = load (f)
 		else:
 			cp = ConfigParser()
 			cp.read(cfgfile)
-			config = cp._sections.values()[0]
+			config = list(cp._sections.values())[0]
 			for key, val in config.items():
 				if key.endswith(".type"):
 					config[key] = eval(val)
