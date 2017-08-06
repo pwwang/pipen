@@ -5,7 +5,7 @@ Once a job is cached, `pyppl` will skip running this job. But you have to tell a
 
 |Caching method (`p.cache=?`)|How|
 |-|-|
-|`True`|A signature<sup>*</sup> of input files, script and output files of a job is cached in `<workdir>/cached.jobs`, compare the signature before a job starts to run.|
+|`True`|A signature<sup>*</sup> of input files, script and output files of a job is cached in `<workdir>/<job.index>/job.cache`, compare the signature before a job starts to run.|
 |`False`| Disable caching, always run jobs.|
 |`"export"`| First try to find the signatures, if failed, try to restore the files existed (or exported previously in `p.exdir`).
 
