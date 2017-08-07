@@ -79,7 +79,7 @@ if args.command in ['list', 'clean']:
 	maxlen = max(maxlen, 30)
 	for g, sufs in groups.iteritems():
 		print "\n- PROCESSES: %s" % (g)
-		print "  " + "-" * (maxlen + 18)
+		print "  " + "-" * (maxlen + 30)
 		
 		for i, suf in enumerate(sorted(sufs, key=lambda x: mtime4proc(path.join (args.workdir, "PyPPL.%s.%s" % (g, x))), reverse=True)):
 			procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
