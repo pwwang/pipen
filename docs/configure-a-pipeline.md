@@ -42,6 +42,8 @@ Here is the full structure of the configurations:
 You can also put some commonly used configurations into a `json` file (for example, `/a/b/pyppl.config.json`), and then specify it to `pyppl` constructor:
 ```python
 pyppl ({}, "/a/b/pyppl.config.json")
+# or 
+pyppl (cfile = "/a/b/pyppl.config.json")
 ```
 If not configuration file is specified, it will look for one at `~/.pyppl.json` (if not available, check `~/.pyppl`).  
 You can also overwrite some options in the configuration file by specify them in the first argument:
