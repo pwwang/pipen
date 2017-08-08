@@ -1,7 +1,7 @@
 import sys, unittest, os, glob
 rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
-from pyppl import channel
+from pyppl import channel, params
 
 class TestChannel (unittest.TestCase):
 
@@ -69,6 +69,14 @@ class TestChannel (unittest.TestCase):
 			""")
 		c = channel.fromFile (testfile)
 		self.assertEqual (c, [("1", "2", "4"), ("a", "b", "c"), ("4", "1", "0")])
+		
+	def testFromParams (self):
+		sys.argv = [sys.argv[0], "--param-a=1", "2", "3", "--param-b=a"]
+		params.a.setType(list)
+		params.b.setType(list)
+		params.parse()
+		c = channel.fromParams('a', 'b')
+		self.assertEqual (c, [('1', 'a'), ('2', 'a'), ('3', 'a')])
 
 	def testTuplize (self):
 		data = [

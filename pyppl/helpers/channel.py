@@ -132,6 +132,20 @@ class channel (list):
 			width = len(items)
 			ret.append (items)
 		return ret
+		
+	@staticmethod
+	def fromParams (*pnames):
+		from .parameters import params
+		ret = channel.create()
+		for pname in pnames:
+			param = getattr(params, pname)
+			if not param.type in [list, utils.basestring, str]:
+				raise AttributeError('Expect the type of params to be list or basestring, not %s' % param.type.__name__)
+			data = param.value
+			if param.type != list:
+				data = [param.value]
+			ret = ret.cbind(data)
+		return ret
 	
 	@staticmethod
 	def _tuplize (tu):
