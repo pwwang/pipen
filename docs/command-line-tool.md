@@ -41,7 +41,7 @@ Or you can do it without `--force` and keep the ones you want.
 ## Compare the settings of two pipeines
 ![pyppl-compare][3]
 
-`pyppl compare` uses python's `difflib` to compare the `proc.settings` files in the directories of two processes. it can take a process group name (i.e. `-p pSort.notag`) to compare the top 2 latest processes or two process names with suffices (i.e. `-p1 pSort.notag.4HIhyVbp -p2 pSort.notag.7hNBe2uT`. 
+`pyppl compare` uses python's `difflib` to compare the `proc.settings` files in the directories of two processes. it can take a process group name (i.e. `-p pSort.notag`, in this case, actually, the tag can be omitted if it is `notag`, so you can use `-p pSort`) to compare the top 2 latest processes or two process names with suffices (i.e. `-p1 pSort.notag.4HIhyVbp -p2 pSort.notag.7hNBe2uT`. 
 
 You can also specify the direct path of process groups/directories:
 ```sh
