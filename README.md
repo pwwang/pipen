@@ -301,9 +301,9 @@ In your configuration file: (i.e. `/path/to/mypyppl.json`)
 
 You can then switch them easily by:
 ```python
-pyppl({}, "/path/to/mypyppl.json").starts(...).run('test')
+pyppl(cfile = "/path/to/mypyppl.json").starts(...).run('test')
 # or
-pyppl({}, "/path/to/mypyppl.json").starts(...).run('cluster')
+pyppl(cfile = "/path/to/mypyppl.json").starts(...).run('cluster')
 ```
 You can use a command line option to control it by using the command line argument parser:
 ```python
@@ -315,7 +315,7 @@ params.parse()
 # process definitions
 # ...
 
-pyppl({}, "/path/to/mypyppl.json").starts(...).run(params.runner.value)
+pyppl(cfile = "/path/to/mypyppl.json").starts(...).run(params.runner.value)
 ```
 Then to switch the runner:
 ```
