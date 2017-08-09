@@ -424,7 +424,7 @@ def filesig (fn):
 	# say in case of export using move
 	if not mtime: 
 		return False
-	return fn + '@' + str(mtime)
+	return [fn, mtime]
 
 def alwaysList (data):
 	"""

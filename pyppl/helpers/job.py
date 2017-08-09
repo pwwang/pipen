@@ -168,64 +168,98 @@ class job (object):
 				return False
 
 			sigOld  = json.loads(sig)
-			keysNow = sigNow.keys()
-			keysOld = sigOld.keys()
-			if sorted(keysNow) != sorted(keysOld):
-				self.proc.log ("Job #%s not cached due to key difference of signautres:" % (self.index), 'debug', 'CACHE_SIGKEYS_DIFFER')
-				self.proc.log ("  Previous: %s" % (keysOld), 'debug', 'CACHE_SIGKEYS_DIFFER')
-				self.proc.log ("  Current : %s" % (keysNow), 'debug', 'CACHE_SIGKEYS_DIFFER')
+			
+			# script
+			sigScriptOld = sigOld['script']
+			sigScriptNow = sigNow['script']
+			
+			# if you have a different script, you will have a different proc suffix, and you won't compare this
+			# script is newer
+			if sigScriptNow[1] > sigScriptOld[1]:
+				self.proc.log ("Job #%s not cached because script file newer:" % (self.index), 'debug', 'CACHE_SCRIPT_NEWER')
+				self.proc.log ("- Previous: %s" % (sigScriptOld[1]), 'debug', 'CACHE_SCRIPT_NEWER')
+				self.proc.log ("- Current : %s" % (sigScriptNow[1]), 'debug', 'CACHE_SCRIPT_NEWER')
 				return False
-			for key in keysNow:
-				if key == 'script':
-					if sigOld[key] != sigNow[key]:
-						self.proc.log ("Job #%s not cached due to script file difference:" % (self.index), 'debug', 'CACHE_SCRIPT_DIFFER')
-						self.proc.log ("  Previous: %s" % (sigOld[key]), 'debug', 'CACHE_SCRIPT_DIFFER')
-						self.proc.log ("  Current : %s" % (sigNow[key]), 'debug', 'CACHE_SCRIPT_DIFFER')
+			
+			# input var
+			sigInVarOld = sigOld['in'][self.proc.IN_VARTYPE[0]]
+			sigInVarNow = sigNow['in'][self.proc.IN_VARTYPE[0]]
+			for key, val in sigInVarNow.items():
+				if val != sigInVarOld[key]:
+					self.proc.log ("Job #%s not cached because input variable (%s) is different: " % (self.index, key), 'debug', 'CACHE_SIGINVAR_DIFF')
+					self.proc.log ("- Previous: %s" % (sigInVarOld[key]), 'debug', 'CACHE_SIGINVAR_DIFF')
+					self.proc.log ("- Current : %s" % (val), 'debug', 'CACHE_SIGINVAR_DIFF')
+					return False
+			
+			# input file
+			sigInFileOld = sigOld['in'][self.proc.IN_FILETYPE[0]]
+			sigInFileNow = sigNow['in'][self.proc.IN_FILETYPE[0]]
+			
+			for key, val in sigInFileNow.items():
+				if val[0] != sigInFileOld[key][0]:
+					self.proc.log ("Job #%s not cached because input file (%s) is different:" % (self.index, key), 'debug', 'CACHE_SIGINFILE_DIFF')
+					self.proc.log ("- Previous: %s" % (sigInFileOld[key][0]), 'debug', 'CACHE_SIGINFILE_DIFF')
+					self.proc.log ("- Current : %s" % (val[0]), 'debug', 'CACHE_SIGINFILE_DIFF')
+					return False
+				if val[1] > sigInFileOld[key][1]:
+					self.proc.log ("Job #%s not cached because input file (%s) is newer:" % (self.index, key), 'debug', 'CACHE_SIGINFILE_NEWER')
+					self.proc.log ("- File:     %s" % (val[0]), 'debug', 'CACHE_SIGINFILE_NEWER')
+					self.proc.log ("- Previous: %s" % (sigInFileOld[key][1]), 'debug', 'CACHE_SIGINFILE_NEWER')
+					self.proc.log ("- Current : %s" % (val[1]), 'debug', 'CACHE_SIGINFILE_NEWER')
+					return False
+			
+			# input files
+			sigInFilesOld = sigOld['in'][self.proc.IN_FILESTYPE[0]]
+			sigInFilesNow = sigNow['in'][self.proc.IN_FILESTYPE[0]]
+			for key, val in sigInFilesNow.items():
+				valOld    = sorted(sigInFilesOld[key])
+				valNow    = sorted(val)
+				filesOld  = [v[0] for v in valOld]
+				filesNow  = [v[0] for v in valNow]
+				if filesNow != filesOld:
+					self.proc.log ("Job #%s not cached because input files (%s) are different:" % (self.index, key), 'debug', 'CACHE_SIGINFILES_DIFF')
+					self.proc.log ("- Previous: %s" % (filesOld), 'debug', 'CACHE_SIGINFILES_DIFF')
+					self.proc.log ("- Current : %s" % (filesNow), 'debug', 'CACHE_SIGINFILES_DIFF')
+					return False
+				for i, fileTsNow in enumerate(valNow):
+					fileTsOld = valOld[i]
+					if fileTsNow[1] > fileTsOld[1]:
+						self.proc.log ("Job #%s not cached because one of input files (%s) is newer:" % (self.index, key), 'debug', 'CACHE_SIGINFILES_NEWER')
+						self.proc.log ("- File:     %s" % (fileTsNow[0]), 'debug', 'CACHE_SIGINFILES_NEWER')
+						self.proc.log ("- Previous: %s" % (fileTsOld[1]), 'debug', 'CACHE_SIGINFILES_NEWER')
+						self.proc.log ("- Current : %s" % (fileTsNow[1]), 'debug', 'CACHE_SIGINFILES_NEWER')
 						return False
-				if key == 'in':
-					inTypesOld = sigOld[key].keys()
-					inTypesNow = sigNow[key].keys()
-					if sorted(inTypesNow) != sorted(inTypesOld):
-						self.proc.log ("Job #%s not cached due to input type difference of signautres:" % (self.index), 'debug', 'CACHE_SIGINTYPES_DIFFER')
-						self.proc.log ("  Previous: %s" % (inTypesOld), 'debug', 'CACHE_SIGINTYPES_DIFFER')
-						self.proc.log ("  Current : %s" % (inTypesNow), 'debug', 'CACHE_SIGINTYPES_DIFFER')
-						return False
-					for intype in inTypesNow:
-						inKeysOld = sigOld[key][intype].keys()
-						inKeysNow = sigNow[key][intype].keys()
-						if sorted(inKeysOld) != sorted(inKeysNow):
-							self.proc.log ("Job #%s not cached due to input key difference of signautres:" % (self.index), 'debug', 'CACHE_SIGINKEYS_DIFFER')
-							self.proc.log ("  Previous: %s" % (inKeysOld), 'debug', 'CACHE_SIGINKEYS_DIFFER')
-							self.proc.log ("  Current : %s" % (inKeysNow), 'debug', 'CACHE_SIGINKEYS_DIFFER')
-							return False
-						for inkey in inKeysNow:
-							if sigOld[key][intype][inkey] != sigNow[key][intype][inkey]:
-								self.proc.log ("Job #%s not cached due to input difference for key %s:" % (self.index, inkey), 'debug', 'CACHE_SIGINPUT_DIFFER')
-								self.proc.log ("  Previous: %s" % (sigOld[key][intype][inkey]), 'debug', 'CACHE_SIGINPUT_DIFFER')
-								self.proc.log ("  Current : %s" % (sigNow[key][intype][inkey]), 'debug', 'CACHE_SIGINPUT_DIFFER')
-								return False
-				if key == 'out':
-					outTypesOld = sigOld[key].keys()
-					outTypesNow = sigNow[key].keys()
-					if sorted(outTypesNow) != sorted(outTypesOld):
-						self.proc.log ("Job #%s not cached due to output type difference of signautres:" % (self.index), 'debug', 'CACHE_SIGOUTTYPES_DIFFER')
-						self.proc.log ("  Previous: %s" % (outTypesOld), 'debug', 'CACHE_SIGOUTTYPES_DIFFER')
-						self.proc.log ("  Current : %s" % (outTypesNow), 'debug', 'CACHE_SIGOUTTYPES_DIFFER')
-						return False
-					for outtype in outTypesNow:
-						outKeysOld = sigOld[key][outtype].keys()
-						outKeysNow = sigNow[key][outtype].keys()
-						if sorted(outKeysOld) != sorted(outKeysNow):
-							self.proc.log ("Job #%s not cached due to output key difference of signautres:" % (self.index), 'debug', 'CACHE_SIGOUTKEYS_DIFFER')
-							self.proc.log ("  Previous: %s" % (outKeysOld), 'debug', 'CACHE_SIGOUTKEYS_DIFFER')
-							self.proc.log ("  Current : %s" % (outKeysNow), 'debug', 'CACHE_SIGOUTKEYS_DIFFER')
-							return False
-						for outkey in outKeysNow:
-							if sigOld[key][outtype][outkey] != sigNow[key][outtype][outkey]:
-								self.proc.log ("Job #%s not cached due to output difference for key %s:" % (self.index, outkey), 'debug', 'CACHE_SIGOUTPUT_DIFFER')
-								self.proc.log ("  Previous: %s" % (sigOld[key][outtype][outkey]), 'debug', 'CACHE_SIGOUTPUT_DIFFER')
-								self.proc.log ("  Current : %s" % (sigNow[key][outtype][outkey]), 'debug', 'CACHE_SIGOUTPUT_DIFFER')
-								return False
+			
+			# output var
+			sigOutVarOld = sigOld['out'][self.proc.OUT_VARTYPE[0]]
+			sigOutVarNow = sigNow['out'][self.proc.OUT_VARTYPE[0]]
+			for key, val in sigOutVarNow.items():
+				if val != sigOutVarOld[key]:
+					self.proc.log ("Job #%s not cached because output variable (%s) is different: " % (self.index, key), 'debug', 'CACHE_SIGOUTVAR_DIFF')
+					self.proc.log ("- Previous: %s" % (sigOutVarOld[key]), 'debug', 'CACHE_SIGOUTVAR_DIFF')
+					self.proc.log ("- Current : %s" % (val), 'debug', 'CACHE_SIGOUTVAR_DIFF')
+					return False
+			
+			# output file
+			sigOutFileOld = sigOld['out'][self.proc.OUT_FILETYPE[0]]
+			sigOutFileNow = sigNow['out'][self.proc.OUT_FILETYPE[0]]
+			for key, val in sigOutFileNow.items():
+				if val[0] != sigOutFileOld[key][0]:
+					self.proc.log ("Job #%s not cached because output file (%s) is different:" % (self.index, key), 'debug', 'CACHE_SIGOUTFILE_DIFF')
+					self.proc.log ("- Previous: %s" % (sigOutFileOld[key][0]), 'debug', 'CACHE_SIGOUTFILE_DIFF')
+					self.proc.log ("- Current : %s" % (val[0]), 'debug', 'CACHE_SIGOUTFILE_DIFF')
+					return False
+					
+			# output dir
+			sigOutDirOld = sigOld['out'][self.proc.OUT_DIRTYPE[0]]
+			sigOutDirNow = sigNow['out'][self.proc.OUT_DIRTYPE[0]]
+			for key, val in sigOutDirNow.items():
+				if val[0] != sigOutDirOld[key][0]:
+					self.proc.log ("Job #%s not cached because output dir (%s) is different:" % (self.index, key), 'debug', 'CACHE_SIGOUTDIR_DIFF')
+					self.proc.log ("- Previous: %s" % (sigOutDirOld[key][0]), 'debug', 'CACHE_SIGOUTDIR_DIFF')
+					self.proc.log ("- Current : %s" % (val[0]), 'debug', 'CACHE_SIGOUTDIR_DIFF')
+					return False
+			
 			return True
 	
 	def isExptCached (self):
