@@ -1,4 +1,5 @@
 import sys
+from . import utils
 """
 Handling parameters
 """
@@ -20,7 +21,7 @@ class parameter (object):
 			'show'    : True,
 			'type'    : None,
 			'name'    : name,
-			'value'   : value# if not isinstance(value, unicode) else value.encode('utf-8')
+			'value'   : value if not isinstance(value, utils.basestring) else str(value)
 		}
 		self.setType(type(self.value))
 	
@@ -64,7 +65,7 @@ class parameter (object):
 			- Note: str rather then 'str'
 		"""
 		if t not in [str, int, float, bool, list]:
-			raise TypeError ('Unexpected type "{}", only support one of the types: [str, int, float, bool, list]'.format(t.__name__))
+			raise TypeError ('Unexpected type "{}" for param {}, only support one of the types: [str, int, float, bool, list]'.format(t.__name__, self.name))
 		self.props['type'] = t
 		self._forceType()
 		return self
@@ -84,7 +85,7 @@ class parameter (object):
 		@params:
 			`v`: The value
 		"""
-		self.props['value'] = v# if not isinstance(v, unicode) else v.encode('utf-8')
+		self.props['value'] = v if not isinstance(v, utils.basestring) else str(v)
 		return self
 	
 	def setName (self, n):
