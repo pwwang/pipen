@@ -85,7 +85,7 @@ class runner (object):
 				(lastout, lasterr) = self._flushOut(fout, ferr, lastout, lasterr)
 				sleep (2)
 			
-			self._flushOut(fout, ferr, lastout, lasterr)
+			self._flushOut(fout, ferr, lastout, lasterr, True)
 			if rc:
 				retcode = self.p.returncode
 				self.job.rc(retcode)
@@ -130,7 +130,7 @@ class runner (object):
 		with open(devnull, 'w') as f:
 			return Popen (['kill', '-s', '0', jobid], stderr=f, stdout=f).wait() == 0
 		
-	def _flushOut (self, fout, ferr, lastout, lasterr):
+	def _flushOut (self, fout, ferr, lastout, lasterr, end = False):
 		"""
 		Flush stdout/stderr
 		@params:
@@ -146,7 +146,10 @@ class runner (object):
 					lines[0] = lastout + lines[0]
 					if not lines[-1].endswith('\n'):
 						lastout = lines.pop(-1)
-					
+					else:
+						lastout = ''
+					if lastout and end:
+						lines.append(lastout + '\n')
 					for line in lines:
 						if not self.job.proc.echo['filter'] or (self.job.proc.echo['filter'] and re.search (self.job.proc.echo['filter'], line)):
 							lock.acquire()
@@ -156,9 +159,12 @@ class runner (object):
 			lines = ferr.readlines()
 			if lines: 
 				lines[0] = lasterr + lines[0]
-				if not lines[-1].endswith('\n'):
+				if not end and not lines[-1].endswith('\n'):
 					lasterr = lines.pop(-1)
-				
+				else:
+					lasterr = ''
+				if lasterr and end:
+					lines.append(lasterr + '\n')
 				for line in lines:
 					if 'stderr' in self.job.proc.echo['type'] and (not self.job.proc.echo['filter'] or (self.job.proc.echo['filter'] and re.search (self.job.proc.echo['filter'], line))):
 						lock.acquire()

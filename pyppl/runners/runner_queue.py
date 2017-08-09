@@ -44,7 +44,7 @@ class runner_queue (runner):
 			sleep (30)
 			(lastout, lasterr) = self._flushOut (fout, ferr, lastout, lasterr)
 			
-		self._flushOut(fout, ferr, lastout, lasterr)
+		self._flushOut(fout, ferr, lastout, lasterr, True)
 			
 		ferr.close()
 		fout.close()
