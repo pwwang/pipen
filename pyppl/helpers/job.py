@@ -87,9 +87,14 @@ class job (object):
 		Report the job information to logger
 		"""
 		for key in sorted(self.input.keys()):
-			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.input[key]['data']), 'input')
-			if 'orig' in self.input[key]:
-				self.proc.log ("[%s/%s] %s.orig => %s" % (self.index, self.proc.length - 1, key, self.input[key]['orig']), 'input')
+			if self.input[key]['type'] in self.proc.IN_FILESTYPE:
+				self.proc.log ("[%s/%s] %s => [%s, ...]" % (self.index, self.proc.length - 1, key, self.input[key]['data'][0]), 'input')
+				if 'orig' in self.input[key]:
+					self.proc.log ("[%s/%s] %s.orig => [%s, ...]" % (self.index, self.proc.length - 1, key, self.input[key]['orig'][0]), 'input')
+			else:
+				self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.input[key]['data']), 'input')
+				if 'orig' in self.input[key]:
+					self.proc.log ("[%s/%s] %s.orig => %s" % (self.index, self.proc.length - 1, key, self.input[key]['orig']), 'input')
 		for key in sorted(self.brings.keys()):
 			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.brings[key]), 'brings')
 		for key in sorted(self.output.keys()):
