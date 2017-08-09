@@ -122,8 +122,11 @@ if args.command == 'compare':
 	if args.p:
 		if '/' in args.p[:-1]:
 			prefix = args.p
+			prefix = prefix + '.notag' if path.basename(prefix).count('.') < 2 else prefix
 		else:
+			
 			prefix = 'PyPPL.' + args.p if not args.p.startswith('PyPPL.') else args.p
+			prefix = prefix + '.notag' if prefix.count('.') < 2 else prefix
 			prefix = path.join(args.workdir, prefix)
 			
 		procs  = glob (prefix + '.*')
