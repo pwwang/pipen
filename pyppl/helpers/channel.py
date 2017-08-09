@@ -135,6 +135,13 @@ class channel (list):
 		
 	@staticmethod
 	def fromParams (*pnames):
+		"""
+		Create a channel from params
+		@params:
+			`*pnames`: The names of the option
+		@returns:
+			The channel
+		"""
 		from .parameters import params
 		ret = channel.create()
 		for pname in pnames:

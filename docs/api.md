@@ -229,6 +229,16 @@ Create a width = 2 channel from a pattern
 - **returns:**  
 The channel create from every 2 files match the pattern  
   
+#### `fromParams (*pnames) [@staticmethod]`
+  
+Create a channel from params  
+
+- **params:**  
+`*pnames`: The names of the option  
+
+- **returns:**  
+The channel  
+  
 #### `fromPath (pattern, t, sortby, reverse) [@staticmethod]`
   
 Create a channel from a path pattern  
