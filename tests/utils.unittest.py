@@ -8,6 +8,9 @@ rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, rootdir)
 from pyppl import utils
 
+def somefunc(x):
+	return x*2
+
 class TestUtils (unittest.TestCase):
 
 	def testSplit (self):
@@ -58,9 +61,10 @@ class TestUtils (unittest.TestCase):
 			("{{a|acquote}}", '"a","b","c"', {"a":['a', 'b', 'c']}),
 			("{{a|squote}}", "'a'", {"a":'a'}),
 			("{{a|len}}", "7", {"a":'abcdefg'}),
+			("{{a|somefunc}}", "abcdefgabcdefg", {"a":'abcdefg'}),
 			("{{import math | a | math.log}}", "1.0", {"a":__import__('math').e}),
 			("{{from math import ceil | a | ceil}}", "9.0", {"a":8.8}),
-			("{{ from math import ceil; from math import floor | v | lambda x: floor(ceil(x+.5)+.5)}}", "10.0", {"v":8.8}),
+			("{{ from math import ceil; from math import floor | v | lambda x: floor(ceil(x+.5)+.5) | int}}", "10", {"v":8.8}),
 		]
 		for d in data[-1:]:
 			self.assertEqual (utils.format(d[0], d[2]), d[1])
