@@ -28,6 +28,17 @@ var2 = params.opt2.value + [4]
 # var2 is ['1', '2', '3', 4]
 ```
 
+If you feel annoying using `params.xxx.value` to have the value of the option, you can convert the `params` object to a `pyppl.doct` object:
+```python
+ps = params.toDoct()
+```
+Then you can refer the values directly by:
+```python
+var = ps.opt + '2'
+var2 = ps.opt2 + [4]
+```
+
+
 ## Set properties of an option
 An option has server properties:
 - `desc`: The description of the option, shows in the help page. Default: `''`
