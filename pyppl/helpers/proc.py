@@ -362,7 +362,7 @@ class proc (object):
 		if self.suffix:
 			return self.suffix
 		
-		config        = { key:val for key, val in self.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'expect', 'callback', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] or key.endswith ('Runner') }
+		config        = { key:val for key, val in self.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'expect', 'callback', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] and not key.endswith ('Runner') }
 		config['id']  = self.id
 		config['tag'] = self.tag
 		
