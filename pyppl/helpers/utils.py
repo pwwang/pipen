@@ -178,9 +178,8 @@ def format (tpl, args):
 		nneat   = n[2:-2]
 		parts  = split(nneat, "|")
 		key    = parts.pop(0).strip()
-		impstr = ''
 		if key.startswith('import ') or key.startswith('from '):
-			impstr = key
+			exec (key)
 			key = parts.pop(0).strip()
 		if not key in args:
 			raise KeyError ("No key '%s' found in the data!\nAvailable keys are: %s" % (key, str(args.keys())))
@@ -201,8 +200,7 @@ def format (tpl, args):
 				expstr = '%s(%s)' % (func, val2replace)
 			
 			try:
-				exec (impstr)
-				value  = eval (expstr)	
+				value  = eval (expstr, locals())	
 			except:
 				stderr.write("Failed to evaluate: %s\n" % expstr)
 				stderr.write("- Key/Func:   %s\n" % func)
