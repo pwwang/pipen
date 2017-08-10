@@ -28,17 +28,35 @@ ret = pyppl.utils.format (ph, {v: 3})
   - but the value passed among chains remains its own type (i.e. `{{v | lambda x: "a" + x}}` for `{v:1}` will raise a `TypeError`).
 - Built-in functions, or a callable object can be used, for example:
   - `{{ v | len }}` for `{v: "abcdefg"}` will return `"7"`
-  - `{{ v | __import__('math').ceil }}` for `{v: "8.8"}` will return `"9.0"`
+  - `{{ v | __import__('math').ceil | int }}` for `{v: "8.8"}` will return `"9"`
 - Frequently-used modules can be imported in the first component:
   - `{{ import math | v | math.ceil }}` 
   - `{{ from math import ceil | v | ceil }}`
-  - `{{ from math import ceil; import math import floor | v | lambda x: floor(ceil(x+.5)+.5)}}` for `{v: "8.8"}` will return `"10.0"`
+  - `{{ from math import ceil; import math import floor | v | lambda x: floor(ceil(x+.5)+.5) | int}}` for `{v: "8.8"}` will return `"10"`
 
 
 You can also apply a set of functions:
 ```python
 {{ v | lambda x: pow(2,x) | lambda x: pow(2,x) }}
 # "2","4","16"
+```
+A global function can also be used:
+```python
+import math
+def somefunc(x):
+  return math.ceil(x)*2
+
+from pyppl import proc
+p = proc()
+p.input  = {"in": [8.8]}
+# ... other settings
+p.script = '''
+# ...
+r = {{in | somefunc | int}}  
+# r == 18
+'''
+
+# ... run the pipeline
 ```
 
 
