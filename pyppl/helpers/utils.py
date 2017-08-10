@@ -174,22 +174,22 @@ def format (tpl, args):
 	m = re.findall ("{{.+?}}", s)
 	
 	for n in m:
-		nneat = n.strip("{}")
-		parts = split(nneat, "|")
-		key   = parts.pop(0).strip()
+		#nneat = n.strip("{}")
+		nneat   = n[2:-2]
+		parts  = split(nneat, "|")
+		key    = parts.pop(0).strip()
+		impstr = ''
+		if key.startswith('import ') or key.startswith('from '):
+			impstr = key
+			key = parts.pop(0).strip()
 		if not key in args:
-			stderr.write ("[KEY]      ->" + str(key) + "\n")
-			stderr.write ("[DATA]     ->" + str(args) + "\n")
-			stderr.write ("[TEMPLATE] ->\n")
-			stderr.write (tpl + "\n")
-			stderr.write ("-" * 80 + "\n")
-			raise KeyError ("No key found in the data!")
+			raise KeyError ("No key '%s' found in the data!\nAvailable keys are: %s" % (key, str(args.keys())))
 		
 		value = args[key]
 		while parts:
 			func = parts.pop(0).strip()
 			val2replace = ("'%s'" % value) if isinstance(value, basestring) else ("%s" % value)
-			func = re.sub(r"(?<=\(|\s|,)_(?=\)|,|\s)", val2replace, func, 1)
+			#func = re.sub(r"(?<=\(|\s|,)_(?=\)|,|\s)", val2replace, func, 1)
 			
 			if func.startswith(".") or func.startswith("["):
 				expstr = '%s%s' % (val2replace, func)
@@ -198,9 +198,10 @@ def format (tpl, args):
 			elif func in format.shorts:
 				expstr = '(%s)(%s)' % (format.shorts[func], val2replace)
 			else:
-				expstr = func
+				expstr = '%s(%s)' % (func, val2replace)
 			
 			try:
+				exec (impstr)
 				value  = eval (expstr)	
 			except:
 				stderr.write("Failed to evaluate: %s\n" % expstr)
