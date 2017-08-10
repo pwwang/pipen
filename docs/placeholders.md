@@ -16,7 +16,6 @@ echo {{v}}
 ## Transform values by placeholders
 You can apply some function to transform values by placeholders:
 ```python
-#{{ v | pow(2, _) }}  # NOTE: this is deprecated!
 ph  = "{{ v | lambda x: pow(2, x) }}" # please use lambda function
 ret = pyppl.utils.format (ph, {v: 3})
 # ret == "9"
@@ -25,24 +24,23 @@ ret = pyppl.utils.format (ph, {v: 3})
   - A lambda function with one and only one argument
   - `[i]`/`["key"]` to get value from `iter` objects
   - `.func()` to call functions of an object. (i.e. `{{v | .lower()}}` for `{v: "A"}`)
-- ~~`_` represents the value of previous chain~~ is deprecated!.
 - `pyppl.utils.format(...)` always returns a **STRING**.
   - but the value passed among chains remains its own type (i.e. `{{v | lambda x: "a" + x}}` for `{v:1}` will raise a `TypeError`).
+- Built-in functions, or a callable object can be used, for example:
+  - `{{ v | len }}` for `{v: "abcdefg"}` will return `"7"`
+  - `{{ v | __import__('math').ceil }}` for `{v: "8.8"}` will return `"9.0"`
+- Frequently-used modules can be imported in the first component:
+  - `{{ import math | v | math.ceil }}` 
+  - `{{ from math import ceil | v | ceil }}`
+  - `{{ from math import ceil; import math import floor | v | lambda x: floor(ceil(x+.5)+.5)}}` for `{v: "8.8"}` will return `"10.0"`
 
 
 You can also apply a set of functions:
 ```python
-#{{ v | pow(2, _) | pow(2, _) }}
 {{ v | lambda x: pow(2,x) | lambda x: pow(2,x) }}
 # "2","4","16"
 ```
 
-Import modules in a placeholder:
-```python
-#{{ v | __import__('math').exp(_) }}
-{{ v | lambda x: __import__('math').exp(x) }}
-# "1", "2.71828182846", "7.38905609893"
-```
 
 ## Built-in functions
 We have a set of built-in funcitons for placeholders, they are:
