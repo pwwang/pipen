@@ -246,6 +246,26 @@ OPTIONAL OPTIONS:
 		ps.parse()
 		self.assertEqual(ps.p3.value, 5.1)
 		self.assertEqual(ps.p2.value, ['4', '5', '6'])
+		
+	def testToDoct(self):
+		sys.argv = [sys.argv[0], "-p-p3", "5.1", "-p-p2=4", "5", "6"]
+		ps = parameters()
+		ps.prefix('-p-')
+		d2load = {
+			'p1': 1,
+			'p1.required': True,
+			'p2': [1,2,3],
+			'p2.show': True,
+			'p3': 2.3,
+			'p3.desc': 'The p3 params',
+			'p3.required': True,
+			'p3.show': True
+		}
+		ps.loadDict(d2load)
+		ps = ps.parse().toDoct()
+		self.assertEqual(ps.p3, 5.1)
+		self.assertEqual(ps.p2, ['4', '5', '6'])
+		
 	
 if __name__ == '__main__':
 	unittest.main()

@@ -1,5 +1,6 @@
 import sys
 from . import utils
+from .doct import doct
 """
 Handling parameters
 """
@@ -261,7 +262,7 @@ class parameters (object):
 					val._forceType()
 				except TypeError:
 					sys.stderr.write('ERROR: Cannot coerce "{}" to {} for option: {}' % (val.value, val.type, karg))
-				
+		return self				
 		
 	def _help (self):
 		"""
@@ -381,6 +382,16 @@ class parameters (object):
 					config[key] = eval(val)
 		self.loadDict(config, show = show)
 		return self
-		
+	
+	def toDoct (self):
+		"""
+		Convert the parameters to doct
+		@returns:
+			The doct object
+		"""
+		ret = doct()
+		for name in self.params:
+			ret[name] = self.params[name].value
+		return ret
 
 params = parameters()

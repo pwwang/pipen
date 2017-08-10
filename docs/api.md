@@ -1033,7 +1033,7 @@ Constructor
 - **params:**  
 `job`:    The job object  
   
-#### `_flushOut (self, fout, ferr, lastout, lasterr) `
+#### `_flushOut (self, fout, ferr, lastout, lasterr, end) `
   
 Flush stdout/stderr  
 
