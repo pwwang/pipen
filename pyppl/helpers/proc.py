@@ -521,6 +521,10 @@ class proc (object):
 		if not 'filter' in self.echo:
 			self.echo['filter'] = ''
 		
+		# don't cache for dry runner
+		if self.runner == 'dry':
+			self.props['cache'] = False
+		
 		self.log ('Properties set explictly: %s' % str(self.sets), 'debug')
 	
 	def _saveSettings (self):

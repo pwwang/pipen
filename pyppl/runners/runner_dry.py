@@ -1,7 +1,7 @@
 """
 # Dry runner
 """
-from os import path, utime
+from os import path, utime, remove
 from .runner import runner
 from ..helpers import utils
 
