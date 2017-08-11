@@ -41,6 +41,17 @@ You can also apply a set of functions:
 # "2","4","16"
 ```
 
+Another trick to import module is to use `__import__`:
+```python
+{{ v | lambda x: __import__('math').log(x, 2) | int}} 
+# {'v': 8 } ==> 3
+# or simply (if you only have one argument for your function:
+{{ v | __import__('math').log | int}} 
+# {'v': __import__('math').e} ==> 1
+# or if you use the module frequently:
+{{ v | lambda x, path=__import__('os').path: path.splitext(path.basename(x)) }} 
+# {'v': '/a/b/c.txt'} ==> c
+```
 
 ## Built-in functions
 We have a set of built-in funcitons for placeholders, they are:
