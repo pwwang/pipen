@@ -404,12 +404,12 @@ class proc (object):
 		"""
 		
 		self._buildProps ()
-		self._saveSettings()
 		if callable (self.callfront):
 			self.log ("Calling callfront ...", "debug")
 			self.callfront (self)
 		self._buildInput ()
 		self._buildProcVars ()
+		self._saveSettings()
 		self._buildJobs ()
 
 	def _tidyAfterRun (self):
@@ -560,10 +560,14 @@ class proc (object):
 					for k in sorted(val.keys()):
 						v = val[k]
 						f.write (k + '.type: ' + str(v['type']) + '\n')
-						f.write (k + '.data: \n')
-						for _ in v['data']:
-							f.write ('  ' + json.dumps(_) + '\n')
-				elif key in ['lognline', 'args'] or key.endswith('Runner'):
+						for j, ds in enumerate(v['data']):
+							f.write (k + '.data#%s: \n' % str(j))
+							if isinstance(ds, list):
+								for _ in ds:
+									f.write('  ' + json.dumps(_, sort_keys = True) + '\n')
+							else:
+								f.write ('  ' + json.dumps(ds, sort_keys = True) + '\n')
+				elif key in ['lognline', 'args', 'procvars', 'brings', 'echo'] or key.endswith('Runner'):
 					f.write('\n['+ key +']\n')
 					for k in sorted(val.keys()):
 						v = val[k]
