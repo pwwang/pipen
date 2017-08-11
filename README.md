@@ -88,7 +88,7 @@ total 163
 -rw-r--r-- 1 user group 895 Aug 4 00:29 test.py
 drwxr-sr-x 3 user group 44 Aug 4 00:29 workdir/
 ```
-If you don't like the theme, you can different one or define your own (see [here][28]).
+If you don't like the theme, you can use a different one or define your own (see [here][28]).
 
 ## Multiple processes 
 Sort each 5 file and then combine them into one file
