@@ -40,24 +40,6 @@ You can also apply a set of functions:
 {{ v | lambda x: pow(2,x) | lambda x: pow(2,x) }}
 # "2","4","16"
 ```
-A global function can also be used:
-```python
-import math
-def somefunc(x):
-  return math.ceil(x)*2
-
-from pyppl import proc
-p = proc()
-p.input  = {"in": [8.8]}
-# ... other settings
-p.script = '''
-# ...
-r = {{in | somefunc | int}}  
-# r == 18
-'''
-
-# ... run the pipeline
-```
 
 
 ## Built-in functions
