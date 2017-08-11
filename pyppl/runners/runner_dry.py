@@ -52,5 +52,8 @@ class runner_dry (runner):
 		if self.job.succeed():
 			self.job.checkOutfiles(expect = False)
 		
+		if path.exists(self.job.cachefile):
+			remove (self.job.cachefile)
+			
 		self.p = None
 		self.retry ()
