@@ -173,6 +173,8 @@ def format (tpl, args):
 	s = tpl
 	m = re.findall ("{{.+?}}", s)
 	
+	keys = sorted(args.keys())
+	nkeyPerLine = 8
 	for n in m:
 		#nneat = n.strip("{}")
 		nneat   = n[2:-2]
@@ -181,8 +183,12 @@ def format (tpl, args):
 		if key.startswith('import ') or key.startswith('from '):
 			exec (key)
 			key = parts.pop(0).strip()
-		if not key in args:
-			raise KeyError ("No key '%s' found in the data!\nAvailable keys are: %s" % (key, str(args.keys())))
+		if not key in keys:
+			stderr.write('No key "%s" found in data.\n' % key)
+			stderr.write('Available keys are: \n')
+			for i in range(0, len(keys), nkeyPerLine):
+				stderr.write ('  ' + ', '.join(keys[i:i+nkeyPerLine]) + '\n')
+			raise KeyError
 		
 		value = args[key]
 		while parts:
@@ -205,7 +211,9 @@ def format (tpl, args):
 				stderr.write("Failed to evaluate: %s\n" % expstr)
 				stderr.write("- Key/Func:   %s\n" % func)
 				stderr.write("- Expression: %s\n" % n)
-				stderr.write("- Avail keys: %s\n" % args.keys())
+				stderr.write("- Avail keys:\n")
+				for i in range(0, len(keys), nkeyPerLine):
+					stderr.write ('  ' + ', '.join(keys[i:i+nkeyPerLine]) + '\n')
 				raise
 
 		s     = s.replace (n, str(value))

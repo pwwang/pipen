@@ -3,12 +3,13 @@ proc module for pyppl
 """
 import copy as pycopy
 import os
-import pickle
 import sys
 import threading
+import json
 from random import randint
 from subprocess import PIPE, Popen
 from time import sleep, time
+from collections import OrderedDict
 try:
 	from Queue import Queue
 except ImportError:
@@ -393,7 +394,7 @@ class proc (object):
 			for key, val in config['input'].items():
 				config['input'][key] = utils.funcsig(val) if callable(val) else val
 		
-		signature = pickle.dumps(str(config))
+		signature = json.dumps(config, sort_keys = True)
 		self.props['suffix'] = utils.uid(signature)
 		return self.suffix
 
@@ -534,7 +535,7 @@ class proc (object):
 				if key == 'input':
 					f.write('\n[input]\n')
 					if not isinstance(val, dict):
-						f.write('key: ' + str(val) + '\n')
+						f.write('value: ' + str(val) + '\n')
 					else:
 						for k in sorted(val.keys()):
 							v = val[k]
@@ -557,19 +558,19 @@ class proc (object):
 						f.write (k + '.type: ' + str(v['type']) + '\n')
 						f.write (k + '.data: \n')
 						for _ in v['data']:
-							f.write ('  ' + str(_) + '\n')
+							f.write ('  ' + json.dumps(_) + '\n')
 				elif key in ['lognline', 'args'] or key.endswith('Runner'):
 					f.write('\n['+ key +']\n')
 					for k in sorted(val.keys()):
 						v = val[k]
-						f.write ((k if k else "''") + ': ' + str(v) + '\n')
+						f.write ((k if k else "''") + ': ' + json.dumps(v, sort_keys = True) + '\n')
 				elif key == 'script':
 					f.write('\n['+ key +']\n')
 					f.write('value:\n')
 					f.write('  ' + val.replace('\n', '\n  ') + '\n')
 				else:
 					f.write('\n['+ key +']\n')
-					f.write('value: ' + str(val) + '\n')
+					f.write('value: ' + json.dumps(val, sort_keys = True) + '\n')
 					
 		self.log ('Settings saved to: %s' % settingsfile, 'debug')
 					
