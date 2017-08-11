@@ -88,9 +88,24 @@ class job (object):
 		"""
 		for key in sorted(self.input.keys()):
 			if self.input[key]['type'] in self.proc.IN_FILESTYPE:
-				self.proc.log ("[%s/%s] %s => [%s, ...]" % (self.index, self.proc.length - 1, key, self.input[key]['data'][0]), 'input')
-				if 'orig' in self.input[key]:
-					self.proc.log ("[%s/%s] %s.orig => [%s, ...]" % (self.index, self.proc.length - 1, key, self.input[key]['orig'][0]), 'input')
+				data1 = self.input[key]['data'][0]
+				data3 = self.input[key]['data'][1:3]
+				dataR = self.input[key]['data'][3:]
+				orig1 = self.input[key]['orig'][0]
+				orig3 = self.input[key]['orig'][1:3]
+				origR = self.input[key]['orig'][3:]
+				
+				self.proc.log ("[%s/%s] %s => %s, " % (self.index, self.proc.length - 1, key, data1), 'input')
+				for data in data3:
+					self.proc.log ("[%s/%s] %s    %s, " % (self.index, self.proc.length - 1, ' ' * len(key), data), 'input')
+				if dataR:
+					self.proc.log ("[%s/%s] %s    ... %s more not shown." % (self.index, self.proc.length - 1, ' ' * len(key), len(dataR)), 'input')
+					
+				self.proc.log ("[%s/%s] %s.orig => %s, " % (self.index, self.proc.length - 1, key, orig1), 'input')
+				for orig in orig3:
+					self.proc.log ("[%s/%s] %s         %s, " % (self.index, self.proc.length - 1, ' ' * len(key), orig), 'input')
+				if origR:
+					self.proc.log ("[%s/%s] %s         ... %s more not shown." % (self.index, self.proc.length - 1, ' ' * len(key), len(origR)), 'input')
 			else:
 				self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.input[key]['data']), 'input')
 				if 'orig' in self.input[key]:
