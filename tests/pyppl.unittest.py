@@ -18,8 +18,8 @@ class TestPipelineMethods (unittest.TestCase):
 	def tearDown (self):
 		try:
 			if os.path.exists ('./workdir'):
-				shutil.rmtree ('./workdir')
-				#pass
+				#shutil.rmtree ('./workdir')
+				pass
 		except:
 			sleep (1)
 			self.tearDown()
@@ -412,7 +412,20 @@ sorted("""digraph PyPPL {
 		
 		pyppl().starts(pFalse).run()
 		
-		
+	def testJobExportLock(self):
+		p = proc('jobexportlock')
+		p.input  = {'in': range(20)}
+		p.output = "outfile:file:a.txt"
+		p.forks  = 20
+		p.script = """
+		if [[ {{#}} -eq 0 ]]; then
+			touch {{outfile}}
+		else
+			ln -s {{proc.workdir}}/0/output/a.txt {{outfile}}
+		fi
+		"""
+		p.exdir = './workdir'
+		pyppl().starts(p).run()
 
 if __name__ == '__main__':
 	unittest.main()

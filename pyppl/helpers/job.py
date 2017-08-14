@@ -8,9 +8,10 @@ from glob import glob
 from os import makedirs, path, remove, symlink, utime, readlink, listdir
 from shutil import copyfile, copytree, move, rmtree
 from subprocess import Popen, PIPE
-
+from threading import Lock
 from . import utils, logger
 
+lock = Lock()
 class job (object):
 	
 	"""
@@ -124,7 +125,9 @@ class job (object):
 		if self.succeed():
 			self.checkOutfiles()
 		if self.succeed():
+			lock.acquire()
 			self.export()
+			lock.release()
 			self.cache()	
 			self.proc.log ('Job #%s done!' % self.index, 'JOBDONE')
 			
