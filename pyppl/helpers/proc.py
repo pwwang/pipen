@@ -787,13 +787,17 @@ class proc (object):
 				sleep (i)	
 				#if hasattr(run, 'checkRunning') and run.checkRunning and run.isRunning():
 				# anyway check whether the job is running before submit it
-				if run.isRunning():
-					self.log ("Job #%-3s is already running, skip submitting." % run.job.index, 'submit')
-				else:
-					run.submit()
-				run.wait() 
-				run.finish()
-				q.task_done()
+				try:
+					if run.isRunning():
+						self.log ("Job #%-3s is already running, skip submitting." % run.job.index, 'submit')
+					else:
+						run.submit()
+					run.wait() 
+					run.finish()
+				except:
+					raise
+				finally:
+					q.task_done()
 		
 		runner    = proc.RUNNERS[self.runner]
 		maxsubmit = self.forks
@@ -816,20 +820,23 @@ class proc (object):
 		threads       = []
 		nojobs2submit = min (self.forks, len(self.ncjobids))
 		for i in range (nojobs2submit):
-			t = threading.Thread(target = sworker, args = (sq, ))
+			t = utils.exThread(target = sworker, args = (sq, ))
 			t.daemon = True
 			t.start ()
 			threads.append (t)
-		
-		sq.join()
-		
-		for i in range(nojobs2submit):
-			sq.put (None)
-		for thr in threads:
-			thr.join()
-		
-		# make sure only one thread left
-		self.log('Active thread(s): %s' % str(threading.activeCount()), 'debug')
+			
+		try:
+			sq.join()
+		except:
+			raise
+		finally:
+			for i in range(nojobs2submit):
+				sq.put (None)
+			for thr in threads:
+				thr.join()
+			
+			# make sure only one thread left
+			self.log('Active thread(s): %s' % str(threading.activeCount()), 'debug')
 
 	@staticmethod
 	def registerRunner (runner):
