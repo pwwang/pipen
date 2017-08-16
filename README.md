@@ -1,4 +1,7 @@
 # pyppl - A python lightweight pipeline framework
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a04aac445f384a8dbe47da19c779763f)](https://www.codacy.com/app/pwwang/pyppl?utm_source=github.com&utm_medium=referral&utm_content=pwwang/pyppl&utm_campaign=badger)
+
 ![Pypi][22] ![Github][23] ![Gitbook][21]   
 
 [Documentation][1] | [API][2] | [Change log][19] | [FAQ][26] | [Fork me][3]
