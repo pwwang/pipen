@@ -65,6 +65,14 @@ class TestUtils (unittest.TestCase):
 			("{{import math | a | math.log}}", "1.0", {"a":__import__('math').e}),
 			("{{from math import ceil | a | ceil}}", "9.0", {"a":8.8}),
 			("{{ from math import ceil; from math import floor | v | lambda x: floor(ceil(x+.5)+.5) | int}}", "10", {"v":8.8}),
+			("{{ v | R}}", '"a"', {"v":'a'}),
+			("{{ v | R}}", '"TRUE"', {"v":'True'}),
+			("{{ v | R}}", '"TRUE"', {"v":'true'}),
+			("{{ v | R}}", '1.2', {"v":'1.2'}),
+			("{{ v | R}}", 'NA', {"v":'na'}),
+			("{{ v | R}}", 'NULL', {"v":'null'}),
+			("{{ v | Rvec}}", 'c(NA,NULL,"1",TRUE,0)', {"v":['na', 'null', '1', True, 0]}),
+			("{{ v | Rlist}}", 'list(a=NA,b=NULL,c="1",d=TRUE,e=0)', {"v":{'a': 'na', 'b': 'null', 'c':'1', 'd':True, 'e':0}}),
 		]
 		for d in data[-1:]:
 			self.assertEqual (utils.format(d[0], d[2]), d[1])

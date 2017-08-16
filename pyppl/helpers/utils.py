@@ -2,6 +2,8 @@
 A set of utitities for pyppl
 """
 
+from .doct import doct
+
 try:
 	basestring = basestring
 except NameError:
@@ -224,7 +226,8 @@ def format (tpl, args):
 				expstr = '%s(%s)' % (func, val2replace)
 			
 			try:
-				value  = eval (expstr, locals())	
+				globals().update(locals())
+				value  = eval (expstr, globals())	
 			except:
 				stderr.write("Failed to evaluate: %s\n" % expstr)
 				stderr.write("- Key/Func:   %s\n" % func)
@@ -236,10 +239,25 @@ def format (tpl, args):
 
 		s     = s.replace (n, str(value))
 	return s
+	
+format.helpers = doct({
+	'py2r': lambda x: 'TRUE' if (isinstance(x, basestring) and str(x).upper() == 'TRUE') or (isinstance(x, bool) and x) \
+		else 'FALSE' if (isinstance(x, basestring) and str(x).upper() == 'FALSE') or (isinstance(x, bool) and not x) \
+		else 'NA'    if isinstance(x, basestring) and str(x).upper() == 'NA'    \
+		else 'NULL'  if isinstance(x, basestring) and str(x).upper() == 'NULL'  \
+		else str(x)  if isinstance(x, int) or isinstance(x, float) \
+		else str(x)[2:] if isinstance(x, basestring) and (x.startswith('r:') or x.startswith('R:'))  \
+		else '"' + str(x) + '"' if isinstance(x, basestring) else str(x),
+})
 
 format.shorts = {
+	'R':         "lambda x: format.helpers.py2r(x)",
 	# convert python bool to R bool
 	'Rbool':     "lambda x: str(bool(x)).upper()",
+	# require list
+	'Rvec':      "lambda x: 'c(' + ','.join([format.helpers.py2r(e) for e in x]) + ')'",
+	# require dict
+	'Rlist':     "lambda x: 'list(' + ','.join([k + '=' + format.helpers.py2r(x[k]) for k in sorted(x.keys())]) + ')'",
 	'realpath':  "lambda x, os = __import__('os'): os.path.realpath (x)",
 	'readlink':  "lambda x, os = __import__('os'): os.readlink (x)",
 	'dirname':   "lambda x, os = __import__('os'): os.path.dirname (x)",
