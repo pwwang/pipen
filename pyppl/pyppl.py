@@ -82,6 +82,46 @@ class pyppl (object):
 			
 		self.config = config
 		self.heads  = []
+		
+	@staticmethod
+	def _any2procs (arg):
+		"""
+		Get procs from anything (aggr.starts, proc, procs, proc names)
+		@params:
+			`arg`: anything
+		@returns:
+			A set of procs
+		"""
+		procs = [a for a in arg if not isinstance(a, list)]
+		for a in arg:
+			if isinstance(a, list): 
+				procs += a
+		
+		ret = []
+		for pany in set(procs):
+			if isinstance(pany, proc):
+				if not pany in ret:
+					ret.append(pany)
+			elif isinstance(pany, aggr):
+				for p in pany.starts:
+					if not p in ret:
+						ret.append(p)
+			else:
+				found = False
+				for p in proc.PROCS:
+					if p in ret:
+						found = True
+						continue
+					if p.id == pany:
+						found = True
+						ret.append(p)
+					elif p.id + '.' + p.tag == pany:
+						found = True
+						ret.append(p)
+				if not found:
+					raise Exception('Cannot find any process associates with "%s"' % str(pany))
+		return ret
+			
 
 	def starts (self, *arg):
 		"""
@@ -91,19 +131,59 @@ class pyppl (object):
 		@returns:
 			The pipeline object itself.
 		"""
-		for pa in arg:
-			if isinstance(pa, proc):
-				if pa in self.heads:
-					raise ValueError('Proc %s already added.', pa._name(False))
-				self.heads.append(pa)
-			elif isinstance(pa, aggr):
-				for p in pa.starts:
-					if p in self.heads:
-						raise ValueError('Proc %s already added.', p._name(False))
-					self.heads.append(p)
-			else:
-				raise ValueError('An "proc" or "aggr" instance required.')
+		self.heads = pyppl._any2procs(arg)
 		return self
+	
+	def start (self, *arg):
+		"""
+		Alias of starts
+		"""
+		self.starts(*arg)
+		return self
+	
+	def _alldepends (self, p):
+		"""
+		Find all dependents of a process
+		Must call after start being called
+		@params 
+			`p`: The process
+		@returns:
+			A set of processes that this process depends on
+		"""
+		ret = []
+		if p in self.heads: 
+			return ret
+		for dp in p.depends:
+			ret.append(dp)
+			ret += self._alldepends(dp)
+		return list(set(ret))
+		
+	def resume (self, *arg):
+		"""
+		Mark processes as to be resumed
+		@params:
+			`args`: the processes to be marked
+		@returns:
+			The pipeline object itself.
+		"""
+		resuming_procs = pyppl._any2procs(arg)
+		ps2skip = []
+		for rp in resuming_procs:
+			rp.props['resume'] = True
+			ps2skip += self._alldepends(rp)
+		ps2skip = set(ps2skip)
+		
+		ovlap  = list(ps2skip & set(resuming_procs))
+		if ovlap:
+			logger.logger.info ('[WARNING] processes marked for resuming will be skipped, as a resuming process depends on them.')
+			logger.logger.info ('[WARNING] They are: %s' % [ol._name() for ol in ovlap])
+		del ovlap
+		
+		for p2s in ps2skip:
+			p2s.props['resume'] = 'skip'			
+
+		return self
+		
 	
 	def run (self, profile = 'local'):
 		"""
@@ -132,16 +212,43 @@ class pyppl (object):
 		
 		while next2run:
 			next2run2 = []
-			for p in next2run:
+			for p in sorted(next2run, key = lambda x: x._name()):
 				p.run (config)
 				finished.append (p)
 				next2run2 += p.props['nexts']
-			next2run2 = list(set(next2run2))
 			# next procs to run must be not finished and all their depends are finished
-			next2run = sorted([n for n in next2run2 if n not in finished and all(x in finished for x in n.depends)], key = lambda x: x._name())
+			next2run = [n for n in set(next2run2) if n not in finished and all(x in finished for x in n.depends)]
+			
 		logger.logger.info ('[   DONE] Total time: %s' % utils.formatTime (time()-timer))
 		return self
-
+		
+	
+	def _node (self, p):
+		"""
+		Give dot expression of a node of a process
+		"""
+		# default attributes
+		attrs = {
+			'shape':     'box',
+			'style':     'rounded,filled',
+			'fillcolor': '#ffffff',
+			'color':     '#000000',
+			'fontcolor': '#000000',
+		}
+		if p in self.heads:
+			attrs['style']         = 'filled'
+			attrs['color']         = '#259229'
+		elif not p.nexts:
+			attrs['style']         = 'filled'
+			attrs['color']         = '#d63125'
+		if p.exdir:
+			attrs['fontcolor']     = '#c71be4'
+		if p.resume == 'skip':
+			attrs['fillcolor']     = '#eaeaea'
+		elif p.resume == True:
+			attrs['fillcolor']     = '#b9ffcd'
+		
+		return '"%s" [%s]' % (p._name(), ' '.join(['%s="%s"' % (k,v) for k,v in attrs.items()]))
 	
 	def flowchart (self, dotfile = None, fcfile = None, dot = "dot -Tsvg {{dotfile}} > {{fcfile}}"):
 		"""
@@ -154,31 +261,29 @@ class pyppl (object):
 		@returns:
 			The pipeline object itself.
 		"""
-		ret  = "digraph PyPPL {\n"
+		ret  = 'digraph PyPPL {\n'
+			
 		next2run = self.heads 
 		finished = []
-		shapes = {}
-		for p in next2run:
-			shapes[p._name()] = '[shape=box, style=filled, color="#c9fcb3" %s]' % ("fontcolor=red" if p.exportdir else "")
 		while next2run:
 			next2run2 = []
 			for p in next2run:
-				finished.append (p)
-				if p.exportdir and not p._name() in shapes:
-					shapes[p._name()] = '[shape=box, style=filled, color="#f0f998", fontcolor=red]'
-				for n in p.props['nexts']:
-					ret += '	"%s" -> "%s"\n' % (p._name(), n._name())
-					if not n.props['nexts']:
-						shapes[n._name()] = '[shape=box, style=filled, color="#fcc9b3" %s]' % ("fontcolor=red" if n.exportdir else "")
-				next2run2 += p.props['nexts']
-			next2run = [n for n in list(set(next2run2)) if n not in finished and all(x in finished for x in n.props['depends'])]
-		for node, shape in shapes.items():
-			ret += '	"%s" %s\n' % (node, shape)
+				if p not in finished:
+					finished.append (p)
+				ret += '	"%s" -> {%s}\n' % (p._name(), ' '.join(['"%s"' % n._name() for n in p.nexts]))
+				next2run2 = set(next2run2) | set(p.nexts)
+			next2run = [n for n in next2run2 if n not in finished and all(x in finished for x in n.depends)]
+		
+		for node in finished:
+			ret += '	%s\n' % (self._node(node))
 		ret += '}\n'
+		
 		if dotfile is None: dotfile = os.path.splitext(sys.argv[0])[0] + ".pyppl.dot"
 		if fcfile  is None: fcfile  = os.path.splitext(sys.argv[0])[0] + ".pyppl.svg"
+		
 		with open (dotfile, "w") as f:
 			f.write (ret)
+			
 		logger.logger.info ('[   INFO] DOT file saved to: %s' % dotfile)
 		try:
 			dotcmd = utils.format (dot, {"dotfile": dotfile, "fcfile":fcfile})
@@ -186,5 +291,5 @@ class pyppl (object):
 			logger.logger.info ('[   INFO] Flowchart file saved to: %s' % fcfile)
 		except Exception as ex:
 			logger.logger.info ('[  ERROR] %s' % ex)
-			logger.logger.info ('[  ERROR] Skipped to generate flowchart to: %s' % fcfile)
+			logger.logger.info ('[   INFO] Skipped to generate flowchart to: %s' % fcfile)
 		return self

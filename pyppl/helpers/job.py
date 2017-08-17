@@ -773,7 +773,7 @@ class job (object):
 		"""
 		if not path.exists (self.outdir):
 			makedirs (self.outdir)
-			
+		
 		output = self.proc.output
 		if not output:
 			return

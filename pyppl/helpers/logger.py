@@ -35,7 +35,7 @@ themes = {
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.green,
 		'has:ERR' : colors.red,
 		'in:WARNING,RETRY' : colors.bold + colors.yellow,
-		'in:CACHED,RUNNING': colors.yellow,
+		'in:CACHED,RUNNING,SKIPPED,RESUMED': colors.yellow,
 		''        : colors.white
 	},
 	'blueOnBlack':  {
@@ -45,7 +45,7 @@ themes = {
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.blue,
 		'has:ERR' : colors.red,
 		'in:WARNING,RETRY' : colors.bold + colors.yellow,
-		'in:CACHED,RUNNING': colors.yellow,
+		'in:CACHED,RUNNING,SKIPPED,RESUMED': colors.yellow,
 		''        : colors.white
 	},
 	'magentaOnBlack':  {
@@ -55,7 +55,7 @@ themes = {
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.magenta,
 		'has:ERR' : colors.red,
 		'WARNING' : colors.bold + colors.yellow,
-		'in:CACHED,RUNNING': colors.yellow,
+		'in:CACHED,RUNNING,SKIPPED,RESUMED': colors.yellow,
 		''        : colors.white
 	},
 	'greenOnWhite': {
@@ -65,7 +65,7 @@ themes = {
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.green,
 		'has:ERR' : colors.red,
 		'in:WARNING,RETRY' : colors.bold + colors.yellow,
-		'in:CACHED,RUNNING': colors.yellow,
+		'in:CACHED,RUNNING,SKIPPED,RESUMED': colors.yellow,
 		''        : colors.black
 	},
 	'blueOnWhite':  {
@@ -75,7 +75,7 @@ themes = {
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.blue,
 		'has:ERR' : colors.red,
 		'in:WARNING,RETRY' : colors.bold + colors.yellow,
-		'in:CACHED,RUNNING': colors.yellow,
+		'in:CACHED,RUNNING,SKIPPED,RESUMED': colors.yellow,
 		''        : colors.black
 	},
 	'magentaOnWhite':  {
@@ -85,7 +85,7 @@ themes = {
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.magenta,
 		'has:ERR' : colors.red,
 		'in:WARNING,RETRY' : colors.bold + colors.yellow,
-		'in:CACHED,RUNNING': colors.yellow,
+		'in:CACHED,RUNNING,SKIPPED,RESUMED': colors.yellow,
 		''        : colors.black
 	}
 }
@@ -97,7 +97,7 @@ levels = {
 	'nodebug': ['INPUT', 'OUTPUT', 'BRINGS', 'SUBMIT', 'P.ARGS', 'P.PROPS', 'JOBDONE']
 }
 
-levels_always = ['>>>>>>>', 'DEPENDS', 'STDOUT', 'STDERR', 'ERROR', 'INFO', 'DONE', 'RUNNING', 'CACHED', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'RETRY']
+levels_always = ['>>>>>>>', 'SKIPPED', 'RESUMED', 'DEPENDS', 'STDOUT', 'STDERR', 'ERROR', 'INFO', 'DONE', 'RUNNING', 'CACHED', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'RETRY']
 
 def _getLevel (record):
 	"""

@@ -39,7 +39,7 @@ class proc (object):
 	"""
 
 	RUNNERS      = {}
-	PROCS        = {}
+	PROCS        = []
 	ALIAS        = {
 		'exdir':   'exportdir',
 		'exhow':   'exporthow',
@@ -189,6 +189,8 @@ class proc (object):
 		self.props['tag']        = tag
 		# the description
 		self.props['desc']       = self.config['desc']
+		# resume the process
+		self.props['resume']     = False
 
 		# the cachefile, cache file will be in <tmpdir>/<cachefile>
 		#self.props['cachefile']  = 'cached.jobs'
@@ -233,10 +235,15 @@ class proc (object):
 		self.props['callback']   = self.config['callback']
 		self.props['brings']     = self.config['brings']
 		self.props['suffix']     = ''
+		
 		self.props['lognline']   = {key:0 for key in proc.LOG_NLINE.keys()}
 		self.props['lognline']['prevlog'] = ''
+		self.props['logswitch']  = True
+		
 		self.props['expect']     = self.config['expect']
 		self.props['expart']     = self.config['expart']
+		
+		proc.PROCS.append(self)
 		
 
 	def __getattr__ (self, name):
@@ -286,6 +293,9 @@ class proc (object):
 			self.props[name]  = self.config[name]
 		else:
 			self.props[name] = value
+			
+	def __repr__(self):
+		return '<proc(%s) at %s>' % (self._name(), hex(id(self)))
 		
 	def log (self, msg, level="info", key = ''):
 		"""
@@ -295,6 +305,9 @@ class proc (object):
 			`level`: The log level
 			`key`:   The type of messages
 		"""
+		if not self.logswitch:
+			return
+		
 		level  = "[%s]" % level
 		name   = self._name()
 		
@@ -343,6 +356,7 @@ class proc (object):
 		props['procvars']  = {}
 		props['channel']   = channel.create()
 		props['depends']   = []
+		props['resume']    = False
 		props['nexts']     = []
 		props['jobs']      = []
 		props['ncjobids']  = []
@@ -363,7 +377,7 @@ class proc (object):
 		if self.suffix:
 			return self.suffix
 		
-		config        = { key:val for key, val in self.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'expect', 'callback', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry'] and not key.endswith ('Runner') }
+		config        = { key:val for key, val in self.config.items() if key not in ['desc', 'workdir', 'forks', 'cache', 'retcodes', 'expect', 'callback', 'echo', 'runner', 'exportdir', 'exporthow', 'exportow', 'errorhow', 'errorntry', 'resume'] and not key.endswith ('Runner') }
 		config['id']  = self.id
 		config['tag'] = self.tag
 		
@@ -411,6 +425,12 @@ class proc (object):
 		self._buildProcVars ()
 		self._saveSettings()
 		self._buildJobs ()
+		
+	def _tidyBeforeRunResume (self):
+		self._buildProps ()
+		self._buildInputResume()
+		self._buildProcVars ()
+		self._buildJobs ()
 
 	def _tidyAfterRun (self):
 		"""
@@ -437,6 +457,22 @@ class proc (object):
 		aggrName  = "@%s" % self.aggr if self.aggr and incAggr else ""
 		tag   = ".%s" % self.tag  if self.tag != "notag" else ""
 		return "%s%s%s" % (self.id, tag, aggrName)
+		
+	def _run (self):
+		"""
+		Run the process.
+		"""
+		timer = time()
+		self._runCmd('beforeCmd')
+		if not self._checkCached():
+			self.log (self.workdir, 'RUNNING')
+		else:
+			self.log (self.workdir, 'CACHED')
+		self._runJobs()
+		self._runCmd('afterCmd')
+		self._tidyAfterRun ()
+		self.log ('Done (time: %s).' % utils.formatTime(time() - timer), 'info')
+		
 
 	def run (self, config = None):
 		"""
@@ -444,8 +480,6 @@ class proc (object):
 		@params:
 			`config`: The configuration
 		"""
-		
-		timer = time()
 		if config is None:
 			config = {}
 		
@@ -457,17 +491,18 @@ class proc (object):
 			[p._name() for p in self.nexts] if self.nexts else "END"
 		), "depends")
 		self._readConfig (config)
-		self._tidyBeforeRun ()
-		self._runCmd('beforeCmd')
-		if not self._checkCached():
-			self.log (self.workdir, 'RUNNING')
+		
+		if self.resume == 'skip':
+			self.log ("Marked to be skipped, pipeline will resume from future processes.", 'skipped')
+			self.props['logswitch'] = False
+			self._tidyBeforeRunResume()
+		elif self.resume:
+			self.log ("Resumed, previous processes skipped.", 'resumed')
+			self._tidyBeforeRunResume()
+			self._run()
 		else:
-			self.log (self.workdir, 'CACHED')
-		self._runJobs()
-		self._runCmd('afterCmd')
-		self._tidyAfterRun ()
-		self.log ('Done (time: %s).' % utils.formatTime(time() - timer), 'info')
-
+			self._tidyBeforeRun ()
+			self._run()
 				
 	def _buildProps (self):
 		"""
@@ -480,13 +515,20 @@ class proc (object):
 		if isinstance (self.retcodes, str):
 			self.props['retcodes'] = [int(i) for i in self.retcodes.split(',')]
 
-		key = self._name(False)
+		pcount = sum([1 for p in proc.PROCS if p._name(False) == self._name(False)])
+		if pcount > 1:
+			raise Exception ('A proc with id "%s" and tag "%s" already exists.' % (self.id, self.tag))
+		'''
 		if key in proc.PROCS and proc.PROCS[key] != self:
 			raise Exception ('A proc with id "%s" and tag "%s" already exists.' % (self.id, self.tag))
 		proc.PROCS[key] = self
+		'''
 		
 		if not 'workdir' in self.sets and not self.workdir:
 			self.props['workdir'] = os.path.join(self.ppldir, "PyPPL.%s.%s.%s" % (self.id, self.tag, self._suffix()))
+		
+		if self.resume and not os.path.exists(self.workdir):
+			raise Exception('Cannot resume, as workdir not exists: %s' % self.workdir)
 		
 		if not os.path.exists (self.workdir): 
 			os.makedirs (self.workdir)	
@@ -530,7 +572,7 @@ class proc (object):
 	def _saveSettings (self):
 		"""
 		Save all settings in proc.settings, mostly for debug
-		"""
+		"""			
 		settingsfile = os.path.join(self.workdir, 'proc.settings')
 		with open(settingsfile, 'w') as f:
 			for key in sorted(self.props.keys()):
@@ -544,7 +586,7 @@ class proc (object):
 						for k in sorted(val.keys()):
 							v = val[k]
 							if callable(v):
-								f.write (k + ': ' + utils.funcsig(v) + '\n')
+								f.write (k + ': ' + json.dumps(utils.funcsig(v)) + '\n')
 							else:
 								f.write (k + ': ' + str(v) + '\n')
 				elif key in ['depends', 'nexts']:
@@ -554,7 +596,7 @@ class proc (object):
 					pass
 				elif key in ['callfront', 'callback']:
 					f.write('\n['+ key +']\n')
-					f.write('func: ' + utils.funcsig(val) + '\n')
+					f.write('func: ' + json.dumps(utils.funcsig(val)) + '\n')
 				elif key == 'indata':
 					f.write('\n['+ key +']\n')
 					for k in sorted(val.keys()):
@@ -582,7 +624,39 @@ class proc (object):
 					
 		self.log ('Settings saved to: %s' % settingsfile, 'debug')
 					
-				
+	
+	def _buildInputResume(self):
+		psfile = os.path.join(self.workdir, 'proc.settings')
+		if not os.path.exists(psfile):
+			raise('Cannot resume, as proc.settings not exists: %s' % psfile)
+		try:
+			from ConfigParser import ConfigParser
+		except ImportError:
+			from configparser import ConfigParser	
+		cp = ConfigParser()
+		cp.optionxform = str
+		cp.read(psfile)
+		self.props['length'] = int(cp.get('length', 'value'))
+		
+		indata = OrderedDict(cp.items('indata'))
+		inname = ''
+		intype = ''
+		for key in indata.keys():
+			if key.endswith('.type'):
+				intype = indata[key]
+				inname = key[:-5]
+				self.props['indata'][inname] = {
+					'type': intype,
+					'data': []
+				}
+			elif key.startswith(inname + '.data#'):
+				if intype in proc.IN_FILESTYPE:
+					data = map(json.loads, list(filter(None, indata[key].split("\n"))))
+				else:
+					data = json.loads(indata[key].strip())
+				self.props['indata'][inname]['data'].append(data)
+		self.props['jobs'] = [None] * self.length
+	
 	def _buildInput (self):
 		"""
 		Build the input data
@@ -593,7 +667,6 @@ class proc (object):
 		   or    {"input:var, input:file" : channel3}
 		for 1,2 channels will be the combined channel from dependents, if there is not dependents, it will be sys.argv[1:]
 		"""
-
 		indata    = self.config['input']
 		if not isinstance (indata, dict):
 			indata = ','.join(utils.alwaysList (indata))			

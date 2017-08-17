@@ -17,6 +17,31 @@ Constructor
 `config`: the configurations for the pipeline, default: {}  
 `cfile`:  the configuration file for the pipeline, default: `~/.pyppl.json`  
   
+#### `_alldepends (self, p) `
+  
+Find all dependents of a process  
+Must call after start being called  
+
+- **params**  
+`p`: The process  
+
+- **returns:**  
+A set of processes that this process depends on  
+  
+#### `_any2procs (arg) [@staticmethod]`
+  
+Get procs from anything (aggr.starts, proc, procs, proc names)  
+
+- **params:**  
+`arg`: anything  
+
+- **returns:**  
+A set of procs  
+  
+#### `_node (self, p) `
+  
+Give dot expression of a node of a process  
+  
 #### `flowchart (self, dotfile, fcfile, dot) `
   
 Generate graph in dot language and visualize it.  
@@ -30,6 +55,16 @@ Generate graph in dot language and visualize it.
 - **returns:**  
 The pipeline object itself.  
   
+#### `resume (self, *arg) `
+  
+Mark processes as to be resumed  
+
+- **params:**  
+`args`: the processes to be marked  
+
+- **returns:**  
+The pipeline object itself.  
+  
 #### `run (self, profile) `
   
 Run the pipeline  
@@ -39,6 +74,10 @@ Run the pipeline
 
 - **returns:**  
 The pipeline object itself.  
+  
+#### `start (self, *arg) `
+  
+Alias of starts  
   
 #### `starts (self, *arg) `
   
@@ -515,6 +554,8 @@ Input could be:
 or    {"input:var, input:file" : channel3}  
 for 1,2 channels will be the combined channel from dependents, if there is not dependents, it will be sys.argv[1:]  
   
+#### `_buildInputResume (self) `
+  
 #### `_buildJobs (self) `
   
 #### `_buildProcVars (self) `
@@ -545,6 +586,10 @@ Read the configuration
 
 - **params:**  
 `config`: The configuration  
+  
+#### `_run (self) `
+  
+Run the process.  
   
 #### `_runCmd (self, key) `
   
@@ -578,6 +623,8 @@ Do some cleaning after running jobs
 #### `_tidyBeforeRun (self) `
   
 Do some preparation before running jobs  
+  
+#### `_tidyBeforeRunResume (self) `
   
 #### `copy (self, tag, newid, desc) `
   
@@ -680,6 +727,33 @@ Should be the max mtime of all files in it.
 - **returns:**  
 The mtime.  
   
+#### `class: doct`
+```
+Extend dict so you can use dot (".") to access keys.
+	Refer to 
+	Examples:
+	```python
+	m = Map({'first_name': 'Eduardo'}, last_name='Pool', age=24, sports=['Soccer'])
+	# Add new key
+	m.new_key = 'Hello world!'
+	# Or
+	m['new_key'] = 'Hello world!'
+	print m.new_key
+	print m['new_key']
+	# Update values
+	m.new_key = 'Yay!'
+	# Or
+	m['new_key'] = 'Yay!'
+	# Delete key
+	del m.new_key
+	# Or
+	del m['new_key']
+	```
+```
+#### `class: exThread`
+```
+
+```
 #### `filesig (fn) `
   
 Calculate a signature for a file according to its path and mtime  
