@@ -4,8 +4,8 @@ proc module for pyppl
 import copy as pycopy
 import os
 import sys
-import threading
 import json
+import multiprocessing
 from random import randint
 from subprocess import PIPE, Popen
 from time import sleep, time
@@ -528,7 +528,7 @@ class proc (object):
 			self.props['workdir'] = os.path.join(self.ppldir, "PyPPL.%s.%s.%s" % (self.id, self.tag, self._suffix()))
 		
 		if self.resume and not os.path.exists(self.workdir):
-			raise Exception('Cannot resume, as workdir not exists: %s' % self.workdir)
+			raise Exception('Cannot resume/skip, as workdir not exists: %s' % self.workdir)
 		
 		if not os.path.exists (self.workdir): 
 			os.makedirs (self.workdir)	
@@ -628,7 +628,7 @@ class proc (object):
 	def _buildInputResume(self):
 		psfile = os.path.join(self.workdir, 'proc.settings')
 		if not os.path.exists(psfile):
-			raise('Cannot resume, as proc.settings not exists: %s' % psfile)
+			raise('Cannot resume/skip, as proc.settings not exists: %s' % psfile)
 		try:
 			from ConfigParser import ConfigParser
 		except ImportError:
@@ -840,37 +840,11 @@ class proc (object):
 		if rc != 0:
 			raise Exception ('Failed to run %s: \n----------------------------------\n%s' % (key, cmd))
 		return rc
-
+	
 	def _runJobs (self):
 		"""
 		Submit and run the jobs
 		"""
-		# submit jobs
-		def sworker (q):
-			"""
-			The worker to run jobs
-			"""
-			while True:
-				data = q.get()
-				
-				if data is None:
-					break
-					
-				(run, i) = data
-				sleep (i)	
-				#if hasattr(run, 'checkRunning') and run.checkRunning and run.isRunning():
-				# anyway check whether the job is running before submit it
-				try:
-					if run.isRunning():
-						self.log ("Job #%-3s is already running, skip submitting." % run.job.index, 'submit')
-					else:
-						run.submit()
-					run.wait() 
-					run.finish()
-				except:
-					raise
-				finally:
-					q.task_done()
 		
 		runner    = proc.RUNNERS[self.runner]
 		maxsubmit = self.forks
@@ -879,37 +853,48 @@ class proc (object):
 		interval  = .1
 		if hasattr(runner, 'interval'): 
 			interval = runner.interval
+			
+		def _worker(q):
+			"""
+			The worker to run jobs with multiprocessing
+			@params:
+				`q`: The multiprocessing.JoinableQueue
+			"""
+			while True:
+				if q.empty(): break
+				try:
+					index = q.get()
+				except:
+					break
+				if index is None: break
+					
+				r = runner(self.jobs[index])
+				sleep (int(index/maxsubmit) * interval)	
+				#if hasattr(run, 'checkRunning') and run.checkRunning and run.isRunning():
+				# anyway check whether the job is running before submit it
+				if r.isRunning():
+					self.log ("Job #%-3s is already running, skip submitting." % index, 'submit')
+				else:
+					r.submit()
+				r.wait() 
+				r.finish()
+				q.task_done()
 		
-		sq = Queue()
+		sq = multiprocessing.JoinableQueue()
 		for i, job in enumerate(self.jobs):
 			if i in self.ncjobids:
-				rjob = runner (job)
-				tm = int(i/maxsubmit) * interval
-				sq.put ((rjob, tm))
+				sq.put(i)
 			else:
 				job.done()
 
 		# submit jobs
-		threads       = []
 		nojobs2submit = min (self.forks, len(self.ncjobids))
 		for i in range (nojobs2submit):
-			t = utils.exThread(target = sworker, args = (sq, ))
+			t = multiprocessing.Process(target = _worker, args = (sq, ))
 			t.daemon = True
 			t.start ()
-			threads.append (t)
-			
-		try:
-			sq.join()
-		except:
-			raise
-		finally:
-			for i in range(nojobs2submit):
-				sq.put (None)
-			for thr in threads:
-				thr.join()
-			
-			# make sure only one thread left
-			self.log('Active thread(s): %s' % str(threading.activeCount()), 'debug')
+		
+		sq.join()
 
 	@staticmethod
 	def registerRunner (runner):

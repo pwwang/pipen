@@ -750,10 +750,6 @@ Extend dict so you can use dot (".") to access keys.
 	del m['new_key']
 	```
 ```
-#### `class: exThread`
-```
-
-```
 #### `filesig (fn) `
   
 Calculate a signature for a file according to its path and mtime  

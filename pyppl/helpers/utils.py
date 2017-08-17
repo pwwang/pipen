@@ -13,24 +13,6 @@ try:
 	reduce = reduce
 except NameError:
 	from functools import reduce
-	
-import threading
-class exThread (threading.Thread):
-	
-	def __init__(self, *args, **kwargs):
-		threading.Thread.__init__(self, *args, **kwargs)
-		self.ex = None
-	
-	def run (self):
-		try:
-			threading.Thread.run(self)
-		except Exception as ex:
-			self.ex = ex
-	
-	def join (self):
-		threading.Thread.join(self)  
-		if self.ex:
-			raise self.ex
 
 def varname (func, maxline = 20):
 	"""

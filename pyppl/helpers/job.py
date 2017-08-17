@@ -8,7 +8,7 @@ from glob import glob
 from os import makedirs, path, remove, symlink, utime, readlink, listdir
 from shutil import copyfile, copytree, move, rmtree
 from subprocess import Popen, PIPE
-from threading import Lock
+from multiprocessing import Lock
 from . import utils, logger
 
 lock = Lock()
