@@ -195,7 +195,7 @@ def format (tpl, args):
 		value = args[key]
 		while parts:
 			func = parts.pop(0).strip()
-			val2replace = ("'%s'" % value) if isinstance(value, basestring) else ("%s" % value)
+			val2replace = ("'''%s'''" % value) if isinstance(value, basestring) else ("%s" % value)
 			#func = re.sub(r"(?<=\(|\s|,)_(?=\)|,|\s)", val2replace, func, 1)
 			
 			if func.startswith(".") or func.startswith("["):
