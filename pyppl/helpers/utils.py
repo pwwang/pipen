@@ -229,7 +229,10 @@ format.helpers = doct({
 		else 'NULL'  if isinstance(x, basestring) and str(x).upper() == 'NULL'  \
 		else str(x)  if isinstance(x, int) or isinstance(x, float) \
 		else str(x)[2:] if isinstance(x, basestring) and (x.startswith('r:') or x.startswith('R:'))  \
-		else '"' + str(x) + '"' if isinstance(x, basestring) else str(x),
+		else '"' + str(x) + '"' if isinstance(x, basestring) \
+		else 'c(%s)' % (', '.join([format.helpers.py2r(e) for e in x])) if isinstance(x, list)\
+		else 'list(%s)' % (', '.join([str(k) + '=' + format.helpers.py2r(v) for k, v in x.items()])) if isinstance(x, dict) \
+		else str(x),
 })
 
 format.shorts = {

@@ -716,26 +716,15 @@ class job (object):
 				if bring:
 					# basename of infile could be changed in indir if a file with the same basename exists
 					dstbn = path.basename (bring[0])
-					if inbn != path.basename(infile): # name changed
+					oinbn = path.basename(infile)
+					
+					if inbn != oinbn: # name changed
 						inparts     = inbn.split('.')
+						oinparts    = oinbn.split('.')
+						chgpart, ochgpart = [(inparts[i], oinparts[i]) for i in range(len(inparts)) if inparts[i] != oinparts[i]][0]
 						dstparts    = dstbn.split('.')
-						chgpos      = -1 if len(dstparts) == 1 else len(inparts) - len(dstparts) - 2
-						existBfiles = glob (path.join(self.indir, '.'.join([x+'[[]*[]]' if i==chgpos else x for x in dstparts])))
-						if not existBfiles:
-							dstparts[chgpos] += '[1]'
-						else:
-							num = 0
-							for ebfile in existBfiles:
-								if utils.isSamefile(bring[0], ebfile):
-									dstbn = path.basename(ebfile)
-									num   = 0
-									break
-								n   = int(path.basename(ebfile)[len(fn)+1 : -len(ext)-2])
-								num = max (num, n)
-								
-							if num > 0:
-								dstparts[chgpos] += '[' + str(num) + ']'
-								dstbn = '.'.join(dstparts)
+						dstparts[dstparts.index(ochgpart)] = chgpart
+						dstbn       = '.'.join(dstparts)
 					
 					dstfile = path.join (self.indir, dstbn)
 					self.data[brkey] = dstfile
@@ -809,6 +798,8 @@ class job (object):
 			
 			val = utils.format (outexp, self.data)
 			if outtype in self.proc.OUT_DIRTYPE and not path.exists(val):
+				if path.islink(val):
+					remove(val)
 				makedirs (val)
 				self.proc.log ('Output directory created: %s.' % val, 'debug', 'OUTDIR_CREATED')
 
