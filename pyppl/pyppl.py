@@ -180,10 +180,35 @@ class pyppl (object):
 		del ovlap
 		
 		for p2s in ps2skip:
-			p2s.props['resume'] = 'skip'			
+			p2s.props['resume'] = 'skip'
 
 		return self
+	
+	def resume2 (self, *arg):
+		"""
+		Mark processes as to be resumed
+		@params:
+			`args`: the processes to be marked
+		@returns:
+			The pipeline object itself.
+		"""
+		resuming_procs = pyppl._any2procs(arg)
+		ps2skip = []
+		for rp in resuming_procs:
+			rp.props['resume'] = True
+			ps2skip += self._alldepends(rp)
+		ps2skip = set(ps2skip)
 		
+		ovlap  = list(ps2skip & set(resuming_procs))
+		if ovlap:
+			logger.logger.info ('[WARNING] processes marked for resuming will be skipped, as a resuming process depends on them.')
+			logger.logger.info ('[WARNING] They are: %s' % [ol._name() for ol in ovlap])
+		del ovlap
+		
+		for p2s in ps2skip:
+			p2s.props['resume'] = 'skip+'
+
+		return self	
 	
 	def run (self, profile = 'local'):
 		"""
@@ -261,7 +286,8 @@ class pyppl (object):
 		@returns:
 			The pipeline object itself.
 		"""
-		ret  = 'digraph PyPPL {\n'
+		aggrs = {}
+		ret   = 'digraph PyPPL {\n'
 			
 		next2run = self.heads 
 		finished = []
@@ -270,12 +296,26 @@ class pyppl (object):
 			for p in next2run:
 				if p not in finished:
 					finished.append (p)
-				ret += '	"%s" -> {%s}\n' % (p._name(), ' '.join(['"%s"' % n._name() for n in p.nexts]))
+				ret += '	"%s" -> {%s}\n' % (p._name(False), ' '.join(['"%s"' % n._name(False) for n in p.nexts]))
+				if p.aggr:
+					if not p.aggr in aggrs:
+						aggrs[p.aggr] = []
+					if p._name(False) not in aggrs[p.aggr]:
+						aggrs[p.aggr].append(p._name(False))
 				next2run2 = set(next2run2) | set(p.nexts)
 			next2run = [n for n in next2run2 if n not in finished and all(x in finished for x in n.depends)]
 		
 		for node in finished:
 			ret += '	%s\n' % (self._node(node))
+		
+		for key, val in aggrs.items():
+			ret += '    subgraph cluster_%s {' % key
+			ret += '        style = filled;'
+			ret += '        color = #eeeeee;'
+			ret += '        label = "%s";' % key
+			for v in val:
+				ret += '    "%s"' % v
+			ret += '    }'
 		ret += '}\n'
 		
 		if dotfile is None: dotfile = os.path.splitext(sys.argv[0])[0] + ".pyppl.dot"

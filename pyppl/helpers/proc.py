@@ -238,7 +238,6 @@ class proc (object):
 		
 		self.props['lognline']   = {key:0 for key in proc.LOG_NLINE.keys()}
 		self.props['lognline']['prevlog'] = ''
-		self.props['logswitch']  = True
 		
 		self.props['expect']     = self.config['expect']
 		self.props['expart']     = self.config['expart']
@@ -305,9 +304,6 @@ class proc (object):
 			`level`: The log level
 			`key`:   The type of messages
 		"""
-		if not self.logswitch:
-			return
-		
 		level  = "[%s]" % level
 		name   = self._name()
 		
@@ -493,11 +489,13 @@ class proc (object):
 		self._readConfig (config)
 		
 		if self.resume == 'skip':
-			self.log ("Marked to be skipped, pipeline will resume from future processes.", 'skipped')
-			self.props['logswitch'] = False
+			self.log ("Pipeline will resume from future processes.", 'skipped')
+			self._buildProps()
+		elif self.resume == 'skip+':
+			self.log ("Data loaded, pipeline will resume from future processes.", 'skipped')
 			self._tidyBeforeRunResume()
 		elif self.resume:
-			self.log ("Resumed, previous processes skipped.", 'resumed')
+			self.log ("Previous processes skipped.", 'resumed')
 			self._tidyBeforeRunResume()
 			self._run()
 		else:
