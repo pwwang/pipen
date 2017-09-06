@@ -47,12 +47,17 @@ def varname ():
 	@returns:
 		The variable name
 	"""
-	frames   = inspect.getouterframes(inspect.currentframe())
-	frame    = frames[2][0]
-	defined  = inspect.currentframe().f_back.f_back.f_locals.keys()
-	varnames = [var for var in frame.f_code.co_varnames if var not in defined]
+	frames  = inspect.getouterframes(inspect.currentframe())[2]
+	frame   = frames[0]
+	# cannot get co_varnames from top frame 
+	# assignment has to be in one line
+	if not frame.f_code.co_varnames:
+		code = frames[4][0]
+		varnames = code.split('=') if '=' in code else []
+	else:
+		varnames = [var for var in frame.f_code.co_varnames if var not in frame.f_locals]
 	if varnames:
-		return varnames[0]
+		return varnames[0].strip()
 	else:
 		varname.index += 1
 		return 'var_%s' % (varname.index - 1) 
