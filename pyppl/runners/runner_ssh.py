@@ -2,11 +2,11 @@ import os
 from getpass import getuser
 from subprocess import check_output, list2cmdline
 
-from .runner import runner
-from ..helpers import utils
+from .runner import Runner
+from .. import utils
 
 
-class runner_ssh (runner):
+class RunnerSsh (Runner):
 	"""
 	The ssh runner
 
@@ -24,7 +24,7 @@ class runner_ssh (runner):
 			`job`:    The job object
 		"""
 		
-		super(runner_ssh, self).__init__(job)
+		super(RunnerSsh, self).__init__(job)
 		# construct an ssh cmd
 		sshfile      = self.job.script + '.ssh'
 
@@ -37,7 +37,7 @@ class runner_ssh (runner):
 		
 		servers      = conf['servers']
 
-		serverid     = runner_ssh.serverid % len (servers)
+		serverid     = RunnerSsh.serverid % len (servers)
 		self.server  = servers[serverid]
 		# TODO: check the server is alive?
 

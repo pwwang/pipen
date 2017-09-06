@@ -92,3 +92,4 @@ workdir/
 node_modules/
 _book/
 tests/first/test*.sorted
+.vscode

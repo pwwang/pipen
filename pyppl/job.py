@@ -11,28 +11,11 @@ from subprocess import Popen, PIPE
 from multiprocessing import Lock
 from . import utils, logger
 
-lock = Lock()
-class job (object):
+class Job (object):
 	
 	"""
 	Job class, defining a job in a process
-
-	@static variables:
-		`FAILED_RC`: Jobs failed to submit, no return code available
-		`EMPTY_RC`:  Rc file not generated, not is empty
-		`NOOUT_RC`:  Outfile not generated
-		`RC_MSGS`:   The messages when job failed
 	"""
-	
-	FAILED_RC = 9999
-	EMPTY_RC  = 9998
-	NOOUT_RC  = -1000
-	RC_MSGS   = {
-		9998:  "No rcfile generated or empty",
-		9999:  "Failed to submit/run the jobs",
-		-1000: "Output files not generated or expections didn't meet",
-		1:     "Script error"
-	}
 		
 	def __init__(self, index, proc):
 		"""
@@ -41,18 +24,16 @@ class job (object):
 			`index`:   The index of the job in a process
 			`proc`:    The process
 		"""
+		self.outfileOk = True
 		self.dir       = path.abspath(path.join (proc.workdir, str(index)))
 		self.indir     = path.join (self.dir, "input")
 		self.outdir    = path.join (self.dir, "output")
 		self.script    = path.join (self.dir, "job.script")
-		self.oscript   = path.join (self.dir, "job.oscript")
 		self.rcfile    = path.join (self.dir, "job.rc")
 		self.outfile   = path.join (self.dir, "job.stdout")
 		self.errfile   = path.join (self.dir, "job.stderr")
 		self.cachefile = path.join (self.dir, "job.cache")
-		self.idfile    = path.join (self.dir, "job.id")
-		#self.input   = {'var':[], 'file':[], 'files':[]} if input is None else input
-		#self.output  = {'var':[], 'file':[]} if output is None else input
+		self.pidfile   = path.join (self.dir, "job.pid")
 		self.index     = index
 		self.proc      = proc
 		self.input     = {}
@@ -60,15 +41,19 @@ class job (object):
 		self.output    = OrderedDict()
 		self.brings    = {}
 		self.data      = {
-			'#':           index,
-			'job.index':   index,
-			'job.id':      '',
-			'job.indir':   self.indir,
-			'job.outdir':  self.outdir,
-			'job.dir':     self.dir,
-			'job.outfile': self.outfile,
-			'job.errfile': self.errfile,
-			'job.idfile':  self.idfile
+			'job': {
+				'index'   : self.index,
+				'pid'     : '',
+				'indir'   : self.indir,
+				'outdir'  : self.outdir,
+				'dir'     : self.dir,
+				'outfile' : self.outfile,
+				'errfile' : self.errfile,
+				'pidfile' : self.pidfile
+			},
+			'in'   : {},
+			'out'  : {},
+			'bring': {}
 		}
 		
 	def init (self):
@@ -83,51 +68,52 @@ class job (object):
 		self._prepOutput ()
 		self._prepScript ()
 
+	def _reportList(self, key, data, loglevel):
+		if not key.startswith('_'): key = ' ' + key
+		lkey  = len(key)
+		ldata = len(data)
+		if ldata == 1:
+			self.proc.log ("[%s/%s] %s  => [%s]" % (self.index, self.proc.size - 1, key, data[0]), loglevel)
+		elif ldata == 2:
+			self.proc.log ("[%s/%s] %s  => [%s," % (self.index, self.proc.size - 1, key, data[0]), loglevel)
+			self.proc.log ("[%s/%s] %s      %s]" % (self.index, self.proc.size - 1, ' ' * lkey, data[1]), loglevel)
+		elif ldata == 3:
+			self.proc.log ("[%s/%s] %s  => [%s," % (self.index, self.proc.size - 1, key, data[0]), loglevel)
+			self.proc.log ("[%s/%s] %s      %s," % (self.index, self.proc.size - 1, ' ' * lkey, data[1]), loglevel)
+			self.proc.log ("[%s/%s] %s      %s]" % (self.index, self.proc.size - 1, ' ' * lkey, data[2]), loglevel)
+		else:
+			self.proc.log ("[%s/%s] %s  => [%s," % (self.index, self.proc.size - 1, key, data[0]), loglevel)
+			self.proc.log ("[%s/%s] %s      %s," % (self.index, self.proc.size - 1, ' ' * lkey, data[1]), loglevel)
+			self.proc.log ("[%s/%s] %s      ...," % (self.index, self.proc.size - 1, ' ' * lkey), loglevel)
+			self.proc.log ("[%s/%s] %s      %s]" % (self.index, self.proc.size - 1, ' ' * lkey, data[-1]), loglevel)
+	
+	
 	def report (self):
 		"""
 		Report the job information to logger
 		"""
 		for key in sorted(self.input.keys()):
 			if self.input[key]['type'] in self.proc.IN_FILESTYPE:
-				data1 = self.input[key]['data'][0]
-				data3 = self.input[key]['data'][1:3]
-				dataR = self.input[key]['data'][3:]
-				orig1 = self.input[key]['orig'][0]
-				orig3 = self.input[key]['orig'][1:3]
-				origR = self.input[key]['orig'][3:]
-				
-				self.proc.log ("[%s/%s] %s => %s, " % (self.index, self.proc.length - 1, key, data1), 'input')
-				for data in data3:
-					self.proc.log ("[%s/%s] %s    %s, " % (self.index, self.proc.length - 1, ' ' * len(key), data), 'input')
-				if dataR:
-					self.proc.log ("[%s/%s] %s... %s more not shown." % (self.index, self.proc.length - 1, ' ' * len(key), len(dataR)), 'input')
-					
-				self.proc.log ("[%s/%s] %s.orig => %s, " % (self.index, self.proc.length - 1, key, orig1), 'input')
-				for orig in orig3:
-					self.proc.log ("[%s/%s] %s         %s, " % (self.index, self.proc.length - 1, ' ' * len(key), orig), 'input')
-				if origR:
-					self.proc.log ("[%s/%s] %s     ... %s more not shown." % (self.index, self.proc.length - 1, ' ' * len(key), len(origR)), 'input')
+				self._reportList(key, self.input[key]['data'], 'input')
+				self._reportList('_' + key, self.input[key]['orig'], 'input')
+			elif self.input[key]['type'] in self.proc.IN_FILETYPE:
+				self.proc.log ("[%s/%s]  %s => %s" % (self.index, self.proc.size - 1, key, self.input[key]['data']), 'input')
+				self.proc.log ("[%s/%s] _%s => %s" % (self.index, self.proc.size - 1, key, self.input[key]['orig']), 'input')
 			else:
-				self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.input[key]['data']), 'input')
-				if 'orig' in self.input[key]:
-					self.proc.log ("[%s/%s] %s.orig => %s" % (self.index, self.proc.length - 1, key, self.input[key]['orig']), 'input')
-		for key in sorted(self.brings.keys()):
-			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.brings[key]), 'brings')
+				self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.size - 1, key, self.input[key]['data']), 'input')
+		for key in sorted(self.brings.keys(), key = lambda x: x[1:] if x.startswith('_') else x):
+			self._reportList(key, self.brings[key], 'brings')
 		for key in sorted(self.output.keys()):
-			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.length - 1, key, self.output[key]['data']), 'output')	
+			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.size - 1, key, self.output[key]['data']), 'output')	
 	
 	def done (self):
 		"""
 		Do some cleanup when job finished
 		"""
 		# have to touch the output directory so stat flushes and output files can be detected.
-		utime (self.dir, None)
+		self.checkOutfiles()
 		if self.succeed():
-			self.checkOutfiles()
-		if self.succeed():
-			lock.acquire()
 			self.export()
-			lock.release()
 			self.cache()	
 			self.proc.log ('Job #%s done!' % self.index, 'JOBDONE')
 			
@@ -135,21 +121,14 @@ class job (object):
 		"""
 		Show the error message if the job failed.
 		"""
-		rc = self.rc()
-		if rc in job.RC_MSGS:
-			rcmsg = job.RC_MSGS[rc]
-		elif rc < 0:
-			rcmsg = job.RC_MSGS[job.NOOUT_RC]
-		else:
-			rcmsg = job.RC_MSGS[1]
-			
-		if rc == self.NOOUT_RC: 
-			rc = "-0"
+		rc  = self.rc()
+		outfilemsg = 'generated and expectation met' if self.outfileOk else 'not generated or expectation not met'
+
+		if self.proc.errhow == 'ignore':
+			self.proc.log ('Job #%s (total %s) failed but ignored. Return code: %s, all output files: %s.' % (self.index, lenfailed, rc, outfilemsg), 'warning')
+			return
 		
-		if self.proc.errorhow == 'ignore':
-			self.proc.log ("Job #%s (total %s) failed but ignored. Return code is %s (%s)." % (self.index, lenfailed, rc, rcmsg), "warning")
-		else:
-			self.proc.log ('Job #%s (total %s) failed. Return code: %s (%s).' % (self.index, lenfailed, rc, rcmsg), 'error')
+		self.proc.log ('Job #%s (total %s) failed. Return code: %s, all output files: %s.' % (self.index, lenfailed, rc, outfilemsg), 'error')
 		
 		self.proc.log('Job #%s: Script: %s' % (self.index, self.script), 'error')
 		self.proc.log('Job #%s: Stdout: %s' % (self.index, self.outfile), 'error')
@@ -292,7 +271,7 @@ class job (object):
 		"""
 		if self.proc.cache != 'export':
 			return False
-		if self.proc.exhow in self.proc.EX_SYMLINK:
+		if self.proc.exhow in self.proc.EX_LINK:
 			self.proc.log ("Job not export-cached using symlink export.", "warning", "EXPORT_CACHE_USING_SYMLINK")
 			return False
 		if self.proc.expart:
@@ -307,8 +286,20 @@ class job (object):
 			exfile = path.join (self.proc.exdir, path.basename(out['data']))
 			
 			if self.proc.exhow in self.proc.EX_GZIP:
-				if out['type'] in self.proc.OUT_FILETYPE:
-					exfile += '.%s.gz' % self.proc._name (False)
+				if path.isdir(out['data']) or out['type'] in self.proc.OUT_DIRTYPE:
+					exfile += '.tgz'
+					if not path.exists(exfile): 
+						self.proc.log ("Job not export-cached since exported file not exists: %s." % exfile, "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
+						return False
+					
+					if path.exists (out['data']) or path.islink (out['data']):
+						self.proc.log ('Overwrite file for export-caching: %s' % out['data'], 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
+						utils.safeRemove(out['data'])
+						
+					makedirs(out['data'])
+					utils.untargz (exfile, out['data'])
+				else:
+					exfile += '.gz'
 					if not path.exists (exfile): 
 						self.proc.log ("Job not export-cached since exported file not exists: %s." % exfile, "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
 						return False
@@ -318,32 +309,17 @@ class job (object):
 						remove (out['data'])
 						
 					utils.ungz (exfile, out['data'])
-					
-				elif out['type'] in self.proc.OUT_DIRTYPE:
-					exfile += '.%s.tgz' % self.proc._name (False)
-					if not path.exists(exfile): 
-						self.proc.log ("Job not export-cached since exported file not exists: %s." % exfile, "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
-						return False
-					
-					if path.exists (out['data']) or path.islink (out['data']):
-						self.proc.log ('Overwrite file for export caching: %s' % out['data'], 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
-						if path.islink (out['data']): remove (out['data'])
-						else: rmtree (out['data'])
-						
-					makedirs(out['data'])
-					utils.untargz (exfile, out['data'])
 			else:
 				if not path.exists (exfile):
 					self.proc.log ("Job not export-cached since exported file not exists: %s." % exfile, "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
 					return False	
-				if utils.isSamefile (exfile, out['data']):
+				if utils.samefile (exfile, out['data']):
 					continue
-				if path.exists (out['data']):
+				if path.exists (out['data']) or path.islink(out['data']):
 					self.proc.log ('Overwrite file for export-caching: %s' % out['data'], 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
-					if not path.isdir (out['data']): remove (out['data'])
-					else: rmtree (out['data'])
+					utils.safeRemove(out['data'])
 					
-				symlink (path.realpath(exfile), out['data'])
+				utils.safeLink(path.realpath(exfile), out['data'])
 		
 		# Make sure no need to calculate next time
 		self.cache ()
@@ -364,11 +340,15 @@ class job (object):
 			with open (self.cachefile, 'w') as f:
 				f.write (sig if not sig else json.dumps(sig))
 			
-	def succeed (self):
+	def succeed (self, ignore = False):
 		"""
 		Tell if the job is successful by return code
+		@params:
+			`ignore`: Whether use proc.errhow. If proc.errhow == 'ignore', anyway return True.
+		@returns:
+			True if succeed else False
 		"""
-		return self.rc() in self.proc.retcodes
+		return self.rc() in self.proc.rc and self.outfileOk
 		
 	def signature (self):
 		"""
@@ -377,9 +357,9 @@ class job (object):
 			The signature of the job
 		"""
 		ret = {}
-		sig = utils.filesig (self.oscript)
+		sig = utils.filesig (self.script)
 		if not sig: 
-			self.proc.log ('Job #%s: Empty signature because of oscript file: %s.' % (self.index, self.oscript), 'debug', 'CACHE_EMPTY_CURRSIG')
+			self.proc.log ('Job #%s: Empty signature because of script file: %s.' % (self.index, self.script), 'debug', 'CACHE_EMPTY_CURRSIG')
 			return ''
 		ret['script'] = sig
 		ret['in']     = {
@@ -442,42 +422,29 @@ class job (object):
 		"""
 		if val is None:
 			if not path.exists (self.rcfile): 
-				return job.EMPTY_RC
+				return -1
 			
 			with open (self.rcfile) as f:
-				rcstr = f.read().strip()
-				if rcstr == '': 
-					return job.EMPTY_RC
-				if rcstr == '-0': 
-					return job.NOOUT_RC
-				return int (rcstr)
+				return int(f.read().strip())
 		else:
-			r = self.rc ()
-			if val == job.NOOUT_RC:
-				if r < 0 or r == job.FAILED_RC: 
-					return
-				if r > 0: 
-					val = -r
-				elif r == 0: 
-					val = "-0"
 			with open (self.rcfile, 'w') as f:
 				f.write (str(val))
 
-	def id (self, val = None):
+	def pid (self, val = None):
 		"""
 		Get/Set the job id (pid or the id from queue system)
 		@params:
 			`val`: The id to be set
 		"""
 		if val is None:
-			if not path.exists (self.idfile):
+			if not path.exists (self.pidfile):
 				return ''
-			with open(self.idfile) as f:
+			with open(self.pidfile) as f:
 				return f.read().strip()
 		else:
-			self.data['job.id'] = val
-			with open (self.idfile, 'w') as f:
-				f.write (val)
+			self.data['job']['pid'] = val
+			with open (self.pidfile, 'w') as f:
+				f.write (str(val))
 	
 	def checkOutfiles (self, expect = True):
 		"""
@@ -486,28 +453,36 @@ class job (object):
 		utime (self.outdir, None)
 		for _, out in self.output.items():
 			if out['type'] in self.proc.OUT_VARTYPE: continue
-			if not path.exists (out['data']):
-				self.rc (job.NOOUT_RC)
+			if not path.exists(out['data']):
+				self.outfileOk = False
+				self.proc.log ('Job #%-3s: outfile not generated: %s' % (self.index, out['data']), 'debug', 'OUTFILE_NOT_EXISTS')
 				return
 				
 		if self.proc.expect and expect:
-			expect = utils.format (self.proc.expect, self.data)
+			expect = self.proc.expect.render(self.data)
 			self.proc.log ('Job #%-3s: check expectation: %s' % (self.index, expect), 'debug', 'EXPECT_CHECKING')
-			p      = Popen (expect, shell=True, stdout=PIPE, stderr=PIPE)
-			exrc   = p.wait()
-			#if p:
-				#p.close()
-			if exrc != 0:
-				self.rc (job.NOOUT_RC)
-				return
-			
+			p      = utils.dumbPopen (expect, shell=True)
+			if p.wait() != 0:
+				self.outfileOk = False
+
 	def export (self):
 		"""
 		Export the output files
 		"""
-		if not self.proc.exportdir: 
+		if not self.proc.exdir: 
 			return
-		
+			
+		assert path.exists(self.proc.exdir)
+		assert isinstance(self.proc.expart, list)
+		def overwriteRemove(e, f):
+			if e:
+				self.proc.log ('Job #%-3s: overwriting: %s' % (self.index, f), 'export')
+				if not path.isdir (f): remove (f)
+				else: rmtree (f)
+			else:
+				if path.islink (f): remove (f)
+				self.proc.log ('Job #%-3s: exporting to: %s' % (self.index, f), 'export')
+			
 		files2ex = []
 		if not self.proc.expart:
 			for _, out in self.output.items():
@@ -519,71 +494,114 @@ class job (object):
 				if expart in self.output:
 					files2ex.append (self.output[expart]['data'])
 				else:
-					files2ex.extend(glob(path.join(self.outdir, expart)))
+					files2ex.extend(glob(path.join(self.outdir, expart.render(self.data))))
 		files2ex = list(set(files2ex))
-		
-		for file2ex in files2ex:
-			bname  = path.basename (file2ex)
-			exfile = path.join (self.proc.exportdir, bname)
-			
-			if self.proc.exhow in self.proc.EX_GZIP and path.isfile(file2ex):
-				exfile += '.%s.gz' % self.proc._name (False)
-			elif self.proc.exhow in self.proc.EX_GZIP and path.isdir(file2ex):
-				exfile += '.%s.tgz' % self.proc._name (False)
-			
-			# don't overwrite existing files
-			if (not self.proc.exportow and path.exists(exfile)) or utils.isSamefile(file2ex, exfile):
-				self.proc.log ('Job #%-3s: skipped (target exists): %s' % (self.index, exfile),  'export')
-				continue
-			
-			if path.exists(exfile):
-				self.proc.log ('Job #%-3s: overwriting: %s' % (self.index, exfile), 'export')
-				if not path.isdir (exfile): 
-					remove (exfile)
-				else: rmtree (exfile)
-			else:
-				if path.islink (exfile): 
-					remove (exfile)
-				self.proc.log ('Job #%-3s: exporting to: %s' % (self.index, exfile), 'export')
-			
-			if self.proc.exporthow in self.proc.EX_GZIP and path.isfile(file2ex):
-				utils.gz (exfile, file2ex)
-			elif self.proc.exporthow in self.proc.EX_GZIP and path.isdir(file2ex):
-				utils.targz (exfile, file2ex)
-			elif self.proc.exporthow in self.proc.EX_COPY and path.isfile(file2ex):
-				copyfile (file2ex, exfile)
-			elif self.proc.exporthow in self.proc.EX_COPY and path.isdir(file2ex):
-				copytree (file2ex, exfile)
-			elif self.proc.exporthow in self.proc.EX_MOVE:
-				move (file2ex, exfile)
-				# make sure dependent proc can run
-				symlink(path.abspath(exfile), file2ex)
-			elif self.proc.exporthow in self.proc.EX_SYMLINK:
-				symlink (file2ex, path.abspath(exfile))
+
+		if self.proc.exhow in self.proc.EX_MOVE:
+			# make sure file2ex exists, in case it points to the same file from all jobs
+			with Lock():
+				for file2ex in files2ex:
+					bname  = path.basename (file2ex)
+					exfile = path.join (self.proc.exdir, bname)
+					utils.safeMoveWithLink (file2ex, exfile, overwrite = self.proc.exow)
+		else:
+			for file2ex in files2ex:
+				bname  = path.basename (file2ex)
+				exfile = path.join (self.proc.exdir, bname)
 				
-	def reset (self):
+				if self.proc.exhow in self.proc.EX_GZIP:
+					exfile += ('.tgz' if path.isdir(file2ex) else '.gz')
+				
+				# don't overwrite existing files
+				if (not self.proc.exow and path.exists(exfile)) or utils.samefile(file2ex, exfile):
+					self.proc.log ('Job #%-3s: skipped (target exists): %s' % (self.index, exfile),  'export')
+					continue
+
+				utils.fileExists(exfile, overwriteRemove)
+				if self.proc.exhow in self.proc.EX_GZIP and path.isdir(file2ex):
+					utils.targz (file2ex, exfile)
+				elif self.proc.exhow in self.proc.EX_GZIP and path.isfile(file2ex):
+					utils.gz (file2ex, exfile)
+				elif self.proc.exhow in self.proc.EX_COPY:
+					utils.safeCopy (file2ex, exfile)
+				elif self.proc.exhow in self.proc.EX_LINK:
+					utils.safeLink (file2ex, path.abspath(exfile))
+				
+	def reset (self, retry = None):
 		"""
 		Clear the intermediate files and output files
 		"""
 		self.proc.log ('Resetting job #%s ...' % self.index, 'debug', 'JOB_RESETTING')
+		if retry is not None:
+			retrydir = path.join(self.dir, 'retry.' + str(retry))
+			utils.safeRemove(retrydir)
+			makedirs(retrydir)
+		else:
+			for retrydir in glob(path.join(self.dir, 'retry.*')):
+				utils.safeRemove(retrydir)
+
 		if path.exists (self.rcfile) or path.islink (self.rcfile):
-			remove(self.rcfile)
+			if retry is None:
+				remove(self.rcfile)
+			else:
+				move(self.rcfile, path.join(retrydir, path.basename(self.rcfile)))
 		if path.exists (self.outfile) or path.islink (self.outfile):
-			remove(self.outfile)
+			if retry is None:
+				remove(self.outfile)
+			else:
+				move(self.outfile, path.join(retrydir, path.basename(self.outfile)))
 		if path.exists (self.errfile) or path.islink (self.errfile):
-			remove(self.errfile)
-		if path.exists (self.idfile) or path.islink (self.idfile):
-			remove(self.idfile)
+			if retry is None:
+				remove(self.errfile)
+			else:
+				move(self.errfile, path.join(retrydir, path.basename(self.errfile)))
+		if path.exists (self.pidfile) or path.islink (self.pidfile):
+			if retry is None:
+				remove(self.pidfile)
+			else:
+				move(self.pidfile, path.join(retrydir, path.basename(self.pidfile)))
 		
 		if listdir (self.outdir):
-			rmtree  (self.outdir)	
+			if retry is None:
+				utils.safeRemove(self.outdir)	
+			else:
+				utils.safeMove(self.outdir, path.join(retrydir, path.basename(self.outdir)))
 			makedirs(self.outdir)
 			
 		for _, out in self.output.items():
-			if out['type'] not in self.proc.OUT_DIRTYPE: 
-				continue
-			makedirs (out['data'])
+			if out['type'] not in self.proc.OUT_DIRTYPE: continue
+			makedirs(out['data'])
 			self.proc.log ('Output directory created after reset: %s.' % out['data'], 'debug', 'OUTDIR_CREATED_AFTER_RESET')
+
+	def _linkInfile(self, orgfile):
+		if not path.exists(orgfile):
+			raise OSError('No such input file: %s' % orgfile)
+
+		basename = path.basename (orgfile)
+		infile   = path.join (self.indir, basename)
+		linked   = utils.safeLink(orgfile, infile, overwrite = False)
+		if linked or utils.samefile(infile, orgfile): 
+			return infile
+
+		(fn, ext) = path.splitext(basename)
+		existInfiles = glob (path.join(self.indir, fn + '[[]*[]]' + ext))
+		if not existInfiles:
+			infile = path.join (self.indir, fn + '[1]' + ext)
+			utils.safeLink(orgfile, infile)
+		else:
+			num = 0
+			for eifile in existInfiles:
+				if utils.samefile(eifile, orgfile):
+					num = 0
+					return eifile
+				n   = int(path.basename(eifile)[len(fn)+1 : -len(ext)-1])
+				num = max (num, n)
+
+			if num > 0:
+				infile = path.join (self.indir, fn + '[' + str(num+1) + ']' + ext)
+				utils.safeLink(orgfile, infile)
+		return infile
+		
 
 	def _prepInput (self):
 		"""
@@ -592,90 +610,47 @@ class job (object):
 		if not path.exists (self.indir):
 			makedirs (self.indir)
 		
-		for key, val in self.proc.indata.items():
+		for key, val in self.proc.input.items():
 			self.input[key] = {}
 			if val['type'] in self.proc.IN_FILETYPE:
-				origfile = path.abspath(val['data'][self.index])
-				basename = path.basename (origfile)
-				infile   = path.join (self.indir, basename)
-				if not path.exists (infile):
-					if path.islink (infile): 
-						remove (infile)
-					symlink (origfile, infile)
-				elif not utils.isSamefile (origfile, infile):
-					(fn, _, ext) = basename.rpartition('.')
-					existInfiles = glob (path.join(self.indir, fn + '[[]*[]].' + ext))
-					if not existInfiles:
-						infile = path.join (self.indir, fn + '[1].' + ext)
-						symlink (origfile, infile)
-					else:
-						num = 0
-						for eifile in existInfiles:
-							if utils.isSamefile (origfile, eifile):
-								infile = eifile
-								num    = 0
-								break
-							n   = int(path.basename(eifile)[len(fn)+1 : -len(ext)-2])
-							num = max (num, n)
+				orgfile = path.abspath(val['data'][self.index])
+				if not path.exists(orgfile):
+					raise OSError('No such input file: %s' % orgfile)
+
+				basename = path.basename (orgfile)
+				infile   = self._linkInfile(orgfile)
+				if basename != path.basename(infile):
+					self.proc.log ("Input file renamed: %s -> %s" % (basename, path.basename(infile)), 'warning', 'INFILE_RENAMING')
 						
-						if num > 0:
-							infile = path.join (self.indir, fn + '[' + str(num+1) + '].' + ext)
-							symlink (origfile, infile)
-							
-					self.proc.log ("Input file renamed: %s -> %s" % (origfile, path.basename(infile)), 'warning', 'INFILE_RENAMING')
-						
-				self.data[key]           = infile
-				self.data[key + '.orig'] = origfile
-				self.input[key]['type']  = self.proc.IN_FILETYPE[0]
-				self.input[key]['data']  = infile
-				self.input[key]['orig']  = origfile
+				self.data['in'][key]       = infile
+				self.data['in']['_' + key] = orgfile
+				self.input[key]['type']    = self.proc.IN_FILETYPE[0]
+				self.input[key]['data']    = infile
+				self.input[key]['orig']    = orgfile
 				
 			elif val['type'] in self.proc.IN_FILESTYPE:
-				self.input[key]['type'] = self.proc.IN_FILESTYPE[0]
-				self.input[key]['orig'] = []
-				self.input[key]['data'] = []
-				for origfile in val['data'][self.index]:
-					origfile = path.abspath(origfile)
-					basename = path.basename (origfile)
-					infile   = path.join (self.indir, basename)
-					if not key in self.data: 
-						self.data[key] = []
-					if not key + '.orig' in self.data: 
-						self.data[key + '.orig'] = []
-					if not path.exists (infile):
-						if path.islink (infile): 
-							remove (infile)
-						symlink (origfile, infile)
-					elif not utils.isSamefile (origfile, infile):
-						(fn, _, ext) = basename.rpartition('.')
-						existInfiles = glob (path.join(self.indir, fn + '[[]*[]].' + ext))
-						if not existInfiles:
-							infile = path.join (self.indir, fn + '[1].' + ext)
-							symlink (origfile, infile)
-						else:
-							num = 0
-							for eifile in existInfiles:
-								if utils.isSamefile (origfile, eifile):
-									infile = eifile
-									num    = 0
-									break
-								n   = int(path.basename(eifile)[len(fn)+1 : -len(ext)-2])
-								num = max (num, n)
-							
-							if num > 0:
-								infile = path.join (self.indir, fn + '[' + str(num+1) + '].' + ext)
-								symlink (origfile, infile)
-								
-						self.proc.log ("Input file renamed: %s -> %s" % (origfile, path.basename(infile)), 'warning', 'INFILE_RENAMING')
+				self.input[key]['type']     = self.proc.IN_FILESTYPE[0]
+				self.input[key]['orig']     = []
+				self.input[key]['data']     = []
+				self.data['in'][key]        = []
+				self.data['in']['_' + key]  = []
+				for orgfile in val['data'][self.index]:
+					orgfile = path.abspath(orgfile)
+
+					basename = path.basename (orgfile)
+					infile   = self._linkInfile(orgfile)
+					
+					if basename != path.basename(infile):
+						self.proc.log ("Input file renamed: %s -> %s" % (basename, path.basename(infile)), 'warning', 'INFILE_RENAMING')
 						
-					self.input[key]['orig'].append (origfile)
+					self.input[key]['orig'].append (orgfile)
 					self.input[key]['data'].append (infile)
-					self.data[key].append (infile)
-					self.data[key + '.orig'].append (origfile)
+					self.data['in'][key].append (infile)
+					self.data['in']['_' + key].append (orgfile)
 			else:
 				self.input[key]['type'] = self.proc.IN_VARTYPE[0]
 				self.input[key]['data'] = val['data'][self.index]
-				self.data[key] = val['data'][self.index]
+				self.data['in'][key] = val['data'][self.index]
 				
 	def _prepBrings (self):
 		"""
@@ -688,63 +663,51 @@ class job (object):
 		If original input file is a link, will try to find it along each directory the link is in.
 		"""
 		for key, val in self.proc.brings.items():
-			  
-			brkey   = "brings." + key
-			pattern = utils.format (val, self.data)
-
-			inkey   = key.split("#")[0]
-			infile  = self.input[inkey]['data']
-			ogfile  = self.input[inkey]['orig']
-			inbn    = path.basename (infile)
-			intype  = self.input[inkey]['type']
-			if intype not in self.proc.IN_FILETYPE:
-				raise Exception ('Only can brings a file related to an input file.')
-
-			# Anyway give an empty string, so that users can tell if bringing fails
-			self.data[brkey]           = ''
-			self.data[brkey + ".orig"] = ''
-			self.brings[key]           = ''
-			self.brings[key + ".orig"] = ''
 			
-			# have to be a link
-			if not path.islink (infile): 
-				return
+			if self.input[key]['type'] not in self.proc.IN_FILETYPE:
+				raise ValueError('Cannot bring files for a non-file type input.')
+
+			orginfile                     = self.input[key]['data']
+			if not path.islink(orginfile): continue
+
+			self.brings[key]              = []
+			self.brings['_' + key]        = []
+			self.data['bring'][key]       = []
+			self.data['bring']['_' + key] = []
+
+			if not isinstance(val, list): val = [val]
 			
-			infile = readlink (infile)
+			infile = readlink(orginfile)
 			while path.exists(infile):
-				bring = glob (path.join (path.dirname(infile), pattern))
-				if bring:
-					# basename of infile could be changed in indir if a file with the same basename exists
-					dstbn = path.basename (bring[0])
-					oinbn = path.basename(infile)
-					
-					if inbn != oinbn: # name changed
-						inparts     = inbn.split('.')
-						oinparts    = oinbn.split('.')
-						chgpart, ochgpart = [(inparts[i], oinparts[i]) for i in range(len(inparts)) if inparts[i] != oinparts[i]][0]
-						dstparts    = dstbn.split('.')
-						dstparts[dstparts.index(ochgpart)] = chgpart
-						dstbn       = '.'.join(dstparts)
-					
-					dstfile = path.join (self.indir, dstbn)
-					self.data[brkey] = dstfile
-					self.data[brkey + ".orig"] = bring[0]
-					self.brings[key] = dstfile
-					self.brings[key + ".orig"] = bring[0]
-					if path.exists(dstfile) and not utils.isSamefile (dstfile, bring[0]):
-						self.proc.log ("Overwriting bring file: %s" % dstfile, 'warning', 'BRINGFILE_OVERWRITING')
-						remove (dstfile) # a link
-						symlink (bring[0], dstfile)
-					elif not path.exists(dstfile):
-						if path.islink (dstfile): 
-							remove (dstfile)
-						symlink (bring[0], dstfile)
-					break
-				# should be a link, then can bring, otherwise it's in job.indir, 
-				# not possible to have the bring file
-				if not path.islink (infile): 
-					break
+				for v in val:
+					pattern = path.join(path.dirname(infile), v.render(self.data))
+					bring   = glob(pattern)
+					if not bring: continue
+					for b in bring:
+						ninbn    = path.basename(infile)
+						oinbn    = path.basename(orginfile)
+						dstbn    = path.basename(b)
+
+						if ninbn != oinbn: # name changed
+							ninparts    = ninbn.split('.')
+							oinparts    = oinbn.split('.')
+							nchgpart, ochgpart = [(ninparts[i], oinparts[i]) for i in range(len(ninparts)) if ninparts[i] != oinparts[i]][0]
+							dstparts    = dstbn.split('.')
+							dstparts[dstparts.index(nchgpart)] = ochgpart
+							dstbn       = '.'.join(dstparts)
+						
+						dstfile = path.join (self.indir, dstbn)
+						self.data['bring'][key].append(dstfile)
+						self.data['bring']['_' + key].append(b)
+						self.brings[key].append(dstfile)
+						self.brings['_' + key].append(b)
+						utils.safeLink(b, dstfile)
+						
+				if not path.islink (infile): break
 				infile = readlink(infile)
+
+			if not self.brings[key]:
+				raise ValueError('No bring-file found for input file: %s' % key)
 				
 	def _prepOutput (self):
 		"""
@@ -764,115 +727,45 @@ class job (object):
 			makedirs (self.outdir)
 		
 		output = self.proc.output
-		if not output:
-			return
-			#raise ValueError ('%s: Output is not specified' % self.proc._name())
+		# has to be OrderedDict
+		assert isinstance(output, dict) 
+		# allow empty output
+		if not output: return
 		
-		if not isinstance (output, dict):
-			output = ','.join(utils.alwaysList (output))
-		else:
-			output = ','.join([key + ':' + val for key, val in output.items()])
-			
-		alltype = self.proc.OUT_VARTYPE + self.proc.OUT_FILETYPE + self.proc.OUT_DIRTYPE
-		for outitem in utils.split(output, ','):
-			parts   = utils.split(outitem, ':')
-			outtype = self.proc.OUT_VARTYPE[0]
-			if len(parts) == 1 or len(parts) > 3:
-				raise ValueError ('You need name your output or you have more than 3 parts in your output items.')
-			
-			if len(parts) == 2:
-				outkey = parts[0]
-				outexp = parts[1]
-				if outkey in alltype:
-					self.proc.log ('You are using preseved types (%s) as output names.' % parts[0], 'warning', 'OUTNAME_USING_OUTTYPES')
-			
-			else:  # len (parts) == 3
-				outkey  = parts[0]
-				outtype = parts[1]
-				outexp  = parts[2]
-				if outtype not in self.proc.OUT_VARTYPE + self.proc.OUT_FILETYPE + self.proc.OUT_DIRTYPE:
-					raise ValueError ('Expect output type: %s instead of %s' % (alltype, parts[1]))
-			
-			if outtype not in self.proc.OUT_VARTYPE:
-				outexp = path.join (self.outdir, outexp)
-			
-			val = utils.format (outexp, self.data)
-			if outtype in self.proc.OUT_DIRTYPE and not path.exists(val):
-				if path.islink(val):
-					remove(val)
-				makedirs (val)
-				self.proc.log ('Output directory created: %s.' % val, 'debug', 'OUTDIR_CREATED')
-
-			self.data[outkey]           = val
-			self.output[outkey]         = {
+		for key, val in output.items():
+			(outtype, outtpl) = val
+			self.data['out'][key] = outtpl.render(self.data)
+			self.output[key] = {
 				'type': outtype,
-				'data': val
+				'data': self.data['out'][key]
 			}
-
+			if outtype in self.proc.OUT_FILETYPE:
+				self.output[key]['data'] = path.join(self.outdir, self.output[key]['data'])
+				self.data['out'][key]    = path.join(self.outdir, self.data['out'][key])
+			elif outtype in self.proc.OUT_DIRTYPE:
+				self.output[key]['data'] = path.join(self.outdir, self.output[key]['data'])
+				self.data['out'][key]    = path.join(self.outdir, self.data['out'][key])
+				utils.safeRemove(self.data['out'][key])
+				makedirs(self.data['out'][key])
 	
 	def _prepScript (self): 
 		"""
 		Build the script, interpret the placeholders
 		"""
-		script    = self.proc.script
-		if not script:
-			self.proc.log ('No script specified', 'warning', 'NOSCRIPT')
-			open (self.script, 'w').close()
-			return
+		script = self.proc.script.render(self.data)
 		
-		if script.startswith ('template:'):
-			tplfile = script[9:].strip()
-			if not path.isabs(tplfile):
-				tplfile = path.join (path.dirname(sys.argv[0]), tplfile)
-			if not path.exists (tplfile):
-				raise ValueError ('Script template file "%s" does not exist.' % tplfile)
-			self.proc.log ("Using template file: %s" % tplfile, 'debug', 'SCRIPT_USING_TEMPLATE')
-			f = open(tplfile)
-			script = f.read().strip()
-			f.close()
-		
-		# deal with indent for python
-		scripts  = script.split("\n")
-		indent   = ''
-		hassth   = False
-		nscripts = []
-		for s in scripts:
-			if not hassth and not s.strip():
-				continue
-			hassth = True
-			
-			if '# Indent: remove' in s:
-				indent = s[0:s.find('# Indent: remove')]
-				nscripts.append (s[len(indent):])
-			elif '# Indent: keep' in s:
-				indent = ''
-				nscripts.append (s)
-			elif indent and s.startswith(indent):
-				nscripts.append(s[len(indent):])
-			else:
-				nscripts.append(s)
-		script  = "\n".join(nscripts)
-		del scripts
-		
-		if not script.startswith ("#!"):
-			script = "#!/usr/bin/env " + self.proc.defaultSh + "\n\n" + script
-		
-		if path.exists (self.oscript):
-			f = open (self.oscript)
-			oscript = f.read()
+		write = True
+		if path.exists (self.script):
+			f = open (self.script)
+			prevscript = f.read()
 			f.close()
 			# no change to happen? script change will cause a different uid for a proc
-			if oscript == script:
+			if prevscript == script:
+				write = False
 				self.proc.log ("Script file exists: %s" % self.script, 'debug', 'SCRIPT_EXISTS')
-			else:
-				with open (self.oscript, 'w') as f:
-					f.write (script)
-		else:
-			with open (self.oscript, 'w') as f:
-				f.write (script)
 		
-		script = utils.format (script, self.data)
-		with open (self.script, 'w') as f:
-			f.write (script)
+		if write:
+			with open (self.script, 'w') as f:
+				f.write (script)
 			
 			

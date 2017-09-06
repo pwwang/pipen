@@ -1,10 +1,10 @@
 """
 The aggregation of procs
 """
-from .channel import channel
+from .channel import Channel
 from . import utils
 
-class aggr (object):
+class Aggr (object):
 	"""
 	The aggregation of a set of processes
 

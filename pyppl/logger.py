@@ -2,12 +2,12 @@
 A customized logger for pyppl
 """
 import logging, re, sys
-from .doct import doct
+from box import Box
 
 # the entire format
 format = "[%(asctime)s]%(message)s"
 # colors
-colors = doct({
+colors = Box({
 	'none'      : '',
 	'end'       : '\033[0m',
 	'bold'      : '\033[1m',
@@ -105,7 +105,7 @@ def _getLevel (record):
 	@params:
 		`record`:  The logging record
 	"""
-	level = logging.getLevelName(record.levelno)
+	level = record.levelname
 	msg   = record.msg.lstrip()
 	m     = re.match(r'\[\s*([\w>.]+)\s*\](.*)', record.msg)
 	if m:
@@ -114,6 +114,14 @@ def _getLevel (record):
 	return (level, msg)
 
 def _getColorFromTheme (level, theme):
+	"""
+	Get colors from a them
+	@params:
+		`level`: Our own log record level 
+		`theme`: The theme
+	@returns:
+		The colors
+	"""
 	ret = theme[''] if isinstance(theme[''], list) else [theme['']] * 2
 	level = level.upper()
 	
@@ -130,8 +138,16 @@ def _getColorFromTheme (level, theme):
 	return tuple(ret)
 	
 def _formatTheme(theme):
+	"""
+	Make them in the standard form with bgcolor and fgcolor in raw terminal color strings
+	If the theme is read from file, try to translate "colors.xxx" to terminal color strings
+	@params:
+		`theme`: The theme
+	@returns:
+		The formatted colors
+	"""
 	if theme is True:
-		return themes['greenOnBlack']
+		theme = themes['greenOnBlack']
 	if not theme:
 		return False
 	if not isinstance(theme, dict):
@@ -144,7 +160,9 @@ def _formatTheme(theme):
 	ret = {'': [colors.white, colors.white]}
 	for key, val in theme.items():
 		if not isinstance(val, list):
-			val = [val] * 2
+			val = [val]
+		if len(val) == 1:
+			val = val * 2
 		# it's not a color, try to find colors.xxx keywords
 		for i, v in enumerate(val):
 			if v and not re.escape(v).startswith('\\'):
@@ -229,7 +247,7 @@ class pFormatter (logging.Formatter):
 		return logging.Formatter.format(self, record)
 		
 
-def getLogger (levels='normal', theme=True, logfile=None, lvldiff=[], name='pyppl'):
+def getLogger (levels='normal', theme=True, logfile=None, lvldiff=[], name='PyPPL'):
 	"""
 	Get the default logger
 	@params:
@@ -239,7 +257,7 @@ def getLogger (levels='normal', theme=True, logfile=None, lvldiff=[], name='pypp
 		`logfile`:The log file. Default: None (don't white to log file)
 		`lvldiff`:The diff levels for log
 			- ["-depends", "jobdone", "+debug"]: show jobdone, hide depends and debug
-		`name`:   The name of the logger, default: pyppl
+		`name`:   The name of the logger, default: PyPPL
 	@returns:
 		The logger
 	"""

@@ -1,8 +1,8 @@
 import copy
 from subprocess import check_output
-from .runner_queue import runner_queue
+from .runner_queue import RunnerQueue
 
-class runner_slurm (runner_queue):
+class RunnerSlurm (RunnerQueue):
 	"""
 	The slurm runner
 	"""
@@ -14,7 +14,7 @@ class runner_slurm (runner_queue):
 			`job`:    The job object
 			`config`: The properties of the process
 		"""
-		super(runner_slurm, self).__init__(job)
+		super(RunnerSlurm, self).__init__(job)
 
 		# construct an slurm script
 		slurmfile = self.job.script + '.slurm'

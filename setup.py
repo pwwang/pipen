@@ -1,16 +1,16 @@
 from setuptools import setup, find_packages
-import pyppl
+import PyPPL
 
 setup (
-	name             = 'pyppl',
-	version          = pyppl.VERSION,
-	description      = "A python lightweight pipeline framework",
-	url              = "https://github.com/pwwang/pyppl",
+	name             = 'PyPPL',
+	version          = PyPPL.VERSION,
+	description      = "A Python lightweight PiPeLine framework",
+	url              = "https://github.com/pwwang/PyPPL",
 	author           = "pwwang",
 	author_email     = "pwwang@pwwang.com",
 	license          = "Apache License Version 2.0",
 	packages         = find_packages(),
-	scripts          = ['bin/pyppl'],
+	scripts          = ['bin/PyPPL'],
 	classifiers      = [
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",

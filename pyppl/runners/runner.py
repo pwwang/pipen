@@ -8,11 +8,11 @@ from time import sleep
 from multiprocessing import Lock
 from subprocess import Popen, list2cmdline
 
-from ..helpers import utils
+from .. import utils
 
 lock = Lock()
 
-class runner (object):
+class Runner (object):
 	"""
 	The base runner class
 	"""
@@ -41,7 +41,7 @@ class runner (object):
 		"""
 		Try to submit the job use Popen
 		"""
-		self.job.reset()
+		self.job.reset(None if self.ntry == 0 else self.ntry)
 		try:
 			self.job.proc.log ('Submitting job #%-3s ...' % self.job.index, 'submit')
 			# retry may open the files again
@@ -60,7 +60,7 @@ class runner (object):
 		"""
 		Get the job id
 		"""
-		self.job.id (str(self.p.pid))
+		self.job.pid (str(self.p.pid))
 
 	def wait(self, rc = True, infout = None, inferr = None):
 		"""
@@ -124,11 +124,11 @@ class runner (object):
 		@returns:
 			`True` if yes, otherwise `False`
 		"""
-		jobid = self.job.id()
-		if not jobid:
+		jobpid = self.job.pid()
+		if not jobpid:
 			return False
 		with open(devnull, 'w') as f:
-			return Popen (['kill', '-s', '0', jobid], stderr=f, stdout=f).wait() == 0
+			return Popen (['kill', '-s', '0', jobpid], stderr=f, stdout=f).wait() == 0
 		
 	def _flushOut (self, fout, ferr, lastout, lasterr, end = False):
 		"""

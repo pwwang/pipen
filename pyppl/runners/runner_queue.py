@@ -3,13 +3,13 @@ from multiprocessing import Lock, cpu_count
 from random import randint
 from time import sleep
 
-from .runner import runner
+from .runner import Runner
 
-from ..helpers.job import job as pjob
+from ..job import Job
 
 lock = Lock()
 
-class runner_queue (runner):
+class RunnerQueue (Runner):
 	"""
 	The base queue runner class
 	@static variables:
@@ -26,7 +26,7 @@ class runner_queue (runner):
 		@params:
 			`job`:    The job object
 		"""
-		super(runner_queue, self).__init__(job)
+		super(RunnerQueue, self).__init__(job)
 	
 	def wait(self):
 		"""
@@ -40,7 +40,7 @@ class runner_queue (runner):
 			
 		lastout = ''
 		lasterr = ''
-		while self.job.rc() == pjob.EMPTY_RC:
+		while self.job.rc() == Job.EMPTY_RC:
 			sleep (30)
 			(lastout, lasterr) = self._flushOut (fout, ferr, lastout, lasterr)
 			

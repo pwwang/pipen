@@ -3,10 +3,10 @@ from os import devnull
 from subprocess import Popen
 from re import search
 
-from .runner_queue import runner_queue
+from .runner_queue import RunnerQueue
 
 
-class runner_sge (runner_queue):
+class RunnerSge (RunnerQueue):
 	"""
 	The sge runner
 	"""
@@ -18,7 +18,7 @@ class runner_sge (runner_queue):
 			`job`:    The job object
 			`config`: The properties of the process
 		"""
-		super(runner_sge, self).__init__(job)
+		super(RunnerSge, self).__init__(job)
 
 		# construct an sge script
 		sgefile = self.job.script + '.sge'
@@ -104,15 +104,15 @@ class runner_sge (runner_queue):
 		m = search (r"\s(\d+)\s", open(self.job.outfile).read())
 		if not m:
 			return
-		self.job.id (m.group(1))
+		self.job.pid (m.group(1))
 
 	def isRunning (self):
 		"""
 		Tell whether the job is still running
 		"""
-		jobid = self.job.id ()
-		if not jobid:
+		jobpid = self.job.pid ()
+		if not jobpid:
 			return False
 		with open(devnull, 'w') as f:
-			return Popen (['qstat', '-j', jobid], stdout=f, stderr=f).wait() == 0
+			return Popen (['qstat', '-j', jobpid], stdout=f, stderr=f).wait() == 0
 
