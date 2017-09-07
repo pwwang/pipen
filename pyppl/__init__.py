@@ -1029,31 +1029,44 @@ class PyPPL (object):
 						p.insert(0, dep)
 				ret.extend(ps)
 			return ret
-		
+
+		# nexts, paths
 		for proc in PyPPL.PROCS:
 			name = proc.name(False)
 			paths[name] = getpaths(proc, useStarts)
 			if not name in nexts: nexts[name] = []
 			for dp in proc.depends:
-				nexts[dp.name(False)].append(proc)
+				dpname = dp.name(False)
+				if not dpname in nexts: nexts[dpname] = []
+				if not proc in nexts[dpname]:
+					nexts[dpname].append(proc)
 		
+		# ends
 		for proc in PyPPL.PROCS:
 			name     = proc.name(False)
 			ppaths   = paths[name]
-			if not nexts[name] and (proc in self.starts or not useStarts):
-				ends.append(proc)
-			elif nexts[name]:
-				continue
-			elif not useStarts or all([ps[-1] in self.starts for ps in ppaths]):
-				ends.append(proc)
-		
+			# if some proc depends on it, it's not an ending for sure
+			if nexts[name]: continue
+
+			# if don't use starts, then no nexts means it's end
+			if not useStarts:
+				if proc not in ends: ends.append(proc)
+			# if it is a start, then it's an end too
+			elif proc in self.starts:
+				if proc not in ends: ends.append(proc)
+			# obosolete proc
+			elif not ppaths: continue
+			# else: start of each path should be in starts
+			elif all([ps[-1] in self.starts for ps in ppaths]):
+				if proc not in ends: ends.append(proc)
+
 		if not ends and useStarts:
 			raise ValueError('Cannot figure out ending processes, you probably missed to mark some starting processes.')
 
 		self.nexts  = nexts
 		self.ends   = ends
 		self.paths  = paths
-		return nexts, ends, paths
+		return self.nexts, self.ends, self.paths
 		
 	def start (self, *args):
 		"""
@@ -1072,7 +1085,7 @@ class PyPPL (object):
 				logger.logger.info('[WARNING] Process %s will be ignored as a starting process as it depends on other starting processes.' % name)
 				nostarts.append(start)
 		self.starts = [start for start in self.starts if start not in nostarts]
-		nexts, ends, paths = self._procRelations(useStarts = True, force = True)
+		self._procRelations(useStarts = True, force = True)
 		return self
 
 	def _resume(self, *args):
@@ -1237,7 +1250,8 @@ class PyPPL (object):
 
 	@staticmethod
 	def _registerProc(proc):
-		PyPPL.PROCS.append(proc)
+		if not proc in PyPPL.PROCS:
+			PyPPL.PROCS.append(proc)
 
 	@staticmethod
 	def _checkProc(proc):

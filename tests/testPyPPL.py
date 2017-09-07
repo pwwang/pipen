@@ -224,18 +224,16 @@ class TestPyPPL (unittest.TestCase):
 
 		pyppl.start(p1, p5)
 		nexts, ends, paths = pyppl._procRelations()
-		self.assertEqual(nexts, {
-			'p1': [p2, p10],
-			'p2': [p3, p4],
-			'p3': [p7],
-			'p4': [p6],
-			'p5': [p6],
-			'p6': [p7],
-			'p7': [p8, p9],
-			'p8': [],
-			'p9': [],
-			'p10': [],
-		})
+		self.assertItemsEqual(nexts['p1'], [p2, p10])
+		self.assertItemsEqual(nexts['p2'], [p3, p4])
+		self.assertItemsEqual(nexts['p3'], [p7])
+		self.assertItemsEqual(nexts['p4'], [p6])
+		self.assertItemsEqual(nexts['p5'], [p6])
+		self.assertItemsEqual(nexts['p6'], [p7])
+		self.assertItemsEqual(nexts['p7'], [p8, p9])
+		self.assertItemsEqual(nexts['p8'], [])
+		self.assertItemsEqual(nexts['p9'], [])
+		self.assertItemsEqual(nexts['p10'], [])
 		self.assertItemsEqual([p10, p8, p9], ends)
 		self.assertItemsEqual(paths['p1'], [])
 		self.assertItemsEqual(paths['p2'], [[p1]])
@@ -251,18 +249,16 @@ class TestPyPPL (unittest.TestCase):
 		pyppl.nexts = {}
 		pyppl.start(p2, p5)
 		nexts, ends, paths = pyppl._procRelations()
-		self.assertEqual(nexts, {
-			'p1': [p2, p10],
-			'p2': [p3, p4],
-			'p3': [p7],
-			'p4': [p6],
-			'p5': [p6],
-			'p6': [p7],
-			'p7': [p8, p9],
-			'p8': [],
-			'p9': [],
-			'p10': [],
-		})
+		self.assertItemsEqual(nexts['p1'], [p2, p10])
+		self.assertItemsEqual(nexts['p2'], [p3, p4])
+		self.assertItemsEqual(nexts['p3'], [p7])
+		self.assertItemsEqual(nexts['p4'], [p6])
+		self.assertItemsEqual(nexts['p5'], [p6])
+		self.assertItemsEqual(nexts['p6'], [p7])
+		self.assertItemsEqual(nexts['p7'], [p8, p9])
+		self.assertItemsEqual(nexts['p8'], [])
+		self.assertItemsEqual(nexts['p9'], [])
+		self.assertItemsEqual(nexts['p10'], [])
 		self.assertItemsEqual([p8, p9], ends)
 		self.assertItemsEqual(paths['p1'], [])
 		self.assertItemsEqual(paths['p2'], [])
@@ -283,6 +279,25 @@ class TestPyPPL (unittest.TestCase):
 		self.assertEqual(nexts, {'p1': []})
 		self.assertEqual(ends, [p1])
 		self.assertEqual(paths, {'p1': []})
+
+		# a simple one:
+		PyPPL.PROCS = []
+		pyppl.nexts = {}
+		pa = Proc()
+		pb = Proc()
+		pc = Proc()
+		pd = Proc()
+		pd.addDepends(pc)
+		PyPPL._registerProc(pa)
+		PyPPL._registerProc(pb)
+		PyPPL._registerProc(pc)
+		PyPPL._registerProc(pd)
+		pyppl.start(pc)
+		nexts, ends, paths = pyppl._procRelations()
+		self.assertEqual(nexts, {'pb': [], 'pc': [pd], 'pa': [], 'pd': []})
+		self.assertEqual(ends, [pd])
+		self.assertEqual(paths, {'pb': [], 'pc': [], 'pa': [], 'pd': [[pc]]})
+
 
 
 	def testResumeResume2(self):

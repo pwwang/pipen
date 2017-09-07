@@ -98,6 +98,7 @@ class TemplatePyPPLEngine(object):
 		`contexts` are dictionaries of values to use for future renderings.
 		These are good for filters and global values.
 		"""
+		self.text    = text
 		self.context = {}
 		for context in contexts:
 			self.context.update(context)
@@ -123,7 +124,12 @@ class TemplatePyPPLEngine(object):
 			if len(buffered) == 1:
 				code.add_line("append_result(%s)" % buffered[0])
 			elif len(buffered) > 1:
-				code.add_line("extend_result([%s])" % ", ".join(buffered))
+				code.add_line("extend_result([")
+				code.indent()
+				for buffer in buffered:
+					code.add_line(buffer + ',')
+				code.dedent()
+				code.add_line("])")
 			del buffered[:]
 
 		ops_stack = []
@@ -280,7 +286,16 @@ class TemplatePyPPLEngine(object):
 		render_context = dict(self.context)
 		if context:
 			render_context.update(context)
-		return self._render_function(render_context, self._do_dots)
+		try:
+			return self._render_function(render_context, self._do_dots)
+		except Exception as ex:
+			ex.args = (
+				ex.args[0] + '\n>>> Failed to render:\n%s\n>>> With context:\n%s\n>>> The render function is:\n%s' % (
+					'\n'.join(['  ' + line for line in self.text.splitlines()]), 
+					'\n'.join(['  %-10s: %s' % (k,v) for k,v in render_context.items()]),
+					'\n'.join(['  %-3s %s' % (str(i+1) + '.', line) for i,line in enumerate(self._render_function_code.splitlines())])
+				), )
+			raise
 
 	def _do_dots(self, value, *dots):
 		"""Evaluate dotted expressions at runtime."""
