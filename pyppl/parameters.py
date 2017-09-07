@@ -249,7 +249,7 @@ class Parameters (object):
 							i += 1
 						else:
 							if i+1 >= len(args) or args[i+1].startswith(self._props['prefix']):
-								raise ValueError('No value assigned for option: {}' % karg)
+								raise ValueError('No value assigned for option: {}'.format(karg))
 							val.value = args[i+1]
 							i += 2				
 						

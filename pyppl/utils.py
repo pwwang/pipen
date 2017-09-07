@@ -107,9 +107,9 @@ def split (s, delimter, trim = True, opens = ['(', '[', '{', '"', '\''], closes 
 				else:
 					flags1[int(index/2)] -= 1
 			elif c in special2:
-				index = special2[0].index(c)
+				index = special2.index(c)
 				flags2[index] = not flags2[index]
-			elif c == delimter and sum(flags1) % 2 == 0 and sum(flags2) == 0:
+			elif c == delimter and not any(flags1) and not any(flags2):
 				r = s[start:i]
 				if trim: r = r.strip()
 				ret.append(r)

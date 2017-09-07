@@ -670,6 +670,9 @@ class Proc (object):
 			"exow", "forks", "id", "lang", "ppldir", "procvars", "rc", "resume", "runner", 
 			"sets", "size", "suffix", "tag", "workdir"
 		] 
+		hidden = [
+			'desc', 'id', 'sets', 'tag', 'suffix', 'workdir'
+		]
 		procvars = {}
 		procargs = {}
 
@@ -686,11 +689,11 @@ class Proc (object):
 			elif key in alias:
 				key = alias[key]
 				procvars[key] = val
-				if val is False or val:
+				if (val is False or val) and key not in hidden:
 					self.log ('%s => %s' % (key, val), 'p.props')
 			else:
 				procvars[key] = val
-				if val is False or val:
+				if (val is False or val) and key not in hidden:
 					self.log ('%s => %s' % (key, val), 'p.props')
 		
 		self.props['procvars'] = {'proc': procvars, 'args': procargs}
@@ -713,10 +716,13 @@ class Proc (object):
 		outdict = OrderedDict()
 		if isinstance(output, list):
 			for op in output:
-				if not ':' in op:
-					raise ValueError('Missing values in output: %s' % op)
-				key, _, val = op.rpartition(':')
-				outdict[key] = val
+				ops = utils.split(op, ':')
+				lenops = len(ops)
+				if lenops < 2:
+					raise ValueError('Missing parts in output: %s' % op)
+				elif lenops > 3:
+					raise ValueError('too many parts in output: %s' % op)
+				outdict[':'.join(ops[:-1])] = ops[-1]
 		else:
 			outdict = self.config['output']
 
@@ -724,13 +730,18 @@ class Proc (object):
 			raise TypeError('Expect str, list, or OrderedDict. Dict is not allowed as key sequence has to be kept.')
 		
 		for key, val in outdict.items():
-			if ':' not in key:
-				self.props['output'][key] = [Proc.OUT_VARTYPE[0], self.template(val, **self.tplenvs)]
+			kparts = utils.split(key, ':')
+			lparts = len(kparts)
+			if lparts == 1:
+				k, t = key, Proc.OUT_VARTYPE[0]
+			elif lparts == 2:
+				k, t = kparts
 			else:
-				k, t = key.split(':')
-				if t not in Proc.OUT_DIRTYPE + Proc.OUT_FILETYPE + Proc.OUT_VARTYPE:
-					raise TypeError('Unknown output type: %s' % t)
-				self.props['output'][k] = [t, self.template(val, **self.tplenvs)]
+				raise ValueError('too many parts in output key: %s' % key)
+			
+			if t not in Proc.OUT_DIRTYPE + Proc.OUT_FILETYPE + Proc.OUT_VARTYPE:
+				raise TypeError('Unknown output type: %s' % t)
+			self.props['output'][k] = [t, self.template(val, **self.tplenvs)]
 		
 	def _buildScript(self):
 		script = self.config['script'].strip()
