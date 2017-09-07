@@ -623,7 +623,6 @@ class Proc (object):
 					if self.depends else Channel.fromArgv()
 			}
 			
-		# TODO: support empty input
 		inkeys   = list(indata.keys())
 		pinkeys  = []
 		pintypes = []
@@ -635,7 +634,7 @@ class Proc (object):
 				k, t = key.split(':')
 				if t not in Proc.IN_VARTYPE + Proc.IN_FILESTYPE + Proc.IN_FILETYPE:
 					raise TypeError('Unknown input type: %s' % t)
-				pinkeys.append(t)
+				pinkeys.append(k)
 				pintypes.append(t)
 
 		invals = Channel.create()
@@ -650,8 +649,7 @@ class Proc (object):
 				invals = invals.cbind(Channel.create(inval))
 		
 		# support empty input
-		if len(pinkeys) == 1 and not pinkeys[0]:
-			pinkeys = []
+		pinkeys = list(filter(None, pinkeys))
 
 		if len(pinkeys) > invals.width():
 			raise ValueError('Need more columns to unpack input channel.')
@@ -735,7 +733,39 @@ class Proc (object):
 				self.props['output'][k] = [t, self.template(val, **self.tplenvs)]
 		
 	def _buildScript(self):
-		self.props['script'] = self.template(self.config['script'], **self.tplenvs)
+		script = self.config['script'].strip()
+		
+		# TODO add tests
+		if not script:
+			self.log ('No script specified', 'warning')
+			
+		if script.startswith ('file:'):
+			tplfile = script[5:].strip()
+			if not path.isabs(tplfile):
+				tplfile = path.join (path.dirname(sys.argv[0]), tplfile)
+			if not path.exists (tplfile):
+				raise OSError ('No such template file: %s.' % tplfile)
+			self.proc.log ("Using template file: %s" % tplfile, 'debug')
+			with open(tplfile) as f:
+				script = f.read().strip()
+
+		olines = script.splitlines()
+		nlines = []
+		indent = ''
+		for line in olines:
+			if '## indent remove ##' in line:
+				indent = line[:line.find('## indent remove ##')]
+			elif '## indent keep ##' in line:
+				indent = ''
+			elif indent and line.startswith(indent):
+				nlines.append(line[len(indent):])
+			else:
+				nlines.append(line)
+				
+		if not nlines or not nlines[0].startswith('#!'):
+			nlines.insert(0, '#!/usr/bin/env ' + self.lang)
+
+		self.props['script'] = self.template('\n'.join(nlines), **self.tplenvs)
 
 	def _buildJobs (self):
 		self.props['channel'] = Channel.create()
