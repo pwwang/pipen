@@ -68,6 +68,12 @@ class TestTemplatePyPPL (unittest.TestCase):
 		self.assertIn('{{a|read}}', t.render({'a': __file__}))
 		t  = TemplatePyPPL('{{a|readlines}}')
 		self.assertIn("import path, unittest", t.render({'a': __file__}))
+		t = TemplatePyPPL('{{a.x, b.y | lambda x,y: x+y}}')
+		self.assertEqual(t.render({'a': {'x': 1}, 'b': {'y': 2}}), '3')
+		t = TemplatePyPPL('{{a.x, b.y | lambda x,y: x+y}}')
+		self.assertEqual(t.render({'a': {'x': 1}, 'b': {'y': 2}}), '3')
+		t = TemplatePyPPL('{{a.b["1"][0](",")}}')
+		self.assertEqual(t.render({'a': {'b': {"1": [lambda x: x]}}}), ',')
 
 	def testJinja2Render(self):
 		data = [

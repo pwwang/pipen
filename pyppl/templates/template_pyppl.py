@@ -1,5 +1,6 @@
 import re
 from .template import Template
+from .. import utils
 
 """
 This template engine is borrowed from Templite
@@ -215,9 +216,11 @@ class TemplatePyPPLEngine(object):
 		"""Generate a Python expression for `expr`."""
 		if isinstance(expr, list):
 			expr = ' '.join(expr)
-		expr = expr.strip()
-		if "|" in expr:
-			pipes  = [pipe.strip() for pipe in expr.split("|")]
+		expr   = expr.strip()
+		pipes  = utils.split(expr, '|')
+		commas = utils.split(expr, ',')
+		dots   = utils.split(expr, '.')
+		if len(pipes) > 1:
 			code = self._expr_code(pipes[0])
 			for func in pipes[1:]:
 				if func.startswith('[') or func.startswith('.'):
@@ -227,39 +230,26 @@ class TemplatePyPPLEngine(object):
 				else:
 					self._variable(func, self.all_vars)
 					code = "c_%s(%s)" % (func, code)
-		elif "." in expr:
-			if '[' in expr and expr.endswith(']'):
-				var, idx  = expr[:-1].split('[')
-				var  = var.strip()
-				dots = var.split(".")
-				code = self._expr_code(dots[0])
-				args = ", ".join(repr(d) for d in dots[1:])
-				code = "do_dots(%s, %s)[%s]" % (code, args, idx)
-			elif '(' in expr and expr.endswith(')'):
-				var, idx  = expr[:-1].split('(')
-				var  = var.strip()
-				dots = var.split(".")
-				code = self._expr_code(dots[0])
-				args = ", ".join(repr(d) for d in dots[1:])
-				code = "do_dots(%s, %s)(%s)" % (code, args, idx)
-			else:
-				dots = expr.split(".")
-				code = self._expr_code(dots[0])
-				args = ", ".join(repr(d) for d in dots[1:])
-				code = "do_dots(%s, %s)" % (code, args)
-		else:
-			parts = expr.split(',')
-			codes = []
-			for part in parts:
-				part = part.strip()
-				# support getitem 
-				if '[' in part and part.endswith(']'):
-					var = part.split('[')[0].strip()
+		elif len(commas) > 1:
+			codes = [self._expr_code(comma) for comma in commas]
+			code = ', '.join(codes)
+		elif len(dots) > 1:
+			code = self._expr_code(dots[0])
+			for dot in dots[1:]:
+				b1     = dot.find('(')
+				b2     = dot.find('[')
+				bindex = min(b1, b2) if b1 >= 0 and b2 >=0 else b1 if b1 >= 0 else b2
+				if bindex == -1:
+					code = "do_dots(%s, %s)" % (code, repr(dot))
 				else:
-					var = part
-				self._variable(var, self.all_vars)
-				codes.append("c_%s" % part)
-			code = ", ".join(codes)
+					code = "do_dots(%s, %s)%s" % (code, repr(dot[:bindex]), dot[bindex:])
+		else:
+			b1     = expr.find('(')
+			b2     = expr.find('[')
+			bindex = min(b1, b2) if b1 >= 0 and b2 >=0 else b1 if b1 >= 0 else b2
+			var    = expr if bindex == -1 else expr[:bindex]
+			self._variable(var, self.all_vars)
+			code = "c_%s" % expr
 		return code
 
 	def __str__(self):
@@ -302,7 +292,7 @@ class TemplatePyPPLEngine(object):
 		for dot in dots:
 			try:
 				value = getattr(value, dot)
-			except AttributeError:
+			except (AttributeError, TypeError):
 				try:
 					value = value[dot]
 				except TypeError:

@@ -57,6 +57,7 @@ class Proc (object):
 		'CACHE_SIGOUTDIR_DIFF': -3,
 		'CACHE_SIGFILE_NOTEXISTS': -1,
 		'EXPECT_CHECKING': -1,
+		'INFILE_RENAMING': -3,
 		'OUTFILE_NOT_EXISTS': -1,
 		'OUTDIR_CREATED_AFTER_RESET': 0,
 		'SCRIPT_EXISTS': -2,
@@ -270,8 +271,28 @@ class Proc (object):
 		
 		if name not in self.sets:
 			self.sets.append(name)
-
-		self.config[name] = Box(value) if name == 'args' else value
+		
+		# depends have to be computed here, as it's used to infer the relation before run
+		if name == 'depends':
+			depends = value
+			self.props['depends'] = []
+			if isinstance(depends, tuple):
+				depends = list(depends)
+			elif isinstance(depends, Proc):
+				depends = [depends]
+			elif isinstance(depends, Aggr):
+				depends = depends.ends
+			for depend in depends:
+				if isinstance(depend, Proc):
+					self.props['depends'].append(depend)
+				elif isinstance(depend, Aggr):
+					self.props['depends'].extend(depend.ends)
+				else:
+					raise TypeError('Unsupported dependent: %s, expect Proc or Aggr.' % repr(depend))
+		elif name == 'args':
+			self.config[name] = Box(value)
+		else:
+			self.config[name] = value
 			
 	def __repr__(self):
 		return '<Proc(%s) at %s>' % (self.name(), hex(id(self)))
@@ -521,23 +542,6 @@ class Proc (object):
 		if self.runner == 'dry':
 			self.props['cache'] = False
 
-		# depends
-		depends = self.config['depends']
-		self.props['depends'] = []
-		if isinstance(depends, tuple):
-			depends = list(depends)
-		elif isinstance(depends, Proc):
-			depends = [depends]
-		elif isinstance(depends, Aggr):
-			depends = depends.ends
-		for depend in depends:
-			if isinstance(depend, Proc):
-				self.props['depends'].append(depend)
-			elif isinstance(depend, Aggr):
-				self.props['depends'].extend(depend.ends)
-			else:
-				raise TypeError('Unsupported dependent: %s, expect Proc or Aggr.' % repr(depend))
-			
 		# expect
 		self.props['expect'] = self.template(self.config['expect'], **self.tplenvs)
 
@@ -648,18 +652,23 @@ class Proc (object):
 			else:
 				invals = invals.cbind(Channel.create(inval))
 		
+		self.props['size'] = invals.length()
+		self.props['jobs'] = [None] * self.size
+
 		# support empty input
 		pinkeys = list(filter(None, pinkeys))
 
-		if len(pinkeys) > invals.width():
-			raise ValueError('Need more columns to unpack input channel.')
+		#if len(pinkeys) > invals.width():
+		#	raise ValueError('Need more columns to unpack input channel.')
+		wdata   = invals.width()
 		for i, inkey in enumerate(pinkeys):
 			self.props['input'][inkey] = {}
 			self.props['input'][inkey]['type'] = pintypes[i]
-			self.props['input'][inkey]['data'] = invals.colAt(i).flatten()
-
-		self.props['size'] = invals.length()
-		self.props['jobs'] = [None] * self.size
+			if i < wdata:
+				self.props['input'][inkey]['data'] = invals.colAt(i).flatten()
+			else:
+				self.log('No data found for input key "%s", will use empty strings instead.' % inkey, 'warning')
+				self.props['input'][inkey]['data'] = [''] * self.size
 				
 	def _buildProcVars (self):
 		"""
@@ -670,9 +679,9 @@ class Proc (object):
 			"exow", "forks", "id", "lang", "ppldir", "procvars", "rc", "resume", "runner", 
 			"sets", "size", "suffix", "tag", "workdir"
 		] 
-		hidden = [
-			'desc', 'id', 'sets', 'tag', 'suffix', 'workdir'
-		]
+		show   = [ 'size' ]
+		hidden = [ 'desc', 'id', 'sets', 'tag', 'suffix', 'workdir' ]
+		hidden.extend([key for key in pvkeys if key not in self.sets if key not in show])
 		procvars = {}
 		procargs = {}
 
@@ -683,18 +692,18 @@ class Proc (object):
 				procvars['args'] = val
 				procargs = val
 				for k,v in val.items():
-					self.log('%s => %s' % (k, v), 'p.args')
+					self.log('%-10s => %s' % (k, v), 'p.args')
 			elif key == 'procvars':
 				procvars['procvars'] = val
 			elif key in alias:
 				key = alias[key]
 				procvars[key] = val
 				if (val is False or val) and key not in hidden:
-					self.log ('%s => %s' % (key, val), 'p.props')
+					self.log ('%-10s => %s' % (key, val), 'p.props')
 			else:
 				procvars[key] = val
 				if (val is False or val) and key not in hidden:
-					self.log ('%s => %s' % (key, val), 'p.props')
+					self.log ('%-10s => %s' % (key, val), 'p.props')
 		
 		self.props['procvars'] = {'proc': procvars, 'args': procargs}
 
@@ -853,6 +862,7 @@ class Proc (object):
 		@returns:
 			The return code of the command
 		"""
+		if not self.config[key]: return
 		cmd = self.template(self.config[key], **self.tplenvs).render(self.procvars)
 		self.log ('Running <%s> ...' % (key), 'info')
 		
@@ -889,22 +899,25 @@ class Proc (object):
 			while True:
 				if q.empty(): break
 				try:
-					index = q.get()
+					data = q.get()
 				except:
 					break
-				if index is None: break
-				
+				if data is None: break
+				index, cached = data
+
 				try:
 					r = runner(self.jobs[index])
 					sleep (int(index/maxsubmit) * interval)	
-					#if hasattr(run, 'checkRunning') and run.checkRunning and run.isRunning():
-					# anyway check whether the job is running before submit it
-					if r.isRunning():
-						self.log ("Job #%-3s is already running, skip submitting." % index, 'submit')
+					if cached: 
+						self.jobs[index].done()
 					else:
-						r.submit()
-					r.wait() 
-					r.finish()
+						# check whether the job is running before submit it
+						if r.isRunning():
+							self.log ("Job #%-3s is already running, skip submitting." % index, 'submit')
+						else:
+							r.submit()
+						r.wait() 
+						r.finish()
 				except:
 					raise
 				finally:
@@ -912,14 +925,10 @@ class Proc (object):
 		
 		sq = multiprocessing.JoinableQueue()
 		for i, job in enumerate(self.jobs):
-			if i in self.ncjobids:
-				sq.put(i)
-			else:
-				job.done()
+			sq.put((i, i not in self.ncjobids))
 
 		# submit jobs
-		nojobs2submit = min (self.forks, len(self.ncjobids))
-		for i in range (nojobs2submit):
+		for i in range (min(self.forks, self.size)):
 			t = multiprocessing.Process(target = _worker, args = (sq, ))
 			t.daemon = True
 			t.start ()

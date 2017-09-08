@@ -73,19 +73,19 @@ class Job (object):
 		lkey  = len(key)
 		ldata = len(data)
 		if ldata == 1:
-			self.proc.log ("[%s/%s] %s  => [%s]" % (self.index, self.proc.size - 1, key, data[0]), loglevel)
+			self.proc.log ("[%s/%s] %-10s => [%s]" % (self.index, self.proc.size - 1, key, data[0]), loglevel)
 		elif ldata == 2:
-			self.proc.log ("[%s/%s] %s  => [%s," % (self.index, self.proc.size - 1, key, data[0]), loglevel)
-			self.proc.log ("[%s/%s] %s      %s]" % (self.index, self.proc.size - 1, ' ' * lkey, data[1]), loglevel)
+			self.proc.log ("[%s/%s] %-10s => [%s," % (self.index, self.proc.size - 1, key, data[0]), loglevel)
+			self.proc.log ("[%s/%s] %-10s     %s]" % (self.index, self.proc.size - 1, ' ' * lkey, data[1]), loglevel)
 		elif ldata == 3:
-			self.proc.log ("[%s/%s] %s  => [%s," % (self.index, self.proc.size - 1, key, data[0]), loglevel)
-			self.proc.log ("[%s/%s] %s      %s," % (self.index, self.proc.size - 1, ' ' * lkey, data[1]), loglevel)
-			self.proc.log ("[%s/%s] %s      %s]" % (self.index, self.proc.size - 1, ' ' * lkey, data[2]), loglevel)
+			self.proc.log ("[%s/%s] %-10s => [%s," % (self.index, self.proc.size - 1, key, data[0]), loglevel)
+			self.proc.log ("[%s/%s] %-10s     %s," % (self.index, self.proc.size - 1, ' ' * lkey, data[1]), loglevel)
+			self.proc.log ("[%s/%s] %-10s     %s]" % (self.index, self.proc.size - 1, ' ' * lkey, data[2]), loglevel)
 		else:
-			self.proc.log ("[%s/%s] %s  => [%s," % (self.index, self.proc.size - 1, key, data[0]), loglevel)
-			self.proc.log ("[%s/%s] %s      %s," % (self.index, self.proc.size - 1, ' ' * lkey, data[1]), loglevel)
-			self.proc.log ("[%s/%s] %s      ...," % (self.index, self.proc.size - 1, ' ' * lkey), loglevel)
-			self.proc.log ("[%s/%s] %s      %s]" % (self.index, self.proc.size - 1, ' ' * lkey, data[-1]), loglevel)
+			self.proc.log ("[%s/%s] %-10s => [%s," % (self.index, self.proc.size - 1, key, data[0]), loglevel)
+			self.proc.log ("[%s/%s] %-10s     %s," % (self.index, self.proc.size - 1, ' ' * lkey, data[1]), loglevel)
+			self.proc.log ("[%s/%s] %-10s     ...," % (self.index, self.proc.size - 1, ' ' * lkey), loglevel)
+			self.proc.log ("[%s/%s] %-10s     %s]" % (self.index, self.proc.size - 1, ' ' * lkey, data[-1]), loglevel)
 	
 	
 	def report (self):
@@ -97,14 +97,14 @@ class Job (object):
 				self._reportList(key, self.input[key]['data'], 'input')
 				self._reportList('_' + key, self.input[key]['orig'], 'input')
 			elif self.input[key]['type'] in self.proc.IN_FILETYPE:
-				self.proc.log ("[%s/%s]  %s => %s" % (self.index, self.proc.size - 1, key, self.input[key]['data']), 'input')
-				self.proc.log ("[%s/%s] _%s => %s" % (self.index, self.proc.size - 1, key, self.input[key]['orig']), 'input')
+				self.proc.log ("[%s/%s] %-10s => %s" % (self.index, self.proc.size - 1, key, self.input[key]['data']), 'input')
+				self.proc.log ("[%s/%s] %-10s => %s" % (self.index, self.proc.size - 1, '_'+key, self.input[key]['orig']), 'input')
 			else:
-				self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.size - 1, key, self.input[key]['data']), 'input')
+				self.proc.log ("[%s/%s] %-10s => %s" % (self.index, self.proc.size - 1, key, self.input[key]['data']), 'input')
 		for key in sorted(self.brings.keys(), key = lambda x: x[1:] if x.startswith('_') else x):
 			self._reportList(key, self.brings[key], 'brings')
 		for key in sorted(self.output.keys()):
-			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.size - 1, key, self.output[key]['data']), 'output')	
+			self.proc.log ("[%s/%s] %-10s => %s" % (self.index, self.proc.size - 1, key, self.output[key]['data']), 'output')	
 	
 	def done (self):
 		"""
@@ -745,8 +745,7 @@ class Job (object):
 			elif outtype in self.proc.OUT_DIRTYPE:
 				self.output[key]['data'] = path.join(self.outdir, self.output[key]['data'])
 				self.data['out'][key]    = path.join(self.outdir, self.data['out'][key])
-				utils.safeRemove(self.data['out'][key])
-				makedirs(self.data['out'][key])
+				utils.fileExists(self.data['out'][key], lambda e, f: makedirs(f) if not e else None)
 	
 	def _prepScript (self): 
 		"""

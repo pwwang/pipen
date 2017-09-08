@@ -279,8 +279,8 @@ class TestProc (unittest.TestCase):
 		p._buildProps()
 		self.assertEqual(p.depends, [p2, p3])
 
-		p.depends = p2, p3, 3
-		self.assertRaises(TypeError, p._buildProps)
+		#p.depends = p2, p3, 3
+		self.assertRaises(TypeError, p.__setattr__, 'depends', (p2, p3, 3))
 
 		# expect
 		self.assertIsInstance(p.expect, templates.TemplatePyPPL)
@@ -391,7 +391,8 @@ class TestProc (unittest.TestCase):
 		# not enough columns
 		p3.input = {'qi, qa, qb': lambda ch1, ch2: ch1.colAt(0).cbind(ch2.colAt(1))}
 		p3._buildProps()
-		self.assertRaises(ValueError, p3._buildInput)
+		p3._buildInput()
+		self.assertEqual(p3.input['qb']['data'], [''] * 2)
 
 		# Cannot cbind
 		p.depends = []
