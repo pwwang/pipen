@@ -41,6 +41,7 @@ class Runner (object):
 		Try to submit the job use Popen
 		"""
 		self.job.reset(None if self.ntry == 0 else self.ntry)
+		
 		try:
 			self.job.proc.log ('Submitting job #%-3s ...' % self.job.index, 'submit')
 			# retry may open the files again

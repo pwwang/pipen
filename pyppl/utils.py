@@ -637,6 +637,7 @@ def filesig (fn):
 	@returns:
 		The md5 deigested signature.
 	"""
+	if fn == '': return ['', 0]
 	fname = path.realpath(fn)
 	if not path.exists (fname): 
 		return False

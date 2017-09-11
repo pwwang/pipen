@@ -59,9 +59,9 @@ class Proc (object):
 		'EXPECT_CHECKING': -1,
 		'INFILE_RENAMING': -3,
 		'OUTFILE_NOT_EXISTS': -1,
-		'OUTDIR_CREATED_AFTER_RESET': 0,
+		'OUTDIR_CREATED_AFTER_RESET': -1,
 		'SCRIPT_EXISTS': -2,
-		'JOB_RESETTING': 0,
+		'JOB_RESETTING': -1,
 	}
 	
 	OUT_VARTYPE  = ['var']
@@ -240,7 +240,7 @@ class Proc (object):
 		self.props['template']    = None
 
 		# The template environment
-		self.config['tplenvs']    = {}
+		self.config['tplenvs']    = Box()
 
 		# The workdir for the process
 		self.config['workdir']    = ''
@@ -289,7 +289,7 @@ class Proc (object):
 					self.props['depends'].extend(depend.ends)
 				else:
 					raise TypeError('Unsupported dependent: %s, expect Proc or Aggr.' % repr(depend))
-		elif name == 'args':
+		elif name == 'args' or name == 'tplenvs':
 			self.config[name] = Box(value)
 		else:
 			self.config[name] = value
@@ -667,8 +667,8 @@ class Proc (object):
 			if i < wdata:
 				self.props['input'][inkey]['data'] = invals.colAt(i).flatten()
 			else:
-				self.log('No data found for input key "%s", will use empty strings instead.' % inkey, 'warning')
-				self.props['input'][inkey]['data'] = [''] * self.size
+				self.log('No data found for input key "%s", use empty strings/lists instead.' % inkey, 'warning')
+				self.props['input'][inkey]['data'] = [[] if pintypes[i] in Proc.IN_FILESTYPE else ''] * self.size
 				
 	def _buildProcVars (self):
 		"""
@@ -685,26 +685,32 @@ class Proc (object):
 		procvars = {}
 		procargs = {}
 
-		alias  = { val:key for key, val in Proc.ALIAS.items() }
+		alias   = { val:key for key, val in Proc.ALIAS.items() }
+		maxlen  = 0
+		propout = {}
 		for key in pvkeys:
 			val = getattr(self, key)
 			if key == 'args':
 				procvars['args'] = val
 				procargs = val
-				for k,v in val.items():
-					self.log('%-10s => %s' % (k, v), 'p.args')
+				if val: maxlen = max(maxlen, max(list(map(len, val.keys()))))
 			elif key == 'procvars':
 				procvars['procvars'] = val
 			elif key in alias:
 				key = alias[key]
 				procvars[key] = val
 				if (val is False or val) and key not in hidden:
-					self.log ('%-10s => %s' % (key, val), 'p.props')
+					maxlen = max(maxlen, len(key))
+					propout[key] = val
 			else:
 				procvars[key] = val
 				if (val is False or val) and key not in hidden:
-					self.log ('%-10s => %s' % (key, val), 'p.props')
-		
+					maxlen = max(maxlen, len(key))
+					propout[key] = val
+		for key in sorted(procargs.keys()):
+			self.log('%s => %s' % (key.ljust(maxlen), procargs[key]), 'p.args')
+		for key in sorted(propout.keys()):
+			self.log('%s => %s' % (key.ljust(maxlen), propout[key]), 'p.props')
 		self.props['procvars'] = {'proc': procvars, 'args': procargs}
 
 	def _buildBrings(self):

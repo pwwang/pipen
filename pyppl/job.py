@@ -68,43 +68,54 @@ class Job (object):
 		self._prepOutput ()
 		self._prepScript ()
 
-	def _reportList(self, key, data, loglevel):
-		if not key.startswith('_'): key = ' ' + key
-		lkey  = len(key)
-		ldata = len(data)
-		if ldata == 1:
-			self.proc.log ("[%s/%s] %-10s => [%s]" % (self.index, self.proc.size - 1, key, data[0]), loglevel)
-		elif ldata == 2:
-			self.proc.log ("[%s/%s] %-10s => [%s," % (self.index, self.proc.size - 1, key, data[0]), loglevel)
-			self.proc.log ("[%s/%s] %-10s     %s]" % (self.index, self.proc.size - 1, ' ' * lkey, data[1]), loglevel)
-		elif ldata == 3:
-			self.proc.log ("[%s/%s] %-10s => [%s," % (self.index, self.proc.size - 1, key, data[0]), loglevel)
-			self.proc.log ("[%s/%s] %-10s     %s," % (self.index, self.proc.size - 1, ' ' * lkey, data[1]), loglevel)
-			self.proc.log ("[%s/%s] %-10s     %s]" % (self.index, self.proc.size - 1, ' ' * lkey, data[2]), loglevel)
+	def _reportItem(self, key, maxlen, data, loglevel):
+		if not isinstance(data, list):
+			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.size - 1, key.ljust(maxlen), data), loglevel)
 		else:
-			self.proc.log ("[%s/%s] %-10s => [%s," % (self.index, self.proc.size - 1, key, data[0]), loglevel)
-			self.proc.log ("[%s/%s] %-10s     %s," % (self.index, self.proc.size - 1, ' ' * lkey, data[1]), loglevel)
-			self.proc.log ("[%s/%s] %-10s     ...," % (self.index, self.proc.size - 1, ' ' * lkey), loglevel)
-			self.proc.log ("[%s/%s] %-10s     %s]" % (self.index, self.proc.size - 1, ' ' * lkey, data[-1]), loglevel)
+			ldata = len(data)
+			if ldata == 1:
+				self.proc.log ("[%s/%s] %s => [%s]" % (self.index, self.proc.size - 1, key.ljust(maxlen), data[0]), loglevel)
+			elif ldata == 2:
+				self.proc.log ("[%s/%s] %s => [%s," % (self.index, self.proc.size - 1, key.ljust(maxlen), data[0]), loglevel)
+				self.proc.log ("[%s/%s] %s     %s]" % (self.index, self.proc.size - 1, ' '.ljust(maxlen), data[1]), loglevel)
+			elif ldata == 3:
+				self.proc.log ("[%s/%s] %s => [%s," % (self.index, self.proc.size - 1, key.ljust(maxlen), data[0]), loglevel)
+				self.proc.log ("[%s/%s] %s     %s," % (self.index, self.proc.size - 1, ' '.ljust(maxlen), data[1]), loglevel)
+				self.proc.log ("[%s/%s] %s     %s]" % (self.index, self.proc.size - 1, ' '.ljust(maxlen), data[2]), loglevel)
+			else:
+				self.proc.log ("[%s/%s] %s => [%s," % (self.index, self.proc.size - 1, key.ljust(maxlen), data[0]), loglevel)
+				self.proc.log ("[%s/%s] %s     %s," % (self.index, self.proc.size - 1, ' '.ljust(maxlen), data[1]), loglevel)
+				self.proc.log ("[%s/%s] %s     ...," % (self.index, self.proc.size - 1, ' '.ljust(maxlen)), loglevel)
+				self.proc.log ("[%s/%s] %s     %s]" % (self.index, self.proc.size - 1, ' '.ljust(maxlen), data[-1]), loglevel)
 	
 	
 	def report (self):
 		"""
 		Report the job information to logger
 		"""
+		maxlen = 0
+		if self.input:
+			maxken = max(list(map(len, self.input.keys())))
+			if any([ t['type'] in self.proc.IN_FILETYPE + self.proc.IN_FILESTYPE for t in self.input.values() ]):
+				maxken += 1
+			maxlen = max(maxlen, maxken)
+		if self.brings:
+			maxken = max(list(map(len, self.brings.keys())))
+			maxlen = max(maxlen, maxken)
+		if self.output:
+			maxken = max(list(map(len, self.output.keys()))) 
+			maxlen = max(maxlen, maxken)
+
 		for key in sorted(self.input.keys()):
-			if self.input[key]['type'] in self.proc.IN_FILESTYPE:
-				self._reportList(key, self.input[key]['data'], 'input')
-				self._reportList('_' + key, self.input[key]['orig'], 'input')
-			elif self.input[key]['type'] in self.proc.IN_FILETYPE:
-				self.proc.log ("[%s/%s] %-10s => %s" % (self.index, self.proc.size - 1, key, self.input[key]['data']), 'input')
-				self.proc.log ("[%s/%s] %-10s => %s" % (self.index, self.proc.size - 1, '_'+key, self.input[key]['orig']), 'input')
+			if self.input[key]['type'] in self.proc.IN_VARTYPE:
+				self._reportItem(key, maxlen, self.input[key]['data'], 'input')
 			else:
-				self.proc.log ("[%s/%s] %-10s => %s" % (self.index, self.proc.size - 1, key, self.input[key]['data']), 'input')
+				self._reportItem(' ' + key, maxlen, self.input[key]['data'], 'input')
+				self._reportItem('_' + key, maxlen, self.input[key]['orig'], 'input')
 		for key in sorted(self.brings.keys(), key = lambda x: x[1:] if x.startswith('_') else x):
-			self._reportList(key, self.brings[key], 'brings')
+			self._reportItem(key if key.startswith('_') else ' ' + key, maxlen, self.brings[key], 'brings')
 		for key in sorted(self.output.keys()):
-			self.proc.log ("[%s/%s] %-10s => %s" % (self.index, self.proc.size - 1, key, self.output[key]['data']), 'output')	
+			self._reportItem(key, maxlen, self.output[key]['data'], 'output')
 	
 	def done (self):
 		"""
@@ -607,20 +618,24 @@ class Job (object):
 		"""
 		Prepare input, create link to input files and set other placeholders
 		"""
-		if not path.exists (self.indir):
-			makedirs (self.indir)
+		utils.safeRemove(self.indir)
+		makedirs (self.indir)
 		
 		for key, val in self.proc.input.items():
 			self.input[key] = {}
 			if val['type'] in self.proc.IN_FILETYPE:
-				orgfile = path.abspath(val['data'][self.index])
-				if not path.exists(orgfile):
-					raise OSError('No such input file: %s' % orgfile)
+				if val['data'][self.index] == '':
+					orgfile = ''
+					infile  = ''
+				else:
+					orgfile = path.abspath(val['data'][self.index])
+					if not path.exists(orgfile):
+						raise OSError('No such input file: %s' % orgfile)
 
-				basename = path.basename (orgfile)
-				infile   = self._linkInfile(orgfile)
-				if basename != path.basename(infile):
-					self.proc.log ("Input file renamed: %s -> %s" % (basename, path.basename(infile)), 'warning', 'INFILE_RENAMING')
+					basename = path.basename (orgfile)
+					infile   = self._linkInfile(orgfile)
+					if basename != path.basename(infile):
+						self.proc.log ("Input file renamed: %s -> %s" % (basename, path.basename(infile)), 'warning', 'INFILE_RENAMING')
 						
 				self.data['in'][key]       = infile
 				self.data['in']['_' + key] = orgfile
@@ -734,18 +749,17 @@ class Job (object):
 		
 		for key, val in output.items():
 			(outtype, outtpl) = val
-			self.data['out'][key] = outtpl.render(self.data)
+			outdata               = outtpl.render(self.data)
+			self.data['out'][key] = outdata
 			self.output[key] = {
 				'type': outtype,
-				'data': self.data['out'][key]
+				'data': outdata
 			}
-			if outtype in self.proc.OUT_FILETYPE:
-				self.output[key]['data'] = path.join(self.outdir, self.output[key]['data'])
-				self.data['out'][key]    = path.join(self.outdir, self.data['out'][key])
-			elif outtype in self.proc.OUT_DIRTYPE:
-				self.output[key]['data'] = path.join(self.outdir, self.output[key]['data'])
-				self.data['out'][key]    = path.join(self.outdir, self.data['out'][key])
-				utils.fileExists(self.data['out'][key], lambda e, f: makedirs(f) if not e else None)
+			if outtype in self.proc.OUT_FILETYPE + self.proc.OUT_DIRTYPE:
+				if path.isabs(outdata):
+					raise ValueError('Only basename expected for output file/directory. \nBut full path assigned: \n  %s\nFor key:\n  %s' % (outdata, key))
+				self.output[key]['data'] = path.join(self.outdir, outdata)
+				self.data['out'][key]    = path.join(self.outdir, outdata)
 	
 	def _prepScript (self): 
 		"""

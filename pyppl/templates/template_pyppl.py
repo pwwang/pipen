@@ -1,4 +1,5 @@
 import re
+from sys import stderr
 from .template import Template
 from .. import utils
 
@@ -225,7 +226,7 @@ class TemplatePyPPLEngine(object):
 			for func in pipes[1:]:
 				if func.startswith('[') or func.startswith('.'):
 					code = "%s%s" % (code, func)
-				elif func.startswith('lambda'):
+				elif func.startswith('lambda '):
 					code = "(%s)(%s)" % (func, code)
 				else:
 					self._variable(func, self.all_vars)
@@ -279,13 +280,13 @@ class TemplatePyPPLEngine(object):
 		try:
 			return self._render_function(render_context, self._do_dots)
 		except Exception as ex:
-			ex.args = (
-				ex.args[0] + '\n>>> Failed to render:\n%s\n>>> With context:\n%s\n>>> The render function is:\n%s' % (
+			stderr.write(
+				'\n>>> Failed to render:\n%s\n>>> With context:\n%s\n>>> The render function is:\n%s\n\n' % (
 					'\n'.join(['  ' + line for line in self.text.splitlines()]), 
 					'\n'.join(['  %-10s: %s' % (k,v) for k,v in render_context.items()]),
 					'\n'.join(['  %-3s %s' % (str(i+1) + '.', line) for i,line in enumerate(self._render_function_code.splitlines())])
-				), )
-			raise
+				))
+			raise 
 
 	def _do_dots(self, value, *dots):
 		"""Evaluate dotted expressions at runtime."""
