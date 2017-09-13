@@ -493,9 +493,8 @@ class Job (object):
 			else:
 				if path.islink (f): remove (f)
 				self.proc.log ('Job #%-3s: exporting to: %s' % (self.index, f), 'export')
-			
 		files2ex = []
-		if not self.proc.expart:
+		if len(self.proc.expart) == 1 and not self.proc.expart[0].render(self.data):
 			for _, out in self.output.items():
 				if out['type'] in self.proc.OUT_VARTYPE: 
 					continue

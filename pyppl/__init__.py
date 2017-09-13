@@ -509,8 +509,10 @@ class Proc (object):
 			makedirs (self.workdir)	
 
 		# exdir
-		if self.exdir and not path.exists (self.exdir):
-			makedirs (self.exdir)
+		if self.exdir:
+			self.config['exdir'] = path.abspath(self.exdir)
+			if not path.exists (self.exdir):
+				makedirs (self.exdir)
 		
 		# echo
 		if self.config['echo'] in [True, False, 'stderr', 'stdout']:

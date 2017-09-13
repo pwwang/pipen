@@ -18,16 +18,16 @@ if len(sys.argv) == 2 and sys.argv[1] == 'clean':
 config = {'logtheme': 'greenOnWhite'}
 	
 # Copy the following code to README file
-from pyppl import pyppl, proc
+from pyppl import PyPPL, Proc
 
-pSort         = proc(desc = 'Sort files.')
+pSort         = Proc(desc = 'Sort files.')
 pSort.input   = "infile:file"
-pSort.output  = "outfile:file:{{infile | fn}}.sorted"
+pSort.output  = "outfile:file:{{in.infile | fn}}.sorted"
 pSort.forks   = 5
 pSort.exdir   = './'
 pSort.script  = """
   # difference
-  sort -k1r {{infile}} > {{outfile}} 
+  sort -k1r {{in.infile}} > {{out.outfile}} 
 """ 
 
-pyppl({'loglevels': 'basic'}).starts(pSort).run()
+PyPPL({'log':{'levels': 'all'}}).start(pSort).run()
