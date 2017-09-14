@@ -886,6 +886,7 @@ print "a"
 		# gzip
 		job.proc.exhow = 'gz'
 		with captured_output() as (out, err):
+			logger.getLogger()
 			job.export()
 		exfile_b = path.join(exdir, path.basename(job.data['out']['b']) + '.gz')
 		exfile_c = path.join(exdir, path.basename(job.data['out']['c']) + '.tgz')
@@ -1059,7 +1060,7 @@ print "a"
 		proc = Proc()
 		proc.exdir = exdir
 		proc.exhow = 'copy'
-		proc.expart = ['b']
+		proc.expart = [TemplatePyPPL('b')]
 		job = Job(0, proc)
 		utils.safeRemove(job.dir)
 		with captured_output() as (out, err):
@@ -1070,6 +1071,7 @@ print "a"
 		exfile_b = path.join(exdir, path.basename(job.data['out']['b']))
 		exfile_c = path.join(exdir, path.basename(job.data['out']['c']))
 		with captured_output() as (out, err):
+			logger.getLogger()
 			job.export()
 		self.assertPathExists(exfile_b)
 		self.assertPathNotExists(exfile_c)
@@ -1077,7 +1079,7 @@ print "a"
 		# the other output
 		utils.safeRemove(exdir)
 		makedirs(exdir)
-		proc.expart = ['c']
+		proc.expart = [TemplatePyPPL('c')]
 		with captured_output() as (out, err):
 			job.export()
 		self.assertPathExists(exfile_c)

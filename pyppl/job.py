@@ -494,19 +494,20 @@ class Job (object):
 				if path.islink (f): remove (f)
 				self.proc.log ('Job #%-3s: exporting to: %s' % (self.index, f), 'export')
 		files2ex = []
-		if len(self.proc.expart) == 1 and not self.proc.expart[0].render(self.data):
+		if not self.proc.expart or (len(self.proc.expart) == 1 and not self.proc.expart[0].render(self.data)):
 			for _, out in self.output.items():
 				if out['type'] in self.proc.OUT_VARTYPE: 
 					continue
 				files2ex.append (out['data'])
 		else:
 			for expart in self.proc.expart:
+				expart = expart.render(self.data)
 				if expart in self.output:
 					files2ex.append (self.output[expart]['data'])
 				else:
-					files2ex.extend(glob(path.join(self.outdir, expart.render(self.data))))
+					files2ex.extend(glob(path.join(self.outdir, expart)))
 		files2ex = list(set(files2ex))
-
+		
 		if self.proc.exhow in self.proc.EX_MOVE:
 			# make sure file2ex exists, in case it points to the same file from all jobs
 			with Lock():
