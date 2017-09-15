@@ -134,6 +134,7 @@ paste -d. <(seq 1 $(wc -l {{in.infile}} | cut -f1 -d' ')) {{in.infile}} > {{out.
 
 pMergeFiles         = Proc(desc = 'Merge files, each as a column.')
 pMergeFiles.depends = pAddPrefix
+# Transform it into a list of files
 # ["test1.ln", "test2.ln", ..., "test5.ln"]
 pMergeFiles.input   = {"infiles:files": lambda ch: [ch.flatten()]}
 pMergeFiles.output  = "outfile:file:mergedfile.txt"
@@ -161,7 +162,9 @@ pHeatmap        = Proc(desc = 'Draw a heatmap.')
 pHeatmap.input  = {'seed': 8525}
 pHeatmap.output = "outfile:file:heatmap.png"
 pHeatmap.exdir  = './export'
-# or /path/to/Rscript if it's not in $PATH
+# Use full path "/path/to/Rscript" if it's not in $PATH
+# You can also use a shebang in script
+# in this case: #!/usr/bin/env Rscript
 pHeatmap.lang   = 'Rscript' 
 pHeatmap.script = """
 set.seed({{in.seed}})
@@ -201,52 +204,41 @@ PyPPL().start(pHeatmap).run()
 
 |`./export/heatmap1.png`|`./export/heatmap2.png`|`./export/heatmap3.png`|
 |-----------------------|-----------------------|-----------------------|
-|![heatmap1][30]|![heatmap2][31]|![heatmap1][32]|
+|  ![heatmap1.png][30]  |  ![heatmap2.png][31]  |  ![heatmap3.png][32]  |
 
-## Using the command line argument parser
+## Use the command line argument parser
 ```python
-from pyppl import pyppl, proc, params
+from pyppl import PyPPL, Proc, Channel, params
 
-params.infiles.setType(list).setRequired().setDesc("Input files.")
-params.runner.setValue('local').setDesc('The runner.')
-params.forks.setValue(5).setType(int).setDesc('How many jobs to run simultaneously.')
-params.parse()
+params.datadir    \
+  .setRequired()  \
+  .setDesc('The data directory containing the data files.')
 
-pSort         = proc(desc = "Sort files.")
-pSort.input   = {"infile:file": params.infiles.value}
-pSort.output  = "outfile:file:{{infile | fn}}.sorted"
-pSort.forks   = params.forks.value
-pSort.runner  = params.runner.value
+params = params.parse().toDict()
+
+pSort         = Proc(desc = 'Sort files.')
+pSort.input   = {"infile:file": Channel.fromPattern(params.datadir + '/*.txt')}
+pSort.output  = "outfile:file:{{in.infile | fn}}.sorted"
+pSort.forks   = 5
+pSort.exdir   = './export'
 pSort.script  = """
-  sort -k1r {{infile}} > {{outfile}}
+  sort -k1r {{in.infile}} > {{out.outfile}} 
 """ 
 
-pyppl().starts(pSort).run()
+PyPPL().start(pSort).run()
+
 ```
 Run the pipeline: 
-```bash
-pwwang@LAPTOP ~/p/t/first> python test2.py
+```
+> python useParams.py
 USAGE:
------
-  test2.py --param-infiles <list> [OPTIONS]
+  useParams.py --param-datadir <str>
 
 REQUIRED OPTIONS:
-----------------
-  --param-infiles <list>                Input files.
+  --param-datadir <str>                 The data directory containing the data files.
 
 OPTIONAL OPTIONS:
-----------------
-  --param-runner <str>                  The runner. Default: local
-  --param-forks <int>                   How many jobs to run simultaneously. Default: 5
   -h, --help, -H, -?                    Print this help information.
-
-
-pwwang@LAPTOP ~/p/t/first> python test2.py --param-infiles test?.txt
-[2017-08-04 23:06:39][  PYPPL] Version: 0.8.0
-[2017-08-04 23:06:39][   TIPS] You can find the stderr in <workdir>/<job.index>/job.stderr
-[2017-08-04 23:06:39][>>>>>>>] pSort: Sort files.
-[2017-08-04 23:06:39][DEPENDS] pSort: START => pSort => ['pCombine']
-... ...
 ```
 
 ## Using a different runner
@@ -475,7 +467,7 @@ You can use different [dot renderers][17] to render and visualize it.
 [17]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)#Layout_programs
 [18]: https://github.com/pwwang/pyppl/raw/master/docs/pyppl.png
 [19]: https://pwwang.gitbooks.io/pyppl/change-log.html
-[20]: https://github.com/pwwang/pyppl/raw/master/docs/getStarted.png
+[20]: ./docs/getStarted.png
 [21]: https://www.gitbook.com/button/status/book/pwwang/pyppl
 [22]: https://badge.fury.io/py/pyppl.svg
 [23]: https://badge.fury.io/gh/pwwang%2Fpyppl.svg
@@ -484,7 +476,7 @@ You can use different [dot renderers][17] to render and visualize it.
 [26]: https://pwwang.gitbooks.io/pyppl/content/faq.html
 [27]: https://pwwang.gitbooks.io/pyppl/command-line-argument-parser.html
 [28]: https://pwwang.gitbooks.io/pyppl/content/configure-your-logs.html
-[29]: https://github.com/pwwang/pyppl/raw/master/docs/heatmap.png
-[29]: https://github.com/pwwang/pyppl/raw/master/docs/heatmap1.png
-[29]: https://github.com/pwwang/pyppl/raw/master/docs/heatmap2.png
-[29]: https://github.com/pwwang/pyppl/raw/master/docs/heatmap3.png
+[29]: ./docs/heatmap.png
+[30]: ./docs/heatmap1.png
+[31]: ./docs/heatmap2.png
+[32]: ./docs/heatmap3.png
