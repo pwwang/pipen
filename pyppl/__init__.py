@@ -284,6 +284,8 @@ class Proc (object):
 				depends = depends.ends
 			for depend in depends:
 				if isinstance(depend, Proc):
+					if depend is self:
+						raise ValueError('Proc(%s) cannot depend on itself.' % self.name(True))
 					self.props['depends'].append(depend)
 				elif isinstance(depend, Aggr):
 					self.props['depends'].extend(depend.ends)
