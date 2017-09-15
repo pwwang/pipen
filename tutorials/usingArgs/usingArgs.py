@@ -11,7 +11,7 @@ pHeatmap.lang      = 'Rscript' # or /path/to/Rscript if it's not in $PATH
 pHeatmap.script = """
 set.seed({{in.seed}})
 mat = matrix(rnorm({{args.ncol, args.nrow | lambda x, y: x*y}}), ncol={{args.ncol}})
-png(filename = "{{out.outfile}}")
+png(filename = "{{out.outfile}}", width=150, height=150)
 heatmap(mat)
 dev.off()
 """

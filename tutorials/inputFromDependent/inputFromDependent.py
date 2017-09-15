@@ -12,7 +12,8 @@ pSort.script = """
 
 pAddPrefix         = Proc(desc = 'Add line number to each line.')
 pAddPrefix.depends = pSort
-pAddPrefix.input   = "infile:file"  # automatically inferred from pSort.output
+# automatically inferred from pSort.output
+pAddPrefix.input   = "infile:file"  
 pAddPrefix.output  = "outfile:file:{{in.infile | fn}}.ln"
 pAddPrefix.exdir   = './export'
 pAddPrefix.forks   = 5

@@ -5,119 +5,203 @@
 
 <!-- toc -->
 ## Features
-- Supports of any language to run you processes.
 - [Easy-to-use command line parser.][27]
 - [Fancy logs.][28]
-- [Automatic deduction of input based on the process dependencies.][4]
-- [Different ways of exporting output files (including `gzip`).][5]
-- [Process caching (including caching using exported files).][6]
-- [Expectations of process output.][25]
-- [Flexible placeholder handling in output and script settings.][7]
-- [APIs to modify channels.][8]
-- [Different runners to run you processes on different platforms.][9]
-- [Runner customization (you can define your own runner).][10]
-- [Callfronts/Callbacks of processes.][11]
+- [Process caching.][6]
+- [Script templating.][7]
+- [Runner customization][9]
 - [Error handling for processes.][12]
-- [Configuration file support for pipelines.][13]
+- [Easy-switching running profile.][13]
 - Flowchat in [DOT][14] for your pipelines ([Details][15]).
-- Highly reusable processes (see [a set of highly reusable bioinformatics processes][24]).
 - [Aggregations (a set of processes predefined).][16]
-- Detailed [documentation][1] and [API documentation][2].
+- Highly reusable processes (see [a set of highly reusable bioinformatics processes][24]).
 
 ## Requirements
-- Linux, OSX or WSL (Windows Subsystem for Linux)
-- Python 2.7+ (python3 supported)
+- OS: Linux, OSX and WSL (Windows Subsystem for Linux)
+- Python 2.7+ or Python 3.4+
+- Python packages:
+  - python-box
+  - six
+  - filelock
 
 ## Installation
 ```bash
 # install latest version
-git clone https://github.com/pwwang/pyppl.git
-cd pyppl
+git clone https://github.com/pwwang/PyPPL.git
+cd PyPPL
 python setup.py install
 # or simly:
-pip install git+git://github.com/pwwang/pyppl.git
+pip install git+git://github.com/pwwang/PyPPL.git
 
 # install released version
-pip install pyppl
+pip install PyPPL
 ```
 
-## First script
-To sort 5 files simultaneously: 
+## Get started
+See `tutorials/getStarted/`  
+Sort 5 files simultaneously: 
 ```python
-1. from pyppl import pyppl, proc, channel
+1. from pyppl import PyPPL, Proc, Channel
 
-2. pSort         = proc(desc = 'Sort files.')
-3. pSort.input   = "infile:file"
-4. pSort.output  = "outfile:file:{{infile | fn}}.sorted"
+2. pSort         = Proc(desc = 'Sort files.')
+3. pSort.input   = {"infile:file": Channel.fromPattern("./data/*.txt")}
+4. pSort.output  = "outfile:file:{{in.infile | fn}}.sorted"
 5. pSort.forks   = 5
-6. pSort.exdir   = './'
+6. pSort.exdir   = './export'
 7. pSort.script  = """
-sort -k1r {{infile}} > {{outfile}}
+  sort -k1r {{in.infile}} > {{out.outfile}} 
 """ 
 
-8. pyppl().starts(pSort).run()
-"""
+8. PyPPL().start(pSort).run()
 ```
 
 **Line 1**: Import the modules.  
 **Line 2**: Define the process with a description.  
 **Line 3**: Define the input data for the process.  
-* No data was specified, it will use `sys.argv`.   
-* Full format should be: `{"infile:file": channel.fromArgv()}`.  
-
-**Line 4**: Define the output. Placeholders and functions call be used.  
+**Line 4**: Define the output. Templates are also applied here.  
 **Line 5**: Define how many jobs are running simultaneously.  
 **Line 6**: Set the directory to export the output files.  
-**Line 7**: Set Your script to run.  
-**Line 8**: Set the starting processes and run the pipeline.  
+**Line 7**: Set your script to run.  
+**Line 8**: Set the starting process and run the pipeline.  
 
-![First-script-output][20]
+![getStarted][20]
 ```
-> ls -l
-total 163
--rw-r--r-- 1 user group 56 Aug 4 00:29 test1.sorted
--rw-r--r-- 1 user group 56 Jul 31 18:47 test1.txt
--rw-r--r-- 1 user group 56 Aug 4 00:29 test2.sorted
--rw-r--r-- 1 user group 56 Jul 31 18:47 test2.txt
--rw-r--r-- 1 user group 59 Aug 4 00:29 test3.sorted
--rw-r--r-- 1 user group 59 Jul 31 18:47 test3.txt
--rw-r--r-- 1 user group 58 Aug 4 00:29 test4.sorted
--rw-r--r-- 1 user group 58 Jul 31 18:47 test4.txt
--rw-r--r-- 1 user group 58 Aug 4 00:29 test5.sorted
--rw-r--r-- 1 user group 58 Jul 31 18:47 test5.txt
--rw-r--r-- 1 user group 895 Aug 4 00:29 test.py
-drwxr-sr-x 3 user group 44 Aug 4 00:29 workdir/
+> ls -l ./export
+total 0
+-rw-rw-rw- 1 pwwang pwwang 44 Sep 14 20:50 test1.sorted
+-rw-rw-rw- 1 pwwang pwwang 56 Sep 14 20:50 test2.sorted
+-rw-rw-rw- 1 pwwang pwwang 59 Sep 14 20:50 test3.sorted
+-rw-rw-rw- 1 pwwang pwwang 58 Sep 14 20:50 test4.sorted
+-rw-rw-rw- 1 pwwang pwwang 58 Sep 14 20:50 test5.sorted
 ```
-If you don't like the theme, you can use a different one or define your own (see [here][28]).
 
-## Multiple processes 
-Sort each 5 file and then combine them into one file
+## Deduce input channel from dependent process
+See `tutorials/inputFromDependent/`  
+Sort 5 files and then add line number to each line.
 ```python
-from pyppl import pyppl, proc
+from pyppl import PyPPL, Proc, Channel
 
-pSort         = proc(desc = "Sort files.")
-pSort.input   = "infile:file"
-pSort.output  = "outfile:file:{{infile | fn}}.sorted"
-pSort.forks   = 5
-pSort.script  = """
-  sort -k1r {{infile}} > {{outfile}}
+pSort        = Proc(desc = 'Sort files.')
+pSort.input  = {"infile:file": Channel.fromPattern("./data/*.txt")}
+pSort.output = "outfile:file:{{in.infile | fn}}.sorted"
+pSort.forks  = 5
+pSort.script = """
+  sort -k1r {{in.infile}} > {{out.outfile}} 
 """ 
 
-pCombine          = proc(desc = "Combine files.")
-pCombine.depends  = pSort   # will automatically use pSort's output as input data
-pCombine.input    = {"infiles:files": lambda ch: [ch.toList()]}
-pCombine.output   = "outfile:file:{{infiles | [0] | fn}}_etc.sorted"
-pCombine.exdir    = "./export" 
-pCombine.script   = """
-> {{outfile}}
-for infile in {{infiles | asquote}}; do
-	cat $infile >> {{outfile}}
-done
+pAddPrefix         = Proc(desc = 'Add line number to each line.')
+pAddPrefix.depends = pSort
+# automatically inferred from pSort.output
+pAddPrefix.input   = "infile:file"  
+pAddPrefix.output  = "outfile:file:{{in.infile | fn}}.ln"
+pAddPrefix.exdir   = './export'
+pAddPrefix.forks   = 5
+pAddPrefix.script  = """
+paste -d. <(seq 1 $(wc -l {{in.infile}} | cut -f1 -d' ')) {{in.infile}} > {{out.outfile}}
+""" 
+
+PyPPL().start(pSort).run()
+```
+```
+> head -3 ./export/
+1.8984
+2.663
+3.625
+```
+
+## Transform input channel
+See `tutorials/transformInputChannels/`  
+Sort 5 files, add line numbers, and merge them into one file.
+```python
+from pyppl import PyPPL, Proc, Channel
+
+pSort        = Proc(desc = 'Sort files.')
+pSort.input  = {"infile:file": Channel.fromPattern("./data/*.txt")}
+pSort.output = "outfile:file:{{in.infile | fn}}.sorted"
+pSort.forks  = 5
+pSort.script = """
+  sort -k1r {{in.infile}} > {{out.outfile}} 
+""" 
+
+pAddPrefix         = Proc(desc = 'Add line number to each line.')
+pAddPrefix.depends = pSort
+pAddPrefix.input   = "infile:file"  # automatically inferred from pSort.output
+pAddPrefix.output  = "outfile:file:{{in.infile | fn}}.ln"
+pAddPrefix.forks   = 5
+pAddPrefix.script  = """
+paste -d. <(seq 1 $(wc -l {{in.infile}} | cut -f1 -d' ')) {{in.infile}} > {{out.outfile}}
+""" 
+
+pMergeFiles         = Proc(desc = 'Merge files, each as a column.')
+pMergeFiles.depends = pAddPrefix
+# ["test1.ln", "test2.ln", ..., "test5.ln"]
+pMergeFiles.input   = {"infiles:files": lambda ch: [ch.flatten()]}
+pMergeFiles.output  = "outfile:file:mergedfile.txt"
+pMergeFiles.exdir   = "./export"
+pMergeFiles.script  = """
+paste {{in.infiles | asquote}} > {{out.outfile}}
 """
 
-# Only need to specify starting processes
-pyppl().starts(pSort).run()
+PyPPL().start(pSort).run()
 ```
+```
+> head -3 ./export/mergedfile.txt
+1.8984  1.6448  1.2915  1.7269  1.7692
+2.663   2.3369  2.26223 2.3866  2.7536
+3.625   3.28984 3.25945 3.29971 3.30204
+```
+
+## Use a different language
+See `tutorials/differentLang/`  
+Plot heatmap using R.
+```python
+from pyppl import PyPPL, Proc
+
+pHeatmap        = Proc(desc = 'Draw a heatmap.')
+pHeatmap.input  = {'seed': 8525}
+pHeatmap.output = "outfile:file:heatmap.png"
+pHeatmap.exdir  = './export'
+# or /path/to/Rscript if it's not in $PATH
+pHeatmap.lang   = 'Rscript' 
+pHeatmap.script = """
+set.seed({{in.seed}})
+mat = matrix(rnorm(100), ncol=10)
+png(filename = "{{out.outfile}}")
+heatmap(mat)
+dev.off()
+"""
+
+PyPPL().start(pHeatmap).run()
+```
+`./export/heatmap.png`  
+![heatmap.png][29]
+
+## Use args
+```python
+from pyppl import PyPPL, Proc
+
+pHeatmap           = Proc(desc = 'Draw a heatmap.')
+pHeatmap.input     = {'seed': [1,2,3]}
+pHeatmap.output    = "outfile:file:heatmap{{in.seed}}.png"
+pHeatmap.exdir     = "./export"
+pHeatmap.forks     = 3
+pHeatmap.args.ncol = 10
+pHeatmap.args.nrow = 10
+pHeatmap.lang      = 'Rscript' # or /path/to/Rscript if it's not in $PATH
+pHeatmap.script = """
+set.seed({{in.seed}})
+mat = matrix(rnorm({{args.ncol, args.nrow | lambda x, y: x*y}}), ncol={{args.ncol}})
+png(filename = "{{out.outfile}}", width=150, height=150)
+heatmap(mat)
+dev.off()
+"""
+
+PyPPL().start(pHeatmap).run()
+```
+
+|`./export/heatmap1.png`|`./export/heatmap2.png`|`./export/heatmap3.png`|
+|-----------------------|-----------------------|-----------------------|
+|![heatmap1][30]|![heatmap2][31]|![heatmap1][32]|
 
 ## Using the command line argument parser
 ```python
@@ -163,23 +247,6 @@ pwwang@LAPTOP ~/p/t/first> python test2.py --param-infiles test?.txt
 [2017-08-04 23:06:39][>>>>>>>] pSort: Sort files.
 [2017-08-04 23:06:39][DEPENDS] pSort: START => pSort => ['pCombine']
 ... ...
-```
-
-## Using a different language
-```python
-pPlot = proc()
-# Specify input explicitly
-pPlot.input   = {"infile:file": ["./data.txt"]}
-# data.png
-pPlot.output  = "outfile:file:{{infile | fn}}.png"
-pPlot.lang    = "Rscript"
-pPlot.script  = """
-data <- read.table ("{{infile}}")
-H    <- hclust(dist(data))
-png (figure = “{{outfile}}”)
-plot(H)
-dev.off()
-"""
 ```
 
 ## Using a different runner
@@ -408,7 +475,7 @@ You can use different [dot renderers][17] to render and visualize it.
 [17]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)#Layout_programs
 [18]: https://github.com/pwwang/pyppl/raw/master/docs/pyppl.png
 [19]: https://pwwang.gitbooks.io/pyppl/change-log.html
-[20]: https://github.com/pwwang/pyppl/raw/master/docs/firstScript.png
+[20]: https://github.com/pwwang/pyppl/raw/master/docs/getStarted.png
 [21]: https://www.gitbook.com/button/status/book/pwwang/pyppl
 [22]: https://badge.fury.io/py/pyppl.svg
 [23]: https://badge.fury.io/gh/pwwang%2Fpyppl.svg
@@ -417,3 +484,7 @@ You can use different [dot renderers][17] to render and visualize it.
 [26]: https://pwwang.gitbooks.io/pyppl/content/faq.html
 [27]: https://pwwang.gitbooks.io/pyppl/command-line-argument-parser.html
 [28]: https://pwwang.gitbooks.io/pyppl/content/configure-your-logs.html
+[29]: https://github.com/pwwang/pyppl/raw/master/docs/heatmap.png
+[29]: https://github.com/pwwang/pyppl/raw/master/docs/heatmap1.png
+[29]: https://github.com/pwwang/pyppl/raw/master/docs/heatmap2.png
+[29]: https://github.com/pwwang/pyppl/raw/master/docs/heatmap3.png

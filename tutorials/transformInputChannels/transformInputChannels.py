@@ -21,7 +21,7 @@ paste -d. <(seq 1 $(wc -l {{in.infile}} | cut -f1 -d' ')) {{in.infile}} > {{out.
 
 pMergeFiles = Proc(desc = 'Merge files, each as a column.')
 pMergeFiles.depends = pAddPrefix
-# ["test1.L", "test2.L", ..., "test5.L"]
+# ["test1.ln", "test2.ln", ..., "test5.ln"]
 pMergeFiles.input = {"infiles:files": lambda ch: [ch.flatten()]}
 pMergeFiles.output = "outfile:file:mergedfile.txt"
 pMergeFiles.exdir = "./export"
