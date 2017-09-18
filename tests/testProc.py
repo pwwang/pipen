@@ -116,6 +116,9 @@ class TestProc (unittest.TestCase):
 		p.args = {'a': 1}
 		p.args.b = '2'
 		self.assertEqual(dict(p.args), {'a': 1, 'b': '2'})
+		p.input = 'a'
+		p.input = [1]
+		self.assertEqual(p.config['input'], {'a': [1]})
 
 	def testLog(self):
 		p = Proc()
@@ -336,14 +339,14 @@ class TestProc (unittest.TestCase):
 		self.assertEqual(p3.input['qs']['type'], 'var')
 
 		# always list
-		p3.input = ["qi", 'qs']
+		p3.input = "qi, qs"
 		p3._buildProps()
 		p3._buildInput()
 		self.assertEqual(p3.input['qi']['data'], ['1', '2'])
 		self.assertEqual(p3.input['qi']['type'], 'var')
 		self.assertEqual(p3.input['qs']['data'], ['a', 'b'])
 		self.assertEqual(p3.input['qs']['type'], 'var')
-		p3.input = ["qi, qs"]
+		p3.input = "qi, qs"
 		p3._buildProps()
 		p3._buildInput()
 		self.assertEqual(p3.input['qi']['data'], ['1', '2'])
@@ -352,7 +355,7 @@ class TestProc (unittest.TestCase):
 		self.assertEqual(p3.input['qs']['type'], 'var')
 
 		# invalid type
-		p3.input = ["qi:t", 'qs']
+		p3.input = "qi:t, qs"
 		p3._buildProps()
 		self.assertRaises(TypeError, p3._buildInput)
 

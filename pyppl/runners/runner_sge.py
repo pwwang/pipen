@@ -1,9 +1,8 @@
 import copy
-from os import devnull
-from subprocess import Popen
 from re import search
 
 from .runner_queue import RunnerQueue
+from .. import utils
 
 
 class RunnerSge (RunnerQueue):
@@ -101,9 +100,9 @@ class RunnerSge (RunnerQueue):
 
 	def getpid (self):
 		# Your job 6556149 ("pSort.notag.3omQ6NdZ.0") has been submitted
-		m = search (r"\s(\d+)\s", open(self.job.outfile).read())
-		if not m:
-			return
+		with open(self.job.outfile) as f:
+			m = search (r"\s(\d+)\s", f.read())
+		if not m: return
 		self.job.pid (m.group(1))
 
 	def isRunning (self):
@@ -111,8 +110,6 @@ class RunnerSge (RunnerQueue):
 		Tell whether the job is still running
 		"""
 		jobpid = self.job.pid ()
-		if not jobpid:
-			return False
-		with open(devnull, 'w') as f:
-			return Popen (['qstat', '-j', jobpid], stdout=f, stderr=f).wait() == 0
+		if not jobpid: return False
+		return utils.dumbPopen (['qstat', '-j', jobpid]).wait() == 0
 

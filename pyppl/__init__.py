@@ -293,6 +293,12 @@ class Proc (object):
 					raise TypeError('Unsupported dependent: %s, expect Proc or Aggr.' % repr(depend))
 		elif name == 'args' or name == 'tplenvs':
 			self.config[name] = Box(value)
+		elif name == 'input' and self.config[name] and isinstance(self.config[name], six.string_types) and not isinstance(value, six.string_types) and not isinstance(value, dict):
+			# previous keys assigned
+			# previous keys are strings
+			# data assigned (strings are supposed to be keys)
+			# whole format used
+			self.config[name] = {self.config[name]: value}
 		else:
 			self.config[name] = value
 			
@@ -655,7 +661,6 @@ class Proc (object):
 				invals = invals.cbind(inval)
 			else:
 				invals = invals.cbind(Channel.create(inval))
-		
 		self.props['size'] = invals.length()
 		self.props['jobs'] = [None] * self.size
 
@@ -1009,9 +1014,11 @@ class PyPPL (object):
 			'file':    path.splitext(sys.argv[0])[0] + ".pyppl.log"  
 		}
 		if 'log' in self.config:
+			if self.config['log']['file'] is True: 
+				del self.config['log']['file']
 			utils.dictUpdate(logconfig, self.config['log'])
-			del self.config['log']			
-
+			del self.config['log']
+			
 		logger.getLogger (logconfig['levels'], logconfig['theme'], logconfig['file'], logconfig['lvldiff'])
 
 		logger.logger.info ('[  PYPPL] Version: %s' % (VERSION))

@@ -36,11 +36,11 @@ class RunnerQueue (Runner):
 		fout = open (self.job.outfile)
 		
 		# wait for submission process first
-		super(runner_queue, self).wait(False, fout, ferr)
+		super(RunnerQueue, self).wait(False, fout, ferr)
 			
 		lastout = ''
 		lasterr = ''
-		while self.job.rc() == Job.EMPTY_RC:
+		while self.job.rc() == -1:
 			sleep (30)
 			(lastout, lasterr) = self._flushOut (fout, ferr, lastout, lasterr)
 			

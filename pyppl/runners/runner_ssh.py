@@ -31,9 +31,9 @@ class RunnerSsh (Runner):
 		conf         = {}
 		if hasattr (self.job.proc, 'sshRunner'):
 			conf     = self.job.proc.sshRunner
-			
+		
 		if not 'servers' in conf:
-			raise Exception ("%s: No servers found." % self.job.proc._name())
+			raise ValueError ("%s: No servers found." % self.job.proc.name())
 		
 		servers      = conf['servers']
 
@@ -61,7 +61,7 @@ class RunnerSsh (Runner):
 		if 'postScript' in conf:
 			sshsrc.append (conf['postScript'])
 
-		runner_ssh.serverid += 1
+		RunnerSsh.serverid += 1
 		
 		with open (sshfile, 'w') as f:
 			f.write ('\n'.join(sshsrc) + '\n')

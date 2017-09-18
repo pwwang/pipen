@@ -78,23 +78,25 @@ class TestPyPPL (unittest.TestCase):
 		self.assertIsInstance(pyppl, PyPPL)
 		self.assertIn('Version', err.getvalue())
 		self.assertIn('TIPS', err.getvalue())
-
+		
 		cfgfile = path.join(tempfile.gettempdir(), 'testInit.json')
 		with open(cfgfile, 'w') as f:
 			f.write('''{
 				"proc": {"forks": 5}
 			}
 			''')
+		
 		with captured_output() as (out, err):
 			pyppl = PyPPL(config = {
 				'proc': {'forks': 10}
 			}, cfgfile = cfgfile)
 		self.assertIn('Read from %s' % cfgfile, err.getvalue())
-
+		
 		with captured_output() as (out, err):
 			pyppl = PyPPL(config = {
 				'log': {
-					'levels': None
+					'levels': None,
+					'file': True
 				},
 				'proc': {'forks': 10}
 			}, cfgfile = cfgfile)

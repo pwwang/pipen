@@ -20,13 +20,25 @@ def captured_output():
 		sys.stdout, sys.stderr = old_out, old_err
 
 class Proc(object):
+	OUT_VARTYPE  = ['var']
+	OUT_FILETYPE = ['file']
+	OUT_DIRTYPE  = ['dir']
 	def __init__(self):
 		self.errhow  = 'terminate'
 		self.errntry = 3
-		self.echo    = {'jobs':[8], 'type':['stderr']}
+		self.echo    = {'jobs':[8], 'type':['stderr'], 'filter': ''}
+		self.id      = 'pTestProc'
+		self.tag     = 'notag'
+		self.sshRunner = ''
 
 	def log(self, msg, flag):
 		sys.stderr.write('[%s] %s\n' % (flag, msg)) 
+
+	def _suffix(self):
+		return 'suffix'
+	
+	def name(self):
+		return "%s.%s" % (self.id, self.tag)
 
 class Job(object):
 	def __init__(self):
@@ -35,6 +47,8 @@ class Job(object):
 		self._suc    = True
 		self.proc    = Proc()
 		self.index   = 8
+		self.output  = {}
+		self.rcfile  = path.join(tmpdir, 'testrunnerjob.rc')
 		self.script  = path.join(tmpdir, 'testrunnerjob.script')
 		self.errfile = path.join(tmpdir, 'testrunnerjob.stderr')
 		self.outfile = path.join(tmpdir, 'testrunnerjob.stdout')
@@ -137,6 +151,93 @@ class TestRunner(unittest.TestCase):
 			r.finish()
 		self.assertEqual(err.getvalue().count('RETRY'), 3)
 
+	def testLocal(self):
+		job = Job()
+		r = runners.RunnerLocal(job)
+		self.assertIsInstance(r, runners.RunnerLocal)
+		self.assertIsInstance(r, runners.Runner)
+
+	def testDry(self):
+		job = Job()
+		r = runners.RunnerDry(job)
+		self.assertIsInstance(r, runners.RunnerDry)
+		self.assertIsInstance(r, runners.Runner)
+		script = path.join(tempfile.gettempdir(), 'testrunnerjob.script.dry')
+		self.assertEqual(r.script, [script])
+
+		job.output = {
+			'a': {'type': 'file', 'data': 'abc.file'},
+			'b': {'type': 'dir', 'data': 'abc.dir'}
+		}
+		r = runners.RunnerDry(job)
+		with open(script) as f: scriptcontent = f.read()
+		self.assertIn('touch "abc.file"', scriptcontent)
+		self.assertIn('mkdir -p "abc.dir"', scriptcontent)
+
+	def testQueue(self):
+		job = Job()
+		r = runners.RunnerQueue(job)
+		self.assertIsInstance(r, runners.RunnerQueue)
+		self.assertIsInstance(r, runners.Runner)
+
+	def testQueueWait(self):
+		with captured_output() as (out, err):
+			logger.getLogger()
+			job = Job()
+			with open(job.script, 'w') as fs:
+				fs.write('#!/bin/bash\necho pyppl.log:abcdef 1>&2')
+			r = runners.RunnerQueue(job)
+			r.submit()
+			r.wait()
+		self.assertIn('abcdef', err.getvalue())
+
+	def testSge(self):
+		job = Job()
+		r = runners.RunnerSge(job)
+		self.assertIsInstance(r, runners.RunnerSge)
+		self.assertIsInstance(r, runners.Runner)
+
+		with open(job.script + '.sge') as f: scripts = f.read()
+		self.assertIn('#$ -N pTestProc.notag.suffix.8', scripts)
+		self.assertIn('testrunnerjob.stdout', scripts)
+		self.assertIn('testrunnerjob.stderr', scripts)
+		self.assertIn('testrunnerjob.script', scripts)
+		self.assertIn('trap', scripts)
+
+		self.assertEqual(r.script, ['qsub', job.script + '.sge'])
+
+	def testSgeGetPid(self):
+		job = Job()
+		r = runners.RunnerSge(job)
+		with open(job.outfile, 'w') as f: f.write('')
+		r.getpid()
+		self.assertEqual(job.pid(), '')
+		with open(job.outfile, 'w') as f: f.write('Your job 6556149 ("pSort.notag.3omQ6NdZ.0") has been submitted')
+		r.getpid()
+		self.assertEqual(job.pid(), '6556149')
+
+		self.assertFalse(r.isRunning())
+
+	def testSlurm(self):
+		job = Job()
+		r = runners.RunnerSlurm(job)
+		self.assertIsInstance(r, runners.RunnerSlurm)
+		self.assertIsInstance(r, runners.Runner)
+
+	#@skip('Skip if ssh not available.')
+	def testSsh(self):
+		job = Job()
+		self.assertRaises(ValueError, runners.RunnerSsh, job)
+		job.proc.sshRunner = {
+			'servers': ['server1', 'server2', 'server3']
+		}
+		r = runners.RunnerSsh(job)
+		self.assertIsInstance(r, runners.RunnerSsh)
+		self.assertIsInstance(r, runners.Runner)
+		self.assertEqual(r.server, 'server1')
+		r2 = runners.RunnerSsh(job)
+		self.assertEqual(r2.server, 'server2')
+		self.assertEqual(r2.script, [job.script + '.ssh'])
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)
