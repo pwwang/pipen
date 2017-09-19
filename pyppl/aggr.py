@@ -8,8 +8,6 @@ class Aggr (object):
 	"""
 	The aggregation of a set of processes
 
-	@static variables:
-		`commprops`: The common properties. If you set these properties to an aggregation, all the processes in this aggregation will have it.
 	@magic methods:
 		`__setattr__(self, name, value)`: Set property value of an aggregation.
 		- if it's a common property, set it to all processes
@@ -22,8 +20,6 @@ class Aggr (object):
 
 	"""
 	
-	commprops = ['tag', 'tmpdir', 'forks', 'cache', 'retcodes', 'rc', 'echo', 'runner', 'errorhow', 'errhow', 'errorntry', 'errntry']
-	
 	# aggr (p1, p2, p3, ..., depends = True)
 	def __init__ (self, *arg):
 		"""
@@ -33,7 +29,7 @@ class Aggr (object):
 		"""
 		self.starts                     = []
 		self.ends                       = []
-		self.id                         = utils.varname(self.__class__.__name__, 100)
+		self.id                         = utils.varname()
 		
 		depends                         = True
 		arg                             = list(arg)
@@ -43,7 +39,9 @@ class Aggr (object):
 		self.procs                      = []
 		for proc in arg:
 			pid                = proc.id
-			newproc            = proc.copy(utils.uid(self.id, 4), pid)
+			if hasattr(self, pid):
+				raise AttributeError('%s is an attribute of Aggr, use a different process id.' % pid)
+			newproc            = proc.copy(tag = utils.uid(self.id, 4), newid = pid)
 			newproc.aggr       = self.id
 			self.__dict__[pid] = newproc
 			self.procs.append (newproc)
@@ -64,57 +62,20 @@ class Aggr (object):
 			propval:  The property value
 			procs:    The ids of the procs to set
 		"""
-		if procs is None:
-			procs = [p.id for p in self.procs]
-		else:
-			procs = utils.alwaysList (procs)
-		for proc in [self.__dict__[pid] for pid in procs]:
-			proc.__setattr__ (propname, propval)
-			
-	def updateArgs (self, arg, procs = None):
-		"""
-		update args for procs
-		@params:
-			arg:   the arg to update
-			procs: The ids of the procs to update
-		"""
-		if procs is None:
-			procs = [p.id for p in self.procs]
-		else:
-			procs = utils.alwaysList (procs)
-		for proc in [self.__dict__[pid] for pid in procs]:
-			utils.dictUpdate (proc.args, arg)
-		
-	def __setattr__ (self, name, value):
-		if name in aggr.commprops or name.endswith('Runner'):
-			self.set (name, value)
-		elif name == 'input':
-			if not isinstance(value, channel):
-				value  = channel.create(value)
-			
-			start = 0
-			for proc in self.starts: # only str and list allowed: "input1, input2" or ["input1", "input2"]
-				inkey = proc.config['input']
-				if isinstance(inkey, list):
-					inkey = ','.join (inkey)
-				if not isinstance (inkey, utils.basestring):
-					raise RuntimeError('Expect list or str for proc keys for aggregation: %s, you may have already set the input channels?' % (self.id))
-				l = len (utils.split(inkey, ','))
+		dot2dictargs = lambda name, val: val if '.' not in name else {name.split('.')[-1]: val}
 
-				proc.input = {inkey: value.slice(start, l)}
-				start += l
-					
-		elif name == 'depends':
-			for proc in self.starts:
-				proc.depends = value
-		elif name.startswith ('ex'): # export
-			for proc in self.ends:
-				proc.__setattr__(name, value)
-		elif name in ['starts', 'ends', 'id', 'procs']:
-			self.__dict__[name] = value
+		if procs is None:
+			procs = [p.id for p in self.procs]
 		else:
-			raise AttributeError('Cannot set property "%s" of aggregation "%s"' % (name, self.id))
-		
+			procs = utils.alwaysList (procs)
+		for proc in [self.__dict__[pid] for pid in procs]:
+			if propname.startswith('args'):
+				utils.dictUpdate (proc.args, dot2dictargs(propname, propval))
+			elif propname.startswith('tplenvs'):
+				utils.dictUpdate (proc.tplenvs, dot2dictargs(propname, propval))
+			else:
+				setattr(proc, propname, propval)
+	
 	def addProc (self, p, where = None):
 		"""
 		Add a process to the aggregation.
@@ -125,7 +86,7 @@ class Aggr (object):
 		@returns:
 			the aggregation itself
 		"""
-		newproc = p.copy(utils.uid(self.id, 4), p.id)
+		newproc = p.copy(tag = utils.uid(self.id, 4), newid = p.id)
 		newproc.aggr = self.id
 		self.procs.append (newproc)
 		if where == 'starts' or where == 'both':
@@ -135,38 +96,42 @@ class Aggr (object):
 		self.__dict__[p.id] = newproc
 		return self
 		
-	def copy (self, tag='notag', copyDeps=True, newid=None):
+	def copy (self, tag='notag', deps=True, newid=None):
 		"""
 		Like `proc`'s `copy` function, copy an aggregation. Each processes will be copied.
 		@params:
 			`tag`:      The new tag of all copied processes
-			`copyDeps`: Whether to copy the dependencies or not. Default: True
+			`deps`: Whether to copy the dependencies or not. Default: True
 			- dependences for processes in starts will not be copied
 			`newid`:    Use a different id if you don't want to use the variant name
 		@returns:
 			The new aggregation
 		"""
-		name     = utils.varname(r'\w+\.'+self.copy.__name__, 2) if newid is None else newid
+		name     = utils.varname() if newid is None else newid
 		tagstr   = utils.uid(name, 4) if not tag or tag == 'notag' else tag
-		ret      = aggr ()
+		ret      = Aggr ()
 		ret.id   = name
 		
 		for proc in self.procs:
 			if tag == proc.tag:
+				# This will happen to have procs with same id and tag
 				raise ValueError('Tag "%s" is used by proc "%s" before, cannot copy with the same tag for aggregation: %s.' % (tag, proc.id, self.id))
 			
-			if proc not in self.starts and copyDeps:
+			if proc not in self.starts and deps:
 				for d in proc.depends:
 					if d not in self.procs:
-						raise ValueError('Failed to copy "%s": a non-start proc ("%s") depends on a proc("%s") does not belong to "%s"' % (self.id, proc._name(), d._name(), self.id))					
+						raise ValueError('Failed to copy "%s": a non-start proc ("%s") depends on a proc("%s") does not belong to "%s"' % (self.id, proc.name(), d.name(), self.id))					
 			
 			newproc      = proc.copy (tag, proc.id)
 			newproc.aggr = name
-			ret.addProc (newproc)
-			if proc in self.starts:
-				ret.starts.append (newproc)
-			if proc in self.ends:
-				ret.ends.append (newproc)
+
+			
+			where = 'both' if proc in self.starts and proc in self.ends \
+				else 'starts' if proc in self.starts \
+				else 'ends' if proc in self.ends \
+				else None
+			
+			ret.addProc (newproc, where = where)
 		
 		ret.set ('tag', tagstr)
 		# copy dependences

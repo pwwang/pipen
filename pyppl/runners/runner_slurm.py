@@ -98,15 +98,14 @@ class RunnerSlurm (RunnerQueue):
 			return
 		
 		pid = int (content.split(' ')[-1])
-		self.job.id (pid)
+		self.job.pid (pid)
 
 	def isRunning (self):
 		"""
 		Tell whether the job is still running
 		"""
-		jobid = self.job.id ()
-		if not jobid:
-			return False
+		jobid = self.job.pid ()
+		if not jobid: return False
 		try:
 			return jobid + ' ' in check_output([self.commands['squeue'], '-j', jobid]).split("\n")[1]
 		except:
