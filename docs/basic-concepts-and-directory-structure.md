@@ -3,7 +3,7 @@
 <!-- toc -->
 
 ## Layers of a pipeline
-![Basic concepts](https://github.com/pwwang/pyppl/raw/master/docs/concept.png)
+![Basic concepts](./concept.png)
 The pipeline consists of channels and processes. A process may have many jobs. Each job uses the corresponding elements from the input channel of the process, and generates values for output channel.  
 Actually, what you need to do is just specify the first input channel, and then tell `pyppl` the dependencies of the processes. The later processes will use the output channel of the processes they depend on. Of course, you can interfere by using functions in the input specification.
 
@@ -19,7 +19,7 @@ Actually, what you need to do is just specify the first input channel, and then 
 			|-- output/
 			|-- job.cache
 			|-- job.script
-			|-- job.id
+			|-- job.pid
 			|-- job.rc
 			|-- job.stdout
 			|-- job.stderr
@@ -37,7 +37,7 @@ Actually, what you need to do is just specify the first input channel, and then 
 |`<job.index>/output/`|Where you can find all the output files||
 |`<job.index>/job.cache`|The file containing the signature of the job||
 |`<job.index>/job.script`|To script file to be running||
-|`<job.index>/job.id`|The id of the job of its running system.|Mostly used to tell whether the process is still running.|
+|`<job.index>/job.pid`|The id of the job of its running system.|Mostly used to tell whether the process is still running.|
 |`<job.index>/job.rc`|To file containing the return code||
 |`<job.index>/job.stdout`|The STDOUT of the script||
 |`<job.index>/job.stderr`|The STDERR of the script||
