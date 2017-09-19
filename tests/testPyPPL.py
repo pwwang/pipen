@@ -424,6 +424,7 @@ class TestPyPPL (unittest.TestCase):
 		self.assertTrue(path.exists(fcfile))
 		self.assertTrue(path.exists(dotfile))
 		with open(dotfile) as f:
+			a = f.read()
 			self.assertFalse(set("""digraph PyPPL {
     "p2" -> "p3"
     "p2" -> "p4"
@@ -436,7 +437,7 @@ class TestPyPPL (unittest.TestCase):
     "p4" -> "p6"
     "p5" -> "p6"
 }
-""".splitlines()) - set(f.read().splitlines()))
+""".splitlines()) - set(a.splitlines()))
 
 	def testRun(self):
 		"""

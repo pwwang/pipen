@@ -1224,7 +1224,7 @@ class PyPPL (object):
 			fc.addNode(start, 'start')
 			
 		for end in self.ends:
-			fc.addNode(start, 'end')
+			fc.addNode(end, 'end')
 			for ps in paths[end.name(False)]:
 				[fc.addNode(p) for p in ps]
 		

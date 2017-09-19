@@ -20,32 +20,64 @@ class Flowchart(object):
 			},
 			'start': {
 				'style': 'filled',
-				'color': '#259229',
+				'color': '#259229', # green
 			},
 			'end': {
 				'style': 'filled',
-				'color': '#d63125',
+				'color': '#d63125', # red
 			},
 			'export': {
-				'fontcolor': '#c71be4',
+				'fontcolor': '#c71be4', # purple
 			},
 			'skip': {
-				'fillcolor': '#eaeaea',
+				'fillcolor': '#eaeaea', # gray
 			},
-			'skip2': {
-				'fillcolor': '#e9e9e9',
+			'skip+': {
+				'fillcolor': '#e9e9e9', # gray
 			},
 			'resume': {
-				'fillcolor': '#b9ffcd',
+				'fillcolor': '#b9ffcd', # light green
 			},
 			'aggr': {
 				'style': 'filled',
-				'color': '#eeeeee',
+				'color': '#eeeeee', # almost white
 			}
 		},
 
 		'dark': {
-
+			'base':  {
+				'shape':     'box',
+				'style':     'rounded,filled',
+				'fillcolor': '#555555',
+				'color':     '#ffffff',
+				'fontcolor': '#ffffff',
+			},
+			'start': {
+				'style': 'filled',
+				'color': '#59b95d', # green
+				'penwidth': 2,
+			},
+			'end': {
+				'style': 'filled',
+				'color': '#ea7d75', # red
+				'penwidth': 2,
+			},
+			'export': {
+				'fontcolor': '#db95e6', # purple
+			},
+			'skip': {
+				'fillcolor': '#eaeaea', # gray
+			},
+			'skip+': {
+				'fillcolor': '#e9e9e9', # gray
+			},
+			'resume': {
+				'fillcolor': '#1b5a2d', # light green
+			},
+			'aggr': {
+				'style': 'filled',
+				'color': '#eeeeee', # almost white
+			}
 		}
 	}
 
@@ -92,14 +124,14 @@ class Flowchart(object):
 	def _dotnodes(self):
 		dotstr = []
 		for node in self.nodes:
-			theme  = self.theme['base']
+			theme  = {key:val for key,val in self.theme['base'].items()}
 			if node in self.starts:
 				theme.update(self.theme['start'])
 			if node in self.ends:
 				theme.update(self.theme['end'])
 			if node.exdir:
 				theme.update(self.theme['export'])
-			if node.resume == True:
+			if node.resume is True:
 				theme.update(self.theme['resume'])
 			elif node.resume:
 				theme.update(self.theme[node.resume])
