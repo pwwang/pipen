@@ -271,6 +271,7 @@ def getLogger (levels='normal', theme=True, logfile=None, lvldiff=[], name='PyPP
 	
 	if logfile:
 		fileCh = logging.FileHandler(logfile)
+		fileCh.setFormatter(pFormatter(theme = None))
 		logger.addHandler (fileCh)
 	
 	logger.addHandler (streamCh)

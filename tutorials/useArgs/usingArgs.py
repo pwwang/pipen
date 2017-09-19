@@ -1,6 +1,6 @@
 from pyppl import PyPPL, Proc
 
-pHeatmap           = Proc(desc = 'Draw a heatmap.')
+pHeatmap           = Proc(desc = 'Draw heatmap.')
 pHeatmap.input     = {'seed': [1,2,3]}
 pHeatmap.output    = "outfile:file:heatmap{{in.seed}}.png"
 pHeatmap.exdir     = "./export"

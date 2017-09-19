@@ -1,4 +1,4 @@
-# pyppl - A python lightweight pipeline framework
+# PyPPL - A python lightweight pipeline framework
 ![Pypi][22] ![Github][23] ![Gitbook][21]   
 
 [Documentation][1] | [API][2] | [Change log][19] | [FAQ][26] | [Fork me][3]
@@ -8,7 +8,7 @@
 - [Easy-to-use command line parser.][27]
 - [Fancy logs.][28]
 - [Process caching.][6]
-- [Script templating.][7]
+- [Script templating (using either a builtin one or Jinja2).][7]
 - [Runner customization][9]
 - [Error handling for processes.][12]
 - [Easy-switching running profile.][13]
@@ -77,6 +77,7 @@ total 0
 
 ## Deduce input channel from dependent process
 See `tutorials/inputFromDependent/`  
+If a process depends on another one, the input channel can be deduced from the output channel of the latter process.  
 Sort 5 files and then add line number to each line.
 ```python
 from pyppl import PyPPL, Proc, Channel
@@ -158,7 +159,7 @@ Plot heatmap using R.
 ```python
 from pyppl import PyPPL, Proc
 
-pHeatmap        = Proc(desc = 'Draw a heatmap.')
+pHeatmap        = Proc(desc = 'Draw heatmap.')
 pHeatmap.input  = {'seed': 8525}
 pHeatmap.output = "outfile:file:heatmap.png"
 pHeatmap.exdir  = './export'
@@ -180,10 +181,12 @@ PyPPL().start(pHeatmap).run()
 ![heatmap.png][29]
 
 ## Use args
+See `tutorials/useArgs/`  
+If the jobs are sharing the same set of configurations (in this case, the number of rows and columns of the matrix), they can be set in `pXXX.args`. The other benefit is to make the channels intact if the configurations are not suppose to be channeling.  
 ```python
 from pyppl import PyPPL, Proc
 
-pHeatmap           = Proc(desc = 'Draw a heatmap.')
+pHeatmap           = Proc(desc = 'Draw heatmap.')
 pHeatmap.input     = {'seed': [1,2,3]}
 pHeatmap.output    = "outfile:file:heatmap{{in.seed}}.png"
 pHeatmap.exdir     = "./export"
@@ -207,6 +210,7 @@ PyPPL().start(pHeatmap).run()
 |  ![heatmap1.png][30]  |  ![heatmap2.png][31]  |  ![heatmap3.png][32]  |
 
 ## Use the command line argument parser
+See `tutorials/useParams/`  
 ```python
 from pyppl import PyPPL, Proc, Channel, params
 
@@ -228,9 +232,9 @@ pSort.script  = """
 PyPPL().start(pSort).run()
 
 ```
-Run the pipeline: 
+Run the pipeline:  
+`> python useParams.py`
 ```
-> python useParams.py
 USAGE:
   useParams.py --param-datadir <str>
 
@@ -240,239 +244,226 @@ REQUIRED OPTIONS:
 OPTIONAL OPTIONS:
   -h, --help, -H, -?                    Print this help information.
 ```
+Provide value to `--param-datadir`:  
+`> python useParams.py --param-datadir ./data`
 
-## Using a different runner
+## Use a different runner
+See `/tutorials/differentRunner/`
 ```python
-pPlot = proc()
-pPlot.input   = {"infile:file": ["./data1.txt", "./data2.txt", "./data3.txt"]}
-pPlot.output  = "outfile:file:{{infile.fn}}.png"
-pPlot.lang    = "Rscript"
-pPlot.runner  = "sge"
-pPlot.sgeRunner = {
-    "sgeRunner": {
-      "sge.q" : "1-day"
-    }		
+from pyppl import PyPPL, Proc, Channel
+
+pSort         = Proc(desc = 'Sort files.')
+pSort.input   = {"infile:file": Channel.fromPattern("./data/*.txt")}
+pSort.output  = "outfile:file:{{in.infile | fn}}.sorted"
+# specify the runner
+pSort.runner  = 'sge'
+# specify the runner options
+pSort.sgeRunner = {
+	"sge.q" : "1-day"
 }
-# run all 5 jobs at the same time
-pPlot.forks   = 5
-pPlot.script  = """
-data <- read.table ("{{infile}}")
-H    <- hclust(dist(data))
-png (figure = “{{outfile}}”)
-plot(H)
-dev.off()
-"""
-pyppl().starts(pPlot).run()
+pSort.forks   = 5
+pSort.exdir   = './export'
+pSort.script  = """
+  sort -k1r {{in.infile}} > {{out.outfile}} 
+""" 
+
+PyPPL().start(pSort).run()
+# or run all process with sge runner:
+# PyPPL().start(pSort).run('sge')
+# or:
+# PyPPL({
+#	'proc': {
+#		'runner': 'sge', 
+#		'sgeRunner': {'sge.q': '1-day'}
+#	}
+# }).start(pSort).run()
+```
+
+## Use Jinja2 as template engine
+See `/tutorials/useJinja2/`
+```python
+from pyppl import PyPPL, Proc, Channel
+
+pSort          = Proc(desc = 'Sort files.')
+pSort.input    = {"infile:file": Channel.fromPattern("./data/*.txt")}
+# Notice the different between builtin template engine and Jinja2
+pSort.output   = "outfile:file:{{ fn(in.infile) }}.sorted"
+# pSort.output = "outfile:file:{{in.infile | fn}}.sorted"
+pSort.forks    = 5
+# You have to have Jinja2 installed (pip install Jinja2)
+pSort.template = 'Jinja2'
+pSort.exdir    = './export'
+pSort.script   = """
+  sort -k1r {{in.infile}} > {{out.outfile}} 
+""" 
+
+PyPPL().start(pSort).run()
 ```
 
 ## Debug your script
+See `/tutorials/debugScript/`  
+You can directly go to `<workdir>/<job.index>/job.script` to debug your script, or you can also print some values out throught `PyPPL` log system.  
 ```python
-from pyppl import pyppl, proc
-p = proc(tag = 'Debug')
-p.input = {"a": [1]}
-p.script = """
-a={{a}}
-echo "pyppl.log: The value of a is $a" 1>&2
-a="someothervalue"
-echo "pyppl.log.avalue: The value of a is $a" 1>&2
+from pyppl import PyPPL, Proc
+
+pHeatmap           = Proc(desc = 'Draw heatmap.')
+pHeatmap.input     = {'seed': [1,2,3,4,5]}
+pHeatmap.output    = "outfile:file:heatmap{{in.seed}}.png"
+pHeatmap.exdir     = "./export"
+# Don't cache jobs for debugging
+pHeatmap.cache     = False
+# Output debug information for all jobs, but don't echo stdout and stderr
+pHeatmap.echo      = {'jobs': range(5), 'type': ''}
+pHeatmap.args.ncol = 10
+pHeatmap.args.nrow = 10
+pHeatmap.lang      = 'Rscript' # or /path/to/Rscript if it's not in $PATH
+pHeatmap.script = """
+set.seed({{in.seed}})
+mat = matrix(rnorm({{args.ncol, args.nrow | lambda x, y: x*y}}), ncol={{args.ncol}})
+png(filename = "{{out.outfile}}", width=150, height=150)
+
+# have to be on stderr
+cat("pyppl.log.debug:Plotting heatmap #{{job.index | lambda x: int(x) + 1}} ...", file = stderr())
+
+heatmap(mat)
+dev.off()
 """
+
+PyPPL({
+	'log': {
+		'levels' : 'basic',
+		'lvldiff': []
+	}
+}).start(pHeatmap).run()
 ```
 You will get something like this in your log:
-```
-# other logs
-[2017-01-01 01:01:01][    LOG] The value of a is 1
-[2017-01-01 01:01:01][ AVALUE] The value of a is someothervalue
-# other logs
-```
-
-## Use exported files as cache
-```python
-from pyppl import pyppl, proc
-
-pDownload         = proc(desc = 'Download the genome reference.')
-pDownload.input   = {"url": ["http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz"]}
-pDownload.output  = "outfile:file:hg19.tar.gz"
-pDownload.exdir   = './export'
-pDownload.cache   = 'export'
-pDownload.script  = """
-wget "{{url}}" -O "{{outfile}}"
-""" 
-
-pyppl().starts(pSort).run()
-```
-For this kind of process, you just want to run it only once. Next time when you run it, it will use the exported files in `pDownload.exdir` as output file and skip running the script.
-
-## Dry-run a pipeline
-If you just want to generate the pipeline flowchart or test the process settings, you would like to dry-run a pipeline, which will generate empty output files and directories and skip running the script.  
-Dry runner is a built-in runner, so you just need to specify the runner name to the process:
-```python
-p.runner = 'dry'
-```
-To dry-run a whole pipeline:
-```python
-pyppl().starts().run('dry')
-```
-
-## Set expectations of a process output
-```python
-from pyppl import pyppl, proc
-
-pDownload         = proc(desc = 'Download the genome reference.')
-pDownload.input   = {"url": ["http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz"]}
-pDownload.output  = "outfile:file:hg19.tar.gz"
-pDownload.exdir   = './export'
-pDownload.cache   = 'export'
-# Expect the outfile contains "chr"
-pDownload.expect  = "grep chr {{outfile}}" 
-pDownload.script  = """
-wget "{{url}}" -O "{{outfile}}"
-""" 
-
-pyppl().starts(pSort).run()
-```
+![debugScript.png][34]
 
 ## Switch runner profiles
-In your configuration file: (i.e. `/path/to/mypyppl.json`)
+See `tutorials/siwthcRunnerProfile/`  
+We can define a set of runner profiles in a `json` file (`./profiles.json`):
 ```json
 {
-    "proc": {            // default profile
-        "runner": "ssh",
-        "sgeRunner": {
-            // sge options
-        }
-    },
-    "test" : {
-        "forks": 1,
-        "runner": "local"
-    },
-    "cluster": {
-       "forks": 100,
-       "runner": "sge",
-       "sgeRunner": {
-           "sge.q": "7-days",
-           // ...
-       }
-    },
-    "profile3": {...},
-    ...
+  "proc": {
+    "runner": "local",
+    "forks" : 1,
+    "sgeRunner": {
+      "sge.q": "1-day"
+    } 
+  },
+  "local5": {
+    "runner": "local",
+    "forks":  5
+  },
+  "sge7days": {
+    "runner": "sge",
+    "sgeRunner": {
+      "sge.q": "7-days"
+    }
+  }
 }
 ```
-
-You can then switch them easily by:
+To switch profile:
 ```python
-pyppl(cfile = "/path/to/mypyppl.json").starts(...).run('test')
-# or
-pyppl(cfile = "/path/to/mypyppl.json").starts(...).run('cluster')
-```
-You can use a command line option to control it by using the command line argument parser:
-```python
-from pyppl import pyppl, params
+# default profile (proc)
+PyPPL(cfgfile = "./profiles.json").start(pHeatmap).run()
+# switch to local5 or sge7days:
+# PyPPL(cfgfile = "./profiles.json").start(pHeatmap).run('local5')
+# PyPPL(cfgfile = "./profiles.json").start(pHeatmap).run('sge7days')
 
-params.runner.setValue('test').setDesc("The running profile.")
-params.parse()
-
-# process definitions
-# ...
-
-pyppl(cfile = "/path/to/mypyppl.json").starts(...).run(params.runner.value)
-```
-Then to switch the runner:
-```
-> python pipeline.py --param-runner test
-# or
-> python pipeline.py --param-runner cluster
+# You may also use runner name as profile, which means to run using the runner with default options:
+# PyPPL(cfgfile = "./profiles.json").start(pHeatmap).run('sge') # use 1-day queue
 ```
 
 ## Draw the pipeline chart
-`pyppl` can generate the graph in [DOT language][14]. 
+`PyPPL` can generate the graph in [DOT language][14]. 
 ```python
-# "A" is the tag of p1
-p1 = proc(tag = "A")
-p2 = proc(tag = "B")
-p3 = proc(tag = "C")
-p4 = proc(tag = "D")
-p5 = proc(tag = "E")
-p6 = proc(tag = "F")
-p7 = proc(tag = "G")
-p8 = proc(tag = "H")
-p9 = proc(tag = "I")
+from pyppl import PyPPL, Proc
+
+p1 = Proc()
+p2 = Proc()
+p3 = Proc()
+p4 = Proc()
+p5 = Proc()
+p6 = Proc()
+p7 = Proc()
+p8 = Proc()
+p9 = Proc()
 """
-		   1A         8H
+		   p1         p8
 		/      \      /
-	 2B           3C
+	 p2           p3
 		\      /
-		  4D(e)       9I
+		   p4         p9
 		/      \      /
-	 5E          6F(e)
+	 p5          p6 (export)
 		\      /
-		  7G(e)
+		  p7 (expart)
 """
 p2.depends = p1
-p3.depends = [p1, p8]
-p4.depends = [p2, p3]
-p4.exdir   = "./"
+p3.depends = p1, p8
+p4.depends = p2, p3
+p4.exdir   = "./export"
 p5.depends = p4
-p6.depends = [p4, p9]
-p6.exdir   = "./"
-p7.depends = [p5, p6]
-p7.exdir   = "./"
-pyppl().starts(p1, p8, p9).flowchart()
-# saved to dot file: test.pyppl.dot
-# saved to svg file: test.pyppl.svg
-# run it after the chart generated:
-# pyppl().starts(p1, p8, p9).flowchart().run()
+p6.depends = p4, p9
+p6.exdir   = "./export"
+p7.depends = p5, p6
+p7.exdir   = "./export"
+
+# make sure at least one job is created.
+p1.input = {"in": [0]}
+p8.input = {"in": [0]}
+p9.input = {"in": [0]}
+
+PyPPL().start(p1, p8, p9).flowchart().run()
 ```
-`test.pyppl.dot`:
+`drawFlowchart.pyppl.dot`:
 ```dot
 digraph PyPPL {
-	"p1.A" -> "p2.B"
-	"p1.A" -> "p3.C"
-	"p8.H" -> "p3.C"
-	"p2.B" -> "p4.D"
-	"p3.C" -> "p4.D"
-	"p4.D" -> "p5.E"
-	"p4.D" -> "p6.F"
-	"p9.I" -> "p6.F"
-	"p5.E" -> "p7.G"
-	"p6.F" -> "p7.G"
-	"p6.F" [shape=box, style=filled, color="#f0f998", fontcolor=red]
-	"p1.A" [shape=box, style=filled, color="#c9fcb3"]
-	"p8.H" [shape=box, style=filled, color="#c9fcb3"]
-	"p9.I" [shape=box, style=filled, color="#c9fcb3"]
-	"p7.G" [shape=box, style=filled, color="#fcc9b3" fontcolor=red]
-	"p4.D" [shape=box, style=filled, color="#f0f998", fontcolor=red]
+    "p8" [color="#259229" fillcolor="#ffffff" fontcolor="#000000" shape="box" style="filled"]
+    "p1" [color="#259229" fillcolor="#ffffff" fontcolor="#000000" shape="box" style="filled"]
+    "p9" [color="#259229" fillcolor="#ffffff" fontcolor="#000000" shape="box" style="filled"]
+    "p7" [color="#d63125" fillcolor="#ffffff" fontcolor="#c71be4" shape="box" style="filled"]
+    "p5" [color="#000000" fillcolor="#ffffff" fontcolor="#000000" shape="box" style="rounded,filled"]
+    "p4" [color="#000000" fillcolor="#ffffff" fontcolor="#c71be4" shape="box" style="rounded,filled"]
+    "p2" [color="#000000" fillcolor="#ffffff" fontcolor="#000000" shape="box" style="rounded,filled"]
+    "p3" [color="#000000" fillcolor="#ffffff" fontcolor="#000000" shape="box" style="rounded,filled"]
+    "p6" [color="#000000" fillcolor="#ffffff" fontcolor="#c71be4" shape="box" style="rounded,filled"]
+    "p2" -> "p4"
+    "p3" -> "p4"
+    "p1" -> "p2"
+    "p1" -> "p3"
+    "p6" -> "p7"
+    "p4" -> "p5"
+    "p4" -> "p6"
+    "p5" -> "p7"
+    "p8" -> "p3"
+    "p9" -> "p6"
 }
 ```
-You can use different [dot renderers][17] to render and visualize it.
 
-`test.pyppl.svg`:  
+To generate svg file, you have to have [graphviz][33] installed.  
+`drawFlowchart.pyppl.svg`:  
 ![PyPPL chart][18]
 
 [1]: https://pwwang.gitbooks.io/pyppl/
 [2]: https://pwwang.gitbooks.io/pyppl/api.html
 [3]: https://github.com/pwwang/pyppl/
-[4]: https://pwwang.gitbooks.io/pyppl/specify-input-and-output-of-a-process.html#specify-input-of-a-process
-[5]: https://pwwang.gitbooks.io/pyppl/export-output-files.html
 [6]: https://pwwang.gitbooks.io/pyppl/caching.html
 [7]: https://pwwang.gitbooks.io/pyppl/placeholders.html
-[8]: https://pwwang.gitbooks.io/pyppl/channels.html
 [9]: https://pwwang.gitbooks.io/pyppl/runners.html
-[10]: https://pwwang.gitbooks.io/pyppl/runners.html#define-your-own-runner
-[11]: https://pwwang.gitbooks.io/pyppl/set-other-properties-of-a-process.html#use-callback-to-modify-the-process-pcallback
 [12]: https://pwwang.gitbooks.io/pyppl/set-other-properties-of-a-process.html#error-handling-perrhowperrntry
 [13]: https://pwwang.gitbooks.io/pyppl/configure-a-pipeline.html#use-a-configuration-file
 [14]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
 [15]: https://pwwang.gitbooks.io/pyppl/draw-flowchart-of-a-pipeline.html
 [16]: https://pwwang.gitbooks.io/pyppl/aggregations.html
-[17]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)#Layout_programs
-[18]: https://github.com/pwwang/pyppl/raw/master/docs/pyppl.png
+[18]: ./docs/drawFlowchart_pyppl.png
 [19]: https://pwwang.gitbooks.io/pyppl/change-log.html
 [20]: ./docs/getStarted.png
 [21]: https://www.gitbook.com/button/status/book/pwwang/pyppl
 [22]: https://badge.fury.io/py/pyppl.svg
 [23]: https://badge.fury.io/gh/pwwang%2Fpyppl.svg
 [24]: https://github.com/pwwang/bioprocs
-[25]: https://pwwang.gitbooks.io/pyppl/content/set-other-properties-of-a-process.html#set-expectations-of-a-process
 [26]: https://pwwang.gitbooks.io/pyppl/content/faq.html
 [27]: https://pwwang.gitbooks.io/pyppl/command-line-argument-parser.html
 [28]: https://pwwang.gitbooks.io/pyppl/content/configure-your-logs.html
@@ -480,3 +471,5 @@ You can use different [dot renderers][17] to render and visualize it.
 [30]: ./docs/heatmap1.png
 [31]: ./docs/heatmap2.png
 [32]: ./docs/heatmap3.png
+[33]: http://www.graphviz.org/
+[34]: ./docs/debugScript.png
