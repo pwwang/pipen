@@ -1,4 +1,4 @@
-# Specify input and output of a process
+# Input and output of a process
 <!-- toc -->
 
 {% raw %}
@@ -7,7 +7,7 @@
 The input of a process of basically a `dict` with keys the placeholders and the values the input channels:
 
 ```python
-p = proc()
+p = Proc()
 p.input = {"ph1":[1,2,3], "ph2":[4,5,6]}
 # You can also use combined keys and channels
 # p.input = {"ph1, ph2": [(1,4), (2,5), (3,6)]}
@@ -19,10 +19,10 @@ You can also use a `str` or a `list` if a process depends on a prior process, it
 
 Use output channel of prior process:
 ```python
-p1 = proc()
+p1 = Proc()
 p1.input  = {"ph1":[1,2,3], "ph2":[4,5,6]}
-p1.output = "out1:{{ph1}},out2:{{ph2}}"
-# same as p.output = ["out1:{{ph1}}", "out2:{{ph2}}"]
+p1.output = "out1:{{in.ph1}},out2:{{in.ph2}}"
+# same as p.output = ["out1:{{in.ph1}}", "out2:{{in.ph2}}"]
 p1.script = "# your logic here"
 
 p2 = proc()
@@ -31,36 +31,51 @@ p2.input   = "in1, in2"
 # will automatically use output channel of p1
 ```
 > **Caution** the number of input keys should be no more than that of the output from the prior process. Otherwise, there is not enough data for the keys.
-> **Note** For output, `dict` is not supported. As we need the order of the keys and data to be kept when it's being passed on.
+> **Note** For output, `dict` is not supported. As we need the order of the keys and data to be kept when it's being passed on. But you may use `OrderedDict`.
 
-Use `sys.argv` (see details for [`channel.fromArgv`](https://pwwang.gitbooks.io/pyppl/content/channels.html#initialize-a-channel)):
+Use `sys.argv` (see details for [`Channel.fromArgv`](https://pwwang.gitbooks.io/pyppl/content/channels.html#initialize-a-channel)):
 ```python
-p3 = proc()
+p3 = Proc()
 p3.input = "in1"
 # same as p3.input = {"in1": channel.fromArgv ()}
-# python test.py 1 2 3
-# p3.input = {"in1": ["1", "2", "3"]}
+# Run the program: > python test.py 1 2 3
+# Then in job#0: {{in.in1}} -> 1
+# Then in job#1: {{in.in1}} -> 2
+# Then in job#2: {{in.in1}} -> 3
 
-p4 = proc()
-p3.input = "in1, in2"
-# same as p3.input = {"in1, in2": channel.fromArgv ()}
-# python test.py 1,a 2,b 3,c
-# p3.input = {"in1": [("1", "a"), ("2", "b"), ("3", "c")]}
+p4 = Proc()
+p4.input = "in1, in2"
+# same as p4.input = {"in1, in2": channel.fromArgv ()}
+# Run the program: python test.py 1,a 2,b 3,c
+# Job#0: {{in.in1}} -> 1, {{in.in2}} -> a
+# Job#1: {{in.in1}} -> 2, {{in.in2}} -> b
+# Job#2: {{in.in1}} -> 3, {{in.in2}} -> c
 ```
 
-### Specify file as input
-When you specify file as input, you should use `file` (a.k.a `path`, `dir` or `folder`) flag for the type: 
-```python
-p.input = {"infile:file": channel.fromPath("./*.txt")}
-```
-Then `pyppl` will create symbolic links in `<workdir>/<job.index>/input/`. See [File placeholders](https://pwwang.gitbooks.io/pyppl/placeholders.html#file-placeholders).
-
-> **Note** The `{{infile}}`
- will return the path of the link in `<indir>` pointing to the actual input file. If you want to get the path of the actual path, you may use: 
-```
-{{ infile | readlink }} or {{ infile.orig }}
-```
-
+### Specify files as input
+- Use a single file:
+  When you specify file as input, you should use `file` (a.k.a `path`, `dir` or `folder`) flag for the type: 
+  ```python
+  p.input = {"infile:file": channel.fromPattern("./*.txt")}
+  ```
+  Then `PyPPL` will create symbolic links in `<workdir>/<job.index>/input/`. 
+  
+  > **Note** The `{{in.infile}}`
+   will return the path of the link in `<indir>` pointing to the actual input file. If you want to get the path of the actual path, you may use: 
+  ```
+  {{ in.infile | readlink }} or {{ in._infile }}
+  ```
+- Use a list of files:
+  Similar as a single file, but you have to specify it as `files`:
+  ```python
+  p.input = {"infiles:files": [channel.fromPattern("./*.txt").flatten()]}
+  ```
+  Then remember `{{in.infiles}}` is a list, so is `{{in._infiles}}`
+- Rename input files
+  When there are input files (different files) with the same basename, later ones will be renamed in `<indir>`. For example:
+  ```python
+  pXXX.input = {"infile1:file": "/path1/to/theSameBasename.txt", "infile2:file": "/path2/to/theSameBasename.txt"}
+  ```
 
 ### Bring related files to input directory
 Some programs, for example, mutation calling programs, take bam files as input. However, during the process, they actually need the bam files to be indexed with an index file (.bai), which will not be explicitly specified with program options. Usually, they will try to find the index file according to the path of the bam files. For example, index file `tumor.bam.bai` for input file `tumor.bam`. Sometimes, we will generate the index file in advance and put it together with the input file. When you specify the bam files to `pyppl` process, we will create a link for it in `<indir>`, but not for the index file (we don't know, right?). If the index file is not found, some programs will try to generate the index file, some will not and just quit. To avoid that, you can use `p.brings` to bring the index file in.
@@ -70,19 +85,18 @@ Some programs, for example, mutation calling programs, take bam files as input. 
 
 p.input  = {"bamfile:file": ["/a/b/tumor.bam"]}
 p.brings = {
-	"bamfile": "{{bamfile | bn}}.bai"
+  "bamfile": "{{bamfile | bn}}.bai"
 }
 ```
 
 > **Note** 
 > 1. If `/a/b/tumor.bam` is a symbolic link to `/c/d/tumor.bam`, the index file `/c/d/tumor.bam.bai` will also be found.
-> 2. A link will be create in `<indir>`, of which the path can be got by `{{brings.bamfile}}`. To get the original path of the index file: `{{brings.bamfile.orig}}`
-> 3. You can use wildcards to find the files, the first matched file will be brought in.
-> 4. You can bring in multiple files:
+> 2. Multiple files can be brought, so `{{bring.bamfile}}` and `{{bring._bamfile}}` always return a list.
+> 3. A link will be create in `<indir>`, of which the path can be got by `{{bring.bamfile[0]}}`. To get the original path of the index file: `{{brings._bamfile[0]}}`
+> 4. You can use wildcards to find the files.
+> 5. You can bring in multiple files:
 > ```python
-> p.brings = {"bamfile": "{{bamfile | bn}}.bai", "bamfile#": "{{bamfile | bn}}.bai2"}
-> # to access path of the second bring-in file: {{brings.bamfile#}}
-> # its original path: {{brings.bamfile#.orig}}
+> p.brings = {"bamfile": ["{{bamfile | bn}}.bai", "{{bamfile | bn}}.bai2"]}
 > ```
 
 ### Use a callback to modify the output channel of the prior process.
