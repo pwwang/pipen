@@ -1,8 +1,14 @@
-#Placeholders
+# Templating
 
 <!-- toc -->
 
+``
 {% raw %}
+`PyPPL` has its own template engine, which derived from a [500-line-or-less template engine][1]. It also supports [Jinja2][2] if you have if installed and specify `"Jinja2"` to `pXXX.template`.
+The built-in template engine is enabled by default.
+
+
+
 `pyppl` uses placeholders from `input`, `output` and some properties of `pyppl.proc`/`pyppl.job` to hold the values in `output`, `beforeCmd`, `afterCmd` and `script`. For example:
 ```python
 p = proc()
@@ -122,3 +128,6 @@ You can also use some `proc`/`job` property values with placeholders: `{{proc.<p
 |`job.errfile`||The file with the STDERR|
 
 {% endraw %}
+
+[1]: https://github.com/aosabook/500lines/tree/master/template-engine
+[2]: http://jinja.pocoo.org/
