@@ -128,19 +128,33 @@ For built-in template engine, you may use pipe, for example: `{{in.file | basena
   | Usage | Data | Result |
   |-------|------|--------|
   | `{% if v %}`<br />&nbsp;&nbsp;`1`<br />`{% else %}`<br />&nbsp;&nbsp;`2`<br />`{% endif %}`|`{'v': True}`|`1`|
-  | `{% if v `&#x7c;` notExists %}`<br />&nbsp;&nbsp;`Path not exists.`<br />`{% elif v `&#x7c;` isDir %}`<br />&nbsp;&nbsp;`Path is a directory.`<br />`{% else %}`<br />&nbsp;&nbsp;`Path exists but is not a directory.`<br />`{% endif %}` | `{`<br />`'v': '/path/to/file', `<br />`'notExists': lambda x: not __import__('os').path.exists(x)}, `<br />`'isDir': os.path.isdir`<br />`}` |`Path exists but is not a directory.`|
+  | `{% if v `&#x7c;` notExists %}`<br />&nbsp;&nbsp;`Path not exists.`<br />`{% elif v `&#x7c;` isDir %}`<br />&nbsp;&nbsp;`Path is a directory.`<br />`{% else %}`<br />&nbsp;&nbsp;`Path exists but is not a directory.`<br />`{% endif %}` | `{`<br />`'v': '/path/to/file', `<br />`'notExists': lambda x: not __import__('os').path.exists(x), `<br />`'isDir': __import__('os').path.isdir`<br />`}` |`Path exists but is not a directory.`|
 - Loops:
+  | Usage | Data | Result |
+  |-------|------|--------|
+  |`{% for var in varlist %}{{var`&#x7c;`R}}{% endfor %}`|`{'varlist': ['abc', 'True', 1, False]}`|`"abc"TRUE1FALSE`|
+  |`{% for k , v in data.items() %}{{k}}:{{v}}{% endfor %}`|`{'data': {'a':1, 'b':2}}`|`a:1b:2`|
+  
+## Set environment of template engine
+You can define you own functions/data for template rendering:
+```python
+pXXX.tplenvs.data  = {'v1': 'a', 'v2': 'b', 'b': True}
+pXXX.tplenvs.os    = __import__('os')
+pXXX.tplenvs.paste = lambda x,y: x +' ' + y
+# use them
+pXXX.script = """
+{% if data.b %}
+print "{{data.v1, data.v2 | paste}}"
+{% else %}
+print "{{data.v1, data.v2 | os.path.join}}"
+{% endif %}
+"""
+```
+Then if `pXXX.tplenv.data['b'] is True`, it prints `a b`; otherwise prints `a/b`
 
-
-
-
-
-
-
-
-
-
-
+## Use Jinja2
+All the data and environment definition mentioned above are all applicable when you use `Jinja2` as your template engine.  
+For usage of `Jinja2`, you may refer to its [official documentation][2].
 
 
 {% endraw %}
