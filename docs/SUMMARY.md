@@ -5,7 +5,7 @@
 * [Templating](placeholders.md)
 * [Channels](channels.md)
 * [Input and output of a process](specify-input-and-output-of-a-process.md)
-* [Write and debug your script](write-your-script.md)
+* [The heart: script](write-your-script.md)
 * [Export output files](export-output-files.md)
 * [Caching](caching.md)
 * [Runners](runners.md)
