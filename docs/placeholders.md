@@ -129,9 +129,11 @@ For built-in template engine, you may use pipe, for example: `{{in.file | basena
 | `{{v1, v2 `&#x7c;` paste}}` | `{'v1': 'Hello', 'v2': 'world!', 'paste': lambda x, y: x + ' ' + y}`| `Hello world!` |
 | `{{v1, v2 `&#x7c;` lambda x, y: x + ' ' + y}}` | `{'v1': 'Hello', 'v2': 'world!'}`| `Hello world!` |
   
-  > **Note** If you want to pass a literal value (for example: `1`, `True`), you CANNOT do this: `{{v, False | readlines}}`. Instead, you can either:
-    - specify the value in data: `{'v': '/path/to/file', 'skipEmptyLines': False}`, then `{{v, skipEmptyLines | readlines}}`; or
-    - use `lambda` function: `{{v, readlines | lambda x, func: func(x, False)}}`
+> **Note** If you want to pass a literal value (for example: `1`, `True`), you CANNOT do this: `{{v, False | readlines}}`. Instead, you can either:
+  - specify the value in data: `{'v': '/path/to/file', 'skipEmptyLines': False}`,   
+    then `{{v, skipEmptyLines | readlines}}`; or
+  - use `lambda` function: `{{v, readlines | lambda x, func: func(x, False)}}`
+  
 - `If-else/elif` statements:
 
 | Usage | Data | Result |
