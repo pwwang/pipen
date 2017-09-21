@@ -9,10 +9,16 @@ ppl = PyPPL(config)
 Here is the full structure of the configurations:
 ```json
 {
-    "loglevels": "basic",  // the log levels
-    "logtheme": true,    // use colored log information
-    "loglvldiff": ["+DEBUG"],  // modify the loglevels group
-    "logfile": false,    // disable logfile, or specify a different logfile
+    "log": {
+        "levels": "basic",  // the log levels
+        "theme": true,    // use colored log information
+        "lvldiff": ["+DEBUG"],  // modify the loglevels group
+        "file": false,    // disable logfile, or specify a different logfile
+    },
+    "flowchart": {
+        "theme": "default",
+        "dot": "dot -Tsvg {{dotfile}} -o {{fcfile}}"
+    },
     "proc": {            // shared configuration of processes
         "forks": 10,
         "runner": "sge",
@@ -33,22 +39,35 @@ Here is the full structure of the configurations:
 }
 ```
 - For log configuration please refer to [configure your logs][3]
-- `proc` defines the shared configurations of processes in this pipeline. [All the properties][2] of a process can be set here, but just some common one are recommended. Obviously, `input` is not suitable to be set here, except some extreme cases.
-- `profiles` defines some profiles that may be shared by the processes. To use a profile, just specify the profile name to `run`: `pyppl (config).starts(process).run(<profile>)`.
+- For flowchart configuration please refer to [pipeline flowchart][4]
+- `proc` defines the base running profile for processes in this pipeline. [All the properties][2] of a process can be set here, but just some common one are recommended. Obviously, `input` is not suitable to be set here, except some extreme cases.
+- `profiles` defines some profiles that may be shared by the processes. To use a profile, just specify the profile name to `run`: `PyPPL(config).start(process).run(<profile>)`.
 
-> **Info** settings for `profiles` are actually the same as for `proc`. They just make you easy to switch the profiles back and forth. For example, you want to run with sge runner this time, but ssh runner next time, what you need to do is just change from `...run("profile_sge")` to `...run("profile_ssh")`
+> **Info** Settings for `profiles` are actually the same as for `proc`. They just make you easy to switch the profiles back and forth. For example, you want to run with sge runner this time, but ssh runner next time, what you need to do is just change from `...run("profile_sge")` to `...run("profile_ssh")`
+> **Note** You may also use the runner name as a profile. That means, following profiles are implied in the configuration:
+```json
+{
+    "sge"  : {"runner": "sge"},
+    "ssh"  : {"runner": "ssh"},
+    "slurm": {"runner": "slurm"},
+    "local": {"runner": "local"},
+    "dry"  : {"runner": "dry"},
+}
+```
+> **Caution** You cannot define profiles with names `flowchar` and `log`
 
 ## Use a configuration file
-You can also put some commonly used configurations into a `json` file (for example, `/a/b/pyppl.config.json`), and then specify it to `pyppl` constructor:
+You can also put some commonly used configurations into a `json` file (for example, `/a/b/pyppl.config.json`), and then specify it to `PyPPL` constructor:
 ```python
-pyppl ({}, "/a/b/pyppl.config.json")
+PyPPL({}, "/a/b/pyppl.config.json")
 # or 
-pyppl (cfile = "/a/b/pyppl.config.json")
+PyPPL (cfgfile = "/a/b/pyppl.config.json")
 ```
+
 If not configuration file is specified, it will look for one at `~/.pyppl.json` (if not available, check `~/.pyppl`).  
 You can also overwrite some options in the configuration file by specify them in the first argument:
 ```python
-pyppl ({
+PyPPL({
     "proc": {forks: 5}
 })
 ```
@@ -111,5 +130,6 @@ pyppl ().starts(p1,p2,p3).run()
 [1]: https://docs.python.org/2/library/logging.html#logging-levels
 [2]: https://pwwang.gitbooks.io/pyppl/content/set-other-properties-of-a-process.html
 [3]: https://pwwang.gitbooks.io/pyppl/configure-your-logs.html
+[4]: https://pwwang.gitbooks.io/pyppl/draw-flowchart-of-a-pipeline.html
 {% endraw %}
 
