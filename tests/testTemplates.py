@@ -1,9 +1,14 @@
 import path, unittest
-
-import jinja2
 from os import path
 from pyppl.templates import Template, TemplatePyPPL, template_pyppl
 from pyppl.templates.template_jinja2 import TemplateJinja2
+
+def moduleInstalled(mod):
+	try:
+		__import__(mod)
+		return True
+	except ImportError:
+		return False
 
 class TestTemplatePyPPL (unittest.TestCase):
 	
@@ -14,7 +19,9 @@ class TestTemplatePyPPL (unittest.TestCase):
 		self.assertEqual(t.envs, Template.DEFAULT_ENVS)
 		self.assertIsInstance(t.engine, template_pyppl.TemplatePyPPLEngine)
 
+	@unittest.skipIf(not moduleInstalled('jinja2'), 'Jinja2 not installed.')
 	def testJinja2Init(self):
+		import jinja2
 		t = TemplateJinja2('')
 		self.assertIsInstance(t, TemplateJinja2)
 		self.assertIsInstance(t.engine, jinja2.Template)
@@ -32,7 +39,7 @@ class TestTemplatePyPPL (unittest.TestCase):
 			('{{v1, v2|concate}}', {'v1': 'hello', 'v2': 'world', 'concate': lambda x,y: x+y}, 'helloworld'),
 			('{{v3 | Rbool}}', {'v3': 0}, 'FALSE'),
 			('{{v4|realpath}}', {'v4': __file__}, path.realpath(__file__)),
-			('{{v5|readlink}}', {'v5': path.join(path.dirname(path.realpath(path.abspath(__file__))), 'path.py')}, path.relpath(path.join(path.dirname(path.dirname(path.abspath(__file__))), 'bin', 'path.py'))),
+			('{{v5|readlink}}', {'v5': path.join(path.dirname(path.realpath(path.abspath(__file__))), 'path.py')}, path.relpath(path.join(path.dirname(path.dirname(path.abspath(__file__))), 'bin', 'path.py'), start = path.dirname(__file__))),
 			('{{v6|dirname}}', {'v6': '/a/b/c'}, '/a/b'),
 			('{{v7|basename}}{{v7|bn}}', {'v7': '/a/b/c.txt'}, 'c.txtc.txt'),
 			('{{v8|basename}}{{v8|bn}}', {'v8': '/a/b/c[1].txt'}, 'c.txtc.txt'),
@@ -75,6 +82,7 @@ class TestTemplatePyPPL (unittest.TestCase):
 		t = TemplatePyPPL('{{a.b["1"][0](",")}}')
 		self.assertEqual(t.render({'a': {'b': {"1": [lambda x: x]}}}), ',')
 
+	@unittest.skipIf(not moduleInstalled('jinja2'), 'Jinja2 not installed.')
 	def testJinja2Render(self):
 		data = [
 			('{{name}}', {'name': 'John'}, 'John'),
@@ -122,8 +130,9 @@ class TestTemplatePyPPL (unittest.TestCase):
 	def testStr(self):
 		t = TemplatePyPPL('')
 		self.assertIn('TemplatePyPPL with source:', str(t))
-		t = TemplateJinja2('')
-		self.assertIn('TemplateJinja2 with source:', str(t))
+		if moduleInstalled('jinja2'):
+			t = TemplateJinja2('')
+			self.assertIn('TemplateJinja2 with source:', str(t))
 
 	# TODO: test render file
 
