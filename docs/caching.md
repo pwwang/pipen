@@ -24,5 +24,13 @@ Or if the process uses the data from other processes, especially the output chan
 ```python
 PyPPL().start(...).resume2(pXXX).run()
 ```
+You may also use a common id to set a set of processes:
+```python
+p1 = Proc(newid = 'p', tag = '1st')
+p2 = Proc(newid = 'p', tag = '2nd')
+p3 = Proc(newid = 'p', tag = '3rd')
+# pipeline will be resumed from p1, p2, p3
+PyPPL().start(...).resume('p').run()
+```
 
 

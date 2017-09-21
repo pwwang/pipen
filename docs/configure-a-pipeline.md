@@ -57,74 +57,79 @@ Here is the full structure of the configurations:
 > **Caution** You cannot define profiles with names `flowchar` and `log`
 
 ## Use a configuration file
-You can also put some commonly used configurations into a `json` file (for example, `/a/b/pyppl.config.json`), and then specify it to `PyPPL` constructor:
+`PyPPL` will look for configuration files at `~/.PyPPL` and `~/.PyPPL.json` if both or either of them exist. If both of them exist, `~/.PyPPL.json` has higher priority, which means the options will be overwritten in `~/.PyPPL` by those in `~/.PyPPL.json`. But to avoid confusion, you'd better just use either of them.
+
+You can also use another configuration file explictly (say, `/a/b/pyppl.config.json`), and then specify it to `PyPPL` constructor:
 ```python
 PyPPL({}, "/a/b/pyppl.config.json")
 # or 
 PyPPL (cfgfile = "/a/b/pyppl.config.json")
 ```
+In this case, `/a/b/pyppl.config.json` has the highest priority of all configuration files.
+All other options will be inherited from `~/.PyPPL.json` and them `~/.PyPPL`.
 
-If not configuration file is specified, it will look for one at `~/.pyppl.json` (if not available, check `~/.pyppl`).  
-You can also overwrite some options in the configuration file by specify them in the first argument:
-```python
-PyPPL({
-    "proc": {forks: 5}
-})
-```
-All other options will be inherited from `~/.pyppl.json`.
+## Priority of configuration options
+Now you have 3 ways to set attributes for a process: 
+- directly set the process attributes _(1)_, 
+- set in the first argument (`config`) of `PyPPL` constructor _(2)_, 
+- set in a configuration file `/a/b/pyppl.config.json` _(3)_,
+- set in configuration file `~/.PyPPL.json` _(4)_, and
+- set in configuration file `~/.PyPPL` _(5)_
 
-## Priority of configuration items
-Now you have 3 ways to set options for a process: 
-- directly set the process properties _(1)_, 
-- set in the first argument of `pyppl` constructor _(2)_, and 
-- set in a configuration file _(3)_.  
-
-**The priority is: (1) > (2) > (3).**
-Once you set the property of the process, it will never be changed by `pyppl` constructor or the configuration file. But the first argument can overwrite the options in configuration files.
+**The priority is: (1) > (2) > (3) > (4) > (5).**
+Once you set the property of the process, it will never be changed by `PyPPL` constructor or the configuration file. But the first argument can overwrite the options in configuration files.
 Here are an examples to illustrate the priority:
 
 ** Example 1:**
 ```python
-# ~/.pyppl.json
+# ~/.PyPPL.json
 """
 {
     "proc": {"forks": 5}
 }
 """
 
-p = proc()
+p = Proc()
 p.forks = 1
 
-ppl = pyppl ({"proc": {forks: 10}})
+ppl = PyPPL({"proc": {forks: 10}})
 
 # p.forks == 1
 ```
 ** Example 2:**
 ```python
-# we also have ~/.pyppl.json as previous example
-p = proc()
+# we also have ~/.PyPPL.json as previous example
+p = Proc()
 
-ppl = pyppl ({"proc": {forks: 10}})
+ppl = PyPPL({"proc": {forks: 10}})
 
 # p.forks == 10
 ```
 ** Example 3:**
 ```python
-# we also have ~/.pyppl.json as previous example
-p = proc()
+# we also have ~/.PyPPL.json as previous example
+p = Proc()
 
-ppl = pyppl ()
+ppl = PyPPL()
 
 # p.forks == 5
 ```
 
 ## Starting processes
-It's very easy to set the starting processes of the pipeline, just pass them to `starts` function. A pipeline can have multiple starting processes:
+It's very easy to set the starting processes of the pipeline, just pass them to `start` function. A pipeline can have multiple starting processes:
 ```python
-pyppl ().starts(p1,p2,p3).run()
+PyPPL().start(p1,p2,p3).run()
+```
+You may also use a common id to set a set of processes:
+```python
+p1 = Proc(newid = 'p', tag = '1st')
+p2 = Proc(newid = 'p', tag = '2nd')
+p3 = Proc(newid = 'p', tag = '3rd')
+# all p1, p2, p3 will be starting processes
+PyPPL().start('p').run()
 ```
 > **Caution** 
-> 1. If a process is depending on other processes, you are not supposed to set it as starting process.
+> 1. If a process is depending on other processes, you are not supposed to set it as starting process. Of course you can, but make sure the input channel can be normally constructed.
 > 2. If a process is not depending on any other processes, you have to set it as starting process. Otherwise, it won't start to run.
 
 [1]: https://docs.python.org/2/library/logging.html#logging-levels
