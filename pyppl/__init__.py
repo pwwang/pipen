@@ -1000,10 +1000,11 @@ class PyPPL (object):
 		self.config = fconfig
 
 		fcconfig = {
-			'theme': 'default'
+			'theme': 'default',
+			'dot'  : "dot -Tsvg {{dotfile}} -o {{fcfile}}"
 		}
 		if 'flowchart' in self.config:
-			utils.update(fcconfig, self.config['flowchart'])
+			utils.dictUpdate(fcconfig, self.config['flowchart'])
 			del self.config['flowchart']
 		self.fcconfig = fcconfig
 
@@ -1205,7 +1206,7 @@ class PyPPL (object):
 		logger.logger.info ('[   DONE] Total time: %s' % utils.formatSecs (time()-timer))
 		return self
 		
-	def flowchart (self, dotfile = None, fcfile = None, dot = "dot -Tsvg {{dotfile}} -o {{fcfile}}"):
+	def flowchart (self, dotfile = None, fcfile = None, dot = None):
 		"""
 		Generate graph in dot language and visualize it.
 		@params:
@@ -1217,7 +1218,8 @@ class PyPPL (object):
 			The pipeline object itself.
 		"""
 		nexts, ends, paths = self._procRelations()
-		fc = Flowchart(dotfile = dotfile, fcfile = fcfile, dot = dot)
+		dot = dot if dot else self.fcconfig['dot']
+		fc  = Flowchart(dotfile = dotfile, fcfile = fcfile, dot = dot)
 		fc.setTheme(self.fcconfig['theme'])
 
 		for start in self.starts:
