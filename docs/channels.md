@@ -149,7 +149,10 @@ p2.depends = p1
 # [("outdir/a/1.txt",), ("outdir/a/2.txt",), ("outdir/a/3.txt",), ...]
 p2.input   = {"infile:file": lambda ch: ch.expand()}
 p2.output  = {"outfile:file:{{infile.fn}}.result"}
-p2.script  = "# handle each file (1.txt, 2.txt, 3.txt, ...) to result file (1.result, 2.result, 3.result, ...)"
+p2.script  = """
+# work on each file (1.txt, 2.txt, 3.txt, ...) 
+# to result file (1.result, 2.result, 3.result, ...)
+"""
 
 PyPPL().start(p1).run()
 ```
