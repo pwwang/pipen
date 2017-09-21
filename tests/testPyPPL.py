@@ -8,6 +8,24 @@ from contextlib import contextmanager
 from six import StringIO
 from pyppl import PyPPL, utils, logger
 
+def which(program):
+	import os
+	def is_exe(fpath):
+		return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+	fpath, fname = os.path.split(program)
+	if fpath:
+		if is_exe(program):
+			return program
+	else:
+		for path in os.environ["PATH"].split(os.pathsep):
+			path = path.strip('"')
+			exe_file = os.path.join(path, program)
+			if is_exe(exe_file):
+				return exe_file
+
+	return None
+
 class Proc(object):
 	
 	def __init__(self, id = None, tag = 'notag'):
@@ -384,6 +402,7 @@ class TestPyPPL (unittest.TestCase):
 			pyppl.resume(p3, p4, p6)
 		self.assertIn('processes marked for resuming will be skipped, as a resuming process depends on them.', err.getvalue())
 		
+	@unittest.skipIf(not which('dot'), 'Graphviz not installed.')
 	def testFlowchart(self):
 		tmpdir  = tempfile.gettempdir()
 		fcfile  = path.join(tmpdir, 'testFlowchart.svg')

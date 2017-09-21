@@ -591,14 +591,14 @@ class TestUtils (unittest.TestCase):
 		self.assertEqual(utils.filesig(d1), [d1, int(mtime)])
 		f1 = path.join(d1, 'a.txt')
 		open(f1, 'w').close()
-		mtime = path.getmtime(f1)
-		self.assertEqual(utils.dirmtime(d1), mtime)
-		self.assertEqual(utils.filesig(d1), [d1, int(mtime)])
-		self.assertEqual(utils.filesig(f1), [f1, int(mtime)])
+		mtime = int(path.getmtime(f1))
+		self.assertEqual(int(utils.dirmtime(d1)), mtime)
+		self.assertEqual(utils.filesig(d1), [d1, mtime])
+		self.assertEqual(utils.filesig(f1), [f1, mtime])
 		f2 = path.join(d1, 'a.link')
 		symlink(f1, f2)
-		self.assertEqual(int(utils.dirmtime(d1)), int(mtime))
-		self.assertEqual(utils.filesig(d1), [d1, int(mtime)])
+		self.assertEqual(int(utils.dirmtime(d1)), mtime)
+		self.assertEqual(utils.filesig(d1), [d1, mtime])
 		utils.safeRemove(f2)
 		self.assertEqual(utils.dirmtime(f1), 0)
 		
@@ -614,7 +614,7 @@ class TestUtils (unittest.TestCase):
 		self.assertEqual(utils.chmodX(l), [f])
 
 	def testDumbPopen(self):
-		cmd = ['ls', '-l']
+		cmd = ['ls', '-l', path.abspath(path.dirname(__file__))]
 		with captured_output() as (out, err):
 			rc = utils.dumbPopen(cmd).wait()	
 		self.assertEqual(rc, 0)

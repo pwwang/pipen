@@ -5,7 +5,7 @@
 ## Layers of a pipeline
 ![Basic concepts](./concept.png)
 The pipeline consists of channels and processes. A process may have many jobs. Each job uses the corresponding elements from the input channel of the process, and generates values for output channel.  
-Actually, what you need to do is just specify the first input channel, and then tell `pyppl` the dependencies of the processes. The later processes will use the output channel of the processes they depend on. Of course, you can interfere by using functions in the input specification.
+Actually, what you need to do is just specify the first input channel, and then tell `PyPPL` the dependencies of the processes. The later processes will use the output channel of the processes they depend on. Of course, you can interfere by using functions in the input specification.
 
 ## Folder structure
 ```

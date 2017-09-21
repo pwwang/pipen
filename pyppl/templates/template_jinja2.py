@@ -1,10 +1,10 @@
 
-import jinja2
 from .template import Template
 
 class TemplateJinja2 (Template):
 	
 	def __init__(self, source, **envs):
+		import jinja2
 		super(TemplateJinja2, self).__init__(source ,**envs)
 		self.engine = jinja2.Template(source)
 		self.engine.globals = self.envs
