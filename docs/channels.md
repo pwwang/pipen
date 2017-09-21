@@ -195,8 +195,8 @@ p1.script = """
 
 p2 = Proc()
 p2.depends = p1
-# collapse channel [("<outdir>/1.txt2",), ("<outdir>/2.txt2",), ("<outdir>/3.txt2",)] to channel:
-# [("<outdir>/", )]
+# collapse channel [("<outdir>/1.txt2",), ("<outdir>/2.txt2",), ("<outdir>/3.txt2",)] 
+# to channel: [("<outdir>/", )]
 p2.input   = {"indir:file": lambda ch: ch.collapse()}
 p2.output  = {"outfile:file:{{indir | fn}}.result"}
 p2.script  = """
@@ -423,7 +423,8 @@ ch1.reduceCol(lambda x,y: x+y) == 15           # x and y are numbers
   ch4 = [41, 42]
   ch5 = (51, 52)
   ch6 = "a"
-  # Raises ValueError, when 1 is inserted, it is a 1-width channel, then you can't insert a 2-width to it.
+  # Raises ValueError, when 1 is inserted, it is a 1-width channel, 
+  # then you can't insert a 2-width to it.
   ch1.insert(1, ch2)
   ch1.insert(0, ch2, ch3, ch4, ch5, ch6) == [(21, 3, 41, 51, 'a'), (22, 3, 42, 52, 'a')]
   ```
