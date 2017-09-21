@@ -213,7 +213,7 @@ p2.input  = {"indir:file": lambda ch: ch.collapse(1)}
 > 1. `os.path.dirname(os.path.commonprefix(...))` is used to detect the common ancestor directory, so the files could be `['/a/1/1.file', '/a/2/1.file']`. In this case `/a/` will be returned.
 > 2. values at other columns should be the same, `PyPPL` will NOT check it, the first value at the column will be used.
 
-### Fetch column(s) from a channel
+### Fetch columns from a channel
 - `Channel.slice(start, length=None)`
 ```
 chan1 = Channel.create ([(1,2,3,4), (4,5,6,7)])
