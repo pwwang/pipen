@@ -26,7 +26,7 @@ Currently we introduced in previous chapters a set of attributes of a process an
 | `beforeCmd` | The command to run before jobs run | `str` | | This chapter |
 | `afterCmd` | The command to run after jobs finish | `str` | | This chapter |
 | `errhow` | What's next if jobs fail | `"terminate"`, `"retry"`, `"ignore"` | `"terminate"`| This chapter |
-| `errntry` | If `errhow` is `"retry"`, how many time to re-try? | `int` | 1 | This chapter
+| `errntry` | If `errhow` is `"retry"`, how many time to re-try? | `int` | 3 | This chapter
 | `depends` | The processes the process depends on | `proc`/`list` | | This chapter |
 | `callback` | The callback, called after the process finishes | `callable` | | This chapter |
 | `callfront` | The callfront, called after properties are computed | `callable` | | This chapter |
