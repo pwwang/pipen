@@ -1,6 +1,7 @@
-# Caching
+# Caching and resuming processes
 <!-- toc -->
 
+## Process caching
 Once a job is cached, `PyPPL` will skip running this job. But you have to tell a process how to cache its jobs by setting `pXXX.cache` with a valid caching method:
 
 |Caching method (`p.cache=?`)|How|
@@ -12,3 +13,16 @@ Once a job is cached, `PyPPL` will skip running this job. But you have to tell a
   
 > **Hint**: `p.cache = "export"` is extremely useful for a process that you only want it to run successfully once, export the result files and never run the process again. You can even delete the `<workdir>` of the process, but `PyPPL` will find the exported files and use them as the input for processes depending on it, so that you don't need to modify the pipeline.  
 One scenario is that you can use it to download some files and never need to download them again.
+
+## Resuming from processes
+Sometimes, you may not want to start at the very begining. Then you can resume the pipeline from some intermediate processes.  
+To resume pipeline from a process, you have to make sure that the output files of the processes that this process depends on are already generated. Then you can do:
+```python
+PyPPL().start(...).resume(pXXX).run()
+```
+Or if the process uses the data from other processes, especially the output channel, you may need `PyPPL` to infer (not neccessary run the script) the output data for processes that this process depends on. Then you can do:
+```python
+PyPPL().start(...).resume2(pXXX).run()
+```
+
+
