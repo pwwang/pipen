@@ -228,6 +228,8 @@ class TemplatePyPPLEngine(object):
 					code = "%s%s" % (code, func)
 				elif func.startswith('lambda '):
 					code = "(%s)(%s)" % (func, code)
+				elif '.' in func:
+					code = "%s(%s)" % (self._expr_code(func), code)
 				else:
 					self._variable(func, self.all_vars)
 					code = "c_%s(%s)" % (func, code)

@@ -492,7 +492,7 @@ class Channel (list):
 				raise ValueError('Cannot attach column to "%s" as it is already a property of Channel.' % name)
 			setattr(self, name, self.colAt(i).flatten() if flatten else self.colAt(i))
 	
-	def flatten (self, col = None): # [(a,), (b,)] to [a, b], only applicable when width =1
+	def flatten (self, col = None): 
 		"""
 		Convert a single-column Channel to a list (remove the tuple signs)
 		`[(a,), (b,)]` to `[a, b]`

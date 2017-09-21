@@ -43,7 +43,6 @@ class Job (object):
 		self.data      = {
 			'job': {
 				'index'   : self.index,
-				'pid'     : '',
 				'indir'   : self.indir,
 				'outdir'  : self.outdir,
 				'dir'     : self.dir,
@@ -453,7 +452,6 @@ class Job (object):
 			with open(self.pidfile) as f:
 				return f.read().strip()
 		else:
-			self.data['job']['pid'] = val
 			with open (self.pidfile, 'w') as f:
 				f.write (str(val))
 	

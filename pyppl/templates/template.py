@@ -36,8 +36,6 @@ class Template(object):
 			else str(x)  if isinstance(x, int) or isinstance(x, float) \
 			else str(x)[2:] if isinstance(x, string_types) and (x.startswith('r:') or x.startswith('R:'))  \
 			else '"' + str(x) + '"' if isinstance(x, string_types) else str(x),
-
-		'Rbool':    lambda x: str(bool(x)).upper(),
 		'realpath': path.realpath,
 		'readlink': readlink,
 		'dirname':  path.dirname,

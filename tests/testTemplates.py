@@ -30,7 +30,7 @@ class TestTemplatePyPPL (unittest.TestCase):
 			('{{names6 | [1][:-1] | .upper()}}', {'names6': ['John', 'Tome']}, 'TOM'),
 			('{{names7 | lambda x: x[1].upper()}}', {'names7': ['John', 'Tome']}, 'TOME'),
 			('{{v1, v2|concate}}', {'v1': 'hello', 'v2': 'world', 'concate': lambda x,y: x+y}, 'helloworld'),
-			('{{v3 | Rbool}}', {'v3': 0}, 'FALSE'),
+			('{{v3 | R}}', {'v3': 'false'}, 'FALSE'),
 			('{{v4|realpath}}', {'v4': __file__}, path.realpath(__file__)),
 			('{{v5|readlink}}', {'v5': path.join(path.dirname(path.realpath(path.abspath(__file__))), 'path.py')}, path.relpath(path.join(path.dirname(path.dirname(path.abspath(__file__))), 'bin', 'path.py'))),
 			('{{v6|dirname}}', {'v6': '/a/b/c'}, '/a/b'),
@@ -52,6 +52,7 @@ class TestTemplatePyPPL (unittest.TestCase):
 			('{{c|acquote}}', {'c':[1,2]}, '"1", "2"'),
 			('{{d|squote}}', {'d':1}, "'1'"),
 			('{{e.f|json}}', {'e':{'f':[1,2]}}, '[1, 2]'),
+			('{{g,h | os.path.join}}', {'g': 'a', 'h': 'b', 'os': __import__('os')}, 'a/b'),
 		]
 		d0 = ''
 		d1 = {}
@@ -80,7 +81,7 @@ class TestTemplatePyPPL (unittest.TestCase):
 			('{{name}}', {'name': 'John'}, 'John'),
 			('{{names[0]}}', {'names': ['John', 'Tom']}, 'John'),
 			('{{concate(v1, v2)}}', {'v1': 'hello', 'v2': 'world', 'concate': lambda x,y: x+y}, 'helloworld'),
-			('{{Rbool(v3)}}', {'v3': 0}, 'FALSE'),
+			('{{R(v3)}}', {'v3': 'false'}, 'FALSE'),
 			('{{realpath(v4)}}', {'v4': __file__}, path.realpath(__file__)),
 			('{{readlink(v5)}}', {'v5': path.join(path.dirname(path.realpath(path.abspath(__file__))), 'path.py')}, path.relpath(path.join(path.dirname(path.dirname(path.abspath(__file__))), 'bin', 'path.py'))),
 			('{{dirname(v6)}}', {'v6': '/a/b/c'}, '/a/b'),
