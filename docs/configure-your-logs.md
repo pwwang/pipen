@@ -2,7 +2,7 @@
 <!-- toc -->
 
 {% raw %}
-`pyppl` has fancy logs. You can define how they look like (theme) and what messages to show (levels).
+`PyPPL` has fancy logs. You can define how they look like (theme) and what messages to show (levels).
 
 ## Built-in log themes
 We have some built-in themes:
@@ -36,7 +36,7 @@ To use them, just specify the name in your pipeline configuration file:
 ```
 Or when you initialize a pipeline:
 ```python
-pyppl({"logtheme": "magentaOnWhite"}).starts(...).run()
+PyPPL({"logtheme": "magentaOnWhite"}).start(...).run()
 ```
 If you want to disable the theme, just set `"logtheme"` to `False` (`false` for `json`)
 If you set `logtheme` to `True`, then default theme `greenOnBlack` is used.
@@ -79,7 +79,7 @@ You may also specify the group name in your pipeline configuration file:
 ```
 Or when you initialize a pipeline:
 ```python
-pyppl({"loglevels": "nodebug"}).starts(...).run()
+PyPPL({"loglevels": "nodebug"}).start(...).run()
 ```
 
 You can also explicitly define a set of messages with different levels to show in the logs:
@@ -101,7 +101,7 @@ Then the `DEBUG`, `P.ARGS` messages will show, and `SUBMIT` will hide.
 ## Define your theme
 
 Let's see how the built-in theme looks like first:
-in `pyppl/helpers/logger.py`:
+in `pyppl/logger.py`:
 ```python
 themes = {
   'greenOnBlack': {
@@ -128,22 +128,22 @@ For the values, basically it's a 2-element list, where the first one defines the
 
 If you just want to modify the built-in themes, you can do it before you specify it to the pyppl constructor:
 ```python
-from pyppl import logger, pyppl
+from PyPPL import logger, PyPPL
 logger.themes['greenOnBlack']['DONE'] = logger.colors.cyan
 # ... define some procs
-pyppl({'logtheme': 'greenOnBlack'}).starts(...).run()
+PyPPL({'logtheme': 'greenOnBlack'}).start(...).run()
 ```
 
 Yes, of course, you can also define a completely new theme:
 ```python
-from pyppl import logger, pyppl
+from PyPPL import logger, PyPPL
 # ... define procs
-pyppl({'logtheme': {
+PyPPL({'logtheme': {
     'DONE': logger.colors.green,
     'DEBUG': logger.colors.black,
     'starts:LOG': logger.colors.bgwhite + logger.colors.black,
     # ...
-}}).starts(...).run()
+}}).start(...).run()
 ```
 
 Available colors in `logger.colors`:
