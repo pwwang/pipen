@@ -4,7 +4,7 @@
 {% raw %}
 To configure your pipeline, you just pass the configurations (a `dict`) to the constructor:
 ```python
-ppl = pyppl (config)
+ppl = PyPPL(config)
 ```
 Here is the full structure of the configurations:
 ```json
