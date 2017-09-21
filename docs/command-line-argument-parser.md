@@ -3,9 +3,9 @@
 
 This module is just for your convenience. You are free to use Python's built-in `argparse` module or just use `sys.argv`.
 
-To start with, just import it from `pyppl`:
+To start with, just import it from `PyPPL`:
 ```python
-from pyppl import params
+from PyPPL import params
 ```
 
 ## Add an option
@@ -39,7 +39,7 @@ var2 = ps.opt2 + [4]
 ```
 
 
-## Set properties of an option
+## Set attributes of an option
 An option has server properties:
 - `desc`: The description of the option, shows in the help page. Default: `''`
 - `required`: Whether the option is required. Default: `False`
@@ -118,7 +118,7 @@ p3.show: True
 
 Similarly, you can set the default value for `show` property by: `params.loadCfgfile("params.config", show=True)`
 
-## Set other properties of params
+## Set other attributes of params
 - `params.usage('--param-infile <infile> [Options]')` The usage of the program
 - `params.example('python prog.py /path/to/file <options>')` The example of usages
 - `params.desc('What does the program do?')` The description of the program
