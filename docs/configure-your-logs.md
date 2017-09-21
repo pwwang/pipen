@@ -142,7 +142,7 @@ PyPPL({'log':{'theme': 'greenOnBlack'}}).start(...).run()
 
 Yes, of course, you can also define a completely new theme:
 ```python
-from PyPPL import logger, PyPPL
+from pyppl import logger, PyPPL
 # ... define procs
 PyPPL({'log': 
     {'theme': {

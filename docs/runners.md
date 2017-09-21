@@ -192,7 +192,7 @@ You are also able to define your own runner, which should be a class extends `Ru
 
 The class name **MUST** start with `Runner` and end with the runner name with first letter capitalized. For example, to define the runner `my`:
 ```python
-from PyPPL.runners import Runner
+from pyppl.runners import Runner
 class runner_my (Runner):
 	pass
 ```
@@ -222,7 +222,7 @@ Some important method to be redefined:
     > **Note** For queue runners, the script is used to submit the job and you may also have to specify the static variables `maxsubmit` and `interval` (see below).
     > 
     > **Checklist (What you have to do in the constructor redefinition):**
-    > - choose the right base class (`PyPPL.runners.Runner` or `PyPPL.runners.RunnerQueue`)
+    > - choose the right base class (`pyppl.runners.Runner` or `pyppl.runners.RunnerQueue`)
     > - `super(RunnerMy, self).__init__(job)`
     > - setup the right `self.script` for submission.
     > - if it is a queue runner, make sure the return code is written to `self.job.rcfile`, stdout to `self.job.outfile` and stderr to `self.job.errilfe`
@@ -248,7 +248,7 @@ Some important method to be redefined:
 
 **Key points in writing your own runner**:
 
-  1. Choose the right base class (`PyPPL.runners.Runner` or `pyppl.runners.RunnerQueue`) (required).
+  1. Choose the right base class (`pyppl.runners.Runner` or `pyppl.runners.RunnerQueue`) (required).
   2. Compose the right script to submit the job (`self.script`) in `__init__`(required).
   3. Use `getpid` to get the job id (optional).
   4. Tell `PyPPL` how to judge when the jobs are still running (`self.isRunning()`) (optional). 

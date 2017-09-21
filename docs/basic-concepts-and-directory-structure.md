@@ -49,4 +49,4 @@ Actually, what you need to do is just specify the first input channel, and then 
 - `<workdir>` refers to `./workdir/PyPPL.<id>.<tag>.<suffix>/`, 
 - `<indir>` refers to `./workdir/PyPPL.<id>.<tag>.<suffix>/<job.index>/input/`
 - `<outdir>` refers to `./workdir/PyPPL.<id>.<tag>.<suffix>/<job.index>/output/` 
-- `pXXX` refers to a process instantiated from `PyPPL.Proc` class.
+- `pXXX` refers to a process instantiated from `pyppl.Proc` class.

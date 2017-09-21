@@ -5,7 +5,7 @@ This module is just for your convenience. You are free to use Python's built-in 
 
 To start with, just import it from `PyPPL`:
 ```python
-from PyPPL import params
+from pyppl import params
 ```
 
 ## Add an option
