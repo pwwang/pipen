@@ -2,7 +2,7 @@
 <!-- toc -->
 
 {% raw %}
-`pyppl` has fancy logs. You can define how they look like (theme) and what messages to show (levels).
+`PyPPL` has fancy logs. You can define how they look like (theme) and what messages to show (levels).
 
 ## Built-in log themes
 We have some built-in themes:
@@ -31,15 +31,17 @@ If you don't like them, you can also disable them:
 To use them, just specify the name in your pipeline configuration file:
 ```json
 {
-    "logtheme": "magentaOnWhite"
+    "log": {
+        "theme": "magentaOnWhite"
+    }
 }
 ```
 Or when you initialize a pipeline:
 ```python
-pyppl({"logtheme": "magentaOnWhite"}).starts(...).run()
+PyPPL({"log": {"theme": "magentaOnWhite"}}).start(...).run()
 ```
-If you want to disable the theme, just set `"logtheme"` to `False` (`false` for `json`)
-If you set `logtheme` to `True`, then default theme `greenOnBlack` is used.
+If you want to disable the theme, just set `"theme"` to `False` (`false` for `json`)
+If you set `theme` to `True`, then default theme `greenOnBlack` is used.
 
 ## Levels of pyppl logs
 Please note that the levels are different from those of python's `logging` module. For `logging` module has [6 levels][9], with different int values. However, pyppl's log has many levels, or more suitable, flags, which don't have corresponding values. They are somehow equal, but some of them always print out unless you ask them not to.
@@ -69,31 +71,35 @@ Please note that the levels are different from those of python's `logging` modul
 |`P.PROPS`|`all, normal, nodebug`|Show some properties of a process|
 |`P.ARGS`|`all, nodebug`|Show the args of a process|
 |`JOBDONE`|`all, nodebug`|Mark when a job is done|
->**NOTE** The log levels are a little bit different from here, please see [debug your script].[27]
+>**NOTE** The log levels are a little bit different from here, please see [debug your script][27].
 
 You may also specify the group name in your pipeline configuration file:
 ```json
 {
-    "loglevels": "nodebug"
+    "log": {
+        "levels": "nodebug"
+    }
 }
 ```
 Or when you initialize a pipeline:
 ```python
-pyppl({"loglevels": "nodebug"}).starts(...).run()
+PyPPL({"log": {"levels": "nodebug"}}).start(...).run()
 ```
 
 You can also explicitly define a set of messages with different levels to show in the logs:
 ```json
 {
-    "loglevels": [">>>>>>>", "RUNNING", "CACHED"]
+    "log": {"levels": [">>>>>>>", "RUNNING", "CACHED"]}
 }
 ```
 
 Even you can modify the base groups:
 ```json
 {
-    "loglevels": "normal",
-    "loglvldiff": ["+DEBUG", "P.ARGS", "-SUBMIT"]
+    "log": {
+        "levels": "normal",
+        "lvldiff": ["+DEBUG", "P.ARGS", "-SUBMIT"]
+    }
 }
 ```
 Then the `DEBUG`, `P.ARGS` messages will show, and `SUBMIT` will hide.
@@ -101,7 +107,7 @@ Then the `DEBUG`, `P.ARGS` messages will show, and `SUBMIT` will hide.
 ## Define your theme
 
 Let's see how the built-in theme looks like first:
-in `pyppl/helpers/logger.py`:
+in `pyppl/logger.py`:
 ```python
 themes = {
   'greenOnBlack': {
@@ -128,22 +134,24 @@ For the values, basically it's a 2-element list, where the first one defines the
 
 If you just want to modify the built-in themes, you can do it before you specify it to the pyppl constructor:
 ```python
-from pyppl import logger, pyppl
+from PyPPL import logger, PyPPL
 logger.themes['greenOnBlack']['DONE'] = logger.colors.cyan
 # ... define some procs
-pyppl({'logtheme': 'greenOnBlack'}).starts(...).run()
+PyPPL({'log':{'theme': 'greenOnBlack'}}).start(...).run()
 ```
 
 Yes, of course, you can also define a completely new theme:
 ```python
-from pyppl import logger, pyppl
+from PyPPL import logger, PyPPL
 # ... define procs
-pyppl({'logtheme': {
-    'DONE': logger.colors.green,
-    'DEBUG': logger.colors.black,
-    'starts:LOG': logger.colors.bgwhite + logger.colors.black,
-    # ...
-}}).starts(...).run()
+PyPPL({'log': 
+    {'theme': {
+        'DONE': logger.colors.green,
+        'DEBUG': logger.colors.black,
+        'starts:LOG': logger.colors.bgwhite + logger.colors.black,
+        # ...
+    }}
+}).start(...).run()
 ```
 
 Available colors in `logger.colors`:
@@ -162,17 +170,17 @@ You can also use the directly terminal escape sequences, like `\033[30m` for bla
 If you define a theme in a configuration file, you may use the escape sequences or also use the color names:
 ```json
 {
-    "logtheme": {
+    "log": {"theme": {
         "DONE": "colors.green",
         "DEBUG": "colors.black",
         "starts:LOG": "colors.bgwhite + colors.black",
         # ...
-    }
+    }}
 }
 ```
 
 ## Log to file
-By default, pyppl will not log to a file until you set a file path to `"logfile"` in the configuration. Or you can specfiy `False` to it to disable logging to file. If you set it to `True`, a default log file will be used, which is: `"./pipeline.pyppl.log"` if your pipeline is from file: `./pipeline.py`
+By default, pyppl will not log to a file until you set a file path to `{"log": {"file": "/path/to/logfile"}}` in the configuration. Or you can specfiy `False` to it to disable logging to file. If you set it to `True`, a default log file will be used, which is: `"./pipeline.pyppl.log"` if your pipeline is from file: `./pipeline.py`
 >**NOTE** Filters and themes are not applied to handler to log to file. So you can always find all logs in the log file if your have it enabled.
 
 {% endraw %}

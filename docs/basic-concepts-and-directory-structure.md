@@ -44,5 +44,9 @@ Actually, what you need to do is just specify the first input channel, and then 
 |`<job.index>/job.script.ssh`|The script file for ssh runner||
 |`<job.index>/job.script.sge`|The script file for sge runner||
 
-> **Note**  You are encouraged to set `p.ppldir` **BUT NOT** `p.workdir`, as it contains a unique `suffix` that is automatically computed.  
-All `<workdir>` refers to `./workdir/PyPPL.<id>.<tag>.<suffix>/`, `<indir>` to `./workdir/PyPPL.<id>.<tag>.<suffix>/<job.index>/input/` and `<outdir>` to `./workdir/PyPPL.<id>.<tag>.<suffix>/<job.index>/output/` in this documentation.
+> **Note** You are encouraged to set `p.ppldir` **BUT NOT** `p.workdir`, as it contains a unique `suffix` that is automatically computed.  
+> **Note** In this documentation:
+- `<workdir>` refers to `./workdir/PyPPL.<id>.<tag>.<suffix>/`, 
+- `<indir>` refers to `./workdir/PyPPL.<id>.<tag>.<suffix>/<job.index>/input/`
+- `<outdir>` refers to `./workdir/PyPPL.<id>.<tag>.<suffix>/<job.index>/output/` 
+- `pXXX` refers to a process instantiated from `PyPPL.Proc` class.

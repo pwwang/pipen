@@ -2,29 +2,23 @@
 <!-- toc -->
 
 ## Choose your language
-You can either specify the path of interpreter to `p.lang`~~or p.defaultSh~~ (deprecated), if the interpreter is in `$PATH`, you can directly give the basename of the interpreter.  
-For example, if you have your own perl installed at `/home/user/bin/perl`, then you need to tell `pyppl` where it is: `p.lang = "/home/user/bin/perl"`. If `/home/user/bin` is in your `$PATH`, you can simply do: `p.lang = "perl"`  
+You can either specify the path of interpreter to `pXXX.lang`, if the interpreter is in `$PATH`, you can directly give the basename of the interpreter.  
+For example, if you have your own perl installed at `/home/user/bin/perl`, then you need to tell `PyPPL` where it is: `pXXX.lang = "/home/user/bin/perl"`. If `/home/user/bin` is in your `$PATH`, you can simply do: `p.lang = "perl"`  
 You can also use [shebang][1] to specify the interperter:
 ```perl
 #!/home/usr/bin/perl
 # You perl code goes here
 ```
-Theoretically, `pyppl` supports any language.
 
-## Use placeholders
-You can use all available placeholders in the script. Each job will have its own script. See [here](https://pwwang.gitbooks.io/pyppl/content/placeholders.html) for details of placeholders.
+## Use script from a file
+You can also put the script into a file, and use it with a `file:` prefix: `pXXX.script = "file:/a/b/c.pl"`  
 
-## Use a template
-You can also put the script into a file, and use it with a `template:` prefix: `p.script = "template:/a/b/c.pl"`  
-You may also use the placeholders in the template, where everything should be the same when you put the script directly to `p.script`, the only difference is the control characters.
-For example, in a template file, you use `"\t"` for a tab, but when directly specified to `p.script` property, you have to use `"\\t"`
 > **Note**: You may also use a relative-path template, which is relative to `os.path.dirname (sys.argv[0])`
-> Template extension is not supported yet.
 
-> **HINT**: Indents are import in python, when you write your scripts, you have to follow exactly the indents in the script string, for example:
+> **HINT**: Indents are important in python, when you write your scripts, you have to follow exactly the indents in the script string, for example:
 ```python
 def test():
-    p = proc()
+    p = Proc()
     p.lang = "python"
     p.script = """
 import os
@@ -33,24 +27,24 @@ def somefunc ():
     pass
 """
 ```
-But with `'# Indent: remove'`, you can do it more elegantly:
+But with `'## indent remove ##'`, you can do it more elegantly:
 ```python
 def test():
     p = proc()
     p.lang = "python"
     p.script = """
-    # Indent: remove 
+    ## indent remove ## 
     import os
     import re
     def somefunc():
         pass
     """
 ```
-The leading white spaces of line `# Indent: remove` will be removed for each line (including itself) below it. In this case, the extra `<tab>` of pass will be kept.  
-You may use `# Indent: keep` to stop removing the white spaces for the following lines.
+The leading white spaces of line `## indent remove ##` will be removed for each line (including itself) below it. In this case, the extra `<tab>` of pass will be kept.  
+You may use `## indent keep ##` to stop removing the white spaces for the following lines.
 
 ## Debug your script
-If you need to debug your script, you just need to find the real running script, which is at: `<workdir>/<job.index>/job.script`. All the placeholders in the script have been replaced with actual values. You can debug it using the tool according to the language you used for the script.
+If you need to debug your script, you just need to find the real running script, which is at: `<workdir>/<job.index>/job.script`. The template is rendered already in the file. You can debug it using the tool according to the language you used for the script.
 
 You may also add logs to pyppl's main logs on the screen or in log files. To do that, you just need to print you message starting with `pyppl.log` to STDERR:
 ```python
@@ -66,7 +60,7 @@ echo "pyppl.log: Something for debug." 1>&2
 
 ```R
 # Rscript
-write("pyppl.log: Something for debug.", stderr())
+cat("pyppl.log: Something for debug.", file = stderr())
 ```
 Either one of the above will have a log message like:
 ```
@@ -85,7 +79,6 @@ Then the log message will be:
 
 >**NOTE** The level name you specified after `pyppl.log` does not apply to [normal log filters or themes][2], because the actual level is `_FLAG` in this case. So unless you set `loglevels` to `None`, it will be anyway printed out. For themes, the color at the empty string key will be used. 
 > You can define filters or themes for this kind of logs, just remember the actual level name has an `_` prefix. See [here][2] to learn how to define filters and themes.
-
 
 
 [1]: https://en.wikipedia.org/wiki/Shebang_(Unix)
