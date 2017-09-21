@@ -68,15 +68,15 @@ For built-in template engine, you may use pipe, for example: `{{in.file | basena
 
 - `R`: Transform a python value to R value. For example:
 
-  | Usage | Data | Result |
-  |-------|------|--------|
-  | `{{v `&#x7c;` R}}` | `{'v': True}` | `TRUE` |
-  || `{'v': 'TRUE'}` | `TRUE` | 
-  || `{'v': 'NA'}` | `NA` |  
-  || `{'v': 'NULL'}` | `NULL` |
-  || `{'v': 1}` | `1` |
-  || `{'v': 'r:c(1,2,3)'}` | `c(1,2,3)` |
-  || `{'v': 'plainstring'}` | `"plainstring"` |
+| Usage | Data | Result |
+|-------|------|--------|
+| `{{v `&#x7c;` R}}` | `{'v': True}` | `TRUE` |
+|| `{'v': 'TRUE'}` | `TRUE` | 
+|| `{'v': 'NA'}` | `NA` |  
+|| `{'v': 'NULL'}` | `NULL` |
+|| `{'v': 1}` | `1` |
+|| `{'v': 'r:c(1,2,3)'}` | `c(1,2,3)` |
+|| `{'v': 'plainstring'}` | `"plainstring"` |
   
 - `Rvec`: Transform a python list to a R vector. For example:
   - `{{v | Rvec}}` with `{'v': [1,2,3]}` results in `c(1,2,3)`
@@ -87,11 +87,11 @@ For built-in template engine, you may use pipe, for example: `{{in.file | basena
 - `dirname`: Shortcut of `os.path.dirname`
 - `basename`: Get the basename of a file. If a file is renamed by `PyPPL` in case of input files with the same basename, it tries to get the original basename. For example:
 
-  | Usage | Data | Result |
-  |-------|------|--------|
-  | `{{v `&#x7c;` basename}}` | `{'v': '/path/to/file.txt'}` | `file.txt` |
-  || `{'v': '/path/to/file[1].txt'}` | `file.txt` |
-  | `{{v, orig `&#x7c;` basename}}` | `{'v': '/path/to/file[1].txt', 'orig': True}` | `file[1].txt`| 
+| Usage | Data | Result |
+|-------|------|--------|
+| `{{v `&#x7c;` basename}}` | `{'v': '/path/to/file.txt'}` | `file.txt` |
+|| `{'v': '/path/to/file[1].txt'}` | `file.txt` |
+| `{{v, orig `&#x7c;` basename}}` | `{'v': '/path/to/file[1].txt', 'orig': True}` | `file[1].txt`| 
   
 - `bn`: Shortcut of `basename`
 - `filename`: similar as `basename` but without extension.
@@ -113,38 +113,38 @@ For built-in template engine, you may use pipe, for example: `{{in.file | basena
 ## Usage of built-in template engine
 - Basic usage:
 
-  | Usage | Data | Result |
-  |-------|------|--------|
-  | `{{v}}`| `{'v': 1}`| `1` |
-  | `{{v.a}}`, `{{v['a']}}`| `{'v': {'a': 1}}`| `1` |
-  | `{{v.0}}`, `{{v[0]}}` | `{'v': [1]}` | `1` |
-  | `{{v.upper()}}` | `{'v': "a"}` | `A` |
-  | `{{v.0.upper()}}`| `{'v': ["a"]}` | `A` |
+| Usage | Data | Result |
+|-------|------|--------|
+| `{{v}}`| `{'v': 1}`| `1` |
+| `{{v.a}}`, `{{v['a']}}`| `{'v': {'a': 1}}`| `1` |
+| `{{v.0}}`, `{{v[0]}}` | `{'v': [1]}` | `1` |
+| `{{v.upper()}}` | `{'v': "a"}` | `A` |
+| `{{v.0.upper()}}`| `{'v': ["a"]}` | `A` |
   
 - Applying functions:
 
-  | Usage | Data | Result |
-  |-------|------|--------|
-  | `{{v `&#x7c;` R}}` | `{'v': True}` | `TRUE` |
-  | `{{v1, v2 `&#x7c;` paste}}` | `{'v1': 'Hello', 'v2': 'world!', 'paste': lambda x, y: x + ' ' + y}`| `Hello world!` |
-  | `{{v1, v2 `&#x7c;` lambda x, y: x + ' ' + y}}` | `{'v1': 'Hello', 'v2': 'world!'}`| `Hello world!` |
+| Usage | Data | Result |
+|-------|------|--------|
+| `{{v `&#x7c;` R}}` | `{'v': True}` | `TRUE` |
+| `{{v1, v2 `&#x7c;` paste}}` | `{'v1': 'Hello', 'v2': 'world!', 'paste': lambda x, y: x + ' ' + y}`| `Hello world!` |
+| `{{v1, v2 `&#x7c;` lambda x, y: x + ' ' + y}}` | `{'v1': 'Hello', 'v2': 'world!'}`| `Hello world!` |
   
   > **Note** If you want to pass a literal value (for example: `1`, `True`), you CANNOT do this: `{{v, False | readlines}}`. Instead, you can either:
     - specify the value in data: `{'v': '/path/to/file', 'skipEmptyLines': False}`, then `{{v, skipEmptyLines | readlines}}`; or
     - use `lambda` function: `{{v, readlines | lambda x, func: func(x, False)}}`
 - `If-else/elif` statements:
 
-  | Usage | Data | Result |
-  |-------|------|--------|
-  | `{% if v %}`<br />&nbsp;&nbsp;`1`<br />`{% else %}`<br />&nbsp;&nbsp;`2`<br />`{% endif %}`|`{'v': True}`|`1`|
-  | `{% if v `&#x7c;` notExists %}`<br />&nbsp;&nbsp;`Path not exists.`<br />`{% elif v `&#x7c;` isDir %}`<br />&nbsp;&nbsp;`Path is a directory.`<br />`{% else %}`<br />&nbsp;&nbsp;`Path exists but is not a directory.`<br />`{% endif %}` | `{`<br />`'v': '/path/to/file', `<br />`'notExists': lambda x: not __import__('os').path.exists(x), `<br />`'isDir': __import__('os').path.isdir`<br />`}` |`Path exists but is not a directory.`|
+| Usage | Data | Result |
+|-------|------|--------|
+| `{% if v %}`<br />&nbsp;&nbsp;`1`<br />`{% else %}`<br />&nbsp;&nbsp;`2`<br />`{% endif %}`|`{'v': True}`|`1`|
+| `{% if v `&#x7c;` notExists %}`<br />&nbsp;&nbsp;`Path not exists.`<br />`{% elif v `&#x7c;` isDir %}`<br />&nbsp;&nbsp;`Path is a directory.`<br />`{% else %}`<br />&nbsp;&nbsp;`Path exists but is not a directory.`<br />`{% endif %}` | `{`<br />`'v': '/path/to/file', `<br />`'notExists': lambda x: not __import__('os').path.exists(x), `<br />`'isDir': __import__('os').path.isdir`<br />`}` |`Path exists but is not a directory.`|
   
 - Loops:
 
-  | Usage | Data | Result |
-  |-------|------|--------|
-  |`{% for var in varlist %}{{var`&#x7c;`R}}{% endfor %}`|`{'varlist': ['abc', 'True', 1, False]}`|`"abc"TRUE1FALSE`|
-  |`{% for k , v in data.items() %}{{k}}:{{v}}{% endfor %}`|`{'data': {'a':1, 'b':2}}`|`a:1b:2`|
+| Usage | Data | Result |
+|-------|------|--------|
+|`{% for var in varlist %}{{var`&#x7c;`R}}{% endfor %}`|`{'varlist': ['abc', 'True', 1, False]}`|`"abc"TRUE1FALSE`|
+|`{% for k , v in data.items() %}{{k}}:{{v}}{% endfor %}`|`{'data': {'a':1, 'b':2}}`|`a:1b:2`|
   
 ## Set environment of template engine
 You can define you own functions/data for template rendering:
