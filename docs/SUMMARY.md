@@ -6,7 +6,7 @@
 * [Channels](channels.md)
 * [Input and output of a process](specify-input-and-output-of-a-process.md)
 * [The heart: script](write-your-script.md)
-* [Export output files](export-output-files.md)
+* [Output file exporting](export-output-files.md)
 * [Caching](caching.md)
 * [Runners](runners.md)
 * [Set other properties of a process](set-other-properties-of-a-process.md)
