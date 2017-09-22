@@ -7,30 +7,30 @@ Aggregations are designed for this kind of situations, you can just define an ag
 
 For example:
 ```python
-pTrimmomaticPE.input             = {pTrimmomaticPE.input: inchan}
+pTrimmomaticPE.input             = <input channel>
 pAlignPEByBWA.depends            = pTrimmomaticPE
 pSortSam.depends                 = pAlignPEByBWA
 pMarkDuplicates.depends          = pSortSam
 pIndexBam.depends                = pMarkDuplicates
 pRealignerTargetCreator.depends  = pIndexBam
-pIndelRealigner.depends          = [pIndexBam, pRealignerTargetCreator]
+pIndelRealigner.depends          = pIndexBam, pRealignerTargetCreator
 pBaseRecalibrator.depends        = pIndelRealigner
-pPrintReads.depends              = [pIndelRealigner, pBaseRecalibrator]
+pPrintReads.depends              = pIndelRealigner, pBaseRecalibrator
 pPrintReads.exportdir            = exdir
 
-pMarkDuplicates.args['params']         += ' TMP_DIR="/local2/tmp/"'
-pAlignPEByBWA.args['reffile']           = reffile
-pRealignerTargetCreator.args['reffile'] = reffile
-pRealignerTargetCreator.args['params'] += ' -Djava.io.tmpdir=/local2/tmp/'
-pIndelRealigner.args['reffile']         = reffile
-pIndelRealigner.args['params']         += ' -Djava.io.tmpdir=/local2/tmp/'
-pBaseRecalibrator.args['reffile']       = reffile
-pBaseRecalibrator.args['knownSites']    = dbsnp
-pBaseRecalibrator.args['params']       += ' -Djava.io.tmpdir=/local2/tmp/'
-pPrintReads.args['reffile']             = reffile
-pPrintReads.args['params']             += ' -Djava.io.tmpdir=/local2/tmp/'
+pMarkDuplicates.args.params         += ' TMP_DIR="/local2/tmp/"'
+pAlignPEByBWA.args.reffile           = reffile
+pRealignerTargetCreator.args.reffile = reffile
+pRealignerTargetCreator.args.params += ' -Djava.io.tmpdir=/local2/tmp/'
+pIndelRealigner.args.reffile         = reffile
+pIndelRealigner.args.params         += ' -Djava.io.tmpdir=/local2/tmp/'
+pBaseRecalibrator.args.reffile       = reffile
+pBaseRecalibrator.args.knownSites    = dbsnp
+pBaseRecalibrator.args.params       += ' -Djava.io.tmpdir=/local2/tmp/'
+pPrintReads.args.reffile             = reffile
+pPrintReads.args.params             += ' -Djava.io.tmpdir=/local2/tmp/'
 
-pyppl.pyppl({
+PyPPL({
     'proc': {
         'forks': 100,
         'runner': 'sge',
@@ -38,14 +38,15 @@ pyppl.pyppl({
             'sge.q': 'lg-mem'
         }
     }
-}).starts(pTrimmomaticPE).run()
+}).start(pTrimmomaticPE).run()
 ```
 This is a very commonly used Whole Genome Sequencing data cleanup pipeline from the raw reads according to the [GATK best practice](https://software.broadinstitute.org/gatk/best-practices/). And it will be used pretty much every time when the raw read files come. 
 
 With an aggregation defined, you don't need to configure and call those processes every time:
 ```python
+from pyppl import Aggr
 # some paramters defined in params
-aFastqPE2Bam = aggr (
+aFastqPE2Bam = Aggr (
     pTrimmomaticPE,
     pAlignPEByBWA,
     pSortSam,
@@ -57,34 +58,34 @@ aFastqPE2Bam = aggr (
     pPrintReads
 )
 # dependency adjustment
-aFastqPE2Bam.pIndelRealigner.depends   = [aFastqPE2Bam.pIndexBam, aFastqPE2Bam.pRealignerTargetCreator]
-aFastqPE2Bam.pPrintReads.depends       = [aFastqPE2Bam.pIndelRealigner, aFastqPE2Bam.pBaseRecalibrator]
+aFastqPE2Bam.pIndelRealigner.depends   = aFastqPE2Bam.pIndexBam, aFastqPE2Bam.pRealignerTargetCreator
+aFastqPE2Bam.pPrintReads.depends       = aFastqPE2Bam.pIndelRealigner, aFastqPE2Bam.pBaseRecalibrator
 # input adjustment
 # args adjustment
-aFastqPE2Bam.pMarkDuplicates.args['params']             += ' TMP_DIR="%s"' % params.tmpdir
-aFastqPE2Bam.pAlignPEByBWA.args['reffile']               = params.hg19fa
-aFastqPE2Bam.pRealignerTargetCreator.args['reffile']     = params.hg19fa
-aFastqPE2Bam.pRealignerTargetCreator.args['params']     += ' -Djava.io.tmpdir=%s' % params.tmpdir
-aFastqPE2Bam.pIndelRealigner.args['reffile']             = params.hg19fa
-aFastqPE2Bam.pIndelRealigner.args['params']             += ' -Djava.io.tmpdir=%s' % params.tmpdir
-aFastqPE2Bam.pBaseRecalibrator.args['reffile']           = params.hg19fa
-aFastqPE2Bam.pBaseRecalibrator.args['knownSites']        = params.dbsnp
-aFastqPE2Bam.pBaseRecalibrator.args['params']           += ' -Djava.io.tmpdir=%s' % params.tmpdir
-aFastqPE2Bam.pPrintReads.args['reffile']                 = params.hg19fa
-aFastqPE2Bam.pPrintReads.args['params']                 += ' -Djava.io.tmpdir=%s' % params.tmpdir
+aFastqPE2Bam.pMarkDuplicates.args.params             += ' TMP_DIR="%s"' % params.tmpdir
+aFastqPE2Bam.pAlignPEByBWA.args.reffile               = params.hg19fa
+aFastqPE2Bam.pRealignerTargetCreator.args.reffile     = params.hg19fa
+aFastqPE2Bam.pRealignerTargetCreator.args.params     += ' -Djava.io.tmpdir=%s' % params.tmpdir
+aFastqPE2Bam.pIndelRealigner.args.reffile             = params.hg19fa
+aFastqPE2Bam.pIndelRealigner.args.params             += ' -Djava.io.tmpdir=%s' % params.tmpdir
+aFastqPE2Bam.pBaseRecalibrator.args.reffile           = params.hg19fa
+aFastqPE2Bam.pBaseRecalibrator.args.knownSites        = params.dbsnp
+aFastqPE2Bam.pBaseRecalibrator.args.params           += ' -Djava.io.tmpdir=%s' % params.tmpdir
+aFastqPE2Bam.pPrintReads.args.reffile                 = params.hg19fa
+aFastqPE2Bam.pPrintReads.args.params                 += ' -Djava.io.tmpdir=%s' % params.tmpdir
 ```
 
 Then every time you just need to call the aggregation:
 ```python
 aFastqPE2Bam.input = channel.fromPairs ( datadir + '/*.fastq.gz' )
 aFastqPE2Bam.exdir = exdir
-pyppl({
+PyPPL({
     'proc': {
         'sgeRunner': {
             'sge.q' : '1-day'
         }
     }
-}).starts(aFastqPE2Bam).run()
+}).start(aFastqPE2Bam).run()
 ```
 
 ## Initialize an aggregation
@@ -92,33 +93,33 @@ Like previous example shows, you just need to give the constructor all the proce
 
 1. The dependencies are automatically constructed by the order of the processes. 
    ```python
-   a = aggr (p1, p2, p3)
+   a = Aggr (p1, p2, p3)
    # The dependencies will be p1 -> p2 -> p3
    ```
 2. The starting and ending processes are defined as the first and last processes, respectively. If you need to modify the dependencies, keep that in mind whether the starting and ending processes are changed.
     ```python
-    a = aggr (p1, p2, p3)
+    a = Aggr (p1, p2, p3)
     # a.starts == [p1]
     # a.ends   == [p3]
     #                                / p2
     # change the dependencies to  p1      >
     #                                \ p3
     # both p2, p3 depend on p1, and p3 depends on p2
-    a.p3.depends = [p1, p2]
+    a.p3.depends = p1, p2
     # but remember the ending processes are changed from [p3] to [p2, p3]
     a.ends = [p2, p3]
     ```
     You can also specify the dependencies manually:
     ```python
-    a = aggr (p1, p2, p3, False)
+    a = Aggr (p1, p2, p3, False)
     a.p2.depends = p1
-    a.p3.depends = [p1, p2]
+    a.p3.depends = p1, p2
     a.starts = [p1]
     a.ends   = [p2, p3]
     ```
 3. If you have one process used twice in the aggregation, copy it with a different id:
    ```python
-   a = aggr(
+   a = Aggr(
        p1,
        p2,
        p1.copy(newid = 'p1copy')
@@ -132,67 +133,46 @@ Like previous example shows, you just need to give the constructor all the proce
 `aggr.addProc(p, where=None)`
 You can add a process, and also define whether to put it in `starts`, `ends`, `both` or `None`.
     
-## Set properties of an aggregation
-You can set properties for an aggregation. Some of them will affect the aggregation itself; some will affect the starting processes and some a:
-
-| Property name | Affected processes |
-|-|-|
-| `input` | starting<sup>*</sup> |
-| `depends`, `ex*` | ending |
-| `starts`, `ends`, `id` | aggregation |
-| `tag`, `tmpdir`, `forks`, `cache`, `retcodes`, `rc`, `echo`, `runner`, `errorhow`, `errhow`, `errorntry`, `errntry` | all processes |
-
-> **Caution** <sup>*</sup>: As the input of processes already have the keys defined, when you specify the input to an aggregation, you just need to give the channel. And there could be multiple starting processes, the input channel you specify to the aggregation should be column-combined of the input channels when you specify them separately.
+## Set attributes of processes of an aggregation
+You can set the attributes directly for a process of an aggregation:
 ```python
-p1.input = "v1"  # channel: [1,2,3]
-p2.input = "v2"  # channel: [4,5,6]
-a = aggr (p1, p2, p3, False)
-p3.depends = [p1,p2]
-a.starts = [p1,p2]
-a.ends   = [p3]
-a.input = [(1,4), (2,5), (3,6)]
+aFastqPE2Bam.pAlignPEByBWA.args.reffile = params.hg19fa
 ```
-
-You may also set the value for a property for all processes of an aggregation:
+Or you may use `set` method of an aggregation:
 ```python
-a = aggr(p1, p2, p3)
-a.set ('runner', 'ssh')
+aFastqPE2Bam.set('args.reffile', params.hg19fa, 'pAlignPEByBWA')
 ```
-Or for some processes:
+The benefit of the latter method is that you can set the attributes of multiple processes at one time:
 ```python
-a = aggr(p1, p2, p3)
-a.set ('runner', 'ssh', "p2,p3")
+aFastqPE2Bam.set('args.reffile', params.hg19fa, 'pAlignPEByBWA, pBaseRecalibrator')
+# Both args.reffile of aFastqPE2Bam.pAlignPEByBWA and aFastqPE2Bam.pBaseRecalibrator 
+# were set as params.hg19fa
 ```
-
-
-And you are also able to update the `args` for all processes:
+You can also do:
 ```python
-a = aggr(p1,p2,p3)
-a.updateArgs ('samtools', '/path/to/samtools')
-# for some processes
-# a.updateArgs ('samtools', '/path/to/samtools', "p2,p3")
-# a.updateArgs ('samtools', '/path/to/samtools', ["p2", "p3"])
+aFastqPE2Bam.set('forks', 10)
 ```
+to set `forks` of all processes as `10`.
 
 ## Set an aggregation as starting aggregation for a pipeline
-You can do it just like setting a process as the starting process of pipeline (see [here][1]). Actually the starting processes in the aggregation (`agg.starts`) will be set as the starting processes of the pipeline.
+You can do it just like setting a process as the starting process of pipeline (see [here][1]). Actually the starting processes in the aggregation (`aggr.starts`) will be set as the starting processes of the pipeline.
 
 ## The dependency of aggregations and processes
 An aggregation can depend on aggregations and/or processes, you just treat the aggregations as processes. A process can also depend on aggregations and/or processes. 
 
 | What am I? | Whom I am depending on? | Real relations |
 |-|-|-|
-| `aggr` (`a1`) | `aggr` (`a2`) | `a1.starts` depends on `a2.ends` |
-| `aggr` (`a`) | `proc` (`p`) | `a.starts` depends on `p` |
-| `proc` (`p`) | `aggr` (`a`) | `p` depends on `a.ends` |
+| `Aggr` (`a1`) | `Aggr` (`a2`) | `a1.starts` depends on `a2.ends` |
+| `Aggr` (`a`) | `Proc` (`p`) | `a.starts` depends on `p` |
+| `Proc` (`p`) | `Aggr` (`a`) | `p` depends on `a.ends` |
 
 ## Copy an aggregation
-`aggr.copy(tag = 'notag', copyDeps = True, newid = None)`
+`Aggr.copy(tag = 'notag', copyDeps = True, newid = None)`
 You may copy an aggregation, all the processes in the aggregation will be copied, and the dependencies will be switched to the corresponding copied processes, as well as the starting and ending processes, if `copyDeps == True`. 
 
 You can keep the ids of processes unchanged but give a new tag and also give the aggregation an new id instead of the variable name:
 ```python
-a = aggr(p1, p2, p3)
+a = Aggr(p1, p2, p3)
 # access the processes:
 # a.p1, a.p2, a.p3
 a2 = a.copy('copied')

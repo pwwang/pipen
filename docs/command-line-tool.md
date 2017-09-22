@@ -1,6 +1,8 @@
 # Command line tool
 <!-- toc -->
 
+When you are debuggin a processes, specially when you are modify input, output and script, the suffix a process will change. Then there will be several `<workdir>` created in `<ppldir>`. The command line tool helps to maintain and clean up the `<workdir>`s
+
 ```bash
 > bin/pyppl --help
 usage: pyppl [-h] [-w WORKDIR] {clean,list,compare} ...
