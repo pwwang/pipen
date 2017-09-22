@@ -3,18 +3,19 @@ from multiprocessing import Lock, cpu_count
 from random import randint
 from time import sleep
 
-from .runner import runner
+from .runner import Runner
 
-from ..helpers.job import job as pjob
+from ..job import Job
 
 lock = Lock()
 
-class runner_queue (runner):
+class RunnerQueue (Runner):
 	"""
 	The base queue runner class
+
 	@static variables:
-		maxsubmit: Maximum jobs submitted at one time. Default cpu_count()/2
-		interval:  The interval to submit next batch of jobs. Default 30
+		`maxsubmit`: Maximum jobs submitted at one time. Default cpu_count()/2
+		`interval` :  The interval to submit next batch of jobs. Default 30
 	"""
 	
 	maxsubmit = int (cpu_count()/2)
@@ -26,7 +27,7 @@ class runner_queue (runner):
 		@params:
 			`job`:    The job object
 		"""
-		super(runner_queue, self).__init__(job)
+		super(RunnerQueue, self).__init__(job)
 	
 	def wait(self):
 		"""
@@ -36,11 +37,11 @@ class runner_queue (runner):
 		fout = open (self.job.outfile)
 		
 		# wait for submission process first
-		super(runner_queue, self).wait(False, fout, ferr)
+		super(RunnerQueue, self).wait(False, fout, ferr)
 			
 		lastout = ''
 		lasterr = ''
-		while self.job.rc() == pjob.EMPTY_RC:
+		while self.job.rc() == -1:
 			sleep (30)
 			(lastout, lasterr) = self._flushOut (fout, ferr, lastout, lasterr)
 			

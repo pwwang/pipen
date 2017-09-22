@@ -6,9 +6,9 @@
 #	@see runner.unittest.py
 """
 
-from .runner import runner
+from .runner import Runner
 
-class runner_local (runner):
+class RunnerLocal (Runner):
 	"""
 	The local runner
 	"""

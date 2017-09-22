@@ -1,12 +1,11 @@
 import copy
-from os import devnull
-from subprocess import Popen
 from re import search
 
-from .runner_queue import runner_queue
+from .runner_queue import RunnerQueue
+from .. import utils
 
 
-class runner_sge (runner_queue):
+class RunnerSge (RunnerQueue):
 	"""
 	The sge runner
 	"""
@@ -18,7 +17,7 @@ class runner_sge (runner_queue):
 			`job`:    The job object
 			`config`: The properties of the process
 		"""
-		super(runner_sge, self).__init__(job)
+		super(RunnerSge, self).__init__(job)
 
 		# construct an sge script
 		sgefile = self.job.script + '.sge'
@@ -100,19 +99,22 @@ class runner_sge (runner_queue):
 		self.script = ['qsub', sgefile]
 
 	def getpid (self):
+		"""
+		Get the job identity and save it to job.pidfile
+		"""
 		# Your job 6556149 ("pSort.notag.3omQ6NdZ.0") has been submitted
-		m = search (r"\s(\d+)\s", open(self.job.outfile).read())
-		if not m:
-			return
-		self.job.id (m.group(1))
+		with open(self.job.outfile) as f:
+			m = search (r"\s(\d+)\s", f.read())
+		if not m: return
+		self.job.pid (m.group(1))
 
 	def isRunning (self):
 		"""
 		Tell whether the job is still running
+		@returns:
+			True if it is running else False
 		"""
-		jobid = self.job.id ()
-		if not jobid:
-			return False
-		with open(devnull, 'w') as f:
-			return Popen (['qstat', '-j', jobid], stdout=f, stderr=f).wait() == 0
+		jobpid = self.job.pid ()
+		if not jobpid: return False
+		return utils.dumbPopen (['qstat', '-j', jobpid]).wait() == 0
 

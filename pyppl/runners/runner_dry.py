@@ -2,10 +2,10 @@
 # Dry runner
 """
 from os import path, utime, remove
-from .runner import runner
-from ..helpers import utils
+from .runner import Runner
+from .. import utils
 
-class runner_dry (runner):
+class RunnerDry (Runner):
 	"""
 	The dry runner
 	"""
@@ -17,7 +17,7 @@ class runner_dry (runner):
 			`job`:    The job object
 		"""
 		
-		super(runner_dry, self).__init__(job)
+		super(RunnerDry, self).__init__(job)
 		# construct an ssh cmd
 		dryfile      = self.job.script + '.dry'
 		

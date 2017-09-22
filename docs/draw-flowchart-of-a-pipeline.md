@@ -1,43 +1,50 @@
 # Draw flowchart of a pipeline
 <!-- toc -->
 
-`pyppl` will generate a graph in [DOT language][1], according to the process dependencies. 
-You can have multiple [renderers][2] to visualize to graph. A typical one is [Graphviz][3]. Once you have Graphviz installed, you will have a command line tool `dot` available, which takes the dot file as input and can output to a bunch of figure format. For example, if we have a pipeline written in `pipeline.py`:
+`PyPPL` will generate a graph in [DOT language][1], according to the process dependencies. 
+You can have multiple [renderers][2] to visualize to graph. A typical one is [Graphviz][3]. Once you have Graphviz installed, you will have a command line tool `dot` available, which takes the dot file as input and can output to a bunch of figure format. 
+
+## Generate the flowchart
+For example, if we have a pipeline written in `pipeline.py`:
 ```python
-p1 = proc("A")
-p2 = proc("B")
-p3 = proc("C")
-p4 = proc("D")
-p5 = proc("E")
-p6 = proc("F")
-p7 = proc("G")
-p8 = proc("H")
-p9 = proc("I")
+from pyppl import PyPPL, Proc
+
+p1 = Proc()
+p2 = Proc()
+p3 = Proc()
+p4 = Proc()
+p5 = Proc()
+p6 = Proc()
+p7 = Proc()
+p8 = Proc()
+p9 = Proc()
 """
-		   1A         8H
+		   p1         p8
 		/      \      /
-	 2B           3C
+	 p2           p3
 		\      /
-		  4D(e)       9I
+		   p4         p9
 		/      \      /
-	 5E          6F(e)
+	 p5          p6 (export)
 		\      /
-		  7G(e)
+		  p7 (expart)
 """
 p2.depends = p1
-p3.depends = [p1, p8]
-p4.depends = [p2, p3]
-p4.exdir   = "./"
+p3.depends = p1, p8
+p4.depends = p2, p3
+p4.exdir   = "./export"
 p5.depends = p4
-p6.depends = [p4, p9]
-p6.exdir   = "./"
-p7.depends = [p5, p6]
-p7.exdir   = "./"
-pyppl().starts(p1, p8, p9).flowchart()
-# ppl = pyppl().starts(p1, p8, p9).flowchart()
-# run it: ppl.run()
-# or:
-# pyppl().starts(p1, p8, p9).flowchart().run()
+p6.depends = p4, p9
+p6.exdir   = "./export"
+p7.depends = p5, p6
+p7.exdir   = "./export"
+
+# make sure at least one job is created.
+p1.input = {"in": [0]}
+p8.input = {"in": [0]}
+p9.input = {"in": [0]}
+
+PyPPL().star(p1, p8, p9).flowchart().run()
 ```
 
 You can specify different files to store the dot and svg file:
@@ -48,7 +55,7 @@ pyppl().starts(p1, p8, p9).flowchart("/another/dot/file", "/another/svg/file")
 
 For example, if you have [Graphviz](http://www.graphviz.org/) installed, you will have `dot` available to convert the dot file to svg file:
 ```python
-pyppl().starts(p1, p8, p9).flowchart(
+PyPPL().start(p1, p8, p9).flowchart(
 	"/another/dot/file", 
 	"/another/svg/file", 
 	"dot -Tsvg {{dotfile}} > {{svgfile}}"
@@ -58,9 +65,74 @@ pyppl().starts(p1, p8, p9).flowchart(
 The graph (`svgfile`) will be like:  
 ![Pipeline][4]
 
-The green processes are the starting processes; ones with red text are processes that will export the output files; and nodes in red are the end processes of the pipeline.
+The green processes are the starting processes; ones with purple text are processes that will export the output files; and nodes in red are the end processes of the pipeline.
+
+## Use the dark theme
+```python
+PyPPL({
+	'flowchart': {'theme': 'dark'}
+}).star(p1, p8, p9).flowchart().run()
+```
+![Pipeline-flowchart-dark][5]
+
+## Define your own theme
+You just need to define the style for each type of nodes (refer [DOT node shapes][6] for detailed styles):
+You may also put the definition in the default configuration file (`~/.PyPPL.json`)
+```python
+PyPPL({
+	'flowchart': {
+		'theme': {
+			'base':  {
+				'shape':     'box',
+				'style':     'rounded,filled',
+				'fillcolor': '#555555',
+				'color':     '#ffffff',
+				'fontcolor': '#ffffff',
+			},
+			'start': {
+				'style': 'filled',
+				'color': '#59b95d', # green
+				'penwidth': 2,
+			},
+			'end': {
+				'style': 'filled',
+				'color': '#ea7d75', # red
+				'penwidth': 2,
+			},
+			'export': {
+				'fontcolor': '#db95e6', # purple
+			},
+			'skip': {
+				'fillcolor': '#eaeaea', # gray
+			},
+			'skip+': {
+				'fillcolor': '#e9e9e9', # gray
+			},
+			'resume': {
+				'fillcolor': '#1b5a2d', # light green
+			},
+			'aggr': {
+				'style': 'filled',
+				'color': '#eeeeee', # almost white
+			}
+		}
+	}
+}).star(p1, p8, p9).flowchart().run()
+```
+Explanations of node types:
+- `base`: The base node style
+- `start`: The style for starting processes
+- `end`: The style for starting processes
+- `export`: The style for processes have output file to be exported
+- `skip`: The style for processes to be skiped
+- `skip+`: The style for processes to be skiped but ouput channel will be computed
+- `resume`: The style for the processes to be resumed
+- `aggr`: The style for the group, where all processes belong to the same aggregation
+
 
 [1]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
 [2]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)#Layout_programs
 [3]: https://en.wikipedia.org/wiki/Graphviz
-[4]: https://github.com/pwwang/pyppl/raw/master/docs/pyppl.png
+[4]: ./drawFlowchart_pyppl.png
+[5]: ./drawFlowchart_pyppl_dark.png
+[6]: http://www.graphviz.org/doc/info/shapes.html

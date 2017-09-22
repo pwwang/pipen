@@ -3,16 +3,15 @@ The base runner class
 """
 import sys
 import re
-from os import devnull
 from time import sleep
 from multiprocessing import Lock
 from subprocess import Popen, list2cmdline
 
-from ..helpers import utils
+from .. import utils
 
 lock = Lock()
 
-class runner (object):
+class Runner (object):
 	"""
 	The base runner class
 	"""
@@ -41,7 +40,8 @@ class runner (object):
 		"""
 		Try to submit the job use Popen
 		"""
-		self.job.reset()
+		self.job.reset(None if self.ntry == 0 else self.ntry)
+		
 		try:
 			self.job.proc.log ('Submitting job #%-3s ...' % self.job.index, 'submit')
 			# retry may open the files again
@@ -52,15 +52,15 @@ class runner (object):
 			self.job.proc.log ('Failed to run job #%s: %s' % (self.job.index, str(ex)), 'error')
 			with open (self.job.errfile, 'a') as f:
 				f.write(str(ex))
-			self.job.rc(self.job.FAILED_RC)
-			self.finish()
+			self.job.rc(99)
+			#self.finish()
 			
 	
 	def getpid (self):
 		"""
 		Get the job id
 		"""
-		self.job.id (str(self.p.pid))
+		self.job.pid (str(self.p.pid))
 
 	def wait(self, rc = True, infout = None, inferr = None):
 		"""
@@ -71,7 +71,7 @@ class runner (object):
 			`inferr`: The file handler for stderr file
 			- If infout or inferr is None, will open the file and close it before function returns.
 		"""
-		if self.job.rc() == self.job.FAILED_RC: 
+		if self.job.rc() == 99: 
 			return
 		
 		fout = open (self.job.outfile) if infout is None else infout
@@ -108,11 +108,10 @@ class runner (object):
 		Retry to submit and run the job if failed
 		"""
 		self.ntry += 1
-		if self.job.succeed() or self.job.proc.errorhow != 'retry' or self.ntry > self.job.proc.errorntry:
+		if self.job.succeed() or self.job.proc.errhow != 'retry' or self.ntry > self.job.proc.errntry:
 			return
-
 		self.job.proc.log ("Retrying job #%s ... (%s)" % (self.job.index, self.ntry), 'RETRY')
-		sleep (3)
+		sleep (1)
 		self.__del__()
 		self.submit()
 		self.wait()
@@ -124,11 +123,10 @@ class runner (object):
 		@returns:
 			`True` if yes, otherwise `False`
 		"""
-		jobid = self.job.id()
-		if not jobid:
+		jobpid = self.job.pid()
+		if not jobpid:
 			return False
-		with open(devnull, 'w') as f:
-			return Popen (['kill', '-s', '0', jobid], stderr=f, stdout=f).wait() == 0
+		return utils.dumbPopen (['kill', '-s', '0', jobpid]).wait() == 0
 		
 	def _flushOut (self, fout, ferr, lastout, lasterr, end = False):
 		"""
