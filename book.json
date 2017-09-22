@@ -1,4 +1,10 @@
 {
   "root": "./docs",
-  "plugins": ["toc", "richquotes"]
+  "plugins": ["simple-page-toc", "richquotes"],
+  "pluginsConfig": {
+    "simple-page-toc": {
+        "maxDepth": 2,
+        "skipFirstH1": true
+       }
+  }
 }
