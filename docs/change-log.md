@@ -1,5 +1,17 @@
 # Change log
 
+## Sept 22, 2017: 0.9.0
+- Change class name with first letter capitalized
+- Add resuming from processes (#20)
+- Fix #19
+- Group log configuration
+- Make flowchart themeable and configurable
+- Make attributes of `Proc` clearer
+- Add tutorials
+- Make tests more robust
+- Enhancer templating, support Jinja2
+- Set attributes of processes in aggregation with `set`
+
 ## Aug 4, 2017: 0.8.1
 - Add partial echo
 - Add interactive log from the script

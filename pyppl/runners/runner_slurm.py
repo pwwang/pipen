@@ -1,8 +1,8 @@
 import copy
 from subprocess import check_output
-from .runner_queue import runner_queue
+from .runner_queue import RunnerQueue
 
-class runner_slurm (runner_queue):
+class RunnerSlurm (RunnerQueue):
 	"""
 	The slurm runner
 	"""
@@ -14,7 +14,7 @@ class runner_slurm (runner_queue):
 			`job`:    The job object
 			`config`: The properties of the process
 		"""
-		super(runner_slurm, self).__init__(job)
+		super(RunnerSlurm, self).__init__(job)
 
 		# construct an slurm script
 		slurmfile = self.job.script + '.slurm'
@@ -90,6 +90,9 @@ class runner_slurm (runner_queue):
 		self.script = [self.commands['sbatch'], slurmfile]
 
 	def getpid (self):
+		"""
+		Get the job identity and save it to job.pidfile
+		"""
 		# sbatch: Submitted batch job 99999999
 		content = ''
 		with open(self.job.outfile) as f:
@@ -98,15 +101,16 @@ class runner_slurm (runner_queue):
 			return
 		
 		pid = int (content.split(' ')[-1])
-		self.job.id (pid)
+		self.job.pid (pid)
 
 	def isRunning (self):
 		"""
 		Tell whether the job is still running
+		@returns:
+			True if it is running else False
 		"""
-		jobid = self.job.id ()
-		if not jobid:
-			return False
+		jobid = self.job.pid ()
+		if not jobid: return False
 		try:
 			return jobid + ' ' in check_output([self.commands['squeue'], '-j', jobid]).split("\n")[1]
 		except:

@@ -2,11 +2,11 @@ import os
 from getpass import getuser
 from subprocess import check_output, list2cmdline
 
-from .runner import runner
-from ..helpers import utils
+from .runner import Runner
+from .. import utils
 
 
-class runner_ssh (runner):
+class RunnerSsh (Runner):
 	"""
 	The ssh runner
 
@@ -24,20 +24,20 @@ class runner_ssh (runner):
 			`job`:    The job object
 		"""
 		
-		super(runner_ssh, self).__init__(job)
+		super(RunnerSsh, self).__init__(job)
 		# construct an ssh cmd
 		sshfile      = self.job.script + '.ssh'
 
 		conf         = {}
 		if hasattr (self.job.proc, 'sshRunner'):
 			conf     = self.job.proc.sshRunner
-			
+		
 		if not 'servers' in conf:
-			raise Exception ("%s: No servers found." % self.job.proc._name())
+			raise ValueError ("%s: No servers found." % self.job.proc.name())
 		
 		servers      = conf['servers']
 
-		serverid     = runner_ssh.serverid % len (servers)
+		serverid     = RunnerSsh.serverid % len (servers)
 		self.server  = servers[serverid]
 		# TODO: check the server is alive?
 
@@ -61,7 +61,7 @@ class runner_ssh (runner):
 		if 'postScript' in conf:
 			sshsrc.append (conf['postScript'])
 
-		runner_ssh.serverid += 1
+		RunnerSsh.serverid += 1
 		
 		with open (sshfile, 'w') as f:
 			f.write ('\n'.join(sshsrc) + '\n')
