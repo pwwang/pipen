@@ -123,7 +123,7 @@ class TestProc (unittest.TestCase):
 	def testLog(self):
 		p = Proc()
 		self.assertEqual(Proc.LOG_NLINE['EXPORT_CACHE_OUTFILE_EXISTS'], -3)
-		with captured_output() as (out, err):
+		with captured_output() as (_, err):
 			logger.getLogger()
 			p.log('Normal1')
 			p.log('Normal2')
@@ -485,7 +485,7 @@ class TestProc (unittest.TestCase):
 		}
 		p._buildProps()
 		p._buildInput()
-		p._buildProcVars
+		p._buildProcVars()
 		p._buildBrings()
 		self.assertEqual(p.brings['a'][0].render({'proc': {'id': 'p'}}), 'p.*')
 		self.assertEqual(p.brings['b'][0].render({'proc': {'id': 'p'}}), 'b1')
@@ -497,7 +497,7 @@ class TestProc (unittest.TestCase):
 		p.output = "a:b, c:d"
 		p._buildProps()
 		p._buildInput()
-		p._buildProcVars
+		p._buildProcVars()
 		p._buildBrings()
 		p._buildOutput()
 		self.assertEqual(p.output['a'][0], 'var')
@@ -509,7 +509,7 @@ class TestProc (unittest.TestCase):
 		p.output = ["a:b", "c:d"]
 		p._buildProps()
 		p._buildInput()
-		p._buildProcVars
+		p._buildProcVars()
 		p._buildBrings()
 		p._buildOutput()
 		self.assertEqual(p.output['a'][0], 'var')
@@ -521,7 +521,7 @@ class TestProc (unittest.TestCase):
 		p.output = ["a", "c:d"]
 		p._buildProps()
 		p._buildInput()
-		p._buildProcVars
+		p._buildProcVars()
 		p._buildBrings()
 		self.assertRaises(ValueError, p._buildOutput)
 
@@ -529,7 +529,7 @@ class TestProc (unittest.TestCase):
 		p.output = {'a': 'b', 'c': 'd'}
 		p._buildProps()
 		p._buildInput()
-		p._buildProcVars
+		p._buildProcVars()
 		p._buildBrings()
 		self.assertRaises(TypeError, p._buildOutput)
 
@@ -537,7 +537,7 @@ class TestProc (unittest.TestCase):
 		p.output = ["a:b", "c:d:e"]
 		p._buildProps()
 		p._buildInput()
-		p._buildProcVars
+		p._buildProcVars()
 		p._buildBrings()
 		self.assertRaises(TypeError, p._buildOutput)
 
@@ -545,7 +545,7 @@ class TestProc (unittest.TestCase):
 		p.output = ["a:var:a", "c:file:e"]
 		p._buildProps()
 		p._buildInput()
-		p._buildProcVars
+		p._buildProcVars()
 		p._buildBrings()
 		p._buildOutput()
 		self.assertEqual(p.output['a'][0], 'var')
@@ -557,7 +557,7 @@ class TestProc (unittest.TestCase):
 		p.output = ''
 		p._buildProps()
 		p._buildInput()
-		p._buildProcVars
+		p._buildProcVars()
 		p._buildBrings()
 		p._buildOutput()
 
@@ -566,7 +566,7 @@ class TestProc (unittest.TestCase):
 		p.script = 'a {% if pid | lambda x: x == 1 %} b {% endif %}'
 		p._buildProps()
 		p._buildInput()
-		p._buildProcVars
+		p._buildProcVars()
 		p._buildBrings()
 		p._buildOutput()
 		p._buildScript()

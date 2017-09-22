@@ -4,9 +4,6 @@ from six import string_types
 from box import Box
 from six.moves import configparser
 from . import utils
-"""
-Handling parameter
-"""
 
 class Parameter (object):
 	"""

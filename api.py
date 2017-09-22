@@ -46,7 +46,7 @@ def getDoc(module, name):
 			continue
 		try:
 			args = tuple(inspect.getargspec(mobj))
-		except Exception as ex:
+		except Exception:
 			pass
 
 		strargs  = args[0]

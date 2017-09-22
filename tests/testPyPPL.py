@@ -91,7 +91,7 @@ class TestPyPPL (unittest.TestCase):
 		return True
 	
 	def testInit(self):
-		with captured_output() as (out, err):
+		with captured_output() as (_, err):
 			pyppl = PyPPL()
 		self.assertIsInstance(pyppl, PyPPL)
 		self.assertIn('Version', err.getvalue())
@@ -157,7 +157,6 @@ class TestPyPPL (unittest.TestCase):
 		ap6  = Proc(id = 'ap1', tag = 't')
 		ap7  = Proc(id = 'ap2', tag = 't')
 		ap8  = Proc(id = 'ap3', tag = 't')
-		ap9  = Proc(id = 'ap4', tag = 't')
 		ap10 = Proc(id = 'ap5', tag = 't')
 		aggr = Aggr()
 		aggr.starts = [ap2, ap3, ap4]
@@ -207,7 +206,6 @@ class TestPyPPL (unittest.TestCase):
 		self.assertIn('Process ap5.t will be ignored as a starting process as it depends on other starting processes.', err.getvalue())
 
 	def testProcRelations(self):
-		self.maxDiff = None
 		"""
 		         / p3  --- \ 
 		p1 -- p2            \    / p8
@@ -215,6 +213,7 @@ class TestPyPPL (unittest.TestCase):
 		    p10         p6  /    \ p9
 		           p5 /
 		"""
+		self.maxDiff = None
 		PyPPL.PROCS = []
 		p1  = Proc()
 		p2  = Proc()

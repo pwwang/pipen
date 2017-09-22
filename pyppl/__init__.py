@@ -952,7 +952,7 @@ class Proc (object):
 					q.task_done()
 		
 		sq = multiprocessing.JoinableQueue()
-		for i, job in enumerate(self.jobs):
+		for i in list(range(self.size)):
 			sq.put((i, i not in self.ncjobids))
 
 		# submit jobs
@@ -1142,7 +1142,7 @@ class PyPPL (object):
 		@params:
 			`args`: the processes to be marked. The last element is the mark for processes to be skipped.
 		"""
-		nexts, ends, paths = self._procRelations()
+		_, ends, paths = self._procRelations()
 
 		flag    = args[-1]
 		args    = args[:-1]

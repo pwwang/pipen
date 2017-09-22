@@ -95,7 +95,7 @@ class TestUtils (unittest.TestCase):
 		   return ''.join(random.choice(list('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')) for i in range(length)).encode('utf-8')
 		
 		uids = {}
-		for i in range (10000):
+		for _ in range (10000):
 			s = randomword (10)
 			uid = utils.uid (s)
 			self.assertEqual(uid, utils.uid(s))
@@ -135,7 +135,7 @@ class TestUtils (unittest.TestCase):
 	def testProcessEx(self):
 	
 		def raiseEx():
-			1/0
+			return 1/0
 		proc = utils.ProcessEx(target = raiseEx)
 		proc.start()
 		self.assertRaises(ZeroDivisionError, proc.join)
@@ -161,7 +161,7 @@ class TestUtils (unittest.TestCase):
 				remove(f)
 				
 		procs = []
-		for i in range(10):
+		for _ in range(10):
 			p = utils.ProcessEx(target = utils.fileExists, args = (testf, callback))
 			procs.append(p)
 			p.start()

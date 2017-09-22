@@ -1,6 +1,4 @@
-import sys
 from multiprocessing import Lock, cpu_count
-from random import randint
 from time import sleep
 
 from .runner import Runner

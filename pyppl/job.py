@@ -2,12 +2,10 @@
 Job module for pyppl
 """
 import json
-import sys
 from collections import OrderedDict
 from glob import glob
 from os import makedirs, path, remove, symlink, utime, readlink, listdir
 from shutil import copyfile, copytree, move, rmtree
-from subprocess import Popen, PIPE
 from multiprocessing import Lock
 from . import utils, logger
 
