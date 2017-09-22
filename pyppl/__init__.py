@@ -1,3 +1,5 @@
+VERSION = "0.9.0b3"
+
 import json
 import random
 import sys
@@ -17,8 +19,6 @@ from .job import Job
 from .parameters import params, Parameter, Parameters
 from .flowchart import Flowchart
 from . import logger, utils, runners, templates
-
-VERSION = "0.9.0"
 
 class Proc (object):
 	"""

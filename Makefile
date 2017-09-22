@@ -1,4 +1,7 @@
 SHELL=bash
+PYTHON=python
+
+.PHONY: test api build dist
 
 test: ./tests/*.py
 	@wd=`pwd`;                                \
@@ -16,4 +19,10 @@ test: ./tests/*.py
 	cd $$wd 
 
 api:
-	python ./api.py	
+	$(PYTHON) ./api.py
+
+build:
+	$(PYTHON) setup.py build --force
+
+dist:
+	$(PYTHON) setup.py sdist upload	
