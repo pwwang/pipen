@@ -14,4 +14,6 @@ test: ./tests/*.py
 		python3 $$tfile;                      \
 	done;                                     \
 	cd $$wd 
-	
+
+api:
+	python ./api.py	

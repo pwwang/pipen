@@ -68,6 +68,14 @@ class Job (object):
 		self._prepScript ()
 
 	def _reportItem(self, key, maxlen, data, loglevel):
+		"""
+		Report the item on logs
+		@params:
+			`key`: The key of the item
+			`maxlen`: The max length of the key
+			`data`: The data of the item
+			`loglevel`: The log level
+		"""
 		if not isinstance(data, list):
 			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.size - 1, key.ljust(maxlen), data), loglevel)
 		else:
@@ -583,6 +591,13 @@ class Job (object):
 			self.proc.log ('Output directory created after reset: %s.' % out['data'], 'debug', 'OUTDIR_CREATED_AFTER_RESET')
 
 	def _linkInfile(self, orgfile):
+		"""
+		Create links for input files
+		@params:
+			`orgfile`: The original input file
+		@returns:
+			The link to the original file.
+		"""
 		if not path.exists(orgfile):
 			raise OSError('No such input file: %s' % orgfile)
 
@@ -732,7 +747,7 @@ class Job (object):
 			or even (only var type can be ignored):
 				`['{{input}}', 'file:{{infile.bn}}.txt']`
 		2. str : `'output:var:{{input}}, outfile:file:{{infile.bn}}.txt'`
-		3. dict: `{"output:var:{{input}}": channel1, "outfile:file:{{infile.bn}}.txt": channel2}`
+		3. OrderedDict: `{"output:var:{{input}}": channel1, "outfile:file:{{infile.bn}}.txt": channel2}`
 		   or    `{"output:var:{{input}}, output:file:{{infile.bn}}.txt" : channel3}`
 		for 1,2 channels will be the property channel for this proc (i.e. p.channel)
 		"""

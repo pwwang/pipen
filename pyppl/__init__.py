@@ -681,7 +681,8 @@ class Proc (object):
 				
 	def _buildProcVars (self):
 		"""
-		also add proc.props, mostly scalar values
+		Build proc attribute values for template rendering,
+		and also print some out.
 		"""
 		pvkeys = [
 			"aggr", "args", "cache", "desc", "echo", "errhow", "errntry", "exdir", "exhow", 
@@ -723,6 +724,9 @@ class Proc (object):
 		self.props['procvars'] = {'proc': procvars, 'args': procargs}
 
 	def _buildBrings(self):
+		"""
+		Build the bring-file templates waiting to be rendered.
+		"""
 		for key, val in self.config['brings'].items():
 			if not isinstance(val, list): val = [val]
 			self.props['brings'][key] = []
@@ -730,6 +734,9 @@ class Proc (object):
 				self.props['brings'][key].append(self.template(v, **self.tplenvs))
 
 	def _buildOutput(self):
+		"""
+		Build the output data templates waiting to be rendered.
+		"""
 		output = self.config['output']
 		if isinstance(output, six.string_types):
 			output = utils.split(output, ',')
@@ -768,6 +775,9 @@ class Proc (object):
 			self.props['output'][k] = [t, self.template(val, **self.tplenvs)]
 		
 	def _buildScript(self):
+		"""
+		Build the script template waiting to be rendered.
+		"""
 		script = self.config['script'].strip()
 		
 		# TODO add tests
@@ -803,6 +813,9 @@ class Proc (object):
 		self.props['script'] = self.template('\n'.join(nlines), **self.tplenvs)
 
 	def _buildJobs (self):
+		"""
+		Build the jobs.
+		"""
 		self.props['channel'] = Channel.create()
 		rptjob  = randint(0, self.size-1)
 		outkeys = [] 
@@ -952,7 +965,7 @@ class Proc (object):
 			
 class PyPPL (object):
 	"""
-	The pyppl class
+	The PyPPL class
 	
 	@static variables:
 		`TIPS`: The tips for users
@@ -1036,6 +1049,14 @@ class PyPPL (object):
 		self.paths   = {}
 
 	def _procRelations(self, useStarts = True, force = False):
+		"""
+		Infer the processes relations
+		@params:
+			`useStarts`: Whether to use `self.starts` to infer or not. Default: True
+			`force`: Force to replace `self.nexts, self.ends, self.paths`. Default: False
+		@returns:
+			`self.nexts, self.ends, self.paths`
+		"""
 
 		if self.nexts and not force:
 			return self.nexts, self.ends, self.paths
@@ -1116,6 +1137,11 @@ class PyPPL (object):
 		return self
 
 	def _resume(self, *args):
+		"""
+		Mark processes as to be resumed
+		@params:
+			`args`: the processes to be marked. The last element is the mark for processes to be skipped.
+		"""
 		nexts, ends, paths = self._procRelations()
 
 		flag    = args[-1]
@@ -1278,11 +1304,23 @@ class PyPPL (object):
 
 	@staticmethod
 	def _registerProc(proc):
+		"""
+		Register the process
+		@params:
+			`proc`: The process
+		"""
 		if not proc in PyPPL.PROCS:
 			PyPPL.PROCS.append(proc)
 
 	@staticmethod
 	def _checkProc(proc):
+		"""
+		Check processes, whether 2 processes have the same id and tag
+		@params:
+			`proc`: The process
+		@returns:
+			If there are 2 processes with the same id and tag, raise `ValueError`.
+		"""
 		for p in PyPPL.PROCS:
 			if proc is p: continue
 			if p.id == proc.id and p.tag == proc.tag:

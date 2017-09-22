@@ -7,6 +7,9 @@ from . import utils
 class Flowchart(object):
 	"""
 	Draw flowchart for pipelines
+
+	@static variables:
+		`THEMES`: predefined themes
 	"""
 
 	THEMES = {
@@ -82,6 +85,13 @@ class Flowchart(object):
 	}
 
 	def __init__(self, fcfile = None, dotfile = None, dot = 'dot -Tsvg {{dotfile}} -o {{fcfile}}'):
+		"""
+		The constructor
+		@params:
+			`fcfile`: The flowchart file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.svg'`
+			`dotfile`: The dot file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.dot'`
+			`dot`: The dot command. Default: `'dot -Tsvg {{dotfile}} -o {{fcfile}}'`
+		"""
 		self.fcfile  = fcfile
 		self.dotfile = dotfile
 		if fcfile is None:
@@ -99,12 +109,23 @@ class Flowchart(object):
 		self.groups  = {}
 
 	def setTheme(self, theme):
+		"""
+		Set the theme to be used
+		@params:
+			`theme`: The theme, could be the key of Flowchart.THEMES or a dict of a theme definition.
+		"""
 		if isinstance(theme, dict):
 			self.theme = theme
 		else:
 			self.theme = Flowchart.THEMES[theme]
 
 	def addNode(self, node, role = None):
+		"""
+		Add a node to the chart
+		@params:
+			`node`: The node
+			`role`: Is it a starting node, an ending node or None. Default: None.
+		"""
 		if node not in self.nodes:
 			self.nodes.append(node)
 		if role == 'start' and node not in self.starts:
@@ -118,10 +139,21 @@ class Flowchart(object):
 				self.groups[node.aggr].append(node)
 
 	def addLink(self, node1, node2):
+		"""
+		Add a link to the chart
+		@params:
+			`node1`: The first node.
+			`node2`: The second node.
+		"""
 		if [node1, node2] not in self.links:
 			self.links.append((node1, node2))
 
 	def _dotnodes(self):
+		"""
+		Convert nodes to dot language.
+		@returns:
+			The string in dot language for all nodes.
+		"""
 		dotstr = []
 		for node in self.nodes:
 			theme  = {key:val for key,val in self.theme['base'].items()}
@@ -139,12 +171,22 @@ class Flowchart(object):
 		return dotstr
 
 	def _dotlinks(self):
+		"""
+		Convert links to dot language.
+		@returns:
+			The string in dot language for all links.
+		"""
 		dotstr = []
 		for node1, node2 in self.links:
 			dotstr.append('    "%s" -> "%s"' % (node1.name(False), node2.name(False)))
 		return dotstr
 
 	def _dotgroups(self):
+		"""
+		Convert groups to dot language.
+		@returns:
+			The string in dot language for all groups.
+		"""
 		dotstr = []
 		theme  = self.theme['aggr']
 		for aggr, nodes in self.groups.items():
@@ -158,6 +200,9 @@ class Flowchart(object):
 		return dotstr
 
 	def generate(self):
+		"""
+		Generate the flowchart.
+		"""
 		dotstr  = ['digraph PyPPL {']
 		dotstr.extend(self._dotnodes())
 		dotstr.extend(self._dotlinks())

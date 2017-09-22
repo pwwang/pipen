@@ -392,6 +392,13 @@ class Channel (list):
 		return Channel.create([col + colsafter[i] if colsafter else col for i, col in enumerate(colsbefore)])
 		
 	def cbind(self, *cols):
+		"""
+		Add columns to the channel
+		@params:
+			`cols`: The columns
+		@returns:
+			The channel with the columns inserted.
+		"""
 		return self.insert(None, *cols)
 	
 	def colAt (self, index):

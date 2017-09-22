@@ -126,6 +126,9 @@ class Parameter (object):
 		return prefix + self.name + ' <{}>'.format(self.type.__name__)
 
 class Parameters (object):
+	"""
+	A set of parameters
+	"""
 	
 	def __init__(self):
 		"""
