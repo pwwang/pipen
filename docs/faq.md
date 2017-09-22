@@ -6,6 +6,7 @@
 - Log configurations were grouped to `{"log": {...}}` instead of `{"logtheme": ..., "loglevels": ...}`
 - Flowchart is themeable now: in configuration file: `{"flowchart": {...}}`
 - Templating enhanced from previous placeholders (Jinja2 supported). See [templating](https://pwwang.gitbooks.io/pyppl/content/placeholders.html)
+- Input and output placeholders are now under `in` and `out` namespaces, respectively.
 - `updateArgs` is merged into `set` for `Aggr`.
 - Module `doct` removed, `python-box` is used instead.
 
