@@ -583,7 +583,7 @@ class TestProc (unittest.TestCase):
 
 	def testRunCmd(self):
 		p = Proc('runcmd')
-		p.beforeCmd = 'ls -l'
+		p.beforeCmd = 'ls -l ' + path.join(path.dirname(__file__))
 		p.afterCmd  = 'grep afterCmd {{file}}'
 		p.tplenvs   = {
 			'file': __file__
@@ -732,6 +732,11 @@ class TestProc (unittest.TestCase):
 		for job in p.jobs:
 			job.checkOutfiles()
 			self.assertFalse(job.outfileOk)
+
+		p.runner = 'nosuchrunner'
+		p._tidyBeforeRun()
+		p._checkCached()
+		self.assertRaises(KeyError, p._runJobs)
 
 		p.runner = 'testnr'
 		with captured_output() as (out, err):
