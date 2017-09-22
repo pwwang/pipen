@@ -19,7 +19,7 @@
 
 ## Requirements
 - OS: Linux, OSX and WSL (Windows Subsystem for Linux)
-- Python 2.7+ or Python 3.4+
+- Python 2.7+ or Python 3.4+ 
 - Python packages: python-box, six, filelock
 
 ## Installation
