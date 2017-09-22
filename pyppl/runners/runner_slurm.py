@@ -90,6 +90,9 @@ class RunnerSlurm (RunnerQueue):
 		self.script = [self.commands['sbatch'], slurmfile]
 
 	def getpid (self):
+		"""
+		Get the job identity and save it to job.pidfile
+		"""
 		# sbatch: Submitted batch job 99999999
 		content = ''
 		with open(self.job.outfile) as f:
@@ -103,6 +106,8 @@ class RunnerSlurm (RunnerQueue):
 	def isRunning (self):
 		"""
 		Tell whether the job is still running
+		@returns:
+			True if it is running else False
 		"""
 		jobid = self.job.pid ()
 		if not jobid: return False

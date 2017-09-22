@@ -64,12 +64,36 @@ def varname ():
 varname.index = 0
 
 def reduce(func, vec):
+	"""
+	Python2 and Python3 compatible reduce
+	@params:
+		`func`: The reduce function
+		`vec`: The list to be reduced
+	@returns:
+		The reduced value
+	"""
 	return moves.reduce(func, vec)
 	
 def map(func, vec):
+	"""
+	Python2 and Python3 compatible map
+	@params:
+		`func`: The map function
+		`vec`: The list to be maped
+	@returns:
+		The maped list
+	"""
 	return list(moves.map(func, vec))
 
 def filter(func, vec):
+	"""
+	Python2 and Python3 compatible filter
+	@params:
+		`func`: The filter function
+		`vec`:  The list to be filtered
+	@returns:
+		The filtered list
+	"""
 	return list(moves.filter(func, vec))
 
 def split (s, delimter, trim = True, opens = ['(', '[', '{', '"', '\''], closes = [')', ']', '}', '"', '\'']):
@@ -236,6 +260,13 @@ def alwaysList (data):
 	return [x.strip() for x in ret]
 	
 def _lockfile(f):
+	"""
+	Get the path of lockfile of a file
+	@params:
+		`f`: The file
+	@returns:
+		The path of the lock file
+	"""
 	return path.join(tempfile.gettempdir(), uid(f, 16) + '.lock')
 	
 def _fileExists(f, callback = None):

@@ -306,8 +306,17 @@ class TemplatePyPPLEngine(object):
 		return value
 
 class TemplatePyPPL (Template):
+	"""
+	Built-in template wrapper.
+	"""
 
 	def __init__(self, source, **envs):
+		"""
+		Initiate the engine with source and envs
+		@params:
+			`source`: The souce text
+			`envs`: The env data
+		"""
 		super(TemplatePyPPL, self).__init__(source ,**envs)
 		self.engine = TemplatePyPPLEngine(source, envs)
 		self.source = source
@@ -316,5 +325,12 @@ class TemplatePyPPL (Template):
 		return 'TemplatePyPPL with source: ' + self.source
 
 	def _render(self, data):
+		"""
+		Render the template
+		@params:
+			`data`: The data used for rendering
+		@returns:
+			The rendered string
+		"""
 		return self.engine.render(data)
 

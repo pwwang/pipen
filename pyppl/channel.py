@@ -352,8 +352,9 @@ class Channel (list):
 	
 	def insert (self, cidx, *cols):
 		"""
-		The multiple-argument versoin of `cbind`
+		Insert columns to a channel
 		@params:
+			`cidx`: Insert into which index of column?
 			`cols`: the columns to be bound to Channel
 		@returns:
 			The combined Channel

@@ -12,9 +12,10 @@ lock = Lock()
 class RunnerQueue (Runner):
 	"""
 	The base queue runner class
+
 	@static variables:
-		maxsubmit: Maximum jobs submitted at one time. Default cpu_count()/2
-		interval:  The interval to submit next batch of jobs. Default 30
+		`maxsubmit`: Maximum jobs submitted at one time. Default cpu_count()/2
+		`interval` :  The interval to submit next batch of jobs. Default 30
 	"""
 	
 	maxsubmit = int (cpu_count()/2)

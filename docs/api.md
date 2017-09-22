@@ -492,9 +492,10 @@ The Channel created from the path
   
 #### `insert (self, cidx, *cols) `
   
-The multiple-argument versoin of `cbind`  
+Insert columns to a channel  
 
 - **params:**  
+`cidx`: Insert into which index of column?  
 `cols`: the columns to be bound to Channel  
 
 - **returns:**  
@@ -1093,6 +1094,14 @@ If any of the path does not exist, return False
   
 #### `_lockfile (f) `
   
+Get the path of lockfile of a file  
+
+- **params:**  
+`f`: The file  
+
+- **returns:**  
+The path of the lock file  
+  
 #### `_safeCopy (src, dst, overwrite) `
   
 Copy a file/dir  
@@ -1171,14 +1180,6 @@ ret  = alwaysList (data)
 - **returns:**  
 The split list  
   
-#### `chdir (data) `
-chdir(path)  
-  
-Change the current working directory to the specified path.  
-#### `chmod (data) `
-chmod(path, mode)  
-  
-Change the access permissions of a file.  
 #### `chmodX (thefile) `
   
 Convert script file to executable or add extract shebang to cmd line  
@@ -1188,36 +1189,6 @@ Convert script file to executable or add extract shebang to cmd line
 
 - **returns:**  
 A list with or without the path of the interpreter as the first element and the script file as the last element  
-  
-#### `copyfile (src, dst) `
-Copy data from src to dst  
-#### `copyfileobj (fsrc, fdst, length) `
-copy data from file-like object fsrc to file-like object fdst  
-#### `copytree (src, dst, symlinks, ignore) `
-Recursively copy a directory tree using copy2().  
-  
-The destination directory must not already exist.  
-If exception(s) occur, an Error is raised with a list of reasons.  
-  
-If the optional symlinks flag is true, symbolic links in the  
-source tree result in symbolic links in the destination tree; if  
-it is false, the contents of the files pointed to by symbolic  
-links are copied.  
-  
-The optional ignore argument is a callable. If given, it  
-is called with the `src` parameter, which is the directory  
-being visited by copytree(), and `names` which is the list of  
-`src` contents, as returned by os.listdir():  
-  
-callable(src, names) -> ignored_names  
-  
-Since copytree() is called recursively, the callable will be  
-called once for each directory that is copied. It returns a  
-list of names relative to the `src` directory that should  
-not be copied.  
-  
-XXX Consider this example code rather than the ultimate tool.  
-  
   
 #### `dictUpdate (origDict, newDict) `
   
@@ -1284,6 +1255,15 @@ The md5 deigested signature.
   
 #### `filter (func, vec) `
   
+Python2 and Python3 compatible filter  
+
+- **params:**  
+`func`: The filter function  
+`vec`:  The list to be filtered  
+
+- **returns:**  
+The filtered list  
+  
 #### `formatSecs (seconds) `
   
 Format a time duration  
@@ -1295,8 +1275,6 @@ Format a time duration
 The formated string.  
 For example: "01:01:01.001" stands for 1 hour 1 min 1 sec and 1 minisec.  
   
-#### `format_exc (limit) `
-Like print_exc() but return a string.  
 #### `funcsig (func) `
   
 Get the signature of a function  
@@ -1308,19 +1286,6 @@ Try to get the source first, if failed, try to get its name, otherwise return No
 - **returns:**  
 The signature  
   
-#### `getcwd (func) `
-getcwd() -> path  
-  
-Return a string representing the current working directory.  
-#### `glob (pathname) `
-Return a list of paths matching a pathname pattern.  
-  
-The pattern may contain simple shell-style wildcards a la  
-fnmatch. However, unlike fnmatch, filenames starting with a  
-dot are special cases that are not matched by '*' and '?'  
-patterns.  
-  
-  
 #### `gz (srcfile, gzfile, overwrite) `
   
 Do a "gzip"-like for a file  
@@ -1329,35 +1294,16 @@ Do a "gzip"-like for a file
 `gzfile`:  the final .gz file  
 `srcfile`: the source file  
   
-#### `makedirs (name, mode) `
-makedirs(path [, mode=0777])  
-  
-Super-mkdir; create a leaf directory and all intermediate ones.  
-Works like mkdir, except that any intermediate path segment (not  
-just the rightmost) will be created if it does not exist.  This is  
-recursive.  
-  
-  
 #### `map (func, vec) `
   
-#### `md5 (func, vec) `
-Returns a md5 hash object; optionally initialized with a string  
-#### `move (src, dst) `
-Recursively move a file or directory to another location. This is  
-similar to the Unix "mv" command.  
-  
-If the destination is a directory or a symlink to a directory, the source  
-is moved inside the directory. The destination path must not already  
-exist.  
-  
-If the destination already exists but is not a directory, it may be  
-overwritten depending on os.rename() semantics.  
-  
-If the destination is on our current filesystem, then rename() is used.  
-Otherwise, src is copied to the destination and then removed.  
-A lot more could be done here...  A look at a mv.c shows a lot of  
-the issues this implementation glosses over.  
-  
+Python2 and Python3 compatible map  
+
+- **params:**  
+`func`: The map function  
+`vec`: The list to be maped  
+
+- **returns:**  
+The maped list  
   
 #### `range (i, *args, **kwargs) `
   
@@ -1371,20 +1317,14 @@ The converted list
   
 #### `reduce (func, vec) `
   
-#### `remove (func, vec) `
-remove(path)  
-  
-Remove a file (same as unlink(path)).  
-#### `rmtree (path, ignore_errors, onerror) `
-Recursively delete a directory tree.  
-  
-If ignore_errors is set, errors are ignored; otherwise, if onerror  
-is set, it is called to handle the error with arguments (func,  
-path, exc_info) where func is os.listdir, os.remove, or os.rmdir;  
-path is the argument to that function that caused it to fail; and  
-exc_info is a tuple returned by sys.exc_info().  If ignore_errors  
-is false and onerror is None, an exception is raised.  
-  
+Python2 and Python3 compatible reduce  
+
+- **params:**  
+`func`: The reduce function  
+`vec`: The list to be reduced  
+
+- **returns:**  
+The reduced value  
   
 #### `safeCopy (src, dst, overwrite) `
   
@@ -1473,14 +1413,6 @@ ret = split("'a,b',c", ",")
 - **returns:**  
 The list of substrings  
   
-#### `stat (s, delimter, trim, opens, closes) `
-stat(path) -> stat result  
-  
-Perform a stat system call on the given path.  
-#### `symlink (s, delimter, trim, opens, closes) `
-symlink(src, dst)  
-  
-Create a symbolic link pointing to src named dst.  
 #### `targz (srcdir, tgzfile, overwrite) `
   
 Do a "tar zcf"-like for a directory  
@@ -1526,79 +1458,51 @@ Get the variable name for ini
 - **returns:**  
 The variable name  
   
-#### `walk (top, topdown, onerror, followlinks) `
-Directory tree generator.  
-  
-For each directory in the directory tree rooted at top (including top  
-itself, but excluding '.' and '..'), yields a 3-tuple  
-  
-dirpath, dirnames, filenames  
-  
-dirpath is a string, the path to the directory.  dirnames is a list of  
-the names of the subdirectories in dirpath (excluding '.' and '..').  
-filenames is a list of the names of the non-directory files in dirpath.  
-Note that the names in the lists are just names, with no path components.  
-To get a full path (which begins with top) to a file or directory in  
-dirpath, do os.path.join(dirpath, name).  
-  
-If optional arg 'topdown' is true or not specified, the triple for a  
-directory is generated before the triples for any of its subdirectories  
-(directories are generated top down).  If topdown is false, the triple  
-for a directory is generated after the triples for all of its  
-subdirectories (directories are generated bottom up).  
-  
-When topdown is true, the caller can modify the dirnames list in-place  
-(e.g., via del or slice assignment), and walk will only recurse into the  
-subdirectories whose names remain in dirnames; this can be used to prune the  
-search, or to impose a specific order of visiting.  Modifying dirnames when  
-topdown is false is ineffective, since the directories in dirnames have  
-already been generated by the time dirnames itself is generated. No matter  
-the value of topdown, the list of subdirectories is retrieved before the  
-tuples for the directory and its subdirectories are generated.  
-  
-By default errors from the os.listdir() call are ignored.  If  
-optional arg 'onerror' is specified, it should be a function; it  
-will be called with one argument, an os.error instance.  It can  
-report the error to continue with the walk, or raise the exception  
-to abort the walk.  Note that the filename is available as the  
-filename attribute of the exception object.  
-  
-By default, os.walk does not follow symbolic links to subdirectories on  
-systems that support them.  In order to get this functionality, set the  
-optional argument 'followlinks' to true.  
-  
-Caution:  if you pass a relative pathname for top, don't change the  
-current working directory between resumptions of walk.  walk never  
-changes the current directory, and assumes that the client doesn't  
-either.  
-  
-Example:  
-  
-import os  
-from os.path import join, getsize  
-for root, dirs, files in os.walk('python/Lib/email'):  
-print root, "consumes",  
-print sum([getsize(join(root, name)) for name in files]),  
-print "bytes in", len(files), "non-directory files"  
-if 'CVS' in dirs:  
-dirs.remove('CVS')  # don't visit CVS directories  
-  
-  
 
 ## Module `templates.TemplatePyPPL`  
-> .
+> Built-in template wrapper.
+	
 
 #### `__init__ (self, source, **envs) `
   
+Initiate the engine with source and envs  
+
+- **params:**  
+`source`: The souce text  
+`envs`: The env data  
+  
 #### `_render (self, data) `
+  
+Render the template  
+
+- **params:**  
+`data`: The data used for rendering  
+
+- **returns:**  
+The rendered string  
   
 
 ## Module `templates.TemplateJinja2`  
-> .
+> Jinja2 template wrapper
+	
 
 #### `__init__ (self, source, **envs) `
   
+Initiate the engine with source and envs  
+
+- **params:**  
+`source`: The souce text  
+`envs`: The env data  
+  
 #### `_render (self, data) `
+  
+Render the template  
+
+- **params:**  
+`data`: The data used for rendering  
+
+- **returns:**  
+The rendered string  
   
 
 ## Module `runners.Runner`  
@@ -1658,9 +1562,10 @@ Wait for the job to finish
 
 ## Module `runners.RunnerQueue`  
 > The base queue runner class
+
 	@static variables:
-		maxsubmit: Maximum jobs submitted at one time. Default cpu_count()/2
-		interval:  The interval to submit next batch of jobs. Default 30
+		`maxsubmit`: Maximum jobs submitted at one time. Default cpu_count()/2
+		`interval` :  The interval to submit next batch of jobs. Default 30
 	
 
 #### `__init__ (self, job) `
@@ -1711,9 +1616,14 @@ Constructor
   
 #### `getpid (self) `
   
+Get the job identity and save it to job.pidfile  
+  
 #### `isRunning (self) `
   
 Tell whether the job is still running  
+
+- **returns:**  
+True if it is running else False  
   
 
 ## Module `runners.RunnerSlurm`  
@@ -1730,9 +1640,14 @@ Constructor
   
 #### `getpid (self) `
   
+Get the job identity and save it to job.pidfile  
+  
 #### `isRunning (self) `
   
 Tell whether the job is still running  
+
+- **returns:**  
+True if it is running else False  
   
 
 ## Module `runners.RunnerDry`  

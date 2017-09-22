@@ -99,6 +99,9 @@ class RunnerSge (RunnerQueue):
 		self.script = ['qsub', sgefile]
 
 	def getpid (self):
+		"""
+		Get the job identity and save it to job.pidfile
+		"""
 		# Your job 6556149 ("pSort.notag.3omQ6NdZ.0") has been submitted
 		with open(self.job.outfile) as f:
 			m = search (r"\s(\d+)\s", f.read())
@@ -108,6 +111,8 @@ class RunnerSge (RunnerQueue):
 	def isRunning (self):
 		"""
 		Tell whether the job is still running
+		@returns:
+			True if it is running else False
 		"""
 		jobpid = self.job.pid ()
 		if not jobpid: return False
