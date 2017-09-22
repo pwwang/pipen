@@ -135,7 +135,6 @@ class TestJob (unittest.TestCase):
 		self.assertEqual(job.data, {
 			'job': {
 				'index'   : job.index,
-				'pid'     : '',
 				'indir'   : job.indir,
 				'outdir'  : job.outdir,
 				'dir'     : job.dir,
