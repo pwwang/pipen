@@ -454,9 +454,9 @@ To generate svg file, you have to have [graphviz][33] installed.
 [14]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
 [15]: https://pwwang.gitbooks.io/PyPPL/draw-flowchart-of-a-pipeline.html
 [16]: https://pwwang.gitbooks.io/PyPPL/aggregations.html
-[18]: ./docs/drawFlowchart_pyppl.png
+[18]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/drawFlowchart_pyppl.png
 [19]: https://pwwang.gitbooks.io/PyPPL/change-log.html
-[20]: ./docs/getStarted.png
+[20]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/getStarted.png
 [21]: https://www.gitbook.com/button/status/book/pwwang/pyppl
 [22]: https://badge.fury.io/py/pyppl.svg
 [23]: https://badge.fury.io/gh/pwwang%2Fpyppl.svg
@@ -464,9 +464,9 @@ To generate svg file, you have to have [graphviz][33] installed.
 [26]: https://pwwang.gitbooks.io/PyPPL/content/faq.html
 [27]: https://pwwang.gitbooks.io/PyPPL/command-line-argument-parser.html
 [28]: https://pwwang.gitbooks.io/PyPPL/content/configure-your-logs.html
-[29]: ./docs/heatmap.png
-[30]: ./docs/heatmap1.png
-[31]: ./docs/heatmap2.png
-[32]: ./docs/heatmap3.png
+[29]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/heatmap.png
+[30]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/heatmap1.png
+[31]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/heatmap2.png
+[32]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/heatmap3.png
 [33]: http://www.graphviz.org/
-[34]: ./docs/debugScript.png
+[34]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/debugScript.png
