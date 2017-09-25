@@ -357,7 +357,8 @@ class Proc (object):
 		config['desc']     = newproc.desc
 		config['aggr']     = ''
 		config['workdir']  = ''
-		config['args']     = Box(self.config['args'])
+		config['tplenvs']  = pycopy.deepcopy(self.config['tplenvs'])
+		config['args']     = pycopy.deepcopy(self.config['args'])
 		config['resume']   = False
 		
 		props   = {key:val for key, val in self.props.items()}

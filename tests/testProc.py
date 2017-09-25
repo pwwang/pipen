@@ -2,6 +2,7 @@ import path, unittest
 
 import sys
 import tempfile
+from box import Box
 from os import path
 from time import sleep
 from pyppl import Proc, logger, templates, utils, Channel, PyPPL, Job
@@ -149,7 +150,7 @@ class TestProc (unittest.TestCase):
 		p.aggr = 'aggr'
 		p.workdir = './wdir'
 		p.resume = 'skip'
-		p.args = {'a':1,'b':2}
+		p.args = {'a':1,'b':2,'c':[3,4],'d':Box({'a':0})}
 		p.props['depends'] = 1
 		p2 = p.copy()
 		self.assertEqual(p2.id, 'p2')
@@ -160,7 +161,14 @@ class TestProc (unittest.TestCase):
 		self.assertEqual(p3.aggr, '')
 		self.assertEqual(p3.workdir, '')
 		p3.args.b = 3
-		self.assertEqual(dict(p3.args), {'a':1, 'b':3})
+		p3.args.c[0] = 1
+		p3.args.d.a = 1
+		self.assertEqual(p3.args['b'], 3)
+		self.assertEqual(p3.args['c'], [1,4])
+		self.assertEqual(p3.args['d']['a'], 1)
+		self.assertEqual(p.args['b'], 2)
+		self.assertEqual(p.args['c'], [3,4])
+		self.assertEqual(p.args['d']['a'], 0)
 		self.assertEqual(p3.resume, False)
 		p3.tag = 'tag3'
 		self.assertIn('tag', p3.sets)
