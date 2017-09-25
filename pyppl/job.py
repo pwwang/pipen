@@ -22,7 +22,6 @@ class Job (object):
 			`index`:   The index of the job in a process
 			`proc`:    The process
 		"""
-		self.outfileOk = True
 		self.dir       = path.abspath(path.join (proc.workdir, str(index)))
 		self.indir     = path.join (self.dir, "input")
 		self.outdir    = path.join (self.dir, "output")
@@ -127,7 +126,8 @@ class Job (object):
 		Do some cleanup when job finished
 		"""
 		# have to touch the output directory so stat flushes and output files can be detected.
-		self.checkOutfiles()
+		if self.succeed(): 
+			self.checkOutfiles()
 		if self.succeed():
 			self.export()
 			self.cache()	
@@ -138,13 +138,17 @@ class Job (object):
 		Show the error message if the job failed.
 		"""
 		rc  = self.rc()
-		outfilemsg = 'generated and expectation met' if self.outfileOk else 'not generated or expectation not met'
+		msg = 'Output files not generated' if rc == -2 else \
+			  'Expectations not met' if rc == -3 else       \
+			  'Rc file not generated' if rc == -1 else      \
+			  'Failed to submit job' if rc == 99 else       \
+			  'Script error'
 
 		if self.proc.errhow == 'ignore':
-			self.proc.log ('Job #%s (total %s) failed but ignored. Return code: %s, all output files: %s.' % (self.index, lenfailed, rc, outfilemsg), 'warning')
+			self.proc.log ('Job #%s (total %s) failed but ignored. Return code: %s (%s).' % (self.index, lenfailed, rc, msg), 'warning')
 			return
 		
-		self.proc.log ('Job #%s (total %s) failed. Return code: %s, all output files: %s.' % (self.index, lenfailed, rc, outfilemsg), 'error')
+		self.proc.log ('Job #%s (total %s) failed. Return code: %s (%s).' % (self.index, lenfailed, rc, msg), 'error')
 		
 		self.proc.log('Job #%s: Script: %s' % (self.index, self.script), 'error')
 		self.proc.log('Job #%s: Stdout: %s' % (self.index, self.outfile), 'error')
@@ -164,7 +168,7 @@ class Job (object):
 				logger.logger.info(errmsg)
 				
 			if len (errmsgs) > 20:
-				logger.logger.info ('[ STDERR] ... top %s line(s) omitted (see all in "%s").' % (len(errmsgs)-20, self.errfile))
+				logger.logger.info ('[ STDERR] ... top %s line(s) hidden (see all in "%s").' % (len(errmsgs)-20, self.errfile))
 	
 	def isTrulyCached (self):
 		"""
@@ -356,15 +360,13 @@ class Job (object):
 			with open (self.cachefile, 'w') as f:
 				f.write (sig if not sig else json.dumps(sig))
 			
-	def succeed (self, ignore = False):
+	def succeed (self):
 		"""
-		Tell if the job is successful by return code
-		@params:
-			`ignore`: Whether use proc.errhow. If proc.errhow == 'ignore', anyway return True.
+		Tell if the job is successful by return code, and output file expectations.
 		@returns:
 			True if succeed else False
 		"""
-		return self.rc() in self.proc.rc and self.outfileOk
+		return self.rc() in self.proc.rc
 		
 	def signature (self):
 		"""
@@ -469,7 +471,7 @@ class Job (object):
 		for _, out in self.output.items():
 			if out['type'] in self.proc.OUT_VARTYPE: continue
 			if not path.exists(out['data']):
-				self.outfileOk = False
+				self.rc(-2)
 				self.proc.log ('Job #%-3s: outfile not generated: %s' % (self.index, out['data']), 'debug', 'OUTFILE_NOT_EXISTS')
 				return
 				
@@ -478,7 +480,7 @@ class Job (object):
 			self.proc.log ('Job #%-3s: check expectation: %s' % (self.index, expect), 'debug', 'EXPECT_CHECKING')
 			p      = utils.dumbPopen (expect, shell=True)
 			if p.wait() != 0:
-				self.outfileOk = False
+				self.rc(-3)
 
 	def export (self):
 		"""

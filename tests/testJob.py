@@ -117,7 +117,6 @@ class TestJob (unittest.TestCase):
 		job  = Job(0, proc)
 		self.assertIsInstance(job, Job)
 		self.assertIsInstance(job.proc, Proc)
-		self.assertTrue(job.outfileOk)
 		self.assertEqual(job.dir, path.join(tmpdir, 'TestJob-wdir', '0'))
 		self.assertEqual(job.indir, path.join(job.dir, 'input'))
 		self.assertEqual(job.outdir, path.join(job.dir, 'output'))
@@ -237,10 +236,10 @@ class TestJob (unittest.TestCase):
 		self.assertRaises(ValueError, job._prepBrings)
 		proc.brings = orgbrings
 		job._prepBrings()
-		self.assertItemsEqual(job.data['bring']['_c'], list(map(path.abspath, glob('./test*.py'))))
-		self.assertItemsEqual(job.data['bring']['c'], list(map(lambda x: path.join(job.indir, path.basename(x)), glob('./test*.py'))))
-		self.assertItemsEqual(job.brings['_c'], list(map(path.abspath, glob('./test*.py'))))
-		self.assertItemsEqual(job.brings['c'], list(map(lambda x: path.join(job.indir, path.basename(x)), glob('./test*.py'))))
+		self.assertItemsEqual(job.data['bring']['_c'], list(map(path.abspath, glob(path.join(path.dirname(__file__), 'test*.py')))))
+		self.assertItemsEqual(job.data['bring']['c'], list(map(lambda x: path.join(job.indir, path.basename(x)), glob(path.join(path.dirname(__file__), 'test*.py')))))
+		self.assertItemsEqual(job.brings['_c'], list(map(path.abspath, glob(path.join(path.dirname(__file__), 'test*.py')))))
+		self.assertItemsEqual(job.brings['c'], list(map(lambda x: path.join(job.indir, path.basename(x)), glob(path.join(path.dirname(__file__), 'test*.py')))))
 
 		# test rename and bring through links
 		utils.safeRemove(job.indir)
@@ -359,10 +358,10 @@ print "a"
 			'_d': [path.realpath(__file__)],
 		})
 		# brings
-		self.assertItemsEqual(job.data['bring']['_c'], list(map(path.abspath, glob('./test*.py'))))
-		self.assertItemsEqual(job.data['bring']['c'], list(map(lambda x: path.join(job.indir, path.basename(x)), glob('./test*.py'))))
-		self.assertItemsEqual(job.brings['_c'], list(map(path.abspath, glob('./test*.py'))))
-		self.assertItemsEqual(job.brings['c'], list(map(lambda x: path.join(job.indir, path.basename(x)), glob('./test*.py'))))
+		self.assertItemsEqual(job.data['bring']['_c'], list(map(path.abspath, glob(path.join(path.dirname(__file__), 'test*.py')))))
+		self.assertItemsEqual(job.data['bring']['c'], list(map(lambda x: path.join(job.indir, path.basename(x)), glob(path.join(path.dirname(__file__), 'test*.py')))))
+		self.assertItemsEqual(job.brings['_c'], list(map(path.abspath, glob(path.join(path.dirname(__file__), 'test*.py')))))
+		self.assertItemsEqual(job.brings['c'], list(map(lambda x: path.join(job.indir, path.basename(x)), glob(path.join(path.dirname(__file__), 'test*.py')))))
 		# output
 		self.assertEqual(job.data['out'], {
 			'a': '1_1',
@@ -628,8 +627,7 @@ print "a"
 	def testShowError(self):
 		proc = Proc()
 		job  = Job(0, proc)
-		job.rc(0)
-		job.outfileOk = False
+		job.rc(1)
 		proc.echo['jobs'] = []
 		proc.errhow = 'terminate'
 
@@ -637,7 +635,7 @@ print "a"
 		with captured_output() as (out, err):
 			logger.getLogger()
 			job.showError()
-		self.assertIn('failed. Return code: 0, all output files: not generated or expectation not met', err.getvalue())
+		self.assertIn('Return code: 1 (Script error).', err.getvalue())
 		self.assertIn(job.script, err.getvalue())
 		self.assertIn(job.outfile, err.getvalue())
 		self.assertIn(job.errfile, err.getvalue())
@@ -800,40 +798,40 @@ print "a"
 
 
 	def testCheckOutfiles(self):
-		proc = Proc()
-		job  = Job(0, proc)
-		with captured_output() as (out, err):
+		with captured_output() as (out, err): 
+			logger.getLogger()
+			proc = Proc()
+			job  = Job(0, proc)
 			job.init()
-		outfile = path.join(job.outdir, path.basename(__file__))
-		utils.safeRemove(outfile)
-		# no output file
-		job.outfileOk = True
-		with captured_output() as (out, err):
+			# no output file
+			utils.safeRemove(job.data['out']['b'])
 			job.checkOutfiles()
-		self.assertFalse(job.outfileOk)
+		self.assertFalse(job.succeed())
 		self.assertIn('outfile not generated:', err.getvalue())
 
 		# expectation not meet
-		job.outfileOk = True
-		with open(outfile, 'w') as fout:
-			fout.write('Expecttion') # no a
-		with captured_output() as (out, err):
+		with captured_output() as (out, err): 
+			logger.getLogger()
+			open(job.data['out']['b'], 'w').close()
 			job.checkOutfiles()
 		self.assertIn('check expectation', err.getvalue())
-		self.assertFalse(job.outfileOk)
+		self.assertFalse(job.succeed())
 
 		# dont check expectation
-		job.outfileOk = True
-		with captured_output() as (out, err):
+		job.rc(0)
+		with captured_output() as (out, err): 
+			logger.getLogger()
 			job.checkOutfiles(expect = False)
-		self.assertTrue(job.outfileOk)
+		self.assertTrue(job.succeed())
 
+		job.rc(0)
 		# check expectation
-		job.outfileOk = True
 		job.proc.expect = TemplatePyPPL('grep "Expecttion" {{out.b}}')
-		with captured_output() as (out, err):
+		with open(job.data['out']['b'], 'w') as f: f.write('Expecttion')
+		with captured_output() as (out, err): 
+			logger.getLogger()
 			job.checkOutfiles(expect = True)
-		self.assertTrue(job.outfileOk)
+		self.assertTrue(job.succeed())
 
 	def testSucceed(self):
 		proc = Proc()
@@ -857,7 +855,6 @@ print "a"
 		
 
 		# outfile not ok
-		job.outfileOk = True
 		job.rc(0)
 		utils.safeRemove(outfile)
 		with captured_output() as (out, err):

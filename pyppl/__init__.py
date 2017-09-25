@@ -424,7 +424,6 @@ class Proc (object):
 				self.callback (self)
 		else:
 			failedjobs = [job for job in self.jobs if not job.succeed()]
-			
 			if not failedjobs:	
 				self.log ('Successful jobs: ALL', 'debug')
 				if callable (self.callback):		

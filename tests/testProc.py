@@ -40,7 +40,9 @@ class RunnerTestNR(object):
 		pass
 
 	def finish(self):
-		pass
+		with open(self.job.rcfile, 'w') as f:
+			f.write('0')
+		self.job.done()
 
 class RunnerTestR(RunnerTestNR):
 	
@@ -478,6 +480,8 @@ class TestProc (unittest.TestCase):
 		})
 
 	def testBuildBrings(self):
+		with captured_output() as (out, err):
+			logger.getLogger()
 		p = Proc('buildbrings')
 		p.brings = {
 			'a': "{{proc.id}}.*",
@@ -731,7 +735,7 @@ class TestProc (unittest.TestCase):
 			p._runJobs()
 		for job in p.jobs:
 			job.checkOutfiles()
-			self.assertFalse(job.outfileOk)
+			self.assertFalse(job.succeed())
 
 		p.runner = 'nosuchrunner'
 		p._tidyBeforeRun()
@@ -748,8 +752,29 @@ class TestProc (unittest.TestCase):
 			p._runJobs()
 		for job in p.jobs:
 			job.checkOutfiles()
-			self.assertTrue(job.outfileOk)
-	
+			self.assertTrue(job.succeed())
+
+	def testRunJobsExpect(self):
+		logger.getLogger()
+		p = Proc('runjobsexpect')
+		# no expectation
+		p.runner = 'testr'
+		p.input = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
+		p.output = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
+		p.script = 'echo {{in.a}} > {{out.outfile}}'
+		p.expect = 'grep abc {{out.outfile}}'
+		with captured_output() as (out, err):
+			logger.getLogger()
+			p._tidyBeforeRun()
+			for job in p.jobs:
+				utils.safeRemove(job.data['out']['outfile'])
+			p._checkCached()
+			p._runJobs()
+		for job in p.jobs:
+			job.checkOutfiles()
+			self.assertFalse(job.succeed())
+
+
 	def testRun(self):
 		logger.getLogger()
 		p = Proc('testRun')
@@ -780,6 +805,19 @@ class TestProc (unittest.TestCase):
 			logger.getLogger()
 			p.run()
 		self.assertIn('CACHED', err.getvalue())
+
+	def testRunExpect(self):
+		with captured_output() as (out, err): logger.getLogger()
+		p = Proc('testRunExpect')
+		# empty output
+		p.runner = 'testnr'
+		p.input = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
+		p.output = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
+		p.script = 'echo {{in.a}} > {{out.outfile}}'
+		p.expect = 'grep walfafwawnn {{out.outfile}}'
+		self.assertRaises(SystemExit, p.run)
+		self.assertEqual(p.ncjobids, [0,1,2,3,4])
+		
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)
