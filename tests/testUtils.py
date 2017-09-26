@@ -9,6 +9,7 @@ from os import path, remove, makedirs, symlink, fdopen
 from subprocess import Popen, PIPE
 from contextlib import contextmanager
 from six import StringIO
+from box import Box
 from shutil import rmtree, move, copyfile, copytree
 from pyppl import utils
 
@@ -67,8 +68,8 @@ class TestUtils (unittest.TestCase):
 		self.assertEqual(utils.split('outdir:dir:{{in.pattern | lambda x: __import__("glob").glob(x)[0] | fn }}_etc', ':'), ["outdir", "dir", "{{in.pattern | lambda x: __import__(\"glob\").glob(x)[0] | fn }}_etc"])
 			
 	def testDictUpdate (self):
-		ref1  = {"c": 3, "d": 9}
-		ref2  = {"c": 4}
+		ref1 = {"c": 3, "d": 9}
+		ref2 = {"c": 4}
 		orig = {"a":1, "b":ref1}
 		newd = {"b":ref2, "c":8}
 		utils.dictUpdate (orig, newd)
@@ -77,6 +78,16 @@ class TestUtils (unittest.TestCase):
 		newd2 = {"b":ref2, "c":8}
 		orig2.update(newd2)
 		self.assertEqual (orig2, {"a":1, "b":ref2, "c":8})
+
+		newd = {}
+		ref3 = {'a':1,'b':2,'c':[3,4],'d':Box({'a':0})}
+		utils.dictUpdate(newd, ref3)
+		newd['c'][0] = 1
+		newd['d'].a  = 1
+		self.assertEqual(ref3['c'], [3,4])
+		self.assertEqual(ref3['d'].to_dict(), {'a': 0})
+		self.assertEqual(newd['c'], [1,4])
+		self.assertEqual(newd['d'].to_dict(), {'a':1})
 		
 	def testFuncSig (self):
 		def func1 ():

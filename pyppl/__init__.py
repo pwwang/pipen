@@ -364,9 +364,11 @@ class Proc (object):
 		config['desc']     = newproc.desc
 		config['aggr']     = ''
 		config['workdir']  = ''
-		config['tplenvs']  = pycopy.deepcopy(self.config['tplenvs'])
-		config['args']     = pycopy.deepcopy(self.config['args'])
+		config['tplenvs']  = Box()
+		config['args']     = Box()
 		config['resume']   = False
+		utils.dictUpdate(config['tplenvs'], self.config['tplenvs'])
+		utils.dictUpdate(config['args'], self.config['args'])
 		
 		props   = {key:val for key, val in self.props.items()}
 		props['sets']      = [s for s in self.sets]

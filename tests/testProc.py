@@ -576,7 +576,7 @@ class TestProc (unittest.TestCase):
 	def testBuildScript(self):
 		with captured_output() as (out, err):
 			logger.getLogger()
-			
+
 		script = 'a {% if pid | lambda x: x == 1 %} b {% endif %}'
 
 		p = Proc('buildscript')

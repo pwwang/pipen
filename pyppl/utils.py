@@ -163,10 +163,16 @@ def dictUpdate(origDict, newDict):
 		```
 	"""
 	for k, v in newDict.items():
-		if not isinstance(v, dict) or not k in origDict or not isinstance(origDict[k], dict):
-			origDict[k] = newDict[k]
-		else:
+
+		if isinstance(v, list):
+			origDict[k] = [e for e in v]
+		elif isinstance(v, dict):
+			if k not in origDict: 
+				origDict[k] = Box() if isinstance(v, Box) else {}
 			dictUpdate(origDict[k], newDict[k])
+		else:
+			origDict[k] = newDict[k]
+
 			
 def funcsig (func):
 	"""
