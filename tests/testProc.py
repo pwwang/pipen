@@ -3,7 +3,7 @@ import path, unittest
 import sys
 import tempfile
 from box import Box
-from os import path
+from os import path, makedirs
 from time import sleep
 from pyppl import Proc, logger, templates, utils, Channel, PyPPL, Job
 
@@ -574,8 +574,13 @@ class TestProc (unittest.TestCase):
 		p._buildOutput()
 
 	def testBuildScript(self):
+		with captured_output() as (out, err):
+			logger.getLogger()
+			
+		script = 'a {% if pid | lambda x: x == 1 %} b {% endif %}'
+
 		p = Proc('buildscript')
-		p.script = 'a {% if pid | lambda x: x == 1 %} b {% endif %}'
+		p.script = script
 		p._buildProps()
 		p._buildInput()
 		p._buildProcVars()
@@ -583,6 +588,44 @@ class TestProc (unittest.TestCase):
 		p._buildOutput()
 		p._buildScript()
 		self.assertEqual(p.script.render({'pid': p}), '#!/usr/bin/env bash\na ')
+
+		# abspath
+		p = Proc('abspathscript')
+		sfile = path.abspath(path.join(tmpdir, 'abspathscript'))
+		with open(sfile, 'w') as sf: sf.write(script)
+		p.script = "file:%s" % sfile
+		p._buildProps()
+		p._buildInput()
+		p._buildProcVars()
+		p._buildBrings()
+		p._buildOutput()
+		p._buildScript()
+		self.assertEqual(p.script.render({'pid': 1}), '#!/usr/bin/env bash\na  b ')
+
+		# relpath
+		script = "echo pyppl.log: Using the relpath script."
+		pfile = path.join(path.dirname(__file__), 'workdir', 'pscript.py')
+		sfile = path.join(path.dirname(__file__), 'workdir', 'relpathscript')
+		if not path.isdir(path.dirname(pfile)):
+			makedirs(path.dirname(pfile))
+		with open(sfile, 'w') as sf: sf.write(script)
+		with open(pfile, 'w') as pf:
+			pf.write("""
+from pyppl import Proc
+p = Proc('relpathscript')
+p.input  = {"a": [0]}
+p.script = "file:./relpathscript"
+
+""")
+		sys.path.insert(0, path.dirname(pfile))
+		from pscript import p as prel
+		prel._buildProps()
+		prel._buildInput()
+		prel._buildProcVars()
+		prel._buildBrings()
+		prel._buildOutput()
+		prel._buildScript()
+		self.assertIn(script, prel.script.render())
 
 	def testReadConfig(self):
 		p = Proc('readconf')

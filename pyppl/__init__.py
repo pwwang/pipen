@@ -291,6 +291,13 @@ class Proc (object):
 					self.props['depends'].extend(depend.ends)
 				else:
 					raise TypeError('Unsupported dependent: %s, expect Proc or Aggr.' % repr(depend))
+		elif name == 'script' and value.startswith('file:'):
+			scriptpath = value[5:]
+			if not path.isabs(scriptpath):
+				from inspect import getframeinfo, stack
+				caller = getframeinfo(stack()[1][0])
+				scriptpath = path.join(path.dirname(caller.filename), scriptpath)
+			self.config[name] = "file:%s" % scriptpath
 		elif name == 'args' or name == 'tplenvs':
 			self.config[name] = Box(value)
 		elif name == 'input' and self.config[name] and isinstance(self.config[name], six.string_types) and not isinstance(value, six.string_types) and not isinstance(value, dict):
@@ -786,11 +793,11 @@ class Proc (object):
 			
 		if script.startswith ('file:'):
 			tplfile = script[5:].strip()
-			if not path.isabs(tplfile):
-				tplfile = path.join (path.dirname(sys.argv[0]), tplfile)
+			#if not path.isabs(tplfile):
+			#	tplfile = path.join (path.dirname(sys.argv[0]), tplfile)
 			if not path.exists (tplfile):
 				raise OSError ('No such template file: %s.' % tplfile)
-			self.proc.log ("Using template file: %s" % tplfile, 'debug')
+			self.log ("Using template file: %s" % tplfile, 'debug')
 			with open(tplfile) as f:
 				script = f.read().strip()
 
