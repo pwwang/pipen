@@ -94,6 +94,7 @@ class Template(object):
 
 Template.DEFAULT_ENVS.update({
 	'Rvec':     lambda x: 'c(' + ','.join([Template.DEFAULT_ENVS['R'](e) for e in x]) + ')',
-	'Rlist':    lambda x: 'list(' + ','.join([k + '=' + Template.DEFAULT_ENVS['R'](x[k]) for k in sorted(x.keys())]) + ')',
+	'Rlist':    lambda x: 'list(' + ','.join([k + '=' + Template.DEFAULT_ENVS['R'](x[k]) for k in sorted(x.keys())]) + ')' if isinstance(x, dict) else \
+						  'list(' + ','.join([          Template.DEFAULT_ENVS['R'](k) for k in list(x)]) + ')',
 })
 
