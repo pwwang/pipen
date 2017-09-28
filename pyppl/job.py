@@ -520,6 +520,7 @@ class Job (object):
 				for file2ex in files2ex:
 					bname  = path.basename (file2ex)
 					exfile = path.join (self.proc.exdir, bname)
+					self.proc.log ('Job #%-3s: exporting to: %s' % (self.index, exfile), 'export')
 					utils.safeMoveWithLink (file2ex, exfile, overwrite = self.proc.exow)
 		else:
 			for file2ex in files2ex:
