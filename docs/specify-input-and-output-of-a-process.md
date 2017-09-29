@@ -32,7 +32,30 @@ p2.input   = "in1, in2"
 ```
 > **Caution** the number of input keys should be no more than that of the output from the prior process. Otherwise, there is not enough data for the keys.
 > **Note** For output, `dict` is not supported. As we need the order of the keys and data to be kept when it's being passed on. But you may use `OrderedDict`.
+> **Hint** If you have input keys defined by a string before, for example:
+  ```python
+  p1.input = "ph1, ph2"
+  ```
+  You can then specify the input data/channel directly:
+  ```python
+  p1.input = [(1,4), (2,5), (3,6)]
+  # same as:
+  p1.input  = {"ph1":[1,2,3], "ph2":[4,5,6]}
+  ```
+  One thing has to be reminded is that, you can do:
+  ```python
+  p1.input = {"in": "a"}  # same as p1.input = {"in": ["a"]}
+  ```
+  But you cannot do:
+  ```python
+  p1.input = "in"
+  p1.input = "a" 
+  # the right way is p.input = ["a"]
+  # because PyPPL will take "a" as the input key instead of data, as it's a string
+  ```
 
+  
+  
 Use `sys.argv` (see details for [`Channel.fromArgv`](https://pwwang.gitbooks.io/pyppl/content/channels.html#initialize-a-channel)):
 ```python
 p3 = Proc()
