@@ -337,15 +337,16 @@ class Parameters (object):
 
 		return ret
 	
-	def loadDict (self, dictVar, show = None):
+	def loadDict (self, dictVar, show = False):
 		"""
 		Load parameters from a dict
 		@params:
 			`dictVar`: The dict variable.
 			- Properties are set by "<param>.required", "<param>.show", ...
 			`show`:    Whether these parameters should be shown in help information
-			- It'll be overwritten by the `show` property inside dict variable.
-			- If it is None, will inherit the param's show value
+				- Default: False (don't show parameter from config object in help page)
+				- It'll be overwritten by the `show` property inside dict variable.
+				- If it is None, will inherit the param's show value
 		"""
 		for key, val in dictVar.items():
 			if '.' in key: continue
@@ -363,7 +364,7 @@ class Parameters (object):
 			setattr (self._props['params'][k], prop, val)	
 		return self
 		
-	def loadFile (self, cfgfile, show = None):
+	def loadFile (self, cfgfile, show = False):
 		"""
 		Load parameters from a json/config file
 		If the file name ends with '.json', `json.load` will be used,
@@ -372,7 +373,8 @@ class Parameters (object):
 		@params:
 			`cfgfile`: The config file
 			`show`:    Whether these parameters should be shown in help information
-			- It'll be overwritten by the `show` property inside the config file.
+				- Default: False (don't show parameter from config file in help page)
+				- It'll be overwritten by the `show` property inside the config file.
 		"""
 		config = {} 
 		if cfgfile.endswith('.json'):
