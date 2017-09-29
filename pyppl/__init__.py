@@ -676,9 +676,9 @@ class Proc (object):
 		# support empty input
 		pinkeys = list(filter(None, pinkeys))
 
-		#if len(pinkeys) > invals.width():
-		#	raise ValueError('Need more columns to unpack input channel.')
 		wdata   = invals.width()
+		if len(pinkeys) < wdata:
+			self.log('Not all data are used as input, %s columns wasted.' % (wdata - len(pinkeys)), 'warning')
 		for i, inkey in enumerate(pinkeys):
 			self.props['input'][inkey] = {}
 			self.props['input'][inkey]['type'] = pintypes[i]
