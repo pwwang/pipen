@@ -60,6 +60,35 @@ class TestAggr (unittest.TestCase):
 		self.assertEqual(a.p1.tplenvs, {'x':1})
 		self.assertEqual(a.p2.tplenvs, {'x':1})
 
+		a.set('forks', 10, 'starts')
+		self.assertEqual(a.p1.forks, 10)
+		self.assertEqual(a.p2.forks, 20)
+		a.set('forks', 5, 'ends')
+		self.assertEqual(a.p1.forks, 10)
+		self.assertEqual(a.p2.forks, 5)
+
+	def testSetInput(self):
+		p1 = Proc()
+		p2 = Proc()
+		p3 = Proc()
+		p1.input = "in1, in2"
+		p2.input = "in1, in2"
+		a = Aggr(p1, p2, p3)
+		a.starts = [p1, p2]
+		a.p2.depends = []
+
+		a.set('input', [lambda x: x]*2)
+		self.assertTrue(callable(a.p1.config['input']['in1, in2']))
+		self.assertTrue(callable(a.p2.config['input']['in1, in2']))
+
+		self.assertRaises(TypeError, a.set, 'input', [1])
+		a.p1.input = "in1, in2"
+		a.p2.input = "in1, in2"
+		a.set('input', [(1,'a', 3, 'c'), (2, 'b', 4, 'd')])
+
+		self.assertEqual(a.p1.config['input']['in1, in2'], [(1, 'a'), (2, 'b')])
+		self.assertEqual(a.p2.config['input']['in1, in2'], [(3, 'c'), (4, 'd')])
+
 	def testAddproc(self):
 		p1 = Proc()
 		p2 = Proc()

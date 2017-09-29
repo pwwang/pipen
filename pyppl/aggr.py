@@ -60,21 +60,51 @@ class Aggr (object):
 		@params:
 			propname: The property name
 			propval:  The property value
-			procs:    The ids of the procs to set
+			procs:    The ids of the procs to set. Default: None (all procs)
+				- if propname == 'input', it defaults to 'starts'
 		"""
 		dot2dictargs = lambda name, val: val if '.' not in name else {name.split('.')[-1]: val}
 
+		if propname == 'input' and procs is None:
+			procs = 'starts'
 		if procs is None:
 			procs = [p.id for p in self.procs]
+		elif procs == 'starts':
+			procs = [p.id for p in self.starts]
+		elif procs == 'ends':
+			procs = [p.id for p in self.ends]
 		else:
 			procs = utils.alwaysList (procs)
-		for proc in [self.__dict__[pid] for pid in procs]:
-			if propname.startswith('args'):
-				utils.dictUpdate (proc.args, dot2dictargs(propname, propval))
-			elif propname.startswith('tplenvs'):
-				utils.dictUpdate (proc.tplenvs, dot2dictargs(propname, propval))
+		
+		procs = [self.__dict__[pid] for pid in procs]
+		if propname == 'input':
+			# callback for each process
+			if all([callable(pv) for pv in propval]):
+				for i, proc in enumerate(procs): 
+					proc.input = propval[i]
 			else:
-				setattr(proc, propname, propval)
+				if not isinstance(propval, Channel):
+					propval = Channel.create(propval)
+
+				idx = 0
+				for proc in procs:
+					procinput = proc.config['input']
+					# Issue: cannot assure the order of keys, unless procinput is an OrderedDict
+					if isinstance(procinput, dict):
+						raise TypeError('Expect orginal input as string or list rather than dict. Please specify input for each process separately.')
+					inkeys     = utils.alwaysList(procinput)
+					inlen      = len(inkeys)
+					proc.input = ', '.join(inkeys)
+					proc.input = propval.slice(idx, inlen)
+					idx += inlen
+		else:
+			for proc in procs:
+				if propname.startswith('args'):
+					utils.dictUpdate (proc.args, dot2dictargs(propname, propval))
+				elif propname.startswith('tplenvs'):
+					utils.dictUpdate (proc.tplenvs, dot2dictargs(propname, propval))
+				else:
+					setattr(proc, propname, propval)
 	
 	def addProc (self, p, where = None):
 		"""
