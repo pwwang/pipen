@@ -106,12 +106,12 @@ class TestParameters (unittest.TestCase):
 		ps.a.setValue('a')
 		ps.b.setValue(2).setType(int).setRequired().setDesc('Option b')
 		ps.c.setValue([]).setType(list).setShow(False)
-		self.assertEqual(ps.help().splitlines(), """DESCRIPTION:
+		self.assertEqual(ps.help().splitlines(), ("""DESCRIPTION:
   A test program.
   The test description.
 
 USAGE:
-  testParameters.py --param-b <int> [OPTIONS]
+  %s --param-b <int> [OPTIONS]
 
 EXAMPLE:
   prog -a A -b B
@@ -124,7 +124,7 @@ OPTIONAL OPTIONS:
   --param-a <str>                       Default: a
   -h, --help, -H, -?                    Print this help information.
 
-""".splitlines())
+""" % sys.argv[0]).splitlines())
 
 	def testParseAndToDict(self):
 		ps = Parameters()
@@ -181,6 +181,7 @@ OPTIONAL OPTIONS:
 			'b.type': int,
 			'b.required': True,
 			'b.desc': 'Option b',
+			'b.show': True,
 			'c': ['a', 'b'],
 			'c.type': list,
 			'c.show': False,
@@ -193,12 +194,12 @@ OPTIONAL OPTIONS:
 			'c': ['a', 'b'],
 			'd': False
 		})
-		self.assertEqual(ps.help().splitlines(), """DESCRIPTION:
+		self.assertEqual(ps.help().splitlines(), ("""DESCRIPTION:
   A test program.
   The test description.
 
 USAGE:
-  testParameters.py --param-b <int> [OPTIONS]
+  %s --param-b <int>
 
 EXAMPLE:
   prog -a A -b B
@@ -208,11 +209,9 @@ REQUIRED OPTIONS:
   --param-b <int>                       Option b
 
 OPTIONAL OPTIONS:
-  --param-a <str>                       Default: b
-  --param-d (bool)                      A switch Default: False
   -h, --help, -H, -?                    Print this help information.
 
-""".splitlines())
+""" % sys.argv[0]).splitlines())
 	
 	def testLoadFile(self):
 		f1 = path.join(tempfile.gettempdir(), 'testLoadFile.json') 

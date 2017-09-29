@@ -962,6 +962,7 @@ print "a"
 		])
 		job = Job(0, proc)
 		with captured_output() as (out, err):
+			logger.getLogger()
 			job.init()
 			open(job.data['out']['b'], 'w').close()
 			utils.safeRemove(job.data['out']['c'])
@@ -995,7 +996,9 @@ print "a"
 
 					try:
 						job = jobs[index]
-						job.export()
+						with captured_output() as (out, err):
+							logger.getLogger()
+							job.export()
 					except:
 						raise
 					finally:
@@ -1016,6 +1019,7 @@ print "a"
 			proc.input[key]['data'] = [val['data'][0]] * 20
 		jobs = [Job(i, proc) for i in range(20)]
 		with captured_output() as (out, err):
+			logger.getLogger()
 			multiJobTest(jobs, lambda job: open(job.data['out']['b'], 'w').close())
 		for job in jobs:
 			exfile_b = path.join(exdir, path.basename(job.data['out']['b']))

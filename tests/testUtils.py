@@ -23,29 +23,41 @@ def captured_output():
 	finally:
 		sys.stdout, sys.stderr = old_out, old_err
 
+class Proc(object):
+	def __init__(self, default='', d2=''):
+		self.id = utils.varname()
+	def copy(self, *arg):
+		return utils.varname()
+
 class TestUtils (unittest.TestCase):
 	
 	def testVarname(self):
-		class proc(object):
-			def __init__(this):
-				this.id = utils.varname()
 				
-		h = proc()
-		h2 = proc()
-		h3 = proc()
+		h = Proc()
+		h2 = Proc()
+		h3 = Proc(
+			default = 'a', 
+			d2 = 'c'
+		)
+		h4 = [Proc()]
 		self.assertEqual(h.id, 'h')
 		self.assertEqual(h2.id, 'h2')
 		self.assertEqual(h3.id, 'h3')
+		self.assertEqual(h4[0].id, 'var_0')
 		
-		def func():
-			return utils.varname()
-			
-		f1 = func()
-		f2 = func()
-		f3 = func()
-		self.assertEqual(f1, 'f1')
-		self.assertEqual(f2, 'f2')
-		self.assertEqual(f3, 'f3')
+		v1 = h.copy()
+		v2 = h2.copy(
+			2,
+			3,
+			4
+		)
+		v3 = [h3.copy(
+			1,2,
+			4
+		)]
+		self.assertEqual(v1, 'v1')
+		self.assertEqual(v2, 'v2')
+		self.assertEqual(v3[0], 'var_1')
 	
 	
 	def testMapReduceFilter(self):

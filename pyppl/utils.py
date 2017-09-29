@@ -6,6 +6,7 @@ import filelock
 import tempfile
 import tarfile
 import gzip
+import re
 
 from stat import S_IEXEC
 from glob import glob
@@ -41,26 +42,43 @@ class ProcessEx (Process):
 			if ex:
 				raise ex
 
-def varname ():
+def varname (maxline = 20):
 	"""
 	Get the variable name for ini
+	@params:
+		`maxline`: The max number of lines to retrive. Default: 20
 	@returns:
 		The variable name
 	"""
-	frames  = inspect.getouterframes(inspect.currentframe())[2]
-	#frame   = frames[0]
-	# cannot get co_varnames from top frame 
-	# assignment has to be in one line
-	#if not frame.f_code.co_varnames:
-	code = frames[4][0]
-	varnames = code.split('=') if '=' in code else []
-	#else:
-	#	varnames = [var for var in frame.f_code.co_varnames if var not in frame.f_locals]
-	if varnames:
-		return varnames[0].strip()
+	stack     = inspect.stack()
+	theclass  = stack[1][0].f_locals["self"].__class__.__name__
+	themethod = stack[1][0].f_code.co_name
+
+	srcfile   = stack[2][1] 
+	srclineno = stack[2][2]
+
+	with open(srcfile) as f:
+		srcs   = list(reversed(f.readlines()[max(0, srclineno-maxline): srclineno]))
+
+	if themethod == 'copy':
+		#            var             = pp          .copy    (
+		re_hit  = r'([A-Za-z_]\w*)\s*=\s*([A-Za-z_]\w*\.)+copy\s*\('
+		#           pp.copy    (
+		re_stop = r'([A-Za-z_]\w*\.)+copy\s*\('
 	else:
-		varname.index += 1
-		return 'var_%s' % (varname.index - 1) 
+		#            var             =   
+		re_hit  = r'([A-Za-z_]\w*)\s*=\s*([A-Za-z_]\w*\.)*%s\s*\(' % theclass
+		re_stop = r'([A-Za-z_]\w*\.)*%s\s*\(' % theclass
+	
+	for src in srcs:
+		hitgroup = re.search(re_hit, src)
+		if hitgroup: return hitgroup.group(1)
+		stopgroup = re.search(re_stop, src)
+		if stopgroup: break
+
+	varname.index += 1
+	return 'var_%s' % (varname.index - 1) 
+		
 varname.index = 0
 
 def reduce(func, vec):
