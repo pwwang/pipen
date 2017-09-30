@@ -28,7 +28,7 @@ class TestAggr (unittest.TestCase):
 		self.assertEqual(a.ends[0].id, 'p2')
 		self.assertIn(a.p1, a.p2.depends)
 
-		b = Aggr(p1, p2, False)
+		b = Aggr(p1, p2, depends = False)
 		self.assertEqual(b.starts, [])
 		self.assertEqual(b.ends, [])
 

@@ -21,20 +21,19 @@ class Aggr (object):
 	"""
 	
 	# aggr (p1, p2, p3, ..., depends = True)
-	def __init__ (self, *arg):
+	def __init__ (self, *arg, **kwargs):
 		"""
 		Constructor
 		@params:
 			`arg`: the set of processes
 		"""
-		self.starts                     = []
-		self.ends                       = []
-		self.id                         = utils.varname()
+		self.starts = []
+		self.ends   = []
+		self.id     = utils.varname()
 		
-		depends                         = True
-		arg                             = list(arg)
-		if len(arg) > 0 and isinstance(arg[-1], bool):
-			depends                     = arg.pop(-1)
+		depends = True
+		arg     = list(arg)
+		depends = True if not 'depends' in kwargs else kwargs['depends']
 		
 		self.procs                      = []
 		for proc in arg:
