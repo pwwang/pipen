@@ -31,11 +31,10 @@ class Aggr (object):
 		self.ends   = []
 		self.id     = utils.varname()
 		
-		depends = True
 		arg     = list(arg)
 		depends = True if not 'depends' in kwargs else kwargs['depends']
 		
-		self.procs                      = []
+		self.procs = []
 		for proc in arg:
 			pid                = proc.id
 			if hasattr(self, pid):
