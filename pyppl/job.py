@@ -2,6 +2,7 @@
 Job module for pyppl
 """
 import json
+from sys import stderr
 from collections import OrderedDict
 from glob import glob
 from os import makedirs, path, remove, symlink, utime, readlink, listdir
@@ -642,7 +643,11 @@ class Job (object):
 					orgfile = ''
 					infile  = ''
 				else:
-					orgfile = path.abspath(val['data'][self.index])
+					try:
+						orgfile = path.abspath(val['data'][self.index])
+					except AttributeError:
+						stderr.write("Input data: \n  %s: %s\n" % (key, val['data'][self.index]))
+						raise
 					if not path.exists(orgfile):
 						raise OSError('No such input file: %s' % orgfile)
 
