@@ -48,7 +48,7 @@ class Job (object):
 				'pidfile' : self.pidfile
 			},
 			'in'   : {},
-			'out'  : {},
+			'out'  : OrderedDict(),
 			'bring': {}
 		}
 		
