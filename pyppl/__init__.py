@@ -1089,18 +1089,18 @@ class PyPPL (object):
 
 		# nexts, paths
 		for proc in PyPPL.PROCS:
-			name = proc.name(False)
+			name = id(proc)
 			paths[name] = getpaths(proc, useStarts)
 			if not name in nexts: nexts[name] = []
 			for dp in proc.depends:
-				dpname = dp.name(False)
+				dpname = id(dp)
 				if not dpname in nexts: nexts[dpname] = []
 				if not proc in nexts[dpname]:
 					nexts[dpname].append(proc)
 		
 		# ends
 		for proc in PyPPL.PROCS:
-			name     = proc.name(False)
+			name     = id(proc)
 			ppaths   = paths[name]
 			# if some proc depends on it, it's not an ending for sure
 			if nexts[name]: continue
@@ -1138,7 +1138,7 @@ class PyPPL (object):
 		nostarts = []
 		for start in self.starts:
 			name = start.name(False)
-			if any([(set(ps) & set(self.starts)) for ps in paths[name]]):
+			if any([(set(ps) & set(self.starts)) for ps in paths[id(start)]]):
 				logger.logger.info('[WARNING] Process %s will be ignored as a starting process as it depends on other starting processes.' % name)
 				nostarts.append(start)
 		self.starts = [start for start in self.starts if start not in nostarts]
@@ -1158,13 +1158,13 @@ class PyPPL (object):
 		rsprocs = PyPPL._any2procs(*args)
 		
 		for end in ends:
-			if not all([(set(ps) & set(rsprocs)) for ps in paths[end.name(False)]]) and end not in rsprocs:
+			if not all([(set(ps) & set(rsprocs)) for ps in paths[id(end)]]) and end not in rsprocs:
 				raise ValueError('None processes along %s\'s path resumed.' % end.name(False))
 
 		ps2skip = []
 		for rp in rsprocs:
 			rp.props['resume'] = True
-			rppaths = paths[rp.name(False)]
+			rppaths = paths[id(rp)]
 			if rppaths:
 				ps2skip.extend(list(utils.reduce(lambda x,y: set(x) | set(y), rppaths)))
 		ps2skip = set(ps2skip)
@@ -1236,7 +1236,7 @@ class PyPPL (object):
 			for p in sorted(next2run, key = lambda x: x.name()):
 				p.run (config)
 				doneprocs |= set([p])
-				next2run2 |= set(nexts[p.name(False)])
+				next2run2 |= set(nexts[id(p)])
 			# next procs to run must be not finished and all their depends are finished
 			next2run = [n for n in next2run2 if n not in doneprocs and all(x in doneprocs for x in n.depends)]
 			
@@ -1254,6 +1254,7 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
+		import ctypes
 		nexts, ends, paths = self._procRelations()
 		dot = dot if dot else self.fcconfig['dot']
 		fc  = Flowchart(dotfile = dotfile, fcfile = fcfile, dot = dot)
@@ -1264,13 +1265,15 @@ class PyPPL (object):
 			
 		for end in self.ends:
 			fc.addNode(end, 'end')
-			for ps in paths[end.name(False)]:
+			for ps in paths[id(end)]:
 				[fc.addNode(p) for p in ps]
 		
 		for key, val in nexts.items():
-			if '.' not in key:
-				key += '.notag'
-			node = self._any2procs(key)[0]
+			proc = ctypes.cast(key, ctypes.py_object).value
+			name = proc.name(False)
+			if '.' not in name:
+				name += '.notag'
+			node = self._any2procs(name)[0]
 			for v in val:
 				fc.addLink(node, v)
 		

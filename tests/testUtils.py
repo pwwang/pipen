@@ -169,7 +169,7 @@ class TestUtils (unittest.TestCase):
 		
 		def target(f):
 			if path.exists(f):
-				sleep(0.1)
+				sleep(0.5)
 				remove(f)
 		p1 = utils.ProcessEx(target = target, args = (testf, ))
 		p2 = utils.ProcessEx(target = target, args = (testf, ))
@@ -295,7 +295,7 @@ class TestUtils (unittest.TestCase):
 			thr.start()
 			procs.append(thr)
 		
-		with self.assertRaises(OSError):
+		with self.assertRaises((OSError, IOError)):
 			for p in procs:
 				p.join()
 			
