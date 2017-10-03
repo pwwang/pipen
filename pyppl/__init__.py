@@ -1224,7 +1224,9 @@ class PyPPL (object):
 				config['runner'] = profile
 			else:
 				config['runner'] = 'local'
-		
+		if 'id' in config:
+			raise AttributeError('Cannot set a unique id for all process in configuration.')
+
 		nexts, ends, paths = self._procRelations()
 
 		doneprocs = set()
