@@ -47,8 +47,8 @@ There are several ways to initialize a channel:
   ```  
   > **Note** Please use `Channel.create(...)` instead of `Channel(...)` unless each element is 'tuplized' properly. 
   ```python
-  channel.create([1,2,3]) != channel([1,2,3])
-  channel.create([1,2,3]) == channel([(1,), (2,), (3,)])
+  Channel.create([1,2,3]) != Channel([1,2,3])
+  Channel.create([1,2,3]) == Channel([(1,), (2,), (3,)])
   ```
 - From other channels:   
   ```python
@@ -140,7 +140,7 @@ For example:
 # the original file: a.txt
 p1 = Proc()
 p1.input  = {"infile:file": ["a.txt"]}
-p1.output = "outdir:dir:{{infile | fn}}"
+p1.output = "outdir:dir:{{in.infile | fn}}"
 p1.script = "# the script to split a.txt to 1.txt, 2.txt, 3.txt ... to {{outdir}}"
 
 p2 = Proc()
