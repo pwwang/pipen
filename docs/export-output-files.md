@@ -28,4 +28,12 @@ You can have multiple selectors: `p.expart = ["*.txt1", "outfile2"]` to export a
 
 > **NOTE**: 
 > 1. Export-caching will not be allowed when using partial export.
-> 2. Templating is applied for this option.
+> 2. Templating is applied for this option.  
+> 3. `expart` will first match output keys and then be used as a glob pattern. So if you have 
+```python
+# ...
+p.output = "outfile1:file:outfile2, outfile2:file:b.txt2"
+# ...
+p.expart = ["outfile2"]
+```
+then `b.txt2` will be exported instead of `<job.outdir>/outfile2`
