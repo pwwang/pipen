@@ -148,7 +148,7 @@ p2.depends = p1
 # expand channel [("outdir/a/",)] to channel:
 # [("outdir/a/1.txt",), ("outdir/a/2.txt",), ("outdir/a/3.txt",), ...]
 p2.input   = {"infile:file": lambda ch: ch.expand()}
-p2.output  = {"outfile:file:{{infile.fn}}.result"}
+p2.output  = {"outfile:file:{{in.infile | fn}}.result"}
 p2.script  = """
 # work on each file (1.txt, 2.txt, 3.txt, ...) 
 # to result file (1.result, 2.result, 3.result, ...)
@@ -158,7 +158,7 @@ PyPPL().start(p1).run()
 ```
 If a channel is a multi-variable channel (containing 2 or more columns), you may specify the index of the column, which should be a directory. For the previous example:
 ```python
-p1.output = "outvar:{{infile | ext | [1:]}}, outdir:dir:{{infile | fn}}"
+p1.output = "outvar:{{in.infile | ext | [1:]}}, outdir:dir:{{in.infile | fn}}"
 # ...
 p2.depends = p1
 p2.input   = {"invar,infile:file": lambda ch: ch.expand(1)}
@@ -198,7 +198,7 @@ p2.depends = p1
 # collapse channel [("<outdir>/1.txt2",), ("<outdir>/2.txt2",), ("<outdir>/3.txt2",)] 
 # to channel: [("<outdir>/", )]
 p2.input   = {"indir:file": lambda ch: ch.collapse()}
-p2.output  = {"outfile:file:{{indir | fn}}.result"}
+p2.output  = {"outfile:file:{{in.indir | fn}}.result"}
 p2.script  = """
 # combine 1.txt2, 2.txt2, 3.txt3 in {{in.indir}} to {{out.outfile}}
 """
