@@ -2,7 +2,7 @@
 <!-- toc -->
 
 ## Choose your language
-You can either specify the path of interpreter to `pXXX.lang`, if the interpreter is in `$PATH`, you can directly give the basename of the interpreter.  
+You can either specify the path of interpreter to `pXXX.lang`. If the interpreter is in `$PATH`, you can directly give the basename of the interpreter.  
 For example, if you have your own perl installed at `/home/user/bin/perl`, then you need to tell `PyPPL` where it is: `pXXX.lang = "/home/user/bin/perl"`. If `/home/user/bin` is in your `$PATH`, you can simply do: `p.lang = "perl"`  
 You can also use [shebang][1] to specify the interperter:
 ```perl
@@ -13,7 +13,7 @@ You can also use [shebang][1] to specify the interperter:
 ## Use script from a file
 You can also put the script into a file, and use it with a `file:` prefix: `pXXX.script = "file:/a/b/c.pl"`  
 
-> **Note**: You may also use a relative-path template, which is relative to `os.path.dirname (sys.argv[0])`
+> **Note**: You may also use a relative-path template, which is relative to where `pXXX.script` is defined. For example: `pXXX.script = "file:./scripts/script.py"` is defined in `/a/b/pipeline.py`, then the script file refers to `/a/b/scripts/script.py`
 
 > **HINT**: Indents are important in python, when you write your scripts, you have to follow exactly the indents in the script string, for example:
 ```python
