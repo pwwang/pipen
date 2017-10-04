@@ -27,7 +27,7 @@ p9 = Proc()
 		/      \      /
 	 p5          p6 (export)
 		\      /
-		  p7 (expart)
+		  p7 (export)
 """
 p2.depends = p1
 p3.depends = p1, p8
@@ -58,7 +58,7 @@ For example, if you have [Graphviz](http://www.graphviz.org/) installed, you wil
 PyPPL().start(p1, p8, p9).flowchart(
 	"/another/dot/file", 
 	"/another/svg/file", 
-	"dot -Tsvg {{dotfile}} > {{svgfile}}"
+	"dot -Tsvg {{dotfile}} -o {{svgfile}}"
 )
 ```
 

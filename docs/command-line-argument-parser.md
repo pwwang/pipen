@@ -28,11 +28,11 @@ var2 = params.opt2.value + [4]
 # var2 is ['1', '2', '3', 4]
 ```
 
-If you feel annoying using `params.xxx.value` to have the value of the option, you can convert the `params` object to a `pyppl.doct` object:
+If you feel annoying using `params.xxx.value` to have the value of the option, you can convert the `params` object to a `box.Box` object (python-box):
 ```python
-ps = params.toDoct()
+ps = params.toDict()
 ```
-Then you can refer the values directly by:
+Then you can use `params.xxx` to get the value directly:
 ```python
 var = ps.opt + '2'
 var2 = ps.opt2 + [4]

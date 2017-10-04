@@ -111,7 +111,7 @@ Like previous example shows, you just need to give the constructor all the proce
     ```
     You can also specify the dependencies manually:
     ```python
-    a = Aggr (p1, p2, p3, False)
+    a = Aggr (p1, p2, p3, depends = False)
     a.p2.depends = p1
     a.p3.depends = p1, p2
     a.starts = [p1]
@@ -148,13 +148,10 @@ aFastqPE2Bam.set('args.reffile', params.hg19fa, 'pAlignPEByBWA, pBaseRecalibrato
 # Both args.reffile of aFastqPE2Bam.pAlignPEByBWA and aFastqPE2Bam.pBaseRecalibrator 
 # were set as params.hg19fa
 ```
-You can also do:
-```python
-aFastqPE2Bam.set('forks', 10)
-```
-to set `forks` of all processes as `10`.
+You can also do: `aFastqPE2Bam.set('forks', 10)` to set `forks` of all processes as `10`.
+Or `aFastqPE2Bam.set('forks', 10, 'starts')`/`aFastqPE2Bam.set('forks', 10, 'ends')` for processes in `aFastqPE2Bam.starts/aFastqPE2Bam.ends`.
 
-## Set an aggregation as starting aggregation for a pipeline
+## Set an aggregation as start aggregation for a pipeline
 You can do it just like setting a process as the starting process of pipeline (see [here][1]). Actually the starting processes in the aggregation (`aggr.starts`) will be set as the starting processes of the pipeline.
 
 ## The dependency of aggregations and processes
@@ -163,8 +160,8 @@ An aggregation can depend on aggregations and/or processes, you just treat the a
 | What am I? | Whom I am depending on? | Real relations |
 |-|-|-|
 | `Aggr` (`a1`) | `Aggr` (`a2`) | `a1.starts` depends on `a2.ends` |
-| `Aggr` (`a`) | `Proc` (`p`) | `a.starts` depends on `p` |
 | `Proc` (`p`) | `Aggr` (`a`) | `p` depends on `a.ends` |
+> **Note** You have to specify `depends` for start processes of an aggregation.
 
 ## Copy an aggregation
 `Aggr.copy(tag = 'notag', copyDeps = True, newid = None)`
