@@ -1,0 +1,3 @@
+exclude_paths:
+  - api.py
+  - tests/**
