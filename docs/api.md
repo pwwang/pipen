@@ -40,6 +40,16 @@ Check processes, whether 2 processes have the same id and tag
 - **returns:**  
 If there are 2 processes with the same id and tag, raise `ValueError`.  
   
+#### `_getProfile (self, profile) `
+  
+Get running profile according to profile name  
+
+- **params:**  
+`profile`: The profile name  
+
+- **returns:**  
+The running configuration  
+  
 #### `_procRelations (self, useStarts, force) `
   
 Infer the processes relations  
@@ -152,7 +162,7 @@ Constructor
 - **config:**  
 id, input, output, ppldir, forks, cache, rc, echo, runner, script, depends, tag, desc  
 exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr  
-callfront, callback, brings, expect, expart, template, tplenvs, resume  
+callfront, callback, brings, expect, expart, template, tplenvs, resume, profile  
 
 - **props**  
 input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, brings, expect  

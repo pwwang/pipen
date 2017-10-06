@@ -87,7 +87,7 @@ class Proc (object):
 		@config:
 			id, input, output, ppldir, forks, cache, rc, echo, runner, script, depends, tag, desc
 			exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr
-			callfront, callback, brings, expect, expart, template, tplenvs, resume
+			callfront, callback, brings, expect, expart, template, tplenvs, resume, profile
 		@props
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, brings, expect
 			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, lognline
@@ -207,6 +207,9 @@ class Proc (object):
 
 		# data for proc.xxx in template
 		self.props['procvars']    = {}
+
+		# running profile
+		self.config['profile']    = ''
 
 		# Valid return code
 		self.config['rc']         = 0
@@ -698,8 +701,8 @@ class Proc (object):
 		"""
 		pvkeys = [
 			"aggr", "args", "cache", "desc", "echo", "errhow", "errntry", "exdir", "exhow",
-			"exow", "forks", "id", "lang", "ppldir", "procvars", "rc", "resume", "runner",
-			"sets", "size", "suffix", "tag", "workdir"
+			"exow", "forks", "id", "lang", "ppldir", "procvars", "profile", "rc", "resume",
+			"runner", "sets", "size", "suffix", "tag", "workdir"
 		]
 		show   = [ 'size' ]
 		hidden = [ 'desc', 'id', 'sets', 'tag', 'suffix', 'workdir' ]
@@ -1204,6 +1207,29 @@ class PyPPL (object):
 		args += ('skip+',)
 		self._resume(*args)
 		return self
+
+	def _getProfile(self, profile):
+		"""
+		Get running profile according to profile name
+		@params:
+			`profile`: The profile name
+		@returns:
+			The running configuration
+		"""
+		config = {}
+		if 'proc' in self.config:
+			utils.dictUpdate(config, self.config['proc'])
+		
+		if profile in self.config:
+			utils.dictUpdate(config, self.config[profile])
+
+		if not 'runner' in config:
+			config['runner'] = profile if profile in PyPPL.RUNNERS else 'local'
+
+		if 'id' in config:
+			raise AttributeError('Cannot set a unique id for all process in configuration.')
+
+		return config
 	
 	def run (self, profile = 'local'):
 		"""
@@ -1213,21 +1239,8 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
-		timer = time()
-		config = {}
-		if 'proc' in self.config:
-			utils.dictUpdate(config, self.config['proc'])
-		
-		if profile in self.config:
-			utils.dictUpdate(config, self.config[profile])
-		
-		if not 'runner' in config:
-			if profile in PyPPL.RUNNERS:
-				config['runner'] = profile
-			else:
-				config['runner'] = 'local'
-		if 'id' in config:
-			raise AttributeError('Cannot set a unique id for all process in configuration.')
+		timer     = time()
+		dftconfig = self._getProfile(profile)
 
 		nexts, ends, paths = self._procRelations()
 
@@ -1236,7 +1249,10 @@ class PyPPL (object):
 		while next2run:
 			next2run2 = set()
 			for p in sorted(next2run, key = lambda x: x.name()):
-				p.run (config)
+				if p.profile and p.profile != profile:
+					p.run(self._getProfile(p.profile))
+				else:
+					p.run(dftconfig)
 				doneprocs |= set([p])
 				next2run2 |= set(nexts[id(p)])
 			# next procs to run must be not finished and all their depends are finished

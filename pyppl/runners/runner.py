@@ -86,8 +86,8 @@ class Runner (object):
 				sleep (2)
 			
 			self._flushOut(fout, ferr, lastout, lasterr, True)
-			if rc:
-				retcode = self.p.returncode
+			retcode = self.p.returncode
+			if rc or retcode != 0:
 				self.job.rc(retcode)
 		
 		if infout is None:
