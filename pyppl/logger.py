@@ -183,7 +183,7 @@ class pFilter (logging.Filter):
 	logging filter by levels (flags)
 	"""
 	
-	def __init__(self, name='', lvls='normal', lvldiff=[]):
+	def __init__(self, name='', lvls='normal', lvldiff=None):
 		logging.Filter.__init__(self, name)
 		if not isinstance(lvls, list) and lvls in levels:
 			self.levels = levels[lvls]
@@ -194,6 +194,7 @@ class pFilter (logging.Filter):
 		
 		self.lvlhide = []
 		self.lvlshow = []
+		if not lvldiff: lvldiff = []
 		for ld in lvldiff:
 			if ld.startswith('-'):
 				self.lvlhide.append(ld[1:].upper())
@@ -247,7 +248,7 @@ class pFormatter (logging.Formatter):
 		return logging.Formatter.format(self, record)
 
 
-def getLogger (levels='normal', theme=True, logfile=None, lvldiff=[], name='PyPPL'):
+def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, name='PyPPL'):
 	"""
 	Get the default logger
 	@params:

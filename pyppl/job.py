@@ -6,7 +6,7 @@ from sys import stderr
 from collections import OrderedDict
 from glob import glob
 from os import makedirs, path, remove, utime, readlink, listdir
-from shutil import copytree, move, rmtree
+from shutil import move, rmtree
 from multiprocessing import Lock
 from . import utils, logger
 

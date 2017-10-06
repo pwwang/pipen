@@ -1,5 +1,4 @@
 import os
-from subprocess import list2cmdline
 
 from .runner import Runner
 from .. import utils

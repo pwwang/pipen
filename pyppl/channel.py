@@ -295,7 +295,7 @@ class Channel (list):
 		@returns:
 			The filtered Channel
 		"""
-		if func is None: func = lambda x: bool(x)
+		if func is None: func = bool
 		return Channel.create([s for s in self if func(s[col])])
 
 	def reduce (self, func):
