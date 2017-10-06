@@ -1,6 +1,6 @@
 # [PyPPL][3] - A [Py](#)thon [P](#)i[P](#)e[L](#)ine framework 
 
-![Pypi][22] ![Github][23] ![Gitbook][21]   
+![Pypi][22] ![Github][23] ![Gitbook][21] [![Codacy][4]][5]
 
 [Documentation][1] | [API][2] | [Change log][19] | [FAQ][26]
 
@@ -447,6 +447,8 @@ To generate svg file, you have to have [graphviz][33] installed.
 [1]: https://pwwang.gitbooks.io/PyPPL/
 [2]: https://pwwang.gitbooks.io/PyPPL/api.html
 [3]: https://github.com/pwwang/pyppl/
+[4]: https://api.codacy.com/project/badge/Grade/a04aac445f384a8dbe47da19c779763f
+[5]: https://www.codacy.com/app/pwwang/PyPPL?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=pwwang/pyppl&amp;utm_campaign=Badge_Grade
 [6]: https://pwwang.gitbooks.io/PyPPL/caching.html
 [7]: https://pwwang.gitbooks.io/PyPPL/placeholders.html
 [9]: https://pwwang.gitbooks.io/PyPPL/runners.html
