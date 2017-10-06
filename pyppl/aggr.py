@@ -19,7 +19,7 @@ class Aggr (object):
 		- You can use `[aggr].[proc].[prop]` to set/get the properties of a processes in the aggregation.
 
 	"""
-	
+
 	# aggr (p1, p2, p3, ..., depends = True)
 	def __init__ (self, *arg, **kwargs):
 		"""
@@ -48,7 +48,7 @@ class Aggr (object):
 			self.starts = [self.procs[0]] if len(self.procs) > 0 else []
 			self.ends   = [self.procs[-1]] if len(self.procs) > 0 else []
 			for i, proc in enumerate(self.procs):
-				if i == 0: 
+				if i == 0:
 					continue
 				proc.depends = self.procs[i-1]
 				
@@ -78,7 +78,7 @@ class Aggr (object):
 		if propname == 'input':
 			# callback for each process
 			if all([callable(pv) for pv in propval]):
-				for i, proc in enumerate(procs): 
+				for i, proc in enumerate(procs):
 					proc.input = propval[i]
 			else:
 				if not isinstance(propval, Channel):

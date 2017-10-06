@@ -1,6 +1,5 @@
 import os
-from getpass import getuser
-from subprocess import check_output, list2cmdline
+from subprocess import list2cmdline
 
 from .runner import Runner
 from .. import utils

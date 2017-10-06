@@ -31,9 +31,9 @@ class Runner (object):
 		self.foutw     = None
 		
 	def __del__(self):
-		if self.ferrw: 
+		if self.ferrw:
 			self.ferrw.close()
-		if self.foutw: 
+		if self.foutw:
 			self.foutw.close()
 
 	def submit (self):
@@ -71,7 +71,7 @@ class Runner (object):
 			`inferr`: The file handler for stderr file
 			- If infout or inferr is None, will open the file and close it before function returns.
 		"""
-		if self.job.rc() == 99: 
+		if self.job.rc() == 99:
 			return
 		
 		fout = open (self.job.outfile) if infout is None else infout
@@ -140,7 +140,7 @@ class Runner (object):
 		if self.job.index in self.job.proc.echo['jobs']:
 			if 'stdout' in self.job.proc.echo['type']:
 				lines = fout.readlines()
-				if lines: 
+				if lines:
 					lines[0] = lastout + lines[0]
 					if not lines[-1].endswith('\n'):
 						lastout = lines.pop(-1)
@@ -155,7 +155,7 @@ class Runner (object):
 							lock.release()
 			
 			lines = ferr.readlines()
-			if lines: 
+			if lines:
 				lines[0] = lasterr + lines[0]
 				if not end and not lines[-1].endswith('\n'):
 					lasterr = lines.pop(-1)
@@ -178,7 +178,7 @@ class Runner (object):
 						else:
 							(loglevel, logmsg) = logstrs
 						
-						if not loglevel: 
+						if not loglevel:
 							loglevel = 'log'
 						else:
 							loglevel = loglevel[1:] # remove leading dot

@@ -1,8 +1,3 @@
-import re
-from sys import stderr
-from .template import Template
-from .. import utils
-
 """
 This template engine is borrowed from Templite
 The code is here: https://github.com/aosabook/500lines/blob/master/template-engine/code/templite.py
@@ -15,11 +10,14 @@ Functions added:
 	- support elif, else
 	- support for dict: for k,v in dict.items()
 	- support [] to get element from list or dict.
-	- support multivariables in expression: 
+	- support multivariables in expression:
 	  {{d1,d2|concate}}
 	  {'concate': lambda x,y: x+y}
 """
-
+import re
+from sys import stderr
+from .template import Template
+from .. import utils
 
 class TemplatePyPPLSyntaxError(ValueError):
 	"""Raised when a template has a syntax error."""
@@ -258,6 +256,7 @@ class TemplatePyPPLEngine(object):
 	def __str__(self):
 		return 'TemplatePyPPLEngine with _render_function: \n' + self._render_function_code
 
+	@classmethod
 	def _syntax_error(self, msg, thing):
 		"""Raise a syntax error using `msg`, and showing `thing`."""
 		raise TemplatePyPPLSyntaxError("%s: %r" % (msg, thing))
@@ -281,15 +280,16 @@ class TemplatePyPPLEngine(object):
 			render_context.update(context)
 		try:
 			return self._render_function(render_context, self._do_dots)
-		except Exception as ex:
+		except Exception:
 			stderr.write(
 				'\n>>> Failed to render:\n%s\n>>> With context:\n%s\n>>> The render function is:\n%s\n\n' % (
-					'\n'.join(['  ' + line for line in self.text.splitlines()]), 
+					'\n'.join(['  ' + line for line in self.text.splitlines()]),
 					'\n'.join(['  %-10s: %s' % (k,v) for k,v in render_context.items()]),
 					'\n'.join(['  %-3s %s' % (str(i+1) + '.', line) for i,line in enumerate(self._render_function_code.splitlines())])
 				))
-			raise 
+			raise
 
+	@classmethod
 	def _do_dots(self, value, *dots):
 		"""Evaluate dotted expressions at runtime."""
 		for dot in dots:

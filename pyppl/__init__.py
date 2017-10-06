@@ -14,8 +14,8 @@ from collections import OrderedDict
 
 from box import Box
 from .aggr import Aggr
-from .channel import Channel 
-from .job import Job 
+from .channel import Channel
+from .job import Job
 from .parameters import params, Parameter, Parameters
 from .flowchart import Flowchart
 from . import logger, utils, runners, templates
@@ -195,7 +195,7 @@ class Proc (object):
 		self.config['lang']       = 'bash'
 
 		# non-cached job ids
-		self.props['ncjobids']    = [] 
+		self.props['ncjobids']    = []
 
 		# The output that user specified
 		self.config['output']     = ''
@@ -224,7 +224,7 @@ class Proc (object):
 		self.props['script']      = None
 
 		# remember which property is set, then it won't be overwritten by configurations
-		self.props['sets']        = [] 
+		self.props['sets']        = []
 		# The size of the process (# jobs)
 		self.props['size']        = 0
 		
@@ -300,12 +300,15 @@ class Proc (object):
 			self.config[name] = "file:%s" % scriptpath
 		elif name == 'args' or name == 'tplenvs':
 			self.config[name] = Box(value)
-		elif name == 'input' and self.config[name] and isinstance(self.config[name], six.string_types) and not isinstance(value, six.string_types) and not isinstance(value, dict):
-			# previous keys assigned
-			# previous keys are strings
-			# data assigned (strings are supposed to be keys)
-			# whole format used
-			self.config[name] = {self.config[name]: value}
+		elif name == 'input' and self.config[name] and not isinstance(value, six.string_types) and not isinstance(value, dict):
+			# specify data
+			previn  = self.config[name]
+			prevkey = ', '.join(previn) if isinstance(previn, list) else \
+					  ', '.join(previn.keys()) if isinstance(previn, dict) else \
+					  previn
+			self.config[name] = {prevkey: value}
+			if isinstance(previn, dict) and len(previn) > 1:
+				self.log("Previous input is a dict with multiple keys. Now the key sequence is: %s" % prevkey)
 		else:
 			self.config[name] = value
 			
@@ -331,7 +334,7 @@ class Proc (object):
 				logger.logger.info ("%s %s: %s" % (level, name, msg))
 		else:
 			n_omit = self.lognline[PREV_LOG] - abs(Proc.LOG_NLINE[PREV_LOG])
-			if n_omit > 0 and Proc.LOG_NLINE[PREV_LOG] < 0: 
+			if n_omit > 0 and Proc.LOG_NLINE[PREV_LOG] < 0:
 				logname = 'logs' if n_omit > 1 else 'log'
 				maxinfo = '(%s, max=%s)' % (PREV_LOG, abs(Proc.LOG_NLINE[PREV_LOG])) if PREV_LOG else ''
 				logger.logger.info ("[DEBUG] %s: ... and %s %s omitted %s." % (name, n_omit, logname, maxinfo))
@@ -354,7 +357,7 @@ class Proc (object):
 			The new process
 		"""
 		newproc = Proc (
-			tag  = tag  if tag is not None else self.tag, 
+			tag  = tag  if tag is not None else self.tag,
 			desc = desc if desc is not None else self.desc
 		)
 		
@@ -402,7 +405,7 @@ class Proc (object):
 			config['input'] = pycopy.copy(config['input'])
 			for key, val in config['input'].items():
 				config['input'][key] = utils.funcsig(val) if callable(val) else val
-		
+
 		signature = json.dumps(config, sort_keys = True)
 		self.props['suffix'] = utils.uid(signature)
 		return self.suffix
@@ -420,7 +423,7 @@ class Proc (object):
 		self._buildBrings ()
 		self._buildOutput()
 		self._buildScript()
-		if self.resume != 'skip+': 
+		if self.resume != 'skip+':
 			self._saveSettings()
 		self._buildJobs ()
 
@@ -434,14 +437,14 @@ class Proc (object):
 				self.callback (self)
 		else:
 			failedjobs = [job for job in self.jobs if not job.succeed()]
-			if not failedjobs:	
+			if not failedjobs:
 				self.log ('Successful jobs: ALL', 'debug')
 				if callable (self.callback):		
 					self.log('Calling callback ...', 'debug')
 					self.callback (self)
 			else:
 				failedjobs[0].showError (len(failedjobs))
-				if self.errhow != 'ignore': 
+				if self.errhow != 'ignore':
 					sys.exit (1) # don't go further
 	
 	def name (self, aggr = True):
@@ -464,7 +467,7 @@ class Proc (object):
 		
 		self.log (self.desc, '>>>>>>>')
 		self.log ("%s => %s" % (
-			[p.name() for p in self.depends] if self.depends else "START", 
+			[p.name() for p in self.depends] if self.depends else "START",
 			self.name()
 		), "depends")
 		self._readConfig (config)
@@ -520,10 +523,10 @@ class Proc (object):
 		elif not self.props['workdir']:
 			self.props['workdir'] = path.join(self.ppldir, "PyPPL.%s.%s.%s" % (self.id, self.tag, self._suffix()))
 
-		if not path.exists (self.workdir): 
+		if not path.exists (self.workdir):
 			if self.resume == 'skip+':
 				raise Exception('Cannot skip process, as workdir not exists: %s' % self.workdir)
-			makedirs (self.workdir)	
+			makedirs (self.workdir)
 
 		# exdir
 		if self.exdir:
@@ -694,10 +697,10 @@ class Proc (object):
 		and also print some out.
 		"""
 		pvkeys = [
-			"aggr", "args", "cache", "desc", "echo", "errhow", "errntry", "exdir", "exhow", 
-			"exow", "forks", "id", "lang", "ppldir", "procvars", "rc", "resume", "runner", 
+			"aggr", "args", "cache", "desc", "echo", "errhow", "errntry", "exdir", "exhow",
+			"exow", "forks", "id", "lang", "ppldir", "procvars", "rc", "resume", "runner",
 			"sets", "size", "suffix", "tag", "workdir"
-		] 
+		]
 		show   = [ 'size' ]
 		hidden = [ 'desc', 'id', 'sets', 'tag', 'suffix', 'workdir' ]
 		hidden.extend([key for key in pvkeys if key not in self.sets if key not in show])
@@ -827,7 +830,7 @@ class Proc (object):
 		"""
 		self.props['channel'] = Channel.create()
 		rptjob  = randint(0, self.size-1)
-		outkeys = [] 
+		outkeys = []
 		for i in range(self.size):
 			job = Job (i, self)
 			job.init ()
@@ -921,10 +924,10 @@ class Proc (object):
 		"""
 		runner    = PyPPL.RUNNERS[self.runner]
 		maxsubmit = self.forks
-		if hasattr(runner, 'maxsubmit'): 
+		if hasattr(runner, 'maxsubmit'):
 			maxsubmit = runner.maxsubmit
 		interval  = .1
-		if hasattr(runner, 'interval'): 
+		if hasattr(runner, 'interval'):
 			interval = runner.interval
 			
 		def _worker(q):
@@ -937,15 +940,15 @@ class Proc (object):
 				if q.empty(): break
 				try:
 					data = q.get()
-				except:
+				except Exception:
 					break
 				if data is None: break
 				index, cached = data
 
 				try:
 					r = runner(self.jobs[index])
-					sleep (int(index/maxsubmit) * interval)	
-					if cached: 
+					sleep (int(index/maxsubmit) * interval)
+					if cached:
 						self.jobs[index].done()
 					else:
 						# check whether the job is running before submit it
@@ -953,9 +956,9 @@ class Proc (object):
 							self.log ("Job #%-3s is already running, skip submitting." % index, 'submit')
 						else:
 							r.submit()
-						r.wait() 
+						r.wait()
 						r.finish()
-				except:
+				except Exception:
 					raise
 				finally:
 					q.task_done()
@@ -1037,7 +1040,7 @@ class PyPPL (object):
 			'file':    path.splitext(sys.argv[0])[0] + ".pyppl.log"  
 		}
 		if 'log' in self.config:
-			if self.config['log']['file'] is True: 
+			if self.config['log']['file'] is True:
 				del self.config['log']['file']
 			utils.dictUpdate(logconfig, self.config['log'])
 			del self.config['log']
@@ -1134,7 +1137,7 @@ class PyPPL (object):
 			The pipeline object itself.
 		"""
 		self.starts = PyPPL._any2procs(*args)
-		nexts, ends, paths = self._procRelations(useStarts = False)
+		_, _, paths = self._procRelations(useStarts = False)
 		nostarts = []
 		for start in self.starts:
 			name = start.name(False)
@@ -1201,7 +1204,6 @@ class PyPPL (object):
 		args += ('skip+',)
 		self._resume(*args)
 		return self
-		return self	
 	
 	def run (self, profile = 'local'):
 		"""
@@ -1266,7 +1268,7 @@ class PyPPL (object):
 		for end in self.ends:
 			fc.addNode(end, 'end')
 			for ps in paths[id(end)]:
-				[fc.addNode(p) for p in ps]
+				for p in ps: fc.addNode(p)
 		
 		for key, val in nexts.items():
 			proc = ctypes.cast(key, ctypes.py_object).value
@@ -1294,7 +1296,7 @@ class PyPPL (object):
 		# convert all to flat list
 		procs = [a for a in args if not isinstance(a, list)]
 		for a in args:
-			if isinstance(a, list): 
+			if isinstance(a, list):
 				procs.extend(a)
 		
 		ret = []

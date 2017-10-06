@@ -11,7 +11,7 @@ pSort.forks    = 5
 pSort.template = 'Jinja2'
 pSort.exdir    = './export'
 pSort.script   = """
-  sort -k1r {{in.infile}} > {{out.outfile}} 
-""" 
+  sort -k1r {{in.infile}} > {{out.outfile}}
+"""
 
 PyPPL().start(pSort).run()

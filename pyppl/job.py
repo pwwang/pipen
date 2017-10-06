@@ -5,8 +5,8 @@ import json
 from sys import stderr
 from collections import OrderedDict
 from glob import glob
-from os import makedirs, path, remove, symlink, utime, readlink, listdir
-from shutil import copyfile, copytree, move, rmtree
+from os import makedirs, path, remove, utime, readlink, listdir
+from shutil import copytree, move, rmtree
 from multiprocessing import Lock
 from . import utils, logger
 
@@ -108,7 +108,7 @@ class Job (object):
 			maxken = max(list(map(len, self.brings.keys())))
 			maxlen = max(maxlen, maxken)
 		if self.output:
-			maxken = max(list(map(len, self.output.keys()))) 
+			maxken = max(list(map(len, self.output.keys())))
 			maxlen = max(maxlen, maxken)
 
 		for key in sorted(self.input.keys()):
@@ -127,11 +127,11 @@ class Job (object):
 		Do some cleanup when job finished
 		"""
 		# have to touch the output directory so stat flushes and output files can be detected.
-		if self.succeed(): 
+		if self.succeed():
 			self.checkOutfiles()
 		if self.succeed():
 			self.export()
-			self.cache()	
+			self.cache()
 			self.proc.log ('Job #%s done!' % self.index, 'JOBDONE')
 			
 	def showError (self, lenfailed = 1):
@@ -181,7 +181,7 @@ class Job (object):
 		
 		with open (self.cachefile) as f:
 			sig    = f.read()
-			if not sig: 
+			if not sig:
 				self.proc.log ("Job #%s not cached because previous signature is empty." % (self.index), "debug", "CACHE_EMPTY_PREVSIG")
 				return False
 
@@ -309,7 +309,7 @@ class Job (object):
 			if self.proc.exhow in self.proc.EX_GZIP:
 				if path.isdir(out['data']) or out['type'] in self.proc.OUT_DIRTYPE:
 					exfile += '.tgz'
-					if not path.exists(exfile): 
+					if not path.exists(exfile):
 						self.proc.log ("Job not export-cached since exported file not exists: %s." % exfile, "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
 						return False
 					
@@ -321,7 +321,7 @@ class Job (object):
 					utils.untargz (exfile, out['data'])
 				else:
 					exfile += '.gz'
-					if not path.exists (exfile): 
+					if not path.exists (exfile):
 						self.proc.log ("Job not export-cached since exported file not exists: %s." % exfile, "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
 						return False
 					
@@ -333,7 +333,7 @@ class Job (object):
 			else:
 				if not path.exists (exfile):
 					self.proc.log ("Job not export-cached since exported file not exists: %s." % exfile, "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
-					return False	
+					return False
 				if utils.samefile (exfile, out['data']):
 					continue
 				if path.exists (out['data']) or path.islink(out['data']):
@@ -354,10 +354,10 @@ class Job (object):
 		"""
 		Truly cache the job (by signature)
 		"""
-		if not self.proc.cache: 
+		if not self.proc.cache:
 			return
 		sig  = self.signature()
-		if sig: 
+		if sig:
 			with open (self.cachefile, 'w') as f:
 				f.write (sig if not sig else json.dumps(sig))
 			
@@ -377,7 +377,7 @@ class Job (object):
 		"""
 		ret = {}
 		sig = utils.filesig (self.script)
-		if not sig: 
+		if not sig:
 			self.proc.log ('Job #%s: Empty signature because of script file: %s.' % (self.index, self.script), 'debug', 'CACHE_EMPTY_CURRSIG')
 			return ''
 		ret['script'] = sig
@@ -397,7 +397,7 @@ class Job (object):
 				ret['in'][self.proc.IN_VARTYPE[0]][key] = val['data']
 			elif val['type'] in self.proc.IN_FILETYPE:
 				sig = utils.filesig (val['data'])
-				if not sig: 
+				if not sig:
 					self.proc.log ('Job #%s: Empty signature because of input file: %s.' % (self.index, val['data']), 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
 				ret['in'][self.proc.IN_FILETYPE[0]][key] = sig
@@ -405,7 +405,7 @@ class Job (object):
 				ret['in'][self.proc.IN_FILESTYPE[0]][key] = []
 				for infile in sorted(val['data']):
 					sig = utils.filesig (infile)
-					if not sig: 
+					if not sig:
 						self.proc.log ('Job #%s: Empty signature because of one of input files: %s.' % (self.index, infile), 'debug', 'CACHE_EMPTY_CURRSIG')
 						return ''
 					ret['in'][self.proc.IN_FILESTYPE[0]][key].append (sig)
@@ -415,7 +415,7 @@ class Job (object):
 				ret['out'][self.proc.OUT_VARTYPE[0]][key] = val['data']
 			elif val['type'] in self.proc.OUT_FILETYPE:
 				sig = utils.filesig (val['data'])
-				if not sig: 
+				if not sig:
 					self.proc.log ('Job #%s: Empty signature because of output file: %s.' % (self.index, val['data']), 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
 				ret['out'][self.proc.OUT_FILETYPE[0]][key] = sig
@@ -436,11 +436,11 @@ class Job (object):
 			If val == -1000: the return code will be negative of current one. 0 will be '-0'
 		@returns:
 			The return code if `val` is `None`
-			If rcfile does not exist or is empty, return 9999, otherwise return -rc 
+			If rcfile does not exist or is empty, return 9999, otherwise return -rc
 			A negative rc (including -0) means output files not generated
 		"""
 		if val is None:
-			if not path.exists (self.rcfile): 
+			if not path.exists (self.rcfile):
 				return -1
 			
 			with open (self.rcfile) as f:
@@ -487,7 +487,7 @@ class Job (object):
 		"""
 		Export the output files
 		"""
-		if not self.proc.exdir: 
+		if not self.proc.exdir:
 			return
 			
 		assert path.exists(self.proc.exdir)
@@ -503,7 +503,7 @@ class Job (object):
 		files2ex = []
 		if not self.proc.expart or (len(self.proc.expart) == 1 and not self.proc.expart[0].render(self.data)):
 			for _, out in self.output.items():
-				if out['type'] in self.proc.OUT_VARTYPE: 
+				if out['type'] in self.proc.OUT_VARTYPE:
 					continue
 				files2ex.append (out['data'])
 		else:
@@ -582,7 +582,7 @@ class Job (object):
 		
 		if listdir (self.outdir):
 			if retry is None:
-				utils.safeRemove(self.outdir)	
+				utils.safeRemove(self.outdir)
 			else:
 				utils.safeMove(self.outdir, path.join(retrydir, path.basename(self.outdir)))
 			makedirs(self.outdir)
@@ -606,7 +606,7 @@ class Job (object):
 		basename = path.basename (orgfile)
 		infile   = path.join (self.indir, basename)
 		linked   = utils.safeLink(orgfile, infile, overwrite = False)
-		if linked or utils.samefile(infile, orgfile): 
+		if linked or utils.samefile(infile, orgfile):
 			return infile
 
 		(fn, ext) = path.splitext(basename)
@@ -762,7 +762,7 @@ class Job (object):
 		
 		output = self.proc.output
 		# has to be OrderedDict
-		assert isinstance(output, dict) 
+		assert isinstance(output, dict)
 		# allow empty output
 		if not output: return
 		
@@ -780,7 +780,7 @@ class Job (object):
 				self.output[key]['data'] = path.join(self.outdir, outdata)
 				self.data['out'][key]    = path.join(self.outdir, outdata)
 	
-	def _prepScript (self): 
+	def _prepScript (self):
 		"""
 		Build the script, interpret the placeholders
 		"""

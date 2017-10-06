@@ -12,7 +12,7 @@ class Channel (list):
 	"""
 	The channen class, extended from `list`
 	"""
-	
+
 	@staticmethod
 	def create(l = None):
 		"""
@@ -59,7 +59,7 @@ class Channel (list):
 			key = str
 		elif sortby == 'mtime':
 			key = path.getmtime
-		elif sortby == 'size':	
+		elif sortby == 'size':
 			key = path.getsize
 		ret = Channel.create(sorted(glob(pattern), key=key, reverse=reverse))
 		if t == 'link':
@@ -171,11 +171,11 @@ class Channel (list):
 		if isinstance(tu, string_types):
 			tu = (tu, )
 		else:
-			try: 
+			try:
 				iter(tu)
-			except Exception:	
+			except Exception:
 				tu = (tu, )
-		return (tu, ) if isinstance(tu, list) else tuple (tu) 
+		return (tu, ) if isinstance(tu, list) else tuple (tu)
 		
 	
 	def expand(self, col = 0, pattern = "*", t = 'any', sortby = 'name', reverse=False):
@@ -330,7 +330,7 @@ class Channel (list):
 		"""
 		width = self.width()
 		rows2 = [s for s in self]
-		for row in rows: 
+		for row in rows:
 			if isinstance(row, Channel):
 				if row.width() == 1:
 					rows2.extend([r * max(width, 1) for r in row])
@@ -434,7 +434,7 @@ class Channel (list):
 		a1	a2
 		a3	a4
 		b1	b2
-		b3	b4		
+		b3	b4
 		```
 		@params:
 			`n`: the size of the chunk
@@ -500,7 +500,7 @@ class Channel (list):
 				raise ValueError('Cannot attach column to "%s" as it is already a property of Channel.' % name)
 			setattr(self, name, self.colAt(i).flatten() if flatten else self.colAt(i))
 	
-	def flatten (self, col = None): 
+	def flatten (self, col = None):
 		"""
 		Convert a single-column Channel to a list (remove the tuple signs)
 		`[(a,), (b,)]` to `[a, b]`

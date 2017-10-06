@@ -2,7 +2,7 @@
 # A runner wrapper for a single script
 # Version: 0.0.1
 # Author: pwwang@pwwang.com
-# Examples: 
+# Examples:
 #	@see runner.unittest.py
 """
 

@@ -3,8 +3,6 @@ from time import sleep
 
 from .runner import Runner
 
-from ..job import Job
-
 lock = Lock()
 
 class RunnerQueue (Runner):
@@ -17,7 +15,7 @@ class RunnerQueue (Runner):
 	"""
 	
 	maxsubmit = int (cpu_count()/2)
-	interval  = 30 
+	interval  = 30
 	
 	def __init__ (self, job):
 		"""

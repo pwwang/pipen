@@ -45,7 +45,7 @@ class RunnerSlurm (RunnerQueue):
 			cmdPrefix = conf['cmdPrefix']
 		
 		if not 'slurm.J' in conf:
-			slurmsrc.append('#SBATCH -J %s' % self.jobname) 
+			slurmsrc.append('#SBATCH -J %s' % self.jobname)
 		else:
 			self.jobname = conf['slurm.J']
 			slurmsrc.append('#SBATCH -J %s' % self.jobname)
@@ -113,6 +113,6 @@ class RunnerSlurm (RunnerQueue):
 		if not jobid: return False
 		try:
 			return jobid + ' ' in check_output([self.commands['squeue'], '-j', jobid]).split("\n")[1]
-		except:
+		except Exception:
 			return False
 

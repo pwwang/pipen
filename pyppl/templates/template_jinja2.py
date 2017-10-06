@@ -5,7 +5,7 @@ class TemplateJinja2 (Template):
 	"""
 	Jinja2 template wrapper
 	"""
-	
+
 	def __init__(self, source, **envs):
 		"""
 		Initiate the engine with source and envs

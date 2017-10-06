@@ -5,14 +5,14 @@ import logging, re, sys
 from box import Box
 
 # the entire format
-format = "[%(asctime)s]%(message)s"
+logfmt = "[%(asctime)s]%(message)s"
 # colors
 colors = Box({
 	'none'      : '',
 	'end'       : '\033[0m',
 	'bold'      : '\033[1m',
 	'underline' : '\033[4m',
-	
+
 	# regular colors
 	'black'     : '\033[30m',   'red'       : '\033[31m',	'green'     : '\033[32m',	'yellow'    : '\033[33m',
 	'blue'      : '\033[34m',   'magenta'   : '\033[35m',   'cyan'      : '\033[36m',   'white'     : '\033[37m',
@@ -117,7 +117,7 @@ def _getColorFromTheme (level, theme):
 	"""
 	Get colors from a them
 	@params:
-		`level`: Our own log record level 
+		`level`: Our own log record level
 		`theme`: The theme
 	@returns:
 		The colors
@@ -219,7 +219,7 @@ class pFormatter (logging.Formatter):
 	logging formatter for pyppl
 	"""
 	def __init__(self, fmt=None, theme='greenOnBlack'):
-		fmt = format if fmt is None else fmt
+		fmt = logfmt if fmt is None else fmt
 		logging.Formatter.__init__(self, fmt, "%Y-%m-%d %H:%M:%S")
 		self.theme  = theme
 		
@@ -242,10 +242,10 @@ class pFormatter (logging.Formatter):
 		
 		level = level[1:] if level.startswith('_') else level
 		level = level[:7]
-		record.msg = "[%s%7s%s] %s%s%s" % (colorLevelStart, level, colorLevelEnd, colorMsgStart, msg, colorMsgEnd)	
-		
+		record.msg = "[%s%7s%s] %s%s%s" % (colorLevelStart, level, colorLevelEnd, colorMsgStart, msg, colorMsgEnd)
+
 		return logging.Formatter.format(self, record)
-		
+
 
 def getLogger (levels='normal', theme=True, logfile=None, lvldiff=[], name='PyPPL'):
 	"""

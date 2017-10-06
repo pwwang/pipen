@@ -54,7 +54,7 @@ def varname (maxline = 20):
 	theclass  = stack[1][0].f_locals["self"].__class__.__name__
 	themethod = stack[1][0].f_code.co_name
 
-	srcfile   = stack[2][1] 
+	srcfile   = stack[2][1]
 	srclineno = stack[2][2]
 
 	with open(srcfile) as f:
@@ -77,7 +77,7 @@ def varname (maxline = 20):
 		if stopgroup: break
 
 	varname.index += 1
-	return 'var_%s' % (varname.index - 1) 
+	return 'var_%s' % (varname.index - 1)
 		
 varname.index = 0
 
@@ -114,7 +114,7 @@ def filter(func, vec):
 	"""
 	return list(moves.filter(func, vec))
 
-def split (s, delimter, trim = True, opens = ['(', '[', '{', '"', '\''], closes = [')', ']', '}', '"', '\'']):
+def split (s, delimter, trim = True):
 	"""
 	Split a string using a single-character delimter
 	@params:
@@ -165,7 +165,7 @@ def split (s, delimter, trim = True, opens = ['(', '[', '{', '"', '\''], closes 
 
 def dictUpdate(origDict, newDict):
 	"""
-	Update a dictionary recursively. 
+	Update a dictionary recursively.
 	@params:
 		`origDict`: The original dictionary
 		`newDict`:  The new dictionary
@@ -185,7 +185,7 @@ def dictUpdate(origDict, newDict):
 		if isinstance(v, list):
 			origDict[k] = [e for e in v]
 		elif isinstance(v, dict):
-			if k not in origDict: 
+			if k not in origDict:
 				origDict[k] = Box() if isinstance(v, Box) else {}
 			dictUpdate(origDict[k], newDict[k])
 		else:
@@ -258,7 +258,7 @@ def range (i, *args, **kwargs):
 
 def alwaysList (data):
 	"""
-	Convert a string or a list with element 
+	Convert a string or a list with element
 	@params:
 		`data`: the data to be converted
 	@examples:
@@ -275,9 +275,9 @@ def alwaysList (data):
 	elif isinstance(data, list):
 		ret = []
 		for d in data:
-			if ',' in d: 
+			if ',' in d:
 				ret += split(d, ',')
-			else: 
+			else:
 				ret.append (d)
 	else:
 		raise ValueError('Expect string or list to convert to list.')
@@ -354,7 +354,7 @@ def samefile (f1, f2, callback = None):
 		True if yes, otherwise False
 		If any of the path does not exist, return False
 	"""
-	if f1 == f2: 
+	if f1 == f2:
 		callback(True, f1, f2)
 		return
 		
@@ -485,7 +485,7 @@ def safeMoveWithLink(src, dst, overwrite = True):
 	
 def _safeCopy(src, dst, overwrite = True):
 	"""
-	Copy a file/dir 
+	Copy a file/dir
 	@params:
 		`src`: The source file
 		`dst`: The destination
@@ -529,7 +529,7 @@ def safeCopy(src, dst, overwrite = True):
 	
 def _safeLink(src, dst, overwrite = True):
 	"""
-	Symlink a file/dir 
+	Symlink a file/dir
 	@params:
 		`src`: The source file
 		`dst`: The destination
@@ -594,7 +594,7 @@ def targz (srcdir, tgzfile, overwrite = True):
 		tar.close()
 		chdir (cwd)
 		return True
-	else: 
+	else:
 		return False
 	
 def untargz (tgzfile, dstdir, overwrite = True):
@@ -672,15 +672,15 @@ def dirmtime (d):
 	mtime = 0
 	for root, dirs, files in walk(d):
 		m = path.getmtime (root) if path.exists(root) else 0
-		if m > mtime: 
+		if m > mtime:
 			mtime = m
 		for dr in dirs:
 			m = dirmtime (path.join (root, dr))
-			if m > mtime: 
+			if m > mtime:
 				mtime = m
 		for f in files:
 			m = path.getmtime (path.join (root, f)) if path.exists(path.join(root, f)) else 0
-			if m > mtime: 
+			if m > mtime:
 				mtime = m
 	return mtime
 
@@ -694,12 +694,12 @@ def filesig (fn):
 	"""
 	if fn == '': return ['', 0]
 	fname = path.realpath(fn)
-	if not path.exists (fname): 
+	if not path.exists (fname):
 		return False
 	mtime = dirmtime(fname) if path.isdir (fname) else path.getmtime(fname)
 	# not using fname, because we intend to allow links to replace the original file
 	# say in case of export using move
-	if not mtime: 
+	if not mtime:
 		return False
 	return [fn, int(mtime)]
 

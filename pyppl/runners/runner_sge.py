@@ -9,7 +9,7 @@ class RunnerSge (RunnerQueue):
 	"""
 	The sge runner
 	"""
-	
+
 	def __init__ (self, job):
 		"""
 		Constructor
@@ -36,7 +36,7 @@ class RunnerSge (RunnerQueue):
 			conf = copy.copy (self.job.proc.sgeRunner)
 
 		if not 'sge.N' in conf:
-			sgesrc.append('#$ -N %s' % self.jobname) 
+			sgesrc.append('#$ -N %s' % self.jobname)
 		else:
 			self.jobname = conf['sge.N']
 			sgesrc.append('#$ -N %s' % self.jobname)

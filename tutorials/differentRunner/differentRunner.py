@@ -13,8 +13,8 @@ pSort.sgeRunner = {
 pSort.forks   = 5
 pSort.exdir   = './export'
 pSort.script  = """
-  sort -k1r {{in.infile}} > {{out.outfile}} 
-""" 
+  sort -k1r {{in.infile}} > {{out.outfile}}
+"""
 
 PyPPL().start(pSort).run()
 # or run all process with sge runner:
@@ -22,7 +22,7 @@ PyPPL().start(pSort).run()
 # or:
 # PyPPL({
 #	'proc': {
-#		'runner': 'sge', 
+#		'runner': 'sge',
 #		'sgeRunner': {'sge.q': '1-day'}
 #	}
 # }).start(pSort).run()

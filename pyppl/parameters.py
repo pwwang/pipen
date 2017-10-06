@@ -1,9 +1,8 @@
 import sys
 import json
 from six import string_types
-from box import Box
 from six.moves import configparser
-from . import utils
+from box import Box
 
 class Parameter (object):
 	"""
@@ -25,7 +24,7 @@ class Parameter (object):
 			'value'   : value if not isinstance(value, string_types) else str(value)
 		}
 		self.setType(type(self.value))
-	
+
 	def __setattr__(self, name, value):
 		getattr(self, 'set' + name[0].upper() + name[1:])(value)
 	
@@ -242,7 +241,7 @@ class Parameters (object):
 						while j < len(args) and not args[j].startswith(self._props['prefix']):
 							val.value.append (args[j])
 							j += 1
-						i = j 
+						i = j
 					else:
 						if arg:
 							val.value = arg[0]
@@ -274,8 +273,8 @@ class Parameters (object):
 				try:
 					val._forceType()
 				except TypeError:
-					sys.stderr.write('ERROR: Cannot coerce "{}" to {} for option: {}' % (val.value, val.type, karg))
-		return self				
+					sys.stderr.write('ERROR: Cannot coerce "{}" to {} for option: {}'.format(val.value, val.type, karg))
+		return self
 		
 	def help (self):
 		"""
@@ -361,7 +360,7 @@ class Parameters (object):
 			if not prop in ['desc', 'required', 'show', 'type']:
 				raise ValueError('Unknown property "{}" for option: {}'.format(prop, k))
 			
-			setattr (self._props['params'][k], prop, val)	
+			setattr (self._props['params'][k], prop, val)
 		return self
 		
 	def loadFile (self, cfgfile, show = False):
@@ -376,7 +375,7 @@ class Parameters (object):
 				- Default: False (don't show parameter from config file in help page)
 				- It'll be overwritten by the `show` property inside the config file.
 		"""
-		config = {} 
+		config = {}
 		if cfgfile.endswith('.json'):
 			with open(cfgfile) as f:
 				config = json.load (f)

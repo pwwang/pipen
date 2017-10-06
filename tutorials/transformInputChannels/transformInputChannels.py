@@ -7,8 +7,8 @@ pSort.input  = {"infile:file": Channel.fromPattern("./data/*.txt")}
 pSort.output = "outfile:file:{{in.infile | fn}}.sorted"
 pSort.forks  = 5
 pSort.script = """
-  sort -k1r {{in.infile}} > {{out.outfile}} 
-""" 
+  sort -k1r {{in.infile}} > {{out.outfile}}
+"""
 
 pAddPrefix         = Proc(desc = 'Add line number to each line.')
 pAddPrefix.depends = pSort
@@ -17,7 +17,7 @@ pAddPrefix.output  = "outfile:file:{{in.infile | fn}}.ln"
 pAddPrefix.forks   = 5
 pAddPrefix.script  = """
 paste -d. <(seq 1 $(wc -l {{in.infile}} | cut -f1 -d' ')) {{in.infile}} > {{out.outfile}}
-""" 
+"""
 
 pMergeFiles = Proc(desc = 'Merge files, each as a column.')
 pMergeFiles.depends = pAddPrefix
