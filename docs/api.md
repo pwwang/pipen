@@ -731,12 +731,9 @@ Calculate the signature of the job based on the input/output and the script
 - **returns:**  
 The signature of the job  
   
-#### `succeed (self, ignore) `
+#### `succeed (self) `
   
-Tell if the job is successful by return code  
-
-- **params:**  
-`ignore`: Whether use proc.errhow. If proc.errhow == 'ignore', anyway return True.  
+Tell if the job is successful by return code, and output file expectations.  
 
 - **returns:**  
 True if succeed else False  
@@ -757,7 +754,7 @@ True if succeed else False
 
 	
 
-#### `__init__ (self, *arg) `
+#### `__init__ (self, *arg, **kwargs) `
   
 Constructor  
 
@@ -796,7 +793,8 @@ Set property for procs
 - **params:**  
 propname: The property name  
 propval:  The property value  
-procs:    The ids of the procs to set  
+procs:    The ids of the procs to set. Default: None (all procs)  
+- if propname == 'input', it defaults to 'starts'  
   
 
 ## Module `Flowchart`  
@@ -977,6 +975,7 @@ Load parameters from a dict
 `dictVar`: The dict variable.  
 - Properties are set by "<param>.required", "<param>.show", ...  
 `show`:    Whether these parameters should be shown in help information  
+- Default: False (don't show parameter from config object in help page)  
 - It'll be overwritten by the `show` property inside dict variable.  
 - If it is None, will inherit the param's show value  
   
@@ -990,6 +989,7 @@ For config file other than json, a section name is needed, whatever it is.
 - **params:**  
 `cfgfile`: The config file  
 `show`:    Whether these parameters should be shown in help information  
+- Default: False (don't show parameter from config file in help page)  
 - It'll be overwritten by the `show` property inside the config file.  
   
 #### `parse (self) `
@@ -1394,7 +1394,7 @@ Tell whether two paths pointing to the same file under locks
 True if yes, otherwise False  
 If any of the path does not exist, return False  
   
-#### `split (s, delimter, trim, opens, closes) `
+#### `split (s, delimter, trim) `
   
 Split a string using a single-character delimter  
 
@@ -1451,9 +1451,12 @@ Do a "tar zxf"-like for .tgz file
 `tgzfile`:  the .tgz file  
 `dstdir`: which directory to extract the file to  
   
-#### `varname () `
+#### `varname (maxline) `
   
 Get the variable name for ini  
+
+- **params:**  
+`maxline`: The max number of lines to retrive. Default: 20  
 
 - **returns:**  
 The variable name  

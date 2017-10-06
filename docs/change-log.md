@@ -1,5 +1,20 @@
 # Change log
 
+## Oct 6, 2017: 0.9.1
+- Fix issues reported by codacy
+- Fix an issue checking whether output files generated
+- Deepcopy args and tplenvs when copy a process
+- Refer relative path in p.script (with "file:" prefix) where p.script is defined
+- Fix a utils.dictUpdate bug
+- Template function 'Rlist' now can deal with python list
+- Add log for export using move method (previously missed)
+- Allow Aggr instance to set input directly
+- Switch default showing of parameters loaded from object or file to False
+- Optimize utils.varname
+- Add warning if more input data columns than number of input keys
+- Fix output channel key sequence does not keep
+- Use object id instead of name as key for PyPPL nexts/paths in case tag is set in pipeline configrations
+
 ## Sept 22, 2017: 0.9.0
 - Change class name with first letter capitalized
 - Add resuming from processes (#20)
