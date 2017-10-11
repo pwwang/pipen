@@ -482,6 +482,7 @@ class TestProc (unittest.TestCase):
 			'errhow': 'terminate', 
 			'lang': 'bash', 
 			'exdir': '', 
+			'profile': '',
 			'procvars': {}, 
 			'sets': ['args'], 
 			'errntry': 3

@@ -3,7 +3,8 @@ import path, unittest
 from contextlib import contextmanager
 from six import StringIO
 
-from pyppl import Proc, Aggr, utils
+from pyppl import Proc, Aggr, utils, Channel, Box
+from pyppl.aggr import _Proxy
 
 @contextmanager
 def captured_output():
@@ -32,38 +33,109 @@ class TestAggr (unittest.TestCase):
 		self.assertEqual(b.starts, [])
 		self.assertEqual(b.ends, [])
 
-		self.assertRaises(AttributeError, Aggr, p1.copy(newid = 'set'))
 		self.assertRaises(AttributeError, Aggr, p1.copy(newid = 'id'))
 		self.assertRaises(AttributeError, Aggr, p1.copy(newid = 'starts'))
 		self.assertRaises(AttributeError, Aggr, p1.copy(newid = 'ends'))
-		self.assertRaises(AttributeError, Aggr, p1.copy(newid = 'procs'))
+		self.assertRaises(AttributeError, Aggr, p1.copy(newid = 'delegate'))
 		self.assertRaises(AttributeError, Aggr, p1.copy(newid = 'addProc'))
 		self.assertRaises(AttributeError, Aggr, p1.copy(newid = 'copy'))
+
+	def testProxy(self):
+		a = Aggr()
+		p = _Proxy(a, 'args', 'a')
+		self.assertIsInstance(a, Aggr)
+		self.assertIsInstance(p, _Proxy)
+		p.addsub('b')
+		self.assertEqual(p.__dict__['_names'], ['a', 'b'])
+		self.assertRaises(AttributeError, p.__setattr__, 'x', 1)
+		p.a = 1
+		p.b = 2
+
+	def testGetAttr(self):
+		p = Proc()
+		a = Aggr(p)
+		a.delegate('args.x')
+		a.delegate('args.y')
+		self.assertEqual(a.starts, [a.p])
+		self.assertEqual(a.ends, [a.p])
+		self.assertEqual(a.id, 'a')
+		self.assertIsInstance(a.args, _Proxy)
+		self.assertEqual(a.args._names, ['x', 'y'])
+		self.assertIsInstance(a.p, Proc)
+		self.assertIsNot(a.p, p)
+		self.assertEqual(a._procs, {'p': a.p})
+
+	def testDelegate(self):
+		p1 = Proc()
+		p2 = Proc()
+		a = Aggr(p1, p2)
+		self.assertRaises(AttributeError, a.delegate, 'starts')
+		self.assertRaises(AttributeError, a.delegate, 'x.a.b')
+		self.assertRaises(AttributeError, a.delegate, 'id.b')
+		self.assertRaises(AttributeError, a.delegate, 'args.*', None, 'x.*')
+		
+		
+
+		a.delegate('a')
+		a.delegate('b', 'starts')
+		a.delegate('c', 'ends')
+		a.delegate('d', 'both')
+		a.delegate('a', 'p1', 'args.x') # overwrite
+		a.delegate('tplenvs.a', pattr = 'desc')
+		a.delegate('args.*')
+		self.assertEqual(a._delegates, {
+			'a': ('p1', 'args.x'),
+			'args.*': (None, 'args.*'),
+			'b': ('starts', 'b'),
+			'c': ('ends', 'c'),
+			'd': ('both', 'd'),
+			'depends': ('starts', 'depends'),
+			'depends2': ('starts', 'depends2'),
+			'exdir': ('ends', 'exdir'),
+			'exhow': ('ends', 'exhow'),
+			'exow': ('ends', 'exow'),
+			'expart': ('ends', 'expart'),
+			'input': ('starts', 'input'),
+			'tplenvs.a': (None, 'desc')
+		})
 
 	def testSet(self):
 		p1 = Proc()
 		p2 = Proc()
 		a = Aggr(p1, p2)
-		a.set('forks', 20)
+		a.forks = 20
 		self.assertEqual(a.p1.forks, 20)
 		self.assertEqual(a.p2.forks, 20)
-		a.set('errhow', 'retry', 'p2')
+		a.delegate('errhow', 'p2')
+		a.errhow = 'retry'
 		self.assertEqual(a.p2.errhow, 'retry')
 		self.assertEqual(a.p1.errhow, 'terminate')
-		a.set('args', {'a': 2})
+		a.delegate('args.*')
+		a.args.a = 2
 		self.assertEqual(a.p1.args, {'a':2})
 		self.assertEqual(a.p2.args, {'a':2})
-		a.set('args.a', 1)
+		a.args.a = 1
 		self.assertEqual(a.p1.args, {'a':1})
 		self.assertEqual(a.p2.args, {'a':1})
-		a.set('tplenvs.x', 1)
+		a.delegate('tplenvs.*')
+		a.tplenvs.x = 1
 		self.assertEqual(a.p1.tplenvs, {'x':1})
 		self.assertEqual(a.p2.tplenvs, {'x':1})
+				
+		a.p1.tplenvs.b = Box()
+		a.delegate('tb', 'starts', 'tplenvs.b.c')
+		a.tb = 'h'
+		self.assertEqual(a.p1.tplenvs, {'x':1, 'b': {
+			'c': 'h'
+		}})
 
-		a.set('forks', 10, 'starts')
+
+		a.delegate('forks', 'starts')
+		a.forks = 10
 		self.assertEqual(a.p1.forks, 10)
 		self.assertEqual(a.p2.forks, 20)
-		a.set('forks', 5, 'ends')
+		a.delegate('forks', 'ends')
+		a.forks = 5
 		self.assertEqual(a.p1.forks, 10)
 		self.assertEqual(a.p2.forks, 5)
 
@@ -74,18 +146,18 @@ class TestAggr (unittest.TestCase):
 		p1.input = "in1, in2"
 		p2.input = "in1, in2"
 		a = Aggr(p1, p2, p3)
-		a.starts = [p1, p2]
+		a.starts = [a.p1, a.p2]
 		a.p2.depends = []
 
-		a.set('input', [lambda x: x]*2)
+		a.input = [lambda x: x]*2
 		self.assertTrue(callable(a.p1.config['input']['in1, in2']))
 		self.assertTrue(callable(a.p2.config['input']['in1, in2']))
 
-		self.assertRaises(TypeError, a.set, 'input', [1])
 		a.p1.input = "in1, in2"
 		a.p2.input = "in1, in2"
-		a.set('input', [(1,'a', 3, 'c'), (2, 'b', 4, 'd')])
-
+		ch = Channel.create([(1,'a', 3, 'c'), (2, 'b', 4, 'd')])
+		a.input = [ch.slice(0, 2), ch.slice(2)]
+		
 		self.assertEqual(a.p1.config['input']['in1, in2'], [(1, 'a'), (2, 'b')])
 		self.assertEqual(a.p2.config['input']['in1, in2'], [(3, 'c'), (4, 'd')])
 
@@ -101,10 +173,10 @@ class TestAggr (unittest.TestCase):
 		b.addProc(p3, where = 'starts')
 		c.addProc(p3, where = 'ends')
 		d.addProc(p3, where = 'both')
-		self.assertIn(a.p3, a.procs)
-		self.assertIn(b.p3, b.procs)
-		self.assertIn(c.p3, c.procs)
-		self.assertIn(d.p3, d.procs)
+		self.assertIn(a.p3, a.__dict__['_procs'].values())
+		self.assertIn(b.p3, b.__dict__['_procs'].values())
+		self.assertIn(c.p3, c.__dict__['_procs'].values())
+		self.assertIn(d.p3, d.__dict__['_procs'].values())
 		self.assertNotIn(a.p3, a.starts)
 		self.assertNotIn(a.p3, a.ends)
 		self.assertIn(b.p3, b.starts)
@@ -132,10 +204,6 @@ class TestAggr (unittest.TestCase):
 		a.p2.depends = p3
 		self.assertRaises(ValueError, a.copy, deps = True)
 
-
-
-
-		
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

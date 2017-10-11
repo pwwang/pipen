@@ -37,6 +37,7 @@ class Proc(object):
 		self.depends = []
 		self.exdir = ''
 		self.resume = ''
+		self.profile = ''
 		self.props = {
 			'resume': ''
 		}

@@ -1,8 +1,32 @@
 """
 The aggregation of procs
 """
+from collections import OrderedDict
 from .channel import Channel
 from . import utils
+
+class _Proxy(object):
+	"""
+	A proxy class to implement: 
+	```
+	a = Aggr()
+	a.arg.tool = 'bedtools' <=>
+	# for each process in a:
+	p.arg.tool = 'bedtools'
+	```
+	"""
+	def __init__(self, aggr, attr, names):
+		self.__dict__['_aggr']  = aggr
+		self.__dict__['_attr']  = attr
+		self.__dict__['_names'] = [names]
+
+	def addsub(self, sub):
+		self._names.append(sub)
+	
+	def __setattr__(self, name, value):
+		if '*' not in self.__dict__['_names'] and name not in self.__dict__['_names']:
+			raise AttributeError('%s.%s is not delegated.' % (self.__dict__['_attr'], name))
+		setattr(self.__dict__['_aggr'], "%s.%s" % (self.__dict__['_attr'], name), value)
 
 class Aggr (object):
 	"""
@@ -20,91 +44,149 @@ class Aggr (object):
 
 	"""
 
-	# aggr (p1, p2, p3, ..., depends = True)
-	def __init__ (self, *arg, **kwargs):
+	def __init__ (self, *args, **kwargs):
 		"""
 		Constructor
 		@params:
-			`arg`: the set of processes
+			`args`: the set of processes
+			`depends`: Whether auto deduce depends. Default: True
+			`id`: The id of the aggr. Default: None (the variable name)
+			`tag`: The tag of the processes. Default: None (a unique 4-char str according to the id)
 		"""
-		self.starts = []
-		self.ends   = []
-		self.id     = utils.varname()
+
+		# depends = True, id = None, tag = None
+		self.__dict__['_props'] = {
+			'starts'   : [],
+			'ends'     : [],
+			'id'       : utils.varname() if 'id' not in kwargs or not kwargs['id'] else kwargs['id']
+		}
+		self.__dict__['_proxies']   = {}
+		self.__dict__['_delegates'] = {}
+		self.__dict__['_procs']     = OrderedDict()
+		tag = utils.uid(self.id, 4) if 'tag' not in kwargs or not kwargs['tag'] else kwargs['tag']
 		
-		arg     = list(arg)
-		depends = True if not 'depends' in kwargs else kwargs['depends']
-		
-		self.procs = []
-		for proc in arg:
-			pid                = proc.id
-			if hasattr(self, pid):
+		for proc in args:
+			pid = proc.id
+			if pid in ['starts', 'ends', 'id'] or pid in self.__dict__['_procs'] or hasattr(self, pid):
 				raise AttributeError('%s is an attribute of Aggr, use a different process id.' % pid)
-			newproc            = proc.copy(tag = utils.uid(self.id, 4), newid = pid)
-			newproc.aggr       = self.id
-			self.__dict__[pid] = newproc
-			self.procs.append (newproc)
+			newproc      = proc.copy(tag = tag, newid = pid)
+			newproc.aggr = self.id
+			self.__dict__['_procs'][pid] = newproc
 		
-		if depends:
-			self.starts = [self.procs[0]] if len(self.procs) > 0 else []
-			self.ends   = [self.procs[-1]] if len(self.procs) > 0 else []
-			for i, proc in enumerate(self.procs):
-				if i == 0:
-					continue
-				proc.depends = self.procs[i-1]
-				
-	def set (self, propname, propval, procs = None):
-		"""
-		Set property for procs
-		@params:
-			propname: The property name
-			propval:  The property value
-			procs:    The ids of the procs to set. Default: None (all procs)
-				- if propname == 'input', it defaults to 'starts'
-		"""
-		dot2dictargs = lambda name, val: val if '.' not in name else {name.split('.')[-1]: val}
+		if 'depends' not in kwargs or kwargs['depends']:
+			procs = list(self.__dict__['_procs'].values())
+			self.starts = [procs[0]] if len(procs) > 0 else []
+			self.ends   = [procs[-1]] if len(procs) > 0 else []
+			for i, proc in enumerate(procs):
+				if i == 0: continue
+				proc.depends = procs[i-1]
+		
+		# depends respectively: 
+		# For example: 
+		# a.starts  == [ps1, ps2, ps3]
+		# a.depends2 = pd1, pd2, pd3 => 
+		# 	a.ps1.depends = pd1
+		# 	a.ps2.depends = pd2
+		# 	a.ps3.depends = pd3
+		# a.depends = pd1, pd2, pd3 =>
+		# 	a.ps1.depends = pd1, pd2, pd3
+		# 	a.ps2.depends = pd1, pd2, pd3
+		# 	a.ps3.depends = pd1, pd2, pd3
+		self.delegate('depends2', 'starts')
+		self.delegate('depends' , 'starts')
+		self.delegate('input'   , 'starts')
+		self.delegate('exdir'   , 'ends')
+		self.delegate('exhow'   , 'ends')
+		self.delegate('exow'    , 'ends')
+		self.delegate('expart'  , 'ends')
 
-		if propname == 'input' and procs is None:
-			procs = 'starts'
-		if procs is None:
-			procs = [p.id for p in self.procs]
-		elif procs == 'starts':
-			procs = [p.id for p in self.starts]
-		elif procs == 'ends':
-			procs = [p.id for p in self.ends]
-		else:
-			procs = utils.alwaysList (procs)
-		
-		procs = [self.__dict__[pid] for pid in procs]
-		if propname == 'input':
-			# callback for each process
-			if all([callable(pv) for pv in propval]):
-				for i, proc in enumerate(procs):
-					proc.input = propval[i]
+	def delegate(self, attr, procs = None, pattr = None):
+		"""
+		Delegate attributes of processes to aggr.
+		@params
+			`attr` : The attribute of the aggregation
+			`procs`: The ids of the processes. Default: None (all processes)
+			`pattr`: The attr of the processes. Default: None (same as `attr`)
+		"""
+		if attr in self.__dict__['_props'] or attr in self.__dict__['_procs']:
+			raise AttributeError('Cannot delegate process attribute to an existing Aggr attribute: %s.' % attr)
+
+		if pattr is None: pattr = attr
+		if '.' in attr:
+			if attr.count('.') > 1: 
+				raise AttributeError('Cannot delegate process attribute to a "2-dot" Aggr attribute: %s' % attr)
+			attrname, attrsubs = attr.split('.')
+			if attrname in self.__dict__['_props'] or attrname in self.__dict__['_procs']:
+				raise AttributeError('Cannot delegate process attribute to an existing Aggr attribute: %s.' % attrname)
+			if pattr != attr and (attrsubs == '*' or pattr.endswith('.*')):
+				raise AttributeError('Cannot delegate different process attribute to Aggr attribute: %s -> %s.' % (pattr, attr))
+			if not attrname in self.__dict__['_proxies']:
+				self.__dict__['_proxies'][attrname] = _Proxy(self, attrname, attrsubs)
 			else:
-				if not isinstance(propval, Channel):
-					propval = Channel.create(propval)
+				self.__dict__['_proxies'][attrname].addsub(attrsubs)
+		self.__dict__['_delegates'][attr] = procs, pattr
 
-				idx = 0
-				for proc in procs:
-					procinput = proc.config['input']
-					# Issue: cannot assure the order of keys, unless procinput is an OrderedDict
-					if isinstance(procinput, dict):
-						raise TypeError('Expect orginal input as string or list rather than dict. Please specify input for each process separately.')
-					inkeys     = utils.alwaysList(procinput)
-					inlen      = len(inkeys)
-					proc.input = ', '.join(inkeys)
-					proc.input = propval.slice(idx, inlen)
-					idx += inlen
-		else:
-			for proc in procs:
-				if propname.startswith('args'):
-					utils.dictUpdate (proc.args, dot2dictargs(propname, propval))
-				elif propname.startswith('tplenvs'):
-					utils.dictUpdate (proc.tplenvs, dot2dictargs(propname, propval))
+	def __getattr__(self, name):
+		if name not in self.__dict__['_props'] and   \
+		   name not in self.__dict__['_proxies'] and \
+		   name not in self.__dict__['_procs']:
+			raise AttributeError('No such attribute: %s' % name)
+		return self.__dict__['_props'][name]   if name in self.__dict__['_props'] else   \
+			   self.__dict__['_proxies'][name] if name in self.__dict__['_proxies'] else \
+			   self.__dict__['_procs'][name]
+
+	def __setattr__(self, name, value):
+		if name == 'id':
+			self.__dict__['_procs'][name] = value
+			self.aggr = name
+		elif name in ['starts', 'ends']:
+			self.__dict__['_props'][name] = value
+		elif name in self.__dict__:
+			raise AttributeError('Attribute %s is not allowed to be modified.' % name)
+		elif name in self.__dict__['_delegates']:
+			procs, attr = self.__dict__['_delegates'][name]
+			if procs is None:
+				procs = self.procs
+			elif procs == 'starts':
+				procs = self.starts
+			elif procs == 'ends':
+				procs = self.ends
+			elif procs == 'both':
+				procs = list(set(self.starts + self.ends))
+			else:
+				procs = [self.__dict__['_procs'][pid] for pid in utils.alwaysList(procs)]
+
+			for i, proc in enumerate(procs):
+				if name == 'depends2' and i < len(value):
+					proc.depends = value[i]
+				elif name == 'input' and i < len(value):
+					proc.input   = value[i]
+				elif '.' not in attr:
+					setattr(proc, attr, value)
 				else:
-					setattr(proc, propname, propval)
+					if attr.endswith('.*'): 
+						attr = attr[:-2] + name.split('.')[-1]
+					parts = attr.split('.')
+					newv  = {parts.pop(-1): value}
+					oldv  = proc
+					while parts:
+						key  = parts.pop(0)
+						oldv = getattr(oldv, key)
+					utils.dictUpdate(oldv, newv)
+		else:
+			for _, proc in self.__dict__['_procs'].items():
+				if '.' not in name:
+					setattr(proc, name, value)
+				else:
+					parts = name.split('.')
+					newv  = {parts.pop(-1): value}
+					oldv  = proc
+					while parts:
+						key  = parts.pop(0)
+						oldv = getattr(oldv, key)
+					utils.dictUpdate(oldv, newv)
 	
-	def addProc (self, p, where = None):
+	def addProc (self, p, tag = None, where = None):
 		"""
 		Add a process to the aggregation.
 		Note that you have to adjust the dependencies after you add processes.
@@ -114,17 +196,19 @@ class Aggr (object):
 		@returns:
 			the aggregation itself
 		"""
-		newproc = p.copy(tag = utils.uid(self.id, 4), newid = p.id)
+		if tag is not None:
+			tag = utils.uid(self.id, 4) if not self.__dict__['_procs'] else list(self.__dict__['_procs'].values())[0].tag
+
+		newproc = p.copy(tag = tag, newid = p.id)
 		newproc.aggr = self.id
-		self.procs.append (newproc)
+		self.__dict__['_procs'][newproc.id] = newproc
 		if where == 'starts' or where == 'both':
 			self.starts.append (newproc)
 		if where == 'ends' or where == 'both':
 			self.ends.append (newproc)
-		self.__dict__[p.id] = newproc
 		return self
 		
-	def copy (self, tag='notag', deps=True, newid=None):
+	def copy (self, tag=None, deps=True, newid=None):
 		"""
 		Like `proc`'s `copy` function, copy an aggregation. Each processes will be copied.
 		@params:
@@ -135,19 +219,18 @@ class Aggr (object):
 		@returns:
 			The new aggregation
 		"""
-		name     = utils.varname() if newid is None else newid
-		tagstr   = utils.uid(name, 4) if not tag or tag == 'notag' else tag
-		ret      = Aggr ()
-		ret.id   = name
+		name = utils.varname() if newid is None else newid
+		tag  = utils.uid(name, 4) if not tag else tag
+		ret  = Aggr (id = name)
 		
-		for proc in self.procs:
+		for _, proc in self.__dict__['_procs'].items():
 			if tag == proc.tag:
 				# This will happen to have procs with same id and tag
 				raise ValueError('Tag "%s" is used by proc "%s" before, cannot copy with the same tag for aggregation: %s.' % (tag, proc.id, self.id))
 			
 			if proc not in self.starts and deps:
 				for d in proc.depends:
-					if d not in self.procs:
+					if d not in self.__dict__['_procs'].values():
 						raise ValueError('Failed to copy "%s": a non-start proc ("%s") depends on a proc("%s") does not belong to "%s"' % (self.id, proc.name(), d.name(), self.id))					
 			
 			newproc      = proc.copy (tag, proc.id)
@@ -159,18 +242,13 @@ class Aggr (object):
 				else 'ends' if proc in self.ends \
 				else None
 			
-			ret.addProc (newproc, where = where)
+			ret.addProc (newproc, tag = tag, where = where)
 		
-		ret.set ('tag', tagstr)
 		# copy dependences
-		for proc in self.procs:
-			if proc in self.starts:
-				continue
-			
-			ret.__dict__[proc.id].depends = [ret.__dict__[d.id] for d in proc.depends]
+		if deps:
+			for _, proc in ret.__dict__['_procs'].items():
+				if proc in ret.starts: continue
+				proc.depends = [ret.__dict__['_procs'][p.id] for p in self.__dict__['_procs'][proc.id].depends]
 
 		return ret
-		
-	
-
 		
