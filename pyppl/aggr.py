@@ -140,7 +140,7 @@ class Aggr (object):
 			self.__dict__['_procs'][name] = value
 			self.aggr = name
 		elif name in ['starts', 'ends']:
-			self.__dict__['_props'][name] = value
+			self.__dict__['_props'][name] = list(value) if isinstance(value, tuple) or isinstance(value, list) else [value]
 		elif name in self.__dict__:
 			raise AttributeError('Attribute %s is not allowed to be modified.' % name)
 		elif name in self.__dict__['_delegates']:
@@ -157,10 +157,10 @@ class Aggr (object):
 				procs = [self.__dict__['_procs'][pid] for pid in utils.alwaysList(procs)]
 
 			for i, proc in enumerate(procs):
-				if name == 'depends2' and i < len(value):
-					proc.depends = value[i]
-				elif name == 'input' and i < len(value):
-					proc.input   = value[i]
+				if name == 'depends2':
+					if i < len(value): proc.depends = value[i]
+				elif name == 'input':
+					if i < len(value): proc.input   = value[i]
 				elif '.' not in attr:
 					setattr(proc, attr, value)
 				else:
