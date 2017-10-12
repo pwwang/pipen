@@ -145,7 +145,7 @@ class Flowchart(object):
 			`node1`: The first node.
 			`node2`: The second node.
 		"""
-		if [node1, node2] not in self.links:
+		if (node1, node2) not in self.links:
 			self.links.append((node1, node2))
 
 	def _dotnodes(self):

@@ -1274,6 +1274,7 @@ class PyPPL (object):
 		"""
 		import ctypes
 		nexts, ends, paths = self._procRelations()
+
 		dot = dot if dot else self.fcconfig['dot']
 		fc  = Flowchart(dotfile = dotfile, fcfile = fcfile, dot = dot)
 		fc.setTheme(self.fcconfig['theme'])
@@ -1284,17 +1285,12 @@ class PyPPL (object):
 		for end in self.ends:
 			fc.addNode(end, 'end')
 			for ps in paths[id(end)]:
-				for p in ps: fc.addNode(p)
-		
-		for key, val in nexts.items():
-			proc = ctypes.cast(key, ctypes.py_object).value
-			name = proc.name(False)
-			if '.' not in name:
-				name += '.notag'
-			node = self._any2procs(name)[0]
-			for v in val:
-				fc.addLink(node, v)
-		
+				for p in ps: 
+					fc.addNode(p)
+					nextps = nexts[id(p)]
+					if not nextps: continue
+					for np in nextps: fc.addLink(p, np)
+
 		fc.generate()
 		logger.logger.info ('[   INFO] DOT file saved to: %s' % fc.dotfile)
 		logger.logger.info ('[   INFO] Flowchart file saved to: %s' % fc.dotfile)
