@@ -500,6 +500,16 @@ class Channel (list):
 				raise ValueError('Cannot attach column to "%s" as it is already a property of Channel.' % name)
 			setattr(self, name, self.colAt(i).flatten() if flatten else self.colAt(i))
 	
+	def get(self, idx = 0):
+		"""
+		Get the element of a flattened channel
+		@params:
+			`idx`: The index of the element to get. Default: 0
+		@return:
+			The element
+		"""
+		return self.flatten()[idx]
+
 	def flatten (self, col = None):
 		"""
 		Convert a single-column Channel to a list (remove the tuple signs)

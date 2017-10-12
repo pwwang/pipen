@@ -42,17 +42,23 @@ class ProcessEx (Process):
 			if ex:
 				raise ex
 
-def varname (maxline = 20):
+def varname (maxline = 20, incldot = False):
 	"""
 	Get the variable name for ini
 	@params:
 		`maxline`: The max number of lines to retrive. Default: 20
+		`incldot`: Whether include dot in the variable name. Default: False
 	@returns:
 		The variable name
 	"""
 	stack     = inspect.stack()
-	theclass  = stack[1][0].f_locals["self"].__class__.__name__
-	themethod = stack[1][0].f_code.co_name
+	
+	if 'self' in stack[1][0].f_locals:
+		theclass  = stack[1][0].f_locals["self"].__class__.__name__
+		themethod = stack[1][0].f_code.co_name
+	else:
+		theclass  = stack[1][0].f_code.co_name
+		themethod = ''
 
 	srcfile   = stack[2][1]
 	srclineno = stack[2][2]
@@ -60,14 +66,15 @@ def varname (maxline = 20):
 	with open(srcfile) as f:
 		srcs   = list(reversed(f.readlines()[max(0, srclineno-maxline): srclineno]))
 
-	if themethod == 'copy':
-		#            var             = pp          .copy    (
-		re_hit  = r'([A-Za-z_]\w*)\s*=\s*([A-Za-z_]\w*\.)+copy\s*\('
+	re_var = r'([A-Za-z_][\w.]*)' if incldot else r'([A-Za-z_]\w*)'
+	if themethod and themethod != '__init__':
+		#            var =     pp          .copy    (
+		re_hit  = r'%s\s*=\s*([A-Za-z_]\w*\.)+%s\s*\(' % (re_var, themethod)
 		#           pp.copy    (
-		re_stop = r'([A-Za-z_]\w*\.)+copy\s*\('
+		re_stop = r'([A-Za-z_]\w*\.)+%s\s*\(' % themethod
 	else:
-		#            var             =   
-		re_hit  = r'([A-Za-z_]\w*)\s*=\s*([A-Za-z_]\w*\.)*%s\s*\(' % theclass
+		#           var  =
+		re_hit  = r'%s\s*=\s*([A-Za-z_]\w*\.)*%s\s*\(' % (re_var, theclass)
 		re_stop = r'([A-Za-z_]\w*\.)*%s\s*\(' % theclass
 	
 	for src in srcs:

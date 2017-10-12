@@ -500,6 +500,16 @@ Create a Channel from a path pattern
 - **returns:**  
 The Channel created from the path  
   
+#### `get (self, idx) `
+  
+Get the element of a flattened channel  
+
+- **params:**  
+`idx`: The index of the element to get. Default: 0  
+
+- **return:**  
+The element  
+  
 #### `insert (self, cidx, *cols) `
   
 Insert columns to a channel  
@@ -764,14 +774,17 @@ True if succeed else False
 
 	
 
-#### `__init__ (self, *arg, **kwargs) `
+#### `__init__ (self, *args, **kwargs) `
   
 Constructor  
 
 - **params:**  
-`arg`: the set of processes  
+`args`: the set of processes  
+`depends`: Whether auto deduce depends. Default: True  
+`id`: The id of the aggr. Default: None (the variable name)  
+`tag`: The tag of the processes. Default: None (a unique 4-char str according to the id)  
   
-#### `addProc (self, p, where) `
+#### `addProc (self, p, tag, where) `
   
 Add a process to the aggregation.  
 Note that you have to adjust the dependencies after you add processes.  
@@ -796,15 +809,14 @@ Like `proc`'s `copy` function, copy an aggregation. Each processes will be copie
 - **returns:**  
 The new aggregation  
   
-#### `set (self, propname, propval, procs) `
+#### `delegate (self, attr, procs, pattr) `
   
-Set property for procs  
+Delegate attributes of processes to aggr.  
 
-- **params:**  
-propname: The property name  
-propval:  The property value  
-procs:    The ids of the procs to set. Default: None (all procs)  
-- if propname == 'input', it defaults to 'starts'  
+- **params**  
+`attr` : The attribute of the aggregation  
+`procs`: The ids of the processes. Default: None (all processes)  
+`pattr`: The attr of the processes. Default: None (same as `attr`)  
   
 
 ## Module `Flowchart`  
@@ -1461,12 +1473,13 @@ Do a "tar zxf"-like for .tgz file
 `tgzfile`:  the .tgz file  
 `dstdir`: which directory to extract the file to  
   
-#### `varname (maxline) `
+#### `varname (maxline, incldot) `
   
 Get the variable name for ini  
 
 - **params:**  
 `maxline`: The max number of lines to retrive. Default: 20  
+`incldot`: Whether include dot in the variable name. Default: False  
 
 - **returns:**  
 The variable name  
