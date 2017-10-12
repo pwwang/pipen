@@ -280,6 +280,9 @@ class TemplatePyPPLEngine(object):
 			render_context.update(context)
 		try:
 			return self._render_function(render_context, self._do_dots)
+		except KeyError:
+			stderr.write('>>> Probably variable not found in the template, check your data for rendering!\n>>> ')
+			raise
 		except Exception:
 			stderr.write(
 				'\n>>> Failed to render:\n%s\n>>> With context:\n%s\n>>> The render function is:\n%s\n\n' % (
