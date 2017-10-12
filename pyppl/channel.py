@@ -510,6 +510,28 @@ class Channel (list):
 		"""
 		return self.flatten()[idx]
 
+	def repCol(self, n = 2):
+		"""
+		Repeat column and return a new channel
+		@params:
+			`n`: how many times to repeat.
+		@returns:
+			The new channel with repeated columns
+		"""
+		cols = [self] * (n - 1) 
+		return self.cbind(*cols)
+
+	def repRow(self, n = 2):
+		"""
+		Repeat row and return a new channel
+		@params:
+			`n`: how many times to repeat.
+		@returns:
+			The new channel with repeated rows
+		"""
+		rows = [self] * (n - 1) 
+		return self.rbind(*rows)
+
 	def flatten (self, col = None):
 		"""
 		Convert a single-column Channel to a list (remove the tuple signs)

@@ -387,6 +387,25 @@ get|has_key|join
 		self.assertEqual(ch.col2, ch.flatten(1))
 		self.assertEqual(ch.col3, ch.flatten(2))
 
+	def testGet(self):
+		ch = Channel.create([(1,2,3), (4,5,6)])
+		self.assertEqual(ch.get(), 1)
+		self.assertEqual(ch.get(2), 3)
+		self.assertEqual(ch.get(5), 6)
+
+	def testRepCol(self):
+		ch = Channel.create([(1,2,3), (4,5,6)])
+		self.assertEqual(ch.repCol(), [(1,2,3,1,2,3), (4,5,6,4,5,6)])
+		self.assertEqual(ch.repCol(3), [(1,2,3,1,2,3,1,2,3), (4,5,6,4,5,6,4,5,6)])
+		ch = Channel.create()
+		self.assertEqual(ch.repCol(), [])
+
+	def testRepRow(self):
+		ch = Channel.create([(1,2,3), (4,5,6)])
+		self.assertEqual(ch.repRow(), [(1,2,3), (4,5,6), (1,2,3), (4,5,6)])
+		self.assertEqual(ch.repRow(3), [(1,2,3), (4,5,6), (1,2,3), (4,5,6), (1,2,3), (4,5,6)])
+		ch = Channel.create()
+		self.assertEqual(ch.repRow(), [])
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)
