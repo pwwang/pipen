@@ -610,13 +610,20 @@ class Proc (object):
 				elif key == 'template':
 					f.write('\n['+ key +']\n')
 					f.write('name: ' + json.dumps(val.__class__.__name__) + '\n')
-				elif key in ['lognline', 'args', 'procvars', 'brings', 'echo'] or key.endswith('Runner'):
+				elif key in ['lognline', 'args', 'procvars', 'echo'] or key.endswith('Runner'):
 					f.write('\n['+ key +']\n')
 					if not val:
 						f.write('value: {}\n')
 					for k in sorted(val.keys()):
 						v = val[k]
 						f.write ((k if k else "''") + ': ' + json.dumps(str(v), sort_keys = True) + '\n')
+				elif key == 'brings':
+					f.write('\n['+ key +']\n')
+					if not val:
+						f.write('value: {}\n')
+					for k in sorted(val.keys()):
+						v = val[k]
+						f.write ((k if k else "''") + ': ' + json.dumps([str(vv) for vv in v], sort_keys = True) + '\n')
 				elif key == 'script':
 					f.write('\n['+ key +']\n')
 					f.write('value:\n')

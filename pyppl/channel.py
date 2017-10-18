@@ -86,27 +86,43 @@ class Channel (list):
 		return c
 	
 	@staticmethod
-	def fromFile(fn, skip = 0, delimit = "\t"):
+	def fromFile(fn, header = False, skip = 0, delimit = "\t"):
 		"""
 		Create Channel from the file content
 		It's like a matrix file, each row is a row for a Channel.
 		And each column is a column for a Channel.
 		@params:
 			`fn`:      the file
+			`header`:  Whether the file contains header. If True, will attach the header
+				- So you can use `channel.<header>` to fetch the column
 			`skip`:    first lines to skip
 			`delimit`: the delimit for columns
 		@returns:
 			A Channel created from the file
 		"""
-		ret = Channel.create()
+		ret     = Channel.create()
+		i       = -1
+		headers = []
 		with open(fn) as f:
-			i = -1
 			for line in f:
 				i += 1
 				if i < skip: continue
 				line = line.strip()
 				if not line: continue
-				ret.append (tuple(line.split(delimit)))
+				if header: 
+					headers = line.split(delimit)
+					header  = False
+				else:
+					ret.append (tuple(line.split(delimit)))
+		if headers: 
+			lenheaders = len(headers)
+			channelwid = ret.width()
+			if lenheaders == channelwid - 1:
+				headers.insert(0, 'RowNames')
+			elif lenheaders != channelwid:
+				raise ValueError('Number of headers and columns doesn\'t match: %s, %s.' % (lenheaders, channelwid))
+			ret.attach(*headers)
+			
 		return ret
 
 	@staticmethod
@@ -412,6 +428,16 @@ class Channel (list):
 		"""
 		return self.slice (index, 1)
 	
+	def rowAt (self, index):
+		"""
+		Fetch one row of a Channel
+		@params:
+			`index`: which row to fetch
+		@returns:
+			The Channel with that row
+		"""
+		return Channel.create(self[index])
+	
 	def slice (self, start, length = None):
 		"""
 		Fetch some columns of a Channel
@@ -421,7 +447,7 @@ class Channel (list):
 		@returns:
 			The Channel with fetched columns
 		"""
-		return Channel.create([s[start:start + length] for s in self]) if length else \
+		return Channel.create([s[start:(start + length)] for s in self]) if length else \
 			   Channel.create([s[start:] for s in self])
 	
 	def fold (self, n = 1):

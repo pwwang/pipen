@@ -190,6 +190,15 @@ get	has_key	join
 			("data", "elif", "f1"), 
 			("get", "has_key", "join")
 		])
+
+		self.assertEqual(Channel.fromFile(f, header = True), [
+			("data", "elif", "f1"), 
+			("get", "has_key", "join")
+		])
+
+		self.assertEqual(Channel.fromFile(f, header = True).basestring.flatten(), [
+			"elif", "has_key"
+		])
 		
 		with open(f, 'w') as fout:
 			fout.write("""
@@ -346,6 +355,12 @@ get|has_key|join
 		self.assertEqual(ch.colAt(1), Channel.create(2))
 		self.assertEqual(ch.colAt(5), Channel.create([()]))
 		self.assertEqual(Channel.create().colAt(0), [])
+
+	def testRowAt(self):
+		ch = Channel.create([1,2,3,4,5])
+		self.assertEqual(ch.rowAt(1), Channel.create(2))
+		self.assertEqual(ch.rowAt(4), Channel.create([(5)]))
+		self.assertRaises(IndexError, Channel.create().rowAt, 0)
 
 	def testFoldUnFold(self):
 		ch = Channel.create((1,2,3,4,5,6))

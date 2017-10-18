@@ -281,7 +281,8 @@ class TemplatePyPPLEngine(object):
 		try:
 			return self._render_function(render_context, self._do_dots)
 		except KeyError:
-			stderr.write('>>> Probably variable not found in the template, check your data for rendering!\n>>> ')
+			stderr.write('>>> Probably variable not found in the template, check your data for rendering!\n')
+			stderr.write('>>> Current data keys are: %s\n>>> ' % sorted(render_context.keys()))
 			raise
 		except Exception:
 			stderr.write(
