@@ -295,7 +295,7 @@ class Job (object):
 		if self.proc.exhow in self.proc.EX_LINK:
 			self.proc.log ("Job not export-cached using symlink export.", "warning", "EXPORT_CACHE_USING_SYMLINK")
 			return False
-		if self.proc.expart:
+		if self.proc.expart and self.proc.expart[0].render(self.data):
 			self.proc.log ("Job not export-cached using partial export.", "warning", "EXPORT_CACHE_USING_EXPARTIAL")
 			return False
 		if not self.proc.exdir:
@@ -635,7 +635,7 @@ class Job (object):
 		"""
 		utils.safeRemove(self.indir)
 		makedirs (self.indir)
-		
+
 		for key, val in self.proc.input.items():
 			self.input[key] = {}
 			if val['type'] in self.proc.IN_FILETYPE:

@@ -504,7 +504,7 @@ print "a"
 		self.assertIn('Job not export-cached using symlink export.', err.getvalue())
 		# expart
 		proc.exhow = 'move'
-		proc.expart = [1]
+		proc.expart = [TemplatePyPPL('1')]
 		with captured_output() as (out, err):
 			self.assertFalse(job.isExptCached())
 		self.assertIn('Job not export-cached using partial export.', err.getvalue())

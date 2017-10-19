@@ -445,6 +445,21 @@ class TestProc (unittest.TestCase):
 		self.assertEqual(p.input['a']['type'], 'file')
 		self.assertEqual(p.input['b']['data'], [5]*5)
 		self.assertEqual(p.input['b']['type'], 'dir')
+
+		p.depends = []
+		p.input = {'a,b':[(1,'a'), (2,'b')]}
+		p._buildProps()
+		p._buildInput()
+		self.assertEqual(p.input['a']['data'], [1,2])
+		self.assertEqual(p.input['b']['data'], ['a', 'b'])
+
+		p.depends = []
+		p.input = 'a,b'
+		p.input = lambda: [(1,'a'), (2,'b')]
+		p._buildProps()
+		p._buildInput()
+		self.assertEqual(p.input['a']['data'], [1,2])
+		self.assertEqual(p.input['b']['data'], ['a', 'b'])
 		
 
 	def testBuildProcVars(self):

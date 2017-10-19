@@ -651,7 +651,7 @@ class Proc (object):
 		"""
 		self.props['input'] = {}
 
-		indata    = self.config['input']
+		indata = self.config['input']
 		if not isinstance (indata, dict):
 			indata   = ','.join(utils.alwaysList(indata))			
 			indata   = {

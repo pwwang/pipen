@@ -400,7 +400,7 @@ class Channel (list):
 					lcol = length
 				if lcol != length:
 					raise ValueError('Cannot bind column (length: %s) to Channel (length: %s).' % (lcol, length))
-				col = [(c,) for c in col]
+				col = [(c,) if not isinstance(c, tuple) else c for c in col]
 			else:
 				col = [(col,)] * length
 			
