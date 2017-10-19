@@ -741,7 +741,7 @@ class Job (object):
 				infile = readlink(infile)
 
 			if not self.brings[key]:
-				raise ValueError('No bring-file found for input file: %s' % key)
+				raise ValueError('No bring-file found for input file: %s' % [str(v) for v in val])
 				
 	def _prepOutput (self):
 		"""

@@ -556,7 +556,7 @@ def _safeLink(src, dst, overwrite = True):
 		else:
 			return False		
 	if not path.exists(dst):
-		symlink(path.realpath(src), dst)
+		symlink(path.abspath(src), dst)
 	else:
 		return False
 	return True

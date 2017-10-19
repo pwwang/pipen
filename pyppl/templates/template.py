@@ -1,3 +1,4 @@
+import json
 from os import path, readlink
 from six import string_types
 
@@ -35,7 +36,7 @@ class Template(object):
 			else 'NULL'  if isinstance(x, string_types) and str(x).upper() == 'NULL'  \
 			else str(x)  if isinstance(x, int) or isinstance(x, float) \
 			else str(x)[2:] if isinstance(x, string_types) and (x.startswith('r:') or x.startswith('R:'))  \
-			else '"' + str(x) + '"' if isinstance(x, string_types) else str(x),
+			else json.dumps(str(x)) if isinstance(x, string_types) else str(x),
 		'realpath': path.realpath,
 		'readlink': readlink,
 		'dirname':  path.dirname,
@@ -48,13 +49,8 @@ class Template(object):
 		'ext':      lambda x: path.splitext(x)[1],
 		# /a/b/c[1].txt => /a/b/c
 		'prefix':   lambda x, orig = False: path.join(path.dirname(x), _filename(x, orig)),
-		'quote':    lambda x: '''"%s"''' % str(x),
-		# array-space quote
-		'asquote':  lambda x: '''%s''' % (" ".join(['"' + str(e) + '"' for e in x])),
-		# array-comma quote
-		'acquote':  lambda x: '''%s''' % (", ".join(['"' + str(e) + '"' for e in x])),
-		'squote':   lambda x: """'%s'""" % str(x),
-		'json':     __import__('json').dumps,
+		'quote':    lambda x: json.dumps(str(x)),
+		'json':     json.dumps,
 		'read':     _read,
 		'readlines':_readlines
 
@@ -93,6 +89,11 @@ class Template(object):
 			return self._render(data)
 
 Template.DEFAULT_ENVS.update({
+	# array-space quote
+	'asquote':  lambda x: '''%s''' % (" " .join([Template.DEFAULT_ENVS['quote'](e) for e in x])),
+	# array-comma quote
+	'acquote':  lambda x: '''%s''' % (", ".join([Template.DEFAULT_ENVS['quote'](e) for e in x])),
+	'squote':   lambda x: "'" + Template.DEFAULT_ENVS['quote'](x)[1:-1] + "'",
 	'Rvec':     lambda x: 'c(' + ','.join([Template.DEFAULT_ENVS['R'](e) for e in x]) + ')',
 	'Rlist':    lambda x: 'list(' + ','.join([k + '=' + Template.DEFAULT_ENVS['R'](x[k]) for k in sorted(x.keys())]) + ')' if isinstance(x, dict) else \
 						  'list(' + ','.join([          Template.DEFAULT_ENVS['R'](k) for k in list(x)]) + ')',
