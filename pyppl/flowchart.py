@@ -36,10 +36,13 @@ class Flowchart(object):
 				'fillcolor': '#eaeaea', # gray
 			},
 			'skip+': {
-				'fillcolor': '#e9e9e9', # gray
+				'fillcolor': '#b5b3b3', # gray
 			},
 			'resume': {
 				'fillcolor': '#b9ffcd', # light green
+			},
+			'resume+': {
+				'fillcolor': '#58b773', # green
 			},
 			'aggr': {
 				'style': 'filled',
@@ -69,13 +72,16 @@ class Flowchart(object):
 				'fontcolor': '#db95e6', # purple
 			},
 			'skip': {
-				'fillcolor': '#eaeaea', # gray
+				'fillcolor': '#b5b3b3', # gray
 			},
 			'skip+': {
-				'fillcolor': '#e9e9e9', # gray
+				'fillcolor': '#d1cfcf', # gray
 			},
 			'resume': {
-				'fillcolor': '#1b5a2d', # light green
+				'fillcolor': '#1b5a2d', # green
+			},
+			'resume+': {
+				'fillcolor': '#a7f2bb', # light green
 			},
 			'aggr': {
 				'style': 'filled',
@@ -163,9 +169,7 @@ class Flowchart(object):
 				theme.update(self.theme['end'])
 			if node.exdir:
 				theme.update(self.theme['export'])
-			if node.resume is True:
-				theme.update(self.theme['resume'])
-			elif node.resume:
+			if node.resume:
 				theme.update(self.theme[node.resume])
 			dotstr.append('    "%s" [%s]' % (node.name(False), ' '.join(['%s="%s"' % (k,theme[k]) for k in sorted(theme.keys())])))
 		return dotstr

@@ -96,7 +96,7 @@ class TestProc (unittest.TestCase):
 		self.assertEqual(p.ppldir, path.abspath('./workdir'))
 		self.assertEqual(p.procvars, {})
 		self.assertEqual(p.rc, [0])
-		self.assertEqual(p.resume, False)
+		self.assertEqual(p.resume, '')
 		self.assertEqual(p.runner, 'local')
 		self.assertEqual(p.script, None)
 		self.assertEqual(p.sets, [])
@@ -169,7 +169,7 @@ class TestProc (unittest.TestCase):
 		self.assertEqual(p.args['b'], 2)
 		self.assertEqual(p.args['c'], [3,4])
 		self.assertEqual(p.args['d']['a'], 0)
-		self.assertEqual(p3.resume, False)
+		self.assertEqual(p3.resume, '')
 		p3.tag = 'tag3'
 		self.assertIn('tag', p3.sets)
 		self.assertNotIn('tag', p.sets)
@@ -491,7 +491,7 @@ class TestProc (unittest.TestCase):
 			'forks': 1, 
 			'desc': 'No description.', 
 			'aggr': None, 
-			'resume': False, 
+			'resume': '', 
 			'exhow': 'move', 
 			'exow': True, 
 			'errhow': 'terminate', 
@@ -751,9 +751,9 @@ p.script = "file:./relpathscript"
 
 		# callfront
 		p.callfront = lambda p: setattr(p, 'resume', 'skip+')
-		utils.safeRemove(settingfile)
+		#utils.safeRemove(settingfile)
 		p._tidyBeforeRun()
-		self.assertPathNotExists(settingfile)
+		self.assertPathExists(settingfile)
 
 		self.assertEqual(p.size, 5)
 		for job in p.jobs:

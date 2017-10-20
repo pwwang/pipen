@@ -1,3 +1,4 @@
+from sys import argv
 from pyppl import PyPPL, Proc
 
 p1 = Proc()
@@ -35,4 +36,7 @@ p1.input = {"in": [0]}
 p8.input = {"in": [0]}
 p9.input = {"in": [0]}
 
-PyPPL().start(p1, p8, p9).flowchart().run()
+if len(argv) > 1:
+	PyPPL({'flowchart': {'theme': 'dark'}}).start(p1, p8, p9).resume2(argv[1:]).flowchart().run()
+else:
+	PyPPL().start(p1, p8, p9).flowchart().run()

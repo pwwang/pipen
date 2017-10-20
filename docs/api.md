@@ -9,7 +9,7 @@
 		`TIPS`: The tips for users
 		`RUNNERS`: Registered runners
 		`PROCS`: The processes
-		`DEFAULT_CFGFILE`: Default configuration file
+		`DEFAULT_CFGFILES`: Default configuration file
 	
 
 #### `__init__ (self, config, cfgfile) `
@@ -451,7 +451,7 @@ Create a Channel from Channels
 - **returns:**  
 The Channel merged from other Channels  
   
-#### `fromFile (fn, skip, delimit) [@staticmethod]`
+#### `fromFile (fn, header, skip, delimit) [@staticmethod]`
   
 Create Channel from the file content  
 It's like a matrix file, each row is a row for a Channel.  
@@ -459,6 +459,8 @@ And each column is a column for a Channel.
 
 - **params:**  
 `fn`:      the file  
+`header`:  Whether the file contains header. If True, will attach the header  
+- So you can use `channel.<header>` to fetch the column  
 `skip`:    first lines to skip  
 `delimit`: the delimit for columns  
 
@@ -582,6 +584,36 @@ Reduce a column
 
 - **returns:**  
 The reduced value  
+  
+#### `repCol (self, n) `
+  
+Repeat column and return a new channel  
+
+- **params:**  
+`n`: how many times to repeat.  
+
+- **returns:**  
+The new channel with repeated columns  
+  
+#### `repRow (self, n) `
+  
+Repeat row and return a new channel  
+
+- **params:**  
+`n`: how many times to repeat.  
+
+- **returns:**  
+The new channel with repeated rows  
+  
+#### `rowAt (self, index) `
+  
+Fetch one row of a Channel  
+
+- **params:**  
+`index`: which row to fetch  
+
+- **returns:**  
+The Channel with that row  
   
 #### `slice (self, start, length) `
   

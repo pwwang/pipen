@@ -215,8 +215,13 @@ class Proc (object):
 		self.config['rc']         = 0
 		self.props['rc']          = [0]
 
-		# resume the process, True, False, 'skip', 'skip+'
-		self.config['resume']     = False
+		# resume flag of the process
+		# ''       : Normal, don't resume
+		# 'skip+'  : Load data from previous run, pipeline resumes from future processes
+		# 'resume+': Deduce input from 'skip+' processes
+		# 'skip'   : Just skip, don't load data
+		# 'resume' : Load data from previous run, resume pipeline
+		self.config['resume']     = ''
 
 		# Select the runner
 		self.config['runner']     = 'local'
@@ -372,7 +377,7 @@ class Proc (object):
 		config['workdir']  = ''
 		config['tplenvs']  = Box()
 		config['args']     = Box()
-		config['resume']   = False
+		config['resume']   = ''
 		utils.dictUpdate(config['tplenvs'], self.config['tplenvs'])
 		utils.dictUpdate(config['args'], self.config['args'])
 		
@@ -413,6 +418,7 @@ class Proc (object):
 		self.props['suffix'] = utils.uid(signature)
 		return self.suffix
 
+	# self.resume != 'skip'
 	def _tidyBeforeRun (self):
 		"""
 		Do some preparation before running jobs
@@ -426,10 +432,11 @@ class Proc (object):
 		self._buildBrings ()
 		self._buildOutput()
 		self._buildScript()
-		if self.resume != 'skip+':
+		if self.resume not in ['skip+', 'resume']:
 			self._saveSettings()
 		self._buildJobs ()
 
+	# self.resume != 'skip'
 	def _tidyAfterRun (self):
 		"""
 		Do some cleaning after running jobs
@@ -438,7 +445,7 @@ class Proc (object):
 			if callable (self.callback):		
 				self.log('Calling callback ...', 'debug')
 				self.callback (self)
-		else:
+		else: # '', resume, resume+
 			failedjobs = [job for job in self.jobs if not job.succeed()]
 			if not failedjobs:
 				self.log ('Successful jobs: ALL', 'debug')
@@ -468,27 +475,21 @@ class Proc (object):
 		"""
 		if config is None: config = {}
 		
-		self.log (self.desc, '>>>>>>>')
-		self.log ("%s => %s" % (
-			[p.name() for p in self.depends] if self.depends else "START",
-			self.name()
-		), "depends")
 		self._readConfig (config)
 		
 		if self.resume == 'skip':
-			self.log (self.workdir, 'skipped')
-			self.log ("Pipeline will resume from future processes.", 'info')
+			self.log ("Pipeline will resume from future processes.", 'skipped')
 		elif self.resume == 'skip+':
 			self.log ("Data loaded, pipeline will resume from future processes.", 'skipped')
 			self._tidyBeforeRun()
 			self._tidyAfterRun ()
-		else:
+		else: # '', resume, resume+
 			timer = time()
 			self._tidyBeforeRun ()
 			self._runCmd('beforeCmd')
 			cached = self._checkCached()
-			if self.resume:
-				self.log (self.workdir, 'RESUMED')
+			if self.resume: # resume or resume+
+				self.log (self.workdir + (' [CACHED] ' if cached else ' [RUNNING]'), 'RESUMED')
 			elif not cached:
 				self.log (self.workdir, 'RUNNING')
 			else:
@@ -527,7 +528,7 @@ class Proc (object):
 			self.props['workdir'] = path.join(self.ppldir, "PyPPL.%s.%s.%s" % (self.id, self.tag, self._suffix()))
 
 		if not path.exists (self.workdir):
-			if self.resume == 'skip+':
+			if self.resume in ['skip+', 'resume']:
 				raise Exception('Cannot skip process, as workdir not exists: %s' % self.workdir)
 			makedirs (self.workdir)
 
@@ -638,7 +639,8 @@ class Proc (object):
 					f.write('value: ' + json.dumps(str(val), sort_keys = True) + '\n')
 					
 		self.log ('Settings saved to: %s' % settingsfile, 'debug')
-					
+	
+	# self.resume != 'skip'
 	def _buildInput (self):
 		"""
 		Build the input data
@@ -650,56 +652,86 @@ class Proc (object):
 		for 1,2 channels will be the combined channel from dependents, if there is not dependents, it will be sys.argv[1:]
 		"""
 		self.props['input'] = {}
-
-		indata = self.config['input']
-		if not isinstance (indata, dict):
-			indata   = ','.join(utils.alwaysList(indata))			
-			indata   = {
-				indata: Channel.fromChannels (*[d.channel for d in self.depends]) \
-					if self.depends else Channel.fromArgv()
-			}
+		
+		if self.resume in ['skip+', 'resume']:
+			from six.moves.configparser import ConfigParser
+			psfile = path.join(self.workdir, 'proc.settings')
+			if not path.isfile(psfile):
+				raise OSError('Cannot skip+/resume process: %s, no such file: %s' % (self.name(), psfile))
+	
+			cp = ConfigParser()
+			cp.optionxform = str
+			cp.read(psfile)
+			self.props['size'] = max(1, int(json.loads(cp.get('size', 'value'))))
 			
-		inkeys   = list(indata.keys())
-		pinkeys  = []
-		pintypes = []
-		for key in utils.alwaysList(inkeys):
-			if ':' not in key:
-				pinkeys.append(key)
-				pintypes.append(Proc.IN_VARTYPE[0])
-			else:
-				k, t = key.split(':')
-				if t not in Proc.IN_VARTYPE + Proc.IN_FILESTYPE + Proc.IN_FILETYPE:
-					raise TypeError('Unknown input type: %s' % t)
-				pinkeys.append(k)
-				pintypes.append(t)
+			indata = OrderedDict(cp.items('input'))
+			intype = ''
+			inname = ''
+			for key in indata.keys():
+				if key.endswith('.type'):
+					intype = indata[key]
+					inname = key[:-5]
+					self.props['input'][inname] = {
+						'type': intype,
+						'data': []
+					}
+				elif key.startswith(inname + '.data#'):
+					if intype in Proc.IN_FILESTYPE:
+						data = list(map(json.loads, list(filter(None, indata[key].split("\n")))))
+					else:
+						data = json.loads(indata[key].strip())
+					self.props['input'][inname]['data'].append(data)
+			self.props['jobs'] = [None] * self.size
+		else:
+			indata = self.config['input']
+			if not isinstance (indata, dict):
+				indata   = ','.join(utils.alwaysList(indata))			
+				indata   = {
+					indata: Channel.fromChannels (*[d.channel for d in self.depends]) \
+						if self.depends else Channel.fromArgv()
+				}
+				
+			inkeys   = list(indata.keys())
+			pinkeys  = []
+			pintypes = []
+			for key in utils.alwaysList(inkeys):
+				if ':' not in key:
+					pinkeys.append(key)
+					pintypes.append(Proc.IN_VARTYPE[0])
+				else:
+					k, t = key.split(':')
+					if t not in Proc.IN_VARTYPE + Proc.IN_FILESTYPE + Proc.IN_FILETYPE:
+						raise TypeError('Unknown input type: %s' % t)
+					pinkeys.append(k)
+					pintypes.append(t)
 
-		invals = Channel.create()
-		for inkey in inkeys:
-			inval = indata[inkey]
-			if callable(inval):
-				inval = inval (*[d.channel for d in self.depends] if self.depends else Channel.fromArgv())
-				invals = invals.cbind(inval)
-			elif isinstance(inval, Channel):
-				invals = invals.cbind(inval)
-			else:
-				invals = invals.cbind(Channel.create(inval))
-		self.props['size'] = invals.length()
-		self.props['jobs'] = [None] * self.size
+			invals = Channel.create()
+			for inkey in inkeys:
+				inval = indata[inkey]
+				if callable(inval):
+					inval = inval (*[d.channel for d in self.depends] if self.depends else Channel.fromArgv())
+					invals = invals.cbind(inval)
+				elif isinstance(inval, Channel):
+					invals = invals.cbind(inval)
+				else:
+					invals = invals.cbind(Channel.create(inval))
+			self.props['size'] = invals.length()
+			self.props['jobs'] = [None] * self.size
 
-		# support empty input
-		pinkeys = list(filter(None, pinkeys))
+			# support empty input
+			pinkeys = list(filter(None, pinkeys))
 
-		wdata   = invals.width()
-		if len(pinkeys) < wdata:
-			self.log('Not all data are used as input, %s columns wasted.' % (wdata - len(pinkeys)), 'warning')
-		for i, inkey in enumerate(pinkeys):
-			self.props['input'][inkey] = {}
-			self.props['input'][inkey]['type'] = pintypes[i]
-			if i < wdata:
-				self.props['input'][inkey]['data'] = invals.colAt(i).flatten()
-			else:
-				self.log('No data found for input key "%s", use empty strings/lists instead.' % inkey, 'warning')
-				self.props['input'][inkey]['data'] = [[] if pintypes[i] in Proc.IN_FILESTYPE else ''] * self.size
+			wdata   = invals.width()
+			if len(pinkeys) < wdata:
+				self.log('Not all data are used as input, %s columns wasted.' % (wdata - len(pinkeys)), 'warning')
+			for i, inkey in enumerate(pinkeys):
+				self.props['input'][inkey] = {}
+				self.props['input'][inkey]['type'] = pintypes[i]
+				if i < wdata:
+					self.props['input'][inkey]['data'] = invals.colAt(i).flatten()
+				else:
+					self.log('No data found for input key "%s", use empty strings/lists instead.' % inkey, 'warning')
+					self.props['input'][inkey]['data'] = [[] if pintypes[i] in Proc.IN_FILESTYPE else ''] * self.size
 				
 	def _buildProcVars (self):
 		"""
@@ -839,7 +871,7 @@ class Proc (object):
 		Build the jobs.
 		"""
 		self.props['channel'] = Channel.create()
-		rptjob  = randint(0, self.size-1)
+		rptjob  = 0 if self.size == 1 else randint(0, self.size-1)
 		outkeys = []
 		for i in range(self.size):
 			job = Job (i, self)
@@ -996,7 +1028,7 @@ class PyPPL (object):
 		`TIPS`: The tips for users
 		`RUNNERS`: Registered runners
 		`PROCS`: The processes
-		`DEFAULT_CFGFILE`: Default configuration file
+		`DEFAULT_CFGFILES`: Default configuration file
 	"""
 	
 	TIPS = [
@@ -1023,8 +1055,9 @@ class PyPPL (object):
 			`cfgfile`:  the configuration file for the pipeline, default: `~/.PyPPL.json` or `./.PyPPL`
 		"""
 		fconfig = {}
-		for cfile in PyPPL.DEFAULT_CFGFILES:
-			cfile = path.expanduser(cfile)
+		for i in list(range(len(PyPPL.DEFAULT_CFGFILES))):
+			cfile = path.expanduser(PyPPL.DEFAULT_CFGFILES[i])
+			PyPPL.DEFAULT_CFGFILES[i] = cfile
 			if path.exists(cfile):
 				with open(cfile) as cf:
 					utils.dictUpdate(fconfig, json.load(cf))
@@ -1057,16 +1090,15 @@ class PyPPL (object):
 				del self.config['log']['file']
 			utils.dictUpdate(logconfig, self.config['log'])
 			del self.config['log']
-			
+
 		logger.getLogger (logconfig['levels'], logconfig['theme'], logconfig['file'], logconfig['lvldiff'])
 
 		logger.logger.info ('[  PYPPL] Version: %s' % (VERSION))
 		logger.logger.info ('[   TIPS] %s' % (random.choice(PyPPL.TIPS)))
-		for cfile in PyPPL.DEFAULT_CFGFILES:
-			if path.exists(cfile):
-				logger.logger.info ('[ CONFIG] Read from %s' % cfgfile)
-		if cfgfile and path.exists (cfgfile):
-			logger.logger.info ('[ CONFIG] Read from %s' % cfgfile)
+
+		for cfile in (PyPPL.DEFAULT_CFGFILES + [str(cfgfile)]):
+			if not path.isfile(cfile): continue
+			logger.logger.info ('[ CONFIG] Read from %s' % cfile)
 			
 		self.starts  = []
 		self.nexts   = {}
@@ -1168,30 +1200,27 @@ class PyPPL (object):
 			`args`: the processes to be marked. The last element is the mark for processes to be skipped.
 		"""
 		_, ends, paths = self._procRelations()
-
 		flag    = args[-1]
 		args    = args[:-1]
 		rsprocs = PyPPL._any2procs(*args)
 		
 		for end in ends:
-			if not all([(set(ps) & set(rsprocs)) for ps in paths[id(end)]]) and end not in rsprocs:
-				raise ValueError('None processes along %s\'s path resumed.' % end.name(False))
+			if end in rsprocs: continue
+			for ps in paths[id(end)]:
+				if (set(ps) & set(rsprocs)): continue
+				raise ValueError('None processes along %s\'s path [%s] is resumed.' % (end.name(), ' -> '.join([p.name() for p in reversed(ps)] + [end.name()])))
 
 		ps2skip = []
 		for rp in rsprocs:
-			rp.props['resume'] = True
+			# True: totally resumed, 'resume': read from proc.settings
+			rp.props['resume'] = 'resume+' if flag.endswith('+') else 'resume'
 			rppaths = paths[id(rp)]
 			if rppaths:
 				ps2skip.extend(list(utils.reduce(lambda x,y: set(x) | set(y), rppaths)))
 		ps2skip = set(ps2skip)
-
-		ovlaps = ps2skip & set(rsprocs)
-		if ovlaps:
-			logger.logger.info ('[WARNING] processes marked for resuming will be skipped, as a resuming process depends on them.')
-			logger.logger.info ('[WARNING] They are: %s' % [ol.name(False) for ol in ovlaps])
-		del ovlaps
-
+		
 		for ps in ps2skip:
+			if ps.resume: continue
 			ps.props['resume'] = flag
 	
 	def resume (self, *args):
@@ -1259,12 +1288,19 @@ class PyPPL (object):
 		while next2run:
 			next2run2 = set()
 			for p in sorted(next2run, key = lambda x: x.name()):
+				pnexts = nexts[id(p)]
+				p.log (p.desc, '>>>>>>>')
+				p.log ("%s => %s => %s" % (
+					[d.name() for d in p.depends] if p.depends else "START",
+					p.name(),
+					[n.name() for n in pnexts] if pnexts else "END"
+				), "depends")
 				if p.profile and p.profile != profile:
 					p.run(self._getProfile(p.profile))
 				else:
 					p.run(dftconfig)
 				doneprocs |= set([p])
-				next2run2 |= set(nexts[id(p)])
+				next2run2 |= set(pnexts)
 			# next procs to run must be not finished and all their depends are finished
 			next2run = [n for n in next2run2 if n not in doneprocs and all(x in doneprocs for x in n.depends)]
 			

@@ -130,7 +130,7 @@ class TestFlowchart (unittest.TestCase):
 		self.assertInDot('n1', extheme, nodestr)
 
 		n1.exdir = ''
-		n1.resume = True
+		n1.resume = 'resume'
 		restheme = copy(basetheme)
 		restheme.update(Flowchart.THEMES['default']['resume'])
 		nodestr = fc._dotnodes()
