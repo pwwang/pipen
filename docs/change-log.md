@@ -1,5 +1,13 @@
 # Change log
 
+## Oct 23, 2017: 0.9.2
+- Add profile for Proc so different procs can run with different profiles.
+- Add delegate for Aggr.
+- Add get, repCol, repRow, rowAt method for Channel.
+- Dont't sleep for batch interval if jobs are cached or running.
+- Add header argument for Channel.fromFile.
+- Fix a bunch of bugs.
+
 ## Oct 6, 2017: 0.9.1
 - Fix issues reported by codacy
 - Fix an issue checking whether output files generated
