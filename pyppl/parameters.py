@@ -326,7 +326,7 @@ class Parameters (object):
 		ret += 'OPTIONAL OPTIONS:\n'
 		if optionalOptions:
 			for key, val in optionalOptions.items():
-				descs = (val.desc + ' ' if val.desc else '') + 'Default: ' + str(val)
+				descs = (val.desc + ' ' if val.desc else '') + 'Default: ' + (str(val) if len(str(val)) > 0 else "''")
 				descs = descs.split("\n")
 				ret  += '  {}'.format(val._printName(self._props['prefix'])).ljust(keylen) \
 					 + (descs.pop(0) if descs else '') + '\n'
