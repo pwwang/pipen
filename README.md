@@ -1,6 +1,6 @@
 # [PyPPL][3] - A [Py](#)thon [P](#)i[P](#)e[L](#)ine framework 
 
-![Pypi][22] ![Github][23] ![Gitbook][21] [![Codacy][4]][5]
+![Pypi][22] ![Github][23] ![Gitbook][21] [![Gitter chat][8]][10] [![Codacy][4]][5]
 
 [Documentation][1] | [API][2] | [Change log][19] | [FAQ][26]
 
@@ -451,7 +451,9 @@ To generate svg file, you have to have [graphviz][33] installed.
 [5]: https://www.codacy.com/app/pwwang/PyPPL?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=pwwang/pyppl&amp;utm_campaign=Badge_Grade
 [6]: https://pwwang.gitbooks.io/PyPPL/caching.html
 [7]: https://pwwang.gitbooks.io/PyPPL/placeholders.html
+[8]: https://badges.gitter.im/gitterHQ/gitter.png
 [9]: https://pwwang.gitbooks.io/PyPPL/runners.html
+[10]: https://gitter.im/PyPPL/Lobby
 [12]: https://pwwang.gitbooks.io/PyPPL/set-other-properties-of-a-process.html#error-handling-perrhowperrntry
 [13]: https://pwwang.gitbooks.io/PyPPL/configure-a-pipeline.html#use-a-configuration-file
 [14]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
