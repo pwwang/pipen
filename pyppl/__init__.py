@@ -1001,12 +1001,12 @@ class Proc (object):
 					r     = runner(self.jobs[index])
 					batch = int(index/maxsubmit)
 					if cached:
-						sleep (.1)
+						sleep (batch * .1)
 						self.jobs[index].done()
 					else:
 						# check whether the job is running before submit it
 						if r.isRunning():
-							sleep (.1)
+							sleep (batch * .1)
 							self.log ("Job #%-3s is already running, skip submitting." % index, 'submit')
 						else:
 							sleep (batch * interval)

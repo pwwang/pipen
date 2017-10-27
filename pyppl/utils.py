@@ -80,7 +80,7 @@ def parallel(func, args, nthread):
 		for arg in args: q.put(arg)
 		for _ in range(nworkers): q.put(None)
 
-		for i in range(nworkers):
+		for _ in range(nworkers):
 			t = Thread(target = _parallelWorker, args=(q, ))
 			t.setDaemon(True)
 			t.start()
