@@ -1231,6 +1231,8 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
+		if not args or (len(args) == 1 and not args[0]): return self
+
 		args += ('skip',)
 		self._resume(*args)
 		return self
@@ -1243,6 +1245,8 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
+		if not args or (len(args) == 1 and not args[0]): return self
+
 		args += ('skip+',)
 		self._resume(*args)
 		return self
