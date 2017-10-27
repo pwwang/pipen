@@ -876,7 +876,6 @@ class Proc (object):
 		rptjob  = 0 if self.size == 1 else randint(0, self.size-1)
 
 		def bjSingle(i):
-			global outkeys
 			job = Job(i, self)
 			job.init()
 			self.jobs[i] = job
@@ -1333,7 +1332,6 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
-		import ctypes
 		nexts, ends, paths = self._procRelations()
 
 		dot = dot if dot else self.fcconfig['dot']

@@ -2,7 +2,6 @@
 The aggregation of procs
 """
 from collections import OrderedDict
-from .channel import Channel
 from . import utils
 
 class _Proxy(object):

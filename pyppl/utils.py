@@ -78,7 +78,7 @@ def parallel(func, args, nthread):
 	else:
 		q = moves.queue.Queue()
 		for arg in args: q.put(arg)
-		for i in range(nworkers): q.put(None)
+		for _ in range(nworkers): q.put(None)
 
 		for i in range(nworkers):
 			t = Thread(target = _parallelWorker, args=(q, ))
