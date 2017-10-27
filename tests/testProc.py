@@ -674,36 +674,23 @@ p.script = "file:./relpathscript"
 		self.assertRaises(RuntimeError, p._runCmd, 'beforeCmd')
 
 	def testBuildJobs(self):
-		p = Proc('buildjobs')
-		# empty output
-		p.input = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
-		#p.output = "outfile:file:out{{in.b}}.txt"
-		#p.script = 'echo {{in.a}} > {{out.outfile}}'
-		p._buildProps()
-		p._buildInput()
-		p._buildProcVars
-		p._buildBrings()
-		p._buildOutput()
-		#p._buildScript()
 		with captured_output() as (out, err):
 			logger.getLogger()
-		#	p._buildJobs()
-		logger.getLogger()
-		#self.assertEqual(p.size, 5)
-		
+		p = Proc('buildjobs')
+		p.nthread = 5
+		p.input = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}		
 		# output
 		p.output = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
 		p.script = 'echo {{in.a}} > {{out.outfile}}'
 		p._buildProps()
 		p._buildInput()
-		p._buildProcVars
+		p._buildProcVars()
 		p._buildBrings()
 		p._buildOutput()
 		p._buildScript()
-		with captured_output() as (out, err):
-			logger.getLogger()
-			p._buildJobs()
-		logger.getLogger()
+		p._buildJobs()
+		self.assertEqual(len(p.jobs), 5)
+		self.assertEqual(p.jobs[1].input['a'], {'data': 2, 'type': 'var'})
 		self.assertEqual(p.channel.outfile, [(path.join(p.workdir, str(i), 'output', 'out' + str(b) + '.txt'),) for i,b in enumerate([6,7,8,9,10])])
 		self.assertEqual(p.channel.o2.flatten(), ['12', '22', '32', '42', '52'])
 
@@ -846,12 +833,13 @@ p.script = "file:./relpathscript"
 		logger.getLogger()
 		p = Proc('testRun')
 		# empty output
-		p.runner = 'testr'
-		p.input = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
-		p.output = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
-		p.script = 'echo {{in.a}} > {{out.outfile}}'
-		p.runner = 'testnr'
-		p.resume = 'skip'
+		p.runner  = 'testr'
+		p.nthread = 5
+		p.input   = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
+		p.output  = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
+		p.script  = 'echo {{in.a}} > {{out.outfile}}'
+		p.runner  = 'testnr'
+		p.resume  = 'skip'
 		with captured_output() as (out, err):
 			logger.getLogger()
 			p.run()

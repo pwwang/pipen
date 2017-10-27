@@ -87,7 +87,7 @@ class Proc (object):
 		@config:
 			id, input, output, ppldir, forks, cache, rc, echo, runner, script, depends, tag, desc
 			exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr
-			callfront, callback, brings, expect, expart, template, tplenvs, resume, profile
+			callfront, callback, brings, expect, expart, template, tplenvs, resume, profile, nthread
 		@props
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, brings, expect
 			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, lognline
@@ -196,6 +196,8 @@ class Proc (object):
 
 		# non-cached job ids
 		self.props['ncjobids']    = []
+		# number of threads used to build jobs and to check job cache status
+		self.config['nthread']    = 1
 
 		# The output that user specified
 		self.config['output']     = ''
@@ -870,18 +872,21 @@ class Proc (object):
 		"""
 		Build the jobs.
 		"""
-		self.props['channel'] = Channel.create()
+		self.props['channel'] = Channel.create([None] * self.size)
 		rptjob  = 0 if self.size == 1 else randint(0, self.size-1)
-		outkeys = []
-		for i in range(self.size):
-			job = Job (i, self)
-			job.init ()
+
+		def bjSingle(i):
+			global outkeys
+			job = Job(i, self)
+			job.init()
 			self.jobs[i] = job
-			if not outkeys: outkeys = job.data['out'].keys()
-			row = [job.data['out'][key] for key in outkeys]
-			self.props['channel'] = self.channel.rbind (row)
-		if outkeys:
-			self.channel.attach(*outkeys)
+			row = tuple(job.data['out'].values())
+			self.props['channel'][i] = row
+
+		utils.parallel(bjSingle, [(i, ) for i in range(self.size)], self.nthread)
+
+		if self.jobs[0].data['out']:
+			self.channel.attach(*self.jobs[0].data['out'].keys())
 		self.jobs[rptjob].report()
 
 	def _readConfig (self, config):
@@ -908,20 +913,23 @@ class Proc (object):
 		notTrulyCachedJids     = []
 		exptCachedJids         = []
 		self.props['ncjobids'] = []
-		for i, job in enumerate(self.jobs):
+
+		def chkTrulyCached(i):
 			job = self.jobs[i]
-			if job.isTrulyCached ():
-				# make sure logs have the same type
+			if job.isTrulyCached():
 				trulyCachedJids.append(i)
 			else:
 				notTrulyCachedJids.append(i)
 		
-		for i in notTrulyCachedJids:
+		def chkExptCached(i):
 			job = self.jobs[i]
 			if job.isExptCached ():
 				exptCachedJids.append (i)
 			else:
 				self.props['ncjobids'].append (i)
+
+		utils.parallel(chkTrulyCached, [(i, ) for i in range(self.size)], self.nthread)
+		utils.parallel(chkExptCached,  [(i, ) for i in notTrulyCachedJids], self.nthread)			
 				
 		self.log ('Truely cached jobs: %s' % (trulyCachedJids if len(trulyCachedJids) < self.size else 'ALL'), 'info')
 		self.log ('Export cached jobs: %s' % (exptCachedJids  if len(exptCachedJids)  < self.size else 'ALL'), 'info')
@@ -983,11 +991,14 @@ class Proc (object):
 				try:
 					data = q.get()
 				except Exception:
+					q.task_done()
 					break
-				if data is None: break
-				index, cached = data
+				if data is None: 
+					q.task_done()
+					break
 
 				try:
+					index, cached = data
 					r     = runner(self.jobs[index])
 					batch = int(index/maxsubmit)
 					if cached:

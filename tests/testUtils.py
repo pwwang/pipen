@@ -4,7 +4,7 @@ import sys
 import inspect
 import tempfile
 
-from time import sleep
+from time import sleep, time
 from os import path, remove, makedirs, symlink, fdopen
 from subprocess import Popen, PIPE
 from contextlib import contextmanager
@@ -647,6 +647,21 @@ class TestUtils (unittest.TestCase):
 		p = Popen(cmd, stdout=PIPE, stderr=PIPE)
 		stdout, _ = p.communicate()
 		self.assertTrue(path.basename(__file__) in str(stdout))
+
+	def testParallel(self):
+		globalVars = []
+		def func(a, b):
+			sleep(.5)
+			globalVars.append(a)
+			globalVars.append(b)
+		
+		t0 = time()
+		utils.parallel(func, [(1,2), (3,4), (5,6), (7,8)], nthread = 4)
+		t = time() - t0
+		self.assertEqual(sorted(globalVars), [1,2,3,4,5,6,7,8])
+		self.assertLess(t, 2)
+
+
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

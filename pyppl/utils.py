@@ -18,6 +18,7 @@ from multiprocessing import Process, Pipe
 from hashlib import md5
 from box import Box
 from six import moves, string_types
+from threading import Thread
 
 class ProcessEx (Process):
 	"""
@@ -41,6 +42,50 @@ class ProcessEx (Process):
 			ex = self._pconn.recv()
 			if ex:
 				raise ex
+
+def parallel(func, args, nthread):
+	"""
+	Call functions in a parallel way.
+	If nthread == 1, will be running in single-threading manner.
+	@params:
+		`func`: The function
+		`args`: The arguments, in list. Each element should be the arguments for the function in one thread.
+		`nthread`: Number of threads
+	"""
+
+	def _parallelWorker(sq):
+		while True:
+			if sq.empty(): break
+			try:
+				arg = sq.get()
+			except Exception:
+				sq.task_done()
+				break
+			if not arg: 
+				sq.task_done()
+				break
+
+			try:
+				func(*arg)
+			except Exception:
+				raise
+			finally:
+				sq.task_done()
+
+	nworkers = min(len(args), nthread)
+	if nworkers == 1:
+		for arg in args: func(*arg)
+	else:
+		q = moves.queue.Queue()
+		for arg in args: q.put(arg)
+		for i in range(nworkers): q.put(None)
+
+		for i in range(nworkers):
+			t = Thread(target = _parallelWorker, args=(q, ))
+			t.setDaemon(True)
+			t.start()
+		q.join()
+
 
 def varname (maxline = 20, incldot = False):
 	"""
