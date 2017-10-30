@@ -475,13 +475,12 @@ class Job (object):
 				self.rc(-2)
 				self.proc.log ('Job #%-3s: outfile not generated: %s' % (self.index, out['data']), 'debug', 'OUTFILE_NOT_EXISTS')
 				return
-				
-		if self.proc.expect and expect:
-			expect = self.proc.expect.render(self.data)
-			self.proc.log ('Job #%-3s: check expectation: %s' % (self.index, expect), 'debug', 'EXPECT_CHECKING')
-			p      = utils.dumbPopen (expect, shell=True)
-			if p.wait() != 0:
-				self.rc(-3)
+		
+		expectCmd = self.proc.expect.render(self.data)
+		if expectCmd and expect:
+			self.proc.log ('Job #%-3s: check expectation: %s' % (self.index, expectCmd), 'debug', 'EXPECT_CHECKING')
+			rc = utils.dumbPopen (expect, shell=True).wait()
+			if rc != 0:	self.rc(-3)
 
 	def export (self):
 		"""
@@ -550,7 +549,7 @@ class Job (object):
 		"""
 		Clear the intermediate files and output files
 		"""
-		self.proc.log ('Resetting job #%s ...' % self.index, 'debug', 'JOB_RESETTING')
+		#self.proc.log ('Resetting job #%s ...' % self.index, 'debug', 'JOB_RESETTING')
 		if retry is not None:
 			retrydir = path.join(self.dir, 'retry.' + str(retry))
 			utils.safeRemove(retrydir)
