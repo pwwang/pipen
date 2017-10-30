@@ -14,7 +14,7 @@ from traceback import format_exc
 from os import path, remove, symlink, makedirs, chdir, getcwd, walk, stat, chmod, devnull
 from shutil import rmtree, copyfile, copytree, move, copyfileobj
 from subprocess import Popen
-from multiprocessing import Process, Pipe
+from multiprocessing import Process, Pipe, JoinableQueue
 from hashlib import md5
 from box import Box
 from six import moves, string_types
@@ -43,7 +43,7 @@ class ProcessEx (Process):
 			if ex:
 				raise ex
 
-def parallel(func, args, nthread):
+def parallel(func, args, nthread, method = 'thread'):
 	"""
 	Call functions in a parallel way.
 	If nthread == 1, will be running in single-threading manner.
@@ -51,7 +51,10 @@ def parallel(func, args, nthread):
 		`func`: The function
 		`args`: The arguments, in list. Each element should be the arguments for the function in one thread.
 		`nthread`: Number of threads
+		`method`: use multithreading (thread) or multiprocessing (process)
 	"""
+	q = moves.queue.Queue() if method == 'thread' else JoinableQueue()
+	u = Thread if method == 'thread' else Process
 
 	def _parallelWorker(sq):
 		while True:
@@ -73,18 +76,15 @@ def parallel(func, args, nthread):
 				sq.task_done()
 
 	nworkers = min(len(args), nthread)
-	if nworkers == 1:
-		for arg in args: func(*arg)
-	else:
-		q = moves.queue.Queue()
-		for arg in args: q.put(arg)
-		for _ in range(nworkers): q.put(None)
 
-		for _ in range(nworkers):
-			t = Thread(target = _parallelWorker, args=(q, ))
-			t.setDaemon(True)
-			t.start()
-		q.join()
+	for arg in args: q.put(arg)
+	for _ in range(nworkers): q.put(None)
+
+	for _ in range(nworkers):
+		t = u(target = _parallelWorker, args=(q, ))
+		t.daemon = True
+		t.start()
+	q.join()
 
 
 def varname (maxline = 20, incldot = False):

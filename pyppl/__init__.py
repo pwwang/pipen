@@ -978,57 +978,30 @@ class Proc (object):
 		interval  = .1
 		if hasattr(runner, 'interval'):
 			interval = runner.interval
-			
-		def _worker(q):
-			"""
-			The worker to run jobs with multiprocessing
-			@params:
-				`q`: The multiprocessing.JoinableQueue
-			"""
-			while True:
-				if q.empty(): break
-				try:
-					data = q.get()
-				except Exception:
-					q.task_done()
-					break
-				if data is None: 
-					q.task_done()
-					break
 
-				try:
-					index, cached = data
-					r     = runner(self.jobs[index])
-					batch = int(index/maxsubmit)
-					if cached:
-						sleep (batch * .1)
-						self.jobs[index].done()
-					else:
-						# check whether the job is running before submit it
-						if r.isRunning():
-							sleep (batch * .1)
-							self.log ("Job #%-3s is already running, skip submitting." % index, 'submit')
-						else:
-							sleep (batch * interval)
-							r.submit()
-						r.wait()
-						r.finish()
-				except Exception:
-					raise
-				finally:
-					q.task_done()
-		
-		sq = multiprocessing.JoinableQueue()
-		for i in list(range(self.size)):
-			sq.put((i, i not in self.ncjobids))
+		def _worker(index, cached):
+			job   = self.jobs[index]
+			r     = runner(job)
+			batch = int(index/maxsubmit)
+			if cached:
+				sleep(batch * .1)
+				job.done()
+			elif r.isRunning():
+				sleep(batch * .1)
+				self.log ("Job #%-3s is already running, skip submitting." % index, 'submit')
+				r.wait()
+				r.finish()
+			else:
+				sleep(batch * interval)
+				r.submit()
+				r.wait()
+				r.finish()
 
-		# submit jobs
-		for i in range (min(self.forks, self.size)):
-			t = multiprocessing.Process(target = _worker, args = (sq, ))
-			t.daemon = True
-			t.start ()
+		args = []
+		for i in range(self.size):
+			args.append((i, i not in self.ncjobids))
 		
-		sq.join()
+		utils.parallel(_worker, args, min(self.forks, self.size), 'process')
 			
 class PyPPL (object):
 	"""

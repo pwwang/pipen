@@ -667,6 +667,10 @@ class Job (object):
 				self.input[key]['data']     = []
 				self.data['in'][key]        = []
 				self.data['in']['_' + key]  = []
+
+				if not isinstance(val['data'][self.index], list):
+					raise ValueError('Expect a list for input type: files, but we got: %s' % val['data'][self.index])
+
 				for orgfile in val['data'][self.index]:
 					orgfile = path.abspath(orgfile)
 
