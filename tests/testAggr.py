@@ -46,7 +46,7 @@ class TestAggr (unittest.TestCase):
 		self.assertIsInstance(a, Aggr)
 		self.assertIsInstance(p, _Proxy)
 		p.addsub('b')
-		self.assertEqual(p.__dict__['_names'], ['a', 'b'])
+		self.assertEqual(p.__dict__['_subs'], ['a', 'b'])
 		self.assertRaises(AttributeError, p.__setattr__, 'x', 1)
 		p.a = 1
 		p.b = 2
@@ -60,20 +60,31 @@ class TestAggr (unittest.TestCase):
 		self.assertEqual(a.ends, [a.p])
 		self.assertEqual(a.id, 'a')
 		self.assertIsInstance(a.args, _Proxy)
-		self.assertEqual(a.args._names, ['x', 'y'])
+		self.assertEqual(a.args._subs, ['x', 'y'])
 		self.assertIsInstance(a.p, Proc)
 		self.assertIsNot(a.p, p)
 		self.assertEqual(a._procs, {'p': a.p})
 
+		a.args.x = 1
+		a.args.y = 2
+		self.assertEqual(a.p.args.x, 1)
+		self.assertEqual(a.p.args.y, 2)
+
+		a.delegate('a.*', None, 'args.*')
+		a.a.x = 3
+		a.a.y = 4
+		self.assertEqual(a.p.args.x, 3)
+		self.assertEqual(a.p.args.y, 4)
+
 	def testDelegate(self):
 		p1 = Proc()
 		p2 = Proc()
+		p1.args.args1 = Box()
 		a = Aggr(p1, p2)
 		self.assertRaises(AttributeError, a.delegate, 'starts')
 		self.assertRaises(AttributeError, a.delegate, 'x.a.b')
 		self.assertRaises(AttributeError, a.delegate, 'id.b')
-		self.assertRaises(AttributeError, a.delegate, 'args.*', None, 'x.*')
-		
+		#self.assertRaises(AttributeError, a.delegate, 'args.*', None, 'x.*')
 		
 
 		a.delegate('a')
@@ -82,10 +93,11 @@ class TestAggr (unittest.TestCase):
 		a.delegate('d', 'both')
 		a.delegate('a', 'p1', 'args.x') # overwrite
 		a.delegate('tplenvs.a', pattr = 'desc')
-		a.delegate('args.*')
+		a.delegate('a.*', None, 'args.*')
+		a.delegate('f.*', 'p1', 'args.args1.*')
 		self.assertEqual(a._delegates, {
 			'a': ('p1', 'args.x'),
-			'args.*': (None, 'args.*'),
+			'a.*': (None, 'args.*'),
 			'b': ('starts', 'b'),
 			'c': ('ends', 'c'),
 			'd': ('both', 'd'),
@@ -96,8 +108,15 @@ class TestAggr (unittest.TestCase):
 			'exow': ('ends', 'exow'),
 			'expart': ('ends', 'expart'),
 			'input': ('starts', 'input'),
-			'tplenvs.a': (None, 'desc')
+			'tplenvs.a': (None, 'desc'),
+			'f.*': ('p1', 'args.args1.*')
 		})
+		a.f.j = 2
+		a.tplenvs.a = 'hahahah'
+		a.a.a = 'aaa'
+		self.assertEqual(a.p1.args.args1.j, 2)
+		self.assertEqual(a.p2.desc, 'hahahah')
+		self.assertEqual(a.p2.args.a, 'aaa')
 
 	def testSet(self):
 		p1 = Proc()
@@ -191,7 +210,7 @@ class TestAggr (unittest.TestCase):
 		p2 = Proc()
 		p3 = Proc()
 		a = Aggr(p1, p2)
-
+		a.delegate('args.*')
 		b = a.copy()
 		self.assertEqual(b.id, 'b')
 		self.assertEqual(b.p1.tag, utils.uid('b', 4))
@@ -204,6 +223,12 @@ class TestAggr (unittest.TestCase):
 		a.p2.depends = p3
 		self.assertRaises(ValueError, a.copy, deps = True)
 
+		a.args.a = 1
+		self.assertEqual(a.p1.args.a, 1)
+
+		b.args.a = 2
+		self.assertEqual(b.p1.args.a, 2)
+		self.assertEqual(a.p1.args.a, 1)
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

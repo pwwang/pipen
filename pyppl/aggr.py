@@ -14,18 +14,18 @@ class _Proxy(object):
 	p.arg.tool = 'bedtools'
 	```
 	"""
-	def __init__(self, aggr, attr, names):
-		self.__dict__['_aggr']  = aggr
-		self.__dict__['_attr']  = attr
-		self.__dict__['_names'] = [names]
+	def __init__(self, aggr, attr, sub):
+		self.__dict__['_aggr'] = aggr
+		self.__dict__['_attr'] = attr
+		self.__dict__['_subs'] = [sub]
 
 	def addsub(self, sub):
-		self._names.append(sub)
+		self._subs.append(sub)
 	
 	def __setattr__(self, name, value):
-		if '*' not in self.__dict__['_names'] and name not in self.__dict__['_names']:
-			raise AttributeError('%s.%s is not delegated.' % (self.__dict__['_attr'], name))
-		setattr(self.__dict__['_aggr'], "%s.%s" % (self.__dict__['_attr'], name), value)
+		if name not in self._subs and not any([a.endswith('*') for a  in self._subs]):
+			raise AttributeError('%s.%s is not delegated.' % (self._attr, name))
+		setattr(self._aggr, self._attr + '.' + name, value)
 
 class Aggr (object):
 	"""
@@ -111,18 +111,31 @@ class Aggr (object):
 			raise AttributeError('Cannot delegate process attribute to an existing Aggr attribute: %s.' % attr)
 
 		if pattr is None: pattr = attr
+
 		if '.' in attr:
+			# can only do
+			# a.delegate('a', None, 'b') or
+			# a.delegate('a.b', None, 'b') or
+			# a.delegate('a.b', None, 'b.c.d.e') or
+			# a.delegate('a.*', None, 'b.*') or
+			# a.delegate('a.*', None, 'b.c.*') or
 			if attr.count('.') > 1: 
 				raise AttributeError('Cannot delegate process attribute to a "2-dot" Aggr attribute: %s' % attr)
-			attrname, attrsubs = attr.split('.')
+			# args.x
+			attrname, attrsub = attr.split('.')
 			if attrname in self.__dict__['_props'] or attrname in self.__dict__['_procs']:
 				raise AttributeError('Cannot delegate process attribute to an existing Aggr attribute: %s.' % attrname)
-			if pattr != attr and (attrsubs == '*' or pattr.endswith('.*')):
-				raise AttributeError('Cannot delegate different process attribute to Aggr attribute: %s -> %s.' % (pattr, attr))
+			if pattr.endswith('.*') and attrsub != '*': 
+				raise AttributeError('Cannot delegate multiple attributes to a single one.')
+			
 			if not attrname in self.__dict__['_proxies']:
-				self.__dict__['_proxies'][attrname] = _Proxy(self, attrname, attrsubs)
+				self.__dict__['_proxies'][attrname] = _Proxy(self, attrname, attrsub)
 			else:
-				self.__dict__['_proxies'][attrname].addsub(attrsubs)
+				self.__dict__['_proxies'][attrname].addsub(attrsub)
+
+		elif pattr.endswith('.*'): 
+			raise AttributeError('Cannot delegate multiple attributes to a single one.')
+
 		self.__dict__['_delegates'][attr] = procs, pattr
 
 	def __getattr__(self, name):
@@ -142,10 +155,11 @@ class Aggr (object):
 			self.__dict__['_props'][name] = list(value) if isinstance(value, tuple) or isinstance(value, list) else [value]
 		elif name in self.__dict__:
 			raise AttributeError('Attribute %s is not allowed to be modified.' % name)
+		# no star
 		elif name in self.__dict__['_delegates']:
 			procs, attr = self.__dict__['_delegates'][name]
 			if procs is None:
-				procs = self.procs
+				procs = self.__dict__['_procs'].values()
 			elif procs == 'starts':
 				procs = self.starts
 			elif procs == 'ends':
@@ -163,8 +177,6 @@ class Aggr (object):
 				elif '.' not in attr:
 					setattr(proc, attr, value)
 				else:
-					if attr.endswith('.*'): 
-						attr = attr[:-2] + name.split('.')[-1]
 					parts = attr.split('.')
 					newv  = {parts.pop(-1): value}
 					oldv  = proc
@@ -172,6 +184,28 @@ class Aggr (object):
 						key  = parts.pop(0)
 						oldv = getattr(oldv, key)
 					utils.dictUpdate(oldv, newv)
+		elif '.' in name and (name.split('.')[0] + ".*") in self.__dict__['_delegates']:
+			procs, attr = self.__dict__['_delegates'][(name.split('.')[0] + ".*")]
+			if procs is None:
+				procs = self.__dict__['_procs'].values()
+			elif procs == 'starts':
+				procs = self.starts
+			elif procs == 'ends':
+				procs = self.ends
+			elif procs == 'both':
+				procs = list(set(self.starts + self.ends))
+			else:
+				procs = [self.__dict__['_procs'][pid] for pid in utils.alwaysList(procs)]
+
+			attrs = attr.split('.')
+			for i, proc in enumerate(procs):
+				parts = attrs[:-1] + [name.split('.')[-1]]
+				newv  = {parts.pop(-1): value}
+				oldv  = proc
+				while parts:
+					key  = parts.pop(0)
+					oldv = getattr(oldv, key)
+				utils.dictUpdate(oldv, newv)
 		else:
 			for _, proc in self.__dict__['_procs'].items():
 				if '.' not in name:
@@ -221,7 +255,11 @@ class Aggr (object):
 		name = utils.varname() if newid is None else newid
 		tag  = utils.uid(name, 4) if not tag else tag
 		ret  = Aggr (id = name)
-		
+
+		for k, v in self.__dict__['_delegates'].items():
+			if k not in ret.__dict__['_delegates']:
+				ret.delegate(k, *v)
+
 		for _, proc in self.__dict__['_procs'].items():
 			if tag == proc.tag:
 				# This will happen to have procs with same id and tag
