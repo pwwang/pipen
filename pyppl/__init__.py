@@ -6,6 +6,7 @@ import sys
 import six
 import multiprocessing
 import copy as pycopy
+import traceback
 from os import path, makedirs
 from time import time, sleep
 from random import randint
@@ -18,7 +19,8 @@ from .channel import Channel
 from .job import Job
 from .parameters import params, Parameter, Parameters
 from .flowchart import Flowchart
-from . import logger, utils, runners, templates
+from .proctree import ProcTree
+from . import logger, utils, runners, templates, ProcTree
 
 class Proc (object):
 	"""
@@ -26,7 +28,6 @@ class Proc (object):
 	
 	@static variables:
 		`RUNNERS`:       The regiested runners
-		`PROCS`:         The "<id>.<tag>" initialized processes, used to detected whether there are two processes with the same id and tag.
 		`ALIAS`:         The alias for the properties
 		`LOG_NLINE`:     The limit of lines of logging information of same type of messages
 		
@@ -366,10 +367,9 @@ class Proc (object):
 		@returns:
 			The new process
 		"""
-		newproc = Proc (
-			tag  = tag  if tag is not None else self.tag,
-			desc = desc if desc is not None else self.desc
-		)
+		tag  = tag if tag is not None else self.tag
+		desc = desc if desc is not None else self.desc
+		newproc = Proc(tag = tag, desc = desc)
 		
 		config = {key: val for key, val in self.config.items()}
 		config['id']       = newid if newid else utils.varname()
@@ -1010,7 +1010,6 @@ class PyPPL (object):
 	@static variables:
 		`TIPS`: The tips for users
 		`RUNNERS`: Registered runners
-		`PROCS`: The processes
 		`DEFAULT_CFGFILES`: Default configuration file
 	"""
 	
@@ -1025,8 +1024,7 @@ class PyPPL (object):
 		"The default <ppldir> will be './workdir'",
 	]
 
-	RUNNERS = {}
-	PROCS   = []
+	RUNNERS  = {}
 	# ~/.PyPPL.json has higher priority
 	DEFAULT_CFGFILES = ['~/.PyPPL', '~/.PyPPL.json']
 	
@@ -1082,79 +1080,8 @@ class PyPPL (object):
 		for cfile in (PyPPL.DEFAULT_CFGFILES + [str(cfgfile)]):
 			if not path.isfile(cfile): continue
 			logger.logger.info ('[ CONFIG] Read from %s' % cfile)
-			
-		self.starts  = []
-		self.nexts   = {}
-		self.ends    = []
-		self.paths   = {}
 
-	def _procRelations(self, useStarts = True, force = False):
-		"""
-		Infer the processes relations
-		@params:
-			`useStarts`: Whether to use `self.starts` to infer or not. Default: True
-			`force`: Force to replace `self.nexts, self.ends, self.paths`. Default: False
-		@returns:
-			`self.nexts, self.ends, self.paths`
-		"""
-
-		if self.nexts and not force:
-			return self.nexts, self.ends, self.paths
-
-		nexts   = {}
-		ends    = []
-		paths   = {}
-
-		def getpaths(p, useStarts):
-			if p in self.starts and useStarts: return []
-			ret     = []
-			for dep in p.depends:
-				if not dep.depends or (dep in self.starts and useStarts):
-					ps = [[dep]]
-				else:
-					ps  = getpaths(dep, useStarts)
-					for p in ps:
-						p.insert(0, dep)
-				ret.extend(ps)
-			return ret
-
-		# nexts, paths
-		for proc in PyPPL.PROCS:
-			name = id(proc)
-			paths[name] = getpaths(proc, useStarts)
-			if not name in nexts: nexts[name] = []
-			for dp in proc.depends:
-				dpname = id(dp)
-				if not dpname in nexts: nexts[dpname] = []
-				if not proc in nexts[dpname]:
-					nexts[dpname].append(proc)
-		
-		# ends
-		for proc in PyPPL.PROCS:
-			name     = id(proc)
-			ppaths   = paths[name]
-			# if some proc depends on it, it's not an ending for sure
-			if nexts[name]: continue
-
-			# if don't use starts, then no nexts means it's end
-			if not useStarts:
-				if proc not in ends: ends.append(proc)
-			# if it is a start, then it's an end too
-			elif proc in self.starts:
-				if proc not in ends: ends.append(proc)
-			# obosolete proc
-			elif not ppaths: continue
-			# else: start of each path should be in starts
-			elif all([ps[-1] in self.starts for ps in ppaths]):
-				if proc not in ends: ends.append(proc)
-
-		if not ends and useStarts:
-			raise ValueError('Cannot figure out ending processes, you probably missed to mark some starting processes.')
-
-		self.nexts  = nexts
-		self.ends   = ends
-		self.paths  = paths
-		return self.nexts, self.ends, self.paths
+		self.tree    = ProcTree()
 		
 	def start (self, *args):
 		"""
@@ -1164,16 +1091,20 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
-		self.starts = PyPPL._any2procs(*args)
-		_, _, paths = self._procRelations(useStarts = False)
-		nostarts = []
-		for start in self.starts:
-			name = start.name(False)
-			if any([(set(ps) & set(self.starts)) for ps in paths[id(start)]]):
-				logger.logger.info('[WARNING] Process %s will be ignored as a starting process as it depends on other starting processes.' % name)
-				nostarts.append(start)
-		self.starts = [start for start in self.starts if start not in nostarts]
-		self._procRelations(useStarts = True, force = True)
+		starts  = PyPPL._any2procs(*args)
+		starts2 = []
+		for start in starts:
+			paths = self.tree.getPaths(start)
+			found = False
+			for path in paths:
+				if any([p in starts for p in path]):
+					found = True
+					break
+			if found:
+				logger.logger.info('[WARNING] Process %s marked as start but will be ignored as it depends on other start processes.' % start.name())
+			else:
+				starts2.append(start)
+		self.tree.setStarts(starts2)
 		return self
 
 	def _resume(self, *args):
@@ -1182,22 +1113,24 @@ class PyPPL (object):
 		@params:
 			`args`: the processes to be marked. The last element is the mark for processes to be skipped.
 		"""
-		_, ends, paths = self._procRelations()
+
 		flag    = args[-1]
 		args    = args[:-1]
 		rsprocs = PyPPL._any2procs(*args)
+		ends    = self.tree.getEnds()
 		
 		for end in ends:
 			if end in rsprocs: continue
-			for ps in paths[id(end)]:
+			for ps in self.tree.getPathsToStarts(end):
+				ps.insert(0, end)
 				if (set(ps) & set(rsprocs)): continue
-				raise ValueError('None processes along %s\'s path [%s] is resumed.' % (end.name(), ' -> '.join([p.name() for p in reversed(ps)] + [end.name()])))
+				raise ValueError('None processes along %s\'s path [%s] is resumed.' % (end.name(), ' <- '.join([p.name() for p in ps])))
 
 		ps2skip = []
 		for rp in rsprocs:
 			# True: totally resumed, 'resume': read from proc.settings
 			rp.props['resume'] = 'resume+' if flag.endswith('+') else 'resume'
-			rppaths = paths[id(rp)]
+			rppaths = self.tree.getPathsToStarts(rp)
 			if rppaths:
 				ps2skip.extend(list(utils.reduce(lambda x,y: set(x) | set(y), rppaths)))
 		ps2skip = set(ps2skip)
@@ -1267,30 +1200,16 @@ class PyPPL (object):
 		"""
 		timer     = time()
 		dftconfig = self._getProfile(profile)
+		proc      = self.tree.getNextToRun()
+		while proc:
+			proc.log (proc.desc, '>>>>>>>')
+			proc.log ("%s => %s => %s" % (ProcTree.getPrevStr(proc), proc.name(), ProcTree.getNextStr(proc)))
+			if proc.profile and proc.profile != profile:
+				proc.run(self._getProfile(proc.profile))
+			else:
+				proc.run(dftconfig)
+			proc = self.tree.getNextToRun()
 
-		nexts, ends, paths = self._procRelations()
-
-		doneprocs = set()
-		next2run  = self.starts
-		while next2run:
-			next2run2 = set()
-			for p in sorted(next2run, key = lambda x: x.name()):
-				pnexts = nexts[id(p)]
-				p.log (p.desc, '>>>>>>>')
-				p.log ("%s => %s => %s" % (
-					[d.name() for d in p.depends] if p.depends else "START",
-					p.name(),
-					[n.name() for n in pnexts] if pnexts else "END"
-				), "depends")
-				if p.profile and p.profile != profile:
-					p.run(self._getProfile(p.profile))
-				else:
-					p.run(dftconfig)
-				doneprocs |= set([p])
-				next2run2 |= set(pnexts)
-			# next procs to run must be not finished and all their depends are finished
-			next2run = [n for n in next2run2 if n not in doneprocs and all(x in doneprocs for x in n.depends)]
-			
 		logger.logger.info ('[   DONE] Total time: %s' % utils.formatSecs (time()-timer))
 		return self
 		
@@ -1305,21 +1224,19 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
-		nexts, ends, paths = self._procRelations()
-
 		dot = dot if dot else self.fcconfig['dot']
 		fc  = Flowchart(dotfile = dotfile, fcfile = fcfile, dot = dot)
 		fc.setTheme(self.fcconfig['theme'])
 
-		for start in self.starts:
+		for start in self.tree.getStarts():
 			fc.addNode(start, 'start')
 			
-		for end in self.ends:
+		for end in self.tree.getEnds():
 			fc.addNode(end, 'end')
-			for ps in paths[id(end)]:
+			for ps in self.tree.getPathsToStarts(end):
 				for p in ps: 
 					fc.addNode(p)
-					nextps = nexts[id(p)]
+					nextps = ProcTree.getNext(p)
 					if not nextps: continue
 					for np in nextps: fc.addLink(p, np)
 
@@ -1351,7 +1268,8 @@ class PyPPL (object):
 				ret.extend([p for p in pany.starts])
 			else:
 				found = False
-				for p in PyPPL.PROCS:
+				for node in ProcTree.NODES.values():
+					p = node.proc
 					if p.id == pany:
 						found = True
 						ret.append(p)
@@ -1369,8 +1287,7 @@ class PyPPL (object):
 		@params:
 			`proc`: The process
 		"""
-		if not proc in PyPPL.PROCS:
-			PyPPL.PROCS.append(proc)
+		ProcTree.register(proc)
 
 	@staticmethod
 	def _checkProc(proc):
@@ -1381,10 +1298,7 @@ class PyPPL (object):
 		@returns:
 			If there are 2 processes with the same id and tag, raise `ValueError`.
 		"""
-		for p in PyPPL.PROCS:
-			if proc is p: continue
-			if p.id == proc.id and p.tag == proc.tag:
-				raise ValueError('You cannot have two processes with the same id(%s) ang tag(%s).' % (p.id, p.tag))
+		ProcTree.check(proc)
 
 	@staticmethod
 	def registerRunner(runner):

@@ -8,7 +8,6 @@
 	@static variables:
 		`TIPS`: The tips for users
 		`RUNNERS`: Registered runners
-		`PROCS`: The processes
 		`DEFAULT_CFGFILES`: Default configuration file
 	
 
@@ -49,17 +48,6 @@ Get running profile according to profile name
 
 - **returns:**  
 The running configuration  
-  
-#### `_procRelations (self, useStarts, force) `
-  
-Infer the processes relations  
-
-- **params:**  
-`useStarts`: Whether to use `self.starts` to infer or not. Default: True  
-`force`: Force to replace `self.nexts, self.ends, self.paths`. Default: False  
-
-- **returns:**  
-`self.nexts, self.ends, self.paths`  
   
 #### `_registerProc (proc) [@staticmethod]`
   
@@ -141,7 +129,6 @@ The pipeline object itself.
 	
 	@static variables:
 		`RUNNERS`:       The regiested runners
-		`PROCS`:         The "<id>.<tag>" initialized processes, used to detected whether there are two processes with the same id and tag.
 		`ALIAS`:         The alias for the properties
 		`LOG_NLINE`:     The limit of lines of logging information of same type of messages
 		
@@ -162,7 +149,7 @@ Constructor
 - **config:**  
 id, input, output, ppldir, forks, cache, rc, echo, runner, script, depends, tag, desc  
 exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr  
-callfront, callback, brings, expect, expart, template, tplenvs, resume, profile  
+callfront, callback, brings, expect, expart, template, tplenvs, resume, profile, nthread  
 
 - **props**  
 input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, brings, expect  
@@ -816,7 +803,7 @@ Constructor
 `id`: The id of the aggr. Default: None (the variable name)  
 `tag`: The tag of the processes. Default: None (a unique 4-char str according to the id)  
   
-#### `addProc (self, p, tag, where) `
+#### `addProc (self, p, tag, where, copy) `
   
 Add a process to the aggregation.  
 Note that you have to adjust the dependencies after you add processes.  
@@ -1134,6 +1121,16 @@ logging formatter for pyppl
 > A set of utitities for PyPPL
 
 
+#### `JoinableQueue (maxsize) `
+  
+Returns a queue object  
+  
+#### `class: Thread`
+```
+A class that represents a thread of control.
+
+    This class can be safely subclassed in a limited fashion.
+```
 #### `_fileExists (f, callback) `
   
 Tell whether a path exists  
@@ -1359,6 +1356,17 @@ Python2 and Python3 compatible map
 - **returns:**  
 The maped list  
   
+#### `parallel (func, args, nthread, method) `
+  
+Call functions in a parallel way.  
+If nthread == 1, will be running in single-threading manner.  
+
+- **params:**  
+`func`: The function  
+`args`: The arguments, in list. Each element should be the arguments for the function in one thread.  
+`nthread`: Number of threads  
+`method`: use multithreading (thread) or multiprocessing (process)  
+  
 #### `range (i, *args, **kwargs) `
   
 Convert a range to list, because in python3, range is not a list  
@@ -1515,6 +1523,159 @@ Get the variable name for ini
 
 - **returns:**  
 The variable name  
+  
+
+## Module `proctree.ProcNode`  
+> The node for processes to manage relations between each other
+	
+
+#### `__init__ (self, proc) `
+  
+Constructor  
+
+- **params:**  
+`proc`: The `Proc` instance  
+  
+#### `sameIdTag (self, proc) `
+  
+Check if the process has the same id and tag with me.  
+
+- **params:**  
+`proc`: The `Proc` instance  
+
+- **returns:**  
+`True` if it is.  
+`False` if not.  
+  
+
+## Module `proctree.ProcTree`  
+> .
+
+#### `__init__ (self) `
+  
+Constructor, set the status of all `ProcNode`s  
+  
+#### `check (proc) [@staticmethod]`
+  
+Check whether a process with the same id and tag exists  
+
+- **params:**  
+`proc`: The `Proc` instance  
+  
+#### `checkPath (self, proc) `
+  
+Check whether paths of a process can start from a start process  
+
+- **params:**  
+`proc`: The process  
+
+- **returns:**  
+`True` if all paths can pass  
+The failed path otherwise  
+  
+#### `getEnds (self) `
+  
+Get the end processes  
+
+- **returns:**  
+The end processes  
+  
+#### `getNext (proc) [@staticmethod]`
+  
+Get next processes of process  
+
+- **params:**  
+`proc`: The `Proc` instance  
+
+- **returns:**  
+The processes depend on this process  
+  
+#### `getNextStr (proc) [@staticmethod]`
+  
+Get the names of processes depend on a process  
+
+- **params:**  
+`proc`: The `Proc` instance  
+
+- **returns:**  
+The names  
+  
+#### `getNextToRun (self) `
+  
+Get the process to run next  
+
+- **returns:**  
+The process next to run  
+  
+#### `getNode (proc) [@staticmethod]`
+  
+Get the `ProcNode` instance by `Proc` instance  
+
+- **params:**  
+`proc`: The `Proc` instance  
+
+- **returns:**  
+The `ProcNode` instance  
+  
+#### `getPaths (self, proc, proc0) `
+  
+Infer the path to a process  
+
+- **params:**  
+`proc`: The process  
+`proc0`: The original process  
+
+- **returns:**  
+```  
+p1 -> p2 -> p3  
+p4  _/  
+Paths for p3: [[p4], [p2, p1]]  
+```  
+  
+#### `getPathsToStarts (self, proc) `
+  
+Filter the paths with start processes  
+
+- **params:**  
+`proc`: The process  
+
+- **returns:**  
+The filtered path  
+  
+#### `getPrevStr (proc) [@staticmethod]`
+  
+Get the names of processes a process depends on  
+
+- **params:**  
+`proc`: The `Proc` instance  
+
+- **returns:**  
+The names  
+  
+#### `getStarts (self) `
+  
+Get the start processes  
+
+- **returns:**  
+The start processes  
+  
+#### `register (proc) [@staticmethod]`
+  
+Register the process  
+
+- **params:**  
+`proc`: The `Proc` instance  
+  
+#### `reset () [@staticmethod]`
+  
+Reset the status of all `ProcNode`s  
+  
+#### `setStarts (self, starts) `
+  
+Set the start processes  
+
+- **params:**  
+`starts`: The start processes  
   
 
 ## Module `templates.TemplatePyPPL`  

@@ -230,5 +230,7 @@ class TestAggr (unittest.TestCase):
 		self.assertEqual(b.p1.args.a, 2)
 		self.assertEqual(a.p1.args.a, 1)
 
+		c = a.copy(deps = False)
+
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

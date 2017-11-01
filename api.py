@@ -9,7 +9,7 @@ import pyppl
 
 modules = [
 	'PyPPL', 'Proc', 'Channel', 'Job', 'Aggr', 'Flowchart', 'Parameter', 'Parameters', 
-	'logger', 'utils', 
+	'logger', 'utils', 'proctree.ProcNode', 'proctree.ProcTree',
 	'templates.TemplatePyPPL', 'templates.TemplateJinja2',
 	'runners.Runner', 'runners.RunnerQueue', 'runners.RunnerLocal', 'runners.RunnerSsh', 'runners.RunnerSge', 'runners.RunnerSlurm', 'runners.RunnerDry', 
 ]

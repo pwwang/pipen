@@ -5,7 +5,7 @@ import tempfile
 from box import Box
 from os import path, makedirs
 from time import sleep
-from pyppl import Proc, logger, templates, utils, Channel, PyPPL, Job
+from pyppl import Proc, logger, templates, utils, Channel, PyPPL, Job, ProcTree
 
 from contextlib import contextmanager
 from six import StringIO
@@ -214,8 +214,9 @@ class TestProc (unittest.TestCase):
 		p._buildProps()
 		# no procs with same id and tag
 		p2 = Proc(tag = 'buildprops', id = 'p')
-		self.assertRaises(ValueError, p2._buildProps)
-		del PyPPL.PROCS[PyPPL.PROCS.index(p2)]
+		with captured_output() as (out, err):
+			self.assertRaises(ValueError, p2._buildProps)
+		del ProcTree.NODES[id(p2)]
 		# template
 		self.assertIs(p.template, templates.TemplatePyPPL)
 		try:

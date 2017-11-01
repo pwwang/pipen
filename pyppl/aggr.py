@@ -219,7 +219,7 @@ class Aggr (object):
 						oldv = getattr(oldv, key)
 					utils.dictUpdate(oldv, newv)
 	
-	def addProc (self, p, tag = None, where = None):
+	def addProc (self, p, tag = None, where = None, copy = True):
 		"""
 		Add a process to the aggregation.
 		Note that you have to adjust the dependencies after you add processes.
@@ -232,7 +232,7 @@ class Aggr (object):
 		if tag is not None:
 			tag = utils.uid(self.id, 4) if not self.__dict__['_procs'] else list(self.__dict__['_procs'].values())[0].tag
 
-		newproc = p.copy(tag = tag, newid = p.id)
+		newproc = p.copy(tag = tag, newid = p.id) if copy else p
 		newproc.aggr = self.id
 		self.__dict__['_procs'][newproc.id] = newproc
 		if where == 'starts' or where == 'both':
@@ -268,8 +268,7 @@ class Aggr (object):
 			if proc not in self.starts and deps:
 				for d in proc.depends:
 					if d not in self.__dict__['_procs'].values():
-						raise ValueError('Failed to copy "%s": a non-start proc ("%s") depends on a proc("%s") does not belong to "%s"' % (self.id, proc.name(), d.name(), self.id))					
-			
+						raise ValueError('Failed to copy "%s": a non-start proc ("%s") depends on a proc("%s") does not belong to "%s"' % (self.id, proc.name(), d.name(), self.id))
 			newproc      = proc.copy (tag, proc.id)
 			newproc.aggr = name
 
@@ -279,7 +278,7 @@ class Aggr (object):
 				else 'ends' if proc in self.ends \
 				else None
 			
-			ret.addProc (newproc, tag = tag, where = where)
+			ret.addProc (newproc, tag = tag, where = where, copy = False)
 		
 		# copy dependences
 		if deps:

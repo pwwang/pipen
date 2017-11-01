@@ -6,7 +6,7 @@ import logging
 from os import path, remove
 from contextlib import contextmanager
 from six import StringIO
-from pyppl import PyPPL, utils, logger
+from pyppl import PyPPL, utils, logger, ProcTree
 
 def which(program):
 	import os
@@ -140,20 +140,22 @@ class TestPyPPL (unittest.TestCase):
 		PyPPL.registerRunner(AnotherRunner)
 		self.assertIn('AnotherRunner', PyPPL.RUNNERS)
 		self.assertEqual(PyPPL.RUNNERS['AnotherRunner'], AnotherRunner)
-
+	'''
 	def testRegisterCheckProc(self):
 		PyPPL.PROCS = []
 		p1 = Proc('p1', 'tag')
 		p2 = Proc('p2', 'tag')
 		p3 = Proc('p1', 'tag')
-		self.assertRaises(ValueError, PyPPL._checkProc, p3)
+		with captured_output() as (out, err):
+			self.assertRaises(ValueError, PyPPL._checkProc, p3)
 		self.assertEqual(len(PyPPL.PROCS), 3)
 		self.assertIs(PyPPL.PROCS[0], p1)
 		self.assertIs(PyPPL.PROCS[1], p2)
 		self.assertIs(PyPPL.PROCS[2], p3)
-
+	'''
 	def testAny2Procs(self):
-		PyPPL.PROCS = []
+		from collections import OrderedDict
+		ProcTree.NODES = OrderedDict()
 		ap1  = Proc()
 		ap2  = Proc()
 		ap3  = Proc()
@@ -176,7 +178,8 @@ class TestPyPPL (unittest.TestCase):
 		self.assertRaises(ValueError, PyPPL._any2procs, 'abc')
 		
 	def testStart(self):
-		PyPPL.PROCS = []
+		from collections import OrderedDict
+		ProcTree.NODES = OrderedDict()
 		ap1  = Proc()
 		ap2  = Proc()
 		ap3  = Proc()
@@ -198,7 +201,9 @@ class TestPyPPL (unittest.TestCase):
 			'proc': {'forks': 10}
 		})
 		pyppl.start('ap1', aggr, ap1, ap2)
-		self.assertEqual(set(pyppl.starts), set([ap1, ap2, ap3, ap4, ap6]))
+		self.assertEqual(len(pyppl.tree.getStarts()), 5)
+		for p in [ap1, ap6, ap2, ap3, ap4]:
+			self.assertIn(p, pyppl.tree.getStarts())
 		
 		with captured_output() as (out, err):
 			pyppl = PyPPL(config = {
@@ -208,8 +213,8 @@ class TestPyPPL (unittest.TestCase):
 				}
 			})
 			pyppl.start(ap1, ap10)
-		self.assertIn('Process ap5.t will be ignored as a starting process as it depends on other starting processes.', err.getvalue())
-
+		self.assertIn('Process ap5.t marked as start but will be ignored as it depends on other start processes.', err.getvalue())
+	'''
 	def testProcRelations(self):
 		"""
 		         / p3  --- \ 
@@ -321,7 +326,7 @@ class TestPyPPL (unittest.TestCase):
 		self.assertEqual(nexts, {id(pb): [], id(pc): [pd], id(pa): [], id(pd): []})
 		self.assertEqual(ends, [pd])
 		self.assertEqual(paths, {id(pb): [], id(pc): [], id(pa): [], id(pd): [[pc]]})
-
+	'''
 
 
 	def testResumeResume2(self):
@@ -333,7 +338,8 @@ class TestPyPPL (unittest.TestCase):
 		    p10         p6  /    \ p9
 		           p5 /
 		"""
-		PyPPL.PROCS = []
+		from collections import OrderedDict
+		ProcTree.NODES = OrderedDict()
 		p1  = Proc()
 		p2  = Proc()
 		p3  = Proc()
@@ -376,13 +382,26 @@ class TestPyPPL (unittest.TestCase):
 
 		for p in [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]:
 			p.props['resume'] = ''
+			ProcTree.getNode(p).start = False
 
-		pyppl.nexts = {}
-		self.assertRaises(ValueError, pyppl.start, p2)
+		pyppl.tree.starts = []
+		pyppl.tree.ends   = []
+		self.assertEqual( pyppl.tree.getStarts(), [] )
+		pyppl.start(p5)
+		self.assertEqual( pyppl.tree.getStarts(), [p5] )
+		self.assertRaises(ValueError, pyppl.tree.getEnds)
 		self.assertRaises(ValueError, pyppl._resume, p3, p4, 'skip+')
+
+		pyppl.tree.starts = []
+		pyppl.tree.ends   = []
 		pyppl.start(p2, p5)
+		self.assertEqual( len(pyppl.tree.getStarts()), 2 )
+		self.assertIn(p2, pyppl.tree.getStarts())
+		self.assertIn(p5, pyppl.tree.getStarts())
 		pyppl.resume2(p3, p6)
-		self.assertEqual(pyppl.ends, [p8, p9])
+		self.assertEqual( len(pyppl.tree.getEnds()), 2 )
+		self.assertIn(p8, pyppl.tree.getEnds())
+		self.assertIn(p9, pyppl.tree.getEnds())
 		self.assertEqual(p1.props['resume'], '')
 		self.assertEqual(p2.props['resume'], 'skip+')
 		self.assertEqual(p3.props['resume'], 'resume+')
@@ -406,7 +425,7 @@ class TestPyPPL (unittest.TestCase):
 			pyppl.resume(p3, p4, p6)
 		self.assertIn('processes marked for resuming will be skipped, as a resuming process depends on them.', err.getvalue())
 		'''
-		
+
 	@unittest.skipIf(not which('dot'), 'Graphviz not installed.')
 	def testFlowchart(self):
 		tmpdir  = tempfile.gettempdir()
@@ -419,7 +438,8 @@ class TestPyPPL (unittest.TestCase):
 		    p10         p6  /    \ p9
 		           p5 /
 		"""
-		PyPPL.PROCS = []
+		from collections import OrderedDict
+		ProcTree.NODES = OrderedDict()
 		p1  = Proc()
 		p2  = Proc()
 		p3  = Proc()
@@ -471,7 +491,8 @@ class TestPyPPL (unittest.TestCase):
 		    p10         p6  /    \ p9
 		           p5 /
 		"""
-		PyPPL.PROCS = []
+		from collections import OrderedDict
+		ProcTree.NODES = OrderedDict()
 		p1  = Proc()
 		p2  = Proc()
 		p3  = Proc()
@@ -500,7 +521,7 @@ class TestPyPPL (unittest.TestCase):
 			}).start(p1, p5).run()
 		errmsgs = [e for e in err.getvalue().splitlines() if 'SUBMIT' in e]
 		errmsgs = [e[(e.index('Running')+8):-4].strip() for e in errmsgs]
-		self.assertEqual(errmsgs, ['p1', 'p5', 'p10', 'p2', 'p3', 'p4', 'p6', 'p7', 'p8', 'p9'])
+		self.assertEqual(errmsgs, ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10'])
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

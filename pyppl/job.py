@@ -479,7 +479,7 @@ class Job (object):
 		expectCmd = self.proc.expect.render(self.data)
 		if expectCmd and expect:
 			self.proc.log ('Job #%-3s: check expectation: %s' % (self.index, expectCmd), 'debug', 'EXPECT_CHECKING')
-			rc = utils.dumbPopen (expect, shell=True).wait()
+			rc = utils.dumbPopen (expectCmd, shell=True).wait()
 			if rc != 0:	self.rc(-3)
 
 	def export (self):
@@ -589,7 +589,7 @@ class Job (object):
 		for _, out in self.output.items():
 			if out['type'] not in self.proc.OUT_DIRTYPE: continue
 			makedirs(out['data'])
-			self.proc.log ('Output directory created after reset: %s.' % out['data'], 'debug', 'OUTDIR_CREATED_AFTER_RESET')
+			#self.proc.log ('Output directory created after reset: %s.' % out['data'], 'debug', 'OUTDIR_CREATED_AFTER_RESET')
 
 	def _linkInfile(self, orgfile):
 		"""
