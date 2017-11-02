@@ -20,7 +20,7 @@ from .job import Job
 from .parameters import params, Parameter, Parameters
 from .flowchart import Flowchart
 from .proctree import ProcTree
-from . import logger, utils, runners, templates, ProcTree
+from . import logger, utils, runners, templates
 
 class Proc (object):
 	"""
@@ -1189,6 +1189,30 @@ class PyPPL (object):
 			raise AttributeError('Cannot set a unique id for all process in configuration.')
 
 		return config
+
+	def showAllRoutes(self):
+		logger.logger.info('[   INFO] ALL ROUTES:')
+		paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths(True)])
+		paths2 = [] # processes merged from the same aggr
+		for path in paths:
+			logger.logger.info('[  DEBUG] * %s' % (' -> '.join(path)))
+			prevaggr = None
+			path2    = []
+			for p in path:
+				if not '@' in p: path2.append(p)
+				else:
+					aggr = p.split('@')[-1]
+					if not prevaggr or prevaggr != aggr:
+						path2.append('[%s]' % aggr)
+						prevaggr = aggr
+					elif prevaggr == aggr:
+						continue
+			if not path2 in paths2:
+				paths2.append(path2)
+
+		for path in paths2:
+			logger.logger.info('[   INFO] * %s' % (' -> '.join(path)))		
+		return self
 	
 	def run (self, profile = 'local'):
 		"""
@@ -1199,6 +1223,7 @@ class PyPPL (object):
 			The pipeline object itself.
 		"""
 		timer     = time()
+
 		dftconfig = self._getProfile(profile)
 		proc      = self.tree.getNextToRun()
 		while proc:
@@ -1209,6 +1234,13 @@ class PyPPL (object):
 			else:
 				proc.run(dftconfig)
 			proc = self.tree.getNextToRun()
+
+		unran = self.tree.unranProcs()
+		if unran:
+			klen  = max([len(k) for k in unran.keys()])
+			for key, val in unran.items():
+				fmtstr = "[WARNING] %-"+ str(klen) +"s won't run as prior processes didn't run: [%s]"
+				logger.logger.info (fmtstr % (key, ', '.join(val)))
 
 		logger.logger.info ('[   DONE] Total time: %s' % utils.formatSecs (time()-timer))
 		return self
@@ -1224,6 +1256,7 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
+		self.showAllRoutes()
 		dot = dot if dot else self.fcconfig['dot']
 		fc  = Flowchart(dotfile = dotfile, fcfile = fcfile, dot = dot)
 		fc.setTheme(self.fcconfig['theme'])
@@ -1242,7 +1275,7 @@ class PyPPL (object):
 
 		fc.generate()
 		logger.logger.info ('[   INFO] DOT file saved to: %s' % fc.dotfile)
-		logger.logger.info ('[   INFO] Flowchart file saved to: %s' % fc.dotfile)
+		logger.logger.info ('[   INFO] Flowchart file saved to: %s' % fc.fcfile)
 		return self
 
 	@staticmethod

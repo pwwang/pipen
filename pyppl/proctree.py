@@ -138,7 +138,7 @@ class ProcTree(object):
 		self.starts = [] # start procs
 		self.ends   = [] # end procs
 		# build prevs and nexts
-		for key, node in ProcTree.NODES.items():
+		for node in ProcTree.NODES.values():
 			depends = node.proc.depends
 			if not depends: continue
 			for dep in depends:
@@ -148,6 +148,7 @@ class ProcTree(object):
 				if dnode not in node.prev:
 					node.prev.append(dnode)
 
+	@classmethod
 	def setStarts(self, starts):
 		"""
 		Set the start processes
@@ -268,13 +269,27 @@ class ProcTree(object):
 				raise ValueError(msg)
 		return self.ends
 
+	def getAllPaths(self, withStarts = True):
+		ret = []
+		ends = self.getEnds()
+		for end in ends:
+			paths = self.getPaths(end) if not withStarts else self.getPathsToStarts(end)
+			if not paths:
+				ret.append([end.name()])
+			else:
+				for path in paths:
+					path = [end.name()] + [p.name() for p in path]
+					ret.append(path)
+		return ret
+
+	@classmethod
 	def getNextToRun(self):
 		"""
 		Get the process to run next
 		@returns:
 			The process next to run
 		"""
-		for key, node in ProcTree.NODES.items():
+		for node in ProcTree.NODES.values():
 			# already ran
 			if node.ran: continue
 			# not a start and not depends on any procs
@@ -284,3 +299,11 @@ class ProcTree(object):
 				node.ran = True
 				return node.proc
 		return None
+
+	def unranProcs(self):
+		ret = {}
+		for node in ProcTree.NODES.values():
+			if node.ran or not node.prev: continue
+			if not self.getPathsToStarts(node): continue
+			ret[node.proc.name()] = [np.proc.name() for np in node.prev if not np.ran]
+		return ret
