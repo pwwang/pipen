@@ -86,7 +86,7 @@ class Proc (object):
 			`desc`: The description of the process
 			`id`:   The identify of the process
 		@config:
-			id, input, output, ppldir, forks, cache, rc, echo, runner, script, depends, tag, desc
+			id, input, output, ppldir, forks, cache, cclean, rc, echo, runner, script, depends, tag, desc
 			exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr
 			callfront, callback, brings, expect, expart, template, tplenvs, resume, profile, nthread
 		@props
@@ -134,6 +134,9 @@ class Proc (object):
 		self.config['callfront']  = None
 		# The callback function of the process
 		self.config['callback']   = None
+
+		# Do cleanup for cached jobs?
+		self.config['cclean']     = False
 
 		# The output channel of the process
 		self.props['channel']     = Channel.create()
@@ -999,9 +1002,12 @@ class Proc (object):
 
 		args = []
 		for i in range(self.size):
+			if not self.cclean and not i in self.ncjobids:
+				continue
 			args.append((i, i not in self.ncjobids))
 		
-		utils.parallel(_worker, args, min(self.forks, self.size), 'process')
+		nthreads  = min(self.forks, self.size) if self.cclean else min(self.forks, len(self.ncjobids))
+		utils.parallel(_worker, args, nthreads, 'process')
 			
 class PyPPL (object):
 	"""
