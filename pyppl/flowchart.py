@@ -171,6 +171,7 @@ class Flowchart(object):
 				theme.update(self.theme['export'])
 			if node.resume:
 				theme.update(self.theme[node.resume])
+			theme['tooltip'] = node.desc
 			dotstr.append('    "%s" [%s]' % (node.name(False), ' '.join(['%s="%s"' % (k,theme[k]) for k in sorted(theme.keys())])))
 		return dotstr
 
