@@ -34,6 +34,7 @@ class RunnerQueue (Runner):
 		
 		# wait for submission process first
 		super(RunnerQueue, self).wait(False, fout, ferr)
+		self.getpid()
 			
 		lastout = ''
 		lasterr = ''
