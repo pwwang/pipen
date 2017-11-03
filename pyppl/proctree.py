@@ -125,18 +125,18 @@ class ProcTree(object):
 		Reset the status of all `ProcNode`s
 		"""
 		for node in ProcTree.NODES.values():
-			node.prev  = []
-			node.next  = []
-			node.ran   = False
-			node.start = False
+			node.prev   = []
+			node.next   = []
+			node.ran    = False
+			node.start  = False
 	
 	def __init__(self):
 		"""
 		Constructor, set the status of all `ProcNode`s
 		"""
 		ProcTree.reset()
-		self.starts = [] # start procs
-		self.ends   = [] # end procs
+		self.starts  = [] # start procs
+		self.ends    = [] # end procs
 		# build prevs and nexts
 		for node in ProcTree.NODES.values():
 			depends = node.proc.depends

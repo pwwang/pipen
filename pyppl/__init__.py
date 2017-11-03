@@ -1113,37 +1113,35 @@ class PyPPL (object):
 		self.tree.setStarts(starts2)
 		return self
 
-	def _resume(self, *args):
+	def _resume(self, *args, **kwargs):
 		"""
 		Mark processes as to be resumed
 		@params:
 			`args`: the processes to be marked. The last element is the mark for processes to be skipped.
 		"""
 
-		flag    = args[-1]
-		args    = args[:-1]
-		rsprocs = PyPPL._any2procs(*args)
-		ends    = self.tree.getEnds()
-		
-		for end in ends:
-			if end in rsprocs: continue
-			for ps in self.tree.getPathsToStarts(end):
-				ps.insert(0, end)
-				if (set(ps) & set(rsprocs)): continue
-				raise ValueError('None processes along %s\'s path [%s] is resumed.' % (end.name(), ' <- '.join([p.name() for p in ps])))
+		sflag    = 'skip+' if kwargs['plus'] else 'skip'
+		rflag    = 'resume+' if kwargs['plus'] else 'resume'
+		resumes  = PyPPL._any2procs(*args)
 
-		ps2skip = []
-		for rp in rsprocs:
-			# True: totally resumed, 'resume': read from proc.settings
-			rp.props['resume'] = 'resume+' if flag.endswith('+') else 'resume'
-			rppaths = self.tree.getPathsToStarts(rp)
-			if rppaths:
-				ps2skip.extend(list(utils.reduce(lambda x,y: set(x) | set(y), rppaths)))
-		ps2skip = set(ps2skip)
-		
-		for ps in ps2skip:
-			if ps.resume: continue
-			ps.props['resume'] = flag
+		ends     = self.tree.getEnds()
+		starts   = self.tree.getStarts()
+		# check whether all ends can be reached
+		for end in ends:
+			if end in resumes: continue
+			paths = self.tree.getPathsToStarts(end)
+			for path in paths:
+				if any([p in resumes for p in path]): continue
+				raise ValueError('One of the routes %s <- [%s] cannot be achived from resumed processes.' % (end.name(), ', '.join([p.name() for p in path])))
+
+		# set prior processes to skip
+		for rsproc in resumes:
+			rsproc.resume = rflag
+			paths = self.tree.getPathsToStarts(rsproc)
+			for path in paths:
+				for p in path:
+					if not p.resume: 
+						p.resume = sflag
 	
 	def resume (self, *args):
 		"""
@@ -1154,9 +1152,7 @@ class PyPPL (object):
 			The pipeline object itself.
 		"""
 		if not args or (len(args) == 1 and not args[0]): return self
-
-		args += ('skip',)
-		self._resume(*args)
+		self._resume(*args, plus = False)
 		return self
 	
 	def resume2 (self, *args):
@@ -1168,9 +1164,7 @@ class PyPPL (object):
 			The pipeline object itself.
 		"""
 		if not args or (len(args) == 1 and not args[0]): return self
-
-		args += ('skip+',)
-		self._resume(*args)
+		self._resume(*args, plus = True)
 		return self
 
 	def _getProfile(self, profile):
@@ -1201,7 +1195,6 @@ class PyPPL (object):
 		paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths(True)])
 		paths2 = [] # processes merged from the same aggr
 		for path in paths:
-			logger.logger.info('[  DEBUG] * %s' % (' -> '.join(path)))
 			prevaggr = None
 			path2    = []
 			for p in path:
@@ -1215,6 +1208,9 @@ class PyPPL (object):
 						continue
 			if not path2 in paths2:
 				paths2.append(path2)
+			# see details for aggregations
+			if path != path2:
+				logger.logger.info('[  DEBUG] * %s' % (' -> '.join(path)))
 
 		for path in paths2:
 			logger.logger.info('[   INFO] * %s' % (' -> '.join(path)))		
