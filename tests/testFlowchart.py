@@ -30,6 +30,7 @@ class Node(object):
 		self.aggr  = aggr
 		self.exdir = exdir
 		self.resume = resume
+		self.desc   = ''
 
 	def name(self, full = False):
 		return self._name
@@ -189,9 +190,9 @@ class TestFlowchart (unittest.TestCase):
 		self.assertTrue(path.exists(dotfile))
 		with open(dotfile) as f:
 			self.assertEqual(f.read().splitlines(), """digraph PyPPL {
-    "n1" [color="#000000" fillcolor="#ffffff" fontcolor="#000000" shape="box" style="rounded,filled"]
-    "n2" [color="#259229" fillcolor="#ffffff" fontcolor="#c71be4" shape="box" style="filled"]
-    "n3" [color="#d63125" fillcolor="#b9ffcd" fontcolor="#000000" shape="box" style="filled"]
+    "n1" [color="#000000" fillcolor="#ffffff" fontcolor="#000000" shape="box" style="rounded,filled" tooltip=""]
+    "n2" [color="#259229" fillcolor="#ffffff" fontcolor="#c71be4" shape="box" style="filled" tooltip=""]
+    "n3" [color="#d63125" fillcolor="#b9ffcd" fontcolor="#000000" shape="box" style="filled" tooltip=""]
     "n1" -> "n2"
     "n2" -> "n3"
     subgraph cluster_g1 {
@@ -248,9 +249,9 @@ class TestFlowchart (unittest.TestCase):
 		self.assertTrue(path.exists(dotfile))
 		with open(dotfile) as f:
 			self.assertEqual(f.read().splitlines(), """digraph PyPPL {
-    "n1" [color="#ffffff" fillcolor="#555555" fontcolor="#ffffff" shape="box" style="rounded,filled"]
-    "n2" [color="#59b95d" fillcolor="#555555" fontcolor="#db95e6" penwidth="2" shape="box" style="filled"]
-    "n3" [color="#ea7d75" fillcolor="#1b5a2d" fontcolor="#ffffff" penwidth="2" shape="box" style="filled"]
+    "n1" [color="#ffffff" fillcolor="#555555" fontcolor="#ffffff" shape="box" style="rounded,filled" tooltip=""]
+    "n2" [color="#59b95d" fillcolor="#555555" fontcolor="#db95e6" penwidth="2" shape="box" style="filled" tooltip=""]
+    "n3" [color="#ea7d75" fillcolor="#1b5a2d" fontcolor="#ffffff" penwidth="2" shape="box" style="filled" tooltip=""]
     "n1" -> "n2"
     "n2" -> "n3"
     subgraph cluster_g1 {

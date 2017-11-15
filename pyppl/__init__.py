@@ -4,7 +4,7 @@ import json
 import random
 import sys
 import six
-import multiprocessing
+import threading
 import copy as pycopy
 import traceback
 from os import path, makedirs
@@ -886,6 +886,7 @@ class Proc (object):
 			self.props['channel'][i] = row
 
 		utils.parallel(bjSingle, [(i, ) for i in range(self.size)], self.nthread)
+		self.log('After job building, active threads: %s' % threading.active_count(), 'debug')
 
 		if self.jobs[0].data['out']:
 			self.channel.attach(*self.jobs[0].data['out'].keys())
@@ -931,7 +932,9 @@ class Proc (object):
 				self.props['ncjobids'].append (i)
 
 		utils.parallel(chkTrulyCached, [(i, ) for i in range(self.size)], self.nthread)
-		utils.parallel(chkExptCached,  [(i, ) for i in notTrulyCachedJids], self.nthread)			
+		self.log('After job true-cache checking, active threads: %s' % threading.active_count(), 'debug')
+		utils.parallel(chkExptCached,  [(i, ) for i in notTrulyCachedJids], self.nthread)
+		self.log('After job export-cache checking, active threads: %s' % threading.active_count(), 'debug')
 				
 		self.log ('Truely cached jobs: %s' % (trulyCachedJids if len(trulyCachedJids) < self.size else 'ALL'), 'info')
 		self.log ('Export cached jobs: %s' % (exptCachedJids  if len(exptCachedJids)  < self.size else 'ALL'), 'info')
@@ -1008,6 +1011,7 @@ class Proc (object):
 		
 		nthreads  = min(self.forks, self.size) if self.cclean else min(self.forks, len(self.ncjobids))
 		utils.parallel(_worker, args, nthreads, 'process')
+		self.log('After job run, active threads: %s' % threading.active_count(), 'debug')
 			
 class PyPPL (object):
 	"""

@@ -367,21 +367,21 @@ class TestPyPPL (unittest.TestCase):
 		})
 
 		pyppl.start(p1)
-		self.assertRaises(ValueError, pyppl._resume, p4, 'skip')
+		self.assertRaises(ValueError, pyppl._resume, p4, **{'plus': False})
 		pyppl.resume(p3, p4, p5, p10)
-		self.assertEqual(p1.props['resume'], 'skip')
-		self.assertEqual(p2.props['resume'], 'skip')
-		self.assertEqual(p3.props['resume'], 'resume')
-		self.assertEqual(p4.props['resume'], 'resume')
-		self.assertEqual(p5.props['resume'], 'resume')
-		self.assertEqual(p6.props['resume'], '')
-		self.assertEqual(p7.props['resume'], '')
-		self.assertEqual(p8.props['resume'], '')
-		self.assertEqual(p9.props['resume'], '')
-		self.assertEqual(p10.props['resume'], 'resume')
+		self.assertEqual(p1.resume, 'skip')
+		self.assertEqual(p2.resume, 'skip')
+		self.assertEqual(p3.resume, 'resume')
+		self.assertEqual(p4.resume, 'resume')
+		self.assertEqual(p5.resume, 'resume')
+		self.assertEqual(p6.resume, '')
+		self.assertEqual(p7.resume, '')
+		self.assertEqual(p8.resume, '')
+		self.assertEqual(p9.resume, '')
+		self.assertEqual(p10.resume, 'resume')
 
 		for p in [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]:
-			p.props['resume'] = ''
+			p.resume = ''
 			ProcTree.getNode(p).start = False
 
 		pyppl.tree.starts = []
@@ -390,7 +390,7 @@ class TestPyPPL (unittest.TestCase):
 		pyppl.start(p5)
 		self.assertEqual( pyppl.tree.getStarts(), [p5] )
 		self.assertRaises(ValueError, pyppl.tree.getEnds)
-		self.assertRaises(ValueError, pyppl._resume, p3, p4, 'skip+')
+		self.assertRaises(ValueError, pyppl._resume, p3, p4, **{'plus': True})
 
 		pyppl.tree.starts = []
 		pyppl.tree.ends   = []
@@ -402,16 +402,16 @@ class TestPyPPL (unittest.TestCase):
 		self.assertEqual( len(pyppl.tree.getEnds()), 2 )
 		self.assertIn(p8, pyppl.tree.getEnds())
 		self.assertIn(p9, pyppl.tree.getEnds())
-		self.assertEqual(p1.props['resume'], '')
-		self.assertEqual(p2.props['resume'], 'skip+')
-		self.assertEqual(p3.props['resume'], 'resume+')
-		self.assertEqual(p4.props['resume'], 'skip+')
-		self.assertEqual(p5.props['resume'], 'skip+')
-		self.assertEqual(p6.props['resume'], 'resume+')
-		self.assertEqual(p7.props['resume'], '')
-		self.assertEqual(p8.props['resume'], '')
-		self.assertEqual(p9.props['resume'], '')
-		self.assertEqual(p10.props['resume'], '')
+		self.assertEqual(p1.resume, '')
+		self.assertEqual(p2.resume, 'skip+')
+		self.assertEqual(p3.resume, 'resume+')
+		self.assertEqual(p4.resume, 'skip+')
+		self.assertEqual(p5.resume, 'skip+')
+		self.assertEqual(p6.resume, 'resume+')
+		self.assertEqual(p7.resume, '')
+		self.assertEqual(p8.resume, '')
+		self.assertEqual(p9.resume, '')
+		self.assertEqual(p10.resume, '')
 		'''
 		with captured_output() as (out, err):
 			pyppl = PyPPL(config = {
