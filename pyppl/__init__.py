@@ -39,7 +39,6 @@ class Proc (object):
 	# for future use, shortcuts
 	ALIAS        = { }
 	LOG_NLINE    = {
-		'': 999,
 		'EXPORT_CACHE_OUTFILE_EXISTS': -3,
 		'EXPORT_CACHE_USING_SYMLINK': 1,
 		'EXPORT_CACHE_USING_EXPARTIAL': 1,
@@ -91,7 +90,7 @@ class Proc (object):
 			callfront, callback, brings, expect, expart, template, tplenvs, resume, profile, nthread
 		@props
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, brings, expect
-			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, lognline
+			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs
 		"""
 		
 		# Don't go through __getattr__ and __setattr__
@@ -261,8 +260,7 @@ class Proc (object):
 		# The computed workdir
 		self.props['workdir']     = ''
 		
-		self.props['lognline']    = {'_PREV_LOG': ''}
-		self.props['lognline'].update({key: 0 for key in Proc.LOG_NLINE.keys()})
+		self.props['logs']        = {}
 
 		PyPPL._registerProc(self)
 		
@@ -337,28 +335,37 @@ class Proc (object):
 			`level`: The log level
 			`key`:   The type of messages
 		"""
-		level  = "[%s]" % level
-		name   = self.name(True)
+		summary = False
+		level   = "[%s]" % level
+		name    = self.name(True)
 		
-		maxline  = Proc.LOG_NLINE[key]
-		PREV_LOG = self.lognline['_PREV_LOG']
+		logobj  = [level, msg]
+		logobjs = []
 
-		if key == PREV_LOG:
-			if self.lognline[key] < abs(maxline):
-				logger.logger.info ("%s %s: %s" % (level, name, msg))
+		if not key or not key in Proc.LOG_NLINE:
+			logobjs.append(logobj)
 		else:
-			n_omit = self.lognline[PREV_LOG] - abs(Proc.LOG_NLINE[PREV_LOG])
-			if n_omit > 0 and Proc.LOG_NLINE[PREV_LOG] < 0:
-				logname = 'logs' if n_omit > 1 else 'log'
-				maxinfo = '(%s, max=%s)' % (PREV_LOG, abs(Proc.LOG_NLINE[PREV_LOG])) if PREV_LOG else ''
-				logger.logger.info ("[DEBUG] %s: ... and %s %s omitted %s." % (name, n_omit, logname, maxinfo))
-			self.lognline[PREV_LOG]   = 0
+			maxline  = Proc.LOG_NLINE[key]
+			summary  = maxline < 0
+			maxline  = abs(maxline)
+			if key not in self.logs: self.logs[key] = []
+			logobjs = self.logs[key]
+			prevlen = len(logobjs)
+			if prevlen == maxline - 1:
+				# Now logging, and saving
+				logobjs.append(logobj)
+				if summary:
+					logobjs.append(["[DEBUG]", "... max=%s reached, further information will be ignored." % maxline])
+			elif prevlen < maxline:
+				# Don't log, just save
+				logobjs = []
+				self.logs[key].append(logobj)
+			else:
+				# Don't log, don't save
+				logobjs = []
 
-			if self.lognline[key] < abs(maxline):
-				logger.logger.info ("%s %s: %s" % (level, name, msg))
-
-		self.lognline['_PREV_LOG'] = key
-		self.lognline[key] += 1
+		for lo in logobjs:
+			logger.logger.info ("%s %s: %s" % (lo[0], name, lo[1]))
 
 	def copy (self, tag=None, newid=None, desc=None):
 		"""
@@ -396,7 +403,7 @@ class Proc (object):
 		props['ncjobids']  = []
 		props['size']      = 0
 		props['suffix']    = ''
-		props['lognline']  = newproc.props['lognline']
+		props['logs']      = {}
 		newproc.__dict__['config'] = config
 		newproc.__dict__['props']  = props
 		return newproc
@@ -616,7 +623,7 @@ class Proc (object):
 				elif key == 'template':
 					f.write('\n['+ key +']\n')
 					f.write('name: ' + json.dumps(val.__class__.__name__) + '\n')
-				elif key in ['lognline', 'args', 'procvars', 'echo'] or key.endswith('Runner'):
+				elif key in ['args', 'procvars', 'echo'] or key.endswith('Runner'):
 					f.write('\n['+ key +']\n')
 					if not val:
 						f.write('value: {}\n')
@@ -913,28 +920,20 @@ class Proc (object):
 			return False
 
 		trulyCachedJids        = []
-		notTrulyCachedJids     = []
+		#notTrulyCachedJids     = []
 		exptCachedJids         = []
 		self.props['ncjobids'] = []
 
-		def chkTrulyCached(i):
+		def chkCached(i):
 			job = self.jobs[i]
 			if job.isTrulyCached():
 				trulyCachedJids.append(i)
-			else:
-				notTrulyCachedJids.append(i)
-		
-		def chkExptCached(i):
-			job = self.jobs[i]
-			if job.isExptCached ():
-				exptCachedJids.append (i)
+			elif job.isExptCached():
+				exptCachedJids.append(i)
 			else:
 				self.props['ncjobids'].append (i)
 
-		utils.parallel(chkTrulyCached, [(i, ) for i in range(self.size)], self.nthread)
-		self.log('After job true-cache checking, active threads: %s' % threading.active_count(), 'debug')
-		utils.parallel(chkExptCached,  [(i, ) for i in notTrulyCachedJids], self.nthread)
-		self.log('After job export-cache checking, active threads: %s' % threading.active_count(), 'debug')
+		utils.parallel(chkCached, [(i, ) for i in range(self.size)], self.nthread)
 				
 		self.log ('Truely cached jobs: %s' % (trulyCachedJids if len(trulyCachedJids) < self.size else 'ALL'), 'info')
 		self.log ('Export cached jobs: %s' % (exptCachedJids  if len(exptCachedJids)  < self.size else 'ALL'), 'info')
@@ -1129,7 +1128,7 @@ class PyPPL (object):
 		resumes  = PyPPL._any2procs(*args)
 
 		ends     = self.tree.getEnds()
-		starts   = self.tree.getStarts()
+		#starts   = self.tree.getStarts()
 		# check whether all ends can be reached
 		for end in ends:
 			if end in resumes: continue

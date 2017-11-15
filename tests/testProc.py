@@ -106,7 +106,7 @@ class TestProc (unittest.TestCase):
 		self.assertEqual(p.template, None)
 		self.assertEqual(p.tplenvs, {})
 		self.assertEqual(p.workdir, '')
-		self.assertEqual(p.lognline['_PREV_LOG'], '')
+		self.assertEqual(p.logs, {})
 
 	def testGetSetAttrRepr(self):
 		p = Proc()
