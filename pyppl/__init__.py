@@ -355,7 +355,7 @@ class Proc (object):
 				# Now logging, and saving
 				logobjs.append(logobj)
 				if summary:
-					logobjs.append(["[DEBUG]", "... max=%s reached, further information will be ignored." % maxline])
+					logobjs.append(["[DEBUG]", "... max=%s (%s) reached, further information will be ignored." % (maxline, key)])
 			elif prevlen < maxline:
 				# Don't log, just save
 				logobjs = []
