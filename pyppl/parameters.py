@@ -110,16 +110,16 @@ class Parameter (object):
 		except (ValueError, TypeError):
 			sys.stderr.write('Cannot coerce value "{}" to type "{}" for {}'.format(str(self.value), self.type.__name__, repr(self)))
 		
-	def _printName (self, prefix):
+	def _printName (self, prefix, keylen = 0):
 		"""
 		Get the print name with type for the parameter
 		@params:
 			`prefix`: The prefix of the option
 		"""
 		if self.type == bool:
-			return prefix + self.name + ' (bool)'
+			return (prefix + self.name).ljust(keylen) + ' (BOOL)'
 			
-		return prefix + self.name + ' <{}>'.format(self.type.__name__)
+		return (prefix + self.name).ljust(keylen) + ' <{}>'.format(self.type.__name__.upper())
 
 class Parameters (object):
 	"""
@@ -287,7 +287,8 @@ class Parameters (object):
 		requiredOptions = {}
 		optionalOptions = {}
 		
-		keylen = 40 # '--param-xxx'
+		keylen = 40 # '--param-xxx <str> ..........'
+		keylen2 = 0 # '--param-xxx'
 		
 		for key, val in self._props['params'].items():
 			if not val.show:
@@ -297,6 +298,7 @@ class Parameters (object):
 			else:
 				optionalOptions[key] = val
 			keylen = max(len(self._props['prefix']) + 4 + len(key), keylen)
+			keylen2 = max(len(self._props['prefix']) + len(key), keylen2)
 			
 		keylen = max (4 + len(', '.join(filter(None, self._props['hopts']))), keylen)
 			
@@ -317,22 +319,26 @@ class Parameters (object):
 		if requiredOptions:
 			ret += 'REQUIRED OPTIONS:\n'
 			for key, val in requiredOptions.items():
-				descs = val.desc.split("\n")
-				ret  += '  {}'.format(val._printName(self._props['prefix'])).ljust(keylen) + (descs.pop(0) if descs else '') + '\n'
+				descs = val.desc.splitlines()
+				ret  += '  {}'.format(val._printName(self._props['prefix'], keylen2)).ljust(keylen) + '- ' + (descs.pop(0) if descs else '') + '\n'
 				for desc in descs:
-					ret += ''.ljust(keylen) + desc + '\n'
+					ret += '  ' + ''.ljust(keylen) + desc + '\n'
 			ret += '\n'
 		
 		ret += 'OPTIONAL OPTIONS:\n'
 		if optionalOptions:
 			for key, val in optionalOptions.items():
-				descs = (val.desc + ' ' if val.desc else '') + 'Default: ' + (str(val) if len(str(val)) > 0 else "''")
-				descs = descs.split("\n")
-				ret  += '  {}'.format(val._printName(self._props['prefix'])).ljust(keylen) \
-					 + (descs.pop(0) if descs else '') + '\n'
+				defaultStr = 'DEFAULT: ' + (str(val) if len(str(val)) > 0 else "''")
+				descs = val.desc.splitlines()
+				if not descs or len(descs[-1]) >= 40 or len(descs[-1] + defaultStr) + 1 >= 80:
+					descs.append(defaultStr)
+				else:
+					descs[-1] += ' ' + defaultStr
+				ret  += '  {}'.format(val._printName(self._props['prefix'], keylen2)).ljust(keylen) \
+					 + '- ' + (descs.pop(0) if descs else '') + '\n'
 				for desc in descs:
-					ret += ''.ljust(keylen) + desc + '\n'
-		ret += '  ' + ', '.join(filter(None, self._props['hopts'])).ljust(keylen - 2) + 'Print this help information.\n\n'
+					ret += '  ' + ''.ljust(keylen) + desc + '\n'
+		ret += '  ' + ', '.join(filter(None, self._props['hopts'])).ljust(keylen - 2) + '- Print this help information.\n\n'
 
 		return ret
 	
@@ -347,11 +353,15 @@ class Parameters (object):
 				- It'll be overwritten by the `show` property inside dict variable.
 				- If it is None, will inherit the param's show value
 		"""
+		# load the param first
 		for key, val in dictVar.items():
 			if '.' in key: continue
-			self._props['params'][key] = Parameter(key, val)
+			if not key in self._props['params']:
+				self._props['params'][key] = Parameter(key, val)
+			self._props['params'][key].value = val
 			if show is not None:
 				self._props['params'][key].show = show
+		# then load property
 		for key, val in dictVar.items():
 			if '.' not in key: continue
 			(k, _, prop) = key.rpartition('.')
