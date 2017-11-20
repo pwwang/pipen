@@ -1,5 +1,20 @@
 # Change log
 
+## Nov 20, 2017: 0.9.3
+- Beautify parameters help page.
+- Enable multithreading for job construction and cache checking (set by proc.nthread).
+- Uniform multiprocessing/threading.
+- Fix Aggr delegate problems.
+- Add ProcTree to manage process relations.
+- Report processes will not run due to prior processes not ran.
+- Add cclean option for enable/disable cleanup (output check/export) if a job is cached.
+- Add tooltip for flowchart svg.
+- Fix job id not saved for runner_sge.
+- Fix resume assignment issue.
+- Rewrite proc.log function so that logs from jobs do not mess up when they are multithreaded.
+- Fix params loaded from file get overwriten.
+- Add coverage report.
+
 ## Oct 23, 2017: 0.9.2
 - Add profile for Proc so different procs can run with different profiles.
 - Add delegate for Aggr.

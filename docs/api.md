@@ -56,7 +56,7 @@ Register the process
 - **params:**  
 `proc`: The process  
   
-#### `_resume (self, *args) `
+#### `_resume (self, *args, **kwargs) `
   
 Mark processes as to be resumed  
 
@@ -113,6 +113,8 @@ Run the pipeline
 - **returns:**  
 The pipeline object itself.  
   
+#### `showAllRoutes (self) `
+  
 #### `start (self, *args) `
   
 Set the starting processes of the pipeline  
@@ -147,13 +149,13 @@ Constructor
 `id`:   The identify of the process  
 
 - **config:**  
-id, input, output, ppldir, forks, cache, rc, echo, runner, script, depends, tag, desc  
+id, input, output, ppldir, forks, cache, cclean, rc, echo, runner, script, depends, tag, desc  
 exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr  
 callfront, callback, brings, expect, expart, template, tplenvs, resume, profile, nthread  
 
 - **props**  
 input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, brings, expect  
-expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, lognline  
+expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs  
   
 #### `_buildBrings (self) `
   
@@ -920,7 +922,7 @@ Constructor
 Coerce the value to the type specified  
 TypeError will be raised if error happens  
   
-#### `_printName (self, prefix) `
+#### `_printName (self, prefix, keylen) `
   
 Get the print name with type for the parameter  
 
@@ -1573,6 +1575,8 @@ Check whether paths of a process can start from a start process
 `True` if all paths can pass  
 The failed path otherwise  
   
+#### `getAllPaths (self, withStarts) `
+  
 #### `getEnds (self) `
   
 Get the end processes  
@@ -1676,6 +1680,8 @@ Set the start processes
 
 - **params:**  
 `starts`: The start processes  
+  
+#### `unranProcs (self) `
   
 
 ## Module `templates.TemplatePyPPL`  
