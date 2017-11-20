@@ -1,5 +1,6 @@
 import sys
 import json
+from os import path
 from six import string_types
 from six.moves import configparser
 from box import Box
@@ -282,7 +283,8 @@ class Parameters (object):
 		@return:
 			The help information
 		"""
-		ret = ''
+		ret  = ''
+		prog = path.basename(sys.argv[0])
 		
 		requiredOptions = {}
 		optionalOptions = {}
@@ -307,9 +309,9 @@ class Parameters (object):
 			ret += '\n'.join('  ' + d for d in self._props['desc']) + '\n\n'
 		ret += 'USAGE:\n'
 		if self._props['usage']:
-			ret += '  ' + '\n	{}'.format(sys.argv[0]).join(list(self._props['usage'])) + '\n\n'
+			ret += '  ' + '\n	{}'.format(prog).join(list(self._props['usage'])) + '\n\n'
 		else:
-			ret += '  ' + sys.argv[0]  \
+			ret += '  ' + prog  \
 				+ ('' if not requiredOptions else ' ' + ' '.join([val._printName(self._props['prefix']) for key, val in requiredOptions.items()])) \
 				+ ('' if not optionalOptions else ' [OPTIONS]') + '\n\n'
 		if self._props['example']:

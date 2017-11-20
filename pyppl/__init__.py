@@ -1194,7 +1194,7 @@ class PyPPL (object):
 		return config
 
 	def showAllRoutes(self):
-		logger.logger.info('[   INFO] ALL ROUTES:')
+		logger.logger.info('[DEBUG] ALL ROUTES:')
 		paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths(True)])
 		paths2 = [] # processes merged from the same aggr
 		for path in paths:
@@ -1212,11 +1212,11 @@ class PyPPL (object):
 			if not path2 in paths2:
 				paths2.append(path2)
 			# see details for aggregations
-			if path != path2:
-				logger.logger.info('[  DEBUG] * %s' % (' -> '.join(path)))
+			#if path != path2:
+			#	logger.logger.info('[  DEBUG] * %s' % (' -> '.join(path)))
 
 		for path in paths2:
-			logger.logger.info('[   INFO] * %s' % (' -> '.join(path)))		
+			logger.logger.info('[DEBUG] * %s' % (' -> '.join(path)))		
 		return self
 	
 	def run (self, profile = 'local'):
