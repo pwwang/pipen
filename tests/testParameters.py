@@ -16,7 +16,7 @@ class TestParameters (unittest.TestCase):
 		self.assertEqual(p.name, 'a')
 		self.assertEqual(p.value, [])
 		
-		self.assertEqual(p._printName('-P'), '-Pa <list>')
+		self.assertEqual(p._printName('-P'), '-Pa <LIST>')
 		p.setDesc('some description')
 		self.assertEqual(p.desc, 'some description')
 		p.setRequired()
@@ -32,7 +32,7 @@ class TestParameters (unittest.TestCase):
 		self.assertFalse(p.show)
 		p.setName('name2')
 		self.assertEqual(p.name, 'name2')
-		self.assertEqual(p._printName('-P'), '-Pname2 <str>')
+		self.assertEqual(p._printName('-P'), '-Pname2 <STR>')
 		p._forceType()
 		self.assertEqual(p.value, '[1, 2]')
 		
@@ -111,18 +111,18 @@ class TestParameters (unittest.TestCase):
   The test description.
 
 USAGE:
-  %s --param-b <int> [OPTIONS]
+  %s --param-b <INT> [OPTIONS]
 
 EXAMPLE:
   prog -a A -b B
   prog -c C
 
 REQUIRED OPTIONS:
-  --param-b <int>                       Option b
+  --param-b <INT>                       - Option b
 
 OPTIONAL OPTIONS:
-  --param-a <str>                       Default: a
-  -h, --help, -H, -?                    Print this help information.
+  --param-a <STR>                       - DEFAULT: a
+  -h, --help, -H, -?                    - Print this help information.
 
 """ % sys.argv[0]).splitlines())
 
@@ -172,6 +172,7 @@ OPTIONAL OPTIONS:
 		self.assertEqual(psdict.d, True)
 	
 	def testLoadDict(self):
+		self.maxDiff = None
 		ps = Parameters()
 		ps.desc('A test program.\n The test description.')
 		ps.example('prog -a A -b B\n prog -c C')
@@ -199,17 +200,17 @@ OPTIONAL OPTIONS:
   The test description.
 
 USAGE:
-  %s --param-b <int>
+  %s --param-b <INT>
 
 EXAMPLE:
   prog -a A -b B
   prog -c C
 
 REQUIRED OPTIONS:
-  --param-b <int>                       Option b
+  --param-b <INT>                       - Option b
 
 OPTIONAL OPTIONS:
-  -h, --help, -H, -?                    Print this help information.
+  -h, --help, -H, -?                    - Print this help information.
 
 """ % sys.argv[0]).splitlines())
 	

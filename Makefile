@@ -72,6 +72,19 @@ tutorial:
 
 tutorials: tutorial
 
+cov:
+	@wd=`pwd`;                                             \
+	cd ./tests;                                            \
+	for tfile in test*.py; do                              \
+		echo "Running tests $$tfile ...";                  \
+		coverage run -a $$tfile;                           \
+	done;                                                  \
+	coverage xml;                                          \
+	python-codacy-coverage -r coverage.xml;                \
+	cd $$wd
+
+coverage: cov
+
 api:
 	$(PYTHON) ./api.py
 
