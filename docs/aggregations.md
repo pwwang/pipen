@@ -133,23 +133,25 @@ Like previous example shows, you just need to give the constructor all the proce
 `aggr.addProc(p, where=None)`
 You can add a process, and also define whether to put it in `starts`, `ends`, `both` or `None`.
     
-## Set attributes of processes of an aggregation
-You can set the attributes directly for a process of an aggregation:
+## Delegate attributes of processes to an aggregation
+You can Delegate the attributes directly for a process to an aggregation:
 ```python
-aFastqPE2Bam.pAlignPEByBWA.args.reffile = params.hg19fa
+aFastqPE2Bam.delegate('args.reffile', 'pAlignPEByBWA')
 ```
-Or you may use `set` method of an aggregation:
+Then when you want to set `args.reffile` for `pAlignPEByBWA`, you can just do:
 ```python
-aFastqPE2Bam.set('args.reffile', params.hg19fa, 'pAlignPEByBWA')
+aFastqPE2Bam.args.reffile = '/path/to/hg19.fa'
 ```
-The benefit of the latter method is that you can set the attributes of multiple processes at one time:
+You may use `starts/ends` represents the start/end processes.
+You may also set an alias for the attribute:
 ```python
-aFastqPE2Bam.set('args.reffile', params.hg19fa, 'pAlignPEByBWA, pBaseRecalibrator')
-# Both args.reffile of aFastqPE2Bam.pAlignPEByBWA and aFastqPE2Bam.pBaseRecalibrator 
-# were set as params.hg19fa
+aFastqPE2Bam.delegate('align_ref', 'pAlignPEByBWA', 'args.reffile')
 ```
-You can also do: `aFastqPE2Bam.set('forks', 10)` to set `forks` of all processes as `10`.
-Or `aFastqPE2Bam.set('forks', 10, 'starts')`/`aFastqPE2Bam.set('forks', 10, 'ends')` for processes in `aFastqPE2Bam.starts/aFastqPE2Bam.ends`.
+Then to set the value:
+```python
+aFastqPE2Bam.align_ref = '/path/to/hg19.fa'
+```
+
 
 ## Set an aggregation as start aggregation for a pipeline
 You can do it just like setting a process as the starting process of pipeline (see [here][1]). Actually the starting processes in the aggregation (`aggr.starts`) will be set as the starting processes of the pipeline.

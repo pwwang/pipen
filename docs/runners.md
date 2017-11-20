@@ -271,4 +271,28 @@ PyPPL.registerRunner(RunnerMy)
 ```
 After registration, you are able to ask a process to use it: `pXXX.runner = "my"`
 
+## Use different runners
+You can use different runners to run processes if you like. The default runner is `local`. You can change it by the configuration of the pipeline:
+```python
+PyPPL(config).start(...).run()
+```
+The config is something like:
+```json
+{
+    "proc": {
+        "runner": "sge"
+    }
+}
+```
+You can also set it in the default configuration file: `$HOME/.PyPPL.json`.
+If you don't want to modify the configurations, to set the runner on the run:
+`PyPPL().start(...).run("sge")`
+Then all processes will run through `sge` runner.
+
+You may also set different runners for different processes.
+```python
+pXXX.runner = "sge"
+```
+Note that this will NOT be overwritten by any other configurations, which means it has the highest priority.
+
 {% endraw %}

@@ -35,6 +35,8 @@ Currently we introduced in previous chapters a set of attributes of a process an
 | `brings` | Definition of bring-in files| `str`/`list`||[Link][1]|
 | `template` | The name of the template engine | `str` | `PyPPL` | [Link][8] |
 | `tplenvs` | Environments for the template engine | `dict` | `PyPPL` | [Link][8] |
+| `nthread` | Number of theads used for job construction and cache checking | `int` | `PyPPL` | - |
+| `cclean` | Whether do cleanup (output checking/exporting) if a job was cached. | `bool` | `PyPPL` | - |
 
 
 ## Set arguments of a process `pXXX.args`
