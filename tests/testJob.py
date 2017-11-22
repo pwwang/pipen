@@ -65,6 +65,14 @@ class Proc(object):
 			'd': {
 				'type': 'files',
 				'data': [[__file__]] * 5
+			},
+			'd2': {
+				'type': 'files',
+				'data': [[__file__]] * 2
+			},
+			'd3': {
+				'type': 'files',
+				'data': [[__file__]] * 3
 			}
 		}
 		self.output = OrderedDict([
@@ -147,6 +155,7 @@ class TestJob (unittest.TestCase):
 		})
 
 	def testPrepInput(self):
+		self.maxDiff = None
 		proc = Proc()
 		job  = Job(0, proc)
 		job._prepInput()
@@ -169,6 +178,16 @@ class TestJob (unittest.TestCase):
 				'type': 'files',
 				'orig': [path.realpath(__file__)],
 				'data': [path.join(job.indir, path.basename(__file__))],
+			},
+			'd2': {
+				'type': 'files',
+				'orig': [path.realpath(__file__)],
+				'data': [path.join(job.indir, path.basename(__file__))],
+			},
+			'd3': {
+				'type': 'files',
+				'orig': [path.realpath(__file__)],
+				'data': [path.join(job.indir, path.basename(__file__))],
 			}
 		})
 		self.assertEqual(job.data['in'], {
@@ -178,6 +197,10 @@ class TestJob (unittest.TestCase):
 			'_c': path.realpath(__file__),
 			'd': [path.join(job.indir, path.basename(__file__))],
 			'_d': [path.realpath(__file__)],
+			'd2': [path.join(job.indir, path.basename(__file__))],
+			'_d2': [path.realpath(__file__)],
+			'd3': [path.join(job.indir, path.basename(__file__))],
+			'_d3': [path.realpath(__file__)],
 		})
 		proc.input['c']['data'][0] = __file__ + '.noexist'
 		self.assertRaises(OSError, job._prepInput)
@@ -212,6 +235,16 @@ class TestJob (unittest.TestCase):
 				'type': 'files',
 				'orig': [path.realpath(file1)],
 				'data': [path.join(job.indir, path.splitext(path.basename(file1))[0] + '[1].py')],
+			},
+			'd2': {
+				'type': 'files',
+				'orig': [path.realpath(__file__)],
+				'data': [path.join(job.indir, path.splitext(path.basename(__file__))[0] + '.py')],
+			},
+			'd3': {
+				'type': 'files',
+				'orig': [path.abspath(__file__)],
+				'data': [path.join(job.indir, path.splitext(path.basename(__file__))[0] + '.py')],
 			}
 		})
 		self.assertEqual(job.data['in'], {
@@ -221,7 +254,23 @@ class TestJob (unittest.TestCase):
 			'_c': path.realpath(__file__),
 			'd': [path.join(job.indir, path.splitext(path.basename(file1))[0] + '[1].py')],
 			'_d': [path.realpath(file1)],
+			'd2': [path.join(job.indir, path.splitext(path.basename(__file__))[0] + '.py')],
+			'_d2': [path.realpath(__file__)],
+			'd3': [path.join(job.indir, path.splitext(path.basename(__file__))[0] + '.py')],
+			'_d3': [path.realpath(__file__)],
 		})
+
+	def testPrepInputException(self):
+		proc = Proc()
+		job  = Job(0, proc)
+		proc.input = {
+			'a': {
+				'type': 'files',
+				'orig': 'a',
+				'data': 'a',
+			}
+		}
+		self.assertRaises(ValueError, job._prepInput)
 
 	def testPrepBrings(self):
 		proc = Proc()
@@ -295,6 +344,15 @@ class TestJob (unittest.TestCase):
 		self.assertEqual(job.output['b']['data'], path.join(job.outdir, path.basename(__file__)))
 		self.assertEqual(job.output['c']['data'], path.join(job.outdir, path.basename(__file__)[:-3]))
 
+	def testPrepOutputFileException(self):
+		proc = Proc()
+		proc.output = OrderedDict([
+			('a', ['file',  TemplatePyPPL('/a/b/c')])
+		])
+		job  = Job(0, proc)
+		#job._prepOutput()
+		self.assertRaises(ValueError, job._prepOutput)
+
 	def testPrepScript(self):
 		proc = Proc()
 		job  = Job(0, proc)
@@ -347,6 +405,16 @@ print "a"
 				'type': 'files',
 				'orig': [path.realpath(__file__)],
 				'data': [path.join(job.indir, path.basename(__file__))],
+			},
+			'd2': {
+				'type': 'files',
+				'orig': [path.realpath(__file__)],
+				'data': [path.join(job.indir, path.basename(__file__))],
+			},
+			'd3': {
+				'type': 'files',
+				'orig': [path.realpath(__file__)],
+				'data': [path.join(job.indir, path.basename(__file__))],
 			}
 		})
 		self.assertEqual(job.data['in'], {
@@ -356,6 +424,10 @@ print "a"
 			'_c': path.realpath(__file__),
 			'd': [path.join(job.indir, path.basename(__file__))],
 			'_d': [path.realpath(__file__)],
+			'd2': [path.join(job.indir, path.basename(__file__))],
+			'_d2': [path.realpath(__file__)],
+			'd3': [path.join(job.indir, path.basename(__file__))],
+			'_d3': [path.realpath(__file__)],
 		})
 		# brings
 		self.assertItemsEqual(job.data['bring']['_c'], list(map(path.abspath, glob(path.join(path.dirname(__file__), 'test*.py')))))
@@ -643,14 +715,19 @@ print "a"
 		self.assertIn('<EMPTY STDERR>', err.getvalue())
 
 		with open(job.errfile, 'w') as ferr:
-			ferr.write('Error1\nError2\nError3')
+			ferr.write('Error1\nError2\nError3' + ('\nx'*23))
 		with captured_output() as (out, err):
 			logger.getLogger()
 			job.showError()
 		self.assertIn('check STDERR below', err.getvalue())
-		self.assertIn('Error1', err.getvalue())
-		self.assertIn('Error2', err.getvalue())
-		self.assertIn('Error3', err.getvalue())
+		self.assertIn('x', err.getvalue())
+		self.assertIn('hidden', err.getvalue())
+
+		with captured_output() as (out, err):
+			logger.getLogger()
+			proc.errhow = 'ignore'
+			job.showError()
+		self.assertIn('Job #0 (total 1) failed but ignored.', err.getvalue())
 
 	def testDone(self):
 		proc = Proc()
@@ -673,19 +750,23 @@ print "a"
 		with captured_output() as (out, err):
 			job.init()
 			job.report()
-		self.assertIn('[  input] [0/4] a  => 1', err.getvalue())
-		self.assertIn('[  input] [0/4] b  => a', err.getvalue())
-		self.assertIn('[  input] [0/4]  c => /', err.getvalue())
-		self.assertIn('[  input] [0/4] _c => /', err.getvalue())
-		self.assertIn('[  input] [0/4]  d => [', err.getvalue())
-		self.assertIn('[  input] [0/4] _d => [', err.getvalue())
-		self.assertIn('[ brings] [0/4]  c => [', err.getvalue())
-		self.assertIn('[ brings] [0/4]        /', err.getvalue())
-		self.assertIn('[ brings] [0/4]        ...,', err.getvalue())
-		self.assertIn('[ brings] [0/4] _c => [', err.getvalue())
-		self.assertIn('[ output] [0/4] a  => 1_1', err.getvalue())
-		self.assertIn('[ output] [0/4] b  => /', err.getvalue())
-		self.assertIn('[ output] [0/4] c  => /', err.getvalue())
+		self.assertIn('[  input] [0/4] a   => 1', err.getvalue())
+		self.assertIn('[  input] [0/4] b   => a', err.getvalue())
+		self.assertIn('[  input] [0/4]  c  => /', err.getvalue())
+		self.assertIn('[  input] [0/4] _c  => /', err.getvalue())
+		self.assertIn('[  input] [0/4]  d  => [', err.getvalue())
+		self.assertIn('[  input] [0/4] _d  => [', err.getvalue())
+		self.assertIn('[  input] [0/4]  d2 => [', err.getvalue())
+		self.assertIn('[  input] [0/4] _d2 => [', err.getvalue())
+		self.assertIn('[  input] [0/4]  d3 => [', err.getvalue())
+		self.assertIn('[  input] [0/4] _d3 => [', err.getvalue())
+		self.assertIn('[ brings] [0/4]  c  => [', err.getvalue())
+		self.assertIn('[ brings] [0/4]         /', err.getvalue())
+		self.assertIn('[ brings] [0/4]         ...,', err.getvalue())
+		self.assertIn('[ brings] [0/4] _c  => [', err.getvalue())
+		self.assertIn('[ output] [0/4] a   => 1_1', err.getvalue())
+		self.assertIn('[ output] [0/4] b   => /', err.getvalue())
+		self.assertIn('[ output] [0/4] c   => /', err.getvalue())
 
 	def testRc(self):
 		proc = Proc()
@@ -731,8 +812,10 @@ print "a"
 		out_c = job.data['out']['c']
 		in_c  = job.data['in']['c']
 		in_d  = job.data['in']['d']
+		in_d2 = job.data['in']['d2']
+		in_d3 = job.data['in']['d3']
 		self.assertEqual(sig['script'], [job.script, int(path.getmtime(job.script))])
-		self.assertEqual(sig['in'], {'var': {'a': 1, 'b': 'a'}, 'files': {'d': [[fd, int(path.getmtime(fd))] for fd in in_d]}, 'file': {'c': [in_c, int(path.getmtime(in_c))]}})
+		self.assertEqual(sig['in'], {'var': {'a': 1, 'b': 'a'}, 'files': {'d': [[fd, int(path.getmtime(fd))] for fd in in_d], 'd2': [[fd, int(path.getmtime(fd))] for fd in in_d2], 'd3': [[fd, int(path.getmtime(fd))] for fd in in_d3]}, 'file': {'c': [in_c, int(path.getmtime(in_c))]}})
 		self.assertEqual(sig['out'], {'var': {'a': '1_1'}, 'dir': {'c': [out_c, int(path.getmtime(out_c))]}, 'file': {'b': [out_b, int(path.getmtime(out_b))]}})
 
 	def testSignature(self):
@@ -750,6 +833,8 @@ print "a"
 		out_c = job.data['out']['c']
 		in_c  = job.data['in']['c']
 		in_d  = job.data['in']['d']
+		in_d2 = job.data['in']['d2']
+		in_d3 = job.data['in']['d3']
 		utils.safeRemove(job.script)
 		# script file not exists
 		with captured_output() as (out, err):
@@ -760,7 +845,7 @@ print "a"
 		with captured_output() as (out, err):
 			sig = job.signature()
 			self.assertEqual(sig['script'], [job.script, int(path.getmtime(job.script))])
-			self.assertEqual(sig['in'], {'var': {'a': 1, 'b': 'a'}, 'files': {'d': [[fd, int(path.getmtime(fd))] for fd in in_d]}, 'file': {'c': [in_c, int(path.getmtime(in_c))]}})
+			self.assertEqual(sig['in'], {'var': {'a': 1, 'b': 'a'}, 'files': {'d': [[fd, int(path.getmtime(fd))] for fd in in_d], 'd2': [[fd, int(path.getmtime(fd))] for fd in in_d2], 'd3': [[fd, int(path.getmtime(fd))] for fd in in_d3]}, 'file': {'c': [in_c, int(path.getmtime(in_c))]}})
 			self.assertEqual(sig['out'], {'var': {'a': '1_1'}, 'dir': {'c': [out_c, int(path.getmtime(out_c))]}, 'file': {'b': [out_b, int(path.getmtime(out_b))]}})
 		# no input file
 		#if path.islink(in_c):
@@ -952,6 +1037,7 @@ print "a"
 		exdir = path.join(tmpdir, 'testExport-export')
 		utils.safeRemove(exdir)
 		makedirs(exdir)
+		makedirs(path.join(exdir, path.basename(__file__) + '0'))
 		proc = Proc()
 		proc.exdir = exdir
 		proc.exhow = 'move'

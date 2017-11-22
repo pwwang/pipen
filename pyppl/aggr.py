@@ -149,8 +149,7 @@ class Aggr (object):
 
 	def __setattr__(self, name, value):
 		if name == 'id':
-			self.__dict__['_procs'][name] = value
-			self.aggr = name
+			self.__dict__['_props'][name] = value
 		elif name in ['starts', 'ends']:
 			self.__dict__['_props'][name] = list(value) if isinstance(value, tuple) or isinstance(value, list) else [value]
 		elif name in self.__dict__:
@@ -208,16 +207,7 @@ class Aggr (object):
 				utils.dictUpdate(oldv, newv)
 		else:
 			for _, proc in self.__dict__['_procs'].items():
-				if '.' not in name:
-					setattr(proc, name, value)
-				else:
-					parts = name.split('.')
-					newv  = {parts.pop(-1): value}
-					oldv  = proc
-					while parts:
-						key  = parts.pop(0)
-						oldv = getattr(oldv, key)
-					utils.dictUpdate(oldv, newv)
+				setattr(proc, name, value)
 	
 	def addProc (self, p, tag = None, where = None, copy = True):
 		"""

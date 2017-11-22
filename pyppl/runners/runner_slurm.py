@@ -99,7 +99,6 @@ class RunnerSlurm (RunnerQueue):
 			content = f.read().strip()
 		if not 'Submitted batch job' in content:
 			return
-		
 		pid = int (content.split(' ')[-1])
 		self.job.pid (pid)
 

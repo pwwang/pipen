@@ -217,7 +217,10 @@ class Flowchart(object):
 		with open(self.dotfile, 'w') as fout:
 			fout.write('\n'.join(dotstr) + '\n')
 		
-		rc = utils.dumbPopen(self.command).wait()
+		try:
+			rc = utils.dumbPopen(self.command).wait()
+		except:
+			rc = 1
 		if rc != 0:
 			raise ValueError('Failed to generate flowcart file: %s.' % self.command)
 

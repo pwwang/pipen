@@ -128,6 +128,8 @@ class TestPyPPL (unittest.TestCase):
 		self.assertTrue(path.exists(path.splitext(sys.argv[0])[0] + '.pyppl.log'))
 		remove(path.splitext(sys.argv[0])[0] + '.pyppl.log')
 		self.assertFalse(path.exists(path.splitext(sys.argv[0])[0] + '.pyppl.log'))
+		self.assertEqual(path.expanduser('~/.PyPPL'), PyPPL.DEFAULT_CFGFILES[0])
+		self.assertEqual(path.expanduser('~/.PyPPL.json'), PyPPL.DEFAULT_CFGFILES[1])
 
 
 	def testRegisterRunner(self):
@@ -168,7 +170,8 @@ class TestPyPPL (unittest.TestCase):
 		aggr = Aggr()
 		aggr.starts = [ap2, ap3, ap4]
 		data = [
-			(['ap1'], [ap1, ap6]),
+			(['ap1.t'], [ap6]),
+			(['ap1'], [ap1, "ap1.t"]),
 			([aggr], [ap2, ap3, ap4]),
 			([ap1, ap2], [ap1, ap2])
 		]
@@ -214,6 +217,20 @@ class TestPyPPL (unittest.TestCase):
 			})
 			pyppl.start(ap1, ap10)
 		self.assertIn('Process ap5.t marked as start but will be ignored as it depends on other start processes.', err.getvalue())
+
+	def testshowAllRoutes(self):
+		p1 = Proc()
+		p2 = Proc(tag = 't@a')
+		p3 = Proc(tag = 't@a')
+		p2.depends = [p1]
+		p3.depends = [p2]
+		with captured_output() as (out, err):
+			ppl = PyPPL()
+			ppl2 = ppl.start(p1).showAllRoutes()
+		self.assertIs(ppl, ppl2)
+		self.assertIn('ALL ROUTES', err.getvalue())
+		
+
 	'''
 	def testProcRelations(self):
 		"""
@@ -368,7 +385,8 @@ class TestPyPPL (unittest.TestCase):
 
 		pyppl.start(p1)
 		self.assertRaises(ValueError, pyppl._resume, p4, **{'plus': False})
-		pyppl.resume(p3, p4, p5, p10)
+		pyppl2 = pyppl.resume(p3, p4, p5, p10)
+		self.assertIs(pyppl2, pyppl)
 		self.assertEqual(p1.resume, 'skip')
 		self.assertEqual(p2.resume, 'skip')
 		self.assertEqual(p3.resume, 'resume')
@@ -398,7 +416,8 @@ class TestPyPPL (unittest.TestCase):
 		self.assertEqual( len(pyppl.tree.getStarts()), 2 )
 		self.assertIn(p2, pyppl.tree.getStarts())
 		self.assertIn(p5, pyppl.tree.getStarts())
-		pyppl.resume2(p3, p6)
+		pyppl2 = pyppl.resume2(p3, p6)
+		self.assertIs(pyppl2, pyppl)
 		self.assertEqual( len(pyppl.tree.getEnds()), 2 )
 		self.assertIn(p8, pyppl.tree.getEnds())
 		self.assertIn(p9, pyppl.tree.getEnds())
@@ -463,8 +482,9 @@ class TestPyPPL (unittest.TestCase):
 				'levels': None,
 				'file': None
 			}
-		})
-		pyppl.start(p1, p5).flowchart(fcfile = fcfile, dotfile = dotfile)
+		}).start(p1, p5)
+		pyppl2 = pyppl.flowchart(fcfile = fcfile, dotfile = dotfile)
+		self.assertIs(pyppl, pyppl2)
 		self.assertTrue(path.exists(fcfile))
 		self.assertTrue(path.exists(dotfile))
 		with open(dotfile) as f:
@@ -503,6 +523,7 @@ class TestPyPPL (unittest.TestCase):
 		p8  = Proc()
 		p9  = Proc()
 		p10 = Proc()
+		p1.profile = 'proc'
 		p2.addDepends(p1)
 		p10.addDepends(p1)
 		p3.addDepends(p2)
@@ -522,6 +543,36 @@ class TestPyPPL (unittest.TestCase):
 		errmsgs = [e for e in err.getvalue().splitlines() if 'SUBMIT' in e]
 		errmsgs = [e[(e.index('Running')+8):-4].strip() for e in errmsgs]
 		self.assertEqual(errmsgs, ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10'])
+
+	def testUnRan(self):
+		"""
+		p3  --- p7 
+		   _____/   
+		p4 \      
+		     p6  
+		p5 /
+		"""
+		from collections import OrderedDict
+		ProcTree.NODES = OrderedDict()
+		p3  = Proc()
+		p4  = Proc()
+		p5  = Proc()
+		p6  = Proc()
+		p7  = Proc()
+		p6.addDepends(p4, p5)
+		p7.addDepends(p3, p4)
+		
+		with captured_output() as (out, err):
+			ppl = PyPPL(config = {
+				'log': {
+					'levels': 'all',
+					'file': None
+				}
+			})
+			ppl2 = ppl.start(p3, p4).run()
+		self.assertIs(ppl, ppl2)
+		self.assertIn("p6 won't run as prior processes didn't run: [p5]", err.getvalue())
+
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

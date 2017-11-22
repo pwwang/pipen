@@ -135,7 +135,10 @@ class TestTemplatePyPPL (unittest.TestCase):
 			t = TemplateJinja2('')
 			self.assertIn('TemplateJinja2 with source:', str(t))
 
-	# TODO: test render file
+	def testRenderFile(self):
+		t = TemplatePyPPL('{{name}}')
+		t.registerEnvs(name = 'a')
+		self.assertEqual(t.render(), 'a')
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

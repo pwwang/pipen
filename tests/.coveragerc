@@ -1,0 +1,9 @@
+[run]
+omit =
+	test*.py
+	workdir/*.py
+
+[report]
+omit = 
+	test*.py
+	workdir/*.py

@@ -3,6 +3,18 @@ import path, unittest
 import sys, tempfile
 from os import path
 from pyppl.parameters import Parameter, Parameters
+from contextlib import contextmanager
+from six import StringIO
+
+@contextmanager
+def captured_output():
+	new_out, new_err = StringIO(), StringIO()
+	old_out, old_err = sys.stdout, sys.stderr
+	try:
+		sys.stdout, sys.stderr = new_out, new_err
+		yield sys.stdout, sys.stderr
+	finally:
+		sys.stdout, sys.stderr = old_out, old_err
 
 class TestParameters (unittest.TestCase):
 
@@ -15,6 +27,7 @@ class TestParameters (unittest.TestCase):
 		self.assertEqual(p.type, list)
 		self.assertEqual(p.name, 'a')
 		self.assertEqual(p.value, [])
+		self.assertEqual(repr(p), 'Parameter({})[{}]'.format(','.join([key+'='+str(val) for key, val in p.props.items()]), hex(id(p))))
 		
 		self.assertEqual(p._printName('-P'), '-Pa <LIST>')
 		p.setDesc('some description')
@@ -35,6 +48,12 @@ class TestParameters (unittest.TestCase):
 		self.assertEqual(p._printName('-P'), '-Pname2 <STR>')
 		p._forceType()
 		self.assertEqual(p.value, '[1, 2]')
+
+		p = Parameter('a', True)
+		self.assertRaises(ValueError, p.setRequired)
+
+		p = Parameter('a', 'a')
+		self.assertRaises(TypeError, p.setType, int)
 		
 	def testParametersInit(self):
 		ps = Parameters()
@@ -135,7 +154,17 @@ OPTIONAL OPTIONS:
 		ps.c.setValue([]).setType(list).setShow(False)
 		ps.d.setValue(0).setType(bool).setDesc('A switch')
 		
-		sys.argv = ['prog', '--param-a', 'b', '--param-b', '3', '--param-c', 'a', 'b']
+		sys.argv = ['-h']
+		with captured_output():
+			self.assertRaises(SystemExit, ps.parse)
+
+		sys.argv = ['prog', '--param-a', 'b', '--param-b', '3', '--param-c', 'a', 'b', '--param-d=x']
+		self.assertRaises(ValueError, ps.parse)
+
+		sys.argv = ['prog', '--param-a', 'b', '--param-b', 'a', '--param-c', 'a', 'b']
+		self.assertRaises(TypeError, ps.parse)
+
+		sys.argv = ['prog', '--param-a', 'b', '--param-b', '3', '--param-c', 'a', 'b', '--param-d=f']
 		ps.parse()
 		self.assertEqual(ps.a.value, 'b')
 		self.assertEqual(ps.b.value, 3)
@@ -153,8 +182,15 @@ OPTIONAL OPTIONS:
 		self.assertEqual(psdict.c, ['a', 'b'])
 		self.assertEqual(psdict.d, False)
 		
-		sys.argv = ['prog', '--param-a=b', '--param-b=3', '--param-c=a', '--param-c', 'b', '--param-d']
-		ps.parse()
+		ps.b.value = ''
+		sys.argv = ['prog', '--param-a=b', '--param-c=a', '--param-c', 'b', '--param-d=1', 'unused']
+		with captured_output() as (out,err):
+			self.assertRaises(SystemExit, ps.parse)
+
+		sys.argv = ['prog', '--param-a=b', '--param-b=3', '--param-c=a', '--param-c', 'b', '--param-d=1', 'unused']
+		with captured_output() as (out,err):
+			ps.parse()
+		self.assertEqual('WARNING: Unused value found: unused.\n', err.getvalue())
 		self.assertEqual(ps.a.value, 'b')
 		self.assertEqual(ps.b.value, 3)
 		self.assertEqual(ps.c.value, ['a', 'b'])

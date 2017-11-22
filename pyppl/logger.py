@@ -170,7 +170,7 @@ def _formatTheme(theme):
 					exprStr = v.replace('colors.' + ck, '"' + cv + '"')
 					try:
 						val[i] = eval(exprStr)
-					except SyntaxError:
+					except (SyntaxError, AttributeError):
 						sys.stderr.write('Cannot get colors in %s (%s)\n' % (exprStr, v))
 						raise
 			else:

@@ -204,6 +204,9 @@ class TestFlowchart (unittest.TestCase):
     }
 }
 """.splitlines())
+		
+		fc.command = 'exit 1'
+		self.assertRaises(ValueError, fc.generate)
 
 	@unittest.skipIf(not which('dot'), 'Graphviz not installed.')
 	def testDark(self):

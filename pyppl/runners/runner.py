@@ -157,12 +157,12 @@ class Runner (object):
 			lines = ferr.readlines()
 			if lines:
 				lines[0] = lasterr + lines[0]
-				if not end and not lines[-1].endswith('\n'):
+				lastline = lines[-1]
+				if end and not lastline.endswith('\n'):
+					lines[-1] += '\n'
+				elif not end and not lines[-1].endswith('\n'):
 					lasterr = lines.pop(-1)
-				else:
-					lasterr = ''
-				if lasterr and end:
-					lines.append(lasterr + '\n')
+				
 				for line in lines:
 					if 'stderr' in self.job.proc.echo['type'] and (not self.job.proc.echo['filter'] or (self.job.proc.echo['filter'] and re.search (self.job.proc.echo['filter'], line))):
 						lock.acquire()

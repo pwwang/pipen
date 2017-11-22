@@ -97,7 +97,7 @@ def varname (maxline = 20, incldot = False):
 		The variable name
 	"""
 	stack     = inspect.stack()
-	
+
 	if 'self' in stack[1][0].f_locals:
 		theclass  = stack[1][0].f_locals["self"].__class__.__name__
 		themethod = stack[1][0].f_code.co_name
@@ -407,8 +407,8 @@ def samefile (f1, f2, callback = None):
 		If any of the path does not exist, return False
 	"""
 	if f1 == f2:
-		callback(True, f1, f2)
-		return
+		if callable(callback): callback(True, f1, f2)
+		return True
 		
 	f1lock = _lockfile(f1)
 	f2lock = _lockfile(f2)
@@ -505,17 +505,17 @@ def _safeMoveWithLink(src, dst, overwrite = True):
 		if path.isdir(dst): rmtree(dst)
 		else: remove(dst)
 	
-	if not path.exists(dst):
-		# if source is a link, copy the realfile
-		if path.islink(src):
-			ret = _safeCopy(path.realpath(src), dst)
-			if not ret: return False
-			return _safeLink(dst, src)
-		else:
-			move(src, dst)
-			return _safeLink(dst, src)
+	# always True
+	# if not path.exists(dst):
+	# if source is a link, copy the realfile
+	if path.islink(src):
+		ret = _safeCopy(path.realpath(src), dst)
+		if not ret: return False
+	else:
+		move(src, dst)
+	
+	return _safeLink(dst, src)
 
-	return False
 
 def safeMoveWithLink(src, dst, overwrite = True):
 	"""

@@ -73,6 +73,14 @@ class TestLogger (unittest.TestCase):
 			'in:CACHED,RUNNING,SKIPPED,RESUMED': "colors.yellow",
 			''        : "colors.white"
 		}), logger._formatTheme(logger.themes['greenOnBlack']))
+
+		self.assertRaises(ValueError, logger._formatTheme, "a")
+
+		with captured_output():
+			logger.getLogger()
+			self.assertRaises((SyntaxError, AttributeError), logger._formatTheme, {
+				'DONE': "colors.unknowncolor"
+			})
 	
 	def testGetLogger(self):
 		log1 = logger.getLogger()

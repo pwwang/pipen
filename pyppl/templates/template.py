@@ -58,12 +58,8 @@ class Template(object):
 
 	def __init__(self, source, **envs):
 		self.source = source
-		self.isfile = False
 		self.envs   = {k:v for k, v in Template.DEFAULT_ENVS.items()}
 		self.envs.update(envs)
-		if source.startswith('file:') and path.exists(source[5:]):
-			self.source = self.source[5:]
-			self.isfile = True
 
 	def registerEnvs(self, **envs):
 		self.envs.update(envs)
@@ -71,10 +67,7 @@ class Template(object):
 	def render(self, data = None):
 		data = {} if data is None else data
 		data.update(self.envs)
-		if self.isfile:
-			return self._renderFile(data)
-		else:
-			return self._render(data)
+		return self._render(data)
 
 	# in order to dump setting
 	def __str__(self):
@@ -83,10 +76,6 @@ class Template(object):
 	def _render(self, data):
 		raise NotImplementedError()
 
-	def _renderFile(self, data):
-		with open(self.source) as fs:
-			self.source = fs.read()
-			return self._render(data)
 
 Template.DEFAULT_ENVS.update({
 	# array-space quote

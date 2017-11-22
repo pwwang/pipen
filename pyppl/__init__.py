@@ -37,7 +37,9 @@ class Proc (object):
 	"""
 
 	# for future use, shortcuts
-	ALIAS        = { }
+	ALIAS        = { 
+		'envs': 'tplenvs'
+	}
 	LOG_NLINE    = {
 		'EXPORT_CACHE_OUTFILE_EXISTS': -3,
 		'EXPORT_CACHE_USING_SYMLINK': 1,
@@ -566,7 +568,7 @@ class Proc (object):
 		if isinstance(self.echo['jobs'], int):
 			self.echo['jobs'] = [self.echo['jobs']]
 		elif isinstance(self.echo['jobs'], six.string_types):
-			self.echo['jobs'] = map(lambda x: int(x.strip()), self.echo['jobs'].split(','))
+			self.echo['jobs'] = list(map(lambda x: int(x.strip()), self.echo['jobs'].split(',')))
 		
 		if not 'type' in self.echo:
 			self.echo['type'] = ['stderr', 'stdout']
@@ -758,6 +760,7 @@ class Proc (object):
 		show   = [ 'size' ]
 		hidden = [ 'desc', 'id', 'sets', 'tag', 'suffix', 'workdir' ]
 		hidden.extend([key for key in pvkeys if key not in self.sets if key not in show])
+		hidden = set(hidden)
 		procvars = {}
 		procargs = {}
 
@@ -775,7 +778,7 @@ class Proc (object):
 			elif key in alias:
 				key = alias[key]
 				procvars[key] = val
-				if (val is False or val) and key not in hidden:
+				if ((val is False) or bool(val)) and key not in hidden:
 					maxlen = max(maxlen, len(key))
 					propout[key] = val
 			else:
@@ -864,9 +867,11 @@ class Proc (object):
 		nlines = []
 		indent = ''
 		for line in olines:
-			if '## indent remove ##' in line:
-				indent = line[:line.find('## indent remove ##')]
-			elif '## indent keep ##' in line:
+			line2 = line.strip().strip('#').upper()
+			# ## indent remove ##
+			if 'INDENT REMOVE' in line2:
+				indent = line[:line.find('#')]
+			elif 'INDENT KEEP' in line2:
 				indent = ''
 			elif indent and line.startswith(indent):
 				nlines.append(line[len(indent):])

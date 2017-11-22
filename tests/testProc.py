@@ -6,6 +6,7 @@ from box import Box
 from os import path, makedirs
 from time import sleep
 from pyppl import Proc, logger, templates, utils, Channel, PyPPL, Job, ProcTree
+from shutil import rmtree
 
 from contextlib import contextmanager
 from six import StringIO
@@ -122,6 +123,9 @@ class TestProc (unittest.TestCase):
 		p.input = 'a'
 		p.input = [1]
 		self.assertEqual(p.config['input'], {'a': [1]})
+		self.assertEqual(p.envs, p.tplenvs)
+		p.envs = {'a': 1}
+		self.assertEqual(p.tplenvs, {'a': 1})
 
 	def testLog(self):
 		p = Proc()
@@ -264,6 +268,9 @@ class TestProc (unittest.TestCase):
 		p.echo = 'stdout'
 		p._buildProps()
 		self.assertEqual(p.echo, {'filter': '', 'jobs':[0], 'type': ['stdout']})
+		p.echo = {'jobs': "0,1"}
+		p._buildProps()
+		self.assertEqual(p.echo, {'filter': '', 'jobs':[0, 1], 'type': ['stderr', 'stdout']})
 
 		# dryrunner
 		self.assertEqual(p.runner, 'local')
@@ -311,6 +318,15 @@ class TestProc (unittest.TestCase):
 		p._buildProps()
 		self.assertEqual(p.expart[0].render(), 'a')
 		self.assertEqual(p.expart[1].render({'proc': {'id': p.id}}), 'p')
+
+		# exdir
+		exdir = path.join(p.ppldir, 'exdir')
+		if path.isdir(exdir): rmtree(exdir)
+		self.assertFalse(path.isdir(exdir))
+		p.exdir = exdir
+		p._buildProps()
+		self.assertTrue(path.isdir(exdir))
+			
 	
 	def testBuildInput(self):
 		p = Proc(tag = 'buildinput')
@@ -465,11 +481,14 @@ class TestProc (unittest.TestCase):
 
 	def testBuildProcVars(self):
 		sys.argv = ['']
+		Proc.ALIAS['tag']   = 'tag' # coverage issue
+		Proc.ALIAS['cache'] = 'cache' # coverage issue
+
 		p = Proc(tag = 'procvars')
 		p._buildProps()
 		p._buildInput()
 		p.args = {'a': 1, 'b': 2}
-
+		p.cache = True
 		with captured_output() as (out, err):
 			logger.getLogger()
 			p._buildProcVars()
@@ -500,7 +519,7 @@ class TestProc (unittest.TestCase):
 			'exdir': '', 
 			'profile': '',
 			'procvars': {}, 
-			'sets': ['args'], 
+			'sets': ['args', 'cache'], 
 			'errntry': 3
 		})
 
@@ -590,6 +609,15 @@ class TestProc (unittest.TestCase):
 		p._buildBrings()
 		p._buildOutput()
 
+		p.output = 'a:b:c:d'
+		p._buildProps()
+		p._buildInput()
+		p._buildProcVars()
+		p._buildBrings()
+		self.assertRaises(ValueError, p._buildOutput)
+
+
+
 	def testBuildScript(self):
 		with captured_output() as (out, err):
 			logger.getLogger()
@@ -643,6 +671,33 @@ p.script = "file:./relpathscript"
 		prel._buildOutput()
 		prel._buildScript()
 		self.assertIn(script, prel.script.render())
+
+		# file
+		p = Proc('render-file')
+		p.script = "file:" + sfile
+		p._buildProps()
+		p._buildInput()
+		p._buildProcVars()
+		p._buildBrings()
+		p._buildOutput()
+		p._buildScript()
+		self.assertIn(script, p.script.render())
+
+		# indents
+		p = Proc('bs-indents')
+		p.script = """#
+		## indent remove ##
+		hello
+		## indent keep ##
+		hello2
+		"""
+		p._buildProps()
+		p._buildInput()
+		p._buildProcVars()
+		p._buildBrings()
+		p._buildOutput()
+		p._buildScript()
+		self.assertEqual(p.script.render({'pid': p}), '#!/usr/bin/env bash\n#\nhello\n\t\thello2')
 
 	def testReadConfig(self):
 		p = Proc('readconf')
@@ -712,7 +767,7 @@ p.script = "file:./relpathscript"
 	def testSaveSettings(self):
 		p = Proc('savesettings')
 		# empty output
-		p.input = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
+		p.input = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10], 'infiles:files': [['./a']]}
 		p.output = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
 		p.script = 'echo {{in.a}} > {{out.outfile}}'
 		p._buildProps()
@@ -746,6 +801,24 @@ p.script = "file:./relpathscript"
 		self.assertEqual(p.size, 5)
 		for job in p.jobs:
 			self.assertIsInstance(job, Job)
+	
+	def testTidyAfterRun(self):
+		with captured_output() as (out, err):
+			logger.getLogger(levels = 'all')
+			p = Proc('tar')
+			p.resume = 'skip+'
+			p.callback = lambda x: 1
+			p._tidyAfterRun()
+		self.assertIn('Calling callback ...', err.getvalue())
+
+		with captured_output() as (out, err):
+			logger.getLogger(levels = 'all')
+			p = Proc('tar2')
+			p.resume = 'resume'
+			p.callback = lambda x: 1
+			p._tidyAfterRun()
+		self.assertIn('Calling callback ...', err.getvalue())
+
 
 	def testCheckCached(self):
 		logger.getLogger()
@@ -774,20 +847,19 @@ p.script = "file:./relpathscript"
 		self.assertIn('Export cached jobs: []', err.getvalue())
 
 	def testRunJobs(self):
-		logger.getLogger()
+		with captured_output() as (out, err):
+			logger.getLogger()
 		p = Proc('runjobs')
 		# empty output
 		p.runner = 'testr'
 		p.input = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
 		p.output = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
 		p.script = 'echo {{in.a}} > {{out.outfile}}'
-		with captured_output() as (out, err):
-			logger.getLogger()
-			p._tidyBeforeRun()
-			for job in p.jobs:
-				utils.safeRemove(job.data['out']['outfile'])
-			p._checkCached()
-			p._runJobs()
+		p._tidyBeforeRun()
+		for job in p.jobs:
+			utils.safeRemove(job.data['out']['outfile'])
+		p._checkCached()
+		p._runJobs()
 		for job in p.jobs:
 			job.checkOutfiles()
 			self.assertFalse(job.succeed())
@@ -798,16 +870,30 @@ p.script = "file:./relpathscript"
 		self.assertRaises(KeyError, p._runJobs)
 
 		p.runner = 'testnr'
-		with captured_output() as (out, err):
-			logger.getLogger()
-			p._tidyBeforeRun()
-			for job in p.jobs:
-				utils.safeRemove(job.data['out']['outfile'])
-			p._checkCached()
-			p._runJobs()
+		p._tidyBeforeRun()
+		for job in p.jobs:
+			utils.safeRemove(job.data['out']['outfile'])
+		p._checkCached()
+		p._runJobs()
 		for job in p.jobs:
 			job.checkOutfiles()
 			self.assertTrue(job.succeed())
+
+		# coverage __init__.py:994
+		#logger.getLogger()
+		p.cclean = True
+		p._tidyBeforeRun()
+		for job in p.jobs:
+			utils.safeRemove(job.data['out']['outfile'])
+		#p._checkCached()
+		p.props['ncjobids'] = []
+		p._runJobs()
+		for job in p.jobs:
+			job.checkOutfiles()
+			# job not run (cached)
+			self.assertFalse(job.succeed())
+
+		
 
 	def testRunJobsExpect(self):
 		logger.getLogger()
@@ -834,7 +920,6 @@ p.script = "file:./relpathscript"
 		logger.getLogger()
 		p = Proc('testRun')
 		# empty output
-		p.runner  = 'testr'
 		p.nthread = 5
 		p.input   = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
 		p.output  = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
@@ -847,7 +932,7 @@ p.script = "file:./relpathscript"
 		self.assertIn('Pipeline will resume from future processes', err.getvalue())
 
 		logger.getLogger(levels = 'all')
-		p.resume = True
+		p.resume = 'resume'
 		with captured_output() as (out, err):
 			logger.getLogger()
 			p.run()
@@ -856,11 +941,30 @@ p.script = "file:./relpathscript"
 		for job in p.jobs:
 			job.done()
 
-		p.resume = False
+		p.resume = ''
 		with captured_output() as (out, err):
 			logger.getLogger()
 			p.run()
 		self.assertIn('CACHED', err.getvalue())
+
+		p.resume = 'skip+'
+		with captured_output() as (out, err):
+			logger.getLogger()
+			p.run()
+		self.assertIn('SKIPPED', err.getvalue())
+
+	def testRunCachedRunning(self):
+		with captured_output() as (out, err):
+			logger.getLogger()
+		p = Proc('trcr')
+		p.input   = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
+		p.output  = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
+		p.script  = 'echo {{in.a}} > {{out.outfile}}'
+		p.runner  = 'testnr'
+		p.props['ncjobids'] = []
+		p.cclean  = True
+		p.run()
+		self.assertIn('Truely cached jobs: ALL', err.getvalue())
 
 	def testRunExpect(self):
 		with captured_output() as (out, err): logger.getLogger()

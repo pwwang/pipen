@@ -109,7 +109,7 @@ class Parameter (object):
 			else:
 				self.value = self.type(self.value)
 		except (ValueError, TypeError):
-			sys.stderr.write('Cannot coerce value "{}" to type "{}" for {}'.format(str(self.value), self.type.__name__, repr(self)))
+			raise TypeError('Cannot coerce value "{}" to type "{}" for {}'.format(str(self.value), self.type.__name__, repr(self)))
 		
 	def _printName (self, prefix, keylen = 0):
 		"""
@@ -216,7 +216,7 @@ class Parameters (object):
 			listKeysFirstHit = {}
 			while i < len(args):
 				# support '--param-a=b'
-				arg  = args[i].split('=')
+				arg  = args[i].split('=', 1)
 				karg = arg.pop(0)
 				if karg.startswith(self._props['prefix']):
 					key = karg[len(self._props['prefix']):]
@@ -274,7 +274,7 @@ class Parameters (object):
 				try:
 					val._forceType()
 				except TypeError:
-					sys.stderr.write('ERROR: Cannot coerce "{}" to {} for option: {}'.format(val.value, val.type, karg))
+					raise TypeError('ERROR: Cannot coerce "{}" to {} for option: {}'.format(val.value, val.type, karg))
 		return self
 		
 	def help (self):

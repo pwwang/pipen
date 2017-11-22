@@ -61,6 +61,11 @@ class TestProcTree (unittest.TestCase):
 	def test3Init(self):
 		TestProcTree.procs.p2.depends = [TestProcTree.procs.p1]
 		TestProcTree.procs.p3.depends = [TestProcTree.procs.p2]
+
+		p = TestProcTree.procs.p2
+		pn = ProcNode(p)
+		self.assertEqual('<ProcNode(<Proc(id=%s,tag=%s) @ %s>) @ %s>' % (pn.proc.id, pn.proc.tag, hex(id(pn.proc)), hex(id(pn))), repr(pn)) 
+
 		pt = ProcTree()
 		self.assertIsInstance(pt, ProcTree)
 		self.assertEqual(len(ProcTree.NODES), 4)
@@ -150,6 +155,7 @@ class TestProcTree (unittest.TestCase):
 		n8 = ProcTree.getNode(p8)
 		n9 = ProcTree.getNode(p9)
 		n10 = ProcTree.getNode(p10)
+		n11 = ProcTree.getNode(p11)
 
 		self.assertEqual(len(ProcTree.NODES), 11)
 		pt = ProcTree()
@@ -174,6 +180,7 @@ class TestProcTree (unittest.TestCase):
 		self.assertEqual(pt.getNextToRun(), p7)
 		self.assertEqual(pt.getNextToRun(), p10)
 		self.assertEqual(pt.getNextToRun(), None)
+
 		
 		n1.start = False
 		n8.start = False
@@ -191,6 +198,25 @@ class TestProcTree (unittest.TestCase):
 		self.assertNotIn([p5, p4, p3, p1], paths)
 		self.assertIn([p5, p4], paths)
 
+		self.assertEqual(pt.getAllPaths(), [['p7', 'p5', 'p4'], ['p7', 'p5', 'p4'], ['p7', 'p5', 'p4'], ['p7', 'p6', 'p4'], ['p7', 'p6', 'p4'], ['p7', 'p6', 'p4'], ['p7', 'p6', 'p9']])
+
+		n4.start  = False
+		n9.start  = False
+		pt.starts = []
+		pt.ends   = []
+		pt.setStarts([p11])
+		self.assertEqual(pt.getAllPaths(), [['p11']])
+
+		n11.start = False
+		pt.starts = []
+		pt.ends   = []
+		pt.setStarts([p8])
+		for n in [n1,n2,n3,n4,n5,n6,n7,n8,n9,n10]:
+			n.ran = False
+
+		self.assertEqual(pt.getNextToRun(), p8)
+		self.assertEqual(pt.getNextToRun(), p10)
+		self.assertEqual(pt.unranProcs(), {'p3': ['p1'], 'p6': ['p4', 'p9'], 'p7': ['p5', 'p6'], 'p4': ['p2', 'p3'], 'p5': ['p4']})
 	
 	def test8Obsolete(self):
 		ProcTree.NODES = OrderedDict()

@@ -96,6 +96,10 @@ class TestChannel (unittest.TestCase):
 		self.assertEqual(ch1, [])
 		
 		self.assertEqual(ch1.cbind(ch3).cbind(ch6), [(3, 'a')])
+
+		ch1 = Channel.create([(1, 2), (3, 4)])
+		ch2 = (1,2,3)
+		self.assertRaises(ValueError, ch1.cbind, ch2)
 		
 	def testFromChannels(self):
 		ch1 = Channel.create([(1, 2), (3, 4)])
@@ -211,6 +215,40 @@ get|has_key|join
 			("data", "elif", "f1"), 
 			("get", "has_key", "join")
 		])
+
+		with open(f, 'w') as fout:
+			fout.write("""
+basestring|callable
+data|elif|f1
+get|has_key|join
+""")
+		self.assertEqual(Channel.fromFile(f, delimit = '|', header=True), [ 
+			("data", "elif", "f1"), 
+			("get", "has_key", "join")
+		])
+
+		self.assertEqual(Channel.fromFile(f, delimit = '|', header=True).RowNames, [ 
+			("data",), 
+			("get",)
+		])
+
+		self.assertEqual(Channel.fromFile(f, delimit = '|', header=True).basestring, [ 
+			("elif",), 
+			("has_key",)
+		])
+
+		self.assertEqual(Channel.fromFile(f, delimit = '|', header=True).callable, [ 
+			("f1",), 
+			("join",)
+		])
+
+		with open(f, 'w') as fout:
+			fout.write("""
+callable
+data|elif|f1
+get|has_key|join
+""")
+		self.assertRaises(ValueError, Channel.fromFile, f, **{'delimit': '|', 'header': True})
 		
 	def testFromArgv(self):
 		sys.argv = ['proc']
@@ -241,6 +279,9 @@ get|has_key|join
 		self.assertEqual(Channel.fromParams('a', 'b'), [('a', 2)])
 		
 	def testExpandCollapse(self):
+		self.assertRaises(ValueError, Channel.create().expand)
+		self.assertRaises(ValueError, Channel.create().collapse)
+
 		d  = path.join(tempfile.gettempdir(), 'testExpand')
 		f1 = path.join(d, 'testExpand1.txt')
 		f2 = path.join(d, 'testExpand2.txt')
@@ -260,6 +301,7 @@ get|has_key|join
 		ch2 = Channel.create(tempfile.gettempdir())
 		self.assertEqual(ch2.expand(pattern = 'testExpand/*.txt'), Channel.create([f1, f2, f3, f4, f5, f6]))
 		self.assertEqual(ch2.expand(pattern = 'testExpand/*.txt').collapse(), ch1)
+		self.assertEqual(ch2.expand(pattern = 'testExpand/NoTeXiStEd'), ch2)
 		
 		
 		ch3 = Channel.create((d, 1, 2))

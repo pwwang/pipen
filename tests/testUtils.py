@@ -1,7 +1,6 @@
 import path, unittest
 
 import sys
-import inspect
 import tempfile
 
 from time import sleep, time
@@ -58,6 +57,12 @@ class TestUtils (unittest.TestCase):
 		self.assertEqual(v1, 'v1')
 		self.assertEqual(v2, 'v2')
 		self.assertEqual(v3[0], 'var_1')
+
+		def func():
+			return utils.varname()
+
+		v = func()
+		self.assertEqual(v, 'v')
 	
 	
 	def testMapReduceFilter(self):
@@ -75,8 +80,8 @@ class TestUtils (unittest.TestCase):
 			('a|b\|c|(\)\\\'|)', ["a", "b\\|c", "(\\)\\'|)"]),
 		]
 		for d in data:
-			pass
-			#self.assertEqual (utils.split(d[0], "|"), d[1])
+			#pass
+			self.assertEqual (utils.split(d[0], "|"), d[1])
 		self.assertEqual(utils.split('outdir:dir:{{in.pattern | lambda x: __import__("glob").glob(x)[0] | fn }}_etc', ':'), ["outdir", "dir", "{{in.pattern | lambda x: __import__(\"glob\").glob(x)[0] | fn }}_etc"])
 			
 	def testDictUpdate (self):
@@ -110,6 +115,8 @@ class TestUtils (unittest.TestCase):
 		self.assertEqual (utils.funcsig(func1).strip(), "def func1 ():\n\t\t\tpass")
 		self.assertEqual (utils.funcsig(func2).strip(), "func2 = lambda x: x")
 		self.assertEqual (utils.funcsig(func3), "None")
+
+
 		
 	def testUid (self):
 		import random, string
@@ -154,6 +161,8 @@ class TestUtils (unittest.TestCase):
 		string = ["o1:var:{{c1}}", "o2:var:{{c2 | __import__('math').pow(float(_), 2.0)}}", "o3:file:{{c3.fn}}2{{c3.ext}}"]
 		l = utils.alwaysList (string)
 		self.assertEqual (l, string)
+		string = {'a': 1}
+		self.assertRaises(ValueError, utils.alwaysList, string)
 		
 	def testProcessEx(self):
 	
@@ -228,6 +237,12 @@ class TestUtils (unittest.TestCase):
 			thr.start()
 		for thr in procs:
 			thr.join()
+
+	def testSamefileSamefile(self):
+		f = path.join(tempfile.gettempdir(), 'samefile1')
+		ret = utils.samefile(f, f)
+		self.assertTrue(ret)
+
 			
 	def testSaferemove(self):
 		f1 = path.join(tempfile.gettempdir(), 'testSaferemove1')
@@ -329,6 +344,47 @@ class TestUtils (unittest.TestCase):
 		self.assertFalse(path.exists(f2))
 		self.assertTrue(path.exists(f3))
 		self.assertTrue(path.exists(f4))
+
+		# create dead link: f1
+		utils.safeLink(f3, f1)
+		utils.safeRemove(f3)
+		ret = utils.safeMove(f4, f1)
+		self.assertTrue(ret)
+
+
+	def testSafeMoveNotExists(self):
+		ret = utils.safeMove('/a/b/c/NotExist', 'x')
+		self.assertFalse(ret)
+
+		# overwrite file
+		f1 = path.join(tempfile.gettempdir(), 'testSafeMoveNotExists1')
+		f2 = path.join(tempfile.gettempdir(), 'testSafeMoveNotExists2')
+		f3 = path.join(tempfile.gettempdir(), 'testSafeMoveNotExists3')
+		utils.safeRemove(f1)
+		utils.safeRemove(f2)
+		utils.safeRemove(f3)
+		open(f1, 'w').close()
+		open(f2, 'w').close()
+		ret = utils.safeMove(f1, f2)
+		self.assertTrue(ret)
+
+		# overwrite dir
+		utils.safeRemove(f1)
+		utils.safeRemove(f2)
+		makedirs(f1)
+		makedirs(f2)
+		ret = utils.safeMove(f1, f2)
+		self.assertTrue(ret)
+
+		# remove dead link
+		utils.safeRemove(f1)
+		utils.safeRemove(f2)
+		open(f1, 'w').close()
+		symlink(f2, f3)
+		utils.safeRemove(f3)
+		ret = utils.safeMove(f1, f2)
+		self.assertTrue(ret)
+
 		
 	def testSafemovewithlink(self):
 		f1 = path.join(tempfile.gettempdir(), 'Safemovewithlink')
@@ -416,6 +472,25 @@ class TestUtils (unittest.TestCase):
 			self.assertEqual(fin3.read(), fin4.read())
 		self.assertTrue(path.samefile(f2, f4))
 
+		ret = utils.safeMoveWithLink("/a/b/c/NotExists", 'x')
+		self.assertFalse(ret)
+
+		utils.safeRemove(f1)
+		utils.safeRemove(f2)
+		utils.safeRemove(f3)
+		utils.safeRemove(f4)
+
+		open(f1, 'w').close()
+		utils.safeLink(f1, f2)
+		ret = utils.safeMoveWithLink(f1, f2, overwrite = False)
+		self.assertFalse(ret)
+
+		utils.safeRemove(f1)
+		open(f3, 'w').close()
+		ret = utils.safeMoveWithLink(f3, f2, overwrite = True)
+		self.assertTrue(ret)
+
+
 			
 	def testSafecopy(self):
 		f1 = path.join(tempfile.gettempdir(), 'testSafecopy')
@@ -483,6 +558,26 @@ class TestUtils (unittest.TestCase):
 		self.assertTrue(path.exists(f2))
 		self.assertTrue(path.exists(f3))
 		self.assertTrue(path.exists(f4))
+
+		ret = utils.safeCopy("/a/b/c/NotExists", "x")
+		self.assertFalse(ret)
+		
+		f1 = path.join(tempfile.gettempdir(), 'testSafecopyfile1')
+		f2 = path.join(tempfile.gettempdir(), 'testSafecopyfile2')
+		open(f1, 'w').close()
+		open(f2, 'w').close()
+		ret = utils.safeCopy(f1, f2)
+		self.assertTrue(ret)
+
+		d1 = path.join(tempfile.gettempdir(), 'testSafecopydir1')
+		d2 = path.join(tempfile.gettempdir(), 'testSafecopydir2')
+		utils.safeRemove(d1)
+		utils.safeRemove(d2)
+		makedirs(d1)
+		makedirs(d2)
+		ret = utils.safeCopy(d1, d2)
+		self.assertTrue(ret)
+
 		
 	def testSafelink(self):
 		f0 = path.join(tempfile.gettempdir(), 'testSafelink0')
@@ -550,6 +645,18 @@ class TestUtils (unittest.TestCase):
 		self.assertTrue(path.exists(f2))
 		self.assertTrue(path.islink(f3))
 		self.assertTrue(path.islink(f4))
+
+		ret = utils.safeLink("/a/b/c/NotExist", "x")
+		self.assertFalse(ret)
+
+		d1 = path.join(tempfile.gettempdir(), 'testSafelinkdir1')
+		d2 = path.join(tempfile.gettempdir(), 'testSafelinkdir2')
+		utils.safeRemove(d1)
+		utils.safeRemove(d2)
+		makedirs(d1)
+		makedirs(d2)
+		ret = utils.safeLink(d1, d2)
+		self.assertTrue(ret)
 		
 	def testTargz(self):
 		f1 = path.join(tempfile.gettempdir(), 'testTargz')
@@ -602,23 +709,29 @@ class TestUtils (unittest.TestCase):
 		utils.safeRemove(f1)
 		self.assertTrue(utils.ungz(f3, f1))
 		self.assertTrue(path.isfile(f1))
+
+		ret = utils.ungz("/a/b/c/NotExist", "x")
+		self.assertFalse(ret)
+		ret = utils.untargz("/a/b/c/NotExist", "x")
+		self.assertFalse(ret)
 		
 	def testDirmtimeFilesig(self):
 		d1 = path.join(tempfile.gettempdir(), 'testDirmtime')
-		utils.safeRemove(d1)
-		self.assertEqual(utils.dirmtime(d1), 0)
-		self.assertFalse(utils.filesig(d1))
-		makedirs(d1)
-		mtime = path.getmtime(d1)
-		self.assertEqual(utils.dirmtime(d1), mtime)
+		d2 = path.join(d1, 'testDirmtime2')
+		utils.safeRemove(d2)
+		self.assertEqual(utils.dirmtime(d2), 0)
+		self.assertFalse(utils.filesig(d2))
+		makedirs(d2)
+		mtime = int(path.getmtime(d2))
+		self.assertEqual(int(utils.dirmtime(d1)), mtime)
 		self.assertEqual(utils.filesig(d1), [d1, int(mtime)])
-		f1 = path.join(d1, 'a.txt')
+		f1 = path.join(d2, 'a.txt')
 		open(f1, 'w').close()
 		mtime = int(path.getmtime(f1))
 		self.assertEqual(int(utils.dirmtime(d1)), mtime)
 		self.assertEqual(utils.filesig(d1), [d1, mtime])
 		self.assertEqual(utils.filesig(f1), [f1, mtime])
-		f2 = path.join(d1, 'a.link')
+		f2 = path.join(d2, 'a.link')
 		symlink(f1, f2)
 		self.assertEqual(int(utils.dirmtime(d1)), mtime)
 		self.assertEqual(utils.filesig(d1), [d1, mtime])
@@ -635,6 +748,8 @@ class TestUtils (unittest.TestCase):
 		self.assertEqual(utils.chmodX(f), [f])
 		utils.safeLink(f, l)
 		self.assertEqual(utils.chmodX(l), [f])
+
+		self.assertRaises(Exception, utils.chmodX, '/a/b/c/NotExists')
 
 	def testDumbPopen(self):
 		cmd = ['ls', '-l', path.abspath(path.dirname(__file__))]
@@ -660,6 +775,7 @@ class TestUtils (unittest.TestCase):
 		t = time() - t0
 		self.assertEqual(sorted(globalVars), [1,2,3,4,5,6,7,8])
 		self.assertLess(t, 2)
+
 
 
 

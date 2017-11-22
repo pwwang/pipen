@@ -84,7 +84,8 @@ class TestAggr (unittest.TestCase):
 		self.assertRaises(AttributeError, a.delegate, 'starts')
 		self.assertRaises(AttributeError, a.delegate, 'x.a.b')
 		self.assertRaises(AttributeError, a.delegate, 'id.b')
-		#self.assertRaises(AttributeError, a.delegate, 'args.*', None, 'x.*')
+		self.assertRaises(AttributeError, a.delegate, 'args', None, 'x.*')
+		self.assertRaises(AttributeError, a.delegate, 'args.x', None, 'x.*')
 		
 
 		a.delegate('a')
@@ -122,6 +123,8 @@ class TestAggr (unittest.TestCase):
 		p1 = Proc()
 		p2 = Proc()
 		a = Aggr(p1, p2)
+		a.id = 'aa'
+		self.assertEqual(a.__dict__['_props']['id'], 'aa')
 		a.forks = 20
 		self.assertEqual(a.p1.forks, 20)
 		self.assertEqual(a.p2.forks, 20)
@@ -157,6 +160,10 @@ class TestAggr (unittest.TestCase):
 		a.forks = 5
 		self.assertEqual(a.p1.forks, 10)
 		self.assertEqual(a.p2.forks, 5)
+
+		a.delegate('aa.a', 'starts', 'args.aa')
+		a.aa.a = 1
+		self.assertEqual(a.p1.args.aa, 1)
 
 	def testSetInput(self):
 		p1 = Proc()

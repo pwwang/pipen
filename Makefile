@@ -78,9 +78,11 @@ cov:
 	for tfile in test*.py; do                              \
 		echo "Running tests $$tfile ...";                  \
 		coverage run -a $$tfile;                           \
+		if [[ $$? -ne 0 ]]; then exit 1; fi;               \
 	done;                                                  \
 	coverage xml;                                          \
 	python-codacy-coverage -r coverage.xml;                \
+	coverage html;                                         \
 	cd $$wd
 
 coverage: cov
