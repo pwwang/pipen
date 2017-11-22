@@ -38,7 +38,7 @@ class RunnerQueue (Runner):
 			
 		lastout = ''
 		lasterr = ''
-		while self.job.rc() == -1:
+		while self.job.rc() == -1: # pragma: no cover
 			sleep (30)
 			(lastout, lasterr) = self._flushOut (fout, ferr, lastout, lasterr)
 			

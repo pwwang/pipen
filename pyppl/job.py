@@ -80,10 +80,10 @@ class Job (object):
 			ldata = len(data)
 			if ldata == 1:
 				self.proc.log ("[%s/%s] %s => [%s]" % (self.index, self.proc.size - 1, key.ljust(maxlen), data[0]), loglevel)
-			elif ldata == 2:
+			elif ldata == 2: # pragma: no cover
 				self.proc.log ("[%s/%s] %s => [%s," % (self.index, self.proc.size - 1, key.ljust(maxlen), data[0]), loglevel)
 				self.proc.log ("[%s/%s] %s     %s]" % (self.index, self.proc.size - 1, ' '.ljust(maxlen), data[1]), loglevel)
-			elif ldata == 3:
+			elif ldata == 3: # pragma: no cover
 				self.proc.log ("[%s/%s] %s => [%s," % (self.index, self.proc.size - 1, key.ljust(maxlen), data[0]), loglevel)
 				self.proc.log ("[%s/%s] %s     %s," % (self.index, self.proc.size - 1, ' '.ljust(maxlen), data[1]), loglevel)
 				self.proc.log ("[%s/%s] %s     %s]" % (self.index, self.proc.size - 1, ' '.ljust(maxlen), data[2]), loglevel)
@@ -495,7 +495,7 @@ class Job (object):
 			if e:
 				self.proc.log ('Job #%-3s: overwriting: %s' % (self.index, f), 'export')
 				if not path.isdir (f): remove (f)
-				else: rmtree (f)
+				else: rmtree (f) # pragma: no cover
 			else:
 				if path.islink (f): remove (f)
 				self.proc.log ('Job #%-3s: exporting to: %s' % (self.index, f), 'export')
@@ -556,7 +556,7 @@ class Job (object):
 			makedirs(retrydir)
 		else:
 			for retrydir in glob(path.join(self.dir, 'retry.*')):
-				utils.safeRemove(retrydir)
+				utils.safeRemove(retrydir) # pragma: no cover
 
 		if path.exists (self.rcfile) or path.islink (self.rcfile):
 			if retry is None:
@@ -613,7 +613,7 @@ class Job (object):
 		if not existInfiles:
 			infile = path.join (self.indir, fn + '[1]' + ext)
 			utils.safeLink(orgfile, infile)
-		else:
+		else: # pragma: no cover
 			num = 0
 			for eifile in existInfiles:
 				if utils.samefile(eifile, orgfile):
@@ -638,13 +638,13 @@ class Job (object):
 		for key, val in self.proc.input.items():
 			self.input[key] = {}
 			if val['type'] in self.proc.IN_FILETYPE:
-				if val['data'][self.index] == '':
+				if val['data'][self.index] == '': # pragma: no cover
 					orgfile = ''
 					infile  = ''
 				else:
 					try:
 						orgfile = path.abspath(val['data'][self.index])
-					except AttributeError:
+					except AttributeError: # pragma: no cover
 						stderr.write("Input data: \n  %s: %s\n" % (key, val['data'][self.index]))
 						raise
 					if not path.exists(orgfile):

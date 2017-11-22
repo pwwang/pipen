@@ -110,8 +110,8 @@ class RunnerSlurm (RunnerQueue):
 		"""
 		jobid = self.job.pid ()
 		if not jobid: return False
-		try:
+		try: # pragma: no cover
 			return jobid + ' ' in check_output([self.commands['squeue'], '-j', jobid]).splitlines()[1]
-		except Exception:
+		except Exception: # pragma: no cover
 			return False
 

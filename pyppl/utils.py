@@ -29,10 +29,10 @@ class ProcessEx (Process):
 		self._pconn, self._cconn = Pipe()
 		
 	def run(self):
-		try:
+		try: # pragma: no cover
 			Process.run(self)
 			self._cconn.send(None)
-		except Exception as ex:
+		except Exception as ex: # pragma: no cover
 			message = format_exc()
 			self._cconn.send(type(ex)(message))
 	
@@ -61,7 +61,7 @@ def parallel(func, args, nthread, method = 'thread'):
 			if sq.empty(): break
 			try:
 				arg = sq.get()
-			except Exception:
+			except Exception: # pragma: no cover
 				sq.task_done()
 				break
 			if not arg: 
@@ -70,7 +70,7 @@ def parallel(func, args, nthread, method = 'thread'):
 
 			try:
 				func(*arg)
-			except Exception:
+			except Exception: # pragma: no cover
 				raise
 			finally:
 				sq.task_done()
@@ -257,7 +257,7 @@ def funcsig (func):
 		try:
 			from inspect import getsource
 			sig = getsource(func)
-		except Exception:
+		except Exception: # pragma: no cover
 			sig = func.__name__
 	else:
 		sig = 'None'
@@ -391,7 +391,7 @@ def _samefile(f1, f2, callback = None):
 		ret = False
 	else:
 		ret = path.samefile (f1, f2)
-	if callback:
+	if callback: # pragma: no cover
 		callback(ret, f1, f2)
 	return ret
 	
@@ -732,7 +732,7 @@ def dirmtime (d):
 				mtime = m
 		for f in files:
 			m = path.getmtime (path.join (root, f)) if path.exists(path.join(root, f)) else 0
-			if m > mtime:
+			if m > mtime: # pragma: no cover
 				mtime = m
 	return mtime
 
@@ -751,7 +751,7 @@ def filesig (fn):
 	mtime = dirmtime(fname) if path.isdir (fname) else path.getmtime(fname)
 	# not using fname, because we intend to allow links to replace the original file
 	# say in case of export using move
-	if not mtime:
+	if not mtime: # pragma: no cover
 		return False
 	return [fn, int(mtime)]
 
@@ -771,9 +771,9 @@ def chmodX (thefile):
 	except Exception as e1:
 		try:
 			shebang = open (thefile).read().strip().splitlines()[0]
-			if not shebang.startswith("#!"):
+			if not shebang.startswith("#!"): # pragma: no cover
 				raise
-			ret = shebang[2:].strip().split() + [thefile]
+			ret = shebang[2:].strip().split() + [thefile] # pragma: no cover
 		except Exception as e2:
 			raise Exception("Cannot change %s as executable or read the shebang from it:\n%s\n%s" % (thefile, e1, e2))
 	return ret

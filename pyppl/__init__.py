@@ -991,14 +991,14 @@ class Proc (object):
 
 		def _worker(index, cached):
 			job   = self.jobs[index]
-			r     = runner(job)
-			batch = int(index/maxsubmit)
-			if cached:
+			r     = runner(job)           # pragma: no cover
+			batch = int(index/maxsubmit)  # pragma: no cover
+			if cached:                    # pragma: no cover
 				sleep(batch * .1)
 				job.done()
-			elif r.isRunning():
+			elif r.isRunning():           # pragma: no cover
 				sleep(batch * .1)
-				self.log ("Job #%-3s is already running, skip submitting." % index, 'submit')
+				self.log ("Job #%-3s is already running, skip submitting." % index, 'submit') 
 				r.wait()
 				r.finish()
 			else:

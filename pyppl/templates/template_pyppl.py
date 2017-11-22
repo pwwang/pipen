@@ -68,7 +68,7 @@ class TemplatePyPPLCodeBuilder(object):
 		return global_namespace
 
 
-class TemplatePyPPLEngine(object):
+class TemplatePyPPLEngine(object): # pragma: no cover
 	"""A simple template renderer, for a nano-subset of Django syntax.
 	Supported constructs are extended variable access::
 		{{var.modifer.modifier|filter|filter}}
