@@ -111,7 +111,7 @@ class RunnerSlurm (RunnerQueue):
 		jobid = self.job.pid ()
 		if not jobid: return False
 		try:
-			return jobid + ' ' in check_output([self.commands['squeue'], '-j', jobid]).split("\n")[1]
+			return jobid + ' ' in check_output([self.commands['squeue'], '-j', jobid]).splitlines()[1]
 		except Exception:
 			return False
 

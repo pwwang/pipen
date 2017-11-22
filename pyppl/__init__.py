@@ -691,7 +691,7 @@ class Proc (object):
 					}
 				elif key.startswith(inname + '.data#'):
 					if intype in Proc.IN_FILESTYPE:
-						data = list(map(json.loads, list(filter(None, indata[key].split("\n")))))
+						data = list(map(json.loads, list(filter(None, indata[key].splitlines()))))
 					else:
 						data = json.loads(indata[key].strip())
 					self.props['input'][inname]['data'].append(data)

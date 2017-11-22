@@ -770,7 +770,7 @@ def chmodX (thefile):
 		chmod (thefile, st.st_mode | S_IEXEC)
 	except Exception as e1:
 		try:
-			shebang = open (thefile).read().strip().split("\n")[0]
+			shebang = open (thefile).read().strip().splitlines()[0]
 			if not shebang.startswith("#!"):
 				raise
 			ret = shebang[2:].strip().split() + [thefile]

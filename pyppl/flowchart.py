@@ -219,7 +219,7 @@ class Flowchart(object):
 		
 		try:
 			rc = utils.dumbPopen(self.command).wait()
-		except:
+		except Exception:
 			rc = 1
 		if rc != 0:
 			raise ValueError('Failed to generate flowcart file: %s.' % self.command)
