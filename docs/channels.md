@@ -77,14 +77,23 @@ There are several ways to initialize a channel:
   ```
   
 - From file content:  
+  `Channel.fromFile(fn, header=False, skip=0, delimit="\t")`
   For example, we have a file `"chan.txt"` with content:
   ```
+  A<tab>B<tab>C
   a1<tab>b1<tab>c1
   a2<tab>b2<tab>c2
   ```  
   Read the file as a channel:
   ```python
   c = Channel.fromFile ("chan.txt")
+  # c == [("A", "B", "C"), ("a1", "b1", "c1"), ("a2", "b2", "c2")]
+  c = Channel.fromFile ("chan.txt", header=True)
+  # c == [("a1", "b1", "c1"), ("a2", "b2", "c2")]
+  # c.A == [("a1", ), ("a2", )]
+  # c.B == [("b1", ), ("b2", )]
+  # c.C == [("c1", ), ("c2", )]
+  c = Channel.fromFile ("chan.txt", skip = 1)
   # c == [("a1", "b1", "c1"), ("a2", "b2", "c2")]
   ```
 
@@ -126,6 +135,31 @@ There are several ways to initialize a channel:
 chan = Channel.create ([(1,2,3), (4,5,6)])
 #chan.length() == 2 == len(chan)
 #chan.width()  == 3
+```
+
+### Get value from a channel
+```python
+chan = Channel.create ([(1,2,3), (4,5,6)])
+# chan.get() == 1
+# chan.get(0) == 1
+# chan.get(1) == 2
+# chan.get(2) == 3
+# chan.get(3) == 4
+# chan.get(4) == 5
+# chan.get(5) == 6
+```
+
+### Repeat rows and columns
+```python
+chan = Channel.create ([(1,2,3), (4,5,6)])
+chan2 = chan.repCol()
+chan3 = chan.repCol(n=3)
+# chan2 == [(1,2,3,1,2,3), (4,5,6,4,5,6)]
+# chan3 == [(1,2,3,1,2,3,1,2,3), (4,5,6,4,5,6,4,5,6)]
+chan4 = chan.repRow()
+chan5 = chan.repRow(n=3)
+# chan4 == [(1,2,3), (4,5,6), (1,2,3), (4,5,6)]
+# chan5 == [(1,2,3), (4,5,6), (1,2,3), (4,5,6), (1,2,3), (4,5,6)]
 ```
 
 ### Expand a channel by directory
@@ -215,6 +249,14 @@ p2.input  = {"indir:file": lambda ch: ch.collapse(1)}
 > **Caution** 
 > 1. `os.path.dirname(os.path.commonprefix(...))` is used to detect the common ancestor directory, so the files could be `['/a/1/1.file', '/a/2/1.file']`. In this case `/a/` will be returned.
 > 2. values at other columns should be the same, `PyPPL` will NOT check it, the first value at the column will be used.
+
+### Fetch row from a channel
+- `Channel.rowAt(index)`
+```
+chan1 = Channel.create ([(1,2,3,4), (4,5,6,7)])
+chan2 = chan1.rowAt(1)
+# chan2 == [(4,5,6,7)]
+```
 
 ### Fetch columns from a channel
 - `Channel.slice(start, length=None)`
