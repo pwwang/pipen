@@ -2,7 +2,7 @@ SHELL=bash
 PYTHON=python
 PYTHON3=python3
 
-.PHONY: test api build dist
+.PHONY: test test2 test3 tutorial tutorials cov covupload coverage api build dist 
 
 test: ./tests/*.py
 	@wd=`pwd`;                                                                         \
@@ -73,17 +73,22 @@ tutorial:
 tutorials: tutorial
 
 cov:
-	@wd=`pwd`;                                             \
-	cd ./tests;                                            \
-	for tfile in test*.py; do                              \
-		echo "Running tests $$tfile ...";                  \
-		coverage run -a $$tfile;                           \
-		if [[ $$? -ne 0 ]]; then exit 1; fi;               \
-	done;                                                  \
-	coverage xml;                                          \
-	python-codacy-coverage -r coverage.xml;                \
-	coverage html;                                         \
+	@wd=`pwd`;                                                                        \
+	cd ./tests;                                                                       \
+	for tfile in test*.py; do                                                         \
+		echo -e "\nRUNNING TESTS: $$tfile";                                           \
+		echo      "=================================================================";\
+		coverage run -a $$tfile;                                                      \
+		if [[ $$? -ne 0 ]]; then exit 1; fi;                                          \
+	done;                                                                             \
+	coverage xml;                                                                     \
+	coverage html;                                                                    \
+	coverage report;                                                                  \
+	echo -e "\nRun 'make covupload' to upload the results if coverage is satisfied."; \
 	cd $$wd
+
+covupload:
+	python-codacy-coverage -r coverage.xml                
 
 coverage: cov
 

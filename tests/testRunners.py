@@ -115,6 +115,8 @@ class TestRunner(unittest.TestCase):
 		lastout = ''
 		lasterr = ''
 		end     = False
+		open(job.outfile, 'w').close()
+		open(job.errfile, 'w').close()
 		fout = open (job.outfile)
 		ferr = open (job.errfile)
 		with open(job.outfile, 'w') as f1, open(job.errfile, 'w') as f2:
