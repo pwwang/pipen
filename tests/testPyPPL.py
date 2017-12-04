@@ -128,8 +128,42 @@ class TestPyPPL (unittest.TestCase):
 		self.assertTrue(path.exists(path.splitext(sys.argv[0])[0] + '.pyppl.log'))
 		remove(path.splitext(sys.argv[0])[0] + '.pyppl.log')
 		self.assertFalse(path.exists(path.splitext(sys.argv[0])[0] + '.pyppl.log'))
-		self.assertEqual(path.expanduser('~/.PyPPL'), PyPPL.DEFAULT_CFGFILES[0])
-		self.assertEqual(path.expanduser('~/.PyPPL.json'), PyPPL.DEFAULT_CFGFILES[1])
+		self.assertEqual(path.expanduser('~/.PyPPL'), PyPPL.DEFAULT_CFGFILES[1])
+		self.assertEqual(path.expanduser('~/.PyPPL.json'), PyPPL.DEFAULT_CFGFILES[2])
+
+	def testYamlConfig(self):
+		try:
+			import yaml
+		except ImportError:
+			return
+
+		cfgfile = path.join(tempfile.gettempdir(), 'testInit.yaml')
+		with open(cfgfile, 'w') as f:
+			f.write('''
+proc: 
+	forks: 5
+''')
+		with captured_output() as (out, err):
+			pyppl = PyPPL(cfgfile = cfgfile)
+		self.assertEqual(pyppl.config['proc']['forks'], 5)
+		
+		with captured_output() as (out, err):
+			pyppl = PyPPL(config = {
+				'proc': {'forks': 10}
+			}, cfgfile = cfgfile)
+		self.assertIn('Read from %s' % cfgfile, err.getvalue())
+		
+		with captured_output() as (out, err):
+			pyppl = PyPPL(config = {
+				'log': {
+					'levels': None,
+					'file': True
+				},
+				'proc': {'forks': 10}
+			}, cfgfile = cfgfile)
+		self.assertNotIn('Read from %s' % cfgfile, err.getvalue())
+		self.assertEqual(pyppl.config['proc']['forks'], 10)
+		self.assertEqual(path.expanduser('~/.PyPPL.yaml'), PyPPL.DEFAULT_CFGFILES[0])
 
 
 	def testRegisterRunner(self):

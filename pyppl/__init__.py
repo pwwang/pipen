@@ -1040,7 +1040,7 @@ class PyPPL (object):
 
 	RUNNERS  = {}
 	# ~/.PyPPL.json has higher priority
-	DEFAULT_CFGFILES = ['~/.PyPPL', '~/.PyPPL.json']
+	DEFAULT_CFGFILES = ['~/.PyPPL.yaml', '~/.PyPPL', '~/.PyPPL.json']
 	
 	def __init__(self, config = None, cfgfile = None):
 		"""
@@ -1055,11 +1055,19 @@ class PyPPL (object):
 			PyPPL.DEFAULT_CFGFILES[i] = cfile
 			if path.exists(cfile):
 				with open(cfile) as cf:
-					utils.dictUpdate(fconfig, json.load(cf))
+					if cfile.endswith('.yaml'):
+						import yaml
+						utils.dictUpdate(fconfig, yaml.load(cf.read().replace('\t', '  ')))
+					else:
+						utils.dictUpdate(fconfig, json.load(cf))
 		
 		if cfgfile is not None and path.exists(cfgfile):
 			with open(cfgfile) as cfgf:
-				utils.dictUpdate(fconfig, json.load(cfgf))
+				if cfgfile.endswith('.yaml'):
+					import yaml
+					utils.dictUpdate(fconfig, yaml.load(cfgf.read().replace('\t', '  ')))
+				else:
+					utils.dictUpdate(fconfig, json.load(cfgf))
 				
 		if config is None:	config = {}
 		utils.dictUpdate(fconfig, config)
