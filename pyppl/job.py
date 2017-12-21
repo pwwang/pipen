@@ -78,7 +78,9 @@ class Job (object):
 			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.size - 1, key.ljust(maxlen), data), loglevel)
 		else:
 			ldata = len(data)
-			if ldata == 1:
+			if ldata == 0:
+				self.proc.log ("[%s/%s] %s => [%s]" % (self.index, self.proc.size - 1, key.ljust(maxlen), ''), loglevel)
+			elif ldata == 1:
 				self.proc.log ("[%s/%s] %s => [%s]" % (self.index, self.proc.size - 1, key.ljust(maxlen), data[0]), loglevel)
 			elif ldata == 2: # pragma: no cover
 				self.proc.log ("[%s/%s] %s => [%s," % (self.index, self.proc.size - 1, key.ljust(maxlen), data[0]), loglevel)

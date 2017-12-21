@@ -88,7 +88,7 @@ cov:
 	cd $$wd
 
 covupload:
-	python-codacy-coverage -r coverage.xml                
+	python-codacy-coverage -r tests/coverage.xml                
 
 coverage: cov
 
