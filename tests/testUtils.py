@@ -30,6 +30,16 @@ class Proc(object):
 
 class TestUtils (unittest.TestCase):
 	
+	def testBriefList(self):
+		l = [0, 1, 2, 3, 4, 5, 6, 7]
+		self.assertEqual(utils.briefList(l), "0-7")
+
+		l = [1, 3, 5, 7, 9]
+		self.assertEqual(utils.briefList(l), "1, 3, 5, 7, 9")
+
+		l = [1, 3, 5, 7, 9, 4, 8, 12, 13]
+		self.assertEqual(utils.briefList(l), "1, 3-5, 7-9, 12, 13")
+
 	def testVarname(self):
 				
 		h = Proc()

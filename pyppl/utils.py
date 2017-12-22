@@ -790,4 +790,39 @@ def dumbPopen(cmd, shell = False):
 	with open(devnull, 'w') as f:
 		ret = Popen(cmd, shell = shell, stdout = f, stderr = f)
 	return ret
+
+def briefList(l):
+	"""
+	Briefly show an integer list, combine the continuous numbers.
+	@params:
+		`l`: The list
+	@returns:
+		The string to show for the briefed list.
+	"""
+	if len(l) == 0: return "[]"
+	if len(l) == 1: return str(l[0])
+	l       = sorted(l)
+	groups  = [[]]
+	ret     = []
+	for i in range(0, len(l) - 1):
+		e0 = l[i]
+		e1 = l[i + 1]
+		if e1 - e0 > 1:
+			groups[-1].append(e0)
+			groups.append([])
+		else:
+			groups[-1].append(e0)
+	groups[-1].append(l[-1])
+	for group in groups:
+		if len(group) == 1:
+			ret.append(str(group[0]))
+		elif len(group) == 2:
+			ret.append(str(group[0]))
+			ret.append(str(group[1]))
+		else:
+			ret.append(str(group[0]) + '-' + str(group[-1]))
+	return ', '.join(ret)
+
+		
+
 		

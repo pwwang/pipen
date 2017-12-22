@@ -940,13 +940,13 @@ class Proc (object):
 
 		utils.parallel(chkCached, [(i, ) for i in range(self.size)], self.nthread)
 				
-		self.log ('Truely cached jobs: %s' % (trulyCachedJids if len(trulyCachedJids) < self.size else 'ALL'), 'info')
-		self.log ('Export cached jobs: %s' % (exptCachedJids  if len(exptCachedJids)  < self.size else 'ALL'), 'info')
+		self.log ('Truely cached jobs: %s' % (utils.briefList(trulyCachedJids) if len(trulyCachedJids) < self.size else 'ALL'), 'info')
+		self.log ('Export cached jobs: %s' % (utils.briefList(exptCachedJids)  if len(exptCachedJids)  < self.size else 'ALL'), 'info')
 		
 		if self.ncjobids:
 			if len(self.ncjobids) < self.size:
 				self.log ('Partly cached, only run non-cached %s job(s).' % len(self.ncjobids), 'info')
-				self.log ('Jobs to be running: %s' % self.ncjobids, 'debug')
+				self.log ('Jobs to run: %s' % utils.briefList(self.ncjobids), 'debug')
 			else:
 				self.log ('Not cached, none of the jobs are cached.', 'debug')
 			return False
