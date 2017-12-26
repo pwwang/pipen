@@ -993,16 +993,15 @@ class Proc (object):
 			job   = self.jobs[index]
 			r     = runner(job)           # pragma: no cover
 			batch = int(index/maxsubmit)  # pragma: no cover
+			sleep(batch * interval)
+			
 			if cached:                    # pragma: no cover
-				sleep(batch * .1)
 				job.done()
 			elif r.isRunning():           # pragma: no cover
-				sleep(batch * .1)
 				self.log ("Job #%-3s is already running, skip submitting." % index, 'submit') 
 				r.wait()
 				r.finish()
 			else:
-				sleep(batch * interval)
 				r.submit()
 				r.wait()
 				r.finish()
