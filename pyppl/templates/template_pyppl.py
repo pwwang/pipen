@@ -14,52 +14,96 @@ Functions added:
 	  {{d1,d2|concate}}
 	  {'concate': lambda x,y: x+y}
 """
-import re
-from sys import stderr
+import re, traceback
+from sys import stderr, exc_info
 from .template import Template
 from .. import utils
 
 class TemplatePyPPLSyntaxError(ValueError):
-	"""Raised when a template has a syntax error."""
+	"""
+	Raised when a template has a syntax error.
+	"""
+	pass
+
+class TemplatePyPPLRenderError(ValueError):
+	"""
+	Raised when a template failed to render.
+	"""
 	pass
 
 
+class TemplatePyPPLLine(object):
+	"""
+	Line of compiled code
+	"""
+	
+	def __init__(self, line, src):
+		"""
+		Constructor of line
+		"""
+		self.line = line + "\n"
+		self.src  = src
+
 class TemplatePyPPLCodeBuilder(object):
-	"""Build source code conveniently."""
+	"""
+	Build source code conveniently.
+	"""
 
-	INDENT_STEP = 4	  # PEP8 says so!
+	INDENT_STEP = 1
 
-	def __init__(self, indent=0):
-		self.code = []
-		self.indent_level = indent
+	def __init__(self, indent = 0):
+		"""
+		Constructor of code builder
+		@params:
+			indent: The initial indent level
+		"""
+		self.code    = []
+		self.nIndent = indent
 
 	def __str__(self):
-		return "".join(str(c) for c in self.code)
+		sections = [(i, sec) for i, sec in enumerate(self.code) if isinstance(sec, TemplatePyPPLCodeBuilder)]
+		for i, sec in sections:
+			self.code[i:(i+1)] = sec.code
+		return "".join(str(c.line) for c in self.code)
 
-	def add_line(self, line):
-		"""Add a line of source to the code.
-		Indentation and newline will be added for you, don't provide them.
+	def addLine(self, line, src = ""):
 		"""
-		self.code.extend([" " * self.indent_level, line, "\n"])
+		Add a line of source to the code.
+		Indentation and newline will be added for you, don't provide them.
+		@params:
+			line: The line to add
+		"""
+		self.code.append(TemplatePyPPLLine(("\t" * self.nIndent) + str(line), src))
 
-	def add_section(self):
-		"""Add a section, a sub-CodeBuilder."""
-		section = TemplatePyPPLCodeBuilder(self.indent_level)
+	def addSection(self):
+		"""
+		Add a section, a sub-CodeBuilder.
+		@returns:
+			The section added.
+		"""
+		section = TemplatePyPPLCodeBuilder(self.nIndent)
 		self.code.append(section)
 		return section
 
 	def indent(self):
-		"""Increase the current indent for following lines."""
-		self.indent_level += self.INDENT_STEP
+		"""
+		Increase the current indent for following lines.
+		"""
+		self.nIndent += self.INDENT_STEP
 
 	def dedent(self):
-		"""Decrease the current indent for following lines."""
-		self.indent_level -= self.INDENT_STEP
+		"""
+		Decrease the current indent for following lines.
+		"""
+		self.nIndent -= self.INDENT_STEP
+		
 
-	def get_globals(self):
-		"""Execute the code, and return a dict of globals it defines."""
+	def getGlobals(self):
+		"""
+		Execute the code, and return a dict of globals it defines.
+		"""
 		# A check that the caller really finished all the blocks they started.
-		assert self.indent_level == 0
+		assert self.nIndent == 0
 		# Get the Python source as a single string.
 		python_source = str(self)
 		# Execute the source, defining globals, and return them.
@@ -98,121 +142,144 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 		`contexts` are dictionaries of values to use for future renderings.
 		These are good for filters and global values.
 		"""
-		self.text    = text
-		self.context = {}
+		self.text      = text
+		self.context   = {}
+		self.buffered  = []
+		self.all_vars  = {}
+		self.loop_vars = {}
 		for context in contexts:
 			self.context.update(context)
 
-		self.all_vars = set()
-		self.loop_vars = set()
-
 		# We construct a function in source form, then compile it and hold onto
 		# it, and execute it to render the template.
-		code = TemplatePyPPLCodeBuilder()
+		self.code = TemplatePyPPLCodeBuilder()
 
-		code.add_line("def render_function(context, do_dots):")
-		code.indent()
-		vars_code = code.add_section()
-		code.add_line("result = []")
-		code.add_line("append_result = result.append")
-		code.add_line("extend_result = result.extend")
-		code.add_line("to_str = str")
-
-		buffered = []
-		def flush_output():
-			"""Force `buffered` to the code builder."""
-			if len(buffered) == 1:
-				code.add_line("append_result(%s)" % buffered[0])
-			elif len(buffered) > 1:
-				code.add_line("extend_result([")
-				code.indent()
-				for buffer in buffered:
-					code.add_line(buffer + ',')
-				code.dedent()
-				code.add_line("])")
-			del buffered[:]
+		self.code.addLine("def renderFunction(context, do_dots):")
+		self.code.indent()
+		self.code.addLine("result = []")
+		self.code.addLine("append_result = result.append")
+		self.code.addLine("extend_result = result.extend")
+		self.code.addLine("to_str = str")
+		vars_code = self.code.addSection()
 
 		ops_stack = []
 
 		# Split the text to form a list of tokens.
 		tokens = re.split(r"(?s)({{.*?}}|{%.*?%}|{#.*?#})", text)
+		lineno = 1
 		for token in tokens:
+			lnstr = "in template line %s: %s" % (lineno, token.rstrip('\n'))
 			if token.startswith('{#'):
 				# Comment: ignore it and move on.
-				continue
+				self._parseComment(token, lnstr)
+				
 			elif token.startswith('{{'):
 				# An expression to evaluate.
-				expr = self._expr_code(token[2:-2].strip())
-				buffered.append("to_str(%s)" % expr)
+				self._parseExpression(token, lnstr)
+				
 			elif token.startswith('{%'):
 				# Action tag: split into words and parse further.
-				flush_output()
-				words = token[2:-2].strip().split()
-				if words[0] == 'if' or words[0] == 'elif':
-					# An if statement: evaluate the expression to determine if.
-					if len(words) < 2:
-						self._syntax_error("Don't understand if/elif", token)
-					if words[0] == 'if':
-						ops_stack.append('if')
-					else:
-						code.dedent()
-					code.add_line("%s %s:" % (words[0], self._expr_code(words[1:])))
-					code.indent()
-				elif words[0] == 'else':
-					if len(words) > 1:
-						self._syntax_error("Don't understand else", token)
-					code.dedent()
-					code.add_line("else:")
-					code.indent()
-				elif words[0] == 'for':
-					# A loop: iterate over expression result.
-					if len(words) < 4 or 'in' not in words or words.index('in') < 2:
-						self._syntax_error("Don't understand for", token)
-					ops_stack.append('for')
-					inidx = words.index('in')
-					keys  = list(map(lambda x: x.strip(), ''.join(words[1:inidx]).split(',')))
-					for key in keys:
-						self._variable(key, self.loop_vars)
-					code.add_line(
-						"for %s in %s:" % (
-							', '.join(['c_%s' % key for key in keys]),
-							self._expr_code(words[(inidx+1):])
-						)
-					)
-					code.indent()
-				elif words[0].startswith('end'):
-					# Endsomething.  Pop the ops stack.
-					if len(words) != 1:
-						self._syntax_error("Don't understand end", token)
-					end_what = words[0][3:]
-					if not ops_stack:
-						self._syntax_error("Too many ends", token)
-					start_what = ops_stack.pop()
-					if start_what != end_what:
-						self._syntax_error("Mismatched end tag", end_what)
-					code.dedent()
-				else:
-					self._syntax_error("Don't understand tag", words[0])
+				self.flushOutput()
+				self._parseTag(token, lnstr, ops_stack)
+				
 			else:
 				# Literal content.  If it isn't empty, output it.
-				if token:
-					buffered.append(repr(token))
+				if token: self._parseLiteral(token, lnstr)
+				lineno += len(token.splitlines())
 
 		if ops_stack:
-			self._syntax_error("Unmatched action tag", ops_stack[-1])
+			TemplatePyPPLEngine._syntaxError("Unmatched action tag", ops_stack[-1][1])
 
-		flush_output()
+		self.flushOutput()
+		
+		for var_name, src in [(k, v) for k, v in self.all_vars.items() if k not in self.loop_vars]:
+			vars_code.addLine(("c_%s = context[%r]" % (var_name, var_name)), 'unknown template variable: %s, %s' % (var_name, src))
 
-		for var_name in self.all_vars - self.loop_vars:
-			vars_code.add_line("c_%s = context[%r]" % (var_name, var_name))
+		self.code.addLine("return ''.join(result)")
+		self.code.dedent()
+		self._renderFunction = self.code.getGlobals()['renderFunction']
+		self.renderFunctionStr = str(self.code)
+		
+	def _parseComments(self, token, src):
+		pass
+	
+	def _parseExpression(self, token, src):
+		expr = self._exprCode(token[2:-2].strip(), src)
+		self.buffered.append(("to_str(%s)" % expr, src))
+		
+	def _parseTag(self, token, src, ops_stack):
+		words = token[2:-2].strip().split()
+		if words[0] == 'if' or words[0] == 'elif':
+			# An if statement: evaluate the expression to determine if.
+			if len(words) < 2:
+				TemplatePyPPLEngine._syntaxError("Don't understand if/elif", src)
+			if words[0] == 'if':
+				ops_stack.append(('if', src))
+			else:
+				self.code.dedent()
+			self.code.addLine(("%s %s:" % (words[0], self._exprCode(words[1:], src))), src)
+			self.code.indent()
+		elif words[0] == 'else':
+			if len(words) > 1:
+				TemplatePyPPLEngine._syntaxError("Don't understand else", src)
+			self.code.dedent()
+			self.code.addLine("else:", src)
+			self.code.indent()
+		elif words[0] == 'for':
+			# A loop: iterate over expression result.
+			if len(words) < 4 or 'in' not in words or words.index('in') < 2:
+				TemplatePyPPLEngine._syntaxError("Don't understand for", src)
+			ops_stack.append(('for', src))
+			inidx = words.index('in')
+			keys  = list(map(lambda x: x.strip(), ''.join(words[1:inidx]).split(',')))
+			for key in keys:
+				TemplatePyPPLEngine._variable(key, src, self.loop_vars)
+			self.code.addLine((
+				"for %s in %s:" % (
+					', '.join(['c_%s' % key for key in keys]),
+					self._exprCode(words[(inidx+1):], src)
+				)), src
+			)
+			self.code.indent()
+		elif words[0].startswith('end'):
+			# Endsomething.  Pop the ops stack.
+			if len(words) != 1:
+				TemplatePyPPLEngine._syntaxError("Don't understand end", src)
+			end_what = words[0][3:]
+			if not ops_stack:
+				TemplatePyPPLEngine._syntaxError("Too many ends", src)
+			start_what = ops_stack.pop()
+			if start_what[0] != end_what:
+				TemplatePyPPLEngine._syntaxError("Mismatched end tag", start_what[1] + ' <--> ' + src)
+			self.code.dedent()
+		else:
+			TemplatePyPPLEngine._syntaxError("Don't understand tag", words[0] + ' at ' + src)
+			
+	def _parseLiteral(self, token, src):
+		for i, line in enumerate(token.splitlines()):
+			self.buffered.append((repr(line), src))
 
-		code.add_line("return ''.join(result)")
-		code.dedent()
-		self._render_function = code.get_globals()['render_function']
-		self._render_function_code = str(code)
-
-	def _expr_code(self, expr):
-		"""Generate a Python expression for `expr`."""
+	def flushOutput(self):
+		"""
+		Force `self.buffered` to the code builder.
+		@params:
+			`code`: The code builder
+		"""
+		if len(self.buffered) == 1:
+			self.code.addLine(("append_result(%s)" % self.buffered[0][0]), self.buffered[0][1])
+		elif len(self.buffered) > 1:
+			self.code.addLine("extend_result([")
+			self.code.indent()
+			for buf, src in self.buffered:
+				self.code.addLine(buf + ',', src)
+			self.code.dedent()
+			self.code.addLine("])")
+		del self.buffered[:]
+		
+	def _exprCode(self, expr, src):
+		"""
+		Generate a Python expression for `expr`.
+		"""
 		if isinstance(expr, list):
 			expr = ' '.join(expr)
 		expr   = expr.strip()
@@ -220,22 +287,22 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 		commas = utils.split(expr, ',')
 		dots   = utils.split(expr, '.')
 		if len(pipes) > 1:
-			code = self._expr_code(pipes[0])
+			code = self._exprCode(pipes[0], src)
 			for func in pipes[1:]:
 				if func.startswith('[') or func.startswith('.'):
 					code = "%s%s" % (code, func)
 				elif func.startswith('lambda '):
 					code = "(%s)(%s)" % (func, code)
 				elif '.' in func:
-					code = "%s(%s)" % (self._expr_code(func), code)
+					code = "%s(%s)" % (self._exprCode(func, src), code)
 				else:
-					self._variable(func, self.all_vars)
+					TemplatePyPPLEngine._variable(func, src, self.all_vars)
 					code = "c_%s(%s)" % (func, code)
 		elif len(commas) > 1:
-			codes = [self._expr_code(comma) for comma in commas]
+			codes = [self._exprCode(comma, src) for comma in commas]
 			code = ', '.join(codes)
 		elif len(dots) > 1:
-			code = self._expr_code(dots[0])
+			code = self._exprCode(dots[0], src)
 			for dot in dots[1:]:
 				b1     = dot.find('(')
 				b2     = dot.find('[')
@@ -249,53 +316,41 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 			b2     = expr.find('[')
 			bindex = min(b1, b2) if b1 >= 0 and b2 >=0 else b1 if b1 >= 0 else b2
 			var    = expr if bindex == -1 else expr[:bindex]
-			self._variable(var, self.all_vars)
+			TemplatePyPPLEngine._variable(var, src, self.all_vars)
 			code = "c_%s" % expr
 		return code
 
 	def __str__(self):
-		return 'TemplatePyPPLEngine with _render_function: \n' + self._render_function_code
-
-	@classmethod
-	def _syntax_error(self, msg, thing):
-		"""Raise a syntax error using `msg`, and showing `thing`."""
+		"""
+		Stringize the engine.
+		@returns:
+			The string of the stringized engine.
+		"""
+		return 'TemplatePyPPLEngine with _renderFunction: \n' + self.renderFunctionStr
+	
+	@staticmethod
+	def _syntaxError(msg, thing):
+		"""
+		Raise a syntax error using `msg`, and showing `thing`.
+		"""
 		raise TemplatePyPPLSyntaxError("%s: %r" % (msg, thing))
-
-	def _variable(self, name, vars_set):
-		"""Track that `name` is used as a variable.
+	
+	@staticmethod
+	def _variable(name, src, vars_set):
+		"""
+		Track that `name` is used as a variable.
 		Adds the name to `vars_set`, a set of variable names.
 		Raises an syntax error if `name` is not a valid name.
 		"""
 		if not re.match(r"[_a-zA-Z][_a-zA-Z0-9]*$", name):
-			self._syntax_error("Not a valid name", name)
-		vars_set.add(name)
-
-	def render(self, context=None):
-		"""Render this template by applying it to `context`.
-		`context` is a dictionary of values to use in this rendering.
+			TemplatePyPPLEngine._syntaxError("Not a valid name", name)
+		vars_set[name] = src
+			
+	@staticmethod
+	def _do_dots(value, *dots):
 		"""
-		# Make the complete context we'll use.
-		render_context = dict(self.context)
-		if context:
-			render_context.update(context)
-		try:
-			return self._render_function(render_context, self._do_dots)
-		except KeyError:
-			stderr.write('>>> Probably variable not found in the template, check your data for rendering!\n')
-			stderr.write('>>> Current data keys are: %s\n>>> ' % sorted(render_context.keys()))
-			raise
-		except Exception:
-			stderr.write(
-				'\n>>> Failed to render:\n%s\n>>> With context:\n%s\n>>> The render function is:\n%s\n\n' % (
-					'\n'.join(['  ' + line for line in self.text.splitlines()]),
-					'\n'.join(['  %-10s: %s' % (k,v) for k,v in render_context.items()]),
-					'\n'.join(['  %-3s %s' % (str(i+1) + '.', line) for i,line in enumerate(self._render_function_code.splitlines())])
-				))
-			raise
-
-	@classmethod
-	def _do_dots(self, value, *dots):
-		"""Evaluate dotted expressions at runtime."""
+		Evaluate dotted expressions at runtime.
+		"""
 		for dot in dots:
 			try:
 				value = getattr(value, dot)
@@ -308,6 +363,28 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 					else:
 						raise
 		return value
+
+	def render(self, context=None):
+		"""
+		Render this template by applying it to `context`.
+		`context` is a dictionary of values to use in this rendering.
+		"""
+		# Make the complete context we'll use.
+		render_context = dict(self.context)
+		if context:
+			render_context.update(context)
+		
+		try:
+			return self._renderFunction(render_context, TemplatePyPPLEngine._do_dots)
+		except Exception as ex:
+			stacks = list(reversed(traceback.format_exc().splitlines()))
+			for stack in stacks:
+				stack = stack.strip()
+				if stack.startswith('File "<string>"'):
+					lineno = int(stack.split(', ')[1].split()[-1]) - 1
+					src    = self.code.code[lineno].src
+					raise TemplatePyPPLRenderError(stacks[0] + ', ' + src), None, exc_info()[2]
+			raise
 
 class TemplatePyPPL (Template):
 	"""
