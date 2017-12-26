@@ -843,7 +843,7 @@ p.script = "file:./relpathscript"
 		job.rc(utils.dumbPopen(['bash', job.script]).wait())
 		job.cache()
 		self.assertFalse(p._checkCached())
-		self.assertIn('Truely cached jobs: [0]', err.getvalue())
+		self.assertIn('Truely cached jobs: 0', err.getvalue())
 		self.assertIn('Export cached jobs: []', err.getvalue())
 
 	def testRunJobs(self):

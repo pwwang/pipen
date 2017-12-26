@@ -1049,23 +1049,30 @@ class PyPPL (object):
 			`config`: the configurations for the pipeline, default: {}
 			`cfgfile`:  the configuration file for the pipeline, default: `~/.PyPPL.json` or `./.PyPPL`
 		"""
-		fconfig = {}
+		fconfig    = {}
+		cfgIgnored = {}
 		for i in list(range(len(PyPPL.DEFAULT_CFGFILES))):
 			cfile = path.expanduser(PyPPL.DEFAULT_CFGFILES[i])
 			PyPPL.DEFAULT_CFGFILES[i] = cfile
 			if path.exists(cfile):
 				with open(cfile) as cf:
 					if cfile.endswith('.yaml'):
-						import yaml
-						utils.dictUpdate(fconfig, yaml.load(cf.read().replace('\t', '  ')))
+						try:
+							import yaml
+							utils.dictUpdate(fconfig, yaml.load(cf.read().replace('\t', '  ')))
+						except ImportError:
+							cfgIgnored[cfile] = 1
 					else:
 						utils.dictUpdate(fconfig, json.load(cf))
 		
 		if cfgfile is not None and path.exists(cfgfile):
 			with open(cfgfile) as cfgf:
 				if cfgfile.endswith('.yaml'):
-					import yaml
-					utils.dictUpdate(fconfig, yaml.load(cfgf.read().replace('\t', '  ')))
+					try:
+						import yaml
+						utils.dictUpdate(fconfig, yaml.load(cfgf.read().replace('\t', '  ')))
+					except ImportError:
+						cfgIgnored[cfgfile] = 1
 				else:
 					utils.dictUpdate(fconfig, json.load(cfgf))
 				
@@ -1089,7 +1096,7 @@ class PyPPL (object):
 			'file':    path.splitext(sys.argv[0])[0] + ".pyppl.log"  
 		}
 		if 'log' in self.config:
-			if self.config['log']['file'] is True:
+			if 'file' in self.config['log'] and self.config['log']['file'] is True:
 				del self.config['log']['file']
 			utils.dictUpdate(logconfig, self.config['log'])
 			del self.config['log']
@@ -1098,10 +1105,13 @@ class PyPPL (object):
 
 		logger.logger.info ('[  PYPPL] Version: %s' % (VERSION))
 		logger.logger.info ('[   TIPS] %s' % (random.choice(PyPPL.TIPS)))
-
+		
 		for cfile in (PyPPL.DEFAULT_CFGFILES + [str(cfgfile)]):
 			if not path.isfile(cfile): continue
-			logger.logger.info ('[ CONFIG] Read from %s' % cfile)
+			if cfile in cfgIgnored:
+				logger.logger.info ('[WARNING] Module yaml not installed, config file ignored: %s' % (cfile))
+			else:
+				logger.logger.info ('[ CONFIG] Read from %s' % cfile)
 
 		self.tree    = ProcTree()
 		

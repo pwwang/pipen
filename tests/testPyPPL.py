@@ -259,7 +259,7 @@ proc:
 		p2.depends = [p1]
 		p3.depends = [p2]
 		with captured_output() as (out, err):
-			ppl = PyPPL()
+			ppl = PyPPL({'log': {'levels': 'all'}})
 			ppl2 = ppl.start(p1).showAllRoutes()
 		self.assertIs(ppl, ppl2)
 		self.assertIn('ALL ROUTES', err.getvalue())
