@@ -109,6 +109,26 @@ class TestTemplatePyPPL (unittest.TestCase):
 		('{{e.f|json}}', {'e':{'f':[1,2]}}, '[1, 2]'),
 		('{{g,h | os.path.join}}', {'g': 'a', 'h': 'b', 'os': __import__('os')}, 'a/b'),
 	]
+
+	def testPyPPLRenderMultiline(self):
+		# multiple line
+		d0, d1, d2 = ('''
+		#!/usr/bin/env python
+		{% if x %}
+		{% for y in ylist %}
+		{{y}}
+		{% endfor %}
+		{% endif %}
+		''', {'x': True, 'ylist': [1,2,3,4,5]}, '''
+		#!/usr/bin/env python\n\t\t\n\t\t
+		1\n\t\t
+		2\n\t\t
+		3\n\t\t
+		4\n\t\t
+		5\n\t\t
+		\n\t\t''')
+		t = TemplatePyPPL(d0)
+		self.assertEqual(t.render(d1), d2)
 	
 	def testPyPPLRender(self):
 		for d in self.data:
@@ -211,7 +231,76 @@ class TestTemplatePyPPL (unittest.TestCase):
 		six.assertRaisesRegex(
 			self,
 			TemplatePyPPLRenderError,
-			r"TypeError: 'int' object has no attribute '__getitem__', in template line 4: \{\{a.b\}\}",
+			r"in template line 4: \{\{a.b\}\}",
+			t.render,
+			{'a': 1, 'x': True}
+		)
+
+	def testExceptions3(self):
+		# literal error
+		src = "{% if x %}{{a}}{% endx %}"
+		six.assertRaisesRegex(
+			self,
+			TemplatePyPPLSyntaxError,
+			r"Mismatched end tag: 'in template line 1: \{% if x %\} <--> in template line 1: \{% endx %\}'",
+			TemplatePyPPL,
+			src
+		)
+
+	def testExceptions4(self):
+		src = """{% if x %}{{a}}
+		{% endx %}"""
+		six.assertRaisesRegex(
+			self,
+			TemplatePyPPLSyntaxError,
+			r"Mismatched end tag: 'in template line 1: \{% if x %\} <--> in template line 2: \{% endx %\}'",
+			TemplatePyPPL,
+			src
+		)
+
+	def testExceptions5(self):
+		src = """{% if x %}{{a.b}}
+		{% endif %}"""
+		t   = TemplatePyPPL(src)
+		six.assertRaisesRegex(
+			self,
+			TemplatePyPPLRenderError,
+			r"in template line 1: {{a.b}}",
+			t.render,
+			{'a': 1, 'x': True}
+		)
+
+	def testExceptions6(self):
+		src = """{% if x %}
+		{{a.b}}{% endif %}"""
+		t   = TemplatePyPPL(src)
+		six.assertRaisesRegex(
+			self,
+			TemplatePyPPLRenderError,
+			r"in template line 2: \{\{a.b\}\}",
+			t.render,
+			{'a': 1, 'x': True}
+		)
+
+	def testExceptions7(self):
+		src = """{% if x %}{%for y in a%}
+		{%endfor%}{% endif %}"""
+		t   = TemplatePyPPL(src)
+		six.assertRaisesRegex(
+			self,
+			TemplatePyPPLRenderError,
+			r"in template line 1: \{%for y in a%\}",
+			t.render,
+			{'a': 1, 'x': True}
+		)
+
+		src = """{% if x %}
+		{%for y in a%}a{%endfor%}{% endif %}"""
+		t   = TemplatePyPPL(src)
+		six.assertRaisesRegex(
+			self,
+			TemplatePyPPLRenderError,
+			r"in template line 2: \{%for y in a%\}",
 			t.render,
 			{'a': 1, 'x': True}
 		)

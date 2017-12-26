@@ -41,7 +41,7 @@ class TemplatePyPPLLine(object):
 		"""
 		Constructor of line
 		"""
-		self.line = line + "\n"
+		self.line = line
 		self.src  = src
 
 class TemplatePyPPLCodeBuilder(object):
@@ -73,7 +73,7 @@ class TemplatePyPPLCodeBuilder(object):
 		@params:
 			line: The line to add
 		"""
-		self.code.append(TemplatePyPPLLine(("\t" * self.nIndent) + str(line), src))
+		self.code.append(TemplatePyPPLLine(("\t" * self.nIndent) + str(line) + "\n", src))
 
 	def addSection(self):
 		"""
@@ -184,8 +184,10 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 				
 			else:
 				# Literal content.  If it isn't empty, output it.
-				if token: self._parseLiteral(token, lnstr)
-				lineno += len(token.splitlines())
+				if token: 
+					tokenlines = token.split('\n')
+					self._parseLiteral(tokenlines, lnstr)
+					lineno += len(tokenlines) - 1
 
 		if ops_stack:
 			TemplatePyPPLEngine._syntaxError("Unmatched action tag", ops_stack[-1][1])
@@ -255,9 +257,10 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 		else:
 			TemplatePyPPLEngine._syntaxError("Don't understand tag", words[0] + ' at ' + src)
 			
-	def _parseLiteral(self, token, src):
-		for i, line in enumerate(token.splitlines()):
-			self.buffered.append((repr(line), src))
+	def _parseLiteral(self, tokenlines, src):
+		for i, line in enumerate(tokenlines):
+			reprstr = repr(line) if i == len(tokenlines) - 1 else repr(line + '\n')
+			self.buffered.append((reprstr, src))
 
 	def flushOutput(self):
 		"""
@@ -383,7 +386,7 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 				if stack.startswith('File "<string>"'):
 					lineno = int(stack.split(', ')[1].split()[-1]) - 1
 					src    = self.code.code[lineno].src
-					raise TemplatePyPPLRenderError(stacks[0] + ', ' + src), None, exc_info()[2]
+					raise TemplatePyPPLRenderError(stacks[0] + ', ' + src)
 			raise
 
 class TemplatePyPPL (Template):
