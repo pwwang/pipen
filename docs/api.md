@@ -151,7 +151,7 @@ Constructor
 - **config:**  
 id, input, output, ppldir, forks, cache, cclean, rc, echo, runner, script, depends, tag, desc  
 exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr  
-callfront, callback, brings, expect, expart, template, tplenvs, resume, profile, nthread  
+callfront, callback, brings, expect, expart, template, tplenvs, resume, nthread  
 
 - **props**  
 input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, brings, expect  
@@ -1232,6 +1232,16 @@ ret  = alwaysList (data)
 
 - **returns:**  
 The split list  
+  
+#### `briefList (l) `
+  
+Briefly show an integer list, combine the continuous numbers.  
+
+- **params:**  
+`l`: The list  
+
+- **returns:**  
+The string to show for the briefed list.  
   
 #### `chmodX (thefile) `
   
