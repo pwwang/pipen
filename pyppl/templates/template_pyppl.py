@@ -15,7 +15,6 @@ Functions added:
 	  {'concate': lambda x,y: x+y}
 """
 import re, traceback
-from sys import stderr, exc_info
 from .template import Template
 from .. import utils
 
@@ -379,7 +378,7 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 		
 		try:
 			return self._renderFunction(render_context, TemplatePyPPLEngine._do_dots)
-		except Exception as ex:
+		except Exception:
 			stacks = list(reversed(traceback.format_exc().splitlines()))
 			for stack in stacks:
 				stack = stack.strip()

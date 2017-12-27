@@ -787,9 +787,9 @@ class Proc (object):
 					maxlen = max(maxlen, len(key))
 					propout[key] = val
 		for key in sorted(procargs.keys()):
-			self.log('%s => %s' % (key.ljust(maxlen), procargs[key]), 'p.args')
+			self.log('%s => %s' % (key.ljust(maxlen), repr(procargs[key])), 'p.args')
 		for key in sorted(propout.keys()):
-			self.log('%s => %s' % (key.ljust(maxlen), propout[key]), 'p.props')
+			self.log('%s => %s' % (key.ljust(maxlen), repr(propout[key])), 'p.props')
 		self.props['procvars'] = {'proc': procvars, 'args': procargs}
 
 	def _buildBrings(self):
@@ -994,7 +994,7 @@ class Proc (object):
 			r     = runner(job)           # pragma: no cover
 			batch = int(index/maxsubmit)  # pragma: no cover
 			sleep(batch * interval)
-			
+
 			if cached:                    # pragma: no cover
 				job.done()
 			elif r.isRunning():           # pragma: no cover
