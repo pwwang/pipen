@@ -1,5 +1,15 @@
 # Change log
 
+## Dec 27, 2017: 0.9.4
+- Add yaml support for config file (#26).
+- Allow empty list for input files.
+- Merge continuous job ids in log (Make the list shorter).
+- More details when internal template failed to render (#25)
+- Ignore .yaml config files if yaml module is not installed.
+- sleep before testing isRunning to avoid all jobs running it at the same time.
+- Use repr to output p.args and p.props.
+- Merge Proc attributes profile and runner. Profile is now an alias of runner, and will be removed finally.
+
 ## Nov 20, 2017: 0.9.3
 - Beautify parameters help page.
 - Enable multithreading for job construction and cache checking (set by proc.nthread).
