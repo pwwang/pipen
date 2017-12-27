@@ -38,7 +38,8 @@ class Proc (object):
 
 	# for future use, shortcuts
 	ALIAS        = { 
-		'envs': 'tplenvs'
+		'envs'   : 'tplenvs',
+		'profile': 'runner'
 	}
 	LOG_NLINE    = {
 		'EXPORT_CACHE_OUTFILE_EXISTS': -3,
@@ -89,7 +90,7 @@ class Proc (object):
 		@config:
 			id, input, output, ppldir, forks, cache, cclean, rc, echo, runner, script, depends, tag, desc
 			exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr
-			callfront, callback, brings, expect, expart, template, tplenvs, resume, profile, nthread
+			callfront, callback, brings, expect, expart, template, tplenvs, resume, nthread
 		@props
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, brings, expect
 			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs
@@ -215,9 +216,6 @@ class Proc (object):
 		# data for proc.xxx in template
 		self.props['procvars']    = {}
 
-		# running profile
-		self.config['profile']    = ''
-
 		# Valid return code
 		self.config['rc']         = 0
 		self.props['rc']          = [0]
@@ -232,6 +230,8 @@ class Proc (object):
 
 		# Select the runner
 		self.config['runner']     = 'local'
+		# get the runner from the profile
+		self.props['runner']      = 'local'
 
 		# The script of the jobs
 		self.config['script']     = ''
@@ -279,6 +279,10 @@ class Proc (object):
 	def __setattr__ (self, name, value):
 		if not name in self.config and not name in Proc.ALIAS and not name.endswith ('Runner'):
 			raise AttributeError('Cannot set attribute "%s" for Proc instance' % name)
+
+		# profile will be deprecated, use runner instead
+		if name == 'profile':
+			self.log('Attribute profile is deprecated, please use runner instead.', 'warning')
 		
 		if name in Proc.ALIAS:
 			name = Proc.ALIAS[name]
@@ -490,6 +494,8 @@ class Proc (object):
 		if config is None: config = {}
 		
 		self._readConfig (config)
+		if self.runner == 'dry':
+			self.config['cache'] = False
 		
 		if self.resume == 'skip':
 			self.log ("Pipeline will resume from future processes.", 'skipped')
@@ -540,7 +546,7 @@ class Proc (object):
 			self.props['workdir'] = self.config['workdir']
 		elif not self.props['workdir']:
 			self.props['workdir'] = path.join(self.ppldir, "PyPPL.%s.%s.%s" % (self.id, self.tag, self._suffix()))
-
+		
 		if not path.exists (self.workdir):
 			if self.resume in ['skip+', 'resume']:
 				raise Exception('Cannot skip process, as workdir not exists: %s' % self.workdir)
@@ -579,8 +585,9 @@ class Proc (object):
 			self.echo['filter'] = ''
 		
 		# don't cache for dry runner
-		if self.runner == 'dry':
-			self.props['cache'] = False
+		# runner is decided when run (in config)
+		#if self.runner == 'dry':
+		#	self.props['cache'] = False
 
 		# expect
 		self.props['expect'] = self.template(self.config['expect'], **self.tplenvs)
@@ -754,7 +761,7 @@ class Proc (object):
 		"""
 		pvkeys = [
 			"aggr", "args", "cache", "desc", "echo", "errhow", "errntry", "exdir", "exhow",
-			"exow", "forks", "id", "lang", "ppldir", "procvars", "profile", "rc", "resume",
+			"exow", "forks", "id", "lang", "ppldir", "procvars", "rc", "resume",
 			"runner", "sets", "size", "suffix", "tag", "workdir"
 		]
 		show   = [ 'size' ]
@@ -910,7 +917,8 @@ class Proc (object):
 		@params:
 			`config`: The configuration
 		"""
-		conf = { (key if not key in Proc.ALIAS else Proc.ALIAS[key]):val for key, val in config.items() if key not in self.sets }
+		conf = { (key if not key in Proc.ALIAS else Proc.ALIAS[key]):val for key, val in config.items() if key not in self.sets and key != 'runner' }
+		self.props['runner'] = config['runner'] if 'runner' in config else 'local'
 		self.config.update (conf)
 
 	def _checkCached (self):
@@ -984,17 +992,17 @@ class Proc (object):
 		runner    = PyPPL.RUNNERS[self.runner]
 		maxsubmit = self.forks
 		if hasattr(runner, 'maxsubmit'):
-			maxsubmit = runner.maxsubmit
+			maxsubmit = runner.maxsubmit  # pragma: no cover
 		interval  = .1
-		if hasattr(runner, 'interval'):
+		if hasattr(runner, 'interval'):   # pragma: no cover
 			interval = runner.interval
 
-		def _worker(index, cached):
+		def _worker(index, cached):       # pragma: no cover
 			job   = self.jobs[index]
 			r     = runner(job)           # pragma: no cover
 			batch = int(index/maxsubmit)  # pragma: no cover
-			sleep(batch * interval)
-
+			sleep(batch * interval)       # pragma: no cover
+	
 			if cached:                    # pragma: no cover
 				job.done()
 			elif r.isRunning():           # pragma: no cover
@@ -1201,15 +1209,21 @@ class PyPPL (object):
 			The running configuration
 		"""
 		config = {}
+		# get default profile first
 		if 'proc' in self.config:
 			utils.dictUpdate(config, self.config['proc'])
 		
+		# overwrite with the given profile
 		if profile in self.config:
 			utils.dictUpdate(config, self.config[profile])
 
+		# set default runner
 		if not 'runner' in config:
-			config['runner'] = profile if profile in PyPPL.RUNNERS else 'local'
+			default_runner = profile if profile in PyPPL.RUNNERS else 'local'
+			logger.logger.info("[WARNING] No runner specified in profile '%s', will use %s runner." % (profile, default_runner))
+			config['runner'] = default_runner
 
+		# id is not allowed to set in profile
 		if 'id' in config:
 			raise AttributeError('Cannot set a unique id for all process in configuration.')
 
@@ -1254,10 +1268,10 @@ class PyPPL (object):
 		dftconfig = self._getProfile(profile)
 		proc      = self.tree.getNextToRun()
 		while proc:
-			proc.log (proc.desc, '>>>>>>>')
+			proc.log (proc.desc, 'PROCESS')
 			proc.log ("%s => %s => %s" % (ProcTree.getPrevStr(proc), proc.name(), ProcTree.getNextStr(proc)))
-			if proc.profile and proc.profile != profile:
-				proc.run(self._getProfile(proc.profile))
+			if proc.config['runner'] and proc.config['runner'] != profile:
+				proc.run(self._getProfile(proc.config['runner']))
 			else:
 				proc.run(dftconfig)
 			proc = self.tree.getNextToRun()

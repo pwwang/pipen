@@ -32,6 +32,7 @@ class Proc(object):
 		self.id = id
 		if id is None:
 			self.id  = utils.varname()
+		self.config = {'runner':''}
 		self.tag = tag
 		self.desc = ''
 		self.aggr = ''
@@ -39,6 +40,7 @@ class Proc(object):
 		self.exdir = ''
 		self.resume = ''
 		self.profile = ''
+		self.runner = 'local'
 		self.props = {
 			'resume': ''
 		}
@@ -62,6 +64,7 @@ class Proc(object):
 		logger.logger.info('[%s] %s' % (k2, k1))
 
 	def run(self, config):
+		self.runner = config['runner']
 		logger.logger.info('[ SUBMIT] Running %s' % self.name())
 
 class Aggr(object):
@@ -537,6 +540,40 @@ proc:
 }
 """.splitlines()) - set(a.splitlines()))
 
+	def testProfileRunner(self):
+		p = Proc('profile')
+		with captured_output() as (out, err):
+			PyPPL(config = {
+				'log': {
+					'levels': 'all',
+					'file': None
+				}
+			}).start(p).run()
+		self.assertEqual(p.runner, 'local')
+
+		p.config['runner'] = 'dry'
+		with captured_output() as (out, err):
+			PyPPL(config = {
+				'log': {
+					'levels': 'all',
+					'file': None
+				}
+			}).start(p).run()
+		self.assertEqual(p.runner, 'dry')
+
+		p.config['runner'] = 'dry'
+		with captured_output() as (out, err):
+			PyPPL(config = {
+				'log': {
+					'levels': 'all',
+					'file': None
+				},
+				'dry': {
+					'runner': 'notdry'
+				}
+			}).start(p).run()
+		self.assertEqual(p.runner, 'notdry')
+
 	def testRun(self):
 		"""
 		         / p3  --- \ 
@@ -557,7 +594,7 @@ proc:
 		p8  = Proc()
 		p9  = Proc()
 		p10 = Proc()
-		p1.profile = 'proc'
+		p1.runner = 'proc'
 		p2.addDepends(p1)
 		p10.addDepends(p1)
 		p3.addDepends(p2)

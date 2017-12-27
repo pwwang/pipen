@@ -277,8 +277,9 @@ class TestProc (unittest.TestCase):
 		self.assertTrue(p.cache)
 		p.runner = 'dry'
 		p._buildProps()
-		self.assertEqual(p.runner, 'dry')
-		self.assertFalse(p.cache)
+		self.assertEqual(p.config['runner'], 'dry')
+		self.assertEqual(p.props['runner'], 'local')
+		self.assertTrue(p.cache) # runner cannot be determined. dry here is a profile name
 
 		# depends
 		self.assertEqual(p.depends, [])
@@ -501,7 +502,7 @@ class TestProc (unittest.TestCase):
 		del p.procvars['proc']['ppldir']
 		self.assertEqual(p.procvars['proc'], {
 			'suffix': '4zbHysnh', 
-			'runner': 'local', 
+			'profile': 'local', 
 			'echo': {'filter': '', 'type': [], 'jobs': [0]}, 
 			'tag': 'procvars', 
 			'id': 'p', 
@@ -517,7 +518,6 @@ class TestProc (unittest.TestCase):
 			'errhow': 'terminate', 
 			'lang': 'bash', 
 			'exdir': '', 
-			'profile': '',
 			'procvars': {}, 
 			'sets': ['args', 'cache'], 
 			'errntry': 3
@@ -674,7 +674,7 @@ p.script = "file:./relpathscript"
 
 		# file
 		p = Proc('render-file')
-		p.script = "file:" + sfile
+		p.script = "file:" + path.abspath(sfile)
 		p._buildProps()
 		p._buildInput()
 		p._buildProcVars()
@@ -848,28 +848,30 @@ p.script = "file:./relpathscript"
 
 	def testRunJobs(self):
 		with captured_output() as (out, err):
-			logger.getLogger()
+			logger.getLogger(levels = 'all')
 		p = Proc('runjobs')
 		# empty output
-		p.runner = 'testr'
-		p.input = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
+		
+		p.forks  = 5
+		p.input  = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
 		p.output = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
 		p.script = 'echo {{in.a}} > {{out.outfile}}'
 		p._tidyBeforeRun()
 		for job in p.jobs:
 			utils.safeRemove(job.data['out']['outfile'])
 		p._checkCached()
+		p.props['runner'] = 'testr'
 		p._runJobs()
 		for job in p.jobs:
 			job.checkOutfiles()
 			self.assertFalse(job.succeed())
 
-		p.runner = 'nosuchrunner'
+		p.props['runner'] = 'nosuchrunner'
 		p._tidyBeforeRun()
 		p._checkCached()
 		self.assertRaises(KeyError, p._runJobs)
 
-		p.runner = 'testnr'
+		p.props['runner'] = 'testnr'
 		p._tidyBeforeRun()
 		for job in p.jobs:
 			utils.safeRemove(job.data['out']['outfile'])
@@ -925,6 +927,12 @@ p.script = "file:./relpathscript"
 		p.output  = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
 		p.script  = 'echo {{in.a}} > {{out.outfile}}'
 		p.runner  = 'testnr'
+		#p.resume  = 'skip'
+		with captured_output() as (out, err):
+			logger.getLogger()
+			p.run()
+		self.assertIn('p.testRun', err.getvalue())
+
 		p.resume  = 'skip'
 		with captured_output() as (out, err):
 			logger.getLogger()
@@ -952,6 +960,18 @@ p.script = "file:./relpathscript"
 			logger.getLogger()
 			p.run()
 		self.assertIn('SKIPPED', err.getvalue())
+
+		self.assertTrue(p.config['cache'])
+		with captured_output() as (out, err):
+			logger.getLogger(levels = 'all')
+			p.profile = 'dryprofile'
+			p.run({
+				'runner': 'dry'
+			})
+		# PyPPL({'dryprofile': {'runner': 'dry'}})
+		self.assertEqual(p.runner, 'dry')
+		self.assertFalse(p.config['cache'])
+		self.assertIn('Attribute profile is deprecated, please use runner instead.', err.getvalue())
 
 	def testRunCachedRunning(self):
 		with captured_output() as (out, err):

@@ -25,7 +25,7 @@ class TestLogger (unittest.TestCase):
 		theme = logger.themes['greenOnBlack']
 		self.assertEqual (logger._getColorFromTheme('DONE', theme), tuple([logger.colors.bold + logger.colors.green]*2))
 		self.assertEqual (logger._getColorFromTheme('DEBUG', theme), tuple([logger.colors.bold + logger.colors.black]*2))
-		self.assertEqual (logger._getColorFromTheme('>>>>>>>', theme), tuple([logger.colors.bold + logger.colors.cyan, logger.colors.bold + logger.colors.underline + logger.colors.cyan]))
+		self.assertEqual (logger._getColorFromTheme('PROCESS', theme), tuple([logger.colors.bold + logger.colors.cyan, logger.colors.bold + logger.colors.underline + logger.colors.cyan]))
 		self.assertEqual (logger._getColorFromTheme('INFO', theme), tuple([logger.colors.green]*2))
 		self.assertEqual (logger._getColorFromTheme('DEPENDS', theme), tuple([logger.colors.green]*2))
 		self.assertEqual (logger._getColorFromTheme('ERRRRR', theme), tuple([logger.colors.red]*2))
@@ -54,7 +54,7 @@ class TestLogger (unittest.TestCase):
 		self.assertEqual(logger._formatTheme(True), {
 			'DONE'    : [logger.colors.bold + logger.colors.green, logger.colors.bold + logger.colors.green],
 			'DEBUG'   : [logger.colors.bold + logger.colors.black, logger.colors.bold + logger.colors.black],
-			'>>>>>>>' : [logger.colors.bold + logger.colors.cyan, logger.colors.bold + logger.colors.underline + logger.colors.cyan],
+			'PROCESS' : [logger.colors.bold + logger.colors.cyan, logger.colors.bold + logger.colors.underline + logger.colors.cyan],
 			'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': [logger.colors.green, logger.colors.green],
 			'has:ERR' : [logger.colors.red, logger.colors.red],
 			'in:WARNING,RETRY' : [logger.colors.bold + logger.colors.yellow, logger.colors.bold + logger.colors.yellow],
@@ -66,7 +66,7 @@ class TestLogger (unittest.TestCase):
 		self.assertEqual(logger._formatTheme({
 			'DONE'    : "colors.bold + colors.green",
 			'DEBUG'   : "colors.bold + colors.black",
-			'>>>>>>>' : ["colors.bold + colors.cyan", "colors.bold + colors.underline + colors.cyan"],
+			'PROCESS' : ["colors.bold + colors.cyan", "colors.bold + colors.underline + colors.cyan"],
 			'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': "colors.green",
 			'has:ERR' : "colors.red",
 			'in:WARNING,RETRY' : "colors.bold + colors.yellow",
@@ -118,7 +118,7 @@ class TestLogger (unittest.TestCase):
 			self.assertTrue('You see this9, info' in err.getvalue())
 			
 			logger.getLogger(levels='basic')
-			log.info('[>>>>>>>]You see this10')
+			log.info('[PROCESS]You see this10')
 			self.assertTrue('You see this10' in err.getvalue())
 			log.info('[NO]You don\'t see this11')
 			self.assertTrue('You don\'t see this11' not in err.getvalue())
@@ -156,7 +156,7 @@ class TestLogger (unittest.TestCase):
 			self.assertTrue('You don\'t see this27' not in err.getvalue())
 			
 			logger.getLogger(levels = 'normal')
-			log.info('[>>>>>>>]You see this28')
+			log.info('[PROCESS]You see this28')
 			self.assertTrue('You see this28' in err.getvalue())
 			log.info('[NO]You don\'t see this29')
 			self.assertTrue('You don\'t see this29' not in err.getvalue())
@@ -194,7 +194,7 @@ class TestLogger (unittest.TestCase):
 			self.assertTrue('You don\'t see this45' not in err.getvalue())
 			
 			logger.getLogger(levels = 'nodebug')
-			log.info('[>>>>>>>]You see this46')
+			log.info('[PROCESS]You see this46')
 			self.assertTrue('You see this46' in err.getvalue())
 			log.info('[NO]You don\'t see this47')
 			self.assertTrue('You don\'t see this47' not in err.getvalue())
@@ -238,7 +238,7 @@ class TestLogger (unittest.TestCase):
 	def testFormatter(self):
 		with captured_output() as (out, err):
 			log = logger.getLogger(theme = False)
-			log.info('[>>>>>>>]You see this1')
+			log.info('[PROCESS]You see this1')
 			self.assertTrue('You see this1' in err.getvalue())
 			log.info('[NO]You don\'t see this2')
 			self.assertTrue('You don\'t see this2' not in err.getvalue())
@@ -279,7 +279,7 @@ class TestLogger (unittest.TestCase):
 		
 		with captured_output() as (out, err):
 			logger.getLogger(theme = True)
-			log.info('[>>>>>>>]greenOnBlack')
+			log.info('[PROCESS]greenOnBlack')
 			self.assertTrue('greenOnBlack' in err.getvalue())
 			log.info('[NO]You don\'t see this1')
 			self.assertTrue('You don\'t see this1' not in err.getvalue())
@@ -320,7 +320,7 @@ class TestLogger (unittest.TestCase):
 		
 		with captured_output() as (out, err):
 			logger.getLogger(theme = 'blueOnBlack')
-			log.info('[>>>>>>>]blueOnBlack')
+			log.info('[PROCESS]blueOnBlack')
 			self.assertTrue('blueOnBlack' in err.getvalue())
 			log.info('[NO]You don\'t see this1')
 			self.assertTrue('You don\'t see this1' not in err.getvalue())
@@ -361,7 +361,7 @@ class TestLogger (unittest.TestCase):
 		
 		with captured_output() as (out, err):
 			logger.getLogger(theme = 'magentaOnBlack')
-			log.info('[>>>>>>>]magentaOnBlack')
+			log.info('[PROCESS]magentaOnBlack')
 			self.assertTrue('magentaOnBlack' in err.getvalue())
 			log.info('[NO]You don\'t see this1')
 			self.assertTrue('You don\'t see this1' not in err.getvalue())
@@ -402,7 +402,7 @@ class TestLogger (unittest.TestCase):
 		
 		with captured_output() as (out, err):
 			logger.getLogger(theme = 'greenOnWhite')
-			log.info('[>>>>>>>]greenOnWhite')
+			log.info('[PROCESS]greenOnWhite')
 			self.assertTrue('greenOnWhite' in err.getvalue())
 			log.info('[NO]You don\'t see this1')
 			self.assertTrue('You don\'t see this1' not in err.getvalue())
@@ -443,7 +443,7 @@ class TestLogger (unittest.TestCase):
 		
 		with captured_output() as (out, err):
 			logger.getLogger(theme = 'blueOnWhite')
-			log.info('[>>>>>>>]blueOnWhite')
+			log.info('[PROCESS]blueOnWhite')
 			self.assertTrue('blueOnWhite' in err.getvalue())
 			log.info('[NO]You don\'t see this1')
 			self.assertTrue('You don\'t see this1' not in err.getvalue())
@@ -484,7 +484,7 @@ class TestLogger (unittest.TestCase):
 		
 		with captured_output() as (out, err):
 			logger.getLogger(theme = 'magentaOnWhite')
-			log.info('[>>>>>>>]magentaOnWhite')
+			log.info('[PROCESS]magentaOnWhite')
 			self.assertTrue('magentaOnWhite' in err.getvalue())
 			log.info('[NO]You don\'t see this1')
 			self.assertTrue('You don\'t see this1' not in err.getvalue())
@@ -529,7 +529,7 @@ class TestLogger (unittest.TestCase):
 				'DONE': logger.colors.bold + logger.colors.red,
 				'starts:STD': "colors.cyan + colors.underline"
 			})
-			log.info('[>>>>>>>]Customized')
+			log.info('[PROCESS]Customized')
 			self.assertTrue('Customized' in err.getvalue())
 			log.info('[NO]You don\'t see this1')
 			self.assertTrue('You don\'t see this1' not in err.getvalue())
@@ -573,7 +573,7 @@ class TestLogger (unittest.TestCase):
 
 		with captured_output() as (out, err):
 			log = logger.getLogger(logfile = logfile)
-			log.info('[>>>>>>>]testLogfile')
+			log.info('[PROCESS]testLogfile')
 			log.info('[NO]You don\'t see this1')
 			log.info('[_NO]But you see this2')
 			log.info('[DEPENDS]You see this3')
@@ -619,7 +619,7 @@ class TestLogger (unittest.TestCase):
 	def testLvlDiff(self):
 		with captured_output() as (out, err):
 			log = logger.getLogger(levels = 'nodebug', lvldiff=['DEBUG', '-ERROR'])
-			log.info('[>>>>>>>]You see this1')
+			log.info('[PROCESS]You see this1')
 			self.assertTrue('You see this1' in err.getvalue())
 			log.info('[NO]You don\'t see this2')
 			self.assertTrue('You don\'t see this2' not in err.getvalue())

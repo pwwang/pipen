@@ -33,6 +33,18 @@ pip install git+git://github.com/pwwang/PyPPL.git
 
 # install released version
 pip install PyPPL
+
+# run tests for both python2 and python3
+make test
+
+# run tests only for python2
+make test2
+
+# run tests only for python3
+make test3
+
+# run tutorials
+make tutorials
 ```
 
 ## Get started

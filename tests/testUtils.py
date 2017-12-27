@@ -743,7 +743,7 @@ class TestUtils (unittest.TestCase):
 		self.assertEqual(utils.filesig(f1), [f1, mtime])
 		f2 = path.join(d2, 'a.link')
 		symlink(f1, f2)
-		self.assertEqual(int(utils.dirmtime(d1)), mtime)
+		self.assertTrue(abs(int(utils.dirmtime(d1)) - mtime) <= 1)
 		self.assertEqual(utils.filesig(d1), [d1, mtime])
 		utils.safeRemove(f2)
 		self.assertEqual(utils.dirmtime(f1), 0)

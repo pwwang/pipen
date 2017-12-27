@@ -31,7 +31,7 @@ themes = {
 	'greenOnBlack': {
 		'DONE'    : colors.bold + colors.green,
 		'DEBUG'   : colors.bold + colors.black,
-		'>>>>>>>' : [colors.bold + colors.cyan, colors.bold + colors.underline + colors.cyan],
+		'PROCESS' : [colors.bold + colors.cyan, colors.bold + colors.underline + colors.cyan],
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.green,
 		'has:ERR' : colors.red,
 		'in:WARNING,RETRY' : colors.bold + colors.yellow,
@@ -41,7 +41,7 @@ themes = {
 	'blueOnBlack':  {
 		'DONE'    : colors.bold + colors.blue,
 		'DEBUG'   : colors.bold + colors.black,
-		'>>>>>>>' : [colors.bold + colors.cyan, colors.bold + colors.underline + colors.cyan],
+		'PROCESS' : [colors.bold + colors.cyan, colors.bold + colors.underline + colors.cyan],
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.blue,
 		'has:ERR' : colors.red,
 		'in:WARNING,RETRY' : colors.bold + colors.yellow,
@@ -51,7 +51,7 @@ themes = {
 	'magentaOnBlack':  {
 		'DONE'    : colors.bold + colors.magenta,
 		'DEBUG'   : colors.bold + colors.black,
-		'>>>>>>>' : [colors.bold + colors.blue, colors.bold + colors.underline + colors.blue],
+		'PROCESS' : [colors.bold + colors.blue, colors.bold + colors.underline + colors.blue],
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.magenta,
 		'has:ERR' : colors.red,
 		'WARNING' : colors.bold + colors.yellow,
@@ -61,7 +61,7 @@ themes = {
 	'greenOnWhite': {
 		'DONE'    : colors.bold + colors.green,
 		'DEBUG'   : colors.bold + colors.black,
-		'>>>>>>>' : [colors.bold + colors.blue, colors.bold + colors.underline + colors.blue],
+		'PROCESS' : [colors.bold + colors.blue, colors.bold + colors.underline + colors.blue],
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.green,
 		'has:ERR' : colors.red,
 		'in:WARNING,RETRY' : colors.bold + colors.yellow,
@@ -71,7 +71,7 @@ themes = {
 	'blueOnWhite':  {
 		'DONE'    : colors.bold + colors.blue,
 		'DEBUG'   : colors.bold + colors.black,
-		'>>>>>>>' : [colors.bold + colors.magenta, colors.bold + colors.underline + colors.magenta],
+		'PROCESS' : [colors.bold + colors.magenta, colors.bold + colors.underline + colors.magenta],
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.blue,
 		'has:ERR' : colors.red,
 		'in:WARNING,RETRY' : colors.bold + colors.yellow,
@@ -81,7 +81,7 @@ themes = {
 	'magentaOnWhite':  {
 		'DONE'    : colors.bold + colors.magenta,
 		'DEBUG'   : colors.bold + colors.black,
-		'>>>>>>>' : [colors.bold + colors.blue, colors.bold + colors.underline + colors.blue],
+		'PROCESS' : [colors.bold + colors.blue, colors.bold + colors.underline + colors.blue],
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.magenta,
 		'has:ERR' : colors.red,
 		'in:WARNING,RETRY' : colors.bold + colors.yellow,
@@ -97,7 +97,7 @@ levels = {
 	'nodebug': ['INPUT', 'OUTPUT', 'BRINGS', 'SUBMIT', 'P.ARGS', 'P.PROPS', 'JOBDONE']
 }
 
-levels_always = ['>>>>>>>', 'SKIPPED', 'RESUMED', 'DEPENDS', 'STDOUT', 'STDERR', 'WARNING', 'ERROR', 'INFO', 'DONE', 'RUNNING', 'CACHED', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'RETRY']
+levels_always = ['PROCESS', 'SKIPPED', 'RESUMED', 'DEPENDS', 'STDOUT', 'STDERR', 'WARNING', 'ERROR', 'INFO', 'DONE', 'RUNNING', 'CACHED', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'RETRY']
 
 def _getLevel (record):
 	"""
