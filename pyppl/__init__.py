@@ -766,7 +766,7 @@ class Proc (object):
 		]
 		show   = [ 'size' ]
 		hidden = [ 'desc', 'id', 'sets', 'tag', 'suffix', 'workdir' ]
-		hidden.extend([key for key in pvkeys if key not in self.sets if key not in show])
+		hidden.extend([key for key in pvkeys if key not in self.sets + show])
 		hidden = set(hidden)
 		procvars = {}
 		procargs = {}
@@ -782,21 +782,21 @@ class Proc (object):
 				if val: maxlen = max(maxlen, max(list(map(len, val.keys()))))
 			elif key == 'procvars':
 				procvars['procvars'] = val
-			elif key in alias:
-				key = alias[key]
-				procvars[key] = val
-				if ((val is False) or bool(val)) and key not in hidden:
-					maxlen = max(maxlen, len(key))
-					propout[key] = val
+			#elif key in alias:
+			#	key = alias[key]
+			#	procvars[key] = val
+			#	if ((val is False) or bool(val)) and key not in hidden:
+			#		maxlen = max(maxlen, len(key))
+			#		propout[key] = val
 			else:
 				procvars[key] = val
 				if (val is False or val) and key not in hidden:
 					maxlen = max(maxlen, len(key))
-					propout[key] = val
+					propout[key] = (repr(val) + ' [%s]' % alias[key]) if key in alias else repr(val)
 		for key in sorted(procargs.keys()):
 			self.log('%s => %s' % (key.ljust(maxlen), repr(procargs[key])), 'p.args')
 		for key in sorted(propout.keys()):
-			self.log('%s => %s' % (key.ljust(maxlen), repr(propout[key])), 'p.props')
+			self.log('%s => %s' % (key.ljust(maxlen), propout[key]), 'p.props')
 		self.props['procvars'] = {'proc': procvars, 'args': procargs}
 
 	def _buildBrings(self):
@@ -1219,9 +1219,11 @@ class PyPPL (object):
 
 		# set default runner
 		if not 'runner' in config:
-			default_runner = profile if profile in PyPPL.RUNNERS else 'local'
-			logger.logger.info("[WARNING] No runner specified in profile '%s', will use %s runner." % (profile, default_runner))
-			config['runner'] = default_runner
+			if profile in PyPPL.RUNNERS:
+				config['runner'] = profile
+			else:
+				config['runner'] = 'local'
+				logger.logger.info("[WARNING] No runner specified in profile '%s', will use local runner." % (profile))
 
 		# id is not allowed to set in profile
 		if 'id' in config:

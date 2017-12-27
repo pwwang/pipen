@@ -502,7 +502,7 @@ class TestProc (unittest.TestCase):
 		del p.procvars['proc']['ppldir']
 		self.assertEqual(p.procvars['proc'], {
 			'suffix': '4zbHysnh', 
-			'profile': 'local', 
+			'runner': 'local', 
 			'echo': {'filter': '', 'type': [], 'jobs': [0]}, 
 			'tag': 'procvars', 
 			'id': 'p', 
