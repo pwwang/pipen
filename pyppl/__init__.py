@@ -88,7 +88,7 @@ class Proc (object):
 			`desc`: The description of the process
 			`id`:   The identify of the process
 		@config:
-			id, input, output, ppldir, forks, cache, cclean, rc, echo, runner, script, depends, tag, desc
+			id, input, output, ppldir, forks, cache, cclean, rc, echo, runner, script, depends, tag, desc, dirsig
 			exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr
 			callfront, callback, brings, expect, expart, template, tplenvs, resume, nthread
 		@props
@@ -150,6 +150,9 @@ class Proc (object):
 
 		# The description of the job		
 		self.config['desc']       = desc
+
+		# Whether expand directory to check signature	
+		self.config['dirsig']     = True
 
 		# Whether to print the stdout and stderr of the jobs to the screen
 		# Could also be:

@@ -736,7 +736,7 @@ def dirmtime (d):
 				mtime = m
 	return mtime
 
-def filesig (fn):
+def filesig (fn, dirsig = True):
 	"""
 	Calculate a signature for a file according to its path and mtime
 	@params:
@@ -748,7 +748,7 @@ def filesig (fn):
 	fname = path.realpath(fn)
 	if not path.exists (fname):
 		return False
-	mtime = dirmtime(fname) if path.isdir (fname) else path.getmtime(fname)
+	mtime = dirmtime(fname) if path.isdir (fname) and dirsig else path.getmtime(fname)
 	# not using fname, because we intend to allow links to replace the original file
 	# say in case of export using move
 	if not mtime: # pragma: no cover

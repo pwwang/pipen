@@ -398,7 +398,7 @@ class Job (object):
 			if val['type'] in self.proc.IN_VARTYPE:
 				ret['in'][self.proc.IN_VARTYPE[0]][key] = val['data']
 			elif val['type'] in self.proc.IN_FILETYPE:
-				sig = utils.filesig (val['data'])
+				sig = utils.filesig (val['data'], self.proc.dirsig)
 				if not sig:
 					self.proc.log ('Job #%s: Empty signature because of input file: %s.' % (self.index, val['data']), 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
@@ -406,7 +406,7 @@ class Job (object):
 			elif val['type'] in self.proc.IN_FILESTYPE:
 				ret['in'][self.proc.IN_FILESTYPE[0]][key] = []
 				for infile in sorted(val['data']):
-					sig = utils.filesig (infile)
+					sig = utils.filesig (infile, self.proc.dirsig)
 					if not sig:
 						self.proc.log ('Job #%s: Empty signature because of one of input files: %s.' % (self.index, infile), 'debug', 'CACHE_EMPTY_CURRSIG')
 						return ''
@@ -416,13 +416,13 @@ class Job (object):
 			if val['type'] in self.proc.OUT_VARTYPE:
 				ret['out'][self.proc.OUT_VARTYPE[0]][key] = val['data']
 			elif val['type'] in self.proc.OUT_FILETYPE:
-				sig = utils.filesig (val['data'])
+				sig = utils.filesig (val['data'], self.proc.dirsig)
 				if not sig:
 					self.proc.log ('Job #%s: Empty signature because of output file: %s.' % (self.index, val['data']), 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
 				ret['out'][self.proc.OUT_FILETYPE[0]][key] = sig
 			elif val['type'] in self.proc.OUT_DIRTYPE:
-				sig = utils.filesig (val['data'])
+				sig = utils.filesig (val['data'], self.proc.dirsig)
 				if not sig:
 					self.proc.log ('Job #%s: Empty signature because of output dir: %s.' % (self.index, val['data']), 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
