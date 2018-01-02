@@ -9,13 +9,14 @@ from shutil import rmtree
 
 from os import path
 sys.path.insert(0, path.dirname(path.dirname(path.realpath(__file__))))
-from pyppl import logger
+from pyppl import logger, utils
 
 parser           = argparse.ArgumentParser(description='A set of CLI tools for pyppl.')
 parser.add_argument('-w', '--workdir', help="The path of workdir, default: %(default)s", required=False, default="./workdir")
 cmdparsers       = parser.add_subparsers(dest='command')
 parser_clean     = cmdparsers.add_parser('clean', help="Clean a workdir")
 parser_clean.add_argument ('-f', '--force', help="Force cleaning, don't ask for confirmation.", action='store_true')
+parser_clean.add_argument ('-n', '--nthread', help="Number of threads used to remove the directory.", dest='n', type=int, default=1)
 parser_clean.set_defaults(force = False)
 parser_list      = cmdparsers.add_parser('list', help="List the status of a workdir")
 parser_compare   = cmdparsers.add_parser('compare', help="Compare the settings of two processes.")
@@ -44,9 +45,10 @@ def getGroups (workdir):
 		ret[pname].append(parts[-1])
 	return ret
 	
-def ask2Remove (msg, path, ask = True):
+def ask2Remove (msg, procpath, ask = True):
 	def rm ():
-		rmtree(path)
+		utils.parallel(rmtree, [(pp, ) for pp in glob(path.join(procpath, '*'))], args.n, 'process')
+		rmtree(procpath)
 		print logger.colors.bold + logger.colors.yellow + "  Removed: " + procpath + logger.colors.end
 	
 	if not ask:

@@ -37,22 +37,26 @@ class Template(object):
 			else str(x)  if isinstance(x, int) or isinstance(x, float) \
 			else str(x)[2:] if isinstance(x, string_types) and (x.startswith('r:') or x.startswith('R:'))  \
 			else json.dumps(str(x)) if isinstance(x, string_types) else str(x),
-		'realpath': path.realpath,
-		'readlink': readlink,
-		'dirname':  path.dirname,
+		'realpath' : path.realpath,
+		'readlink' : readlink,
+		'dirname'  : path.dirname,
 		# /a/b/c[1].txt => c.txt
-		'basename': _basename,
-		'bn':       _basename,
-		'filename': _filename,
-		'fn':       _filename,
+		'basename' : _basename,
+		'bn'       : _basename,
+		'filename' : _filename,
+		'fn'       : _filename,
+		# /a/b/c.d.e.txt => c
+		'fn2'      : lambda x, orig = False: _filename(x, orig).split('.')[0],
 		# /a/b/c.txt => .txt
-		'ext':      lambda x: path.splitext(x)[1],
+		'ext'      : lambda x: path.splitext(x)[1],
 		# /a/b/c[1].txt => /a/b/c
-		'prefix':   lambda x, orig = False: path.join(path.dirname(x), _filename(x, orig)),
-		'quote':    lambda x: json.dumps(str(x)),
-		'json':     json.dumps,
-		'read':     _read,
-		'readlines':_readlines
+		'prefix'   : lambda x, orig = False: path.join(path.dirname(x), _filename(x, orig)),
+		# /a/b/c.d.e.txt => /a/b/c
+		'prefix2'  : lambda x, orig = False: path.join(path.dirname(x), _filename(x, orig).split('.')[0]),
+		'quote'    : lambda x: json.dumps(str(x)),
+		'json'     : json.dumps,
+		'read'     : _read,
+		'readlines': _readlines
 
 	}
 
