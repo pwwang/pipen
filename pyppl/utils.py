@@ -43,7 +43,7 @@ class ProcessEx (Process):
 			if ex:
 				raise ex
 
-def parallel(func, args, nthread, method = 'thread'):
+def parallel(func, args, nthread, method = 'thread', join = True):
 	"""
 	Call functions in a parallel way.
 	If nthread == 1, will be running in single-threading manner.
@@ -53,39 +53,42 @@ def parallel(func, args, nthread, method = 'thread'):
 		`nthread`: Number of threads
 		`method`: use multithreading (thread) or multiprocessing (process)
 	"""
-	q = moves.queue.Queue() if method == 'thread' else JoinableQueue()
-	u = Thread if method == 'thread' else Process
+	if method == 'thread':
+		Queue = moves.queue.Queue
+		Unit  = Thread
+	else:
+		Queue = JoinableQueue
+		Unit  = Process
 
-	def _parallelWorker(sq):
+	def _parallelWorker(q):
 		while True:
-			if sq.empty(): break
-			try:
-				arg = sq.get()
-			except Exception: # pragma: no cover
-				sq.task_done()
+			if q.empty():
+				q.task_done()
 				break
-			if not arg: 
-				sq.task_done()
+			arg = q.get()
+			if arg is None:
+				q.task_done()
 				break
-
+			
 			try:
 				func(*arg)
 			except Exception: # pragma: no cover
 				raise
 			finally:
-				sq.task_done()
+				q.task_done()
 
 	nworkers = min(len(args), nthread)
+	q = Queue()
 
 	for arg in args: q.put(arg)
 	for _ in range(nworkers): q.put(None)
 
 	for _ in range(nworkers):
-		t = u(target = _parallelWorker, args=(q, ))
+		t = Unit(target = _parallelWorker, args=(q, ))
 		t.daemon = True
 		t.start()
+	
 	q.join()
-
 
 def varname (maxline = 20, incldot = False):
 	"""
