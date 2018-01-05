@@ -999,12 +999,11 @@ class Proc (object):
 			maxsubmit = min(maxsubmit, runner.MAXSUBMIT)  # pragma: no cover
 
 		jobman = JobMan(self.jobs, self.cclean, self.ncjobids, runner)
-		nRunners = min(self.forks, jobman.size) + 1
-
+		nRunners = min(self.forks, jobman.size) 
 		def _submit(sq):
 			while True:
 				# if we already have enough # jobs running, wait
-				while nRunners > 1 and jobman.nRunning() >= nRunners - 1:
+				while nRunners > 0 and jobman.nRunning() >= nRunners:
 					sleep(1)
 				jid = sq.get()
 				if jid is None:
@@ -1013,7 +1012,7 @@ class Proc (object):
 				# job is cached
 				r = jobman.get(jid)
 				if jid not in self.ncjobids:
-					r.finish()
+					r.status(runner.STATUS_SUBMITTED)
 				elif r.isRunning():
 					self.log ("Job #%-3s is already running, skip submitting." % jid, 'submit')
 					r.status(runner.STATUS_SUBMITTED)
@@ -1027,26 +1026,26 @@ class Proc (object):
 				if jid is None:
 					rq.task_done()
 					break
-				if jid == -1: # the watcher
-					while jobman.size > 0 and not jobman.allJobsDone():
-						sleep(1)
-					
-					for _ in range(maxsubmit):
-						sq.put(None)
-					for _ in range(nRunners):
-						rq.put(None)
-					rq.task_done()
 				else:
 					r = jobman.get(jid)
 					r.run(sq)
 					rq.task_done()
 
+		def _watch(rq, sq):
+			while jobman.size > 0 and not jobman.allJobsDone():
+				sleep(1)
+
+			for _ in range(maxsubmit):
+				sq.put(None)
+			for _ in range(nRunners):
+				rq.put(None)
+
 		submitQ = JoinableQueue()
 		runQ    = JoinableQueue()
+
 		for rid in jobman.jobids():
 			submitQ.put(rid)
 			runQ.put(rid)
-		runQ.put(-1)
 
 		for _ in range(maxsubmit):
 			p = Process(target = _submit, args = (submitQ, ))
@@ -1057,9 +1056,14 @@ class Proc (object):
 			p = Process(target = _run, args = (runQ, submitQ))
 			p.daemon = True
 			p.start()
+		
+		watchp = Process(target = _watch, args = (runQ, submitQ))
+		watchp.daemon = True
+		watchp.start()
 
 		runQ.join()
 		submitQ.join()
+		watchp.join()
 		self.log('After job run, active threads: %s' % threading.active_count(), 'debug')
 			
 class PyPPL (object):

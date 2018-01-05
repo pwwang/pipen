@@ -124,6 +124,9 @@ class Job (object):
 		"""
 		if not path.exists(self.dir):
 			makedirs (self.dir)
+		# run may come first before submit
+		open(self.outfile, 'w').close()
+		open(self.errfile, 'w').close()
 		self.data.update (self.proc.procvars)
 		self._prepInput ()
 		self._prepBrings ()

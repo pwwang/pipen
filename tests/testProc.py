@@ -6,6 +6,7 @@ from box import Box
 from os import path, makedirs
 from time import sleep
 from pyppl import Proc, logger, templates, utils, Channel, PyPPL, Job, ProcTree
+from pyppl.runners import Runner
 from shutil import rmtree
 
 from contextlib import contextmanager
@@ -26,29 +27,15 @@ class Aggr(object):
 	def __init__(self, *ps):
 		self.ends = ps
 
-class RunnerTestNR(object):
-	def __init__(self, job):
-		self.job = job
+class RunnerTestNR(Runner):
 	
 	def isRunning(self):
 		return False
 
-	def submit(self):
-		logger.logger.info('[submit]submit job %s\n' % self.job.index)
-		p = utils.dumbPopen(['bash', self.job.script], shell=False)
-		self.job.rc(p.wait())
-	
-	def wait(self):
-		pass
-
-	def finish(self):
-		with open(self.job.rcfile, 'w') as f:
-			f.write('0')
-		self.job.done()
-
-class RunnerTestR(RunnerTestNR):
+class RunnerTestR(Runner):
 	
 	def isRunning(self):
+		self.job.rc(0)
 		return True
 
 
@@ -834,6 +821,7 @@ p.script = "file:./relpathscript"
 			for i in [0,1,2,3,4]:
 				utils.safeRemove(path.join(p.workdir, str(i)))
 			self.assertFalse(p._checkCached())
+
 		self.assertEqual(p.ncjobids, [0,1,2,3,4])
 		self.assertIn('Truely cached jobs: []', err.getvalue())
 		self.assertIn('Export cached jobs: []', err.getvalue())
@@ -981,6 +969,7 @@ p.script = "file:./relpathscript"
 		p.output  = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
 		p.script  = 'echo {{in.a}} > {{out.outfile}}'
 		p.runner  = 'testnr'
+		p.forks   = 5
 		p.props['ncjobids'] = []
 		p.cclean  = True
 		p.run()

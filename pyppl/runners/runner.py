@@ -63,7 +63,6 @@ class Runner (object):
 			self.job.proc.log ('Submitting job #%-3s ...' % self.job.index, 'submit')
 			# retry may open the files again
 			p  = Popen (self.script, stderr=ferrw, stdout=foutw, close_fds=True)
-
 			
 			rc = p.wait()
 			if rc != 0:
@@ -79,7 +78,7 @@ class Runner (object):
 		finally:
 			ferrw.close()
 			foutw.close()
-		
+			
 		if not succ:
 			self.job.rc(99)
 			self.status(Runner.STATUS_SUBMITFAILED)
@@ -98,35 +97,43 @@ class Runner (object):
 		if pid is not None:
 			self.job.pid (str(pid))
 
-	def run(self, submitQ):
+	def run(self, submitQ, test = False):
+		
 		# wait until the job is submitted
-		while self.status() not in [Runner.STATUS_SUBMITTED, Runner.STATUS_SUBMITFAILED]:
+		allowed_status = [Runner.STATUS_SUBMITTED, Runner.STATUS_SUBMITFAILED]
+		if test: allowed_status.append(Runner.STATUS_RUNFAILED)
+		while self.status() not in allowed_status:
 			sleep(1)
-		
+
 		self.status(Runner.STATUS_RUNNING)
-		ferr = open(self.job.errfile)
-		fout = open(self.job.outfile)
-		lastout = ''
-		lasterr = ''
-		while self.job.rc() == -1: # rc not generated yet
-			sleep (10)
-			lastout, lasterr = self._flushOut(fout, ferr, lastout, lasterr)
-		self._flushOut(fout, ferr, lastout, lasterr, True)
-		ferr.close()
-		fout.close()
-		self.finish()
-		
-		if self.job.succeed():
+		# cached jobs
+		if self.job.index not in self.job.proc.ncjobids:
+			self.finish()
 			self.status(Runner.STATUS_DONE)
 		else:
-			if self.job.proc.errhow == 'retry' and self.ntry < self.job.proc.errntry:
-				self.status(Runner.STATUS_RUNFAILED)
-				submitQ.put(self.job.index)
-				self.ntry += 1
-				self.run(submitQ)
-				self.job.proc.log ("Retrying job #%s ... (%s)" % (self.job.index, self.ntry), 'RETRY')
-			else:
+			ferr = open(self.job.errfile)
+			fout = open(self.job.outfile)
+			lastout = ''
+			lasterr = ''
+			while self.job.rc() == -1: # rc not generated yet
+				sleep (5)
+				lastout, lasterr = self._flushOut(fout, ferr, lastout, lasterr)
+			self._flushOut(fout, ferr, lastout, lasterr, True)
+			ferr.close()
+			fout.close()
+			self.finish()
+			
+			if self.job.succeed():
 				self.status(Runner.STATUS_DONE)
+			else:
+				if self.job.proc.errhow == 'retry' and self.ntry < self.job.proc.errntry:
+					self.status(Runner.STATUS_RUNFAILED)
+					submitQ.put(self.job.index)
+					self.ntry += 1
+					self.job.proc.log ("Retrying job #%s ... (%s)" % (self.job.index, self.ntry), 'RETRY')
+					self.run(submitQ, test = test)
+				else:
+					self.status(Runner.STATUS_DONE)
 
 
 	def isRunning (self):

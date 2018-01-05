@@ -5,6 +5,8 @@ import tempfile
 from os import path
 from contextlib import contextmanager
 from six import StringIO
+from subprocess import Popen
+from multiprocessing import Queue
 from pyppl import runners, utils, logger
 
 tmpdir = tempfile.gettempdir()
@@ -48,6 +50,7 @@ class Proc(object):
 		self.id      = 'pTestProc'
 		self.tag     = 'notag'
 		self.sshRunner = ''
+		self.ncjobids = [8]
 
 	def log(self, msg, flag):
 		sys.stderr.write('[%s] %s\n' % (flag, msg)) 
@@ -68,6 +71,7 @@ class Job(object):
 		self.index   = 8
 		self.output  = {}
 		self.rcfile  = path.join(tmpdir, 'testrunnerjob.rc')
+		self.pidfile = path.join(tmpdir, 'testrunnerjob.pid')
 		self.script  = path.join(tmpdir, 'testrunnerjob.script')
 		self.errfile = path.join(tmpdir, 'testrunnerjob.stderr')
 		self.outfile = path.join(tmpdir, 'testrunnerjob.stdout')
@@ -91,9 +95,15 @@ class Job(object):
 	def succeed(self):
 		return self._suc
 
-	def pid(self, _pid = None):
-		if _pid is None: return self._pid
-		self._pid = _pid
+	def pid(self, val = None):
+		if val is None:
+			if not path.exists (self.pidfile):
+				return ''
+			with open(self.pidfile) as f:
+				return f.read().strip()
+		else:
+			with open (self.pidfile, 'w') as f:
+				f.write (str(val))
 
 class TestRunner(unittest.TestCase):
 
@@ -104,9 +114,6 @@ class TestRunner(unittest.TestCase):
 		self.assertEqual(r.script, [job.script])
 		self.assertEqual(r.cmd2run, job.script)
 		self.assertEqual(r.ntry, 0)
-		self.assertIsNone(r.p)
-		self.assertIsNone(r.ferrw)
-		self.assertIsNone(r.foutw)
 
 	def testFlushOut(self):
 		job = Job()
@@ -152,8 +159,9 @@ class TestRunner(unittest.TestCase):
 		self.assertFalse(r.isRunning())
 
 	def testSubmit(self):
+		
 		with captured_output() as (out, err):
-			logger.getLogger()
+			logger.getLogger(levels = 'all')
 		job = Job()
 		r = runners.Runner(job)
 		with captured_output() as (out, err):
@@ -166,16 +174,17 @@ class TestRunner(unittest.TestCase):
 		# normal
 		with open(job.script, 'w') as fs:
 			fs.write('#!/bin/bash\nsleep 1\nls')
-		with captured_output() as (out, err):
-			r.submit()
-		self.assertIsNotNone(r.p)
-		self.assertIn('reset', err.getvalue())
-		self.assertIn('Submitting', err.getvalue())
-		self.assertNotIn('Failed', err.getvalue())
-		r.getpid()
-		self.assertEqual(r.job._pid, str(r.p.pid))
+		#with captured_output() as (out, err):
+		
+		# simulate submitting
+		p = Popen(['sleep', '1'])
+		job.pid(p.pid)
 		self.assertTrue(r.isRunning())
-		self.assertEqual(r.p.wait(), 0)
+		self.assertEqual(p.wait(), 0)
+		self.assertEqual(int(job.pid()), p.pid)
+		#self.assertIn('reset', err.getvalue())
+		#self.assertIn('Submitting', err.getvalue())
+		#self.assertNotIn('Failed', err.getvalue())
 
 	def testWait(self):
 		with captured_output() as (out, err):
@@ -187,13 +196,14 @@ class TestRunner(unittest.TestCase):
 		r = runners.Runner(job)
 		with captured_output() as (out, err):
 			r.submit()
-			r.wait()
+			r.run(Queue())
 		self.assertEqual(job._rc, 0)
 		job._rc = 345
+		r.status(0)
 		with captured_output() as (out, err):
 			r.submit()
-			r.wait(rc = False)
-		self.assertEqual(job._rc, 345)
+			r.run(Queue())
+		self.assertEqual(job._rc, 0)
 
 	def testFinish(self):
 		with captured_output() as (out, err):
@@ -213,7 +223,7 @@ class TestRunner(unittest.TestCase):
 		job._suc = False
 		with captured_output() as (out, err):
 			r.submit()
-			r.wait()
+			r.run(Queue(), test=True)
 			r.finish()
 		self.assertEqual(err.getvalue().count('RETRY'), 3)
 
@@ -256,7 +266,7 @@ class TestRunner(unittest.TestCase):
 				fs.write('#!/bin/bash\necho pyppl.log:abcdef 1>&2')
 			r = runners.RunnerQueue(job)
 			r.submit()
-			r.wait()
+			r.run(Queue())
 		self.assertIn('abcdef', err.getvalue())
 
 	def testSge(self):
@@ -293,6 +303,7 @@ class TestRunner(unittest.TestCase):
 	@unittest.skipIf(not which('qstat'), 'SGE client not installed.')
 	def testSgeGetPid(self):
 		job = Job()
+		job.pid('')
 		r = runners.RunnerSge(job)
 		with open(job.outfile, 'w') as f: f.write('')
 		r.getpid()
@@ -336,6 +347,7 @@ class TestRunner(unittest.TestCase):
 
 	def testSlurmGetPid(self):
 		job = Job()
+		job.pid('')
 		r = runners.RunnerSlurm(job)
 		with open(job.outfile, 'w') as f:
 			f.write('')
@@ -345,7 +357,7 @@ class TestRunner(unittest.TestCase):
 		with open(job.outfile, 'w') as f:
 			f.write('Submitted batch job: 8525')
 		r.getpid()
-		self.assertEqual(job.pid(), 8525)
+		self.assertEqual(int(job.pid()), 8525)
 
 	def testSlurmIsRunning(self):
 		job = Job()
