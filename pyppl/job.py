@@ -9,6 +9,71 @@ from os import makedirs, path, remove, utime, readlink, listdir
 from shutil import move, rmtree
 from multiprocessing import Lock
 from . import utils, logger
+from .runners import Runner
+
+
+class JobMan (object):
+
+	"""
+	JobManager
+	"""
+	def __init__(self, jobs, cclean, ncjobids, runner):
+		"""
+		Job manager constructor
+		@params:
+			`jobs`    : The jobs
+			`cclean`  : The flag of cleaning cached jobs
+			`ncjobids`: The non-cached job indexes
+			`runner`  : The runner class
+		"""
+		self.lock = Lock()
+		self.runners = {
+			job.index: runner(job) for job in jobs \
+			if job.index in ncjobids or cclean
+		}
+		self.size = len(self.runners)
+
+	def nRunning(self):
+		"""
+		Get the number of running jobs
+		@returns:
+			The number of running jobs.
+		"""
+		with self.lock:
+			n = 0
+			for r in self.runners.values():
+				st = r.status()
+				if st in [Runner.STATUS_RUNNING, Runner.STATUS_SUBMITTING, Runner.STATUS_SUBMITTED]:
+					n += 1
+			return n
+
+	def allJobsDone(self):
+		"""
+		Tell whether all jobs are done.
+		No need to lock as it only runs in one process (the watcher process)
+		@return:
+			`True` if all jobs are done else `False`
+		"""
+		return all([r.status() == Runner.STATUS_DONE for r in self.runners.values()])
+
+	def get(self, i):
+		"""
+		Get the job runner by index
+		@params: 
+			`i`: The index
+		@returns:
+			The job runner
+		"""
+		return self.runners[i]
+
+	def jobids(self):
+		"""
+		Get the job indexes
+		@returns:
+			The job indexes.
+		"""
+		return self.runners.keys()
+
 
 class Job (object):
 	

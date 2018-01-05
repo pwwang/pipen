@@ -11,12 +11,13 @@ from os import path, makedirs
 from time import time, sleep
 from random import randint
 from subprocess import PIPE, Popen
+from multiprocessing import JoinableQueue, Process
 from collections import OrderedDict
 
 from box import Box
 from .aggr import Aggr
 from .channel import Channel
-from .job import Job
+from .job import Job, JobMan
 from .parameters import params, Parameter, Parameters
 from .flowchart import Flowchart
 from .proctree import ProcTree
@@ -994,37 +995,71 @@ class Proc (object):
 		"""
 		runner    = PyPPL.RUNNERS[self.runner]
 		maxsubmit = self.forks
-		if hasattr(runner, 'maxsubmit'):
-			maxsubmit = runner.maxsubmit  # pragma: no cover
-		interval  = .1
-		if hasattr(runner, 'interval'):   # pragma: no cover
-			interval = runner.interval
+		if hasattr(runner, 'MAXSUBMIT'):
+			maxsubmit = min(maxsubmit, runner.MAXSUBMIT)  # pragma: no cover
 
-		def _worker(index, cached):       # pragma: no cover
-			job   = self.jobs[index]
-			r     = runner(job)           # pragma: no cover
-			batch = int(index/maxsubmit)  # pragma: no cover
-			sleep(batch * interval)       # pragma: no cover
-	
-			if cached:                    # pragma: no cover
-				job.done()
-			elif r.isRunning():           # pragma: no cover
-				self.log ("Job #%-3s is already running, skip submitting." % index, 'submit') 
-				r.wait()
-				r.finish()
-			else:
-				r.submit()
-				r.wait()
-				r.finish()
+		jobman = JobMan(self.jobs, self.cclean, self.ncjobids, runner)
+		nRunners = min(self.forks, jobman.size) + 1
 
-		args = []
-		for i in range(self.size):
-			if not self.cclean and not i in self.ncjobids:
-				continue
-			args.append((i, i not in self.ncjobids))
+		def _submit(sq):
+			while True:
+				# if we already have enough # jobs running, wait
+				while nRunners > 1 and jobman.nRunning() >= nRunners - 1:
+					sleep(1)
+				jid = sq.get()
+				if jid is None:
+					sq.task_done()
+					break
+				# job is cached
+				r = jobman.get(jid)
+				if jid not in self.ncjobids:
+					r.finish()
+				elif r.isRunning():
+					self.log ("Job #%-3s is already running, skip submitting." % jid, 'submit')
+					r.status(runner.STATUS_SUBMITTED)
+				else:
+					r.submit()
+				sq.task_done()
 		
-		nthreads  = min(self.forks, self.size) if self.cclean else min(self.forks, len(self.ncjobids))
-		utils.parallel(_worker, args, nthreads, 'process')
+		def _run(rq, sq):
+			while True:
+				jid = rq.get()
+				if jid is None:
+					rq.task_done()
+					break
+				if jid == -1: # the watcher
+					while jobman.size > 0 and not jobman.allJobsDone():
+						sleep(1)
+					
+					for _ in range(maxsubmit):
+						sq.put(None)
+					for _ in range(nRunners):
+						rq.put(None)
+					rq.task_done()
+				else:
+					r = jobman.get(jid)
+					r.run(sq)
+					rq.task_done()
+
+		submitQ = JoinableQueue()
+		runQ    = JoinableQueue()
+		for rid in jobman.jobids():
+			submitQ.put(rid)
+			runQ.put(rid)
+		runQ.put(-1)
+
+		for _ in range(maxsubmit):
+			p = Process(target = _submit, args = (submitQ, ))
+			p.daemon = True
+			p.start()
+		
+		for _ in range(nRunners):
+			p = Process(target = _run, args = (runQ, submitQ))
+			p.daemon = True
+			p.start()
+
+		runQ.join()
+		submitQ.join()
 		self.log('After job run, active threads: %s' % threading.active_count(), 'debug')
 			
 class PyPPL (object):
@@ -1387,7 +1422,7 @@ class PyPPL (object):
 			`runner`: The runner to be registered.
 		"""
 		runnerName = runner.__name__
-		if runnerName.startswith ('Runner'):
+		if runnerName.startswith('Runner'):
 			runnerName = runnerName[6:].lower()
 			
 		if not runnerName in PyPPL.RUNNERS:
