@@ -66,13 +66,19 @@ class Runner (object):
 			
 			rc = p.wait()
 			if rc != 0:
-				self.job.proc.log ('Failed to run job #%s.', 'error')
+				if isQ:
+					self.job.proc.log ('Failed to submit job #%s' % self.job.index, 'error')
+				else:
+					self.job.proc.log ('Failed to run job #%s' % self.job.index, 'error')
 				succ = False
-			elif not isQ:
+			if not isQ:
 				self.job.rc(rc)
 				
 		except Exception as ex:
-			self.job.proc.log ('Failed to run job #%s: %s' % (self.job.index, str(ex)), 'error')
+			if isQ:
+				self.job.proc.log ('Failed to submit job #%s: %s' % (self.job.index, str(ex)), 'error')
+			else:
+				self.job.proc.log ('Failed to run job #%s: %s' % (self.job.index, str(ex)), 'error')
 			ferrw.write(str(ex))
 			succ = False
 		finally:
@@ -80,7 +86,7 @@ class Runner (object):
 			foutw.close()
 			
 		if not succ:
-			self.job.rc(99)
+			if isQ: self.job.rc(99)
 			self.status(Runner.STATUS_SUBMITFAILED)
 		else:
 			if isQ: self.getpid()
