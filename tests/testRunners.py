@@ -1,4 +1,4 @@
-import path, unittest
+import helpers, unittest
 
 import sys
 import tempfile
@@ -46,7 +46,7 @@ class Proc(object):
 	def __init__(self):
 		self.errhow  = 'terminate'
 		self.errntry = 3
-		self.echo    = {'jobs':[8], 'type':['stderr'], 'filter': ''}
+		self.echo    = {'jobs':[8], 'type':{'stderr': None}}
 		self.id      = 'pTestProc'
 		self.tag     = 'notag'
 		self.sshRunner = ''
@@ -62,6 +62,18 @@ class Proc(object):
 		return "%s.%s" % (self.id, self.tag)
 
 class Job(object):
+	RC_SUCCESS     = 0
+	RC_NOTGENERATE = -1
+	RC_NOOUTFILE   = -2
+	RC_EXPECTFAIL  = -3
+	RC_SUBMITFAIL  = 99
+
+	MSG_RC_NOTGENERATE = 'Rc file not generated'
+	MSG_RC_NOOUTFILE   = 'Output file not generated'
+	MSG_RC_EXPECTFAIL  = 'Failed to meet the expectation'
+	MSG_RC_SUBMITFAIL  = 'Failed to submit job'
+	MSG_RC_OTHER       = 'Script error'
+
 	def __init__(self):
 		self._rc     = 0
 		self._pid    = ''
@@ -117,7 +129,7 @@ class TestRunner(unittest.TestCase):
 
 	def testFlushOut(self):
 		job = Job()
-		job.proc.echo['type'] = ['stderr', 'stdout']
+		job.proc.echo['type'] = {'stderr': None, 'stdout': None}
 		r = runners.Runner(job)
 		lastout = ''
 		lasterr = ''
@@ -130,7 +142,7 @@ class TestRunner(unittest.TestCase):
 			f1.write("outoutout\noutoutout2")
 			f2.write("errerrrerere\nererererere2")
 		with captured_output() as (out, err):
-			(lastout, lasterr) = r._flushOut(fout,ferr,lastout,lasterr,False)
+			(lastout, lasterr) = r._flush(fout,ferr,lastout,lasterr,False)
 		
 		self.assertEqual('outoutout\n', out.getvalue())
 		self.assertEqual('errerrrerere\n', err.getvalue())
@@ -141,14 +153,14 @@ class TestRunner(unittest.TestCase):
 			f1.write("outoutout3\n")
 			f2.write("errerrrerere3\npyppl.log.warn: hello\npyppl.log.AAA\n444")
 		with captured_output() as (out, err):
-			(lastout, lasterr) = r._flushOut(fout,ferr,lastout,lasterr,False)
+			(lastout, lasterr) = r._flush(fout,ferr,lastout,lasterr,False)
 		self.assertEqual('outoutout2outoutout3\n', out.getvalue())
-		self.assertEqual('ererererere2errerrrerere3\npyppl.log.warn: hello\n[_warn] hello\npyppl.log.AAA\n[_AAA] \n', err.getvalue())
+		self.assertEqual('ererererere2errerrrerere3\n[_warn] hello\n[_AAA] \n', err.getvalue())
 
 		with open(job.outfile, 'a') as f1, open(job.errfile, 'a') as f2:
 			f2.write("555")
 		with captured_output() as (out, err):
-			(lastout, lasterr) = r._flushOut(fout,ferr,lastout,lasterr,True)
+			(lastout, lasterr) = r._flush(fout,ferr,lastout,lasterr,True)
 		self.assertEqual(err.getvalue(), '444555\n')
 		if fout: fout.close()
 		if ferr: ferr.close()
@@ -169,7 +181,7 @@ class TestRunner(unittest.TestCase):
 		self.assertEqual(job._rc, 99)
 		self.assertIn('Job reset: None', err.getvalue())
 		self.assertIn('Submitting job #8', err.getvalue())
-		self.assertIn('Failed to run job', err.getvalue())
+		self.assertIn('Failed to submit job', err.getvalue())
 
 		# normal
 		with open(job.script, 'w') as fs:
@@ -197,13 +209,13 @@ class TestRunner(unittest.TestCase):
 		with captured_output() as (out, err):
 			r.submit()
 			r.run(Queue())
-		self.assertEqual(job._rc, 0)
+		self.assertEqual(job._rc, 3924)
 		job._rc = 345
 		r.status(0)
 		with captured_output() as (out, err):
 			r.submit()
 			r.run(Queue())
-		self.assertEqual(job._rc, 0)
+		self.assertEqual(job._rc, 345)
 
 	def testFinish(self):
 		with captured_output() as (out, err):
@@ -214,6 +226,7 @@ class TestRunner(unittest.TestCase):
 			r.finish()
 		self.assertIn('Job done', err.getvalue())
 
+	@unittest.skip('need submit queue')
 	def testRetry(self):
 		with captured_output() as (out, err):
 			logger.getLogger()
@@ -223,7 +236,7 @@ class TestRunner(unittest.TestCase):
 		job._suc = False
 		with captured_output() as (out, err):
 			r.submit()
-			r.run(Queue(), test=True)
+			r.run(Queue())
 			r.finish()
 		self.assertEqual(err.getvalue().count('RETRY'), 3)
 
@@ -252,10 +265,9 @@ class TestRunner(unittest.TestCase):
 		self.assertIn('touch "abc.file"', scriptcontent)
 		self.assertIn('mkdir -p "abc.dir"', scriptcontent)
 
-	def testQueue(self):
+	def testInstance(self):
 		job = Job()
-		r = runners.RunnerQueue(job)
-		self.assertIsInstance(r, runners.RunnerQueue)
+		r = runners.Runner(job)
 		self.assertIsInstance(r, runners.Runner)
 
 	def testQueueWait(self):
@@ -264,7 +276,7 @@ class TestRunner(unittest.TestCase):
 			job = Job()
 			with open(job.script, 'w') as fs:
 				fs.write('#!/bin/bash\necho pyppl.log:abcdef 1>&2')
-			r = runners.RunnerQueue(job)
+			r = runners.Runner(job)
 			r.submit()
 			r.run(Queue())
 		self.assertIn('abcdef', err.getvalue())

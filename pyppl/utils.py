@@ -43,6 +43,16 @@ class ProcessEx (Process):
 			if ex:
 				raise ex
 
+def flushFile(f, lastmsg, end = False):
+	lines = f.readlines() or []
+	if lines:
+		lines[0] = lastmsg + lines[0]
+		lastmsg  = '' if lines[-1].endswith('\n') else lines.pop(-1)
+		if lastmsg and end:
+			lines.append(lastmsg + '\n')
+			lastmsg = ''
+	return lines, lastmsg
+
 def parallel(func, args, nthread, method = 'thread', join = True):
 	"""
 	Call functions in a parallel way.

@@ -1,8 +1,8 @@
 import copy
 from subprocess import check_output
-from .runner_queue import RunnerQueue
+from .runner import Runner
 
-class RunnerSlurm (RunnerQueue):
+class RunnerSlurm (Runner):
 	"""
 	The slurm runner
 	"""

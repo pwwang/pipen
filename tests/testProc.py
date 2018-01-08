@@ -1,4 +1,4 @@
-import path, unittest
+import helpers, unittest
 
 import sys
 import tempfile
@@ -6,7 +6,7 @@ from box import Box
 from os import path, makedirs
 from time import sleep
 from pyppl import Proc, logger, templates, utils, Channel, PyPPL, Job, ProcTree
-from pyppl.runners import Runner
+from pyppl.runners import RunnerLocal
 from shutil import rmtree
 
 from contextlib import contextmanager
@@ -27,12 +27,12 @@ class Aggr(object):
 	def __init__(self, *ps):
 		self.ends = ps
 
-class RunnerTestNR(Runner):
+class RunnerTestNR(RunnerLocal):
 	
 	def isRunning(self):
 		return False
 
-class RunnerTestR(Runner):
+class RunnerTestR(RunnerLocal):
 	
 	def isRunning(self):
 		self.job.rc(0)
@@ -248,16 +248,16 @@ class TestProc (unittest.TestCase):
 		p._buildProps()
 		self.assertPathExists(p.exdir)
 		# echo
-		self.assertEqual(p.echo, {'filter': '', 'jobs':[0], 'type': []})
+		self.assertEqual(p.echo, {'jobs':[0], 'type': {'stderr': None, 'stdout': None}})
 		p.echo = True
 		p._buildProps()
-		self.assertEqual(p.echo, {'filter': '', 'jobs':[0], 'type': ['stderr', 'stdout']})
+		self.assertEqual(p.echo, {'jobs':[0], 'type': {'stderr': None, 'stdout': None}})
 		p.echo = 'stdout'
 		p._buildProps()
-		self.assertEqual(p.echo, {'filter': '', 'jobs':[0], 'type': ['stdout']})
+		self.assertEqual(p.echo, {'jobs':[0], 'type': {'stdout': None}})
 		p.echo = {'jobs': "0,1"}
 		p._buildProps()
-		self.assertEqual(p.echo, {'filter': '', 'jobs':[0, 1], 'type': ['stderr', 'stdout']})
+		self.assertEqual(p.echo, {'jobs':[0, 1], 'type': {'stderr': None, 'stdout': None}})
 
 		# dryrunner
 		self.assertEqual(p.runner, 'local')
@@ -490,7 +490,7 @@ class TestProc (unittest.TestCase):
 		self.assertEqual(p.procvars['proc'], {
 			'suffix': '4zbHysnh', 
 			'runner': 'local', 
-			'echo': {'filter': '', 'type': [], 'jobs': [0]}, 
+			'echo': {'type': {'stderr': None, 'stdout': None}, 'jobs': [0]}, 
 			'tag': 'procvars', 
 			'id': 'p', 
 			'size': 0, 
@@ -844,6 +844,7 @@ p.script = "file:./relpathscript"
 		p.input  = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
 		p.output = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
 		p.script = 'echo {{in.a}} > {{out.outfile}}'
+
 		p._tidyBeforeRun()
 		for job in p.jobs:
 			utils.safeRemove(job.data['out']['outfile'])
@@ -853,7 +854,6 @@ p.script = "file:./relpathscript"
 		for job in p.jobs:
 			job.checkOutfiles()
 			self.assertFalse(job.succeed())
-
 		p.props['runner'] = 'nosuchrunner'
 		p._tidyBeforeRun()
 		p._checkCached()
@@ -882,7 +882,6 @@ p.script = "file:./relpathscript"
 			job.checkOutfiles()
 			# job not run (cached)
 			self.assertFalse(job.succeed())
-
 		
 
 	def testRunJobsExpect(self):
