@@ -11,12 +11,13 @@ from os import path, makedirs
 from time import time, sleep
 from random import randint
 from subprocess import PIPE, Popen
+from multiprocessing import JoinableQueue, Process
 from collections import OrderedDict
 
 from box import Box
 from .aggr import Aggr
 from .channel import Channel
-from .job import Job
+from .job import Job, JobMan
 from .parameters import params, Parameter, Parameters
 from .flowchart import Flowchart
 from .proctree import ProcTree
@@ -159,11 +160,17 @@ class Proc (object):
 		# {
 		#   'jobs':   0           # or [0, 1, 2], just echo output of those jobs.
 		#   'type':   'stderr'    # only echo stderr. (stdout: only echo stdout; [don't specify]: echo all)
-		#   'filter': r'^output:' # only echo string starting with "output:"
 		# }
-		# self.echo = True     <=> self.echo = { 'jobs': 0 }
+		# You can also specify a filter to the type
+		# {
+		#   'jobs':  0
+		#   'type':  {'stderr': r'^Error'}	# only output lines starting with 'Error' in stderr
+		# }
+		# self.echo = True     <=> self.echo = { 'jobs': [0], 'type': {'stderr': None, 'stdout': None} }
 		# self.echo = False    <=> self.echo = { 'jobs': [] }
-		# self.echo = 'stderr' <=> self.echo = { 'jobs': 0, 'type': 'stderr' }
+		# self.echo = 'stderr' <=> self.echo = { 'jobs': [0], 'type': {'stderr': None} }
+		# self.echo = {'jobs': 0, 'type': 'stdout'} <=> self.echo = { 'jobs': [0], 'type': {'stdout': None} }
+		# self.echo = {'type': {'all': r'^output'}} <=> self.echo = { 'jobs': [0], 'type': {'stdout': r'^output', 'stderr': r'^output'} }
 		self.config['echo']       = False
 		# the computed echo option
 		self.props['echo']        = {}
@@ -566,12 +573,12 @@ class Proc (object):
 			if self.config['echo'] is True:
 				self.props['echo'] = { 'jobs': 0 }
 			elif self.config['echo'] is False:
-				self.props['echo'] = { 'jobs': 0, 'type': [] }
+				self.props['echo'] = { 'jobs': [], 'type': 'all' }
 			else:
-				self.props['echo'] = { 'jobs': 0, 'type': self.config['echo'] }
+				self.props['echo'] = { 'jobs': 0, 'type': {self.config['echo']: None} }
 		else:
 			self.props['echo'] = self.config['echo']
-		
+
 		if not 'jobs' in self.echo:
 			self.echo['jobs'] = 0
 		if isinstance(self.echo['jobs'], int):
@@ -579,13 +586,13 @@ class Proc (object):
 		elif isinstance(self.echo['jobs'], six.string_types):
 			self.echo['jobs'] = list(map(lambda x: int(x.strip()), self.echo['jobs'].split(',')))
 		
-		if not 'type' in self.echo:
-			self.echo['type'] = ['stderr', 'stdout']
-		if not isinstance(self.echo['type'], list):
-			self.echo['type'] = [self.echo['type']]
-		
-		if not 'filter' in self.echo:
-			self.echo['filter'] = ''
+		if not 'type' in self.echo or self.echo['type'] == 'all':
+			self.echo['type'] = {'stderr': None, 'stdout': None}
+		if not isinstance(self.echo['type'], dict):
+			# must be a string, either stderr or stdout
+			self.echo['type'] = {self.echo['type']: None}
+		if 'all' in self.echo['type']:
+			self.echo['type'] = {'stderr': self.echo['type']['all'], 'stdout': self.echo['type']['all']}
 		
 		# don't cache for dry runner
 		# runner is decided when run (in config)
@@ -994,37 +1001,12 @@ class Proc (object):
 		"""
 		runner    = PyPPL.RUNNERS[self.runner]
 		maxsubmit = self.forks
-		if hasattr(runner, 'maxsubmit'):
-			maxsubmit = runner.maxsubmit  # pragma: no cover
-		interval  = .1
-		if hasattr(runner, 'interval'):   # pragma: no cover
-			interval = runner.interval
+		if hasattr(runner, 'MAXSUBMIT'):
+			maxsubmit = min(maxsubmit, runner.MAXSUBMIT)  # pragma: no cover
 
-		def _worker(index, cached):       # pragma: no cover
-			job   = self.jobs[index]
-			r     = runner(job)           # pragma: no cover
-			batch = int(index/maxsubmit)  # pragma: no cover
-			sleep(batch * interval)       # pragma: no cover
-	
-			if cached:                    # pragma: no cover
-				job.done()
-			elif r.isRunning():           # pragma: no cover
-				self.log ("Job #%-3s is already running, skip submitting." % index, 'submit') 
-				r.wait()
-				r.finish()
-			else:
-				r.submit()
-				r.wait()
-				r.finish()
-
-		args = []
-		for i in range(self.size):
-			if not self.cclean and not i in self.ncjobids:
-				continue
-			args.append((i, i not in self.ncjobids))
+		jobman = JobMan(self.jobs, self.cclean, self.ncjobids, self.forks, maxsubmit, runner)
+		jobman.run()
 		
-		nthreads  = min(self.forks, self.size) if self.cclean else min(self.forks, len(self.ncjobids))
-		utils.parallel(_worker, args, nthreads, 'process')
 		self.log('After job run, active threads: %s' % threading.active_count(), 'debug')
 			
 class PyPPL (object):
@@ -1387,7 +1369,7 @@ class PyPPL (object):
 			`runner`: The runner to be registered.
 		"""
 		runnerName = runner.__name__
-		if runnerName.startswith ('Runner'):
+		if runnerName.startswith('Runner'):
 			runnerName = runnerName[6:].lower()
 			
 		if not runnerName in PyPPL.RUNNERS:

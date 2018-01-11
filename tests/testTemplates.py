@@ -1,4 +1,4 @@
-import path, six, unittest
+import helpers, six, unittest
 from os import path
 from pyppl.templates import Template, TemplatePyPPL, template_pyppl
 from pyppl.templates.template_jinja2 import TemplateJinja2
@@ -87,7 +87,7 @@ class TestTemplatePyPPL (unittest.TestCase):
 		('{{v1, v2|concate}}', {'v1': 'hello', 'v2': 'world', 'concate': lambda x,y: x+y}, 'helloworld'),
 		('{{v3 | R}}', {'v3': 'false'}, 'FALSE'),
 		('{{v4|realpath}}', {'v4': __file__}, path.realpath(__file__)),
-		('{{v5|readlink}}', {'v5': path.join(path.dirname(path.realpath(path.abspath(__file__))), 'path.py')}, path.relpath(path.join(path.dirname(path.dirname(path.abspath(__file__))), 'bin', 'path.py'), start = path.dirname(__file__))),
+		#('{{v5|readlink}}', {'v5': path.join(path.dirname(path.realpath(path.abspath(__file__))), 'helpers.py')}, path.relpath(path.join(path.dirname(path.dirname(path.abspath(__file__))), 'bin', 'helpers.py'), start = path.dirname(__file__))),
 		('{{v6|dirname}}', {'v6': '/a/b/c'}, '/a/b'),
 		('{{v7|basename}}{{v7|bn}}', {'v7': '/a/b/c.txt'}, 'c.txtc.txt'),
 		('{{v8|basename}}{{v8|bn}}', {'v8': '/a/b/c[1].txt'}, 'c.txtc.txt'),
@@ -313,7 +313,7 @@ class TestTemplatePyPPL (unittest.TestCase):
 			('{{concate(v1, v2)}}', {'v1': 'hello', 'v2': 'world', 'concate': lambda x,y: x+y}, 'helloworld'),
 			('{{R(v3)}}', {'v3': 'false'}, 'FALSE'),
 			('{{realpath(v4)}}', {'v4': __file__}, path.realpath(__file__)),
-			('{{readlink(v5)}}', {'v5': path.join(path.dirname(path.realpath(path.abspath(__file__))), 'path.py')}, path.relpath(path.join(path.dirname(path.dirname(path.abspath(__file__))), 'bin', 'path.py'))),
+			#('{{readlink(v5)}}', {'v5': path.join(path.dirname(path.realpath(path.abspath(__file__))), 'helpers.py')}, path.relpath(path.join(path.dirname(path.dirname(path.abspath(__file__))), 'bin', 'helpers.py'))),
 			('{{dirname(v6)}}', {'v6': '/a/b/c'}, '/a/b'),
 			('{{basename(v7)}}{{bn(v7)}}', {'v7': '/a/b/c.txt'}, 'c.txtc.txt'),
 			('{{basename(v8)}}{{bn(v8)}}', {'v8': '/a/b/c[1].txt'}, 'c.txtc.txt'),

@@ -5,16 +5,177 @@ import json
 from sys import stderr
 from collections import OrderedDict
 from glob import glob
+from time import sleep
 from os import makedirs, path, remove, utime, readlink, listdir
 from shutil import move, rmtree
-from multiprocessing import Lock
+from multiprocessing import Lock, JoinableQueue, Process, Value
 from . import utils, logger
+from .runners import Runner
+
+
+class JobMan (object):
+
+	"""
+	JobManager
+	"""
+	def __init__(self, jobs, cclean, ncjobids, forks, npsubmit, runner):
+		"""
+		Job manager constructor
+		@params:
+			`jobs`    : The jobs
+			`cclean`  : The flag of cleaning cached jobs
+			`ncjobids`: The non-cached job indexes
+			`runner`  : The runner class
+		"""
+		self.lock = Lock()
+		self.runners = {
+			job.index: runner(job) for job in jobs \
+			if job.index in ncjobids or cclean
+		}
+		# how many jobs are there
+		self.size     = len(self.runners)
+		# non-cached job indexes
+		self.ncjobids = ncjobids
+		# number of runner processes
+		self.nprunner = min(forks, self.size)
+		# number of submit processes
+		self.npsubmit = npsubmit
+		# number of running jobs
+		self.nrunning = Value('i', 0)
+
+	def nrJobs(self, action = 'get'):
+		"""
+		Get or change number of running jobs
+		@params:
+			`action`: The action:
+				- `get`: get the number of running jobs
+				- `+`:   add 1 to the number of running jobs
+				- `-`:   minus 1 to the number of running jobs
+		"""
+		with self.lock:
+			if action == '+':
+				self.nrunning.value += 1
+			elif action == '-':
+				self.nrunning.value -= 1
+			else:
+				return self.nrunning.value
+
+	def allJobsDone(self):
+		"""
+		Tell whether all jobs are done.
+		No need to lock as it only runs in one process (the watcher process)
+		@returns:
+			`True` if all jobs are done else `False`
+		"""
+		if self.size == 0: return True
+		return all([r.status() == Runner.STATUS_DONE for r in self.runners.values()])
+
+	def canSubmit(self):
+		"""
+		Tell whether we can submit jobs.
+		@returns:
+			`True` if we can, otherwise `False`
+		"""
+		if self.nprunner == 0: return True
+		return self.nrJobs() < self.nprunner
+
+	def submitPool(self, sq):
+		"""
+		The pool to submit jobs
+		@params:
+			`sq`: The submit queue
+		"""
+		while True:
+			# if we already have enough # jobs running, wait
+			if not self.canSubmit():
+				sleep(1)
+				continue
+
+			jid = sq.get()
+			if jid is None:
+				sq.task_done()
+				break
+
+			self.nrJobs(action = '+')
+			self.runners[jid].submit()
+			sq.task_done()
+
+	def runPool(self, rq, sq):
+		"""
+		The pool to run jobs (wait jobs to be done)
+		@params:
+			`rq`: The run queue
+			`sq`: The submit queue
+		"""
+		while True:
+			jid = rq.get()
+			if jid is None:
+				rq.task_done()
+				break
+			else:
+				r = self.runners[jid]
+				r.run(sq)
+				self.nrJobs(action = '-')
+				rq.task_done()
+
+	def watchPool(self, rq, sq):
+		"""
+		The watchdog, checking whether all jobs are done.
+		"""
+		while not self.allJobsDone():
+			sleep(1)
+
+		for _ in range(self.npsubmit):
+			sq.put(None)
+		for _ in range(self.nprunner):
+			rq.put(None)
+
+	def run(self):
+		"""
+		Start to run the jobs
+		"""
+		submitQ = JoinableQueue()
+		runQ    = JoinableQueue()
+
+		for rid in self.runners.keys():
+			submitQ.put(rid)
+			runQ.put(rid)
+
+		for _ in range(self.npsubmit):
+			p = Process(target = self.submitPool, args = (submitQ, ))
+			p.daemon = True
+			p.start()
+		
+		for _ in range(self.nprunner):
+			p = Process(target = self.runPool, args = (runQ, submitQ))
+			p.daemon = True
+			p.start()
+		
+		watchp = Process(target = self.watchPool, args = (runQ, submitQ))
+		watchp.daemon = True
+		watchp.start()
+
+		runQ.join()
+		submitQ.join()
+		watchp.join()
+
 
 class Job (object):
 	
 	"""
 	Job class, defining a job in a process
 	"""
+	RC_SUCCESS     = 0
+	RC_NOTGENERATE = -1
+	RC_NOOUTFILE   = -2
+	RC_EXPECTFAIL  = -3
+	RC_SUBMITFAIL  = 99
+
+	MSG_RC_NOTGENERATE = 'Rc file not generated'
+	MSG_RC_NOOUTFILE   = 'Output file not generated'
+	MSG_RC_EXPECTFAIL  = 'Failed to meet the expectation'
+	MSG_RC_SUBMITFAIL  = 'Failed to submit job'
+	MSG_RC_OTHER       = 'Script error'
 		
 	def __init__(self, index, proc):
 		"""
@@ -59,6 +220,9 @@ class Job (object):
 		"""
 		if not path.exists(self.dir):
 			makedirs (self.dir)
+		# run may come first before submit
+		open(self.outfile, 'w').close()
+		open(self.errfile, 'w').close()
 		self.data.update (self.proc.procvars)
 		self._prepInput ()
 		self._prepBrings ()
@@ -141,11 +305,11 @@ class Job (object):
 		Show the error message if the job failed.
 		"""
 		rc  = self.rc()
-		msg = 'Output files not generated' if rc == -2 else \
-			  'Expectations not met' if rc == -3 else       \
-			  'Rc file not generated' if rc == -1 else      \
-			  'Failed to submit job' if rc == 99 else       \
-			  'Script error'
+		msg = Job.MSG_RC_NOOUTFILE   if rc == Job.RC_NOOUTFILE   else \
+			  Job.MSG_RC_EXPECTFAIL  if rc == Job.RC_EXPECTFAIL  else \
+			  Job.MSG_RC_NOTGENERATE if rc == Job.RC_NOTGENERATE else \
+			  Job.MSG_RC_SUBMITFAIL  if rc == Job.RC_SUBMITFAIL  else \
+			  Job.MSG_RC_OTHER
 
 		if self.proc.errhow == 'ignore':
 			self.proc.log ('Job #%s (total %s) failed but ignored. Return code: %s (%s).' % (self.index, lenfailed, rc, msg), 'warning')
@@ -348,7 +512,7 @@ class Job (object):
 		self.cache ()
 		if not path.exists (self.rcfile):
 			with open (self.rcfile, 'w') as f:
-				f.write ('0')
+				f.write (str(Job.RC_SUCCESS))
 		
 		return True
 				
@@ -443,7 +607,7 @@ class Job (object):
 		"""
 		if val is None:
 			if not path.exists (self.rcfile):
-				return -1
+				return Job.RC_NOTGENERATE
 			
 			with open (self.rcfile) as f:
 				return int(f.read().strip())
@@ -474,7 +638,7 @@ class Job (object):
 		for _, out in self.output.items():
 			if out['type'] in self.proc.OUT_VARTYPE: continue
 			if not path.exists(out['data']):
-				self.rc(-2)
+				self.rc(Job.RC_NOOUTFILE)
 				self.proc.log ('Job #%-3s: outfile not generated: %s' % (self.index, out['data']), 'debug', 'OUTFILE_NOT_EXISTS')
 				return
 		
@@ -482,7 +646,7 @@ class Job (object):
 		if expectCmd and expect:
 			self.proc.log ('Job #%-3s: check expectation: %s' % (self.index, expectCmd), 'debug', 'EXPECT_CHECKING')
 			rc = utils.dumbPopen (expectCmd, shell=True).wait()
-			if rc != 0:	self.rc(-3)
+			if rc != 0:	self.rc(Job.RC_EXPECTFAIL)
 
 	def export (self):
 		"""

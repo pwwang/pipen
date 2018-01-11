@@ -4,17 +4,24 @@ The base runner class
 import sys
 import re
 from time import sleep
-from multiprocessing import Lock
+from multiprocessing import Value, Lock, cpu_count
 from subprocess import Popen, list2cmdline
 
 from .. import utils
 
-lock = Lock()
+flushlock = Lock()
 
 class Runner (object):
 	"""
 	The base runner class
 	"""
+
+	STATUS_INITIATED    = 0
+	STATUS_SUBMITTED    = 1
+	STATUS_SUBMITFAILED = 2
+	STATUS_DONE         = 3
+
+	MAXSUBMIT = int (cpu_count()/2)
 
 	def __init__ (self, job):
 		"""
@@ -26,96 +33,101 @@ class Runner (object):
 		self.script    = utils.chmodX(self.job.script)
 		self.cmd2run   = list2cmdline (self.script)
 		self.ntry      = 0
-		self.p         = None
-		self.ferrw     = None
-		self.foutw     = None
-		
-	def __del__(self):
-		if self.ferrw:
-			self.ferrw.close()
-		if self.foutw:
-			self.foutw.close()
+		self.lock      = Lock()
+		self.st        = Value('i', Runner.STATUS_INITIATED)
 
-	def submit (self):
+	def status(self, s = None):
+		with self.lock:
+			if s is None:
+				return self.st.value
+			else:
+				self.st.value = s
+
+	def submit (self, isQ = False):
 		"""
 		Try to submit the job use Popen
 		"""
-		self.job.reset(None if self.ntry == 0 else self.ntry)
-		
-		try:
-			self.job.proc.log ('Submitting job #%-3s ...' % self.job.index, 'submit')
-			# retry may open the files again
-			self.ferrw = open(self.job.errfile, 'w')
-			self.foutw = open(self.job.outfile, 'w')
-			self.p = Popen (self.script, stderr=self.ferrw, stdout=self.foutw, close_fds=True)
-		except Exception as ex:
-			self.job.proc.log ('Failed to run job #%s: %s' % (self.job.index, str(ex)), 'error')
-			with open (self.job.errfile, 'a') as f:
-				f.write(str(ex))
-			self.job.rc(99)
-			#self.finish()
+		#assert self.status() in [Runner.STATUS_INITIATED, Runner.STATUS_SUBMITFAILED, Runner.STATUS_RUNFAILED]
+		assert self.status() == Runner.STATUS_INITIATED
+		if self.job.index not in self.job.proc.ncjobids:
+			self.status(Runner.STATUS_SUBMITTED)
+		elif self.isRunning():
+			self.job.proc.log ("Job #%-3s is already running, skip submitting." % self.job.index, 'submit')
+			self.status(Runner.STATUS_SUBMITTED)
+		else:
+			self.job.reset(None if self.ntry == 0 else self.ntry)
 			
+			ferrw = open(self.job.errfile, 'w')
+			foutw = open(self.job.outfile, 'w')
+			succ  = True
+
+			try:
+				self.job.proc.log ('Submitting job #%-3s ...' % self.job.index, 'submit')
+				# retry may open the files again
+				p  = Popen (self.script, stderr=ferrw, stdout=foutw, close_fds=True)
+				
+				rc = p.wait()
+				if rc != 0:
+					self.job.proc.log ('Failed to submit job #%s' % self.job.index, 'error')
+					succ = False
+					
+			except Exception as ex:
+				self.job.proc.log ('Failed to submit job #%s: %s' % (self.job.index, str(ex)), 'error')
+				ferrw.write(str(ex))
+				succ = False
+			finally:
+				ferrw.close()
+				foutw.close()
+				
+			if not succ:
+				self.job.rc(self.job.RC_SUBMITFAIL)
+				self.status(Runner.STATUS_SUBMITFAILED)
+			else:
+				self.getpid()
+				self.status(Runner.STATUS_SUBMITTED)
+
+	def finish(self):
+		self.job.done()
 	
 	def getpid (self):
 		"""
 		Get the job id
 		"""
-		self.job.pid (str(self.p.pid))
+		pass
 
-	def wait(self, rc = True, infout = None, inferr = None):
-		"""
-		Wait for the job to finish
-		@params:
-			`rc`: Whether to write return code in rcfile
-			`infout`: The file handler for stdout file
-			`inferr`: The file handler for stderr file
-			- If infout or inferr is None, will open the file and close it before function returns.
-		"""
-		if self.job.rc() == 99:
-			return
-		
-		fout = open (self.job.outfile) if infout is None else infout
-		ferr = open (self.job.errfile) if inferr is None else inferr
+	def run(self, submitQ):
+		while self.status() not in [Runner.STATUS_SUBMITTED, Runner.STATUS_SUBMITFAILED]:
+			sleep(1)
 
-		if self.p:
-			self.getpid()
+		# cached jobs
+		if self.job.index not in self.job.proc.ncjobids:
+			self.finish()
+			self.status(Runner.STATUS_DONE)
+		else:
+			ferr = open(self.job.errfile)
+			fout = open(self.job.outfile)
 			lastout = ''
 			lasterr = ''
-			while self.p.poll() is None:
-				(lastout, lasterr) = self._flushOut(fout, ferr, lastout, lasterr)
-				sleep (2)
-			
-			self._flushOut(fout, ferr, lastout, lasterr, True)
-			retcode = self.p.returncode
-			if rc or retcode != 0:
-				self.job.rc(retcode)
-		
-		if infout is None:
-			fout.close()
-		if inferr is None:
+			while self.job.rc() == self.job.RC_NOTGENERATE: # rc not generated yet
+				sleep (5)
+				lastout, lasterr = self._flush(fout, ferr, lastout, lasterr)
+			self._flush(fout, ferr, lastout, lasterr, True)
 			ferr.close()
+			fout.close()
+			self.finish()
+			
+			if self.job.succeed():
+				self.status(Runner.STATUS_DONE)
+			else:
+				if self.job.proc.errhow == 'retry' and self.ntry < self.job.proc.errntry:
+					submitQ.put(self.job.index)
+					self.ntry += 1
+					self.job.proc.log ("Retrying job #%s ... (%s)" % (self.job.index, self.ntry), 'RETRY')
+					self.status(Runner.STATUS_INITIATED)
+					self.run(submitQ, test = test)
+				else:
+					self.status(Runner.STATUS_DONE)
 
-	def finish (self):
-		"""
-		Do some cleanup work when jobs finish
-		"""
-		self.job.done ()
-		self.p = None
-		self.retry ()
-
-	def retry (self):
-		"""
-		Retry to submit and run the job if failed
-		"""
-		self.ntry += 1
-		if self.job.succeed() or self.job.proc.errhow != 'retry' or self.ntry > self.job.proc.errntry:
-			return
-		self.job.proc.log ("Retrying job #%s ... (%s)" % (self.job.index, self.ntry), 'RETRY')
-		sleep (1)
-		self.__del__()
-		self.submit()
-		self.wait()
-		self.finish()
 
 	def isRunning (self):
 		"""
@@ -128,7 +140,7 @@ class Runner (object):
 			return False
 		return utils.dumbPopen (['kill', '-s', '0', jobpid]).wait() == 0
 		
-	def _flushOut (self, fout, ferr, lastout, lasterr, end = False):
+	def _flush (self, fout, ferr, lastout, lasterr, end = False):
 		"""
 		Flush stdout/stderr
 		@params:
@@ -136,53 +148,37 @@ class Runner (object):
 			`ferr`: The stderr file handler
 			`lastout`: The leftovers of previously readlines of stdout
 			`lasterr`: The leftovers of previously readlines of stderr
+			`end`: Whether this is the last time to flush
 		"""
-		if self.job.index in self.job.proc.echo['jobs']:
-			if 'stdout' in self.job.proc.echo['type']:
-				lines = fout.readlines()
-				if lines:
-					lines[0] = lastout + lines[0]
-					if not lines[-1].endswith('\n'):
-						lastout = lines.pop(-1)
-					else:
-						lastout = ''
-					if lastout and end:
-						lines.append(lastout + '\n')
-					for line in lines:
-						if not self.job.proc.echo['filter'] or (self.job.proc.echo['filter'] and re.search (self.job.proc.echo['filter'], line)):
-							lock.acquire()
-							sys.stdout.write (line)
-							lock.release()
+		if self.job.index not in self.job.proc.echo['jobs']:
+			return None, None
+
+		if 'stdout' in self.job.proc.echo['type']:
+			lines, lastout = utils.flushFile(fout, lastout, end)
+			outfilter      = self.job.proc.echo['type']['stdout']
 			
-			lines = ferr.readlines()
-			if lines:
-				lines[0] = lasterr + lines[0]
-				lastline = lines[-1]
-				if end and not lastline.endswith('\n'):
-					lines[-1] += '\n'
-				elif not end and not lines[-1].endswith('\n'):
-					lasterr = lines.pop(-1)
+			for line in lines:
+				if not outfilter or re.search(outfilter, line):
+					with flushlock:
+						sys.stdout.write(line)
+		
+		lines, lasterr = utils.flushFile(ferr, lasterr, end)
+		for line in lines:
+			if line.startswith('pyppl.log'):
+				line = line.rstrip('\n')
+				logstrs  = line[9:].lstrip().split(':', 1)
+				if len(logstrs) == 1:
+					logstrs.append('')
+				(loglevel, logmsg) = logstrs
 				
-				for line in lines:
-					if 'stderr' in self.job.proc.echo['type'] and (not self.job.proc.echo['filter'] or (self.job.proc.echo['filter'] and re.search (self.job.proc.echo['filter'], line))):
-						lock.acquire()
-						sys.stderr.write (line)
-						lock.release()
-					
-					line = line.strip()
-					if line.startswith('pyppl.log'):
-						logstrs  = line[9:].lstrip().split(':', 1)
-						if len(logstrs) == 1:
-							loglevel = logstrs[0]
-							logmsg   = ''
-						else:
-							(loglevel, logmsg) = logstrs
-						
-						if not loglevel:
-							loglevel = 'log'
-						else:
-							loglevel = loglevel[1:] # remove leading dot
-							
-						# '_' makes sure it's not filtered by log levels
-						self.job.proc.log (logmsg.lstrip(), '_' + loglevel)
+				loglevel = loglevel[1:] if loglevel else 'log'
+				
+				# '_' makes sure it's not filtered by log levels
+				self.job.proc.log (logmsg.lstrip(), '_' + loglevel)
+			elif 'stderr' in self.job.proc.echo['type']:
+				errfilter = self.job.proc.echo['type']['stderr']
+				if not errfilter or re.search(errfilter, line):
+					with flushlock:
+						sys.stderr.write(line)
+		
 		return (lastout, lasterr)

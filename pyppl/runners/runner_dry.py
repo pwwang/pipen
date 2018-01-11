@@ -55,5 +55,3 @@ class RunnerDry (Runner):
 		if path.exists(self.job.cachefile):
 			remove (self.job.cachefile)
 			
-		self.p = None
-		self.retry ()

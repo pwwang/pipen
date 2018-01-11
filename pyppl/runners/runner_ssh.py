@@ -43,6 +43,7 @@ class RunnerSsh (Runner):
 		sshsrc       = [
 			'#!/usr/bin/env bash',
 			'',
+			'echo $$ > %s' % self.job.pidfile,
 			'trap "status=\\$?; echo \\$status > %s; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile
 		]
 		
@@ -63,7 +64,12 @@ class RunnerSsh (Runner):
 		
 		with open (sshfile, 'w') as f:
 			f.write ('\n'.join(sshsrc) + '\n')
-		
-		self.script = utils.chmodX(sshfile)
+
+		utils.chmodX(sshfile)
+		submitfile = self.job.script + '.submit'
+		with open(submitfile, 'w') as f:
+			f.write('#!/usr/bin/env bash\n')
+			f.write('%s &\n' % sshfile)
+		self.script = utils.chmodX(submitfile)
 
 

@@ -1,4 +1,4 @@
-import path, unittest
+import helpers, unittest
 
 import sys
 import tempfile
@@ -84,6 +84,7 @@ class Proc(object):
 		self.size = 5
 		self.rc = [0]
 		self.exdir = ''
+		self.dirsig = True
 		self.expart = []
 		self.exhow = 'move'
 		self.exow = True

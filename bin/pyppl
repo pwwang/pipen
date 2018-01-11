@@ -47,7 +47,7 @@ def getGroups (workdir):
 	
 def ask2Remove (msg, procpath, ask = True):
 	def rm ():
-		utils.parallel(rmtree, [(pp, ) for pp in glob(path.join(procpath, '*'))], args.n, 'process')
+		utils.parallel(rmtree, [(pp, ) for pp in glob(path.join(procpath, '*/'))], args.n, 'process')
 		rmtree(procpath)
 		print logger.colors.bold + logger.colors.yellow + "  Removed: " + procpath + logger.colors.end
 	
