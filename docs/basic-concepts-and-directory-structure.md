@@ -23,6 +23,9 @@ Actually, what you need to do is just specify the first input channel, and then 
 			|-- job.rc
 			|-- job.stdout
 			|-- job.stderr
+			|-- [job.script.submit]
+			|-- [job.script.local]
+			|-- [job.script.submit]
 			|-- [job.script.ssh]
 			`-- [job.script.sge]
 ```
@@ -41,6 +44,8 @@ Actually, what you need to do is just specify the first input channel, and then 
 |`<job.index>/job.rc`|To file containing the return code||
 |`<job.index>/job.stdout`|The STDOUT of the script||
 |`<job.index>/job.stderr`|The STDERR of the script||
+|`<job.index>/job.script.submit`|The file to submit local jobs||
+|`<job.index>/job.script.local`|The wrapper for local jobs to save return code, stdout and stderr||
 |`<job.index>/job.script.ssh`|The script file for ssh runner||
 |`<job.index>/job.script.sge`|The script file for sge runner||
 
