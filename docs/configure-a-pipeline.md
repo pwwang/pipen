@@ -54,7 +54,7 @@ Here is the full structure of the configurations:
     "dry"  : {"runner": "dry"},
 }
 ```
-> **Caution** You cannot define profiles with names `flowchar` and `log`
+> **Caution** You cannot define profiles with names `flowchart` and `log`
 
 ## Use a configuration file
 `PyPPL` will look for configuration files at `~/.PyPPL` and `~/.PyPPL.json` if both or either of them exist. If both of them exist, `~/.PyPPL.json` has higher priority, which means the options will be overwritten in `~/.PyPPL` by those in `~/.PyPPL.json`. But to avoid confusion, you'd better just use either of them.
