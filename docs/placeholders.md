@@ -151,9 +151,9 @@ For built-in template engine, you may use pipe, for example: `{{in.file | basena
 ## Set environment of template engine
 You can define you own functions/data for template rendering:
 ```python
-pXXX.tplenvs.data  = {'v1': 'a', 'v2': 'b', 'b': True}
-pXXX.tplenvs.os    = __import__('os')
-pXXX.tplenvs.paste = lambda x,y: x +' ' + y
+pXXX.envs.data  = {'v1': 'a', 'v2': 'b', 'b': True}
+pXXX.envs.os    = __import__('os')
+pXXX.envs.paste = lambda x,y: x +' ' + y
 # use them
 pXXX.script = """
 {% if data.b %}
