@@ -34,9 +34,14 @@ Currently we introduced in previous chapters a set of attributes of a process an
 | `expart` | Partial export | `str`/`list` | | [Link][4] |
 | `brings` | Definition of bring-in files| `str`/`list`||[Link][1]|
 | `template` | The name of the template engine | `str` | `PyPPL` | [Link][8] |
-| `tplenvs` | Environments for the template engine | `dict` | `PyPPL` | [Link][8] |
-| `nthread` | Number of theads used for job construction and cache checking | `int` | `PyPPL` | - |
-| `cclean` | Whether do cleanup (output checking/exporting) if a job was cached. | `bool` | `PyPPL` | - |
+| `envs` | Environments for the template engine | `dict` |  | [Link][8] |
+| `nthread` | Number of theads used for job construction and cache checking | `int` | `1` | - |
+| `cclean` | Whether do cleanup (output checking/exporting) if a job was cached. | `bool` | `False` | - |
+| `dirsig`* | Get the modified time for directory recursively (taking into account the dirs and files in it) for cache checking | `bool` | `True` | - |
+*: Set it to `False` if you have huge number of files generated for one job. It will save time since it just checks the modified time for `<job.outdir>` instead of each generated file.
+
+
+
 
 
 ## Set arguments of a process `pXXX.args`
