@@ -193,7 +193,7 @@ You are also able to define your own runner, which should be a class extends `Ru
 The class name **MUST** start with `Runner` and end with the runner name with first letter capitalized. For example, to define the runner `my`:
 ```python
 from pyppl.runners import Runner
-class runner_my (Runner):
+class RunnerMy (Runner):
 	pass
 ```
 
@@ -215,24 +215,34 @@ Some important method to be redefined:
             scriptfile = self.job.script + ".delay"
             with open (scriptfile, "w") as f:
                 f.write ("#!/usr/bin/env bash\n")
-                f.write ("sleep 10\n")          # delay for 10 seconds
-                f.write ("%s\n" % self.cmd2run) # submit the job
-            self.script = utils.chmodX (scriptfile)
+                # save the pid
+                f.write ("echo $$ > %s" % self.job.pidfile) 
+                # save the rc
+                f.write ('trap "status=\\$?; echo \\$status > %s; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile)  
+                # delay for 10 seconds
+                f.write ("sleep 10\n")   
+                # save the stdout and stderr       
+                f.write ("%s 1>%s 2>%s\n" % (self.cmd2run, self.job.outfile, self.job.errfile)) 
+            # make it executable
+            utils.chmodX(scriptfile)
+            # because we don't have a local job submitter (like qsub for sge), we need to compose one
+            submitfile = self.job.script + ".submit"
+            with open(submitfile, 'w') as f:
+                f.write('#!/usr/bin/env bash\n')
+                f.write('%s\n' % scriptfile)
+            # ready to submit
+            self.script = utils.chmodX (submitfile)
     ```
-    > **Note** For queue runners, the script is used to submit the job and you may also have to specify the static variables `maxsubmit` and `interval` (see below).
-    > 
     > **Checklist (What you have to do in the constructor redefinition):**
     > - choose the right base class (`pyppl.runners.Runner` or `pyppl.runners.RunnerQueue`)
     > - `super(RunnerMy, self).__init__(job)`
     > - setup the right `self.script` for submission.
-    > - if it is a queue runner, make sure the return code is written to `self.job.rcfile`, stdout to `self.job.outfile` and stderr to `self.job.errilfe`
+    > - MAKE SURE you save the identity of the job to `job.pidfile`, rc to `job.rcfile`, stdout to `job.outfile` and `stderr` to `job.errfile`
 
 - Get the job identity on the system: `getpid()`
-  - Get the job identity, which is used in `isRunning` detection
-  - You can set the job identity by `self.job.pid(<jobid>)`.
-  - In `isRunning`, you can use `self.job.pid()` to get it.
-  - For example, in `RunnerLocal`, the job id is PID, but for `RunnerSge`, it should be the job id from the grid.
-  - It's optional, see `isRunning` below.
+  Sometimes you cannot determin the job identity (e.g. `pid` for local jobs) when you are composing the script file. For example, for `SGE` runner, only after you submit the job, the job id will be saved in `job.pidfile`. In this case, you have to parse the job identity from `job.outfile`. Then you may save it by `self.job.pid(<jobid>)`.  
+  The purpose to save the job identity is to tell whether the job is already running before we submit the job. So you can ignore this, but the same job may be submitted twice. 
+  Also see `isRunning` below.
 
 - Tell whether a job is still running: `isRunning(self)`  
     This function is used to detect whether a job is running. 
@@ -240,11 +250,8 @@ Some important method to be redefined:
     **This function is specially useful when you try to run the pipeline again if some of the jobs are still running but the main thread (pipeline) quite unintentionally.**  
     But it's optional, you can make the function always return `False`. Then the jobs are anyway to be submitted. In this case, `getpid` redefinition is not needed.
 
-- How many jobs to submit at one time (static variable): `maxsubmit` (only for `RunnerQueue`)  
+- How many jobs to submit at one time (static variable): `maxsubmit` (WILL BE DEPRECATED!)
     This variable defines how many jobs to submit at one time. It defaults to `multiprocessing.cpu_count()/2` if you don't have the value for your runner, which means it will use half of the cpus to submit the jobs you want to run simultaneously at one time. Then wait for sometime (`interval`, see below), and submit another batch. The purpose is to avoid local machine to get stuck if you have too many jobs to submit.
-
-- How long should I wait if `maxsubmit` reached (static variable): `interval`  (only for `interval`)
-    As explained in `maxsubmit`, this value is used for wait some time when submitting different batches of jobs. The default value is `30` if you don't have one.
 
 **Key points in writing your own runner**:
 
@@ -252,8 +259,7 @@ Some important method to be redefined:
   2. Compose the right script to submit the job (`self.script`) in `__init__`(required).
   3. Use `getpid` to get the job id (optional).
   4. Tell `PyPPL` how to judge when the jobs are still running (`self.isRunning()`) (optional). 
-  5. Set the static value for `maxsubmit` and `interval` if necessary (only for queue runners) (optional).
-  6. For queue runners, make sure the `stdout`/`stderr` will be written to the right file (`.stdout`/`.stderr` file), and the right return code to `.rc` file (required).
+  6. MAKE SURE you save the identity of the job to `job.pidfile`, rc to `job.rcfile`, stdout to `job.outfile` and `stderr` to `job.errfile`
 
 ## Register your runner
 It very easy to register your runner, just do `PyPPL.registerRunner (RunnerMy)` (static method) before you start to run the pipeline.
