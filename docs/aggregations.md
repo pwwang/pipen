@@ -18,17 +18,17 @@ pBaseRecalibrator.depends        = pIndelRealigner
 pPrintReads.depends              = pIndelRealigner, pBaseRecalibrator
 pPrintReads.exportdir            = exdir
 
-pMarkDuplicates.args.params         += ' TMP_DIR="/local2/tmp/"'
+pMarkDuplicates.args.params.tmpdir   = "/local2/tmp/"
 pAlignPEByBWA.args.reffile           = reffile
 pRealignerTargetCreator.args.reffile = reffile
-pRealignerTargetCreator.args.params += ' -Djava.io.tmpdir=/local2/tmp/'
+pRealignerTargetCreator.args.params.tmpdir='/local2/tmp/'
 pIndelRealigner.args.reffile         = reffile
-pIndelRealigner.args.params         += ' -Djava.io.tmpdir=/local2/tmp/'
+pIndelRealigner.args.params.tmpdir   = '/local2/tmp/'
 pBaseRecalibrator.args.reffile       = reffile
 pBaseRecalibrator.args.knownSites    = dbsnp
-pBaseRecalibrator.args.params       += ' -Djava.io.tmpdir=/local2/tmp/'
+pBaseRecalibrator.args.params.tmpdir ='/local2/tmp/'
 pPrintReads.args.reffile             = reffile
-pPrintReads.args.params             += ' -Djava.io.tmpdir=/local2/tmp/'
+pPrintReads.args.params              = '/local2/tmp/'
 
 PyPPL({
     'proc': {
@@ -45,6 +45,7 @@ This is a very commonly used Whole Genome Sequencing data cleanup pipeline from 
 With an aggregation defined, you don't need to configure and call those processes every time:
 ```python
 from pyppl import Aggr
+from bioprocs import params
 # some paramters defined in params
 aFastqPE2Bam = Aggr (
     pTrimmomaticPE,
@@ -62,17 +63,17 @@ aFastqPE2Bam.pIndelRealigner.depends   = aFastqPE2Bam.pIndexBam, aFastqPE2Bam.pR
 aFastqPE2Bam.pPrintReads.depends       = aFastqPE2Bam.pIndelRealigner, aFastqPE2Bam.pBaseRecalibrator
 # input adjustment
 # args adjustment
-aFastqPE2Bam.pMarkDuplicates.args.params             += ' TMP_DIR="%s"' % params.tmpdir
+aFastqPE2Bam.pMarkDuplicates.args.params.tmpdir       = params.tmpdir
 aFastqPE2Bam.pAlignPEByBWA.args.reffile               = params.hg19fa
 aFastqPE2Bam.pRealignerTargetCreator.args.reffile     = params.hg19fa
-aFastqPE2Bam.pRealignerTargetCreator.args.params     += ' -Djava.io.tmpdir=%s' % params.tmpdir
+aFastqPE2Bam.pRealignerTargetCreator.args.params.tmpdir= params.tmpdir
 aFastqPE2Bam.pIndelRealigner.args.reffile             = params.hg19fa
-aFastqPE2Bam.pIndelRealigner.args.params             += ' -Djava.io.tmpdir=%s' % params.tmpdir
+aFastqPE2Bam.pIndelRealigner.args.params.tmpdir       = params.tmpdir
 aFastqPE2Bam.pBaseRecalibrator.args.reffile           = params.hg19fa
 aFastqPE2Bam.pBaseRecalibrator.args.knownSites        = params.dbsnp
-aFastqPE2Bam.pBaseRecalibrator.args.params           += ' -Djava.io.tmpdir=%s' % params.tmpdir
+aFastqPE2Bam.pBaseRecalibrator.args.params.tmpdir     = params.tmpdir
 aFastqPE2Bam.pPrintReads.args.reffile                 = params.hg19fa
-aFastqPE2Bam.pPrintReads.args.params                 += ' -Djava.io.tmpdir=%s' % params.tmpdir
+aFastqPE2Bam.pPrintReads.args.params.tmpdir           = params.tmpdir
 ```
 
 Then every time you just need to call the aggregation:
