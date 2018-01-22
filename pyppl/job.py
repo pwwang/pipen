@@ -610,7 +610,9 @@ class Job (object):
 				return Job.RC_NOTGENERATE
 			
 			with open (self.rcfile) as f:
-				return int(f.read().strip())
+				r = f.read().strip()
+				if not r: return Job.RC_NOTGENERATE
+				return int(r)
 		else:
 			with open (self.rcfile, 'w') as f:
 				f.write (str(val))

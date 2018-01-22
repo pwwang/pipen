@@ -170,7 +170,7 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 			lnstr = "in template line %s: %s" % (lineno, token.rstrip('\n'))
 			if token.startswith('{#'):
 				# Comment: ignore it and move on.
-				self._parseComment(token, lnstr)
+				self._parseComments(token, lnstr)
 				
 			elif token.startswith('{{'):
 				# An expression to evaluate.
