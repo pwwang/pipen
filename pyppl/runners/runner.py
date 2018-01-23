@@ -95,7 +95,12 @@ class Runner (object):
 		"""
 		pass
 
-	def run(self, submitQ):
+	def run(self):
+		"""
+		@returns:
+			True: success/fail
+			False: needs retry
+		"""
 		while self.status() not in [Runner.STATUS_SUBMITTED, Runner.STATUS_SUBMITFAILED]:
 			sleep(1)
 
@@ -120,13 +125,13 @@ class Runner (object):
 				self.status(Runner.STATUS_DONE)
 			else:
 				if self.job.proc.errhow == 'retry' and self.ntry < self.job.proc.errntry:
-					submitQ.put(self.job.index)
 					self.ntry += 1
 					self.job.proc.log ("Retrying job #%s ... (%s)" % (self.job.index, self.ntry), 'RETRY')
 					self.status(Runner.STATUS_INITIATED)
-					self.run(submitQ, test = test)
+					return False
 				else:
 					self.status(Runner.STATUS_DONE)
+			return True
 
 
 	def isRunning (self):
