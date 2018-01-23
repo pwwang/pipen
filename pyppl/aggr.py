@@ -245,6 +245,8 @@ class Aggr (object):
 		name = utils.varname() if newid is None else newid
 		tag  = utils.uid(name, 4) if not tag else tag
 		ret  = Aggr (id = name)
+		ret.starts = [None] * len(self.starts)
+		ret.ends   = [None] * len(self.ends)
 
 		for k, v in self.__dict__['_delegates'].items():
 			if k not in ret.__dict__['_delegates']:
@@ -268,7 +270,11 @@ class Aggr (object):
 				else 'ends' if proc in self.ends \
 				else None
 			
-			ret.addProc (newproc, tag = tag, where = where, copy = False)
+			ret.addProc (newproc, tag = tag, where = None, copy = False)
+			if where == 'starts' or where == 'both':
+				ret.starts[self.starts.index(proc)] = newproc
+			if where == 'ends' or where == 'both':
+				ret.ends[self.ends.index(proc)] = newproc
 		
 		# copy dependences
 		if deps:
