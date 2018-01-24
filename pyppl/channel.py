@@ -426,7 +426,12 @@ class Channel (list):
 		@returns:
 			The Channel with that column
 		"""
-		return self.slice (index, 1)
+		if not isinstance(index, list):
+			index = [index]
+		chs = []
+		for idx in index:
+			chs.append(self.slice (idx, 1))
+		return Channel.fromChannels(*chs)
 	
 	def rowAt (self, index):
 		"""
@@ -436,7 +441,23 @@ class Channel (list):
 		@returns:
 			The Channel with that row
 		"""
-		return Channel.create(self[index])
+		if not isinstance(index, list):
+			index = [index]
+		rows = []
+		for idx in index:
+			rows.append(self[idx])
+		return Channel.create(rows)
+
+	def unique(self):
+		"""
+		Make the channel unique, remove duplicated rows
+		Try to keep the order
+		"""
+		rows = []
+		for row in self:
+			if not row in rows:
+				rows.append(row)
+		return Channel.create(rows)
 	
 	def slice (self, start, length = None):
 		"""

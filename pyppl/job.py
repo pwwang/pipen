@@ -114,10 +114,9 @@ class JobMan (object):
 				break
 			else:
 				r = self.runners[jid]
-				# keep retrying
-				while not r.run():
+				if not r.run():
 					sq.put(jid)
-					self.nrJobs(action = '-')
+					rq.put(jid)
 				self.nrJobs(action = '-')
 				rq.task_done()
 

@@ -775,7 +775,7 @@ class Proc (object):
 			"runner", "sets", "size", "suffix", "tag", "workdir"
 		]
 		show   = [ 'size' ]
-		hidden = [ 'desc', 'id', 'sets', 'tag', 'suffix', 'workdir' ]
+		hidden = [ 'desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'aggr']
 		hidden.extend([key for key in pvkeys if key not in self.sets + show])
 		hidden = set(hidden)
 		procvars = {}
