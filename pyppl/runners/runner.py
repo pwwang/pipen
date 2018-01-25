@@ -108,6 +108,7 @@ class Runner (object):
 		if self.job.index not in self.job.proc.ncjobids:
 			self.finish()
 			self.status(Runner.STATUS_DONE)
+			return True
 		else:
 			ferr = open(self.job.errfile)
 			fout = open(self.job.outfile)

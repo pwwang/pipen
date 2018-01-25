@@ -905,6 +905,9 @@ class Proc (object):
 		Build the jobs.
 		"""
 		self.props['channel'] = Channel.create([None] * self.size)
+		if self.size == 0:
+			self.log('No data found for jobs, process will be skipped.', 'warning')
+			return
 		rptjob  = 0 if self.size == 1 else randint(0, self.size-1)
 
 		def bjSingle(i):
