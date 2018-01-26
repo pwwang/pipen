@@ -502,8 +502,8 @@ class Proc (object):
 			`config`: The configuration
 		"""
 		if config is None: config = {}
-		
 		self._readConfig (config)
+		
 		if self.runner == 'dry':
 			self.config['cache'] = False
 		
@@ -932,6 +932,9 @@ class Proc (object):
 		"""
 		conf = { (key if not key in Proc.ALIAS else Proc.ALIAS[key]):val for key, val in config.items() if key not in self.sets and key != 'runner' }
 		self.props['runner'] = config['runner'] if 'runner' in config else 'local'
+		# if you set a different runner in PyPPL().run(...)
+		if 'runner' not in self.sets and self.props['runner'] != 'local':
+			self.sets.append('runner')
 		self.config.update (conf)
 
 	def _checkCached (self):
@@ -1260,7 +1263,7 @@ class PyPPL (object):
 		while proc:
 			proc.log (proc.desc, 'PROCESS')
 			proc.log ("%s => %s => %s" % (ProcTree.getPrevStr(proc), proc.name(), ProcTree.getNextStr(proc)))
-			if proc.config['runner'] and proc.config['runner'] != profile:
+			if 'runner' in proc.sets and proc.config['runner'] != profile:
 				proc.run(self._getProfile(proc.config['runner']))
 			else:
 				proc.run(dftconfig)
