@@ -774,7 +774,7 @@ class Proc (object):
 			"exow", "forks", "id", "lang", "ppldir", "procvars", "rc", "resume",
 			"runner", "sets", "size", "suffix", "tag", "workdir"
 		]
-		show   = [ 'size' ]
+		show   = [ 'size' ] + (['runner'] if self.runner != 'local' else [])
 		hidden = [ 'desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'aggr']
 		hidden.extend([key for key in pvkeys if key not in self.sets + show])
 		hidden = set(hidden)
@@ -932,9 +932,6 @@ class Proc (object):
 		"""
 		conf = { (key if not key in Proc.ALIAS else Proc.ALIAS[key]):val for key, val in config.items() if key not in self.sets and key != 'runner' }
 		self.props['runner'] = config['runner'] if 'runner' in config else 'local'
-		# if you set a different runner in PyPPL().run(...)
-		if 'runner' not in self.sets and self.props['runner'] != 'local':
-			self.sets.append('runner')
 		self.config.update (conf)
 
 	def _checkCached (self):
