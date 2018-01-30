@@ -259,7 +259,7 @@ Some important method to be redefined:
   2. Compose the right script to submit the job (`self.script`) in `__init__`(required).
   3. Use `getpid` to get the job id (optional).
   4. Tell `PyPPL` how to judge when the jobs are still running (`self.isRunning()`) (optional). 
-  6. MAKE SURE you save the identity of the job to `job.pidfile`, rc to `job.rcfile`, stdout to `job.outfile` and `stderr` to `job.errfile`
+  5. MAKE SURE you save the identity of the job to `job.pidfile`, rc to `job.rcfile`, stdout to `job.outfile` and `stderr` to `job.errfile`
 
 ## Register your runner
 It very easy to register your runner, just do `PyPPL.registerRunner (RunnerMy)` (static method) before you start to run the pipeline.

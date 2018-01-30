@@ -149,7 +149,7 @@ Constructor
 `id`:   The identify of the process  
 
 - **config:**  
-id, input, output, ppldir, forks, cache, cclean, rc, echo, runner, script, depends, tag, desc  
+id, input, output, ppldir, forks, cache, cclean, rc, echo, runner, script, depends, tag, desc, dirsig  
 exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr  
 callfront, callback, brings, expect, expart, template, tplenvs, resume, nthread  
 
@@ -632,6 +632,11 @@ Do the reverse thing as self.fold does
 - **returns:**  
 The unfolded Channel  
   
+#### `unique (self) `
+  
+Make the channel unique, remove duplicated rows  
+Try to keep the order  
+  
 #### `width (self) `
   
 Get the width of a Channel  
@@ -778,6 +783,69 @@ Tell if the job is successful by return code, and output file expectations.
 
 - **returns:**  
 True if succeed else False  
+  
+
+## Module `JobMan`  
+> JobManager
+	
+
+#### `__init__ (self, jobs, cclean, ncjobids, forks, npsubmit, runner) `
+  
+Job manager constructor  
+
+- **params:**  
+`jobs`    : The jobs  
+`cclean`  : The flag of cleaning cached jobs  
+`ncjobids`: The non-cached job indexes  
+`runner`  : The runner class  
+  
+#### `allJobsDone (self) `
+  
+Tell whether all jobs are done.  
+No need to lock as it only runs in one process (the watcher process)  
+
+- **returns:**  
+`True` if all jobs are done else `False`  
+  
+#### `canSubmit (self) `
+  
+Tell whether we can submit jobs.  
+
+- **returns:**  
+`True` if we can, otherwise `False`  
+  
+#### `nrJobs (self, action) `
+  
+Get or change number of running jobs  
+
+- **params:**  
+`action`: The action:  
+- `get`: get the number of running jobs  
+- `+`:   add 1 to the number of running jobs  
+- `-`:   minus 1 to the number of running jobs  
+  
+#### `run (self) `
+  
+Start to run the jobs  
+  
+#### `runPool (self, rq, sq) `
+  
+The pool to run jobs (wait jobs to be done)  
+
+- **params:**  
+`rq`: The run queue  
+`sq`: The submit queue  
+  
+#### `submitPool (self, sq) `
+  
+The pool to submit jobs  
+
+- **params:**  
+`sq`: The submit queue  
+  
+#### `watchPool (self, rq, sq) `
+  
+The watchdog, checking whether all jobs are done.  
   
 
 ## Module `Aggr`  
@@ -1306,7 +1374,7 @@ Tell whether a path exists under a lock
 True if yes, otherwise False  
 If any of the path does not exist, return False  
   
-#### `filesig (fn) `
+#### `filesig (fn, dirsig) `
   
 Calculate a signature for a file according to its path and mtime  
 
@@ -1326,6 +1394,8 @@ Python2 and Python3 compatible filter
 
 - **returns:**  
 The filtered list  
+  
+#### `flushFile (f, lastmsg, end) `
   
 #### `formatSecs (seconds) `
   
@@ -1368,7 +1438,7 @@ Python2 and Python3 compatible map
 - **returns:**  
 The maped list  
   
-#### `parallel (func, args, nthread, method) `
+#### `parallel (func, args, nthread, method, join) `
   
 Call functions in a parallel way.  
 If nthread == 1, will be running in single-threading manner.  
@@ -1751,7 +1821,7 @@ Constructor
 - **params:**  
 `job`:    The job object  
   
-#### `_flushOut (self, fout, ferr, lastout, lasterr, end) `
+#### `_flush (self, fout, ferr, lastout, lasterr, end) `
   
 Flush stdout/stderr  
 
@@ -1760,10 +1830,9 @@ Flush stdout/stderr
 `ferr`: The stderr file handler  
 `lastout`: The leftovers of previously readlines of stdout  
 `lasterr`: The leftovers of previously readlines of stderr  
+`end`: Whether this is the last time to flush  
   
 #### `finish (self) `
-  
-Do some cleanup work when jobs finish  
   
 #### `getpid (self) `
   
@@ -1776,23 +1845,18 @@ Try to tell whether the job is still running.
 - **returns:**  
 `True` if yes, otherwise `False`  
   
-#### `retry (self) `
+#### `run (self) `
   
-Retry to submit and run the job if failed  
+
+- **returns:**  
+True: success/fail  
+False: needs retry  
   
-#### `submit (self) `
+#### `status (self, s) `
+  
+#### `submit (self, isQ) `
   
 Try to submit the job use Popen  
-  
-#### `wait (self, rc, infout, inferr) `
-  
-Wait for the job to finish  
-
-- **params:**  
-`rc`: Whether to write return code in rcfile  
-`infout`: The file handler for stdout file  
-`inferr`: The file handler for stderr file  
-- If infout or inferr is None, will open the file and close it before function returns.  
   
 
 ## Module `runners.RunnerQueue`  
@@ -1816,9 +1880,14 @@ Wait for the job to finish
   
 
 ## Module `runners.RunnerLocal`  
-> The local runner
+> Constructor
+	@params:
+		`job`:    The job object
+		`config`: The properties of the process
 	
 
+#### `__init__ (self, job) `
+  
 
 ## Module `runners.RunnerSsh`  
 > The ssh runner

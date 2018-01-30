@@ -4,7 +4,7 @@
 {% raw %}
 ## Specify input of a process
 
-The input of a process of basically a `dict` with keys the placeholders and the values the input channels:
+The input of a process of basically a `dict` with keys as the placeholders and the values as the input channels:
 
 ```python
 p = Proc()
@@ -13,7 +13,7 @@ p.input = {"ph1":[1,2,3], "ph2":[4,5,6]}
 # p.input = {"ph1, ph2": [(1,4), (2,5), (3,6)]}
 ```
 
-The complete form of an input key is `<placeholder>:<type>`. The `<type>` could be `var`, `file` (a.k.a `path`, `dir` or `folder`) and `files` (a.k.a `paths`, `dirs` or `folders`). **A type of `var` can be omitted.** So `{"ph1":[1,2,3], "ph2":[4,5,6]}` is the same as `{"ph1:var":[1,2,3], "ph2:var":[4,5,6]}`
+The complete form of an input key is `<key>:<type>`. The `<type>` could be `var`, `file` (a.k.a `path`, `dir` or `folder`) and `files` (a.k.a `paths`, `dirs` or `folders`). **A type of `var` can be omitted.** So `{"ph1":[1,2,3], "ph2":[4,5,6]}` is the same as `{"ph1:var":[1,2,3], "ph2:var":[4,5,6]}`
 
 You can also use a `str` or a `list` if a process depends on a prior process, it will automatically use the output channel of the prior process, or you want to use the arguments from command line as input channel (in most case for starting processes, which do not depend on any other processes). For example:
 

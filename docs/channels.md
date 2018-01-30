@@ -205,7 +205,9 @@ You may also filter the files with a pattern (arguments `t`, `sortby` and `rever
 p2.input   = {"invar,infile:file": lambda ch: ch.expand(1, "*.txt")}
 # only include .txt files
 ```
-> **Caution** `expand` only works for original channels with length is 1, which will expand to `N` (number of files included)
+> **Caution** 
+> - `expand` only works for original channels with length is 1, which will expand to `N` (number of files included). If original channel has more than 1 element, only first element will be used, and other elements will be ignored.
+> - Only the value of the column to be expanded will be changed, values of other columns remain the same. 
 
 ### Collapse a channel by files in a common ancestor directory
 `Channel.collapse(col=0)`
@@ -216,7 +218,6 @@ It's basically the reverse process of `expand`. It applies when you deal with di
 
 For example:
 ```python
-# the original file: a.txt
 p1 = Proc()
 p1.input  = {"infile:file": ["/a/b/1.txt", "/a/b/2.txt", "/a/b/3.txt"]}
 p1.output = {"outfile:file": "{{infile | fn}}.txt2"}
@@ -247,8 +248,8 @@ p2.input  = {"indir:file": lambda ch: ch.collapse(1)}
 # ...
 ```
 > **Caution** 
-> 1. `os.path.dirname(os.path.commonprefix(...))` is used to detect the common ancestor directory, so the files could be `['/a/1/1.file', '/a/2/1.file']`. In this case `/a/` will be returned.
-> 2. values at other columns should be the same, `PyPPL` will NOT check it, the first value at the column will be used.
+> - `os.path.dirname(os.path.commonprefix(...))` is used to detect the common ancestor directory, so the files could be `['/a/1/1.file', '/a/2/1.file']`. In this case `/a/` will be returned.
+> - values at other columns should be the same, `PyPPL` will NOT check it, the first value at the column will be used.
 
 ### Fetch row from a channel
 - `Channel.rowAt(index)`
@@ -256,6 +257,10 @@ p2.input  = {"indir:file": lambda ch: ch.collapse(1)}
 chan1 = Channel.create ([(1,2,3,4), (4,5,6,7)])
 chan2 = chan1.rowAt(1)
 # chan2 == [(4,5,6,7)]
+
+# Now you can also fetch multiple columus as a channel:
+chan3 = chan1.rowAt([:2])
+chan3 == chan1
 ```
 
 ### Fetch columns from a channel
@@ -271,7 +276,12 @@ chan4 = chan1.slice(-1)
 ```
 
 - `Channel.colAt(index)`
-`chan.colAt(index) == chan.slice(index, 1)`
+```python
+chan.colAt(index) == chan.slice(index, 1)
+
+# Now you may also fetch multiple columns:
+chan.colAt([1,2]) == chan.slice(1, 2)
+```
 
 ### Flatten a channel
 `Channel.flatten(col = None)`

@@ -3,10 +3,10 @@
 <!-- toc -->
 
 {% raw %}
-`PyPPL` has its own template engine, which derived from a [500-line-or-less template engine][1]. It also supports [Jinja2][2] if you have if installed and specify `"Jinja2"` to `pXXX.template`. The built-in template engine is enabled by default.
+`PyPPL` has its own template engine, which derived from a [500-line-or-less template engine][1]. It also supports [Jinja2][2] if you have it installed and specify `"Jinja2"` to `pXXX.template`. The built-in template engine is enabled by default.
 
 ## Common data avaible for rendering
-When render a template, following data are fed to the render function. So that you use those values in the template. Some attribute values of a process are shared for all templates that applied:
+When rendering a template, following data are fed to the render function. So that you can use those values in the template. Some attribute values of a process are shared for all templates that are applied:
 - `proc.aggr`: The aggregation name of the process
 - `proc.args`: A `dict` of process arguments. To access an item of it: `{{args.<item>}}`
 - `proc.cache`: The cache option
@@ -21,7 +21,7 @@ When render a template, following data are fed to the render function. So that y
 - `proc.id`: The id of the process.
 - `proc.lang`: The interpreter for the script
 - `proc.ppldir`: Where the workdirs are located
-- `proc.procvars`: The `dict` of all avaiable attributes of a process
+- `proc.procvars`: The `dict` of all avaiable attributes of a process, can be accessed directly by `{{proc.<var>}}`
 - `proc.rc`: The rc option
 - `proc.resume`: The resume option
 - `proc.runner`: The runner
@@ -52,7 +52,7 @@ pXXX.brings = {"b": "{{in.b | bn}}.index"}
 Now you can access them by: `{{in.a}}`, `{{in.b}}`, `{{out.a}}`, `{{bring.b}}`
 
 ## The scope of data
-|Attribute|Data avaible|Meaning|
+|Attribute|Data available|Meaning|
 |---------|------------|-------|
 |`pXXX.beforeCmd`|`{{proc.*}}`|Command to run before job starts|
 |`pXXX.afterCmd`|`{{proc.*}}`|Command to run after job finishes|
@@ -163,7 +163,7 @@ print "{{data.v1, data.v2 | os.path.join}}"
 {% endif %}
 """
 ```
-Then if `pXXX.tplenv.data['b'] is True`, it prints `a b`; otherwise prints `a/b`
+Then if `pXXX.envs.data['b'] is True`, it prints `a b`; otherwise it prints `a/b`.
 
 ## Use Jinja2
 All the data and environment definition mentioned above are all applicable when you use `Jinja2` as your template engine.  

@@ -6,7 +6,7 @@ To configure your pipeline, you just pass the configurations (a `dict`) to the c
 ```python
 ppl = PyPPL(config)
 ```
-Here is the full structure of the configurations:
+Here is the full structure of the configurations (**`yaml` configuration file is also supported since `0.9.4`**):
 ```json
 {
     "log": {

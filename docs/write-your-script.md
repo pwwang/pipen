@@ -43,7 +43,7 @@ def test():
 ```
 The leading white spaces of line `## indent remove ##` will be removed for each line (including itself) below it. In this case, the extra `<tab>` of pass will be kept.  
 You may use `## indent keep ##` to stop removing the white spaces for the following lines.
-> **Caution** `## indent remove ##` Should not be at the beginning of the file, otherwise the leading spaces will be stripped.
+> **Caution** `## indent remove ##` Should not be at the beginning of the file, otherwise the leading spaces will be stripped so we can detect how many spaces should be removed for the following lines.
 
 ## Debug your script
 If you need to debug your script, you just need to find the real running script, which is at: `<workdir>/<job.index>/job.script`. The template is rendered already in the file. You can debug it using the tool according to the language you used for the script.
