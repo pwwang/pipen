@@ -442,6 +442,12 @@ class Proc (object):
 			for key, val in config['input'].items():
 				config['input'][key] = utils.funcsig(val) if callable(val) else val
 
+		# Add depends to avoid the same suffix for processes with the same depends but different input files
+		# They could have the same suffix because they are using input callbacks
+		# callbacks could be the same though even if the input files are different
+		if self.depends:
+			config['depends'] = [p.id + '.' + p.tag + '.' + p._suffix() for p in self.depends]
+
 		signature = json.dumps(config, sort_keys = True)
 		self.props['suffix'] = utils.uid(signature)
 		return self.suffix

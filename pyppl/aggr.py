@@ -62,13 +62,15 @@ class Aggr (object):
 		self.__dict__['_proxies']   = {}
 		self.__dict__['_delegates'] = {}
 		self.__dict__['_procs']     = OrderedDict()
-		tag = utils.uid(self.id, 4) if 'tag' not in kwargs or not kwargs['tag'] else kwargs['tag']
+		#tag = utils.uid(self.id, 4) if 'tag' not in kwargs or not kwargs['tag'] else kwargs['tag']
+		tag = kwargs['tag'] if 'tag' in kwargs else ''
 		
 		for proc in args:
 			pid = proc.id
 			if pid in ['starts', 'ends', 'id'] or pid in self.__dict__['_procs'] or hasattr(self, pid):
 				raise AttributeError('%s is an attribute of Aggr, use a different process id.' % pid)
-			newproc      = proc.copy(tag = tag, newid = pid)
+			newtag       = tag if tag else utils.uid(proc.tag + '@' + self.id, 4)
+			newproc      = proc.copy(tag = newtag, newid = pid)
 			newproc.aggr = self.id
 			self.__dict__['_procs'][pid] = newproc
 		
@@ -219,8 +221,7 @@ class Aggr (object):
 		@returns:
 			the aggregation itself
 		"""
-		if tag is not None:
-			tag = utils.uid(self.id, 4) if not self.__dict__['_procs'] else list(self.__dict__['_procs'].values())[0].tag
+		newtag = tag if tag else utils.uid(p.tag + '@' + self.id, 4)
 
 		newproc = p.copy(tag = tag, newid = p.id) if copy else p
 		newproc.aggr = self.id
