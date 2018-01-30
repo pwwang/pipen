@@ -9,8 +9,8 @@
 - [Easy-to-use command line parser.][27]
 - [Fancy logs.][28]
 - [Process caching.][6]
-- [Script templating (using either a builtin one or Jinja2).][7]
-- [Runner customization][9]
+- [Script templating (using either builtin engine or Jinja2).][7]
+- [Runner customization][9].
 - [Error handling for processes.][12]
 - [Easy-switching running profile.][13]
 - Flowchat in [DOT][14] for your pipelines ([Details][15]).
@@ -19,7 +19,7 @@
 
 ## Requirements
 - OS: Linux, OSX and WSL (Windows Subsystem for Linux)
-- Python 2.7+ or Python 3.4+ 
+- Python 2.7+ or Python 3.4+ (lower versions not tested)
 - Python packages: python-box, six, filelock
 
 ## Installation
@@ -28,7 +28,7 @@
 git clone https://github.com/pwwang/PyPPL.git
 cd PyPPL
 python setup.py install
-# or simly:
+# or simply:
 pip install git+git://github.com/pwwang/PyPPL.git
 
 # install released version
@@ -114,7 +114,7 @@ paste -d. <(seq 1 $(wc -l {{in.infile}} | cut -f1 -d' ')) {{in.infile}} > {{out.
 PyPPL().start(pSort).run()
 ```
 ```
-> head -3 ./export/
+> head -3 ./export/test1.ln
 1.8984
 2.663
 3.625
@@ -408,7 +408,7 @@ p9 = Proc()
 		/      \      /
 	 p5          p6 (export)
 		\      /
-		  p7 (expart)
+		  p7 (export)
 """
 p2.depends = p1
 p3.depends = p1, p8
@@ -455,6 +455,9 @@ digraph PyPPL {
 To generate svg file, you have to have [graphviz][33] installed.  
 `drawFlowchart.pyppl.svg`:  
 ![PyPPL chart][18]
+
+
+***Enjoy pipelining!!!***
 
 [1]: https://pwwang.gitbooks.io/PyPPL/
 [2]: https://pwwang.gitbooks.io/PyPPL/api.html
