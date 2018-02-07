@@ -19,7 +19,9 @@ from hashlib import md5
 from box import Box
 from six import moves, string_types
 from threading import Thread
+TMPDIR = tempfile.gettempdir()
 
+'''
 class ProcessEx (Process):
 	"""
 	Try to capture process exceptions when join
@@ -42,8 +44,10 @@ class ProcessEx (Process):
 			ex = self._pconn.recv()
 			if ex:
 				raise ex
+'''
 
 def flushFile(f, lastmsg, end = False):
+	f.flush()
 	lines = f.readlines() or []
 	if lines:
 		lines[0] = lastmsg + lines[0]
@@ -53,7 +57,7 @@ def flushFile(f, lastmsg, end = False):
 			lastmsg = ''
 	return lines, lastmsg
 
-def parallel(func, args, nthread, method = 'thread', join = True):
+def parallel(func, args, nthread, method = 'thread'):
 	"""
 	Call functions in a parallel way.
 	If nthread == 1, will be running in single-threading manner.
@@ -72,7 +76,7 @@ def parallel(func, args, nthread, method = 'thread', join = True):
 
 	def _parallelWorker(q):
 		while True:
-			if q.empty():
+			if q.empty(): # pragma: no cover
 				q.task_done()
 				break
 			arg = q.get()
@@ -256,7 +260,6 @@ def dictUpdate(origDict, newDict):
 		else:
 			origDict[k] = newDict[k]
 
-			
 def funcsig (func):
 	"""
 	Get the signature of a function
@@ -348,7 +351,7 @@ def alwaysList (data):
 		raise ValueError('Expect string or list to convert to list.')
 	return [x.strip() for x in ret]
 	
-def _lockfile(f):
+def _lockfile(f, real = True, tmpdir = TMPDIR):
 	"""
 	Get the path of lockfile of a file
 	@params:
@@ -356,59 +359,63 @@ def _lockfile(f):
 	@returns:
 		The path of the lock file
 	"""
-	return path.join(tempfile.gettempdir(), uid(f, 16) + '.lock')
-	
-def _fileExists(f, callback = None):
+	p = path.realpath(f) if real else f
+	return path.join(tmpdir, uid(p, 16) + '.lock')
+
+def _rm(fn):
 	"""
-	Tell whether a path exists
+	Remove an entry
 	@params:
-		`f`: the path
-		`callback`: the callback
-	@returns:
-		True if yes, otherwise False
-		If any of the path does not exist, return False
+		`fn`: The path of the entry
 	"""
-	ret = path.exists(f)
-	if not ret and path.islink(f): remove(f)
-	if callback:
-		callback(ret, f)
-	return ret
-		
-def fileExists(f, callback = None):
+	if path.isdir(fn) and not path.islink(fn):
+		rmtree(fn)
+	else:
+		remove(fn)
+
+def _cp(f1, f2):
+	"""
+	Copy a file or a directory
+	@params:
+		`f1`: The source
+		`f2`: The destination
+	"""
+	if path.isdir(f1):
+		copytree(f1, f2)
+	else:
+		copyfile(f1, f2)
+
+def _link(f1, f2):
+	"""
+	Create a symbolic link for the given file
+	@params:
+		`f1`: The source
+		`f2`: The destination
+	"""
+	symlink(path.realpath(f1), f2)
+
+def fileExists(f, callback = None, tmpdir = TMPDIR):
 	"""
 	Tell whether a path exists under a lock
 	@params:
 		`f`: the path
 		`callback`: the callback
+			- arguments: whether the file exists and the path of the file
+		`tmpdir`: The tmpdir to save the lock file
 	@returns:
 		True if yes, otherwise False
 		If any of the path does not exist, return False
 	"""
-	lfile = _lockfile(f)
-	with filelock.FileLock(lfile):
-		ret = _fileExists(f, callback)
-	return ret
+	with filelock.FileLock(_lockfile(f, tmpdir)):
+		r = path.exists(f)
+		# remove dead links
+		if not r and path.islink(f):
+			remove(f)
+		if callable(callback):
+			callback(r, f)
+		return r
 
-def _samefile(f1, f2, callback = None):
-	"""
-	Tell whether two paths pointing to the same file
-	@params:
-		`f1`: the first path
-		`f2`: the second path
-		`callback`: the callback
-	@returns:
-		True if yes, otherwise False
-		If any of the path does not exist, return False
-	"""
-	if not path.exists (f1) or not path.exists(f2):
-		ret = False
-	else:
-		ret = path.samefile (f1, f2)
-	if callback: # pragma: no cover
-		callback(ret, f1, f2)
-	return ret
-	
-def samefile (f1, f2, callback = None):
+def samefile(f1, f2, callback = None, tmpdir = TMPDIR):
 	"""
 	Tell whether two paths pointing to the same file under locks
 	@params:
@@ -420,30 +427,41 @@ def samefile (f1, f2, callback = None):
 		If any of the path does not exist, return False
 	"""
 	if f1 == f2:
-		if callable(callback): callback(True, f1, f2)
+		if callable(callback):
+			callback(True, f1, f2)
 		return True
-		
-	f1lock = _lockfile(f1)
-	f2lock = _lockfile(f2)
-	with filelock.FileLock(f1lock), filelock.FileLock(f2lock):
-		ret = _samefile(f1, f2, callback)
-	return ret
+	
+	lfile1 = _lockfile(f1, real = False, tmpdir = tmpdir)
+	lfile2 = _lockfile(f2, real = False, tmpdir = tmpdir)
+	with filelock.FileLock(lfile1), filelock.FileLock(lfile2):
+		r = path.samefile(f1, f2) if path.exists(f1) and path.exists(f2) else False
+		if callable(callback):
+			callback(r, f1, f2)
+	return r
 
-def safeRemove(f):
+def safeRemove(f, callback = None, tmpdir = TMPDIR):
 	"""
 	Safely remove a file/dir.
 	@params:
 		`f`: the file or dir.
+		`callback`: The callback
+			- argument `r`: Whether the file exists before removing
+			- argument `fn`: The path of the file
 	"""
-	def callback (e, fn):
-		if e:
-			if path.isdir(fn) and not path.islink(fn):
-				rmtree(fn)
-			else:
-				remove(fn)
-	fileExists(f, callback)
+	lfile = _lockfile(f, tmpdir = tmpdir)
+	with filelock.FileLock(lfile):
+		if not path.exists(f):
+			r = False
+		else:
+			try: 
+				r = True
+				_rm(f)
+			except Exception: # pragma: no cover 
+				r = False
+		if callable(callback):
+			callback(r, f)
 	
-def _safeMove(src, dst, overwrite = True):
+def safeMove(f1, f2, callback = None, overwrite = True, tmpdir = TMPDIR):
 	"""
 	Move a file/dir
 	@params:
@@ -453,191 +471,166 @@ def _safeMove(src, dst, overwrite = True):
 	@return:
 		True if succeed else False
 	"""
-	if not path.exists(src):
-		return False
-	
-	if path.exists(dst) and not path.samefile(src, dst) and overwrite:
-		if path.isdir(dst) and not path.islink(dst):
-			rmtree(dst)
-		else:
-			remove(dst)
-	elif not path.exists(dst) and path.islink(dst):
-		remove(dst)
-	
-	if not path.exists(dst):
-		move (src, dst)
-	return True
-
-def safeMove(src, dst, overwrite = True):
-	"""
-	Move a file/dir with locks
-	@params:
-		`src`: The source file
-		`dst`: The destination
-		`overwrite`: Whether overwrite the destination
-	@return:
-		True if succeed else False
-	"""
-	if src == dst:	return False
-	
-	srclock = _lockfile(src)
-	dstlock = _lockfile(dst)
-	with filelock.FileLock(srclock), filelock.FileLock(dstlock):
-		ret = _safeMove(src, dst, overwrite)
-	return ret
-			
-def _safeMoveWithLink(src, dst, overwrite = True):
-	"""
-	Move a file/dir and leave a link the source file
-	@params:
-		`src`: The source file
-		`dst`: The destination
-		`overwrite`: Whether overwrite the destination
-	@return:
-		True if succeed else False
-	"""
-	if not path.exists(src):
-		return False
-
-	# already point the dst
-	if path.islink(src) and path.exists(dst) and path.samefile(path.realpath(src), dst):
-		return False
-	
-	# remove dead link
-	if not path.exists(dst) and path.islink(dst):
-		remove(dst)
-	
-	# if dst is link, and overwrite, remove it
-	if path.islink(dst):
-		if overwrite: remove(dst)
-		else: return False
-		
-	if path.exists(dst):
-		if path.samefile(src, dst): return False
-		if not overwrite: return False
-		if path.isdir(dst): rmtree(dst)
-		else: remove(dst)
-	
-	# always True
-	# if not path.exists(dst):
-	# if source is a link, copy the realfile
-	if path.islink(src):
-		ret = _safeCopy(path.realpath(src), dst)
-		if not ret: return False
+	if f1 == f2:
+		if callable(callback):
+			callback(False, f1, f2)
 	else:
-		move(src, dst)
-	
-	return _safeLink(dst, src)
+		lfile1 = _lockfile(f1, real=False, tmpdir=tmpdir)
+		lfile2 = _lockfile(f2, real=False, tmpdir=tmpdir)
+		with filelock.FileLock(lfile1), filelock.FileLock(lfile2):
+			if not path.exists(f1):
+				r = False
+			elif path.exists(f2):
+				if path.samefile(f1, f2):
+					r = True
+				elif overwrite:
+					_rm(f2)
+					move(f1, f2)
+					r = True
+				else:
+					r = False
+			elif path.islink(f2):
+				remove(f2) # dead link
+				move(f1, f2)
+				r = True
+			else:
+				move(f1, f2)
+				r = True
+		if callable(callback):
+			callback(r, f1, f2)	
+			
 
-
-def safeMoveWithLink(src, dst, overwrite = True):
+def safeMoveWithLink(f1, f2, callback = None, overwrite = True, tmpdir = TMPDIR):
 	"""
 	Move a file/dir and leave a link the source file with locks
 	@params:
-		`src`: The source file
-		`dst`: The destination
+		`f1`: The source file
+		`f2`: The destination
 		`overwrite`: Whether overwrite the destination
 	@return:
 		True if succeed else False
 	"""
-	if src == dst:	return False
-	
-	srclock = _lockfile(src)
-	dstlock = _lockfile(dst)
-	with filelock.FileLock(srclock), filelock.FileLock(dstlock):
-		ret = _safeMoveWithLink(src, dst, overwrite)
-	return ret
-	
-def _safeCopy(src, dst, overwrite = True):
-	"""
-	Copy a file/dir
-	@params:
-		`src`: The source file
-		`dst`: The destination
-		`overwrite`: Whether overwrite the destination
-	@return:
-		True if succeed else False
-	"""
-	if not path.exists(src):
-		return False
-	
-	if path.exists(dst) and not path.samefile(src, dst) and overwrite:
-		if path.isdir(dst) and not path.islink(dst):
-			rmtree(dst)
-		else:
-			remove(dst)
-			
-	if not path.exists(dst):
-		if path.isdir(src):
-			copytree(src, dst)
-		else:
-			copyfile(src, dst)
-	return True
-	
-def safeCopy(src, dst, overwrite = True):
-	"""
-	Copy a file/dir with locks
-	@params:
-		`src`: The source file
-		`dst`: The destination
-		`overwrite`: Whether overwrite the destination
-	@return:
-		True if succeed else False
-	"""
-	if src == dst:	return False
-	
-	srclock = _lockfile(src)
-	dstlock = _lockfile(dst)
-	with filelock.FileLock(srclock), filelock.FileLock(dstlock):
-		ret = _safeCopy(src, dst, overwrite)
-	return ret
-	
-def _safeLink(src, dst, overwrite = True):
-	"""
-	Symlink a file/dir
-	@params:
-		`src`: The source file
-		`dst`: The destination
-		`overwrite`: Whether overwrite the destination
-	@return:
-		True if succeed else False
-	"""
-	if not path.exists(src):
-		return False
-	
-	if path.exists(dst) and not path.samefile(src, dst):
-		if overwrite:
-			if path.isdir(dst) and not path.islink(dst):
-				rmtree(dst)
-			else:
-				remove(dst)
-		else:
-			return False		
-	if not path.exists(dst):
-		symlink(path.abspath(src), dst)
+	if f1 == f2:
+		if callable(callback):
+			callback(False, f1, f2)
 	else:
-		return False
-	return True
-	
-def safeLink(src, dst, overwrite = True):
+		lfile1 = _lockfile(f1, real=False, tmpdir = tmpdir)
+		lfile2 = _lockfile(f2, real=False, tmpdir = tmpdir)
+
+		with filelock.FileLock(lfile1), filelock.FileLock(lfile2):
+			if not path.exists(f1):
+				r = False
+			elif path.exists(f2):
+				if path.samefile(f1, f2):
+					if path.islink(f1):
+						r = True
+					else:
+						_rm(f2)
+						move(f1, f2)
+						_link(f2, f1)
+						r = True
+				elif overwrite:
+					_rm(f2)
+					move(f1, f2)
+					_link(f2, f1)
+					r = True
+				else:
+					r = False
+			elif path.islink(f2):
+				remove(f2)
+				move(f1, f2)
+				_link(f2, f1)
+				r = True
+			else:
+				move(f1, f2)
+				_link(f2, f1)
+				r = True
+
+			if callable(callback):
+				callback(r, f1, f2)
+
+def safeCopy(f1, f2, callback = None, overwrite = True, tmpdir = TMPDIR):
 	"""
-	Symlink a file/dir with locks
+	Safe copy
 	@params:
 		`src`: The source file
-		`dst`: The destination
-		`overwrite`: Whether overwrite the destination
-	@return:
-		True if succeed else False
+		`dst`: The dist file
+		`callback`: The callback (r, f1, f2)
+		`overwrite`: Overwrite target file?
+		`tmpdir`: Tmpdir for lock file
 	"""
-	if src == dst:	return False
+	if f1 == f2:
+		if callable(callback):
+			callback(False, f1, f2)
+	else:
+		lfile1 = _lockfile(f1, real = False, tmpdir = tmpdir)
+		lfile2 = _lockfile(f2, real = False, tmpdir = tmpdir)
+		with filelock.FileLock(lfile1), filelock.FileLock(lfile2):
+			if not path.exists(f1):
+				r = False
+			elif path.exists(f2):
+				if path.samefile(f1, f2):
+					r = True
+				elif overwrite:
+					_rm(f2)
+					_cp(f1, f2)
+					r = True
+				else:
+					r = False
+			elif path.islink(f2):
+				remove(f2)
+				_cp(f1, f2)
+				r = True
+			else:
+				_cp(f1, f2)
+				r = True
+
+			if callable(callback):
+				callback(r, f1, f2)
+
+def safeLink(f1, f2, callback = None, overwrite = True, tmpdir = TMPDIR):
+	"""
+	Safe link
+	@params:
+		`src`: The source file
+		`dst`: The dist file
+		`callback`: The callback (r, f1, f2)
+		`overwrite`: Overwrite target file?
+		`tmpdir`: Tmpdir for lock file
+	"""
+	if f1 == f2:
+		if callable(callback):
+			callback(False, f1, f2)
+	else:
+		lfile1 = _lockfile(f1, real = False, tmpdir = tmpdir)
+		lfile2 = _lockfile(f2, real = False, tmpdir = tmpdir)
+		with filelock.FileLock(lfile1), filelock.FileLock(lfile2):
+			if not path.exists(f1):
+				r = False
+			elif path.exists(f2):
+				if path.samefile(f1, f2):
+					if path.islink(f2):
+						r = True
+					else:
+						_rm(f1)
+						move(f2, f1)
+						_link(f1, f2)
+						r = True
+				elif overwrite:
+					_rm(f2)
+					_link(f1, f2)
+					r = True
+				else:
+					r = False
+			else:
+				_link(f1, f2)
+				r = True
+
+			if callable(callback):
+				callback(r, f1, f2)
+
 	
-	srclock = _lockfile(src)
-	dstlock = _lockfile(dst)
-	with filelock.FileLock(srclock), filelock.FileLock(dstlock):
-		ret = _safeLink(src, dst, overwrite)
-	return ret
-	
-def targz (srcdir, tgzfile, overwrite = True):
+def targz (srcdir, tgzfile, overwrite = True, tmpdir = TMPDIR):
 	"""
 	Do a "tar zcf"-like for a directory
 	@params:
@@ -646,23 +639,21 @@ def targz (srcdir, tgzfile, overwrite = True):
 	"""
 	if not path.isdir(srcdir):
 		return False
-		
-	if overwrite:
-		safeRemove(tgzfile)
 	
-	if not path.exists(tgzfile):
-		cwd = getcwd()
-		tar = tarfile.open(tgzfile, 'w:gz')
-		chdir (srcdir)
-		for name in glob ('./*'):
-			tar.add(name)
-		tar.close()
-		chdir (cwd)
-		return True
-	else:
-		return False
+	def callback(r, f):
+		if r and overwrite:
+			_rm(f)
+		if not path.exists(f):
+			cwd = getcwd()
+			tar = tarfile.open(f, 'w:gz')
+			chdir (srcdir)
+			for name in glob ('./*'):
+				tar.add(name)
+			tar.close()
+			chdir (cwd)
+	return fileExists(tgzfile, callback = callback, tmpdir = tmpdir)
 	
-def untargz (tgzfile, dstdir, overwrite = True):
+def untargz (tgzfile, dstdir, overwrite = True, tmpdir = TMPDIR):
 	"""
 	Do a "tar zxf"-like for .tgz file
 	@params:
@@ -671,18 +662,18 @@ def untargz (tgzfile, dstdir, overwrite = True):
 	"""
 	if not path.isfile(tgzfile):
 		return False
-	if overwrite:
-		safeRemove(dstdir)
-	if not path.exists(dstdir):
-		makedirs(dstdir)
-		tar = tarfile.open (tgzfile, 'r:gz')
-		tar.extractall (dstdir)
-		tar.close()
-		return True
-	else:
-		return False
-	
-def gz (srcfile, gzfile, overwrite = True):
+
+	def callback(r, f):
+		if r and overwrite:
+			_rm(f)
+		if not path.exists(f):
+			makedirs(f)
+			tar = tarfile.open (tgzfile, 'r:gz')
+			tar.extractall (f)
+			tar.close()
+	return fileExists(dstdir, callback = callback, tmpdir = tmpdir)
+
+def gz (srcfile, gzfile, overwrite = True, tmpdir = TMPDIR):
 	"""
 	Do a "gzip"-like for a file
 	@params:
@@ -691,20 +682,19 @@ def gz (srcfile, gzfile, overwrite = True):
 	"""
 	if not path.isfile(srcfile):
 		return False
-	if overwrite:
-		safeRemove(gzfile)
 	
-	if not path.exists(gzfile):
-		fin  = gzip.open (srcfile, 'rb')
-		fout = gzip.open (gzfile, 'wb')
-		copyfileobj (fin, fout)
-		fin.close()
-		fout.close()
-		return True
-	else:
-		return False
+	def callback(r, f):
+		if r and overwrite:
+			_rm(f)
+		if not path.exists(f):
+			fin  = open (srcfile, 'rb')
+			fout = gzip.open (f, 'wb')
+			copyfileobj (fin, fout)
+			fin.close()
+			fout.close()
+	return fileExists(gzfile, callback = callback, tmpdir = tmpdir)
 		
-def ungz (gzfile, dstfile, overwrite = True):
+def ungz (gzfile, dstfile, overwrite = True, tmpdir = TMPDIR):
 	"""
 	Do a "gunzip"-like for a .gz file
 	@params:
@@ -713,17 +703,18 @@ def ungz (gzfile, dstfile, overwrite = True):
 	"""
 	if not path.isfile(gzfile):
 		return False
-	if overwrite:
-		safeRemove(dstfile)
-	if not path.exists(dstfile):
-		fin  = gzip.open (gzfile, 'rb')
-		fout = open (dstfile, 'wb')
-		copyfileobj (fin, fout)
-		fin.close()
-		fout.close()
-		return True
-	else:
-		return False
+
+	def callback(r, f):
+		if r and overwrite:
+			_rm(f)
+		if not path.exists(f):
+			fin  = gzip.open (gzfile, 'rb')
+			fout = open (f, 'wb')
+			copyfileobj (fin, fout)
+			fin.close()
+			fout.close()
+	return fileExists(dstfile, callback = callback, tmpdir = tmpdir)
+
 
 def dirmtime (d):
 	"""
@@ -745,7 +736,7 @@ def dirmtime (d):
 				mtime = m
 		for f in files:
 			m = path.getmtime (path.join (root, f)) if path.exists(path.join(root, f)) else 0
-			if m > mtime: # pragma: no cover
+			if m > mtime: 
 				mtime = m
 	return mtime
 
@@ -764,8 +755,8 @@ def filesig (fn, dirsig = True):
 	mtime = dirmtime(fname) if path.isdir (fname) and dirsig else path.getmtime(fname)
 	# not using fname, because we intend to allow links to replace the original file
 	# say in case of export using move
-	if not mtime: # pragma: no cover
-		return False
+	#if not mtime: # pragma: no cover
+	#	return False
 	return [fn, int(mtime)]
 
 def chmodX (thefile):
@@ -783,7 +774,8 @@ def chmodX (thefile):
 		chmod (thefile, st.st_mode | S_IEXEC)
 	except Exception as e1:
 		try:
-			shebang = open (thefile).read().strip().splitlines()[0]
+			with open(thefile) as f:
+				shebang = f.read().strip().splitlines()[0]
 			if not shebang.startswith("#!"): # pragma: no cover
 				raise
 			ret = shebang[2:].strip().split() + [thefile] # pragma: no cover
@@ -801,7 +793,10 @@ def dumbPopen(cmd, shell = False):
 		The process object
 	'''
 	with open(devnull, 'w') as f:
-		ret = Popen(cmd, shell = shell, stdout = f, stderr = f)
+		try:	
+			ret = Popen(cmd, shell = shell, stdout = f, stderr = f)
+		except Exception:
+			return False
 	return ret
 
 def briefList(l):

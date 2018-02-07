@@ -14,6 +14,28 @@ class Channel (list):
 	"""
 
 	@staticmethod
+	def _tuplize(tu):
+		"""
+		A private method, try to convert an element to tuple
+		If it's a string, convert it to `(tu, )`
+		Else if it is iterable, convert it to `tuple(tu)`
+		Otherwise, convert it to `(tu, )`
+		Notice that string is also iterable.
+		@params:
+			`tu`: the element to be converted
+		@returns:
+			The converted element
+		"""
+		if isinstance(tu, (string_types, list)):
+			tu = (tu, )
+		else:
+			try:
+				iter(tu)
+			except Exception:
+				tu = (tu, )
+		return tuple (tu)
+
+	@staticmethod
 	def create(l = None):
 		"""
 		Create a Channel from a list
@@ -25,8 +47,13 @@ class Channel (list):
 		if l is None: l = []
 		if not isinstance(l, list): l = [l]
 		ret = Channel()
+		length = 0
 		for e in l:
-			ret.append (Channel._tuplize(e))
+			row = Channel._tuplize(e)
+			if length == 0: length = len(row)
+			if length != len(row):
+				raise ValueError('Inconsistent width of row (%s) with previous row (%s)' % (len(row), length))
+			ret.append (row)
 		return ret
 
 	@staticmethod
@@ -61,14 +88,16 @@ class Channel (list):
 			key = path.getmtime
 		elif sortby == 'size':
 			key = path.getsize
-		ret = Channel.create(sorted(glob(pattern), key=key, reverse=reverse))
+		
+		filt  = lambda f: True
 		if t == 'link':
-			return ret.filterCol (func = path.islink)
+			filt = lambda f: path.islink(f)
 		elif t == 'dir':
-			return ret.filterCol (func = path.isdir)
+			filt = lambda f: path.isdir(f) and not path.islink(f)
 		elif t == 'file':
-			return ret.filterCol (func = path.isfile)
-		return ret
+			filt = lambda f: path.isfile(f) and not path.islink(f)
+		files = [f for f in glob(pattern) if filt(f)]
+		return Channel.create(sorted(files, key=key, reverse=reverse))
 
 	@staticmethod
 	def fromPairs(pattern):
@@ -169,30 +198,9 @@ class Channel (list):
 				raise ValueError('Width %s (%s) is not consistent with previous %s' % (len(data), data, width))
 			width = len(data)
 			ret = ret.cbind(data)
+		if ret:
+			ret.attach(*pnames)
 		return ret
-	
-	@staticmethod
-	def _tuplize(tu):
-		"""
-		A private method, try to convert an element to tuple
-		If it's a string, convert it to `(tu, )`
-		Else if it is iterable, convert it to `tuple(tu)`
-		Otherwise, convert it to `(tu, )`
-		Notice that string is also iterable.
-		@params:
-			`tu`: the element to be converted
-		@returns:
-			The converted element
-		"""
-		if isinstance(tu, string_types):
-			tu = (tu, )
-		else:
-			try:
-				iter(tu)
-			except Exception:
-				tu = (tu, )
-		return (tu, ) if isinstance(tu, list) else tuple (tu)
-		
 	
 	def expand(self, col = 0, pattern = "*", t = 'any', sortby = 'name', reverse=False):
 		"""
@@ -344,27 +352,27 @@ class Channel (list):
 			The combined Channel
 			Note, self is also changed
 		"""
-		width = self.width()
-		rows2 = [s for s in self]
+		ret = self.copy()
 		for row in rows:
-			if isinstance(row, Channel):
-				if row.width() == 1:
-					rows2.extend([r * max(width, 1) for r in row])
-				elif row.width() != width and width != 0:
-					raise ValueError('Unable to rbind unequal width channels (%s, %s)' % (width, row.width()))
-				else:
-					rows2.extend(row)
-			elif isinstance(row, tuple) or isinstance(row, list):
-				lrow = len(row)
-				if lrow == 1:
-					row = row * max(width, 1)
-					lrow = width
-				if lrow != width and width != 0:
-					raise ValueError('Cannot bind row (width: %s) to Channel (width: %s).' % (lrow, width))
-				rows2.append(tuple(row))
+			if not row: continue
+			if not isinstance(row, Channel):
+				row = Channel.create(row)
+			if row.length() == 0 or row.width() == 0: 
+				continue
+
+			if ret.length() == 0:
+				ret = row
+			elif row.width() == 1:
+				ret.extend([r * ret.width() for r in row])
+			elif ret.width() == 1:
+				for i in range(ret.length()):
+					ret[i] *= row.width()
+				ret.extend(row)
+			elif row.width() != ret.width():
+				raise ValueError('Unable to rbind unequal width channels (%s, %s)' % (ret.width(), row.width()))
 			else:
-				rows2.append((row, ) * max(width, 1))
-		return Channel.create(rows2)
+				ret.extend(row)
+		return ret
 	
 	def insert (self, cidx, *cols):
 		"""
@@ -376,37 +384,36 @@ class Channel (list):
 			The combined Channel
 			Note, self is also changed
 		"""
-		ret = self
-		if not ret:
-			if cidx != 0 and cidx is not None and cidx != -1:
-				raise ValueError('Cannot insert a column other than 0 into an empty channel.')
-			ret  = [()] * (len(cols[0]) if isinstance(cols[0], tuple) or isinstance(cols[0], list) else 1)
-		length = len(ret)
+		ret    = self.copy()
+		cols   = [col if isinstance(col, Channel) else Channel.create(col) for col in cols if col]
+		cols   = [col for col in cols if col.width() > 0 and col.length() > 0]
+		if not cols: return ret
+		
 		if cidx is None:
 			colsbefore = ret
 			colsafter  = []
 		else:
 			colsbefore = [s[:cidx] for s in ret]
 			colsafter  = [s[cidx:] for s in ret]
+
+		maxlen = max([col.length() for col in cols])
+		maxlen = max(maxlen, len(ret))
+		if ret.length() == 1:
+			colsbefore *= maxlen
+			colsafter  *= maxlen
+		
+		length = max(len(colsbefore), len(colsafter))
 		for col in cols:
-			if not col: continue
-			if isinstance(col, Channel):
-				if len(col) == 1:
-					col = col * length
-			elif isinstance(col, tuple) or isinstance(col, list):
-				lcol = len(col)
-				if lcol == 1:
-					col = col * length
-					lcol = length
-				if lcol != length:
-					raise ValueError('Cannot bind column (length: %s) to Channel (length: %s).' % (lcol, length))
-				col = [(c,) if not isinstance(c, tuple) else c for c in col]
-			else:
-				col = [(col,)] * length
-			
-			colsbefore = [colsbefore[i] + c if colsbefore else c for i, c in enumerate(col)]
-				
-		return Channel.create([col + colsafter[i] if colsafter else col for i, col in enumerate(colsbefore)])
+			if col.width() == 0: continue
+			if col.length() == 1:
+				col *= maxlen
+			if length > 0 and length != col.length():
+				raise ValueError('Cannot bind column (length: %s) to Channel (length: %s).' % (col.length(), length))
+
+			colsbefore = [colsbefore[i] + c for i, c in enumerate(col)] if colsbefore else col
+			length = max(len(colsbefore), len(colsafter))
+		
+		return Channel([c + colsafter[i] for i, c in enumerate(colsbefore)] if colsafter else colsbefore)
 		
 	def cbind(self, *cols):
 		"""
@@ -445,8 +452,8 @@ class Channel (list):
 			index = [index]
 		rows = []
 		for idx in index:
-			rows.append(self[idx])
-		return Channel.create(rows)
+			rows.extend(self[idx:(idx+1 if idx!=-1 else None)])
+		return Channel(rows)
 
 	def unique(self):
 		"""
@@ -457,7 +464,7 @@ class Channel (list):
 		for row in self:
 			if not row in rows:
 				rows.append(row)
-		return Channel.create(rows)
+		return Channel(rows)
 	
 	def slice (self, start, length = None):
 		"""
@@ -468,8 +475,8 @@ class Channel (list):
 		@returns:
 			The Channel with fetched columns
 		"""
-		return Channel.create([s[start:(start + length)] for s in self]) if length else \
-			   Channel.create([s[start:] for s in self])
+		return Channel([s[start:(start + length)] for s in self]) \
+				if length and start != -1 else Channel.create([s[start:] for s in self])
 	
 	def fold (self, n = 1):
 		"""
@@ -488,7 +495,7 @@ class Channel (list):
 		@returns
 			The new Channel
 		"""
-		if self.width() % n != 0:
+		if n <= 0 or self.width() % n != 0:
 			raise ValueError ('Failed to fold, the width %s cannot be divided by %s' % (self.width(), n))
 		
 		nrows = int(self.width() / n)
@@ -496,7 +503,7 @@ class Channel (list):
 		for row in self:
 			for i in [x*n for x in range(nrows)]:
 				ret.append (row[i:i+n])
-		return Channel.create(ret)
+		return Channel(ret)
 	
 	def unfold (self, n = 2):
 		"""
@@ -506,7 +513,7 @@ class Channel (list):
 		@returns:
 			The unfolded Channel
 		"""
-		if len(self) % n != 0:
+		if n <= 0 or len(self) % n != 0:
 			raise ValueError ('Failed to unfold, the length %s cannot be divided by %s' % (len(self), n))
 		
 		nrows = int(len(self) / n)
@@ -524,28 +531,26 @@ class Channel (list):
 		@returns:
 			The list of single-column Channels
 		"""
-		return [ self.colAt(i).flatten() for i in range(self.width()) ] if flatten else \
+		return [ self.flatten(i) for i in range(self.width()) ] if flatten else \
 			   [ self.colAt(i) for i in range(self.width()) ]
 
-	def attach(self, *names):
+	def attach(self, *names, **kwargs):
 		"""
 		Attach columns to names of Channel, so we can access each column by:
 		`ch.col0` == ch.colAt(0)
 		@params:
 			`names`: The names. Have to be as length as channel's width. None of them should be Channel's property name
+			`flatten`: Whether flatten the channel for the name being attached
 		"""
-		flatten = False
-		if isinstance(names[-1], bool):
-			flatten = names[-1]
-			names   = names[:-1]
+		flatten = False if 'flatten' not in kwargs else kwargs['flatten']
 		mywidth = self.width()
 		lnames  = len(names)
-		if mywidth != lnames:
-			raise ValueError('Lenth of names are different frome the width of the channel.')
+		if mywidth < lnames:
+			raise ValueError('More names (%s) to attach than the width (%s) of the channel.' % (lnames, mywidth))
 		for i, name in enumerate(names):
 			if hasattr(self, name) and not isinstance(getattr(self, name), Channel) and not isinstance(getattr(self, name), list):
-				raise ValueError('Cannot attach column to "%s" as it is already a property of Channel.' % name)
-			setattr(self, name, self.colAt(i).flatten() if flatten else self.colAt(i))
+				raise AttributeError('Cannot attach column to "%s" as it is already an attribute of Channel.' % name)
+			setattr(self, name, self.flatten(i) if flatten else self.colAt(i))
 	
 	def get(self, idx = 0):
 		"""
