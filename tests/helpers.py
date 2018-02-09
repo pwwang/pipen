@@ -8,10 +8,10 @@ sys.path.insert(0, path.join(
 
 import tempfile, inspect, unittest, shutil
 from hashlib import md5
-from pyppl import logger
+from pyppl import logger, Box
 
 from contextlib import contextmanager
-from six import StringIO, with_metaclass
+from six import StringIO, with_metaclass, assertRaisesRegex as sixAssertRaisesRegex
 
 fn = path.basename(inspect.getframeinfo(inspect.getouterframes(inspect.currentframe())[1][0])[0])
 
@@ -31,6 +31,12 @@ def createDeadlink(f):
 	symlink(tmpfile, f)
 	remove(tmpfile)
 
+def moduleInstalled(mod):
+	try:
+		__import__(mod)
+		return True
+	except ImportError:
+		return False
 
 @contextmanager
 def captured_output():
@@ -81,10 +87,11 @@ class DataProviderSupport(type):
 			# generate test method variants based on
 			# data from the data porovider function
 			lenargs = len(inspect.getargspec(attr).args)
-			data    = attr(None, testdir) if lenargs == 2 else attr(None) if lenargs == 1 else attr()
-			for i, arg in enumerate(data):
-				key = testName if i == 0 else testName + '_' + str(i)
-				classDict[key] = create_test_method(testFunc, arg)
+			data    = attr(Box(classDict), testdir) if lenargs == 2 else attr(Box(classDict)) if lenargs == 1 else attr()
+			if data:
+				for i, arg in enumerate(data):
+					key = testName if i == 0 else testName + '_' + str(i)
+					classDict[key] = create_test_method(testFunc, arg)
 
 		# create the type
 		return type.__new__(meta, classname, bases, classDict)
@@ -97,6 +104,40 @@ class TestCase(with_metaclass(DataProviderSupport, unittest.TestCase)):
 		second         = str(sorted(second))
 		assertion_func = self._getAssertEqualityFunc(first, second)
 		assertion_func(first, second, msg=msg)
+
+	def assertDictIn(self, first, second, msg = 'Not all k-v pairs in 1st element are in the second.'):
+		assert isinstance(first, dict)
+		assert isinstance(second, dict)
+		if not all([k in second.keys() for k in first.keys()]):
+			self.fail(msg)
+		else:
+			seconds2 = {second[k] for k in first.keys()}
+			for k in first.keys():
+				v1   = str(first[k])
+				v2   = str(second[k])
+				func = self._getAssertEqualityFunc(v1, v2)
+				func(v1, v2, msg=msg)
+
+	def assertDictNotIn(self, first, second, msg = 'all k-v pairs in 1st element are in the second.'):
+		assert isinstance(first, dict)
+		assert isinstance(second, dict)
+		ret = False
+		for k in first.keys():
+			if k in second:
+				if first[k] != second[k]:
+					ret = True
+			else:
+				ret = True
+		if not ret:
+			self.fail(msg)
+
+	def assertTextEqual(self, first, second, msg = None):
+		first  = first.split('\n')
+		second = second.split('\n')
+		self.assertListEqual(first, second, msg)
+
+	def assertRaisesRegex(self, exc, callable, *args, **kwds):
+		sixAssertRaisesRegex(self, exc, callable, *args, **kwds)
 
 	'''
 	def assertEvalEqual(self, expr, value, msg = None):

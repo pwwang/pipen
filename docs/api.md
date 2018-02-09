@@ -293,13 +293,14 @@ Notice that string is also iterable.
 - **returns:**  
 The converted element  
   
-#### `attach (self, *names) `
+#### `attach (self, *names, **kwargs) `
   
 Attach columns to names of Channel, so we can access each column by:  
 `ch.col0` == ch.colAt(0)  
 
 - **params:**  
 `names`: The names. Have to be as length as channel's width. None of them should be Channel's property name  
+`flatten`: Whether flatten the channel for the name being attached  
   
 #### `cbind (self, *cols) `
   
@@ -1201,19 +1202,23 @@ A class that represents a thread of control.
 
     This class can be safely subclassed in a limited fashion.
 ```
-#### `_fileExists (f, callback) `
+#### `_cp (f1, f2) `
   
-Tell whether a path exists  
+Copy a file or a directory  
 
 - **params:**  
-`f`: the path  
-`callback`: the callback  
-
-- **returns:**  
-True if yes, otherwise False  
-If any of the path does not exist, return False  
+`f1`: The source  
+`f2`: The destination  
   
-#### `_lockfile (f) `
+#### `_link (f1, f2) `
+  
+Create a symbolic link for the given file  
+
+- **params:**  
+`f1`: The source  
+`f2`: The destination  
+  
+#### `_lockfile (f, real, tmpdir) `
   
 Get the path of lockfile of a file  
 
@@ -1223,66 +1228,12 @@ Get the path of lockfile of a file
 - **returns:**  
 The path of the lock file  
   
-#### `_safeCopy (src, dst, overwrite) `
+#### `_rm (fn) `
   
-Copy a file/dir  
+Remove an entry  
 
 - **params:**  
-`src`: The source file  
-`dst`: The destination  
-`overwrite`: Whether overwrite the destination  
-
-- **return:**  
-True if succeed else False  
-  
-#### `_safeLink (src, dst, overwrite) `
-  
-Symlink a file/dir  
-
-- **params:**  
-`src`: The source file  
-`dst`: The destination  
-`overwrite`: Whether overwrite the destination  
-
-- **return:**  
-True if succeed else False  
-  
-#### `_safeMove (src, dst, overwrite) `
-  
-Move a file/dir  
-
-- **params:**  
-`src`: The source file  
-`dst`: The destination  
-`overwrite`: Whether overwrite the destination  
-
-- **return:**  
-True if succeed else False  
-  
-#### `_safeMoveWithLink (src, dst, overwrite) `
-  
-Move a file/dir and leave a link the source file  
-
-- **params:**  
-`src`: The source file  
-`dst`: The destination  
-`overwrite`: Whether overwrite the destination  
-
-- **return:**  
-True if succeed else False  
-  
-#### `_samefile (f1, f2, callback) `
-  
-Tell whether two paths pointing to the same file  
-
-- **params:**  
-`f1`: the first path  
-`f2`: the second path  
-`callback`: the callback  
-
-- **returns:**  
-True if yes, otherwise False  
-If any of the path does not exist, return False  
+`fn`: The path of the entry  
   
 #### `alwaysList (data) `
   
@@ -1362,13 +1313,15 @@ A dumb Popen (no stdout and stderr)
 - **returns:**  
 The process object  
   
-#### `fileExists (f, callback) `
+#### `fileExists (f, callback, tmpdir) `
   
 Tell whether a path exists under a lock  
 
 - **params:**  
 `f`: the path  
 `callback`: the callback  
+- arguments: whether the file exists and the path of the file  
+`tmpdir`: The tmpdir to save the lock file  
 
 - **returns:**  
 True if yes, otherwise False  
@@ -1419,7 +1372,7 @@ Try to get the source first, if failed, try to get its name, otherwise return No
 - **returns:**  
 The signature  
   
-#### `gz (srcfile, gzfile, overwrite) `
+#### `gz (srcfile, gzfile, overwrite, tmpdir) `
   
 Do a "gzip"-like for a file  
 
@@ -1438,7 +1391,7 @@ Python2 and Python3 compatible map
 - **returns:**  
 The maped list  
   
-#### `parallel (func, args, nthread, method, join) `
+#### `parallel (func, args, nthread, method) `
   
 Call functions in a parallel way.  
 If nthread == 1, will be running in single-threading manner.  
@@ -1470,9 +1423,31 @@ Python2 and Python3 compatible reduce
 - **returns:**  
 The reduced value  
   
-#### `safeCopy (src, dst, overwrite) `
+#### `safeCopy (f1, f2, callback, overwrite, tmpdir) `
   
-Copy a file/dir with locks  
+Safe copy  
+
+- **params:**  
+`src`: The source file  
+`dst`: The dist file  
+`callback`: The callback (r, f1, f2)  
+`overwrite`: Overwrite target file?  
+`tmpdir`: Tmpdir for lock file  
+  
+#### `safeLink (f1, f2, callback, overwrite, tmpdir) `
+  
+Safe link  
+
+- **params:**  
+`src`: The source file  
+`dst`: The dist file  
+`callback`: The callback (r, f1, f2)  
+`overwrite`: Overwrite target file?  
+`tmpdir`: Tmpdir for lock file  
+  
+#### `safeMove (f1, f2, callback, overwrite, tmpdir) `
+  
+Move a file/dir  
 
 - **params:**  
 `src`: The source file  
@@ -1482,50 +1457,29 @@ Copy a file/dir with locks
 - **return:**  
 True if succeed else False  
   
-#### `safeLink (src, dst, overwrite) `
-  
-Symlink a file/dir with locks  
-
-- **params:**  
-`src`: The source file  
-`dst`: The destination  
-`overwrite`: Whether overwrite the destination  
-
-- **return:**  
-True if succeed else False  
-  
-#### `safeMove (src, dst, overwrite) `
-  
-Move a file/dir with locks  
-
-- **params:**  
-`src`: The source file  
-`dst`: The destination  
-`overwrite`: Whether overwrite the destination  
-
-- **return:**  
-True if succeed else False  
-  
-#### `safeMoveWithLink (src, dst, overwrite) `
+#### `safeMoveWithLink (f1, f2, callback, overwrite, tmpdir) `
   
 Move a file/dir and leave a link the source file with locks  
 
 - **params:**  
-`src`: The source file  
-`dst`: The destination  
+`f1`: The source file  
+`f2`: The destination  
 `overwrite`: Whether overwrite the destination  
 
 - **return:**  
 True if succeed else False  
   
-#### `safeRemove (f) `
+#### `safeRemove (f, callback, tmpdir) `
   
 Safely remove a file/dir.  
 
 - **params:**  
 `f`: the file or dir.  
+`callback`: The callback  
+- argument `r`: Whether the file exists before removing  
+- argument `fn`: The path of the file  
   
-#### `samefile (f1, f2, callback) `
+#### `samefile (f1, f2, callback, tmpdir) `
   
 Tell whether two paths pointing to the same file under locks  
 
@@ -1557,7 +1511,7 @@ ret = split("'a,b',c", ",")
 - **returns:**  
 The list of substrings  
   
-#### `targz (srcdir, tgzfile, overwrite) `
+#### `targz (srcdir, tgzfile, overwrite, tmpdir) `
   
 Do a "tar zcf"-like for a directory  
 
@@ -1579,7 +1533,7 @@ This is used to calcuate a uid for a process
 - **returns:**  
 The uid  
   
-#### `ungz (gzfile, dstfile, overwrite) `
+#### `ungz (gzfile, dstfile, overwrite, tmpdir) `
   
 Do a "gunzip"-like for a .gz file  
 
@@ -1587,7 +1541,7 @@ Do a "gunzip"-like for a .gz file
 `gzfile`:  the .gz file  
 `dstfile`: the extracted file  
   
-#### `untargz (tgzfile, dstdir, overwrite) `
+#### `untargz (tgzfile, dstdir, overwrite, tmpdir) `
   
 Do a "tar zxf"-like for .tgz file  
 
@@ -1860,23 +1814,10 @@ Try to submit the job use Popen
   
 
 ## Module `runners.RunnerQueue`  
-> The base queue runner class
-
-	@static variables:
-		`maxsubmit`: Maximum jobs submitted at one time. Default cpu_count()/2
-		`interval` :  The interval to submit next batch of jobs. Default 30
+> The queue runner
 	
 
-#### `__init__ (self, job) `
-  
-Constructor  
-
-- **params:**  
-`job`:    The job object  
-  
-#### `wait (self) `
-  
-Wait for the job to finish  
+#### `submit (self) `
   
 
 ## Module `runners.RunnerLocal`  

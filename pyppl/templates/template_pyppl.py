@@ -16,19 +16,8 @@ Functions added:
 """
 import re, traceback
 from .template import Template
+from ..exception import TemplatePyPPLSyntaxUnclosedTag, TemplatePyPPLSyntaxMalformKeyword, TemplatePyPPLSyntaxDotError, TemplatePyPPLSyntaxNameError, TemplatePyPPLSyntaxNewline, TemplatePyPPLRenderError
 from .. import utils
-
-class TemplatePyPPLSyntaxError(ValueError):
-	"""
-	Raised when a template has a syntax error.
-	"""
-	pass
-
-class TemplatePyPPLRenderError(ValueError):
-	"""
-	Raised when a template failed to render.
-	"""
-	pass
 
 
 class TemplatePyPPLLine(object):
@@ -36,12 +25,16 @@ class TemplatePyPPLLine(object):
 	Line of compiled code
 	"""
 	
-	def __init__(self, line, src):
+	def __init__(self, line, src, indent = 0):
 		"""
 		Constructor of line
 		"""
-		self.line = line
-		self.src  = src
+		self.line  = line
+		self.src   = src
+		self.ndent = indent
+	
+	def __str__(self):
+		return ("\t" * self.ndent) + str(self.line) + "\n"
 
 class TemplatePyPPLCodeBuilder(object):
 	"""
@@ -56,14 +49,16 @@ class TemplatePyPPLCodeBuilder(object):
 		@params:
 			indent: The initial indent level
 		"""
-		self.code    = []
-		self.nIndent = indent
+		self.code   = []
+		self.ndent = indent
 
 	def __str__(self):
-		sections = [(i, sec) for i, sec in enumerate(self.code) if isinstance(sec, TemplatePyPPLCodeBuilder)]
-		for i, sec in sections:
-			self.code[i:(i+1)] = sec.code
-		return "".join(str(c.line) for c in self.code)
+		"""
+		Concatnate of the codes
+		@returns:
+			The concatnated string
+		"""
+		return "".join(str(c) for c in self.code)
 
 	def addLine(self, line, src = ""):
 		"""
@@ -72,7 +67,8 @@ class TemplatePyPPLCodeBuilder(object):
 		@params:
 			line: The line to add
 		"""
-		self.code.append(TemplatePyPPLLine(("\t" * self.nIndent) + str(line) + "\n", src))
+		line = TemplatePyPPLLine(line, src, self.ndent)
+		self.code.append(line)
 
 	def addSection(self):
 		"""
@@ -80,7 +76,7 @@ class TemplatePyPPLCodeBuilder(object):
 		@returns:
 			The section added.
 		"""
-		section = TemplatePyPPLCodeBuilder(self.nIndent)
+		section = TemplatePyPPLCodeBuilder(self.ndent)
 		self.code.append(section)
 		return section
 
@@ -88,21 +84,50 @@ class TemplatePyPPLCodeBuilder(object):
 		"""
 		Increase the current indent for following lines.
 		"""
-		self.nIndent += self.INDENT_STEP
+		self.ndent += self.INDENT_STEP
 
 	def dedent(self):
 		"""
 		Decrease the current indent for following lines.
 		"""
-		self.nIndent -= self.INDENT_STEP
-		
+		self.ndent -= self.INDENT_STEP
 
+	def _nlines(self):
+		"""
+		Get the number of lines in the builder
+		@returns:
+			The number of lines.
+		"""
+		return sum(1 if isinstance(c, TemplatePyPPLLine) else c._nlines() for c in self.code)
+
+	def lineByNo(self, lineno):
+		"""
+		Get the line by line number
+		@params:
+			`lineno`: The line number
+		@returns:
+			The TemplatePyPPLLine object at `lineno`.
+		"""
+		if lineno <= 0: return None
+
+		n = 0
+		for c in self.code:
+			if isinstance(c, TemplatePyPPLLine):
+				n += 1
+				if n == lineno: 
+					return c
+			else:
+				nlines = c._nlines()
+				n += nlines
+				if n >= lineno:
+					return c.lineByNo(lineno - n + nlines)
+		
 	def getGlobals(self):
 		"""
 		Execute the code, and return a dict of globals it defines.
 		"""
 		# A check that the caller really finished all the blocks they started.
-		assert self.nIndent == 0
+		assert self.ndent == 0
 		# Get the Python source as a single string.
 		python_source = str(self)
 		# Execute the source, defining globals, and return them.
@@ -137,9 +162,13 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 		})
 	"""
 	def __init__(self, text, *contexts):
-		"""Construct a Templite with the given `text`.
+		"""
+		Construct a Templite with the given `text`.
 		`contexts` are dictionaries of values to use for future renderings.
 		These are good for filters and global values.
+		@params:
+			`text`: The template text
+			`contexts`: The contexts used to render.
 		"""
 		self.text      = text
 		self.context   = {}
@@ -167,7 +196,7 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 		tokens = re.split(r"(?s)({{.*?}}|{%.*?%}|{#.*?#})", text)
 		lineno = 1
 		for token in tokens:
-			lnstr = "in template line %s: %s" % (lineno, token.rstrip('\n'))
+			lnstr = "Line %s: %s" % (lineno, token.rstrip('\n'))
 			if token.startswith('{#'):
 				# Comment: ignore it and move on.
 				self._parseComments(token, lnstr)
@@ -189,12 +218,12 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 					lineno += len(tokenlines) - 1
 
 		if ops_stack:
-			TemplatePyPPLEngine._syntaxError("Unmatched action tag", ops_stack[-1][1])
+			raise TemplatePyPPLSyntaxUnclosedTag(ops_stack[-1][1])
 
 		self.flushOutput()
 		
 		for var_name, src in [(k, v) for k, v in self.all_vars.items() if k not in self.loop_vars]:
-			vars_code.addLine(("c_%s = context[%r]" % (var_name, var_name)), 'unknown template variable: %s, %s' % (var_name, src))
+			vars_code.addLine(("c_%s = context[%r]" % (var_name, var_name)), 'unknown template variable: "%s" at %s' % (var_name, src))
 
 		self.code.addLine("return ''.join(result)")
 		self.code.dedent()
@@ -202,18 +231,23 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 		self.renderFunctionStr = str(self.code)
 		
 	def _parseComments(self, token, src):
-		pass
+		if '\n' in token:
+			raise TemplatePyPPLSyntaxNewline(src)
 	
 	def _parseExpression(self, token, src):
+		if '\n' in token:
+			raise TemplatePyPPLSyntaxNewline(src)
 		expr = self._exprCode(token[2:-2].strip(), src)
 		self.buffered.append(("to_str(%s)" % expr, src))
 		
 	def _parseTag(self, token, src, ops_stack):
+		if '\n' in token:
+			raise TemplatePyPPLSyntaxNewline(src)
 		words = token[2:-2].strip().split()
 		if words[0] == 'if' or words[0] == 'elif':
 			# An if statement: evaluate the expression to determine if.
 			if len(words) < 2:
-				TemplatePyPPLEngine._syntaxError("Don't understand if/elif", src)
+				raise TemplatePyPPLSyntaxMalformKeyword('if/elif', src)
 			if words[0] == 'if':
 				ops_stack.append(('if', src))
 			else:
@@ -222,14 +256,14 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 			self.code.indent()
 		elif words[0] == 'else':
 			if len(words) > 1:
-				TemplatePyPPLEngine._syntaxError("Don't understand else", src)
+				raise TemplatePyPPLSyntaxMalformKeyword('else', src)
 			self.code.dedent()
 			self.code.addLine("else:", src)
 			self.code.indent()
 		elif words[0] == 'for':
 			# A loop: iterate over expression result.
 			if len(words) < 4 or 'in' not in words or words.index('in') < 2:
-				TemplatePyPPLEngine._syntaxError("Don't understand for", src)
+				raise TemplatePyPPLSyntaxMalformKeyword('for', src)
 			ops_stack.append(('for', src))
 			inidx = words.index('in')
 			keys  = list(map(lambda x: x.strip(), ''.join(words[1:inidx]).split(',')))
@@ -245,17 +279,17 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 		elif words[0].startswith('end'):
 			# Endsomething.  Pop the ops stack.
 			if len(words) != 1:
-				TemplatePyPPLEngine._syntaxError("Don't understand end", src)
+				raise TemplatePyPPLSyntaxMalformKeyword('end', src)
 			end_what = words[0][3:]
 			if not ops_stack:
-				TemplatePyPPLEngine._syntaxError("Too many ends", src)
+				raise TemplatePyPPLSyntaxMalformKeyword('%s (too many ends)' % words[0], src)
 			start_what = ops_stack.pop()
 			if start_what[0] != end_what:
-				TemplatePyPPLEngine._syntaxError("Mismatched end tag", start_what[1] + ' <--> ' + src)
+				raise TemplatePyPPLSyntaxMalformKeyword(words[0], "'%s' paired with '%s'" % (src, start_what[1]))
 			self.code.dedent()
 		else:
-			TemplatePyPPLEngine._syntaxError("Don't understand tag", words[0] + ' at ' + src)
-			
+			raise TemplatePyPPLSyntaxMalformKeyword(words[0], src)
+
 	def _parseLiteral(self, tokenlines, src):
 		for i, line in enumerate(tokenlines):
 			reprstr = repr(line) if i == len(tokenlines) - 1 else repr(line + '\n')
@@ -281,6 +315,11 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 	def _exprCode(self, expr, src):
 		"""
 		Generate a Python expression for `expr`.
+		@params:
+			`expr`: The expression
+			`src`:  The source of the expression
+		@returns:
+			The code after the expression being parsed.
 		"""
 		if isinstance(expr, list):
 			expr = ' '.join(expr)
@@ -331,27 +370,29 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 		return 'TemplatePyPPLEngine with _renderFunction: \n' + self.renderFunctionStr
 	
 	@staticmethod
-	def _syntaxError(msg, thing):
-		"""
-		Raise a syntax error using `msg`, and showing `thing`.
-		"""
-		raise TemplatePyPPLSyntaxError("%s: %r" % (msg, thing))
-	
-	@staticmethod
 	def _variable(name, src, vars_set):
 		"""
 		Track that `name` is used as a variable.
 		Adds the name to `vars_set`, a set of variable names.
 		Raises an syntax error if `name` is not a valid name.
+		@params:
+			`name`: The name of the variable
+			`src`:  The source of the variable
+			`vars_set`: The variable set
 		"""
 		if not re.match(r"[_a-zA-Z][_a-zA-Z0-9]*$", name):
-			TemplatePyPPLEngine._syntaxError("Not a valid name", name)
+			raise TemplatePyPPLSyntaxNameError(name, src)
 		vars_set[name] = src
 			
 	@staticmethod
 	def _do_dots(value, *dots):
 		"""
 		Evaluate dotted expressions at runtime.
+		@params:
+			`value`: The value
+			`dots`:  The set of dots to do one after another
+		@returns:
+			The value after dots being done
 		"""
 		for dot in dots:
 			try:
@@ -359,17 +400,23 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 			except (AttributeError, TypeError):
 				try:
 					value = value[dot]
-				except TypeError:
-					if dot.isdigit(): # names.0 == names[0]
-						value = value[int(dot)]
-					else:
-						raise
+				except (TypeError, KeyError):
+					try:
+						if dot.isdigit(): # names.0 == names[0]
+							value = value[int(dot)]
+						else:
+							raise
+					except Exception:
+						raise TemplatePyPPLSyntaxDotError(value, dot)
 		return value
 
 	def render(self, context=None):
 		"""
 		Render this template by applying it to `context`.
-		`context` is a dictionary of values to use in this rendering.
+		@params:
+			`context`: a dictionary of values to use in this rendering.
+		@returns:
+			The rendered string
 		"""
 		# Make the complete context we'll use.
 		render_context = dict(self.context)
@@ -383,9 +430,10 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 			for stack in stacks:
 				stack = stack.strip()
 				if stack.startswith('File "<string>"'):
-					lineno = int(stack.split(', ')[1].split()[-1]) - 1
-					src    = self.code.code[lineno].src
-					raise TemplatePyPPLRenderError(stacks[0] + ', ' + src)
+					lineno = int(stack.split(', ')[1].split()[-1]) 
+					line   = self.code.lineByNo(lineno)
+					src    = line.src if line else '<unknown source>'
+					raise TemplatePyPPLRenderError(stacks[0], src)
 			raise
 
 class TemplatePyPPL (Template):
