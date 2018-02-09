@@ -252,7 +252,7 @@ class TestTemplatePyPPLEngine(helpers.TestCase):
 		if exception and not msg:
 			self.assertRaises(exception, TemplatePyPPLEngine, text, *contexts)
 		elif exception:
-			self.assertRaisesRegex(exception, msg, TemplatePyPPLEngine, text, *contexts)
+			self.assertRaisesStr(exception, msg, TemplatePyPPLEngine, text, *contexts)
 		else:
 			engine = TemplatePyPPLEngine(text, *contexts)
 			renderfunc = renderfunc.lstrip('\n').split('\n')
@@ -470,7 +470,7 @@ class TestTemplatePyPPLEngine(helpers.TestCase):
 
 	def testRenderExceptions(self, text, context, exception, msg):
 		engine = TemplatePyPPLEngine(text)
-		self.assertRaisesRegex(exception, msg, engine.render, context)
+		self.assertRaisesStr(exception, msg, engine.render, context)
 
 	def dataProvider_testStr(self):
 		yield TemplatePyPPLEngine(''), ''

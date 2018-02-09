@@ -27,7 +27,7 @@ class TestException(helpers.TestCase):
 	def testRaise(self, exc, Exc, msg):
 		def raise_exc():
 			raise exc
-		self.assertRaisesRegex(Exc, msg, raise_exc)
+		self.assertRaisesStr(Exc, msg, raise_exc)
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

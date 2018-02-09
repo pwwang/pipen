@@ -136,7 +136,7 @@ class TestCase(with_metaclass(DataProviderSupport, unittest.TestCase)):
 		second = second.split('\n')
 		self.assertListEqual(first, second, msg)
 
-	def assertRaisesRegex(self, exc, callable, *args, **kwds):
+	def assertRaisesStr(self, exc, callable, *args, **kwds):
 		sixAssertRaisesRegex(self, exc, callable, *args, **kwds)
 
 	'''
