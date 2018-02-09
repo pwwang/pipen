@@ -1,4 +1,4 @@
-import helpers, six, unittest
+import helpers, unittest
 from os import path
 from pyppl.templates import Template
 from pyppl.templates.template_jinja2 import TemplateJinja2
