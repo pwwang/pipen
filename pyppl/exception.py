@@ -43,3 +43,25 @@ class TemplatePyPPLRenderError(Exception):
 	"""
 	def __init__(self, stack, src):
 		super(Exception, self).__init__(stack + ', ' + src)
+
+class LoggerNoSuchTheme(Exception):
+	"""
+	Cannot find a theme
+	"""
+	def __init__(self, theme):
+		super(Exception, self).__init__('No such theme: ' + str(theme))
+
+class LoggerNoSuchColor(Exception):
+	"""
+	Cannot find a color
+	"""
+	def __init__(self, expr):
+		super(Exception, self).__init__('No such color used in: ' + str(expr))
+
+class LoggerFailToCompileTheme(Exception):
+	"""
+	Cannot compile a theme
+	"""
+	def __init__(self, ex, key, v, vexp):
+		super(Exception, self).__init__(str(ex) + ', failed to compile theme for "%s": %s' % (key, repr(v) if v == vexp else (repr(v) + ' (%s)' % repr(vexp))))
+		

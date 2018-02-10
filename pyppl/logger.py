@@ -3,11 +3,12 @@ A customized logger for pyppl
 """
 import logging, re, sys
 from box import Box
+from .exception import LoggerNoSuchTheme, LoggerNoSuchColor, LoggerFailToCompileTheme
 
 # the entire format
-logfmt = "[%(asctime)s]%(message)s"
+LOGFMT = "[%(asctime)s]%(message)s"
 # colors
-colors = Box({
+COLORS = Box({
 	'none'      : '',
 	'end'       : '\033[0m',
 	'bold'      : '\033[1m',
@@ -27,77 +28,77 @@ colors = Box({
 # - starts: startswith the string
 # - re: The regular expression to match
 # - has: with the string in flag
-themes = {
+THEMES = {
 	'greenOnBlack': {
-		'DONE'    : colors.bold + colors.green,
-		'DEBUG'   : colors.bold + colors.black,
-		'PROCESS' : [colors.bold + colors.cyan, colors.bold + colors.underline + colors.cyan],
-		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.green,
-		'has:ERR' : colors.red,
-		'in:WARNING,RETRY' : colors.bold + colors.yellow,
-		'in:CACHED,RUNNING,SKIPPED,RESUMED': colors.yellow,
-		''        : colors.white
+		'DONE'    : COLORS.bold + COLORS.green,
+		'DEBUG'   : COLORS.bold + COLORS.black,
+		'PROCESS' : [COLORS.bold + COLORS.cyan, COLORS.bold + COLORS.underline + COLORS.cyan],
+		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.green,
+		'has:ERR' : COLORS.red,
+		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
+		'in:CACHED,RUNNING,SKIPPED,RESUMED': COLORS.yellow,
+		''        : COLORS.white
 	},
 	'blueOnBlack':  {
-		'DONE'    : colors.bold + colors.blue,
-		'DEBUG'   : colors.bold + colors.black,
-		'PROCESS' : [colors.bold + colors.cyan, colors.bold + colors.underline + colors.cyan],
-		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.blue,
-		'has:ERR' : colors.red,
-		'in:WARNING,RETRY' : colors.bold + colors.yellow,
-		'in:CACHED,RUNNING,SKIPPED,RESUMED': colors.yellow,
-		''        : colors.white
+		'DONE'    : COLORS.bold + COLORS.blue,
+		'DEBUG'   : COLORS.bold + COLORS.black,
+		'PROCESS' : [COLORS.bold + COLORS.cyan, COLORS.bold + COLORS.underline + COLORS.cyan],
+		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.blue,
+		'has:ERR' : COLORS.red,
+		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
+		'in:CACHED,RUNNING,SKIPPED,RESUMED': COLORS.yellow,
+		''        : COLORS.white
 	},
 	'magentaOnBlack':  {
-		'DONE'    : colors.bold + colors.magenta,
-		'DEBUG'   : colors.bold + colors.black,
-		'PROCESS' : [colors.bold + colors.blue, colors.bold + colors.underline + colors.blue],
-		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.magenta,
-		'has:ERR' : colors.red,
-		'WARNING' : colors.bold + colors.yellow,
-		'in:CACHED,RUNNING,SKIPPED,RESUMED': colors.yellow,
-		''        : colors.white
+		'DONE'    : COLORS.bold + COLORS.magenta,
+		'DEBUG'   : COLORS.bold + COLORS.black,
+		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.underline + COLORS.blue],
+		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.magenta,
+		'has:ERR' : COLORS.red,
+		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
+		'in:CACHED,RUNNING,SKIPPED,RESUMED': COLORS.yellow,
+		''        : COLORS.white
 	},
 	'greenOnWhite': {
-		'DONE'    : colors.bold + colors.green,
-		'DEBUG'   : colors.bold + colors.black,
-		'PROCESS' : [colors.bold + colors.blue, colors.bold + colors.underline + colors.blue],
-		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.green,
-		'has:ERR' : colors.red,
-		'in:WARNING,RETRY' : colors.bold + colors.yellow,
-		'in:CACHED,RUNNING,SKIPPED,RESUMED': colors.yellow,
-		''        : colors.black
+		'DONE'    : COLORS.bold + COLORS.green,
+		'DEBUG'   : COLORS.bold + COLORS.black,
+		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.underline + COLORS.blue],
+		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.green,
+		'has:ERR' : COLORS.red,
+		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
+		'in:CACHED,RUNNING,SKIPPED,RESUMED': COLORS.yellow,
+		''        : COLORS.black
 	},
 	'blueOnWhite':  {
-		'DONE'    : colors.bold + colors.blue,
-		'DEBUG'   : colors.bold + colors.black,
-		'PROCESS' : [colors.bold + colors.magenta, colors.bold + colors.underline + colors.magenta],
-		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.blue,
-		'has:ERR' : colors.red,
-		'in:WARNING,RETRY' : colors.bold + colors.yellow,
-		'in:CACHED,RUNNING,SKIPPED,RESUMED': colors.yellow,
-		''        : colors.black
+		'DONE'    : COLORS.bold + COLORS.blue,
+		'DEBUG'   : COLORS.bold + COLORS.black,
+		'PROCESS' : [COLORS.bold + COLORS.magenta, COLORS.bold + COLORS.underline + COLORS.magenta],
+		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.blue,
+		'has:ERR' : COLORS.red,
+		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
+		'in:CACHED,RUNNING,SKIPPED,RESUMED': COLORS.yellow,
+		''        : COLORS.black
 	},
 	'magentaOnWhite':  {
-		'DONE'    : colors.bold + colors.magenta,
-		'DEBUG'   : colors.bold + colors.black,
-		'PROCESS' : [colors.bold + colors.blue, colors.bold + colors.underline + colors.blue],
-		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.magenta,
-		'has:ERR' : colors.red,
-		'in:WARNING,RETRY' : colors.bold + colors.yellow,
-		'in:CACHED,RUNNING,SKIPPED,RESUMED': colors.yellow,
-		''        : colors.black
+		'DONE'    : COLORS.bold + COLORS.magenta,
+		'DEBUG'   : COLORS.bold + COLORS.black,
+		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.underline + COLORS.blue],
+		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.magenta,
+		'has:ERR' : COLORS.red,
+		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
+		'in:CACHED,RUNNING,SKIPPED,RESUMED': COLORS.yellow,
+		''        : COLORS.black
 	}
 }
 
-levels = {
-	'all':     'ALL',
+LEVELS = {
+	'all':     ['INPUT', 'OUTPUT', 'BRINGS', 'SUBMIT', 'P.ARGS', 'P.PROPS', 'JOBDONE', 'DEBUG'],
 	'basic':   [],
 	'normal':  ['INPUT', 'OUTPUT', 'BRINGS', 'SUBMIT', 'P.PROPS'],
 	'nodebug': ['INPUT', 'OUTPUT', 'BRINGS', 'SUBMIT', 'P.ARGS', 'P.PROPS', 'JOBDONE']
 }
 
-levels_always = ['PROCESS', 'SKIPPED', 'RESUMED', 'DEPENDS', 'STDOUT', 'STDERR', 'WARNING', 'ERROR', 'INFO', 'DONE', 'RUNNING', 'CACHED', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'RETRY']
+LEVELS_ALWAYS = ['PROCESS', 'SKIPPED', 'RESUMED', 'DEPENDS', 'STDOUT', 'STDERR', 'WARNING', 'ERROR', 'INFO', 'DONE', 'RUNNING', 'CACHED', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'RETRY']
 
 def _getLevel (record):
 	"""
@@ -140,87 +141,96 @@ def _getColorFromTheme (level, theme):
 def _formatTheme(theme):
 	"""
 	Make them in the standard form with bgcolor and fgcolor in raw terminal color strings
-	If the theme is read from file, try to translate "colors.xxx" to terminal color strings
+	If the theme is read from file, try to translate "COLORS.xxx" to terminal color strings
 	@params:
 		`theme`: The theme
 	@returns:
 		The formatted colors
 	"""
 	if theme is True:
-		theme = themes['greenOnBlack']
+		theme = THEMES['greenOnBlack']
 	if not theme:
 		return False
 	if not isinstance(theme, dict):
-		raise ValueError('Log theme not found: %s' % theme)
-		
-	replacements = {}
-	for key, val in colors.items():
-		replacements['colors.' + key] = val
+		raise LoggerNoSuchTheme(theme)
 	
-	ret = {'': [colors.white, colors.white]}
+	ret = {'': [COLORS.white, COLORS.white]}
 	for key, val in theme.items():
 		if not isinstance(val, list):
 			val = [val]
 		if len(val) == 1:
 			val = val * 2
-		# it's not a color, try to find colors.xxx keywords
+		# it's not a color, try to find COLORS.xxx keywords
 		for i, v in enumerate(val):
-			if v and not re.escape(v).startswith('\\'):
-				for ck, cv in colors.items():
-					exprStr = v.replace('colors.' + ck, '"' + cv + '"')
-					try:
-						val[i] = eval(exprStr)
-					except (SyntaxError, AttributeError):
-						sys.stderr.write('Cannot get colors in %s (%s)\n' % (exprStr, v))
-						raise
-			else:
-				val[i] = v
+			cstrs = set(re.findall(r'COLORS\.\w+', v))
+			vexp = v
+			for cstr in cstrs:
+				c = cstr[7:]
+				if c not in COLORS:
+					raise LoggerNoSuchColor(c)
+				vexp = vexp.replace(cstr, "'" + COLORS[c] + "'")
+
+			if vexp != v:
+				try:
+					val[i] = eval(vexp)
+				except Exception as ex:
+					raise LoggerFailToCompileTheme(ex, key, v, vexp)
+
 		ret[key] = val
 	return ret
 	
-class pFilter (logging.Filter):
+class PyPPLLogFilter (logging.Filter):
 	"""
 	logging filter by levels (flags)
 	"""
 	
 	def __init__(self, name='', lvls='normal', lvldiff=None):
 		logging.Filter.__init__(self, name)
-		if not isinstance(lvls, list) and lvls in levels:
-			self.levels = levels[lvls]
-		elif not isinstance(lvls, list) and not lvls is None:
-			self.levels = [lvls]
+		if not isinstance(lvls, list):
+			if lvls in LEVELS:
+				self.levels = LEVELS[lvls]
+			elif lvls == 'ALL':
+				self.levels = LEVELS['all']
+			elif lvls:
+				self.levels = [lvls]
+			else:
+				self.levels = lvls
 		else:
 			self.levels = lvls
-		
-		self.lvlhide = []
-		self.lvlshow = []
-		if not lvldiff: lvldiff = []
+
+		if self.levels is False: return
+
+		if self.levels is not None:
+			self.levels += LEVELS_ALWAYS
+			self.levels = list(set(self.levels))
+		else:
+			self.levels = []
+			
+		lvldiff = lvldiff or []
 		for ld in lvldiff:
 			if ld.startswith('-'):
-				self.lvlhide.append(ld[1:].upper())
+				ld = ld[1:].upper()
+				if ld in self.levels: 
+					del self.levels[self.levels.index(ld)]
 			elif ld.startswith('+'):
-				self.lvlshow.append(ld[1:].upper())
+				ld = ld[1:].upper()
+				if ld not in self.levels:
+					self.levels.append(ld)
 			else:
-				self.lvlshow.append(ld.upper())
+				ld = ld.upper()
+				if ld not in self.levels:
+					self.levels.append(ld)
 	
 	def filter (self, record):
 		level   = _getLevel(record)[0]
-		# disable logging
-		if self.levels is None or level in self.lvlhide:
-			return False
-		if level in self.lvlshow  or \
-		   self.levels == 'ALL'   or \
-		   level.startswith('_')  or \
-		   level in levels_always or \
-		   level in self.levels:
-			return True
+		return self.levels and ( level in self.levels or level.startswith('_') )
 
-class pFormatter (logging.Formatter):
+class PyPPLLogFormatter (logging.Formatter):
 	"""
 	logging formatter for pyppl
 	"""
 	def __init__(self, fmt=None, theme='greenOnBlack'):
-		fmt = logfmt if fmt is None else fmt
+		fmt = LOGFMT if fmt is None else fmt
 		logging.Formatter.__init__(self, fmt, "%Y-%m-%d %H:%M:%S")
 		self.theme  = theme
 		
@@ -228,18 +238,18 @@ class pFormatter (logging.Formatter):
 	def format(self, record):
 		(level, msg) = _getLevel(record)
 		theme = 'greenOnBlack' if self.theme is True else self.theme
-		theme = themes[theme] if not isinstance(theme, dict) and theme in themes else theme
+		theme = THEMES[theme] if not isinstance(theme, dict) and theme in THEMES else theme
 		theme = _formatTheme(theme)
 		
 		if not theme:
-			colorLevelStart = colors.none
-			colorLevelEnd   = colors.none
-			colorMsgStart   = colors.none
-			colorMsgEnd     = colors.none
+			colorLevelStart = COLORS.none
+			colorLevelEnd   = COLORS.none
+			colorMsgStart   = COLORS.none
+			colorMsgEnd     = COLORS.none
 		else:
 			(colorLevelStart, colorMsgStart) = _getColorFromTheme(level, theme)
-			colorLevelEnd   = colors.end
-			colorMsgEnd     = colors.end
+			colorLevelEnd   = COLORS.end
+			colorMsgEnd     = COLORS.end
 		
 		level = level[1:] if level.startswith('_') else level
 		level = level[:7]
@@ -265,14 +275,14 @@ def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, name='Py
 	logger    = logging.getLogger (name)
 	for handler in logger.handlers:
 		handler.close()
-	logger.handlers = []
+	del logger.handlers[:]
 	streamCh  = logging.StreamHandler()
-	streamCh.setFormatter (pFormatter(theme = theme))
-	streamCh.addFilter(pFilter(name = name, lvls = levels, lvldiff = lvldiff))
+	streamCh.setFormatter (PyPPLLogFormatter(theme = theme))
+	streamCh.addFilter(PyPPLLogFilter(name = name, lvls = levels, lvldiff = lvldiff))
 	
 	if logfile:
 		fileCh = logging.FileHandler(logfile)
-		fileCh.setFormatter(pFormatter(theme = None))
+		fileCh.setFormatter(PyPPLLogFormatter(theme = None))
 		logger.addHandler (fileCh)
 	
 	logger.addHandler (streamCh)

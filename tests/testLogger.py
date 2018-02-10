@@ -1,662 +1,199 @@
-import helpers, unittest
-
-import sys
-import logging
-import tempfile
+import helpers, unittest, logging
 
 from os import path
-from contextlib import contextmanager
-from six import StringIO
 from pyppl import logger
+from pyppl.logger import LEVELS, LEVELS_ALWAYS, COLORS, THEMES, PyPPLLogFilter, PyPPLLogFormatter
+from pyppl.exception import LoggerNoSuchTheme, LoggerNoSuchColor, LoggerFailToCompileTheme
 
-@contextmanager
-def captured_output():
-	new_out, new_err = StringIO(), StringIO()
-	old_out, old_err = sys.stdout, sys.stderr
-	try:
-		sys.stdout, sys.stderr = new_out, new_err
-		yield sys.stdout, sys.stderr
-	finally:
-		sys.stdout, sys.stderr = old_out, old_err
+class TestPyPPLLogFilter(helpers.TestCase):
 
-class TestLogger (unittest.TestCase):
+	def dataProvider_testInit(self):
+		yield '', 'normal', None, LEVELS['normal'] + LEVELS_ALWAYS
+		yield '', 'ALL', None, LEVELS['all'] + LEVELS_ALWAYS
+		yield '', 'DEBUG', None, ['DEBUG'] + LEVELS_ALWAYS
+		yield '', 'ONLY', None, ['ONLY'] + LEVELS_ALWAYS
+		yield '', ['INPUT', 'OUTPUT'], None, ['INPUT', 'OUTPUT'] + LEVELS_ALWAYS
+		yield '', None, None, []
+		yield '', None, ['INPUT'], ['INPUT']
+		yield '', None, ['+INPUT'], ['INPUT']
+		yield '', [], ['INPUT'], ['INPUT'] + LEVELS_ALWAYS
+		yield '', ['INPUT', 'OUTPUT'], ['-OUTPUT'], ['INPUT'] + LEVELS_ALWAYS
 
-	def testGetColorFromTheme (self):
-		theme = logger.themes['greenOnBlack']
-		self.assertEqual (logger._getColorFromTheme('DONE', theme), tuple([logger.colors.bold + logger.colors.green]*2))
-		self.assertEqual (logger._getColorFromTheme('DEBUG', theme), tuple([logger.colors.bold + logger.colors.black]*2))
-		self.assertEqual (logger._getColorFromTheme('PROCESS', theme), tuple([logger.colors.bold + logger.colors.cyan, logger.colors.bold + logger.colors.underline + logger.colors.cyan]))
-		self.assertEqual (logger._getColorFromTheme('INFO', theme), tuple([logger.colors.green]*2))
-		self.assertEqual (logger._getColorFromTheme('DEPENDS', theme), tuple([logger.colors.green]*2))
-		self.assertEqual (logger._getColorFromTheme('ERRRRR', theme), tuple([logger.colors.red]*2))
-		self.assertEqual (logger._getColorFromTheme('WARNING', theme), tuple([logger.colors.bold + logger.colors.yellow]*2))
-		self.assertEqual (logger._getColorFromTheme('CACHED', theme), tuple([logger.colors.yellow]*2))
-		self.assertEqual (logger._getColorFromTheme('234', theme), tuple([logger.colors.white]*2))
+	def testInit(self, name, lvls, lvldiff, outlvls):
+		pf = PyPPLLogFilter(name, lvls, lvldiff)
+		self.assertIsInstance(pf, PyPPLLogFilter)
+		if outlvls is None:
+			self.assertIsNone(pf.levels)
+		else:
+			self.assertItemEqual(pf.levels,  list(set(outlvls)))
 
-	def testGetLevel(self):
-		record = logging.LogRecord(
+	def dataProvider_testFilter(self):
+		r = logging.LogRecord(
 			name     = 'noname',
-			level    = logging.DEBUG,
 			pathname = __file__,
-			lineno   = 10,
-			msg      = 'hi',
 			args     = None,
-			exc_info = None
+			exc_info = None,
+			level    = logging.INFO,
+			lineno   = 10,
+			msg      = '',
 		)
-		self.assertEqual(logger._getLevel(record), ('DEBUG', 'hi'))
-		record.msg = '[le>.l] hi'
-		self.assertEqual(logger._getLevel(record), ('LE>.L', 'hi'))
-		record.msg = '[123456789] hi'
-		self.assertEqual(logger._getLevel(record), ('123456789', 'hi'))
+		yield '', False, None, r, '[INFO]', False
+		yield '', False, None, r, '[_INFO]', False
+		yield '', 'ONLY', None, r, '[DEBUG2]', False
+		yield '', 'ONLY', None, r, '[ONLY]', True
+		yield '', 'ONLY', None, r, '[PROCESS]', True
+		yield '', [], ['ONLY'], r, '[PROCESS]', True
+		yield '', None, ['ONLY'], r, '[PROCESS]', False
+		yield '', None, ['ONLY'], r, '[_a]', True
+		yield '', 'all', None, r, '[debug]', True
+		yield '', 'nodebug', None, r, '[debug]', False
 
-	def testformatTheme(self):
+	def testFilter(self, name, lvls, lvldiff, record, msg, out):
+		pf = PyPPLLogFilter(name, lvls, lvldiff)
+		record.msg = msg
+		self.assertEqual(pf.filter(record), out)
+
+
+class TestPyPPLLogFormatter(helpers.TestCase):
+
+	def dataProvider_testInit(self):
+		yield None, {}
+		yield None, 'greenOnBlank'
+
+	def testInit(self, fmt, theme):
+		lf = PyPPLLogFormatter(fmt, theme)
+		self.assertIsInstance(lf, PyPPLLogFormatter)
+		self.assertEqual(lf.theme, theme)
+
+	def dataProvider_testFormat(self):
+		yield None, True, '[info]a', '[%s   INFO%s] %sa%s' % (COLORS.green, COLORS.end, COLORS.green, COLORS.end)
+		yield None, 'greenOnBlack', '[info]a', '[%s   INFO%s] %sa%s' % (COLORS.green, COLORS.end, COLORS.green, COLORS.end)
+		yield None, 'magentaOnWhite', '[info]a', '[%s   INFO%s] %sa%s' % (COLORS.magenta, COLORS.end, COLORS.magenta, COLORS.end)
+		yield None, 'greenOnBlack', '[warning] ', '[%sWARNING%s] %s%s' % (COLORS.bold + COLORS.yellow, COLORS.end, COLORS.bold + COLORS.yellow, COLORS.end)
+		yield None, 'greenOnBlack', '[warning] ', '[%sWARNING%s] %s%s' % (COLORS.bold + COLORS.yellow, COLORS.end, COLORS.bold + COLORS.yellow, COLORS.end)
+		yield None, '', '[warning] ', '[%sWARNING%s] %s%s' % ('', '', '', '')
+		yield None, None, '[warning] ', '[%sWARNING%s] %s%s' % ('', '', '', '')
+
+	def testFormat(self, fmt, theme, msg, out):
+		r = logging.LogRecord(
+			name     = 'noname',
+			pathname = __file__,
+			args     = None,
+			exc_info = None,
+			level    = logging.INFO,
+			lineno   = 10,
+			msg      = '',
+		)
+		r.msg = msg
+		lf = PyPPLLogFormatter(fmt, theme)
+		f  = lf.format(r)
+		t  = lf.formatTime(r, fmt if fmt else "[%Y-%m-%d %H:%M:%S]")
+		self.assertEqual(f[:21], t)
+		self.assertEqual(f[21:], out)
+
+
+class TestLogger(helpers.TestCase):
+
+	theme_done_key    = 'DONE'
+	theme_debug_key   = 'DEBUG'
+	theme_process_key = 'PROCESS'
+	theme_submit_key  = 'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS'
+	theme_error_key   = 'has:ERR'
+	theme_warning_key = 'in:WARNING,RETRY'
+	theme_running_key = 'in:CACHED,RUNNING,SKIPPED,RESUMED'
+	theme_other_key   = ''
+
+	def dataProvider_testGetLevel(self):
+		r = logging.LogRecord(
+			name     = 'noname',
+			pathname = __file__,
+			args     = None,
+			exc_info = None,
+			level    = logging.DEBUG,
+			lineno   = 10,
+			msg      = '',
+		)
+		yield r, '[debug]hi', ('DEBUG', 'hi'),
+		yield r, '[le>.l] hi', ('LE>.L', 'hi'),
+		yield r, '[123456789] hi', ('123456789', 'hi'),
+
+	def testGetLevel(self, record, msg, out):
+		record.msg   = msg
+		self.assertTupleEqual(logger._getLevel(record), out)
+
+	def dataProvider_testGetColorFromTheme(self):
+		for tname in ['greenOnBlack', 'blueOnBlack', 'magentaOnBlack', 'greenOnWhite', 'blueOnWhite', 'magentaOnWhite']:
+			yield tname, 'DONE', self.theme_done_key
+			yield tname, 'DEBUG', self.theme_debug_key
+			yield tname, 'PROCESS', self.theme_process_key
+			yield tname, 'INFO', self.theme_submit_key
+			yield tname, 'DEPENDS', self.theme_submit_key
+			yield tname, 'ERRRRR', self.theme_error_key
+			yield tname, 'WARNING', self.theme_warning_key
+			yield tname, 'CACHED', self.theme_running_key
+			yield tname, '123', self.theme_other_key
+		
+	def testGetColorFromTheme (self, tname, level, key):
+		theme = THEMES[tname]
+		c = theme[key] if key in theme else theme[self.theme_other_key]
+		c = tuple(c) if isinstance(c, list) else (c, )
+		c = c * 2 if len(c) == 1 else c
+		ret = logger._getColorFromTheme(level, theme)
+		ret = (tname, level) + ret # just indicate when test fails
+		c   = (tname, level) + c
+		self.assertTupleEqual(ret, c)
+
+	def dataProvider_testFormatTheme(self):
+		yield True, THEMES['greenOnBlack']
+		yield False, False
+		yield 1, None, LoggerNoSuchTheme
+		yield {
+			'DONE'    : "COLORS.bold + COLORS.green",
+			'DEBUG'   : "COLORS.bold + COLORS.black",
+			'PROCESS' : ["COLORS.bold + COLORS.cyan", "COLORS.bold + COLORS.underline + COLORS.cyan"],
+			'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': "COLORS.green",
+			'has:ERR' : "COLORS.red",
+			'in:WARNING,RETRY' : "'\\033[1m' + COLORS.yellow",
+			# must quote ------>  ^        ^
+			'in:CACHED,RUNNING,SKIPPED,RESUMED': "COLORS.yellow",
+			''        : "COLORS.white"
+		}, THEMES['greenOnBlack']
+		yield {
+			'DONE': "COLORS.whatever"
+		}, {}, LoggerNoSuchColor
+		yield {
+			'DONE': "COLORS.white x"
+		}, {}, LoggerFailToCompileTheme
+
+	def testFormatTheme(self, tname, theme, exception = None):
 		self.maxDiff = None
-		self.assertEqual(logger._formatTheme(True), {
-			'DONE'    : [logger.colors.bold + logger.colors.green, logger.colors.bold + logger.colors.green],
-			'DEBUG'   : [logger.colors.bold + logger.colors.black, logger.colors.bold + logger.colors.black],
-			'PROCESS' : [logger.colors.bold + logger.colors.cyan, logger.colors.bold + logger.colors.underline + logger.colors.cyan],
-			'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': [logger.colors.green, logger.colors.green],
-			'has:ERR' : [logger.colors.red, logger.colors.red],
-			'in:WARNING,RETRY' : [logger.colors.bold + logger.colors.yellow, logger.colors.bold + logger.colors.yellow],
-			'in:CACHED,RUNNING,SKIPPED,RESUMED': [logger.colors.yellow, logger.colors.yellow],
-			''        : [logger.colors.white, logger.colors.white]
-		})
-		self.assertEqual(logger._formatTheme(True), logger._formatTheme(logger.themes['greenOnBlack']))
-		self.assertFalse(logger._formatTheme(False))
-		self.assertEqual(logger._formatTheme({
-			'DONE'    : "colors.bold + colors.green",
-			'DEBUG'   : "colors.bold + colors.black",
-			'PROCESS' : ["colors.bold + colors.cyan", "colors.bold + colors.underline + colors.cyan"],
-			'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': "colors.green",
-			'has:ERR' : "colors.red",
-			'in:WARNING,RETRY' : "colors.bold + colors.yellow",
-			'in:CACHED,RUNNING,SKIPPED,RESUMED': "colors.yellow",
-			''        : "colors.white"
-		}), logger._formatTheme(logger.themes['greenOnBlack']))
+		if exception:
+			self.assertRaises(exception, logger._formatTheme, tname)
+		else:
+			if theme is False:
+				self.assertFalse(logger._formatTheme(tname))
+			else:
+				self.assertDictEqual(logger._formatTheme(tname), logger._formatTheme(theme))
 
-		self.assertRaises(ValueError, logger._formatTheme, "a")
+	def dataProvider_testGetLogger(self, testdir):
+		yield 'normal', True, None, None, '[info]a', '[%s   INFO%s] %sa%s' % (COLORS.green, COLORS.end, COLORS.green, COLORS.end)
+		yield 'normal', None, None, None, '[info]a', '[   INFO] a'
+		logfile = path.join(testdir, 'logfile.txt')
+		yield 'normal', True, logfile, None, '[info]a', '[%s   INFO%s] %sa%s' % (COLORS.green, COLORS.end, COLORS.green, COLORS.end), '[   INFO] a'
+		yield 'normal', None, logfile, None, '[info]a', '[   INFO] a', '[   INFO] a'
 
-		with captured_output():
-			logger.getLogger()
-			self.assertRaises((SyntaxError, AttributeError), logger._formatTheme, {
-				'DONE': "colors.unknowncolor"
-			})
-	
-	def testGetLogger(self):
-		log1 = logger.getLogger()
+	def testGetLogger(self, levels, theme, logfile, lvldiff, msg, outs, fileouts = None):
 		log2 = logger.getLogger()
-		self.assertIs(log1, log2)
-		self.assertEqual(len(log1.handlers), 1)
-		logger.getLogger(logfile = path.join(tempfile.gettempdir(), 'testGetLogger.log'))
-		self.assertEqual(len(log1.handlers), 2)
+		log = logger.getLogger(levels, theme, logfile, lvldiff)
+		self.assertIs(log, log2)
+		self.assertIsInstance(log, logging.Logger)
+		self.assertEqual(len(log.handlers), int(bool(logfile)) + 1)
+		with helpers.log2str(levels, theme, logfile, lvldiff) as (out, err):
+			log.info(msg)
+		self.assertEqual(err.getvalue().strip()[21:], outs)
+		if logfile:
+			self.assertInFile(fileouts, logfile)
 
-	def testFilter(self):
-
-		with captured_output() as (out, err):
-			log = logger.getLogger(levels=None)
-			log.info('You should not see this1')
-			self.assertTrue('You should not see this1' not in err.getvalue())
-			log.info('You should not see this2')
-			self.assertTrue('You should not see this2' not in err.getvalue())
-
-			logger.getLogger(levels="ONLY")
-			log.info('[No]You cannot see this3')
-			self.assertTrue('You cannot see this3' not in err.getvalue())
-			log.info('[ONLY]You can see this4')
-			self.assertTrue('You can see this4' in err.getvalue())
-			log.info('[   ONLY]You can see this5, too')
-			self.assertTrue('You can see this5, too' in err.getvalue())
-
-			logger.getLogger(levels='all')
-			log.debug('You see this6, debug')
-			self.assertTrue('You see this6, debug' in err.getvalue())
-			log.warning('You see this7, warning')
-			self.assertTrue('You see this7, warning' in err.getvalue())
-			log.error('You see this8, error')
-			self.assertTrue('You see this8, error' in err.getvalue())
-			log.info('You see this9, info')
-			self.assertTrue('You see this9, info' in err.getvalue())
-			
-			logger.getLogger(levels='basic')
-			log.info('[PROCESS]You see this10')
-			self.assertTrue('You see this10' in err.getvalue())
-			log.info('[NO]You don\'t see this11')
-			self.assertTrue('You don\'t see this11' not in err.getvalue())
-			log.info('[DEPENDS]You see this12')
-			self.assertTrue('You see this12' in err.getvalue())
-			log.info('[STDOUT]You see this13')
-			self.assertTrue('You see this13' in err.getvalue())
-			log.info('[STDERR]You see this14')
-			self.assertTrue('You see this14' in err.getvalue())
-			log.info('[ERROR]You see this15')
-			self.assertTrue('You see this15' in err.getvalue())
-			log.info('[INFO]You see this16')
-			self.assertTrue('You see this16' in err.getvalue())
-			log.info('[DONE]You see this17')
-			self.assertTrue('You see this17' in err.getvalue())
-			log.info('[RUNNING]You see this18')
-			self.assertTrue('You see this18' in err.getvalue())
-			log.info('[CACHED]You see this19')
-			self.assertTrue('You see this19' in err.getvalue())
-			log.info('[EXPORT]You see this20')
-			self.assertTrue('You see this20' in err.getvalue())
-			log.info('[INPUT]You don\'t see this21')
-			self.assertTrue('You don\'t see this21' not in err.getvalue())
-			log.info('[OUTPUT]You don\'t see this22')
-			self.assertTrue('You don\'t see this22' not in err.getvalue())
-			log.info('[SUBMIT]You don\'t see this23')
-			self.assertTrue('You don\'t see this23' not in err.getvalue())
-			log.info('[P.ARGS]You don\'t see this24')
-			self.assertTrue('You don\'t see this24' not in err.getvalue())
-			log.info('[P.PROPS]You don\'t see this25')
-			self.assertTrue('You don\'t see this25' not in err.getvalue())
-			log.info('[JOBDONE]You don\'t see this26')
-			self.assertTrue('You don\'t see this26' not in err.getvalue())
-			log.info('[DEBUG]You don\'t see this27')
-			self.assertTrue('You don\'t see this27' not in err.getvalue())
-			
-			logger.getLogger(levels = 'normal')
-			log.info('[PROCESS]You see this28')
-			self.assertTrue('You see this28' in err.getvalue())
-			log.info('[NO]You don\'t see this29')
-			self.assertTrue('You don\'t see this29' not in err.getvalue())
-			log.info('[DEPENDS]You see this30')
-			self.assertTrue('You see this30' in err.getvalue())
-			log.info('[STDOUT]You see this31')
-			self.assertTrue('You see this31' in err.getvalue())
-			log.info('[STDERR]You see this32')
-			self.assertTrue('You see this32' in err.getvalue())
-			log.info('[ERROR]You see this33')
-			self.assertTrue('You see this33' in err.getvalue())
-			log.info('[INFO]You see this34')
-			self.assertTrue('You see this34' in err.getvalue())
-			log.info('[DONE]You see this35')
-			self.assertTrue('You see this35' in err.getvalue())
-			log.info('[RUNNING]You see this36')
-			self.assertTrue('You see this36' in err.getvalue())
-			log.info('[CACHED]You see this37')
-			self.assertTrue('You see this37' in err.getvalue())
-			log.info('[EXPORT]You see this38')
-			self.assertTrue('You see this38' in err.getvalue())
-			log.info('[INPUT]You see this39')
-			self.assertTrue('You see this39' in err.getvalue())
-			log.info('[OUTPUT]You see this40')
-			self.assertTrue('You see this40' in err.getvalue())
-			log.info('[SUBMIT]You see this41')
-			self.assertTrue('You see this41' in err.getvalue())
-			log.info('[P.ARGS]You don\'t see this42')
-			self.assertTrue('You don\'t see this42' not in err.getvalue())
-			log.info('[P.PROPS]You see this43')
-			self.assertTrue('You see this43' in err.getvalue())
-			log.info('[JOBDONE]You don\'t see this44')
-			self.assertTrue('You don\'t see this44' not in err.getvalue())
-			log.info('[DEBUG]You don\'t see this45')
-			self.assertTrue('You don\'t see this45' not in err.getvalue())
-			
-			logger.getLogger(levels = 'nodebug')
-			log.info('[PROCESS]You see this46')
-			self.assertTrue('You see this46' in err.getvalue())
-			log.info('[NO]You don\'t see this47')
-			self.assertTrue('You don\'t see this47' not in err.getvalue())
-			log.info('[_NO]But you see this48')
-			self.assertTrue('But you see this48' in err.getvalue())
-			log.info('[DEPENDS]You see this49')
-			self.assertTrue('You see this49' in err.getvalue())
-			log.info('[STDOUT]You see this50')
-			self.assertTrue('You see this50' in err.getvalue())
-			log.info('[STDERR]You see this51')
-			self.assertTrue('You see this51' in err.getvalue())
-			log.info('[ERROR]You see this52')
-			self.assertTrue('You see this52' in err.getvalue())
-			log.info('[INFO]You see this53')
-			self.assertTrue('You see this53' in err.getvalue())
-			log.info('[DONE]You see this54')
-			self.assertTrue('You see this54' in err.getvalue())
-			log.info('[RUNNING]You see this55')
-			self.assertTrue('You see this55' in err.getvalue())
-			log.info('[CACHED]You see this56')
-			self.assertTrue('You see this56' in err.getvalue())
-			log.info('[EXPORT]You see this57')
-			self.assertTrue('You see this57' in err.getvalue())
-			log.info('[INPUT]You see this58')
-			self.assertTrue('You see this58' in err.getvalue())
-			log.info('[OUTPUT]You see this59')
-			self.assertTrue('You see this59' in err.getvalue())
-			log.info('[SUBMIT]You see this60')
-			self.assertTrue('You see this60' in err.getvalue())
-			log.info('[P.ARGS]You see this61')
-			self.assertTrue('You see this61' in err.getvalue())
-			log.info('[P.PROPS]You see this62')
-			self.assertTrue('You see this62' in err.getvalue())
-			log.info('[JOBDONE]You see this63')
-			self.assertTrue('You see this63' in err.getvalue())
-			log.info('[DEBUG]You don\'t see this64')
-			self.assertTrue('You don\'t see this64' not in err.getvalue())
-
-
-	
-	def testFormatter(self):
-		with captured_output() as (out, err):
-			log = logger.getLogger(theme = False)
-			log.info('[PROCESS]You see this1')
-			self.assertTrue('You see this1' in err.getvalue())
-			log.info('[NO]You don\'t see this2')
-			self.assertTrue('You don\'t see this2' not in err.getvalue())
-			log.info('[_NO]But you see this3')
-			self.assertTrue('But you see this3' in err.getvalue())
-			log.info('[DEPENDS]You see this4')
-			self.assertTrue('You see this4' in err.getvalue())
-			log.info('[STDOUT]You see this5')
-			self.assertTrue('You see this5' in err.getvalue())
-			log.info('[STDERR]You see this6')
-			self.assertTrue('You see this6' in err.getvalue())
-			log.info('[ERROR]You see this7')
-			self.assertTrue('You see this7' in err.getvalue())
-			log.info('[INFO]You see this8')
-			self.assertTrue('You see this8' in err.getvalue())
-			log.info('[DONE]You see this9')
-			self.assertTrue('[   DONE] You see this9' in err.getvalue())
-			log.info('[RUNNING]You see this10')
-			self.assertTrue('You see this10' in err.getvalue())
-			log.info('[CACHED]You see this11')
-			self.assertTrue('You see this11' in err.getvalue())
-			log.info('[EXPORT]You see this12')
-			self.assertTrue('You see this12' in err.getvalue())
-			log.info('[INPUT]You see this13')
-			self.assertTrue('You see this13' in err.getvalue())
-			log.info('[OUTPUT]You see this14')
-			self.assertTrue('You see this14' in err.getvalue())
-			log.info('[SUBMIT]You see this15')
-			self.assertTrue('You see this15' in err.getvalue())
-			log.info('[P.ARGS]You don\'t see this16')
-			self.assertTrue('You don\'t see this16' not in err.getvalue())
-			log.info('[P.PROPS]You see this17')
-			self.assertTrue('You see this17' in err.getvalue())
-			log.info('[JOBDONE]You don\'t see this18')
-			self.assertTrue('You don\'t see this18' not in err.getvalue())
-			log.info('[DEBUG]You don\'t see this19')
-			self.assertTrue('You don\'t see this19' not in err.getvalue())
-		
-		with captured_output() as (out, err):
-			logger.getLogger(theme = True)
-			log.info('[PROCESS]greenOnBlack')
-			self.assertTrue('greenOnBlack' in err.getvalue())
-			log.info('[NO]You don\'t see this1')
-			self.assertTrue('You don\'t see this1' not in err.getvalue())
-			log.info('[_NO]But you see this2')
-			self.assertTrue('But you see this2' in err.getvalue())
-			log.info('[DEPENDS]You see this3')
-			self.assertTrue('You see this3' in err.getvalue())
-			log.info('[STDOUT]You see this4')
-			self.assertTrue('You see this4' in err.getvalue())
-			log.info('[STDERR]You see this5')
-			self.assertTrue('You see this5' in err.getvalue())
-			log.info('[ERROR]You see this6')
-			self.assertTrue('You see this6' in err.getvalue())
-			log.info('[INFO]You see this7')
-			self.assertTrue('You see this7' in err.getvalue())
-			log.info('[DONE]You see this8')
-			self.assertTrue(logger.colors.bold + logger.colors.green + 'You see this8' + logger.colors.end in err.getvalue())
-			log.info('[RUNNING]You see this9')
-			self.assertTrue('You see this9' in err.getvalue())
-			log.info('[CACHED]You see this10')
-			self.assertTrue('You see this10' in err.getvalue())
-			log.info('[EXPORT]You see this11')
-			self.assertTrue('You see this11' in err.getvalue())
-			log.info('[INPUT]You see this12')
-			self.assertTrue('You see this12' in err.getvalue())
-			log.info('[OUTPUT]You see this13')
-			self.assertTrue('You see this13' in err.getvalue())
-			log.info('[SUBMIT]You see this14')
-			self.assertTrue('You see this14' in err.getvalue())
-			log.info('[P.ARGS]You not see this15')
-			self.assertTrue('You not see this15' not in err.getvalue())
-			log.info('[P.PROPS]You see this16')
-			self.assertTrue('You see this16' in err.getvalue())
-			log.info('[JOBDONE]You not see this17')
-			self.assertTrue('You not see this17' not in err.getvalue())
-			log.info('[DEBUG]You don\'t see this18')
-			self.assertTrue('You don\'t see this18' not in err.getvalue())
-		
-		with captured_output() as (out, err):
-			logger.getLogger(theme = 'blueOnBlack')
-			log.info('[PROCESS]blueOnBlack')
-			self.assertTrue('blueOnBlack' in err.getvalue())
-			log.info('[NO]You don\'t see this1')
-			self.assertTrue('You don\'t see this1' not in err.getvalue())
-			log.info('[_NO]But you see this2')
-			self.assertTrue('But you see this2' in err.getvalue())
-			log.info('[DEPENDS]You see this3')
-			self.assertTrue('You see this3' in err.getvalue())
-			log.info('[STDOUT]You see this4')
-			self.assertTrue('You see this4' in err.getvalue())
-			log.info('[STDERR]You see this5')
-			self.assertTrue('You see this5' in err.getvalue())
-			log.info('[ERROR]You see this6')
-			self.assertTrue('You see this6' in err.getvalue())
-			log.info('[INFO]You see this7')
-			self.assertTrue('You see this7' in err.getvalue())
-			log.info('[DONE]You see this8')
-			self.assertTrue(logger.colors.bold + logger.colors.blue + 'You see this8' in err.getvalue())
-			log.info('[RUNNING]You see this9')
-			self.assertTrue('You see this9' in err.getvalue())
-			log.info('[CACHED]You see this10')
-			self.assertTrue('You see this10' in err.getvalue())
-			log.info('[EXPORT]You see this11')
-			self.assertTrue('You see this11' in err.getvalue())
-			log.info('[INPUT]You see this12')
-			self.assertTrue('You see this12' in err.getvalue())
-			log.info('[OUTPUT]You see this13')
-			self.assertTrue('You see this13' in err.getvalue())
-			log.info('[SUBMIT]You see this14')
-			self.assertTrue('You see this14' in err.getvalue())
-			log.info('[P.ARGS]You not see this15')
-			self.assertTrue('You not see this15' not in err.getvalue())
-			log.info('[P.PROPS]You see this16')
-			self.assertTrue('You see this16' in err.getvalue())
-			log.info('[JOBDONE]You not see this17')
-			self.assertTrue('You not see this17' not in err.getvalue())
-			log.info('[DEBUG]You don\'t see this18')
-			self.assertTrue('You don\'t see this18' not in err.getvalue())
-		
-		with captured_output() as (out, err):
-			logger.getLogger(theme = 'magentaOnBlack')
-			log.info('[PROCESS]magentaOnBlack')
-			self.assertTrue('magentaOnBlack' in err.getvalue())
-			log.info('[NO]You don\'t see this1')
-			self.assertTrue('You don\'t see this1' not in err.getvalue())
-			log.info('[_NO]But you see this2')
-			self.assertTrue('But you see this2' in err.getvalue())
-			log.info('[DEPENDS]You see this3')
-			self.assertTrue('You see this3' in err.getvalue())
-			log.info('[STDOUT]You see this4')
-			self.assertTrue('You see this4' in err.getvalue())
-			log.info('[STDERR]You see this5')
-			self.assertTrue('You see this5' in err.getvalue())
-			log.info('[ERROR]You see this6')
-			self.assertTrue('You see this6' in err.getvalue())
-			log.info('[INFO]You see this7')
-			self.assertTrue('You see this7' in err.getvalue())
-			log.info('[DONE]You see this8')
-			self.assertTrue(logger.colors.bold + logger.colors.magenta + 'You see this8' in err.getvalue())
-			log.info('[RUNNING]You see this9')
-			self.assertTrue('You see this9' in err.getvalue())
-			log.info('[CACHED]You see this10')
-			self.assertTrue('You see this10' in err.getvalue())
-			log.info('[EXPORT]You see this11')
-			self.assertTrue('You see this11' in err.getvalue())
-			log.info('[INPUT]You see this12')
-			self.assertTrue('You see this12' in err.getvalue())
-			log.info('[OUTPUT]You see this13')
-			self.assertTrue('You see this13' in err.getvalue())
-			log.info('[SUBMIT]You see this14')
-			self.assertTrue('You see this14' in err.getvalue())
-			log.info('[P.ARGS]You not see this15')
-			self.assertTrue('You not see this15' not in err.getvalue())
-			log.info('[P.PROPS]You see this16')
-			self.assertTrue('You see this16' in err.getvalue())
-			log.info('[JOBDONE]You not see this17')
-			self.assertTrue('You not see this17' not in err.getvalue())
-			log.info('[DEBUG]You don\'t see this18')
-			self.assertTrue('You don\'t see this18' not in err.getvalue())
-		
-		with captured_output() as (out, err):
-			logger.getLogger(theme = 'greenOnWhite')
-			log.info('[PROCESS]greenOnWhite')
-			self.assertTrue('greenOnWhite' in err.getvalue())
-			log.info('[NO]You don\'t see this1')
-			self.assertTrue('You don\'t see this1' not in err.getvalue())
-			log.info('[_NO]But you see this2')
-			self.assertTrue('But you see this2' in err.getvalue())
-			log.info('[DEPENDS]You see this3')
-			self.assertTrue('You see this3' in err.getvalue())
-			log.info('[STDOUT]You see this4')
-			self.assertTrue('You see this4' in err.getvalue())
-			log.info('[STDERR]You see this5')
-			self.assertTrue('You see this5' in err.getvalue())
-			log.info('[ERROR]You see this6')
-			self.assertTrue('You see this6' in err.getvalue())
-			log.info('[INFO]You see this7')
-			self.assertTrue('You see this7' in err.getvalue())
-			log.info('[DONE]You see this8')
-			self.assertTrue(logger.colors.bold + logger.colors.green + 'You see this8' in err.getvalue())
-			log.info('[RUNNING]You see this9')
-			self.assertTrue('You see this9' in err.getvalue())
-			log.info('[CACHED]You see this10')
-			self.assertTrue('You see this10' in err.getvalue())
-			log.info('[EXPORT]You see this11')
-			self.assertTrue('You see this11' in err.getvalue())
-			log.info('[INPUT]You see this12')
-			self.assertTrue('You see this12' in err.getvalue())
-			log.info('[OUTPUT]You see this13')
-			self.assertTrue('You see this13' in err.getvalue())
-			log.info('[SUBMIT]You see this14')
-			self.assertTrue('You see this14' in err.getvalue())
-			log.info('[P.ARGS]You not see this15')
-			self.assertTrue('You not see this15'not  in err.getvalue())
-			log.info('[P.PROPS]You see this16')
-			self.assertTrue('You see this16' in err.getvalue())
-			log.info('[JOBDONE]You not see this17')
-			self.assertTrue('You not see this17' not in err.getvalue())
-			log.info('[DEBUG]You don\'t see this18')
-			self.assertTrue('You don\'t see this18' not in err.getvalue())
-		
-		with captured_output() as (out, err):
-			logger.getLogger(theme = 'blueOnWhite')
-			log.info('[PROCESS]blueOnWhite')
-			self.assertTrue('blueOnWhite' in err.getvalue())
-			log.info('[NO]You don\'t see this1')
-			self.assertTrue('You don\'t see this1' not in err.getvalue())
-			log.info('[_NO]But you see this2')
-			self.assertTrue('But you see this2' in err.getvalue())
-			log.info('[DEPENDS]You see this3')
-			self.assertTrue('You see this3' in err.getvalue())
-			log.info('[STDOUT]You see this4')
-			self.assertTrue('You see this4' in err.getvalue())
-			log.info('[STDERR]You see this5')
-			self.assertTrue('You see this5' in err.getvalue())
-			log.info('[ERROR]You see this6')
-			self.assertTrue('You see this6' in err.getvalue())
-			log.info('[INFO]You see this7')
-			self.assertTrue('You see this7' in err.getvalue())
-			log.info('[DONE]You see this8')
-			self.assertTrue(logger.colors.bold + logger.colors.blue + 'You see this8' in err.getvalue())
-			log.info('[RUNNING]You see this9')
-			self.assertTrue('You see this9' in err.getvalue())
-			log.info('[CACHED]You see this10')
-			self.assertTrue('You see this10' in err.getvalue())
-			log.info('[EXPORT]You see this11')
-			self.assertTrue('You see this11' in err.getvalue())
-			log.info('[INPUT]You see this12')
-			self.assertTrue('You see this12' in err.getvalue())
-			log.info('[OUTPUT]You see this13')
-			self.assertTrue('You see this13' in err.getvalue())
-			log.info('[SUBMIT]You see this14')
-			self.assertTrue('You see this14' in err.getvalue())
-			log.info('[P.ARGS]You not see this15')
-			self.assertTrue('You not see this15' not in err.getvalue())
-			log.info('[P.PROPS]You see this16')
-			self.assertTrue('You see this16' in err.getvalue())
-			log.info('[JOBDONE]You not see this17')
-			self.assertTrue('You not see this17' not in err.getvalue())
-			log.info('[DEBUG]You don\'t see this18')
-			self.assertTrue('You don\'t see this18' not in err.getvalue())
-		
-		with captured_output() as (out, err):
-			logger.getLogger(theme = 'magentaOnWhite')
-			log.info('[PROCESS]magentaOnWhite')
-			self.assertTrue('magentaOnWhite' in err.getvalue())
-			log.info('[NO]You don\'t see this1')
-			self.assertTrue('You don\'t see this1' not in err.getvalue())
-			log.info('[_NO]But you see this2')
-			self.assertTrue('But you see this2' in err.getvalue())
-			log.info('[DEPENDS]You see this3')
-			self.assertTrue('You see this3' in err.getvalue())
-			log.info('[STDOUT]You see this4')
-			self.assertTrue('You see this4' in err.getvalue())
-			log.info('[STDERR]You see this5')
-			self.assertTrue('You see this5' in err.getvalue())
-			log.info('[ERROR]You see this6')
-			self.assertTrue('You see this6' in err.getvalue())
-			log.info('[INFO]You see this7')
-			self.assertTrue('You see this7' in err.getvalue())
-			log.info('[DONE]You see this8')
-			self.assertTrue(logger.colors.bold + logger.colors.magenta + 'You see this8' in err.getvalue())
-			log.info('[RUNNING]You see this9')
-			self.assertTrue('You see this9' in err.getvalue())
-			log.info('[CACHED]You see this10')
-			self.assertTrue('You see this10' in err.getvalue())
-			log.info('[EXPORT]You see this11')
-			self.assertTrue('You see this11' in err.getvalue())
-			log.info('[INPUT]You see this12')
-			self.assertTrue('You see this12' in err.getvalue())
-			log.info('[OUTPUT]You see this13')
-			self.assertTrue('You see this13' in err.getvalue())
-			log.info('[SUBMIT]You see this14')
-			self.assertTrue('You see this14' in err.getvalue())
-			log.info('[P.ARGS]You not see this15')
-			self.assertTrue('You not see this15' not in err.getvalue())
-			log.info('[P.PROPS]You see this16')
-			self.assertTrue('You see this16' in err.getvalue())
-			log.info('[JOBDONE]You not see this17')
-			self.assertTrue('You not see this17' not in err.getvalue())
-			log.info('[DEBUG]You don\'t see this18')
-			self.assertTrue('You don\'t see this18' not in err.getvalue())
-		
-		with captured_output() as (out, err):
-			logger.getLogger(theme = {
-				'DEPENDS': logger.colors.yellow,
-				'DONE': logger.colors.bold + logger.colors.red,
-				'starts:STD': "colors.cyan + colors.underline"
-			})
-			log.info('[PROCESS]Customized')
-			self.assertTrue('Customized' in err.getvalue())
-			log.info('[NO]You don\'t see this1')
-			self.assertTrue('You don\'t see this1' not in err.getvalue())
-			log.info('[_NO]But you see this2')
-			self.assertTrue('But you see this2' in err.getvalue())
-			log.info('[DEPENDS]You see this3')
-			self.assertTrue('You see this3' in err.getvalue())
-			log.info('[STDOUT]You see this4')
-			self.assertTrue('You see this4' in err.getvalue())
-			log.info('[STDERR]You see this5')
-			self.assertTrue('You see this5' in err.getvalue())
-			log.info('[ERROR]You see this6')
-			self.assertTrue('You see this6' in err.getvalue())
-			log.info('[INFO]You see this7')
-			self.assertTrue('You see this7' in err.getvalue())
-			log.info('[DONE]You see this8')
-			self.assertTrue(logger.colors.bold + logger.colors.red + 'You see this8' in err.getvalue())
-			log.info('[RUNNING]You see this9')
-			self.assertTrue('You see this9' in err.getvalue())
-			log.info('[CACHED]You see this10')
-			self.assertTrue('You see this10' in err.getvalue())
-			log.info('[EXPORT]You see this11')
-			self.assertTrue('You see this11' in err.getvalue())
-			log.info('[INPUT]You see this12')
-			self.assertTrue('You see this12' in err.getvalue())
-			log.info('[OUTPUT]You see this13')
-			self.assertTrue('You see this13' in err.getvalue())
-			log.info('[SUBMIT]You see this14')
-			self.assertTrue('You see this14' in err.getvalue())
-			log.info('[P.ARGS]You not see this15')
-			self.assertTrue('You not see this15' not in err.getvalue())
-			log.info('[P.PROPS]You see this16')
-			self.assertTrue('You see this16' in err.getvalue())
-			log.info('[JOBDONE]You not see this17')
-			self.assertTrue('You not see this17' not in err.getvalue())
-			log.info('[DEBUG]You don\'t see this18')
-			self.assertTrue('You don\'t see this18' not in err.getvalue())
-		
-	def testLogfile (self):
-		logfile = path.join(tempfile.gettempdir(), 'testLogfile.log')
-
-		with captured_output() as (out, err):
-			log = logger.getLogger(logfile = logfile)
-			log.info('[PROCESS]testLogfile')
-			log.info('[NO]You don\'t see this1')
-			log.info('[_NO]But you see this2')
-			log.info('[DEPENDS]You see this3')
-			log.info('[STDOUT]You see this4')
-			log.info('[STDERR]You see this5')
-			log.info('[ERROR]You see this6')
-			log.info('[INFO]You see this7')
-			log.info('[DONE]You see this8')
-			log.info('[RUNNING]You see this9')
-			log.info('[CACHED]You see this10')
-			log.info('[EXPORT]You see this11')
-			log.info('[INPUT]You see this12')
-			log.info('[OUTPUT]You see this13')
-			log.info('[SUBMIT]You see this14')
-			log.info('[P.ARGS]You see this15')
-			log.info('[P.PROPS]You see this16')
-			log.info('[JOBDONE]You see this17')
-			log.info('[DEBUG]You don\'t see this18')
-
-		with open(logfile) as f:
-			logs = f.read()
-			# you see all things in log file
-			self.assertTrue('testLogfile' in logs)
-			self.assertTrue('[     NO] You don\'t see this1' in logs)
-			self.assertTrue('[     NO] But you see this2' in logs)
-			self.assertTrue('[DEPENDS] You see this3' in logs)
-			self.assertTrue('[ STDOUT] You see this4' in logs)
-			self.assertTrue('[ STDERR] You see this5' in logs)
-			self.assertTrue('[  ERROR] You see this6' in logs)
-			self.assertTrue('[   INFO] You see this7' in logs)
-			self.assertTrue('[   DONE] You see this8' in logs)
-			self.assertTrue('[RUNNING] You see this9' in logs)
-			self.assertTrue('[ CACHED] You see this10' in logs)
-			self.assertTrue('[ EXPORT] You see this11' in logs)
-			self.assertTrue('[  INPUT] You see this12' in logs)
-			self.assertTrue('[ OUTPUT] You see this13' in logs)
-			self.assertTrue('[ SUBMIT] You see this14' in logs)
-			self.assertTrue('[ P.ARGS] You see this15' in logs)
-			self.assertTrue('[P.PROPS] You see this16' in logs)
-			self.assertTrue('[JOBDONE] You see this17' in logs)
-			self.assertTrue('[  DEBUG] You don\'t see this18' in logs)
-	
-	def testLvlDiff(self):
-		with captured_output() as (out, err):
-			log = logger.getLogger(levels = 'nodebug', lvldiff=['DEBUG', '-ERROR'])
-			log.info('[PROCESS]You see this1')
-			self.assertTrue('You see this1' in err.getvalue())
-			log.info('[NO]You don\'t see this2')
-			self.assertTrue('You don\'t see this2' not in err.getvalue())
-			log.info('[_NO]But you see this3')
-			self.assertTrue('But you see this3' in err.getvalue())
-			log.info('[DEPENDS]You see this4')
-			self.assertTrue('You see this4' in err.getvalue())
-			log.info('[STDOUT]You see this5')
-			self.assertTrue('You see this5' in err.getvalue())
-			log.info('[STDERR]You see this6')
-			self.assertTrue('You see this6' in err.getvalue())
-			log.info('[ERROR]You DON\'T see this7')
-			self.assertTrue('You DON\'T see this7' not in err.getvalue())
-			log.info('[INFO]You see this8')
-			self.assertTrue('You see this8' in err.getvalue())
-			log.info('[DONE]You see this9')
-			self.assertTrue('You see this9' in err.getvalue())
-			log.info('[RUNNING]You see this10')
-			self.assertTrue('You see this10' in err.getvalue())
-			log.info('[CACHED]You see this11')
-			self.assertTrue('You see this11' in err.getvalue())
-			log.info('[EXPORT]You see this12')
-			self.assertTrue('You see this12' in err.getvalue())
-			log.info('[INPUT]You see this13')
-			self.assertTrue('You see this13' in err.getvalue())
-			log.info('[OUTPUT]You see this14')
-			self.assertTrue('You see this14' in err.getvalue())
-			log.info('[SUBMIT]You see this15')
-			self.assertTrue('You see this15' in err.getvalue())
-			log.info('[P.ARGS]You see this16')
-			self.assertTrue('You see this16' in err.getvalue())
-			log.info('[P.PROPS]You see this17')
-			self.assertTrue('You see this17' in err.getvalue())
-			log.info('[JOBDONE]You see this18')
-			self.assertTrue('You see this18' in err.getvalue())
-			log.info('[DEBUG]You SEE this19')
-			self.assertTrue('You SEE this19' in err.getvalue())
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

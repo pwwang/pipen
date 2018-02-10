@@ -39,22 +39,16 @@ def moduleInstalled(mod):
 		return False
 
 @contextmanager
-def captured_output():
+def log2str(levels = 'normal', theme = True, logfile = None, lvldiff = None):
 	new_out, new_err = StringIO(), StringIO()
 	old_out, old_err = sys.stdout, sys.stderr
 	try:
 		sys.stdout, sys.stderr = new_out, new_err
+		#yield sys.stdout.getvalue(), sys.stderr.getvalue()
+		logger.getLogger(levels = levels, theme = theme, logfile = logfile, lvldiff = lvldiff)
 		yield sys.stdout, sys.stderr
 	finally:
 		sys.stdout, sys.stderr = old_out, old_err
-
-def log2str (levels = 'all'):
-	with captured_output() as (out, err):
-		logger.getLogger(levels = levels)
-	return (out, err)
-
-def log2sys (levels = 'all'):
-	logger.getLogger(levels = levels)
 
 class DataProviderSupport(type):
 	def __new__(meta, classname, bases, classDict):
@@ -139,9 +133,7 @@ class TestCase(with_metaclass(DataProviderSupport, unittest.TestCase)):
 	def assertRaisesStr(self, exc, callable, *args, **kwds):
 		sixAssertRaisesRegex(self, exc, callable, *args, **kwds)
 
-	'''
-	def assertEvalEqual(self, expr, value, msg = None):
-		first = literal_eval(expr)
-		assertion_func = self._getAssertEqualityFunc(first, value)
-		assertion_func(expr, value, msg=msg)
-	'''
+	def assertInFile(self, s, f):
+		sf = readFile(f, str)
+		self.assertIn(s, sf)
+
