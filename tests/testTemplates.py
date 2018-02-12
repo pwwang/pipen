@@ -3,7 +3,7 @@ from os import path
 from pyppl.templates import Template
 from pyppl.templates.template_jinja2 import TemplateJinja2
 from pyppl.templates.template_pyppl import TemplatePyPPLCodeBuilder, TemplatePyPPLLine, TemplatePyPPLEngine, TemplatePyPPL
-from pyppl.exception import TemplatePyPPLSyntaxMalformKeyword, TemplatePyPPLSyntaxDotError, TemplatePyPPLSyntaxNameError, TemplatePyPPLSyntaxUnclosedTag, TemplatePyPPLSyntaxNewline, TemplatePyPPLRenderError
+from pyppl.exception import TemplatePyPPLSyntaxError, TemplatePyPPLRenderError
 
 class TestTemplatePyPPLLine(helpers.TestCase):
 
@@ -234,18 +234,18 @@ class TestTemplatePyPPLEngine(helpers.TestCase):
 					'2',
 				])
 		"""
-		yield '{% for a in b %}{{a}}{% endif %}', [], '', TemplatePyPPLSyntaxMalformKeyword, "Cannot understand \"endif\" in 'Line 1: {% endif %}' paired with 'Line 1: {% for a in b %}'"
-		yield '{% if x %}{% for a in b %}{{a}}{% endfor %}', [], '', TemplatePyPPLSyntaxUnclosedTag, 'Unclosed template tag: Line 1: {% if x %}'
+		yield '{% for a in b %}{{a}}{% endif %}', [], '', TemplatePyPPLSyntaxError, "End statement not paired with \"Line 1: {% for a in b %}\" in \"Line 1: {% endif %}\": 'endif'"
+		yield '{% if x %}{% for a in b %}{{a}}{% endfor %}', [], '', TemplatePyPPLSyntaxError, "Unclosed template tag: 'Line 1: {% if x %}'"
 		yield '''
 		literal1
 		literal2
 		{% if %}
-		''', [], '', TemplatePyPPLSyntaxMalformKeyword, 'Cannot understand "if/elif" in Line 4: {% if %}'
+		''', [], '', TemplatePyPPLSyntaxError, "No condition offered in \"Line 4: {% if %}\": 'if/elif'"
 		yield '''
 		literal1
 		literal2
 		{% endif %}literal3
-		''', [], '', TemplatePyPPLSyntaxMalformKeyword, 'Cannot understand "endif \(too many ends\)" in Line 4: {% endif %}'
+		''', [], '', TemplatePyPPLSyntaxError, "Too many ends in \"Line 4: {% endif %}\": 'endif'"
 
 
 	def testInit(self, text, contexts, renderfunc, exception = None, msg = None):
@@ -262,9 +262,9 @@ class TestTemplatePyPPLEngine(helpers.TestCase):
 	def dataProvider_testParseComments(self):
 		yield '', ''
 		yield '', None
-		yield '{# a \n b #}', '', TemplatePyPPLSyntaxNewline
-		yield '{% a \n b %}', '', TemplatePyPPLSyntaxNewline
-		yield '{{ a \n b }}', '', TemplatePyPPLSyntaxNewline
+		yield '{# a \n b #}', '', TemplatePyPPLSyntaxError
+		yield '{% a \n b %}', '', TemplatePyPPLSyntaxError
+		yield '{{ a \n b }}', '', TemplatePyPPLSyntaxError
 
 	def testParseComments(self, token, src, exception = None):
 		engine = TemplatePyPPLEngine('')
@@ -310,7 +310,7 @@ class TestTemplatePyPPLEngine(helpers.TestCase):
 	def testParseTag(self, token, src, stack, out, exception = False):
 		engine = TemplatePyPPLEngine('')
 		if exception:
-			self.assertRaises(TemplatePyPPLSyntaxMalformKeyword, engine._parseTag, token, src, stack)
+			self.assertRaises(TemplatePyPPLSyntaxError, engine._parseTag, token, src, stack)
 		else:
 			engine._parseTag(token, src, stack)
 			self.assertEqual(str(engine.code)[len(self.renderFunc_start + self.renderFunc_end):], out)
@@ -374,7 +374,7 @@ class TestTemplatePyPPLEngine(helpers.TestCase):
 
 	def testVariable(self, name, src, vars_set, outs, exception = False):
 		if exception:
-			self.assertRaises(TemplatePyPPLSyntaxNameError, TemplatePyPPLEngine._variable, name, src, vars_set)
+			self.assertRaises(TemplatePyPPLSyntaxError, TemplatePyPPLEngine._variable, name, src, vars_set)
 		else:
 			TemplatePyPPLEngine._variable(name, src, vars_set)
 		self.assertDictEqual(vars_set, outs)
@@ -394,7 +394,7 @@ class TestTemplatePyPPLEngine(helpers.TestCase):
 	
 	def testDoDots(self, dots, out, exception = False):
 		if exception:
-			self.assertRaises(TemplatePyPPLSyntaxDotError, TemplatePyPPLEngine._do_dots, *dots)
+			self.assertRaises(TemplatePyPPLRenderError, TemplatePyPPLEngine._do_dots, *dots)
 		else:
 			v = TemplatePyPPLEngine._do_dots(*dots)
 			self.assertEqual(v, out)
@@ -459,14 +459,20 @@ class TestTemplatePyPPLEngine(helpers.TestCase):
 		self.assertTextEqual(t.render(contexts), out)
 
 	def dataProvider_testRenderExceptions(self):
-		yield '{{a}}', {}, TemplatePyPPLRenderError, "KeyError: 'a', unknown template variable: \"a\" at Line 1: {{a}}"
-		yield '{% if a %}1{% endif %}', {}, TemplatePyPPLRenderError, "KeyError: 'a', unknown template variable: \"a\" at Line 1: {% if a %}"
-		yield '{{a.b}}', {'a':1}, TemplatePyPPLRenderError, "TemplatePyPPLSyntaxDotError: Cannot find an attribute/subscribe/index named \"b\" for \"1\", Line 1: {{a.b}}"
+		yield '{{a}}', {}, TemplatePyPPLRenderError, "KeyError: 'a' in 'unknown template variable: \"a\" at Line 1: {{a}}'"
+		yield '{% if a %}1{% endif %}', {}, TemplatePyPPLRenderError, "KeyError: 'a' in 'unknown template variable: \"a\" at Line 1: {% if a %}'"
+		yield '{{a.b}}', {'a':1}, TemplatePyPPLRenderError, "TemplatePyPPLRenderError: No such attribute/index 'b' found for 1 in 'Line 1: {{a.b}}'"
 		yield """
 		{% if x %}
 			{%for y in a%}
 			{%endfor%}
-		{% endif %}""", {'a':1, 'x':True}, TemplatePyPPLRenderError, "TypeError: 'int' object is not iterable, Line 3: {%for y in a%}"
+		{% endif %}""", {'a':1, 'x':True}, TemplatePyPPLRenderError, "TypeError: 'int' object is not iterable in 'Line 3: {%for y in a%}'"
+		yield """
+		{% if x %}\n
+			{%for y in a%}
+			{%endfor%}
+		{% endif %}""", {'a':1, 'x':True}, TemplatePyPPLRenderError, "TypeError: 'int' object is not iterable in 'Line 4: {%for y in a%}'"
+		
 
 	def testRenderExceptions(self, text, context, exception, msg):
 		engine = TemplatePyPPLEngine(text)

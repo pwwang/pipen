@@ -1,22 +1,40 @@
 import helpers, unittest
 
+from pyppl.parameters import Parameter, Parameters
+from pyppl.exception import ParameterNameError
+
+class TestParameter (helpers.TestCase):
+
+	def dataProvider_testInit(self):
+		yield '', '', str, 'Expect a string with alphabetics and underlines in length 1~32'
+		yield '-', '', str, 'Expect a string with alphabetics and underlines in length 1~32'
+		yield 'a?', '', str, 'Expect a string with alphabetics and underlines in length 1~32'
+		yield int, '', str, 'Not a string'
+		yield 'a', 1, int
+		yield 'a', [], list
+		yield 'a', '', str
+
+	def testInit(self, name, value, t, excmsg = None):
+		if excmsg:
+			self.assertRaisesStr(ParameterNameError, excmsg, Parameter, name, value)
+		else:
+			param = Parameter(name, value)
+			self.assertIsInstance(param, Parameter)
+			self.assertEqual(param.desc, '')
+			self.assertFalse(param.required, '')
+			self.assertTrue(param.show, '')
+			self.assertIs(param.type, t)
+			self.assertEqual(param.name, name)
+			self.assertEqual(param.value, value)
+
+
+'''
 import sys, tempfile
 from os import path
-from pyppl.parameters import Parameter, Parameters
 from contextlib import contextmanager
 from six import StringIO
 
-@contextmanager
-def captured_output():
-	new_out, new_err = StringIO(), StringIO()
-	old_out, old_err = sys.stdout, sys.stderr
-	try:
-		sys.stdout, sys.stderr = new_out, new_err
-		yield sys.stdout, sys.stderr
-	finally:
-		sys.stdout, sys.stderr = old_out, old_err
 
-class TestParameters (unittest.TestCase):
 
 	def testParameter(self):
 		p = Parameter('a', [])
@@ -303,6 +321,6 @@ D.desc: A switch
 			'c': ['1', 'aa', 'bb'],
 			'D': False
 		})
-	
+'''	
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

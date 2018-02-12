@@ -3,7 +3,8 @@ A customized logger for pyppl
 """
 import logging, re, sys
 from box import Box
-from .exception import LoggerNoSuchTheme, LoggerNoSuchColor, LoggerFailToCompileTheme
+from .exception import LoggerThemeError
+from .templates import TemplatePyPPL
 
 # the entire format
 LOGFMT = "[%(asctime)s]%(message)s"
@@ -152,7 +153,7 @@ def _formatTheme(theme):
 	if not theme:
 		return False
 	if not isinstance(theme, dict):
-		raise LoggerNoSuchTheme(theme)
+		raise LoggerThemeError(theme, 'No such theme')
 	
 	ret = {'': [COLORS.white, COLORS.white]}
 	for key, val in theme.items():
@@ -160,21 +161,10 @@ def _formatTheme(theme):
 			val = [val]
 		if len(val) == 1:
 			val = val * 2
-		# it's not a color, try to find COLORS.xxx keywords
-		for i, v in enumerate(val):
-			cstrs = set(re.findall(r'COLORS\.\w+', v))
-			vexp = v
-			for cstr in cstrs:
-				c = cstr[7:]
-				if c not in COLORS:
-					raise LoggerNoSuchColor(c)
-				vexp = vexp.replace(cstr, "'" + COLORS[c] + "'")
 
-			if vexp != v:
-				try:
-					val[i] = eval(vexp)
-				except Exception as ex:
-					raise LoggerFailToCompileTheme(ex, key, v, vexp)
+		for i, v in enumerate(val):
+			t = TemplatePyPPL(v, colors = COLORS)
+			val[i] = t.render()
 
 		ret[key] = val
 	return ret

@@ -1,9 +1,11 @@
 import sys
 import json
+import re
 from os import path
 from six import string_types
 from six.moves import configparser
 from box import Box
+from .exception import ParameterNameError
 
 class Parameter (object):
 	"""
@@ -24,6 +26,10 @@ class Parameter (object):
 			'name'    : name,
 			'value'   : value if not isinstance(value, string_types) else str(value)
 		}
+		if not isinstance(name, string_types):
+			raise ParameterNameError(name, 'Not a string')
+		if not re.search(r'^[A-Za-z0-9_]{1,32}$', name):
+			raise ParameterNameError(name, 'Expect a string with alphabetics and underlines in length 1~32, but we got')
 		self.setType(type(self.value))
 
 	def __setattr__(self, name, value):
@@ -398,7 +404,7 @@ class Parameters (object):
 			config = dict(cp.items(cp.sections()[0]))
 		for key, val in config.items():
 			if key.endswith(".type"):
-				config[key] = eval(val)
+				config[key] = globals()[val]
 				if config[key] == list and key[:-5] in config and not isinstance(config[key[:-5]], list):
 					config[key[:-5]] = list(filter(None, config[key[:-5]].splitlines()))
 		self.loadDict(config, show = show)

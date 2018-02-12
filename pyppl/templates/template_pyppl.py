@@ -16,7 +16,7 @@ Functions added:
 """
 import re, traceback
 from .template import Template
-from ..exception import TemplatePyPPLSyntaxUnclosedTag, TemplatePyPPLSyntaxMalformKeyword, TemplatePyPPLSyntaxDotError, TemplatePyPPLSyntaxNameError, TemplatePyPPLSyntaxNewline, TemplatePyPPLRenderError
+from ..exception import TemplatePyPPLSyntaxError, TemplatePyPPLRenderError
 from .. import utils
 
 
@@ -218,7 +218,7 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 					lineno += len(tokenlines) - 1
 
 		if ops_stack:
-			raise TemplatePyPPLSyntaxUnclosedTag(ops_stack[-1][1])
+			raise TemplatePyPPLSyntaxError(name = ops_stack[-1][1], msg = 'Unclosed template tag')
 
 		self.flushOutput()
 		
@@ -232,22 +232,22 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 		
 	def _parseComments(self, token, src):
 		if '\n' in token:
-			raise TemplatePyPPLSyntaxNewline(src)
+			raise TemplatePyPPLSyntaxError(src = src, msg = 'No new line is allowed')
 	
 	def _parseExpression(self, token, src):
 		if '\n' in token:
-			raise TemplatePyPPLSyntaxNewline(src)
+			raise TemplatePyPPLSyntaxError(src = src, msg = 'No new line is allowed')
 		expr = self._exprCode(token[2:-2].strip(), src)
 		self.buffered.append(("to_str(%s)" % expr, src))
 		
 	def _parseTag(self, token, src, ops_stack):
 		if '\n' in token:
-			raise TemplatePyPPLSyntaxNewline(src)
+			raise TemplatePyPPLSyntaxError(src = src, msg = 'No new line is allowed')
 		words = token[2:-2].strip().split()
 		if words[0] == 'if' or words[0] == 'elif':
 			# An if statement: evaluate the expression to determine if.
 			if len(words) < 2:
-				raise TemplatePyPPLSyntaxMalformKeyword('if/elif', src)
+				raise TemplatePyPPLSyntaxError(name = 'if/elif', src = src, msg = 'No condition offered')
 			if words[0] == 'if':
 				ops_stack.append(('if', src))
 			else:
@@ -256,14 +256,14 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 			self.code.indent()
 		elif words[0] == 'else':
 			if len(words) > 1:
-				raise TemplatePyPPLSyntaxMalformKeyword('else', src)
+				raise TemplatePyPPLSyntaxError(name = 'else', src = src, msg = 'Extra condition offered')
 			self.code.dedent()
 			self.code.addLine("else:", src)
 			self.code.indent()
 		elif words[0] == 'for':
 			# A loop: iterate over expression result.
 			if len(words) < 4 or 'in' not in words or words.index('in') < 2:
-				raise TemplatePyPPLSyntaxMalformKeyword('for', src)
+				raise TemplatePyPPLSyntaxError(name = 'for', src = src, msg = 'Cannot understand for loop')
 			ops_stack.append(('for', src))
 			inidx = words.index('in')
 			keys  = list(map(lambda x: x.strip(), ''.join(words[1:inidx]).split(',')))
@@ -279,16 +279,16 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 		elif words[0].startswith('end'):
 			# Endsomething.  Pop the ops stack.
 			if len(words) != 1:
-				raise TemplatePyPPLSyntaxMalformKeyword('end', src)
+				raise TemplatePyPPLSyntaxError(name = words[0], src = src, msg = 'Extra expression offered for end')
 			end_what = words[0][3:]
 			if not ops_stack:
-				raise TemplatePyPPLSyntaxMalformKeyword('%s (too many ends)' % words[0], src)
+				raise TemplatePyPPLSyntaxError(name = words[0], src = src, msg = 'Too many ends')
 			start_what = ops_stack.pop()
 			if start_what[0] != end_what:
-				raise TemplatePyPPLSyntaxMalformKeyword(words[0], "'%s' paired with '%s'" % (src, start_what[1]))
+				raise TemplatePyPPLSyntaxError(name = words[0], src = src, msg = 'End statement not paired with "%s"' % start_what[1])
 			self.code.dedent()
 		else:
-			raise TemplatePyPPLSyntaxMalformKeyword(words[0], src)
+			raise TemplatePyPPLSyntaxError(name = words[0], src = src, msg = 'No such keyword')
 
 	def _parseLiteral(self, tokenlines, src):
 		for i, line in enumerate(tokenlines):
@@ -381,7 +381,7 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 			`vars_set`: The variable set
 		"""
 		if not re.match(r"[_a-zA-Z][_a-zA-Z0-9]*$", name):
-			raise TemplatePyPPLSyntaxNameError(name, src)
+			raise TemplatePyPPLSyntaxError(name = name, src = src, msg = 'Invalid variable name')
 		vars_set[name] = src
 			
 	@staticmethod
@@ -407,7 +407,8 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 						else:
 							raise
 					except Exception:
-						raise TemplatePyPPLSyntaxDotError(value, dot)
+						# will be later raised in render method
+						raise TemplatePyPPLRenderError(stack = 'No such attribute/index %s found for %s' % (repr(dot), repr(value)))
 		return value
 
 	def render(self, context=None):

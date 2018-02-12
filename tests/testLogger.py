@@ -3,7 +3,7 @@ import helpers, unittest, logging
 from os import path
 from pyppl import logger
 from pyppl.logger import LEVELS, LEVELS_ALWAYS, COLORS, THEMES, PyPPLLogFilter, PyPPLLogFormatter
-from pyppl.exception import LoggerNoSuchTheme, LoggerNoSuchColor, LoggerFailToCompileTheme
+from pyppl.exception import TemplatePyPPLRenderError, LoggerThemeError
 
 class TestPyPPLLogFilter(helpers.TestCase):
 
@@ -146,24 +146,23 @@ class TestLogger(helpers.TestCase):
 	def dataProvider_testFormatTheme(self):
 		yield True, THEMES['greenOnBlack']
 		yield False, False
-		yield 1, None, LoggerNoSuchTheme
+		yield 1, None, LoggerThemeError
 		yield {
-			'DONE'    : "COLORS.bold + COLORS.green",
-			'DEBUG'   : "COLORS.bold + COLORS.black",
-			'PROCESS' : ["COLORS.bold + COLORS.cyan", "COLORS.bold + COLORS.underline + COLORS.cyan"],
-			'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': "COLORS.green",
-			'has:ERR' : "COLORS.red",
-			'in:WARNING,RETRY' : "'\\033[1m' + COLORS.yellow",
-			# must quote ------>  ^        ^
-			'in:CACHED,RUNNING,SKIPPED,RESUMED': "COLORS.yellow",
-			''        : "COLORS.white"
+			'DONE'    : "{{colors.bold}}{{colors.green}}",
+			'DEBUG'   : "{{colors.bold}}{{colors.black}}",
+			'PROCESS' : ["{{colors.bold}}{{colors.cyan}}", "{{colors.bold}}{{colors.underline}}{{colors.cyan}}"],
+			'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': "{{colors.green}}",
+			'has:ERR' : "{{colors.red}}",
+			'in:WARNING,RETRY' : "\x1b[1m{{colors.yellow}}",
+			'in:CACHED,RUNNING,SKIPPED,RESUMED': "{{colors.yellow}}",
+			''        : "{{colors.white}}"
 		}, THEMES['greenOnBlack']
 		yield {
-			'DONE': "COLORS.whatever"
-		}, {}, LoggerNoSuchColor
+			'DONE': "{{colors.whatever}}"
+		}, {}, TemplatePyPPLRenderError
 		yield {
-			'DONE': "COLORS.white x"
-		}, {}, LoggerFailToCompileTheme
+			'DONE': "{{a}} x"
+		}, {}, TemplatePyPPLRenderError
 
 	def testFormatTheme(self, tname, theme, exception = None):
 		self.maxDiff = None
