@@ -5,7 +5,7 @@ from os import path
 from six import string_types
 from six.moves import configparser
 from box import Box
-from .exception import ParameterNameError
+from .exception import ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError
 
 class Parameter (object):
 	"""
@@ -39,7 +39,7 @@ class Parameter (object):
 		return self.props[name]
 	
 	def __repr__(self):
-		return 'Parameter({})[{}]'.format(','.join([key+'='+str(val) for key, val in self.props.items()]), hex(id(self)))
+		return 'Parameter@{}({})'.format(hex(id(self)), ','.join([key+'='+repr(val) for key, val in self.props.items()]))
 	
 	def __str__(self):
 		return str(self.value)
@@ -60,7 +60,7 @@ class Parameter (object):
 			`r`: True if required else False. Default: True
 		"""
 		if self.props['type'] == bool:
-			raise ValueError('Bool option "{}" cannot be set as required.'.format(self.name))
+			raise ParameterTypeError(self.value, 'Bool option "%s" cannot be set as required' % self.name)
 		self.props['required'] = r
 		return self
 		
@@ -72,7 +72,7 @@ class Parameter (object):
 			- Note: str rather then 'str'
 		"""
 		if t not in [str, int, float, bool, list]:
-			raise TypeError ('Unexpected type "{}" for param {}, only support one of the types: [str, int, float, bool, list]'.format(str(t), self.name))
+			raise ParameterTypeError(t, 'Unsupported type for option "%s"' % self.name)
 		self.props['type'] = t
 		self._forceType()
 		return self
@@ -115,7 +115,7 @@ class Parameter (object):
 			else:
 				self.value = self.type(self.value)
 		except (ValueError, TypeError):
-			raise TypeError('Cannot coerce value "{}" to type "{}" for {}'.format(str(self.value), self.type.__name__, repr(self)))
+			raise ParameterTypeError(self.type, 'Unable to coerce value %s of option "%s" to type' % (repr(self.value), self.name))
 		
 	def _printName (self, prefix, keylen = 0):
 		"""
@@ -148,7 +148,7 @@ class Parameters (object):
 			
 	def __setattr__(self, name, value):
 		if name == '_props':
-			raise ValueError('A preserved parameter name used: _props.')
+			raise ParameterNameError(name, 'Parameter name is prevserved by Parameters')
 		
 		if name in self._props['params']:
 			self._props['params'][name].setValue(value)
@@ -165,8 +165,6 @@ class Parameters (object):
 		@params:
 			`p`: The prefix. No default, but typically '--param-'
 		"""
-		if not p.startswith('-'):
-			raise ValueError('Expecting a prefix starting with "-"')
 		self._props['prefix'] = p
 		return self
 	
@@ -223,13 +221,15 @@ class Parameters (object):
 			while i < len(args):
 				# support '--param-a=b'
 				arg  = args[i].split('=', 1)
+				
 				karg = arg.pop(0)
 				if karg.startswith(self._props['prefix']):
 					key = karg[len(self._props['prefix']):]
 					if key not in self._props['params']:
-						sys.stderr.write ('WARNING: Unkown option {}.\n'.format(karg))
+						sys.stderr.write ('WARNING: Unknown option {}.\n'.format(karg))
+						i += 1
+						continue
 					val = self._props['params'][key]
-					
 					if val.type == bool:
 						if arg or (i+1 < len(args) and not args[i+1].startswith(self._props['prefix'])):
 							val.value = arg[0] if arg else args[i+1]
@@ -255,9 +255,11 @@ class Parameters (object):
 							i += 1
 						else:
 							if i+1 >= len(args) or args[i+1].startswith(self._props['prefix']):
-								raise ValueError('No value assigned for option: {}'.format(karg))
-							val.value = args[i+1]
-							i += 2				
+								sys.stderr.write ('WARNING: No value assigned for option: {}.\n'.format(karg))
+								i += 1
+							else:
+								val.value = args[i+1]
+								i += 2				
 						
 				else:
 					sys.stderr.write ('WARNING: Unused value found: {}.\n'.format(args[i]))
@@ -276,11 +278,9 @@ class Parameters (object):
 					elif val.value.lower() in ['f', 'false', 'no', 'n', '0', 'off']:
 						val.value = False
 					else:
-						raise ValueError('Cannot coerce "{}" to bool for option: {}, expect T[rue]/F[alse], Y[es]/N[o], 1/0 or on/off.'.format(val.value, val.name))
-				try:
-					val._forceType()
-				except TypeError:
-					raise TypeError('ERROR: Cannot coerce "{}" to {} for option: {}'.format(val.value, val.type, karg))
+						raise ParametersParseError(val.value, 'Cannot coerce value to bool for option %s' % repr(val.name))
+
+				val._forceType()
 		return self
 		
 	def help (self):
@@ -315,14 +315,14 @@ class Parameters (object):
 			ret += '\n'.join('  ' + d for d in self._props['desc']) + '\n\n'
 		ret += 'USAGE:\n'
 		if self._props['usage']:
-			ret += '  ' + '\n	{}'.format(prog).join(list(self._props['usage'])) + '\n\n'
+			ret += '\n'.join('  ' + d.replace('{}', prog) for d in self._props['usage']) + '\n\n'
 		else:
 			ret += '  ' + prog  \
 				+ ('' if not requiredOptions else ' ' + ' '.join([val._printName(self._props['prefix']) for key, val in requiredOptions.items()])) \
 				+ ('' if not optionalOptions else ' [OPTIONS]') + '\n\n'
 		if self._props['example']:
 			ret += 'EXAMPLE:\n'
-			ret += '\n'.join('  ' + d for d in self._props['example']) + '\n\n'
+			ret += '\n'.join('  ' + d.replace('{}', prog) for d in self._props['example']) + '\n\n'
 
 		if requiredOptions:
 			ret += 'REQUIRED OPTIONS:\n'
@@ -336,7 +336,7 @@ class Parameters (object):
 		ret += 'OPTIONAL OPTIONS:\n'
 		if optionalOptions:
 			for key, val in optionalOptions.items():
-				defaultStr = 'DEFAULT: ' + (str(val) if len(str(val)) > 0 else "''")
+				defaultStr = 'DEFAULT: ' + repr(val.value)
 				descs = val.desc.splitlines()
 				if not descs or len(descs[-1]) >= 40 or len(descs[-1] + defaultStr) + 1 >= 80:
 					descs.append(defaultStr)
@@ -372,11 +372,11 @@ class Parameters (object):
 		# then load property
 		for key, val in dictVar.items():
 			if '.' not in key: continue
-			(k, _, prop) = key.rpartition('.')
+			k, prop = key.split('.', 1)
 			if not k in self._props['params']:
-				raise ValueError('Propterty set for undefined option: {}'.format(key))
+				raise ParametersLoadError(key, 'Cannot set attribute of an undefined option %s' % repr(k))
 			if not prop in ['desc', 'required', 'show', 'type']:
-				raise ValueError('Unknown property "{}" for option: {}'.format(prop, k))
+				raise ParametersLoadError(prop, 'Unknown attribute name for option %s' % repr(k))
 			
 			setattr (self._props['params'][k], prop, val)
 		return self
@@ -396,15 +396,20 @@ class Parameters (object):
 		config = {}
 		if cfgfile.endswith('.json'):
 			with open(cfgfile) as f:
-				config = json.load (f)
+				config = json.load(f)
+		elif cfgfile.endswith('yml') or cfgfile.endswith('yaml'):
+			import yaml
+			with open(cfgfile) as f:
+				config = yaml.load(f)
 		else:
 			cp = configparser.ConfigParser()
 			cp.optionxform = str
 			cp.read(cfgfile)
-			config = dict(cp.items(cp.sections()[0]))
+			sec = cp.sections()
+			config = cp.items(sec[0]) if sec else {}
 		for key, val in config.items():
 			if key.endswith(".type"):
-				config[key] = globals()[val]
+				config[key] = globals()['__builtins__'][str(val)]
 				if config[key] == list and key[:-5] in config and not isinstance(config[key[:-5]], list):
 					config[key[:-5]] = list(filter(None, config[key[:-5]].splitlines()))
 		self.loadDict(config, show = show)

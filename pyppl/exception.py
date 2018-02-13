@@ -35,4 +35,27 @@ class ParameterNameError(Exception):
 	def __init__(self, name, msg = None):
 		msg = msg or "Parameter name error"
 		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
-		
+
+class ParameterTypeError(Exception):
+	"""
+	Unable to set type
+	"""
+	def __init__(self, name, msg = None):
+		msg = msg or "Parameter type error"
+		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
+
+class ParametersParseError(Exception):
+	"""
+	Error when parsing the parameters
+	"""	
+	def __init__(self, name, msg = None):
+		msg = msg or 'Error when parsing command line arguments.'
+		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
+
+class ParametersLoadError(Exception):
+	"""
+	Error loading dict to Parameters
+	"""	
+	def __init__(self, name, msg = None):
+		msg = msg or 'Error loading dict to Parameters.'
+		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
