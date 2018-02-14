@@ -1,245 +1,517 @@
 import helpers, unittest
 
 from collections import OrderedDict
-from pyppl import Box
+
+from pyppl import Proc
 from pyppl.proctree import ProcTree, ProcNode
+from pyppl.exception import ProcTreeProcExists, ProcTreeParseError
 
-class Proc(object):
-	def __init__(self, id, tag = 'notag'):
-		self.depends = []
-		self.id = id
-		self.tag = tag
-		ProcTree.register(self)
+class TestProcNode(helpers.TestCase):
 
-	def __str__(self):
-		return '<Proc(id=%s,tag=%s) @ %s>' % (self.id, self.tag, hex(id(self)))
+	def testInit(self):
+		proc = Proc()
+		self.maxDiff = None
+		pn = ProcNode(proc)
+		self.assertIs(pn.proc, proc)
+		self.assertListEqual(pn.prev, [])
+		self.assertListEqual(pn.next, [])
+		self.assertEqual(pn.ran, False)
+		self.assertEqual(pn.start, False)
+		self.assertIn('File ', pn.defs[0])
 
-	def __repr__(self):
-		return self.__str__()
+	def dataProvider_testSameIdTag(self):
+		proc1 = Proc()
+		pn1   = ProcNode(proc1)
+		yield pn1, proc1, True
 
-	def name(self):
-		return self.id if not self.tag or self.tag == 'notag' else self.id + '.' + self.tag
+		proc2 = Proc()
+		yield pn1, proc2, False
 
-unittest.TestLoader.sortTestMethodsUsing = lambda _, a, b: (a > b) - (a < b)
-class TestProcTree (unittest.TestCase):
+	def testSameIdTag(self, pn, proc, out):
+		self.assertEqual(pn.sameIdTag(proc), out)
 
-	procs = Box()
+	def testRepr(self):
+		proc = Proc()
+		pn   = ProcNode(proc)
+		self.assertEqual(repr(pn), '<ProcNode(<Proc(id=%s,tag=%s) @ %s>) @ %s>' % (proc.id, proc.tag, hex(id(proc)), hex(id(pn))))
 
-	def test0Register(self):
-		TestProcTree.procs.p1 = Proc('p1')
-		TestProcTree.procs.p2 = Proc('p2')
+class TestProcTree(helpers.TestCase):
 
-		self.assertEqual(len(ProcTree.NODES), 2)
-		n1 = ProcTree.NODES[id(TestProcTree.procs.p1)]
-		n2 = ProcTree.NODES[id(TestProcTree.procs.p2)]
-		self.assertIs(n1.proc, TestProcTree.procs.p1)
-		self.assertIs(n2.proc, TestProcTree.procs.p2)
-		self.assertEqual(n1.prev, [])
-		self.assertEqual(n2.prev, [])
-		self.assertEqual(n1.next, [])
-		self.assertEqual(n2.next, [])
-		self.assertFalse(n1.ran)
-		self.assertFalse(n2.ran)
-		self.assertFalse(n1.start)
-		self.assertFalse(n2.start)
-
-	def test1Check(self):
-		p3 = Proc('p1', 'notag')
-		#ProcTree.check(p3)
-		self.assertRaises(ValueError, ProcTree.check, p3)
-		TestProcTree.procs.p3 = Proc('p3')
-		ProcTree.check(TestProcTree.procs.p3)
-
-	def test2GetNode(self):
-		p1 = ProcTree.getNode(TestProcTree.procs.p1).proc
-		p2 = ProcTree.getNode(TestProcTree.procs.p2).proc
-		p3 = ProcTree.getNode(TestProcTree.procs.p3).proc
-		self.assertIs(p1, TestProcTree.procs.p1)
-		self.assertIs(p2, TestProcTree.procs.p2)
-		self.assertIs(p3, TestProcTree.procs.p3)
-
-	def test3Init(self):
-		TestProcTree.procs.p2.depends = [TestProcTree.procs.p1]
-		TestProcTree.procs.p3.depends = [TestProcTree.procs.p2]
-
-		p = TestProcTree.procs.p2
-		pn = ProcNode(p)
-		self.assertEqual('<ProcNode(<Proc(id=%s,tag=%s) @ %s>) @ %s>' % (pn.proc.id, pn.proc.tag, hex(id(pn.proc)), hex(id(pn))), repr(pn)) 
-
-		pt = ProcTree()
-		self.assertIsInstance(pt, ProcTree)
-		self.assertEqual(len(ProcTree.NODES), 4)
-
-		n1 = ProcTree.getNode(TestProcTree.procs.p1)
-		n2 = ProcTree.getNode(TestProcTree.procs.p2)
-		n3 = ProcTree.getNode(TestProcTree.procs.p3)
-
-		self.assertEqual(n1.prev, [])
-		self.assertEqual(n2.prev, [n1])
-		self.assertEqual(n3.prev, [n2])
-		self.assertEqual(n1.next, [n2])
-		self.assertEqual(n2.next, [n3])
-		self.assertEqual(n3.next, [])
-
-	def test4SetGetStarts(self):
-		pt = ProcTree()
-		pt.setStarts([TestProcTree.procs.p1])
-		n1 = ProcTree.getNode(TestProcTree.procs.p1)
-		self.assertTrue(n1.start)
-		self.assertEqual(pt.getStarts(), [TestProcTree.procs.p1])
-
-	def test5GetEnds(self):
-		n3 = ProcTree.getNode(TestProcTree.procs.p3)
-		pt = ProcTree()
-		pt.setStarts([TestProcTree.procs.p1])
-		ends = pt.getEnds()
-		self.assertEqual(ends, [TestProcTree.procs.p3])
-
-	def test6GetNextToRun(self):
-		pt = ProcTree()
-		n1 = ProcTree.getNode(TestProcTree.procs.p1)
-		n2 = ProcTree.getNode(TestProcTree.procs.p2)
-		n3 = ProcTree.getNode(TestProcTree.procs.p3)
-		pt.setStarts([TestProcTree.procs.p1])
+	def setUp(self):
+		# procs registered by Proc.__init__() are also removed!
+		ProcTree.NODES = OrderedDict()
 		
-		n2r = pt.getNextToRun()
-		self.assertEqual(n2r, n1.proc)
-		n2r = pt.getNextToRun()
-		self.assertEqual(n2r, n2.proc)
-		n2r = pt.getNextToRun()
-		self.assertEqual(n2r, n3.proc)
-		n2r = pt.getNextToRun()
-		self.assertEqual(n2r, None)
+	def dataProvider_testRegister(self):
+		proc_testRegister1 = Proc()
+		yield proc_testRegister1, 1
+		yield proc_testRegister1, 1
+		proc_testRegister2 = Proc()
+		yield proc_testRegister2, 2
 
-	#@unittest.skip('')
-	def test7GetPaths(self):
-		ProcTree.NODES = OrderedDict()
+	def testRegister(self, proc, l):
+		ProcTree.register(proc)
+		key = id(proc)
+		self.assertIs(ProcTree.NODES[key].proc, proc)
+		self.assertEqual(len(ProcTree.NODES), l)
 
-		p1 = Proc('p1')
-		p2 = Proc('p2')
-		p3 = Proc('p3')
-		p4 = Proc('p4')
-		p5 = Proc('p5')
-		p6 = Proc('p6')
-		p7 = Proc('p7')
-		p8 = Proc('p8')
-		p9 = Proc('p9')
-		p10 = Proc('p10')
-		p11 = Proc('p11')
+	def dataProvider_testCheck(self):
+		proc_testCheck1 = Proc()
+		proc_testCheck2 = Proc()
+		proc_testCheck3 = Proc(id = 'proc_testCheck1')
+		yield proc_testCheck1, False
+		yield proc_testCheck2, False
+		yield proc_testCheck3, True
+
+	def testCheck(self, proc, r):
+		ProcTree.register(proc)
+		if r:
+			self.assertRaises(ProcTreeProcExists, ProcTree.check, proc)
+		else:
+			ProcTree.check(proc)
+
+	def dataProvider_testGetNode(self):
+		proc_testGetNode1 = Proc()
+		proc_testGetNode2 = Proc()
+		yield proc_testGetNode1,
+		yield proc_testGetNode2,
+
+	def testGetNode(self, proc):
+		ProcTree.register(proc)
+		self.assertIs(ProcTree.getNode(proc).proc, proc)
+
+	def dataProvider_testGetPrevNextStr(self):
+		proc_testGetPrevNextStr1 = Proc()
+		proc_testGetPrevNextStr2 = Proc()
+		proc_testGetPrevNextStr3 = Proc()
+		proc_testGetPrevNextStr2.depends = proc_testGetPrevNextStr1
+		proc_testGetPrevNextStr3.depends = proc_testGetPrevNextStr2
+		ps = [proc_testGetPrevNextStr1, proc_testGetPrevNextStr2, proc_testGetPrevNextStr3]
+		yield ps, proc_testGetPrevNextStr1, 'prev', 'START'
+		yield ps, proc_testGetPrevNextStr2, 'prev', '[proc_testGetPrevNextStr1]'
+		yield ps, proc_testGetPrevNextStr3, 'prev', '[proc_testGetPrevNextStr2]'
+		yield ps, proc_testGetPrevNextStr1, 'next', '[proc_testGetPrevNextStr2]'
+		yield ps, proc_testGetPrevNextStr2, 'next', '[proc_testGetPrevNextStr3]'
+		yield ps, proc_testGetPrevNextStr3, 'next', 'END'
+
+	def testGetPrevNextStr(self, procs, proc, which, out):
+		for p in procs:
+			ProcTree.register(p)
+		ProcTree()
+		if which == 'prev':
+			self.assertEqual(ProcTree.getPrevStr(proc), out)
+		else:
+			self.assertEqual(ProcTree.getNextStr(proc), out)
+
+	def dataProvider_testGetNext(self):
+		proc_testGetNext1 = Proc()
+		proc_testGetNext2 = Proc()
+		proc_testGetNext3 = Proc()
+		proc_testGetNext4 = Proc()
+		proc_testGetNext2.depends = proc_testGetNext1
+		proc_testGetNext3.depends = proc_testGetNext2
+		proc_testGetNext4.depends = proc_testGetNext2
+		ps = [proc_testGetNext1, proc_testGetNext2, proc_testGetNext3, proc_testGetNext4]
+		yield ps, proc_testGetNext1, [proc_testGetNext2]
+		yield ps, proc_testGetNext2, [proc_testGetNext3, proc_testGetNext4]
+		yield ps, proc_testGetNext3, []
+		yield ps, proc_testGetNext4, []
+
+	def testGetNext(self, procs, proc, outs):
+		for p in procs:
+			ProcTree.register(p)
+		ProcTree()
+		nexts = ProcTree.getNext(proc)
+		self.assertItemEqual(nexts, outs)
+
+	def dataProvider_testReset(self):
+		proc_testReset1 = Proc()
+		proc_testReset2 = Proc()
+		proc_testReset3 = Proc()
+		proc_testReset4 = Proc()
+		proc_testReset2.depends = proc_testReset1
+		proc_testReset3.depends = proc_testReset2
+		proc_testReset4.depends = proc_testReset2
+		yield [proc_testReset1, proc_testReset2, proc_testReset3, proc_testReset4], 
+
+	def testReset(self, procs):
+		for p in procs:
+			ProcTree.register(p)
+		ProcTree()
+		ProcTree.reset()
+		for node in ProcTree.NODES.values():
+			self.assertListEqual(node.prev, [])
+			self.assertListEqual(node.next, [])
+			self.assertFalse(node.ran)
+			self.assertFalse(node.start)
+
+	def dataProvider_testInit(self):
+		proc_testInit1 = Proc()
+		proc_testInit2 = Proc()
+		proc_testInit3 = Proc()
+		proc_testInit4 = Proc()
+		proc_testInit2.depends = proc_testInit1
+		proc_testInit3.depends = proc_testInit2
+		proc_testInit4.depends = proc_testInit2
+		yield [proc_testInit1, proc_testInit2, proc_testInit3, proc_testInit4], 
+		yield [proc_testInit1, proc_testInit3], 
+
+	def testInit(self, procs):
+		for p in procs:
+			ProcTree.register(p)
+		pt = ProcTree()
+		self.assertEqual(pt.starts, [])
+		self.assertEqual(pt.ends, [])
+		for proc in procs:
+			depends = proc.depends
+			for depend in depends:
+				nproc   = ProcTree.getNode(proc)
+				ndepend = ProcTree.getNode(depend)
+				self.assertIn(nproc, ndepend.next)
+				self.assertIn(ndepend, nproc.prev)
+
+	def dataProvider_testSetGetStarts(self):
+		proc_testSetGetStarts1 = Proc()
+		proc_testSetGetStarts2 = Proc()
+		proc_testSetGetStarts3 = Proc()
+		proc_testSetGetStarts4 = Proc()
+		proc_testSetGetStarts2.depends = proc_testSetGetStarts1
+		proc_testSetGetStarts3.depends = proc_testSetGetStarts2
+		proc_testSetGetStarts4.depends = proc_testSetGetStarts2
+		yield [proc_testSetGetStarts1, proc_testSetGetStarts2, proc_testSetGetStarts3, proc_testSetGetStarts4], [proc_testSetGetStarts1]
+		yield [proc_testSetGetStarts2, proc_testSetGetStarts3, proc_testSetGetStarts4], [proc_testSetGetStarts2]
+		yield [proc_testSetGetStarts1, proc_testSetGetStarts2, proc_testSetGetStarts3, proc_testSetGetStarts4], [proc_testSetGetStarts1, proc_testSetGetStarts2]
+
+	def testSetGetStarts(self, procs, starts):
+		for p in procs:
+			ProcTree.register(p)
+		pt = ProcTree()
+		pt.setStarts(starts)
+		for proc in procs:
+			if proc in starts:
+				self.assertTrue(ProcTree.getNode(proc).start)
+			else:
+				self.assertFalse(ProcTree.getNode(proc).start)
+		s = pt.getStarts()
+		self.assertItemEqual(s, starts)
+		self.assertItemEqual(pt.starts, starts)
+
+	def dataProvider_testGetPaths(self):
+		proc_testGetPaths1 = Proc()
+		proc_testGetPaths2 = Proc()
+		proc_testGetPaths3 = Proc()
+		proc_testGetPaths4 = Proc()
+		proc_testGetPaths5 = Proc()
+		proc_testGetPaths2.depends = proc_testGetPaths1
+		proc_testGetPaths3.depends = proc_testGetPaths2, proc_testGetPaths4
+		proc_testGetPaths4.depends = proc_testGetPaths2
+		proc_testGetPaths5.depends = proc_testGetPaths1
 		"""
-				   p1         p8
-				/      \      /  \
-			p2           p3        p10
-				\      /
-				   p4         p9
-				/      \      /
-			p5             p6 
-				\      /
-				   p7            p11(obsolete)
+		proc1 -> proc2 -> proc3
+			\        \    /
+			  proc5  proc4
 		"""
-		p2.depends = [p1]
-		p3.depends = [p1, p8]
-		p4.depends = [p2, p3]
-		p5.depends = [p4]
-		p6.depends = [p4, p9]
-		p7.depends = [p5, p6]
-		p10.depends = [p8]
+		ps = [proc_testGetPaths1, proc_testGetPaths2, proc_testGetPaths3, proc_testGetPaths4, proc_testGetPaths5]
+		yield ps, proc_testGetPaths1, []
+		yield ps, proc_testGetPaths2, [[proc_testGetPaths1]]
+		yield ps, proc_testGetPaths3, [[proc_testGetPaths2, proc_testGetPaths1], [proc_testGetPaths4, proc_testGetPaths2, proc_testGetPaths1]]
+		yield ps, proc_testGetPaths4, [[proc_testGetPaths2, proc_testGetPaths1]]
+		yield ps, proc_testGetPaths5, [[proc_testGetPaths1]]
 
-		n1 = ProcTree.getNode(p1)
-		n2 = ProcTree.getNode(p2)
-		n3 = ProcTree.getNode(p3)
-		n4 = ProcTree.getNode(p4)
-		n5 = ProcTree.getNode(p5)
-		n6 = ProcTree.getNode(p6)
-		n7 = ProcTree.getNode(p7)
-		n8 = ProcTree.getNode(p8)
-		n9 = ProcTree.getNode(p9)
-		n10 = ProcTree.getNode(p10)
-		n11 = ProcTree.getNode(p11)
+		proc_testGetPaths6 = Proc()
+		proc_testGetPaths7 = Proc()
+		proc_testGetPaths8 = Proc()
+		proc_testGetPaths7.depends = proc_testGetPaths6
+		proc_testGetPaths8.depends = proc_testGetPaths7
+		proc_testGetPaths6.depends = proc_testGetPaths8
+		ps2 = [proc_testGetPaths6, proc_testGetPaths7, proc_testGetPaths8]
+		yield ps2, proc_testGetPaths6, [], True
 
-		self.assertEqual(len(ProcTree.NODES), 11)
+		proc_testGetPaths10 = Proc()
+		proc_testGetPaths11 = Proc()
+		proc_testGetPaths12 = Proc()
+		proc_testGetPaths11.depends = proc_testGetPaths10
+		proc_testGetPaths12.depends = proc_testGetPaths11
+		proc_testGetPaths10.depends = proc_testGetPaths11
+		ps3 = [proc_testGetPaths10, proc_testGetPaths11, proc_testGetPaths12]
+		yield ps3, proc_testGetPaths12, [], True
+
+		# should be ok: 
+		# 13 -> 15
+		# 14 -> 15
+		# 13 -> 14
+		proc_testGetPaths13 = Proc()
+		proc_testGetPaths14 = Proc()
+		proc_testGetPaths15 = Proc()
+		proc_testGetPaths15.depends = proc_testGetPaths13, proc_testGetPaths14
+		proc_testGetPaths14.depends = proc_testGetPaths13
+		ps4 = [proc_testGetPaths13, proc_testGetPaths14, proc_testGetPaths15]
+		yield ps4, proc_testGetPaths15, [[proc_testGetPaths13], [proc_testGetPaths14, proc_testGetPaths13]]
+
+
+	def testGetPaths(self, procs, proc, paths, exception = None):
+		for p in procs:
+			ProcTree.register(p)
 		pt = ProcTree()
-		self.assertRaises(ValueError, pt.getEnds)
-		pt.setStarts([p1])
-		self.assertEqual(pt.getStarts(), [p1])
-		self.assertRaises(ValueError, pt.getEnds)
-		pt.starts = []
-		pt.setStarts([p1, p8, p9])
-		self.assertEqual(len(pt.getEnds()), 2)
-		self.assertIn(p7, pt.getEnds())
-		self.assertIn(p10, pt.getEnds())
+		if exception:
+			self.assertRaises(ProcTreeParseError, pt.getPaths, proc)
+		else:
+			ps = pt.getPaths(proc)
+			self.assertListEqual(ps, paths)
 
-		self.assertEqual(pt.getNextToRun(), p1)
-		self.assertEqual(pt.getNextToRun(), p2)
-		self.assertEqual(pt.getNextToRun(), p8)
-		self.assertEqual(pt.getNextToRun(), p3)
-		self.assertEqual(pt.getNextToRun(), p4)
-		self.assertEqual(pt.getNextToRun(), p5)
-		self.assertEqual(pt.getNextToRun(), p9)
-		self.assertEqual(pt.getNextToRun(), p6)
-		self.assertEqual(pt.getNextToRun(), p7)
-		self.assertEqual(pt.getNextToRun(), p10)
-		self.assertEqual(pt.getNextToRun(), None)
+	def dataProvider_testGetPathsToStarts(self):
+		proc_testGetPathsToStarts1 = Proc()
+		proc_testGetPathsToStarts2 = Proc()
+		proc_testGetPathsToStarts3 = Proc()
+		proc_testGetPathsToStarts4 = Proc()
+		proc_testGetPathsToStarts5 = Proc()
+		proc_testGetPathsToStarts2.depends = proc_testGetPathsToStarts1
+		proc_testGetPathsToStarts3.depends = proc_testGetPathsToStarts2, proc_testGetPathsToStarts4
+		proc_testGetPathsToStarts4.depends = proc_testGetPathsToStarts2
+		proc_testGetPathsToStarts5.depends = proc_testGetPathsToStarts1
+		"""
+		proc1 -> proc2 -> proc3
+			\        \    /
+			  proc5  proc4
+		"""
+		ps = [proc_testGetPathsToStarts1, proc_testGetPathsToStarts2, proc_testGetPathsToStarts3, proc_testGetPathsToStarts4, proc_testGetPathsToStarts5]
+		yield ps, [proc_testGetPathsToStarts1], proc_testGetPathsToStarts1, []
+		yield ps, [proc_testGetPathsToStarts1], proc_testGetPathsToStarts2, [[proc_testGetPathsToStarts1]]
+		yield ps, [proc_testGetPathsToStarts2], proc_testGetPathsToStarts2, []
+		yield ps, [proc_testGetPathsToStarts1], proc_testGetPathsToStarts3, [[proc_testGetPathsToStarts2, proc_testGetPathsToStarts1], [proc_testGetPathsToStarts4, proc_testGetPathsToStarts2, proc_testGetPathsToStarts1]]
+		yield ps, [proc_testGetPathsToStarts1, proc_testGetPathsToStarts4], proc_testGetPathsToStarts3, [[proc_testGetPathsToStarts2, proc_testGetPathsToStarts1], [proc_testGetPathsToStarts4, proc_testGetPathsToStarts2, proc_testGetPathsToStarts1]]
+		yield ps, [proc_testGetPathsToStarts2], proc_testGetPathsToStarts3, [[proc_testGetPathsToStarts2], [proc_testGetPathsToStarts4, proc_testGetPathsToStarts2]]
+		yield ps, [proc_testGetPathsToStarts1], proc_testGetPathsToStarts4, [[proc_testGetPathsToStarts2, proc_testGetPathsToStarts1]]
+		yield ps, [proc_testGetPathsToStarts1], proc_testGetPathsToStarts5, [[proc_testGetPathsToStarts1]]
 
-		
-		n1.start = False
-		n8.start = False
-		n9.start = False
-		pt.starts = []
-		self.assertEqual(pt.getStarts(), [])
-		pt.ends  = []
-		self.assertRaises(ValueError, pt.getEnds)
-		pt.setStarts([p4, p9])
-		self.assertEqual(pt.getEnds(), [p7])
-		paths = pt.getPaths(p7)
-		self.assertIn([p5, p4, p3, p1], paths)
-		self.assertNotIn([p5, p4], paths)
-		paths = pt.getPathsToStarts(p7)
-		self.assertNotIn([p5, p4, p3, p1], paths)
-		self.assertIn([p5, p4], paths)
-
-		self.assertEqual(pt.getAllPaths(), [['p7', 'p5', 'p4'], ['p7', 'p5', 'p4'], ['p7', 'p5', 'p4'], ['p7', 'p6', 'p4'], ['p7', 'p6', 'p4'], ['p7', 'p6', 'p4'], ['p7', 'p6', 'p9']])
-
-		n4.start  = False
-		n9.start  = False
-		pt.starts = []
-		pt.ends   = []
-		pt.setStarts([p11])
-		self.assertEqual(pt.getAllPaths(), [['p11']])
-
-		n11.start = False
-		pt.starts = []
-		pt.ends   = []
-		pt.setStarts([p8])
-		for n in [n1,n2,n3,n4,n5,n6,n7,n8,n9,n10]:
-			n.ran = False
-
-		self.assertEqual(pt.getNextToRun(), p8)
-		self.assertEqual(pt.getNextToRun(), p10)
-		self.assertEqual(pt.unranProcs(), {'p3': ['p1'], 'p6': ['p4', 'p9'], 'p7': ['p5', 'p6'], 'p4': ['p2', 'p3'], 'p5': ['p4']})
-	
-	def test8Obsolete(self):
-		ProcTree.NODES = OrderedDict()
-		p1 = Proc('p1')
-		p2 = Proc('p2')
+	def testGetPathsToStarts(self, procs, starts, proc, paths):
+		for p in procs:
+			ProcTree.register(p)
 		pt = ProcTree()
-		pt.setStarts([p2])
-		self.assertEqual(pt.getEnds(), [p2])
+		pt.setStarts(starts)
+		ps = pt.getPathsToStarts(proc)
+		self.assertListEqual(ps, paths)
 
-	def testLoop(self):
-		ProcTree.NODES = OrderedDict()
-		p1 = Proc('p1')
-		p2 = Proc('p2')
-		p3 = Proc('p3')
-		p2.depends = [p1]
-		p3.depends = [p2]
-		p1.depends = [p3]
+	def dataProvider_testCheckPath(self):
+		proc_testCheckPath0 = Proc()
+		proc_testCheckPath1 = Proc()
+		proc_testCheckPath2 = Proc()
+		proc_testCheckPath3 = Proc()
+		proc_testCheckPath4 = Proc()
+		proc_testCheckPath5 = Proc()
+		proc_testCheckPath2.depends = proc_testCheckPath0, proc_testCheckPath1
+		proc_testCheckPath3.depends = proc_testCheckPath2, proc_testCheckPath4
+		proc_testCheckPath4.depends = proc_testCheckPath2
+		proc_testCheckPath5.depends = proc_testCheckPath1
+		"""
+			proc0
+				\
+		proc1 -> proc2 -> proc3
+			\        \    /
+			  proc5  proc4
+		"""
+		ps = [proc_testCheckPath0, proc_testCheckPath1, proc_testCheckPath2, proc_testCheckPath3, proc_testCheckPath4, proc_testCheckPath5]
+		yield ps, [proc_testCheckPath1], proc_testCheckPath1, True
+		yield ps, [proc_testCheckPath1], proc_testCheckPath2, [proc_testCheckPath0]
+		yield ps, [proc_testCheckPath0, proc_testCheckPath1], proc_testCheckPath2, True
+		yield ps, [proc_testCheckPath0, proc_testCheckPath1], proc_testCheckPath3, True
+		yield ps, [proc_testCheckPath0], proc_testCheckPath3, [proc_testCheckPath2, proc_testCheckPath1]
+
+	def testCheckPath(self, procs, starts, proc, passed):
+		for p in procs:
+			ProcTree.register(p)
 		pt = ProcTree()
-		pt.setStarts([p1])
-		#pt.getEnds()
-		self.assertRaises(ValueError, pt.getEnds)
+		pt.setStarts(starts)
+		if isinstance(passed, bool):
+			self.assertEqual(pt.checkPath(proc), passed)
+		else:
+			self.assertListEqual(pt.checkPath(proc), passed)
+
+	def dataProvider_testGetEnds(self):
+		# check for loops
+		proc_testGetEnds_loop0 = Proc()
+		proc_testGetEnds_loop1 = Proc()
+		proc_testGetEnds_loop2 = Proc()
+		proc_testGetEnds_loop3 = Proc()
+		proc_testGetEnds_loop1.depends = proc_testGetEnds_loop0
+		proc_testGetEnds_loop2.depends = proc_testGetEnds_loop1
+		proc_testGetEnds_loop3.depends = proc_testGetEnds_loop2
+		proc_testGetEnds_loop0.depends = proc_testGetEnds_loop1
+		"""
+		0 -> 1 -> 2 -> 3
+		|____|
+		"""
+		yield [proc_testGetEnds_loop0, proc_testGetEnds_loop1, proc_testGetEnds_loop2, proc_testGetEnds_loop3], [proc_testGetEnds_loop3], [], ProcTreeParseError, 'Loop dependency'
+
+		proc_testGetEnds_loop4 = Proc()
+		proc_testGetEnds_loop5 = Proc()
+		proc_testGetEnds_loop6 = Proc()
+		proc_testGetEnds_loop7 = Proc()
+		proc_testGetEnds_loop5.depends = proc_testGetEnds_loop4
+		proc_testGetEnds_loop6.depends = proc_testGetEnds_loop5
+		proc_testGetEnds_loop7.depends = proc_testGetEnds_loop6
+		proc_testGetEnds_loop4.depends = proc_testGetEnds_loop7
+		"""
+		4 -> 5 -> 6 -> 7
+		|______________|
+		"""
+		yield [proc_testGetEnds_loop4, proc_testGetEnds_loop5, proc_testGetEnds_loop6, proc_testGetEnds_loop7], [proc_testGetEnds_loop7], [], ProcTreeParseError, 'Loop dependency'
+
+		proc_testGetEnds0 = Proc()
+		proc_testGetEnds1 = Proc()
+		proc_testGetEnds2 = Proc()
+		proc_testGetEnds3 = Proc()
+		proc_testGetEnds4 = Proc()
+		proc_testGetEnds5 = Proc()
+		proc_testGetEnds2.depends = proc_testGetEnds0, proc_testGetEnds1
+		proc_testGetEnds3.depends = proc_testGetEnds2, proc_testGetEnds4
+		proc_testGetEnds4.depends = proc_testGetEnds2
+		proc_testGetEnds5.depends = proc_testGetEnds1
+		"""
+			proc0
+				\
+		proc1 -> proc2 -> proc3
+			\        \    /
+			  proc5  proc4
+		"""
+		ps = [proc_testGetEnds0, proc_testGetEnds1, proc_testGetEnds2, proc_testGetEnds3, proc_testGetEnds4, proc_testGetEnds5]
+
+		yield ps, [proc_testGetEnds5], [], ProcTreeParseError, 'one of the paths cannot go through'
+		yield ps, [proc_testGetEnds1], [proc_testGetEnds5]
+		yield ps, [proc_testGetEnds0, proc_testGetEnds1], [proc_testGetEnds3, proc_testGetEnds5]
+		yield ps, [proc_testGetEnds0], [], ProcTreeParseError, 'one of the paths cannot go through'
+
+		proc_testGetEnds6 = Proc()
+		yield [proc_testGetEnds6], [proc_testGetEnds6], [proc_testGetEnds6]
+		yield [proc_testGetEnds6], [], [], ProcTreeParseError, 'Failed to determine end processes by start processes'
 
 
+	def testGetEnds(self, procs, starts, ends, exception = None, msg = None):
+		for p in procs:
+			ProcTree.register(p)
+		pt = ProcTree()
+		pt.setStarts(starts)
+		if exception:
+			self.assertRaisesStr(ProcTreeParseError, msg, pt.getEnds)
+		else:
+			self.assertItemEqual(pt.getEnds(), ends)
+
+	def dataProvider_testGetAllPaths(self):
+		proc_testGetAllPaths0 = Proc()
+		proc_testGetAllPaths1 = Proc()
+		proc_testGetAllPaths2 = Proc()
+		proc_testGetAllPaths3 = Proc()
+		proc_testGetAllPaths4 = Proc()
+		proc_testGetAllPaths5 = Proc()
+		proc_testGetAllPaths2.depends = proc_testGetAllPaths0, proc_testGetAllPaths1
+		proc_testGetAllPaths3.depends = proc_testGetAllPaths2, proc_testGetAllPaths4
+		proc_testGetAllPaths4.depends = proc_testGetAllPaths2
+		proc_testGetAllPaths5.depends = proc_testGetAllPaths1
+		"""
+			proc0
+				\
+		proc1 -> proc2 -> proc3
+			\        \    /
+			  proc5  proc4
+		"""
+		ps = [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths3, proc_testGetAllPaths4, proc_testGetAllPaths5]
+		yield ps, [proc_testGetAllPaths2], [[proc_testGetAllPaths3, proc_testGetAllPaths2], [proc_testGetAllPaths3, proc_testGetAllPaths4, proc_testGetAllPaths2]]
+		yield ps, [proc_testGetAllPaths1], [[proc_testGetAllPaths5, proc_testGetAllPaths1]]
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [
+			[proc_testGetAllPaths5, proc_testGetAllPaths1],
+			[proc_testGetAllPaths3, proc_testGetAllPaths2, proc_testGetAllPaths0],
+			[proc_testGetAllPaths3, proc_testGetAllPaths2, proc_testGetAllPaths1],
+			[proc_testGetAllPaths3, proc_testGetAllPaths4, proc_testGetAllPaths2, proc_testGetAllPaths0],
+			[proc_testGetAllPaths3, proc_testGetAllPaths4, proc_testGetAllPaths2, proc_testGetAllPaths1],
+		]
+
+		# obsolete
+		proc_testGetAllPaths6 = Proc()
+		yield [proc_testGetAllPaths6], [proc_testGetAllPaths6], [[proc_testGetAllPaths6]]
+
+	def testGetAllPaths(self, procs, starts, paths):
+		for p in procs:
+			ProcTree.register(p)
+		pt = ProcTree()
+		pt.setStarts(starts)
+		self.assertItemEqual(pt.getAllPaths(), paths)
+
+	def dataProvider_testGetNextToRun(self):
+		proc_testGetAllPaths0 = Proc()
+		proc_testGetAllPaths1 = Proc()
+		proc_testGetAllPaths2 = Proc()
+		proc_testGetAllPaths3 = Proc()
+		proc_testGetAllPaths4 = Proc()
+		proc_testGetAllPaths5 = Proc()
+		proc_testGetAllPaths2.depends = proc_testGetAllPaths0, proc_testGetAllPaths1
+		proc_testGetAllPaths3.depends = proc_testGetAllPaths2, proc_testGetAllPaths4
+		proc_testGetAllPaths4.depends = proc_testGetAllPaths2
+		proc_testGetAllPaths5.depends = proc_testGetAllPaths1
+		"""
+			proc0
+				\
+		proc1 -> proc2 -> proc3
+			\        \    /
+			  proc5  proc4
+		"""
+		ps = [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths3, proc_testGetAllPaths4, proc_testGetAllPaths5]
+		yield ps, [proc_testGetAllPaths0], [], proc_testGetAllPaths0
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [], proc_testGetAllPaths0
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0], proc_testGetAllPaths1
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1], proc_testGetAllPaths2
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2], proc_testGetAllPaths4
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths4], proc_testGetAllPaths3
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths4, proc_testGetAllPaths3], proc_testGetAllPaths5
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths4, proc_testGetAllPaths3, proc_testGetAllPaths5], None
+
+	def testGetNextToRun(self, procs, starts, haveran, out):
+		for p in procs:
+			ProcTree.register(p)
+		pt = ProcTree()
+		pt.setStarts(starts)
+		for hr in haveran:
+			ProcTree.getNode(hr).ran = True
+		self.assertIs(pt.getNextToRun(), out)
+
+	def dataProvider_testUnranProcs(self):
+		proc_testUnranProcs0 = Proc()
+		proc_testUnranProcs1 = Proc()
+		proc_testUnranProcs2 = Proc()
+		proc_testUnranProcs3 = Proc()
+		proc_testUnranProcs4 = Proc()
+		proc_testUnranProcs5 = Proc()
+		proc_testUnranProcs6 = Proc()
+		proc_testUnranProcs7 = Proc()
+		proc_testUnranProcs2.depends = proc_testUnranProcs0, proc_testUnranProcs1
+		proc_testUnranProcs3.depends = proc_testUnranProcs2, proc_testUnranProcs4
+		proc_testUnranProcs4.depends = proc_testUnranProcs2
+		proc_testUnranProcs5.depends = proc_testUnranProcs1
+		proc_testUnranProcs6.depends = proc_testUnranProcs0
+		"""
+			proc0 -> proc6
+				\
+		proc1 -> proc2 -> proc3                   proc7
+			\        \    /
+			  proc5  proc4
+		"""
+		ps = [proc_testUnranProcs0, proc_testUnranProcs1, proc_testUnranProcs2, proc_testUnranProcs3, proc_testUnranProcs4, proc_testUnranProcs5, proc_testUnranProcs6, proc_testUnranProcs7]
+		yield ps, [proc_testUnranProcs0], {
+			'proc_testUnranProcs3': ['proc_testUnranProcs2', 'proc_testUnranProcs1']
+		}
+		yield ps, [proc_testUnranProcs1], {
+			'proc_testUnranProcs3': ['proc_testUnranProcs2', 'proc_testUnranProcs0']
+		}
+
+	def testUnranProcs(self, procs, starts, outs):
+		for p in procs:
+			ProcTree.register(p)
+		pt = ProcTree()
+		pt.setStarts(starts)
+		# run the pipeline
+		p = pt.getNextToRun()
+		while p:
+			ProcTree.getNode(p).ran = True
+			p = pt.getNextToRun()
+		self.assertDictEqual(pt.unranProcs(), outs)
 
 if __name__ == '__main__':
-	unittest.main(verbosity=2, failfast=True)
+	unittest.main(verbosity=2)

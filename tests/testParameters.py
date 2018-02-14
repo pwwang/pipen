@@ -64,7 +64,7 @@ class TestParameter (helpers.TestCase):
 		yield p3,
 
 	def testReprStr(self, p):
-		self.assertEqual(repr(p), 'Parameter@{}({})'.format(hex(id(p)), ','.join([key+'='+repr(val) for key, val in p.props.items()])))
+		self.assertEqual(repr(p), '<Parameter({}) @ {}>'.format(','.join([key+'='+repr(val) for key, val in p.props.items()]), hex(id(p))))
 		self.assertEqual(str(p), str(p.value))
 
 	def dataProvider_testForceType(self):

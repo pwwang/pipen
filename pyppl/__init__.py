@@ -341,7 +341,7 @@ class Proc (object):
 			self.config[name] = value
 			
 	def __repr__(self):
-		return '<Proc(%s) at %s>' % (self.name(), hex(id(self)))
+		return '<Proc(%s) @ %s>' % (self.name(), hex(id(self)))
 		
 	def log (self, msg, level="info", key = ''):
 		"""
@@ -1227,7 +1227,8 @@ class PyPPL (object):
 
 	def showAllRoutes(self):
 		logger.logger.info('[DEBUG] ALL ROUTES:')
-		paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths(True)])
+		#paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths()])
+		paths  = sorted([[p.name() for p in reversed(ps)] for ps in self.tree.getAllPaths()])
 		paths2 = [] # processes merged from the same aggr
 		for path in paths:
 			prevaggr = None
@@ -1276,8 +1277,8 @@ class PyPPL (object):
 		if unran:
 			klen  = max([len(k) for k in unran.keys()])
 			for key, val in unran.items():
-				fmtstr = "[WARNING] %-"+ str(klen) +"s won't run as prior processes didn't run: [%s]"
-				logger.logger.info (fmtstr % (key, ', '.join(val)))
+				fmtstr = "[WARNING] %-"+ str(klen) +"s won't run as path can't be reached: %s <- %s"
+				logger.logger.info (fmtstr % (key, key, ' <- '.join(val)))
 
 		logger.logger.info ('[   DONE] Total time: %s' % utils.formatSecs (time()-timer))
 		return self

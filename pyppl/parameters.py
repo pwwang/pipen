@@ -39,7 +39,7 @@ class Parameter (object):
 		return self.props[name]
 	
 	def __repr__(self):
-		return 'Parameter@{}({})'.format(hex(id(self)), ','.join([key+'='+repr(val) for key, val in self.props.items()]))
+		return '<Parameter({}) @ {}>'.format(','.join([key+'='+repr(val) for key, val in self.props.items()]), hex(id(self)))
 	
 	def __str__(self):
 		return str(self.value)

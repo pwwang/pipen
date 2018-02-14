@@ -3,6 +3,7 @@ Manage process relations
 """
 import traceback
 from collections import OrderedDict
+from .exception import ProcTreeProcExists, ProcTreeParseError
 
 class ProcNode(object):
 	"""
@@ -40,6 +41,8 @@ class ProcNode(object):
 class ProcTree(object):
 
 	# all processes, key is the object id
+	# use static, because we want different pipelines in the same session
+	# have unique (id and tag)
 	NODES    = OrderedDict()
 
 	@staticmethod
@@ -63,12 +66,7 @@ class ProcTree(object):
 		for key, node in ProcTree.NODES.items():
 			if key == id(proc): continue
 			if node.sameIdTag(proc):
-				msg  = 'You cannot have two processes with the same id(%s) ang tag(%s).\n' % (proc.id, proc.tag)
-				msg += '>>> The 1st one was defined here:\n'
-				msg += ''.join(node.defs)
-				msg += '>>> The 2nd one was defined here:\n'
-				msg += ''.join(ProcTree.getNode(proc).defs)
-				raise ValueError(msg)
+				raise ProcTreeProcExists(node, ProcTree.getNode(proc))
 
 	@staticmethod
 	def getNode(proc):
@@ -173,7 +171,7 @@ class ProcTree(object):
 		Infer the path to a process
 		@params:
 			`proc`: The process
-			`proc0`: The original process
+			`proc0`: The original process, because this function runs recursively.
 		@returns:
 			```
 			p1 -> p2 -> p3
@@ -182,15 +180,15 @@ class ProcTree(object):
 			```
 		"""
 		node  = proc if isinstance(proc, ProcNode) else ProcTree.getNode(proc)
-		proc0 = proc0 or node
+		proc0 = proc0 or [node]
 		paths = []
 		for np in node.prev:
-			if np is proc0:
-				raise ValueError('You cannot depend on yourself: %s' % proc0.proc.name())
+			if np in proc0:
+				raise ProcTreeParseError(np.proc, 'Loop dependency through')
 			if not np.prev:
 				ps = [[np.proc]]
 			else:
-				ps = self.getPaths(np, proc0)
+				ps = self.getPaths(np, proc0 + [np])
 				for p in ps: p.insert(0, np.proc)
 			paths.extend(ps)
 		return paths
@@ -225,7 +223,7 @@ class ProcTree(object):
 			The failed path otherwise
 		"""
 		paths  = self.getPaths(proc)
-		starts = set(self.starts)
+		starts = set(self.getStarts())
 		passed = True
 		for path in paths:
 			if not (starts & set(path)):
@@ -262,25 +260,30 @@ class ProcTree(object):
 
 			# didn't find any ends
 			if not self.ends:
-				msg  = 'Cannot find any end processes by the start processes assigned.\n'
 				if failedPaths:
-					msg += '>>> One of the paths cannot pass:\n    '
-					msg += ' <- '.join([fn.name() for fn in failedPaths[0]]) + '\n'
-				raise ValueError(msg)
+					raise ProcTreeParseError(' <- '.join([fn.name() for fn in failedPaths[0]]), 'Failed to determine end processes, one of the paths cannot go through')
+				else:
+					raise ProcTreeParseError(', '.join(s.name() for s in self.getStarts()), 'Failed to determine end processes by start processes')
 		return self.ends
 
-	def getAllPaths(self, withStarts = True):
-		ret = []
+	def getAllPaths(self):
+		ret = set()
 		ends = self.getEnds()
 		for end in ends:
-			paths = self.getPaths(end) if not withStarts else self.getPathsToStarts(end)
+			paths = self.getPathsToStarts(end)
 			if not paths:
-				ret.append([end.name()])
+				p = [end]
+				pstr = str(p)
+				if pstr not in ret:
+					yield [end]
+					ret.add(pstr)
 			else:
-				for path in paths:
-					path = [end.name()] + [p.name() for p in path]
-					ret.append(path)
-		return ret
+				for p in paths:
+					p = [end] + p
+					pstr = str(p)
+					if pstr not in ret:
+						yield p
+						ret.add(pstr)
 
 	@classmethod
 	def getNextToRun(self):
@@ -302,8 +305,17 @@ class ProcTree(object):
 
 	def unranProcs(self):
 		ret = {}
+		starts = set(self.getStarts())
 		for node in ProcTree.NODES.values():
-			if node.ran or not node.prev: continue
+			# just for possible end process
+			if node.next: continue
+			# don't report obsolete process
 			if not self.getPathsToStarts(node): continue
-			ret[node.proc.name()] = [np.proc.name() for np in node.prev if not np.ran]
+			# check paths can't reach
+			paths = self.getPaths(node)
+			for ps in paths:
+				# the path can be reached
+				if set(ps) & set(starts): continue
+				ret[node.proc.name()] = [p.name() for p in ps]
+				break
 		return ret

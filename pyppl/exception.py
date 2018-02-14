@@ -49,7 +49,7 @@ class ParametersParseError(Exception):
 	Error when parsing the parameters
 	"""	
 	def __init__(self, name, msg = None):
-		msg = msg or 'Error when parsing command line arguments.'
+		msg = msg or 'Error when parsing command line arguments'
 		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
 
 class ParametersLoadError(Exception):
@@ -57,5 +57,28 @@ class ParametersLoadError(Exception):
 	Error loading dict to Parameters
 	"""	
 	def __init__(self, name, msg = None):
-		msg = msg or 'Error loading dict to Parameters.'
+		msg = msg or 'Error loading dict to Parameters'
 		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
+
+class ProcTreeProcExists(Exception):
+	"""
+	Raise when two Procs with same id and tag defined
+	"""	
+	def __init__(self, pn1, pn2):
+		msg = [
+			"There are two processes with id(%s) and tag(%s)" % (pn1.proc.id, pn1.proc.tag),
+			">>> One is defined here:",
+			''.join(pn1.defs),
+			">>> The other is defined here:",
+			''.join(pn2.defs)
+		]
+		super(Exception, self).__init__("\n".join(msg))
+
+class ProcTreeParseError(Exception):
+	"""
+	Raise when failed to parse the tree
+	"""
+	def __init__(self, name, msg = None):
+		msg = msg or 'Failed to parse the process tree'
+		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
+

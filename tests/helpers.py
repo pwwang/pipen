@@ -1,4 +1,4 @@
-import sys
+import sys, re
 from os import path, makedirs, symlink, remove
 # just in case that package not installed in sys.path
 sys.path.insert(0, path.join(
@@ -60,11 +60,37 @@ def log2str(levels = 'normal', theme = True, logfile = None, lvldiff = None):
 	finally:
 		sys.stdout, sys.stderr = old_out, old_err
 
+# make sure the order is like:
+# testA
+# testA_1
+# testA_2
+# testAB
+# testAB_1
+# instead of:
+# testA
+# testAB
+# testAB_1
+# testA_1
+# testA_2
+def testingOrder (_, x, y):
+	if not re.search(r'_\d+$', x):
+		x += '_0'
+	if not re.search(r'_\d+$', y):
+		y += '_0'
+	return -1 if x<y else 1 if x>y else 0
+
+unittest.TestLoader.sortTestMethodsUsing = testingOrder
 class DataProviderSupport(type):
 	def __new__(meta, classname, bases, classDict):
 		# method for creating our test methods
 		def create_test_method(testFunc, args):
 			return lambda self: testFunc(self, *args)
+
+		def create_setupteardown_method(stfunc):
+			def stFunc(self):
+				if not re.search(r'_\d+$', self._testMethodName):
+					stfunc(self)
+			return stFunc
 
 		parentDir = path.join(tempfile.gettempdir(), 'PyPPL_unittest', classname)
 		if path.isdir(parentDir):
@@ -72,10 +98,18 @@ class DataProviderSupport(type):
 		# look for data provider functions
 		
 		for attrName in list(classDict.keys()):
+
+			attr = classDict[attrName]
+			if attrName == 'setUp':
+				classDict['setUp'] = create_setupteardown_method(attr)
+				continue
+			if attrName == 'tearDown':
+				classDict['tearDown'] = create_setupteardown_method(attr)
+				continue
+
 			if not attrName.startswith("dataProvider_"):
 				continue
 
-			attr = classDict[attrName]
 			# find out the corresponding test method
 			testName = attrName[13:]
 			testFunc = classDict[testName]
@@ -104,6 +138,8 @@ class DataProviderSupport(type):
 class TestCase(with_metaclass(DataProviderSupport, unittest.TestCase)):
 
 	def assertItemEqual(self, first, second, msg = None):
+		first          = [repr(x) for x in first]
+		second         = [repr(x) for x in second]
 		first          = str(sorted(first))
 		second         = str(sorted(second))
 		assertion_func = self._getAssertEqualityFunc(first, second)
