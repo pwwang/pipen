@@ -1,7 +1,7 @@
 """
 Job module for pyppl
 """
-import json
+import json, re
 from sys import stderr
 from collections import OrderedDict
 from glob import glob
@@ -9,7 +9,9 @@ from time import sleep
 from os import makedirs, path, remove, utime, readlink, listdir
 from shutil import move, rmtree
 from multiprocessing import Lock, JoinableQueue, Process, Value
+from six import string_types
 from . import utils, logger
+from .exception import JobInputParseError, JobBringParseError, JobOutputParseError
 from .runners import Runner
 
 
@@ -18,28 +20,25 @@ class JobMan (object):
 	"""
 	JobManager
 	"""
-	def __init__(self, jobs, cclean, ncjobids, forks, npsubmit, runner):
+	#def __init__(self, jobs, cclean, ncjobids, forks, npsubmit, runner):
+	def __init__(self, proc, maxsubmit, runner):
 		"""
 		Job manager constructor
 		@params:
-			`jobs`    : The jobs
-			`cclean`  : The flag of cleaning cached jobs
-			`ncjobids`: The non-cached job indexes
-			`runner`  : The runner class
+			`proc`     : The process
+			`maxsubmit`: The max number of processes to submit jobs
+			`runner`   : The runner class
 		"""
 		self.lock = Lock()
+		self.proc = proc
 		self.runners = {
-			job.index: runner(job) for job in jobs \
-			if job.index in ncjobids or cclean
+			job.index: runner(job) for job in proc.jobs \
+			if job.index in proc.ncjobids or proc.cclean
 		}
-		# how many jobs are there
-		self.size     = len(self.runners)
-		# non-cached job indexes
-		self.ncjobids = ncjobids
 		# number of runner processes
-		self.nprunner = min(forks, self.size)
+		self.nprunner = min(proc.forks, len(self.runners))
 		# number of submit processes
-		self.npsubmit = npsubmit
+		self.npsubmit = proc.maxsubmit
 		# number of running jobs
 		self.nrunning = Value('i', 0)
 
@@ -67,7 +66,7 @@ class JobMan (object):
 		@returns:
 			`True` if all jobs are done else `False`
 		"""
-		if self.size == 0: return True
+		if not self.runners: return True
 		return all([r.status() == Runner.STATUS_DONE for r in self.runners.values()])
 
 	def canSubmit(self):
@@ -769,9 +768,6 @@ class Job (object):
 		@returns:
 			The link to the original file.
 		"""
-		if not path.exists(orgfile):
-			raise OSError('No such input file: %s' % orgfile)
-
 		basename = path.basename (orgfile)
 		infile   = path.join (self.indir, basename)
 		linked   = utils.safeLink(orgfile, infile, overwrite = False)
@@ -807,57 +803,61 @@ class Job (object):
 
 		for key, val in self.proc.input.items():
 			self.input[key] = {}
-			if val['type'] in self.proc.IN_FILETYPE:
-				if val['data'][self.index] == '': # pragma: no cover
-					orgfile = ''
+			intype = val['type']
+			indata = val['data'][self.index]
+			if intype in self.proc.IN_FILETYPE:
+				if not isinstance(indata, string_types):
+					raise JobInputParseError(indata, 'Not a string for input type "%s"' % intype)
+				if not indata:
 					infile  = ''
 				else:
-					try:
-						orgfile = path.abspath(val['data'][self.index])
-					except AttributeError: # pragma: no cover
-						stderr.write("Input data: \n  %s: %s\n" % (key, val['data'][self.index]))
-						raise
-					if not path.exists(orgfile):
-						raise OSError('No such input file: %s' % orgfile)
-
-					basename = path.basename (orgfile)
-					infile   = self._linkInfile(orgfile)
+					if not path.exists(indata):
+						raise JobInputParseError(indata, 'File not exists for input type "%s"' % intype)
+					
+					basename = path.basename (indata)
+					infile   = self._linkInfile(indata)
 					if basename != path.basename(infile):
 						self.proc.log ("Input file renamed: %s -> %s" % (basename, path.basename(infile)), 'warning', 'INFILE_RENAMING')
-						
+
 				self.data['in'][key]       = infile
-				self.data['in']['_' + key] = orgfile
-				self.input[key]['type']    = self.proc.IN_FILETYPE[0]
+				self.data['in']['_' + key] = indata
+				self.input[key]['type']    = intype
 				self.input[key]['data']    = infile
-				self.input[key]['orig']    = orgfile
+				self.input[key]['orig']    = indata
 				
-			elif val['type'] in self.proc.IN_FILESTYPE:
-				self.input[key]['type']     = self.proc.IN_FILESTYPE[0]
+			elif intype in self.proc.IN_FILESTYPE:
+				self.input[key]['type']     = intype
 				self.input[key]['orig']     = []
 				self.input[key]['data']     = []
 				self.data['in'][key]        = []
 				self.data['in']['_' + key]  = []
 
-				if not isinstance(val['data'][self.index], list):
-					raise ValueError('Expect a list for input type: files, but we got: %s' % val['data'][self.index])
+				if not isinstance(indata, list):
+					raise JobInputParseError(indata, 'Not a list for input type "%s"' % intype)
 
-				for orgfile in val['data'][self.index]:
-					orgfile = path.abspath(orgfile)
+				for data in indata:
+					if not isinstance(data, string_types):
+						raise JobInputParseError(data, 'Not a string for element of input type "%s"' % intype)
 
-					basename = path.basename (orgfile)
-					infile   = self._linkInfile(orgfile)
+					if not data:
+						infile  = ''
+					else:
+						if not path.exists(data):
+							raise JobInputParseError(data, 'File not exists for element of input type "%s"' % intype)
 					
-					if basename != path.basename(infile):
-						self.proc.log ("Input file renamed: %s -> %s" % (basename, path.basename(infile)), 'warning', 'INFILE_RENAMING')
+						basename = path.basename (data)
+						infile   = self._linkInfile(data)
+						if basename != path.basename(infile):
+							self.proc.log ("Input file renamed: %s -> %s" % (basename, path.basename(infile)), 'warning', 'INFILE_RENAMING')
 						
-					self.input[key]['orig'].append (orgfile)
+					self.input[key]['orig'].append (data)
 					self.input[key]['data'].append (infile)
 					self.data['in'][key].append (infile)
-					self.data['in']['_' + key].append (orgfile)
+					self.data['in']['_' + key].append (data)
 			else:
-				self.input[key]['type'] = self.proc.IN_VARTYPE[0]
-				self.input[key]['data'] = val['data'][self.index]
-				self.data['in'][key] = val['data'][self.index]
+				self.input[key]['type'] = intype
+				self.input[key]['data'] = indata
+				self.data['in'][key]    = indata
 				
 	def _prepBrings (self):
 		"""
@@ -870,12 +870,8 @@ class Job (object):
 		If original input file is a link, will try to find it along each directory the link is in.
 		"""
 		for key, val in self.proc.brings.items():
-			
 			if self.input[key]['type'] not in self.proc.IN_FILETYPE:
-				raise ValueError('Cannot bring files for a non-file type input.')
-
-			orginfile                     = self.input[key]['data']
-			if not path.islink(orginfile): continue
+				raise JobBringParseError(self.input[key]['type'], 'Cannot bring files for a non-file type input')
 
 			self.brings[key]              = []
 			self.brings['_' + key]        = []
@@ -883,39 +879,47 @@ class Job (object):
 			self.data['bring']['_' + key] = []
 
 			if not isinstance(val, list): val = [val]
+
+			# the file in indir
+			infile  = self.input[key]['data']
+			# the file specified
+			orgfile = self.input[key]['orig']
+			#not happening
+			#if not path.islink(infile): continue
 			
-			infile = readlink(orginfile)
-			while path.exists(infile):
+			inbn   = path.basename(infile)
+			orgbn  = path.basename(orgfile)
+			diffbn = ''
+			if inbn != orgbn: # name change
+				diffs = reversed(list(re.finditer(r'\[\d+\]', inbn)))
+				for d in diffs:
+					if inbn[:d.start()] == orgbn[:d.start()]:
+						diffbn = d.group()
+						break
+					
+			while True:
 				for v in val:
-					pattern = path.join(path.dirname(infile), v.render(self.data))
+					pattern = path.join(path.dirname(orgfile), v.render(self.data))
 					bring   = glob(pattern)
 					if not bring: continue
 					for b in bring:
-						ninbn    = path.basename(infile)
-						oinbn    = path.basename(orginfile)
-						dstbn    = path.basename(b)
-
-						if ninbn != oinbn: # name changed
-							ninparts    = ninbn.split('.')
-							oinparts    = oinbn.split('.')
-							nchgpart, ochgpart = [(ninparts[i], oinparts[i]) for i in range(len(ninparts)) if ninparts[i] != oinparts[i]][0]
-							dstparts    = dstbn.split('.')
-							dstparts[dstparts.index(nchgpart)] = ochgpart
-							dstbn       = '.'.join(dstparts)
-						
-						dstfile = path.join (self.indir, dstbn)
+						dstbn, dstext = path.splitext(path.basename(b))
+						dstfile = path.join(self.indir, dstbn + diffbn + dstext)
 						self.data['bring'][key].append(dstfile)
 						self.data['bring']['_' + key].append(b)
 						self.brings[key].append(dstfile)
 						self.brings['_' + key].append(b)
 						utils.safeLink(b, dstfile)
-						
-				if not path.islink (infile): break
-				infile = readlink(infile)
-
+				if not path.islink(orgfile): break
+				orgfile = readlink(orgfile)
+			
 			if not self.brings[key]:
-				raise ValueError('No bring-file found for input file: %s' % [str(v) for v in val])
-				
+				self.data['bring'][key].append('')
+				self.data['bring']['_' + key].append('')
+				self.brings[key].append('')
+				self.brings['_' + key].append('')
+				self.proc.log('No bring-in file found for %s' % repr(key), 'warning', 'BRINGFILE_NOTFOUND')
+
 	def _prepOutput (self):
 		"""
 		Build the output data.
@@ -949,7 +953,7 @@ class Job (object):
 			}
 			if outtype in self.proc.OUT_FILETYPE + self.proc.OUT_DIRTYPE:
 				if path.isabs(outdata):
-					raise ValueError('Only basename expected for output file/directory. \nBut full path assigned: \n  %s\nFor key:\n  %s' % (outdata, key))
+					raise JobOutputParseError(outdata, 'Absolute path not allowed for output file/dir for key %s' % repr(key))
 				self.output[key]['data'] = path.join(self.outdir, outdata)
 				self.data['out'][key]    = path.join(self.outdir, outdata)
 	
@@ -960,15 +964,14 @@ class Job (object):
 		script = self.proc.script.render(self.data)
 		
 		write = True
-		if path.exists (self.script):
-			f = open (self.script)
-			prevscript = f.read()
-			f.close()
-			# no change to happen? script change will cause a different uid for a proc
+		if path.isfile (self.script):
+			with open(self.script) as f:
+				prevscript = f.read()
 			if prevscript == script:
 				write = False
-				self.proc.log ("Script file exists: %s" % self.script, 'debug', 'SCRIPT_EXISTS')
-		
+			else:
+				self.proc.log ("Script file updated: %s" % self.script, 'debug', 'SCRIPT_EXISTS')
+
 		if write:
 			with open (self.script, 'w') as f:
 				f.write (script)

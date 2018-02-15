@@ -1,7 +1,8 @@
 import sys
 import shlex
 from os import path
-from .templates import TemplatePyPPL
+from copy import deepcopy
+from graphviz import Digraph
 from . import utils
 
 class Flowchart(object):
@@ -90,41 +91,40 @@ class Flowchart(object):
 		}
 	}
 
-	def __init__(self, fcfile = None, dotfile = None, dot = 'dot -Tsvg {{dotfile}} -o {{fcfile}}'):
+	ROOTGROUP = '__ROOT__'
+
+
+	def __init__(self, fcfile = None, dotfile = None):
 		"""
 		The constructor
 		@params:
 			`fcfile`: The flowchart file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.svg'`
 			`dotfile`: The dot file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.dot'`
-			`dot`: The dot command. Default: `'dot -Tsvg {{dotfile}} -o {{fcfile}}'`
 		"""
-		self.fcfile  = fcfile
-		self.dotfile = dotfile
-		if fcfile is None:
-			self.fcfile = path.splitext(sys.argv[0])[0] + '.pyppl.svg'
-		if dotfile is None:
-			self.dotfile = path.splitext(sys.argv[0])[0] + '.pyppl.dot'
-
-		t = TemplatePyPPL(dot)
-		self.command = shlex.split(t.render({'fcfile': self.fcfile, 'dotfile': self.dotfile}))
+		self.fcfile  = fcfile  or path.splitext(sys.argv[0])[0] + '.pyppl.svg'
+		self.dotfile = dotfile or path.splitext(sys.argv[0])[0] + '.pyppl.dot'
+		fmt          = path.splitext(self.fcfile)[1]
+		fmt          = 'svg' if not fmt else fmt[1:]
+		self.graph   = Digraph('PyPPL', format = fmt)
 		self.theme   = Flowchart.THEMES['default']
-		self.nodes   = []
+		self.nodes   = {}
 		self.starts  = []
 		self.ends    = []
 		self.links   = []
-		self.groups  = {}
 
-	def setTheme(self, theme):
+	def setTheme(self, theme, base = 'default'):
 		"""
 		Set the theme to be used
 		@params:
 			`theme`: The theme, could be the key of Flowchart.THEMES or a dict of a theme definition.
+			`base` : The base theme to be based on you pass custom theme
 		"""
 		if isinstance(theme, dict):
-			self.theme = theme
+			self.theme = deepcopy(Flowchart.THEMES[base])
+			utils.dictUpdate(self.theme, theme)
 		else:
 			self.theme = Flowchart.THEMES[theme]
-
+	
 	def addNode(self, node, role = None):
 		"""
 		Add a node to the chart
@@ -132,17 +132,15 @@ class Flowchart(object):
 			`node`: The node
 			`role`: Is it a starting node, an ending node or None. Default: None.
 		"""
-		if node not in self.nodes:
-			self.nodes.append(node)
 		if role == 'start' and node not in self.starts:
 			self.starts.append(node)
 		if role == 'end' and node not in self.ends:
 			self.ends.append(node)
-		if node.aggr:
-			if node.aggr not in self.groups:
-				self.groups[node.aggr] = []
-			if node not in self.groups[node.aggr]:
-				self.groups[node.aggr].append(node)
+		gname = node.aggr or Flowchart.ROOTGROUP
+		if not gname in self.nodes:
+			self.nodes[gname] = []
+		if not node in self.nodes[gname]:
+			self.nodes[gname].append(node)
 
 	def addLink(self, node1, node2):
 		"""
@@ -153,77 +151,41 @@ class Flowchart(object):
 		"""
 		if (node1, node2) not in self.links:
 			self.links.append((node1, node2))
-
-	def _dotnodes(self):
+		
+	def _assemble(self):
 		"""
-		Convert nodes to dot language.
-		@returns:
-			The string in dot language for all nodes.
+		Assemble the graph for printing and rendering
 		"""
-		dotstr = []
-		for node in self.nodes:
-			theme  = {key:val for key,val in self.theme['base'].items()}
-			if node in self.starts:
-				theme.update(self.theme['start'])
-			if node in self.ends:
-				theme.update(self.theme['end'])
-			if node.exdir:
-				theme.update(self.theme['export'])
-			if node.resume:
-				theme.update(self.theme[node.resume])
-			theme['tooltip'] = node.desc
-			dotstr.append('    "%s" [%s]' % (node.name(False), ' '.join(['%s="%s"' % (k,theme[k]) for k in sorted(theme.keys())])))
-		return dotstr
-
-	def _dotlinks(self):
-		"""
-		Convert links to dot language.
-		@returns:
-			The string in dot language for all links.
-		"""
-		dotstr = []
-		for node1, node2 in self.links:
-			dotstr.append('    "%s" -> "%s"' % (node1.name(False), node2.name(False)))
-		return dotstr
-
-	def _dotgroups(self):
-		"""
-		Convert groups to dot language.
-		@returns:
-			The string in dot language for all groups.
-		"""
-		dotstr = []
-		theme  = self.theme['aggr']
-		for aggr, nodes in self.groups.items():
-			dotstr.append('    subgraph cluster_%s {' % aggr)
-			dotstr.append('        label = "%s";' % aggr)
-			for key in sorted(theme.keys()):
-				dotstr.append('        %s = "%s";' % (key, theme[key]))
+		# nodes
+		for group, nodes in self.nodes.items():
+			graph = self.graph if group == Flowchart.ROOTGROUP else Digraph("cluster_%s" % group)
 			for node in nodes:
-				dotstr.append('        "%s";' % node.name(False))
-			dotstr.append('    }')
-		return dotstr
+				# copy the theme
+				theme  = deepcopy(self.theme['base'])
+				if node in self.starts:
+					theme.update(self.theme['start'])
+				if node in self.ends:
+					theme.update(self.theme['end'])
+				if node.exdir:
+					theme.update(self.theme['export'])
+				if node.resume:
+					theme.update(self.theme[node.resume])
+				if node.desc != 'No description.':
+					theme['tooltip'] = node.desc
+				graph.node(node.name(False), **{k:str(v) for k, v in theme.items()})
+			if group != Flowchart.ROOTGROUP:
+				graph.attr(label = group, **{k:str(v) for k,v in self.theme['aggr'].items()})
+				self.graph.subgraph(graph)
+		
+		# edges
+		for n1, n2 in self.links:
+			self.graph.edge(n1.name(False), n2.name(False))
 
 	def generate(self):
 		"""
-		Generate the flowchart.
+		Generate the dot file and graph file.
 		"""
-		dotstr  = ['digraph PyPPL {']
-		dotstr.extend(self._dotnodes())
-		dotstr.extend(self._dotlinks())
-		dotstr.extend(self._dotgroups())
-		dotstr.append('}')
+		self._assemble()
+		self.graph.save(self.dotfile)
+		self.graph.render(path.splitext(self.fcfile)[0], cleanup = True)
 
-		with open(self.dotfile, 'w') as fout:
-			fout.write('\n'.join(dotstr) + '\n')
-		
-		try:
-			rc = utils.dumbPopen(self.command).wait()
-		except Exception:
-			rc = 1
-		if rc != 0:
-			raise ValueError('Failed to generate flowcart file: %s.' % self.command)
-
-
-
-		

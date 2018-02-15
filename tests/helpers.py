@@ -148,15 +148,15 @@ class TestCase(with_metaclass(DataProviderSupport, unittest.TestCase)):
 	def assertDictIn(self, first, second, msg = 'Not all k-v pairs in 1st element are in the second.'):
 		assert isinstance(first, dict)
 		assert isinstance(second, dict)
-		if not all([k in second.keys() for k in first.keys()]):
-			self.fail(msg)
+		notInkeys = [k for k in first.keys() if k not in second.keys()]
+		if notInkeys:
+			self.fail(msg = 'Keys of first dict not in second: %s' % notInkeys)
 		else:
-			seconds2 = {second[k] for k in first.keys()}
+			seconds2 = {k:second[k] for k in first.keys()}
 			for k in first.keys():
-				v1   = str(first[k])
-				v2   = str(second[k])
-				func = self._getAssertEqualityFunc(v1, v2)
-				func(v1, v2, msg=msg)
+				v1   = first[k]
+				v2   = second[k]
+				self.assertSequenceEqual(v1, v2)
 
 	def assertDictNotIn(self, first, second, msg = 'all k-v pairs in 1st element are in the second.'):
 		assert isinstance(first, dict)
@@ -178,6 +178,11 @@ class TestCase(with_metaclass(DataProviderSupport, unittest.TestCase)):
 
 	def assertRaisesStr(self, exc, s, callable, *args, **kwds):
 		sixAssertRaisesRegex(self, exc, s, callable, *args, **kwds)
+
+	def assertItemSubset(self, s, t, msg = 'The first list is not a subset of the second.'):
+		assert isinstance(s, list)
+		assert isinstance(t, list)
+		self.assertTrue(set(s) < set(t), msg = msg)
 
 	def assertInFile(self, s, f):
 		sf = readFile(f, str)

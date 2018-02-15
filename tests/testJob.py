@@ -1,132 +1,30 @@
 import helpers, unittest
 
-import sys
-import tempfile
-import json
-from time import sleep, time
-from os import path, makedirs, utime
-from contextlib import contextmanager
-from collections import OrderedDict
-from six import StringIO
-from glob import glob
-from pyppl import utils, logger
-from pyppl.job import Job
+from os import path, symlink, makedirs
+from shutil import rmtree
+from copy import deepcopy
+from pyppl.job import JobMan, Job
+from pyppl.exception import JobInputParseError, JobBringParseError, TemplatePyPPLRenderError, JobOutputParseError
 from pyppl.templates import TemplatePyPPL
+from pyppl import Proc, logger
 
-@contextmanager
-def captured_output():
-	new_out, new_err = StringIO(), StringIO()
-	old_out, old_err = sys.stdout, sys.stderr
-	try:
-		sys.stdout, sys.stderr = new_out, new_err
-		yield sys.stdout, sys.stderr
-	finally:
-		sys.stdout, sys.stderr = old_out, old_err
+class TestJob(helpers.TestCase):
 
-tmpdir = tempfile.gettempdir()
-class Proc(object):
-	def __init__(self, workdir = ''):
-		self.workdir = workdir
-		if not self.workdir:
-			self.workdir = path.join(tmpdir, 'TestJob-wdir')
-		if not path.exists(self.workdir):
-			makedirs(self.workdir)
+	def file2indir(workdir, index, f, suffix = ''):
+		(prefix, _, ext) = path.basename(f).rpartition('.')
+		return path.join(workdir, str(index), 'input', prefix + suffix + '.' + ext)
 
-		self.procvars = {
+	def dataProvider_testInit0(self, testdir):
+		p = Proc()
+		p.props['workdir'] = path.join(testdir, 'workdir')
+		yield 0, p
+		yield 1, p
 
-			'a': 1,
-			'b': 2
-		}
-
-		self.IN_VARTYPE = ['var']
-		self.OUT_VARTYPE = ['var']
-		self.IN_FILETYPE = ['file']
-		self.OUT_FILETYPE = ['file']
-		self.IN_FILESTYPE = ['files']
-		self.OUT_DIRTYPE = ['dir']
-		self.EX_GZIP = ['gz']
-		self.EX_MOVE = ['move']
-		self.EX_COPY = ['copy']
-		self.EX_LINK = ['link']
-
-		self.input = {
-			'a': {
-				'type': 'var',
-				'data': [1,2,3,4,5],
-			},
-			'b': {
-				'type': 'var',
-				'data': ['a', 'b', 'c', 'd', 'e'],
-			},
-			'c': {
-				'type': 'file',
-				'data': [__file__] * 5,
-			},
-			'd': {
-				'type': 'files',
-				'data': [[__file__]] * 5
-			},
-			'd2': {
-				'type': 'files',
-				'data': [[__file__]] * 2
-			},
-			'd3': {
-				'type': 'files',
-				'data': [[__file__]] * 3
-			}
-		}
-		self.output = OrderedDict([
-			('a', ['var',  TemplatePyPPL('{{in.a}}_1')]),
-			('b', ['file', TemplatePyPPL('{{in.c | bn}}')]),
-			('c', ['dir',  TemplatePyPPL('{{in.c | fn}}')]),
-		])
-
-		self.size = 5
-		self.rc = [0]
-		self.exdir = ''
-		self.dirsig = True
-		self.expart = []
-		self.exhow = 'move'
-		self.exow = True
-		self.cache = True
-		self.errhow = 'terminate'
-		self.echo = {
-			'jobs': [0],
-			'type': ['stderr', 'stdout']
-		}
-
-		self.brings = {
-			'c': TemplatePyPPL('{{in.c | fn | [:4]}}*{{in.c | ext}}')
-		}
-
-		self.expect = TemplatePyPPL('grep a {{out.b}}')
-
-		self.script = TemplatePyPPL("""
-import os
-print "{{in.a}}"
-print "{{out.a}}"
-{% if in.a %}
-print "{{in.b}}"
-{% else %}
-print "not a"
-{% endif %}
-""")
-	
-	def log(self, msg, level, mark = ''):
-		sys.stderr.write('[%7s] %s\n' % (level, msg))
-
-class TestJob (unittest.TestCase):
-
-	assertItemsEqual = lambda self, x, y: self.assertEqual(sorted(x), sorted(y))
-	assertPathExists = lambda self, x: self.assertTrue(path.exists(x))
-	assertPathNotExists = lambda self, x: self.assertFalse(path.exists(x))
-
-	def testInit(self):
-		proc = Proc()
-		job  = Job(0, proc)
+	def testInit0(self, index, proc):
+		job  = Job(index, proc)
 		self.assertIsInstance(job, Job)
 		self.assertIsInstance(job.proc, Proc)
-		self.assertEqual(job.dir, path.join(tmpdir, 'TestJob-wdir', '0'))
+		self.assertEqual(job.dir, path.join(proc.workdir, str(index)))
 		self.assertEqual(job.indir, path.join(job.dir, 'input'))
 		self.assertEqual(job.outdir, path.join(job.dir, 'output'))
 		self.assertEqual(job.script, path.join(job.dir, 'job.script'))
@@ -135,7 +33,7 @@ class TestJob (unittest.TestCase):
 		self.assertEqual(job.errfile, path.join(job.dir, 'job.stderr'))
 		self.assertEqual(job.cachefile, path.join(job.dir, 'job.cache'))
 		self.assertEqual(job.pidfile, path.join(job.dir, 'job.pid'))
-		self.assertEqual(job.index, 0)
+		self.assertEqual(job.index, index)
 		self.assertIs(job.proc, proc)
 		self.assertEqual(job.input, {})
 		self.assertEqual(job.output, {})
@@ -155,227 +53,372 @@ class TestJob (unittest.TestCase):
 			'bring': {}
 		})
 
-	def testPrepInput(self):
+	def dataProvider_testPrepInput(self, testdir):
+		p = Proc()
+		# make sure the infile renaming log output
+		p.LOG_NLINE['INFILE_RENAMING'] = -1
+		p.props['workdir'] = path.join(testdir, 'workdir')
+		filec0 = path.join(testdir, 'filec0.txt')
+		filec1 = path.join(testdir, 'filec1.txt')
+		filec2 = path.join(testdir, 'filec2.txt')
+		filed0 = path.join(testdir, 'filed0.txt')
+		filed1 = path.join(testdir, 'filed1.txt')
+		filed2 = path.join(testdir, 'filed2.txt')
+		filed3 = path.join(testdir, 'filed3.txt')
+		filed4 = path.join(testdir, 'filed4.txt')
+		filed20 = path.join(testdir, 'filed20.txt')
+		filed21 = path.join(testdir, 'filed21.txt')
+		filed22 = path.join(testdir, 'filed22.txt')
+		filed23 = path.join(testdir, 'filed23.txt')
+		filed24 = path.join(testdir, 'filed24.txt')
+		filed30 = path.join(testdir, 'filed30.txt')
+		filed31 = path.join(testdir, 'filed31.txt')
+		filed32 = path.join(testdir, 'filed32.txt')
+		filed33 = path.join(testdir, 'filed33.txt')
+		filed34 = path.join(testdir, 'filed34.txt')
+		filed35 = path.join(testdir, 'filed35', 'filec2.txt')
+		for f in [
+			# filec1 not exists
+			filec0, filec2, filed0, filed1, filed2, filed3, 
+			filed4, filed20, filed21, filed22, filed23, filed24, filed30, 
+			filed31, filed32, filed33, filed34]:
+			helpers.writeFile(f)
+		makedirs(path.dirname(filed35))
+		symlink(filed34, filed35)
+		p.props['input']   = {
+			'a': {'type': 'var', 'data': [1, 2, 3, 4, 5, 6, 7]},
+			'b': {'type': 'var', 'data': ['a', 'b', 'c', 'd', 'e', 'f', 'g']},
+			'c': {'type': 'file', 'data': ['', filec1, [], filec0, filec0, filec0, filec2]},
+			'd': {'type': 'files', 'data': [
+				[filed0, filed1],
+				[filed2],
+				[filed3, filed4],
+				{},
+				[[], filed4],
+				[filec1, filed4],
+				[filed4, filed4],
+			]},
+			'd2': {'type': 'files', 'data': [
+				[filed20],
+				[filed21, filed22],
+				[filed23, filed24],
+				[filed24],
+				[filed24],
+				[filed24],
+				[filed24],
+			]}, 
+			'd3': {'type': 'files', 'data': [
+				[filed30, filed31],
+				[filed32, filed33],
+				[filed34],
+				[filed34],
+				[filed34],
+				[filed34],
+				[filed35],
+			]}, 
+		}
+
+		yield 0, p, {
+			'a': {'type': 'var', 'data': 1},
+			'b': {'type': 'var', 'data': 'a'},
+			'c': {'type': 'file', 'orig':'', 'data': ''},
+			'd': {'type': 'files', 'orig':[filed0, filed1], 'data': [
+				self.file2indir(p.workdir, 0, filed0), 
+				self.file2indir(p.workdir, 0, filed1)
+			]},
+			'd2': {'type': 'files', 'orig': [filed20], 'data': [
+				self.file2indir(p.workdir, 0, filed20)
+			]},
+			'd3': {'type': 'files', 'orig': [filed30, filed31], 'data': [
+				self.file2indir(p.workdir, 0, filed30),
+				self.file2indir(p.workdir, 0, filed31)
+			]}, 
+		}, {
+			'a': 1,
+			'b': 'a',
+			'c': '',
+			'_c': '',
+			'd': [
+				self.file2indir(p.workdir, 0, filed0), 
+				self.file2indir(p.workdir, 0, filed1)
+			],
+			'_d': [filed0, filed1],
+			'd2': [
+				self.file2indir(p.workdir, 0, filed20)
+			],
+			'_d2': [filed20],
+			'd3': [
+				self.file2indir(p.workdir, 0, filed30),
+				self.file2indir(p.workdir, 0, filed31)
+			], 
+			'_d3': [filed30, filed31], 
+		}
+
+		yield 1, p, {}, {}, JobInputParseError, 'File not exists for input type'
+		yield 2, p, {}, {}, JobInputParseError, 'Not a string for input type'
+		yield 3, p, {}, {}, JobInputParseError, 'Not a list for input type'
+		yield 4, p, {}, {}, JobInputParseError, 'Not a string for element of input type'
+		yield 5, p, {}, {}, JobInputParseError, 'File not exists for element of input type'
+		yield 6, p, {
+			'a': {'type': 'var', 'data': 7},
+			'b': {'type': 'var', 'data': 'g'},
+			'c': {'type': 'file', 'orig': filec2, 'data': self.file2indir(p.workdir, 6, filec2)},
+			'd': {'type': 'files', 'orig':[filed4, filed4], 'data': [
+				self.file2indir(p.workdir, 6, filed4), 
+				self.file2indir(p.workdir, 6, filed4)
+			]},
+			'd2': {'type': 'files', 'orig': [filed24], 'data': [
+				self.file2indir(p.workdir, 6, filed24)
+			]},
+			#                               not file34
+			'd3': {'type': 'files', 'orig': [filed35], 'data': [
+				self.file2indir(p.workdir, 6, filed35, '[1]')
+			]}, 
+		}, {
+			'a': 7,
+			'b': 'g',
+			'c': self.file2indir(p.workdir, 6, filec2),
+			'_c': filec2,
+			'd': [
+				self.file2indir(p.workdir, 6, filed4), 
+				self.file2indir(p.workdir, 6, filed4)
+			],
+			'_d': [filed4, filed4],
+			'd2': [
+				self.file2indir(p.workdir, 6, filed24)
+			],
+			'_d2': [filed24],
+			'd3': [
+				self.file2indir(p.workdir, 6, filed35, '[1]')
+			], 
+			'_d3': [filed35], 
+		}, None, None, 'p: Input file renamed: filec2.txt -> filec2[1].txt'
+
+	def testPrepInput(self, index, proc, jobinput, indata, exception = None, msg = None, errmsg = None):
 		self.maxDiff = None
-		proc = Proc()
-		job  = Job(0, proc)
+		job = Job(index, proc)
+		if path.isdir(job.indir):
+			rmtree(job.indir)
+		self.assertFalse(path.isdir(job.indir))
+		if exception:
+			self.assertRaisesStr(exception, msg, job._prepInput)
+			self.assertTrue(path.isdir(job.indir))
+		else:
+			with helpers.log2str() as (out, err):
+				job._prepInput()
+			if errmsg:
+				self.assertIn(errmsg, err.getvalue())
+			self.assertTrue(path.isdir(job.indir))
+			self.assertDictEqual(job.input, jobinput)
+			self.assertDictEqual(job.data['in'], indata)
+
+	def dataProvider_testPrepBrings(self, testdir):
+		pPrepBrings1 = Proc()
+		pPrepBrings1.props['workdir'] = path.join(testdir, 'pPrepBrings1', 'workdir')
+		pPrepBrings1.props['input']   = {
+			'a': {'type': 'var', 'data': [1]},
+		}
+		pPrepBrings1.props['brings']  = {'a': ''}
+		yield 0, pPrepBrings1, {}, JobBringParseError, 'Cannot bring files for a non-file type input'
+
+		pPrepBrings2 = Proc()
+		pPrepBrings2.props['workdir'] = path.join(testdir, 'pPrepBrings1', 'workdir')
+		filepbdir2 = path.join(testdir, 'testPrepBringDir2')
+		makedirs(filepbdir2)
+		filepb20 = path.join(filepbdir2, 'testPrepBring2.br')
+		filepb21 = path.join(filepbdir2, 'whatever2.txt')
+		filepb22 = path.join(testdir, 'testPrepBring2.txt')
+		symlink(filepb21, filepb22)
+		helpers.writeFile(filepb21)
+		pPrepBrings2.props['input']   = {
+			'a': {'type': 'file', 'data': [filepb22]},
+		}
+		pPrepBrings2.props['brings']  = {'a': TemplatePyPPL('{{x}}.br')}
+		yield 0, pPrepBrings2, {}, TemplatePyPPLRenderError, 'unknown template variable: "x"'
+
+		pPrepBrings3 = Proc()
+		pPrepBrings3.props['workdir'] = path.join(testdir, 'pPrepBrings1', 'workdir')
+		filepbdir3 = path.join(testdir, 'testPrepBringDir3')
+		makedirs(filepbdir3)
+		filepb30 = path.join(filepbdir3, 'testPrepBring3.br')
+		filepb31 = path.join(filepbdir3, 'whatever3.txt')
+		filepb32 = path.join(testdir, 'testPrepBring3.txt')
+		helpers.writeFile(filepb31)
+		symlink(filepb31, filepb32)
+		helpers.writeFile(filepb30)
+		pPrepBrings3.props['input']   = {
+			'a': {'type': 'file', 'data': [filepb32]},
+		}
+		pPrepBrings3.props['brings']  = {'a': TemplatePyPPL('{{in.a | fn}}.br')}
+		yield 0, pPrepBrings3, {
+			'a': [self.file2indir(pPrepBrings3.workdir, 0, filepb30)],
+			'_a': [filepb30],
+		}
+
+		# no bring-in file
+		pPrepBrings4 = Proc()
+		pPrepBrings4.props['workdir'] = path.join(testdir, 'pPrepBrings1', 'workdir')
+		pPrepBrings4.LOG_NLINE['BRINGFILE_NOTFOUND'] = -1
+		filepbdir4 = path.join(testdir, 'testPrepBringDir4')
+		makedirs(filepbdir4)
+		filepb41 = path.join(filepbdir4, 'whatever4.txt')
+		filepb42 = path.join(testdir, 'testPrepBring4.txt')
+		helpers.writeFile(filepb41)
+		symlink(filepb41, filepb42)
+		pPrepBrings4.props['input']   = {
+			'a': {'type': 'file', 'data': [filepb42]},
+		}
+		pPrepBrings4.props['brings']  = {'a': TemplatePyPPL('{{in.a | fn}}.br')}
+		yield 0, pPrepBrings4, {'a': [''], '_a': ['']}, None, None, 'No bring-in file found'
+
+		# input file renamed
+		pPrepBrings5 = Proc()
+		pPrepBrings5.props['workdir'] = path.join(testdir, 'pPrepBrings1', 'workdir')
+		filepbdir5 = path.join(testdir, 'testPrepBringDir5')
+		makedirs(filepbdir5)
+		filepb50 = path.join(filepbdir5, 'testPrepBring5.br')
+		filepb51 = path.join(filepbdir5, 'whatever5.txt')
+		filepb52 = path.join(testdir, 'testPrepBring5.txt')
+		filepb53 = path.join(filepbdir5, 'testPrepBring5.txt')
+		helpers.writeFile(filepb51)
+		helpers.writeFile(filepb53)
+		symlink(filepb51, filepb52)
+		helpers.writeFile(filepb50)
+		pPrepBrings5.props['input']   = {
+			'a': {'type': 'file', 'data': [filepb53]},
+			'b': {'type': 'file', 'data': [filepb52]},
+		}
+		pPrepBrings5.props['brings']  = {'b': TemplatePyPPL('{{in.b | fn}}.br')}
+		yield 0, pPrepBrings5, {
+			'b': [self.file2indir(pPrepBrings3.workdir, 0, filepb50, '[1]')],
+			'_b': [filepb50],
+		}
+
+	def testPrepBrings(self, index, proc, brdata, exception = None, msg = None, errmsg = None):
+		self.maxDiff = None
+		job = Job(index, proc)
 		job._prepInput()
+		if exception:
+			self.assertRaisesStr(exception, msg, job._prepBrings)
+		else:
+			with helpers.log2str() as (out, err):
+				job._prepBrings()
+			if errmsg:
+				self.assertIn(errmsg, err.getvalue())
+			self.assertDictEqual(job.brings, brdata)
+			self.assertDictEqual(job.data['bring'], brdata)
+
+	def dataProvider_testPrepOutput(self, testdir):
+		pPrepOutput = Proc()
+		pPrepOutput.props['workdir'] = path.join(testdir, 'pPrepOutput', 'workdir')
+		yield 0, pPrepOutput, {
+			'a': {'type': 'var', 'data': [0]}
+		}, '', {}, {}, AssertionError
+		yield 0, pPrepOutput, {
+			'a': {'type': 'var', 'data': [0]}
+		}, {}, {}, {}
+		yield 0, pPrepOutput, {
+			'a': {'type': 'var', 'data': [0]}
+		}, {'a': ('var', TemplatePyPPL('{{x}}'))}, {}, {}, TemplatePyPPLRenderError, 'unknown template variable'
+		yield 0, pPrepOutput, {
+			'a': {'type': 'var', 'data': [0]}
+		}, {'a': ('var', TemplatePyPPL('1{{in.a}}'))}, {
+			'a': {'type': 'var', 'data': '10'}
+		}, {
+			'a': '10'
+		}
+		yield 0, pPrepOutput, {
+			'a': {'type': 'var', 'data': [0]}
+		}, {'a': ('file', TemplatePyPPL('/a/b/1{{in.a}}'))}, {}, {}, JobOutputParseError, 'Absolute path not allowed for output file/dir'
+		
+	def testPrepOutput(self, index, proc, input, output, jobout, outdata, exception = None, msg = None):
+		proc.props['input']  = input
+		proc.props['output'] = output
+		job = Job(index, proc)
+		job._prepInput()
+		if exception:
+			self.assertRaisesStr(exception, msg, job._prepOutput)
+		else:
+			job._prepOutput()
+			self.assertTrue(path.isdir(job.outdir))
+			self.assertDictEqual(job.output, jobout)
+			self.assertDictEqual(job.data['out'], outdata)
+
+	def dataProvider_testPrepScript(self, testdir):
+		pPrepScript = Proc()
+		pPrepScript.LOG_NLINE['SCRIPT_EXISTS'] = -1
+		pPrepScript.props['workdir'] = path.join(testdir, 'pPrepScript', 'workdir')
+		yield 0, pPrepScript, {}, {}, TemplatePyPPL('{{x}}'), '', TemplatePyPPLRenderError, 'unknown template variable'
+		sfile = path.join(pPrepScript.workdir, '0', 'job.script')
+		makedirs(path.dirname(sfile))
+		helpers.writeFile(sfile)
+		yield 0, pPrepScript, {'x': {'type': 'var', 'data': [0]}}, {}, TemplatePyPPL('1{{in.x}}'), '10', None, None, 'Script file updated'
+
+	def testPrepScript(self, index, proc, input, output, script, scriptout, exception = None, msg = None, errmsg = None):
+		proc.props['input']  = input
+		proc.props['output'] = output
+		proc.props['script'] = script
+		job = Job(index, proc)
+		job._prepInput()
+		job._prepOutput()
+		if exception:
+			self.assertRaisesStr(exception, msg, job._prepScript)
+		else:
+			with helpers.log2str(levels = 'all') as (out, err):
+				job._prepScript()
+			if errmsg:
+				self.assertIn(errmsg, err.getvalue())
+			self.assertTrue(path.isfile(job.script))
+			self.assertInFile(scriptout, job.script)
+
+	def dataProvider_testLinkInfile(self, testdir):
+		file1 = path.join(testdir, 'testLinkInfile1.txt')
+		helpers.writeFile(file1)
+		yield testdir, [file1, file1], ['testLinkInfile1.txt', 'testLinkInfile1.txt']
+
+		dir2 = path.join(testdir, 'testLinkInfileDir')
+		makedirs(dir2)
+		file2 = path.join(dir2, 'testLinkInfile1.txt')
+		helpers.writeFile(file2)
+		yield testdir, [file1, file2], ['testLinkInfile1.txt', 'testLinkInfile1[1].txt']
+		yield testdir, [file1, file2, file2], ['testLinkInfile1.txt', 'testLinkInfile1[1].txt', 'testLinkInfile1[1].txt']
+
+		dir3 = path.join(testdir, 'testLinkInfileDir3')
+		makedirs(dir3)
+		file3 = path.join(dir3, 'testLinkInfile1.txt')
+		helpers.writeFile(file3)
+		yield testdir, [file1, file2, file3], ['testLinkInfile1.txt', 'testLinkInfile1[1].txt', 'testLinkInfile1[2].txt']
+
+	def testLinkInfile(self, testdir, orgfiles, inbns):
+		pLinkInfile = Proc()
+		pLinkInfile.props['workdir'] = path.join(testdir, 'pLinkInfile', 'workdir')
+		job = Job(0, pLinkInfile)
+		job._prepInput()
+		for i, orgfile in enumerate(orgfiles):
+			job._linkInfile(orgfile)
+			self.assertTrue(path.samefile(orgfile, path.join(job.indir, inbns[i])))
+
+	def dataProvider_testInit(self, testdir):
+		pInit = Proc()
+		pInit.props['workdir'] = path.join(testdir, 'pInit', 'workdir')
+		pInit.props['script']  = TemplatePyPPL('')
+		yield 0, pInit
+
+	def testInit(self, index, proc):
+		self.maxDiff = None
+		job = Job(index, proc)
+		predata = deepcopy(job.data)
+		job.init()
+		self.assertTrue(path.exists(job.dir))
 		self.assertTrue(path.exists(job.indir))
-		self.assertEqual(job.input, {
-			'a': {
-				'type': 'var',
-				'data': 1,
-			},
-			'b': {
-				'type': 'var',
-				'data': 'a',
-			},
-			'c': {
-				'type': 'file',
-				'orig': path.realpath(__file__),
-				'data': path.join(job.indir, path.basename(__file__)),
-			},
-			'd': {
-				'type': 'files',
-				'orig': [path.realpath(__file__)],
-				'data': [path.join(job.indir, path.basename(__file__))],
-			},
-			'd2': {
-				'type': 'files',
-				'orig': [path.realpath(__file__)],
-				'data': [path.join(job.indir, path.basename(__file__))],
-			},
-			'd3': {
-				'type': 'files',
-				'orig': [path.realpath(__file__)],
-				'data': [path.join(job.indir, path.basename(__file__))],
-			}
-		})
-		self.assertEqual(job.data['in'], {
-			'a': 1,
-			'b': 'a',
-			'c': path.join(job.indir, path.basename(__file__)),
-			'_c': path.realpath(__file__),
-			'd': [path.join(job.indir, path.basename(__file__))],
-			'_d': [path.realpath(__file__)],
-			'd2': [path.join(job.indir, path.basename(__file__))],
-			'_d2': [path.realpath(__file__)],
-			'd3': [path.join(job.indir, path.basename(__file__))],
-			'_d3': [path.realpath(__file__)],
-		})
-		proc.input['c']['data'][0] = __file__ + '.noexist'
-		self.assertRaises(OSError, job._prepInput)
-		proc.input['c']['data'][0] = __file__
-		proc.input['d']['data'][0][0] = __file__ + '.noexist'
-		self.assertRaises(OSError, job._prepInput)
+		self.assertTrue(path.exists(job.outfile))
+		self.assertTrue(path.exists(job.errfile))
+		self.assertDictEqual(predata['job'], job.data['job'])
 
-		file1 = path.join(tmpdir, path.basename(__file__))
-		open(file1, 'w').close()
-		proc.input['d']['data'][0][0] = file1
-		job.input = {}
-		job.data['in'] = {}
+'''
 
-		with captured_output() as (out, err):
-			job._prepInput()
-		self.assertIn('Input file renamed: testJob.py -> testJob[1].py', err.getvalue())
-		self.assertEqual(job.input, {
-			'a': {
-				'type': 'var',
-				'data': 1,
-			},
-			'b': {
-				'type': 'var',
-				'data': 'a',
-			},
-			'c': {
-				'type': 'file',
-				'orig': path.realpath(__file__),
-				'data': path.join(job.indir, path.basename(__file__)),
-			},
-			'd': {
-				'type': 'files',
-				'orig': [path.realpath(file1)],
-				'data': [path.join(job.indir, path.splitext(path.basename(file1))[0] + '[1].py')],
-			},
-			'd2': {
-				'type': 'files',
-				'orig': [path.realpath(__file__)],
-				'data': [path.join(job.indir, path.splitext(path.basename(__file__))[0] + '.py')],
-			},
-			'd3': {
-				'type': 'files',
-				'orig': [path.abspath(__file__)],
-				'data': [path.join(job.indir, path.splitext(path.basename(__file__))[0] + '.py')],
-			}
-		})
-		self.assertEqual(job.data['in'], {
-			'a': 1,
-			'b': 'a',
-			'c': path.join(job.indir, path.basename(__file__)),
-			'_c': path.realpath(__file__),
-			'd': [path.join(job.indir, path.splitext(path.basename(file1))[0] + '[1].py')],
-			'_d': [path.realpath(file1)],
-			'd2': [path.join(job.indir, path.splitext(path.basename(__file__))[0] + '.py')],
-			'_d2': [path.realpath(__file__)],
-			'd3': [path.join(job.indir, path.splitext(path.basename(__file__))[0] + '.py')],
-			'_d3': [path.realpath(__file__)],
-		})
 
-	def testPrepInputException(self):
-		proc = Proc()
-		job  = Job(0, proc)
-		proc.input = {
-			'a': {
-				'type': 'files',
-				'orig': 'a',
-				'data': 'a',
-			}
-		}
-		self.assertRaises(ValueError, job._prepInput)
-
-	def testPrepBrings(self):
-		proc = Proc()
-		job  = Job(0, proc)
-		job._prepInput()
-		orgbrings = {k:v for k,v in proc.brings.items()}
-		proc.brings = {'a': ''}
-		self.assertRaises(ValueError, job._prepBrings)
-		proc.brings = {
-			'c': TemplatePyPPL('{{in.c | fn | [:4]}}111*{{in.c | ext}}')
-		}
-		self.assertRaises(ValueError, job._prepBrings)
-		proc.brings = orgbrings
-		job._prepBrings()
-		self.assertItemsEqual(job.data['bring']['_c'], list(map(path.abspath, glob(path.join(path.dirname(__file__), 'test*.py')))))
-		self.assertItemsEqual(job.data['bring']['c'], list(map(lambda x: path.join(job.indir, path.basename(x)), glob(path.join(path.dirname(__file__), 'test*.py')))))
-		self.assertItemsEqual(job.brings['_c'], list(map(path.abspath, glob(path.join(path.dirname(__file__), 'test*.py')))))
-		self.assertItemsEqual(job.brings['c'], list(map(lambda x: path.join(job.indir, path.basename(x)), glob(path.join(path.dirname(__file__), 'test*.py')))))
-
-		# test rename and bring through links
-		utils.safeRemove(job.indir)
-		self.assertFalse(path.exists(job.indir))
-		file1   = path.join(tmpdir, path.basename(__file__))
-		file2   = path.join(tmpdir, 't', path.basename(__file__))
-		utils.safeRemove(path.join(tmpdir, 't'))
-		makedirs(path.join(tmpdir, 't'))
-		brfile1 = path.join(tmpdir, path.basename(__file__)) + '.idx'
-		open(file1, 'w').close()
-		open(brfile1, 'w').close()
-		utils.safeLink(file1, file2)
-		proc2 = Proc()
-		proc2.input = {
-			'f1': {
-				'type': 'file',
-				'data': [__file__]
-			},
-			'f2': {
-				'type': 'file',
-				'data': [file2]
-			}
-		}
-		proc2.brings = {
-			'f2': TemplatePyPPL('{{in.f2 | bn}}.idx')
-		}
-		job2 = Job(0, proc2)
-		with captured_output() as (out, err):
-			job2._prepInput()
-		self.assertIn('Input file renamed: testJob.py -> testJob[1].py', err.getvalue())
-		job2._prepBrings()
-		self.assertEqual(job2.data['bring']['f2'], [path.join(job2.indir, 'testJob[1].py.idx')])
-		self.assertEqual(job2.data['bring']['_f2'], [brfile1])
-		self.assertEqual(job2.brings['f2'], [path.join(job2.indir, 'testJob[1].py.idx')])
-		self.assertEqual(job2.brings['_f2'], [brfile1])
-		self.assertEqual(job2.data['in']['f1'], path.join(job2.indir, 'testJob.py'))
-		self.assertEqual(job2.data['in']['_f1'], path.abspath(__file__))
-
-	def testPrepOutput(self):
-		proc = Proc()
-		job  = Job(0, proc)
-		job._prepInput()
-		job._prepOutput()
-		self.assertEqual(job.data['out'], {
-			'a': '1_1',
-			'b': path.join(job.outdir, path.basename(__file__)),
-			'c': path.join(job.outdir, path.basename(__file__)[:-3]),
-		})
-		self.assertEqual(job.output['a']['type'], 'var')
-		self.assertEqual(job.output['b']['type'], 'file')
-		self.assertEqual(job.output['c']['type'], 'dir')
-		self.assertEqual(job.output['a']['data'], '1_1')
-		self.assertEqual(job.output['b']['data'], path.join(job.outdir, path.basename(__file__)))
-		self.assertEqual(job.output['c']['data'], path.join(job.outdir, path.basename(__file__)[:-3]))
-
-	def testPrepOutputFileException(self):
-		proc = Proc()
-		proc.output = OrderedDict([
-			('a', ['file',  TemplatePyPPL('/a/b/c')])
-		])
-		job  = Job(0, proc)
-		#job._prepOutput()
-		self.assertRaises(ValueError, job._prepOutput)
-
-	def testPrepScript(self):
-		proc = Proc()
-		job  = Job(0, proc)
-		job._prepInput()
-		job._prepOutput()
-		# job.script may not contain the real script in this test suite
-		utils.safeRemove(job.script)
-		scriptExists = path.exists(job.script)
-		with captured_output() as (out, err):
-			job._prepScript()
-		if scriptExists:
-			self.assertIn('Script file exists', err.getvalue())
-		self.assertTrue(path.exists(job.script))
-		with open(job.script) as f:
-			self.assertEqual(f.read(), """
-import os
-print "1"
-print "1_1"
-
-print "a"
-
-""")
+class TestJob (unittest.TestCase):
 
 	def testInitSelf(self):
 		proc = Proc()
@@ -383,10 +426,8 @@ print "a"
 		scriptExists = path.exists(job.script)
 		with captured_output() as (out, err):
 			job.init()
-		self.assertTrue(path.exists(job.dir))
 		self.assertEqual(job.data['a'], 1)
 		self.assertEqual(job.data['b'], 2)
-		self.assertTrue(path.exists(job.indir))
 		# input
 		self.assertEqual(job.input, {
 			'a': {
@@ -1239,7 +1280,7 @@ print "a"
 		self.assertPathExists(path.join(retrydir, path.basename(job.pidfile)))
 		self.assertPathExists(path.join(retrydir, path.basename(job.outdir), path.basename(outc), 'something'))
 
-
+'''
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

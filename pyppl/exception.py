@@ -82,3 +82,27 @@ class ProcTreeParseError(Exception):
 		msg = msg or 'Failed to parse the process tree'
 		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
 
+class JobInputParseError(Exception):
+	"""
+	Raise when failed to parse the input data for jobs
+	"""
+	def __init__(self, name, msg = None):
+		msg = msg or 'Failed to parse the input data'
+		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
+
+class JobBringParseError(Exception):
+	"""
+	Raise when failed to parse the bring data for jobs
+	"""
+	def __init__(self, name, msg = None):
+		msg = msg or 'Failed to parse the bring data'
+		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
+
+class JobOutputParseError(Exception):
+	"""
+	Raise when failed to parse the output data for jobs
+	"""
+	def __init__(self, name, msg = None):
+		msg = msg or 'Failed to parse the output data'
+		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
+

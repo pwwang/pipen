@@ -11,7 +11,7 @@ from os import path, makedirs
 from time import time, sleep
 from random import randint
 from subprocess import PIPE, Popen
-from multiprocessing import JoinableQueue, Process
+from multiprocessing import JoinableQueue, Process, cpu_count
 from collections import OrderedDict
 
 from box import Box
@@ -62,6 +62,7 @@ class Proc (object):
 		'CACHE_SIGFILE_NOTEXISTS': -1,
 		'EXPECT_CHECKING': -1,
 		'INFILE_RENAMING': -3,
+		'BRINGFILE_NOTFOUND': -3,
 		'OUTFILE_NOT_EXISTS': -1,
 		'OUTDIR_CREATED_AFTER_RESET': -1,
 		'SCRIPT_EXISTS': -2,
@@ -91,7 +92,7 @@ class Proc (object):
 		@config:
 			id, input, output, ppldir, forks, cache, cclean, rc, echo, runner, script, depends, tag, desc, dirsig
 			exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr
-			callfront, callback, brings, expect, expart, template, tplenvs, resume, nthread
+			callfront, callback, brings, expect, expart, template, tplenvs, resume, nthread, maxsubmit
 		@props
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, brings, expect
 			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs
@@ -209,6 +210,9 @@ class Proc (object):
 
 		# Default shell/language
 		self.config['lang']       = 'bash'
+
+		# max number of processes used to submit jobs
+		self.config['maxsubmit']  = int(cpu_count() / 2)
 
 		# non-cached job ids
 		self.props['ncjobids']    = []
@@ -1009,11 +1013,7 @@ class Proc (object):
 		Submit and run the jobs
 		"""
 		runner    = PyPPL.RUNNERS[self.runner]
-		maxsubmit = self.forks
-		if hasattr(runner, 'MAXSUBMIT'):
-			maxsubmit = min(maxsubmit, runner.MAXSUBMIT)  # pragma: no cover
-
-		jobman = JobMan(self.jobs, self.cclean, self.ncjobids, self.forks, maxsubmit, runner)
+		jobman = JobMan(self, min(self.maxsubmit, self.forks), runner)
 		jobman.run()
 		
 		self.log('After job run, active threads: %s' % threading.active_count(), 'debug')
