@@ -22,7 +22,7 @@ def writeFile(f, contents = ''):
 def readFile(f, transform = None):
 	from io import open
 	with open(f, 'r', encoding = "ISO-8859-1") as fin:
-		r = fin.read()
+		r = str(fin.read())
 	return transform(r) if callable(transform) else r
 
 def createDeadlink(f):
@@ -48,6 +48,9 @@ def captured_output():
 	finally:
 		sys.stdout, sys.stderr = old_out, old_err
 
+def log2sys(levels = 'normal', theme = True, logfile = None, lvldiff = None):
+	logger.getLogger(levels = levels, theme = theme, logfile = logfile, lvldiff = lvldiff)
+
 @contextmanager
 def log2str(levels = 'normal', theme = True, logfile = None, lvldiff = None):
 	new_out, new_err = StringIO(), StringIO()
@@ -59,6 +62,7 @@ def log2str(levels = 'normal', theme = True, logfile = None, lvldiff = None):
 		yield sys.stdout, sys.stderr
 	finally:
 		sys.stdout, sys.stderr = old_out, old_err
+
 
 # make sure the order is like:
 # testA

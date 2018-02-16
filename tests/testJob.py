@@ -415,6 +415,87 @@ class TestJob(helpers.TestCase):
 		self.assertTrue(path.exists(job.errfile))
 		self.assertDictEqual(predata['job'], job.data['job'])
 
+	def dataProvider_testReportItem(self, testdir):
+		pReportItem = Proc()
+		pReportItem.props['workdir'] = path.join(testdir, 'pReportItem', 'workdir')
+		pReportItem.props['size'] = 128
+		yield 0, pReportItem, 'a', 5, 'hello', 'input', ['INPUT', 'pReportItem: [000/127] a     => hello']
+		yield 1, pReportItem, 'a', 5, [], 'input', ['INPUT', 'pReportItem: [001/127] a     => []']
+		yield 1, pReportItem, 'a', 5, ['x'], 'input', ['INPUT', 'pReportItem: [001/127] a     => [x]']
+		yield 1, pReportItem, 'a', 5, ['x', 'y'], 'input', ['INPUT', 'pReportItem: [001/127] a     => [x,', 'pReportItem: [001/127]           y]']
+		yield 1, pReportItem, 'a', 5, ['x', 'y', 'z'], 'input', ['INPUT', 'pReportItem: [001/127] a     => [x,', 'pReportItem: [001/127]           y,', 'pReportItem: [001/127]           z]']
+		yield 1, pReportItem, 'a', 5, ['x', 'y', '', '', 'z'], 'output', ['OUTPUT', 'pReportItem: [001/127] a     => [x,', 'pReportItem: [001/127]           y,', 'pReportItem: [001/127]           ...,', 'pReportItem: [001/127]           z]']
+
+	# indicator is also tested
+	def testReportItem(self, index, proc, key, maxlen, data, loglevel, outs):
+		job = Job(index, proc)
+		with helpers.log2str() as (out, err):
+			job._reportItem(key, maxlen, data, loglevel)
+		for o in outs:
+			self.assertIn(o, err.getvalue())
+
+	def dataProvider_testReport(self, testdir):
+		pReport = Proc()
+		pReport.props['workdir'] = path.join(testdir, 'pReport', 'workdir')
+		fileprdir = path.join(testdir, 'pReportDir')
+		makedirs(fileprdir)
+		filepb0 = path.join(fileprdir, 'testReport.br')
+		filepb1 = path.join(fileprdir, 'whatever.txt')
+		filepb2 = path.join(testdir, 'testReport.txt')
+		helpers.writeFile(filepb1)
+		symlink(filepb1, filepb2)
+		helpers.writeFile(filepb0)
+		pReport.props['input']   = {
+			'a': {'type': 'file', 'data': [filepb2]},
+			'b': {'type': 'var', 'data': ['hello']}
+		}
+		pReport.props['output']  = {'a': ('var', TemplatePyPPL('1{{in.a}}'))}
+		pReport.props['brings']  = {'a': TemplatePyPPL('{{in.a | fn}}.br')}
+		pReport.props['size']    = 100
+		pReport.props['script']  = TemplatePyPPL('{{in.a | fn}}.script')
+		yield 0, pReport, [
+			'INPUT',
+			'OUTPUT',
+			'BRINGS',
+			'pReport: [00/99]',
+			'b  => hello',
+			'_a => %s' % filepb2,
+			'_a => [%s]' % filepb0,
+			'a  => 1/'
+		]
+
+	def testReport(self, index, proc, outs):
+		job = Job(index, proc)
+		job.init()
+		with helpers.log2str() as (out, err):
+			job.report()
+		for o in outs:
+			self.assertIn(o, err.getvalue())
+
+	def dataProvider_testRc(self, testdir):
+		pRc = Proc()
+		pRc.props['workdir'] = path.join(testdir, 'pRc', 'workdir')
+		job = Job(0, pRc)
+		job1 = Job(1, pRc)
+		job2 = Job(2, pRc)
+		makedirs(path.join(pRc.workdir, '0'))
+		makedirs(path.join(pRc.workdir, '1'))
+		makedirs(path.join(pRc.workdir, '2'))
+		helpers.writeFile(job1.rcfile)
+		helpers.writeFile(job2.rcfile, '-8')
+		yield job, None, Job.RC_NOTGENERATE
+		yield job1, None, Job.RC_NOTGENERATE
+		yield job2, None, -8
+		yield job, 1, 1
+		yield job, None, 1
+
+	def testRc(self, job, val, exprc):
+		if val is None:
+			rc = job.rc()
+			self.assertEqual(rc, exprc)
+		else:
+			job.rc(val)
+			self.assertEqual(helpers.readFile(job.rcfile, int), exprc)
 '''
 
 

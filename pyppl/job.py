@@ -230,6 +230,15 @@ class Job (object):
 		self._prepOutput ()
 		self._prepScript ()
 
+	def _IndexIndicator(self):
+		"""
+		Get the index indicator in the log
+		@returns:
+			The "[000/127]" like indicator
+		"""
+		indexlen = len(str(self.proc.size - 1))
+		return ("[%0"+ str(indexlen) +"d/%s]") % (self.index, self.proc.size - 1)
+
 	def _reportItem(self, key, maxlen, data, loglevel):
 		"""
 		Report the item on logs
@@ -239,27 +248,28 @@ class Job (object):
 			`data`: The data of the item
 			`loglevel`: The log level
 		"""
+		indexstr = self._IndexIndicator()
+
 		if not isinstance(data, list):
-			self.proc.log ("[%s/%s] %s => %s" % (self.index, self.proc.size - 1, key.ljust(maxlen), data), loglevel)
+			self.proc.log ("%s %s => %s" % (indexstr, key.ljust(maxlen), data), loglevel)
 		else:
 			ldata = len(data)
 			if ldata == 0:
-				self.proc.log ("[%s/%s] %s => [%s]" % (self.index, self.proc.size - 1, key.ljust(maxlen), ''), loglevel)
+				self.proc.log ("%s %s => [%s]" % (indexstr, key.ljust(maxlen), ''), loglevel)
 			elif ldata == 1:
-				self.proc.log ("[%s/%s] %s => [%s]" % (self.index, self.proc.size - 1, key.ljust(maxlen), data[0]), loglevel)
-			elif ldata == 2: # pragma: no cover
-				self.proc.log ("[%s/%s] %s => [%s," % (self.index, self.proc.size - 1, key.ljust(maxlen), data[0]), loglevel)
-				self.proc.log ("[%s/%s] %s     %s]" % (self.index, self.proc.size - 1, ' '.ljust(maxlen), data[1]), loglevel)
-			elif ldata == 3: # pragma: no cover
-				self.proc.log ("[%s/%s] %s => [%s," % (self.index, self.proc.size - 1, key.ljust(maxlen), data[0]), loglevel)
-				self.proc.log ("[%s/%s] %s     %s," % (self.index, self.proc.size - 1, ' '.ljust(maxlen), data[1]), loglevel)
-				self.proc.log ("[%s/%s] %s     %s]" % (self.index, self.proc.size - 1, ' '.ljust(maxlen), data[2]), loglevel)
+				self.proc.log ("%s %s => [%s]" % (indexstr, key.ljust(maxlen), data[0]), loglevel)
+			elif ldata == 2: 
+				self.proc.log ("%s %s => [%s," % (indexstr, key.ljust(maxlen), data[0]), loglevel)
+				self.proc.log ("%s %s     %s]" % (indexstr, ' '.ljust(maxlen), data[1]), loglevel)
+			elif ldata == 3: 
+				self.proc.log ("%s %s => [%s," % (indexstr, key.ljust(maxlen), data[0]), loglevel)
+				self.proc.log ("%s %s     %s," % (indexstr, ' '.ljust(maxlen), data[1]), loglevel)
+				self.proc.log ("%s %s     %s]" % (indexstr, ' '.ljust(maxlen), data[2]), loglevel)
 			else:
-				self.proc.log ("[%s/%s] %s => [%s," % (self.index, self.proc.size - 1, key.ljust(maxlen), data[0]), loglevel)
-				self.proc.log ("[%s/%s] %s     %s," % (self.index, self.proc.size - 1, ' '.ljust(maxlen), data[1]), loglevel)
-				self.proc.log ("[%s/%s] %s     ...," % (self.index, self.proc.size - 1, ' '.ljust(maxlen)), loglevel)
-				self.proc.log ("[%s/%s] %s     %s]" % (self.index, self.proc.size - 1, ' '.ljust(maxlen), data[-1]), loglevel)
-	
+				self.proc.log ("%s %s => [%s," % (indexstr, key.ljust(maxlen), data[0]), loglevel)
+				self.proc.log ("%s %s     %s," % (indexstr, ' '.ljust(maxlen), data[1]), loglevel)
+				self.proc.log ("%s %s     ...," % (indexstr, ' '.ljust(maxlen)), loglevel)
+				self.proc.log ("%s %s     %s]" % (indexstr, ' '.ljust(maxlen), data[-1]), loglevel)
 	
 	def report (self):
 		"""
