@@ -406,7 +406,10 @@ class Parameters (object):
 			cp.optionxform = str
 			cp.read(cfgfile)
 			sec = cp.sections()
-			config = cp.items(sec[0]) if sec else {}
+			config = {}
+			for s in sec:
+				config.update(dict(cp.items(s)))
+				
 		for key, val in config.items():
 			if key.endswith(".type"):
 				config[key] = globals()['__builtins__'][str(val)]

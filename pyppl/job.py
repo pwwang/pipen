@@ -15,10 +15,10 @@ from .exception import JobInputParseError, JobBringParseError, JobOutputParseErr
 from .runners import Runner
 
 
-class JobMan (object):
+class Jobmgr (object):
 
 	"""
-	JobManager
+	Job Manager
 	"""
 	#def __init__(self, jobs, cclean, ncjobids, forks, npsubmit, runner):
 	def __init__(self, proc, maxsubmit, runner):
@@ -69,6 +69,47 @@ class JobMan (object):
 		if not self.runners: return True
 		return all([r.status() == Runner.STATUS_DONE for r in self.runners.values()])
 
+	def progressbar(self, jid, loglevel = 'info'):
+		bar     = '%s[' % self.proc.jobs[jid]._IndexIndicator()
+		barsize = 50
+		barjobs = {}
+		# distribute the jobs to bars
+		if self.proc.size <= barsize:
+			barx = 0
+			n, m = divmod(barsize, self.proc.size)
+			for j in range(self.proc.size):
+				step = n + 1 if j < m else n
+				for _ in range(step):
+					barjobs[barx] = [j]
+					barx += 1
+		else:
+			jobx = 0
+			n, m = divmod(self.proc.size, barsize)
+			for i in range(barsize):
+				step = n + 1 if i < m else n
+				barjobs[i] = [jobx + s for s in range(step)]
+				jobx += step
+
+		allsts = {j:self.runners[j].status() if j in self.runners else Runner.STATUS_DONE for j in range(self.proc.size)}
+		ncompleted = sum(1 for _, s in allsts.items() if s == Runner.STATUS_DONE)
+		nrunning   = sum(1 for _, s in allsts.items() if s == Runner.STATUS_SUBMITTED)
+
+		for bi, bj in barjobs.items():
+			if any([allsts[j] == Runner.STATUS_INITIATED for j in bj]):
+				bar += '-'
+			elif any([allsts[j] == Runner.STATUS_SUBMITTED for j in bj]):
+				bar += '>'
+			elif any([allsts[j] == Runner.STATUS_SUBMITFAILED for j in bj]):
+				bar += '!'
+			elif all([allsts[j] == Runner.STATUS_DONE for j in bj]):
+				bar += '='
+			else:
+				bar += '-'
+			
+		bar += '] Done: %5.1f%% | Running: %d' % (100.0*float(ncompleted)/float(self.proc.size), nrunning)
+			
+		self.proc.log(bar, loglevel)
+	
 	def canSubmit(self):
 		"""
 		Tell whether we can submit jobs.
@@ -97,6 +138,7 @@ class JobMan (object):
 
 			self.nrJobs(action = '+')
 			self.runners[jid].submit()
+			self.progressbar(jid, 'submit')
 			sq.task_done()
 
 	def runPool(self, rq, sq):
@@ -116,6 +158,7 @@ class JobMan (object):
 				if not r.run():
 					sq.put(jid)
 					rq.put(jid)
+				self.progressbar(jid, 'jobdone')
 				self.nrJobs(action = '-')
 				rq.task_done()
 
@@ -309,7 +352,7 @@ class Job (object):
 		if self.succeed():
 			self.export()
 			self.cache()
-			self.proc.log ('Job #%s done!' % self.index, 'JOBDONE')
+			#self.proc.log ('Job #%s done!' % self.index, 'JOBDONE')
 			
 	def showError (self, lenfailed = 1):
 		"""
@@ -667,17 +710,18 @@ class Job (object):
 		"""
 		if not self.proc.exdir:
 			return
-			
+		
+		indexstr = self._IndexIndicator()
 		assert path.exists(self.proc.exdir)
 		assert isinstance(self.proc.expart, list)
 		def overwriteRemove(e, f):
 			if e:
-				self.proc.log ('Job #%-3s: overwriting: %s' % (self.index, f), 'export')
+				self.proc.log ('%s overwriting: %s' % (indexstr, f), 'export')
 				if not path.isdir (f): remove (f)
 				else: rmtree (f) # pragma: no cover
 			else:
 				if path.islink (f): remove (f)
-				self.proc.log ('Job #%-3s: exporting to: %s' % (self.index, f), 'export')
+				self.proc.log ('%s exporting to: %s' % (indexstr, f), 'export')
 		files2ex = []
 		if not self.proc.expart or (len(self.proc.expart) == 1 and not self.proc.expart[0].render(self.data)):
 			for _, out in self.output.items():
@@ -699,7 +743,7 @@ class Job (object):
 				for file2ex in files2ex:
 					bname  = path.basename (file2ex)
 					exfile = path.join (self.proc.exdir, bname)
-					self.proc.log ('Job #%-3s: exporting to: %s' % (self.index, exfile), 'export')
+					self.proc.log ('%s exporting to: %s' % (indexstr, exfile), 'export')
 					utils.safeMoveWithLink (file2ex, exfile, overwrite = self.proc.exow)
 		else:
 			for file2ex in files2ex:
@@ -711,7 +755,7 @@ class Job (object):
 				
 				# don't overwrite existing files
 				if (not self.proc.exow and path.exists(exfile)) or utils.samefile(file2ex, exfile):
-					self.proc.log ('Job #%-3s: skipped (target exists): %s' % (self.index, exfile),  'export')
+					self.proc.log ('%s skipped (target exists): %s' % (indexstr, exfile),  'export')
 					continue
 
 				utils.fileExists(exfile, overwriteRemove)

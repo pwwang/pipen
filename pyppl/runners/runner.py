@@ -62,7 +62,7 @@ class Runner (object):
 			succ  = True
 
 			try:
-				self.job.proc.log ('Submitting job #%-3s ...' % self.job.index, 'submit')
+				#self.job.proc.log ('Submitting job #%-3s ...' % self.job.index, 'submit')
 				# retry may open the files again
 				p  = Popen (self.script, stderr=ferrw, stdout=foutw, close_fds=True)
 				

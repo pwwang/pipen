@@ -17,7 +17,7 @@ from collections import OrderedDict
 from box import Box
 from .aggr import Aggr
 from .channel import Channel
-from .job import Job, JobMan
+from .job import Job, Jobmgr
 from .parameters import params, Parameter, Parameters
 from .flowchart import Flowchart
 from .proctree import ProcTree
@@ -1013,8 +1013,8 @@ class Proc (object):
 		Submit and run the jobs
 		"""
 		runner    = PyPPL.RUNNERS[self.runner]
-		jobman = JobMan(self, min(self.maxsubmit, self.forks), runner)
-		jobman.run()
+		jobmgr = Jobmgr(self, min(self.maxsubmit, self.forks), runner)
+		jobmgr.run()
 		
 		self.log('After job run, active threads: %s' % threading.active_count(), 'debug')
 			
