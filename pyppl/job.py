@@ -8,7 +8,7 @@ from glob import glob
 from time import sleep
 from os import makedirs, path, remove, utime, readlink, listdir
 from shutil import move, rmtree
-from multiprocessing import Lock, JoinableQueue, Process, Value
+from multiprocessing import Lock, JoinableQueue, Process, Array
 from six import string_types
 from . import utils, logger
 from .exception import JobInputParseError, JobBringParseError, JobOutputParseError
@@ -16,10 +16,16 @@ from .runners import Runner
 
 
 class Jobmgr (object):
-
 	"""
 	Job Manager
 	"""
+	STATUS_INITIATED    = 0
+	STATUS_SUBMITTING   = 1
+	STATUS_SUBMITTED    = 2
+	STATUS_SUBMITFAILED = 3
+	STATUS_DONE         = 4
+	STATUS_DONEFAILED   = 5
+
 	#def __init__(self, jobs, cclean, ncjobids, forks, npsubmit, runner):
 	def __init__(self, proc, maxsubmit, runner):
 		"""
@@ -29,35 +35,20 @@ class Jobmgr (object):
 			`maxsubmit`: The max number of processes to submit jobs
 			`runner`   : The runner class
 		"""
-		self.lock = Lock()
-		self.proc = proc
-		self.runners = {
-			job.index: runner(job) for job in proc.jobs \
-			if job.index in proc.ncjobids or proc.cclean
-		}
+		self.proc    = proc
+		status       = []
+		self.runners = {}
+		for job in proc.jobs:
+			if not proc.cclean and job.index not in proc.ncjobids:
+				status.append(Jobmgr.STATUS_DONE)
+			else:
+				status.append(Jobmgr.STATUS_INITIATED)
+				self.runners[job.index] = runner(job)
+		self.status  = Array('i', status, lock = Lock())
 		# number of runner processes
 		self.nprunner = min(proc.forks, len(self.runners))
 		# number of submit processes
-		self.npsubmit = proc.maxsubmit
-		# number of running jobs
-		self.nrunning = Value('i', 0)
-
-	def nrJobs(self, action = 'get'):
-		"""
-		Get or change number of running jobs
-		@params:
-			`action`: The action:
-				- `get`: get the number of running jobs
-				- `+`:   add 1 to the number of running jobs
-				- `-`:   minus 1 to the number of running jobs
-		"""
-		with self.lock:
-			if action == '+':
-				self.nrunning.value += 1
-			elif action == '-':
-				self.nrunning.value -= 1
-			else:
-				return self.nrunning.value
+		self.npsubmit = min(proc.forks, proc.maxsubmit)
 
 	def allJobsDone(self):
 		"""
@@ -67,10 +58,10 @@ class Jobmgr (object):
 			`True` if all jobs are done else `False`
 		"""
 		if not self.runners: return True
-		return all([r.status() == Runner.STATUS_DONE for r in self.runners.values()])
+		return all(s in [Jobmgr.STATUS_DONE, Jobmgr.STATUS_DONEFAILED] for s in self.status)
 
 	def progressbar(self, jid, loglevel = 'info'):
-		bar     = '%s[' % self.proc.jobs[jid]._IndexIndicator()
+		bar     = '%s [' % self.proc.jobs[jid]._IndexIndicator()
 		barsize = 50
 		barjobs = {}
 		# distribute the jobs to bars
@@ -90,21 +81,26 @@ class Jobmgr (object):
 				barjobs[i] = [jobx + s for s in range(step)]
 				jobx += step
 
-		allsts = {j:self.runners[j].status() if j in self.runners else Runner.STATUS_DONE for j in range(self.proc.size)}
-		ncompleted = sum(1 for _, s in allsts.items() if s == Runner.STATUS_DONE)
-		nrunning   = sum(1 for _, s in allsts.items() if s == Runner.STATUS_SUBMITTED)
+		# status can only be: 
+		# Jobmgr.STATUS_SUBMITTED
+		# Jobmgr.STATUS_SUBMITFAILED
+		# Jobmgr.STATUS_DONE
+		# Jobmgr.STATUS_DONEFAILED
+		# Jobmgr.STATUS_INITIATED
+		ncompleted = sum(1 for s in self.status if s == Jobmgr.STATUS_DONE or s == Jobmgr.STATUS_DONEFAILED)
+		nrunning   = sum(1 for s in self.status if s == Jobmgr.STATUS_SUBMITTED or s == Jobmgr.STATUS_SUBMITFAILED)
 
 		for bi, bj in barjobs.items():
-			if any([allsts[j] == Runner.STATUS_INITIATED for j in bj]):
+			if any(self.status[j] == Jobmgr.STATUS_INITIATED for j in bj):
 				bar += '-'
-			elif any([allsts[j] == Runner.STATUS_SUBMITTED for j in bj]):
-				bar += '>'
-			elif any([allsts[j] == Runner.STATUS_SUBMITFAILED for j in bj]):
+			elif any(self.status[j] == Jobmgr.STATUS_SUBMITFAILED for j in bj):
 				bar += '!'
-			elif all([allsts[j] == Runner.STATUS_DONE for j in bj]):
+			elif any(self.status[j] == Jobmgr.STATUS_SUBMITTED for j in bj):
+				bar += '>'
+			elif any(self.status[j] == Jobmgr.STATUS_DONEFAILED for j in bj):
+				bar += 'x'
+			else: # STATUS_DONE
 				bar += '='
-			else:
-				bar += '-'
 			
 		bar += '] Done: %5.1f%% | Running: %d' % (100.0*float(ncompleted)/float(self.proc.size), nrunning)
 			
@@ -117,7 +113,11 @@ class Jobmgr (object):
 			`True` if we can, otherwise `False`
 		"""
 		if self.nprunner == 0: return True
-		return self.nrJobs() < self.nprunner
+		return sum(s in [
+			Jobmgr.STATUS_SUBMITTING, 
+			Jobmgr.STATUS_SUBMITTED, 
+			Jobmgr.STATUS_SUBMITFAILED
+		] for s in self.status) < self.nprunner
 
 	def submitPool(self, sq):
 		"""
@@ -127,19 +127,22 @@ class Jobmgr (object):
 		"""
 		while True:
 			# if we already have enough # jobs running, wait
-			if not self.canSubmit():
-				sleep(1)
-				continue
+				if not self.canSubmit():
+					sleep(1)
+					continue
 
-			jid = sq.get()
-			if jid is None:
+				jid = sq.get()
+				if jid is None:
+					sq.task_done()
+					break
+				
+				self.status[jid] = Jobmgr.STATUS_SUBMITTING
+				if self.runners[jid].submit():
+					self.status[jid] = Jobmgr.STATUS_SUBMITTED
+				else:
+					self.status[jid] = Jobmgr.STATUS_SUBMITFAILED
+				self.progressbar(jid, 'submit')
 				sq.task_done()
-				break
-
-			self.nrJobs(action = '+')
-			self.runners[jid].submit()
-			self.progressbar(jid, 'submit')
-			sq.task_done()
 
 	def runPool(self, rq, sq):
 		"""
@@ -155,11 +158,18 @@ class Jobmgr (object):
 				break
 			else:
 				r = self.runners[jid]
-				if not r.run():
-					sq.put(jid)
-					rq.put(jid)
+				while self.status[jid]!=Jobmgr.STATUS_SUBMITTED and self.status[jid]!=Jobmgr.STATUS_SUBMITFAILED:
+					sleep(1)
+				if self.status[jid]==Jobmgr.STATUS_SUBMITTED and r.run():
+					self.status[jid] = Jobmgr.STATUS_DONE
+				else:
+					if r.retry():
+						self.status[jid] = Jobmgr.STATUS_INITIATED
+						sq.put(jid)
+						rq.put(jid)
+					else:
+						self.status[jid] = Jobmgr.STATUS_DONEFAILED
 				self.progressbar(jid, 'jobdone')
-				self.nrJobs(action = '-')
 				rq.task_done()
 
 	def watchPool(self, rq, sq):
@@ -279,8 +289,8 @@ class Job (object):
 		@returns:
 			The "[000/127]" like indicator
 		"""
-		indexlen = len(str(self.proc.size - 1))
-		return ("[%0"+ str(indexlen) +"d/%s]") % (self.index, self.proc.size - 1)
+		indexlen = len(str(self.proc.size))
+		return ("[%0"+ str(indexlen) +"d/%s]") % (self.index + 1, self.proc.size)
 
 	def _reportItem(self, key, maxlen, data, loglevel):
 		"""
@@ -716,12 +726,12 @@ class Job (object):
 		assert isinstance(self.proc.expart, list)
 		def overwriteRemove(e, f):
 			if e:
-				self.proc.log ('%s overwriting: %s' % (indexstr, f), 'export')
+				self.proc.log ('%s Overwriting: %s' % (indexstr, f), 'export')
 				if not path.isdir (f): remove (f)
 				else: rmtree (f) # pragma: no cover
 			else:
 				if path.islink (f): remove (f)
-				self.proc.log ('%s exporting to: %s' % (indexstr, f), 'export')
+				self.proc.log ('%s Exporting to: %s' % (indexstr, f), 'export')
 		files2ex = []
 		if not self.proc.expart or (len(self.proc.expart) == 1 and not self.proc.expart[0].render(self.data)):
 			for _, out in self.output.items():
@@ -743,7 +753,7 @@ class Job (object):
 				for file2ex in files2ex:
 					bname  = path.basename (file2ex)
 					exfile = path.join (self.proc.exdir, bname)
-					self.proc.log ('%s exporting to: %s' % (indexstr, exfile), 'export')
+					self.proc.log ('%s Exporting to: %s' % (indexstr, exfile), 'export')
 					utils.safeMoveWithLink (file2ex, exfile, overwrite = self.proc.exow)
 		else:
 			for file2ex in files2ex:
