@@ -571,7 +571,7 @@ class Proc (object):
 			if self.resume in ['skip+', 'resume']:
 				raise Exception('Cannot skip process, as workdir not exists: %s' % self.workdir)
 			makedirs (self.workdir)
-
+			
 		# exdir
 		if self.exdir:
 			self.config['exdir'] = path.abspath(self.exdir)

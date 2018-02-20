@@ -22,7 +22,7 @@ def writeFile(f, contents = ''):
 def readFile(f, transform = None):
 	from io import open
 	with open(f, 'r', encoding = "ISO-8859-1") as fin:
-		r = str(fin.read())
+		r = fin.read()
 	return transform(r) if callable(transform) else r
 
 def createDeadlink(f):
@@ -160,7 +160,12 @@ class TestCase(with_metaclass(DataProviderSupport, unittest.TestCase)):
 			for k in first.keys():
 				v1   = first[k]
 				v2   = second[k]
-				self.assertSequenceEqual(v1, v2)
+				try:
+					self.assertSequenceEqual(v1, v2)
+				except AssertionError:
+					self.assertEqual(v1, v2)
+				
+				
 
 	def assertDictNotIn(self, first, second, msg = 'all k-v pairs in 1st element are in the second.'):
 		assert isinstance(first, dict)

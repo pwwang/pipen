@@ -37,7 +37,7 @@ class Runner (object):
 			self.job.proc.log ("Job #%-3s is already running, skip submitting." % self.job.index, 'submit')
 			return True
 		else:
-			self.job.reset(None if self.ntry.value == 0 else self.ntry.value)
+			self.job.reset(self.ntry.value)
 			
 			ferrw = open(self.job.errfile, 'w')
 			foutw = open(self.job.outfile, 'w')

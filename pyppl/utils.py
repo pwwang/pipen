@@ -628,7 +628,6 @@ def safeLink(f1, f2, callback = None, overwrite = True, tmpdir = TMPDIR):
 
 			if callable(callback):
 				callback(r, f1, f2)
-
 	
 def targz (srcdir, tgzfile, overwrite = True, tmpdir = TMPDIR):
 	"""
