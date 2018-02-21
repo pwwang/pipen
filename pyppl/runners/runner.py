@@ -4,7 +4,7 @@ The base runner class
 import sys
 import re
 from time import sleep
-from multiprocessing import Value, Lock, cpu_count
+from multiprocessing import Value, Lock
 from subprocess import Popen, list2cmdline
 
 from .. import utils
@@ -27,14 +27,15 @@ class Runner (object):
 		self.cmd2run   = list2cmdline (self.script)
 		self.ntry      = Value('i', 0, lock = Lock())
 
-	def submit (self, isQ = False):
+	def submit (self):
 		"""
 		Try to submit the job use Popen
 		"""
+		indexstr = self.job._indexIndicator()
 		if self.job.index not in self.job.proc.ncjobids:
 			return True
 		elif self.isRunning():
-			self.job.proc.log ("Job #%-3s is already running, skip submitting." % self.job.index, 'submit')
+			self.job.proc.log ("%s is already running, skip submission." % indexstr, 'submit')
 			return True
 		else:
 			self.job.reset(self.ntry.value)
@@ -50,11 +51,11 @@ class Runner (object):
 				
 				rc = p.wait()
 				if rc != 0:
-					self.job.proc.log ('Failed to submit job #%s' % self.job.index, 'error')
+					self.job.proc.log ('%s Submission failed with return code: %s.' % (indexstr, rc), 'error')
 					succ = False
 					
 			except Exception as ex:
-				self.job.proc.log ('Failed to submit job #%s: %s' % (self.job.index, str(ex)), 'error')
+				self.job.proc.log ('%s Submission failed with exception: %s' % (indexstr, str(ex)), 'error')
 				ferrw.write(str(ex))
 				succ = False
 			finally:
@@ -77,8 +78,10 @@ class Runner (object):
 		"""
 		pass
 
-	def run(self):
+	def run(self, interval = 5):
 		"""
+		@params:
+			`interval`: the interval to sleep for check rc
 		@returns:
 			True: success/fail
 			False: needs retry
@@ -93,7 +96,7 @@ class Runner (object):
 		lastout = ''
 		lasterr = ''
 		while self.job.rc() == self.job.RC_NOTGENERATE: # rc not generated yet
-			sleep (5)
+			sleep (interval)
 			lastout, lasterr = self._flush(fout, ferr, lastout, lasterr)
 		self._flush(fout, ferr, lastout, lasterr, True)
 		ferr.close()
@@ -105,7 +108,7 @@ class Runner (object):
 	def retry(self):
 		if self.job.proc.errhow == 'retry' and self.ntry.value < self.job.proc.errntry:
 			self.ntry.value += 1
-			self.job.proc.log ("Retrying job #%s ... (%s)" % (self.job.index, self.ntry.value), 'RETRY')
+			self.job.proc.log ("%s Retrying job ... %s" % (self.job._indexIndicator(), self.ntry.value), 'RETRY')
 			return True
 		else:
 			return False
@@ -155,7 +158,7 @@ class Runner (object):
 				loglevel = loglevel[1:] if loglevel else 'log'
 				
 				# '_' makes sure it's not filtered by log levels
-				self.job.proc.log (logmsg.lstrip(), '_' + loglevel)
+				self.job.proc.log (self.job._indexIndicator() + ' ' + logmsg, '_' + loglevel)
 			elif 'stderr' in self.job.proc.echo['type']:
 				errfilter = self.job.proc.echo['type']['stderr']
 				if not errfilter or re.search(errfilter, line):

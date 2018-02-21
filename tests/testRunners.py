@@ -1,404 +1,849 @@
 import helpers, unittest
 
-import sys
-import tempfile
-from os import path
-from contextlib import contextmanager
-from six import StringIO
-from subprocess import Popen
-from multiprocessing import Queue
-from pyppl import runners, utils, logger
+from os import path, getcwd
+from hashlib import md5
+from collections import OrderedDict
+from pyppl import Job, Proc, utils
+from pyppl.runners import Runner, RunnerLocal, RunnerDry, RunnerSsh, RunnerSge, RunnerSlurm
+from pyppl.templates import TemplatePyPPL
+from pyppl.exception import RunnerSshError
 
-tmpdir = tempfile.gettempdir()
+__folder__ = path.realpath(path.dirname(__file__))
 
-@contextmanager
-def captured_output():
-	new_out, new_err = StringIO(), StringIO()
-	old_out, old_err = sys.stdout, sys.stderr
-	try:
-		sys.stdout, sys.stderr = new_out, new_err
-		yield sys.stdout, sys.stderr
-	finally:
-		sys.stdout, sys.stderr = old_out, old_err
+def clearMockQueue():
+	qsubQfile   = path.join(__folder__, 'mocks', 'qsub.queue.txt')
+	sbatchQfile = path.join(__folder__, 'mocks', 'sbatch.queue.txt')
+	helpers.writeFile(qsubQfile, '')
+	helpers.writeFile(sbatchQfile, '')
 
-def which(program):
-	import os
-	def is_exe(fpath):
-		return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+def _generateJob(testdir, index = 0, pProps = None, jobActs = None):
+	p = Proc()
+	p.props['workdir'] = path.join(testdir, 'p', 'workdir')
+	p.props['script']  = TemplatePyPPL('')
+	p.props['ncjobids']  = list(range(40))
+	if pProps:
+		p.props.update(pProps)
+	job = Job(index, p)
+	job.init()
+	if jobActs:
+		jobActs(job)
+	return job
 
-	fpath, fname = os.path.split(program)
-	if fpath:
-		if is_exe(program):
-			return program
-	else:
-		for path in os.environ["PATH"].split(os.pathsep):
-			path = path.strip('"')
-			exe_file = os.path.join(path, program)
-			if is_exe(exe_file):
-				return exe_file
-
-	return None
-
-class Proc(object):
-	OUT_VARTYPE  = ['var']
-	OUT_FILETYPE = ['file']
-	OUT_DIRTYPE  = ['dir']
-	def __init__(self):
-		self.errhow  = 'terminate'
-		self.errntry = 3
-		self.echo    = {'jobs':[8], 'type':{'stderr': None}}
-		self.id      = 'pTestProc'
-		self.tag     = 'notag'
-		self.sshRunner = ''
-		self.ncjobids = [8]
-
-	def log(self, msg, flag):
-		sys.stderr.write('[%s] %s\n' % (flag, msg)) 
-
-	def _suffix(self):
-		return 'suffix'
+class TestRunner(helpers.TestCase):
 	
-	def name(self):
-		return "%s.%s" % (self.id, self.tag)
+	def dataProvider_testInit(self, testdir):
+		yield _generateJob(testdir),
 
-class Job(object):
-	RC_SUCCESS     = 0
-	RC_NOTGENERATE = -1
-	RC_NOOUTFILE   = -2
-	RC_EXPECTFAIL  = -3
-	RC_SUBMITFAIL  = 99
-
-	MSG_RC_NOTGENERATE = 'Rc file not generated'
-	MSG_RC_NOOUTFILE   = 'Output file not generated'
-	MSG_RC_EXPECTFAIL  = 'Failed to meet the expectation'
-	MSG_RC_SUBMITFAIL  = 'Failed to submit job'
-	MSG_RC_OTHER       = 'Script error'
-
-	def __init__(self):
-		self._rc     = 0
-		self._pid    = ''
-		self._suc    = True
-		self.proc    = Proc()
-		self.dir     = '.'
-		self.index   = 8
-		self.output  = {}
-		self.rcfile  = path.join(tmpdir, 'testrunnerjob.rc')
-		self.pidfile = path.join(tmpdir, 'testrunnerjob.pid')
-		self.script  = path.join(tmpdir, 'testrunnerjob.script')
-		self.errfile = path.join(tmpdir, 'testrunnerjob.stderr')
-		self.outfile = path.join(tmpdir, 'testrunnerjob.stdout')
-		self.cachefile = self.script
-		with open(self.script, 'w') as fs:
-			fs.write('')
-
-	def checkOutfiles(self, expect):
-		pass
-
-	def reset(self, ntry = None):
-		sys.stderr.write('Job reset: ' + str(ntry) + '\n') 
-
-	def rc(self, r = None):
-		if r is None: return self._rc
-		self._rc = r
-
-	def done(self):
-		sys.stderr.write('Job done\n') 
-
-	def succeed(self):
-		return self._suc
-
-	def pid(self, val = None):
-		if val is None:
-			if not path.exists (self.pidfile):
-				return ''
-			with open(self.pidfile) as f:
-				return f.read().strip()
-		else:
-			with open (self.pidfile, 'w') as f:
-				f.write (str(val))
-
-class TestRunner(unittest.TestCase):
-
-	def testInit(self):
-		job = Job()
-		r = runners.Runner(job)
-		self.assertIsInstance(r.job, Job)
+	def testInit(self, job):
+		r = Runner(job)
+		self.assertIsInstance(r, Runner)
+		self.assertIs(r.job, job)
 		self.assertEqual(r.script, [job.script])
 		self.assertEqual(r.cmd2run, job.script)
-		self.assertEqual(r.ntry, 0)
-
-	def testFlushOut(self):
-		job = Job()
-		job.proc.echo['type'] = {'stderr': None, 'stdout': None}
-		r = runners.Runner(job)
-		lastout = ''
-		lasterr = ''
-		end     = False
-		open(job.outfile, 'w').close()
-		open(job.errfile, 'w').close()
-		fout = open (job.outfile)
-		ferr = open (job.errfile)
-		with open(job.outfile, 'w') as f1, open(job.errfile, 'w') as f2:
-			f1.write("outoutout\noutoutout2")
-			f2.write("errerrrerere\nererererere2")
-		with captured_output() as (out, err):
-			(lastout, lasterr) = r._flush(fout,ferr,lastout,lasterr,False)
+		self.assertEqual(r.ntry.value, 0)
 		
-		self.assertEqual('outoutout\n', out.getvalue())
-		self.assertEqual('errerrrerere\n', err.getvalue())
-		self.assertEqual(lastout, 'outoutout2')
-		self.assertEqual(lasterr, 'ererererere2')
-
-		with open(job.outfile, 'a') as f1, open(job.errfile, 'a') as f2:
-			f1.write("outoutout3\n")
-			f2.write("errerrrerere3\npyppl.log.warn: hello\npyppl.log.AAA\n444")
-		with captured_output() as (out, err):
-			(lastout, lasterr) = r._flush(fout,ferr,lastout,lasterr,False)
-		self.assertEqual('outoutout2outoutout3\n', out.getvalue())
-		self.assertEqual('ererererere2errerrrerere3\n[_warn] hello\n[_AAA] \n', err.getvalue())
-
-		with open(job.outfile, 'a') as f1, open(job.errfile, 'a') as f2:
-			f2.write("555")
-		with captured_output() as (out, err):
-			(lastout, lasterr) = r._flush(fout,ferr,lastout,lasterr,True)
-		self.assertEqual(err.getvalue(), '444555\n')
-		if fout: fout.close()
-		if ferr: ferr.close()
-
-	def testIsRunning(self):
-		job = Job()
-		r = runners.Runner(job)
-		self.assertFalse(r.isRunning())
-
-	def testSubmit(self):
+	def dataProvider_testIsRunning(self, testdir):
+		yield _generateJob(testdir), False
+		yield _generateJob(testdir, index = 1, jobActs = lambda job: job.pid(0)), True
 		
-		with captured_output() as (out, err):
-			logger.getLogger(levels = 'all')
-		job = Job()
-		r = runners.Runner(job)
-		with captured_output() as (out, err):
-			r.submit()
-		self.assertEqual(job._rc, 99)
-		self.assertIn('Job reset: None', err.getvalue())
-		self.assertIn('Submitting job #8', err.getvalue())
-		self.assertIn('Failed to submit job', err.getvalue())
-
-		# normal
-		with open(job.script, 'w') as fs:
-			fs.write('#!/bin/bash\nsleep 1\nls')
-		#with captured_output() as (out, err):
+	def testIsRunning(self, job, ret):
+		r = Runner(job)
+		self.assertEqual(r.isRunning(), ret)
 		
-		# simulate submitting
-		p = Popen(['sleep', '1'])
-		job.pid(p.pid)
-		self.assertTrue(r.isRunning())
-		self.assertEqual(p.wait(), 0)
-		self.assertEqual(int(job.pid()), p.pid)
-		#self.assertIn('reset', err.getvalue())
-		#self.assertIn('Submitting', err.getvalue())
-		#self.assertNotIn('Failed', err.getvalue())
-
-	def testWait(self):
-		with captured_output() as (out, err):
-			logger.getLogger()
-		job = Job()
-		with open(job.script, 'w') as fs:
-			fs.write('#!/bin/bash\nls')
-		job._rc = 3924
-		r = runners.Runner(job)
-		with captured_output() as (out, err):
+	def dataProvider_testSubmit(self, testdir):
+		# job cached
+		yield _generateJob(testdir, pProps = {'ncjobids': []}), True
+		# job is running
+		yield _generateJob(
+			testdir,
+			index = 1,
+			jobActs = lambda job: job.pid(0)
+		), True, ['SUBMIT', "[2/0] is already running, skip submission."]
+		# submission failure
+		yield _generateJob(
+			testdir,
+			index = 2,
+			pProps = {'script': TemplatePyPPL('#!/usr/bin/env bash\nexit 1')}
+		), False, ['ERROR', "[3/0] Submission failed with return code: 1."]
+		# submission failure exception
+		yield _generateJob(
+			testdir,
+			index = 3,
+			pProps = {'script': TemplatePyPPL('exit 1')}
+		), False, ['ERROR', "[4/0] Submission failed with exception: [Errno 8] Exec format error"]
+		# submission success
+		yield _generateJob(
+			testdir,
+			index = 4,
+			pProps = {'script': TemplatePyPPL('#!/usr/bin/env bash\nexit 0')}
+		), True
+		
+	def testSubmit(self, job, ret, errs = []):
+		r = Runner(job)
+		with helpers.log2str(levels = 'all') as (out, err):
+			o = r.submit()
+		stderr = err.getvalue()
+		self.assertEqual(o, ret)
+		for err in errs:
+			self.assertIn(err, stderr)
+		if not ret:
+			self.assertEqual(job.rc(), Job.RC_SUBMITFAIL)
+	
+	def dataProvider_testFinish(self, testdir):
+		yield _generateJob(testdir),
+		
+	def testFinish(self, job):
+		r = Runner(job)
+		self.assertIsNone(r.finish())
+		
+	def dataProvider_testGetpid(self, testdir):
+		yield _generateJob(testdir),
+		
+	def testGetpid(self, job):
+		r = Runner(job)
+		self.assertIsNone(r.getpid())
+	
+	def dataProvider_testRetry(self, testdir):
+		yield _generateJob(testdir, pProps = {'errhow': 'terminate'}), False
+		yield _generateJob(testdir, index = 1, pProps = {'errhow': 'retry', 'errntry': 3}), True, [
+			'RETRY',
+			'[2/0] Retrying job ... 1'
+		]
+		yield _generateJob(testdir, index = 2, pProps = {'errhow': 'retry', 'errntry': 0}), False
+		
+	def testRetry(self, job, ret, errs = []):
+		r = Runner(job)
+		with helpers.log2str() as (out, err):
+			o = r.retry()
+		stderr = err.getvalue()
+		self.assertEqual(o, ret)
+		for err in errs:
+			self.assertIn(err, stderr)
+			
+	def dataProvider_testFlush(self, testdir):
+		job = _generateJob(testdir, pProps = {'echo': {'jobs': []}})
+		yield job, {'': ('', None)}, {'': ('', None)}
+		
+		job1 = _generateJob(testdir, index = 1, pProps = {'echo': {'jobs': [1], 'type': {'stdout': None}}})
+		yield job1, {'': ('', '')}, {}
+		yield job1, {'123': ('123', '')}, {}
+		yield job1, OrderedDict([
+			('123\n', ('123', '')),
+			('456\n78', ('456', '78')),
+			('910', ('78910', ''))
+		]), {}
+		# filter
+		job2 = _generateJob(testdir, index = 2, pProps = {'echo': {'jobs': [2], 'type': {'stdout': '^a'}}})
+		yield job1, {'': ('', '')}, {}
+		yield job1, {'123': ('', '')}, {}
+		yield job1, OrderedDict([
+			('123\n', ('', '')),
+			('456\na78', ('', 'a78')),
+			('910', ('a78910', ''))
+		]), {}
+		# stderr
+		job3 = _generateJob(testdir, index = 3, pProps = {'echo': {'jobs': [3], 'type': {'stderr': None}}})
+		yield job3, {}, OrderedDict([
+			('pyppl.log: 123', ('p: [4/0]  123', ''))
+		])
+		yield job3, {}, OrderedDict([
+			('456\n78', ('456', '78')),
+			('9\npyppl.log', ('789', 'pyppl.log')),
+			(': 123', ('', 'pyppl.log: 123')),
+			('a\n78', ('p: [4/0]  123a', '78')),
+			('b', ('78b', '')),
+		])
+		# stderr filter
+		job4 = _generateJob(testdir, index = 4, pProps = {'echo': {'jobs': [4], 'type': {'stderr': '^7'}}})
+		yield job4, {}, OrderedDict([
+			('pyppl.log.flag ', ('p: [5/0] ', ''))
+		])
+		yield job4, {}, OrderedDict([
+			('456\n78', ('', '78')),
+			('9\npyppl.log', ('789', 'pyppl.log')),
+			(': 123', ('', 'pyppl.log: 123')),
+			('a\n78', ('p: [5/0]  123a', '78')),
+			('b', ('78b', '')),
+		])
+		
+			
+	def testFlush(self, job, outs, errs):
+		r = Runner(job)
+		lastout, lasterr = '', ''
+		foutr = open(job.outfile, 'r')
+		ferrr = open(job.errfile, 'r')
+		foutw = open(job.outfile, 'w')
+		ferrw = open(job.errfile, 'w')
+		for i, k in enumerate(outs.keys()):
+			o, lo = outs[k] # out, lastout
+			end = i == len(outs) - 1
+			foutw.write(k)
+			foutw.flush()
+			with helpers.log2str() as (out, err):
+				lastout, lasterr = r._flush(foutr, ferrr, lastout, lasterr, end)
+			self.assertEqual(lastout, lo)
+			self.assertIn(o, out.getvalue())
+		for i, k in enumerate(errs.keys()):
+			e, le = errs[k]
+			end = i == len(errs) - 1
+			ferrw.write(k)
+			ferrw.flush()
+			with helpers.log2str() as (out, err):
+				lastout, lasterr = r._flush(foutr, ferrr, lastout, lasterr, end)
+			self.assertEqual(lasterr, le)
+			self.assertIn(e, err.getvalue())
+		foutr.close()
+		ferrr.close()
+		foutw.close()
+		ferrw.close()
+			
+	def dataProvider_testRun(self, testdir):
+		# job cached
+		yield _generateJob(testdir, pProps = {'ncjobids': []}), True
+		yield _generateJob(
+			testdir,
+			index = 1,
+			pProps = {'ncjobids': [1], 'echo': {'jobs': []}},
+			jobActs = lambda job: job.rc(1)
+		), False
+		yield _generateJob(
+			testdir,
+			index = 2,
+			pProps = {
+				'ncjobids': [2],
+				'echo': {'jobs': [2], 'type': {'stdout': None}},
+				'script': TemplatePyPPL('#!/usr/bin/env bash\nprintf 1\nbash -c \'sleep .5; echo 1 > "%s"\'\nprintf 3' % path.join(testdir, 'p', 'workdir', '3', 'job.rc'))
+			}
+		), False, ['13']
+		yield _generateJob(
+			testdir,
+			index = 3,
+			pProps = {
+				'expect': TemplatePyPPL(''),
+				'ncjobids': [3],
+				'echo': {'jobs': [3], 'type': {'stdout': None}},
+				'script': TemplatePyPPL('#!/usr/bin/env bash\nprintf 2\nbash -c \'sleep .5; echo 0 > "%s"\'\nprintf 4' % path.join(testdir, 'p', 'workdir', '4', 'job.rc'))
+			}
+		), True, ['24']
+		
+	def testRun(self, job, ret, outs = [], errs = []):
+		r = Runner(job)
+		with helpers.log2str() as (out, err):
 			r.submit()
-			r.run(Queue())
-		self.assertEqual(job._rc, 3924)
-		job._rc = 345
-		r.status(0)
-		with captured_output() as (out, err):
-			r.submit()
-			r.run(Queue())
-		self.assertEqual(job._rc, 345)
+			o = r.run(.1)
+		self.assertEqual(o, ret)
+		stdout = out.getvalue()
+		stderr = err.getvalue()
+		for o in outs:
+			self.assertIn(o, stdout)
+		for e in errs:
+			self.assertIn(e, stderr)
 
-	def testFinish(self):
-		with captured_output() as (out, err):
-			logger.getLogger()
-		job = Job()
-		r = runners.Runner(job)
-		with captured_output() as (out, err):
-			r.finish()
-		self.assertIn('Job done', err.getvalue())
+class TestRunnerLocal(helpers.TestCase):
+	
+	def dataProvider_testInit(self, testdir):
+		yield _generateJob(
+			testdir, 
+			pProps = {'localRunner': {'preScript': 'prescript', 'postScript': 'postscript'}}
+		),
 
-	@unittest.skip('need submit queue')
-	def testRetry(self):
-		with captured_output() as (out, err):
-			logger.getLogger()
-		job = Job()
-		r = runners.Runner(job)
-		job.proc.errhow = 'retry'
-		job._suc = False
-		with captured_output() as (out, err):
-			r.submit()
-			r.run(Queue())
-			r.finish()
-		self.assertEqual(err.getvalue().count('RETRY'), 3)
+	def testInit(self, job):
+		r = RunnerLocal(job)
+		self.assertIsInstance(r, RunnerLocal)
+		self.assertTrue(path.exists(job.script + '.local'))
+		self.assertTrue(path.exists(job.script + '.submit'))
+		self.assertTextEqual(helpers.readFile(job.script + '.local', str), '\n'.join([
+			"#!/usr/bin/env bash",
+			"echo $$ > '%s'",
+			'trap "status=\\$?; echo \\$status >\'%s\'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT',
+			'prescript',
+			'',
+			"%s 1>'%s' 2>'%s'",
+			'postscript',
+		]) % (job.pidfile, job.rcfile, job.script, job.outfile, job.errfile) + '\n')
+		self.assertTextEqual(helpers.readFile(job.script + '.submit', str), '\n'.join([
+			"#!/usr/bin/env bash",
+			"exec '%s' &"
+		]) % (job.script + '.local') + '\n')
+		
+	
+	def dataProvider_testSubmitNRun(self, testdir):
+		yield _generateJob(
+			testdir,
+			pProps = {
+				'expect': TemplatePyPPL(''),
+				'ncjobids': [0],
+				'echo': {'jobs': [0], 'type': {'stdout': None}},
+				'script': TemplatePyPPL('#!/usr/bin/env bash\nprintf 123\nsleep .5\nprintf 456')
+			}
+		), True, ['123456']
+		yield _generateJob(
+			testdir,
+			index = 1,
+			pProps = {
+				'expect': TemplatePyPPL(''),
+				'ncjobids': [1],
+				'echo': {'jobs': [1], 'type': {'stdout': None}},
+				'script': TemplatePyPPL('#!/usr/bin/env bash\nprintf 123 >&2\nsleep .5\nprintf 456 >&2\nexit 1')
+			}
+		), False, [], ['123456']
+	
+	def testSubmitNRun(self, job, ret, outs = [], errs = []):
+		r = RunnerLocal(job)
+		r.submit()
+		o = r.run(.1)
+		self.assertEqual(o, ret)
+		stdout = helpers.readFile(job.outfile, str)
+		stderr = helpers.readFile(job.errfile, str)
+		for o in outs:
+			self.assertIn(o, stdout)
+		for e in errs:
+			self.assertIn(e, stderr)
 
-	def testLocal(self):
-		job = Job()
-		r = runners.RunnerLocal(job)
-		self.assertIsInstance(r, runners.RunnerLocal)
-		self.assertIsInstance(r, runners.Runner)
+class TestRunnerDry(helpers.TestCase):
+	
+	def dataProvider_testInit(self, testdir):
+		yield _generateJob(
+			testdir
+		),
 
-	def testDry(self):
-		job = Job()
-		r = runners.RunnerDry(job)
-		self.assertIsInstance(r, runners.RunnerDry)
-		self.assertIsInstance(r, runners.Runner)
-		script = path.join(tempfile.gettempdir(), 'testrunnerjob.script.dry')
-		self.assertEqual(r.script, [script])
-
-		job.output = {
-			'a': {'type': 'file', 'data': 'abc.file'},
-			'b': {'type': 'dir', 'data': 'abc.dir'},
-			'c': {'type': 'var', 'data': '1'}
-		}
-		r = runners.RunnerDry(job)
+	def testInit(self, job):
+		r = RunnerDry(job)
+		self.assertIsInstance(r, RunnerDry)
+		self.assertTrue(path.exists(job.script + '.dry'))
+		self.assertTrue(path.exists(job.script + '.submit'))
+		self.assertTextEqual(helpers.readFile(job.script + '.dry', str), '\n'.join([
+			"#!/usr/bin/env bash",
+			"echo $$ > '%s'",
+			'trap "status=\\$?; echo \\$status >\'%s\'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT',
+			''
+		]) % (job.pidfile, job.rcfile) + '\n')
+		self.assertTextEqual(helpers.readFile(job.script + '.submit', str), '\n'.join([
+			"#!/usr/bin/env bash",
+			"exec '%s' &"
+		]) % (job.script + '.dry') + '\n')
+		
+	
+	def dataProvider_testSubmitNRun(self, testdir):
+		yield _generateJob(
+			testdir,
+			pProps = {
+				'expect': TemplatePyPPL(''),
+				'ncjobids': [0],
+				'echo': {'jobs': [0], 'type': {'stdout': None}},
+				'script': TemplatePyPPL('')
+			}
+		), True
+		
+		job = _generateJob(
+			testdir,
+			index = 1,
+			pProps = {
+				'expect': TemplatePyPPL(''),
+				'ncjobids': [1],
+				'echo': {'jobs': [1], 'type': {'stdout': None}},
+				'script': TemplatePyPPL(''),
+				'output': {
+					'a': ('file', TemplatePyPPL('runndry.txt')),
+					'b': ('dir', TemplatePyPPL('runndry.dir')),
+					'c': ('var', TemplatePyPPL('runndry.dir')),
+				}
+			}
+		)
+		yield job, True, [path.join(job.outdir, 'runndry.txt')], [path.join(job.outdir, 'runndry.dir')]
+	
+	def testSubmitNRun(self, job, ret, files = [], dirs = []):
+		r = RunnerDry(job)
+		r.submit()
+		o = r.run(.1)
+		self.assertEqual(o, ret)
+		for f in files:
+			self.assertTrue(path.isfile(f))
+		for d in dirs:
+			self.assertTrue(path.isdir(d))
+			
+	def dataProvider_testFinish(self, testdir):
+		yield _generateJob(
+			testdir,
+			pProps = {
+				'expect': TemplatePyPPL(''),
+			},
+			jobActs = lambda job: job.rc(0) or job.cache()
+		), 
+			
+	def testFinish(self, job):
+		r = RunnerDry(job)
 		r.finish()
-		with open(script) as f: scriptcontent = f.read()
-		self.assertIn('touch "abc.file"', scriptcontent)
-		self.assertIn('mkdir -p "abc.dir"', scriptcontent)
+		self.assertTrue(job.succeed())
+		self.assertFalse(path.isfile(job.cachefile))
 
-	def testInstance(self):
-		job = Job()
-		r = runners.Runner(job)
-		self.assertIsInstance(r, runners.Runner)
+class TestRunnerSsh(helpers.TestCase):
+	
+	def _localSshAlive():
+		return utils.dumbPopen('ps axf | grep sshd | grep -v grep', shell = True).wait() == 0
+	
+	def dataProvider_testIsServerAlive(self):
+		if self._localSshAlive():
+			yield 'localhost', None, True
+		yield 'blahblah', None, False
+	
+	def testIsServerAlive(self, server, key, ret):
+		self.assertEqual(RunnerSsh.isServerAlive(server, key), ret)
+		
+	def dataProvider_testInit(self, testdir):
+		yield _generateJob(
+			testdir
+		), RunnerSshError, 'No server found for ssh runner.'
+		
+		servers = ['server1', 'server2', 'localhost']
+		keys    = ['key1', 'key2']
+		yield _generateJob(
+			testdir,
+			index = 1,
+			pProps = {'sshRunner': {
+				'servers': servers,
+				'keys'   : keys,
+				'checkAlive': False,
+			}}
+		),
+		
+		yield _generateJob(
+			testdir,
+			index = 2,
+			pProps = {'sshRunner': {
+				'servers': servers,
+				'keys'   : keys,
+				'checkAlive': False
+			}}
+		),
+		
+		yield _generateJob(
+			testdir,
+			index = 3,
+			pProps = {'sshRunner': {
+				'servers': servers,
+				'keys'   : keys,
+				'checkAlive': False
+			}}
+		),
+		
+		if self._localSshAlive():
+			# should be localhost
+			yield _generateJob(
+				testdir,
+				index = 4,
+				pProps = {'sshRunner': {
+					'servers': servers,
+					'keys'   : keys,
+					'checkAlive': True
+				}}
+			),
+		else:
+			yield _generateJob(
+				testdir,
+				index = 4,
+				pProps = {'sshRunner': {
+					'servers': servers,
+					'keys'   : keys,
+					'checkAlive': True
+				}}
+			), RunnerSshError, 'No server is alive.'
+		
+		# no server is alive
+		yield _generateJob(
+			testdir,
+			index = 5,
+			pProps = {'sshRunner': {
+				'servers': ['server1', 'server2', 'server3'],
+				'checkAlive': True
+			}}
+		), RunnerSshError, 'No server is alive.'
 
-	def testQueueWait(self):
-		with captured_output() as (out, err):
-			logger.getLogger()
-			job = Job()
-			with open(job.script, 'w') as fs:
-				fs.write('#!/bin/bash\necho pyppl.log:abcdef 1>&2')
-			r = runners.Runner(job)
-			r.submit()
-			r.run(Queue())
-		self.assertIn('abcdef', err.getvalue())
+	def testInit(self, job, exception = None, msg = None):
+		self.maxDiff = None
+		if exception:
+			self.assertRaisesStr(exception, msg, RunnerSsh, job)
+		else:
+			r = RunnerSsh(job)
+			servers = job.proc.sshRunner['servers']
+			keys = job.proc.sshRunner['keys']
+			sid = (RunnerSsh.SERVERID.value - 1) % len(servers)
+			server = servers[sid]
+			key = ('-i ' + keys[sid]) if sid < len(keys) else ''
+			self.assertIsInstance(r, RunnerSsh)
+			self.assertTrue(path.exists(job.script + '.ssh'))
+			self.assertTrue(path.exists(job.script + '.submit'))
+			self.assertTextEqual(helpers.readFile(job.script + '.ssh', str), '\n'.join([
+				"#!/usr/bin/env bash",
+				"",
+				"echo $$ > '%s'",
+				'trap "status=\\$?; echo \\$status >\'%s\'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT',
+				'ssh %s %s cd %s; %s',
+			]) % (job.pidfile, job.rcfile, server, key, getcwd(), job.script) + '\n')
+			self.assertTextEqual(helpers.readFile(job.script + '.submit', str), '\n'.join([
+				"#!/usr/bin/env bash",
+				"exec '%s' &"
+			]) % (job.script + '.ssh') + '\n')
+		
+	
+	def dataProvider_testSubmitNRun(self, testdir):
+		yield _generateJob(
+			testdir,
+			pProps = {
+				'expect': TemplatePyPPL(''),
+				'ncjobids': [0],
+				'echo': {'jobs': [0], 'type': {'stdout': None}},
+				'sshRunner': {
+					'servers': ['server1', 'server2', 'localhost'],
+					'checkAlive': True,
+					'preScript': 'alias ssh="%s"' % (path.join(__folder__, 'mocks', 'ssh')),
+					'postScript': ''
+				},
+				'script': TemplatePyPPL('#!/usr/bin/env bash\nprintf 123\nsleep .5\nprintf 456')
+			}
+		), True, ['123456']
+		yield _generateJob(
+			testdir,
+			index = 1,
+			pProps = {
+				'expect': TemplatePyPPL(''),
+				'ncjobids': [1],
+				'echo': {'jobs': [1], 'type': {'stdout': None}},
+				'sshRunner': {
+					'servers': ['server1', 'server2', 'localhost'],
+					'checkAlive': True,
+					'preScript': 'alias ssh="%s"' % (path.join(__folder__, 'mocks', 'ssh')),
+					'postScript': ''
+				},
+				'script': TemplatePyPPL('#!/usr/bin/env bash\nprintf 123 >&2\nsleep .5\nprintf 456 >&2\nexit 1')
+			}
+		), False, [], ['123456']
+	
+	def testSubmitNRun(self, job, ret, outs = [], errs = []):
+		r = RunnerSsh(job)
+		r.submit()
+		o = r.run(.1)
+		self.assertEqual(o, ret)
+		stdout = helpers.readFile(job.outfile, str)
+		stderr = helpers.readFile(job.errfile, str)
+		for o in outs:
+			self.assertIn(o, stdout)
+		for e in errs:
+			self.assertIn(e, stderr)
 
-	def testSge(self):
-		job = Job()
-		job.proc.sgeRunner = {
-			'sge.N': 'pTestProc.notag.suffix.8',
-			'sge.q': '1-day',
-			'sge.j': 'sge.j',
-			'sge.o': 'testrunnerjob.stdout',
-			'sge.e': 'testrunnerjob.stderr',
-			'sge.M': 'sge.M',
-			'sge.m': 'sge.m',
-			'sge.notify': True,
-			'sge.X': 'sge.X',
-			'preScript': 'preScript',
-			'postScript': 'postScript',
+class TestRunnerSge(helpers.TestCase):
+	
+	def dataProvider_testInit(self, testdir):
+		yield _generateJob(
+			testdir,
+			pProps = {
+				'sgeRunner': {
+					'sge.N': 'SgeJobName',
+					'sge.q': 'queue',
+					'sge.j': 'y',
+					'sge.o': path.join(testdir, 'stdout'),
+					'sge.e': path.join(testdir, 'stderr'),
+					'sge.M': 'xxx@abc.com',
+					'sge.m': 'yes',
+					'sge.mem': '4G',
+					'sge.notify': True,
+					'preScript': 'alias qsub="%s"' % (path.join(__folder__, 'mocks', 'qsub')),
+					'postScript': ''
+				}
+			}
+		), 'SgeJobName', path.join(testdir, 'stdout'), path.join(testdir, 'stderr')
+		
+		yield _generateJob(
+			testdir,
+			index  = 1,
+			pProps = {
+				'sgeRunner': {
+					'sge.q': 'queue',
+					'sge.j': 'y',
+					'sge.M': 'xxx@abc.com',
+					'sge.m': 'yes',
+					'sge.mem': '4G',
+					'sge.notify': True,
+					'preScript': 'alias qsub="%s"' % (path.join(__folder__, 'mocks', 'qsub')),
+					'postScript': ''
+				}
+			}
+		),
+		
+	def testInit(self, job, jobname = None, outfile = None, errfile = None):
+		self.maxDiff = None
+		r = RunnerSge(job)
+		self.assertIsInstance(r, RunnerSge)
+		self.assertTrue(path.exists(job.script + '.sge'))
+		self.assertTextEqual(helpers.readFile(job.script + '.sge', str), '\n'.join([
+			"#!/usr/bin/env bash",
+			'#$ -N %s' % (jobname if jobname else '.'.join([
+				job.proc.id,
+				job.proc.tag,
+				job.proc._suffix(),
+				str(job.index)
+			])),
+			'#$ -q queue',
+			'#$ -j y',
+			'#$ -o %s' % (outfile if outfile else job.outfile),
+			'#$ -e %s' % (errfile if errfile else job.errfile),
+			'#$ -cwd',
+			'#$ -M xxx@abc.com',
+			'#$ -m yes',
+			'#$ -mem 4G',
+			'#$ -notify',
+			'',
+			'trap "status=\\$?; echo \\$status >\'%s\'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % job.rcfile,
+			'alias qsub="%s"' % (path.join(__folder__, 'mocks', 'qsub')),
+			'',
+			job.script,
+			'',
+			''
+		]))
+		
+	def dataProvider_testGetpid(self, testdir):
+		job = _generateJob(
+			testdir,
+			pProps = {
+				'sgeRunner': {
+					'qsub': path.join(__folder__, 'mocks', 'qsub'),
+					'qstat': path.join(__folder__, 'mocks', 'qstat'),
+					'preScript': '',
+					'postScript': ''
+				}
+			}
+		)
+		helpers.writeFile(job.script, '\n'.join([
+			'#!/usr/bin/env bash',
+			'%s %s' % (
+				# remove the pid after job id done
+				path.join(__folder__, 'mocks', 'qsub_done'),
+				#str(int(md5(str(job.script) + '.sge').hexdigest()[:8], 16))
+				int(md5((job.script + '.sge').encode('utf-8')).hexdigest()[:8], 16)
+			)
+		]))
+		yield job, 
+		
+	def testGetpid(self, job):
+		r = RunnerSge(job)
+		r.submit()
+		self.assertIn(helpers.readFile(job.pidfile, str), helpers.readFile(job.outfile, str))
+		
+	def dataProvider_testIsRunning(self, testdir):
+		job = _generateJob(
+			testdir,
+			pProps = {
+				'expect': TemplatePyPPL(''),
+				'echo': {'jobs': [0], 'type': {'stdout': None}},
+				'sgeRunner': {
+					'qsub': path.join(__folder__, 'mocks', 'qsub'),
+					'qstat': path.join(__folder__, 'mocks', 'qstat'),
+					'preScript': '',
+					'postScript': ''
+				}
+			}
+		)
+		helpers.writeFile(job.script, '\n'.join([
+			'sleep .1',
+			'%s %s' % (
+				path.join(__folder__, 'mocks', 'qsub_done'),
+				int(md5((job.script + '.sge').encode('utf-8')).hexdigest()[:8], 16)
+			)
+		]))
+		yield job,
+		
+		job1 = _generateJob(
+			testdir,
+			index = 1,
+			pProps = {
+				'expect': TemplatePyPPL(''),
+				'echo': {'jobs': [0], 'type': {'stdout': None}},
+				'sgeRunner': {
+					'qsub': path.join(__folder__, 'mocks', 'qsub'),
+					'qstat': '__command_not_exists__',
+					'preScript': '',
+					'postScript': ''
+				}
+			}
+		)
+		helpers.writeFile(job1.script, '\n'.join([
+			'#!/usr/bin/env bash',
+			'sleep .1',
+			'%s %s' % (
+				path.join(__folder__, 'mocks', 'qsub_done'),
+				int(md5((job1.script + '.sge').encode('utf-8')).hexdigest()[:8], 16)
+			)
+		]))
+		yield job1, False, False, False
+		
+	def testIsRunning(self, job, beforesub = False, aftersub = True, afterrun = False):
+		r = RunnerSge(job)
+		self.assertEqual(r.isRunning(), beforesub)
+		r.submit()
+		self.assertEqual(r.isRunning(), aftersub)
+		with helpers.log2str():
+			r.run(.2)
+		self.assertEqual(r.isRunning(), afterrun)
 
-		}
-		r = runners.RunnerSge(job)
-		self.assertIsInstance(r, runners.RunnerSge)
-		self.assertIsInstance(r, runners.Runner)
 
-		with open(job.script + '.sge') as f: scripts = f.read()
-		self.assertIn('#$ -N pTestProc.notag.suffix.8', scripts)
-		self.assertIn('testrunnerjob.stdout', scripts)
-		self.assertIn('testrunnerjob.stderr', scripts)
-		self.assertIn('testrunnerjob.script', scripts)
-		self.assertIn('preScript', scripts)
-		self.assertIn('postScript', scripts)
-		self.assertIn('trap', scripts)
+class TestRunnerSlurm(helpers.TestCase):
+	
+	def dataProvider_testInit(self, testdir):
+		yield _generateJob(
+			testdir,
+			pProps = {
+				'slurmRunner': {
+					'slurm.J': 'SlurmJobName',
+					'slurm.q': 'queue',
+					'slurm.j': 'y',
+					'slurm.o': path.join(testdir, 'stdout'),
+					'slurm.e': path.join(testdir, 'stderr'),
+					'slurm.M': 'xxx@abc.com',
+					'slurm.m': 'yes',
+					'slurm.mem': '4G',
+					'slurm.notify': True,
+					'cmdPrefix': 'srun prefix',
+					'preScript': 'alias srun="%s"' % (path.join(__folder__, 'mocks', 'srun')),
+					'postScript': ''
+				}
+			}
+		), 'SlurmJobName', path.join(testdir, 'stdout'), path.join(testdir, 'stderr')
+		
+		yield _generateJob(
+			testdir,
+			index  = 1,
+			pProps = {
+				'slurmRunner': {
+					'slurm.q': 'queue',
+					'slurm.j': 'y',
+					'slurm.M': 'xxx@abc.com',
+					'slurm.m': 'yes',
+					'slurm.mem': '4G',
+					'slurm.notify': True,
+					'cmdPrefix': 'srun prefix',
+					'preScript': 'alias srun="%s"' % (path.join(__folder__, 'mocks', 'srun')),
+					'postScript': ''
+				}
+			}
+		),
+		
+	def testInit(self, job, jobname = None, outfile = None, errfile = None):
+		self.maxDiff = None
+		r = RunnerSlurm(job)
+		self.assertIsInstance(r, RunnerSlurm)
+		self.assertTrue(path.exists(job.script + '.slurm'))
+		self.assertTextEqual(helpers.readFile(job.script + '.slurm', str), '\n'.join([
+			"#!/usr/bin/env bash",
+			'#SBATCH -J %s' % (jobname if jobname else '.'.join([
+				job.proc.id,
+				job.proc.tag,
+				job.proc._suffix(),
+				str(job.index)
+			])),
+			'#SBATCH -o %s' % (outfile if outfile else job.outfile),
+			'#SBATCH -e %s' % (errfile if errfile else job.errfile),
+			'#SBATCH -M xxx@abc.com',
+			'#SBATCH -j y',
+			'#SBATCH -m yes',
+			'#SBATCH --mem 4G',
+			'#SBATCH --notify',
+			'#SBATCH -q queue',
+			'',
+			'trap "status=\\$?; echo \\$status >\'%s\'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % job.rcfile,
+			'alias srun="%s"' % (path.join(__folder__, 'mocks', 'srun')),
+			'',
+			'srun prefix ' + job.script,
+			'',
+			''
+		]))
+		
+	def dataProvider_testGetpid(self, testdir):
+		job = _generateJob(
+			testdir,
+			pProps = {
+				'slurmRunner': {
+					'sbatch': path.join(__folder__, 'mocks', 'sbatch'),
+					'squeue': path.join(__folder__, 'mocks', 'squeue'),
+					'srun': path.join(__folder__, 'mocks', 'srun'),
+					'preScript': 'alias srun="%s"' % (path.join(__folder__, 'mocks', 'srun')),
+					'postScript': ''
+				}
+			}
+		)
+		helpers.writeFile(job.script, '\n'.join([
+			'%s %s' % (
+				# remove the pid after job id done
+				path.join(__folder__, 'mocks', 'sbatch_done'),
+				#str(int(md5(str(job.script) + '.sge').hexdigest()[:8], 16))
+				int(md5((job.script + '.slurm').encode('utf-8')).hexdigest()[:8], 16)
+			)
+		]))
+		yield job, 
+		
+	def testGetpid(self, job):
+		r = RunnerSlurm(job)
+		r.submit()
+		self.assertIn(helpers.readFile(job.pidfile, str), helpers.readFile(job.outfile, str))
+		
+	def dataProvider_testIsRunning(self, testdir):
+		job = _generateJob(
+			testdir,
+			pProps = {
+				'expect': TemplatePyPPL(''),
+				'echo': {'jobs': [0], 'type': {'stdout': None}},
+				'slurmRunner': {
+					'sbatch': path.join(__folder__, 'mocks', 'sbatch'),
+					'squeue': path.join(__folder__, 'mocks', 'squeue'),
+					'srun': path.join(__folder__, 'mocks', 'qsub'),
+					'preScript': '',
+					'postScript': ''
+				}
+			}
+		)
+		helpers.writeFile(job.script, '\n'.join([
+			'#!/usr/bin/env bash',
+			'sleep .1',
+			'%s %s' % (
+				path.join(__folder__, 'mocks', 'sbatch_done'),
+				int(md5((job.script + '.slurm').encode('utf-8')).hexdigest()[:8], 16)
+			)
+		]))
+		yield job,
+		
+		job1 = _generateJob(
+			testdir,
+			index = 1,
+			pProps = {
+				'expect': TemplatePyPPL(''),
+				'echo': {'jobs': [0], 'type': {'stdout': None}},
+				'slurmRunner': {
+					'sbatch': path.join(__folder__, 'mocks', 'sbatch'),
+					'squeue': '__command_not_exists__',
+					'srun': path.join(__folder__, 'mocks', 'srun'),
+					'postScript': ''
+				}
+			}
+		)
+		helpers.writeFile(job1.script, '\n'.join([
+			'#!/usr/bin/env bash',
+			'sleep .1',
+			'%s %s' % (
+				path.join(__folder__, 'mocks', 'sbatch_done'),
+				int(md5((job1.script + '.slurm').encode('utf-8')).hexdigest()[:8], 16)
+			)
+		]))
+		yield job1, False, False, False
+		
+	def testIsRunning(self, job, beforesub = False, aftersub = True, afterrun = False):
+		r = RunnerSlurm(job)
+		self.assertEqual(r.isRunning(), beforesub)
+		r.submit()
+		self.assertEqual(r.isRunning(), aftersub)
+		with helpers.log2str():
+			r.run(.2)
+		self.assertEqual(r.isRunning(), afterrun)
 
-		self.assertEqual(r.script, ['qsub', job.script + '.sge'])
-
-	@unittest.skipIf(not which('qstat'), 'SGE client not installed.')
-	def testSgeGetPid(self):
-		job = Job()
-		job.pid('')
-		r = runners.RunnerSge(job)
-		with open(job.outfile, 'w') as f: f.write('')
-		r.getpid()
-		self.assertEqual(job.pid(), '')
-		with open(job.outfile, 'w') as f: f.write('Your job 6556149 ("pSort.notag.3omQ6NdZ.0") has been submitted')
-		r.getpid()
-		self.assertEqual(job.pid(), '6556149')
-
-		self.assertFalse(r.isRunning())
-
-	def testSlurm(self):
-		job = Job()
-		job.proc.slurmRunner = {
-			'sbatch': 'sbatch',
-			'srun': 'srun',
-			'squeue': 'squeue',
-			'cmdPrefix': 'srun',
-			'slurm.J': 'slurm.J',
-			'slurm.o': 'slurm.o',
-			'slurm.e': 'slurm.e',
-			'slurm.notify': True,
-			'slurm.X': 'slurm.X',
-			'preScript': 'preScript',
-			'postScript': 'postScript',
-		}
-		r = runners.RunnerSlurm(job)
-		self.assertIsInstance(r, runners.RunnerSlurm)
-		self.assertIsInstance(r, runners.Runner)
-		self.assertEqual(r.script, ['sbatch', job.script + '.slurm'])
-		with open(job.script + '.slurm') as f:
-			thestr = f.read()
-		self.assertIn('#!/usr/bin/env bash', thestr)
-		self.assertIn('#SBATCH -J slurm.J', thestr)
-		self.assertIn('#SBATCH -o slurm.o', thestr)
-		self.assertIn('#SBATCH -e slurm.e', thestr)
-		self.assertIn('#SBATCH -X slurm.X', thestr)
-		self.assertIn('#SBATCH --notify', thestr)
-		self.assertIn('preScript', thestr)
-		self.assertIn('postScript', thestr)
-		self.assertIn('srun', thestr)
-
-	def testSlurmGetPid(self):
-		job = Job()
-		job.pid('')
-		r = runners.RunnerSlurm(job)
-		with open(job.outfile, 'w') as f:
-			f.write('')
-		r.getpid()
-		self.assertEqual(job.pid(), '')
-
-		with open(job.outfile, 'w') as f:
-			f.write('Submitted batch job: 8525')
-		r.getpid()
-		self.assertEqual(int(job.pid()), 8525)
-
-	def testSlurmIsRunning(self):
-		job = Job()
-		r = runners.RunnerSlurm(job)
-		self.assertFalse(r.isRunning())
-
-	#@skip('Skip if ssh not available.')
-	def testSsh(self):
-		job = Job()
-		self.assertRaises(ValueError, runners.RunnerSsh, job)
-		job.proc.sshRunner = {
-			'servers': ['server1', 'server2', 'server3'],
-			'keys':    ['k1', 'k2', 'k3'],
-			'preScript': 'mkdir ~/ssh-runner',
-			'postScript': 'rm -rf ~/ssh-runner',
-		}
-		r = runners.RunnerSsh(job)
-		self.assertIsInstance(r, runners.RunnerSsh)
-		self.assertIsInstance(r, runners.Runner)
-		self.assertEqual(r.server, 'server1')
-		r2 = runners.RunnerSsh(job)
-		self.assertEqual(r2.server, 'server2')
-		self.assertEqual(r2.script, [job.script + '.ssh'])
-
-		job.proc.sshRunner = {
-			'servers': ['server1', 'server2', 'server3'],
-			'keys': ''
-		}
-		self.assertRaises(Exception, runners.RunnerSsh, job)
 
 if __name__ == '__main__':
+	clearMockQueue()
 	unittest.main(verbosity=2)

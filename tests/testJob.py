@@ -438,7 +438,7 @@ class TestJob(helpers.TestCase):
 	def testIndexIndicator(self, index, proc, size, out):
 		proc.props['size'] = size
 		job = Job(index, proc)
-		self.assertEqual(job._IndexIndicator(), out)
+		self.assertEqual(job._indexIndicator(), out)
 		
 	def testReportItem(self, index, proc, key, maxlen, data, loglevel, outs):
 		job = Job(index, proc)

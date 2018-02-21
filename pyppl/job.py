@@ -61,7 +61,7 @@ class Jobmgr (object):
 		return all(s in [Jobmgr.STATUS_DONE, Jobmgr.STATUS_DONEFAILED] for s in self.status)
 
 	def progressbar(self, jid, loglevel = 'info'):
-		bar     = '%s [' % self.proc.jobs[jid]._IndexIndicator()
+		bar     = '%s [' % self.proc.jobs[jid]._indexIndicator()
 		barsize = 50
 		barjobs = {}
 		# distribute the jobs to bars
@@ -283,7 +283,7 @@ class Job (object):
 		self._prepOutput ()
 		self._prepScript ()
 
-	def _IndexIndicator(self):
+	def _indexIndicator(self):
 		"""
 		Get the index indicator in the log
 		@returns:
@@ -301,7 +301,7 @@ class Job (object):
 			`data`: The data of the item
 			`loglevel`: The log level
 		"""
-		indexstr = self._IndexIndicator()
+		indexstr = self._indexIndicator()
 
 		if not isinstance(data, list):
 			self.proc.log ("%s %s => %s" % (indexstr, key.ljust(maxlen), data), loglevel)
@@ -368,7 +368,7 @@ class Job (object):
 		"""
 		Show the error message if the job failed.
 		"""
-		indexstr = self._IndexIndicator()
+		indexstr = self._indexIndicator()
 		rc  = self.rc()
 		msg = Job.MSG_RC_NOOUTFILE   if rc == Job.RC_NOOUTFILE   else \
 			  Job.MSG_RC_EXPECTFAIL  if rc == Job.RC_EXPECTFAIL  else \
@@ -407,7 +407,7 @@ class Job (object):
 		"""
 		Check whether a job is truly cached (by signature)
 		"""
-		indexstr = self._IndexIndicator()
+		indexstr = self._indexIndicator()
 		if not path.exists (self.cachefile):
 			self.proc.log ("%s not cached as cache file not exists." % (indexstr), "debug", "CACHE_SIGFILE_NOTEXISTS")			
 			return False
@@ -625,7 +625,7 @@ class Job (object):
 		@returns:
 			The signature of the job
 		"""
-		indexstr = self._IndexIndicator()
+		indexstr = self._indexIndicator()
 		ret = {}
 		sig = utils.filesig (self.script)
 		if not sig:
@@ -721,7 +721,7 @@ class Job (object):
 		"""
 		Check whether output files are generated, if not, add - to rc.
 		"""
-		indexstr = self._IndexIndicator()
+		indexstr = self._indexIndicator()
 		# make sure the cache is flushed
 		utime (self.outdir, None)
 		for out in self.output.values():
@@ -744,7 +744,7 @@ class Job (object):
 		if not self.proc.exdir:
 			return
 		
-		indexstr = self._IndexIndicator()
+		indexstr = self._indexIndicator()
 		assert path.exists(self.proc.exdir)
 		assert isinstance(self.proc.expart, list)
 		

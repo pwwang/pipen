@@ -106,3 +106,9 @@ class JobOutputParseError(Exception):
 		msg = msg or 'Failed to parse the output data'
 		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
 
+class RunnerSshError(Exception):
+	"""
+	Raise when failed to initiate RunnerSsh
+	"""
+	def __init__(self, msg = 'Failed to initiate RunnerSsh'):
+		super(Exception, self).__init__(str(msg))

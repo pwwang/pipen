@@ -26,7 +26,7 @@ def readFile(f, transform = None):
 	return transform(r) if callable(transform) else r
 
 def createDeadlink(f):
-	tmpfile = path.join(tempfile.gettempdir(), md5(f).hexdigest())
+	tmpfile = path.join(tempfile.gettempdir(), md5(f.encode('utf-8')).hexdigest())
 	writeFile(tmpfile)
 	symlink(tmpfile, f)
 	remove(tmpfile)

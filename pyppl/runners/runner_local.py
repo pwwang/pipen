@@ -5,6 +5,7 @@
 # Examples:
 #	@see runner.unittest.py
 """
+import copy
 
 from .runner import Runner
 from .. import utils
@@ -24,17 +25,17 @@ class RunnerLocal (Runner):
 		localsrc  = ['#!/usr/bin/env bash']
 
 		conf = {}
-		if hasattr(self.job.proc, 'localRunner'):
+		if 'localRunner' in self.job.proc.props or 'localRunner' in self.job.proc.config:
 			conf = copy.copy (self.job.proc.localRunner)
 
-		localsrc.append ('echo $$ > %s' % self.job.pidfile)
-		localsrc.append ('trap "status=\\$?; echo \\$status > %s; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile)
+		localsrc.append ("echo $$ > '%s'" % self.job.pidfile)
+		localsrc.append ('trap "status=\\$?; echo \\$status >\'%s\'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile)
 		
 		if 'preScript' in conf:
 			localsrc.append (conf['preScript'])
 
 		localsrc.append ('')
-		localsrc.append (self.cmd2run + ' 1>%s 2>%s' % (self.job.outfile, self.job.errfile))
+		localsrc.append (self.cmd2run + " 1>'%s' 2>'%s'" % (self.job.outfile, self.job.errfile))
 
 		if 'postScript' in conf:
 			localsrc.append (conf['postScript'])
@@ -46,6 +47,6 @@ class RunnerLocal (Runner):
 		submitfile = self.job.script + '.submit'
 		with open(submitfile, 'w') as f:
 			f.write('#!/usr/bin/env bash\n')
-			f.write('%s &\n' % localfile)
+			f.write("exec '%s' &\n" % localfile)
 		self.script = utils.chmodX(submitfile)
 	

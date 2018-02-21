@@ -1,5 +1,4 @@
 from .runner import Runner
-from .runner_queue import RunnerQueue
 from .runner_local import RunnerLocal
 from .runner_sge import RunnerSge
 from .runner_ssh import RunnerSsh

@@ -1,11 +1,11 @@
 import copy
 from re import search
 
-from .runner_queue import RunnerQueue
+from .runner import Runner
 from .. import utils
 
 
-class RunnerSge (RunnerQueue):
+class RunnerSge (Runner):
 	"""
 	The sge runner
 	"""
@@ -21,25 +21,29 @@ class RunnerSge (RunnerQueue):
 
 		# construct an sge script
 		sgefile = self.job.script + '.sge'
-		# get suffix
-		suffix  = job.proc._suffix()
 		sgesrc  = ['#!/usr/bin/env bash']
-		self.jobname = '%s.%s.%s.%s' % (
-			self.job.proc.id,
-			self.job.proc.tag,
-			suffix,
-			self.job.index
-		)
 
 		conf = {}
-		if hasattr(self.job.proc, 'sgeRunner'):
+		if 'sgeRunner' in self.job.proc.props or 'sgeRunner' in self.job.proc.config:
 			conf = copy.copy (self.job.proc.sgeRunner)
-
+		
+		self.commands = {'qsub': 'qsub', 'qstat': 'qstat'}
+		if 'qsub' in conf:
+			self.commands['qsub'] = conf['qsub']
+		if 'qstat' in conf:
+			self.commands['qstat'] = conf['qstat']
+			
 		if not 'sge.N' in conf:
-			sgesrc.append('#$ -N %s' % self.jobname)
+			jobname = '.'.join([
+				self.job.proc.id,
+				self.job.proc.tag,
+				self.job.proc._suffix(),
+				str(self.job.index)
+			])
+			sgesrc.append('#$ -N %s' % jobname)
 		else:
-			self.jobname = conf['sge.N']
-			sgesrc.append('#$ -N %s' % self.jobname)
+			jobname = conf['sge.N']
+			sgesrc.append('#$ -N %s' % jobname)
 			del conf['sge.N']
 		
 		if 'sge.q' in conf:
@@ -82,7 +86,7 @@ class RunnerSge (RunnerQueue):
 			sgesrc.append(src)
 
 		sgesrc.append ('')
-		sgesrc.append ('trap "status=\\$?; echo \\$status > %s; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile)
+		sgesrc.append ('trap "status=\\$?; echo \\$status >\'%s\'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile)
 		
 		if 'preScript' in conf:
 			sgesrc.append (conf['preScript'])
@@ -96,7 +100,7 @@ class RunnerSge (RunnerQueue):
 		with open (sgefile, 'w') as f:
 			f.write ('\n'.join(sgesrc) + '\n')
 		
-		self.script = ['qsub', sgefile]
+		self.script = [self.commands['qsub'], sgefile]
 
 	def getpid (self):
 		"""
@@ -116,5 +120,8 @@ class RunnerSge (RunnerQueue):
 		"""
 		jobpid = self.job.pid ()
 		if not jobpid: return False
-		return utils.dumbPopen (['qstat', '-j', jobpid]).wait() == 0
+		try:
+			return utils.dumbPopen ([self.commands['qstat'], '-j', jobpid]).wait() == 0
+		except Exception:
+			return False
 

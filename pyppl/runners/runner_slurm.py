@@ -18,18 +18,11 @@ class RunnerSlurm (Runner):
 
 		# construct an slurm script
 		slurmfile = self.job.script + '.slurm'
-		# get suffix
-		suffix  = job.proc._suffix()
+		
 		slurmsrc  = ['#!/usr/bin/env bash']
-		self.jobname = '%s.%s.%s.%s' % (
-			self.job.proc.id,
-			self.job.proc.tag,
-			suffix,
-			self.job.index
-		)
-
+	
 		conf = {}
-		if hasattr(self.job.proc, 'slurmRunner'):
+		if 'slurmRunner' in self.job.proc.props or 'slurmRunner' in self.job.proc.config:
 			conf = copy.copy (self.job.proc.slurmRunner)
 
 		self.commands = {'sbatch': 'sbatch', 'srun': 'srun', 'squeue': 'squeue'}
@@ -45,10 +38,16 @@ class RunnerSlurm (Runner):
 			cmdPrefix = conf['cmdPrefix']
 		
 		if not 'slurm.J' in conf:
-			slurmsrc.append('#SBATCH -J %s' % self.jobname)
+			jobname = '.'.join([
+				self.job.proc.id,
+				self.job.proc.tag,
+				self.job.proc._suffix(),
+				str(self.job.index)
+			])
+			slurmsrc.append('#SBATCH -J %s' % jobname)
 		else:
-			self.jobname = conf['slurm.J']
-			slurmsrc.append('#SBATCH -J %s' % self.jobname)
+			jobname = conf['slurm.J']
+			slurmsrc.append('#SBATCH -J %s' % jobname)
 			del conf['slurm.J']
 		
 		if 'slurm.o' in conf:
@@ -73,7 +72,7 @@ class RunnerSlurm (Runner):
 			slurmsrc.append(src)
 
 		slurmsrc.append ('')
-		slurmsrc.append ('trap "status=\\$?; echo \\$status > %s; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile)
+		slurmsrc.append ('trap "status=\\$?; echo \\$status >\'%s\'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile)
 		
 		if 'preScript' in conf:
 			slurmsrc.append (conf['preScript'])
@@ -110,8 +109,11 @@ class RunnerSlurm (Runner):
 		"""
 		jobid = self.job.pid ()
 		if not jobid: return False
-		try: # pragma: no cover
-			return jobid + ' ' in check_output([self.commands['squeue'], '-j', jobid]).splitlines()[1]
-		except Exception: # pragma: no cover
+		try:
+			# header line
+			# jid xxx xxx
+			jid = str(check_output([self.commands['squeue'], '-j', jobid]).splitlines()[1].split()[0].decode())
+			return jobid == jid
+		except Exception:
 			return False
 
