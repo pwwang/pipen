@@ -19,9 +19,6 @@ class TemplateJinja2 (Template):
 		self.engine.globals = self.envs
 		self.source = source
 
-	def __str__(self):
-		return 'TemplateJinja2 with source: ' + self.source
-
 	def _render(self, data):
 		"""
 		Render the template

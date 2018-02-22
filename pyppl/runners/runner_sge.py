@@ -9,6 +9,8 @@ class RunnerSge (Runner):
 	"""
 	The sge runner
 	"""
+	
+	INTERVAL = 5
 
 	def __init__ (self, job):
 		"""

@@ -1,5 +1,22 @@
 import helpers, unittest
 
+from pyppl import Proc, PyPPL, ProcTree
+
+class TestPyPPL(helpers.TestCase):
+	
+	def dataProvider_testRegisterProc(self):
+		pRegisterProc = Proc()
+		pRegisterProc1 = Proc()
+		yield pRegisterProc,
+		yield pRegisterProc1,
+	
+	def testRegisterProc(self, p):
+		PyPPL._registerProc(p)
+		key = id(p)
+		node = ProcTree.NODES[key]
+		self.assertIs(node.proc, p)
+		
+"""	
 import sys
 import tempfile
 import logging
@@ -270,13 +287,13 @@ proc:
 
 	'''
 	def testProcRelations(self):
-		"""
+		'''
 		         / p3  --- \ 
 		p1 -- p2            \    / p8
 		  \      \ p4 \       p7 
 		    p10         p6  /    \ p9
 		           p5 /
-		"""
+		'''
 		self.maxDiff = None
 		PyPPL.PROCS = []
 		p1  = Proc()
@@ -385,13 +402,13 @@ proc:
 
 	def testResumeResume2(self):
 		self.maxDiff = None
-		"""
+		'''
 		         / p3  --- \ 
 		p1 -- p2            \    / p8
 		  \      \ p4 \       p7 
 		    p10         p6  /    \ p9
 		           p5 /
-		"""
+		'''
 		from collections import OrderedDict
 		ProcTree.NODES = OrderedDict()
 		p1  = Proc()
@@ -487,13 +504,13 @@ proc:
 		tmpdir  = tempfile.gettempdir()
 		fcfile  = path.join(tmpdir, 'testFlowchart.svg')
 		dotfile = path.join(tmpdir, 'testFlowchart.dot')
-		"""
+		'''
 		         / p3  --- \ 
 		p1 -- p2            \    / p8
 		  \      \ p4 \       p7 
 		    p10         p6  /    \ p9
 		           p5 /
-		"""
+		'''
 		from collections import OrderedDict
 		ProcTree.NODES = OrderedDict()
 		p1  = Proc()
@@ -526,7 +543,7 @@ proc:
 		self.assertTrue(path.exists(dotfile))
 		with open(dotfile) as f:
 			a = f.read()
-			self.assertFalse(set("""digraph PyPPL {
+			self.assertFalse(set('''digraph PyPPL {
     "p2" -> "p3"
     "p2" -> "p4"
     "p3" -> "p7"
@@ -538,7 +555,7 @@ proc:
     "p4" -> "p6"
     "p5" -> "p6"
 }
-""".splitlines()) - set(a.splitlines()))
+'''.splitlines()) - set(a.splitlines()))
 
 	def testProfileRunner(self):
 		p = Proc('profile')
@@ -575,13 +592,13 @@ proc:
 		self.assertEqual(p.runner, 'notdry')
 
 	def testRun(self):
-		"""
+		'''
 		         / p3  --- \ 
 		p1 -- p2            \    / p8
 		  \      \ p4 \       p7 
 		    p10         p6  /    \ p9
 		           p5 /
-		"""
+		'''
 		from collections import OrderedDict
 		ProcTree.NODES = OrderedDict()
 		p1  = Proc()
@@ -616,13 +633,13 @@ proc:
 		self.assertEqual(errmsgs, ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10'])
 
 	def testUnRan(self):
-		"""
+		'''
 		p3  --- p7 
 		   _____/   
 		p4 \      
 		     p6  
 		p5 /
-		"""
+		'''
 		from collections import OrderedDict
 		ProcTree.NODES = OrderedDict()
 		p3  = Proc()
@@ -643,7 +660,7 @@ proc:
 			ppl2 = ppl.start(p3, p4).run()
 		self.assertIs(ppl, ppl2)
 		self.assertIn("p6 won't run as prior processes didn't run: [p5]", err.getvalue())
-
+"""
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

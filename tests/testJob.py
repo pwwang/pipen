@@ -194,7 +194,7 @@ class TestJob(helpers.TestCase):
 				self.file2indir(p.workdir, 6, filed35, '[1]')
 			], 
 			'_d3': [filed35], 
-		}, None, None, 'p: Input file renamed: filec2.txt -> filec2[1].txt'
+		}, None, None, 'Input file renamed: filec2.txt -> filec2[1].txt'
 		
 
 	def testPrepInput(self, index, proc, jobinput, indata, exception = None, msg = None, errmsg = None):
@@ -422,12 +422,12 @@ class TestJob(helpers.TestCase):
 		pReportItem = Proc()
 		pReportItem.props['workdir'] = path.join(testdir, 'pReportItem', 'workdir')
 		pReportItem.props['size'] = 128
-		yield 0, pReportItem, 'a', 5, 'hello', 'input', ['INPUT', 'pReportItem: [001/128] a     => hello']
-		yield 1, pReportItem, 'a', 5, [], 'input', ['INPUT', 'pReportItem: [002/128] a     => []']
-		yield 1, pReportItem, 'a', 5, ['x'], 'input', ['INPUT', 'pReportItem: [002/128] a     => [x]']
-		yield 1, pReportItem, 'a', 5, ['x', 'y'], 'input', ['INPUT', 'pReportItem: [002/128] a     => [x,', 'pReportItem: [002/128]           y]']
-		yield 1, pReportItem, 'a', 5, ['x', 'y', 'z'], 'input', ['INPUT', 'pReportItem: [002/128] a     => [x,', 'pReportItem: [002/128]           y,', 'pReportItem: [002/128]           z]']
-		yield 1, pReportItem, 'a', 5, ['x', 'y', '', '', 'z'], 'output', ['OUTPUT', 'pReportItem: [002/128] a     => [x,', 'pReportItem: [002/128]           y,', 'pReportItem: [002/128]           ...,', 'pReportItem: [002/128]           z]']
+		yield 0, pReportItem, 'a', 5, 'hello', 'input', ['INPUT', '[001/128] a     => hello']
+		yield 1, pReportItem, 'a', 5, [], 'input', ['INPUT', '[002/128] a     => []']
+		yield 1, pReportItem, 'a', 5, ['x'], 'input', ['INPUT', '[002/128] a     => [x]']
+		yield 1, pReportItem, 'a', 5, ['x', 'y'], 'input', ['INPUT', '[002/128] a     => [x,', '[002/128]           y]']
+		yield 1, pReportItem, 'a', 5, ['x', 'y', 'z'], 'input', ['INPUT', '[002/128] a     => [x,', '[002/128]           y,', '[002/128]           z]']
+		yield 1, pReportItem, 'a', 5, ['x', 'y', '', '', 'z'], 'output', ['OUTPUT', '[002/128] a     => [x,', '[002/128]           y,', '[002/128]           ...,', '[002/128]           z]']
 	
 	def dataProvider_testIndexIndicator(self):
 		pIndexIndicator = Proc()
@@ -470,7 +470,7 @@ class TestJob(helpers.TestCase):
 			'INPUT',
 			'OUTPUT',
 			'BRINGS',
-			'pReport: [001/100]',
+			'[001/100]',
 			'b  => hello',
 			'_a => %s' % filepb2,
 			'_a => [%s]' % filepb0,
@@ -1657,6 +1657,7 @@ class TestJob(helpers.TestCase):
 		with helpers.log2str(levels = 'all') as (out, err):
 			r = job.isTrulyCached()
 		self.assertEqual(r, ret)
+		if r: self.assertEqual(job.rc(), 0)
 		stderr = err.getvalue()
 		for err in errs:
 			self.assertIn(err, stderr)

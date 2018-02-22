@@ -21,6 +21,7 @@ from .job import Job, Jobmgr
 from .parameters import params, Parameter, Parameters
 from .flowchart import Flowchart
 from .proctree import ProcTree
+from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
 from . import logger, utils, runners, templates
 
 class Proc (object):
@@ -40,6 +41,11 @@ class Proc (object):
 	# for future use, shortcuts
 	ALIAS        = { 
 		'envs'   : 'tplenvs',
+		'profile': 'runner',
+		'nsub'   : 'maxsubmit'
+	}
+	# deprecated
+	DEPRECATED   = {
 		'profile': 'runner'
 	}
 	LOG_NLINE    = {
@@ -113,7 +119,7 @@ class Proc (object):
 		self.config['id']         = utils.varname() if id is None else id
 		
 		if ' ' in tag:
-			raise ValueError("No space is allowed in %s's tag. Do you mean 'desc' instead of 'tag' ?" % self.config['id'])
+			raise ProcTagError("No space is allowed in tag. Do you mean 'desc' instead of 'tag' ?")
 
 		# The command to run after jobs start
 		self.config['afterCmd']   = ""
@@ -224,7 +230,7 @@ class Proc (object):
 		# The computed output
 		self.props['output']      = OrderedDict()
 
-		# Where cache file and wdir located
+		# Where cache file and workdir located
 		self.config['ppldir']     = path.abspath("./workdir")
 
 		# data for proc.xxx in template
@@ -279,11 +285,13 @@ class Proc (object):
 		self.props['logs']        = {}
 
 		PyPPL._registerProc(self)
-		
 
 	def __getattr__ (self, name):
-		if not name in self.props and not name in self.config and not name in Proc.ALIAS and not name.endswith ('Runner'):
-			raise AttributeError('No such attribute "%s" for Proc.' % name)
+		if not name in self.props \
+			and not name in self.config \
+			and not name in Proc.ALIAS \
+			and not name.endswith ('Runner'):
+			raise ProcAttributeError(name)
 		
 		if name in Proc.ALIAS:
 			name = Proc.ALIAS[name]
@@ -292,11 +300,11 @@ class Proc (object):
 
 	def __setattr__ (self, name, value):
 		if not name in self.config and not name in Proc.ALIAS and not name.endswith ('Runner'):
-			raise AttributeError('Cannot set attribute "%s" for Proc instance' % name)
+			raise ProcAttributeError(name, 'Cannot set attribute for process')
 
 		# profile will be deprecated, use runner instead
-		if name == 'profile':
-			self.log('Attribute profile is deprecated, please use runner instead.', 'warning')
+		if name in Proc.DEPRECATED:
+			self.log('Attribute "%s" is deprecated%s.' % (name, (', use "%s" instead' % Proc.DEPRECATED[name]) if Proc.DEPRECATED[name] else ''), 'warning')
 		
 		if name in Proc.ALIAS:
 			name = Proc.ALIAS[name]
@@ -306,48 +314,50 @@ class Proc (object):
 		
 		# depends have to be computed here, as it's used to infer the relation before run
 		if name == 'depends':
-			depends = value
 			self.props['depends'] = []
-			if isinstance(depends, tuple):
-				depends = list(depends)
-			elif isinstance(depends, Proc):
-				depends = [depends]
-			elif isinstance(depends, Aggr):
-				depends = depends.ends
+			depends = list(value) if isinstance(value, tuple) else \
+				value.ends if isinstance(value, Aggr) else \
+				value if isinstance(value, list) else [value]
+				
 			for depend in depends:
 				if isinstance(depend, Proc):
 					if depend is self:
-						raise ValueError('Proc(%s) cannot depend on itself.' % self.name(True))
+						raise ProcAttributeError(self.name(True), 'Process depends on itself')
 					self.props['depends'].append(depend)
 				elif isinstance(depend, Aggr):
 					self.props['depends'].extend(depend.ends)
 				else:
-					raise TypeError('Unsupported dependent: %s, expect Proc or Aggr.' % repr(depend))
+					raise ProcAttributeError(type(value).__name__, "Process dependents should be 'Proc/Aggr', not")
+					
 		elif name == 'script' and value.startswith('file:'):
 			scriptpath = value[5:]
 			if not path.isabs(scriptpath):
 				from inspect import getframeinfo, stack
 				caller = getframeinfo(stack()[1][0])
-				scriptpath = path.join(path.dirname(caller.filename), scriptpath)
+				scriptpath = path.join(path.dirname(path.realpath(caller.filename)), scriptpath)
 			self.config[name] = "file:%s" % scriptpath
+			
 		elif name == 'args' or name == 'tplenvs':
 			self.config[name] = Box(value)
-		elif name == 'input' and self.config[name] and not isinstance(value, six.string_types) and not isinstance(value, dict):
+			
+		elif name == 'input' \
+			and self.config[name] \
+			and not isinstance(value, six.string_types) \
+			and not isinstance(value, dict):
 			# specify data
 			previn  = self.config[name]
 			prevkey = ', '.join(previn) if isinstance(previn, list) else \
-					  ', '.join(previn.keys()) if isinstance(previn, dict) else \
-					  previn
+					  ', '.join(previn.keys()) if isinstance(previn, dict) else previn
 			self.config[name] = {prevkey: value}
 			if isinstance(previn, dict) and len(previn) > 1:
-				self.log("Previous input is a dict with multiple keys. Now the key sequence is: %s" % prevkey)
+				self.log("Previous input is a dict with multiple keys. Now the key sequence is: %s" % prevkey, 'warning')
 		else:
 			self.config[name] = value
 			
 	def __repr__(self):
 		return '<Proc(%s) @ %s>' % (self.name(), hex(id(self)))
 		
-	def log (self, msg, level="info", key = ''):
+	def log (self, msg, level="info", key = None):
 		"""
 		The log function with aggregation name, process id and tag integrated.
 		@params:
@@ -356,76 +366,87 @@ class Proc (object):
 			`key`:   The type of messages
 		"""
 		summary = False
-		level   = "[%s]" % level
-		name    = self.name(True)
-		
-		logobj  = [level, msg]
-		logobjs = []
+		level   = "[%s]" % level		
 
-		if not key or not key in Proc.LOG_NLINE:
-			logobjs.append(logobj)
+		if not key or key not in Proc.LOG_NLINE:
+			logger.logger.info(level + ' ' + msg)
 		else:
-			maxline  = Proc.LOG_NLINE[key]
-			summary  = maxline < 0
-			maxline  = abs(maxline)
 			if key not in self.logs: self.logs[key] = []
-			logobjs = self.logs[key]
-			prevlen = len(logobjs)
-			if prevlen == maxline - 1:
-				# Now logging, and saving
-				logobjs.append(logobj)
-				if summary:
-					logobjs.append(["[DEBUG]", "... max=%s (%s) reached, further information will be ignored." % (maxline, key)])
-			elif prevlen < maxline:
-				# Don't log, just save
-				logobjs = []
-				self.logs[key].append(logobj)
-			else:
-				# Don't log, don't save
-				logobjs = []
+			self.logs[key].append((level, msg))
+			nlogs   = len(self.logs[key])
+			
+			maxline = Proc.LOG_NLINE[key]
+			summary = maxline < 0 and nlogs < self.size
+			maxline = min(self.size, abs(maxline))
+			if nlogs < maxline: return
+			for level, msg in self.logs[key]:
+				logger.logger.info (level + ' ' + msg)
+			if summary:
+				logger.logger.info ('[debug] ... max=%s (%s) reached, further information will be ignored.' % (maxline, key))
 
-		for lo in logobjs:
-			logger.logger.info ("%s %s: %s" % (lo[0], name, lo[1]))
-
-	def copy (self, tag=None, newid=None, desc=None):
+	def copy (self, tag=None, desc=None, id=None):
 		"""
 		Copy a process
 		@params:
-			`newid`: The new id of the process, default: `None` (use the varname)
+			`id`: The new id of the process, default: `None` (use the varname)
 			`tag`:   The tag of the new process, default: `None` (used the old one)
 			`desc`:  The desc of the new process, default: `None` (used the old one)
 		@returns:
 			The new process
 		"""
-		tag  = tag if tag is not None else self.tag
-		desc = desc if desc is not None else self.desc
-		newproc = Proc(tag = tag, desc = desc)
+		config = {}
+		props  = {}
 		
-		config = {key: val for key, val in self.config.items()}
-		config['id']       = newid if newid else utils.varname()
-		config['tag']      = newproc.tag
-		config['desc']     = newproc.desc
-		config['aggr']     = ''
-		config['workdir']  = ''
-		config['tplenvs']  = Box()
-		config['args']     = Box()
-		config['resume']   = ''
-		utils.dictUpdate(config['tplenvs'], self.config['tplenvs'])
-		utils.dictUpdate(config['args'], self.config['args'])
+		config.update(self.config)
+		props.update(self.props)
 		
-		props   = {key:val for key, val in self.props.items()}
-		props['sets']      = [s for s in self.sets]
-		props['depends']   = []
-		props['procvars']  = {}
-		props['workdir']   = ''
-		props['channel']   = Channel.create()
-		props['jobs']      = []
-		props['ncjobids']  = []
-		props['size']      = 0
-		props['suffix']    = ''
-		props['logs']      = {}
-		newproc.__dict__['config'] = config
-		newproc.__dict__['props']  = props
+		for key in config.keys():
+			if key == 'id':
+				config[key]  = id if id else utils.varname()
+			elif key == 'tag' and tag:
+				config[key] = tag
+			elif key == 'desc' and desc:
+				config[key] = desc
+			elif key == 'aggr':
+				config[key] = None
+			elif key in ['workdir', 'resume']:
+				config[key] = ''
+			elif isinstance(config[key], Box):
+				config[key] = Box()
+				config[key].update(self.config[key])
+			#elif isinstance(config[key], OrderedDict):
+			#	config[key] = OrderedDict()
+			#	config[key].update(self.config[key])
+			elif isinstance(config[key], dict):
+				config[key] = {}
+				config[key].update(self.config[key])
+		
+		for key in props.keys():
+			if key in ['depends', 'jobs', 'ncjobids']:
+				props[key] = []
+			elif key in ['procvars', 'logs']:
+				props[key] = {}
+			elif key == 'size':
+				props[key] = 0
+			elif key in ['workdir', 'suffix']:
+				props[key] = ''
+			elif key == 'channel':
+				props[key] = Channel.create()
+			elif key == 'sets':
+				props[key] = self.props[key][:]
+			#elif isinstance(props[key], Box):
+			#	props[key] = Box()
+			#	props[key].update(self.props[key])
+			elif isinstance(props[key], OrderedDict):
+				props[key] = OrderedDict()
+				props[key].update(self.props[key])
+			elif isinstance(props[key], dict):
+				props[key] = {}
+				props[key].update(self.props[key])
+			
+		newproc = Proc()
+		newproc.props.update(props)
+		newproc.config.update(config)
 		return newproc
 
 	def _suffix (self):
@@ -450,7 +471,7 @@ class Proc (object):
 		# They could have the same suffix because they are using input callbacks
 		# callbacks could be the same though even if the input files are different
 		if self.depends:
-			config['depends'] = [p.id + '.' + p.tag + '.' + p._suffix() for p in self.depends]
+			config['depends'] = [p.name(True) + '#' + p._suffix() for p in self.depends]
 
 		signature = json.dumps(config, sort_keys = True)
 		self.props['suffix'] = utils.uid(signature)
@@ -478,6 +499,11 @@ class Proc (object):
 	def _tidyAfterRun (self):
 		"""
 		Do some cleaning after running jobs
+		self.resume can only be:
+		- '': normal process
+		- skip+: skipped process but required workdir and data exists
+		- resume: resume pipeline from this process, no requirement
+		- resume+: get data from workdir/proc.settings, and resume
 		"""
 		if self.resume == 'skip+':
 			if callable (self.callback):		
@@ -555,7 +581,7 @@ class Proc (object):
 
 		# build rc
 		if isinstance(self.config['rc'], six.string_types):
-			self.props['rc'] = [int(i) for i in utils.split(self.config['rc'], ',')]
+			self.props['rc'] = [int(i) for i in utils.split(self.config['rc'], ',') if i]
 		elif isinstance(self.config['rc'], int):
 			self.props['rc'] = [self.config['rc']]
 		else:
@@ -569,7 +595,7 @@ class Proc (object):
 		
 		if not path.exists (self.workdir):
 			if self.resume in ['skip+', 'resume']:
-				raise Exception('Cannot skip process, as workdir not exists: %s' % self.workdir)
+				raise ProcAttributeError(self.workdir, 'Cannot skip process, as workdir not exists')
 			makedirs (self.workdir)
 			
 		# exdir
@@ -623,62 +649,78 @@ class Proc (object):
 		Save all settings in proc.settings, mostly for debug
 		"""
 		settingsfile = path.join(self.workdir, 'proc.settings')
+		
+		def pickKey(key):
+			return key if key else "''"
+			
+		def flatData(data):
+			if isinstance(data, dict):
+				return {k:flatData(v) for k,v in data.items()}
+			elif isinstance(data, list):
+				return [flatData(v) for v in data]
+			elif isinstance(data, self.template):
+				return str(data)
+			else:
+				return data
+				
+		def pickData(data, splitline = False, forcelist = False):
+			data = flatData(data)
+			if isinstance(data, dict):
+				ret = json.dumps(data, sort_keys = True)
+			elif isinstance(data, list) and splitline:
+				ret = ['\t' + json.dumps(d, sort_keys = True) for d in data]
+			elif isinstance(data, list) and not splitline:
+				ret = data
+			elif forcelist:
+				ret = pickData([data], splitline)
+			else:
+				ret = data
+			return ret
+			
+		def dump(key, data):
+			ret = ['[%s]' % key]
+			if key in ['jobs', 'ncjobids', 'logs']:
+				return ''
+			elif key == 'input':
+				for k in sorted(data.keys()):
+					v = val[k]
+					ret.append('%s.type: %s' % (k, pickData(v['type'])))
+					for j, ds in enumerate(v['data']):
+						ret.append('%s.data#%s:' % (k, j))
+						ret.extend(pickData(ds, splitline = True, forcelist = True))
+			elif key == 'output':
+				for k in sorted(data.keys()):
+					t, ds = val[k]
+					ret.append('%s.type: %s' % (k, pickData(t)))
+					ret.append('%s.data: %s' % (k, pickData(ds)))
+			elif key == 'depends':
+				ret.append('procs: %s' % pickData([p.name() for p in data]))
+			elif key == 'template':
+				ret.append('name: %s' % pickData(data.__name__))
+			elif key in ['args', 'procvars', 'echo'] or key.endswith('Runner'):
+				for k in sorted(data.keys()):
+					v = val[k]
+					ret.append('%s: %s' % (pickKey(k), pickData(v)))
+			elif key == 'brings':
+				for k in sorted(data.keys()):
+					v = val[k]
+					ret.append('%s: %s' % (pickKey(k), pickData(v)))
+			elif key in ['script']:
+				ret.append('value:')
+				ret.extend(pickData(str(data).splitlines(), splitline = True))
+			elif key == 'expart':
+				for i,v in enumerate(data):
+					ret.append('value_%s: %s' % (i, pickData((v))))
+			else:
+				ret.append('value: %s' % pickData(val))
+			ret.append('\n')
+			return '\n'.join([str(r) for r in ret])
+		
 		with open(settingsfile, 'w') as f:
 			for key in sorted(self.props.keys()):
 				val = self.props[key]
-				if key == 'input':
-					f.write('\n[input]\n')
-					for k in sorted(val.keys()):
-						v = val[k]
-						f.write (k + '.type: ' + str(v['type']) + '\n')
-						for j, ds in enumerate(v['data']):
-							f.write (k + '.data#%s: \n' % str(j))
-							if isinstance(ds, list):
-								for _ in ds:
-									f.write('  ' + json.dumps(_, sort_keys = True) + '\n')
-							else:
-								f.write ('  ' + json.dumps(ds, sort_keys = True) + '\n')
-				elif key == 'output':
-					f.write('\n[output]\n')
-					for k in sorted(val.keys()):
-						v = val[k]
-						f.write (k + '.type: ' + str(v[0]) + '\n')
-						f.write (k + '.data: \n' + ('\n'.join(['  ' + l for l in str(v[1]).splitlines()])) + '\n')
-				elif key == 'depends':
-					f.write('\n['+ key +']\n')
-					f.write('procs: ' + str([p.name() for p in val]) + '\n')
-				elif key == 'jobs' or key == 'ncjobids':
-					pass
-				elif key == 'template':
-					f.write('\n['+ key +']\n')
-					f.write('name: ' + json.dumps(val.__class__.__name__) + '\n')
-				elif key in ['args', 'procvars', 'echo'] or key.endswith('Runner'):
-					f.write('\n['+ key +']\n')
-					if not val:
-						f.write('value: {}\n')
-					for k in sorted(val.keys()):
-						v = val[k]
-						f.write ((k if k else "''") + ': ' + json.dumps(str(v), sort_keys = True) + '\n')
-				elif key == 'brings':
-					f.write('\n['+ key +']\n')
-					if not val:
-						f.write('value: {}\n')
-					for k in sorted(val.keys()):
-						v = val[k]
-						f.write ((k if k else "''") + ': ' + json.dumps([str(vv) for vv in v], sort_keys = True) + '\n')
-				elif key == 'script':
-					f.write('\n['+ key +']\n')
-					f.write('value:\n')
-					f.write('\n'.join(['  ' + l for l in str(val).splitlines()]) + '\n')
-				elif key == 'expart':
-					f.write('\n['+ key +']\n')
-					for i,v in enumerate(val):
-						f.write('value_%s:\n' % i)
-						f.write('\n'.join(['  ' + l for l in str(v).splitlines()]) + '\n')
-				else:
-					f.write('\n['+ key +']\n')
-					f.write('value: ' + json.dumps(str(val), sort_keys = True) + '\n')
-					
+				f.write(dump(key, val))
+				
 		self.log ('Settings saved to: %s' % settingsfile, 'debug')
 	
 	# self.resume != 'skip'
@@ -693,17 +735,17 @@ class Proc (object):
 		for 1,2 channels will be the combined channel from dependents, if there is not dependents, it will be sys.argv[1:]
 		"""
 		self.props['input'] = {}
-		
+
 		if self.resume in ['skip+', 'resume']:
 			from six.moves.configparser import ConfigParser
 			psfile = path.join(self.workdir, 'proc.settings')
 			if not path.isfile(psfile):
-				raise OSError('Cannot skip+/resume process: %s, no such file: %s' % (self.name(), psfile))
+				raise ProcInputError(psfile, 'Cannot parse input for skip+/resume process, no such file')
 	
 			cp = ConfigParser()
 			cp.optionxform = str
 			cp.read(psfile)
-			self.props['size'] = max(1, int(json.loads(cp.get('size', 'value'))))
+			self.props['size'] = int(json.loads(cp.get('size', 'value')))
 			
 			indata = OrderedDict(cp.items('input'))
 			intype = ''
@@ -718,20 +760,21 @@ class Proc (object):
 					}
 				elif key.startswith(inname + '.data#'):
 					if intype in Proc.IN_FILESTYPE:
-						data = list(map(json.loads, list(filter(None, indata[key].splitlines()))))
+						data = [json.loads(s) for s in filter(None, indata[key].splitlines())]
 					else:
 						data = json.loads(indata[key].strip())
 					self.props['input'][inname]['data'].append(data)
 			self.props['jobs'] = [None] * self.size
 		else:
 			indata = self.config['input']
+
 			if not isinstance (indata, dict):
 				indata   = ','.join(utils.alwaysList(indata))			
 				indata   = {
 					indata: Channel.fromChannels (*[d.channel for d in self.depends]) \
 						if self.depends else Channel.fromArgv()
 				}
-				
+
 			inkeys   = list(indata.keys())
 			pinkeys  = []
 			pintypes = []
@@ -742,7 +785,7 @@ class Proc (object):
 				else:
 					k, t = key.split(':')
 					if t not in Proc.IN_VARTYPE + Proc.IN_FILESTYPE + Proc.IN_FILETYPE:
-						raise TypeError('Unknown input type: %s' % t)
+						raise ProcInputError(t, 'Unknown input type')
 					pinkeys.append(k)
 					pintypes.append(t)
 
@@ -764,12 +807,12 @@ class Proc (object):
 
 			wdata   = invals.width()
 			if len(pinkeys) < wdata:
-				self.log('Not all data are used as input, %s columns wasted.' % (wdata - len(pinkeys)), 'warning')
+				self.log('Not all data are used as input, %s column(s) wasted.' % (wdata - len(pinkeys)), 'warning')
 			for i, inkey in enumerate(pinkeys):
 				self.props['input'][inkey] = {}
 				self.props['input'][inkey]['type'] = pintypes[i]
 				if i < wdata:
-					self.props['input'][inkey]['data'] = invals.colAt(i).flatten()
+					self.props['input'][inkey]['data'] = invals.flatten(i)
 				else:
 					self.log('No data found for input key "%s", use empty strings/lists instead.' % inkey, 'warning')
 					self.props['input'][inkey]['data'] = [[] if pintypes[i] in Proc.IN_FILESTYPE else ''] * self.size
@@ -779,15 +822,13 @@ class Proc (object):
 		Build proc attribute values for template rendering,
 		and also print some out.
 		"""
-		pvkeys = [
-			"aggr", "args", "cache", "desc", "echo", "errhow", "errntry", "exdir", "exhow",
-			"exow", "forks", "id", "lang", "ppldir", "procvars", "rc", "resume",
-			"runner", "sets", "size", "suffix", "tag", "workdir"
-		]
-		show   = [ 'size' ] + (['runner'] if self.runner != 'local' else [])
-		hidden = [ 'desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'aggr']
-		hidden.extend([key for key in pvkeys if key not in self.sets + show])
-		hidden = set(hidden)
+		show   = ['size', 'args']
+		if self.runner != 'local':
+			show.append('runner')
+		hide   = ['desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'aggr', 'input', 'output', 'depends']
+		pvkeys = [key for key in set(self.props.keys() + self.config.keys()) \
+			if key in show or (key in self.sets and key not in hide)]
+			
 		procvars = {}
 		procargs = {}
 
@@ -800,19 +841,12 @@ class Proc (object):
 				procvars['args'] = val
 				procargs = val
 				if val: maxlen = max(maxlen, max(list(map(len, val.keys()))))
-			elif key == 'procvars':
-				procvars['procvars'] = val
-			#elif key in alias:
-			#	key = alias[key]
-			#	procvars[key] = val
-			#	if ((val is False) or bool(val)) and key not in hidden:
-			#		maxlen = max(maxlen, len(key))
-			#		propout[key] = val
+			#elif key == 'procvars':
+			#	procvars['procvars'] = val
 			else:
 				procvars[key] = val
-				if (val is False or val) and key not in hidden:
-					maxlen = max(maxlen, len(key))
-					propout[key] = (repr(val) + ' [%s]' % alias[key]) if key in alias else repr(val)
+				maxlen = max(maxlen, len(key))
+				propout[key] = (repr(val) + ' [%s]' % alias[key]) if key in alias else repr(val)
 		for key in sorted(procargs.keys()):
 			self.log('%s => %s' % (key.ljust(maxlen), repr(procargs[key])), 'p.args')
 		for key in sorted(propout.keys()):
@@ -837,7 +871,6 @@ class Proc (object):
 		if isinstance(output, six.string_types):
 			output = utils.split(output, ',')
 		if isinstance(output, list):
-			# filter allow empty output
 			output = list(filter(None, utils.alwaysList(output)))
 
 		outdict = OrderedDict()
@@ -846,15 +879,15 @@ class Proc (object):
 				ops = utils.split(op, ':')
 				lenops = len(ops)
 				if lenops < 2:
-					raise ValueError('Missing parts in output: %s' % op)
+					raise ProcOutputError(op, 'One of <key>:<type>:<value> missed for process output in')
 				elif lenops > 3:
-					raise ValueError('too many parts in output: %s' % op)
+					raise ProcOutputError(op, 'Too many parts for process output in')
 				outdict[':'.join(ops[:-1])] = ops[-1]
 		else:
 			outdict = self.config['output']
 
 		if not isinstance(outdict, OrderedDict):
-			raise TypeError('Expect str, list, or OrderedDict. Dict is not allowed as key sequence has to be kept.')
+			raise ProcOutputError(type(outdict).__name__, 'Process output should be str/list/OrderedDict, not')
 		
 		for key, val in outdict.items():
 			kparts = utils.split(key, ':')
@@ -864,11 +897,11 @@ class Proc (object):
 			elif lparts == 2:
 				k, t = kparts
 			else:
-				raise ValueError('too many parts in output key: %s' % key)
+				raise ProcOutputError(key, 'Too many parts for process output key in')
 			
 			if t not in Proc.OUT_DIRTYPE + Proc.OUT_FILETYPE + Proc.OUT_VARTYPE:
-				raise TypeError('Unknown output type: %s' % t)
-			self.props['output'][k] = [t, self.template(val, **self.tplenvs)]
+				raise ProcOutputError(t, 'Unknown output type')
+			self.props['output'][k] = (t, self.template(val, **self.tplenvs))
 		
 	def _buildScript(self):
 		"""
@@ -876,29 +909,45 @@ class Proc (object):
 		"""
 		script = self.config['script'].strip()
 		
-		# TODO add tests
 		if not script:
 			self.log ('No script specified', 'warning')
 			
 		if script.startswith ('file:'):
 			tplfile = script[5:].strip()
-			#if not path.isabs(tplfile):
-			#	tplfile = path.join (path.dirname(sys.argv[0]), tplfile)
 			if not path.exists (tplfile):
-				raise OSError ('No such template file: %s.' % tplfile)
+				raise ProcScriptError (tplfile, 'No such template file')
 			self.log ("Using template file: %s" % tplfile, 'debug')
 			with open(tplfile) as f:
 				script = f.read().strip()
-
+		
 		olines = script.splitlines()
 		nlines = []
+		# remove repeats
+		repeats = []
+		repeat_start = '# PYPPL REPEAT START:'
+		repeat_end   = '# PYPPL REPEAT END'
+		switch  = True
+		for line in olines:
+			if repeat_start in line:
+				rname = line[line.find(repeat_start) + len(repeat_start):].strip().split()[0]
+				if rname in repeats:
+					switch = False
+				else:
+					repeats.append(rname)
+					switch = True
+			elif repeat_end in line:
+				switch = True
+			elif switch:
+				nlines.append(line)
+				
+		del repeats
+		olines, nlines = nlines, []
 		indent = ''
 		for line in olines:
-			line2 = line.strip().strip('#').upper()
 			# ## indent remove ##
-			if 'INDENT REMOVE' in line2:
+			if '# PYPPL INDENT REMOVE' in line:
 				indent = line[:line.find('#')]
-			elif 'INDENT KEEP' in line2:
+			elif '# PYPPL INDENT KEEP' in line:
 				indent = ''
 			elif indent and line.startswith(indent):
 				nlines.append(line[len(indent):])
@@ -908,7 +957,7 @@ class Proc (object):
 		if not nlines or not nlines[0].startswith('#!'):
 			nlines.insert(0, '#!/usr/bin/env ' + self.lang)
 
-		self.props['script'] = self.template('\n'.join(nlines), **self.tplenvs)
+		self.props['script'] = self.template('\n'.join(nlines) + '\n', **self.tplenvs)
 
 	def _buildJobs (self):
 		"""
@@ -940,9 +989,16 @@ class Proc (object):
 		@params:
 			`config`: The configuration
 		"""
-		conf = { (key if not key in Proc.ALIAS else Proc.ALIAS[key]):val for key, val in config.items() if key not in self.sets and key != 'runner' }
-		self.props['runner'] = config['runner'] if 'runner' in config else 'local'
-		self.config.update (conf)
+		conf = {}
+		for key, val in config.items():
+			if key == 'runner': 
+				self.props['runner'] = val
+			elif key in self.sets:
+				continue
+			else:
+				if key in Proc.ALIAS:
+					key = Proc.ALIAS[key]
+				self.config[key] = val
 
 	def _checkCached (self):
 		"""
@@ -971,8 +1027,8 @@ class Proc (object):
 
 		utils.parallel(chkCached, [(i, ) for i in range(self.size)], self.nthread)
 				
-		self.log ('Truely cached jobs: %s' % (utils.briefList(trulyCachedJids) if len(trulyCachedJids) < self.size else 'ALL'), 'info')
-		self.log ('Export cached jobs: %s' % (utils.briefList(exptCachedJids)  if len(exptCachedJids)  < self.size else 'ALL'), 'info')
+		self.log ('Truly cached jobs: %s' % (utils.briefList(trulyCachedJids) if len(trulyCachedJids) < self.size else 'ALL'), 'info')
+		self.log ('Export-cached jobs: %s' % (utils.briefList(exptCachedJids)  if len(exptCachedJids)  < self.size else 'ALL'), 'info')
 		
 		if self.ncjobids:
 			if len(self.ncjobids) < self.size:
@@ -996,17 +1052,20 @@ class Proc (object):
 		cmd = self.template(self.config[key], **self.tplenvs).render(self.procvars)
 		self.log ('Running <%s> ...' % (key), 'info')
 		
-		p = Popen (cmd, shell=True, stderr=PIPE, stdout=PIPE, universal_newlines=True)
+		try:
+			p = Popen (cmd, shell=True, stderr=PIPE, stdout=PIPE, universal_newlines=True)
 
-		for line in iter(p.stdout.readline, ''):
-			logger.logger.info ('[ CMDOUT] %s' % line.rstrip("\n"))
-		for line in iter(p.stderr.readline, ''):
-			logger.logger.info ('[ CMDERR] %s' % line.rstrip("\n"))
-		rc = p.wait()
-		p.stdout.close()
-		p.stderr.close()
-		if rc != 0:
-			raise RuntimeError ('Failed to run %s: \n----------------------------------\n%s' % (key, cmd))
+			for line in iter(p.stdout.readline, ''):
+				logger.logger.info ('[ CMDOUT] %s' % line.rstrip("\n"))
+			for line in iter(p.stderr.readline, ''):
+				logger.logger.info ('[ CMDERR] %s' % line.rstrip("\n"))
+			rc = p.wait()
+			p.stdout.close()
+			p.stderr.close()
+			if rc != 0:
+				raise ProcRunCmdError(cmd, key)
+		except Exception:
+			raise ProcRunCmdError(cmd, key)
 	
 	def _runJobs (self):
 		"""

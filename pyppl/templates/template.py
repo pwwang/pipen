@@ -75,7 +75,17 @@ class Template(object):
 
 	# in order to dump setting
 	def __str__(self):
-		raise NotImplementedError()
+		lines = self.source.splitlines()
+		if len(lines) <= 1:
+			return '%s < %s >' % (self.__class__.__name__, ''.join(lines))
+		
+		ret  = ['%s <<<' % self.__class__.__name__]
+		ret += ['\t' + line for line in self.source.splitlines()]
+		ret += ['>>>']
+		return '\n'.join(ret)
+		
+	def __repr__(self):
+		return str(self)
 
 	def _render(self, data):
 		raise NotImplementedError()

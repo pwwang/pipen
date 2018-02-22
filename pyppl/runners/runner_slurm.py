@@ -7,6 +7,8 @@ class RunnerSlurm (Runner):
 	The slurm runner
 	"""
 	
+	INTERVAL = 5
+	
 	def __init__ (self, job):
 		"""
 		Constructor

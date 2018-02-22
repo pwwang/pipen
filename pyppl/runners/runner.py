@@ -15,7 +15,9 @@ class Runner (object):
 	"""
 	The base runner class
 	"""
-
+	
+	INTERVAL = 1
+	
 	def __init__ (self, job):
 		"""
 		Constructor
@@ -78,10 +80,8 @@ class Runner (object):
 		"""
 		pass
 
-	def run(self, interval = 5):
+	def run(self):
 		"""
-		@params:
-			`interval`: the interval to sleep for check rc
 		@returns:
 			True: success/fail
 			False: needs retry
@@ -96,7 +96,7 @@ class Runner (object):
 		lastout = ''
 		lasterr = ''
 		while self.job.rc() == self.job.RC_NOTGENERATE: # rc not generated yet
-			sleep (interval)
+			sleep (self.INTERVAL)
 			lastout, lasterr = self._flush(fout, ferr, lastout, lasterr)
 		self._flush(fout, ferr, lastout, lasterr, True)
 		ferr.close()

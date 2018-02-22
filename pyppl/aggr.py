@@ -70,7 +70,7 @@ class Aggr (object):
 			if pid in ['starts', 'ends', 'id'] or pid in self.__dict__['_procs'] or hasattr(self, pid):
 				raise AttributeError('%s is an attribute of Aggr, use a different process id.' % pid)
 			newtag       = tag if tag else utils.uid(proc.tag + '@' + self.id, 4)
-			newproc      = proc.copy(tag = newtag, newid = pid)
+			newproc      = proc.copy(tag = newtag, id = pid)
 			newproc.aggr = self.id
 			self.__dict__['_procs'][pid] = newproc
 		
@@ -223,7 +223,7 @@ class Aggr (object):
 		"""
 		newtag = tag if tag else utils.uid(p.tag + '@' + self.id, 4)
 
-		newproc = p.copy(tag = tag, newid = p.id) if copy else p
+		newproc = p.copy(tag = tag, id = p.id) if copy else p
 		newproc.aggr = self.id
 		self.__dict__['_procs'][newproc.id] = newproc
 		if where == 'starts' or where == 'both':
@@ -232,18 +232,18 @@ class Aggr (object):
 			self.ends.append (newproc)
 		return self
 		
-	def copy (self, tag=None, deps=True, newid=None):
+	def copy (self, tag=None, deps=True, id=None):
 		"""
 		Like `proc`'s `copy` function, copy an aggregation. Each processes will be copied.
 		@params:
 			`tag`:      The new tag of all copied processes
 			`deps`: Whether to copy the dependencies or not. Default: True
 			- dependences for processes in starts will not be copied
-			`newid`:    Use a different id if you don't want to use the variant name
+			`id`:    Use a different id if you don't want to use the variant name
 		@returns:
 			The new aggregation
 		"""
-		name = utils.varname() if newid is None else newid
+		name = utils.varname() if id is None else id
 		tag  = utils.uid(name, 4) if not tag else tag
 		ret  = Aggr (id = name)
 		ret.starts = [None] * len(self.starts)

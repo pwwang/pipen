@@ -453,9 +453,6 @@ class TemplatePyPPL (Template):
 		self.engine = TemplatePyPPLEngine(source, envs)
 		self.source = source
 
-	def __str__(self):
-		return 'TemplatePyPPL with source: ' + self.source
-
 	def _render(self, data):
 		"""
 		Render the template

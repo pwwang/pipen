@@ -1,991 +1,1177 @@
-import helpers, unittest
+import helpers, unittest, json, sys
+import copy as pycopy
 
-import sys
-import tempfile
-from box import Box
-from os import path, makedirs
-from time import sleep
-from pyppl import Proc, logger, templates, utils, Channel, PyPPL, Job, ProcTree
+from os import path
+from collections import OrderedDict
+from multiprocessing import cpu_count
+from pyppl import Proc, Box, Aggr, utils, ProcTree, Channel
+from pyppl.exception import ProcTagError, ProcAttributeError, ProcTreeProcExists, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
+from pyppl.templates import TemplatePyPPL, TemplateJinja2
 from pyppl.runners import RunnerLocal
-from shutil import rmtree
 
-from contextlib import contextmanager
-from six import StringIO
-@contextmanager
-def captured_output():
-	new_out, new_err = StringIO(), StringIO()
-	old_out, old_err = sys.stdout, sys.stderr
-	try:
-		sys.stdout, sys.stderr = new_out, new_err
-		yield sys.stdout, sys.stderr
-	finally:
-		sys.stdout, sys.stderr = old_out, old_err
+__folder__ = path.realpath(path.dirname(__file__))
 
-tmpdir = tempfile.gettempdir()
-
-class Aggr(object):
-	def __init__(self, *ps):
-		self.ends = ps
-
-class RunnerTestNR(RunnerLocal):
+class TestProc(helpers.TestCase):
 	
-	def isRunning(self):
-		return False
-
-class RunnerTestR(RunnerLocal):
+	def dataProvider_testInit(self):
+		yield 'notag', 'No description', None, {
+			'brings': {},
+			'channel': [],
+			'depends': [],
+			'echo': {},
+			'expart': [],
+			'expect': None,
+			'input': {},
+			'jobs': [],
+			'logs': {},
+			'ncjobids': [],
+			'output': OrderedDict(),
+			'procvars': {},
+			'rc': [0],
+			'runner': 'local',
+			'script': None,
+			'sets': [],
+			'size': 0,
+			'suffix': '',
+			'template': None,
+			'workdir': ''
+		}, {
+			'afterCmd': '',
+			'aggr': None,
+			'args': {},
+			'beforeCmd': '',
+			'brings': {},
+			'cache': True,
+			'callback': None,
+			'callfront': None,
+			'cclean': False,
+			'depends': [],
+			'desc': 'No description',
+			'dirsig': True,
+			'echo': False,
+			'errhow': 'terminate',
+			'errntry': 3,
+			'exdir': '',
+			'exhow': 'move',
+			'exow': True,
+			'expart': '',
+			'expect': '',
+			'forks': 1,
+			'id': 'p',
+			'input': '',
+			'lang': 'bash',
+			'maxsubmit': 40,
+			'nthread': 1,
+			'output': '',
+			'ppldir': path.join(__folder__, 'workdir'),
+			'rc': 0,
+			'resume': '',
+			'runner': 'local',
+			'script': '',
+			'tag': 'notag',
+			'template': '',
+			'tplenvs': {},
+			'workdir': ''
+		}
+		
+		yield 'atag', 'A different description', 'someId', {
+			'brings': {},
+			'channel': [],
+			'depends': [],
+			'echo': {},
+			'expart': [],
+			'expect': None,
+			'input': {},
+			'jobs': [],
+			'logs': {},
+			'ncjobids': [],
+			'output': OrderedDict(),
+			'procvars': {},
+			'rc': [0],
+			'runner': 'local',
+			'script': None,
+			'sets': [],
+			'size': 0,
+			'suffix': '',
+			'template': None,
+			'workdir': ''
+		}, {
+			'afterCmd': '',
+			'aggr': None,
+			'args': {},
+			'beforeCmd': '',
+			'brings': {},
+			'cache': True,
+			'callback': None,
+			'callfront': None,
+			'cclean': False,
+			'depends': [],
+			'desc': 'A different description',
+			'dirsig': True,
+			'echo': False,
+			'errhow': 'terminate',
+			'errntry': 3,
+			'exdir': '',
+			'exhow': 'move',
+			'exow': True,
+			'expart': '',
+			'expect': '',
+			'forks': 1,
+			'id': 'someId',
+			'input': '',
+			'lang': 'bash',
+			'maxsubmit': int(cpu_count() / 2),
+			'nthread': 1,
+			'output': '',
+			'ppldir': path.join(__folder__, 'workdir'),
+			'rc': 0,
+			'resume': '',
+			'runner': 'local',
+			'script': '',
+			'tag': 'atag',
+			'template': '',
+			'tplenvs': {},
+			'workdir': ''
+		}
+		
+		yield 'tag no allowed', '', None, {}, {}, ProcTagError
+		
 	
-	def isRunning(self):
-		self.job.rc(0)
-		return True
-
-
-PyPPL.registerRunner(RunnerTestNR)
-PyPPL.registerRunner(RunnerTestR)
-
-import pyppl
-pyppl.Aggr = Aggr
-
-class TestProc (unittest.TestCase):
-
-	# shorthands
-	assertPathExists = lambda self, x: self.assertTrue(path.exists(x))
-	assertPathNotExists = lambda self, x: self.assertFalse(path.exists(x))
-
-	def testInit(self):
-		self.assertRaises(ValueError, Proc, **{'tag': 'a b'})
-		p = Proc()
-		self.assertEqual(p.id, 'p')
-		self.assertEqual(p.afterCmd, '')
-		self.assertEqual(p.aggr, None)
-		self.assertEqual(p.args, {})
-		self.assertEqual(p.beforeCmd, '')
-		self.assertEqual(p.brings, {})
-		self.assertEqual(p.cache, True)
-		self.assertEqual(p.callfront, None)
-		self.assertEqual(p.callback, None)
-		self.assertEqual(p.channel, [])
-		self.assertEqual(p.depends, [])
-		self.assertEqual(p.desc, 'No description.')
-		self.assertEqual(p.echo, {})
-		self.assertEqual(p.config['echo'], False)
-		self.assertEqual(p.errhow, 'terminate')
-		self.assertEqual(p.errntry, 3)
-		self.assertEqual(p.exdir, '')
-		self.assertEqual(p.exhow, 'move')
-		self.assertEqual(p.exow, True)
-		self.assertEqual(p.expart, [])
-		self.assertEqual(p.expect, None)
-		self.assertEqual(p.forks, 1)
-		self.assertEqual(p.input, {})
-		self.assertEqual(p.jobs, [])
-		self.assertEqual(p.ncjobids, [])
-		self.assertEqual(p.lang, 'bash')
-		self.assertEqual(p.output, {})
-		self.assertEqual(p.ppldir, path.abspath('./workdir'))
-		self.assertEqual(p.procvars, {})
-		self.assertEqual(p.rc, [0])
-		self.assertEqual(p.resume, '')
-		self.assertEqual(p.runner, 'local')
-		self.assertEqual(p.script, None)
-		self.assertEqual(p.sets, [])
-		self.assertEqual(p.size, 0)
-		self.assertEqual(p.suffix, '')
-		self.assertEqual(p.tag, 'notag')
-		self.assertEqual(p.template, None)
-		self.assertEqual(p.tplenvs, {})
-		self.assertEqual(p.workdir, '')
-		self.assertEqual(p.logs, {})
-
-	def testGetSetAttrRepr(self):
-		p = Proc()
-		self.assertRaises(AttributeError, p.__getattr__, 'a')
-		self.assertRaises(AttributeError, p.__setattr__, 'a', 'b')
-		p.tag = 'newtag'
-		self.assertEqual(p.tag, 'newtag')
-		self.assertEqual(p.config['tag'], 'newtag')
-		self.assertIn('<Proc(p.newtag) at', repr(p))
-		p.args = {'a': 1}
-		p.args.b = '2'
-		self.assertEqual(dict(p.args), {'a': 1, 'b': '2'})
-		p.input = 'a'
-		p.input = [1]
-		self.assertEqual(p.config['input'], {'a': [1]})
-		self.assertEqual(p.envs, p.tplenvs)
-		p.envs = {'a': 1}
-		self.assertEqual(p.tplenvs, {'a': 1})
-
-	def testLog(self):
-		p = Proc()
-		self.assertEqual(Proc.LOG_NLINE['EXPORT_CACHE_OUTFILE_EXISTS'], -3)
-		with captured_output() as (_, err):
-			logger.getLogger()
-			p.log('Normal1')
-			p.log('Normal2')
-			p.log('Normal3')
-			p.log('Normal4')
-			p.log('Limit1', 'info', 'EXPORT_CACHE_OUTFILE_EXISTS')
-			p.log('Limit2', 'info', 'EXPORT_CACHE_OUTFILE_EXISTS')
-			p.log('Limit3', 'info', 'EXPORT_CACHE_OUTFILE_EXISTS')
-			p.log('Limit4', 'info', 'EXPORT_CACHE_OUTFILE_EXISTS')
-		self.assertIn('Normal1', err.getvalue())
-		self.assertIn('Normal2', err.getvalue())
-		self.assertIn('Normal3', err.getvalue())
-		self.assertIn('Normal4', err.getvalue())
-		self.assertIn('Limit1', err.getvalue())
-		self.assertIn('Limit2', err.getvalue())
-		self.assertIn('Limit3', err.getvalue())
-		self.assertNotIn('Limit4', err.getvalue())
-	
-	def testCopy(self):
-		p = Proc()
-		p.aggr = 'aggr'
-		p.workdir = './wdir'
-		p.resume = 'skip'
-		p.args = {'a':1,'b':2,'c':[3,4],'d':Box({'a':0})}
-		p.props['depends'] = 1
-		p2 = p.copy()
-		self.assertEqual(p2.id, 'p2')
-		p3 = p.copy(newid='p0', tag ='tag0', desc='ksks')
-		self.assertEqual(p3.id, 'p0')
-		self.assertEqual(p3.tag, 'tag0')
-		self.assertEqual(p3.desc, 'ksks')
-		self.assertEqual(p3.aggr, '')
-		self.assertEqual(p3.workdir, '')
-		p3.args.b = 3
-		p3.args.c[0] = 1
-		p3.args.d.a = 1
-		self.assertEqual(p3.args['b'], 3)
-		self.assertEqual(p3.args['c'], [1,4])
-		self.assertEqual(p3.args['d']['a'], 1)
-		self.assertEqual(p.args['b'], 2)
-		self.assertEqual(p.args['c'], [3,4])
-		self.assertEqual(p.args['d']['a'], 0)
-		self.assertEqual(p3.resume, '')
-		p3.tag = 'tag3'
-		self.assertIn('tag', p3.sets)
-		self.assertNotIn('tag', p.sets)
-		self.assertEqual(p3.depends, [])
-		self.assertEqual(p3.procvars, {})
-		self.assertEqual(p3.jobs, [])
-		self.assertEqual(p3.ncjobids, [])
-		self.assertEqual(p3.suffix, '')
-
-	def testSuffix(self):
-		p = Proc()
-		self.assertEqual(p.suffix, '')
-		suffix1 = p._suffix()
-		self.assertEqual(len(suffix1), 8)
-		p.id = 'p1'
-		# because suffix  computed
-		self.assertEqual(suffix1, p._suffix())
-		p.props['suffix'] = ''
-		self.assertNotEqual(suffix1, p._suffix())
-		p.tag = 'tag1'
-		p.props['suffix'] = ''
-		self.assertNotEqual(suffix1, p._suffix())
-		p.input = {"a, b": lambda ch: ch.collapse()}
-		p.props['suffix'] = ''
-		self.assertNotEqual(suffix1, p._suffix())
-		p.output = "{{a}}"
-		p.props['suffix'] = ''
-		self.assertNotEqual(suffix1, p._suffix())
-		p.script = 'aa'
-		p.props['suffix'] = ''
-		self.assertNotEqual(suffix1, p._suffix())
-		p.lang = 'Rscript'
-		p.props['suffix'] = ''
-		self.assertNotEqual(suffix1, p._suffix())
-		suffix2 = p._suffix()
-		p.echo = {'type': 'stdout'}
-		p.props['suffix'] = ''
-		self.assertEqual(suffix2, p._suffix())
-
-	def testBuildProps(self):
-		p = Proc(tag= 'buildprops')
-		p._buildProps()
-		# no procs with same id and tag
-		p2 = Proc(tag = 'buildprops', id = 'p')
-		with captured_output() as (out, err):
-			self.assertRaises(ValueError, p2._buildProps)
-		del ProcTree.NODES[id(p2)]
-		# template
-		self.assertIs(p.template, templates.TemplatePyPPL)
-		try:
-			import jinja2
-			p.template = 'jinja2'
-			p._buildProps()
-			self.assertIs(p.template, templates.TemplateJinja2)
-		except:
-			pass
-
-		# rc
-		p.rc = "1, 2"
-		p._buildProps()
-		self.assertEqual(p.rc, [1,2])
-		p.rc = [0,1]
-		p._buildProps()
-		self.assertEqual(p.rc, [0,1])
-		p.rc = 2
-		p._buildProps()
-		self.assertEqual(p.rc, [2])
-
-		# workdir
-		p.props['workdir'] = ''
-		p.workdir = './workdir/otherwdir'
-		self.assertIn('workdir', p.sets)
-		p._buildProps()
-		self.assertEqual(p.workdir, './workdir/otherwdir')
-		# skip+ proc must have workdir exists
-		self.assertPathExists(p.workdir)
-		utils.safeRemove(p.workdir)
-		p.props['workdir'] = ''
-		p.resume = 'skip+'
-		p.workdir = './workdir/otherwdir'
-		self.assertRaises(Exception, p._buildProps)
-		# exdir
-		p.resume = False
-		p.exdir  = './workdir/exports'
-		p._buildProps()
-		self.assertPathExists(p.exdir)
-		# echo
-		self.assertEqual(p.echo, {'jobs':[0], 'type': {'stderr': None, 'stdout': None}})
-		p.echo = True
-		p._buildProps()
-		self.assertEqual(p.echo, {'jobs':[0], 'type': {'stderr': None, 'stdout': None}})
-		p.echo = 'stdout'
-		p._buildProps()
-		self.assertEqual(p.echo, {'jobs':[0], 'type': {'stdout': None}})
-		p.echo = {'jobs': "0,1"}
-		p._buildProps()
-		self.assertEqual(p.echo, {'jobs':[0, 1], 'type': {'stderr': None, 'stdout': None}})
-
-		# dryrunner
-		self.assertEqual(p.runner, 'local')
-		self.assertTrue(p.cache)
-		p.runner = 'dry'
-		p._buildProps()
-		self.assertEqual(p.config['runner'], 'dry')
-		self.assertEqual(p.props['runner'], 'local')
-		self.assertTrue(p.cache) # runner cannot be determined. dry here is a profile name
-
-		# depends
-		self.assertEqual(p.depends, [])
-		p2 = Proc()
-		p3 = Proc()
-		p.depends = p2, p3
-		p._buildProps()
-		self.assertEqual(p.depends, [p2, p3])
-
-		p.depends = p2
-		p._buildProps()
-		self.assertEqual(p.depends, [p2])
-		p.depends = Aggr(p2, p3)
-		p._buildProps()
-		self.assertEqual(p.depends, [p2, p3])
-
-		p.depends = p2, Aggr(p3)
-		p.template = ''
-		p._buildProps()
-		self.assertEqual(p.depends, [p2, p3])
-
-		#p.depends = p2, p3, 3
-		self.assertRaises(TypeError, p.__setattr__, 'depends', (p2, p3, 3))
-
-		# expect
-		self.assertIsInstance(p.expect, templates.TemplatePyPPL)
-		p.expect = "echo {{proc.id}}"
-		p.depends = p2
-		p._buildProps()
-		self.assertEqual(p.expect.render({'proc': {'id': p.id}}), 'echo p')
-
-		# expart
-		p.expart = 'a, b'
-		p._buildProps()
-		self.assertIsInstance(p.expart, list)
-		p.expart = ['a', '{{proc.id}}']
-		p._buildProps()
-		self.assertEqual(p.expart[0].render(), 'a')
-		self.assertEqual(p.expart[1].render({'proc': {'id': p.id}}), 'p')
-
-		# exdir
-		exdir = path.join(p.ppldir, 'exdir')
-		if path.isdir(exdir): rmtree(exdir)
-		self.assertFalse(path.isdir(exdir))
-		p.exdir = exdir
-		p._buildProps()
-		self.assertTrue(path.isdir(exdir))
+	def testInit(self, tag, desc, id, props, config, exception = None):
+		self.maxDiff = None
+		if exception:
+			self.assertRaises(exception, Proc, tag = tag, desc = desc, id = id)
+		else:
+			p = Proc(tag = tag, desc = desc, id = id)
+			self.assertDictEqual(p.props, props)
+			self.assertDictEqual(p.config, config)
 			
-	
-	def testBuildInput(self):
-		p = Proc(tag = 'buildinput')
-		# from argv
-		p.input = 'ii, is'
-		sys.argv = [sys.argv[0], '1,a', '2,b']
-		p._buildProps()
-		p._buildInput()
-		self.assertEqual(p.input['ii']['data'], ['1', '2'])
-		self.assertEqual(p.input['ii']['type'], 'var')
-		self.assertEqual(p.input['is']['data'], ['a', 'b'])
-		self.assertEqual(p.input['is']['type'], 'var')
-		p.props['channel'] = Channel.fromArgv()
-
-		# from one dependent
-		p2 = Proc()
-		p2.depends = p
-		p2.input = "pi, ps"
-		p2._buildProps()
-		p2._buildInput()
-		self.assertEqual(p2.input['pi']['data'], ['1', '2'])
-		self.assertEqual(p2.input['pi']['type'], 'var')
-		self.assertEqual(p2.input['ps']['data'], ['a', 'b'])
-		self.assertEqual(p2.input['ps']['type'], 'var')
-
-		# from multi depends
-		p.props['channel'] = Channel.fromArgv().colAt(0)
-		p2.props['channel'] = Channel.fromArgv().colAt(1)
-		p3 = Proc()
-		p3.depends = p, p2
-		p3.input = "qi, qs"
-		p3._buildProps()
-		p3._buildInput()
-		self.assertEqual(p3.input['qi']['data'], ['1', '2'])
-		self.assertEqual(p3.input['qi']['type'], 'var')
-		self.assertEqual(p3.input['qs']['data'], ['a', 'b'])
-		self.assertEqual(p3.input['qs']['type'], 'var')
-
-		# always list
-		p3.input = "qi, qs"
-		p3._buildProps()
-		p3._buildInput()
-		self.assertEqual(p3.input['qi']['data'], ['1', '2'])
-		self.assertEqual(p3.input['qi']['type'], 'var')
-		self.assertEqual(p3.input['qs']['data'], ['a', 'b'])
-		self.assertEqual(p3.input['qs']['type'], 'var')
-		p3.input = "qi, qs"
-		p3._buildProps()
-		p3._buildInput()
-		self.assertEqual(p3.input['qi']['data'], ['1', '2'])
-		self.assertEqual(p3.input['qi']['type'], 'var')
-		self.assertEqual(p3.input['qs']['data'], ['a', 'b'])
-		self.assertEqual(p3.input['qs']['type'], 'var')
-
-		# invalid type
-		p3.input = "qi:t, qs"
-		p3._buildProps()
-		self.assertRaises(TypeError, p3._buildInput)
-
-		# lambda
-		p.props['channel'] = Channel.fromArgv()
-		p2.props['channel'] = Channel.fromArgv()
-		p3.depends = p, p2
-		p3.input = {'qi, qs': lambda ch1, ch2: ch1.colAt(0).cbind(ch2.colAt(1))}
-		p3._buildProps()
-		p3._buildInput()
-		self.assertEqual(p3.input['qi']['data'], ['1', '2'])
-		self.assertEqual(p3.input['qi']['type'], 'var')
-		self.assertEqual(p3.input['qs']['data'], ['a', 'b'])
-		self.assertEqual(p3.input['qs']['type'], 'var')
-
-		p3.input = {'qi': lambda ch1, ch2: ch1.colAt(0), 'qs': lambda ch1, ch2: ch2.colAt(1)}
-		p3._buildProps()
-		p3._buildInput()
-		self.assertEqual(p3.input['qi']['data'], ['1', '2'])
-		self.assertEqual(p3.input['qi']['type'], 'var')
-		self.assertEqual(p3.input['qs']['data'], ['a', 'b'])
-		self.assertEqual(p3.input['qs']['type'], 'var')
-
-		# list
-		p.depends = []
-		p.input   = {'a': list(range(5)), 'b': [5,6,7,8,9]}
-		p._buildProps()
-		p._buildInput()
-		self.assertEqual(p.input['a']['data'], list(range(5)))
-		self.assertEqual(p.input['a']['type'], 'var')
-		self.assertEqual(p.input['b']['data'], [5,6,7,8,9])
-		self.assertEqual(p.input['b']['type'], 'var')
-		self.assertEqual(p.size, 5)
-		self.assertEqual(p.jobs, [None] * 5)
-
-		# not enough columns
-		p3.input = {'qi, qa, qb': lambda ch1, ch2: ch1.colAt(0).cbind(ch2.colAt(1))}
-		p3._buildProps()
-		p3._buildInput()
-		self.assertEqual(p3.input['qb']['data'], [''] * 2)
-
-		# Cannot cbind
-		p.depends = []
-		p.input   = {'a': list(range(4)), 'b': [5,6,7,8,9]}
-		p._buildProps()
-		self.assertRaises(IndexError, p._buildInput)
-		p.depends = []
-		p.input   = {'a': [1], 'b': [5,6,7,8,9]}
-		p._buildProps()
-		self.assertRaises(IndexError, p._buildInput)
-
-		# can cbind
-		p.depends = []
-		p.input   = {'a': list(range(5)), 'b': [5]}
-		p._buildProps()
-		p._buildInput()
-		self.assertEqual(p.input['a']['data'], list(range(5)))
-		self.assertEqual(p.input['a']['type'], 'var')
-		self.assertEqual(p.input['b']['data'], [5]*5)
-		self.assertEqual(p.input['b']['type'], 'var')
-		self.assertEqual(p.size, 5)
-		self.assertEqual(p.jobs, [None] * 5)
-
-		# support empty input
-		sys.argv = [sys.argv[0]]
-		p4 = Proc()
-		p4._buildProps()
-		p4._buildInput()
-		self.assertEqual(p4.input, {})
-
-		# other types
-		p.depends = []
-		p.input   = {'a:file': list(range(5)), 'b:dir': [5]}
-		p._buildProps()
-		p._buildInput()
-		self.assertEqual(p.input['a']['data'], list(range(5)))
-		self.assertEqual(p.input['a']['type'], 'file')
-		self.assertEqual(p.input['b']['data'], [5]*5)
-		self.assertEqual(p.input['b']['type'], 'dir')
-
-		p.depends = []
-		p.input = {'a,b':[(1,'a'), (2,'b')]}
-		p._buildProps()
-		p._buildInput()
-		self.assertEqual(p.input['a']['data'], [1,2])
-		self.assertEqual(p.input['b']['data'], ['a', 'b'])
-
-		p.depends = []
-		p.input = 'a,b'
-		p.input = lambda: [(1,'a'), (2,'b')]
-		p._buildProps()
-		p._buildInput()
-		self.assertEqual(p.input['a']['data'], [1,2])
-		self.assertEqual(p.input['b']['data'], ['a', 'b'])
+	def dataProvider_testGetAttr(self):
+		pGetAttr = Proc()
+		yield pGetAttr, '__keynotexists__', None, ProcAttributeError
+		yield pGetAttr, 'envs', {}
+		yield pGetAttr, 'script', None
+		yield pGetAttr, 'suffix', ''
 		
-
-	def testBuildProcVars(self):
-		sys.argv = ['']
-		Proc.ALIAS['tag']   = 'tag' # coverage issue
-		Proc.ALIAS['cache'] = 'cache' # coverage issue
-
-		p = Proc(tag = 'procvars')
-		p._buildProps()
-		p._buildInput()
-		p.args = {'a': 1, 'b': 2}
-		p.cache = True
-		with captured_output() as (out, err):
-			logger.getLogger()
+	def testGetAttr(self, p, name, val, exception = None):
+		if exception:
+			self.assertRaises(exception, p.__getattr__, name)
+		else:
+			v = p.__getattr__(name)
+			if isinstance(val, list):
+				self.assertListEqual(v, val)
+			elif isinstance(val, dict):
+				self.assertDictEqual(v, val)
+			else:
+				self.assertEqual(v, val)
+				
+	def dataProvider_testSetAttr(self):
+		pSetAttr = Proc()
+		pSetAttrDepends = Proc()
+		pSetAttrAggr = Proc()
+		aSetAttr = Aggr(pSetAttrAggr)
+		aSetAttr.ends = [aSetAttr.pSetAttrAggr]
+		yield pSetAttr, '__nosuchattr__', None, None, ProcAttributeError, 'Cannot set attribute for process'
+		yield pSetAttr, 'profile', 'sge', 'local', None, None, ['WARNING', 'Attribute "profile" is deprecated']
+		yield pSetAttr, 'envs', {'a': 1}
+		yield pSetAttr, 'depends', pSetAttr, None, ProcAttributeError, 'Process depends on itself'
+		yield pSetAttr, 'depends', 1, None, ProcAttributeError, "Process dependents should be 'Proc/Aggr', not: 'int'"
+		yield pSetAttr, 'depends', pSetAttrDepends, [pSetAttrDepends]
+		yield pSetAttr, 'depends', aSetAttr, [aSetAttr.pSetAttrAggr]
+		yield pSetAttr, 'depends', (aSetAttr, pSetAttrDepends), [aSetAttr.pSetAttrAggr, pSetAttrDepends]
+		yield pSetAttr, 'script', 'file:' + path.abspath(__file__)
+		yield pSetAttr, 'script', 'file:' + path.relpath(__file__), 'file:' + path.abspath(__file__)
+		yield pSetAttr, 'args', {'a':1}, Box({'a':1})
+		yield pSetAttr, 'envs', {'a':1}, Box({'a':1})
+		yield pSetAttr, 'input', 'inkey1:var, inkey2:file'
+		yield pSetAttr, 'input', [('inval1', 'inval2')], {'inkey1:var, inkey2:file': [('inval1', 'inval2')]}
+		yield pSetAttr, 'input', {'inkey1:var, inkey2:file': [('inval1', 'inval2')]}
+		yield pSetAttr, 'input', [('inval3', 'inval4')], {'inkey1:var, inkey2:file': [('inval3', 'inval4')]}
+		yield pSetAttr, 'input', ['inkey3:var', 'inkey4:file'], {'inkey1:var, inkey2:file': ['inkey3:var', 'inkey4:file']}
+		yield pSetAttr, 'input', {'inkey1:var': 'inval1', 'inkey2:file': 'inval2'}
+		yield pSetAttr, 'input', [('inval3', 'inval4')], {'inkey1:var, inkey2:file': [('inval3', 'inval4')]}
+				
+	def testSetAttr(self, p, name, val, expect = None, exception = None, msg = None, errs = []):
+		if exception:
+			self.assertRaisesStr(exception, msg, p.__setattr__, name, val)
+		else:
+			if expect is None:
+				expect = val
+			with helpers.log2str() as (out, err):
+				p.__setattr__(name, val)
+			stderr = err.getvalue()
+			v = p.__getattr__(name)
+			if not v:
+				v = p.config[name]
+			if isinstance(expect, list):
+				self.assertListEqual(v, expect)
+			elif isinstance(expect, dict):
+				self.assertDictEqual(v, expect)
+			else:
+				self.assertEqual(v, expect)
+			for err in errs:
+				self.assertIn(err, stderr)
+			setname = name if name not in Proc.ALIAS else Proc.ALIAS[name]
+			self.assertIn(setname, p.props['sets'])
+			
+	def dataProvider_testRepr(self):
+		pRepr = Proc()
+		yield pRepr, '<Proc(pRepr) @ %s>' % hex(id(pRepr))
+		pRepr1 = Proc(tag = 'atag')
+		yield pRepr1, '<Proc(pRepr1.atag) @ %s>' % hex(id(pRepr1))
+		pRepr2 = Proc(tag = 'aggr')
+		pRepr2.aggr = 'aggr'
+		yield pRepr2, '<Proc(pRepr2.aggr@aggr) @ %s>' % hex(id(pRepr2))
+		
+	def testRepr(self, p, r):
+		self.assertEqual(repr(p), r)
+	
+	def dataProvider_testLog(self):
+		pLog = Proc()
+		pLog.props['size'] = 2
+		# CACHE_SCRIPT_NEWER = -3
+		yield pLog, 'hello', 'info', '', ['INFO', 'hello']
+		yield pLog, 'hello', 'info', '', ['INFO', 'hello']
+		yield pLog, 'script newer1', 'warning', 'CACHE_SCRIPT_NEWER', [], ['WARNING', 'DEBUG', 'script newer1']
+		yield pLog, 'script newer2', 'warning', 'CACHE_SCRIPT_NEWER', ['WARNING', 'script newer1', 'script newer2'], ['DEBUG']
+		
+		pLog1 = Proc()
+		pLog1.props['size'] = 100
+		yield pLog1, 'script newer1', 'warning', 'CACHE_SCRIPT_NEWER', [], ['WARNING', 'DEBUG', 'script newer1']
+		yield pLog1, 'script newer2', 'warning', 'CACHE_SCRIPT_NEWER', [], ['WARNING', 'script newer1', 'script newer2', 'DEBUG']
+		yield pLog1, 'script newer3', 'warning', 'CACHE_SCRIPT_NEWER', ['WARNING', 'script newer1', 'script newer2', 'DEBUG', 'max']
+		
+	# note: single test will not work, e.g: python testProc.py TestProc.testLog_6 	
+	def testLog(self, p, msg, level, key, expects, noexpects = []):
+		with helpers.log2str(levels = 'all') as (out, err):
+			p.log(msg, level, key)
+		stderr = err.getvalue()
+		if not isinstance(expects, list):
+			expects = [expects]
+		if not isinstance(noexpects, list):
+			noexpect = [noexpects]
+		for ex in expects:
+			self.assertIn(ex, stderr)
+		for ex in noexpects:
+			self.assertNotIn(ex, stderr)
+			
+	def dataProvider_testCopy(self, testdir):
+		pCopy = Proc()
+		pCopy.workdir = path.join(testdir, 'pCopy')
+		yield pCopy, None, 'DESCRIPTION', None, {
+			'brings': {},
+			'channel': [],
+			'depends': [],
+			'echo': {},
+			'expart': [],
+			'expect': None,
+			'input': {},
+			'jobs': [],
+			'logs': {},
+			'ncjobids': [],
+			'output': OrderedDict(),
+			'procvars': {},
+			'rc': [0],
+			'runner': 'local',
+			'script': None,
+			'sets': ['workdir'],
+			'size': 0,
+			'suffix': '',
+			'template': None,
+			'workdir': ''
+		}, {
+			'afterCmd': '',
+			'aggr': None,
+			'args': {},
+			'beforeCmd': '',
+			'brings': {},
+			'cache': True,
+			'callback': None,
+			'callfront': None,
+			'cclean': False,
+			'depends': [],
+			'desc': 'No description.',
+			'dirsig': True,
+			'echo': False,
+			'errhow': 'terminate',
+			'errntry': 3,
+			'exdir': '',
+			'exhow': 'move',
+			'exow': True,
+			'expart': '',
+			'expect': '',
+			'forks': 1,
+			'id': 'pCopy',
+			'input': '',
+			'lang': 'bash',
+			'maxsubmit': int(cpu_count() / 2),
+			'nthread': 1,
+			'output': '',
+			'ppldir': path.join(__folder__, 'workdir'),
+			'rc': 0,
+			'resume': '',
+			'runner': 'local',
+			'script': '',
+			'tag': 'notag',
+			'template': '',
+			'tplenvs': {},
+			'workdir': path.join(testdir, 'pCopy')
+		}, {
+			'brings': {},
+			'channel': [],
+			'depends': [],
+			'echo': {},
+			'expart': [],
+			'expect': None,
+			'input': {},
+			'jobs': [],
+			'logs': {},
+			'ncjobids': [],
+			'output': OrderedDict(),
+			'procvars': {},
+			'rc': [0],
+			'runner': 'local',
+			'script': None,
+			'sets': ['workdir'],
+			'size': 0,
+			'suffix': '',
+			'template': None,
+			'workdir': ''
+		}, {
+			'afterCmd': '',
+			'aggr': None,
+			'args': Box(),
+			'beforeCmd': '',
+			'brings': {},
+			'cache': True,
+			'callback': None,
+			'callfront': None,
+			'cclean': False,
+			'depends': [],
+			'desc': 'DESCRIPTION',
+			'dirsig': True,
+			'echo': False,
+			'errhow': 'terminate',
+			'errntry': 3,
+			'exdir': '',
+			'exhow': 'move',
+			'exow': True,
+			'expart': '',
+			'expect': '',
+			'forks': 1,
+			'id': 'p',
+			'input': '',
+			'lang': 'bash',
+			'maxsubmit': int(cpu_count() / 2),
+			'nthread': 1,
+			'output': '',
+			'ppldir': path.join(__folder__, 'workdir'),
+			'rc': 0,
+			'resume': '',
+			'runner': 'local',
+			'script': '',
+			'tag': 'notag',
+			'template': '',
+			'tplenvs': Box(),
+			'workdir': ''
+		}
+			
+	def testCopy(self, orgp, tag, desc, newid, oprops, oconfig, nprops, nconfig):
+		self.maxDiff = None
+		p = orgp.copy(tag = tag, desc = desc, id = newid)
+		self.assertDictEqual(p.props, nprops)
+		self.assertDictEqual(p.config, nconfig)
+		p.args.a = 1
+		p.props['output']['a:var'] = 'outputa'
+		p.tplenvs.b = 2
+		p.tag = 'newtag'
+		self.assertEqual(orgp.tag, 'notag')
+		self.assertEqual(orgp.output, {})
+		self.assertEqual(orgp.envs, {})
+		self.assertEqual(orgp.args, {})
+		self.assertEqual(orgp.sets, ['workdir'])
+		self.assertEqual(p.args, {'a': 1})
+		self.assertEqual(p.output, {'a:var': 'outputa'})
+		self.assertEqual(p.envs, {'b': 2})
+		self.assertEqual(p.tag, 'newtag')
+		# original process keeps intact
+		self.assertDictEqual(orgp.props, oprops)
+		self.assertDictEqual(orgp.config, oconfig)
+		
+	def dataProvider_testSuffix(self):
+		pSuffix = Proc()
+		pSuffix.props['suffix'] = '23lhsaf'
+		yield pSuffix, '23lhsaf'
+		
+		pSuffix1 = Proc()
+		pSuffix1.input = {'in': lambda ch: ch}
+		pSuffix1.depends = pSuffix
+		config = {key:val for key, val in pSuffix1.config.items() if key in [
+			'id', 'tag', 'input', 'output', 'script', 'lang'
+		]}
+		if isinstance(config['input'], dict):
+			config['input'] = pycopy.copy(config['input'])
+			for key, val in config['input'].items():
+				config['input'][key] = utils.funcsig(val) if callable(val) else val
+		config['depends'] = [pSuffix.name(True) + '#' + pSuffix._suffix()]
+		yield pSuffix1, utils.uid(json.dumps(config, sort_keys = True))
+		
+	def testSuffix(self, p, suffix):
+		s = p._suffix()
+		self.assertEqual(s, suffix)
+		
+	def dataProvider_testName(self):
+		pName = Proc()
+		pName.tag = 'tag'
+		pName.aggr = 'aggr'
+		yield pName, True, 'pName.tag@aggr'
+		yield pName, False, 'pName.tag'
+		
+		pName1 = Proc()
+		yield pName1, True, 'pName1'
+		yield pName1, False, 'pName1'
+		
+	def testName(self, p, aggr, name):
+		n = p.name(aggr)
+		self.assertEqual(n, name)
+		
+	def dataProvider_testBuildProps(self, testdir):
+		# 0
+		pBuildProps = Proc()
+		pBuildProps.ppldir = testdir
+		yield pBuildProps, {}, {}, ProcTreeProcExists, 'There are two processes with id\(pBuildProps\) and tag\(notag\)'
+		# 1
+		pBuildProps1 = Proc(id = 'pBuildProps')
+		pBuildProps1.ppldir = testdir
+		yield pBuildProps1, {}, {}, ProcTreeProcExists, 'There are two processes with id\(pBuildProps\) and tag\(notag\)'
+		# 2-9
+		pBuildProps2 = Proc()
+		pBuildProps2.ppldir = testdir
+		yield pBuildProps2, {}, {'template': TemplatePyPPL}
+		yield pBuildProps2, {'template': ''}, {'template': TemplatePyPPL}
+		yield pBuildProps2, {'template': TemplateJinja2}, {'template': TemplateJinja2}
+		yield pBuildProps2, {'template': 'jinja2'}, {'template': TemplateJinja2}
+		yield pBuildProps2, {'rc': ' 0, 1, '}, {'rc': [0,1]}
+		yield pBuildProps2, {'rc': 2}, {'rc': [2]}
+		yield pBuildProps2, {'rc': [0, 1]}, {'rc': [0, 1]}
+		yield pBuildProps2, {'workdir': path.join(testdir, 'pBuildProps2')}, {'workdir': path.join(testdir, 'pBuildProps2')}
+		# 10
+		pBuildProps3 = Proc()
+		pBuildProps3.ppldir = testdir
+		yield pBuildProps3, {}, {'workdir': path.join(testdir, 'PyPPL.pBuildProps3.notag.%s' % pBuildProps3._suffix())}, None, None, [lambda p: path.isdir(p.workdir)]
+		
+		# 11
+		pBuildProps4 = Proc()
+		pBuildProps4.ppldir = testdir
+		yield pBuildProps4, {'resume': 'skip+'}, {}, ProcAttributeError, 'Cannot skip process, as workdir not exists'
+		
+		# 12
+		pBuildProps5 = Proc()
+		pBuildProps5.ppldir = testdir
+		# exdir
+		yield pBuildProps5, {'exdir': path.relpath(path.join(testdir, 'exports'))}, {'exdir': path.abspath(path.join(testdir, 'exports'))}, None, None, [lambda p: path.isdir(p.exdir)]
+		# echo
+		# 13-20
+		yield pBuildProps5, {'echo': True}, {'echo': {'jobs': [0], 'type': {'stderr': None, 'stdout': None}}}
+		yield pBuildProps5, {'echo': False}, {'echo': {'jobs': [], 'type': {'stderr': None, 'stdout': None}}}
+		yield pBuildProps5, {'echo': 'stderr'}, {'echo': {'jobs': [0], 'type': {'stderr': None}}}
+		yield pBuildProps5, {'echo': 'stdout'}, {'echo': {'jobs': [0], 'type': {'stdout': None}}}
+		yield pBuildProps5, {'echo': {'type': 'all'}}, {'echo': {'jobs': [0], 'type': {'stderr': None, 'stdout': None}}}
+		yield pBuildProps5, {'echo': {'jobs': ' 0, 1 ', 'type': 'all'}}, {'echo': {'jobs': [0, 1], 'type': {'stderr': None, 'stdout': None}}}
+		yield pBuildProps5, {'echo': {'type': 'stderr'}}, {'echo': {'jobs': [0], 'type': {'stderr': None}}}
+		yield pBuildProps5, {'echo': {'type': {'all': r'^a'}}}, {'echo': {'jobs': [0], 'type': {'stderr': r'^a', 'stdout': r'^a'}}}
+		# expect
+		# 21
+		yield pBuildProps5, {'expect': 'expect template'}, {}, None, None, [lambda p: p.expect.source == 'expect template']
+		# expart
+		# 22
+		yield pBuildProps5, {'expart': 'a,b,c,d,"e,f"'}, {}, None, None, [
+			(lambda p: p.expart[i].source == v) for i,v in enumerate(['a', 'b', 'c', 'd', '"e,f"'])
+		]
+		
+	def testBuildProps(self, p, attrs = {}, props = {}, exception = None, msg = None, expects = []):
+		for k,v in attrs.items():
+			setattr(p, k, v)
+		if exception:
+			self.assertRaisesStr(exception, msg, p._buildProps)
+		else:
+			p._buildProps()
+			for k, v in props.items():
+				if isinstance(v, dict):
+					self.assertDictEqual(v, getattr(p, k))
+				elif isinstance(v, list):
+					self.assertListEqual(v, getattr(p, k))
+				else:
+					self.assertEqual(v, getattr(p, k))
+			for expect in expects:
+				self.assertTrue(expect(p))
+				
+	def dataProvider_testBuildInput(self, testdir):
+		pBuildInputDep = Proc()
+		pBuildInputDep.props['channel'] = []
+		
+		pBuildInput = Proc()
+		pBuildInput.depends = pBuildInputDep
+		yield pBuildInput, {}, {}
+		yield pBuildInput, 'a,b', {'a': {'data': [], 'type': 'var'}, 'b': {'data': [], 'type': 'var'}}
+		yield pBuildInput, 'a:unknowntype', {}, ProcInputError, 'Unknown input type'
+		
+		pBuildInputDep1 = Proc()
+		pBuildInputDep1.props['channel'] = Channel.create([1,2])
+		pBuildInputDep2 = Proc()
+		pBuildInputDep2.props['channel'] = Channel.create([3,4])
+		pBuildInput1 = Proc()
+		pBuildInput1.depends = pBuildInputDep1, pBuildInputDep2
+		yield pBuildInput1, 'a,b', {'a': {'data': [1,2], 'type': 'var'}, 'b': {'data': [3,4], 'type': 'var'}}
+		
+		pBuildInput2 = Proc()
+		pBuildInput2.depends = pBuildInputDep1, pBuildInputDep2
+		yield pBuildInput2, 'a', {'a': {'data': [1,2], 'type': 'var'}}, None, None, ['Not all data are used as input, 1 column(s) wasted.']
+		
+		pBuildInput3 = Proc()
+		pBuildInput3.depends = pBuildInputDep1, pBuildInputDep2
+		yield pBuildInput2, {'a,b,c': lambda ch1, ch2: ch1.cbind(ch2)}, {'a': {'data': [1,2], 'type': 'var'}, 'b': {'data': [3,4], 'type': 'var'}, 'c': {'data': ['',''], 'type': 'var'}}, None, None, ['No data found for input key "c", use empty strings/lists instead.']
+		
+		pBuildInput4 = Proc()
+		yield pBuildInput4, {'a': [1], 'b': 2, 'c': [1,2], 'd:files':[[testdir, testdir]]}, {
+			'a': {'data': [1,1], 'type': 'var'},
+			'b': {'data': [2,2], 'type': 'var'},
+			'c': {'data': [1,2], 'type': 'var'},
+			'd': {'data': [[testdir,testdir], [testdir,testdir]], 'type': 'files'},
+		}
+		
+		pBuildInput5 = Proc()
+		pBuildInput5.ppldir = testdir
+		pBuildInput5.input  = {'a': ['h"i\'nihao'], 'b': 2, 'c': [1,2], 'd:files':[[testdir, testdir]]}
+		with helpers.log2str():
+			pBuildInput5._buildInput()
+			pBuildInput5._buildProps()
+			pBuildInput5._saveSettings()
+		pBuildInput5.props['resume'] = 'skip+'
+		yield pBuildInput5, {}, {
+			'a': {'data': ['h"i\'nihao','h"i\'nihao'], 'type': 'var'},
+			'b': {'data': [2,2], 'type': 'var'},
+			'c': {'data': [1,2], 'type': 'var'},
+			'd': {'data': [[testdir,testdir], [testdir,testdir]], 'type': 'files'},
+		}
+		
+		pBuildInput6 = Proc()
+		pBuildInput6.ppldir = testdir
+		pBuildInput6.props['resume'] = 'skip+'
+		yield pBuildInput6, {}, {}, ProcInputError, 'Cannot parse input for skip\+/resume process, no such file:'
+				
+	def testBuildInput(self, p, cin, pin, exception = None, msg = None, errs = []):
+		self.maxDiff = None
+		p.input = cin
+		if exception:
+			self.assertRaisesStr(exception, msg, p._buildInput)
+		else:
+			with helpers.log2str(levels = 'all') as (out, err):
+				#p._buildInput()
+				pass
+			p._buildInput()
+			stderr = err.getvalue()
+			self.assertDictEqual(p.input, pin)
+			for err in errs:
+				self.assertIn(err, stderr)
+				
+	def dataProvider_testBuildProcVars(self, testdir):
+		pBuildProcVars = Proc()
+		pBuildProcVars.ppldir = testdir
+		yield pBuildProcVars, {}, {'size': 0, 'ppldir': testdir}, [
+			'P.PROPS',
+			'ppldir => %s' % repr(testdir),
+			'size   => 0',
+		]
+		
+		pBuildProcVars1 = Proc()
+		pBuildProcVars1.ppldir = testdir
+		pBuildProcVars1.args.a = 1
+		pBuildProcVars1.props['runner'] = 'ssh'
+		yield pBuildProcVars1, {'a': 1}, {'size': 0, 'ppldir': testdir, 'runner': 'ssh'}, [
+			'P.PROPS',
+			'ppldir => %s' % repr(testdir),
+			'runner => \'ssh\' [profile]',
+			'size   => 0',
+			'P.ARGS',
+			'a      => 1'
+		]
+		
+	def testBuildProcVars(self, p, procargs, procvars, errs = []):
+		with helpers.log2str(levels = 'all') as (out, err):
+			p._buildProps()
 			p._buildProcVars()
-		self.assertEqual(dict(p.procvars['args']), {'a': 1, 'b': 2})
-		self.assertEqual(dict(p.procvars['proc']['args']), {'a': 1, 'b': 2})
-		del p.procvars['proc']['args']
-		self.assertIn(p.procvars['proc']['suffix'], p.procvars['proc']['workdir'])
-		del p.procvars['proc']['workdir']
-		self.assertIn(p.procvars['proc']['ppldir'], path.abspath('./workdir'))
-		del p.procvars['proc']['ppldir']
-		self.assertEqual(p.procvars['proc'], {
-			'suffix': '4zbHysnh', 
-			'runner': 'local', 
-			'echo': {'type': {'stderr': None, 'stdout': None}, 'jobs': [0]}, 
-			'tag': 'procvars', 
-			'id': 'p', 
-			'size': 0, 
-			'cache': True, 
-			'rc': [0], 
-			'forks': 1, 
-			'desc': 'No description.', 
-			'aggr': None, 
-			'resume': '', 
-			'exhow': 'move', 
-			'exow': True, 
-			'errhow': 'terminate', 
-			'lang': 'bash', 
-			'exdir': '', 
-			'procvars': {}, 
-			'sets': ['args', 'cache'], 
-			'errntry': 3
-		})
-
-	def testBuildBrings(self):
-		with captured_output() as (out, err):
-			logger.getLogger()
-		p = Proc('buildbrings')
-		p.brings = {
-			'a': "{{proc.id}}.*",
-			'b': ['b1', 'b2{{proc.tag}}']
-		}
-		p._buildProps()
-		p._buildInput()
-		p._buildProcVars()
-		p._buildBrings()
-		self.assertEqual(p.brings['a'][0].render({'proc': {'id': 'p'}}), 'p.*')
-		self.assertEqual(p.brings['b'][0].render({'proc': {'id': 'p'}}), 'b1')
-		self.assertEqual(p.brings['b'][1].render({'proc': {'tag': 'tag'}}), 'b2tag')
-
-	def testBuildOutput(self):
-		p = Proc('buildoutput')
-		# string
-		p.output = "a:b, c:d"
-		p._buildProps()
-		p._buildInput()
-		p._buildProcVars()
-		p._buildBrings()
-		p._buildOutput()
-		self.assertEqual(p.output['a'][0], 'var')
-		self.assertEqual(p.output['a'][1].render(), 'b')
-		self.assertEqual(p.output['c'][0], 'var')
-		self.assertEqual(p.output['c'][1].render(), 'd')
-
-		# list
-		p.output = ["a:b", "c:d"]
-		p._buildProps()
-		p._buildInput()
-		p._buildProcVars()
-		p._buildBrings()
-		p._buildOutput()
-		self.assertEqual(p.output['a'][0], 'var')
-		self.assertEqual(p.output['a'][1].render(), 'b')
-		self.assertEqual(p.output['c'][0], 'var')
-		self.assertEqual(p.output['c'][1].render(), 'd')
-
-		# missing value
-		p.output = ["a", "c:d"]
-		p._buildProps()
-		p._buildInput()
-		p._buildProcVars()
-		p._buildBrings()
-		self.assertRaises(ValueError, p._buildOutput)
-
-		# no dict
-		p.output = {'a': 'b', 'c': 'd'}
-		p._buildProps()
-		p._buildInput()
-		p._buildProcVars()
-		p._buildBrings()
-		self.assertRaises(TypeError, p._buildOutput)
-
-		# type error
-		p.output = ["a:b", "c:d:e"]
-		p._buildProps()
-		p._buildInput()
-		p._buildProcVars()
-		p._buildBrings()
-		self.assertRaises(TypeError, p._buildOutput)
-
-		# other types
-		p.output = ["a:var:a", "c:file:e"]
-		p._buildProps()
-		p._buildInput()
-		p._buildProcVars()
-		p._buildBrings()
-		p._buildOutput()
-		self.assertEqual(p.output['a'][0], 'var')
-		self.assertEqual(p.output['a'][1].render(), 'a')
-		self.assertEqual(p.output['c'][0], 'file')
-		self.assertEqual(p.output['c'][1].render(), 'e')
-
-		# allow empty output
-		p.output = ''
-		p._buildProps()
-		p._buildInput()
-		p._buildProcVars()
-		p._buildBrings()
-		p._buildOutput()
-
-		p.output = 'a:b:c:d'
-		p._buildProps()
-		p._buildInput()
-		p._buildProcVars()
-		p._buildBrings()
-		self.assertRaises(ValueError, p._buildOutput)
-
-
-
-	def testBuildScript(self):
-		with captured_output() as (out, err):
-			logger.getLogger()
-
-		script = 'a {% if pid | lambda x: x == 1 %} b {% endif %}'
-
-		p = Proc('buildscript')
-		p.script = script
-		p._buildProps()
-		p._buildInput()
-		p._buildProcVars()
-		p._buildBrings()
-		p._buildOutput()
-		p._buildScript()
-		self.assertEqual(p.script.render({'pid': p}), '#!/usr/bin/env bash\na ')
-
-		# abspath
-		p = Proc('abspathscript')
-		sfile = path.abspath(path.join(tmpdir, 'abspathscript'))
-		with open(sfile, 'w') as sf: sf.write(script)
-		p.script = "file:%s" % sfile
-		p._buildProps()
-		p._buildInput()
-		p._buildProcVars()
-		p._buildBrings()
-		p._buildOutput()
-		p._buildScript()
-		self.assertEqual(p.script.render({'pid': 1}), '#!/usr/bin/env bash\na  b ')
-
-		# relpath
-		script = "echo pyppl.log: Using the relpath script."
-		pfile = path.join(path.dirname(__file__), 'workdir', 'pscript.py')
-		sfile = path.join(path.dirname(__file__), 'workdir', 'relpathscript')
-		if not path.isdir(path.dirname(pfile)):
-			makedirs(path.dirname(pfile))
-		with open(sfile, 'w') as sf: sf.write(script)
-		with open(pfile, 'w') as pf:
-			pf.write("""
-from pyppl import Proc
-p = Proc('relpathscript')
-p.input  = {"a": [0]}
-p.script = "file:./relpathscript"
-
-""")
-		sys.path.insert(0, path.dirname(pfile))
-		from pscript import p as prel
-		prel._buildProps()
-		prel._buildInput()
-		prel._buildProcVars()
-		prel._buildBrings()
-		prel._buildOutput()
-		prel._buildScript()
-		self.assertIn(script, prel.script.render())
-
-		# file
-		p = Proc('render-file')
-		p.script = "file:" + path.abspath(sfile)
-		p._buildProps()
-		p._buildInput()
-		p._buildProcVars()
-		p._buildBrings()
-		p._buildOutput()
-		p._buildScript()
-		self.assertIn(script, p.script.render())
-
-		# indents
-		p = Proc('bs-indents')
-		p.script = """#
-		## indent remove ##
-		hello
-		## indent keep ##
-		hello2
-		"""
-		p._buildProps()
-		p._buildInput()
-		p._buildProcVars()
-		p._buildBrings()
-		p._buildOutput()
-		p._buildScript()
-		self.assertEqual(p.script.render({'pid': p}), '#!/usr/bin/env bash\n#\nhello\n\t\thello2')
-
-	def testReadConfig(self):
-		p = Proc('readconf')
-		p._readConfig({'id': 'p2'})
-		self.assertEqual(p.config['id'], 'p2')
-		p.config['id'] = 'p'
-		p.props['sets'] = ['id']
-		p._readConfig({'id': 'p2'})
-		self.assertEqual(p.config['id'], 'p')
-
-	def testRunCmd(self):
-		p = Proc('runcmd')
-		p.beforeCmd = 'ls -l ' + path.join(path.dirname(__file__))
-		p.afterCmd  = 'grep afterCmd {{file}}'
-		p.tplenvs   = {
-			'file': __file__
-		}
-		p._buildProps()
-		with captured_output() as (out, err):
-			logger.getLogger()
-			p._runCmd('beforeCmd')
-		self.assertIn(path.basename(__file__), err.getvalue())
-		self.assertIn('p.runcmd: Running <beforeCmd> ...', err.getvalue())
-		with captured_output() as (out, err):
-			logger.getLogger()
-			p._runCmd('afterCmd')
-		self.assertIn('afterCmd', err.getvalue())
-		# runtime rror
-		p.beforeCmd = 'nosuchcmd'
-		self.assertRaises(RuntimeError, p._runCmd, 'beforeCmd')
-
-	def testBuildJobs(self):
-		with captured_output() as (out, err):
-			logger.getLogger()
-		p = Proc('buildjobs')
-		p.nthread = 5
-		p.input = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}		
-		# output
-		p.output = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
-		p.script = 'echo {{in.a}} > {{out.outfile}}'
-		p._buildProps()
-		p._buildInput()
-		p._buildProcVars()
-		p._buildBrings()
-		p._buildOutput()
-		p._buildScript()
-		p._buildJobs()
-		self.assertEqual(len(p.jobs), 5)
-		self.assertEqual(p.jobs[1].input['a'], {'data': 2, 'type': 'var'})
-		self.assertEqual(p.channel.outfile, [(path.join(p.workdir, str(i), 'output', 'out' + str(b) + '.txt'),) for i,b in enumerate([6,7,8,9,10])])
-		self.assertEqual(p.channel.o2.flatten(), ['12', '22', '32', '42', '52'])
-
-		self.assertEqual(p.size, 5)
-		job = p.jobs[0]
-		with open(job.script) as f:
-			self.assertIn('echo 1 > ', f.read())
+		stderr = err.getvalue()
+		self.assertDictIn(procargs, p.procvars['args'])
+		self.assertDictIn(procvars, p.procvars['proc'])
+		for err in errs:
+			self.assertIn(err, stderr)
+			
+	def dataProvider_testBuildBrings(self, testdir):
+		pBuildBrings = Proc()
+		pBuildBrings.ppldir = testdir
+		yield pBuildBrings, {}, {}
+		yield pBuildBrings, {'a': ''}, {'a': [TemplatePyPPL('')]}
+		yield pBuildBrings, {'a': ['', 'aaa'], 'b': 'bbb'}, {'a': [TemplatePyPPL(''), TemplatePyPPL('aaa')], 'b': [TemplatePyPPL('bbb')]}
 		
-	def testName(self):
-		p = Proc('name')
-		self.assertEqual(p.name(), 'p.name')
-		p.tag = 'notag'
-		self.assertEqual(p.name(), 'p')
-		p.aggr = 'aggr'
-		self.assertEqual(p.name(), 'p@aggr')
-		self.assertEqual(p.name(False), 'p')
-
-	def testSaveSettings(self):
-		p = Proc('savesettings')
-		# empty output
-		p.input = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10], 'infiles:files': [['./a']]}
-		p.output = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
-		p.script = 'echo {{in.a}} > {{out.outfile}}'
+	def testBuildBrings(self, p, inbrs, outbrs):
+		p.brings = inbrs
 		p._buildProps()
-		p._buildInput()
-		p._buildProcVars
 		p._buildBrings()
-		p._buildOutput()
-		p._buildScript()
-		# just expect no exceptions
-		p._saveSettings()
-		self.assertPathExists(path.join(p.workdir, 'proc.settings'))
+		for k, v in inbrs.items():
+			if not isinstance(v, list): v = [v]
+			self.assertListEqual(
+				v,
+				[t.source for t in outbrs[k]]
+			)
+			
+	def dataProvider_testBuildOutput(self, testdir):
+		pBuildOutput = Proc()
+		pBuildOutput.ppldir = testdir
+		pBuildOutput.output = ''
+		yield pBuildOutput, '', {}
+		yield pBuildOutput, {}, {}, ProcOutputError, 'Process output should be str/list/OrderedDict, not: \'dict\''
+		yield pBuildOutput, 'a', {}, ProcOutputError, 'One of <key>:<type>:<value> missed for process output in: \'a\''
+		yield pBuildOutput, ['a:b:c:d'], {}, ProcOutputError, 'Too many parts for process output in: \'a:b:c:d\''
+		yield pBuildOutput, OrderedDict([('a:b:c', 'd')]), {}, ProcOutputError, 'Too many parts for process output key in: \'a:b:c\''
+		yield pBuildOutput, 'a:b:c', {}, ProcOutputError, 'Unknown output type: \'b\''
+		yield pBuildOutput, 'a:c, b:file:d, e:dir:f', OrderedDict([
+			('a', ('var', 'c')),
+			('b', ('file', 'd')),
+			('e', ('dir', 'f')),
+		])
+
+	def testBuildOutput(self, p, inout, outout, exception = None, msg = None):
+		p.output = inout
+		if exception:
+			self.assertRaisesStr(exception, msg, p._buildOutput)
+		else:
+			p._buildProps()
+			p._buildOutput()
+			for k, v in outout.items():
+				t, o = p.output[k]
+				o = o.source
+				self.assertEqual(t, v[0])
+				self.assertEqual(o, v[1])
+				
+	def dataProvider_testBuildScript(self, testdir):
+		pBuildScript = Proc()
+		pBuildScript.ppldir = testdir
+		yield pBuildScript, '', '#!/usr/bin/env bash\n', None, None, [
+			'WARNING',
+			'No script specified'
+		]
+		
+		tplfile = path.join(testdir, 'scriptTpl.txt')
+		helpers.writeFile(tplfile, '\n'.join([
+			'A',
+			'B',
+			'## PYPPL REPEAT START: repeat  #',
+			'Repeat1',
+			'## PYPPL REPEAT END',
+			'',
+			'## PYPPL REPEAT START: repeat #',
+			'Repeat2',
+			'## PYPPL REPEAT END',
+			'C',
+			'  ### PYPPL INDENT REMOVE',
+			'  D',
+			'    E',
+			'  # PYPPL INDENT KEEP ###',
+			'  F'
+		]) + '\n')
+		yield pBuildScript, 'file:' + tplfile, '\n'.join([
+			'#!/usr/bin/env bash',
+			'A',
+			'B',
+			'Repeat1',
+			'',
+			'C',
+			'D',
+			'  E',
+			'  F',
+		]) + '\n'
+		
+		tplfile = path.join(testdir, 'nosuchtpl')
+		yield pBuildScript, 'file:' + tplfile, '', ProcScriptError, 'No such template file:'
+				
+	def testBuildScript(self, p, inscript, outscript, exception = None, msg = None, errs = []):
+		p.script = inscript
+		if exception:
+			self.assertRaisesStr(exception, msg, p._buildScript)
+		else:
+			with helpers.log2str(levels = 'all') as (out, err):
+				p._buildProps()
+				p._buildScript()
+			self.assertTextEqual(p.script.source, outscript)
+			stderr = err.getvalue()
+			for err in errs:
+				self.assertIn(err, stderr)
+				
+	def dataProvider_testSaveSettings(self, testdir):
+		pSaveSettings = Proc()
+		pSaveSettings.ppldir = testdir
+		yield pSaveSettings, [
+			'[brings]',
+			'[channel]',
+			'value: []',
+			'[depends]',
+			'procs: []',
+			'[echo]',
+			'jobs: []',
+			'type: {"stderr": null, "stdout": null}',
+			'[expart]',
+			'value_0: TemplatePyPPL <  >',
+			'[expect]',
+			'value: TemplatePyPPL <  >',
+			'[input]',
+			'[output]',
+			'[procvars]',
+			'args: {}',
+			'proc: {"args": {}, "',
+			'[rc]',
+			'value: [0]',
+			'[runner]',
+			'value: local',
+			'[script]',
+			'value:',
+			'	"TemplatePyPPL < #!/usr/bin/env bash >"',
+			'[sets]',
+			'value: [\'ppldir\']',
+			'[size]',
+			'value: %s' % (len(sys.argv) - 1), 
+			'[suffix]',
+			'value: ',
+			'[template]',
+			'name: TemplatePyPPL',
+			'[workdir]',
+			'value: ',
+		]
+		
+		pSaveSettings1 = Proc()
+		pSaveSettings1.ppldir = testdir
+		infile1 = path.join(testdir, 'pSaveSettings1-in1.txt')
+		infile2 = path.join(testdir, 'pSaveSettings1-in2.txt')
+		brfile1 = path.join(testdir, 'pSaveSettings1-in1.br')
+		brfile2 = path.join(testdir, 'pSaveSettings1-in2.br')
+		helpers.writeFile(infile1)
+		helpers.writeFile(infile2)
+		helpers.writeFile(brfile1)
+		helpers.writeFile(brfile2)
+		pSaveSettings1.input    = {'a': 1, 'b:file': [infile1, infile2], 'c:files': [[infile1, infile2]]}
+		pSaveSettings1.brings   = {'b': '{{fn(in.b)}}.br'}
+		pSaveSettings1.output   = 'out:file:{{fn(in.b)}}-{{in.a}}.out'
+		pSaveSettings1.echo     = {'jobs': [0,1]}
+		pSaveSettings1.expart   = '*-1.out'
+		pSaveSettings1.expect   = 'grep 1 {{out.out}}'
+		pSaveSettings1.args.a   = 'a'
+		pSaveSettings1.rc       = '0,1'
+		pSaveSettings1.script   = 'echo {{in.a}} > {{out.out}}'
+		pSaveSettings1.template = 'jinja2'
+		yield pSaveSettings1, [
+			'[brings]',
+			'b: [\'TemplateJinja2 < {{fn(in.b)}}.br >\']',
+			'[channel]',
+			'value: []',
+			'[depends]',
+			'procs: []',
+			'[echo]',
+			'jobs: [0, 1]',
+			'type: {"stderr": null, "stdout": null}',
+			'[expart]',
+			'value_0: TemplateJinja2 < *-1.out >',
+			'[expect]',
+			'value: TemplateJinja2 < grep 1 {{out.out}} >',
+			'[input]',
+			'a.type: var',
+			'a.data#0',
+			'	1',
+			'a.data#1',
+			'	1',
+			'b.type: file',
+			'b.data#0',
+			'pSaveSettings1-in1.txt',
+			'b.data#1',
+			'pSaveSettings1-in2.txt',
+			'[output]',
+			'out.type: file',
+			'out.data: TemplateJinja2 < {{fn(in.b)}}-{{in.a}}.out >',
+			'[procvars]',
+			'args: {"a": "a"}',
+			'proc: {"args": {"a": "a"}, "brings": {"b": ["TemplateJinja2 < {{fn(in.b)}}.br >"]}, "echo": {}, "expart": [], "expect": null, "ppldir": "',
+			'[rc]',
+			'value: [0, 1]',
+			'[runner]',
+			'value: local',
+			'[script]',
+			'value:',
+			'	"TemplateJinja2 <<<"',
+			'	"\\t#!/usr/bin/env bash"',
+			'	"\\techo {{in.a}} > {{out.out}}"',
+			'	">>>"',
+			'[sets]',
+			'value: [\'ppldir\', \'input\', \'brings\', \'output\', \'echo\', \'expart\', \'expect\', \'rc\', \'script\', \'template\']',
+			'[size]',
+			'value: 2',
+			'[suffix]',
+			'value: ',
+			'[template]',
+			'name: TemplateJinja2',
+			'[workdir]',
+			'value: ',
+		]
+		
+	def testSaveSettings(self, p, settings):
+		self.maxDiff = None
+		with helpers.log2str() as (out, err):
+			p._buildInput()
+			p._buildProcVars ()
+			p._buildProps()
+			p._buildBrings()
+			p._buildOutput()
+			p._buildScript()
+			p._saveSettings()
+		psettings = helpers.readFile(path.join(p.workdir, 'proc.settings'), str)
+		for setting in settings:
+			self.assertIn(setting, psettings)
+			psettings = psettings[(psettings.find(setting) + len(setting)):]
 	
-	def testTidybeforeRun(self):
-		with captured_output():
-			logger.getLogger()
-		p = Proc('tbr')
-		# empty output
-		p.input = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
-		p.output = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
-		p.script = 'echo {{in.a}} > {{out.outfile}}'
-		p._tidyBeforeRun()
-		settingfile = path.join(p.workdir, 'proc.settings')
-		self.assertPathExists(settingfile)
-
-		# callfront
-		p.callfront = lambda p: setattr(p, 'resume', 'skip+')
-		#utils.safeRemove(settingfile)
-		p._tidyBeforeRun()
-		self.assertPathExists(settingfile)
-
-		self.assertEqual(p.size, 5)
-		for job in p.jobs:
-			self.assertIsInstance(job, Job)
+	def dataProvider_testBuildJobs(self, testdir):
+		pBuildJobs = Proc()
+		pBuildJobs.ppldir = testdir
+		infile1 = path.join(testdir, 'pBuildJobs-in1.txt')
+		infile2 = path.join(testdir, 'pBuildJobs-in2.txt')
+		helpers.writeFile(infile1)
+		helpers.writeFile(infile2)
+		pBuildJobs.input    = {'a': 1, 'b:file': [infile1, infile2], 'c:files': [[infile1, infile2]]}
+		pBuildJobs.output   = 'out:file:{{in.b | fn}}-{{in.a}}.out'
+		pBuildJobs.script   = 'echo {{in.a}} > {{out.out}}'
+		with helpers.log2str(levels = 'all') as (out, err):
+			pBuildJobs._buildProps ()
+			pBuildJobs._buildInput ()
+			pBuildJobs._buildProcVars ()
+			pBuildJobs._buildBrings ()
+			pBuildJobs._buildOutput()
+			pBuildJobs._buildScript()
+		yield pBuildJobs, 2, [
+			path.join(pBuildJobs.workdir, '1', 'output', 'pBuildJobs-in1-1.out'),
+			path.join(pBuildJobs.workdir, '2', 'output', 'pBuildJobs-in2-1.out')
+		], ['out'], [
+			'INPUT',
+			'/2] a   => 1',
+			'/2]  b  => %s' % pBuildJobs.workdir,
+			'/2] _b  => %s' % testdir,
+			'/2]  c  => [%s' % pBuildJobs.workdir,
+			'/2]         %s' % pBuildJobs.workdir,
+			'/2] _c  => [%s' % testdir,
+			'/2]         %s' % testdir,
+			'OUTPUT',
+			'/2] out => %s' % pBuildJobs.workdir
+		]
+		
+		pBuildJobs1 = Proc()
+		pBuildJobs1.ppldir = testdir
+		yield pBuildJobs1, 0, [], [], [
+			'WARNING', 
+			'No data found for jobs, process will be skipped.'
+		]
+		
+	def testBuildJobs(self, p, size, channel, chkeys, errs = []):
+		with helpers.log2str(levels = 'all') as (out, err):
+			p._buildJobs ()
+		stderr = err.getvalue()
+		self.assertEqual(len(p.jobs), size)
+		channel = Channel.create(channel)
+		self.assertListEqual(p.channel, channel)
+		for i, key in enumerate(chkeys):
+			self.assertListEqual(getattr(p.channel, key), channel.colAt(i))
+		for err in errs:
+			self.assertIn(err, stderr)
+			stderr = stderr[(stderr.find(err) + len(err)):]
 	
-	def testTidyAfterRun(self):
-		with captured_output() as (out, err):
-			logger.getLogger(levels = 'all')
-			p = Proc('tar')
-			p.resume = 'skip+'
-			p.callback = lambda x: 1
-			p._tidyAfterRun()
-		self.assertIn('Calling callback ...', err.getvalue())
-
-		with captured_output() as (out, err):
-			logger.getLogger(levels = 'all')
-			p = Proc('tar2')
-			p.resume = 'resume'
-			p.callback = lambda x: 1
-			p._tidyAfterRun()
-		self.assertIn('Calling callback ...', err.getvalue())
-
-
-	def testCheckCached(self):
-		logger.getLogger()
-		p = Proc('testCheckCached')
-		# empty output
-		p.runner = 'testr'
-		p.input = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
-		p.output = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
-		p.script = 'echo {{in.a}} > {{out.outfile}}'
-		with captured_output() as (out, err):
-			logger.getLogger()
+	def dataProvider_testTidyBeforeRun(self, testdir):
+		pTidyBeforeRun= Proc()
+		pTidyBeforeRun.ppldir = testdir
+		yield pTidyBeforeRun, []
+		pTidyBeforeRun1 = Proc()
+		pTidyBeforeRun1.ppldir = testdir
+		pTidyBeforeRun1.props['callfront'] = lambda p: p.log('hello')
+		yield pTidyBeforeRun1, ['DEBUG', 'Calling callfront ...', 'INFO', 'hello']
+	
+	def testTidyBeforeRun(self, p, errs = []):
+		with helpers.log2str(levels = 'all') as (out, err):
 			p._tidyBeforeRun()
-			for i in [0,1,2,3,4]:
-				utils.safeRemove(path.join(p.workdir, str(i)))
-			self.assertFalse(p._checkCached())
-
-		self.assertEqual(p.ncjobids, [0,1,2,3,4])
-		self.assertIn('Truely cached jobs: []', err.getvalue())
-		self.assertIn('Export cached jobs: []', err.getvalue())
-
-		p._tidyBeforeRun()
-		job = p.jobs[0]
-		job.rc(utils.dumbPopen(['bash', job.script]).wait())
-		job.cache()
-		self.assertFalse(p._checkCached())
-		self.assertIn('Truely cached jobs: 0', err.getvalue())
-		self.assertIn('Export cached jobs: []', err.getvalue())
-
-	def testRunJobs(self):
-		with captured_output() as (out, err):
-			logger.getLogger(levels = 'all')
-		p = Proc('runjobs')
-		# empty output
+		stderr = err.getvalue()
+		for err in errs:
+			self.assertIn(err, stderr)
+			stderr = stderr[(stderr.find(err) + len(err)):]
+			
+	def dataProvider_testRunCmd(self, testdir):
+		pRunCmd = Proc()
+		pRunCmd.ppldir = testdir
+		yield pRunCmd, 'beforeCmd'
+		pRunCmd1 = Proc()
+		pRunCmd1.ppldir = testdir
+		pRunCmd1.beforeCmd = "echo 456; echo 123 >&2"
+		yield pRunCmd1, 'beforeCmd', None, None, [
+			'INFO',
+			'Running <beforeCmd> ...',
+			'CMDOUT',
+			'456',
+			'CMDERR',
+			'123'
+		]
+		pRunCmd2 = Proc()
+		pRunCmd2.ppldir = testdir
+		pRunCmd2.beforeCmd = "xxx 123 >&2"
+		yield pRunCmd2, 'beforeCmd', ProcRunCmdError, 'Failed to run <beforeCmd>:\n\nxxx 123 >&2'
+		pRunCmd3 = Proc()
+		pRunCmd3.ppldir = testdir
+		pRunCmd3.afterCmd = "xxx 123 >&2"
+		yield pRunCmd3, 'beforeCmd'
+		pRunCmd4 = Proc()
+		pRunCmd4.ppldir = testdir
+		pRunCmd4.afterCmd = "exit 1"
+		yield pRunCmd4, 'afterCmd', ProcRunCmdError, 'Failed to run <afterCmd>:\n\nexit 1'
 		
-		p.forks  = 5
-		p.input  = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
-		p.output = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
-		p.script = 'echo {{in.a}} > {{out.outfile}}'
-
-		p._tidyBeforeRun()
-		for job in p.jobs:
-			utils.safeRemove(job.data['out']['outfile'])
-		p._checkCached()
-		p.props['runner'] = 'testr'
-		p._runJobs()
-		for job in p.jobs:
-			job.checkOutfiles()
-			self.assertFalse(job.succeed())
-		p.props['runner'] = 'nosuchrunner'
-		p._tidyBeforeRun()
-		p._checkCached()
-		self.assertRaises(KeyError, p._runJobs)
-
-		p.props['runner'] = 'testnr'
-		p._tidyBeforeRun()
-		for job in p.jobs:
-			utils.safeRemove(job.data['out']['outfile'])
-		p._checkCached()
-		p._runJobs()
-		for job in p.jobs:
-			job.checkOutfiles()
-			self.assertTrue(job.succeed())
-
-		# coverage __init__.py:994
-		#logger.getLogger()
-		p.cclean = True
-		p._tidyBeforeRun()
-		for job in p.jobs:
-			utils.safeRemove(job.data['out']['outfile'])
-		#p._checkCached()
-		p.props['ncjobids'] = []
-		p._runJobs()
-		for job in p.jobs:
-			job.checkOutfiles()
-			# job not run (cached)
-			self.assertFalse(job.succeed())
+	def testRunCmd(self, p, key, exception = None, msg = None, errs = []):
+		p._buildProps()
+		if exception:
+			self.assertRaisesStr(exception, msg, p._runCmd, key)
+		else:
+			with helpers.log2str() as (out, err):
+				p._runCmd(key)
+			stderr = err.getvalue()
+			for err in errs:
+				self.assertIn(err, stderr)
+				stderr = stderr[(stderr.find(err) + len(err)):]
+	
+	def dataProvider_testReadConfig(self, testdir):
+		pReadConfig = Proc()
+		yield pReadConfig, {}, 'local', {}
+		pReadConfig1 = Proc()
+		pReadConfig1.runner = 'sge1d'
+		pReadConfig1.forks  = 8
+		yield pReadConfig1, {'runner': 'sge', 'nsub': 10, 'forks': 4, 'ppldir': testdir}, 'sge', {'runner': 'sge1d', 'forks': 8, 'maxsubmit': 10, 'ppldir': testdir}
 		
-
-	def testRunJobsExpect(self):
-		logger.getLogger()
-		p = Proc('runjobsexpect')
-		# no expectation
-		p.runner = 'testr'
-		p.input = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
-		p.output = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
-		p.script = 'echo {{in.a}} > {{out.outfile}}'
-		p.expect = 'grep abc {{out.outfile}}'
-		with captured_output() as (out, err):
-			logger.getLogger()
-			p._tidyBeforeRun()
-			for job in p.jobs:
-				utils.safeRemove(job.data['out']['outfile'])
-			p._checkCached()
-			p._runJobs()
-		for job in p.jobs:
-			job.checkOutfiles()
-			self.assertFalse(job.succeed())
-
-
-	def testRun(self):
-		logger.getLogger()
-		p = Proc('testRun')
-		# empty output
-		p.nthread = 5
-		p.input   = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
-		p.output  = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
-		p.script  = 'echo {{in.a}} > {{out.outfile}}'
-		p.runner  = 'testnr'
-		#p.resume  = 'skip'
-		with captured_output() as (out, err):
-			logger.getLogger()
-			p.run()
-		self.assertIn('p.testRun', err.getvalue())
-
-		p.resume  = 'skip'
-		with captured_output() as (out, err):
-			logger.getLogger()
-			p.run()
-		self.assertIn('Pipeline will resume from future processes', err.getvalue())
-
-		logger.getLogger(levels = 'all')
-		p.resume = 'resume'
-		with captured_output() as (out, err):
-			logger.getLogger()
-			p.run()
-		self.assertIn('RESUMED', err.getvalue())
-
-		for job in p.jobs:
-			job.done()
-
-		p.resume = ''
-		with captured_output() as (out, err):
-			logger.getLogger()
-			p.run()
-		self.assertIn('CACHED', err.getvalue())
-
-		p.resume = 'skip+'
-		with captured_output() as (out, err):
-			logger.getLogger()
-			p.run()
-		self.assertIn('SKIPPED', err.getvalue())
-
-		self.assertTrue(p.config['cache'])
-		with captured_output() as (out, err):
-			logger.getLogger(levels = 'all')
-			p.profile = 'dryprofile'
-			p.run({
-				'runner': 'dry'
-			})
-		# PyPPL({'dryprofile': {'runner': 'dry'}})
-		self.assertEqual(p.runner, 'dry')
-		self.assertFalse(p.config['cache'])
-		self.assertIn('Attribute profile is deprecated, please use runner instead.', err.getvalue())
-
-	def testRunCachedRunning(self):
-		with captured_output() as (out, err):
-			logger.getLogger()
-		p = Proc('trcr')
-		p.input   = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
-		p.output  = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
-		p.script  = 'echo {{in.a}} > {{out.outfile}}'
-		p.runner  = 'testnr'
-		p.forks   = 5
-		p.props['ncjobids'] = []
-		p.cclean  = True
-		p.run()
-		self.assertIn('Truely cached jobs: ALL', err.getvalue())
-
-	def testRunExpect(self):
-		with captured_output() as (out, err): logger.getLogger()
-		p = Proc('testRunExpect')
-		# empty output
-		p.runner = 'testnr'
-		p.input = {'a': [1,2,3,4,5], 'b': [6,7,8,9,10]}
-		p.output = "outfile:file:out{{in.b}}.txt, o2:{{in.a}}2"
-		p.script = 'echo {{in.a}} > {{out.outfile}}'
-		p.expect = 'grep walfafwawnn {{out.outfile}}'
-		self.assertRaises(SystemExit, p.run)
-		self.assertEqual(p.ncjobids, [0,1,2,3,4])
+	def testReadConfig(self, p, inconfig, runner, outconfig):
+		p._readConfig(inconfig)
+		self.assertEqual(p.runner, runner)
+		self.assertDictIn(outconfig, p.config)
 		
-
+	def dataProvider_testTidyAfterRun(self, testdir):
+		pTidyAfterRun = Proc()
+		pTidyAfterRun.props['callback'] = lambda p: p.log('goodbye')
+		yield pTidyAfterRun, 'terminate', 'skip+', None, [
+			'DEBUG',
+			'Calling callback ...',
+			'INFO',
+			'goodbye'
+		]
+		
+		pTidyAfterRun1 = Proc()
+		pTidyAfterRun1.ppldir = testdir
+		pTidyAfterRun1.input = {'in': [1,2]}
+		pTidyAfterRun1.props['callback'] = lambda p: p.log('goodbye')
+		pTidyAfterRun1._tidyBeforeRun()
+		# write rc to job.rc
+		for job in pTidyAfterRun1.jobs:
+			helpers.writeFile(job.rcfile, 0)
+		yield pTidyAfterRun1, 'terminate', '', None, [
+			'DEBUG',
+			'Successful jobs: ALL',
+			'INFO',
+			'goodbye'
+		]
+		
+		pTidyAfterRun2 = Proc()
+		pTidyAfterRun2.ppldir = testdir
+		pTidyAfterRun2.input = {'in': [1,2]}
+		pTidyAfterRun2._tidyBeforeRun()
+		# write rc to job.rc
+		helpers.writeFile(pTidyAfterRun2.jobs[0].rcfile, 0)
+		helpers.writeFile(pTidyAfterRun2.jobs[1].rcfile, 1)
+		yield pTidyAfterRun2, 'terminate', '', SystemExit, [
+			'ERROR',
+			'failed (totally 1). Return code: 1 (Script error).',
+			'[2/2] Script:',
+			'[2/2] Stdout:',
+			'[2/2] Stderr:',
+			'[2/2] check STDERR below:',
+			'<EMPTY STDERR>',
+		]
+		yield pTidyAfterRun2, 'ignore', '', None, [
+			'WARNING',
+			'[2/2] failed but ignored (totally 1). Return code: 1 (Script error).',
+		]
+		
+	def testTidyAfterRun(self, p, errhow, resume, exception = None, errs = []):
+		p.props['errhow'] = errhow
+		p.props['resume'] = resume
+		if exception:
+			self.assertRaises(exception, p._tidyAfterRun)
+		else:
+			with helpers.log2str(levels = 'all') as (out, err):
+				p._tidyAfterRun()
+			stderr = err.getvalue()
+			for err in errs:
+				self.assertIn(err, stderr)
+				stderr = stderr[(stderr.find(err) + len(err)):]
+				
+	def dataProvider_testCheckCached(self, testdir):
+		pCheckCached = Proc()
+		pCheckCached.props['cache'] = False
+		yield pCheckCached, False, [
+			'DEBUG',
+			'Not cached, because proc.cache is False'
+		]
+		
+		# all cached
+		pCheckCached1 = Proc()
+		pCheckCached1.ppldir = testdir
+		pCheckCached1.input  = {'a': [1,2]}
+		with helpers.log2str():
+			pCheckCached1._tidyBeforeRun()
+		for job in pCheckCached1.jobs:
+			job.cache()
+		yield pCheckCached1, True, [
+			'INFO',
+			'Truly cached jobs: ALL',
+			'Export-cached jobs: []'
+		]
+	
+		# all export cached
+		pCheckCached2 = Proc()
+		pCheckCached2.ppldir = testdir
+		pCheckCached2.input  = {'a': [1,2]}
+		pCheckCached2.output = 'a:file:{{in.a}}.txt'
+		pCheckCached2.cache  = 'export'
+		pCheckCached2.exdir  = testdir 
+		with helpers.log2str():
+			pCheckCached2._tidyBeforeRun()
+		for i, job in enumerate(pCheckCached2.jobs):
+			helpers.writeFile(job.rcfile, 0)
+			helpers.writeFile(path.join(job.outdir, str(i+1) + '.txt'))
+			helpers.writeFile(path.join(testdir, str(i+1) + '.txt'))
+			
+		yield pCheckCached2, True, [
+			'INFO',
+			'Truly cached jobs: []',
+			'Export-cached jobs: ALL'
+		]
+		
+		# partially cached
+		pCheckCached3 = Proc()
+		pCheckCached3.ppldir = testdir
+		pCheckCached3.input  = {'a': [1,2]}
+		with helpers.log2str():
+			pCheckCached3._tidyBeforeRun()
+		pCheckCached3.jobs[0].cache()
+		yield pCheckCached3, False, [
+			'INFO',
+			'Truly cached jobs: 0',
+			'Export-cached jobs: []',
+			'Partly cached, only run non-cached 1 job(s).',
+			'DEBUG',
+			'Jobs to run: 1'
+		]
+		
+		# no jobs cached
+		pCheckCached4 = Proc()
+		pCheckCached4.ppldir = testdir
+		pCheckCached4.input  = {'a': [1,2]}
+		with helpers.log2str():
+			pCheckCached4._tidyBeforeRun()
+		yield pCheckCached4, False, [
+			'DEBUG',
+			'Not cached, none of the jobs are cached.',
+		]
+		
+	def testCheckCached(self, p, ret, errs):
+		with helpers.log2str(levels = 'all') as (out, err):
+			r = p._checkCached()
+		self.assertEqual(r, ret)
+		stderr = err.getvalue()
+		for err in errs:
+			self.assertIn(err, stderr)
+			stderr = stderr[(stderr.find(err) + len(err)):]
+	
+	def dataProvider_testRunJobs(self, testdir):
+		pRunJobs = Proc()
+		pRunJobs.ppldir = testdir
+		pRunJobs.input  = {'a': [1,2]}
+		with helpers.log2str():
+			pRunJobs._tidyBeforeRun()
+		yield pRunJobs,
+	
+	def testRunJobs(self, p):
+		self.assertIsNone(p._runJobs())
+		
+	def dataProvider_testRun(self, testdir):
+		pRun = Proc()
+		pRun.ppldir = testdir
+		pRun.input  = {'a': [1,2]}
+		with helpers.log2str():
+			pRun._tidyBeforeRun()
+		yield pRun, {'runner': 'dry'}, False, [
+			'RUNNING',
+			pRun.workdir,
+			'INFO',
+			'Done (time: '
+		]
+		pRun1 = Proc()
+		pRun1.ppldir = testdir
+		pRun1.props['resume'] = 'skip'
+		
+		yield pRun1, {}, True, [
+			'SKIPPED',
+			'Pipeline will resume from future processes.'
+		]
+		pRun2 = Proc()
+		pRun2.ppldir = testdir
+		pRun2.input  = {'a': [1,2]}
+		with helpers.log2str():
+			pRun2._tidyBeforeRun()
+		pRun2.props['resume'] = 'skip+'
+		yield pRun2, {}, True, [
+			'SKIPPED',
+			'Data loaded, pipeline will resume from future processes.'
+		]
+		
+		pRun3 = Proc()
+		pRun3.ppldir = testdir
+		pRun3.input  = {'a': [1,2]}
+		with helpers.log2str():
+			pRun3._tidyBeforeRun()
+		for job in pRun3.jobs:
+			job.cache()
+		yield pRun3, {}, True, [
+			'CACHED',
+			pRun3.workdir
+		]
+		pRun4 = Proc()
+		pRun4.ppldir = testdir
+		pRun4.input  = {'a': [1,2]}
+		with helpers.log2str():
+			pRun4._tidyBeforeRun()
+		for job in pRun4.jobs:
+			job.cache()
+		pRun4.props['resume'] = 'resume'		
+		yield pRun4, {}, True, [
+			'RESUMED',
+			pRun4.workdir
+		]
+		
+		
+	def testRun(self, p, config, cache, errs = []):
+		RunnerLocal.INTERVAL = .1
+		with helpers.log2str(levels = 'all') as (out, err):
+			p.run(config)
+		self.assertEqual(p.cache, cache)
+		stderr = err.getvalue()
+		for err in errs:
+			self.assertIn(err, stderr)
+			stderr = stderr[(stderr.find(err) + len(err)):]
+	
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

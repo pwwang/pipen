@@ -144,25 +144,25 @@ class TestRunner(helpers.TestCase):
 		# stderr
 		job3 = _generateJob(testdir, index = 3, pProps = {'echo': {'jobs': [3], 'type': {'stderr': None}}})
 		yield job3, {}, OrderedDict([
-			('pyppl.log: 123', ('p: [4/0]  123', ''))
+			('pyppl.log: 123', ('[4/0]  123', ''))
 		])
 		yield job3, {}, OrderedDict([
 			('456\n78', ('456', '78')),
 			('9\npyppl.log', ('789', 'pyppl.log')),
 			(': 123', ('', 'pyppl.log: 123')),
-			('a\n78', ('p: [4/0]  123a', '78')),
+			('a\n78', ('[4/0]  123a', '78')),
 			('b', ('78b', '')),
 		])
 		# stderr filter
 		job4 = _generateJob(testdir, index = 4, pProps = {'echo': {'jobs': [4], 'type': {'stderr': '^7'}}})
 		yield job4, {}, OrderedDict([
-			('pyppl.log.flag ', ('p: [5/0] ', ''))
+			('pyppl.log.flag ', ('[5/0] ', ''))
 		])
 		yield job4, {}, OrderedDict([
 			('456\n78', ('', '78')),
 			('9\npyppl.log', ('789', 'pyppl.log')),
 			(': 123', ('', 'pyppl.log: 123')),
-			('a\n78', ('p: [5/0]  123a', '78')),
+			('a\n78', ('[5/0]  123a', '78')),
 			('b', ('78b', '')),
 		])
 		
@@ -227,10 +227,11 @@ class TestRunner(helpers.TestCase):
 		), True, ['24']
 		
 	def testRun(self, job, ret, outs = [], errs = []):
+		Runner.INTERVAL = .1
 		r = Runner(job)
 		with helpers.log2str() as (out, err):
 			r.submit()
-			o = r.run(.1)
+			o = r.run()
 		self.assertEqual(o, ret)
 		stdout = out.getvalue()
 		stderr = err.getvalue()
@@ -289,9 +290,10 @@ class TestRunnerLocal(helpers.TestCase):
 		), False, [], ['123456']
 	
 	def testSubmitNRun(self, job, ret, outs = [], errs = []):
+		RunnerLocal.INTERVAL = .1
 		r = RunnerLocal(job)
 		r.submit()
-		o = r.run(.1)
+		o = r.run()
 		self.assertEqual(o, ret)
 		stdout = helpers.readFile(job.outfile, str)
 		stderr = helpers.readFile(job.errfile, str)
@@ -353,9 +355,10 @@ class TestRunnerDry(helpers.TestCase):
 		yield job, True, [path.join(job.outdir, 'runndry.txt')], [path.join(job.outdir, 'runndry.dir')]
 	
 	def testSubmitNRun(self, job, ret, files = [], dirs = []):
+		RunnerDry.INTERVAL = .1
 		r = RunnerDry(job)
 		r.submit()
-		o = r.run(.1)
+		o = r.run()
 		self.assertEqual(o, ret)
 		for f in files:
 			self.assertTrue(path.isfile(f))
@@ -520,9 +523,10 @@ class TestRunnerSsh(helpers.TestCase):
 		), False, [], ['123456']
 	
 	def testSubmitNRun(self, job, ret, outs = [], errs = []):
+		RunnerSsh.INTERVAL = .1
 		r = RunnerSsh(job)
 		r.submit()
-		o = r.run(.1)
+		o = r.run()
 		self.assertEqual(o, ret)
 		stdout = helpers.readFile(job.outfile, str)
 		stderr = helpers.readFile(job.errfile, str)
@@ -677,12 +681,13 @@ class TestRunnerSge(helpers.TestCase):
 		yield job1, False, False, False
 		
 	def testIsRunning(self, job, beforesub = False, aftersub = True, afterrun = False):
+		RunnerSge.INTERVAL = .2
 		r = RunnerSge(job)
 		self.assertEqual(r.isRunning(), beforesub)
 		r.submit()
 		self.assertEqual(r.isRunning(), aftersub)
 		with helpers.log2str():
-			r.run(.2)
+			r.run()
 		self.assertEqual(r.isRunning(), afterrun)
 
 
@@ -835,12 +840,13 @@ class TestRunnerSlurm(helpers.TestCase):
 		yield job1, False, False, False
 		
 	def testIsRunning(self, job, beforesub = False, aftersub = True, afterrun = False):
+		RunnerSlurm.INTERVAL = .2
 		r = RunnerSlurm(job)
 		self.assertEqual(r.isRunning(), beforesub)
 		r.submit()
 		self.assertEqual(r.isRunning(), aftersub)
 		with helpers.log2str():
-			r.run(.2)
+			r.run()
 		self.assertEqual(r.isRunning(), afterrun)
 
 

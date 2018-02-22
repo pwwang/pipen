@@ -10,7 +10,7 @@ class TemplatePyPPLSyntaxError(Exception):
 		name = ': ' + repr(name) if name else ''
 		src  = ' in "%s"' % src if src else ''
 		msg  = msg or 'Template syntax error'
-		super(Exception, self).__init__(str(msg) + src + name)
+		super(TemplatePyPPLSyntaxError, self).__init__(str(msg) + src + name)
 
 class TemplatePyPPLRenderError(Exception):
 	"""
@@ -18,7 +18,7 @@ class TemplatePyPPLRenderError(Exception):
 	"""
 	def __init__(self, stack, src = None):
 		src = ' in ' + repr(src) if src else ''
-		super(Exception, self).__init__(stack + src)
+		super(TemplatePyPPLRenderError, self).__init__(stack + src)
 
 class LoggerThemeError(Exception):
 	"""
@@ -26,15 +26,15 @@ class LoggerThemeError(Exception):
 	"""
 	def __init__(self, name, msg = None):
 		msg = msg or "Logger theme error"
-		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
+		super(LoggerThemeError, self).__init__(str(msg) + ': ' + repr(name))
 
 class ParameterNameError(Exception):
 	"""
-	Malformat name not allowed
+	Malformed name not allowed
 	"""
 	def __init__(self, name, msg = None):
 		msg = msg or "Parameter name error"
-		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
+		super(ParameterNameError, self).__init__(str(msg) + ': ' + repr(name))
 
 class ParameterTypeError(Exception):
 	"""
@@ -42,7 +42,7 @@ class ParameterTypeError(Exception):
 	"""
 	def __init__(self, name, msg = None):
 		msg = msg or "Parameter type error"
-		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
+		super(ParameterTypeError, self).__init__(str(msg) + ': ' + repr(name))
 
 class ParametersParseError(Exception):
 	"""
@@ -50,7 +50,7 @@ class ParametersParseError(Exception):
 	"""	
 	def __init__(self, name, msg = None):
 		msg = msg or 'Error when parsing command line arguments'
-		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
+		super(ParametersParseError, self).__init__(str(msg) + ': ' + repr(name))
 
 class ParametersLoadError(Exception):
 	"""
@@ -58,7 +58,7 @@ class ParametersLoadError(Exception):
 	"""	
 	def __init__(self, name, msg = None):
 		msg = msg or 'Error loading dict to Parameters'
-		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
+		super(ParametersLoadError, self).__init__(str(msg) + ': ' + repr(name))
 
 class ProcTreeProcExists(Exception):
 	"""
@@ -67,12 +67,13 @@ class ProcTreeProcExists(Exception):
 	def __init__(self, pn1, pn2):
 		msg = [
 			"There are two processes with id(%s) and tag(%s)" % (pn1.proc.id, pn1.proc.tag),
+			"",
 			">>> One is defined here:",
 			''.join(pn1.defs),
 			">>> The other is defined here:",
 			''.join(pn2.defs)
 		]
-		super(Exception, self).__init__("\n".join(msg))
+		super(ProcTreeProcExists, self).__init__("\n".join(msg))
 
 class ProcTreeParseError(Exception):
 	"""
@@ -80,7 +81,7 @@ class ProcTreeParseError(Exception):
 	"""
 	def __init__(self, name, msg = None):
 		msg = msg or 'Failed to parse the process tree'
-		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
+		super(ProcTreeParseError, self).__init__(str(msg) + ': ' + repr(name))
 
 class JobInputParseError(Exception):
 	"""
@@ -88,7 +89,7 @@ class JobInputParseError(Exception):
 	"""
 	def __init__(self, name, msg = None):
 		msg = msg or 'Failed to parse the input data'
-		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
+		super(JobInputParseError, self).__init__(str(msg) + ': ' + repr(name))
 
 class JobBringParseError(Exception):
 	"""
@@ -96,7 +97,7 @@ class JobBringParseError(Exception):
 	"""
 	def __init__(self, name, msg = None):
 		msg = msg or 'Failed to parse the bring data'
-		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
+		super(JobBringParseError, self).__init__(str(msg) + ': ' + repr(name))
 
 class JobOutputParseError(Exception):
 	"""
@@ -104,11 +105,56 @@ class JobOutputParseError(Exception):
 	"""
 	def __init__(self, name, msg = None):
 		msg = msg or 'Failed to parse the output data'
-		super(Exception, self).__init__(str(msg) + ': ' + repr(name))
+		super(JobOutputParseError, self).__init__(str(msg) + ': ' + repr(name))
 
 class RunnerSshError(Exception):
 	"""
 	Raise when failed to initiate RunnerSsh
 	"""
 	def __init__(self, msg = 'Failed to initiate RunnerSsh'):
-		super(Exception, self).__init__(str(msg))
+		super(RunnerSshError, self).__init__(str(msg))
+		
+class ProcTagError(Exception):
+	"""
+	Raise when malformed tag is assigned to a process
+	"""
+	def __init__(self, msg = 'Failed to specify tag for process.'):
+		super(ProcTagError, self).__init__(str(msg))
+		
+class ProcAttributeError(Exception):
+	"""
+	Raise when set/get process' attributes
+	"""
+	def __init__(self, name, msg = 'No such attribute'):
+		super(ProcAttributeError, self).__init__(str(msg) + ': ' + repr(name))	
+		
+class ProcInputError(Exception):
+	"""
+	Raise when failed to parse process input
+	"""
+	def __init__(self, name, msg = 'Failed to parse input'):
+		super(ProcInputError, self).__init__(str(msg) + ': ' + repr(name))
+		
+class ProcOutputError(Exception):
+	"""
+	Raise when failed to parse process output
+	"""
+	def __init__(self, name, msg = 'Failed to parse output'):
+		super(ProcOutputError, self).__init__(str(msg) + ': ' + repr(name))
+
+class ProcScriptError(Exception):
+	"""
+	Raise when failed to parse process script
+	"""
+	def __init__(self, name, msg = 'Failed to parse process script'):
+		super(ProcScriptError, self).__init__(str(msg) + ': ' + repr(name))
+		
+class ProcRunCmdError(Exception):
+	"""
+	Raise when failed to run before/after cmds for process
+	"""
+	def __init__(self, cmd, key):
+		msg = 'Failed to run <%s>:\n\n' % key
+		msg += cmd
+		super(ProcRunCmdError, self).__init__(msg)
+				

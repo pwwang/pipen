@@ -518,8 +518,17 @@ class TestTemplate (helpers.TestCase):
 		self.assertDictIn(envs, tpl.envs)
 		self.assertDictIn(newenvs, tpl.envs)
 
-	def testStr(self):
-		self.assertRaises(NotImplementedError, str, Template(''))
+	def dataProvider_testStr(self):
+		yield Template(''), 'Template <  >'
+		
+	def testStr(self, t, s):
+		self.assertTextEqual(str(t), s)
+	
+	def dataProvider_testRepr(self):
+		self.dataProvider_testStr(self)
+	
+	def testRepr(self, t, s):
+		self.assertTextEqual(repr(t), s)
 
 	def testRender(self):
 		self.assertRaises(NotImplementedError, Template('').render, {})
@@ -542,10 +551,19 @@ class TestTemplatePyPPL (helpers.TestCase):
 		yield '',
 		yield 'a',
 		yield '{{a}}',
+		yield '{{a}}\n{{b}}',
 
 	def testStr(self, source):
 		tpl = TemplatePyPPL(source)
-		self.assertEqual(str(tpl), 'TemplatePyPPL with source: ' + tpl.source)
+		lines = source.splitlines()
+		if len(lines) <= 1:
+			self.assertEqual(str(tpl), 'TemplatePyPPL < %s >' % ''.join(lines))
+		else:
+			self.assertTextEqual(str(tpl), '\n'.join(
+				['TemplatePyPPL <<<'] +
+				['\t' + line for line in tpl.source.splitlines()] +
+				['>>>'])
+			)
 
 	def dataProvider_testRender(self):
 		source = """
@@ -596,11 +614,20 @@ class TestTemplateJinja2(helpers.TestCase):
 		yield '',
 		yield 'a',
 		yield '{{a}}',
+		yield '{{a}}\n{{b}}',
 
 	@unittest.skipIf(not helpers.moduleInstalled('jinja2'), 'Jinja2 not installed.')
 	def testStr(self, source):
 		tpl = TemplateJinja2(source)
-		self.assertEqual(str(tpl), 'TemplateJinja2 with source: ' + tpl.source)
+		lines = source.splitlines()
+		if len(lines) <= 1:
+			self.assertEqual(str(tpl), 'TemplateJinja2 < %s >' % ''.join(lines))
+		else:
+			self.assertTextEqual(str(tpl), '\n'.join(
+				['TemplateJinja2 <<<'] +
+				['\t' + line for line in tpl.source.splitlines()] +
+				['>>>'])
+			)
 
 	def dataProvider_testRender(self):
 		yield '{{name}}', {'name': 'John'}, 'John'

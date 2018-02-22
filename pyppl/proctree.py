@@ -21,7 +21,7 @@ class ProcNode(object):
 		self.next    = [] # next nodes
 		self.ran     = False
 		self.start   = False
-		self.defs    = traceback.format_stack()[:-3]
+		self.defs    = traceback.format_stack()[:-4]
 
 	def sameIdTag(self, proc):
 		"""

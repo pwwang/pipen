@@ -532,7 +532,7 @@ class Job (object):
 			'output dir',
 			'CACHE_SIGOUTDIR_DIFF'
 		): return False
-		
+		self.rc(0)
 		return True
 	
 	def isExptCached (self):
@@ -551,7 +551,7 @@ class Job (object):
 		if not self.proc.exdir:
 			self.proc.log ("Job is not export-cached since export directory is not set.", "debug", "EXPORT_CACHE_EXDIR_NOTSET")
 			return False
-		
+
 		for out in self.output.values():
 			if out['type'] in self.proc.OUT_VARTYPE: continue
 			exfile = path.join (self.proc.exdir, path.basename(out['data']))
