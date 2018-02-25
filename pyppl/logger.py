@@ -33,7 +33,7 @@ THEMES = {
 	'greenOnBlack': {
 		'DONE'    : COLORS.bold + COLORS.green,
 		'DEBUG'   : COLORS.bold + COLORS.black,
-		'PROCESS' : [COLORS.bold + COLORS.cyan, COLORS.bold + COLORS.underline + COLORS.cyan],
+		'PROCESS' : [COLORS.bold + COLORS.cyan, COLORS.bold + COLORS.cyan],
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.green,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
@@ -43,7 +43,7 @@ THEMES = {
 	'blueOnBlack':  {
 		'DONE'    : COLORS.bold + COLORS.blue,
 		'DEBUG'   : COLORS.bold + COLORS.black,
-		'PROCESS' : [COLORS.bold + COLORS.cyan, COLORS.bold + COLORS.underline + COLORS.cyan],
+		'PROCESS' : [COLORS.bold + COLORS.cyan, COLORS.bold  + COLORS.cyan],
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.blue,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
@@ -53,7 +53,7 @@ THEMES = {
 	'magentaOnBlack':  {
 		'DONE'    : COLORS.bold + COLORS.magenta,
 		'DEBUG'   : COLORS.bold + COLORS.black,
-		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.underline + COLORS.blue],
+		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.blue],
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.magenta,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
@@ -63,7 +63,7 @@ THEMES = {
 	'greenOnWhite': {
 		'DONE'    : COLORS.bold + COLORS.green,
 		'DEBUG'   : COLORS.bold + COLORS.black,
-		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.underline + COLORS.blue],
+		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.blue],
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.green,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
@@ -73,7 +73,7 @@ THEMES = {
 	'blueOnWhite':  {
 		'DONE'    : COLORS.bold + COLORS.blue,
 		'DEBUG'   : COLORS.bold + COLORS.black,
-		'PROCESS' : [COLORS.bold + COLORS.magenta, COLORS.bold + COLORS.underline + COLORS.magenta],
+		'PROCESS' : [COLORS.bold + COLORS.magenta, COLORS.bold + COLORS.magenta],
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.blue,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
@@ -83,7 +83,7 @@ THEMES = {
 	'magentaOnWhite':  {
 		'DONE'    : COLORS.bold + COLORS.magenta,
 		'DEBUG'   : COLORS.bold + COLORS.black,
-		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.underline + COLORS.blue],
+		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.blue],
 		'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.magenta,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,

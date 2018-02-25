@@ -94,15 +94,15 @@ class Flowchart(object):
 	ROOTGROUP = '__ROOT__'
 
 
-	def __init__(self, fcfile = None, dotfile = None):
+	def __init__(self, fcfile, dotfile):
 		"""
 		The constructor
 		@params:
 			`fcfile`: The flowchart file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.svg'`
 			`dotfile`: The dot file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.dot'`
 		"""
-		self.fcfile  = fcfile  or path.splitext(sys.argv[0])[0] + '.pyppl.svg'
-		self.dotfile = dotfile or path.splitext(sys.argv[0])[0] + '.pyppl.dot'
+		self.fcfile  = fcfile
+		self.dotfile = dotfile
 		fmt          = path.splitext(self.fcfile)[1]
 		fmt          = 'svg' if not fmt else fmt[1:]
 		self.graph   = Digraph('PyPPL', format = fmt)

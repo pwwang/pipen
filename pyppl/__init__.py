@@ -21,7 +21,7 @@ from .job import Job, Jobmgr
 from .parameters import params, Parameter, Parameters
 from .flowchart import Flowchart
 from .proctree import ProcTree
-from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
+from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcFindError, PyPPLProcRelationError, PyPPLConfigError
 from . import logger, utils, runners, templates
 
 class Proc (object):
@@ -1072,7 +1072,7 @@ class Proc (object):
 		Submit and run the jobs
 		"""
 		runner    = PyPPL.RUNNERS[self.runner]
-		jobmgr = Jobmgr(self, min(self.maxsubmit, self.forks), runner)
+		jobmgr = Jobmgr(self, runner)
 		jobmgr.run()
 		
 		self.log('After job run, active threads: %s' % threading.active_count(), 'debug')
@@ -1094,13 +1094,15 @@ class PyPPL (object):
 		"Check documentation at: https://www.gitbook.com/book/pwwang/pyppl",
 		"You cannot have two processes with the same id and tag",
 		"beforeCmd and afterCmd only run locally",
-		"If 'workdir' is not set for a process, it will be PyPPL.<proc-id>.<proc-tag>.<uuid> under default <ppldir>",
-		"The default <ppldir> will be './workdir'",
+		"If 'workdir' is not set for a process, it will be PyPPL.<proc-id>.<proc-tag>.<suffix> under default <ppldir>",
+		"The default <ppldir> is './workdir'",
 	]
 
 	RUNNERS  = {}
 	# ~/.PyPPL.json has higher priority
 	DEFAULT_CFGFILES = ['~/.PyPPL.yaml', '~/.PyPPL', '~/.PyPPL.json']
+	# counter
+	COUNTER  = 0
 	
 	def __init__(self, config = None, cfgfile = None):
 		"""
@@ -1109,6 +1111,9 @@ class PyPPL (object):
 			`config`: the configurations for the pipeline, default: {}
 			`cfgfile`:  the configuration file for the pipeline, default: `~/.PyPPL.json` or `./.PyPPL`
 		"""
+		self.counter = PyPPL.COUNTER
+		PyPPL.COUNTER += 1
+		
 		fconfig    = {}
 		cfgIgnored = {}
 		for i in list(range(len(PyPPL.DEFAULT_CFGFILES))):
@@ -1141,8 +1146,7 @@ class PyPPL (object):
 		self.config = fconfig
 
 		fcconfig = {
-			'theme': 'default',
-			'dot'  : "dot -Tsvg {{dotfile}} -o {{fcfile}}"
+			'theme': 'default'
 		}
 		if 'flowchart' in self.config:
 			utils.dictUpdate(fcconfig, self.config['flowchart'])
@@ -1153,14 +1157,14 @@ class PyPPL (object):
 			'levels': 'normal',
 			'theme':   True,
 			'lvldiff': [],
-			'file':    path.splitext(sys.argv[0])[0] + ".pyppl.log"  
+			'file':    '%s%s.pyppl.log' % (path.splitext(sys.argv[0])[0], ('_%s' % self.counter) if self.counter else '') 
 		}
 		if 'log' in self.config:
 			if 'file' in self.config['log'] and self.config['log']['file'] is True:
 				del self.config['log']['file']
 			utils.dictUpdate(logconfig, self.config['log'])
 			del self.config['log']
-
+			
 		logger.getLogger (logconfig['levels'], logconfig['theme'], logconfig['file'], logconfig['lvldiff'])
 
 		logger.logger.info ('[  PYPPL] Version: %s' % (VERSION))
@@ -1218,8 +1222,8 @@ class PyPPL (object):
 			paths = self.tree.getPathsToStarts(end)
 			for path in paths:
 				if any([p in resumes for p in path]): continue
-				raise ValueError('One of the routes %s <- [%s] cannot be achived from resumed processes.' % (end.name(), ', '.join([p.name() for p in path])))
-
+				raise PyPPLProcRelationError('%s <- [%s]' % (end.name(), ', '.join([p.name() for p in path])), 'One of the routes cannot be achived from resumed processes')
+				
 		# set prior processes to skip
 		for rsproc in resumes:
 			rsproc.resume = rflag
@@ -1280,7 +1284,7 @@ class PyPPL (object):
 
 		# id is not allowed to set in profile
 		if 'id' in config:
-			raise AttributeError('Cannot set a unique id for all process in configuration.')
+			raise PyPPLConfigError(config['id'], 'Cannot set a universal id for all process in configuration')
 
 		return config
 
@@ -1324,8 +1328,12 @@ class PyPPL (object):
 		dftconfig = self._getProfile(profile)
 		proc      = self.tree.getNextToRun()
 		while proc:
-			proc.log (proc.desc, 'PROCESS')
-			proc.log ("%s => %s => %s" % (ProcTree.getPrevStr(proc), proc.name(), ProcTree.getNextStr(proc)))
+			name = ' %s: %s ' % (proc.name(True), proc.desc)
+			nlen = max(67, len(name)) - len(name)
+			llen = (nlen - 1) / 2 if nlen else nlen / 2
+			rlen = (nlen + 1) / 2 if nlen else nlen / 2
+			proc.log ('|>%s%s%s<|' % ('>'*llen, name, '<'*rlen), 'PROCESS')
+			proc.log ("%s => %s => %s" % (ProcTree.getPrevStr(proc), proc.name(), ProcTree.getNextStr(proc)), 'depends')
 			if 'runner' in proc.sets and proc.config['runner'] != profile:
 				proc.run(self._getProfile(proc.config['runner']))
 			else:
@@ -1342,7 +1350,7 @@ class PyPPL (object):
 		logger.logger.info ('[   DONE] Total time: %s' % utils.formatSecs (time()-timer))
 		return self
 		
-	def flowchart (self, dotfile = None, fcfile = None, dot = None):
+	def flowchart (self, fcfile = None, dotfile = None):
 		"""
 		Generate graph in dot language and visualize it.
 		@params:
@@ -1354,8 +1362,9 @@ class PyPPL (object):
 			The pipeline object itself.
 		"""
 		self.showAllRoutes()
-		dot = dot if dot else self.fcconfig['dot']
-		fc  = Flowchart(dotfile = dotfile, fcfile = fcfile, dot = dot)
+		fcfile  = fcfile or '%s%s.pyppl.svg' % (path.splitext(sys.argv[0])[0], ('_%s' % self.counter) if self.counter else '') 
+		dotfile = dotfile or '%s.dot' % (path.splitext(fcfile)[0])
+		fc  = Flowchart(fcfile = fcfile, dotfile = dotfile)
 		fc.setTheme(self.fcconfig['theme'])
 
 		for start in self.tree.getStarts():
@@ -1371,8 +1380,8 @@ class PyPPL (object):
 					for np in nextps: fc.addLink(p, np)
 
 		fc.generate()
-		logger.logger.info ('[   INFO] DOT file saved to: %s' % fc.dotfile)
 		logger.logger.info ('[   INFO] Flowchart file saved to: %s' % fc.fcfile)
+		logger.logger.info ('[   INFO] DOT file saved to: %s' % fc.dotfile)
 		return self
 
 	@staticmethod
@@ -1391,6 +1400,7 @@ class PyPPL (object):
 				procs.extend(a)
 		
 		ret = []
+
 		for pany in set(procs):
 			if isinstance(pany, Proc):
 				ret.append(pany)
@@ -1407,7 +1417,7 @@ class PyPPL (object):
 						found = True
 						ret.append(p)
 				if not found:
-					raise ValueError('Cannot find any process associates with "%s"' % str(pany))
+					raise PyPPLProcFindError(pany)
 		return list(set(ret))
 
 	@staticmethod

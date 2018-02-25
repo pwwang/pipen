@@ -26,18 +26,16 @@ class Jobmgr (object):
 	STATUS_DONE         = 4
 	STATUS_DONEFAILED   = 5
 
-	#def __init__(self, jobs, cclean, ncjobids, forks, npsubmit, runner):
-	def __init__(self, proc, maxsubmit, runner):
+	def __init__(self, proc, runner):
 		"""
 		Job manager constructor
 		@params:
 			`proc`     : The process
-			`maxsubmit`: The max number of processes to submit jobs
 			`runner`   : The runner class
 		"""
 		self.proc    = proc
 		status       = []
-		self.runners = {}
+		self.runners = OrderedDict()
 		for job in proc.jobs:
 			if not proc.cclean and job.index not in proc.ncjobids:
 				status.append(Jobmgr.STATUS_DONE)
@@ -48,7 +46,7 @@ class Jobmgr (object):
 		# number of runner processes
 		self.nprunner = min(proc.forks, len(self.runners))
 		# number of submit processes
-		self.npsubmit = min(proc.forks, proc.maxsubmit)
+		self.npsubmit = min(self.nprunner, proc.forks, proc.maxsubmit)
 
 	def allJobsDone(self):
 		"""
@@ -127,22 +125,22 @@ class Jobmgr (object):
 		"""
 		while True:
 			# if we already have enough # jobs running, wait
-				if not self.canSubmit():
-					sleep(1)
-					continue
+			if not self.canSubmit():
+				sleep(.5)
+				continue
 
-				jid = sq.get()
-				if jid is None:
-					sq.task_done()
-					break
-				
-				self.status[jid] = Jobmgr.STATUS_SUBMITTING
-				if self.runners[jid].submit():
-					self.status[jid] = Jobmgr.STATUS_SUBMITTED
-				else:
-					self.status[jid] = Jobmgr.STATUS_SUBMITFAILED
-				self.progressbar(jid, 'submit')
+			jid = sq.get()
+			if jid is None:
 				sq.task_done()
+				break
+			
+			self.status[jid] = Jobmgr.STATUS_SUBMITTING
+			if self.runners[jid].submit():
+				self.status[jid] = Jobmgr.STATUS_SUBMITTED
+			else:
+				self.status[jid] = Jobmgr.STATUS_SUBMITFAILED
+			self.progressbar(jid, 'submit')
+			sq.task_done()
 
 	def runPool(self, rq, sq):
 		"""
@@ -159,10 +157,10 @@ class Jobmgr (object):
 			else:
 				r = self.runners[jid]
 				while self.status[jid]!=Jobmgr.STATUS_SUBMITTED and self.status[jid]!=Jobmgr.STATUS_SUBMITFAILED:
-					sleep(1)
+					sleep(.5)
 				if self.status[jid]==Jobmgr.STATUS_SUBMITTED and r.run():
 					self.status[jid] = Jobmgr.STATUS_DONE
-				else:
+				else: # submission failed
 					if r.retry():
 						self.status[jid] = Jobmgr.STATUS_INITIATED
 						sq.put(jid)
@@ -177,7 +175,7 @@ class Jobmgr (object):
 		The watchdog, checking whether all jobs are done.
 		"""
 		while not self.allJobsDone():
-			sleep(1)
+			sleep(.5)
 
 		for _ in range(self.npsubmit):
 			sq.put(None)

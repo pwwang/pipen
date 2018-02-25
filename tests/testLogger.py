@@ -150,7 +150,7 @@ class TestLogger(helpers.TestCase):
 		yield {
 			'DONE'    : "{{colors.bold}}{{colors.green}}",
 			'DEBUG'   : "{{colors.bold}}{{colors.black}}",
-			'PROCESS' : ["{{colors.bold}}{{colors.cyan}}", "{{colors.bold}}{{colors.underline}}{{colors.cyan}}"],
+			'PROCESS' : ["{{colors.bold}}{{colors.cyan}}", "{{colors.bold}}{{colors.cyan}}"],
 			'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': "{{colors.green}}",
 			'has:ERR' : "{{colors.red}}",
 			'in:WARNING,RETRY' : "\x1b[1m{{colors.yellow}}",

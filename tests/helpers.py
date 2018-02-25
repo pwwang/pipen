@@ -16,6 +16,8 @@ from six import StringIO, with_metaclass, assertRaisesRegex as sixAssertRaisesRe
 fn = path.basename(inspect.getframeinfo(inspect.getouterframes(inspect.currentframe())[1][0])[0])
 
 def writeFile(f, contents = ''):
+	if isinstance(contents, list):
+		contents = '\n'.join(contents) + '\n'
 	with open(f, 'w') as fin:
 		fin.write(str(contents))
 
@@ -90,11 +92,31 @@ class DataProviderSupport(type):
 		def create_test_method(testFunc, args):
 			return lambda self: testFunc(self, *args)
 
-		def create_setupteardown_method(stfunc):
+		def create_setup_method(stfunc):
 			def stFunc(self):
 				if not re.search(r'_\d+$', self._testMethodName):
 					stfunc(self)
 			return stFunc
+			
+		def create_teardown_method(tdfunc):			
+			def tdFunc(self):
+				call = True
+				if re.search(r'_\d+$', self._testMethodName):
+					base, _, idx = self._testMethodName.rpartition('_')
+					idx = int(idx)
+					for key in classDict.keys():
+						if not key.startswith(base + '_'): continue
+						_, _, idx2 = key.rpartition('_')
+						if int(idx2) > idx:
+							call = False
+							break
+				else:
+					for key in classDict.keys():
+						if key.startswith(self._testMethodName + '_'): 
+							call = False
+							break
+				if call: tdfunc(self)
+			return tdFunc
 
 		parentDir = path.join(tempfile.gettempdir(), 'PyPPL_unittest', classname)
 		if path.isdir(parentDir):
@@ -105,10 +127,10 @@ class DataProviderSupport(type):
 
 			attr = classDict[attrName]
 			if attrName == 'setUp':
-				classDict['setUp'] = create_setupteardown_method(attr)
+				classDict['setUp'] = create_setup_method(attr)
 				continue
 			if attrName == 'tearDown':
-				classDict['tearDown'] = create_setupteardown_method(attr)
+				classDict['tearDown'] = create_teardown_method(attr)
 				continue
 
 			if not attrName.startswith("dataProvider_"):

@@ -411,10 +411,14 @@ class Parameters (object):
 				config.update(dict(cp.items(s)))
 				
 		for key, val in config.items():
-			if key.endswith(".type"):
+			if key.endswith('.type'):
 				config[key] = globals()['__builtins__'][str(val)]
 				if config[key] == list and key[:-5] in config and not isinstance(config[key[:-5]], list):
 					config[key[:-5]] = list(filter(None, config[key[:-5]].splitlines()))
+			elif key.endswith('.show') or key.endswith('.required'):
+				if isinstance(val, bool): continue
+				val = val.lower() not in ['f', 'false', 'no', 'n', '0', 'off']
+				config[key] = val
 		self.loadDict(config, show = show)
 		return self
 	

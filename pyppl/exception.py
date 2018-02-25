@@ -157,4 +157,25 @@ class ProcRunCmdError(Exception):
 		msg = 'Failed to run <%s>:\n\n' % key
 		msg += cmd
 		super(ProcRunCmdError, self).__init__(msg)
+		
+class PyPPLProcFindError(Exception):
+	"""
+	Raise when failed to find a proc
+	"""
+	def __init__(self, p, msg = 'Failed to find process'):
+		super(PyPPLProcFindError, self).__init__(str(msg) + ': ' + repr(p))
+		
+class PyPPLProcRelationError(Exception):
+	"""
+	Raise when failed to parse the relation of processes
+	"""
+	def __init__(self, p, msg):
+		super(PyPPLProcRelationError, self).__init__(str(msg) + ': ' + repr(p))
+		
+class PyPPLConfigError(Exception):
+	"""
+	Raise when failed to parse the configuration of pyppl
+	"""
+	def __init__(self, key, msg):
+		super(PyPPLConfigError, self).__init__(str(msg) + ': ' + repr(key))
 				

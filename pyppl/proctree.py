@@ -153,6 +153,8 @@ class ProcTree(object):
 		@params:
 			`starts`: The start processes
 		"""
+		for n in ProcTree.NODES.values():
+			n.start = False
 		for s in starts:
 			ProcTree.getNode(s).start = True
 

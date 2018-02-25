@@ -79,6 +79,9 @@ class TestParameter (helpers.TestCase):
 
 		p4 = Parameter('a', '0')
 		yield p4, int, 0
+		
+		p5 = Parameter('a', 'False')
+		yield p5, bool, 0
 
 	def testForceType(self, p, t, val, exception = None):
 		if exception:
@@ -114,6 +117,10 @@ class TestParameters(helpers.TestCase):
 		ps = Parameters()
 		yield ps, '_props', None, ParameterNameError
 		yield ps, 'a', 1
+		
+		ps1 = Parameters()
+		ps1.a = 'a'
+		yield ps, 'a', 'b'
 
 	def testSetGetAttr(self, ps, name, value, exception = None):
 		if exception:
@@ -472,6 +479,26 @@ class TestParameters(helpers.TestCase):
 			p2.required = False
 			p2.show = True
 			yield yamlfile, False, [p2]
+			
+		conffile = path.join(testdir, 'testLoadFile.conf')
+		helpers.writeFile(conffile, '\n'.join([
+			'[PARAM1]',
+			'a = 2',
+			'a.desc = Option a',
+			'a.type = int',
+			'a.required = f',
+			'[PARAM2]',
+			'a.type = str',
+			'b:',
+			'	1',
+			'	2',
+			'b.type = list',
+		]))
+		p3 = Parameter('a', '2')
+		p3.desc = "Option a"
+		p3.required = False
+		p4 = Parameter('b', ['1','2'])
+		yield conffile, True, [p3, p4]
 
 	def testLoadFile(self, cfgfile, show, params, exception = None, msg = None):
 		ps = Parameters()

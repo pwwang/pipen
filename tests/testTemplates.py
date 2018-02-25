@@ -525,7 +525,7 @@ class TestTemplate (helpers.TestCase):
 		self.assertTextEqual(str(t), s)
 	
 	def dataProvider_testRepr(self):
-		self.dataProvider_testStr(self)
+		yield Template(''), 'Template <  >'
 	
 	def testRepr(self, t, s):
 		self.assertTextEqual(repr(t), s)

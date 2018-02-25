@@ -352,10 +352,16 @@ class TestJob(helpers.TestCase):
 		pPrepScript.LOG_NLINE['SCRIPT_EXISTS'] = -1
 		pPrepScript.props['workdir'] = path.join(testdir, 'pPrepScript', 'workdir')
 		yield 0, pPrepScript, {}, {}, TemplatePyPPL('{{x}}'), '', TemplatePyPPLRenderError, 'unknown template variable'
+		
 		sfile = path.join(pPrepScript.workdir, '1', 'job.script')
 		makedirs(path.dirname(sfile))
 		helpers.writeFile(sfile)
 		yield 0, pPrepScript, {'x': {'type': 'var', 'data': [0]}}, {}, TemplatePyPPL('1{{in.x}}'), '10', None, None, 'Script file updated'
+		
+		sfile = path.join(pPrepScript.workdir, '2', 'job.script')
+		makedirs(path.dirname(sfile))
+		helpers.writeFile(sfile, '11')
+		yield 1, pPrepScript, {'x': {'type': 'var', 'data': [0, 1]}}, {}, TemplatePyPPL('1{{in.x}}'), '11'
 
 	def testPrepScript(self, index, proc, input, output, script, scriptout, exception = None, msg = None, errmsg = None):
 		proc.props['input']  = input

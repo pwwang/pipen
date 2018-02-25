@@ -785,6 +785,21 @@ class TestRunnerSlurm(helpers.TestCase):
 		]))
 		yield job, 
 		
+		job1 = _generateJob(
+			testdir,
+			index = 1,
+			pProps = {
+				'slurmRunner': {
+					'sbatch': path.join(__folder__, 'mocks', 'sbatch'),
+					'squeue': path.join(__folder__, 'mocks', 'squeue'),
+					'srun': path.join(__folder__, 'mocks', 'srun'),
+					'preScript': 'alias srun="%s"' % (path.join(__folder__, 'mocks', 'srun')),
+					'postScript': 'echo >\'%s\'' % (path.join(testdir, 'p', 'workdir', '2', 'job.pid'))
+				}
+			}
+		)
+		yield job1, 
+		
 	def testGetpid(self, job):
 		r = RunnerSlurm(job)
 		r.submit()
@@ -837,6 +852,23 @@ class TestRunnerSlurm(helpers.TestCase):
 				int(md5((job1.script + '.slurm').encode('utf-8')).hexdigest()[:8], 16)
 			)
 		]))
+		yield job1, False, False, False
+		
+		job2 = _generateJob(
+			testdir,
+			index = 2,
+			pProps = {
+				'expect': TemplatePyPPL(''),
+				'echo': {'jobs': [0], 'type': {'stdout': None}},
+				'slurmRunner': {
+					'sbatch': '__command_not_exists__',
+					'squeue': path.join(__folder__, 'mocks', 'squeue'),
+					'srun': path.join(__folder__, 'mocks', 'srun'),
+					'postScript': ''
+				}
+			}
+		)
+		helpers.writeFile(job2.script)
 		yield job1, False, False, False
 		
 	def testIsRunning(self, job, beforesub = False, aftersub = True, afterrun = False):
