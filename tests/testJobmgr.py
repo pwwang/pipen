@@ -282,7 +282,9 @@ class TestJobmgr(helpers.TestCase):
 		jm3.status[59] = Jobmgr.STATUS_SUBMITFAILED
 		jm3.status[60] = Jobmgr.STATUS_DONE
 		jm3.status[61] = Jobmgr.STATUS_SUBMITTED
-		yield jm3, 0, 'SUBMIT', '[01/80] [-!>x-------------------------!=>------------------] Done:   8.8% | Running: 4'
+		yield jm3, 0, 'SUBMIT', '[01/80] [=!>x-------------------------!=>------------------] Done:   8.8% | Running: 4'
+		yield jm3, 1, 'SUBMIT', '[02/80] [-!>x-------------------------!=>------------------] Done:   8.8% | Running: 4'
+		yield jm3, 2, 'SUBMIT', '[03/80] [-=>x-------------------------!=>------------------] Done:   8.8% | Running: 4'
 
 	def testProgressBar(self, jm, jid, loglevel, bar):
 		with helpers.log2str(levels = 'all') as (out, err):

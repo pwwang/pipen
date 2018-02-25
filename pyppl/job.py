@@ -89,7 +89,17 @@ class Jobmgr (object):
 		nrunning   = sum(1 for s in self.status if s == Jobmgr.STATUS_SUBMITTED or s == Jobmgr.STATUS_SUBMITFAILED)
 
 		for bi, bj in barjobs.items():
-			if any(self.status[j] == Jobmgr.STATUS_INITIATED for j in bj):
+			if jid in bj and self.status[jid] == Jobmgr.STATUS_INITIATED:
+				bar += '-'
+			elif jid in bj and self.status[jid] == Jobmgr.STATUS_SUBMITFAILED:
+				bar += '!'
+			elif jid in bj and self.status[jid] == Jobmgr.STATUS_SUBMITTED:
+				bar += '>'
+			elif jid in bj and self.status[jid] == Jobmgr.STATUS_DONEFAILED:
+				bar += 'x'
+			elif jid in bj and self.status[jid] == Jobmgr.STATUS_DONE:
+				bar += '='
+			elif any(self.status[j] == Jobmgr.STATUS_INITIATED for j in bj):
 				bar += '-'
 			elif any(self.status[j] == Jobmgr.STATUS_SUBMITFAILED for j in bj):
 				bar += '!'
