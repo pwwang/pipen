@@ -1,5 +1,57 @@
 import helpers, unittest
 
+from pyppl import Aggr, Proc
+from pyppl.aggr import DotProxy
+
+class TestDotProxy(helpers.TestCase):
+	
+	def dataProvider_testInit(self):
+		aggr = Aggr()
+		yield aggr, ''
+		yield aggr, 'prefix1.prefix2'
+	
+	def testInit(self, aggr, prefix):
+		dp = DotProxy(aggr, prefix)
+		self.assertIsInstance(dp, DotProxy)
+		self.assertIs(dp.aggr, aggr)
+		self.assertEqual(dp.prefix, prefix)
+	
+	def dataProvider_testGetAttr(self):
+		aggr = Aggr()
+		yield DotProxy(aggr, ''), 'a1'
+	
+	def testGetAttr(self, dp, name):
+		dp1 = getattr(dp, name)
+		self.assertIsInstance(dp1, DotProxy)
+		self.assertIs(dp1.aggr, dp.aggr)
+		self.assertEqual(dp1.prefix, (dp.prefix or dp.refix + '.') + name)
+	
+	def dataProvider_testIsDelegated(self):
+		yield 'a.b', 'c', '', False
+		yield 'a.bb', 'a.b', '', False
+		yield 'a.b.c.d', 'a.b', 'x.y', ['x', 'y', 'c', 'd']
+	
+	def testIsDelegated(self, prefix, dkey, dval, ret):
+		self.assertEqual(DotProxy._isDelegated(prefix, dkey, dval), ret)
+		
+	def dataProvider_testSetAttr(self):
+		p1 = Proc()
+		p2 = Proc()
+		p3 = Proc()
+		aggr = Aggr(p1, p2, p3)
+		dp = DotProxy(aggr, '')
+		yield aggr, 'a', None, None, aggr, Exception, 'a is not delegated.'
+		
+	def testSetAttr(self, dp, name, value, expval, aggr, exception = None, msg = None):
+		if exception:
+			self.assertRaisesStr(exception, msg, setattr, dp, name, value)
+		else:
+			setattr(dp, name, value)
+			self.assertEqual(expval(), value)
+
+class TestAggr(helpers.TestCase):
+	pass
+'''
 from contextlib import contextmanager
 from six import StringIO
 
@@ -238,6 +290,6 @@ class TestAggr (unittest.TestCase):
 		self.assertEqual(a.p1.args.a, 1)
 
 		c = a.copy(deps = False)
-
+'''
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

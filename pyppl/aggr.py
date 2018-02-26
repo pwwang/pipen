@@ -4,6 +4,60 @@ The aggregation of procs
 from collections import OrderedDict
 from . import utils
 
+class DotProxy(object):
+	"""
+	The proxy to do dot for attributes:
+	aggr.args.params.b = True
+	"""
+	def __init__(self, aggr, prefix = ''):
+		"""
+		@params:
+			`aggr`: The aggr
+			`prefix`: The prefix of the proxy
+		"""
+		self.__dict__['_aggr']   = aggr
+		self.__dict__['_prefix'] = prefix
+	
+	def __getattr__(self, name):
+		"""
+		@params:
+			`name`: The attribute name
+		@return:
+			Another proxy
+		"""
+		if name in self.__dict__:
+			return self.__dict__[name]
+		prefix = self.prefix or self.prefix + '.'
+		return DotProxy(self._aggr, prefix + name)
+	
+	@staticmethod
+	def _isDelegated(prefix, dkey, dval):
+		if not prefix.startswith(dkey):
+			return False
+		rest = prefix[len(dkey):]
+		if not rest.startswith('.'):
+			return False
+		return (dval + rest).split('.')
+		
+	def __setattr__(self, name, value):
+		"""
+		@params:
+			`name`: The name of the attribute
+			`value`: The value of the attribute
+		"""
+		delegated = False
+		for key, val in self._aggr._delegates.items():
+			procs, v = val
+			dots = DotProxy._isDelegated(self._prefix, key, v)
+			if not dots: conintue
+			for proc in procs:
+				obj = proc
+				for dot in dots:
+					obj = getattr(obj, dot)
+				setattr(obj, name, value)
+		if not delegated:
+			raise Exception('%s%s is not delegated.' % (self._prefix or self._prefix + '.', name))
+
 class _Proxy(object):
 	"""
 	A proxy class to implement: 
