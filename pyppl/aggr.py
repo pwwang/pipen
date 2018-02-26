@@ -2,7 +2,9 @@
 The aggregation of procs
 """
 from collections import OrderedDict
+from .exception import AggrAttributeError, AggrCopyError
 from . import utils
+
 
 class DotProxy(object):
 	"""
@@ -27,17 +29,33 @@ class DotProxy(object):
 		"""
 		if name in self.__dict__:
 			return self.__dict__[name]
-		prefix = self.prefix or self.prefix + '.'
-		return DotProxy(self._aggr, prefix + name)
+		prefix = self._prefix if not self._prefix else self._prefix + '.'
+		self.__dict__[name] = DotProxy(self._aggr, prefix + name)
+		return self.__dict__[name]
 	
 	@staticmethod
-	def _isDelegated(prefix, dkey, dval):
-		if not prefix.startswith(dkey):
-			return False
-		rest = prefix[len(dkey):]
-		if not rest.startswith('.'):
-			return False
-		return (dval + rest).split('.')
+	def _isDelegated(prefix, delegates):
+		"""
+		Tell if a prefix is delegated
+		@params:
+			`prefix`: The prefix, like 'a.a.b' from 'aggr.a.a.b'
+			`delegates`: The delegates
+				`key` is like 'args.a'
+				`dval` is like 'a.a'
+			The you are able to use aggr.a.a.b = 1 to set values for args.[p].args.a.b
+		@returns:
+			False if not delegated, else return the name array, in the above case: ['args', 'a', 'b']
+		"""
+		for key, value in delegates.items():
+			procs, val = value
+			if not prefix.startswith(key):
+				continue
+			rest = prefix[len(key):]
+			if rest and not rest.startswith('.'):
+				continue
+			return (val + rest).split('.'), procs
+		return False
+		
 		
 	def __setattr__(self, name, value):
 		"""
@@ -45,41 +63,20 @@ class DotProxy(object):
 			`name`: The name of the attribute
 			`value`: The value of the attribute
 		"""
-		delegated = False
-		for key, val in self._aggr._delegates.items():
-			procs, v = val
-			dots = DotProxy._isDelegated(self._prefix, key, v)
-			if not dots: conintue
-			for proc in procs:
-				obj = proc
-				for dot in dots:
-					obj = getattr(obj, dot)
-				setattr(obj, name, value)
+		delegated = DotProxy._isDelegated(self._prefix, self._aggr._delegates)
 		if not delegated:
-			raise Exception('%s%s is not delegated.' % (self._prefix or self._prefix + '.', name))
-
-class _Proxy(object):
-	"""
-	A proxy class to implement: 
-	```
-	a = Aggr()
-	a.arg.tool = 'bedtools' <=>
-	# for each process in a:
-	p.arg.tool = 'bedtools'
-	```
-	"""
-	def __init__(self, aggr, attr, sub):
-		self.__dict__['_aggr'] = aggr
-		self.__dict__['_attr'] = attr
-		self.__dict__['_subs'] = [sub]
-
-	def addsub(self, sub):
-		self._subs.append(sub)
-	
-	def __setattr__(self, name, value):
-		if name not in self._subs and not any([a.endswith('*') for a  in self._subs]):
-			raise AttributeError('%s.%s is not delegated.' % (self._attr, name))
-		setattr(self._aggr, self._attr + '.' + name, value)
+			raise AggrAttributeError((self._prefix if not self._prefix else self._prefix + '.') + name, 'Attribute is not delegated')
+		dots, procs = delegated
+		for proc in procs:
+			obj = proc
+			for dot in dots: obj = getattr(obj, dot)
+			setattr(obj, name, value)
+			
+	def __getitem__(self, name):
+		return getattr(self, name)
+		
+	def __setitem__(self, name, value):
+		setattr(self, name, value)
 
 class Aggr (object):
 	"""
@@ -113,23 +110,22 @@ class Aggr (object):
 			'ends'     : [],
 			'id'       : utils.varname() if 'id' not in kwargs or not kwargs['id'] else kwargs['id']
 		}
-		self.__dict__['_proxies']   = {}
-		self.__dict__['_delegates'] = {}
+		self.__dict__['_delegates'] = OrderedDict()
 		self.__dict__['_procs']     = OrderedDict()
-		#tag = utils.uid(self.id, 4) if 'tag' not in kwargs or not kwargs['tag'] else kwargs['tag']
+		
 		tag = kwargs['tag'] if 'tag' in kwargs else ''
 		
 		for proc in args:
 			pid = proc.id
-			if pid in ['starts', 'ends', 'id'] or pid in self.__dict__['_procs'] or hasattr(self, pid):
-				raise AttributeError('%s is an attribute of Aggr, use a different process id.' % pid)
+			if pid in ['starts', 'ends', 'id', '_delegates', '_props', '_procs'] or pid in self.__dict__['_procs']:
+				raise AggrAttributeError(pid, 'Use a different process id, attribute name is already taken')
 			newtag       = tag if tag else utils.uid(proc.tag + '@' + self.id, 4)
 			newproc      = proc.copy(tag = newtag, id = pid)
 			newproc.aggr = self.id
 			self.__dict__['_procs'][pid] = newproc
 		
 		if 'depends' not in kwargs or kwargs['depends']:
-			procs = list(self.__dict__['_procs'].values())
+			procs = list(self._procs.values())
 			self.starts = [procs[0]] if len(procs) > 0 else []
 			self.ends   = [procs[-1]] if len(procs) > 0 else []
 			for i, proc in enumerate(procs):
@@ -163,107 +159,55 @@ class Aggr (object):
 			`procs`: The ids of the processes. Default: None (all processes)
 			`pattr`: The attr of the processes. Default: None (same as `attr`)
 		"""
-		if attr in self.__dict__['_props'] or attr in self.__dict__['_procs']:
-			raise AttributeError('Cannot delegate process attribute to an existing Aggr attribute: %s.' % attr)
+		if attr in ['starts', 'ends', 'id', '_delegates', '_props', '_procs'] or attr in self.__dict__['_procs']:
+			raise AggrAttributeError(attr, 'Cannot delegate Proc attribute to an existing Aggr attribute')
 
 		if pattr is None: pattr = attr
 
-		if '.' in attr:
-			# can only do
-			# a.delegate('a', None, 'b') or
-			# a.delegate('a.b', None, 'b') or
-			# a.delegate('a.b', None, 'b.c.d.e') or
-			# a.delegate('a.*', None, 'b.*') or
-			# a.delegate('a.*', None, 'b.c.*') or
-			if attr.count('.') > 1: 
-				raise AttributeError('Cannot delegate process attribute to a "2-dot" Aggr attribute: %s' % attr)
-			# args.x
-			attrname, attrsub = attr.split('.')
-			if attrname in self.__dict__['_props'] or attrname in self.__dict__['_procs']:
-				raise AttributeError('Cannot delegate process attribute to an existing Aggr attribute: %s.' % attrname)
-			if pattr.endswith('.*') and attrsub != '*': 
-				raise AttributeError('Cannot delegate multiple attributes to a single one.')
+		if procs == 'starts':
+			procs = self.starts
+		elif procs == 'ends':
+			procs = self.ends
+		elif procs == 'both':
+			procs = self.starts + self.ends
+		elif procs == 'neither':
+			procs = [p for p in self._procs.values() if p not in (self.starts + self.ends)]
+		elif not procs:
+			procs = self._procs.values()
 			
-			if not attrname in self.__dict__['_proxies']:
-				self.__dict__['_proxies'][attrname] = _Proxy(self, attrname, attrsub)
-			else:
-				self.__dict__['_proxies'][attrname].addsub(attrsub)
-
-		elif pattr.endswith('.*'): 
-			raise AttributeError('Cannot delegate multiple attributes to a single one.')
-
-		self.__dict__['_delegates'][attr] = procs, pattr
+		self._delegates[attr] = procs, pattr
 
 	def __getattr__(self, name):
-		if name not in self.__dict__['_props'] and   \
-		   name not in self.__dict__['_proxies'] and \
-		   name not in self.__dict__['_procs']:
-			raise AttributeError('No such attribute: %s' % name)
-		return self.__dict__['_props'][name]   if name in self.__dict__['_props'] else   \
-			   self.__dict__['_proxies'][name] if name in self.__dict__['_proxies'] else \
-			   self.__dict__['_procs'][name]
+		if name in self.__dict__:
+			return self.__dict__[name]
+		if name in self._props:
+			return self._props[name]
+		if name in self._procs:
+			return self._procs[name]
+		
+		delegated = DotProxy._isDelegated(name, self._delegates)
+		if not delegated:
+			raise AggrAttributeError(name, 'Attribute not delegated')
+		self.__dict__[name] = DotProxy(self, name)
+		return self.__dict__[name]
 
 	def __setattr__(self, name, value):
 		if name == 'id':
-			self.__dict__['_props'][name] = value
+			self._props[name] = value
 		elif name in ['starts', 'ends']:
-			self.__dict__['_props'][name] = list(value) if isinstance(value, tuple) or isinstance(value, list) else [value]
+			self._props[name] = list(value) if isinstance(value, tuple) or isinstance(value, list) else [value]
 		elif name in self.__dict__:
-			raise AttributeError('Attribute %s is not allowed to be modified.' % name)
-		# no star
-		elif name in self.__dict__['_delegates']:
-			procs, attr = self.__dict__['_delegates'][name]
-			if procs is None:
-				procs = self.__dict__['_procs'].values()
-			elif procs == 'starts':
-				procs = self.starts
-			elif procs == 'ends':
-				procs = self.ends
-			elif procs == 'both':
-				procs = list(set(self.starts + self.ends))
-			else:
-				procs = [self.__dict__['_procs'][pid] for pid in utils.alwaysList(procs)]
-
-			for i, proc in enumerate(procs):
-				if name == 'depends2':
-					if i < len(value): proc.depends = value[i]
-				elif name == 'input':
-					if i < len(value): proc.input   = value[i]
-				elif '.' not in attr:
-					setattr(proc, attr, value)
-				else:
-					parts = attr.split('.')
-					newv  = {parts.pop(-1): value}
-					oldv  = proc
-					while parts:
-						key  = parts.pop(0)
-						oldv = getattr(oldv, key)
-					utils.dictUpdate(oldv, newv)
-		elif '.' in name and (name.split('.')[0] + ".*") in self.__dict__['_delegates']:
-			procs, attr = self.__dict__['_delegates'][(name.split('.')[0] + ".*")]
-			if procs is None:
-				procs = self.__dict__['_procs'].values()
-			elif procs == 'starts':
-				procs = self.starts
-			elif procs == 'ends':
-				procs = self.ends
-			elif procs == 'both':
-				procs = list(set(self.starts + self.ends))
-			else:
-				procs = [self.__dict__['_procs'][pid] for pid in utils.alwaysList(procs)]
-
-			attrs = attr.split('.')
-			for i, proc in enumerate(procs):
-				parts = attrs[:-1] + [name.split('.')[-1]]
-				newv  = {parts.pop(-1): value}
-				oldv  = proc
-				while parts:
-					key  = parts.pop(0)
-					oldv = getattr(oldv, key)
-				utils.dictUpdate(oldv, newv)
+			raise AggrAttributeError(name, 'Built-in attribute is not allowed to be modified')
+		# set attributes of procs:
+		# aAggr.args = {'a': 1}
 		else:
-			for _, proc in self.__dict__['_procs'].items():
-				setattr(proc, name, value)
+			delegated = DotProxy._isDelegated(name, self._delegates)
+			if not delegated:
+				raise AggrAttributeError(name, 'Attribute is not delegated')
+			dots, procs = delegated
+			dot = dots[0]
+			for proc in procs:
+				setattr(proc, dot, value)
 	
 	def addProc (self, p, tag = None, where = None, copy = True):
 		"""
@@ -277,9 +221,10 @@ class Aggr (object):
 		"""
 		newtag = tag if tag else utils.uid(p.tag + '@' + self.id, 4)
 
-		newproc = p.copy(tag = tag, id = p.id) if copy else p
+		newproc = p.copy(id = p.id) if copy else p
+		newproc.tag  = newtag
 		newproc.aggr = self.id
-		self.__dict__['_procs'][newproc.id] = newproc
+		self._procs[newproc.id] = newproc
 		if where == 'starts' or where == 'both':
 			self.starts.append (newproc)
 		if where == 'ends' or where == 'both':
@@ -303,22 +248,14 @@ class Aggr (object):
 		ret.starts = [None] * len(self.starts)
 		ret.ends   = [None] * len(self.ends)
 
-		for k, v in self.__dict__['_delegates'].items():
-			if k not in ret.__dict__['_delegates']:
-				ret.delegate(k, *v)
 
-		for _, proc in self.__dict__['_procs'].items():
+		for k, proc in self._procs.items():
 			if tag == proc.tag:
 				# This will happen to have procs with same id and tag
-				raise ValueError('Tag "%s" is used by proc "%s" before, cannot copy with the same tag for aggregation: %s.' % (tag, proc.id, self.id))
+				raise AggrCopyError('%s.%s' % (proc.id, tag), 'Cannot copy process with same id and tag')
 			
-			if proc not in self.starts and deps:
-				for d in proc.depends:
-					if d not in self.__dict__['_procs'].values():
-						raise ValueError('Failed to copy "%s": a non-start proc ("%s") depends on a proc("%s") does not belong to "%s"' % (self.id, proc.name(), d.name(), self.id))
-			newproc      = proc.copy (tag, proc.id)
+			newproc      = proc.copy (tag = tag, id = proc.id)
 			newproc.aggr = name
-
 			
 			where = 'both' if proc in self.starts and proc in self.ends \
 				else 'starts' if proc in self.starts \
@@ -331,11 +268,21 @@ class Aggr (object):
 			if where == 'ends' or where == 'both':
 				ret.ends[self.ends.index(proc)] = newproc
 		
+		# copy delegates
+		for key, value in self._delegates.items():
+			procs, val = value
+			ret._delegates[key] = (
+				[ret._procs[p.id] for p in procs],
+				val
+			)
 		# copy dependences
 		if deps:
-			for _, proc in ret.__dict__['_procs'].items():
-				if proc in ret.starts: continue
-				proc.depends = [ret.__dict__['_procs'][p.id] for p in self.__dict__['_procs'][proc.id].depends]
+			for k, proc in ret._procs.items():
+				proc.depends = [
+					p if p not in self._procs.values() else \
+					ret._procs[p.id] \
+					for p in self._procs[k].depends
+				]
 
 		return ret
 		

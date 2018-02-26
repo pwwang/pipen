@@ -178,4 +178,20 @@ class PyPPLConfigError(Exception):
 	"""
 	def __init__(self, key, msg):
 		super(PyPPLConfigError, self).__init__(str(msg) + ': ' + repr(key))
+
 				
+class AggrAttributeError(Exception):
+	"""
+	Raise when there is an error to set/get Aggr attributes
+	"""
+	def __init__(self, key, msg):
+		super(AggrAttributeError, self).__init__(str(msg) + ': ' + repr(key))
+		
+
+				
+class AggrCopyError(Exception):
+	"""
+	Raise when there is an error to set/get Aggr attributes
+	"""
+	def __init__(self, key, msg = 'Failed to copy aggregation'):
+		super(AggrCopyError, self).__init__(str(msg) + ': ' + repr(key))

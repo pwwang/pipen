@@ -785,8 +785,11 @@ class Job (object):
 				utils.safeCopy(file2ex, exfile, overwrite = self.proc.exow)
 			elif self.proc.exhow in self.proc.EX_LINK:
 				utils.safeLink(file2ex, exfile, overwrite = self.proc.exow)
-			else:
-				utils.safeMoveWithLink(file2ex, exfile, overwrite = self.proc.exow)
+			else: # move
+				if path.islink(file2ex):
+					utils.safeCopy(file2ex, exfile, overwrite = self.proc.exow)
+				else:
+					utils.safeMoveWithLink(file2ex, exfile, overwrite = self.proc.exow)
 			
 			self.proc.log ('%s Exported: %s' % (indexstr, exfile), 'export')
 				
@@ -1007,11 +1010,15 @@ class Job (object):
 				'type': outtype,
 				'data': outdata
 			}
-			if outtype in self.proc.OUT_FILETYPE + self.proc.OUT_DIRTYPE:
+			if outtype in self.proc.OUT_FILETYPE + self.proc.OUT_DIRTYPE + self.proc.OUT_STDOUTTYPE + self.proc.OUT_STDERRTYPE:
 				if path.isabs(outdata):
 					raise JobOutputParseError(outdata, 'Absolute path not allowed for output file/dir for key %s' % repr(key))
 				self.output[key]['data'] = path.join(self.outdir, outdata)
 				self.data['out'][key]    = path.join(self.outdir, outdata)
+				if outtype in self.proc.OUT_STDOUTTYPE:
+					utils._link(self.outfile, self.data['out'][key])
+				if outtype in self.proc.OUT_STDERRTYPE:
+					utils._link(self.errfile, self.data['out'][key])
 	
 	def _prepScript (self):
 		"""

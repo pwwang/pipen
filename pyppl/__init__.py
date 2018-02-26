@@ -75,9 +75,11 @@ class Proc (object):
 		'JOB_RESETTING': -1,
 	}
 	
-	OUT_VARTYPE  = ['var']
-	OUT_FILETYPE = ['file', 'path']
-	OUT_DIRTYPE  = ['dir', 'folder']
+	OUT_VARTYPE     = ['var']
+	OUT_FILETYPE    = ['file', 'path']
+	OUT_DIRTYPE     = ['dir', 'folder']
+	OUT_STDOUTTYPE  = ['stdout']
+	OUT_STDERRTYPE  = ['stderr']
 	
 	IN_VARTYPE   = ['var']
 	IN_FILETYPE  = ['file', 'path', 'dir', 'folder']
@@ -899,7 +901,7 @@ class Proc (object):
 			else:
 				raise ProcOutputError(key, 'Too many parts for process output key in')
 			
-			if t not in Proc.OUT_DIRTYPE + Proc.OUT_FILETYPE + Proc.OUT_VARTYPE:
+			if t not in Proc.OUT_DIRTYPE + Proc.OUT_FILETYPE + Proc.OUT_VARTYPE + Proc.OUT_STDOUTTYPE + Proc.OUT_STDERRTYPE:
 				raise ProcOutputError(t, 'Unknown output type')
 			self.props['output'][k] = (t, self.template(val, **self.tplenvs))
 		

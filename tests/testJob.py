@@ -332,9 +332,27 @@ class TestJob(helpers.TestCase):
 		}
 		yield 0, pPrepOutput, {
 			'a': {'type': 'var', 'data': [0]}
-		}, {'a': ('file', TemplatePyPPL('/a/b/1{{in.a}}'))}, {}, {}, JobOutputParseError, 'Absolute path not allowed for output file/dir'
+		}, {
+			'a': ('file', TemplatePyPPL('/a/b/1{{in.a}}'))
+		}, {}, {}, JobOutputParseError, 'Absolute path not allowed for output file/dir'
+		yield 0, pPrepOutput, {
+			'a': {'type': 'var', 'data': [0]}
+		}, {
+			'a': ('file', TemplatePyPPL('{{in.a}}.out')),
+			'b': ('stdout', TemplatePyPPL('{{in.a}}.stdout')),
+			'c': ('stderr', TemplatePyPPL('{{in.a}}.stderr')),
+		}, {
+			'a': {'type': 'file', 'data': path.join(pPrepOutput.workdir, '1', 'output', '0.out')},
+			'b': {'type': 'stdout', 'data': path.join(pPrepOutput.workdir, '1', 'output', '0.stdout')},
+			'c': {'type': 'stderr', 'data': path.join(pPrepOutput.workdir, '1', 'output', '0.stderr')},
+		}, {
+			'a': path.join(pPrepOutput.workdir, '1', 'output', '0.out'),
+			'b': path.join(pPrepOutput.workdir, '1', 'output', '0.stdout'),
+			'c': path.join(pPrepOutput.workdir, '1', 'output', '0.stderr'),
+		}
 		
 	def testPrepOutput(self, index, proc, input, output, jobout, outdata, exception = None, msg = None):
+		self.maxDiff = None
 		proc.props['input']  = input
 		proc.props['output'] = output
 		job = Job(index, proc)
@@ -344,7 +362,7 @@ class TestJob(helpers.TestCase):
 		else:
 			job._prepOutput()
 			self.assertTrue(path.isdir(job.outdir))
-			self.assertDictEqual(job.output, jobout)
+			self.assertDictEqual(dict(job.output), jobout)
 			self.assertDictEqual(job.data['out'], outdata)
 
 	def dataProvider_testPrepScript(self, testdir):
@@ -788,6 +806,25 @@ class TestJob(helpers.TestCase):
 		helpers.writeFile(afile12)
 		yield job12, [(path.isfile, afile12)], [(path.isfile, afile12_ex), (path.islink, afile12)]
 		
+		pExportSingle13 = Proc()
+		pExportSingle13.props['workdir'] = path.join(testdir, 'pExportSingle13', 'workdir')
+		pExportSingle13.props['script'] = TemplatePyPPL('')
+		pExportSingle13.props['exdir'] = path.join(testdir, 'exdir')
+		pExportSingle13.props['exhow'] = 'move'
+		pExportSingle13.props['output'] = {
+			'a': ('stdout', TemplatePyPPL('whatever.out')),
+			'b': ('stderr', TemplatePyPPL('whatever.err'))
+		}
+		job13 = Job(0, pExportSingle13)
+		job13.init()
+		afile13    = path.join(job13.outdir, 'whatever.out')
+		afile13_ex = path.join(pExportSingle13.exdir, 'whatever.out')
+		bfile13    = path.join(job13.outdir, 'whatever.err')
+		bfile13_ex = path.join(pExportSingle13.exdir, 'whatever.err')
+		helpers.writeFile(afile13)
+		helpers.writeFile(bfile13)
+		yield job13, [(path.isfile, afile13_ex), (path.isfile, bfile13_ex)], [(path.islink, afile13_ex), (path.islink, bfile13_ex)]
+		
 	def testExportSingle(self, job, truths, falsehoods, exception = None):
 		if exception:
 			self.assertRaises(exception, job.export)
@@ -810,10 +847,10 @@ class TestJob(helpers.TestCase):
 		somefile = path.join(testdir, 'somefile')
 		helpers.writeFile(somefile)
 		makedirs(pExport.exdir)
-		truths = [(path.isfile, somefile), (path.islink, path.join(pExport.exdir, 'pexport-multiple.txt'))]
-		falsehoolds = [(path.islink, somefile)]
+		truths = [(path.isfile, somefile), (path.isfile, path.join(pExport.exdir, 'pexport-multiple.txt'))]
+		falsehoolds = [(path.islink, somefile), (path.islink, path.join(pExport.exdir, 'pexport-multiple.txt'))]
 		tappend = truths.append
-		#fappend = falsehoolds.append
+		fappend = falsehoolds.append
 		jobs = []
 		for i in range(2):
 			job = Job(i, pExport)
@@ -822,27 +859,32 @@ class TestJob(helpers.TestCase):
 			outfile = path.join(job.outdir, 'pexport-multiple.txt')
 			symlink(somefile, outfile)
 			tappend((path.islink, outfile))
+		
 		jobs1 = []
 		truths1 = []
 		falsehoolds1 = []
+		tappend1 = truths1.append
+		fappend1 = falsehoolds1.append
 		for i in range(2, 20):
 			job = Job(i, pExport)
 			jobs1.append(job)
 			job.init()
 			outfile = path.join(job.outdir, 'pexport-multiple.txt')
 			symlink(somefile, outfile)
-			tappend((path.islink, outfile))
+			tappend1((path.isfile, outfile))
+			
 		jobs2 = []
 		truths2 = []
 		falsehoolds2 = []
+		tappend2 = truths2.append
+		fappend2 = falsehoolds2.append
 		for i in range(20, 200):
 			job = Job(i, pExport)
 			jobs2.append(job)
 			job.init()
 			outfile = path.join(job.outdir, 'pexport-multiple.txt')
 			symlink(somefile, outfile)
-			tappend((path.islink, outfile))
-			
+			tappend2((path.isfile, outfile))
 		yield jobs, truths, falsehoolds
 		yield jobs1, truths1, falsehoolds1
 		yield jobs2, truths2, falsehoolds2
@@ -852,6 +894,7 @@ class TestJob(helpers.TestCase):
 			with helpers.log2str():
 				jobs[i].export()
 		utils.parallel(func = export_func, args = [(i,) for i in range(len(jobs))], nthread = len(jobs), method = 'process')
+		i = 0
 		for func, outfile in truths:
 			self.assertTrue(func(outfile))
 		for func, outfile in falsehoods:

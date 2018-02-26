@@ -390,6 +390,7 @@ class TestProc(helpers.TestCase):
 		self.assertEqual(orgp.envs, {})
 		self.assertEqual(orgp.args, {})
 		self.assertEqual(orgp.sets, ['workdir'])
+		self.assertIsInstance(p.args, Box)
 		self.assertEqual(p.args, {'a': 1})
 		self.assertEqual(p.output, {'a:var': 'outputa'})
 		self.assertEqual(p.envs, {'b': 2})
@@ -639,6 +640,13 @@ class TestProc(helpers.TestCase):
 			('a', ('var', 'c')),
 			('b', ('file', 'd')),
 			('e', ('dir', 'f')),
+		])
+		yield pBuildOutput, 'a:c, b:file:d, e:dir:f, g:stdout:h, i:stderr:j', OrderedDict([
+			('a', ('var', 'c')),
+			('b', ('file', 'd')),
+			('e', ('dir', 'f')),
+			('g', ('stdout', 'h')),
+			('i', ('stderr', 'j')),
 		])
 
 	def testBuildOutput(self, p, inout, outout, exception = None, msg = None):

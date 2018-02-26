@@ -1,7 +1,9 @@
 import helpers, unittest
 
-from pyppl import Aggr, Proc
+from collections import OrderedDict
+from pyppl import Aggr, Proc, Box, utils
 from pyppl.aggr import DotProxy
+from pyppl.exception import AggrAttributeError, AggrCopyError
 
 class TestDotProxy(helpers.TestCase):
 	
@@ -13,8 +15,10 @@ class TestDotProxy(helpers.TestCase):
 	def testInit(self, aggr, prefix):
 		dp = DotProxy(aggr, prefix)
 		self.assertIsInstance(dp, DotProxy)
-		self.assertIs(dp.aggr, aggr)
-		self.assertEqual(dp.prefix, prefix)
+		self.assertIsInstance(dp._aggr, Aggr)
+		self.assertIsInstance(aggr, Aggr)
+		self.assertIs(dp._aggr, aggr)
+		self.assertEqual(dp._prefix, prefix)
 	
 	def dataProvider_testGetAttr(self):
 		aggr = Aggr()
@@ -23,24 +27,47 @@ class TestDotProxy(helpers.TestCase):
 	def testGetAttr(self, dp, name):
 		dp1 = getattr(dp, name)
 		self.assertIsInstance(dp1, DotProxy)
-		self.assertIs(dp1.aggr, dp.aggr)
-		self.assertEqual(dp1.prefix, (dp.prefix or dp.refix + '.') + name)
+		self.assertIsInstance(dp._aggr, Aggr)
+		self.assertIsInstance(dp1._aggr, Aggr)
+		self.assertIs(dp1._aggr, dp._aggr)
+		self.assertEqual(dp1._prefix, (dp._prefix if not dp._prefix else dp._prefix + '.') + name)
+		
+		dp2 = dp[name]
+		self.assertIsInstance(dp2, DotProxy)
+		self.assertIsInstance(dp2._aggr, Aggr)
+		self.assertIs(dp2._aggr, dp._aggr)
+		self.assertEqual(dp2._prefix, (dp._prefix if not dp._prefix else dp._prefix + '.') + name)
 	
 	def dataProvider_testIsDelegated(self):
-		yield 'a.b', 'c', '', False
-		yield 'a.bb', 'a.b', '', False
-		yield 'a.b.c.d', 'a.b', 'x.y', ['x', 'y', 'c', 'd']
+		yield 'a.b', {'c': ([], 'c')}, False
+		yield 'a.bb', {'a.b': ([], 'a.b')}, False
+		yield 'args', {'args': ([], 'args')}, (['args'], [])
+		yield 'args.a', {'args.a': ([], 'args.a')}, (['args', 'a'], [])
+		yield 'a.b.c.d', {'a.b': ([], 'x.y')}, (['x', 'y', 'c', 'd'], [])
 	
-	def testIsDelegated(self, prefix, dkey, dval, ret):
-		self.assertEqual(DotProxy._isDelegated(prefix, dkey, dval), ret)
+	def testIsDelegated(self, prefix, delegates, ret):
+		r = DotProxy._isDelegated(prefix, delegates)
+		if isinstance(r, bool):
+			self.assertEqual(r, ret)
+		else:
+			self.assertTupleEqual(r, ret)
 		
 	def dataProvider_testSetAttr(self):
-		p1 = Proc()
-		p2 = Proc()
-		p3 = Proc()
-		aggr = Aggr(p1, p2, p3)
+		pSetAttr1 = Proc()
+		pSetAttr2 = Proc()
+		pSetAttr3 = Proc()
+		aggr = Aggr(pSetAttr1, pSetAttr2, pSetAttr3)
 		dp = DotProxy(aggr, '')
-		yield aggr, 'a', None, None, aggr, Exception, 'a is not delegated.'
+		yield aggr, 'a', None, None, aggr, AggrAttributeError, 'Attribute is not delegated: \'a\''
+		
+		pSetAttr3.args.b = Box(c = 3)
+		aggr1 = Aggr(pSetAttr1, pSetAttr2, pSetAttr3)
+		aggr1.delegate('args', 'ends')
+		dp1 = DotProxy(aggr1, 'args')
+		yield dp1, 'a', 1, lambda: aggr1.pSetAttr3.args.a, aggr1
+		
+		dp2 = DotProxy(aggr1, 'args.b')
+		yield dp2, 'c', 2, lambda: aggr1.pSetAttr3.args.b.c, aggr1
 		
 	def testSetAttr(self, dp, name, value, expval, aggr, exception = None, msg = None):
 		if exception:
@@ -48,248 +75,269 @@ class TestDotProxy(helpers.TestCase):
 		else:
 			setattr(dp, name, value)
 			self.assertEqual(expval(), value)
+			
+			dp[name] = value
+			self.assertEqual(expval(), value)
 
 class TestAggr(helpers.TestCase):
-	pass
-'''
-from contextlib import contextmanager
-from six import StringIO
-
-from pyppl import Proc, Aggr, utils, Channel, Box
-from pyppl.aggr import _Proxy
-
-@contextmanager
-def captured_output():
-	new_out, new_err = StringIO(), StringIO()
-	old_out, old_err = sys.stdout, sys.stderr
-	try:
-		sys.stdout, sys.stderr = new_out, new_err
-		yield sys.stdout, sys.stderr
-	finally:
-		sys.stdout, sys.stderr = old_out, old_err
-
-class TestAggr (unittest.TestCase):
 	
-	def testInit(self):
-		p1 = Proc()
-		p2 = Proc()
-		a = Aggr(p1, p2)
-		self.assertIsInstance(a, Aggr)
-		self.assertIsNot(a.starts[0], p1)
-		self.assertIsNot(a.ends[0], p2)
-		self.assertEqual(a.starts[0].id, 'p1')
-		self.assertEqual(a.ends[0].id, 'p2')
-		self.assertIn(a.p1, a.p2.depends)
-
-		b = Aggr(p1, p2, depends = False)
-		self.assertEqual(b.starts, [])
-		self.assertEqual(b.ends, [])
-
-		self.assertRaises(AttributeError, Aggr, p1.copy(newid = 'id'))
-		self.assertRaises(AttributeError, Aggr, p1.copy(newid = 'starts'))
-		self.assertRaises(AttributeError, Aggr, p1.copy(newid = 'ends'))
-		self.assertRaises(AttributeError, Aggr, p1.copy(newid = 'delegate'))
-		self.assertRaises(AttributeError, Aggr, p1.copy(newid = 'addProc'))
-		self.assertRaises(AttributeError, Aggr, p1.copy(newid = 'copy'))
-
-	def testProxy(self):
-		a = Aggr()
-		p = _Proxy(a, 'args', 'a')
-		self.assertIsInstance(a, Aggr)
-		self.assertIsInstance(p, _Proxy)
-		p.addsub('b')
-		self.assertEqual(p.__dict__['_subs'], ['a', 'b'])
-		self.assertRaises(AttributeError, p.__setattr__, 'x', 1)
-		p.a = 1
-		p.b = 2
-
-	def testGetAttr(self):
-		p = Proc()
-		a = Aggr(p)
-		a.delegate('args.x')
-		a.delegate('args.y')
-		self.assertEqual(a.starts, [a.p])
-		self.assertEqual(a.ends, [a.p])
-		self.assertEqual(a.id, 'a')
-		self.assertIsInstance(a.args, _Proxy)
-		self.assertEqual(a.args._subs, ['x', 'y'])
-		self.assertIsInstance(a.p, Proc)
-		self.assertIsNot(a.p, p)
-		self.assertEqual(a._procs, {'p': a.p})
-
-		a.args.x = 1
-		a.args.y = 2
-		self.assertEqual(a.p.args.x, 1)
-		self.assertEqual(a.p.args.y, 2)
-
-		a.delegate('a.*', None, 'args.*')
-		a.a.x = 3
-		a.a.y = 4
-		self.assertEqual(a.p.args.x, 3)
-		self.assertEqual(a.p.args.y, 4)
-
-	def testDelegate(self):
-		p1 = Proc()
-		p2 = Proc()
-		p1.args.args1 = Box()
-		a = Aggr(p1, p2)
-		self.assertRaises(AttributeError, a.delegate, 'starts')
-		self.assertRaises(AttributeError, a.delegate, 'x.a.b')
-		self.assertRaises(AttributeError, a.delegate, 'id.b')
-		self.assertRaises(AttributeError, a.delegate, 'args', None, 'x.*')
-		self.assertRaises(AttributeError, a.delegate, 'args.x', None, 'x.*')
+	def dataProvider_testInit(self):
+		pInit1 = Proc()
+		pInit2 = Proc()
+		pInit3 = Proc()
+		pInit4 = Proc()
+		pInit5 = Proc()
 		
-
-		a.delegate('a')
-		a.delegate('b', 'starts')
-		a.delegate('c', 'ends')
-		a.delegate('d', 'both')
-		a.delegate('a', 'p1', 'args.x') # overwrite
-		a.delegate('tplenvs.a', pattr = 'desc')
-		a.delegate('a.*', None, 'args.*')
-		a.delegate('f.*', 'p1', 'args.args1.*')
-		self.assertEqual(a._delegates, {
-			'a': ('p1', 'args.x'),
-			'a.*': (None, 'args.*'),
-			'b': ('starts', 'b'),
-			'c': ('ends', 'c'),
-			'd': ('both', 'd'),
-			'depends': ('starts', 'depends'),
-			'depends2': ('starts', 'depends2'),
-			'exdir': ('ends', 'exdir'),
-			'exhow': ('ends', 'exhow'),
-			'exow': ('ends', 'exow'),
-			'expart': ('ends', 'expart'),
-			'input': ('starts', 'input'),
-			'tplenvs.a': (None, 'desc'),
-			'f.*': ('p1', 'args.args1.*')
-		})
-		a.f.j = 2
-		a.tplenvs.a = 'hahahah'
-		a.a.a = 'aaa'
-		self.assertEqual(a.p1.args.args1.j, 2)
-		self.assertEqual(a.p2.desc, 'hahahah')
-		self.assertEqual(a.p2.args.a, 'aaa')
-
-	def testSet(self):
-		p1 = Proc()
-		p2 = Proc()
-		a = Aggr(p1, p2)
-		a.id = 'aa'
-		self.assertEqual(a.__dict__['_props']['id'], 'aa')
-		a.forks = 20
-		self.assertEqual(a.p1.forks, 20)
-		self.assertEqual(a.p2.forks, 20)
-		a.delegate('errhow', 'p2')
-		a.errhow = 'retry'
-		self.assertEqual(a.p2.errhow, 'retry')
-		self.assertEqual(a.p1.errhow, 'terminate')
-		a.delegate('args.*')
-		a.args.a = 2
-		self.assertEqual(a.p1.args, {'a':2})
-		self.assertEqual(a.p2.args, {'a':2})
-		a.args.a = 1
-		self.assertEqual(a.p1.args, {'a':1})
-		self.assertEqual(a.p2.args, {'a':1})
-		a.delegate('tplenvs.*')
-		a.tplenvs.x = 1
-		self.assertEqual(a.p1.tplenvs, {'x':1})
-		self.assertEqual(a.p2.tplenvs, {'x':1})
+		yield [pInit1.copy(id = 'starts'), pInit2, pInit3, pInit4, pInit5], {}, AggrAttributeError, 'Use a different process id, attribute name is already taken: \'starts\''
+		yield [pInit1.copy(id = '_procs'), pInit2, pInit3, pInit4, pInit5], {}, AggrAttributeError, 'Use a different process id, attribute name is already taken: \'_procs\''
+		yield [pInit1, pInit2.copy(id = 'pInit1'), pInit3, pInit4, pInit5], {}, AggrAttributeError, 'Use a different process id, attribute name is already taken: \'pInit1\''
+		yield [pInit1.copy(tag = '1st'), pInit2, pInit3, pInit4, pInit5], {}
+		yield [pInit1.copy(tag = '1st'), pInit2, pInit3, pInit4, pInit5], {'tag': 'aggr'}
+		yield [pInit1, pInit2, pInit3, pInit4, pInit5], {'depends': False}
+		yield [pInit1, pInit2, pInit3, pInit4, pInit5], {}
+		yield [pInit1], {}
+		yield [pInit1, pInit2, pInit3, pInit4, pInit5], {'id': 'aggr2'}
+		
+	def testInit(self, args, kwargs, exception = None, msg = None):
+		self.maxDiff = None
+		if exception:
+			self.assertRaisesStr(exception, msg, Aggr, *args, **kwargs)
+		else:
+			aggr = Aggr(*args, **kwargs)
+			self.assertEqual(aggr.id, 'aggr' if 'id' not in kwargs else kwargs['id'])
+			for i, p in enumerate(aggr._procs.values()):
+				self.assertEqual(p.tag, kwargs['tag'] if 'tag' in kwargs else utils.uid(args[i].tag + '@' + aggr.id, 4))
+				self.assertEqual(p.aggr, aggr.id)
+				self.assertIs(aggr._procs[p.id], p)
+			if ('depends' not in kwargs or kwargs['depends']) and len(args) > 0:
+				self.assertListEqual(aggr.starts, [aggr._procs.values()[0]])
+				self.assertListEqual(aggr.ends  , [aggr._procs.values()[-1]])
+				for i, proc in enumerate(aggr._procs.values()):
+					if i == 0: continue
+					self.assertIs(proc.depends[0], aggr._procs.values()[i - 1])
+				# delegates
+				self.assertDictEqual(aggr._delegates, {
+					'depends2': ([aggr._procs.values()[0]], 'depends2'),
+					'depends' : ([aggr._procs.values()[0]], 'depends'),
+					'input' :   ([aggr._procs.values()[0]], 'input'),
+					'exdir' :   ([aggr._procs.values()[-1]], 'exdir'),
+					'exhow' :   ([aggr._procs.values()[-1]], 'exhow'),
+					'exow' :    ([aggr._procs.values()[-1]], 'exow'),
+					'expart' :  ([aggr._procs.values()[-1]], 'expart'),
+				})
+			else:
+				self.assertListEqual(aggr.starts, [])
+				self.assertListEqual(aggr.ends  , [])
+				for i, proc in enumerate(aggr._procs.values()):
+					if i == 0: continue
+					self.assertListEqual(proc.depends, [])
+				# delegates
+				self.assertDictEqual(aggr._delegates, {
+					'depends2': ([], 'depends2'),
+					'depends' : ([], 'depends'),
+					'input' :   ([], 'input'),
+					'exdir' :   ([], 'exdir'),
+					'exhow' :   ([], 'exhow'),
+					'exow' :    ([], 'exow'),
+					'expart' :  ([], 'expart'),
+				})
+	
+	def dataProvider_testDelegate(self):
+		pDelegate1 = Proc()
+		pDelegate2 = Proc()
+		pDelegate3 = Proc()
+		aggr = Aggr(pDelegate1, pDelegate2, pDelegate3)
+		yield aggr, 'starts', None, None, None, AggrAttributeError, 'Cannot delegate Proc attribute to an existing Aggr attribute: \'starts\''
+		yield aggr, 'pDelegate1', None, None, None, AggrAttributeError, 'Cannot delegate Proc attribute to an existing Aggr attribute: \'pDelegate1\''
+		yield aggr, 'args', 'starts', None, {
+			'args': ([aggr.pDelegate1], 'args')
+		}
+		yield aggr, 'args', 'ends', None, {
+			'args': ([aggr.pDelegate3], 'args')
+		}
+		yield aggr, 'args', 'both', None, {
+			'args': ([aggr.pDelegate1, aggr.pDelegate3], 'args')
+		}
+		yield aggr, 'args', 'neither', None, {
+			'args': ([aggr.pDelegate2], 'args')
+		}
+		yield aggr, 'args.a', None, 'a', {
+			'args.a': ([aggr.pDelegate1, aggr.pDelegate2, aggr.pDelegate3], 'a')
+		}
+		
 				
-		a.p1.tplenvs.b = Box()
-		a.delegate('tb', 'starts', 'tplenvs.b.c')
-		a.tb = 'h'
-		self.assertEqual(a.p1.tplenvs, {'x':1, 'b': {
-			'c': 'h'
-		}})
-
-
-		a.delegate('forks', 'starts')
-		a.forks = 10
-		self.assertEqual(a.p1.forks, 10)
-		self.assertEqual(a.p2.forks, 20)
-		a.delegate('forks', 'ends')
-		a.forks = 5
-		self.assertEqual(a.p1.forks, 10)
-		self.assertEqual(a.p2.forks, 5)
-
-		a.delegate('aa.a', 'starts', 'args.aa')
-		a.aa.a = 1
-		self.assertEqual(a.p1.args.aa, 1)
-
-	def testSetInput(self):
-		p1 = Proc()
-		p2 = Proc()
-		p3 = Proc()
-		p1.input = "in1, in2"
-		p2.input = "in1, in2"
-		a = Aggr(p1, p2, p3)
-		a.starts = [a.p1, a.p2]
-		a.p2.depends = []
-
-		a.input = [lambda x: x]*2
-		self.assertTrue(callable(a.p1.config['input']['in1, in2']))
-		self.assertTrue(callable(a.p2.config['input']['in1, in2']))
-
-		a.p1.input = "in1, in2"
-		a.p2.input = "in1, in2"
-		ch = Channel.create([(1,'a', 3, 'c'), (2, 'b', 4, 'd')])
-		a.input = [ch.slice(0, 2), ch.slice(2)]
+	def testDelegate(self, aggr, attr, procs, pattr, delegates, exception = None, msg = None):
+		pattr = pattr or attr
+		if exception:
+			self.assertRaisesStr(exception, msg, aggr.delegate, attr, procs, pattr)
+		else:
+			aggr.delegate(attr, procs, pattr)
+			self.assertDictIn(delegates, aggr._delegates)
+			
+	def dataProvider_testGetAttr(self):
+		pGetAttr1 = Proc()
+		pGetAttr2 = Proc()
+		pGetAttr3 = Proc()
+		aggr = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
+		yield aggr, '_props', aggr._props
+		yield aggr, '_delegates', aggr._delegates
+		yield aggr, '_procs', aggr._procs
+		yield aggr, 'starts', aggr.starts
+		yield aggr, 'ends', aggr.ends
+		yield aggr, 'id', aggr.id
+		yield aggr, 'pGetAttr1', aggr.pGetAttr1
+		yield aggr, 'pGetAttr2', aggr.pGetAttr2
+		yield aggr, 'pGetAttr3', aggr.pGetAttr3
+		yield aggr, 'a', None, False, AggrAttributeError, 'Attribute not delegated: \'a\''
 		
-		self.assertEqual(a.p1.config['input']['in1, in2'], [(1, 'a'), (2, 'b')])
-		self.assertEqual(a.p2.config['input']['in1, in2'], [(3, 'c'), (4, 'd')])
-
-	def testAddproc(self):
-		p1 = Proc()
-		p2 = Proc()
-		p3 = Proc()
-		a = Aggr(p1, p2)
-		b = Aggr(p1, p2)
-		c = Aggr(p1, p2)
-		d = Aggr(p1, p2)
-		a.addProc(p3)
-		b.addProc(p3, where = 'starts')
-		c.addProc(p3, where = 'ends')
-		d.addProc(p3, where = 'both')
-		self.assertIn(a.p3, a.__dict__['_procs'].values())
-		self.assertIn(b.p3, b.__dict__['_procs'].values())
-		self.assertIn(c.p3, c.__dict__['_procs'].values())
-		self.assertIn(d.p3, d.__dict__['_procs'].values())
-		self.assertNotIn(a.p3, a.starts)
-		self.assertNotIn(a.p3, a.ends)
-		self.assertIn(b.p3, b.starts)
-		self.assertNotIn(b.p3, b.ends)
-		self.assertNotIn(c.p3, c.starts)
-		self.assertIn(c.p3, c.ends)
-		self.assertIn(d.p3, d.starts)
-		self.assertIn(d.p3, d.ends)
-
-	def testCopy(self):
-		p1 = Proc()
-		p2 = Proc()
-		p3 = Proc()
-		a = Aggr(p1, p2)
-		a.delegate('args.*')
-		b = a.copy()
-		self.assertEqual(b.id, 'b')
-		self.assertEqual(b.p1.tag, utils.uid('b', 4))
-		self.assertEqual(b.p2.tag, utils.uid('b', 4))
-		self.assertEqual(b.starts, [b.p1])
-		self.assertEqual(b.ends, [b.p2])
-		self.assertIn(b.p1, b.p2.depends)
-
-		self.assertRaises(ValueError, a.copy, tag = utils.uid('a', 4))
-		a.p2.depends = p3
-		self.assertRaises(ValueError, a.copy, deps = True)
-
-		a.args.a = 1
-		self.assertEqual(a.p1.args.a, 1)
-
-		b.args.a = 2
-		self.assertEqual(b.p1.args.a, 2)
-		self.assertEqual(a.p1.args.a, 1)
-
-		c = a.copy(deps = False)
-'''
+		aggr1 = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
+		aggr1.delegate('args', 'starts')
+		yield aggr1, 'args', None, True
+		
+			
+	def testGetAttr(self, aggr, name, value, isDotProxy = False, exception = None, msg = None):
+		if exception:
+			self.assertRaisesStr(exception, msg, getattr, aggr, name)
+		elif isDotProxy:
+			self.assertIsInstance(getattr(aggr, name), DotProxy)
+		else:
+			self.assertEqual(getattr(aggr, name), value)
+			
+	def dataProvider_testSetAttr(self):
+		pSetAttr1 = Proc()
+		pSetAttr2 = Proc()
+		pSetAttr3 = Proc()
+		aggr = Aggr(pSetAttr1, pSetAttr2, pSetAttr3)
+		aggr.delegate('args', 'ends')
+		yield aggr, 'id', 'whatever', lambda: aggr.id
+		yield aggr, 'starts', (aggr.pSetAttr1, aggr.pSetAttr2), lambda: tuple(aggr.starts)
+		yield aggr, 'ends', aggr.pSetAttr3, lambda: aggr.ends[0]
+		yield aggr, '_procs', None, None, AggrAttributeError, 'Built-in attribute is not allowed to be modified'
+		yield aggr, 'a', None, None, AggrAttributeError, 'Attribute is not delegated: \'a\''
+		yield aggr, 'args', {'a': 1}, lambda: aggr.pSetAttr3.args
+			
+	def testSetAttr(self, aggr, name, value, expval, exception = None, msg = None):
+		if exception:
+			self.assertRaisesStr(exception, msg, setattr, aggr, name, value)
+		else:
+			setattr(aggr, name, value)
+			self.assertEqual(expval(), value)
+	
+	def dataProvider_testChain(self):
+		pChain1 = Proc()
+		pChain2 = Proc()
+		pChain3 = Proc()
+		pChain1.args.params = Box(c = 1, d = 2)
+		pChain3.args.b = 1
+		aggr = Aggr(pChain1, pChain2, pChain3)
+		aggr.delegate('a.p', 'starts', 'args.params')
+		aggr.delegate('a', 'ends', 'args')
+		aggr.delegate('f', 'neither', 'forks')
+		def attr_setaggr():
+			aggr.a.b = 2
+		def attr_setaggr1():
+			aggr.a.p.c = 2
+		def attr_setaggr2():
+			aggr.a.p['d'] = 3
+		def attr_setaggr3():
+			aggr.a.p.e = 4
+		def attr_setaggr4():
+			aggr.f = 10
+		yield attr_setaggr, 2, lambda: aggr.pChain3.args.b
+		yield attr_setaggr1, 2, lambda: aggr.pChain1.args.params.c
+		yield attr_setaggr2, 3, lambda: aggr.pChain1.args.params.d
+		yield attr_setaggr3, 4, lambda: 4
+		yield attr_setaggr4, 10, lambda: aggr.pChain2.forks
+	
+	def testChain(self, attr_setaggr, value, attr_getproc):
+		attr_setaggr()
+		self.assertEqual(attr_getproc(), value)
+	
+	def dataProvider_testAddProc(self):
+		pAddProc1 = Proc()
+		pAddProc2 = Proc()
+		pAddProc3 = Proc()
+		pAddProc4 = Proc(tag = 'new')
+		pAddProc5 = Proc(tag = 'new')
+		pAddProc6 = Proc(tag = 'new')
+		aggr = Aggr(pAddProc1, pAddProc2, pAddProc3)
+		yield aggr, pAddProc4, 'starts', None, True, utils.uid(pAddProc4.tag + '@' + aggr.id, 4)
+		yield aggr, pAddProc5, 'ends', None, True, utils.uid(pAddProc5.tag + '@' + aggr.id, 4)
+		yield aggr, pAddProc6, None, None, False, utils.uid(pAddProc6.tag + '@' + aggr.id, 4)
+	
+	def testAddProc(self, aggr, p, where, tag, copy, newtag):
+		self.assertIs(aggr.addProc(p, tag, where, copy), aggr)
+		if not copy:
+			self.assertIs(aggr._procs[p.id], p)
+		self.assertEqual(aggr._procs[p.id].id, p.id)
+		self.assertEqual(aggr._procs[p.id].tag, newtag)
+		if where == 'starts':
+			self.assertIn(aggr._procs[p.id], aggr.starts)
+		elif where == 'ends':
+			self.assertIn(aggr._procs[p.id], aggr.ends)
+		else:
+			self.assertNotIn(aggr._procs[p.id], aggr.starts)
+			self.assertNotIn(aggr._procs[p.id], aggr.ends)
+			
+	def dataProvider_testCopy(self):
+		pCopy1 = Proc()
+		pCopy2 = Proc()
+		pCopy3 = Proc()
+		pCopy4 = Proc()
+		aggr = Aggr(pCopy1, pCopy2, pCopy3)
+		aggr.depends = pCopy4
+		aggr.delegate('a', None, 'args')
+		yield aggr, 'newtag', True, 'newid'
+		yield aggr, None, True, None
+		yield aggr, None, False, None
+		yield aggr, aggr.pCopy1.tag, False, None, AggrCopyError, 'Cannot copy process with same id and tag: \'pCopy1.%s\'' % aggr.pCopy1.tag
+			
+	def testCopy(self, aggr, tag, deps, id, exception = None, msg = None):
+		self.maxDiff = None
+		if exception:
+			self.assertRaisesStr(exception, msg, aggr.copy, tag, deps, id)
+		else:
+			newaggr = aggr.copy(tag, deps, id)
+			# id
+			if id is None:
+				self.assertEqual(newaggr.id, 'newaggr')
+			else:
+				self.assertEqual(newaggr.id, id)
+			# tag
+			if tag is None:
+				for k, proc in newaggr._procs.items():
+					self.assertEqual(proc.tag, newaggr._procs[k].tag)
+			else:
+				for k, proc in newaggr._procs.items():
+					self.assertEqual(proc.tag, tag)
+			# procs
+			self.assertDictEqual(newaggr._procs, {k:newaggr._procs[k] for k in aggr._procs.keys()})
+			# starts, ends
+			self.assertListEqual(newaggr.starts, [newaggr._procs[p.id] for p in aggr.starts])
+			self.assertListEqual(newaggr.ends, [newaggr._procs[p.id] for p in aggr.ends])
+			# delegates
+			self.assertDictEqual(newaggr._delegates, {
+				k: ([newaggr._procs[p.id] for p in v[0]], v[1]) \
+				for k, v in aggr._delegates.items()
+			})
+			# depends
+			if deps:
+				for k, p in newaggr._procs.items():
+					self.assertListEqual(
+						list(p.depends),
+						[
+							p if not p in aggr._procs.values() else \
+							newaggr._procs[p.id] \
+							for p in aggr._procs[k].depends
+						]
+					)
+			else:
+				for k, p in newaggr._procs.items():
+					self.assertListEqual(p.depends, [])
+			
+		
+			
+		
+		
 if __name__ == '__main__':
 	unittest.main(verbosity=2)
