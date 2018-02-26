@@ -63,7 +63,7 @@ Mark processes as to be resumed
 - **params:**  
 `args`: the processes to be marked. The last element is the mark for processes to be skipped.  
   
-#### `flowchart (self, dotfile, fcfile, dot) `
+#### `flowchart (self, fcfile, dotfile) `
   
 Generate graph in dot language and visualize it.  
 
@@ -151,7 +151,7 @@ Constructor
 - **config:**  
 id, input, output, ppldir, forks, cache, cclean, rc, echo, runner, script, depends, tag, desc, dirsig  
 exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr  
-callfront, callback, brings, expect, expart, template, tplenvs, resume, nthread  
+callfront, callback, brings, expect, expart, template, tplenvs, resume, nthread, maxsubmit  
 
 - **props**  
 input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, brings, expect  
@@ -234,17 +234,22 @@ The uniq id of the process
 #### `_tidyAfterRun (self) `
   
 Do some cleaning after running jobs  
+self.resume can only be:  
+- '': normal process  
+- skip+: skipped process but required workdir and data exists  
+- resume: resume pipeline from this process, no requirement  
+- resume+: get data from workdir/proc.settings, and resume  
   
 #### `_tidyBeforeRun (self) `
   
 Do some preparation before running jobs  
   
-#### `copy (self, tag, newid, desc) `
+#### `copy (self, tag, desc, id) `
   
 Copy a process  
 
 - **params:**  
-`newid`: The new id of the process, default: `None` (use the varname)  
+`id`: The new id of the process, default: `None` (use the varname)  
 `tag`:   The tag of the new process, default: `None` (used the old one)  
 `desc`:  The desc of the new process, default: `None` (used the old one)  
 
@@ -658,6 +663,13 @@ Constructor
 `index`:   The index of the job in a process  
 `proc`:    The process  
   
+#### `_indexIndicator (self) `
+  
+Get the index indicator in the log  
+
+- **returns:**  
+The "[001/100]" like indicator  
+  
 #### `_linkInfile (self, orgfile) `
   
 Create links for input files  
@@ -767,7 +779,7 @@ Report the job information to logger
   
 Clear the intermediate files and output files  
   
-#### `showError (self, lenfailed) `
+#### `showError (self, totalfailed) `
   
 Show the error message if the job failed.  
   
@@ -786,19 +798,17 @@ Tell if the job is successful by return code, and output file expectations.
 True if succeed else False  
   
 
-## Module `JobMan`  
-> JobManager
+## Module `Jobmgr`  
+> Job Manager
 	
 
-#### `__init__ (self, jobs, cclean, ncjobids, forks, npsubmit, runner) `
+#### `__init__ (self, proc, runner) `
   
 Job manager constructor  
 
 - **params:**  
-`jobs`    : The jobs  
-`cclean`  : The flag of cleaning cached jobs  
-`ncjobids`: The non-cached job indexes  
-`runner`  : The runner class  
+`proc`     : The process  
+`runner`   : The runner class  
   
 #### `allJobsDone (self) `
   
@@ -815,15 +825,7 @@ Tell whether we can submit jobs.
 - **returns:**  
 `True` if we can, otherwise `False`  
   
-#### `nrJobs (self, action) `
-  
-Get or change number of running jobs  
-
-- **params:**  
-`action`: The action:  
-- `get`: get the number of running jobs  
-- `+`:   add 1 to the number of running jobs  
-- `-`:   minus 1 to the number of running jobs  
+#### `progressbar (self, jid, loglevel) `
   
 #### `run (self) `
   
@@ -886,7 +888,7 @@ Note that you have to adjust the dependencies after you add processes.
 - **returns:**  
 the aggregation itself  
   
-#### `copy (self, tag, deps, newid) `
+#### `copy (self, tag, deps, id) `
   
 Like `proc`'s `copy` function, copy an aggregation. Each processes will be copied.  
 
@@ -894,7 +896,7 @@ Like `proc`'s `copy` function, copy an aggregation. Each processes will be copie
 `tag`:      The new tag of all copied processes  
 `deps`: Whether to copy the dependencies or not. Default: True  
 - dependences for processes in starts will not be copied  
-`newid`:    Use a different id if you don't want to use the variant name  
+`id`:    Use a different id if you don't want to use the variant name  
 
 - **returns:**  
 The new aggregation  
@@ -916,35 +918,17 @@ Delegate attributes of processes to aggr.
 		`THEMES`: predefined themes
 	
 
-#### `__init__ (self, fcfile, dotfile, dot) `
+#### `__init__ (self, fcfile, dotfile) `
   
 The constructor  
 
 - **params:**  
 `fcfile`: The flowchart file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.svg'`  
 `dotfile`: The dot file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.dot'`  
-`dot`: The dot command. Default: `'dot -Tsvg {{dotfile}} -o {{fcfile}}'`  
   
-#### `_dotgroups (self) `
+#### `_assemble (self) `
   
-Convert groups to dot language.  
-
-- **returns:**  
-The string in dot language for all groups.  
-  
-#### `_dotlinks (self) `
-  
-Convert links to dot language.  
-
-- **returns:**  
-The string in dot language for all links.  
-  
-#### `_dotnodes (self) `
-  
-Convert nodes to dot language.  
-
-- **returns:**  
-The string in dot language for all nodes.  
+Assemble the graph for printing and rendering  
   
 #### `addLink (self, node1, node2) `
   
@@ -964,14 +948,15 @@ Add a node to the chart
   
 #### `generate (self) `
   
-Generate the flowchart.  
+Generate the dot file and graph file.  
   
-#### `setTheme (self, theme) `
+#### `setTheme (self, theme, base) `
   
 Set the theme to be used  
 
 - **params:**  
 `theme`: The theme, could be the key of Flowchart.THEMES or a dict of a theme definition.  
+`base` : The base theme to be based on you pass custom theme  
   
 
 ## Module `Parameter`  
@@ -1134,10 +1119,26 @@ Set the usage of the program. Otherwise it'll be automatically calculated.
 > A customized logger for pyppl
 
 
+#### `class: LoggerThemeError`
+```
+Theme errors for logger
+```
+#### `class: PyPPLLogFilter`
+```
+logging filter by levels (flags)
+```
+#### `class: PyPPLLogFormatter`
+```
+logging formatter for pyppl
+```
+#### `class: TemplatePyPPL`
+```
+Built-in template wrapper.
+```
 #### `_formatTheme (theme) [@staticmethod]`
   
 Make them in the standard form with bgcolor and fgcolor in raw terminal color strings  
-If the theme is read from file, try to translate "colors.xxx" to terminal color strings  
+If the theme is read from file, try to translate "COLORS.xxx" to terminal color strings  
 
 - **params:**  
 `theme`: The theme  
@@ -1179,14 +1180,6 @@ Get the default logger
 - **returns:**  
 The logger  
   
-#### `class: pFilter`
-```
-logging filter by levels (flags)
-```
-#### `class: pFormatter`
-```
-logging formatter for pyppl
-```
 
 ## Module `utils`  
 > A set of utitities for PyPPL
@@ -1609,7 +1602,7 @@ Check whether paths of a process can start from a start process
 `True` if all paths can pass  
 The failed path otherwise  
   
-#### `getAllPaths (self, withStarts) `
+#### `getAllPaths (self) `
   
 #### `getEnds (self) `
   
@@ -1661,7 +1654,7 @@ Infer the path to a process
 
 - **params:**  
 `proc`: The process  
-`proc0`: The original process  
+`proc0`: The original process, because this function runs recursively.  
 
 - **returns:**  
 ```  
@@ -1799,6 +1792,8 @@ Try to tell whether the job is still running.
 - **returns:**  
 `True` if yes, otherwise `False`  
   
+#### `retry (self) `
+  
 #### `run (self) `
   
 
@@ -1806,18 +1801,9 @@ Try to tell whether the job is still running.
 True: success/fail  
 False: needs retry  
   
-#### `status (self, s) `
-  
-#### `submit (self, isQ) `
+#### `submit (self) `
   
 Try to submit the job use Popen  
-  
-
-## Module `runners.RunnerQueue`  
-> The queue runner
-	
-
-#### `submit (self) `
   
 
 ## Module `runners.RunnerLocal`  
@@ -1834,7 +1820,7 @@ Try to submit the job use Popen
 > The ssh runner
 
 	@static variables:
-		`serverid`: The incremental number used to calculate which server should be used.
+		`SERVERID`: The incremental number used to calculate which server should be used.
 		- Don't touch unless you know what's going on!
 
 	
@@ -1845,6 +1831,8 @@ Constructor
 
 - **params:**  
 `job`:    The job object  
+  
+#### `isServerAlive (server, key) [@staticmethod]`
   
 
 ## Module `runners.RunnerSge`  

@@ -8,10 +8,10 @@ import pyppl
 
 
 modules = [
-	'PyPPL', 'Proc', 'Channel', 'Job', 'JobMan', 'Aggr', 'Flowchart', 'Parameter', 'Parameters',
+	'PyPPL', 'Proc', 'Channel', 'Job', 'Jobmgr', 'Aggr', 'Flowchart', 'Parameter', 'Parameters',
 	'logger', 'utils', 'proctree.ProcNode', 'proctree.ProcTree',
 	'templates.TemplatePyPPL', 'templates.TemplateJinja2',
-	'runners.Runner', 'runners.RunnerQueue', 'runners.RunnerLocal', 'runners.RunnerSsh', 'runners.RunnerSge', 'runners.RunnerSlurm', 'runners.RunnerDry', 
+	'runners.Runner', 'runners.RunnerLocal', 'runners.RunnerSsh', 'runners.RunnerSge', 'runners.RunnerSlurm', 'runners.RunnerDry', 
 ]
 
 excludes = [
