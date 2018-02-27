@@ -1,6 +1,7 @@
 """
 The aggregation of procs
 """
+from six import string_types
 from collections import OrderedDict
 from .exception import AggrAttributeError, AggrCopyError
 from . import utils
@@ -34,7 +35,7 @@ class DotProxy(object):
 		return self.__dict__[name]
 	
 	@staticmethod
-	def _isDelegated(prefix, delegates):
+	def _isDelegated(aggr, prefix, delegates):
 		"""
 		Tell if a prefix is delegated
 		@params:
@@ -53,7 +54,7 @@ class DotProxy(object):
 			rest = prefix[len(key):]
 			if rest and not rest.startswith('.'):
 				continue
-			return (val + rest).split('.'), procs
+			return procs(aggr), (val + rest).split('.')
 		return False
 		
 		
@@ -63,10 +64,10 @@ class DotProxy(object):
 			`name`: The name of the attribute
 			`value`: The value of the attribute
 		"""
-		delegated = DotProxy._isDelegated(self._prefix, self._aggr._delegates)
+		delegated = DotProxy._isDelegated(self._aggr, self._prefix, self._aggr._delegates)
 		if not delegated:
 			raise AggrAttributeError((self._prefix if not self._prefix else self._prefix + '.') + name, 'Attribute is not delegated')
-		dots, procs = delegated
+		procs, dots = delegated
 		for proc in procs:
 			obj = proc
 			for dot in dots: obj = getattr(obj, dot)
@@ -163,17 +164,24 @@ class Aggr (object):
 			raise AggrAttributeError(attr, 'Cannot delegate Proc attribute to an existing Aggr attribute')
 
 		if pattr is None: pattr = attr
-
+		
+		# use callbacks to make sure they apply for futher processes
 		if procs == 'starts':
-			procs = self.starts
+			procs = lambda a: a.starts
 		elif procs == 'ends':
-			procs = self.ends
+			procs = lambda a: a.ends
 		elif procs == 'both':
-			procs = self.starts + self.ends
+			procs = lambda a: a.starts + a.ends
 		elif procs == 'neither':
-			procs = [p for p in self._procs.values() if p not in (self.starts + self.ends)]
+			procs = lambda a: [p for p in a._procs.values() if p not in (a.starts + a.ends)]
+		elif isinstance(procs, string_types):
+			procs = lambda a, procs = procs: [a._procs[procs]]
+		elif isinstance(procs, list):
+			procs = lambda a, procs = procs: [a._procs[proc if isinstance(proc, string_types) else proc.id] for proc in procs]
 		elif not procs:
-			procs = self._procs.values()
+			procs = lambda a: a._procs.values()
+		else:
+			procs = lambda a, procs = procs: procs
 			
 		self._delegates[attr] = procs, pattr
 
@@ -184,8 +192,8 @@ class Aggr (object):
 			return self._props[name]
 		if name in self._procs:
 			return self._procs[name]
-		
-		delegated = DotProxy._isDelegated(name, self._delegates)
+
+		delegated = DotProxy._isDelegated(self, name, self._delegates)
 		if not delegated:
 			raise AggrAttributeError(name, 'Attribute not delegated')
 		self.__dict__[name] = DotProxy(self, name)
@@ -201,13 +209,19 @@ class Aggr (object):
 		# set attributes of procs:
 		# aAggr.args = {'a': 1}
 		else:
-			delegated = DotProxy._isDelegated(name, self._delegates)
+			delegated = DotProxy._isDelegated(self, name, self._delegates)
 			if not delegated:
 				raise AggrAttributeError(name, 'Attribute is not delegated')
-			dots, procs = delegated
+			procs, dots = delegated
 			dot = dots[0]
-			for proc in procs:
-				setattr(proc, dot, value)
+			if dot in ['depends2', 'input'] and not isinstance(value, (list, tuple)):
+				value = [value]
+			for i, proc in enumerate(procs):
+				if dot in ['depends2', 'input'] and i < len(value):
+					if dot == 'depends2': dot = 'depends'
+					setattr(proc, dot, value[i])
+				else:
+					setattr(proc, dot, value)
 	
 	def addProc (self, p, tag = None, where = None, copy = True):
 		"""
@@ -269,12 +283,9 @@ class Aggr (object):
 				ret.ends[self.ends.index(proc)] = newproc
 		
 		# copy delegates
-		for key, value in self._delegates.items():
-			procs, val = value
-			ret._delegates[key] = (
-				[ret._procs[p.id] for p in procs],
-				val
-			)
+		for k, v in self._delegates.items():
+			ret._delegates[k] = v
+		
 		# copy dependences
 		if deps:
 			for k, proc in ret._procs.items():

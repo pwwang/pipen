@@ -165,7 +165,7 @@ class TestPyPPL(helpers.TestCase):
 		yield pp, [pStart1, pStart5], [pStart1, pStart5]
 		yield pp, [pStart1, pStart5, pStart2], [pStart1, pStart5], [
 			'WARNING',
-			'Process pStart2 marked as start but will be ignored as it depends on other start processes.'
+			'Start process pStart2 ignored, depending on [pStart1]'
 		]
 			
 	def testStart(self, pp, starts, outstarts, errs = []):
@@ -173,6 +173,10 @@ class TestPyPPL(helpers.TestCase):
 			self.assertIs(pp.start(starts), pp)
 		for outstart in outstarts:
 			self.assertTrue(ProcTree.getNode(outstart).start)
+		stderr = err.getvalue()
+		for err in errs:
+			self.assertIn(err, stderr)
+			stderr = stderr[(stderr.find(err) + len(err)):]
 			
 	def dataProvider_test_resume(self):
 		'''
@@ -491,7 +495,7 @@ class TestPyPPL(helpers.TestCase):
 		for s in start:
 			self.assertEqual(s.runner, runner)
 		stderr = err.getvalue()
-		#print(stderr)
+
 		for err in errs:
 			self.assertIn(err, stderr)
 			stderr = stderr[(stderr.find(err) + len(err)):]

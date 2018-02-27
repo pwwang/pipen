@@ -164,7 +164,7 @@ class Proc (object):
 		# Whether expand directory to check signature	
 		self.config['dirsig']     = True
 
-		# Whether to print the stdout and stderr of the jobs to the screen
+		# Whether to echo the stdout and stderr of the jobs to the screen
 		# Could also be:
 		# {
 		#   'jobs':   0           # or [0, 1, 2], just echo output of those jobs.
@@ -665,6 +665,8 @@ class Proc (object):
 				return [flatData(v) for v in data]
 			elif isinstance(data, self.template):
 				return str(data)
+			elif callable(data):
+				return utils.funcsig(data)
 			else:
 				return data
 				
@@ -825,7 +827,7 @@ class Proc (object):
 	def _buildProcVars (self):
 		"""
 		Build proc attribute values for template rendering,
-		and also print some out.
+		and also echo some out.
 		"""
 		show   = ['size', 'args']
 		if self.runner != 'local':
@@ -1191,20 +1193,20 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
-		starts  = PyPPL._any2procs(*args)
-		starts2 = []
+		starts  = set(PyPPL._any2procs(*args))
+		nostart = set()
 		for start in starts:
 			paths = self.tree.getPaths(start)
-			found = False
-			for path in paths:
-				if any([p in starts for p in path]):
-					found = True
-					break
-			if found:
-				logger.logger.info('[WARNING] Process %s marked as start but will be ignored as it depends on other start processes.' % start.name())
-			else:
-				starts2.append(start)
-		self.tree.setStarts(starts2)
+			pristarts = [p for sublist in paths for p in sublist if p in starts]
+			if pristarts:
+				nostart.add(start)
+				names = [p.name(True) for p in pristarts]
+				names = names[:3] + ['...'] if len(names) > 3 else names
+				logger.logger.info('[WARNING] Start process %s ignored, depending on [%s]' % (
+					start.name(True), 
+					', '.join(names)
+				))
+		self.tree.setStarts(starts - nostart)
 		return self
 
 	def _resume(self, *args, **kwargs):
@@ -1333,7 +1335,7 @@ class PyPPL (object):
 		proc      = self.tree.getNextToRun()
 		while proc:
 			name = ' %s: %s ' % (proc.name(True), proc.desc)
-			nlen = max(70, len(name))
+			nlen = max(70, len(name) + 3)
 			proc.log ('+' + '-'*(nlen-3) + '+', 'PROCESS')
 			proc.log ('|%s%s|' % (name, ' '*(nlen - 3 - len(name))), 'PROCESS')
 			proc.log ('+' + '-'*(nlen-3) + '+', 'PROCESS')

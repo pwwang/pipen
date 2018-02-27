@@ -39,14 +39,14 @@ class TestDotProxy(helpers.TestCase):
 		self.assertEqual(dp2._prefix, (dp._prefix if not dp._prefix else dp._prefix + '.') + name)
 	
 	def dataProvider_testIsDelegated(self):
-		yield 'a.b', {'c': ([], 'c')}, False
-		yield 'a.bb', {'a.b': ([], 'a.b')}, False
-		yield 'args', {'args': ([], 'args')}, (['args'], [])
-		yield 'args.a', {'args.a': ([], 'args.a')}, (['args', 'a'], [])
-		yield 'a.b.c.d', {'a.b': ([], 'x.y')}, (['x', 'y', 'c', 'd'], [])
+		yield 'a.b', {'c': (lambda a: [], 'c')}, False
+		yield 'a.bb', {'a.b': (lambda a: [], 'a.b')}, False
+		yield 'args', {'args': (lambda a: [], 'args')}, ([], ['args'])
+		yield 'args.a', {'args.a': (lambda a: [], 'args.a')}, ([], ['args', 'a'])
+		yield 'a.b.c.d', {'a.b': (lambda a: [], 'x.y')}, ([], ['x', 'y', 'c', 'd'])
 	
 	def testIsDelegated(self, prefix, delegates, ret):
-		r = DotProxy._isDelegated(prefix, delegates)
+		r = DotProxy._isDelegated(Aggr(), prefix, delegates)
 		if isinstance(r, bool):
 			self.assertEqual(r, ret)
 		else:
@@ -116,7 +116,9 @@ class TestAggr(helpers.TestCase):
 					if i == 0: continue
 					self.assertIs(proc.depends[0], list(aggr._procs.values())[i - 1])
 				# delegates
-				self.assertDictEqual(aggr._delegates, {
+				self.assertDictEqual({
+					k: (v[0](aggr), v[1]) for k, v in aggr._delegates.items()
+				}, {
 					'depends2': ([list(aggr._procs.values())[0]], 'depends2'),
 					'depends' : ([list(aggr._procs.values())[0]], 'depends'),
 					'input' :   ([list(aggr._procs.values())[0]], 'input'),
@@ -132,7 +134,9 @@ class TestAggr(helpers.TestCase):
 					if i == 0: continue
 					self.assertListEqual(proc.depends, [])
 				# delegates
-				self.assertDictEqual(aggr._delegates, {
+				self.assertDictEqual({
+					k: (v[0](aggr), v[1]) for k, v in aggr._delegates.items()
+				}, {
 					'depends2': ([], 'depends2'),
 					'depends' : ([], 'depends'),
 					'input' :   ([], 'input'),
@@ -161,6 +165,9 @@ class TestAggr(helpers.TestCase):
 		yield aggr, 'args', 'neither', None, {
 			'args': ([aggr.pDelegate2], 'args')
 		}
+		yield aggr, 'args', 'pDelegate2', None, {
+			'args': ([aggr.pDelegate2], 'args')
+		}
 		yield aggr, 'args.a', None, 'a', {
 			'args.a': ([aggr.pDelegate1, aggr.pDelegate2, aggr.pDelegate3], 'a')
 		}
@@ -173,7 +180,7 @@ class TestAggr(helpers.TestCase):
 		else:
 			aggr.delegate(attr, procs, pattr)
 			for k, v in delegates.items():
-				self.assertListEqual(list(aggr._delegates[k][0]), v[0])
+				self.assertListEqual(list(aggr._delegates[k][0](aggr)), v[0])
 				self.assertEqual(aggr._delegates[k][1], v[1])
 			
 	def dataProvider_testGetAttr(self):
@@ -293,9 +300,13 @@ class TestAggr(helpers.TestCase):
 		yield aggr, None, True, None
 		yield aggr, None, False, None
 		yield aggr, aggr.pCopy1.tag, False, None, AggrCopyError, 'Cannot copy process with same id and tag: \'pCopy1.%s\'' % aggr.pCopy1.tag
+		
+		aggr1 = Aggr(pCopy1, pCopy2, pCopy3, depends = False)
+		aggr1.starts = [aggr1.pCopy1, aggr1.pCopy2]
+		aggr1.pCopy3.depends = aggr1.starts
+		yield aggr1, None, True, None
 			
 	def testCopy(self, aggr, tag, deps, id, exception = None, msg = None):
-		self.maxDiff = None
 		if exception:
 			self.assertRaisesStr(exception, msg, aggr.copy, tag, deps, id)
 		else:
@@ -318,10 +329,7 @@ class TestAggr(helpers.TestCase):
 			self.assertListEqual(newaggr.starts, [newaggr._procs[p.id] for p in aggr.starts])
 			self.assertListEqual(newaggr.ends, [newaggr._procs[p.id] for p in aggr.ends])
 			# delegates
-			self.assertDictEqual(newaggr._delegates, {
-				k: ([newaggr._procs[p.id] for p in v[0]], v[1]) \
-				for k, v in aggr._delegates.items()
-			})
+			self.assertDictEqual(newaggr._delegates, aggr._delegates)
 			# depends
 			if deps:
 				for k, p in newaggr._procs.items():
@@ -336,7 +344,22 @@ class TestAggr(helpers.TestCase):
 			else:
 				for k, p in newaggr._procs.items():
 					self.assertListEqual(p.depends, [])
-			
+	
+	def dataProvider_testDepends(self):
+		pDepends1 = Proc()
+		pDepends2 = Proc()
+		pDepends3 = Proc()
+		pDepends4 = Proc()
+		pDepends5 = Proc()
+		aggr = Aggr(pDepends1, pDepends2, pDepends3)
+		aggr.starts = [pDepends1, pDepends2]
+		yield aggr, [pDepends4, pDepends5]		
+	
+	def testDepends(self, aggr, depends):
+		aggr.depends = depends
+		for p in aggr.starts:
+			self.assertListEqual(p.depends, depends)
+		
 		
 			
 		
