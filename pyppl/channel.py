@@ -91,7 +91,7 @@ class Channel (list):
 		
 		filt  = lambda f: True
 		if t == 'link':
-			filt = lambda f: path.islink(f)
+			filt = path.islink
 		elif t == 'dir':
 			filt = lambda f: path.isdir(f) and not path.islink(f)
 		elif t == 'file':

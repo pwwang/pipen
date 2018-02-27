@@ -1,33 +1,41 @@
 import helpers, unittest
 
-from pyppl.exception import TemplatePyPPLSyntaxMalformKeyword, TemplatePyPPLSyntaxDotError, TemplatePyPPLSyntaxNameError, TemplatePyPPLSyntaxUnclosedTag, TemplatePyPPLSyntaxNewline, TemplatePyPPLRenderError
+from pyppl import Proc, ProcTree
+from pyppl.exception import TemplatePyPPLSyntaxError, TemplatePyPPLRenderError, LoggerThemeError, ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError, ProcTreeProcExists, ProcTreeParseError, JobInputParseError, JobBringParseError, JobOutputParseError, RunnerSshError, ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcFindError, PyPPLProcRelationError, PyPPLConfigError, AggrAttributeError, AggrCopyError
 
 class TestException(helpers.TestCase):
 
 	def dataProvider_testInit(self):
-		yield TemplatePyPPLSyntaxMalformKeyword('', ''), TemplatePyPPLSyntaxMalformKeyword
-		yield TemplatePyPPLSyntaxDotError('', ''), TemplatePyPPLSyntaxDotError
-		yield TemplatePyPPLSyntaxNameError('', ''), TemplatePyPPLSyntaxNameError
-		yield TemplatePyPPLSyntaxUnclosedTag(''), TemplatePyPPLSyntaxUnclosedTag
-		yield TemplatePyPPLSyntaxNewline(''), TemplatePyPPLSyntaxNewline
+		yield TemplatePyPPLSyntaxError('', ''), TemplatePyPPLSyntaxError
 		yield TemplatePyPPLRenderError('', ''), TemplatePyPPLRenderError
-
+		yield LoggerThemeError('', ''), LoggerThemeError
+		yield ParameterNameError(''), ParameterNameError
+		yield ParameterTypeError(''), ParameterTypeError
+		yield ParametersParseError('', ''), ParametersParseError
+		yield ParametersLoadError('', ''), ParametersLoadError
+		p1 = Proc()
+		p2 = Proc()
+		yield ProcTreeProcExists(ProcTree.getNode(p1), ProcTree.getNode(p2)), ProcTreeProcExists
+		yield ProcTreeParseError('', ''), ProcTreeParseError
+		yield JobInputParseError('', ''), JobInputParseError
+		yield JobBringParseError('', ''), JobBringParseError
+		yield JobOutputParseError('', ''), JobOutputParseError
+		yield RunnerSshError(''), RunnerSshError
+		yield ProcTagError(''), ProcTagError
+		yield ProcAttributeError('', ''), ProcAttributeError
+		yield ProcInputError('', ''), ProcInputError
+		yield ProcOutputError('', ''), ProcOutputError
+		yield ProcScriptError('', ''), ProcScriptError
+		yield ProcRunCmdError('', ''), ProcRunCmdError
+		yield PyPPLProcFindError('', ''), PyPPLProcFindError
+		yield PyPPLProcRelationError('', ''), PyPPLProcRelationError
+		yield PyPPLConfigError('', ''), PyPPLConfigError
+		yield AggrAttributeError('', ''), AggrAttributeError
+		yield AggrCopyError('', ''), AggrCopyError
+		
 	def testInit(self, exc, Exc, Super = Exception):
 		self.assertIsInstance(exc, Exc)
 		self.assertIsInstance(exc, Super)
-
-	def dataProvider_testRaise(self):
-		yield TemplatePyPPLSyntaxMalformKeyword('a', 'b'), TemplatePyPPLSyntaxMalformKeyword, 'Cannot understand "a" in b'
-		yield TemplatePyPPLSyntaxDotError('a', 'b'), TemplatePyPPLSyntaxDotError, 'Cannot find an attribute/subscribe/index named "b" for "a"'
-		yield TemplatePyPPLSyntaxNameError('a', 'b'), TemplatePyPPLSyntaxNameError, 'Invalid variable name "a" in "b"'
-		yield TemplatePyPPLSyntaxUnclosedTag('a'), TemplatePyPPLSyntaxUnclosedTag, 'Unclosed template tag: a'
-		yield TemplatePyPPLSyntaxNewline('a'), TemplatePyPPLSyntaxNewline, 'No newline is allowed in block: a'
-		yield TemplatePyPPLRenderError('a', 'b'), TemplatePyPPLRenderError, 'a, b'
-
-	def testRaise(self, exc, Exc, msg):
-		def raise_exc():
-			raise exc
-		self.assertRaisesStr(Exc, msg, raise_exc)
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)

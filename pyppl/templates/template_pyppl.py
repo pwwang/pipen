@@ -229,7 +229,8 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 		self.code.dedent()
 		self._renderFunction = self.code.getGlobals()['renderFunction']
 		self.renderFunctionStr = str(self.code)
-		
+	
+	@classmethod
 	def _parseComments(self, token, src):
 		if '\n' in token:
 			raise TemplatePyPPLSyntaxError(src = src, msg = 'No new line is allowed')

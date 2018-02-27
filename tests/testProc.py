@@ -229,7 +229,7 @@ class TestProc(helpers.TestCase):
 	def dataProvider_testLog(self):
 		pLog = Proc()
 		pLog.props['size'] = 2
-		# CACHE_SCRIPT_NEWER = -3
+		Proc.LOG_NLINE['CACHE_SCRIPT_NEWER'] = -3
 		yield pLog, 'hello', 'info', '', ['INFO', 'hello']
 		yield pLog, 'hello', 'info', '', ['INFO', 'hello']
 		yield pLog, 'script newer1', 'warning', 'CACHE_SCRIPT_NEWER', [], ['WARNING', 'DEBUG', 'script newer1']
@@ -239,7 +239,8 @@ class TestProc(helpers.TestCase):
 		pLog1.props['size'] = 100
 		yield pLog1, 'script newer1', 'warning', 'CACHE_SCRIPT_NEWER', [], ['WARNING', 'DEBUG', 'script newer1']
 		yield pLog1, 'script newer2', 'warning', 'CACHE_SCRIPT_NEWER', [], ['WARNING', 'script newer1', 'script newer2', 'DEBUG']
-		yield pLog1, 'script newer3', 'warning', 'CACHE_SCRIPT_NEWER', ['WARNING', 'script newer1', 'script newer2', 'DEBUG', 'max']
+		yield pLog1, 'script newer3', 'warning', 'CACHE_SCRIPT_NEWER', ['WARNING', 'script newer1', 'script newer2', 'DEBUG', 'max=3']
+		yield pLog1, 'script newer4', 'warning', 'CACHE_SCRIPT_NEWER', [], ['WARNING', 'script newer1', 'script newer2', 'DEBUG', 'max=3', 'script newer4']
 		
 	# note: single test will not work, e.g: python testProc.py TestProc.testLog_6 	
 	def testLog(self, p, msg, level, key, expects, noexpects = []):
@@ -1034,7 +1035,7 @@ class TestProc(helpers.TestCase):
 			'Not cached, because proc.cache is False'
 		]
 		
-		# all cached
+		# 1 all cached
 		pCheckCached1 = Proc()
 		pCheckCached1.ppldir = testdir
 		pCheckCached1.input  = {'a': [1,2]}
@@ -1048,7 +1049,7 @@ class TestProc(helpers.TestCase):
 			'Export-cached jobs: []'
 		]
 	
-		# all export cached
+		# 2 all export cached
 		pCheckCached2 = Proc()
 		pCheckCached2.ppldir = testdir
 		pCheckCached2.input  = {'a': [1,2]}

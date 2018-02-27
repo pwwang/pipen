@@ -78,7 +78,8 @@ cov:
 	for tfile in test*.py; do                                                         \
 		echo -e "\nRUNNING TESTS: $$tfile";                                           \
 		echo      "=================================================================";\
-		coverage run -a $$tfile;                                                      \
+		coverage run -a --concurrency=multiprocessing $$tfile;                        \
+		coverage combine;                                                             \
 		if [[ $$? -ne 0 ]]; then exit 1; fi;                                          \
 	done;                                                                             \
 	coverage xml;                                                                     \

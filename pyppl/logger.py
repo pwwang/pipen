@@ -1,7 +1,7 @@
 """
 A customized logger for pyppl
 """
-import logging, re, sys
+import logging, re
 from box import Box
 from .exception import LoggerThemeError
 from .templates import TemplatePyPPL

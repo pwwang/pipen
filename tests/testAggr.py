@@ -110,20 +110,20 @@ class TestAggr(helpers.TestCase):
 				self.assertEqual(p.aggr, aggr.id)
 				self.assertIs(aggr._procs[p.id], p)
 			if ('depends' not in kwargs or kwargs['depends']) and len(args) > 0:
-				self.assertListEqual(aggr.starts, [aggr._procs.values()[0]])
-				self.assertListEqual(aggr.ends  , [aggr._procs.values()[-1]])
+				self.assertListEqual(aggr.starts, [list(aggr._procs.values())[0]])
+				self.assertListEqual(aggr.ends  , [list(aggr._procs.values())[-1]])
 				for i, proc in enumerate(aggr._procs.values()):
 					if i == 0: continue
-					self.assertIs(proc.depends[0], aggr._procs.values()[i - 1])
+					self.assertIs(proc.depends[0], list(aggr._procs.values())[i - 1])
 				# delegates
 				self.assertDictEqual(aggr._delegates, {
-					'depends2': ([aggr._procs.values()[0]], 'depends2'),
-					'depends' : ([aggr._procs.values()[0]], 'depends'),
-					'input' :   ([aggr._procs.values()[0]], 'input'),
-					'exdir' :   ([aggr._procs.values()[-1]], 'exdir'),
-					'exhow' :   ([aggr._procs.values()[-1]], 'exhow'),
-					'exow' :    ([aggr._procs.values()[-1]], 'exow'),
-					'expart' :  ([aggr._procs.values()[-1]], 'expart'),
+					'depends2': ([list(aggr._procs.values())[0]], 'depends2'),
+					'depends' : ([list(aggr._procs.values())[0]], 'depends'),
+					'input' :   ([list(aggr._procs.values())[0]], 'input'),
+					'exdir' :   ([list(aggr._procs.values())[-1]], 'exdir'),
+					'exhow' :   ([list(aggr._procs.values())[-1]], 'exhow'),
+					'exow' :    ([list(aggr._procs.values())[-1]], 'exow'),
+					'expart' :  ([list(aggr._procs.values())[-1]], 'expart'),
 				})
 			else:
 				self.assertListEqual(aggr.starts, [])
@@ -172,7 +172,9 @@ class TestAggr(helpers.TestCase):
 			self.assertRaisesStr(exception, msg, aggr.delegate, attr, procs, pattr)
 		else:
 			aggr.delegate(attr, procs, pattr)
-			self.assertDictIn(delegates, aggr._delegates)
+			for k, v in delegates.items():
+				self.assertListEqual(list(aggr._delegates[k][0]), v[0])
+				self.assertEqual(aggr._delegates[k][1], v[1])
 			
 	def dataProvider_testGetAttr(self):
 		pGetAttr1 = Proc()

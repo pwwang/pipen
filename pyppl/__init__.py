@@ -369,22 +369,25 @@ class Proc (object):
 		"""
 		summary = False
 		level   = "[%s]" % level		
-
+		
 		if not key or key not in Proc.LOG_NLINE:
 			logger.logger.info(level + ' ' + msg)
 		else:
-			if key not in self.logs: self.logs[key] = []
-			self.logs[key].append((level, msg))
-			nlogs   = len(self.logs[key])
-			
 			maxline = Proc.LOG_NLINE[key]
-			summary = maxline < 0 and nlogs < self.size
-			maxline = min(self.size, abs(maxline))
-			if nlogs < maxline: return
-			for level, msg in self.logs[key]:
-				logger.logger.info (level + ' ' + msg)
-			if summary:
-				logger.logger.info ('[debug] ... max=%s (%s) reached, further information will be ignored.' % (maxline, key))
+			absline = abs(maxline)
+			summary = maxline < 0
+			
+			if key not in self.logs: self.logs[key] = []
+			
+			if not self.logs[key] or self.logs[key][-1] is not None:
+				self.logs[key].append((level, msg))
+			nlogs = len(self.logs[key])
+			if nlogs == absline or nlogs == self.size:
+				self.logs[key].append(None)
+				for level, msg in filter(None, self.logs[key]):
+					logger.logger.info (level + ' ' + msg)
+				if summary and nlogs < self.size:
+					logger.logger.info ('[debug] ... max=%s (%s) reached, further information will be ignored.' % (absline, key))
 
 	def copy (self, tag=None, desc=None, id=None):
 		"""
@@ -828,7 +831,7 @@ class Proc (object):
 		if self.runner != 'local':
 			show.append('runner')
 		hide   = ['desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'aggr', 'input', 'output', 'depends']
-		pvkeys = [key for key in set(self.props.keys() + self.config.keys()) \
+		pvkeys = [key for key in set(list(self.props.keys()) + list(self.config.keys())) \
 			if key in show or (key in self.sets and key not in hide)]
 			
 		procvars = {}
@@ -991,7 +994,6 @@ class Proc (object):
 		@params:
 			`config`: The configuration
 		"""
-		conf = {}
 		for key, val in config.items():
 			if key == 'runner': 
 				self.props['runner'] = val
@@ -1331,10 +1333,10 @@ class PyPPL (object):
 		proc      = self.tree.getNextToRun()
 		while proc:
 			name = ' %s: %s ' % (proc.name(True), proc.desc)
-			nlen = max(67, len(name)) - len(name)
-			llen = (nlen - 1) / 2 if nlen else nlen / 2
-			rlen = (nlen + 1) / 2 if nlen else nlen / 2
-			proc.log ('|>%s%s%s<|' % ('>'*llen, name, '<'*rlen), 'PROCESS')
+			nlen = max(70, len(name))
+			proc.log ('+' + '-'*(nlen-3) + '+', 'PROCESS')
+			proc.log ('|%s%s|' % (name, ' '*(nlen - 3 - len(name))), 'PROCESS')
+			proc.log ('+' + '-'*(nlen-3) + '+', 'PROCESS')
 			proc.log ("%s => %s => %s" % (ProcTree.getPrevStr(proc), proc.name(), ProcTree.getNextStr(proc)), 'depends')
 			if 'runner' in proc.sets and proc.config['runner'] != profile:
 				proc.run(self._getProfile(proc.config['runner']))

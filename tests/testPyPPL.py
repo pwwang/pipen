@@ -296,8 +296,6 @@ class TestPyPPL(helpers.TestCase):
 		    p10         p6  /    \ p9
 		           p5 /
 		'''
-		with helpers.log2str():
-			pp = PyPPL({'log': {'file': None}})
 		pShowAllRoutes1 = Proc()
 		pShowAllRoutes2 = Proc()
 		pShowAllRoutes3 = Proc()
@@ -323,7 +321,7 @@ class TestPyPPL(helpers.TestCase):
 		aAggr.pShowAllRoutes8.depends = aAggr.pShowAllRoutes7
 		aAggr.pShowAllRoutes9.depends = aAggr.pShowAllRoutes7
 		aAggr.depends = pShowAllRoutes3, pShowAllRoutes6
-		yield pp, [pShowAllRoutes1, pShowAllRoutes5], [
+		yield [pShowAllRoutes1, pShowAllRoutes5], [
 			'DEBUG',
 			'* pShowAllRoutes1 -> pShowAllRoutes10',
 			'pShowAllRoutes1 -> pShowAllRoutes2 -> pShowAllRoutes3 -> [aAggr]',
@@ -331,7 +329,9 @@ class TestPyPPL(helpers.TestCase):
 			'* pShowAllRoutes5 -> pShowAllRoutes6 -> [aAggr]'
 		]
 				
-	def testShowAllRoutes(self, pp, start, errs):
+	def testShowAllRoutes(self, start, errs):
+		with helpers.log2str():
+			pp = PyPPL({'log': {'file': None}})
 		pp.start(start)
 		with helpers.log2str(levels = 'all') as (out, err):
 			pp.showAllRoutes()
@@ -348,8 +348,6 @@ class TestPyPPL(helpers.TestCase):
 		    p10         p6  /    \ p9
 		           p5 /
 		'''
-		with helpers.log2str():
-			pp = PyPPL({'log': {'file': None}})
 		pFlowchart1 = Proc()
 		pFlowchart2 = Proc()
 		pFlowchart3 = Proc()
@@ -378,7 +376,7 @@ class TestPyPPL(helpers.TestCase):
 		
 		dotfile = path.join(testdir, 'test.dot')
 		fcfile  = path.join(testdir, 'test.svg')
-		yield pp, [pFlowchart1, pFlowchart5], fcfile, dotfile, [
+		yield testdir, [pFlowchart1, pFlowchart5], fcfile, dotfile, [
 			'DEBUG',
 			'* pFlowchart1 -> pFlowchart10',
 			'pFlowchart1 -> pFlowchart2 -> pFlowchart3 -> [aAggr]',
@@ -389,7 +387,7 @@ class TestPyPPL(helpers.TestCase):
 			'DOT file saved to: %s' % dotfile,
 		]
 		
-		yield pp, [pFlowchart1, pFlowchart5], fcfile, None, [
+		yield testdir, [pFlowchart1, pFlowchart5], fcfile, None, [
 			'DEBUG',
 			'* pFlowchart1 -> pFlowchart10',
 			'pFlowchart1 -> pFlowchart2 -> pFlowchart3 -> [aAggr]',
@@ -400,7 +398,9 @@ class TestPyPPL(helpers.TestCase):
 			'DOT file saved to: %s' % dotfile,
 		]
 			
-	def testFlowchart(self, pp, start, fcfile, dotfile, errs = []):
+	def testFlowchart(self, testdir, start, fcfile, dotfile, errs = []):
+		with helpers.log2str():
+			pp = PyPPL({'log': {'file': None}})
 		pp.start(start)
 		with helpers.log2str(levels = 'all') as (out, err):
 			pp.flowchart(fcfile = fcfile, dotfile = dotfile)
@@ -419,8 +419,6 @@ class TestPyPPL(helpers.TestCase):
 		    p10         p6  /    \ p9
 		           p5 /
 		'''
-		with helpers.log2str():
-			pp = PyPPL({'log': {'file': None}, 'profile': {'ppldir': testdir, 'runner': 'sge'}})
 		pRun1 = Proc()
 		pRun2 = Proc()
 		pRun3 = Proc()
@@ -446,30 +444,54 @@ class TestPyPPL(helpers.TestCase):
 		aAggr.pRun8.depends = aAggr.pRun7
 		aAggr.pRun9.depends = aAggr.pRun7
 		aAggr.depends = pRun3, pRun6
-		yield pp, [pRun1, pRun5], 'profile', 'sge', [
-			'|>>>>>>>>>>>>>>>>>>>>>> pRun1: No description. <<<<<<<<<<<<<<<<<<<<<<<|',
-			'|>>>>>>>>>>>>>>>>>>>>>> pRun2: No description. <<<<<<<<<<<<<<<<<<<<<<<|',
-			'|>>>>>>>>>>>>>>>>>>>>>> pRun3: No description. <<<<<<<<<<<<<<<<<<<<<<<|',
-			'|>>>>>>>>>>>>>>>>>>>>>> pRun4: No description. <<<<<<<<<<<<<<<<<<<<<<<|',
-			'|>>>>>>>>>>>>>>>>>>>>>> pRun5: No description. <<<<<<<<<<<<<<<<<<<<<<<|',
-			'|>>>>>>>>>>>>>>>>>>>>>> pRun6: No description. <<<<<<<<<<<<<<<<<<<<<<<|',
-			'|>>>>>>>>>>>>>>>>>>>>> pRun10: No description. <<<<<<<<<<<<<<<<<<<<<<|',
-			'|>>>>>>>>>>>>>>>> pRun7.5gPF@aAggr: No description. <<<<<<<<<<<<<<<<<|',
-			'|>>>>>>>>>>>>>>>> pRun8.5gPF@aAggr: No description. <<<<<<<<<<<<<<<<<|',
-			'|>>>>>>>>>>>>>>>> pRun9.5gPF@aAggr: No description. <<<<<<<<<<<<<<<<<|',
+		yield testdir, [pRun1, pRun5], 'profile', 'sge', [
+			'+-------------------------------------------------------------------+',
+			'| pRun1: No description.                                            |',
+			'+-------------------------------------------------------------------+',
+			'+-------------------------------------------------------------------+',
+			'| pRun2: No description.                                            |',
+			'+-------------------------------------------------------------------+',
+			'+-------------------------------------------------------------------+',
+			'| pRun3: No description.                                            |',
+			'+-------------------------------------------------------------------+',
+			'+-------------------------------------------------------------------+',
+			'| pRun4: No description.                                            |',
+			'+-------------------------------------------------------------------+',
+			'+-------------------------------------------------------------------+',
+			'| pRun5: No description.                                            |',
+			'+-------------------------------------------------------------------+',
+			'+-------------------------------------------------------------------+',
+			'| pRun6: No description.                                            |',
+			'+-------------------------------------------------------------------+',
+			'+-------------------------------------------------------------------+',
+			'| pRun10: No description.                                           |',
+			'+-------------------------------------------------------------------+',
+			'+-------------------------------------------------------------------+',
+			'| pRun7.5gPF@aAggr: No description.                                 |',
+			'+-------------------------------------------------------------------+',
+			'+-------------------------------------------------------------------+',
+			'| pRun8.5gPF@aAggr: No description.                                 |',
+			'+-------------------------------------------------------------------+',
+			'+-------------------------------------------------------------------+',
+			'| pRun9.5gPF@aAggr: No description.                                 |',
+			'+-------------------------------------------------------------------+',
 		]
 			
-	def testRun(self, pp, start, profile, runner, errs = []):
+	def testRun(self, testdir, start, profile, runner, errs = []):
+		with helpers.log2str():
+			pp = PyPPL({'log': {'file': None}, 'profile': {'ppldir': testdir, 'runner': 'sge'}})
 		import sys
 		pp.start(start)
 		argv = sys.argv
 		sys.argv = []
+		helpers.log2sys()
 		with helpers.log2str(levels = 'all') as (out, err):
 			pp.run(profile)
 		sys.argv = argv
 		for s in start:
 			self.assertEqual(s.runner, runner)
 		stderr = err.getvalue()
+		#print(stderr)
 		for err in errs:
 			self.assertIn(err, stderr)
 			stderr = stderr[(stderr.find(err) + len(err)):]

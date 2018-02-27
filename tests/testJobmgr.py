@@ -2,7 +2,7 @@ import helpers, unittest
 
 from os import path
 from time import sleep
-from Queue import Empty
+from six.moves.queue import Empty
 from multiprocessing import JoinableQueue
 
 from pyppl import Jobmgr, Proc, utils

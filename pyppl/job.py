@@ -2,18 +2,15 @@
 Job module for pyppl
 """
 import json, re
-from sys import stderr
 from collections import OrderedDict
 from glob import glob
 from time import sleep
-from os import makedirs, path, remove, utime, readlink, listdir
-from shutil import move, rmtree
+from os import makedirs, path, remove, utime, readlink
+from shutil import rmtree
 from multiprocessing import Lock, JoinableQueue, Process, Array
 from six import string_types
 from . import utils, logger
 from .exception import JobInputParseError, JobBringParseError, JobOutputParseError
-from .runners import Runner
-
 
 class Jobmgr (object):
 	"""
@@ -61,22 +58,20 @@ class Jobmgr (object):
 	def progressbar(self, jid, loglevel = 'info'):
 		bar     = '%s [' % self.proc.jobs[jid]._indexIndicator()
 		barsize = 50
-		barjobs = {}
+		barjobs = []
 		# distribute the jobs to bars
 		if self.proc.size <= barsize:
-			barx = 0
 			n, m = divmod(barsize, self.proc.size)
 			for j in range(self.proc.size):
 				step = n + 1 if j < m else n
 				for _ in range(step):
-					barjobs[barx] = [j]
-					barx += 1
+					barjobs.append([j])
 		else:
 			jobx = 0
 			n, m = divmod(self.proc.size, barsize)
 			for i in range(barsize):
 				step = n + 1 if i < m else n
-				barjobs[i] = [jobx + s for s in range(step)]
+				barjobs.append([jobx + s for s in range(step)])
 				jobx += step
 
 		# status can only be: 
@@ -88,7 +83,7 @@ class Jobmgr (object):
 		ncompleted = sum(1 for s in self.status if s == Jobmgr.STATUS_DONE or s == Jobmgr.STATUS_DONEFAILED)
 		nrunning   = sum(1 for s in self.status if s == Jobmgr.STATUS_SUBMITTED or s == Jobmgr.STATUS_SUBMITFAILED)
 
-		for bi, bj in barjobs.items():
+		for bj in barjobs:
 			if jid in bj and self.status[jid] == Jobmgr.STATUS_INITIATED:
 				bar += '-'
 			elif jid in bj and self.status[jid] == Jobmgr.STATUS_SUBMITFAILED:

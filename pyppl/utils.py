@@ -10,11 +10,10 @@ import re
 
 from stat import S_IEXEC
 from glob import glob
-from traceback import format_exc
 from os import path, remove, symlink, makedirs, chdir, getcwd, walk, stat, chmod, devnull
 from shutil import rmtree, copyfile, copytree, move, copyfileobj
 from subprocess import Popen
-from multiprocessing import Process, Pipe, JoinableQueue
+from multiprocessing import Process, JoinableQueue
 from hashlib import md5
 from box import Box
 from six import moves, string_types

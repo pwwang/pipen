@@ -400,7 +400,7 @@ class Parameters (object):
 		elif cfgfile.endswith('yml') or cfgfile.endswith('yaml'):
 			import yaml
 			with open(cfgfile) as f:
-				config = yaml.load(f)
+				config = yaml.safe_load(f)
 		else:
 			cp = configparser.ConfigParser()
 			cp.optionxform = str

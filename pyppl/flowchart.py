@@ -1,5 +1,3 @@
-import sys
-import shlex
 from os import path
 from copy import deepcopy
 from graphviz import Digraph
