@@ -109,7 +109,7 @@ def _getLevel (record):
 	"""
 	level = record.levelname
 	msg   = record.msg.lstrip()
-	m     = re.match(r'\[\s*([\w>.]+)\s*\](.*)', record.msg)
+	m     = re.match(r'\[\s*([\w>._]+)\s*\](.*)', record.msg)
 	if m:
 		level = m.group(1).upper()
 		msg   = m.group(2).lstrip()
@@ -267,15 +267,17 @@ def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, name='Py
 		handler.close()
 	del logger.handlers[:]
 	streamCh  = logging.StreamHandler()
-	streamCh.setFormatter (PyPPLLogFormatter(theme = theme))
-	streamCh.addFilter(PyPPLLogFilter(name = name, lvls = levels, lvldiff = lvldiff))
+	formatter = PyPPLLogFormatter(theme = theme)
+	filter    = PyPPLLogFilter(name = name, lvls = levels, lvldiff = lvldiff)
+	streamCh.addFilter(filter)
+	streamCh.setFormatter(formatter)
+	logger.addHandler (streamCh)
 	
 	if logfile:
 		fileCh = logging.FileHandler(logfile)
 		fileCh.setFormatter(PyPPLLogFormatter(theme = None))
 		logger.addHandler (fileCh)
 	
-	logger.addHandler (streamCh)
 	logger.setLevel(1)
 	# Output all logs
 	return logger

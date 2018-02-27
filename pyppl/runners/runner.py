@@ -98,6 +98,7 @@ class Runner (object):
 		while self.job.rc() == self.job.RC_NOTGENERATE: # rc not generated yet
 			sleep (self.INTERVAL)
 			lastout, lasterr = self._flush(fout, ferr, lastout, lasterr)
+
 		self._flush(fout, ferr, lastout, lasterr, True)
 		ferr.close()
 		fout.close()
@@ -108,7 +109,7 @@ class Runner (object):
 	def retry(self):
 		if self.job.proc.errhow == 'retry' and self.ntry.value < self.job.proc.errntry:
 			self.ntry.value += 1
-			self.job.proc.log ("%s Retrying job ... %s" % (self.job._indexIndicator(), self.ntry.value), 'RETRY')
+			self.job.proc.log ("%s Retrying job (%s/%s) ..." % (self.job._indexIndicator(), self.ntry.value, self.job.proc.errntry), 'RETRY')
 			return True
 		else:
 			return False
@@ -145,8 +146,8 @@ class Runner (object):
 				if not outfilter or re.search(outfilter, line):
 					with flushlock:
 						sys.stdout.write(line)
-		
-		lines, lasterr = utils.flushFile(ferr, lasterr, end)
+
+		lines, lasterr = utils.flushFile(ferr, lasterr, end)		
 		for line in lines:
 			if line.startswith('pyppl.log'):
 				line = line.rstrip('\n')

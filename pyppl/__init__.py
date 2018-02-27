@@ -368,7 +368,7 @@ class Proc (object):
 			`key`:   The type of messages
 		"""
 		summary = False
-		level   = "[%s]" % level		
+		level   = "[%s]" % level
 		
 		if not key or key not in Proc.LOG_NLINE:
 			logger.logger.info(level + ' ' + msg)
@@ -1228,9 +1228,10 @@ class PyPPL (object):
 		for end in ends:
 			if end in resumes: continue
 			paths = self.tree.getPathsToStarts(end)
-			for path in paths:
-				if any([p in resumes for p in path]): continue
-				raise PyPPLProcRelationError('%s <- [%s]' % (end.name(), ', '.join([p.name() for p in path])), 'One of the routes cannot be achived from resumed processes')
+			failedpaths = [ps for ps in paths if not any([p in ps for p in resumes])]
+			if not failedpaths: continue
+			failedpath = failedpaths[0]
+			raise PyPPLProcRelationError('%s <- [%s]' % (end.name(), ', '.join([p.name() for p in failedpath])), 'One of the routes cannot be achived from resumed processes')
 				
 		# set prior processes to skip
 		for rsproc in resumes:
@@ -1337,7 +1338,7 @@ class PyPPL (object):
 		proc      = self.tree.getNextToRun()
 		while proc:
 			name = ' %s: %s ' % (proc.name(True), proc.desc)
-			nlen = max(70, len(name) + 3)
+			nlen = max(85, len(name) + 3)
 			proc.log ('+' + '-'*(nlen-3) + '+', 'PROCESS')
 			proc.log ('|%s%s|' % (name, ' '*(nlen - 3 - len(name))), 'PROCESS')
 			proc.log ('+' + '-'*(nlen-3) + '+', 'PROCESS')

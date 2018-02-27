@@ -14,6 +14,7 @@ class TestUtils (helpers.TestCase):
 		file1 = path.join(testdir, 'testFlushFile1.txt')
 		file2 = path.join(testdir, 'testFlushFile2.txt')
 		file3 = path.join(testdir, 'testFlushFile3.txt')
+		file4 = path.join(testdir, 'testFlushFile4.txt')
 
 		yield (
 			file1, [
@@ -31,9 +32,15 @@ class TestUtils (helpers.TestCase):
 		)
 		yield (
 			file3, [
-				('\n', ['\n'], '', False), # string append to the file, lines flushed, and remaining string
+				('\n', ['\n'], '', False), # string append to the file, lines flushed, and remaining string, end
 				('\n', ['\n'], '', False),
 				('\na', ['\n', 'a\n'], '', True),
+			]
+		)
+		yield (
+			file4, [
+				('123', [], '123', False),
+				('', ['123\n'], '', True)
 			]
 		)
 

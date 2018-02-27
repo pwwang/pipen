@@ -13,6 +13,8 @@
 from sys import stderr
 from shutil import rmtree
 from pyppl import Proc, PyPPL
+from pyppl.exception import PyPPLProcRelationError
+
 p1  = Proc()
 p2  = Proc()
 p3  = Proc()
@@ -45,7 +47,7 @@ try:
 	logger("Resume from p8.")
 	clear()
 	PyPPL(config).start(p1, p8).resume(p8).run()
-except ValueError as ex:
+except PyPPLProcRelationError as ex:
 	logger("Cannot only resume from p8: %s" % ex)
 
 # even without p1, p2, p3 and p8's workdir

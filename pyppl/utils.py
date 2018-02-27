@@ -54,6 +54,9 @@ def flushFile(f, lastmsg, end = False):
 		if lastmsg and end:
 			lines.append(lastmsg + '\n')
 			lastmsg = ''
+	elif lastmsg and end:
+		lines.append(lastmsg + '\n')
+		lastmsg = ''
 	return lines, lastmsg
 
 def parallel(func, args, nthread, method = 'thread'):
