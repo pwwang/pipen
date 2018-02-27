@@ -480,6 +480,7 @@ class TestProc(helpers.TestCase):
 		yield pBuildProps5, {'echo': 'stdout'}, {'echo': {'jobs': [0], 'type': {'stdout': None}}}
 		yield pBuildProps5, {'echo': {'type': 'all'}}, {'echo': {'jobs': [0], 'type': {'stderr': None, 'stdout': None}}}
 		yield pBuildProps5, {'echo': {'jobs': ' 0, 1 ', 'type': 'all'}}, {'echo': {'jobs': [0, 1], 'type': {'stderr': None, 'stdout': None}}}
+		yield pBuildProps5, {'echo': {'jobs': range(2), 'type': 'all'}}, {'echo': {'jobs': [0, 1], 'type': {'stderr': None, 'stdout': None}}}
 		yield pBuildProps5, {'echo': {'type': 'stderr'}}, {'echo': {'jobs': [0], 'type': {'stderr': None}}}
 		yield pBuildProps5, {'echo': {'type': {'all': r'^a'}}}, {'echo': {'jobs': [0], 'type': {'stderr': r'^a', 'stdout': r'^a'}}}
 		# expect

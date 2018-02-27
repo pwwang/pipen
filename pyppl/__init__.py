@@ -626,6 +626,8 @@ class Proc (object):
 			self.echo['jobs'] = [self.echo['jobs']]
 		elif isinstance(self.echo['jobs'], six.string_types):
 			self.echo['jobs'] = list(map(lambda x: int(x.strip()), self.echo['jobs'].split(',')))
+		else:
+			self.echo['jobs'] = list(self.echo['jobs'])
 		
 		if not 'type' in self.echo or self.echo['type'] == 'all':
 			self.echo['type'] = {'stderr': None, 'stdout': None}
