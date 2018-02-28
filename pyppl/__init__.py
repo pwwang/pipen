@@ -306,7 +306,7 @@ class Proc (object):
 
 		# profile will be deprecated, use runner instead
 		if name in Proc.DEPRECATED:
-			self.log('Attribute "%s" is deprecated%s.' % (name, (', use "%s" instead' % Proc.DEPRECATED[name]) if Proc.DEPRECATED[name] else ''), 'warning')
+			self.log('%s: Attribute "%s" is deprecated%s.' % (self.name(True), name, (', use "%s" instead' % Proc.DEPRECATED[name]) if Proc.DEPRECATED[name] else ''), 'warning')
 		
 		if name in Proc.ALIAS:
 			name = Proc.ALIAS[name]
@@ -929,39 +929,36 @@ class Proc (object):
 			with open(tplfile) as f:
 				script = f.read().strip()
 		
-		olines = script.splitlines()
-		nlines = []
+		olines       = script.splitlines()
+		nlines       = []
 		# remove repeats
-		repeats = []
+		repeats      = []
+		repeat_opens = {}
 		repeat_start = '# PYPPL REPEAT START:'
-		repeat_end   = '# PYPPL REPEAT END'
-		switch  = True
+		repeat_end   = '# PYPPL REPEAT END:'
+		switch       = True
+		indent       = ''
 		for line in olines:
 			if repeat_start in line:
 				rname = line[line.find(repeat_start) + len(repeat_start):].strip().split()[0]
 				if rname in repeats:
 					switch = False
-				else:
-					repeats.append(rname)
-					switch = True
+				repeat_opens[rname] = True
 			elif repeat_end in line:
+				rname = line[line.find(repeat_end) + len(repeat_end):].strip().split()[0]
+				if not rname in repeat_opens: continue
+				del repeat_opens[rname]
+				repeats.append(rname)
 				switch = True
 			elif switch:
-				nlines.append(line)
-				
-		del repeats
-		olines, nlines = nlines, []
-		indent = ''
-		for line in olines:
-			# ## indent remove ##
-			if '# PYPPL INDENT REMOVE' in line:
-				indent = line[:line.find('#')]
-			elif '# PYPPL INDENT KEEP' in line:
-				indent = ''
-			elif indent and line.startswith(indent):
-				nlines.append(line[len(indent):])
-			else:
-				nlines.append(line)
+				if '# PYPPL INDENT REMOVE' in line:
+					indent = line[:-len(line.lstrip())]
+				elif '# PYPPL INDENT KEEP' in line:
+					indent = ''
+				elif indent and line.startswith(indent):
+					nlines.append(line[len(indent):])
+				else:
+					nlines.append(line)
 				
 		if not nlines or not nlines[0].startswith('#!'):
 			nlines.insert(0, '#!/usr/bin/env ' + self.lang)
@@ -1335,19 +1332,20 @@ class PyPPL (object):
 		timer     = time()
 
 		dftconfig = self._getProfile(profile)
-		proc      = self.tree.getNextToRun()
-		while proc:
-			name = ' %s: %s ' % (proc.name(True), proc.desc)
-			nlen = max(85, len(name) + 3)
-			proc.log ('+' + '-'*(nlen-3) + '+', 'PROCESS')
-			proc.log ('|%s%s|' % (name, ' '*(nlen - 3 - len(name))), 'PROCESS')
-			proc.log ('+' + '-'*(nlen-3) + '+', 'PROCESS')
-			proc.log ("%s => %s => %s" % (ProcTree.getPrevStr(proc), proc.name(), ProcTree.getNextStr(proc)), 'depends')
-			if 'runner' in proc.sets and proc.config['runner'] != profile:
-				proc.run(self._getProfile(proc.config['runner']))
-			else:
-				proc.run(dftconfig)
-			proc = self.tree.getNextToRun()
+		procs     = self.tree.getNextToRun()
+		while procs:
+			for proc in procs:
+				name = ' %s: %s ' % (proc.name(True), proc.desc)
+				nlen = max(85, len(name) + 3)
+				proc.log ('+' + '-'*(nlen-3) + '+', 'PROCESS')
+				proc.log ('|%s%s|' % (name, ' '*(nlen - 3 - len(name))), 'PROCESS')
+				proc.log ('+' + '-'*(nlen-3) + '+', 'PROCESS')
+				proc.log ("%s => %s => %s" % (ProcTree.getPrevStr(proc), proc.name(), ProcTree.getNextStr(proc)), 'depends')
+				if 'runner' in proc.sets and proc.config['runner'] != profile:
+					proc.run(self._getProfile(proc.config['runner']))
+				else:
+					proc.run(dftconfig)
+			procs = self.tree.getNextToRun()
 
 		unran = self.tree.unranProcs()
 		if unran:

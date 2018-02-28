@@ -197,7 +197,10 @@ class TestAggr(helpers.TestCase):
 		yield aggr, 'pGetAttr1', aggr.pGetAttr1
 		yield aggr, 'pGetAttr2', aggr.pGetAttr2
 		yield aggr, 'pGetAttr3', aggr.pGetAttr3
-		yield aggr, 'a', None, False, AggrAttributeError, 'Attribute not delegated: \'a\''
+		# not raised, because we have to allow:
+		# aggr.delegate('args.a')
+		# when we do aggr.args.a no error should be raised for aggr.args
+		#yield aggr, 'a', None, False, AggrAttributeError, 'Attribute not delegated: \'a\''
 		
 		aggr1 = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
 		aggr1.delegate('args', 'starts')
@@ -216,14 +219,17 @@ class TestAggr(helpers.TestCase):
 		pSetAttr1 = Proc()
 		pSetAttr2 = Proc()
 		pSetAttr3 = Proc()
+		pSetAttr3.args.p = 1
 		aggr = Aggr(pSetAttr1, pSetAttr2, pSetAttr3)
 		aggr.delegate('args', 'ends')
+		#aggr.delegate('envs.p1', 'pSetAttr3', 'envs.p')
 		yield aggr, 'id', 'whatever', lambda: aggr.id
 		yield aggr, 'starts', (aggr.pSetAttr1, aggr.pSetAttr2), lambda: tuple(aggr.starts)
 		yield aggr, 'ends', aggr.pSetAttr3, lambda: aggr.ends[0]
 		yield aggr, '_procs', None, None, AggrAttributeError, 'Built-in attribute is not allowed to be modified'
 		yield aggr, 'a', None, None, AggrAttributeError, 'Attribute is not delegated: \'a\''
 		yield aggr, 'args', {'a': 1}, lambda: aggr.pSetAttr3.args
+		#yield aggr, 'envs.p1', 2, lambda: aggr.pSetAttr3.envs
 			
 	def testSetAttr(self, aggr, name, value, expval, exception = None, msg = None):
 		if exception:
@@ -240,6 +246,8 @@ class TestAggr(helpers.TestCase):
 		pChain3.args.b = 1
 		aggr = Aggr(pChain1, pChain2, pChain3)
 		aggr.delegate('a.p', 'starts', 'args.params')
+		aggr.delegate('args.b1', 'pChain3', 'args.b')
+		aggr.delegate('runner', 'pChain3')
 		aggr.delegate('a', 'ends', 'args')
 		aggr.delegate('f', 'neither', 'forks')
 		def attr_setaggr():
@@ -252,11 +260,17 @@ class TestAggr(helpers.TestCase):
 			aggr.a.p.e = 4
 		def attr_setaggr4():
 			aggr.f = 10
+		def attr_setaggr5():
+			aggr.args.b1 = 11
+		def attr_setaggr6():
+			aggr.runner = 'sge'
 		yield attr_setaggr, 2, lambda: aggr.pChain3.args.b
 		yield attr_setaggr1, 2, lambda: aggr.pChain1.args.params.c
 		yield attr_setaggr2, 3, lambda: aggr.pChain1.args.params.d
 		yield attr_setaggr3, 4, lambda: 4
 		yield attr_setaggr4, 10, lambda: aggr.pChain2.forks
+		yield attr_setaggr5, 11, lambda: aggr.pChain3.args.b
+		yield attr_setaggr6, 'sge', lambda: aggr.pChain3.config['runner']
 	
 	def testChain(self, attr_setaggr, value, attr_getproc):
 		attr_setaggr()
@@ -360,7 +374,21 @@ class TestAggr(helpers.TestCase):
 		for p in aggr.starts:
 			self.assertListEqual(p.depends, depends)
 		
-		
+	def dataProvider_testDepends2(self):
+		pDepends21 = Proc()
+		pDepends22 = Proc()
+		pDepends23 = Proc()
+		pDepends24 = Proc()
+		pDepends25 = Proc()
+		aggr = Aggr(pDepends21, pDepends22, pDepends23)
+		aggr.starts = [pDepends21, pDepends22]
+		yield aggr, [pDepends24, pDepends25]		
+	
+	def testDepends2(self, aggr, depends):
+		aggr.depends2 = depends
+		for i, p in enumerate(aggr.starts):
+			self.assertListEqual(p.depends, [depends[i]])
+			
 			
 		
 		

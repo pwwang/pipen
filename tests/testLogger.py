@@ -176,10 +176,13 @@ class TestLogger(helpers.TestCase):
 
 	def dataProvider_testGetLogger(self, testdir):
 		yield 'normal', True, None, None, '[info]a', '[%s   INFO%s] %sa%s' % (COLORS.green, COLORS.end, COLORS.green, COLORS.end)
+		
 		yield 'normal', None, None, None, '[info]a', '[   INFO] a'
+		
 		logfile = path.join(testdir, 'logfile.txt')
 		yield 'normal', True, logfile, None, '[info]a', '[%s   INFO%s] %sa%s' % (COLORS.green, COLORS.end, COLORS.green, COLORS.end), '[   INFO] a'
-		yield 'normal', None, logfile, None, '[info]a', '[   INFO] a', '[   INFO] a'
+		
+		yield 'normal', None, logfile, None, '[debug]a', '', '[  DEBUG] a'
 
 	def testGetLogger(self, levels, theme, logfile, lvldiff, msg, outs, fileouts = None):
 		log2 = logger.getLogger()

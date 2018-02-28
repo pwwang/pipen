@@ -454,14 +454,18 @@ class TestProcTree(helpers.TestCase):
 			  proc5  proc4
 		"""
 		ps = [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths3, proc_testGetAllPaths4, proc_testGetAllPaths5]
-		yield ps, [proc_testGetAllPaths0], [], proc_testGetAllPaths0
-		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [], proc_testGetAllPaths0
-		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0], proc_testGetAllPaths1
-		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1], proc_testGetAllPaths2
-		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2], proc_testGetAllPaths4
-		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths4], proc_testGetAllPaths3
-		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths4, proc_testGetAllPaths3], proc_testGetAllPaths5
-		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths4, proc_testGetAllPaths3, proc_testGetAllPaths5], None
+		
+		yield ps, [proc_testGetAllPaths0], [], [proc_testGetAllPaths0]
+		
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [], [proc_testGetAllPaths0, proc_testGetAllPaths1]
+		
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths2, proc_testGetAllPaths5]
+		
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths5], [proc_testGetAllPaths4]
+		
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths4, proc_testGetAllPaths5], [proc_testGetAllPaths3]
+		
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths3, proc_testGetAllPaths4, proc_testGetAllPaths5], []
 
 	def testGetNextToRun(self, procs, starts, haveran, out):
 		for p in procs:
@@ -470,7 +474,7 @@ class TestProcTree(helpers.TestCase):
 		pt.setStarts(starts)
 		for hr in haveran:
 			ProcTree.getNode(hr).ran = True
-		self.assertIs(pt.getNextToRun(), out)
+		self.assertListEqual(pt.getNextToRun(), out)
 
 	def dataProvider_testUnranProcs(self):
 		proc_testUnranProcs0 = Proc()
@@ -507,10 +511,11 @@ class TestProcTree(helpers.TestCase):
 		pt = ProcTree()
 		pt.setStarts(starts)
 		# run the pipeline
-		p = pt.getNextToRun()
-		while p:
-			ProcTree.getNode(p).ran = True
-			p = pt.getNextToRun()
+		ps = pt.getNextToRun()
+		while ps:
+			for p in ps:
+				ProcTree.getNode(p).ran = True
+			ps = pt.getNextToRun()
 		self.assertDictEqual(pt.unranProcs(), outs)
 
 if __name__ == '__main__':

@@ -219,10 +219,12 @@ class PyPPLLogFormatter (logging.Formatter):
 	"""
 	logging formatter for pyppl
 	"""
-	def __init__(self, fmt=None, theme='greenOnBlack'):
+	def __init__(self, fmt=None, theme='greenOnBlack', secondary = False):
 		fmt = LOGFMT if fmt is None else fmt
 		logging.Formatter.__init__(self, fmt, "%Y-%m-%d %H:%M:%S")
-		self.theme  = theme
+		self.theme     = theme
+		# whether it's a secondary formatter (for fileHandler)
+		self.secondary = secondary
 		
 	
 	def format(self, record):
@@ -230,7 +232,7 @@ class PyPPLLogFormatter (logging.Formatter):
 		theme = 'greenOnBlack' if self.theme is True else self.theme
 		theme = THEMES[theme] if not isinstance(theme, dict) and theme in THEMES else theme
 		theme = _formatTheme(theme)
-		
+
 		if not theme:
 			colorLevelStart = COLORS.none
 			colorLevelEnd   = COLORS.none
@@ -241,7 +243,9 @@ class PyPPLLogFormatter (logging.Formatter):
 			colorLevelEnd   = COLORS.end
 			colorMsgEnd     = COLORS.end
 		
-		level = level[1:] if level.startswith('_') else level
+		if self.secondary:
+			# keep _ for file handler
+			level = level[1:] if level.startswith('_') else level
 		level = level[:7]
 		record.msg = "[%s%7s%s] %s%s%s" % (colorLevelStart, level, colorLevelEnd, colorMsgStart, msg, colorMsgEnd)
 
@@ -266,17 +270,18 @@ def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, name='Py
 	for handler in logger.handlers:
 		handler.close()
 	del logger.handlers[:]
-	streamCh  = logging.StreamHandler()
-	formatter = PyPPLLogFormatter(theme = theme)
-	filter    = PyPPLLogFilter(name = name, lvls = levels, lvldiff = lvldiff)
-	streamCh.addFilter(filter)
-	streamCh.setFormatter(formatter)
-	logger.addHandler (streamCh)
 	
 	if logfile:
 		fileCh = logging.FileHandler(logfile)
 		fileCh.setFormatter(PyPPLLogFormatter(theme = None))
 		logger.addHandler (fileCh)
+		
+	streamCh  = logging.StreamHandler()
+	formatter = PyPPLLogFormatter(theme = theme, secondary = True)
+	filter    = PyPPLLogFilter(name = name, lvls = levels, lvldiff = lvldiff)
+	streamCh.addFilter(filter)
+	streamCh.setFormatter(formatter)
+	logger.addHandler (streamCh)
 	
 	logger.setLevel(1)
 	# Output all logs

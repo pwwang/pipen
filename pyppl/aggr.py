@@ -64,14 +64,17 @@ class DotProxy(object):
 			`name`: The name of the attribute
 			`value`: The value of the attribute
 		"""
-		delegated = DotProxy._isDelegated(self._aggr, self._prefix, self._aggr._delegates)
+		prefix  = self._prefix if not self._prefix else self._prefix + '.'
+		prefix += name
+		delegated = DotProxy._isDelegated(self._aggr, prefix, self._aggr._delegates)
 		if not delegated:
-			raise AggrAttributeError((self._prefix if not self._prefix else self._prefix + '.') + name, 'Attribute is not delegated')
+			raise AggrAttributeError(prefix, 'Attribute is not delegated')
 		procs, dots = delegated
+		setname     = dots.pop(-1)
 		for proc in procs:
 			obj = proc
 			for dot in dots: obj = getattr(obj, dot)
-			setattr(obj, name, value)
+			setattr(obj, setname, value)
 			
 	def __getitem__(self, name):
 		return getattr(self, name)
@@ -192,10 +195,7 @@ class Aggr (object):
 			return self._props[name]
 		if name in self._procs:
 			return self._procs[name]
-
-		delegated = DotProxy._isDelegated(self, name, self._delegates)
-		if not delegated:
-			raise AggrAttributeError(name, 'Attribute not delegated')
+		
 		self.__dict__[name] = DotProxy(self, name)
 		return self.__dict__[name]
 
@@ -218,8 +218,7 @@ class Aggr (object):
 				value = [value]
 			for i, proc in enumerate(procs):
 				if dot in ['depends2', 'input'] and i < len(value):
-					if dot == 'depends2': dot = 'depends'
-					setattr(proc, dot, value[i])
+					setattr(proc, 'depends' if dot == 'depends2' else dot, value[i])
 				else:
 					setattr(proc, dot, value)
 	

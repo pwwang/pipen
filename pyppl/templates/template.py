@@ -26,6 +26,30 @@ def _basename(x, orig = False):
 
 def _filename(x, orig = False):
 	return path.splitext(_basename(x, orig))[0]
+	
+def _norepeats(x):
+	olines       = x.splitlines()
+	nlines       = []
+	repeats      = []
+	repeat_opens = {}
+	repeat_start = '# PYPPL REPEAT START:'
+	repeat_end   = '# PYPPL REPEAT END:'
+	switch       = True
+	for line in olines:
+		if repeat_start in line:
+			rname = line[line.find(repeat_start) + len(repeat_start):].strip().split()[0]
+			if rname in repeats:
+				switch = False
+			repeat_opens[rname] = True
+		elif repeat_end in line:
+			rname = line[line.find(repeat_end) + len(repeat_end):].strip().split()[0]
+			if not rname in repeat_opens: continue
+			del repeat_opens[rname]
+			repeats.append(rname)
+			switch = True
+		elif switch:
+			nlines.append(line)
+	return '\n'.join(nlines) + '\n'
 
 class Template(object):
 
@@ -56,8 +80,8 @@ class Template(object):
 		'quote'    : lambda x: json.dumps(str(x)),
 		'json'     : json.dumps,
 		'read'     : _read,
-		'readlines': _readlines
-
+		'readlines': _readlines,
+		'norepeats': _norepeats
 	}
 
 	def __init__(self, source, **envs):

@@ -38,7 +38,7 @@ class TestProc(helpers.TestCase):
 		}, {
 			'afterCmd': '',
 			'aggr': None,
-			'args': {},
+			'args': Box(),
 			'beforeCmd': '',
 			'brings': {},
 			'cache': True,
@@ -63,14 +63,14 @@ class TestProc(helpers.TestCase):
 			'maxsubmit': 40,
 			'nthread': 1,
 			'output': '',
-			'ppldir': path.join(__folder__, 'workdir'),
+			'ppldir': path.realpath('./workdir'),
 			'rc': 0,
 			'resume': '',
 			'runner': 'local',
 			'script': '',
 			'tag': 'notag',
 			'template': '',
-			'tplenvs': {},
+			'tplenvs': Box(),
 			'workdir': ''
 		}
 		
@@ -98,7 +98,7 @@ class TestProc(helpers.TestCase):
 		}, {
 			'afterCmd': '',
 			'aggr': None,
-			'args': {},
+			'args': Box(),
 			'beforeCmd': '',
 			'brings': {},
 			'cache': True,
@@ -123,14 +123,14 @@ class TestProc(helpers.TestCase):
 			'maxsubmit': int(cpu_count() / 2),
 			'nthread': 1,
 			'output': '',
-			'ppldir': path.join(__folder__, 'workdir'),
+			'ppldir': path.realpath('./workdir'),
 			'rc': 0,
 			'resume': '',
 			'runner': 'local',
 			'script': '',
 			'tag': 'atag',
 			'template': '',
-			'tplenvs': {},
+			'tplenvs': Box(),
 			'workdir': ''
 		}
 		
@@ -176,11 +176,13 @@ class TestProc(helpers.TestCase):
 		yield pSetAttr, 'envs', {'a': 1}
 		yield pSetAttr, 'depends', pSetAttr, None, ProcAttributeError, 'Process depends on itself'
 		yield pSetAttr, 'depends', 1, None, ProcAttributeError, "Process dependents should be 'Proc/Aggr', not: 'int'"
+		#5
 		yield pSetAttr, 'depends', pSetAttrDepends, [pSetAttrDepends]
 		yield pSetAttr, 'depends', aSetAttr, [aSetAttr.pSetAttrAggr]
 		yield pSetAttr, 'depends', (aSetAttr, pSetAttrDepends), [aSetAttr.pSetAttrAggr, pSetAttrDepends]
 		yield pSetAttr, 'script', 'file:' + path.abspath(__file__)
-		yield pSetAttr, 'script', 'file:' + path.relpath(__file__), 'file:' + path.abspath(__file__)
+		yield pSetAttr, 'script', 'file:' + path.relpath(__file__, __folder__), 'file:' + path.abspath(__file__)
+		#10
 		yield pSetAttr, 'args', {'a':1}, Box({'a':1})
 		yield pSetAttr, 'envs', {'a':1}, Box({'a':1})
 		yield pSetAttr, 'input', 'inkey1:var, inkey2:file'
@@ -308,7 +310,7 @@ class TestProc(helpers.TestCase):
 			'maxsubmit': int(cpu_count() / 2),
 			'nthread': 1,
 			'output': '',
-			'ppldir': path.join(__folder__, 'workdir'),
+			'ppldir': path.realpath('./workdir'),
 			'rc': 0,
 			'resume': '',
 			'runner': 'local',
@@ -366,7 +368,7 @@ class TestProc(helpers.TestCase):
 			'maxsubmit': int(cpu_count() / 2),
 			'nthread': 1,
 			'output': '',
-			'ppldir': path.join(__folder__, 'workdir'),
+			'ppldir': path.realpath('./workdir'),
 			'rc': 0,
 			'resume': '',
 			'runner': 'local',
@@ -673,24 +675,24 @@ class TestProc(helpers.TestCase):
 		]
 		
 		tplfile = path.join(testdir, 'scriptTpl.txt')
-		helpers.writeFile(tplfile, '\n'.join([
+		helpers.writeFile(tplfile, [
 			'A',
 			'B',
 			'## PYPPL REPEAT START: repeat  #',
 			'Repeat1',
-			'## PYPPL REPEAT END',
+			'## PYPPL REPEAT END: repeat',
 			'',
 			'## PYPPL REPEAT START: repeat #',
 			'Repeat2',
-			'## PYPPL REPEAT END',
+			'## PYPPL REPEAT END: repeat',
 			'C',
 			'  ### PYPPL INDENT REMOVE',
 			'  D',
 			'    E',
 			'  # PYPPL INDENT KEEP ###',
 			'  F'
-		]) + '\n')
-		yield pBuildScript, 'file:' + tplfile, '\n'.join([
+		])
+		yield pBuildScript, 'file:' + tplfile, [
 			'#!/usr/bin/env bash',
 			'A',
 			'B',
@@ -700,7 +702,47 @@ class TestProc(helpers.TestCase):
 			'D',
 			'  E',
 			'  F',
-		]) + '\n'
+			''
+		]
+		
+		tplfile1 = path.join(testdir, 'scriptTpl1.txt')
+		helpers.writeFile(tplfile1, [
+			'A',
+			'B',
+			'## PYPPL REPEAT START: repeat #',
+			'Repeat1',
+			'# PYPPL REPEAT START: repeat2',
+			'Repeat2',
+			'### PYPPL REPEAT END: repeat2',
+			'',
+			'## PYPPL REPEAT START: repeat #',
+			'Repeat3',
+			'# PYPPL REPEAT START: repeat2',
+			'Repeat2'
+			'## PYPPL REPEAT END: repeat2',
+			'## PYPPL REPEAT END: repeat',
+			'C',
+			'  ### PYPPL INDENT REMOVE',
+			'  D',
+			'    # PYPPL INDENT REMOVE',
+			'    E',
+			'  # PYPPL INDENT KEEP ###',
+			'  F',
+		])
+		yield pBuildScript, 'file:' + tplfile1, [
+			'#!/usr/bin/env bash',
+			'A',
+			'B',
+			'Repeat1',
+			'Repeat2',
+			'',
+			'Repeat3',
+			'C',
+			'D',
+			'E',
+			'  F',
+			''
+		]
 		
 		tplfile = path.join(testdir, 'nosuchtpl')
 		yield pBuildScript, 'file:' + tplfile, '', ProcScriptError, 'No such template file:'

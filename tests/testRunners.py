@@ -107,7 +107,8 @@ class TestRunner(helpers.TestCase):
 		yield _generateJob(testdir, pProps = {'errhow': 'terminate'}), False
 		yield _generateJob(testdir, index = 1, pProps = {'errhow': 'retry', 'errntry': 3}), True, [
 			'RETRY',
-			'[2/0] Retrying job ... 1'
+			'[2/0]',
+			'Retrying job (1/3) ...'
 		]
 		yield _generateJob(testdir, index = 2, pProps = {'errhow': 'retry', 'errntry': 0}), False
 		
@@ -293,7 +294,8 @@ class TestRunnerLocal(helpers.TestCase):
 		RunnerLocal.INTERVAL = .1
 		r = RunnerLocal(job)
 		r.submit()
-		o = r.run()
+		with helpers.log2str():
+			o = r.run()
 		self.assertEqual(o, ret)
 		stdout = helpers.readFile(job.outfile, str)
 		stderr = helpers.readFile(job.errfile, str)
@@ -526,7 +528,8 @@ class TestRunnerSsh(helpers.TestCase):
 		RunnerSsh.INTERVAL = .1
 		r = RunnerSsh(job)
 		r.submit()
-		o = r.run()
+		with helpers.log2str():
+			o = r.run()
 		self.assertEqual(o, ret)
 		stdout = helpers.readFile(job.outfile, str)
 		stderr = helpers.readFile(job.errfile, str)

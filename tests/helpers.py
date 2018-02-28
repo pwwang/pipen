@@ -203,8 +203,10 @@ class TestCase(with_metaclass(DataProviderSupport, unittest.TestCase)):
 			self.fail(msg)
 
 	def assertTextEqual(self, first, second, msg = None):
-		first  = first.split('\n')
-		second = second.split('\n')
+		if not isinstance(first, list):
+			first  = first.split('\n')
+		if not isinstance(second, list):
+			second = second.split('\n')
 		self.assertListEqual(first, second, msg)
 
 	def assertRaisesStr(self, exc, s, callable, *args, **kwds):
