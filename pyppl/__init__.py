@@ -59,9 +59,9 @@ class Proc (object):
 		'CACHE_SCRIPT_NEWER': -3,
 		'CACHE_SIGINVAR_DIFF': -3,
 		'CACHE_SIGINFILE_DIFF': -3,
-		'CACHE_SIGINFILE_NEWER': -4,
+		'CACHE_SIGINFILE_NEWER': -3,
 		'CACHE_SIGINFILES_DIFF': -3,
-		'CACHE_SIGINFILES_NEWER': -4,
+		'CACHE_SIGINFILES_NEWER': -3,
 		'CACHE_SIGOUTVAR_DIFF': -3,
 		'CACHE_SIGOUTFILE_DIFF': -3,
 		'CACHE_SIGOUTDIR_DIFF': -3,
@@ -369,25 +369,25 @@ class Proc (object):
 		"""
 		summary = False
 		level   = "[%s]" % level
-		
 		if not key or key not in Proc.LOG_NLINE:
 			logger.logger.info(level + ' ' + msg)
 		else:
 			maxline = Proc.LOG_NLINE[key]
 			absline = abs(maxline)
 			summary = maxline < 0
+			n = 3 if key.startswith('CACHE_') and (key.endswith('_DIFF') or key.endswith('_NEWER')) else 1
 			
 			if key not in self.logs: self.logs[key] = []
 			
 			if not self.logs[key] or self.logs[key][-1] is not None:
 				self.logs[key].append((level, msg))
 			nlogs = len(self.logs[key])
-			if nlogs == absline or nlogs == self.size:
+			if nlogs == absline or nlogs == self.size * n:
 				self.logs[key].append(None)
 				for level, msg in filter(None, self.logs[key]):
 					logger.logger.info (level + ' ' + msg)
-				if summary and nlogs < self.size:
-					logger.logger.info ('[debug] ... max=%s (%s) reached, further information will be ignored.' % (absline, key))
+				if summary and nlogs < self.size * n:
+					logger.logger.info ('[debug] ...... max=%s (%s) reached, further information will be ignored.' % (absline, key))
 
 	def copy (self, tag=None, desc=None, id=None):
 		"""

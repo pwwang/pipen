@@ -5,6 +5,7 @@ import json, re
 from collections import OrderedDict
 from glob import glob
 from time import sleep
+from datetime import datetime
 from os import makedirs, path, remove, utime, readlink
 from multiprocessing import Lock, JoinableQueue, Process, Array
 from six import string_types
@@ -233,6 +234,8 @@ class Job (object):
 	MSG_RC_EXPECTFAIL  = 'Failed to meet the expectation'
 	MSG_RC_SUBMITFAIL  = 'Failed to submit job'
 	MSG_RC_OTHER       = 'Script error'
+	
+	LOGLOCK = Lock()
 		
 	def __init__(self, index, proc):
 		"""
@@ -433,9 +436,10 @@ class Job (object):
 				oval = osig[k]
 				nval = nsig[k]
 				if nval == oval: continue
-				self.proc.log("%s not cached because %s variable(%s) is different:" % (indexstr, key, k), 'debug', logkey)
-				self.proc.log("- Previous: %s" % oval, 'debug', logkey)
-				self.proc.log("- Current : %s" % nval, 'debug', logkey)
+				with Job.LOGLOCK:
+					self.proc.log("%s not cached because %s variable(%s) is different:" % (indexstr, key, k), 'debug', logkey)
+					self.proc.log("...... - Previous: %s" % oval, 'debug', logkey)
+					self.proc.log("...... - Current : %s" % nval, 'debug', logkey)
 				return False
 			return True
 		
@@ -445,14 +449,16 @@ class Job (object):
 				nfile, ntime = nsig[k]
 				if nfile == ofile and ntime <= otime: continue
 				if nfile != ofile:
-					self.proc.log("%s not cached because %s file(%s) is different:" % (indexstr, key, k), 'debug', logkey)
-					self.proc.log("- Previous: %s" % ofile, 'debug', logkey)
-					self.proc.log("- Current : %s" % nfile, 'debug', logkey)
+					with Job.LOGLOCK:
+						self.proc.log("%s not cached because %s file(%s) is different:" % (indexstr, key, k), 'debug', logkey)
+						self.proc.log("...... - Previous: %s" % ofile, 'debug', logkey)
+						self.proc.log("...... - Current : %s" % nfile, 'debug', logkey)
 					return False
 				if timekey and ntime > otime:
-					self.proc.log("%s not cached because %s file(%s) is newer: %s" % (indexstr, key, k, ofile), 'debug', timekey)
-					self.proc.log("- Previous: %s" % otime, 'debug', timekey)
-					self.proc.log("- Current : %s" % ntime, 'debug', timekey)
+					with Job.LOGLOCK:
+						self.proc.log("%s not cached because %s file(%s) is newer: %s" % (indexstr, key, k, ofile), 'debug', timekey)
+						self.proc.log("...... - Previous: %s (%s)" % (otime, datetime.fromtimestamp(otime)), 'debug', timekey)
+						self.proc.log("...... - Current : %s (%s)" % (ntime, datetime.fromtimestamp(ntime)), 'debug', timekey)
 					return False
 			return True
 		
@@ -473,14 +479,16 @@ class Job (object):
 						nfile, ntime = nval[i]
 					if nfile == ofile and ntime <= otime: continue
 					if nfile != ofile:
-						self.proc.log("%s not cached because file %s is different for %s files(%s):" % (indexstr, i + 1, key, k), 'debug', logkey)
-						self.proc.log("- Previous: %s" % ofile, 'debug', logkey)
-						self.proc.log("- Current : %s" % nfile, 'debug', logkey)
+						with Job.LOGLOCK:
+							self.proc.log("%s not cached because file %s is different for %s files(%s):" % (indexstr, i + 1, key, k), 'debug', logkey)
+							self.proc.log("...... - Previous: %s" % ofile, 'debug', logkey)
+							self.proc.log("...... - Current : %s" % nfile, 'debug', logkey)
 						return False
 					if timekey and ntime > otime:
-						self.proc.log("%s not cached because file %s is newer for %s files(%s): %s" % (indexstr, i + 1, key, k, ofile), 'debug', timekey)
-						self.proc.log("- Previous: %s" % otime, 'debug', timekey)
-						self.proc.log("- Current : %s" % ntime, 'debug', timekey)
+						with Job.LOGLOCK:
+							self.proc.log("%s not cached because file %s is newer for %s files(%s): %s" % (indexstr, i + 1, key, k, ofile), 'debug', timekey)
+							self.proc.log("...... - Previous: %s (%s)" % (otime, datetime.fromtimestamp(otime)), 'debug', timekey)
+							self.proc.log("...... - Current : %s (%s)" % (ntime, datetime.fromtimestamp(ntime)), 'debug', timekey)
 						return False
 			return True
 		
