@@ -6,7 +6,6 @@ from collections import OrderedDict
 from glob import glob
 from time import sleep
 from os import makedirs, path, remove, utime, readlink
-from shutil import rmtree
 from multiprocessing import Lock, JoinableQueue, Process, Array
 from six import string_types
 from . import utils, logger
@@ -22,6 +21,8 @@ class Jobmgr (object):
 	STATUS_SUBMITFAILED = 3
 	STATUS_DONE         = 4
 	STATUS_DONEFAILED   = 5
+	
+	PBAR_SIZE = 50
 
 	def __init__(self, proc, runner):
 		"""
@@ -57,19 +58,18 @@ class Jobmgr (object):
 
 	def progressbar(self, jid, loglevel = 'info'):
 		bar     = '%s [' % self.proc.jobs[jid]._indexIndicator()
-		barsize = 50
 		barjobs = []
 		# distribute the jobs to bars
-		if self.proc.size <= barsize:
-			n, m = divmod(barsize, self.proc.size)
+		if self.proc.size <= Jobmgr.PBAR_SIZE:
+			n, m = divmod(Jobmgr.PBAR_SIZE, self.proc.size)
 			for j in range(self.proc.size):
 				step = n + 1 if j < m else n
 				for _ in range(step):
 					barjobs.append([j])
 		else:
 			jobx = 0
-			n, m = divmod(self.proc.size, barsize)
-			for i in range(barsize):
+			n, m = divmod(self.proc.size, Jobmgr.PBAR_SIZE)
+			for i in range(Jobmgr.PBAR_SIZE):
 				step = n + 1 if i < m else n
 				barjobs.append([jobx + s for s in range(step)])
 				jobx += step
@@ -88,7 +88,7 @@ class Jobmgr (object):
 				bar += '-'
 			elif jid in bj and self.status[jid] == Jobmgr.STATUS_SUBMITFAILED:
 				bar += '!'
-			elif jid in bj and self.status[jid] == Jobmgr.STATUS_SUBMITTED:
+			elif jid in bj and (self.status[jid] in [Jobmgr.STATUS_SUBMITTING, Jobmgr.STATUS_SUBMITTED]):
 				bar += '>'
 			elif jid in bj and self.status[jid] == Jobmgr.STATUS_DONEFAILED:
 				bar += 'x'
@@ -98,7 +98,7 @@ class Jobmgr (object):
 				bar += '-'
 			elif any(self.status[j] == Jobmgr.STATUS_SUBMITFAILED for j in bj):
 				bar += '!'
-			elif any(self.status[j] == Jobmgr.STATUS_SUBMITTED for j in bj):
+			elif any(self.status[j] in [Jobmgr.STATUS_SUBMITTING, Jobmgr.STATUS_SUBMITTED] for j in bj):
 				bar += '>'
 			elif any(self.status[j] == Jobmgr.STATUS_DONEFAILED for j in bj):
 				bar += 'x'
