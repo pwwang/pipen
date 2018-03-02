@@ -121,7 +121,7 @@ class Proc (object):
 		self.config['id']         = utils.varname() if id is None else id
 		
 		if ' ' in tag:
-			raise ProcTagError("No space is allowed in tag. Do you mean 'desc' instead of 'tag' ?")
+			raise ProcTagError("No space is allowed in tag (%s). Do you mean 'desc' instead of 'tag' ?" % tag)
 
 		# The command to run after jobs start
 		self.config['afterCmd']   = ""
@@ -834,7 +834,7 @@ class Proc (object):
 		show   = ['size', 'args']
 		if self.runner != 'local':
 			show.append('runner')
-		hide   = ['desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'aggr', 'input', 'output', 'depends']
+		hide   = ['desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'aggr', 'input', 'output', 'depends', 'script']
 		pvkeys = [key for key in set(list(self.props.keys()) + list(self.config.keys())) \
 			if key in show or (key in self.sets and key not in hide)]
 			
@@ -1032,7 +1032,7 @@ class Proc (object):
 
 		utils.parallel(chkCached, [(i, ) for i in range(self.size)], self.nthread)
 				
-		self.log ('Truly cached jobs: %s' % (utils.briefList(trulyCachedJids) if len(trulyCachedJids) < self.size else 'ALL'), 'info')
+		self.log ('Truly cached jobs : %s' % (utils.briefList(trulyCachedJids) if len(trulyCachedJids) < self.size else 'ALL'), 'info')
 		self.log ('Export-cached jobs: %s' % (utils.briefList(exptCachedJids)  if len(exptCachedJids)  < self.size else 'ALL'), 'info')
 		
 		if self.ncjobids:
