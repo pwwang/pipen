@@ -97,7 +97,8 @@ class TestLogger(helpers.TestCase):
 	theme_done_key    = 'DONE'
 	theme_debug_key   = 'DEBUG'
 	theme_process_key = 'PROCESS'
-	theme_submit_key  = 'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS'
+	theme_depends_key = 'DEPENDS'
+	theme_submit_key  = 'in:SUBMIT,JOBDONE,INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS'
 	theme_error_key   = 'has:ERR'
 	theme_warning_key = 'in:WARNING,RETRY'
 	theme_running_key = 'in:CACHED,RUNNING,SKIPPED,RESUMED'
@@ -127,7 +128,7 @@ class TestLogger(helpers.TestCase):
 			yield tname, 'DEBUG', self.theme_debug_key
 			yield tname, 'PROCESS', self.theme_process_key
 			yield tname, 'INFO', self.theme_submit_key
-			yield tname, 'DEPENDS', self.theme_submit_key
+			yield tname, 'DEPENDS', self.theme_depends_key
 			yield tname, 'ERRRRR', self.theme_error_key
 			yield tname, 'WARNING', self.theme_warning_key
 			yield tname, 'CACHED', self.theme_running_key
@@ -151,7 +152,8 @@ class TestLogger(helpers.TestCase):
 			'DONE'    : "{{colors.bold}}{{colors.green}}",
 			'DEBUG'   : "{{colors.bold}}{{colors.black}}",
 			'PROCESS' : ["{{colors.bold}}{{colors.cyan}}", "{{colors.bold}}{{colors.cyan}}"],
-			'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': "{{colors.green}}",
+			'DEPENDS' : "{{colors.magenta}}",
+			'in:SUBMIT,JOBDONE,INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': "{{colors.green}}",
 			'has:ERR' : "{{colors.red}}",
 			'in:WARNING,RETRY' : "\x1b[1m{{colors.yellow}}",
 			'in:CACHED,RUNNING,SKIPPED,RESUMED': "{{colors.yellow}}",

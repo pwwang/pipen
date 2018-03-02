@@ -235,7 +235,7 @@ class TestProc(helpers.TestCase):
 		yield pLog, 'hello', 'info', '', ['INFO', 'hello']
 		yield pLog, 'hello', 'info', '', ['INFO', 'hello']
 		yield pLog, 'script newer1', 'warning', 'CACHE_SCRIPT_NEWER', [], ['WARNING', 'DEBUG', 'script newer1']
-		yield pLog, 'script newer2', 'warning', 'CACHE_SCRIPT_NEWER', ['WARNING', 'script newer1', 'script newer2'], ['DEBUG']
+		yield pLog, 'script newer2', 'warning', 'CACHE_SCRIPT_NEWER', [], ['WARNING', 'script newer1', 'script newer2', 'DEBUG']
 		
 		pLog1 = Proc()
 		pLog1.props['size'] = 100
@@ -1088,7 +1088,7 @@ class TestProc(helpers.TestCase):
 			job.cache()
 		yield pCheckCached1, True, [
 			'INFO',
-			'Truly cached jobs: ALL',
+			'Truly cached jobs : ALL',
 			'Export-cached jobs: []'
 		]
 	
@@ -1108,7 +1108,7 @@ class TestProc(helpers.TestCase):
 			
 		yield pCheckCached2, True, [
 			'INFO',
-			'Truly cached jobs: []',
+			'Truly cached jobs : []',
 			'Export-cached jobs: ALL'
 		]
 		
@@ -1121,7 +1121,7 @@ class TestProc(helpers.TestCase):
 		pCheckCached3.jobs[0].cache()
 		yield pCheckCached3, False, [
 			'INFO',
-			'Truly cached jobs: 0',
+			'Truly cached jobs : 0',
 			'Export-cached jobs: []',
 			'Partly cached, only run non-cached 1 job(s).',
 			'DEBUG',
