@@ -1,5 +1,17 @@
 # Change log
 
+## Mar 6, 2018: 0.9.5
+- Add proc.dirsig to disable/enable calculating signatures from deep directories
+- Add Jobmgr class to handle job distribution
+- Allow channel.rowAt and colAt to return multiple rows and columns, respectively
+- Allow empty channel as input (process will be skipped)
+- Refine all tests
+- Rewrite thread-safe file system helper functions
+- Add specific exception classes
+- Report line # when error happens in template
+- Add progress bar for jobs
+- Allow stdout and stderr file as output
+
 ## Dec 27, 2017: 0.9.4
 - Add yaml support for config file (#26).
 - Allow empty list for input files.
