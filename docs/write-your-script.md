@@ -34,7 +34,7 @@ def test():
     p.lang = "python"
     p.script = """
     # make sure it's not at the beginning of the file
-    ## indent remove ## 
+    ## PYPPL INDENT REMOVE ## 
     import os
     import re
     def somefunc():

@@ -48,7 +48,7 @@ Please note that the levels are different from those of python's `logging` modul
 
 |Log level|Belongs to groups|Meaning
 |-|-|-|
-|`>>>>>>>`|`all, basic, normal, nodebug`|Mark when a process initiates|
+|`PROCESS`|`all, basic, normal, nodebug`|Mark when a process initiates|
 |`DEPENDS`|`all, basic, normal, nodebug`|Show dependencies of a process|
 |`STDOUT`|`all, basic, normal, nodebug`|Show the STDOUT from a process|
 |`STDERR`|`all, basic, normal, nodebug`|Show the STDERR from a process|
