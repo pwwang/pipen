@@ -120,7 +120,7 @@ PyPPL().start(pSort).run()
 3.625
 ```
 
-## Transform input channel
+## Modify input channel
 See `tutorials/transformInputChannels/`  
 Sort 5 files, add line numbers, and merge them into one file.
 ```python
