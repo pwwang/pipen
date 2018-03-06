@@ -182,7 +182,7 @@ Build the output data templates waiting to be rendered.
 #### `_buildProcVars (self) `
   
 Build proc attribute values for template rendering,  
-and also print some out.  
+and also echo some out.  
   
 #### `_buildProps (self) `
   
