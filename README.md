@@ -18,9 +18,9 @@
 - Highly reusable processes (see [a set of highly reusable bioinformatics processes][24]).
 
 ## Requirements
-- OS: Linux, OSX and WSL (Windows Subsystem for Linux)
+- OS: Linux, OSX or WSL (Windows Subsystem for Linux)
 - Python 2.7+ or Python 3.4+ (lower versions not tested)
-- Python packages: python-box, six, filelock
+- Python packages: [python-box][17], [six][25], [filelock][35], ([graphviz][36] and [pyyaml][33], suggested)
 
 ## Installation
 ```bash
@@ -452,7 +452,7 @@ digraph PyPPL {
 }
 ```
 
-To generate svg file, you have to have [graphviz][33] installed.  
+To generate svg file, you have to have [graphviz][36] installed.  
 `drawFlowchart.pyppl.svg`:  
 ![PyPPL chart][18]
 
@@ -475,6 +475,7 @@ To generate svg file, you have to have [graphviz][33] installed.
 [14]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
 [15]: https://pwwang.gitbooks.io/PyPPL/draw-flowchart-of-a-pipeline.html
 [16]: https://pwwang.gitbooks.io/PyPPL/aggregations.html
+[17]: https://github.com/cdgriffith/Box
 [18]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/drawFlowchart_pyppl.png
 [19]: https://pwwang.gitbooks.io/PyPPL/change-log.html
 [20]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/getStarted.png
@@ -482,6 +483,7 @@ To generate svg file, you have to have [graphviz][33] installed.
 [22]: https://img.shields.io/pypi/v/pyppl.svg?style=flat-square
 [23]: https://img.shields.io/github/tag/pwwang/PyPPL.svg?style=flat-square
 [24]: https://github.com/pwwang/bioprocs
+[25]: https://github.com/benjaminp/six
 [26]: https://pwwang.gitbooks.io/PyPPL/content/faq.html
 [27]: https://pwwang.gitbooks.io/PyPPL/command-line-argument-parser.html
 [28]: https://pwwang.gitbooks.io/PyPPL/content/configure-your-logs.html
@@ -489,5 +491,7 @@ To generate svg file, you have to have [graphviz][33] installed.
 [30]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/heatmap1.png
 [31]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/heatmap2.png
 [32]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/heatmap3.png
-[33]: http://www.graphviz.org/
+[33]: https://github.com/yaml/pyyaml
 [34]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/debugScript.png
+[35]: https://github.com/benediktschmitt/py-filelock
+[36]: https://github.com/xflr6/graphviz
