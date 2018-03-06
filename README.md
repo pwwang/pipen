@@ -352,6 +352,7 @@ You will get something like this in your log:
 ## Switch runner profiles
 See `tutorials/siwthcRunnerProfile/`  
 We can define a set of runner profiles in a `json` file (`./profiles.json`):
+
 ```json
 {
   "proc": {
@@ -373,6 +374,23 @@ We can define a set of runner profiles in a `json` file (`./profiles.json`):
   }
 }
 ```
+
+or you can also use `.yaml`(`pyyaml` is required) file:
+```yaml
+proc:
+  runner: local
+  forks : 1
+  sgeRunner:
+    sge.q: 1-day
+local5:
+  runner: local
+  forks : 5
+sge7days:
+  runner: local
+  sgeRunner:
+    sge.q: 7-days
+```
+
 To switch profile:
 ```python
 # default profile (proc)
