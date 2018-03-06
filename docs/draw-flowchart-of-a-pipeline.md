@@ -2,7 +2,7 @@
 <!-- toc -->
 
 `PyPPL` will generate a graph in [DOT language][1], according to the process dependencies. 
-You can have multiple [renderers][2] to visualize to graph. A typical one is [Graphviz][3]. Once you have Graphviz installed, you will have a command line tool `dot` available, which takes the dot file as input and can output to a bunch of figure format. 
+You can have multiple [renderers][2] to visualize to graph. A typical one is [Graphviz][3]. With its python port [graphviz][7] installed, you can output the flowchart to an svg figure. 
 
 ## Generate the flowchart
 For example, if we have a pipeline written in `pipeline.py`:
@@ -57,8 +57,7 @@ For example, if you have [Graphviz](http://www.graphviz.org/) installed, you wil
 ```python
 PyPPL().start(p1, p8, p9).flowchart(
 	"/another/dot/file", 
-	"/another/svg/file", 
-	"dot -Tsvg {{dotfile}} -o {{svgfile}}"
+	"/another/svg/file"
 )
 ```
 
@@ -136,3 +135,4 @@ Explanations of node types:
 [4]: ./drawFlowchart_pyppl.png
 [5]: ./drawFlowchart_pyppl_dark.png
 [6]: http://www.graphviz.org/doc/info/shapes.html
+[7]: https://github.com/xflr6/graphviz/
