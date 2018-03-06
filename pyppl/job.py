@@ -818,9 +818,13 @@ class Job (object):
 				
 		makedirs(self.outdir)
 		for out in self.output.values():
-			if out['type'] not in self.proc.OUT_DIRTYPE: continue
-			makedirs(out['data'])
-			#self.proc.log ('Output directory created after reset: %s.' % out['data'], 'debug', 'OUTDIR_CREATED_AFTER_RESET')
+			if out['type'] in self.proc.OUT_DIRTYPE: 
+				makedirs(out['data'])
+				#self.proc.log ('Output directory created after reset: %s.' % out['data'], 'debug', 'OUTDIR_CREATED_AFTER_RESET')
+			if out['type'] in self.proc.OUT_STDOUTTYPE:
+				utils._link(self.outfile, out['data'])
+			if out['type'] in self.proc.OUT_STDERRTYPE:
+				utils._link(self.errfile, out['data'])
 
 	def _linkInfile(self, orgfile):
 		"""
@@ -1018,11 +1022,7 @@ class Job (object):
 					raise JobOutputParseError(outdata, 'Absolute path not allowed for output file/dir for key %s' % repr(key))
 				self.output[key]['data'] = path.join(self.outdir, outdata)
 				self.data['out'][key]    = path.join(self.outdir, outdata)
-				if outtype in self.proc.OUT_STDOUTTYPE:
-					utils._link(self.outfile, self.data['out'][key])
-				if outtype in self.proc.OUT_STDERRTYPE:
-					utils._link(self.errfile, self.data['out'][key])
-	
+				
 	def _prepScript (self):
 		"""
 		Build the script, interpret the placeholders
