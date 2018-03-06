@@ -171,9 +171,13 @@ p.channel.outdir  == [('<outdir>/c-dir', )]
 |Input|`var`|-|Use the value directly|`{"in:var": [1]}`|`{{in.in}} -> 1`|
 |Input|`file`|`path`<br />`dir`<br />`folder`|Create link in `<indir>` and assign the original path to `in._in`|`{"in:file": ["/path/to/file"]}`|`{{in.in}} -> <indir>/file`<br />`{{in._in}} -> /path/to/file`|
 |Input|`files`|`paths`<br />`dirs`<br />`folders`|Same as `file` but do for multiple files|`{`<br />`"in:files": `<br />`(["/path/to/file1", `<br />`"/path/to/file2"],)`<br />`}`|`{{in.in `&#124;` asquote}} -> "<indir>/file1" "<indir>/file2"`<br />`{{in._in `&#124;` asquote}} -> "/path/to/file1" "/path/to/file2"`|
-|Output|`var`|-|Specify direct value|`"out:var:{{job.index}}"`|`{{out}} -> <job.index>`|
-|Output|`file`|`path`|Just specify the basename, output file will be generated in `job.outdir`|`"out:file:{{in.infile `&#124;` fn}}.out"`|`{{out}} == <outdir>/<filename of infile>.out`|
-|Output|`dir`|`folder`|Do the same thing as `file` but will create the directory|`"out:dir:{{in.infile `&#124;` fn}}-outdir"`|`{{out}} == <outdir>/<filename of infile>-outdir` <br />(automatically created)|
+|Output|`var`|-|Specify direct value|`"out:var:{{job.index}}"`|`{{out.out}} -> <job.index>`|
+|Output|`file`|`path`|Just specify the basename, output file will be generated in `job.outdir`|`"out:file:{{in.infile `&#124;` fn}}.out"`|`{{out.out}} == <outdir>/<filename of infile>.out`|
+|Output|`dir`|`folder`|Do the same thing as `file` but will create the directory|`"out:dir:{{in.infile `&#124;` fn}}-outdir"`|`{{out.out}} == <outdir>/<filename of infile>-outdir` <br />(automatically created)|
+|Output|`stdout`|-|Link `job.stdout` file to `<outdir>`|`out:stdout:{{in.infile `&#124;` fn}}.out` | `{{out.out}} == <outdir>/<filename of infile>.out`|
+|Output|`stderr`|-|Link `job.stderr` file to `<outdir>`|`err:stderr:{{in.infile `&#124;` fn}}.err` | `{{out.err}} == <outdir>/<filename of infile>.err`|
+
+
 
 
 {% endraw %}
