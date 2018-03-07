@@ -185,6 +185,48 @@ If you define a theme in a configuration file, you may use the escape sequences 
 By default, pyppl will not log to a file until you set a file path to `{"log": {"file": "/path/to/logfile"}}` in the configuration. Or you can specfiy `False` to it to disable logging to file. If you set it to `True`, a default log file will be used, which is: `"./pipeline.pyppl.log"` if your pipeline is from file: `./pipeline.py`
 >**NOTE** Filters and themes are not applied to handler to log to file. So you can always find all logs in the log file if your have it enabled.
 
+## Progress bar
+Job status and progress are indicated in the log with progress bar:
+```
+[==============================xxxxx!!!!!>>>>>-----]
+```
+The bar length defaults to `50`. You can change it in your code:
+```python
+from pyppl import Jobmgr
+Jobmgr.PBAR_SIZE = 80
+```
+Here is an explanation about how a cell (one sign or element of the bar) corresponds to job(s):
+Let's say `Jobmgr.PBAR_SIZE = 9` and we have 5 jobs, then every two cells represent 1 job for first 8 cells, and last one represents job #5. The rule is trying to equally distributed the cells to jobs:
+```
+ 1 2 3 4 5         1  2  345      1    2345
+[==xx!!>>-]  NOT  [===xxx!>-] OR [=====x!>-]
+```
+While if you have more jobs than cells, we try to equally distribute jobs to cells:
+Say we have 9 jobs but `Jobmgr.PBAR_SIZE = 5`:
+```
+ 1357        
+ 24689        
+[=x!>-] 
+```
+First cell represents job #1, #2; second job #3, #4; ...; the last one represents job #9.
+
+The meaning of each sign in the cell:
+- `-`: Job initiated
+- `!`: Job failed to submit
+- `>`: Job running
+- `x`: Job failed
+- `=`: Job done
+
+Note that if a cell represents multiple jobs, it has a priority as above listed. For example, in the second situation, if job #1 is done, however, job #2 is running, then the sign should be `>`.
+
+But if the progress bar belongs to a job (shown when a job is submitted or done), the status of the job has the highest priority. So in the above example, if the progress bar belongs to job #1:
+```
+[JOBDONE] [1/9] [=----] Done:  x.x% | Running: x
+           ^ Indicating current job
+```
+So even job #2 belongs to the first cell and it's running, the sign is still `=`.
+
+
 {% endraw %}
 
 
