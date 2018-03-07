@@ -111,10 +111,12 @@ in `pyppl/logger.py`:
 ```python
 themes = {
   'greenOnBlack': {
+    'PROCESS' : [colors.bold + colors.cyan, colors.bold + colors.underline + colors.cyan],
     'DONE'    : colors.bold + colors.green,
     'DEBUG'   : colors.bold + colors.black,
-    '>>>>>>>' : [colors.bold + colors.cyan, colors.bold + colors.underline + colors.cyan],
-    'in:SUBMIT,JOBDONE,INFO,P.PROPS,DEPENDS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.green,
+    'DEPENDS' : colors.magenta,
+    'PROCESS' : [colors.bold + colors.cyan, colors.bold + colors.underline + colors.cyan],
+    'in:SUBMIT,JOBDONE,INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.green,
     'has:ERR' : colors.red,
     'in:WARNING,RETRY' : colors.bold + colors.yellow,
     'in:CACHED,RUNNING': colors.yellow,
@@ -171,9 +173,9 @@ If you define a theme in a configuration file, you may use the escape sequences 
 ```json
 {
     "log": {"theme": {
-        "DONE": "colors.green",
-        "DEBUG": "colors.black",
-        "starts:LOG": "colors.bgwhite + colors.black",
+        "DONE": "{{colors.green}}",
+        "DEBUG": "{{colors.black}}",
+        "starts:LOG": "{{colors.bgwhite}}{{colors.black}}",
         # ...
     }}
 }
