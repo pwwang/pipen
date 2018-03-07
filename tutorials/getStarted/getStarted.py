@@ -10,4 +10,4 @@ pSort.script   = """
   sort -k1r {{in.infile}} > {{out.outfile}}
 """
 
-PyPPL({'log': {'theme': 'blueOnWhite'}}).start(pSort).run()
+PyPPL().start(pSort).run()

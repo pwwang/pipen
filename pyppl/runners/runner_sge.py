@@ -40,7 +40,7 @@ class RunnerSge (Runner):
 				self.job.proc.id,
 				self.job.proc.tag,
 				self.job.proc._suffix(),
-				str(self.job.index)
+				str(self.job.index + 1)
 			])
 			sgesrc.append('#$ -N %s' % jobname)
 		else:
