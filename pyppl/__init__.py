@@ -42,7 +42,7 @@ class Proc (object):
 	ALIAS        = { 
 		'envs'   : 'tplenvs',
 		'profile': 'runner',
-		'nsub'   : 'maxsubmit'
+		#'nsub'   : 'maxsubmit'
 	}
 	# deprecated
 	DEPRECATED   = {
@@ -100,7 +100,7 @@ class Proc (object):
 		@config:
 			id, input, output, ppldir, forks, cache, cclean, rc, echo, runner, script, depends, tag, desc, dirsig
 			exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr
-			callfront, callback, brings, expect, expart, template, tplenvs, resume, nthread, maxsubmit
+			callfront, callback, brings, expect, expart, template, tplenvs, resume, nthread
 		@props
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, brings, expect
 			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs
@@ -220,12 +220,12 @@ class Proc (object):
 		self.config['lang']       = 'bash'
 
 		# max number of processes used to submit jobs
-		self.config['maxsubmit']  = int(cpu_count() / 2)
+		#self.config['maxsubmit']  = int(cpu_count() / 2)
 
 		# non-cached job ids
 		self.props['ncjobids']    = []
 		# number of threads used to build jobs and to check job cache status
-		self.config['nthread']    = 1
+		self.config['nthread']    = min(int(cpu_count() / 2), 16)
 
 		# The output that user specified
 		self.config['output']     = ''

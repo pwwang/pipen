@@ -45,7 +45,7 @@ class Jobmgr (object):
 		# number of runner processes
 		self.nprunner = min(proc.forks, len(self.runners))
 		# number of submit processes
-		self.npsubmit = min(self.nprunner, proc.forks, proc.maxsubmit)
+		self.npsubmit = min(self.nprunner, proc.forks, proc.nthread)
 
 	def allJobsDone(self):
 		"""
