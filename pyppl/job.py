@@ -866,11 +866,13 @@ class Job (object):
 		"""
 		utils.safeRemove(self.indir)
 		makedirs (self.indir)
-
+		
+		indexstr = self._indexIndicator()				
 		for key, val in self.proc.input.items():
 			self.input[key] = {}
 			intype = val['type']
 			indata = val['data'][self.index]
+			
 			if intype in self.proc.IN_FILETYPE:
 				if not isinstance(indata, string_types):
 					raise JobInputParseError(indata, 'Not a string for input type "%s"' % intype)
@@ -883,7 +885,7 @@ class Job (object):
 					basename = path.basename (indata)
 					infile   = self._linkInfile(indata)
 					if basename != path.basename(infile):
-						self.proc.log ("Input file renamed: %s -> %s" % (basename, path.basename(infile)), 'warning', 'INFILE_RENAMING')
+						self.proc.log ("%s Input file renamed: %s -> %s" % (indexstr, basename, path.basename(infile)), 'warning', 'INFILE_RENAMING')
 
 				self.data['in'][key]       = infile
 				self.data['in']['_' + key] = indata

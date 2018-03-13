@@ -147,13 +147,22 @@ class Aggr (object):
 		# 	a.ps1.depends = pd1, pd2, pd3
 		# 	a.ps2.depends = pd1, pd2, pd3
 		# 	a.ps3.depends = pd1, pd2, pd3
-		self.delegate('depends2', 'starts')
-		self.delegate('depends' , 'starts')
-		self.delegate('input'   , 'starts')
-		self.delegate('exdir'   , 'ends')
-		self.delegate('exhow'   , 'ends')
-		self.delegate('exow'    , 'ends')
-		self.delegate('expart'  , 'ends')
+		defaultDelegatesStart = ['depends2', 'depends', 'input']
+		defaultDelegatesEnd   = ['input', 'exdir', 'exhow', 'exow', 'expart']
+		defaultDelegates      = [\
+			k for k in self._procs.values()[0].config.keys() \
+			if k not in ['id', 'args', 'envs'] \
+			and k not in defaultDelegatesStart + defaultDelegatesEnd \
+		] if self._procs else []
+		
+		for dd in defaultDelegatesStart:
+			self.delegate(dd, 'starts')
+		
+		for dd in defaultDelegatesEnd:
+			self.delegate(dd, 'ends')
+			
+		for dd in defaultDelegates:
+			self.delegate(dd)
 
 	def delegate(self, attr, procs = None, pattr = None):
 		"""
@@ -217,8 +226,9 @@ class Aggr (object):
 			if dot in ['depends2', 'input'] and not isinstance(value, (list, tuple)):
 				value = [value]
 			for i, proc in enumerate(procs):
-				if dot in ['depends2', 'input'] and i < len(value):
-					setattr(proc, 'depends' if dot == 'depends2' else dot, value[i])
+				if dot in ['depends2', 'input']:
+					if i < len(value) and value[i] is not None:
+						setattr(proc, 'depends' if dot == 'depends2' else dot, value[i])
 				else:
 					setattr(proc, dot, value)
 	
@@ -232,6 +242,13 @@ class Aggr (object):
 		@returns:
 			the aggregation itself
 		"""
+		if not self._procs:
+			defaultDelegatesStart = ['depends2', 'depends', 'input']
+			defaultDelegatesEnd   = ['input', 'exdir', 'exhow', 'exow', 'expart']
+			delegates = [k for k in p.config.keys() if k not in ['id', 'args', 'envs'] and k not in defaultDelegatesStart + defaultDelegatesEnd]
+			for dd in delegates:
+				self.delegate(dd)
+		
 		newtag = tag if tag else utils.uid(p.tag + '@' + self.id, 4)
 
 		newproc = p.copy(id = p.id) if copy else p

@@ -72,7 +72,7 @@ class Proc (object):
 		'OUTFILE_NOT_EXISTS': -1,
 		'OUTDIR_CREATED_AFTER_RESET': -1,
 		'SCRIPT_EXISTS': -2,
-		'JOB_RESETTING': -1,
+		'JOB_RESETTING': -1
 	}
 	
 	OUT_VARTYPE     = ['var']
@@ -457,29 +457,37 @@ class Proc (object):
 	def _suffix (self):
 		"""
 		Calcuate a uid for the process according to the configuration
+		The philosophy:
+		1. procs from different script must have different suffix (sys.argv[0])
+		2. procs from the same script:
+			- procs with different id or tag have different suffix
+			- procs with different input have different suffix (depends, input)
 		@returns:
 			The uniq id of the process
 		"""
 		if self.suffix: return self.suffix
 		
-		config = { key:val for key, val in self.config.items() if key in [
-			'id', 'tag', 'input', 'output', 'script', 'lang'
-		] }
+		sigs = {}
+		sigs['id']  = self.id
+		sigs['tag'] = self.tag
 		
 		# lambda is not pickable
-		if isinstance(config['input'], dict):
-			config['input'] = pycopy.copy(config['input'])
-			for key, val in config['input'].items():
-				config['input'][key] = utils.funcsig(val) if callable(val) else val
+		if isinstance(self.config['input'], dict):
+			sigs['input'] = pycopy.copy(self.config['input'])
+			for key, val in self.config['input'].items():
+				sigs['input'][key] = utils.funcsig(val) if callable(val) else val
 
 		# Add depends to avoid the same suffix for processes with the same depends but different input files
 		# They could have the same suffix because they are using input callbacks
 		# callbacks could be the same though even if the input files are different
 		if self.depends:
-			config['depends'] = [p.name(True) + '#' + p._suffix() for p in self.depends]
-
-		signature = json.dumps(config, sort_keys = True)
+			sigs['depends'] = [p.name(True) + '#' + p._suffix() for p in self.depends]
+		
+		signature = json.dumps(sigs, sort_keys = True)
+		
+		# suffix is only depending on where it comes from (sys.argv[0]) and it's name (id and tag) to avoid too many different workdirs being generated
 		self.props['suffix'] = utils.uid(signature)
+		#self.props['suffix'] = utils.uid(path.realpath(sys.argv[0]) + ':' + self.name(False))
 		return self.suffix
 
 	# self.resume != 'skip'
@@ -599,7 +607,7 @@ class Proc (object):
 			self.props['workdir'] = path.join(self.ppldir, "PyPPL.%s.%s.%s" % (self.id, self.tag, self._suffix()))
 		
 		if not path.exists (self.workdir):
-			if self.resume in ['skip+', 'resume']:
+			if self.resume in ['skip+', 'resume'] and self.cache != 'export':
 				raise ProcAttributeError(self.workdir, 'Cannot skip process, as workdir not exists')
 			makedirs (self.workdir)
 			
