@@ -1340,20 +1340,19 @@ class PyPPL (object):
 		timer     = time()
 
 		dftconfig = self._getProfile(profile)
-		procs     = self.tree.getNextToRun()
-		while procs:
-			for proc in procs:
-				name = ' %s: %s ' % (proc.name(True), proc.desc)
-				nlen = max(85, len(name) + 3)
-				proc.log ('+' + '-'*(nlen-3) + '+', 'PROCESS')
-				proc.log ('|%s%s|' % (name, ' '*(nlen - 3 - len(name))), 'PROCESS')
-				proc.log ('+' + '-'*(nlen-3) + '+', 'PROCESS')
-				proc.log ("%s => %s => %s" % (ProcTree.getPrevStr(proc), proc.name(), ProcTree.getNextStr(proc)), 'depends')
-				if 'runner' in proc.sets and proc.config['runner'] != profile:
-					proc.run(self._getProfile(proc.config['runner']))
-				else:
-					proc.run(dftconfig)
-			procs = self.tree.getNextToRun()
+		proc      = self.tree.getNextToRun()
+		while proc:
+			name = ' %s: %s ' % (proc.name(True), proc.desc)
+			nlen = max(85, len(name) + 3)
+			proc.log ('+' + '-'*(nlen-3) + '+', 'PROCESS')
+			proc.log ('|%s%s|' % (name, ' '*(nlen - 3 - len(name))), 'PROCESS')
+			proc.log ('+' + '-'*(nlen-3) + '+', 'PROCESS')
+			proc.log ("%s => %s => %s" % (ProcTree.getPrevStr(proc), proc.name(), ProcTree.getNextStr(proc)), 'depends')
+			if 'runner' in proc.sets and proc.config['runner'] != profile:
+				proc.run(self._getProfile(proc.config['runner']))
+			else:
+				proc.run(dftconfig)
+			proc = self.tree.getNextToRun()
 
 		unran = self.tree.unranProcs()
 		if unran:

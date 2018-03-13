@@ -294,7 +294,7 @@ class ProcTree(object):
 		@returns:
 			The process next to run
 		"""
-		ret = []
+		#ret = []
 		for node in ProcTree.NODES.values():
 			# already ran
 			if node.ran: continue
@@ -302,13 +302,13 @@ class ProcTree(object):
 			if not node.start and not node.prev: continue
 			# start
 			if node.start or all([p.ran for p in node.prev]):
-				#node.ran = True
-				ret.append(node.proc)
-				
-		for proc in ret:
-			ProcTree.getNode(proc).ran = True
-			
-		return ret
+				node.ran = True
+				return node.proc
+				#ret.append(node.proc)
+		return None
+		#for proc in ret:
+		#	ProcTree.getNode(proc).ran = True	
+		#return ret
 
 	def unranProcs(self):
 		ret = {}
