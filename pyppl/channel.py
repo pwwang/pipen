@@ -220,17 +220,17 @@ class Channel (list):
 		@returns:
 			The expanded Channel
 		"""
-		if len(self) == 0:
-			raise ValueError('Cannot expand an empty Channel.')
-			
-		folder = self[0][col]
+		ret = Channel.create()
+		if len(self) == 0: return ret
 		
-		ret = Channel.fromPattern(path.join(folder, pattern), t=t, sortby=sortby, reverse=reverse)
-		
-		if not ret:
-			return Channel.create([self[0]])
-		
-		return ret.insert(0, *self[0][:col]).cbind(*self[0][(col+1):])
+		for row in self:
+			row    = list(row)
+			folder = row[col]
+			files  = Channel.fromPattern(path.join(folder, pattern), t=t, sortby=sortby, reverse=reverse).flatten()
+			for f in files:
+				row[col] = f
+				ret.append(tuple(row))
+		return ret
 		
 	def collapse(self, col = 0):
 		"""
@@ -406,7 +406,9 @@ class Channel (list):
 		for col in cols:
 			if col.width() == 0: continue
 			if col.length() == 1:
-				col *= maxlen
+				# oringal col has been changed
+				#col *= maxlen
+				col = col.repRow(maxlen)
 			if length > 0 and length != col.length():
 				raise ValueError('Cannot bind column (length: %s) to Channel (length: %s).' % (col.length(), length))
 

@@ -1,5 +1,6 @@
 import helpers, unittest
 
+from copy import deepcopy
 from pyppl.channel import Channel
 from os import path, makedirs, symlink, utime
 from time import time
@@ -315,7 +316,7 @@ class TestChannel (helpers.TestCase):
 
 	def dataProvider_testExpand(self, testdir):
 		# empty self
-		yield Channel.create(), 0, [], '*', 'any', 'name', False, True
+		yield Channel.create(), 0, []
 
 		# defaults
 		dir1  = path.join(testdir, 'testExpand')
@@ -336,7 +337,18 @@ class TestChannel (helpers.TestCase):
 		yield Channel.create(('a', 1, dir2)), 2, [('a', 1, file3), ('a', 1, file4)]
 
 		# pattern not exists
-		yield Channel.create(('a', 1, dir2)), 2, [('a', 1, dir2)], 'a.*'
+		yield Channel.create(('a', 1, dir2)), 2, [], 'a.*'
+		
+		# expand respectively
+		yield Channel.create([
+			('a', 1, dir1),
+			('b', 2, dir2)
+		]), 2, Channel.create([
+			('a', 1, file1),
+			('a', 1, file2),
+			('b', 2, file3),
+			('b', 2, file4),
+		])
 
 	def testExpand(self, ch, col, outs, pattern = '*', t = 'any', sortby = 'name', reverse = False, exception = False):
 		if exception:
@@ -546,17 +558,21 @@ class TestChannel (helpers.TestCase):
 		yield [(1,2), (3,4)], [5, 6], [(1,2,5,6), (3,4,5,6)]
 		yield [(1,2), (3,4)], [(5, 6,)], [(1,2,5,6), (3,4,5,6)]
 		yield [(1,2), (3,4)], [5], [(1,2,5), (3,4,5)]
+		yield [7,8], [[5, 6], Channel.create(4)], [(7,5,4), (8,6,4)]
 		yield [], [21, 22], [(21, 22)]
 		yield [], [(21, 22, )], [(21, 22)]
 		yield [], [[21, 22], (1, 2, 3)], [(21, 1, 2, 3), (22, 1,2,3)]
 		yield [], [[21, 22], [1, 2, 3]], [], True
 
 	def testCbind(self, ch, cols, outs, exception = False):
-		ch = Channel.create(ch)
+		ch   = Channel.create(ch)
+		orgcols = deepcopy(cols)
 		if not exception:
 			ch2  = ch.cbind(*cols)
 			outs = Channel.create(outs)
 			self.assertListEqual(ch2, outs)
+			for i, ocol in enumerate(orgcols):
+				self.assertListEqual(Channel.create(ocol), Channel.create(cols[i]))
 		else:
 			self.assertRaises(ValueError, ch.cbind, *cols)
 

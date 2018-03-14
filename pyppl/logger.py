@@ -101,7 +101,7 @@ THEMES = {
 LEVELS = {
 	'all':     ['INPUT', 'OUTPUT', 'BRINGS', 'SUBMIT', 'P.ARGS', 'P.PROPS', 'JOBDONE', 'DEBUG'],
 	'basic':   [],
-	'normal':  ['INPUT', 'OUTPUT', 'BRINGS', 'SUBMIT', 'P.PROPS'],
+	'normal':  ['INPUT', 'OUTPUT', 'BRINGS', 'SUBMIT', 'P.ARGS', 'P.PROPS'],
 	'nodebug': ['INPUT', 'OUTPUT', 'BRINGS', 'SUBMIT', 'P.ARGS', 'P.PROPS', 'JOBDONE']
 }
 

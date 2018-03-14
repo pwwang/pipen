@@ -468,8 +468,9 @@ class Proc (object):
 		if self.suffix: return self.suffix
 		
 		sigs = {}
-		sigs['id']  = self.id
-		sigs['tag'] = self.tag
+		sigs['argv0'] = path.realpath(sys.argv[0])
+		sigs['id']    = self.id
+		sigs['tag']   = self.tag
 		
 		# lambda is not pickable
 		if isinstance(self.config['input'], dict):
