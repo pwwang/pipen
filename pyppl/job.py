@@ -1038,6 +1038,8 @@ class Job (object):
 			if prevscript == script:
 				write = False
 			else:
+				# for debug
+				utils.safeMove(self.script, self.script + '.bak')
 				self.proc.log ("Script file updated: %s" % self.script, 'debug', 'SCRIPT_EXISTS')
 
 		if write:

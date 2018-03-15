@@ -477,6 +477,8 @@ class Proc (object):
 			sigs['input'] = pycopy.copy(self.config['input'])
 			for key, val in self.config['input'].items():
 				sigs['input'][key] = utils.funcsig(val) if callable(val) else val
+		else:
+			sigs['input'] = str(self.config['input'])
 
 		# Add depends to avoid the same suffix for processes with the same depends but different input files
 		# They could have the same suffix because they are using input callbacks
@@ -485,7 +487,7 @@ class Proc (object):
 			sigs['depends'] = [p.name(True) + '#' + p._suffix() for p in self.depends]
 		
 		signature = json.dumps(sigs, sort_keys = True)
-		
+		self.log('Suffix decided by: ' + signature, 'debug')
 		# suffix is only depending on where it comes from (sys.argv[0]) and it's name (id and tag) to avoid too many different workdirs being generated
 		self.props['suffix'] = utils.uid(signature)
 		#self.props['suffix'] = utils.uid(path.realpath(sys.argv[0]) + ':' + self.name(False))
