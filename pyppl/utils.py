@@ -45,6 +45,12 @@ class ProcessEx (Process):
 				raise ex
 '''
 
+def basename(f):
+	bname = path.basename(f)
+	if not bname and path.isdir(f):
+		bname = path.basename(path.dirname(f))
+	return bname
+
 def flushFile(f, lastmsg, end = False):
 	f.flush()
 	lines = f.readlines() or []

@@ -834,7 +834,7 @@ class Job (object):
 		@returns:
 			The link to the original file.
 		"""
-		basename = path.basename (orgfile)
+		basename = utils.basename (orgfile)
 		infile   = path.join (self.indir, basename)
 		utils.safeLink(orgfile, infile, overwrite = False)
 		if utils.samefile(infile, orgfile):
@@ -882,10 +882,10 @@ class Job (object):
 					if not path.exists(indata):
 						raise JobInputParseError(indata, 'File not exists for input type "%s"' % intype)
 					
-					basename = path.basename (indata)
+					basename = utils.basename (indata)
 					infile   = self._linkInfile(indata)
-					if basename != path.basename(infile):
-						self.proc.log ("%s Input file renamed: %s -> %s" % (indexstr, basename, path.basename(infile)), 'warning', 'INFILE_RENAMING')
+					if basename != utils.basename(infile):
+						self.proc.log ("%s Input file renamed: %s -> %s" % (indexstr, basename, utils.basename(infile)), 'warning', 'INFILE_RENAMING')
 
 				self.data['in'][key]       = infile
 				self.data['in']['_' + key] = indata
