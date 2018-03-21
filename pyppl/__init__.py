@@ -368,9 +368,9 @@ class Proc (object):
 			`key`:   The type of messages
 		"""
 		summary = False
-		level   = "[%s]" % level
+		level   = "[%s] %s: " % (level, self.name(False))
 		if not key or key not in Proc.LOG_NLINE:
-			logger.logger.info(level + ' ' + msg)
+			logger.logger.info(level + msg)
 		else:
 			maxline = Proc.LOG_NLINE[key]
 			absline = abs(maxline)
@@ -385,7 +385,7 @@ class Proc (object):
 			if nlogs == absline or nlogs == self.size * n:
 				self.logs[key].append(None)
 				for level, msg in filter(None, self.logs[key]):
-					logger.logger.info (level + ' ' + msg)
+					logger.logger.info (level + msg)
 				if summary and nlogs < self.size * n:
 					logger.logger.info ('[debug] ...... max=%s (%s) reached, further information will be ignored.' % (absline, key))
 
@@ -1345,12 +1345,15 @@ class PyPPL (object):
 		dftconfig = self._getProfile(profile)
 		proc      = self.tree.getNextToRun()
 		while proc:
-			name = ' %s: %s ' % (proc.name(True), proc.desc)
-			nlen = max(85, len(name) + 3)
-			proc.log ('+' + '-'*(nlen-3) + '+', 'PROCESS')
-			proc.log ('|%s%s|' % (name, ' '*(nlen - 3 - len(name))), 'PROCESS')
-			proc.log ('+' + '-'*(nlen-3) + '+', 'PROCESS')
-			proc.log ("%s => %s => %s" % (ProcTree.getPrevStr(proc), proc.name(), ProcTree.getNextStr(proc)), 'depends')
+			name = ' %s: %s' % (proc.name(True), proc.desc)
+			#nlen = max(85, len(name) + 3)
+			#logger.logger.info ('[PROCESS] +' + '-'*(nlen-3) + '+')
+			#logger.logger.info ('[PROCESS] |%s%s|' % (name, ' '*(nlen - 3 - len(name))))
+			decorlen = max(80, len(name))
+			logger.logger.info ('[PROCESS]' + '~'*decorlen)
+			logger.logger.info ('[PROCESS]' + name)
+			logger.logger.info ('[PROCESS]' + '~'*decorlen)
+			proc.log ('%s => %s => %s' % (ProcTree.getPrevStr(proc), proc.name(), ProcTree.getNextStr(proc)), 'DEPENDS')
 			if 'runner' in proc.sets and proc.config['runner'] != profile:
 				proc.run(self._getProfile(proc.config['runner']))
 			else:

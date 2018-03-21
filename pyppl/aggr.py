@@ -148,7 +148,7 @@ class Aggr (object):
 		# 	a.ps2.depends = pd1, pd2, pd3
 		# 	a.ps3.depends = pd1, pd2, pd3
 		defaultDelegatesStart = ['depends2', 'depends', 'input']
-		defaultDelegatesEnd   = ['input', 'exdir', 'exhow', 'exow', 'expart']
+		defaultDelegatesEnd   = ['exdir', 'exhow', 'exow', 'expart']
 		defaultDelegates      = [\
 			k for k in self._procs.values()[0].config.keys() \
 			if k not in ['id', 'args', 'envs'] \
