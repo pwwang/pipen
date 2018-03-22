@@ -159,7 +159,7 @@ class Runner (object):
 				loglevel = loglevel[1:] if loglevel else 'log'
 				
 				# '_' makes sure it's not filtered by log levels
-				self.job.proc.log (self.job._indexIndicator() + ' ' + logmsg, '_' + loglevel)
+				self.job.proc.log (self.job._indexIndicator() + ' ' + logmsg.lstrip(), '_' + loglevel)
 			elif 'stderr' in self.job.proc.echo['type']:
 				errfilter = self.job.proc.echo['type']['stderr']
 				if not errfilter or re.search(errfilter, line):
