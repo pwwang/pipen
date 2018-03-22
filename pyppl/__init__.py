@@ -676,6 +676,8 @@ class Proc (object):
 				return {k:flatData(v) for k,v in data.items()}
 			elif isinstance(data, list):
 				return [flatData(v) for v in data]
+			elif isinstance(data, tuple):
+				return (flatData(v) for v in data)
 			elif isinstance(data, self.template):
 				return str(data)
 			elif callable(data):
@@ -842,12 +844,16 @@ class Proc (object):
 		Build proc attribute values for template rendering,
 		and also echo some out.
 		"""
-		show   = ['size', 'args']
+		show    = ['size', 'args']
 		if self.runner != 'local':
 			show.append('runner')
-		hide   = ['desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'aggr', 'input', 'output', 'depends', 'script']
-		pvkeys = [key for key in set(list(self.props.keys()) + list(self.config.keys())) \
-			if key in show or (key in self.sets and key not in hide)]
+		hide    = ['desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'aggr', 'input', 'output', 'depends', 'script']
+		nokeys  = ['tplenvs', 'input', 'output', 'depends']
+		allkeys = [key for key in set(self.props.keys() + self.config.keys())]
+		pvkeys  = [
+			key for key in allkeys \
+			if key in show or (key in self.sets and key not in hide)
+		]
 			
 		procvars = {}
 		procargs = {}
@@ -855,18 +861,18 @@ class Proc (object):
 		alias   = { val:key for key, val in Proc.ALIAS.items() }
 		maxlen  = 0
 		propout = {}
-		for key in pvkeys:
+		for key in allkeys:
 			val = getattr(self, key)
 			if key == 'args':
 				procvars['args'] = val
 				procargs = val
 				if val: maxlen = max(maxlen, max(list(map(len, val.keys()))))
-			#elif key == 'procvars':
-			#	procvars['procvars'] = val
-			else:
+			elif key in pvkeys:
 				procvars[key] = val
 				maxlen = max(maxlen, len(key))
 				propout[key] = (repr(val) + ' [%s]' % alias[key]) if key in alias else repr(val)
+			elif key not in nokeys:
+				procvars[key] = val
 		for key in sorted(procargs.keys()):
 			self.log('%s => %s' % (key.ljust(maxlen), repr(procargs[key])), 'p.args')
 		for key in sorted(propout.keys()):
