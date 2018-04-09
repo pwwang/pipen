@@ -226,7 +226,9 @@ class Proc (object):
 		self.props['ncjobids']    = []
 		# number of threads used to build jobs and to check job cache status
 		self.config['nthread']    = min(int(cpu_count() / 2), 16)
-
+		
+		self.props['origin']      = self.config['id']
+		
 		# The output that user specified
 		self.config['output']     = ''
 		# The computed output
@@ -433,6 +435,8 @@ class Proc (object):
 				props[key] = {}
 			elif key == 'size':
 				props[key] = 0
+			elif key == 'origin':
+				props['origin'] = self.origin
 			elif key in ['workdir', 'suffix']:
 				props[key] = ''
 			elif key == 'channel':
@@ -677,7 +681,7 @@ class Proc (object):
 			elif isinstance(data, list):
 				return [flatData(v) for v in data]
 			elif isinstance(data, tuple):
-				return (flatData(v) for v in data)
+				return tuple(flatData(v) for v in data)
 			elif isinstance(data, self.template):
 				return str(data)
 			elif callable(data):
@@ -1351,7 +1355,10 @@ class PyPPL (object):
 		dftconfig = self._getProfile(profile)
 		proc      = self.tree.getNextToRun()
 		while proc:
-			name = ' %s: %s' % (proc.name(True), proc.desc)
+			if proc.origin != proc.id:
+				name = ' %s (%s): %s' % (proc.name(True), proc.origin, proc.desc)
+			else:
+				name = ' %s: %s' % (proc.name(True), proc.desc)
 			#nlen = max(85, len(name) + 3)
 			#logger.logger.info ('[PROCESS] +' + '-'*(nlen-3) + '+')
 			#logger.logger.info ('[PROCESS] |%s%s|' % (name, ' '*(nlen - 3 - len(name))))

@@ -81,7 +81,8 @@ class Template(object):
 		'json'     : json.dumps,
 		'read'     : _read,
 		'readlines': _readlines,
-		'norepeats': _norepeats
+		'norepeats': _norepeats,
+		'pyvar'    : lambda x: '"%s"' % x if isinstance(x, string_types) else x
 	}
 
 	def __init__(self, source, **envs):
