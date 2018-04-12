@@ -258,7 +258,7 @@ class Job (object):
 		self.input     = {}
 		# need to pass this to next procs, so have to keep order
 		self.output    = OrderedDict()
-		self.brings    = {}
+		#self.brings    = {}
 		self.data      = {
 			'job': {
 				'index'   : self.index,
@@ -276,7 +276,7 @@ class Job (object):
 		
 	def init (self):
 		"""
-		Initiate a job, make directory and prepare input, brings, output and script.
+		Initiate a job, make directory and prepare input, output and script.
 		"""
 		if not path.exists(self.dir):
 			makedirs (self.dir)
@@ -285,7 +285,7 @@ class Job (object):
 		open(self.errfile, 'w').close()
 		self.data.update (self.proc.procvars)
 		self._prepInput ()
-		self._prepBrings ()
+		#self._prepBrings ()
 		self._prepOutput ()
 		self._prepScript ()
 
@@ -335,26 +335,30 @@ class Job (object):
 		Report the job information to logger
 		"""
 		maxlen = 0
+		inkeys = [key for key in self.input.keys() if not key.startswith('_')]
 		if self.input:
-			maxken = max(list(map(len, self.input.keys())))
-			if any([ t['type'] in self.proc.IN_FILETYPE + self.proc.IN_FILESTYPE for t in self.input.values() ]):
-				maxken += 1
+			maxken = max([len(key) for key in inkeys])
 			maxlen = max(maxlen, maxken)
+		'''
 		if self.brings:
 			maxken = max(list(map(len, self.brings.keys())))
 			maxlen = max(maxlen, maxken)
+		'''
 		if self.output:
-			maxken = max(list(map(len, self.output.keys())))
+			maxken = max([len(key) for key in self.output.keys()])
 			maxlen = max(maxlen, maxken)
 
-		for key in sorted(self.input.keys()):
+		for key in sorted(inkeys):
+			if key.startswith('_'): continue
 			if self.input[key]['type'] in self.proc.IN_VARTYPE:
 				self._reportItem(key, maxlen, self.input[key]['data'], 'input')
 			else:
-				self._reportItem(' ' + key, maxlen, self.input[key]['data'], 'input')
-				self._reportItem('_' + key, maxlen, self.input[key]['orig'], 'input')
+				self._reportItem(key, maxlen, self.input[key]['data'], 'input')
+				#self._reportItem('_' + key, maxlen, self.input[key]['orig'], 'input')
+		'''
 		for key in sorted(self.brings.keys(), key = lambda x: x[1:] if x.startswith('_') else x):
 			self._reportItem(key if key.startswith('_') else ' ' + key, maxlen, self.brings[key], 'brings')
+		'''
 		for key in sorted(self.output.keys()):
 			self._reportItem(key, maxlen, self.output[key]['data'], 'output')
 	
@@ -871,6 +875,7 @@ class Job (object):
 		for key, val in self.proc.input.items():
 			self.input[key] = {}
 			intype = val['type']
+			# the original input file(s)
 			indata = val['data'][self.index]
 			
 			if intype in self.proc.IN_FILETYPE:
@@ -882,16 +887,21 @@ class Job (object):
 					if not path.exists(indata):
 						raise JobInputParseError(indata, 'File not exists for input type "%s"' % intype)
 					
+					indata   = path.realpath(indata)
 					basename = utils.basename (indata)
 					infile   = self._linkInfile(indata)
 					if basename != utils.basename(infile):
 						self.proc.log ("%s Input file renamed: %s -> %s" % (indexstr, basename, utils.basename(infile)), 'warning', 'INFILE_RENAMING')
 
-				self.data['in'][key]       = infile
-				self.data['in']['_' + key] = indata
+				#self.data['in'][key]       = infile
+				#self.data['in']['_' + key] = indata
+				self.data['in'][key]       = indata
+				self.data['in']['_' + key] = infile
 				self.input[key]['type']    = intype
-				self.input[key]['data']    = infile
-				self.input[key]['orig']    = indata
+				#self.input[key]['data']    = infile
+				#self.input[key]['orig']    = indata
+				self.input[key]['data']    = indata
+				self.input[key]['orig']    = infile
 				
 			elif intype in self.proc.IN_FILESTYPE:
 				self.input[key]['type']     = intype
@@ -912,21 +922,26 @@ class Job (object):
 					else:
 						if not path.exists(data):
 							raise JobInputParseError(data, 'File not exists for element of input type "%s"' % intype)
-					
+						
+						data     = path.realpath(data)
 						basename = path.basename (data)
 						infile   = self._linkInfile(data)
 						if basename != path.basename(infile):
 							self.proc.log ("Input file renamed: %s -> %s" % (basename, path.basename(infile)), 'warning', 'INFILE_RENAMING')
 						
-					self.input[key]['orig'].append (data)
-					self.input[key]['data'].append (infile)
-					self.data['in'][key].append (infile)
-					self.data['in']['_' + key].append (data)
+					#self.input[key]['orig'].append (data)
+					#self.input[key]['data'].append (infile)
+					#self.data['in'][key].append (infile)
+					#self.data['in']['_' + key].append (data)
+					self.input[key]['orig'].append (infile)
+					self.input[key]['data'].append (data)
+					self.data['in'][key].append (data)
+					self.data['in']['_' + key].append (infile)
 			else:
 				self.input[key]['type'] = intype
 				self.input[key]['data'] = indata
 				self.data['in'][key]    = indata
-				
+	'''			
 	def _prepBrings (self):
 		"""
 		Build the brings to bring some files to indir
@@ -987,7 +1002,7 @@ class Job (object):
 				self.brings[key].append('')
 				self.brings['_' + key].append('')
 				self.proc.log('No bring-in file found for %s' % repr(key), 'warning', 'BRINGFILE_NOTFOUND')
-
+	'''
 	def _prepOutput (self):
 		"""
 		Build the output data.

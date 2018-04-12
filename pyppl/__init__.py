@@ -100,9 +100,9 @@ class Proc (object):
 		@config:
 			id, input, output, ppldir, forks, cache, cclean, rc, echo, runner, script, depends, tag, desc, dirsig
 			exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr
-			callfront, callback, brings, expect, expart, template, tplenvs, resume, nthread
+			callfront, callback, expect, expart, template, tplenvs, resume, nthread
 		@props
-			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, brings, expect
+			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect
 			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs
 		"""
 		
@@ -135,9 +135,9 @@ class Proc (object):
 		self.config['beforeCmd']  = ""
 
 		# The bring files that user specified
-		self.config['brings']     = {}
+		# self.config['brings']     = {}
 		# The computed brings
-		self.props['brings']      = {}
+		# self.props['brings']      = {}
 
 		# The cache option
 		self.config['cache']      = True # False or 'export'
@@ -508,7 +508,7 @@ class Proc (object):
 			self.callfront (self)
 		self._buildInput ()
 		self._buildProcVars ()
-		self._buildBrings ()
+		#self._buildBrings ()
 		self._buildOutput()
 		self._buildScript()
 		if self.resume not in ['skip+', 'resume']:
@@ -727,10 +727,10 @@ class Proc (object):
 				for k in sorted(data.keys()):
 					v = val[k]
 					ret.append('%s: %s' % (pickKey(k), pickData(v)))
-			elif key == 'brings':
-				for k in sorted(data.keys()):
-					v = val[k]
-					ret.append('%s: %s' % (pickKey(k), pickData(v)))
+			#elif key == 'brings':
+			#	for k in sorted(data.keys()):
+			#		v = val[k]
+			#		ret.append('%s: %s' % (pickKey(k), pickData(v)))
 			elif key in ['script']:
 				ret.append('value:')
 				ret.extend(pickData(str(data).splitlines(), splitline = True))
@@ -882,7 +882,7 @@ class Proc (object):
 		for key in sorted(propout.keys()):
 			self.log('%s => %s' % (key.ljust(maxlen), propout[key]), 'p.props')
 		self.props['procvars'] = {'proc': procvars, 'args': procargs}
-
+	'''
 	def _buildBrings(self):
 		"""
 		Build the bring-file templates waiting to be rendered.
@@ -892,7 +892,7 @@ class Proc (object):
 			self.props['brings'][key] = []
 			for v in val:
 				self.props['brings'][key].append(self.template(v, **self.tplenvs))
-
+	'''
 	def _buildOutput(self):
 		"""
 		Build the output data templates waiting to be rendered.
