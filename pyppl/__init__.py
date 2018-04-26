@@ -219,7 +219,7 @@ class Proc (object):
 
 		# Default shell/language
 		self.config['lang']       = 'bash'
-		
+
 		self.props['lock']        = None
 
 		# max number of processes used to submit jobs
@@ -560,7 +560,7 @@ class Proc (object):
 		@params:
 			`config`: The configuration
 		"""
-		if config is None: config = {}
+		config = config or {}
 		self._readConfig (config)
 
 		if self.runner == 'dry':
@@ -571,7 +571,10 @@ class Proc (object):
 		elif self.resume == 'skip+':
 			self.log ("Data loaded, pipeline will resume from future processes.", 'skipped')
 			self._tidyBeforeRun()
-			self._tidyAfterRun ()
+			try:
+				self._tidyAfterRun ()
+			finally:
+				self.lock.release()
 		else: # '', resume, resume+
 			timer = time()
 			self._tidyBeforeRun ()
@@ -591,7 +594,7 @@ class Proc (object):
 				self.log ('Done (time: %s).' % utils.formatSecs(time() - timer), 'info')
 			finally:
 				self.lock.release()
-				
+
 	def _buildProps (self):
 		"""
 		Compute some properties
@@ -624,10 +627,10 @@ class Proc (object):
 			if self.resume in ['skip+', 'resume'] and self.cache != 'export':
 				raise ProcAttributeError(self.workdir, 'Cannot skip process, as workdir not exists')
 			makedirs (self.workdir)
-			
+
 		self.props['lock'] = filelock.FileLock(path.join(self.workdir, 'lock'))
 		self.lock.acquire()
-		
+
 		# exdir
 		if self.exdir:
 			self.config['exdir'] = path.abspath(self.exdir)
@@ -1013,7 +1016,8 @@ class Proc (object):
 			row = tuple(job.data['out'].values())
 			self.props['channel'][i] = row
 
-		utils.parallel(bjSingle, [(i, ) for i in range(self.size)], self.nthread)
+		utils.Parallel(self.nthread, backend = 'thread').run(bjSingle, [(i, ) for i in range(self.size)])
+		#utils.parallel(bjSingle, [(i, ) for i in range(self.size)], self.nthread)
 		self.log('After job building, active threads: %s' % threading.active_count(), 'debug')
 
 		if self.jobs[0].data['out']:
@@ -1034,7 +1038,10 @@ class Proc (object):
 			else:
 				if key in Proc.ALIAS:
 					key = Proc.ALIAS[key]
-				self.config[key] = val
+				if key in self.config and isinstance(self.config[key], dict) and isinstance(val, dict):
+					utils.dictUpdate(self.config[key], val)
+				else:
+					self.config[key] = val
 
 	def _checkCached (self):
 		"""
@@ -1060,8 +1067,8 @@ class Proc (object):
 				exptCachedJids.append(i)
 			else:
 				self.props['ncjobids'].append (i)
-
-		utils.parallel(chkCached, [(i, ) for i in range(self.size)], self.nthread)
+		utils.Parallel(self.nthread, backend = 'thread').run(chkCached, [(i, ) for i in range(self.size)])
+		#utils.parallel(chkCached, [(i, ) for i in range(self.size)], self.nthread)
 
 		self.log ('Truly cached jobs : %s' % (utils.briefList(trulyCachedJids) if len(trulyCachedJids) < self.size else 'ALL'), 'info')
 		self.log ('Export-cached jobs: %s' % (utils.briefList(exptCachedJids)  if len(exptCachedJids)  < self.size else 'ALL'), 'info')

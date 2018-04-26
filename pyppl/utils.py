@@ -8,6 +8,10 @@ import tarfile
 import gzip
 import re
 
+from concurrent.futures import ThreadPoolExecutor
+from loky import ProcessPoolExecutor
+from traceback import format_exc
+
 from stat import S_IEXEC
 from glob import glob
 from os import path, remove, symlink, makedirs, chdir, getcwd, walk, stat, chmod, devnull
@@ -29,7 +33,7 @@ class ProcessEx (Process):
 	def __init__(self, *args, **kwargs):
 		Process.__init__(self, *args, **kwargs)
 		self._pconn, self._cconn = Pipe()
-		
+
 	def run(self):
 		try: # pragma: no cover
 			Process.run(self)
@@ -37,7 +41,7 @@ class ProcessEx (Process):
 		except Exception as ex: # pragma: no cover
 			message = format_exc()
 			self._cconn.send(type(ex)(message))
-	
+
 	def join(self):
 		Process.join(self)
 		if self._pconn.poll():
@@ -55,12 +59,40 @@ class Box(OrderedDict):
 		if not name.startswith('_OrderedDict') and not name.startswith('__'):
 			return self[name]
 		super(Box, self).__getattr__(name)
-		
+
 	def __setattr__(self, name, val):
 		if not name.startswith('_OrderedDict') and not name.startswith('__'):
 			self[name] = val
 		else:
 			super(Box, self).__setattr__(name, val)
+
+class Parallel(object):
+
+	def __init__(self, nthread = 1, backend = 'process', raiseExc = True):
+		PoolExecutor   = ProcessPoolExecutor if backend.lower() in 'multiprocessing' else ThreadPoolExecutor
+		self.executor  = PoolExecutor(max_workers = nthread)
+		self.raiseExc  = raiseExc
+
+	def run(self, func, args):
+		_func = lambda arg: func(*arg)
+
+		submits   = []
+		results   = []
+		exception = None
+		for arg in args:
+			submits.append(self.executor.submit(_func, arg))
+
+		for submit in submits:
+			try:
+				results.append(submit.result())
+			except Exception as ex:
+				#results.append(None)
+				exception = type(ex)(format_exc())
+
+		if self.raiseExc and exception:
+			raise exception
+
+		return results
 
 def basename(f):
 	bname = path.basename(f)
@@ -108,7 +140,7 @@ def parallel(func, args, nthread, method = 'thread'):
 			if arg is None:
 				q.task_done()
 				break
-			
+
 			try:
 				func(*arg)
 			except Exception: # pragma: no cover
@@ -126,7 +158,7 @@ def parallel(func, args, nthread, method = 'thread'):
 		t = Unit(target = _parallelWorker, args=(q, ))
 		t.daemon = True
 		t.start()
-	
+
 	q.join()
 
 def varname (maxline = 20, incldot = False):
@@ -163,7 +195,7 @@ def varname (maxline = 20, incldot = False):
 		#           var  =
 		re_hit  = r'%s\s*=\s*([A-Za-z_]\w*\.)*%s\s*\(' % (re_var, theclass)
 		re_stop = r'([A-Za-z_]\w*\.)*%s\s*\(' % theclass
-	
+
 	for src in srcs:
 		hitgroup = re.search(re_hit, src)
 		if hitgroup: return hitgroup.group(1)
@@ -172,7 +204,7 @@ def varname (maxline = 20, incldot = False):
 
 	varname.index += 1
 	return 'var_%s' % (varname.index - 1)
-		
+
 varname.index = 0
 
 def reduce(func, vec):
@@ -185,7 +217,7 @@ def reduce(func, vec):
 		The reduced value
 	"""
 	return moves.reduce(func, vec)
-	
+
 def map(func, vec):
 	"""
 	Python2 and Python3 compatible map
@@ -375,7 +407,7 @@ def alwaysList (data):
 	else:
 		raise ValueError('Expect string or list to convert to list.')
 	return [x.strip() for x in ret]
-	
+
 def _lockfile(f, real = True, tmpdir = TMPDIR):
 	"""
 	Get the path of lockfile of a file
@@ -455,7 +487,7 @@ def samefile(f1, f2, callback = None, tmpdir = TMPDIR):
 		if callable(callback):
 			callback(True, f1, f2)
 		return True
-	
+
 	lfile1 = _lockfile(f1, real = False, tmpdir = tmpdir)
 	lfile2 = _lockfile(f2, real = False, tmpdir = tmpdir)
 	with filelock.FileLock(lfile1), filelock.FileLock(lfile2):
@@ -478,14 +510,14 @@ def safeRemove(f, callback = None, tmpdir = TMPDIR):
 		if not path.exists(f):
 			r = False
 		else:
-			try: 
+			try:
 				r = True
 				_rm(f)
-			except Exception: # pragma: no cover 
+			except Exception: # pragma: no cover
 				r = False
 		if callable(callback):
 			callback(r, f)
-	
+
 def safeMove(f1, f2, callback = None, overwrite = True, tmpdir = TMPDIR):
 	"""
 	Move a file/dir
@@ -522,8 +554,8 @@ def safeMove(f1, f2, callback = None, overwrite = True, tmpdir = TMPDIR):
 				move(f1, f2)
 				r = True
 		if callable(callback):
-			callback(r, f1, f2)	
-			
+			callback(r, f1, f2)
+
 
 def safeMoveWithLink(f1, f2, callback = None, overwrite = True, tmpdir = TMPDIR):
 	"""
@@ -653,7 +685,7 @@ def safeLink(f1, f2, callback = None, overwrite = True, tmpdir = TMPDIR):
 
 			if callable(callback):
 				callback(r, f1, f2)
-	
+
 def targz (srcdir, tgzfile, overwrite = True, tmpdir = TMPDIR):
 	"""
 	Do a "tar zcf"-like for a directory
@@ -663,7 +695,7 @@ def targz (srcdir, tgzfile, overwrite = True, tmpdir = TMPDIR):
 	"""
 	if not path.isdir(srcdir):
 		return False
-	
+
 	def callback(r, f):
 		if r and overwrite:
 			_rm(f)
@@ -676,7 +708,7 @@ def targz (srcdir, tgzfile, overwrite = True, tmpdir = TMPDIR):
 			tar.close()
 			chdir (cwd)
 	return fileExists(tgzfile, callback = callback, tmpdir = tmpdir)
-	
+
 def untargz (tgzfile, dstdir, overwrite = True, tmpdir = TMPDIR):
 	"""
 	Do a "tar zxf"-like for .tgz file
@@ -706,7 +738,7 @@ def gz (srcfile, gzfile, overwrite = True, tmpdir = TMPDIR):
 	"""
 	if not path.isfile(srcfile):
 		return False
-	
+
 	def callback(r, f):
 		if r and overwrite:
 			_rm(f)
@@ -717,7 +749,7 @@ def gz (srcfile, gzfile, overwrite = True, tmpdir = TMPDIR):
 			fin.close()
 			fout.close()
 	return fileExists(gzfile, callback = callback, tmpdir = tmpdir)
-		
+
 def ungz (gzfile, dstfile, overwrite = True, tmpdir = TMPDIR):
 	"""
 	Do a "gunzip"-like for a .gz file
@@ -760,7 +792,7 @@ def dirmtime (d):
 				mtime = m
 		for f in files:
 			m = path.getmtime (path.join (root, f)) if path.exists(path.join(root, f)) else 0
-			if m > mtime: 
+			if m > mtime:
 				mtime = m
 	return mtime
 
@@ -817,7 +849,7 @@ def dumbPopen(cmd, shell = False):
 		The process object
 	'''
 	with open(devnull, 'w') as f:
-		try:	
+		try:
 			ret = Popen(cmd, shell = shell, stdout = f, stderr = f)
 		except Exception:
 			return False
@@ -854,7 +886,3 @@ def briefList(l):
 		else:
 			ret.append(str(group[0]) + '-' + str(group[-1]))
 	return ', '.join(ret)
-
-		
-
-		
