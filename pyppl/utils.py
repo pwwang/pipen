@@ -15,7 +15,7 @@ from shutil import rmtree, copyfile, copytree, move, copyfileobj
 from subprocess import Popen
 from multiprocessing import Process, JoinableQueue
 from hashlib import md5
-from box import Box
+#from box import Box
 from six import moves, string_types
 from threading import Thread
 from collections import OrderedDict
@@ -50,16 +50,14 @@ class Box(OrderedDict):
 	"""
 	Allow dot operation for OrderedDict
 	"""
-	def __repr__(self):
-		return '<Box: {%s}>' % ', '.join(['%s=%s' % (k,v) for k,v in self.items()])
 
 	def __getattr__(self, name):
-		if not name.startswith('_OrderedDict'):
+		if not name.startswith('_OrderedDict') and not name.startswith('__'):
 			return self[name]
 		super(Box, self).__getattr__(name)
 		
 	def __setattr__(self, name, val):
-		if not name.startswith('_OrderedDict'):
+		if not name.startswith('_OrderedDict') and not name.startswith('__'):
 			self[name] = val
 		else:
 			super(Box, self).__setattr__(name, val)

@@ -14,7 +14,7 @@ from subprocess import PIPE, Popen
 from multiprocessing import JoinableQueue, Process, cpu_count
 from collections import OrderedDict
 
-from box import Box
+from .utils import Box
 from .aggr import Aggr
 from .channel import Channel
 from .job import Job, Jobmgr
@@ -27,19 +27,19 @@ from . import logger, utils, runners, templates
 class Proc (object):
 	"""
 	The Proc class defining a process
-	
+
 	@static variables:
 		`RUNNERS`:       The regiested runners
 		`ALIAS`:         The alias for the properties
 		`LOG_NLINE`:     The limit of lines of logging information of same type of messages
-		
+
 	@magic methods:
 		`__getattr__(self, name)`: get the value of a property in `self.props`
 		`__setattr__(self, name, value)`: set the value of a property in `self.config`
 	"""
 
 	# for future use, shortcuts
-	ALIAS        = { 
+	ALIAS        = {
 		'envs'   : 'tplenvs',
 		'profile': 'runner',
 		#'nsub'   : 'maxsubmit'
@@ -74,17 +74,17 @@ class Proc (object):
 		'SCRIPT_EXISTS': -2,
 		'JOB_RESETTING': -1
 	}
-	
+
 	OUT_VARTYPE     = ['var']
 	OUT_FILETYPE    = ['file', 'path']
 	OUT_DIRTYPE     = ['dir', 'folder']
 	OUT_STDOUTTYPE  = ['stdout']
 	OUT_STDERRTYPE  = ['stderr']
-	
+
 	IN_VARTYPE   = ['var']
 	IN_FILETYPE  = ['file', 'path', 'dir', 'folder']
 	IN_FILESTYPE = ['files', 'paths', 'dirs', 'folders']
-	
+
 	EX_GZIP      = ['gzip', 'gz']
 	EX_COPY      = ['copy', 'cp']
 	EX_MOVE      = ['move', 'mv']
@@ -105,7 +105,7 @@ class Proc (object):
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect
 			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs
 		"""
-		
+
 		# Don't go through __getattr__ and __setattr__
 		# To get a prop  : proc.echo   --> proc.props['echo']
 		# To get a config: proc.ppldir --> proc.config['ppldir']
@@ -119,7 +119,7 @@ class Proc (object):
 		self.__dict__['props']    = {}
 
 		self.config['id']         = utils.varname() if id is None else id
-		
+
 		if ' ' in tag:
 			raise ProcTagError("No space is allowed in tag (%s). Do you mean 'desc' instead of 'tag' ?" % tag)
 
@@ -158,10 +158,10 @@ class Proc (object):
 		# The dependencies computed
 		self.props['depends']     = []
 
-		# The description of the job		
+		# The description of the job
 		self.config['desc']       = desc
 
-		# Whether expand directory to check signature	
+		# Whether expand directory to check signature
 		self.config['dirsig']     = True
 
 		# Whether to echo the stdout and stderr of the jobs to the screen
@@ -226,9 +226,9 @@ class Proc (object):
 		self.props['ncjobids']    = []
 		# number of threads used to build jobs and to check job cache status
 		self.config['nthread']    = min(int(cpu_count() / 2), 16)
-		
+
 		self.props['origin']      = self.config['id']
-		
+
 		# The output that user specified
 		self.config['output']     = ''
 		# The computed output
@@ -266,7 +266,7 @@ class Proc (object):
 		self.props['sets']        = []
 		# The size of the process (# jobs)
 		self.props['size']        = 0
-		
+
 		# The unique identify of the process
 		self.props['suffix']      = ''
 
@@ -285,7 +285,7 @@ class Proc (object):
 		self.config['workdir']    = ''
 		# The computed workdir
 		self.props['workdir']     = ''
-		
+
 		self.props['logs']        = {}
 
 		PyPPL._registerProc(self)
@@ -296,10 +296,10 @@ class Proc (object):
 			and not name in Proc.ALIAS \
 			and not name.endswith ('Runner'):
 			raise ProcAttributeError(name)
-		
+
 		if name in Proc.ALIAS:
 			name = Proc.ALIAS[name]
-			
+
 		return self.props[name] if name in self.props else self.config[name]
 
 	def __setattr__ (self, name, value):
@@ -309,20 +309,20 @@ class Proc (object):
 		# profile will be deprecated, use runner instead
 		if name in Proc.DEPRECATED:
 			self.log('%s: Attribute "%s" is deprecated%s.' % (self.name(True), name, (', use "%s" instead' % Proc.DEPRECATED[name]) if Proc.DEPRECATED[name] else ''), 'warning')
-		
+
 		if name in Proc.ALIAS:
 			name = Proc.ALIAS[name]
-		
+
 		if name not in self.sets:
 			self.sets.append(name)
-		
+
 		# depends have to be computed here, as it's used to infer the relation before run
 		if name == 'depends':
 			self.props['depends'] = []
 			depends = list(value) if isinstance(value, tuple) else \
 				value.ends if isinstance(value, Aggr) else \
 				value if isinstance(value, list) else [value]
-				
+
 			for depend in depends:
 				if isinstance(depend, Proc):
 					if depend is self:
@@ -332,7 +332,7 @@ class Proc (object):
 					self.props['depends'].extend(depend.ends)
 				else:
 					raise ProcAttributeError(type(value).__name__, "Process dependents should be 'Proc/Aggr', not")
-					
+
 		elif name == 'script' and value.startswith('file:'):
 			scriptpath = value[5:]
 			if not path.isabs(scriptpath):
@@ -340,10 +340,10 @@ class Proc (object):
 				caller = getframeinfo(stack()[1][0])
 				scriptpath = path.join(path.dirname(path.realpath(caller.filename)), scriptpath)
 			self.config[name] = "file:%s" % scriptpath
-			
+
 		elif name == 'args' or name == 'tplenvs':
 			self.config[name] = Box(value)
-			
+
 		elif name == 'input' \
 			and self.config[name] \
 			and not isinstance(value, six.string_types) \
@@ -357,10 +357,10 @@ class Proc (object):
 				self.log("Previous input is a dict with multiple keys. Now the key sequence is: %s" % prevkey, 'warning')
 		else:
 			self.config[name] = value
-			
+
 	def __repr__(self):
 		return '<Proc(%s) @ %s>' % (self.name(), hex(id(self)))
-		
+
 	def log (self, msg, level="info", key = None):
 		"""
 		The log function with aggregation name, process id and tag integrated.
@@ -378,9 +378,9 @@ class Proc (object):
 			absline = abs(maxline)
 			summary = maxline < 0
 			n = 3 if key.startswith('CACHE_') and (key.endswith('_DIFF') or key.endswith('_NEWER')) else 1
-			
+
 			if key not in self.logs: self.logs[key] = []
-			
+
 			if not self.logs[key] or self.logs[key][-1] is not None:
 				self.logs[key].append((level, msg))
 			nlogs = len(self.logs[key])
@@ -403,10 +403,10 @@ class Proc (object):
 		"""
 		config = {}
 		props  = {}
-		
+
 		config.update(self.config)
 		props.update(self.props)
-		
+
 		for key in config.keys():
 			if key == 'id':
 				config[key]  = id if id else utils.varname()
@@ -427,7 +427,7 @@ class Proc (object):
 			elif isinstance(config[key], dict):
 				config[key] = {}
 				config[key].update(self.config[key])
-		
+
 		for key in props.keys():
 			if key in ['depends', 'jobs', 'ncjobids']:
 				props[key] = []
@@ -452,7 +452,7 @@ class Proc (object):
 			elif isinstance(props[key], dict):
 				props[key] = {}
 				props[key].update(self.props[key])
-			
+
 		newproc = Proc()
 		newproc.props.update(props)
 		newproc.config.update(config)
@@ -470,12 +470,12 @@ class Proc (object):
 			The uniq id of the process
 		"""
 		if self.suffix: return self.suffix
-		
+
 		sigs = {}
 		sigs['argv0'] = path.realpath(sys.argv[0])
 		sigs['id']    = self.id
 		sigs['tag']   = self.tag
-		
+
 		# lambda is not pickable
 		if isinstance(self.config['input'], dict):
 			sigs['input'] = pycopy.copy(self.config['input'])
@@ -489,7 +489,7 @@ class Proc (object):
 		# callbacks could be the same though even if the input files are different
 		if self.depends:
 			sigs['depends'] = [p.name(True) + '#' + p._suffix() for p in self.depends]
-		
+
 		signature = json.dumps(sigs, sort_keys = True)
 		self.log('Suffix decided by: ' + signature, 'debug')
 		# suffix is only depending on where it comes from (sys.argv[0]) and it's name (id and tag) to avoid too many different workdirs being generated
@@ -526,21 +526,21 @@ class Proc (object):
 		- resume+: get data from workdir/proc.settings, and resume
 		"""
 		if self.resume == 'skip+':
-			if callable (self.callback):		
+			if callable (self.callback):
 				self.log('Calling callback ...', 'debug')
 				self.callback (self)
 		else: # '', resume, resume+
 			failedjobs = [job for job in self.jobs if not job.succeed()]
 			if not failedjobs:
 				self.log ('Successful jobs: ALL', 'debug')
-				if callable (self.callback):		
+				if callable (self.callback):
 					self.log('Calling callback ...', 'debug')
 					self.callback (self)
 			else:
 				failedjobs[0].showError (len(failedjobs))
 				if self.errhow != 'ignore':
 					sys.exit (1) # don't go further
-	
+
 	def name (self, aggr = True):
 		"""
 		Get my name include `aggr`, `id`, `tag`
@@ -550,7 +550,7 @@ class Proc (object):
 		aggrName  = "@%s" % self.aggr if self.aggr and aggr else ""
 		tag   = ".%s" % self.tag  if self.tag != "notag" else ""
 		return "%s%s%s" % (self.id, tag, aggrName)
-		
+
 	def run (self, config = None):
 		"""
 		Run the jobs with a configuration
@@ -559,10 +559,10 @@ class Proc (object):
 		"""
 		if config is None: config = {}
 		self._readConfig (config)
-		
+
 		if self.runner == 'dry':
 			self.config['cache'] = False
-		
+
 		if self.resume == 'skip':
 			self.log ("Pipeline will resume from future processes.", 'skipped')
 		elif self.resume == 'skip+':
@@ -584,7 +584,7 @@ class Proc (object):
 			self._runCmd('afterCmd')
 			self._tidyAfterRun ()
 			self.log ('Done (time: %s).' % utils.formatSecs(time() - timer), 'info')
-				
+
 	def _buildProps (self):
 		"""
 		Compute some properties
@@ -612,18 +612,18 @@ class Proc (object):
 			self.props['workdir'] = self.config['workdir']
 		elif not self.props['workdir']:
 			self.props['workdir'] = path.join(self.ppldir, "PyPPL.%s.%s.%s" % (self.id, self.tag, self._suffix()))
-		
+
 		if not path.exists (self.workdir):
 			if self.resume in ['skip+', 'resume'] and self.cache != 'export':
 				raise ProcAttributeError(self.workdir, 'Cannot skip process, as workdir not exists')
 			makedirs (self.workdir)
-			
+
 		# exdir
 		if self.exdir:
 			self.config['exdir'] = path.abspath(self.exdir)
 			if not path.exists (self.exdir):
 				makedirs (self.exdir)
-		
+
 		# echo
 		if self.config['echo'] in [True, False, 'stderr', 'stdout']:
 			if self.config['echo'] is True:
@@ -643,7 +643,7 @@ class Proc (object):
 			self.echo['jobs'] = list(map(lambda x: int(x.strip()), self.echo['jobs'].split(',')))
 		else:
 			self.echo['jobs'] = list(self.echo['jobs'])
-		
+
 		if not 'type' in self.echo or self.echo['type'] == 'all':
 			self.echo['type'] = {'stderr': None, 'stdout': None}
 		if not isinstance(self.echo['type'], dict):
@@ -651,7 +651,7 @@ class Proc (object):
 			self.echo['type'] = {self.echo['type']: None}
 		if 'all' in self.echo['type']:
 			self.echo['type'] = {'stderr': self.echo['type']['all'], 'stdout': self.echo['type']['all']}
-		
+
 		# don't cache for dry runner
 		# runner is decided when run (in config)
 		#if self.runner == 'dry':
@@ -663,18 +663,18 @@ class Proc (object):
 		# expart
 		expart = utils.alwaysList(self.config['expart'])
 		self.props['expart'] = [self.template(e, **self.tplenvs) for e in expart]
-		
+
 		self.log ('Properties set explictly: %s' % str(self.sets), 'debug')
-	
+
 	def _saveSettings (self):
 		"""
 		Save all settings in proc.settings, mostly for debug
 		"""
 		settingsfile = path.join(self.workdir, 'proc.settings')
-		
+
 		def pickKey(key):
 			return key if key else "''"
-			
+
 		def flatData(data):
 			if isinstance(data, dict):
 				return {k:flatData(v) for k,v in data.items()}
@@ -688,7 +688,7 @@ class Proc (object):
 				return utils.funcsig(data)
 			else:
 				return data
-				
+
 		def pickData(data, splitline = False, forcelist = False):
 			data = flatData(data)
 			if isinstance(data, dict):
@@ -702,7 +702,7 @@ class Proc (object):
 			else:
 				ret = data
 			return ret
-			
+
 		def dump(key, data):
 			ret = ['[%s]' % key]
 			if key in ['jobs', 'ncjobids', 'logs']:
@@ -741,14 +741,14 @@ class Proc (object):
 				ret.append('value: %s' % pickData(val))
 			ret.append('\n')
 			return '\n'.join([str(r) for r in ret])
-		
+
 		with open(settingsfile, 'w') as f:
 			for key in sorted(self.props.keys()):
 				val = self.props[key]
 				f.write(dump(key, val))
-				
+
 		self.log ('Settings saved to: %s' % settingsfile, 'debug')
-	
+
 	# self.resume != 'skip'
 	def _buildInput (self):
 		"""
@@ -767,12 +767,12 @@ class Proc (object):
 			psfile = path.join(self.workdir, 'proc.settings')
 			if not path.isfile(psfile):
 				raise ProcInputError(psfile, 'Cannot parse input for skip+/resume process, no such file')
-	
+
 			cp = ConfigParser()
 			cp.optionxform = str
 			cp.read(psfile)
 			self.props['size'] = int(json.loads(cp.get('size', 'value')))
-			
+
 			indata = OrderedDict(cp.items('input'))
 			intype = ''
 			inname = ''
@@ -795,7 +795,7 @@ class Proc (object):
 			indata = self.config['input']
 
 			if not isinstance (indata, dict):
-				indata   = ','.join(utils.alwaysList(indata))			
+				indata   = ','.join(utils.alwaysList(indata))
 				indata   = {
 					indata: Channel.fromChannels (*[d.channel for d in self.depends]) \
 						if self.depends else Channel.fromArgv()
@@ -842,7 +842,7 @@ class Proc (object):
 				else:
 					self.log('No data found for input key "%s", use empty strings/lists instead.' % inkey, 'warning')
 					self.props['input'][inkey]['data'] = [[] if pintypes[i] in Proc.IN_FILESTYPE else ''] * self.size
-				
+
 	def _buildProcVars (self):
 		"""
 		Build proc attribute values for template rendering,
@@ -858,7 +858,7 @@ class Proc (object):
 			key for key in allkeys \
 			if key in show or (key in self.sets and key not in hide)
 		]
-			
+
 		procvars = {}
 		procargs = {}
 
@@ -918,7 +918,7 @@ class Proc (object):
 
 		if not isinstance(outdict, OrderedDict):
 			raise ProcOutputError(type(outdict).__name__, 'Process output should be str/list/OrderedDict, not')
-		
+
 		for key, val in outdict.items():
 			kparts = utils.split(key, ':')
 			lparts = len(kparts)
@@ -928,20 +928,20 @@ class Proc (object):
 				k, t = kparts
 			else:
 				raise ProcOutputError(key, 'Too many parts for process output key in')
-			
+
 			if t not in Proc.OUT_DIRTYPE + Proc.OUT_FILETYPE + Proc.OUT_VARTYPE + Proc.OUT_STDOUTTYPE + Proc.OUT_STDERRTYPE:
 				raise ProcOutputError(t, 'Unknown output type')
 			self.props['output'][k] = (t, self.template(val, **self.tplenvs))
-		
+
 	def _buildScript(self):
 		"""
 		Build the script template waiting to be rendered.
 		"""
 		script = self.config['script'].strip()
-		
+
 		if not script:
 			self.log ('No script specified', 'warning')
-			
+
 		if script.startswith ('file:'):
 			tplfile = script[5:].strip()
 			if not path.exists (tplfile):
@@ -949,7 +949,7 @@ class Proc (object):
 			self.log ("Using template file: %s" % tplfile, 'debug')
 			with open(tplfile) as f:
 				script = f.read().strip()
-		
+
 		olines       = script.splitlines()
 		nlines       = []
 		# remove repeats
@@ -980,7 +980,7 @@ class Proc (object):
 					nlines.append(line[len(indent):])
 				else:
 					nlines.append(line)
-				
+
 		if not nlines or not nlines[0].startswith('#!'):
 			nlines.insert(0, '#!/usr/bin/env ' + self.lang)
 
@@ -1017,7 +1017,7 @@ class Proc (object):
 			`config`: The configuration
 		"""
 		for key, val in config.items():
-			if key == 'runner': 
+			if key == 'runner':
 				self.props['runner'] = val
 			elif key in self.sets:
 				continue
@@ -1052,10 +1052,10 @@ class Proc (object):
 				self.props['ncjobids'].append (i)
 
 		utils.parallel(chkCached, [(i, ) for i in range(self.size)], self.nthread)
-				
+
 		self.log ('Truly cached jobs : %s' % (utils.briefList(trulyCachedJids) if len(trulyCachedJids) < self.size else 'ALL'), 'info')
 		self.log ('Export-cached jobs: %s' % (utils.briefList(exptCachedJids)  if len(exptCachedJids)  < self.size else 'ALL'), 'info')
-		
+
 		if self.ncjobids:
 			if len(self.ncjobids) < self.size:
 				self.log ('Partly cached, only run non-cached %s job(s).' % len(self.ncjobids), 'info')
@@ -1077,9 +1077,9 @@ class Proc (object):
 		if not self.config[key]: return
 		cmd = self.template(self.config[key], **self.tplenvs).render(self.procvars)
 		self.log ('Running <%s> ...' % (key), 'info')
-		
+
 		try:
-			p = Popen (cmd, shell=True, stderr=PIPE, stdout=PIPE, universal_newlines=True)
+			p = Popen (cmd, shell=True, executable='bash', stderr=PIPE, stdout=PIPE, universal_newlines=True)
 
 			for line in iter(p.stdout.readline, ''):
 				logger.logger.info ('[ CMDOUT] %s' % line.rstrip("\n"))
@@ -1090,9 +1090,9 @@ class Proc (object):
 			p.stderr.close()
 			if rc != 0:
 				raise ProcRunCmdError(cmd, key)
-		except Exception:
-			raise ProcRunCmdError(cmd, key)
-	
+		except Exception as ex:
+			raise ProcRunCmdError(cmd, key, traceback.format_exc())
+
 	def _runJobs (self):
 		"""
 		Submit and run the jobs
@@ -1100,19 +1100,19 @@ class Proc (object):
 		runner    = PyPPL.RUNNERS[self.runner]
 		jobmgr = Jobmgr(self, runner)
 		jobmgr.run()
-		
+
 		self.log('After job run, active threads: %s' % threading.active_count(), 'debug')
-			
+
 class PyPPL (object):
 	"""
 	The PyPPL class
-	
+
 	@static variables:
 		`TIPS`: The tips for users
 		`RUNNERS`: Registered runners
 		`DEFAULT_CFGFILES`: Default configuration file
 	"""
-	
+
 	TIPS = [
 		"You can find the stdout in <workdir>/<job.index>/job.stdout",
 		"You can find the stderr in <workdir>/<job.index>/job.stderr",
@@ -1129,7 +1129,7 @@ class PyPPL (object):
 	DEFAULT_CFGFILES = ['~/.PyPPL.yaml', '~/.PyPPL', '~/.PyPPL.json']
 	# counter
 	COUNTER  = 0
-	
+
 	def __init__(self, config = None, cfgfile = None):
 		"""
 		Constructor
@@ -1139,7 +1139,7 @@ class PyPPL (object):
 		"""
 		self.counter = PyPPL.COUNTER
 		PyPPL.COUNTER += 1
-		
+
 		fconfig    = {}
 		cfgIgnored = {}
 		for i in list(range(len(PyPPL.DEFAULT_CFGFILES))):
@@ -1155,7 +1155,7 @@ class PyPPL (object):
 							cfgIgnored[cfile] = 1
 					else:
 						utils.dictUpdate(fconfig, json.load(cf))
-		
+
 		if cfgfile is not None and path.exists(cfgfile):
 			with open(cfgfile) as cfgf:
 				if cfgfile.endswith('.yaml'):
@@ -1166,7 +1166,7 @@ class PyPPL (object):
 						cfgIgnored[cfgfile] = 1
 				else:
 					utils.dictUpdate(fconfig, json.load(cfgf))
-				
+
 		if config is None:	config = {}
 		utils.dictUpdate(fconfig, config)
 		self.config = fconfig
@@ -1183,19 +1183,19 @@ class PyPPL (object):
 			'levels': 'normal',
 			'theme':   True,
 			'lvldiff': [],
-			'file':    '%s%s.pyppl.log' % (path.splitext(sys.argv[0])[0], ('_%s' % self.counter) if self.counter else '') 
+			'file':    '%s%s.pyppl.log' % (path.splitext(sys.argv[0])[0], ('_%s' % self.counter) if self.counter else '')
 		}
 		if 'log' in self.config:
 			if 'file' in self.config['log'] and self.config['log']['file'] is True:
 				del self.config['log']['file']
 			utils.dictUpdate(logconfig, self.config['log'])
 			del self.config['log']
-			
+
 		logger.getLogger (logconfig['levels'], logconfig['theme'], logconfig['file'], logconfig['lvldiff'])
 
 		logger.logger.info ('[  PYPPL] Version: %s' % (VERSION))
 		logger.logger.info ('[   TIPS] %s' % (random.choice(PyPPL.TIPS)))
-		
+
 		for cfile in (PyPPL.DEFAULT_CFGFILES + [str(cfgfile)]):
 			if not path.isfile(cfile): continue
 			if cfile in cfgIgnored:
@@ -1204,7 +1204,7 @@ class PyPPL (object):
 				logger.logger.info ('[ CONFIG] Read from %s' % cfile)
 
 		self.tree    = ProcTree()
-		
+
 	def start (self, *args):
 		"""
 		Set the starting processes of the pipeline
@@ -1223,7 +1223,7 @@ class PyPPL (object):
 				names = [p.name(True) for p in pristarts]
 				names = names[:3] + ['...'] if len(names) > 3 else names
 				logger.logger.info('[WARNING] Start process %s ignored, depending on [%s]' % (
-					start.name(True), 
+					start.name(True),
 					', '.join(names)
 				))
 		self.tree.setStarts(starts - nostart)
@@ -1250,16 +1250,16 @@ class PyPPL (object):
 			if not failedpaths: continue
 			failedpath = failedpaths[0]
 			raise PyPPLProcRelationError('%s <- [%s]' % (end.name(), ', '.join([p.name() for p in failedpath])), 'One of the routes cannot be achived from resumed processes')
-				
+
 		# set prior processes to skip
 		for rsproc in resumes:
 			rsproc.resume = rflag
 			paths = self.tree.getPathsToStarts(rsproc)
 			for path in paths:
 				for p in path:
-					if not p.resume: 
+					if not p.resume:
 						p.resume = sflag
-	
+
 	def resume (self, *args):
 		"""
 		Mark processes as to be resumed
@@ -1271,7 +1271,7 @@ class PyPPL (object):
 		if not args or (len(args) == 1 and not args[0]): return self
 		self._resume(*args, plus = False)
 		return self
-	
+
 	def resume2 (self, *args):
 		"""
 		Mark processes as to be resumed
@@ -1296,7 +1296,7 @@ class PyPPL (object):
 		# get default profile first
 		if 'proc' in self.config:
 			utils.dictUpdate(config, self.config['proc'])
-		
+
 		# overwrite with the given profile
 		if profile in self.config:
 			utils.dictUpdate(config, self.config[profile])
@@ -1339,9 +1339,9 @@ class PyPPL (object):
 			#	logger.logger.info('[  DEBUG] * %s' % (' -> '.join(path)))
 
 		for path in paths2:
-			logger.logger.info('[DEBUG] * %s' % (' -> '.join(path)))		
+			logger.logger.info('[DEBUG] * %s' % (' -> '.join(path)))
 		return self
-	
+
 	def run (self, profile = 'local'):
 		"""
 		Run the pipeline
@@ -1382,7 +1382,7 @@ class PyPPL (object):
 
 		logger.logger.info ('[   DONE] Total time: %s' % utils.formatSecs (time()-timer))
 		return self
-		
+
 	def flowchart (self, fcfile = None, dotfile = None):
 		"""
 		Generate graph in dot language and visualize it.
@@ -1395,18 +1395,18 @@ class PyPPL (object):
 			The pipeline object itself.
 		"""
 		self.showAllRoutes()
-		fcfile  = fcfile or '%s%s.pyppl.svg' % (path.splitext(sys.argv[0])[0], ('_%s' % self.counter) if self.counter else '') 
+		fcfile  = fcfile or '%s%s.pyppl.svg' % (path.splitext(sys.argv[0])[0], ('_%s' % self.counter) if self.counter else '')
 		dotfile = dotfile or '%s.dot' % (path.splitext(fcfile)[0])
 		fc  = Flowchart(fcfile = fcfile, dotfile = dotfile)
 		fc.setTheme(self.fcconfig['theme'])
 
 		for start in self.tree.getStarts():
 			fc.addNode(start, 'start')
-			
+
 		for end in self.tree.getEnds():
 			fc.addNode(end, 'end')
 			for ps in self.tree.getPathsToStarts(end):
-				for p in ps: 
+				for p in ps:
 					fc.addNode(p)
 					nextps = ProcTree.getNext(p)
 					if not nextps: continue
@@ -1431,7 +1431,7 @@ class PyPPL (object):
 		for a in args:
 			if isinstance(a, list):
 				procs.extend(a)
-		
+
 		ret = []
 
 		for pany in set(procs):
@@ -1483,7 +1483,7 @@ class PyPPL (object):
 		runnerName = runner.__name__
 		if runnerName.startswith('Runner'):
 			runnerName = runnerName[6:].lower()
-			
+
 		if not runnerName in PyPPL.RUNNERS:
 			PyPPL.RUNNERS[runnerName] = runner
 

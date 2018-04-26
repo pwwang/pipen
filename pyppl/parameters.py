@@ -4,7 +4,7 @@ import re
 from os import path
 from six import string_types
 from six.moves import configparser
-from box import Box
+from .utils import Box
 from .exception import ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError
 
 class Parameter (object):

@@ -47,7 +47,7 @@ class ParameterTypeError(Exception):
 class ParametersParseError(Exception):
 	"""
 	Error when parsing the parameters
-	"""	
+	"""
 	def __init__(self, name, msg = None):
 		msg = msg or 'Error when parsing command line arguments'
 		super(ParametersParseError, self).__init__(str(msg) + ': ' + repr(name))
@@ -55,7 +55,7 @@ class ParametersParseError(Exception):
 class ParametersLoadError(Exception):
 	"""
 	Error loading dict to Parameters
-	"""	
+	"""
 	def __init__(self, name, msg = None):
 		msg = msg or 'Error loading dict to Parameters'
 		super(ParametersLoadError, self).__init__(str(msg) + ': ' + repr(name))
@@ -63,7 +63,7 @@ class ParametersLoadError(Exception):
 class ProcTreeProcExists(Exception):
 	"""
 	Raise when two Procs with same id and tag defined
-	"""	
+	"""
 	def __init__(self, pn1, pn2):
 		msg = [
 			"There are two processes with id(%s) and tag(%s)" % (pn1.proc.id, pn1.proc.tag),
@@ -113,28 +113,28 @@ class RunnerSshError(Exception):
 	"""
 	def __init__(self, msg = 'Failed to initiate RunnerSsh'):
 		super(RunnerSshError, self).__init__(str(msg))
-		
+
 class ProcTagError(Exception):
 	"""
 	Raise when malformed tag is assigned to a process
 	"""
 	def __init__(self, msg = 'Failed to specify tag for process.'):
 		super(ProcTagError, self).__init__(str(msg))
-		
+
 class ProcAttributeError(Exception):
 	"""
 	Raise when set/get process' attributes
 	"""
 	def __init__(self, name, msg = 'No such attribute'):
-		super(ProcAttributeError, self).__init__(str(msg) + ': ' + repr(name))	
-		
+		super(ProcAttributeError, self).__init__(str(msg) + ': ' + repr(name))
+
 class ProcInputError(Exception):
 	"""
 	Raise when failed to parse process input
 	"""
 	def __init__(self, name, msg = 'Failed to parse input'):
 		super(ProcInputError, self).__init__(str(msg) + ': ' + repr(name))
-		
+
 class ProcOutputError(Exception):
 	"""
 	Raise when failed to parse process output
@@ -148,30 +148,30 @@ class ProcScriptError(Exception):
 	"""
 	def __init__(self, name, msg = 'Failed to parse process script'):
 		super(ProcScriptError, self).__init__(str(msg) + ': ' + repr(name))
-		
+
 class ProcRunCmdError(Exception):
 	"""
 	Raise when failed to run before/after cmds for process
 	"""
-	def __init__(self, cmd, key):
-		msg = 'Failed to run <%s>:\n\n' % key
+	def __init__(self, cmd, key, ex = ''):
+		msg = 'Failed to run <%s>: %s\n\n' % (key, str(ex))
 		msg += cmd
 		super(ProcRunCmdError, self).__init__(msg)
-		
+
 class PyPPLProcFindError(Exception):
 	"""
 	Raise when failed to find a proc
 	"""
 	def __init__(self, p, msg = 'Failed to find process'):
 		super(PyPPLProcFindError, self).__init__(str(msg) + ': ' + repr(p))
-		
+
 class PyPPLProcRelationError(Exception):
 	"""
 	Raise when failed to parse the relation of processes
 	"""
 	def __init__(self, p, msg):
 		super(PyPPLProcRelationError, self).__init__(str(msg) + ': ' + repr(p))
-		
+
 class PyPPLConfigError(Exception):
 	"""
 	Raise when failed to parse the configuration of pyppl
@@ -185,7 +185,7 @@ class AggrAttributeError(Exception):
 	"""
 	def __init__(self, key, msg):
 		super(AggrAttributeError, self).__init__(str(msg) + ': ' + repr(key))
-	
+
 class AggrCopyError(Exception):
 	"""
 	Raise when there is an error to set/get Aggr attributes
