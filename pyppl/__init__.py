@@ -7,6 +7,7 @@ import six
 import threading
 import copy as pycopy
 import traceback
+import filelock
 from os import path, makedirs
 from time import time, sleep
 from random import randint
@@ -218,6 +219,8 @@ class Proc (object):
 
 		# Default shell/language
 		self.config['lang']       = 'bash'
+		
+		self.props['lock']        = None
 
 		# max number of processes used to submit jobs
 		#self.config['maxsubmit']  = int(cpu_count() / 2)
@@ -572,19 +575,23 @@ class Proc (object):
 		else: # '', resume, resume+
 			timer = time()
 			self._tidyBeforeRun ()
-			self._runCmd('beforeCmd')
-			cached = self._checkCached()
-			if self.resume: # resume or resume+
-				self.log (self.workdir + (' [CACHED] ' if cached else ' [RUNNING]'), 'RESUMED')
-			elif not cached:
-				self.log (self.workdir, 'RUNNING')
-			else:
-				self.log (self.workdir, 'CACHED')
-			self._runJobs()
-			self._runCmd('afterCmd')
-			self._tidyAfterRun ()
-			self.log ('Done (time: %s).' % utils.formatSecs(time() - timer), 'info')
 
+			try:
+				self._runCmd('beforeCmd')
+				cached = self._checkCached()
+				if self.resume: # resume or resume+
+					self.log (self.workdir + (' [CACHED] ' if cached else ' [RUNNING]'), 'RESUMED')
+				elif not cached:
+					self.log (self.workdir, 'RUNNING')
+				else:
+					self.log (self.workdir, 'CACHED')
+				self._runJobs()
+				self._runCmd('afterCmd')
+				self._tidyAfterRun ()
+				self.log ('Done (time: %s).' % utils.formatSecs(time() - timer), 'info')
+			finally:
+				self.lock.release()
+				
 	def _buildProps (self):
 		"""
 		Compute some properties
@@ -617,7 +624,10 @@ class Proc (object):
 			if self.resume in ['skip+', 'resume'] and self.cache != 'export':
 				raise ProcAttributeError(self.workdir, 'Cannot skip process, as workdir not exists')
 			makedirs (self.workdir)
-
+			
+		self.props['lock'] = filelock.FileLock(path.join(self.workdir, 'lock'))
+		self.lock.acquire()
+		
 		# exdir
 		if self.exdir:
 			self.config['exdir'] = path.abspath(self.exdir)
@@ -705,7 +715,7 @@ class Proc (object):
 
 		def dump(key, data):
 			ret = ['[%s]' % key]
-			if key in ['jobs', 'ncjobids', 'logs']:
+			if key in ['jobs', 'ncjobids', 'logs', 'lock']:
 				return ''
 			elif key == 'input':
 				for k in sorted(data.keys()):
@@ -852,7 +862,7 @@ class Proc (object):
 		if self.runner != 'local':
 			show.append('runner')
 		hide    = ['desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'aggr', 'input', 'output', 'depends', 'script']
-		nokeys  = ['tplenvs', 'input', 'output', 'depends']
+		nokeys  = ['tplenvs', 'input', 'output', 'depends', 'lock']
 		allkeys = [key for key in set(self.props.keys() + self.config.keys())]
 		pvkeys  = [
 			key for key in allkeys \
