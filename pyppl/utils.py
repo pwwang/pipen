@@ -310,9 +310,7 @@ def dictUpdate(origDict, newDict):
 
 		if isinstance(v, list):
 			origDict[k] = [e for e in v]
-		elif isinstance(v, dict):
-			if k not in origDict:
-				origDict[k] = Box() if isinstance(v, Box) else {}
+		elif k in origDict and isinstance(origDict[k], dict) and isinstance(v, dict):
 			dictUpdate(origDict[k], newDict[k])
 		else:
 			origDict[k] = newDict[k]

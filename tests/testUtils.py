@@ -4,11 +4,26 @@ import traceback
 from copy import deepcopy
 from os import path, symlink, remove, rename, makedirs, utime, X_OK, access
 from pyppl import utils
+from pyppl.utils import Box
 from time import time, sleep
 from shutil import copyfile, rmtree
 from subprocess import Popen
 
 class TestUtils (helpers.TestCase):
+
+	def dataProvider_testBox(self):
+		box = Box()
+		yield box, {}
+		box1 = Box()
+		box1.a = Box()
+		yield box1, dict(a = {})
+		box2 = Box()
+		box2.a = Box()
+		box2.a.b = 1
+		yield box2, dict(a = dict(b = 1))
+
+	def testBox(self, box, out):
+		self.assertDictEqual(box, out)
 
 	def dataProvider_testFlushFile(self, testdir):
 		file1 = path.join(testdir, 'testFlushFile1.txt')
@@ -69,7 +84,7 @@ class TestUtils (helpers.TestCase):
 			sleep(interval)
 			globalVars.append(a)
 			globalVars.append(b)
-		
+
 		t0 = time()
 		utils.parallel(func, data, nthread = nthread, method = method)
 		t = time() - t0
@@ -135,7 +150,7 @@ class TestUtils (helpers.TestCase):
 		yield ([1, 0, False, '1', '0', 2], lambda x, y: str(x) + str(y), '10False102')
 		yield ([1, 0, False, '1', '0', 2], lambda x, y: int(x) + int(y), 4)
 		yield ([1, 0, False, '1', '0', 2], lambda x, y: bool(x) and bool(y), False)
-	
+
 	def testReduce(self, l, func, ret):
 		self.assertEqual(utils.reduce(func, l), ret)
 
@@ -154,10 +169,10 @@ class TestUtils (helpers.TestCase):
 		yield ('a|b\|c|(\)|)', "|", ["a", "b\\|c", "(\\)|)"])
 		yield ('a|b\|c|(\)\\\'|)', "|", ["a", "b\\|c", "(\\)\\'|)"])
 		yield ('outdir:dir:{{in.pattern | lambda x: __import__("glob").glob(x)[0] | fn }}_etc', ':', ["outdir", "dir", "{{in.pattern | lambda x: __import__(\"glob\").glob(x)[0] | fn }}_etc"])
-		
+
 	def testSplit (self, s, d, a):
 		self.assertEqual(utils.split(s, d), a)
-	
+
 	def dataProvider_testDictUpdate(self):
 		yield (
 			{"a":1, "b":{"c": 3, "d": 9}},       # original dict
@@ -165,27 +180,40 @@ class TestUtils (helpers.TestCase):
 			{"a":1, "b":{"c":4, "d":9}, "c":8},  # result of utils.update
 			{"a":1, "b":{"c": 4}, "c":8},        # result of naive update
 		)
+		b = {'args': {'inopts': {'ftype': 'head'}}}
+		def ud (d):
+			d['args']['inopts']['ftype'] = 'hello'
 		yield (
-			{}, 
-			{"b":{"c": 4}, "c":8}, 
-			{"b":{"c": 4}, "c":8}, 
-			{"b":{"c": 4}, "c":8}, 
+			b,
+			{'args': {'inopts': {'ftype': 'nometa'}}},
+			{'args': {'inopts': {'ftype': 'nometa'}}},
+			{'args': {'inopts': {'ftype': 'nometa'}}},
+			ud
+		)
+		yield (
+			{},
+			{"b":{"c": 4}, "c":8},
+			{"b":{"c": 4}, "c":8},
+			{"b":{"c": 4}, "c":8},
 		)
 		yield (
 			{'a':1,'b':2,'c':[3,4],'d':{'a':0}},
-			{'a':1,'b':2,'c':[1,4],'d':{'a':1}}, 
-			{'a':1,'b':2,'c':[1,4],'d':{'a':1}}, 
+			{'a':1,'b':2,'c':[1,4],'d':{'a':1}},
+			{'a':1,'b':2,'c':[1,4],'d':{'a':1}},
 			{'a':1,'b':2,'c':[1,4],'d':{'a':1}},
 		)
 
-	def testDictUpdate (self, odict, rdict, ndict, naive):
+	def testDictUpdate (self, odict, rdict, ndict, naive, cb = None):
 		odict1 = deepcopy(odict)
 		rdict1 = deepcopy(rdict)
+		#print rdict
+		#if callable(cb): cb(odict1)
 		utils.dictUpdate(odict, rdict)
 		odict1.update(rdict)
+		#print rdict
 		self.assertEqual(odict1, naive)
 		self.assertEqual(rdict1, rdict)
-		
+
 	def dataProvider_testFuncSig(self):
 		def func1():
 			pass
@@ -203,16 +231,16 @@ class TestUtils (helpers.TestCase):
 	def dataProvider_testUid(self):
 		yield ('a', 'O4JnVAW7')
 		yield ('', '6SFsQFoW')
-	
+
 	def testUid(self, s, uid):
 		self.assertEqual(utils.uid(s), uid)
 
 	def testUidUnique (self):
 		import random, string
-		
+
 		def randomword(length):
 		   return ''.join(random.choice(list('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')) for i in range(length)).encode('utf-8')
-		
+
 		uids = {}
 		for _ in range (10000):
 			s = randomword (10)
@@ -220,7 +248,7 @@ class TestUtils (helpers.TestCase):
 			self.assertEqual(uid, utils.uid(s))
 			uids[uid] = 1
 		self.assertEqual (len (uids.keys()), 10000)
-	
+
 	def dataProvider_testFormatsecs(self):
 		yield (1, "00:00:01.000")
 		yield (1.001, "00:00:01.001")
@@ -234,7 +262,7 @@ class TestUtils (helpers.TestCase):
 		yield (utils.range(3), [0,1,2])
 		yield (utils.range(1), [0])
 		yield (utils.range(0), [])
-			
+
 	def testRange(self, r1, r2):
 		self.assertEqual (type(r1), type(r2))
 		self.assertEqual (r1, r2)
@@ -245,18 +273,18 @@ class TestUtils (helpers.TestCase):
 		yield (["a, b,c", 'd'], ['a', 'b', 'c', 'd'])
 		yield ("a,b, c, 'd,e'", ['a', 'b', 'c', "'d,e'"])
 		yield (
-			["o1:var:{{c1}}", "o2:var:{{c2 | __import__('math').pow(float(_), 2.0)}}", "o3:file:{{c3.fn}}2{{c3.ext}}"], 
+			["o1:var:{{c1}}", "o2:var:{{c2 | __import__('math').pow(float(_), 2.0)}}", "o3:file:{{c3.fn}}2{{c3.ext}}"],
 			["o1:var:{{c1}}", "o2:var:{{c2 | __import__('math').pow(float(_), 2.0)}}", "o3:file:{{c3.fn}}2{{c3.ext}}"]
 		)
 		yield (
-			["o1:var:{{c1}}", "o2:var:c2 | __import__('math').pow float(_), 2.0)}}", "o3:file:{{c3.fn}}2{{c3.ext}}"], 
+			["o1:var:{{c1}}", "o2:var:c2 | __import__('math').pow float(_), 2.0)}}", "o3:file:{{c3.fn}}2{{c3.ext}}"],
 			#                                                             ^ comma is not quoted
 			["o1:var:{{c1}}", "o2:var:c2 | __import__('math').pow float(_)", "2.0)}}", "o3:file:{{c3.fn}}2{{c3.ext}}"]
 		)
-			
+
 	def testAlwayslist(self, albefore, alafter):
 		self.assertSequenceEqual (utils.alwaysList (albefore), alafter)
-	
+
 	def dataProvider_testAlwayslistException(self):
 		yield ({'a': 1}, )
 		yield (None, )
@@ -310,7 +338,7 @@ class TestUtils (helpers.TestCase):
 		makedirs(file2)
 		yield file1, file1_cp
 		yield file2, file2_cp
-	
+
 	def test_cp(self, f1, f2):
 		utils._cp(f1, f2)
 		self.assertTrue(path.exists(f1))
@@ -325,7 +353,7 @@ class TestUtils (helpers.TestCase):
 		makedirs(file2)
 		yield file1, file1_link
 		yield file2, file2_link
-	
+
 	def test_link(self, f1, f2):
 		utils._link(f1, f2)
 		self.assertTrue(path.exists(f1))
@@ -333,7 +361,7 @@ class TestUtils (helpers.TestCase):
 		self.assertTrue(path.islink(f2))
 
 	def dataProvider_test1FS(self, testdir):
-		
+
 		def _int(s):
 			return 0 if not s else int(s)
 
@@ -418,7 +446,7 @@ class TestUtils (helpers.TestCase):
 			except OSError:
 				helpers.writeFile(flag4)
 		yield (func4,  file4,  10, lambda: path.exists(flag4))
-		
+
 		"""
 		Thread-safe file remove, remove file in multiple thread, no error
 		"""
@@ -463,7 +491,7 @@ class TestUtils (helpers.TestCase):
 		self.assertTrue(state())
 
 	def dataProvider_test2FS(self, testdir):
-		
+
 		def _int(s):
 			return 0 if not s else int(s)
 
@@ -500,7 +528,7 @@ class TestUtils (helpers.TestCase):
 		yield (func1, file11, file12, 10, lambda: path.exists(flag1))
 
 		"""
-		#2 Thread-safe samefile, increment the number in a file 
+		#2 Thread-safe samefile, increment the number in a file
 		"""
 		file21 = path.join(testdir, 'testSamefile21.txt')
 		file22 = path.join(testdir, 'testSamefile22.txt')
@@ -539,7 +567,7 @@ class TestUtils (helpers.TestCase):
 				helpers.writeFile(flag4, ex)
 		yield (func4, file41, file42, 10, lambda: not path.exists(flag4))
 
-		
+
 		"""
 		#5 Thread-safe samefile, remove a file in multiple thread, error happens
 		"""
@@ -648,7 +676,7 @@ class TestUtils (helpers.TestCase):
 			except OSError as ex:
 				helpers.writeFile(flag9, ex)
 		yield (func9, file91, file92, 20, lambda: path.exists(flag9))
-		
+
 		"""
 		#13 Thread-safe copy
 		"""
@@ -677,7 +705,7 @@ class TestUtils (helpers.TestCase):
 			except (OSError, IOError) as ex:
 				helpers.writeFile(flag11, ex)
 		yield (func11, file111, file112, 10, lambda: path.exists(flag11) and not path.isfile(file111) and  path.isfile(file112))
-		
+
 		"""
 		#15 Thread-safe link
 		"""
@@ -1121,7 +1149,7 @@ class TestUtils (helpers.TestCase):
 		def func48(f1, f2):
 			utils.safeLink(f1, f2, overwrite = False, tmpdir = testdir)
 		yield (func48, file481, file482, 1, lambda: helpers.readFile(file481, int) == 1 and helpers.readFile(file482, int) == 2)
-		
+
 
 	def test2FS(self, func, f1, f2, length, state, msg = None):
 		utils.parallel(func, [(f1, f2) for _ in range(length)], length)
@@ -1160,7 +1188,7 @@ class TestUtils (helpers.TestCase):
 
 	def testDirmtime(self, d, mt):
 		self.assertEqual(int(utils.dirmtime(d)), int(mt))
-	
+
 	def dataProvider_testFilesig(self, testdir):
 		"""
 		#0: Empty string
