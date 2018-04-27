@@ -505,17 +505,21 @@ class Proc (object):
 		Do some preparation before running jobs
 		"""
 		self._buildProps ()
-		if callable (self.callfront):
-			self.log ("Calling callfront ...", "debug")
-			self.callfront (self)
-		self._buildInput ()
-		self._buildProcVars ()
-		#self._buildBrings ()
-		self._buildOutput()
-		self._buildScript()
-		if self.resume not in ['skip+', 'resume']:
-			self._saveSettings()
-		self._buildJobs ()
+		try:
+			if callable (self.callfront):
+				self.log ("Calling callfront ...", "debug")
+				self.callfront (self)
+			self._buildInput ()
+			self._buildProcVars ()
+			#self._buildBrings ()
+			self._buildOutput()
+			self._buildScript()
+			if self.resume not in ['skip+', 'resume']:
+				self._saveSettings()
+			self._buildJobs ()
+		except Exception:
+			self.lock.release()
+			raise
 
 	# self.resume != 'skip'
 	def _tidyAfterRun (self):
@@ -629,54 +633,57 @@ class Proc (object):
 
 		self.props['lock'] = filelock.FileLock(path.join(self.workdir, 'lock'))
 		self.lock.acquire()
+		try:
+			# exdir
+			if self.exdir:
+				self.config['exdir'] = path.abspath(self.exdir)
+				if not path.exists (self.exdir):
+					makedirs (self.exdir)
 
-		# exdir
-		if self.exdir:
-			self.config['exdir'] = path.abspath(self.exdir)
-			if not path.exists (self.exdir):
-				makedirs (self.exdir)
-
-		# echo
-		if self.config['echo'] in [True, False, 'stderr', 'stdout']:
-			if self.config['echo'] is True:
-				self.props['echo'] = { 'jobs': 0 }
-			elif self.config['echo'] is False:
-				self.props['echo'] = { 'jobs': [], 'type': 'all' }
+			# echo
+			if self.config['echo'] in [True, False, 'stderr', 'stdout']:
+				if self.config['echo'] is True:
+					self.props['echo'] = { 'jobs': 0 }
+				elif self.config['echo'] is False:
+					self.props['echo'] = { 'jobs': [], 'type': 'all' }
+				else:
+					self.props['echo'] = { 'jobs': 0, 'type': {self.config['echo']: None} }
 			else:
-				self.props['echo'] = { 'jobs': 0, 'type': {self.config['echo']: None} }
-		else:
-			self.props['echo'] = self.config['echo']
+				self.props['echo'] = self.config['echo']
 
-		if not 'jobs' in self.echo:
-			self.echo['jobs'] = 0
-		if isinstance(self.echo['jobs'], int):
-			self.echo['jobs'] = [self.echo['jobs']]
-		elif isinstance(self.echo['jobs'], six.string_types):
-			self.echo['jobs'] = list(map(lambda x: int(x.strip()), self.echo['jobs'].split(',')))
-		else:
-			self.echo['jobs'] = list(self.echo['jobs'])
+			if not 'jobs' in self.echo:
+				self.echo['jobs'] = 0
+			if isinstance(self.echo['jobs'], int):
+				self.echo['jobs'] = [self.echo['jobs']]
+			elif isinstance(self.echo['jobs'], six.string_types):
+				self.echo['jobs'] = list(map(lambda x: int(x.strip()), self.echo['jobs'].split(',')))
+			else:
+				self.echo['jobs'] = list(self.echo['jobs'])
 
-		if not 'type' in self.echo or self.echo['type'] == 'all':
-			self.echo['type'] = {'stderr': None, 'stdout': None}
-		if not isinstance(self.echo['type'], dict):
-			# must be a string, either stderr or stdout
-			self.echo['type'] = {self.echo['type']: None}
-		if 'all' in self.echo['type']:
-			self.echo['type'] = {'stderr': self.echo['type']['all'], 'stdout': self.echo['type']['all']}
+			if not 'type' in self.echo or self.echo['type'] == 'all':
+				self.echo['type'] = {'stderr': None, 'stdout': None}
+			if not isinstance(self.echo['type'], dict):
+				# must be a string, either stderr or stdout
+				self.echo['type'] = {self.echo['type']: None}
+			if 'all' in self.echo['type']:
+				self.echo['type'] = {'stderr': self.echo['type']['all'], 'stdout': self.echo['type']['all']}
 
-		# don't cache for dry runner
-		# runner is decided when run (in config)
-		#if self.runner == 'dry':
-		#	self.props['cache'] = False
+			# don't cache for dry runner
+			# runner is decided when run (in config)
+			#if self.runner == 'dry':
+			#	self.props['cache'] = False
 
-		# expect
-		self.props['expect'] = self.template(self.config['expect'], **self.tplenvs)
+			# expect
+			self.props['expect'] = self.template(self.config['expect'], **self.tplenvs)
 
-		# expart
-		expart = utils.alwaysList(self.config['expart'])
-		self.props['expart'] = [self.template(e, **self.tplenvs) for e in expart]
+			# expart
+			expart = utils.alwaysList(self.config['expart'])
+			self.props['expart'] = [self.template(e, **self.tplenvs) for e in expart]
 
-		self.log ('Properties set explictly: %s' % str(self.sets), 'debug')
+			self.log ('Properties set explictly: %s' % str(self.sets), 'debug')
+		except Exception:
+			self.lock.release()
+			raise
 
 	def _saveSettings (self):
 		"""
