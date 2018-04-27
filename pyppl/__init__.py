@@ -570,7 +570,10 @@ class Proc (object):
 		elif self.resume == 'skip+':
 			self.log ("Data loaded, pipeline will resume from future processes.", 'skipped')
 			self._tidyBeforeRun()
-			self._tidyAfterRun ()
+			try:
+				self._tidyAfterRun ()
+			finally:
+				self.lock.release()
 		else: # '', resume, resume+
 			timer = time()
 			self._tidyBeforeRun ()
