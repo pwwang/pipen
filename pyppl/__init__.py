@@ -1012,7 +1012,7 @@ class Proc (object):
 			row = tuple(job.data['out'].values())
 			self.props['channel'][i] = row
 
-		utils.parallel(bjSingle, [(i, ) for i in range(self.size)], self.nthread)
+		utils.Parallel(self.nthread, backend = 'thread').run(bjSingle, [(i, ) for i in range(self.size)])
 		self.log('After job building, active threads: %s' % threading.active_count(), 'debug')
 
 		if self.jobs[0].data['out']:
@@ -1060,7 +1060,7 @@ class Proc (object):
 			else:
 				self.props['ncjobids'].append (i)
 
-		utils.parallel(chkCached, [(i, ) for i in range(self.size)], self.nthread)
+		utils.Parallel(self.nthread, backend = 'thread').run(chkCached, [(i, ) for i in range(self.size)])
 
 		self.log ('Truly cached jobs : %s' % (utils.briefList(trulyCachedJids) if len(trulyCachedJids) < self.size else 'ALL'), 'info')
 		self.log ('Export-cached jobs: %s' % (utils.briefList(exptCachedJids)  if len(exptCachedJids)  < self.size else 'ALL'), 'info')

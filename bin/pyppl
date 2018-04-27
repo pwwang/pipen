@@ -44,17 +44,18 @@ def getGroups (workdir):
 			ret[pname] = []
 		ret[pname].append(parts[-1])
 	return ret
-	
+
 def ask2Remove (msg, procpath, ask = True):
 	def rm ():
-		utils.parallel(rmtree, [(pp, ) for pp in glob(path.join(procpath, '*/'))], args.n, 'process')
+		utils.Parallel(args.n).run(rmtree, [(pp, ) for pp in glob(path.join(procpath, '*/'))])
+		#utils.parallel(rmtree, [(pp, ) for pp in glob(path.join(procpath, '*/'))], args.n, 'process')
 		rmtree(procpath)
 		print logger.colors.bold + logger.colors.yellow + "  Removed: " + procpath + logger.colors.end
-	
+
 	if not ask:
 		rm ()
 		return
-	
+
 	dists = ['', 'Y', 'y', 'N', 'n']
 	r     = raw_input(msg + ', clean it? [Y/n] ')
 	while r not in dists:
@@ -63,7 +64,7 @@ def ask2Remove (msg, procpath, ask = True):
 		rm()
 
 fmtTime = lambda x: datetime.fromtimestamp(x).strftime('%Y-%m-%d %H:%M:%S')
-		
+
 if args.command in ['list', 'clean']:
 	print ''
 	print logger.colors.green  + 'GREEN PROC : Latest processes' + logger.colors.end
@@ -73,17 +74,17 @@ if args.command in ['list', 'clean']:
 	print "-" * (len (args.workdir) + 9)
 
 	groups = getGroups (args.workdir)
-	
+
 	if not groups:
 		print logger.colors.red + "No processes found!\n" + logger.colors.end
-	
+
 	maxlen = max([len(g) for g in groups.keys()])
 	maxlen = max(maxlen, 30)
 	for g in sorted(groups.keys()):
 		sufs = groups[g]
 		print "\n- PROCESSES: %s" % (g)
 		print "  " + "-" * (maxlen + 30)
-		
+
 		for i, suf in enumerate(sorted(sufs, key=lambda x: mtime4proc(path.join (args.workdir, "PyPPL.%s.%s" % (g, x))), reverse=True)):
 			procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
 			color    = logger.colors.green
@@ -107,9 +108,9 @@ if args.command in ['list', 'clean']:
 					else:
 						ask2Remove(msg, procpath, not args.force)
 	print ''
-				
+
 if args.command == 'compare':
-	
+
 	if not args.p1 and not args.p2 and not args.p:
 		print "Expect paired processes (-p1 and -p2) OR the process prefix (-p)"
 		sys.exit (1)
@@ -119,19 +120,19 @@ if args.command == 'compare':
 	if (args.p1 and not args.p2) or (args.p2 and not args.p1):
 		print "Expect paired processes (both -p1 and -p2)"
 		sys.exit (1)
-	
+
 	from difflib import unified_diff
-	
+
 	if args.p:
 		if '/' in args.p[:-1]:
 			prefix = args.p
 			prefix = prefix + '.notag' if path.basename(prefix).count('.') < 2 else prefix
 		else:
-			
+
 			prefix = 'PyPPL.' + args.p if not args.p.startswith('PyPPL.') else args.p
 			prefix = prefix + '.notag' if prefix.count('.') < 2 else prefix
 			prefix = path.join(args.workdir, prefix)
-			
+
 		procs  = glob (prefix + '.*')
 		if not procs:
 			sfile1 = ''
@@ -149,7 +150,7 @@ if args.command == 'compare':
 		else:
 			p1 = 'PyPPL.' + args.p1 if not args.p1.startswith('PyPPL.') else args.p1
 			p1 = path.join(args.workdir, p1)
-			
+
 		if '/' in args.p2[:-1]:
 			p2 = args.p2
 		else:
@@ -157,7 +158,7 @@ if args.command == 'compare':
 			p2 = path.join(args.workdir, p2)
 		sfile1    = path.join(p1, 'proc.settings')
 		sfile2    = path.join(p2, 'proc.settings')
-	
+
 	print logger.colors.green + "1. " + sfile1 + logger.colors.end
 	print logger.colors.red   + "2. " + sfile2 + logger.colors.end
 	print '-' * (max(len(sfile1), len(sfile2)) + 3)
@@ -174,16 +175,16 @@ if args.command == 'compare':
 							ret[sec] = []
 						ret[sec].append(line)
 			return ret
-		
+
 		seclines1 = readSections(sfile1)
 		seclines2 = readSections(sfile2)
-		
+
 		for sec in sorted(seclines1.keys()):
 			lines1 = seclines1[sec]
 			lines2 = seclines2[sec]
 			diff   = unified_diff(lines1, lines2, n=0)
 			toprnt = ''
-			for i, d in enumerate(diff): 
+			for i, d in enumerate(diff):
 				if i==0 and d.strip() == '---':
 					pass
 				elif i==1 and d.strip() == '+++':
@@ -196,10 +197,10 @@ if args.command == 'compare':
 					toprnt += logger.colors.yellow + d + logger.colors.end
 				else:
 					toprnt += d
-			if toprnt: 
+			if toprnt:
 				print "["+ sec +"]"
 				print toprnt
-		
+
 	elif not path.exists(sfile1) and not path.exists(sfile2):
 		print "None of the proc.settings files exist, nothing to compare.\n"
 		sys.exit(0)
@@ -207,4 +208,3 @@ if args.command == 'compare':
 		print "Only one of the processes' proc.settings exists, see the configuration in:"
 		print logger.colors.green + (sfile1 if path.exists(sfile1) else sfile2) + logger.colors.end + "\n"
 		sys.exit(0)
-		
