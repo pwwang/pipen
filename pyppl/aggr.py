@@ -20,7 +20,7 @@ class DotProxy(object):
 		"""
 		self.__dict__['_aggr']   = aggr
 		self.__dict__['_prefix'] = prefix
-	
+
 	def __getattr__(self, name):
 		"""
 		@params:
@@ -33,7 +33,7 @@ class DotProxy(object):
 		prefix = self._prefix if not self._prefix else self._prefix + '.'
 		self.__dict__[name] = DotProxy(self._aggr, prefix + name)
 		return self.__dict__[name]
-	
+
 	@staticmethod
 	def _isDelegated(aggr, prefix, delegates):
 		"""
@@ -56,8 +56,8 @@ class DotProxy(object):
 				continue
 			return procs(aggr), (val + rest).split('.')
 		return False
-		
-		
+
+
 	def __setattr__(self, name, value):
 		"""
 		@params:
@@ -75,10 +75,10 @@ class DotProxy(object):
 			obj = proc
 			for dot in dots: obj = getattr(obj, dot)
 			setattr(obj, setname, value)
-			
+
 	def __getitem__(self, name):
 		return getattr(self, name)
-		
+
 	def __setitem__(self, name, value):
 		setattr(self, name, value)
 
@@ -116,9 +116,9 @@ class Aggr (object):
 		}
 		self.__dict__['_delegates'] = OrderedDict()
 		self.__dict__['_procs']     = OrderedDict()
-		
+
 		tag = kwargs['tag'] if 'tag' in kwargs else ''
-		
+
 		for proc in args:
 			pid = proc.id
 			if pid in ['starts', 'ends', 'id', '_delegates', '_props', '_procs'] or pid in self.__dict__['_procs']:
@@ -127,7 +127,7 @@ class Aggr (object):
 			newproc      = proc.copy(tag = newtag, id = pid)
 			newproc.aggr = self.id
 			self.__dict__['_procs'][pid] = newproc
-		
+
 		if 'depends' not in kwargs or kwargs['depends']:
 			procs = list(self._procs.values())
 			self.starts = [procs[0]] if len(procs) > 0 else []
@@ -135,11 +135,11 @@ class Aggr (object):
 			for i, proc in enumerate(procs):
 				if i == 0: continue
 				proc.depends = procs[i-1]
-		
-		# depends respectively: 
-		# For example: 
+
+		# depends respectively:
+		# For example:
 		# a.starts  == [ps1, ps2, ps3]
-		# a.depends2 = pd1, pd2, pd3 => 
+		# a.depends2 = pd1, pd2, pd3 =>
 		# 	a.ps1.depends = pd1
 		# 	a.ps2.depends = pd2
 		# 	a.ps3.depends = pd3
@@ -154,13 +154,13 @@ class Aggr (object):
 			if k not in ['id', 'args', 'envs'] \
 			and k not in defaultDelegatesStart + defaultDelegatesEnd \
 		] if self._procs else []
-		
+
 		for dd in defaultDelegatesStart:
 			self.delegate(dd, 'starts')
-		
+
 		for dd in defaultDelegatesEnd:
 			self.delegate(dd, 'ends')
-			
+
 		for dd in defaultDelegates:
 			self.delegate(dd)
 
@@ -176,7 +176,7 @@ class Aggr (object):
 			raise AggrAttributeError(attr, 'Cannot delegate Proc attribute to an existing Aggr attribute')
 
 		if pattr is None: pattr = attr
-		
+
 		# use callbacks to make sure they apply for futher processes
 		if procs == 'starts':
 			procs = lambda a: a.starts
@@ -187,14 +187,14 @@ class Aggr (object):
 		elif procs == 'neither':
 			procs = lambda a: [p for p in a._procs.values() if p not in (a.starts + a.ends)]
 		elif isinstance(procs, string_types):
-			procs = lambda a, procs = procs: [a._procs[procs]]
+			procs = lambda a, procs = utils.alwaysList(procs): [a._procs[proc] for proc in procs]
 		elif isinstance(procs, list):
 			procs = lambda a, procs = procs: [a._procs[proc if isinstance(proc, string_types) else proc.id] for proc in procs]
 		elif not procs:
 			procs = lambda a: a._procs.values()
 		else:
 			procs = lambda a, procs = procs: procs
-			
+
 		self._delegates[attr] = procs, pattr
 
 	def __getattr__(self, name):
@@ -204,7 +204,7 @@ class Aggr (object):
 			return self._props[name]
 		if name in self._procs:
 			return self._procs[name]
-		
+
 		self.__dict__[name] = DotProxy(self, name)
 		return self.__dict__[name]
 
@@ -231,7 +231,7 @@ class Aggr (object):
 						setattr(proc, 'depends' if dot == 'depends2' else dot, value[i])
 				else:
 					setattr(proc, dot, value)
-	
+
 	def addProc (self, p, tag = None, where = None, copy = True):
 		"""
 		Add a process to the aggregation.
@@ -248,7 +248,7 @@ class Aggr (object):
 			delegates = [k for k in p.config.keys() if k not in ['id', 'args', 'envs'] and k not in defaultDelegatesStart + defaultDelegatesEnd]
 			for dd in delegates:
 				self.delegate(dd)
-		
+
 		newtag = tag if tag else utils.uid(p.tag + '@' + self.id, 4)
 
 		newproc = p.copy(id = p.id) if copy else p
@@ -260,7 +260,7 @@ class Aggr (object):
 		if where == 'ends' or where == 'both':
 			self.ends.append (newproc)
 		return self
-		
+
 	def copy (self, tag=None, deps=True, id=None):
 		"""
 		Like `proc`'s `copy` function, copy an aggregation. Each processes will be copied.
@@ -283,25 +283,25 @@ class Aggr (object):
 			if tag == proc.tag:
 				# This will happen to have procs with same id and tag
 				raise AggrCopyError('%s.%s' % (proc.id, tag), 'Cannot copy process with same id and tag')
-			
+
 			newproc      = proc.copy (tag = tag, id = proc.id)
 			newproc.aggr = name
-			
+
 			where = 'both' if proc in self.starts and proc in self.ends \
 				else 'starts' if proc in self.starts \
 				else 'ends' if proc in self.ends \
 				else None
-			
+
 			ret.addProc (newproc, tag = tag, where = None, copy = False)
 			if where == 'starts' or where == 'both':
 				ret.starts[self.starts.index(proc)] = newproc
 			if where == 'ends' or where == 'both':
 				ret.ends[self.ends.index(proc)] = newproc
-		
+
 		# copy delegates
 		for k, v in self._delegates.items():
 			ret._delegates[k] = v
-		
+
 		# copy dependences
 		if deps:
 			for k, proc in ret._procs.items():
@@ -312,4 +312,3 @@ class Aggr (object):
 				]
 
 		return ret
-		

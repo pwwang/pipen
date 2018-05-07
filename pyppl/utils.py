@@ -17,38 +17,11 @@ from glob import glob
 from os import path, remove, symlink, makedirs, chdir, getcwd, walk, stat, chmod, devnull
 from shutil import rmtree, copyfile, copytree, move, copyfileobj
 from subprocess import Popen
-from multiprocessing import Process, JoinableQueue
 from hashlib import md5
 #from box import Box
 from six import moves, string_types
-from threading import Thread
 from collections import OrderedDict
 TMPDIR = tempfile.gettempdir()
-
-'''
-class ProcessEx (Process):
-	"""
-	Try to capture process exceptions when join
-	"""
-	def __init__(self, *args, **kwargs):
-		Process.__init__(self, *args, **kwargs)
-		self._pconn, self._cconn = Pipe()
-
-	def run(self):
-		try: # pragma: no cover
-			Process.run(self)
-			self._cconn.send(None)
-		except Exception as ex: # pragma: no cover
-			message = format_exc()
-			self._cconn.send(type(ex)(message))
-
-	def join(self):
-		Process.join(self)
-		if self._pconn.poll():
-			ex = self._pconn.recv()
-			if ex:
-				raise ex
-'''
 
 class Box(OrderedDict):
 	"""

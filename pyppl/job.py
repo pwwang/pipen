@@ -22,7 +22,7 @@ class Jobmgr (object):
 	STATUS_SUBMITFAILED = 3
 	STATUS_DONE         = 4
 	STATUS_DONEFAILED   = 5
-	
+
 	PBAR_SIZE = 50
 
 	def __init__(self, proc, runner):
@@ -75,7 +75,7 @@ class Jobmgr (object):
 				barjobs.append([jobx + s for s in range(step)])
 				jobx += step
 
-		# status can only be: 
+		# status can only be:
 		# Jobmgr.STATUS_SUBMITTED
 		# Jobmgr.STATUS_SUBMITFAILED
 		# Jobmgr.STATUS_DONE
@@ -105,11 +105,11 @@ class Jobmgr (object):
 				bar += 'x'
 			else: # STATUS_DONE
 				bar += '='
-			
+
 		bar += '] Done: %5.1f%% | Running: %d' % (100.0*float(ncompleted)/float(self.proc.size), nrunning)
-			
+
 		self.proc.log(bar, loglevel)
-	
+
 	def canSubmit(self):
 		"""
 		Tell whether we can submit jobs.
@@ -118,8 +118,8 @@ class Jobmgr (object):
 		"""
 		if self.nprunner == 0: return True
 		return sum(s in [
-			Jobmgr.STATUS_SUBMITTING, 
-			Jobmgr.STATUS_SUBMITTED, 
+			Jobmgr.STATUS_SUBMITTING,
+			Jobmgr.STATUS_SUBMITTED,
 			Jobmgr.STATUS_SUBMITFAILED
 		] for s in self.status) < self.nprunner
 
@@ -139,7 +139,7 @@ class Jobmgr (object):
 			if jid is None:
 				sq.task_done()
 				break
-			
+
 			self.status[jid] = Jobmgr.STATUS_SUBMITTING
 			if self.runners[jid].submit():
 				self.status[jid] = Jobmgr.STATUS_SUBMITTED
@@ -203,12 +203,12 @@ class Jobmgr (object):
 			p = Process(target = self.submitPool, args = (submitQ, ))
 			p.daemon = True
 			p.start()
-		
+
 		for _ in range(self.nprunner):
 			p = Process(target = self.runPool, args = (runQ, submitQ))
 			p.daemon = True
 			p.start()
-		
+
 		watchp = Process(target = self.watchPool, args = (runQ, submitQ))
 		watchp.daemon = True
 		watchp.start()
@@ -219,7 +219,7 @@ class Jobmgr (object):
 
 
 class Job (object):
-	
+
 	"""
 	Job class, defining a job in a process
 	"""
@@ -234,9 +234,9 @@ class Job (object):
 	MSG_RC_EXPECTFAIL  = 'Failed to meet the expectation'
 	MSG_RC_SUBMITFAIL  = 'Failed to submit job'
 	MSG_RC_OTHER       = 'Script error'
-	
+
 	LOGLOCK = Lock()
-		
+
 	def __init__(self, index, proc):
 		"""
 		Constructor
@@ -273,7 +273,7 @@ class Job (object):
 			'out'  : OrderedDict(),
 			'bring': {}
 		}
-		
+
 	def init (self):
 		"""
 		Initiate a job, make directory and prepare input, output and script.
@@ -317,10 +317,10 @@ class Job (object):
 				self.proc.log ("%s %s => [%s]" % (indexstr, key.ljust(maxlen), ''), loglevel)
 			elif ldata == 1:
 				self.proc.log ("%s %s => [%s]" % (indexstr, key.ljust(maxlen), data[0]), loglevel)
-			elif ldata == 2: 
+			elif ldata == 2:
 				self.proc.log ("%s %s => [%s," % (indexstr, key.ljust(maxlen), data[0]), loglevel)
 				self.proc.log ("%s %s     %s]" % (indexstr, ' '.ljust(maxlen), data[1]), loglevel)
-			elif ldata == 3: 
+			elif ldata == 3:
 				self.proc.log ("%s %s => [%s," % (indexstr, key.ljust(maxlen), data[0]), loglevel)
 				self.proc.log ("%s %s     %s," % (indexstr, ' '.ljust(maxlen), data[1]), loglevel)
 				self.proc.log ("%s %s     %s]" % (indexstr, ' '.ljust(maxlen), data[2]), loglevel)
@@ -329,7 +329,7 @@ class Job (object):
 				self.proc.log ("%s %s     %s," % (indexstr, ' '.ljust(maxlen), data[1]), loglevel)
 				self.proc.log ("%s %s     ...," % (indexstr, ' '.ljust(maxlen)), loglevel)
 				self.proc.log ("%s %s     %s]" % (indexstr, ' '.ljust(maxlen), data[-1]), loglevel)
-	
+
 	def report (self):
 		"""
 		Report the job information to logger
@@ -361,7 +361,7 @@ class Job (object):
 		'''
 		for key in sorted(self.output.keys()):
 			self._reportItem(key, maxlen, self.output[key]['data'], 'output')
-	
+
 	def done (self):
 		"""
 		Do some cleanup when job finished
@@ -373,7 +373,7 @@ class Job (object):
 			self.export()
 			self.cache()
 			#self.proc.log ('Job #%s done!' % self.index, 'JOBDONE')
-			
+
 	def showError (self, totalfailed = 1):
 		"""
 		Show the error message if the job failed.
@@ -389,13 +389,13 @@ class Job (object):
 		if self.proc.errhow == 'ignore':
 			self.proc.log ('%s failed but ignored (totally %s). Return code: %s (%s).' % (indexstr, totalfailed, rc, msg), 'warning')
 			return
-		
+
 		self.proc.log ('%s failed (totally %s). Return code: %s (%s).' % (indexstr, totalfailed, rc, msg), 'error')
-		
+
 		self.proc.log('%s Script: %s' % (indexstr, self.script), 'error')
 		self.proc.log('%s Stdout: %s' % (indexstr, self.outfile), 'error')
 		self.proc.log('%s Stderr: %s' % (indexstr, self.errfile), 'error')
-		
+
 		# errors are not echoed, print them out
 		if self.index not in self.proc.echo['jobs'] or 'stderr' not in self.proc.echo['type']:
 			self.proc.log('%s check STDERR below:' % (indexstr), 'error')
@@ -403,28 +403,28 @@ class Job (object):
 			if path.exists (self.errfile):
 				with open(self.errfile) as f:
 					errmsgs = ['[ STDERR] ' + line.rstrip("\n") for line in f]
-				
+
 			if not errmsgs:
 				errmsgs = ['[ STDERR] <EMPTY STDERR>']
-				
+
 			for errmsg in errmsgs[-20:] if len (errmsgs) > 20 else errmsgs:
 				logger.logger.info(errmsg)
-				
+
 			if len (errmsgs) > 20:
 				logger.logger.info ('[ STDERR] ... top %s line(s) ignored (see all in "%s").' % (len(errmsgs)-20, self.errfile))
-	
+
 	def isTrulyCached (self):
 		"""
 		Check whether a job is truly cached (by signature)
 		"""
 		indexstr = self._indexIndicator()
 		if not path.exists (self.cachefile):
-			self.proc.log ("%s not cached as cache file not exists." % (indexstr), "debug", "CACHE_SIGFILE_NOTEXISTS")			
+			self.proc.log ("%s not cached as cache file not exists." % (indexstr), "debug", "CACHE_SIGFILE_NOTEXISTS")
 			return False
-		
+
 		with open (self.cachefile) as f:
 			sig = f.read()
-			
+
 		if not sig:
 			self.proc.log ("%s not cached because previous signature is empty." % (indexstr), "debug", "CACHE_EMPTY_PREVSIG")
 			return False
@@ -434,7 +434,7 @@ class Job (object):
 		if not sigNow:
 			self.proc.log ("%s not cached because current signature is empty." % (indexstr), "debug", "CACHE_EMPTY_CURRSIG")
 			return False
-		
+
 		def compareVar(osig, nsig, key, logkey):
 			for k in osig.keys():
 				oval = osig[k]
@@ -446,7 +446,7 @@ class Job (object):
 					self.proc.log("...... - Current : %s" % nval, 'debug', logkey)
 				return False
 			return True
-		
+
 		def compareFile(osig, nsig, key, logkey, timekey = None):
 			for k in osig.keys():
 				ofile, otime = osig[k]
@@ -465,7 +465,7 @@ class Job (object):
 						self.proc.log("...... - Current : %s (%s)" % (ntime, datetime.fromtimestamp(ntime)), 'debug', timekey)
 					return False
 			return True
-		
+
 		def compareFiles(osig, nsig, key, logkey, timekey = True):
 			for k in osig.keys():
 				oval = sorted(osig[k])
@@ -495,14 +495,14 @@ class Job (object):
 							self.proc.log("...... - Current : %s (%s)" % (ntime, datetime.fromtimestamp(ntime)), 'debug', timekey)
 						return False
 			return True
-		
+
 		if not compareFile(
 			{'script': sigOld['script']},
 			{'script': sigNow['script']},
 			'script',
 			'',
 			'CACHE_SCRIPT_NEWER'
-		): return False		
+		): return False
 
 		if not compareVar(
 			sigOld['in'][self.proc.IN_VARTYPE[0]],
@@ -540,7 +540,7 @@ class Job (object):
 			'output',
 			'CACHE_SIGOUTFILE_DIFF'
 		): return False
-		
+
 		if not compareFile(
 			sigOld['out'][self.proc.OUT_DIRTYPE[0]],
 			sigNow['out'][self.proc.OUT_DIRTYPE[0]],
@@ -549,7 +549,7 @@ class Job (object):
 		): return False
 		self.rc(0)
 		return True
-	
+
 	def isExptCached (self):
 		"""
 		Prepare to use export files as cached information
@@ -570,18 +570,18 @@ class Job (object):
 		for out in self.output.values():
 			if out['type'] in self.proc.OUT_VARTYPE: continue
 			exfile = path.join (self.proc.exdir, path.basename(out['data']))
-			
+
 			if self.proc.exhow in self.proc.EX_GZIP:
 				if path.isdir(out['data']) or out['type'] in self.proc.OUT_DIRTYPE:
 					exfile += '.tgz'
 					if not path.exists(exfile):
 						self.proc.log ("Job is not export-cached since exported file not exists: %s." % exfile, "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
 						return False
-					
+
 					if path.exists (out['data']) or path.islink (out['data']):
 						self.proc.log ('Overwrite file for export-caching: %s' % out['data'], 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
 						utils.safeRemove(out['data'])
-						
+
 					makedirs(out['data'])
 					utils.untargz (exfile, out['data'])
 				else:
@@ -589,11 +589,11 @@ class Job (object):
 					if not path.exists (exfile):
 						self.proc.log ("Job is not export-cached since exported file not exists: %s." % exfile, "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
 						return False
-					
+
 					if path.exists (out['data']) or path.islink (out['data']):
 						self.proc.log ('Overwrite file for export-caching: %s' % out['data'], 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
 						remove (out['data'])
-						
+
 					utils.ungz (exfile, out['data'])
 			else:
 				if not path.exists (exfile):
@@ -604,17 +604,17 @@ class Job (object):
 				if path.exists (out['data']) or path.islink(out['data']):
 					self.proc.log ('Overwrite file for export-caching: %s' % out['data'], 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
 					utils.safeRemove(out['data'])
-					
+
 				utils.safeLink(path.realpath(exfile), out['data'])
-		
+
 		# Make sure no need to calculate next time
 		self.cache ()
 		if not path.exists (self.rcfile):
 			with open (self.rcfile, 'w') as f:
 				f.write (str(Job.RC_SUCCESS))
-		
+
 		return True
-				
+
 	def cache (self):
 		"""
 		Truly cache the job (by signature)
@@ -625,7 +625,7 @@ class Job (object):
 		if sig:
 			with open (self.cachefile, 'w') as f:
 				f.write (sig if not sig else json.dumps(sig))
-			
+
 	def succeed (self):
 		"""
 		Tell if the job is successful by return code, and output file expectations.
@@ -633,7 +633,7 @@ class Job (object):
 			True if succeed else False
 		"""
 		return self.rc() in self.proc.rc
-		
+
 	def signature (self):
 		"""
 		Calculate the signature of the job based on the input/output and the script
@@ -657,7 +657,7 @@ class Job (object):
 			self.proc.OUT_FILETYPE[0]: {},
 			self.proc.OUT_DIRTYPE[0]:  {}
 		}
-		
+
 		for key, val in self.input.items():
 			if val['type'] in self.proc.IN_VARTYPE:
 				ret['in'][self.proc.IN_VARTYPE[0]][key] = val['data']
@@ -675,7 +675,7 @@ class Job (object):
 						self.proc.log ('%s Empty signature because of one of input files: %s.' % (indexstr, infile), 'debug', 'CACHE_EMPTY_CURRSIG')
 						return ''
 					ret['in'][self.proc.IN_FILESTYPE[0]][key].append (sig)
-		
+
 		for key, val in self.output.items():
 			if val['type'] in self.proc.OUT_VARTYPE:
 				ret['out'][self.proc.OUT_VARTYPE[0]][key] = val['data']
@@ -691,9 +691,9 @@ class Job (object):
 					self.proc.log ('%s Empty signature because of output dir: %s.' % (indexstr, val['data']), 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
 				ret['out'][self.proc.OUT_DIRTYPE[0]][key] = sig
-				
+
 		return ret
-	
+
 	def rc (self, val = None):
 		"""
 		Get/Set the return code
@@ -708,7 +708,7 @@ class Job (object):
 		if val is None:
 			if not path.exists (self.rcfile):
 				return Job.RC_NOTGENERATE
-			
+
 			with open (self.rcfile) as f:
 				r = f.read().strip()
 				if not r: return Job.RC_NOTGENERATE
@@ -731,7 +731,7 @@ class Job (object):
 		else:
 			with open (self.pidfile, 'w') as f:
 				f.write (str(val))
-	
+
 	def checkOutfiles (self, expect = True):
 		"""
 		Check whether output files are generated, if not, add - to rc.
@@ -745,7 +745,7 @@ class Job (object):
 				self.rc(Job.RC_NOOUTFILE)
 				self.proc.log ('%s outfile not generated: %s' % (indexstr, out['data']), 'debug', 'OUTFILE_NOT_EXISTS')
 				return
-		
+
 		expectCmd = self.proc.expect.render(self.data)
 		if expectCmd and expect:
 			self.proc.log ('%s check expectation: %s' % (indexstr, expectCmd), 'debug', 'EXPECT_CHECKING')
@@ -758,11 +758,11 @@ class Job (object):
 		"""
 		if not self.proc.exdir:
 			return
-		
+
 		indexstr = self._indexIndicator()
 		assert path.exists(self.proc.exdir)
 		assert isinstance(self.proc.expart, list)
-		
+
 		files2ex = []
 		if not self.proc.expart or (len(self.proc.expart) == 1 and not self.proc.expart[0].render(self.data)):
 			for out in self.output.values():
@@ -780,7 +780,7 @@ class Job (object):
 		for file2ex in files2ex:
 			bname  = path.basename (file2ex)
 			exfile = path.join (self.proc.exdir, bname)
-			
+
 			if self.proc.exhow in self.proc.EX_GZIP:
 				if path.isdir(file2ex):
 					exfile += '.tgz'
@@ -797,9 +797,9 @@ class Job (object):
 					utils.safeCopy(file2ex, exfile, overwrite = self.proc.exow)
 				else:
 					utils.safeMoveWithLink(file2ex, exfile, overwrite = self.proc.exow)
-			
+
 			self.proc.log ('%s Exported: %s' % (indexstr, exfile), 'export')
-				
+
 	def reset (self, retry = 0):
 		"""
 		Clear the intermediate files and output files
@@ -811,18 +811,18 @@ class Job (object):
 			makedirs(retrydir)
 		else:
 			for retrydir in glob(path.join(self.dir, 'retry.*')):
-				utils.safeRemove(retrydir) 
-		
+				utils.safeRemove(retrydir)
+
 		for jobfile in [self.rcfile, self.outfile, self.errfile, self.pidfile, self.outdir]:
 			mvfile = path.join(retrydir, path.basename(jobfile))
 			if retry:
 				utils.safeMove(jobfile, mvfile)
 			else:
 				utils.safeRemove(jobfile)
-				
+
 		makedirs(self.outdir)
 		for out in self.output.values():
-			if out['type'] in self.proc.OUT_DIRTYPE: 
+			if out['type'] in self.proc.OUT_DIRTYPE:
 				makedirs(out['data'])
 				#self.proc.log ('Output directory created after reset: %s.' % out['data'], 'debug', 'OUTDIR_CREATED_AFTER_RESET')
 			if out['type'] in self.proc.OUT_STDOUTTYPE:
@@ -862,7 +862,7 @@ class Job (object):
 				infile = path.join (self.indir, fn + '[' + str(num+1) + ']' + ext)
 				utils.safeLink(orgfile, infile)
 		return infile
-		
+
 
 	def _prepInput (self):
 		"""
@@ -870,14 +870,14 @@ class Job (object):
 		"""
 		utils.safeRemove(self.indir)
 		makedirs (self.indir)
-		
-		indexstr = self._indexIndicator()				
+
+		indexstr = self._indexIndicator()
 		for key, val in self.proc.input.items():
 			self.input[key] = {}
 			intype = val['type']
 			# the original input file(s)
 			indata = val['data'][self.index]
-			
+
 			if intype in self.proc.IN_FILETYPE:
 				if not isinstance(indata, string_types):
 					raise JobInputParseError(indata, 'Not a string for input type "%s"' % intype)
@@ -886,7 +886,7 @@ class Job (object):
 				else:
 					if not path.exists(indata):
 						raise JobInputParseError(indata, 'File not exists for input type "%s"' % intype)
-					
+
 					indata   = path.realpath(indata)
 					basename = utils.basename (indata)
 					infile   = self._linkInfile(indata)
@@ -902,7 +902,7 @@ class Job (object):
 				#self.input[key]['orig']    = indata
 				self.input[key]['data']    = indata
 				self.input[key]['orig']    = infile
-				
+
 			elif intype in self.proc.IN_FILESTYPE:
 				self.input[key]['type']     = intype
 				self.input[key]['orig']     = []
@@ -922,13 +922,13 @@ class Job (object):
 					else:
 						if not path.exists(data):
 							raise JobInputParseError(data, 'File not exists for element of input type "%s"' % intype)
-						
+
 						data     = path.realpath(data)
 						basename = path.basename (data)
 						infile   = self._linkInfile(data)
 						if basename != path.basename(infile):
 							self.proc.log ("Input file renamed: %s -> %s" % (basename, path.basename(infile)), 'warning', 'INFILE_RENAMING')
-						
+
 					#self.input[key]['orig'].append (data)
 					#self.input[key]['data'].append (infile)
 					#self.data['in'][key].append (infile)
@@ -941,7 +941,7 @@ class Job (object):
 				self.input[key]['type'] = intype
 				self.input[key]['data'] = indata
 				self.data['in'][key]    = indata
-	'''			
+	'''
 	def _prepBrings (self):
 		"""
 		Build the brings to bring some files to indir
@@ -969,7 +969,7 @@ class Job (object):
 			orgfile = self.input[key]['orig']
 			#not happening
 			#if not path.islink(infile): continue
-			
+
 			inbn   = path.basename(infile)
 			orgbn  = path.basename(orgfile)
 			diffbn = ''
@@ -979,7 +979,7 @@ class Job (object):
 					if inbn[:d.start()] == orgbn[:d.start()]:
 						diffbn = d.group()
 						break
-					
+
 			while True:
 				for v in val:
 					pattern = path.join(path.dirname(orgfile), v.render(self.data))
@@ -995,7 +995,7 @@ class Job (object):
 						utils.safeLink(b, dstfile)
 				if not path.islink(orgfile): break
 				orgfile = readlink(orgfile)
-			
+
 			if not self.brings[key]:
 				self.data['bring'][key].append('')
 				self.data['bring']['_' + key].append('')
@@ -1019,13 +1019,13 @@ class Job (object):
 		"""
 		if not path.exists (self.outdir):
 			makedirs (self.outdir)
-		
+
 		output = self.proc.output
 		# has to be OrderedDict
 		assert isinstance(output, dict)
 		# allow empty output
 		if not output: return
-		
+
 		for key, val in output.items():
 			outtype, outtpl = val
 			outdata               = outtpl.render(self.data)
@@ -1039,13 +1039,13 @@ class Job (object):
 					raise JobOutputParseError(outdata, 'Absolute path not allowed for output file/dir for key %s' % repr(key))
 				self.output[key]['data'] = path.join(self.outdir, outdata)
 				self.data['out'][key]    = path.join(self.outdir, outdata)
-				
+
 	def _prepScript (self):
 		"""
 		Build the script, interpret the placeholders
 		"""
 		script = self.proc.script.render(self.data)
-		
+
 		write = True
 		if path.isfile (self.script):
 			with open(self.script) as f:
@@ -1060,5 +1060,3 @@ class Job (object):
 		if write:
 			with open (self.script, 'w') as f:
 				f.write (script)
-			
-			

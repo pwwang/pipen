@@ -86,7 +86,7 @@ class TestUtils (helpers.TestCase):
 			globalVars.append(b)
 
 		t0 = time()
-		utils.parallel(func, data, nthread = nthread, method = method)
+		utils.Parallel(nthread, method).run(func, data)
 		t = time() - t0
 		if method == 'thread':
 			self.assertItemEqual(utils.reduce(lambda x, y: list(x) + list(y), data), globalVars)
@@ -377,7 +377,7 @@ class TestUtils (helpers.TestCase):
 			remove(f)
 
 		"""
-		Simple file exists
+		Simple file exists: 0-2
 		"""
 		file01 = path.join(testdir, 'testFileExists01.txt')
 		file02 = path.join(testdir, 'testFileExists02.txt')
@@ -401,7 +401,7 @@ class TestUtils (helpers.TestCase):
 		yield (func03, file03, 2,  lambda: path.exists(flag03))
 
 		"""
-		Thread-safe file exists, increment the number in a file
+		Thread-safe file exists, increment the number in a file: 3
 		"""
 		file1 = path.join(testdir, 'testFileExists1.txt')
 		# thread-safe, so number accumulates
@@ -410,7 +410,7 @@ class TestUtils (helpers.TestCase):
 		yield (func1,  file1,  20, lambda: helpers.readFile(file1, _int) == 20)
 
 		"""
-		Thread-unsafe file exists, number will not accumulated to max
+		Thread-unsafe file exists, number will not accumulated to max: 4
 		"""
 		file2 = path.join(testdir, 'testFileExists2.txt')
 		# non-thread-safe, so number may be lost
@@ -419,7 +419,7 @@ class TestUtils (helpers.TestCase):
 		yield (func2,  file2,  20, lambda: helpers.readFile(file2, _int) < 20)
 
 		"""
-		Thread-safe file exists, remove a file in multiple thread, no error
+		Thread-safe file exists, remove a file in multiple thread, no error: 5
 		"""
 		file3 = path.join(testdir, 'testFileExists3.txt')
 		flag3 = path.join(testdir, 'testFileExists3-flag.txt')
@@ -487,7 +487,7 @@ class TestUtils (helpers.TestCase):
 		yield (func6,  file6,  10, lambda: path.exists(flag6))
 
 	def test1FS(self, func, f, length, state):
-		utils.parallel(func, [(f, ) for _ in range(length)], length)
+		utils.Parallel(length, 'thread').run(func, [(f, ) for _ in range(length)])
 		self.assertTrue(state())
 
 	def dataProvider_test2FS(self, testdir):
@@ -1152,7 +1152,7 @@ class TestUtils (helpers.TestCase):
 
 
 	def test2FS(self, func, f1, f2, length, state, msg = None):
-		utils.parallel(func, [(f1, f2) for _ in range(length)], length)
+		utils.Parallel(length, 'thread').run(func, [(f1, f2) for _ in range(length)])
 		self.assertTrue(state(), msg)
 
 	def dataProvider_testDirmtime(self, testdir):
