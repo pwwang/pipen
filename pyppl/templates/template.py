@@ -26,7 +26,7 @@ def _basename(x, orig = False):
 
 def _filename(x, orig = False):
 	return path.splitext(_basename(x, orig))[0]
-	
+
 def _norepeats(x):
 	olines       = x.splitlines()
 	nlines       = []
@@ -51,16 +51,34 @@ def _norepeats(x):
 			nlines.append(line)
 	return '\n'.join(nlines) + '\n'
 
+def _R(x):
+	if x == 'TRUE' or x is True:
+		return 'TRUE'
+	if x == 'FALSE' or x is False:
+		return 'FALSE'
+	if x == 'NA' or x == 'NULL':
+		return x
+	if isinstance(x, string_types) and (x.startswith('r:') or x.startswith('R:')):
+		return str(x)[2:]
+	if isinstance(x, (list, tuple, set)):
+		return 'c({})'.format([_R(i) for i in x])
+	if isinstance(x, dict):
+		return 'list({})'.format(','.join(['{0}={1}'.format(_R(k), _R(v)) for k, v in x.items()]))
+	return repr(x)
+
+def _Rlist(x):
+	assert isinstance(x, (list, tuple, set, dict))
+	if isinstance(x, dict):
+		return _R(x)
+	else:
+		return 'as.list({})'.format(_R(x))
+
 class Template(object):
 
 	DEFAULT_ENVS = {
-		'R': lambda x: 'TRUE' if (isinstance(x, string_types) and str(x).upper() == 'TRUE') or (isinstance(x, bool) and x) \
-			else 'FALSE' if (isinstance(x, string_types) and str(x).upper() == 'FALSE') or (isinstance(x, bool) and not x) \
-			else 'NA'	if isinstance(x, string_types) and str(x).upper() == 'NA'	\
-			else 'NULL'  if isinstance(x, string_types) and str(x).upper() == 'NULL'  \
-			else str(x)  if isinstance(x, int) or isinstance(x, float) \
-			else str(x)[2:] if isinstance(x, string_types) and (x.startswith('r:') or x.startswith('R:'))  \
-			else json.dumps(str(x)) if isinstance(x, string_types) else str(x),
+		'R'        : _R,
+		'Rvec'     : _R, # will be depreated!
+		'Rlist'    : _Rlist,
 		'realpath' : path.realpath,
 		'readlink' : readlink,
 		'dirname'  : path.dirname,
@@ -82,7 +100,7 @@ class Template(object):
 		'read'     : _read,
 		'readlines': _readlines,
 		'norepeats': _norepeats,
-		'pyvar'    : lambda x: '"%s"' % x if isinstance(x, string_types) else x
+		'repr'     : repr
 	}
 
 	def __init__(self, source, **envs):
@@ -103,12 +121,12 @@ class Template(object):
 		lines = self.source.splitlines()
 		if len(lines) <= 1:
 			return '%s < %s >' % (self.__class__.__name__, ''.join(lines))
-		
+
 		ret  = ['%s <<<' % self.__class__.__name__]
 		ret += ['\t' + line for line in self.source.splitlines()]
 		ret += ['>>>']
 		return '\n'.join(ret)
-		
+
 	def __repr__(self):
 		return str(self)
 
@@ -121,9 +139,5 @@ Template.DEFAULT_ENVS.update({
 	'asquote':  lambda x: '''%s''' % (" " .join([Template.DEFAULT_ENVS['quote'](e) for e in x])),
 	# array-comma quote
 	'acquote':  lambda x: '''%s''' % (", ".join([Template.DEFAULT_ENVS['quote'](e) for e in x])),
-	'squote':   lambda x: "'" + Template.DEFAULT_ENVS['quote'](x)[1:-1] + "'",
-	'Rvec':     lambda x: 'c(' + ','.join([Template.DEFAULT_ENVS['R'](e) for e in x]) + ')',
-	'Rlist':    lambda x: 'list(' + ','.join([k + '=' + Template.DEFAULT_ENVS['R'](x[k]) for k in sorted(x.keys())]) + ')' if isinstance(x, dict) else \
-						  'list(' + ','.join([          Template.DEFAULT_ENVS['R'](k) for k in list(x)]) + ')',
+	'squote':   lambda x: "'" + Template.DEFAULT_ENVS['quote'](x)[1:-1] + "'"
 })
-
