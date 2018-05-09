@@ -34,16 +34,16 @@ class Parameter (object):
 
 	def __setattr__(self, name, value):
 		getattr(self, 'set' + name[0].upper() + name[1:])(value)
-	
+
 	def __getattr__(self, name):
 		return self.props[name]
-	
+
 	def __repr__(self):
 		return '<Parameter({}) @ {}>'.format(','.join([key+'='+repr(val) for key, val in self.props.items()]), hex(id(self)))
-	
+
 	def __str__(self):
 		return str(self.value)
-	
+
 	def setDesc (self, d = ''):
 		"""
 		Set the description of the parameter
@@ -52,7 +52,7 @@ class Parameter (object):
 		"""
 		self.props['desc'] = d
 		return self
-		
+
 	def setRequired (self, r = True):
 		"""
 		Set whether this parameter is required
@@ -63,7 +63,7 @@ class Parameter (object):
 			raise ParameterTypeError(self.value, 'Bool option "%s" cannot be set as required' % self.name)
 		self.props['required'] = r
 		return self
-		
+
 	def setType (self, t = str):
 		"""
 		Set the type of the parameter
@@ -76,7 +76,7 @@ class Parameter (object):
 		self.props['type'] = t
 		self._forceType()
 		return self
-	
+
 	def setShow (self, s = True):
 		"""
 		Set whether this parameter should be shown in help information
@@ -85,7 +85,7 @@ class Parameter (object):
 		"""
 		self.props['show'] = s
 		return self
-		
+
 	def setValue (self, v):
 		"""
 		Set the value of the parameter
@@ -94,7 +94,7 @@ class Parameter (object):
 		"""
 		self.props['value'] = v if not isinstance(v, string_types) else str(v)
 		return self
-	
+
 	def setName (self, n):
 		"""
 		Set the name of the parameter
@@ -103,7 +103,7 @@ class Parameter (object):
 		"""
 		self.props['name'] = n
 		return self
-		
+
 	def _forceType (self):
 		"""
 		Coerce the value to the type specified
@@ -116,7 +116,7 @@ class Parameter (object):
 				self.value = self.type(self.value)
 		except (ValueError, TypeError):
 			raise ParameterTypeError(self.type, 'Unable to coerce value %s of option "%s" to type' % (repr(self.value), self.name))
-		
+
 	def _printName (self, prefix, keylen = 0):
 		"""
 		Get the print name with type for the parameter
@@ -125,14 +125,14 @@ class Parameter (object):
 		"""
 		if self.type == bool:
 			return (prefix + self.name).ljust(keylen) + ' (BOOL)'
-			
+
 		return (prefix + self.name).ljust(keylen) + ' <{}>'.format(self.type.__name__.upper())
 
 class Parameters (object):
 	"""
 	A set of parameters
 	"""
-	
+
 	def __init__(self):
 		"""
 		Constructor
@@ -145,20 +145,20 @@ class Parameters (object):
 			'prefix': '--param-',
 			'params': {}
 		}
-			
+
 	def __setattr__(self, name, value):
 		if name == '_props':
 			raise ParameterNameError(name, 'Parameter name is prevserved by Parameters')
-		
+
 		if name in self._props['params']:
 			self._props['params'][name].setValue(value)
 		self._props['params'][name] = Parameter(name, value)
-		
+
 	def __getattr__(self, name):
 		if not name in self._props['params']:
 			self._props['params'][name] = Parameter(name, '')
 		return self._props['params'][name]
-		
+
 	def prefix (self, p):
 		"""
 		Set the prefix of options
@@ -167,7 +167,7 @@ class Parameters (object):
 		"""
 		self._props['prefix'] = p
 		return self
-	
+
 	def helpOpts (self, h):
 		"""
 		The options to popup help information
@@ -179,7 +179,7 @@ class Parameters (object):
 			h = list(map(lambda x: x.strip(), h.split(',')))
 		self._props['hopts'] = h
 		return self
-	
+
 	def usage(self, u):
 		"""
 		Set the usage of the program. Otherwise it'll be automatically calculated.
@@ -188,7 +188,7 @@ class Parameters (object):
 		"""
 		self._props['usage'] = list(filter(None, list(map(lambda x: x.strip(), u.splitlines()))))
 		return self
-		
+
 	def example(self, e):
 		"""
 		Set the examples of the program
@@ -197,7 +197,7 @@ class Parameters (object):
 		"""
 		self._props['example'] = list(filter(None, list(map(lambda x: x.strip(), e.splitlines()))))
 		return self
-		
+
 	def desc(self, d):
 		"""
 		Set the description of the program
@@ -206,7 +206,7 @@ class Parameters (object):
 		"""
 		self._props['desc'] = list(filter(None, list(map(lambda x: x.strip(), d.splitlines()))))
 		return self
-	
+
 	def parse (self):
 		"""
 		Parse the arguments from `sys.argv`
@@ -221,7 +221,7 @@ class Parameters (object):
 			while i < len(args):
 				# support '--param-a=b'
 				arg  = args[i].split('=', 1)
-				
+
 				karg = arg.pop(0)
 				if karg.startswith(self._props['prefix']):
 					key = karg[len(self._props['prefix']):]
@@ -241,7 +241,7 @@ class Parameters (object):
 						if key not in listKeysFirstHit:
 							listKeysFirstHit[key] = True
 							val.value = []
-							
+
 						if arg:
 							val.value += arg
 						j = i + 1
@@ -259,12 +259,12 @@ class Parameters (object):
 								i += 1
 							else:
 								val.value = args[i+1]
-								i += 2				
-						
+								i += 2
+
 				else:
 					sys.stderr.write ('WARNING: Unused value found: {}.\n'.format(args[i]))
 					i += 1
-					
+
 			for key, val in self._props['params'].items():
 				if val.required and not val.value:
 					sys.stderr.write ('ERROR: Option {}{} is required.\n\n'.format(self._props['prefix'], key))
@@ -282,7 +282,7 @@ class Parameters (object):
 
 				val._forceType()
 		return self
-		
+
 	def help (self):
 		"""
 		Calculate the help page
@@ -291,13 +291,13 @@ class Parameters (object):
 		"""
 		ret  = ''
 		prog = path.basename(sys.argv[0])
-		
+
 		requiredOptions = {}
 		optionalOptions = {}
-		
+
 		keylen = 40 # '--param-xxx <str> ..........'
 		keylen2 = 0 # '--param-xxx'
-		
+
 		for key, val in self._props['params'].items():
 			if not val.show:
 				continue
@@ -307,9 +307,9 @@ class Parameters (object):
 				optionalOptions[key] = val
 			keylen = max(len(self._props['prefix']) + 4 + len(key), keylen)
 			keylen2 = max(len(self._props['prefix']) + len(key), keylen2)
-			
+
 		keylen = max (4 + len(', '.join(filter(None, self._props['hopts']))), keylen)
-			
+
 		if self._props['desc']:
 			ret += 'DESCRIPTION:\n'
 			ret += '\n'.join('  ' + d for d in self._props['desc']) + '\n\n'
@@ -332,7 +332,7 @@ class Parameters (object):
 				for desc in descs:
 					ret += '  ' + ''.ljust(keylen) + desc + '\n'
 			ret += '\n'
-		
+
 		ret += 'OPTIONAL OPTIONS:\n'
 		if optionalOptions:
 			for key, val in optionalOptions.items():
@@ -349,7 +349,7 @@ class Parameters (object):
 		ret += '  ' + ', '.join(filter(None, self._props['hopts'])).ljust(keylen - 2) + '- Print this help information.\n\n'
 
 		return ret
-	
+
 	def loadDict (self, dictVar, show = False):
 		"""
 		Load parameters from a dict
@@ -377,10 +377,10 @@ class Parameters (object):
 				raise ParametersLoadError(key, 'Cannot set attribute of an undefined option %s' % repr(k))
 			if not prop in ['desc', 'required', 'show', 'type']:
 				raise ParametersLoadError(prop, 'Unknown attribute name for option %s' % repr(k))
-			
+
 			setattr (self._props['params'][k], prop, val)
 		return self
-		
+
 	def loadFile (self, cfgfile, show = False):
 		"""
 		Load parameters from a json/config file
@@ -409,7 +409,7 @@ class Parameters (object):
 			config = {}
 			for s in sec:
 				config.update(dict(cp.items(s)))
-				
+
 		for key, val in config.items():
 			if key.endswith('.type'):
 				config[key] = globals()['__builtins__'][str(val)]
@@ -421,8 +421,8 @@ class Parameters (object):
 				config[key] = val
 		self.loadDict(config, show = show)
 		return self
-	
-	def toDict (self):
+
+	def asDict (self):
 		"""
 		Convert the parameters to Box object
 		@returns:
@@ -432,5 +432,9 @@ class Parameters (object):
 		for name in self._props['params']:
 			ret[name] = self._props['params'][name].value
 		return ret
+
+	def toDict(self):
+		"Will be deprecated."
+		return self.asDict()
 
 params = Parameters()

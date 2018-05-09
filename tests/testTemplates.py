@@ -410,7 +410,7 @@ class TestTemplatePyPPLEngine(helpers.TestCase):
 		yield '{{names6 | [1][:-1] | .upper()}}', {'names6': ['John', 'Tome']}, 'TOM'
 		yield '{{names7 | lambda x: x[1].upper()}}', {'names7': ['John', 'Tome']}, 'TOME'
 		yield '{{v1, v2|concate}}', {'v1': 'hello', 'v2': 'world', 'concate': lambda x,y: x+y}, 'helloworld'
-		yield '{{v3 | R}}', {'v3': 'false'}, "'false'"
+		yield '{{v3 | R}}', {'v3': 'false'}, "FALSE"
 		yield '{{v4|realpath}}', {'v4': __file__}, path.realpath(__file__)
 		#yield ('{{v5|readlink}}', {'v5': path.join(path.dirname(path.realpath(path.abspath(__file__))), 'helpers.py')}, path.relpath(path.join(path.dirname(path.dirname(path.abspat(__file__))), bin', 'helpers.py'), start = path.dirname(__file__)))
 		yield '{{v6|dirname}}', {'v6': '/a/b/c'}, '/a/b'
@@ -424,7 +424,7 @@ class TestTemplatePyPPLEngine(helpers.TestCase):
 		yield '{{v14, v14b|filename}}{{v14, v14b|fn}}', {'v14': '/a/b/c[1].txt', 'v14b': True}, 'c[1]c[1]'
 		yield '{{var1|R}}', {'var1': 'NULL'}, 'NULL'
 		yield '{{var2|R}}', {'var2': 'abc'}, "'abc'"
-		yield '{% for var in varlist %}{{var|R}}{% endfor %}', {'varlist': ['abc', 'True', 1, False]}, "'abc''True'1FALSE"
+		yield '{% for var in varlist %}{{var|R}}{% endfor %}', {'varlist': ['abc', 'True', 1, False]}, "'abc'TRUE1FALSE"
 		yield '{% if var3|bool %}1{% else %}0{% endif %}', {'var3': 'abc', 'bool': bool}, '1'
 		yield '{% for k , v in data.items() %}{{k}}:{{v}}{% endfor %}', {'data': {'a':1, 'b':2}}, 'a:1b:2'
 		yield '{{x|R}}', {'x': OrderedDict([(u'key1', 'val1'), ('key2', u'val2')])}, "list(key1='val1',key2='val2')"
@@ -636,7 +636,8 @@ class TestTemplateJinja2(helpers.TestCase):
 		yield '{{name}}', {'name': 'John'}, 'John'
 		yield '{{names[0]}}', {'names': ['John', 'Tom']}, 'John'
 		yield '{{concate(v1, v2)}}', {'v1': 'hello', 'v2': 'world', 'concate': lambda x,y: x+y}, 'helloworld'
-		yield '{{R(v3)}}', {'v3': 'false'}, "'false'"
+		yield '{{R(v23)}}', {'v23': '"FALSE"'}, '\'"FALSE"\''
+		yield '{{R(v3)}}', {'v3': 'false'}, "FALSE"
 		yield '{{realpath(v4)}}', {'v4': __file__}, path.realpath(__file__)
 		#yield ('{{readlink(v5)}}', {'v5': path.join(path.dirname(path.realpath(path.abspath(__file__))), 'helpers.py')yield , path.relpath(path.jo(path.dirname(path.dirname(path.abspath(__file__))), 'bin', 'helpers.py'))),
 		# 5
@@ -653,7 +654,7 @@ class TestTemplateJinja2(helpers.TestCase):
 		yield '{{R(var1)}}', {'var1': 'NULL'}, 'NULL'
 		# 15
 		yield '{{R(var2)}}', {'var2': 'abc'}, "'abc'"
-		yield '{% for var in varlist %}{{R(var)}}{% endfor %}', {'varlist': ['abc', 'True', 1, False]}, "'abc''True'1FALSE"
+		yield '{% for var in varlist %}{{R(var)}}{% endfor %}', {'varlist': ['abc', 'True', 1, False]}, "'abc'TRUE1FALSE"
 		yield '{% if bool(var3) %}1{% else %}0{% endif %}', {'var3': 'abc', 'bool': bool}, '1'
 		yield '{% for k,v in data.items() %}{{k}}:{{v}}{% endfor %}', {'data': {'a':1, 'b':2}}, 'a:1b:2'
 		yield '{{quote(a)}}', {'a':''}, '""'

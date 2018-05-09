@@ -67,7 +67,7 @@ class Parallel(object):
 
 		return results
 
-def tostr(s, encoding = 'utf-8'):
+def asStr(s, encoding = 'utf-8'):
 	"""
 	Convert everything (str, unicode, bytes) to str with python2, python3 compatiblity
 	"""

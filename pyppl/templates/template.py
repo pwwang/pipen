@@ -1,7 +1,7 @@
 import json
 from os import path, readlink
 from six import string_types
-from ..utils import tostr
+from ..utils import asStr
 
 def _read(x):
 	with open(x) as f:
@@ -53,20 +53,26 @@ def _norepeats(x):
 	return '\n'.join(nlines) + '\n'
 
 def _R(x):
-	if x == 'TRUE' or x is True:
+	if x is True:
 		return 'TRUE'
-	if x == 'FALSE' or x is False:
+	if x is False:
 		return 'FALSE'
-	if x == 'NA' or x == 'NULL':
-		return x
-	if isinstance(x, string_types) and (x.startswith('r:') or x.startswith('R:')):
-		return tostr(x)[2:]
+	if x is None:
+		return 'NULL'
+	if isinstance(x, string_types):
+		if x.upper() == 'TRUE':
+			return 'TRUE'
+		if x.upper() == 'FALSE':
+			return 'FALSE'
+		if x.upper() == 'NA' or x.upper() == 'NULL':
+			return x
+		if x.startswith('r:') or x.startswith('R:'):
+			return asStr(x)[2:]
+		return repr(asStr(x))
 	if isinstance(x, (list, tuple, set)):
 		return 'c({})'.format([_R(i) for i in x])
 	if isinstance(x, dict):
-		return 'list({})'.format(','.join(['{0}={1}'.format(tostr(k), _R(v)) for k, v in x.items()]))
-	if isinstance(x, string_types):
-		return repr(tostr(x))
+		return 'list({})'.format(','.join(['{0}={1}'.format(asStr(k), _R(v)) for k, v in x.items()]))
 	return repr(x)
 
 def _Rlist(x):
