@@ -1,5 +1,6 @@
 import helpers, unittest
 from os import path
+from collections import OrderedDict
 from pyppl.templates import Template
 from pyppl.templates.template_jinja2 import TemplateJinja2
 from pyppl.templates.template_pyppl import TemplatePyPPLCodeBuilder, TemplatePyPPLLine, TemplatePyPPLEngine, TemplatePyPPL
@@ -426,6 +427,7 @@ class TestTemplatePyPPLEngine(helpers.TestCase):
 		yield '{% for var in varlist %}{{var|R}}{% endfor %}', {'varlist': ['abc', 'True', 1, False]}, "'abc''True'1FALSE"
 		yield '{% if var3|bool %}1{% else %}0{% endif %}', {'var3': 'abc', 'bool': bool}, '1'
 		yield '{% for k , v in data.items() %}{{k}}:{{v}}{% endfor %}', {'data': {'a':1, 'b':2}}, 'a:1b:2'
+		yield '{{x|R}}', {'x': OrderedDict([(u'key1', 'val1'), ('key2', u'val2')])}, "list(key1='val1',key2='val2')"
 		yield '{{a|quote}}', {'a':''}, '""'
 		yield '{{b|asquote}}', {'b':[1,2]}, '"1" "2"'
 		yield '{{c|acquote}}', {'c':[1,2]}, '"1", "2"'
@@ -656,6 +658,7 @@ class TestTemplateJinja2(helpers.TestCase):
 		yield '{% for k,v in data.items() %}{{k}}:{{v}}{% endfor %}', {'data': {'a':1, 'b':2}}, 'a:1b:2'
 		yield '{{quote(a)}}', {'a':''}, '""'
 		# 20
+		yield '{{R(x)}}', {'x': OrderedDict([(u'key1', 'val1'), ('key2', u'val2')])}, "list(key1='val1',key2='val2')"
 		yield '{{asquote(b)}}', {'b':[1,2]}, '"1" "2"'
 		yield '{{acquote(c)}}', {'c':[1,2]}, '"1", "2"'
 		yield '{{squote(d)}}', {'d':1}, "'1'"

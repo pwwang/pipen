@@ -67,6 +67,18 @@ class Parallel(object):
 
 		return results
 
+def tostr(s, encoding = 'utf-8'):
+	"""
+	Convert everything (str, unicode, bytes) to str with python2, python3 compatiblity
+	"""
+	try:
+		# python2
+		unicode
+		return s.encode(encoding) if isinstance(s, unicode) else s
+	except NameError:
+		# python3
+		return s.decode(encoding) if isinstance(s, bytes) else s
+
 def basename(f):
 	bname = path.basename(f)
 	if not bname and path.isdir(f):

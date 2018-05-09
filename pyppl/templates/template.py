@@ -1,6 +1,7 @@
 import json
 from os import path, readlink
 from six import string_types
+from ..utils import tostr
 
 def _read(x):
 	with open(x) as f:
@@ -59,11 +60,13 @@ def _R(x):
 	if x == 'NA' or x == 'NULL':
 		return x
 	if isinstance(x, string_types) and (x.startswith('r:') or x.startswith('R:')):
-		return str(x)[2:]
+		return tostr(x)[2:]
 	if isinstance(x, (list, tuple, set)):
 		return 'c({})'.format([_R(i) for i in x])
 	if isinstance(x, dict):
-		return 'list({})'.format(','.join(['{0}={1}'.format(_R(k), _R(v)) for k, v in x.items()]))
+		return 'list({})'.format(','.join(['{0}={1}'.format(tostr(k), _R(v)) for k, v in x.items()]))
+	if isinstance(x, string_types):
+		return repr(tostr(x))
 	return repr(x)
 
 def _Rlist(x):
