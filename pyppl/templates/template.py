@@ -60,6 +60,10 @@ def _R(x):
 	if x is None:
 		return 'NULL'
 	if isinstance(x, string_types):
+		if x.upper() in ['+INF', 'INF']:
+			return 'Inf'
+		if x.upper() == '-Inf':
+			return '-Inf'
 		if x.upper() == 'TRUE':
 			return 'TRUE'
 		if x.upper() == 'FALSE':
@@ -70,9 +74,10 @@ def _R(x):
 			return asStr(x)[2:]
 		return repr(asStr(x))
 	if isinstance(x, (list, tuple, set)):
-		return 'c({})'.format([_R(i) for i in x])
+		return 'c({})'.format(','.join([_R(i) for i in x]))
 	if isinstance(x, dict):
-		return 'list({})'.format(','.join(['{0}={1}'.format(asStr(k), _R(v)) for k, v in x.items()]))
+		#                                                   list allow repeated names
+		return 'list({})'.format(','.join(['{0}={1}'.format(asStr(k).split('#')[0], _R(v)) for k, v in x.items()]))
 	return repr(x)
 
 def _Rlist(x):
