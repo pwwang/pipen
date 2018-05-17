@@ -74,10 +74,10 @@ def asStr(s, encoding = 'utf-8'):
 	try:
 		# python2
 		unicode
-		return s.encode(encoding) if isinstance(s, unicode) else s
+		return s.encode(encoding) if isinstance(s, unicode) else str(s)
 	except NameError:
 		# python3
-		return s.decode(encoding) if isinstance(s, bytes) else s
+		return s.decode(encoding) if isinstance(s, bytes) else str(s)
 
 def basename(f):
 	bname = path.basename(f)
