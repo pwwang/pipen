@@ -871,7 +871,7 @@ class Proc (object):
 		if self.runner != 'local':
 			show.append('runner')
 		hide    = ['desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'aggr', 'input', 'output', 'depends', 'script']
-		nokeys  = ['tplenvs', 'input', 'output', 'depends', 'lock']
+		nokeys  = ['tplenvs', 'input', 'output', 'depends', 'lock', 'jobs']
 		allkeys = [key for key in set(self.props.keys() + self.config.keys())]
 		pvkeys  = [
 			key for key in allkeys \
