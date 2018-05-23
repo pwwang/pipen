@@ -62,7 +62,7 @@ def _R(x):
 	if isinstance(x, string_types):
 		if x.upper() in ['+INF', 'INF']:
 			return 'Inf'
-		if x.upper() == '-Inf':
+		if x.upper() == '-INF':
 			return '-Inf'
 		if x.upper() == 'TRUE':
 			return 'TRUE'
