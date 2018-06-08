@@ -1,5 +1,14 @@
 # Change log
 
+## June 8, 2018: 0.9.6
+- Auto-delegate common proc config names to aggr
+- Add proc.origin to save the original proc id for copied procs
+- Remove brings, add proc.infile to swith '{{in.(infile)}}' to job.indir path, original path or realpath of the input file
+- Add process lock to avoid the same processes run simultaneously
+- Use built-in Box instead of box.Box
+- Merge template function Rvec and Rlist into R, add repr
+- Fix #29 and #31, and fix other bugs
+
 ## Mar 6, 2018: 0.9.5
 - Add proc.dirsig to disable/enable calculating signatures from deep directories
 - Add Jobmgr class to handle job distribution
