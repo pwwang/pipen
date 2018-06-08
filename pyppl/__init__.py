@@ -920,17 +920,7 @@ class Proc (object):
 		for key in sorted(propout.keys()):
 			self.log('%s => %s' % (key.ljust(maxlen), propout[key]), 'p.props')
 		self.props['procvars'] = {'proc': procvars, 'args': procargs}
-	'''
-	def _buildBrings(self):
-		"""
-		Build the bring-file templates waiting to be rendered.
-		"""
-		for key, val in self.config['brings'].items():
-			if not isinstance(val, list): val = [val]
-			self.props['brings'][key] = []
-			for v in val:
-				self.props['brings'][key].append(self.template(v, **self.tplenvs))
-	'''
+
 	def _buildOutput(self):
 		"""
 		Build the output data templates waiting to be rendered.
@@ -1128,7 +1118,7 @@ class Proc (object):
 			p.stderr.close()
 			if rc != 0:
 				raise ProcRunCmdError(cmd, key)
-		except Exception as ex:
+		except Exception:
 			raise ProcRunCmdError(cmd, key, traceback.format_exc())
 
 	def _runJobs (self):

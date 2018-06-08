@@ -1,16 +1,16 @@
 """
 Job module for pyppl
 """
-import json, re
+import json
 from collections import OrderedDict
 from glob import glob
 from time import sleep
 from datetime import datetime
-from os import makedirs, path, remove, utime, readlink
+from os import makedirs, path, remove, utime
 from multiprocessing import Lock, JoinableQueue, Process, Array
 from six import string_types
 from . import utils, logger
-from .exception import JobInputParseError, JobBringParseError, JobOutputParseError
+from .exception import JobInputParseError, JobOutputParseError
 
 class Jobmgr (object):
 	"""
@@ -339,11 +339,7 @@ class Job (object):
 		if self.input:
 			maxken = max([len(key) for key in inkeys])
 			maxlen = max(maxlen, maxken)
-		'''
-		if self.brings:
-			maxken = max(list(map(len, self.brings.keys())))
-			maxlen = max(maxlen, maxken)
-		'''
+		
 		if self.output:
 			maxken = max([len(key) for key in self.output.keys()])
 			maxlen = max(maxlen, maxken)
