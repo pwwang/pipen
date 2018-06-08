@@ -1,10 +1,12 @@
-import helpers, unittest
+import helpers, testly
 
-from os import path
+from os import path, makedirs
+from shutil import rmtree
+from tempfile import gettempdir
 from pyppl.parameters import Parameter, Parameters
 from pyppl.exception import ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError
 
-class TestParameter (helpers.TestCase):
+class TestParameter (testly.TestCase):
 
 	def dataProvider_testInit(self):
 		yield '', '', str, 'Expect a string with alphabetics and underlines in length 1~32'
@@ -17,7 +19,7 @@ class TestParameter (helpers.TestCase):
 
 	def testInit(self, name, value, t, excmsg = None):
 		if excmsg:
-			self.assertRaisesStr(ParameterNameError, excmsg, Parameter, name, value)
+			self.assertRaisesRegex(ParameterNameError, excmsg, Parameter, name, value)
 		else:
 			param = Parameter(name, value)
 			self.assertIsInstance(param, Parameter)
@@ -45,7 +47,7 @@ class TestParameter (helpers.TestCase):
 	def testSetGetAttr(self, name, val, propname, propval, exception = None, msg = None):
 		p = Parameter(name, val)
 		if exception:
-			self.assertRaisesStr(exception, msg, setattr, p, propname, propval)
+			self.assertRaisesRegex(exception, msg, setattr, p, propname, propval)
 		else:
 			setattr(p, propname, propval)
 			self.assertEqual(getattr(p, propname), propval)
@@ -101,7 +103,13 @@ class TestParameter (helpers.TestCase):
 	def testPrintName(self, p, prefix, keylen, out):
 		self.assertEqual(p._printName(prefix, keylen), out)
 
-class TestParameters(helpers.TestCase):
+class TestParameters(testly.TestCase):
+
+	def setUpMeta(self):
+		self.testdir = path.join(gettempdir(), 'PyPPL_unittest', 'TestParameters')
+		if path.exists(self.testdir):
+			rmtree(self.testdir)
+		makedirs(self.testdir)
 
 	def testInit(self):
 		ps = Parameters()
@@ -297,7 +305,7 @@ class TestParameters(helpers.TestCase):
 		sys.argv = [''] + args
 		if exception:
 			with helpers.captured_output() as (out, err):
-				self.assertRaisesStr(exception, msg, ps.parse)
+				self.assertRaisesRegex(exception, msg, ps.parse)
 			if stderr:
 				if not isinstance(stderr, list):
 					stderr = [stderr]
@@ -414,7 +422,7 @@ class TestParameters(helpers.TestCase):
 		import sys
 		sys.argv = ['progname']
 		h = ps.help()
-		self.assertTextEqual(h, '\n'.join(out) + '\n')
+		helpers.assertTextEqual(self, h, '\n'.join(out) + '\n')
 	
 	def dataProvider_testLoadDict(self):
 		yield {}, True
@@ -430,7 +438,7 @@ class TestParameters(helpers.TestCase):
 	def testLoadDict(self, dictVar, show, exception = None, msg = None):
 		ps = Parameters()
 		if exception:
-			self.assertRaisesStr(exception, msg, ps.loadDict, dictVar, show)
+			self.assertRaisesRegex(exception, msg, ps.loadDict, dictVar, show)
 		else:
 			ps.loadDict(dictVar, show)
 			for dk, dv in dictVar.items():
@@ -447,10 +455,10 @@ class TestParameters(helpers.TestCase):
 					self.assertEqual(p.value, dv)
 					self.assertEqual(p.show, show)
 
-	def dataProvider_testLoadFile(self, testdir):
-		yield testdir, False, []
+	def dataProvider_testLoadFile(self):
+		yield self.testdir, False, []
 
-		jsonfile = path.join(testdir, 'testLoadFile.json')
+		jsonfile = path.join(self.testdir, 'testLoadFile.json')
 		helpers.writeFile(jsonfile, '\n'.join([
 			'{',
 			'	"a": "2",',
@@ -465,7 +473,7 @@ class TestParameters(helpers.TestCase):
 		yield jsonfile, True, [p1]
 
 		if helpers.moduleInstalled('yaml'):
-			yamlfile = path.join(testdir, 'testLoadFile.yaml')
+			yamlfile = path.join(self.testdir, 'testLoadFile.yaml')
 			helpers.writeFile(yamlfile, '\n'.join([
 				'a: 2',
 				'a.desc: Option a',
@@ -480,7 +488,7 @@ class TestParameters(helpers.TestCase):
 			p2.show = True
 			yield yamlfile, False, [p2]
 			
-		conffile = path.join(testdir, 'testLoadFile.conf')
+		conffile = path.join(self.testdir, 'testLoadFile.conf')
 		helpers.writeFile(conffile, '\n'.join([
 			'[PARAM1]',
 			'a = 2',
@@ -503,7 +511,7 @@ class TestParameters(helpers.TestCase):
 	def testLoadFile(self, cfgfile, show, params, exception = None, msg = None):
 		ps = Parameters()
 		if exception:
-			self.assertRaisesStr(exception, msg, ps.loadFile, dictVar, cfgfile)
+			self.assertRaisesRegex(exception, msg, ps.loadFile, dictVar, cfgfile)
 		else:
 			ps.loadFile(cfgfile, show)
 			for param in params:
@@ -512,4 +520,4 @@ class TestParameters(helpers.TestCase):
 			
 
 if __name__ == '__main__':
-	unittest.main(verbosity=2)
+	testly.main(verbosity=2)

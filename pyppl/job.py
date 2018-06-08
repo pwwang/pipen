@@ -887,28 +887,35 @@ class Job (object):
 					if not path.exists(indata):
 						raise JobInputParseError(indata, 'File not exists for input type "%s"' % intype)
 
-					indata   = path.realpath(indata)
+					indata   = path.abspath(indata)
 					basename = utils.basename (indata)
 					infile   = self._linkInfile(indata)
 					if basename != utils.basename(infile):
 						self.proc.log ("%s Input file renamed: %s -> %s" % (indexstr, basename, utils.basename(infile)), 'warning', 'INFILE_RENAMING')
 
-				#self.data['in'][key]       = infile
-				#self.data['in']['_' + key] = indata
-				self.data['in'][key]       = indata
-				self.data['in']['_' + key] = infile
-				self.input[key]['type']    = intype
-				#self.input[key]['data']    = infile
-				#self.input[key]['orig']    = indata
-				self.input[key]['data']    = indata
-				self.input[key]['orig']    = infile
+				if self.proc.infile == 'origin':
+					self.data['in'][key] = indata
+				elif self.proc.infile == 'indir':
+					self.data['in'][key] = infile
+				else:
+					self.data['in'][key] = path.realpath(indata)
+
+				self.data['in']['IN_' + key]  = infile
+				self.data['in']['OR_' + key] = indata
+				self.data['in']['RL_' + key]   = path.realpath(indata)
+
+				self.input[key]['type'] = intype
+				self.input[key]['data'] = infile
+				self.input[key]['orig'] = indata
 
 			elif intype in self.proc.IN_FILESTYPE:
-				self.input[key]['type']     = intype
-				self.input[key]['orig']     = []
-				self.input[key]['data']     = []
-				self.data['in'][key]        = []
-				self.data['in']['_' + key]  = []
+				self.input[key]['type']       = intype
+				self.input[key]['orig']       = []
+				self.input[key]['data']       = []
+				self.data ['in'][key]         = []
+				self.data ['in']['IN_' + key] = []
+				self.data ['in']['OR_' + key] = []
+				self.data ['in']['RL_' + key] = []
 
 				if not isinstance(indata, list):
 					raise JobInputParseError(indata, 'Not a list for input type "%s"' % intype)
@@ -923,86 +930,30 @@ class Job (object):
 						if not path.exists(data):
 							raise JobInputParseError(data, 'File not exists for element of input type "%s"' % intype)
 
-						data     = path.realpath(data)
-						basename = path.basename (data)
+						data     = path.abspath(data)
+						basename = path.basename(data)
 						infile   = self._linkInfile(data)
 						if basename != path.basename(infile):
 							self.proc.log ("Input file renamed: %s -> %s" % (basename, path.basename(infile)), 'warning', 'INFILE_RENAMING')
 
-					#self.input[key]['orig'].append (data)
-					#self.input[key]['data'].append (infile)
-					#self.data['in'][key].append (infile)
-					#self.data['in']['_' + key].append (data)
-					self.input[key]['orig'].append (infile)
-					self.input[key]['data'].append (data)
-					self.data['in'][key].append (data)
-					self.data['in']['_' + key].append (infile)
+					if self.proc.infile == 'origin':
+						self.data['in'][key].append(data)
+					elif self.proc.infile == 'indir':
+						self.data['in'][key].append(infile)
+					else:
+						self.data['in'][key].append(path.realpath(data))
+
+					self.data['in']['IN_' + key].append (infile)
+					self.data['in']['OR_' + key].append (data)
+					self.data['in']['RL_' + key].append (path.realpath(data))
+
+					self.input[key]['orig'].append (data)
+					self.input[key]['data'].append (infile)
 			else:
 				self.input[key]['type'] = intype
 				self.input[key]['data'] = indata
 				self.data['in'][key]    = indata
-	'''
-	def _prepBrings (self):
-		"""
-		Build the brings to bring some files to indir
-		The brings can be set as: `p.brings = {"infile": "{{infile.bn}}*.bai"}`
-		If you have multiple files to bring in:
-		`p.brings = {"infile": "{{infile.bn}}*.bai", "infile#": "{{infile.bn}}*.fai"}`
-		You can use wildcards to search the files, but only the first file will return
-		To access the brings in your script: {% raw %}`{{ brings.infile }}`, `{{ brings.infile# }}`{% endraw %}
-		If original input file is a link, will try to find it along each directory the link is in.
-		"""
-		for key, val in self.proc.brings.items():
-			if self.input[key]['type'] not in self.proc.IN_FILETYPE:
-				raise JobBringParseError(self.input[key]['type'], 'Cannot bring files for a non-file type input')
-
-			self.brings[key]              = []
-			self.brings['_' + key]        = []
-			self.data['bring'][key]       = []
-			self.data['bring']['_' + key] = []
-
-			if not isinstance(val, list): val = [val]
-
-			# the file in indir
-			infile  = self.input[key]['data']
-			# the file specified
-			orgfile = self.input[key]['orig']
-			#not happening
-			#if not path.islink(infile): continue
-
-			inbn   = path.basename(infile)
-			orgbn  = path.basename(orgfile)
-			diffbn = ''
-			if inbn != orgbn: # name change
-				diffs = reversed(list(re.finditer(r'\[\d+\]', inbn)))
-				for d in diffs:
-					if inbn[:d.start()] == orgbn[:d.start()]:
-						diffbn = d.group()
-						break
-
-			while True:
-				for v in val:
-					pattern = path.join(path.dirname(orgfile), v.render(self.data))
-					bring   = glob(pattern)
-					if not bring: continue
-					for b in bring:
-						dstbn, dstext = path.splitext(path.basename(b))
-						dstfile = path.join(self.indir, dstbn + diffbn + dstext)
-						self.data['bring'][key].append(dstfile)
-						self.data['bring']['_' + key].append(b)
-						self.brings[key].append(dstfile)
-						self.brings['_' + key].append(b)
-						utils.safeLink(b, dstfile)
-				if not path.islink(orgfile): break
-				orgfile = readlink(orgfile)
-
-			if not self.brings[key]:
-				self.data['bring'][key].append('')
-				self.data['bring']['_' + key].append('')
-				self.brings[key].append('')
-				self.brings['_' + key].append('')
-				self.proc.log('No bring-in file found for %s' % repr(key), 'warning', 'BRINGFILE_NOTFOUND')
-	'''
+	
 	def _prepOutput (self):
 		"""
 		Build the output data.

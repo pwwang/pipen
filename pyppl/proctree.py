@@ -52,9 +52,7 @@ class ProcTree(object):
 		@params:
 			`proc`: The `Proc` instance
 		"""
-		key = id(proc)
-		if not key in ProcTree.NODES:
-			ProcTree.NODES[key] = ProcNode(proc)
+		ProcTree.NODES[proc] = ProcNode(proc)
 
 	@staticmethod
 	def check(proc):
@@ -63,21 +61,10 @@ class ProcTree(object):
 		@params:
 			`proc`: The `Proc` instance
 		"""
-		for key, node in ProcTree.NODES.items():
-			if key == id(proc): continue
-			if node.sameIdTag(proc):
-				raise ProcTreeProcExists(node, ProcTree.getNode(proc))
-
-	@staticmethod
-	def getNode(proc):
-		"""
-		Get the `ProcNode` instance by `Proc` instance
-		@params:
-			`proc`: The `Proc` instance
-		@returns:
-			The `ProcNode` instance
-		"""
-		return ProcTree.NODES[id(proc)]
+		for p in ProcTree.NODES.keys():
+			if p is proc: continue
+			if ProcTree.NODES[p].sameIdTag(proc):
+				raise ProcTreeProcExists(ProcTree.NODES[p], ProcTree.NODES[proc])
 
 	@staticmethod
 	def getPrevStr(proc):
@@ -88,7 +75,7 @@ class ProcTree(object):
 		@returns:
 			The names
 		"""
-		node = ProcTree.getNode(proc)
+		node = ProcTree.NODES[proc]
 		prev = [np.proc.name() for np in node.prev]
 		return 'START' if not prev else '[%s]' % ', '.join(prev)
 	
@@ -101,7 +88,7 @@ class ProcTree(object):
 		@returns:
 			The names
 		"""
-		node = ProcTree.getNode(proc)
+		node = ProcTree.NODES[proc]
 		nexs = [nn.proc.name() for nn in node.next]
 		return 'END' if not nexs else '[%s]' % ', '.join(nexs)
 
@@ -114,7 +101,7 @@ class ProcTree(object):
 		@returns:
 			The processes depend on this process
 		"""
-		node = ProcTree.getNode(proc)
+		node = ProcTree.NODES[proc]
 		return [nn.proc for nn in node.next]
 
 	@staticmethod
@@ -140,7 +127,7 @@ class ProcTree(object):
 			depends = node.proc.depends
 			if not depends: continue
 			for dep in depends:
-				dnode = ProcTree.getNode(dep)
+				dnode = ProcTree.NODES[dep]
 				if node not in dnode.next:
 					dnode.next.append(node)
 				if dnode not in node.prev:
@@ -156,7 +143,7 @@ class ProcTree(object):
 		for n in ProcTree.NODES.values():
 			n.start = False
 		for s in starts:
-			ProcTree.getNode(s).start = True
+			ProcTree.NODES[s].start = True
 
 	def getStarts(self):
 		"""
@@ -181,7 +168,7 @@ class ProcTree(object):
 			Paths for p3: [[p4], [p2, p1]]
 			```
 		"""
-		node  = proc if isinstance(proc, ProcNode) else ProcTree.getNode(proc)
+		node  = proc if isinstance(proc, ProcNode) else ProcTree.NODES[proc]
 		proc0 = proc0 or [node]
 		paths = []
 		for np in node.prev:
@@ -241,7 +228,7 @@ class ProcTree(object):
 		"""
 		if not self.ends:
 			failedPaths = []
-			nodes = [ProcTree.getNode(s) for s in self.getStarts()]
+			nodes = [ProcTree.NODES[s] for s in self.getStarts()]
 			while nodes:
 				# check loops
 				for n in nodes: self.getPaths(n)
@@ -306,9 +293,6 @@ class ProcTree(object):
 				return node.proc
 				#ret.append(node.proc)
 		return None
-		#for proc in ret:
-		#	ProcTree.getNode(proc).ran = True	
-		#return ret
 
 	def unranProcs(self):
 		ret = {}

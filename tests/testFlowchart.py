@@ -1,15 +1,23 @@
-import helpers, unittest, sys
+import testly, sys, helpers
 
-from os import path
+from os import path, makedirs
+from shutil import rmtree
+from tempfile import gettempdir
 from pyppl import Proc
 from pyppl.flowchart import Flowchart
 from graphviz import Digraph
 
-class TestFlowchart (helpers.TestCase):
+class TestFlowchart (testly.TestCase):
 
-	def dataProvider_testInit(self, testdir):
-		dotfile = path.join(testdir, 'test.dot')
-		svgfile = path.join(testdir, 'test.svg')
+	def setUpMeta(self):
+		self.testdir = path.join(gettempdir(), 'PyPPL_unittest', 'TestFlowchart')
+		if path.exists(self.testdir):
+			rmtree(self.testdir)
+		makedirs(self.testdir)
+
+	def dataProvider_testInit(self):
+		dotfile = path.join(self.testdir, 'test.dot')
+		svgfile = path.join(self.testdir, 'test.svg')
 		yield dotfile, svgfile
 		yield 'x', 'y'
 		yield 'x', svgfile
@@ -27,10 +35,10 @@ class TestFlowchart (helpers.TestCase):
 		self.assertListEqual(fc.ends, [])
 		self.assertListEqual(fc.links, [])
 
-	def dataProvider_testSetTheme(self, testdir):
-		yield testdir, 'default', 'default', Flowchart.THEMES['default']
-		yield testdir, 'dark', 'default', Flowchart.THEMES['dark']
-		yield testdir, {}, 'default', {
+	def dataProvider_testSetTheme(self):
+		yield 'default', 'default', Flowchart.THEMES['default']
+		yield 'dark', 'default', Flowchart.THEMES['dark']
+		yield {}, 'default', {
 			'aggr': {'color': '#eeeeee', 'style': 'filled'},
 			'base': {'color': '#000000',
 			         'fillcolor': '#ffffff',
@@ -45,7 +53,7 @@ class TestFlowchart (helpers.TestCase):
 			'skip+': {'fillcolor': '#b5b3b3'},
 			'start': {'color': '#259229', 'style': 'filled'}
 		}
-		yield testdir, {'base': {'shape': 'circle'}}, 'dark', {
+		yield {'base': {'shape': 'circle'}}, 'dark', {
 			'aggr': {'color': '#eeeeee', 'style': 'filled'},
 			'base': {'color': '#ffffff',
 			         'fillcolor': '#555555',
@@ -61,15 +69,15 @@ class TestFlowchart (helpers.TestCase):
 			'start': {'color': '#59b95d', 'penwidth': 2, 'style': 'filled'}
 		}
 
-	def testSetTheme(self, testdir, theme, tmbase, tmout):
+	def testSetTheme(self, theme, tmbase, tmout):
 		self.maxDiff = None
-		dotfile = path.join(testdir, 'test.dot')
-		fcfile = path.join(testdir, 'test.svg')
+		dotfile = path.join(self.testdir, 'test.dot')
+		fcfile = path.join(self.testdir, 'test.svg')
 		fc = Flowchart(dotfile, fcfile)
 		fc.setTheme(theme, tmbase)
 		self.assertDictEqual(fc.theme, tmout)
 
-	def dataProvider_testAddNode(self, testdir):
+	def dataProvider_testAddNode(self):
 		p1 = Proc()
 		p2 = Proc()
 		p3 = Proc()
@@ -80,43 +88,43 @@ class TestFlowchart (helpers.TestCase):
 		p5.aggr = 'aggr1'
 		p6.aggr = 'aggr2'
 
-		yield testdir, p1, 'start', True, False, Flowchart.ROOTGROUP
-		yield testdir, p2, 'end', False, True, Flowchart.ROOTGROUP
-		yield testdir, p3, None, False, False, Flowchart.ROOTGROUP
-		yield testdir, p4, None, False, False, 'aggr1'
-		yield testdir, p5, 'start', True, False, 'aggr1'
-		yield testdir, p6, 'end', False, True, 'aggr2'
+		yield p1, 'start', True, False, Flowchart.ROOTGROUP
+		yield p2, 'end', False, True, Flowchart.ROOTGROUP
+		yield p3, None, False, False, Flowchart.ROOTGROUP
+		yield p4, None, False, False, 'aggr1'
+		yield p5, 'start', True, False, 'aggr1'
+		yield p6, 'end', False, True, 'aggr2'
 
-	def testAddNode(self, testdir, proc, role, instarts, inends, group):
-		dotfile = path.join(testdir, 'test.dot')
-		fcfile  = path.join(testdir, 'test.svg')
+	def testAddNode(self, proc, role, instarts, inends, group):
+		dotfile = path.join(self.testdir, 'test.dot')
+		fcfile  = path.join(self.testdir, 'test.svg')
 		fc = Flowchart(fcfile, dotfile)
 		fc.addNode(proc, role)
 		self.assertEqual(proc in fc.starts, instarts)
 		self.assertEqual(proc in fc.ends, inends)
 		self.assertTrue(proc in fc.nodes[group])
 
-	def dataProvider_testAddLink(self, testdir):
+	def dataProvider_testAddLink(self):
 		p1 = Proc()
 		p2 = Proc()
 		p3 = Proc()
 		p4 = Proc()
 		p5 = Proc()
 		p6 = Proc()
-		yield testdir, p1, p2
-		yield testdir, p1, p3
-		yield testdir, p4, p3
-		yield testdir, p5, p4
-		yield testdir, p5, p6
+		yield p1, p2
+		yield p1, p3
+		yield p4, p3
+		yield p5, p4
+		yield p5, p6
 
-	def testAddLink(self, testdir, n1, n2):
-		dotfile = path.join(testdir, 'test.dot')
-		fcfile  = path.join(testdir, 'test.svg')
+	def testAddLink(self, n1, n2):
+		dotfile = path.join(self.testdir, 'test.dot')
+		fcfile  = path.join(self.testdir, 'test.svg')
 		fc = Flowchart(fcfile, dotfile)
 		fc.addLink(n1, n2)
 		self.assertIn((n1, n2), fc.links)
 
-	def dataProvider_testAssemble(self, testdir):
+	def dataProvider_testAssemble(self):
 		p1 = Proc(tag = '1st')
 		p2 = Proc(desc = 'The description of p2')
 		p3 = Proc()
@@ -129,7 +137,7 @@ class TestFlowchart (helpers.TestCase):
 		p5.resume = 'skip+'
 		p6.exdir  = '.'
 
-		yield testdir, [p1, p2, p3, p4], [p1], [p4], [(p1, p2), (p2, p3), (p3, p4)], 'default', 'default', '\n'.join([
+		yield [p1, p2, p3, p4], [p1], [p4], [(p1, p2), (p2, p3), (p3, p4)], 'default', 'default', '\n'.join([
 			'digraph PyPPL {',
 			'\t"p1.1st" [color="#259229" fillcolor="#ffffff" fontcolor="#000000" shape=box style=filled]',
 			'\tp2 [color="#000000" fillcolor="#ffffff" fontcolor="#000000" shape=box style="rounded,filled" tooltip="The description of p2"]',
@@ -144,7 +152,7 @@ class TestFlowchart (helpers.TestCase):
 			'}'
 		])
 
-		yield testdir, [p1, p2, p3, p4], [p1], [p4], [(p1, p2), (p2, p3), (p3, p4)], 'dark', 'default', '\n'.join([
+		yield [p1, p2, p3, p4], [p1], [p4], [(p1, p2), (p2, p3), (p3, p4)], 'dark', 'default', '\n'.join([
 			'digraph PyPPL {',
 			'\t"p1.1st" [color="#59b95d" fillcolor="#555555" fontcolor="#ffffff" penwidth=2 shape=box style=filled]',
 			'\tp2 [color="#ffffff" fillcolor="#555555" fontcolor="#ffffff" shape=box style="rounded,filled" tooltip="The description of p2"]',
@@ -159,7 +167,7 @@ class TestFlowchart (helpers.TestCase):
 			'}'
 		])
 
-		yield testdir, [p1, p2, p3, p4, p5, p6], [p1, p5], [p4, p5], [(p1, p2), (p2, p3), (p3, p4), (p2, p5), (p3, p5), (p5, p6)], {'base': {'shape': 'circle'}}, 'dark', '\n'.join([
+		yield [p1, p2, p3, p4, p5, p6], [p1, p5], [p4, p5], [(p1, p2), (p2, p3), (p3, p4), (p2, p5), (p3, p5), (p5, p6)], {'base': {'shape': 'circle'}}, 'dark', '\n'.join([
 			'digraph PyPPL {',
 			'\t"p1.1st" [color="#59b95d" fillcolor="#555555" fontcolor="#ffffff" penwidth=2 shape=circle style=filled]',
 			'\tp2 [color="#ffffff" fillcolor="#555555" fontcolor="#ffffff" shape=circle style="rounded,filled" tooltip="The description of p2"]',
@@ -182,10 +190,10 @@ class TestFlowchart (helpers.TestCase):
 			'}'
 		])
 
-	def testAssemble(self, testdir, nodes, starts, ends, links, theme, basetheme, src):
+	def testAssemble(self, nodes, starts, ends, links, theme, basetheme, src):
 		self.maxDiff = None
-		dotfile = path.join(testdir, 'test.dot')
-		fcfile  = path.join(testdir, 'test.svg')
+		dotfile = path.join(self.testdir, 'test.dot')
+		fcfile  = path.join(self.testdir, 'test.svg')
 		fc = Flowchart(fcfile, dotfile)
 		fc.setTheme(theme, basetheme)
 		for node in nodes:
@@ -197,9 +205,9 @@ class TestFlowchart (helpers.TestCase):
 		for link in links:
 			fc.addLink(*link)
 		fc._assemble()
-		self.assertTextEqual(fc.graph.source, src)
+		helpers.assertTextEqual(self, fc.graph.source, src)
 
-	def dataProvider_testGenerate(self, testdir):
+	def dataProvider_testGenerate(self):
 		p1 = Proc(tag = '1st')
 		p2 = Proc(desc = 'The description of p2')
 		p3 = Proc()
@@ -211,8 +219,8 @@ class TestFlowchart (helpers.TestCase):
 		p6.aggr = 'aggr2'
 		p5.resume = 'skip+'
 
-		dotfile1 = path.join(testdir, 'dotfile1.txt')
-		svgfile1 = path.join(testdir, 'svgfile1.svg')
+		dotfile1 = path.join(self.testdir, 'dotfile1.txt')
+		svgfile1 = path.join(self.testdir, 'svgfile1.svg')
 		yield dotfile1, svgfile1, [p1, p2, p3, p4], [p1], [p4], [(p1, p2), (p2, p3), (p3, p4)], 'default', 'default', '\n'.join([
 			'digraph PyPPL {',
 			'\t"p1.1st" [color="#259229" fillcolor="#ffffff" fontcolor="#000000" shape=box style=filled]',
@@ -279,8 +287,8 @@ class TestFlowchart (helpers.TestCase):
 			'</svg>',
 		]
 
-		dotfile2 = path.join(testdir, 'dotfile2.txt')
-		svgfile2 = path.join(testdir, 'svgfile2.svg')
+		dotfile2 = path.join(self.testdir, 'dotfile2.txt')
+		svgfile2 = path.join(self.testdir, 'svgfile2.svg')
 		yield dotfile2, svgfile2, [p1, p2, p3, p4], [p1], [p4], [(p1, p2), (p2, p3), (p3, p4)], 'dark', 'default', '\n'.join([
 			'digraph PyPPL {',
 			'\t"p1.1st" [color="#59b95d" fillcolor="#555555" fontcolor="#ffffff" penwidth=2 shape=box style=filled]',
@@ -347,8 +355,8 @@ class TestFlowchart (helpers.TestCase):
 			'</svg>',
 		]
 
-		dotfile3 = path.join(testdir, 'dotfile3.txt')
-		svgfile3 = path.join(testdir, 'svgfile3.svg')
+		dotfile3 = path.join(self.testdir, 'dotfile3.txt')
+		svgfile3 = path.join(self.testdir, 'svgfile3.svg')
 		yield dotfile3, svgfile3, [p1, p2, p3, p4, p5, p6], [p1, p5], [p4, p5], [(p1, p2), (p2, p3), (p3, p4), (p2, p5), (p3, p5), (p5, p6)], {'base': {'shape': 'circle'}}, 'dark', '\n'.join([
 			'digraph PyPPL {',
 			'\t"p1.1st" [color="#59b95d" fillcolor="#555555" fontcolor="#ffffff" penwidth=2 shape=circle style=filled]',
@@ -466,10 +474,9 @@ class TestFlowchart (helpers.TestCase):
 			fc.addLink(*link)
 		fc.generate()
 		with open(fc.dotfile) as f:
-			self.assertTextEqual(f.read(), src)
-		with open(fc.fcfile) as f:
-			self.assertItemSubset(svg, f.read().splitlines())
+			helpers.assertTextEqual(self, f.read(), src)
+		helpers.assertInFile(self, svg, fc.fcfile)
 
 
 if __name__ == '__main__':
-	unittest.main(verbosity=2)
+	testly.main(verbosity=2)

@@ -1,4 +1,4 @@
-import helpers, unittest
+import testly, helpers, unittest
 from os import path
 from collections import OrderedDict
 from pyppl.templates import Template
@@ -6,7 +6,7 @@ from pyppl.templates.template_jinja2 import TemplateJinja2
 from pyppl.templates.template_pyppl import TemplatePyPPLCodeBuilder, TemplatePyPPLLine, TemplatePyPPLEngine, TemplatePyPPL
 from pyppl.exception import TemplatePyPPLSyntaxError, TemplatePyPPLRenderError
 
-class TestTemplatePyPPLLine(helpers.TestCase):
+class TestTemplatePyPPLLine(testly.TestCase):
 
 	def dataProvider_testInit(self):
 		yield '', ''
@@ -20,7 +20,7 @@ class TestTemplatePyPPLLine(helpers.TestCase):
 		self.assertEqual(tpline.src,  src)
 		self.assertEqual(tpline.ndent,  indent)
 
-class TestTemplatePyPPLCodeBuilder(helpers.TestCase):
+class TestTemplatePyPPLCodeBuilder(testly.TestCase):
 
 	def dataProvider_testInit(self):
 		yield 1,
@@ -117,9 +117,9 @@ class TestTemplatePyPPLCodeBuilder(helpers.TestCase):
 
 	def testGetGlobals(self, cb, gs, gsnot = None):
 		cbgs = cb.getGlobals()
-		self.assertDictIn(gs, cbgs)
+		self.assertDictContains(gs, cbgs)
 		if gsnot:
-			self.assertDictNotIn(gs, gsnot)
+			self.assertDictNotContains(gs, gsnot)
 
 	def dataProvider_testNlines(self):
 		cb1 = TemplatePyPPLCodeBuilder()
@@ -198,7 +198,7 @@ class TestTemplatePyPPLCodeBuilder(helpers.TestCase):
 			self.assertEqual(line.src, out.src)
 			self.assertEqual(line.ndent, out.ndent)
 
-class TestTemplatePyPPLEngine(helpers.TestCase):
+class TestTemplatePyPPLEngine(testly.TestCase):
 
 	renderFunc_start = "def renderFunction(context, do_dots):\n" + \
 		"	result = []\n" + \
@@ -253,12 +253,12 @@ class TestTemplatePyPPLEngine(helpers.TestCase):
 		if exception and not msg:
 			self.assertRaises(exception, TemplatePyPPLEngine, text, *contexts)
 		elif exception:
-			self.assertRaisesStr(exception, msg, TemplatePyPPLEngine, text, *contexts)
+			self.assertRaisesRegex(exception, msg, TemplatePyPPLEngine, text, *contexts)
 		else:
 			engine = TemplatePyPPLEngine(text, *contexts)
 			renderfunc = renderfunc.lstrip('\n').split('\n')
 			renderfunc = '\n'.join(line[2:] for line in renderfunc)
-			self.assertTextEqual(engine.renderFunctionStr[len(self.renderFunc_start):-len(self.renderFunc_end)], renderfunc)
+			helpers.assertTextEqual(self, engine.renderFunctionStr[len(self.renderFunc_start):-len(self.renderFunc_end)], renderfunc)
 
 	def dataProvider_testParseComments(self):
 		yield '', ''
@@ -458,7 +458,7 @@ class TestTemplatePyPPLEngine(helpers.TestCase):
 
 	def testRender(self, text, contexts, out):
 		t  = TemplatePyPPL(text)
-		self.assertTextEqual(t.render(contexts), out)
+		helpers.assertTextEqual(self, t.render(contexts), out)
 
 	def dataProvider_testRenderExceptions(self):
 		yield '{{a}}', {}, TemplatePyPPLRenderError, "KeyError: 'a' in 'unknown template variable: \"a\" at Line 1: {{a}}'"
@@ -478,7 +478,7 @@ class TestTemplatePyPPLEngine(helpers.TestCase):
 
 	def testRenderExceptions(self, text, context, exception, msg):
 		engine = TemplatePyPPLEngine(text)
-		self.assertRaisesStr(exception, msg, engine.render, context)
+		self.assertRaisesRegex(exception, msg, engine.render, context)
 
 	def dataProvider_testStr(self):
 		yield TemplatePyPPLEngine(''), ''
@@ -493,9 +493,9 @@ class TestTemplatePyPPLEngine(helpers.TestCase):
 	def testStr(self, cb, renderfunc):
 		renderfunc = renderfunc.lstrip('\n').split('\n')
 		renderfunc = '\n'.join(line[2:] for line in renderfunc)
-		self.assertTextEqual(str(cb)[len(self.str_prefix + self.renderFunc_start):-len(self.renderFunc_end)], renderfunc)
+		helpers.assertTextEqual(self, str(cb)[len(self.str_prefix + self.renderFunc_start):-len(self.renderFunc_end)], renderfunc)
 
-class TestTemplate (helpers.TestCase):
+class TestTemplate (testly.TestCase):
 
 	def dataProvider_testInit(self):
 		yield '', {}
@@ -503,9 +503,9 @@ class TestTemplate (helpers.TestCase):
 
 	def testInit(self, source, envs):
 		tpl = Template(source, **envs)
-		self.assertTextEqual(tpl.source, source)
-		self.assertDictIn(Template.DEFAULT_ENVS, tpl.envs)
-		self.assertDictIn(envs, tpl.envs)
+		helpers.assertTextEqual(self, tpl.source, source)
+		self.assertDictContains(Template.DEFAULT_ENVS, tpl.envs)
+		self.assertDictContains(envs, tpl.envs)
 
 	def dataProvider_testRegisterEnvs(self):
 		yield '', {}, {}
@@ -515,28 +515,28 @@ class TestTemplate (helpers.TestCase):
 	def testRegisterEnvs(self, source, envs, newenvs):
 		tpl = Template(source, **envs)
 		tpl.registerEnvs(**newenvs)
-		self.assertTextEqual(tpl.source, source)
-		self.assertDictIn(Template.DEFAULT_ENVS, tpl.envs)
-		self.assertDictIn(envs, tpl.envs)
-		self.assertDictIn(newenvs, tpl.envs)
+		helpers.assertTextEqual(self, tpl.source, source)
+		self.assertDictContains(Template.DEFAULT_ENVS, tpl.envs)
+		self.assertDictContains(envs, tpl.envs)
+		self.assertDictContains(newenvs, tpl.envs)
 
 	def dataProvider_testStr(self):
 		yield Template(''), 'Template <  >'
 
 	def testStr(self, t, s):
-		self.assertTextEqual(str(t), s)
+		helpers.assertTextEqual(self, str(t), s)
 
 	def dataProvider_testRepr(self):
 		yield Template(''), 'Template <  >'
 
 	def testRepr(self, t, s):
-		self.assertTextEqual(repr(t), s)
+		helpers.assertTextEqual(self, repr(t), s)
 
 	def testRender(self):
 		self.assertRaises(NotImplementedError, Template('').render, {})
 
 
-class TestTemplatePyPPL (helpers.TestCase):
+class TestTemplatePyPPL (testly.TestCase):
 
 	def dataProvider_testInit(self):
 		yield '', {}
@@ -544,9 +544,9 @@ class TestTemplatePyPPL (helpers.TestCase):
 
 	def testInit(self, source, envs):
 		tpl = TemplatePyPPL(source, **envs)
-		self.assertTextEqual(tpl.source, source)
-		self.assertDictIn(Template.DEFAULT_ENVS, tpl.envs)
-		self.assertDictIn(envs, tpl.envs)
+		helpers.assertTextEqual(self, tpl.source, source)
+		self.assertDictContains(Template.DEFAULT_ENVS, tpl.envs)
+		self.assertDictContains(envs, tpl.envs)
 		self.assertIsInstance(tpl.engine, TemplatePyPPLEngine)
 
 	def dataProvider_testStr(self):
@@ -561,7 +561,7 @@ class TestTemplatePyPPL (helpers.TestCase):
 		if len(lines) <= 1:
 			self.assertEqual(str(tpl), 'TemplatePyPPL < %s >' % ''.join(lines))
 		else:
-			self.assertTextEqual(str(tpl), '\n'.join(
+			helpers.assertTextEqual(self, str(tpl), '\n'.join(
 				['TemplatePyPPL <<<'] +
 				['\t' + line for line in tpl.source.splitlines()] +
 				['>>>'])
@@ -595,9 +595,9 @@ class TestTemplatePyPPL (helpers.TestCase):
 
 	def testRender(self, source, data, out):
 		tpl = TemplatePyPPL(source)
-		self.assertTextEqual(tpl.render(data), out)
+		helpers.assertTextEqual(self, tpl.render(data), out)
 
-class TestTemplateJinja2(helpers.TestCase):
+class TestTemplateJinja2(testly.TestCase):
 
 	def dataProvider_testInit(self):
 		yield '', {}
@@ -607,9 +607,9 @@ class TestTemplateJinja2(helpers.TestCase):
 	def testInit(self, source, envs):
 		import jinja2
 		tpl = TemplateJinja2(source, **envs)
-		self.assertTextEqual(tpl.source, source)
-		self.assertDictIn(Template.DEFAULT_ENVS, tpl.envs)
-		self.assertDictIn(envs, tpl.envs)
+		helpers.assertTextEqual(self, tpl.source, source)
+		self.assertDictContains(Template.DEFAULT_ENVS, tpl.envs)
+		self.assertDictContains(envs, tpl.envs)
 		self.assertIsInstance(tpl.engine, jinja2.Template)
 
 	def dataProvider_testStr(self):
@@ -625,7 +625,7 @@ class TestTemplateJinja2(helpers.TestCase):
 		if len(lines) <= 1:
 			self.assertEqual(str(tpl), 'TemplateJinja2 < %s >' % ''.join(lines))
 		else:
-			self.assertTextEqual(str(tpl), '\n'.join(
+			helpers.assertTextEqual(self, str(tpl), '\n'.join(
 				['TemplateJinja2 <<<'] +
 				['\t' + line for line in tpl.source.splitlines()] +
 				['>>>'])
@@ -686,7 +686,7 @@ class TestTemplateJinja2(helpers.TestCase):
 
 	def testRender(self, s, e, out):
 		t = TemplateJinja2(s)
-		self.assertTextEqual(t.render(e), out)
+		helpers.assertTextEqual(self, t.render(e), out)
 
 if __name__ == '__main__':
-	unittest.main(verbosity=2)
+	testly.main(verbosity=2)

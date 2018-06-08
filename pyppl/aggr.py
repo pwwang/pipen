@@ -150,8 +150,11 @@ class Aggr (object):
 		defaultDelegatesStart = ['depends2', 'depends', 'input']
 		defaultDelegatesEnd   = ['exdir', 'exhow', 'exow', 'expart']
 		defaultDelegates      = [\
-			k for k in self._procs.values()[0].config.keys() \
-			if k not in ['id', 'args', 'envs'] \
+			k for k in list(self._procs.values())[0].config.keys() \
+			if k not in [
+				'id', 'args', 'envs', 'afterCmd', 'beforeCmd', 'aggr', 'callback', 'callfront',
+				'desc', 'expect', 'expart', 'input', 'output', 'resume', 'script', 'workdir'
+			] \
 			and k not in defaultDelegatesStart + defaultDelegatesEnd \
 		] if self._procs else []
 
@@ -242,12 +245,6 @@ class Aggr (object):
 		@returns:
 			the aggregation itself
 		"""
-		if not self._procs:
-			defaultDelegatesStart = ['depends2', 'depends', 'input']
-			defaultDelegatesEnd   = ['input', 'exdir', 'exhow', 'exow', 'expart']
-			delegates = [k for k in p.config.keys() if k not in ['id', 'args', 'envs'] and k not in defaultDelegatesStart + defaultDelegatesEnd]
-			for dd in delegates:
-				self.delegate(dd)
 
 		newtag = tag if tag else utils.uid(p.tag + '@' + self.id, 4)
 
@@ -278,7 +275,6 @@ class Aggr (object):
 		ret.starts = [None] * len(self.starts)
 		ret.ends   = [None] * len(self.ends)
 
-
 		for k, proc in self._procs.items():
 			if tag == proc.tag:
 				# This will happen to have procs with same id and tag
@@ -298,6 +294,7 @@ class Aggr (object):
 			if where == 'ends' or where == 'both':
 				ret.ends[self.ends.index(proc)] = newproc
 
+		
 		# copy delegates
 		for k, v in self._delegates.items():
 			ret._delegates[k] = v

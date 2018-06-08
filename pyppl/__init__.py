@@ -247,6 +247,12 @@ class Proc (object):
 		self.config['rc']         = 0
 		self.props['rc']          = [0]
 
+		# which input file to use:
+		# - indir:  The symbolic links in input directory
+		# - origin: The original file specified by input channel
+		# - real:   The realpath of the input file
+		self.config['infile']     = 'indir'
+
 		# resume flag of the process
 		# ''       : Normal, don't resume
 		# 'skip+'  : Load data from previous run, pipeline resumes from future processes
@@ -308,7 +314,7 @@ class Proc (object):
 	def __setattr__ (self, name, value):
 		if not name in self.config and not name in Proc.ALIAS and not name.endswith ('Runner'):
 			raise ProcAttributeError(name, 'Cannot set attribute for process')
-
+		
 		# profile will be deprecated, use runner instead
 		if name in Proc.DEPRECATED:
 			self.log('%s: Attribute "%s" is deprecated%s.' % (self.name(True), name, (', use "%s" instead' % Proc.DEPRECATED[name]) if Proc.DEPRECATED[name] else ''), 'warning')
@@ -363,6 +369,16 @@ class Proc (object):
 
 	def __repr__(self):
 		return '<Proc(%s) @ %s>' % (self.name(), hex(id(self)))
+
+	# make Proc hashable
+	def __hash__(self):
+		return id(self)
+
+	def __eq__(self, other):
+		return id(self) == id(other)
+
+	def __ne__(self, other):
+		return not self.__eq__(other)
 
 	def log (self, msg, level="info", key = None):
 		"""
@@ -564,6 +580,9 @@ class Proc (object):
 			`config`: The configuration
 		"""
 		if config is None: config = {}
+		# fix #31
+		if 'runner' not in config:
+			config['runner'] = self.config['runner']
 		self._readConfig (config)
 
 		if self.runner == 'dry':
@@ -872,7 +891,7 @@ class Proc (object):
 			show.append('runner')
 		hide    = ['desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'aggr', 'input', 'output', 'depends', 'script']
 		nokeys  = ['tplenvs', 'input', 'output', 'depends', 'lock', 'jobs']
-		allkeys = [key for key in set(self.props.keys() + self.config.keys())]
+		allkeys = [key for key in set(self.props.keys()) | set(self.config.keys())]
 		pvkeys  = [
 			key for key in allkeys \
 			if key in show or (key in self.sets and key not in hide)

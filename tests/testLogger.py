@@ -1,11 +1,13 @@
-import helpers, unittest, logging
+import testly, logging, helpers
 
-from os import path
+from os import path, makedirs
+from shutil import rmtree
+from tempfile import gettempdir
 from pyppl import logger
 from pyppl.logger import LEVELS, LEVELS_ALWAYS, COLORS, THEMES, PyPPLLogFilter, PyPPLLogFormatter
 from pyppl.exception import TemplatePyPPLRenderError, LoggerThemeError
 
-class TestPyPPLLogFilter(helpers.TestCase):
+class TestPyPPLLogFilter(testly.TestCase):
 
 	def dataProvider_testInit(self):
 		yield '', 'normal', None, LEVELS['normal'] + LEVELS_ALWAYS
@@ -25,7 +27,7 @@ class TestPyPPLLogFilter(helpers.TestCase):
 		if outlvls is None:
 			self.assertIsNone(pf.levels)
 		else:
-			self.assertItemEqual(pf.levels,  list(set(outlvls)))
+			self.assertCountEqual(pf.levels,  list(set(outlvls)))
 
 	def dataProvider_testFilter(self):
 		r = logging.LogRecord(
@@ -54,7 +56,7 @@ class TestPyPPLLogFilter(helpers.TestCase):
 		self.assertEqual(pf.filter(record), out)
 
 
-class TestPyPPLLogFormatter(helpers.TestCase):
+class TestPyPPLLogFormatter(testly.TestCase):
 
 	def dataProvider_testInit(self):
 		yield None, {}
@@ -92,7 +94,7 @@ class TestPyPPLLogFormatter(helpers.TestCase):
 		self.assertEqual(f[21:], out)
 
 
-class TestLogger(helpers.TestCase):
+class TestLogger(testly.TestCase):
 
 	theme_done_key    = 'DONE'
 	theme_debug_key   = 'DEBUG'
@@ -103,6 +105,13 @@ class TestLogger(helpers.TestCase):
 	theme_warning_key = 'in:WARNING,RETRY'
 	theme_running_key = 'in:CACHED,RUNNING,SKIPPED,RESUMED'
 	theme_other_key   = ''
+
+	
+	def setUpMeta(self):
+		self.testdir = path.join(gettempdir(), 'PyPPL_unittest', 'TestLogger')
+		if path.exists(self.testdir):
+			rmtree(self.testdir)
+		makedirs(self.testdir)
 
 	def dataProvider_testGetLevel(self):
 		r = logging.LogRecord(
@@ -176,12 +185,12 @@ class TestLogger(helpers.TestCase):
 			else:
 				self.assertDictEqual(logger._formatTheme(tname), logger._formatTheme(theme))
 
-	def dataProvider_testGetLogger(self, testdir):
+	def dataProvider_testGetLogger(self):
 		yield 'normal', True, None, None, '[info]a', '[%s   INFO%s] %sa%s' % (COLORS.green, COLORS.end, COLORS.green, COLORS.end)
 		
 		yield 'normal', None, None, None, '[info]a', '[   INFO] a'
 		
-		logfile = path.join(testdir, 'logfile.txt')
+		logfile = path.join(self.testdir, 'logfile.txt')
 		yield 'normal', True, logfile, None, '[info]a', '[%s   INFO%s] %sa%s' % (COLORS.green, COLORS.end, COLORS.green, COLORS.end), '[   INFO] a'
 		
 		yield 'normal', None, logfile, None, '[debug]a', '', '[  DEBUG] a'
@@ -196,8 +205,7 @@ class TestLogger(helpers.TestCase):
 			log.info(msg)
 		self.assertEqual(err.getvalue().strip()[21:], outs)
 		if logfile:
-			self.assertInFile(fileouts, logfile)
-
+			self.assertIn(fileouts, helpers.readFile(logfile))
 
 if __name__ == '__main__':
-	unittest.main(verbosity=2)
+	testly.main(verbosity=2)

@@ -384,9 +384,11 @@ class Channel (list):
 			The combined Channel
 			Note, self is also changed
 		"""
-		ret    = self.copy()
-		cols   = [col if isinstance(col, Channel) else Channel.create(col) for col in cols if col]
-		cols   = [col for col in cols if col.width() > 0 and col.length() > 0]
+		ret  = self.copy()
+		#cols = [col if isinstance(col, Channel) else Channel.create(col) for col in cols if col]
+		# fix #29
+		cols = [col if isinstance(col, Channel) else Channel.create(col) for col in cols]
+		cols = [col for col in cols if col.width() > 0 and col.length() > 0]
 		if not cols: return ret
 		
 		if cidx is None:

@@ -54,7 +54,7 @@ class Parallel(object):
 		exception = None
 		for arg in args:
 			submits.append(self.executor.submit(_func, arg))
-
+		
 		for submit in submits:
 			try:
 				results.append(submit.result())
@@ -119,29 +119,33 @@ def varname (maxline = 20, incldot = False):
 
 	srcfile   = stack[2][1]
 	srclineno = stack[2][2]
+	try:
+		with open(srcfile) as f:
+			srcs   = list(reversed(f.readlines()[max(0, srclineno-maxline): srclineno]))
 
-	with open(srcfile) as f:
-		srcs   = list(reversed(f.readlines()[max(0, srclineno-maxline): srclineno]))
+		re_var = r'([A-Za-z_][\w.]*)' if incldot else r'([A-Za-z_]\w*)'
+		if themethod and themethod != '__init__':
+			#            var =     pp          .copy    (
+			re_hit  = r'%s\s*=\s*([A-Za-z_]\w*\.)+%s\s*\(' % (re_var, themethod)
+			#           pp.copy    (
+			re_stop = r'([A-Za-z_]\w*\.)+%s\s*\(' % themethod
+		else:
+			#           var  =
+			re_hit  = r'%s\s*=\s*([A-Za-z_]\w*\.)*%s\s*\(' % (re_var, theclass)
+			re_stop = r'([A-Za-z_]\w*\.)*%s\s*\(' % theclass
 
-	re_var = r'([A-Za-z_][\w.]*)' if incldot else r'([A-Za-z_]\w*)'
-	if themethod and themethod != '__init__':
-		#            var =     pp          .copy    (
-		re_hit  = r'%s\s*=\s*([A-Za-z_]\w*\.)+%s\s*\(' % (re_var, themethod)
-		#           pp.copy    (
-		re_stop = r'([A-Za-z_]\w*\.)+%s\s*\(' % themethod
-	else:
-		#           var  =
-		re_hit  = r'%s\s*=\s*([A-Za-z_]\w*\.)*%s\s*\(' % (re_var, theclass)
-		re_stop = r'([A-Za-z_]\w*\.)*%s\s*\(' % theclass
+		for src in srcs:
+			hitgroup = re.search(re_hit, src)
+			if hitgroup: return hitgroup.group(1)
+			stopgroup = re.search(re_stop, src)
+			if stopgroup: break
+		
+		varname.index += 1
+		return 'var_%s' % (varname.index - 1)
 
-	for src in srcs:
-		hitgroup = re.search(re_hit, src)
-		if hitgroup: return hitgroup.group(1)
-		stopgroup = re.search(re_stop, src)
-		if stopgroup: break
-
-	varname.index += 1
-	return 'var_%s' % (varname.index - 1)
+	except Exception:
+		varname.index += 1
+		return 'var_%s' % (varname.index - 1)
 
 varname.index = 0
 

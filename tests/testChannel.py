@@ -1,11 +1,19 @@
-import helpers, unittest
+import helpers, testly
 
+from shutil import rmtree
+from tempfile import gettempdir
 from copy import deepcopy
 from pyppl.channel import Channel
 from os import path, makedirs, symlink, utime
 from time import time
 
-class TestChannel (helpers.TestCase):
+class TestChannel (testly.TestCase):
+
+	def setUpMeta(self):
+		self.testdir = path.join(gettempdir(), 'PyPPL_unittest', 'TestChannel')
+		if path.exists(self.testdir):
+			rmtree(self.testdir)
+		makedirs(self.testdir)
 
 	def dataProvider_testTuplize(self):
 		yield ('abc',('abc', ))
@@ -25,6 +33,8 @@ class TestChannel (helpers.TestCase):
 		yield [], []
 		yield [[]], [([], )]
 		yield [("a", ), ("c", "d")], [], True
+		# issue #29
+		yield '', [('', )]
 	
 	def testCreate(self, ins, outs, exception = False):
 		if exception:
@@ -114,6 +124,9 @@ class TestChannel (helpers.TestCase):
 
 		ch1 = Channel.create([(1,2), (3,4)])
 		yield None, ch1, [1,2,3], ValueError
+
+		# issue 29
+		yield 0, Channel.create(), '', [('', )]
 		
 	def testInsert(self, pos, ch1, ch2, outs, ch2islist = False):
 		if ch2islist:
@@ -127,8 +140,10 @@ class TestChannel (helpers.TestCase):
 			else:
 				self.assertEqual(ch1.insert(pos, ch2), outs)
 
-	def dataProvider_testFromPattern(self, testdir):
+	def dataProvider_testFromPattern(self):
 		# create files
+		testdir = path.join(self.testdir, 'testFromPattern')
+		makedirs(testdir)
 		file1 = path.join(testdir, 'testFromPattern1_File.ext1') # 1 file
 		file2 = path.join(testdir, 'testFromPattern2_Link.ext1') # 2 link 1
 		file3 = path.join(testdir, 'testFromPattern3_File.ext1') # 3 file
@@ -190,20 +205,20 @@ class TestChannel (helpers.TestCase):
 	def testFromPattern(self, pattern, outs, t = 'any', sortby = 'name', reverse = False):
 		self.assertListEqual(Channel.fromPattern(pattern, t, sortby, reverse), outs)
 
-	def dataProvider_testFromPairs(self, testdir):
-		files1 = [path.join(testdir, 'testFromPairs1%s.txt' % i) for i in range(0, 4)]
-		files2 = [path.join(testdir, 'testFromPairs2%s.txt' % i) for i in range(0, 4)]
+	def dataProvider_testFromPairs(self):
+		files1 = [path.join(self.testdir, 'testFromPairs1%s.txt' % i) for i in range(0, 4)]
+		files2 = [path.join(self.testdir, 'testFromPairs2%s.txt' % i) for i in range(0, 4)]
 		for f in files1 + files2:
 			helpers.writeFile(f)
 
-		yield path.join(testdir, 'testFromPairs1?.txt'), Channel.create([(files1[0], files1[1]), (files1[2], files1[3])])
-		yield path.join(testdir, 'testFromPairs2?.txt'), Channel.create([(files2[0], files2[1]), (files2[2], files2[3])])
+		yield path.join(self.testdir, 'testFromPairs1?.txt'), Channel.create([(files1[0], files1[1]), (files1[2], files1[3])])
+		yield path.join(self.testdir, 'testFromPairs2?.txt'), Channel.create([(files2[0], files2[1]), (files2[2], files2[3])])
 
 	def testFromPairs(self, pattern, outs):
 		self.assertListEqual(Channel.fromPairs(pattern), outs)
 
-	def dataProvider_testFromFile(self, testdir):
-		file1 = path.join(testdir, 'testFromFile1.txt')
+	def dataProvider_testFromFile(self):
+		file1 = path.join(self.testdir, 'testFromFile1.txt')
 		helpers.writeFile(
 			file1, 
 			"a1\tb1\tc1\n" + 
@@ -213,7 +228,7 @@ class TestChannel (helpers.TestCase):
 		yield file1, outs, False, 0, '\t'
 
 		# head & delimit
-		file2 = path.join(testdir, "testFromFile2.txt")
+		file2 = path.join(self.testdir, "testFromFile2.txt")
 		helpers.writeFile(
 			file2, 
 			"a,b,c\n" + 
@@ -224,7 +239,7 @@ class TestChannel (helpers.TestCase):
 		yield file2, outs, ['a', 'b', 'c'], 0, ','
 
 		# skip
-		file3 = path.join(testdir, "testFromFile3.txt")
+		file3 = path.join(self.testdir, "testFromFile3.txt")
 		helpers.writeFile(
 			file3, 
 			"#a,b,c\n" + 
@@ -237,7 +252,7 @@ class TestChannel (helpers.TestCase):
 		yield file3, outs, ['RowNames', 'b', 'c'], 2, ','
 
 		# error
-		file4 = path.join(testdir, "testFromFile4.txt")
+		file4 = path.join(self.testdir, "testFromFile4.txt")
 		helpers.writeFile(
 			file4, 
 			"#a,b,c\n" + 
@@ -314,12 +329,12 @@ class TestChannel (helpers.TestCase):
 		else:
 			self.assertRaises(ValueError, Channel.fromParams, *pnames)
 
-	def dataProvider_testExpand(self, testdir):
+	def dataProvider_testExpand(self):
 		# empty self
 		yield Channel.create(), 0, []
 
 		# defaults
-		dir1  = path.join(testdir, 'testExpand')
+		dir1  = path.join(self.testdir, 'testExpand')
 		file1 = path.join(dir1, 'testExpand1.txt')
 		file2 = path.join(dir1, 'testExpand2.txt')
 		makedirs(dir1)
@@ -328,7 +343,7 @@ class TestChannel (helpers.TestCase):
 		yield Channel.create(dir1), 0, [file1, file2]
 
 		# extra columns
-		dir2  = path.join(testdir, 'testExpand2')
+		dir2  = path.join(self.testdir, 'testExpand2')
 		file3 = path.join(dir2, 'testExpand3.txt')
 		file4 = path.join(dir2, 'testExpand4.txt')
 		makedirs(dir2)
@@ -358,12 +373,12 @@ class TestChannel (helpers.TestCase):
 			outs = Channel.create(outs)
 			self.assertListEqual(c, outs)
 
-	def dataProvider_testCollapse(self, testdir):
+	def dataProvider_testCollapse(self):
 		# empty self
 		yield Channel.create(), 0, [], True
 
 		# defaults
-		dir1  = path.join(testdir, 'testCollapse')
+		dir1  = path.join(self.testdir, 'testCollapse')
 		file1 = path.join(dir1, 'testCollapse1.txt')
 		file2 = path.join(dir1, 'testCollapse2.txt')
 		makedirs(dir1)
@@ -385,7 +400,7 @@ class TestChannel (helpers.TestCase):
 			outs = Channel.create(outs)
 			self.assertListEqual(c, outs)
 
-	def dataProvider_testCopy():
+	def dataProvider_testCopy(self):
 		yield [], (1,)
 		yield [(1,2)], (3,4)
 
@@ -777,4 +792,4 @@ class TestChannel (helpers.TestCase):
 			self.assertListEqual(ch.flatten(col), outs)
 
 if __name__ == '__main__':
-	unittest.main(verbosity=2)
+	testly.main(verbosity=2)

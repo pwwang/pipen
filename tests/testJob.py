@@ -1,8 +1,9 @@
-import helpers, unittest, sys, json
+import helpers, testly, sys, json
 
 from time import time
 from glob import glob
 from os import path, symlink, makedirs, utime
+from tempfile import gettempdir
 from shutil import rmtree
 from copy import deepcopy
 from pyppl.job import Jobmgr, Job
@@ -10,15 +11,21 @@ from pyppl.exception import JobInputParseError, JobBringParseError, TemplatePyPP
 from pyppl.templates import TemplatePyPPL
 from pyppl import Proc, logger, utils
 
-class TestJob(helpers.TestCase):
+class TestJob(testly.TestCase):
+
+	def setUpMeta(self):
+		self.testdir = path.join(gettempdir(), 'PyPPL_unittest', 'TestJob')
+		if path.exists(self.testdir):
+			rmtree(self.testdir)
+		makedirs(self.testdir)
 
 	def file2indir(workdir, index, f, suffix = ''):
 		(prefix, _, ext) = path.basename(f).rpartition('.')
 		return path.join(workdir, str(index + 1), 'input', prefix + suffix + '.' + ext)
 
-	def dataProvider_testInit0(self, testdir):
+	def dataProvider_testInit0(self):
 		p = Proc()
-		p.props['workdir'] = path.join(testdir, 'workdir')
+		p.props['workdir'] = path.join(self.testdir, 'workdir')
 		yield 0, p
 		yield 1, p
 
@@ -39,7 +46,7 @@ class TestJob(helpers.TestCase):
 		self.assertIs(job.proc, proc)
 		self.assertEqual(job.input, {})
 		self.assertEqual(job.output, {})
-		self.assertEqual(job.brings, {})
+		#self.assertEqual(job.brings, {})
 		self.assertEqual(job.data, {
 			'job': {
 				'index'   : job.index,
@@ -55,30 +62,30 @@ class TestJob(helpers.TestCase):
 			'bring': {}
 		})
 
-	def dataProvider_testPrepInput(self, testdir):
+	def dataProvider_testPrepInput(self):
 		p = Proc()
 		# make sure the infile renaming log output
 		p.LOG_NLINE['INFILE_RENAMING'] = -1
-		p.props['workdir'] = path.join(testdir, 'workdir')
-		filec0 = path.join(testdir, 'filec0.txt')
-		filec1 = path.join(testdir, 'filec1.txt')
-		filec2 = path.join(testdir, 'filec2.txt')
-		filed0 = path.join(testdir, 'filed0.txt')
-		filed1 = path.join(testdir, 'filed1.txt')
-		filed2 = path.join(testdir, 'filed2.txt')
-		filed3 = path.join(testdir, 'filed3.txt')
-		filed4 = path.join(testdir, 'filed4.txt')
-		filed20 = path.join(testdir, 'filed20.txt')
-		filed21 = path.join(testdir, 'filed21.txt')
-		filed22 = path.join(testdir, 'filed22.txt')
-		filed23 = path.join(testdir, 'filed23.txt')
-		filed24 = path.join(testdir, 'filed24.txt')
-		filed30 = path.join(testdir, 'filed30.txt')
-		filed31 = path.join(testdir, 'filed31.txt')
-		filed32 = path.join(testdir, 'filed32.txt')
-		filed33 = path.join(testdir, 'filed33.txt')
-		filed34 = path.join(testdir, 'filed34.txt')
-		filed35 = path.join(testdir, 'filed35', 'filec2.txt')
+		p.props['workdir'] = path.join(self.testdir, 'workdir')
+		filec0 = path.join(self.testdir, 'filec0.txt')
+		filec1 = path.join(self.testdir, 'filec1.txt')
+		filec2 = path.join(self.testdir, 'filec2.txt')
+		filed0 = path.join(self.testdir, 'filed0.txt')
+		filed1 = path.join(self.testdir, 'filed1.txt')
+		filed2 = path.join(self.testdir, 'filed2.txt')
+		filed3 = path.join(self.testdir, 'filed3.txt')
+		filed4 = path.join(self.testdir, 'filed4.txt')
+		filed20 = path.join(self.testdir, 'filed20.txt')
+		filed21 = path.join(self.testdir, 'filed21.txt')
+		filed22 = path.join(self.testdir, 'filed22.txt')
+		filed23 = path.join(self.testdir, 'filed23.txt')
+		filed24 = path.join(self.testdir, 'filed24.txt')
+		filed30 = path.join(self.testdir, 'filed30.txt')
+		filed31 = path.join(self.testdir, 'filed31.txt')
+		filed32 = path.join(self.testdir, 'filed32.txt')
+		filed33 = path.join(self.testdir, 'filed33.txt')
+		filed34 = path.join(self.testdir, 'filed34.txt')
+		filed35 = path.join(self.testdir, 'filed35', 'filec2.txt')
 		for f in [
 			# filec1 not exists
 			filec0, filec2, filed0, filed1, filed2, filed3, 
@@ -139,21 +146,37 @@ class TestJob(helpers.TestCase):
 			'a': 1,
 			'b': 'a',
 			'c': '',
-			'_c': '',
+			'IN_c': '',
+			'OR_c': '',
+			'RL_c': path.realpath(''),
 			'd': [
 				self.file2indir(p.workdir, 0, filed0), 
 				self.file2indir(p.workdir, 0, filed1)
 			],
-			'_d': [filed0, filed1],
+			'IN_d': [
+				self.file2indir(p.workdir, 0, filed0), 
+				self.file2indir(p.workdir, 0, filed1)
+			],
+			'OR_d': [filed0, filed1],
+			'RL_d': [filed0, filed1],
 			'd2': [
 				self.file2indir(p.workdir, 0, filed20)
 			],
-			'_d2': [filed20],
+			'IN_d2': [
+				self.file2indir(p.workdir, 0, filed20)
+			],
+			'OR_d2': [filed20],
+			'RL_d2': [filed20],
 			'd3': [
 				self.file2indir(p.workdir, 0, filed30),
 				self.file2indir(p.workdir, 0, filed31)
 			], 
-			'_d3': [filed30, filed31], 
+			'IN_d3': [
+				self.file2indir(p.workdir, 0, filed30),
+				self.file2indir(p.workdir, 0, filed31)
+			], 
+			'OR_d3': [filed30, filed31], 
+			'RL_d3': [filed30, filed31], 
 		}
 
 		yield 1, p, {}, {}, JobInputParseError, 'File not exists for input type'
@@ -180,20 +203,31 @@ class TestJob(helpers.TestCase):
 			'a': 7,
 			'b': 'g',
 			'c': self.file2indir(p.workdir, 6, filec2),
-			'_c': filec2,
+			'IN_c': self.file2indir(p.workdir, 6, filec2),
+			'OR_c': filec2,
+			'RL_c': filec2,
 			'd': [
 				self.file2indir(p.workdir, 6, filed4), 
 				self.file2indir(p.workdir, 6, filed4)
 			],
-			'_d': [filed4, filed4],
-			'd2': [
-				''
+			'IN_d': [
+				self.file2indir(p.workdir, 6, filed4), 
+				self.file2indir(p.workdir, 6, filed4)
 			],
-			'_d2': [''],
+			'OR_d': [filed4, filed4],
+			'RL_d': [filed4, filed4],
+			'd2': [''],
+			'IN_d2': [''],
+			'OR_d2': [''],
+			'RL_d2': [path.realpath('')],
 			'd3': [
 				self.file2indir(p.workdir, 6, filed35, '[1]')
 			], 
-			'_d3': [filed35], 
+			'IN_d3': [
+				self.file2indir(p.workdir, 6, filed35, '[1]')
+			], 
+			'OR_d3': [filed35], 
+			'RL_d3': [path.realpath(filed35)]
 		}, None, None, 'Input file renamed: filec2.txt -> filec2[1].txt'
 		
 
@@ -204,7 +238,7 @@ class TestJob(helpers.TestCase):
 			rmtree(job.indir)
 		self.assertFalse(path.isdir(job.indir))
 		if exception:
-			self.assertRaisesStr(exception, msg, job._prepInput)
+			self.assertRaisesRegex(exception, msg, job._prepInput)
 			self.assertTrue(path.isdir(job.indir))
 		else:
 			with helpers.log2str() as (out, err):
@@ -214,10 +248,10 @@ class TestJob(helpers.TestCase):
 			self.assertTrue(path.isdir(job.indir))
 			self.assertDictEqual(job.input, jobinput)
 			self.assertDictEqual(job.data['in'], indata)
-
-	def dataProvider_testPrepBrings(self, testdir):
+	'''
+	def dataProvider_testPrepBrings(self):
 		pPrepBrings1 = Proc()
-		pPrepBrings1.props['workdir'] = path.join(testdir, 'pPrepBrings1', 'workdir')
+		pPrepBrings1.props['workdir'] = path.join(self.testdir, 'pPrepBrings1', 'workdir')
 		pPrepBrings1.props['input']   = {
 			'a': {'type': 'var', 'data': [1]},
 		}
@@ -225,12 +259,12 @@ class TestJob(helpers.TestCase):
 		yield 0, pPrepBrings1, {}, JobBringParseError, 'Cannot bring files for a non-file type input'
 
 		pPrepBrings2 = Proc()
-		pPrepBrings2.props['workdir'] = path.join(testdir, 'pPrepBrings1', 'workdir')
-		filepbdir2 = path.join(testdir, 'testPrepBringDir2')
+		pPrepBrings2.props['workdir'] = path.join(self.testdir, 'pPrepBrings1', 'workdir')
+		filepbdir2 = path.join(self.testdir, 'testPrepBringDir2')
 		makedirs(filepbdir2)
 		filepb20 = path.join(filepbdir2, 'testPrepBring2.br')
 		filepb21 = path.join(filepbdir2, 'whatever2.txt')
-		filepb22 = path.join(testdir, 'testPrepBring2.txt')
+		filepb22 = path.join(self.testdir, 'testPrepBring2.txt')
 		symlink(filepb21, filepb22)
 		helpers.writeFile(filepb21)
 		pPrepBrings2.props['input']   = {
@@ -240,12 +274,12 @@ class TestJob(helpers.TestCase):
 		yield 0, pPrepBrings2, {}, TemplatePyPPLRenderError, 'unknown template variable: "x"'
 
 		pPrepBrings3 = Proc()
-		pPrepBrings3.props['workdir'] = path.join(testdir, 'pPrepBrings1', 'workdir')
-		filepbdir3 = path.join(testdir, 'testPrepBringDir3')
+		pPrepBrings3.props['workdir'] = path.join(self.testdir, 'pPrepBrings1', 'workdir')
+		filepbdir3 = path.join(self.testdir, 'testPrepBringDir3')
 		makedirs(filepbdir3)
 		filepb30 = path.join(filepbdir3, 'testPrepBring3.br')
 		filepb31 = path.join(filepbdir3, 'whatever3.txt')
-		filepb32 = path.join(testdir, 'testPrepBring3.txt')
+		filepb32 = path.join(self.testdir, 'testPrepBring3.txt')
 		helpers.writeFile(filepb31)
 		symlink(filepb31, filepb32)
 		helpers.writeFile(filepb30)
@@ -260,12 +294,12 @@ class TestJob(helpers.TestCase):
 
 		# no bring-in file
 		pPrepBrings4 = Proc()
-		pPrepBrings4.props['workdir'] = path.join(testdir, 'pPrepBrings1', 'workdir')
+		pPrepBrings4.props['workdir'] = path.join(self.testdir, 'pPrepBrings1', 'workdir')
 		pPrepBrings4.LOG_NLINE['BRINGFILE_NOTFOUND'] = -1
-		filepbdir4 = path.join(testdir, 'testPrepBringDir4')
+		filepbdir4 = path.join(self.testdir, 'testPrepBringDir4')
 		makedirs(filepbdir4)
 		filepb41 = path.join(filepbdir4, 'whatever4.txt')
-		filepb42 = path.join(testdir, 'testPrepBring4.txt')
+		filepb42 = path.join(self.testdir, 'testPrepBring4.txt')
 		helpers.writeFile(filepb41)
 		symlink(filepb41, filepb42)
 		pPrepBrings4.props['input']   = {
@@ -276,12 +310,12 @@ class TestJob(helpers.TestCase):
 
 		# input file renamed
 		pPrepBrings5 = Proc()
-		pPrepBrings5.props['workdir'] = path.join(testdir, 'pPrepBrings1', 'workdir')
-		filepbdir5 = path.join(testdir, 'testPrepBringDir5')
+		pPrepBrings5.props['workdir'] = path.join(self.testdir, 'pPrepBrings1', 'workdir')
+		filepbdir5 = path.join(self.testdir, 'testPrepBringDir5')
 		makedirs(filepbdir5)
 		filepb50 = path.join(filepbdir5, 'testPrepBring5.br')
 		filepb51 = path.join(filepbdir5, 'whatever5.txt')
-		filepb52 = path.join(testdir, 'testPrepBring5.txt')
+		filepb52 = path.join(self.testdir, 'testPrepBring5.txt')
 		filepb53 = path.join(filepbdir5, 'testPrepBring5.txt')
 		helpers.writeFile(filepb51)
 		helpers.writeFile(filepb53)
@@ -302,7 +336,7 @@ class TestJob(helpers.TestCase):
 		job = Job(index, proc)
 		job._prepInput()
 		if exception:
-			self.assertRaisesStr(exception, msg, job._prepBrings)
+			self.assertRaisesRegex(exception, msg, job._prepBrings)
 		else:
 			with helpers.log2str() as (out, err):
 				job._prepBrings()
@@ -310,10 +344,10 @@ class TestJob(helpers.TestCase):
 				self.assertIn(errmsg, err.getvalue())
 			self.assertDictEqual(job.brings, brdata)
 			self.assertDictEqual(job.data['bring'], brdata)
-
-	def dataProvider_testPrepOutput(self, testdir):
+	'''
+	def dataProvider_testPrepOutput(self):
 		pPrepOutput = Proc()
-		pPrepOutput.props['workdir'] = path.join(testdir, 'pPrepOutput', 'workdir')
+		pPrepOutput.props['workdir'] = path.join(self.testdir, 'pPrepOutput', 'workdir')
 		yield 0, pPrepOutput, {
 			'a': {'type': 'var', 'data': [0]}
 		}, '', {}, {}, AssertionError
@@ -358,17 +392,17 @@ class TestJob(helpers.TestCase):
 		job = Job(index, proc)
 		job._prepInput()
 		if exception:
-			self.assertRaisesStr(exception, msg, job._prepOutput)
+			self.assertRaisesRegex(exception, msg, job._prepOutput)
 		else:
 			job._prepOutput()
 			self.assertTrue(path.isdir(job.outdir))
 			self.assertDictEqual(dict(job.output), jobout)
 			self.assertDictEqual(job.data['out'], outdata)
 
-	def dataProvider_testPrepScript(self, testdir):
+	def dataProvider_testPrepScript(self):
 		pPrepScript = Proc()
 		pPrepScript.LOG_NLINE['SCRIPT_EXISTS'] = -1
-		pPrepScript.props['workdir'] = path.join(testdir, 'pPrepScript', 'workdir')
+		pPrepScript.props['workdir'] = path.join(self.testdir, 'pPrepScript', 'workdir')
 		yield 0, pPrepScript, {}, {}, TemplatePyPPL('{{x}}'), '', TemplatePyPPLRenderError, 'unknown template variable'
 		
 		sfile = path.join(pPrepScript.workdir, '1', 'job.script')
@@ -389,45 +423,45 @@ class TestJob(helpers.TestCase):
 		job._prepInput()
 		job._prepOutput()
 		if exception:
-			self.assertRaisesStr(exception, msg, job._prepScript)
+			self.assertRaisesRegex(exception, msg, job._prepScript)
 		else:
 			with helpers.log2str(levels = 'all') as (out, err):
 				job._prepScript()
 			if errmsg:
 				self.assertIn(errmsg, err.getvalue())
 			self.assertTrue(path.isfile(job.script))
-			self.assertInFile(scriptout, job.script)
+			helpers.assertInFile(self, scriptout, job.script)
 
-	def dataProvider_testLinkInfile(self, testdir):
-		file1 = path.join(testdir, 'testLinkInfile1.txt')
+	def dataProvider_testLinkInfile(self):
+		file1 = path.join(self.testdir, 'testLinkInfile1.txt')
 		helpers.writeFile(file1)
-		yield testdir, [file1, file1], ['testLinkInfile1.txt', 'testLinkInfile1.txt']
+		yield [file1, file1], ['testLinkInfile1.txt', 'testLinkInfile1.txt']
 
-		dir2 = path.join(testdir, 'testLinkInfileDir')
+		dir2 = path.join(self.testdir, 'testLinkInfileDir')
 		makedirs(dir2)
 		file2 = path.join(dir2, 'testLinkInfile1.txt')
 		helpers.writeFile(file2)
-		yield testdir, [file1, file2], ['testLinkInfile1.txt', 'testLinkInfile1[1].txt']
-		yield testdir, [file1, file2, file2], ['testLinkInfile1.txt', 'testLinkInfile1[1].txt', 'testLinkInfile1[1].txt']
+		yield [file1, file2], ['testLinkInfile1.txt', 'testLinkInfile1[1].txt']
+		yield [file1, file2, file2], ['testLinkInfile1.txt', 'testLinkInfile1[1].txt', 'testLinkInfile1[1].txt']
 
-		dir3 = path.join(testdir, 'testLinkInfileDir3')
+		dir3 = path.join(self.testdir, 'testLinkInfileDir3')
 		makedirs(dir3)
 		file3 = path.join(dir3, 'testLinkInfile1.txt')
 		helpers.writeFile(file3)
-		yield testdir, [file1, file2, file3], ['testLinkInfile1.txt', 'testLinkInfile1[1].txt', 'testLinkInfile1[2].txt']
+		yield [file1, file2, file3], ['testLinkInfile1.txt', 'testLinkInfile1[1].txt', 'testLinkInfile1[2].txt']
 
-	def testLinkInfile(self, testdir, orgfiles, inbns):
+	def testLinkInfile(self, orgfiles, inbns):
 		pLinkInfile = Proc()
-		pLinkInfile.props['workdir'] = path.join(testdir, 'pLinkInfile', 'workdir')
+		pLinkInfile.props['workdir'] = path.join(self.testdir, 'pLinkInfile', 'workdir')
 		job = Job(0, pLinkInfile)
 		job._prepInput()
 		for i, orgfile in enumerate(orgfiles):
 			job._linkInfile(orgfile)
 			self.assertTrue(path.samefile(orgfile, path.join(job.indir, inbns[i])))
 
-	def dataProvider_testInit(self, testdir):
+	def dataProvider_testInit(self):
 		pInit = Proc()
-		pInit.props['workdir'] = path.join(testdir, 'pInit', 'workdir')
+		pInit.props['workdir'] = path.join(self.testdir, 'pInit', 'workdir')
 		pInit.props['script']  = TemplatePyPPL('')
 		yield 0, pInit
 
@@ -442,9 +476,9 @@ class TestJob(helpers.TestCase):
 		self.assertTrue(path.exists(job.errfile))
 		self.assertDictEqual(predata['job'], job.data['job'])
 
-	def dataProvider_testReportItem(self, testdir):
+	def dataProvider_testReportItem(self):
 		pReportItem = Proc()
-		pReportItem.props['workdir'] = path.join(testdir, 'pReportItem', 'workdir')
+		pReportItem.props['workdir'] = path.join(self.testdir, 'pReportItem', 'workdir')
 		pReportItem.props['size'] = 128
 		yield 0, pReportItem, 'a', 5, 'hello', 'input', ['INPUT', '[001/128] a     => hello']
 		yield 1, pReportItem, 'a', 5, [], 'input', ['INPUT', '[002/128] a     => []']
@@ -471,14 +505,14 @@ class TestJob(helpers.TestCase):
 		for o in outs:
 			self.assertIn(o, err.getvalue())
 
-	def dataProvider_testReport(self, testdir):
+	def dataProvider_testReport(self):
 		pReport = Proc()
-		pReport.props['workdir'] = path.join(testdir, 'pReport', 'workdir')
-		fileprdir = path.join(testdir, 'pReportDir')
+		pReport.props['workdir'] = path.join(self.testdir, 'pReport', 'workdir')
+		fileprdir = path.join(self.testdir, 'pReportDir')
 		makedirs(fileprdir)
 		filepb0 = path.join(fileprdir, 'testReport.br')
 		filepb1 = path.join(fileprdir, 'whatever.txt')
-		filepb2 = path.join(testdir, 'testReport.txt')
+		filepb2 = path.join(self.testdir, 'testReport.txt')
 		helpers.writeFile(filepb1)
 		symlink(filepb1, filepb2)
 		helpers.writeFile(filepb0)
@@ -487,18 +521,16 @@ class TestJob(helpers.TestCase):
 			'b': {'type': 'var', 'data': ['hello']}
 		}
 		pReport.props['output']  = {'a': ('var', TemplatePyPPL('1{{in.a}}'))}
-		pReport.props['brings']  = {'a': TemplatePyPPL('{{in.a | fn}}.br')}
+		# pReport.props['brings']  = {'a': TemplatePyPPL('{{in.a | fn}}.br')}
 		pReport.props['size']    = 100
 		pReport.props['script']  = TemplatePyPPL('{{in.a | fn}}.script')
 		yield 0, pReport, [
 			'INPUT',
 			'OUTPUT',
-			'BRINGS',
+			# 'BRINGS',
 			'[001/100]',
-			'b  => hello',
-			'_a => %s' % filepb2,
-			'_a => [%s]' % filepb0,
-			'a  => 1/'
+			'b => hello',
+			'a => 1/'
 		]
 
 	def testReport(self, index, proc, outs):
@@ -509,9 +541,9 @@ class TestJob(helpers.TestCase):
 		for o in outs:
 			self.assertIn(o, err.getvalue())
 
-	def dataProvider_testRc(self, testdir):
+	def dataProvider_testRc(self):
 		pRc = Proc()
-		pRc.props['workdir'] = path.join(testdir, 'pRc', 'workdir')
+		pRc.props['workdir'] = path.join(self.testdir, 'pRc', 'workdir')
 		job = Job(0, pRc)
 		job1 = Job(1, pRc)
 		job2 = Job(2, pRc)
@@ -534,9 +566,9 @@ class TestJob(helpers.TestCase):
 			job.rc(val)
 			self.assertEqual(helpers.readFile(job.rcfile, int), exprc)
 
-	def dataProvider_testPid(self, testdir):
+	def dataProvider_testPid(self):
 		pPid = Proc()
-		pPid.props['workdir'] = path.join(testdir, 'pPid', 'workdir')
+		pPid.props['workdir'] = path.join(self.testdir, 'pPid', 'workdir')
 		job = Job(0, pPid)
 		job1 = Job(1, pPid)
 		job2 = Job(2, pPid)
@@ -559,15 +591,15 @@ class TestJob(helpers.TestCase):
 			job.pid(val)
 			self.assertEqual(helpers.readFile(job.pidfile), expid)
 			
-	def dataProvider_testSucceed(self, testdir):
-		yield testdir, 0, [0], True
-		yield testdir, 1, [0], False
-		yield testdir, 1, [0,1], True
-		yield testdir, 2, [0,1], False
+	def dataProvider_testSucceed(self):
+		yield 0, [0], True
+		yield 1, [0], False
+		yield 1, [0,1], True
+		yield 2, [0,1], False
 			
-	def testSucceed(self, testdir, jobrc, procrc, out):
+	def testSucceed(self, jobrc, procrc, out):
 		pSucceed = Proc()
-		pSucceed.props['workdir'] = path.join(testdir, 'pSucceed', 'workdir')
+		pSucceed.props['workdir'] = path.join(self.testdir, 'pSucceed', 'workdir')
 		pSucceed.props['rc'] = procrc
 		job = Job(0, pSucceed)
 		if not path.isdir(job.dir):
@@ -575,9 +607,9 @@ class TestJob(helpers.TestCase):
 		job.rc(jobrc)
 		self.assertEqual(job.succeed(), out)
 		
-	def dataProvider_testCheckoutfiles(self, testdir):
+	def dataProvider_testCheckoutfiles(self):
 		pCheckoutfiles1 = Proc()
-		pCheckoutfiles1.props['workdir'] = path.join(testdir, 'pCheckoutfiles1', 'workdir')
+		pCheckoutfiles1.props['workdir'] = path.join(self.testdir, 'pCheckoutfiles1', 'workdir')
 		pCheckoutfiles1.props['expect'] = TemplatePyPPL('grep content {{out.a}}')
 		pCheckoutfiles1.props['script'] = TemplatePyPPL('')
 		pCheckoutfiles1.props['output'] = {
@@ -590,7 +622,7 @@ class TestJob(helpers.TestCase):
 		yield job1, True, Job.RC_EXPECTFAIL
 		
 		pCheckoutfiles2 = Proc()
-		pCheckoutfiles2.props['workdir'] = path.join(testdir, 'pCheckoutfiles2', 'workdir')
+		pCheckoutfiles2.props['workdir'] = path.join(self.testdir, 'pCheckoutfiles2', 'workdir')
 		pCheckoutfiles2.props['expect'] = TemplatePyPPL('grep content {{out.a}}')
 		pCheckoutfiles2.props['script'] = TemplatePyPPL('')
 		pCheckoutfiles2.props['output'] = {
@@ -604,7 +636,7 @@ class TestJob(helpers.TestCase):
 		yield job2, False, 0
 		
 		pCheckoutfiles3 = Proc()
-		pCheckoutfiles3.props['workdir'] = path.join(testdir, 'pCheckoutfiles3', 'workdir')
+		pCheckoutfiles3.props['workdir'] = path.join(self.testdir, 'pCheckoutfiles3', 'workdir')
 		pCheckoutfiles3.props['expect'] = TemplatePyPPL('grep content {{out.a}}')
 		pCheckoutfiles3.props['script'] = TemplatePyPPL('')
 		pCheckoutfiles3.props['output'] = {
@@ -618,7 +650,7 @@ class TestJob(helpers.TestCase):
 		yield job3, False, 0
 		
 		pCheckoutfiles4 = Proc()
-		pCheckoutfiles4.props['workdir'] = path.join(testdir, 'pCheckoutfiles4', 'workdir')
+		pCheckoutfiles4.props['workdir'] = path.join(self.testdir, 'pCheckoutfiles4', 'workdir')
 		pCheckoutfiles4.props['script'] = TemplatePyPPL('')
 		pCheckoutfiles4.props['output'] = {
 			'a': ('file', TemplatePyPPL('whatever.txt'))
@@ -634,30 +666,31 @@ class TestJob(helpers.TestCase):
 		self.assertEqual(job.rc(), outrc)
 		job.rc(0)
 		
-	def dataProvider_testExportSingle(self, testdir):
+	def dataProvider_testExportSingle(self):
 		pExportSingle1 = Proc()
-		pExportSingle1.props['workdir'] = path.join(testdir, 'pExportSingle1', 'workdir')
+		pExportSingle1.props['workdir'] = path.join(self.testdir, 'pExportSingle1', 'workdir')
 		job1 = Job(0, pExportSingle1)
 		yield job1, [], []
 		
 		pExportSingle2 = Proc()
-		pExportSingle2.props['workdir'] = path.join(testdir, 'pExportSingle2', 'workdir')
-		pExportSingle2.props['exdir'] = path.join(testdir, 'notexist')
+		pExportSingle2.props['workdir'] = path.join(self.testdir, 'pExportSingle2', 'workdir')
+		pExportSingle2.props['exdir'] = path.join(self.testdir, 'notexist')
 		job2 = Job(1, pExportSingle2)
 		yield job2, [], [], AssertionError
 		
 		pExportSingle3 = Proc()
-		pExportSingle3.props['workdir'] = path.join(testdir, 'pExportSingle3', 'workdir')
-		pExportSingle3.props['exdir'] = path.join(testdir, 'exdir')
+		pExportSingle3.props['workdir'] = path.join(self.testdir, 'pExportSingle3', 'workdir')
+		pExportSingle3.props['exdir'] = path.join(self.testdir, 'exdir')
 		pExportSingle3.props['expart'] = 1
 		job3 = Job(1, pExportSingle3)
-		makedirs(pExportSingle3.exdir)
+		if not path.exists(pExportSingle3.exdir):
+			makedirs(pExportSingle3.exdir)
 		yield job3, [], [], AssertionError
 		
 		pExportSingle4 = Proc()
-		pExportSingle4.props['workdir'] = path.join(testdir, 'pExportSingle4', 'workdir')
+		pExportSingle4.props['workdir'] = path.join(self.testdir, 'pExportSingle4', 'workdir')
 		pExportSingle4.props['script'] = TemplatePyPPL('')
-		pExportSingle4.props['exdir'] = path.join(testdir, 'exdir')
+		pExportSingle4.props['exdir'] = path.join(self.testdir, 'exdir')
 		pExportSingle4.props['exhow'] = 'move'
 		pExportSingle4.props['output'] = {
 			'a': ('file', TemplatePyPPL('whatever.txt'))
@@ -670,9 +703,9 @@ class TestJob(helpers.TestCase):
 		yield job4, [(path.isfile, afile4_ex), (path.exists, afile4), (path.islink, afile4)], [(path.islink, afile4_ex)]
 		
 		pExportSingle5 = Proc()
-		pExportSingle5.props['workdir'] = path.join(testdir, 'pExportSingle5', 'workdir')
+		pExportSingle5.props['workdir'] = path.join(self.testdir, 'pExportSingle5', 'workdir')
 		pExportSingle5.props['script']  = TemplatePyPPL('')
-		pExportSingle5.props['exdir']   = path.join(testdir, 'exdir')
+		pExportSingle5.props['exdir']   = path.join(self.testdir, 'exdir')
 		pExportSingle5.props['exow']    = True
 		pExportSingle5.props['exhow']   = 'move'
 		pExportSingle5.props['output']  = {
@@ -687,9 +720,9 @@ class TestJob(helpers.TestCase):
 		yield job5, [(path.isfile, afile5_ex), (path.exists, afile5), (path.islink, afile5)], [(path.islink, afile5_ex), (lambda x: helpers.readFile(x) == 'afile5_ex', afile5_ex)]
 		
 		pExportSingle6 = Proc()
-		pExportSingle6.props['workdir'] = path.join(testdir, 'pExportSingle6', 'workdir')
+		pExportSingle6.props['workdir'] = path.join(self.testdir, 'pExportSingle6', 'workdir')
 		pExportSingle6.props['script']  = TemplatePyPPL('')
-		pExportSingle6.props['exdir']   = path.join(testdir, 'exdir')
+		pExportSingle6.props['exdir']   = path.join(self.testdir, 'exdir')
 		pExportSingle6.props['exow']    = True
 		pExportSingle6.props['exhow']   = 'gz'
 		pExportSingle6.props['output']  = {
@@ -707,9 +740,9 @@ class TestJob(helpers.TestCase):
 		yield job6, [(path.isfile, afile6_ex), (path.isfile, bfile6_ex), (path.isdir, bfile6), (path.exists, afile6)], []
 		
 		pExportSingle7 = Proc()
-		pExportSingle7.props['workdir'] = path.join(testdir, 'pExportSingle7', 'workdir')
+		pExportSingle7.props['workdir'] = path.join(self.testdir, 'pExportSingle7', 'workdir')
 		pExportSingle7.props['script']  = TemplatePyPPL('')
-		pExportSingle7.props['exdir']   = path.join(testdir, 'exdir')
+		pExportSingle7.props['exdir']   = path.join(self.testdir, 'exdir')
 		pExportSingle7.props['exow']    = True
 		pExportSingle7.props['exhow']   = 'gz'
 		pExportSingle7.props['output']  = {
@@ -726,9 +759,9 @@ class TestJob(helpers.TestCase):
 		
 		# copy
 		pExportSingle8 = Proc()
-		pExportSingle8.props['workdir'] = path.join(testdir, 'pExportSingle8', 'workdir')
+		pExportSingle8.props['workdir'] = path.join(self.testdir, 'pExportSingle8', 'workdir')
 		pExportSingle8.props['script']  = TemplatePyPPL('')
-		pExportSingle8.props['exdir']   = path.join(testdir, 'exdir')
+		pExportSingle8.props['exdir']   = path.join(self.testdir, 'exdir')
 		pExportSingle8.props['exow']    = True
 		pExportSingle8.props['exhow']   = 'copy'
 		pExportSingle8.props['output']  = {
@@ -743,9 +776,9 @@ class TestJob(helpers.TestCase):
 		
 		# link
 		pExportSingle9 = Proc()
-		pExportSingle9.props['workdir'] = path.join(testdir, 'pExportSingle9', 'workdir')
+		pExportSingle9.props['workdir'] = path.join(self.testdir, 'pExportSingle9', 'workdir')
 		pExportSingle9.props['script']  = TemplatePyPPL('')
-		pExportSingle9.props['exdir']   = path.join(testdir, 'exdir')
+		pExportSingle9.props['exdir']   = path.join(self.testdir, 'exdir')
 		pExportSingle9.props['exow']    = True
 		pExportSingle9.props['exhow']   = 'link'
 		pExportSingle9.props['output']  = {
@@ -760,9 +793,9 @@ class TestJob(helpers.TestCase):
 		
 		# expart (glob)
 		pExportSingle10 = Proc()
-		pExportSingle10.props['workdir'] = path.join(testdir, 'pExportSingle10', 'workdir')
+		pExportSingle10.props['workdir'] = path.join(self.testdir, 'pExportSingle10', 'workdir')
 		pExportSingle10.props['script']  = TemplatePyPPL('')
-		pExportSingle10.props['exdir']   = path.join(testdir, 'exdir')
+		pExportSingle10.props['exdir']   = path.join(self.testdir, 'exdir')
 		pExportSingle10.props['expart']  = [TemplatePyPPL('*.txt')]
 		pExportSingle10.props['output']  = {
 			'a': ('file', TemplatePyPPL('whatever10.txt'))
@@ -776,9 +809,9 @@ class TestJob(helpers.TestCase):
 		
 		# expart (outkey)
 		pExportSingle11 = Proc()
-		pExportSingle11.props['workdir'] = path.join(testdir, 'pExportSingle11', 'workdir')
+		pExportSingle11.props['workdir'] = path.join(self.testdir, 'pExportSingle11', 'workdir')
 		pExportSingle11.props['script']  = TemplatePyPPL('')
-		pExportSingle11.props['exdir']   = path.join(testdir, 'exdir')
+		pExportSingle11.props['exdir']   = path.join(self.testdir, 'exdir')
 		pExportSingle11.props['expart']  = [TemplatePyPPL('a')]
 		pExportSingle11.props['output']  = {
 			'a': ('file', TemplatePyPPL('whatever11.txt'))
@@ -792,9 +825,9 @@ class TestJob(helpers.TestCase):
 		
 		# expart (no matches)
 		pExportSingle12 = Proc()
-		pExportSingle12.props['workdir'] = path.join(testdir, 'pExportSingle12', 'workdir')
+		pExportSingle12.props['workdir'] = path.join(self.testdir, 'pExportSingle12', 'workdir')
 		pExportSingle12.props['script']  = TemplatePyPPL('')
-		pExportSingle12.props['exdir']   = path.join(testdir, 'exdir')
+		pExportSingle12.props['exdir']   = path.join(self.testdir, 'exdir')
 		pExportSingle12.props['expart']  = [TemplatePyPPL('b')]
 		pExportSingle12.props['output']  = {
 			'a': ('file', TemplatePyPPL('whatever12.txt'))
@@ -807,9 +840,9 @@ class TestJob(helpers.TestCase):
 		yield job12, [(path.isfile, afile12)], [(path.isfile, afile12_ex), (path.islink, afile12)]
 		
 		pExportSingle13 = Proc()
-		pExportSingle13.props['workdir'] = path.join(testdir, 'pExportSingle13', 'workdir')
+		pExportSingle13.props['workdir'] = path.join(self.testdir, 'pExportSingle13', 'workdir')
 		pExportSingle13.props['script'] = TemplatePyPPL('')
-		pExportSingle13.props['exdir'] = path.join(testdir, 'exdir')
+		pExportSingle13.props['exdir'] = path.join(self.testdir, 'exdir')
 		pExportSingle13.props['exhow'] = 'move'
 		pExportSingle13.props['output'] = {
 			'a': ('stdout', TemplatePyPPL('whatever.out')),
@@ -836,17 +869,18 @@ class TestJob(helpers.TestCase):
 			for func, outfile in falsehoods:
 				self.assertFalse(func(outfile))
 				
-	def dataProvider_testExport(self, testdir):
+	def dataProvider_testExport(self):
 		pExport = Proc()
-		pExport.props['workdir'] = path.join(testdir, 'pExport', 'workdir')
+		pExport.props['workdir'] = path.join(self.testdir, 'pExport', 'workdir')
 		pExport.props['script']  = TemplatePyPPL('')
-		pExport.props['exdir']   = path.join(testdir, 'exdir')
+		pExport.props['exdir']   = path.join(self.testdir, 'exdir')
 		pExport.props['output']  = {
 			'a': ('file', TemplatePyPPL('pexport-multiple.txt'))
 		}
-		somefile = path.join(testdir, 'somefile')
+		somefile = path.join(self.testdir, 'somefile')
 		helpers.writeFile(somefile)
-		makedirs(pExport.exdir)
+		if not path.exists(pExport.exdir):
+			makedirs(pExport.exdir)
 		truths = [(path.isfile, somefile), (path.isfile, path.join(pExport.exdir, 'pexport-multiple.txt'))]
 		falsehoolds = [(path.islink, somefile), (path.islink, path.join(pExport.exdir, 'pexport-multiple.txt'))]
 		tappend = truths.append
@@ -891,18 +925,19 @@ class TestJob(helpers.TestCase):
 						
 	def testExport(self, jobs, truths, falsehoods):
 		def export_func(i):
-			with helpers.log2str():
+			with self.assertLogs():
 				jobs[i].export()
-		utils.parallel(func = export_func, args = [(i,) for i in range(len(jobs))], nthread = len(jobs), method = 'process')
+		utils.Parallel(len(jobs), 'thread').run(export_func, [(i,) for i in range(len(jobs))])
+		#utils.parallel(func = export_func, args = [(i,) for i in range(len(jobs))], nthread = len(jobs), method = 'process')
 		i = 0
 		for func, outfile in truths:
 			self.assertTrue(func(outfile))
 		for func, outfile in falsehoods:
 			self.assertFalse(func(outfile))
 			
-	def dataProvider_testReset(self, testdir):
+	def dataProvider_testReset(self):
 		pReset = Proc()
-		pReset.props['workdir'] = path.join(testdir, 'pReset', 'workdir')
+		pReset.props['workdir'] = path.join(self.testdir, 'pReset', 'workdir')
 		pReset.props['script']  = TemplatePyPPL('')
 		pReset.props['output']  = {
 			'a': ('file', TemplatePyPPL('preset.txt')),
@@ -953,10 +988,10 @@ class TestJob(helpers.TestCase):
 		for outdir in outdirs:
 			self.assertTrue(path.exists(path.join(job.outdir, outdir)))
 		
-	def dataProvider_testShowError(self, testdir):
+	def dataProvider_testShowError(self):
 		# ignore
 		pShowError = Proc()
-		pShowError.props['workdir'] = path.join(testdir, 'pShowError', 'workdir')
+		pShowError.props['workdir'] = path.join(self.testdir, 'pShowError', 'workdir')
 		pShowError.props['script']  = TemplatePyPPL('')
 		pShowError.props['errhow']  = 'ignore'
 		pShowError.props['size']    = 1
@@ -967,7 +1002,7 @@ class TestJob(helpers.TestCase):
 		
 		# empty stderr
 		pShowError1 = Proc()
-		pShowError1.props['workdir'] = path.join(testdir, 'pShowError1', 'workdir')
+		pShowError1.props['workdir'] = path.join(self.testdir, 'pShowError1', 'workdir')
 		pShowError1.props['script']  = TemplatePyPPL('')
 		pShowError1.props['echo']    = {'jobs': [0], 'type': []}
 		pShowError1.props['size']    = 10
@@ -978,7 +1013,7 @@ class TestJob(helpers.TestCase):
 		
 		# errors less than 20 lines
 		pShowError2 = Proc()
-		pShowError2.props['workdir'] = path.join(testdir, 'pShowError2', 'workdir')
+		pShowError2.props['workdir'] = path.join(self.testdir, 'pShowError2', 'workdir')
 		pShowError2.props['script']  = TemplatePyPPL('')
 		pShowError2.props['echo']    = {'jobs': [0], 'type': []}
 		pShowError2.props['size']    = 10
@@ -990,7 +1025,7 @@ class TestJob(helpers.TestCase):
 		
 		# errors more than 20 lines
 		pShowError3 = Proc()
-		pShowError3.props['workdir'] = path.join(testdir, 'pShowError3', 'workdir')
+		pShowError3.props['workdir'] = path.join(self.testdir, 'pShowError3', 'workdir')
 		pShowError3.props['script']  = TemplatePyPPL('')
 		pShowError3.props['echo']    = {'jobs': [0], 'type': []}
 		pShowError3.props['size']    = 10
@@ -1004,7 +1039,7 @@ class TestJob(helpers.TestCase):
 		
 		# not in echo, don't print stderr
 		pShowError4 = Proc()
-		pShowError4.props['workdir'] = path.join(testdir, 'pShowError4', 'workdir')
+		pShowError4.props['workdir'] = path.join(self.testdir, 'pShowError4', 'workdir')
 		pShowError4.props['script']  = TemplatePyPPL('')
 		pShowError4.props['echo']    = {'jobs': [0], 'type': ['stderr']}
 		pShowError4.props['size']    = 10
@@ -1023,10 +1058,10 @@ class TestJob(helpers.TestCase):
 		for err in errsnotin:
 			self.assertNotIn(err, stderr)
 			
-	def dataProvider_testSignature(self, testdir):
+	def dataProvider_testSignature(self):
 		# empty script
 		pSignature = Proc()
-		pSignature.props['workdir'] = path.join(testdir, 'pSignature', 'workdir')
+		pSignature.props['workdir'] = path.join(self.testdir, 'pSignature', 'workdir')
 		pSignature.props['script']  = TemplatePyPPL('')
 		pSignature.props['size']    = 10
 		pSignature.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
@@ -1036,10 +1071,10 @@ class TestJob(helpers.TestCase):
 		yield job, '', ['DEBUG', '[01/10] Empty signature because of script file']
 		
 		# input file empty
-		infile1 = path.join(testdir, 'pSignature1.txt')
+		infile1 = path.join(self.testdir, 'pSignature1.txt')
 		helpers.writeFile(infile1)
 		pSignature1 = Proc()
-		pSignature1.props['workdir'] = path.join(testdir, 'pSignature1', 'workdir')
+		pSignature1.props['workdir'] = path.join(self.testdir, 'pSignature1', 'workdir')
 		pSignature1.props['script']  = TemplatePyPPL('')
 		pSignature1.props['size']    = 10
 		pSignature1.props['input']   = {
@@ -1052,10 +1087,10 @@ class TestJob(helpers.TestCase):
 		yield job1, '', ['DEBUG', '[01/10] Empty signature because of input file']
 		
 		# input files empty
-		infile2 = path.join(testdir, 'pSignature2.txt')
+		infile2 = path.join(self.testdir, 'pSignature2.txt')
 		helpers.writeFile(infile2)
 		pSignature2 = Proc()
-		pSignature2.props['workdir'] = path.join(testdir, 'pSignature2', 'workdir')
+		pSignature2.props['workdir'] = path.join(self.testdir, 'pSignature2', 'workdir')
 		pSignature2.props['script']  = TemplatePyPPL('')
 		pSignature2.props['size']    = 10
 		pSignature2.props['input']   = {
@@ -1069,7 +1104,7 @@ class TestJob(helpers.TestCase):
 		
 		# outfile empty
 		pSignature3 = Proc()
-		pSignature3.props['workdir'] = path.join(testdir, 'pSignature3', 'workdir')
+		pSignature3.props['workdir'] = path.join(self.testdir, 'pSignature3', 'workdir')
 		pSignature3.props['script']  = TemplatePyPPL('')
 		pSignature3.props['size']    = 10
 		pSignature3.props['output']  = {
@@ -1082,7 +1117,7 @@ class TestJob(helpers.TestCase):
 		
 		# outdir empty
 		pSignature4 = Proc()
-		pSignature4.props['workdir'] = path.join(testdir, 'pSignature4', 'workdir')
+		pSignature4.props['workdir'] = path.join(self.testdir, 'pSignature4', 'workdir')
 		pSignature4.props['script']  = TemplatePyPPL('')
 		pSignature4.props['size']    = 10
 		pSignature4.props['output']  = {
@@ -1094,14 +1129,14 @@ class TestJob(helpers.TestCase):
 		yield job4, '', ['DEBUG', '[01/10] Empty signature because of output dir']
 		
 		# normal signature
-		infile5 = path.join(testdir, 'pSignature5.txt')
-		infile5_1 = path.join(testdir, 'pSignature5_1.txt')
-		infile5_2 = path.join(testdir, 'pSignature5_2.txt')
+		infile5 = path.join(self.testdir, 'pSignature5.txt')
+		infile5_1 = path.join(self.testdir, 'pSignature5_1.txt')
+		infile5_2 = path.join(self.testdir, 'pSignature5_2.txt')
 		helpers.writeFile(infile5)
 		helpers.writeFile(infile5_1)
 		helpers.writeFile(infile5_2)
 		pSignature5 = Proc()
-		pSignature5.props['workdir'] = path.join(testdir, 'pSignature5', 'workdir')
+		pSignature5.props['workdir'] = path.join(self.testdir, 'pSignature5', 'workdir')
 		pSignature5.props['script']  = TemplatePyPPL('')
 		pSignature5.props['size']    = 10
 		pSignature5.props['input']   = {
@@ -1159,16 +1194,16 @@ class TestJob(helpers.TestCase):
 		for err in errs:
 			self.assertIn(err, stderr)
 	
-	def dataProvider_testCache(self, testdir):		
+	def dataProvider_testCache(self):		
 		# normal signature
-		infile = path.join(testdir, 'pCache.txt')
-		infile_1 = path.join(testdir, 'pCache_1.txt')
-		infile_2 = path.join(testdir, 'pCache_2.txt')
+		infile = path.join(self.testdir, 'pCache.txt')
+		infile_1 = path.join(self.testdir, 'pCache_1.txt')
+		infile_2 = path.join(self.testdir, 'pCache_2.txt')
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
 		pCache = Proc()
-		pCache.props['workdir'] = path.join(testdir, 'pCache', 'workdir')
+		pCache.props['workdir'] = path.join(self.testdir, 'pCache', 'workdir')
 		pCache.props['script']  = TemplatePyPPL('')
 		pCache.props['cache']   = True
 		pCache.props['size']    = 10
@@ -1218,7 +1253,7 @@ class TestJob(helpers.TestCase):
 		
 		#
 		pCache1 = Proc()
-		pCache1.props['workdir'] = path.join(testdir, 'pCache1', 'workdir')
+		pCache1.props['workdir'] = path.join(self.testdir, 'pCache1', 'workdir')
 		pCache1.props['script']  = TemplatePyPPL('')
 		pCache1.props['cache']   = False
 		pCache1.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
@@ -1234,10 +1269,10 @@ class TestJob(helpers.TestCase):
 		else:
 			self.assertDictEqual(helpers.readFile(job.cachefile, json.loads), outsig)
 			
-	def dataProvider_testIsTrulyCached(self, testdir):
+	def dataProvider_testIsTrulyCached(self):
 		# no cache file
 		pIsTrulyCached = Proc()
-		pIsTrulyCached.props['workdir'] = path.join(testdir, 'pIsTrulyCached', 'workdir')
+		pIsTrulyCached.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached', 'workdir')
 		pIsTrulyCached.props['script']  = TemplatePyPPL('')
 		pIsTrulyCached.LOG_NLINE['CACHE_SIGFILE_NOTEXISTS'] = -1
 		job = Job(0, pIsTrulyCached)
@@ -1246,7 +1281,7 @@ class TestJob(helpers.TestCase):
 		
 		# empty cache file
 		pIsTrulyCached1 = Proc()
-		pIsTrulyCached1.props['workdir'] = path.join(testdir, 'pIsTrulyCached1', 'workdir')
+		pIsTrulyCached1.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached1', 'workdir')
 		pIsTrulyCached1.props['script']  = TemplatePyPPL('')
 		pIsTrulyCached1.LOG_NLINE['CACHE_EMPTY_PREVSIG'] = -1
 		job1 = Job(0, pIsTrulyCached1)
@@ -1255,14 +1290,14 @@ class TestJob(helpers.TestCase):
 		yield job1, False, ['DEBUG', 'not cached because previous signature is empty.']
 		
 		# current signature empty
-		infile = path.join(testdir, 'pIsTrulyCached2.txt')
-		infile_1 = path.join(testdir, 'pIsTrulyCached2_1.txt')
-		infile_2 = path.join(testdir, 'pIsTrulyCached2_2.txt')
+		infile = path.join(self.testdir, 'pIsTrulyCached2.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached2_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached2_2.txt')
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
 		pIsTrulyCached2 = Proc()
-		pIsTrulyCached2.props['workdir'] = path.join(testdir, 'pIsTrulyCached2', 'workdir')
+		pIsTrulyCached2.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached2', 'workdir')
 		pIsTrulyCached2.props['script']  = TemplatePyPPL('')
 		pIsTrulyCached2.props['cache']   = True
 		pIsTrulyCached2.props['size']    = 10
@@ -1291,14 +1326,14 @@ class TestJob(helpers.TestCase):
 		yield job2, False, ['DEBUG', 'not cached because current signature is empty.']
 		
 		# script file newer
-		infile = path.join(testdir, 'pIsTrulyCached3.txt')
-		infile_1 = path.join(testdir, 'pIsTrulyCached3_1.txt')
-		infile_2 = path.join(testdir, 'pIsTrulyCached3_2.txt')
+		infile = path.join(self.testdir, 'pIsTrulyCached3.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached3_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached3_2.txt')
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
 		pIsTrulyCached3 = Proc()
-		pIsTrulyCached3.props['workdir'] = path.join(testdir, 'pIsTrulyCached3', 'workdir')
+		pIsTrulyCached3.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached3', 'workdir')
 		pIsTrulyCached3.props['script']  = TemplatePyPPL('')
 		pIsTrulyCached3.props['cache']   = True
 		pIsTrulyCached3.props['size']    = 10
@@ -1329,14 +1364,14 @@ class TestJob(helpers.TestCase):
 		yield job3, False, ['DEBUG', 'not cached because script file(script) is newer:', '- Previous:', '- Current']
 		
 		# script file newer
-		infile = path.join(testdir, 'pIsTrulyCached4.txt')
-		infile_1 = path.join(testdir, 'pIsTrulyCached4_1.txt')
-		infile_2 = path.join(testdir, 'pIsTrulyCached4_2.txt')
+		infile = path.join(self.testdir, 'pIsTrulyCached4.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached4_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached4_2.txt')
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
 		pIsTrulyCached4 = Proc()
-		pIsTrulyCached4.props['workdir'] = path.join(testdir, 'pIsTrulyCached4', 'workdir')
+		pIsTrulyCached4.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached4', 'workdir')
 		pIsTrulyCached4.props['script']  = TemplatePyPPL('')
 		pIsTrulyCached4.props['cache']   = True
 		pIsTrulyCached4.props['size']    = 10
@@ -1367,14 +1402,14 @@ class TestJob(helpers.TestCase):
 		yield job4, False, ['DEBUG', 'not cached because input variable(c) is different:', '- Previous: var_c', '- Current : d']
 		
 		# input file different
-		infile = path.join(testdir, 'pIsTrulyCached5.txt')
-		infile_1 = path.join(testdir, 'pIsTrulyCached5_1.txt')
-		infile_2 = path.join(testdir, 'pIsTrulyCached5_2.txt')
+		infile = path.join(self.testdir, 'pIsTrulyCached5.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached5_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached5_2.txt')
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
 		pIsTrulyCached5 = Proc()
-		pIsTrulyCached5.props['workdir'] = path.join(testdir, 'pIsTrulyCached5', 'workdir')
+		pIsTrulyCached5.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached5', 'workdir')
 		pIsTrulyCached5.props['script']  = TemplatePyPPL('')
 		pIsTrulyCached5.props['cache']   = True
 		pIsTrulyCached5.props['size']    = 10
@@ -1405,14 +1440,14 @@ class TestJob(helpers.TestCase):
 		yield job5, False, ['DEBUG', 'not cached because input file(a) is different:']
 		
 		# input file newer
-		infile = path.join(testdir, 'pIsTrulyCached6.txt')
-		infile_1 = path.join(testdir, 'pIsTrulyCached6_1.txt')
-		infile_2 = path.join(testdir, 'pIsTrulyCached6_2.txt')
+		infile = path.join(self.testdir, 'pIsTrulyCached6.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached6_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached6_2.txt')
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
 		pIsTrulyCached6 = Proc()
-		pIsTrulyCached6.props['workdir'] = path.join(testdir, 'pIsTrulyCached6', 'workdir')
+		pIsTrulyCached6.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached6', 'workdir')
 		pIsTrulyCached6.props['script']  = TemplatePyPPL('')
 		pIsTrulyCached6.props['cache']   = True
 		pIsTrulyCached6.props['size']    = 10
@@ -1443,14 +1478,14 @@ class TestJob(helpers.TestCase):
 		yield job6, False, ['DEBUG', 'not cached because input file(a) is newer:']
 		
 		# input files diff
-		infile = path.join(testdir, 'pIsTrulyCached7.txt')
-		infile_1 = path.join(testdir, 'pIsTrulyCached7_1.txt')
-		infile_2 = path.join(testdir, 'pIsTrulyCached7_2.txt')
+		infile = path.join(self.testdir, 'pIsTrulyCached7.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached7_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached7_2.txt')
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
 		pIsTrulyCached7 = Proc()
-		pIsTrulyCached7.props['workdir'] = path.join(testdir, 'pIsTrulyCached7', 'workdir')
+		pIsTrulyCached7.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached7', 'workdir')
 		pIsTrulyCached7.props['script']  = TemplatePyPPL('')
 		pIsTrulyCached7.props['cache']   = True
 		pIsTrulyCached7.props['size']    = 10
@@ -1481,14 +1516,14 @@ class TestJob(helpers.TestCase):
 		yield job7, False, ['DEBUG', 'not cached because file 3 is different for input files(b):']
 		
 		# input files diff 2
-		infile = path.join(testdir, 'pIsTrulyCached71.txt')
-		infile_1 = path.join(testdir, 'pIsTrulyCached71_1.txt')
-		infile_2 = path.join(testdir, 'pIsTrulyCached71_2.txt')
+		infile = path.join(self.testdir, 'pIsTrulyCached71.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached71_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached71_2.txt')
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
 		pIsTrulyCached71 = Proc()
-		pIsTrulyCached71.props['workdir'] = path.join(testdir, 'pIsTrulyCached71', 'workdir')
+		pIsTrulyCached71.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached71', 'workdir')
 		pIsTrulyCached71.props['script']  = TemplatePyPPL('')
 		pIsTrulyCached71.props['cache']   = True
 		pIsTrulyCached71.props['size']    = 10
@@ -1516,14 +1551,14 @@ class TestJob(helpers.TestCase):
 		yield job71, False, ['DEBUG', 'not cached because file 2 is different for input files(b):']
 		
 		# input files newer
-		infile = path.join(testdir, 'pIsTrulyCached8.txt')
-		infile_1 = path.join(testdir, 'pIsTrulyCached8_1.txt')
-		infile_2 = path.join(testdir, 'pIsTrulyCached8_2.txt')
+		infile = path.join(self.testdir, 'pIsTrulyCached8.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached8_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached8_2.txt')
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
 		pIsTrulyCached8 = Proc()
-		pIsTrulyCached8.props['workdir'] = path.join(testdir, 'pIsTrulyCached8', 'workdir')
+		pIsTrulyCached8.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached8', 'workdir')
 		pIsTrulyCached8.props['script']  = TemplatePyPPL('')
 		pIsTrulyCached8.props['cache']   = True
 		pIsTrulyCached8.props['size']    = 10
@@ -1554,14 +1589,14 @@ class TestJob(helpers.TestCase):
 		yield job8, False, ['DEBUG', 'not cached because file 1 is newer for input files(b):']
 		
 		# out var diff
-		infile = path.join(testdir, 'pIsTrulyCached9.txt')
-		infile_1 = path.join(testdir, 'pIsTrulyCached9_1.txt')
-		infile_2 = path.join(testdir, 'pIsTrulyCached9_2.txt')
+		infile = path.join(self.testdir, 'pIsTrulyCached9.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached9_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached9_2.txt')
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
 		pIsTrulyCached9 = Proc()
-		pIsTrulyCached9.props['workdir'] = path.join(testdir, 'pIsTrulyCached9', 'workdir')
+		pIsTrulyCached9.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached9', 'workdir')
 		pIsTrulyCached9.props['script']  = TemplatePyPPL('')
 		pIsTrulyCached9.props['cache']   = True
 		pIsTrulyCached9.props['size']    = 10
@@ -1593,14 +1628,14 @@ class TestJob(helpers.TestCase):
 		yield job9, False, ['DEBUG', 'not cached because output variable(c) is different:']
 		
 		# out file diff
-		infile = path.join(testdir, 'pIsTrulyCached10.txt')
-		infile_1 = path.join(testdir, 'pIsTrulyCached10_1.txt')
-		infile_2 = path.join(testdir, 'pIsTrulyCached10_2.txt')
+		infile = path.join(self.testdir, 'pIsTrulyCached10.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached10_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached10_2.txt')
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
 		pIsTrulyCached10 = Proc()
-		pIsTrulyCached10.props['workdir'] = path.join(testdir, 'pIsTrulyCached10', 'workdir')
+		pIsTrulyCached10.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached10', 'workdir')
 		pIsTrulyCached10.props['script']  = TemplatePyPPL('')
 		pIsTrulyCached10.props['cache']   = True
 		pIsTrulyCached10.props['size']    = 10
@@ -1630,14 +1665,14 @@ class TestJob(helpers.TestCase):
 		yield job10, False, ['DEBUG', 'not cached because output file(a) is different:']
 		
 		# out dir diff
-		infile = path.join(testdir, 'pIsTrulyCached11.txt')
-		infile_1 = path.join(testdir, 'pIsTrulyCached11_1.txt')
-		infile_2 = path.join(testdir, 'pIsTrulyCached11_2.txt')
+		infile = path.join(self.testdir, 'pIsTrulyCached11.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached11_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached11_2.txt')
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
 		pIsTrulyCached11 = Proc()
-		pIsTrulyCached11.props['workdir'] = path.join(testdir, 'pIsTrulyCached11', 'workdir')
+		pIsTrulyCached11.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached11', 'workdir')
 		pIsTrulyCached11.props['script']  = TemplatePyPPL('')
 		pIsTrulyCached11.props['cache']   = True
 		pIsTrulyCached11.props['size']    = 10
@@ -1667,14 +1702,14 @@ class TestJob(helpers.TestCase):
 		yield job11, False, ['DEBUG', 'not cached because output dir file(b) is different:']
 		
 		# True
-		infile = path.join(testdir, 'pIsTrulyCached12.txt')
-		infile_1 = path.join(testdir, 'pIsTrulyCached12_1.txt')
-		infile_2 = path.join(testdir, 'pIsTrulyCached12_2.txt')
+		infile = path.join(self.testdir, 'pIsTrulyCached12.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached12_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached12_2.txt')
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
 		pIsTrulyCached12 = Proc()
-		pIsTrulyCached12.props['workdir'] = path.join(testdir, 'pIsTrulyCached12', 'workdir')
+		pIsTrulyCached12.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached12', 'workdir')
 		pIsTrulyCached12.props['script']  = TemplatePyPPL('')
 		pIsTrulyCached12.props['cache']   = True
 		pIsTrulyCached12.props['size']    = 10
@@ -1711,15 +1746,15 @@ class TestJob(helpers.TestCase):
 		for err in errs:
 			self.assertIn(err, stderr)
 	
-	def dataProvider_testIsExptCached(self, testdir):
+	def dataProvider_testIsExptCached(self):
 		pIsExptCached = Proc()
-		pIsExptCached.props['workdir'] = path.join(testdir, 'pIsExptCached', 'workdir')
+		pIsExptCached.props['workdir'] = path.join(self.testdir, 'pIsExptCached', 'workdir')
 		pIsExptCached.props['cache']   = True
 		job = Job(0, pIsExptCached)
 		yield job, False
 		
 		pIsExptCached1 = Proc()
-		pIsExptCached1.props['workdir'] = path.join(testdir, 'pIsExptCached1', 'workdir')
+		pIsExptCached1.props['workdir'] = path.join(self.testdir, 'pIsExptCached1', 'workdir')
 		pIsExptCached1.props['cache']   = 'export'
 		pIsExptCached1.props['exhow']   = 'link'
 		pIsExptCached1.__dict__['LOG_NLINE'] = {}
@@ -1727,24 +1762,24 @@ class TestJob(helpers.TestCase):
 		yield job1, False, ['WARNING', 'Job is not export-cached using symlink export.']
 		
 		pIsExptCached2 = Proc()
-		pIsExptCached2.props['workdir'] = path.join(testdir, 'pIsExptCached2', 'workdir')
+		pIsExptCached2.props['workdir'] = path.join(self.testdir, 'pIsExptCached2', 'workdir')
 		pIsExptCached2.props['cache']   = 'export'
 		pIsExptCached2.props['expart']   = [TemplatePyPPL('link')]
 		job2 = Job(0, pIsExptCached2)
 		yield job2, False, ['WARNING', 'Job is not export-cached using partial export.']
 		
 		pIsExptCached3 = Proc()
-		pIsExptCached3.props['workdir'] = path.join(testdir, 'pIsExptCached3', 'workdir')
+		pIsExptCached3.props['workdir'] = path.join(self.testdir, 'pIsExptCached3', 'workdir')
 		pIsExptCached3.props['cache'] = 'export'
 		job3 = Job(0, pIsExptCached3)
 		yield job3, False, ['DEBUG', 'Job is not export-cached since export directory is not set.']
 		
 		# tgz, but file not exists
 		pIsExptCached4 = Proc()
-		pIsExptCached4.props['workdir'] = path.join(testdir, 'pIsExptCached4', 'workdir')
+		pIsExptCached4.props['workdir'] = path.join(self.testdir, 'pIsExptCached4', 'workdir')
 		pIsExptCached4.props['cache'] = 'export'
 		pIsExptCached4.props['exhow'] = 'gz'
-		pIsExptCached4.props['exdir'] = path.join(testdir, 'exdir')
+		pIsExptCached4.props['exdir'] = path.join(self.testdir, 'exdir')
 		pIsExptCached4.props['script'] = TemplatePyPPL('')
 		pIsExptCached4.props['output']  = {
 			'b': ('dir', TemplatePyPPL('pIsExptCached4.dir')),
@@ -1763,10 +1798,10 @@ class TestJob(helpers.TestCase):
 		
 		# tgz
 		pIsExptCached5 = Proc()
-		pIsExptCached5.props['workdir'] = path.join(testdir, 'pIsExptCached5', 'workdir')
+		pIsExptCached5.props['workdir'] = path.join(self.testdir, 'pIsExptCached5', 'workdir')
 		pIsExptCached5.props['cache'] = 'export'
 		pIsExptCached5.props['exhow'] = 'gz'
-		pIsExptCached5.props['exdir'] = path.join(testdir, 'exdir')
+		pIsExptCached5.props['exdir'] = path.join(self.testdir, 'exdir')
 		pIsExptCached5.props['script'] = TemplatePyPPL('')
 		pIsExptCached5.__dict__['LOG_NLINE'] = {}
 		pIsExptCached5.props['output']  = {
@@ -1779,17 +1814,18 @@ class TestJob(helpers.TestCase):
 		outbfile = path.join(outb, 'pIsExptCached5.txt')
 		makedirs(outb)
 		helpers.writeFile(outbfile, 'pIsExptCached5')
-		makedirs(path.join(testdir, 'exdir'))
+		if not path.exists(path.join(self.testdir, 'exdir')):
+			makedirs(path.join(self.testdir, 'exdir'))
 		with helpers.log2str():
 			job5.export()
 		yield job5, True
 		
 		# gz: file not exists
 		pIsExptCached6 = Proc()
-		pIsExptCached6.props['workdir'] = path.join(testdir, 'pIsExptCached6', 'workdir')
+		pIsExptCached6.props['workdir'] = path.join(self.testdir, 'pIsExptCached6', 'workdir')
 		pIsExptCached6.props['cache'] = 'export'
 		pIsExptCached6.props['exhow'] = 'gz'
-		pIsExptCached6.props['exdir'] = path.join(testdir, 'exdir')
+		pIsExptCached6.props['exdir'] = path.join(self.testdir, 'exdir')
 		pIsExptCached6.props['script'] = TemplatePyPPL('')
 		pIsExptCached6.__dict__['LOG_NLINE'] = {}
 		pIsExptCached6.props['output']  = {
@@ -1806,10 +1842,10 @@ class TestJob(helpers.TestCase):
 		
 		# gz
 		pIsExptCached7 = Proc()
-		pIsExptCached7.props['workdir'] = path.join(testdir, 'pIsExptCached7', 'workdir')
+		pIsExptCached7.props['workdir'] = path.join(self.testdir, 'pIsExptCached7', 'workdir')
 		pIsExptCached7.props['cache'] = 'export'
 		pIsExptCached7.props['exhow'] = 'gz'
-		pIsExptCached7.props['exdir'] = path.join(testdir, 'exdir')
+		pIsExptCached7.props['exdir'] = path.join(self.testdir, 'exdir')
 		pIsExptCached7.props['script'] = TemplatePyPPL('')
 		pIsExptCached7.__dict__['LOG_NLINE'] = {}
 		pIsExptCached7.props['output']  = {
@@ -1825,10 +1861,10 @@ class TestJob(helpers.TestCase):
 		
 		# other: file not exist
 		pIsExptCached8 = Proc()
-		pIsExptCached8.props['workdir'] = path.join(testdir, 'pIsExptCached8', 'workdir')
+		pIsExptCached8.props['workdir'] = path.join(self.testdir, 'pIsExptCached8', 'workdir')
 		pIsExptCached8.props['cache'] = 'export'
 		pIsExptCached8.props['exhow'] = 'copy'
-		pIsExptCached8.props['exdir'] = path.join(testdir, 'exdir')
+		pIsExptCached8.props['exdir'] = path.join(self.testdir, 'exdir')
 		pIsExptCached8.props['script'] = TemplatePyPPL('')
 		pIsExptCached8.__dict__['LOG_NLINE'] = {}
 		pIsExptCached8.props['output']  = {
@@ -1843,10 +1879,10 @@ class TestJob(helpers.TestCase):
 		
 		# other: same file
 		pIsExptCached9 = Proc()
-		pIsExptCached9.props['workdir'] = path.join(testdir, 'pIsExptCached9', 'workdir')
+		pIsExptCached9.props['workdir'] = path.join(self.testdir, 'pIsExptCached9', 'workdir')
 		pIsExptCached9.props['cache'] = 'export'
 		pIsExptCached9.props['exhow'] = 'copy'
-		pIsExptCached9.props['exdir'] = path.join(testdir, 'exdir')
+		pIsExptCached9.props['exdir'] = path.join(self.testdir, 'exdir')
 		pIsExptCached9.props['script'] = TemplatePyPPL('')
 		pIsExptCached9.__dict__['LOG_NLINE'] = {}
 		pIsExptCached9.props['output']  = {
@@ -1857,15 +1893,15 @@ class TestJob(helpers.TestCase):
 		# generate output files
 		outa = path.join(job9.outdir, 'pIsExptCached9.txt')
 		helpers.writeFile(outa)
-		symlink(outa, path.join(testdir, 'exdir', 'pIsExptCached9.txt'))
+		symlink(outa, path.join(self.testdir, 'exdir', 'pIsExptCached9.txt'))
 		yield job9, True
 		
 		# other: overwrite
 		pIsExptCached10 = Proc()
-		pIsExptCached10.props['workdir'] = path.join(testdir, 'pIsExptCached10', 'workdir')
+		pIsExptCached10.props['workdir'] = path.join(self.testdir, 'pIsExptCached10', 'workdir')
 		pIsExptCached10.props['cache'] = 'export'
 		pIsExptCached10.props['exhow'] = 'copy'
-		pIsExptCached10.props['exdir'] = path.join(testdir, 'exdir')
+		pIsExptCached10.props['exdir'] = path.join(self.testdir, 'exdir')
 		pIsExptCached10.props['script'] = TemplatePyPPL('')
 		del pIsExptCached10.LOG_NLINE['EXPORT_CACHE_OUTFILE_EXISTS']
 		pIsExptCached10.props['output']  = {
@@ -1890,10 +1926,10 @@ class TestJob(helpers.TestCase):
 			self.assertEqual(job.rc(), 0)
 			self.assertTrue(job.isTrulyCached())
 			
-	def dataProvider_testDone(self, testdir):
+	def dataProvider_testDone(self):
 		# other: overwrite
 		pDone = Proc()
-		pDone.props['workdir'] = path.join(testdir, 'pDone', 'workdir')
+		pDone.props['workdir'] = path.join(self.testdir, 'pDone', 'workdir')
 		pDone.props['script']  = TemplatePyPPL('')
 		pDone.props['expect']  = TemplatePyPPL('')
 		pDone.props['output']  = {
@@ -1914,4 +1950,4 @@ class TestJob(helpers.TestCase):
 
 
 if __name__ == '__main__':
-	unittest.main(verbosity=2)
+	testly.main(verbosity=2)

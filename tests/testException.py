@@ -1,9 +1,9 @@
-import helpers, unittest
+import testly
 
 from pyppl import Proc, ProcTree
 from pyppl.exception import TemplatePyPPLSyntaxError, TemplatePyPPLRenderError, LoggerThemeError, ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError, ProcTreeProcExists, ProcTreeParseError, JobInputParseError, JobBringParseError, JobOutputParseError, RunnerSshError, ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcFindError, PyPPLProcRelationError, PyPPLConfigError, AggrAttributeError, AggrCopyError
 
-class TestException(helpers.TestCase):
+class TestException(testly.TestCase):
 
 	def dataProvider_testInit(self):
 		yield TemplatePyPPLSyntaxError('', ''), TemplatePyPPLSyntaxError
@@ -15,7 +15,7 @@ class TestException(helpers.TestCase):
 		yield ParametersLoadError('', ''), ParametersLoadError
 		p1 = Proc()
 		p2 = Proc()
-		yield ProcTreeProcExists(ProcTree.getNode(p1), ProcTree.getNode(p2)), ProcTreeProcExists
+		yield ProcTreeProcExists(ProcTree.NODES[p1], ProcTree.NODES[p2]), ProcTreeProcExists
 		yield ProcTreeParseError('', ''), ProcTreeParseError
 		yield JobInputParseError('', ''), JobInputParseError
 		yield JobBringParseError('', ''), JobBringParseError
@@ -38,4 +38,4 @@ class TestException(helpers.TestCase):
 		self.assertIsInstance(exc, Super)
 
 if __name__ == '__main__':
-	unittest.main(verbosity=2)
+	testly.main(verbosity=2)

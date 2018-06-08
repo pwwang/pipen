@@ -1,4 +1,4 @@
-import helpers, unittest
+import helpers, testly
 
 from collections import OrderedDict
 
@@ -6,7 +6,7 @@ from pyppl import Proc
 from pyppl.proctree import ProcTree, ProcNode
 from pyppl.exception import ProcTreeProcExists, ProcTreeParseError
 
-class TestProcNode(helpers.TestCase):
+class TestProcNode(testly.TestCase):
 
 	def testInit(self):
 		proc = Proc()
@@ -35,11 +35,12 @@ class TestProcNode(helpers.TestCase):
 		pn   = ProcNode(proc)
 		self.assertEqual(repr(pn), '<ProcNode(<Proc(id=%s,tag=%s) @ %s>) @ %s>' % (proc.id, proc.tag, hex(id(proc)), hex(id(pn))))
 
-class TestProcTree(helpers.TestCase):
+class TestProcTree(testly.TestCase):
 
 	def setUp(self):
 		# procs registered by Proc.__init__() are also removed!
-		ProcTree.NODES = OrderedDict()
+		if self.isFirst() or not self.isOfSet():
+			ProcTree.NODES = OrderedDict()
 		
 	def dataProvider_testRegister(self):
 		proc_testRegister1 = Proc()
@@ -50,8 +51,7 @@ class TestProcTree(helpers.TestCase):
 
 	def testRegister(self, proc, l):
 		ProcTree.register(proc)
-		key = id(proc)
-		self.assertIs(ProcTree.NODES[key].proc, proc)
+		self.assertIs(ProcTree.NODES[proc].proc, proc)
 		self.assertEqual(len(ProcTree.NODES), l)
 
 	def dataProvider_testCheck(self):
@@ -68,16 +68,6 @@ class TestProcTree(helpers.TestCase):
 			self.assertRaises(ProcTreeProcExists, ProcTree.check, proc)
 		else:
 			ProcTree.check(proc)
-
-	def dataProvider_testGetNode(self):
-		proc_testGetNode1 = Proc()
-		proc_testGetNode2 = Proc()
-		yield proc_testGetNode1,
-		yield proc_testGetNode2,
-
-	def testGetNode(self, proc):
-		ProcTree.register(proc)
-		self.assertIs(ProcTree.getNode(proc).proc, proc)
 
 	def dataProvider_testGetPrevNextStr(self):
 		proc_testGetPrevNextStr1 = Proc()
@@ -121,7 +111,7 @@ class TestProcTree(helpers.TestCase):
 			ProcTree.register(p)
 		ProcTree()
 		nexts = ProcTree.getNext(proc)
-		self.assertItemEqual(nexts, outs)
+		self.assertCountEqual(nexts, outs)
 
 	def dataProvider_testReset(self):
 		proc_testReset1 = Proc()
@@ -164,8 +154,8 @@ class TestProcTree(helpers.TestCase):
 		for proc in procs:
 			depends = proc.depends
 			for depend in depends:
-				nproc   = ProcTree.getNode(proc)
-				ndepend = ProcTree.getNode(depend)
+				nproc   = ProcTree.NODES[proc]
+				ndepend = ProcTree.NODES[depend]
 				self.assertIn(nproc, ndepend.next)
 				self.assertIn(ndepend, nproc.prev)
 
@@ -188,12 +178,12 @@ class TestProcTree(helpers.TestCase):
 		pt.setStarts(starts)
 		for proc in procs:
 			if proc in starts:
-				self.assertTrue(ProcTree.getNode(proc).start)
+				self.assertTrue(ProcTree.NODES[proc].start)
 			else:
-				self.assertFalse(ProcTree.getNode(proc).start)
+				self.assertFalse(ProcTree.NODES[proc].start)
 		s = pt.getStarts()
-		self.assertItemEqual(s, starts)
-		self.assertItemEqual(pt.starts, starts)
+		self.assertCountEqual(s, starts)
+		self.assertCountEqual(pt.starts, starts)
 
 	def dataProvider_testGetPaths(self):
 		proc_testGetPaths1 = Proc()
@@ -391,9 +381,9 @@ class TestProcTree(helpers.TestCase):
 		pt = ProcTree()
 		pt.setStarts(starts)
 		if exception:
-			self.assertRaisesStr(ProcTreeParseError, msg, pt.getEnds)
+			self.assertRaisesRegex(ProcTreeParseError, msg, pt.getEnds)
 		else:
-			self.assertItemEqual(pt.getEnds(), ends)
+			self.assertCountEqual(pt.getEnds(), ends)
 
 	def dataProvider_testGetAllPaths(self):
 		proc_testGetAllPaths0 = Proc()
@@ -433,7 +423,7 @@ class TestProcTree(helpers.TestCase):
 			ProcTree.register(p)
 		pt = ProcTree()
 		pt.setStarts(starts)
-		self.assertItemEqual(pt.getAllPaths(), paths)
+		self.assertCountEqual(pt.getAllPaths(), paths)
 
 	def dataProvider_testGetNextToRun(self):
 		proc_testGetAllPaths0 = Proc()
@@ -455,17 +445,17 @@ class TestProcTree(helpers.TestCase):
 		"""
 		ps = [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths3, proc_testGetAllPaths4, proc_testGetAllPaths5]
 		
-		yield ps, [proc_testGetAllPaths0], [], [proc_testGetAllPaths0]
+		yield ps, [proc_testGetAllPaths0], [], proc_testGetAllPaths0
 		
-		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [], [proc_testGetAllPaths0, proc_testGetAllPaths1]
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [], proc_testGetAllPaths0
 		
-		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths2, proc_testGetAllPaths5]
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1], proc_testGetAllPaths2
 		
-		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths5], [proc_testGetAllPaths4]
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths5], proc_testGetAllPaths4
 		
-		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths4, proc_testGetAllPaths5], [proc_testGetAllPaths3]
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths4, proc_testGetAllPaths5], proc_testGetAllPaths3
 		
-		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths3, proc_testGetAllPaths4, proc_testGetAllPaths5], []
+		yield ps, [proc_testGetAllPaths0, proc_testGetAllPaths1], [proc_testGetAllPaths0, proc_testGetAllPaths1, proc_testGetAllPaths2, proc_testGetAllPaths3, proc_testGetAllPaths4, proc_testGetAllPaths5], None
 
 	def testGetNextToRun(self, procs, starts, haveran, out):
 		for p in procs:
@@ -473,8 +463,8 @@ class TestProcTree(helpers.TestCase):
 		pt = ProcTree()
 		pt.setStarts(starts)
 		for hr in haveran:
-			ProcTree.getNode(hr).ran = True
-		self.assertListEqual(pt.getNextToRun(), out)
+			ProcTree.NODES[hr].ran = True
+		self.assertIs(pt.getNextToRun(), out)
 
 	def dataProvider_testUnranProcs(self):
 		proc_testUnranProcs0 = Proc()
@@ -511,12 +501,11 @@ class TestProcTree(helpers.TestCase):
 		pt = ProcTree()
 		pt.setStarts(starts)
 		# run the pipeline
-		ps = pt.getNextToRun()
-		while ps:
-			for p in ps:
-				ProcTree.getNode(p).ran = True
-			ps = pt.getNextToRun()
+		p = pt.getNextToRun()
+		while p:
+			ProcTree.NODES[p].ran = True
+			p = pt.getNextToRun()
 		self.assertDictEqual(pt.unranProcs(), outs)
 
 if __name__ == '__main__':
-	unittest.main(verbosity=2)
+	testly.main(verbosity=2, failfast = True)

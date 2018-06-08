@@ -1,49 +1,42 @@
-import helpers, unittest
+import helpers, testly
 
-from os import path, remove
+from os import path, remove, makedirs
+from shutil import rmtree
+from tempfile import gettempdir
 from collections import OrderedDict
 from glob import glob
 from pyppl import Proc, PyPPL, ProcTree, Aggr
 from pyppl.runners import RunnerLocal, RunnerSge, RunnerSlurm, RunnerSsh, RunnerDry
 from pyppl.exception import PyPPLProcFindError, PyPPLProcRelationError, PyPPLConfigError
 
-class TestPyPPL(helpers.TestCase):
+class TestPyPPL(testly.TestCase):
 
-	NODES = OrderedDict()
-	def setUp(self):
-		base = self._testMethodName
-		pid = 'p' + base[4].upper() + base[5:]
-		nodes = ProcTree.NODES
-		ProcTree.NODES = OrderedDict()
-		for node in nodes.values():
-			if node.proc.id.startswith(pid):
-				ProcTree.NODES[id(node.proc)] = node
-			else:
-				TestPyPPL.NODES[id(node.proc)] = node
+	def setUpMeta(self):
+		self.testdir = path.join(gettempdir(), 'PyPPL_unittest', 'TestPyPPL')
+		if path.exists(self.testdir):
+			rmtree(self.testdir)
+		makedirs(self.testdir)
 		
-	def tearDown(self):
-		ProcTree.NODES = TestPyPPL.NODES
-		TestPyPPL.NODES = OrderedDict()
 	
-	def dataProvider_testInit(self, testdir):
+	def dataProvider_testInit(self):
 		yield {'log': {'file': False}}, None, {}, {'theme': 'default'}, [], ['PYPPL', 'TIPS']
 		yield {'proc': {'forks': 8}, 'log': {'file': False}}, None, {'proc': {'forks': 8}}, {'theme': 'default'}, [], ['PYPPL', 'TIPS']
 		
 		# default conf files
 		if helpers.moduleInstalled('yaml'):
-			ymlfile = path.join(testdir, 'config.yaml')
+			ymlfile = path.join(self.testdir, 'config.yaml')
 			helpers.writeFile(ymlfile, [
 				'proc:',
 				'	forks: 10'
 			])
 		
-		j1file = path.join(testdir, 'config1.json')
+		j1file = path.join(self.testdir, 'config1.json')
 		helpers.writeFile(j1file, '{"proc": {"forks": 8}}')
 		
-		j2file = path.join(testdir, 'config2.json')
+		j2file = path.join(self.testdir, 'config2.json')
 		helpers.writeFile(j2file, '{"proc": {"forks": 6}}')
 		
-		logfile = path.join(testdir, 'init.log')
+		logfile = path.join(self.testdir, 'init.log')
 		
 		yield {'flowchart': {'theme': 'dark'}, 'log': {'file': False}}, None, {'proc': {'forks': 8}}, {'theme': 'dark'}, [j1file]
 		yield {'log': {'file': False}}, None, {'proc': {'forks': 6}}, {'theme': 'default'}, [j1file, j2file]
@@ -69,8 +62,8 @@ class TestPyPPL(helpers.TestCase):
 			self.assertIn(err, stderr)
 			stderr = stderr[(stderr.find(err) + len(err)):]
 			
-	def dataProvider_testNoYaml(self, testdir):
-		yield testdir,
+	def dataProvider_testNoYaml(self):
+		yield self.testdir,
 			
 	def testNoYaml(self, testdir):
 		PyPPL.DEFAULT_CFGFILES = []
@@ -102,8 +95,7 @@ class TestPyPPL(helpers.TestCase):
 	
 	def testRegisterProc(self, p):
 		PyPPL._registerProc(p)
-		key = id(p)
-		node = ProcTree.NODES[key]
+		node = ProcTree.NODES[p]
 		self.assertIs(node.proc, p)
 		
 	def dataProvider_testAny2Procs(self):
@@ -127,9 +119,9 @@ class TestPyPPL(helpers.TestCase):
 		
 	def testAny2Procs(self, args, procs, exception = None, msg = None):
 		if exception:
-			self.assertRaisesStr(exception, msg, PyPPL._any2procs, *args)
+			self.assertRaisesRegex(exception, msg, PyPPL._any2procs, *args)
 		else:
-			self.assertItemEqual(PyPPL._any2procs(*args), procs)
+			self.assertCountEqual(PyPPL._any2procs(*args), procs)
 			
 	def dataProvider_testStart(self):
 		'''
@@ -172,7 +164,7 @@ class TestPyPPL(helpers.TestCase):
 		with helpers.log2str(levels = 'all') as (out, err):
 			self.assertIs(pp.start(starts), pp)
 		for outstart in outstarts:
-			self.assertTrue(ProcTree.getNode(outstart).start)
+			self.assertTrue(ProcTree.NODES[outstart].start)
 		stderr = err.getvalue()
 		for err in errs:
 			self.assertIn(err, stderr)
@@ -220,7 +212,7 @@ class TestPyPPL(helpers.TestCase):
 		skip   = 'skip+' if plus else 'skip'
 		resume = 'resume+' if plus else 'resume'
 		if exception:
-			self.assertRaisesStr(exception, msg, pp._resume, *resumes, plus = plus)
+			self.assertRaisesRegex(exception, msg, pp._resume, *resumes, plus = plus)
 		else:
 			pp._resume(*resumes, plus = plus)
 			for r in resumes:
@@ -264,11 +256,13 @@ class TestPyPPL(helpers.TestCase):
 		pp.tree = ProcTree()
 		pp.start(start).resume2(procs)
 		if not procs:
-			for node in ProcTree.NODES.values():
-				self.assertEqual(node.proc.resume, '')
+			for proc in ProcTree.NODES.keys():
+				if not proc.id.startswith('pResume2'): continue
+				self.assertEqual(proc.resume, '')
 		else:
-			for node in ProcTree.NODES.values():
-				self.assertIn(node.proc.resume, ['', 'skip+', 'resume+'])
+			for proc in ProcTree.NODES.keys():
+				if not proc.id.startswith('pResume2'): continue
+				self.assertIn(proc.resume, ['', 'skip+', 'resume+'])
 				
 	def dataProvider_testGetProfile(self):
 		yield {'log': {'file': None}, 'proc': {'id': 'a'}}, 'proc', {}, PyPPLConfigError, 'Cannot set a universal id for all process in configuration: \'a\''
@@ -283,7 +277,7 @@ class TestPyPPL(helpers.TestCase):
 		with helpers.log2str():
 			pp = PyPPL(inconf)
 		if exception:
-			self.assertRaisesStr(exception, msg, pp._getProfile, profile)
+			self.assertRaisesRegex(exception, msg, pp._getProfile, profile)
 		else:
 			with helpers.log2str(levels = 'all') as (out, err):
 				c = pp._getProfile(profile)
@@ -344,7 +338,7 @@ class TestPyPPL(helpers.TestCase):
 			self.assertIn(err, stderr)
 			stderr = stderr[(stderr.find(err) + len(err)):]
 	
-	def dataProvider_testFlowchart(self, testdir):
+	def dataProvider_testFlowchart(self):
 		'''
 		         / p3  --- \ 
 		p1 -- p2            \    / p8
@@ -378,9 +372,9 @@ class TestPyPPL(helpers.TestCase):
 		aAggr.pFlowchart9.depends = aAggr.pFlowchart7
 		aAggr.depends = pFlowchart3, pFlowchart6
 		
-		dotfile = path.join(testdir, 'test.dot')
-		fcfile  = path.join(testdir, 'test.svg')
-		yield testdir, [pFlowchart1, pFlowchart5], fcfile, dotfile, [
+		dotfile = path.join(self.testdir, 'test.dot')
+		fcfile  = path.join(self.testdir, 'test.svg')
+		yield [pFlowchart1, pFlowchart5], fcfile, dotfile, [
 			'DEBUG',
 			'* pFlowchart1 -> pFlowchart10',
 			'pFlowchart1 -> pFlowchart2 -> pFlowchart3 -> [aAggr]',
@@ -391,7 +385,7 @@ class TestPyPPL(helpers.TestCase):
 			'DOT file saved to: %s' % dotfile,
 		]
 		
-		yield testdir, [pFlowchart1, pFlowchart5], fcfile, None, [
+		yield [pFlowchart1, pFlowchart5], fcfile, None, [
 			'DEBUG',
 			'* pFlowchart1 -> pFlowchart10',
 			'pFlowchart1 -> pFlowchart2 -> pFlowchart3 -> [aAggr]',
@@ -402,7 +396,7 @@ class TestPyPPL(helpers.TestCase):
 			'DOT file saved to: %s' % dotfile,
 		]
 			
-	def testFlowchart(self, testdir, start, fcfile, dotfile, errs = []):
+	def testFlowchart(self, start, fcfile, dotfile, errs = []):
 		with helpers.log2str():
 			pp = PyPPL({'log': {'file': None}})
 		pp.start(start)
@@ -415,7 +409,7 @@ class TestPyPPL(helpers.TestCase):
 			self.assertIn(err, stderr)
 			stderr = stderr[(stderr.find(err) + len(err)):]
 			
-	def dataProvider_testRun(self, testdir):
+	def dataProvider_testRun(self):
 		'''
 		         / p3  --- \ 
 		p1 -- p2            \    / p8
@@ -448,46 +442,46 @@ class TestPyPPL(helpers.TestCase):
 		aAggr.pRun8.depends = aAggr.pRun7
 		aAggr.pRun9.depends = aAggr.pRun7
 		aAggr.depends = pRun3, pRun6
-		yield testdir, [pRun1, pRun5], 'profile', 'sge', [
-			'+----------------------------------------------------------------------------------+',
-			'| pRun1: No description.                                                           |',
-			'+----------------------------------------------------------------------------------+',
-			'+----------------------------------------------------------------------------------+',
-			'| pRun5: No description.                                                           |',
-			'+----------------------------------------------------------------------------------+',
-			'+----------------------------------------------------------------------------------+',
-			'| pRun2: No description.                                                           |',
-			'+----------------------------------------------------------------------------------+',
-			'+----------------------------------------------------------------------------------+',
-			'| pRun10: No description.                                                          |',
-			'+----------------------------------------------------------------------------------+',
-			'+----------------------------------------------------------------------------------+',
-			'| pRun3: No description.                                                           |',
-			'+----------------------------------------------------------------------------------+',
-			'+----------------------------------------------------------------------------------+',
-			'| pRun4: No description.                                                           |',
-			'+----------------------------------------------------------------------------------+',
-			'+----------------------------------------------------------------------------------+',
-			'| pRun6: No description.                                                           |',
-			'+----------------------------------------------------------------------------------+',
-			'+----------------------------------------------------------------------------------+',
-			'| pRun7.5gPF@aAggr: No description.                                                |',
-			'+----------------------------------------------------------------------------------+',
-			'+----------------------------------------------------------------------------------+',
-			'| pRun8.5gPF@aAggr: No description.                                                |',
-			'+----------------------------------------------------------------------------------+',
-			'+----------------------------------------------------------------------------------+',
-			'| pRun9.5gPF@aAggr: No description.                                                |',
-			'+----------------------------------------------------------------------------------+',
+		yield [pRun1, pRun5], 'profile', 'sge', [
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'Run1: No description.',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'pRun2: No description.',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'pRun3: No description.',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'pRun4: No description.',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'pRun5: No description.',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'pRun6: No description.',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'pRun10: No description.',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'pRun7.5gPF@aAggr: No description.',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'pRun8.5gPF@aAggr: No description.',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+			'pRun9.5gPF@aAggr: No description.',
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
 		]
 			
-	def testRun(self, testdir, start, profile, runner, errs = []):
+	def testRun(self, start, profile, runner, errs = []):
 		with helpers.log2str():
-			pp = PyPPL({'log': {'file': None}, 'profile': {'ppldir': testdir, 'runner': 'sge'}})
+			pp = PyPPL({'log': {'file': None}, 'profile': {'ppldir': self.testdir, 'runner': 'sge'}})
 		import sys
 		pp.start(start)
 		argv = sys.argv
-		sys.argv = []
+		sys.argv = [sys.argv[0]]
 		helpers.log2sys()
 		with helpers.log2str(levels = 'all') as (out, err):
 			pp.run(profile)
@@ -519,4 +513,4 @@ class TestPyPPL(helpers.TestCase):
 		
 
 if __name__ == '__main__':
-	unittest.main(verbosity=2)
+	testly.main(verbosity=2)

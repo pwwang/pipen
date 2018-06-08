@@ -1,11 +1,11 @@
-import helpers, unittest
+import testly
 
 from collections import OrderedDict
-from pyppl import Aggr, Proc, Box, utils
+from pyppl import Aggr, Proc, Box, utils, logger
 from pyppl.aggr import DotProxy
 from pyppl.exception import AggrAttributeError, AggrCopyError
 
-class TestDotProxy(helpers.TestCase):
+class TestDotProxy(testly.TestCase):
 	
 	def dataProvider_testInit(self):
 		aggr = Aggr()
@@ -71,7 +71,7 @@ class TestDotProxy(helpers.TestCase):
 		
 	def testSetAttr(self, dp, name, value, expval, aggr, exception = None, msg = None):
 		if exception:
-			self.assertRaisesStr(exception, msg, setattr, dp, name, value)
+			self.assertRaisesRegex(exception, msg, setattr, dp, name, value)
 		else:
 			setattr(dp, name, value)
 			self.assertEqual(expval(), value)
@@ -79,7 +79,7 @@ class TestDotProxy(helpers.TestCase):
 			dp[name] = value
 			self.assertEqual(expval(), value)
 
-class TestAggr(helpers.TestCase):
+class TestAggr(testly.TestCase):
 	
 	def dataProvider_testInit(self):
 		pInit1 = Proc()
@@ -101,7 +101,7 @@ class TestAggr(helpers.TestCase):
 	def testInit(self, args, kwargs, exception = None, msg = None):
 		self.maxDiff = None
 		if exception:
-			self.assertRaisesStr(exception, msg, Aggr, *args, **kwargs)
+			self.assertRaisesRegex(exception, msg, Aggr, *args, **kwargs)
 		else:
 			aggr = Aggr(*args, **kwargs)
 			self.assertEqual(aggr.id, 'aggr' if 'id' not in kwargs else kwargs['id'])
@@ -116,9 +116,7 @@ class TestAggr(helpers.TestCase):
 					if i == 0: continue
 					self.assertIs(proc.depends[0], list(aggr._procs.values())[i - 1])
 				# delegates
-				self.assertDictEqual({
-					k: (v[0](aggr), v[1]) for k, v in aggr._delegates.items()
-				}, {
+				self.assertDictContains({
 					'depends2': ([list(aggr._procs.values())[0]], 'depends2'),
 					'depends' : ([list(aggr._procs.values())[0]], 'depends'),
 					'input' :   ([list(aggr._procs.values())[0]], 'input'),
@@ -126,6 +124,8 @@ class TestAggr(helpers.TestCase):
 					'exhow' :   ([list(aggr._procs.values())[-1]], 'exhow'),
 					'exow' :    ([list(aggr._procs.values())[-1]], 'exow'),
 					'expart' :  ([list(aggr._procs.values())[-1]], 'expart'),
+				}, {
+					k: (v[0](aggr), v[1]) for k, v in aggr._delegates.items()
 				})
 			else:
 				self.assertListEqual(aggr.starts, [])
@@ -134,9 +134,7 @@ class TestAggr(helpers.TestCase):
 					if i == 0: continue
 					self.assertListEqual(proc.depends, [])
 				# delegates
-				self.assertDictEqual({
-					k: (v[0](aggr), v[1]) for k, v in aggr._delegates.items()
-				}, {
+				self.assertDictContains({
 					'depends2': ([], 'depends2'),
 					'depends' : ([], 'depends'),
 					'input' :   ([], 'input'),
@@ -144,6 +142,8 @@ class TestAggr(helpers.TestCase):
 					'exhow' :   ([], 'exhow'),
 					'exow' :    ([], 'exow'),
 					'expart' :  ([], 'expart'),
+				}, {
+					k: (v[0](aggr), v[1]) for k, v in aggr._delegates.items()
 				})
 	
 	def dataProvider_testDelegate(self):
@@ -176,7 +176,7 @@ class TestAggr(helpers.TestCase):
 	def testDelegate(self, aggr, attr, procs, pattr, delegates, exception = None, msg = None):
 		pattr = pattr or attr
 		if exception:
-			self.assertRaisesStr(exception, msg, aggr.delegate, attr, procs, pattr)
+			self.assertRaisesRegex(exception, msg, aggr.delegate, attr, procs, pattr)
 		else:
 			aggr.delegate(attr, procs, pattr)
 			for k, v in delegates.items():
@@ -209,7 +209,7 @@ class TestAggr(helpers.TestCase):
 			
 	def testGetAttr(self, aggr, name, value, isDotProxy = False, exception = None, msg = None):
 		if exception:
-			self.assertRaisesStr(exception, msg, getattr, aggr, name)
+			self.assertRaisesRegex(exception, msg, getattr, aggr, name)
 		elif isDotProxy:
 			self.assertIsInstance(getattr(aggr, name), DotProxy)
 		else:
@@ -233,7 +233,7 @@ class TestAggr(helpers.TestCase):
 			
 	def testSetAttr(self, aggr, name, value, expval, exception = None, msg = None):
 		if exception:
-			self.assertRaisesStr(exception, msg, setattr, aggr, name, value)
+			self.assertRaisesRegex(exception, msg, setattr, aggr, name, value)
 		else:
 			setattr(aggr, name, value)
 			self.assertEqual(expval(), value)
@@ -321,8 +321,9 @@ class TestAggr(helpers.TestCase):
 		yield aggr1, None, True, None
 			
 	def testCopy(self, aggr, tag, deps, id, exception = None, msg = None):
+		self.maxDiff = None
 		if exception:
-			self.assertRaisesStr(exception, msg, aggr.copy, tag, deps, id)
+			self.assertRaisesRegex(exception, msg, aggr.copy, tag, deps, id)
 		else:
 			newaggr = aggr.copy(tag, deps, id)
 			# id
@@ -388,9 +389,16 @@ class TestAggr(helpers.TestCase):
 		aggr.depends2 = depends
 		for i, p in enumerate(aggr.starts):
 			self.assertListEqual(p.depends, [depends[i]])
-			
-			
-		
+
+	# issue #31
+	def testIssue31(self):
+		p = Proc()
+		#p.runner = 'local'
+		a = Aggr(p)
+		a.runner = 'sge'
+		with self.assertLogs(logger.getLogger()):
+			a.p.run()
+		self.assertEqual(a.p.runner, 'sge')
 		
 if __name__ == '__main__':
-	unittest.main(verbosity=2)
+	testly.main(verbosity=2, failfast = True)

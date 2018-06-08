@@ -1,7 +1,9 @@
-import helpers, unittest, json, sys
+import helpers, testly, json, sys
 import copy as pycopy
 
-from os import path
+from os import path, makedirs
+from shutil import rmtree
+from tempfile import gettempdir
 from collections import OrderedDict
 from multiprocessing import cpu_count
 from pyppl import Proc, Box, Aggr, utils, ProcTree, Channel
@@ -11,11 +13,17 @@ from pyppl.runners import RunnerLocal
 
 __folder__ = path.realpath(path.dirname(__file__))
 
-class TestProc(helpers.TestCase):
+class TestProc(testly.TestCase):
+
+	def setUpMeta(self):
+		self.testdir = path.join(gettempdir(), 'PyPPL_unittest', 'TestProc')
+		if path.exists(self.testdir):
+			rmtree(self.testdir)
+		makedirs(self.testdir)
 	
 	def dataProvider_testInit(self):
 		yield 'notag', 'No description', None, {
-			'brings': {},
+			# 'brings': {},
 			'channel': [],
 			'depends': [],
 			'echo': {},
@@ -23,9 +31,11 @@ class TestProc(helpers.TestCase):
 			'expect': None,
 			'input': {},
 			'jobs': [],
+			'lock': None,
 			'logs': {},
 			'ncjobids': [],
 			'output': OrderedDict(),
+			'origin': 'p',
 			'procvars': {},
 			'rc': [0],
 			'runner': 'local',
@@ -40,7 +50,7 @@ class TestProc(helpers.TestCase):
 			'aggr': None,
 			'args': Box(),
 			'beforeCmd': '',
-			'brings': {},
+			# 'brings': {},
 			'cache': True,
 			'callback': None,
 			'callfront': None,
@@ -58,10 +68,10 @@ class TestProc(helpers.TestCase):
 			'expect': '',
 			'forks': 1,
 			'id': 'p',
+			'infile': 'indir',
 			'input': '',
 			'lang': 'bash',
-			'maxsubmit': 40,
-			'nthread': 1,
+			'nthread': min(int(cpu_count() / 2), 16),
 			'output': '',
 			'ppldir': path.realpath('./workdir'),
 			'rc': 0,
@@ -75,7 +85,7 @@ class TestProc(helpers.TestCase):
 		}
 		
 		yield 'atag', 'A different description', 'someId', {
-			'brings': {},
+			# 'brings': {},
 			'channel': [],
 			'depends': [],
 			'echo': {},
@@ -85,9 +95,13 @@ class TestProc(helpers.TestCase):
 			'jobs': [],
 			'logs': {},
 			'ncjobids': [],
+			'lock': None,
+			'origin': 'someId',
 			'output': OrderedDict(),
 			'procvars': {},
 			'rc': [0],
+			'lock': None,
+			'origin': 'someId',
 			'runner': 'local',
 			'script': None,
 			'sets': [],
@@ -100,7 +114,7 @@ class TestProc(helpers.TestCase):
 			'aggr': None,
 			'args': Box(),
 			'beforeCmd': '',
-			'brings': {},
+			# 'brings': {},
 			'cache': True,
 			'callback': None,
 			'callfront': None,
@@ -118,10 +132,10 @@ class TestProc(helpers.TestCase):
 			'expect': '',
 			'forks': 1,
 			'id': 'someId',
+			'infile': 'indir',
 			'input': '',
 			'lang': 'bash',
-			'maxsubmit': int(cpu_count() / 2),
-			'nthread': 1,
+			'nthread': min(int(cpu_count() / 2), 16),
 			'output': '',
 			'ppldir': path.realpath('./workdir'),
 			'rc': 0,
@@ -195,7 +209,7 @@ class TestProc(helpers.TestCase):
 				
 	def testSetAttr(self, p, name, val, expect = None, exception = None, msg = None, errs = []):
 		if exception:
-			self.assertRaisesStr(exception, msg, p.__setattr__, name, val)
+			self.assertRaisesRegex(exception, msg, p.__setattr__, name, val)
 		else:
 			if expect is None:
 				expect = val
@@ -258,16 +272,18 @@ class TestProc(helpers.TestCase):
 		for ex in noexpects:
 			self.assertNotIn(ex, stderr)
 			
-	def dataProvider_testCopy(self, testdir):
+	def dataProvider_testCopy(self):
 		pCopy = Proc()
-		pCopy.workdir = path.join(testdir, 'pCopy')
+		pCopy.workdir = path.join(self.testdir, 'pCopy')
 		yield pCopy, None, 'DESCRIPTION', None, {
-			'brings': {},
+			# 'brings': {},
 			'channel': [],
 			'depends': [],
 			'echo': {},
 			'expart': [],
 			'expect': None,
+			'lock': None,
+			'origin': 'pCopy',
 			'input': {},
 			'jobs': [],
 			'logs': {},
@@ -285,9 +301,10 @@ class TestProc(helpers.TestCase):
 		}, {
 			'afterCmd': '',
 			'aggr': None,
-			'args': {},
+			'args': Box(),
+			'infile': 'indir',
 			'beforeCmd': '',
-			'brings': {},
+			# 'brings': {},
 			'cache': True,
 			'callback': None,
 			'callfront': None,
@@ -307,8 +324,7 @@ class TestProc(helpers.TestCase):
 			'id': 'pCopy',
 			'input': '',
 			'lang': 'bash',
-			'maxsubmit': int(cpu_count() / 2),
-			'nthread': 1,
+			'nthread': min(int(cpu_count() / 2), 16),
 			'output': '',
 			'ppldir': path.realpath('./workdir'),
 			'rc': 0,
@@ -317,15 +333,17 @@ class TestProc(helpers.TestCase):
 			'script': '',
 			'tag': 'notag',
 			'template': '',
-			'tplenvs': {},
-			'workdir': path.join(testdir, 'pCopy')
+			'tplenvs': Box(),
+			'workdir': path.join(self.testdir, 'pCopy')
 		}, {
-			'brings': {},
+			# 'brings': {},
 			'channel': [],
 			'depends': [],
 			'echo': {},
 			'expart': [],
 			'expect': None,
+			'lock': None,
+			'origin': 'pCopy',
 			'input': {},
 			'jobs': [],
 			'logs': {},
@@ -345,7 +363,7 @@ class TestProc(helpers.TestCase):
 			'aggr': None,
 			'args': Box(),
 			'beforeCmd': '',
-			'brings': {},
+			# 'brings': {},
 			'cache': True,
 			'callback': None,
 			'callfront': None,
@@ -363,10 +381,10 @@ class TestProc(helpers.TestCase):
 			'expect': '',
 			'forks': 1,
 			'id': 'p',
+			'infile': 'indir',
 			'input': '',
 			'lang': 'bash',
-			'maxsubmit': int(cpu_count() / 2),
-			'nthread': 1,
+			'nthread': min(int(cpu_count() / 2), 16),
 			'output': '',
 			'ppldir': path.realpath('./workdir'),
 			'rc': 0,
@@ -411,8 +429,9 @@ class TestProc(helpers.TestCase):
 		pSuffix1.input = {'in': lambda ch: ch}
 		pSuffix1.depends = pSuffix
 		config = {key:val for key, val in pSuffix1.config.items() if key in [
-			'id', 'tag', 'input', 'output', 'script', 'lang'
+			'id', 'tag', 'input'
 		]}
+		config['argv0'] = path.realpath(sys.argv[0])
 		if isinstance(config['input'], dict):
 			config['input'] = pycopy.copy(config['input'])
 			for key, val in config['input'].items():
@@ -439,7 +458,8 @@ class TestProc(helpers.TestCase):
 		n = p.name(aggr)
 		self.assertEqual(n, name)
 		
-	def dataProvider_testBuildProps(self, testdir):
+	def dataProvider_testBuildProps(self):
+		testdir = self.testdir
 		# 0
 		pBuildProps = Proc()
 		pBuildProps.ppldir = testdir
@@ -498,7 +518,7 @@ class TestProc(helpers.TestCase):
 		for k,v in attrs.items():
 			setattr(p, k, v)
 		if exception:
-			self.assertRaisesStr(exception, msg, p._buildProps)
+			self.assertRaisesRegex(exception, msg, p._buildProps)
 		else:
 			p._buildProps()
 			for k, v in props.items():
@@ -511,7 +531,7 @@ class TestProc(helpers.TestCase):
 			for expect in expects:
 				self.assertTrue(expect(p))
 				
-	def dataProvider_testBuildInput(self, testdir):
+	def dataProvider_testBuildInput(self):
 		pBuildInputDep = Proc()
 		pBuildInputDep.props['channel'] = []
 		
@@ -538,16 +558,16 @@ class TestProc(helpers.TestCase):
 		yield pBuildInput2, {'a,b,c': lambda ch1, ch2: ch1.cbind(ch2)}, {'a': {'data': [1,2], 'type': 'var'}, 'b': {'data': [3,4], 'type': 'var'}, 'c': {'data': ['',''], 'type': 'var'}}, None, None, ['No data found for input key "c", use empty strings/lists instead.']
 		
 		pBuildInput4 = Proc()
-		yield pBuildInput4, {'a': [1], 'b': 2, 'c': [1,2], 'd:files':[[testdir, testdir]]}, {
+		yield pBuildInput4, {'a': [1], 'b': 2, 'c': [1,2], 'd:files':[[self.testdir, self.testdir]]}, {
 			'a': {'data': [1,1], 'type': 'var'},
 			'b': {'data': [2,2], 'type': 'var'},
 			'c': {'data': [1,2], 'type': 'var'},
-			'd': {'data': [[testdir,testdir], [testdir,testdir]], 'type': 'files'},
+			'd': {'data': [[self.testdir,self.testdir], [self.testdir,self.testdir]], 'type': 'files'},
 		}
 		
 		pBuildInput5 = Proc()
-		pBuildInput5.ppldir = testdir
-		pBuildInput5.input  = {'a': ['h"i\'nihao'], 'b': 2, 'c': [1,2], 'd:files':[[testdir, testdir]]}
+		pBuildInput5.ppldir = self.testdir
+		pBuildInput5.input  = {'a': ['h"i\'nihao'], 'b': 2, 'c': [1,2], 'd:files':[[self.testdir, self.testdir]]}
 		with helpers.log2str():
 			pBuildInput5._buildInput()
 			pBuildInput5._buildProps()
@@ -557,11 +577,11 @@ class TestProc(helpers.TestCase):
 			'a': {'data': ['h"i\'nihao','h"i\'nihao'], 'type': 'var'},
 			'b': {'data': [2,2], 'type': 'var'},
 			'c': {'data': [1,2], 'type': 'var'},
-			'd': {'data': [[testdir,testdir], [testdir,testdir]], 'type': 'files'},
+			'd': {'data': [[self.testdir,self.testdir], [self.testdir,self.testdir]], 'type': 'files'},
 		}
 		
 		pBuildInput6 = Proc()
-		pBuildInput6.ppldir = testdir
+		pBuildInput6.ppldir = self.testdir
 		pBuildInput6.props['resume'] = 'skip+'
 		yield pBuildInput6, {}, {}, ProcInputError, 'Cannot parse input for skip\+/resume process, no such file:'
 				
@@ -569,7 +589,7 @@ class TestProc(helpers.TestCase):
 		self.maxDiff = None
 		p.input = cin
 		if exception:
-			self.assertRaisesStr(exception, msg, p._buildInput)
+			self.assertRaisesRegex(exception, msg, p._buildInput)
 		else:
 			with helpers.log2str(levels = 'all') as (out, err):
 				#p._buildInput()
@@ -580,22 +600,22 @@ class TestProc(helpers.TestCase):
 			for err in errs:
 				self.assertIn(err, stderr)
 				
-	def dataProvider_testBuildProcVars(self, testdir):
+	def dataProvider_testBuildProcVars(self):
 		pBuildProcVars = Proc()
-		pBuildProcVars.ppldir = testdir
-		yield pBuildProcVars, {}, {'size': 0, 'ppldir': testdir}, [
+		pBuildProcVars.ppldir = self.testdir
+		yield pBuildProcVars, {}, {'size': 0, 'ppldir': self.testdir}, [
 			'P.PROPS',
-			'ppldir => %s' % repr(testdir),
+			'ppldir => %s' % repr(self.testdir),
 			'size   => 0',
 		]
 		
 		pBuildProcVars1 = Proc()
-		pBuildProcVars1.ppldir = testdir
+		pBuildProcVars1.ppldir = self.testdir
 		pBuildProcVars1.args.a = 1
 		pBuildProcVars1.props['runner'] = 'ssh'
-		yield pBuildProcVars1, {'a': 1}, {'size': 0, 'ppldir': testdir, 'runner': 'ssh'}, [
+		yield pBuildProcVars1, {'a': 1}, {'size': 0, 'ppldir': self.testdir, 'runner': 'ssh'}, [
 			'P.PROPS',
-			'ppldir => %s' % repr(testdir),
+			'ppldir => %s' % repr(self.testdir),
 			'runner => \'ssh\' [profile]',
 			'size   => 0',
 			'P.ARGS',
@@ -607,11 +627,11 @@ class TestProc(helpers.TestCase):
 			p._buildProps()
 			p._buildProcVars()
 		stderr = err.getvalue()
-		self.assertDictIn(procargs, p.procvars['args'])
-		self.assertDictIn(procvars, p.procvars['proc'])
+		self.assertDictContains(procargs, p.procvars['args'])
+		self.assertDictContains(procvars, p.procvars['proc'])
 		for err in errs:
 			self.assertIn(err, stderr)
-			
+	'''		
 	def dataProvider_testBuildBrings(self, testdir):
 		pBuildBrings = Proc()
 		pBuildBrings.ppldir = testdir
@@ -629,10 +649,10 @@ class TestProc(helpers.TestCase):
 				v,
 				[t.source for t in outbrs[k]]
 			)
-			
-	def dataProvider_testBuildOutput(self, testdir):
+	'''		
+	def dataProvider_testBuildOutput(self):
 		pBuildOutput = Proc()
-		pBuildOutput.ppldir = testdir
+		pBuildOutput.ppldir = self.testdir
 		pBuildOutput.output = ''
 		yield pBuildOutput, '', {}
 		yield pBuildOutput, {}, {}, ProcOutputError, 'Process output should be str/list/OrderedDict, not: \'dict\''
@@ -656,7 +676,7 @@ class TestProc(helpers.TestCase):
 	def testBuildOutput(self, p, inout, outout, exception = None, msg = None):
 		p.output = inout
 		if exception:
-			self.assertRaisesStr(exception, msg, p._buildOutput)
+			self.assertRaisesRegex(exception, msg, p._buildOutput)
 		else:
 			p._buildProps()
 			p._buildOutput()
@@ -666,15 +686,15 @@ class TestProc(helpers.TestCase):
 				self.assertEqual(t, v[0])
 				self.assertEqual(o, v[1])
 				
-	def dataProvider_testBuildScript(self, testdir):
+	def dataProvider_testBuildScript(self):
 		pBuildScript = Proc()
-		pBuildScript.ppldir = testdir
+		pBuildScript.ppldir = self.testdir
 		yield pBuildScript, '', '#!/usr/bin/env bash\n', None, None, [
 			'WARNING',
 			'No script specified'
 		]
 		
-		tplfile = path.join(testdir, 'scriptTpl.txt')
+		tplfile = path.join(self.testdir, 'scriptTpl.txt')
 		helpers.writeFile(tplfile, [
 			'A',
 			'B',
@@ -705,7 +725,7 @@ class TestProc(helpers.TestCase):
 			''
 		]
 		
-		tplfile1 = path.join(testdir, 'scriptTpl1.txt')
+		tplfile1 = path.join(self.testdir, 'scriptTpl1.txt')
 		helpers.writeFile(tplfile1, [
 			'A',
 			'B',
@@ -744,27 +764,27 @@ class TestProc(helpers.TestCase):
 			''
 		]
 		
-		tplfile = path.join(testdir, 'nosuchtpl')
+		tplfile = path.join(self.testdir, 'nosuchtpl')
 		yield pBuildScript, 'file:' + tplfile, '', ProcScriptError, 'No such template file:'
 				
 	def testBuildScript(self, p, inscript, outscript, exception = None, msg = None, errs = []):
 		p.script = inscript
 		if exception:
-			self.assertRaisesStr(exception, msg, p._buildScript)
+			self.assertRaisesRegex(exception, msg, p._buildScript)
 		else:
 			with helpers.log2str(levels = 'all') as (out, err):
 				p._buildProps()
 				p._buildScript()
-			self.assertTextEqual(p.script.source, outscript)
+			helpers.assertTextEqual(self, p.script.source, outscript)
 			stderr = err.getvalue()
 			for err in errs:
 				self.assertIn(err, stderr)
 				
-	def dataProvider_testSaveSettings(self, testdir):
+	def dataProvider_testSaveSettings(self):
 		pSaveSettings = Proc()
-		pSaveSettings.ppldir = testdir
+		pSaveSettings.ppldir = self.testdir
 		yield pSaveSettings, [
-			'[brings]',
+			# '[brings]',
 			'[channel]',
 			'value: []',
 			'[depends]',
@@ -780,7 +800,7 @@ class TestProc(helpers.TestCase):
 			'[output]',
 			'[procvars]',
 			'args: {}',
-			'proc: {"args": {}, "',
+			'proc: {',
 			'[rc]',
 			'value: [0]',
 			'[runner]',
@@ -801,17 +821,17 @@ class TestProc(helpers.TestCase):
 		]
 		
 		pSaveSettings1 = Proc()
-		pSaveSettings1.ppldir = testdir
-		infile1 = path.join(testdir, 'pSaveSettings1-in1.txt')
-		infile2 = path.join(testdir, 'pSaveSettings1-in2.txt')
-		brfile1 = path.join(testdir, 'pSaveSettings1-in1.br')
-		brfile2 = path.join(testdir, 'pSaveSettings1-in2.br')
+		pSaveSettings1.ppldir = self.testdir
+		infile1 = path.join(self.testdir, 'pSaveSettings1-in1.txt')
+		infile2 = path.join(self.testdir, 'pSaveSettings1-in2.txt')
+		brfile1 = path.join(self.testdir, 'pSaveSettings1-in1.br')
+		brfile2 = path.join(self.testdir, 'pSaveSettings1-in2.br')
 		helpers.writeFile(infile1)
 		helpers.writeFile(infile2)
 		helpers.writeFile(brfile1)
 		helpers.writeFile(brfile2)
 		pSaveSettings1.input    = {'a': 1, 'b:file': [infile1, infile2], 'c:files': [[infile1, infile2]]}
-		pSaveSettings1.brings   = {'b': '{{fn(in.b)}}.br'}
+		#pSaveSettings1.brings   = {'b': '{{fn(in.b)}}.br'}
 		pSaveSettings1.output   = 'out:file:{{fn(in.b)}}-{{in.a}}.out'
 		pSaveSettings1.echo     = {'jobs': [0,1]}
 		pSaveSettings1.expart   = '*-1.out'
@@ -821,8 +841,8 @@ class TestProc(helpers.TestCase):
 		pSaveSettings1.script   = 'echo {{in.a}} > {{out.out}}'
 		pSaveSettings1.template = 'jinja2'
 		yield pSaveSettings1, [
-			'[brings]',
-			'b: [\'TemplateJinja2 < {{fn(in.b)}}.br >\']',
+			#'[brings]',
+			#'b: [\'TemplateJinja2 < {{fn(in.b)}}.br >\']',
 			'[channel]',
 			'value: []',
 			'[depends]',
@@ -850,7 +870,7 @@ class TestProc(helpers.TestCase):
 			'out.data: TemplateJinja2 < {{fn(in.b)}}-{{in.a}}.out >',
 			'[procvars]',
 			'args: {"a": "a"}',
-			'proc: {"args": {"a": "a"}, "brings": {"b": ["TemplateJinja2 < {{fn(in.b)}}.br >"]}, "echo": {}, "expart": [], "expect": null, "ppldir": "',
+			'proc: {',
 			'[rc]',
 			'value: [0, 1]',
 			'[runner]',
@@ -862,7 +882,7 @@ class TestProc(helpers.TestCase):
 			'	"\\techo {{in.a}} > {{out.out}}"',
 			'	">>>"',
 			'[sets]',
-			'value: [\'ppldir\', \'input\', \'brings\', \'output\', \'echo\', \'expart\', \'expect\', \'rc\', \'script\', \'template\']',
+			'value: [\'ppldir\', \'input\', \'output\', \'echo\', \'expart\', \'expect\', \'rc\', \'script\', \'template\']',
 			'[size]',
 			'value: 2',
 			'[suffix]',
@@ -879,7 +899,7 @@ class TestProc(helpers.TestCase):
 			p._buildInput()
 			p._buildProcVars ()
 			p._buildProps()
-			p._buildBrings()
+			# p._buildBrings()
 			p._buildOutput()
 			p._buildScript()
 			p._saveSettings()
@@ -888,11 +908,11 @@ class TestProc(helpers.TestCase):
 			self.assertIn(setting, psettings)
 			psettings = psettings[(psettings.find(setting) + len(setting)):]
 	
-	def dataProvider_testBuildJobs(self, testdir):
+	def dataProvider_testBuildJobs(self):
 		pBuildJobs = Proc()
-		pBuildJobs.ppldir = testdir
-		infile1 = path.join(testdir, 'pBuildJobs-in1.txt')
-		infile2 = path.join(testdir, 'pBuildJobs-in2.txt')
+		pBuildJobs.ppldir = self.testdir
+		infile1 = path.join(self.testdir, 'pBuildJobs-in1.txt')
+		infile2 = path.join(self.testdir, 'pBuildJobs-in2.txt')
 		helpers.writeFile(infile1)
 		helpers.writeFile(infile2)
 		pBuildJobs.input    = {'a': 1, 'b:file': [infile1, infile2], 'c:files': [[infile1, infile2]]}
@@ -902,7 +922,7 @@ class TestProc(helpers.TestCase):
 			pBuildJobs._buildProps ()
 			pBuildJobs._buildInput ()
 			pBuildJobs._buildProcVars ()
-			pBuildJobs._buildBrings ()
+			#pBuildJobs._buildBrings ()
 			pBuildJobs._buildOutput()
 			pBuildJobs._buildScript()
 		yield pBuildJobs, 2, [
@@ -911,18 +931,18 @@ class TestProc(helpers.TestCase):
 		], ['out'], [
 			'INPUT',
 			'/2] a   => 1',
-			'/2]  b  => %s' % pBuildJobs.workdir,
-			'/2] _b  => %s' % testdir,
-			'/2]  c  => [%s' % pBuildJobs.workdir,
+			'/2] b   => %s' % pBuildJobs.workdir,
+			# '/2] _b  => %s' % testdir,
+			'/2] c   => [%s' % pBuildJobs.workdir,
 			'/2]         %s' % pBuildJobs.workdir,
-			'/2] _c  => [%s' % testdir,
-			'/2]         %s' % testdir,
+			# '/2] _c  => [%s' % testdir,
+			# '/2]         %s' % testdir,
 			'OUTPUT',
 			'/2] out => %s' % pBuildJobs.workdir
 		]
 		
 		pBuildJobs1 = Proc()
-		pBuildJobs1.ppldir = testdir
+		pBuildJobs1.ppldir = self.testdir
 		yield pBuildJobs1, 0, [], [], [
 			'WARNING', 
 			'No data found for jobs, process will be skipped.'
@@ -941,12 +961,12 @@ class TestProc(helpers.TestCase):
 			self.assertIn(err, stderr)
 			stderr = stderr[(stderr.find(err) + len(err)):]
 	
-	def dataProvider_testTidyBeforeRun(self, testdir):
+	def dataProvider_testTidyBeforeRun(self):
 		pTidyBeforeRun= Proc()
-		pTidyBeforeRun.ppldir = testdir
+		pTidyBeforeRun.ppldir = self.testdir
 		yield pTidyBeforeRun, []
 		pTidyBeforeRun1 = Proc()
-		pTidyBeforeRun1.ppldir = testdir
+		pTidyBeforeRun1.ppldir = self.testdir
 		pTidyBeforeRun1.props['callfront'] = lambda p: p.log('hello')
 		yield pTidyBeforeRun1, ['DEBUG', 'Calling callfront ...', 'INFO', 'hello']
 	
@@ -958,12 +978,12 @@ class TestProc(helpers.TestCase):
 			self.assertIn(err, stderr)
 			stderr = stderr[(stderr.find(err) + len(err)):]
 			
-	def dataProvider_testRunCmd(self, testdir):
+	def dataProvider_testRunCmd(self):
 		pRunCmd = Proc()
-		pRunCmd.ppldir = testdir
+		pRunCmd.ppldir = self.testdir
 		yield pRunCmd, 'beforeCmd'
 		pRunCmd1 = Proc()
-		pRunCmd1.ppldir = testdir
+		pRunCmd1.ppldir = self.testdir
 		pRunCmd1.beforeCmd = "echo 456; echo 123 >&2"
 		yield pRunCmd1, 'beforeCmd', None, None, [
 			'INFO',
@@ -974,22 +994,22 @@ class TestProc(helpers.TestCase):
 			'123'
 		]
 		pRunCmd2 = Proc()
-		pRunCmd2.ppldir = testdir
+		pRunCmd2.ppldir = self.testdir
 		pRunCmd2.beforeCmd = "xxx 123 >&2"
-		yield pRunCmd2, 'beforeCmd', ProcRunCmdError, 'Failed to run <beforeCmd>:\n\nxxx 123 >&2'
+		yield pRunCmd2, 'beforeCmd', ProcRunCmdError, 'Failed to run <beforeCmd>:'
 		pRunCmd3 = Proc()
-		pRunCmd3.ppldir = testdir
+		pRunCmd3.ppldir = self.testdir
 		pRunCmd3.afterCmd = "xxx 123 >&2"
 		yield pRunCmd3, 'beforeCmd'
 		pRunCmd4 = Proc()
-		pRunCmd4.ppldir = testdir
+		pRunCmd4.ppldir = self.testdir
 		pRunCmd4.afterCmd = "exit 1"
-		yield pRunCmd4, 'afterCmd', ProcRunCmdError, 'Failed to run <afterCmd>:\n\nexit 1'
+		yield pRunCmd4, 'afterCmd', ProcRunCmdError, 'Failed to run <afterCmd>:'
 		
 	def testRunCmd(self, p, key, exception = None, msg = None, errs = []):
 		p._buildProps()
 		if exception:
-			self.assertRaisesStr(exception, msg, p._runCmd, key)
+			self.assertRaisesRegex(exception, msg, p._runCmd, key)
 		else:
 			with helpers.log2str() as (out, err):
 				p._runCmd(key)
@@ -998,20 +1018,20 @@ class TestProc(helpers.TestCase):
 				self.assertIn(err, stderr)
 				stderr = stderr[(stderr.find(err) + len(err)):]
 	
-	def dataProvider_testReadConfig(self, testdir):
+	def dataProvider_testReadConfig(self):
 		pReadConfig = Proc()
 		yield pReadConfig, {}, 'local', {}
 		pReadConfig1 = Proc()
 		pReadConfig1.runner = 'sge1d'
 		pReadConfig1.forks  = 8
-		yield pReadConfig1, {'runner': 'sge', 'nsub': 10, 'forks': 4, 'ppldir': testdir}, 'sge', {'runner': 'sge1d', 'forks': 8, 'maxsubmit': 10, 'ppldir': testdir}
+		yield pReadConfig1, {'runner': 'sge', 'nthread': 10, 'forks': 4, 'ppldir': self.testdir}, 'sge', {'runner': 'sge1d', 'forks': 8, 'nthread': 10, 'ppldir': self.testdir}
 		
 	def testReadConfig(self, p, inconfig, runner, outconfig):
 		p._readConfig(inconfig)
 		self.assertEqual(p.runner, runner)
-		self.assertDictIn(outconfig, p.config)
+		self.assertDictContains(outconfig, p.config)
 		
-	def dataProvider_testTidyAfterRun(self, testdir):
+	def dataProvider_testTidyAfterRun(self):
 		pTidyAfterRun = Proc()
 		pTidyAfterRun.props['callback'] = lambda p: p.log('goodbye')
 		yield pTidyAfterRun, 'terminate', 'skip+', None, [
@@ -1022,7 +1042,7 @@ class TestProc(helpers.TestCase):
 		]
 		
 		pTidyAfterRun1 = Proc()
-		pTidyAfterRun1.ppldir = testdir
+		pTidyAfterRun1.ppldir = self.testdir
 		pTidyAfterRun1.input = {'in': [1,2]}
 		pTidyAfterRun1.props['callback'] = lambda p: p.log('goodbye')
 		pTidyAfterRun1._tidyBeforeRun()
@@ -1037,7 +1057,7 @@ class TestProc(helpers.TestCase):
 		]
 		
 		pTidyAfterRun2 = Proc()
-		pTidyAfterRun2.ppldir = testdir
+		pTidyAfterRun2.ppldir = self.testdir
 		pTidyAfterRun2.input = {'in': [1,2]}
 		pTidyAfterRun2._tidyBeforeRun()
 		# write rc to job.rc
@@ -1070,7 +1090,7 @@ class TestProc(helpers.TestCase):
 				self.assertIn(err, stderr)
 				stderr = stderr[(stderr.find(err) + len(err)):]
 				
-	def dataProvider_testCheckCached(self, testdir):
+	def dataProvider_testCheckCached(self):
 		pCheckCached = Proc()
 		pCheckCached.props['cache'] = False
 		yield pCheckCached, False, [
@@ -1080,7 +1100,7 @@ class TestProc(helpers.TestCase):
 		
 		# 1 all cached
 		pCheckCached1 = Proc()
-		pCheckCached1.ppldir = testdir
+		pCheckCached1.ppldir = self.testdir
 		pCheckCached1.input  = {'a': [1,2]}
 		with helpers.log2str():
 			pCheckCached1._tidyBeforeRun()
@@ -1094,17 +1114,17 @@ class TestProc(helpers.TestCase):
 	
 		# 2 all export cached
 		pCheckCached2 = Proc()
-		pCheckCached2.ppldir = testdir
+		pCheckCached2.ppldir = self.testdir
 		pCheckCached2.input  = {'a': [1,2]}
 		pCheckCached2.output = 'a:file:{{in.a}}.txt'
 		pCheckCached2.cache  = 'export'
-		pCheckCached2.exdir  = testdir 
+		pCheckCached2.exdir  = self.testdir 
 		with helpers.log2str():
 			pCheckCached2._tidyBeforeRun()
 		for i, job in enumerate(pCheckCached2.jobs):
 			helpers.writeFile(job.rcfile, 0)
 			helpers.writeFile(path.join(job.outdir, str(i+1) + '.txt'))
-			helpers.writeFile(path.join(testdir, str(i+1) + '.txt'))
+			helpers.writeFile(path.join(self.testdir, str(i+1) + '.txt'))
 			
 		yield pCheckCached2, True, [
 			'INFO',
@@ -1114,7 +1134,7 @@ class TestProc(helpers.TestCase):
 		
 		# partially cached
 		pCheckCached3 = Proc()
-		pCheckCached3.ppldir = testdir
+		pCheckCached3.ppldir = self.testdir
 		pCheckCached3.input  = {'a': [1,2]}
 		with helpers.log2str():
 			pCheckCached3._tidyBeforeRun()
@@ -1130,7 +1150,7 @@ class TestProc(helpers.TestCase):
 		
 		# no jobs cached
 		pCheckCached4 = Proc()
-		pCheckCached4.ppldir = testdir
+		pCheckCached4.ppldir = self.testdir
 		pCheckCached4.input  = {'a': [1,2]}
 		with helpers.log2str():
 			pCheckCached4._tidyBeforeRun()
@@ -1148,9 +1168,9 @@ class TestProc(helpers.TestCase):
 			self.assertIn(err, stderr)
 			stderr = stderr[(stderr.find(err) + len(err)):]
 	
-	def dataProvider_testRunJobs(self, testdir):
+	def dataProvider_testRunJobs(self):
 		pRunJobs = Proc()
-		pRunJobs.ppldir = testdir
+		pRunJobs.ppldir = self.testdir
 		pRunJobs.input  = {'a': [1,2]}
 		with helpers.log2str():
 			pRunJobs._tidyBeforeRun()
@@ -1159,9 +1179,9 @@ class TestProc(helpers.TestCase):
 	def testRunJobs(self, p):
 		self.assertIsNone(p._runJobs())
 		
-	def dataProvider_testRun(self, testdir):
+	def dataProvider_testRun(self):
 		pRun = Proc()
-		pRun.ppldir = testdir
+		pRun.ppldir = self.testdir
 		pRun.input  = {'a': [1,2]}
 		with helpers.log2str():
 			pRun._tidyBeforeRun()
@@ -1172,7 +1192,7 @@ class TestProc(helpers.TestCase):
 			'Done (time: '
 		]
 		pRun1 = Proc()
-		pRun1.ppldir = testdir
+		pRun1.ppldir = self.testdir
 		pRun1.props['resume'] = 'skip'
 		
 		yield pRun1, {}, True, [
@@ -1180,7 +1200,7 @@ class TestProc(helpers.TestCase):
 			'Pipeline will resume from future processes.'
 		]
 		pRun2 = Proc()
-		pRun2.ppldir = testdir
+		pRun2.ppldir = self.testdir
 		pRun2.input  = {'a': [1,2]}
 		with helpers.log2str():
 			pRun2._tidyBeforeRun()
@@ -1191,7 +1211,7 @@ class TestProc(helpers.TestCase):
 		]
 		
 		pRun3 = Proc()
-		pRun3.ppldir = testdir
+		pRun3.ppldir = self.testdir
 		pRun3.input  = {'a': [1,2]}
 		with helpers.log2str():
 			pRun3._tidyBeforeRun()
@@ -1202,7 +1222,7 @@ class TestProc(helpers.TestCase):
 			pRun3.workdir
 		]
 		pRun4 = Proc()
-		pRun4.ppldir = testdir
+		pRun4.ppldir = self.testdir
 		pRun4.input  = {'a': [1,2]}
 		with helpers.log2str():
 			pRun4._tidyBeforeRun()
@@ -1226,4 +1246,4 @@ class TestProc(helpers.TestCase):
 			stderr = stderr[(stderr.find(err) + len(err)):]
 	
 if __name__ == '__main__':
-	unittest.main(verbosity=2)
+	testly.main(verbosity=2, failfast = True)
