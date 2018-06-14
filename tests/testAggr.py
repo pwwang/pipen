@@ -390,7 +390,6 @@ class TestAggr(testly.TestCase):
 		for i, p in enumerate(aggr.starts):
 			self.assertListEqual(p.depends, [depends[i]])
 
-	# issue #31
 	def testIssue31(self):
 		p = Proc()
 		#p.runner = 'local'
@@ -399,6 +398,13 @@ class TestAggr(testly.TestCase):
 		with self.assertLogs(logger.getLogger()):
 			a.p.run()
 		self.assertEqual(a.p.runner, 'sge')
+
+		a2 = Aggr(p.copy(id = 'p2'))
+		a2.runner = 'sge'
+		a2.p2.runner = 'local'
+		with self.assertLogs(logger.getLogger()):
+			a2.p2.run()
+		self.assertEqual(a2.p2.runner, 'local')
 		
 if __name__ == '__main__':
 	testly.main(verbosity=2, failfast = True)
