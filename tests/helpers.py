@@ -70,5 +70,27 @@ assertTextEqual = lambda t, first, second, msg = None: t.assertListEqual(
 	second if isinstance(second, list) else second.split('\n'), msg)
 
 def assertInFile(t, text, file, msg = None):
+	t.longMessage = True
+	text = text if isinstance(text, (tuple, list)) else text.split('\n')
+	msg  = msg or '\n"{text}" is not in file "{file}"\n'.format(
+		text = '\n'.join(text), file = file
+	)
 	with open(file) as f:
-		t.assertSeqContains(text if isinstance(text, (tuple, list)) else text.split('\n'), [line.rstrip('\n') for line in f], msg)
+		t.assertSeqContains(text, [
+			line.rstrip('\n') for line in f
+		], msg)
+		
+def assertInSvgFile(t, text, file, starts = None, msg = None):
+	t.longMessage = True
+	text = text if isinstance(text, (tuple, list)) else text.split('\n')
+	if starts:
+		text = [line for line in text if line.startswith(starts)]
+	msg  = msg or '\n"{text}" is not in SVG file "{file}"\n'.format(
+		text = '\n'.join(text), file = file
+	)
+	with open(file) as f:
+		t.assertSeqContains(text, [
+			line.rstrip('\n') 
+			for line in f 
+			if not starts or line.startswith(starts)
+		], msg)

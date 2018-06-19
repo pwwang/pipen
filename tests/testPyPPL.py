@@ -17,37 +17,36 @@ class TestPyPPL(testly.TestCase):
 			rmtree(self.testdir)
 		makedirs(self.testdir)
 		
-	
 	def dataProvider_testInit(self):
-		yield {'log': {'file': False}}, None, {}, {'theme': 'default'}, [], ['PYPPL', 'TIPS']
-		yield {'proc': {'forks': 8}, 'log': {'file': False}}, None, {'proc': {'forks': 8}}, {'theme': 'default'}, [], ['PYPPL', 'TIPS']
+		yield {'_log': {'file': False}}, None, {}, {'theme': 'default'}, [], ['PYPPL', 'TIPS']
+		yield {'default': {'forks': 8}, '_log': {'file': False}}, None, {'default': {'forks': 8}}, {'theme': 'default'}, [], ['PYPPL', 'TIPS']
 		
 		# default conf files
 		if helpers.moduleInstalled('yaml'):
 			ymlfile = path.join(self.testdir, 'config.yaml')
 			helpers.writeFile(ymlfile, [
-				'proc:',
+				'default:',
 				'	forks: 10'
 			])
 		
 		j1file = path.join(self.testdir, 'config1.json')
-		helpers.writeFile(j1file, '{"proc": {"forks": 8}}')
+		helpers.writeFile(j1file, '{"default": {"forks": 8}}')
 		
 		j2file = path.join(self.testdir, 'config2.json')
-		helpers.writeFile(j2file, '{"proc": {"forks": 6}}')
+		helpers.writeFile(j2file, '{"default": {"forks": 6}}')
 		
 		logfile = path.join(self.testdir, 'init.log')
 		
-		yield {'flowchart': {'theme': 'dark'}, 'log': {'file': False}}, None, {'proc': {'forks': 8}}, {'theme': 'dark'}, [j1file]
-		yield {'log': {'file': False}}, None, {'proc': {'forks': 6}}, {'theme': 'default'}, [j1file, j2file]
-		yield {'log': {'file': False}}, None, {'proc': {'forks': 8}}, {'theme': 'default'}, [j2file, j1file]
-		yield {'log': {'file': False}}, j1file, {'proc': {'forks': 8}}, {'theme': 'default'}, [j2file]
-		yield {'proc': {'forks': 4}, 'log': {'file': False}}, j1file, {'proc': {'forks': 4}}, {'theme': 'default'}, [j2file]
+		yield {'_flowchart': {'theme': 'dark'}, '_log': {'file': False}}, None, {'default': {'forks': 8}}, {'theme': 'dark'}, [j1file]
+		yield {'_log': {'file': False}}, None, {'default': {'forks': 6}}, {'theme': 'default'}, [j1file, j2file]
+		yield {'_log': {'file': False}}, None, {'default': {'forks': 8}}, {'theme': 'default'}, [j2file, j1file]
+		yield {'_log': {'file': False}}, j1file, {'default': {'forks': 8}}, {'theme': 'default'}, [j2file]
+		yield {'default': {'forks': 4}, '_log': {'file': False}}, j1file, {'default': {'forks': 4}}, {'theme': 'default'}, [j2file]
 		
 		if helpers.moduleInstalled('yaml'):
-			yield {'log': {'file': False}}, ymlfile, {'proc': {'forks': 10}}, {'theme': 'default'}, [j2file, j1file]
-			yield {'proc': {'forks': 4}, 'log': {'file': False}}, ymlfile, {'proc': {'forks': 4}}, {'theme': 'default'}, [j2file, j1file]
-			yield {'proc': {'forks': 4}, 'log': {'file': False}}, j1file, {'proc': {'forks': 4}}, {'theme': 'default'}, [j2file, ymlfile]
+			yield {'_log': {'file': False}}, ymlfile, {'default': {'forks': 10}}, {'theme': 'default'}, [j2file, j1file]
+			yield {'default': {'forks': 4}, '_log': {'file': False}}, ymlfile, {'default': {'forks': 4}}, {'theme': 'default'}, [j2file, j1file]
+			yield {'default': {'forks': 4}, '_log': {'file': False}}, j1file, {'default': {'forks': 4}}, {'theme': 'default'}, [j2file, ymlfile]
 		
 	def testInit(self, config, cfgfile, outconf, outfcconf, dftconffiles = [], errs = []):
 		PyPPL.DEFAULT_CFGFILES = dftconffiles
@@ -69,7 +68,7 @@ class TestPyPPL(testly.TestCase):
 		PyPPL.DEFAULT_CFGFILES = []
 		ymlfile = path.join(testdir, 'config.yaml')
 		helpers.writeFile(ymlfile, [
-			'proc:',
+			'default:',
 			'	forks: 10'
 		])
 		import sys
@@ -77,15 +76,20 @@ class TestPyPPL(testly.TestCase):
 			import yaml
 			del sys.modules['yaml']
 		paths = []
-		while sys.path:
-			paths.append(sys.path.pop(0))
+		paths.extend (sys.path)
+		del sys.path[:]
+		#while sys.path:
+		#	paths.append(sys.path.pop(0))
 		with helpers.log2str(levels = 'all') as (out, err):
-			pp = PyPPL(config = {'log': {'file': True}}, cfgfile = ymlfile)
-		for p in paths: sys.path.append(p)
+			pp = PyPPL(config = {'_log': {'file': True}}, cfgfile = ymlfile)
+		#for p in paths: sys.path.append(p)
+		sys.path = paths
 		self.assertDictEqual(pp.config, {})
 		logfiles = glob(path.splitext(sys.argv[0])[0] + "*.pyppl.log")
 		self.assertTrue(logfiles)
-		for logfile in logfiles: remove(logfile)
+		
+		for logfile in logfiles:
+			remove(logfile)
 	
 	def dataProvider_testRegisterProc(self):
 		pRegisterProc = Proc()
@@ -132,7 +136,7 @@ class TestPyPPL(testly.TestCase):
 		           p5 /
 		'''
 		with helpers.log2str():
-			pp = PyPPL({'log': {'file': None}})
+			pp = PyPPL({'_log': {'file': None}})
 		pStart1 = Proc()
 		pStart2 = Proc()
 		pStart3 = Proc()
@@ -179,7 +183,7 @@ class TestPyPPL(testly.TestCase):
 		           p5 /
 		'''
 		with helpers.log2str():
-			pp = PyPPL({'log': {'file': None}})
+			pp = PyPPL({'_log': {'_file': None}})
 		p_resume1 = Proc()
 		p_resume2 = Proc()
 		p_resume3 = Proc()
@@ -222,7 +226,7 @@ class TestPyPPL(testly.TestCase):
 				
 	def dataProvider_testResume1(self):
 		with helpers.log2str():
-			pp = PyPPL({'log': {'file': None}})
+			pp = PyPPL({'_log': {'file': None}})
 		pResume11 = Proc()
 		pResume12 = Proc()
 		pResume13 = Proc()
@@ -243,7 +247,7 @@ class TestPyPPL(testly.TestCase):
 				
 	def dataProvider_testResume2(self):
 		with helpers.log2str():
-			pp = PyPPL({'log': {'file': None}})
+			pp = PyPPL({'_log': {'file': None}})
 		pResume21 = Proc()
 		pResume22 = Proc()
 		pResume23 = Proc()
@@ -263,7 +267,7 @@ class TestPyPPL(testly.TestCase):
 			for proc in ProcTree.NODES.keys():
 				if not proc.id.startswith('pResume2'): continue
 				self.assertIn(proc.resume, ['', 'skip+', 'resume+'])
-				
+	'''			
 	def dataProvider_testGetProfile(self):
 		yield {'log': {'file': None}, 'proc': {'id': 'a'}}, 'proc', {}, PyPPLConfigError, 'Cannot set a universal id for all process in configuration: \'a\''
 		yield {'log': {'file': None}, 'proc': {}, 'sge': {}}, 'sge', {'runner': 'sge'}
@@ -285,7 +289,7 @@ class TestPyPPL(testly.TestCase):
 			self.assertEqual(c, config)
 			for err in errs:
 				self.assertIn(err, stderr)
-				
+	'''			
 	def dataProvider_testShowAllRoutes(self):
 		'''
 		         / p3  --- \ 
@@ -329,7 +333,7 @@ class TestPyPPL(testly.TestCase):
 				
 	def testShowAllRoutes(self, start, errs):
 		with helpers.log2str():
-			pp = PyPPL({'log': {'file': None}})
+			pp = PyPPL({'_log': {'file': None}})
 		pp.start(start)
 		with helpers.log2str(levels = 'all') as (out, err):
 			pp.showAllRoutes()
@@ -398,7 +402,7 @@ class TestPyPPL(testly.TestCase):
 			
 	def testFlowchart(self, start, fcfile, dotfile, errs = []):
 		with helpers.log2str():
-			pp = PyPPL({'log': {'file': None}})
+			pp = PyPPL({'_log': {'file': None}})
 		pp.start(start)
 		with helpers.log2str(levels = 'all') as (out, err):
 			pp.flowchart(fcfile = fcfile, dotfile = dotfile)
@@ -408,7 +412,7 @@ class TestPyPPL(testly.TestCase):
 		for err in errs:
 			self.assertIn(err, stderr)
 			stderr = stderr[(stderr.find(err) + len(err)):]
-			
+	
 	def dataProvider_testRun(self):
 		'''
 		         / p3  --- \ 
@@ -477,7 +481,7 @@ class TestPyPPL(testly.TestCase):
 			
 	def testRun(self, start, profile, runner, errs = []):
 		with helpers.log2str():
-			pp = PyPPL({'log': {'file': None}, 'profile': {'ppldir': self.testdir, 'runner': 'sge'}})
+			pp = PyPPL({'_log': {'file': None}, 'profile': {'ppldir': self.testdir, 'runner': 'sge'}})
 		import sys
 		pp.start(start)
 		argv = sys.argv

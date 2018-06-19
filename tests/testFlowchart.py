@@ -380,8 +380,6 @@ class TestFlowchart (testly.TestCase):
 			'}',
 			'',
 		]), [
-			'<svg width="141pt" height="420pt"',
-			' viewBox="0.00 0.00 141.00 419.90" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">',
 			'<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 415.898)">',
 			'<title>PyPPL</title>',
 			'<polygon fill="white" stroke="none" points="-4,4 -4,-415.898 137,-415.898 137,4 -4,4"/>',
@@ -475,7 +473,7 @@ class TestFlowchart (testly.TestCase):
 		fc.generate()
 		with open(fc.dotfile) as f:
 			helpers.assertTextEqual(self, f.read(), src)
-		helpers.assertInFile(self, svg, fc.fcfile)
+		helpers.assertInSvgFile(self, svg, fc.fcfile, '<g id="n')
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-import helpers, testly
+import helpers, testly, unittest
 
 from os import path, getcwd, makedirs
 from shutil import rmtree
@@ -406,14 +406,15 @@ class TestRunnerDry(testly.TestCase):
 
 class TestRunnerSsh(testly.TestCase):
 
+	def _localSshAlive():
+		#return utils.dumbPopen('ps axf | grep sshd | grep -v grep', shell = True).wait() == 0
+		return RunnerSsh.isServerAlive('localhost', None)
+		
 	def setUpMeta(self):
 		self.testdir = path.join(gettempdir(), 'PyPPL_unittest', 'TestRunnerSsh')
 		if path.exists(self.testdir):
 			rmtree(self.testdir)
-		makedirs(self.testdir)
-	
-	def _localSshAlive():
-		return utils.dumbPopen('ps axf | grep sshd | grep -v grep', shell = True).wait() == 0
+		makedirs(self.testdir)		
 	
 	def dataProvider_testIsServerAlive(self):
 		if self._localSshAlive():
@@ -461,7 +462,7 @@ class TestRunnerSsh(testly.TestCase):
 		),
 		
 		if self._localSshAlive():
-			# should be localhost
+			# should be localhost'
 			yield _generateJob(
 				self.testdir,
 				index = 4,
@@ -552,6 +553,7 @@ class TestRunnerSsh(testly.TestCase):
 			}
 		), False, [], ['123456']
 	
+	@unittest.skipIf(not RunnerSsh.isServerAlive('localhost', None), 'Local ssh server is not alive.')
 	def testSubmitNRun(self, job, ret, outs = [], errs = []):
 		RunnerSsh.INTERVAL = .1
 		r = RunnerSsh(job)

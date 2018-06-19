@@ -50,7 +50,7 @@ class RunnerSsh(Runner):
 			raise RunnerSshError('No server found for ssh runner.')
 		
 		servers    = conf['servers']
-		checkAlive = False if 'checkAlive' not in conf else conf['checkAlive']
+		checkAlive = conf.get('checkAlive', False)
 		sid        = RunnerSsh.SERVERID.value % len (servers)
 		server     = servers[sid]
 		key        = conf['keys'][sid] if 'keys' in conf   \

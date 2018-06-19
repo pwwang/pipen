@@ -400,8 +400,8 @@ class TestAggr(testly.TestCase):
 		self.assertEqual(a.p.runner, 'sge')
 
 		a2 = Aggr(p.copy(id = 'p2'))
-		a2.runner = 'sge'
 		a2.p2.runner = 'local'
+		a2.runner = 'sge'
 		with self.assertLogs(logger.getLogger()):
 			a2.p2.run()
 		self.assertEqual(a2.p2.runner, 'local')

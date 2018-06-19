@@ -613,10 +613,13 @@ class TestProc(testly.TestCase):
 		pBuildProcVars1.ppldir = self.testdir
 		pBuildProcVars1.args.a = 1
 		pBuildProcVars1.props['runner'] = 'ssh'
+		# pBuildProcVars1.props['runner'] will still be 'local'
+		# because the runner closes in proc.run
+		#pBuildProcVars1.runner = 'ssh'  
 		yield pBuildProcVars1, {'a': 1}, {'size': 0, 'ppldir': self.testdir, 'runner': 'ssh'}, [
 			'P.PROPS',
 			'ppldir => %s' % repr(self.testdir),
-			'runner => \'ssh\' [profile]',
+			'runner => ssh',
 			'size   => 0',
 			'P.ARGS',
 			'a      => 1'
@@ -631,25 +634,7 @@ class TestProc(testly.TestCase):
 		self.assertDictContains(procvars, p.procvars['proc'])
 		for err in errs:
 			self.assertIn(err, stderr)
-	'''		
-	def dataProvider_testBuildBrings(self, testdir):
-		pBuildBrings = Proc()
-		pBuildBrings.ppldir = testdir
-		yield pBuildBrings, {}, {}
-		yield pBuildBrings, {'a': ''}, {'a': [TemplatePyPPL('')]}
-		yield pBuildBrings, {'a': ['', 'aaa'], 'b': 'bbb'}, {'a': [TemplatePyPPL(''), TemplatePyPPL('aaa')], 'b': [TemplatePyPPL('bbb')]}
 		
-	def testBuildBrings(self, p, inbrs, outbrs):
-		p.brings = inbrs
-		p._buildProps()
-		p._buildBrings()
-		for k, v in inbrs.items():
-			if not isinstance(v, list): v = [v]
-			self.assertListEqual(
-				v,
-				[t.source for t in outbrs[k]]
-			)
-	'''		
 	def dataProvider_testBuildOutput(self):
 		pBuildOutput = Proc()
 		pBuildOutput.ppldir = self.testdir
@@ -1020,16 +1005,19 @@ class TestProc(testly.TestCase):
 	
 	def dataProvider_testReadConfig(self):
 		pReadConfig = Proc()
-		yield pReadConfig, {}, 'local', {}
-		pReadConfig1 = Proc()
-		pReadConfig1.runner = 'sge1d'
-		pReadConfig1.forks  = 8
-		yield pReadConfig1, {'runner': 'sge', 'nthread': 10, 'forks': 4, 'ppldir': self.testdir}, 'sge', {'runner': 'sge1d', 'forks': 8, 'nthread': 10, 'ppldir': self.testdir}
+		yield 't1', None, None, 'local', {'runner': 'local'}
+		yield 't2', 'sge', None, 'sge', {'runner': 'sge'}
+		yield 't3', 'default', {'default': {'runner': 'sge'}}, 'sge', {'runner': 'default'}
+		yield 't4', 'xxx', {'xxx': {}, 'default': {}}, 'xxx', {'runner': 'xxx'}
+		yield 't5', 'xxx', {'xxx': {}}, 'local', {'runner': 'xxx'}
+		yield 't6', 'xxx', {'yyy': {}}, 'xxx', {'runner': 'xxx'}
+		yield 't7', 'sge1d', {'sge1d': {'runner': 'sge', 'nthread': 10, 'forks': 4, 'ppldir': self.testdir}}, 'sge', {'runner': 'sge1d', 'forks': 4, 'nthread': 10, 'ppldir': self.testdir}
 		
-	def testReadConfig(self, p, inconfig, runner, outconfig):
-		p._readConfig(inconfig)
-		self.assertEqual(p.runner, runner)
-		self.assertDictContains(outconfig, p.config)
+	def testReadConfig(self, tag, profile, inconfig, runner, outconfig):
+		pReadConfig = Proc(tag = tag)
+		pReadConfig._readConfig(profile, inconfig)
+		self.assertEqual(pReadConfig.runner, runner)
+		self.assertDictContains(outconfig, pReadConfig.config)
 		
 	def dataProvider_testTidyAfterRun(self):
 		pTidyAfterRun = Proc()

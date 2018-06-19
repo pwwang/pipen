@@ -301,11 +301,9 @@ class TestParameters(testly.TestCase):
 		yield ps11, ['--param-d', 'no', '--param-c=100', '--param-e', '-1', '-2'], {'a':'', 'b':'a', 'c':100, 'd': False, 'e':['-1', '-2']}
 
 	def testParse(self, ps, args, values, stderr = [], exception = None, msg = None):
-		import sys
-		sys.argv = [''] + args
 		if exception:
 			with helpers.captured_output() as (out, err):
-				self.assertRaisesRegex(exception, msg, ps.parse)
+				self.assertRaisesRegex(exception, msg, ps.parse, args)
 			if stderr:
 				if not isinstance(stderr, list):
 					stderr = [stderr]
@@ -313,7 +311,7 @@ class TestParameters(testly.TestCase):
 					self.assertIn(stde, err.getvalue())
 		else:
 			with helpers.captured_output() as (out, err):
-				d = ps.parse().toDict()
+				d = ps.parse(args).toDict()
 
 			if stderr:
 				if not isinstance(stderr, list):

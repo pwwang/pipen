@@ -187,15 +187,11 @@ class TestUtils (testly.TestCase):
 			{"a":1, "b":{"c":4, "d":9}, "c":8},  # result of utils.update
 			{"a":1, "b":{"c": 4}, "c":8},        # result of naive update
 		)
-		b = {'args': {'inopts': {'ftype': 'head'}}}
-		def ud (d):
-			d['args']['inopts']['ftype'] = 'hello'
 		yield (
-			b,
+			{'args': {'inopts': {'ftype': 'head'}}},
 			{'args': {'inopts': {'ftype': 'nometa'}}},
 			{'args': {'inopts': {'ftype': 'nometa'}}},
-			{'args': {'inopts': {'ftype': 'nometa'}}},
-			ud
+			{'args': {'inopts': {'ftype': 'nometa'}}}
 		)
 		yield (
 			{},
@@ -209,17 +205,22 @@ class TestUtils (testly.TestCase):
 			{'a':1,'b':2,'c':[1,4],'d':{'a':1}},
 			{'a':1,'b':2,'c':[1,4],'d':{'a':1}},
 		)
+		yield (
+			{'runner': 'local'},
+			{'runner': 'local'},
+			{'runner': 'local'},
+			{'runner': 'local'}
+		)
 
-	def testDictUpdate (self, odict, rdict, ndict, naive, cb = None):
-		odict1 = deepcopy(odict)
-		rdict1 = deepcopy(rdict)
+	def testDictUpdate (self, odict, rdict, uodict, nodict):
+		dict_utilsupdate = deepcopy(odict)
+		dict_naiveupdate = deepcopy(odict)
+
+		utils.dictUpdate(dict_utilsupdate, rdict)
+		dict_naiveupdate.update(rdict)
 		#print rdict
-		#if callable(cb): cb(odict1)
-		utils.dictUpdate(odict, rdict)
-		odict1.update(rdict)
-		#print rdict
-		self.assertEqual(odict1, naive)
-		self.assertEqual(rdict1, rdict)
+		self.assertDictEqual(dict_utilsupdate, uodict)
+		self.assertDictEqual(dict_naiveupdate, nodict)
 
 	def dataProvider_testFuncSig(self):
 		def func1():

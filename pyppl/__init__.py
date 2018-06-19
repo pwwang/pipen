@@ -573,17 +573,13 @@ class Proc (object):
 		tag   = ".%s" % self.tag  if self.tag != "notag" else ""
 		return "%s%s%s" % (self.id, tag, aggrName)
 
-	def run (self, config = None):
+	def run (self, profile = None, profiles = None):
 		"""
 		Run the jobs with a configuration
 		@params:
 			`config`: The configuration
 		"""
-		if config is None: config = {}
-		# fix #31
-		if 'runner' not in config:
-			config['runner'] = self.config['runner']
-		self._readConfig (config)
+		self._readConfig (profile, profiles)
 
 		if self.runner == 'dry':
 			self.config['cache'] = False
@@ -907,12 +903,20 @@ class Proc (object):
 			val = getattr(self, key)
 			if key == 'args':
 				procvars['args'] = val
-				procargs = val
-				if val: maxlen = max(maxlen, max(list(map(len, val.keys()))))
+				procargs         = val
+				if val: 
+					maxlen = max(maxlen, max([len(k) for k in val.keys()]))
+			elif key == 'runner':
+				procvars[key] = val
+				maxlen        = max(maxlen, len(key))
+				if val == self.config['runner']:
+					propout[key]  = val
+				else:
+					propout[key]  = val + ' [profile: %s]' % self.config['runner']
 			elif key in pvkeys:
 				procvars[key] = val
-				maxlen = max(maxlen, len(key))
-				propout[key] = (repr(val) + ' [%s]' % alias[key]) if key in alias else repr(val)
+				maxlen        = max(maxlen, len(key))
+				propout[key]  = (repr(val) + ' [%s]' % alias[key]) if key in alias else repr(val)
 			elif key not in nokeys:
 				procvars[key] = val
 		for key in sorted(procargs.keys()):
@@ -1038,21 +1042,42 @@ class Proc (object):
 			self.channel.attach(*self.jobs[0].data['out'].keys())
 		self.jobs[rptjob].report()
 
-	def _readConfig (self, config):
+	def _readConfig (self, profile, profiles):
 		"""
 		Read the configuration
 		@params:
 			`config`: The configuration
 		"""
-		for key, val in config.items():
-			if key == 'runner':
-				self.props['runner'] = val
-			elif key in self.sets:
-				continue
+		profile  = profile or self.config['runner']
+		profiles = profiles or {
+			'default': {'runner': 'local'}
+		}
+		
+		config = profiles.get('default', {'runner': 'local'})
+		
+		if isinstance(profile, dict):
+			utils.dictUpdate(config, profile)
+			if 'runner' not in config:
+				config['runner'] = 'local'
+		else:	
+			if profile in profiles:
+				utils.dictUpdate(config, profiles[profile])
+				if 'runner' not in config:
+					config['runner'] = profile
 			else:
-				if key in Proc.ALIAS:
-					key = Proc.ALIAS[key]
-				self.config[key] = val
+				config['runner'] = profile
+
+		self.config['runner'] = profile
+		self.props['runner']  = config['runner']
+		del config['runner']
+		
+		for key, val in config.items():
+			if key in self.sets:
+				continue
+			
+			if key in Proc.ALIAS:
+				key = Proc.ALIAS[key]
+			self.config[key] = val
 
 	def _checkCached (self):
 		"""
@@ -1202,9 +1227,9 @@ class PyPPL (object):
 		fcconfig = {
 			'theme': 'default'
 		}
-		if 'flowchart' in self.config:
-			utils.dictUpdate(fcconfig, self.config['flowchart'])
-			del self.config['flowchart']
+		if '_flowchart' in self.config:
+			utils.dictUpdate(fcconfig, self.config['_flowchart'])
+			del self.config['_flowchart']
 		self.fcconfig = fcconfig
 
 		logconfig = {
@@ -1213,11 +1238,11 @@ class PyPPL (object):
 			'lvldiff': [],
 			'file':    '%s%s.pyppl.log' % (path.splitext(sys.argv[0])[0], ('_%s' % self.counter) if self.counter else '')
 		}
-		if 'log' in self.config:
-			if 'file' in self.config['log'] and self.config['log']['file'] is True:
-				del self.config['log']['file']
-			utils.dictUpdate(logconfig, self.config['log'])
-			del self.config['log']
+		if '_log' in self.config:
+			if 'file' in self.config['_log'] and self.config['_log']['file'] is True:
+				del self.config['_log']['file']
+			utils.dictUpdate(logconfig, self.config['_log'])
+			del self.config['_log']
 
 		logger.getLogger (logconfig['levels'], logconfig['theme'], logconfig['file'], logconfig['lvldiff'])
 
@@ -1311,7 +1336,8 @@ class PyPPL (object):
 		if not args or (len(args) == 1 and not args[0]): return self
 		self._resume(*args, plus = True)
 		return self
-
+		
+	'''
 	def _getProfile(self, profile):
 		"""
 		Get running profile according to profile name
@@ -1322,7 +1348,7 @@ class PyPPL (object):
 		"""
 		config = {}
 		# get default profile first
-		if 'proc' in self.config:
+		if 'default' in self.config:
 			utils.dictUpdate(config, self.config['proc'])
 
 		# overwrite with the given profile
@@ -1342,7 +1368,7 @@ class PyPPL (object):
 			raise PyPPLConfigError(config['id'], 'Cannot set a universal id for all process in configuration')
 
 		return config
-
+	'''
 	def showAllRoutes(self):
 		logger.logger.info('[DEBUG] ALL ROUTES:')
 		#paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths()])
@@ -1380,7 +1406,7 @@ class PyPPL (object):
 		"""
 		timer     = time()
 
-		dftconfig = self._getProfile(profile)
+		#dftconfig = self._getProfile(profile)
 		proc      = self.tree.getNextToRun()
 		while proc:
 			if proc.origin != proc.id:
@@ -1395,10 +1421,13 @@ class PyPPL (object):
 			logger.logger.info ('[PROCESS]' + name)
 			logger.logger.info ('[PROCESS]' + '~'*decorlen)
 			proc.log ('%s => %s => %s' % (ProcTree.getPrevStr(proc), proc.name(), ProcTree.getNextStr(proc)), 'DEPENDS')
+			proc.run(profile, self.config)
+			'''
 			if 'runner' in proc.sets and proc.config['runner'] != profile:
 				proc.run(self._getProfile(proc.config['runner']))
 			else:
 				proc.run(dftconfig)
+			'''
 			proc = self.tree.getNextToRun()
 
 		unran = self.tree.unranProcs()

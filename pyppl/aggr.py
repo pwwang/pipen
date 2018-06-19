@@ -232,7 +232,7 @@ class Aggr (object):
 				if dot in ['depends2', 'input']:
 					if i < len(value) and value[i] is not None:
 						setattr(proc, 'depends' if dot == 'depends2' else dot, value[i])
-				else:
+				elif not dot in proc.sets:
 					setattr(proc, dot, value)
 
 	def addProc (self, p, tag = None, where = None, copy = True):
