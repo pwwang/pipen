@@ -207,11 +207,9 @@ class Parameters (object):
 		self._props['desc'] = list(filter(None, list(map(lambda x: x.strip(), d.splitlines()))))
 		return self
 
-	def parse (self, raiseExc = False, args = sys.argv[1:]):
+	def parse (self, args = sys.argv[1:]):
 		"""
 		Parse the arguments from `sys.argv`
-		@params:
-			`raiseExc`: Whether raise exception when error happens or print help. Default: False
 		"""
 		if (not args and '' in self._props['hopts']) or (set(filter(None, self._props['hopts'])) & set(args)):
 			sys.stderr.write (self.help())
@@ -227,8 +225,7 @@ class Parameters (object):
 				if karg.startswith(self._props['prefix']):
 					key = karg[len(self._props['prefix']):]
 					if key not in self._props['params']:
-						if not raiseExc:
-							sys.stderr.write ('WARNING: Unknown option {}.\n'.format(karg))
+						sys.stderr.write ('WARNING: Unknown option {}.\n'.format(karg))
 						i += 1
 						continue
 					val = self._props['params'][key]
@@ -257,26 +254,21 @@ class Parameters (object):
 							i += 1
 						else:
 							if i+1 >= len(args) or args[i+1].startswith(self._props['prefix']):
-								if not raiseExc:
-									sys.stderr.write ('WARNING: No value assigned for option: {}.\n'.format(karg))
+								sys.stderr.write ('WARNING: No value assigned for option: {}.\n'.format(karg))
 								i += 1
 							else:
 								val.value = args[i+1]
 								i += 2
 
 				else:
-					if not raiseExc:
-						sys.stderr.write ('WARNING: Unused value found: {}.\n'.format(args[i]))
+					sys.stderr.write ('WARNING: Unused value found: {}.\n'.format(args[i]))
 					i += 1
 
 			for key, val in self._props['params'].items():
 				if val.required and not val.value:
-					if not raiseExc:
-						sys.stderr.write ('ERROR: Option {}{} is required.\n\n'.format(self._props['prefix'], key))
-						sys.stderr.write (self.help())
-						sys.exit(1)
-					else:
-						raise ParametersParseError('Option {}{} is required.\n\n'.format(self._props['prefix'], key))
+					sys.stderr.write ('ERROR: Option {}{} is required.\n\n'.format(self._props['prefix'], key))
+					sys.stderr.write (self.help())
+					sys.exit(1)
 				if val.type == bool:
 					if isinstance(val.value, bool):
 						pass
