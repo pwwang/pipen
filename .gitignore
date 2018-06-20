@@ -96,3 +96,4 @@ export/
 *.svg
 *.dot
 *.queue.txt
+site/
