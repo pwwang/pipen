@@ -1,6 +1,7 @@
-site_name: PyPPL - A Python PiPeLine framework
+site_name: PyPPL
+theme: 'readthedocs'
 pages:
-    - 'Introduction': 'README.md'
+    - 'Introduction': 'index.md'
     - 'Basics and folder structure': 'basic-concepts-and-directory-structure.md'
     - 'Templating': 'placeholders.md'
     - 'Channels': 'channels.md'
