@@ -164,7 +164,9 @@ An aggregation can depend on aggregations and/or processes, you just treat the a
 |-|-|-|
 | `Aggr` (`a1`) | `Aggr` (`a2`) | `a1.starts` depends on `a2.ends` |
 | `Proc` (`p`) | `Aggr` (`a`) | `p` depends on `a.ends` |
-> **Note** You have to specify `depends` for start processes of an aggregation.
+
+!!! note
+    You have to specify `depends` for start processes of an aggregation.
 
 ## Copy an aggregation
 `Aggr.copy(tag = 'notag', copyDeps = True, newid = None)`
@@ -184,7 +186,7 @@ a2 = a.copy('copied')
 # a2.id == 'a2'
 # to access the processes:
 # a2.p1, a2.p2, a2.p3
-a2 = a.copy('copied', newid = 'newAggr')
+a2 = a.copy('copied', id = 'newAggr')
 # a2.id == 'newAggr'
 ```
-[1]: https://pwwang.gitbooks.io/pyppl/configure-a-pipeline.html#starting-processes
+[1]: ./configure-a-pipeline/#starting-processes

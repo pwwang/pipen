@@ -1,7 +1,5 @@
 # Configure your logs
-<!-- toc -->
 
-{% raw %}
 `PyPPL` has fancy logs. You can define how they look like (theme) and what messages to show (levels).
 
 ## Built-in log themes
@@ -31,14 +29,14 @@ If you don't like them, you can also disable them:
 To use them, just specify the name in your pipeline configuration file:
 ```json
 {
-    "log": {
+    "_log": {
         "theme": "magentaOnWhite"
     }
 }
 ```
 Or when you initialize a pipeline:
 ```python
-PyPPL({"log": {"theme": "magentaOnWhite"}}).start(...).run()
+PyPPL({"_log": {"theme": "magentaOnWhite"}}).start(...).run()
 ```
 If you want to disable the theme, just set `"theme"` to `False` (`false` for `json`)
 If you set `theme` to `True`, then default theme `greenOnBlack` is used.
@@ -71,32 +69,34 @@ Please note that the levels are different from those of python's `logging` modul
 |`P.PROPS`|`all, normal, nodebug`|Show some properties of a process|
 |`P.ARGS`|`all, nodebug`|Show the args of a process|
 |`JOBDONE`|`all, nodebug`|Mark when a job is done|
->**NOTE** The log levels are a little bit different from here, please see [debug your script][27].
+!!! note
+    The log levels are a little bit different from here, please see [debug your script][27].
 
 You may also specify the group name in your pipeline configuration file:
 ```json
 {
-    "log": {
+    "_log": {
         "levels": "nodebug"
-    }
+    },
+    // running profiles ...
 }
 ```
 Or when you initialize a pipeline:
 ```python
-PyPPL({"log": {"levels": "nodebug"}}).start(...).run()
+PyPPL({"_log": {"levels": "nodebug"}}).start(...).run()
 ```
 
 You can also explicitly define a set of messages with different levels to show in the logs:
 ```json
 {
-    "log": {"levels": [">>>>>>>", "RUNNING", "CACHED"]}
+    "_log": {"levels": ["PROCESS", "RUNNING", "CACHED"]}
 }
 ```
 
 Even you can modify the base groups:
 ```json
 {
-    "log": {
+    "_log": {
         "levels": "normal",
         "lvldiff": ["+DEBUG", "P.ARGS", "-SUBMIT"]
     }
@@ -139,14 +139,14 @@ If you just want to modify the built-in themes, you can do it before you specify
 from PyPPL import logger, PyPPL
 logger.themes['greenOnBlack']['DONE'] = logger.colors.cyan
 # ... define some procs
-PyPPL({'log':{'theme': 'greenOnBlack'}}).start(...).run()
+PyPPL({'_log':{'theme': 'greenOnBlack'}}).start(...).run()
 ```
 
 Yes, of course, you can also define a completely new theme:
 ```python
 from pyppl import logger, PyPPL
 # ... define procs
-PyPPL({'log': 
+PyPPL({'_log': 
     {'theme': {
         'DONE': logger.colors.green,
         'DEBUG': logger.colors.black,
@@ -172,7 +172,7 @@ You can also use the directly terminal escape sequences, like `\033[30m` for bla
 If you define a theme in a configuration file, you may use the escape sequences or also use the color names:
 ```json
 {
-    "log": {"theme": {
+    "_log": {"theme": {
         "DONE": "{{colors.green}}",
         "DEBUG": "{{colors.black}}",
         "starts:LOG": "{{colors.bgwhite}}{{colors.black}}",
@@ -182,7 +182,7 @@ If you define a theme in a configuration file, you may use the escape sequences 
 ```
 
 ## Log to file
-By default, pyppl will not log to a file until you set a file path to `{"log": {"file": "/path/to/logfile"}}` in the configuration. Or you can specfiy `False` to it to disable logging to file. If you set it to `True`, a default log file will be used, which is: `"./pipeline.pyppl.log"` if your pipeline is from file: `./pipeline.py`
+By default, pyppl will not log to a file until you set a file path to `{"_log": {"file": "/path/to/logfile"}}` in the configuration. Or you can specfiy `False` to it to disable logging to file. If you set it to `True`, a default log file will be used, which is: `"./pipeline.pyppl.log"` if your pipeline is from file: `./pipeline.py`
 >**NOTE** Filters and themes are not applied to handler to log to file. So you can always find all logs in the log file if your have it enabled.
 
 ## Progress bar
@@ -256,4 +256,4 @@ So even job #2 belongs to the first cell and it's running, the sign is still `=`
 [24]: https://placehold.it/32/00ffff/eeeeee?text=A
 [25]: https://placehold.it/32/ffffff/eeeeee?text=A
 [26]: https://en.wikipedia.org/wiki/ANSI_escape_code
-[27]: https://pwwang.gitbooks.io/pyppl/write-your-script.html#debug-your-script
+[27]: https://pwwang.github.io/PyPPL/write-your-script.html#debug-your-script

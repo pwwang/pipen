@@ -13,7 +13,8 @@ Actually, what you need to do is just specify the first input channel, and then 
 |-- pipeline.py
 `-- workdir/
 	`-- PyPPL.<id>.<tag>.<suffix>/
-		`-- proc.settings
+		|-- lock
+		|-- proc.settings
 		`-- <job.index>/
 			|-- input/
 			|-- output/
@@ -33,8 +34,8 @@ Actually, what you need to do is just specify the first input channel, and then 
 |------|---------|------|
 |`workdir/`|Where the pipeline directories of all processes of current pipeline are located.|Can be set by `p.ppldir`|
 |`PyPPL.<id>.<tag>.<suffix>/`|The work directory of current process.|The `suffix` is a unique identify of the process according to its configuration.<br/>You may set it by `p.workdir`|
-|`proc.settings/`|The settings of the process||
-|`<job.index>/`|The job directory||
+|`proc.settings/`|The settings of the process|A copy of proc settings|
+|`<job.index>/`|The job directory|Starts with `1`|
 |`<job.index>/input/`|Where you can find the links to all the input files||
 |`<job.index>/output/`|Where you can find all the output files||
 |`<job.index>/job.cache`|The file containing the signature of the job||
@@ -48,9 +49,11 @@ Actually, what you need to do is just specify the first input channel, and then 
 |`<job.index>/job.script.ssh`|The script file for ssh runner||
 |`<job.index>/job.script.sge`|The script file for sge runner||
 
-> **Note** You are encouraged to set `p.ppldir` **BUT NOT** `p.workdir`, as it contains a unique `suffix` that is automatically computed.  
-> **Note** In this documentation:
-- `<workdir>` refers to `./workdir/PyPPL.<id>.<tag>.<suffix>/`, 
-- `<indir>` refers to `./workdir/PyPPL.<id>.<tag>.<suffix>/<job.index>/input/`
-- `<outdir>` refers to `./workdir/PyPPL.<id>.<tag>.<suffix>/<job.index>/output/` 
-- `pXXX` refers to a process instantiated from `pyppl.Proc` class.
+!!! note
+	You are encouraged to set `p.ppldir` **BUT NOT** `p.workdir`, as it contains a unique `suffix` that is automatically computed.  
+
+## Symbols used in this documentation
+* `<workdir>` refers to `./workdir/PyPPL.<id>.<tag>.<suffix>/`,  
+* `<indir>` refers to `./workdir/PyPPL.<id>.<tag>.<suffix>/<job.index>/input/`  
+* `<outdir>` refers to `./workdir/PyPPL.<id>.<tag>.<suffix>/<job.index>/output/`  
+* `pXXX` or `p` refers to a process instantiated from `pyppl.Proc` class.

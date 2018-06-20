@@ -35,10 +35,13 @@ optional arguments:
 
 You can remove all those older process directories without confirmation by `pyppl clean --force`
 
->**CAUTION** Be careful when you have multiple pipelines in `./workdir`. 
-For a single pipeline, it does allow you have processes with same `id` and `tag`. However, for multiple pipelines, you may have. And if the two processes have the same `ppldir` (i.e. `./workdir`), they will have directories with the same `id` and `tag`, but different `suffix`. In this case, if you use `pyppl clean --force`, it will only try to keep only the latest one.
-So the best way is to set different tags for the processes with same ids in different pipelines.
-Or you can do it without `--force` and keep the ones you want.
+!!! caution
+    Be careful when you have multiple pipelines in `./workdir`. 
+    
+    For a single pipeline, it does allow you have processes with same `id` and `tag`. However, for multiple pipelines, you may have. And if the two processes have the same `ppldir` (i.e. `./workdir`), they will have directories with the same `id` and `tag`, but different `suffix`. In this case, if you use `pyppl clean --force`, it will only try to keep only the latest one.
+    
+    So the best way is to set different tags for the processes with same ids in different pipelines.
+    Or you can do it without `--force` and keep the ones you want.
 
 ## Compare the settings of two pipeines
 ![pyppl-compare][3]
@@ -56,6 +59,6 @@ The direct path will ignore the `workdir` specified by `-w`.
 
  
 
-[1]: https://raw.githubusercontent.com/pwwang/pyppl/master/docs/pyppl-cli-list.png
+[1]: ./pyppl-cli-list.png
 [2]: https://raw.githubusercontent.com/pwwang/pyppl/master/docs/pyppl-cli-clean.png
 [3]: https://raw.githubusercontent.com/pwwang/pyppl/master/docs/pyppl-cli-compare.png

@@ -69,7 +69,7 @@ The green processes are the starting processes; ones with purple text are proces
 ## Use the dark theme
 ```python
 PyPPL({
-	'flowchart': {'theme': 'dark'}
+	'_flowchart': {'theme': 'dark'}
 }).star(p1, p8, p9).flowchart().run()
 ```
 ![Pipeline-flowchart-dark][5]
@@ -79,7 +79,7 @@ You just need to define the style for each type of nodes (refer [DOT node shapes
 You may also put the definition in the default configuration file (`~/.PyPPL.json`)
 ```python
 PyPPL({
-	'flowchart': {
+	'_flowchart': {
 		'theme': {
 			'base':  {
 				'shape':     'box',

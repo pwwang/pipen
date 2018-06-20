@@ -1,7 +1,5 @@
-# Configure your pipeline
-<!-- toc -->
+# Full pipeline configuration
 
-{% raw %}
 To configure your pipeline, you just pass the configurations (a `dict`) to the constructor:
 ```python
 ppl = PyPPL(config)
@@ -9,13 +7,13 @@ ppl = PyPPL(config)
 Here is the full structure of the configurations (**`yaml` configuration file is also supported since `0.9.4`**):
 ```json
 {
-    "log": {
+    "_log": {
         "levels": "basic",  // the log levels
         "theme": true,    // use colored log information
         "lvldiff": ["+DEBUG"],  // modify the loglevels group
         "file": false,    // disable logfile, or specify a different logfile
     },
-    "flowchart": {
+    "_flowchart": {
         "theme": "default",
         "dot": "dot -Tsvg {{dotfile}} -o {{fcfile}}"
     },
@@ -43,32 +41,26 @@ Here is the full structure of the configurations (**`yaml` configuration file is
 - `proc` defines the base running profile for processes in this pipeline. [All the properties][2] of a process can be set here, but just some common one are recommended. Obviously, `input` is not suitable to be set here, except some extreme cases.
 - `profiles` defines some profiles that may be shared by the processes. To use a profile, just specify the profile name to `run`: `PyPPL(config).start(process).run(<profile>)`.
 
-> **Info** Settings for `profiles` are actually the same as for `proc`. They just make you easy to switch the profiles back and forth. For example, you want to run with sge runner this time, but ssh runner next time, what you need to do is just change from `...run("profile_sge")` to `...run("profile_ssh")`
-> **Note** You may also use the runner name as a profile. That means, following profiles are implied in the configuration:
-```json
-{
-    "sge"  : {"runner": "sge"},
-    "ssh"  : {"runner": "ssh"},
-    "slurm": {"runner": "slurm"},
-    "local": {"runner": "local"},
-    "dry"  : {"runner": "dry"},
-}
-```
-> **Caution** You cannot define profiles with names `flowchart` and `log`
+!!! info
+    Settings for `profiles` are actually the same as for `proc`. They just make you easy to switch the profiles back and forth. For example, you want to run with sge runner this time, but ssh runner next time, what you need to do is just change from `...run("profile_sge")` to `...run("profile_ssh")`
 
-## Use a configuration file
-`PyPPL` will look for configuration files at `~/.PyPPL` and `~/.PyPPL.json` if both or either of them exist. If both of them exist, `~/.PyPPL.json` has higher priority, which means the options will be overwritten in `~/.PyPPL` by those in `~/.PyPPL.json`. But to avoid confusion, you'd better just use either of them.
+!!! note
+     You may also use the runner name as a profile. That means, following profiles are implied in the configuration:
+    ```json
+    {
+        "sge"  : {"runner": "sge"},
+        "ssh"  : {"runner": "ssh"},
+        "slurm": {"runner": "slurm"},
+        "local": {"runner": "local"},
+        "dry"  : {"runner": "dry"},
+    }
+    ```
 
-You can also use another configuration file explictly (say, `/a/b/pyppl.config.json`), and then specify it to `PyPPL` constructor:
-```python
-PyPPL({}, "/a/b/pyppl.config.json")
-# or 
-PyPPL (cfgfile = "/a/b/pyppl.config.json")
-```
-In this case, `/a/b/pyppl.config.json` has the highest priority of all configuration files.
-All other options will be inherited from `~/.PyPPL.json` and them `~/.PyPPL`.
+!!! caution
+     You cannot define profiles with names `flowchart` and `log`
 
 ## Priority of configuration options
+See [here][5] for use of configuration files.  
 Now you have 3 ways to set attributes for a process: 
 - directly set the process attributes _(1)_, 
 - set in the first argument (`config`) of `PyPPL` constructor _(2)_, 
@@ -128,15 +120,15 @@ p3 = Proc(newid = 'p', tag = '3rd')
 # all p1, p2, p3 will be starting processes
 PyPPL().start('p').run()
 ```
-> **Caution** 
-> 1. If a process is depending on other processes, you are not supposed to set it as starting process. Of course you can, but make sure the input channel can be normally constructed.
-> 2. If a process is not depending on any other processes, you have to set it as starting process. Otherwise, it won't start to run.
+!!! caution
+    1. If a process is depending on other processes, you are not supposed to set it as starting process. Of course you can, but make sure the input channel can be normally constructed.
+    2. If a process is not depending on any other processes, you have to set it as starting process. Otherwise, it won't start to run.
 
 [1]: https://docs.python.org/2/library/logging.html#logging-levels
-[2]: https://pwwang.gitbooks.io/pyppl/content/set-other-properties-of-a-process.html
-[3]: https://pwwang.gitbooks.io/pyppl/configure-your-logs.html
-[4]: https://pwwang.gitbooks.io/pyppl/draw-flowchart-of-a-pipeline.html
-{% endraw %}
+[2]: https://pwwang.github.io/PyPPL/content/set-other-properties-of-a-process.html
+[3]: https://pwwang.github.io/PyPPL/configure-your-logs.html
+[4]: https://pwwang.github.io/PyPPL/draw-flowchart-of-a-pipeline.html
+[5]: https://pwwang.github.io/PyPPL/runners/#defining-running-profiles
 
 
 

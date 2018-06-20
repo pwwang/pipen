@@ -67,9 +67,11 @@ params.opt.setRequired(True)
 #           .setName('opt1')       \
 #           .setValue([1,2,3])
 ```
->**NOTE**: About the `type`:
-- To explicitly specify type of an option, you have to use the type itself, instead of the name of the type. That mean `str` instead of `"str"`
-- The type can be implied by: `params.opt = []` (implies `list`). But `params.opt.setValue('a')` or `params.opt.value = 1` won't change the type, instead, the value will be coerced to the type previously specified/implied.
+
+!!! note "About the `type`"
+
+    - To explicitly specify type of an option, you have to use the type itself, instead of the name of the type. That mean `str` instead of `"str"`
+    - The type can be implied by: `params.opt = []` (implies `list`). But `params.opt.setValue('a')` or `params.opt.value = 1` won't change the type, instead, the value will be coerced to the type previously specified/implied.
 
 ## Load params from a dict
 You can define a `dict`, and then load it to `params`:

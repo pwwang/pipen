@@ -1,55 +1,54 @@
 # Templating
 
-<!-- toc -->
-
-{% raw %}
-`PyPPL` has its own template engine, which derived from a [500-line-or-less template engine][1]. It also supports [Jinja2][2] if you have it installed and specify `"Jinja2"` to `pXXX.template`. The built-in template engine is enabled by default.
+`PyPPL` has its own template engine, which is derived from a [500-line-or-less template engine][1]. It also supports [Jinja2][2] if you have it installed and specify `"Jinja2"` to `pXXX.template`. The built-in template engine is enabled by default.
 
 ## Common data avaible for rendering
 When rendering a template, following data are fed to the render function. So that you can use those values in the template. Some attribute values of a process are shared for all templates that are applied:
-- `proc.aggr`: The aggregation name of the process
-- `proc.args`: A `dict` of process arguments. To access an item of it: `{{args.<item>}}`
-- `proc.cache`: The cache option
-- `proc.desc`: The description of the process
-- `proc.echo`: The echo option
-- `proc.errhow`: What to do if error happens
-- `proc.errntry`: If `errorhow == 'retry'`, how many times to re-try if a job fails
-- `proc.exdir`: The export directory
-- `proc.exhow`: How to export output files
-- `proc.exow`: Whether to overwrite existing files when exporting output files
-- `proc.forks`: How many jobs to run concurrently
-- `proc.id`: The id of the process.
-- `proc.lang`: The interpreter for the script
-- `proc.ppldir`: Where the workdirs are located
-- `proc.procvars`: The `dict` of all avaiable attributes of a process, can be accessed directly by `{{proc.<var>}}`
-- `proc.rc`: The rc option
-- `proc.resume`: The resume option
-- `proc.runner`: The runner
-- `proc.sets`: A list of attribute names that has been set explictly
-- `proc.size`: Number of jobs
-- `proc.suffix`: The unique suffix of the process
-- `proc.tag`: The tag of the process
-- `proc.workdir`: The workdir of the process
+
+* `proc.aggr`: The aggregation name of the process
+* `proc.args`: A `dict` of process arguments. To access an item of it: `{{args.<item>}}`
+* `proc.cache`: The cache option
+* `proc.cclean`: Whether clean (error check and export) the job when it's cached?
+* `proc.desc`: The description of the process
+* `proc.echo`: The echo option
+* `proc.errhow`: What to do if error happens
+* `proc.errntry`: If `errorhow == 'retry'`, how many times to re-try if a job fails
+* `proc.exdir`: The export directory
+* `proc.exhow`: How to export output files
+* `proc.exow`: Whether to overwrite existing files when exporting output files
+* `proc.forks`: How many jobs to run concurrently
+* `proc.id`: The id of the process.
+* `proc.infile`: Where does `{{in.infile}}` refer to? (including other input files)
+* `proc.lang`: The interpreter for the script
+* `proc.ppldir`: Where the workdirs are located
+* `proc.procvars`: The `dict` of all avaiable attributes of a process, can be accessed directly by `{{proc.<var>}}`
+* `proc.rc`: The rc option
+* `proc.resume`: The resume option
+* `proc.runner`: The runner
+* `proc.sets`: A list of attribute names that has been set explictly
+* `proc.size`: Number of jobs
+* `proc.suffix`: The unique suffix of the process
+* `proc.tag`: The tag of the process
+* `proc.workdir`: The workdir of the process
 
 ## Other data for rendering
 For each job, we also have some value available for rendering:
 
-- `job.index`: The index of the job
-- `job.indir`: The input directory of the job
-- `job.outdir`: The output directory of the job
-- `job.dir`: The directory of the job
-- `job.outfile`: The stdout file of the job
-- `job.errfile`: The stderr file of the job
-- `job.pidfile`: The file stores the PID of the job or the identity from a queue runner.
+* `job.index`: The index of the job
+* `job.indir`: The input directory of the job
+* `job.outdir`: The output directory of the job
+* `job.dir`: The directory of the job
+* `job.outfile`: The stdout file of the job
+* `job.errfile`: The stderr file of the job
+* `job.pidfile`: The file stores the PID of the job or the identity from a queue runner.
 
-Input, output and bring-in data are under namespace `in`, `out` and `bring`, respectively.
+Input and output data are under namespace `in` and `out`, respectively.
 For example, you have following definition:
 ```python
 pXXX.input  = {"a": ["hello"], "b": ["/path/to/file"]}
 pXXX.output = "a:{{in.a}} world!"
-pXXX.brings = {"b": "{{in.b | bn}}.index"}
 ```
-Now you can access them by: `{{in.a}}`, `{{in.b}}`, `{{out.a}}`, `{{bring.b}}`
+Now you can access them by: `{{in.a}}`, `{{in.b}}` and `{{out.a}}`
 
 ## The scope of data
 |Attribute|Data available|Meaning|
@@ -82,9 +81,9 @@ For built-in template engine, you may use pipe, for example: `{{in.file | basena
   - `{{v | Rvec}}` with `{'v': [1,2,3]}` results in `c(1,2,3)`
 - `Rlist`: Transform a python dict to a R list. For example:
   - `{{v | Rlist}}` with `{'v': {'a':1, 'b':2}}` results in `list(a=1, b=2)`
-- `realpath`: Shortcut of `os.path.realpath`
-- `readlink`: Shortcut of `os.readlink`
-- `dirname`: Shortcut of `os.path.dirname`
+- `realpath`: Alias of `os.path.realpath`
+- `readlink`: Alias of `os.readlink`
+- `dirname`: Alias of `os.path.dirname`
 - `basename`: Get the basename of a file. If a file is renamed by `PyPPL` in case of input files with the same basename, it tries to get the original basename. For example:
 
 | Usage | Data | Result |
@@ -93,22 +92,25 @@ For built-in template engine, you may use pipe, for example: `{{in.file | basena
 || `{'v': '/path/to/file[1].txt'}` | `file.txt` |
 | `{{v, orig `&#x7c;` basename}}` | `{'v': '/path/to/file[1].txt', 'orig': True}` | `file[1].txt`| 
   
-- `bn`: Shortcut of `basename`
-- `filename`: similar as `basename` but without extension.
-- `fn`: Shortcut of `filename`
-- `ext`: Get extension of a file. Shortcut of `os.path.splitext(x)[1]`
+- `bn`: Alias of `basename`
+- `filename`: Similar as `basename` but without extension.
+- `fn`: Alias of `filename`
+- `filename2`: Get the filename without dot.
+- `fn2`: Alias of `filename2`. (i.e: `/a/b/c.d.e.txt` -> `c`)
+- `ext`: Get extension of a file. Alias of `os.path.splitext(x)[1]`
   - Dot is included. To remove the dot: `{{v | ext | [1:]}}`
 - `prefix`: Get the prefix of a path, without extension. It acts like `{{v | dirname}}/{{v | filename}}`
+- `prefix2`: Get the prefix of a path without dot in filename. (i.e: `/a/b/c.d.e.txt` -> `/a/b/c`)
 - `quote`: Double-quote a string.
 - `asquote`: Double quote items in a list and join them by space. For example:
   - `{{v | asquote}}` with `{'v': [1,2,3]}` results in `"1" "2" "3"`
 - `acquote`: Double quote items in a list and join them by comma.
 - `squote`: Single-quote a string.
-- `json`: Dumps a python object to a json string. Shortcut of `json.dumps`
+- `json`: Dumps a python object to a json string. Alias of `json.dumps`
 - `read`: Read the content of a file.
 - `readlines`: Read the lines of a file. Empty lines are skipped by default. To return the empty lines for `{'v': '/path/to/file', 'skipEmptyLines': False}`: 
   - `{{v, skipEmptyLines | readlines}}`
-
+- `repr`: Alias of python `repr` built-in function.
 
 ## Usage of built-in template engine
 - Basic usage:
@@ -128,11 +130,13 @@ For built-in template engine, you may use pipe, for example: `{{in.file | basena
 | `{{v `&#x7c;` R}}` | `{'v': True}` | `TRUE` |
 | `{{v1, v2 `&#x7c;` paste}}` | `{'v1': 'Hello', 'v2': 'world!', 'paste': lambda x, y: x + ' ' + y}`| `Hello world!` |
 | `{{v1, v2 `&#x7c;` lambda x, y: x + ' ' + y}}` | `{'v1': 'Hello', 'v2': 'world!'}`| `Hello world!` |
-  
-> **Note** If you want to pass a literal value (for example: `1`, `True`), you CANNOT do this: `{{v, False | readlines}}`. Instead, you can either:
-  - specify the value in data: `{'v': '/path/to/file', 'skipEmptyLines': False}`,   
+
+!!! note
+    If you want to pass a literal value (for example: `1`, `True`), you CANNOT do this: `{{v, False | readlines}}`. Instead, you can either:
+
+    * specify the value in data: `{'v': '/path/to/file', 'skipEmptyLines': False}`,   
     then `{{v, skipEmptyLines | readlines}}`; or
-  - use `lambda` function: `{{v, readlines | lambda x, func: func(x, False)}}`
+    * use `lambda` function: `{{v, readlines | lambda x, func: func(x, False)}}`
   
 - `If-else/elif` statements:
 
@@ -169,8 +173,6 @@ Then if `pXXX.envs.data['b'] is True`, it prints `a b`; otherwise it prints `a/b
 All the data and environment definition mentioned above are all applicable when you use `Jinja2` as your template engine.  
 For usage of `Jinja2`, you may refer to its [official documentation][2].
 
-
-{% endraw %}
 
 [1]: https://github.com/aosabook/500lines/tree/master/template-engine
 [2]: http://jinja.pocoo.org/

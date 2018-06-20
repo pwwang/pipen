@@ -1,8 +1,5 @@
 # Channels
 
-<!-- toc -->
-
-{% raw %}
 Channels are used to pass data from one process (an instance of `Proc`) to another. It is derived from a `list`, where each element is a `tuple`. **So all python functions/methods that apply on `list` will also apply on `Channel`.** The length a the `tuple` corresponds to the number of variables of the input or output of a `proc`.
 ```python
 # v1  v2  v3
@@ -28,6 +25,7 @@ Then the values for different variables in different jobs wil be:
 
 ## Initialize a channel
 There are several ways to initialize a channel:
+
 - From a non-iterable element (string is considered non-iterable):  
   This will create a single element channel.
   ```python
@@ -45,11 +43,12 @@ There are several ways to initialize a channel:
   c = Channel.create(("a", "b"))
   # produce [("a", "b")]
   ```  
-  > **Note** Please use `Channel.create(...)` instead of `Channel(...)` unless each element is 'tuplized' properly. 
-  ```python
-  Channel.create([1,2,3]) != Channel([1,2,3])
-  Channel.create([1,2,3]) == Channel([(1,), (2,), (3,)])
-  ```
+!!! note
+    Please use `Channel.create(...)` instead of `Channel(...)` unless each element is 'tuplized' properly. 
+    ```python
+    Channel.create([1,2,3]) != Channel([1,2,3])
+    Channel.create([1,2,3]) == Channel([(1,), (2,), (3,)])
+    ```
 - From other channels:   
   ```python
   ch1 = Channel.create([(1, 2), (3, 4)])
@@ -62,12 +61,14 @@ There are several ways to initialize a channel:
 
 - From a file path pattern:  
   Use `glob.glob` to grab files by the pattern, you may use different arguments for filter, sort or reverse the list:
+
   - filter the files with type (`t`): `dir`, `file`, `link` or `any` (default), 
   - sort them by (`sortby`): `size`, `mtime` or `name` (default)
   - reverse the list (`reverse`): `False` (default, don't reverse)
-  ```python
-  c = Channel.fromPattern ("/a/b/*.txt", t = 'any', sortby = 'size', reverse = False)
-  ```
+
+    ```python
+    c = Channel.fromPattern ("/a/b/*.txt", t = 'any', sortby = 'size', reverse = False)
+    ```
 
 - From file pairs:
   ```python
@@ -120,7 +121,7 @@ There are several ways to initialize a channel:
   params.d.type = list
   params.e = []
   params.e.type = list
-  
+
   ch = Channel.fromParams('c', 'e')
   # Raises ValueError, non-equal length
   ch = Channel.fromParams('c', 'd')
@@ -205,9 +206,9 @@ You may also filter the files with a pattern (arguments `t`, `sortby` and `rever
 p2.input   = {"invar,infile:file": lambda ch: ch.expand(1, "*.txt")}
 # only include .txt files
 ```
-> **Caution** 
-> - `expand` only works for original channels with length is 1, which will expand to `N` (number of files included). If original channel has more than 1 element, only first element will be used, and other elements will be ignored.
-> - Only the value of the column to be expanded will be changed, values of other columns remain the same. 
+!!! caution
+    * `expand` only works for original channels with length is 1, which will expand to `N` (number of files included). If original channel has more than 1 element, only first element will be used, and other elements will be ignored.
+    * Only the value of the column to be expanded will be changed, values of other columns remain the same. 
 
 ### Collapse a channel by files in a common ancestor directory
 `Channel.collapse(col=0)`
@@ -247,44 +248,44 @@ p2.input  = {"indir:file": lambda ch: ch.collapse(1)}
 # collapse to: [("a", "<outdir>/")]
 # ...
 ```
-> **Caution** 
-> - `os.path.dirname(os.path.commonprefix(...))` is used to detect the common ancestor directory, so the files could be `['/a/1/1.file', '/a/2/1.file']`. In this case `/a/` will be returned.
-> - values at other columns should be the same, `PyPPL` will NOT check it, the first value at the column will be used.
+!!! caution
+    * `os.path.dirname(os.path.commonprefix(...))` is used to detect the common ancestor directory, so the files could be `['/a/1/1.file', '/a/2/1.file']`. In this case `/a/` will be returned.
+    * values at other columns should be the same, `PyPPL` will NOT check it, the first value at the column will be used.
 
 ### Fetch rows from a channel
 - `Channel.rowAt(index)`  
 
-```python
-chan1 = Channel.create ([(1,2,3,4), (4,5,6,7)])
-chan2 = chan1.rowAt(1)
-# chan2 == [(4,5,6,7)]
+  ```python
+  chan1 = Channel.create ([(1,2,3,4), (4,5,6,7)])
+  chan2 = chan1.rowAt(1)
+  # chan2 == [(4,5,6,7)]
 
-# Now you can also fetch multiple columus as a channel:
-chan3 = chan1.rowAt([:2])
-chan3 == chan1
-```
+  # Now you can also fetch multiple columus as a channel:
+  chan3 = chan1.rowAt([:2])
+  chan3 == chan1
+  ```
 
 ### Fetch columns from a channel
 - `Channel.slice(start, length=None)`
 
-```python
-chan1 = Channel.create ([(1,2,3,4), (4,5,6,7)])
-chan2 = chan1.slice(1,2)
-# chan2 == [(2,3), (5,6)]
-chan3 = chan1.slice(2)
-# chan3 == [(3,4), (6,7)]
-chan4 = chan1.slice(-1)
-# chan4 == [(4,), (7,)]
-```
+  ```python
+  chan1 = Channel.create ([(1,2,3,4), (4,5,6,7)])
+  chan2 = chan1.slice(1,2)
+  # chan2 == [(2,3), (5,6)]
+  chan3 = chan1.slice(2)
+  # chan3 == [(3,4), (6,7)]
+  chan4 = chan1.slice(-1)
+  # chan4 == [(4,), (7,)]
+  ```
 
 - `Channel.colAt(index)`
 
-```python
-chan.colAt(index) == chan.slice(index, 1)
+  ```python
+  chan.colAt(index) == chan.slice(index, 1)
 
-# Now you may also fetch multiple columns:
-chan.colAt([1,2]) == chan.slice(1, 2)
-```
+  # Now you may also fetch multiple columns:
+  chan.colAt([1,2]) == chan.slice(1, 2)
+  ```
 
 ### Flatten a channel
 `Channel.flatten(col = None)`
@@ -339,60 +340,60 @@ ch.attach ('col1', 'col2', 'col3', True)
 ### Map, filter, reduce
 - `Channel.map(func)`
 - `Channel.mapCol(func, col=0)`
-```python
-ch1 = Channel.create()
-ch2 = Channel.create([1,2,3,4,5])
-ch3 = Channel.create([('a', 1), ('b', 2)])
-# ch1.map(lambda x: (x[0]*x[0],)) == []
-# ch2.map(lambda x: (x[0]*x[0],)) == [(1,),(4,),(9,),(16,),(25,)]
-# ch3.map(lambda x: (x[0], x[1]*x[1])) == [('a', 1), ('b', 4)]
-# ch1.mapCol(lambda x: x*x) == []
-# ch2.mapCol(lambda x: x*x) == [(1,),(4,),(9,),(16,),(25,)]
-# ch3.mapCol(lambda x: x*x, 1) == [('a', 1), ('b', 4)]
-# map & mapCol return an instance of Channel
-```
+  ```python
+  ch1 = Channel.create()
+  ch2 = Channel.create([1,2,3,4,5])
+  ch3 = Channel.create([('a', 1), ('b', 2)])
+  # ch1.map(lambda x: (x[0]*x[0],)) == []
+  # ch2.map(lambda x: (x[0]*x[0],)) == [(1,),(4,),(9,),(16,),(25,)]
+  # ch3.map(lambda x: (x[0], x[1]*x[1])) == [('a', 1), ('b', 4)]
+  # ch1.mapCol(lambda x: x*x) == []
+  # ch2.mapCol(lambda x: x*x) == [(1,),(4,),(9,),(16,),(25,)]
+  # ch3.mapCol(lambda x: x*x, 1) == [('a', 1), ('b', 4)]
+  # map & mapCol return an instance of Channel
+  ```
 - `Channel.filter(func)`
 - `Channel.filterCol(func, col=0)`
-```python
-ch1 = Channel.create([
-  (1,    0,     0,   1  ),
-  ('a',  '',    'b', '0'),
-  (True, False, 0,   1  ),
-  ([],   [1],   [2], [0]),
-])
-# Filter by the first column, only first three rows remained
-ch1.filterCol() == ch1[:3] 
-# Filter by the second column, only the last row remained
-ch1.filterCol(col = 1) == ch1[3:4]
-# Filter by the third column, the 2nd and 4th row remained
-ch1.filterCol(col = 2) == [ch1[1], ch1[3]]
-# Filter by the fourth column, all rows remained
-ch1.filterCol(col = 3) == ch1
-# Filter with a function:		
-ch1.filter(lambda x: isinstance(x[2], int)) == [ch1[0], ch1[2]]
-# filter & filterCol return an instance of Channel
-```
+  ```python
+  ch1 = Channel.create([
+    (1,    0,     0,   1  ),
+    ('a',  '',    'b', '0'),
+    (True, False, 0,   1  ),
+    ([],   [1],   [2], [0]),
+  ])
+  # Filter by the first column, only first three rows remained
+  ch1.filterCol() == ch1[:3] 
+  # Filter by the second column, only the last row remained
+  ch1.filterCol(col = 1) == ch1[3:4]
+  # Filter by the third column, the 2nd and 4th row remained
+  ch1.filterCol(col = 2) == [ch1[1], ch1[3]]
+  # Filter by the fourth column, all rows remained
+  ch1.filterCol(col = 3) == ch1
+  # Filter with a function:		
+  ch1.filter(lambda x: isinstance(x[2], int)) == [ch1[0], ch1[2]]
+  # filter & filterCol return an instance of Channel
+  ```
 - `Channel.reduce(func)`
 - `Channel.reduceCol(func, col=0)`
-```python
-ch1 = Channel.create()
-# Raises TypeError, no elements
-ch1.reduce(lambda x,y: x+y)
-ch1 = Channel.create([1,2,3,4,5])
-# Notice the different
-ch1.reduce(lambda x,y: x+y) == (1, 2, 3, 4, 5) # x and y are tuples
-ch1.reduceCol(lambda x,y: x+y) == 15           # x and y are numbers
-```
+  ```python
+  ch1 = Channel.create()
+  # Raises TypeError, no elements
+  ch1.reduce(lambda x,y: x+y)
+  ch1 = Channel.create([1,2,3,4,5])
+  # Notice the different
+  ch1.reduce(lambda x,y: x+y) == (1, 2, 3, 4, 5) # x and y are tuples
+  ch1.reduceCol(lambda x,y: x+y) == 15           # x and y are numbers
+  ```
 
 ### Add rows/columns to a channel
 
 - `Channel.rbind(*rows)`  
 
-   Each row can be either a channel, a tuple, a list or a non-iterable element(including string)   
+  Each row can be either a channel, a tuple, a list or a non-iterable element(including string)   
   ```python
   ch1 = Channel.create()
   ch2 = Channel.create((1,2,3))
-  
+
   row1 = Channel.create(1)
   row2 = Channel.create((2,2,2))
   row3 = [3]
@@ -400,7 +401,7 @@ ch1.reduceCol(lambda x,y: x+y) == 15           # x and y are numbers
   row5 = (4,4,4)
   row6 = [4,4,4]
   row7 = 5
-  
+
   ch1.rbind(row1) == [(1, )]
   ch2.rbind(row1) == [(1,2,3),(1,1,1)],
   ch1.rbind(row2) == [(2,2,2)]
@@ -422,22 +423,22 @@ ch1.reduceCol(lambda x,y: x+y) == 15           # x and y are numbers
   ```python
   ch1 = Channel.create([(1, 2), (3, 4)])
   ch2 = Channel.create([5, 6])
-  
+
   ch1.cbind(ch2) == [(1, 2, 5), (3, 4, 6)]
-  
+
   ch2 = Channel.create(5)
   ch1.cbind(ch2)    == [(1, 2, 5), (3, 4, 5)]
   ch1.cbind([5, 6]) == [(1, 2, 5), (3, 4, 6)]
   ch1.cbind((5, 6)) == [(1, 2, 5), (3, 4, 6)]
   ch1.cbind("a")    == [(1, 2, 'a'), (3, 4, 'a')]
-  
+
   ch1 = Channel.create()
   ch2 = Channel.create([21, 22])
   ch3 = 3
   ch4 = [41, 42]
   ch5 = (51, 52)
   ch6 = "a"
-  
+
   ch1.cbind(ch2, ch3, ch4, ch5, ch6) == [(21, 3, 41, 51, 'a'), (22, 3, 42, 52, 'a')]
   ch1.cbind(ch3).cbind(ch6) == [(3, 'a')]
   ```
@@ -450,13 +451,13 @@ ch1.reduceCol(lambda x,y: x+y) == 15           # x and y are numbers
   ch1.insert(1, ch2)    == [(1, 5, 2), (3, 6, 4)]
   ch1.insert(-1, ch2)   == [(1, 5, 2), (3, 6, 4)]
   ch1.insert(None, ch2) == [(1, 2, 5), (3, 4, 6)]
-  
+
   ch2 = Channel.create(5)
   ch1.insert(0, ch2)    == [(5, 1, 2), (5, 3, 4)]
   ch1.insert(1, ch2)    == [(1, 5, 2), (3, 5, 4)]
   ch1.insert(-1, ch2)   == [(1, 5, 2), (3, 5, 4)]
   ch1.insert(None, ch2) == [(1, 2, 5), (3, 4, 5)]
-  
+
   ch1.insert(0, [5, 6])    == [(5, 1, 2), (6, 3, 4)]
   ch1.insert(1, [5, 6])    == [(1, 5, 2), (3, 6, 4)]
   ch1.insert(-1, [5, 6])   == [(1, 5, 2), (3, 6, 4)]
@@ -469,9 +470,9 @@ ch1.reduceCol(lambda x,y: x+y) == 15           # x and y are numbers
   ch1.insert(1, "a")       == [(1, 'a', 2), (3, 'a', 4)]
   ch1.insert(-1, "a")      == [(1, 'a', 2), (3, 'a', 4)]
   ch1.insert(None, "a")    == [(1, 2, 'a'), (3, 4, 'a')]
-  
+
   self.assertEqual(ch1, [(1, 2), (3, 4)])
-  
+
   ch1 = Channel.create()
   ch2 = Channel.create([21, 22])
   ch3 = 3
@@ -508,7 +509,5 @@ Combine n-rows into one row; do the reverse thing as `Channel.fold`. But note th
 ### Copy a channel
 `Channel.copy()`
 
-{% endraw %}
-
-[1]: https://pwwang.gitbooks.io/PyPPL/command-line-argument-parser.html
+[1]: https://pwwang.github.io/PyPPL/command-line-argument-parser.html
 

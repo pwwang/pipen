@@ -1,7 +1,101 @@
-# Runners
-<!-- toc -->
+# Runners and running profiles
 
-{% raw %}
+## Running profile
+A running profile defines the parameters that needed for a pipeline to run. Generally it contains the runner, the parameters for the runner and the common settings for the processes.
+A typical running profile is as follows:
+```python
+{
+    'runner': 'sge',
+    'sgeRunner': {
+        'queue': '1-day'
+    },
+    'forks': 32
+}
+```
+
+!!! caution
+    You may also put other settings of processes into a running profile, but keep in mind:
+    1. The value will not be overridden if the attribute is set explicitly (i.e: `p.forks = 10`)
+    2. Only set common attributes for all processes in a pipeline to avoid unexprected behavior. For example, you probably don't want this in general cases to set the same script for all processes: 
+    ```python
+    {
+        'script': 'file:/path/to/script'
+    }
+    ```
+
+## Defining running profiles
+You may pre-define some profiles so that you can easily swith them by:
+```python
+PyPPL().start(pXXX).run('profile1')
+PyPPL().start(pXXX).run('profile2')
+```
+You can define profiles in `PyPPL`'s default configuration files: `$HOME/.PyPPL.yaml`, `$HOME/.PyPPL` and/or `$HOME/.PyPPL.json`. The latter ones have high priorities. `$HOME/.PyPPL` should also be in `JSON` format. Take `$HOME/.PyPPL.yaml` (requiring `pyyaml`) for example, the content is like:
+```yaml
+default: 
+    runner: local
+    forks: 1
+    echo: stderr
+profile1:
+    runner: sge
+    sgeRunner:
+        queue: 1-day
+profile2:
+    runner: sge
+    sgeRunner:
+        queue: 7-days
+```
+
+!!! note
+    If a `key` is not in a profile, then it will be inherited from `default`.
+
+You may also define some profiles in a file somewhere else, say `/path/to/myprofiles.yaml`. Just pass the file to `PyPPL` constructor:
+```python
+PyPPL(cfgfile = '/path/to/myprofiles.yaml').start(pXXX).run('profile1')
+```
+
+!!! note
+    This has higher priority than default configuration files.
+
+You can also pass the profiles to `PyPPL` constructor directly:
+```python
+PyPPL({
+    'default': {
+        'runner': 'local',
+        'forks': 1,
+        'echo': 'stderr'
+    },
+    'profile1': {
+        'runner': 'sge',
+        'sgeRunner': {
+            'queue': '1-day'
+        }
+    },
+    'profile2': {
+        'runner': 'sge',
+        'sgeRunner': {
+            'queue': '7-days'
+        }
+    }
+}).start(pXXX).run('profile1')
+```
+
+!!! note
+    In this way, the profiles have higher priorities than the ones defined in configuration files.
+
+Or even, you can also specify a profile to `run` function to ask the pipeline run with the profile directly:
+```python
+PyPPL().start(pXXX).run({
+    'runner': 'sge',
+    'sgeRunner': {
+        'queue': '1-day'
+    }
+})
+```
+
+!!! note
+    This has the highest priority.
+
+## Built-in runners
 We have 5 built-in runners (`RunnerLocal`, `RunnerSsh`, `RunnerSge`, `RunnerSlurm`, `runnerDry`), you can also define you own runners.
 
 You can either tell one process to use a runner, or even, you can tell the pipeline to use one runner for all the processes. That means each process can have the same runner or a different one. To tell a process which runner to use, just specify the runner name to `pXXX.runner` (for example, `pXXX.runner = "sge"` to use the sge runner). Each process may use different configuration for the runner (`pXXX.sgeRunner`) or the same one by [configuring the pipeline](https://pwwang.gitbooks.io/pyppl/content/configure-a-pipeline.html).
@@ -9,10 +103,10 @@ You can either tell one process to use a runner, or even, you can tell the pipel
 ## Configurations for ssh runner
 Ssh runner takes the advantage to use the computing resources from other servers that can be connected via `ssh`. The `ssh` command allows us to pass the command to the server and execute it: `ssh [options] [command]`
 
-> **Caution** 
-1. ssh runner only works when the servers share the same file system.
-2. you have to [configure](http://www.linuxproblem.org/art_9.html) so that you don't need a password to log onto the servers, or use a private key to connect to the ssh servers.
-3. The jobs will be distributed equally to the servers.
+!!! caution
+    1. ssh runner only works when the servers share the same file system.
+    2. you have to [configure](http://www.linuxproblem.org/art_9.html) so that you don't need a password to log onto the servers, or use a private key to connect to the ssh servers.
+    3. The jobs will be distributed equally to the servers.
 
 To tell a process the available ssh servers:
 ```python
@@ -51,7 +145,7 @@ To make a running profile with it for a pipeline for all processes:
 ```python
 PyPPL ({
     # default profile
-    'proc': {
+    'default': {
         'sshRunner': {"servers": ["user1@server1", "user2@server2", ...]}
     },
     'ssh3': {
@@ -63,7 +157,7 @@ PyPPL ({
     }
 })
 ```
-Also see "[pipeline configration](https://pwwang.gitbooks.io/pyppl/content/configure-a-pipeline.html)" for more details.
+Also see "[pipeline configration](https://pwwang.github.io/pyppl/content/configure-a-pipeline.html)" for more details.
 
 The constructor of the runner will change the actual script to run the following (`<workdir>/0/job.script.ssh`):
 
@@ -180,12 +274,14 @@ PyPPL(config).start(...).run() # uses configurations of 'proc'
 
 ## Dry-run a pipeline
 You can use dry runner to dry-run a pipeline. The real script will not be running, instead, it just tries to touch the output files and create the output directories.
->**NOTE**: when `RunnerDry` is being used:
-- All processes are running on local machine.
-- Expectations won't be checked.
-- Processes won't be cached.
-- Output files/directories won't be exported.
-- Better set runner of all processes in a pipeline to `dry`. (`pyppl().starts(...).run('dry')`), since empty file/directory will be created for output. Problems will happen if you have a non-dry-run process depending on dry-run processes.
+
+!!! note "When `RunnerDry` is being used"
+
+    - All processes are running on local machine.
+    - Expectations won't be checked.
+    - Processes won't be cached.
+    - Output files/directories won't be exported.
+    - Better set runner of all processes in a pipeline to `dry`. (`pyppl().starts(...).run('dry')`), since empty file/directory will be created for output. Problems will happen if you have a non-dry-run process depending on dry-run processes.
 
 ## Define your own runner
 You are also able to define your own runner, which should be a class extends `Runner` (jobs run immediately after submission) or `RunnerQueue` (jobs are put into a queue after submission). There are several methods and variables you may need to redefine (You may check the [API documentation](https://pwwang.gitbooks.io/pyppl/content/API.html#runner) for all available methods and variables).
@@ -233,11 +329,12 @@ Some important method to be redefined:
             # ready to submit
             self.script = utils.chmodX (submitfile)
     ```
-    > **Checklist (What you have to do in the constructor redefinition):**
-    > - choose the right base class (`pyppl.runners.Runner` or `pyppl.runners.RunnerQueue`)
-    > - `super(RunnerMy, self).__init__(job)`
-    > - setup the right `self.script` for submission.
-    > - MAKE SURE you save the identity of the job to `job.pidfile`, rc to `job.rcfile`, stdout to `job.outfile` and `stderr` to `job.errfile`
+!!! hint "Checklist (What you have to do in the constructor redefinition)"
+
+    - choose the right base class (`pyppl.runners.Runner` or `pyppl.runners.RunnerQueue`)
+    - `super(RunnerMy, self).__init__(job)`
+    - setup the right `self.script` for submission.
+    - MAKE SURE you save the identity of the job to `job.pidfile`, rc to `job.rcfile`, stdout to `job.outfile` and `stderr` to `job.errfile`
 
 - Get the job identity on the system: `getpid()`
   Sometimes you cannot determin the job identity (e.g. `pid` for local jobs) when you are composing the script file. For example, for `SGE` runner, only after you submit the job, the job id will be saved in `job.pidfile`. In this case, you have to parse the job identity from `job.outfile`. Then you may save it by `self.job.pid(<jobid>)`.  
@@ -277,28 +374,5 @@ PyPPL.registerRunner(RunnerMy)
 ```
 After registration, you are able to ask a process to use it: `pXXX.runner = "my"`
 
-## Use different runners
-You can use different runners to run processes if you like. The default runner is `local`. You can change it by the configuration of the pipeline:
-```python
-PyPPL(config).start(...).run()
-```
-The config is something like:
-```json
-{
-    "proc": {
-        "runner": "sge"
-    }
-}
-```
-You can also set it in the default configuration file: `$HOME/.PyPPL.json`.
-If you don't want to modify the configurations, to set the runner on the run:
-`PyPPL().start(...).run("sge")`
-Then all processes will run through `sge` runner.
 
-You may also set different runners for different processes.
-```python
-pXXX.runner = "sge"
-```
-Note that this will NOT be overwritten by any other configurations, which means it has the highest priority.
 
-{% endraw %}

@@ -1,6 +1,6 @@
 # [PyPPL][3] - A [Py](#)thon [P](#)i[P](#)e[L](#)ine framework 
 
-![Pypi][22] ![Github][23] [![Gitter chat][8]][10] [![Codacy][4]][5] ![Codacy coverage][11] ![Gitbook][21]
+![Pypi][22] ![Github][23] ![Codacy][4] ![Codacy coverage][11]
 
 [Documentation][1] | [API][2] | [Change log][19] | [FAQ][26]
 
@@ -20,7 +20,7 @@
 ## Requirements
 - OS: Linux, OSX or WSL (Windows Subsystem for Linux)
 - Python 2.7+ or Python 3.4+ (lower versions not tested)
-- Python packages: [python-box][17], [six][25], [filelock][35], ([graphviz][36] and [pyyaml][33], suggested)
+- Python packages: [six][25], [filelock][35] (suggested: [graphviz][36], [pyyaml][33] and [testly][5]).
 
 ## Installation
 ```bash
@@ -35,6 +35,7 @@ pip install git+git://github.com/pwwang/PyPPL.git
 pip install PyPPL
 
 # run tests for both python2 and python3
+pip install git+git://github.com/pwwang/testly.git
 make test
 
 # run tests only for python2
@@ -282,10 +283,10 @@ PyPPL().start(pSort).run()
 # PyPPL().start(pSort).run('sge')
 # or:
 # PyPPL({
-#	'proc': {
-#		'runner': 'sge', 
-#		'sgeRunner': {'sge.q': '1-day'}
-#	}
+#   'default': {
+#       'runner': 'sge', 
+#       'sgeRunner': {'sge.q': '1-day'}
+#   }
 # }).start(pSort).run()
 ```
 
@@ -340,7 +341,7 @@ dev.off()
 """
 
 PyPPL({
-	'log': {
+	'_log': {
 		'levels' : 'basic',
 		'lvldiff': []
 	}
@@ -355,7 +356,7 @@ We can define a set of runner profiles in a `json` file (`./profiles.json`):
 
 ```json
 {
-  "proc": {
+  "default": {
     "runner": "local",
     "forks" : 1,
     "sgeRunner": {
@@ -377,7 +378,7 @@ We can define a set of runner profiles in a `json` file (`./profiles.json`):
 
 or you can also use `.yaml`(`pyyaml` is required) file:
 ```yaml
-proc:
+default:
   runner: local
   forks : 1
   sgeRunner:
@@ -393,7 +394,7 @@ sge7days:
 
 To switch profile:
 ```python
-# default profile (proc)
+# default profile (default)
 PyPPL(cfgfile = "./profiles.json").start(pHeatmap).run()
 # switch to local5 or sge7days:
 # PyPPL(cfgfile = "./profiles.json").start(pHeatmap).run('local5')
@@ -477,34 +478,32 @@ To generate svg file, you have to have [graphviz][36] installed.
 
 ***Enjoy pipelining!!!***
 
-[1]: https://pwwang.gitbooks.io/PyPPL/
-[2]: https://pwwang.gitbooks.io/PyPPL/api.html
+[1]: https://pwwang.github.io/PyPPL/
+[2]: https://pwwang.github.io/PyPPL/api.html
 [3]: https://github.com/pwwang/pyppl/
 [4]: https://img.shields.io/codacy/grade/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
-[5]: https://www.codacy.com/app/pwwang/PyPPL?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=pwwang/pyppl&amp;utm_campaign=Badge_Grade
-[6]: https://pwwang.gitbooks.io/PyPPL/caching.html
-[7]: https://pwwang.gitbooks.io/PyPPL/placeholders.html
-[8]: https://img.shields.io/gitter/room/pwwang/PyPPL.svg?style=flat-square
-[9]: https://pwwang.gitbooks.io/PyPPL/runners.html
-[10]: https://gitter.im/PyPPL/Lobby
+[5]: https://pwwang.github.com/testly
+[6]: https://pwwang.github.io/PyPPL/caching.html
+[7]: https://pwwang.github.io/PyPPL/placeholders.html
+[8]: runners/
+[9]: https://pwwang.github.io/PyPPL/runners.html
 [11]: https://img.shields.io/codacy/coverage/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
-[12]: https://pwwang.gitbooks.io/PyPPL/set-other-properties-of-a-process.html#error-handling-perrhowperrntry
-[13]: https://pwwang.gitbooks.io/PyPPL/configure-a-pipeline.html#use-a-configuration-file
+[12]: https://pwwang.github.io/PyPPL/set-other-properties-of-a-process.html#error-handling-perrhowperrntry
+[13]: https://pwwang.github.io/PyPPL/configure-a-pipeline.html#use-a-configuration-file
 [14]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
-[15]: https://pwwang.gitbooks.io/PyPPL/draw-flowchart-of-a-pipeline.html
-[16]: https://pwwang.gitbooks.io/PyPPL/aggregations.html
-[17]: https://github.com/cdgriffith/Box
+[15]: https://pwwang.github.io/PyPPL/draw-flowchart-of-a-pipeline.html
+[16]: https://pwwang.github.io/PyPPL/aggregations.html
 [18]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/drawFlowchart_pyppl.png
-[19]: https://pwwang.gitbooks.io/PyPPL/change-log.html
+[19]: https://pwwang.github.io/PyPPL/change-log.html
 [20]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/getStarted.png
 [21]: https://www.gitbook.com/button/status/book/pwwang/pyppl
 [22]: https://img.shields.io/pypi/v/pyppl.svg?style=flat-square
 [23]: https://img.shields.io/github/tag/pwwang/PyPPL.svg?style=flat-square
 [24]: https://github.com/pwwang/bioprocs
 [25]: https://github.com/benjaminp/six
-[26]: https://pwwang.gitbooks.io/PyPPL/content/faq.html
-[27]: https://pwwang.gitbooks.io/PyPPL/command-line-argument-parser.html
-[28]: https://pwwang.gitbooks.io/PyPPL/content/configure-your-logs.html
+[26]: https://pwwang.github.io/PyPPL/content/faq.html
+[27]: https://pwwang.github.io/PyPPL/command-line-argument-parser.html
+[28]: https://pwwang.github.io/PyPPL/content/configure-your-logs.html
 [29]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/heatmap.png
 [30]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/heatmap1.png
 [31]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/heatmap2.png

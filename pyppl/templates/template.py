@@ -28,6 +28,7 @@ def _basename(x, orig = False):
 def _filename(x, orig = False):
 	return path.splitext(_basename(x, orig))[0]
 
+# will be deprecated
 def _norepeats(x):
 	olines       = x.splitlines()
 	nlines       = []
@@ -94,7 +95,7 @@ class Template(object):
 
 	DEFAULT_ENVS = {
 		'R'        : _R,
-		'Rvec'     : _R, # will be depreated!
+		'Rvec'     : _R, # will be deprecated!
 		'Rlist'    : _Rlist,
 		'realpath' : path.realpath,
 		'readlink' : readlink,
@@ -105,6 +106,7 @@ class Template(object):
 		'filename' : _filename,
 		'fn'       : _filename,
 		# /a/b/c.d.e.txt => c
+		'filename2': lambda x, orig = False: _filename(x, orig).split('.')[0],
 		'fn2'      : lambda x, orig = False: _filename(x, orig).split('.')[0],
 		# /a/b/c.txt => .txt
 		'ext'      : lambda x: path.splitext(x)[1],
@@ -113,11 +115,12 @@ class Template(object):
 		# /a/b/c.d.e.txt => /a/b/c
 		'prefix2'  : lambda x, orig = False: path.join(path.dirname(x), _filename(x, orig).split('.')[0]),
 		'quote'    : lambda x: json.dumps(str(x)),
+		'squote'   : repr
 		'json'     : json.dumps,
 		'read'     : _read,
 		'readlines': _readlines,
-		'norepeats': _norepeats,
-		'repr'     : repr
+		'norepeats': _norepeats, # will be deprecated
+		'repr'     : repr,
 	}
 
 	def __init__(self, source, **envs):
@@ -155,6 +158,5 @@ Template.DEFAULT_ENVS.update({
 	# array-space quote
 	'asquote':  lambda x: '''%s''' % (" " .join([Template.DEFAULT_ENVS['quote'](e) for e in x])),
 	# array-comma quote
-	'acquote':  lambda x: '''%s''' % (", ".join([Template.DEFAULT_ENVS['quote'](e) for e in x])),
-	'squote':   lambda x: "'" + Template.DEFAULT_ENVS['quote'](x)[1:-1] + "'"
+	'acquote':  lambda x: '''%s''' % (", ".join([Template.DEFAULT_ENVS['quote'](e) for e in x]))
 })

@@ -1,5 +1,9 @@
 site_name: PyPPL
 theme: 'readthedocs'
+markdown_extensions:
+    - markdown.extensions.admonition:
+    - pymdownx.superfences:
+        preserve_tabs: true
 pages:
     - 'Introduction': 'index.md'
     - 'Basics and folder structure': 'basic-concepts-and-directory-structure.md'
@@ -9,11 +13,12 @@ pages:
     - 'The heart: script': 'write-your-script.md'
     - 'Output file exporting': 'export-output-files.md'
     - 'Caching and resuming processes': 'caching.md'
-    - 'Runners': 'runners.md'
+    - 'Runners and running profiles': 'runners.md'
+    - 'Error handling of processes': 'error-handling.md'
     - 'Other attributes of a process': 'set-other-properties-of-a-process.md'
     - 'Log configuration': 'configure-your-logs.md'
-    - 'Pipeline configuration': 'configure-a-pipeline.md'
     - 'Pipeline flowchart': 'draw-flowchart-of-a-pipeline.md'
+    - 'Pipeline configuration': 'configure-a-pipeline.md'
     - 'Command line argument parser': 'command-line-argument-parser.md'
     - 'Aggregations': 'aggregations.md'
     - 'Command line tool': 'command-line-tool.md'
