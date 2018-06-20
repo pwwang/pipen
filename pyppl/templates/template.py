@@ -115,12 +115,12 @@ class Template(object):
 		# /a/b/c.d.e.txt => /a/b/c
 		'prefix2'  : lambda x, orig = False: path.join(path.dirname(x), _filename(x, orig).split('.')[0]),
 		'quote'    : lambda x: json.dumps(str(x)),
-		'squote'   : repr
+		'squote'   : repr,
 		'json'     : json.dumps,
 		'read'     : _read,
 		'readlines': _readlines,
 		'norepeats': _norepeats, # will be deprecated
-		'repr'     : repr,
+		'repr'     : repr
 	}
 
 	def __init__(self, source, **envs):
