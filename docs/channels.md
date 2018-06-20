@@ -168,7 +168,7 @@ chan5 = chan.repRow(n=3)
 
 Sometimes we prepare files in one process (for example, split a big file into small ones in a directory), then handle these files by different jobs in another process, so that they can be processed simultaneously. 
 
-![channel.expand](https://github.com/pwwang/pyppl/raw/master/docs/channel-expand.png) 
+![channel.expand](./channel-expand.png) 
 
 For example:
 ```python
@@ -215,7 +215,7 @@ p2.input   = {"invar,infile:file": lambda ch: ch.expand(1, "*.txt")}
 
 It's basically the reverse process of `expand`. It applies when you deal with different files and in next process you need them all involved (i.e. combine the results):
 
-![channel.expand](https://github.com/pwwang/pyppl/raw/master/docs/channel-collapse.png) 
+![channel.expand](./channel-collapse.png) 
 
 For example:
 ```python
@@ -509,5 +509,5 @@ Combine n-rows into one row; do the reverse thing as `Channel.fold`. But note th
 ### Copy a channel
 `Channel.copy()`
 
-[1]: https://pwwang.github.io/PyPPL/command-line-argument-parser.html
+[1]: ./command-line-argument-parser/
 

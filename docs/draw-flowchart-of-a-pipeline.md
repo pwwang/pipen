@@ -118,7 +118,9 @@ PyPPL({
 	}
 }).star(p1, p8, p9).flowchart().run()
 ```
+
 Explanations of node types:
+
 - `base`: The base node style
 - `start`: The style for starting processes
 - `end`: The style for starting processes

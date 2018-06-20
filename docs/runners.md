@@ -98,7 +98,7 @@ PyPPL().start(pXXX).run({
 ## Built-in runners
 We have 5 built-in runners (`RunnerLocal`, `RunnerSsh`, `RunnerSge`, `RunnerSlurm`, `runnerDry`), you can also define you own runners.
 
-You can either tell one process to use a runner, or even, you can tell the pipeline to use one runner for all the processes. That means each process can have the same runner or a different one. To tell a process which runner to use, just specify the runner name to `pXXX.runner` (for example, `pXXX.runner = "sge"` to use the sge runner). Each process may use different configuration for the runner (`pXXX.sgeRunner`) or the same one by [configuring the pipeline](https://pwwang.gitbooks.io/pyppl/content/configure-a-pipeline.html).
+You can either tell one process to use a runner, or even, you can tell the pipeline to use one runner for all the processes. That means each process can have the same runner or a different one. To tell a process which runner to use, just specify the runner name to `pXXX.runner` (for example, `pXXX.runner = "sge"` to use the sge runner). Each process may use different configuration for the runner (`pXXX.sgeRunner`) or the same one by [configuring the pipeline](./configure-a-pipeline/).
 
 ## Configurations for ssh runner
 Ssh runner takes the advantage to use the computing resources from other servers that can be connected via `ssh`. The `ssh` command allows us to pass the command to the server and execute it: `ssh [options] [command]`
@@ -157,7 +157,7 @@ PyPPL ({
     }
 })
 ```
-Also see "[pipeline configration](https://pwwang.github.io/pyppl/content/configure-a-pipeline.html)" for more details.
+Also see "[pipeline configration](./configure-a-pipeline/)" for more details.
 
 The constructor of the runner will change the actual script to run the following (`<workdir>/0/job.script.ssh`):
 
@@ -196,7 +196,7 @@ PyPPL({
     }
 })
 ```
-Also see "[pipeline configuration](https://pwwang.gitbooks.io/pyppl/content/configure-a-pipeline.html)" for more details.
+Also see "[pipeline configuration](./configure-a-pipeline/)" for more details.
 
 The constructor of the runner will change the script to run to the following (`<workdir>/0/job.script.sge`):
 ```bash
@@ -284,7 +284,7 @@ You can use dry runner to dry-run a pipeline. The real script will not be runnin
     - Better set runner of all processes in a pipeline to `dry`. (`pyppl().starts(...).run('dry')`), since empty file/directory will be created for output. Problems will happen if you have a non-dry-run process depending on dry-run processes.
 
 ## Define your own runner
-You are also able to define your own runner, which should be a class extends `Runner` (jobs run immediately after submission) or `RunnerQueue` (jobs are put into a queue after submission). There are several methods and variables you may need to redefine (You may check the [API documentation](https://pwwang.gitbooks.io/pyppl/content/API.html#runner) for all available methods and variables).
+You are also able to define your own runner, which should be a class extends `Runner` (jobs run immediately after submission) or `RunnerQueue` (jobs are put into a queue after submission). There are several methods and variables you may need to redefine (You may check the [API documentation](./API/#runner) for all available methods and variables).
 
 The class name **MUST** start with `Runner` and end with the runner name with first letter capitalized. For example, to define the runner `my`:
 ```python
@@ -302,7 +302,7 @@ Some important method to be redefined:
     ```python
     super(RunnerMy, self).__init__(job)
     ```
-    Then the main purpose of the constructor is to construct the script (`self.script`) to submit the job. In `Runner`, it uses `utils.chmodX` to make it suitable for first argument of [`Popen`](https://docs.python.org/2/library/subprocess.html#popen-constructor) with `shell=False`. If the file is executable, no interpreters will be added, otherwise, the interpreter will be inferred from shebang (see [API](https://pwwang.gitbooks.io/pyppl/content/API.html#chmodX)).
+    Then the main purpose of the constructor is to construct the script (`self.script`) to submit the job. In `Runner`, it uses `utils.chmodX` to make it suitable for first argument of [`Popen`](https://docs.python.org/2/library/subprocess.html#popen-constructor) with `shell=False`. If the file is executable, no interpreters will be added, otherwise, the interpreter will be inferred from shebang (see [API](./API/#chmodX)).
     For example, you want a delay before submitting jobs:
     ```python
     class runnerDelay(Runner):

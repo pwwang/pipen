@@ -95,7 +95,7 @@ To set prior processes not only let the process use the output channel as input 
 
 !!! caution 
     You can copy a process by `p2 = p.copy()`, but remember `depends` will not be copied, you have to specify it for the copied processes.  
-    
+
     When you specify new dependents for a process, its original ones will be removed, which means each time `pXXX.depends` will overwrite the previous setting.
 
 ## Use callback to modify the process `pXXX.callback`
@@ -149,15 +149,15 @@ PyPPL().start(pBam, pRef).run()
 ```
 
 
-[1]: https://pwwang.github.io/PyPPL/content/specify-input-and-output-of-a-process.html#specify-input-of-a-process
-[2]: https://pwwang.github.io/PyPPL/content/specify-input-and-output-of-a-process.html#specify-output-of-a-process
-[3]: https://pwwang.github.io/PyPPL/content/write-your-script.html
-[4]: https://pwwang.github.io/PyPPL/content/export-output-files.html
-[5]: https://pwwang.github.io/PyPPL/content/caching.html
-[6]: https://pwwang.github.io/PyPPL/content/runners.html
-[7]: https://pwwang.github.io/PyPPL/content/basic-concepts-and-directory-structure.html#folder-structure
-[8]: https://pwwang.github.io/PyPPL/content/placeholders.html#proc-property-placeholders
-[9]: https://pwwang.github.io/PyPPL/content/specify-input-and-output-of-a-process.html#use-a-callback-to-modify-the-output-channel-of-the-prior-process
-[10]: https://pwwang.github.io/PyPPL/caching/#calculating-signatures-for-caching
-[11]: https://pwwang.github.io/PyPPL/export-output-files/#control-of-export-of-cached-jobs
-[12]: https://pwwang.github.io/PyPPL/error-handling/
+[1]: ./specify-input-and-output-of-a-process/#specify-input-of-a-process
+[2]: ./specify-input-and-output-of-a-process/#specify-output-of-a-process
+[3]: ./write-your-script/
+[4]: ./export-output-files/
+[5]: ./caching/
+[6]: ./runners/
+[7]: ./basic-concepts-and-directory-structure/#folder-structure
+[8]: ./placeholders/#proc-property-placeholders
+[9]: ./specify-input-and-output-of-a-process/#use-a-callback-to-modify-the-output-channel-of-the-prior-process
+[10]: ./caching/#calculating-signatures-for-caching
+[11]: ./export-output-files/#control-of-export-of-cached-jobs
+[12]: ./error-handling/

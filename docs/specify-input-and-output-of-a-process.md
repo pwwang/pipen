@@ -77,7 +77,7 @@ p2.input   = "in1, in2"
     * `{{in.RE_infile}}`: The realpath
   
   
-Use `sys.argv` (see details for [`Channel.fromArgv`](https://pwwang.gitbooks.io/pyppl/content/channels.html#initialize-a-channel)):
+Use `sys.argv` (see details for [`Channel.fromArgv`](./channels/#initialize-a-channel)):
 ```python
 p3 = Proc()
 p3.input = "in1"
@@ -138,7 +138,7 @@ p2.input   = {"in1, in2": lambda ch: ch.slice(1)}
 # just use the last 2 columns: [(2,5), (3,6)]
 # p1.channel keeps intact
 ```
-You can check more examples in some channel methods: [channel.expand](https://pwwang.gitbooks.io/pyppl/channels.html#expand-a-channel-by-directory) and [channel.collapse](https://pwwang.gitbooks.io/pyppl/channels.html#collapse-a-channel-by-files-in-a-common-ancestor-directory).
+You can check more examples in some channel methods: [channel.expand](./channels/#expand-a-channel-by-directory) and [channel.collapse](./channels/#collapse-a-channel-by-files-in-a-common-ancestor-directory).
 
 !!! caution
     If you use callback to modify the channel, you may combine the keys: in the above case `"in1, in2": ...`, or specify them independently: `p2.input = {"in1": lambda ch: ch.slice(1,1), "in2": lambda ch: ch.slice(2)}`. But remember, **all channels** from `p2.depends` will be passed to each callback function. For example:

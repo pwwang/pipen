@@ -1,11 +1,12 @@
 # FAQ
 
 **Q: How should I migrate from 0.8.x?**
+
 - First letters of class names are capitalized (i.e. `proc` -> `Proc`, `aggr` -> `Aggr`). Note that previous class `pyppl` was changed to `PyPPL`.
 - Default configuration files were changed to `~/.PyPPL.json` and `~/.PyPPL`
 - Log configurations were grouped to `{"log": {...}}` instead of `{"logtheme": ..., "loglevels": ...}`
 - Flowchart is themeable now: in configuration file: `{"flowchart": {...}}`
-- Templating enhanced from previous placeholders (Jinja2 supported). See [templating](https://pwwang.gitbooks.io/pyppl/content/placeholders.html)
+- Templating enhanced from previous placeholders (Jinja2 supported). See [templating](./placeholders/)
 - Input and output placeholders are now under `in` and `out` namespaces, respectively.
 - `updateArgs` is merged into `set` for `Aggr`.
 - Module `doct` removed, `python-box` is used instead.

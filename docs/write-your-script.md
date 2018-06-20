@@ -111,4 +111,4 @@ But there are also some abbrevations for the setting:
 |`{'type': {'all': r'^output'}}`|`{ 'jobs': [0], 'type': {'stdout': r'^output', 'stderr': r'^output'} }`|Output all lines starting with `"output"` from stdout/stderr of job #0|
 
 [1]: https://en.wikipedia.org/wiki/Shebang_(Unix)
-[2]: https://pwwang.github.io/PyPPL/configure-your-logs.html
+[2]: ./configure-your-logs/

@@ -127,8 +127,9 @@ Similarly, you can set the default value for `show` property by: `params.loadCfg
 - `params.prefix('--p-')` The prefix of the options. Default: `--param-`
 - `params.helpOpts('--help, -H')` The option to show the help page.  
 
->**Hint**
-- You can also chain those settings: `params.usage(...).example(...)`  
-- Multiple usages and examples can be separated by `'\n'`
-- You can also set the `helpOpts` by `list`: `params.helpOpts(['-h', '-?'])`
-- An empty string in `helpOpts` means to show help page if no arguments offered.
+!!! hint
+
+    - You can also chain those settings: `params.usage(...).example(...)`  
+    - Multiple usages and examples can be separated by `'\n'`
+    - You can also set the `helpOpts` by `list`: `params.helpOpts(['-h', '-?'])`
+    - An empty string in `helpOpts` means to show help page if no arguments offered.

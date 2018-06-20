@@ -41,11 +41,8 @@ Here is the full structure of the configurations (**`yaml` configuration file is
 - `proc` defines the base running profile for processes in this pipeline. [All the properties][2] of a process can be set here, but just some common one are recommended. Obviously, `input` is not suitable to be set here, except some extreme cases.
 - `profiles` defines some profiles that may be shared by the processes. To use a profile, just specify the profile name to `run`: `PyPPL(config).start(process).run(<profile>)`.
 
-!!! info
-    Settings for `profiles` are actually the same as for `proc`. They just make you easy to switch the profiles back and forth. For example, you want to run with sge runner this time, but ssh runner next time, what you need to do is just change from `...run("profile_sge")` to `...run("profile_ssh")`
-
 !!! note
-     You may also use the runner name as a profile. That means, following profiles are implied in the configuration:
+    You may also use the runner name as a profile. That means, following profiles are implied in the configuration:
     ```json
     {
         "sge"  : {"runner": "sge"},
@@ -57,7 +54,7 @@ Here is the full structure of the configurations (**`yaml` configuration file is
     ```
 
 !!! caution
-     You cannot define profiles with names `flowchart` and `log`
+    You cannot define profiles with names `_flowchart` and `_log`
 
 ## Priority of configuration options
 See [here][5] for use of configuration files.  
@@ -125,10 +122,10 @@ PyPPL().start('p').run()
     2. If a process is not depending on any other processes, you have to set it as starting process. Otherwise, it won't start to run.
 
 [1]: https://docs.python.org/2/library/logging.html#logging-levels
-[2]: https://pwwang.github.io/PyPPL/content/set-other-properties-of-a-process.html
-[3]: https://pwwang.github.io/PyPPL/configure-your-logs.html
-[4]: https://pwwang.github.io/PyPPL/draw-flowchart-of-a-pipeline.html
-[5]: https://pwwang.github.io/PyPPL/runners/#defining-running-profiles
+[2]: ./set-other-properties-of-a-process/
+[3]: ./configure-your-logs/
+[4]: ./draw-flowchart-of-a-pipeline/
+[5]: ./runners/#defining-running-profiles
 
 
 

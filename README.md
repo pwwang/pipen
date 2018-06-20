@@ -11,8 +11,8 @@
 - [Process caching.][6]
 - [Script templating (using either builtin engine or Jinja2).][7]
 - [Runner customization][9].
-- [Error handling for processes.][12]
-- [Easy-switching running profile.][13]
+- [Error handling for processes.][10]
+- [Easy-switching running profile.][9]
 - Flowchat in [DOT][14] for your pipelines ([Details][15]).
 - [Aggregations (a set of processes predefined).][16]
 - Highly reusable processes (see [a set of highly reusable bioinformatics processes][24]).
@@ -479,31 +479,30 @@ To generate svg file, you have to have [graphviz][36] installed.
 ***Enjoy pipelining!!!***
 
 [1]: https://pwwang.github.io/PyPPL/
-[2]: https://pwwang.github.io/PyPPL/api.html
+[2]: https://pwwang.github.io/PyPPL/api/
 [3]: https://github.com/pwwang/pyppl/
 [4]: https://img.shields.io/codacy/grade/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
 [5]: https://pwwang.github.com/testly
-[6]: https://pwwang.github.io/PyPPL/caching.html
-[7]: https://pwwang.github.io/PyPPL/placeholders.html
-[8]: runners/
-[9]: https://pwwang.github.io/PyPPL/runners.html
+[6]: https://pwwang.github.io/PyPPL/caching/
+[7]: https://pwwang.github.io/PyPPL/placeholders/
+[9]: https://pwwang.github.io/PyPPL/runners/
+[10]: https://pwwang.github.io/PyPPL/error-handling/
 [11]: https://img.shields.io/codacy/coverage/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
-[12]: https://pwwang.github.io/PyPPL/set-other-properties-of-a-process.html#error-handling-perrhowperrntry
-[13]: https://pwwang.github.io/PyPPL/configure-a-pipeline.html#use-a-configuration-file
+[12]: https://pwwang.github.io/PyPPL/set-other-properties-of-a-process/#error-handling-perrhowperrntry
+[13]: https://pwwang.github.io/PyPPL/configure-a-pipeline/#use-a-configuration-file
 [14]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
-[15]: https://pwwang.github.io/PyPPL/draw-flowchart-of-a-pipeline.html
-[16]: https://pwwang.github.io/PyPPL/aggregations.html
+[15]: https://pwwang.github.io/PyPPL/draw-flowchart-of-a-pipeline/
+[16]: https://pwwang.github.io/PyPPL/aggregations/
 [18]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/drawFlowchart_pyppl.png
-[19]: https://pwwang.github.io/PyPPL/change-log.html
+[19]: https://pwwang.github.io/PyPPL/change-log/
 [20]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/getStarted.png
-[21]: https://www.gitbook.com/button/status/book/pwwang/pyppl
 [22]: https://img.shields.io/pypi/v/pyppl.svg?style=flat-square
 [23]: https://img.shields.io/github/tag/pwwang/PyPPL.svg?style=flat-square
 [24]: https://github.com/pwwang/bioprocs
 [25]: https://github.com/benjaminp/six
-[26]: https://pwwang.github.io/PyPPL/content/faq.html
-[27]: https://pwwang.github.io/PyPPL/command-line-argument-parser.html
-[28]: https://pwwang.github.io/PyPPL/content/configure-your-logs.html
+[26]: https://pwwang.github.io/PyPPL/faq/
+[27]: https://pwwang.github.io/PyPPL/command-line-argument-parser/
+[28]: https://pwwang.github.io/PyPPL/configure-your-logs/
 [29]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/heatmap.png
 [30]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/heatmap1.png
 [31]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/heatmap2.png

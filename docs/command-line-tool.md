@@ -60,5 +60,5 @@ The direct path will ignore the `workdir` specified by `-w`.
  
 
 [1]: ./pyppl-cli-list.png
-[2]: https://raw.githubusercontent.com/pwwang/pyppl/master/docs/pyppl-cli-clean.png
-[3]: https://raw.githubusercontent.com/pwwang/pyppl/master/docs/pyppl-cli-compare.png
+[2]: ./pyppl-cli-clean.png
+[3]: ./pyppl-cli-compare.png

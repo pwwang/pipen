@@ -183,7 +183,9 @@ If you define a theme in a configuration file, you may use the escape sequences 
 
 ## Log to file
 By default, pyppl will not log to a file until you set a file path to `{"_log": {"file": "/path/to/logfile"}}` in the configuration. Or you can specfiy `False` to it to disable logging to file. If you set it to `True`, a default log file will be used, which is: `"./pipeline.pyppl.log"` if your pipeline is from file: `./pipeline.py`
->**NOTE** Filters and themes are not applied to handler to log to file. So you can always find all logs in the log file if your have it enabled.
+
+!!! note
+    Filters and themes are not applied to handler to log to file. So you can always find all logs in the log file if your have it enabled.
 
 ## Progress bar
 Job status and progress are indicated in the log with progress bar:
@@ -227,17 +229,14 @@ But if the progress bar belongs to a job (shown when a job is submitted or done)
 So even job #2 belongs to the first cell and it's running, the sign is still `=`.
 
 
-{% endraw %}
-
-
-[1]: https://raw.githubusercontent.com/pwwang/pyppl/master/docs/blueOnBlack.png
-[2]: https://raw.githubusercontent.com/pwwang/pyppl/master/docs/blueOnWhite.png
-[3]: https://raw.githubusercontent.com/pwwang/pyppl/master/docs/greenOnBlack.png
-[4]: https://raw.githubusercontent.com/pwwang/pyppl/master/docs/greenOnWhite.png
-[5]: https://raw.githubusercontent.com/pwwang/pyppl/master/docs/magentaOnBlack.png
-[6]: https://raw.githubusercontent.com/pwwang/pyppl/master/docs/magentaOnWhite.png
-[7]: https://raw.githubusercontent.com/pwwang/pyppl/master/docs/noThemeOnBlack.png
-[8]: https://raw.githubusercontent.com/pwwang/pyppl/master/docs/noThemeOnWhite.png
+[1]: ./blueOnBlack.png
+[2]: ./blueOnWhite.png
+[3]: ./greenOnBlack.png
+[4]: ./greenOnWhite.png
+[5]: ./magentaOnBlack.png
+[6]: ./magentaOnWhite.png
+[7]: ./noThemeOnBlack.png
+[8]: ./noThemeOnWhite.png
 [9]: https://docs.python.org/2/library/logging.html#logging-levels
 [10]: https://placehold.it/32/eeeeee/000000?text=A
 [11]: https://placehold.it/32/eeeeee/ff0000?text=A
@@ -256,4 +255,4 @@ So even job #2 belongs to the first cell and it's running, the sign is still `=`
 [24]: https://placehold.it/32/00ffff/eeeeee?text=A
 [25]: https://placehold.it/32/ffffff/eeeeee?text=A
 [26]: https://en.wikipedia.org/wiki/ANSI_escape_code
-[27]: https://pwwang.github.io/PyPPL/write-your-script.html#debug-your-script
+[27]: ./write-your-script/#debug-your-script
