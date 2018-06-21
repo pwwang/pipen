@@ -85,6 +85,14 @@ Then the log message will be:
 ```
 
 !!! note
+    You have to tell `PyPPL` which jobs to output these logs.
+    Just simply by:
+    ```python
+    # You have to specify an empty string to 'type' to disable other outputs, unless you want them.
+    pXXX.echo = {'jobs': [0,1,2,3], 'type': ''}
+    ```
+
+!!! note
     The level name you specified after `pyppl.log` does not apply to [normal log filters or themes][2], because the actual level is `_FLAG` in this case. So unless you set `loglevels` to `None`, it will be anyway printed out. For themes, the color at the empty string key will be used. 
 
     You can define filters or themes for this kind of logs, just remember the actual level name has an `_` prefix. See [here][2] to learn how to define filters and themes.
