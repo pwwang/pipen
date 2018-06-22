@@ -1048,7 +1048,11 @@ class Proc (object):
 		@params:
 			`config`: The configuration
 		"""
-		profile  = profile or self.config['runner']
+		if 'runner' in self.sets:
+			profile = self.config['runner']
+		else:
+			profile = profile or self.config['runner']
+
 		profiles = profiles or {
 			'default': {'runner': 'local'}
 		}
