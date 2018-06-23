@@ -281,6 +281,10 @@ class Job (object):
 		if not path.exists(self.dir):
 			makedirs (self.dir)
 		# run may come first before submit
+		# preserve the outfile and errfile of previous run
+		# issue #30
+		utils.safeMove(self.outfile, self.outfile + '.bak')
+		utils.safeMove(self.errfile, self.errfile + '.bak')
 		open(self.outfile, 'w').close()
 		open(self.errfile, 'w').close()
 		self.data.update (self.proc.procvars)

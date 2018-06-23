@@ -401,37 +401,44 @@ class TestTemplatePyPPLEngine(testly.TestCase):
 			self.assertEqual(v, out)
 
 	def dataProvider_testRender(self):
+		# 0
 		yield '{{name}}', {'name': 'John'}, 'John'
 		yield '{{names[0]}}', {'names': ['John', 'Tome']}, 'John'
 		yield '{{names2.1}}', {'names2': ['John', 'Tome']}, 'Tome'
 		yield '{{names3.1[:-1]}}', {'names3': ['John', 'Tome']}, 'Tom'
 		yield '{{names4.1.upper()}}', {'names4': ['John', 'Tome']}, 'TOME'
+		# 5
 		yield '{{names5.1 | [:-1] | .upper()}}', {'names5': ['John', 'Tome']}, 'TOM'
 		yield '{{names6 | [1][:-1] | .upper()}}', {'names6': ['John', 'Tome']}, 'TOM'
 		yield '{{names7 | lambda x: x[1].upper()}}', {'names7': ['John', 'Tome']}, 'TOME'
 		yield '{{v1, v2|concate}}', {'v1': 'hello', 'v2': 'world', 'concate': lambda x,y: x+y}, 'helloworld'
 		yield '{{v3 | R}}', {'v3': 'false'}, "FALSE"
+		# 10
 		yield '{{v4|realpath}}', {'v4': __file__}, path.realpath(__file__)
 		#yield ('{{v5|readlink}}', {'v5': path.join(path.dirname(path.realpath(path.abspath(__file__))), 'helpers.py')}, path.relpath(path.join(path.dirname(path.dirname(path.abspat(__file__))), bin', 'helpers.py'), start = path.dirname(__file__)))
 		yield '{{v6|dirname}}', {'v6': '/a/b/c'}, '/a/b'
 		yield '{{v7|basename}}{{v7|bn}}', {'v7': '/a/b/c.txt'}, 'c.txtc.txt'
 		yield '{{v8|basename}}{{v8|bn}}', {'v8': '/a/b/c[1].txt'}, 'c.txtc.txt'
 		yield '{{v9, v9b|basename}}{{v9, v9b|bn}}', {'v9': '/a/b/c.txt', 'v9b': True}, 'c.txtc.txt'
+		# 15
 		yield '{{v10, v10b|basename}}{{v10, v10b|bn}} {{v10|ext}}', {'v10': '/a/b/c[1].txt', 'v10b': True}, 'c[1].txtc[1].txt .txt'
 		yield '{{v11|filename}}{{v11|fn}} {{v11|prefix}}', {'v11': '/a/b/a.txt'}, 'aa /a/b/a'
 		yield '{{v12|filename}}{{v12|fn}}', {'v12': '/a/b/b[1].txt'}, 'bb'
 		yield '{{v13, v13b|filename}}{{v13, v13b|fn}}', {'v13': '/a/b/d.txt', 'v13b': True}, 'dd'
 		yield '{{v14, v14b|filename}}{{v14, v14b|fn}}', {'v14': '/a/b/c[1].txt', 'v14b': True}, 'c[1]c[1]'
+		# 20
 		yield '{{var1|R}}', {'var1': 'NULL'}, 'NULL'
 		yield '{{var2|R}}', {'var2': 'abc'}, "'abc'"
 		yield '{% for var in varlist %}{{var|R}}{% endfor %}', {'varlist': ['abc', 'True', 1, False]}, "'abc'TRUE1FALSE"
 		yield '{% if var3|bool %}1{% else %}0{% endif %}', {'var3': 'abc', 'bool': bool}, '1'
 		yield '{% for k , v in data.items() %}{{k}}:{{v}}{% endfor %}', {'data': {'a':1, 'b':2}}, 'a:1b:2'
+		# 25
 		yield '{{x|R}}', {'x': OrderedDict([(u'key1', 'val1'), ('key2', u'val2')])}, "list(key1='val1',key2='val2')"
 		yield '{{a|quote}}', {'a':''}, '""'
 		yield '{{b|asquote}}', {'b':[1,2]}, '"1" "2"'
 		yield '{{c|acquote}}', {'c':[1,2]}, '"1", "2"'
-		yield '{{d|squote}}', {'d':1}, "'1'"
+		yield '{{d|squote}}', {'d':"1"}, "'1'"
+		# 30
 		yield '{{e.f|json}}', {'e':{'f':[1,2]}}, '[1, 2]'
 		yield '{{g,h | os.path.join}}', {'g': 'a', 'h': 'b', 'os': __import__('os')}, 'a/b'
 		yield """
@@ -638,31 +645,32 @@ class TestTemplateJinja2(testly.TestCase):
 		yield '{{concate(v1, v2)}}', {'v1': 'hello', 'v2': 'world', 'concate': lambda x,y: x+y}, 'helloworld'
 		yield '{{R(v23)}}', {'v23': '"FALSE"'}, '\'"FALSE"\''
 		yield '{{R(v3)}}', {'v3': 'false'}, "FALSE"
+		# 5
 		yield '{{realpath(v4)}}', {'v4': __file__}, path.realpath(__file__)
 		#yield ('{{readlink(v5)}}', {'v5': path.join(path.dirname(path.realpath(path.abspath(__file__))), 'helpers.py')yield , path.relpath(path.jo(path.dirname(path.dirname(path.abspath(__file__))), 'bin', 'helpers.py'))),
-		# 5
 		yield '{{dirname(v6)}}', {'v6': '/a/b/c'}, '/a/b'
 		yield '{{basename(v7)}}{{bn(v7)}}', {'v7': '/a/b/c.txt'}, 'c.txtc.txt'
 		yield '{{basename(v8)}}{{bn(v8)}}', {'v8': '/a/b/c[1].txt'}, 'c.txtc.txt'
 		yield '{{basename(v9, v9b)}}{{bn(v9, v9b)}}', {'v9': '/a/b/c.txt', 'v9b': True}, 'c.txtc.txt'
-		yield '{{basename(v10, v10b)}}{{bn(v10, v10b)}} {{ext(v10)}}', {'v10': '/a/b/c[1].txt', 'v10b': True}, 'c[1].txtc[1].txt .txt'
 		# 10
+		yield '{{basename(v10, v10b)}}{{bn(v10, v10b)}} {{ext(v10)}}', {'v10': '/a/b/c[1].txt', 'v10b': True}, 'c[1].txtc[1].txt .txt'
 		yield '{{filename(v11)}}{{fn(v11)}} {{prefix(v11)}}', {'v11': '/a/b/a.txt'}, 'aa /a/b/a'
 		yield '{{filename(v12)}}{{fn(v12)}}', {'v12': '/a/b/b[1].txt'}, 'bb'
 		yield '{{filename(v13, v13b)}}{{fn(v13, v13b)}}', {'v13': '/a/b/d.txt', 'v13b': True}, 'dd'
 		yield '{{filename(v14, v14b)}}{{fn(v14, v14b)}}', {'v14': '/a/b/c[1].txt', 'v14b': True}, 'c[1]c[1]'
-		yield '{{R(var1)}}', {'var1': 'NULL'}, 'NULL'
 		# 15
+		yield '{{R(var1)}}', {'var1': 'NULL'}, 'NULL'
 		yield '{{R(var2)}}', {'var2': 'abc'}, "'abc'"
 		yield '{% for var in varlist %}{{R(var)}}{% endfor %}', {'varlist': ['abc', 'True', 1, False]}, "'abc'TRUE1FALSE"
 		yield '{% if bool(var3) %}1{% else %}0{% endif %}', {'var3': 'abc', 'bool': bool}, '1'
 		yield '{% for k,v in data.items() %}{{k}}:{{v}}{% endfor %}', {'data': {'a':1, 'b':2}}, 'a:1b:2'
-		yield '{{quote(a)}}', {'a':''}, '""'
 		# 20
+		yield '{{quote(a)}}', {'a':''}, '""'
 		yield '{{R(x)}}', {'x': OrderedDict([(u'key1', 'val1'), ('key2', u'val2')])}, "list(key1='val1',key2='val2')"
 		yield '{{asquote(b)}}', {'b':[1,2]}, '"1" "2"'
 		yield '{{acquote(c)}}', {'c':[1,2]}, '"1", "2"'
-		yield '{{squote(d)}}', {'d':1}, "'1'"
+		yield '{{squote(d)}}', {'d':'1'}, "'1'"
+		# 25
 		yield '{{json(e["f"])}}', {'e':{'f':[1,2]}}, '[1, 2]'
 		yield '{{os.path.join(g,h)}}', {'g': 'a', 'h': 'b', 'os': __import__('os')}, 'a/b'
 		yield """
