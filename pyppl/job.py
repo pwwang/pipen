@@ -548,6 +548,8 @@ class Job (object):
 			'CACHE_SIGOUTDIR_DIFF'
 		): return False
 		self.rc(0)
+		utils.safeMove(self.outfile + '.bak', self.outfile)
+		utils.safeMove(self.errfile + '.bak', self.errfile)
 		return True
 
 	def isExptCached (self):
@@ -613,6 +615,8 @@ class Job (object):
 			with open (self.rcfile, 'w') as f:
 				f.write (str(Job.RC_SUCCESS))
 
+		utils.safeMove(self.outfile + '.bak', self.outfile)
+		utils.safeMove(self.errfile + '.bak', self.errfile)
 		return True
 
 	def cache (self):
