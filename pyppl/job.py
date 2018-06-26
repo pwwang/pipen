@@ -848,7 +848,9 @@ class Job (object):
 		if utils.samefile(infile, orgfile):
 			return infile
 
-		(fn, ext) = path.splitext(basename)
+		#(fn, ext) = path.splitext(basename)
+		(fn, ext) = basename.split('.', 1)
+		ext       = '.' + ext
 		existInfiles = glob (path.join(self.indir, fn + '[[]*[]]' + ext))
 		if not existInfiles:
 			infile = path.join (self.indir, fn + '[1]' + ext)

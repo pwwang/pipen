@@ -50,7 +50,7 @@ def ask2Remove (msg, procpath, ask = True):
 		utils.Parallel(args.n).run(rmtree, [(pp, ) for pp in glob(path.join(procpath, '*/'))])
 		#utils.parallel(rmtree, [(pp, ) for pp in glob(path.join(procpath, '*/'))], args.n, 'process')
 		rmtree(procpath)
-		print logger.colors.bold + logger.colors.yellow + "  Removed: " + procpath + logger.colors.end
+		print logger.COLORS.bold + logger.COLORS.yellow + "  Removed: " + procpath + logger.COLORS.end
 
 	if not ask:
 		rm ()
@@ -67,16 +67,16 @@ fmtTime = lambda x: datetime.fromtimestamp(x).strftime('%Y-%m-%d %H:%M:%S')
 
 if args.command in ['list', 'clean']:
 	print ''
-	print logger.colors.green  + 'GREEN PROC : Latest processes' + logger.colors.end
-	print logger.colors.yellow + 'YELLOW PROC: Older processes' + logger.colors.end
-	print logger.colors.red    + 'RED PROC   : Settings file not exists' + logger.colors.end
-	print logger.colors.none + '\nWORKDIR: ' + args.workdir + logger.colors.end
+	print logger.COLORS.green  + 'GREEN PROC : Latest processes' + logger.COLORS.end
+	print logger.COLORS.yellow + 'YELLOW PROC: Older processes' + logger.COLORS.end
+	print logger.COLORS.red    + 'RED PROC   : Settings file not exists' + logger.COLORS.end
+	print logger.COLORS.none + '\nWORKDIR: ' + args.workdir + logger.COLORS.end
 	print "-" * (len (args.workdir) + 9)
 
 	groups = getGroups (args.workdir)
 
 	if not groups:
-		print logger.colors.red + "No processes found!\n" + logger.colors.end
+		print logger.COLORS.red + "No processes found!\n" + logger.COLORS.end
 
 	maxlen = max([len(g) for g in groups.keys()])
 	maxlen = max(maxlen, 30)
@@ -87,22 +87,22 @@ if args.command in ['list', 'clean']:
 
 		for i, suf in enumerate(sorted(sufs, key=lambda x: mtime4proc(path.join (args.workdir, "PyPPL.%s.%s" % (g, x))), reverse=True)):
 			procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
-			color    = logger.colors.green
+			color    = logger.COLORS.green
 			ptime    = mtime4proc(procpath)
 			if i == 0 and ptime != 0:
-				print color + '  ' + g + '.' + suf + ': ' + fmtTime(ptime) + logger.colors.end
+				print color + '  ' + g + '.' + suf + ': ' + fmtTime(ptime) + logger.COLORS.end
 			else:
 				procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
 				if ptime == 0:
-					color = logger.colors.red
-					msg = color + '  ' + g + '.' + suf + ': ' + fmtTime(ptime) + logger.colors.end
+					color = logger.COLORS.red
+					msg = color + '  ' + g + '.' + suf + ': ' + fmtTime(ptime) + logger.COLORS.end
 					if args.command == 'list':
 						print msg
 					else:
 						ask2Remove(msg, procpath, not args.force)
 				else:
-					color = logger.colors.yellow
-					msg = color + '  ' + g + '.' + suf + ': ' + fmtTime(ptime) + logger.colors.end
+					color = logger.COLORS.yellow
+					msg = color + '  ' + g + '.' + suf + ': ' + fmtTime(ptime) + logger.COLORS.end
 					if args.command == 'list':
 						print msg
 					else:
@@ -159,8 +159,8 @@ if args.command == 'compare':
 		sfile1    = path.join(p1, 'proc.settings')
 		sfile2    = path.join(p2, 'proc.settings')
 
-	print logger.colors.green + "1. " + sfile1 + logger.colors.end
-	print logger.colors.red   + "2. " + sfile2 + logger.colors.end
+	print logger.COLORS.green + "1. " + sfile1 + logger.COLORS.end
+	print logger.COLORS.red   + "2. " + sfile2 + logger.COLORS.end
 	print '-' * (max(len(sfile1), len(sfile2)) + 3)
 	if path.exists(sfile1) and path.exists(sfile2):
 		def readSections (sfile):
@@ -190,11 +190,11 @@ if args.command == 'compare':
 				elif i==1 and d.strip() == '+++':
 					pass
 				elif d.startswith('-'):
-					toprnt += logger.colors.green + d + logger.colors.end
+					toprnt += logger.COLORS.green + d + logger.COLORS.end
 				elif d.startswith('+'):
-					toprnt += logger.colors.red   + d + logger.colors.end
+					toprnt += logger.COLORS.red   + d + logger.COLORS.end
 				elif d.startswith('@'):
-					toprnt += logger.colors.yellow + d + logger.colors.end
+					toprnt += logger.COLORS.yellow + d + logger.COLORS.end
 				else:
 					toprnt += d
 			if toprnt:
@@ -206,5 +206,5 @@ if args.command == 'compare':
 		sys.exit(0)
 	else:
 		print "Only one of the processes' proc.settings exists, see the configuration in:"
-		print logger.colors.green + (sfile1 if path.exists(sfile1) else sfile2) + logger.colors.end + "\n"
+		print logger.COLORS.green + (sfile1 if path.exists(sfile1) else sfile2) + logger.COLORS.end + "\n"
 		sys.exit(0)
