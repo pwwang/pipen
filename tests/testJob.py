@@ -481,11 +481,11 @@ class TestJob(testly.TestCase):
 		pReportItem.props['workdir'] = path.join(self.testdir, 'pReportItem', 'workdir')
 		pReportItem.props['size'] = 128
 		yield 0, pReportItem, 'a', 5, 'hello', 'input', ['INPUT', '[001/128] a     => hello']
-		yield 1, pReportItem, 'a', 5, [], 'input', ['INPUT', '[002/128] a     => []']
-		yield 1, pReportItem, 'a', 5, ['x'], 'input', ['INPUT', '[002/128] a     => [x]']
-		yield 1, pReportItem, 'a', 5, ['x', 'y'], 'input', ['INPUT', '[002/128] a     => [x,', '[002/128]           y]']
-		yield 1, pReportItem, 'a', 5, ['x', 'y', 'z'], 'input', ['INPUT', '[002/128] a     => [x,', '[002/128]           y,', '[002/128]           z]']
-		yield 1, pReportItem, 'a', 5, ['x', 'y', '', '', 'z'], 'output', ['OUTPUT', '[002/128] a     => [x,', '[002/128]           y,', '[002/128]           ...,', '[002/128]           z]']
+		yield 1, pReportItem, 'a', 5, [], 'input', ['INPUT', '[002/128] a     => [  ]']
+		yield 1, pReportItem, 'a', 5, ['x'], 'input', ['INPUT', '[002/128] a     => [ x ]']
+		yield 1, pReportItem, 'a', 5, ['x', 'y'], 'input', ['INPUT', '[002/128] a     => [ x,', '[002/128]            y ]']
+		yield 1, pReportItem, 'a', 5, ['x', 'y', 'z'], 'input', ['INPUT', '[002/128] a     => [ x,', '[002/128]            y,', '[002/128]            z ]']
+		yield 1, pReportItem, 'a', 5, ['x', 'y', '', '', 'z'], 'output', ['OUTPUT', '[002/128] a     => [ x,', '[002/128]            y,', '[002/128]            ... (2),', '[002/128]            z ]']
 	
 	def dataProvider_testIndexIndicator(self):
 		pIndexIndicator = Proc()
