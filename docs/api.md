@@ -4,7 +4,7 @@
 
 ## Module `PyPPL`  
 > The PyPPL class
-	
+
 	@static variables:
 		`TIPS`: The tips for users
 		`RUNNERS`: Registered runners
@@ -38,16 +38,6 @@ Check processes, whether 2 processes have the same id and tag
 
 - **returns:**  
 If there are 2 processes with the same id and tag, raise `ValueError`.  
-  
-#### `_getProfile (self, profile) `
-  
-Get running profile according to profile name  
-
-- **params:**  
-`profile`: The profile name  
-
-- **returns:**  
-The running configuration  
   
 #### `_registerProc (proc) [@staticmethod]`
   
@@ -128,12 +118,12 @@ The pipeline object itself.
 
 ## Module `Proc`  
 > The Proc class defining a process
-	
+
 	@static variables:
 		`RUNNERS`:       The regiested runners
 		`ALIAS`:         The alias for the properties
 		`LOG_NLINE`:     The limit of lines of logging information of same type of messages
-		
+
 	@magic methods:
 		`__getattr__(self, name)`: get the value of a property in `self.props`
 		`__setattr__(self, name, value)`: set the value of a property in `self.config`
@@ -151,15 +141,11 @@ Constructor
 - **config:**  
 id, input, output, ppldir, forks, cache, cclean, rc, echo, runner, script, depends, tag, desc, dirsig  
 exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr  
-callfront, callback, brings, expect, expart, template, tplenvs, resume, nthread, maxsubmit  
+callfront, callback, expect, expart, template, tplenvs, resume, nthread  
 
 - **props**  
-input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, brings, expect  
+input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect  
 expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs  
-  
-#### `_buildBrings (self) `
-  
-Build the bring-file templates waiting to be rendered.  
   
 #### `_buildInput (self) `
   
@@ -199,7 +185,7 @@ Tell whether the jobs are cached
 - **returns:**  
 True if all jobs are cached, otherwise False  
   
-#### `_readConfig (self, config) `
+#### `_readConfig (self, profile, profiles) `
   
 Read the configuration  
 
@@ -227,6 +213,11 @@ Save all settings in proc.settings, mostly for debug
 #### `_suffix (self) `
   
 Calcuate a uid for the process according to the configuration  
+The philosophy:  
+1. procs from different script must have different suffix (sys.argv[0])  
+2. procs from the same script:  
+- procs with different id or tag have different suffix  
+- procs with different input have different suffix (depends, input)  
 
 - **returns:**  
 The uniq id of the process  
@@ -272,7 +263,7 @@ Get my name include `aggr`, `id`, `tag`
 - **returns:**  
 the name  
   
-#### `run (self, config) `
+#### `run (self, profile, profiles) `
   
 Run the jobs with a configuration  
 
@@ -680,16 +671,6 @@ Create links for input files
 - **returns:**  
 The link to the original file.  
   
-#### `_prepBrings (self) `
-  
-Build the brings to bring some files to indir  
-The brings can be set as: `p.brings = {"infile": "{{infile.bn}}*.bai"}`  
-If you have multiple files to bring in:  
-`p.brings = {"infile": "{{infile.bn}}*.bai", "infile#": "{{infile.bn}}*.fai"}`  
-You can use wildcards to search the files, but only the first file will return  
-To access the brings in your script: {% raw %}`{{ brings.infile }}`, `{{ brings.infile# }}`{% endraw %}  
-If original input file is a link, will try to find it along each directory the link is in.  
-  
 #### `_prepInput (self) `
   
 Prepare input, create link to input files and set other placeholders  
@@ -740,7 +721,7 @@ Export the output files
   
 #### `init (self) `
   
-Initiate a job, make directory and prepare input, brings, output and script.  
+Initiate a job, make directory and prepare input, output and script.  
   
 #### `isExptCached (self) `
   
@@ -1035,6 +1016,13 @@ Set the value of the parameter
   
 Constructor  
   
+#### `asDict (self) `
+  
+Convert the parameters to Box object  
+
+- **returns:**  
+The Box object  
+  
 #### `desc (self, d) `
   
 Set the description of the program  
@@ -1089,7 +1077,7 @@ For config file other than json, a section name is needed, whatever it is.
 - Default: False (don't show parameter from config file in help page)  
 - It'll be overwritten by the `show` property inside the config file.  
   
-#### `parse (self) `
+#### `parse (self, args) `
   
 Parse the arguments from `sys.argv`  
   
@@ -1101,12 +1089,7 @@ Set the prefix of options
 `p`: The prefix. No default, but typically '--param-'  
   
 #### `toDict (self) `
-  
-Convert the parameters to Box object  
-
-- **returns:**  
-The Box object  
-  
+Will be deprecated.  
 #### `usage (self, u) `
   
 Set the usage of the program. Otherwise it'll be automatically calculated.  
@@ -1185,15 +1168,21 @@ The logger
 > A set of utitities for PyPPL
 
 
-#### `JoinableQueue (maxsize) `
-  
-Returns a queue object  
-  
-#### `class: Thread`
+#### `class: OrderedDict`
 ```
-A class that represents a thread of control.
+Dictionary that remembers insertion order
+```
+#### `class: Parallel`
+```
 
-    This class can be safely subclassed in a limited fashion.
+```
+#### `class: ProcessPoolExecutor`
+```
+
+```
+#### `class: ThreadPoolExecutor`
+```
+
 ```
 #### `_cp (f1, f2) `
   
@@ -1244,6 +1233,12 @@ ret  = alwaysList (data)
 
 - **returns:**  
 The split list  
+  
+#### `asStr (s, encoding) `
+  
+Convert everything (str, unicode, bytes) to str with python2, python3 compatiblity  
+  
+#### `basename (f) `
   
 #### `briefList (l) `
   
@@ -1383,17 +1378,6 @@ Python2 and Python3 compatible map
 
 - **returns:**  
 The maped list  
-  
-#### `parallel (func, args, nthread, method) `
-  
-Call functions in a parallel way.  
-If nthread == 1, will be running in single-threading manner.  
-
-- **params:**  
-`func`: The function  
-`args`: The arguments, in list. Each element should be the arguments for the function in one thread.  
-`nthread`: Number of threads  
-`method`: use multithreading (thread) or multiprocessing (process)  
   
 #### `range (i, *args, **kwargs) `
   
@@ -1637,16 +1621,6 @@ Get the process to run next
 
 - **returns:**  
 The process next to run  
-  
-#### `getNode (proc) [@staticmethod]`
-  
-Get the `ProcNode` instance by `Proc` instance  
-
-- **params:**  
-`proc`: The `Proc` instance  
-
-- **returns:**  
-The `ProcNode` instance  
   
 #### `getPaths (self, proc, proc0) `
   
