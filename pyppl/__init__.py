@@ -1056,7 +1056,7 @@ class Proc (object):
 		profiles = profiles or {
 			'default': {'runner': 'local'}
 		}
-		
+
 		config = profiles.get('default', {'runner': 'local'})
 		
 		if isinstance(profile, dict):
@@ -1154,7 +1154,10 @@ class Proc (object):
 		"""
 		Submit and run the jobs
 		"""
-		runner    = PyPPL.RUNNERS[self.runner]
+		try:
+			runner    = PyPPL.RUNNERS[self.runner]
+		except KeyError:
+			raise ProcAttributeError(self.runner, 'No such runner')
 		jobmgr = Jobmgr(self, runner)
 		jobmgr.run()
 
