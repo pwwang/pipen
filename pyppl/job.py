@@ -92,7 +92,7 @@ class Jobmgr (object):
 			elif jid in bj and (self.status[jid] in [Jobmgr.STATUS_SUBMITTING, Jobmgr.STATUS_SUBMITTED]):
 				bar += '>'
 			elif jid in bj and self.status[jid] == Jobmgr.STATUS_DONEFAILED:
-				bar += 'x'
+				bar += 'X'
 			elif jid in bj and self.status[jid] == Jobmgr.STATUS_DONE:
 				bar += '='
 			elif any(self.status[j] == Jobmgr.STATUS_INITIATED for j in bj):
@@ -102,7 +102,7 @@ class Jobmgr (object):
 			elif any(self.status[j] in [Jobmgr.STATUS_SUBMITTING, Jobmgr.STATUS_SUBMITTED] for j in bj):
 				bar += '>'
 			elif any(self.status[j] == Jobmgr.STATUS_DONEFAILED for j in bj):
-				bar += 'x'
+				bar += 'X'
 			else: # STATUS_DONE
 				bar += '='
 

@@ -190,7 +190,7 @@ By default, pyppl will not log to a file until you set a file path to `{"_log": 
 ## Progress bar
 Job status and progress are indicated in the log with progress bar:
 ```
-[==============================xxxxx!!!!!>>>>>-----]
+[==============================XXXXX!!!!!>>>>>-----]
 ```
 The bar length defaults to `50`. You can change it in your code:
 ```python
@@ -201,14 +201,14 @@ Here is an explanation about how a cell (one sign or element of the bar) corresp
 Let's say `Jobmgr.PBAR_SIZE = 9` and we have 5 jobs, then every two cells represent 1 job for first 8 cells, and last one represents job #5. The rule is trying to equally distributed the cells to jobs:
 ```
  1 2 3 4 5         1  2  345      1    2345
-[==xx!!>>-]  NOT  [===xxx!>-] OR [=====x!>-]
+[==XX!!>>-]  NOT  [===XXX!>-] OR [=====X!>-]
 ```
 While if you have more jobs than cells, we try to equally distribute jobs to cells:
 Say we have 9 jobs but `Jobmgr.PBAR_SIZE = 5`:
 ```
  1357        
  24689        
-[=x!>-] 
+[=X!>-] 
 ```
 First cell represents job #1, #2; second job #3, #4; ...; the last one represents job #9.
 
@@ -216,7 +216,7 @@ The meaning of each sign in the cell:
 - `-`: Job initiated
 - `!`: Job failed to submit
 - `>`: Job running
-- `x`: Job failed
+- `X`: Job failed
 - `=`: Job done
 
 Note that if a cell represents multiple jobs, it has a priority as above listed. For example, in the second situation, if job #1 is done, however, job #2 is running, then the sign should be `>`.
