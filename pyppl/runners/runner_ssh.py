@@ -82,7 +82,7 @@ class RunnerSsh(Runner):
 		if 'preScript' in conf:
 			sshsrc.append (conf['preScript'])
 		
-		sshsrc.append ('ssh %s %s %s' % (server, ('-i %s' % key) if key else '', self.cmd2run))
+		sshsrc.append ('ssh %s %s %s' % (server, ('-i %s' % key) if key else '', str(repr(self.cmd2run))))
 		
 		if 'postScript' in conf:
 			sshsrc.append (conf['postScript'])
