@@ -1403,11 +1403,11 @@ class PyPPL (object):
 			logger.logger.info('[DEBUG] * %s' % (' -> '.join(path)))
 		return self
 
-	def run (self, profile = 'local'):
+	def run (self, profile = 'default'):
 		"""
 		Run the pipeline
 		@params:
-			`profile`: the profile used to run, if not found, it'll be used as runner name. default: 'local'
+			`profile`: the profile used to run, if not found, it'll be used as runner name. default: 'default'
 		@returns:
 			The pipeline object itself.
 		"""
