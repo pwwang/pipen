@@ -1067,7 +1067,7 @@ class Proc (object):
 			if profile in profiles:
 				utils.dictUpdate(config, profiles[profile])
 				if 'runner' not in config:
-					config['runner'] = profile
+					config['runner'] = 'local' if profile == 'default' else profile
 			else:
 				config['runner'] = profile
 
@@ -1428,7 +1428,7 @@ class PyPPL (object):
 			logger.logger.info ('[PROCESS]' + name)
 			logger.logger.info ('[PROCESS]' + '~'*decorlen)
 			proc.log ('%s => %s => %s' % (ProcTree.getPrevStr(proc), proc.name(), ProcTree.getNextStr(proc)), 'DEPENDS')
-			proc.run(profile, self.config)
+			proc.run(profile, pycopy.deepcopy(self.config))
 			'''
 			if 'runner' in proc.sets and proc.config['runner'] != profile:
 				proc.run(self._getProfile(proc.config['runner']))
