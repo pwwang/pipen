@@ -1177,7 +1177,7 @@ class PyPPL (object):
 		"You can find the stdout in <workdir>/<job.index>/job.stdout",
 		"You can find the stderr in <workdir>/<job.index>/job.stderr",
 		"You can find the script in <workdir>/<job.index>/job.script",
-		"Check documentation at: https://www.gitbook.com/book/pwwang/pyppl",
+		"Check documentation at: https://pwwang.github.io/PyPPL",
 		"You cannot have two processes with the same id and tag",
 		"beforeCmd and afterCmd only run locally",
 		"If 'workdir' is not set for a process, it will be PyPPL.<proc-id>.<proc-tag>.<suffix> under default <ppldir>",

@@ -512,7 +512,7 @@ class TestRunnerSsh(testly.TestCase):
 				"",
 				"echo $$ > '%s'",
 				'trap "status=\\$?; echo \\$status >\'%s\'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT',
-				'ssh %s %s cd %s; %s',
+				'ssh %s %s \'cd %s; %s\'',
 			]) % (job.pidfile, job.rcfile, server, key, getcwd(), job.script) + '\n')
 			helpers.assertTextEqual(self, helpers.readFile(job.script + '.submit', str), '\n'.join([
 				"#!/usr/bin/env bash",

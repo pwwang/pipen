@@ -271,7 +271,7 @@ class TestJobmgr(testly.TestCase):
 		jm1.status[1] = Jobmgr.STATUS_SUBMITTED
 		jm1.status[2] = Jobmgr.STATUS_DONEFAILED
 		jm1.status[3] = Jobmgr.STATUS_DONE
-		yield jm1, 0, 'SUBMIT', '[1/5] [!!!!!!!!!!>>>>>>>>>>xxxxxxxxxx==========----------] Done:  40.0% | Running: 2'
+		yield jm1, 0, 'SUBMIT', '[1/5] [!!!!!!!!!!>>>>>>>>>>XXXXXXXXXX==========----------] Done:  40.0% | Running: 2'
 		
 		pProgressbar1 = Proc()
 		pProgressbar1.ppldir = self.testdir
@@ -295,9 +295,9 @@ class TestJobmgr(testly.TestCase):
 		jm3.status[59] = Jobmgr.STATUS_SUBMITFAILED
 		jm3.status[60] = Jobmgr.STATUS_DONE
 		jm3.status[61] = Jobmgr.STATUS_SUBMITTED
-		yield jm3, 0, 'SUBMIT', '[01/80] [=!>x-------------------------!=>------------------] Done:   8.8% | Running: 4'
-		yield jm3, 1, 'SUBMIT', '[02/80] [-!>x-------------------------!=>------------------] Done:   8.8% | Running: 4'
-		yield jm3, 2, 'SUBMIT', '[03/80] [-=>x-------------------------!=>------------------] Done:   8.8% | Running: 4'
+		yield jm3, 0, 'SUBMIT', '[01/80] [=!>X-------------------------!=>------------------] Done:   8.8% | Running: 4'
+		yield jm3, 1, 'SUBMIT', '[02/80] [-!>X-------------------------!=>------------------] Done:   8.8% | Running: 4'
+		yield jm3, 2, 'SUBMIT', '[03/80] [-=>X-------------------------!=>------------------] Done:   8.8% | Running: 4'
 
 	def testProgressBar(self, jm, jid, loglevel, bar):
 		with helpers.log2str(levels = 'all') as (out, err):
