@@ -17,6 +17,6 @@ setup (
 	packages         = find_packages(),
 	scripts          = ['bin/pyppl'],
 	install_requires=[
-		'python-box', 'six', 'filelock'
+		'six', 'filelock'
     ],
 )
