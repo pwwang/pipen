@@ -34,7 +34,7 @@ p3.depends  = p1, p8
 p1.input = {'in':0}
 p8.input = {'in':0}
 
-config   = {'log': {'levels': 'base'}}
+config   = {'_log': {'levels': 'base'}}
 logger   = lambda msg: stderr.write("%s\n%s\n%s\n" % ('-'*80, msg, '-'*80))
 clear    = lambda: [setattr(p, 'resume', '') for p in [p1,p2,p3,p4,p5,p6,p7,p8]]
 

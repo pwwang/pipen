@@ -1056,14 +1056,16 @@ class Proc (object):
 		profiles = profiles or {
 			'default': {'runner': 'local'}
 		}
-
-		config = profiles.get('default', {'runner': 'local'})
+		if 'default' not in profiles:
+			profiles['default'] = {'runner': 'local'}
+		
+		config = profiles['default']
 		
 		if isinstance(profile, dict):
 			utils.dictUpdate(config, profile)
 			if 'runner' not in config:
 				config['runner'] = 'local'
-		else:	
+		else:
 			if profile in profiles:
 				utils.dictUpdate(config, profiles[profile])
 				if 'runner' not in config:
@@ -1263,7 +1265,7 @@ class PyPPL (object):
 			else:
 				logger.logger.info ('[ CONFIG] Read from %s' % cfile)
 
-		self.tree    = ProcTree()
+		self.tree = ProcTree()
 
 	def start (self, *args):
 		"""

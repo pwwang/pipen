@@ -98,7 +98,7 @@ The pipeline object itself.
 Run the pipeline  
 
 - **params:**  
-`profile`: the profile used to run, if not found, it'll be used as runner name. default: 'local'  
+`profile`: the profile used to run, if not found, it'll be used as runner name. default: 'default'  
 
 - **returns:**  
 The pipeline object itself.  
@@ -1016,6 +1016,26 @@ Set the value of the parameter
   
 Constructor  
   
+#### `_coerceValue (value, t) [@staticmethod]`
+  
+#### `_getType (self, argname, argtype) `
+  
+#### `_parseName (self, argname) `
+  
+If `argname` is the name of an option  
+
+- **params:**  
+`argname`: The argname  
+
+- **returns:**  
+`an`: clean argument name  
+`at`: normalized argument type  
+`av`: the argument value, if `argname` is like: `-a=1`  
+  
+#### `_putValue (self, argname, argtype, argval) `
+  
+#### `_shouldPrintHelp (self, args) `
+  
 #### `asDict (self) `
   
 Convert the parameters to Box object  
@@ -1023,34 +1043,16 @@ Convert the parameters to Box object
 - **returns:**  
 The Box object  
   
-#### `desc (self, d) `
-  
-Set the description of the program  
-
-- **params:**  
-`d`: The description  
-  
-#### `example (self, e) `
-  
-Set the examples of the program  
-
-- **params:**  
-`e`: The examples. Multiple examples in multiple lines  
-  
-#### `help (self) `
+#### `help (self, error, printNexit) `
   
 Calculate the help page  
 
+- **params:**  
+`error`: The error message to show before the help information. Default: `''`  
+`printNexit`: Print the help page and exit the program? Default: `False` (return the help information)  
+
 - **return:**  
 The help information  
-  
-#### `helpOpts (self, h) `
-  
-The options to popup help information  
-An empty string '' implys help information pops up when no arguments specified  
-
-- **params:**  
-`h`: The options. It could be either list or comma separated.  
   
 #### `loadDict (self, dictVar, show) `
   
@@ -1081,22 +1083,8 @@ For config file other than json, a section name is needed, whatever it is.
   
 Parse the arguments from `sys.argv`  
   
-#### `prefix (self, p) `
-  
-Set the prefix of options  
-
-- **params:**  
-`p`: The prefix. No default, but typically '--param-'  
-  
 #### `toDict (self) `
 Will be deprecated.  
-#### `usage (self, u) `
-  
-Set the usage of the program. Otherwise it'll be automatically calculated.  
-
-- **params**  
-`u`: The usage, no program name needed. Multiple usages in multiple lines.  
-  
 
 ## Module `logger`  
 > A customized logger for pyppl

@@ -24,7 +24,7 @@ dev.off()
 """
 
 PyPPL({
-	'log': {
+	'_log': {
 		'levels' : 'basic',
 		'lvldiff': []
 	}
