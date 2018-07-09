@@ -1,3 +1,4 @@
 six
 filelock
+futures
 python-testly
