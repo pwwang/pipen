@@ -192,7 +192,7 @@ class Channel (list):
 		for pname in pnames:
 			param = getattr(params, pname)
 			data = param.value
-			if param.type != list:
+			if not param.type.startswith('list'):
 				data = [param.value]
 			if width is not None and width != len(data):
 				raise ValueError('Width %s (%s) is not consistent with previous %s' % (len(data), data, width))

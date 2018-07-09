@@ -680,6 +680,7 @@ class TestUtils (testly.TestCase):
 		def func9(f1, f2):
 			try:
 				rename(f1, f2)
+				sleep (.05)
 				symlink(f2, f1)
 			except OSError as ex:
 				helpers.writeFile(flag9, ex)

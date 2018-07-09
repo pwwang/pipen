@@ -318,7 +318,7 @@ class TestChannel (testly.TestCase):
 		from pyppl.parameters import Parameter, params
 		outs = Channel.create(outs)
 		for p in ps:
-			params._props['params'][p.name] = p
+			params._params[p.name] = p
 		pnames = [p.name for  p in ps]
 		if not exception:
 			ch = Channel.fromParams(*pnames)

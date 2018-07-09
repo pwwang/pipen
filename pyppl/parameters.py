@@ -8,6 +8,7 @@ from .utils import Box
 from .exception import ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError
 
 class Parameter (object):
+
 	"""
 	The class for a single parameter
 	"""
@@ -18,28 +19,46 @@ class Parameter (object):
 			`name`:  The name of the parameter
 			`value`: The initial value of the parameter
 		"""
-		self.__dict__['props'] = {
-			'desc'    : '',
-			'required': False,
-			'show'    : True,
-			'type'    : None,
-			'name'    : name,
-			'value'   : value if not isinstance(value, string_types) else str(value)
-		}
+		self.__dict__['_props'] = dict(
+			desc     = [],
+			required = False,
+			show     = True,
+			type     = None,
+			name     = name,
+			value    = value
+		)
 		if not isinstance(name, string_types):
 			raise ParameterNameError(name, 'Not a string')
 		if not re.search(r'^[A-Za-z0-9_]{1,32}$', name):
 			raise ParameterNameError(name, 'Expect a string with alphabetics and underlines in length 1~32, but we got')
-		self.setType(type(self.value))
+		if value is not None:
+			t = type(value).__name__
+			if t in ['tuple', 'set']:
+				t = 'list'
+				self._props['value'] = list(value)
+			elif t == 'unicode': # py2
+				t = 'str'
+				self._props['value'] = value.encode()
+			elif not t in Parameters.ALLOWED_TYPES:
+				raise ParameterTypeError('Unsupported parameter type: ' + t)
+			self.setType(t)
 
 	def __setattr__(self, name, value):
-		getattr(self, 'set' + name[0].upper() + name[1:])(value)
+		if name.startswith('__') or name.startswith('_Parameter'):
+			super(Parameter, self).__setattr__(name, value)
+		else:
+			getattr(self, 'set' + name[0].upper() + name[1:])(value)
 
 	def __getattr__(self, name):
-		return self.props[name]
+		if name.startswith('__') or name.startswith('_Parameter'):
+			return super(Parameter, self).__getattr__(name)
+		elif name == 'desc' and not self.required:
+			if not self._props['desc'] or not self._props['desc'][-1].startswith('DEFAULT: '):
+				self._props['desc'].append('DEFAULT: ' + repr(self.value))
+		return self._props[name]
 
 	def __repr__(self):
-		return '<Parameter({}) @ {}>'.format(','.join([key+'='+repr(val) for key, val in self.props.items()]), hex(id(self)))
+		return '<Parameter({}) @ {}>'.format(','.join([key+'='+repr(val) for key, val in self._props.items()]), hex(id(self)))
 
 	def __str__(self):
 		return str(self.value)
@@ -50,7 +69,9 @@ class Parameter (object):
 		@params:
 			`d`: The description
 		"""
-		self.props['desc'] = d
+		if not isinstance(d, list):
+			d = d.splitlines()
+		self._props['desc'] = d
 		return self
 
 	def setRequired (self, r = True):
@@ -59,23 +80,42 @@ class Parameter (object):
 		@params:
 			`r`: True if required else False. Default: True
 		"""
-		if self.props['type'] == bool:
+		if self._props['type'] == 'bool':
 			raise ParameterTypeError(self.value, 'Bool option "%s" cannot be set as required' % self.name)
-		self.props['required'] = r
+		self._props['required'] = r
 		return self
 
-	def setType (self, t = str):
+	def setType (self, t = 'str'):
 		"""
 		Set the type of the parameter
 		@params:
 			`t`: The type of the value. Default: str
 			- Note: str rather then 'str'
 		"""
-		if t not in [str, int, float, bool, list]:
+		if not isinstance(t, string_types):
+			t = t.__name__
+		tcolon = t if ':' in t else t + ':'
+		t1, t2 = tcolon.split(':', 2)
+		if t1 in Parameters.ARG_TYPES:
+			t1 = Parameters.ARG_TYPES[t1]
+		if t2 in Parameters.ARG_TYPES:
+			t2 = Parameters.ARG_TYPES[t2]
+		
+		t2use = t1 + ':' + t2 if t2 else t1
+		if t2use not in Parameters.ALLOWED_TYPES and not t2use.startswith('list'):
 			raise ParameterTypeError(t, 'Unsupported type for option "%s"' % self.name)
-		self.props['type'] = t
-		self._forceType()
+		self._props['type'] = t2use
+		if not self.value is None:
+			self._forceType()
 		return self
+
+	def _forceType (self):
+		"""
+		Coerce the value to the type specified
+		TypeError will be raised if error happens
+		"""
+		if self.type is None: return
+		self.value = Parameters._coerceValue(self.value, self.type)
 
 	def setShow (self, s = True):
 		"""
@@ -83,7 +123,7 @@ class Parameter (object):
 		@params:
 			`s`: True if it shows else False. Default: True
 		"""
-		self.props['show'] = s
+		self._props['show'] = s
 		return self
 
 	def setValue (self, v):
@@ -92,7 +132,7 @@ class Parameter (object):
 		@params:
 			`v`: The value
 		"""
-		self.props['value'] = v if not isinstance(v, string_types) else str(v)
+		self._props['value'] = v
 		return self
 
 	def setName (self, n):
@@ -101,21 +141,8 @@ class Parameter (object):
 		@params:
 			`n`: The name
 		"""
-		self.props['name'] = n
+		self._props['name'] = n
 		return self
-
-	def _forceType (self):
-		"""
-		Coerce the value to the type specified
-		TypeError will be raised if error happens
-		"""
-		try:
-			if self.type == bool and self.value == 'False':
-				self.value = False
-			else:
-				self.value = self.type(self.value)
-		except (ValueError, TypeError):
-			raise ParameterTypeError(self.type, 'Unable to coerce value %s of option "%s" to type' % (repr(self.value), self.name))
 
 	def _printName (self, prefix, keylen = 0):
 		"""
@@ -123,188 +150,312 @@ class Parameter (object):
 		@params:
 			`prefix`: The prefix of the option
 		"""
-		if self.type == bool:
-			return (prefix + self.name).ljust(keylen) + ' (BOOL)'
-
-		return (prefix + self.name).ljust(keylen) + ' <{}>'.format(self.type.__name__.upper())
+		if self.name == Parameters.POSITIONAL:
+			return '<POSITIONAL>'.ljust(keylen)
+		name = (prefix + self.name).ljust(keylen)
+		if self.type == 'bool':
+			return name + ' (bool)'
+		elif self.type is None:
+			return name
+		else:
+			return (prefix + self.name).ljust(keylen) + ' <{}>'.format(self.type)
 
 class Parameters (object):
 	"""
 	A set of parameters
 	"""
 
+	ARG_TYPES = dict(
+		a       = 'auto',
+		auto    = 'auto',
+		i       = 'int',
+		int     = 'int',
+		f       = 'float',
+		float   = 'float',
+		b       = 'bool',
+		bool    = 'bool',
+		s       = 'str',
+		str     = 'str',
+		l       = 'list',
+		list    = 'list',
+		array   = 'list',
+		p       = 'py',
+		py      = 'py',
+		python  = 'py'
+	)
+
+	ARG_NAME_PATTERN     = r'^([a-zA-Z][\w\._-]*)(?::(a|auto|i|int|f|float|b|bool|s|str|l|list|array|l:i|l:int|l:f|l:float|l:b|l:bool|l:s|l:str|list:i|list:int|list:f|list:float|list:b|list:bool|list:s|list:str|array:i|array:int|array:f|array:float|array:b|array:bool|array:s|array:str|p|py|python))?(?:=(.+))?$'
+	ARG_VALINT_PATTERN   = r'^[+-]?\d+$'
+	ARG_VALFLOAT_PATTERN = r'^[+-]?(?:\d*\.)?\d+(?:[Ee][+-]\d+)?$'
+	ARG_VALBOOL_PATTERN  = r'^(t|T|True|TRUE|true|1|Y|y|Yes|YES|yes|on|ON|On|f|F|False|FALSE|false|0|N|n|No|NO|off|Off|OFF)$'
+	ARG_VALPY_PATTERN    = r'^(?:py|expr):(.+)$'
+
+	VAL_TRUES  = ['t', 'T', 'True' , 'TRUE' , 'true' , '1', 'Y', 'y', 'Yes', 'YES', 'yes', 'on' , 'ON' , 'On' ]
+	VAL_FALSES = ['f', 'F', 'False', 'FALSE', 'false', '0', 'N', 'n', 'No' , 'NO' , 'no' , 'off', 'OFF', 'Off']
+
+	POSITIONAL = '_'
+
+	ALLOWED_TYPES = ['str', 'int', 'float', 'bool', 'list']
+
 	def __init__(self):
 		"""
 		Constructor
 		"""
-		self.__dict__['_props']  = {
-			'usage': '',
-			'example': '',
-			'desc': '',
-			'hopts': ['-h', '--help', '-H', '-?', ''],
-			'prefix': '--param-',
-			'params': {}
-		}
+		self.__dict__['_props'] = dict(
+			usage   = [],
+			example = [],
+			desc    = [],
+			hopts   = ['-h', '--help', '-H', '-?', ''],
+			prefix  = '-'
+		)
+		self.__dict__['_params'] = {}
 
 	def __setattr__(self, name, value):
-		if name == '_props':
-			raise ParameterNameError(name, 'Parameter name is prevserved by Parameters')
-
-		if name in self._props['params']:
-			self._props['params'][name].setValue(value)
-		self._props['params'][name] = Parameter(name, value)
+		if name.startswith('__') or name.startswith('_Parameters'):
+			super(Parameters, self).__setattr__(name, value)
+		elif name in self.__dict__:
+			self.__dict__[name] = value
+		elif name in self._params:
+			self._params[name].setValue(value)
+		else:
+			self._params[name] = Parameter(name, value)
 
 	def __getattr__(self, name):
-		if not name in self._props['params']:
-			self._props['params'][name] = Parameter(name, '')
-		return self._props['params'][name]
+		if name.startswith('__') or name.startswith('_Parameters'):
+			return super(Parameters, self).__getattr__(name)
+		elif name in self.__dict__:
+			return self.__dict__[name]
+		elif not name in self._params:
+			self._params[name] = Parameter(name, None)
+		return self._params[name]
 
-	def prefix (self, p):
+	def __call__(self, option, value, excl = False):
 		"""
-		Set the prefix of options
+		Set options values in `self._props`
 		@params:
-			`p`: The prefix. No default, but typically '--param-'
+			`option`: The key of the option
+			`value` : The value of the option
+			`excl`  : The value is used to exclude (only for `hopts`)
+		@returns:
+			`self`
 		"""
-		self._props['prefix'] = p
+		if option == 'prefix':
+			if len(value) == 0:
+				raise ParametersParseError('prefix cannot be empty.')
+			self._props['prefix'] = value
+		elif option == 'hopts':
+			if not isinstance(value, list):
+				value = [x.strip() for x in value.split(',')]
+			if excl:
+				self._props['hopts'] = list(set(self._props['hopts']) - set(value))
+			else:
+				self._props['hopts'] = value
+		elif option in ['usage', 'example', 'desc']:
+			if not isinstance(value, list):
+				value = value.splitlines()
+			self._props[option] = [v.strip() for v in value]
+		else:
+			raise AttributeError('No such option for Parameters: {}'.format(option))
 		return self
 
-	def helpOpts (self, h):
+	def _parseName(self, argname):
 		"""
-		The options to popup help information
-		An empty string '' implys help information pops up when no arguments specified
+		If `argname` is the name of an option
 		@params:
-			`h`: The options. It could be either list or comma separated.
+			`argname`: The argname
+		@returns:
+			`an`: clean argument name
+			`at`: normalized argument type
+			`av`: the argument value, if `argname` is like: `-a=1`
 		"""
-		if not isinstance(h, list):
-			h = list(map(lambda x: x.strip(), h.split(',')))
-		self._props['hopts'] = h
-		return self
+		an, at, av = None, 'auto', None
+		if not argname.startswith(self._props['prefix']):
+			return an, at, av
+		argname = argname[len(self._props['prefix']):]
+		m = re.match(Parameters.ARG_NAME_PATTERN, argname)
+		if not m: return an, at, av
+		an = m.group(1)
+		at = m.group(2) or 'auto'
+		av = m.group(3)
+		if ':' in at:
+			at, att = at.split(':')
+			at = Parameters.ARG_TYPES[at] + ':' + Parameters.ARG_TYPES[att]
+		else:
+			at = Parameters.ARG_TYPES[at]
+		return an, at, av
 
-	def usage(self, u):
-		"""
-		Set the usage of the program. Otherwise it'll be automatically calculated.
-		@params
-			`u`: The usage, no program name needed. Multiple usages in multiple lines.
-		"""
-		self._props['usage'] = list(filter(None, list(map(lambda x: x.strip(), u.splitlines()))))
-		return self
+	def _shouldPrintHelp(self, args):
+		if not args and '' in self._props['hopts']:
+			return True
+		return any([arg in self._props['hopts'] for arg in args])
 
-	def example(self, e):
-		"""
-		Set the examples of the program
-		@params:
-			`e`: The examples. Multiple examples in multiple lines
-		"""
-		self._props['example'] = list(filter(None, list(map(lambda x: x.strip(), e.splitlines()))))
-		return self
+	@staticmethod
+	def _coerceValue(value, t = 'auto'):
+		try:
+			if t == 'int' and not isinstance(value, int):
+				return int(value)
+			elif t == 'float' and not isinstance(value, float):
+				return float(value)
+			elif t == 'bool' and not isinstance(value, (int, bool)):
+				if value in Parameters.VAL_TRUES:
+					return True
+				elif value in Parameters.VAL_FALSES:
+					return False
+				else:
+					sys.stderr.write('WARNING: Unknown bool value, use True instead of {}.\n'.format(repr(value)))
+					return True
+			elif t == 'py':
+				return eval(value)
+			elif t == 'str':
+				return str(value)
+			elif t == 'auto':
+				try:
+					if re.match(Parameters.ARG_VALINT_PATTERN, value):
+						t = 'int'
+					elif re.match(Parameters.ARG_VALFLOAT_PATTERN, value):
+						t = 'float'
+					elif re.match(Parameters.ARG_VALBOOL_PATTERN, value):
+						t = 'bool'
+					else:
+						t = None
+						m = re.match(Parameters.ARG_VALPY_PATTERN, value)
+						if m: 
+							t = 'py'
+							value = m.group(1)
+					return Parameters._coerceValue(value, t)
+				except TypeError: # value is not a string, cannot do re.match
+					return value
+			elif not t is None and t.startswith('list'):
+				if isinstance(value, string_types):
+					value = [value]
+				else:
+					try:
+						value = list(value)
+					except TypeError:
+						value = [value]
+				subtype = ':' in t and t.split(':')[1] or 'auto'
+				return [Parameters._coerceValue(x, subtype) for x in value]
+			else:
+				return value
+		except (ValueError, TypeError):
+			raise ParameterTypeError(t, 'Unable to coerce value %s to type' % (repr(value)))
 
-	def desc(self, d):
-		"""
-		Set the description of the program
-		@params:
-			`d`: The description
-		"""
-		self._props['desc'] = list(filter(None, list(map(lambda x: x.strip(), d.splitlines()))))
-		return self
+	def _getType(self, argname, argtype):
+		if argname not in self._params:
+			sys.stderr.write ('WARNING: Unknown option {}{}.\n'.format(self._props['prefix'], argname))
+			return False
 
-	def parse (self, args = sys.argv[1:]):
+		if argtype == 'auto' and self._params[argname].type:
+			argtype = self._params[argname].type
+		elif argtype != 'auto' and self._params[argname].type != argtype:
+			sys.stderr.write (
+				'WARNING: Decleared type "{dtype}" ignored, use "{ptype}" instead for option {prefix}{option}.\n'.format(
+					dtype  = self._params[argname].type,
+					ptype  = argtype,
+					prefix = self._props['prefix'],
+					option = argname
+				)
+			)
+		if argtype == 'list':
+			argtype = 'list:auto'
+
+		return argtype or 'auto'
+
+	def _putValue(self, argname, argtype, argval):
+		atype = self._getType(argname, argtype)
+		if atype is False:
+			return False
+		if atype.startswith('list'):
+			if self._params[argname].value is None:
+				self._params[argname].value = []
+			subtype = atype.split(':')[1]
+			self._params[argname].value.append(Parameters._coerceValue(argval, subtype))
+			return True
+		else:
+			self._params[argname].value = Parameters._coerceValue(argval, atype)
+			return False
+
+	def parse (self, args = None):
 		"""
 		Parse the arguments from `sys.argv`
 		"""
-		if (not args and '' in self._props['hopts']) or (set(filter(None, self._props['hopts'])) & set(args)):
-			sys.stderr.write (self.help())
-			sys.exit (1)
-		else:
-			i = 0
-			listKeysFirstHit = {}
-			while i < len(args):
-				# support '--param-a=b'
-				arg  = args[i].split('=', 1)
+		args = args is None and sys.argv[1:] or args
+		if self._shouldPrintHelp(args):
+			self.help(printNexit = True)
 
-				karg = arg.pop(0)
-				if karg.startswith(self._props['prefix']):
-					key = karg[len(self._props['prefix']):]
-					if key not in self._props['params']:
-						sys.stderr.write ('WARNING: Unknown option {}.\n'.format(karg))
-						i += 1
-						continue
-					val = self._props['params'][key]
-					if val.type == bool:
-						if arg or (i+1 < len(args) and not args[i+1].startswith(self._props['prefix'])):
-							val.value = arg[0] if arg else args[i+1]
-							i += (1 if arg else 2)
-						else:
-							val.value = True
-							i += (1 if not arg else 2)
-					elif val.type == list:
-						if key not in listKeysFirstHit:
-							listKeysFirstHit[key] = True
-							val.value = []
-
-						if arg:
-							val.value += arg
-						j = i + 1
-						while j < len(args) and not args[j].startswith(self._props['prefix']):
-							val.value.append (args[j])
-							j += 1
-						i = j
+		self._ = []
+		# arbitrarily parse the arguments
+		argname, argtype = None, 'auto'
+		for arg in args:
+			argname2, argtype2, argvalue = self._parseName(arg)
+			if not argname: # argname not reached yet
+				if argname2: # I am the first argname
+					# it's not -a=1 format, just -a or it's list (-a:list=1)
+					if argvalue is None or self._putValue(argname2, argtype2, argvalue): 
+						argname, argtype = argname2, argtype2
+				else: # argname not reached yet and I am not an argname, so I am positional
+					self._putValue(Parameters.POSITIONAL, 'list', arg)
+			else: # argname reached
+				if argname2: # it's argname
+					# type 'list' hasn't closed, so it should not be bool
+					atype = self._getType(argname, argtype)
+					if not atype or not atype.startswith('list'):
+						self._putValue(argname, 'bool', 'True')
+					if argvalue is None or self._putValue(argname2, argtype2, argvalue):
+						argname, argtype = argname2, argtype2
 					else:
-						if arg:
-							val.value = arg[0]
-							i += 1
-						else:
-							if i+1 >= len(args) or args[i+1].startswith(self._props['prefix']):
-								sys.stderr.write ('WARNING: No value assigned for option: {}.\n'.format(karg))
-								i += 1
-							else:
-								val.value = args[i+1]
-								i += 2
+						argname, argtype = None, 'auto'
+				else: # it's value
+					if not self._putValue(argname, argtype, arg):
+						argname, argtype = None, 'auto'
 
-				else:
-					sys.stderr.write ('WARNING: Unused value found: {}.\n'.format(args[i]))
-					i += 1
+		if argname:
+			atype = self._getType(argname, argtype)
+			if not atype or not atype.startswith('list'):
+				self._putValue(argname, 'bool', 'True')
 
-			for key, val in self._props['params'].items():
-				if val.required and not val.value:
-					sys.stderr.write ('ERROR: Option {}{} is required.\n\n'.format(self._props['prefix'], key))
-					sys.stderr.write (self.help())
-					sys.exit(1)
-				if val.type == bool:
-					if isinstance(val.value, bool):
-						pass
-					elif val.value.lower() in ['t', 'true', 'yes', 'y', '1', 'on', '']:
-						val.value = True
-					elif val.value.lower() in ['f', 'false', 'no', 'n', '0', 'off']:
-						val.value = False
-					else:
-						raise ParametersParseError(val.value, 'Cannot coerce value to bool for option %s' % repr(val.name))
+		# check the types, values of the params
+		for name in self._params:
+			if self._params[name].required and self._params[name].value is None:
+				self.help(error = 'ERROR: Option {}{} is required.'.format(self._props['prefix'], name), printNexit = True)
 
-				val._forceType()
-		return self
+		return self.asDict()
 
-	def help (self):
+	def help (self, error = '', printNexit = False):
 		"""
 		Calculate the help page
+		@params:
+			`error`: The error message to show before the help information. Default: `''`
+			`printNexit`: Print the help page and exit the program? Default: `False` (return the help information)
 		@return:
 			The help information
 		"""
-		ret  = ''
-		prog = path.basename(sys.argv[0])
+		error = error.strip()
+		ret   = error + '\n\n' if error else ''
+		prog  = path.basename(sys.argv[0])
 
 		requiredOptions = {}
 		optionalOptions = {}
 
-		keylen = 40 # '--param-xxx <str> ..........'
-		keylen2 = 0 # '--param-xxx'
+		##
+		# REQUIRED OPTIONS:
+		#   --param-key    <str>          - description
+		# |----------- keylen -----------|
+		#   |----- keylen2 ----|
+		##
+		keylen  = 40 # '--param-xxx <str> ..........'
+		keylen2 = 0  # '--param-xxx'
 
-		for key, val in self._props['params'].items():
+		for key, val in self._params.items():
+			# options not suppose to show
 			if not val.show:
 				continue
 			if val.required:
 				requiredOptions[key] = val
 			else:
 				optionalOptions[key] = val
-			keylen = max(len(self._props['prefix']) + 4 + len(key), keylen)
+
+			keylen  = max(len(self._props['prefix']) + 4 + len(key), keylen)
 			keylen2 = max(len(self._props['prefix']) + len(key), keylen2)
 
 		keylen = max (4 + len(', '.join(filter(None, self._props['hopts']))), keylen)
@@ -312,41 +463,58 @@ class Parameters (object):
 		if self._props['desc']:
 			ret += 'DESCRIPTION:\n'
 			ret += '\n'.join('  ' + d for d in self._props['desc']) + '\n\n'
+
 		ret += 'USAGE:\n'
 		if self._props['usage']:
-			ret += '\n'.join('  ' + d.replace('{}', prog) for d in self._props['usage']) + '\n\n'
+			ret += '\n'.join(
+				'  ' + d.replace('{prog}', prog).replace('{program}', prog)
+				for d in self._props['usage']
+			) + '\n\n'
 		else:
-			ret += '  ' + prog  \
-				+ ('' if not requiredOptions else ' ' + ' '.join([val._printName(self._props['prefix']) for key, val in requiredOptions.items()])) \
-				+ ('' if not optionalOptions else ' [OPTIONS]') + '\n\n'
+			ret += '  ' + prog
+			if requiredOptions:
+				ret += ' ' + ' '.join(
+					val._printName(self._props['prefix']) 
+					for key, val in requiredOptions.items()
+				)
+			if optionalOptions:
+				ret += ' [OPTIONS]'
+			ret += '\n\n'
+
 		if self._props['example']:
 			ret += 'EXAMPLE:\n'
-			ret += '\n'.join('  ' + d.replace('{}', prog) for d in self._props['example']) + '\n\n'
+			ret += '\n'.join(
+				'  ' + d.replace('{prog}', prog).replace('{program}', prog) 
+				for d in self._props['example']
+			) + '\n\n'
 
 		if requiredOptions:
 			ret += 'REQUIRED OPTIONS:\n'
 			for key, val in requiredOptions.items():
-				descs = val.desc.splitlines()
-				ret  += '  {}'.format(val._printName(self._props['prefix'], keylen2)).ljust(keylen) + '- ' + (descs.pop(0) if descs else '') + '\n'
-				for desc in descs:
-					ret += '  ' + ''.ljust(keylen) + desc + '\n'
+				ret  += '  {optitem}{optdesc}'.format(
+					optitem = val._printName(self._props['prefix'], keylen2).ljust(keylen - 2),
+					optdesc = '- ' + val.desc[0] if val.desc else '- No description.'
+				) + '\n'
+				for d in val.desc[1:]:
+					ret += ' ' * (keylen + 2) + d + '\n' 
 			ret += '\n'
 
 		ret += 'OPTIONAL OPTIONS:\n'
 		if optionalOptions:
 			for key, val in optionalOptions.items():
-				defaultStr = 'DEFAULT: ' + repr(val.value)
-				descs = val.desc.splitlines()
-				if not descs or len(descs[-1]) >= 40 or len(descs[-1] + defaultStr) + 1 >= 80:
-					descs.append(defaultStr)
-				else:
-					descs[-1] += ' ' + defaultStr
-				ret  += '  {}'.format(val._printName(self._props['prefix'], keylen2)).ljust(keylen) \
-					 + '- ' + (descs.pop(0) if descs else '') + '\n'
-				for desc in descs:
-					ret += '  ' + ''.ljust(keylen) + desc + '\n'
+				if key == Parameters.POSITIONAL: continue
+				ret  += '  {optitem}{optdesc}'.format(
+					optitem = val._printName(self._props['prefix'], keylen2).ljust(keylen - 2),
+					optdesc = '- ' + val.desc[0]
+				) + '\n'
+				for d in val.desc[1:]:
+					ret += ' ' * (keylen + 2) + d + '\n' 
+
 		ret += '  ' + ', '.join(filter(None, self._props['hopts'])).ljust(keylen - 2) + '- Print this help information.\n\n'
 
+		if printNexit:
+			sys.stderr.write(ret)
+			sys.exit(1)
 		return ret
 
 	def loadDict (self, dictVar, show = False):
@@ -363,21 +531,21 @@ class Parameters (object):
 		# load the param first
 		for key, val in dictVar.items():
 			if '.' in key: continue
-			if not key in self._props['params']:
-				self._props['params'][key] = Parameter(key, val)
-			self._props['params'][key].value = val
+			if not key in self._params:
+				self._params[key] = Parameter(key, val)
+			self._params[key].value = val
 			if show is not None:
-				self._props['params'][key].show = show
+				self._params[key].show = show
 		# then load property
 		for key, val in dictVar.items():
 			if '.' not in key: continue
 			k, prop = key.split('.', 1)
-			if not k in self._props['params']:
+			if not k in self._params:
 				raise ParametersLoadError(key, 'Cannot set attribute of an undefined option %s' % repr(k))
 			if not prop in ['desc', 'required', 'show', 'type']:
 				raise ParametersLoadError(prop, 'Unknown attribute name for option %s' % repr(k))
 
-			setattr (self._props['params'][k], prop, val)
+			setattr (self._params[k], prop, val)
 		return self
 
 	def loadFile (self, cfgfile, show = False):
@@ -411,13 +579,12 @@ class Parameters (object):
 
 		for key, val in config.items():
 			if key.endswith('.type'):
-				config[key] = globals()['__builtins__'][str(val)]
-				if config[key] == list and key[:-5] in config and not isinstance(config[key[:-5]], list):
-					config[key[:-5]] = list(filter(None, config[key[:-5]].splitlines()))
+				config[key] = val
+				if val.startswith('list') and key[:-5] in config and not isinstance(config[key[:-5]], list):
+					config[key[:-5]] = config[key[:-5]].strip().splitlines()
 			elif key.endswith('.show') or key.endswith('.required'):
 				if isinstance(val, bool): continue
-				val = val.lower() not in ['f', 'false', 'no', 'n', '0', 'off']
-				config[key] = val
+				config[key] = Parameters._coerceValue(val, 'bool')
 		self.loadDict(config, show = show)
 		return self
 
@@ -428,8 +595,8 @@ class Parameters (object):
 			The Box object
 		"""
 		ret = Box()
-		for name in self._props['params']:
-			ret[name] = self._props['params'][name].value
+		for name in self._params:
+			ret[name] = self._params[name].value
 		return ret
 
 	def toDict(self):
