@@ -1,5 +1,6 @@
 SHELL=bash
 PYTHON=python
+PYTHON2=python2
 PYTHON3=python3
 
 .PHONY: test test2 test3 tutorial tutorials cov covupload coverage api build dist 
@@ -13,11 +14,6 @@ test: ./tests/*.py
 		echo '----------------------------------------------------------------------'; \
 		$(PYTHON) $$tfile;                                                             \
 		if [[ $$? -ne 0 ]]; then exit 1; fi;                                           \
-		echo "";                                                                       \
-		echo "Running test: $(PYTHON3) $$tfile";                                       \
-		echo '----------------------------------------------------------------------'; \
-		$(PYTHON3) $$tfile;                                                            \
-		if [[ $$? -ne 0 ]]; then exit 1; fi;                                           \
 	done;                                                                              \
 	cd $$wd 
 
@@ -26,9 +22,9 @@ test2: ./tests/*.py
 	cd ./tests;                                                                        \
 	for tfile in test*.py; do                                                          \
 		echo "";                                                                       \
-		echo "Running test: $(PYTHON) $$tfile";                                        \
+		echo "Running test: $(PYTHON2) $$tfile";                                        \
 		echo '----------------------------------------------------------------------'; \
-		$(PYTHON) $$tfile;                                                             \
+		$(PYTHON2) $$tfile;                                                             \
 		if [[ $$? -ne 0 ]]; then exit 1; fi;                                           \
 	done;                                                                              \
 	cd $$wd 
@@ -58,12 +54,8 @@ tutorial:
 			elif [[ "$$p" == "useParams.py" ]]; then                                   \
 				$(PYTHON) $$p --param-datadir ./data;                                  \
 				if [[ $$? -ne 0 ]]; then exit 1; fi;                                   \
-				$(PYTHON3) $$p --param-datadir ./data;                                 \
-				if [[ $$? -ne 0 ]]; then exit 1; fi;                                   \
 			else                                                                       \
 				$(PYTHON) $$p;                                                         \
-				if [[ $$? -ne 0 ]]; then exit 1; fi;                                   \
-				$(PYTHON3) $$p;                                                        \
 				if [[ $$? -ne 0 ]]; then exit 1; fi;                                   \
 			fi;                                                                        \
 		done;                                                                          \
