@@ -692,6 +692,7 @@ class TestTemplateJinja2(testly.TestCase):
 		file2read = path.join(path.dirname(__file__), 'helpers.py')
 		yield '{{"\\n".join(readlines(a))}}', {'a': file2read}, helpers.readFile(file2read, lambda x: '\n'.join(str(y) for y in x.splitlines() if y))
 
+	@unittest.skipIf(not helpers.moduleInstalled('jinja2'), 'Jinja2 not installed.')
 	def testRender(self, s, e, out):
 		t = TemplateJinja2(s)
 		helpers.assertTextEqual(self, t.render(e), out)

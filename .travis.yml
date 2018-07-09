@@ -16,4 +16,3 @@ install:
 script:
   - pip install python-testly
   - make test
-  - make tutorial
