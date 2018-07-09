@@ -14,4 +14,5 @@ install:
   - python setup.py install
 # command to run tests
 script:
+  - pip install python-testly
   - make test

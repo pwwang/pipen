@@ -20,7 +20,6 @@ from .aggr import Aggr
 from .channel import Channel
 from .job import Job, Jobmgr
 from .parameters import params, Parameter, Parameters
-from .flowchart import Flowchart
 from .proctree import ProcTree
 from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcFindError, PyPPLProcRelationError, PyPPLConfigError
 from . import logger, utils, runners, templates
@@ -1460,6 +1459,7 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
+		from .flowchart import Flowchart
 		self.showAllRoutes()
 		fcfile  = fcfile or '%s%s.pyppl.svg' % (path.splitext(sys.argv[0])[0], ('_%s' % self.counter) if self.counter else '')
 		dotfile = dotfile or '%s.dot' % (path.splitext(fcfile)[0])
