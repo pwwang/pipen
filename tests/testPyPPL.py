@@ -1,4 +1,4 @@
-import helpers, testly
+import helpers, testly, unittest
 
 from os import path, remove, makedirs
 from shutil import rmtree
@@ -399,8 +399,10 @@ class TestPyPPL(testly.TestCase):
 			'Flowchart file saved to: %s' % fcfile,
 			'DOT file saved to: %s' % dotfile,
 		]
-			
+
+	@unittest.skipIf(not helpers.moduleInstalled('graphviz'), 'graphviz not installed.')
 	def testFlowchart(self, start, fcfile, dotfile, errs = []):
+
 		with helpers.log2str():
 			pp = PyPPL({'_log': {'file': None}})
 		pp.start(start)
