@@ -1,0 +1,3 @@
+six
+filelock
+python-testly
