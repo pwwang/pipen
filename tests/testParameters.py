@@ -357,7 +357,7 @@ class TestParameters(testly.TestCase):
 		yield ps3, {'x': True, 'y': []}
 
 	def testToDict(self, ps, values):
-		d = ps.toDict()
+		d = ps.asDict()
 		self.assertDictEqual(d, values)
 
 	def dataProvider_testParse(self):
