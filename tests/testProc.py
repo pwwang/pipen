@@ -8,7 +8,9 @@ from collections import OrderedDict
 from multiprocessing import cpu_count
 from pyppl import Proc, Box, Aggr, utils, ProcTree, Channel
 from pyppl.exception import ProcTagError, ProcAttributeError, ProcTreeProcExists, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
-from pyppl.templates import TemplatePyPPL, TemplateJinja2
+from pyppl.templates import TemplatePyPPL
+if helpers.moduleInstalled('jinja2'):
+	from pyppl.templates import TemplateJinja2
 from pyppl.runners import RunnerLocal
 
 __folder__ = path.realpath(path.dirname(__file__))
@@ -473,8 +475,9 @@ class TestProc(testly.TestCase):
 		pBuildProps2.ppldir = testdir
 		yield pBuildProps2, {}, {'template': TemplatePyPPL}
 		yield pBuildProps2, {'template': ''}, {'template': TemplatePyPPL}
-		yield pBuildProps2, {'template': TemplateJinja2}, {'template': TemplateJinja2}
-		yield pBuildProps2, {'template': 'jinja2'}, {'template': TemplateJinja2}
+		if helpers.moduleInstalled('jinja2'):
+			yield pBuildProps2, {'template': TemplateJinja2}, {'template': TemplateJinja2}
+			yield pBuildProps2, {'template': 'jinja2'}, {'template': TemplateJinja2}
 		yield pBuildProps2, {'rc': ' 0, 1, '}, {'rc': [0,1]}
 		yield pBuildProps2, {'rc': 2}, {'rc': [2]}
 		yield pBuildProps2, {'rc': [0, 1]}, {'rc': [0, 1]}
@@ -825,58 +828,59 @@ class TestProc(testly.TestCase):
 		pSaveSettings1.rc       = '0,1'
 		pSaveSettings1.script   = 'echo {{in.a}} > {{out.out}}'
 		pSaveSettings1.template = 'jinja2'
-		yield pSaveSettings1, [
-			#'[brings]',
-			#'b: [\'TemplateJinja2 < {{fn(in.b)}}.br >\']',
-			'[channel]',
-			'value: []',
-			'[depends]',
-			'procs: []',
-			'[echo]',
-			'jobs: [0, 1]',
-			'type: {"stderr": null, "stdout": null}',
-			'[expart]',
-			'value_0: TemplateJinja2 < *-1.out >',
-			'[expect]',
-			'value: TemplateJinja2 < grep 1 {{out.out}} >',
-			'[input]',
-			'a.type: var',
-			'a.data#0',
-			'	1',
-			'a.data#1',
-			'	1',
-			'b.type: file',
-			'b.data#0',
-			'pSaveSettings1-in1.txt',
-			'b.data#1',
-			'pSaveSettings1-in2.txt',
-			'[output]',
-			'out.type: file',
-			'out.data: TemplateJinja2 < {{fn(in.b)}}-{{in.a}}.out >',
-			'[procvars]',
-			'args: {"a": "a"}',
-			'proc: {',
-			'[rc]',
-			'value: [0, 1]',
-			'[runner]',
-			'value: local',
-			'[script]',
-			'value:',
-			'	"TemplateJinja2 <<<"',
-			'	"\\t#!/usr/bin/env bash"',
-			'	"\\techo {{in.a}} > {{out.out}}"',
-			'	">>>"',
-			'[sets]',
-			'value: [\'ppldir\', \'input\', \'output\', \'echo\', \'expart\', \'expect\', \'rc\', \'script\', \'template\']',
-			'[size]',
-			'value: 2',
-			'[suffix]',
-			'value: ',
-			'[template]',
-			'name: TemplateJinja2',
-			'[workdir]',
-			'value: ',
-		]
+		if helpers.moduleInstalled('jinja2'):
+			yield pSaveSettings1, [
+				#'[brings]',
+				#'b: [\'TemplateJinja2 < {{fn(in.b)}}.br >\']',
+				'[channel]',
+				'value: []',
+				'[depends]',
+				'procs: []',
+				'[echo]',
+				'jobs: [0, 1]',
+				'type: {"stderr": null, "stdout": null}',
+				'[expart]',
+				'value_0: TemplateJinja2 < *-1.out >',
+				'[expect]',
+				'value: TemplateJinja2 < grep 1 {{out.out}} >',
+				'[input]',
+				'a.type: var',
+				'a.data#0',
+				'	1',
+				'a.data#1',
+				'	1',
+				'b.type: file',
+				'b.data#0',
+				'pSaveSettings1-in1.txt',
+				'b.data#1',
+				'pSaveSettings1-in2.txt',
+				'[output]',
+				'out.type: file',
+				'out.data: TemplateJinja2 < {{fn(in.b)}}-{{in.a}}.out >',
+				'[procvars]',
+				'args: {"a": "a"}',
+				'proc: {',
+				'[rc]',
+				'value: [0, 1]',
+				'[runner]',
+				'value: local',
+				'[script]',
+				'value:',
+				'	"TemplateJinja2 <<<"',
+				'	"\\t#!/usr/bin/env bash"',
+				'	"\\techo {{in.a}} > {{out.out}}"',
+				'	">>>"',
+				'[sets]',
+				'value: [\'ppldir\', \'input\', \'output\', \'echo\', \'expart\', \'expect\', \'rc\', \'script\', \'template\']',
+				'[size]',
+				'value: 2',
+				'[suffix]',
+				'value: ',
+				'[template]',
+				'name: TemplateJinja2',
+				'[workdir]',
+				'value: ',
+			]
 		
 	def testSaveSettings(self, p, settings):
 		self.maxDiff = None
