@@ -1,4 +1,5 @@
 six
+loky
 filelock
 futures
 python-testly

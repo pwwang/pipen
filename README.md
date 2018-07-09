@@ -1,6 +1,6 @@
 # [PyPPL][3] - A [Py](#)thon [P](#)i[P](#)e[L](#)ine framework 
 
-![Pypi][22] ![Github][23] ![Codacy][4] ![Codacy coverage][11]
+![Pypi][22] ![Github][23] ![Codacy][4] ![Codacy coverage][11] ![Travis building][8]
 
 [Documentation][1] | [API][2] | [Change log][19] | [FAQ][26]
 
@@ -489,6 +489,7 @@ To generate svg file, you have to have [graphviz][36] installed.
 [5]: https://pwwang.github.com/testly
 [6]: https://pwwang.github.io/PyPPL/caching/
 [7]: https://pwwang.github.io/PyPPL/placeholders/
+[8]: https://img.shields.io/travis/pwwang/PyPPL.svg?style=flat-square
 [9]: https://pwwang.github.io/PyPPL/runners/
 [10]: https://pwwang.github.io/PyPPL/error-handling/
 [11]: https://img.shields.io/codacy/coverage/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
