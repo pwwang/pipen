@@ -13,7 +13,6 @@ test: ./tests/*.py
 		echo "Running test: $(PYTHON) $$tfile";                                        \
 		echo '----------------------------------------------------------------------'; \
 		$(PYTHON) $$tfile;                                                             \
-		if [[ $$? -ne 0 ]]; then exit 1; fi;                                           \
 	done;                                                                              \
 	cd $$wd 
 
@@ -72,7 +71,6 @@ cov:
 		echo      "=================================================================";\
 		coverage run -a --concurrency=multiprocessing $$tfile;                        \
 		coverage combine;                                                             \
-		if [[ $$? -ne 0 ]]; then exit 1; fi;                                          \
 	done;                                                                             \
 	coverage xml;                                                                     \
 	coverage html;                                                                    \
