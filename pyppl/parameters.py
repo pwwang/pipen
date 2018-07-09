@@ -599,8 +599,4 @@ class Parameters (object):
 			ret[name] = self._params[name].value
 		return ret
 
-	def toDict(self):
-		"Will be deprecated."
-		return self.asDict()
-
 params = Parameters()

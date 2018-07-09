@@ -13,24 +13,27 @@ from pyppl import params
 params.opt = 'a'
 # or
 # params.opt.setValue('a')
-params.opt2.setType(list).setRequired()
+params.opt2.setType('list').setRequired()
 
 # then don't forget to parse the command line arguments:
 params.parse()
 ```
-Then `python pipeline.py --param-opt b --param-opt2 1 2 3` will overwrite the value.  
-`list` option can also be specified as `--param-opt2 1 --param-opt2 2 --param-opt2 3`
+Then `python pipeline.py -opt b -opt2 1 2 3` will overwrite the value.  
+`list` option can also be specified as `-opt2 1 -opt2 2 -opt2 3`
 To use the value:
 ```python
 var = params.opt.value + '2'
 # var is 'b2'
 var2 = params.opt2.value + [4]
-# var2 is ['1', '2', '3', 4]
+# var2 is [1, 2, 3, 4]
 ```
 
-If you feel annoying using `params.xxx.value` to have the value of the option, you can convert the `params` object to a `box.Box` object (python-box):
+If you feel annoying using `params.xxx.value` to have the value of the option, you can convert the `params` object to a `Box` object (inherited from `OrderedDict`):
 ```python
-ps = params.toDict()
+params.parse()
+ps = params.asDict()
+# or just
+# ps = params.parse()
 ```
 Then you can use `params.xxx` to get the value directly:
 ```python
@@ -41,11 +44,11 @@ var2 = ps.opt2 + [4]
 
 ## Set attributes of an option
 An option has server properties:
-- `desc`: The description of the option, shows in the help page. Default: `''`
+- `desc`: The description of the option, shows in the help page. Default: `[]`
 - `required`: Whether the option is required. Default: `False`
 - `show`: Whether this option should be shown in the help page. Default: `True`
 - `type`: The type of the option value. Default: `str`
-- `name`: The name of the option, then in command line, `--param-<name>` refers to the option.
+- `name`: The name of the option, then in command line, `-<name>` refers to the option.
 - `value`: The default value of the option.
 
 You can either set the value of an option by 
@@ -68,10 +71,51 @@ params.opt.setRequired(True)
 #           .setValue([1,2,3])
 ```
 
-!!! note "About the `type`"
+### About `type`
+#### Declear the type of an option
+You can use either the type itself or the type name:  
+`params.opt.type = int` or `params.opt.type = 'int'`
 
-    - To explicitly specify type of an option, you have to use the type itself, instead of the name of the type. That mean `str` instead of `"str"`
-    - The type can be implied by: `params.opt = []` (implies `list`). But `params.opt.setValue('a')` or `params.opt.value = 1` won't change the type, instead, the value will be coerced to the type previously specified/implied.
+#### Infer type when option initialized
+When you initialize an option:
+```python
+# with nothing specified
+params.opt
+# with a default value
+params.opt = 1
+```
+The type will be inferred from the value. In the first case, the type is `None`, will in the second, it's `'int'`
+
+!!! note
+
+    Let initialize an option first: `params.opt`, then when the value is set explictly:  
+    `params.opt.value = "a"`  
+    Or when the value replaced (set value after initialization):  
+    `params.opt = "a"`  
+    The type will not be changed (it's `None` in this case).
+
+#### Allowed types
+Literally, allowed types are `str`, `int`, `float`, `bool` and `list`. But we allow subtypes (types of elements) for `list`. By default, the value of `list` elements will be recognized automatically. For example, `'1'` will be recognized as an integer `1`, and `"True"` will be recognized as bool value `True`. You can avoid this by specified the subtypes explictly: `params.opt.type = 'list:str'`, then `'1'` will be kept as `'1'` rather than `1`, and `"True"` will be `"True"` instead of `True`.
+
+You can use shortcuts for the types:
+```
+i     -> 'int'
+f     -> 'float'
+b     -> 'bool'
+s     -> 'str'
+l     -> 'list'
+array -> 'list'
+```
+For subtypes, you can also do `params.opt.type = 'l:s'` indicating `list:str`. Or you can even mix them: `params.opt.type = 'l:str'` or `params.opt.type = 'list:s'`
+
+#### Overwrite the type from command line
+Even though we may declear the type of an option by `params.opt.type = 'list:str'`, the users are able to overwrite it by pass the type through command argument:  
+`> program -opt:list:int 1 2 3`  
+Then we will get: `params.opt.value == [1,2,3]` instead of `params.opt.value == ['1', '2', '3']` when we do:  
+`> program -opt 1 2 3`  
+Flexibly, we can have mixed types of elements in a list option:  
+`> program -opt:list:bool 1 -opt:list:int 2 -opt:list:str 3`  
+We will get: `params.opt.value == [True, 2, '3']`
 
 ## Load params from a dict
 You can define a `dict`, and then load it to `params`:
@@ -120,16 +164,43 @@ p3.show: True
 
 Similarly, you can set the default value for `show` property by: `params.loadCfgfile("params.config", show=True)`
 
+!!! hint
+
+    `params` is a singleton of `Parameters`. It's a combination of configuration and command line arguments. So you are able to load the configurations from files, which will be used as default values, before you parse the command line arguments. You are also able to choose some of the options for the users to pass value to, and some hidden from the users.
+
+## Preseved option names
+We have a certain convention of the option names used with `params`:
+- Make sure it's only composed of alphabetics, underscores and hyphens.
+- Make sure it starts with alphabetics.
+- Make sure it's not one of these words (`help`, `loadDict`, `loadFile` and `asDict`)
+
 ## Set other attributes of params
-- `params.usage('--param-infile <infile> [Options]')` The usage of the program
-- `params.example('python prog.py /path/to/file <options>')` The example of usages
-- `params.desc('What does the program do?')` The description of the program
-- `params.prefix('--p-')` The prefix of the options. Default: `--param-`
-- `params.helpOpts('--help, -H')` The option to show the help page.  
+### Show the usages/example/description of the program
+`params('usage', ["{prog} -h", "{prog} -infile <infile> [options]"])`  
+`params('example', ["{prog} -h", "{prog} -infile path/to/infile -out /path/to/outfile"])`  
+`params('desc', ["This program does this.", "This program also does that."])`  
+Multiple lines can also be passed as a string with `"\n"`:  
+`params('desc', ["This program does this.\nThis program also does that."])`
+
+### Set the prefix of option names
+By default, the option names are recognized from the command line if they follow the convention and start with `-`. You may change it, let's say you want the option names to start with `--`:  
+`params('prefix', '--')`  
+The only `prog --opt 1` will be parsed, instead of `prog -opt 1` to get the value by `params.opt.value`  
+
+!!! note
+
+    You cannot use an empty prefix
+
+### Set the default help options
+By default, the help options are `['-h', '--help', '-H', '-?', '']`. The empty string (`''`) enables the program to print the help page without arguments be passed from the command line. If you don't want it, you can remove it from the default help options:  
+`params('hopts', '-h, --help, -H, -?')` or  
+`params('hopts', ['-h', '--help', '-H', '-?'])`  
+Or you can just simply remove some of them by:  
+`params('hopts', ['-H', '-?', ''], excl = True)`  
+Then you will only have `['-h', '--help']`
+
 
 !!! hint
 
-    - You can also chain those settings: `params.usage(...).example(...)`  
-    - Multiple usages and examples can be separated by `'\n'`
-    - You can also set the `helpOpts` by `list`: `params.helpOpts(['-h', '-?'])`
-    - An empty string in `helpOpts` means to show help page if no arguments offered.
+    These statements can also be chained:  
+    `params('usage', ["{prog} -h", "{prog} -infile <infile> [options]"])('prefix', '--')('hopts', ['-H', '-?', ''], excl = True)`

@@ -1083,8 +1083,6 @@ For config file other than json, a section name is needed, whatever it is.
   
 Parse the arguments from `sys.argv`  
   
-#### `toDict (self) `
-Will be deprecated.  
 
 ## Module `logger`  
 > A customized logger for pyppl

@@ -229,7 +229,11 @@ params.datadir    \
   .setRequired()  \
   .setDesc('The data directory containing the data files.')
 
-params = params.parse().toDict()
+# or
+# params.datadir.required = True
+# params.datadir.desc     = 'The data directory containing the data files.'
+
+params = params.parse()
 
 pSort         = Proc(desc = 'Sort files.')
 pSort.input   = {"infile:file": Channel.fromPattern(params.datadir + '/*.txt')}
@@ -247,16 +251,16 @@ Run the pipeline:
 `> python useParams.py`
 ```
 USAGE:
-  useParams.py --param-datadir <str>
+  useParams.py -datadir <str>
 
 REQUIRED OPTIONS:
-  --param-datadir <str>                 The data directory containing the data files.
+  -datadir <str>                        The data directory containing the data files.
 
 OPTIONAL OPTIONS:
   -h, --help, -H, -?                    Print this help information.
 ```
-Provide value to `--param-datadir`:  
-`> python useParams.py --param-datadir ./data`
+Provide value to `-datadir`:  
+`> python useParams.py -datadir ./data`
 
 ## Use a different runner
 See `/tutorials/differentRunner/`
