@@ -7,18 +7,19 @@ python:
 install:
   - pip install -r requirements.txt
   - python setup.py install
-# command to run tests
-script:
   - pip install python-testly
   - pip install coverage
+  - pip install codacy-coverage
+# command to run tests
+script:
   - make cov
-  - export CODACY_PROJECT_TOKEN=b8ba4ff9257e4061b2c29e105255433c
-  - make covupload
-after_success:
   - pip install graphviz jinja2
   - sudo apt-get install -y graphviz
-  - python tests/testPyPPL.py TestPyPPL.testFlowchart
-  - python tests/testTemplates.py TestTemplateJinja2
+  - coverage run -a --concurrency=multiprocessing tests/testPyPPL.py TestPyPPL.testFlowchart 
+  - coverage run -a --concurrency=multiprocessing tests/testTemplates.py TestTemplateJinja2
+after_success:
+  - export CODACY_PROJECT_TOKEN=b8ba4ff9257e4061b2c29e105255433c
+  - make covupload
   
 
   
