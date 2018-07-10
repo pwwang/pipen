@@ -2,4 +2,4 @@ exclude_paths:
   - 'api.py'
   - 'site.py'
   - 'tests/**'
-  - '**/site-packages/**'
+  - 'tutorials/**'
