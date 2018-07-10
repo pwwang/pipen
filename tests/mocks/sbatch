@@ -4,7 +4,7 @@ import sys, hashlib
 from os import path, system
 
 cmd = sys.argv[1]
-fakepid = str(int(hashlib.md5(cmd).hexdigest()[:8], 16))
+fakepid = str(int(hashlib.md5(cmd.encode()).hexdigest()[:8], 16))
 
 piddb = path.join(path.dirname(__file__), 'sbatch.queue.txt')
 if not path.isfile(piddb):
@@ -18,7 +18,7 @@ with open(piddb, 'w') as f:
 	f.write('\n'.join(pids))
 
 outfile = path.join(path.dirname(cmd), 'job.stdout')
-with open(outfile, 'w') as f:
+with open(str(outfile), 'w') as f:
 	f.write('Submitted batch job %s' % fakepid)
 	
 system ('bash ' + cmd + ' &')

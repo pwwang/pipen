@@ -4,7 +4,7 @@ import sys, hashlib
 from os import path, system
 
 cmd = sys.argv[1]
-fakepid = str(int(hashlib.md5(cmd).hexdigest()[:8], 16))
+fakepid = str(int(hashlib.md5(cmd.encode()).hexdigest()[:8], 16))
 
 piddb = path.join(path.dirname(__file__), 'qsub.queue.txt')
 if not path.isfile(piddb):
