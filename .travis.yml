@@ -1,10 +1,6 @@
 language: python
 python:
   - "2.7"
-  - "3.3"
-  - "3.4"
-  - "3.5"
-  - "3.5-dev"  # 3.5 development branch
   - "3.6"
   - "3.6-dev"  # 3.6 development branch
 # command to install dependencies
@@ -17,6 +13,7 @@ script:
   - make test
 after_success:
   - pip install graphviz jinja2
+  - sudo apt-get install -y graphviz
   - python tests/testPyPPL.py TestPyPPL.testFlowchart
   - python tests/testTemplates.py TestTemplateJinja2
   
