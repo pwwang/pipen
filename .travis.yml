@@ -10,7 +10,7 @@ install:
 # command to run tests
 script:
   - pip install python-testly
-  - npm install codacy-coverage
+  - pip install coverage
   - make cov
   - export CODACY_PROJECT_TOKEN=b8ba4ff9257e4061b2c29e105255433c
   - make covupload

@@ -1398,12 +1398,7 @@ class PyPPL (object):
 			logger.logger.info ('[PROCESS]' + '~'*decorlen)
 			proc.log ('%s => %s => %s' % (ProcTree.getPrevStr(proc), proc.name(), ProcTree.getNextStr(proc)), 'DEPENDS')
 			proc.run(profile, pycopy.deepcopy(self.config))
-			'''
-			if 'runner' in proc.sets and proc.config['runner'] != profile:
-				proc.run(self._getProfile(proc.config['runner']))
-			else:
-				proc.run(dftconfig)
-			'''
+
 			proc = self.tree.getNextToRun()
 
 		unran = self.tree.unranProcs()
