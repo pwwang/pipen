@@ -1,5 +1,5 @@
 import helpers, testly
-
+from __future__ import print_function
 from os import path, makedirs
 from shutil import rmtree
 from tempfile import gettempdir
@@ -240,6 +240,7 @@ class TestJobmgr(testly.TestCase):
 		helpers.log2str()
 		rq = JoinableQueue()
 		sq = JoinableQueue()
+		print(jm.npsubmit, jm.nprunner)
 		size = len(list(jm.status))
 		def test(act):
 			if act == 'pool': # watch the jobs
