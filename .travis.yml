@@ -16,7 +16,7 @@ script:
   - pip install python-testly
   - make test
 after_success:
-  - pip install graphviz, jinja2
+  - pip install graphviz jinja2
   - python tests/testPyPPL.py TestPyPPL.testFlowchart
   - python tests/testTemplates.py TestTemplateJinja2
   
