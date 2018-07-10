@@ -86,7 +86,7 @@ total 0
 -rw-rw-rw- 1 pwwang pwwang 58 Sep 14 20:50 test5.sorted
 ```
 
-## Deduce input channel from dependent process
+## Infer input channel from dependent process
 See `tutorials/inputFromDependent/`  
 If a process depends on another one, the input channel can be deduced from the output channel of the latter process.  
 Sort 5 files and then add line number to each line.
