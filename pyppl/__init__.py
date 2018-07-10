@@ -21,7 +21,7 @@ from .channel import Channel
 from .job import Job, Jobmgr
 from .parameters import params, Parameter, Parameters
 from .proctree import ProcTree
-from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcFindError, PyPPLProcRelationError, PyPPLConfigError
+from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcFindError, PyPPLProcRelationError
 from . import logger, utils, runners, templates
 
 class Proc (object):

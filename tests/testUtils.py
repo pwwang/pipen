@@ -28,6 +28,13 @@ class TestUtils (testly.TestCase):
 		box2.a = Box()
 		box2.a.b = 1
 		yield box2, dict(a = dict(b = 1))
+		box3 = Box()
+		box3._OrderedDict__a = 1
+		# absorbed by the object!!
+		yield box3, dict()
+		box4 = Box()
+		box4.__a = 1
+		yield box4, dict(_TestUtils__a = 1)
 
 	def testBox(self, box, out):
 		self.assertDictEqual(box, out)

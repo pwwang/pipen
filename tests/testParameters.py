@@ -15,6 +15,8 @@ class TestParameter (testly.TestCase):
 		yield int, '', None, None, ParameterNameError, 'Not a string'
 		yield 'a', 1, 'int', ['DEFAULT: 1']
 		yield 'a', [], 'list', ['DEFAULT: []']
+		yield 'atuple', (), 'list', ['DEFAULT: []']
+		yield 'a', u'a', 'str', ['DEFAULT: \'a\'']
 		yield 'a', '', 'str', ["DEFAULT: ''"]
 		yield 'a', {}, None, None, ParameterTypeError, 'Unsupported parameter type: dict'
 
@@ -30,7 +32,10 @@ class TestParameter (testly.TestCase):
 			self.assertTrue(param.show)
 			self.assertEqual(param.type, t)
 			self.assertEqual(param.name, name)
-			self.assertEqual(param.value, value)
+			if t == 'list':
+				self.assertListEqual(param.value, list(value))
+			else:
+				self.assertEqual(param.value, value)
 
 	def dataProvider_testSetGetAttr(self):
 		# 0
@@ -74,6 +79,8 @@ class TestParameter (testly.TestCase):
 		yield 'a', '', 'value', 'a'
 		yield 'a', '', 'value', 2
 		yield 'a', '', 'name', 'a2'
+
+		yield 'a', 1, '__dict__', {'_props': {'name': 'a', 'show': True, 'required': False, 'type': 'int', 'value': 1, 'desc': []}}
 
 	def testSetGetAttr(self, name, val, propname, propval, exptval = None, exception = None, msg = None):
 		exptval = exptval or propval
@@ -513,12 +520,17 @@ class TestParameters(testly.TestCase):
 			''
 		]
 
-		ps3 = Parameters()
-		ps3.e = False
-		ps3.e.type = 'bool'
+		ps3            = Parameters()
+		ps3.e          = False
+		ps3.e.type     = 'bool'
+		ps3._.required = True
+		ps3._.desc     = 'positional options'
 		yield ps3, [
 			'USAGE:',
-			'  progname [OPTIONS]',
+			'  progname [OPTIONS] <POSITIONAL>',
+			'',
+			'REQUIRED OPTIONS:',
+			'  <POSITIONAL>                          - positional options',
 			'',
 			'OPTIONAL OPTIONS:',
 			'  -e (bool)                             - DEFAULT: False',
@@ -534,6 +546,8 @@ class TestParameters(testly.TestCase):
 		ps4.f           = []
 		ps4.f.type      = 'list'
 		ps4.f.desc      = 'This is a description of option f. \n Option f is not required.'
+		ps4._.required  = True
+		ps4._.desc      = 'positional options'
 		ps4('usage', '{prog} User-defined usages\n{prog} User-defined another usage')
 		ps4('desc', 'This program is doing: \n* 1. blahblah\n* 2. lalala')
 		ps4('example', '{prog} --param-f abc\n {prog} --param-f 22')
@@ -554,6 +568,7 @@ class TestParameters(testly.TestCase):
 			'REQUIRED OPTIONS:',
 			'  --param-ef <str>                      - This is a description of option ef. ',
 			'                                           Option ef is required.',
+			'  <POSITIONAL>                          - positional options',
 			'',
 			'OPTIONAL OPTIONS:',
 			'  --param-f  <list>                     - This is a description of option f. ',

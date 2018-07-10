@@ -1,7 +1,7 @@
 import testly
 
 from pyppl import Proc, ProcTree
-from pyppl.exception import TemplatePyPPLSyntaxError, TemplatePyPPLRenderError, LoggerThemeError, ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError, ProcTreeProcExists, ProcTreeParseError, JobInputParseError, JobBringParseError, JobOutputParseError, RunnerSshError, ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcFindError, PyPPLProcRelationError, PyPPLConfigError, AggrAttributeError, AggrCopyError
+from pyppl.exception import TemplatePyPPLSyntaxError, TemplatePyPPLRenderError, LoggerThemeError, ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError, ProcTreeProcExists, ProcTreeParseError, JobInputParseError, JobOutputParseError, RunnerSshError, ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcFindError, PyPPLProcRelationError, PyPPLConfigError, AggrAttributeError, AggrCopyError
 
 class TestException(testly.TestCase):
 
@@ -18,7 +18,6 @@ class TestException(testly.TestCase):
 		yield ProcTreeProcExists(ProcTree.NODES[p1], ProcTree.NODES[p2]), ProcTreeProcExists
 		yield ProcTreeParseError('', ''), ProcTreeParseError
 		yield JobInputParseError('', ''), JobInputParseError
-		yield JobBringParseError('', ''), JobBringParseError
 		yield JobOutputParseError('', ''), JobOutputParseError
 		yield RunnerSshError(''), RunnerSshError
 		yield ProcTagError(''), ProcTagError

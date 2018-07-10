@@ -7,7 +7,7 @@ from tempfile import gettempdir
 from shutil import rmtree
 from copy import deepcopy
 from pyppl.job import Jobmgr, Job
-from pyppl.exception import JobInputParseError, JobBringParseError, TemplatePyPPLRenderError, JobOutputParseError
+from pyppl.exception import JobInputParseError, TemplatePyPPLRenderError, JobOutputParseError
 from pyppl.templates import TemplatePyPPL
 from pyppl import Proc, logger, utils
 

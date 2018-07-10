@@ -811,6 +811,7 @@ class TestRunnerSlurm(testly.TestCase):
 		job = _generateJob(
 			self.testdir,
 			pProps = {
+				'echo': {'jobs': [0]},
 				'slurmRunner': {
 					'sbatch': path.join(__folder__, 'mocks', 'sbatch'),
 					'squeue': path.join(__folder__, 'mocks', 'squeue'),
@@ -828,12 +829,13 @@ class TestRunnerSlurm(testly.TestCase):
 				int(md5((job.script + '.slurm').encode('utf-8')).hexdigest()[:8], 16)
 			)
 		]))
-		yield job, 
+		yield job, True
 		
 		job1 = _generateJob(
 			self.testdir,
 			index = 1,
 			pProps = {
+				'echo': {'jobs': [0]},
 				'slurmRunner': {
 					'sbatch': path.join(__folder__, 'mocks', 'sbatch'),
 					'squeue': path.join(__folder__, 'mocks', 'squeue'),
@@ -843,12 +845,36 @@ class TestRunnerSlurm(testly.TestCase):
 				}
 			}
 		)
-		yield job1, 
+		yield job1, True
+
+		job2 = _generateJob(
+			self.testdir,
+			index = 2,
+			pProps = {
+				'echo': {'jobs': [0]},
+				'slurmRunner': {
+					'sbatch': path.join(__folder__, 'mocks', 'sbatch'),
+					'squeue': path.join(__folder__, 'mocks', 'squeue'),
+					'srun': path.join(__folder__, 'mocks', 'srun'),
+					'preScript': 'alias srun="%s"' % (path.join(__folder__, 'mocks', 'srun')),
+					'postScript': 'echo >\'%s\'' % (path.join(self.testdir, 'p', 'workdir', '3', 'job.pid'))
+				}
+			}
+		)
+		helpers.writeFile(job2.script, '\n'.join([
+			'echo Hello world! > "%s"' % job2.outfile 
+		]))
+		yield job2,
 		
-	def testGetpid(self, job):
+	def testGetpid(self, job, pid = None):
 		r = RunnerSlurm(job)
 		r.submit()
-		self.assertIn(helpers.readFile(job.pidfile, str), helpers.readFile(job.outfile, str))
+		if pid:
+			self.assertIn(helpers.readFile(job.pidfile, str), helpers.readFile(job.outfile, str))
+		else:
+			r.run()
+			self.assertIsNone(r.getpid())
+
 		
 	def dataProvider_testIsRunning(self):
 		job = _generateJob(

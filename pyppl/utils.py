@@ -31,7 +31,7 @@ class Box(OrderedDict):
 	def __getattr__(self, name):
 		if not name.startswith('_OrderedDict') and not name.startswith('__'):
 			return self[name]
-		super(Box, self).__getattr__(name)
+		return super(Box, self).__getattr__(name)
 
 	def __setattr__(self, name, val):
 		if not name.startswith('_OrderedDict') and not name.startswith('__'):
@@ -58,7 +58,7 @@ class Parallel(object):
 		for submit in submits:
 			try:
 				results.append(submit.result())
-			except Exception as ex:
+			except Exception as ex: # pragma: no cover
 				#results.append(None)
 				exception = type(ex)(format_exc())
 

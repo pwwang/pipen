@@ -429,16 +429,18 @@ class TestTemplatePyPPLEngine(testly.TestCase):
 		# 20
 		yield '{{var1|R}}', {'var1': 'NULL'}, 'NULL'
 		yield '{{var2|R}}', {'var2': 'abc'}, "'abc'"
-		yield '{% for var in varlist %}{{var|R}}{% endfor %}', {'varlist': ['abc', 'True', 1, False]}, "'abc'TRUE1FALSE"
+		yield '{% for var in varlist %}{{var|R}}{% endfor %}', {'varlist': ['abc', 'True', 1, False, True, None, 'INF', '-INF', 'r:c()', [1,2,3]]}, "'abc'TRUE1FALSETRUENULLInf-Infc()c(1,2,3)"
 		yield '{% if var3|bool %}1{% else %}0{% endif %}', {'var3': 'abc', 'bool': bool}, '1'
 		yield '{% for k , v in data.items() %}{{k}}:{{v}}{% endfor %}', {'data': {'a':1, 'b':2}}, 'a:1b:2'
 		# 25
 		yield '{{x|R}}', {'x': OrderedDict([(u'key1', 'val1'), ('key2', u'val2')])}, "list(key1='val1',key2='val2')"
+		yield '{{x|Rlist}}', {'x': OrderedDict([(u'key1', 'val1'), ('key2', u'val2')])}, "list(key1='val1',key2='val2')"
+		yield '{{x|Rlist}}', {'x': [1,2,3]}, "as.list(c(1,2,3))"
 		yield '{{a|quote}}', {'a':''}, '""'
 		yield '{{b|asquote}}', {'b':[1,2]}, '"1" "2"'
+		# 30
 		yield '{{c|acquote}}', {'c':[1,2]}, '"1", "2"'
 		yield '{{d|squote}}', {'d':"1"}, "'1'"
-		# 30
 		yield '{{e.f|json}}', {'e':{'f':[1,2]}}, '[1, 2]'
 		yield '{{g,h | os.path.join}}', {'g': 'a', 'h': 'b', 'os': __import__('os')}, 'a/b'
 		yield """

@@ -91,14 +91,6 @@ class JobInputParseError(Exception):
 		msg = msg or 'Failed to parse the input data'
 		super(JobInputParseError, self).__init__(str(msg) + ': ' + repr(name))
 
-class JobBringParseError(Exception):
-	"""
-	Raise when failed to parse the bring data for jobs
-	"""
-	def __init__(self, name, msg = None):
-		msg = msg or 'Failed to parse the bring data'
-		super(JobBringParseError, self).__init__(str(msg) + ': ' + repr(name))
-
 class JobOutputParseError(Exception):
 	"""
 	Raise when failed to parse the output data for jobs

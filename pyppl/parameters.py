@@ -383,7 +383,7 @@ class Parameters (object):
 		if self._shouldPrintHelp(args):
 			self.help(printNexit = True)
 
-		self._ = []
+		setattr(self, Parameters.POSITIONAL, [])
 		# arbitrarily parse the arguments
 		argname, argtype = None, 'auto'
 		for arg in args:
@@ -473,12 +473,17 @@ class Parameters (object):
 		else:
 			ret += '  ' + prog
 			if requiredOptions:
-				ret += ' ' + ' '.join(
+				reqopts = ' '.join(
 					val._printName(self._props['prefix']) 
 					for key, val in requiredOptions.items()
+					if key != Parameters.POSITIONAL
 				)
+				if reqopts:
+					ret += ' ' + reqopts
 			if optionalOptions:
 				ret += ' [OPTIONS]'
+			if Parameters.POSITIONAL in self._params and self._params[Parameters.POSITIONAL].required:
+				ret += ' <POSITIONAL>'
 			ret += '\n\n'
 
 		if self._props['example']:
