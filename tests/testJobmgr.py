@@ -243,12 +243,16 @@ class TestJobmgr(testly.TestCase):
 		size = len(list(jm.status))
 		def test(act):
 			if act == 'pool': # watch the jobs
+				#print 'Watch them ...'
+				sleep(.3)
 				jm.watchPool(rq, sq)
 			elif act == 'jobs': # run the jobs
+				#print 'Start to run jobs ...'
 				sleep(.6)
 				for i in range(size):
 					jm.status[i] = Jobmgr.STATUS_DONE
 			elif act == 'test': # initial queues
+				#print 'Initiating, all empty ...'
 				self.assertListEqual(_getItemsFromQ(rq), [])
 				self.assertListEqual(_getItemsFromQ(sq), [])
 		# utils.parallel(test, [('pool', ), ('jobs', ), ('test', )], nthread = 3, method = 'process')
