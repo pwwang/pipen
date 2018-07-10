@@ -2,7 +2,7 @@ import testly, helpers
 
 import traceback
 from copy import deepcopy
-from os import path, symlink, remove, rename, makedirs, utime, X_OK, access
+from os import path, symlink, remove, rename, makedirs, utime, X_OK, access, W_OK
 from pyppl import utils
 from pyppl.utils import Box
 from time import time, sleep
@@ -1270,7 +1270,10 @@ class TestUtils (testly.TestCase):
 		"""
 		fileChmodx2 = '/usr/bin/ldd'
 		if path.exists(fileChmodx2):
-			yield fileChmodx2, ['/bin/bash', fileChmodx2], True
+			if access(fileChmodx2, W_OK):
+				yield fileChmodx2, [fileChmodx2], True
+			else:
+				yield fileChmodx2, ['/bin/bash', fileChmodx2], True
 
 	def testChmodX(self, f, ret, x):
 		self.assertListEqual(utils.chmodX(f), ret)
@@ -1282,7 +1285,8 @@ class TestUtils (testly.TestCase):
 			yield file1,
 
 	def testChmodXException(self, f):
-		self.assertRaises(Exception, utils.chmodX, f)
+		if not access(f, W_OK): # what if I am root?
+			self.assertRaises(Exception, utils.chmodX, f)
 
 	def dataProvider_testDumbPopen(self):
 		yield 'ls', True, 0, False

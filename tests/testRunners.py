@@ -859,7 +859,7 @@ class TestRunnerSlurm(testly.TestCase):
 				'slurmRunner': {
 					'sbatch': path.join(__folder__, 'mocks', 'sbatch'),
 					'squeue': path.join(__folder__, 'mocks', 'squeue'),
-					'srun': path.join(__folder__, 'mocks', 'qsub'),
+					'srun': path.join(__folder__, 'mocks', 'srun'),
 					'preScript': '',
 					'postScript': ''
 				}
@@ -867,7 +867,7 @@ class TestRunnerSlurm(testly.TestCase):
 		)
 		helpers.writeFile(job.script, '\n'.join([
 			'#!/usr/bin/env bash',
-			'sleep .1',
+			'sleep .5',
 			'%s %s' % (
 				path.join(__folder__, 'mocks', 'sbatch_done'),
 				int(md5((job.script + '.slurm').encode('utf-8')).hexdigest()[:8], 16)
@@ -919,6 +919,7 @@ class TestRunnerSlurm(testly.TestCase):
 	def testIsRunning(self, job, beforesub = False, aftersub = True, afterrun = False):
 		RunnerSlurm.INTERVAL = .2
 		r = RunnerSlurm(job)
+		job.proc.echo = {'job':0, 'type':{'stdout': None, 'stderr': None}}
 		self.assertEqual(r.isRunning(), beforesub)
 		r.submit()
 		self.assertEqual(r.isRunning(), aftersub)
