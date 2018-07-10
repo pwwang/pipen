@@ -355,10 +355,7 @@ class Job (object):
 			else:
 				self._reportItem(key, maxlen, self.input[key]['data'], 'input')
 				#self._reportItem('_' + key, maxlen, self.input[key]['orig'], 'input')
-		'''
-		for key in sorted(self.brings.keys(), key = lambda x: x[1:] if x.startswith('_') else x):
-			self._reportItem(key if key.startswith('_') else ' ' + key, maxlen, self.brings[key], 'brings')
-		'''
+		
 		for key in sorted(self.output.keys()):
 			self._reportItem(key, maxlen, self.output[key]['data'], 'output')
 

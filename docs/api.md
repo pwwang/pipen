@@ -892,54 +892,6 @@ Delegate attributes of processes to aggr.
 `pattr`: The attr of the processes. Default: None (same as `attr`)  
   
 
-## Module `Flowchart`  
-> Draw flowchart for pipelines
-
-	@static variables:
-		`THEMES`: predefined themes
-	
-
-#### `__init__ (self, fcfile, dotfile) `
-  
-The constructor  
-
-- **params:**  
-`fcfile`: The flowchart file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.svg'`  
-`dotfile`: The dot file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.dot'`  
-  
-#### `_assemble (self) `
-  
-Assemble the graph for printing and rendering  
-  
-#### `addLink (self, node1, node2) `
-  
-Add a link to the chart  
-
-- **params:**  
-`node1`: The first node.  
-`node2`: The second node.  
-  
-#### `addNode (self, node, role) `
-  
-Add a node to the chart  
-
-- **params:**  
-`node`: The node  
-`role`: Is it a starting node, an ending node or None. Default: None.  
-  
-#### `generate (self) `
-  
-Generate the dot file and graph file.  
-  
-#### `setTheme (self, theme, base) `
-  
-Set the theme to be used  
-
-- **params:**  
-`theme`: The theme, could be the key of Flowchart.THEMES or a dict of a theme definition.  
-`base` : The base theme to be based on you pass custom theme  
-  
-
 ## Module `Parameter`  
 > The class for a single parameter
 	

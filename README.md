@@ -18,9 +18,9 @@
 - Highly reusable processes (see [a set of highly reusable bioinformatics processes][24]).
 
 ## Requirements
-- OS: Linux, OSX or WSL (Windows Subsystem for Linux)
-- Python 2.7+ or Python 3.4+ (lower versions not tested)
-- Python packages: [six][25], [filelock][35] (suggested: [graphviz][36], [pyyaml][33] and [testly][5]).
+- OS: Linux, OSX, WSL (Windows Subsystem for Linux) or Cygwin
+- Python 2.7 or Python 3.6
+- Python packages: [six][25], [filelock][35], [loky][17], [futures][21] (suggested: [graphviz][36], [pyyaml][33] and [python-testly][5]).
 
 ## Installation
 ```bash
@@ -34,8 +34,9 @@ pip install git+git://github.com/pwwang/PyPPL.git
 # install released version
 pip install PyPPL
 
-# run tests for both python2 and python3
-pip install git+git://github.com/pwwang/testly.git
+# run tests 
+pip install python-testly
+# or pip install git+git://github.com/pwwang/testly.git
 make test
 
 # run tests only for python2
@@ -486,7 +487,7 @@ To generate svg file, you have to have [graphviz][36] installed.
 [2]: https://pwwang.github.io/PyPPL/api/
 [3]: https://github.com/pwwang/pyppl/
 [4]: https://img.shields.io/codacy/grade/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
-[5]: https://pwwang.github.com/testly
+[5]: https://github.com/pwwang/testly
 [6]: https://pwwang.github.io/PyPPL/caching/
 [7]: https://pwwang.github.io/PyPPL/placeholders/
 [8]: https://img.shields.io/travis/pwwang/PyPPL.svg?style=flat-square
@@ -498,9 +499,11 @@ To generate svg file, you have to have [graphviz][36] installed.
 [14]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
 [15]: https://pwwang.github.io/PyPPL/draw-flowchart-of-a-pipeline/
 [16]: https://pwwang.github.io/PyPPL/aggregations/
+[17]: https://github.com/tomMoral/loky
 [18]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/drawFlowchart_pyppl.png
 [19]: https://pwwang.github.io/PyPPL/change-log/
 [20]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/getStarted.png
+[21]: https://pypi.org/project/futures/
 [22]: https://img.shields.io/pypi/v/pyppl.svg?style=flat-square
 [23]: https://img.shields.io/github/tag/pwwang/PyPPL.svg?style=flat-square
 [24]: https://github.com/pwwang/bioprocs

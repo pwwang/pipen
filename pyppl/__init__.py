@@ -1344,39 +1344,7 @@ class PyPPL (object):
 		if not args or (len(args) == 1 and not args[0]): return self
 		self._resume(*args, plus = True)
 		return self
-		
-	'''
-	def _getProfile(self, profile):
-		"""
-		Get running profile according to profile name
-		@params:
-			`profile`: The profile name
-		@returns:
-			The running configuration
-		"""
-		config = {}
-		# get default profile first
-		if 'default' in self.config:
-			utils.dictUpdate(config, self.config['proc'])
 
-		# overwrite with the given profile
-		if profile in self.config:
-			utils.dictUpdate(config, self.config[profile])
-
-		# set default runner
-		if not 'runner' in config:
-			if profile in PyPPL.RUNNERS:
-				config['runner'] = profile
-			else:
-				config['runner'] = 'local'
-				logger.logger.info("[WARNING] No runner specified in profile '%s', will use local runner." % (profile))
-
-		# id is not allowed to set in profile
-		if 'id' in config:
-			raise PyPPLConfigError(config['id'], 'Cannot set a universal id for all process in configuration')
-
-		return config
-	'''
 	def showAllRoutes(self):
 		logger.logger.info('[DEBUG] ALL ROUTES:')
 		#paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths()])
