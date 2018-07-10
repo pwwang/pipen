@@ -15,10 +15,12 @@ script:
   - make cov
   - pip install graphviz jinja2
   - sudo apt-get install -y graphviz
-  - coverage run -a --concurrency=multiprocessing tests/testPyPPL.py TestPyPPL.testFlowchart 
-  - coverage run -a --concurrency=multiprocessing tests/testTemplates.py TestTemplateJinja2
+  - cd tests; coverage run -a --concurrency=multiprocessing testPyPPL.py TestPyPPL.testFlowchart; cd -
+  - cd tests; coverage run -a --concurrency=multiprocessing testTemplates.py TestTemplateJinja2; cd -
 after_success:
   - export CODACY_PROJECT_TOKEN=b8ba4ff9257e4061b2c29e105255433c
+  - cd tests; coverage xml; cd -
+  - cd tests; coverage report; cd -
   - make covupload
   
 

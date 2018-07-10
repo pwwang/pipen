@@ -1,4 +1,6 @@
 [run]
+source =
+	../pyppl
 omit =
 	test*.py
 	workdir/*.py
