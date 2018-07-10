@@ -1,5 +1,13 @@
 # Change log
 
+## July 10, 2018: 1.0.0 !
+- Fix runner name issue #31.
+- Use mkdocs to generate documentations and host them on GitHub pages.
+- Keep stdout and stderr when a job is cached: #30.
+- Allow command line arguments to overwrite Parameter's type.
+- Host the testing procedures with Travis.
+- Fix other bugs.
+
 ## June 8, 2018: 0.9.6
 - Auto-delegate common proc config names to aggr
 - Add proc.origin to save the original proc id for copied procs
