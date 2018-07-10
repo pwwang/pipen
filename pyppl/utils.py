@@ -62,6 +62,8 @@ class Parallel(object):
 				#results.append(None)
 				exception = type(ex)(format_exc())
 
+		self.executor.shutdown(wait = True)
+		
 		if self.raiseExc and exception:
 			raise exception
 

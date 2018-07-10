@@ -1,4 +1,3 @@
-from __future__ import print_function
 import helpers, testly
 from os import path, makedirs
 from shutil import rmtree
@@ -14,10 +13,12 @@ def _getItemsFromQ (q):
 	ret = []
 	while True:
 		try:
-			ret.append(q.get(block=False))
+			e = q.get(block=False)
 		except Empty:
 			break
-	sleep(.1)
+		else:
+			if e != 'END':
+				ret.append(e)
 	return ret
 
 class TestJobmgr(testly.TestCase):
@@ -215,7 +216,8 @@ class TestJobmgr(testly.TestCase):
 
 		# utils.parallel(test, [('pool', ), ('enq', ), ('test', )], nthread = 3, method = 'process')
 		parallel = utils.Parallel(3, 'thread').run(test, [('pool', ), ('enq', ), ('test', )])
-		
+		rq.put('END')
+		sq.put('END')
 		self.assertListEqual(list(_getItemsFromQ(rq)), outrq)
 		self.assertListEqual(list(_getItemsFromQ(sq)), outsq)
 		
@@ -240,12 +242,11 @@ class TestJobmgr(testly.TestCase):
 		helpers.log2str()
 		rq = JoinableQueue()
 		sq = JoinableQueue()
-		print(jm.npsubmit, jm.nprunner)
 		size = len(list(jm.status))
 		def test(act):
 			if act == 'pool': # watch the jobs
 				#print 'Watch them ...'
-				sleep(.3)
+				#sleep(2)
 				jm.watchPool(rq, sq)
 			elif act == 'jobs': # run the jobs
 				#print 'Start to run jobs ...'
@@ -259,6 +260,8 @@ class TestJobmgr(testly.TestCase):
 				pass
 		# utils.parallel(test, [('pool', ), ('jobs', ), ('test', )], nthread = 3, method = 'process')
 		utils.Parallel(3, 'thread').run(test, [('pool', ), ('jobs', ), ('test', )])
+		rq.put('END')
+		sq.put('END')
 		self.assertListEqual(_getItemsFromQ(rq), [None] * jm.nprunner)
 		self.assertListEqual(_getItemsFromQ(sq), [None] * jm.npsubmit)	
 		
