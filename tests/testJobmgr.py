@@ -1,5 +1,5 @@
-import helpers, testly
 from __future__ import print_function
+import helpers, testly
 from os import path, makedirs
 from shutil import rmtree
 from tempfile import gettempdir
