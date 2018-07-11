@@ -1244,7 +1244,11 @@ class PyPPL (object):
 			'levels': 'normal',
 			'theme':   True,
 			'lvldiff': [],
-			'file':    '%s%s.pyppl.log' % (path.splitext(sys.argv[0])[0], ('_%s' % self.counter) if self.counter else '')
+			# current directory instead of script directory
+			'file':    './%s%s.pyppl.log' % (
+				path.splitext(path.basename(sys.argv[0]))[0], 
+				('_%s' % self.counter) if self.counter else ''
+			)
 		}
 		if '_log' in self.config:
 			if 'file' in self.config['_log'] and self.config['_log']['file'] is True:
@@ -1424,7 +1428,10 @@ class PyPPL (object):
 		"""
 		from .flowchart import Flowchart
 		self.showAllRoutes()
-		fcfile  = fcfile or '%s%s.pyppl.svg' % (path.splitext(sys.argv[0])[0], ('_%s' % self.counter) if self.counter else '')
+		fcfile  = fcfile or './%s%s.pyppl.svg' % (
+			path.splitext(path.basename(sys.argv[0]))[0], 
+			('_%s' % self.counter) if self.counter else ''
+		)
 		dotfile = dotfile or '%s.dot' % (path.splitext(fcfile)[0])
 		fc  = Flowchart(fcfile = fcfile, dotfile = dotfile)
 		fc.setTheme(self.fcconfig['theme'])

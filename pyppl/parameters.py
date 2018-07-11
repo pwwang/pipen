@@ -474,7 +474,8 @@ class Parameters (object):
 			ret += '  ' + prog
 			if requiredOptions:
 				reqopts = ' '.join(
-					val._printName(self._props['prefix']) 
+					val._printName(self._props['prefix']) + \
+					('' if not val.type is None else ' <{}>'.format(key.upper()))
 					for key, val in requiredOptions.items()
 					if key != Parameters.POSITIONAL
 				)

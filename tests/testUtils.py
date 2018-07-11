@@ -93,7 +93,7 @@ class TestUtils (testly.TestCase):
 
 	def testParallel(self, data, nthread, method):
 		globalVars = []
-		interval   = .1
+		interval   = .2
 		def func(a, b):
 			sleep(interval)
 			globalVars.append(a)
