@@ -89,7 +89,7 @@ total 0
 
 ## Infer input channel from dependent process
 See `tutorials/inputFromDependent/`  
-If a process depends on another one, the input channel can be deduced from the output channel of the latter process.  
+If a process depends on another one, the input channel can be inferred from the output channel of the latter process.  
 Sort 5 files and then add line number to each line.
 ```python
 from pyppl import PyPPL, Proc, Channel

@@ -2,85 +2,129 @@ import testly
 
 from collections import OrderedDict
 from pyppl import Aggr, Proc, Box, utils, logger
-from pyppl.aggr import DotProxy
+from pyppl.aggr import _DotProxy, _Proxy
 from pyppl.exception import AggrAttributeError, AggrCopyError
+
+class FakeProc(object):
+	def __init__(self, id):
+		self.id    = id
+		self.args  = Box(inopts = Box(), id = id)
+		self.forks = 1
+
+	def __eq__(self, other):
+		return self.id == other.id
+	
+	def __ne__(self, other):
+		return not self.__eq__(other)
 
 class TestDotProxy(testly.TestCase):
 	
 	def dataProvider_testInit(self):
-		aggr = Aggr()
-		yield aggr, ''
-		yield aggr, 'prefix1.prefix2'
+		yield Box(),
+		yield [Box(), Box(), Box()],
 	
-	def testInit(self, aggr, prefix):
-		dp = DotProxy(aggr, prefix)
-		self.assertIsInstance(dp, DotProxy)
-		self.assertIsInstance(dp._aggr, Aggr)
-		self.assertIsInstance(aggr, Aggr)
-		self.assertIs(dp._aggr, aggr)
-		self.assertEqual(dp._prefix, prefix)
+	def testInit(self, objs):
+		dp = _DotProxy(objs)
+		self.assertIsInstance(dp, _DotProxy)
+		self.assertIsInstance(dp._DotProxy_objs, list)
+		self.assertListEqual(dp._DotProxy_objs, objs if isinstance(objs, list) else [objs])
 	
-	def dataProvider_testGetAttr(self):
-		aggr = Aggr()
-		yield DotProxy(aggr, ''), 'a1'
+	def testGetattr(self, objs, name, outobjs):
+		dp = _DotProxy(objs)
+		self.assertListEqual(dp.__getattr__(name)._DotProxy_objs, outobjs)
+
+	def dataProvider_testGetattr(self):
+		yield Box(a = 1), 'a', [1]
+		yield [Box(a=1), Box(a=2), Box(a=3)], 'a', [1,2,3]
+		yield [Box(a=Box()), Box(a=Box(b=1)), Box(a=Box(c=2))], 'a', [Box(),Box(b=1),Box(c=2)]
+
+	def testSetattr(self, objs, name, value, outvalue):
+		dp = _DotProxy(objs)
+		dp.__setattr__(name, value)
+		self.assertListEqual(dp.__getattr__(name)._DotProxy_objs, outvalue)
+
+	def dataProvider_testSetattr(self):
+		yield Box(a = 1), 'a', 2, [2]
+		yield [Box(a=1), Box(a=2), Box(a=4)], 'a', 3, [3,3,3]
+		yield [Box(a=Box()), Box(a=Box()), Box(a=Box())], 'a', Box(b=1), [Box(b=1)]*3
+
+	def testGetitem(self, objs, name, outobjs):
+		dp = _DotProxy(objs)
+		self.assertListEqual(dp[name]._DotProxy_objs, outobjs)
+
+	def dataProvider_testGetitem(self):
+		yield Box(a = 1), 'a', [1]
+		yield [Box(a=1), Box(a=2), Box(a=3)], 'a', [1,2,3]
+		yield [Box(a=Box()), Box(a=Box(b=1)), Box(a=Box(c=2))], 'a', [Box(),Box(b=1),Box(c=2)]
+
+	def testSetitem(self, objs, name, value, outvalue):
+		dp = _DotProxy(objs)
+		dp[name] = value
+		self.assertListEqual(dp[name]._DotProxy_objs, outvalue)
+
+	def dataProvider_testSetitem(self):
+		yield Box(a = 1), 'a', 2, [2]
+		yield [Box(a=1), Box(a=2), Box(a=4)], 'a', 3, [3,3,3]
+		yield [Box(a=Box()), Box(a=Box()), Box(a=Box())], 'a', Box(b=1), [Box(b=1)]*3
+
+class TestProxy(testly.TestCase):
+
+	def testInit(self, name, procs, starts, ends):
+		p = _Proxy(name, procs, starts, ends)
+		self.assertListEqual(p._ids, [proc.id for proc in procs.values()])
+		self.assertListEqual(p._starts, [proc.id for proc in starts])
+		self.assertListEqual(p._ends, [proc.id for proc in ends])
+		self.assertListEqual(p._procs, list(procs.values()))
+		self.assertEqual(p._attr, name)
+
+	def dataProvider_testInit(self):
+		yield 'forks', OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))]), [FakeProc('a')], [FakeProc('c')]
+
+	def testAny2index(self, p, anything, out):
+		self.assertEqual(p._any2index(anything), out)
+
+	def dataProvider_testAny2index(self):
+		procs = OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))])
+		p = _Proxy('args', procs, [procs['a']], [procs['c']])
+		yield p, 0, 0
+		yield p, 1, 1
+		yield p, slice(0,1), slice(0,1)
+		yield p, [0,2], [0,2]
+		yield p, (1,2), [1,2]
+		yield p, 'a', 0
+		yield p, 'c', 2
+		yield p, 'a, c', [0,2]
+		yield p, ['a', 'b'], [0, 1]
+
+	def testGetitem(self, p, index, outobjs):
+		self.assertEqual(p[index]._DotProxy_objs, outobjs)
+
+	def dataProvider_testGetitem(self):
+		procs = OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))])
+		p = _Proxy('args', procs, [procs['a']], [procs['c']])
+		yield p, 'a,c', [Box(inopts = Box(), id = 'a'), Box(inopts = Box(), id = 'c')]
+		yield p, (0,2), [Box(inopts = Box(), id = 'a'), Box(inopts = Box(), id = 'c')]
+		yield p, [0,2], [Box(inopts = Box(), id = 'a'), Box(inopts = Box(), id = 'c')]
+		yield p, ['a', 'c'], [Box(inopts = Box(), id = 'a'), Box(inopts = Box(), id = 'c')]
+		yield p, 'starts', [Box(inopts = Box(), id = 'a')]
+		yield p, 'ends', [Box(inopts = Box(), id = 'c')]
 	
-	def testGetAttr(self, dp, name):
-		dp1 = getattr(dp, name)
-		self.assertIsInstance(dp1, DotProxy)
-		self.assertIsInstance(dp._aggr, Aggr)
-		self.assertIsInstance(dp1._aggr, Aggr)
-		self.assertIs(dp1._aggr, dp._aggr)
-		self.assertEqual(dp1._prefix, (dp._prefix if not dp._prefix else dp._prefix + '.') + name)
-		
-		dp2 = dp[name]
-		self.assertIsInstance(dp2, DotProxy)
-		self.assertIsInstance(dp2._aggr, Aggr)
-		self.assertIs(dp2._aggr, dp._aggr)
-		self.assertEqual(dp2._prefix, (dp._prefix if not dp._prefix else dp._prefix + '.') + name)
+	def testSetitem(self, p, index, value, outvalue):
+		p[index] = value
+		self.assertEqual(p[index]._DotProxy_objs, outvalue)
 	
-	def dataProvider_testIsDelegated(self):
-		yield 'a.b', {'c': (lambda a: [], 'c')}, False
-		yield 'a.bb', {'a.b': (lambda a: [], 'a.b')}, False
-		yield 'args', {'args': (lambda a: [], 'args')}, ([], ['args'])
-		yield 'args.a', {'args.a': (lambda a: [], 'args.a')}, ([], ['args', 'a'])
-		yield 'a.b.c.d', {'a.b': (lambda a: [], 'x.y')}, ([], ['x', 'y', 'c', 'd'])
-	
-	def testIsDelegated(self, prefix, delegates, ret):
-		r = DotProxy._isDelegated(Aggr(), prefix, delegates)
-		if isinstance(r, bool):
-			self.assertEqual(r, ret)
-		else:
-			self.assertTupleEqual(r, ret)
-		
-	def dataProvider_testSetAttr(self):
-		pSetAttr1 = Proc()
-		pSetAttr2 = Proc()
-		pSetAttr3 = Proc()
-		aggr = Aggr(pSetAttr1, pSetAttr2, pSetAttr3)
-		dp = DotProxy(aggr, '')
-		yield aggr, 'a', None, None, aggr, AggrAttributeError, 'Attribute is not delegated: \'a\''
-		
-		pSetAttr3.args.b = Box(c = 3)
-		aggr1 = Aggr(pSetAttr1, pSetAttr2, pSetAttr3)
-		aggr1.delegate('args', 'ends')
-		dp1 = DotProxy(aggr1, 'args')
-		yield dp1, 'a', 1, lambda: aggr1.pSetAttr3.args.a, aggr1
-		
-		dp2 = DotProxy(aggr1, 'args.b')
-		yield dp2, 'c', 2, lambda: aggr1.pSetAttr3.args.b.c, aggr1
-		
-	def testSetAttr(self, dp, name, value, expval, aggr, exception = None, msg = None):
-		if exception:
-			self.assertRaisesRegex(exception, msg, setattr, dp, name, value)
-		else:
-			setattr(dp, name, value)
-			self.assertEqual(expval(), value)
-			
-			dp[name] = value
-			self.assertEqual(expval(), value)
+	def dataProvider_testSetitem(self):
+		procs = OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))])
+		p = _Proxy('forks', procs, [procs['a']], [procs['c']])
+		yield p, 'a,c', 10, [10, 10]
+		yield p, (0,2), 10, [10, 10]
+		yield p, [0,2], 10, [10, 10]
+		yield p, ['a', 'c'], 10, [10, 10]
+		yield p, 'starts', 4, [4]
+		yield p, 'ends', 4, [4]
 
 class TestAggr(testly.TestCase):
-	
+
 	def dataProvider_testInit(self):
 		pInit1 = Proc()
 		pInit2 = Proc()
@@ -115,129 +159,50 @@ class TestAggr(testly.TestCase):
 				for i, proc in enumerate(aggr._procs.values()):
 					if i == 0: continue
 					self.assertIs(proc.depends[0], list(aggr._procs.values())[i - 1])
-				# delegates
-				self.assertDictContains({
-					'depends2': ([list(aggr._procs.values())[0]], 'depends2'),
-					'depends' : ([list(aggr._procs.values())[0]], 'depends'),
-					'input' :   ([list(aggr._procs.values())[0]], 'input'),
-					'exdir' :   ([list(aggr._procs.values())[-1]], 'exdir'),
-					'exhow' :   ([list(aggr._procs.values())[-1]], 'exhow'),
-					'exow' :    ([list(aggr._procs.values())[-1]], 'exow'),
-					'expart' :  ([list(aggr._procs.values())[-1]], 'expart'),
-				}, {
-					k: (v[0](aggr), v[1]) for k, v in aggr._delegates.items()
-				})
 			else:
 				self.assertListEqual(aggr.starts, [])
 				self.assertListEqual(aggr.ends  , [])
 				for i, proc in enumerate(aggr._procs.values()):
 					if i == 0: continue
 					self.assertListEqual(proc.depends, [])
-				# delegates
-				self.assertDictContains({
-					'depends2': ([], 'depends2'),
-					'depends' : ([], 'depends'),
-					'input' :   ([], 'input'),
-					'exdir' :   ([], 'exdir'),
-					'exhow' :   ([], 'exhow'),
-					'exow' :    ([], 'exow'),
-					'expart' :  ([], 'expart'),
-				}, {
-					k: (v[0](aggr), v[1]) for k, v in aggr._delegates.items()
-				})
-	
-	def dataProvider_testDelegate(self):
-		pDelegate1 = Proc()
-		pDelegate2 = Proc()
-		pDelegate3 = Proc()
-		aggr = Aggr(pDelegate1, pDelegate2, pDelegate3)
-		yield aggr, 'starts', None, None, None, AggrAttributeError, 'Cannot delegate Proc attribute to an existing Aggr attribute: \'starts\''
-		yield aggr, 'pDelegate1', None, None, None, AggrAttributeError, 'Cannot delegate Proc attribute to an existing Aggr attribute: \'pDelegate1\''
-		yield aggr, 'args', 'starts', None, {
-			'args': ([aggr.pDelegate1], 'args')
-		}
-		yield aggr, 'args', 'ends', None, {
-			'args': ([aggr.pDelegate3], 'args')
-		}
-		yield aggr, 'args', 'both', None, {
-			'args': ([aggr.pDelegate1, aggr.pDelegate3], 'args')
-		}
-		yield aggr, 'args', 'neither', None, {
-			'args': ([aggr.pDelegate2], 'args')
-		}
-		yield aggr, 'args', 'pDelegate2', None, {
-			'args': ([aggr.pDelegate2], 'args')
-		}
-		yield aggr, 'args.a', None, 'a', {
-			'args.a': ([aggr.pDelegate1, aggr.pDelegate2, aggr.pDelegate3], 'a')
-		}
-		
-				
-	def testDelegate(self, aggr, attr, procs, pattr, delegates, exception = None, msg = None):
-		pattr = pattr or attr
-		if exception:
-			self.assertRaisesRegex(exception, msg, aggr.delegate, attr, procs, pattr)
-		else:
-			aggr.delegate(attr, procs, pattr)
-			for k, v in delegates.items():
-				self.assertListEqual(list(aggr._delegates[k][0](aggr)), v[0])
-				self.assertEqual(aggr._delegates[k][1], v[1])
-			
-	def dataProvider_testGetAttr(self):
+
+	def testGetattr(self, aggr, name, outtype):
+		# make sure getattr is not called for starts,ends,_procs
+		self.assertIsInstance(aggr.starts, list)
+		self.assertIsInstance(aggr.ends, list)
+		self.assertIsInstance(aggr._procs, dict)
+		self.assertIsInstance(aggr.__getattr__(name), outtype)
+
+	def dataProvider_testGetattr(self):
 		pGetAttr1 = Proc()
 		pGetAttr2 = Proc()
 		pGetAttr3 = Proc()
 		aggr = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
-		yield aggr, '_props', aggr._props
-		yield aggr, '_delegates', aggr._delegates
-		yield aggr, '_procs', aggr._procs
-		yield aggr, 'starts', aggr.starts
-		yield aggr, 'ends', aggr.ends
-		yield aggr, 'id', aggr.id
-		yield aggr, 'pGetAttr1', aggr.pGetAttr1
-		yield aggr, 'pGetAttr2', aggr.pGetAttr2
-		yield aggr, 'pGetAttr3', aggr.pGetAttr3
-		# not raised, because we have to allow:
-		# aggr.delegate('args.a')
-		# when we do aggr.args.a no error should be raised for aggr.args
-		#yield aggr, 'a', None, False, AggrAttributeError, 'Attribute not delegated: \'a\''
-		
-		aggr1 = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
-		aggr1.delegate('args', 'starts')
-		yield aggr1, 'args', None, True
-		
+		# yield aggr, 'starts', list
+		# yield aggr, 'ends', list
+		# yield aggr, '_procs', dict
+		yield aggr, 'pGetAttr1', Proc
+		yield aggr, 'pGetAttr2', Proc
+		yield aggr, 'pGetAttr3', Proc
+		yield aggr, 'a', _Proxy
+		yield aggr, 'b', _Proxy
+		yield aggr, 'aggrs', _Proxy
+
+	def testSetattr(self, aggr, name, value):
+		# make sure setattr is not called
+		aggr.id = aggr.id
+		aggr.__setattr__(name, value)
+		for proc in aggr._procs.values():
+			self.assertEqual(getattr(proc, name), value)
+			self.assertNotEqual(proc.id, aggr.id)
+
+	def dataProvider_testSetattr(self):
+		pGetAttr1 = Proc()
+		pGetAttr2 = Proc()
+		pGetAttr3 = Proc()
+		aggr = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
+		yield aggr, 'forks', 10
 			
-	def testGetAttr(self, aggr, name, value, isDotProxy = False, exception = None, msg = None):
-		if exception:
-			self.assertRaisesRegex(exception, msg, getattr, aggr, name)
-		elif isDotProxy:
-			self.assertIsInstance(getattr(aggr, name), DotProxy)
-		else:
-			self.assertEqual(getattr(aggr, name), value)
-			
-	def dataProvider_testSetAttr(self):
-		pSetAttr1 = Proc()
-		pSetAttr2 = Proc()
-		pSetAttr3 = Proc()
-		pSetAttr3.args.p = 1
-		aggr = Aggr(pSetAttr1, pSetAttr2, pSetAttr3)
-		aggr.delegate('args', 'ends')
-		#aggr.delegate('envs.p1', 'pSetAttr3', 'envs.p')
-		yield aggr, 'id', 'whatever', lambda: aggr.id
-		yield aggr, 'starts', (aggr.pSetAttr1, aggr.pSetAttr2), lambda: tuple(aggr.starts)
-		yield aggr, 'ends', aggr.pSetAttr3, lambda: aggr.ends[0]
-		yield aggr, '_procs', None, None, AggrAttributeError, 'Built-in attribute is not allowed to be modified'
-		yield aggr, 'a', None, None, AggrAttributeError, 'Attribute is not delegated: \'a\''
-		yield aggr, 'args', {'a': 1}, lambda: aggr.pSetAttr3.args
-		#yield aggr, 'envs.p1', 2, lambda: aggr.pSetAttr3.envs
-			
-	def testSetAttr(self, aggr, name, value, expval, exception = None, msg = None):
-		if exception:
-			self.assertRaisesRegex(exception, msg, setattr, aggr, name, value)
-		else:
-			setattr(aggr, name, value)
-			self.assertEqual(expval(), value)
-	
 	def dataProvider_testChain(self):
 		pChain1 = Proc()
 		pChain2 = Proc()
@@ -245,23 +210,18 @@ class TestAggr(testly.TestCase):
 		pChain1.args.params = Box(c = 1, d = 2)
 		pChain3.args.b = 1
 		aggr = Aggr(pChain1, pChain2, pChain3)
-		aggr.delegate('a.p', 'starts', 'args.params')
-		aggr.delegate('args.b1', 'pChain3', 'args.b')
-		aggr.delegate('runner', 'pChain3')
-		aggr.delegate('a', 'ends', 'args')
-		aggr.delegate('f', 'neither', 'forks')
 		def attr_setaggr():
-			aggr.a.b = 2
+			aggr.args[2].b = 2
 		def attr_setaggr1():
-			aggr.a.p.c = 2
+			aggr.args['starts'].params.c = 2
 		def attr_setaggr2():
-			aggr.a.p['d'] = 3
+			aggr.args[0:1].params.d = 3
 		def attr_setaggr3():
-			aggr.a.p.e = 4
+			aggr.args.x = 4
 		def attr_setaggr4():
-			aggr.f = 10
+			aggr.forks = 10
 		def attr_setaggr5():
-			aggr.args.b1 = 11
+			aggr.args['pChain3'].b1 = 11
 		def attr_setaggr6():
 			aggr.runner = 'sge'
 		yield attr_setaggr, 2, lambda: aggr.pChain3.args.b
@@ -269,7 +229,7 @@ class TestAggr(testly.TestCase):
 		yield attr_setaggr2, 3, lambda: aggr.pChain1.args.params.d
 		yield attr_setaggr3, 4, lambda: 4
 		yield attr_setaggr4, 10, lambda: aggr.pChain2.forks
-		yield attr_setaggr5, 11, lambda: aggr.pChain3.args.b
+		yield attr_setaggr5, 11, lambda: aggr.pChain3.args.b1
 		yield attr_setaggr6, 'sge', lambda: aggr.pChain3.config['runner']
 	
 	def testChain(self, attr_setaggr, value, attr_getproc):
@@ -308,8 +268,7 @@ class TestAggr(testly.TestCase):
 		pCopy3 = Proc()
 		pCopy4 = Proc()
 		aggr = Aggr(pCopy1, pCopy2, pCopy3)
-		aggr.depends = pCopy4
-		aggr.delegate('a', None, 'args')
+		aggr.depends = [pCopy4]
 		yield aggr, 'newtag', True, 'newid'
 		yield aggr, None, True, None
 		yield aggr, None, False, None
@@ -343,8 +302,6 @@ class TestAggr(testly.TestCase):
 			# starts, ends
 			self.assertListEqual(newaggr.starts, [newaggr._procs[p.id] for p in aggr.starts])
 			self.assertListEqual(newaggr.ends, [newaggr._procs[p.id] for p in aggr.ends])
-			# delegates
-			self.assertDictEqual(newaggr._delegates, aggr._delegates)
 			# depends
 			if deps:
 				for k, p in newaggr._procs.items():
@@ -372,8 +329,8 @@ class TestAggr(testly.TestCase):
 	
 	def testDepends(self, aggr, depends):
 		aggr.depends = depends
-		for p in aggr.starts:
-			self.assertListEqual(p.depends, depends)
+		for i, p in enumerate(aggr.starts):
+			self.assertListEqual(p.depends, [depends[i]])
 		
 	def dataProvider_testDepends2(self):
 		pDepends21 = Proc()
@@ -387,24 +344,22 @@ class TestAggr(testly.TestCase):
 	
 	def testDepends2(self, aggr, depends):
 		aggr.depends2 = depends
-		for i, p in enumerate(aggr.starts):
-			self.assertListEqual(p.depends, [depends[i]])
+		for p in aggr.starts:
+			self.assertListEqual(p.depends, depends)
 
 	def testIssue31(self):
 		p = Proc()
 		#p.runner = 'local'
 		a = Aggr(p)
 		a.runner = 'sge'
-		with self.assertLogs(logger.getLogger()):
-			a.p.run()
+		a.p._readConfig(None, None)
 		self.assertEqual(a.p.runner, 'sge')
 
 		a2 = Aggr(p.copy(id = 'p2'))
 		a2.p2.runner = 'local'
-		a2.runner = 'sge'
-		with self.assertLogs(logger.getLogger()):
-			a2.p2.run()
+		a2.runner = 'sge' # make sure it's not  overwriting
+		a2.p2._readConfig(None, None)
 		self.assertEqual(a2.p2.runner, 'local')
 		
 if __name__ == '__main__':
-	testly.main(verbosity=2, failfast = True)
+	testly.main(verbosity=2)

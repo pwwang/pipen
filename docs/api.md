@@ -882,15 +882,6 @@ Like `proc`'s `copy` function, copy an aggregation. Each processes will be copie
 - **returns:**  
 The new aggregation  
   
-#### `delegate (self, attr, procs, pattr) `
-  
-Delegate attributes of processes to aggr.  
-
-- **params**  
-`attr` : The attribute of the aggregation  
-`procs`: The ids of the processes. Default: None (all processes)  
-`pattr`: The attr of the processes. Default: None (same as `attr`)  
-  
 
 ## Module `Parameter`  
 > The class for a single parameter
