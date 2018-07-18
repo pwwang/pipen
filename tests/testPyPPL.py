@@ -322,7 +322,7 @@ class TestPyPPL(testly.TestCase):
 		aAggr.starts = [aAggr.pShowAllRoutes7]
 		aAggr.pShowAllRoutes8.depends = aAggr.pShowAllRoutes7
 		aAggr.pShowAllRoutes9.depends = aAggr.pShowAllRoutes7
-		aAggr.depends = pShowAllRoutes3, pShowAllRoutes6
+		aAggr.depends2 = [pShowAllRoutes3, pShowAllRoutes6]
 		yield [pShowAllRoutes1, pShowAllRoutes5], [
 			'DEBUG',
 			'* pShowAllRoutes1 -> pShowAllRoutes10',
@@ -374,7 +374,7 @@ class TestPyPPL(testly.TestCase):
 		aAggr.starts = [aAggr.pFlowchart7]
 		aAggr.pFlowchart8.depends = aAggr.pFlowchart7
 		aAggr.pFlowchart9.depends = aAggr.pFlowchart7
-		aAggr.depends = pFlowchart3, pFlowchart6
+		aAggr.depends2 = [pFlowchart3, pFlowchart6]
 		
 		dotfile = path.join(self.testdir, 'test.dot')
 		fcfile  = path.join(self.testdir, 'test.svg')
@@ -447,7 +447,7 @@ class TestPyPPL(testly.TestCase):
 		aAggr.starts = [aAggr.pRun7]
 		aAggr.pRun8.depends = aAggr.pRun7
 		aAggr.pRun9.depends = aAggr.pRun7
-		aAggr.depends = pRun3, pRun6
+		aAggr.depends2 = [pRun3, pRun6]
 		yield [pRun1, pRun5], 'profile', 'sge', [
 			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
 			'Run1: No description.',
