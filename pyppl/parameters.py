@@ -287,7 +287,8 @@ class Parameters (object):
 	def _shouldPrintHelp(self, args):
 		if not args and '' in self._props['hopts']:
 			return True
-		return any([arg in self._props['hopts'] for arg in args])
+		
+		return any([arg and arg in self._props['hopts'] for arg in args])
 
 	@staticmethod
 	def _coerceValue(value, t = 'auto'):
