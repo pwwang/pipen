@@ -89,7 +89,7 @@ api:
 	$(PYTHON) ./api.py
 
 build:
-	$(PYTHON) setup.py build --force
+	$(PYTHON) setup.py sdist bdist_wheel --universal
 
 dist:
-	$(PYTHON) setup.py sdist upload	
+	twine upload dist/*

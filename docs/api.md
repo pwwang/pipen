@@ -882,14 +882,13 @@ Like `proc`'s `copy` function, copy an aggregation. Each processes will be copie
 - **returns:**  
 The new aggregation  
   
-#### `delegate (self, attr, procs, pattr) `
+#### `delegate (self, attrs, procs) `
   
-Delegate attributes of processes to aggr.  
-
-- **params**  
-`attr` : The attribute of the aggregation  
-`procs`: The ids of the processes. Default: None (all processes)  
-`pattr`: The attr of the processes. Default: None (same as `attr`)  
+Delegate the procs to have the attributes set by:  
+`aggr.args.a.b = 1`  
+Instead of setting `args.a.b` of all processes, `args.a.b` of only delegated processes will be set.  
+`procs` can be `starts`/`ends`, but it cannot be set with other procs, which means you can do:  
+`aggr.delegate('args', 'starts')`, but not `aggr.delegate('args', ['starts', 'pXXX'])`  
   
 
 ## Module `Parameter`  
