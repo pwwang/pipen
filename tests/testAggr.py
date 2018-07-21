@@ -20,72 +20,113 @@ class FakeProc(object):
 class TestDotProxy(testly.TestCase):
 	
 	def dataProvider_testInit(self):
-		yield Box(),
-		yield [Box(), Box(), Box()],
+		yield FakeProc('a'), {}, []
+		yield [FakeProc('a'), FakeProc('b'), FakeProc('c')], {'args': [FakeProc('a'), FakeProc('b')]}, ['args']
 	
-	def testInit(self, objs):
-		dp = _DotProxy(objs)
+	def testInit(self, procs, delegates, prefix):
+		dp = _DotProxy(procs, delegates, prefix)
 		self.assertIsInstance(dp, _DotProxy)
-		self.assertIsInstance(dp._DotProxy_objs, list)
-		self.assertListEqual(dp._DotProxy_objs, objs if isinstance(objs, list) else [objs])
-	
-	def testGetattr(self, objs, name, outobjs):
-		dp = _DotProxy(objs)
-		self.assertListEqual(dp.__getattr__(name)._DotProxy_objs, outobjs)
+		self.assertIsInstance(dp._DotProxy_procs, list)
+		self.assertListEqual(dp._DotProxy_procs, procs if isinstance(procs, list) else [procs])
+		self.assertDictEqual(dp._DotProxy_delegates, delegates)
+		self.assertListEqual(dp._DotProxy_prefix, prefix)
+
+	def dataProvider_testSetProcsAttr(self):
+		procs = [FakeProc('a'), FakeProc('b'), FakeProc('c')]
+		yield procs, ['args', 'inopts'], 'b', 1
+		yield procs, ['args'], 'inopts', 2
+
+	def testSetProcsAttr(self, procs, prefix, name, value):
+		_DotProxy._setProcsAttr(procs, prefix, name, value)
+		for proc in procs:
+			obj = proc
+			for p in prefix:
+				obj = getattr(obj, p)
+			self.assertEqual(getattr(obj, name), value)
+
+	def dataProvider_testSetProcsItem(self):
+		procs = [FakeProc('a'), FakeProc('b'), FakeProc('c')]
+		yield procs, ['args', 'inopts'], 'b', 1
+		yield procs, ['args'], 'inopts', 2
+
+	def testSetProcsItem(self, procs, prefix, name, value):
+		_DotProxy._setProcsItem(procs, prefix, name, value)
+		for proc in procs:
+			obj = proc
+			for p in prefix:
+				obj = getattr(obj, p)
+			self.assertEqual(obj[name], value)
+
+	def testGetattr(self, procs, delegates, prefix, name, outprocs):
+		dp = _DotProxy(procs, delegates, prefix)
+		self.assertListEqual(dp.__getattr__(name)._DotProxy_procs, outprocs)
 
 	def dataProvider_testGetattr(self):
-		yield Box(a = 1), 'a', [1]
-		yield [Box(a=1), Box(a=2), Box(a=3)], 'a', [1,2,3]
-		yield [Box(a=Box()), Box(a=Box(b=1)), Box(a=Box(c=2))], 'a', [Box(),Box(b=1),Box(c=2)]
+		yield FakeProc('a'), {}, [], 'forks', [FakeProc('a')]
+		yield [FakeProc('a'), FakeProc('b'), FakeProc('c')], {'args.inopts': [FakeProc('a')]}, ['args'], 'id', [FakeProc('a'), FakeProc('b'), FakeProc('c')]
+		yield [FakeProc('a'), FakeProc('b'), FakeProc('c')], {'args.inopts': [FakeProc('a')]}, ['args'], 'inopts', [FakeProc('a')]
 
-	def testSetattr(self, objs, name, value, outvalue):
-		dp = _DotProxy(objs)
+	def testSetattr(self, procs, delegates, prefix, name, value, outvalues):
+		dp = _DotProxy(procs, delegates, prefix)
 		dp.__setattr__(name, value)
-		self.assertListEqual(dp.__getattr__(name)._DotProxy_objs, outvalue)
+		
+		for i, proc in enumerate(dp._DotProxy_procs):
+			obj = proc
+			for p in prefix:
+				obj = getattr(obj, p)
+			self.assertEqual(getattr(obj, name), outvalues[i])
 
 	def dataProvider_testSetattr(self):
-		yield Box(a = 1), 'a', 2, [2]
-		yield [Box(a=1), Box(a=2), Box(a=4)], 'a', 3, [3,3,3]
-		yield [Box(a=Box()), Box(a=Box()), Box(a=Box())], 'a', Box(b=1), [Box(b=1)]*3
+		yield FakeProc('a'), {}, [], 'forks', 10, [10]
+		procs = [FakeProc('a'), FakeProc('b'), FakeProc('c')]
+		yield procs, {'args.inopts': [procs[0]]}, ['args'], 'id', 'x', ['x']*3
+		yield procs, {'args.inopts': [procs[0]]}, ['args'], 'inopts', 'onlya', ['onlya', Box(), Box()]
 
-	def testGetitem(self, objs, name, outobjs):
-		dp = _DotProxy(objs)
-		self.assertListEqual(dp[name]._DotProxy_objs, outobjs)
+	def testGetitem(self, procs, delegates, prefix, name, outprocs):
+		dp = _DotProxy(procs, delegates, prefix)
+		self.assertListEqual(dp.__getitem__(name)._DotProxy_procs, outprocs)
 
 	def dataProvider_testGetitem(self):
-		yield Box(a = 1), 'a', [1]
-		yield [Box(a=1), Box(a=2), Box(a=3)], 'a', [1,2,3]
-		yield [Box(a=Box()), Box(a=Box(b=1)), Box(a=Box(c=2))], 'a', [Box(),Box(b=1),Box(c=2)]
+		yield FakeProc('a'), {}, [], 'forks', [FakeProc('a')]
+		yield [FakeProc('a'), FakeProc('b'), FakeProc('c')], {'args.inopts': [FakeProc('a')]}, ['args'], 'id', [FakeProc('a'), FakeProc('b'), FakeProc('c')]
+		yield [FakeProc('a'), FakeProc('b'), FakeProc('c')], {'args.inopts': [FakeProc('a')]}, ['args'], 'inopts', [FakeProc('a')]
 
-	def testSetitem(self, objs, name, value, outvalue):
-		dp = _DotProxy(objs)
-		dp[name] = value
-		self.assertListEqual(dp[name]._DotProxy_objs, outvalue)
+	def testSetitem(self, procs, delegates, prefix, name, value, outvalues):
+		dp = _DotProxy(procs, delegates, prefix)
+		dp.__setitem__(name, value)
+		for i, proc in enumerate(dp._DotProxy_procs):
+			obj = proc
+			for p in prefix:
+				obj = getattr(obj, p)
+			self.assertEqual(obj[name], outvalues[i])
 
 	def dataProvider_testSetitem(self):
-		yield Box(a = 1), 'a', 2, [2]
-		yield [Box(a=1), Box(a=2), Box(a=4)], 'a', 3, [3,3,3]
-		yield [Box(a=Box()), Box(a=Box()), Box(a=Box())], 'a', Box(b=1), [Box(b=1)]*3
+		yield FakeProc('a'), {}, ['args'], 'id', 'newa', ['newa']
+		procs = [FakeProc('a'), FakeProc('b'), FakeProc('c')]
+		yield procs, {'args.inopts.x': [procs[0]]}, ['args', 'inopts'], 'y', 'yvalue', ['yvalue']*3
+		procs2 = [FakeProc('a'), FakeProc('b'), FakeProc('c')]
+		yield procs2, {'args.inopts': [procs2[0]]}, ['args'], 'inopts', 'onlya', ['onlya', Box(), Box()]
 
 class TestProxy(testly.TestCase):
 
-	def testInit(self, name, procs, starts, ends):
-		p = _Proxy(name, procs, starts, ends)
+	def testInit(self, name, procs, starts, ends, delegates):
+		p = _Proxy(name, procs, starts, ends, delegates)
 		self.assertListEqual(p._ids, [proc.id for proc in procs.values()])
 		self.assertListEqual(p._starts, [proc.id for proc in starts])
 		self.assertListEqual(p._ends, [proc.id for proc in ends])
 		self.assertListEqual(p._procs, list(procs.values()))
 		self.assertEqual(p._attr, name)
+		self.assertDictEqual(p._delegates, delegates)
 
 	def dataProvider_testInit(self):
-		yield 'forks', OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))]), [FakeProc('a')], [FakeProc('c')]
+		yield 'forks', OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))]), [FakeProc('a')], [FakeProc('c')], {}
 
 	def testAny2index(self, p, anything, out):
 		self.assertEqual(p._any2index(anything), out)
 
 	def dataProvider_testAny2index(self):
 		procs = OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))])
-		p = _Proxy('args', procs, [procs['a']], [procs['c']])
+		p = _Proxy('args', procs, [procs['a']], [procs['c']], {})
 		yield p, 0, 0
 		yield p, 1, 1
 		yield p, slice(0,1), slice(0,1)
@@ -96,32 +137,70 @@ class TestProxy(testly.TestCase):
 		yield p, 'a, c', [0,2]
 		yield p, ['a', 'b'], [0, 1]
 
-	def testGetitem(self, p, index, outobjs):
-		self.assertEqual(p[index]._DotProxy_objs, outobjs)
+	def testGetattr(self, p, name, outprocs):
+		dp = p.__getattr__(name)
+		self.assertListEqual(dp._DotProxy_procs, outprocs)
+		self.assertListEqual(dp._DotProxy_prefix, [p._attr, name])
+
+	def dataProvider_testGetattr(self):
+		procs = OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))])
+		p = _Proxy('args', procs, [procs['a']], [procs['c']], {})
+		yield p, 'id', list(procs.values())
+		p2 = _Proxy('args', procs, [procs['a']], [procs['c']], {'args.id': [procs['b']]})
+		yield p2, 'id', [FakeProc('b')]
+
+	def testSetattr(self, p, name, value, outvalues):
+		p.__setattr__(name, value)
+		for i, proc in enumerate(p._procs):
+			obj = getattr(proc, p._attr)
+			self.assertEqual(getattr(obj, name), outvalues[i])
+	
+	def dataProvider_testSetattr(self):
+		procs = OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))])
+		p = _Proxy('args', procs, [procs['a']], [procs['c']], {'args.inopts': [procs['b']]})
+		yield p, 'id', 'x', ['x']*3
+		yield p, 'inopts', Box(b=1), [Box(), Box(b=1), Box()]
+
+	def testGetitem(self, p, index, outprocs):
+		self.assertEqual(p[index]._DotProxy_procs, outprocs)
 
 	def dataProvider_testGetitem(self):
 		procs = OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))])
-		p = _Proxy('args', procs, [procs['a']], [procs['c']])
-		yield p, 'a,c', [Box(inopts = Box(), id = 'a'), Box(inopts = Box(), id = 'c')]
-		yield p, (0,2), [Box(inopts = Box(), id = 'a'), Box(inopts = Box(), id = 'c')]
-		yield p, [0,2], [Box(inopts = Box(), id = 'a'), Box(inopts = Box(), id = 'c')]
-		yield p, ['a', 'c'], [Box(inopts = Box(), id = 'a'), Box(inopts = Box(), id = 'c')]
-		yield p, 'starts', [Box(inopts = Box(), id = 'a')]
-		yield p, 'ends', [Box(inopts = Box(), id = 'c')]
+		p = _Proxy('args', procs, [procs['a']], [procs['c']], {'args.inopts': [procs['b']]})
+		yield p, 'a,c', [procs['a'], procs['c']]
+		yield p, (0,2), [procs['a'], procs['c']]
+		yield p, [0,2], [procs['a'], procs['c']]
+		yield p, ['a', 'c'], [procs['a'], procs['c']]
+		yield p, 'starts', [procs['a']]
+		yield p, 'ends', [procs['c']]
+		yield p, 'inopts', [procs['b']]
 	
-	def testSetitem(self, p, index, value, outvalue):
+	def testSetitem(self, p, index, value, outvalues):
 		p[index] = value
-		self.assertEqual(p[index]._DotProxy_objs, outvalue)
+		self.assertListEqual([getattr(proc, p._attr) for proc in p._procs], outvalues)
 	
 	def dataProvider_testSetitem(self):
-		procs = OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))])
-		p = _Proxy('forks', procs, [procs['a']], [procs['c']])
-		yield p, 'a,c', 10, [10, 10]
-		yield p, (0,2), 10, [10, 10]
-		yield p, [0,2], 10, [10, 10]
-		yield p, ['a', 'c'], 10, [10, 10]
-		yield p, 'starts', 4, [4]
-		yield p, 'ends', 4, [4]
+		procs0 = OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))])
+		procs1 = OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))])
+		procs2 = OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))])
+		procs3 = OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))])
+		procs4 = OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))])
+		procs5 = OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))])
+		procs6 = OrderedDict([('a', FakeProc('a')), ('b', FakeProc('b')), ('c', FakeProc('c'))])
+		p0 = _Proxy('forks', procs0, [procs0['a']], [procs0['c']], {'args.inopts': [procs0['b']]})
+		p1 = _Proxy('forks', procs1, [procs1['a']], [procs1['c']], {'args.inopts': [procs1['b']]})
+		p2 = _Proxy('forks', procs2, [procs2['a']], [procs2['c']], {'args.inopts': [procs2['b']]})
+		p3 = _Proxy('forks', procs3, [procs3['a']], [procs3['c']], {'args.inopts': [procs3['b']]})
+		p4 = _Proxy('forks', procs4, [procs4['a']], [procs4['c']], {'args.inopts': [procs4['b']]})
+		p5 = _Proxy('forks', procs5, [procs5['a']], [procs5['c']], {'args.inopts': [procs5['b']]})
+		p6 = _Proxy('args',  procs6, [procs6['a']], [procs6['c']], {'args.inopts': [procs6['b']]})
+		yield p0, 'a,c', 10, [10, 1, 10]
+		yield p1, (0,2), 10, [10, 1, 10]
+		yield p2, [0,2], 10, [10, 1, 10]
+		yield p3, ['a', 'c'], 10, [10, 1, 10]
+		yield p4, 'starts', 4, [4, 1, 1]
+		yield p5, 'ends', 4, [1, 1, 4]
+		yield p6, 'inopts', 1, [Box([('inopts', Box()), ('id', 'a')]), Box([('inopts', 1), ('id', 'b')]), Box([('inopts', Box()), ('id', 'c')])]
 
 class TestAggr(testly.TestCase):
 
@@ -166,6 +245,32 @@ class TestAggr(testly.TestCase):
 					if i == 0: continue
 					self.assertListEqual(proc.depends, [])
 
+	def testDelegate(self, aggr, attrs, procs, outdelegates, outdelstarts, outdelends):
+		aggr.delegate(attrs, procs)
+		for attr in Aggr.ATTR_STARTS:
+			outdelegates[attr] = aggr.starts
+			outdelstarts.append(attr)
+		for attr in Aggr.ATTR_ENDS:
+			outdelegates[attr] = aggr.ends
+			outdelends.append(attr)
+		self.assertDictEqual(aggr._delegates, outdelegates)
+		self.assertCountEqual(aggr._delegates_starts, outdelstarts)
+		self.assertCountEqual(aggr._delegates_ends, outdelends)
+	
+	def dataProvider_testDelegate(self):
+		pGetAttr1 = Proc()
+		pGetAttr2 = Proc()
+		pGetAttr3 = Proc()
+		aggr1 = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
+		aggr2 = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
+		aggr3 = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
+		aggr4 = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
+		yield aggr1, 'aggrs.a', 'pGetAttr1', {'aggrs.a': [aggr1.pGetAttr1]}, [], []
+		yield aggr2, 'aggrs.b, aggrs.c', 'pGetAttr1,pGetAttr2', {'aggrs.b': [aggr2.pGetAttr1, aggr2.pGetAttr2], 'aggrs.c': [aggr2.pGetAttr1, aggr2.pGetAttr2]}, [], []
+		yield aggr3, 'aggrs.b, aggrs.c', 'starts', {'aggrs.b': [aggr3.pGetAttr1], 'aggrs.c': [aggr3.pGetAttr1]}, ['aggrs.b', 'aggrs.c'], []
+		yield aggr4, 'aggrs.b, aggrs.c', 'ends', {'aggrs.b': [aggr4.pGetAttr3], 'aggrs.c': [aggr4.pGetAttr3]}, [], ['aggrs.b', 'aggrs.c']
+
+
 	def testGetattr(self, aggr, name, outtype):
 		# make sure getattr is not called for starts,ends,_procs
 		self.assertIsInstance(aggr.starts, list)
@@ -188,20 +293,238 @@ class TestAggr(testly.TestCase):
 		yield aggr, 'b', _Proxy
 		yield aggr, 'aggrs', _Proxy
 
-	def testSetattr(self, aggr, name, value):
+	def testSetattr(self, aggr, name, value, values):
 		# make sure setattr is not called
 		aggr.id = aggr.id
 		aggr.__setattr__(name, value)
-		for proc in aggr._procs.values():
-			self.assertEqual(getattr(proc, name), value)
+		for i, proc in enumerate(aggr._procs.values()):
+			self.assertEqual(getattr(proc, name), values[i])
 			self.assertNotEqual(proc.id, aggr.id)
 
 	def dataProvider_testSetattr(self):
 		pGetAttr1 = Proc()
 		pGetAttr2 = Proc()
 		pGetAttr3 = Proc()
-		aggr = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
-		yield aggr, 'forks', 10
+		aggr1 = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
+		aggr2 = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
+		yield aggr1, 'forks', 10, [10] * 3
+		aggr2.delegate('forks', 'pGetAttr2')
+		yield aggr2, 'forks', 10, [1, 10, 1]
+
+	def testSetGetAttr(self):
+		pGetAttr1 = Proc()
+		pGetAttr2 = Proc()
+		pGetAttr3 = Proc()
+		pGetAttr4 = Proc()
+		pGetAttr5 = Proc()
+		pGetAttr1.args.params = Box(inopts = Box())
+		pGetAttr2.args.params = Box(inopts = Box())
+		pGetAttr3.args.params = Box(inopts = Box())
+		pGetAttr4.args.params = Box(inopts = Box())
+		pGetAttr5.args.params = Box(inopts = Box())
+		aggr = Aggr(pGetAttr1, pGetAttr2, pGetAttr3, pGetAttr4, pGetAttr5, depends = False)
+		# nothing delegated yet
+		self.assertDictEqual({
+			'input'  : [],
+			'depends': [],
+			'exdir'  : [],
+			'exhow'  : [],
+			'expart' : [],
+			'exow'   : []
+		}, aggr._delegates)
+		# but when starts and ends changed
+		aggr.starts = [aggr.pGetAttr1, aggr.pGetAttr2]
+		aggr.ends   = [aggr.pGetAttr5]
+		self.assertDictEqual({
+			'input'  : [aggr.pGetAttr1, aggr.pGetAttr2],
+			'depends': [aggr.pGetAttr1, aggr.pGetAttr2],
+			'exdir'  : [aggr.pGetAttr5],
+			'exhow'  : [aggr.pGetAttr5],
+			'expart' : [aggr.pGetAttr5],
+			'exow'   : [aggr.pGetAttr5]
+		}, aggr._delegates)
+
+		# delegate a short attribute
+		aggr.delegate('forks', [aggr.pGetAttr2, aggr.pGetAttr3])
+		aggr.forks = 10
+		# only 2, 3 changed
+		self.assertListEqual([p.forks for p in aggr._procs.values()], [1, 10, 10, 1, 1])
+
+		# change the specific procs
+		aggr.forks['pGetAttr2', 'pGetAttr4'] = 5
+		self.assertListEqual([p.forks for p in aggr._procs.values()], [1, 5, 10, 5, 1])
+
+		# fix an attribute
+		aggr.pGetAttr3.runner = 'dry'
+		aggr.runner = 'sge'
+		self.assertListEqual([p.config['runner'] for p in aggr._procs.values()], ['sge', 'sge', 'dry', 'sge', 'sge'])
+
+		# set input
+		self.assertRaises(AggrAttributeError, setattr, aggr, 'input', 1)
+		aggr.input = [1,2]
+		self.assertListEqual([p.config['input'] for p in aggr._procs.values()], [1, 2, '', '', ''])
+		# reverse it
+		aggr.input = ['', '']
+		aggr.input2 = [1,2]
+		self.assertListEqual([p.config['input'] for p in aggr._procs.values()], [[1,2], [1,2], '', '', ''])
+		aggr.input[3] = 'i3'
+		self.assertListEqual([p.config['input'] for p in aggr._procs.values()], [[1,2], [1,2], '', 'i3', ''])
+		# not suppose to do this
+		# aggr.input2[2] = ['a', 'b']
+		#self.assertListEqual([p.config['input'] for p in aggr._procs.values()], [[1,2], [1,2], ['a', 'b'], 'i3', ''])
+
+		# similar for depends
+		self.assertRaises(AggrAttributeError, setattr, aggr, 'depends', 1)
+		aggr.depends = [pGetAttr1, pGetAttr2]
+		self.assertListEqual([p.depends for p in aggr._procs.values()], [[pGetAttr1], [pGetAttr2], [], [], []])
+		# reverse it
+		aggr.depends = [[], []]
+		aggr.depends2 = [pGetAttr1, pGetAttr2]
+		self.assertListEqual([p.depends for p in aggr._procs.values()], [[pGetAttr1, pGetAttr2], [pGetAttr1, pGetAttr2], [], [], []])
+
+		# set attributes of certain processes
+		aggr.args[0].params = Box(inopts = Box(a = 1))
+		self.assertListEqual(
+			[p.args for p in aggr._procs.values()], 
+			[
+				Box(params = Box(inopts = Box(a = 1))),
+				Box(params = Box(inopts = Box())),
+				Box(params = Box(inopts = Box())),
+				Box(params = Box(inopts = Box())),
+				Box(params = Box(inopts = Box())),
+			])
+
+		aggr.args[:2].params = Box(inopts = Box(b = 1))
+		self.assertListEqual(
+			[p.args for p in aggr._procs.values()], 
+			[
+				Box(params = Box(inopts = Box(b = 1))),
+				Box(params = Box(inopts = Box(b = 1))),
+				Box(params = Box(inopts = Box())),
+				Box(params = Box(inopts = Box())),
+				Box(params = Box(inopts = Box())),
+			])
+
+		aggr.args[1,2].params = Box(inopts = Box(c = 1))
+		self.assertListEqual(
+			[p.args for p in aggr._procs.values()], 
+			[
+				Box(params = Box(inopts = Box(b = 1))),
+				Box(params = Box(inopts = Box(c = 1))),
+				Box(params = Box(inopts = Box(c = 1))),
+				Box(params = Box(inopts = Box())),
+				Box(params = Box(inopts = Box())),
+			])
+		
+		# using proc ids
+		aggr.args['pGetAttr1'].params = Box(inopts = Box(d = 1))
+		self.assertListEqual(
+			[p.args for p in aggr._procs.values()], 
+			[
+				Box(params = Box(inopts = Box(d = 1))),
+				Box(params = Box(inopts = Box(c = 1))),
+				Box(params = Box(inopts = Box(c = 1))),
+				Box(params = Box(inopts = Box())),
+				Box(params = Box(inopts = Box())),
+			])
+		
+		aggr.args['pGetAttr1', 'pGetAttr3'].params = Box(inopts = Box(e = 1))
+		self.assertListEqual(
+			[p.args for p in aggr._procs.values()], 
+			[
+				Box(params = Box(inopts = Box(e = 1))),
+				Box(params = Box(inopts = Box(c = 1))),
+				Box(params = Box(inopts = Box(e = 1))),
+				Box(params = Box(inopts = Box())),
+				Box(params = Box(inopts = Box())),
+			])
+
+		aggr.args['pGetAttr1, pGetAttr3'].params = Box(inopts = Box(f = 1))
+		self.assertListEqual(
+			[p.args for p in aggr._procs.values()], 
+			[
+				Box(params = Box(inopts = Box(f = 1))),
+				Box(params = Box(inopts = Box(c = 1))),
+				Box(params = Box(inopts = Box(f = 1))),
+				Box(params = Box(inopts = Box())),
+				Box(params = Box(inopts = Box())),
+			])
+
+		aggr.args['starts'].params = Box(inopts = Box(g = 1))
+		self.assertListEqual(
+			[p.args for p in aggr._procs.values()], 
+			[
+				Box(params = Box(inopts = Box(g = 1))),
+				Box(params = Box(inopts = Box(g = 1))),
+				Box(params = Box(inopts = Box(f = 1))),
+				Box(params = Box(inopts = Box())),
+				Box(params = Box(inopts = Box())),
+			])
+
+		aggr.args['ends'].params = Box(inopts = Box(h = 1))
+		self.assertListEqual(
+			[p.args for p in aggr._procs.values()], 
+			[
+				Box(params = Box(inopts = Box(g = 1))),
+				Box(params = Box(inopts = Box(g = 1))),
+				Box(params = Box(inopts = Box(f = 1))),
+				Box(params = Box(inopts = Box())),
+				Box(params = Box(inopts = Box(h = 1))),
+			])
+
+		aggr.delegate('args.params.inopts', 'pGetAttr3')
+		aggr.args['params'].inopts = Box(n = 1)
+		self.assertListEqual(
+			[p.args for p in aggr._procs.values()], 
+			[
+				Box(params = Box(inopts = Box(g = 1))),
+				Box(params = Box(inopts = Box(g = 1))),
+				Box(params = Box(inopts = Box(n = 1))),
+				Box(params = Box(inopts = Box())),
+				Box(params = Box(inopts = Box(h = 1))),
+			])
+
+		aggr.args.params['inopts'] = Box(m = 1)
+		self.assertListEqual(
+			[p.args for p in aggr._procs.values()], 
+			[
+				Box(params = Box(inopts = Box(g = 1))),
+				Box(params = Box(inopts = Box(g = 1))),
+				Box(params = Box(inopts = Box(m = 1))),
+				Box(params = Box(inopts = Box())),
+				Box(params = Box(inopts = Box(h = 1))),
+			])
+			
+		aggr.args[0].params.inopts = Box(z = 1)
+		# remeber at line 453, inopts refers to the same Box() object, so both pGetAttr1 and 3 will change
+		self.assertListEqual(
+			[p.args for p in aggr._procs.values()], 
+			[
+				Box(params = Box(inopts = Box(z = 1))),
+				Box(params = Box(inopts = Box(z = 1))), # <-- not g
+				Box(params = Box(inopts = Box(m = 1))),
+				Box(params = Box(inopts = Box())),
+				Box(params = Box(inopts = Box(h = 1))),
+			])
+
+		aggr.args.params.inopts.cnames = True
+		self.assertListEqual(
+			[p.args.params.inopts for p in aggr._procs.values()], 
+			[
+				Box(z = 1),
+				Box(z = 1),
+				Box(m = 1, cnames = True),
+				Box(),
+				Box(h = 1),
+			])
+		
+		# something undelegated
+		aggr.tag = 'abc'
+		self.assertListEqual(
+			[p.tag for p in aggr._procs.values()],
+			['abc'] * 5
+		)
+
 			
 	def dataProvider_testChain(self):
 		pChain1 = Proc()

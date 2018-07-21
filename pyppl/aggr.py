@@ -17,26 +17,55 @@ class _DotProxy(object):
 	aggr.args[:2].inopts.cnames = True
 	```
 	"""
-	def __init__(self, objs):
-		self.__dict__['_DotProxy_objs'] = objs if isinstance(objs, list) else [objs]
+	def __init__(self, procs, delegates, prefix):
+		self.__dict__['_DotProxy_procs']     = procs if isinstance(procs, list) else [procs]
+		self.__dict__['_DotProxy_delegates'] = delegates
+		self.__dict__['_DotProxy_prefix']    = prefix
 
-	def __getattr__(self, name):
-		if name == '_DotProxy_objs':
-			return self.__dict__['_DotProxy_objs']
-		return _DotProxy([getattr(obj, name) for obj in self._DotProxy_objs])
-
-	def __setattr__(self, name, value):
-		if name == '_DotProxy_objs':
-			raise AttributeError('_DotProxy_objs is a readonly attribute of _DotProxy.')
-		for obj in self._DotProxy_objs:
+	@staticmethod
+	def _setProcsAttr(procs, prefix, name, value):
+		for proc in procs:
+			obj = proc
+			for p in prefix:
+				obj = getattr(obj, p)
 			setattr(obj, name, value)
 
+	@staticmethod
+	def _setProcsItem(procs, prefix, name, value):
+		for proc in procs:
+			obj = proc
+			for p in prefix:
+				obj = getattr(obj, p)
+			obj[name] = value
+
+	def __getattr__(self, name):
+		if name in self.__dict__:
+			return self.__dict__[name]
+		
+		attr  = '.'.join(self._DotProxy_prefix + [name])
+		procs = self._DotProxy_delegates.get(attr, self._DotProxy_procs)
+		return _DotProxy(procs, self._DotProxy_delegates, self._DotProxy_prefix + [name])
+
+	def __setattr__(self, name, value):
+		if name in self.__dict__:
+			raise AttributeError('{} is a readonly attribute of _DotProxy.'.format(name))
+		attr  = '.'.join(self._DotProxy_prefix + [name])
+		procs = self._DotProxy_delegates.get(attr, self._DotProxy_procs)
+		_DotProxy._setProcsAttr(procs, self._DotProxy_prefix, name, value)
+
 	def __getitem__(self, name):
-		return _DotProxy([obj[name] for obj in self._DotProxy_objs])
+		"""
+		will be treated as getattr
+		"""
+		return self.__getattr__(name)
 
 	def __setitem__(self, name, value):
-		for obj in self._DotProxy_objs:
-			obj[name] = value
+		if name in self.__dict__:
+			return self.__dict__[name]
+		
+		attr  = '.'.join(self._DotProxy_prefix + [name])
+		procs = self._DotProxy_delegates.get(attr, self._DotProxy_procs)
+		_DotProxy._setProcsItem(procs, self._DotProxy_prefix, name, value)
 	
 
 class _Proxy(object):
@@ -53,12 +82,13 @@ class _Proxy(object):
 	aggr.forks = 10 # for all procs
 	```
 	"""
-	def __init__(self, name, procs, starts, ends):
-		self.__dict__['_ids']    = list(procs.keys())
-		self.__dict__['_starts'] = [proc.id for proc in starts]
-		self.__dict__['_ends']   = [proc.id for proc in ends]
-		self.__dict__['_procs']  = list(procs.values())
-		self.__dict__['_attr']   = name
+	def __init__(self, name, procs, starts, ends, delegates):
+		self.__dict__['_ids']       = list(procs.keys())
+		self.__dict__['_starts']    = [proc.id for proc in starts]
+		self.__dict__['_ends']      = [proc.id for proc in ends]
+		self.__dict__['_procs']     = list(procs.values())
+		self.__dict__['_attr']      = name
+		self.__dict__['_delegates'] = delegates
 
 	def _any2index(self, anything):
 		"""
@@ -86,31 +116,75 @@ class _Proxy(object):
 		else: # str
 			return self._ids.index(anything)
 
+	def __getattr__(self, name):
+		"""
+		aggr.args.name.xxx
+		          ^^^^
+		"""
+		if name in self.__dict__:
+			return self.__dict__[name]
+
+		# check if args.name is delegated:
+		attr = '.'.join([self._attr, name])
+		if attr in self._delegates:
+			procs = self._delegates[attr]
+		else:
+			procs = self._procs
+		return _DotProxy(procs, self._delegates, [self._attr, name])
+
+	def __setattr__(self, name, value):
+		"""
+		aggr.args.params = '-input xxx'
+		"""
+		# check if args.name is delegated:
+		attr = '.'.join([self._attr, name])
+		if attr in self._delegates:
+			procs = self._delegates[attr]
+		else:
+			procs = self._procs
+		
+		for proc in procs:
+			setattr(getattr(proc, self._attr), name, value)
+
 	def __getitem__(self, index):
 		"""
 		Get a list of attributes and send them to _DotProxy for dot operations
+		aggr.args[procs].params
 		"""
-		index = self._any2index(index)
+		try:
+			index = self._any2index(index)
+		except ValueError:
+			# not recommended, but just for avilability
+			# getting attribute instead of selecting procs
+			return self.__getattr__(index)
 		
 		if isinstance(index, int):
-			ret = getattr(self._procs[index], self._attr)
+			procs = [self._procs[index]]
 		elif isinstance(index, slice):
-			ret = [getattr(proc, self._attr) for proc in self._procs[index]]
+			procs = self._procs[index]
 		else:
-			ret = []
+			procs = []
 			for idx in index:
 				if isinstance(idx, int):
-					ret.append(getattr(self._procs[idx], self._attr))
+					procs.append(self._procs[idx])
 				else:
-					ret.extend([getattr(proc, self._attr) for proc in self._procs[idx]])
+					procs.extend(self._procs[idx])
 		
-		return _DotProxy(ret)
+		# return _DotProxy(procs, self._delegates, [self._attr])
+		# should not apply delegates any more, because specified processes have been selected.
+		return _DotProxy(procs, {}, [self._attr])
 
 	def __setitem__(self, index, value):
 		"""
 		Set the attributes for the select procs
 		"""
-		index = self._any2index(index)
+		try:
+			index = self._any2index(index)
+		except ValueError:
+			# not recommended, but just for avilability
+			self.__setattr__(index, value)
+			return
+
 		if isinstance(index, int):
 			setattr(self._procs[index], self._attr, value)
 		elif isinstance(index, slice):
@@ -152,11 +226,15 @@ class Aggr (object):
 			`tag`: The tag of the processes. Default: None (a unique 4-char str according to the id)
 		"""
 
-		# depends = True, id = None, tag = None
-		self.__dict__['starts'] = []
-		self.__dict__['ends']   = []
-		self.__dict__['id']     = kwargs.get('id') or utils.varname()
-		self.__dict__['_procs'] = OrderedDict()
+		#             depends              = True, id = None, tag = None
+		self.__dict__['starts']            = []
+		self.__dict__['ends']              = []
+		self.__dict__['id']                = kwargs.get('id') or utils.varname()
+		self.__dict__['_procs']            = OrderedDict()
+		self.__dict__['_delegates']        = {}
+		# starts/ends may be changed later, remember the attrs to update them
+		self.__dict__['_delegates_starts'] = []
+		self.__dict__['_delegates_ends']   = []
 
 		tag = kwargs['tag'] if 'tag' in kwargs else ''
 
@@ -177,49 +255,83 @@ class Aggr (object):
 				if i == 0: continue
 				proc.depends = procs[i-1]
 
+		self.delegate(Aggr.ATTR_STARTS, 'starts')
+		self.delegate(Aggr.ATTR_ENDS, 'ends')
+
+	def delegate(self, attrs, procs):
+		"""
+		Delegate the procs to have the attributes set by:
+		`aggr.args.a.b = 1`
+		Instead of setting `args.a.b` of all processes, `args.a.b` of only delegated processes will be set.
+		`procs` can be `starts`/`ends`, but it cannot be set with other procs, which means you can do:  
+		`aggr.delegate('args', 'starts')`, but not `aggr.delegate('args', ['starts', 'pXXX'])`
+		"""
+		if not isinstance(attrs, (tuple, list)):
+			attrs = utils.alwaysList(attrs)
+		if isinstance(procs, string_types):
+			procs = utils.alwaysList(procs)
+		elif not isinstance(procs, (tuple, list)):
+			procs = [procs]
+
+		if procs == ['starts']:
+			self._delegates_starts.extend(attrs)
+		if procs == ['ends']:
+			self._delegates_ends.extend(attrs)
+
+		theprocs = []
+		for proc in procs:
+			if proc == 'starts':				
+				theprocs.extend(self.starts) # what if self.starts is changed later?
+			elif proc == 'ends':
+				theprocs.extend(self.ends)
+			elif isinstance(proc, string_types):
+				theprocs.append(self._procs[proc])
+			else:
+				theprocs.append(proc)
+				
+		for attr in attrs:
+			self._delegates[attr] = theprocs			
+
 	def __getattr__(self, name):
 		if name in self.__dict__:
 			return self.__dict__[name]
 		if name in self._procs:
 			return self._procs[name]
-
-		if name in Aggr.ATTR_STARTS:
-			return _Proxy(name, self.starts, self.starts, self.ends)
-		elif name in Aggr.ATTR_ENDS:
-			return _Proxy(name, self.ends, self.starts, self.ends)
-		else:
-			return _Proxy(name, self._procs, self.starts, self.ends)
+		return _Proxy(name, self._procs, self.starts, self.ends, self._delegates)
 
 	def __setattr__(self, name, value):
 		if name == 'id':
 			self.__dict__['id'] = value
 		elif name in ['starts', 'ends']:
 			self.__dict__[name] = list(value) if isinstance(value, (list, tuple)) else [value]
+			# update delegates here?
+			if name == 'starts':
+				for attr in self._delegates_starts:
+					self._delegates[attr] = self.starts
+			else:
+				for attr in self._delegates_ends:
+					self._delegates[attr] = self.ends
 		elif name in self.__dict__:
 			raise AggrAttributeError(name, 'Built-in attribute is not allowed to be modified')
-		elif name in Aggr.ATTR_STARTS:
-			# don't pass the samething for input and depends of all processes
-			# if you do want that, please use input2 and depends2
-			# make sure passing a list explictly
-			if not isinstance(value, list):
-				raise AggrAttributeError(name, 'Expecting a list for attribute')
-			for i, val in enumerate(value):
-				setattr(self.starts[i], name, val)
-		elif name in [attr + '2' for attr in Aggr.ATTR_STARTS]:
-			# input2, depends2
-			name = name[:-1]
-			for proc in self.starts:
-				setattr(proc, name, value)
-		elif name in Aggr.ATTR_ENDS:
-			for proc in self.ends:
-				setattr(proc, name, value)
 		else:
-			# set attributes of all procs:
-			# aAggr.args = {'a': 1}
-			for proc in self._procs.values():
-				# don't overwrite the config that has been set
-				if name in proc.sets: continue
-				setattr(proc, name, value)
+			if name in self._delegates or (name[-1] == '2' and name[:-1] in self._delegates):
+				procs = self._delegates[name[:-1] if name[-1] == '2' else name]
+			else:
+				procs = [proc for proc in self._procs.values() if not name in proc.sets]
+
+			if name in Aggr.ATTR_STARTS:
+				# don't pass the samething for input and depends of all processes
+				# if you do want that, please use input2 and depends2
+				# make sure passing a list explictly
+				if not isinstance(value, list):
+					raise AggrAttributeError(name, 'Expecting a list for attribute')
+				for i, val in enumerate(value):
+					setattr(procs[i], name, val)
+			else:
+				if name[-1] == '2' and name[:-1] in Aggr.ATTR_STARTS:
+					name = name[:-1]
+				for proc in procs:
+					setattr(proc, name, value)
 
 	def addProc (self, p, tag = None, where = None, copy = True):
 		"""
