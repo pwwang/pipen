@@ -1,5 +1,4 @@
 # Aggregations
-<!-- toc -->
 
 Imagine that you have a set of processes predefined, and every time when you deal with similar problems (i.e. format a file and plot the data or some next generation sequencing data analysis), you will consistently use those processes, then you have to configure and call them every time. 
 
@@ -123,7 +122,7 @@ Like previous example shows, you just need to give the constructor all the proce
    a = Aggr(
        p1,
        p2,
-       p1.copy(newid = 'p1copy')
+       p1.copy(id = 'p1copy')
    )
    # then to access the 2nd p1: a.p1copy
    ```
@@ -143,16 +142,82 @@ Then when you want to set `args.reffile` for `pAlignPEByBWA`, you can just do:
 ```python
 aFastqPE2Bam.args.reffile = '/path/to/hg19.fa'
 ```
-You may use `starts/ends` represents the start/end processes.
-You may also set an alias for the attribute:
+You may use `starts/ends` represents the start/end processes.  
+
+Delegate an attribute to multiple processes:
 ```python
-aFastqPE2Bam.delegate('align_ref', 'pAlignPEByBWA', 'args.reffile')
-```
-Then to set the value:
-```python
-aFastqPE2Bam.align_ref = '/path/to/hg19.fa'
+aFastqPE2Bam.delegate('args.reffile', 'pAlignPEByBWA, pPrintReads')
+# or
+aFastqPE2Bam.delegate('args.reffile', ['pAlignPEByBWA', 'pPrintReads'])
+# or
+aFastqPE2Bam.delegate('args.reffile', [aFastqPE2Bam.pAlignPEByBWA, aFastqPE2Bam.pPrintReads])
 ```
 
+Delegate multiple attributes at one time:
+```python
+aFastqPE2Bam.delegate('args.reffile, args.tmpdir', 'pAlignPEByBWA, pPrintReads')
+# or
+aFastqPE2Bam.delegate(['args.reffile', 'args.tmpdir'], 'pAlignPEByBWA, pPrintReads')
+```
+
+!!! caution
+
+    Undelegated attributes will be delegated to all processes. But remember if an attribute has been set before, say `p.runner = 'local'` then, `aggr.runner` will not overwrite it if `runner` is not delegated. If it is, then it'll be overwritten.
+
+!!! note
+
+    For attributes that have sub-attributes (i.e. `p.args.params.inopts.cnames`), you may just delegate the first parts, then the full assignment of the attribute will still follow the delegation. For example:  
+    ```python
+    aggr.delegate('args.params', 'p1,p2')
+    aggr.args.params.inopts.cnames = True # only affects p1, p2
+    ```
+    Keep in mind that shorter delegations always come first. In the above case, if we have another delegation: `aggr.delegate('args.params.inopts', 'p3')`, then the assignment will still affect `p1, p2` (the first delegation) and `p3` (the second delegation).
+
+## Default delegations
+By default, `input/depends` are delegated for start processes, and `exdir/exhow/exow/expart` for end processes. Importantly, as `aggr.starts` is a list, the values for `input/depends` must be a list as well, with elements corresponing to each start process. 
+Besides, we have two special attributes for aggregations: `input2` and `depends2`. Unlike `input` and `depends`, `input2` and `depends2` try to pass everything it gets to each process, instead of passing corresponind element to each process. For example:
+```python
+# aggr.starts = [aggr.p1, aggr.p2]
+aggr.input = [['a'], ['b']]
+# then:
+# aggr.p1.config['input'] == ['a']
+# aggr.p2.config['input'] == ['b']
+
+aggr.input2 = [['a'], ['b']]
+# then:
+# aggr.p1.config['input'] == [['a'], ['b']]
+# aggr.p2.config['input'] == [['a'], ['b']]
+```
+
+## Set attribute value for specific processes of an aggregation
+There are several ways to do that:
+```python
+# refer to the process directly
+aFastqPE2Bam.pPrintReads.args.tmpdir = '/tmp'
+aFastqPE2Bam.pPrintReads.runner = 'local'
+# refer to the index of the process
+aFastqPE2Bam.args[8].tmpdir = '/tmp'
+aFastqPE2Bam.runner[8] = 'local'
+# refer to the name of the process
+aFastqPE2Bam.args['pPrintReads'].tmpdir = '/tmp'
+aFastqPE2Bam.runner['pPrintReads'] = 'local'
+
+# for multiple processes
+aFastqPE2Bam.args[:3].tmpdir = '/tmp'
+aFastqPE2Bam.args[0,1,3].tmpdir = '/tmp'
+aFastqPE2Bam.args['aFastqPE2Bam', 'pPrintReads'].tmpdir = '/tmp'
+aFastqPE2Bam.args['aFastqPE2Bam, pPrintReads'].tmpdir = '/tmp'
+
+# or you may use starts/ends to refer to the start/end processes
+# has to be done after aggr.starts/aggr.ends assigned 
+# or initialized with depends = True
+aFastqPE2Bam.args['starts'].tmpdir = '/tmp'
+aFastqPE2Bam.args['ends'].tmpdir = '/tmp'
+```
+
+!!! hint
+
+    If an attribute is delegated for other processes, you can still set the value of it by the above methods.
 
 ## Set an aggregation as start aggregation for a pipeline
 You can do it just like setting a process as the starting process of pipeline (see [here][1]). Actually the starting processes in the aggregation (`aggr.starts`) will be set as the starting processes of the pipeline.
