@@ -128,6 +128,8 @@ class _Proxy(object):
 		attr = '.'.join([self._attr, name])
 		if attr in self._delegates:
 			procs = self._delegates[attr]
+		elif self._attr in self._delegates:
+			procs = self._delegates[self._attr]
 		else:
 			procs = self._procs
 		return _DotProxy(procs, self._delegates, [self._attr, name])
@@ -140,6 +142,8 @@ class _Proxy(object):
 		attr = '.'.join([self._attr, name])
 		if attr in self._delegates:
 			procs = self._delegates[attr]
+		elif self._attr in self._delegates:
+			procs = self._delegates[self._attr]
 		else:
 			procs = self._procs
 		
@@ -297,6 +301,13 @@ class Aggr (object):
 			return self.__dict__[name]
 		if name in self._procs:
 			return self._procs[name]
+
+		# This disables assignment of attribute of a specific process
+		# if name in self._delegates:
+		# 	procs = self._delegates[name]
+		# 	procs = {proc.id:proc for proc in procs}
+		# else:
+		# 	procs = self._procs
 		return _Proxy(name, self._procs, self.starts, self.ends, self._delegates)
 
 	def __setattr__(self, name, value):

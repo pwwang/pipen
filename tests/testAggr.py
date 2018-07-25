@@ -525,6 +525,20 @@ class TestAggr(testly.TestCase):
 			['abc'] * 5
 		)
 
+		del aggr._delegates['args.params.inopts']
+		aggr.delegate('args', 'pGetAttr4')
+		aggr.args.params.inopts.rnames = True
+		self.assertListEqual(
+			[p.args.params.inopts for p in aggr._procs.values()], 
+			[
+				Box(z = 1),
+				Box(z = 1),
+				Box(m = 1, cnames = True),
+				Box(rnames = True),
+				Box(h = 1),
+			])
+		
+
 			
 	def dataProvider_testChain(self):
 		pChain1 = Proc()
