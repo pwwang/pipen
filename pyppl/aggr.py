@@ -239,6 +239,7 @@ class Aggr (object):
 		# starts/ends may be changed later, remember the attrs to update them
 		self.__dict__['_delegates_starts'] = []
 		self.__dict__['_delegates_ends']   = []
+		self.__dict__['_config']           = {}
 
 		tag = kwargs['tag'] if 'tag' in kwargs else ''
 
@@ -343,6 +344,19 @@ class Aggr (object):
 					name = name[:-1]
 				for proc in procs:
 					setattr(proc, name, value)
+
+	def config(self, name, on, off):
+		self._config[name] = dict(on = on, off = off)
+
+	def on(self, *names):
+		names = sum([utils.alwaysList(name) for name in names], [])
+		for name in names:
+			self._config[name]['on'](self)
+	
+	def off(self, *names):
+		names = sum([utils.alwaysList(name) for name in names], [])
+		for name in names:
+			self._config[name]['off'](self)
 
 	def addProc (self, p, tag = None, where = None, copy = True):
 		"""

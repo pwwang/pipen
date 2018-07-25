@@ -538,7 +538,34 @@ class TestAggr(testly.TestCase):
 				Box(h = 1),
 			])
 		
+	def testConfig(self, aggr, name, on, off):
+		aggr.config(name, on, off)
+		self.assertTrue(name in aggr._config)
+		self.assertIs(aggr._config[name]['on'], on)
+		self.assertIs(aggr._config[name]['off'], off)
 
+	def dataProvider_testConfig(self):
+		aggr = Aggr()
+		yield aggr, 'qc', lambda a:True, lambda a:False
+
+	def testOnOff(self, aggr, name, on, off, ons, offs):
+		aggr.config(name, on, off)
+		aggr.on(name)
+		self.assertTrue(ons(aggr))
+		aggr.off(name)
+		self.assertTrue(offs(aggr))
+
+	def dataProvider_testOnOff(self):
+		aggr = Aggr()
+		def on(a):
+			a.starts = [1]
+		def off(a):
+			a.starts = []
+		def ons(a):
+			return a.starts == [1]
+		def offs(a):
+			return a.starts == []
+		yield aggr, 'qc', on, off, ons, offs
 			
 	def dataProvider_testChain(self):
 		pChain1 = Proc()
