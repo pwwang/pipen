@@ -103,18 +103,23 @@ class _Proxy(object):
 		_any2index('b,c') # [2,3]
 		```
 		"""
-		if isinstance(anything, (int, slice)):
+		if isinstance(anything, string_types):
+			if ',' in anything:
+				return self._any2index(utils.alwaysList(anything))
+			elif anything == 'starts':
+				return self._any2index(self._starts)
+			elif anything == 'ends':
+				return self._any2index(self._ends)
+			else:
+				return self._ids.index(anything)
+		elif isinstance(anything, (int, slice)):
 			return anything
 		elif isinstance(anything, (list, tuple)):
 			return [self._any2index(a) for a in anything]
-		elif ',' in anything:
-			return self._any2index(utils.alwaysList(anything))
-		elif anything == 'starts':
-			return self._any2index(self._starts)
-		elif anything == 'ends':
-			return self._any2index(self._ends)
-		else: # str
-			return self._ids.index(anything)
+		elif anying in self._procs: 
+			return self._procs.index(anything)
+		else:
+			raise ValueError('No such process: {}'.format(anything))
 
 	def __getattr__(self, name):
 		"""
@@ -188,13 +193,29 @@ class _Proxy(object):
 			# not recommended, but just for avilability
 			self.__setattr__(index, value)
 			return
+		
+		# allow using proc id to assign depends
+		if self._attr == 'depends':
+			index2 = self._any2index(value)
+			
+			if isinstance(index2, int):
+				value = [self._procs[index2]]
+			elif isinstance(index2, slice):
+				value = self._procs[index2]
+			else:
+				value = []
+				for idx in index2:
+					if isinstance(idx, int):
+						value.append(self._procs[idx])
+					else:
+						value.extend(self._procs[idx])
 
 		if isinstance(index, int):
 			setattr(self._procs[index], self._attr, value)
 		elif isinstance(index, slice):
 			for proc in self._procs[index]:
 				setattr(proc, self._attr, value)
-		else:
+		else:			
 			for idx in index:
 				if isinstance(idx, int):
 					setattr(self._procs[idx], self._attr, value)
@@ -339,8 +360,16 @@ class Aggr (object):
 				# don't pass the samething for input and depends of all processes
 				# if you do want that, please use input2 and depends2
 				# make sure passing a list explictly
+				
 				if not isinstance(value, list):
 					raise AggrAttributeError(name, 'Expecting a list for attribute')
+
+				# allow using proc id to assign depends
+				if name == 'depends':
+					for i, val in enumerate(value):
+						if isinstance(value, string_types):
+							value[i] = [self._procs[val] for val in utils.alwaysList(value)]
+
 				for i, val in enumerate(value):
 					setattr(procs[i], name, val)
 			else:
@@ -371,11 +400,6 @@ class Aggr (object):
 			if isinstance(proc, string_types) else [proc]
 			for proc in procs
 		], self.starts))
-		order = sum([
-			[self._procs[proc] for proc in utils.alwaysList(proc)] \
-			if isinstance(proc, string_types) else [proc]
-			for proc in order
-		], [])
 		starts = [proc for proc in order if proc in procs]
 		self.starts = starts
 	
@@ -387,6 +411,25 @@ class Aggr (object):
 		], []))
 		starts = [proc for proc in self.starts if proc not in procs]
 		self.starts = starts
+
+	def addEnd(self, *procs):
+		order = self._procs.values()
+		procs = set(sum([
+			[self._procs[proc] for proc in utils.alwaysList(proc)] \
+			if isinstance(proc, string_types) else [proc]
+			for proc in procs
+		], self.ends))
+		ends = [proc for proc in order if proc in procs]
+		self.ends = ends
+	
+	def delEnd(self, *procs):
+		procs = set(sum([
+			[self._procs[proc] for proc in utils.alwaysList(proc)] \
+			if isinstance(proc, string_types) else [proc]
+			for proc in procs
+		], []))
+		ends = [proc for proc in self.ends if proc not in procs]
+		self.ends = ends
 
 	def addProc (self, p, tag = None, where = None, copy = True):
 		"""

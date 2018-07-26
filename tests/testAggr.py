@@ -723,6 +723,33 @@ class TestAggr(testly.TestCase):
 		yield aggr, [aggr.p1], [aggr.p2]
 		yield aggr, ['p1, p2'], []
 	
+	def testAddEnd(self, aggr, args, ends):
+		aggr.addEnd(*args)
+		self.assertListEqual(aggr.ends, ends)
+
+	def dataProvider_testAddEnd(self):
+		p1 = Proc()
+		p2 = Proc()
+		p3 = Proc()
+		aggr = Aggr(p1, p2, p3, depends = False)
+		yield aggr, [aggr.p1], [aggr.p1]
+		yield aggr, [aggr.p2], [aggr.p1, aggr.p2]
+		yield aggr, ['p1', 'p2'], [aggr.p1, aggr.p2]
+		yield aggr, ['p1, p2'], [aggr.p1, aggr.p2]
+
+	def testDelEnd(self, aggr, args, ends):
+		aggr.delEnd(*args)
+		self.assertListEqual(aggr.ends, ends)
+
+	def dataProvider_testDelEnd(self):
+		p1 = Proc()
+		p2 = Proc()
+		p3 = Proc()
+		aggr = Aggr(p1, p2, p3, depends = False)
+		aggr.ends = 'p1, p2'
+		yield aggr, [aggr.p1], [aggr.p2]
+		yield aggr, ['p1, p2'], []
+
 	def dataProvider_testDepends(self):
 		pDepends1 = Proc()
 		pDepends2 = Proc()
@@ -730,13 +757,18 @@ class TestAggr(testly.TestCase):
 		pDepends4 = Proc()
 		pDepends5 = Proc()
 		aggr = Aggr(pDepends1, pDepends2, pDepends3)
-		aggr.starts = [pDepends1, pDepends2]
-		yield aggr, [pDepends4, pDepends5]		
-	
+		aggr.starts = 'pDepends1, pDepends2'
+		aggr.depends = [aggr.pDepends2, aggr.pDepends3]
+		yield aggr, [[aggr.pDepends2], [aggr.pDepends3]]
+
+		aggr1 = Aggr(pDepends1, pDepends2, pDepends3, pDepends4, pDepends5)
+		aggr1.starts = 'pDepends1'
+		aggr1.depends['pDepends1'] = 'pDepends3, pDepends5'
+		yield aggr1, [[aggr1.pDepends3, aggr1.pDepends5]]
+
 	def testDepends(self, aggr, depends):
-		aggr.depends = depends
 		for i, p in enumerate(aggr.starts):
-			self.assertListEqual(p.depends, [depends[i]])
+			self.assertListEqual(p.depends, depends[i])
 		
 	def dataProvider_testDepends2(self):
 		pDepends21 = Proc()
