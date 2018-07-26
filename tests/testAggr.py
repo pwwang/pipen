@@ -685,16 +685,43 @@ class TestAggr(testly.TestCase):
 					self.assertListEqual(p.depends, [])
 
 			# delegates
-			if delegates:
-				self.assertNotEqual(newaggr._delegates, aggr._delegates)
-				self.assertDictEqual({
-					k: [aggr._procs[p.id] for p in v]
-					for k, v in newaggr._delegates.items()
-				}, aggr._delegates)
+			#if delegates:
+			self.assertNotEqual(newaggr._delegates, aggr._delegates)
+			self.assertDictEqual({
+				k: [aggr._procs[p.id] for p in v]
+				for k, v in newaggr._delegates.items()
+			}, aggr._delegates)
 
 			# configs
-			if configs:
-				self.assertDictEqual(newaggr._config, aggr._config)
+			#if configs:
+			self.assertDictEqual(newaggr._config, aggr._config)
+
+	def testAddStart(self, aggr, args, starts):
+		aggr.addStart(*args)
+		self.assertListEqual(aggr.starts, starts)
+
+	def dataProvider_testAddStart(self):
+		p1 = Proc()
+		p2 = Proc()
+		p3 = Proc()
+		aggr = Aggr(p1, p2, p3, depends = False)
+		yield aggr, [aggr.p1], [aggr.p1]
+		yield aggr, [aggr.p2], [aggr.p1, aggr.p2]
+		yield aggr, ['p1', 'p2'], [aggr.p1, aggr.p2]
+		yield aggr, ['p1, p2'], [aggr.p1, aggr.p2]
+
+	def testDelStart(self, aggr, args, starts):
+		aggr.delStart(*args)
+		self.assertListEqual(aggr.starts, starts)
+
+	def dataProvider_testDelStart(self):
+		p1 = Proc()
+		p2 = Proc()
+		p3 = Proc()
+		aggr = Aggr(p1, p2, p3, depends = False)
+		aggr.starts = 'p1, p2'
+		yield aggr, [aggr.p1], [aggr.p2]
+		yield aggr, ['p1, p2'], []
 	
 	def dataProvider_testDepends(self):
 		pDepends1 = Proc()

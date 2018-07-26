@@ -315,7 +315,11 @@ class Aggr (object):
 		if name == 'id':
 			self.__dict__['id'] = value
 		elif name in ['starts', 'ends']:
-			self.__dict__[name] = list(value) if isinstance(value, (list, tuple)) else [value]
+			value = utils.alwaysList(value) if isinstance(value, string_types) \
+				else list(value) if isinstance(value, (tuple, list))     \
+				else [value]
+			value = [self._procs[val] if isinstance(val, string_types) else val for val in value]
+			self.__dict__[name] = value
 			# update delegates here?
 			if name == 'starts':
 				for attr in self._delegates_starts:
@@ -359,6 +363,30 @@ class Aggr (object):
 		for name in names:
 			if self._config[name]['off']:
 				self._config[name]['off'](self)
+
+	def addStart(self, *procs):
+		order = self._procs.values()
+		procs = set(sum([
+			[self._procs[proc] for proc in utils.alwaysList(proc)] \
+			if isinstance(proc, string_types) else [proc]
+			for proc in procs
+		], self.starts))
+		order = sum([
+			[self._procs[proc] for proc in utils.alwaysList(proc)] \
+			if isinstance(proc, string_types) else [proc]
+			for proc in order
+		], [])
+		starts = [proc for proc in order if proc in procs]
+		self.starts = starts
+	
+	def delStart(self, *procs):
+		procs = set(sum([
+			[self._procs[proc] for proc in utils.alwaysList(proc)] \
+			if isinstance(proc, string_types) else [proc]
+			for proc in procs
+		], []))
+		starts = [proc for proc in self.starts if proc not in procs]
+		self.starts = starts
 
 	def addProc (self, p, tag = None, where = None, copy = True):
 		"""
