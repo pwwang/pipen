@@ -636,19 +636,22 @@ class TestAggr(testly.TestCase):
 		yield aggr, 'newtag', True, 'newid'
 		yield aggr, None, True, None
 		yield aggr, None, False, None
-		yield aggr, aggr.pCopy1.tag, False, None, AggrCopyError, 'Cannot copy process with same id and tag: \'pCopy1.%s\'' % aggr.pCopy1.tag
+		yield aggr, aggr.pCopy1.tag, False, None, False, False, AggrCopyError, 'Cannot copy process with same id and tag: \'pCopy1.%s\'' % aggr.pCopy1.tag
 		
 		aggr1 = Aggr(pCopy1, pCopy2, pCopy3, depends = False)
 		aggr1.starts = [aggr1.pCopy1, aggr1.pCopy2]
 		aggr1.pCopy3.depends = aggr1.starts
-		yield aggr1, None, True, None
+		aggr1.config('qc', lambda a: True, lambda a: False)
+		yield aggr1, None, True, None, True, True
+
+
 			
-	def testCopy(self, aggr, tag, deps, id, exception = None, msg = None):
+	def testCopy(self, aggr, tag, deps, id, delegates = False, configs = False, exception = None, msg = None):
 		self.maxDiff = None
 		if exception:
-			self.assertRaisesRegex(exception, msg, aggr.copy, tag, deps, id)
+			self.assertRaisesRegex(exception, msg, aggr.copy, tag, deps, id, delegates, configs)
 		else:
-			newaggr = aggr.copy(tag, deps, id)
+			newaggr = aggr.copy(tag, deps, id, delegates, configs)
 			# id
 			if id is None:
 				self.assertEqual(newaggr.id, 'newaggr')
@@ -680,6 +683,18 @@ class TestAggr(testly.TestCase):
 			else:
 				for k, p in newaggr._procs.items():
 					self.assertListEqual(p.depends, [])
+
+			# delegates
+			if delegates:
+				self.assertNotEqual(newaggr._delegates, aggr._delegates)
+				self.assertDictEqual({
+					k: [aggr._procs[p.id] for p in v]
+					for k, v in newaggr._delegates.items()
+				}, aggr._delegates)
+
+			# configs
+			if configs:
+				self.assertDictEqual(newaggr._config, aggr._config)
 	
 	def dataProvider_testDepends(self):
 		pDepends1 = Proc()

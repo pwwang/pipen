@@ -345,18 +345,20 @@ class Aggr (object):
 				for proc in procs:
 					setattr(proc, name, value)
 
-	def config(self, name, on, off):
+	def config(self, name, on, off = None):
 		self._config[name] = dict(on = on, off = off)
 
 	def on(self, *names):
 		names = sum([utils.alwaysList(name) for name in names], [])
 		for name in names:
-			self._config[name]['on'](self)
+			if self._config[name]['on']:
+				self._config[name]['on'](self)
 	
 	def off(self, *names):
 		names = sum([utils.alwaysList(name) for name in names], [])
 		for name in names:
-			self._config[name]['off'](self)
+			if self._config[name]['off']:
+				self._config[name]['off'](self)
 
 	def addProc (self, p, tag = None, where = None, copy = True):
 		"""
@@ -381,14 +383,16 @@ class Aggr (object):
 			self.ends.append (newproc)
 		return self
 
-	def copy (self, tag=None, deps=True, id=None):
+	def copy (self, tag=None, depends=True, id=None, delegates = True, configs = True):
 		"""
 		Like `proc`'s `copy` function, copy an aggregation. Each processes will be copied.
 		@params:
 			`tag`:      The new tag of all copied processes
-			`deps`: Whether to copy the dependencies or not. Default: True
+			`depends`: Whether to copy the dependencies or not. Default: True
 			- dependences for processes in starts will not be copied
 			`id`:    Use a different id if you don't want to use the variant name
+			`delegates`: Copy delegates? Default: `True`
+			`configs`: Copy configs? Default: `True`
 		@returns:
 			The new aggregation
 		"""
@@ -418,12 +422,23 @@ class Aggr (object):
 				ret.ends[self.ends.index(proc)] = newproc
 
 		# copy dependences
-		if deps:
+		if depends:
 			for k, proc in ret._procs.items():
 				proc.depends = [
-					p if p not in self._procs.values() else \
-					ret._procs[p.id] \
+					p if p not in self._procs.values() else ret._procs[p.id] 
 					for p in self._procs[k].depends
 				]
+
+		if delegates:
+			for k, procs in self._delegates.items():
+				ret._delegates[k] = [ret._procs[proc.id] for proc in procs]
+		else:
+			# trigger the default delegates
+			ret.starts = ret.starts
+			ret.ends   = ret.ends
+
+		if configs:
+			for k, v in self._config.items():
+				ret._config[k] = v
 
 		return ret
