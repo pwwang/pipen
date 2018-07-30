@@ -222,7 +222,15 @@ aFastqPE2Bam['ends'].args.tmpdir = '/tmp'
 !!! note
 
     When use `__getitem__` to select processes from aggregations, only the index or the id will return the processes itself (instance of `Proc`), otherwise it will return an instance `_Proxy`, which is proxy used to pass attribute values to a set of processes.  
-    So pay attention to it, because we can do `aggr['pXXX1, pXXX2'].depends = "pXXX3, pXXX4"` to `aggr.pXXX3` and `aggr.pXXX4` as the dependent of `aggr.pXXX1` and `aggr.pXXX2` respectively, but if you do `aggr['pXXX1'] = 'pXXX3'` will raise an error. Because `_Proxy` helps the aggregation to select the processes from itselt, but a `Proc` instance doesn't know how to.
+    So pay attention to it, because we can do `aggr['pXXX1, pXXX2'].depends = "pXXX3, pXXX4"` to `aggr.pXXX3` and `aggr.pXXX4` as the dependent of `aggr.pXXX1` and `aggr.pXXX2` respectively, but if you do `aggr['pXXX1'] = 'pXXX3'` will raise an error. Because `_Proxy` helps the aggregation to select the processes from itselt, but a `Proc` instance doesn't know how to.  
+    You may turn it into `_Proxy` from `Proc` instance simply by add a comma to the selector:
+    ```python
+    isinstance(aggr[0], Proc)
+    isinstance(aggr[0,], _Proxy)
+    isinstance(aggr['pXXX1'], Proc)
+    isinstance(aggr['pXXX1,'], _Proxy) # or
+    isinstance(aggr['pXXX1',], _Proxy) 
+    ```
 
 ## Define modules of an aggregation.
 We can define some modules for an aggregation, later on we can switch them on or off.  
