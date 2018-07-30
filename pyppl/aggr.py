@@ -278,9 +278,9 @@ class Aggr (object):
 			a.addStart(starts)
 			for key, val in depends.items():
 				if isinstance(a[key], _Proxy):
-					a[key].depends = self._select(val, forceList = True, flatten = False)
+					a[key].depends = a._select(val, forceList = True, flatten = False)
 				else:
-					a[key].depends = self._select(val, forceList = True, flatten = True)
+					a[key].depends = a._select(val, forceList = True, flatten = True)
 			a.addEnd(ends)
 
 		def off(a):
