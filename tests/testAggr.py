@@ -151,10 +151,12 @@ class TestAggr(testly.TestCase):
 		pSelectc = Proc()
 		aggr = Aggr(pSelecta, pSelectb, pSelectc)
 		yield aggr, 0, False, aggr.pSelecta
+		yield aggr, (0,), False, [aggr.pSelecta]
 		yield aggr, 0, True, [aggr.pSelecta]
 		yield aggr, 1, False, aggr.pSelectb
 		yield aggr, 'pSelectb', False, aggr.pSelectb
 		yield aggr, 'pSelectb', True, [aggr.pSelectb]
+		yield aggr, 'pSelectb,', False, [aggr.pSelectb]
 		yield aggr, aggr.pSelectb, False, aggr.pSelectb
 		yield aggr, aggr.pSelectb, True, [aggr.pSelectb]
 		yield aggr, slice(0,2), True, [aggr.pSelecta, aggr.pSelectb]

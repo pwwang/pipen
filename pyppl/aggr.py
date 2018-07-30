@@ -182,7 +182,7 @@ class Aggr (object):
 			else:
 				ret = self._procs[key]
 		elif isinstance(key, (tuple, list)):
-			ret = [self._select(k) for k in key]
+			ret = [self._select(k) for k in key if k != '' and k is not None]
 			if flatten:
 				ret = sum([r if isinstance(r, list) else [r] for r in ret], [])
 		elif hasattr(key, 'id'): # Proc
@@ -295,7 +295,7 @@ class Aggr (object):
 				startskeep.extend(a._select(key, forceList = True))
 			a.delStart([proc for proc in startsdel if proc not in startskeep])
 
-			depsdel = depends.keys()
+			depsdel = list(depends.keys())
 			# depends need to keep
 			depskeep = []
 			for key, val in depends_shared.items():
@@ -304,7 +304,7 @@ class Aggr (object):
 				if all([a._modules[func]['status'] == 'off' for func in funcs]): 
 					continue
 				depskeep.extend(a._select(key, forceList = True))
-			
+
 			for proc in a._select(depsdel, forceList = True):
 				if proc in depskeep:
 					continue
@@ -396,9 +396,9 @@ class Aggr (object):
 		name = utils.varname() if id is None else id
 		tag  = utils.uid(name, 4) if not tag else tag
 		ret  = Aggr (id = name)
-		ret.starts = [None] * len(self.starts)
-		ret.ends   = [None] * len(self.ends)
-
+		ret.__dict__['starts'] = [None] * len(self.starts)
+		ret.__dict__['ends']   = [None] * len(self.ends)
+		
 		for k, proc in self._procs.items():
 			if tag == proc.tag:
 				# This will happen to have procs with same id and tag
@@ -411,7 +411,7 @@ class Aggr (object):
 				else 'starts' if proc in self.starts \
 				else 'ends' if proc in self.ends \
 				else None
-
+			
 			ret.addProc (newproc, tag = tag, where = None, copy = False)
 			if where == 'starts' or where == 'both':
 				ret.starts[self.starts.index(proc)] = newproc
