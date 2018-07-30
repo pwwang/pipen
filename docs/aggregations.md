@@ -196,28 +196,71 @@ There are several ways to do that:
 aFastqPE2Bam.pPrintReads.args.tmpdir = '/tmp'
 aFastqPE2Bam.pPrintReads.runner = 'local'
 # refer to the index of the process
-aFastqPE2Bam.args[8].tmpdir = '/tmp'
-aFastqPE2Bam.runner[8] = 'local'
+aFastqPE2Bam[8].args.tmpdir = '/tmp'
+aFastqPE2Bam[8].runner = 'local'
 # refer to the name of the process
-aFastqPE2Bam.args['pPrintReads'].tmpdir = '/tmp'
-aFastqPE2Bam.runner['pPrintReads'] = 'local'
+aFastqPE2Bam['pPrintReads'].args.tmpdir = '/tmp'
+aFastqPE2Bam['pPrintReads'].runner = 'local'
 
 # for multiple processes
-aFastqPE2Bam.args[:3].tmpdir = '/tmp'
-aFastqPE2Bam.args[0,1,3].tmpdir = '/tmp'
-aFastqPE2Bam.args['aFastqPE2Bam', 'pPrintReads'].tmpdir = '/tmp'
-aFastqPE2Bam.args['aFastqPE2Bam, pPrintReads'].tmpdir = '/tmp'
+aFastqPE2Bam[:3].args.tmpdir = '/tmp'
+aFastqPE2Bam[0,1,3].args.tmpdir = '/tmp'
+aFastqPE2Bam['aFastqPE2Bam', 'pPrintReads'].args.tmpdir = '/tmp'
+aFastqPE2Bam['aFastqPE2Bam, pPrintReads'].args.tmpdir = '/tmp'
 
 # or you may use starts/ends to refer to the start/end processes
 # has to be done after aggr.starts/aggr.ends assigned 
 # or initialized with depends = True
-aFastqPE2Bam.args['starts'].tmpdir = '/tmp'
-aFastqPE2Bam.args['ends'].tmpdir = '/tmp'
+aFastqPE2Bam['starts'].args.tmpdir = '/tmp'
+aFastqPE2Bam['ends'].args.tmpdir = '/tmp'
 ```
 
 !!! hint
 
     If an attribute is delegated for other processes, you can still set the value of it by the above methods.
+
+!!! note
+
+    When use `__getitem__` to select processes from aggregations, only the index or the id will return the processes itself (instance of `Proc`), otherwise it will return an instance `_Proxy`, which is proxy used to pass attribute values to a set of processes.  
+    So pay attention to it, because we can do `aggr['pXXX1, pXXX2'].depends = "pXXX3, pXXX4"` to `aggr.pXXX3` and `aggr.pXXX4` as the dependent of `aggr.pXXX1` and `aggr.pXXX2` respectively, but if you do `aggr['pXXX1'] = 'pXXX3'` will raise an error. Because `_Proxy` helps the aggregation to select the processes from itselt, but a `Proc` instance doesn't know how to.
+
+## Define modules of an aggregation.
+We can define some modules for an aggregation, later on we can switch them on or off.  
+To define a module, you can simply do:
+```python
+aggr.module('name', starts = 'pStart', ends = 'pEnd', depends = {'pEnd': 'pStart'})
+```
+Later on, when we switch this module on: `aggr.on('name')`, then `aggr.pStart` will be added to `aggr.starts`, `aggr.pEnds` will be added to `aggr.ends`, and `aggr.pEnd` will be set to depend on `aggr.pStart`. When we switch it off, then `aggr.pStart` will be removed from `aggr.starts`, `aggr.pEnds` will be removed from `aggr.ends`, and `aggr.pStart` will be removed from `aggr.pStart`'s dependents.  
+If you want to keep some processes from being removed when the module is switched off, as they are used by other modules, you may do: 
+```python
+aggr.module(
+    'name', 
+    starts      = 'pStart',
+    ends        = 'pEnd',
+    depends     = {'pEnd': 'pStart'},
+    ends_shared = {'pEnd': 'othermod'}
+)
+```
+Then when the module is switched off, `aggr.pEnd` will be kept.
+
+If you have something else to be done when a module is switched on/off, you may use `moduleFunc` to define them:
+```python
+def name_on(a):
+    a.addStart(a.pStart)
+    a.pEnd.depends = a.pStart
+    a.addEnd(a.pEnd)
+    # more stuff go here
+def name_off(a):
+    a.delStart(a.pStart)
+    a.pEnd.depends = []
+    a.delEnd(a.pEnd)
+    # more stuff go here
+aggr.moduleFunc('name', on, off)
+```
+
+!!! hint
+
+    You may use `aggr.on()` to switch all modules on and `aggr.off()` to switch all modules off.
 
 ## Set an aggregation as start aggregation for a pipeline
 You can do it just like setting a process as the starting process of pipeline (see [here][1]). Actually the starting processes in the aggregation (`aggr.starts`) will be set as the starting processes of the pipeline.
@@ -234,7 +277,7 @@ An aggregation can depend on aggregations and/or processes, you just treat the a
     You have to specify `depends` for start processes of an aggregation.
 
 ## Copy an aggregation
-`Aggr.copy(tag = 'notag', copyDeps = True, newid = None)`
+`Aggr.copy(tag = 'notag', depends = True, id = None, delegates = True, modules = True)`
 You may copy an aggregation, all the processes in the aggregation will be copied, and the dependencies will be switched to the corresponding copied processes, as well as the starting and ending processes, if `copyDeps == True`. 
 
 You can keep the ids of processes unchanged but give a new tag and also give the aggregation an new id instead of the variable name:
