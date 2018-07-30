@@ -2,7 +2,7 @@
 A set of exceptions used by PyPPL
 """
 
-class TemplatePyPPLSyntaxError(Exception):
+class TemplatePyPPLSyntaxError(SyntaxError):
 	"""
 	Raised when a template has a syntax error.
 	"""
@@ -36,7 +36,7 @@ class ParameterNameError(Exception):
 		msg = msg or "Parameter name error"
 		super(ParameterNameError, self).__init__(str(msg) + ': ' + repr(name))
 
-class ParameterTypeError(Exception):
+class ParameterTypeError(TypeError):
 	"""
 	Unable to set type
 	"""
@@ -113,7 +113,7 @@ class ProcTagError(Exception):
 	def __init__(self, msg = 'Failed to specify tag for process.'):
 		super(ProcTagError, self).__init__(str(msg))
 
-class ProcAttributeError(Exception):
+class ProcAttributeError(AttributeError):
 	"""
 	Raise when set/get process' attributes
 	"""
@@ -171,7 +171,7 @@ class PyPPLConfigError(Exception):
 	def __init__(self, key, msg):
 		super(PyPPLConfigError, self).__init__(str(msg) + ': ' + repr(key))
 
-class AggrAttributeError(Exception):
+class AggrAttributeError(AttributeError):
 	"""
 	Raise when there is an error to set/get Aggr attributes
 	"""
@@ -184,3 +184,10 @@ class AggrCopyError(Exception):
 	"""
 	def __init__(self, key, msg = 'Failed to copy aggregation'):
 		super(AggrCopyError, self).__init__(str(msg) + ': ' + repr(key))
+
+class AggrKeyError(KeyError):
+	"""
+	Raise when error occurred doing aggr[...]
+	"""
+	def __init__(self, key, msg = 'Key error'):
+		super(AggrKeyError, self).__init__(str(msg) + ': ' + repr(key))
