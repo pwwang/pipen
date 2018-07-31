@@ -6,7 +6,8 @@ from collections import OrderedDict
 from glob import glob
 from time import sleep
 from datetime import datetime
-from os import makedirs, path, remove, utime
+from os import makedirs, path, remove, utime, setpgrp, killpg
+from signal import SIGKILL
 from multiprocessing import Lock, JoinableQueue, Process, Array
 from six import string_types
 from . import utils, logger
@@ -56,6 +57,24 @@ class Jobmgr (object):
 		"""
 		if not self.runners: return True
 		return all(s in [Jobmgr.STATUS_DONE, Jobmgr.STATUS_DONEFAILED] for s in self.status)
+
+	def halt(self, index = None):
+		"""
+		Halt the pipeline if needed
+		"""
+		if self.proc.errhow == 'halt' and index:
+			# report the error
+			self.runners[index].job.showError()
+			killpg(0, SIGKILL)
+		elif not index: # ctrl-c
+			for i, s in enumerate(self.status):
+				# show the error message of the first failed job
+				if s in [Jobmgr.STATUS_SUBMITFAILED, Jobmgr.STATUS_DONEFAILED]:
+					index = i
+					break
+			if index:
+				self.runners[index].job.showError()
+			killpg(0, SIGKILL)
 
 	def progressbar(self, jid, loglevel = 'info'):
 		bar     = '%s [' % self.proc.jobs[jid]._indexIndicator()
@@ -129,24 +148,28 @@ class Jobmgr (object):
 		@params:
 			`sq`: The submit queue
 		"""
-		while True:
-			# if we already have enough # jobs running, wait
-			if not self.canSubmit():
-				sleep(.5)
-				continue
+		try:
+			while True:
+				# if we already have enough # jobs running, wait
+				if not self.canSubmit():
+					sleep(.2)
+					continue
 
-			jid = sq.get()
-			if jid is None:
+				jid = sq.get()
+				if jid is None:
+					sq.task_done()
+					break
+
+				self.status[jid] = Jobmgr.STATUS_SUBMITTING
+				if self.runners[jid].submit():
+					self.status[jid] = Jobmgr.STATUS_SUBMITTED
+				else:
+					self.status[jid] = Jobmgr.STATUS_SUBMITFAILED
+					self.halt(jid)
+				self.progressbar(jid, 'submit')
 				sq.task_done()
-				break
-
-			self.status[jid] = Jobmgr.STATUS_SUBMITTING
-			if self.runners[jid].submit():
-				self.status[jid] = Jobmgr.STATUS_SUBMITTED
-			else:
-				self.status[jid] = Jobmgr.STATUS_SUBMITFAILED
-			self.progressbar(jid, 'submit')
-			sq.task_done()
+		except KeyboardInterrupt:
+			pass
 
 	def runPool(self, rq, sq):
 		"""
@@ -155,43 +178,51 @@ class Jobmgr (object):
 			`rq`: The run queue
 			`sq`: The submit queue
 		"""
-		while True:
-			jid = rq.get()
-			if jid is None:
-				rq.task_done()
-				break
-			else:
-				r = self.runners[jid]
-				while self.status[jid]!=Jobmgr.STATUS_SUBMITTED and self.status[jid]!=Jobmgr.STATUS_SUBMITFAILED:
-					sleep(.5)
-				if self.status[jid]==Jobmgr.STATUS_SUBMITTED and r.run():
-					self.status[jid] = Jobmgr.STATUS_DONE
-				else: # submission failed
-					if r.retry():
-						self.status[jid] = Jobmgr.STATUS_INITIATED
-						sq.put(jid)
-						rq.put(jid)
-					else:
-						self.status[jid] = Jobmgr.STATUS_DONEFAILED
-				self.progressbar(jid, 'jobdone')
-				rq.task_done()
+		try:
+			while True:
+				jid = rq.get()
+				if jid is None:
+					rq.task_done()
+					break
+				else:
+					r = self.runners[jid]
+					while self.status[jid]!=Jobmgr.STATUS_SUBMITTED and self.status[jid]!=Jobmgr.STATUS_SUBMITFAILED:
+						sleep(.2)
+					if self.status[jid]==Jobmgr.STATUS_SUBMITTED and r.run():
+						self.status[jid] = Jobmgr.STATUS_DONE
+					else: # submission failed
+						if r.retry():
+							self.status[jid] = Jobmgr.STATUS_INITIATED
+							sq.put(jid)
+							rq.put(jid)
+						else:
+							self.status[jid] = Jobmgr.STATUS_DONEFAILED
+							self.halt(jid)
+					self.progressbar(jid, 'jobdone')
+					rq.task_done()
+		except KeyboardInterrupt:
+			pass
 
 	def watchPool(self, rq, sq):
 		"""
 		The watchdog, checking whether all jobs are done.
 		"""
-		while not self.allJobsDone():
-			sleep(.5)
+		try:
+			while not self.allJobsDone():
+				sleep(.1)
 
-		for _ in range(self.npsubmit):
-			sq.put(None)
-		for _ in range(self.nprunner):
-			rq.put(None)
+			for _ in range(self.npsubmit):
+				sq.put(None)
+			for _ in range(self.nprunner):
+				rq.put(None)
+		except KeyboardInterrupt:
+			pass
 
 	def run(self):
 		"""
 		Start to run the jobs
 		"""
+		setpgrp()
 		submitQ = JoinableQueue()
 		runQ    = JoinableQueue()
 
@@ -209,13 +240,16 @@ class Jobmgr (object):
 			p.daemon = True
 			p.start()
 
-		watchp = Process(target = self.watchPool, args = (runQ, submitQ))
-		watchp.daemon = True
-		watchp.start()
+		watchDog = Process(target = self.watchPool, args = (runQ, submitQ))
+		watchDog.daemon = True
+		watchDog.start()
 
-		runQ.join()
-		submitQ.join()
-		watchp.join()
+		try:
+			runQ.join()
+			submitQ.join()
+			watchDog.join()
+		except KeyboardInterrupt:
+			self.halt()
 
 
 class Job (object):

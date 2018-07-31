@@ -185,7 +185,10 @@ class Proc (object):
 		self.props['echo']        = {}
 
 		# How to deal with the errors
-		self.config['errhow']     = "terminate" # retry, ignore
+		# retry, ignore, halt
+		# halt to halt the whole pipeline, no submitting new jobs
+		# terminate to just terminate the job itself
+		self.config['errhow']     = "terminate" 
 		# How many times to retry to jobs once error occurs
 		self.config['errntry']    = 3
 		# The directory to export the output files
