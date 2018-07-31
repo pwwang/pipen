@@ -90,7 +90,7 @@ class Proc (object):
 	EX_MOVE      = ['move', 'mv']
 	EX_LINK      = ['link', 'symlink', 'symbol']
 
-	def __init__ (self, tag = 'notag', desc = 'No description.', id = None):
+	def __init__ (self, tag = 'notag', desc = 'No description.', id = None, **kwargs):
 		"""
 		Constructor
 		@params:
@@ -295,6 +295,10 @@ class Proc (object):
 		self.props['workdir']     = ''
 
 		self.props['logs']        = {}
+
+		# TODO: add tests
+		for key, val in kwargs.items():
+			self.__setattr__(key, val)
 
 		PyPPL._registerProc(self)
 
