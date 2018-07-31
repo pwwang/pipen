@@ -1,5 +1,12 @@
 # Change log
 
+## July 31, 2018: 1.0.1
+- Change the default path of flowchart and log from script directory to current directory.
+- Rewrite the way of attribute setting for aggregations.
+- Introduce modules for aggregations.
+- Allow setting attributes from Proc constructor.
+- Implement #33, `Ctrl-c` now also halts the pipeline, and hides the exception details.
+
 ## July 10, 2018: 1.0.0 !
 - Fix runner name issue #31.
 - Use mkdocs to generate documentations and host them on GitHub pages.

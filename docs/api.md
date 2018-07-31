@@ -129,7 +129,7 @@ The pipeline object itself.
 		`__setattr__(self, name, value)`: set the value of a property in `self.config`
 	
 
-#### `__init__ (self, tag, desc, id) `
+#### `__init__ (self, tag, desc, id, **kwargs) `
   
 Constructor  
 
@@ -806,6 +806,10 @@ Tell whether we can submit jobs.
 - **returns:**  
 `True` if we can, otherwise `False`  
   
+#### `halt (self, index) `
+  
+Halt the pipeline if needed  
+  
 #### `progressbar (self, jid, loglevel) `
   
 #### `run (self) `
@@ -857,6 +861,27 @@ Constructor
 `id`: The id of the aggr. Default: None (the variable name)  
 `tag`: The tag of the processes. Default: None (a unique 4-char str according to the id)  
   
+#### `_select (self, key, forceList, flatten) `
+  
+Select processes  
+```  
+# self._procs = OrderedDict([  
+#	('a', Proc(id = 'a')),  
+#	('b', Proc(id = 'b')),  
+#	('c', Proc(id = 'c')),  
+#	('d', Proc(id = 'd'))  
+# ])  
+  
+self['a'] # proc a  
+self[0]   # proc a  
+self[1:2] # _Proxy of (proc b, proc c)  
+self[1,3] # _Proxy of (proc b, proc d)  
+self['b', 'c'] # _Proxy of (proc b, proc c)  
+self['b,c'] # _Proxy of (proc b, proc c)  
+self[Proc(id = 'd')] # proc d  
+  
+#### `addEnd (self, *procs) `
+  
 #### `addProc (self, p, tag, where, copy) `
   
 Add a process to the aggregation.  
@@ -869,18 +894,26 @@ Note that you have to adjust the dependencies after you add processes.
 - **returns:**  
 the aggregation itself  
   
-#### `copy (self, tag, deps, id) `
+#### `addStart (self, *procs) `
+  
+#### `copy (self, tag, depends, id, delegates, modules) `
   
 Like `proc`'s `copy` function, copy an aggregation. Each processes will be copied.  
 
 - **params:**  
 `tag`:      The new tag of all copied processes  
-`deps`: Whether to copy the dependencies or not. Default: True  
+`depends`: Whether to copy the dependencies or not. Default: True  
 - dependences for processes in starts will not be copied  
 `id`:    Use a different id if you don't want to use the variant name  
+`delegates`: Copy delegates? Default: `True`  
+`configs`: Copy configs? Default: `True`  
 
 - **returns:**  
 The new aggregation  
+  
+#### `delEnd (self, *procs) `
+  
+#### `delStart (self, *procs) `
   
 #### `delegate (self, attrs, procs) `
   
@@ -889,6 +922,28 @@ Delegate the procs to have the attributes set by:
 Instead of setting `args.a.b` of all processes, `args.a.b` of only delegated processes will be set.  
 `procs` can be `starts`/`ends`, but it cannot be set with other procs, which means you can do:  
 `aggr.delegate('args', 'starts')`, but not `aggr.delegate('args', ['starts', 'pXXX'])`  
+  
+#### `module (self, name, starts, depends, ends, starts_shared, depends_shared, ends_shared) `
+  
+Define a function for aggr.  
+The "shared" parameters will be indicators not to remove those processes  
+when the shared function is on.  
+
+- **params:**  
+`name`          : The name of the function  
+`starts`        : A list of start processes.  
+`depends`       : A dict of dependences of the procs  
+`ends`          : A list of end processes  
+`starts_shared` : A dict of functions that shares the same starts  
+`depends_shared`: A dict of functions that shares the same depends  
+`ends_shared`   : A dict of functions that shares the same ends  
+- For example: `{<procs>: <func>}`  
+  
+#### `moduleFunc (self, name, on, off) `
+  
+#### `off (self, *names) `
+  
+#### `on (self, *names) `
   
 
 ## Module `Parameter`  

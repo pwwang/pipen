@@ -37,6 +37,13 @@ Currently we introduced in previous chapters a set of attributes of a process an
 | `callback` | The callback, called after the process finishes | `callable` | | This chapter |
 | `callfront` | The callfront, called after properties are computed | `callable` | | This chapter |
 
+!!! hint
+
+    Instead of using `setattr` (`pXXX.<attrname> = <attrvalue>`), Now you may also pass the `<attrname>` and `<attrvalue>` to the `Proc` constructor (since v1.0.1):
+    ```python
+    pXXX = Proc(..., <attrname> = <attrvalue>, ...)
+    ```
+
 ## Set arguments of a process `pXXX.args`
 It is a `dict` used to set some common arguments shared within the process (different jobs). For example, all jobs use the same program: `bedtools`. but to make the process portable and shareable, you may want others can give a different path of `bedtools` as well. Then you can use `pXXX.args`:
 ```python
