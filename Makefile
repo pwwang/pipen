@@ -92,4 +92,4 @@ build:
 	$(PYTHON) setup.py sdist bdist_wheel --universal
 
 dist:
-	twine upload dist/*
+	twine upload --skip-existing dist/* 
