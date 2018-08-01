@@ -1,5 +1,6 @@
 exclude_paths:
+  - 'setup.py'
   - 'api.py'
-  - 'site.py'
+  - 'site/**'
   - 'tests/**'
   - 'tutorials/**'
