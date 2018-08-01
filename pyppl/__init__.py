@@ -8,6 +8,7 @@ import threading
 import copy as pycopy
 import traceback
 import filelock
+import atexit
 from os import path, makedirs
 from time import time, sleep
 from random import randint
@@ -565,9 +566,12 @@ class Proc (object):
 					self.log('Calling callback ...', 'debug')
 					self.callback (self)
 			else:
-				failedjobs[0].showError (len(failedjobs))
+				# registered at atexit
+				#failedjobs[0].showError (len(failedjobs))
 				if self.errhow != 'ignore':
 					sys.exit (1) # don't go further
+				else:
+					failedjobs[0].showError (len(failedjobs))
 
 	def name (self, aggr = True):
 		"""
@@ -1167,9 +1171,15 @@ class Proc (object):
 		except KeyError:
 			raise ProcAttributeError(self.runner, 'No such runner')
 		jobmgr = Jobmgr(self, runner)
-		jobmgr.run()
-
-		self.log('After job run, active threads: %s' % threading.active_count(), 'debug')
+		atexit.register(jobmgr._exit)
+		try:
+			jobmgr.run()
+			self.log('After job run, active threads: %s' % threading.active_count(), 'debug')
+		except KeyboardInterrupt:
+			try:
+				self.log('Ctrl-c detected or job failed, pipeline exiting ...', 'WARNING')
+			except KeyboardInterrupt:
+				sys.stderr.write('Ctrl-c detected or job failed, pipeline exiting ...\n')
 
 class PyPPL (object):
 	"""

@@ -6,8 +6,8 @@ from collections import OrderedDict
 from glob import glob
 from time import sleep
 from datetime import datetime
-from os import makedirs, path, remove, utime, setpgrp, killpg
-from signal import SIGKILL
+from os import makedirs, path, remove, utime, getppid, kill
+from signal import SIGINT
 from multiprocessing import Lock, JoinableQueue, Process, Array
 from six import string_types
 from . import utils, logger
@@ -34,6 +34,7 @@ class Jobmgr (object):
 			`runner`   : The runner class
 		"""
 		self.proc    = proc
+		self.lock = Lock()
 		status       = []
 		self.runners = OrderedDict()
 		for job in proc.jobs:
@@ -42,11 +43,21 @@ class Jobmgr (object):
 			else:
 				status.append(Jobmgr.STATUS_INITIATED)
 				self.runners[job.index] = runner(job)
-		self.status  = Array('i', status, lock = Lock())
+		self.status  = Array('i', status, lock = self.lock)
 		# number of runner processes
 		self.nprunner = min(proc.forks, len(self.runners))
 		# number of submit processes
 		self.npsubmit = min(self.nprunner, proc.forks, proc.nthread)
+		self.subprocs = []
+
+	def _exit(self):
+		indexes = [i for i, s in enumerate(self.status) if s in [Jobmgr.STATUS_SUBMITFAILED, Jobmgr.STATUS_DONEFAILED]]
+		lenidx  = len(indexes)
+		if lenidx > 0:
+			self.runners[indexes[0]].job.showError(lenidx)
+		for proc in self.subprocs:
+			if proc._popen:
+				proc.terminate()
 
 	def allJobsDone(self):
 		"""
@@ -58,24 +69,13 @@ class Jobmgr (object):
 		if not self.runners: return True
 		return all(s in [Jobmgr.STATUS_DONE, Jobmgr.STATUS_DONEFAILED] for s in self.status)
 
-	def halt(self, index = None):
+	def halt(self, halt_anyway = False):
 		"""
 		Halt the pipeline if needed
 		"""
-		if self.proc.errhow == 'halt' and index:
-			# report the error
-			self.runners[index].job.showError()
-			killpg(0, SIGKILL)
-		elif not index: # ctrl-c
-			for i, s in enumerate(self.status):
-				# show the error message of the first failed job
-				if s in [Jobmgr.STATUS_SUBMITFAILED, Jobmgr.STATUS_DONEFAILED]:
-					index = i
-					break
-			if index:
-				self.runners[index].job.showError()
-			killpg(0, SIGKILL)
-
+		if self.proc.errhow == 'halt' or halt_anyway:
+			kill(getppid(), SIGINT)
+			
 	def progressbar(self, jid, loglevel = 'info'):
 		bar     = '%s [' % self.proc.jobs[jid]._indexIndicator()
 		barjobs = []
@@ -126,7 +126,6 @@ class Jobmgr (object):
 				bar += '='
 
 		bar += '] Done: %5.1f%% | Running: %d' % (100.0*float(ncompleted)/float(self.proc.size), nrunning)
-
 		self.proc.log(bar, loglevel)
 
 	def canSubmit(self):
@@ -165,7 +164,7 @@ class Jobmgr (object):
 					self.status[jid] = Jobmgr.STATUS_SUBMITTED
 				else:
 					self.status[jid] = Jobmgr.STATUS_SUBMITFAILED
-					self.halt(jid)
+					self.halt()
 				self.progressbar(jid, 'submit')
 				sq.task_done()
 		except KeyboardInterrupt:
@@ -197,7 +196,7 @@ class Jobmgr (object):
 							rq.put(jid)
 						else:
 							self.status[jid] = Jobmgr.STATUS_DONEFAILED
-							self.halt(jid)
+							self.halt()
 					self.progressbar(jid, 'jobdone')
 					rq.task_done()
 		except KeyboardInterrupt:
@@ -222,7 +221,6 @@ class Jobmgr (object):
 		"""
 		Start to run the jobs
 		"""
-		setpgrp()
 		submitQ = JoinableQueue()
 		runQ    = JoinableQueue()
 
@@ -233,23 +231,23 @@ class Jobmgr (object):
 		for _ in range(self.npsubmit):
 			p = Process(target = self.submitPool, args = (submitQ, ))
 			p.daemon = True
+			self.subprocs.append(p)
 			p.start()
 
 		for _ in range(self.nprunner):
 			p = Process(target = self.runPool, args = (runQ, submitQ))
 			p.daemon = True
+			self.subprocs.append(p)
 			p.start()
 
 		watchDog = Process(target = self.watchPool, args = (runQ, submitQ))
 		watchDog.daemon = True
+		self.subprocs.append(watchDog)
 		watchDog.start()
 
-		try:
-			runQ.join()
-			submitQ.join()
-			watchDog.join()
-		except KeyboardInterrupt:
-			self.halt()
+		runQ.join()
+		submitQ.join()
+		watchDog.join()
 
 
 class Job (object):
