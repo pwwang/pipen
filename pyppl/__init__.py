@@ -657,7 +657,15 @@ class Proc (object):
 			makedirs (self.workdir)
 
 		self.props['lock'] = filelock.FileLock(path.join(self.workdir, 'lock'))
-		self.lock.acquire()
+		
+		try:
+			self.lock.acquire(timeout = 3)
+		except filelock.Timeout:
+			self.log('Another instance of this process is running, waiting ...', 'warning')
+			self.log('If it is not the case, remove the process lock file and try again:', 'warning')
+			self.log('- ' + path.join(self.workdir, 'lock'), 'warning')
+			self.lock.acquire()
+
 		try:
 			# exdir
 			if self.exdir:
