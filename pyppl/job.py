@@ -34,7 +34,7 @@ class Jobmgr (object):
 			`runner`   : The runner class
 		"""
 		self.proc    = proc
-		self.lock = Lock()
+		self.lock    = Lock()
 		status       = []
 		self.runners = OrderedDict()
 		for job in proc.jobs:
@@ -43,7 +43,7 @@ class Jobmgr (object):
 			else:
 				status.append(Jobmgr.STATUS_INITIATED)
 				self.runners[job.index] = runner(job)
-		self.status  = Array('i', status, lock = self.lock)
+		self.status  = Array('i', status, lock = Lock())
 		# number of runner processes
 		self.nprunner = min(proc.forks, len(self.runners))
 		# number of submit processes
@@ -134,12 +134,13 @@ class Jobmgr (object):
 		@returns:
 			`True` if we can, otherwise `False`
 		"""
-		if self.nprunner == 0: return True
-		return sum(s in [
-			Jobmgr.STATUS_SUBMITTING,
-			Jobmgr.STATUS_SUBMITTED,
-			Jobmgr.STATUS_SUBMITFAILED
-		] for s in self.status) < self.nprunner
+		with self.lock:
+			if self.nprunner == 0: return True
+			return sum(s in [
+				Jobmgr.STATUS_SUBMITTING,
+				Jobmgr.STATUS_SUBMITTED,
+				Jobmgr.STATUS_SUBMITFAILED
+			] for s in self.status) < self.nprunner
 
 	def submitPool(self, sq):
 		"""
