@@ -63,8 +63,11 @@ class LocalHelper(Helper):
 		self.errfd = open(self.errfile, 'w')
 		self.proc  = cmd.run(chmodX(self.script), outfd = self.outfd, errfd = self.errfd, bg = True)
 		self.pid   = self.proc.pid
-		self.proc.p.wait()
-		self.proc.rc = self.proc.p.returncode
+		try:
+			self.proc.p.wait()
+			self.proc.rc = self.proc.p.returncode
+		except KeyboardInterrupt:
+			self.proc.rc = 1
 
 	def kill(self):
 		if self.pid is not None:
