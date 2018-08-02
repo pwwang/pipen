@@ -2,6 +2,7 @@ import copy
 from re import search
 
 from .runner import Runner
+from .helpers import SgeHelper
 from .. import utils
 
 
@@ -29,11 +30,13 @@ class RunnerSge (Runner):
 		if 'sgeRunner' in self.job.proc.props or 'sgeRunner' in self.job.proc.config:
 			conf = copy.copy (self.job.proc.sgeRunner)
 		
-		self.commands = {'qsub': 'qsub', 'qstat': 'qstat'}
+		commands = {'qsub': 'qsub', 'qstat': 'qstat', 'qdel': 'qdel'}
 		if 'qsub' in conf:
-			self.commands['qsub'] = conf['qsub']
+			commands['qsub'] = conf['qsub']
 		if 'qstat' in conf:
-			self.commands['qstat'] = conf['qstat']
+			commands['qstat'] = conf['qstat']
+		if 'qdel' in conf:
+			commands['qdel'] = conf['qdel']
 			
 		if not 'sge.N' in conf:
 			jobname = '.'.join([
@@ -102,28 +105,6 @@ class RunnerSge (Runner):
 		with open (sgefile, 'w') as f:
 			f.write ('\n'.join(sgesrc) + '\n')
 		
-		self.script = [self.commands['qsub'], sgefile]
+		self.helper = SgeHelper(sgefile, commands)
 
-	def getpid (self):
-		"""
-		Get the job identity and save it to job.pidfile
-		"""
-		# Your job 6556149 ("pSort.notag.3omQ6NdZ.0") has been submitted
-		with open(self.job.outfile) as f:
-			m = search (r"\s(\d+)\s", f.read())
-		if not m: return
-		self.job.pid (m.group(1))
-
-	def isRunning (self):
-		"""
-		Tell whether the job is still running
-		@returns:
-			True if it is running else False
-		"""
-		jobpid = self.job.pid ()
-		if not jobpid: return False
-		try:
-			return utils.dumbPopen ([self.commands['qstat'], '-j', jobpid]).wait() == 0
-		except Exception:
-			return False
 

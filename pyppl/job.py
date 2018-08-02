@@ -12,6 +12,7 @@ from multiprocessing import Lock, JoinableQueue, Process, Array
 from six import string_types
 from . import utils, logger
 from .exception import JobInputParseError, JobOutputParseError
+from .utils import ps
 
 class Jobmgr (object):
 	"""
@@ -54,7 +55,10 @@ class Jobmgr (object):
 		indexes = [i for i, s in enumerate(self.status) if s in [Jobmgr.STATUS_SUBMITFAILED, Jobmgr.STATUS_DONEFAILED]]
 		lenidx  = len(indexes)
 		if lenidx > 0:
-			self.runners[indexes[0]].job.showError(lenidx)
+			try:
+				self.runners[indexes[0]].job.showError(lenidx)
+			except KeyboardInterrupt:
+				pass
 		for proc in self.subprocs:
 			if proc._popen:
 				proc.terminate()
@@ -74,7 +78,7 @@ class Jobmgr (object):
 		Halt the pipeline if needed
 		"""
 		if self.proc.errhow == 'halt' or halt_anyway:
-			kill(getppid(), SIGINT)
+			ps.killtree(getppid(), killme = True, sig = SIGINT)
 			
 	def progressbar(self, jid, loglevel = 'info'):
 		bar     = '%s [' % self.proc.jobs[jid]._indexIndicator()

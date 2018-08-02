@@ -3,7 +3,7 @@ The base runner class
 """
 import sys
 import re
-from os import kill
+from os import path
 from time import sleep
 from multiprocessing import Value, Lock
 from subprocess import Popen, list2cmdline
@@ -26,16 +26,16 @@ class Runner (object):
 			`job`:    The job object
 		"""
 		self.job       = job
+		self.helper    = None
 		self.script    = utils.chmodX(self.job.script)
 		self.cmd2run   = list2cmdline (self.script)
 		self.ntry      = Value('i', 0, lock = Lock())
-		self.p         = None
 
 	def __del__(self):
 		"""
 		Try to kill the running jobs if I am exiting
 		"""
-		pass
+		self.helper.kill()
 
 	def submit (self):
 		"""
@@ -50,34 +50,15 @@ class Runner (object):
 		else:
 			self.job.reset(self.ntry.value)
 			
-			ferrw = open(self.job.errfile, 'w')
-			foutw = open(self.job.outfile, 'w')
-			succ  = True
-
-			try:
-				#self.job.proc.log ('Submitting job #%-3s ...' % self.job.index, 'submit')
-				# retry may open the files again
-				self.p = Popen (self.script, stderr=ferrw, stdout=foutw, close_fds=True)
-				
-				rc = self.p.wait()
-				if rc != 0:
-					self.job.proc.log ('%s Submission failed with return code: %s.' % (indexstr, rc), 'error')
-					succ = False
-					
-			except Exception as ex:
-				self.job.proc.log ('%s Submission failed with exception: %s' % (indexstr, str(ex)), 'error')
-				ferrw.write(str(ex))
-				succ = False
-			finally:
-				ferrw.close()
-				foutw.close()
-				
-			if not succ:
+			r = self.helper.submit()
+			if r.rc != 0:
+				if r.stderr:
+					with open(self.job.errfile, 'w') as ferr:
+						ferr.write(r.stderr)
+				self.job.proc.log ('%s Submission failed with return code: %s.' % (indexstr, r.rc), 'error')
 				self.job.rc(self.job.RC_SUBMITFAIL)
 				return False
-			else:
-				self.getpid()
-				return True
+			return True
 
 	def finish(self):
 		self.job.done()
@@ -86,7 +67,7 @@ class Runner (object):
 		"""
 		Get the job id
 		"""
-		pass
+		self.job.pid(self.helper.pid)
 
 	def run(self):
 		"""
@@ -99,6 +80,10 @@ class Runner (object):
 			self.finish()
 			return True
 		
+		# stdout, stderr haven't been generated, wait
+		while not path.isfile(self.job.errfile) or not path.isfile(self.job.outfile):
+			sleep(self.INTERVAL)
+
 		ferr = open(self.job.errfile)
 		fout = open(self.job.outfile)
 		lastout = ''
@@ -128,14 +113,7 @@ class Runner (object):
 		@returns:
 			`True` if yes, otherwise `False`
 		"""
-		jobpid = self.job.pid()
-		if not jobpid:
-			return False
-		try:
-			kill(int(jobpid), 0)
-			return True
-		except OSError:
-			return False
+		return self.helper.alive()
 		
 	def _flush (self, fout, ferr, lastout, lasterr, end = False):
 		"""
