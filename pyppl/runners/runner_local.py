@@ -6,6 +6,8 @@
 #	@see runner.unittest.py
 """
 import copy
+from os import kill
+from subprocess import check_output, CalledProcessError
 
 from .runner import Runner
 from .. import utils
@@ -49,4 +51,32 @@ class RunnerLocal (Runner):
 			f.write('#!/usr/bin/env bash\n')
 			f.write("exec '%s' &\n" % localfile)
 		self.script = utils.chmodX(submitfile)
-	
+
+	def __del__(self):
+		pid = self.job.pid()
+		if not pid: return
+		
+		if pid: 
+			# get all children
+			# even though there are some other solutions (ps --forest, pstree),
+			# this one is more compatible (linux, osx)
+			def getDirectChildren(procid):
+				try:
+					return [p.strip() for p in check_output(['ps', '-o', 'pid', '--ppid', str(procid), '--no-heading']).splitlines()]
+				except CalledProcessError:
+					return []
+
+			pids = [pid]
+			children = getDirectChildren(pid)
+			pids.extend(children)
+			while children:
+				children2 = sum([getDirectChildren(child) for child in children], [])
+				pids.extend(children2)
+				children = children2
+			
+			for p in reversed(pids):
+				try:
+					kill(int(p), 9)
+				except OSError:
+					pass				
+			

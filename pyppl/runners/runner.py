@@ -3,6 +3,7 @@ The base runner class
 """
 import sys
 import re
+from os import kill
 from time import sleep
 from multiprocessing import Value, Lock
 from subprocess import Popen, list2cmdline
@@ -28,6 +29,13 @@ class Runner (object):
 		self.script    = utils.chmodX(self.job.script)
 		self.cmd2run   = list2cmdline (self.script)
 		self.ntry      = Value('i', 0, lock = Lock())
+		self.p         = None
+
+	def __del__(self):
+		"""
+		Try to kill the running jobs if I am exiting
+		"""
+		pass
 
 	def submit (self):
 		"""
@@ -49,9 +57,9 @@ class Runner (object):
 			try:
 				#self.job.proc.log ('Submitting job #%-3s ...' % self.job.index, 'submit')
 				# retry may open the files again
-				p  = Popen (self.script, stderr=ferrw, stdout=foutw, close_fds=True)
+				self.p = Popen (self.script, stderr=ferrw, stdout=foutw, close_fds=True)
 				
-				rc = p.wait()
+				rc = self.p.wait()
 				if rc != 0:
 					self.job.proc.log ('%s Submission failed with return code: %s.' % (indexstr, rc), 'error')
 					succ = False
@@ -123,7 +131,11 @@ class Runner (object):
 		jobpid = self.job.pid()
 		if not jobpid:
 			return False
-		return utils.dumbPopen (['kill', '-s', '0', jobpid]).wait() == 0
+		try:
+			kill(int(jobpid), 0)
+			return True
+		except OSError:
+			return False
 		
 	def _flush (self, fout, ferr, lastout, lasterr, end = False):
 		"""
