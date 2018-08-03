@@ -1,7 +1,7 @@
 import subprocess
 import shlex
 import six
-from . import Box
+from . import Box, asStr
 
 def run(cmd, bg = False, outfd = None, errfd = None):
 	ret = Box(
@@ -25,20 +25,31 @@ def run(cmd, bg = False, outfd = None, errfd = None):
 			kwargs['stdout'] = outfd
 		if errfd:
 			kwargs['stderr'] = errfd
-		p = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-
-		(ret.stdout, ret.stderr) = p.communicate()
+		try:
+			p = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+			(stdout, stderr) = p.communicate()
+			ret.stdout = asStr(stdout)
+			ret.stderr = asStr(stderr)
+		except OSError:
+			raise subprocess.CalledProcessError(1, ' '.join(cmd))
 		ret.rc  = p.returncode
 		ret.pid = p.pid
 		ret.p   = p
 		return ret
 	else:
+		import warnings
+		# I am intended to run in background.
+		warnings.simplefilter("ignore", ResourceWarning)
+
 		kwargs = {}
 		if outfd:
 			kwargs['stdout'] = outfd
 		if errfd:
 			kwargs['stderr'] = errfd
-		p = subprocess.Popen(cmd, **kwargs)
+		try:
+			p = subprocess.Popen(cmd, **kwargs)
+		except OSError:
+			raise subprocess.CalledProcessError(1, ' '.join(cmd))
 		ret.rc  = 0
 		ret.p   = p
 		ret.pid = p.pid

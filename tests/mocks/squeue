@@ -15,3 +15,5 @@ else:
 	if running:
 		sys.stdout.write('# the head line\n')
 		sys.stdout.write(fakepid + ' whatever\n')
+	else:
+		sys.exit(1)

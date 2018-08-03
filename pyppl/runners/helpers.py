@@ -108,6 +108,7 @@ class SgeHelper(Helper):
 				r.rc = 1
 			else:
 				self.pid = m.group(1)
+
 			return r
 		except subprocess.CalledProcessError as ex:
 			r = Box()
@@ -117,7 +118,10 @@ class SgeHelper(Helper):
 
 	def kill(self):
 		cmdlist = [self.cmds['qdel'], '-j', str(self.pid)]
-		cmd.run(cmdlist)
+		try:
+			cmd.run(cmdlist)
+		except subprocess.CalledProcessError:
+			pass
 
 	def alive(self):
 		if self.pid is None:
@@ -126,6 +130,54 @@ class SgeHelper(Helper):
 		try:
 			r = cmd.run(cmdlist)
 			return r.rc == 0
+		except subprocess.CalledProcessError:
+			return False
+
+class SlurmHelper(Helper):
+
+	def __init__(self, script, cmds = None):
+		cmds = cmds or {
+			'sbatch' : 'sbatch',
+			'squeue' : 'squeue',
+			'srun'   : 'srun',
+			'scancel': 'scancel'
+		}
+		super(SlurmHelper, self).__init__(script, cmds)
+
+	def submit(self):
+		cmdlist = [self.cmds['sbatch'], self.script]
+		try:
+			r = cmd.run(cmdlist)
+			# sbatch: Submitted batch job 99999999
+			m = re.search(r'\s(\d+)$', r.stdout)
+			if not m:
+				r.rc = 1
+			else:
+				self.pid = m.group(1)
+
+			return r
+		except subprocess.CalledProcessError as ex:
+			r = Box()
+			r.stderr = str(ex)
+			r.rc = 1
+			return r
+
+	def kill(self):
+		cmdlist = [self.cmds['scancel'], str(self.pid)]
+		try:
+			cmd.run(cmdlist)
+		except subprocess.CalledProcessError:
+			pass
+
+	def alive(self):
+		if self.pid is None:
+			return False
+		cmdlist = [self.cmds['squeue'], '-j', str(self.pid)]
+		try:
+			r = cmd.run(cmdlist)
+			if r.rc != 0:
+				return False
+			return r.stdout.splitlines()[1].split()[0] == str(self.pid)
 		except subprocess.CalledProcessError:
 			return False
 

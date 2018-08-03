@@ -35,7 +35,8 @@ class Runner (object):
 		"""
 		Try to kill the running jobs if I am exiting
 		"""
-		self.helper.kill()
+		if self.helper:
+			self.helper.kill()
 
 	def submit (self):
 		"""
@@ -49,7 +50,6 @@ class Runner (object):
 			return True
 		else:
 			self.job.reset(self.ntry.value)
-			
 			r = self.helper.submit()
 			if r.rc != 0:
 				if r.stderr:
@@ -67,7 +67,8 @@ class Runner (object):
 		"""
 		Get the job id
 		"""
-		self.job.pid(self.helper.pid)
+		if self.helper:
+			self.job.pid(self.helper.pid)
 
 	def run(self):
 		"""
@@ -113,7 +114,9 @@ class Runner (object):
 		@returns:
 			`True` if yes, otherwise `False`
 		"""
-		return self.helper.alive()
+		if self.helper:
+			return self.helper.alive()
+		return False
 		
 	def _flush (self, fout, ferr, lastout, lasterr, end = False):
 		"""
