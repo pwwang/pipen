@@ -2,6 +2,13 @@ import subprocess
 import shlex
 import six
 from . import Box, asStr
+import warnings
+# I am intended to run in background.
+try:
+	ResourceWarning
+except NameError:
+	class ResourceWarning(Warning):
+		pass
 
 def run(cmd, bg = False, outfd = None, errfd = None):
 	ret = Box(
@@ -37,8 +44,7 @@ def run(cmd, bg = False, outfd = None, errfd = None):
 		ret.p   = p
 		return ret
 	else:
-		import warnings
-		# I am intended to run in background.
+
 		warnings.simplefilter("ignore", ResourceWarning)
 
 		kwargs = {}
