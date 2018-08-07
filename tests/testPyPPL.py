@@ -480,10 +480,21 @@ class TestPyPPL(testly.TestCase):
 			'pRun9.5gPF@aAggr: No description.',
 			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
 		]
+
+		# pRun21 -> pRun22
+		# pRun23 -/
+		#       \-> pRun24
+		pRun21 = Proc()
+		pRun23 = Proc()
+		pRun22 = Proc()
+		pRun22.depends = pRun21, pRun23
+		yield [pRun21], 'profile', 'local', ["pRun22 won't run as path can't be reached: pRun22 <- pRun23"]
+
+
 			
 	def testRun(self, start, profile, runner, errs = []):
 		with helpers.log2str():
-			pp = PyPPL({'_log': {'file': None}, 'profile': {'ppldir': self.testdir, 'runner': 'sge'}})
+			pp = PyPPL({'_log': {'file': None}, 'profile': {'ppldir': self.testdir, 'runner': runner}})
 		import sys
 		pp.start(start)
 		argv = sys.argv

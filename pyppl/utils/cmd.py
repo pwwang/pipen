@@ -1,6 +1,7 @@
 import subprocess
 import shlex
 import six
+from os import environ
 from . import Box, asStr
 import warnings
 # I am intended to run in background.
@@ -10,53 +11,99 @@ except NameError:
 	class ResourceWarning(Warning):
 		pass
 
-def run(cmd, bg = False, outfd = None, errfd = None):
-	ret = Box(
-		stdout = None,
-		stderr = None,
-		rc     = 1,
-		pid    = 0,
-		p      = None,
-		cmd    = None
-	)
-	if isinstance(cmd, six.string_types):
-		cmd = shlex.split(cmd)
-	ret.cmd = cmd
-
-	if not bg:
-		kwargs = {
-			'stdout': subprocess.PIPE,
-			'stderr': subprocess.PIPE
-		}
-		if outfd:
-			kwargs['stdout'] = outfd
-		if errfd:
-			kwargs['stderr'] = errfd
-		try:
-			p = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-			(stdout, stderr) = p.communicate()
-			ret.stdout = asStr(stdout)
-			ret.stderr = asStr(stderr)
-		except OSError:
-			raise subprocess.CalledProcessError(1, ' '.join(cmd))
-		ret.rc  = p.returncode
-		ret.pid = p.pid
-		ret.p   = p
-		return ret
-	else:
-
+class Cmd(object):
+	"""
+	A command (subprocess) wapper
+	"""
+	def __init__(self, cmd, raiseExc = True, **kwargs):
+		"""
+		Constructor
+		@params:
+			`cmd`     : The command, could be a string or a list
+			`raiseExc`: raise the expcetion or not
+			`**kwargs`: other arguments for `Popen`
+		"""
+		# process is intended to run in background
 		warnings.simplefilter("ignore", ResourceWarning)
+		self.cmd        = cmd
+		self.p          = None
+		self.stdout     = None
+		self.stderr     = None
+		self.rc         = 1
+		self.pid        = 0
+		popenargs = {
+			'env'               : environ.copy(),
+			'stdin'             : subprocess.PIPE,
+			'stdout'            : subprocess.PIPE,
+			'stderr'            : subprocess.PIPE,
+			'shell'             : False,
+			'universal_newlines': True,
+			'bufsize'           : 0
+		}
+		popenargs.update(kwargs)
 
-		kwargs = {}
-		if outfd:
-			kwargs['stdout'] = outfd
-		if errfd:
-			kwargs['stderr'] = errfd
+		cmd = self.cmd
+		if isinstance(cmd, list):
+			cmd = [str(c) for c in cmd]
+		if isinstance(cmd, six.string_types):
+			cmd = shlex.split(self.cmd)
+
 		try:
-			p = subprocess.Popen(cmd, **kwargs)
-		except OSError:
-			raise subprocess.CalledProcessError(1, ' '.join(cmd))
-		ret.rc  = 0
-		ret.p   = p
-		ret.pid = p.pid
-		return ret
+			self.p   = subprocess.Popen(cmd, **popenargs)
+			self.pid = self.p.pid
+		except (OSError, subprocess.CalledProcessError):
+			if raiseExc:
+				raise
+
+	def __repr__(self):
+		return '<Cmd {!r}>'.format(self.cmd)
+
+	def run(self, bg = False):
+		"""
+		Wait for the command to run
+		@params:
+			`bg`: Run in background or not. Default: `False`
+				- If it is `True`, `rc` and `stdout/stderr` will be default (no value retrieved).
+		@returns:
+			`self` 
+		"""
+		if not bg and self.p:
+			self.rc     = self.p.wait()
+			self.stdout = self.p.stdout and self.p.stdout.read()
+			self.stderr = self.p.stderr and self.p.stderr.read()
+		return self
+
+	def pipe(self, cmd, **kwargs):
+		"""
+		Pipe another command
+		@examples:
+			```python
+			c = Command('seq 1 3').pipe('grep 1').run()
+			c.stdout == '1\n'
+			```
+		@params:
+			`cmd`: The other command
+			`**kwargs`: Other arguments for `Popen` for the other command
+		@returns:
+			`Command` instance of the other command
+		"""
+		kwargs['stdin'] = self.p.stdout
+		return Cmd(cmd, **kwargs)
+
+# shortcuts
+def run(cmd, bg = False, raiseExc = True, **kwargs):
+	"""
+	A shortcut of `Command.run`  
+	To chain another command, you can do:  
+	`run('seq 1 3', bg = True).pipe('grep 1')`
+	@params:
+		`cmd`     : The command, could be a string or a list
+		`bg`      : Run in background or not. Default: `False`
+			- If it is `True`, `rc` and `stdout/stderr` will be default (no value retrieved).
+		`raiseExc`: raise the expcetion or not
+		`**kwargs`: other arguments for `Popen`
+	@returns:
+		The `Command` instance
+	"""
+	return Cmd(cmd, raiseExc = raiseExc, **kwargs).run(bg = bg)
+

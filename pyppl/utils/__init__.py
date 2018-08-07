@@ -2,104 +2,22 @@
 A set of utitities for PyPPL
 """
 import inspect
-import filelock
-import tempfile
-import tarfile
-import gzip
 import re
-
-from concurrent.futures import ThreadPoolExecutor
-from loky import ProcessPoolExecutor
-from traceback import format_exc
-
-from stat import S_IEXEC
-from glob import glob
-from os import path, remove, symlink, makedirs, chdir, getcwd, walk, stat, chmod, devnull
-from shutil import rmtree, copyfile, copytree, move, copyfileobj
-from subprocess import Popen
 from hashlib import md5
-#from box import Box
+from .box import Box
 from six import moves, string_types
-from collections import OrderedDict
-TMPDIR = tempfile.gettempdir()
-
-class Box(OrderedDict):
-	"""
-	Allow dot operation for OrderedDict
-	"""
-
-	def __getattr__(self, name):
-		if not name.startswith('_OrderedDict') and not name.startswith('__'):
-			return self[name]
-		return super(Box, self).__getattr__(name)
-
-	def __setattr__(self, name, val):
-		if not name.startswith('_OrderedDict') and not name.startswith('__'):
-			self[name] = val
-		else:
-			super(Box, self).__setattr__(name, val)
-
-class Parallel(object):
-
-	def __init__(self, nthread = 1, backend = 'process', raiseExc = True):
-		PoolExecutor   = ProcessPoolExecutor if backend.lower() in 'multiprocessing' else ThreadPoolExecutor
-		self.executor  = PoolExecutor(max_workers = nthread)
-		self.raiseExc  = raiseExc
-
-	def run(self, func, args):
-		_func = lambda arg: func(*arg)
-
-		submits   = []
-		results   = []
-		exception = None
-		for arg in args:
-			submits.append(self.executor.submit(_func, arg))
-		
-		for submit in submits:
-			try:
-				results.append(submit.result())
-			except Exception as ex: # pragma: no cover
-				#results.append(None)
-				exception = type(ex)(format_exc())
-
-		self.executor.shutdown(wait = True)
-		
-		if self.raiseExc and exception:
-			raise exception
-
-		return results
 
 def asStr(s, encoding = 'utf-8'):
 	"""
 	Convert everything (str, unicode, bytes) to str with python2, python3 compatiblity
 	"""
-	try:
+	try: # pragma: no cover
 		# python2
 		unicode
 		return s.encode(encoding) if isinstance(s, unicode) else str(s)
-	except NameError:
+	except NameError: # pragma: no cover
 		# python3
 		return s.decode(encoding) if isinstance(s, bytes) else str(s)
-
-def basename(f):
-	bname = path.basename(f)
-	if not bname and path.isdir(f):
-		bname = path.basename(path.dirname(f))
-	return bname
-
-def flushFile(f, lastmsg, end = False):
-	f.flush()
-	lines = f.readlines() or []
-	if lines:
-		lines[0] = lastmsg + lines[0]
-		lastmsg  = '' if lines[-1].endswith('\n') else lines.pop(-1)
-		if lastmsg and end:
-			lines.append(lastmsg + '\n')
-			lastmsg = ''
-	elif lastmsg and end:
-		lines.append(lastmsg + '\n')
-		lastmsg = ''
-	return lines, lastmsg
 
 def varname (maxline = 20, incldot = False):
 	"""
@@ -145,7 +63,7 @@ def varname (maxline = 20, incldot = False):
 		varname.index += 1
 		return 'var_%s' % (varname.index - 1)
 
-	except Exception:
+	except Exception: # pragma: no cover
 		varname.index += 1
 		return 'var_%s' % (varname.index - 1)
 
@@ -183,6 +101,16 @@ def filter(func, vec):
 		The filtered list
 	"""
 	return list(moves.filter(func, vec))
+
+def range (i, *args, **kwargs):
+	"""
+	Convert a range to list, because in python3, range is not a list
+	@params:
+		`r`: the range data
+	@returns:
+		The converted list
+	"""
+	return list(moves.range(i, *args, **kwargs))
 
 def split (s, delimter, trim = True):
 	"""
@@ -313,16 +241,6 @@ def formatSecs (seconds):
 	h, m = divmod(m, 60)
 	return "%02d:%02d:%02d.%03.0f" % (h, m, s, 1000*(s-int(s)))
 
-def range (i, *args, **kwargs):
-	"""
-	Convert a range to list, because in python3, range is not a list
-	@params:
-		`r`: the range data
-	@returns:
-		The converted list
-	"""
-	return list(moves.range(i, *args, **kwargs))
-
 def alwaysList (data):
 	"""
 	Convert a string or a list with element
@@ -349,453 +267,6 @@ def alwaysList (data):
 	else:
 		raise ValueError('Expect string or list to convert to list.')
 	return [x.strip() for x in ret]
-
-def _lockfile(f, real = True, tmpdir = TMPDIR):
-	"""
-	Get the path of lockfile of a file
-	@params:
-		`f`: The file
-	@returns:
-		The path of the lock file
-	"""
-	p = path.realpath(f) if real else f
-	return path.join(tmpdir, uid(p, 16) + '.lock')
-
-def _rm(fn):
-	"""
-	Remove an entry
-	@params:
-		`fn`: The path of the entry
-	"""
-	if path.isdir(fn) and not path.islink(fn):
-		rmtree(fn)
-	else:
-		remove(fn)
-
-def _cp(f1, f2):
-	"""
-	Copy a file or a directory
-	@params:
-		`f1`: The source
-		`f2`: The destination
-	"""
-	if path.isdir(f1):
-		copytree(f1, f2)
-	else:
-		copyfile(f1, f2)
-
-def _link(f1, f2):
-	"""
-	Create a symbolic link for the given file
-	@params:
-		`f1`: The source
-		`f2`: The destination
-	"""
-	symlink(path.realpath(f1), f2)
-
-def fileExists(f, callback = None, tmpdir = TMPDIR):
-	"""
-	Tell whether a path exists under a lock
-	@params:
-		`f`: the path
-		`callback`: the callback
-			- arguments: whether the file exists and the path of the file
-		`tmpdir`: The tmpdir to save the lock file
-	@returns:
-		True if yes, otherwise False
-		If any of the path does not exist, return False
-	"""
-	with filelock.FileLock(_lockfile(f, tmpdir)):
-		r = path.exists(f)
-		# remove dead links
-		if not r and path.islink(f):
-			remove(f)
-		if callable(callback):
-			callback(r, f)
-		return r
-
-def samefile(f1, f2, callback = None, tmpdir = TMPDIR):
-	"""
-	Tell whether two paths pointing to the same file under locks
-	@params:
-		`f1`: the first path
-		`f2`: the second path
-		`callback`: the callback
-	@returns:
-		True if yes, otherwise False
-		If any of the path does not exist, return False
-	"""
-	if f1 == f2:
-		if callable(callback):
-			callback(True, f1, f2)
-		return True
-
-	lfile1 = _lockfile(f1, real = False, tmpdir = tmpdir)
-	lfile2 = _lockfile(f2, real = False, tmpdir = tmpdir)
-	with filelock.FileLock(lfile1), filelock.FileLock(lfile2):
-		r = path.samefile(f1, f2) if path.exists(f1) and path.exists(f2) else False
-		if callable(callback):
-			callback(r, f1, f2)
-	return r
-
-def safeRemove(f, callback = None, tmpdir = TMPDIR):
-	"""
-	Safely remove a file/dir.
-	@params:
-		`f`: the file or dir.
-		`callback`: The callback
-			- argument `r`: Whether the file exists before removing
-			- argument `fn`: The path of the file
-	"""
-	lfile = _lockfile(f, tmpdir = tmpdir)
-	with filelock.FileLock(lfile):
-		if not path.exists(f):
-			r = False
-		else:
-			try:
-				r = True
-				_rm(f)
-			except Exception: # pragma: no cover
-				r = False
-		if callable(callback):
-			callback(r, f)
-
-def safeMove(f1, f2, callback = None, overwrite = True, tmpdir = TMPDIR):
-	"""
-	Move a file/dir
-	@params:
-		`src`: The source file
-		`dst`: The destination
-		`overwrite`: Whether overwrite the destination
-	@return:
-		True if succeed else False
-	"""
-	if f1 == f2:
-		if callable(callback):
-			callback(False, f1, f2)
-	else:
-		lfile1 = _lockfile(f1, real=False, tmpdir=tmpdir)
-		lfile2 = _lockfile(f2, real=False, tmpdir=tmpdir)
-		with filelock.FileLock(lfile1), filelock.FileLock(lfile2):
-			if not path.exists(f1):
-				r = False
-			elif path.exists(f2):
-				if path.samefile(f1, f2):
-					r = True
-				elif overwrite:
-					_rm(f2)
-					move(f1, f2)
-					r = True
-				else:
-					r = False
-			elif path.islink(f2):
-				remove(f2) # dead link
-				move(f1, f2)
-				r = True
-			else:
-				move(f1, f2)
-				r = True
-		if callable(callback):
-			callback(r, f1, f2)
-
-
-def safeMoveWithLink(f1, f2, callback = None, overwrite = True, tmpdir = TMPDIR):
-	"""
-	Move a file/dir and leave a link the source file with locks
-	@params:
-		`f1`: The source file
-		`f2`: The destination
-		`overwrite`: Whether overwrite the destination
-	@return:
-		True if succeed else False
-	"""
-	if f1 == f2:
-		if callable(callback):
-			callback(False, f1, f2)
-	else:
-		lfile1 = _lockfile(f1, real=False, tmpdir = tmpdir)
-		lfile2 = _lockfile(f2, real=False, tmpdir = tmpdir)
-
-		with filelock.FileLock(lfile1), filelock.FileLock(lfile2):
-			if not path.exists(f1):
-				r = False
-			elif path.exists(f2):
-				if path.samefile(f1, f2):
-					if path.islink(f1):
-						r = True
-					else:
-						_rm(f2)
-						move(f1, f2)
-						_link(f2, f1)
-						r = True
-				elif overwrite:
-					_rm(f2)
-					move(f1, f2)
-					_link(f2, f1)
-					r = True
-				else:
-					r = False
-			elif path.islink(f2):
-				remove(f2)
-				move(f1, f2)
-				_link(f2, f1)
-				r = True
-			else:
-				move(f1, f2)
-				_link(f2, f1)
-				r = True
-
-			if callable(callback):
-				callback(r, f1, f2)
-
-def safeCopy(f1, f2, callback = None, overwrite = True, tmpdir = TMPDIR):
-	"""
-	Safe copy
-	@params:
-		`src`: The source file
-		`dst`: The dist file
-		`callback`: The callback (r, f1, f2)
-		`overwrite`: Overwrite target file?
-		`tmpdir`: Tmpdir for lock file
-	"""
-	if f1 == f2:
-		if callable(callback):
-			callback(False, f1, f2)
-	else:
-		lfile1 = _lockfile(f1, real = False, tmpdir = tmpdir)
-		lfile2 = _lockfile(f2, real = False, tmpdir = tmpdir)
-		with filelock.FileLock(lfile1), filelock.FileLock(lfile2):
-			if not path.exists(f1):
-				r = False
-			elif path.exists(f2):
-				if path.samefile(f1, f2):
-					r = True
-				elif overwrite:
-					_rm(f2)
-					_cp(f1, f2)
-					r = True
-				else:
-					r = False
-			elif path.islink(f2):
-				remove(f2)
-				_cp(f1, f2)
-				r = True
-			else:
-				_cp(f1, f2)
-				r = True
-
-			if callable(callback):
-				callback(r, f1, f2)
-
-def safeLink(f1, f2, callback = None, overwrite = True, tmpdir = TMPDIR):
-	"""
-	Safe link
-	@params:
-		`src`: The source file
-		`dst`: The dist file
-		`callback`: The callback (r, f1, f2)
-		`overwrite`: Overwrite target file?
-		`tmpdir`: Tmpdir for lock file
-	"""
-	if f1 == f2:
-		if callable(callback):
-			callback(False, f1, f2)
-	else:
-		lfile1 = _lockfile(f1, real = False, tmpdir = tmpdir)
-		lfile2 = _lockfile(f2, real = False, tmpdir = tmpdir)
-		with filelock.FileLock(lfile1), filelock.FileLock(lfile2):
-			if not path.exists(f1):
-				r = False
-			elif path.exists(f2):
-				if path.samefile(f1, f2):
-					if path.islink(f2):
-						r = True
-					else:
-						_rm(f1)
-						move(f2, f1)
-						_link(f1, f2)
-						r = True
-				elif overwrite:
-					_rm(f2)
-					_link(f1, f2)
-					r = True
-				else:
-					r = False
-			else:
-				_link(f1, f2)
-				r = True
-
-			if callable(callback):
-				callback(r, f1, f2)
-
-def targz (srcdir, tgzfile, overwrite = True, tmpdir = TMPDIR):
-	"""
-	Do a "tar zcf"-like for a directory
-	@params:
-		`tgzfile`: the final .tgz file
-		`srcdir`:  the source directory
-	"""
-	if not path.isdir(srcdir):
-		return False
-
-	def callback(r, f):
-		if r and overwrite:
-			_rm(f)
-		if not path.exists(f):
-			cwd = getcwd()
-			tar = tarfile.open(f, 'w:gz')
-			chdir (srcdir)
-			for name in glob ('./*'):
-				tar.add(name)
-			tar.close()
-			chdir (cwd)
-	return fileExists(tgzfile, callback = callback, tmpdir = tmpdir)
-
-def untargz (tgzfile, dstdir, overwrite = True, tmpdir = TMPDIR):
-	"""
-	Do a "tar zxf"-like for .tgz file
-	@params:
-		`tgzfile`:  the .tgz file
-		`dstdir`: which directory to extract the file to
-	"""
-	if not path.isfile(tgzfile):
-		return False
-
-	def callback(r, f):
-		if r and overwrite:
-			_rm(f)
-		if not path.exists(f):
-			makedirs(f)
-			tar = tarfile.open (tgzfile, 'r:gz')
-			tar.extractall (f)
-			tar.close()
-	return fileExists(dstdir, callback = callback, tmpdir = tmpdir)
-
-def gz (srcfile, gzfile, overwrite = True, tmpdir = TMPDIR):
-	"""
-	Do a "gzip"-like for a file
-	@params:
-		`gzfile`:  the final .gz file
-		`srcfile`: the source file
-	"""
-	if not path.isfile(srcfile):
-		return False
-
-	def callback(r, f):
-		if r and overwrite:
-			_rm(f)
-		if not path.exists(f):
-			fin  = open (srcfile, 'rb')
-			fout = gzip.open (f, 'wb')
-			copyfileobj (fin, fout)
-			fin.close()
-			fout.close()
-	return fileExists(gzfile, callback = callback, tmpdir = tmpdir)
-
-def ungz (gzfile, dstfile, overwrite = True, tmpdir = TMPDIR):
-	"""
-	Do a "gunzip"-like for a .gz file
-	@params:
-		`gzfile`:  the .gz file
-		`dstfile`: the extracted file
-	"""
-	if not path.isfile(gzfile):
-		return False
-
-	def callback(r, f):
-		if r and overwrite:
-			_rm(f)
-		if not path.exists(f):
-			fin  = gzip.open (gzfile, 'rb')
-			fout = open (f, 'wb')
-			copyfileobj (fin, fout)
-			fin.close()
-			fout.close()
-	return fileExists(dstfile, callback = callback, tmpdir = tmpdir)
-
-
-def dirmtime (d):
-	"""
-	Calculate the mtime for a directory.
-	Should be the max mtime of all files in it.
-	@params:
-		`d`:  the directory
-	@returns:
-		The mtime.
-	"""
-	mtime = 0
-	for root, dirs, files in walk(d):
-		m = path.getmtime (root) if path.exists(root) else 0
-		if m > mtime:
-			mtime = m
-		for dr in dirs:
-			m = dirmtime (path.join (root, dr))
-			if m > mtime:
-				mtime = m
-		for f in files:
-			m = path.getmtime (path.join (root, f)) if path.exists(path.join(root, f)) else 0
-			if m > mtime:
-				mtime = m
-	return mtime
-
-def filesig (fn, dirsig = True):
-	"""
-	Calculate a signature for a file according to its path and mtime
-	@params:
-		`fn`: the file
-	@returns:
-		The md5 deigested signature.
-	"""
-	if fn == '': return ['', 0]
-	fname = path.realpath(fn)
-	if not path.exists (fname):
-		return False
-	mtime = dirmtime(fname) if path.isdir (fname) and dirsig else path.getmtime(fname)
-	# not using fname, because we intend to allow links to replace the original file
-	# say in case of export using move
-	#if not mtime: # pragma: no cover
-	#	return False
-	return [fn, int(mtime)]
-
-def chmodX (thefile):
-	"""
-	Convert script file to executable or add extract shebang to cmd line
-	@params:
-		`thefile`: the script file
-	@returns:
-		A list with or without the path of the interpreter as the first element and the script file as the last element
-	"""
-	thefile = path.realpath(thefile)
-	ret = [thefile]
-	try:
-		st = stat (thefile)
-		chmod (thefile, st.st_mode | S_IEXEC)
-	except Exception as e1:
-		try:
-			with open(thefile) as f:
-				shebang = f.read().strip().splitlines()[0]
-			if not shebang.startswith("#!"): # pragma: no cover
-				raise
-			ret = shebang[2:].strip().split() + [thefile] # pragma: no cover
-		except Exception as e2:
-			raise Exception("Cannot change %s as executable or read the shebang from it:\n%s\n%s" % (thefile, e1, e2))
-	return ret
-
-def dumbPopen(cmd, shell = False):
-	'''
-	A dumb Popen (no stdout and stderr)
-	@params:
-		`cmd`: The command for `Popen`
-		`shell`: The shell argument for `Popen`
-	@returns:
-		The process object
-	'''
-	with open(devnull, 'w') as f:
-		try:
-			ret = Popen(cmd, shell = shell, stdout = f, stderr = f)
-		except Exception:
-			return False
-	return ret
 
 def briefList(l):
 	"""

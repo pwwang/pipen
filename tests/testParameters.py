@@ -227,6 +227,7 @@ class TestParameters(testly.TestCase):
 		yield ps, 'desc', 'a', ['a']
 		yield ps, 'desc', 'a\nb', ['a', 'b']
 		yield ps, 'desc', '  a  \n\n  b \n', ['a', '', 'b']
+		yield ps, 'Unknown', '', '', None, AttributeError
 
 
 	def testCall(self, ps, option, value, outval, excl = None, exception = None):
@@ -302,6 +303,7 @@ class TestParameters(testly.TestCase):
 		yield '1', 'list:str', ['1']
 		yield '1', 'list:bool', [True]
 		yield 123, 'x', 123
+		yield 1, 'list:one', [[1]]
 
 	def testCoerceValue(self, value, t = 'auto', outval = None, exception = None):
 		if exception:
@@ -340,6 +342,8 @@ class TestParameters(testly.TestCase):
 		yield ps, 'a', 'list:str', 3, [1, 2, '3'], True
 		ps.b.type = 'bool'
 		yield ps, 'b', 'auto', 'F', False, False
+		ps.c.type = 'list'
+		yield ps, 'c', 'list:one', 1, [[1]], True
 
 
 	def testPutValue(self, ps, argname, argtype, argval, outval, ret):
@@ -463,6 +467,11 @@ class TestParameters(testly.TestCase):
 		yield ps11, ['--param-d'], {'a':None, 'b':'a', 'c':1, 'd': True, 'e':[], '_': []}
 		yield ps11, ['a', '--param-d', 'no', 'b', '--param-c=100', '--param-e:l:s', '-1', '-2'], {'a': None, 'b':'a', 'c':100, 'd': False, 'e':['-1', '-2'], '_': ['a', 'b']}, 'WARNING: Decleared type "list" ignored, use "list:str" instead for option --param-e.'
 
+		ps12 = Parameters()
+		ps12.a
+		ps12.b
+		yield ps12, ['-a', '-b=1'], {'a':True, 'b':1, '_': []}
+
 	def testParse(self, ps, args, values, stderr = [], exception = None, msg = None):
 		if exception:
 			with helpers.captured_output() as (out, err):
@@ -475,6 +484,7 @@ class TestParameters(testly.TestCase):
 		else:
 			with helpers.captured_output() as (out, err):
 				d = ps.parse(args)
+
 			if stderr:
 				if not isinstance(stderr, list):
 					stderr = [stderr]

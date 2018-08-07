@@ -540,8 +540,9 @@ class Proc (object):
 			if self.resume not in ['skip+', 'resume']:
 				self._saveSettings()
 			self._buildJobs ()
-		except Exception:
-			self.lock.release()
+		except Exception: # pragma: no cover
+			if self.lock.is_locked:
+				self.lock.release()
 			raise
 
 	# self.resume != 'skip'
@@ -660,7 +661,7 @@ class Proc (object):
 		
 		try:
 			self.lock.acquire(timeout = 3)
-		except filelock.Timeout:
+		except filelock.Timeout: # pragma: no cover
 			self.log('Another instance of this process is running, waiting ...', 'warning')
 			self.log('If it is not the case, remove the process lock file and try again:', 'warning')
 			self.log('- ' + path.join(self.workdir, 'lock'), 'warning')
@@ -714,8 +715,9 @@ class Proc (object):
 			self.props['expart'] = [self.template(e, **self.tplenvs) for e in expart]
 
 			self.log ('Properties set explictly: %s' % str(self.sets), 'debug')
-		except Exception:
-			self.lock.release()
+		except Exception: # pragma: no cover
+			if self.lock.is_locked:
+				self.lock.release()
 			raise
 
 	def _saveSettings (self):
@@ -1183,7 +1185,7 @@ class Proc (object):
 		try:
 			jobmgr.run()
 			self.log('After job run, active threads: %s' % threading.active_count(), 'debug')
-		except KeyboardInterrupt:
+		except KeyboardInterrupt: # pragma: no cover
 			try:
 				self.log('Ctrl-c detected or job failed, pipeline exiting ...', 'WARNING')
 			except KeyboardInterrupt:
@@ -1237,7 +1239,7 @@ class PyPPL (object):
 						try:
 							import yaml
 							utils.dictUpdate(fconfig, yaml.load(cf.read().replace('\t', '  ')))
-						except ImportError:
+						except ImportError: # pragma: no cover
 							cfgIgnored[cfile] = 1
 					else:
 						utils.dictUpdate(fconfig, json.load(cf))

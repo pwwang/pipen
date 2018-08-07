@@ -17,7 +17,7 @@ class _Proxy(object):
 		self.__dict__['_check']  = check # check delegates or not
 
 	def __getattr__(self, name):
-		if name in self.__dict__:
+		if name in self.__dict__: # pragma: no cover
 			return self.__dict__[name]
 		return self[name]
 
@@ -221,7 +221,7 @@ class Aggr (object):
 		return procs
 
 	def __getattr__(self, name):
-		if name in self.__dict__:
+		if name in self.__dict__: # pragma: no cover
 			return self.__dict__[name]
 		if name in self._procs:
 			return self._procs[name]
@@ -242,7 +242,7 @@ class Aggr (object):
 			self.__dict__['id'] = value
 		elif name in ['starts', 'ends']:
 			self.__dict__[name] = self._select(value, forceList = True)
-		elif name in self.__dict__:
+		elif name in self.__dict__: # pragma: no cover
 			raise AggrAttributeError(name, 'Built-in attribute is not allowed to be modified directly.')
 		else:
 			proxy = _Proxy(self, check = True)

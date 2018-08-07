@@ -1,6 +1,7 @@
 import sys, re, subprocess, atexit
 from os import path
-from pyppl.utils import chmodX, ps, cmd, Box
+from pyppl.utils import ps, cmd, Box
+from pyppl.utils.safefs import SafeFs
 
 class Helper(object):
 
@@ -61,7 +62,7 @@ class LocalHelper(Helper):
 	def run(self):
 		self.outfd = open(self.outfile, 'w')
 		self.errfd = open(self.errfile, 'w')
-		self.proc  = cmd.run(chmodX(self.script), outfd = self.outfd, errfd = self.errfd, bg = True)
+		self.proc  = cmd.run(SafeFs.chmodX(self.script), outfd = self.outfd, errfd = self.errfd, bg = True)
 		self.pid   = self.proc.pid
 		try:
 			self.proc.p.wait()

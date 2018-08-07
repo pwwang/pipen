@@ -161,6 +161,15 @@ class TestProc(testly.TestCase):
 			p = Proc(tag = tag, desc = desc, id = id)
 			self.assertDictEqual(p.props, props)
 			self.assertDictEqual(p.config, config)
+			config2 = config.copy()
+			del config2['tag']
+			del config2['desc']
+			del config2['id']
+			p2 = Proc(tag, desc, id = config['id'], **config2)
+			props['sets'] = ['runner', 'echo', 'depends', 'expect', 'callfront', 'script', 'cache', 'nthread', 'beforeCmd', 'template', 'rc', 'input', 'forks', 'infile', 'cclean', 'workdir', 'resume', 'exhow', 'args', 'exow', 'dirsig', 'ppldir', 'errhow', 'lang', 'tplenvs', 'exdir', 'expart', 'afterCmd', 'callback', 'aggr', 'output', 'errntry']
+			self.assertDictEqual(p2.props, props)
+			self.assertDictEqual(p2.config, config)
+
 			
 	def dataProvider_testGetAttr(self):
 		pGetAttr = Proc()

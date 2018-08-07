@@ -50,7 +50,7 @@ class Parameter (object):
 			getattr(self, 'set' + name[0].upper() + name[1:])(value)
 
 	def __getattr__(self, name):
-		if name.startswith('__') or name.startswith('_Parameter'):
+		if name.startswith('__') or name.startswith('_Parameter'): # pragma: no cover
 			return super(Parameter, self).__getattr__(name)
 		elif name == 'desc' and not self.required:
 			if not self._props['desc'] or not self._props['desc'][-1].startswith('DEFAULT: '):
@@ -179,12 +179,14 @@ class Parameters (object):
 		l       = 'list',
 		list    = 'list',
 		array   = 'list',
+		o       = 'one',
+		one     = 'one',
 		p       = 'py',
 		py      = 'py',
 		python  = 'py'
 	)
 
-	ARG_NAME_PATTERN     = r'^([a-zA-Z][\w\._-]*)(?::(a|auto|i|int|f|float|b|bool|s|str|l|list|array|l:i|l:int|l:f|l:float|l:b|l:bool|l:s|l:str|list:i|list:int|list:f|list:float|list:b|list:bool|list:s|list:str|array:i|array:int|array:f|array:float|array:b|array:bool|array:s|array:str|p|py|python))?(?:=(.+))?$'
+	ARG_NAME_PATTERN     = r'^([a-zA-Z][\w\._-]*)(?::(p|py|python|a|auto|i|int|f|float|b|bool|s|str|l|list|array|(?:array|l|list):(?:a|auto|i|int|f|float|b|bool|s|str|l|list|array|o|one|p|py|python)))?(?:=(.+))?$'
 	ARG_VALINT_PATTERN   = r'^[+-]?\d+$'
 	ARG_VALFLOAT_PATTERN = r'^[+-]?(?:\d*\.)?\d+(?:[Ee][+-]\d+)?$'
 	ARG_VALBOOL_PATTERN  = r'^(t|T|True|TRUE|true|1|Y|y|Yes|YES|yes|on|ON|On|f|F|False|FALSE|false|0|N|n|No|NO|off|Off|OFF)$'
@@ -211,9 +213,9 @@ class Parameters (object):
 		self.__dict__['_params'] = {}
 
 	def __setattr__(self, name, value):
-		if name.startswith('__') or name.startswith('_Parameters'):
+		if name.startswith('__') or name.startswith('_Parameters'): # pragma: no cover
 			super(Parameters, self).__setattr__(name, value)
-		elif name in self.__dict__:
+		elif name in self.__dict__: # pragma: no cover
 			self.__dict__[name] = value
 		elif name in self._params:
 			self._params[name].setValue(value)
@@ -221,9 +223,9 @@ class Parameters (object):
 			self._params[name] = Parameter(name, value)
 
 	def __getattr__(self, name):
-		if name.startswith('__') or name.startswith('_Parameters'):
+		if name.startswith('__') or name.startswith('_Parameters'): # pragma: no cover
 			return super(Parameters, self).__getattr__(name)
-		elif name in self.__dict__:
+		elif name in self.__dict__: # pragma: no cover
 			return self.__dict__[name]
 		elif not name in self._params:
 			self._params[name] = Parameter(name, None)
@@ -335,6 +337,8 @@ class Parameters (object):
 					except TypeError:
 						value = [value]
 				subtype = ':' in t and t.split(':')[1] or 'auto'
+				if subtype == 'one':
+					return [value]
 				return [Parameters._coerceValue(x, subtype) for x in value]
 			else:
 				return value
@@ -348,7 +352,7 @@ class Parameters (object):
 
 		if argtype == 'auto' and self._params[argname].type:
 			argtype = self._params[argname].type
-		elif argtype != 'auto' and self._params[argname].type != argtype:
+		elif argtype != 'auto' and self._params[argname].type != argtype and self._params[argname].type is not None:
 			sys.stderr.write (
 				'WARNING: Decleared type "{dtype}" ignored, use "{ptype}" instead for option {prefix}{option}.\n'.format(
 					dtype  = self._params[argname].type,
@@ -370,7 +374,12 @@ class Parameters (object):
 			if self._params[argname].value is None:
 				self._params[argname].value = []
 			subtype = atype.split(':')[1]
-			self._params[argname].value.append(Parameters._coerceValue(argval, subtype))
+			if subtype == 'one':
+				if not self._params[argname].value:
+					self._params[argname].value.append([])
+				self._params[argname].value[0].append(argval)
+			else:
+				self._params[argname].value.append(Parameters._coerceValue(argval, subtype))
 			return True
 		else:
 			self._params[argname].value = Parameters._coerceValue(argval, atype)
@@ -402,8 +411,10 @@ class Parameters (object):
 					atype = self._getType(argname, argtype)
 					if not atype or not atype.startswith('list'):
 						self._putValue(argname, 'bool', 'True')
+					# no value offered or it's a list option
 					if argvalue is None or self._putValue(argname2, argtype2, argvalue):
 						argname, argtype = argname2, argtype2
+					# single-value option, reset
 					else:
 						argname, argtype = None, 'auto'
 				else: # it's value

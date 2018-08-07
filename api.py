@@ -15,7 +15,7 @@ modules = [
 ]
 
 excludes = [
-	"Box", "Process", "Pipe", "Popen", "ProcessEx", "S_IEXEC", "__builtins__", "__doc__", "__file__",
+	"Process", "Pipe", "Popen", "ProcessEx", "S_IEXEC", "__builtins__", "__doc__", "__file__",
 	"__name__", "__package__", "__module__", "__str__", "__dict__", "__weakref__", "__repr__",
 	"copyfileobj", "copyfile", "getcwd", "glob", "move", "rmtree", "stat", "symlink", "walk",
 	"logging", "re", "sys", "chdir", "chmod", "copytree", "devnull", "filelock", "format_exc",
