@@ -60,29 +60,30 @@ before_install: |
 install:
   #- python setup.py install
   - export PYTHONPATH="$(pwd):$PYTHONPATH"
-  - echo $PYTHONPATH
-  - echo $TRAVIS_OS_NAME
-  - pip install --upgrade pip
-  - pip install -r requirements.txt
-  - pip install python-testly
-  - pip install coverage
-  - pip install codacy-coverage
+  - sudo pip install --upgrade pip
+  - sudo pip install -r requirements.txt
+  - sudo pip install python-testly
+  - sudo pip install coverage
+  - sudo pip install codacy-coverage
 # command to run tests
 script:
   - make cov
-  - pip install graphviz jinja2
+  - sudo pip install graphviz jinja2
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install graphviz; else sudo apt-get install -y graphviz; fi
   - cd tests
   - coverage run -a --concurrency=multiprocessing testPyPPL.py TestPyPPL.testFlowchart
   - coverage combine
   - coverage run -a --concurrency=multiprocessing testTemplates.py TestTemplateJinja2
   - coverage combine
-after_success:
-  - export CODACY_PROJECT_TOKEN=b8ba4ff9257e4061b2c29e105255433c
-  - coverage xml
-  - coverage report
-  - cd -
-  - if [ "$UPCOV" == "1" ]; then make covupload; fi
+# upload the coverage
+after_success: |
+  if [ "$UPCOV" == "1" ]; then
+    export CODACY_PROJECT_TOKEN=b8ba4ff9257e4061b2c29e105255433c
+    coverage xml
+    coverage report
+    cd -
+    make covupload
+  fi
   
 
   
