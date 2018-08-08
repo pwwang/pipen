@@ -61,7 +61,8 @@ install:
   #- python setup.py install
   - export PYTHONPATH="$(pwd):$PYTHONPATH"
   - echo $PYTHONPATH
-  - which pip
+  - echo $TRAVIS_OS_NAME
+  - pip install --upgrade pip
   - pip install -r requirements.txt
   - pip install python-testly
   - pip install coverage
