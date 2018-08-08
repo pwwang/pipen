@@ -1385,10 +1385,6 @@ The variable name
 ```
 Allow dot operation for OrderedDict
 ```
-#### `class: OrderedDict`
-```
-Dictionary that remembers insertion order
-```
 
 ## Module `utils.cmd`  
 > .

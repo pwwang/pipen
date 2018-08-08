@@ -20,7 +20,7 @@ excludes = [
 	"copyfileobj", "copyfile", "getcwd", "glob", "move", "rmtree", "stat", "symlink", "walk",
 	"logging", "re", "sys", "chdir", "chmod", "copytree", "devnull", "filelock", "format_exc",
 	"gzip", "makedirs", "md5", "moves", "path", "remove", "string_types", "ResourceWarning", 
-	"ProcessPoolExecutor", "ThreadPoolExecutor", "__path__", 
+	"ProcessPoolExecutor", "ThreadPoolExecutor", "__path__", "OrderedDict"
 ]
 
 doc = """
