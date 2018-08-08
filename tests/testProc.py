@@ -154,7 +154,7 @@ class TestProc(testly.TestCase):
 		
 	
 	def testInit(self, tag, desc, id, props, config, exception = None):
-		self.maxDiff = 10000
+		self.maxDiff = None
 		if exception:
 			self.assertRaises(exception, Proc, tag = tag, desc = desc, id = id)
 		else:

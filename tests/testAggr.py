@@ -466,7 +466,7 @@ class TestAggr(testly.TestCase):
 			[
 				Box(z = 1),
 				Box(z = 1),
-				Box(m = 1, cnames = True),
+				Box([('m', 1), ('cnames', True)]),
 				Box(),
 				Box(h = 1),
 			])
@@ -486,7 +486,7 @@ class TestAggr(testly.TestCase):
 			[
 				Box(z = 1),
 				Box(z = 1),
-				Box(m = 1, cnames = True),
+				Box([('m', 1), ('cnames', True)]),
 				Box(rnames = True),
 				Box(h = 1),
 			])
