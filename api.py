@@ -8,8 +8,8 @@ import pyppl
 
 
 modules = [
-	'PyPPL', 'Proc', 'Channel', 'Job', 'Jobmgr', 'Aggr', 'Flowchart', 'Parameter', 'Parameters',
-	'logger', 'utils', 'proctree.ProcNode', 'proctree.ProcTree',
+	'PyPPL', 'Proc', 'Channel', 'Job', 'Jobmgr', 'Aggr', 'flowchart.Flowchart', 'parameters.Parameter', 'parameters.Parameters',
+	'logger', 'utils', 'utils.box', 'utils.cmd', 'utils.parallel', 'utils.safefs', 'proctree.ProcNode', 'proctree.ProcTree',
 	'templates.TemplatePyPPL', 'templates.TemplateJinja2',
 	'runners.Runner', 'runners.RunnerLocal', 'runners.RunnerSsh', 'runners.RunnerSge', 'runners.RunnerSlurm', 'runners.RunnerDry', 
 ]
@@ -19,7 +19,8 @@ excludes = [
 	"__name__", "__package__", "__module__", "__str__", "__dict__", "__weakref__", "__repr__",
 	"copyfileobj", "copyfile", "getcwd", "glob", "move", "rmtree", "stat", "symlink", "walk",
 	"logging", "re", "sys", "chdir", "chmod", "copytree", "devnull", "filelock", "format_exc",
-	"gzip", "makedirs", "md5", "moves", "path", "remove", "string_types"
+	"gzip", "makedirs", "md5", "moves", "path", "remove", "string_types", "ResourceWarning", 
+	"ProcessPoolExecutor", "ThreadPoolExecutor", "__path__", 
 ]
 
 doc = """
@@ -77,7 +78,11 @@ for modname in modules:
 	
 	else:
 		ns, mod = modname.split('.')
-		module  = getattr(getattr(pyppl, ns), mod)
+		if ns == 'flowchart':
+			import pyppl.flowchart
+			module = getattr(pyppl.flowchart, mod)
+		else:
+			module  = getattr(getattr(pyppl, ns), mod)
 		doc += getDoc(module, modname)
 	
 open (os.path.join( os.path.dirname(__file__), 'docs', 'api.md' ), 'w').write (doc)

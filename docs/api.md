@@ -791,6 +791,8 @@ Job manager constructor
 `proc`     : The process  
 `runner`   : The runner class  
   
+#### `_exit (self) `
+  
 #### `allJobsDone (self) `
   
 Tell whether all jobs are done.  
@@ -806,7 +808,7 @@ Tell whether we can submit jobs.
 - **returns:**  
 `True` if we can, otherwise `False`  
   
-#### `halt (self, index) `
+#### `halt (self, halt_anyway) `
   
 Halt the pipeline if needed  
   
@@ -946,7 +948,55 @@ when the shared function is on.
 #### `on (self, *names) `
   
 
-## Module `Parameter`  
+## Module `flowchart.Flowchart`  
+> Draw flowchart for pipelines
+
+	@static variables:
+		`THEMES`: predefined themes
+	
+
+#### `__init__ (self, fcfile, dotfile) `
+  
+The constructor  
+
+- **params:**  
+`fcfile`: The flowchart file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.svg'`  
+`dotfile`: The dot file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.dot'`  
+  
+#### `_assemble (self) `
+  
+Assemble the graph for printing and rendering  
+  
+#### `addLink (self, node1, node2) `
+  
+Add a link to the chart  
+
+- **params:**  
+`node1`: The first node.  
+`node2`: The second node.  
+  
+#### `addNode (self, node, role) `
+  
+Add a node to the chart  
+
+- **params:**  
+`node`: The node  
+`role`: Is it a starting node, an ending node or None. Default: None.  
+  
+#### `generate (self) `
+  
+Generate the dot file and graph file.  
+  
+#### `setTheme (self, theme, base) `
+  
+Set the theme to be used  
+
+- **params:**  
+`theme`: The theme, could be the key of Flowchart.THEMES or a dict of a theme definition.  
+`base` : The base theme to be based on you pass custom theme  
+  
+
+## Module `parameters.Parameter`  
 > The class for a single parameter
 	
 
@@ -1014,7 +1064,7 @@ Set the value of the parameter
 `v`: The value  
   
 
-## Module `Parameters`  
+## Module `parameters.Parameters`  
 > A set of parameters
 	
 
@@ -1094,6 +1144,10 @@ Parse the arguments from `sys.argv`
 > A customized logger for pyppl
 
 
+#### `class: Box`
+```
+Allow dot operation for OrderedDict
+```
 #### `class: LoggerThemeError`
 ```
 Theme errors for logger
@@ -1160,55 +1214,10 @@ The logger
 > A set of utitities for PyPPL
 
 
-#### `class: OrderedDict`
+#### `class: Box`
 ```
-Dictionary that remembers insertion order
+Allow dot operation for OrderedDict
 ```
-#### `class: Parallel`
-```
-
-```
-#### `class: ProcessPoolExecutor`
-```
-
-```
-#### `class: ThreadPoolExecutor`
-```
-
-```
-#### `_cp (f1, f2) `
-  
-Copy a file or a directory  
-
-- **params:**  
-`f1`: The source  
-`f2`: The destination  
-  
-#### `_link (f1, f2) `
-  
-Create a symbolic link for the given file  
-
-- **params:**  
-`f1`: The source  
-`f2`: The destination  
-  
-#### `_lockfile (f, real, tmpdir) `
-  
-Get the path of lockfile of a file  
-
-- **params:**  
-`f`: The file  
-
-- **returns:**  
-The path of the lock file  
-  
-#### `_rm (fn) `
-  
-Remove an entry  
-
-- **params:**  
-`fn`: The path of the entry  
-  
 #### `alwaysList (data) `
   
 Convert a string or a list with element  
@@ -1230,8 +1239,6 @@ The split list
   
 Convert everything (str, unicode, bytes) to str with python2, python3 compatiblity  
   
-#### `basename (f) `
-  
 #### `briefList (l) `
   
 Briefly show an integer list, combine the continuous numbers.  
@@ -1241,16 +1248,6 @@ Briefly show an integer list, combine the continuous numbers.
 
 - **returns:**  
 The string to show for the briefed list.  
-  
-#### `chmodX (thefile) `
-  
-Convert script file to executable or add extract shebang to cmd line  
-
-- **params:**  
-`thefile`: the script file  
-
-- **returns:**  
-A list with or without the path of the interpreter as the first element and the script file as the last element  
   
 #### `dictUpdate (origDict, newDict) `
   
@@ -1271,52 +1268,6 @@ dictUpdate(od2, nd)
 # od2 == {"a": {"b": {"c": 1, "d": 2}}}  
 ```  
   
-#### `dirmtime (d) `
-  
-Calculate the mtime for a directory.  
-Should be the max mtime of all files in it.  
-
-- **params:**  
-`d`:  the directory  
-
-- **returns:**  
-The mtime.  
-  
-#### `dumbPopen (cmd, shell) `
-  
-A dumb Popen (no stdout and stderr)  
-
-- **params:**  
-`cmd`: The command for `Popen`  
-`shell`: The shell argument for `Popen`  
-
-- **returns:**  
-The process object  
-  
-#### `fileExists (f, callback, tmpdir) `
-  
-Tell whether a path exists under a lock  
-
-- **params:**  
-`f`: the path  
-`callback`: the callback  
-- arguments: whether the file exists and the path of the file  
-`tmpdir`: The tmpdir to save the lock file  
-
-- **returns:**  
-True if yes, otherwise False  
-If any of the path does not exist, return False  
-  
-#### `filesig (fn, dirsig) `
-  
-Calculate a signature for a file according to its path and mtime  
-
-- **params:**  
-`fn`: the file  
-
-- **returns:**  
-The md5 deigested signature.  
-  
 #### `filter (func, vec) `
   
 Python2 and Python3 compatible filter  
@@ -1327,8 +1278,6 @@ Python2 and Python3 compatible filter
 
 - **returns:**  
 The filtered list  
-  
-#### `flushFile (f, lastmsg, end) `
   
 #### `formatSecs (seconds) `
   
@@ -1351,14 +1300,6 @@ Try to get the source first, if failed, try to get its name, otherwise return No
 
 - **returns:**  
 The signature  
-  
-#### `gz (srcfile, gzfile, overwrite, tmpdir) `
-  
-Do a "gzip"-like for a file  
-
-- **params:**  
-`gzfile`:  the final .gz file  
-`srcfile`: the source file  
   
 #### `map (func, vec) `
   
@@ -1392,75 +1333,6 @@ Python2 and Python3 compatible reduce
 - **returns:**  
 The reduced value  
   
-#### `safeCopy (f1, f2, callback, overwrite, tmpdir) `
-  
-Safe copy  
-
-- **params:**  
-`src`: The source file  
-`dst`: The dist file  
-`callback`: The callback (r, f1, f2)  
-`overwrite`: Overwrite target file?  
-`tmpdir`: Tmpdir for lock file  
-  
-#### `safeLink (f1, f2, callback, overwrite, tmpdir) `
-  
-Safe link  
-
-- **params:**  
-`src`: The source file  
-`dst`: The dist file  
-`callback`: The callback (r, f1, f2)  
-`overwrite`: Overwrite target file?  
-`tmpdir`: Tmpdir for lock file  
-  
-#### `safeMove (f1, f2, callback, overwrite, tmpdir) `
-  
-Move a file/dir  
-
-- **params:**  
-`src`: The source file  
-`dst`: The destination  
-`overwrite`: Whether overwrite the destination  
-
-- **return:**  
-True if succeed else False  
-  
-#### `safeMoveWithLink (f1, f2, callback, overwrite, tmpdir) `
-  
-Move a file/dir and leave a link the source file with locks  
-
-- **params:**  
-`f1`: The source file  
-`f2`: The destination  
-`overwrite`: Whether overwrite the destination  
-
-- **return:**  
-True if succeed else False  
-  
-#### `safeRemove (f, callback, tmpdir) `
-  
-Safely remove a file/dir.  
-
-- **params:**  
-`f`: the file or dir.  
-`callback`: The callback  
-- argument `r`: Whether the file exists before removing  
-- argument `fn`: The path of the file  
-  
-#### `samefile (f1, f2, callback, tmpdir) `
-  
-Tell whether two paths pointing to the same file under locks  
-
-- **params:**  
-`f1`: the first path  
-`f2`: the second path  
-`callback`: the callback  
-
-- **returns:**  
-True if yes, otherwise False  
-If any of the path does not exist, return False  
-  
 #### `split (s, delimter, trim) `
   
 Split a string using a single-character delimter  
@@ -1480,14 +1352,6 @@ ret = split("'a,b',c", ",")
 - **returns:**  
 The list of substrings  
   
-#### `targz (srcdir, tgzfile, overwrite, tmpdir) `
-  
-Do a "tar zcf"-like for a directory  
-
-- **params:**  
-`tgzfile`: the final .tgz file  
-`srcdir`:  the source directory  
-  
 #### `uid (s, l, alphabet) `
   
 Calculate a short uid based on a string.  
@@ -1502,22 +1366,6 @@ This is used to calcuate a uid for a process
 - **returns:**  
 The uid  
   
-#### `ungz (gzfile, dstfile, overwrite, tmpdir) `
-  
-Do a "gunzip"-like for a .gz file  
-
-- **params:**  
-`gzfile`:  the .gz file  
-`dstfile`: the extracted file  
-  
-#### `untargz (tgzfile, dstdir, overwrite, tmpdir) `
-  
-Do a "tar zxf"-like for .tgz file  
-
-- **params:**  
-`tgzfile`:  the .tgz file  
-`dstdir`: which directory to extract the file to  
-  
 #### `varname (maxline, incldot) `
   
 Get the variable name for ini  
@@ -1528,6 +1376,229 @@ Get the variable name for ini
 
 - **returns:**  
 The variable name  
+  
+
+## Module `utils.box`  
+> .
+
+#### `class: Box`
+```
+Allow dot operation for OrderedDict
+```
+#### `class: OrderedDict`
+```
+Dictionary that remembers insertion order
+```
+
+## Module `utils.cmd`  
+> .
+
+#### `class: Box`
+```
+Allow dot operation for OrderedDict
+```
+#### `class: Cmd`
+```
+A command (subprocess) wapper
+```
+#### `asStr (s, encoding) [@staticmethod]`
+  
+Convert everything (str, unicode, bytes) to str with python2, python3 compatiblity  
+  
+#### `run (cmd, bg, raiseExc, **kwargs) [@staticmethod]`
+  
+A shortcut of `Command.run`  
+To chain another command, you can do:  
+`run('seq 1 3', bg = True).pipe('grep 1')`  
+
+- **params:**  
+`cmd`     : The command, could be a string or a list  
+`bg`      : Run in background or not. Default: `False`  
+- If it is `True`, `rc` and `stdout/stderr` will be default (no value retrieved).  
+`raiseExc`: raise the expcetion or not  
+`**kwargs`: other arguments for `Popen`  
+
+- **returns:**  
+The `Command` instance  
+  
+
+## Module `utils.parallel`  
+> .
+
+#### `class: Parallel`
+```
+A parallel runner
+```
+#### `run (func, args, nthread, backend, raiseExc) [@staticmethod]`
+  
+A shortcut of `Parallel.run`  
+
+- **params:**  
+`func`    : The function to run  
+`args`    : The arguments for the function, should be a `list` with `tuple`s  
+`nthread` : Number of jobs to run simultaneously. Default: `1`  
+`backend` : The backend, either `process` (default) or `thread`  
+`raiseExc`: Whether raise exception or not. Default: `True`  
+
+- **returns:**  
+The merged results from each job.  
+  
+
+## Module `utils.safefs`  
+> .
+
+#### `class: ChmodError`
+```
+OS system call failed.
+```
+#### `Lock () [@staticmethod]`
+  
+Returns a non-recursive lock object  
+  
+#### `class: SafeFs`
+```
+A thread-safe file system
+	
+	@static variables:
+		
+		`TMPDIR`: The default temporary directory to store lock files
+
+		# file types
+		`FILETYPE_UNKNOWN`  : Unknown file type
+		`FILETYPE_NOENT`    : File does not exist
+		`FILETYPE_NOENTLINK`: A dead link (a link links to a non-existent file.
+		`FILETYPE_FILE`     : A regular file
+		`FILETYPE_FILELINK` : A link to a regular file
+		`FILETYPE_DIR`      : A regular directory
+		`FILETYPE_DIRLINK`  : A link to a regular directory
+
+		# relation of two files
+		`FILES_DIFF_BOTHNOENT` : Two files are different and none of them exists
+		`FILES_DIFF_NOENT1`    : Two files are different but file1 does not exists
+		`FILES_DIFF_NOENT2`    : Two files are different but file2 does not exists
+		`FILES_DIFF_BOTHENT`   : Two files are different and both of them exist
+		`FILES_SAME_STRNOENT`  : Two files are the same string and it does not exist
+		`FILES_SAME_STRENT`    : Two files are the same string and it exists
+		`FILES_SAME_BOTHLINKS` : Two files link to one file
+		`FILES_SAME_BOTHLINKS1`: File1 links to file2, file2 links to a regular file
+		`FILES_SAME_BOTHLINKS2`: File2 links to file1, file1 links to a regular file
+		`FILES_SAME_REAL1`     : File2 links to file1, which a regular file
+		`FILES_SAME_REAL2`     : File1 links to file2, which a regular file
+
+		`LOCK`: A global lock ensures the locks are locked at the same time
+```
+#### `copy (file1, file2, overwrite, callback) [@staticmethod]`
+  
+A shortcut of `SafeFs.copy`  
+
+- **params:**  
+`file1`    : File 1  
+`file2`    : File 2  
+`overwrite`: Whether overwrite file 2. Default: `True`  
+`callback` : The callback. arguments:  
+- `r` : Whether the file exists  
+- `fs`: This instance  
+
+- **returns:**  
+`True` if succeed else `False`  
+  
+#### `exists (filepath, callback) [@staticmethod]`
+  
+A shortcut of `SafeFs.exists`  
+
+- **params:**  
+`filepath`: The filepath  
+`callback`: The callback. arguments:  
+- `r` : Whether the file exists  
+- `fs`: This instance  
+
+- **returns:**  
+`True` if the file exists else `False`  
+  
+#### `gz (file1, file2, overwrite, callback) [@staticmethod]`
+  
+A shortcut of `SafeFs.gz`  
+
+- **params:**  
+`file1`    : File 1  
+`file2`    : File 2  
+`overwrite`: Whether overwrite file 2. Default: `True`  
+`callback` : The callback. arguments:  
+- `r` : Whether the file exists  
+- `fs`: This instance  
+
+- **returns:**  
+`True` if succeed else `False`  
+  
+#### `link (file1, file2, overwrite, callback) [@staticmethod]`
+  
+A shortcut of `SafeFs.link`  
+
+- **params:**  
+`file1`    : File 1  
+`file2`    : File 2  
+`overwrite`: Whether overwrite file 2. Default: `True`  
+`callback` : The callback. arguments:  
+- `r` : Whether the file exists  
+- `fs`: This instance  
+
+- **returns:**  
+`True` if succeed else `False`  
+  
+#### `moveWithLink (file1, file2, overwrite, callback) [@staticmethod]`
+  
+A shortcut of `SafeFs.moveWithLink`  
+
+- **params:**  
+`file1`    : File 1  
+`file2`    : File 2  
+`overwrite`: Whether overwrite file 2. Default: `True`  
+`callback` : The callback. arguments:  
+- `r` : Whether the file exists  
+- `fs`: This instance  
+
+- **returns:**  
+`True` if succeed else `False`  
+  
+#### `osremove (file1, file2, overwrite, callback) `
+remove(path)  
+  
+Remove a file (same as unlink(path)).  
+#### `readlink (file1, file2, overwrite, callback) `
+readlink(path) -> path  
+  
+Return a string representing the path to which the symbolic link points.  
+#### `shmove (src, dst) [@staticmethod]`
+Recursively move a file or directory to another location. This is  
+similar to the Unix "mv" command.  
+  
+If the destination is a directory or a symlink to a directory, the source  
+is moved inside the directory. The destination path must not already  
+exist.  
+  
+If the destination already exists but is not a directory, it may be  
+overwritten depending on os.rename() semantics.  
+  
+If the destination is on our current filesystem, then rename() is used.  
+Otherwise, src is copied to the destination and then removed.  
+A lot more could be done here...  A look at a mv.c shows a lot of  
+the issues this implementation glosses over.  
+  
+  
+#### `ungz (file1, file2, overwrite, callback) [@staticmethod]`
+  
+A shortcut of `SafeFs.ungz`  
+
+- **params:**  
+`file1`    : File 1  
+`file2`    : File 2  
+`overwrite`: Whether overwrite file 2. Default: `True`  
+`callback` : The callback. arguments:  
+- `r` : Whether the file exists  
+- `fs`: This instance  
+
+- **returns:**  
+`True` if succeed else `False`  
   
 
 ## Module `proctree.ProcNode`  
@@ -1758,6 +1829,10 @@ Try to tell whether the job is still running.
 - **returns:**  
 `True` if yes, otherwise `False`  
   
+#### `kill (self) `
+  
+Try to kill the running jobs if I am exiting  
+  
 #### `retry (self) `
   
 #### `run (self) `
@@ -1813,17 +1888,6 @@ Constructor
 `job`:    The job object  
 `config`: The properties of the process  
   
-#### `getpid (self) `
-  
-Get the job identity and save it to job.pidfile  
-  
-#### `isRunning (self) `
-  
-Tell whether the job is still running  
-
-- **returns:**  
-True if it is running else False  
-  
 
 ## Module `runners.RunnerSlurm`  
 > The slurm runner
@@ -1836,17 +1900,6 @@ Constructor
 - **params:**  
 `job`:    The job object  
 `config`: The properties of the process  
-  
-#### `getpid (self) `
-  
-Get the job identity and save it to job.pidfile  
-  
-#### `isRunning (self) `
-  
-Tell whether the job is still running  
-
-- **returns:**  
-True if it is running else False  
   
 
 ## Module `runners.RunnerDry`  
