@@ -102,7 +102,8 @@ class LocalHelper(Helper):
 		"""
 		self.outfd = open(self.outfile, 'w')
 		self.errfd = open(self.errfile, 'w')
-		print SafeFs(self.script).chmodX()
+		import sys
+		sys.stdout.write( SafeFs(self.script).chmodX() )
 		self.proc  = cmd.Cmd(SafeFs(self.script).chmodX(), stdout = self.outfd, stderr = self.errfd)
 		self.pid   = self.proc.pid
 		try:
