@@ -431,7 +431,7 @@ class TestTemplatePyPPLEngine(testly.TestCase):
 		yield '{{var2|R}}', {'var2': 'abc'}, "'abc'"
 		yield '{% for var in varlist %}{{var|R}}{% endfor %}', {'varlist': ['abc', 'True', 1, False, True, None, 'INF', '-INF', 'r:c()', [1,2,3]]}, "'abc'TRUE1FALSETRUENULLInf-Infc()c(1,2,3)"
 		yield '{% if var3|bool %}1{% else %}0{% endif %}', {'var3': 'abc', 'bool': bool}, '1'
-		yield '{% for k , v in data.items() %}{{k}}:{{v}}{% endfor %}', {'data': {'a':1, 'b':2}}, 'a:1b:2'
+		yield '{% for k , v in data.items() %}{{k}}:{{v}}{% endfor %}', {'data': OrderedDict([('a', 1), ('b', 2)])}, 'a:1b:2'
 		# 25
 		yield '{{x|R}}', {'x': OrderedDict([(u'key1', 'val1'), ('key2', u'val2')])}, "list(key1='val1',key2='val2')"
 		yield '{{x|Rlist}}', {'x': OrderedDict([(u'key1', 'val1'), ('key2', u'val2')])}, "list(key1='val1',key2='val2')"
