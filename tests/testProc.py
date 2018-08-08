@@ -216,7 +216,7 @@ class TestProc(testly.TestCase):
 		yield pSetAttr, 'input', {'inkey1:var, inkey2:file': [('inval1', 'inval2')]}
 		yield pSetAttr, 'input', [('inval3', 'inval4')], {'inkey1:var, inkey2:file': [('inval3', 'inval4')]}
 		yield pSetAttr, 'input', ['inkey3:var', 'inkey4:file'], {'inkey1:var, inkey2:file': ['inkey3:var', 'inkey4:file']}
-		yield pSetAttr, 'input', {'inkey1:var': 'inval1', 'inkey2:file': 'inval2'}
+		yield pSetAttr, 'input', OrderedDict([('inkey1:var', 'inval1'), ('inkey2:file', 'inval2')])
 		yield pSetAttr, 'input', [('inval3', 'inval4')], {'inkey1:var, inkey2:file': [('inval3', 'inval4')]}
 				
 	def testSetAttr(self, p, name, val, expect = None, exception = None, msg = None, errs = []):

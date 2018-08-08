@@ -508,7 +508,11 @@ class Parameters (object):
 
 		if requiredOptions:
 			ret += 'REQUIRED OPTIONS:\n'
-			for key, val in requiredOptions.items():
+			keys = [key for key in sorted(requiredOptions.keys()) if key != Parameters.POSITIONAL]
+			if Parameters.POSITIONAL in requiredOptions:
+				keys.append(Parameters.POSITIONAL)
+			for key in keys:
+				val = requiredOptions[key]
 				ret  += '  {optitem}{optdesc}'.format(
 					optitem = val._printName(self._props['prefix'], keylen2).ljust(keylen - 2),
 					optdesc = '- ' + val.desc[0] if val.desc else '- No description.'
@@ -519,7 +523,11 @@ class Parameters (object):
 
 		ret += 'OPTIONAL OPTIONS:\n'
 		if optionalOptions:
-			for key, val in optionalOptions.items():
+			keys = [key for key in sorted(optionalOptions.keys()) if key != Parameters.POSITIONAL]
+			if Parameters.POSITIONAL in optionalOptions:
+				keys.append(Parameters.POSITIONAL)
+			for key in keys:
+				val = optionalOptions[key]
 				if key == Parameters.POSITIONAL: continue
 				ret  += '  {optitem}{optdesc}'.format(
 					optitem = val._printName(self._props['prefix'], keylen2).ljust(keylen - 2),

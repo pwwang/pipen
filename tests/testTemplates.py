@@ -668,7 +668,7 @@ class TestTemplateJinja2(testly.TestCase):
 		yield '{{R(var2)}}', {'var2': 'abc'}, "'abc'"
 		yield '{% for var in varlist %}{{R(var)}}{% endfor %}', {'varlist': ['abc', 'True', 1, False]}, "'abc'TRUE1FALSE"
 		yield '{% if bool(var3) %}1{% else %}0{% endif %}', {'var3': 'abc', 'bool': bool}, '1'
-		yield '{% for k,v in data.items() %}{{k}}:{{v}}{% endfor %}', {'data': {'a':1, 'b':2}}, 'a:1b:2'
+		yield '{% for k,v in data.items() %}{{k}}:{{v}}{% endfor %}', {'data': OrderedDict([('a', 1), ('b', 2)])}, 'a:1b:2'
 		# 20
 		yield '{{quote(a)}}', {'a':''}, '""'
 		yield '{{R(x)}}', {'x': OrderedDict([(u'key1', 'val1'), ('key2', u'val2')])}, "list(key1='val1',key2='val2')"
