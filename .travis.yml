@@ -64,7 +64,7 @@ install:
   - sudo pip install -r requirements.txt
   - sudo pip install python-testly
   - sudo pip install coverage
-  - sudo pip install codacy-coverage
+  - sudo pip install --ignore-installed codacy-coverage
 # command to run tests
 script:
   - make cov
