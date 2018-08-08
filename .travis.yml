@@ -20,16 +20,24 @@ matrix:
       env: PY=3.7.0
     - os: linux
       sudo: required
-      python:
-        - "2.7"
-        - "3.3"
-        - "3.4"
-        - "3.5"
-        - "3.5-dev"  # 3.5 development branch
-        - "3.6"
-        - "3.6-dev"  # 3.6 development branch
-        - "3.7-dev"  # 3.7 development branch
-        
+      python: 2.7
+      env: UPCOV=1
+    - os: linux
+      sudo: required
+      python: 3.3
+    - os: linux
+      sudo: required
+      python: 3.4
+    - os: linux
+      sudo: required
+      python: 3.5
+    - os: linux
+      sudo: required
+      python: 3.6
+    - os: linux
+      sudo: required
+      python: 3.7
+
 before_install: |
   if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     brew update
@@ -76,7 +84,7 @@ after_success:
   - coverage xml
   - coverage report
   - cd -
-  - if [ "$TRAVIS_PYTHON_VERSION" == "2.7" -a "$TRAVIS_OS_NAME" == "linux" ]; then make covupload; fi
+  - if [ "$UPCOV" == "1" ]; then make covupload; fi
   
 
   
