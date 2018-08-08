@@ -321,11 +321,13 @@ class TestJobmgr(testly.TestCase):
 		pProgressbar1 = Proc()
 		pProgressbar1.ppldir = self.testdir
 		pProgressbar1.cclean = True
-		pProgressbar1.input  = {'a': [1] * 80}
+		# Too many open files on travis on osx
+		# pProgressbar1.input  = {'a': [1] * 80}
+		pProgressbar1.input  = {'a': [1] * 40}
 		with helpers.log2str():
 			pProgressbar1._tidyBeforeRun()
 		jm2 = Jobmgr(pProgressbar1, RunnerLocal)
-		yield jm2, 0, 'SUBMIT', '[01/80] [--------------------------------------------------] Done:   0.0% | Running: 0'
+		yield jm2, 0, 'SUBMIT', '[01/40] [--------------------------------------------------] Done:   0.0% | Running: 0'
 		
 		jm3 = Jobmgr(pProgressbar1, RunnerLocal)
 		jm3.status[0] = Jobmgr.STATUS_DONE
@@ -336,13 +338,13 @@ class TestJobmgr(testly.TestCase):
 		jm3.status[5] = Jobmgr.STATUS_SUBMITTED
 		jm3.status[6] = Jobmgr.STATUS_DONE
 		jm3.status[7] = Jobmgr.STATUS_DONEFAILED
-		jm3.status[58] = Jobmgr.STATUS_DONE
-		jm3.status[59] = Jobmgr.STATUS_SUBMITFAILED
-		jm3.status[60] = Jobmgr.STATUS_DONE
-		jm3.status[61] = Jobmgr.STATUS_SUBMITTED
-		yield jm3, 0, 'SUBMIT', '[01/80] [=!>X-------------------------!=>------------------] Done:   8.8% | Running: 4'
-		yield jm3, 1, 'SUBMIT', '[02/80] [-!>X-------------------------!=>------------------] Done:   8.8% | Running: 4'
-		yield jm3, 2, 'SUBMIT', '[03/80] [-=>X-------------------------!=>------------------] Done:   8.8% | Running: 4'
+		jm3.status[28] = Jobmgr.STATUS_DONE
+		jm3.status[29] = Jobmgr.STATUS_SUBMITFAILED
+		jm3.status[30] = Jobmgr.STATUS_DONE
+		jm3.status[31] = Jobmgr.STATUS_SUBMITTED
+		yield jm3, 0, 'SUBMIT', '[01/40] [==--==!!==>>==XX----------------------=!=>--------] Done:  17.5% | Running: 4'
+		yield jm3, 1, 'SUBMIT', '[02/40] [==--==!!==>>==XX----------------------=!=>--------] Done:  17.5% | Running: 4'
+		yield jm3, 2, 'SUBMIT', '[03/40] [==--==!!==>>==XX----------------------=!=>--------] Done:  17.5% | Running: 4'
 
 	def testProgressBar(self, jm, jid, loglevel, bar):
 		with helpers.log2str(levels = 'all') as (out, err):

@@ -281,6 +281,7 @@ class SlurmHelper(Helper):
 
 
 if __name__ == '__main__': # pragma: no cover
+	# work as local submitter
 	helper = LocalHelper(sys.argv[1])
 	atexit.register(helper.quit)
 	helper.run()

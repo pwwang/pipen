@@ -1,41 +1,92 @@
-language: python
-os:
-  - linux
-  - osx
-python:
-  - "2.6"
-  - "2.7"
-  - "3.3"
-  - "3.4"
-  - "3.5"
-  - "3.5-dev"  # 3.5 development branch
-  - "3.6"
-  - "3.6-dev"  # 3.6 development branch
-  - "3.7-dev"  # 3.7 development branch
+matrix:
+  include:
+    - os: osx
+      language: generic
+      env: PY=2.7.13
+    - os: osx
+      language: generic
+      env: PY=3.3.6
+    - os: osx
+      language: generic
+      env: PY=3.4.4
+    - os: osx
+      language: generic
+      env: PY=3.5.1
+    - os: osx
+      language: generic
+      env: PY=3.6.6
+    - os: osx
+      language: generic
+      env: PY=3.7.0
+    - os: linux
+      python: 2.7
+      sudo: required
+      env: UPCOV=1
+    - os: linux
+      python: 3.3
+    - os: linux
+      python: 3.4
+    - os: linux
+      python: 3.5
+    - os: linux
+      python: 3.6
+    - os: linux
+      python: 3.7
+
+before_install: |
+  if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+    brew update
+    # Per the `pyenv homebrew recommendations <https://github.com/yyuu/pyenv/wiki#suggested-build-environment>`_.
+    brew install openssl readline
+    # See https://docs.travis-ci.com/user/osx-ci-environment/#A-note-on-upgrading-packages.
+    # I didn't do this above because it works and I'm lazy.
+    brew outdated pyenv || brew upgrade pyenv
+    # virtualenv doesn't work without pyenv knowledge. venv in Python 3.3
+    # doesn't provide Pip by default. So, use `pyenv-virtualenv <https://github.com/yyuu/pyenv-virtualenv/blob/master/README.md>`_.
+    brew install pyenv-virtualenv
+    pyenv install $PY
+    # I would expect something like ``pyenv init; pyenv local $PYTHON`` or
+    # ``pyenv shell $PYTHON`` would work, but ``pyenv init`` doesn't seem to
+    # modify the Bash environment. ??? So, I hand-set the variables instead.
+    export PYENV_VERSION=$PY
+    export PATH="/Users/travis/.pyenv/shims:${PATH}"
+    pyenv-virtualenv venv
+    source venv/bin/activate
+    # A manual check that the correct version of Python is running.
+    python --version
+  fi
+
 # command to install dependencies
 install:
-  - pip install -r requirements.txt
   #- python setup.py install
-  - export PYTHONPATH="$(pwd):$PYTHONPATH"
-  - pip install python-testly
-  - pip install coverage
-  - pip install codacy-coverage
+  - export PYTHONUSERBASE="$(pwd)/pylib"
+  - export PYTHONPATH="$(pwd):$(echo $PYTHONUSERBASE/lib*/python*/site-packages):$PYTHONPATH"
+  - echo $PYTHONPATH
+  - export PATH="$PYTHONUSERBASE/bin:$PATH"
+  #- pip install --user --upgrade pip
+  - pip install --user --ignore-installed -r requirements.txt
+  - pip install --user --ignore-installed python-testly
+  - pip install --user --ignore-installed coverage
+  - pip install --user --ignore-installed codacy-coverage
 # command to run tests
 script:
   - make cov
-  - pip install graphviz jinja2
-  - sudo apt-get install -y graphviz
+  - pip install --user --ignore-installed graphviz jinja2
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install graphviz; else sudo apt-get install -y graphviz; fi
   - cd tests
   - coverage run -a --concurrency=multiprocessing testPyPPL.py TestPyPPL.testFlowchart
   - coverage combine
   - coverage run -a --concurrency=multiprocessing testTemplates.py TestTemplateJinja2
   - coverage combine
-after_success:
-  - export CODACY_PROJECT_TOKEN=b8ba4ff9257e4061b2c29e105255433c
-  - coverage xml
-  - coverage report
-  - cd -
-  - make covupload
+# upload the coverage
+after_success: |
+  if [ "$UPCOV" == "1" ]; then
+    export CODACY_PROJECT_TOKEN=b8ba4ff9257e4061b2c29e105255433c
+    coverage xml
+    coverage report
+    cd -
+    make covupload
+  fi
   
 
   
