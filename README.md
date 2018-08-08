@@ -1,6 +1,6 @@
 # [PyPPL][3] - A [Py](#)thon [P](#)i[P](#)e[L](#)ine framework 
 
-![Pypi][22] ![Github][23] ![Codacy][4] ![Codacy coverage][11] ![Travis building][8]
+![Pypi][22] ![Github][23] ![PythonVers][37] ![Codacy][4] ![Codacy coverage][11] ![Travis building][8] ![License][38]
 
 [Documentation][1] | [API][2] | [Change log][19] | [FAQ][26]
 
@@ -18,8 +18,7 @@
 - Highly reusable processes (see [a set of highly reusable bioinformatics processes][24]).
 
 ## Requirements
-- OS: Linux, OSX, WSL (Windows Subsystem for Linux) or Cygwin
-- Python 2.7 or Python 3.6
+- OS: Linux or OSX
 - Python packages: [six][25], [filelock][35], [loky][17], [futures][21] (suggested: [graphviz][36], [pyyaml][33] and [python-testly][5]).
 
 ## Installation
@@ -519,3 +518,5 @@ To generate svg file, you have to have [graphviz][36] installed.
 [34]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/debugScript.png
 [35]: https://github.com/benediktschmitt/py-filelock
 [36]: https://github.com/xflr6/graphviz
+[37]: https://img.shields.io/pypi/pyversions/PyPPL.svg?style=flat-square
+[38]: https://img.shields.io/github/license/pwwang/PyPPL.svg?style=flat-square
