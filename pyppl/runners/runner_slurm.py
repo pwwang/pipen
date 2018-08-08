@@ -1,5 +1,6 @@
 import copy
 from subprocess import check_output
+from .helpers import SlurmHelper
 from .runner import Runner
 
 class RunnerSlurm (Runner):
@@ -27,15 +28,17 @@ class RunnerSlurm (Runner):
 		if 'slurmRunner' in self.job.proc.props or 'slurmRunner' in self.job.proc.config:
 			conf = copy.copy (self.job.proc.slurmRunner)
 
-		self.commands = {'sbatch': 'sbatch', 'srun': 'srun', 'squeue': 'squeue'}
+		commands = {'sbatch': 'sbatch', 'srun': 'srun', 'squeue': 'squeue', 'scancel': 'scancel'}
 		if 'sbatch' in conf:
-			self.commands['sbatch'] = conf['sbatch']
+			commands['sbatch']  = conf['sbatch']
 		if 'srun' in conf:
-			self.commands['srun']   = conf['srun']
+			commands['srun']    = conf['srun']
 		if 'squeue' in conf:
-			self.commands['squeue'] = conf['squeue']
+			commands['squeue']  = conf['squeue']
+		if 'scancel' in conf:
+			commands['scancel'] = conf['scancel']
 		
-		cmdPrefix = self.commands['srun']
+		cmdPrefix = commands['srun']
 		if 'cmdPrefix' in conf:
 			cmdPrefix = conf['cmdPrefix']
 		
@@ -88,34 +91,6 @@ class RunnerSlurm (Runner):
 		with open (slurmfile, 'w') as f:
 			f.write ('\n'.join(slurmsrc) + '\n')
 		
-		self.script = [self.commands['sbatch'], slurmfile]
+		self.helper = SlurmHelper(slurmfile, commands)
 
-	def getpid (self):
-		"""
-		Get the job identity and save it to job.pidfile
-		"""
-		# sbatch: Submitted batch job 99999999
-		content = ''
-		with open(self.job.outfile) as f:
-			content = f.read().strip()
-		if not 'Submitted batch job' in content:
-			return
-		pid = int (content.split(' ')[-1])
-		self.job.pid (pid)
-
-	def isRunning (self):
-		"""
-		Tell whether the job is still running
-		@returns:
-			True if it is running else False
-		"""
-		jobid = self.job.pid ()
-		if not jobid: return False
-		try:
-			# header line
-			# jid xxx xxx
-			jid = str(check_output([self.commands['squeue'], '-j', jobid]).splitlines()[1].split()[0].decode())
-			return jobid == jid
-		except Exception:
-			return False
 

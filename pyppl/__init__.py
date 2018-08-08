@@ -6,21 +6,20 @@ import sys
 import six
 import threading
 import copy as pycopy
-import traceback
 import filelock
 import atexit
 from os import path, makedirs
 from time import time, sleep
 from random import randint
-from subprocess import PIPE, Popen
-from multiprocessing import JoinableQueue, Process, cpu_count
+from multiprocessing import cpu_count
 from collections import OrderedDict
 
-from .utils import Box
+from .utils import Box, parallel, cmd
 from .aggr import Aggr
 from .channel import Channel
-from .job import Job, Jobmgr
-from .parameters import params, Parameter, Parameters
+from .job import Job
+from .jobmgr import Jobmgr
+from .parameters import params
 from .proctree import ProcTree
 from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcFindError, PyPPLProcRelationError
 from . import logger, utils, runners, templates
@@ -540,8 +539,9 @@ class Proc (object):
 			if self.resume not in ['skip+', 'resume']:
 				self._saveSettings()
 			self._buildJobs ()
-		except Exception:
-			self.lock.release()
+		except Exception: # pragma: no cover
+			if self.lock.is_locked:
+				self.lock.release()
 			raise
 
 	# self.resume != 'skip'
@@ -569,7 +569,7 @@ class Proc (object):
 				# registered at atexit
 				#failedjobs[0].showError (len(failedjobs))
 				if self.errhow != 'ignore':
-					sys.exit (1) # don't go further
+					sys.exit(1) # don't go further
 				else:
 					failedjobs[0].showError (len(failedjobs))
 
@@ -656,11 +656,11 @@ class Proc (object):
 				raise ProcAttributeError(self.workdir, 'Cannot skip process, as workdir not exists')
 			makedirs (self.workdir)
 
-		self.props['lock'] = filelock.FileLock(path.join(self.workdir, 'lock'))
+		self.props['lock'] = filelock.FileLock(path.join(self.workdir, 'proc.lock'))
 		
 		try:
 			self.lock.acquire(timeout = 3)
-		except filelock.Timeout:
+		except filelock.Timeout: # pragma: no cover
 			self.log('Another instance of this process is running, waiting ...', 'warning')
 			self.log('If it is not the case, remove the process lock file and try again:', 'warning')
 			self.log('- ' + path.join(self.workdir, 'lock'), 'warning')
@@ -714,8 +714,9 @@ class Proc (object):
 			self.props['expart'] = [self.template(e, **self.tplenvs) for e in expart]
 
 			self.log ('Properties set explictly: %s' % str(self.sets), 'debug')
-		except Exception:
-			self.lock.release()
+		except Exception: # pragma: no cover
+			if self.lock.is_locked:
+				self.lock.release()
 			raise
 
 	def _saveSettings (self):
@@ -1053,7 +1054,7 @@ class Proc (object):
 			row = tuple(job.data['out'].values())
 			self.props['channel'][i] = row
 
-		utils.Parallel(self.nthread, backend = 'thread').run(bjSingle, [(i, ) for i in range(self.size)])
+		parallel.Parallel(self.nthread, backend = 'thread').run(bjSingle, [(i, ) for i in range(self.size)])
 		self.log('After job building, active threads: %s' % threading.active_count(), 'debug')
 
 		if self.jobs[0].data['out']:
@@ -1128,7 +1129,7 @@ class Proc (object):
 			else:
 				self.props['ncjobids'].append (i)
 
-		utils.Parallel(self.nthread, backend = 'thread').run(chkCached, [(i, ) for i in range(self.size)])
+		parallel.Parallel(self.nthread, backend = 'thread').run(chkCached, [(i, ) for i in range(self.size)])
 
 		self.log ('Truly cached jobs : %s' % (utils.briefList(trulyCachedJids) if len(trulyCachedJids) < self.size else 'ALL'), 'info')
 		self.log ('Export-cached jobs: %s' % (utils.briefList(exptCachedJids)  if len(exptCachedJids)  < self.size else 'ALL'), 'info')
@@ -1152,23 +1153,17 @@ class Proc (object):
 			The return code of the command
 		"""
 		if not self.config[key]: return
-		cmd = self.template(self.config[key], **self.tplenvs).render(self.procvars)
+		cmdstr = self.template(self.config[key], **self.tplenvs).render(self.procvars)
 		self.log ('Running <%s> ...' % (key), 'info')
 
-		try:
-			p = Popen (cmd, shell=True, executable='bash', stderr=PIPE, stdout=PIPE, universal_newlines=True)
-
-			for line in iter(p.stdout.readline, ''):
-				logger.logger.info ('[ CMDOUT] %s' % line.rstrip("\n"))
-			for line in iter(p.stderr.readline, ''):
-				logger.logger.info ('[ CMDERR] %s' % line.rstrip("\n"))
-			rc = p.wait()
-			p.stdout.close()
-			p.stderr.close()
-			if rc != 0:
-				raise ProcRunCmdError(cmd, key)
-		except Exception:
-			raise ProcRunCmdError(cmd, key, traceback.format_exc())
+		c = cmd.run(cmdstr, bg = True, shell = True, executable = '/bin/bash')
+		for line in iter(c.p.stdout.readline, ''):
+			logger.logger.info ('[ CMDOUT] %s' % line.rstrip("\n"))
+		for line in iter(c.p.stderr.readline, ''):
+			logger.logger.info ('[ CMDERR] %s' % line.rstrip("\n"))
+		c.run()
+		if c.rc != 0:
+			raise ProcRunCmdError(cmdstr, key)
 
 	def _runJobs (self):
 		"""
@@ -1183,7 +1178,7 @@ class Proc (object):
 		try:
 			jobmgr.run()
 			self.log('After job run, active threads: %s' % threading.active_count(), 'debug')
-		except KeyboardInterrupt:
+		except KeyboardInterrupt: # pragma: no cover
 			try:
 				self.log('Ctrl-c detected or job failed, pipeline exiting ...', 'WARNING')
 			except KeyboardInterrupt:
@@ -1237,7 +1232,7 @@ class PyPPL (object):
 						try:
 							import yaml
 							utils.dictUpdate(fconfig, yaml.load(cf.read().replace('\t', '  ')))
-						except ImportError:
+						except ImportError: # pragma: no cover
 							cfgIgnored[cfile] = 1
 					else:
 						utils.dictUpdate(fconfig, json.load(cf))

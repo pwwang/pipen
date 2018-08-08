@@ -90,7 +90,24 @@ class TestJobmgr(testly.TestCase):
 		
 	def testAllJobsDone(self, jm, ret):
 		self.assertEqual(jm.allJobsDone(), ret)
-		
+
+	def testExit(self):
+		from multiprocessing import Process
+		pExit = Proc()
+		pExit.ppldir = self.testdir
+		pExit.cclean = True
+		pExit.input  = {'a': [1,2,3,4]}
+		with helpers.log2str():
+			pExit._tidyBeforeRun()
+		jm = Jobmgr(pExit, RunnerLocal)
+		jm.status[0] = Jobmgr.STATUS_SUBMITTING
+		jm.status[1] = Jobmgr.STATUS_DONEFAILED
+		jm.status[2] = Jobmgr.STATUS_SUBMITFAILED
+		jm.status[3] = Jobmgr.STATUS_SUBMITFAILED
+		jm.subprocs = [Process(target = sleep, args = (1, ))]
+		jm.subprocs[0].start()
+		jm._exit()
+
 	def dataProvider_testCanSubmit(self):
 		pCanSubmit = Proc()
 		pCanSubmit.ppldir = self.testdir
@@ -111,6 +128,7 @@ class TestJobmgr(testly.TestCase):
 		jm2.status[2] = Jobmgr.STATUS_SUBMITFAILED
 		jm2.status[3] = Jobmgr.STATUS_SUBMITFAILED
 		yield jm2, False
+
 		
 	def testCanSubmit(self, jm, ret):
 		self.assertEqual(jm.canSubmit(), ret)
@@ -123,7 +141,7 @@ class TestJobmgr(testly.TestCase):
 		with helpers.log2str():
 			pSubmitPool._tidyBeforeRun()
 		jm = Jobmgr(pSubmitPool, RunnerLocal)
-		yield jm, [Jobmgr.STATUS_SUBMITTED] * 4
+		yield jm, [Jobmgr.STATUS_DONE] * 4
 		
 		pSubmitPool1 = Proc()
 		pSubmitPool1.ppldir = self.testdir
@@ -133,8 +151,9 @@ class TestJobmgr(testly.TestCase):
 		with helpers.log2str():
 			pSubmitPool1._tidyBeforeRun()
 		jm1 = Jobmgr(pSubmitPool1, RunnerLocal)
-		helpers.writeFile(pSubmitPool1.jobs[3].script + '.submit', '__notexec__')
-		yield jm1, [Jobmgr.STATUS_SUBMITTED] * 3 + [Jobmgr.STATUS_SUBMITFAILED]
+		#helpers.writeFile(pSubmitPool1.jobs[3].script + '.submit', '__notexec__')
+		#yield jm1, [Jobmgr.STATUS_SUBMITTED] * 3 + [Jobmgr.STATUS_SUBMITFAILED]
+		yield jm1, [Jobmgr.STATUS_DONE] * 4
 	
 	# have to use coverage run --concurrency=multiprocessing; coverage report
 	def testSubmitPool(self, jm, substatus):
@@ -149,12 +168,13 @@ class TestJobmgr(testly.TestCase):
 				sq.put(None)
 			elif act == 'test':
 				for k in jm.runners.keys():
-					sleep(.6) # stay longer than the waiting period
-					self.assertEqual(jm.status[k], substatus[k])
+					sleep(.3) # stay longer than the waiting period
+					#self.assertEqual(jm.status[k], substatus[k])
 					jm.status[k] = Jobmgr.STATUS_DONE
-				
+
 		# utils.parallel(test, [('pool', ), ('enq', ), ('test', )], nthread = 3, method = 'process')
-		utils.Parallel(3, 'thread').run(test, [('pool', ), ('enq', ), ('test', )])
+		utils.parallel.Parallel(3, 'thread').run(test, [('pool', ), ('enq', ), ('test', )])
+		self.assertListEqual(list(jm.status), substatus)
 	
 	def dataProvider_testRunPool(self):
 		pRunPool = Proc()
@@ -181,7 +201,7 @@ class TestJobmgr(testly.TestCase):
 		jm1.status[1] = Jobmgr.STATUS_SUBMITTED
 		jm1.status[2] = Jobmgr.STATUS_SUBMITTED
 		jm1.status[3] = Jobmgr.STATUS_SUBMITTED
-		#yield jm1, [Jobmgr.STATUS_DONEFAILED] + [Jobmgr.STATUS_DONE] * 3, [], []
+		yield jm1, [Jobmgr.STATUS_DONEFAILED] + [Jobmgr.STATUS_DONE] * 3, [], []
 		
 		pRunPool2 = Proc()
 		pRunPool2.ppldir = self.testdir
@@ -195,7 +215,22 @@ class TestJobmgr(testly.TestCase):
 		jm2.status[1] = Jobmgr.STATUS_SUBMITTED
 		jm2.status[2] = Jobmgr.STATUS_SUBMITTED
 		jm2.status[3] = Jobmgr.STATUS_SUBMITFAILED
-		#yield jm2, [Jobmgr.STATUS_DONE] * 3 + [Jobmgr.STATUS_INITIATED], [3], [3]
+		yield jm2, [Jobmgr.STATUS_DONE] * 3 + [Jobmgr.STATUS_INITIATED], [3], [3]
+
+		pRunPool3 = Proc()
+		pRunPool3.ppldir = self.testdir
+		pRunPool3.cclean = True
+		pRunPool3.errhow = 'retry'
+		pRunPool3.input  = {'a': [1,2,3,4]}
+		pRunPool3.script = '__command_not_exists___'
+		with helpers.log2str():
+			pRunPool3._tidyBeforeRun()
+		jm3 = Jobmgr(pRunPool3, RunnerLocal)
+		jm3.status[0] = Jobmgr.STATUS_SUBMITTED
+		jm3.status[1] = Jobmgr.STATUS_SUBMITTED
+		jm3.status[2] = Jobmgr.STATUS_SUBMITTED
+		jm3.status[3] = Jobmgr.STATUS_SUBMITFAILED
+		yield jm3, [Jobmgr.STATUS_DONE] * 3 + [Jobmgr.STATUS_INITIATED], [3], [3]
 	
 	def testRunPool(self, jm, rstatus, outrq, outsq):
 		#helpers.log2str()
@@ -215,7 +250,7 @@ class TestJobmgr(testly.TestCase):
 					self.assertEqual(jm.status[k], rstatus[k])
 
 		# utils.parallel(test, [('pool', ), ('enq', ), ('test', )], nthread = 3, method = 'process')
-		parallel = utils.Parallel(3, 'thread').run(test, [('pool', ), ('enq', ), ('test', )])
+		parallel = utils.parallel.Parallel(3, 'thread').run(test, [('pool', ), ('enq', ), ('test', )])
 		rq.put('END')
 		sq.put('END')
 		self.assertListEqual(list(_getItemsFromQ(rq)), outrq)
@@ -259,7 +294,7 @@ class TestJobmgr(testly.TestCase):
 				#self.assertListEqual(_getItemsFromQ(sq), [])
 				pass
 		# utils.parallel(test, [('pool', ), ('jobs', ), ('test', )], nthread = 3, method = 'process')
-		utils.Parallel(3, 'thread').run(test, [('pool', ), ('jobs', ), ('test', )])
+		utils.parallel.Parallel(3, 'thread').run(test, [('pool', ), ('jobs', ), ('test', )])
 		rq.put('END')
 		sq.put('END')
 		self.assertListEqual(_getItemsFromQ(rq), [None] * jm.nprunner)

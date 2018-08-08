@@ -3,12 +3,12 @@ The base runner class
 """
 import sys
 import re
-from os import kill
+from os import path
 from time import sleep
 from multiprocessing import Value, Lock
 from subprocess import Popen, list2cmdline
 
-from .. import utils
+from ..utils import safefs
 
 flushlock = Lock()
 
@@ -26,16 +26,17 @@ class Runner (object):
 			`job`:    The job object
 		"""
 		self.job       = job
-		self.script    = utils.chmodX(self.job.script)
+		self.helper    = None
+		self.script    = safefs.SafeFs(self.job.script).chmodX()
 		self.cmd2run   = list2cmdline (self.script)
 		self.ntry      = Value('i', 0, lock = Lock())
-		self.p         = None
 
-	def __del__(self):
+	def kill(self):
 		"""
 		Try to kill the running jobs if I am exiting
 		"""
-		pass
+		if self.helper:
+			self.helper.kill()
 
 	def submit (self):
 		"""
@@ -49,35 +50,15 @@ class Runner (object):
 			return True
 		else:
 			self.job.reset(self.ntry.value)
-			
-			ferrw = open(self.job.errfile, 'w')
-			foutw = open(self.job.outfile, 'w')
-			succ  = True
-
-			try:
-				#self.job.proc.log ('Submitting job #%-3s ...' % self.job.index, 'submit')
-				# retry may open the files again
-				self.p = Popen (self.script, stderr=ferrw, stdout=foutw, close_fds=True)
-				
-				rc = self.p.wait()
-				if rc != 0:
-					self.job.proc.log ('%s Submission failed with return code: %s.' % (indexstr, rc), 'error')
-					succ = False
-					
-			except Exception as ex:
-				self.job.proc.log ('%s Submission failed with exception: %s' % (indexstr, str(ex)), 'error')
-				ferrw.write(str(ex))
-				succ = False
-			finally:
-				ferrw.close()
-				foutw.close()
-				
-			if not succ:
+			r = self.helper.submit()
+			if r.rc != 0:
+				if r.stderr: # pragma: no cover
+					with open(self.job.errfile, 'w') as ferr:
+						ferr.write(r.stderr)
+				self.job.proc.log ('%s Submission failed with return code: %s.' % (indexstr, r.rc), 'error')
 				self.job.rc(self.job.RC_SUBMITFAIL)
 				return False
-			else:
-				self.getpid()
-				return True
+			return True
 
 	def finish(self):
 		self.job.done()
@@ -86,7 +67,8 @@ class Runner (object):
 		"""
 		Get the job id
 		"""
-		pass
+		if self.helper:
+			self.job.pid(self.helper.pid)
 
 	def run(self):
 		"""
@@ -98,11 +80,16 @@ class Runner (object):
 		if self.job.index not in self.job.proc.ncjobids:
 			self.finish()
 			return True
-		
+
+		# stdout, stderr haven't been generated, wait
+		while not path.isfile(self.job.errfile) or not path.isfile(self.job.outfile):
+			sleep(self.INTERVAL)
+
 		ferr = open(self.job.errfile)
 		fout = open(self.job.outfile)
 		lastout = ''
 		lasterr = ''
+
 		while self.job.rc() == self.job.RC_NOTGENERATE: # rc not generated yet
 			sleep (self.INTERVAL)
 			lastout, lasterr = self._flush(fout, ferr, lastout, lasterr)
@@ -128,14 +115,9 @@ class Runner (object):
 		@returns:
 			`True` if yes, otherwise `False`
 		"""
-		jobpid = self.job.pid()
-		if not jobpid:
-			return False
-		try:
-			kill(int(jobpid), 0)
-			return True
-		except OSError:
-			return False
+		if self.helper:
+			return self.helper.alive()
+		return False
 		
 	def _flush (self, fout, ferr, lastout, lasterr, end = False):
 		"""
@@ -151,7 +133,7 @@ class Runner (object):
 			return None, None
 
 		if 'stdout' in self.job.proc.echo['type']:
-			lines, lastout = utils.flushFile(fout, lastout, end)
+			lines, lastout = safefs.SafeFs.flush(fout, lastout, end)
 			outfilter      = self.job.proc.echo['type']['stdout']
 			
 			for line in lines:
@@ -159,7 +141,7 @@ class Runner (object):
 					with flushlock:
 						sys.stdout.write(line)
 
-		lines, lasterr = utils.flushFile(ferr, lasterr, end)		
+		lines, lasterr = safefs.SafeFs.flush(ferr, lasterr, end)		
 		for line in lines:
 			if line.startswith('pyppl.log'):
 				line = line.rstrip('\n')

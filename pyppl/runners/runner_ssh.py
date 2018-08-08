@@ -1,7 +1,8 @@
 import os
 
 from .runner import Runner
-from .. import utils
+from .helpers import LocalHelper
+from ..utils import cmd
 from ..exception import RunnerSshError
 from multiprocessing import Value
 
@@ -18,18 +19,18 @@ class RunnerSsh(Runner):
 	
 	@staticmethod
 	def isServerAlive(server, key):
-		cmd = ['ssh', server]
+		cmdlist = ['ssh', server]
 		if key:
-			cmd.append('-i')
-			cmd.append(key)
-		cmd.append('-o')
-		cmd.append('BatchMode=yes')
-		cmd.append('-o')
-		cmd.append('StrictHostKeyChecking=no')
-		cmd.append('-o')
-		cmd.append('ConnectionAttempts=1')
-		cmd.append('true')
-		return utils.dumbPopen(cmd, shell = False).wait() == 0
+			cmdlist.append('-i')
+			cmdlist.append(key)
+		cmdlist.append('-o')
+		cmdlist.append('BatchMode=yes')
+		cmdlist.append('-o')
+		cmdlist.append('StrictHostKeyChecking=no')
+		cmdlist.append('-o')
+		cmdlist.append('ConnectionAttempts=1')
+		cmdlist.append('true')
+		return cmd.run(cmdlist).rc == 0
 
 	def __init__ (self, job):
 		"""
@@ -75,8 +76,6 @@ class RunnerSsh(Runner):
 		sshsrc       = [
 			'#!/usr/bin/env bash',
 			'',
-			"echo $$ > '%s'" % self.job.pidfile,
-			'trap "status=\\$?; echo \\$status >\'%s\'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile
 		]
 		
 		if 'preScript' in conf:
@@ -90,11 +89,6 @@ class RunnerSsh(Runner):
 		with open (sshfile, 'w') as f:
 			f.write ('\n'.join(sshsrc) + '\n')
 
-		utils.chmodX(sshfile)
-		submitfile = self.job.script + '.submit'
-		with open(submitfile, 'w') as f:
-			f.write('#!/usr/bin/env bash\n')
-			f.write("exec '%s' &\n" % sshfile)
-		self.script = utils.chmodX(submitfile)
+		self.helper = LocalHelper(sshfile)
 
 

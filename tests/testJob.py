@@ -6,7 +6,8 @@ from os import path, symlink, makedirs, utime
 from tempfile import gettempdir
 from shutil import rmtree
 from copy import deepcopy
-from pyppl.job import Jobmgr, Job
+from pyppl.job import Job
+from pyppl.jobmgr import Jobmgr
 from pyppl.exception import JobInputParseError, TemplatePyPPLRenderError, JobOutputParseError
 from pyppl.templates import TemplatePyPPL
 from pyppl import Proc, logger, utils
@@ -126,54 +127,60 @@ class TestJob(testly.TestCase):
 				[filed35],
 			]}, 
 		}
+		p2 = p.copy()
+		p2.props['workdir'] = path.join(self.testdir, 'workdir2')
+		p2.infile = 'real'
+		p3 = p.copy()
+		p3.props['workdir'] = path.join(self.testdir, 'workdir3')
+		p3.infile = 'origin'
 
-		yield 0, p, {
+		yield 0, p2, {
 			'a': {'type': 'var', 'data': 1},
 			'b': {'type': 'var', 'data': 'a'},
 			'c': {'type': 'file', 'orig':'', 'data': ''},
 			'd': {'type': 'files', 'orig':[filed0, filed1], 'data': [
-				self.file2indir(p.workdir, 0, filed0), 
-				self.file2indir(p.workdir, 0, filed1)
+				self.file2indir(p2.workdir, 0, filed0), 
+				self.file2indir(p2.workdir, 0, filed1)
 			]},
 			'd2': {'type': 'files', 'orig': [filed20], 'data': [
-				self.file2indir(p.workdir, 0, filed20)
+				self.file2indir(p2.workdir, 0, filed20)
 			]},
 			'd3': {'type': 'files', 'orig': [filed30, filed31], 'data': [
-				self.file2indir(p.workdir, 0, filed30),
-				self.file2indir(p.workdir, 0, filed31)
+				self.file2indir(p2.workdir, 0, filed30),
+				self.file2indir(p2.workdir, 0, filed31)
 			]}, 
 		}, {
 			'a': 1,
 			'b': 'a',
-			'c': '',
+			'c': path.realpath(''),
 			'IN_c': '',
 			'OR_c': '',
 			'RL_c': path.realpath(''),
 			'd': [
-				self.file2indir(p.workdir, 0, filed0), 
-				self.file2indir(p.workdir, 0, filed1)
+				filed0, 
+				filed1
 			],
 			'IN_d': [
-				self.file2indir(p.workdir, 0, filed0), 
-				self.file2indir(p.workdir, 0, filed1)
+				self.file2indir(p2.workdir, 0, filed0), 
+				self.file2indir(p2.workdir, 0, filed1)
 			],
 			'OR_d': [filed0, filed1],
 			'RL_d': [filed0, filed1],
 			'd2': [
-				self.file2indir(p.workdir, 0, filed20)
+				path.realpath(filed20)
 			],
 			'IN_d2': [
-				self.file2indir(p.workdir, 0, filed20)
+				self.file2indir(p2.workdir, 0, filed20)
 			],
 			'OR_d2': [filed20],
 			'RL_d2': [filed20],
 			'd3': [
-				self.file2indir(p.workdir, 0, filed30),
-				self.file2indir(p.workdir, 0, filed31)
+				path.realpath(filed30),
+				path.realpath(filed31)
 			], 
 			'IN_d3': [
-				self.file2indir(p.workdir, 0, filed30),
-				self.file2indir(p.workdir, 0, filed31)
+				self.file2indir(p2.workdir, 0, filed30),
+				self.file2indir(p2.workdir, 0, filed31)
 			], 
 			'OR_d3': [filed30, filed31], 
 			'RL_d3': [filed30, filed31], 
@@ -184,35 +191,35 @@ class TestJob(testly.TestCase):
 		yield 3, p, {}, {}, JobInputParseError, 'Not a list for input type'
 		yield 4, p, {}, {}, JobInputParseError, 'Not a string for element of input type'
 		yield 5, p, {}, {}, JobInputParseError, 'File not exists for element of input type'
-		yield 6, p, {
+		yield 6, p3, {
 			'a': {'type': 'var', 'data': 7},
 			'b': {'type': 'var', 'data': 'g'},
-			'c': {'type': 'file', 'orig': filec2, 'data': self.file2indir(p.workdir, 6, filec2)},
+			'c': {'type': 'file', 'orig': filec2, 'data': self.file2indir(p3.workdir, 6, filec2)},
 			'd': {'type': 'files', 'orig':[filed4, filed4], 'data': [
-				self.file2indir(p.workdir, 6, filed4), 
-				self.file2indir(p.workdir, 6, filed4)
+				self.file2indir(p3.workdir, 6, filed4), 
+				self.file2indir(p3.workdir, 6, filed4)
 			]},
 			'd2': {'type': 'files', 'orig': [''], 'data': [
 				''
 			]},
 			#                               not file34
 			'd3': {'type': 'files', 'orig': [filed35], 'data': [
-				self.file2indir(p.workdir, 6, filed35, '[1]')
+				self.file2indir(p3.workdir, 6, filed35, '[1]')
 			]}, 
 		}, {
 			'a': 7,
 			'b': 'g',
-			'c': self.file2indir(p.workdir, 6, filec2),
-			'IN_c': self.file2indir(p.workdir, 6, filec2),
+			'c': filec2,
+			'IN_c': self.file2indir(p3.workdir, 6, filec2),
 			'OR_c': filec2,
 			'RL_c': filec2,
 			'd': [
-				self.file2indir(p.workdir, 6, filed4), 
-				self.file2indir(p.workdir, 6, filed4)
+				filed4, 
+				filed4
 			],
 			'IN_d': [
-				self.file2indir(p.workdir, 6, filed4), 
-				self.file2indir(p.workdir, 6, filed4)
+				self.file2indir(p3.workdir, 6, filed4), 
+				self.file2indir(p3.workdir, 6, filed4)
 			],
 			'OR_d': [filed4, filed4],
 			'RL_d': [filed4, filed4],
@@ -221,10 +228,10 @@ class TestJob(testly.TestCase):
 			'OR_d2': [''],
 			'RL_d2': [path.realpath('')],
 			'd3': [
-				self.file2indir(p.workdir, 6, filed35, '[1]')
+				filed35
 			], 
 			'IN_d3': [
-				self.file2indir(p.workdir, 6, filed35, '[1]')
+				self.file2indir(p3.workdir, 6, filed35, '[1]')
 			], 
 			'OR_d3': [filed35], 
 			'RL_d3': [path.realpath(filed35)]
@@ -243,6 +250,7 @@ class TestJob(testly.TestCase):
 		else:
 			with helpers.log2str() as (out, err):
 				job._prepInput()
+			
 			if errmsg:
 				self.assertIn(errmsg, err.getvalue())
 			self.assertTrue(path.isdir(job.indir))
@@ -912,7 +920,7 @@ class TestJob(testly.TestCase):
 		falsehoolds2 = []
 		tappend2 = truths2.append
 		fappend2 = falsehoolds2.append
-		for i in range(20, 200):
+		for i in range(20, 100):
 			job = Job(i, pExport)
 			jobs2.append(job)
 			job.init()
@@ -927,7 +935,7 @@ class TestJob(testly.TestCase):
 		def export_func(i):
 			with self.assertLogs():
 				jobs[i].export()
-		utils.Parallel(len(jobs), 'thread').run(export_func, [(i,) for i in range(len(jobs))])
+		utils.parallel.Parallel(len(jobs), 'thread').run(export_func, [(i,) for i in range(len(jobs))])
 		#utils.parallel(func = export_func, args = [(i,) for i in range(len(jobs))], nthread = len(jobs), method = 'process')
 		i = 0
 		for func, outfile in truths:
@@ -941,7 +949,9 @@ class TestJob(testly.TestCase):
 		pReset.props['script']  = TemplatePyPPL('')
 		pReset.props['output']  = {
 			'a': ('file', TemplatePyPPL('preset.txt')),
-			'b': ('dir', TemplatePyPPL('preset.dir'))
+			'b': ('dir', TemplatePyPPL('preset.dir')),
+			'c': ('stdout', TemplatePyPPL('stdout.txt')),
+			'd': ('stderr', TemplatePyPPL('stderr.txt'))
 		}
 		job = Job(0, pReset)
 		job.init()
@@ -1067,7 +1077,8 @@ class TestJob(testly.TestCase):
 		pSignature.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
 		job = Job(0, pSignature)
 		job.init()
-		utils.safeRemove(job.script)
+		#utils.safeRemove(job.script)
+		utils.safefs.remove(job.script)
 		yield job, '', ['DEBUG', '[01/10] Empty signature because of script file']
 		
 		# input file empty
@@ -1083,7 +1094,8 @@ class TestJob(testly.TestCase):
 		pSignature1.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
 		job1 = Job(0, pSignature1)
 		job1.init()
-		utils.safeRemove(infile1)
+		#utils.safeRemove(infile1)
+		utils.safefs.remove(infile1)
 		yield job1, '', ['DEBUG', '[01/10] Empty signature because of input file']
 		
 		# input files empty
@@ -1099,7 +1111,8 @@ class TestJob(testly.TestCase):
 		pSignature2.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
 		job2 = Job(0, pSignature2)
 		job2.init()
-		utils.safeRemove(infile2)
+		#utils.safeRemove(infile2)
+		utils.safefs.remove(infile2)
 		yield job2, '', ['DEBUG', '[01/10] Empty signature because of one of input files']
 		
 		# outfile empty
@@ -1322,7 +1335,8 @@ class TestJob(testly.TestCase):
 		makedirs(outb)
 		with helpers.log2str():
 			job2.cache()
-		utils.safeRemove(outb)
+		#utils.safeRemove(outb)
+		utils.safefs.remove(outb)
 		yield job2, False, ['DEBUG', 'not cached because current signature is empty.']
 		
 		# script file newer

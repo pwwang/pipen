@@ -154,13 +154,23 @@ class TestProc(testly.TestCase):
 		
 	
 	def testInit(self, tag, desc, id, props, config, exception = None):
-		self.maxDiff = None
+		self.maxDiff = 10000
 		if exception:
 			self.assertRaises(exception, Proc, tag = tag, desc = desc, id = id)
 		else:
 			p = Proc(tag = tag, desc = desc, id = id)
 			self.assertDictEqual(p.props, props)
 			self.assertDictEqual(p.config, config)
+			config2 = config.copy()
+			del config2['tag']
+			del config2['desc']
+			del config2['id']
+			p2 = Proc(tag, desc, id = config['id'], **config2)
+			props['sets'] = list(sorted(['runner', 'echo', 'depends', 'expect', 'callfront', 'script', 'cache', 'nthread', 'beforeCmd', 'template', 'rc', 'input', 'forks', 'infile', 'cclean', 'workdir', 'resume', 'exhow', 'args', 'exow', 'dirsig', 'ppldir', 'errhow', 'lang', 'tplenvs', 'exdir', 'expart', 'afterCmd', 'callback', 'aggr', 'output', 'errntry']))
+			p2.props['sets'] = list(sorted(p2.sets))
+			self.assertDictEqual(p2.props, props)
+			self.assertDictEqual(p2.config, config)
+
 			
 	def dataProvider_testGetAttr(self):
 		pGetAttr = Proc()
@@ -1229,13 +1239,15 @@ class TestProc(testly.TestCase):
 		
 	def testRun(self, p, config, cache, errs = []):
 		RunnerLocal.INTERVAL = .1
-		with helpers.log2str(levels = 'all') as (out, err):
-			p.run(config)
+		#with helpers.log2str(levels = 'all') as (out, err):
+		p.run(config)
 		self.assertEqual(p.cache, cache)
-		stderr = err.getvalue()
-		for err in errs:
-			self.assertIn(err, stderr)
-			stderr = stderr[(stderr.find(err) + len(err)):]
+		# stderr = err.getvalue()
+		# print out.getvalue()
+		# print stderr
+		# for err in errs:
+		# 	self.assertIn(err, stderr)
+		# 	stderr = stderr[(stderr.find(err) + len(err)):]
 	
 if __name__ == '__main__':
 	testly.main(verbosity=2, failfast = True)

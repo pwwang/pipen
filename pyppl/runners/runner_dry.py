@@ -3,6 +3,7 @@
 """
 from os import path, utime, remove
 from .runner import Runner
+from .helpers import LocalHelper
 from .. import utils
 
 class RunnerDry (Runner):
@@ -21,9 +22,6 @@ class RunnerDry (Runner):
 		# construct an dry script
 		dryfile = self.job.script + '.dry'
 		drysrc  = ['#!/usr/bin/env bash']
-
-		drysrc.append ("echo $$ > '%s'" % self.job.pidfile)
-		drysrc.append ('trap "status=\\$?; echo \\$status >\'%s\'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % self.job.rcfile)
 		
 		drysrc.append ('')
 		for val in self.job.output.values():
@@ -38,12 +36,7 @@ class RunnerDry (Runner):
 		with open (dryfile, 'w') as f:
 			f.write ('\n'.join(drysrc) + '\n')
 		
-		utils.chmodX(dryfile)
-		submitfile = self.job.script + '.submit'
-		with open(submitfile, 'w') as f:
-			f.write('#!/usr/bin/env bash\n')
-			f.write("exec '%s' &\n" % dryfile)
-		self.script = utils.chmodX(submitfile)
+		self.helper = LocalHelper(dryfile)
 		
 	def finish (self):
 		"""

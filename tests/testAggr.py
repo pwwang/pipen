@@ -137,10 +137,12 @@ class TestAggr(testly.TestCase):
 		aggr2 = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
 		aggr3 = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
 		aggr4 = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
+		aggr5 = Aggr(pGetAttr1, pGetAttr2, pGetAttr3)
 		yield aggr1, 'aggrs.a', 'pGetAttr1', {'aggrs.a': [aggr1.pGetAttr1]}
 		yield aggr2, 'aggrs.b, aggrs.c', 'pGetAttr1,pGetAttr2', {'aggrs.b': [aggr2.pGetAttr1, aggr2.pGetAttr2], 'aggrs.c': [aggr2.pGetAttr1, aggr2.pGetAttr2]}
 		yield aggr3, 'aggrs.b, aggrs.c', 'starts', {'aggrs.b': ['starts'], 'aggrs.c': ['starts']}
 		yield aggr4, 'aggrs.b, aggrs.c', 'ends', {'aggrs.b': ['ends'], 'aggrs.c': ['ends']}
+		yield aggr5, 'aggrs.a', aggr5.pGetAttr1, {'aggrs.a': [aggr5.pGetAttr1]}
 
 	def testSelect(self, p, anything, forceList, out):
 		self.assertEqual(p._select(anything, forceList), out)
@@ -164,9 +166,13 @@ class TestAggr(testly.TestCase):
 		yield aggr, 'starts', True, [aggr.pSelecta]
 		yield aggr, 'ends', True, [aggr.pSelectc]
 		yield aggr, 'pSelecta, pSelectc', True, [aggr.pSelecta, aggr.pSelectc]
+		yield aggr, {}, True, None
 
-	def testGetitem(self, aggr, key, type):
-		self.assertIsInstance(aggr[key], type)
+	def testGetitem(self, aggr, key, type, exception = None):
+		if exception:
+			self.assertRaises(exception, aggr.__getitem__, key)
+		else:
+			self.assertIsInstance(aggr[key], type)
 	
 	def dataProvider_testGetitem(self):
 		pSelecta = Proc()
@@ -181,6 +187,7 @@ class TestAggr(testly.TestCase):
 		yield aggr, 'starts', _Proxy
 		yield aggr, 'ends', _Proxy
 		yield aggr, 'pSelecta, pSelectc', _Proxy
+		yield aggr, {}, None, AggrKeyError
 
 	def testGetattr(self, aggr, name, outtype):
 		# make sure getattr is not called for starts,ends,_procs
@@ -725,7 +732,7 @@ class TestAggr(testly.TestCase):
 		pModule6 = Proc()
 		aggr = Aggr(pModule1, pModule2, pModule3, pModule4, pModule5, pModule6, depends = False)
 		aggr.module('m1', starts = 'pModule1, pModule2', ends = 'pModule4', depends = {
-			'pModule3': 'starts',
+			'pModule3,': ['starts'],
 			'pModule4': 'pModule3'
 		}, ends_shared = {
 			'pModule4': 'm2'
@@ -738,6 +745,8 @@ class TestAggr(testly.TestCase):
 			'pModule4': 'm1'
 		}, depends_shared = {
 			'pModule4': 'm1'
+		}, starts_shared = {
+			'pModule3': 'm1'
 		})
 		self.assertEqual(aggr.starts, [])
 		self.assertEqual(aggr.ends, [])
@@ -763,7 +772,7 @@ class TestAggr(testly.TestCase):
 		self.assertEqual(aggr.pModule3.depends, [])
 		aggr.on('m1, m2')
 		aggr.off('m2')
-		self.assertEqual(aggr.starts, [aggr.pModule1, aggr.pModule2])
+		self.assertEqual(aggr.starts, [aggr.pModule1, aggr.pModule2, aggr.pModule3])
 		self.assertEqual(aggr.ends, [aggr.pModule4])
 		self.assertEqual(aggr.pModule3.depends, [aggr.pModule1, aggr.pModule2])
 		self.assertEqual(aggr.pModule4.depends, [aggr.pModule3])

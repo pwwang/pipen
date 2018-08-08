@@ -423,7 +423,8 @@ class TestPyPPL(testly.TestCase):
 		    p10         p6  /    \ p9
 		           p5 /
 		'''
-		pRun1 = Proc()
+		pRun0 = Proc()
+		pRun1 = pRun0.copy()
 		pRun2 = Proc()
 		pRun3 = Proc()
 		pRun4 = Proc()
@@ -450,7 +451,7 @@ class TestPyPPL(testly.TestCase):
 		aAggr.depends2 = [pRun3, pRun6]
 		yield [pRun1, pRun5], 'profile', 'sge', [
 			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
-			'Run1: No description.',
+			'pRun1 (pRun0): No description.',
 			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
 			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
 			'pRun2: No description.',
@@ -480,10 +481,21 @@ class TestPyPPL(testly.TestCase):
 			'pRun9.5gPF@aAggr: No description.',
 			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
 		]
+
+		# pRun21 -> pRun22
+		# pRun23 -/
+		#       \-> pRun24
+		pRun21 = Proc()
+		pRun23 = Proc()
+		pRun22 = Proc()
+		pRun22.depends = pRun21, pRun23
+		yield [pRun21], 'profile', 'local', ["pRun22 won't run as path can't be reached: pRun22 <- pRun23"]
+
+
 			
 	def testRun(self, start, profile, runner, errs = []):
 		with helpers.log2str():
-			pp = PyPPL({'_log': {'file': None}, 'profile': {'ppldir': self.testdir, 'runner': 'sge'}})
+			pp = PyPPL({'_log': {'file': None}, 'profile': {'ppldir': self.testdir, 'runner': runner}})
 		import sys
 		pp.start(start)
 		argv = sys.argv
