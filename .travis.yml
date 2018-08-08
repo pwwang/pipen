@@ -20,6 +20,7 @@ matrix:
       env: PY=3.7.0
     - os: linux
       python: 2.7
+      sudo: required
       env: UPCOV=1
     - os: linux
       python: 3.3
@@ -57,9 +58,11 @@ before_install: |
 
 # command to install dependencies
 install:
-  - sudo pip install -r requirements.txt
   #- python setup.py install
   - export PYTHONPATH="$(pwd):$PYTHONPATH"
+  - echo $PYTHONPATH
+  - which pip
+  - pip install -r requirements.txt
   - pip install python-testly
   - pip install coverage
   - pip install codacy-coverage
