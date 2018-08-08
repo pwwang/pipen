@@ -43,11 +43,16 @@ class Cmd(object):
 		popenargs.update(kwargs)
 
 		cmd = self.cmd
-		if isinstance(cmd, list):
-			cmd = [str(c) for c in cmd]
-		if isinstance(cmd, six.string_types):
-			cmd = shlex.split(self.cmd)
-
+		if popenargs['shell']:
+			if isinstance(cmd, list):
+				cmd = ' '.join([str(c) for c in cmd])
+			# else: assume string
+		else:
+			if isinstance(cmd, six.string_types):
+				cmd = shlex.split(self.cmd)
+			else: 
+				cmd = [str(c) for c in cmd]
+				
 		try:
 			self.p   = subprocess.Popen(cmd, **popenargs)
 			self.pid = self.p.pid

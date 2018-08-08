@@ -337,6 +337,8 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 					code = "(%s)(%s)" % (func, code)
 				elif '.' in func:
 					code = "%s(%s)" % (self._exprCode(func, src), code)
+				elif func in __builtins__:
+					code = "%s(%s)" % (func, code)
 				else:
 					TemplatePyPPLEngine._variable(func, src, self.all_vars)
 					code = "c_%s(%s)" % (func, code)
@@ -358,8 +360,17 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 			b2     = expr.find('[')
 			bindex = min(b1, b2) if b1 >= 0 and b2 >=0 else b1 if b1 >= 0 else b2
 			var    = expr if bindex == -1 else expr[:bindex]
-			TemplatePyPPLEngine._variable(var, src, self.all_vars)
-			code = "c_%s" % expr
+			isnum  = False
+			try:
+				isnum = var.isnumeric()
+			except AttributeError:
+				isnum = unicode(var).isnumeric()
+			# numbers, True/False
+			if isnum or var in __builtins__:
+				code = expr
+			else:
+				TemplatePyPPLEngine._variable(var, src, self.all_vars)
+				code = "c_%s" % expr
 		return code
 
 	def __str__(self):

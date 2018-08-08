@@ -1945,6 +1945,21 @@ class TestUtils (testly.TestCase):
 			SafeFs(f1, f2, tmpdir = self.testdir).link(overwrite = False)
 		yield (func48, file481, file482, 1, lambda: helpers.readFile(file481, int) == 1 and helpers.readFile(file482, int) == 2)
 
+		"""
+		#49 Thread-safe copy the same link
+		"""
+		file491 = path.join(self.testdir, 'testSafeCopySamelink491.txt')
+		file492 = path.join(self.testdir, 'testSafeCopySamelink492.txt')
+		file493 = path.join(self.testdir, 'testSafeCopySamelink493.txt')
+		helpers.writeFile(file493)
+		symlink(file493, file491)
+		def func49(f1, f2):
+			if path.islink(f1):
+				utils.safefs.copy(f1, f2)
+			else:
+				uitls.safefs.moveWithLink(f1, f2)
+		yield func49, file491, file492, 100, lambda: path.islink(file491) and path.isfile(file492) and not path.islink(file492)
+
 
 	def test2FS(self, func, f1, f2, length, state, msg = None):
 		Parallel(length, 'thread').run(func, [(f1, f2) for _ in range(length)])

@@ -4,8 +4,16 @@ from pyppl.utils import ps, cmd, Box
 from pyppl.utils.safefs import SafeFs
 
 class Helper(object):
-
+	"""
+	A helper class for runners
+	"""
 	def __init__(self, script, cmds = None):
+		"""
+		Constructor
+		@params:
+			`script`: The script of the job
+			`cmds`  : The original runner commands
+		"""
 		self.script  = script
 		self.pidfile = path.join(path.dirname(self.script), 'job.pid')
 		self.rcfile  = path.join(path.dirname(self.script), 'job.rc')
@@ -18,6 +26,11 @@ class Helper(object):
 
 	@property
 	def pid(self):
+		"""
+		Property getter
+		@returns:
+			The pid
+		"""
 		if self._pid is not None:
 			return self._pid
 		if not path.isfile(self.pidfile):
@@ -32,6 +45,11 @@ class Helper(object):
 
 	@pid.setter
 	def pid(self, pid):
+		"""
+		Property setter
+		@params:
+			`pid`: The pid to be saved to pidfile
+		"""
 		if pid is None:
 			spid = ''
 			self._pid = None
@@ -42,44 +60,76 @@ class Helper(object):
 			fpid.write(spid)
 
 	def submit(self):
+		"""
+		Submit the job
+		"""
 		pass
 
 	def run(self):
+		"""
+		Run the job, wait for the job to complete
+		"""
 		pass
 
 	def kill(self):
+		"""
+		Kill the job
+		"""
 		pass
 
 	def alive(self):
+		"""
+		Tell if the job is alive
+		"""
 		pass
 
 class LocalHelper(Helper):
 
 	def submit(self):
+		"""
+		Submit the job
+		@returns:
+			The `utils.cmd.Cmd` instance
+		"""
 		# run self as a script
-		return cmd.run([sys.executable, path.realpath(__file__), self.script], bg = True)
+		c = cmd.run([sys.executable, path.realpath(__file__), self.script], bg = True)
+		c.rc = 0
+		return c
 		
 	def run(self):
+		"""
+		Run the job, wait for the job to complete
+		"""
 		self.outfd = open(self.outfile, 'w')
 		self.errfd = open(self.errfile, 'w')
-		self.proc  = cmd.run(SafeFs.chmodX(self.script), outfd = self.outfd, errfd = self.errfd, bg = True)
+		self.proc  = cmd.Cmd(SafeFs(self.script).chmodX(), stdout = self.outfd, stderr = self.errfd)
 		self.pid   = self.proc.pid
 		try:
-			self.proc.p.wait()
-			self.proc.rc = self.proc.p.returncode
-		except KeyboardInterrupt:
+			self.proc.run()
+		except KeyboardInterrupt: # pragma: no cover
 			self.proc.rc = 1
 
 	def kill(self):
+		"""
+		Kill the job
+		"""
 		if self.pid is not None:
 			ps.killtree(int(self.pid), killme = True, sig = 9)
 
 	def alive(self):
+		"""
+		Tell if the job is alive
+		@returns:
+			`True` if it is else `False`
+		"""
 		if self.pid is None:
 			return False
 		return ps.exists(int(self.pid))
 
 	def quit(self):
+		"""
+		Quit the program, when the job is complete
+		"""
 		# close outfd and errfd
 		if self.outfd:
 			self.outfd.close()
@@ -92,6 +142,15 @@ class LocalHelper(Helper):
 class SgeHelper(Helper):
 
 	def __init__(self, script, cmds = None):
+		"""
+		Constructor
+		@params:
+			`script`: The script of the job
+			`cmds`  : The original runner commands
+				- `qsub`: The command to submit job
+				- `qstat`: The command to check job status
+				- `qdel`: The command to delete job
+		"""
 		cmds = cmds or {
 			'qsub' : 'qsub',
 			'qstat': 'qstat',
@@ -100,6 +159,12 @@ class SgeHelper(Helper):
 		super(SgeHelper, self).__init__(script, cmds)
 
 	def submit(self):
+		"""
+		Submit the job
+		@returns:
+			The `utils.cmd.Cmd` instance if succeed 
+			else a `Box` object with stderr as the exception and rc as 1
+		"""
 		cmdlist = [self.cmds['qsub'], self.script]
 		try:
 			r = cmd.run(cmdlist)
@@ -111,32 +176,50 @@ class SgeHelper(Helper):
 				self.pid = m.group(1)
 
 			return r
-		except subprocess.CalledProcessError as ex:
+		except (OSError, subprocess.CalledProcessError) as ex:
 			r = Box()
 			r.stderr = str(ex)
 			r.rc = 1
 			return r
 
 	def kill(self):
+		"""
+		Kill the job
+		"""
 		cmdlist = [self.cmds['qdel'], '-j', str(self.pid)]
 		try:
 			cmd.run(cmdlist)
-		except subprocess.CalledProcessError:
+		except (OSError, subprocess.CalledProcessError): # pragma: no cover
 			pass
 
 	def alive(self):
+		"""
+		Tell if the job is alive
+		@returns:
+			`True` if it is else `False`
+		"""
 		if self.pid is None:
 			return False
 		cmdlist = [self.cmds['qstat'], '-j', str(self.pid)]
 		try:
 			r = cmd.run(cmdlist)
 			return r.rc == 0
-		except subprocess.CalledProcessError:
+		except (OSError, subprocess.CalledProcessError):
 			return False
 
 class SlurmHelper(Helper):
 
 	def __init__(self, script, cmds = None):
+		"""
+		Constructor
+		@params:
+			`script`: The script of the job
+			`cmds`  : The original runner commands
+				- `sbatch`: The command to submit job
+				- `squeue`: The command to check job status
+				- `srun`: The command to run job
+				- `scancel`: The command to cancel job
+		"""
 		cmds = cmds or {
 			'sbatch' : 'sbatch',
 			'squeue' : 'squeue',
@@ -146,31 +229,45 @@ class SlurmHelper(Helper):
 		super(SlurmHelper, self).__init__(script, cmds)
 
 	def submit(self):
+		"""
+		Submit the job
+		@returns:
+			The `utils.cmd.Cmd` instance if succeed 
+			else a `Box` object with stderr as the exception and rc as 1
+		"""
 		cmdlist = [self.cmds['sbatch'], self.script]
 		try:
 			r = cmd.run(cmdlist)
 			# sbatch: Submitted batch job 99999999
 			m = re.search(r'\s(\d+)$', r.stdout)
-			if not m:
+			if not m: # pragma: no cover
 				r.rc = 1
 			else:
 				self.pid = m.group(1)
 
 			return r
-		except subprocess.CalledProcessError as ex:
+		except (OSError, subprocess.CalledProcessError) as ex: # pragma: no cover
 			r = Box()
 			r.stderr = str(ex)
 			r.rc = 1
 			return r
 
 	def kill(self):
+		"""
+		Kill the job
+		"""
 		cmdlist = [self.cmds['scancel'], str(self.pid)]
 		try:
 			cmd.run(cmdlist)
-		except subprocess.CalledProcessError:
+		except (OSError, subprocess.CalledProcessError): # pragma: no cover
 			pass
 
 	def alive(self):
+		"""
+		Tell if the job is alive
+		@returns:
+			`True` if it is else `False`
+		"""
 		if self.pid is None:
 			return False
 		cmdlist = [self.cmds['squeue'], '-j', str(self.pid)]
@@ -179,11 +276,11 @@ class SlurmHelper(Helper):
 			if r.rc != 0:
 				return False
 			return r.stdout.splitlines()[1].split()[0] == str(self.pid)
-		except subprocess.CalledProcessError:
+		except (OSError, subprocess.CalledProcessError):
 			return False
 
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
 	helper = LocalHelper(sys.argv[1])
 	atexit.register(helper.quit)
 	helper.run()

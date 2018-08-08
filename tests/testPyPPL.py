@@ -423,7 +423,8 @@ class TestPyPPL(testly.TestCase):
 		    p10         p6  /    \ p9
 		           p5 /
 		'''
-		pRun1 = Proc()
+		pRun0 = Proc()
+		pRun1 = pRun0.copy()
 		pRun2 = Proc()
 		pRun3 = Proc()
 		pRun4 = Proc()
@@ -450,7 +451,7 @@ class TestPyPPL(testly.TestCase):
 		aAggr.depends2 = [pRun3, pRun6]
 		yield [pRun1, pRun5], 'profile', 'sge', [
 			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
-			'Run1: No description.',
+			'pRun1 (pRun0): No description.',
 			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
 			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
 			'pRun2: No description.',

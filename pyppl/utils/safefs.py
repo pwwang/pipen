@@ -11,6 +11,8 @@ try:
 except NameError:
 	ChmodError = OSError
 
+from multiprocessing import Lock
+
 class SafeFs(object):
 	"""
 	A thread-safe file system
@@ -40,9 +42,12 @@ class SafeFs(object):
 		`FILES_SAME_BOTHLINKS2`: File2 links to file1, file1 links to a regular file
 		`FILES_SAME_REAL1`     : File2 links to file1, which a regular file
 		`FILES_SAME_REAL2`     : File1 links to file2, which a regular file
+
+		`LOCK`: A global lock ensures the locks are locked at the same time
 	"""
 
 	TMPDIR = tempfile.gettempdir()
+	LOCK   = Lock()
 
 	# file types
 	FILETYPE_UNKNOWN   = -1
@@ -513,7 +518,12 @@ class SafeFs(object):
 		for lfile in set(lockfiles):
 			lock = filelock.FileLock(lfile)
 			self.locks.append(lock)
-			lock.acquire()
+		
+		# have to lock it at the same time!
+		# otherwise it will be a deadlock if locks acquired by different instances
+		with SafeFs.LOCK:
+			for lock in self.locks:
+				lock.acquire()
 	
 	def _unlock(self):
 		"""
@@ -707,7 +717,7 @@ class SafeFs(object):
 		if not self.file1:
 			self._unlock()
 			return ['', 0]
-		if not SafeFs._exists(self.file1, self.filetype1):
+		if not SafeFs._exists(self.file1):
 			self._unlock()
 			return False
 		realfile1 = path.realpath(self.file1)

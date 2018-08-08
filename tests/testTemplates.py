@@ -464,6 +464,9 @@ class TestTemplatePyPPLEngine(testly.TestCase):
 
 		yield '{{a.x, b.y | lambda x,y: x+y}}', {'a': {'x': 1}, 'b': {'y': 2}}, '3'
 		yield '{{a.b["1"][0](",")}}', {'a': {'b': {"1": [lambda x: x]}}}, ','
+		# python literals
+		yield '{{1 | bool}}', {}, 'True'
+		yield '{{True | int}}', {}, '1'
 
 	def testRender(self, text, contexts, out):
 		t  = TemplatePyPPL(text)

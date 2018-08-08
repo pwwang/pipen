@@ -6,254 +6,12 @@ from collections import OrderedDict
 from glob import glob
 from time import sleep
 from datetime import datetime
-from os import makedirs, path, remove, utime, getppid, kill
-from signal import SIGINT
-from multiprocessing import Lock, JoinableQueue, Process, Array
+from os import makedirs, path, remove, utime
+from multiprocessing import Lock
 from six import string_types
-from . import utils, logger
+from . import logger
 from .exception import JobInputParseError, JobOutputParseError
-from .utils import ps
-
-class Jobmgr (object):
-	"""
-	Job Manager
-	"""
-	STATUS_INITIATED    = 0
-	STATUS_SUBMITTING   = 1
-	STATUS_SUBMITTED    = 2
-	STATUS_SUBMITFAILED = 3
-	STATUS_DONE         = 4
-	STATUS_DONEFAILED   = 5
-
-	PBAR_SIZE = 50
-
-	def __init__(self, proc, runner):
-		"""
-		Job manager constructor
-		@params:
-			`proc`     : The process
-			`runner`   : The runner class
-		"""
-		self.proc    = proc
-		self.lock    = Lock()
-		status       = []
-		self.runners = OrderedDict()
-		for job in proc.jobs:
-			if not proc.cclean and job.index not in proc.ncjobids:
-				status.append(Jobmgr.STATUS_DONE)
-			else:
-				status.append(Jobmgr.STATUS_INITIATED)
-				self.runners[job.index] = runner(job)
-		self.status  = Array('i', status, lock = Lock())
-		# number of runner processes
-		self.nprunner = min(proc.forks, len(self.runners))
-		# number of submit processes
-		self.npsubmit = min(self.nprunner, proc.forks, proc.nthread)
-		self.subprocs = []
-
-	def _exit(self):
-		indexes = [i for i, s in enumerate(self.status) if s in [Jobmgr.STATUS_SUBMITFAILED, Jobmgr.STATUS_DONEFAILED]]
-		lenidx  = len(indexes)
-		if lenidx > 0:
-			try:
-				self.runners[indexes[0]].job.showError(lenidx)
-			except KeyboardInterrupt:
-				pass
-		for proc in self.subprocs:
-			if proc._popen:
-				proc.terminate()
-
-	def allJobsDone(self):
-		"""
-		Tell whether all jobs are done.
-		No need to lock as it only runs in one process (the watcher process)
-		@returns:
-			`True` if all jobs are done else `False`
-		"""
-		if not self.runners: return True
-		return all(s in [Jobmgr.STATUS_DONE, Jobmgr.STATUS_DONEFAILED] for s in self.status)
-
-	def halt(self, halt_anyway = False):
-		"""
-		Halt the pipeline if needed
-		"""
-		if self.proc.errhow == 'halt' or halt_anyway:
-			ps.killtree(getppid(), killme = True, sig = SIGINT)
-			
-	def progressbar(self, jid, loglevel = 'info'):
-		bar     = '%s [' % self.proc.jobs[jid]._indexIndicator()
-		barjobs = []
-		# distribute the jobs to bars
-		if self.proc.size <= Jobmgr.PBAR_SIZE:
-			n, m = divmod(Jobmgr.PBAR_SIZE, self.proc.size)
-			for j in range(self.proc.size):
-				step = n + 1 if j < m else n
-				for _ in range(step):
-					barjobs.append([j])
-		else:
-			jobx = 0
-			n, m = divmod(self.proc.size, Jobmgr.PBAR_SIZE)
-			for i in range(Jobmgr.PBAR_SIZE):
-				step = n + 1 if i < m else n
-				barjobs.append([jobx + s for s in range(step)])
-				jobx += step
-
-		# status can only be:
-		# Jobmgr.STATUS_SUBMITTED
-		# Jobmgr.STATUS_SUBMITFAILED
-		# Jobmgr.STATUS_DONE
-		# Jobmgr.STATUS_DONEFAILED
-		# Jobmgr.STATUS_INITIATED
-		ncompleted = sum(1 for s in self.status if s == Jobmgr.STATUS_DONE or s == Jobmgr.STATUS_DONEFAILED)
-		nrunning   = sum(1 for s in self.status if s == Jobmgr.STATUS_SUBMITTED or s == Jobmgr.STATUS_SUBMITFAILED)
-
-		for bj in barjobs:
-			if jid in bj and self.status[jid] == Jobmgr.STATUS_INITIATED:
-				bar += '-'
-			elif jid in bj and self.status[jid] == Jobmgr.STATUS_SUBMITFAILED:
-				bar += '!'
-			elif jid in bj and (self.status[jid] in [Jobmgr.STATUS_SUBMITTING, Jobmgr.STATUS_SUBMITTED]):
-				bar += '>'
-			elif jid in bj and self.status[jid] == Jobmgr.STATUS_DONEFAILED:
-				bar += 'X'
-			elif jid in bj and self.status[jid] == Jobmgr.STATUS_DONE:
-				bar += '='
-			elif any(self.status[j] == Jobmgr.STATUS_INITIATED for j in bj):
-				bar += '-'
-			elif any(self.status[j] == Jobmgr.STATUS_SUBMITFAILED for j in bj):
-				bar += '!'
-			elif any(self.status[j] in [Jobmgr.STATUS_SUBMITTING, Jobmgr.STATUS_SUBMITTED] for j in bj):
-				bar += '>'
-			elif any(self.status[j] == Jobmgr.STATUS_DONEFAILED for j in bj):
-				bar += 'X'
-			else: # STATUS_DONE
-				bar += '='
-
-		bar += '] Done: %5.1f%% | Running: %d' % (100.0*float(ncompleted)/float(self.proc.size), nrunning)
-		self.proc.log(bar, loglevel)
-
-	def canSubmit(self):
-		"""
-		Tell whether we can submit jobs.
-		@returns:
-			`True` if we can, otherwise `False`
-		"""
-		with self.lock:
-			if self.nprunner == 0: return True
-			return sum(s in [
-				Jobmgr.STATUS_SUBMITTING,
-				Jobmgr.STATUS_SUBMITTED,
-				Jobmgr.STATUS_SUBMITFAILED
-			] for s in self.status) < self.nprunner
-
-	def submitPool(self, sq):
-		"""
-		The pool to submit jobs
-		@params:
-			`sq`: The submit queue
-		"""
-		try:
-			while True:
-				# if we already have enough # jobs running, wait
-				if not self.canSubmit():
-					sleep(.2)
-					continue
-
-				jid = sq.get()
-				if jid is None:
-					sq.task_done()
-					break
-
-				self.status[jid] = Jobmgr.STATUS_SUBMITTING
-				if self.runners[jid].submit():
-					self.status[jid] = Jobmgr.STATUS_SUBMITTED
-				else:
-					self.status[jid] = Jobmgr.STATUS_SUBMITFAILED
-					self.halt()
-				self.progressbar(jid, 'submit')
-				sq.task_done()
-		except KeyboardInterrupt:
-			pass
-
-	def runPool(self, rq, sq):
-		"""
-		The pool to run jobs (wait jobs to be done)
-		@params:
-			`rq`: The run queue
-			`sq`: The submit queue
-		"""
-		try:
-			while True:
-				jid = rq.get()
-				if jid is None:
-					rq.task_done()
-					break
-				else:
-					r = self.runners[jid]
-					while self.status[jid]!=Jobmgr.STATUS_SUBMITTED and self.status[jid]!=Jobmgr.STATUS_SUBMITFAILED:
-						sleep(.2)
-					if self.status[jid]==Jobmgr.STATUS_SUBMITTED and r.run():
-						self.status[jid] = Jobmgr.STATUS_DONE
-					else: # submission failed
-						if r.retry():
-							self.status[jid] = Jobmgr.STATUS_INITIATED
-							sq.put(jid)
-							rq.put(jid)
-						else:
-							self.status[jid] = Jobmgr.STATUS_DONEFAILED
-							self.halt()
-					self.progressbar(jid, 'jobdone')
-					rq.task_done()
-		except KeyboardInterrupt:
-			pass
-
-	def watchPool(self, rq, sq):
-		"""
-		The watchdog, checking whether all jobs are done.
-		"""
-		try:
-			while not self.allJobsDone():
-				sleep(.1)
-
-			for _ in range(self.npsubmit):
-				sq.put(None)
-			for _ in range(self.nprunner):
-				rq.put(None)
-		except KeyboardInterrupt:
-			pass
-
-	def run(self):
-		"""
-		Start to run the jobs
-		"""
-		submitQ = JoinableQueue()
-		runQ    = JoinableQueue()
-
-		for rid in self.runners.keys():
-			submitQ.put(rid)
-			runQ.put(rid)
-
-		for _ in range(self.npsubmit):
-			p = Process(target = self.submitPool, args = (submitQ, ))
-			p.daemon = True
-			self.subprocs.append(p)
-			p.start()
-
-		for _ in range(self.nprunner):
-			p = Process(target = self.runPool, args = (runQ, submitQ))
-			p.daemon = True
-			self.subprocs.append(p)
-			p.start()
-
-		watchDog = Process(target = self.watchPool, args = (runQ, submitQ))
-		watchDog.daemon = True
-		self.subprocs.append(watchDog)
-		watchDog.start()
-
-		runQ.join()
-		submitQ.join()
-		watchDog.join()
-
+from .utils import safefs, cmd
 
 class Job (object):
 
@@ -320,8 +78,8 @@ class Job (object):
 		# run may come first before submit
 		# preserve the outfile and errfile of previous run
 		# issue #30
-		utils.safeMove(self.outfile, self.outfile + '.bak')
-		utils.safeMove(self.errfile, self.errfile + '.bak')
+		safefs.move(self.outfile, self.outfile + '.bak')
+		safefs.move(self.errfile, self.errfile + '.bak')
 		open(self.outfile, 'w').close()
 		open(self.errfile, 'w').close()
 		self.data.update (self.proc.procvars)
@@ -582,8 +340,8 @@ class Job (object):
 			'CACHE_SIGOUTDIR_DIFF'
 		): return False
 		self.rc(0)
-		utils.safeMove(self.outfile + '.bak', self.outfile)
-		utils.safeMove(self.errfile + '.bak', self.errfile)
+		safefs.move(self.outfile + '.bak', self.outfile)
+		safefs.move(self.errfile + '.bak', self.errfile)
 		return True
 
 	def isExptCached (self):
@@ -616,10 +374,10 @@ class Job (object):
 
 					if path.exists (out['data']) or path.islink (out['data']):
 						self.proc.log ('Overwrite file for export-caching: %s' % out['data'], 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
-						utils.safeRemove(out['data'])
+						safefs.remove(out['data'])
 
 					makedirs(out['data'])
-					utils.untargz (exfile, out['data'])
+					safefs.ungz (exfile, out['data'])
 				else:
 					exfile += '.gz'
 					if not path.exists (exfile):
@@ -630,18 +388,18 @@ class Job (object):
 						self.proc.log ('Overwrite file for export-caching: %s' % out['data'], 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
 						remove (out['data'])
 
-					utils.ungz (exfile, out['data'])
+					safefs.ungz (exfile, out['data'])
 			else:
 				if not path.exists (exfile):
 					self.proc.log ("Job is not export-cached since exported file not exists: %s." % exfile, "debug", "EXPORT_CACHE_EXFILE_NOTEXISTS")
 					return False
-				if utils.samefile (exfile, out['data']):
+				if safefs.SafeFs(exfile, out['data']).samefile():
 					continue
 				if path.exists (out['data']) or path.islink(out['data']):
 					self.proc.log ('Overwrite file for export-caching: %s' % out['data'], 'warning', 'EXPORT_CACHE_OUTFILE_EXISTS')
-					utils.safeRemove(out['data'])
+					safefs.remove(out['data'])
 
-				utils.safeLink(path.realpath(exfile), out['data'])
+				safefs.link(path.realpath(exfile), out['data'])
 
 		# Make sure no need to calculate next time
 		self.cache ()
@@ -649,8 +407,8 @@ class Job (object):
 			with open (self.rcfile, 'w') as f:
 				f.write (str(Job.RC_SUCCESS))
 
-		utils.safeMove(self.outfile + '.bak', self.outfile)
-		utils.safeMove(self.errfile + '.bak', self.errfile)
+		safefs.move(self.outfile + '.bak', self.outfile)
+		safefs.move(self.errfile + '.bak', self.errfile)
 		return True
 
 	def cache (self):
@@ -680,7 +438,7 @@ class Job (object):
 		"""
 		indexstr = self._indexIndicator()
 		ret = {}
-		sig = utils.filesig (self.script)
+		sig = safefs.SafeFs(self.script).filesig()
 		if not sig:
 			self.proc.log ('%s Empty signature because of script file: %s.' % (indexstr, self.script), 'debug', 'CACHE_EMPTY_CURRSIG')
 			return ''
@@ -700,7 +458,7 @@ class Job (object):
 			if val['type'] in self.proc.IN_VARTYPE:
 				ret['in'][self.proc.IN_VARTYPE[0]][key] = val['data']
 			elif val['type'] in self.proc.IN_FILETYPE:
-				sig = utils.filesig (val['data'], self.proc.dirsig)
+				sig = safefs.SafeFs(val['data']).filesig(self.proc.dirsig)
 				if not sig:
 					self.proc.log ('%s Empty signature because of input file: %s.' % (indexstr, val['data']), 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
@@ -708,7 +466,7 @@ class Job (object):
 			elif val['type'] in self.proc.IN_FILESTYPE:
 				ret['in'][self.proc.IN_FILESTYPE[0]][key] = []
 				for infile in sorted(val['data']):
-					sig = utils.filesig (infile, self.proc.dirsig)
+					sig = safefs.SafeFs(infile).filesig(self.proc.dirsig)
 					if not sig:
 						self.proc.log ('%s Empty signature because of one of input files: %s.' % (indexstr, infile), 'debug', 'CACHE_EMPTY_CURRSIG')
 						return ''
@@ -718,13 +476,13 @@ class Job (object):
 			if val['type'] in self.proc.OUT_VARTYPE:
 				ret['out'][self.proc.OUT_VARTYPE[0]][key] = val['data']
 			elif val['type'] in self.proc.OUT_FILETYPE:
-				sig = utils.filesig (val['data'], self.proc.dirsig)
+				sig = safefs.SafeFs(val['data']).filesig(self.proc.dirsig)
 				if not sig:
 					self.proc.log ('%s Empty signature because of output file: %s.' % (indexstr, val['data']), 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
 				ret['out'][self.proc.OUT_FILETYPE[0]][key] = sig
 			elif val['type'] in self.proc.OUT_DIRTYPE:
-				sig = utils.filesig (val['data'], self.proc.dirsig)
+				sig = safefs.SafeFs(val['data']).filesig(self.proc.dirsig)
 				if not sig:
 					self.proc.log ('%s Empty signature because of output dir: %s.' % (indexstr, val['data']), 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
@@ -785,10 +543,12 @@ class Job (object):
 				return
 
 		expectCmd = self.proc.expect.render(self.data)
+
 		if expectCmd and expect:
 			self.proc.log ('%s check expectation: %s' % (indexstr, expectCmd), 'debug', 'EXPECT_CHECKING')
-			rc = utils.dumbPopen (expectCmd, shell=True).wait()
-			if rc != 0:	self.rc(Job.RC_EXPECTFAIL)
+			#rc = utils.dumbPopen (expectCmd, shell=True).wait()
+			c = cmd.run(expectCmd, raiseExc = False, shell = True)
+			if c.rc != 0:	self.rc(Job.RC_EXPECTFAIL)
 
 	def export (self):
 		"""
@@ -800,7 +560,8 @@ class Job (object):
 		indexstr = self._indexIndicator()
 		assert path.exists(self.proc.exdir)
 		assert isinstance(self.proc.expart, list)
-
+		
+		# output files to export
 		files2ex = []
 		if not self.proc.expart or (len(self.proc.expart) == 1 and not self.proc.expart[0].render(self.data)):
 			for out in self.output.values():
@@ -813,28 +574,25 @@ class Job (object):
 					files2ex.append (self.output[expart]['data'])
 				else:
 					files2ex.extend(glob(path.join(self.outdir, expart)))
-
+		
 		files2ex = set(files2ex)
 		for file2ex in files2ex:
 			bname  = path.basename (file2ex)
+			# exported file
 			exfile = path.join (self.proc.exdir, bname)
 
 			if self.proc.exhow in self.proc.EX_GZIP:
-				if path.isdir(file2ex):
-					exfile += '.tgz'
-					utils.targz(file2ex, exfile, overwrite = self.proc.exow)
-				else:
-					exfile += '.gz'
-					utils.gz(file2ex, exfile, overwrite = self.proc.exow)
+				exfile += '.tgz' if path.isdir(file2ex) else '.gz'
+				safefs.gz(file2ex, exfile, overwrite = self.proc.exow)
 			elif self.proc.exhow in self.proc.EX_COPY:
-				utils.safeCopy(file2ex, exfile, overwrite = self.proc.exow)
+				safefs.copy(file2ex, exfile, overwrite = self.proc.exow)
 			elif self.proc.exhow in self.proc.EX_LINK:
-				utils.safeLink(file2ex, exfile, overwrite = self.proc.exow)
+				safefs.link(file2ex, exfile, overwrite = self.proc.exow)
 			else: # move
 				if path.islink(file2ex):
-					utils.safeCopy(file2ex, exfile, overwrite = self.proc.exow)
+					safefs.copy(file2ex, exfile, overwrite = self.proc.exow)
 				else:
-					utils.safeMoveWithLink(file2ex, exfile, overwrite = self.proc.exow)
+					safefs.moveWithLink(file2ex, exfile, overwrite = self.proc.exow)
 
 			self.proc.log ('%s Exported: %s' % (indexstr, exfile), 'export')
 
@@ -845,18 +603,18 @@ class Job (object):
 		#self.proc.log ('Resetting job #%s ...' % self.index, 'debug', 'JOB_RESETTING')
 		retrydir = path.join(self.dir, 'retry.' + str(retry))
 		if retry:
-			utils.safeRemove(retrydir)
+			safefs.remove(retrydir)
 			makedirs(retrydir)
 		else:
 			for retrydir in glob(path.join(self.dir, 'retry.*')):
-				utils.safeRemove(retrydir)
+				safefs.remove(retrydir)
 
 		for jobfile in [self.rcfile, self.outfile, self.errfile, self.pidfile, self.outdir]:
 			mvfile = path.join(retrydir, path.basename(jobfile))
 			if retry:
-				utils.safeMove(jobfile, mvfile)
+				safefs.move(jobfile, mvfile)
 			else:
-				utils.safeRemove(jobfile)
+				safefs.remove(jobfile)
 
 		makedirs(self.outdir)
 		for out in self.output.values():
@@ -864,9 +622,9 @@ class Job (object):
 				makedirs(out['data'])
 				#self.proc.log ('Output directory created after reset: %s.' % out['data'], 'debug', 'OUTDIR_CREATED_AFTER_RESET')
 			if out['type'] in self.proc.OUT_STDOUTTYPE:
-				utils._link(self.outfile, out['data'])
+				safefs.SafeFs._link(self.outfile, out['data'])
 			if out['type'] in self.proc.OUT_STDERRTYPE:
-				utils._link(self.errfile, out['data'])
+				safefs.SafeFs._link(self.errfile, out['data'])
 
 	def _linkInfile(self, orgfile):
 		"""
@@ -876,10 +634,10 @@ class Job (object):
 		@returns:
 			The link to the original file.
 		"""
-		basename = utils.basename (orgfile)
+		basename = safefs.SafeFs.basename (orgfile)
 		infile   = path.join (self.indir, basename)
-		utils.safeLink(orgfile, infile, overwrite = False)
-		if utils.samefile(infile, orgfile):
+		safefs.link(orgfile, infile, overwrite = False)
+		if safefs.SafeFs(infile, orgfile).samefile():
 			return infile
 
 		#(fn, ext) = path.splitext(basename)
@@ -888,11 +646,11 @@ class Job (object):
 		existInfiles = glob (path.join(self.indir, fn + '[[]*[]]' + ext))
 		if not existInfiles:
 			infile = path.join (self.indir, fn + '[1]' + ext)
-			utils.safeLink(orgfile, infile, overwrite = False)
+			safefs.link(orgfile, infile, overwrite = False)
 		else:
 			num = 0
 			for eifile in existInfiles:
-				if utils.samefile(eifile, orgfile):
+				if safefs.SafeFs(eifile, orgfile).samefile():
 					num = 0
 					return eifile
 				n   = int(path.basename(eifile)[len(fn)+1 : -len(ext)-1])
@@ -900,7 +658,7 @@ class Job (object):
 
 			if num > 0:
 				infile = path.join (self.indir, fn + '[' + str(num+1) + ']' + ext)
-				utils.safeLink(orgfile, infile)
+				safefs.link(orgfile, infile)
 		return infile
 
 
@@ -908,7 +666,7 @@ class Job (object):
 		"""
 		Prepare input, create link to input files and set other placeholders
 		"""
-		utils.safeRemove(self.indir)
+		safefs.remove(self.indir)
 		makedirs (self.indir)
 
 		indexstr = self._indexIndicator()
@@ -928,10 +686,10 @@ class Job (object):
 						raise JobInputParseError(indata, 'File not exists for input type "%s"' % intype)
 
 					indata   = path.abspath(indata)
-					basename = utils.basename (indata)
+					basename = safefs.SafeFs.basename(indata)
 					infile   = self._linkInfile(indata)
-					if basename != utils.basename(infile):
-						self.proc.log ("%s Input file renamed: %s -> %s" % (indexstr, basename, utils.basename(infile)), 'warning', 'INFILE_RENAMING')
+					if basename != safefs.SafeFs.basename(infile):
+						self.proc.log ("%s Input file renamed: %s -> %s" % (indexstr, basename, safefs.SafeFs.basename(infile)), 'warning', 'INFILE_RENAMING')
 
 				if self.proc.infile == 'origin':
 					self.data['in'][key] = indata
@@ -1045,7 +803,7 @@ class Job (object):
 				write = False
 			else:
 				# for debug
-				utils.safeMove(self.script, self.script + '.bak')
+				safefs.move(self.script, self.script + '.bak')
 				self.proc.log ("Script file updated: %s" % self.script, 'debug', 'SCRIPT_EXISTS')
 
 		if write:

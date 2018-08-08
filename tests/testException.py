@@ -1,7 +1,7 @@
 import testly
 
 from pyppl import Proc, ProcTree
-from pyppl.exception import TemplatePyPPLSyntaxError, TemplatePyPPLRenderError, LoggerThemeError, ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError, ProcTreeProcExists, ProcTreeParseError, JobInputParseError, JobOutputParseError, RunnerSshError, ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcFindError, PyPPLProcRelationError, PyPPLConfigError, AggrAttributeError, AggrCopyError
+from pyppl.exception import TemplatePyPPLSyntaxError, TemplatePyPPLRenderError, LoggerThemeError, ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError, ProcTreeProcExists, ProcTreeParseError, JobInputParseError, JobOutputParseError, RunnerSshError, ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcFindError, PyPPLProcRelationError, PyPPLConfigError, AggrAttributeError, AggrCopyError, AggrKeyError
 
 class TestException(testly.TestCase):
 
@@ -31,6 +31,7 @@ class TestException(testly.TestCase):
 		yield PyPPLConfigError('', ''), PyPPLConfigError
 		yield AggrAttributeError('', ''), AggrAttributeError
 		yield AggrCopyError('', ''), AggrCopyError
+		yield AggrKeyError('', ''), AggrKeyError
 		
 	def testInit(self, exc, Exc, Super = Exception):
 		self.assertIsInstance(exc, Exc)

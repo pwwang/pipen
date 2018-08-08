@@ -8,7 +8,7 @@ from time import sleep
 from multiprocessing import Value, Lock
 from subprocess import Popen, list2cmdline
 
-from .. import utils
+from ..utils import safefs
 
 flushlock = Lock()
 
@@ -27,11 +27,11 @@ class Runner (object):
 		"""
 		self.job       = job
 		self.helper    = None
-		self.script    = utils.chmodX(self.job.script)
+		self.script    = safefs.SafeFs(self.job.script).chmodX()
 		self.cmd2run   = list2cmdline (self.script)
 		self.ntry      = Value('i', 0, lock = Lock())
 
-	def __del__(self):
+	def kill(self):
 		"""
 		Try to kill the running jobs if I am exiting
 		"""
@@ -52,7 +52,7 @@ class Runner (object):
 			self.job.reset(self.ntry.value)
 			r = self.helper.submit()
 			if r.rc != 0:
-				if r.stderr:
+				if r.stderr: # pragma: no cover
 					with open(self.job.errfile, 'w') as ferr:
 						ferr.write(r.stderr)
 				self.job.proc.log ('%s Submission failed with return code: %s.' % (indexstr, r.rc), 'error')
@@ -80,7 +80,7 @@ class Runner (object):
 		if self.job.index not in self.job.proc.ncjobids:
 			self.finish()
 			return True
-		
+
 		# stdout, stderr haven't been generated, wait
 		while not path.isfile(self.job.errfile) or not path.isfile(self.job.outfile):
 			sleep(self.INTERVAL)
@@ -89,6 +89,7 @@ class Runner (object):
 		fout = open(self.job.outfile)
 		lastout = ''
 		lasterr = ''
+
 		while self.job.rc() == self.job.RC_NOTGENERATE: # rc not generated yet
 			sleep (self.INTERVAL)
 			lastout, lasterr = self._flush(fout, ferr, lastout, lasterr)
@@ -132,7 +133,7 @@ class Runner (object):
 			return None, None
 
 		if 'stdout' in self.job.proc.echo['type']:
-			lines, lastout = utils.flushFile(fout, lastout, end)
+			lines, lastout = safefs.SafeFs.flush(fout, lastout, end)
 			outfilter      = self.job.proc.echo['type']['stdout']
 			
 			for line in lines:
@@ -140,7 +141,7 @@ class Runner (object):
 					with flushlock:
 						sys.stdout.write(line)
 
-		lines, lasterr = utils.flushFile(ferr, lasterr, end)		
+		lines, lasterr = safefs.SafeFs.flush(ferr, lasterr, end)		
 		for line in lines:
 			if line.startswith('pyppl.log'):
 				line = line.rstrip('\n')
