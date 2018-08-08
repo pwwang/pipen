@@ -57,7 +57,7 @@ before_install: |
 
 # command to install dependencies
 install:
-  - pip install -r requirements.txt
+  - sudo pip install -r requirements.txt
   #- python setup.py install
   - export PYTHONPATH="$(pwd):$PYTHONPATH"
   - pip install python-testly
