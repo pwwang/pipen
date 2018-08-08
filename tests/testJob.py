@@ -4,6 +4,7 @@ from time import time
 from glob import glob
 from os import path, symlink, makedirs, utime
 from tempfile import gettempdir
+from collections import OrderedDict
 from shutil import rmtree
 from copy import deepcopy
 from pyppl.job import Job
@@ -191,22 +192,22 @@ class TestJob(testly.TestCase):
 		yield 3, p, {}, {}, JobInputParseError, 'Not a list for input type'
 		yield 4, p, {}, {}, JobInputParseError, 'Not a string for element of input type'
 		yield 5, p, {}, {}, JobInputParseError, 'File not exists for element of input type'
-		yield 6, p3, {
-			'a': {'type': 'var', 'data': 7},
-			'b': {'type': 'var', 'data': 'g'},
-			'c': {'type': 'file', 'orig': filec2, 'data': self.file2indir(p3.workdir, 6, filec2)},
-			'd': {'type': 'files', 'orig':[filed4, filed4], 'data': [
+		yield 6, p3, OrderedDict([ # make sure c comes first, instead of d3
+			('a', {'type': 'var', 'data': 7}),
+			('b', {'type': 'var', 'data': 'g'}),
+			('c', {'type': 'file', 'orig': filec2, 'data': self.file2indir(p3.workdir, 6, filec2)}),
+			('d', {'type': 'files', 'orig':[filed4, filed4], 'data': [
 				self.file2indir(p3.workdir, 6, filed4), 
 				self.file2indir(p3.workdir, 6, filed4)
-			]},
-			'd2': {'type': 'files', 'orig': [''], 'data': [
+			]}),
+			('d2', {'type': 'files', 'orig': [''], 'data': [
 				''
-			]},
+			]}),
 			#                               not file34
-			'd3': {'type': 'files', 'orig': [filed35], 'data': [
+			('d3', {'type': 'files', 'orig': [filed35], 'data': [
 				self.file2indir(p3.workdir, 6, filed35, '[1]')
-			]}, 
-		}, {
+			]})
+		]), {
 			'a': 7,
 			'b': 'g',
 			'c': filec2,
@@ -1337,7 +1338,7 @@ class TestJob(testly.TestCase):
 			job2.cache()
 		#utils.safeRemove(outb)
 		utils.safefs.remove(outb)
-		yield job2, False, ['DEBUG', 'not cached because current signature is empty.']
+		yield job2, False, ['DEBUG', 'mpty', 'signature', 'because']
 		
 		# script file newer
 		infile = path.join(self.testdir, 'pIsTrulyCached3.txt')
