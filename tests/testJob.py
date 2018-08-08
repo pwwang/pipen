@@ -158,15 +158,15 @@ class TestJob(testly.TestCase):
 			'OR_c': '',
 			'RL_c': path.realpath(''),
 			'd': [
-				filed0, 
-				filed1
+				path.realpath(filed0), 
+				path.realpath(filed1)
 			],
 			'IN_d': [
 				self.file2indir(p2.workdir, 0, filed0), 
 				self.file2indir(p2.workdir, 0, filed1)
 			],
 			'OR_d': [filed0, filed1],
-			'RL_d': [filed0, filed1],
+			'RL_d': [path.realpath(filed0), path.realpath(filed1)],
 			'd2': [
 				path.realpath(filed20)
 			],
@@ -174,7 +174,7 @@ class TestJob(testly.TestCase):
 				self.file2indir(p2.workdir, 0, filed20)
 			],
 			'OR_d2': [filed20],
-			'RL_d2': [filed20],
+			'RL_d2': [path.realpath(filed20)],
 			'd3': [
 				path.realpath(filed30),
 				path.realpath(filed31)
@@ -184,7 +184,7 @@ class TestJob(testly.TestCase):
 				self.file2indir(p2.workdir, 0, filed31)
 			], 
 			'OR_d3': [filed30, filed31], 
-			'RL_d3': [filed30, filed31], 
+			'RL_d3': [path.realpath(filed30), path.realpath(filed31)], 
 		}
 
 		yield 1, p, {}, {}, JobInputParseError, 'File not exists for input type'
@@ -213,7 +213,7 @@ class TestJob(testly.TestCase):
 			'c': filec2,
 			'IN_c': self.file2indir(p3.workdir, 6, filec2),
 			'OR_c': filec2,
-			'RL_c': filec2,
+			'RL_c': path.realpath(filec2),
 			'd': [
 				filed4, 
 				filed4
@@ -223,7 +223,7 @@ class TestJob(testly.TestCase):
 				self.file2indir(p3.workdir, 6, filed4)
 			],
 			'OR_d': [filed4, filed4],
-			'RL_d': [filed4, filed4],
+			'RL_d': [path.realpath(filed4), path.realpath(filed4)],
 			'd2': [''],
 			'IN_d2': [''],
 			'OR_d2': [''],
