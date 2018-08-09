@@ -4,7 +4,6 @@
 from os import path, utime, remove
 from .runner import Runner
 from .helpers import LocalHelper
-from .. import utils
 
 class RunnerDry (Runner):
 	"""
