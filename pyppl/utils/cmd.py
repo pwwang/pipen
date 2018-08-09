@@ -2,6 +2,7 @@ import subprocess
 import shlex
 import six
 from os import environ
+from time import time, sleep
 import warnings
 # I am intended to run in background.
 try:
@@ -10,11 +11,14 @@ except NameError:
 	class ResourceWarning(Warning):
 		pass
 
+class Timeout(Exception):
+	pass
+
 class Cmd(object):
 	"""
 	A command (subprocess) wapper
 	"""
-	def __init__(self, cmd, raiseExc = True, **kwargs):
+	def __init__(self, cmd, raiseExc = True, timeout = None, **kwargs):
 		"""
 		Constructor
 		@params:
@@ -25,6 +29,7 @@ class Cmd(object):
 		# process is intended to run in background
 		warnings.simplefilter("ignore", ResourceWarning)
 		self.cmd        = cmd
+		self.timeout    = timeout
 		self.p          = None
 		self.stdout     = None
 		self.stderr     = None
@@ -72,7 +77,15 @@ class Cmd(object):
 			`self` 
 		"""
 		if not bg and self.p:
-			self.rc     = self.p.wait()
+			if not self.timeout:
+				self.rc     = self.p.wait()
+			else:
+				t0 = time()
+				while self.p.poll() is None:
+					sleep (.1)
+					if time() - t0 > self.timeout:
+						raise Timeout
+				self.rc = self.p.returncode
 			self.stdout = self.p.stdout and self.p.stdout.read()
 			self.stderr = self.p.stderr and self.p.stderr.read()
 		return self
@@ -95,7 +108,7 @@ class Cmd(object):
 		return Cmd(cmd, **kwargs)
 
 # shortcuts
-def run(cmd, bg = False, raiseExc = True, **kwargs):
+def run(cmd, bg = False, raiseExc = True, timeout = None, **kwargs):
 	"""
 	A shortcut of `Command.run`  
 	To chain another command, you can do:  
@@ -109,5 +122,5 @@ def run(cmd, bg = False, raiseExc = True, **kwargs):
 	@returns:
 		The `Command` instance
 	"""
-	return Cmd(cmd, raiseExc = raiseExc, **kwargs).run(bg = bg)
+	return Cmd(cmd, raiseExc = raiseExc, timeout = timeout, **kwargs).run(bg = bg)
 

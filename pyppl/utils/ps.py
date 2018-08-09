@@ -42,8 +42,16 @@ def child(pid):
 	Direct children
 	"""
 	try:
-		cids = Cmd(['ps', '--no-heading', '-o', 'pid', '--ppid', pid]).run()
-		return [p.strip() for p in cids.stdout.splitlines()]
+		# --no-heading, --pid not supported in osx
+		# cids = Cmd(['ps', '--no-heading', '-o', 'pid', '--ppid', pid]).run()
+		c = Cmd(['ps', '-o', 'pid,ppid']).run()
+		cids = []
+		for line in c.stdout.splitlines():
+			parts = line.split()
+			if len(parts) != 2 or parts[-1] != str(pid):
+				continue
+			cids.append(parts[0])
+		return cids
 	except subprocess.CalledProcessError: # pragma: no cover
 		return []
 
@@ -57,8 +65,8 @@ def children(pid):
 	return ret
 
 def killtree(ppid, killme = True, sig = signal.SIGKILL):
-	cids = children(ppid)
+	cids = list(reversed(children(ppid)))
 	if killme:
-		cids.insert(0, ppid)
+		cids.append(ppid)
 	for cid in cids:
 		kill(cid, sig)

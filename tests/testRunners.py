@@ -90,7 +90,7 @@ class TestLocalHelper(testly.TestCase):
 
 	def dataProvider_testSubmit(self):
 		script = path.join(self.testdir, 'job.script')
-		helpers.writeFile(script, '#!/usr/bin/env bash')
+		helpers.writeFile(script, '#!/usr/bin/env bash\n')
 		yield LocalHelper(script),
 
 	def testRun(self, h, rc, stdout):
@@ -150,7 +150,7 @@ class TestLocalHelper(testly.TestCase):
 	def dataProvider_testQuit(self):
 		script = path.join(self.testdir, 'testQuit', 'job.script')
 		makedirs(path.dirname(script))
-		helpers.writeFile(script, '#!/usr/bin/env bash')
+		helpers.writeFile(script, '#!/usr/bin/env bash\n')
 		yield LocalHelper(script), '0'
 
 class TestSgeHelper(testly.TestCase):

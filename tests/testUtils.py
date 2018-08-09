@@ -85,7 +85,7 @@ class TestSafeFs(testly.TestCase):
 	def dataProvider_test_lockfile(self):
 		yield None, True, self.tmpdir, None
 		# a file
-		file1 = path.join(self.testdir, 'test_lockfile1')
+		file1 = path.realpath(path.join(self.testdir, 'test_lockfile1'))
 		# a file link
 		file2 = path.join(self.testdir, 'test_lockfile2')
 		# a dead link
@@ -1578,11 +1578,11 @@ class TestUtils (testly.TestCase):
 		"""
 		#21 Targz and untargz
 		"""
-		filetgz5 = path.join(self.testdir, 'testTgz5.dir')
-		filetgz6 = path.join(self.testdir, 'testTgz6.tgz')
+		filetgz5 = path.realpath(path.join(self.testdir, 'testTgz5.dir'))
+		filetgz6 = path.realpath(path.join(self.testdir, 'testTgz6.tgz'))
 		filetgz7 = path.join(filetgz5, 'testTgz7.txt')
 		filetgz8 = path.join(filetgz5, 'testTgz8.dir')
-		filetgz51 = path.join(self.testdir, 'testTgz51.dir')
+		filetgz51 = path.realpath(path.join(self.testdir, 'testTgz51.dir'))
 		filetgz9 = path.join(filetgz51, 'testTgz7.txt')
 		makedirs(filetgz5)
 		makedirs(filetgz8)
@@ -2016,6 +2016,10 @@ class TestCmd(testly.TestCase):
 		yield 'ls',
 		yield 'ls2', True, None, OSError
 
+	def testRunTimeout(self):
+		c = Cmd('sleep .2', timeout = .1)
+		self.assertRaises(utils.cmd.Timeout, c.run)
+
 	def testRunPipe(self, cmd, bg, rc, stdout, stderr):
 		cmd.run(bg)
 		self.assertEqual(cmd.rc, rc)
@@ -2062,15 +2066,16 @@ class TestPs(testly.TestCase):
 	def testKill(self):
 		c = Cmd('sleep .5').run(bg = True)
 		self.assertTrue(ps.exists(c.pid))
-		c2 = Cmd('ps --no-heading -p ' + str(c.pid)).pipe('grep -v defunct').run()
+		# osx shows zombie process as quoted: "(sleep)"
+		c2 = Cmd('ps -p ' + str(c.pid)).pipe('grep -v defunct').pipe('grep -v ")$"').run()
 		self.assertIn(str(c.pid), c2.stdout)
 		ps.killtree(c.pid)
 		# The process will become a <defunct> process
 		# ps.exists can still detect it
 		# self.assertFalse(ps.exists(r.pid))
 		# use ps command instead
-		c3 = Cmd('ps --no-heading -p ' + str(c.pid)).pipe('grep -v defunct').run()
-		self.assertEqual(c3.stdout, '')
+		c3 = Cmd('ps -p ' + str(c.pid)).pipe('grep -v defunct').pipe('grep -v ")$"').run()
+		self.assertNotIn(str(c.pid), c3.stdout)
 
 if __name__ == '__main__':
 	testly.main(verbosity=2, failfast = True)

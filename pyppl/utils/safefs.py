@@ -766,6 +766,8 @@ class SafeFs(object):
 			`end`    : The file ends? Default: `False`
 		"""
 		fd.flush()
+		# OSX cannot tell the pointer automatically
+		fd.seek(fd.tell())
 		lines = fd.readlines() or []
 		if lines:
 			lines[0] = lastmsg + lines[0]
