@@ -720,7 +720,7 @@ class SafeFs(object):
 		if not SafeFs._exists(self.file1):
 			self._unlock()
 			return False
-		realfile1 = path.realpath(self.file1)
+
 		if dirsig and self.filetype1 in [SafeFs.FILETYPE_DIR, SafeFs.FILETYPE_DIRLINK]:
 			mtime = SafeFs._dirmtime(self.file1)
 		else:

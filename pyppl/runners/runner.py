@@ -6,7 +6,7 @@ import re
 from os import path
 from time import sleep
 from multiprocessing import Value, Lock
-from subprocess import Popen, list2cmdline
+from subprocess import list2cmdline
 
 from ..utils import safefs
 
@@ -40,7 +40,7 @@ class Runner (object):
 
 	def submit (self):
 		"""
-		Try to submit the job use Popen
+		Try to submit the job
 		"""
 		indexstr = self.job._indexIndicator()
 		if self.job.index not in self.job.proc.ncjobids:

@@ -1,10 +1,7 @@
 import copy
-from re import search
 
 from .runner import Runner
 from .helpers import SgeHelper
-from .. import utils
-
 
 class RunnerSge (Runner):
 	"""

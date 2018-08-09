@@ -1,5 +1,4 @@
 import copy
-from subprocess import check_output
 from .helpers import SlurmHelper
 from .runner import Runner
 

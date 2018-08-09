@@ -4,7 +4,6 @@ Job module for pyppl
 import json
 from collections import OrderedDict
 from glob import glob
-from time import sleep
 from datetime import datetime
 from os import makedirs, path, remove, utime
 from multiprocessing import Lock

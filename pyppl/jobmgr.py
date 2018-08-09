@@ -1,7 +1,6 @@
-import json
 from collections import OrderedDict
 from time import sleep
-from os import getppid, kill
+from os import getppid
 from signal import SIGINT
 from multiprocessing import Lock, JoinableQueue, Process, Array
 from .utils import ps

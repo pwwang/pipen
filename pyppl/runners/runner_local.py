@@ -5,12 +5,9 @@
 #	@see runner.unittest.py
 """
 import copy
-from os import kill
-from subprocess import check_output, CalledProcessError
 
 from .runner import Runner
 from .helpers import LocalHelper
-from .. import utils
 
 class RunnerLocal (Runner):
 	"""

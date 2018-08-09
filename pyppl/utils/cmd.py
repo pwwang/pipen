@@ -2,7 +2,6 @@ import subprocess
 import shlex
 import six
 from os import environ
-from . import Box, asStr
 import warnings
 # I am intended to run in background.
 try:
