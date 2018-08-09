@@ -2019,6 +2019,9 @@ class TestCmd(testly.TestCase):
 	def testRunTimeout(self):
 		c = Cmd('sleep .2', timeout = .1)
 		self.assertRaises(utils.cmd.Timeout, c.run)
+		self.assertEqual(c.rc, 1)
+		c = Cmd('sleep .2', timeout = 1).run()
+		self.assertEqual(c.rc, 0)
 
 	def testRunPipe(self, cmd, bg, rc, stdout, stderr):
 		cmd.run(bg)

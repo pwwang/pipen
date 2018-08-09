@@ -84,6 +84,7 @@ class Cmd(object):
 				while self.p.poll() is None:
 					sleep (.1)
 					if time() - t0 > self.timeout:
+						self.p.terminate()
 						raise Timeout
 				self.rc = self.p.returncode
 			self.stdout = self.p.stdout and self.p.stdout.read()

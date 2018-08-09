@@ -31,7 +31,7 @@ class RunnerSsh(Runner):
 		cmdlist.append('ConnectionAttempts=1')
 		cmdlist.append('true')
 		try:
-			cmd.run(cmdlist, timeout = 3).rc == 0
+			return cmd.run(cmdlist, timeout = 3).rc == 0
 		except cmd.Timeout:
 			return False
 
