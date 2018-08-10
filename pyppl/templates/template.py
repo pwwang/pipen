@@ -78,6 +78,7 @@ class Template(object):
 		# /a/b/c[1].txt => c.txt
 		'basename' : _basename,
 		'bn'       : _basename,
+		'stem'     : _filename,
 		'filename' : _filename,
 		'fn'       : _filename,
 		# /a/b/c.d.e.txt => c
@@ -93,8 +94,7 @@ class Template(object):
 		'squote'   : repr,
 		'json'     : json.dumps,
 		'read'     : _read,
-		'readlines': _readlines,
-		'repr'     : repr
+		'readlines': _readlines
 	}
 
 	def __init__(self, source, **envs):
