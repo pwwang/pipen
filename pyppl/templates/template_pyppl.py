@@ -43,14 +43,15 @@ class TemplatePyPPLCodeBuilder(object):
 
 	INDENT_STEP = 1
 
-	def __init__(self, indent = 0):
+	def __init__(self, envs = None, indent = 0):
 		"""
 		Constructor of code builder
 		@params:
 			indent: The initial indent level
 		"""
-		self.code   = []
+		self.code  = []
 		self.ndent = indent
+		self.envs  = envs or {}
 
 	def __str__(self):
 		"""
@@ -76,7 +77,7 @@ class TemplatePyPPLCodeBuilder(object):
 		@returns:
 			The section added.
 		"""
-		section = TemplatePyPPLCodeBuilder(self.ndent)
+		section = TemplatePyPPLCodeBuilder(self.envs, self.ndent)
 		self.code.append(section)
 		return section
 
@@ -131,7 +132,8 @@ class TemplatePyPPLCodeBuilder(object):
 		# Get the Python source as a single string.
 		python_source = str(self)
 		# Execute the source, defining globals, and return them.
-		global_namespace = {}
+		# Allow envs being used in global
+		global_namespace = self.envs
 		exec(python_source, global_namespace)
 		return global_namespace
 
@@ -180,7 +182,7 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 
 		# We construct a function in source form, then compile it and hold onto
 		# it, and execute it to render the template.
-		self.code = TemplatePyPPLCodeBuilder()
+		self.code = TemplatePyPPLCodeBuilder(self.context)
 
 		self.code.addLine("def renderFunction(context, do_dots):")
 		self.code.indent()

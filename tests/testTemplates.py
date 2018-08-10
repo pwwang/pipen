@@ -27,7 +27,7 @@ class TestTemplatePyPPLCodeBuilder(testly.TestCase):
 		yield 0,
 
 	def testInit(self, indent):
-		cb = TemplatePyPPLCodeBuilder(indent)
+		cb = TemplatePyPPLCodeBuilder(None, indent)
 		self.assertIsInstance(cb, TemplatePyPPLCodeBuilder)
 		self.assertEqual(cb.code, [])
 		self.assertEqual(cb.ndent, indent)
@@ -55,7 +55,7 @@ class TestTemplatePyPPLCodeBuilder(testly.TestCase):
 		yield indent, line, src, out
 
 	def testAddLine(self, indent, line, src, out):
-		cb = TemplatePyPPLCodeBuilder(indent)
+		cb = TemplatePyPPLCodeBuilder(None, indent)
 		cb.addLine(line, src)
 		self.assertEqual(str(cb), out)
 
@@ -73,7 +73,7 @@ class TestTemplatePyPPLCodeBuilder(testly.TestCase):
 		yield indent, line, src, out
 
 	def testAddSection(self, indent, line, src, out):
-		cb  = TemplatePyPPLCodeBuilder(indent)
+		cb  = TemplatePyPPLCodeBuilder(None, indent)
 		sec = cb.addSection()
 		sec.addLine(line, src)
 		self.assertEqual(str(cb), out)
@@ -84,7 +84,7 @@ class TestTemplatePyPPLCodeBuilder(testly.TestCase):
 		yield 0,
 
 	def testInDedent(self, indent):
-		cb  = TemplatePyPPLCodeBuilder(indent)
+		cb  = TemplatePyPPLCodeBuilder(None, indent)
 		cb.indent()
 		self.assertEqual(cb.ndent, indent + 1)
 		cb.indent()
@@ -95,7 +95,7 @@ class TestTemplatePyPPLCodeBuilder(testly.TestCase):
 		self.assertEqual(cb.ndent, indent)
 
 	def dataProvider_testGetGlobals(self):
-		cb = TemplatePyPPLCodeBuilder(0)
+		cb = TemplatePyPPLCodeBuilder(None, 0)
 		cb.addLine('a = 1')
 		cb.addLine('def add():')
 		cb.indent()
@@ -105,7 +105,7 @@ class TestTemplatePyPPLCodeBuilder(testly.TestCase):
 		cb.addLine('add()')
 		yield cb, {'a': 2}
 
-		cb = TemplatePyPPLCodeBuilder(0)
+		cb = TemplatePyPPLCodeBuilder(None, 0)
 		cb.addLine('a = 1')
 		cb.addLine('def localvar():')
 		cb.indent()
