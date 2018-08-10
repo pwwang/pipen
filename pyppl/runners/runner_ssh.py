@@ -1,7 +1,7 @@
 import os
 
 from .runner import Runner
-from .helpers import LocalHelper
+from .helpers import SshHelper
 from ..utils import cmd
 from ..exception import RunnerSshError
 from multiprocessing import Value
@@ -84,7 +84,7 @@ class RunnerSsh(Runner):
 		if 'preScript' in conf:
 			sshsrc.append (conf['preScript'])
 		
-		sshsrc.append ('ssh %s %s %s' % (server, ('-i %s' % key) if key else '', str(repr(self.cmd2run))))
+		sshsrc.append(self.cmd2run)
 		
 		if 'postScript' in conf:
 			sshsrc.append (conf['postScript'])
@@ -92,6 +92,11 @@ class RunnerSsh(Runner):
 		with open (sshfile, 'w') as f:
 			f.write ('\n'.join(sshsrc) + '\n')
 
-		self.helper = LocalHelper(sshfile)
+		sshcmd = ['ssh', '-t', server]
+		if key:
+			sshcmd.append('-i')
+			sshcmd.append(key)
+
+		self.helper = SshHelper(sshfile, sshcmd)
 
 

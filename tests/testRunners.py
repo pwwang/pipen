@@ -734,11 +734,9 @@ class TestRunnerSsh(testly.TestCase):
 			helpers.assertTextEqual(self, helpers.readFile(job.script + '.ssh', str), '\n'.join([
 				"#!/usr/bin/env bash",
 				"",
-				'%sssh %s %s \'cd %s; %s\'%s',
+				'%scd %s; %s%s',
 			]) % (
 				preScript, 
-				server, 
-				key, 
 				getcwd(), 
 				job.script, 
 				postScript

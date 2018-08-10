@@ -89,7 +89,7 @@ class JobInputParseError(Exception):
 	"""
 	def __init__(self, name, msg = None):
 		msg = msg or 'Failed to parse the input data'
-		super(JobInputParseError, self).__init__(str(msg) + ': ' + repr(name))
+		super(JobInputParseError, self).__init__(str(msg) + ': ' + str(name))
 
 class JobOutputParseError(Exception):
 	"""

@@ -31,35 +31,45 @@ def exists(pid):
 	else: # pragma: no cover
 		return True
 
-def kill(pid, sig = signal.SIGKILL):
+def kill(pids, sig = signal.SIGKILL):
+	if not isinstance(pids, list):
+		pids = [pids]
 	try:
-		os.kill(int(pid), sig)
+		for pid in pids:
+			os.kill(int(pid), sig)
 	except OSError: # pragma: no cover
-		Cmd(['kill', '-' + str(sig), pid]).run()
+		Cmd(['kill', '-' + str(sig)] + [str(pid) for pid in pids]).run()
 
-def child(pid):
+def child(pid, pidlist = None):
 	"""
 	Direct children
 	"""
-	try:
-		# --no-heading, --pid not supported in osx
-		# cids = Cmd(['ps', '--no-heading', '-o', 'pid', '--ppid', pid]).run()
-		c = Cmd(['ps', '-o', 'pid,ppid']).run()
-		cids = []
-		for line in c.stdout.splitlines():
-			parts = line.split()
-			if len(parts) != 2 or parts[-1] != str(pid):
+	ret = []
+	if pidlist:
+		for pidline in pidlist:
+			if pidline[1] != str(pid):
 				continue
-			cids.append(parts[0])
-		return cids
+			ret.append(pidline[0])
+		return ret
+
+	try:
+		# --no-heading, --ppid not supported in osx
+		# cids = Cmd(['ps', '--no-heading', '-o', 'pid', '--ppid', pid]).run()
+		pidlist = Cmd(['ps', '-o', 'pid,ppid']).run().stdout.splitlines()
+		pidlist = [line.strip().split() for line in pidlist]
+		pidlist = [p for p in pidlist if len(p) == 2 and p[0].isdigit() and p[1].isdigit()]
+		return child(pid, pidlist)
 	except subprocess.CalledProcessError: # pragma: no cover
 		return []
 
 def children(pid):
-	cids = child(pid)
+	pidlist = Cmd(['ps', '-o', 'pid,ppid']).run().stdout.splitlines()
+	pidlist = [line.strip().split() for line in pidlist]
+	pidlist = [p for p in pidlist if len(p) == 2 and p[0].isdigit() and p[1].isdigit()]
+	cids = child(pid, pidlist)
 	ret  = cids
 	while cids:
-		cids2 = sum([child(c) for c in cids], [])
+		cids2 = sum([child(c, pidlist) for c in cids], [])
 		ret.extend(cids2)
 		cids = cids2
 	return ret
@@ -68,5 +78,4 @@ def killtree(ppid, killme = True, sig = signal.SIGKILL):
 	cids = list(reversed(children(ppid)))
 	if killme:
 		cids.append(ppid)
-	for cid in cids:
-		kill(cid, sig)
+	kill(cids, sig)

@@ -2063,7 +2063,7 @@ class TestPs(testly.TestCase):
 
 	def dataProvider_testChild(self):
 		from os import getpid
-		c = Cmd('sleep .5').run(bg = True)
+		c = Cmd('sleep 1').run(bg = True)
 		yield getpid(), str(c.pid)
 
 	def testKill(self):

@@ -1,4 +1,4 @@
-import sys, re, subprocess, atexit
+import sys, re, subprocess, atexit, shlex
 from os import path
 from pyppl.utils import ps, cmd, Box
 from pyppl.utils.safefs import SafeFs
@@ -138,6 +138,74 @@ class LocalHelper(Helper):
 		# write rc
 		with open(self.rcfile, 'w') as frc:
 			frc.write(str(self.proc.rc))
+
+class SshHelper(Helper):
+
+	def __init__(self, script, cmds = None):
+		"""
+		Constructor
+		@params:
+			`script`: The script of the job
+			`cmds`  : The command used for ssh job submission
+		"""
+		if not isinstance(cmds, list):
+			cmds = shlex.split(cmds)
+		super(SshHelper, self).__init__(script, cmds)
+
+	def submit(self):
+		"""
+		Submit the job
+		@returns:
+			The `utils.cmd.Cmd` instance
+		"""
+		# test if self.script exists on the ssh server  
+		# make sure it is using the same file system as the local machine
+		cmdlist = ['ls', self.script]
+		cmdlist = subprocess.list2cmdline(cmdlist)
+		c = cmd.run(self.cmds + [cmdlist])
+		if c.rc != 0:
+			c.stderr += 'Probably the server ({}) is not using the same file system as the local machine.\n'.format(self.cmds)
+			return c
+		
+		# run self as a script
+		cmdlist = [sys.executable, path.realpath(__file__), self.script]
+		cmdlist = subprocess.list2cmdline(cmdlist)
+		c = cmd.run(self.cmds + [cmdlist], bg = True)
+		c.rc = 0
+		return c
+
+	def kill(self):
+		"""
+		Kill the job
+		"""
+		cmdlist = ['ps', '-o', 'pid,ppid']
+		cmdlist = subprocess.list2cmdline(cmdlist)
+		pidlist = cmd.run(self.cmds + [cmdlist]).stdout.splitlines()
+		pidlist = [line.strip().split() for line in pidlist]
+		pidlist = [pid for pid in pidlist if len(pid) == 2 and pid[0].isdigit() and pid[1].isdigit()]
+		dchilds     = ps.child(self.pid, pidlist)
+		allchildren = [str(self.pid)] + dchilds
+		while dchilds:
+			dchilds2 = sum([ps.child(p, pidlist) for p in dchilds], [])
+			allchildren.extend(dchilds2)
+			dchilds = dchilds2
+		
+		killcmd = ['kill', '-9'] + list(reversed(allchildren))
+		killcmd = subprocess.list2cmdline(killcmd)
+		cmd.run(self.cmds + [killcmd])
+	
+	def alive(self):
+		"""
+		Tell if the job is alive.  
+		This just sends '-0 (Cancel)' signal to the process via ssh
+		@returns:
+			`True` if it is else `False`
+		"""
+		if self.pid is None:
+			return False
+		cmdlist = ['kill', '-0', str(self.pid)]
+		cmdlist = subprocess.list2cmdline(cmdlist)
+		return cmd.run(self.cmds + [cmdlist]).rc == 0
 
 class SgeHelper(Helper):
 

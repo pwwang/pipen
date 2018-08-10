@@ -43,13 +43,16 @@ class Jobmgr (object):
 		self.subprocs = []
 
 	def _exit(self):
-		indexes = [i for i, s in enumerate(self.status) if s in [Jobmgr.STATUS_SUBMITFAILED, Jobmgr.STATUS_DONEFAILED]]
+		indexes = [i for i, s in enumerate(self.status) if s != Jobmgr.STATUS_DONE]
 		lenidx  = len(indexes)
 		if lenidx > 0:
 			try:
 				self.runners[indexes[0]].job.showError(lenidx)
 			except KeyboardInterrupt: # pragma: no cover
 				pass
+
+			for idx in indexes:
+				self.runners[idx].kill()
 
 		for proc in self.subprocs:
 			if proc._popen:
