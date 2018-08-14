@@ -99,15 +99,14 @@ class Template(object):
 
 	def __init__(self, source, **envs):
 		self.source = source
-		self.envs   = {k:v for k, v in Template.DEFAULT_ENVS.items()}
+		self.envs   = Template.DEFAULT_ENVS.copy()
 		self.envs.update(envs)
 
 	def registerEnvs(self, **envs):
 		self.envs.update(envs)
 
 	def render(self, data = None):
-		data = {} if data is None else data
-		data.update(self.envs)
+		data = data or {}
 		return self._render(data)
 
 	# in order to dump setting

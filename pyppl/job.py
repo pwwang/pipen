@@ -65,7 +65,7 @@ class Job (object):
 			},
 			'in'   : {},
 			'out'  : OrderedDict(),
-			'bring': {}
+			#'bring': {}
 		}
 
 	def init (self):
@@ -776,7 +776,8 @@ class Job (object):
 
 		for key, val in output.items():
 			outtype, outtpl = val
-			outdata               = outtpl.render(self.data)
+			self.data['ddd'] = 1
+			outdata = outtpl.render(self.data)
 			self.data['out'][key] = outdata
 			self.output[key] = {
 				'type': outtype,

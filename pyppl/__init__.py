@@ -632,10 +632,10 @@ class Proc (object):
 		# get Template
 		if callable(self.config['template']):
 			self.props['template'] = self.config['template']
-		elif self.config['template'] == '':
+		elif not self.config['template']:
 			self.props['template'] = getattr(templates, 'TemplatePyPPL')
 		else:
-			self.props['template'] = getattr(templates, 'Template' + self.config['template'][0].upper() + self.config['template'][1:])
+			self.props['template'] = getattr(templates, 'Template' + self.config['template'].capitalize())
 
 		# build rc
 		if isinstance(self.config['rc'], six.string_types):

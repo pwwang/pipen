@@ -47,7 +47,7 @@ class Parameter (object):
 		if name.startswith('__') or name.startswith('_Parameter'):
 			super(Parameter, self).__setattr__(name, value)
 		else:
-			getattr(self, 'set' + name[0].upper() + name[1:])(value)
+			getattr(self, 'set' + name.capitalize())(value)
 
 	def __getattr__(self, name):
 		if name.startswith('__') or name.startswith('_Parameter'): # pragma: no cover

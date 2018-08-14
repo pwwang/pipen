@@ -425,7 +425,7 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 						raise TemplatePyPPLRenderError(stack = 'No such attribute/index %s found for %s' % (repr(dot), repr(value)))
 		return value
 
-	def render(self, context=None):
+	def render(self, context = None):
 		"""
 		Render this template by applying it to `context`.
 		@params:
@@ -435,8 +435,7 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 		"""
 		# Make the complete context we'll use.
 		render_context = dict(self.context)
-		if context:
-			render_context.update(context)
+		render_context.update(context or {})
 		
 		try:
 			return self._renderFunction(render_context, TemplatePyPPLEngine._do_dots)
@@ -464,7 +463,7 @@ class TemplatePyPPL (Template):
 			`envs`: The env data
 		"""
 		super(TemplatePyPPL, self).__init__(source ,**envs)
-		self.engine = TemplatePyPPLEngine(source, envs)
+		self.engine = TemplatePyPPLEngine(source, self.envs)
 		self.source = source
 
 	def _render(self, data):
