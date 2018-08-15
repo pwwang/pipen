@@ -337,6 +337,10 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 					code = "%s%s" % (code, func)
 				elif func.startswith('lambda '):
 					code = "(%s)(%s)" % (func, code)
+				elif func.startswith(':'):
+					nargs = len(utils.split(code, ','))
+					vargs = ','.join(['v'+str(i+1) for i in range(nargs)])
+					code = "(lambda %s%s)(%s)" % (vargs, func, code)
 				elif '.' in func:
 					code = "%s(%s)" % (self._exprCode(func, src), code)
 				elif func in __builtins__:
