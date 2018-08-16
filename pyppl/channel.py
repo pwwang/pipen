@@ -57,6 +57,22 @@ class Channel (list):
 		return ret
 
 	@staticmethod
+	def nones(length, width):
+		"""
+		Create a channel with `None`s
+		@params:
+			`length`: The length of the channel
+			`width`:  The width of the channel
+		@returns:
+			The created channel
+		"""
+		ret = Channel()
+		row = (None, ) * width
+		for i in range(length):
+			ret.append(row[:])
+		return ret
+
+	@staticmethod
 	def fromChannels(*args):
 		"""
 		Create a Channel from Channels
@@ -600,3 +616,16 @@ class Channel (list):
 		return [item for sublist in self for item in sublist] if col is None else \
 			   [sublist[col] for sublist in self]
 
+	def t(self):
+		"""
+		Transpose a channel
+		"""
+		ret = Channel.nones(length = self.width(), width = self.length())
+		ret = [list(r) for r in ret]
+		for i, row in enumerate(self):
+			for j, val in enumerate(row):
+				ret[j][i] = val
+		ret = [tuple(r) for r in ret]
+		return Channel(ret)
+
+	transpose = t
