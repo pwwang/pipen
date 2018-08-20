@@ -22,7 +22,6 @@ setup (
 	],
 	classifiers      = [
 		"Intended Audience :: Developers",
-		"License :: Apache License 2.0",
 		"Natural Language :: English",
 		"Operating System :: MacOS :: MacOS X",
 		"Operating System :: POSIX",
