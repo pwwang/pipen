@@ -68,7 +68,7 @@ class Channel (list):
 		"""
 		ret = Channel()
 		row = (None, ) * width
-		for i in range(length):
+		for _ in range(length):
 			ret.append(row[:])
 		return ret
 

@@ -61,7 +61,7 @@ class TestJob(testly.TestCase):
 			},
 			'in'   : {},
 			'out'  : {},
-			'bring': {}
+			#'bring': {}
 		})
 
 	def dataProvider_testPrepInput(self):

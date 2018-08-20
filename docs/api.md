@@ -539,6 +539,17 @@ Map for a column
 - **returns:**  
 The transformed Channel  
   
+#### `nones (length, width) [@staticmethod]`
+  
+Create a channel with `None`s  
+
+- **params:**  
+`length`: The length of the channel  
+`width`:  The width of the channel  
+
+- **returns:**  
+The created channel  
+  
 #### `rbind (self, *rows) `
   
 The multiple-argument versoin of `rbind`  
@@ -618,6 +629,14 @@ Split a Channel to single-column Channels
 
 - **returns:**  
 The list of single-column Channels  
+  
+#### `t (self) `
+  
+Transpose a channel  
+  
+#### `transpose (self) `
+  
+Transpose a channel  
   
 #### `unfold (self, n) `
   
@@ -1389,19 +1408,15 @@ Allow dot operation for OrderedDict
 ## Module `utils.cmd`  
 > .
 
-#### `class: Box`
-```
-Allow dot operation for OrderedDict
-```
 #### `class: Cmd`
 ```
 A command (subprocess) wapper
 ```
-#### `asStr (s, encoding) [@staticmethod]`
-  
-Convert everything (str, unicode, bytes) to str with python2, python3 compatiblity  
-  
-#### `run (cmd, bg, raiseExc, **kwargs) [@staticmethod]`
+#### `class: Timeout`
+```
+
+```
+#### `run (cmd, bg, raiseExc, timeout, **kwargs) [@staticmethod]`
   
 A shortcut of `Command.run`  
 To chain another command, you can do:  
@@ -1417,6 +1432,16 @@ To chain another command, you can do:
 - **returns:**  
 The `Command` instance  
   
+#### `sleep (cmd, bg, raiseExc, timeout, **kwargs, **kwargs) `
+sleep(seconds)  
+  
+Delay execution for a given number of seconds.  The argument may be  
+a floating point number for subsecond precision.  
+#### `time (cmd, bg, raiseExc, timeout, **kwargs, **kwargs, **kwargs) `
+time() -> floating point number  
+  
+Return the current time in seconds since the Epoch.  
+Fractions of a second may be present if the system clock provides them.  
 
 ## Module `utils.parallel`  
 > .
@@ -1840,7 +1865,7 @@ False: needs retry
   
 #### `submit (self) `
   
-Try to submit the job use Popen  
+Try to submit the job  
   
 
 ## Module `runners.RunnerLocal`  

@@ -1,5 +1,15 @@
 # Change log
 
+## Aug 20, 2018: 1.1.0
+- Let pipeline halt if any job fails (#33).
+- Add KeyboardInterupt handling.
+- Add Warning message when a process is locked (another instance is running)
+- Clean up utils and runners source codes
+- Support and add tests to travis for python2.7 and python3.3+ for both OSX and Linux.
+- Allow global functions/values to be used in builtin templates.
+- Add shortcut for lambda function in builtin templates.
+- Add `nones` and `transpose` method for `Channel`.
+
 ## July 31, 2018: 1.0.1
 - Change the default path of flowchart and log from script directory to current directory.
 - Rewrite the way of attribute setting for aggregations.
