@@ -19,7 +19,7 @@ from .aggr import Aggr
 from .channel import Channel
 from .job import Job
 from .jobmgr import Jobmgr
-from .parameters import params
+from .parameters import params, Parameters
 from .proctree import ProcTree
 from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcFindError, PyPPLProcRelationError
 from . import logger, utils, runners, templates
