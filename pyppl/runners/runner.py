@@ -46,7 +46,7 @@ class Runner (object):
 		if self.job.index not in self.job.proc.ncjobids:
 			return True
 		elif self.isRunning():
-			self.job.proc.log ("%s is already running, skip submission." % indexstr, 'submit')
+			self.job.proc.log ("%s is already running at %s, skip submission." % (indexstr, self.helper.pid), 'submit')
 			return True
 		else:
 			self.job.reset(self.ntry.value)

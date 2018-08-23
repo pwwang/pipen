@@ -21,7 +21,9 @@ def exists(pid):
 			return False
 		elif err.errno == errno.EPERM:
 			# EPERM clearly means there's a process to deny access to
-			return True
+			# return True
+			# This means I didn't submit the process
+			return False
 		else: # pragma: no cover
 			# According to "man 2 kill" possible error values are
 			# (EINVAL, EPERM, ESRCH) therefore we should never get
