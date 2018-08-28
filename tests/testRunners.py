@@ -780,7 +780,7 @@ class TestRunnerSsh(testly.TestCase):
 			}
 		), False, [], ['123456']
 	
-	@unittest.skipIf(not RunnerSsh.isServerAlive('localhost', None), 'Local ssh server is not alive.')
+	@unittest.skipIf(not RunnerSsh.isServerAlive('localhost'), 'Local ssh server is not alive.')
 	def testSubmitNRun(self, job, ret, outs = [], errs = []):
 		RunnerSsh.INTERVAL = .1
 		r = RunnerSsh(job)

@@ -18,15 +18,13 @@ class RunnerSsh(Runner):
 	SERVERID = Value('i', 0)
 	
 	@staticmethod
-	def isServerAlive(server, key):
+	def isServerAlive(server, key = None):
 		cmdlist = ['ssh', server]
 		if key:
 			cmdlist.append('-i')
 			cmdlist.append(key)
 		cmdlist.append('-o')
 		cmdlist.append('BatchMode=yes')
-		cmdlist.append('-o')
-		cmdlist.append('StrictHostKeyChecking=no')
 		cmdlist.append('-o')
 		cmdlist.append('ConnectionAttempts=1')
 		cmdlist.append('true')

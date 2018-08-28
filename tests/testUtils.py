@@ -5,7 +5,7 @@ import gzip, tarfile
 import filelock
 from glob import glob
 from copy import deepcopy
-from os import path, symlink, remove, rename, makedirs, utime, X_OK, access, W_OK, getcwd, chdir
+from os import path, symlink, remove, rename, makedirs, utime, X_OK, access, W_OK, getcwd, chdir, getpid
 from pyppl import utils
 from pyppl.utils import Box, uid, ps
 from pyppl.utils.cmd import Cmd
@@ -2053,9 +2053,8 @@ class TestPs(testly.TestCase):
 			self.assertEqual(ps.exists(pid), ret)
 
 	def dataProvider_testExists(self):
-		yield 0, True
 		yield 123456, False
-		yield 1, True
+		yield getpid(), True
 
 	def testChild(self, pid, child):
 		self.assertIn(child, ps.child(pid))
