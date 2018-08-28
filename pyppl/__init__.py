@@ -1261,9 +1261,10 @@ class PyPPL (object):
 		self.fcconfig = fcconfig
 
 		logconfig = {
-			'levels': 'normal',
-			'theme':   True,
+			'levels' : 'normal',
+			'theme'  : True,
 			'lvldiff': [],
+			'pbar'   : 'expand',
 			# current directory instead of script directory
 			'file':    './%s%s.pyppl.log' % (
 				path.splitext(path.basename(sys.argv[0]))[0], 
@@ -1276,7 +1277,7 @@ class PyPPL (object):
 			utils.dictUpdate(logconfig, self.config['_log'])
 			del self.config['_log']
 
-		logger.getLogger (logconfig['levels'], logconfig['theme'], logconfig['file'], logconfig['lvldiff'])
+		logger.getLogger (logconfig['levels'], logconfig['theme'], logconfig['file'], logconfig['lvldiff'], logconfig['pbar'])
 
 		logger.logger.info ('[  PYPPL] Version: %s' % (VERSION))
 		logger.logger.info ('[   TIPS] %s' % (random.choice(PyPPL.TIPS)))

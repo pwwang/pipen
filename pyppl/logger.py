@@ -1,10 +1,11 @@
 """
 A customized logger for pyppl
 """
-import logging, re
+import logging, re, sys
 from .utils import Box
 from .exception import LoggerThemeError
 from .templates import TemplatePyPPL
+from multiprocessing import Value
 
 # the entire format
 LOGFMT = "[%(asctime)s]%(message)s"
@@ -257,8 +258,62 @@ class PyPPLLogFormatter (logging.Formatter):
 
 		return logging.Formatter.format(self, record)
 
+class PyPPLStreamHandler(logging.StreamHandler):
 
-def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, name='PyPPL'):
+	def __init__(self, stream = None):
+		self.pbar_started = Value('i', 0)
+		super(PyPPLStreamHandler, self).__init__(stream)
+
+	def _emit(self, record, terminator = "\n"):
+		if sys.version_info[0] > 2:
+			self.terminator = terminator
+			super(PyPPLStreamHandler, self).emit(record)
+		else:
+			try:
+				msg = self.format(record)
+				stream = self.stream
+				fs = "%s" + terminator
+				if not logging._unicode: #if no unicode support...
+					stream.write(fs % msg)
+				else:
+					try:
+						if (isinstance(msg, unicode) and
+							getattr(stream, 'encoding', None)):
+							ufs = u'%s' + terminator
+							try:
+								stream.write(ufs % msg)
+							except UnicodeEncodeError:
+								#Printing to terminals sometimes fails. For example,
+								#with an encoding of 'cp1251', the above write will
+								#work if written to a stream opened or wrapped by
+								#the codecs module, but fail when writing to a
+								#terminal even when the codepage is set to cp1251.
+								#An extra encoding step seems to be needed.
+								stream.write((ufs % msg).encode(stream.encoding))
+						else:
+							stream.write(fs % msg)
+					except UnicodeError:
+						stream.write(fs % msg.encode("UTF-8"))
+				self.flush()
+			except (KeyboardInterrupt, SystemExit):
+				raise
+			except:
+				self.handleError(record)
+
+	def emit(self, record):
+		level, _ = _getLevel(record)
+		if level in ['SUBMIT', 'JOBDONE']:
+			self.pbar_started.value = 1
+			terminator = "\r"
+		else:
+			terminator = "\n"
+			if self.pbar_started.value == 1:
+				self.stream.write('\n')
+				self.pbar_started.value = 0
+		self._emit(record, terminator)
+
+
+def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, pbar = 'expand', name='PyPPL'):
 	"""
 	Get the default logger
 	@params:
@@ -282,7 +337,7 @@ def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, name='Py
 		fileCh.setFormatter(PyPPLLogFormatter(theme = None))
 		logger.addHandler (fileCh)
 		
-	streamCh  = logging.StreamHandler()
+	streamCh  = PyPPLStreamHandler() if pbar != 'expand' else logging.StreamHandler()
 	formatter = PyPPLLogFormatter(theme = theme, secondary = True)
 	filter    = PyPPLLogFilter(name = name, lvls = levels, lvldiff = lvldiff)
 	streamCh.addFilter(filter)
