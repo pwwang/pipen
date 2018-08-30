@@ -297,7 +297,7 @@ class PyPPLStreamHandler(logging.StreamHandler):
 				self.flush()
 			except (KeyboardInterrupt, SystemExit):
 				raise
-			except:
+			except Exception:
 				self.handleError(record)
 
 	def emit(self, record):
