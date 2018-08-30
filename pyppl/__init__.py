@@ -1207,7 +1207,16 @@ class PyPPL (object):
 
 	RUNNERS  = {}
 	# ~/.PyPPL.json has higher priority
-	DEFAULT_CFGFILES = ['~/.PyPPL.yaml', '~/.PyPPL', '~/.PyPPL.json']
+	DEFAULT_CFGFILES = [
+		'~/.pyppl.yaml',
+		'~/.PyPPL.yaml', 
+		'~/.pyppl.yml',
+		'~/.PyPPL.yml', 
+		'~/.pyppl', 
+		'~/.PyPPL', 
+		'~/.pyppl.json',
+		'~/.PyPPL.json'
+	]
 	# counter
 	COUNTER  = 0
 
@@ -1228,7 +1237,7 @@ class PyPPL (object):
 			PyPPL.DEFAULT_CFGFILES[i] = cfile
 			if path.exists(cfile):
 				with open(cfile) as cf:
-					if cfile.endswith('.yaml'):
+					if cfile.endswith('.yaml') or cfile.endswith('.yml'):
 						try:
 							import yaml
 							utils.dictUpdate(fconfig, yaml.load(cf.read().replace('\t', '  ')))
@@ -1239,7 +1248,7 @@ class PyPPL (object):
 
 		if cfgfile is not None and path.exists(cfgfile):
 			with open(cfgfile) as cfgf:
-				if cfgfile.endswith('.yaml'):
+				if cfgfile.endswith('.yaml') or cfgfile.endswith('.yml'):
 					try:
 						import yaml
 						utils.dictUpdate(fconfig, yaml.load(cfgf.read().replace('\t', '  ')))
