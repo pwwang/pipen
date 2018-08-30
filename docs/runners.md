@@ -293,6 +293,7 @@ class RunnerMy (Runner):
 The base class `Runner` defines the runners where the jobs will immediately run after submission; while `RunnerQueue` defines the runners where the jobs will be put into a queue and wait for its turn to run (for example, clusters).
 
 Before you define your own runner, you may have to write a helper class, which includes following methods:
+
 - `__init__(self, script, cmds = None)` The constructor.
   - `script`: The real script to run.
   - `cmds`: Some extra commands, such as `qsub`, `qstat` and `qdel` for sge runner
@@ -330,6 +331,7 @@ class RunnerDelay (Runner):
 ```
 
 **Key points in writing your own runner**:
+
 - Write a proper helper class
 - Compose the right script to run the job (`self.script`) in `__init__`.
 - MAKE SURE you save the identity of the job to `job.pidfile`, rc to `job.rcfile`, stdout to `job.outfile` and `stderr` to `job.errfile`

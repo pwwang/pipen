@@ -1,5 +1,12 @@
 # Change log
 
+## Aug 30, 2018: 1.1.1
+- Allow progress bar to be collapsed in stream log.
+- Remove loky dependency, so `PyPPL` could run on cygwin/msys2.
+- Add `~/pyppl.yml`, `~/pyppl.yaml`, `~/pyppl` and `~/pyppl.json` to default configuration files.
+- Update docs.
+- Fix other bugs.
+
 ## Aug 20, 2018: 1.1.0
 - Let pipeline halt if any job fails (#33).
 - Add KeyboardInterupt handling.
