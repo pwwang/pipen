@@ -1,4 +1,3 @@
 six
-loky
 filelock
 futures

@@ -18,7 +18,7 @@ setup (
 	packages         = find_packages(),
 	scripts          = ['bin/pyppl'],
 	install_requires = [
-		'six', 'filelock', 'loky', 'futures'
+		'six', 'filelock', 'futures'
 	],
 	classifiers      = [
 		"Intended Audience :: Developers",
