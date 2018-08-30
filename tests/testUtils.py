@@ -905,8 +905,8 @@ class TestUtils (testly.TestCase):
 
 	def dataProvider_testParallel(self):
 		yield ([(1,2), (3,4), (5,6), (7,8)], 4, 'thread')
-		yield ([(1,2), (3,4), (5,6), (7,8)], 4, 'process')
-		yield ([(1,0), (3,4), (5,6), (7,8)], 4, 'process', ZeroDivisionError)
+		yield ([(1,2), (3,4), (5,6), (7,8)], 4, 'thread')
+		yield ([(1,0), (3,4), (5,6), (7,8)], 4, 'thread', ZeroDivisionError)
 
 	def testParallel(self, data, nthread, method, exception = None):
 		globalVars = []

@@ -19,7 +19,7 @@
 
 ## Requirements
 - OS: Linux or OSX
-- Python packages: [six][25], [filelock][35], [loky][17], [futures][21] (suggested: [graphviz][36], [pyyaml][33] and [python-testly][5]).
+- Python packages: [six][25], [filelock][35], [futures][21] (suggested: [graphviz][36], [pyyaml][33] and [python-testly][5]).
 
 ## Installation
 ```bash
@@ -498,7 +498,6 @@ To generate svg file, you have to have [graphviz][36] installed.
 [14]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
 [15]: https://pwwang.github.io/PyPPL/draw-flowchart-of-a-pipeline/
 [16]: https://pwwang.github.io/PyPPL/aggregations/
-[17]: https://github.com/tomMoral/loky
 [18]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/drawFlowchart_pyppl.png
 [19]: https://pwwang.github.io/PyPPL/change-log/
 [20]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/getStarted.png

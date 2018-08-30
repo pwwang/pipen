@@ -1,5 +1,5 @@
-from concurrent.futures import ThreadPoolExecutor
-from loky import ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+#from loky import ProcessPoolExecutor
 from traceback import format_exc
 
 class Parallel(object):
