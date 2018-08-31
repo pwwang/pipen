@@ -648,7 +648,7 @@ class TestRunnerSsh(testly.TestCase):
 		), RunnerSshError, 'No server found for ssh runner.'
 		
 		servers = ['server1', 'server2', 'localhost']
-		keys    = ['key1', 'key2']
+		keys    = ['key1', 'key2', None]
 		yield _generateJob(
 			self.testdir,
 			index = 1,
@@ -715,6 +715,7 @@ class TestRunnerSsh(testly.TestCase):
 
 	def testInit(self, job, exception = None, msg = None):
 		self.maxDiff = None
+		RunnerSsh.LIVE_SERVERS = None
 		if exception:
 			self.assertRaisesRegex(exception, msg, RunnerSsh, job)
 		else:
@@ -723,7 +724,7 @@ class TestRunnerSsh(testly.TestCase):
 			keys = job.proc.sshRunner['keys']
 			sid = (RunnerSsh.SERVERID.value - 1) % len(servers)
 			server = servers[sid]
-			key = ('-i ' + keys[sid]) if sid < len(keys) else ''
+			key = ('-i ' + keys[sid]) if keys[sid] else ''
 			self.assertIsInstance(r, RunnerSsh)
 			self.assertTrue(path.exists(job.script + '.ssh'))
 			#self.assertTrue(path.exists(job.script + '.submit'))

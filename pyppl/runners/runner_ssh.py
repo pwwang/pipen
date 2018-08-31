@@ -4,7 +4,7 @@ from .runner import Runner
 from .helpers import SshHelper
 from ..utils import cmd
 from ..exception import RunnerSshError
-from multiprocessing import Value
+from multiprocessing import Value, Lock, Array
 
 class RunnerSsh(Runner):
 	"""
@@ -15,7 +15,9 @@ class RunnerSsh(Runner):
 		- Don't touch unless you know what's going on!
 
 	"""
-	SERVERID = Value('i', 0)
+	SERVERID     = Value('i', 0)
+	LIVE_SERVERS = None
+	LOCK         = Lock()
 	
 	@staticmethod
 	def isServerAlive(server, key = None):
@@ -48,29 +50,30 @@ class RunnerSsh(Runner):
 		if 'sshRunner' in self.job.proc.props or 'sshRunner' in self.job.proc.config:
 			conf     = self.job.proc.sshRunner
 		
-		if not 'servers' in conf:
-			raise RunnerSshError('No server found for ssh runner.')
-		
-		servers    = conf['servers']
+		servers    = conf.get('servers', [])
+		keys       = conf.get('keys', [])
 		checkAlive = conf.get('checkAlive', False)
-		sid        = RunnerSsh.SERVERID.value % len (servers)
-		server     = servers[sid]
-		key        = conf['keys'][sid] if 'keys' in conf   \
-			and isinstance(conf['keys'], list)     \
-			and sid < len(conf['keys']) else None
-		
+		if not servers:
+			raise RunnerSshError('No server found for ssh runner.')
+
 		if checkAlive:
-			n = 0
-			while not RunnerSsh.isServerAlive(server, key):
-				RunnerSsh.SERVERID.value += 1
-				sid    = RunnerSsh.SERVERID.value % len (servers)
-				server = servers[sid]
-				key    = conf['keys'][sid] if 'keys' in conf   \
-					and isinstance(conf['keys'], list) \
-					and sid < len(conf['keys']) else None
-				n += 1
-				if n >= len(servers):
-					raise RunnerSshError('No server is alive.')
+			with RunnerSsh.LOCK:
+				if not RunnerSsh.LIVE_SERVERS:
+					live_server_ids = []
+					for i, server in enumerate(servers):
+						if RunnerSsh.isServerAlive(server, keys[i] if keys else None):
+							live_server_ids.append(i)
+					RunnerSsh.LIVE_SERVERS = Array('i', live_server_ids)
+		else:
+			RunnerSsh.LIVE_SERVERS = list(range(len(servers)))
+
+		if len(RunnerSsh.LIVE_SERVERS) == 0:
+			raise RunnerSshError('No server is alive.')
+
+		sid    = RunnerSsh.LIVE_SERVERS[RunnerSsh.SERVERID.value % len (RunnerSsh.LIVE_SERVERS)]
+		server = servers[sid]
+		key    = keys[sid] if keys else None
+		
 		RunnerSsh.SERVERID.value += 1
 		
 		self.cmd2run = "cd %s; %s" % (os.getcwd(), self.cmd2run)
