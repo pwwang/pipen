@@ -1,210 +1,312 @@
 #!/usr/bin/env python
+#
+# PyPPL command line tool:
+# 1. List all work directories under <ppldir>
+# 2. Compare the difference between processes from different directories
+# 3. Clean work directories
+#    - by date/time
+#    - by status
+#
 
-import sys
-import argparse
-
-from glob import glob
-from datetime import datetime
-from shutil import rmtree
-
+import sys, re
 from os import path
-sys.path.insert(0, path.dirname(path.dirname(path.realpath(__file__))))
-from pyppl import logger, utils
+from glob import glob
+from shutil import rmtree
+from datetime import date, timedelta, datetime
+from multiprocessing import Lock
+from pyppl import PyPPL, Proc, params
+from pyppl.logger import COLORS
+from pyppl.utils import parallel
 
-parser           = argparse.ArgumentParser(description='A set of CLI tools for pyppl.')
-parser.add_argument('-w', '--workdir', help="The path of workdir, default: %(default)s", required=False, default="./workdir")
-cmdparsers       = parser.add_subparsers(dest='command')
-parser_clean     = cmdparsers.add_parser('clean', help="Clean a workdir")
-parser_clean.add_argument ('-f', '--force', help="Force cleaning, don't ask for confirmation.", action='store_true')
-parser_clean.add_argument ('-n', '--nthread', help="Number of threads used to remove the directory.", dest='n', type=int, default=1)
-parser_clean.set_defaults(force = False)
-parser_list      = cmdparsers.add_parser('list', help="List the status of a workdir")
-parser_compare   = cmdparsers.add_parser('compare', help="Compare the settings of two processes.")
-parser_compare.add_argument ('-p1', '--process1', dest='p1', help="The first process, either full path (with -d) or the basename (could be without 'PyPPL.')", required = False)
-parser_compare.add_argument ('-p2', '--process2', dest='p2', help="The second process, either full path (with -d) or the basename (could be without 'PyPPL.')", required = False)
-parser_compare.add_argument ('-p', '--pprefix', dest='p', help="The process without suffix, will compare the most 2 recent processes (with -d for full path).", required = False)
-args             = parser.parse_args()
+try:
+	input = raw_input
+except NameError:
+	pass
 
-def mtime4proc (procdir):
-	settingsfile  = path.join(procdir, "proc.settings")
-	if not path.exists(settingsfile):
-		return 0
-	return path.getmtime(settingsfile)
+params \
+	('desc', '''PyPPL command line tool:
+	- list   : list work directories under <wdir>
+	- compare: compare two processes from different directories
+	- clean  : remove some work directories''') \
+	('usage', '{prog} <command> [options]') \
+	('example', '''# List work directories in ./workdir:
+	{prog} list
+	
+	# List work directories in /path/to/workdir with certain process name:
+	{prog} list -wdir /path/to/workdir -proc pSort
+	
+	# Compare first two processes named "pSort.notag":
+	{prog} compare -wdir /path/to/workdir -proc pSort
+	{prog} compare -wdir /path/to/workdir -proc pSort.notag
+	
+	# Compare two processes with suffices: 
+	{prog} compare -proc1 pSort.notag.suffix1 -proc2 pSort.notag.suffix2
+	
+	# Remove work directories modified before 9/16/2017:
+	{prog} clean -before 9/16/2017
+	
+	# Remove work directories modified 100 days ago only with any job failed:
+	{prog} clean -ago 100 -error
+	
+	# Remove all failed work directories, using 10 threads
+	{prog} clean -error -nthread 10''')
 
-def getGroups (workdir):
-	ret = {}
-	procs = sorted ([path.basename(x) for x in glob (path.join(workdir, "PyPPL.*"))])
-	for proc in procs:
-		ppath = path.join (workdir, proc)
-		if not path.isdir (ppath):
+params.wdir         = './workdir'
+params.wdir.desc    = 'The <ppldir> containing process work directories.'
+params.nthread      = 1
+params.nthread.desc = 'Number of threads used to clean up the work directories.'
+params.proc.desc    = 'The process name to show or to compare.'
+params.proc1.desc   = 'The first full process name to compare.'
+params.proc2.desc   = 'The second full process name to compare.'
+params.before.desc  = '''Before when the work directories to be removed.
+Supported format: m/d, m-d, m/d/y and y-m-d
+'''
+params.ago.type   = 'int'
+params.ago.desc   = 'Work directories to be removed when modified N days ago.'
+params.all        = False
+params.all.desc   = 'List all processes if # processes > 100.'
+params.force      = False
+params.force.desc = 'Don`t ask when remove work directories.'
+params.error      = False
+params.error.desc = 'Remove directories if any job failed.'
+
+help   = params.help()
+params = params.parse()
+
+def streamout(msg, decors = None, end = '\n'):
+	decors = decors or []
+	if not isinstance(decors, list):
+		decors = [decors]
+	sys.stdout.write(''.join([COLORS[dec] for dec in decors]) + str(msg) + COLORS['end'] + end)
+
+# params check
+error = []
+if not params._ or params._[0] not in ['list', 'compare', 'clean']:
+	error.append('Unsupported command: "{}".'.format(params._[0] if params._ else ''))
+
+if params._[0] == 'compare':
+	if params.proc and (params.proc1 or params.proc2):
+		error.append('-proc and -proc1/proc2 are mutually exclusive for command "compare"')
+	elif not (params.proc1 and params.proc2) and (params.proc1 or params.proc2):
+		error.append('Missing either -proc1 or -proc2 for command "compare"')
+	elif not (params.proc1 and params.proc2) and not params.proc:
+		error.append('Nothing to compare, expecting -proc or -proc1/-proc2.')
+
+if params._[0] == 'clean' or params._[0] == 'list':
+	# before and ago cannot be used at the same time
+	if params.ago and params.before:
+		error.append('-ago and -before are mutually exclusive for command "clean"')
+	elif params.before:
+		dateregx1 = r'^(0?[1-9]|1[012])/(0?[1-9]|[12][0-9])(?:/(\d{4}))?$'
+		dateregx2 = r'^(?:(\d{4})-)?(0?[1-9]|1[012])-(0?[1-9]|[12][0-9])$'
+		m1 = re.match(dateregx1, params.before)
+		m2 = re.match(dateregx2, params.before)
+		if m1:
+			y = m1.group(3) or date.today().year
+			m = m1.group(1)
+			d = m1.group(2)
+			params.before = date(int(y), int(m), int(d))
+		elif m2:
+			y = m2.group(3) and m2.group(1) or date.today().year
+			m = m2.group(3) and m2.group(2) or m2.group(1)
+			d = m2.group(3) or m2.group(2)
+			params.before = date(int(y), int(m), int(d))
+		else:
+			error.append('Malformat -before for command "clean"')
+
+if error:
+	streamout('\n'.join(['ERROR: ' + err for err in error]) + '\n', 'red')
+	streamout(help)
+	sys.exit(1)
+
+def proc_mtime(proc):
+	setfile = path.join(proc, 'proc.settings')
+	if not path.isfile(setfile):
+		return datetime.fromtimestamp(0)
+	return datetime.fromtimestamp(path.getmtime(setfile))
+
+def proc_failed(proc):
+	for job in glob(path.join(proc, '*')):
+		if not path.basename(job).isdigit():
 			continue
-		parts = proc.split ('.')
-		pname = '.'.join(parts[1:-1])
-		if not ret.has_key(pname):
-			ret[pname] = []
-		ret[pname].append(parts[-1])
+		rcfile = path.join(job, 'job.rc')
+		if not path.isfile(rcfile):
+			return True
+		with open(rcfile) as f:
+			rc = f.read().strip()
+		if rc != '0':
+			return True
+	return False
+
+# list
+def list_procs(procs, listall):
+	if not procs:
+		streamout('WARNING: No process found in workdir: {}.'.format(params.wdir), 'yellow')
+		sys.exit(1)
+	if len(procs) > 100 and not listall:
+		streamout('WARNING: Got {} processes, listing first 100. Use -all to list all.'.format(len(procs)), 'yellow')
+		procs = procs[:100]
+	procgroups = {}
+	for proc, mtime, fail in procs:
+		pname = '.'.join(path.basename(proc).split('.')[1:3])
+		if pname not in procgroups:
+			procgroups[pname] = []
+		procgroups[pname].append((proc, mtime, fail))
+
+	streamout('WORKDIR: {}'.format(params.wdir), 'yellow')
+	for pname in sorted(procgroups.keys()):
+		streamout('\nPROCESS: {}'.format(pname))
+		for proc, mtime, fail in sorted(procgroups[pname], key = lambda p: p[1]):
+			streamout('{} {}: {}'.format(
+				'x' if fail else '-',
+				path.basename(proc), 
+				mtime.strftime("%Y-%m-%d %H:%M:%S")
+			), 'red' if fail else 'green')
+
+def read_sections (sfile):
+	ret = {}
+	sec = ''
+	with open(sfile) as f:
+		for line in f:
+			if line.startswith('['):
+				sec = line.strip()[1:-1]
+			elif sec:
+				if sec not in ret:
+					ret[sec] = []
+				ret[sec].append(line)
 	return ret
 
-def ask2Remove (msg, procpath, ask = True):
-	def rm ():
-		utils.Parallel(args.n).run(rmtree, [(pp, ) for pp in glob(path.join(procpath, '*/'))])
-		#utils.parallel(rmtree, [(pp, ) for pp in glob(path.join(procpath, '*/'))], args.n, 'process')
-		rmtree(procpath)
-		print logger.COLORS.bold + logger.COLORS.yellow + "  Removed: " + procpath + logger.COLORS.end
-
-	if not ask:
-		rm ()
-		return
-
-	dists = ['', 'Y', 'y', 'N', 'n']
-	r     = raw_input(msg + ', clean it? [Y/n] ')
-	while r not in dists:
-		r     = raw_input(msg + ', clean it? [Y/n] ')
-	if r in ['', 'Y', 'y']:
-		rm()
-
-fmtTime = lambda x: datetime.fromtimestamp(x).strftime('%Y-%m-%d %H:%M:%S')
-
-if args.command in ['list', 'clean']:
-	print ''
-	print logger.COLORS.green  + 'GREEN PROC : Latest processes' + logger.COLORS.end
-	print logger.COLORS.yellow + 'YELLOW PROC: Older processes' + logger.COLORS.end
-	print logger.COLORS.red    + 'RED PROC   : Settings file not exists' + logger.COLORS.end
-	print logger.COLORS.none + '\nWORKDIR: ' + args.workdir + logger.COLORS.end
-	print "-" * (len (args.workdir) + 9)
-
-	groups = getGroups (args.workdir)
-
-	if not groups:
-		print logger.COLORS.red + "No processes found!\n" + logger.COLORS.end
-
-	maxlen = max([len(g) for g in groups.keys()])
-	maxlen = max(maxlen, 30)
-	for g in sorted(groups.keys()):
-		sufs = groups[g]
-		print "\n- PROCESSES: %s" % (g)
-		print "  " + "-" * (maxlen + 30)
-
-		for i, suf in enumerate(sorted(sufs, key=lambda x: mtime4proc(path.join (args.workdir, "PyPPL.%s.%s" % (g, x))), reverse=True)):
-			procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
-			color    = logger.COLORS.green
-			ptime    = mtime4proc(procpath)
-			if i == 0 and ptime != 0:
-				print color + '  ' + g + '.' + suf + ': ' + fmtTime(ptime) + logger.COLORS.end
-			else:
-				procpath = path.join (args.workdir, "PyPPL.%s.%s" % (g, suf))
-				if ptime == 0:
-					color = logger.COLORS.red
-					msg = color + '  ' + g + '.' + suf + ': ' + fmtTime(ptime) + logger.COLORS.end
-					if args.command == 'list':
-						print msg
-					else:
-						ask2Remove(msg, procpath, not args.force)
-				else:
-					color = logger.COLORS.yellow
-					msg = color + '  ' + g + '.' + suf + ': ' + fmtTime(ptime) + logger.COLORS.end
-					if args.command == 'list':
-						print msg
-					else:
-						ask2Remove(msg, procpath, not args.force)
-	print ''
-
-if args.command == 'compare':
-
-	if not args.p1 and not args.p2 and not args.p:
-		print "Expect paired processes (-p1 and -p2) OR the process prefix (-p)"
-		sys.exit (1)
-	if args.p and (args.p1 or args.p2):
-		print "Expect paired processes (-p1 and -p2) OR the process prefix (-p)"
-		sys.exit (1)
-	if (args.p1 and not args.p2) or (args.p2 and not args.p1):
-		print "Expect paired processes (both -p1 and -p2)"
-		sys.exit (1)
-
+def compare_procs(proc1, proc2):
 	from difflib import unified_diff
+	setfile1 = path.join(proc1, 'proc.settings')
+	setfile2 = path.join(proc2, 'proc.settings')
+	streamout('1. {}'.format(setfile1), 'green')
+	streamout('2. {}'.format(setfile2), 'red')
+	streamout('-' * (max(len(setfile1), len(setfile2), 80) + 3))
 
-	if args.p:
-		if '/' in args.p[:-1]:
-			prefix = args.p
-			prefix = prefix + '.notag' if path.basename(prefix).count('.') < 2 else prefix
-		else:
-
-			prefix = 'PyPPL.' + args.p if not args.p.startswith('PyPPL.') else args.p
-			prefix = prefix + '.notag' if prefix.count('.') < 2 else prefix
-			prefix = path.join(args.workdir, prefix)
-
-		procs  = glob (prefix + '.*')
-		if not procs:
-			sfile1 = ''
-			sfile2 = ''
-		elif len(procs) == 1:
-			sfile1 = path.join(procs[0], 'proc.settings')
-			sfile2 = ''
-		else:
-			procs = sorted(procs, key=mtime4proc, reverse=True)[:2]
-			sfile1 = path.join(procs[0], 'proc.settings')
-			sfile2 = path.join(procs[1], 'proc.settings')
-	else:
-		if '/' in args.p1[:-1]:
-			p1 = args.p1
-		else:
-			p1 = 'PyPPL.' + args.p1 if not args.p1.startswith('PyPPL.') else args.p1
-			p1 = path.join(args.workdir, p1)
-
-		if '/' in args.p2[:-1]:
-			p2 = args.p2
-		else:
-			p2 = 'PyPPL.' + args.p2 if not args.p2.startswith('PyPPL.') else args.p2
-			p2 = path.join(args.workdir, p2)
-		sfile1    = path.join(p1, 'proc.settings')
-		sfile2    = path.join(p2, 'proc.settings')
-
-	print logger.COLORS.green + "1. " + sfile1 + logger.COLORS.end
-	print logger.COLORS.red   + "2. " + sfile2 + logger.COLORS.end
-	print '-' * (max(len(sfile1), len(sfile2)) + 3)
-	if path.exists(sfile1) and path.exists(sfile2):
-		def readSections (sfile):
-			ret = {}
-			sec = ''
-			with open(sfile) as f:
-				for line in f:
-					if line.startswith('['):
-						sec = line.strip()[1:-1]
-					elif sec:
-						if sec not in ret:
-							ret[sec] = []
-						ret[sec].append(line)
-			return ret
-
-		seclines1 = readSections(sfile1)
-		seclines2 = readSections(sfile2)
+	if path.isfile(setfile1) and path.isfile(setfile2):
+		seclines1 = read_sections(setfile1)
+		seclines2 = read_sections(setfile2)
 
 		for sec in sorted(seclines1.keys()):
 			lines1 = seclines1[sec]
 			lines2 = seclines2[sec]
 			diff   = unified_diff(lines1, lines2, n=0)
-			toprnt = ''
+			ds     = []
 			for i, d in enumerate(diff):
 				if i==0 and d.strip() == '---':
 					pass
 				elif i==1 and d.strip() == '+++':
 					pass
 				elif d.startswith('-'):
-					toprnt += logger.COLORS.green + d + logger.COLORS.end
+					ds.append((d, 'green'))
 				elif d.startswith('+'):
-					toprnt += logger.COLORS.red   + d + logger.COLORS.end
+					ds.append((d, 'red'))
 				elif d.startswith('@'):
-					toprnt += logger.COLORS.yellow + d + logger.COLORS.end
+					ds.append((d, 'yellow'))
 				else:
-					toprnt += d
-			if toprnt:
-				print "["+ sec +"]"
-				print toprnt
-
-	elif not path.exists(sfile1) and not path.exists(sfile2):
-		print "None of the proc.settings files exist, nothing to compare.\n"
-		sys.exit(0)
+					ds.append((d, ''))
+			if ds:
+				streamout('\n[{}]'.format(sec))
+				for d, color in ds:
+					streamout(d, color, end = '')
 	else:
-		print "Only one of the processes' proc.settings exists, see the configuration in:"
-		print logger.COLORS.green + (sfile1 if path.exists(sfile1) else sfile2) + logger.COLORS.end + "\n"
-		sys.exit(0)
+		streamout('ERROR: proc.settings of either processes not exists.', 'red')
+
+def remove_proc(proc, nthread = 1, msg = '', lock = None):
+	parallel.run(rmtree, [(d, ) for d in glob(path.join(proc, '*')) if path.isdir(d)], nthread, 'thread')
+	rmtree(proc)
+	if msg:
+		if lock:
+			with lock:
+				streamout(msg)
+
+def clean_procs(procs, nthread, force):
+	if not procs:
+		streamout('WARNING: No query processes found in workdir: {}.'.format(params.wdir), 'yellow')
+		sys.exit(1)
+	
+	if force:
+		lock = Lock()
+		parallel.run(remove_proc, [(proc, 1, 'Removed: ' + proc, lock) for proc, _, _ in procs], nthread, 'thread')
+	else:
+		procgroups = {}
+		for proc, mtime, fail in procs:
+			pname = '.'.join(path.basename(proc).split('.')[1:3])
+			if pname not in procgroups:
+				procgroups[pname] = []
+			procgroups[pname].append((proc, mtime, fail))
+
+		ans = ['', 'Y', 'y', 'N', 'n']
+		streamout('WORKDIR: {}'.format(params.wdir), 'yellow')
+		for pname in sorted(procgroups.keys()):
+			streamout('\nPROCESS: {}'.format(pname))
+			for proc, mtime, fail in sorted(procgroups[pname], key = lambda p: p[1]):
+				streamout('{} {}: {}'.format(
+					'x' if fail else '-',
+					path.basename(proc), 
+					mtime.strftime("%Y-%m-%d %H:%M:%S")
+				), 'red' if fail else 'green')
+				r = input('  Remove it? [Y/n] ')
+				while r not in ans:
+					r = input('  Remove it? [Y/n] ')
+				if r in ['', 'Y', 'y']:
+					remove_proc(proc)
+					streamout('\x1b[1A  Removed!           ', 'green')
+
+if __name__ == '__main__':
+
+	if params._[0] == 'compare':
+		if params.proc:
+			pattern = path.join(params.wdir, 'PyPPL.{}.*'.format(params.proc))
+			procs   = glob(pattern)
+			if len(procs) < 2:
+				streamout('ERROR: Not enough processes to compare: {}'.format(params.proc), 'red')
+				sys.exit(1)
+			procs = procs[:2]
+			compare_procs(*procs)
+		else:
+			pattern1 = path.join(params.wdir, 'PyPPL.{}*'.format(params.proc1))
+			proc1 = glob(pattern1)
+			if not proc1:
+				streamout('ERROR: No such process: {}'.format(params.proc1), 'red')
+				sys.exit(1)
+			proc1 = proc1[0]
+
+			pattern2 = path.join(params.wdir, 'PyPPL.{}*'.format(params.proc2))
+			proc2 = glob(pattern2)
+			if not proc2:
+				streamout('ERROR: No such process: {}'.format(params.proc2), 'red')
+				sys.exit(1)
+			proc2 = proc2[0]
+			compare_procs(proc1, proc2)
+	
+	else:
+		if params.proc:
+			pattern = path.join(params.wdir, 'PyPPL.{}.*'.format(params.proc))
+		else:
+			pattern = path.join(params.wdir, 'PyPPL.*')
+		procs   = glob(pattern)
+		before  = None
+		if params.ago:
+			before = date.today() - timedelta(days = params.ago)
+		elif params.before:
+			before = params.before
+			
+		procs2 = []
+		for proc in procs:
+			mtime = proc_mtime(proc)
+			if before and mtime >= before:
+				continue
+
+			fail  = proc_failed(proc)
+			if params.error and not fail:
+				continue
+
+			procs2.append((proc, mtime, fail))
+
+		if params._[0] == 'clean':
+			clean_procs(procs2, params.nthread, params.force)
+		else:
+			list_procs(procs2, params.all)
+		
