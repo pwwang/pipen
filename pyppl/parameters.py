@@ -37,6 +37,17 @@ class HelpAssembler(object):
 			optname = COLORS.bold + COLORS.blue,
 			opttype = COLORS.bold,
 			optdesc = ''
+		),
+
+		plain = dict(
+			error   = '',
+			warning = '',
+			title   = '',
+			prog    = '',
+			default = '',
+			optname = '',
+			opttype = '',
+			optdesc = ''
 		)
 	)
 

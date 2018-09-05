@@ -500,7 +500,7 @@ To generate svg file, you have to have [graphviz][36] installed.
 [16]: https://pwwang.github.io/PyPPL/aggregations/
 [18]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/drawFlowchart_pyppl.png
 [19]: https://pwwang.github.io/PyPPL/change-log/
-[20]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/getStarted.png
+[20]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/getStarted.svg
 [21]: https://pypi.org/project/futures/
 [22]: https://img.shields.io/pypi/v/pyppl.svg?style=flat-square
 [23]: https://img.shields.io/github/tag/pwwang/PyPPL.svg?style=flat-square

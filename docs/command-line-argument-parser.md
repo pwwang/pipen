@@ -88,7 +88,7 @@ The type will be inferred from the value. In the first case, the type is `None`,
 
 !!! note
 
-    Let initialize an option first: `params.opt`, then when the value is set explictly:  
+    Let it initialize an option first: `params.opt`, then when the value is set explictly:  
     `params.opt.value = "a"`  
     Or when the value replaced (set value after initialization):  
     `params.opt = "a"`  
@@ -172,15 +172,18 @@ Similarly, you can set the default value for `show` property by: `params.loadCfg
 We have a certain convention of the option names used with `params`:
 - Make sure it's only composed of alphabetics, underscores and hyphens.
 - Make sure it starts with alphabetics.
-- Make sure it's not one of these words (`help`, `loadDict`, `loadFile` and `asDict`)
+- Make sure it's not one of these words (`help`, `parse`, `loadDict`, `loadFile` and `asDict`)
 
 ## Set other attributes of params
 ### Show the usages/example/description of the program
-`params('usage', ["{prog} -h", "{prog} -infile <infile> [options]"])`  
-`params('example', ["{prog} -h", "{prog} -infile path/to/infile -out /path/to/outfile"])`  
-`params('desc', ["This program does this.", "This program also does that."])`  
-Multiple lines can also be passed as a string with `"\n"`:  
-`params('desc', ["This program does this.\nThis program also does that."])`
+`params._setUsage(["{prog} -h", "{prog} -infile <infile> [options]"])`  
+`params._setDesc(["This program does this.", "This program also does that."])`  
+`params._setHbald(True) # print help if no arguments passed`
+Or  
+`params._usage = ["{prog} -h", "{prog} -infile <infile> [options]"]`  
+`params._desc  = ["This program does this.", "This program also does that."]`  
+`params._hbald = True`  
+Notice the leading underscore of the attribute name, this makes sure `usage`, `desc` and `hbald` still avaiable to be used as option names.
 
 ### Set the prefix of option names
 By default, the option names are recognized from the command line if they follow the convention and start with `-`. You may change it, let's say you want the option names to start with `--`:  
@@ -189,18 +192,103 @@ The only `prog --opt 1` will be parsed, instead of `prog -opt 1` to get the valu
 
 !!! note
 
-    You cannot use an empty prefix
+    You cannot use an empty prefix. 
 
 ### Set the default help options
-By default, the help options are `['-h', '--help', '-H', '-?', '']`. The empty string (`''`) enables the program to print the help page without arguments be passed from the command line. If you don't want it, you can remove it from the default help options:  
-`params('hopts', '-h, --help, -H, -?')` or  
-`params('hopts', ['-h', '--help', '-H', '-?'])`  
-Or you can just simply remove some of them by:  
-`params('hopts', ['-H', '-?', ''], excl = True)`  
-Then you will only have `['-h', '--help']`
+By default, the help options are `['-h', '--help', '-H', '-?']`.  
+`params._hopts = '-h, --help, -H, -?'` or  
+`params.setHopts(['-h', '--help', '-H', '-?'])`  
 
 
 !!! hint
 
     These statements can also be chained:  
-    `params('usage', ["{prog} -h", "{prog} -infile <infile> [options]"])('prefix', '--')('hopts', ['-H', '-?', ''], excl = True)`
+    `params._setUsage(["{prog} -h", "{prog} -infile <infile> [options]"]) \
+           ._setPrefix('--') \
+           ._setHopts(['-H', '-?'])`
+
+## Positional options
+Positional options are activated when you set the descriptions of them:
+```python
+params._.desc = 'The positional option'
+```
+If you want to use a different variable to represent positional option:
+```python
+from pyppl import Parameters
+Parameters.POSITIONAL = 'POSITIONAL'
+
+params.POSITIONAL.desc = 'The positional option'
+```
+
+!!! note
+
+    The default type of positional option is `list`. The values can be appeared in the middle of the command line: `prog -a 1 pos1 -b 2 pos2`, then `params._ == ['pos1', 'pos2']`
+
+## Support of subcommands
+### Add a subcommand
+```python
+from pyppl import commands
+commands.list = 'list work directories under <wdir>'
+```
+`commands.list` becomes an instance of `Parameters`, you may do anything like what we did for `params`. For example, add an option for the command:
+```python
+commands.list.wdir      = './workdir'
+commands.list.wdir.desc = 'The <ppldir> containing process work directories.'
+```
+To parse the arguments:
+```python
+command, params = commands.parse()
+# command: The command
+# params : The parsed arguments, a Box object
+#          To get the value of an option: params.wdir
+# if you want to get the Parameter objects:
+# params.wdir == commands[command].wdir.value
+```
+
+### Use a different 'help' command
+By default, you may use `prog help <command>` to print the help information for the command. Alternatively, you can change it by: 
+```python
+commands._hcmd = 'h'
+# prog h <command>
+```
+
+### Use a different theme for help page
+There are three built-in themes: `default`, `blue` and `plain`, to switch them:
+```python
+from pyppl import Commands
+commands = Commands(theme = 'blue')
+# if you don't like the colors, just use the plain theme
+```
+You may also use different theme for `params`:
+```python
+from pyppl import Parameters
+params = Parameters(theme = 'blue')
+```
+
+### Use you own theme:
+Instead of passing a theme name to `Commands/Parameters`, you may also pass the entire theme:
+```python
+from pyppl.logger import COLORS
+
+commands = Commands(theme = {
+    # the color for errors
+    error   = COLORS.red,     
+    # the color for warnings
+    warning = COLORS.yellow,  
+    # the color for the title of each section
+    title   = COLORS.bold + COLORS.underline + COLORS.cyan, 
+    # the color for the programe name in any sections
+    prog    = COLORS.bold + COLORS.green,
+    # the color for default values
+    default = COLORS.magenta,
+    # the color for option names
+    optname = COLORS.bold + COLORS.green,
+    # the color for option types or placeholders
+    opttype = COLORS.blue,
+    # the color for option descriptions
+    optdesc = '' # leave it as default
+})
+```
+
+
+
