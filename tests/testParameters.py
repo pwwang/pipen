@@ -236,8 +236,8 @@ class TestParameters(testly.TestCase):
 		yield ps, '---a:bool', 'a', 'bool', None
 		yield ps, '---a:f', 'a', 'float', None
 		yield ps, '---a:float', 'a', 'float', None
-		yield ps, '---a:l', 'a', 'list', None
-		yield ps, '---a:list', 'a', 'list', None
+		yield ps, '---a:l', 'a', 'list:auto', None
+		yield ps, '---a:list', 'a', 'list:auto', None
 		yield ps, '---a:l:s', 'a', 'list:str', None
 		yield ps, '---a:list:s', 'a', 'list:str', None
 		yield ps, '---a:list:str', 'a', 'list:str', None
@@ -299,34 +299,14 @@ class TestParameters(testly.TestCase):
 			outval = outval is None and value or outval
 			self.assertEqual(Parameters._coerceValue(value, t), outval)
 
-	def dataProvider_testGetType(self):
-		ps = Parameters()
-		yield ps, 'noSuchArgname', None, False, 'WARNING: Unknown option'
-
-		ps.a.type = 'int'
-		yield ps, 'a', 'auto', 'int'
-		yield ps, 'a', 'float', 'float', 'WARNING: Decleared type "int" ignored'
-
-		ps.b.type = 'list'
-		yield ps, 'b', 'auto', 'list:auto'
-
-		ps.c
-		yield ps, 'c', None, 'auto'
-
-	def testGetType(self, ps, argname, argtype, outtype, warning = None):
-		with self.assertStdOE() as (out, err):
-			self.assertEqual(ps._getType(argname, argtype), outtype)
-		if warning:
-			self.assertIn(warning, err.getvalue())
-
 	def dataProvider_testPutValue(self):
 		ps = Parameters()
 		yield ps, 'noSuchArgname', None, None, None, False
 		ps.a.type = 'list'
-		yield ps, 'a', 'auto', 1, [1], True
-		# if test solely, outval should be [2]
-		yield ps, 'a', 'auto', '2', [1, 2], True
-		yield ps, 'a', 'list:str', 3, [1, 2, '3'], True
+		yield ps, 'a', 'auto', 1, 1, False
+		yield ps, 'a', 'auto', '2', 2, False
+		yield ps, 'a', 'auto', '', '', False
+		yield ps, 'a', 'list:str', 3, ['3'], True
 		ps.b.type = 'bool'
 		yield ps, 'b', 'auto', 'F', False, False
 		ps.c.type = 'list'
@@ -370,7 +350,7 @@ class TestParameters(testly.TestCase):
 		ps2('prefix', '--param-')
 		ps2.a
 		yield ps2, ['--param-a=b'], {'a': 'b', '_': []}
-		yield ps2, ['--param-d'], {'a': 'b', '_': []}, 'WARNING: Unknown option'
+		yield ps2, ['--param-d'], {'a': 'b', '_': []}, 'Warning: No such option: --param-d'
 
 		ps3 = Parameters()
 		ps3('prefix', '--param-')
@@ -393,7 +373,7 @@ class TestParameters(testly.TestCase):
 		yield ps3, ['--param-e', 'n'], {'e': False, '_': []}
 		yield ps3, ['--param-e', '0'], {'e': False, '_': []}
 		yield ps3, ['--param-e', 'off'], {'e': False, '_': []}
-		yield ps3, ['--param-e', 'a'], {'e': True, '_': []}, 'WARNING: Unknown bool value, use True instead of \'a\''
+		yield ps3, ['--param-e', 'a'], {'e': True, '_': []}, None, ParameterTypeError, "Unable to coerce value 'a' to type: 'bool'"
 
 		ps4 = Parameters()
 		ps4('prefix', '--param-')
@@ -406,7 +386,7 @@ class TestParameters(testly.TestCase):
 		ps5 = Parameters()
 		ps5('prefix', '--param-')
 		ps5.g = ''
-		yield ps5, ['--param-g'], {'g': True, '_': []}, 'WARNING: Decleared type "str" ignored, use "bool" instead for option --param-g.'
+		yield ps5, ['--param-g'], {'g': True, '_': []}, 'Warning: Decleared type "str" ignored, use "bool" instead for option --param-g.'
 		yield ps5, ['--param-g', 'a', 'b'], {'g': 'a', '_': ['b']}
 
 		ps6 = Parameters()
@@ -414,7 +394,7 @@ class TestParameters(testly.TestCase):
 		ps6('hbald', False)
 		ps6.h.required = True
 		# 23
-		yield ps6, [], {}, 'ERROR: Option --param-h is required.', SystemExit
+		yield ps6, [], {}, 'Error: Option --param-h is required.', SystemExit
 
 		ps7 = Parameters()
 		ps7('prefix', '--param-')
@@ -453,7 +433,7 @@ class TestParameters(testly.TestCase):
 		ps11.d = False
 		ps11.e = []
 		yield ps11, ['--param-d'], {'a':None, 'b':'a', 'c':1, 'd': True, 'e':[], '_': []}
-		yield ps11, ['a', '--param-d', 'no', 'b', '--param-c=100', '--param-e:l:s', '-1', '-2'], {'a': None, 'b':'a', 'c':100, 'd': False, 'e':['-1', '-2'], '_': ['a', 'b']}, 'WARNING: Decleared type "list" ignored, use "list:str" instead for option --param-e.'
+		yield ps11, ['a', '--param-d', 'no', 'b', '--param-c=100', '--param-e:l:s', '-1', '-2'], {'a': None, 'b':'a', 'c':100, 'd': False, 'e':['-1', '-2'], '_': ['a', 'b']}, 'Warning: Decleared type "list" ignored, use "list:str" instead for option --param-e.'
 
 		ps12 = Parameters()
 		ps12.a

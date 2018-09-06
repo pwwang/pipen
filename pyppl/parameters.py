@@ -376,6 +376,11 @@ class Parameters (object):
 	def _setHopts(self, hopts):
 		self._props['hopts'] = hopts if isinstance(hopts, list) else [ho.strip() for ho in hopts.split(',')]
 		return self
+
+	def __repr__(self):
+		return '<Parameters({}) @ {}>'.format(','.join(
+			p.name+':'+str(p.type) for p in self._params.values()
+		), hex(id(self)))
 	
 	def _setPrefix(self, prefix):
 		if not prefix:
@@ -407,6 +412,12 @@ class Parameters (object):
 		elif not name in self._params:
 			self._params[name] = Parameter(name, None)
 		return self._params[name]
+
+	def __setitem__(self, name, value):
+		self._params[name] = Parameter(name, value)
+
+	def __getitem__(self, name):
+		return getattr(self, name)
 
 	def __call__(self, option, value):
 		"""
@@ -445,8 +456,25 @@ class Parameters (object):
 			at = Parameters.ARG_TYPES[at] + ':' + Parameters.ARG_TYPES[att]
 		else:
 			at = Parameters.ARG_TYPES[at]
-		return an, at, av
 
+		if an not in self._params:
+			return an, 'list:auto' if at == 'list' else at, av
+		
+		# check if the parameter is defined and type is assigned
+		if at == 'auto':
+			at = self._params[an].type or 'auto'
+		else:
+			if self._params[an].type and self._params[an].type != at:
+				sys.stderr.write(self._assembler.warning(
+					'Decleared type "{dtype}" ignored, use "{ptype}" instead for option {prefix}{option}.\n'.format(
+						dtype  = self._params[an].type,
+						ptype  = at,
+						prefix = self._props['prefix'],
+						option = an
+					)
+				))
+		return an, 'list:auto' if at == 'list' else at, av
+		
 	def _shouldPrintHelp(self, args):
 		if self._props['hbald'] and not args:
 			return True
@@ -466,8 +494,7 @@ class Parameters (object):
 				elif value in Parameters.VAL_FALSES:
 					return False
 				else:
-					sys.stderr.write('WARNING: Unknown bool value, use True instead of {}.\n'.format(repr(value)))
-					return True
+					raise ParameterTypeError(t, 'Unable to coerce value %s to bool' % (repr(value)))
 			elif t == 'py':
 				return eval(value)
 			elif t == 'str':
@@ -506,35 +533,30 @@ class Parameters (object):
 		except (ValueError, TypeError):
 			raise ParameterTypeError(t, 'Unable to coerce value %s to type' % (repr(value)))
 
-	def _getType(self, argname, argtype):
+	def _putValue(self, argname, argtype, argval, arbi = False):
+		"""
+		Save the values.
+		@params:
+			`argname`: The option name
+			`argtype`: The parsed type
+			`argval`:  The option value
+			`arbi`:    Whether allow pass options arbitrarily (without definition)
+		@return:
+			`True` if value append to a list option successfully, otherwise `False`
+		"""
 		if argname not in self._params:
-			sys.stderr.write ('WARNING: Unknown option {}{}.\n'.format(self._props['prefix'], argname))
-			return False
+			if not arbi:
+				sys.stderr.write(self._assembler.warning(
+					'No such option: {}{}\n'.format(self._props['prefix'], argname)
+				))
+				return False
+			else:
+				getattr(self, argname).type = 'str' if argtype == 'auto' else argtype
 
-		if argtype == 'auto' and self._params[argname].type:
-			argtype = self._params[argname].type
-		elif argtype != 'auto' and self._params[argname].type != argtype and self._params[argname].type is not None:
-			sys.stderr.write (
-				'WARNING: Decleared type "{dtype}" ignored, use "{ptype}" instead for option {prefix}{option}.\n'.format(
-					dtype  = self._params[argname].type,
-					ptype  = argtype,
-					prefix = self._props['prefix'],
-					option = argname
-				)
-			)
-		if argtype == 'list':
-			argtype = 'list:auto'
-
-		return argtype or 'auto'
-
-	def _putValue(self, argname, argtype, argval):
-		atype = self._getType(argname, argtype)
-		if atype is False:
-			return False
-		if atype.startswith('list'):
-			if self._params[argname].value is None:
+		if argtype.startswith('list'):
+			if not self._params[argname].value:
 				self._params[argname].value = []
-			subtype = atype.split(':')[1]
+			subtype = argtype.split(':')[1]
 			if subtype == 'one':
 				if not self._params[argname].value:
 					self._params[argname].value.append([])
@@ -543,15 +565,16 @@ class Parameters (object):
 				self._params[argname].value.append(Parameters._coerceValue(argval, subtype))
 			return True
 		else:
-			self._params[argname].value = Parameters._coerceValue(argval, atype)
+			self._params[argname].value = Parameters._coerceValue(argval, argtype)
 			return False
 
-	def parse (self, args = None):
+	def parse (self, args = None, arbi = False):
 		"""
 		Parse the arguments from `sys.argv`
 		"""
 		args = args is None and sys.argv[1:] or args
-		if self._shouldPrintHelp(args):
+
+		if self._shouldPrintHelp(args) and not arbi:
 			self.help(printNexit = True)
 
 		setattr(self, Parameters.POSITIONAL, [])
@@ -562,35 +585,45 @@ class Parameters (object):
 			if not argname: # argname not reached yet
 				if argname2: # I am the first argname
 					# it's not -a=1 format, just -a or it's list (-a:list=1)
-					if argvalue is None or self._putValue(argname2, argtype2, argvalue): 
+					# or it's a list option, keep the argname and argtype
+					if argvalue is None or self._putValue(argname2, argtype2, argvalue, arbi): 
 						argname, argtype = argname2, argtype2
 				else: # argname not reached yet and I am not an argname, so I am positional
-					self._putValue(Parameters.POSITIONAL, 'list', arg)
+					self._putValue(Parameters.POSITIONAL, 'list:auto', arg, arbi)
 			else: # argname reached
 				if argname2: # it's argname
 					# type 'list' hasn't closed, so it should not be bool
-					atype = self._getType(argname, argtype)
-					if not atype or not atype.startswith('list'):
-						self._putValue(argname, 'bool', 'True')
+					if not argtype or not argtype.startswith('list'):
+						self._putValue(argname, 'bool', 'True', arbi)
 					# no value offered or it's a list option
-					if argvalue is None or self._putValue(argname2, argtype2, argvalue):
+					if argvalue is None or self._putValue(argname2, argtype2, argvalue, arbi):
 						argname, argtype = argname2, argtype2
 					# single-value option, reset
 					else:
 						argname, argtype = None, 'auto'
 				else: # it's value
-					if not self._putValue(argname, argtype, arg):
+					if not self._putValue(argname, argtype, arg, arbi):
 						argname, argtype = None, 'auto'
 
-		if argname:
-			atype = self._getType(argname, argtype)
-			if not atype or not atype.startswith('list'):
-				self._putValue(argname, 'bool', 'True')
+		if argname and not (argtype and argtype.startswith('list')):
+			if argtype != 'auto' and argtype != 'bool':
+				sys.stderr.write(self._assembler.warning(
+					'Decleared type "{dtype}" ignored, use "{ptype}" instead for option {prefix}{option}.\n'.format(
+						dtype  = argtype,
+						ptype  = 'bool',
+						prefix = self._props['prefix'],
+						option = argname
+					)
+				))
+			self._putValue(argname, 'bool', 'True', arbi)
 
 		# check the types, values of the params
+		errors = []
 		for name in self._params:
 			if self._params[name].required and self._params[name].value is None:
-				self.help(error = 'ERROR: Option {}{} is required.'.format(self._props['prefix'], name), printNexit = True)
+				errors.append('Option {}{} is required.'.format(self._props['prefix'], name))
+		if errors:
+			self.help(error = errors, printNexit = True)
 
 		return self.asDict()
 
@@ -780,7 +813,7 @@ class Commands(object):
 		if name.startswith('__') or name.startswith('_Commands'): # pragma: no cover
 			return super(Commands, self).__getattr__(name)
 		elif not name in self._cmds:
-			self._cmds[name] = Parameters(name, self._assembler._theme)
+			self._cmds[name] = Parameters(name, self._assembler.theme)
 		return self._cmds[name]
 
 	def __setattr__(self, name, value):
@@ -800,22 +833,29 @@ class Commands(object):
 	def __getitem__(self, name):
 		return getattr(self, name)
 
-	def parse(self, args = None):
-		args = args or sys.argv[1:]
-		if not args or (len(args) == 1 and args[0] == self._hcmd):
-			self.help(printNexit = True)
+	def parse(self, args = None, arbi = False):
+		args = args is None and sys.argv[1:] or args
+		if arbi:
+			if not args:
+				return '', Box()
+			else:
+				command = args.pop(0)
+				return command, getattr(self, command).parse(args, arbi = True)
+		else:
+			if not args or (len(args) == 1 and args[0] == self._hcmd):
+				self.help(printNexit = True)
 
-		command = args.pop(0)
-		if (command == self._hcmd and args[0] not in self._cmds) and \
-			command not in self._cmds:
-			self.help(
-				error = 'Unknown command: {}'.format(args[0] if command == self._hcmd else command), 
-				printNexit = True
-			)
-		if command == self._hcmd:
-			self._cmds[args[0]].help(printNexit = True)
-		
-		return command, self._cmds[command].parse(args)
+			command = args.pop(0)
+			if (command == self._hcmd and args[0] not in self._cmds) or \
+				command not in self._cmds:
+				self.help(
+					error = 'Unknown command: {}'.format(args[0] if command == self._hcmd else command), 
+					printNexit = True
+				)
+			if command == self._hcmd:
+				self._cmds[args[0]].help(printNexit = True)
+			
+			return command, self._cmds[command].parse(args)
 
 	def help(self, error = '', printNexit = False):
 
