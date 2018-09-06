@@ -75,8 +75,11 @@ Sort 5 files simultaneously:
 **Line 7**: Set your script to run.  
 **Line 8**: Set the starting process and run the pipeline.  
 
-![getStarted][20]
-```
+<p>
+    <img src="https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/getStarted.svg">
+</p>
+
+```shell
 > ls -l ./export
 total 0
 -rw-rw-rw- 1 pwwang pwwang 44 Sep 14 20:50 test1.sorted
