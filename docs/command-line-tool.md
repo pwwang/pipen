@@ -41,4 +41,4 @@ You can remove all those older process directories without confirmation by `pypp
 [1]: ./pyppl-cli-list.png
 [2]: ./pyppl-cli-clean.png
 [3]: ./pyppl-cli-compare.png
-[3]: ./pyppl-cli-clean-force.png
+[4]: ./pyppl-cli-clean-force.png
