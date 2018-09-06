@@ -1032,13 +1032,6 @@ Constructor
 Coerce the value to the type specified  
 TypeError will be raised if error happens  
   
-#### `_printName (self, prefix, keylen) `
-  
-Get the print name with type for the parameter  
-
-- **params:**  
-`prefix`: The prefix of the option  
-  
 #### `setDesc (self, d) `
   
 Set the description of the parameter  
@@ -1087,7 +1080,7 @@ Set the value of the parameter
 > A set of parameters
 	
 
-#### `__init__ (self) `
+#### `__init__ (self, command, theme) `
   
 Constructor  
   
@@ -1108,6 +1101,18 @@ If `argname` is the name of an option
 `av`: the argument value, if `argname` is like: `-a=1`  
   
 #### `_putValue (self, argname, argtype, argval) `
+  
+#### `_setDesc (self, desc) `
+  
+#### `_setHbald (self, hbald) `
+  
+#### `_setHopts (self, hopts) `
+  
+#### `_setPrefix (self, prefix) `
+  
+#### `_setTheme (self, theme) `
+  
+#### `_setUsage (self, usage) `
   
 #### `_shouldPrintHelp (self, args) `
   
@@ -1179,10 +1184,18 @@ logging filter by levels (flags)
 ```
 logging formatter for pyppl
 ```
+#### `class: PyPPLStreamHandler`
+```
+
+```
 #### `class: TemplatePyPPL`
 ```
 Built-in template wrapper.
 ```
+#### `Value (typecode_or_type, *args, **kwds) [@staticmethod]`
+  
+Returns a synchronized shared object  
+  
 #### `_formatTheme (theme) [@staticmethod]`
   
 Make them in the standard form with bgcolor and fgcolor in raw terminal color strings  
@@ -1212,7 +1225,7 @@ Get the flags of a record
 - **params:**  
 `record`:  The logging record  
   
-#### `getLogger (levels, theme, logfile, lvldiff, name) [@staticmethod]`
+#### `getLogger (levels, theme, logfile, lvldiff, pbar, name) [@staticmethod]`
   
 Get the default logger  
 
