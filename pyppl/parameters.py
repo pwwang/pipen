@@ -69,7 +69,7 @@ class HelpAssembler(object):
 		# replace anything with the progname and get the width for each part
 		pagewidth = HelpAssembler.MAXPAGEWIDTH
 		optwidth  = HelpAssembler.MAXOPTWIDTH
-		for key, val in helps.items():
+		for val in helps.values():
 			if not val:
 				continue
 			# descriptional
