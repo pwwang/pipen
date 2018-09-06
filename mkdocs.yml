@@ -4,7 +4,7 @@ markdown_extensions:
     - markdown.extensions.admonition:
     - pymdownx.superfences:
         preserve_tabs: true
-pages:
+nav:
     - 'Introduction': 'index.md'
     - 'Basics and folder structure': 'basic-concepts-and-directory-structure.md'
     - 'Templating': 'placeholders.md'
