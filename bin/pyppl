@@ -14,7 +14,7 @@ from glob import glob
 from shutil import rmtree
 from datetime import date, timedelta, datetime
 from multiprocessing import Lock
-from pyppl import PyPPL, Proc, params
+from pyppl import PyPPL, Proc, commands
 from pyppl.logger import COLORS
 from pyppl.utils import parallel
 
@@ -23,57 +23,45 @@ try:
 except NameError:
 	pass
 
-params \
-	('desc', '''PyPPL command line tool:
-	- list   : list work directories under <wdir>
-	- compare: compare two processes from different directories
-	- clean  : remove some work directories''') \
-	('usage', '{prog} <command> [options]') \
-	('example', '''# List work directories in ./workdir:
-	{prog} list
-	
-	# List work directories in /path/to/workdir with certain process name:
-	{prog} list -wdir /path/to/workdir -proc pSort
-	
-	# Compare first two processes named "pSort.notag":
-	{prog} compare -wdir /path/to/workdir -proc pSort
-	{prog} compare -wdir /path/to/workdir -proc pSort.notag
-	
-	# Compare two processes with suffices: 
-	{prog} compare -proc1 pSort.notag.suffix1 -proc2 pSort.notag.suffix2
-	
-	# Remove work directories modified before 9/16/2017:
-	{prog} clean -before 9/16/2017
-	
-	# Remove work directories modified 100 days ago only with any job failed:
-	{prog} clean -ago 100 -error
-	
-	# Remove all failed work directories, using 10 threads
-	{prog} clean -error -nthread 10''')
+commands._desc = 'PyPPL command line tool'
 
-params.wdir         = './workdir'
-params.wdir.desc    = 'The <ppldir> containing process work directories.'
-params.nthread      = 1
-params.nthread.desc = 'Number of threads used to clean up the work directories.'
-params.proc.desc    = 'The process name to show or to compare.'
-params.proc1.desc   = 'The first full process name to compare.'
-params.proc2.desc   = 'The second full process name to compare.'
-params.before.desc  = '''Before when the work directories to be removed.
-Supported format: m/d, m-d, m/d/y and y-m-d
-'''
-params.ago.type     = 'int'
-params.ago.desc     = 'Work directories to be removed when modified N days ago.'
-params.all          = False
-params.all.desc     = 'List all processes if # processes > 100.'
-params.nocheck      = False
-params.nocheck.desc = 'Don`t check failure of processes.'
-params.force        = False
-params.force.desc   = 'Don`t ask when remove work directories.'
-params.error        = False
-params.error.desc   = 'Remove directories if any job failed or do error check when listing them.'
+commands.list             = 'list work directories under <wdir>'
+commands.list._hbald      = False
+commands.list.wdir        = './workdir'
+commands.list.wdir.desc   = 'The <ppldir> containing process work directories.'
+commands.list.proc.desc   = 'The process name to show or to compare.'
+commands.list.ago.type    = 'int'
+commands.list.ago.desc    = 'Work directories to be removed when modified N days ago.'
+commands.list.before.desc = [
+	'Before when the work directories to be removed.',
+	'Supported format: m/d, m-d, m/d/y and y-m-d'
+]
+commands.list.all          = False
+commands.list.all.desc     = 'List all processes if # processes > 100.'
+commands.list.nocheck      = False
+commands.list.nocheck.desc = 'Don`t check failure of processes.'
+commands.list.error        = False
+commands.list.error.desc   = 'Remove directories if any job failed or do error check when listing them.'
 
-help   = params.help()
-params = params.parse()
+commands.clean              = 'remove some work directories'
+commands.clean.wdir         = commands.list.wdir
+commands.clean.nthread      = 1
+commands.clean.nthread.desc = 'Number of threads used to clean up the work directories.'
+commands.clean.proc         = commands.list.proc
+commands.clean.ago          = commands.list.ago
+commands.clean.before       = commands.list.before
+commands.clean.nocheck      = commands.list.nocheck
+commands.clean.force        = False
+commands.clean.force.desc   = 'Don`t ask when remove work directories.'
+commands.clean.error        = commands.list.error
+
+commands.compare            = 'compare two processes from different directories'
+commands.compare.wdir       = commands.list.wdir
+commands.compare.proc       = commands.list.proc
+commands.compare.proc1.desc = 'The first full process name to compare.'
+commands.compare.proc2.desc = 'The second full process name to compare.'
+
+command, params = commands.parse()
 
 def streamout(msg, decors = None, end = '\n'):
 	decors = decors or []
@@ -83,10 +71,7 @@ def streamout(msg, decors = None, end = '\n'):
 
 # params check
 error = []
-if not params._ or params._[0] not in ['list', 'compare', 'clean']:
-	error.append('Unsupported command: "{}".'.format(params._[0] if params._ else ''))
-
-if params._[0] == 'compare':
+if command == 'compare':
 	if params.proc and (params.proc1 or params.proc2):
 		error.append('-proc and -proc1/proc2 are mutually exclusive for command "compare"')
 	elif not (params.proc1 and params.proc2) and (params.proc1 or params.proc2):
@@ -94,13 +79,13 @@ if params._[0] == 'compare':
 	elif not (params.proc1 and params.proc2) and not params.proc:
 		error.append('Nothing to compare, expecting -proc or -proc1/-proc2.')
 
-if params._[0] == 'clean' or params._[0] == 'list':
+if command == 'clean' or command == 'list':
 	if params.error:
 		params.nocheck = False
 
 	# before and ago cannot be used at the same time
 	if params.ago and params.before:
-		error.append('-ago and -before are mutually exclusive for command "clean/list"')
+		error.append('-ago and -before are mutually exclusive for command "{}"'.format(command))
 	elif params.before:
 		dateregx1 = r'^(0?[1-9]|1[012])/(0?[1-9]|[12][0-9])(?:/(\d{4}))?$'
 		dateregx2 = r'^(?:(\d{4})-)?(0?[1-9]|1[012])-(0?[1-9]|[12][0-9])$'
@@ -117,12 +102,10 @@ if params._[0] == 'clean' or params._[0] == 'list':
 			d = m2.group(3) or m2.group(2)
 			params.before = date(int(y), int(m), int(d))
 		else:
-			error.append('Malformat -before for command "clean/list"')
+			error.append('Malformat -before for command "{}"'.format(command))
 
 if error:
-	streamout('\n'.join(['ERROR: ' + err for err in error]) + '\n', 'red')
-	streamout(help)
-	sys.exit(1)
+	commands[command].help(error, True)
 
 def proc_mtime(proc):
 	setfile = path.join(proc, 'proc.settings')
@@ -262,7 +245,7 @@ def clean_procs(procs, nthread, force):
 
 if __name__ == '__main__':
 
-	if params._[0] == 'compare':
+	if command == 'compare':
 		if params.proc:
 			pattern = path.join(params.wdir, 'PyPPL.{}.*'.format(params.proc))
 			procs   = glob(pattern)
@@ -315,7 +298,7 @@ if __name__ == '__main__':
 					continue
 				procs2.append((proc, mtime, fail))
 
-		if params._[0] == 'clean':
+		if command == 'clean':
 			clean_procs(procs2, params.nthread, params.force)
 		else:
 			list_procs(procs2, params.all)

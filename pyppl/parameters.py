@@ -4,8 +4,180 @@ import re
 from os import path
 from six import string_types
 from six.moves import configparser
+from collections import OrderedDict
 from .utils import Box
 from .exception import ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError
+from .logger import COLORS
+
+class HelpAssembler(object):
+
+	# the max width of the help page, not including the leading space
+	MAXPAGEWIDTH = 98
+	# the max width of the option name (include the type and placeholder, but not the leading space)
+	MAXOPTWIDTH  = 38
+
+	THEMES = dict(
+		default = dict(
+			error   = COLORS.red,
+			warning = COLORS.yellow,
+			title   = COLORS.bold + COLORS.underline + COLORS.cyan,
+			prog    = COLORS.bold + COLORS.green,
+			default = COLORS.magenta,
+			optname = COLORS.bold + COLORS.green,
+			opttype = COLORS.blue,
+			optdesc = ''
+		),
+
+		blue = dict(
+			error   = COLORS.red,
+			warning = COLORS.yellow,
+			title   = COLORS.bold + COLORS.underline + COLORS.green,
+			prog    = COLORS.bold + COLORS.blue,
+			default = COLORS.magenta,
+			optname = COLORS.bold + COLORS.blue,
+			opttype = COLORS.bold,
+			optdesc = ''
+		),
+
+		plain = dict(
+			error   = '',
+			warning = '',
+			title   = '',
+			prog    = '',
+			default = '',
+			optname = '',
+			opttype = '',
+			optdesc = ''
+		)
+	)
+
+	def __init__(self, prog = None, theme = 'default'):
+		self.progname  = prog or path.basename(sys.argv[0])
+		if isinstance(theme, dict):
+			self.theme = theme
+		else:
+			self.theme = HelpAssembler.THEMES[theme]
+
+	@staticmethod
+	def _reallen( msg, progname):
+		proglen   = len(progname)
+		progcount = msg.count('{prog}')
+		return len(msg) + (proglen - 4) * progcount
+
+	@staticmethod
+	def _calcwidth(helps, progname):
+		# replace anything with the progname and get the width for each part
+		pagewidth = HelpAssembler.MAXPAGEWIDTH
+		optwidth  = HelpAssembler.MAXOPTWIDTH
+		for val in helps.values():
+			if not val:
+				continue
+			# descriptional
+			if isinstance(val[0], tuple):
+				optwidth     = max([len(v[0]) + len(v[1]) + 3  for v in val])
+				optwidth     = max(optwidth, HelpAssembler.MAXOPTWIDTH)
+				maxdescwidth = max([HelpAssembler._reallen(w, progname) for v in val for w in v[2]] or [0])
+				maxdescwidth = max(maxdescwidth, HelpAssembler.MAXPAGEWIDTH - optwidth)
+				pagewidth    = optwidth + maxdescwidth
+			else:
+				pagewidth = max([HelpAssembler._reallen(v, progname) for v in val])
+				pagewidth = max(pagewidth, HelpAssembler.MAXPAGEWIDTH)
+		return pagewidth, optwidth
+				
+	def error(self, msg):
+		msg = msg.replace('{prog}', self.prog(self.progname))
+		return '{colorstart}Error: {msg}{colorend}'.format(
+			colorstart = self.theme['error'],
+			msg        = msg,
+			colorend   = COLORS.end
+		)
+	
+	def warning(self, msg):
+		msg = msg.replace('{prog}', self.prog(self.progname))
+		return '{colorstart}Warning: {msg}{colorend}'.format(
+			colorstart = self.theme['warning'],
+			msg        = msg,
+			colorend   = COLORS.end
+		)
+
+	def title(self, msg):
+		return '{colorstart}{msg}{colorend}:'.format(
+			colorstart = self.theme['title'],
+			msg        = msg.upper(),
+			colorend   = COLORS.end
+		)
+
+	def prog(self, prog = None):
+		prog = prog or self.progname
+		return '{colorstart}{prog}{colorend}'.format(
+			colorstart = self.theme['prog'],
+			prog       = prog,
+			colorend   = COLORS.end
+		)
+
+	def optname(self, msg):
+		return '{colorstart}  {msg}{colorend}'.format(
+			colorstart = self.theme['optname'],
+			msg        = msg,
+			colorend   = COLORS.end
+		)
+
+	def opttype(self, msg):
+		trimmedmsg = msg.rstrip().upper()
+		if not trimmedmsg: 
+			return msg
+		return '{colorstart}{msg}{colorend}'.format(
+			colorstart = self.theme['opttype'],
+			msg        = ('({})' if trimmedmsg == 'BOOL' else '<{}>').format(trimmedmsg),
+			colorend   = COLORS.end
+		) + ' ' * (len(msg) - len(trimmedmsg))
+
+	def optdesc(self, msg):
+		msg = msg.replace('{prog}', self.prog(self.progname))
+		if msg.startswith('DEFAULT: '):
+			msg = '{colorstart}{msg}{colorend}'.format(
+				colorstart = self.theme['default'],
+				msg        = msg,
+				colorend   = COLORS.end
+			)
+		return '{colorstart}{msg}{colorend}'.format(
+			colorstart = self.theme['optdesc'],
+			msg        = msg,
+			colorend   = COLORS.end
+		)
+
+	def plain(self, msg):
+		msg = msg.replace('{prog}', self.prog(self.progname))
+		return '{colorstart}{msg}{colorend}'.format(
+			colorstart = '',
+			msg        = msg,
+			colorend   = ''
+		)
+
+	def assemble(self, helps, progname = None):
+		progname = progname or path.basename(sys.argv[0])
+		pagewidth, optwidth = HelpAssembler._calcwidth(helps, progname)
+		
+		ret = []
+		for title, helpitems in helps.items():
+			if not helpitems:
+				continue
+			ret.append(self.title(title))
+			if isinstance(helpitems[0], tuple):
+				for optname, opttype, optdesc in helpitems:
+					for i, od in enumerate(optdesc):
+						if i == 0:
+							line  = self.optname(optname) + ' '
+							line += self.opttype(opttype.ljust(optwidth - len(optname) - 3)) if opttype else ' ' * (optwidth - len(optname) - 1)
+							line += '- ' + self.optdesc(od.ljust(pagewidth - optwidth - 2))
+							ret.append(line)
+						else:
+							ret.append(' ' * (optwidth + 2) + '  ' + self.optdesc(od.ljust(pagewidth - optwidth - 2)))
+			else:
+				for h in helpitems:
+					ret.append('  ' + self.plain(h.ljust(pagewidth)))
+			ret.append('')
+		return ret
 
 class Parameter (object):
 
@@ -144,46 +316,20 @@ class Parameter (object):
 		self._props['name'] = n
 		return self
 
-	def _printName (self, prefix, keylen = 0):
-		"""
-		Get the print name with type for the parameter
-		@params:
-			`prefix`: The prefix of the option
-		"""
-		if self.name == Parameters.POSITIONAL:
-			return '<POSITIONAL>'.ljust(keylen)
-		name = (prefix + self.name).ljust(keylen)
-		if self.type == 'bool':
-			return name + ' (bool)'
-		elif self.type is None:
-			return name
-		else:
-			return (prefix + self.name).ljust(keylen) + ' <{}>'.format(self.type)
-
 class Parameters (object):
 	"""
 	A set of parameters
 	"""
 
 	ARG_TYPES = dict(
-		a       = 'auto',
-		auto    = 'auto',
-		i       = 'int',
-		int     = 'int',
-		f       = 'float',
-		float   = 'float',
-		b       = 'bool',
-		bool    = 'bool',
-		s       = 'str',
-		str     = 'str',
-		l       = 'list',
-		list    = 'list',
-		array   = 'list',
-		o       = 'one',
-		one     = 'one',
-		p       = 'py',
-		py      = 'py',
-		python  = 'py'
+		a = 'auto',  auto  = 'auto',
+		i = 'int',   int   = 'int',
+		f = 'float', float = 'float',
+		b = 'bool',  bool  = 'bool',
+		s = 'str',   str   = 'str',
+		o = 'one',   one   = 'one',
+		p = 'py',    py    = 'py',    python = 'py',
+		l = 'list',  list  = 'list',  array  = 'list'
 	)
 
 	ARG_NAME_PATTERN     = r'^([a-zA-Z][\w\._-]*)(?::(p|py|python|a|auto|i|int|f|float|b|bool|s|str|l|list|array|(?:array|l|list):(?:a|auto|i|int|f|float|b|bool|s|str|l|list|array|o|one|p|py|python)))?(?:=(.+))?$'
@@ -199,39 +345,70 @@ class Parameters (object):
 
 	ALLOWED_TYPES = ['str', 'int', 'float', 'bool', 'list']
 
-	def __init__(self):
+	def __init__(self, command = None, theme = 'default'):
 		"""
 		Constructor
 		"""
+		prog = path.basename(sys.argv[0])
+		self.__dict__['_prog']  = prog + ' ' + command if command else prog
 		self.__dict__['_props'] = dict(
-			usage   = [],
-			example = [],
-			desc    = [],
-			hopts   = ['-h', '--help', '-H', '-?', ''],
-			prefix  = '-'
+			usage  = [],
+			desc   = [],
+			hopts  = ['-h', '--help', '-H', '-?'],
+			prefix = '-',
+			hbald  = True
 		)
 		self.__dict__['_params'] = {}
+		self.__dict__['_assembler'] = HelpAssembler(self._prog, theme)
+
+	def _setTheme(self, theme):
+		self._assembler = HelpAssembler(self._prog, theme)
+		return self
+	
+	def _setUsage(self, usage):
+		self._props['usage'] = usage if isinstance(usage, list) else [usage]
+		return self
+	
+	def _setDesc(self, desc):
+		self._props['desc'] = desc if isinstance(desc, list) else [desc]
+		return self
+
+	def _setHopts(self, hopts):
+		self._props['hopts'] = hopts if isinstance(hopts, list) else [ho.strip() for ho in hopts.split(',')]
+		return self
+	
+	def _setPrefix(self, prefix):
+		if not prefix:
+			raise ParametersParseError('Empty prefix.')
+		self._props['prefix'] = prefix
+		return self
+	
+	def _setHbald(self, hbald = True):
+		self._props['hbald'] = hbald
+		return self
 
 	def __setattr__(self, name, value):
 		if name.startswith('__') or name.startswith('_Parameters'): # pragma: no cover
 			super(Parameters, self).__setattr__(name, value)
 		elif name in self.__dict__: # pragma: no cover
 			self.__dict__[name] = value
+		elif isinstance(value, Parameter):
+			self._params[name] = value
 		elif name in self._params:
 			self._params[name].setValue(value)
+		elif name in ['_usage', '_desc', '_prefix', '_hopts', '_hbald', '_theme']:
+			getattr(self, '_set' + name[1:].capitalize())(value)
 		else:
 			self._params[name] = Parameter(name, value)
 
 	def __getattr__(self, name):
 		if name.startswith('__') or name.startswith('_Parameters'): # pragma: no cover
 			return super(Parameters, self).__getattr__(name)
-		elif name in self.__dict__: # pragma: no cover
-			return self.__dict__[name]
 		elif not name in self._params:
 			self._params[name] = Parameter(name, None)
 		return self._params[name]
 
-	def __call__(self, option, value, excl = False):
+	def __call__(self, option, value):
 		"""
 		Set options values in `self._props`
 		@params:
@@ -241,23 +418,7 @@ class Parameters (object):
 		@returns:
 			`self`
 		"""
-		if option == 'prefix':
-			if len(value) == 0:
-				raise ParametersParseError('prefix cannot be empty.')
-			self._props['prefix'] = value
-		elif option == 'hopts':
-			if not isinstance(value, list):
-				value = [x.strip() for x in value.split(',')]
-			if excl:
-				self._props['hopts'] = list(set(self._props['hopts']) - set(value))
-			else:
-				self._props['hopts'] = value
-		elif option in ['usage', 'example', 'desc']:
-			if not isinstance(value, list):
-				value = value.splitlines()
-			self._props[option] = [v.strip() for v in value]
-		else:
-			raise AttributeError('No such option for Parameters: {}'.format(option))
+		setattr(self, '_' + option, value)
 		return self
 
 	def _parseName(self, argname):
@@ -287,10 +448,10 @@ class Parameters (object):
 		return an, at, av
 
 	def _shouldPrintHelp(self, args):
-		if not args and '' in self._props['hopts']:
+		if self._props['hbald'] and not args:
 			return True
 		
-		return any([arg and arg in self._props['hopts'] for arg in args])
+		return any([arg in self._props['hopts'] for arg in args])
 
 	@staticmethod
 	def _coerceValue(value, t = 'auto'):
@@ -442,106 +603,73 @@ class Parameters (object):
 		@return:
 			The help information
 		"""
-		error = error.strip()
-		ret   = error + '\n\n' if error else ''
-		prog  = path.basename(sys.argv[0])
+		posopt = None
+		if Parameters.POSITIONAL in self._params:
+			posopt = self._params[Parameters.POSITIONAL]
+			if len(posopt.desc) == 1 and posopt.desc[0].startswith('DEFAULT: '):
+				posopt = None
 
-		requiredOptions = {}
-		optionalOptions = {}
-
-		##
-		# REQUIRED OPTIONS:
-		#   --param-key    <str>          - description
-		# |----------- keylen -----------|
-		#   |----- keylen2 ----|
-		##
-		keylen  = 40 # '--param-xxx <str> ..........'
-		keylen2 = 0  # '--param-xxx'
-
-		for key, val in self._params.items():
+		requiredOptions   = []
+		optionalOptions   = []
+		for val in self._params.values():
 			# options not suppose to show
 			if not val.show:
 				continue
-			if val.required:
-				requiredOptions[key] = val
+			if val.name == Parameters.POSITIONAL:
+				continue
 			else:
-				optionalOptions[key] = val
+				option = (self._props['prefix'] + val.name, (val.type or '').upper(), val.desc)
+			if val.required:
+				requiredOptions.append(option)
+			else:
+				optionalOptions.append(option)
+		
+		if posopt:
+			option = ('POSITIONAL', '', posopt.desc)
+			if posopt.required:
+				requiredOptions.append(option)
+			else:
+				optionalOptions.append(option)			
 
-			keylen  = max(len(self._props['prefix']) + 4 + len(key), keylen)
-			keylen2 = max(len(self._props['prefix']) + len(key), keylen2)
-
-		keylen = max (4 + len(', '.join(filter(None, self._props['hopts']))), keylen)
-
+		helpitems = OrderedDict()
 		if self._props['desc']:
-			ret += 'DESCRIPTION:\n'
-			ret += '\n'.join('  ' + d for d in self._props['desc']) + '\n\n'
-
-		ret += 'USAGE:\n'
+			helpitems['description'] = self._props['desc']
+		
 		if self._props['usage']:
-			ret += '\n'.join(
-				'  ' + d.replace('{prog}', prog).replace('{program}', prog)
-				for d in self._props['usage']
-			) + '\n\n'
-		else:
-			ret += '  ' + prog
-			if requiredOptions:
-				reqopts = ' '.join(
-					val._printName(self._props['prefix']) + \
-					('' if not val.type is None else ' <{}>'.format(key.upper()))
-					for key, val in requiredOptions.items()
-					if key != Parameters.POSITIONAL
+			helpitems['usage'] = self._props['usage']
+		else: # default usage
+			defusage = ['{prog}']
+			for optname, opttype, _ in requiredOptions:
+				if optname == 'POSITIONAL':
+					continue
+				defusage.append('<{} {}>'.format(
+					optname, 
+					opttype or optname[len(self._props['prefix']):].upper())
 				)
-				if reqopts:
-					ret += ' ' + reqopts
 			if optionalOptions:
-				ret += ' [OPTIONS]'
-			if Parameters.POSITIONAL in self._params and self._params[Parameters.POSITIONAL].required:
-				ret += ' <POSITIONAL>'
-			ret += '\n\n'
+				defusage.append('[OPTIONS]')
+			if posopt:
+				defusage.append('POSITIONAL' if posopt.required else '[POSITIONAL]')
 
-		if self._props['example']:
-			ret += 'EXAMPLE:\n'
-			ret += '\n'.join(
-				'  ' + d.replace('{prog}', prog).replace('{program}', prog) 
-				for d in self._props['example']
-			) + '\n\n'
+			helpitems['usage'] = [' '.join(defusage)]
 
-		if requiredOptions:
-			ret += 'REQUIRED OPTIONS:\n'
-			keys = [key for key in sorted(requiredOptions.keys()) if key != Parameters.POSITIONAL]
-			if Parameters.POSITIONAL in requiredOptions:
-				keys.append(Parameters.POSITIONAL)
-			for key in keys:
-				val = requiredOptions[key]
-				ret  += '  {optitem}{optdesc}'.format(
-					optitem = val._printName(self._props['prefix'], keylen2).ljust(keylen - 2),
-					optdesc = '- ' + val.desc[0] if val.desc else '- No description.'
-				) + '\n'
-				for d in val.desc[1:]:
-					ret += ' ' * (keylen + 2) + d + '\n' 
-			ret += '\n'
+		optionalOptions.append((', '.join(filter(None, self._props['hopts'])), '', ['Print this help information']))
+		helpitems['required options'] = requiredOptions
+		helpitems['optional options'] = optionalOptions
 
-		ret += 'OPTIONAL OPTIONS:\n'
-		if optionalOptions:
-			keys = [key for key in sorted(optionalOptions.keys()) if key != Parameters.POSITIONAL]
-			if Parameters.POSITIONAL in optionalOptions:
-				keys.append(Parameters.POSITIONAL)
-			for key in keys:
-				val = optionalOptions[key]
-				if key == Parameters.POSITIONAL: continue
-				ret  += '  {optitem}{optdesc}'.format(
-					optitem = val._printName(self._props['prefix'], keylen2).ljust(keylen - 2),
-					optdesc = '- ' + val.desc[0]
-				) + '\n'
-				for d in val.desc[1:]:
-					ret += ' ' * (keylen + 2) + d + '\n' 
+		ret = []
+		if error:
+			if not isinstance(error, list):
+				error = [error]
+			ret = [self._assembler.error(err.strip()) for err in error]
+		ret += self._assembler.assemble(helpitems, self._prog)
 
-		ret += '  ' + ', '.join(filter(None, self._props['hopts'])).ljust(keylen - 2) + '- Print this help information.\n\n'
-
+		out = '\n'.join(ret) + '\n'
 		if printNexit:
-			sys.stderr.write(ret)
+			sys.stderr.write(out)
 			sys.exit(1)
-		return ret
+		else:
+			return out
 
 	def loadDict (self, dictVar, show = False):
 		"""
@@ -625,4 +753,93 @@ class Parameters (object):
 			ret[name] = self._params[name].value
 		return ret
 
-params = Parameters()
+class Commands(object):
+	"""
+	Support sub-command for command line argument parse.
+	"""
+
+	def __init__(self, theme = 'default'):
+		self.__dict__['_desc']      = []
+		self.__dict__['_hcmd']      = 'help'
+		self.__dict__['_cmds']      = OrderedDict()
+		self.__dict__['_assembler'] = HelpAssembler(None, theme)
+
+	def _setDesc(self, desc):
+		self.__dict__['_desc'] = desc if isinstance(desc, list) else [desc]
+		return self
+
+	def _setHcmd(self, hcmd):
+		self.__dict__['_hcmd'] = hcmd
+		return self
+	
+	def _setTheme(self, theme):
+		self.__dict__['_assembler'] = HelpAssembler(None, theme)
+		return self
+	
+	def __getattr__(self, name):
+		if name.startswith('__') or name.startswith('_Commands'): # pragma: no cover
+			return super(Commands, self).__getattr__(name)
+		elif not name in self._cmds:
+			self._cmds[name] = Parameters(name, self._assembler._theme)
+		return self._cmds[name]
+
+	def __setattr__(self, name, value):
+		if name.startswith('__') or name.startswith('_Commands'): # pragma: no cover
+			return super(Commands, self).__setattr__(name, value)
+		elif name == '_desc':
+			self._setDesc(value)
+		elif name == '_theme':
+			self._setTheme(value)
+		elif name == '_hcmd':
+			self._setHcmd(value)
+		else:
+			if not name in self._cmds:
+				self._cmds[name] = Parameters(name, self._assembler.theme)
+			self._cmds[name]('desc', value if isinstance(value, list) else [value])
+
+	def __getitem__(self, name):
+		return getattr(self, name)
+
+	def parse(self, args = None):
+		args = args or sys.argv[1:]
+		if not args or (len(args) == 1 and args[0] == self._hcmd):
+			self.help(printNexit = True)
+
+		command = args.pop(0)
+		if (command == self._hcmd and args[0] not in self._cmds) and \
+			command not in self._cmds:
+			self.help(
+				error = 'Unknown command: {}'.format(args[0] if command == self._hcmd else command), 
+				printNexit = True
+			)
+		if command == self._hcmd:
+			self._cmds[args[0]].help(printNexit = True)
+		
+		return command, self._cmds[command].parse(args)
+
+	def help(self, error = '', printNexit = False):
+
+		helpitems = OrderedDict()
+
+		if self._desc:
+			helpitems['description'] = self._desc
+		
+		helpitems['commands'] = []
+		for key, val in self._cmds.items():
+			helpitems['commands'].append((key, '', val._props['desc']))
+		helpitems['commands'].append((self._hcmd, 'command', ['Print help information for the command']))
+
+		ret = []
+		if error:
+			ret = [self._assembler.error(error.strip())]
+		ret += self._assembler.assemble(helpitems)
+
+		out = '\n'.join(ret) + '\n'
+		if printNexit:
+			sys.stderr.write(out)
+			sys.exit(1)
+		else:
+			return out
+
+params   = Parameters()
+commands = Commands()

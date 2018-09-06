@@ -1,6 +1,6 @@
 # [PyPPL][3] - A [Py](#)thon [P](#)i[P](#)e[L](#)ine framework 
 
-![Pypi][22] ![Github][23] ![PythonVers][37] ![Codacy][4] ![Codacy coverage][11] ![Travis building][8] ![License][38]
+![Pypi][22] ![Github][23] ![PythonVers][37] ![Travis building][8]  ![Codacy][4] ![Codacy coverage][11]
 
 [Documentation][1] | [API][2] | [Change log][19] | [FAQ][26]
 
@@ -485,14 +485,14 @@ To generate svg file, you have to have [graphviz][36] installed.
 [1]: https://pwwang.github.io/PyPPL/
 [2]: https://pwwang.github.io/PyPPL/api/
 [3]: https://github.com/pwwang/pyppl/
-[4]: https://img.shields.io/codacy/grade/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
+[4]: https://api.codacy.com/project/badge/Grade/a04aac445f384a8dbe47da19c779763f
 [5]: https://github.com/pwwang/testly
 [6]: https://pwwang.github.io/PyPPL/caching/
 [7]: https://pwwang.github.io/PyPPL/placeholders/
 [8]: https://img.shields.io/travis/pwwang/PyPPL.svg?style=flat-square
 [9]: https://pwwang.github.io/PyPPL/runners/
 [10]: https://pwwang.github.io/PyPPL/error-handling/
-[11]: https://img.shields.io/codacy/coverage/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
+[11]: https://api.codacy.com/project/badge/Coverage/a04aac445f384a8dbe47da19c779763f
 [12]: https://pwwang.github.io/PyPPL/set-other-properties-of-a-process/#error-handling-perrhowperrntry
 [13]: https://pwwang.github.io/PyPPL/configure-a-pipeline/#use-a-configuration-file
 [14]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
@@ -500,7 +500,7 @@ To generate svg file, you have to have [graphviz][36] installed.
 [16]: https://pwwang.github.io/PyPPL/aggregations/
 [18]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/drawFlowchart_pyppl.png
 [19]: https://pwwang.github.io/PyPPL/change-log/
-[20]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/getStarted.png
+[20]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/getStarted.svg
 [21]: https://pypi.org/project/futures/
 [22]: https://img.shields.io/pypi/v/pyppl.svg?style=flat-square
 [23]: https://img.shields.io/github/tag/pwwang/PyPPL.svg?style=flat-square
