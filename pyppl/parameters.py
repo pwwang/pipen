@@ -14,7 +14,7 @@ class HelpAssembler(object):
 	# the max width of the help page, not including the leading space
 	MAXPAGEWIDTH = 98
 	# the max width of the option name (include the type and placeholder, but not the leading space)
-	MAXOPTWIDTH  = 40
+	MAXOPTWIDTH  = 38
 
 	THEMES = dict(
 		default = dict(
@@ -76,7 +76,7 @@ class HelpAssembler(object):
 			if isinstance(val[0], tuple):
 				optwidth     = max([len(v[0]) + len(v[1]) + 3  for v in val])
 				optwidth     = max(optwidth, HelpAssembler.MAXOPTWIDTH)
-				maxdescwidth = max([HelpAssembler._reallen(w, progname) for v in val for w in v[2]])
+				maxdescwidth = max([HelpAssembler._reallen(w, progname) for v in val for w in v[2]] or [0])
 				maxdescwidth = max(maxdescwidth, HelpAssembler.MAXPAGEWIDTH - optwidth)
 				pagewidth    = optwidth + maxdescwidth
 			else:
@@ -178,7 +178,6 @@ class HelpAssembler(object):
 					ret.append('  ' + self.plain(h.ljust(pagewidth)))
 			ret.append('')
 		return ret
-
 
 class Parameter (object):
 
@@ -375,10 +374,12 @@ class Parameters (object):
 		return self
 
 	def _setHopts(self, hopts):
-		self._props['desc'] = desc if isinstance(desc, list) else [d.strip() for d in desc.split(',')]
+		self._props['hopts'] = hopts if isinstance(hopts, list) else [ho.strip() for ho in hopts.split(',')]
 		return self
 	
 	def _setPrefix(self, prefix):
+		if not prefix:
+			raise ParametersParseError('Empty prefix.')
 		self._props['prefix'] = prefix
 		return self
 	
@@ -624,6 +625,7 @@ class Parameters (object):
 				optionalOptions.append(option)
 		
 		if posopt:
+			option = ('POSITIONAL', '', posopt.desc)
 			if posopt.required:
 				requiredOptions.append(option)
 			else:
@@ -638,9 +640,12 @@ class Parameters (object):
 		else: # default usage
 			defusage = ['{prog}']
 			for optname, opttype, _ in requiredOptions:
-				if optname == Parameters.POSITIONAL:
+				if optname == 'POSITIONAL':
 					continue
-				defusage.append('<{} {}>'.format(optname, opttype or optname[len(self._props['prefix']):].upper()))
+				defusage.append('<{} {}>'.format(
+					optname, 
+					opttype or optname[len(self._props['prefix']):].upper())
+				)
 			if optionalOptions:
 				defusage.append('[OPTIONS]')
 			if posopt:
@@ -657,7 +662,6 @@ class Parameters (object):
 			if not isinstance(error, list):
 				error = [error]
 			ret = [self._assembler.error(err.strip()) for err in error]
-		
 		ret += self._assembler.assemble(helpitems, self._prog)
 
 		out = '\n'.join(ret) + '\n'

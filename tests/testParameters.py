@@ -1,10 +1,12 @@
-import helpers, testly
+import helpers, testly, re
 
 from os import path, makedirs
 from shutil import rmtree
 from tempfile import gettempdir
 from pyppl.parameters import Parameter, Parameters
 from pyppl.exception import ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError
+
+noANSI = lambda s: '\n'.join(line.rstrip() for line in re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', s).split('\n'))
 
 class TestParameter (testly.TestCase):
 
@@ -138,17 +140,6 @@ class TestParameter (testly.TestCase):
 			p.type = t
 			self.assertEqual(p.value, val)
 	
-	def dataProvider_testPrintName(self):
-		p1 = Parameter('a', 'a')
-		yield p1, '-', 0, '-a <str>'
-		yield p1, '--param-', 0, '--param-a <str>'
-		yield p1, '--param-', 16, '--param-a        <str>'
-		p2 = Parameter('a', True)
-		yield p2, '--param-', 16, '--param-a        (bool)'
-
-	def testPrintName(self, p, prefix, keylen, out):
-		self.assertEqual(p._printName(prefix, keylen), out)
-
 class TestParameters(testly.TestCase):
 
 	def setUpMeta(self):
@@ -161,9 +152,8 @@ class TestParameters(testly.TestCase):
 		ps = Parameters()
 		self.assertIsInstance(ps, Parameters)
 		self.assertEqual(ps._props['usage'], [])
-		self.assertEqual(ps._props['example'], [])
 		self.assertEqual(ps._props['desc'], [])
-		self.assertListEqual(ps._props['hopts'], ['-h', '--help', '-H', '-?', ''])
+		self.assertListEqual(ps._props['hopts'], ['-h', '--help', '-H', '-?'])
 		self.assertEqual(ps._props['prefix'], '-')
 		self.assertDictEqual(ps._params, {})
 
@@ -196,7 +186,7 @@ class TestParameters(testly.TestCase):
 
 	def dataProvider_testCall(self):
 		ps = Parameters()
-		yield ps, 'prefix', '', '', None, ParametersParseError
+		yield ps, 'prefix', '', '', ParametersParseError
 		yield ps, 'prefix', 'a', 'a'
 		yield ps, 'prefix', '-', '-'
 		yield ps, 'prefix', '--', '--'
@@ -208,34 +198,28 @@ class TestParameters(testly.TestCase):
 		yield ps, 'hopts', ' --, -h', ['--', '-h']
 		yield ps, 'hopts', ['--help', '?'], ['--help', '?']
 		# cannot be tested solely
-		yield ps, 'hopts', '?', ['--help'], True
+		yield ps, 'hopts', '?', ['?']
 
-		# 9, usage
-		yield ps, 'usage', '', []
+		# 10, usage
+		yield ps, 'usage', '', ['']
 		yield ps, 'usage', 'a', ['a']
-		yield ps, 'usage', 'a\nb', ['a', 'b']
-		yield ps, 'usage', '  a  \n\n  b \n', ['a', '', 'b']
+		yield ps, 'usage', 'a\nb', ['a\nb']
+		yield ps, 'usage', '  a  \n\n  b \n', ['  a  \n\n  b \n']
 
-		# 13, example
-		yield ps, 'example', '', []
-		yield ps, 'example', 'a', ['a']
-		yield ps, 'example', 'a\nb', ['a', 'b']
-		yield ps, 'example', '  a  \n\n  b \n', ['a', '', 'b']
-
-		# 17, desc
-		yield ps, 'desc', '', []
+		# 14, desc
+		yield ps, 'desc', '', ['']
 		yield ps, 'desc', 'a', ['a']
-		yield ps, 'desc', 'a\nb', ['a', 'b']
-		yield ps, 'desc', '  a  \n\n  b \n', ['a', '', 'b']
-		yield ps, 'Unknown', '', '', None, AttributeError
+		yield ps, 'desc', 'a\nb', ['a\nb']
+		yield ps, 'desc', '  a  \n\n  b \n', ['  a  \n\n  b \n']
+		#yield ps, 'Unknown', '', '', AttributeError
 
 
-	def testCall(self, ps, option, value, outval, excl = None, exception = None):
+	def testCall(self, ps, option, value, outval, exception = None):
 		self.assertTrue(callable(ps))
 		if exception:
-			self.assertRaises(exception, ps, option, value, excl)
+			self.assertRaises(exception, ps, option, value)
 		else:
-			ps(option, value, excl)
+			ps(option, value)
 			self.assertEqual(ps._props[option], outval)
 
 	def dataProvider_testParseName(self):
@@ -275,13 +259,16 @@ class TestParameters(testly.TestCase):
 
 	def dataProvider_testShouldPrintHelp(self):
 		ps = Parameters()
-		ps('hopts', '-h, ')
+		ps('hopts', '-h')
 		yield ps, [], True
 		yield ps, ['-h'], True
 		ps1 = Parameters()
-		ps1('hopts', '', excl = True)
-		yield ps1, [], False
-		yield ps1, ['-h'], True
+		ps1('hopts', ['--help'])
+		yield ps1, [], True
+		yield ps1, ['-h'], False
+		ps2 = Parameters()
+		ps2._hbald = False
+		yield ps2, [], False
 
 	def testShouldPrintHelp(self, ps, args, should):
 		self.assertEqual(ps._shouldPrintHelp(args), should)
@@ -424,8 +411,9 @@ class TestParameters(testly.TestCase):
 
 		ps6 = Parameters()
 		ps6('prefix', '--param-')
-		ps6('hopts', '-?')
+		ps6('hbald', False)
 		ps6.h.required = True
+		# 23
 		yield ps6, [], {}, 'ERROR: Option --param-h is required.', SystemExit
 
 		ps7 = Parameters()
@@ -499,10 +487,10 @@ class TestParameters(testly.TestCase):
 		ps = Parameters()
 		yield ps, [
 			'USAGE:',
-			'  progname',
+			'  testParameters.py',
 			'',
 			'OPTIONAL OPTIONS:',
-			'  -h, --help, -H, -?                    - Print this help information.',
+			'  -h, --help, -H, -?                    - Print this help information',
 			''
 		]
 		
@@ -510,10 +498,10 @@ class TestParameters(testly.TestCase):
 		ps1('hopts', '-h')
 		yield ps1, [
 			'USAGE:',
-			'  progname',
+			'  testParameters.py',
 			'',
 			'OPTIONAL OPTIONS:',
-			'  -h                                    - Print this help information.',
+			'  -h                                    - Print this help information',
 			''
 		]
 
@@ -522,11 +510,11 @@ class TestParameters(testly.TestCase):
 		ps2.a
 		yield ps2, [
 			'USAGE:',
-			'  progname [OPTIONS]',
+			'  testParameters.py [OPTIONS]',
 			'',
 			'OPTIONAL OPTIONS:',
 			'  --param-a                             - DEFAULT: None',
-			'  -h, --help, -H, -?                    - Print this help information.',
+			'  -h, --help, -H, -?                    - Print this help information',
 			''
 		]
 
@@ -537,14 +525,14 @@ class TestParameters(testly.TestCase):
 		ps3._.desc     = 'positional options'
 		yield ps3, [
 			'USAGE:',
-			'  progname [OPTIONS] <POSITIONAL>',
+			'  testParameters.py [OPTIONS] POSITIONAL',
 			'',
 			'REQUIRED OPTIONS:',
-			'  <POSITIONAL>                          - positional options',
+			'  POSITIONAL                            - positional options',
 			'',
 			'OPTIONAL OPTIONS:',
-			'  -e (bool)                             - DEFAULT: False',
-			'  -h, --help, -H, -?                    - Print this help information.',
+			'  -e (BOOL)                             - DEFAULT: False',
+			'  -h, --help, -H, -?                    - Print this help information',
 			''
 		]
 
@@ -558,9 +546,8 @@ class TestParameters(testly.TestCase):
 		ps4.f.desc      = 'This is a description of option f. \n Option f is not required.'
 		ps4._.required  = True
 		ps4._.desc      = 'positional options'
-		ps4('usage', '{prog} User-defined usages\n{prog} User-defined another usage')
-		ps4('desc', 'This program is doing: \n* 1. blahblah\n* 2. lalala')
-		ps4('example', '{prog} --param-f abc\n {prog} --param-f 22')
+		ps4('usage', '{prog} User-defined usages\n{prog} User-defined another usage'.split('\n'))
+		ps4('desc', 'This program is doing: \n* 1. blahblah\n* 2. lalala'.split('\n'))
 		yield ps4, [
 			'DESCRIPTION:',
 			'  This program is doing:',
@@ -568,23 +555,19 @@ class TestParameters(testly.TestCase):
 			'  * 2. lalala',
 			'',
 			'USAGE:',
-			'  progname User-defined usages',
-			'  progname User-defined another usage',
-			'',
-			'EXAMPLE:',
-			'  progname --param-f abc',
-			'  progname --param-f 22',
+			'  testParameters.py User-defined usages',
+			'  testParameters.py User-defined another usage',
 			'',
 			'REQUIRED OPTIONS:',
-			'  --param-ef <str>                      - This is a description of option ef. ',
+			'  --param-ef <STR>                      - This is a description of option ef.',
 			'                                           Option ef is required.',
-			'  <POSITIONAL>                          - positional options',
+			'  POSITIONAL                            - positional options',
 			'',
 			'OPTIONAL OPTIONS:',
-			'  --param-f  <list>                     - This is a description of option f. ',
+			'  --param-f <LIST>                      - This is a description of option f.',
 			'                                           Option f is not required.',
 			'                                          DEFAULT: []',
-			'  -h, --help, -H, -?                    - Print this help information.',
+			'  -h, --help, -H, -?                    - Print this help information',
 			''
 		]
 
@@ -594,21 +577,21 @@ class TestParameters(testly.TestCase):
 		ps5.g.show = False
 		yield ps5, [
 			'USAGE:',
-			'  progname',
+			'  testParameters.py',
 			'',
 			'OPTIONAL OPTIONS:',
-			'  -h, --help, -H, -?                    - Print this help information.',
+			'  -h, --help, -H, -?                    - Print this help information',
 			''
 		]
 
 	def testHelp(self, ps, out):
-		self.maxDiff     = None
+		self.maxDiff     = 8000
 		self.diffContext = None
 		self.diffTheme   = 'contrast'
 		import sys
 		sys.argv = ['progname']
 		h = ps.help()
-		self.assertEqual(h, '\n'.join(out) + '\n')
+		self.assertEqual(noANSI(h), '\n'.join(out) + '\n')
 	
 	def dataProvider_testLoadDict(self):
 		yield {}, True
