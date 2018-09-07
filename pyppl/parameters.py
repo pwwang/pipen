@@ -76,7 +76,11 @@ class HelpAssembler(object):
 			if isinstance(val[0], tuple):
 				optwidth     = max([len(v[0]) + len(v[1]) + 3  for v in val])
 				optwidth     = max(optwidth, HelpAssembler.MAXOPTWIDTH)
-				maxdescwidth = max([HelpAssembler._reallen(w, progname) for v in val for w in v[2]] or [0])
+				maxdescwidth = max([
+					HelpAssembler._reallen(w, progname) 
+					for v in val 
+					for w in (v[2] if isinstance(v[2], list) else [v[2]])
+				] or [0])
 				maxdescwidth = max(maxdescwidth, HelpAssembler.MAXPAGEWIDTH - optwidth)
 				pagewidth    = optwidth + maxdescwidth
 			else:
@@ -134,7 +138,7 @@ class HelpAssembler(object):
 
 	def optdesc(self, msg):
 		msg = msg.replace('{prog}', self.prog(self.progname))
-		if msg.startswith('DEFAULT: '):
+		if msg.startswith('DEFAULT: ') or msg.startswith('Default: '):
 			msg = '{colorstart}{msg}{colorend}'.format(
 				colorstart = self.theme['default'],
 				msg        = msg,
@@ -165,6 +169,8 @@ class HelpAssembler(object):
 			ret.append(self.title(title))
 			if isinstance(helpitems[0], tuple):
 				for optname, opttype, optdesc in helpitems:
+					if not isinstance(optdesc, list):
+						optdesc = [optdesc]
 					for i, od in enumerate(optdesc):
 						if i == 0:
 							line  = self.optname(optname) + ' '
@@ -201,7 +207,7 @@ class Parameter (object):
 		)
 		if not isinstance(name, string_types):
 			raise ParameterNameError(name, 'Not a string')
-		if not re.search(r'^[A-Za-z0-9_]{1,32}$', name):
+		if not re.search(r'^[A-Za-z0-9_\-.]{1,32}$', name):
 			raise ParameterNameError(name, 'Expect a string with alphabetics and underlines in length 1~32, but we got')
 		if value is not None:
 			t = type(value).__name__
@@ -358,8 +364,9 @@ class Parameters (object):
 			prefix = '-',
 			hbald  = True
 		)
-		self.__dict__['_params'] = {}
+		self.__dict__['_params']    = {}
 		self.__dict__['_assembler'] = HelpAssembler(self._prog, theme)
+		self.__dict__['_helpx']     = None
 
 	def _setTheme(self, theme):
 		self._assembler = HelpAssembler(self._prog, theme)
@@ -690,6 +697,9 @@ class Parameters (object):
 		helpitems['required options'] = requiredOptions
 		helpitems['optional options'] = optionalOptions
 
+		if callable(self._helpx):
+			helpitems = self._helpx(helpitems)
+
 		ret = []
 		if error:
 			if not isinstance(error, list):
@@ -796,6 +806,7 @@ class Commands(object):
 		self.__dict__['_hcmd']      = 'help'
 		self.__dict__['_cmds']      = OrderedDict()
 		self.__dict__['_assembler'] = HelpAssembler(None, theme)
+		self.__dict__['_helpx']     = None
 
 	def _setDesc(self, desc):
 		self.__dict__['_desc'] = desc if isinstance(desc, list) else [desc]
@@ -825,6 +836,8 @@ class Commands(object):
 			self._setTheme(value)
 		elif name == '_hcmd':
 			self._setHcmd(value)
+		elif name == '_helpx':
+			self.__dict__['_helpx'] = value
 		else:
 			if not name in self._cmds:
 				self._cmds[name] = Parameters(name, self._assembler.theme)
@@ -840,7 +853,10 @@ class Commands(object):
 				return '', Box()
 			else:
 				command = args.pop(0)
-				return command, getattr(self, command).parse(args, arbi = True)
+				cmdps   = getattr(self, command)
+				if isinstance(cmdps, Parameters):
+					return command, cmdps.parse(args, arbi = True)
+				return command, Box({Parameters.POSITIONAL: args})
 		else:
 			if not args or (len(args) == 1 and args[0] == self._hcmd):
 				self.help(printNexit = True)
@@ -868,6 +884,9 @@ class Commands(object):
 		for key, val in self._cmds.items():
 			helpitems['commands'].append((key, '', val._props['desc']))
 		helpitems['commands'].append((self._hcmd, 'command', ['Print help information for the command']))
+
+		if callable(self._helpx):
+			helpitems = self._helpx(helpitems)
 
 		ret = []
 		if error:

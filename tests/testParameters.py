@@ -12,7 +12,7 @@ class TestParameter (testly.TestCase):
 
 	def dataProvider_testInit(self):
 		yield '', '', None, None, ParameterNameError, 'Expect a string with alphabetics and underlines in length 1~32'
-		yield '-', '', None, None, ParameterNameError, 'Expect a string with alphabetics and underlines in length 1~32'
+		yield '+', '', None, None, ParameterNameError, 'Expect a string with alphabetics and underlines in length 1~32'
 		yield 'a?', '', None, None, ParameterNameError, 'Expect a string with alphabetics and underlines in length 1~32'
 		yield int, '', None, None, ParameterNameError, 'Not a string'
 		yield 'a', 1, 'int', ['DEFAULT: 1']
