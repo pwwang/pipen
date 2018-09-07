@@ -1086,8 +1086,6 @@ Constructor
   
 #### `_coerceValue (value, t) [@staticmethod]`
   
-#### `_getType (self, argname, argtype) `
-  
 #### `_parseName (self, argname) `
   
 If `argname` is the name of an option  
@@ -1100,7 +1098,18 @@ If `argname` is the name of an option
 `at`: normalized argument type  
 `av`: the argument value, if `argname` is like: `-a=1`  
   
-#### `_putValue (self, argname, argtype, argval) `
+#### `_putValue (self, argname, argtype, argval, arbi) `
+  
+Save the values.  
+
+- **params:**  
+`argname`: The option name  
+`argtype`: The parsed type  
+`argval`:  The option value  
+`arbi`:    Whether allow pass options arbitrarily (without definition)  
+
+- **return:**  
+`True` if value append to a list option successfully, otherwise `False`  
   
 #### `_setDesc (self, desc) `
   
@@ -1159,7 +1168,7 @@ For config file other than json, a section name is needed, whatever it is.
 - Default: False (don't show parameter from config file in help page)  
 - It'll be overwritten by the `show` property inside the config file.  
   
-#### `parse (self, args) `
+#### `parse (self, args, arbi) `
   
 Parse the arguments from `sys.argv`  
   
