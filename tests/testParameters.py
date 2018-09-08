@@ -15,11 +15,11 @@ class TestParameter (testly.TestCase):
 		yield '+', '', None, None, ParameterNameError, 'Expect a string with alphabetics and underlines in length 1~32'
 		yield 'a?', '', None, None, ParameterNameError, 'Expect a string with alphabetics and underlines in length 1~32'
 		yield int, '', None, None, ParameterNameError, 'Not a string'
-		yield 'a', 1, 'int', ['DEFAULT: 1']
-		yield 'a', [], 'list', ['DEFAULT: []']
-		yield 'atuple', (), 'list', ['DEFAULT: []']
-		yield 'a', u'a', 'str', ['DEFAULT: \'a\'']
-		yield 'a', '', 'str', ["DEFAULT: ''"]
+		yield 'a', 1, 'int', ['Default: 1']
+		yield 'a', [], 'list', ['Default: []']
+		yield 'atuple', (), 'list', ['Default: []']
+		yield 'a', u'a', 'str', ['Default: \'a\'']
+		yield 'a', '', 'str', ["Default: ''"]
 		yield 'a', {}, None, None, ParameterTypeError, 'Unsupported parameter type: dict'
 
 	def testInit(self, name, value, t, desc = None, exc = None, excmsg = None):
@@ -41,7 +41,7 @@ class TestParameter (testly.TestCase):
 
 	def dataProvider_testSetGetAttr(self):
 		# 0
-		yield 'a', '', 'desc', 'whatever description', ['whatever description', "DEFAULT: ''"]
+		yield 'a', '', 'desc', 'whatever description', ['whatever description', "Default: ''"]
 		yield 'a', '', 'required', True
 		yield 'a', '', 'required', False
 		yield 'a', True, 'required', True, None, ParameterTypeError, 'Bool option "a" cannot be set as required'
@@ -493,7 +493,7 @@ class TestParameters(testly.TestCase):
 			'  testParameters.py [OPTIONS]',
 			'',
 			'OPTIONAL OPTIONS:',
-			'  --param-a                             - DEFAULT: None',
+			'  --param-a                             - Default: None',
 			'  -h, --help, -H, -?                    - Print this help information',
 			''
 		]
@@ -511,7 +511,7 @@ class TestParameters(testly.TestCase):
 			'  POSITIONAL                            - positional options',
 			'',
 			'OPTIONAL OPTIONS:',
-			'  -e (BOOL)                             - DEFAULT: False',
+			'  -e (BOOL)                             - Default: False',
 			'  -h, --help, -H, -?                    - Print this help information',
 			''
 		]
@@ -546,7 +546,7 @@ class TestParameters(testly.TestCase):
 			'OPTIONAL OPTIONS:',
 			'  --param-f <LIST>                      - This is a description of option f.',
 			'                                           Option f is not required.',
-			'                                          DEFAULT: []',
+			'                                          Default: []',
 			'  -h, --help, -H, -?                    - Print this help information',
 			''
 		]

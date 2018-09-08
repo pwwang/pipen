@@ -231,8 +231,11 @@ class Parameter (object):
 		if name.startswith('__') or name.startswith('_Parameter'): # pragma: no cover
 			return super(Parameter, self).__getattr__(name)
 		elif name == 'desc' and not self.required:
-			if not self._props['desc'] or not self._props['desc'][-1].startswith('DEFAULT: '):
-				self._props['desc'].append('DEFAULT: ' + repr(self.value))
+			if not self._props['desc'] or not (
+				self._props['desc'][-1].startswith('DEFAULT: ') or \
+				self._props['desc'][-1].startswith('Default: ')
+			):
+				self._props['desc'].append('Default: ' + repr(self.value))
 		return self._props[name]
 
 	def __repr__(self):
@@ -322,6 +325,15 @@ class Parameter (object):
 		self._props['name'] = n
 		return self
 
+	def __hash__(self):
+		return id(self)
+
+	def __eq__(self, other):
+		return id(self) == id(other)
+
+	def __ne__(self, other):
+		return not self.__eq__(other)
+
 class Parameters (object):
 	"""
 	A set of parameters
@@ -388,6 +400,15 @@ class Parameters (object):
 		return '<Parameters({}) @ {}>'.format(','.join(
 			p.name+':'+str(p.type) for p in self._params.values()
 		), hex(id(self)))
+
+	def __hash__(self):
+		return id(self)
+
+	def __eq__(self, other):
+		return id(self) == id(other)
+
+	def __ne__(self, other):
+		return not self.__eq__(other)
 	
 	def _setPrefix(self, prefix):
 		if not prefix:
@@ -643,22 +664,34 @@ class Parameters (object):
 		@return:
 			The help information
 		"""
+		revparams = {}
+		for key, val in self._params.items():
+			if not val in revparams:
+				revparams[val] = []
+			revparams[val].append(key)
+
 		posopt = None
 		if Parameters.POSITIONAL in self._params:
 			posopt = self._params[Parameters.POSITIONAL]
-			if len(posopt.desc) == 1 and posopt.desc[0].startswith('DEFAULT: '):
+			if len(posopt.desc) == 1 and posopt.desc[0].startswith('Default: '):
 				posopt = None
+
+		prefix = self._props['prefix']
 
 		requiredOptions   = []
 		optionalOptions   = []
-		for val in self._params.values():
+		for val in revparams.keys():
 			# options not suppose to show
 			if not val.show:
 				continue
 			if val.name == Parameters.POSITIONAL:
 				continue
 			else:
-				option = (self._props['prefix'] + val.name, (val.type or '').upper(), val.desc)
+				option = (
+					', '.join([prefix + k for k in sorted(revparams[val], key = len)]),
+					(val.type or '').upper(), 
+					val.desc
+				)
 			if val.required:
 				requiredOptions.append(option)
 			else:
@@ -684,7 +717,7 @@ class Parameters (object):
 					continue
 				defusage.append('<{} {}>'.format(
 					optname, 
-					opttype or optname[len(self._props['prefix']):].upper())
+					opttype or optname[len(prefix):].upper())
 				)
 			if optionalOptions:
 				defusage.append('[OPTIONS]')
@@ -839,9 +872,16 @@ class Commands(object):
 		elif name == '_helpx':
 			self.__dict__['_helpx'] = value
 		else:
-			if not name in self._cmds:
-				self._cmds[name] = Parameters(name, self._assembler.theme)
-			self._cmds[name]('desc', value if isinstance(value, list) else [value])
+			# alias
+			if isinstance(value, Parameters):
+				self._cmds[name] = value
+				if name != value._prog.split()[-1]:
+					value._prog += '|' + name
+					value._assembler = HelpAssembler(value._prog, value._assembler.theme)
+			else:
+				if not name in self._cmds:
+					self._cmds[name] = Parameters(name, self._assembler.theme)
+				self._cmds[name]('desc', value if isinstance(value, list) else [value])
 
 	def __getitem__(self, name):
 		return getattr(self, name)
@@ -863,7 +903,7 @@ class Commands(object):
 
 			command = args.pop(0)
 			if (command == self._hcmd and args[0] not in self._cmds) or \
-				command not in self._cmds:
+				(command != self._hcmd and command not in self._cmds):
 				self.help(
 					error = 'Unknown command: {}'.format(args[0] if command == self._hcmd else command), 
 					printNexit = True
@@ -881,8 +921,15 @@ class Commands(object):
 			helpitems['description'] = self._desc
 		
 		helpitems['commands'] = []
+		
+		revcmds = OrderedDict()
 		for key, val in self._cmds.items():
-			helpitems['commands'].append((key, '', val._props['desc']))
+			if val not in revcmds:
+				revcmds[val] = []
+			revcmds[val].append(key)
+			
+		for key, val in revcmds.items():
+			helpitems['commands'].append((' | '.join(val), '', key._props['desc']))
 		helpitems['commands'].append((self._hcmd, 'command', ['Print help information for the command']))
 
 		if callable(self._helpx):
