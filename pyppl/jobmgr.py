@@ -163,7 +163,7 @@ class Jobmgr (object):
 				self.status[jid] = Jobmgr.STATUS_SUBMITTING
 				if self.runners[jid].submit():
 					self.status[jid] = Jobmgr.STATUS_SUBMITTED
-				else:
+				else: # pragma: no cover
 					self.status[jid] = Jobmgr.STATUS_SUBMITFAILED
 					self.halt()
 				self.progressbar(jid, 'submit')

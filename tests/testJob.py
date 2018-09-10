@@ -238,6 +238,29 @@ class TestJob(testly.TestCase):
 			'RL_d3': [path.realpath(filed35)]
 		}, None, None, 'Input file renamed: filec2.txt -> filec2[1].txt'
 		
+		p21 = Proc()
+		# make sure the infile renaming log output
+		p21.LOG_NLINE['INFILE_RENAMING'] = -1
+		p21.infile = 'origin'
+		p21.props['workdir'] = path.join(self.testdir, 'workdir-p21')
+		p21.props['input']   = OrderedDict([
+			('c1', {'type': 'file', 'data': [filec2]}),
+			('c2', {'type': 'file', 'data': [filed35]}),
+		])
+		yield 0, p21, OrderedDict([
+			('c1', {'type': 'file', 'orig': filec2, 'data': self.file2indir(p21.workdir, 0, filec2)}),
+			('c2', {'type': 'file', 'orig': filed35, 'data': self.file2indir(p21.workdir, 0, filed35, '[1]')}),
+		
+		]), {
+			'c1': filec2,
+			'IN_c1': self.file2indir(p21.workdir, 0, filec2),
+			'OR_c1': filec2,
+			'RL_c1': path.realpath(filec2),
+			'c2': filed35,
+			'IN_c2': self.file2indir(p21.workdir, 0, filed35, '[1]'),
+			'OR_c2': filed35,
+			'RL_c2': path.realpath(filed35),
+		}, None, None, 'Input file renamed: filec2.txt -> filec2[1].txt'
 
 	def testPrepInput(self, index, proc, jobinput, indata, exception = None, msg = None, errmsg = None):
 		self.maxDiff = None
@@ -251,7 +274,6 @@ class TestJob(testly.TestCase):
 		else:
 			with helpers.log2str() as (out, err):
 				job._prepInput()
-			
 			if errmsg:
 				self.assertIn(errmsg, err.getvalue())
 			self.assertTrue(path.isdir(job.indir))

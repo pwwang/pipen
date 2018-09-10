@@ -9,7 +9,7 @@ from pyppl import Job, Proc, utils
 from pyppl.runners import Runner, RunnerLocal, RunnerDry, RunnerSsh, RunnerSge, RunnerSlurm
 from pyppl.templates import TemplatePyPPL
 from pyppl.exception import RunnerSshError
-from pyppl.runners.helpers import Helper, LocalHelper, SgeHelper, SlurmHelper
+from pyppl.runners.helpers import Helper, LocalHelper, SgeHelper, SlurmHelper, SshHelper
 
 __folder__ = path.realpath(path.dirname(__file__))
 
@@ -153,6 +153,58 @@ class TestLocalHelper(testly.TestCase):
 		helpers.writeFile(script, '#!/usr/bin/env bash\n')
 		yield LocalHelper(script), '0'
 
+class TestSshHelper(testly.TestCase):
+
+	def setUpMeta(self):
+		self.testdir = path.join(gettempdir(), 'PyPPL_unittest', 'TestSshHelper')
+		if path.exists(self.testdir):
+			rmtree(self.testdir)
+		makedirs(self.testdir)
+		self.commands = 'bash -c'
+
+	def testSubmit(self, h):
+		c = h.submit()
+		self.assertEqual(c.rc, 0)
+
+	def dataProvider_testSubmit(self):
+		script = path.join(self.testdir, 'job.script')
+		helpers.writeFile(script, '#!/usr/bin/env bash\n')
+		yield SshHelper(script, self.commands),
+
+	def testKill(self, h):
+		h.pid = h.submit().pid
+		for pid in utils.ps.children(h.pid):
+			self.assertTrue(utils.ps.exists(pid))
+		h.kill()
+		for pid in utils.ps.children(h.pid):
+			self.assertFalse(utils.ps.exists(pid))
+
+	def dataProvider_testKill(self):
+		script = path.join(self.testdir, 'job.script')
+		helpers.writeFile(script, '#!/usr/bin/env bash\nsleep .1')
+		yield SshHelper(script, self.commands),
+
+	def testAlive(self, h, alive, aliveAfterSubmit):
+		self.assertEqual(h.alive(), alive)
+		c = h.submit()
+		h.pid = c.pid
+		self.assertEqual(h.alive(), aliveAfterSubmit)
+		c.run()
+		self.assertEqual(h.alive(), False)
+
+	def dataProvider_testAlive(self):
+		script1 = path.join(self.testdir, 'testAlive', 'job.script')
+		makedirs(path.dirname(script1))
+		# not exists
+		h1 = SshHelper(script1, self.commands)
+		yield h1, False, False
+
+		script2 = path.join(self.testdir, 'testAlive2', 'job.script')
+		makedirs(path.dirname(script2))
+		helpers.writeFile(script2, '#!/usr/bin/env bash\nsleep .1')
+		h3 = SshHelper(script2, self.commands)
+		yield h3, False, True
+
 class TestSgeHelper(testly.TestCase):
 
 	def setUpMeta(self):
@@ -166,14 +218,17 @@ class TestSgeHelper(testly.TestCase):
 			'qdel' : path.join(__folder__, 'mocks', 'qdel')
 		}
 
-	def testSubmit(self, h):
+	def testSubmit(self, h, rc):
 		c = h.submit()
-		self.assertEqual(c.rc, 0)
+		self.assertEqual(c.rc, rc)
 
 	def dataProvider_testSubmit(self):
 		script = path.join(self.testdir, 'job.script')
 		helpers.writeFile(script, '#!/usr/bin/env bash')
-		yield SgeHelper(script, self.commands),
+		yield SgeHelper(script, self.commands), 0
+		yield SgeHelper(script, {'qsub': 'nosuchqsub'}), 1
+		yield SgeHelper(script, {'qsub': 'echo'}), 1
+
 
 	def testAlive(self, h, alive, aliveAfterSubmit):
 		self.assertEqual(h.alive(), alive)
@@ -954,16 +1009,43 @@ class TestRunnerSge(testly.TestCase):
 		]))
 		# 1
 		yield job1, False, False, False
+
+		job2 = _generateJob(
+			self.testdir,
+			index = 2,
+			pProps = {
+				'expect': TemplatePyPPL(''),
+				'echo': {'jobs': [0], 'type': {'stdout': None}},
+				'sgeRunner': {
+					'qsub': '__command_not_exists__',
+					'qstat': '__command_not_exists__',
+					'preScript': '',
+					'postScript': ''
+				}
+			}
+		)
+		helpers.writeFile(job2.script, '\n'.join([
+			'#!/usr/bin/env bash',
+			'sleep .1',
+			'touch %s' % job2.outfile,
+			'touch %s' % job2.errfile,
+			'%s %s' % (
+				path.join(__folder__, 'mocks', 'qsub_done'),
+				int(md5((job2.script + '.sge').encode('utf-8')).hexdigest()[:8], 16)
+			)
+		]))
+		# 2
+		yield job2, False, False, False
 		
 	def testIsRunning(self, job, beforesub = False, aftersub = True, afterrun = False):
 		RunnerSge.INTERVAL = .2
 		r = RunnerSge(job)
 		self.assertEqual(r.isRunning(), beforesub)
-		r.submit()
-		self.assertEqual(r.isRunning(), aftersub)
-		with helpers.log2str():
-			r.run()
-		self.assertEqual(r.isRunning(), afterrun)
+		if r.submit():
+			self.assertEqual(r.isRunning(), aftersub)
+			with helpers.log2str():
+				r.run()
+			self.assertEqual(r.isRunning(), afterrun)
 
 
 class TestRunnerSlurm(testly.TestCase):

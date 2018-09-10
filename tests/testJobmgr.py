@@ -4,7 +4,8 @@ from shutil import rmtree
 from tempfile import gettempdir
 from time import sleep
 from six.moves.queue import Empty
-from multiprocessing import JoinableQueue
+from multiprocessing import JoinableQueue, Process
+from threading import Thread
 
 from pyppl import Jobmgr, Proc, utils
 from pyppl.runners import RunnerLocal
@@ -28,6 +29,36 @@ class TestJobmgr(testly.TestCase):
 		if path.exists(self.testdir):
 			rmtree(self.testdir)
 		makedirs(self.testdir)
+
+	def testHalt(self):
+		
+		pHalt = Proc()
+		pHalt.ppldir = self.testdir
+		pHalt.input  = {'a': [1,2,3,4]}
+		pHalt.script = 'sleep 10'
+		with helpers.log2str():
+			pHalt._tidyBeforeRun()
+		jm = Jobmgr(pHalt, RunnerLocal)
+		
+		def run():
+			jm.run()
+		def halt():
+			jm.halt(True)
+
+		t1 = Thread(target = run)
+		t2 = Thread(target = halt)
+
+		def parent():
+			try:
+				t1.start()
+				t2.start()
+			except Exception:
+				pass
+
+		t3 = Process(target = parent)
+		t3.start()
+		#t3.join()
+		self.assertFalse(t1.isAlive())
 
 	def dataProvider_testInit(self):
 		pInit = Proc()
@@ -301,6 +332,7 @@ class TestJobmgr(testly.TestCase):
 		self.assertListEqual(_getItemsFromQ(sq), [None] * jm.npsubmit)	
 		
 	def dataProvider_testProgressBar(self):
+		Jobmgr.PBAR_SIZE = 20
 		pProgressbar = Proc()
 		pProgressbar.ppldir = self.testdir
 		pProgressbar.cclean = True
@@ -308,15 +340,15 @@ class TestJobmgr(testly.TestCase):
 		with helpers.log2str():
 			pProgressbar._tidyBeforeRun()
 		jm = Jobmgr(pProgressbar, RunnerLocal)
-		yield jm, 0, 'INFO', '[1/5] [--------------------------------------------------] Done:   0.0% | Running: 0'
-		yield jm, 3, 'INFO', '[4/5] [--------------------------------------------------] Done:   0.0% | Running: 0'
+		yield jm, 0, 'INFO', '[1/5] [--------------------] Done:   0.0% | Running: 0'
+		yield jm, 3, 'INFO', '[4/5] [--------------------] Done:   0.0% | Running: 0'
 		
 		jm1 = Jobmgr(pProgressbar, RunnerLocal)
 		jm1.status[0] = Jobmgr.STATUS_SUBMITFAILED
 		jm1.status[1] = Jobmgr.STATUS_SUBMITTED
 		jm1.status[2] = Jobmgr.STATUS_DONEFAILED
 		jm1.status[3] = Jobmgr.STATUS_DONE
-		yield jm1, 0, 'SUBMIT', '[1/5] [!!!!!!!!!!>>>>>>>>>>XXXXXXXXXX==========----------] Done:  40.0% | Running: 2'
+		yield jm1, 0, 'SUBMIT', '[1/5] [!!!!>>>>XXXX====----] Done:  40.0% | Running: 2'
 		
 		pProgressbar1 = Proc()
 		pProgressbar1.ppldir = self.testdir
@@ -327,7 +359,7 @@ class TestJobmgr(testly.TestCase):
 		with helpers.log2str():
 			pProgressbar1._tidyBeforeRun()
 		jm2 = Jobmgr(pProgressbar1, RunnerLocal)
-		yield jm2, 0, 'SUBMIT', '[01/40] [--------------------------------------------------] Done:   0.0% | Running: 0'
+		yield jm2, 0, 'SUBMIT', '[01/40] [--------------------] Done:   0.0% | Running: 0'
 		
 		jm3 = Jobmgr(pProgressbar1, RunnerLocal)
 		jm3.status[0] = Jobmgr.STATUS_DONE
@@ -342,9 +374,9 @@ class TestJobmgr(testly.TestCase):
 		jm3.status[29] = Jobmgr.STATUS_SUBMITFAILED
 		jm3.status[30] = Jobmgr.STATUS_DONE
 		jm3.status[31] = Jobmgr.STATUS_SUBMITTED
-		yield jm3, 0, 'SUBMIT', '[01/40] [==--==!!==>>==XX----------------------=!=>--------] Done:  17.5% | Running: 4'
-		yield jm3, 1, 'SUBMIT', '[02/40] [==--==!!==>>==XX----------------------=!=>--------] Done:  17.5% | Running: 4'
-		yield jm3, 2, 'SUBMIT', '[03/40] [==--==!!==>>==XX----------------------=!=>--------] Done:  17.5% | Running: 4'
+		yield jm3, 0, 'SUBMIT', '[01/40] [=!>X----------!>----] Done:  17.5% | Running: 4'
+		yield jm3, 1, 'SUBMIT', '[02/40] [-!>X----------!>----] Done:  17.5% | Running: 4'
+		yield jm3, 2, 'SUBMIT', '[03/40] [-=>X----------!>----] Done:  17.5% | Running: 4'
 
 	def testProgressBar(self, jm, jid, loglevel, bar):
 		with helpers.log2str(levels = 'all') as (out, err):

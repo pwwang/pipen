@@ -61,6 +61,26 @@ class TestChannel (testly.TestCase):
 	def testFromChannels(self, chs, outs):
 		self.assertEqual(Channel.fromChannels(*chs), outs)
 
+	def dataProvider_testNones(self):
+		yield 0, 0
+		yield 1, 1
+		yield 0, 1
+		yield 1, 0
+		yield 2, 2
+		yield 10, 3
+
+	def testNones(self, length, width):
+		nones = Channel.nones(length, width)
+		self.assertListEqual(nones, [(None, ) * width] * length)
+
+	def dataProvider_testT(self):
+		yield Channel.create(), []
+		yield Channel.create([1,2,3]), [(1,2,3)]
+		yield Channel.create([(1,2,3)]), [(1,), (2,), (3,)]
+
+	def testT(self, orig, tsed):
+		self.assertEqual(orig.t(), tsed)
+
 	def dataProvider_testInsert(self):
 		ch1 = Channel.create([(1, 2), (3, 4)])
 		ch2 = Channel.create([5, 6])

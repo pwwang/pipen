@@ -150,6 +150,7 @@ class SshHelper(Helper):
 		"""
 		if not isinstance(cmds, list):
 			cmds = shlex.split(cmds)
+		
 		super(SshHelper, self).__init__(script, cmds)
 
 	def submit(self):

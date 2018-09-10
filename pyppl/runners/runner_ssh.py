@@ -32,7 +32,7 @@ class RunnerSsh(Runner):
 		cmdlist.append('true')
 		try:
 			return cmd.run(cmdlist, timeout = 3).rc == 0
-		except cmd.Timeout:
+		except cmd.Timeout: # pragma: no cover
 			return False
 
 	def __init__ (self, job):

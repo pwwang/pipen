@@ -2013,7 +2013,7 @@ class TestCmd(testly.TestCase):
 			self.assertEqual(repr(c), '<Cmd {!r}>'.format(cmd))
 
 	def dataProvider_testInit(self):
-		yield 'ls',
+		yield ['ls'], True, {'shell': True}
 		yield 'ls2', True, None, OSError
 
 	def testRunTimeout(self):

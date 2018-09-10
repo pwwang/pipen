@@ -1,10 +1,10 @@
-import testly, logging, helpers
+import testly, logging, helpers, sys
 
 from os import path, makedirs
 from shutil import rmtree
 from tempfile import gettempdir
 from pyppl import logger
-from pyppl.logger import LEVELS, LEVELS_ALWAYS, COLORS, THEMES, PyPPLLogFilter, PyPPLLogFormatter
+from pyppl.logger import LEVELS, LEVELS_ALWAYS, COLORS, THEMES, PyPPLLogFilter, PyPPLLogFormatter, PyPPLStreamHandler
 from pyppl.exception import TemplatePyPPLRenderError, LoggerThemeError
 
 class TestPyPPLLogFilter(testly.TestCase):
@@ -93,6 +93,62 @@ class TestPyPPLLogFormatter(testly.TestCase):
 		self.assertEqual(f[:21], t)
 		self.assertEqual(f[21:], out)
 
+class TestPyPPLStreamHandler(testly.TestCase):
+
+	def testInit(self):
+		handler = PyPPLStreamHandler()
+		self.assertEqual(handler.pbar_started.value, 0)
+
+	def dataProvider_test_emit(self):
+		record  = logging.makeLogRecord(dict(
+			level = logging.INFO,
+			msg   = u'whatever msg1'
+		))
+		yield record, '\n', 'whatever msg1'
+
+	def test_emit(self, record, terminator, outs):
+		with self.assertStdOE() as (out, err):
+			handler = PyPPLStreamHandler(sys.stderr)
+			handler._emit(record, terminator)
+		self.assertIn(outs, err.getvalue())
+
+	def dataProvider_testEmit(self):
+		
+		yield logging.makeLogRecord(dict(
+			level = logging.INFO,
+			msg   = 'whatever msg1'
+		)), 'whatever msg1', 0
+
+		yield logging.makeLogRecord(dict(
+			level = logging.INFO,
+			msg   = '[ SUBMIT] job1 submitted'
+		)), 'job1 submitted', 1
+
+		yield logging.makeLogRecord(dict(
+			level = logging.INFO,
+			msg   = '[JOBDONE] job1 done'
+		)), 'job1 done', 1
+
+		yield [
+			logging.makeLogRecord(dict(
+				level = logging.INFO,
+				msg   = '[JOBDONE] job1 done'
+			)), 
+			logging.makeLogRecord(dict(
+				level = logging.INFO,
+				msg   = 'job2 done'
+			)), 
+		], 'job2 done', 0
+	
+	def testEmit(self, records, outs, pbar_started):
+		if not isinstance(records, list):
+			records = [records]
+		with self.assertStdOE() as (out, err):
+			handler = PyPPLStreamHandler(sys.stderr)
+			for record in records:
+				handler.emit(record)
+		self.assertIn(outs, err.getvalue())
+		self.assertEqual(handler.pbar_started.value, pbar_started)
 
 class TestLogger(testly.TestCase):
 

@@ -1079,7 +1079,7 @@ class Proc (object):
 			profiles['default'] = {'runner': 'local'}
 		
 		config = profiles['default']
-		
+
 		if isinstance(profile, dict):
 			utils.dictUpdate(config, profile)
 			if 'runner' not in config:

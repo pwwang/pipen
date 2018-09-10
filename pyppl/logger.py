@@ -265,7 +265,7 @@ class PyPPLStreamHandler(logging.StreamHandler):
 		super(PyPPLStreamHandler, self).__init__(stream)
 
 	def _emit(self, record, terminator = "\n"):
-		if sys.version_info[0] > 2:
+		if sys.version_info[0] > 2: # pragma: no cover
 			self.terminator = terminator
 			super(PyPPLStreamHandler, self).emit(record)
 		else:
@@ -273,12 +273,13 @@ class PyPPLStreamHandler(logging.StreamHandler):
 				msg = self.format(record)
 				stream = self.stream
 				fs = "%s" + terminator
-				if not logging._unicode: #if no unicode support...
+				#if no unicode support...
+				if not logging._unicode: # pragma: no cover
 					stream.write(fs % msg)
 				else:
 					try:
 						if (isinstance(msg, unicode) and
-							getattr(stream, 'encoding', None)):
+							getattr(stream, 'encoding', None)): # pragma: no cover
 							ufs = u'%s' + terminator
 							try:
 								stream.write(ufs % msg)
@@ -292,12 +293,12 @@ class PyPPLStreamHandler(logging.StreamHandler):
 								stream.write((ufs % msg).encode(stream.encoding))
 						else:
 							stream.write(fs % msg)
-					except UnicodeError:
+					except UnicodeError: # pragma: no cover
 						stream.write(fs % msg.encode("UTF-8"))
 				self.flush()
-			except (KeyboardInterrupt, SystemExit):
+			except (KeyboardInterrupt, SystemExit): # pragma: no cover
 				raise
-			except Exception:
+			except Exception: # pragma: no cover
 				self.handleError(record)
 
 	def emit(self, record):

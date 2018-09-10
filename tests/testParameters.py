@@ -1,9 +1,9 @@
-import helpers, testly, re
+import helpers, testly, re, sys
 
 from os import path, makedirs
 from shutil import rmtree
 from tempfile import gettempdir
-from pyppl.parameters import Parameter, Parameters
+from pyppl.parameters import Parameter, Parameters, HelpAssembler, Commands
 from pyppl.exception import ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError
 
 noANSI = lambda s: '\n'.join(line.rstrip() for line in re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', s).split('\n'))
@@ -38,6 +38,8 @@ class TestParameter (testly.TestCase):
 				self.assertListEqual(param.value, list(value))
 			else:
 				self.assertEqual(param.value, value)
+			self.assertTrue(param == param)
+			self.assertFalse(param != param)
 
 	def dataProvider_testSetGetAttr(self):
 		# 0
@@ -155,7 +157,11 @@ class TestParameters(testly.TestCase):
 		self.assertEqual(ps._props['desc'], [])
 		self.assertListEqual(ps._props['hopts'], ['-h', '--help', '-H', '-?'])
 		self.assertEqual(ps._props['prefix'], '-')
+		self.assertIsInstance(ps.__dict__['_assembler'], HelpAssembler)
+		self.assertEqual(ps._assembler.theme, HelpAssembler.THEMES['default'])
 		self.assertDictEqual(ps._params, {})
+		self.assertTrue(ps == ps)
+		self.assertFalse(ps != ps)
 
 	def dataProvider_testSetGetAttr(self):
 		ps = Parameters()
@@ -176,6 +182,14 @@ class TestParameters(testly.TestCase):
 			self.assertEqual(p.name, name)
 			self.assertEqual(p.value, value)
 			self.assertIn(name, ps._params)
+			
+			ps[name] = value
+			p = ps[name]
+			self.assertIsInstance(p, Parameter)
+			self.assertEqual(p.name, name)
+			self.assertEqual(p.value, value)
+			self.assertIn(name, ps._params)
+
 			del ps._params[name]
 			self.assertNotIn(name, ps._params)
 			p = getattr(ps, name)
@@ -183,6 +197,24 @@ class TestParameters(testly.TestCase):
 			self.assertEqual(p.value, None)
 			p.value = value
 			self.assertEqual(p.value, value)
+
+	def dataProvider_testSetTheme(self):
+		yield 'default',
+		yield 'blue',
+		yield {},
+		yield {'title': 'red'},
+
+	def testSetTheme(self, theme):
+		ps = Parameters()
+		ps._setTheme(theme)
+		self.assertEqual(ps._assembler.theme, HelpAssembler.THEMES.get(str(theme), theme))
+
+	def testRepr(self):
+		ps = Parameters()
+		ps.a
+		ps.b
+		self.assertIn('<Parameters(a:None,b:None) @ ', repr(ps))
+		self.assertIn('>', repr(ps))
 
 	def dataProvider_testCall(self):
 		ps = Parameters()
@@ -311,11 +343,12 @@ class TestParameters(testly.TestCase):
 		yield ps, 'b', 'auto', 'F', False, False
 		ps.c.type = 'list'
 		yield ps, 'c', 'list:one', 1, [[1]], True
+		yield ps, 'd', 'auto', '1', 1, False, True
 
 
-	def testPutValue(self, ps, argname, argtype, argval, outval, ret):
+	def testPutValue(self, ps, argname, argtype, argval, outval, ret, arbi = False):
 		with self.assertStdOE():
-			r = ps._putValue(argname, argtype, argval)
+			r = ps._putValue(argname, argtype, argval, arbi)
 		self.assertEqual(r, ret)
 		if argname in ps._params:
 			self.assertEqual(ps._params[argname].value, outval)
@@ -524,10 +557,12 @@ class TestParameters(testly.TestCase):
 		ps4.f           = []
 		ps4.f.type      = 'list'
 		ps4.f.desc      = 'This is a description of option f. \n Option f is not required.'
-		ps4._.required  = True
+		ps4.g           = ps4.f # alias
+		ps4._.required  = False
 		ps4._.desc      = 'positional options'
 		ps4('usage', '{prog} User-defined usages\n{prog} User-defined another usage'.split('\n'))
 		ps4('desc', 'This program is doing: \n* 1. blahblah\n* 2. lalala'.split('\n'))
+		ps4._helpx = lambda items: items.update({'END': ['Bye!']}) or items
 		yield ps4, [
 			'DESCRIPTION:',
 			'  This program is doing:',
@@ -541,13 +576,17 @@ class TestParameters(testly.TestCase):
 			'REQUIRED OPTIONS:',
 			'  --param-ef <STR>                      - This is a description of option ef.',
 			'                                           Option ef is required.',
-			'  POSITIONAL                            - positional options',
 			'',
 			'OPTIONAL OPTIONS:',
-			'  --param-f <LIST>                      - This is a description of option f.',
+			'  --param-f, --param-g <LIST>           - This is a description of option f.',
 			'                                           Option f is not required.',
 			'                                          Default: []',
+			'  POSITIONAL                            - positional options',
+			'                                          Default: None',
 			'  -h, --help, -H, -?                    - Print this help information',
+			'',
+			'END:',
+			'  Bye!',
 			''
 		]
 
@@ -556,21 +595,22 @@ class TestParameters(testly.TestCase):
 		ps5.g = ''
 		ps5.g.show = False
 		yield ps5, [
+			'Error: This is an error!',
 			'USAGE:',
 			'  testParameters.py',
 			'',
 			'OPTIONAL OPTIONS:',
 			'  -h, --help, -H, -?                    - Print this help information',
 			''
-		]
+		], 'This is an error!'
 
-	def testHelp(self, ps, out):
+	def testHelp(self, ps, out, error = ''):
 		self.maxDiff     = 8000
 		self.diffContext = None
 		self.diffTheme   = 'contrast'
 		import sys
 		sys.argv = ['progname']
-		h = ps.help()
+		h = ps.help(error)
 		self.assertEqual(noANSI(h), '\n'.join(out) + '\n')
 	
 	def dataProvider_testLoadDict(self):
@@ -669,7 +709,128 @@ class TestParameters(testly.TestCase):
 			for param in params:
 				p = getattr(ps, param.name)
 				self.assertDictEqual(param._props, p._props)
-			
+	
+class TestCommands(testly.TestCase):
+
+	def testInit(self):
+		cmds = Commands()
+		self.assertEqual(cmds._desc, [])
+		self.assertEqual(cmds._hcmd, 'help')
+		self.assertEqual(cmds._cmds, {})
+		self.assertIsInstance(cmds._assembler, HelpAssembler)
+		self.assertEqual(cmds._assembler.theme, HelpAssembler.THEMES['default'])
+		self.assertIsNone(cmds._helpx)
+		cmds._helpx = lambda a: None
+		self.assertTrue(callable(cmds._helpx))
+
+	def test_setDesc(self, indesc, outdesc):
+		cmds = Commands()
+		cmds._setDesc(indesc)
+		cmds._desc = indesc
+		self.assertEqual(cmds._desc, outdesc)
+
+	def dataProvider_test_setDesc(self):
+		yield 'a', ['a']
+		yield 'a\nb', ['a\nb']
+		yield ['a', 'b'], ['a', 'b']
+
+	def test_setHcmd(self, inhcmd, outhcmd):
+		cmds = Commands()
+		cmds._setHcmd(inhcmd)
+		cmds._hcmd = inhcmd
+		self.assertEqual(cmds._hcmd, outhcmd)
+
+	def dataProvider_test_setHcmd(self):
+		yield 'h', 'h'
+		yield '?', '?'
+
+	def test_setTheme(self, intheme, outtheme):
+		cmds = Commands()
+		cmds._setTheme(intheme)
+		cmds._theme = intheme
+		self.assertDictEqual(cmds._assembler.theme, outtheme)
+
+	def dataProvider_test_setTheme(self):
+		yield 'default', HelpAssembler.THEMES['default']
+		yield 'blue', HelpAssembler.THEMES['blue']
+		yield 'plain', HelpAssembler.THEMES['plain']
+
+	def testSetGetattr(self):
+		cmds = Commands()
+		cmds['ps1'].a
+		self.assertIsInstance(cmds.ps1, Parameters)
+		self.assertIsInstance(cmds.ps1.a, Parameter)
+		self.assertIsInstance(cmds.ps2, Parameters)
+
+		cmds.ps3 = cmds.ps1
+		self.assertEqual(cmds.ps3._prog, path.basename(sys.argv[0]) + ' ' + 'ps1|ps3')
+
+		cmds.ps4 = 'command ps4'
+		self.assertEqual(cmds.ps4._props['desc'], ['command ps4'])
+
+	def testParse(self, cmds, args, retcmd, retps, arbi = False, exception = None):
+		if exception:
+			with self.assertStdOE():
+				self.assertRaises(exception, cmds.parse, args, arbi)
+		else:
+			cmd, ps = cmds.parse(args, arbi)
+			self.assertEqual(cmd, retcmd)
+			self.assertDictEqual(ps, retps)
+
+	def dataProvider_testParse(self):
+		cmds1 = Commands()
+		cmds1._cmds['None'] = None
+		yield cmds1, [], '', {}, True
+
+		args1 = ['-a', '1', '-b', '2', '3', '-c:list', '4', '5', '-d']
+		yield cmds1, args1, '-a', {'_': [1, 3], 'b': 2, 'c': [4, 5], 'd': True}, True
+
+		args2 = ['subcmd', '-a', '1', '-b', '2', '3', '-c:list', '4', '5', '-d']
+		yield cmds1, args2, 'subcmd', {'a': 1, '_': [3], 'b': 2, 'c': [4, 5], 'd': True}, True
+
+		args3 = ['None', '1', '2']
+		yield cmds1, args3, 'None', {'_': ['1', '2']}, True
+
+		cmds2 = Commands()
+		cmds2.subcmd = 'A sub command.'
+		yield cmds2, None, '', {}, False, SystemExit
+		yield cmds2, ['help'], '', {}, False, SystemExit
+		yield cmds2, ['help', 'x'], '', {}, False, SystemExit
+		yield cmds2, ['help', 'subcmd'], '', {}, False, SystemExit
+		yield cmds2, ['subcmd', '1'], 'subcmd', {'_': [1]}, False
+
+	def dataProvider_testHelp(self):
+		cmds = Commands()
+		cmds._desc = 'Hello world!'
+		yield cmds, [
+			"DESCRIPTION:",
+			"  Hello world!",
+			"",
+			"COMMANDS:",
+			"  help <COMMAND>                        - Print help information for the command",
+			""
+		]
+		yield cmds, [
+			"DESCRIPTION:",
+			"  Hello world!",
+			"",
+			"COMMANDS:",
+			"  help <COMMAND>                        - Print help information for the command",
+			"",
+			"END:",
+			"  -hello                                - world",
+			"  -good <BYE>                           - world",
+			""
+		], '', lambda items: items.update({'end': [
+			('-hello', '    ', 'world'),
+			('-good', 'bye', 'world'),
+
+		]}) or items
+
+	def testHelp(self, cmds, outhelp, error = '', helpx = None):
+		cmds._helpx = helpx
+		self.assertEqual(noANSI(cmds.help(error)), '\n'.join(outhelp) + '\n')
+
 
 if __name__ == '__main__':
 	testly.main(verbosity=2)

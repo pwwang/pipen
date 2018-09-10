@@ -169,6 +169,7 @@ class HelpAssembler(object):
 			ret.append(self.title(title))
 			if isinstance(helpitems[0], tuple):
 				for optname, opttype, optdesc in helpitems:
+					opttype = opttype.strip()
 					if not isinstance(optdesc, list):
 						optdesc = [optdesc]
 					for i, od in enumerate(optdesc):
@@ -376,7 +377,7 @@ class Parameters (object):
 			prefix = '-',
 			hbald  = True
 		)
-		self.__dict__['_params']    = {}
+		self.__dict__['_params']    = OrderedDict()
 		self.__dict__['_assembler'] = HelpAssembler(self._prog, theme)
 		self.__dict__['_helpx']     = None
 

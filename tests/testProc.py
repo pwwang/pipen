@@ -1026,6 +1026,8 @@ class TestProc(testly.TestCase):
 		yield 't5', 'xxx', {'xxx': {}}, 'local', {'runner': 'xxx'}
 		yield 't6', 'xxx', {'yyy': {}}, 'xxx', {'runner': 'xxx'}
 		yield 't7', 'sge1d', {'sge1d': {'runner': 'sge', 'nthread': 10, 'forks': 4, 'ppldir': self.testdir}}, 'sge', {'runner': 'sge1d', 'forks': 4, 'nthread': 10, 'ppldir': self.testdir}
+		yield 't8', {'forks': 10}, {'default': {'forks': 20}}, 'local', {'forks': 10, 'runner': {'forks': 10}}
+		yield 't9', {'forks': 10}, {'default': {'envs': {'a': 1}}}, 'local', {'forks': 10}
 		
 	def testReadConfig(self, tag, profile, inconfig, runner, outconfig):
 		pReadConfig = Proc(tag = tag)
@@ -1176,10 +1178,21 @@ class TestProc(testly.TestCase):
 		pRunJobs.input  = {'a': [1,2]}
 		with helpers.log2str():
 			pRunJobs._tidyBeforeRun()
-		yield pRunJobs,
+		yield pRunJobs, 
+		pRunJobs2 = Proc()
+		pRunJobs2.ppldir = self.testdir
+		pRunJobs2.input  = {'a': [1,2]}
+		pRunJobs2.props['runner'] = 'NoSuchRunner'
+		with helpers.log2str():
+			pRunJobs2._tidyBeforeRun()
+		
+		yield pRunJobs2, ProcAttributeError
 	
-	def testRunJobs(self, p):
-		self.assertIsNone(p._runJobs())
+	def testRunJobs(self, p, exception = None):
+		if exception:
+			self.assertRaises(exception, p._runJobs)
+		else:
+			self.assertIsNone(p._runJobs())
 		
 	def dataProvider_testRun(self):
 		pRun = Proc()
