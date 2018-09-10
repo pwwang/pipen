@@ -11,6 +11,14 @@ from .logger import COLORS
 
 class HelpAssembler(object):
 
+	"""
+	A helper class to help assembling the help information page.
+	@staticvars
+		`MAXPAGEWIDTH`: the max width of the help page, not including the leading space
+		`MAXOPTWIDTH` : the max width of the option name (include the type and placeholder, but not the leading space)
+		`THEMES`      : the themes
+	"""
+
 	# the max width of the help page, not including the leading space
 	MAXPAGEWIDTH = 98
 	# the max width of the option name (include the type and placeholder, but not the leading space)
@@ -52,6 +60,12 @@ class HelpAssembler(object):
 	)
 
 	def __init__(self, prog = None, theme = 'default'):
+		"""
+		Constructor
+		@params:
+			`prog`: The program name
+			`theme`: The theme. Could be a name of `THEMES`, or a dict of a custom theme.
+		"""
 		self.progname  = prog or path.basename(sys.argv[0])
 		if isinstance(theme, dict):
 			self.theme = theme
@@ -89,6 +103,11 @@ class HelpAssembler(object):
 		return pagewidth, optwidth
 				
 	def error(self, msg):
+		"""
+		Render an error message
+		@params:
+			`msg`: The error message
+		"""
 		msg = msg.replace('{prog}', self.prog(self.progname))
 		return '{colorstart}Error: {msg}{colorend}'.format(
 			colorstart = self.theme['error'],
@@ -97,6 +116,11 @@ class HelpAssembler(object):
 		)
 	
 	def warning(self, msg):
+		"""
+		Render an warning message
+		@params:
+			`msg`: The warning message
+		"""
 		msg = msg.replace('{prog}', self.prog(self.progname))
 		return '{colorstart}Warning: {msg}{colorend}'.format(
 			colorstart = self.theme['warning'],
@@ -105,6 +129,11 @@ class HelpAssembler(object):
 		)
 
 	def title(self, msg):
+		"""
+		Render an section title
+		@params:
+			`msg`: The section title
+		"""
 		return '{colorstart}{msg}{colorend}:'.format(
 			colorstart = self.theme['title'],
 			msg        = msg.upper(),
@@ -112,6 +141,11 @@ class HelpAssembler(object):
 		)
 
 	def prog(self, prog = None):
+		"""
+		Render the program name
+		@params:
+			`msg`: The program name
+		"""
 		prog = prog or self.progname
 		return '{colorstart}{prog}{colorend}'.format(
 			colorstart = self.theme['prog'],
@@ -120,6 +154,11 @@ class HelpAssembler(object):
 		)
 
 	def optname(self, msg):
+		"""
+		Render the option name
+		@params:
+			`msg`: The option name
+		"""
 		return '{colorstart}  {msg}{colorend}'.format(
 			colorstart = self.theme['optname'],
 			msg        = msg,
@@ -127,6 +166,11 @@ class HelpAssembler(object):
 		)
 
 	def opttype(self, msg):
+		"""
+		Render the option type or placeholder
+		@params:
+			`msg`: the option type or placeholder
+		"""
 		trimmedmsg = msg.rstrip().upper()
 		if not trimmedmsg: 
 			return msg
@@ -137,6 +181,11 @@ class HelpAssembler(object):
 		) + ' ' * (len(msg) - len(trimmedmsg))
 
 	def optdesc(self, msg):
+		"""
+		Render the option descriptions
+		@params:
+			`msg`: the option descriptions
+		"""
 		msg = msg.replace('{prog}', self.prog(self.progname))
 		if msg.startswith('DEFAULT: ') or msg.startswith('Default: '):
 			msg = '{colorstart}{msg}{colorend}'.format(
@@ -151,6 +200,11 @@ class HelpAssembler(object):
 		)
 
 	def plain(self, msg):
+		"""
+		Render a plain message
+		@params:
+			`msg`: the message
+		"""
 		msg = msg.replace('{prog}', self.prog(self.progname))
 		return '{colorstart}{msg}{colorend}'.format(
 			colorstart = '',
@@ -159,6 +213,15 @@ class HelpAssembler(object):
 		)
 
 	def assemble(self, helps, progname = None):
+		"""
+		Assemble the whole help page.
+		@params:
+			`helps`: The help items. A list with plain strings or tuples of 3 elements, which
+				will be treated as option name, option type/placeholder and option descriptions.
+			`progname`: The program name used to replace '{prog}' with.
+		@returns:
+			lines (`list`) of the help information.
+		"""
 		progname = progname or path.basename(sys.argv[0])
 		pagewidth, optwidth = HelpAssembler._calcwidth(helps, progname)
 		
@@ -367,6 +430,9 @@ class Parameters (object):
 	def __init__(self, command = None, theme = 'default'):
 		"""
 		Constructor
+		@params:
+			`command`: The sub-command
+			`theme`: The theme
 		"""
 		prog = path.basename(sys.argv[0])
 		self.__dict__['_prog']  = prog + ' ' + command if command else prog
@@ -382,18 +448,38 @@ class Parameters (object):
 		self.__dict__['_helpx']     = None
 
 	def _setTheme(self, theme):
+		"""
+		Set the theme
+		@params:
+			`theme`: The theme
+		"""
 		self._assembler = HelpAssembler(self._prog, theme)
 		return self
 	
 	def _setUsage(self, usage):
+		"""
+		Set the usage
+		@params:
+			`usage`: The usage
+		"""
 		self._props['usage'] = usage if isinstance(usage, list) else [usage]
 		return self
 	
 	def _setDesc(self, desc):
+		"""
+		Set the description
+		@params:
+			`desc`: The description
+		"""
 		self._props['desc'] = desc if isinstance(desc, list) else [desc]
 		return self
 
 	def _setHopts(self, hopts):
+		"""
+		Set the help options
+		@params:
+			`hopts`: The help options
+		"""
 		self._props['hopts'] = hopts if isinstance(hopts, list) else [ho.strip() for ho in hopts.split(',')]
 		return self
 
@@ -412,12 +498,22 @@ class Parameters (object):
 		return not self.__eq__(other)
 	
 	def _setPrefix(self, prefix):
+		"""
+		Set the option prefix
+		@params:
+			`prefix`: The prefix
+		"""
 		if not prefix:
 			raise ParametersParseError('Empty prefix.')
 		self._props['prefix'] = prefix
 		return self
 	
 	def _setHbald(self, hbald = True):
+		"""
+		Set if we should show help information if no arguments passed.
+		@params:
+			`hbald`: The flag. show if True else hide. Default: `True`
+		"""
 		self._props['hbald'] = hbald
 		return self
 
@@ -450,7 +546,8 @@ class Parameters (object):
 
 	def __call__(self, option, value):
 		"""
-		Set options values in `self._props`
+		Set options values in `self._props`. 
+		Will be deprecated in the future!
 		@params:
 			`option`: The key of the option
 			`value` : The value of the option
@@ -512,6 +609,12 @@ class Parameters (object):
 
 	@staticmethod
 	def _coerceValue(value, t = 'auto'):
+		"""
+		Coerce a value to another type.
+		@params:
+			`value`: The value
+			`t`: The type
+		"""
 		try:
 			if t == 'int' and not isinstance(value, int):
 				return int(value)
@@ -599,7 +702,12 @@ class Parameters (object):
 
 	def parse (self, args = None, arbi = False):
 		"""
-		Parse the arguments from `sys.argv`
+		Parse the arguments.
+		@params:
+			`args`: The arguments (list). `sys.argv[1:]` will be used if it is `None`.
+			`arbi`: Whether do an arbitrary parse. If True, options don't need to be defined. Default: `False`
+		@returns:
+			A `Box`/`dict` object containing all option names and values.
 		"""
 		args = args is None and sys.argv[1:] or args
 
@@ -836,6 +944,11 @@ class Commands(object):
 	"""
 
 	def __init__(self, theme = 'default'):
+		"""
+		Constructor
+		@params:
+			`theme`: The theme
+		"""
 		self.__dict__['_desc']      = []
 		self.__dict__['_hcmd']      = 'help'
 		self.__dict__['_cmds']      = OrderedDict()
@@ -843,14 +956,29 @@ class Commands(object):
 		self.__dict__['_helpx']     = None
 
 	def _setDesc(self, desc):
+		"""
+		Set the description
+		@params:
+			`desc`: The description
+		"""
 		self.__dict__['_desc'] = desc if isinstance(desc, list) else [desc]
 		return self
 
 	def _setHcmd(self, hcmd):
+		"""
+		Set the help command
+		@params:
+			`hcmd`: The help command
+		"""
 		self.__dict__['_hcmd'] = hcmd
 		return self
 	
 	def _setTheme(self, theme):
+		"""
+		Set the theme
+		@params:
+			`theme`: The theme
+		"""
 		self.__dict__['_assembler'] = HelpAssembler(None, theme)
 		return self
 	
@@ -888,6 +1016,14 @@ class Commands(object):
 		return getattr(self, name)
 
 	def parse(self, args = None, arbi = False):
+		"""
+		Parse the arguments.
+		@params:
+			`args`: The arguments (list). `sys.argv[1:]` will be used if it is `None`.
+			`arbi`: Whether do an arbitrary parse. If True, options don't need to be defined. Default: `False`
+		@returns:
+			A `tuple` with first element the subcommand and second the parameters being parsed.
+		"""
 		args = args is None and sys.argv[1:] or args
 		if arbi:
 			if not args:
@@ -915,6 +1051,14 @@ class Commands(object):
 			return command, self._cmds[command].parse(args)
 
 	def help(self, error = '', printNexit = False):
+		"""
+		Construct the help page
+		@params:
+			`error`: the error message
+			`printNexit`: print the help page and exit instead of return the help information
+		@returns:
+			The help information if `printNexit` is `False`
+		"""
 
 		helpitems = OrderedDict()
 

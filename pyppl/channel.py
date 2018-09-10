@@ -618,7 +618,9 @@ class Channel (list):
 
 	def t(self):
 		"""
-		Transpose a channel
+		Transpose the channel
+		@returns:
+			The transposed channel.
 		"""
 		ret = Channel.nones(length = self.width(), width = self.length())
 		ret = [list(r) for r in ret]

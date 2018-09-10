@@ -227,6 +227,13 @@ class PyPPLLogFormatter (logging.Formatter):
 	logging formatter for pyppl
 	"""
 	def __init__(self, fmt=None, theme='greenOnBlack', secondary = False):
+		"""
+		Constructor
+		@params:
+			`fmt`      : The format
+			`theme`    : The theme
+			`secondary`: Whether this is a secondary formatter or not (another formatter applied before this).
+		"""
 		fmt = LOGFMT if fmt is None else fmt
 		logging.Formatter.__init__(self, fmt, "%Y-%m-%d %H:%M:%S")
 		self.theme     = theme
@@ -235,6 +242,13 @@ class PyPPLLogFormatter (logging.Formatter):
 		
 	
 	def format(self, record):
+		"""
+		Format the record
+		@params:
+			`record`: The log record
+		@returns:
+			The formatted record
+		"""
 		(level, msg) = _getLevel(record)
 		theme = 'greenOnBlack' if self.theme is True else self.theme
 		theme = THEMES[theme] if not isinstance(theme, dict) and theme in THEMES else theme
@@ -259,12 +273,25 @@ class PyPPLLogFormatter (logging.Formatter):
 		return logging.Formatter.format(self, record)
 
 class PyPPLStreamHandler(logging.StreamHandler):
+	"""
+	PyPPL stream log handler.
+	To implement the progress bar for JOBONE and SUBMIT logs.
+	"""
 
 	def __init__(self, stream = None):
+		"""
+		Constructor
+		@params:
+			`stream`: The stream
+		"""
 		self.pbar_started = Value('i', 0)
 		super(PyPPLStreamHandler, self).__init__(stream)
 
 	def _emit(self, record, terminator = "\n"):
+		"""
+		Helper function implementing a python2,3-compatible emit.
+		Allow to add "\n" or "\r" as terminator.
+		"""
 		if sys.version_info[0] > 2: # pragma: no cover
 			self.terminator = terminator
 			super(PyPPLStreamHandler, self).emit(record)
@@ -302,6 +329,9 @@ class PyPPLStreamHandler(logging.StreamHandler):
 				self.handleError(record)
 
 	def emit(self, record):
+		"""
+		Emit the record.
+		"""
 		level, _ = _getLevel(record)
 		if level in ['SUBMIT', 'JOBDONE']:
 			self.pbar_started.value = 1

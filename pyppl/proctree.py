@@ -295,6 +295,11 @@ class ProcTree(object):
 		return None
 
 	def unranProcs(self):
+		"""
+		Get the unran processes.
+		@returns:
+			The processes haven't run.
+		"""
 		ret = {}
 		starts = set(self.getStarts())
 		for node in ProcTree.NODES.values():

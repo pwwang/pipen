@@ -249,6 +249,13 @@ class Aggr (object):
 			setattr(proxy, name, value)
 
 	def moduleFunc(self, name, on, off = None):
+		"""
+		Define modules using functions
+		@params:
+			`name`: The name of the module
+			`on`  : The function when the module is turned on
+			`off` : The function when the module is turned off
+		"""
 		self._modules[name] = dict(on = on, off = off, status = 'off')
 
 	def module(self, name, starts = None, depends = None, ends = None, starts_shared = None, depends_shared = None, ends_shared = None):
@@ -324,6 +331,11 @@ class Aggr (object):
 		self.moduleFunc(name, on, off)
 
 	def on(self, *names):
+		"""
+		Turn on modules
+		@params:
+			`names`: The names of the modules.
+		"""
 		names = sum([utils.alwaysList(name) for name in names], [])
 		names = names or self._modules.keys()
 		for name in names:
@@ -332,6 +344,11 @@ class Aggr (object):
 				self._modules[name]['on'](self)
 	
 	def off(self, *names):
+		"""
+		Turn off modules
+		@params:
+			`names`: The names of the modules.
+		"""
 		names = sum([utils.alwaysList(name) for name in names], [])
 		names = names or self._modules.keys()
 		for name in names:
@@ -340,20 +357,40 @@ class Aggr (object):
 				self._modules[name]['off'](self)
 
 	def addStart(self, *procs):
+		"""
+		Add start processes
+		@params:
+			`procs`: The selector of processes to add
+		"""
 		order       = self._procs.values()
 		procs       = self._select(procs, forceList = True) + self.starts
 		self.starts = [proc for proc in order if proc in procs]
 	
 	def delStart(self, *procs):
+		"""
+		Delete start processes
+		@params:
+			`procs`: The selector of processes to delete
+		"""
 		procs       = self._select(procs, forceList = True)
 		self.starts = [proc for proc in self.starts if proc not in procs]
 
 	def addEnd(self, *procs):
+		"""
+		Add end processes
+		@params:
+			`procs`: The selector of processes to add
+		"""
 		order     = self._procs.values()
 		procs     = self._select(procs, forceList = True) + self.ends
 		self.ends = [proc for proc in order if proc in procs]
 	
 	def delEnd(self, *procs):
+		"""
+		Delete end processes
+		@params:
+			`procs`: The selector of processes to delete
+		"""
 		procs     = self._select(procs, forceList = True)
 		self.ends = [proc for proc in self.ends if proc not in procs]
 
