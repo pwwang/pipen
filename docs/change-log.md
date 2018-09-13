@@ -1,5 +1,15 @@
 # Change log
 
+## Sept. 13, 2018: 1.1.2
+- Optimize check server alive for ssh runner.
+- Rwrite command line tool: bin/pyppl
+- Add commands to allow subcommand in command line argument parser.
+- Allow params to parse arguments arbitrarily.
+- Allow help information to be interpolated from outsite for params.
+- Add alias support for params and commands.
+- Rewrite API generator and regenerate API docs.
+- Fix other bugs.
+
 ## Aug 30, 2018: 1.1.1
 - Allow progress bar to be collapsed in stream log.
 - Remove loky dependency, so `PyPPL` could run on cygwin/msys2.
