@@ -1,8 +1,8 @@
 """
-# A runner wrapper for a single script
-# Author: pwwang@pwwang.com
-# Examples:
-#	@see runner.unittest.py
+A runner wrapper for a single script
+Author: pwwang@pwwang.com
+Examples:
+	@see runner.unittest.py
 """
 import copy
 

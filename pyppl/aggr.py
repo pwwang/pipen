@@ -69,17 +69,6 @@ class _Proxy(object):
 class Aggr (object):
 	"""
 	The aggregation of a set of processes
-
-	@magic methods:
-		`__setattr__(self, name, value)`: Set property value of an aggregation.
-		- if it's a common property, set it to all processes
-		- if it is `input` set it to starting processes
-		- if it is `depends` set it to the end processes
-		- if it is related to `export` (startswith `ex`), set it to the end processes
-		- if it is in ['starts', 'ends', 'id'], set it to the aggregation itself.
-		- Otherwise a `ValueError` raised.
-		- You can use `[aggr].[proc].[prop]` to set/get the properties of a processes in the aggregation.
-
 	"""
 	ATTR_STARTS = ['input', 'depends']
 	ATTR_ENDS   = ['exdir', 'exhow', 'exow', 'expart']
@@ -169,6 +158,7 @@ class Aggr (object):
 		self['b', 'c'] # _Proxy of (proc b, proc c)
 		self['b,c'] # _Proxy of (proc b, proc c)
 		self[Proc(id = 'd')] # proc d
+		```
 		"""
 		if isinstance(key, (slice, int)):
 			ret = list(self._procs.values())[key]
@@ -212,6 +202,7 @@ class Aggr (object):
 		self['b', 'c'] # _Proxy of (proc b, proc c)
 		self['b,c'] # _Proxy of (proc b, proc c)
 		self[Proc(id = 'd')] # proc d
+		```
 		"""
 		procs = self._select(key)
 		if procs is None:
@@ -221,6 +212,15 @@ class Aggr (object):
 		return procs
 
 	def __getattr__(self, name):
+		"""
+		Get the property of an aggregation.
+		@params:
+			`name`: The name of the property
+		@returns:
+			- Return a proc if name in `self._procs`
+			- Return a property value if name in `self.__dict__`
+			- Return a `_Proxy` instance else.
+		"""
 		if name in self.__dict__: # pragma: no cover
 			return self.__dict__[name]
 		if name in self._procs:
@@ -238,6 +238,19 @@ class Aggr (object):
 		return _Proxy(self, prefix = [name], check = True)
 
 	def __setattr__(self, name, value):
+		"""
+		Set property value of an aggregation.
+			- if it's a common property, set it to all processes
+			- if it is `input` set it to starting processes
+			- if it is `depends` set it to the end processes
+			- if it is related to `export` (startswith `ex`), set it to the end processes
+			- if it is in ['starts', 'ends', 'id'], set it to the aggregation itself.
+			- Otherwise a `ValueError` raised.
+			- You can use `[aggr].[proc].[prop]` to set/get the properties of a processes in the aggregation.
+		@params:
+			`name` : The name of the property
+			`value`: The value of the property
+		"""
 		if name == 'id':
 			self.__dict__['id'] = value
 		elif name in ['starts', 'ends']:

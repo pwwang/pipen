@@ -182,6 +182,13 @@ class PyPPLLogFilter (logging.Filter):
 	"""
 	
 	def __init__(self, name='', lvls='normal', lvldiff=None):
+		"""
+		Constructor
+		@params:
+			`name`: The name of the logger
+			`lvls`: The levels of records to keep
+			`lvldiff`: The adjustments to `lvls`
+		"""
 		logging.Filter.__init__(self, name)
 		if not isinstance(lvls, list):
 			if lvls in LEVELS:
@@ -219,6 +226,13 @@ class PyPPLLogFilter (logging.Filter):
 					self.levels.append(ld)
 	
 	def filter (self, record):
+		"""
+		Filter the record
+		@params:
+			`record`: The record to be filtered
+		@return:
+			`True` if the record to be kept else `False`
+		"""
 		level   = _getLevel(record)[0]
 		return self.levels and ( level in self.levels or level.startswith('_') )
 

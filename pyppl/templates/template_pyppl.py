@@ -139,29 +139,32 @@ class TemplatePyPPLCodeBuilder(object):
 
 
 class TemplatePyPPLEngine(object): # pragma: no cover
-	"""A simple template renderer, for a nano-subset of Django syntax.
-	Supported constructs are extended variable access::
-		{{var.modifer.modifier|filter|filter}}
-	loops::
-		{% for var in list %}...{% endfor %}
-	and ifs::
-		{% if var %}...{% endif %}
-	Comments are within curly-hash markers::
-		{# This will be ignored #}
+	"""
+	A simple template renderer, for a nano-subset of Django syntax.
+	Supported constructs are extended variable access:
+		`{{var.modifer.modifier|filter|filter}}`
+	loops:
+		`{% for var in list %}...{% endfor %}`
+	and ifs:
+		`{% if var %}...{% endif %}`
+	Comments are within curly-hash markers:
+		`{# This will be ignored #}`
 	Construct a Templite with the template text, then use `render` against a
 	dictionary context to create a finished string::
-		templite = Templite('''
-			<h1>Hello {{name|upper}}!</h1>
-			{% for topic in topics %}
-				<p>You are interested in {{topic}}.</p>
-			{% endif %}
-			''',
-			{'upper': str.upper},
-		)
-		text = templite.render({
-			'name': "Ned",
-			'topics': ['Python', 'Geometry', 'Juggling'],
-		})
+	```
+	templite = Templite('''
+		<h1>Hello {{name|upper}}!</h1>
+		{% for topic in topics %}
+			<p>You are interested in {{topic}}.</p>
+		{% endif %}
+		''',
+		{'upper': str.upper},
+	)
+	text = templite.render({
+		'name': "Ned",
+		'topics': ['Python', 'Geometry', 'Juggling'],
+	})
+	```
 	"""
 	def __init__(self, text, *contexts):
 		"""

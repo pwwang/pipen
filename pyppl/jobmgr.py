@@ -77,6 +77,14 @@ class Jobmgr (object):
 				ps.killtree(getppid(), killme = True, sig = SIGINT)
 			
 	def progressbar(self, jid, loglevel = 'info'):
+		"""
+		Generate progressbar.
+		@params:
+			`jid`: The job index.
+			`loglevel`: The log level in PyPPL log system
+		@returns:
+			The string representing the progressbar
+		"""
 		bar     = '%s [' % self.proc.jobs[jid]._indexIndicator()
 		barjobs = []
 		# distribute the jobs to bars

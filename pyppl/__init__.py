@@ -306,6 +306,14 @@ class Proc (object):
 		PyPPL._registerProc(self)
 
 	def __getattr__ (self, name):
+		"""
+		Get the value of a property in `self.props`
+		It recognizes alias as well.
+		@params:
+			`name`: The name of the property
+		@returns:
+			The value of the property
+		"""
 		if not name in self.props \
 			and not name in self.config \
 			and not name in Proc.ALIAS \
@@ -318,6 +326,12 @@ class Proc (object):
 		return self.props[name] if name in self.props else self.config[name]
 
 	def __setattr__ (self, name, value):
+		"""
+		Set the value of a property in `self.config`
+		@params:
+			`name` : The name of the property.
+			`value`: The new value of the property.
+		"""
 		if not name in self.config and not name in Proc.ALIAS and not name.endswith ('Runner'):
 			raise ProcAttributeError(name, 'Cannot set attribute for process')
 		
@@ -1380,6 +1394,9 @@ class PyPPL (object):
 		return self
 
 	def showAllRoutes(self):
+		"""
+		Show all the routes in the log.
+		"""
 		logger.logger.info('[DEBUG] ALL ROUTES:')
 		#paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths()])
 		paths  = sorted([[p.name() for p in reversed(ps)] for ps in self.tree.getAllPaths()])

@@ -1,92 +1,169 @@
 #!/usr/bin/env python
 """
-Generate API docs for pyppl
+Generate API docs for PyPPL
 """
-import sys, os, inspect
-sys.path.insert (0, os.path.dirname(__file__))
-import pyppl
+import importlib, inspect, re
+from os import path
+from collections import OrderedDict
+from pyppl.logger import logger
 
+def loadModule(modname, excludes = None, global_excludes = None):
+	excludes        = set(excludes or [])
+	global_excludes = set(global_excludes or [])
+	mod             = importlib.import_module('pyppl.' + modname if modname else 'pyppl')
+	funcnames       = set(dir(mod)) - excludes - global_excludes
+	ret             = OrderedDict()
 
-modules = [
-	'PyPPL', 'Proc', 'Channel', 'Job', 'Jobmgr', 'Aggr', 'flowchart.Flowchart', 'parameters.Parameter', 'parameters.Parameters',
-	'logger', 'utils', 'utils.box', 'utils.cmd', 'utils.parallel', 'utils.safefs', 'proctree.ProcNode', 'proctree.ProcTree',
-	'templates.TemplatePyPPL', 'templates.TemplateJinja2',
-	'runners.Runner', 'runners.RunnerLocal', 'runners.RunnerSsh', 'runners.RunnerSge', 'runners.RunnerSlurm', 'runners.RunnerDry', 
-]
-
-excludes = [
-	"Process", "Pipe", "Popen", "ProcessEx", "S_IEXEC", "__builtins__", "__doc__", "__file__",
-	"__name__", "__package__", "__module__", "__str__", "__dict__", "__weakref__", "__repr__",
-	"copyfileobj", "copyfile", "getcwd", "glob", "move", "rmtree", "stat", "symlink", "walk",
-	"logging", "re", "sys", "chdir", "chmod", "copytree", "devnull", "filelock", "format_exc",
-	"gzip", "makedirs", "md5", "moves", "path", "remove", "string_types", "ResourceWarning", 
-	"ProcessPoolExecutor", "ThreadPoolExecutor", "__path__", "OrderedDict"
-]
-
-doc = """
-# API
-<!-- toc -->
-"""
-
-def getDoc(module, name):
-	sys.stderr.write('- Generating doc for %s ... \n' % name)
-	ret = ''
-	ret += "\n## Module `" + modname + "`  \n"
-	ret += "> "
-	ret += (module.__doc__ if module.__doc__ is not None else ".").lstrip()
-	ret += "\n\n"
-	for m in sorted(module.__dict__.keys()):
-		if m in excludes: continue
-		sys.stderr.write('  * %s\n' % m)
-		if m.startswith('__') and m!='__init__': continue
-		mobj = getattr(module, m)
-		if not callable (mobj): continue
-		if inspect.isclass (mobj):
-			ret += "#### `class: " + m + "`\n"
-			ret += "```\n" + (mobj.__doc__.strip() if mobj.__doc__ is not None else "") + "\n```\n"
+	excludes1 = excludes | global_excludes
+	for funcname in funcnames:
+		if any([re.match(ex, funcname) for ex in excludes1]):
 			continue
-		try:
-			args = tuple(inspect.getargspec(mobj))
-		except Exception:
-			pass
+		
+		obj = getattr(mod, funcname)
+		if not hasattr(obj, '__doc__') or not obj.__doc__:
+			continue
+		
+		if inspect.isclass(obj):
+			class_excludes = set([
+				ex[(len(funcname) + 1):] for ex in excludes if ex.startswith(funcname + '.')
+			]) | global_excludes
 
-		strargs  = args[0]
-		if args[1] is not None: strargs.append ("*" + str(args[1]))
-		if args[2] is not None: strargs.append ("**" + str(args[2]))
-		isstatic = "[@staticmethod]" if type(mobj) == type(lambda x:x) and modname!="utils" else ""
-		ret += "#### `" + m + " (%s) %s`\n" % (", ".join(strargs), isstatic)			
-		modoc = mobj.__doc__ if mobj.__doc__ is not None else ""
-		modoc = modoc.split("\n")
-		for line in modoc:
-			line = line.strip()
-			if line.startswith ("@"):
-				ret += "\n- **" + line[1:] + "**  \n"
-			else:
-				ret += line + "  \n"
+			ret[funcname] = obj
+			parent = obj.__bases__[0]
+			classfuncs = OrderedDict()
+			for name in sorted(set(dir(obj)) - class_excludes):
+				if any([re.match(ex, name) for ex in class_excludes]):
+					continue
+				func = getattr(obj, name)
+				# inherited methods
+				if  hasattr(parent, name) and getattr(parent, name) == getattr(obj, name):
+					continue
+				if not callable(func) or not hasattr(func, '__doc__') or not obj.__doc__:
+					continue
+				classfuncs[name] = func
+			ret['class.' + funcname] = classfuncs
+		elif inspect.isfunction(obj):
+			ret[funcname] = obj
+
+	return mod, ret
+
+def formatDoc(func, name, level = None):
+	try:
+		args = tuple(inspect.getargspec(func))
+	except TypeError:
+		args = ('', None, None)
+
+	strargs  = args[0]
+	if args[1] is not None: 
+		strargs.append("*" + str(args[1]))
+	if args[2] is not None: 
+		strargs.append("**" + str(args[2]))
+
+	ret = ''
+	if level and 'method' in level and inspect.isfunction(func):
+		level = level.replace('method', 'staticmethod')
+	if level and ('class' in level or 'function' in level):
+		ret = '!!! example "{}: `{}`"\n'.format(level, name)
+	elif level and 'method' in level:
+		ret = '\t!!! abstract "{}: `{} ({})`"\n'.format(level, name, ", ".join(strargs))
+	elif level:
+		ret = "{}: `{} ({})`\n".format(level, name, ", ".join(strargs))
+	modoc = func.__doc__ if func.__doc__ is not None else ""
+	modoc = modoc.split("\n")
+	for line in modoc:
+		line = line.rstrip()
+		if line.lstrip().startswith ("@"):
+			p1, p2 = line.split('@', 1)
+			ret += "\n{}- **{}**  \n".format(p1, p2)
+		else:
+			ret += line + "  \n"
 	return ret
 
+if __name__ == '__main__':
+	modules = [
+		('', [
+			r'[^P].+', 'Parameters', 'ProcTree'
+		]),
+		'aggr',
+		('channel', [
+			'Channel.append', 'Channel.count', 'Channel.extend',
+			'Channel.extend', 'Channel.pop', 'Channel.remove', 'Channel.reverse',
+			'Channel.sort',
+		]),
+		'flowchart',
+		'job',
+		'jobmgr',
+		('logger', ['Box']),
+		('parameters', ['Box']),
+		('proctree', ['ProcTreeProcExists']),
+		('runners.helpers', ['Box', 'SafeFs']),
+		'runners.runner',
+		'runners.runner_dry',
+		'runners.runner_local',
+		'runners.runner_sge',
+		'runners.runner_slurm',
+		'runners.runner_ssh',
+		('templates.template', ['asStr']),
+		'templates.template_jinja2',
+		'templates.template_pyppl',
+		('utils', ['Box']),
+		('utils.box', ['fromkeys']),
+		'utils.cmd',
+		'utils.parallel',
+		'utils.ps',
+		'utils.safefs',
+	]
+	global_excludes = [
+		'OrderedDict',
+		'cpu_count',
+		'makedirs',
+		'rmtree',
+		'glob',
+		'format_exc',
+		'deepcopy',
+		'Digraph',
+		'datetime',
+		'copytree',
+		'JoinableQueue',
+		'copyfileobj',
+		'Lock',
+		'Array',
+		'Value',
+		'shmove',
+		'copyfile',
+		'walk',
+		'list2cmdline',
+		'Process',
+		'__subclasshook__',
+		'__eq__',
+		'__ne__',
+		'__hash__',
+		'__repr__',
+		'__str__',
+		'__init_subclass__', # py3
+		r'^_[^\_].+',
+		r'.+Error$', 
+	]
+	with open(path.join(path.dirname(__file__), 'docs', 'api.md'), 'w') as fout:
+		for module in modules:
+			if not isinstance(module, tuple):
+				modname, excludes = module, None
+			elif len(module) == 1:
+				modname, excludes = module[0], None
+			else:
+				modname, excludes = module
 
-for modname in modules:
-	
-	if '.' not in modname:
-		if not hasattr(pyppl, modname):
-			sys.stderr.write('- WARNING: module %s not found!\n' % modname)
-			continue
-
-		module = getattr (pyppl, modname)
-		doc += getDoc(module, modname)
-	
-	else:
-		ns, mod = modname.split('.')
-		if ns == 'flowchart':
-			import pyppl.flowchart
-			module = getattr(pyppl.flowchart, mod)
-		else:
-			module  = getattr(getattr(pyppl, ns), mod)
-		doc += getDoc(module, modname)
-	
-open (os.path.join( os.path.dirname(__file__), 'docs', 'api.md' ), 'w').write (doc)
-#print template
-sys.stderr.write('- Done!\n')
+			logger.info('Handling module: {}'.format(modname))
+			mod, mods = loadModule(modname, excludes, global_excludes)
+			fout.write('# module: pyppl{}\n'.format('.' + modname if modname else ''))
+			fout.write(formatDoc(mod, modname))
 			
-	
+			for mname, mod in mods.items():
+				if isinstance(mod, dict):
+					for key, val in mod.items():
+						logger.info('Handling   - method: {}'.format(key))
+						fout.write(formatDoc(val, key, 'method'))
+				else:
+					logger.info('Handling - class/function: {}'.format(mname))
+					fout.write(formatDoc(mod, mname, '{}'.format('class' if 'class.' + mname in mods else 'function')))
+		

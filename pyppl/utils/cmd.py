@@ -97,7 +97,7 @@ class Cmd(object):
 		@examples:
 			```python
 			c = Command('seq 1 3').pipe('grep 1').run()
-			c.stdout == '1\n'
+			c.stdout == '1\\n'
 			```
 		@params:
 			`cmd`: The other command

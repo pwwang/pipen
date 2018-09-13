@@ -1,1962 +1,2478 @@
-
-# API
-<!-- toc -->
-
-## Module `PyPPL`  
-> The PyPPL class
-
-	@static variables:
-		`TIPS`: The tips for users
-		`RUNNERS`: Registered runners
-		`DEFAULT_CFGFILES`: Default configuration file
-	
-
-#### `__init__ (self, config, cfgfile) `
+# module: pyppl
   
-Constructor  
-
-- **params:**  
-`config`: the configurations for the pipeline, default: {}  
-`cfgfile`:  the configuration file for the pipeline, default: `~/.PyPPL.json` or `./.PyPPL`  
+!!! example "class: `PyPPL`"
   
-#### `_any2procs (*args) [@staticmethod]`
+	The PyPPL class  
   
-Get procs from anything (aggr.starts, proc, procs, proc names)  
-
-- **params:**  
-`arg`: anything  
 
-- **returns:**  
-A set of procs  
+	- **static variables:**  
+		`TIPS`: The tips for users  
+		`RUNNERS`: Registered runners  
+		`DEFAULT_CFGFILES`: Default configuration file  
   
-#### `_checkProc (proc) [@staticmethod]`
+	!!! abstract "staticmethod: `__init__ (self, config, cfgfile)`"
   
-Check processes, whether 2 processes have the same id and tag  
+		Constructor  
 
-- **params:**  
-`proc`: The process  
-
-- **returns:**  
-If there are 2 processes with the same id and tag, raise `ValueError`.  
+		- **params:**  
+			`config`: the configurations for the pipeline, default: {}  
+			`cfgfile`:  the configuration file for the pipeline, default: `~/.PyPPL.json` or `./.PyPPL`  
   
-#### `_registerProc (proc) [@staticmethod]`
+	!!! abstract "staticmethod: `flowchart (self, fcfile, dotfile)`"
   
-Register the process  
+		Generate graph in dot language and visualize it.  
 
-- **params:**  
-`proc`: The process  
+		- **params:**  
+			`dotfile`: Where to same the dot graph. Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.dot"`)  
+			`fcfile`:  The flowchart file. Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.svg"`)  
+			- For example: run `python pipeline.py` will save it to `pipeline.pyppl.svg`  
+			`dot`:     The dot visulizer. Default: "dot -Tsvg {{dotfile}} > {{fcfile}}"  
+
+		- **returns:**  
+			The pipeline object itself.  
   
-#### `_resume (self, *args, **kwargs) `
+	!!! abstract "staticmethod: `registerRunner (runner)`"
   
-Mark processes as to be resumed  
+		Register a runner  
 
-- **params:**  
-`args`: the processes to be marked. The last element is the mark for processes to be skipped.  
+		- **params:**  
+			`runner`: The runner to be registered.  
   
-#### `flowchart (self, fcfile, dotfile) `
+	!!! abstract "staticmethod: `resume (self, *args)`"
   
-Generate graph in dot language and visualize it.  
+		Mark processes as to be resumed  
 
-- **params:**  
-`dotfile`: Where to same the dot graph. Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.dot"`)  
-`fcfile`:  The flowchart file. Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.svg"`)  
-- For example: run `python pipeline.py` will save it to `pipeline.pyppl.svg`  
-`dot`:     The dot visulizer. Default: "dot -Tsvg {{dotfile}} > {{fcfile}}"  
+		- **params:**  
+			`args`: the processes to be marked  
 
-- **returns:**  
-The pipeline object itself.  
+		- **returns:**  
+			The pipeline object itself.  
   
-#### `registerRunner (runner) [@staticmethod]`
+	!!! abstract "staticmethod: `resume2 (self, *args)`"
   
-Register a runner  
+		Mark processes as to be resumed  
+
+		- **params:**  
+			`args`: the processes to be marked  
 
-- **params:**  
-`runner`: The runner to be registered.  
+		- **returns:**  
+			The pipeline object itself.  
   
-#### `resume (self, *args) `
+	!!! abstract "staticmethod: `run (self, profile)`"
   
-Mark processes as to be resumed  
+		Run the pipeline  
 
-- **params:**  
-`args`: the processes to be marked  
+		- **params:**  
+			`profile`: the profile used to run, if not found, it'll be used as runner name. default: 'default'  
 
-- **returns:**  
-The pipeline object itself.  
+		- **returns:**  
+			The pipeline object itself.  
   
-#### `resume2 (self, *args) `
+	!!! abstract "staticmethod: `showAllRoutes (self)`"
   
-Mark processes as to be resumed  
+		Show all the routes in the log.  
+  
+	!!! abstract "staticmethod: `start (self, *args)`"
+  
+		Set the starting processes of the pipeline  
 
-- **params:**  
-`args`: the processes to be marked  
+		- **params:**  
+			`args`: the starting processes  
 
-- **returns:**  
-The pipeline object itself.  
+		- **returns:**  
+			The pipeline object itself.  
   
-#### `run (self, profile) `
+!!! example "class: `Proc`"
   
-Run the pipeline  
-
-- **params:**  
-`profile`: the profile used to run, if not found, it'll be used as runner name. default: 'default'  
+	The Proc class defining a process  
+  
 
-- **returns:**  
-The pipeline object itself.  
+	- **static variables:**  
+		`RUNNERS`:       The regiested runners  
+		`ALIAS`:         The alias for the properties  
+		`LOG_NLINE`:     The limit of lines of logging information of same type of messages  
   
-#### `showAllRoutes (self) `
+
+	- **magic methods:**  
+		`__getattr__(self, name)`: get the value of a property in `self.props`  
+		`__setattr__(self, name, value)`: set the value of a property in `self.config`  
   
-#### `start (self, *args) `
+	!!! abstract "staticmethod: `__getattr__ (self, name)`"
   
-Set the starting processes of the pipeline  
+		Get the value of a property in `self.props`  
+		It recognizes alias as well.  
 
-- **params:**  
-`args`: the starting processes  
+		- **params:**  
+			`name`: The name of the property  
 
-- **returns:**  
-The pipeline object itself.  
+		- **returns:**  
+			The value of the property  
   
+	!!! abstract "staticmethod: `__init__ (self, tag, desc, id, **kwargs)`"
+  
+		Constructor  
 
-## Module `Proc`  
-> The Proc class defining a process
+		- **params:**  
+			`tag`:  The tag of the process  
+			`desc`: The description of the process  
+			`id`:   The identify of the process  
 
-	@static variables:
-		`RUNNERS`:       The regiested runners
-		`ALIAS`:         The alias for the properties
-		`LOG_NLINE`:     The limit of lines of logging information of same type of messages
+		- **config:**  
+			id, input, output, ppldir, forks, cache, cclean, rc, echo, runner, script, depends, tag, desc, dirsig  
+			exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr  
+			callfront, callback, expect, expart, template, tplenvs, resume, nthread  
 
-	@magic methods:
-		`__getattr__(self, name)`: get the value of a property in `self.props`
-		`__setattr__(self, name, value)`: set the value of a property in `self.config`
-	
+		- **props**  
+			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect  
+			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs  
+  
+	!!! abstract "staticmethod: `__setattr__ (self, name, value)`"
+  
+		Set the value of a property in `self.config`  
 
-#### `__init__ (self, tag, desc, id, **kwargs) `
+		- **params:**  
+			`name` : The name of the property.  
+			`value`: The new value of the property.  
   
-Constructor  
+	!!! abstract "staticmethod: `copy (self, tag, desc, id)`"
+  
+		Copy a process  
+
+		- **params:**  
+			`id`: The new id of the process, default: `None` (use the varname)  
+			`tag`:   The tag of the new process, default: `None` (used the old one)  
+			`desc`:  The desc of the new process, default: `None` (used the old one)  
 
-- **params:**  
-`tag`:  The tag of the process  
-`desc`: The description of the process  
-`id`:   The identify of the process  
+		- **returns:**  
+			The new process  
+  
+	!!! abstract "staticmethod: `log (self, msg, level, key)`"
+  
+		The log function with aggregation name, process id and tag integrated.  
 
-- **config:**  
-id, input, output, ppldir, forks, cache, cclean, rc, echo, runner, script, depends, tag, desc, dirsig  
-exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr  
-callfront, callback, expect, expart, template, tplenvs, resume, nthread  
+		- **params:**  
+			`msg`:   The message to log  
+			`level`: The log level  
+			`key`:   The type of messages  
+  
+	!!! abstract "staticmethod: `name (self, aggr)`"
+  
+		Get my name include `aggr`, `id`, `tag`  
 
-- **props**  
-input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect  
-expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs  
+		- **returns:**  
+			the name  
+  
+	!!! abstract "staticmethod: `run (self, profile, profiles)`"
   
-#### `_buildInput (self) `
+		Run the jobs with a configuration  
+
+		- **params:**  
+			`config`: The configuration  
   
-Build the input data  
-Input could be:  
-1. list: ['input', 'infile:file'] <=> ['input:var', 'infile:path']  
-2. str : "input, infile:file" <=> input:var, infile:path  
-3. dict: {"input": channel1, "infile:file": channel2}  
-or    {"input:var, input:file" : channel3}  
-for 1,2 channels will be the combined channel from dependents, if there is not dependents, it will be sys.argv[1:]  
+# module: pyppl.aggr
   
-#### `_buildJobs (self) `
+The aggregation of procs  
   
-Build the jobs.  
+!!! example "class: `Aggr`"
   
-#### `_buildOutput (self) `
+	The aggregation of a set of processes  
   
-Build the output data templates waiting to be rendered.  
+	!!! abstract "staticmethod: `__getattr__ (self, name)`"
   
-#### `_buildProcVars (self) `
+		Get the property of an aggregation.  
+
+		- **params:**  
+			`name`: The name of the property  
+
+		- **returns:**  
+			- Return a proc if name in `self._procs`  
+			- Return a property value if name in `self.__dict__`  
+			- Return a `_Proxy` instance else.  
   
-Build proc attribute values for template rendering,  
-and also echo some out.  
+	!!! abstract "staticmethod: `__getitem__ (self, key)`"
   
-#### `_buildProps (self) `
+		Select processes  
+		```  
+		# self._procs = OrderedDict([  
+		#	('a', Proc(id = 'a')),  
+		#	('b', Proc(id = 'b')),  
+		#	('c', Proc(id = 'c')),  
+		#	('d', Proc(id = 'd'))  
+		# ])  
   
-Compute some properties  
+		self['a'] # proc a  
+		self[0]   # proc a  
+		self[1:2] # _Proxy of (proc b, proc c)  
+		self[1,3] # _Proxy of (proc b, proc d)  
+		self['b', 'c'] # _Proxy of (proc b, proc c)  
+		self['b,c'] # _Proxy of (proc b, proc c)  
+		self[Proc(id = 'd')] # proc d  
+		```  
   
-#### `_buildScript (self) `
+	!!! abstract "staticmethod: `__init__ (self, *args, **kwargs)`"
   
-Build the script template waiting to be rendered.  
+		Constructor  
+
+		- **params:**  
+			`args`: the set of processes  
+			`depends`: Whether auto deduce depends. Default: True  
+			`id`: The id of the aggr. Default: None (the variable name)  
+			`tag`: The tag of the processes. Default: None (a unique 4-char str according to the id)  
   
-#### `_checkCached (self) `
+	!!! abstract "staticmethod: `__setattr__ (self, name, value)`"
   
-Tell whether the jobs are cached  
+		Set property value of an aggregation.  
+			- if it's a common property, set it to all processes  
+			- if it is `input` set it to starting processes  
+			- if it is `depends` set it to the end processes  
+			- if it is related to `export` (startswith `ex`), set it to the end processes  
+			- if it is in ['starts', 'ends', 'id'], set it to the aggregation itself.  
+			- Otherwise a `ValueError` raised.  
+			- You can use `[aggr].[proc].[prop]` to set/get the properties of a processes in the aggregation.  
 
-- **returns:**  
-True if all jobs are cached, otherwise False  
+		- **params:**  
+			`name` : The name of the property  
+			`value`: The value of the property  
   
-#### `_readConfig (self, profile, profiles) `
+	!!! abstract "staticmethod: `addEnd (self, *procs)`"
   
-Read the configuration  
+		Add end processes  
 
-- **params:**  
-`config`: The configuration  
+		- **params:**  
+			`procs`: The selector of processes to add  
   
-#### `_runCmd (self, key) `
+	!!! abstract "staticmethod: `addProc (self, p, tag, where, copy)`"
   
-Run the `beforeCmd` or `afterCmd`  
+		Add a process to the aggregation.  
+		Note that you have to adjust the dependencies after you add processes.  
 
-- **params:**  
-`key`: "beforeCmd" or "afterCmd"  
+		- **params:**  
+			`p`:     The process  
+			`where`: Add to where: 'starts', 'ends', 'both' or None (default)  
 
-- **returns:**  
-The return code of the command  
+		- **returns:**  
+			the aggregation itself  
   
-#### `_runJobs (self) `
+	!!! abstract "staticmethod: `addStart (self, *procs)`"
   
-Submit and run the jobs  
+		Add start processes  
+
+		- **params:**  
+			`procs`: The selector of processes to add  
   
-#### `_saveSettings (self) `
+	!!! abstract "staticmethod: `copy (self, tag, depends, id, delegates, modules)`"
   
-Save all settings in proc.settings, mostly for debug  
+		Like `proc`'s `copy` function, copy an aggregation. Each processes will be copied.  
+
+		- **params:**  
+			`tag`:      The new tag of all copied processes  
+			`depends`: Whether to copy the dependencies or not. Default: True  
+			- dependences for processes in starts will not be copied  
+			`id`:    Use a different id if you don't want to use the variant name  
+			`delegates`: Copy delegates? Default: `True`  
+			`configs`: Copy configs? Default: `True`  
+
+		- **returns:**  
+			The new aggregation  
   
-#### `_suffix (self) `
+	!!! abstract "staticmethod: `delEnd (self, *procs)`"
   
-Calcuate a uid for the process according to the configuration  
-The philosophy:  
-1. procs from different script must have different suffix (sys.argv[0])  
-2. procs from the same script:  
-- procs with different id or tag have different suffix  
-- procs with different input have different suffix (depends, input)  
+		Delete end processes  
 
-- **returns:**  
-The uniq id of the process  
+		- **params:**  
+			`procs`: The selector of processes to delete  
   
-#### `_tidyAfterRun (self) `
+	!!! abstract "staticmethod: `delStart (self, *procs)`"
   
-Do some cleaning after running jobs  
-self.resume can only be:  
-- '': normal process  
-- skip+: skipped process but required workdir and data exists  
-- resume: resume pipeline from this process, no requirement  
-- resume+: get data from workdir/proc.settings, and resume  
+		Delete start processes  
+
+		- **params:**  
+			`procs`: The selector of processes to delete  
   
-#### `_tidyBeforeRun (self) `
+	!!! abstract "staticmethod: `delegate (self, attrs, procs)`"
   
-Do some preparation before running jobs  
+		Delegate the procs to have the attributes set by:  
+		`aggr.args.a.b = 1`  
+		Instead of setting `args.a.b` of all processes, `args.a.b` of only delegated processes will be set.  
+		`procs` can be `starts`/`ends`, but it cannot be set with other procs, which means you can do:  
+		`aggr.delegate('args', 'starts')`, but not `aggr.delegate('args', ['starts', 'pXXX'])`  
   
-#### `copy (self, tag, desc, id) `
+	!!! abstract "staticmethod: `module (self, name, starts, depends, ends, starts_shared, depends_shared, ends_shared)`"
   
-Copy a process  
+		Define a function for aggr.  
+		The "shared" parameters will be indicators not to remove those processes  
+		when the shared function is on.  
 
-- **params:**  
-`id`: The new id of the process, default: `None` (use the varname)  
-`tag`:   The tag of the new process, default: `None` (used the old one)  
-`desc`:  The desc of the new process, default: `None` (used the old one)  
-
-- **returns:**  
-The new process  
+		- **params:**  
+			`name`          : The name of the function  
+			`starts`        : A list of start processes.  
+			`depends`       : A dict of dependences of the procs  
+			`ends`          : A list of end processes  
+			`starts_shared` : A dict of functions that shares the same starts  
+			`depends_shared`: A dict of functions that shares the same depends  
+			`ends_shared`   : A dict of functions that shares the same ends  
+				- For example: `{<procs>: <func>}`  
   
-#### `log (self, msg, level, key) `
+	!!! abstract "staticmethod: `moduleFunc (self, name, on, off)`"
   
-The log function with aggregation name, process id and tag integrated.  
+		Define modules using functions  
 
-- **params:**  
-`msg`:   The message to log  
-`level`: The log level  
-`key`:   The type of messages  
+		- **params:**  
+			`name`: The name of the module  
+			`on`  : The function when the module is turned on  
+			`off` : The function when the module is turned off  
   
-#### `name (self, aggr) `
+	!!! abstract "staticmethod: `off (self, *names)`"
   
-Get my name include `aggr`, `id`, `tag`  
+		Turn off modules  
 
-- **returns:**  
-the name  
+		- **params:**  
+			`names`: The names of the modules.  
   
-#### `run (self, profile, profiles) `
+	!!! abstract "staticmethod: `on (self, *names)`"
   
-Run the jobs with a configuration  
+		Turn on modules  
 
-- **params:**  
-`config`: The configuration  
+		- **params:**  
+			`names`: The names of the modules.  
   
-
-## Module `Channel`  
-> The channen class, extended from `list`
-	
-
-#### `_tuplize (tu) [@staticmethod]`
+# module: pyppl.channel
   
-A private method, try to convert an element to tuple  
-If it's a string, convert it to `(tu, )`  
-Else if it is iterable, convert it to `tuple(tu)`  
-Otherwise, convert it to `(tu, )`  
-Notice that string is also iterable.  
-
-- **params:**  
-`tu`: the element to be converted  
-
-- **returns:**  
-The converted element  
+Channel for pyppl  
+  
+!!! example "class: `Channel`"
+  
+	The channen class, extended from `list`  
   
-#### `attach (self, *names, **kwargs) `
+	!!! abstract "staticmethod: `attach (self, *names, **kwargs)`"
   
-Attach columns to names of Channel, so we can access each column by:  
-`ch.col0` == ch.colAt(0)  
+		Attach columns to names of Channel, so we can access each column by:  
+		`ch.col0` == ch.colAt(0)  
 
-- **params:**  
-`names`: The names. Have to be as length as channel's width. None of them should be Channel's property name  
-`flatten`: Whether flatten the channel for the name being attached  
+		- **params:**  
+			`names`: The names. Have to be as length as channel's width. None of them should be Channel's property name  
+			`flatten`: Whether flatten the channel for the name being attached  
   
-#### `cbind (self, *cols) `
+	!!! abstract "staticmethod: `cbind (self, *cols)`"
   
-Add columns to the channel  
+		Add columns to the channel  
 
-- **params:**  
-`cols`: The columns  
+		- **params:**  
+			`cols`: The columns  
 
-- **returns:**  
-The channel with the columns inserted.  
+		- **returns:**  
+			The channel with the columns inserted.  
   
-#### `colAt (self, index) `
+	!!! abstract "staticmethod: `colAt (self, index)`"
   
-Fetch one column of a Channel  
+		Fetch one column of a Channel  
 
-- **params:**  
-`index`: which column to fetch  
+		- **params:**  
+			`index`: which column to fetch  
 
-- **returns:**  
-The Channel with that column  
+		- **returns:**  
+			The Channel with that column  
   
-#### `collapse (self, col) `
+	!!! abstract "staticmethod: `collapse (self, col)`"
   
-Do the reverse of expand  
-length: N -> 1  
-width:  M -> M  
+		Do the reverse of expand  
+		length: N -> 1  
+		width:  M -> M  
 
-- **params:**  
-`col`:     the index of the column used to collapse  
+		- **params:**  
+			`col`:     the index of the column used to collapse  
 
-- **returns:**  
-The collapsed Channel  
+		- **returns:**  
+			The collapsed Channel  
   
-#### `copy (self) `
+	!!! abstract "staticmethod: `copy (self)`"
   
-Copy a Channel using `copy.copy`  
+		Copy a Channel using `copy.copy`  
 
-- **returns:**  
-The copied Channel  
+		- **returns:**  
+			The copied Channel  
   
-#### `create (l) [@staticmethod]`
+	!!! abstract "staticmethod: `create (l)`"
   
-Create a Channel from a list  
+		Create a Channel from a list  
 
-- **params:**  
-`l`: The list, default: []  
+		- **params:**  
+			`l`: The list, default: []  
 
-- **returns:**  
-The Channel created from the list  
+		- **returns:**  
+			The Channel created from the list  
   
-#### `expand (self, col, pattern, t, sortby, reverse) `
+	!!! abstract "staticmethod: `expand (self, col, pattern, t, sortby, reverse)`"
   
-expand the Channel according to the files in <col>, other cols will keep the same  
-`[(dir1/dir2, 1)].expand (0, "*")` will expand to  
-`[(dir1/dir2/file1, 1), (dir1/dir2/file2, 1), ...]`  
-length: 1 -> N  
-width:  M -> M  
+		expand the Channel according to the files in <col>, other cols will keep the same  
+		`[(dir1/dir2, 1)].expand (0, "*")` will expand to  
+		`[(dir1/dir2/file1, 1), (dir1/dir2/file2, 1), ...]`  
+		length: 1 -> N  
+		width:  M -> M  
 
-- **params:**  
-`col`:     the index of the column used to expand  
-`pattern`: use a pattern to filter the files/dirs, default: `*`  
-`t`:       the type of the files/dirs to include  
-- 'dir', 'file', 'link' or 'any' (default)  
-`sortby`:  how the list is sorted  
-- 'name' (default), 'mtime', 'size'  
-`reverse`: reverse sort. Default: False  
+		- **params:**  
+			`col`:     the index of the column used to expand  
+			`pattern`: use a pattern to filter the files/dirs, default: `*`  
+			`t`:       the type of the files/dirs to include  
+			  - 'dir', 'file', 'link' or 'any' (default)  
+			`sortby`:  how the list is sorted  
+			  - 'name' (default), 'mtime', 'size'  
+			`reverse`: reverse sort. Default: False  
 
-- **returns:**  
-The expanded Channel  
+		- **returns:**  
+			The expanded Channel  
   
-#### `filter (self, func) `
+	!!! abstract "staticmethod: `filter (self, func)`"
   
-Alias of python builtin `filter`  
+		Alias of python builtin `filter`  
 
-- **params:**  
-`func`: the function. Default: None  
+		- **params:**  
+			`func`: the function. Default: None  
 
-- **returns:**  
-The filtered Channel  
+		- **returns:**  
+			The filtered Channel  
   
-#### `filterCol (self, func, col) `
+	!!! abstract "staticmethod: `filterCol (self, func, col)`"
   
-Just filter on the first column  
+		Just filter on the first column  
 
-- **params:**  
-`func`: the function  
-`col`: the column to filter  
+		- **params:**  
+			`func`: the function  
+			`col`: the column to filter  
 
-- **returns:**  
-The filtered Channel  
+		- **returns:**  
+			The filtered Channel  
   
-#### `flatten (self, col) `
+	!!! abstract "staticmethod: `flatten (self, col)`"
   
-Convert a single-column Channel to a list (remove the tuple signs)  
-`[(a,), (b,)]` to `[a, b]`  
+		Convert a single-column Channel to a list (remove the tuple signs)  
+		`[(a,), (b,)]` to `[a, b]`  
 
-- **params:**  
-`col`: The column to flat. None for all columns (default)  
+		- **params:**  
+			`col`: The column to flat. None for all columns (default)  
 
-- **returns:**  
-The list converted from the Channel.  
+		- **returns:**  
+			The list converted from the Channel.  
   
-#### `fold (self, n) `
+	!!! abstract "staticmethod: `fold (self, n)`"
   
-Fold a Channel. Make a row to n-length chunk rows  
-```  
-a1	a2	a3	a4  
-b1	b2	b3	b4  
-if n==2, fold(2) will change it to:  
-a1	a2  
-a3	a4  
-b1	b2  
-b3	b4  
-```  
+		Fold a Channel. Make a row to n-length chunk rows  
+		```  
+		a1	a2	a3	a4  
+		b1	b2	b3	b4  
+		if n==2, fold(2) will change it to:  
+		a1	a2  
+		a3	a4  
+		b1	b2  
+		b3	b4  
+		```  
 
-- **params:**  
-`n`: the size of the chunk  
+		- **params:**  
+			`n`: the size of the chunk  
 
-- **returns**  
-The new Channel  
+		- **returns**  
+			The new Channel  
   
-#### `fromArgv () [@staticmethod]`
+	!!! abstract "staticmethod: `fromArgv ()`"
   
-Create a Channel from `sys.argv[1:]`  
-"python test.py a b c" creates a width=1 Channel  
-"python test.py a,1 b,2 c,3" creates a width=2 Channel  
+		Create a Channel from `sys.argv[1:]`  
+		"python test.py a b c" creates a width=1 Channel  
+		"python test.py a,1 b,2 c,3" creates a width=2 Channel  
 
-- **returns:**  
-The Channel created from the command line arguments  
+		- **returns:**  
+			The Channel created from the command line arguments  
   
-#### `fromChannels (*args) [@staticmethod]`
+	!!! abstract "staticmethod: `fromChannels (*args)`"
   
-Create a Channel from Channels  
+		Create a Channel from Channels  
 
-- **params:**  
-`args`: The Channels  
+		- **params:**  
+			`args`: The Channels  
 
-- **returns:**  
-The Channel merged from other Channels  
+		- **returns:**  
+			The Channel merged from other Channels  
   
-#### `fromFile (fn, header, skip, delimit) [@staticmethod]`
+	!!! abstract "staticmethod: `fromFile (fn, header, skip, delimit)`"
   
-Create Channel from the file content  
-It's like a matrix file, each row is a row for a Channel.  
-And each column is a column for a Channel.  
+		Create Channel from the file content  
+		It's like a matrix file, each row is a row for a Channel.  
+		And each column is a column for a Channel.  
 
-- **params:**  
-`fn`:      the file  
-`header`:  Whether the file contains header. If True, will attach the header  
-- So you can use `channel.<header>` to fetch the column  
-`skip`:    first lines to skip  
-`delimit`: the delimit for columns  
+		- **params:**  
+			`fn`:      the file  
+			`header`:  Whether the file contains header. If True, will attach the header  
+				- So you can use `channel.<header>` to fetch the column  
+			`skip`:    first lines to skip  
+			`delimit`: the delimit for columns  
 
-- **returns:**  
-A Channel created from the file  
+		- **returns:**  
+			A Channel created from the file  
   
-#### `fromPairs (pattern) [@staticmethod]`
+	!!! abstract "staticmethod: `fromPairs (pattern)`"
   
-Create a width = 2 Channel from a pattern  
+		Create a width = 2 Channel from a pattern  
 
-- **params:**  
-`pattern`: the pattern  
+		- **params:**  
+			`pattern`: the pattern  
 
-- **returns:**  
-The Channel create from every 2 files match the pattern  
+		- **returns:**  
+			The Channel create from every 2 files match the pattern  
   
-#### `fromParams (*pnames) [@staticmethod]`
+	!!! abstract "staticmethod: `fromParams (*pnames)`"
   
-Create a Channel from params  
+		Create a Channel from params  
 
-- **params:**  
-`*pnames`: The names of the option  
+		- **params:**  
+			`*pnames`: The names of the option  
 
-- **returns:**  
-The Channel  
+		- **returns:**  
+			The Channel  
   
-#### `fromPattern (pattern, t, sortby, reverse) [@staticmethod]`
+	!!! abstract "staticmethod: `fromPattern (pattern, t, sortby, reverse)`"
   
-Create a Channel from a path pattern  
+		Create a Channel from a path pattern  
 
-- **params:**  
-`pattern`: the pattern with wild cards  
-`t`:       the type of the files/dirs to include  
-- 'dir', 'file', 'link' or 'any' (default)  
-`sortby`:  how the list is sorted  
-- 'name' (default), 'mtime', 'size'  
-`reverse`: reverse sort. Default: False  
+		- **params:**  
+			`pattern`: the pattern with wild cards  
+			`t`:       the type of the files/dirs to include  
+			  - 'dir', 'file', 'link' or 'any' (default)  
+			`sortby`:  how the list is sorted  
+			  - 'name' (default), 'mtime', 'size'  
+			`reverse`: reverse sort. Default: False  
 
-- **returns:**  
-The Channel created from the path  
+		- **returns:**  
+			The Channel created from the path  
   
-#### `get (self, idx) `
+	!!! abstract "staticmethod: `get (self, idx)`"
   
-Get the element of a flattened channel  
+		Get the element of a flattened channel  
 
-- **params:**  
-`idx`: The index of the element to get. Default: 0  
+		- **params:**  
+			`idx`: The index of the element to get. Default: 0  
 
-- **return:**  
-The element  
+		- **return:**  
+			The element  
   
-#### `insert (self, cidx, *cols) `
+	!!! abstract "staticmethod: `insert (self, cidx, *cols)`"
   
-Insert columns to a channel  
+		Insert columns to a channel  
 
-- **params:**  
-`cidx`: Insert into which index of column?  
-`cols`: the columns to be bound to Channel  
+		- **params:**  
+			`cidx`: Insert into which index of column?  
+			`cols`: the columns to be bound to Channel  
 
-- **returns:**  
-The combined Channel  
-Note, self is also changed  
+		- **returns:**  
+			The combined Channel  
+			Note, self is also changed  
   
-#### `length (self) `
+	!!! abstract "staticmethod: `length (self)`"
   
-Get the length of a Channel  
-It's just an alias of `len(chan)`  
+		Get the length of a Channel  
+		It's just an alias of `len(chan)`  
 
-- **returns:**  
-The length of the Channel  
+		- **returns:**  
+			The length of the Channel  
   
-#### `map (self, func) `
+	!!! abstract "staticmethod: `map (self, func)`"
   
-Alias of python builtin `map`  
+		Alias of python builtin `map`  
 
-- **params:**  
-`func`: the function  
+		- **params:**  
+			`func`: the function  
 
-- **returns:**  
-The transformed Channel  
+		- **returns:**  
+			The transformed Channel  
   
-#### `mapCol (self, func, col) `
+	!!! abstract "staticmethod: `mapCol (self, func, col)`"
   
-Map for a column  
+		Map for a column  
 
-- **params:**  
-`func`: the function  
-`col`: the index of the column. Default: 0  
+		- **params:**  
+			`func`: the function  
+			`col`: the index of the column. Default: 0  
 
-- **returns:**  
-The transformed Channel  
+		- **returns:**  
+			The transformed Channel  
   
-#### `nones (length, width) [@staticmethod]`
+	!!! abstract "staticmethod: `nones (length, width)`"
   
-Create a channel with `None`s  
+		Create a channel with `None`s  
 
-- **params:**  
-`length`: The length of the channel  
-`width`:  The width of the channel  
+		- **params:**  
+			`length`: The length of the channel  
+			`width`:  The width of the channel  
 
-- **returns:**  
-The created channel  
+		- **returns:**  
+			The created channel  
   
-#### `rbind (self, *rows) `
+	!!! abstract "staticmethod: `rbind (self, *rows)`"
   
-The multiple-argument versoin of `rbind`  
+		The multiple-argument versoin of `rbind`  
 
-- **params:**  
-`rows`: the rows to be bound to Channel  
+		- **params:**  
+			`rows`: the rows to be bound to Channel  
 
-- **returns:**  
-The combined Channel  
-Note, self is also changed  
+		- **returns:**  
+			The combined Channel  
+			Note, self is also changed  
   
-#### `reduce (self, func) `
+	!!! abstract "staticmethod: `reduce (self, func)`"
   
-Alias of python builtin `reduce`  
+		Alias of python builtin `reduce`  
 
-- **params:**  
-`func`: the function  
+		- **params:**  
+			`func`: the function  
 
-- **returns:**  
-The reduced value  
+		- **returns:**  
+			The reduced value  
   
-#### `reduceCol (self, func, col) `
+	!!! abstract "staticmethod: `reduceCol (self, func, col)`"
   
-Reduce a column  
+		Reduce a column  
 
-- **params:**  
-`func`: the function  
-`col`: the column to reduce  
+		- **params:**  
+			`func`: the function  
+			`col`: the column to reduce  
 
-- **returns:**  
-The reduced value  
+		- **returns:**  
+			The reduced value  
   
-#### `repCol (self, n) `
+	!!! abstract "staticmethod: `repCol (self, n)`"
   
-Repeat column and return a new channel  
+		Repeat column and return a new channel  
 
-- **params:**  
-`n`: how many times to repeat.  
+		- **params:**  
+			`n`: how many times to repeat.  
 
-- **returns:**  
-The new channel with repeated columns  
+		- **returns:**  
+			The new channel with repeated columns  
   
-#### `repRow (self, n) `
+	!!! abstract "staticmethod: `repRow (self, n)`"
   
-Repeat row and return a new channel  
+		Repeat row and return a new channel  
 
-- **params:**  
-`n`: how many times to repeat.  
+		- **params:**  
+			`n`: how many times to repeat.  
 
-- **returns:**  
-The new channel with repeated rows  
+		- **returns:**  
+			The new channel with repeated rows  
   
-#### `rowAt (self, index) `
+	!!! abstract "staticmethod: `rowAt (self, index)`"
   
-Fetch one row of a Channel  
+		Fetch one row of a Channel  
 
-- **params:**  
-`index`: which row to fetch  
+		- **params:**  
+			`index`: which row to fetch  
 
-- **returns:**  
-The Channel with that row  
+		- **returns:**  
+			The Channel with that row  
   
-#### `slice (self, start, length) `
+	!!! abstract "staticmethod: `slice (self, start, length)`"
   
-Fetch some columns of a Channel  
+		Fetch some columns of a Channel  
 
-- **params:**  
-`start`:  from column to start  
-`length`: how many columns to fetch, default: None (from start to the end)  
+		- **params:**  
+			`start`:  from column to start  
+			`length`: how many columns to fetch, default: None (from start to the end)  
 
-- **returns:**  
-The Channel with fetched columns  
+		- **returns:**  
+			The Channel with fetched columns  
   
-#### `split (self, flatten) `
+	!!! abstract "staticmethod: `split (self, flatten)`"
   
-Split a Channel to single-column Channels  
+		Split a Channel to single-column Channels  
 
-- **returns:**  
-The list of single-column Channels  
+		- **returns:**  
+			The list of single-column Channels  
   
-#### `t (self) `
+	!!! abstract "staticmethod: `t (self)`"
   
-Transpose a channel  
+		Transpose the channel  
+
+		- **returns:**  
+			The transposed channel.  
   
-#### `transpose (self) `
+	!!! abstract "staticmethod: `transpose (self)`"
   
-Transpose a channel  
+		Transpose the channel  
+
+		- **returns:**  
+			The transposed channel.  
   
-#### `unfold (self, n) `
+	!!! abstract "staticmethod: `unfold (self, n)`"
   
-Do the reverse thing as self.fold does  
+		Do the reverse thing as self.fold does  
 
-- **params:**  
-`n`: How many rows to combind each time. default: 2  
+		- **params:**  
+			`n`: How many rows to combind each time. default: 2  
 
-- **returns:**  
-The unfolded Channel  
+		- **returns:**  
+			The unfolded Channel  
   
-#### `unique (self) `
+	!!! abstract "staticmethod: `unique (self)`"
   
-Make the channel unique, remove duplicated rows  
-Try to keep the order  
+		Make the channel unique, remove duplicated rows  
+		Try to keep the order  
   
-#### `width (self) `
+	!!! abstract "staticmethod: `width (self)`"
   
-Get the width of a Channel  
+		Get the width of a Channel  
 
-- **returns:**  
-The width of the Channel  
+		- **returns:**  
+			The width of the Channel  
   
-
-## Module `Job`  
-> Job class, defining a job in a process
-	
-
-#### `__init__ (self, index, proc) `
+# module: pyppl.flowchart
+  
+!!! example "class: `Flowchart`"
   
-Constructor  
+	Draw flowchart for pipelines  
+  
 
-- **params:**  
-`index`:   The index of the job in a process  
-`proc`:    The process  
+	- **static variables:**  
+		`THEMES`: predefined themes  
   
-#### `_indexIndicator (self) `
+	!!! abstract "staticmethod: `__init__ (self, fcfile, dotfile)`"
   
-Get the index indicator in the log  
+		The constructor  
 
-- **returns:**  
-The "[001/100]" like indicator  
+		- **params:**  
+			`fcfile`: The flowchart file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.svg'`  
+			`dotfile`: The dot file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.dot'`  
   
-#### `_linkInfile (self, orgfile) `
+	!!! abstract "staticmethod: `addLink (self, node1, node2)`"
   
-Create links for input files  
+		Add a link to the chart  
 
-- **params:**  
-`orgfile`: The original input file  
+		- **params:**  
+			`node1`: The first node.  
+			`node2`: The second node.  
+  
+	!!! abstract "staticmethod: `addNode (self, node, role)`"
+  
+		Add a node to the chart  
 
-- **returns:**  
-The link to the original file.  
+		- **params:**  
+			`node`: The node  
+			`role`: Is it a starting node, an ending node or None. Default: None.  
+  
+	!!! abstract "staticmethod: `generate (self)`"
+  
+		Generate the dot file and graph file.  
   
-#### `_prepInput (self) `
+	!!! abstract "staticmethod: `setTheme (self, theme, base)`"
   
-Prepare input, create link to input files and set other placeholders  
+		Set the theme to be used  
+
+		- **params:**  
+			`theme`: The theme, could be the key of Flowchart.THEMES or a dict of a theme definition.  
+			`base` : The base theme to be based on you pass custom theme  
   
-#### `_prepOutput (self) `
+# module: pyppl.job
   
-Build the output data.  
-Output could be:  
-1. list: `['output:var:{{input}}', 'outfile:file:{{infile.bn}}.txt']`  
-or you can ignore the name if you don't put it in script:  
-`['var:{{input}}', 'path:{{infile.bn}}.txt']`  
-or even (only var type can be ignored):  
-`['{{input}}', 'file:{{infile.bn}}.txt']`  
-2. str : `'output:var:{{input}}, outfile:file:{{infile.bn}}.txt'`  
-3. OrderedDict: `{"output:var:{{input}}": channel1, "outfile:file:{{infile.bn}}.txt": channel2}`  
-or    `{"output:var:{{input}}, output:file:{{infile.bn}}.txt" : channel3}`  
-for 1,2 channels will be the property channel for this proc (i.e. p.channel)  
+Job module for pyppl  
   
-#### `_prepScript (self) `
+!!! example "class: `Job`"
   
-Build the script, interpret the placeholders  
+	Job class, defining a job in a process  
   
-#### `_reportItem (self, key, maxlen, data, loglevel) `
+	!!! abstract "staticmethod: `__init__ (self, index, proc)`"
   
-Report the item on logs  
+		Constructor  
 
-- **params:**  
-`key`: The key of the item  
-`maxlen`: The max length of the key  
-`data`: The data of the item  
-`loglevel`: The log level  
+		- **params:**  
+			`index`:   The index of the job in a process  
+			`proc`:    The process  
   
-#### `cache (self) `
+	!!! abstract "staticmethod: `cache (self)`"
   
-Truly cache the job (by signature)  
+		Truly cache the job (by signature)  
   
-#### `checkOutfiles (self, expect) `
+	!!! abstract "staticmethod: `checkOutfiles (self, expect)`"
   
-Check whether output files are generated, if not, add - to rc.  
+		Check whether output files are generated, if not, add - to rc.  
   
-#### `done (self) `
+	!!! abstract "staticmethod: `done (self)`"
   
-Do some cleanup when job finished  
+		Do some cleanup when job finished  
   
-#### `export (self) `
+	!!! abstract "staticmethod: `export (self)`"
   
-Export the output files  
+		Export the output files  
   
-#### `init (self) `
+	!!! abstract "staticmethod: `init (self)`"
   
-Initiate a job, make directory and prepare input, output and script.  
+		Initiate a job, make directory and prepare input, output and script.  
   
-#### `isExptCached (self) `
+	!!! abstract "staticmethod: `isExptCached (self)`"
   
-Prepare to use export files as cached information  
-True if succeed, otherwise False  
+		Prepare to use export files as cached information  
+		True if succeed, otherwise False  
   
-#### `isTrulyCached (self) `
+	!!! abstract "staticmethod: `isTrulyCached (self)`"
   
-Check whether a job is truly cached (by signature)  
+		Check whether a job is truly cached (by signature)  
   
-#### `pid (self, val) `
+	!!! abstract "staticmethod: `pid (self, val)`"
   
-Get/Set the job id (pid or the id from queue system)  
+		Get/Set the job id (pid or the id from queue system)  
 
-- **params:**  
-`val`: The id to be set  
+		- **params:**  
+			`val`: The id to be set  
   
-#### `rc (self, val) `
+	!!! abstract "staticmethod: `rc (self, val)`"
   
-Get/Set the return code  
+		Get/Set the return code  
 
-- **params:**  
-`val`: The return code to be set. If it is None, return the return code. Default: `None`  
-If val == -1000: the return code will be negative of current one. 0 will be '-0'  
+		- **params:**  
+			`val`: The return code to be set. If it is None, return the return code. Default: `None`  
+			If val == -1000: the return code will be negative of current one. 0 will be '-0'  
 
-- **returns:**  
-The return code if `val` is `None`  
-If rcfile does not exist or is empty, return 9999, otherwise return -rc  
-A negative rc (including -0) means output files not generated  
+		- **returns:**  
+			The return code if `val` is `None`  
+			If rcfile does not exist or is empty, return 9999, otherwise return -rc  
+			A negative rc (including -0) means output files not generated  
   
-#### `report (self) `
+	!!! abstract "staticmethod: `report (self)`"
   
-Report the job information to logger  
+		Report the job information to logger  
   
-#### `reset (self, retry) `
+	!!! abstract "staticmethod: `reset (self, retry)`"
   
-Clear the intermediate files and output files  
+		Clear the intermediate files and output files  
   
-#### `showError (self, totalfailed) `
+	!!! abstract "staticmethod: `signature (self)`"
   
-Show the error message if the job failed.  
+		Calculate the signature of the job based on the input/output and the script  
+
+		- **returns:**  
+			The signature of the job  
   
-#### `signature (self) `
+	!!! abstract "staticmethod: `succeed (self)`"
   
-Calculate the signature of the job based on the input/output and the script  
+		Tell if the job is successful by return code, and output file expectations.  
 
-- **returns:**  
-The signature of the job  
+		- **returns:**  
+			True if succeed else False  
   
-#### `succeed (self) `
+# module: pyppl.jobmgr
   
-Tell if the job is successful by return code, and output file expectations.  
-
-- **returns:**  
-True if succeed else False  
+!!! example "class: `Jobmgr`"
+  
+	Job Manager  
+  
+	!!! abstract "staticmethod: `__init__ (self, proc, runner)`"
   
+		Job manager constructor  
 
-## Module `Jobmgr`  
-> Job Manager
-	
+		- **params:**  
+			`proc`     : The process  
+			`runner`   : The runner class  
+  
+	!!! abstract "staticmethod: `allJobsDone (self)`"
+  
+		Tell whether all jobs are done.  
+		No need to lock as it only runs in one process (the watcher process)  
 
-#### `__init__ (self, proc, runner) `
+		- **returns:**  
+			`True` if all jobs are done else `False`  
   
-Job manager constructor  
+	!!! abstract "staticmethod: `canSubmit (self)`"
+  
+		Tell whether we can submit jobs.  
 
-- **params:**  
-`proc`     : The process  
-`runner`   : The runner class  
+		- **returns:**  
+			`True` if we can, otherwise `False`  
   
-#### `_exit (self) `
+	!!! abstract "staticmethod: `halt (self, halt_anyway)`"
   
-#### `allJobsDone (self) `
+		Halt the pipeline if needed  
   
-Tell whether all jobs are done.  
-No need to lock as it only runs in one process (the watcher process)  
+	!!! abstract "staticmethod: `progressbar (self, jid, loglevel)`"
+  
+		Generate progressbar.  
+
+		- **params:**  
+			`jid`: The job index.  
+			`loglevel`: The log level in PyPPL log system  
 
-- **returns:**  
-`True` if all jobs are done else `False`  
+		- **returns:**  
+			The string representing the progressbar  
   
-#### `canSubmit (self) `
+	!!! abstract "staticmethod: `run (self)`"
   
-Tell whether we can submit jobs.  
+		Start to run the jobs  
+  
+	!!! abstract "staticmethod: `runPool (self, rq, sq)`"
+  
+		The pool to run jobs (wait jobs to be done)  
 
-- **returns:**  
-`True` if we can, otherwise `False`  
+		- **params:**  
+			`rq`: The run queue  
+			`sq`: The submit queue  
   
-#### `halt (self, halt_anyway) `
+	!!! abstract "staticmethod: `submitPool (self, sq)`"
   
-Halt the pipeline if needed  
+		The pool to submit jobs  
+
+		- **params:**  
+			`sq`: The submit queue  
   
-#### `progressbar (self, jid, loglevel) `
+	!!! abstract "staticmethod: `watchPool (self, rq, sq)`"
   
-#### `run (self) `
+		The watchdog, checking whether all jobs are done.  
   
-Start to run the jobs  
+# module: pyppl.logger
   
-#### `runPool (self, rq, sq) `
+A customized logger for pyppl  
   
-The pool to run jobs (wait jobs to be done)  
+!!! example "function: `getLogger`"
+  
+	Get the default logger  
+
+	- **params:**  
+		`levels`: The log levels(tags), default: basic  
+		`theme`:  The theme of the logs on terminal. Default: True (default theme will be used)  
+			- False to disable theme  
+		`logfile`:The log file. Default: None (don't white to log file)  
+		`lvldiff`:The diff levels for log  
+			- ["-depends", "jobdone", "+debug"]: show jobdone, hide depends and debug  
+		`name`:   The name of the logger, default: PyPPL  
 
-- **params:**  
-`rq`: The run queue  
-`sq`: The submit queue  
+	- **returns:**  
+		The logger  
   
-#### `submitPool (self, sq) `
+!!! example "class: `TemplatePyPPL`"
   
-The pool to submit jobs  
+	Built-in template wrapper.  
+  
+	!!! abstract "staticmethod: `__init__ (self, source, **envs)`"
+  
+		Initiate the engine with source and envs  
 
-- **params:**  
-`sq`: The submit queue  
+		- **params:**  
+			`source`: The souce text  
+			`envs`: The env data  
+  
+!!! example "class: `PyPPLLogFilter`"
+  
+	logging filter by levels (flags)  
+  
+	!!! abstract "staticmethod: `__init__ (self, name, lvls, lvldiff)`"
   
-#### `watchPool (self, rq, sq) `
+		Constructor  
+
+		- **params:**  
+			`name`: The name of the logger  
+			`lvls`: The levels of records to keep  
+			`lvldiff`: The adjustments to `lvls`  
   
-The watchdog, checking whether all jobs are done.  
+	!!! abstract "staticmethod: `filter (self, record)`"
   
+		Filter the record  
+
+		- **params:**  
+			`record`: The record to be filtered  
 
-## Module `Aggr`  
-> The aggregation of a set of processes
+		- **return:**  
+			`True` if the record to be kept else `False`  
+  
+!!! example "class: `PyPPLLogFormatter`"
+  
+	logging formatter for pyppl  
+  
+	!!! abstract "staticmethod: `__init__ (self, fmt, theme, secondary)`"
+  
+		Constructor  
 
-	@magic methods:
-		`__setattr__(self, name, value)`: Set property value of an aggregation.
-		- if it's a common property, set it to all processes
-		- if it is `input` set it to starting processes
-		- if it is `depends` set it to the end processes
-		- if it is related to `export` (startswith `ex`), set it to the end processes
-		- if it is in ['starts', 'ends', 'id'], set it to the aggregation itself.
-		- Otherwise a `ValueError` raised.
-		- You can use `[aggr].[proc].[prop]` to set/get the properties of a processes in the aggregation.
+		- **params:**  
+			`fmt`      : The format  
+			`theme`    : The theme  
+			`secondary`: Whether this is a secondary formatter or not (another formatter applied before this).  
+  
+	!!! abstract "staticmethod: `format (self, record)`"
+  
+		Format the record  
 
-	
+		- **params:**  
+			`record`: The log record  
 
-#### `__init__ (self, *args, **kwargs) `
+		- **returns:**  
+			The formatted record  
+  
+!!! example "class: `PyPPLStreamHandler`"
+  
+	PyPPL stream log handler.  
+	To implement the progress bar for JOBONE and SUBMIT logs.  
   
-Constructor  
+	!!! abstract "staticmethod: `__init__ (self, stream)`"
+  
+		Constructor  
 
-- **params:**  
-`args`: the set of processes  
-`depends`: Whether auto deduce depends. Default: True  
-`id`: The id of the aggr. Default: None (the variable name)  
-`tag`: The tag of the processes. Default: None (a unique 4-char str according to the id)  
+		- **params:**  
+			`stream`: The stream  
+  
+	!!! abstract "staticmethod: `emit (self, record)`"
   
-#### `_select (self, key, forceList, flatten) `
+		Emit the record.  
   
-Select processes  
-```  
-# self._procs = OrderedDict([  
-#	('a', Proc(id = 'a')),  
-#	('b', Proc(id = 'b')),  
-#	('c', Proc(id = 'c')),  
-#	('d', Proc(id = 'd'))  
-# ])  
+# module: pyppl.parameters
   
-self['a'] # proc a  
-self[0]   # proc a  
-self[1:2] # _Proxy of (proc b, proc c)  
-self[1,3] # _Proxy of (proc b, proc d)  
-self['b', 'c'] # _Proxy of (proc b, proc c)  
-self['b,c'] # _Proxy of (proc b, proc c)  
-self[Proc(id = 'd')] # proc d  
+!!! example "class: `Parameters`"
   
-#### `addEnd (self, *procs) `
+	A set of parameters  
   
-#### `addProc (self, p, tag, where, copy) `
+	!!! abstract "staticmethod: `__call__ (self, option, value)`"
   
-Add a process to the aggregation.  
-Note that you have to adjust the dependencies after you add processes.  
+		Set options values in `self._props`.  
+		Will be deprecated in the future!  
 
-- **params:**  
-`p`:     The process  
-`where`: Add to where: 'starts', 'ends', 'both' or None (default)  
+		- **params:**  
+			`option`: The key of the option  
+			`value` : The value of the option  
+			`excl`  : The value is used to exclude (only for `hopts`)  
 
-- **returns:**  
-the aggregation itself  
+		- **returns:**  
+			`self`  
   
-#### `addStart (self, *procs) `
+	!!! abstract "staticmethod: `__getattr__ (self, name)`"
   
-#### `copy (self, tag, depends, id, delegates, modules) `
+	!!! abstract "staticmethod: `__getitem__ (self, name)`"
   
-Like `proc`'s `copy` function, copy an aggregation. Each processes will be copied.  
-
-- **params:**  
-`tag`:      The new tag of all copied processes  
-`depends`: Whether to copy the dependencies or not. Default: True  
-- dependences for processes in starts will not be copied  
-`id`:    Use a different id if you don't want to use the variant name  
-`delegates`: Copy delegates? Default: `True`  
-`configs`: Copy configs? Default: `True`  
+	!!! abstract "staticmethod: `__init__ (self, command, theme)`"
+  
+		Constructor  
 
-- **returns:**  
-The new aggregation  
+		- **params:**  
+			`command`: The sub-command  
+			`theme`: The theme  
   
-#### `delEnd (self, *procs) `
+	!!! abstract "staticmethod: `__setattr__ (self, name, value)`"
   
-#### `delStart (self, *procs) `
+	!!! abstract "staticmethod: `__setitem__ (self, name, value)`"
   
-#### `delegate (self, attrs, procs) `
+	!!! abstract "staticmethod: `asDict (self)`"
   
-Delegate the procs to have the attributes set by:  
-`aggr.args.a.b = 1`  
-Instead of setting `args.a.b` of all processes, `args.a.b` of only delegated processes will be set.  
-`procs` can be `starts`/`ends`, but it cannot be set with other procs, which means you can do:  
-`aggr.delegate('args', 'starts')`, but not `aggr.delegate('args', ['starts', 'pXXX'])`  
+		Convert the parameters to Box object  
+
+		- **returns:**  
+			The Box object  
   
-#### `module (self, name, starts, depends, ends, starts_shared, depends_shared, ends_shared) `
+	!!! abstract "staticmethod: `help (self, error, printNexit)`"
   
-Define a function for aggr.  
-The "shared" parameters will be indicators not to remove those processes  
-when the shared function is on.  
+		Calculate the help page  
 
-- **params:**  
-`name`          : The name of the function  
-`starts`        : A list of start processes.  
-`depends`       : A dict of dependences of the procs  
-`ends`          : A list of end processes  
-`starts_shared` : A dict of functions that shares the same starts  
-`depends_shared`: A dict of functions that shares the same depends  
-`ends_shared`   : A dict of functions that shares the same ends  
-- For example: `{<procs>: <func>}`  
+		- **params:**  
+			`error`: The error message to show before the help information. Default: `''`  
+			`printNexit`: Print the help page and exit the program? Default: `False` (return the help information)  
+
+		- **return:**  
+			The help information  
   
-#### `moduleFunc (self, name, on, off) `
+	!!! abstract "staticmethod: `loadDict (self, dictVar, show)`"
   
-#### `off (self, *names) `
+		Load parameters from a dict  
+
+		- **params:**  
+			`dictVar`: The dict variable.  
+			- Properties are set by "<param>.required", "<param>.show", ...  
+			`show`:    Whether these parameters should be shown in help information  
+				- Default: False (don't show parameter from config object in help page)  
+				- It'll be overwritten by the `show` property inside dict variable.  
+				- If it is None, will inherit the param's show value  
   
-#### `on (self, *names) `
+	!!! abstract "staticmethod: `loadFile (self, cfgfile, show)`"
   
+		Load parameters from a json/config file  
+		If the file name ends with '.json', `json.load` will be used,  
+		otherwise, `ConfigParser` will be used.  
+		For config file other than json, a section name is needed, whatever it is.  
 
-## Module `flowchart.Flowchart`  
-> Draw flowchart for pipelines
+		- **params:**  
+			`cfgfile`: The config file  
+			`show`:    Whether these parameters should be shown in help information  
+				- Default: False (don't show parameter from config file in help page)  
+				- It'll be overwritten by the `show` property inside the config file.  
+  
+	!!! abstract "staticmethod: `parse (self, args, arbi)`"
+  
+		Parse the arguments.  
 
-	@static variables:
-		`THEMES`: predefined themes
-	
+		- **params:**  
+			`args`: The arguments (list). `sys.argv[1:]` will be used if it is `None`.  
+			`arbi`: Whether do an arbitrary parse. If True, options don't need to be defined. Default: `False`  
 
-#### `__init__ (self, fcfile, dotfile) `
+		- **returns:**  
+			A `Box`/`dict` object containing all option names and values.  
+  
+!!! example "class: `HelpAssembler`"
   
-The constructor  
+	A helper class to help assembling the help information page.  
 
-- **params:**  
-`fcfile`: The flowchart file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.svg'`  
-`dotfile`: The dot file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.dot'`  
+	- **staticvars**  
+		`MAXPAGEWIDTH`: the max width of the help page, not including the leading space  
+		`MAXOPTWIDTH` : the max width of the option name (include the type and placeholder, but not the leading space)  
+		`THEMES`      : the themes  
   
-#### `_assemble (self) `
+	!!! abstract "staticmethod: `__init__ (self, prog, theme)`"
   
-Assemble the graph for printing and rendering  
+		Constructor  
+
+		- **params:**  
+			`prog`: The program name  
+			`theme`: The theme. Could be a name of `THEMES`, or a dict of a custom theme.  
   
-#### `addLink (self, node1, node2) `
+	!!! abstract "staticmethod: `assemble (self, helps, progname)`"
   
-Add a link to the chart  
+		Assemble the whole help page.  
+
+		- **params:**  
+			`helps`: The help items. A list with plain strings or tuples of 3 elements, which  
+				will be treated as option name, option type/placeholder and option descriptions.  
+			`progname`: The program name used to replace '{prog}' with.  
 
-- **params:**  
-`node1`: The first node.  
-`node2`: The second node.  
+		- **returns:**  
+			lines (`list`) of the help information.  
   
-#### `addNode (self, node, role) `
+	!!! abstract "staticmethod: `error (self, msg)`"
   
-Add a node to the chart  
+		Render an error message  
 
-- **params:**  
-`node`: The node  
-`role`: Is it a starting node, an ending node or None. Default: None.  
+		- **params:**  
+			`msg`: The error message  
   
-#### `generate (self) `
+	!!! abstract "staticmethod: `optdesc (self, msg)`"
   
-Generate the dot file and graph file.  
+		Render the option descriptions  
+
+		- **params:**  
+			`msg`: the option descriptions  
   
-#### `setTheme (self, theme, base) `
+	!!! abstract "staticmethod: `optname (self, msg)`"
   
-Set the theme to be used  
+		Render the option name  
 
-- **params:**  
-`theme`: The theme, could be the key of Flowchart.THEMES or a dict of a theme definition.  
-`base` : The base theme to be based on you pass custom theme  
+		- **params:**  
+			`msg`: The option name  
   
+	!!! abstract "staticmethod: `opttype (self, msg)`"
+  
+		Render the option type or placeholder  
 
-## Module `parameters.Parameter`  
-> The class for a single parameter
-	
+		- **params:**  
+			`msg`: the option type or placeholder  
+  
+	!!! abstract "staticmethod: `plain (self, msg)`"
+  
+		Render a plain message  
 
-#### `__init__ (self, name, value) `
+		- **params:**  
+			`msg`: the message  
+  
+	!!! abstract "staticmethod: `prog (self, prog)`"
   
-Constructor  
+		Render the program name  
 
-- **params:**  
-`name`:  The name of the parameter  
-`value`: The initial value of the parameter  
+		- **params:**  
+			`msg`: The program name  
   
-#### `_forceType (self) `
+	!!! abstract "staticmethod: `title (self, msg)`"
   
-Coerce the value to the type specified  
-TypeError will be raised if error happens  
+		Render an section title  
+
+		- **params:**  
+			`msg`: The section title  
   
-#### `setDesc (self, d) `
+	!!! abstract "staticmethod: `warning (self, msg)`"
   
-Set the description of the parameter  
+		Render an warning message  
 
-- **params:**  
-`d`: The description  
+		- **params:**  
+			`msg`: The warning message  
+  
+!!! example "class: `Parameter`"
+  
+	The class for a single parameter  
   
-#### `setName (self, n) `
+	!!! abstract "staticmethod: `__getattr__ (self, name)`"
   
-Set the name of the parameter  
+	!!! abstract "staticmethod: `__init__ (self, name, value)`"
+  
+		Constructor  
 
-- **params:**  
-`n`: The name  
+		- **params:**  
+			`name`:  The name of the parameter  
+			`value`: The initial value of the parameter  
+  
+	!!! abstract "staticmethod: `__setattr__ (self, name, value)`"
   
-#### `setRequired (self, r) `
+	!!! abstract "staticmethod: `setDesc (self, d)`"
   
-Set whether this parameter is required  
+		Set the description of the parameter  
 
-- **params:**  
-`r`: True if required else False. Default: True  
+		- **params:**  
+			`d`: The description  
   
-#### `setShow (self, s) `
+	!!! abstract "staticmethod: `setName (self, n)`"
   
-Set whether this parameter should be shown in help information  
+		Set the name of the parameter  
 
-- **params:**  
-`s`: True if it shows else False. Default: True  
+		- **params:**  
+			`n`: The name  
   
-#### `setType (self, t) `
+	!!! abstract "staticmethod: `setRequired (self, r)`"
   
-Set the type of the parameter  
+		Set whether this parameter is required  
 
-- **params:**  
-`t`: The type of the value. Default: str  
-- Note: str rather then 'str'  
+		- **params:**  
+			`r`: True if required else False. Default: True  
   
-#### `setValue (self, v) `
+	!!! abstract "staticmethod: `setShow (self, s)`"
   
-Set the value of the parameter  
+		Set whether this parameter should be shown in help information  
 
-- **params:**  
-`v`: The value  
+		- **params:**  
+			`s`: True if it shows else False. Default: True  
   
+	!!! abstract "staticmethod: `setType (self, t)`"
+  
+		Set the type of the parameter  
 
-## Module `parameters.Parameters`  
-> A set of parameters
-	
+		- **params:**  
+			`t`: The type of the value. Default: str  
+			- Note: str rather then 'str'  
+  
+	!!! abstract "staticmethod: `setValue (self, v)`"
+  
+		Set the value of the parameter  
 
-#### `__init__ (self, command, theme) `
+		- **params:**  
+			`v`: The value  
   
-Constructor  
+!!! example "class: `Commands`"
   
-#### `_coerceValue (value, t) [@staticmethod]`
+	Support sub-command for command line argument parse.  
   
-#### `_parseName (self, argname) `
+	!!! abstract "staticmethod: `__getattr__ (self, name)`"
   
-If `argname` is the name of an option  
-
-- **params:**  
-`argname`: The argname  
+	!!! abstract "staticmethod: `__getitem__ (self, name)`"
+  
+	!!! abstract "staticmethod: `__init__ (self, theme)`"
+  
+		Constructor  
 
-- **returns:**  
-`an`: clean argument name  
-`at`: normalized argument type  
-`av`: the argument value, if `argname` is like: `-a=1`  
+		- **params:**  
+			`theme`: The theme  
   
-#### `_putValue (self, argname, argtype, argval, arbi) `
+	!!! abstract "staticmethod: `__setattr__ (self, name, value)`"
   
-Save the values.  
+	!!! abstract "staticmethod: `help (self, error, printNexit)`"
+  
+		Construct the help page  
 
-- **params:**  
-`argname`: The option name  
-`argtype`: The parsed type  
-`argval`:  The option value  
-`arbi`:    Whether allow pass options arbitrarily (without definition)  
+		- **params:**  
+			`error`: the error message  
+			`printNexit`: print the help page and exit instead of return the help information  
 
-- **return:**  
-`True` if value append to a list option successfully, otherwise `False`  
-  
-#### `_setDesc (self, desc) `
+		- **returns:**  
+			The help information if `printNexit` is `False`  
   
-#### `_setHbald (self, hbald) `
+	!!! abstract "staticmethod: `parse (self, args, arbi)`"
   
-#### `_setHopts (self, hopts) `
+		Parse the arguments.  
+
+		- **params:**  
+			`args`: The arguments (list). `sys.argv[1:]` will be used if it is `None`.  
+			`arbi`: Whether do an arbitrary parse. If True, options don't need to be defined. Default: `False`  
+
+		- **returns:**  
+			A `tuple` with first element the subcommand and second the parameters being parsed.  
   
-#### `_setPrefix (self, prefix) `
+# module: pyppl.proctree
   
-#### `_setTheme (self, theme) `
+Manage process relations  
   
-#### `_setUsage (self, usage) `
+!!! example "class: `ProcNode`"
   
-#### `_shouldPrintHelp (self, args) `
+	The node for processes to manage relations between each other  
   
-#### `asDict (self) `
+	!!! abstract "staticmethod: `__init__ (self, proc)`"
   
-Convert the parameters to Box object  
+		Constructor  
 
-- **returns:**  
-The Box object  
+		- **params:**  
+			`proc`: The `Proc` instance  
   
-#### `help (self, error, printNexit) `
+	!!! abstract "staticmethod: `sameIdTag (self, proc)`"
   
-Calculate the help page  
+		Check if the process has the same id and tag with me.  
 
-- **params:**  
-`error`: The error message to show before the help information. Default: `''`  
-`printNexit`: Print the help page and exit the program? Default: `False` (return the help information)  
+		- **params:**  
+			`proc`: The `Proc` instance  
 
-- **return:**  
-The help information  
+		- **returns:**  
+			`True` if it is.  
+			`False` if not.  
+  
+# module: pyppl.runners.helpers
+  
+!!! example "class: `Helper`"
+  
+	A helper class for runners  
   
-#### `loadDict (self, dictVar, show) `
+	!!! abstract "staticmethod: `__init__ (self, script, cmds)`"
   
-Load parameters from a dict  
+		Constructor  
 
-- **params:**  
-`dictVar`: The dict variable.  
-- Properties are set by "<param>.required", "<param>.show", ...  
-`show`:    Whether these parameters should be shown in help information  
-- Default: False (don't show parameter from config object in help page)  
-- It'll be overwritten by the `show` property inside dict variable.  
-- If it is None, will inherit the param's show value  
+		- **params:**  
+			`script`: The script of the job  
+			`cmds`  : The original runner commands  
+  
+	!!! abstract "staticmethod: `alive (self)`"
+  
+		Tell if the job is alive  
+  
+	!!! abstract "staticmethod: `kill (self)`"
+  
+		Kill the job  
+  
+	!!! abstract "staticmethod: `run (self)`"
   
-#### `loadFile (self, cfgfile, show) `
+		Run the job, wait for the job to complete  
   
-Load parameters from a json/config file  
-If the file name ends with '.json', `json.load` will be used,  
-otherwise, `ConfigParser` will be used.  
-For config file other than json, a section name is needed, whatever it is.  
+	!!! abstract "staticmethod: `submit (self)`"
+  
+		Submit the job  
+  
+# module: pyppl.runners.runner
+  
+The base runner class  
+  
+!!! example "class: `Runner`"
+  
+	The base runner class  
+  
+	!!! abstract "staticmethod: `__init__ (self, job)`"
+  
+		Constructor  
 
-- **params:**  
-`cfgfile`: The config file  
-`show`:    Whether these parameters should be shown in help information  
-- Default: False (don't show parameter from config file in help page)  
-- It'll be overwritten by the `show` property inside the config file.  
+		- **params:**  
+			`job`:    The job object  
   
-#### `parse (self, args, arbi) `
+	!!! abstract "staticmethod: `finish (self)`"
   
-Parse the arguments from `sys.argv`  
+	!!! abstract "staticmethod: `getpid (self)`"
   
+		Get the job id  
+  
+	!!! abstract "staticmethod: `isRunning (self)`"
+  
+		Try to tell whether the job is still running.  
 
-## Module `logger`  
-> A customized logger for pyppl
+		- **returns:**  
+			`True` if yes, otherwise `False`  
+  
+	!!! abstract "staticmethod: `kill (self)`"
+  
+		Try to kill the running jobs if I am exiting  
+  
+	!!! abstract "staticmethod: `retry (self)`"
+  
+	!!! abstract "staticmethod: `run (self)`"
+  
 
+		- **returns:**  
+			True: success/fail  
+			False: needs retry  
+  
+	!!! abstract "staticmethod: `submit (self)`"
+  
+		Try to submit the job  
+  
+# module: pyppl.runners.runner_dry
+  
+Dry runner  
+  
+!!! example "class: `RunnerDry`"
+  
+	The dry runner  
+  
+	!!! abstract "staticmethod: `__init__ (self, job)`"
+  
+		Constructor  
 
-#### `class: Box`
-```
-Allow dot operation for OrderedDict
-```
-#### `class: LoggerThemeError`
-```
-Theme errors for logger
-```
-#### `class: PyPPLLogFilter`
-```
-logging filter by levels (flags)
-```
-#### `class: PyPPLLogFormatter`
-```
-logging formatter for pyppl
-```
-#### `class: PyPPLStreamHandler`
-```
+		- **params:**  
+			`job`:    The job object  
+  
+	!!! abstract "staticmethod: `finish (self)`"
+  
+		Do some cleanup work when jobs finish  
+  
+!!! example "class: `Runner`"
+  
+	The base runner class  
+  
+	!!! abstract "staticmethod: `__init__ (self, job)`"
+  
+		Constructor  
 
-```
-#### `class: TemplatePyPPL`
-```
-Built-in template wrapper.
-```
-#### `Value (typecode_or_type, *args, **kwds) [@staticmethod]`
+		- **params:**  
+			`job`:    The job object  
+  
+	!!! abstract "staticmethod: `finish (self)`"
+  
+	!!! abstract "staticmethod: `getpid (self)`"
   
-Returns a synchronized shared object  
+		Get the job id  
   
-#### `_formatTheme (theme) [@staticmethod]`
+	!!! abstract "staticmethod: `isRunning (self)`"
   
-Make them in the standard form with bgcolor and fgcolor in raw terminal color strings  
-If the theme is read from file, try to translate "COLORS.xxx" to terminal color strings  
+		Try to tell whether the job is still running.  
 
-- **params:**  
-`theme`: The theme  
+		- **returns:**  
+			`True` if yes, otherwise `False`  
+  
+	!!! abstract "staticmethod: `kill (self)`"
+  
+		Try to kill the running jobs if I am exiting  
+  
+	!!! abstract "staticmethod: `retry (self)`"
+  
+	!!! abstract "staticmethod: `run (self)`"
+  
 
-- **returns:**  
-The formatted colors  
+		- **returns:**  
+			True: success/fail  
+			False: needs retry  
   
-#### `_getColorFromTheme (level, theme) [@staticmethod]`
+	!!! abstract "staticmethod: `submit (self)`"
   
-Get colors from a them  
+		Try to submit the job  
+  
+# module: pyppl.runners.runner_local
+  
+A runner wrapper for a single script  
+Author: pwwang@pwwang.com  
+Examples:  
 
-- **params:**  
-`level`: Our own log record level  
-`theme`: The theme  
+	- **see runner.unittest.py**  
+  
+!!! example "class: `RunnerLocal`"
+  
+	Constructor  
 
-- **returns:**  
-The colors  
+	- **params:**  
+		`job`:    The job object  
+		`config`: The properties of the process  
+  
+	!!! abstract "staticmethod: `__init__ (self, job)`"
   
-#### `_getLevel (record) [@staticmethod]`
+!!! example "class: `Runner`"
   
-Get the flags of a record  
+	The base runner class  
+  
+	!!! abstract "staticmethod: `__init__ (self, job)`"
+  
+		Constructor  
 
-- **params:**  
-`record`:  The logging record  
+		- **params:**  
+			`job`:    The job object  
+  
+	!!! abstract "staticmethod: `finish (self)`"
+  
+	!!! abstract "staticmethod: `getpid (self)`"
   
-#### `getLogger (levels, theme, logfile, lvldiff, pbar, name) [@staticmethod]`
+		Get the job id  
   
-Get the default logger  
+	!!! abstract "staticmethod: `isRunning (self)`"
+  
+		Try to tell whether the job is still running.  
 
-- **params:**  
-`levels`: The log levels(tags), default: basic  
-`theme`:  The theme of the logs on terminal. Default: True (default theme will be used)  
-- False to disable theme  
-`logfile`:The log file. Default: None (don't white to log file)  
-`lvldiff`:The diff levels for log  
-- ["-depends", "jobdone", "+debug"]: show jobdone, hide depends and debug  
-`name`:   The name of the logger, default: PyPPL  
+		- **returns:**  
+			`True` if yes, otherwise `False`  
+  
+	!!! abstract "staticmethod: `kill (self)`"
+  
+		Try to kill the running jobs if I am exiting  
+  
+	!!! abstract "staticmethod: `retry (self)`"
+  
+	!!! abstract "staticmethod: `run (self)`"
+  
 
-- **returns:**  
-The logger  
+		- **returns:**  
+			True: success/fail  
+			False: needs retry  
+  
+	!!! abstract "staticmethod: `submit (self)`"
+  
+		Try to submit the job  
+  
+# module: pyppl.runners.runner_sge
+  
+!!! example "class: `RunnerSge`"
   
+	The sge runner  
+  
+	!!! abstract "staticmethod: `__init__ (self, job)`"
+  
+		Constructor  
 
-## Module `utils`  
-> A set of utitities for PyPPL
+		- **params:**  
+			`job`:    The job object  
+			`config`: The properties of the process  
+  
+!!! example "class: `Runner`"
+  
+	The base runner class  
+  
+	!!! abstract "staticmethod: `__init__ (self, job)`"
+  
+		Constructor  
 
+		- **params:**  
+			`job`:    The job object  
+  
+	!!! abstract "staticmethod: `finish (self)`"
+  
+	!!! abstract "staticmethod: `getpid (self)`"
+  
+		Get the job id  
+  
+	!!! abstract "staticmethod: `isRunning (self)`"
+  
+		Try to tell whether the job is still running.  
 
-#### `class: Box`
-```
-Allow dot operation for OrderedDict
-```
-#### `alwaysList (data) `
+		- **returns:**  
+			`True` if yes, otherwise `False`  
+  
+	!!! abstract "staticmethod: `kill (self)`"
+  
+		Try to kill the running jobs if I am exiting  
+  
+	!!! abstract "staticmethod: `retry (self)`"
+  
+	!!! abstract "staticmethod: `run (self)`"
   
-Convert a string or a list with element  
 
-- **params:**  
-`data`: the data to be converted  
+		- **returns:**  
+			True: success/fail  
+			False: needs retry  
+  
+	!!! abstract "staticmethod: `submit (self)`"
+  
+		Try to submit the job  
+  
+# module: pyppl.runners.runner_slurm
+  
+!!! example "class: `Runner`"
+  
+	The base runner class  
+  
+	!!! abstract "staticmethod: `__init__ (self, job)`"
+  
+		Constructor  
 
-- **examples:**  
-```python  
-data = ["a, b, c", "d"]  
-ret  = alwaysList (data)  
-# ret == ["a", "b", "c", "d"]  
-```  
+		- **params:**  
+			`job`:    The job object  
+  
+	!!! abstract "staticmethod: `finish (self)`"
+  
+	!!! abstract "staticmethod: `getpid (self)`"
+  
+		Get the job id  
+  
+	!!! abstract "staticmethod: `isRunning (self)`"
+  
+		Try to tell whether the job is still running.  
 
-- **returns:**  
-The split list  
+		- **returns:**  
+			`True` if yes, otherwise `False`  
   
-#### `asStr (s, encoding) `
+	!!! abstract "staticmethod: `kill (self)`"
   
-Convert everything (str, unicode, bytes) to str with python2, python3 compatiblity  
+		Try to kill the running jobs if I am exiting  
   
-#### `briefList (l) `
+	!!! abstract "staticmethod: `retry (self)`"
   
-Briefly show an integer list, combine the continuous numbers.  
+	!!! abstract "staticmethod: `run (self)`"
+  
 
-- **params:**  
-`l`: The list  
+		- **returns:**  
+			True: success/fail  
+			False: needs retry  
+  
+	!!! abstract "staticmethod: `submit (self)`"
+  
+		Try to submit the job  
+  
+!!! example "class: `RunnerSlurm`"
+  
+	The slurm runner  
+  
+	!!! abstract "staticmethod: `__init__ (self, job)`"
+  
+		Constructor  
 
-- **returns:**  
-The string to show for the briefed list.  
+		- **params:**  
+			`job`:    The job object  
+			`config`: The properties of the process  
+  
+# module: pyppl.runners.runner_ssh
   
-#### `dictUpdate (origDict, newDict) `
+!!! example "class: `RunnerSsh`"
   
-Update a dictionary recursively.  
+	The ssh runner  
+  
 
-- **params:**  
-`origDict`: The original dictionary  
-`newDict`:  The new dictionary  
+	- **static variables:**  
+		`SERVERID`: The incremental number used to calculate which server should be used.  
+		- Don't touch unless you know what's going on!  
+  
+  
+	!!! abstract "staticmethod: `__init__ (self, job)`"
+  
+		Constructor  
 
-- **examples:**  
-```python  
-od1 = {"a": {"b": {"c": 1, "d":1}}}  
-od2 = {key:value for key:value in od1.items()}  
-nd  = {"a": {"b": {"d": 2}}}  
-od1.update(nd)  
-# od1 == {"a": {"b": {"d": 2}}}, od1["a"]["b"] is lost  
-dictUpdate(od2, nd)  
-# od2 == {"a": {"b": {"c": 1, "d": 2}}}  
-```  
+		- **params:**  
+			`job`:    The job object  
+  
+	!!! abstract "staticmethod: `isServerAlive (server, key)`"
   
-#### `filter (func, vec) `
+!!! example "class: `Runner`"
   
-Python2 and Python3 compatible filter  
+	The base runner class  
+  
+	!!! abstract "staticmethod: `__init__ (self, job)`"
+  
+		Constructor  
 
-- **params:**  
-`func`: The filter function  
-`vec`:  The list to be filtered  
+		- **params:**  
+			`job`:    The job object  
+  
+	!!! abstract "staticmethod: `finish (self)`"
+  
+	!!! abstract "staticmethod: `getpid (self)`"
+  
+		Get the job id  
+  
+	!!! abstract "staticmethod: `isRunning (self)`"
+  
+		Try to tell whether the job is still running.  
 
-- **returns:**  
-The filtered list  
+		- **returns:**  
+			`True` if yes, otherwise `False`  
+  
+	!!! abstract "staticmethod: `kill (self)`"
+  
+		Try to kill the running jobs if I am exiting  
+  
+	!!! abstract "staticmethod: `retry (self)`"
   
-#### `formatSecs (seconds) `
+	!!! abstract "staticmethod: `run (self)`"
   
-Format a time duration  
 
-- **params:**  
-`seconds`: the time duration in seconds  
+		- **returns:**  
+			True: success/fail  
+			False: needs retry  
+  
+	!!! abstract "staticmethod: `submit (self)`"
+  
+		Try to submit the job  
+  
+# module: pyppl.templates.template
+  
+# module: pyppl.templates.template_jinja2
+  
+!!! example "class: `TemplateJinja2`"
+  
+	Jinja2 template wrapper  
+  
+	!!! abstract "staticmethod: `__init__ (self, source, **envs)`"
+  
+		Initiate the engine with source and envs  
 
-- **returns:**  
-The formated string.  
-For example: "01:01:01.001" stands for 1 hour 1 min 1 sec and 1 minisec.  
+		- **params:**  
+			`source`: The souce text  
+			`envs`: The env data  
+  
+# module: pyppl.templates.template_pyppl
+  
+This template engine is borrowed from Templite  
+The code is here: https://github.com/aosabook/500lines/blob/master/template-engine/code/templite.py  
+Author: Ned Batchelder  
+Project: Template engine  
+Requirements: Python  
   
-#### `funcsig (func) `
+Modified by: pwwang  
+Functions added:  
+	- support elif, else  
+	- support for dict: for k,v in dict.items()  
+	- support [] to get element from list or dict.  
+	- support multivariables in expression:  
+	  {{d1,d2|concate}}  
+	  {'concate': lambda x,y: x+y}  
   
-Get the signature of a function  
-Try to get the source first, if failed, try to get its name, otherwise return None  
+!!! example "class: `TemplatePyPPLEngine`"
+  
+	A simple template renderer, for a nano-subset of Django syntax.  
+	Supported constructs are extended variable access:  
+		`{{var.modifer.modifier|filter|filter}}`  
+	loops:  
+		`{% for var in list %}...{% endfor %}`  
+	and ifs:  
+		`{% if var %}...{% endif %}`  
+	Comments are within curly-hash markers:  
+		`{# This will be ignored #}`  
+	Construct a Templite with the template text, then use `render` against a  
+	dictionary context to create a finished string::  
+	```  
+	templite = Templite('''  
+		<h1>Hello {{name|upper}}!</h1>  
+		{% for topic in topics %}  
+			<p>You are interested in {{topic}}.</p>  
+		{% endif %}  
+		''',  
+		{'upper': str.upper},  
+	)  
+	text = templite.render({  
+		'name': "Ned",  
+		'topics': ['Python', 'Geometry', 'Juggling'],  
+	})  
+	```  
+  
+	!!! abstract "staticmethod: `__init__ (self, text, *contexts)`"
+  
+		Construct a Templite with the given `text`.  
+		`contexts` are dictionaries of values to use for future renderings.  
+		These are good for filters and global values.  
 
-- **params:**  
-`func`: The function  
+		- **params:**  
+			`text`: The template text  
+			`contexts`: The contexts used to render.  
+  
+	!!! abstract "staticmethod: `flushOutput (self)`"
+  
+		Force `self.buffered` to the code builder.  
 
-- **returns:**  
-The signature  
+		- **params:**  
+			`code`: The code builder  
   
-#### `map (func, vec) `
+	!!! abstract "staticmethod: `render (self, context)`"
   
-Python2 and Python3 compatible map  
+		Render this template by applying it to `context`.  
 
-- **params:**  
-`func`: The map function  
-`vec`: The list to be maped  
+		- **params:**  
+			`context`: a dictionary of values to use in this rendering.  
 
-- **returns:**  
-The maped list  
+		- **returns:**  
+			The rendered string  
   
-#### `range (i, *args, **kwargs) `
+!!! example "class: `TemplatePyPPL`"
   
-Convert a range to list, because in python3, range is not a list  
-
-- **params:**  
-`r`: the range data  
+	Built-in template wrapper.  
+  
+	!!! abstract "staticmethod: `__init__ (self, source, **envs)`"
+  
+		Initiate the engine with source and envs  
 
-- **returns:**  
-The converted list  
+		- **params:**  
+			`source`: The souce text  
+			`envs`: The env data  
+  
+!!! example "class: `TemplatePyPPLCodeBuilder`"
+  
+	Build source code conveniently.  
   
-#### `reduce (func, vec) `
+	!!! abstract "staticmethod: `__init__ (self, envs, indent)`"
   
-Python2 and Python3 compatible reduce  
+		Constructor of code builder  
 
-- **params:**  
-`func`: The reduce function  
-`vec`: The list to be reduced  
+		- **params:**  
+			indent: The initial indent level  
+  
+	!!! abstract "staticmethod: `addLine (self, line, src)`"
+  
+		Add a line of source to the code.  
+		Indentation and newline will be added for you, don't provide them.  
 
-- **returns:**  
-The reduced value  
+		- **params:**  
+			line: The line to add  
   
-#### `split (s, delimter, trim) `
+	!!! abstract "staticmethod: `addSection (self)`"
   
-Split a string using a single-character delimter  
+		Add a section, a sub-CodeBuilder.  
 
-- **params:**  
-`s`: the string  
-`delimter`: the single-character delimter  
-`trim`: whether to trim each part. Default: True  
+		- **returns:**  
+			The section added.  
+  
+	!!! abstract "staticmethod: `dedent (self)`"
+  
+		Decrease the current indent for following lines.  
+  
+	!!! abstract "staticmethod: `getGlobals (self)`"
+  
+		Execute the code, and return a dict of globals it defines.  
+  
+	!!! abstract "staticmethod: `indent (self)`"
+  
+		Increase the current indent for following lines.  
+  
+	!!! abstract "staticmethod: `lineByNo (self, lineno)`"
+  
+		Get the line by line number  
 
-- **examples:**  
-```python  
-ret = split("'a,b',c", ",")  
-# ret == ["'a,b'", "c"]  
-# ',' inside quotes will be recognized.  
-```  
+		- **params:**  
+			`lineno`: The line number  
 
-- **returns:**  
-The list of substrings  
+		- **returns:**  
+			The TemplatePyPPLLine object at `lineno`.  
+  
+!!! example "class: `TemplatePyPPLLine`"
+  
+	Line of compiled code  
+  
+	!!! abstract "staticmethod: `__init__ (self, line, src, indent)`"
+  
+		Constructor of line  
+  
+# module: pyppl.utils
   
-#### `uid (s, l, alphabet) `
+A set of utitities for PyPPL  
   
-Calculate a short uid based on a string.  
-Safe enough, tested on 1000000 32-char strings, no repeated uid found.  
-This is used to calcuate a uid for a process  
+!!! example "function: `map`"
+  
+	Python2 and Python3 compatible map  
 
-- **params:**  
-`s`: the base string  
-`l`: the length of the uid  
-`alphabet`: the charset used to generate the uid  
+	- **params:**  
+		`func`: The map function  
+		`vec`: The list to be maped  
 
-- **returns:**  
-The uid  
+	- **returns:**  
+		The maped list  
   
-#### `varname (maxline, incldot) `
+!!! example "function: `briefList`"
   
-Get the variable name for ini  
+	Briefly show an integer list, combine the continuous numbers.  
 
-- **params:**  
-`maxline`: The max number of lines to retrive. Default: 20  
-`incldot`: Whether include dot in the variable name. Default: False  
+	- **params:**  
+		`l`: The list  
 
-- **returns:**  
-The variable name  
+	- **returns:**  
+		The string to show for the briefed list.  
+  
+!!! example "function: `dictUpdate`"
   
+	Update a dictionary recursively.  
 
-## Module `utils.box`  
-> .
+	- **params:**  
+		`origDict`: The original dictionary  
+		`newDict`:  The new dictionary  
 
-#### `class: Box`
-```
-Allow dot operation for OrderedDict
-```
+	- **examples:**  
+		```python  
+		od1 = {"a": {"b": {"c": 1, "d":1}}}  
+		od2 = {key:value for key:value in od1.items()}  
+		nd  = {"a": {"b": {"d": 2}}}  
+		od1.update(nd)  
+		# od1 == {"a": {"b": {"d": 2}}}, od1["a"]["b"] is lost  
+		dictUpdate(od2, nd)  
+		# od2 == {"a": {"b": {"c": 1, "d": 2}}}  
+		```  
+  
+!!! example "function: `alwaysList`"
+  
+	Convert a string or a list with element  
 
-## Module `utils.cmd`  
-> .
+	- **params:**  
+		`data`: the data to be converted  
 
-#### `class: Cmd`
-```
-A command (subprocess) wapper
-```
-#### `class: Timeout`
-```
+	- **examples:**  
+		```python  
+		data = ["a, b, c", "d"]  
+		ret  = alwaysList (data)  
+		# ret == ["a", "b", "c", "d"]  
+		```  
 
-```
-#### `run (cmd, bg, raiseExc, timeout, **kwargs) [@staticmethod]`
+	- **returns:**  
+		The split list  
+  
+!!! example "function: `filter`"
   
-A shortcut of `Command.run`  
-To chain another command, you can do:  
-`run('seq 1 3', bg = True).pipe('grep 1')`  
+	Python2 and Python3 compatible filter  
 
-- **params:**  
-`cmd`     : The command, could be a string or a list  
-`bg`      : Run in background or not. Default: `False`  
-- If it is `True`, `rc` and `stdout/stderr` will be default (no value retrieved).  
-`raiseExc`: raise the expcetion or not  
-`**kwargs`: other arguments for `Popen`  
+	- **params:**  
+		`func`: The filter function  
+		`vec`:  The list to be filtered  
 
-- **returns:**  
-The `Command` instance  
+	- **returns:**  
+		The filtered list  
   
-#### `sleep (cmd, bg, raiseExc, timeout, **kwargs, **kwargs) `
-sleep(seconds)  
+!!! example "function: `uid`"
   
-Delay execution for a given number of seconds.  The argument may be  
-a floating point number for subsecond precision.  
-#### `time (cmd, bg, raiseExc, timeout, **kwargs, **kwargs, **kwargs) `
-time() -> floating point number  
-  
-Return the current time in seconds since the Epoch.  
-Fractions of a second may be present if the system clock provides them.  
+	Calculate a short uid based on a string.  
+	Safe enough, tested on 1000000 32-char strings, no repeated uid found.  
+	This is used to calcuate a uid for a process  
 
-## Module `utils.parallel`  
-> .
+	- **params:**  
+		`s`: the base string  
+		`l`: the length of the uid  
+		`alphabet`: the charset used to generate the uid  
 
-#### `class: Parallel`
-```
-A parallel runner
-```
-#### `run (func, args, nthread, backend, raiseExc) [@staticmethod]`
+	- **returns:**  
+		The uid  
   
-A shortcut of `Parallel.run`  
-
-- **params:**  
-`func`    : The function to run  
-`args`    : The arguments for the function, should be a `list` with `tuple`s  
-`nthread` : Number of jobs to run simultaneously. Default: `1`  
-`backend` : The backend, either `process` (default) or `thread`  
-`raiseExc`: Whether raise exception or not. Default: `True`  
-
-- **returns:**  
-The merged results from each job.  
+!!! example "function: `range`"
   
+	Convert a range to list, because in python3, range is not a list  
 
-## Module `utils.safefs`  
-> .
+	- **params:**  
+		`r`: the range data  
 
-#### `class: ChmodError`
-```
-OS system call failed.
-```
-#### `Lock () [@staticmethod]`
+	- **returns:**  
+		The converted list  
   
-Returns a non-recursive lock object  
+!!! example "function: `asStr`"
   
-#### `class: SafeFs`
-```
-A thread-safe file system
-	
-	@static variables:
-		
-		`TMPDIR`: The default temporary directory to store lock files
-
-		# file types
-		`FILETYPE_UNKNOWN`  : Unknown file type
-		`FILETYPE_NOENT`    : File does not exist
-		`FILETYPE_NOENTLINK`: A dead link (a link links to a non-existent file.
-		`FILETYPE_FILE`     : A regular file
-		`FILETYPE_FILELINK` : A link to a regular file
-		`FILETYPE_DIR`      : A regular directory
-		`FILETYPE_DIRLINK`  : A link to a regular directory
-
-		# relation of two files
-		`FILES_DIFF_BOTHNOENT` : Two files are different and none of them exists
-		`FILES_DIFF_NOENT1`    : Two files are different but file1 does not exists
-		`FILES_DIFF_NOENT2`    : Two files are different but file2 does not exists
-		`FILES_DIFF_BOTHENT`   : Two files are different and both of them exist
-		`FILES_SAME_STRNOENT`  : Two files are the same string and it does not exist
-		`FILES_SAME_STRENT`    : Two files are the same string and it exists
-		`FILES_SAME_BOTHLINKS` : Two files link to one file
-		`FILES_SAME_BOTHLINKS1`: File1 links to file2, file2 links to a regular file
-		`FILES_SAME_BOTHLINKS2`: File2 links to file1, file1 links to a regular file
-		`FILES_SAME_REAL1`     : File2 links to file1, which a regular file
-		`FILES_SAME_REAL2`     : File1 links to file2, which a regular file
-
-		`LOCK`: A global lock ensures the locks are locked at the same time
-```
-#### `copy (file1, file2, overwrite, callback) [@staticmethod]`
+	Convert everything (str, unicode, bytes) to str with python2, python3 compatiblity  
+  
+!!! example "function: `reduce`"
   
-A shortcut of `SafeFs.copy`  
+	Python2 and Python3 compatible reduce  
 
-- **params:**  
-`file1`    : File 1  
-`file2`    : File 2  
-`overwrite`: Whether overwrite file 2. Default: `True`  
-`callback` : The callback. arguments:  
-- `r` : Whether the file exists  
-- `fs`: This instance  
+	- **params:**  
+		`func`: The reduce function  
+		`vec`: The list to be reduced  
 
-- **returns:**  
-`True` if succeed else `False`  
+	- **returns:**  
+		The reduced value  
   
-#### `exists (filepath, callback) [@staticmethod]`
+!!! example "function: `funcsig`"
   
-A shortcut of `SafeFs.exists`  
+	Get the signature of a function  
+	Try to get the source first, if failed, try to get its name, otherwise return None  
 
-- **params:**  
-`filepath`: The filepath  
-`callback`: The callback. arguments:  
-- `r` : Whether the file exists  
-- `fs`: This instance  
+	- **params:**  
+		`func`: The function  
 
-- **returns:**  
-`True` if the file exists else `False`  
+	- **returns:**  
+		The signature  
   
-#### `gz (file1, file2, overwrite, callback) [@staticmethod]`
+!!! example "function: `varname`"
   
-A shortcut of `SafeFs.gz`  
+	Get the variable name for ini  
 
-- **params:**  
-`file1`    : File 1  
-`file2`    : File 2  
-`overwrite`: Whether overwrite file 2. Default: `True`  
-`callback` : The callback. arguments:  
-- `r` : Whether the file exists  
-- `fs`: This instance  
+	- **params:**  
+		`maxline`: The max number of lines to retrive. Default: 20  
+		`incldot`: Whether include dot in the variable name. Default: False  
 
-- **returns:**  
-`True` if succeed else `False`  
+	- **returns:**  
+		The variable name  
   
-#### `link (file1, file2, overwrite, callback) [@staticmethod]`
+!!! example "function: `formatSecs`"
   
-A shortcut of `SafeFs.link`  
+	Format a time duration  
 
-- **params:**  
-`file1`    : File 1  
-`file2`    : File 2  
-`overwrite`: Whether overwrite file 2. Default: `True`  
-`callback` : The callback. arguments:  
-- `r` : Whether the file exists  
-- `fs`: This instance  
+	- **params:**  
+		`seconds`: the time duration in seconds  
 
-- **returns:**  
-`True` if succeed else `False`  
+	- **returns:**  
+		The formated string.  
+		For example: "01:01:01.001" stands for 1 hour 1 min 1 sec and 1 minisec.  
   
-#### `moveWithLink (file1, file2, overwrite, callback) [@staticmethod]`
+!!! example "function: `split`"
   
-A shortcut of `SafeFs.moveWithLink`  
+	Split a string using a single-character delimter  
 
-- **params:**  
-`file1`    : File 1  
-`file2`    : File 2  
-`overwrite`: Whether overwrite file 2. Default: `True`  
-`callback` : The callback. arguments:  
-- `r` : Whether the file exists  
-- `fs`: This instance  
+	- **params:**  
+		`s`: the string  
+		`delimter`: the single-character delimter  
+		`trim`: whether to trim each part. Default: True  
 
-- **returns:**  
-`True` if succeed else `False`  
+	- **examples:**  
+		```python  
+		ret = split("'a,b',c", ",")  
+		# ret == ["'a,b'", "c"]  
+		# ',' inside quotes will be recognized.  
+		```  
+
+	- **returns:**  
+		The list of substrings  
   
-#### `osremove (file1, file2, overwrite, callback) `
-remove(path)  
+# module: pyppl.utils.box
   
-Remove a file (same as unlink(path)).  
-#### `readlink (file1, file2, overwrite, callback) `
-readlink(path) -> path  
+!!! example "class: `Box`"
   
-Return a string representing the path to which the symbolic link points.  
-#### `shmove (src, dst) [@staticmethod]`
-Recursively move a file or directory to another location. This is  
-similar to the Unix "mv" command.  
+	Allow dot operation for OrderedDict  
   
-If the destination is a directory or a symlink to a directory, the source  
-is moved inside the directory. The destination path must not already  
-exist.  
+	!!! abstract "staticmethod: `__getattr__ (self, name)`"
   
-If the destination already exists but is not a directory, it may be  
-overwritten depending on os.rename() semantics.  
+	!!! abstract "staticmethod: `__setattr__ (self, name, val)`"
   
-If the destination is on our current filesystem, then rename() is used.  
-Otherwise, src is copied to the destination and then removed.  
-A lot more could be done here...  A look at a mv.c shows a lot of  
-the issues this implementation glosses over.  
+	!!! abstract "method: `fromkeys ()`"
+OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.  
+        If not specified, the value defaults to None.  
   
   
-#### `ungz (file1, file2, overwrite, callback) [@staticmethod]`
+# module: pyppl.utils.cmd
   
-A shortcut of `SafeFs.ungz`  
-
-- **params:**  
-`file1`    : File 1  
-`file2`    : File 2  
-`overwrite`: Whether overwrite file 2. Default: `True`  
-`callback` : The callback. arguments:  
-- `r` : Whether the file exists  
-- `fs`: This instance  
-
-- **returns:**  
-`True` if succeed else `False`  
+!!! example "class: `Cmd`"
   
-
-## Module `proctree.ProcNode`  
-> The node for processes to manage relations between each other
-	
-
-#### `__init__ (self, proc) `
+	A command (subprocess) wapper  
   
-Constructor  
+	!!! abstract "staticmethod: `__init__ (self, cmd, raiseExc, timeout, **kwargs)`"
+  
+		Constructor  
 
-- **params:**  
-`proc`: The `Proc` instance  
+		- **params:**  
+			`cmd`     : The command, could be a string or a list  
+			`raiseExc`: raise the expcetion or not  
+			`**kwargs`: other arguments for `Popen`  
   
-#### `sameIdTag (self, proc) `
+	!!! abstract "staticmethod: `pipe (self, cmd, **kwargs)`"
   
-Check if the process has the same id and tag with me.  
+		Pipe another command  
 
-- **params:**  
-`proc`: The `Proc` instance  
-
-- **returns:**  
-`True` if it is.  
-`False` if not.  
-  
+		- **examples:**  
+			```python  
+			c = Command('seq 1 3').pipe('grep 1').run()  
+			c.stdout == '1\n'  
+			```  
 
-## Module `proctree.ProcTree`  
-> .
+		- **params:**  
+			`cmd`: The other command  
+			`**kwargs`: Other arguments for `Popen` for the other command  
 
-#### `__init__ (self) `
+		- **returns:**  
+			`Command` instance of the other command  
   
-Constructor, set the status of all `ProcNode`s  
+	!!! abstract "staticmethod: `run (self, bg)`"
   
-#### `check (proc) [@staticmethod]`
-  
-Check whether a process with the same id and tag exists  
+		Wait for the command to run  
+
+		- **params:**  
+			`bg`: Run in background or not. Default: `False`  
+				- If it is `True`, `rc` and `stdout/stderr` will be default (no value retrieved).  
 
-- **params:**  
-`proc`: The `Proc` instance  
+		- **returns:**  
+			`self`  
   
-#### `checkPath (self, proc) `
+!!! example "function: `run`"
   
-Check whether paths of a process can start from a start process  
+	A shortcut of `Command.run`  
+	To chain another command, you can do:  
+	`run('seq 1 3', bg = True).pipe('grep 1')`  
 
-- **params:**  
-`proc`: The process  
+	- **params:**  
+		`cmd`     : The command, could be a string or a list  
+		`bg`      : Run in background or not. Default: `False`  
+			- If it is `True`, `rc` and `stdout/stderr` will be default (no value retrieved).  
+		`raiseExc`: raise the expcetion or not  
+		`**kwargs`: other arguments for `Popen`  
 
-- **returns:**  
-`True` if all paths can pass  
-The failed path otherwise  
+	- **returns:**  
+		The `Command` instance  
   
-#### `getAllPaths (self) `
+# module: pyppl.utils.parallel
   
-#### `getEnds (self) `
+!!! example "function: `run`"
   
-Get the end processes  
+	A shortcut of `Parallel.run`  
 
-- **returns:**  
-The end processes  
+	- **params:**  
+		`func`    : The function to run  
+		`args`    : The arguments for the function, should be a `list` with `tuple`s  
+		`nthread` : Number of jobs to run simultaneously. Default: `1`  
+		`backend` : The backend, either `process` (default) or `thread`  
+		`raiseExc`: Whether raise exception or not. Default: `True`  
+
+	- **returns:**  
+		The merged results from each job.  
   
-#### `getNext (proc) [@staticmethod]`
+!!! example "class: `Parallel`"
   
-Get next processes of process  
-
-- **params:**  
-`proc`: The `Proc` instance  
+	A parallel runner  
+  
+	!!! abstract "staticmethod: `__init__ (self, nthread, backend, raiseExc)`"
+  
+		Constructor  
 
-- **returns:**  
-The processes depend on this process  
+		- **params:**  
+			`nthread` : Number of jobs to run simultaneously. Default: `1`  
+			`backend` : The backend, either `process` (default) or `thread`  
+			`raiseExc`: Whether raise exception or not. Default: `True`  
   
-#### `getNextStr (proc) [@staticmethod]`
+	!!! abstract "staticmethod: `run (self, func, args)`"
   
-Get the names of processes depend on a process  
+		Run parallel jobs  
 
-- **params:**  
-`proc`: The `Proc` instance  
+		- **params:**  
+			`func`    : The function to run  
+			`args`    : The arguments for the function, should be a `list` with `tuple`s  
+			`nthread` : Number of jobs to run simultaneously. Default: `1`  
+			`backend` : The backend, either `process` (default) or `thread`  
+			`raiseExc`: Whether raise exception or not. Default: `True`  
 
-- **returns:**  
-The names  
+		- **returns:**  
+			The merged results from each job.  
   
-#### `getNextToRun (self) `
+# module: pyppl.utils.ps
   
-Get the process to run next  
-
-- **returns:**  
-The process next to run  
+!!! example "class: `Cmd`"
   
-#### `getPaths (self, proc, proc0) `
+	A command (subprocess) wapper  
   
-Infer the path to a process  
-
-- **params:**  
-`proc`: The process  
-`proc0`: The original process, because this function runs recursively.  
+	!!! abstract "staticmethod: `__init__ (self, cmd, raiseExc, timeout, **kwargs)`"
+  
+		Constructor  
 
-- **returns:**  
-```  
-p1 -> p2 -> p3  
-p4  _/  
-Paths for p3: [[p4], [p2, p1]]  
-```  
+		- **params:**  
+			`cmd`     : The command, could be a string or a list  
+			`raiseExc`: raise the expcetion or not  
+			`**kwargs`: other arguments for `Popen`  
   
-#### `getPathsToStarts (self, proc) `
+	!!! abstract "staticmethod: `pipe (self, cmd, **kwargs)`"
   
-Filter the paths with start processes  
+		Pipe another command  
+
+		- **examples:**  
+			```python  
+			c = Command('seq 1 3').pipe('grep 1').run()  
+			c.stdout == '1\n'  
+			```  
 
-- **params:**  
-`proc`: The process  
+		- **params:**  
+			`cmd`: The other command  
+			`**kwargs`: Other arguments for `Popen` for the other command  
 
-- **returns:**  
-The filtered path  
+		- **returns:**  
+			`Command` instance of the other command  
   
-#### `getPrevStr (proc) [@staticmethod]`
+	!!! abstract "staticmethod: `run (self, bg)`"
   
-Get the names of processes a process depends on  
+		Wait for the command to run  
 
-- **params:**  
-`proc`: The `Proc` instance  
+		- **params:**  
+			`bg`: Run in background or not. Default: `False`  
+				- If it is `True`, `rc` and `stdout/stderr` will be default (no value retrieved).  
 
-- **returns:**  
-The names  
+		- **returns:**  
+			`self`  
   
-#### `getStarts (self) `
+!!! example "function: `child`"
   
-Get the start processes  
-
-- **returns:**  
-The start processes  
-  
-#### `register (proc) [@staticmethod]`
+	Direct children  
   
-Register the process  
-
-- **params:**  
-`proc`: The `Proc` instance  
+!!! example "function: `exists`"
   
-#### `reset () [@staticmethod]`
+	Check whether pid exists in the current process table.  
+	From https://github.com/kennethreitz/delegator.py/blob/master/delegator.py  
   
-Reset the status of all `ProcNode`s  
+# module: pyppl.utils.safefs
   
-#### `setStarts (self, starts) `
+!!! example "function: `move`"
   
-Set the start processes  
+	A shortcut of `SafeFs.move`  
 
-- **params:**  
-`starts`: The start processes  
+	- **params:**  
+		`file1`    : File 1  
+		`file2`    : File 2  
+		`overwrite`: Whether overwrite file 2. Default: `True`  
+		`callback` : The callback. arguments:  
+			- `r` : Whether the file exists  
+			- `fs`: This instance  
+
+	- **returns:**  
+		`True` if succeed else `False`  
   
-#### `unranProcs (self) `
+!!! example "function: `remove`"
   
+	A shortcut of `SafeFs.remove`  
 
-## Module `templates.TemplatePyPPL`  
-> Built-in template wrapper.
-	
+	- **params:**  
+		`filepath`: The filepath  
+		`callback`: The callback. arguments:  
+			- `r` : Whether the file exists  
+			- `fs`: This instance  
 
-#### `__init__ (self, source, **envs) `
+	- **returns:**  
+		`True` if succeed else `False`  
+  
+!!! example "function: `ungz`"
   
-Initiate the engine with source and envs  
+	A shortcut of `SafeFs.ungz`  
 
-- **params:**  
-`source`: The souce text  
-`envs`: The env data  
+	- **params:**  
+		`file1`    : File 1  
+		`file2`    : File 2  
+		`overwrite`: Whether overwrite file 2. Default: `True`  
+		`callback` : The callback. arguments:  
+			- `r` : Whether the file exists  
+			- `fs`: This instance  
+
+	- **returns:**  
+		`True` if succeed else `False`  
   
-#### `_render (self, data) `
+!!! example "function: `moveWithLink`"
   
-Render the template  
+	A shortcut of `SafeFs.moveWithLink`  
 
-- **params:**  
-`data`: The data used for rendering  
+	- **params:**  
+		`file1`    : File 1  
+		`file2`    : File 2  
+		`overwrite`: Whether overwrite file 2. Default: `True`  
+		`callback` : The callback. arguments:  
+			- `r` : Whether the file exists  
+			- `fs`: This instance  
 
-- **returns:**  
-The rendered string  
+	- **returns:**  
+		`True` if succeed else `False`  
+  
+!!! example "function: `gz`"
   
+	A shortcut of `SafeFs.gz`  
 
-## Module `templates.TemplateJinja2`  
-> Jinja2 template wrapper
-	
+	- **params:**  
+		`file1`    : File 1  
+		`file2`    : File 2  
+		`overwrite`: Whether overwrite file 2. Default: `True`  
+		`callback` : The callback. arguments:  
+			- `r` : Whether the file exists  
+			- `fs`: This instance  
 
-#### `__init__ (self, source, **envs) `
+	- **returns:**  
+		`True` if succeed else `False`  
   
-Initiate the engine with source and envs  
+!!! example "function: `copy`"
+  
+	A shortcut of `SafeFs.copy`  
 
-- **params:**  
-`source`: The souce text  
-`envs`: The env data  
+	- **params:**  
+		`file1`    : File 1  
+		`file2`    : File 2  
+		`overwrite`: Whether overwrite file 2. Default: `True`  
+		`callback` : The callback. arguments:  
+			- `r` : Whether the file exists  
+			- `fs`: This instance  
+
+	- **returns:**  
+		`True` if succeed else `False`  
   
-#### `_render (self, data) `
+!!! example "function: `exists`"
   
-Render the template  
+	A shortcut of `SafeFs.exists`  
 
-- **params:**  
-`data`: The data used for rendering  
+	- **params:**  
+		`filepath`: The filepath  
+		`callback`: The callback. arguments:  
+			- `r` : Whether the file exists  
+			- `fs`: This instance  
 
-- **returns:**  
-The rendered string  
+	- **returns:**  
+		`True` if the file exists else `False`  
+  
+!!! example "function: `link`"
   
+	A shortcut of `SafeFs.link`  
 
-## Module `runners.Runner`  
-> The base runner class
-	
+	- **params:**  
+		`file1`    : File 1  
+		`file2`    : File 2  
+		`overwrite`: Whether overwrite file 2. Default: `True`  
+		`callback` : The callback. arguments:  
+			- `r` : Whether the file exists  
+			- `fs`: This instance  
 
-#### `__init__ (self, job) `
+	- **returns:**  
+		`True` if succeed else `False`  
   
-Constructor  
-
-- **params:**  
-`job`:    The job object  
+!!! example "class: `SafeFs`"
   
-#### `_flush (self, fout, ferr, lastout, lasterr, end) `
+	A thread-safe file system  
   
-Flush stdout/stderr  
 
-- **params:**  
-`fout`: The stdout file handler  
-`ferr`: The stderr file handler  
-`lastout`: The leftovers of previously readlines of stdout  
-`lasterr`: The leftovers of previously readlines of stderr  
-`end`: Whether this is the last time to flush  
+	- **static variables:**  
   
-#### `finish (self) `
+		`TMPDIR`: The default temporary directory to store lock files  
   
-#### `getpid (self) `
+		`FILETYPE_UNKNOWN`  : Unknown file type  
+		`FILETYPE_NOENT`    : File does not exist  
+		`FILETYPE_NOENTLINK`: A dead link (a link links to a non-existent file.  
+		`FILETYPE_FILE`     : A regular file  
+		`FILETYPE_FILELINK` : A link to a regular file  
+		`FILETYPE_DIR`      : A regular directory  
+		`FILETYPE_DIRLINK`  : A link to a regular directory  
   
-Get the job id  
+		`FILES_DIFF_BOTHNOENT` : Two files are different and none of them exists  
+		`FILES_DIFF_NOENT1`    : Two files are different but file1 does not exists  
+		`FILES_DIFF_NOENT2`    : Two files are different but file2 does not exists  
+		`FILES_DIFF_BOTHENT`   : Two files are different and both of them exist  
+		`FILES_SAME_STRNOENT`  : Two files are the same string and it does not exist  
+		`FILES_SAME_STRENT`    : Two files are the same string and it exists  
+		`FILES_SAME_BOTHLINKS` : Two files link to one file  
+		`FILES_SAME_BOTHLINKS1`: File1 links to file2, file2 links to a regular file  
+		`FILES_SAME_BOTHLINKS2`: File2 links to file1, file1 links to a regular file  
+		`FILES_SAME_REAL1`     : File2 links to file1, which a regular file  
+		`FILES_SAME_REAL2`     : File1 links to file2, which a regular file  
   
-#### `isRunning (self) `
+		`LOCK`: A global lock ensures the locks are locked at the same time  
   
-Try to tell whether the job is still running.  
-
-- **returns:**  
-`True` if yes, otherwise `False`  
+	!!! abstract "staticmethod: `__init__ (self, file1, file2, tmpdir)`"
   
-#### `kill (self) `
+		Constructor  
+
+		- **params:**  
+			`file1`:  File 1  
+			`file2`:  File 2. Default: `None`  
+			`tmpdir`: The temporary directory used to store lock files. Default: `None` (`SafeFs.TMPDIR`)  
   
-Try to kill the running jobs if I am exiting  
+	!!! abstract "staticmethod: `basename (filepath)`"
   
-#### `retry (self) `
+		Get the basename of a file  
+		If it is a directory like '/a/b/c/', return `c`  
+
+		- **params:**  
+			`filepath`: The file path  
+
+		- **returns:**  
+			The basename  
   
-#### `run (self) `
+	!!! abstract "staticmethod: `chmodX (self)`"
   
+		Convert file1 to executable or add extract shebang to cmd line  
 
-- **returns:**  
-True: success/fail  
-False: needs retry  
+		- **returns:**  
+			A list with or without the path of the interpreter as the first element and the script file as the last element  
   
-#### `submit (self) `
+	!!! abstract "staticmethod: `copy (self, overwrite, callback)`"
   
-Try to submit the job  
-  
+		Copy file1 to file2 thread-safely  
 
-## Module `runners.RunnerLocal`  
-> Constructor
-	@params:
-		`job`:    The job object
-		`config`: The properties of the process
-	
+		- **params:**  
+			`overwrite`: Allow overwrting file2? Default: `True`  
+			`callback`:  The callback. arguments:  
+				- `r` :  Whether the file exists  
+				- `fs`:  This instance  
 
-#### `__init__ (self, job) `
+		- **returns:**  
+			`True` if succeed else `False`  
+  
+	!!! abstract "staticmethod: `exists (self, callback)`"
   
+		Tell if file1 exists thread-safely  
 
-## Module `runners.RunnerSsh`  
-> The ssh runner
+		- **params:**  
+			`callback`: The callback. arguments:  
+				- `r` : Whether the file exists  
+				- `fs`: This instance  
 
-	@static variables:
-		`SERVERID`: The incremental number used to calculate which server should be used.
-		- Don't touch unless you know what's going on!
+		- **returns:**  
+			`True` if exists else `False`  
+  
+	!!! abstract "staticmethod: `filesig (self, dirsig)`"
+  
+		Generate a signature for a file  
 
-	
+		- **params:**  
+			`dirsig`: Whether expand the directory? Default: True  
 
-#### `__init__ (self, job) `
+		- **returns:**  
+			The signature  
+  
+	!!! abstract "staticmethod: `flush (fd, lastmsg, end)`"
   
-Constructor  
+		Flush a file descriptor  
 
-- **params:**  
-`job`:    The job object  
+		- **params:**  
+			`fd`     : The file handler  
+			`lastmsg`: The remaining content of last flush  
+			`end`    : The file ends? Default: `False`  
   
-#### `isServerAlive (server, key) [@staticmethod]`
+	!!! abstract "staticmethod: `gz (self, overwrite, callback)`"
   
+		Gzip file1 (tar-gzip if file1 is a directory) to file2 in a thread-safe way  
 
-## Module `runners.RunnerSge`  
-> The sge runner
-	
+		- **params:**  
+			`overwrite`: Allow overwrting file2? Default: `True`  
+			`callback`:  The callback. arguments:  
+				- `r` :  Whether the file exists  
+				- `fs`:  This instance  
 
-#### `__init__ (self, job) `
+		- **returns:**  
+			`True` if succeed else `False`  
   
-Constructor  
+	!!! abstract "staticmethod: `link (self, overwrite, callback)`"
+  
+		Link file1 to file2 thread-safely  
+
+		- **params:**  
+			`overwrite`: Allow overwrting file2? Default: `True`  
+			`callback`:  The callback. arguments:  
+				- `r` :  Whether the file exists  
+				- `fs`:  This instance  
 
-- **params:**  
-`job`:    The job object  
-`config`: The properties of the process  
+		- **returns:**  
+			`True` if succeed else `False`  
   
+	!!! abstract "staticmethod: `move (self, overwrite, callback)`"
+  
+		Move file1 to file2 thread-safely  
 
-## Module `runners.RunnerSlurm`  
-> The slurm runner
-	
+		- **params:**  
+			`overwrite`: Allow overwrting file2? Default: `True`  
+			`callback`:  The callback. arguments:  
+				- `r` :  Whether the file exists  
+				- `fs`:  This instance  
 
-#### `__init__ (self, job) `
+		- **returns:**  
+			`True` if succeed else `False`  
   
-Constructor  
+	!!! abstract "staticmethod: `moveWithLink (self, overwrite, callback)`"
+  
+		Move file1 to file2 and link file2 to file1 in a thread-safe way  
+
+		- **params:**  
+			`overwrite`: Allow overwrting file2? Default: `True`  
+			`callback`:  The callback. arguments:  
+				- `r` :  Whether the file exists  
+				- `fs`:  This instance  
 
-- **params:**  
-`job`:    The job object  
-`config`: The properties of the process  
+		- **returns:**  
+			`True` if succeed else `False`  
   
+	!!! abstract "staticmethod: `remove (self, callback)`"
+  
+		Remove file1 thread-safely  
 
-## Module `runners.RunnerDry`  
-> The dry runner
-	
+		- **params:**  
+			`callback`: The callback. arguments:  
+				- `r` : Whether the file exists  
+				- `fs`: This instance  
 
-#### `__init__ (self, job) `
+		- **returns:**  
+			`True` if succeed else `False`  
+  
+	!!! abstract "staticmethod: `samefile (self, callback)`"
   
-Constructor  
+		Tell if file1 and file2 are the same file in a thread-safe way  
 
-- **params:**  
-`job`:    The job object  
+		- **params:**  
+			`callback`: The callback. arguments:  
+				- `r` : Whether the file exists  
+				- `fs`: This instance  
+
+		- **returns:**  
+			`True` if they are the same file else `False`  
   
-#### `finish (self) `
+	!!! abstract "staticmethod: `ungz (self, overwrite, callback)`"
   
-Do some cleanup work when jobs finish  
+		Ungzip file1 (tar-ungzip if file1 tar-gzipped to file2 in a thread-safe way  
+
+		- **params:**  
+			`overwrite`: Allow overwrting file2? Default: `True`  
+			`callback`:  The callback. arguments:  
+				- `r` :  Whether the file exists  
+				- `fs`:  This instance  
+
+		- **returns:**  
+			`True` if succeed else `False`  
   

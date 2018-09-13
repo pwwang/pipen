@@ -1,5 +1,5 @@
 """
-# Dry runner
+Dry runner
 """
 from os import path, utime, remove
 from .runner import Runner

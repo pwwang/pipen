@@ -21,7 +21,6 @@ class SafeFs(object):
 		
 		`TMPDIR`: The default temporary directory to store lock files
 
-		# file types
 		`FILETYPE_UNKNOWN`  : Unknown file type
 		`FILETYPE_NOENT`    : File does not exist
 		`FILETYPE_NOENTLINK`: A dead link (a link links to a non-existent file.
@@ -30,7 +29,6 @@ class SafeFs(object):
 		`FILETYPE_DIR`      : A regular directory
 		`FILETYPE_DIRLINK`  : A link to a regular directory
 
-		# relation of two files
 		`FILES_DIFF_BOTHNOENT` : Two files are different and none of them exists
 		`FILES_DIFF_NOENT1`    : Two files are different but file1 does not exists
 		`FILES_DIFF_NOENT2`    : Two files are different but file2 does not exists
