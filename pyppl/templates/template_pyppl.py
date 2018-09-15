@@ -193,7 +193,7 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 		self.code.addLine("append_result = result.append")
 		self.code.addLine("extend_result = result.extend")
 		self.code.addLine("to_str = str")
-		vars_code = self.code.addSection()
+		self.section = self.code.addSection()
 
 		ops_stack = []
 
@@ -233,9 +233,8 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 			raise TemplatePyPPLSyntaxError(name = ops_stack[-1][1], msg = 'Unclosed template tag')
 
 		self.flushOutput()
-		
 		for var_name, src in [(k, v) for k, v in self.all_vars.items() if k not in self.loop_vars]:
-			vars_code.addLine(("c_%s = context[%r]" % (var_name, var_name)), 'unknown template variable: "%s" at %s' % (var_name, src))
+			self.section.addLine(("c_%s = context[%r]" % (var_name, var_name)), 'unknown template variable: "%s" at %s' % (var_name, src))
 
 		self.code.addLine("return ''.join(result)")
 		self.code.dedent()
@@ -313,6 +312,12 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 			if not ops_stack or 'for' not in [op[0] for op in ops_stack]: # support while in the future?
 				raise TemplatePyPPLSyntaxError(name = words[0], src = src, msg = 'No loop found for %s.' % words[0])
 			self.code.addLine(words[0], src)
+		elif words[0] == 'assign':
+			parts = ''.join(words[1:])
+			if '=' not in parts:
+				raise TemplatePyPPLSyntaxError(name = 'assign', src = src, msg = 'Equal sign (=) is required for assign.')
+			varname, value = parts.split('=', 1)
+			self.section.addLine('context["%s"] = %s' % (varname, value), src)
 		else:
 			raise TemplatePyPPLSyntaxError(name = words[0], src = src, msg = 'No such keyword')
 

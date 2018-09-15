@@ -491,6 +491,12 @@ class TestTemplatePyPPLEngine(testly.TestCase):
 		# python literals
 		yield '{{1 | bool}}', {}, 'True'
 		yield '{{True | int}}', {}, '1'
+		yield """
+		{%- assign a = 1 -%}
+		{{a}}
+		""", {}, """
+		1
+		"""
 
 	def testRender(self, text, contexts, out):
 		t  = TemplatePyPPL(text)
