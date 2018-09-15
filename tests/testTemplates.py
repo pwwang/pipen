@@ -305,7 +305,10 @@ class TestTemplatePyPPLEngine(testly.TestCase):
 		yield '{% endx %}', '', [], None, True # too many ends
 		yield '{%- endfor -%}', '{% endfor %}', [('if', '{% if ... %}')], None, True
 		yield '{% endif %}', '{% endif %}', [('if', '{% if ... %}')], ''
+		yield '{% endcomment %}', '{% endcomment %}', [('comment', '{% comment %}')], ''
 		# other
+		yield '{% comment %}', '{% comment %}', [], ''
+		yield '{% comment x %}', '{% comment %}', [], '', True
 		yield '{% x %}', '', [], None, True
 
 	def testParseTag(self, token, src, stack, out, exception = False):
@@ -460,6 +463,9 @@ class TestTemplatePyPPLEngine(testly.TestCase):
 		\n\t\t"""
 		yield """
 		#!/usr/bin/env python
+		{%- comment -%}
+		this is comment
+		{%- endcomment -%}
 		{%- if x -%}
 		{%- for y in ylist -%}
 		{{y}}

@@ -200,6 +200,7 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 		# Split the text to form a list of tokens.
 		tokens  = re.split(r"(?s)({{.*?}}|[ \t]*{%-.*?-%}[ \t]*\n?|{%.*?%}|{#.*?#})", text)
 		lineno  = 1
+		iscomment = False
 		for token in tokens:
 			if not token: continue
 			lnstr = "Line %s: %s" % (lineno, token.rstrip('\n'))
@@ -214,13 +215,14 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 			elif token.lstrip(' \t').startswith('{%-'):
 				# Action tag with no space
 				self.flushOutput()
-				self._parseTag(token.strip(), lnstr, ops_stack)
+				iscomment = self._parseTag(token.strip(), lnstr, ops_stack)
 				
 			elif token.startswith('{%'):
 				# Action tag: split into words and parse further.
 				self.flushOutput()
-				self._parseTag(token, lnstr, ops_stack)
-				
+				iscomment = self._parseTag(token, lnstr, ops_stack)
+			elif iscomment is True:
+				continue
 			else:
 				# Literal content.  If it isn't empty, output it.
 				tokenlines = token.split('\n')
@@ -298,6 +300,12 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 			if start_what[0] != end_what:
 				raise TemplatePyPPLSyntaxError(name = words[0], src = src, msg = 'End statement not paired with "%s"' % start_what[1])
 			self.code.dedent()
+		elif words[0] == 'comment':
+			if len(words) > 1:
+				raise TemplatePyPPLSyntaxError(name = 'comment', src = src, msg = 'comment is a sole keyword.')
+			ops_stack.append(('comment', src))
+			self.code.indent()
+			return True
 		else:
 			raise TemplatePyPPLSyntaxError(name = words[0], src = src, msg = 'No such keyword')
 
