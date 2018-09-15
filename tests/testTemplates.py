@@ -468,6 +468,11 @@ class TestTemplatePyPPLEngine(testly.TestCase):
 		{%- endcomment -%}
 		{%- if x -%}
 		{%- for y in ylist -%}
+		{%- if y | : v1 == 3 -%}
+		{%- continue -%}
+		{%- elsif y | : v1 == 5 -%}
+		{%- break -%}
+		{%- endif -%}
 		{{y}}
 		{%- endfor -%}
 		{%- endif -%}
@@ -475,9 +480,7 @@ class TestTemplatePyPPLEngine(testly.TestCase):
 		#!/usr/bin/env python
 		1
 		2
-		3
 		4
-		5
 		"""
 		yield '{{a|read}}', {'a': __file__}, helpers.readFile(__file__)
 		file2read = path.join(path.dirname(__file__), 'helpers.py')

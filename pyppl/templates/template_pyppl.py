@@ -264,6 +264,7 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 			if words[0] == 'if':
 				ops_stack.append(('if', src))
 			else:
+				words[0] = 'elif'
 				self.code.dedent()
 			self.code.addLine(("%s %s:" % (words[0], self._exprCode(words[1:], src))), src)
 			self.code.indent()
@@ -306,6 +307,12 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 			ops_stack.append(('comment', src))
 			self.code.indent()
 			return True
+		elif words[0] == 'break' or words[0] == 'continue':
+			if len(words) > 1:
+				raise TemplatePyPPLSyntaxError(name = words[0], src = src, msg = '%s is a sole keyword.' % words[0])
+			if not ops_stack or 'for' not in [op[0] for op in ops_stack]: # support while in the future?
+				raise TemplatePyPPLSyntaxError(name = words[0], src = src, msg = 'No loop found for %s.' % words[0])
+			self.code.addLine(words[0], src)
 		else:
 			raise TemplatePyPPLSyntaxError(name = words[0], src = src, msg = 'No such keyword')
 
