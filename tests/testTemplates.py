@@ -241,7 +241,7 @@ class TestTemplatePyPPLEngine(testly.TestCase):
 		literal1
 		literal2
 		{% if %}
-		''', [], '', TemplatePyPPLSyntaxError, "No condition offered in \"Line 4: {% if %}\": 'if/elif'"
+		''', [], '', TemplatePyPPLSyntaxError, "No condition offered in \"Line 4: {% if %}\": 'if/elif/elsif/elseif'"
 		yield '''
 		literal1
 		literal2
@@ -288,7 +288,7 @@ class TestTemplatePyPPLEngine(testly.TestCase):
 		# if/elif
 		yield '{% if %}', '', [], None, True
 		yield '{% elif %}', '', [], None, True
-		yield '{% if a | b %}', '', [], "if c_b(c_a):\n"
+		yield '{%- if a | b -%}', '', [], "if c_b(c_a):\n"
 		yield '{% elif a(1) %}', '', [], "elif c_a(1):\n"
 		# else
 		yield '{% else 1 %}', '', [], None, True
@@ -303,7 +303,7 @@ class TestTemplatePyPPLEngine(testly.TestCase):
 		# end
 		yield '{% end x %}', '', [], None, True
 		yield '{% endx %}', '', [], None, True # too many ends
-		yield '{% endfor %}', '{% endfor %}', [('if', '{% if ... %}')], None, True
+		yield '{%- endfor -%}', '{% endfor %}', [('if', '{% if ... %}')], None, True
 		yield '{% endif %}', '{% endif %}', [('if', '{% if ... %}')], ''
 		# other
 		yield '{% x %}', '', [], None, True
@@ -458,6 +458,21 @@ class TestTemplatePyPPLEngine(testly.TestCase):
 		4\n\t\t
 		5\n\t\t
 		\n\t\t"""
+		yield """
+		#!/usr/bin/env python
+		{%- if x -%}
+		{%- for y in ylist -%}
+		{{y}}
+		{%- endfor -%}
+		{%- endif -%}
+		""", {'x': True, 'ylist': [1,2,3,4,5]}, """
+		#!/usr/bin/env python
+		1
+		2
+		3
+		4
+		5
+		"""
 		yield '{{a|read}}', {'a': __file__}, helpers.readFile(__file__)
 		file2read = path.join(path.dirname(__file__), 'helpers.py')
 		yield '{{a|readlines|lambda x:"\\n".join(_ for _ in x if _)}}', {'a': file2read}, helpers.readFile(file2read, lambda x: '\n'.join(str(y) for y in x.splitlines() if y))

@@ -198,9 +198,10 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 		ops_stack = []
 
 		# Split the text to form a list of tokens.
-		tokens = re.split(r"(?s)({{.*?}}|{%.*?%}|{#.*?#})", text)
-		lineno = 1
+		tokens  = re.split(r"(?s)({{.*?}}|[ \t]*{%-.*?-%}[ \t]*\n?|{%.*?%}|{#.*?#})", text)
+		lineno  = 1
 		for token in tokens:
+			if not token: continue
 			lnstr = "Line %s: %s" % (lineno, token.rstrip('\n'))
 			if token.startswith('{#'):
 				# Comment: ignore it and move on.
@@ -209,6 +210,11 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 			elif token.startswith('{{'):
 				# An expression to evaluate.
 				self._parseExpression(token, lnstr)
+
+			elif token.lstrip(' \t').startswith('{%-'):
+				# Action tag with no space
+				self.flushOutput()
+				self._parseTag(token.strip(), lnstr, ops_stack)
 				
 			elif token.startswith('{%'):
 				# Action tag: split into words and parse further.
@@ -217,10 +223,9 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 				
 			else:
 				# Literal content.  If it isn't empty, output it.
-				if token: 
-					tokenlines = token.split('\n')
-					self._parseLiteral(tokenlines, lnstr)
-					lineno += len(tokenlines) - 1
+				tokenlines = token.split('\n')
+				self._parseLiteral(tokenlines, lnstr)
+				lineno += len(tokenlines) - 1
 
 		if ops_stack:
 			raise TemplatePyPPLSyntaxError(name = ops_stack[-1][1], msg = 'Unclosed template tag')
@@ -249,11 +254,11 @@ class TemplatePyPPLEngine(object): # pragma: no cover
 	def _parseTag(self, token, src, ops_stack):
 		if '\n' in token:
 			raise TemplatePyPPLSyntaxError(src = src, msg = 'No new line is allowed')
-		words = token[2:-2].strip().split()
-		if words[0] == 'if' or words[0] == 'elif':
+		words = (token[3:-3] if token.startswith('{%-') else token[2:-2]).strip().split()
+		if words[0] == 'if' or words[0] == 'elif' or words[0] == 'elsif' or words[0] == 'elseif':
 			# An if statement: evaluate the expression to determine if.
 			if len(words) < 2:
-				raise TemplatePyPPLSyntaxError(name = 'if/elif', src = src, msg = 'No condition offered')
+				raise TemplatePyPPLSyntaxError(name = 'if/elif/elsif/elseif', src = src, msg = 'No condition offered')
 			if words[0] == 'if':
 				ops_stack.append(('if', src))
 			else:
