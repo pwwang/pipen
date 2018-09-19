@@ -7,10 +7,11 @@ from tempfile import gettempdir
 from collections import OrderedDict
 from shutil import rmtree
 from copy import deepcopy
+from liquid import LiquidRenderError
 from pyppl.job import Job
 from pyppl.jobmgr import Jobmgr
-from pyppl.exception import JobInputParseError, TemplatePyPPLRenderError, JobOutputParseError
-from pyppl.templates import TemplatePyPPL
+from pyppl.exception import JobInputParseError, JobOutputParseError
+from pyppl.template import TemplateLiquid
 from pyppl import Proc, logger, utils
 
 class TestJob(testly.TestCase):
@@ -59,8 +60,8 @@ class TestJob(testly.TestCase):
 				'errfile' : job.errfile,
 				'pidfile' : job.pidfile
 			},
-			'in'   : {},
-			'out'  : {},
+			'i'   : {},
+			'o'  : {},
 			#'bring': {}
 		})
 
@@ -278,104 +279,8 @@ class TestJob(testly.TestCase):
 				self.assertIn(errmsg, err.getvalue())
 			self.assertTrue(path.isdir(job.indir))
 			self.assertDictEqual(job.input, jobinput)
-			self.assertDictEqual(job.data['in'], indata)
-	'''
-	def dataProvider_testPrepBrings(self):
-		pPrepBrings1 = Proc()
-		pPrepBrings1.props['workdir'] = path.join(self.testdir, 'pPrepBrings1', 'workdir')
-		pPrepBrings1.props['input']   = {
-			'a': {'type': 'var', 'data': [1]},
-		}
-		pPrepBrings1.props['brings']  = {'a': ''}
-		yield 0, pPrepBrings1, {}, JobBringParseError, 'Cannot bring files for a non-file type input'
-
-		pPrepBrings2 = Proc()
-		pPrepBrings2.props['workdir'] = path.join(self.testdir, 'pPrepBrings1', 'workdir')
-		filepbdir2 = path.join(self.testdir, 'testPrepBringDir2')
-		makedirs(filepbdir2)
-		filepb20 = path.join(filepbdir2, 'testPrepBring2.br')
-		filepb21 = path.join(filepbdir2, 'whatever2.txt')
-		filepb22 = path.join(self.testdir, 'testPrepBring2.txt')
-		symlink(filepb21, filepb22)
-		helpers.writeFile(filepb21)
-		pPrepBrings2.props['input']   = {
-			'a': {'type': 'file', 'data': [filepb22]},
-		}
-		pPrepBrings2.props['brings']  = {'a': TemplatePyPPL('{{x}}.br')}
-		yield 0, pPrepBrings2, {}, TemplatePyPPLRenderError, 'unknown template variable: "x"'
-
-		pPrepBrings3 = Proc()
-		pPrepBrings3.props['workdir'] = path.join(self.testdir, 'pPrepBrings1', 'workdir')
-		filepbdir3 = path.join(self.testdir, 'testPrepBringDir3')
-		makedirs(filepbdir3)
-		filepb30 = path.join(filepbdir3, 'testPrepBring3.br')
-		filepb31 = path.join(filepbdir3, 'whatever3.txt')
-		filepb32 = path.join(self.testdir, 'testPrepBring3.txt')
-		helpers.writeFile(filepb31)
-		symlink(filepb31, filepb32)
-		helpers.writeFile(filepb30)
-		pPrepBrings3.props['input']   = {
-			'a': {'type': 'file', 'data': [filepb32]},
-		}
-		pPrepBrings3.props['brings']  = {'a': TemplatePyPPL('{{in.a | fn}}.br')}
-		yield 0, pPrepBrings3, {
-			'a': [self.file2indir(pPrepBrings3.workdir, 0, filepb30)],
-			'_a': [filepb30],
-		}
-
-		# no bring-in file
-		pPrepBrings4 = Proc()
-		pPrepBrings4.props['workdir'] = path.join(self.testdir, 'pPrepBrings1', 'workdir')
-		pPrepBrings4.LOG_NLINE['BRINGFILE_NOTFOUND'] = -1
-		filepbdir4 = path.join(self.testdir, 'testPrepBringDir4')
-		makedirs(filepbdir4)
-		filepb41 = path.join(filepbdir4, 'whatever4.txt')
-		filepb42 = path.join(self.testdir, 'testPrepBring4.txt')
-		helpers.writeFile(filepb41)
-		symlink(filepb41, filepb42)
-		pPrepBrings4.props['input']   = {
-			'a': {'type': 'file', 'data': [filepb42]},
-		}
-		pPrepBrings4.props['brings']  = {'a': TemplatePyPPL('{{in.a | fn}}.br')}
-		yield 0, pPrepBrings4, {'a': [''], '_a': ['']}, None, None, 'No bring-in file found'
-
-		# input file renamed
-		pPrepBrings5 = Proc()
-		pPrepBrings5.props['workdir'] = path.join(self.testdir, 'pPrepBrings1', 'workdir')
-		filepbdir5 = path.join(self.testdir, 'testPrepBringDir5')
-		makedirs(filepbdir5)
-		filepb50 = path.join(filepbdir5, 'testPrepBring5.br')
-		filepb51 = path.join(filepbdir5, 'whatever5.txt')
-		filepb52 = path.join(self.testdir, 'testPrepBring5.txt')
-		filepb53 = path.join(filepbdir5, 'testPrepBring5.txt')
-		helpers.writeFile(filepb51)
-		helpers.writeFile(filepb53)
-		symlink(filepb51, filepb52)
-		helpers.writeFile(filepb50)
-		pPrepBrings5.props['input']   = {
-			'a': {'type': 'file', 'data': [filepb53]},
-			'b': {'type': 'file', 'data': [filepb52]},
-		}
-		pPrepBrings5.props['brings']  = {'b': TemplatePyPPL('{{in.b | fn}}.br')}
-		yield 0, pPrepBrings5, {
-			'b': [self.file2indir(pPrepBrings3.workdir, 0, filepb50, '[1]')],
-			'_b': [filepb50],
-		}
-
-	def testPrepBrings(self, index, proc, brdata, exception = None, msg = None, errmsg = None):
-		self.maxDiff = None
-		job = Job(index, proc)
-		job._prepInput()
-		if exception:
-			self.assertRaisesRegex(exception, msg, job._prepBrings)
-		else:
-			with helpers.log2str() as (out, err):
-				job._prepBrings()
-			if errmsg:
-				self.assertIn(errmsg, err.getvalue())
-			self.assertDictEqual(job.brings, brdata)
-			self.assertDictEqual(job.data['bring'], brdata)
-	'''
+			self.assertDictEqual(job.data['i'], indata)
+	
 	def dataProvider_testPrepOutput(self):
 		pPrepOutput = Proc()
 		pPrepOutput.props['workdir'] = path.join(self.testdir, 'pPrepOutput', 'workdir')
@@ -387,10 +292,10 @@ class TestJob(testly.TestCase):
 		}, {}, {}, {}
 		yield 0, pPrepOutput, {
 			'a': {'type': 'var', 'data': [0]}
-		}, {'a': ('var', TemplatePyPPL('{{x}}'))}, {}, {}, TemplatePyPPLRenderError, 'unknown template variable'
+		}, {'a': ('var', TemplateLiquid('{{x}}'))}, {}, {}, LiquidRenderError, "NameError: name 'x' is not defined"
 		yield 0, pPrepOutput, {
 			'a': {'type': 'var', 'data': [0]}
-		}, {'a': ('var', TemplatePyPPL('1{{in.a}}'))}, {
+		}, {'a': ('var', TemplateLiquid('1{{i.a}}'))}, {
 			'a': {'type': 'var', 'data': '10'}
 		}, {
 			'a': '10'
@@ -398,14 +303,14 @@ class TestJob(testly.TestCase):
 		yield 0, pPrepOutput, {
 			'a': {'type': 'var', 'data': [0]}
 		}, {
-			'a': ('file', TemplatePyPPL('/a/b/1{{in.a}}'))
+			'a': ('file', TemplateLiquid('/a/b/1{{i.a}}'))
 		}, {}, {}, JobOutputParseError, 'Absolute path not allowed for output file/dir'
 		yield 0, pPrepOutput, {
 			'a': {'type': 'var', 'data': [0]}
 		}, {
-			'a': ('file', TemplatePyPPL('{{in.a}}.out')),
-			'b': ('stdout', TemplatePyPPL('{{in.a}}.stdout')),
-			'c': ('stderr', TemplatePyPPL('{{in.a}}.stderr')),
+			'a': ('file', TemplateLiquid('{{i.a}}.out')),
+			'b': ('stdout', TemplateLiquid('{{i.a}}.stdout')),
+			'c': ('stderr', TemplateLiquid('{{i.a}}.stderr')),
 		}, {
 			'a': {'type': 'file', 'data': path.join(pPrepOutput.workdir, '1', 'output', '0.out')},
 			'b': {'type': 'stdout', 'data': path.join(pPrepOutput.workdir, '1', 'output', '0.stdout')},
@@ -428,23 +333,23 @@ class TestJob(testly.TestCase):
 			job._prepOutput()
 			self.assertTrue(path.isdir(job.outdir))
 			self.assertDictEqual(dict(job.output), jobout)
-			self.assertDictEqual(job.data['out'], outdata)
+			self.assertDictEqual(job.data['o'], outdata)
 
 	def dataProvider_testPrepScript(self):
 		pPrepScript = Proc()
 		pPrepScript.LOG_NLINE['SCRIPT_EXISTS'] = -1
 		pPrepScript.props['workdir'] = path.join(self.testdir, 'pPrepScript', 'workdir')
-		yield 0, pPrepScript, {}, {}, TemplatePyPPL('{{x}}'), '', TemplatePyPPLRenderError, 'unknown template variable'
+		yield 0, pPrepScript, {}, {}, TemplateLiquid('{{x}}'), '', LiquidRenderError, "NameError: name 'x' is not defined"
 		
 		sfile = path.join(pPrepScript.workdir, '1', 'job.script')
 		makedirs(path.dirname(sfile))
 		helpers.writeFile(sfile)
-		yield 0, pPrepScript, {'x': {'type': 'var', 'data': [0]}}, {}, TemplatePyPPL('1{{in.x}}'), '10', None, None, 'Script file updated'
+		yield 0, pPrepScript, {'x': {'type': 'var', 'data': [0]}}, {}, TemplateLiquid('1{{i.x}}'), '10', None, None, 'Script file updated'
 		
 		sfile = path.join(pPrepScript.workdir, '2', 'job.script')
 		makedirs(path.dirname(sfile))
 		helpers.writeFile(sfile, '11')
-		yield 1, pPrepScript, {'x': {'type': 'var', 'data': [0, 1]}}, {}, TemplatePyPPL('1{{in.x}}'), '11'
+		yield 1, pPrepScript, {'x': {'type': 'var', 'data': [0, 1]}}, {}, TemplateLiquid('1{{i.x}}'), '11'
 
 	def testPrepScript(self, index, proc, input, output, script, scriptout, exception = None, msg = None, errmsg = None):
 		proc.props['input']  = input
@@ -493,7 +398,7 @@ class TestJob(testly.TestCase):
 	def dataProvider_testInit(self):
 		pInit = Proc()
 		pInit.props['workdir'] = path.join(self.testdir, 'pInit', 'workdir')
-		pInit.props['script']  = TemplatePyPPL('')
+		pInit.props['script']  = TemplateLiquid('')
 		yield 0, pInit
 
 	def testInit(self, index, proc):
@@ -551,10 +456,9 @@ class TestJob(testly.TestCase):
 			'a': {'type': 'file', 'data': [filepb2]},
 			'b': {'type': 'var', 'data': ['hello']}
 		}
-		pReport.props['output']  = {'a': ('var', TemplatePyPPL('1{{in.a}}'))}
-		# pReport.props['brings']  = {'a': TemplatePyPPL('{{in.a | fn}}.br')}
+		pReport.props['output']  = {'a': ('var', TemplateLiquid('1{{i.a}}'))}
 		pReport.props['size']    = 100
-		pReport.props['script']  = TemplatePyPPL('{{in.a | fn}}.script')
+		pReport.props['script']  = TemplateLiquid('{{i.a | fn}}.script')
 		yield 0, pReport, [
 			'INPUT',
 			'OUTPUT',
@@ -641,10 +545,10 @@ class TestJob(testly.TestCase):
 	def dataProvider_testCheckoutfiles(self):
 		pCheckoutfiles1 = Proc()
 		pCheckoutfiles1.props['workdir'] = path.join(self.testdir, 'pCheckoutfiles1', 'workdir')
-		pCheckoutfiles1.props['expect'] = TemplatePyPPL('grep content {{out.a}}')
-		pCheckoutfiles1.props['script'] = TemplatePyPPL('')
+		pCheckoutfiles1.props['expect'] = TemplateLiquid('grep content {{o.a}}')
+		pCheckoutfiles1.props['script'] = TemplateLiquid('')
 		pCheckoutfiles1.props['output'] = {
-			'a': ('var', TemplatePyPPL('whatever'))
+			'a': ('var', TemplateLiquid('whatever'))
 		}
 		job1 = Job(0, pCheckoutfiles1)
 		job1.init()
@@ -654,10 +558,10 @@ class TestJob(testly.TestCase):
 		
 		pCheckoutfiles2 = Proc()
 		pCheckoutfiles2.props['workdir'] = path.join(self.testdir, 'pCheckoutfiles2', 'workdir')
-		pCheckoutfiles2.props['expect'] = TemplatePyPPL('grep content {{out.a}}')
-		pCheckoutfiles2.props['script'] = TemplatePyPPL('')
+		pCheckoutfiles2.props['expect'] = TemplateLiquid('grep content {{o.a}}')
+		pCheckoutfiles2.props['script'] = TemplateLiquid('')
 		pCheckoutfiles2.props['output'] = {
-			'a': ('file', TemplatePyPPL('whatever.txt'))
+			'a': ('file', TemplateLiquid('whatever.txt'))
 		}
 		job2 = Job(0, pCheckoutfiles2)
 		job2.init()
@@ -668,10 +572,10 @@ class TestJob(testly.TestCase):
 		
 		pCheckoutfiles3 = Proc()
 		pCheckoutfiles3.props['workdir'] = path.join(self.testdir, 'pCheckoutfiles3', 'workdir')
-		pCheckoutfiles3.props['expect'] = TemplatePyPPL('grep content {{out.a}}')
-		pCheckoutfiles3.props['script'] = TemplatePyPPL('')
+		pCheckoutfiles3.props['expect'] = TemplateLiquid('grep content {{o.a}}')
+		pCheckoutfiles3.props['script'] = TemplateLiquid('')
 		pCheckoutfiles3.props['output'] = {
-			'a': ('file', TemplatePyPPL('whatever.txt'))
+			'a': ('file', TemplateLiquid('whatever.txt'))
 		}
 		job3 = Job(0, pCheckoutfiles3)
 		job3.init()
@@ -682,9 +586,9 @@ class TestJob(testly.TestCase):
 		
 		pCheckoutfiles4 = Proc()
 		pCheckoutfiles4.props['workdir'] = path.join(self.testdir, 'pCheckoutfiles4', 'workdir')
-		pCheckoutfiles4.props['script'] = TemplatePyPPL('')
+		pCheckoutfiles4.props['script'] = TemplateLiquid('')
 		pCheckoutfiles4.props['output'] = {
-			'a': ('file', TemplatePyPPL('whatever.txt'))
+			'a': ('file', TemplateLiquid('whatever.txt'))
 		}
 		job4 = Job(0, pCheckoutfiles4)
 		job4.init()
@@ -720,11 +624,11 @@ class TestJob(testly.TestCase):
 		
 		pExportSingle4 = Proc()
 		pExportSingle4.props['workdir'] = path.join(self.testdir, 'pExportSingle4', 'workdir')
-		pExportSingle4.props['script'] = TemplatePyPPL('')
+		pExportSingle4.props['script'] = TemplateLiquid('')
 		pExportSingle4.props['exdir'] = path.join(self.testdir, 'exdir')
 		pExportSingle4.props['exhow'] = 'move'
 		pExportSingle4.props['output'] = {
-			'a': ('file', TemplatePyPPL('whatever.txt'))
+			'a': ('file', TemplateLiquid('whatever.txt'))
 		}
 		job4 = Job(0, pExportSingle4)
 		job4.init()
@@ -735,12 +639,12 @@ class TestJob(testly.TestCase):
 		
 		pExportSingle5 = Proc()
 		pExportSingle5.props['workdir'] = path.join(self.testdir, 'pExportSingle5', 'workdir')
-		pExportSingle5.props['script']  = TemplatePyPPL('')
+		pExportSingle5.props['script']  = TemplateLiquid('')
 		pExportSingle5.props['exdir']   = path.join(self.testdir, 'exdir')
 		pExportSingle5.props['exow']    = True
 		pExportSingle5.props['exhow']   = 'move'
 		pExportSingle5.props['output']  = {
-			'a': ('file', TemplatePyPPL('whatever.txt'))
+			'a': ('file', TemplateLiquid('whatever.txt'))
 		}
 		job5 = Job(0, pExportSingle5)
 		job5.init()
@@ -752,13 +656,13 @@ class TestJob(testly.TestCase):
 		
 		pExportSingle6 = Proc()
 		pExportSingle6.props['workdir'] = path.join(self.testdir, 'pExportSingle6', 'workdir')
-		pExportSingle6.props['script']  = TemplatePyPPL('')
+		pExportSingle6.props['script']  = TemplateLiquid('')
 		pExportSingle6.props['exdir']   = path.join(self.testdir, 'exdir')
 		pExportSingle6.props['exow']    = True
 		pExportSingle6.props['exhow']   = 'gz'
 		pExportSingle6.props['output']  = {
-			'a': ('file', TemplatePyPPL('whatever.txt')),
-			'b': ('dir', TemplatePyPPL('whatever.dir'))
+			'a': ('file', TemplateLiquid('whatever.txt')),
+			'b': ('dir', TemplateLiquid('whatever.dir'))
 		}
 		job6 = Job(0, pExportSingle6)
 		job6.init()
@@ -772,12 +676,12 @@ class TestJob(testly.TestCase):
 		
 		pExportSingle7 = Proc()
 		pExportSingle7.props['workdir'] = path.join(self.testdir, 'pExportSingle7', 'workdir')
-		pExportSingle7.props['script']  = TemplatePyPPL('')
+		pExportSingle7.props['script']  = TemplateLiquid('')
 		pExportSingle7.props['exdir']   = path.join(self.testdir, 'exdir')
 		pExportSingle7.props['exow']    = True
 		pExportSingle7.props['exhow']   = 'gz'
 		pExportSingle7.props['output']  = {
-			'a': ('file', TemplatePyPPL('whatever7.txt'))
+			'a': ('file', TemplateLiquid('whatever7.txt'))
 		}
 		job7 = Job(0, pExportSingle7)
 		job7.init()
@@ -791,12 +695,12 @@ class TestJob(testly.TestCase):
 		# copy
 		pExportSingle8 = Proc()
 		pExportSingle8.props['workdir'] = path.join(self.testdir, 'pExportSingle8', 'workdir')
-		pExportSingle8.props['script']  = TemplatePyPPL('')
+		pExportSingle8.props['script']  = TemplateLiquid('')
 		pExportSingle8.props['exdir']   = path.join(self.testdir, 'exdir')
 		pExportSingle8.props['exow']    = True
 		pExportSingle8.props['exhow']   = 'copy'
 		pExportSingle8.props['output']  = {
-			'a': ('file', TemplatePyPPL('whatever8.txt'))
+			'a': ('file', TemplateLiquid('whatever8.txt'))
 		}
 		job8 = Job(0, pExportSingle8)
 		job8.init()
@@ -808,12 +712,12 @@ class TestJob(testly.TestCase):
 		# link
 		pExportSingle9 = Proc()
 		pExportSingle9.props['workdir'] = path.join(self.testdir, 'pExportSingle9', 'workdir')
-		pExportSingle9.props['script']  = TemplatePyPPL('')
+		pExportSingle9.props['script']  = TemplateLiquid('')
 		pExportSingle9.props['exdir']   = path.join(self.testdir, 'exdir')
 		pExportSingle9.props['exow']    = True
 		pExportSingle9.props['exhow']   = 'link'
 		pExportSingle9.props['output']  = {
-			'a': ('file', TemplatePyPPL('whatever9.txt'))
+			'a': ('file', TemplateLiquid('whatever9.txt'))
 		}
 		job9 = Job(0, pExportSingle9)
 		job9.init()
@@ -825,11 +729,11 @@ class TestJob(testly.TestCase):
 		# expart (glob)
 		pExportSingle10 = Proc()
 		pExportSingle10.props['workdir'] = path.join(self.testdir, 'pExportSingle10', 'workdir')
-		pExportSingle10.props['script']  = TemplatePyPPL('')
+		pExportSingle10.props['script']  = TemplateLiquid('')
 		pExportSingle10.props['exdir']   = path.join(self.testdir, 'exdir')
-		pExportSingle10.props['expart']  = [TemplatePyPPL('*.txt')]
+		pExportSingle10.props['expart']  = [TemplateLiquid('*.txt')]
 		pExportSingle10.props['output']  = {
-			'a': ('file', TemplatePyPPL('whatever10.txt'))
+			'a': ('file', TemplateLiquid('whatever10.txt'))
 		}
 		job10 = Job(0, pExportSingle10)
 		job10.init()
@@ -841,11 +745,11 @@ class TestJob(testly.TestCase):
 		# expart (outkey)
 		pExportSingle11 = Proc()
 		pExportSingle11.props['workdir'] = path.join(self.testdir, 'pExportSingle11', 'workdir')
-		pExportSingle11.props['script']  = TemplatePyPPL('')
+		pExportSingle11.props['script']  = TemplateLiquid('')
 		pExportSingle11.props['exdir']   = path.join(self.testdir, 'exdir')
-		pExportSingle11.props['expart']  = [TemplatePyPPL('a')]
+		pExportSingle11.props['expart']  = [TemplateLiquid('a')]
 		pExportSingle11.props['output']  = {
-			'a': ('file', TemplatePyPPL('whatever11.txt'))
+			'a': ('file', TemplateLiquid('whatever11.txt'))
 		}
 		job11 = Job(0, pExportSingle11)
 		job11.init()
@@ -857,11 +761,11 @@ class TestJob(testly.TestCase):
 		# expart (no matches)
 		pExportSingle12 = Proc()
 		pExportSingle12.props['workdir'] = path.join(self.testdir, 'pExportSingle12', 'workdir')
-		pExportSingle12.props['script']  = TemplatePyPPL('')
+		pExportSingle12.props['script']  = TemplateLiquid('')
 		pExportSingle12.props['exdir']   = path.join(self.testdir, 'exdir')
-		pExportSingle12.props['expart']  = [TemplatePyPPL('b')]
+		pExportSingle12.props['expart']  = [TemplateLiquid('b')]
 		pExportSingle12.props['output']  = {
-			'a': ('file', TemplatePyPPL('whatever12.txt'))
+			'a': ('file', TemplateLiquid('whatever12.txt'))
 		}
 		job12 = Job(0, pExportSingle12)
 		job12.init()
@@ -872,12 +776,12 @@ class TestJob(testly.TestCase):
 		
 		pExportSingle13 = Proc()
 		pExportSingle13.props['workdir'] = path.join(self.testdir, 'pExportSingle13', 'workdir')
-		pExportSingle13.props['script'] = TemplatePyPPL('')
+		pExportSingle13.props['script'] = TemplateLiquid('')
 		pExportSingle13.props['exdir'] = path.join(self.testdir, 'exdir')
 		pExportSingle13.props['exhow'] = 'move'
 		pExportSingle13.props['output'] = {
-			'a': ('stdout', TemplatePyPPL('whatever.out')),
-			'b': ('stderr', TemplatePyPPL('whatever.err'))
+			'a': ('stdout', TemplateLiquid('whatever.out')),
+			'b': ('stderr', TemplateLiquid('whatever.err'))
 		}
 		job13 = Job(0, pExportSingle13)
 		job13.init()
@@ -903,10 +807,10 @@ class TestJob(testly.TestCase):
 	def dataProvider_testExport(self):
 		pExport = Proc()
 		pExport.props['workdir'] = path.join(self.testdir, 'pExport', 'workdir')
-		pExport.props['script']  = TemplatePyPPL('')
+		pExport.props['script']  = TemplateLiquid('')
 		pExport.props['exdir']   = path.join(self.testdir, 'exdir')
 		pExport.props['output']  = {
-			'a': ('file', TemplatePyPPL('pexport-multiple.txt'))
+			'a': ('file', TemplateLiquid('pexport-multiple.txt'))
 		}
 		somefile = path.join(self.testdir, 'somefile')
 		helpers.writeFile(somefile)
@@ -969,12 +873,12 @@ class TestJob(testly.TestCase):
 	def dataProvider_testReset(self):
 		pReset = Proc()
 		pReset.props['workdir'] = path.join(self.testdir, 'pReset', 'workdir')
-		pReset.props['script']  = TemplatePyPPL('')
+		pReset.props['script']  = TemplateLiquid('')
 		pReset.props['output']  = {
-			'a': ('file', TemplatePyPPL('preset.txt')),
-			'b': ('dir', TemplatePyPPL('preset.dir')),
-			'c': ('stdout', TemplatePyPPL('stdout.txt')),
-			'd': ('stderr', TemplatePyPPL('stderr.txt'))
+			'a': ('file', TemplateLiquid('preset.txt')),
+			'b': ('dir', TemplateLiquid('preset.dir')),
+			'c': ('stdout', TemplateLiquid('stdout.txt')),
+			'd': ('stderr', TemplateLiquid('stderr.txt'))
 		}
 		job = Job(0, pReset)
 		job.init()
@@ -1025,7 +929,7 @@ class TestJob(testly.TestCase):
 		# ignore
 		pShowError = Proc()
 		pShowError.props['workdir'] = path.join(self.testdir, 'pShowError', 'workdir')
-		pShowError.props['script']  = TemplatePyPPL('')
+		pShowError.props['script']  = TemplateLiquid('')
 		pShowError.props['errhow']  = 'ignore'
 		pShowError.props['size']    = 1
 		job = Job(0, pShowError)
@@ -1036,7 +940,7 @@ class TestJob(testly.TestCase):
 		# empty stderr
 		pShowError1 = Proc()
 		pShowError1.props['workdir'] = path.join(self.testdir, 'pShowError1', 'workdir')
-		pShowError1.props['script']  = TemplatePyPPL('')
+		pShowError1.props['script']  = TemplateLiquid('')
 		pShowError1.props['echo']    = {'jobs': [0], 'type': []}
 		pShowError1.props['size']    = 10
 		job1 = Job(0, pShowError1)
@@ -1047,7 +951,7 @@ class TestJob(testly.TestCase):
 		# errors less than 20 lines
 		pShowError2 = Proc()
 		pShowError2.props['workdir'] = path.join(self.testdir, 'pShowError2', 'workdir')
-		pShowError2.props['script']  = TemplatePyPPL('')
+		pShowError2.props['script']  = TemplateLiquid('')
 		pShowError2.props['echo']    = {'jobs': [0], 'type': []}
 		pShowError2.props['size']    = 10
 		job2 = Job(0, pShowError2)
@@ -1059,7 +963,7 @@ class TestJob(testly.TestCase):
 		# errors more than 20 lines
 		pShowError3 = Proc()
 		pShowError3.props['workdir'] = path.join(self.testdir, 'pShowError3', 'workdir')
-		pShowError3.props['script']  = TemplatePyPPL('')
+		pShowError3.props['script']  = TemplateLiquid('')
 		pShowError3.props['echo']    = {'jobs': [0], 'type': []}
 		pShowError3.props['size']    = 10
 		job3 = Job(0, pShowError3)
@@ -1073,7 +977,7 @@ class TestJob(testly.TestCase):
 		# not in echo, don't print stderr
 		pShowError4 = Proc()
 		pShowError4.props['workdir'] = path.join(self.testdir, 'pShowError4', 'workdir')
-		pShowError4.props['script']  = TemplatePyPPL('')
+		pShowError4.props['script']  = TemplateLiquid('')
 		pShowError4.props['echo']    = {'jobs': [0], 'type': ['stderr']}
 		pShowError4.props['size']    = 10
 		job4 = Job(0, pShowError4)
@@ -1095,7 +999,7 @@ class TestJob(testly.TestCase):
 		# empty script
 		pSignature = Proc()
 		pSignature.props['workdir'] = path.join(self.testdir, 'pSignature', 'workdir')
-		pSignature.props['script']  = TemplatePyPPL('')
+		pSignature.props['script']  = TemplateLiquid('')
 		pSignature.props['size']    = 10
 		pSignature.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
 		job = Job(0, pSignature)
@@ -1109,7 +1013,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile1)
 		pSignature1 = Proc()
 		pSignature1.props['workdir'] = path.join(self.testdir, 'pSignature1', 'workdir')
-		pSignature1.props['script']  = TemplatePyPPL('')
+		pSignature1.props['script']  = TemplateLiquid('')
 		pSignature1.props['size']    = 10
 		pSignature1.props['input']   = {
 			'a': {'type': 'file', 'data': [infile1]}
@@ -1126,7 +1030,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile2)
 		pSignature2 = Proc()
 		pSignature2.props['workdir'] = path.join(self.testdir, 'pSignature2', 'workdir')
-		pSignature2.props['script']  = TemplatePyPPL('')
+		pSignature2.props['script']  = TemplateLiquid('')
 		pSignature2.props['size']    = 10
 		pSignature2.props['input']   = {
 			'a': {'type': 'files', 'data': [[infile2]]}
@@ -1141,10 +1045,10 @@ class TestJob(testly.TestCase):
 		# outfile empty
 		pSignature3 = Proc()
 		pSignature3.props['workdir'] = path.join(self.testdir, 'pSignature3', 'workdir')
-		pSignature3.props['script']  = TemplatePyPPL('')
+		pSignature3.props['script']  = TemplateLiquid('')
 		pSignature3.props['size']    = 10
 		pSignature3.props['output']  = {
-			'a': ('file', TemplatePyPPL('pSignature3.txt'))
+			'a': ('file', TemplateLiquid('pSignature3.txt'))
 		}
 		pSignature3.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
 		job3 = Job(0, pSignature3)
@@ -1154,10 +1058,10 @@ class TestJob(testly.TestCase):
 		# outdir empty
 		pSignature4 = Proc()
 		pSignature4.props['workdir'] = path.join(self.testdir, 'pSignature4', 'workdir')
-		pSignature4.props['script']  = TemplatePyPPL('')
+		pSignature4.props['script']  = TemplateLiquid('')
 		pSignature4.props['size']    = 10
 		pSignature4.props['output']  = {
-			'a': ('dir', TemplatePyPPL('pSignature4.dir'))
+			'a': ('dir', TemplateLiquid('pSignature4.dir'))
 		}
 		pSignature4.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
 		job4 = Job(0, pSignature4)
@@ -1173,15 +1077,15 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile5_2)
 		pSignature5 = Proc()
 		pSignature5.props['workdir'] = path.join(self.testdir, 'pSignature5', 'workdir')
-		pSignature5.props['script']  = TemplatePyPPL('')
+		pSignature5.props['script']  = TemplateLiquid('')
 		pSignature5.props['size']    = 10
 		pSignature5.props['input']   = {
 			'a': {'type': 'file', 'data': [infile5]},
 			'b': {'type': 'files', 'data': [[infile5_1, infile5_2]]}
 		}
 		pSignature5.props['output']  = {
-			'a': ('file', TemplatePyPPL('pSignature5.txt')),
-			'b': ('dir', TemplatePyPPL('pSignature5.dir'))
+			'a': ('file', TemplateLiquid('pSignature5.txt')),
+			'b': ('dir', TemplateLiquid('pSignature5.dir'))
 		}
 		pSignature5.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
 		job5 = Job(0, pSignature5)
@@ -1194,7 +1098,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(outa)
 		makedirs(outb)
 		yield job5, {
-			'in': {
+			'i': {
 				'file': {
 					'a': [ina, int(path.getmtime(ina))]
 				},
@@ -1206,7 +1110,7 @@ class TestJob(testly.TestCase):
 				},
 				'var': {}
 			},
-			'out': {
+			'o': {
 				'dir': {
 					'b': [outb, int(path.getmtime(outb))]
 				},
@@ -1240,7 +1144,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile_2)
 		pCache = Proc()
 		pCache.props['workdir'] = path.join(self.testdir, 'pCache', 'workdir')
-		pCache.props['script']  = TemplatePyPPL('')
+		pCache.props['script']  = TemplateLiquid('')
 		pCache.props['cache']   = True
 		pCache.props['size']    = 10
 		pCache.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
@@ -1249,8 +1153,8 @@ class TestJob(testly.TestCase):
 			'b': {'type': 'files', 'data': [[infile_1, infile_2]]}
 		}
 		pCache.props['output']  = {
-			'a': ('file', TemplatePyPPL('pCache.txt')),
-			'b': ('dir', TemplatePyPPL('pCache.dir'))
+			'a': ('file', TemplateLiquid('pCache.txt')),
+			'b': ('dir', TemplateLiquid('pCache.dir'))
 		}
 		pCache.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
 		job = Job(0, pCache)
@@ -1263,7 +1167,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(outa)
 		makedirs(outb)
 		yield job, True, {
-			'in': {
+			'i': {
 				'file': {
 					'a': [ina, int(path.getmtime(ina))]
 				},
@@ -1275,7 +1179,7 @@ class TestJob(testly.TestCase):
 				},
 				'var': {}
 			},
-			'out': {
+			'o': {
 				'dir': {
 					'b': [outb, int(path.getmtime(outb))]
 				},
@@ -1290,7 +1194,7 @@ class TestJob(testly.TestCase):
 		#
 		pCache1 = Proc()
 		pCache1.props['workdir'] = path.join(self.testdir, 'pCache1', 'workdir')
-		pCache1.props['script']  = TemplatePyPPL('')
+		pCache1.props['script']  = TemplateLiquid('')
 		pCache1.props['cache']   = False
 		pCache1.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
 		job1 = Job(0, pCache1)
@@ -1309,7 +1213,7 @@ class TestJob(testly.TestCase):
 		# no cache file
 		pIsTrulyCached = Proc()
 		pIsTrulyCached.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached', 'workdir')
-		pIsTrulyCached.props['script']  = TemplatePyPPL('')
+		pIsTrulyCached.props['script']  = TemplateLiquid('')
 		pIsTrulyCached.LOG_NLINE['CACHE_SIGFILE_NOTEXISTS'] = -1
 		job = Job(0, pIsTrulyCached)
 		job.init()
@@ -1318,7 +1222,7 @@ class TestJob(testly.TestCase):
 		# empty cache file
 		pIsTrulyCached1 = Proc()
 		pIsTrulyCached1.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached1', 'workdir')
-		pIsTrulyCached1.props['script']  = TemplatePyPPL('')
+		pIsTrulyCached1.props['script']  = TemplateLiquid('')
 		pIsTrulyCached1.LOG_NLINE['CACHE_EMPTY_PREVSIG'] = -1
 		job1 = Job(0, pIsTrulyCached1)
 		job1.init()
@@ -1334,7 +1238,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile_2)
 		pIsTrulyCached2 = Proc()
 		pIsTrulyCached2.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached2', 'workdir')
-		pIsTrulyCached2.props['script']  = TemplatePyPPL('')
+		pIsTrulyCached2.props['script']  = TemplateLiquid('')
 		pIsTrulyCached2.props['cache']   = True
 		pIsTrulyCached2.props['size']    = 10
 		pIsTrulyCached2.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
@@ -1343,8 +1247,8 @@ class TestJob(testly.TestCase):
 			'b': {'type': 'files', 'data': [[infile_1, infile_2]]}
 		}
 		pIsTrulyCached2.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsTrulyCached2.txt')),
-			'b': ('dir', TemplatePyPPL('pIsTrulyCached2.dir'))
+			'a': ('file', TemplateLiquid('pIsTrulyCached2.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached2.dir'))
 		}
 		del pIsTrulyCached2.LOG_NLINE['CACHE_EMPTY_CURRSIG']
 		job2 = Job(0, pIsTrulyCached2)
@@ -1371,7 +1275,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile_2)
 		pIsTrulyCached3 = Proc()
 		pIsTrulyCached3.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached3', 'workdir')
-		pIsTrulyCached3.props['script']  = TemplatePyPPL('')
+		pIsTrulyCached3.props['script']  = TemplateLiquid('')
 		pIsTrulyCached3.props['cache']   = True
 		pIsTrulyCached3.props['size']    = 10
 		pIsTrulyCached3.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
@@ -1381,8 +1285,8 @@ class TestJob(testly.TestCase):
 			'c': {'type': 'var', 'data': ['var_c']}
 		}
 		pIsTrulyCached3.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsTrulyCached3.txt')),
-			'b': ('dir', TemplatePyPPL('pIsTrulyCached3.dir'))
+			'a': ('file', TemplateLiquid('pIsTrulyCached3.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached3.dir'))
 		}
 		del pIsTrulyCached3.LOG_NLINE['CACHE_EMPTY_CURRSIG']
 		del pIsTrulyCached3.LOG_NLINE['CACHE_SCRIPT_NEWER']
@@ -1409,7 +1313,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile_2)
 		pIsTrulyCached4 = Proc()
 		pIsTrulyCached4.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached4', 'workdir')
-		pIsTrulyCached4.props['script']  = TemplatePyPPL('')
+		pIsTrulyCached4.props['script']  = TemplateLiquid('')
 		pIsTrulyCached4.props['cache']   = True
 		pIsTrulyCached4.props['size']    = 10
 		pIsTrulyCached4.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
@@ -1419,8 +1323,8 @@ class TestJob(testly.TestCase):
 			'c': {'type': 'var', 'data': ['var_c']}
 		}
 		pIsTrulyCached4.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsTrulyCached4.txt')),
-			'b': ('dir', TemplatePyPPL('pIsTrulyCached4.dir'))
+			'a': ('file', TemplateLiquid('pIsTrulyCached4.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached4.dir'))
 		}
 		del pIsTrulyCached4.LOG_NLINE['CACHE_EMPTY_CURRSIG']
 		del pIsTrulyCached4.LOG_NLINE['CACHE_SIGINVAR_DIFF']
@@ -1447,7 +1351,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile_2)
 		pIsTrulyCached5 = Proc()
 		pIsTrulyCached5.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached5', 'workdir')
-		pIsTrulyCached5.props['script']  = TemplatePyPPL('')
+		pIsTrulyCached5.props['script']  = TemplateLiquid('')
 		pIsTrulyCached5.props['cache']   = True
 		pIsTrulyCached5.props['size']    = 10
 		pIsTrulyCached5.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
@@ -1457,8 +1361,8 @@ class TestJob(testly.TestCase):
 			'c': {'type': 'var', 'data': ['var_c']}
 		}
 		pIsTrulyCached5.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsTrulyCached5.txt')),
-			'b': ('dir', TemplatePyPPL('pIsTrulyCached5.dir'))
+			'a': ('file', TemplateLiquid('pIsTrulyCached5.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached5.dir'))
 		}
 		del pIsTrulyCached5.LOG_NLINE['CACHE_EMPTY_CURRSIG']
 		del pIsTrulyCached5.LOG_NLINE['CACHE_SIGINFILE_DIFF']
@@ -1485,7 +1389,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile_2)
 		pIsTrulyCached6 = Proc()
 		pIsTrulyCached6.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached6', 'workdir')
-		pIsTrulyCached6.props['script']  = TemplatePyPPL('')
+		pIsTrulyCached6.props['script']  = TemplateLiquid('')
 		pIsTrulyCached6.props['cache']   = True
 		pIsTrulyCached6.props['size']    = 10
 		pIsTrulyCached6.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
@@ -1495,8 +1399,8 @@ class TestJob(testly.TestCase):
 			'c': {'type': 'var', 'data': ['var_c']}
 		}
 		pIsTrulyCached6.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsTrulyCached6.txt')),
-			'b': ('dir', TemplatePyPPL('pIsTrulyCached6.dir'))
+			'a': ('file', TemplateLiquid('pIsTrulyCached6.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached6.dir'))
 		}
 		del pIsTrulyCached6.LOG_NLINE['CACHE_EMPTY_CURRSIG']
 		del pIsTrulyCached6.LOG_NLINE['CACHE_SIGINFILE_NEWER']
@@ -1523,7 +1427,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile_2)
 		pIsTrulyCached7 = Proc()
 		pIsTrulyCached7.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached7', 'workdir')
-		pIsTrulyCached7.props['script']  = TemplatePyPPL('')
+		pIsTrulyCached7.props['script']  = TemplateLiquid('')
 		pIsTrulyCached7.props['cache']   = True
 		pIsTrulyCached7.props['size']    = 10
 		pIsTrulyCached7.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
@@ -1533,8 +1437,8 @@ class TestJob(testly.TestCase):
 			'c': {'type': 'var', 'data': ['var_c']}
 		}
 		pIsTrulyCached7.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsTrulyCached7.txt')),
-			'b': ('dir', TemplatePyPPL('pIsTrulyCached7.dir'))
+			'a': ('file', TemplateLiquid('pIsTrulyCached7.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached7.dir'))
 		}
 		del pIsTrulyCached7.LOG_NLINE['CACHE_EMPTY_CURRSIG']
 		del pIsTrulyCached7.LOG_NLINE['CACHE_SIGINFILES_DIFF']
@@ -1561,7 +1465,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile_2)
 		pIsTrulyCached71 = Proc()
 		pIsTrulyCached71.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached71', 'workdir')
-		pIsTrulyCached71.props['script']  = TemplatePyPPL('')
+		pIsTrulyCached71.props['script']  = TemplateLiquid('')
 		pIsTrulyCached71.props['cache']   = True
 		pIsTrulyCached71.props['size']    = 10
 		pIsTrulyCached71.props['input']   = {
@@ -1570,8 +1474,8 @@ class TestJob(testly.TestCase):
 			'c': {'type': 'var', 'data': ['var_c']}
 		}
 		pIsTrulyCached71.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsTrulyCached71.txt')),
-			'b': ('dir', TemplatePyPPL('pIsTrulyCached71.dir'))
+			'a': ('file', TemplateLiquid('pIsTrulyCached71.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached71.dir'))
 		}
 		job71 = Job(0, pIsTrulyCached71)
 		job71.init()
@@ -1596,7 +1500,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile_2)
 		pIsTrulyCached8 = Proc()
 		pIsTrulyCached8.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached8', 'workdir')
-		pIsTrulyCached8.props['script']  = TemplatePyPPL('')
+		pIsTrulyCached8.props['script']  = TemplateLiquid('')
 		pIsTrulyCached8.props['cache']   = True
 		pIsTrulyCached8.props['size']    = 10
 		pIsTrulyCached8.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
@@ -1606,8 +1510,8 @@ class TestJob(testly.TestCase):
 			'c': {'type': 'var', 'data': ['var_c']}
 		}
 		pIsTrulyCached8.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsTrulyCached8.txt')),
-			'b': ('dir', TemplatePyPPL('pIsTrulyCached8.dir'))
+			'a': ('file', TemplateLiquid('pIsTrulyCached8.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached8.dir'))
 		}
 		del pIsTrulyCached8.LOG_NLINE['CACHE_EMPTY_CURRSIG']
 		del pIsTrulyCached8.LOG_NLINE['CACHE_SIGINFILES_NEWER']
@@ -1634,7 +1538,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile_2)
 		pIsTrulyCached9 = Proc()
 		pIsTrulyCached9.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached9', 'workdir')
-		pIsTrulyCached9.props['script']  = TemplatePyPPL('')
+		pIsTrulyCached9.props['script']  = TemplateLiquid('')
 		pIsTrulyCached9.props['cache']   = True
 		pIsTrulyCached9.props['size']    = 10
 		pIsTrulyCached9.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
@@ -1644,9 +1548,9 @@ class TestJob(testly.TestCase):
 			'c': {'type': 'var', 'data': ['var_c']}
 		}
 		pIsTrulyCached9.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsTrulyCached9.txt')),
-			'b': ('dir', TemplatePyPPL('pIsTrulyCached9.dir')),
-			'c': ('var', TemplatePyPPL('hello_c')),
+			'a': ('file', TemplateLiquid('pIsTrulyCached9.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached9.dir')),
+			'c': ('var', TemplateLiquid('hello_c')),
 		}
 		del pIsTrulyCached9.LOG_NLINE['CACHE_EMPTY_CURRSIG']
 		del pIsTrulyCached9.LOG_NLINE['CACHE_SIGOUTVAR_DIFF']
@@ -1673,7 +1577,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile_2)
 		pIsTrulyCached10 = Proc()
 		pIsTrulyCached10.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached10', 'workdir')
-		pIsTrulyCached10.props['script']  = TemplatePyPPL('')
+		pIsTrulyCached10.props['script']  = TemplateLiquid('')
 		pIsTrulyCached10.props['cache']   = True
 		pIsTrulyCached10.props['size']    = 10
 		pIsTrulyCached10.props['input']   = {
@@ -1682,9 +1586,9 @@ class TestJob(testly.TestCase):
 			'c': {'type': 'var', 'data': ['var_c']}
 		}
 		pIsTrulyCached10.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsTrulyCached10.txt')),
-			'b': ('dir', TemplatePyPPL('pIsTrulyCached10.dir')),
-			'c': ('var', TemplatePyPPL('hello_c')),
+			'a': ('file', TemplateLiquid('pIsTrulyCached10.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached10.dir')),
+			'c': ('var', TemplateLiquid('hello_c')),
 		}
 		del pIsTrulyCached10.LOG_NLINE['CACHE_SIGOUTFILE_DIFF']
 		job10 = Job(0, pIsTrulyCached10)
@@ -1710,7 +1614,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile_2)
 		pIsTrulyCached11 = Proc()
 		pIsTrulyCached11.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached11', 'workdir')
-		pIsTrulyCached11.props['script']  = TemplatePyPPL('')
+		pIsTrulyCached11.props['script']  = TemplateLiquid('')
 		pIsTrulyCached11.props['cache']   = True
 		pIsTrulyCached11.props['size']    = 10
 		pIsTrulyCached11.props['input']   = {
@@ -1719,9 +1623,9 @@ class TestJob(testly.TestCase):
 			'c': {'type': 'var', 'data': ['var_c']}
 		}
 		pIsTrulyCached11.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsTrulyCached11.txt')),
-			'b': ('dir', TemplatePyPPL('pIsTrulyCached11.dir')),
-			'c': ('var', TemplatePyPPL('hello_c')),
+			'a': ('file', TemplateLiquid('pIsTrulyCached11.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached11.dir')),
+			'c': ('var', TemplateLiquid('hello_c')),
 		}
 		del pIsTrulyCached11.LOG_NLINE['CACHE_SIGOUTDIR_DIFF']
 		job11 = Job(0, pIsTrulyCached11)
@@ -1747,7 +1651,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile_2)
 		pIsTrulyCached12 = Proc()
 		pIsTrulyCached12.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached12', 'workdir')
-		pIsTrulyCached12.props['script']  = TemplatePyPPL('')
+		pIsTrulyCached12.props['script']  = TemplateLiquid('')
 		pIsTrulyCached12.props['cache']   = True
 		pIsTrulyCached12.props['size']    = 10
 		pIsTrulyCached12.props['input']   = {
@@ -1756,9 +1660,9 @@ class TestJob(testly.TestCase):
 			'c': {'type': 'var', 'data': ['var_c']}
 		}
 		pIsTrulyCached12.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsTrulyCached12.txt')),
-			'b': ('dir', TemplatePyPPL('pIsTrulyCached12.dir')),
-			'c': ('var', TemplatePyPPL('hello_c')),
+			'a': ('file', TemplateLiquid('pIsTrulyCached12.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached12.dir')),
+			'c': ('var', TemplateLiquid('hello_c')),
 		}
 		job12 = Job(0, pIsTrulyCached12)
 		job12.init()
@@ -1801,7 +1705,7 @@ class TestJob(testly.TestCase):
 		pIsExptCached2 = Proc()
 		pIsExptCached2.props['workdir'] = path.join(self.testdir, 'pIsExptCached2', 'workdir')
 		pIsExptCached2.props['cache']   = 'export'
-		pIsExptCached2.props['expart']   = [TemplatePyPPL('link')]
+		pIsExptCached2.props['expart']   = [TemplateLiquid('link')]
 		job2 = Job(0, pIsExptCached2)
 		yield job2, False, ['WARNING', 'Job is not export-cached using partial export.']
 		
@@ -1817,9 +1721,9 @@ class TestJob(testly.TestCase):
 		pIsExptCached4.props['cache'] = 'export'
 		pIsExptCached4.props['exhow'] = 'gz'
 		pIsExptCached4.props['exdir'] = path.join(self.testdir, 'exdir')
-		pIsExptCached4.props['script'] = TemplatePyPPL('')
+		pIsExptCached4.props['script'] = TemplateLiquid('')
 		pIsExptCached4.props['output']  = {
-			'b': ('dir', TemplatePyPPL('pIsExptCached4.dir')),
+			'b': ('dir', TemplateLiquid('pIsExptCached4.dir')),
 		}
 		
 		job4 = Job(0, pIsExptCached4)
@@ -1839,10 +1743,10 @@ class TestJob(testly.TestCase):
 		pIsExptCached5.props['cache'] = 'export'
 		pIsExptCached5.props['exhow'] = 'gz'
 		pIsExptCached5.props['exdir'] = path.join(self.testdir, 'exdir')
-		pIsExptCached5.props['script'] = TemplatePyPPL('')
+		pIsExptCached5.props['script'] = TemplateLiquid('')
 		pIsExptCached5.__dict__['LOG_NLINE'] = {}
 		pIsExptCached5.props['output']  = {
-			'b': ('dir', TemplatePyPPL('pIsExptCached5.dir')),
+			'b': ('dir', TemplateLiquid('pIsExptCached5.dir')),
 		}		
 		job5 = Job(0, pIsExptCached5)
 		job5.init()
@@ -1863,10 +1767,10 @@ class TestJob(testly.TestCase):
 		pIsExptCached6.props['cache'] = 'export'
 		pIsExptCached6.props['exhow'] = 'gz'
 		pIsExptCached6.props['exdir'] = path.join(self.testdir, 'exdir')
-		pIsExptCached6.props['script'] = TemplatePyPPL('')
+		pIsExptCached6.props['script'] = TemplateLiquid('')
 		pIsExptCached6.__dict__['LOG_NLINE'] = {}
 		pIsExptCached6.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsExptCached6.txt')),
+			'a': ('file', TemplateLiquid('pIsExptCached6.txt')),
 		}		
 		job6 = Job(0, pIsExptCached6)
 		job6.init()
@@ -1883,10 +1787,10 @@ class TestJob(testly.TestCase):
 		pIsExptCached7.props['cache'] = 'export'
 		pIsExptCached7.props['exhow'] = 'gz'
 		pIsExptCached7.props['exdir'] = path.join(self.testdir, 'exdir')
-		pIsExptCached7.props['script'] = TemplatePyPPL('')
+		pIsExptCached7.props['script'] = TemplateLiquid('')
 		pIsExptCached7.__dict__['LOG_NLINE'] = {}
 		pIsExptCached7.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsExptCached7.txt')),
+			'a': ('file', TemplateLiquid('pIsExptCached7.txt')),
 		}		
 		job7 = Job(0, pIsExptCached7)
 		job7.init()
@@ -1902,10 +1806,10 @@ class TestJob(testly.TestCase):
 		pIsExptCached8.props['cache'] = 'export'
 		pIsExptCached8.props['exhow'] = 'copy'
 		pIsExptCached8.props['exdir'] = path.join(self.testdir, 'exdir')
-		pIsExptCached8.props['script'] = TemplatePyPPL('')
+		pIsExptCached8.props['script'] = TemplateLiquid('')
 		pIsExptCached8.__dict__['LOG_NLINE'] = {}
 		pIsExptCached8.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsExptCached8.txt')),
+			'a': ('file', TemplateLiquid('pIsExptCached8.txt')),
 		}		
 		job8 = Job(0, pIsExptCached8)
 		job8.init()
@@ -1920,10 +1824,10 @@ class TestJob(testly.TestCase):
 		pIsExptCached9.props['cache'] = 'export'
 		pIsExptCached9.props['exhow'] = 'copy'
 		pIsExptCached9.props['exdir'] = path.join(self.testdir, 'exdir')
-		pIsExptCached9.props['script'] = TemplatePyPPL('')
+		pIsExptCached9.props['script'] = TemplateLiquid('')
 		pIsExptCached9.__dict__['LOG_NLINE'] = {}
 		pIsExptCached9.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsExptCached9.txt')),
+			'a': ('file', TemplateLiquid('pIsExptCached9.txt')),
 		}		
 		job9 = Job(0, pIsExptCached9)
 		job9.init()
@@ -1939,10 +1843,10 @@ class TestJob(testly.TestCase):
 		pIsExptCached10.props['cache'] = 'export'
 		pIsExptCached10.props['exhow'] = 'copy'
 		pIsExptCached10.props['exdir'] = path.join(self.testdir, 'exdir')
-		pIsExptCached10.props['script'] = TemplatePyPPL('')
+		pIsExptCached10.props['script'] = TemplateLiquid('')
 		del pIsExptCached10.LOG_NLINE['EXPORT_CACHE_OUTFILE_EXISTS']
 		pIsExptCached10.props['output']  = {
-			'a': ('file', TemplatePyPPL('pIsExptCached10.txt')),
+			'a': ('file', TemplateLiquid('pIsExptCached10.txt')),
 		}		
 		job10 = Job(0, pIsExptCached10)
 		job10.init()
@@ -1967,10 +1871,10 @@ class TestJob(testly.TestCase):
 		# other: overwrite
 		pDone = Proc()
 		pDone.props['workdir'] = path.join(self.testdir, 'pDone', 'workdir')
-		pDone.props['script']  = TemplatePyPPL('')
-		pDone.props['expect']  = TemplatePyPPL('')
+		pDone.props['script']  = TemplateLiquid('')
+		pDone.props['expect']  = TemplateLiquid('')
 		pDone.props['output']  = {
-			'a': ('file', TemplatePyPPL('pDone.txt')),
+			'a': ('file', TemplateLiquid('pDone.txt')),
 		}		
 		job = Job(0, pDone)
 		job.init()

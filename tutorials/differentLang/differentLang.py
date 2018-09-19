@@ -7,9 +7,9 @@ pHeatmap.exdir  = './export'
 # or /path/to/Rscript if it's not in $PATH
 pHeatmap.lang   = 'Rscript'
 pHeatmap.script = """
-set.seed({{in.seed}})
+set.seed({{i.seed}})
 mat = matrix(rnorm(100), ncol=10)
-png(filename = "{{out.outfile}}")
+png(filename = "{{o.outfile}}")
 heatmap(mat)
 dev.off()
 """

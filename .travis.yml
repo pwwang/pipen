@@ -68,6 +68,7 @@ install:
   - pip install --user --ignore-installed python-testly
   - pip install --user --ignore-installed coverage
   - pip install --user --ignore-installed codacy-coverage
+  - pip install --user --ignore-installed liquid.py
 # command to run tests
 script:
   - make cov

@@ -4,25 +4,27 @@ A customized logger for pyppl
 import logging, re, sys
 from .utils import Box
 from .exception import LoggerThemeError
-from .templates import TemplatePyPPL
+from .template import TemplateLiquid
 from multiprocessing import Value
 
 # the entire format
 LOGFMT = "[%(asctime)s]%(message)s"
 # colors
-COLORS = Box({
-	'none'      : '',
-	'end'       : '\033[0m',
-	'bold'      : '\033[1m',
-	'underline' : '\033[4m',
+COLORS = Box(
+	none = '',        end       = '\033[0m',
+	bold = '\033[1m', underline = '\033[4m',
 
 	# regular colors
-	'black'     : '\033[30m',   'red'       : '\033[31m',	'green'     : '\033[32m',	'yellow'    : '\033[33m',
-	'blue'      : '\033[34m',   'magenta'   : '\033[35m',   'cyan'      : '\033[36m',   'white'     : '\033[37m',
+	black = '\033[30m', red     = '\033[31m',
+	green = '\033[32m', yellow  = '\033[33m',
+	blue  = '\033[34m', magenta = '\033[35m',
+	cyan  = '\033[36m', white   = '\033[37m',
 	# bgcolors
-	'bgblack'   : '\033[40m',   'bgred'     : '\033[41m',   'bggreen'   : '\033[42m',   'bgyellow'  : '\033[43m',
-	'bgblue'    : '\033[44m',   'bgmagenta' : '\033[45m',   'bgcyan'    : '\033[46m',   'bgwhite'   : '\033[47m',
-})
+	bgblack = '\033[40m', bgred     = '\033[41m',
+	bggreen = '\033[42m', bgyellow  = '\033[43m',
+	bgblue  = '\033[44m', bgmagenta = '\033[45m',
+	bgcyan  = '\033[46m', bgwhite   = '\033[47m',
+)
 # the themes
 # keys:
 # - no colon: match directory
@@ -170,7 +172,7 @@ def _formatTheme(theme):
 			val = val * 2
 
 		for i, v in enumerate(val):
-			t = TemplatePyPPL(v, colors = COLORS)
+			t = TemplateLiquid(v, colors = COLORS)
 			val[i] = t.render()
 
 		ret[key] = val

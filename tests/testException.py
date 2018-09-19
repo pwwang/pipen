@@ -1,13 +1,11 @@
 import testly
 
 from pyppl import Proc, ProcTree
-from pyppl.exception import TemplatePyPPLSyntaxError, TemplatePyPPLRenderError, LoggerThemeError, ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError, ProcTreeProcExists, ProcTreeParseError, JobInputParseError, JobOutputParseError, RunnerSshError, ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcFindError, PyPPLProcRelationError, PyPPLConfigError, AggrAttributeError, AggrCopyError, AggrKeyError
+from pyppl.exception import LoggerThemeError, ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError, ProcTreeProcExists, ProcTreeParseError, JobInputParseError, JobOutputParseError, RunnerSshError, ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcFindError, PyPPLProcRelationError, PyPPLConfigError, AggrAttributeError, AggrCopyError, AggrKeyError
 
 class TestException(testly.TestCase):
 
 	def dataProvider_testInit(self):
-		yield TemplatePyPPLSyntaxError('', ''), TemplatePyPPLSyntaxError
-		yield TemplatePyPPLRenderError('', ''), TemplatePyPPLRenderError
 		yield LoggerThemeError('', ''), LoggerThemeError
 		yield ParameterNameError(''), ParameterNameError
 		yield ParameterTypeError(''), ParameterTypeError

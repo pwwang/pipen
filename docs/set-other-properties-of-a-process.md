@@ -49,12 +49,12 @@ It is a `dict` used to set some common arguments shared within the process (diff
 ```python
 pXXX = Proc()
 pXXX.input = {"infile1:file, infile2:file": [("file1.bed", "file2.bed")]}
-pXXX.output = "outfile:file:{{in.infile1 | fn}}.out"
+pXXX.output = "outfile:file:{{i.infile1 | fn}}.out"
 pXXX.args = {"bedtools": "/path/to/bedtools"}
 # You can also do:
 # pXXX.args.bedtools = "/path/to/bedtools"
 pXXX.script = """
-{{args.bedtools}} intersect -a {{in.infile1}} -b {{in.infile2}} > {{out.outfile}}
+{{args.bedtools}} intersect -a {{i.infile1}} -b {{i.infile2}} > {{o.outfile}}
 """
 ```
 That's **NOT** recommended that you put it in the input channel:
@@ -110,8 +110,8 @@ The processes **NOT** initialized until it's ready to run. So you may not be abl
 ```python
 pSingle = Proc ()
 pSingle.input    = {"infile:file": ["file1.txt", "file2.txt", "file3.txt"]}
-pSingle.output   = "outfile:file:{{in.infile | fn}}.sorted"
-pSingle.script   = "# Sort {{in. infile}} and save to {{out.outfile}}.sorted"
+pSingle.output   = "outfile:file:{{i.infile | fn}}.sorted"
+pSingle.script   = "# Sort {{i. infile}} and save to {{o.outfile}}.sorted"
 # pSingle.channel == [("file1.sorted",), ("file2.sorted",), ("file3.sorted",)]
 # BUT NOT NOW!! the output channel is only generated after the process finishes
 
@@ -119,8 +119,8 @@ pCombine = Proc ()
 pCombine.depends = pSingle
 pCombine.input   = "indir:file"   
 # the directory contains "file1.sorted", "file2.sorted", "file3.sorted"
-pCombine.output  = "outfile:{{in.indir | fn}}.combined"
-pCombine.script  = "# combine files to {{out.outfile}}.combined"
+pCombine.output  = "outfile:{{i.indir | fn}}.combined"
+pCombine.script  = "# combine files to {{o.outfile}}.combined"
 
 # To use the directory of "file1.sorted", "file2.sorted", "file3.sorted" as the input channel for pCombine
 # You can use callback
@@ -138,11 +138,11 @@ For example:
 ```python
 # generate bam files
 # ...
-pBam.output = "bamfile:file:{{in.infile | fn}}.bam"
+pBam.output = "bamfile:file:{{i.infile | fn}}.bam"
 
 # generate/download reference file, and index it
 # ...
-pRef.output = "reffile:file:{{in.in}}.fa"
+pRef.output = "reffile:file:{{i.in}}.fa"
 
 # call variance
 # ...

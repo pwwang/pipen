@@ -10,7 +10,7 @@
 		`RUNNERS`: Registered runners  
 		`DEFAULT_CFGFILES`: Default configuration file  
   
-	!!! abstract "staticmethod: `__init__ (self, config, cfgfile)`"
+	!!! abstract "method: `__init__ (self, config, cfgfile)`"
   
 		Constructor  
 
@@ -18,7 +18,7 @@
 			`config`: the configurations for the pipeline, default: {}  
 			`cfgfile`:  the configuration file for the pipeline, default: `~/.PyPPL.json` or `./.PyPPL`  
   
-	!!! abstract "staticmethod: `flowchart (self, fcfile, dotfile)`"
+	!!! abstract "method: `flowchart (self, fcfile, dotfile)`"
   
 		Generate graph in dot language and visualize it.  
 
@@ -38,7 +38,7 @@
 		- **params:**  
 			`runner`: The runner to be registered.  
   
-	!!! abstract "staticmethod: `resume (self, *args)`"
+	!!! abstract "method: `resume (self, *args)`"
   
 		Mark processes as to be resumed  
 
@@ -48,7 +48,7 @@
 		- **returns:**  
 			The pipeline object itself.  
   
-	!!! abstract "staticmethod: `resume2 (self, *args)`"
+	!!! abstract "method: `resume2 (self, *args)`"
   
 		Mark processes as to be resumed  
 
@@ -58,7 +58,7 @@
 		- **returns:**  
 			The pipeline object itself.  
   
-	!!! abstract "staticmethod: `run (self, profile)`"
+	!!! abstract "method: `run (self, profile)`"
   
 		Run the pipeline  
 
@@ -68,11 +68,11 @@
 		- **returns:**  
 			The pipeline object itself.  
   
-	!!! abstract "staticmethod: `showAllRoutes (self)`"
+	!!! abstract "method: `showAllRoutes (self)`"
   
 		Show all the routes in the log.  
   
-	!!! abstract "staticmethod: `start (self, *args)`"
+	!!! abstract "method: `start (self, *args)`"
   
 		Set the starting processes of the pipeline  
 
@@ -97,7 +97,7 @@
 		`__getattr__(self, name)`: get the value of a property in `self.props`  
 		`__setattr__(self, name, value)`: set the value of a property in `self.config`  
   
-	!!! abstract "staticmethod: `__getattr__ (self, name)`"
+	!!! abstract "method: `__getattr__ (self, name)`"
   
 		Get the value of a property in `self.props`  
 		It recognizes alias as well.  
@@ -108,7 +108,7 @@
 		- **returns:**  
 			The value of the property  
   
-	!!! abstract "staticmethod: `__init__ (self, tag, desc, id, **kwargs)`"
+	!!! abstract "method: `__init__ (self, tag, desc, id, **kwargs)`"
   
 		Constructor  
 
@@ -126,7 +126,7 @@
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect  
 			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs  
   
-	!!! abstract "staticmethod: `__setattr__ (self, name, value)`"
+	!!! abstract "method: `__setattr__ (self, name, value)`"
   
 		Set the value of a property in `self.config`  
 
@@ -134,7 +134,7 @@
 			`name` : The name of the property.  
 			`value`: The new value of the property.  
   
-	!!! abstract "staticmethod: `copy (self, tag, desc, id)`"
+	!!! abstract "method: `copy (self, tag, desc, id)`"
   
 		Copy a process  
 
@@ -146,7 +146,7 @@
 		- **returns:**  
 			The new process  
   
-	!!! abstract "staticmethod: `log (self, msg, level, key)`"
+	!!! abstract "method: `log (self, msg, level, key)`"
   
 		The log function with aggregation name, process id and tag integrated.  
 
@@ -155,14 +155,14 @@
 			`level`: The log level  
 			`key`:   The type of messages  
   
-	!!! abstract "staticmethod: `name (self, aggr)`"
+	!!! abstract "method: `name (self, aggr)`"
   
 		Get my name include `aggr`, `id`, `tag`  
 
 		- **returns:**  
 			the name  
   
-	!!! abstract "staticmethod: `run (self, profile, profiles)`"
+	!!! abstract "method: `run (self, profile, profiles)`"
   
 		Run the jobs with a configuration  
 
@@ -177,7 +177,7 @@ The aggregation of procs
   
 	The aggregation of a set of processes  
   
-	!!! abstract "staticmethod: `__getattr__ (self, name)`"
+	!!! abstract "method: `__getattr__ (self, name)`"
   
 		Get the property of an aggregation.  
 
@@ -189,7 +189,7 @@ The aggregation of procs
 			- Return a property value if name in `self.__dict__`  
 			- Return a `_Proxy` instance else.  
   
-	!!! abstract "staticmethod: `__getitem__ (self, key)`"
+	!!! abstract "method: `__getitem__ (self, key)`"
   
 		Select processes  
 		```  
@@ -209,7 +209,7 @@ The aggregation of procs
 		self[Proc(id = 'd')] # proc d  
 		```  
   
-	!!! abstract "staticmethod: `__init__ (self, *args, **kwargs)`"
+	!!! abstract "method: `__init__ (self, *args, **kwargs)`"
   
 		Constructor  
 
@@ -219,7 +219,7 @@ The aggregation of procs
 			`id`: The id of the aggr. Default: None (the variable name)  
 			`tag`: The tag of the processes. Default: None (a unique 4-char str according to the id)  
   
-	!!! abstract "staticmethod: `__setattr__ (self, name, value)`"
+	!!! abstract "method: `__setattr__ (self, name, value)`"
   
 		Set property value of an aggregation.  
 			- if it's a common property, set it to all processes  
@@ -234,14 +234,14 @@ The aggregation of procs
 			`name` : The name of the property  
 			`value`: The value of the property  
   
-	!!! abstract "staticmethod: `addEnd (self, *procs)`"
+	!!! abstract "method: `addEnd (self, *procs)`"
   
 		Add end processes  
 
 		- **params:**  
 			`procs`: The selector of processes to add  
   
-	!!! abstract "staticmethod: `addProc (self, p, tag, where, copy)`"
+	!!! abstract "method: `addProc (self, p, tag, where, copy)`"
   
 		Add a process to the aggregation.  
 		Note that you have to adjust the dependencies after you add processes.  
@@ -253,14 +253,14 @@ The aggregation of procs
 		- **returns:**  
 			the aggregation itself  
   
-	!!! abstract "staticmethod: `addStart (self, *procs)`"
+	!!! abstract "method: `addStart (self, *procs)`"
   
 		Add start processes  
 
 		- **params:**  
 			`procs`: The selector of processes to add  
   
-	!!! abstract "staticmethod: `copy (self, tag, depends, id, delegates, modules)`"
+	!!! abstract "method: `copy (self, tag, depends, id, delegates, modules)`"
   
 		Like `proc`'s `copy` function, copy an aggregation. Each processes will be copied.  
 
@@ -275,21 +275,21 @@ The aggregation of procs
 		- **returns:**  
 			The new aggregation  
   
-	!!! abstract "staticmethod: `delEnd (self, *procs)`"
+	!!! abstract "method: `delEnd (self, *procs)`"
   
 		Delete end processes  
 
 		- **params:**  
 			`procs`: The selector of processes to delete  
   
-	!!! abstract "staticmethod: `delStart (self, *procs)`"
+	!!! abstract "method: `delStart (self, *procs)`"
   
 		Delete start processes  
 
 		- **params:**  
 			`procs`: The selector of processes to delete  
   
-	!!! abstract "staticmethod: `delegate (self, attrs, procs)`"
+	!!! abstract "method: `delegate (self, attrs, procs)`"
   
 		Delegate the procs to have the attributes set by:  
 		`aggr.args.a.b = 1`  
@@ -297,7 +297,7 @@ The aggregation of procs
 		`procs` can be `starts`/`ends`, but it cannot be set with other procs, which means you can do:  
 		`aggr.delegate('args', 'starts')`, but not `aggr.delegate('args', ['starts', 'pXXX'])`  
   
-	!!! abstract "staticmethod: `module (self, name, starts, depends, ends, starts_shared, depends_shared, ends_shared)`"
+	!!! abstract "method: `module (self, name, starts, depends, ends, starts_shared, depends_shared, ends_shared)`"
   
 		Define a function for aggr.  
 		The "shared" parameters will be indicators not to remove those processes  
@@ -313,7 +313,7 @@ The aggregation of procs
 			`ends_shared`   : A dict of functions that shares the same ends  
 				- For example: `{<procs>: <func>}`  
   
-	!!! abstract "staticmethod: `moduleFunc (self, name, on, off)`"
+	!!! abstract "method: `moduleFunc (self, name, on, off)`"
   
 		Define modules using functions  
 
@@ -322,14 +322,14 @@ The aggregation of procs
 			`on`  : The function when the module is turned on  
 			`off` : The function when the module is turned off  
   
-	!!! abstract "staticmethod: `off (self, *names)`"
+	!!! abstract "method: `off (self, *names)`"
   
 		Turn off modules  
 
 		- **params:**  
 			`names`: The names of the modules.  
   
-	!!! abstract "staticmethod: `on (self, *names)`"
+	!!! abstract "method: `on (self, *names)`"
   
 		Turn on modules  
 
@@ -344,7 +344,7 @@ Channel for pyppl
   
 	The channen class, extended from `list`  
   
-	!!! abstract "staticmethod: `attach (self, *names, **kwargs)`"
+	!!! abstract "method: `attach (self, *names, **kwargs)`"
   
 		Attach columns to names of Channel, so we can access each column by:  
 		`ch.col0` == ch.colAt(0)  
@@ -353,7 +353,7 @@ Channel for pyppl
 			`names`: The names. Have to be as length as channel's width. None of them should be Channel's property name  
 			`flatten`: Whether flatten the channel for the name being attached  
   
-	!!! abstract "staticmethod: `cbind (self, *cols)`"
+	!!! abstract "method: `cbind (self, *cols)`"
   
 		Add columns to the channel  
 
@@ -363,7 +363,7 @@ Channel for pyppl
 		- **returns:**  
 			The channel with the columns inserted.  
   
-	!!! abstract "staticmethod: `colAt (self, index)`"
+	!!! abstract "method: `colAt (self, index)`"
   
 		Fetch one column of a Channel  
 
@@ -373,7 +373,7 @@ Channel for pyppl
 		- **returns:**  
 			The Channel with that column  
   
-	!!! abstract "staticmethod: `collapse (self, col)`"
+	!!! abstract "method: `collapse (self, col)`"
   
 		Do the reverse of expand  
 		length: N -> 1  
@@ -385,7 +385,7 @@ Channel for pyppl
 		- **returns:**  
 			The collapsed Channel  
   
-	!!! abstract "staticmethod: `copy (self)`"
+	!!! abstract "method: `copy (self)`"
   
 		Copy a Channel using `copy.copy`  
 
@@ -402,7 +402,7 @@ Channel for pyppl
 		- **returns:**  
 			The Channel created from the list  
   
-	!!! abstract "staticmethod: `expand (self, col, pattern, t, sortby, reverse)`"
+	!!! abstract "method: `expand (self, col, pattern, t, sortby, reverse)`"
   
 		expand the Channel according to the files in <col>, other cols will keep the same  
 		`[(dir1/dir2, 1)].expand (0, "*")` will expand to  
@@ -422,7 +422,7 @@ Channel for pyppl
 		- **returns:**  
 			The expanded Channel  
   
-	!!! abstract "staticmethod: `filter (self, func)`"
+	!!! abstract "method: `filter (self, func)`"
   
 		Alias of python builtin `filter`  
 
@@ -432,7 +432,7 @@ Channel for pyppl
 		- **returns:**  
 			The filtered Channel  
   
-	!!! abstract "staticmethod: `filterCol (self, func, col)`"
+	!!! abstract "method: `filterCol (self, func, col)`"
   
 		Just filter on the first column  
 
@@ -443,7 +443,7 @@ Channel for pyppl
 		- **returns:**  
 			The filtered Channel  
   
-	!!! abstract "staticmethod: `flatten (self, col)`"
+	!!! abstract "method: `flatten (self, col)`"
   
 		Convert a single-column Channel to a list (remove the tuple signs)  
 		`[(a,), (b,)]` to `[a, b]`  
@@ -454,7 +454,7 @@ Channel for pyppl
 		- **returns:**  
 			The list converted from the Channel.  
   
-	!!! abstract "staticmethod: `fold (self, n)`"
+	!!! abstract "method: `fold (self, n)`"
   
 		Fold a Channel. Make a row to n-length chunk rows  
 		```  
@@ -543,7 +543,7 @@ Channel for pyppl
 		- **returns:**  
 			The Channel created from the path  
   
-	!!! abstract "staticmethod: `get (self, idx)`"
+	!!! abstract "method: `get (self, idx)`"
   
 		Get the element of a flattened channel  
 
@@ -553,7 +553,7 @@ Channel for pyppl
 		- **return:**  
 			The element  
   
-	!!! abstract "staticmethod: `insert (self, cidx, *cols)`"
+	!!! abstract "method: `insert (self, cidx, *cols)`"
   
 		Insert columns to a channel  
 
@@ -565,7 +565,7 @@ Channel for pyppl
 			The combined Channel  
 			Note, self is also changed  
   
-	!!! abstract "staticmethod: `length (self)`"
+	!!! abstract "method: `length (self)`"
   
 		Get the length of a Channel  
 		It's just an alias of `len(chan)`  
@@ -573,7 +573,7 @@ Channel for pyppl
 		- **returns:**  
 			The length of the Channel  
   
-	!!! abstract "staticmethod: `map (self, func)`"
+	!!! abstract "method: `map (self, func)`"
   
 		Alias of python builtin `map`  
 
@@ -583,7 +583,7 @@ Channel for pyppl
 		- **returns:**  
 			The transformed Channel  
   
-	!!! abstract "staticmethod: `mapCol (self, func, col)`"
+	!!! abstract "method: `mapCol (self, func, col)`"
   
 		Map for a column  
 
@@ -605,7 +605,7 @@ Channel for pyppl
 		- **returns:**  
 			The created channel  
   
-	!!! abstract "staticmethod: `rbind (self, *rows)`"
+	!!! abstract "method: `rbind (self, *rows)`"
   
 		The multiple-argument versoin of `rbind`  
 
@@ -616,7 +616,7 @@ Channel for pyppl
 			The combined Channel  
 			Note, self is also changed  
   
-	!!! abstract "staticmethod: `reduce (self, func)`"
+	!!! abstract "method: `reduce (self, func)`"
   
 		Alias of python builtin `reduce`  
 
@@ -626,7 +626,7 @@ Channel for pyppl
 		- **returns:**  
 			The reduced value  
   
-	!!! abstract "staticmethod: `reduceCol (self, func, col)`"
+	!!! abstract "method: `reduceCol (self, func, col)`"
   
 		Reduce a column  
 
@@ -637,7 +637,7 @@ Channel for pyppl
 		- **returns:**  
 			The reduced value  
   
-	!!! abstract "staticmethod: `repCol (self, n)`"
+	!!! abstract "method: `repCol (self, n)`"
   
 		Repeat column and return a new channel  
 
@@ -647,7 +647,7 @@ Channel for pyppl
 		- **returns:**  
 			The new channel with repeated columns  
   
-	!!! abstract "staticmethod: `repRow (self, n)`"
+	!!! abstract "method: `repRow (self, n)`"
   
 		Repeat row and return a new channel  
 
@@ -657,7 +657,7 @@ Channel for pyppl
 		- **returns:**  
 			The new channel with repeated rows  
   
-	!!! abstract "staticmethod: `rowAt (self, index)`"
+	!!! abstract "method: `rowAt (self, index)`"
   
 		Fetch one row of a Channel  
 
@@ -667,7 +667,7 @@ Channel for pyppl
 		- **returns:**  
 			The Channel with that row  
   
-	!!! abstract "staticmethod: `slice (self, start, length)`"
+	!!! abstract "method: `slice (self, start, length)`"
   
 		Fetch some columns of a Channel  
 
@@ -678,28 +678,28 @@ Channel for pyppl
 		- **returns:**  
 			The Channel with fetched columns  
   
-	!!! abstract "staticmethod: `split (self, flatten)`"
+	!!! abstract "method: `split (self, flatten)`"
   
 		Split a Channel to single-column Channels  
 
 		- **returns:**  
 			The list of single-column Channels  
   
-	!!! abstract "staticmethod: `t (self)`"
+	!!! abstract "method: `t (self)`"
   
 		Transpose the channel  
 
 		- **returns:**  
 			The transposed channel.  
   
-	!!! abstract "staticmethod: `transpose (self)`"
+	!!! abstract "method: `transpose (self)`"
   
 		Transpose the channel  
 
 		- **returns:**  
 			The transposed channel.  
   
-	!!! abstract "staticmethod: `unfold (self, n)`"
+	!!! abstract "method: `unfold (self, n)`"
   
 		Do the reverse thing as self.fold does  
 
@@ -709,12 +709,12 @@ Channel for pyppl
 		- **returns:**  
 			The unfolded Channel  
   
-	!!! abstract "staticmethod: `unique (self)`"
+	!!! abstract "method: `unique (self)`"
   
 		Make the channel unique, remove duplicated rows  
 		Try to keep the order  
   
-	!!! abstract "staticmethod: `width (self)`"
+	!!! abstract "method: `width (self)`"
   
 		Get the width of a Channel  
 
@@ -731,7 +731,7 @@ Channel for pyppl
 	- **static variables:**  
 		`THEMES`: predefined themes  
   
-	!!! abstract "staticmethod: `__init__ (self, fcfile, dotfile)`"
+	!!! abstract "method: `__init__ (self, fcfile, dotfile)`"
   
 		The constructor  
 
@@ -739,7 +739,7 @@ Channel for pyppl
 			`fcfile`: The flowchart file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.svg'`  
 			`dotfile`: The dot file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.dot'`  
   
-	!!! abstract "staticmethod: `addLink (self, node1, node2)`"
+	!!! abstract "method: `addLink (self, node1, node2)`"
   
 		Add a link to the chart  
 
@@ -747,7 +747,7 @@ Channel for pyppl
 			`node1`: The first node.  
 			`node2`: The second node.  
   
-	!!! abstract "staticmethod: `addNode (self, node, role)`"
+	!!! abstract "method: `addNode (self, node, role)`"
   
 		Add a node to the chart  
 
@@ -755,11 +755,11 @@ Channel for pyppl
 			`node`: The node  
 			`role`: Is it a starting node, an ending node or None. Default: None.  
   
-	!!! abstract "staticmethod: `generate (self)`"
+	!!! abstract "method: `generate (self)`"
   
 		Generate the dot file and graph file.  
   
-	!!! abstract "staticmethod: `setTheme (self, theme, base)`"
+	!!! abstract "method: `setTheme (self, theme, base)`"
   
 		Set the theme to be used  
 
@@ -771,11 +771,24 @@ Channel for pyppl
   
 Job module for pyppl  
   
+!!! example "class: `Box`"
+  
+	Allow dot operation for OrderedDict  
+  
+	!!! abstract "method: `__getattr__ (self, name)`"
+  
+	!!! abstract "method: `__setattr__ (self, name, val)`"
+  
+	!!! abstract "method: `fromkeys (cls, iterable, value)`"
+OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.  
+        If not specified, the value defaults to None.  
+  
+  
 !!! example "class: `Job`"
   
 	Job class, defining a job in a process  
   
-	!!! abstract "staticmethod: `__init__ (self, index, proc)`"
+	!!! abstract "method: `__init__ (self, index, proc)`"
   
 		Constructor  
 
@@ -783,43 +796,43 @@ Job module for pyppl
 			`index`:   The index of the job in a process  
 			`proc`:    The process  
   
-	!!! abstract "staticmethod: `cache (self)`"
+	!!! abstract "method: `cache (self)`"
   
 		Truly cache the job (by signature)  
   
-	!!! abstract "staticmethod: `checkOutfiles (self, expect)`"
+	!!! abstract "method: `checkOutfiles (self, expect)`"
   
 		Check whether output files are generated, if not, add - to rc.  
   
-	!!! abstract "staticmethod: `done (self)`"
+	!!! abstract "method: `done (self)`"
   
 		Do some cleanup when job finished  
   
-	!!! abstract "staticmethod: `export (self)`"
+	!!! abstract "method: `export (self)`"
   
 		Export the output files  
   
-	!!! abstract "staticmethod: `init (self)`"
+	!!! abstract "method: `init (self)`"
   
 		Initiate a job, make directory and prepare input, output and script.  
   
-	!!! abstract "staticmethod: `isExptCached (self)`"
+	!!! abstract "method: `isExptCached (self)`"
   
 		Prepare to use export files as cached information  
 		True if succeed, otherwise False  
   
-	!!! abstract "staticmethod: `isTrulyCached (self)`"
+	!!! abstract "method: `isTrulyCached (self)`"
   
 		Check whether a job is truly cached (by signature)  
   
-	!!! abstract "staticmethod: `pid (self, val)`"
+	!!! abstract "method: `pid (self, val)`"
   
 		Get/Set the job id (pid or the id from queue system)  
 
 		- **params:**  
 			`val`: The id to be set  
   
-	!!! abstract "staticmethod: `rc (self, val)`"
+	!!! abstract "method: `rc (self, val)`"
   
 		Get/Set the return code  
 
@@ -832,22 +845,22 @@ Job module for pyppl
 			If rcfile does not exist or is empty, return 9999, otherwise return -rc  
 			A negative rc (including -0) means output files not generated  
   
-	!!! abstract "staticmethod: `report (self)`"
+	!!! abstract "method: `report (self)`"
   
 		Report the job information to logger  
   
-	!!! abstract "staticmethod: `reset (self, retry)`"
+	!!! abstract "method: `reset (self, retry)`"
   
 		Clear the intermediate files and output files  
   
-	!!! abstract "staticmethod: `signature (self)`"
+	!!! abstract "method: `signature (self)`"
   
 		Calculate the signature of the job based on the input/output and the script  
 
 		- **returns:**  
 			The signature of the job  
   
-	!!! abstract "staticmethod: `succeed (self)`"
+	!!! abstract "method: `succeed (self)`"
   
 		Tell if the job is successful by return code, and output file expectations.  
 
@@ -860,7 +873,7 @@ Job module for pyppl
   
 	Job Manager  
   
-	!!! abstract "staticmethod: `__init__ (self, proc, runner)`"
+	!!! abstract "method: `__init__ (self, proc, runner)`"
   
 		Job manager constructor  
 
@@ -868,7 +881,7 @@ Job module for pyppl
 			`proc`     : The process  
 			`runner`   : The runner class  
   
-	!!! abstract "staticmethod: `allJobsDone (self)`"
+	!!! abstract "method: `allJobsDone (self)`"
   
 		Tell whether all jobs are done.  
 		No need to lock as it only runs in one process (the watcher process)  
@@ -876,18 +889,18 @@ Job module for pyppl
 		- **returns:**  
 			`True` if all jobs are done else `False`  
   
-	!!! abstract "staticmethod: `canSubmit (self)`"
+	!!! abstract "method: `canSubmit (self)`"
   
 		Tell whether we can submit jobs.  
 
 		- **returns:**  
 			`True` if we can, otherwise `False`  
   
-	!!! abstract "staticmethod: `halt (self, halt_anyway)`"
+	!!! abstract "method: `halt (self, halt_anyway)`"
   
 		Halt the pipeline if needed  
   
-	!!! abstract "staticmethod: `progressbar (self, jid, loglevel)`"
+	!!! abstract "method: `progressbar (self, jid, loglevel)`"
   
 		Generate progressbar.  
 
@@ -898,11 +911,11 @@ Job module for pyppl
 		- **returns:**  
 			The string representing the progressbar  
   
-	!!! abstract "staticmethod: `run (self)`"
+	!!! abstract "method: `run (self)`"
   
 		Start to run the jobs  
   
-	!!! abstract "staticmethod: `runPool (self, rq, sq)`"
+	!!! abstract "method: `runPool (self, rq, sq)`"
   
 		The pool to run jobs (wait jobs to be done)  
 
@@ -910,20 +923,82 @@ Job module for pyppl
 			`rq`: The run queue  
 			`sq`: The submit queue  
   
-	!!! abstract "staticmethod: `submitPool (self, sq)`"
+	!!! abstract "method: `submitPool (self, sq)`"
   
 		The pool to submit jobs  
 
 		- **params:**  
 			`sq`: The submit queue  
   
-	!!! abstract "staticmethod: `watchPool (self, rq, sq)`"
+	!!! abstract "method: `watchPool (self, rq, sq)`"
   
 		The watchdog, checking whether all jobs are done.  
   
 # module: pyppl.logger
   
 A customized logger for pyppl  
+  
+!!! example "class: `PyPPLLogFormatter`"
+  
+	logging formatter for pyppl  
+  
+	!!! abstract "method: `__init__ (self, fmt, theme, secondary)`"
+  
+		Constructor  
+
+		- **params:**  
+			`fmt`      : The format  
+			`theme`    : The theme  
+			`secondary`: Whether this is a secondary formatter or not (another formatter applied before this).  
+  
+	!!! abstract "method: `format (self, record)`"
+  
+		Format the record  
+
+		- **params:**  
+			`record`: The log record  
+
+		- **returns:**  
+			The formatted record  
+  
+!!! example "class: `PyPPLLogFilter`"
+  
+	logging filter by levels (flags)  
+  
+	!!! abstract "method: `__init__ (self, name, lvls, lvldiff)`"
+  
+		Constructor  
+
+		- **params:**  
+			`name`: The name of the logger  
+			`lvls`: The levels of records to keep  
+			`lvldiff`: The adjustments to `lvls`  
+  
+	!!! abstract "method: `filter (self, record)`"
+  
+		Filter the record  
+
+		- **params:**  
+			`record`: The record to be filtered  
+
+		- **return:**  
+			`True` if the record to be kept else `False`  
+  
+!!! example "class: `PyPPLStreamHandler`"
+  
+	PyPPL stream log handler.  
+	To implement the progress bar for JOBONE and SUBMIT logs.  
+  
+	!!! abstract "method: `__init__ (self, stream)`"
+  
+		Constructor  
+
+		- **params:**  
+			`stream`: The stream  
+  
+	!!! abstract "method: `emit (self, record)`"
+  
+		Emit the record.  
   
 !!! example "function: `getLogger`"
   
@@ -941,87 +1016,13 @@ A customized logger for pyppl
 	- **returns:**  
 		The logger  
   
-!!! example "class: `TemplatePyPPL`"
-  
-	Built-in template wrapper.  
-  
-	!!! abstract "staticmethod: `__init__ (self, source, **envs)`"
-  
-		Initiate the engine with source and envs  
-
-		- **params:**  
-			`source`: The souce text  
-			`envs`: The env data  
-  
-!!! example "class: `PyPPLLogFilter`"
-  
-	logging filter by levels (flags)  
-  
-	!!! abstract "staticmethod: `__init__ (self, name, lvls, lvldiff)`"
-  
-		Constructor  
-
-		- **params:**  
-			`name`: The name of the logger  
-			`lvls`: The levels of records to keep  
-			`lvldiff`: The adjustments to `lvls`  
-  
-	!!! abstract "staticmethod: `filter (self, record)`"
-  
-		Filter the record  
-
-		- **params:**  
-			`record`: The record to be filtered  
-
-		- **return:**  
-			`True` if the record to be kept else `False`  
-  
-!!! example "class: `PyPPLLogFormatter`"
-  
-	logging formatter for pyppl  
-  
-	!!! abstract "staticmethod: `__init__ (self, fmt, theme, secondary)`"
-  
-		Constructor  
-
-		- **params:**  
-			`fmt`      : The format  
-			`theme`    : The theme  
-			`secondary`: Whether this is a secondary formatter or not (another formatter applied before this).  
-  
-	!!! abstract "staticmethod: `format (self, record)`"
-  
-		Format the record  
-
-		- **params:**  
-			`record`: The log record  
-
-		- **returns:**  
-			The formatted record  
-  
-!!! example "class: `PyPPLStreamHandler`"
-  
-	PyPPL stream log handler.  
-	To implement the progress bar for JOBONE and SUBMIT logs.  
-  
-	!!! abstract "staticmethod: `__init__ (self, stream)`"
-  
-		Constructor  
-
-		- **params:**  
-			`stream`: The stream  
-  
-	!!! abstract "staticmethod: `emit (self, record)`"
-  
-		Emit the record.  
-  
 # module: pyppl.parameters
   
 !!! example "class: `Parameters`"
   
 	A set of parameters  
   
-	!!! abstract "staticmethod: `__call__ (self, option, value)`"
+	!!! abstract "method: `__call__ (self, option, value)`"
   
 		Set options values in `self._props`.  
 		Will be deprecated in the future!  
@@ -1034,11 +1035,11 @@ A customized logger for pyppl
 		- **returns:**  
 			`self`  
   
-	!!! abstract "staticmethod: `__getattr__ (self, name)`"
+	!!! abstract "method: `__getattr__ (self, name)`"
   
-	!!! abstract "staticmethod: `__getitem__ (self, name)`"
+	!!! abstract "method: `__getitem__ (self, name)`"
   
-	!!! abstract "staticmethod: `__init__ (self, command, theme)`"
+	!!! abstract "method: `__init__ (self, command, theme)`"
   
 		Constructor  
 
@@ -1046,18 +1047,18 @@ A customized logger for pyppl
 			`command`: The sub-command  
 			`theme`: The theme  
   
-	!!! abstract "staticmethod: `__setattr__ (self, name, value)`"
+	!!! abstract "method: `__setattr__ (self, name, value)`"
   
-	!!! abstract "staticmethod: `__setitem__ (self, name, value)`"
+	!!! abstract "method: `__setitem__ (self, name, value)`"
   
-	!!! abstract "staticmethod: `asDict (self)`"
+	!!! abstract "method: `asDict (self)`"
   
 		Convert the parameters to Box object  
 
 		- **returns:**  
 			The Box object  
   
-	!!! abstract "staticmethod: `help (self, error, printNexit)`"
+	!!! abstract "method: `help (self, error, printNexit)`"
   
 		Calculate the help page  
 
@@ -1068,7 +1069,7 @@ A customized logger for pyppl
 		- **return:**  
 			The help information  
   
-	!!! abstract "staticmethod: `loadDict (self, dictVar, show)`"
+	!!! abstract "method: `loadDict (self, dictVar, show)`"
   
 		Load parameters from a dict  
 
@@ -1080,7 +1081,7 @@ A customized logger for pyppl
 				- It'll be overwritten by the `show` property inside dict variable.  
 				- If it is None, will inherit the param's show value  
   
-	!!! abstract "staticmethod: `loadFile (self, cfgfile, show)`"
+	!!! abstract "method: `loadFile (self, cfgfile, show)`"
   
 		Load parameters from a json/config file  
 		If the file name ends with '.json', `json.load` will be used,  
@@ -1093,7 +1094,7 @@ A customized logger for pyppl
 				- Default: False (don't show parameter from config file in help page)  
 				- It'll be overwritten by the `show` property inside the config file.  
   
-	!!! abstract "staticmethod: `parse (self, args, arbi)`"
+	!!! abstract "method: `parse (self, args, arbi)`"
   
 		Parse the arguments.  
 
@@ -1104,6 +1105,65 @@ A customized logger for pyppl
 		- **returns:**  
 			A `Box`/`dict` object containing all option names and values.  
   
+!!! example "class: `Parameter`"
+  
+	The class for a single parameter  
+  
+	!!! abstract "method: `__getattr__ (self, name)`"
+  
+	!!! abstract "method: `__init__ (self, name, value)`"
+  
+		Constructor  
+
+		- **params:**  
+			`name`:  The name of the parameter  
+			`value`: The initial value of the parameter  
+  
+	!!! abstract "method: `__setattr__ (self, name, value)`"
+  
+	!!! abstract "method: `setDesc (self, d)`"
+  
+		Set the description of the parameter  
+
+		- **params:**  
+			`d`: The description  
+  
+	!!! abstract "method: `setName (self, n)`"
+  
+		Set the name of the parameter  
+
+		- **params:**  
+			`n`: The name  
+  
+	!!! abstract "method: `setRequired (self, r)`"
+  
+		Set whether this parameter is required  
+
+		- **params:**  
+			`r`: True if required else False. Default: True  
+  
+	!!! abstract "method: `setShow (self, s)`"
+  
+		Set whether this parameter should be shown in help information  
+
+		- **params:**  
+			`s`: True if it shows else False. Default: True  
+  
+	!!! abstract "method: `setType (self, t)`"
+  
+		Set the type of the parameter  
+
+		- **params:**  
+			`t`: The type of the value. Default: str  
+			- Note: str rather then 'str'  
+  
+	!!! abstract "method: `setValue (self, v)`"
+  
+		Set the value of the parameter  
+
+		- **params:**  
+			`v`: The value  
+  
 !!! example "class: `HelpAssembler`"
   
 	A helper class to help assembling the help information page.  
@@ -1113,7 +1173,7 @@ A customized logger for pyppl
 		`MAXOPTWIDTH` : the max width of the option name (include the type and placeholder, but not the leading space)  
 		`THEMES`      : the themes  
   
-	!!! abstract "staticmethod: `__init__ (self, prog, theme)`"
+	!!! abstract "method: `__init__ (self, prog, theme)`"
   
 		Constructor  
 
@@ -1121,7 +1181,7 @@ A customized logger for pyppl
 			`prog`: The program name  
 			`theme`: The theme. Could be a name of `THEMES`, or a dict of a custom theme.  
   
-	!!! abstract "staticmethod: `assemble (self, helps, progname)`"
+	!!! abstract "method: `assemble (self, helps, progname)`"
   
 		Assemble the whole help page.  
 
@@ -1133,139 +1193,80 @@ A customized logger for pyppl
 		- **returns:**  
 			lines (`list`) of the help information.  
   
-	!!! abstract "staticmethod: `error (self, msg)`"
+	!!! abstract "method: `error (self, msg)`"
   
 		Render an error message  
 
 		- **params:**  
 			`msg`: The error message  
   
-	!!! abstract "staticmethod: `optdesc (self, msg)`"
+	!!! abstract "method: `optdesc (self, msg)`"
   
 		Render the option descriptions  
 
 		- **params:**  
 			`msg`: the option descriptions  
   
-	!!! abstract "staticmethod: `optname (self, msg)`"
+	!!! abstract "method: `optname (self, msg)`"
   
 		Render the option name  
 
 		- **params:**  
 			`msg`: The option name  
   
-	!!! abstract "staticmethod: `opttype (self, msg)`"
+	!!! abstract "method: `opttype (self, msg)`"
   
 		Render the option type or placeholder  
 
 		- **params:**  
 			`msg`: the option type or placeholder  
   
-	!!! abstract "staticmethod: `plain (self, msg)`"
+	!!! abstract "method: `plain (self, msg)`"
   
 		Render a plain message  
 
 		- **params:**  
 			`msg`: the message  
   
-	!!! abstract "staticmethod: `prog (self, prog)`"
+	!!! abstract "method: `prog (self, prog)`"
   
 		Render the program name  
 
 		- **params:**  
 			`msg`: The program name  
   
-	!!! abstract "staticmethod: `title (self, msg)`"
+	!!! abstract "method: `title (self, msg)`"
   
 		Render an section title  
 
 		- **params:**  
 			`msg`: The section title  
   
-	!!! abstract "staticmethod: `warning (self, msg)`"
+	!!! abstract "method: `warning (self, msg)`"
   
 		Render an warning message  
 
 		- **params:**  
 			`msg`: The warning message  
   
-!!! example "class: `Parameter`"
-  
-	The class for a single parameter  
-  
-	!!! abstract "staticmethod: `__getattr__ (self, name)`"
-  
-	!!! abstract "staticmethod: `__init__ (self, name, value)`"
-  
-		Constructor  
-
-		- **params:**  
-			`name`:  The name of the parameter  
-			`value`: The initial value of the parameter  
-  
-	!!! abstract "staticmethod: `__setattr__ (self, name, value)`"
-  
-	!!! abstract "staticmethod: `setDesc (self, d)`"
-  
-		Set the description of the parameter  
-
-		- **params:**  
-			`d`: The description  
-  
-	!!! abstract "staticmethod: `setName (self, n)`"
-  
-		Set the name of the parameter  
-
-		- **params:**  
-			`n`: The name  
-  
-	!!! abstract "staticmethod: `setRequired (self, r)`"
-  
-		Set whether this parameter is required  
-
-		- **params:**  
-			`r`: True if required else False. Default: True  
-  
-	!!! abstract "staticmethod: `setShow (self, s)`"
-  
-		Set whether this parameter should be shown in help information  
-
-		- **params:**  
-			`s`: True if it shows else False. Default: True  
-  
-	!!! abstract "staticmethod: `setType (self, t)`"
-  
-		Set the type of the parameter  
-
-		- **params:**  
-			`t`: The type of the value. Default: str  
-			- Note: str rather then 'str'  
-  
-	!!! abstract "staticmethod: `setValue (self, v)`"
-  
-		Set the value of the parameter  
-
-		- **params:**  
-			`v`: The value  
-  
 !!! example "class: `Commands`"
   
 	Support sub-command for command line argument parse.  
   
-	!!! abstract "staticmethod: `__getattr__ (self, name)`"
+	!!! abstract "method: `__getattr__ (self, name)`"
   
-	!!! abstract "staticmethod: `__getitem__ (self, name)`"
+	!!! abstract "method: `__getitem__ (self, name)`"
   
-	!!! abstract "staticmethod: `__init__ (self, theme)`"
+	!!! abstract "method: `__init__ (self, theme)`"
   
 		Constructor  
 
 		- **params:**  
 			`theme`: The theme  
   
-	!!! abstract "staticmethod: `__setattr__ (self, name, value)`"
+	!!! abstract "method: `__setattr__ (self, name, value)`"
   
-	!!! abstract "staticmethod: `help (self, error, printNexit)`"
+	!!! abstract "method: `help (self, error, printNexit)`"
   
 		Construct the help page  
 
@@ -1276,7 +1277,7 @@ A customized logger for pyppl
 		- **returns:**  
 			The help information if `printNexit` is `False`  
   
-	!!! abstract "staticmethod: `parse (self, args, arbi)`"
+	!!! abstract "method: `parse (self, args, arbi)`"
   
 		Parse the arguments.  
 
@@ -1295,14 +1296,14 @@ Manage process relations
   
 	The node for processes to manage relations between each other  
   
-	!!! abstract "staticmethod: `__init__ (self, proc)`"
+	!!! abstract "method: `__init__ (self, proc)`"
   
 		Constructor  
 
 		- **params:**  
 			`proc`: The `Proc` instance  
   
-	!!! abstract "staticmethod: `sameIdTag (self, proc)`"
+	!!! abstract "method: `sameIdTag (self, proc)`"
   
 		Check if the process has the same id and tag with me.  
 
@@ -1319,7 +1320,7 @@ Manage process relations
   
 	A helper class for runners  
   
-	!!! abstract "staticmethod: `__init__ (self, script, cmds)`"
+	!!! abstract "method: `__init__ (self, script, cmds)`"
   
 		Constructor  
 
@@ -1327,19 +1328,19 @@ Manage process relations
 			`script`: The script of the job  
 			`cmds`  : The original runner commands  
   
-	!!! abstract "staticmethod: `alive (self)`"
+	!!! abstract "method: `alive (self)`"
   
 		Tell if the job is alive  
   
-	!!! abstract "staticmethod: `kill (self)`"
+	!!! abstract "method: `kill (self)`"
   
 		Kill the job  
   
-	!!! abstract "staticmethod: `run (self)`"
+	!!! abstract "method: `run (self)`"
   
 		Run the job, wait for the job to complete  
   
-	!!! abstract "staticmethod: `submit (self)`"
+	!!! abstract "method: `submit (self)`"
   
 		Submit the job  
   
@@ -1351,40 +1352,40 @@ The base runner class
   
 	The base runner class  
   
-	!!! abstract "staticmethod: `__init__ (self, job)`"
+	!!! abstract "method: `__init__ (self, job)`"
   
 		Constructor  
 
 		- **params:**  
 			`job`:    The job object  
   
-	!!! abstract "staticmethod: `finish (self)`"
+	!!! abstract "method: `finish (self)`"
   
-	!!! abstract "staticmethod: `getpid (self)`"
+	!!! abstract "method: `getpid (self)`"
   
 		Get the job id  
   
-	!!! abstract "staticmethod: `isRunning (self)`"
+	!!! abstract "method: `isRunning (self)`"
   
 		Try to tell whether the job is still running.  
 
 		- **returns:**  
 			`True` if yes, otherwise `False`  
   
-	!!! abstract "staticmethod: `kill (self)`"
+	!!! abstract "method: `kill (self)`"
   
 		Try to kill the running jobs if I am exiting  
   
-	!!! abstract "staticmethod: `retry (self)`"
+	!!! abstract "method: `retry (self)`"
   
-	!!! abstract "staticmethod: `run (self)`"
+	!!! abstract "method: `run (self)`"
   
 
 		- **returns:**  
 			True: success/fail  
 			False: needs retry  
   
-	!!! abstract "staticmethod: `submit (self)`"
+	!!! abstract "method: `submit (self)`"
   
 		Try to submit the job  
   
@@ -1392,61 +1393,61 @@ The base runner class
   
 Dry runner  
   
-!!! example "class: `RunnerDry`"
-  
-	The dry runner  
-  
-	!!! abstract "staticmethod: `__init__ (self, job)`"
-  
-		Constructor  
-
-		- **params:**  
-			`job`:    The job object  
-  
-	!!! abstract "staticmethod: `finish (self)`"
-  
-		Do some cleanup work when jobs finish  
-  
 !!! example "class: `Runner`"
   
 	The base runner class  
   
-	!!! abstract "staticmethod: `__init__ (self, job)`"
+	!!! abstract "method: `__init__ (self, job)`"
   
 		Constructor  
 
 		- **params:**  
 			`job`:    The job object  
   
-	!!! abstract "staticmethod: `finish (self)`"
+	!!! abstract "method: `finish (self)`"
   
-	!!! abstract "staticmethod: `getpid (self)`"
+	!!! abstract "method: `getpid (self)`"
   
 		Get the job id  
   
-	!!! abstract "staticmethod: `isRunning (self)`"
+	!!! abstract "method: `isRunning (self)`"
   
 		Try to tell whether the job is still running.  
 
 		- **returns:**  
 			`True` if yes, otherwise `False`  
   
-	!!! abstract "staticmethod: `kill (self)`"
+	!!! abstract "method: `kill (self)`"
   
 		Try to kill the running jobs if I am exiting  
   
-	!!! abstract "staticmethod: `retry (self)`"
+	!!! abstract "method: `retry (self)`"
   
-	!!! abstract "staticmethod: `run (self)`"
+	!!! abstract "method: `run (self)`"
   
 
 		- **returns:**  
 			True: success/fail  
 			False: needs retry  
   
-	!!! abstract "staticmethod: `submit (self)`"
+	!!! abstract "method: `submit (self)`"
   
 		Try to submit the job  
+  
+!!! example "class: `RunnerDry`"
+  
+	The dry runner  
+  
+	!!! abstract "method: `__init__ (self, job)`"
+  
+		Constructor  
+
+		- **params:**  
+			`job`:    The job object  
+  
+	!!! abstract "method: `finish (self)`"
+  
+		Do some cleanup work when jobs finish  
   
 # module: pyppl.runners.runner_local
   
@@ -1456,6 +1457,47 @@ Examples:
 
 	- **see runner.unittest.py**  
   
+!!! example "class: `Runner`"
+  
+	The base runner class  
+  
+	!!! abstract "method: `__init__ (self, job)`"
+  
+		Constructor  
+
+		- **params:**  
+			`job`:    The job object  
+  
+	!!! abstract "method: `finish (self)`"
+  
+	!!! abstract "method: `getpid (self)`"
+  
+		Get the job id  
+  
+	!!! abstract "method: `isRunning (self)`"
+  
+		Try to tell whether the job is still running.  
+
+		- **returns:**  
+			`True` if yes, otherwise `False`  
+  
+	!!! abstract "method: `kill (self)`"
+  
+		Try to kill the running jobs if I am exiting  
+  
+	!!! abstract "method: `retry (self)`"
+  
+	!!! abstract "method: `run (self)`"
+  
+
+		- **returns:**  
+			True: success/fail  
+			False: needs retry  
+  
+	!!! abstract "method: `submit (self)`"
+  
+		Try to submit the job  
+  
 !!! example "class: `RunnerLocal`"
   
 	Constructor  
@@ -1464,56 +1506,56 @@ Examples:
 		`job`:    The job object  
 		`config`: The properties of the process  
   
-	!!! abstract "staticmethod: `__init__ (self, job)`"
+	!!! abstract "method: `__init__ (self, job)`"
+  
+# module: pyppl.runners.runner_sge
   
 !!! example "class: `Runner`"
   
 	The base runner class  
   
-	!!! abstract "staticmethod: `__init__ (self, job)`"
+	!!! abstract "method: `__init__ (self, job)`"
   
 		Constructor  
 
 		- **params:**  
 			`job`:    The job object  
   
-	!!! abstract "staticmethod: `finish (self)`"
+	!!! abstract "method: `finish (self)`"
   
-	!!! abstract "staticmethod: `getpid (self)`"
+	!!! abstract "method: `getpid (self)`"
   
 		Get the job id  
   
-	!!! abstract "staticmethod: `isRunning (self)`"
+	!!! abstract "method: `isRunning (self)`"
   
 		Try to tell whether the job is still running.  
 
 		- **returns:**  
 			`True` if yes, otherwise `False`  
   
-	!!! abstract "staticmethod: `kill (self)`"
+	!!! abstract "method: `kill (self)`"
   
 		Try to kill the running jobs if I am exiting  
   
-	!!! abstract "staticmethod: `retry (self)`"
+	!!! abstract "method: `retry (self)`"
   
-	!!! abstract "staticmethod: `run (self)`"
+	!!! abstract "method: `run (self)`"
   
 
 		- **returns:**  
 			True: success/fail  
 			False: needs retry  
   
-	!!! abstract "staticmethod: `submit (self)`"
+	!!! abstract "method: `submit (self)`"
   
 		Try to submit the job  
-  
-# module: pyppl.runners.runner_sge
   
 !!! example "class: `RunnerSge`"
   
 	The sge runner  
   
-	!!! abstract "staticmethod: `__init__ (self, job)`"
+	!!! abstract "method: `__init__ (self, job)`"
   
 		Constructor  
 
@@ -1521,87 +1563,46 @@ Examples:
 			`job`:    The job object  
 			`config`: The properties of the process  
   
-!!! example "class: `Runner`"
-  
-	The base runner class  
-  
-	!!! abstract "staticmethod: `__init__ (self, job)`"
-  
-		Constructor  
-
-		- **params:**  
-			`job`:    The job object  
-  
-	!!! abstract "staticmethod: `finish (self)`"
-  
-	!!! abstract "staticmethod: `getpid (self)`"
-  
-		Get the job id  
-  
-	!!! abstract "staticmethod: `isRunning (self)`"
-  
-		Try to tell whether the job is still running.  
-
-		- **returns:**  
-			`True` if yes, otherwise `False`  
-  
-	!!! abstract "staticmethod: `kill (self)`"
-  
-		Try to kill the running jobs if I am exiting  
-  
-	!!! abstract "staticmethod: `retry (self)`"
-  
-	!!! abstract "staticmethod: `run (self)`"
-  
-
-		- **returns:**  
-			True: success/fail  
-			False: needs retry  
-  
-	!!! abstract "staticmethod: `submit (self)`"
-  
-		Try to submit the job  
-  
 # module: pyppl.runners.runner_slurm
   
 !!! example "class: `Runner`"
   
 	The base runner class  
   
-	!!! abstract "staticmethod: `__init__ (self, job)`"
+	!!! abstract "method: `__init__ (self, job)`"
   
 		Constructor  
 
 		- **params:**  
 			`job`:    The job object  
   
-	!!! abstract "staticmethod: `finish (self)`"
+	!!! abstract "method: `finish (self)`"
   
-	!!! abstract "staticmethod: `getpid (self)`"
+	!!! abstract "method: `getpid (self)`"
   
 		Get the job id  
   
-	!!! abstract "staticmethod: `isRunning (self)`"
+	!!! abstract "method: `isRunning (self)`"
   
 		Try to tell whether the job is still running.  
 
 		- **returns:**  
 			`True` if yes, otherwise `False`  
   
-	!!! abstract "staticmethod: `kill (self)`"
+	!!! abstract "method: `kill (self)`"
   
 		Try to kill the running jobs if I am exiting  
   
-	!!! abstract "staticmethod: `retry (self)`"
+	!!! abstract "method: `retry (self)`"
   
-	!!! abstract "staticmethod: `run (self)`"
+	!!! abstract "method: `run (self)`"
   
 
 		- **returns:**  
 			True: success/fail  
 			False: needs retry  
   
-	!!! abstract "staticmethod: `submit (self)`"
+	!!! abstract "method: `submit (self)`"
   
 		Try to submit the job  
   
@@ -1609,7 +1610,7 @@ Examples:
   
 	The slurm runner  
   
-	!!! abstract "staticmethod: `__init__ (self, job)`"
+	!!! abstract "method: `__init__ (self, job)`"
   
 		Constructor  
 
@@ -1618,6 +1619,47 @@ Examples:
 			`config`: The properties of the process  
   
 # module: pyppl.runners.runner_ssh
+  
+!!! example "class: `Runner`"
+  
+	The base runner class  
+  
+	!!! abstract "method: `__init__ (self, job)`"
+  
+		Constructor  
+
+		- **params:**  
+			`job`:    The job object  
+  
+	!!! abstract "method: `finish (self)`"
+  
+	!!! abstract "method: `getpid (self)`"
+  
+		Get the job id  
+  
+	!!! abstract "method: `isRunning (self)`"
+  
+		Try to tell whether the job is still running.  
+
+		- **returns:**  
+			`True` if yes, otherwise `False`  
+  
+	!!! abstract "method: `kill (self)`"
+  
+		Try to kill the running jobs if I am exiting  
+  
+	!!! abstract "method: `retry (self)`"
+  
+	!!! abstract "method: `run (self)`"
+  
+
+		- **returns:**  
+			True: success/fail  
+			False: needs retry  
+  
+	!!! abstract "method: `submit (self)`"
+  
+		Try to submit the job  
   
 !!! example "class: `RunnerSsh`"
   
@@ -1629,7 +1671,7 @@ Examples:
 		- Don't touch unless you know what's going on!  
   
   
-	!!! abstract "staticmethod: `__init__ (self, job)`"
+	!!! abstract "method: `__init__ (self, job)`"
   
 		Constructor  
 
@@ -1638,56 +1680,23 @@ Examples:
   
 	!!! abstract "staticmethod: `isServerAlive (server, key)`"
   
-!!! example "class: `Runner`"
+# module: pyppl.template
   
-	The base runner class  
+!!! example "class: `Template`"
   
-	!!! abstract "staticmethod: `__init__ (self, job)`"
+	Template wrapper base  
   
-		Constructor  
-
-		- **params:**  
-			`job`:    The job object  
+	!!! abstract "method: `__init__ (self, source, **envs)`"
   
-	!!! abstract "staticmethod: `finish (self)`"
+	!!! abstract "method: `registerEnvs (self, **envs)`"
   
-	!!! abstract "staticmethod: `getpid (self)`"
-  
-		Get the job id  
-  
-	!!! abstract "staticmethod: `isRunning (self)`"
-  
-		Try to tell whether the job is still running.  
-
-		- **returns:**  
-			`True` if yes, otherwise `False`  
-  
-	!!! abstract "staticmethod: `kill (self)`"
-  
-		Try to kill the running jobs if I am exiting  
-  
-	!!! abstract "staticmethod: `retry (self)`"
-  
-	!!! abstract "staticmethod: `run (self)`"
-  
-
-		- **returns:**  
-			True: success/fail  
-			False: needs retry  
-  
-	!!! abstract "staticmethod: `submit (self)`"
-  
-		Try to submit the job  
-  
-# module: pyppl.templates.template
-  
-# module: pyppl.templates.template_jinja2
+	!!! abstract "method: `render (self, data)`"
   
 !!! example "class: `TemplateJinja2`"
   
 	Jinja2 template wrapper  
   
-	!!! abstract "staticmethod: `__init__ (self, source, **envs)`"
+	!!! abstract "method: `__init__ (self, source, **envs)`"
   
 		Initiate the engine with source and envs  
 
@@ -1695,217 +1704,21 @@ Examples:
 			`source`: The souce text  
 			`envs`: The env data  
   
-# module: pyppl.templates.template_pyppl
+!!! example "class: `TemplateLiquid`"
   
-This template engine is borrowed from Templite  
-The code is here: https://github.com/aosabook/500lines/blob/master/template-engine/code/templite.py  
-Author: Ned Batchelder  
-Project: Template engine  
-Requirements: Python  
+	liquid.py template wrapper.  
   
-Modified by: pwwang  
-Functions added:  
-	- support elif, else  
-	- support for dict: for k,v in dict.items()  
-	- support [] to get element from list or dict.  
-	- support multivariables in expression:  
-	  {{d1,d2|concate}}  
-	  {'concate': lambda x,y: x+y}  
-  
-!!! example "class: `TemplatePyPPLEngine`"
-  
-	A simple template renderer, for a nano-subset of Django syntax.  
-	Supported constructs are extended variable access:  
-		`{{var.modifer.modifier|filter|filter}}`  
-	loops:  
-		`{% for var in list %}...{% endfor %}`  
-	and ifs:  
-		`{% if var %}...{% endif %}`  
-	Comments are within curly-hash markers:  
-		`{# This will be ignored #}`  
-	Construct a Templite with the template text, then use `render` against a  
-	dictionary context to create a finished string::  
-	```  
-	templite = Templite('''  
-		<h1>Hello {{name|upper}}!</h1>  
-		{% for topic in topics %}  
-			<p>You are interested in {{topic}}.</p>  
-		{% endif %}  
-		''',  
-		{'upper': str.upper},  
-	)  
-	text = templite.render({  
-		'name': "Ned",  
-		'topics': ['Python', 'Geometry', 'Juggling'],  
-	})  
-	```  
-  
-	!!! abstract "staticmethod: `__init__ (self, text, *contexts)`"
-  
-		Construct a Templite with the given `text`.  
-		`contexts` are dictionaries of values to use for future renderings.  
-		These are good for filters and global values.  
-
-		- **params:**  
-			`text`: The template text  
-			`contexts`: The contexts used to render.  
-  
-	!!! abstract "staticmethod: `flushOutput (self)`"
-  
-		Force `self.buffered` to the code builder.  
-
-		- **params:**  
-			`code`: The code builder  
-  
-	!!! abstract "staticmethod: `render (self, context)`"
-  
-		Render this template by applying it to `context`.  
-
-		- **params:**  
-			`context`: a dictionary of values to use in this rendering.  
-
-		- **returns:**  
-			The rendered string  
-  
-!!! example "class: `TemplatePyPPL`"
-  
-	Built-in template wrapper.  
-  
-	!!! abstract "staticmethod: `__init__ (self, source, **envs)`"
+	!!! abstract "method: `__init__ (self, source, **envs)`"
   
 		Initiate the engine with source and envs  
 
 		- **params:**  
 			`source`: The souce text  
 			`envs`: The env data  
-  
-!!! example "class: `TemplatePyPPLCodeBuilder`"
-  
-	Build source code conveniently.  
-  
-	!!! abstract "staticmethod: `__init__ (self, envs, indent)`"
-  
-		Constructor of code builder  
-
-		- **params:**  
-			indent: The initial indent level  
-  
-	!!! abstract "staticmethod: `addLine (self, line, src)`"
-  
-		Add a line of source to the code.  
-		Indentation and newline will be added for you, don't provide them.  
-
-		- **params:**  
-			line: The line to add  
-  
-	!!! abstract "staticmethod: `addSection (self)`"
-  
-		Add a section, a sub-CodeBuilder.  
-
-		- **returns:**  
-			The section added.  
-  
-	!!! abstract "staticmethod: `dedent (self)`"
-  
-		Decrease the current indent for following lines.  
-  
-	!!! abstract "staticmethod: `getGlobals (self)`"
-  
-		Execute the code, and return a dict of globals it defines.  
-  
-	!!! abstract "staticmethod: `indent (self)`"
-  
-		Increase the current indent for following lines.  
-  
-	!!! abstract "staticmethod: `lineByNo (self, lineno)`"
-  
-		Get the line by line number  
-
-		- **params:**  
-			`lineno`: The line number  
-
-		- **returns:**  
-			The TemplatePyPPLLine object at `lineno`.  
-  
-!!! example "class: `TemplatePyPPLLine`"
-  
-	Line of compiled code  
-  
-	!!! abstract "staticmethod: `__init__ (self, line, src, indent)`"
-  
-		Constructor of line  
   
 # module: pyppl.utils
   
 A set of utitities for PyPPL  
-  
-!!! example "function: `map`"
-  
-	Python2 and Python3 compatible map  
-
-	- **params:**  
-		`func`: The map function  
-		`vec`: The list to be maped  
-
-	- **returns:**  
-		The maped list  
-  
-!!! example "function: `briefList`"
-  
-	Briefly show an integer list, combine the continuous numbers.  
-
-	- **params:**  
-		`l`: The list  
-
-	- **returns:**  
-		The string to show for the briefed list.  
-  
-!!! example "function: `dictUpdate`"
-  
-	Update a dictionary recursively.  
-
-	- **params:**  
-		`origDict`: The original dictionary  
-		`newDict`:  The new dictionary  
-
-	- **examples:**  
-		```python  
-		od1 = {"a": {"b": {"c": 1, "d":1}}}  
-		od2 = {key:value for key:value in od1.items()}  
-		nd  = {"a": {"b": {"d": 2}}}  
-		od1.update(nd)  
-		# od1 == {"a": {"b": {"d": 2}}}, od1["a"]["b"] is lost  
-		dictUpdate(od2, nd)  
-		# od2 == {"a": {"b": {"c": 1, "d": 2}}}  
-		```  
-  
-!!! example "function: `alwaysList`"
-  
-	Convert a string or a list with element  
-
-	- **params:**  
-		`data`: the data to be converted  
-
-	- **examples:**  
-		```python  
-		data = ["a, b, c", "d"]  
-		ret  = alwaysList (data)  
-		# ret == ["a", "b", "c", "d"]  
-		```  
-
-	- **returns:**  
-		The split list  
-  
-!!! example "function: `filter`"
-  
-	Python2 and Python3 compatible filter  
-
-	- **params:**  
-		`func`: The filter function  
-		`vec`:  The list to be filtered  
-
-	- **returns:**  
-		The filtered list  
   
 !!! example "function: `uid`"
   
@@ -1920,20 +1733,6 @@ A set of utitities for PyPPL
 
 	- **returns:**  
 		The uid  
-  
-!!! example "function: `range`"
-  
-	Convert a range to list, because in python3, range is not a list  
-
-	- **params:**  
-		`r`: the range data  
-
-	- **returns:**  
-		The converted list  
-  
-!!! example "function: `asStr`"
-  
-	Convert everything (str, unicode, bytes) to str with python2, python3 compatiblity  
   
 !!! example "function: `reduce`"
   
@@ -1957,16 +1756,22 @@ A set of utitities for PyPPL
 	- **returns:**  
 		The signature  
   
-!!! example "function: `varname`"
+!!! example "function: `alwaysList`"
   
-	Get the variable name for ini  
+	Convert a string or a list with element  
 
 	- **params:**  
-		`maxline`: The max number of lines to retrive. Default: 20  
-		`incldot`: Whether include dot in the variable name. Default: False  
+		`data`: the data to be converted  
+
+	- **examples:**  
+		```python  
+		data = ["a, b, c", "d"]  
+		ret  = alwaysList (data)  
+		# ret == ["a", "b", "c", "d"]  
+		```  
 
 	- **returns:**  
-		The variable name  
+		The split list  
   
 !!! example "function: `formatSecs`"
   
@@ -1998,63 +1803,98 @@ A set of utitities for PyPPL
 	- **returns:**  
 		The list of substrings  
   
+!!! example "function: `briefList`"
+  
+	Briefly show an integer list, combine the continuous numbers.  
+
+	- **params:**  
+		`l`: The list  
+
+	- **returns:**  
+		The string to show for the briefed list.  
+  
+!!! example "function: `map`"
+  
+	Python2 and Python3 compatible map  
+
+	- **params:**  
+		`func`: The map function  
+		`vec`: The list to be maped  
+
+	- **returns:**  
+		The maped list  
+  
+!!! example "function: `varname`"
+  
+	Get the variable name for ini  
+
+	- **params:**  
+		`maxline`: The max number of lines to retrive. Default: 20  
+		`incldot`: Whether include dot in the variable name. Default: False  
+
+	- **returns:**  
+		The variable name  
+  
+!!! example "function: `filter`"
+  
+	Python2 and Python3 compatible filter  
+
+	- **params:**  
+		`func`: The filter function  
+		`vec`:  The list to be filtered  
+
+	- **returns:**  
+		The filtered list  
+  
+!!! example "function: `dictUpdate`"
+  
+	Update a dictionary recursively.  
+
+	- **params:**  
+		`origDict`: The original dictionary  
+		`newDict`:  The new dictionary  
+
+	- **examples:**  
+		```python  
+		od1 = {"a": {"b": {"c": 1, "d":1}}}  
+		od2 = {key:value for key:value in od1.items()}  
+		nd  = {"a": {"b": {"d": 2}}}  
+		od1.update(nd)  
+		# od1 == {"a": {"b": {"d": 2}}}, od1["a"]["b"] is lost  
+		dictUpdate(od2, nd)  
+		# od2 == {"a": {"b": {"c": 1, "d": 2}}}  
+		```  
+  
+!!! example "function: `range`"
+  
+	Convert a range to list, because in python3, range is not a list  
+
+	- **params:**  
+		`r`: the range data  
+
+	- **returns:**  
+		The converted list  
+  
+!!! example "function: `asStr`"
+  
+	Convert everything (str, unicode, bytes) to str with python2, python3 compatiblity  
+  
 # module: pyppl.utils.box
   
 !!! example "class: `Box`"
   
 	Allow dot operation for OrderedDict  
   
-	!!! abstract "staticmethod: `__getattr__ (self, name)`"
+	!!! abstract "method: `__getattr__ (self, name)`"
   
-	!!! abstract "staticmethod: `__setattr__ (self, name, val)`"
+	!!! abstract "method: `__setattr__ (self, name, val)`"
   
-	!!! abstract "method: `fromkeys ()`"
+	!!! abstract "method: `fromkeys (cls, iterable, value)`"
 OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.  
         If not specified, the value defaults to None.  
   
   
 # module: pyppl.utils.cmd
-  
-!!! example "class: `Cmd`"
-  
-	A command (subprocess) wapper  
-  
-	!!! abstract "staticmethod: `__init__ (self, cmd, raiseExc, timeout, **kwargs)`"
-  
-		Constructor  
-
-		- **params:**  
-			`cmd`     : The command, could be a string or a list  
-			`raiseExc`: raise the expcetion or not  
-			`**kwargs`: other arguments for `Popen`  
-  
-	!!! abstract "staticmethod: `pipe (self, cmd, **kwargs)`"
-  
-		Pipe another command  
-
-		- **examples:**  
-			```python  
-			c = Command('seq 1 3').pipe('grep 1').run()  
-			c.stdout == '1\n'  
-			```  
-
-		- **params:**  
-			`cmd`: The other command  
-			`**kwargs`: Other arguments for `Popen` for the other command  
-
-		- **returns:**  
-			`Command` instance of the other command  
-  
-	!!! abstract "staticmethod: `run (self, bg)`"
-  
-		Wait for the command to run  
-
-		- **params:**  
-			`bg`: Run in background or not. Default: `False`  
-				- If it is `True`, `rc` and `stdout/stderr` will be default (no value retrieved).  
-
-		- **returns:**  
-			`self`  
   
 !!! example "function: `run`"
   
@@ -2071,6 +1911,47 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 
 	- **returns:**  
 		The `Command` instance  
+  
+!!! example "class: `Cmd`"
+  
+	A command (subprocess) wapper  
+  
+	!!! abstract "method: `__init__ (self, cmd, raiseExc, timeout, **kwargs)`"
+  
+		Constructor  
+
+		- **params:**  
+			`cmd`     : The command, could be a string or a list  
+			`raiseExc`: raise the expcetion or not  
+			`**kwargs`: other arguments for `Popen`  
+  
+	!!! abstract "method: `pipe (self, cmd, **kwargs)`"
+  
+		Pipe another command  
+
+		- **examples:**  
+			```python  
+			c = Command('seq 1 3').pipe('grep 1').run()  
+			c.stdout == '1\n'  
+			```  
+
+		- **params:**  
+			`cmd`: The other command  
+			`**kwargs`: Other arguments for `Popen` for the other command  
+
+		- **returns:**  
+			`Command` instance of the other command  
+  
+	!!! abstract "method: `run (self, bg)`"
+  
+		Wait for the command to run  
+
+		- **params:**  
+			`bg`: Run in background or not. Default: `False`  
+				- If it is `True`, `rc` and `stdout/stderr` will be default (no value retrieved).  
+
+		- **returns:**  
+			`self`  
   
 # module: pyppl.utils.parallel
   
@@ -2092,7 +1973,7 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
   
 	A parallel runner  
   
-	!!! abstract "staticmethod: `__init__ (self, nthread, backend, raiseExc)`"
+	!!! abstract "method: `__init__ (self, nthread, backend, raiseExc)`"
   
 		Constructor  
 
@@ -2101,7 +1982,7 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 			`backend` : The backend, either `process` (default) or `thread`  
 			`raiseExc`: Whether raise exception or not. Default: `True`  
   
-	!!! abstract "staticmethod: `run (self, func, args)`"
+	!!! abstract "method: `run (self, func, args)`"
   
 		Run parallel jobs  
 
@@ -2117,11 +1998,16 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
   
 # module: pyppl.utils.ps
   
+!!! example "function: `exists`"
+  
+	Check whether pid exists in the current process table.  
+	From https://github.com/kennethreitz/delegator.py/blob/master/delegator.py  
+  
 !!! example "class: `Cmd`"
   
 	A command (subprocess) wapper  
   
-	!!! abstract "staticmethod: `__init__ (self, cmd, raiseExc, timeout, **kwargs)`"
+	!!! abstract "method: `__init__ (self, cmd, raiseExc, timeout, **kwargs)`"
   
 		Constructor  
 
@@ -2130,7 +2016,7 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 			`raiseExc`: raise the expcetion or not  
 			`**kwargs`: other arguments for `Popen`  
   
-	!!! abstract "staticmethod: `pipe (self, cmd, **kwargs)`"
+	!!! abstract "method: `pipe (self, cmd, **kwargs)`"
   
 		Pipe another command  
 
@@ -2147,7 +2033,7 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 		- **returns:**  
 			`Command` instance of the other command  
   
-	!!! abstract "staticmethod: `run (self, bg)`"
+	!!! abstract "method: `run (self, bg)`"
   
 		Wait for the command to run  
 
@@ -2162,12 +2048,20 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
   
 	Direct children  
   
+# module: pyppl.utils.safefs
+  
 !!! example "function: `exists`"
   
-	Check whether pid exists in the current process table.  
-	From https://github.com/kennethreitz/delegator.py/blob/master/delegator.py  
-  
-# module: pyppl.utils.safefs
+	A shortcut of `SafeFs.exists`  
+
+	- **params:**  
+		`filepath`: The filepath  
+		`callback`: The callback. arguments:  
+			- `r` : Whether the file exists  
+			- `fs`: This instance  
+
+	- **returns:**  
+		`True` if the file exists else `False`  
   
 !!! example "function: `move`"
   
@@ -2184,95 +2078,9 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 	- **returns:**  
 		`True` if succeed else `False`  
   
-!!! example "function: `remove`"
-  
-	A shortcut of `SafeFs.remove`  
-
-	- **params:**  
-		`filepath`: The filepath  
-		`callback`: The callback. arguments:  
-			- `r` : Whether the file exists  
-			- `fs`: This instance  
-
-	- **returns:**  
-		`True` if succeed else `False`  
-  
-!!! example "function: `ungz`"
-  
-	A shortcut of `SafeFs.ungz`  
-
-	- **params:**  
-		`file1`    : File 1  
-		`file2`    : File 2  
-		`overwrite`: Whether overwrite file 2. Default: `True`  
-		`callback` : The callback. arguments:  
-			- `r` : Whether the file exists  
-			- `fs`: This instance  
-
-	- **returns:**  
-		`True` if succeed else `False`  
-  
-!!! example "function: `moveWithLink`"
-  
-	A shortcut of `SafeFs.moveWithLink`  
-
-	- **params:**  
-		`file1`    : File 1  
-		`file2`    : File 2  
-		`overwrite`: Whether overwrite file 2. Default: `True`  
-		`callback` : The callback. arguments:  
-			- `r` : Whether the file exists  
-			- `fs`: This instance  
-
-	- **returns:**  
-		`True` if succeed else `False`  
-  
 !!! example "function: `gz`"
   
 	A shortcut of `SafeFs.gz`  
-
-	- **params:**  
-		`file1`    : File 1  
-		`file2`    : File 2  
-		`overwrite`: Whether overwrite file 2. Default: `True`  
-		`callback` : The callback. arguments:  
-			- `r` : Whether the file exists  
-			- `fs`: This instance  
-
-	- **returns:**  
-		`True` if succeed else `False`  
-  
-!!! example "function: `copy`"
-  
-	A shortcut of `SafeFs.copy`  
-
-	- **params:**  
-		`file1`    : File 1  
-		`file2`    : File 2  
-		`overwrite`: Whether overwrite file 2. Default: `True`  
-		`callback` : The callback. arguments:  
-			- `r` : Whether the file exists  
-			- `fs`: This instance  
-
-	- **returns:**  
-		`True` if succeed else `False`  
-  
-!!! example "function: `exists`"
-  
-	A shortcut of `SafeFs.exists`  
-
-	- **params:**  
-		`filepath`: The filepath  
-		`callback`: The callback. arguments:  
-			- `r` : Whether the file exists  
-			- `fs`: This instance  
-
-	- **returns:**  
-		`True` if the file exists else `False`  
-  
-!!! example "function: `link`"
-  
-	A shortcut of `SafeFs.link`  
 
 	- **params:**  
 		`file1`    : File 1  
@@ -2316,7 +2124,7 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
   
 		`LOCK`: A global lock ensures the locks are locked at the same time  
   
-	!!! abstract "staticmethod: `__init__ (self, file1, file2, tmpdir)`"
+	!!! abstract "method: `__init__ (self, file1, file2, tmpdir)`"
   
 		Constructor  
 
@@ -2336,14 +2144,14 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 		- **returns:**  
 			The basename  
   
-	!!! abstract "staticmethod: `chmodX (self)`"
+	!!! abstract "method: `chmodX (self)`"
   
 		Convert file1 to executable or add extract shebang to cmd line  
 
 		- **returns:**  
 			A list with or without the path of the interpreter as the first element and the script file as the last element  
   
-	!!! abstract "staticmethod: `copy (self, overwrite, callback)`"
+	!!! abstract "method: `copy (self, overwrite, callback)`"
   
 		Copy file1 to file2 thread-safely  
 
@@ -2356,7 +2164,7 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 		- **returns:**  
 			`True` if succeed else `False`  
   
-	!!! abstract "staticmethod: `exists (self, callback)`"
+	!!! abstract "method: `exists (self, callback)`"
   
 		Tell if file1 exists thread-safely  
 
@@ -2368,7 +2176,7 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 		- **returns:**  
 			`True` if exists else `False`  
   
-	!!! abstract "staticmethod: `filesig (self, dirsig)`"
+	!!! abstract "method: `filesig (self, dirsig)`"
   
 		Generate a signature for a file  
 
@@ -2387,7 +2195,7 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 			`lastmsg`: The remaining content of last flush  
 			`end`    : The file ends? Default: `False`  
   
-	!!! abstract "staticmethod: `gz (self, overwrite, callback)`"
+	!!! abstract "method: `gz (self, overwrite, callback)`"
   
 		Gzip file1 (tar-gzip if file1 is a directory) to file2 in a thread-safe way  
 
@@ -2400,7 +2208,7 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 		- **returns:**  
 			`True` if succeed else `False`  
   
-	!!! abstract "staticmethod: `link (self, overwrite, callback)`"
+	!!! abstract "method: `link (self, overwrite, callback)`"
   
 		Link file1 to file2 thread-safely  
 
@@ -2413,7 +2221,7 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 		- **returns:**  
 			`True` if succeed else `False`  
   
-	!!! abstract "staticmethod: `move (self, overwrite, callback)`"
+	!!! abstract "method: `move (self, overwrite, callback)`"
   
 		Move file1 to file2 thread-safely  
 
@@ -2426,7 +2234,7 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 		- **returns:**  
 			`True` if succeed else `False`  
   
-	!!! abstract "staticmethod: `moveWithLink (self, overwrite, callback)`"
+	!!! abstract "method: `moveWithLink (self, overwrite, callback)`"
   
 		Move file1 to file2 and link file2 to file1 in a thread-safe way  
 
@@ -2439,7 +2247,7 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 		- **returns:**  
 			`True` if succeed else `False`  
   
-	!!! abstract "staticmethod: `remove (self, callback)`"
+	!!! abstract "method: `remove (self, callback)`"
   
 		Remove file1 thread-safely  
 
@@ -2451,7 +2259,7 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 		- **returns:**  
 			`True` if succeed else `False`  
   
-	!!! abstract "staticmethod: `samefile (self, callback)`"
+	!!! abstract "method: `samefile (self, callback)`"
   
 		Tell if file1 and file2 are the same file in a thread-safe way  
 
@@ -2463,7 +2271,7 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 		- **returns:**  
 			`True` if they are the same file else `False`  
   
-	!!! abstract "staticmethod: `ungz (self, overwrite, callback)`"
+	!!! abstract "method: `ungz (self, overwrite, callback)`"
   
 		Ungzip file1 (tar-ungzip if file1 tar-gzipped to file2 in a thread-safe way  
 
@@ -2475,4 +2283,77 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 
 		- **returns:**  
 			`True` if succeed else `False`  
+  
+!!! example "function: `ungz`"
+  
+	A shortcut of `SafeFs.ungz`  
+
+	- **params:**  
+		`file1`    : File 1  
+		`file2`    : File 2  
+		`overwrite`: Whether overwrite file 2. Default: `True`  
+		`callback` : The callback. arguments:  
+			- `r` : Whether the file exists  
+			- `fs`: This instance  
+
+	- **returns:**  
+		`True` if succeed else `False`  
+  
+!!! example "function: `moveWithLink`"
+  
+	A shortcut of `SafeFs.moveWithLink`  
+
+	- **params:**  
+		`file1`    : File 1  
+		`file2`    : File 2  
+		`overwrite`: Whether overwrite file 2. Default: `True`  
+		`callback` : The callback. arguments:  
+			- `r` : Whether the file exists  
+			- `fs`: This instance  
+
+	- **returns:**  
+		`True` if succeed else `False`  
+  
+!!! example "function: `link`"
+  
+	A shortcut of `SafeFs.link`  
+
+	- **params:**  
+		`file1`    : File 1  
+		`file2`    : File 2  
+		`overwrite`: Whether overwrite file 2. Default: `True`  
+		`callback` : The callback. arguments:  
+			- `r` : Whether the file exists  
+			- `fs`: This instance  
+
+	- **returns:**  
+		`True` if succeed else `False`  
+  
+!!! example "function: `copy`"
+  
+	A shortcut of `SafeFs.copy`  
+
+	- **params:**  
+		`file1`    : File 1  
+		`file2`    : File 2  
+		`overwrite`: Whether overwrite file 2. Default: `True`  
+		`callback` : The callback. arguments:  
+			- `r` : Whether the file exists  
+			- `fs`: This instance  
+
+	- **returns:**  
+		`True` if succeed else `False`  
+  
+!!! example "function: `remove`"
+  
+	A shortcut of `SafeFs.remove`  
+
+	- **params:**  
+		`filepath`: The filepath  
+		`callback`: The callback. arguments:  
+			- `r` : Whether the file exists  
+			- `fs`: This instance  
+
+	- **returns:**  
+		`True` if succeed else `False`  
   

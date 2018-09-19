@@ -35,7 +35,7 @@ There are several ways to initialize a channel:
   c = Channel.create("a,b")
   # produce [("a,b",)]
   ```
-  So `pXXX.input = {'a': 1}` implies one single job will be created for `pXXX` and `{{in.a}}` gives `1` for that job.
+  So `pXXX.input = {'a': 1}` implies one single job will be created for `pXXX` and `{{i.a}}` gives `1` for that job.
 - From a `list` or a `tuple`
   ```python
   c = Channel.create(["a", "b"])
@@ -175,7 +175,7 @@ For example:
 # the original file: a.txt
 p1 = Proc()
 p1.input  = {"infile:file": ["a.txt"]}
-p1.output = "outdir:dir:{{in.infile | fn}}"
+p1.output = "outdir:dir:{{i.infile | fn}}"
 p1.script = "# the script to split a.txt to 1.txt, 2.txt, 3.txt ... to {{outdir}}"
 
 p2 = Proc()
@@ -183,7 +183,7 @@ p2.depends = p1
 # expand channel [("outdir/a/",)] to channel:
 # [("outdir/a/1.txt",), ("outdir/a/2.txt",), ("outdir/a/3.txt",), ...]
 p2.input   = {"infile:file": lambda ch: ch.expand()}
-p2.output  = {"outfile:file:{{in.infile | fn}}.result"}
+p2.output  = {"outfile:file:{{i.infile | fn}}.result"}
 p2.script  = """
 # work on each file (1.txt, 2.txt, 3.txt, ...) 
 # to result file (1.result, 2.result, 3.result, ...)
@@ -193,7 +193,7 @@ PyPPL().start(p1).run()
 ```
 If a channel is a multi-variable channel (containing 2 or more columns), you may specify the index of the column, which should be a directory. For the previous example:
 ```python
-p1.output = "outvar:{{in.infile | ext | [1:]}}, outdir:dir:{{in.infile | fn}}"
+p1.output = "outvar:{{i.infile | ext | [1:]}}, outdir:dir:{{i.infile | fn}}"
 # ...
 p2.depends = p1
 p2.input   = {"invar,infile:file": lambda ch: ch.expand(1)}
@@ -234,9 +234,9 @@ p2.depends = p1
 # collapse channel [("<outdir>/1.txt2",), ("<outdir>/2.txt2",), ("<outdir>/3.txt2",)] 
 # to channel: [("<outdir>/", )]
 p2.input   = {"indir:file": lambda ch: ch.collapse()}
-p2.output  = {"outfile:file:{{in.indir | fn}}.result"}
+p2.output  = {"outfile:file:{{i.indir | fn}}.result"}
 p2.script  = """
-# combine 1.txt2, 2.txt2, 3.txt3 in {{in.indir}} to {{out.outfile}}
+# combine 1.txt2, 2.txt2, 3.txt3 in {{i.indir}} to {{o.outfile}}
 """
 PyPPL().start(p1).run()
 ```
