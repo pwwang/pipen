@@ -1,4 +1,4 @@
 six
 filelock
 futures
-liquid.py
+liquidpy

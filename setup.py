@@ -18,7 +18,7 @@ setup (
 	packages         = find_packages(),
 	scripts          = ['bin/pyppl'],
 	install_requires = [
-		'six', 'filelock', 'futures', 'liquid.py'
+		'six', 'filelock', 'futures', 'liquidpy'
 	],
 	classifiers      = [
 		"Intended Audience :: Developers",

@@ -9,7 +9,7 @@
 - [Easy-to-use command line parser.][27]
 - [Fancy logs.][28]
 - [Process caching.][6]
-- [Script templating][7] (Either [liquid.py][17] or [Jinja2][39])
+- [Script templating][7] (Either [liquidpy][17] or [Jinja2][39])
 - [Runner customization][9].
 - [Error handling for processes.][10]
 - [Easy-switching running profile.][9]
@@ -19,7 +19,7 @@
 
 ## Requirements
 - OS: Linux or OSX
-- Python packages: [six][25], [filelock][35], [futures][21] and [liquid.py][17] (suggested: [graphviz][36], [pyyaml][33] and [python-testly][5]).
+- Python packages: [six][25], [filelock][35], [futures][21] and [liquidpy][17] (suggested: [graphviz][36], [pyyaml][33] and [python-testly][5]).
 
 ## Installation
 ```bash
@@ -499,7 +499,7 @@ To generate svg file, you have to have [graphviz][36] installed.
 [14]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
 [15]: https://pwwang.github.io/PyPPL/draw-flowchart-of-a-pipeline/
 [16]: https://pwwang.github.io/PyPPL/aggregations/
-[17]: https://github.com/pwwang/liquid.py
+[17]: https://github.com/pwwang/liquidpy
 [18]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/drawFlowchart_pyppl.png
 [19]: https://pwwang.github.io/PyPPL/change-log/
 [20]: https://pwwang.github.io/PyPPL/getStarted.svg

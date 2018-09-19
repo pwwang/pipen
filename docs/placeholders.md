@@ -1,6 +1,6 @@
 # Templating
 
-`PyPPL` uses [liquid.py][1] as default template engine. It also supports [Jinja2][2] if you have it installed and specify `"Jinja2"` to `pXXX.template`.
+`PyPPL` uses [liquidpy][1] as default template engine. It also supports [Jinja2][2] if you have it installed and specify `"Jinja2"` to `pXXX.template`.
 
 ## Common data avaible for rendering
 When rendering a template, following data are fed to the render function. So that you can use those values in the template. Some attribute values of a process are shared for all templates that are applied:
@@ -120,5 +120,5 @@ All the data and environment definition mentioned above are all applicable when 
 For usage of `Jinja2`, you may refer to its [official documentation][2].
 
 
-[1]: https://github.com/pwwang/liquid.py
+[1]: https://github.com/pwwang/liquidpy
 [2]: http://jinja.pocoo.org/

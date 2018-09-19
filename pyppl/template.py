@@ -136,7 +136,7 @@ class Template(object):
 
 class TemplateLiquid (Template):
 	"""
-	liquid.py template wrapper.
+	liquidpy template wrapper.
 	"""
 
 	def __init__(self, source, **envs):
