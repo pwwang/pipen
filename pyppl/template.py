@@ -1,7 +1,11 @@
+__all__ = ['Template', 'TemplateLiquid', 'TemplateJinja2']
+
 import json
 from os import path, readlink
 from six import string_types
-from ..utils import asStr
+from liquid import Liquid
+from .utils import asStr
+Liquid.DEFAULT_MODE = 'mixed'
 
 def _read(x):
 	with open(x) as f:
@@ -67,6 +71,9 @@ def _Rlist(x):
 		return 'as.list({})'.format(_R(x))
 
 class Template(object):
+	"""
+	Template wrapper base
+	"""
 
 	DEFAULT_ENVS = {
 		'R'        : _R,
@@ -94,7 +101,9 @@ class Template(object):
 		'squote'   : repr,
 		'json'     : json.dumps,
 		'read'     : _read,
-		'readlines': _readlines
+		'readlines': _readlines,
+		'asquote'  : lambda x: '''%s''' % (" " .join([json.dumps(str(e)) for e in x])),
+		'acquote'  : lambda x: """%s""" % (", ".join([json.dumps(str(e)) for e in x]))
 	}
 
 	def __init__(self, source, **envs):
@@ -106,8 +115,7 @@ class Template(object):
 		self.envs.update(envs)
 
 	def render(self, data = None):
-		data = data or {}
-		return self._render(data)
+		return self._render(data or {})
 
 	# in order to dump setting
 	def __str__(self):
@@ -126,10 +134,57 @@ class Template(object):
 	def _render(self, data):
 		raise NotImplementedError()
 
+class TemplateLiquid (Template):
+	"""
+	liquid.py template wrapper.
+	"""
 
-Template.DEFAULT_ENVS.update({
-	# array-space quote
-	'asquote':  lambda x: '''%s''' % (" " .join([Template.DEFAULT_ENVS['quote'](e) for e in x])),
-	# array-comma quote
-	'acquote':  lambda x: '''%s''' % (", ".join([Template.DEFAULT_ENVS['quote'](e) for e in x]))
-})
+	def __init__(self, source, **envs):
+		"""
+		Initiate the engine with source and envs
+		@params:
+			`source`: The souce text
+			`envs`: The env data
+		"""
+		super(TemplateLiquid, self).__init__(source ,**envs)
+		self.engine = Liquid(source, **self.envs)
+		self.source = source
+
+	def _render(self, data):
+		"""
+		Render the template
+		@params:
+			`data`: The data used for rendering
+		@returns:
+			The rendered string
+		"""
+		return self.engine.render(**data)
+
+class TemplateJinja2 (Template):
+	"""
+	Jinja2 template wrapper
+	"""
+
+	def __init__(self, source, **envs):
+		"""
+		Initiate the engine with source and envs
+		@params:
+			`source`: The souce text
+			`envs`: The env data
+		"""
+		import jinja2
+		super(TemplateJinja2, self).__init__(source ,**envs)
+		self.engine = jinja2.Template(source)
+		self.engine.globals = self.envs
+		self.source = source
+
+	def _render(self, data):
+		"""
+		Render the template
+		@params:
+			`data`: The data used for rendering
+		@returns:
+			The rendered string
+		"""
+		return self.engine.render(data)
+

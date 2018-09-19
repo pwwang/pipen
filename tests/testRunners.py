@@ -7,7 +7,7 @@ from hashlib import md5
 from collections import OrderedDict
 from pyppl import Job, Proc, utils
 from pyppl.runners import Runner, RunnerLocal, RunnerDry, RunnerSsh, RunnerSge, RunnerSlurm
-from pyppl.templates import TemplatePyPPL
+from pyppl.template import TemplateLiquid
 from pyppl.exception import RunnerSshError
 from pyppl.runners.helpers import Helper, LocalHelper, SgeHelper, SlurmHelper, SshHelper
 
@@ -23,7 +23,7 @@ def _generateJob(testdir, index = 0, pProps = None, jobActs = None):
 	p = Proc()
 	uid = dict(index = index, pProps = pProps, jobActs = jobActs)
 	p.props['workdir'] = path.join(testdir, 'p.' + utils.uid(str(uid)), 'workdir')
-	p.props['script']  = TemplatePyPPL('')
+	p.props['script']  = TemplateLiquid('')
 	p.props['ncjobids']  = list(range(40))
 	if pProps:
 		p.props.update(pProps)
@@ -333,19 +333,19 @@ class TestRunner(testly.TestCase):
 	# 	yield _generateJob(
 	# 		self.testdir,
 	# 		index = 2,
-	# 		pProps = {'script': TemplatePyPPL('#!/usr/bin/env bash\nexit 1')}
+	# 		pProps = {'script': TemplateLiquid('#!/usr/bin/env bash\nexit 1')}
 	# 	), False, ['ERROR', "[3/0] Submission failed with return code: 1."]
 	# 	# submission failure exception
 	# 	yield _generateJob(
 	# 		self.testdir,
 	# 		index = 3,
-	# 		pProps = {'script': TemplatePyPPL('exit 1')}
+	# 		pProps = {'script': TemplateLiquid('exit 1')}
 	# 	), False, ['ERROR', "[4/0] Submission failed with exception: [Errno 8] Exec format error"]
 	# 	# submission success
 	# 	yield _generateJob(
 	# 		self.testdir,
 	# 		index = 4,
-	# 		pProps = {'script': TemplatePyPPL('#!/usr/bin/env bash\nexit 0')}
+	# 		pProps = {'script': TemplateLiquid('#!/usr/bin/env bash\nexit 0')}
 	# 	), True
 		
 	# def testSubmit(self, job, ret, errs = []):
@@ -483,17 +483,17 @@ class TestRunner(testly.TestCase):
 	# 		pProps = {
 	# 			'ncjobids': [2],
 	# 			'echo': {'jobs': [2], 'type': {'stdout': None}},
-	# 			'script': TemplatePyPPL('#!/usr/bin/env bash\nprintf 1\nbash -c \'sleep .5; echo 1 > "{{job.dir}}/job.rc"\'\nprintf 3')
+	# 			'script': TemplateLiquid('#!/usr/bin/env bash\nprintf 1\nbash -c \'sleep .5; echo 1 > "{{job.dir}}/job.rc"\'\nprintf 3')
 	# 		}
 	# 	), False, ['13']
 	# 	yield _generateJob(
 	# 		self.testdir,
 	# 		index = 3,
 	# 		pProps = {
-	# 			'expect': TemplatePyPPL(''),
+	# 			'expect': TemplateLiquid(''),
 	# 			'ncjobids': [3],
 	# 			'echo': {'jobs': [3], 'type': {'stdout': None}},
-	# 			'script': TemplatePyPPL('#!/usr/bin/env bash\nprintf 2\nbash -c \'sleep .5; echo 0 > "{{job.dir}}/job.rc"\'\nprintf 4')
+	# 			'script': TemplateLiquid('#!/usr/bin/env bash\nprintf 2\nbash -c \'sleep .5; echo 0 > "{{job.dir}}/job.rc"\'\nprintf 4')
 	# 		}
 	# 	), True, ['24']
 		
@@ -550,30 +550,30 @@ class TestRunnerLocal(testly.TestCase):
 		yield _generateJob(
 			self.testdir,
 			pProps = {
-				'expect': TemplatePyPPL(''),
+				'expect': TemplateLiquid(''),
 				'ncjobids': [0],
 				'echo': {'jobs': [0], 'type': {'stdout': None}},
-				'script': TemplatePyPPL('#!/usr/bin/env bash\nprintf 123\nsleep .2\nprintf 456')
+				'script': TemplateLiquid('#!/usr/bin/env bash\nprintf 123\nsleep .2\nprintf 456')
 			}
 		), True, ['123456']
 		yield _generateJob(
 			self.testdir,
 			index = 1,
 			pProps = {
-				'expect': TemplatePyPPL(''),
+				'expect': TemplateLiquid(''),
 				'ncjobids': [1],
 				'echo': {'jobs': [1], 'type': {'stdout': None}},
-				'script': TemplatePyPPL('#!/usr/bin/env bash\nprintf 123 >&2\nsleep .2\nprintf 456 >&2\nexit 1')
+				'script': TemplateLiquid('#!/usr/bin/env bash\nprintf 123 >&2\nsleep .2\nprintf 456 >&2\nexit 1')
 			}
 		), False, [], ['123456']
 		yield _generateJob(
 			self.testdir,
 			index = 2,
 			pProps = {
-				'expect': TemplatePyPPL(''),
+				'expect': TemplateLiquid(''),
 				'ncjobids': [2],
 				'echo': {'jobs': [2], 'type': {'stdout': None}},
-				'script': TemplatePyPPL('#!/usr/bin/env bash\nprintf 123 >&2\nsleep .2\nprintf 4566 >&2\nexit 1')
+				'script': TemplateLiquid('#!/usr/bin/env bash\nprintf 123 >&2\nsleep .2\nprintf 4566 >&2\nexit 1')
 			}
 		), False, [], ['1234566']
 	
@@ -627,10 +627,10 @@ class TestRunnerDry(testly.TestCase):
 		yield _generateJob(
 			self.testdir,
 			pProps = {
-				'expect': TemplatePyPPL(''),
+				'expect': TemplateLiquid(''),
 				'ncjobids': [0],
 				'echo': {'jobs': [0], 'type': {'stdout': None}},
-				'script': TemplatePyPPL('')
+				'script': TemplateLiquid('')
 			}
 		), True
 		
@@ -638,14 +638,14 @@ class TestRunnerDry(testly.TestCase):
 			self.testdir,
 			index = 1,
 			pProps = {
-				'expect': TemplatePyPPL(''),
+				'expect': TemplateLiquid(''),
 				'ncjobids': [1],
 				'echo': {'jobs': [1], 'type': {'stdout': None}},
-				'script': TemplatePyPPL(''),
+				'script': TemplateLiquid(''),
 				'output': {
-					'a': ('file', TemplatePyPPL('runndry.txt')),
-					'b': ('dir', TemplatePyPPL('runndry.dir')),
-					'c': ('var', TemplatePyPPL('runndry.dir')),
+					'a': ('file', TemplateLiquid('runndry.txt')),
+					'b': ('dir', TemplateLiquid('runndry.dir')),
+					'c': ('var', TemplateLiquid('runndry.dir')),
 				}
 			}
 		)
@@ -666,7 +666,7 @@ class TestRunnerDry(testly.TestCase):
 		yield _generateJob(
 			self.testdir,
 			pProps = {
-				'expect': TemplatePyPPL(''),
+				'expect': TemplateLiquid(''),
 			},
 			jobActs = lambda job: job.rc(0) or job.cache()
 		), 
@@ -807,7 +807,7 @@ class TestRunnerSsh(testly.TestCase):
 		yield _generateJob(
 			self.testdir,
 			pProps = {
-				'expect': TemplatePyPPL(''),
+				'expect': TemplateLiquid(''),
 				'ncjobids': [0],
 				'echo': {'jobs': [0], 'type': {'stdout': None}},
 				'sshRunner': {
@@ -816,14 +816,14 @@ class TestRunnerSsh(testly.TestCase):
 					'preScript': 'alias ssh="%s"' % (path.join(__folder__, 'mocks', 'ssh')),
 					'postScript': ''
 				},
-				'script': TemplatePyPPL('#!/usr/bin/env bash\nprintf 123\nsleep .5\nprintf 456')
+				'script': TemplateLiquid('#!/usr/bin/env bash\nprintf 123\nsleep .5\nprintf 456')
 			}
 		), True, ['123456']
 		yield _generateJob(
 			self.testdir,
 			index = 1,
 			pProps = {
-				'expect': TemplatePyPPL(''),
+				'expect': TemplateLiquid(''),
 				'ncjobids': [1],
 				'echo': {'jobs': [1], 'type': {'stdout': None}},
 				'sshRunner': {
@@ -832,7 +832,7 @@ class TestRunnerSsh(testly.TestCase):
 					'preScript': 'alias ssh="%s"' % (path.join(__folder__, 'mocks', 'ssh')),
 					'postScript': ''
 				},
-				'script': TemplatePyPPL('#!/usr/bin/env bash\nprintf 123 >&2\nsleep .5\nprintf 456 >&2\nexit 1')
+				'script': TemplateLiquid('#!/usr/bin/env bash\nprintf 123 >&2\nsleep .5\nprintf 456 >&2\nexit 1')
 			}
 		), False, [], ['123456']
 	
@@ -961,7 +961,7 @@ class TestRunnerSge(testly.TestCase):
 		job = _generateJob(
 			self.testdir,
 			pProps = {
-				'expect': TemplatePyPPL(''),
+				'expect': TemplateLiquid(''),
 				'echo': {'jobs': [0], 'type': {'stdout': None}},
 				'sgeRunner': {
 					'qsub': path.join(__folder__, 'mocks', 'qsub'),
@@ -987,7 +987,7 @@ class TestRunnerSge(testly.TestCase):
 			self.testdir,
 			index = 1,
 			pProps = {
-				'expect': TemplatePyPPL(''),
+				'expect': TemplateLiquid(''),
 				'echo': {'jobs': [0], 'type': {'stdout': None}},
 				'sgeRunner': {
 					'qsub': path.join(__folder__, 'mocks', 'qsub'),
@@ -1014,7 +1014,7 @@ class TestRunnerSge(testly.TestCase):
 			self.testdir,
 			index = 2,
 			pProps = {
-				'expect': TemplatePyPPL(''),
+				'expect': TemplateLiquid(''),
 				'echo': {'jobs': [0], 'type': {'stdout': None}},
 				'sgeRunner': {
 					'qsub': '__command_not_exists__',
@@ -1203,7 +1203,7 @@ class TestRunnerSlurm(testly.TestCase):
 		job = _generateJob(
 			self.testdir,
 			pProps = {
-				'expect': TemplatePyPPL(''),
+				'expect': TemplateLiquid(''),
 				'echo': {'jobs': [0], 'type': {'stdout': None}},
 				'slurmRunner': {
 					'sbatch': path.join(__folder__, 'mocks', 'sbatch'),
@@ -1230,7 +1230,7 @@ class TestRunnerSlurm(testly.TestCase):
 			self.testdir,
 			index = 1,
 			pProps = {
-				'expect': TemplatePyPPL(''),
+				'expect': TemplateLiquid(''),
 				'echo': {'jobs': [0], 'type': {'stdout': None}},
 				'slurmRunner': {
 					'sbatch': path.join(__folder__, 'mocks', 'sbatch'),
@@ -1256,7 +1256,7 @@ class TestRunnerSlurm(testly.TestCase):
 			self.testdir,
 			index = 2,
 			pProps = {
-				'expect': TemplatePyPPL(''),
+				'expect': TemplateLiquid(''),
 				'echo': {'jobs': [0], 'type': {'stdout': None}},
 				'slurmRunner': {
 					'sbatch': '__command_not_exists__',

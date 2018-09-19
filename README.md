@@ -9,7 +9,7 @@
 - [Easy-to-use command line parser.][27]
 - [Fancy logs.][28]
 - [Process caching.][6]
-- [Script templating (using either builtin engine or Jinja2).][7]
+- [Script templating][7] (Either [liquid.py][17] or [Jinja2][39])
 - [Runner customization][9].
 - [Error handling for processes.][10]
 - [Easy-switching running profile.][9]
@@ -19,7 +19,7 @@
 
 ## Requirements
 - OS: Linux or OSX
-- Python packages: [six][25], [filelock][35], [futures][21] (suggested: [graphviz][36], [pyyaml][33] and [python-testly][5]).
+- Python packages: [six][25], [filelock][35], [futures][21] and [liquid.py][17] (suggested: [graphviz][36], [pyyaml][33] and [python-testly][5]).
 
 ## Installation
 ```bash
@@ -56,11 +56,11 @@ Sort 5 files simultaneously:
 
 2. pSort         = Proc(desc = 'Sort files.')
 3. pSort.input   = {"infile:file": Channel.fromPattern("./data/*.txt")}
-4. pSort.output  = "outfile:file:{{in.infile | fn}}.sorted"
+4. pSort.output  = "outfile:file:{{i.infile | fn}}.sorted"
 5. pSort.forks   = 5
 6. pSort.exdir   = './export'
 7. pSort.script  = """
-  sort -k1r {{in.infile}} > {{out.outfile}} 
+  sort -k1r {{i.infile}} > {{o.outfile}} 
 """ 
 
 8. PyPPL().start(pSort).run()
@@ -96,21 +96,21 @@ from pyppl import PyPPL, Proc, Channel
 
 pSort        = Proc(desc = 'Sort files.')
 pSort.input  = {"infile:file": Channel.fromPattern("./data/*.txt")}
-pSort.output = "outfile:file:{{in.infile | fn}}.sorted"
+pSort.output = "outfile:file:{{i.infile | fn}}.sorted"
 pSort.forks  = 5
 pSort.script = """
-  sort -k1r {{in.infile}} > {{out.outfile}} 
+  sort -k1r {{i.infile}} > {{o.outfile}} 
 """ 
 
 pAddPrefix         = Proc(desc = 'Add line number to each line.')
 pAddPrefix.depends = pSort
 # automatically inferred from pSort.output
 pAddPrefix.input   = "infile:file"  
-pAddPrefix.output  = "outfile:file:{{in.infile | fn}}.ln"
+pAddPrefix.output  = "outfile:file:{{i.infile | fn}}.ln"
 pAddPrefix.exdir   = './export'
 pAddPrefix.forks   = 5
 pAddPrefix.script  = """
-paste -d. <(seq 1 $(wc -l {{in.infile}} | cut -f1 -d' ')) {{in.infile}} > {{out.outfile}}
+paste -d. <(seq 1 $(wc -l {{i.infile}} | cut -f1 -d' ')) {{i.infile}} > {{o.outfile}}
 """ 
 
 PyPPL().start(pSort).run()
@@ -130,19 +130,19 @@ from pyppl import PyPPL, Proc, Channel
 
 pSort        = Proc(desc = 'Sort files.')
 pSort.input  = {"infile:file": Channel.fromPattern("./data/*.txt")}
-pSort.output = "outfile:file:{{in.infile | fn}}.sorted"
+pSort.output = "outfile:file:{{i.infile | fn}}.sorted"
 pSort.forks  = 5
 pSort.script = """
-  sort -k1r {{in.infile}} > {{out.outfile}} 
+  sort -k1r {{i.infile}} > {{o.outfile}} 
 """ 
 
 pAddPrefix         = Proc(desc = 'Add line number to each line.')
 pAddPrefix.depends = pSort
 pAddPrefix.input   = "infile:file"  # automatically inferred from pSort.output
-pAddPrefix.output  = "outfile:file:{{in.infile | fn}}.ln"
+pAddPrefix.output  = "outfile:file:{{i.infile | fn}}.ln"
 pAddPrefix.forks   = 5
 pAddPrefix.script  = """
-paste -d. <(seq 1 $(wc -l {{in.infile}} | cut -f1 -d' ')) {{in.infile}} > {{out.outfile}}
+paste -d. <(seq 1 $(wc -l {{i.infile}} | cut -f1 -d' ')) {{i.infile}} > {{o.outfile}}
 """ 
 
 pMergeFiles         = Proc(desc = 'Merge files, each as a column.')
@@ -153,7 +153,7 @@ pMergeFiles.input   = {"infiles:files": lambda ch: [ch.flatten()]}
 pMergeFiles.output  = "outfile:file:mergedfile.txt"
 pMergeFiles.exdir   = "./export"
 pMergeFiles.script  = """
-paste {{in.infiles | asquote}} > {{out.outfile}}
+paste {{i.infiles | asquote}} > {{o.outfile}}
 """
 
 PyPPL().start(pSort).run()
@@ -180,9 +180,9 @@ pHeatmap.exdir  = './export'
 # in this case: #!/usr/bin/env Rscript
 pHeatmap.lang   = 'Rscript' 
 pHeatmap.script = """
-set.seed({{in.seed}})
+set.seed({{i.seed}})
 mat = matrix(rnorm(100), ncol=10)
-png(filename = "{{out.outfile}}")
+png(filename = "{{o.outfile}}")
 heatmap(mat)
 dev.off()
 """
@@ -200,16 +200,16 @@ from pyppl import PyPPL, Proc
 
 pHeatmap           = Proc(desc = 'Draw heatmap.')
 pHeatmap.input     = {'seed': [1,2,3]}
-pHeatmap.output    = "outfile:file:heatmap{{in.seed}}.png"
+pHeatmap.output    = "outfile:file:heatmap{{i.seed}}.png"
 pHeatmap.exdir     = "./export"
 pHeatmap.forks     = 3
 pHeatmap.args.ncol = 10
 pHeatmap.args.nrow = 10
 pHeatmap.lang      = 'Rscript' # or /path/to/Rscript if it's not in $PATH
 pHeatmap.script = """
-set.seed({{in.seed}})
-mat = matrix(rnorm({{args.ncol, args.nrow | lambda x, y: x*y}}), ncol={{args.ncol}})
-png(filename = "{{out.outfile}}", width=150, height=150)
+set.seed({{i.seed}})
+mat = matrix(rnorm({{args.ncol * args.nrow}}), ncol={{args.ncol}})
+png(filename = "{{o.outfile}}", width=150, height=150)
 heatmap(mat)
 dev.off()
 """
@@ -238,11 +238,11 @@ params = params.parse()
 
 pSort         = Proc(desc = 'Sort files.')
 pSort.input   = {"infile:file": Channel.fromPattern(params.datadir + '/*.txt')}
-pSort.output  = "outfile:file:{{in.infile | fn}}.sorted"
+pSort.output  = "outfile:file:{{i.infile | fn}}.sorted"
 pSort.forks   = 5
 pSort.exdir   = './export'
 pSort.script  = """
-  sort -k1r {{in.infile}} > {{out.outfile}} 
+  sort -k1r {{i.infile}} > {{o.outfile}} 
 """ 
 
 PyPPL().start(pSort).run()
@@ -270,7 +270,7 @@ from pyppl import PyPPL, Proc, Channel
 
 pSort         = Proc(desc = 'Sort files.')
 pSort.input   = {"infile:file": Channel.fromPattern("./data/*.txt")}
-pSort.output  = "outfile:file:{{in.infile | fn}}.sorted"
+pSort.output  = "outfile:file:{{i.infile | fn}}.sorted"
 # specify the runner
 pSort.runner  = 'sge'
 # specify the runner options
@@ -280,7 +280,7 @@ pSort.sgeRunner = {
 pSort.forks   = 5
 pSort.exdir   = './export'
 pSort.script  = """
-  sort -k1r {{in.infile}} > {{out.outfile}} 
+  sort -k1r {{i.infile}} > {{o.outfile}} 
 """ 
 
 PyPPL().start(pSort).run()
@@ -303,14 +303,14 @@ from pyppl import PyPPL, Proc, Channel
 pSort          = Proc(desc = 'Sort files.')
 pSort.input    = {"infile:file": Channel.fromPattern("./data/*.txt")}
 # Notice the different between builtin template engine and Jinja2
-pSort.output   = "outfile:file:{{ fn(in.infile) }}.sorted"
-# pSort.output = "outfile:file:{{in.infile | fn}}.sorted"
+pSort.output   = "outfile:file:{{ fn(i.infile) }}.sorted"
+# pSort.output = "outfile:file:{{i.infile | fn}}.sorted"
 pSort.forks    = 5
 # You have to have Jinja2 installed (pip install Jinja2)
 pSort.template = 'Jinja2'
 pSort.exdir    = './export'
 pSort.script   = """
-  sort -k1r {{in.infile}} > {{out.outfile}} 
+  sort -k1r {{i.infile}} > {{o.outfile}} 
 """ 
 
 PyPPL().start(pSort).run()
@@ -324,7 +324,7 @@ from pyppl import PyPPL, Proc
 
 pHeatmap           = Proc(desc = 'Draw heatmap.')
 pHeatmap.input     = {'seed': [1,2,3,4,5]}
-pHeatmap.output    = "outfile:file:heatmap{{in.seed}}.png"
+pHeatmap.output    = "outfile:file:heatmap{{i.seed}}.png"
 pHeatmap.exdir     = "./export"
 # Don't cache jobs for debugging
 pHeatmap.cache     = False
@@ -334,12 +334,12 @@ pHeatmap.args.ncol = 10
 pHeatmap.args.nrow = 10
 pHeatmap.lang      = 'Rscript' # or /path/to/Rscript if it's not in $PATH
 pHeatmap.script = """
-set.seed({{in.seed}})
-mat = matrix(rnorm({{args.ncol, args.nrow | lambda x, y: x*y}}), ncol={{args.ncol}})
-png(filename = "{{out.outfile}}", width=150, height=150)
+set.seed({{i.seed}})
+mat = matrix(rnorm({{args.ncol * args.nrow}}), ncol={{args.ncol}})
+png(filename = "{{o.outfile}}", width=150, height=150)
 
 # have to be on stderr
-cat("pyppl.log.debug:Plotting heatmap #{{job.index | lambda x: int(x) + 1}} ...", file = stderr())
+cat("pyppl.log.debug:Plotting heatmap #{{job.index | @plus: 1}} ...", file = stderr())
 
 heatmap(mat)
 dev.off()
@@ -486,19 +486,20 @@ To generate svg file, you have to have [graphviz][36] installed.
 [1]: https://pwwang.github.io/PyPPL/
 [2]: https://pwwang.github.io/PyPPL/api/
 [3]: https://github.com/pwwang/pyppl/
-[4]: https://api.codacy.com/project/badge/Grade/a04aac445f384a8dbe47da19c779763f
+[4]: https://img.shields.io/codacy/grade/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
 [5]: https://github.com/pwwang/testly
 [6]: https://pwwang.github.io/PyPPL/caching/
 [7]: https://pwwang.github.io/PyPPL/placeholders/
 [8]: https://img.shields.io/travis/pwwang/PyPPL.svg?style=flat-square
 [9]: https://pwwang.github.io/PyPPL/runners/
 [10]: https://pwwang.github.io/PyPPL/error-handling/
-[11]: https://api.codacy.com/project/badge/Coverage/a04aac445f384a8dbe47da19c779763f
+[11]: https://img.shields.io/codacy/coverage/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
 [12]: https://pwwang.github.io/PyPPL/set-other-properties-of-a-process/#error-handling-perrhowperrntry
 [13]: https://pwwang.github.io/PyPPL/configure-a-pipeline/#use-a-configuration-file
 [14]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
 [15]: https://pwwang.github.io/PyPPL/draw-flowchart-of-a-pipeline/
 [16]: https://pwwang.github.io/PyPPL/aggregations/
+[17]: https://github.com/pwwang/liquid.py
 [18]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/drawFlowchart_pyppl.png
 [19]: https://pwwang.github.io/PyPPL/change-log/
 [20]: https://pwwang.github.io/PyPPL/getStarted.svg
@@ -520,3 +521,4 @@ To generate svg file, you have to have [graphviz][36] installed.
 [36]: https://github.com/xflr6/graphviz
 [37]: https://img.shields.io/pypi/pyversions/PyPPL.svg?style=flat-square
 [38]: https://img.shields.io/github/license/pwwang/PyPPL.svg?style=flat-square
+[39]: http://jinja.pocoo.org/

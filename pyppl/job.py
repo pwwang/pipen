@@ -11,6 +11,7 @@ from six import string_types
 from . import logger
 from .exception import JobInputParseError, JobOutputParseError
 from .utils import safefs, cmd
+from .utils.box import Box
 
 class Job (object):
 
@@ -52,21 +53,19 @@ class Job (object):
 		self.input     = {}
 		# need to pass this to next procs, so have to keep order
 		self.output    = OrderedDict()
-		#self.brings    = {}
-		self.data      = {
-			'job': {
-				'index'   : self.index,
-				'indir'   : self.indir,
-				'outdir'  : self.outdir,
-				'dir'     : self.dir,
-				'outfile' : self.outfile,
-				'errfile' : self.errfile,
-				'pidfile' : self.pidfile
-			},
-			'in'   : {},
-			'out'  : OrderedDict(),
-			#'bring': {}
-		}
+		self.data      = Box(
+			job = Box(
+				index   = self.index,
+				indir   = self.indir,
+				outdir  = self.outdir,
+				dir     = self.dir,
+				outfile = self.outfile,
+				errfile = self.errfile,
+				pidfile = self.pidfile
+			),
+			i = Box(),
+			o = Box()
+		)
 
 	def init (self):
 		"""
@@ -296,45 +295,45 @@ class Job (object):
 		): return False
 
 		if not compareVar(
-			sigOld['in'][self.proc.IN_VARTYPE[0]],
-			sigNow['in'][self.proc.IN_VARTYPE[0]],
+			sigOld['i'][self.proc.IN_VARTYPE[0]],
+			sigNow['i'][self.proc.IN_VARTYPE[0]],
 			'input',
 			'CACHE_SIGINVAR_DIFF'
 		): return False
 
 		if not compareFile(
-			sigOld['in'][self.proc.IN_FILETYPE[0]],
-			sigNow['in'][self.proc.IN_FILETYPE[0]],
+			sigOld['i'][self.proc.IN_FILETYPE[0]],
+			sigNow['i'][self.proc.IN_FILETYPE[0]],
 			'input',
 			'CACHE_SIGINFILE_DIFF',
 			'CACHE_SIGINFILE_NEWER'
 		): return False
 
 		if not compareFiles(
-			sigOld['in'][self.proc.IN_FILESTYPE[0]],
-			sigNow['in'][self.proc.IN_FILESTYPE[0]],
+			sigOld['i'][self.proc.IN_FILESTYPE[0]],
+			sigNow['i'][self.proc.IN_FILESTYPE[0]],
 			'input',
 			'CACHE_SIGINFILES_DIFF',
 			'CACHE_SIGINFILES_NEWER'
 		): return False
 
 		if not compareVar(
-			sigOld['out'][self.proc.OUT_VARTYPE[0]],
-			sigNow['out'][self.proc.OUT_VARTYPE[0]],
+			sigOld['o'][self.proc.OUT_VARTYPE[0]],
+			sigNow['o'][self.proc.OUT_VARTYPE[0]],
 			'output',
 			'CACHE_SIGOUTVAR_DIFF'
 		): return False
 
 		if not compareFile(
-			sigOld['out'][self.proc.OUT_FILETYPE[0]],
-			sigNow['out'][self.proc.OUT_FILETYPE[0]],
+			sigOld['o'][self.proc.OUT_FILETYPE[0]],
+			sigNow['o'][self.proc.OUT_FILETYPE[0]],
 			'output',
 			'CACHE_SIGOUTFILE_DIFF'
 		): return False
 
 		if not compareFile(
-			sigOld['out'][self.proc.OUT_DIRTYPE[0]],
-			sigNow['out'][self.proc.OUT_DIRTYPE[0]],
+			sigOld['o'][self.proc.OUT_DIRTYPE[0]],
+			sigNow['o'][self.proc.OUT_DIRTYPE[0]],
 			'output dir',
 			'CACHE_SIGOUTDIR_DIFF'
 		): return False
@@ -442,12 +441,12 @@ class Job (object):
 			self.proc.log ('%s Empty signature because of script file: %s.' % (indexstr, self.script), 'debug', 'CACHE_EMPTY_CURRSIG')
 			return ''
 		ret['script'] = sig
-		ret['in']     = {
+		ret['i']     = {
 			self.proc.IN_VARTYPE[0]:   {},
 			self.proc.IN_FILETYPE[0]:  {},
 			self.proc.IN_FILESTYPE[0]: {}
 		}
-		ret['out']    = {
+		ret['o']    = {
 			self.proc.OUT_VARTYPE[0]:  {},
 			self.proc.OUT_FILETYPE[0]: {},
 			self.proc.OUT_DIRTYPE[0]:  {}
@@ -455,37 +454,37 @@ class Job (object):
 
 		for key, val in self.input.items():
 			if val['type'] in self.proc.IN_VARTYPE:
-				ret['in'][self.proc.IN_VARTYPE[0]][key] = val['data']
+				ret['i'][self.proc.IN_VARTYPE[0]][key] = val['data']
 			elif val['type'] in self.proc.IN_FILETYPE:
 				sig = safefs.SafeFs(val['data']).filesig(self.proc.dirsig)
 				if not sig:
 					self.proc.log ('%s Empty signature because of input file: %s.' % (indexstr, val['data']), 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
-				ret['in'][self.proc.IN_FILETYPE[0]][key] = sig
+				ret['i'][self.proc.IN_FILETYPE[0]][key] = sig
 			elif val['type'] in self.proc.IN_FILESTYPE:
-				ret['in'][self.proc.IN_FILESTYPE[0]][key] = []
+				ret['i'][self.proc.IN_FILESTYPE[0]][key] = []
 				for infile in sorted(val['data']):
 					sig = safefs.SafeFs(infile).filesig(self.proc.dirsig)
 					if not sig:
 						self.proc.log ('%s Empty signature because of one of input files: %s.' % (indexstr, infile), 'debug', 'CACHE_EMPTY_CURRSIG')
 						return ''
-					ret['in'][self.proc.IN_FILESTYPE[0]][key].append (sig)
+					ret['i'][self.proc.IN_FILESTYPE[0]][key].append (sig)
 
 		for key, val in self.output.items():
 			if val['type'] in self.proc.OUT_VARTYPE:
-				ret['out'][self.proc.OUT_VARTYPE[0]][key] = val['data']
+				ret['o'][self.proc.OUT_VARTYPE[0]][key] = val['data']
 			elif val['type'] in self.proc.OUT_FILETYPE:
 				sig = safefs.SafeFs(val['data']).filesig(self.proc.dirsig)
 				if not sig:
 					self.proc.log ('%s Empty signature because of output file: %s.' % (indexstr, val['data']), 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
-				ret['out'][self.proc.OUT_FILETYPE[0]][key] = sig
+				ret['o'][self.proc.OUT_FILETYPE[0]][key] = sig
 			elif val['type'] in self.proc.OUT_DIRTYPE:
 				sig = safefs.SafeFs(val['data']).filesig(self.proc.dirsig)
 				if not sig:
 					self.proc.log ('%s Empty signature because of output dir: %s.' % (indexstr, val['data']), 'debug', 'CACHE_EMPTY_CURRSIG')
 					return ''
-				ret['out'][self.proc.OUT_DIRTYPE[0]][key] = sig
+				ret['o'][self.proc.OUT_DIRTYPE[0]][key] = sig
 
 		return ret
 
@@ -691,15 +690,15 @@ class Job (object):
 						self.proc.log ("%s Input file renamed: %s -> %s" % (indexstr, basename, safefs.SafeFs.basename(infile)), 'warning', 'INFILE_RENAMING')
 
 				if self.proc.infile == 'origin':
-					self.data['in'][key] = indata
+					self.data['i'][key] = indata
 				elif self.proc.infile == 'indir':
-					self.data['in'][key] = infile
+					self.data['i'][key] = infile
 				else:
-					self.data['in'][key] = path.realpath(indata)
+					self.data['i'][key] = path.realpath(indata)
 
-				self.data['in']['IN_' + key]  = infile
-				self.data['in']['OR_' + key] = indata
-				self.data['in']['RL_' + key]   = path.realpath(indata)
+				self.data['i']['IN_' + key]  = infile
+				self.data['i']['OR_' + key] = indata
+				self.data['i']['RL_' + key]   = path.realpath(indata)
 
 				self.input[key]['type'] = intype
 				self.input[key]['data'] = infile
@@ -709,10 +708,10 @@ class Job (object):
 				self.input[key]['type']       = intype
 				self.input[key]['orig']       = []
 				self.input[key]['data']       = []
-				self.data ['in'][key]         = []
-				self.data ['in']['IN_' + key] = []
-				self.data ['in']['OR_' + key] = []
-				self.data ['in']['RL_' + key] = []
+				self.data ['i'][key]         = []
+				self.data ['i']['IN_' + key] = []
+				self.data ['i']['OR_' + key] = []
+				self.data ['i']['RL_' + key] = []
 
 				if not isinstance(indata, list):
 					raise JobInputParseError(indata, 'Not a list for input type "%s"' % intype)
@@ -734,22 +733,22 @@ class Job (object):
 							self.proc.log ("Input file renamed: %s -> %s" % (basename, path.basename(infile)), 'warning', 'INFILE_RENAMING')
 
 					if self.proc.infile == 'origin':
-						self.data['in'][key].append(data)
+						self.data['i'][key].append(data)
 					elif self.proc.infile == 'indir':
-						self.data['in'][key].append(infile)
+						self.data['i'][key].append(infile)
 					else:
-						self.data['in'][key].append(path.realpath(data))
+						self.data['i'][key].append(path.realpath(data))
 
-					self.data['in']['IN_' + key].append (infile)
-					self.data['in']['OR_' + key].append (data)
-					self.data['in']['RL_' + key].append (path.realpath(data))
+					self.data['i']['IN_' + key].append (infile)
+					self.data['i']['OR_' + key].append (data)
+					self.data['i']['RL_' + key].append (path.realpath(data))
 
 					self.input[key]['orig'].append (data)
 					self.input[key]['data'].append (infile)
 			else:
 				self.input[key]['type'] = intype
 				self.input[key]['data'] = indata
-				self.data['in'][key]    = indata
+				self.data['i'][key]    = indata
 	
 	def _prepOutput (self):
 		"""
@@ -776,9 +775,8 @@ class Job (object):
 
 		for key, val in output.items():
 			outtype, outtpl = val
-			self.data['ddd'] = 1
 			outdata = outtpl.render(self.data)
-			self.data['out'][key] = outdata
+			self.data['o'][key] = outdata
 			self.output[key] = {
 				'type': outtype,
 				'data': outdata
@@ -787,7 +785,7 @@ class Job (object):
 				if path.isabs(outdata):
 					raise JobOutputParseError(outdata, 'Absolute path not allowed for output file/dir for key %s' % repr(key))
 				self.output[key]['data'] = path.join(self.outdir, outdata)
-				self.data['out'][key]    = path.join(self.outdir, outdata)
+				self.data['o'][key]    = path.join(self.outdir, outdata)
 
 	def _prepScript (self):
 		"""

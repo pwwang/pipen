@@ -22,7 +22,7 @@ from .jobmgr import Jobmgr
 from .parameters import params, Parameters, commands
 from .proctree import ProcTree
 from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcFindError, PyPPLProcRelationError
-from . import logger, utils, runners, templates
+from . import logger, utils, runners, template
 
 class Proc (object):
 	"""
@@ -647,9 +647,9 @@ class Proc (object):
 		if callable(self.config['template']):
 			self.props['template'] = self.config['template']
 		elif not self.config['template']:
-			self.props['template'] = getattr(templates, 'TemplatePyPPL')
+			self.props['template'] = getattr(template, 'TemplateLiquid')
 		else:
-			self.props['template'] = getattr(templates, 'Template' + self.config['template'].capitalize())
+			self.props['template'] = getattr(template, 'Template' + self.config['template'].capitalize())
 
 		# build rc
 		if isinstance(self.config['rc'], six.string_types):
@@ -1065,14 +1065,14 @@ class Proc (object):
 			job = Job(i, self)
 			job.init()
 			self.jobs[i] = job
-			row = tuple(job.data['out'].values())
+			row = tuple(job.data.o.values())
 			self.props['channel'][i] = row
 
 		parallel.Parallel(self.nthread, backend = 'thread').run(bjSingle, [(i, ) for i in range(self.size)])
 		self.log('After job building, active threads: %s' % threading.active_count(), 'debug')
 
-		if self.jobs[0].data['out']:
-			self.channel.attach(*self.jobs[0].data['out'].keys())
+		if self.jobs[0].data.o:
+			self.channel.attach(*self.jobs[0].data.o.keys())
 		self.jobs[rptjob].report()
 
 	def _readConfig (self, profile, profiles):

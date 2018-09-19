@@ -12,7 +12,7 @@ You can use commands to check whether you have expected output. For example:
 ```python
 p = Proc ()
 p.input = {"input": "1"}
-p.script = "echo {{in.input}}"
+p.script = "echo {{i.input}}"
 # check the stdout
 p.expect = "grep 1 {{job.outfile}}"
 ```

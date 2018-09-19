@@ -5,7 +5,8 @@ from shutil import rmtree
 from tempfile import gettempdir
 from pyppl import logger
 from pyppl.logger import LEVELS, LEVELS_ALWAYS, COLORS, THEMES, PyPPLLogFilter, PyPPLLogFormatter, PyPPLStreamHandler
-from pyppl.exception import TemplatePyPPLRenderError, LoggerThemeError
+from liquid import LiquidRenderError
+from pyppl.exception import LoggerThemeError
 
 class TestPyPPLLogFilter(testly.TestCase):
 
@@ -226,10 +227,10 @@ class TestLogger(testly.TestCase):
 		}, THEMES['greenOnBlack']
 		yield {
 			'DONE': "{{colors.whatever}}"
-		}, {}, TemplatePyPPLRenderError
+		}, {}, LiquidRenderError
 		yield {
 			'DONE': "{{a}} x"
-		}, {}, TemplatePyPPLRenderError
+		}, {}, LiquidRenderError
 
 	def testFormatTheme(self, tname, theme, exception = None):
 		self.maxDiff = None

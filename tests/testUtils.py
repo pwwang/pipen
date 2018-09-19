@@ -1004,7 +1004,7 @@ class TestUtils (testly.TestCase):
 		yield ('a|b\|c|(|)', "|", ["a", "b\\|c", "(|)"])
 		yield ('a|b\|c|(\)|)', "|", ["a", "b\\|c", "(\\)|)"])
 		yield ('a|b\|c|(\)\\\'|)', "|", ["a", "b\\|c", "(\\)\\'|)"])
-		yield ('outdir:dir:{{in.pattern | lambda x: __import__("glob").glob(x)[0] | fn }}_etc', ':', ["outdir", "dir", "{{in.pattern | lambda x: __import__(\"glob\").glob(x)[0] | fn }}_etc"])
+		yield ('outdir:dir:{{i.pattern | lambda x: __import__("glob").glob(x)[0] | fn }}_etc', ':', ["outdir", "dir", "{{i.pattern | lambda x: __import__(\"glob\").glob(x)[0] | fn }}_etc"])
 
 	def testSplit (self, s, d, a):
 		self.assertEqual(utils.split(s, d), a)

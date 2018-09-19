@@ -8,9 +8,9 @@ from collections import OrderedDict
 from multiprocessing import cpu_count
 from pyppl import Proc, Box, Aggr, utils, ProcTree, Channel
 from pyppl.exception import ProcTagError, ProcAttributeError, ProcTreeProcExists, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
-from pyppl.templates import TemplatePyPPL
+from pyppl.template import TemplateLiquid
 if helpers.moduleInstalled('jinja2'):
-	from pyppl.templates import TemplateJinja2
+	from pyppl.template import TemplateJinja2
 from pyppl.runners import RunnerLocal
 
 __folder__ = path.realpath(path.dirname(__file__))
@@ -483,8 +483,8 @@ class TestProc(testly.TestCase):
 		# 2-9
 		pBuildProps2 = Proc()
 		pBuildProps2.ppldir = testdir
-		yield pBuildProps2, {}, {'template': TemplatePyPPL}
-		yield pBuildProps2, {'template': ''}, {'template': TemplatePyPPL}
+		yield pBuildProps2, {}, {'template': TemplateLiquid}
+		yield pBuildProps2, {'template': ''}, {'template': TemplateLiquid}
 		if helpers.moduleInstalled('jinja2'):
 			yield pBuildProps2, {'template': TemplateJinja2}, {'template': TemplateJinja2}
 			yield pBuildProps2, {'template': 'jinja2'}, {'template': TemplateJinja2}
@@ -791,9 +791,9 @@ class TestProc(testly.TestCase):
 			'jobs: []',
 			'type: {"stderr": null, "stdout": null}',
 			'[expart]',
-			'value_0: TemplatePyPPL <  >',
+			'value_0: TemplateLiquid <  >',
 			'[expect]',
-			'value: TemplatePyPPL <  >',
+			'value: TemplateLiquid <  >',
 			'[input]',
 			'[output]',
 			'[procvars]',
@@ -805,7 +805,7 @@ class TestProc(testly.TestCase):
 			'value: local',
 			'[script]',
 			'value:',
-			'	"TemplatePyPPL < #!/usr/bin/env bash >"',
+			'	"TemplateLiquid < #!/usr/bin/env bash >"',
 			'[sets]',
 			'value: [\'ppldir\']',
 			'[size]',
@@ -813,7 +813,7 @@ class TestProc(testly.TestCase):
 			'[suffix]',
 			'value: ',
 			'[template]',
-			'name: TemplatePyPPL',
+			'name: TemplateLiquid',
 			'[workdir]',
 			'value: ',
 		]
@@ -829,19 +829,19 @@ class TestProc(testly.TestCase):
 		helpers.writeFile(brfile1)
 		helpers.writeFile(brfile2)
 		pSaveSettings1.input    = {'a': 1, 'b:file': [infile1, infile2], 'c:files': [[infile1, infile2]]}
-		#pSaveSettings1.brings   = {'b': '{{fn(in.b)}}.br'}
-		pSaveSettings1.output   = 'out:file:{{fn(in.b)}}-{{in.a}}.out'
+		#pSaveSettings1.brings   = {'b': '{{fn(i.b)}}.br'}
+		pSaveSettings1.output   = 'out:file:{{fn(i.b)}}-{{i.a}}.out'
 		pSaveSettings1.echo     = {'jobs': [0,1]}
 		pSaveSettings1.expart   = '*-1.out'
-		pSaveSettings1.expect   = 'grep 1 {{out.out}}'
+		pSaveSettings1.expect   = 'grep 1 {{o.out}}'
 		pSaveSettings1.args.a   = 'a'
 		pSaveSettings1.rc       = '0,1'
-		pSaveSettings1.script   = 'echo {{in.a}} > {{out.out}}'
+		pSaveSettings1.script   = 'echo {{i.a}} > {{o.out}}'
 		pSaveSettings1.template = 'jinja2'
 		if helpers.moduleInstalled('jinja2'):
 			yield pSaveSettings1, [
 				#'[brings]',
-				#'b: [\'TemplateJinja2 < {{fn(in.b)}}.br >\']',
+				#'b: [\'TemplateJinja2 < {{fn(i.b)}}.br >\']',
 				'[channel]',
 				'value: []',
 				'[depends]',
@@ -852,7 +852,7 @@ class TestProc(testly.TestCase):
 				'[expart]',
 				'value_0: TemplateJinja2 < *-1.out >',
 				'[expect]',
-				'value: TemplateJinja2 < grep 1 {{out.out}} >',
+				'value: TemplateJinja2 < grep 1 {{o.out}} >',
 				'[input]',
 				'a.type: var',
 				'a.data#0',
@@ -866,7 +866,7 @@ class TestProc(testly.TestCase):
 				'pSaveSettings1-in2.txt',
 				'[output]',
 				'out.type: file',
-				'out.data: TemplateJinja2 < {{fn(in.b)}}-{{in.a}}.out >',
+				'out.data: TemplateJinja2 < {{fn(i.b)}}-{{i.a}}.out >',
 				'[procvars]',
 				'args: {"a": "a"}',
 				'proc: {',
@@ -878,7 +878,7 @@ class TestProc(testly.TestCase):
 				'value:',
 				'	"TemplateJinja2 <<<"',
 				'	"\\t#!/usr/bin/env bash"',
-				'	"\\techo {{in.a}} > {{out.out}}"',
+				'	"\\techo {{i.a}} > {{o.out}}"',
 				'	">>>"',
 				'[sets]',
 				'value: [\'ppldir\', \'input\', \'output\', \'echo\', \'expart\', \'expect\', \'rc\', \'script\', \'template\']',
@@ -915,8 +915,8 @@ class TestProc(testly.TestCase):
 		helpers.writeFile(infile1)
 		helpers.writeFile(infile2)
 		pBuildJobs.input    = {'a': 1, 'b:file': [infile1, infile2], 'c:files': [[infile1, infile2]]}
-		pBuildJobs.output   = 'out:file:{{in.b | fn}}-{{in.a}}.out'
-		pBuildJobs.script   = 'echo {{in.a}} > {{out.out}}'
+		pBuildJobs.output   = 'out:file:{{i.b | fn}}-{{i.a}}.out'
+		pBuildJobs.script   = 'echo {{i.a}} > {{o.out}}'
 		with helpers.log2str(levels = 'all') as (out, err):
 			pBuildJobs._buildProps ()
 			pBuildJobs._buildInput ()
@@ -1120,7 +1120,7 @@ class TestProc(testly.TestCase):
 		pCheckCached2 = Proc()
 		pCheckCached2.ppldir = self.testdir
 		pCheckCached2.input  = {'a': [1,2]}
-		pCheckCached2.output = 'a:file:{{in.a}}.txt'
+		pCheckCached2.output = 'a:file:{{i.a}}.txt'
 		pCheckCached2.cache  = 'export'
 		pCheckCached2.exdir  = self.testdir 
 		with helpers.log2str():
@@ -1256,7 +1256,7 @@ class TestProc(testly.TestCase):
 		p.run(config)
 		self.assertEqual(p.cache, cache)
 		# stderr = err.getvalue()
-		# print out.getvalue()
+		# print o.getvalue()
 		# print stderr
 		# for err in errs:
 		# 	self.assertIn(err, stderr)

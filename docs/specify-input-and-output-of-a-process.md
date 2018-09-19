@@ -19,8 +19,8 @@ Use output channel of prior process:
 ```python
 p1 = Proc()
 p1.input  = {"ph1":[1,2,3], "ph2":[4,5,6]}
-p1.output = "out1:{{in.ph1}},out2:{{in.ph2}}"
-# same as p.output = ["out1:{{in.ph1}}", "out2:{{in.ph2}}"]
+p1.output = "out1:{{i.ph1}},out2:{{i.ph2}}"
+# same as p.output = ["out1:{{i.ph1}}", "out2:{{i.ph2}}"]
 p1.script = "# your logic here"
 
 p2 = proc()
@@ -58,13 +58,13 @@ p2.input   = "in1, in2"
     ```
 
 !!! note
-    When a job is being prepared, the input files (type: `file`, `path`, `dir` or `folder`) will be linked to `<indir>`. In the template, for example, you may use `{{in.infile}}` to get its path. However, it may have different paths:  
+    When a job is being prepared, the input files (type: `file`, `path`, `dir` or `folder`) will be linked to `<indir>`. In the template, for example, you may use `{{i.infile}}` to get its path. However, it may have different paths:  
     
     * The original path
     * The path from `<indir>` 
     * The realpath (if the original file specified to the job is a symbolic link, it will be different from the original path)
 
-    Then you are able to swith the value of `{{in.infile}}` using the setting `p.infile`:  
+    Then you are able to swith the value of `{{i.infile}}` using the setting `p.infile`:  
 
     * `"indir"` (default): The path from `<indir>`
     * `"origin"`: The original path
@@ -72,9 +72,9 @@ p2.input   = "in1, in2"
 
     You may also use them directly by:
 
-    * `{{in.IN_infile}}`: The path from `<indir>`
-    * `{{in.OR_infile}}`: The original path
-    * `{{in.RE_infile}}`: The realpath
+    * `{{i.IN_infile}}`: The path from `<indir>`
+    * `{{i.OR_infile}}`: The original path
+    * `{{i.RE_infile}}`: The realpath
   
   
 Use `sys.argv` (see details for [`Channel.fromArgv`](./channels/#initialize-a-channel)):
@@ -83,17 +83,17 @@ p3 = Proc()
 p3.input = "in1"
 # same as p3.input = {"in1": channel.fromArgv ()}
 # Run the program: > python test.py 1 2 3
-# Then in job#0: {{in.in1}} -> 1
-# Then in job#1: {{in.in1}} -> 2
-# Then in job#2: {{in.in1}} -> 3
+# Then in job#0: {{i.in1}} -> 1
+# Then in job#1: {{i.in1}} -> 2
+# Then in job#2: {{i.in1}} -> 3
 
 p4 = Proc()
 p4.input = "in1, in2"
 # same as p4.input = {"in1, in2": channel.fromArgv ()}
 # Run the program: python test.py 1,a 2,b 3,c
-# Job#0: {{in.in1}} -> 1, {{in.in2}} -> a
-# Job#1: {{in.in1}} -> 2, {{in.in2}} -> b
-# Job#2: {{in.in1}} -> 3, {{in.in2}} -> c
+# Job#0: {{i.in1}} -> 1, {{i.in2}} -> a
+# Job#1: {{i.in1}} -> 2, {{i.in2}} -> b
+# Job#2: {{i.in1}} -> 3, {{i.in2}} -> c
 ```
 
 ### Specify files as input
@@ -104,17 +104,17 @@ p4.input = "in1, in2"
   ```
   Then `PyPPL` will create symbolic links in `<workdir>/<job.index>/input/`. 
   
-  > **Note** The `{{in.infile}}`
+  > **Note** The `{{i.infile}}`
    will return the path of the link in `<indir>` pointing to the actual input file. If you want to get the path of the actual path, you may use: 
   ```
-  {{ in.infile | readlink }} or {{ in._infile }}
+  {{ i.infile | readlink }} or {{ i._infile }}
   ```
 - Use a list of files:
   Similar as a single file, but you have to specify it as `files`:
   ```python
   p.input = {"infiles:files": [channel.fromPattern("./*.txt").flatten()]}
   ```
-  Then remember `{{in.infiles}}` is a list, so is `{{in._infiles}}`
+  Then remember `{{i.infiles}}` is a list, so is `{{i._infiles}}`
 - Rename input file links
   When there are input files (different files) with the same basename, later ones will be renamed in `<indir>`. For example:
   ```python
@@ -123,7 +123,7 @@ p4.input = "in1, in2"
     "infile2:file": "/path2/to/theSameBasename.txt"
   }
   ```
-  Remember both files will have symblic links created in `<indir>`. To avoid `infile2` being overwritten, the basename of the link will be `theSameBasename[1].txt`. If you are using built-in template functions to get the filename (`{{in.file2 | fn}}`), we can still get `theSameBasename.txt` instead of `theSameBasename[1].txt`. `bn`, `basename`, `prefix` act similarly.
+  Remember both files will have symblic links created in `<indir>`. To avoid `infile2` being overwritten, the basename of the link will be `theSameBasename[1].txt`. If you are using built-in template functions to get the filename (`{{i.file2 | fn}}`), we can still get `theSameBasename.txt` instead of `theSameBasename[1].txt`. `bn`, `basename`, `prefix` act similarly.
 
 ### Use callback to modify the input channel
 You can modify the input channel of a process by a callback. For example:
@@ -152,7 +152,7 @@ You can check more examples in some channel methods: [channel.expand](./channels
 Different from input, instead of channels, you have to tell `PyPPL` how to compute the output channel. The output can be a `list`, `str` or `OrderedDict` (**but not a `dict`, as the order of keys has to be kept**). If it's `str`, a comma (`,`) is used to separate different keys:
 ```python
 p.input  = {"invar":[1], "infile:file": ["/a/b/c.txt"]}
-p.output = "outvar:var:{{in.invar}}2, outfile:file:{{in.infile | bn}}2, outdir:dir:{{in.indir | fn}}-dir"
+p.output = "outvar:var:{{i.invar}}2, outfile:file:{{i.infile | bn}}2, outdir:dir:{{i.indir | fn}}-dir"
 # The type 'var' is omitted in the first element.
 # The output channel (pXXX.channel) will be:
 # [("12", "c.txt2", "c-dir")]
@@ -168,13 +168,13 @@ p.channel.outdir  == [('<outdir>/c-dir', )]
 
 |Input/Output|Type|Aliases|Behavior|Example-assignment (`p.input/output=?`)|Example-template-value|
 |------------|----|-------|--------|---------------------------------------|----------------------|
-|Input|`var`|-|Use the value directly|`{"in:var": [1]}`|`{{in.in}} -> 1`|
-|Input|`file`|`path`<br />`dir`<br />`folder`|Create link in `<indir>` and assign the original path to `in._in`|`{"in:file": ["/path/to/file"]}`|`{{in.in}} -> <indir>/file`<br />`{{in._in}} -> /path/to/file`|
-|Input|`files`|`paths`<br />`dirs`<br />`folders`|Same as `file` but do for multiple files|`{`<br />`"in:files": `<br />`(["/path/to/file1", `<br />`"/path/to/file2"],)`<br />`}`|`{{in.in `&#124;` asquote}} -> "<indir>/file1" "<indir>/file2"`<br />`{{in._in `&#124;` asquote}} -> "/path/to/file1" "/path/to/file2"`|
-|Output|`var`|-|Specify direct value|`"out:var:{{job.index}}"`|`{{out.out}} -> <job.index>`|
-|Output|`file`|`path`|Just specify the basename, output file will be generated in `job.outdir`|`"out:file:{{in.infile `&#124;` fn}}.out"`|`{{out.out}} == <outdir>/<filename of infile>.out`|
-|Output|`dir`|`folder`|Do the same thing as `file` but will create the directory|`"out:dir:{{in.infile `&#124;` fn}}-outdir"`|`{{out.out}} == <outdir>/<filename of infile>-outdir` <br />(automatically created)|
-|Output|`stdout`|-|Link `job.stdout` file to `<outdir>`|`out:stdout:{{in.infile `&#124;` fn}}.out` | `{{out.out}} == <outdir>/<filename of infile>.out`|
-|Output|`stderr`|-|Link `job.stderr` file to `<outdir>`|`err:stderr:{{in.infile `&#124;` fn}}.err` | `{{out.err}} == <outdir>/<filename of infile>.err`|
+|Input|`var`|-|Use the value directly|`{"in:var": [1]}`|`{{i.in}} -> 1`|
+|Input|`file`|`path`<br />`dir`<br />`folder`|Create link in `<indir>` and assign the original path to `i._in`|`{"in:file": ["/path/to/file"]}`|`{{i.in}} -> <indir>/file`<br />`{{i._in}} -> /path/to/file`|
+|Input|`files`|`paths`<br />`dirs`<br />`folders`|Same as `file` but do for multiple files|`{`<br />`"in:files": `<br />`(["/path/to/file1", `<br />`"/path/to/file2"],)`<br />`}`|`{{i.in `&#124;` asquote}} -> "<indir>/file1" "<indir>/file2"`<br />`{{i._in `&#124;` asquote}} -> "/path/to/file1" "/path/to/file2"`|
+|Output|`var`|-|Specify direct value|`"out:var:{{job.index}}"`|`{{o.out}} -> <job.index>`|
+|Output|`file`|`path`|Just specify the basename, output file will be generated in `job.outdir`|`"out:file:{{i.infile `&#124;` fn}}.out"`|`{{o.out}} == <outdir>/<filename of infile>.out`|
+|Output|`dir`|`folder`|Do the same thing as `file` but will create the directory|`"out:dir:{{i.infile `&#124;` fn}}-outdir"`|`{{o.out}} == <outdir>/<filename of infile>-outdir` <br />(automatically created)|
+|Output|`stdout`|-|Link `job.stdout` file to `<outdir>`|`out:stdout:{{i.infile `&#124;` fn}}.out` | `{{o.out}} == <outdir>/<filename of infile>.out`|
+|Output|`stderr`|-|Link `job.stderr` file to `<outdir>`|`err:stderr:{{i.infile `&#124;` fn}}.err` | `{{o.err}} == <outdir>/<filename of infile>.err`|
 
 

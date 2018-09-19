@@ -1,6 +1,6 @@
 # Templating
 
-`PyPPL` has its own template engine, which is derived from a [500-line-or-less template engine][1]. It also supports [Jinja2][2] if you have it installed and specify `"Jinja2"` to `pXXX.template`. The built-in template engine is enabled by default.
+`PyPPL` uses [liquid.py][1] as default template engine. It also supports [Jinja2][2] if you have it installed and specify `"Jinja2"` to `pXXX.template`.
 
 ## Common data avaible for rendering
 When rendering a template, following data are fed to the render function. So that you can use those values in the template. Some attribute values of a process are shared for all templates that are applied:
@@ -18,7 +18,7 @@ When rendering a template, following data are fed to the render function. So tha
 * `proc.exow`: Whether to overwrite existing files when exporting output files
 * `proc.forks`: How many jobs to run concurrently
 * `proc.id`: The id of the process.
-* `proc.infile`: Where does `{{in.infile}}` refer to? (including other input files)
+* `proc.infile`: Where does `{{i.infile}}` refer to? (including other input files)
 * `proc.lang`: The interpreter for the script
 * `proc.ppldir`: Where the workdirs are located
 * `proc.procvars`: The `dict` of all avaiable attributes of a process, can be accessed directly by `{{proc.<var>}}`
@@ -46,24 +46,24 @@ Input and output data are under namespace `in` and `out`, respectively.
 For example, you have following definition:
 ```python
 pXXX.input  = {"a": ["hello"], "b": ["/path/to/file"]}
-pXXX.output = "a:{{in.a}} world!"
+pXXX.output = "a:{{i.a}} world!"
 ```
-Now you can access them by: `{{in.a}}`, `{{in.b}}` and `{{out.a}}`
+Now you can access them by: `{{i.a}}`, `{{i.b}}` and `{{o.a}}`
 
 ## The scope of data
 |Attribute|Data available|Meaning|
 |---------|------------|-------|
 |`pXXX.beforeCmd`|`{{proc.*}}`|Command to run before job starts|
 |`pXXX.afterCmd`|`{{proc.*}}`|Command to run after job finishes|
-|`pXXX.brings`|`{{proc.*}}`, `{{job.*}}`, `{{in.*}}`|The bring-in files|
-|`pXXX.output`|`{{proc.*}}`, `{{job.*}}`, `{{in.*}}`, `{{bring.*}}`|The output of the process|
+|`pXXX.brings`|`{{proc.*}}`, `{{job.*}}`, `{{i.*}}`|The bring-in files|
+|`pXXX.output`|`{{proc.*}}`, `{{job.*}}`, `{{i.*}}`, `{{bring.*}}`|The output of the process|
 |`pXXX.expect`|All above-mentioned data|Command to check output|
 |`pXXX.expart`|All above-mentioned data|Partial export|
 |`pXXX.script`|All above-mentioned data|The script to run|
 
-## Built-in functions
+## Built-in filters
 Sometimes we need to transform the data in a template. We have some built-in functions available for the transformation.  
-For built-in template engine, you may use pipe, for example: `{{in.file | basename}}`; for `Jinja2`, you have to use functions as "functions", for example: `{{basename(in.file)}}`. Here we give the examples with built-in template engine syntax.
+For built-in template engine, you may use pipe, for example: `{{i.file | basename}}`; for `Jinja2`, you have to use functions as "functions", for example: `{{basename(in.file)}}`. Here we give the examples with built-in template engine syntax.
 
 - `R`: Transform a python value to R value. For example:
 
@@ -112,67 +112,13 @@ For built-in template engine, you may use pipe, for example: `{{in.file | basena
   - `{{v, skipEmptyLines | readlines}}`
 - `repr`: Alias of python `repr` built-in function.
 
-## Usage of built-in template engine
-- Basic usage:
-
-| Usage | Data | Result |
-|-------|------|--------|
-| `{{v}}`| `{'v': 1}`| `1` |
-| `{{v.a}}`, `{{v['a']}}`| `{'v': {'a': 1}}`| `1` |
-| `{{v.0}}`, `{{v[0]}}` | `{'v': [1]}` | `1` |
-| `{{v.upper()}}` | `{'v': "a"}` | `A` |
-| `{{v.0.upper()}}`| `{'v': ["a"]}` | `A` |
-  
-- Applying functions:
-
-| Usage | Data | Result |
-|-------|------|--------|
-| `{{v `&#x7c;` R}}` | `{'v': True}` | `TRUE` |
-| `{{v1, v2 `&#x7c;` paste}}` | `{'v1': 'Hello', 'v2': 'world!', 'paste': lambda x, y: x + ' ' + y}`| `Hello world!` |
-| `{{v1, v2 `&#x7c;` lambda x, y: x + ' ' + y}}` | `{'v1': 'Hello', 'v2': 'world!'}`| `Hello world!` |
-
-!!! note
-    If you want to pass a literal value (for example: `1`, `True`), you CANNOT do this: `{{v, False | readlines}}`. Instead, you can either:
-
-    * specify the value in data: `{'v': '/path/to/file', 'skipEmptyLines': False}`,   
-    then `{{v, skipEmptyLines | readlines}}`; or
-    * use `lambda` function: `{{v, readlines | lambda x, func: func(x, False)}}`
-  
-- `If-else/elif` statements:
-
-| Usage | Data | Result |
-|-------|------|--------|
-| `{% if v %}`<br />&nbsp;&nbsp;`1`<br />`{% else %}`<br />&nbsp;&nbsp;`2`<br />`{% endif %}`|`{'v': True}`|`1`|
-| `{% if v `&#x7c;` notExists %}`<br />&nbsp;&nbsp;`Path not exists.`<br />`{% elif v `&#x7c;` isDir %}`<br />&nbsp;&nbsp;`Path is a directory.`<br />`{% else %}`<br />&nbsp;&nbsp;`Path exists but is not a directory.`<br />`{% endif %}` | `{`<br />`'v': '/path/to/file', `<br />`'notExists': lambda x: not __import__('os').path.exists(x), `<br />`'isDir': __import__('os').path.isdir`<br />`}` |`Path exists but is not a directory.`|
-  
-- Loops:
-
-| Usage | Data | Result |
-|-------|------|--------|
-|`{% for var in varlist %}{{var`&#x7c;`R}}{% endfor %}`|`{'varlist': ['abc', 'True', 1, False]}`|`"abc"TRUE1FALSE`|
-|`{% for k , v in data.items() %}{{k}}:{{v}}{% endfor %}`|`{'data': {'a':1, 'b':2}}`|`a:1b:2`|
-  
-## Set environment of template engine
-You can define you own functions/data for template rendering:
-```python
-pXXX.envs.data  = {'v1': 'a', 'v2': 'b', 'b': True}
-pXXX.envs.os    = __import__('os')
-pXXX.envs.paste = lambda x,y: x +' ' + y
-# use them
-pXXX.script = """
-{% if data.b %}
-print "{{data.v1, data.v2 | paste}}"
-{% else %}
-print "{{data.v1, data.v2 | os.path.join}}"
-{% endif %}
-"""
-```
-Then if `pXXX.envs.data['b'] is True`, it prints `a b`; otherwise it prints `a/b`.
+## Use `Liquid`:
+For usage of `Jinja2`, you may refer to its [official documentation][1].
 
 ## Use Jinja2
 All the data and environment definition mentioned above are all applicable when you use `Jinja2` as your template engine.  
 For usage of `Jinja2`, you may refer to its [official documentation][2].
 
 
-[1]: https://github.com/aosabook/500lines/tree/master/template-engine
+[1]: https://github.com/pwwang/liquid.py
 [2]: http://jinja.pocoo.org/

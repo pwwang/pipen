@@ -3,7 +3,7 @@ from pyppl import PyPPL, Proc, Channel
 
 pSort         = Proc(desc = 'Sort files.')
 pSort.input   = {"infile:file": Channel.fromPattern("./data/*.txt")}
-pSort.output  = "outfile:file:{{in.infile | fn}}.sorted"
+pSort.output  = "outfile:file:{{i.infile | fn}}.sorted"
 # specify the runner
 #pSort.runner  = 'sge'
 # specify the runner options
@@ -13,7 +13,7 @@ pSort.output  = "outfile:file:{{in.infile | fn}}.sorted"
 pSort.forks   = 5
 pSort.exdir   = './export'
 pSort.script  = """
-  sort -k1r {{in.infile}} > {{out.outfile}}
+  sort -k1r {{i.infile}} > {{o.outfile}}
 """
 
 PyPPL().start(pSort).run('local' if len(argv) <= 1 else argv[1])
