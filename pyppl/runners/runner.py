@@ -55,7 +55,7 @@ class Runner (object):
 				if r.stderr: # pragma: no cover
 					with open(self.job.errfile, 'w') as ferr:
 						ferr.write(r.stderr)
-				self.job.proc.log ('%s Submission failed with return code: %s.' % (indexstr, r.rc), 'error')
+				self.job.proc.log ('%s Submission failed: rc=%s; cmd=%s' % (indexstr, r.rc, list2cmdline(r.cmd) if isinstance(r.cmd, list) else r.cmd), 'error')
 				self.job.rc(self.job.RC_SUBMITFAIL)
 				return False
 			return True
