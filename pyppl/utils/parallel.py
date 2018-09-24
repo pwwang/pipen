@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 #from loky import ProcessPoolExecutor
+from liquid import LiquidSyntaxError, LiquidRenderError
 from traceback import format_exc
 
 class Parallel(object):
@@ -43,8 +44,12 @@ class Parallel(object):
 			try:
 				results.append(submit.result())
 			except Exception as ex: # pragma: no cover
-				#results.append(None)
-				exception = type(ex)(format_exc())
+				if exception: continue
+				if isinstance(ex, (LiquidSyntaxError, LiquidRenderError)):
+					exception = type(ex)(format_exc().strip(), '')
+				else:
+					#results.append(None)
+					exception = type(ex)(format_exc())
 
 		self.executor.shutdown(wait = True)
 		

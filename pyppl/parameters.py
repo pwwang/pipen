@@ -425,7 +425,7 @@ class Parameters (object):
 
 	POSITIONAL = '_'
 
-	ALLOWED_TYPES = ['str', 'int', 'float', 'bool', 'list']
+	ALLOWED_TYPES = ['str', 'int', 'float', 'bool', 'list', 'py']
 
 	def __init__(self, command = None, theme = 'default'):
 		"""
