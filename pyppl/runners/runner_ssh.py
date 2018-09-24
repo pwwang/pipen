@@ -79,7 +79,8 @@ class RunnerSsh(Runner):
 		self.cmd2run = "cd %s; %s" % (os.getcwd(), self.cmd2run)
 		sshsrc       = [
 			'#!/usr/bin/env bash',
-			'',
+			'# run on server: {}'.format(server),
+			''
 		]
 		
 		if 'preScript' in conf:
