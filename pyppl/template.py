@@ -58,7 +58,7 @@ def _R(x):
 	if isinstance(x, dict):
 		#                                                   list allow repeated names
 		return 'list({})'.format(','.join([
-			_R(v) if isinstance(k, int) else \
+			'`{0}`={1}'.format(k, _R(v)) if isinstance(k, int) else \
 			'{0}={1}'.format(asStr(k).split('#')[0], _R(v)) for k, v in x.items()
 		]))
 	return repr(x)

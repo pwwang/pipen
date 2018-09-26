@@ -677,7 +677,7 @@ class Proc (object):
 		except filelock.Timeout: # pragma: no cover
 			self.log('Another instance of this process is running, waiting ...', 'warning')
 			self.log('If it is not the case, remove the process lock file and try again:', 'warning')
-			self.log('- ' + path.join(self.workdir, 'lock'), 'warning')
+			self.log('- ' + path.join(self.workdir, 'proc.lock'), 'warning')
 			self.lock.acquire()
 
 		try:
