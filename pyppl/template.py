@@ -5,7 +5,8 @@ from os import path, readlink
 from six import string_types
 from liquid import Liquid
 from .utils import asStr
-Liquid.DEFAULT_MODE = 'mixed'
+Liquid.MODE  = 'mixed'
+Liquid.DEBUG = False
 
 def _read(x):
 	with open(x) as f:
