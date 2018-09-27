@@ -33,7 +33,7 @@ def _basename(x, orig = False):
 def _filename(x, orig = False):
 	return path.splitext(_basename(x, orig))[0]
 
-def _R(x):
+def _R(x, ignoreintkey = True):
 	if x is True:
 		return 'TRUE'
 	if x is False:
@@ -59,17 +59,18 @@ def _R(x):
 	if isinstance(x, dict):
 		#                                                   list allow repeated names
 		return 'list({})'.format(','.join([
-			'`{0}`={1}'.format(k, _R(v)) if isinstance(k, int) else \
+			'`{0}`={1}'.format(k, _R(v)) if isinstance(k, int) and not ignoreintkey else \
+			'{1}'.format(k, _R(v)) if isinstance(k, int) and ignoreintkey else \
 			'{0}={1}'.format(asStr(k).split('#')[0], _R(v)) for k, v in x.items()
 		]))
 	return repr(x)
 
-def _Rlist(x):
+def _Rlist(x, ignoreintkey = True):
 	assert isinstance(x, (list, tuple, set, dict))
 	if isinstance(x, dict):
-		return _R(x)
+		return _R(x, ignoreintkey)
 	else:
-		return 'as.list({})'.format(_R(x))
+		return 'as.list({})'.format(_R(x, ignoreintkey))
 
 class Template(object):
 	"""
