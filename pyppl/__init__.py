@@ -1014,42 +1014,31 @@ class Proc (object):
 			self.log ("Using template file: %s" % tplfile, 'debug')
 			with open(tplfile) as f:
 				script = f.read().strip()
-
-		olines       = script.splitlines()
-		nlines       = []
-		# remove repeats
-		repeats      = []
-		repeat_opens = {}
-		repeat_start = '# PYPPL REPEAT START:'
-		repeat_end   = '# PYPPL REPEAT END:'
-		switch       = True
-		indent       = ''
-		for line in olines:
-			if repeat_start in line:
-				rname = line[line.find(repeat_start) + len(repeat_start):].strip().split()[0]
-				if rname in repeats:
-					switch = False
-				repeat_opens[rname] = True
-			elif repeat_end in line:
-				rname = line[line.find(repeat_end) + len(repeat_end):].strip().split()[0]
-				if not rname in repeat_opens: continue
-				del repeat_opens[rname]
-				repeats.append(rname)
-				switch = True
-			elif switch:
-				if '# PYPPL INDENT REMOVE' in line:
-					indent = line[:-len(line.lstrip())]
-				elif '# PYPPL INDENT KEEP' in line:
-					indent = ''
-				elif indent and line.startswith(indent):
-					nlines.append(line[len(indent):])
-				else:
-					nlines.append(line)
+		
+		# original lines
+		olines = script.splitlines()
+		# new lines
+		nlines   = []
+		indent   = ''
+		modeline = ''
+		for i, line in enumerate(olines):
+			if i == 0 and line.lstrip().startswith('{%') \
+				and line.lstrip()[2:].lstrip().startswith('mode'):
+				modeline = line + '\n'
+				continue
+			if '# PYPPL INDENT REMOVE' in line:
+				indent = line[:-len(line.lstrip())]
+			elif '# PYPPL INDENT KEEP' in line:
+				indent = ''
+			elif indent and line.startswith(indent):
+				nlines.append(line[len(indent):])
+			else:
+				nlines.append(line)
 
 		if not nlines or not nlines[0].startswith('#!'):
 			nlines.insert(0, '#!/usr/bin/env ' + self.lang)
 
-		self.props['script'] = self.template('\n'.join(nlines) + '\n', **self.tplenvs)
+		self.props['script'] = self.template(modeline + '\n'.join(nlines) + '\n', **self.tplenvs)
 
 	def _buildJobs (self):
 		"""
