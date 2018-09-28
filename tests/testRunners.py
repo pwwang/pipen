@@ -777,7 +777,10 @@ class TestRunnerSsh(testly.TestCase):
 			r = RunnerSsh(job)
 			servers = job.proc.sshRunner['servers']
 			keys = job.proc.sshRunner['keys']
-			sid = (RunnerSsh.SERVERID.value - 1) % len(servers)
+			if job.proc.sshRunner['checkAlive']:
+				sid = RunnerSsh.LIVE_SERVERS[RunnerSsh.SERVERID.value % len (RunnerSsh.LIVE_SERVERS)]
+			else:
+				sid = (RunnerSsh.SERVERID.value - 1) % len(RunnerSsh.LIVE_SERVERS)
 			server = servers[sid]
 			key = ('-i ' + keys[sid]) if keys[sid] else ''
 			self.assertIsInstance(r, RunnerSsh)
@@ -789,6 +792,7 @@ class TestRunnerSsh(testly.TestCase):
 			postScript = postScript and '\n' + postScript
 			helpers.assertTextEqual(self, helpers.readFile(job.script + '.ssh', str), '\n'.join([
 				"#!/usr/bin/env bash",
+				"# run on server: {}".format(server),
 				"",
 				'%scd %s; %s%s',
 			]) % (

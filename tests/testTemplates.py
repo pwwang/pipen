@@ -102,6 +102,16 @@ class TestTemplateLiquid (testly.TestCase):
 		\n\t\t\t3
 		\n\t\t"""
 
+		yield '{{True | R}}', {}, 'TRUE'
+		yield '{{None | R}}', {}, 'NULL'
+		yield '{{"+INF" | R}}', {}, 'Inf'
+		yield '{{"-inf" | R}}', {}, '-Inf'
+		yield '{{"r:list(1,2,3)" | R}}', {}, 'list(1,2,3)'
+		yield '{{[1,2,3] | R}}', {}, 'c(1,2,3)'
+		yield '{{[1,2,3] | Rlist}}', {}, 'as.list(c(1,2,3))'
+		yield '{{ {0:1} | Rlist}}', {}, 'list(1)'
+		yield '{{ {0:1} | Rlist: False}}', {}, 'list(`0`=1)'
+
 	def testRender(self, source, data, out):
 		tpl = TemplateLiquid(source)
 		helpers.assertTextEqual(self, tpl.render(data), out)

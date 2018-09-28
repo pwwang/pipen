@@ -246,9 +246,10 @@ class SgeHelper(Helper):
 
 			return r
 		except (OSError, subprocess.CalledProcessError) as ex:
-			r = Box()
+			r        = Box()
 			r.stderr = str(ex)
-			r.rc = 1
+			r.rc     = 1
+			r.cmd    = cmdlist
 			return r
 
 	def kill(self):

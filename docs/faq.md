@@ -31,3 +31,7 @@ A: Yes, just use the dry  runner: `p.runner = "dry"`. The runner will just creat
 
 A: Yes, just set `{"log": {"levels": None}}` in pipeline configurations.
 
+**Q: How to migrate from 1.1.2**
+
+A: v1.2.0+ uses `liquidpy` as default template engine. Input and output are now under namespace `i` and `o` instead of `in` and `out`.
+
