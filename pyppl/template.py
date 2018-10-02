@@ -60,7 +60,7 @@ def _R(x, ignoreintkey = True):
 		#                                                   list allow repeated names
 		return 'list({})'.format(','.join([
 			'`{0}`={1}'.format(k, _R(v)) if isinstance(k, int) and not ignoreintkey else \
-			'{1}'.format(k, _R(v)) if isinstance(k, int) and ignoreintkey else \
+			_R(v) if isinstance(k, int) and ignoreintkey else \
 			'{0}={1}'.format(asStr(k).split('#')[0], _R(v)) for k, v in x.items()
 		]))
 	return repr(x)
