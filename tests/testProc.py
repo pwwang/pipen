@@ -420,7 +420,7 @@ class TestProc(testly.TestCase):
 		p.tag = 'newtag'
 		self.assertEqual(orgp.tag, 'notag')
 		self.assertEqual(orgp.output, {})
-		self.assertEqual(orgp.envs, {})
+		self.assertEqual(orgp.envs, p.envs)
 		self.assertEqual(orgp.args, {})
 		self.assertEqual(orgp.sets, ['workdir'])
 		self.assertIsInstance(p.args, Box)
@@ -430,6 +430,7 @@ class TestProc(testly.TestCase):
 		self.assertEqual(p.tag, 'newtag')
 		# original process keeps intact
 		self.assertDictEqual(orgp.props, oprops)
+		orgp.config['tplenvs'] = Box()
 		self.assertDictEqual(orgp.config, oconfig)
 		
 	def dataProvider_testSuffix(self):
