@@ -926,8 +926,8 @@ class Proc (object):
 			if key in show or (key in self.sets and key not in hide)
 		]
 
-		procvars = {}
-		procargs = {}
+		procvars = Box()
+		procargs = Box()
 
 		alias   = { val:key for key, val in Proc.ALIAS.items() }
 		maxlen  = 0
