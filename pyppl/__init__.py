@@ -460,7 +460,7 @@ class Proc (object):
 			#elif isinstance(config[key], OrderedDict):
 			#	config[key] = OrderedDict()
 			#	config[key].update(self.config[key])
-			elif isinstance(self.config[key], dict):
+			elif isinstance(self.config[key], dict) and 'envs' not in key:
 				config[key] = pycopy.deepcopy(self.config[key])
 			else:
 				config[key] = self.config[key]

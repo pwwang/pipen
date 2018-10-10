@@ -5,8 +5,9 @@ import logging, re, sys
 from .utils import Box
 from .exception import LoggerThemeError
 from .template import TemplateLiquid
-from multiprocessing import Value
+from multiprocessing import Value, Lock
 
+LOCK = Lock()
 # the entire format
 LOGFMT = "[%(asctime)s]%(message)s"
 # colors
@@ -213,6 +214,8 @@ class PyPPLLogFilter (logging.Filter):
 			self.levels = []
 			
 		lvldiff = lvldiff or []
+		if not isinstance(lvldiff, list):
+			lvldiff = [lvldiff]
 		for ld in lvldiff:
 			if ld.startswith('-'):
 				ld = ld[1:].upper()
@@ -349,15 +352,16 @@ class PyPPLStreamHandler(logging.StreamHandler):
 		Emit the record.
 		"""
 		level, _ = _getLevel(record)
-		if level in ['SUBMIT', 'JOBDONE']:
-			self.pbar_started.value = 1
-			terminator = "\r"
-		else:
-			terminator = "\n"
-			if self.pbar_started.value == 1:
-				self.stream.write('\n')
-				self.pbar_started.value = 0
-		self._emit(record, terminator)
+		with LOCK:
+			if level in ['SUBMIT', 'JOBDONE']:
+				self.pbar_started.value = 1
+				terminator = "\r"
+			else:
+				terminator = "\n"
+				if self.pbar_started.value == 1:
+					self.stream.write('\n')
+					self.pbar_started.value = 0
+			self._emit(record, terminator)
 
 
 def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, pbar = 'expand', name='PyPPL'):
