@@ -49,26 +49,26 @@ class Proc (object):
 		'profile': 'runner'
 	}
 	LOG_NLINE    = {
-		'EXPORT_CACHE_OUTFILE_EXISTS': -3,
+		'EXPORT_CACHE_OUTFILE_EXISTS': -1,
 		'EXPORT_CACHE_USING_SYMLINK': 1,
 		'EXPORT_CACHE_USING_EXPARTIAL': 1,
 		'EXPORT_CACHE_EXFILE_NOTEXISTS': 1,
 		'EXPORT_CACHE_EXDIR_NOTSET': 1,
 		'CACHE_EMPTY_PREVSIG': -1,
 		'CACHE_EMPTY_CURRSIG': -2,
-		'CACHE_SCRIPT_NEWER': -3,
-		'CACHE_SIGINVAR_DIFF': -3,
-		'CACHE_SIGINFILE_DIFF': -3,
-		'CACHE_SIGINFILE_NEWER': -3,
-		'CACHE_SIGINFILES_DIFF': -3,
-		'CACHE_SIGINFILES_NEWER': -3,
-		'CACHE_SIGOUTVAR_DIFF': -3,
-		'CACHE_SIGOUTFILE_DIFF': -3,
-		'CACHE_SIGOUTDIR_DIFF': -3,
+		'CACHE_SCRIPT_NEWER': -1,
+		'CACHE_SIGINVAR_DIFF': -1,
+		'CACHE_SIGINFILE_DIFF': -1,
+		'CACHE_SIGINFILE_NEWER': -1,
+		'CACHE_SIGINFILES_DIFF': -1,
+		'CACHE_SIGINFILES_NEWER': -1,
+		'CACHE_SIGOUTVAR_DIFF': -1,
+		'CACHE_SIGOUTFILE_DIFF': -1,
+		'CACHE_SIGOUTDIR_DIFF': -1,
 		'CACHE_SIGFILE_NOTEXISTS': -1,
 		'EXPECT_CHECKING': -1,
-		'INFILE_RENAMING': -3,
-		'BRINGFILE_NOTFOUND': -3,
+		'INFILE_RENAMING': -1,
+		#'BRINGFILE_NOTFOUND': -3,
 		'OUTFILE_NOT_EXISTS': -1,
 		'OUTDIR_CREATED_AFTER_RESET': -1,
 		'SCRIPT_EXISTS': -2,
@@ -410,24 +410,27 @@ class Proc (object):
 		"""
 		summary = False
 		level   = "[%s] %s: " % (level, self.name(False))
+		# if there is no limit of this key
 		if not key or key not in Proc.LOG_NLINE:
-			logger.logger.info(level + msg)
+			for m in msg.splitlines():
+				logger.logger.info(level + m)
 		else:
 			maxline = Proc.LOG_NLINE[key]
 			absline = abs(maxline)
 			summary = maxline < 0
-			n = 3 if key.startswith('CACHE_') and (key.endswith('_DIFF') or key.endswith('_NEWER')) else 1
+			#n = 3 if key.startswith('CACHE_') and (key.endswith('_DIFF') or key.endswith('_NEWER')) else 1
 
 			if key not in self.logs: self.logs[key] = []
 
 			if not self.logs[key] or self.logs[key][-1] is not None:
 				self.logs[key].append((level, msg))
 			nlogs = len(self.logs[key])
-			if nlogs == absline or nlogs == self.size * n:
+			if nlogs == absline or nlogs == self.size:
 				self.logs[key].append(None)
 				for level, msg in filter(None, self.logs[key]):
-					logger.logger.info (level + msg)
-				if summary and nlogs < self.size * n:
+					for m in msg.splitlines():
+						logger.logger.info (level + m)
+				if summary and nlogs < self.size:
 					logger.logger.info ('[debug] ...... max=%s (%s) reached, further information will be ignored.' % (absline, key))
 
 	def copy (self, tag=None, desc=None, id=None):
@@ -1051,6 +1054,7 @@ class Proc (object):
 		rptjob  = 0 if self.size == 1 else randint(0, self.size-1)
 
 		def bjSingle(i):
+			sys.stderr.write("Building jobs: {0:.2f}%\r".format(100.0*(i+1)/self.size))
 			job = Job(i, self)
 			job.init()
 			self.jobs[i] = job

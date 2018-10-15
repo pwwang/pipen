@@ -30,7 +30,7 @@ class Job (object):
 	MSG_RC_SUBMITFAIL  = 'Failed to submit job'
 	MSG_RC_OTHER       = 'Script error'
 
-	LOGLOCK = Lock()
+	#LOGLOCK = Lock()
 
 	def __init__(self, index, proc):
 		"""
@@ -230,10 +230,12 @@ class Job (object):
 				oval = osig[k]
 				nval = nsig[k]
 				if nval == oval: continue
-				with Job.LOGLOCK:
-					self.proc.log("%s not cached because %s variable(%s) is different:" % (indexstr, key, k), 'debug', logkey)
-					self.proc.log("...... - Previous: %s" % oval, 'debug', logkey)
-					self.proc.log("...... - Current : %s" % nval, 'debug', logkey)
+				#with Job.LOGLOCK:
+				self.proc.log((
+					"{index} not cached because {key} variable({k}) is different:\n" +
+					"...... - Previous: {prev}\n" +
+					"...... - Current : {curr}"
+				).format(index = indexstr, key = key, k = k, prev = oval, curr = nval), 'debug', logkey)
 				return False
 			return True
 
@@ -243,16 +245,29 @@ class Job (object):
 				nfile, ntime = nsig[k]
 				if nfile == ofile and ntime <= otime: continue
 				if nfile != ofile:
-					with Job.LOGLOCK:
-						self.proc.log("%s not cached because %s file(%s) is different:" % (indexstr, key, k), 'debug', logkey)
-						self.proc.log("...... - Previous: %s" % ofile, 'debug', logkey)
-						self.proc.log("...... - Current : %s" % nfile, 'debug', logkey)
+					#with Job.LOGLOCK:
+					self.proc.log((
+						"{index} not cached because {key} file({k}) is different:\n" +
+						"...... - Previous: {prev}\n" + 
+						"...... - Current : {curr}"
+					).format(index = indexstr, key = key, k = k, prev = ofile, curr = nfile), 'debug', logkey)
 					return False
 				if timekey and ntime > otime:
-					with Job.LOGLOCK:
-						self.proc.log("%s not cached because %s file(%s) is newer: %s" % (indexstr, key, k, ofile), 'debug', timekey)
-						self.proc.log("...... - Previous: %s (%s)" % (otime, datetime.fromtimestamp(otime)), 'debug', timekey)
-						self.proc.log("...... - Current : %s (%s)" % (ntime, datetime.fromtimestamp(ntime)), 'debug', timekey)
+					#with Job.LOGLOCK:
+					self.proc.log((
+						"{index} not cached because {key} file({k}) is newer: {ofile}\n" +
+						"...... - Previous: {otime} ({transotime})\n" +
+						"...... - Current : {ntime} ({transntime})"
+					).format(
+						index      = indexstr,
+						key        = key,
+						k          = k,
+						ofile      = ofile,
+						otime      = otime,
+						transotime = datetime.fromtimestamp(otime),
+						ntime      = ntime,
+						transntime = datetime.fromtimestamp(ntime)
+					), 'debug', timekey)
 					return False
 			return True
 
@@ -273,16 +288,37 @@ class Job (object):
 						nfile, ntime = nval[i]
 					if nfile == ofile and ntime <= otime: continue
 					if nfile != ofile:
-						with Job.LOGLOCK:
-							self.proc.log("%s not cached because file %s is different for %s files(%s):" % (indexstr, i + 1, key, k), 'debug', logkey)
-							self.proc.log("...... - Previous: %s" % ofile, 'debug', logkey)
-							self.proc.log("...... - Current : %s" % nfile, 'debug', logkey)
+						#with Job.LOGLOCK:
+						self.proc.log((
+							"{index} not cached because file {i} is different for {key} files({k}):\n" +
+							"...... - Previous: {ofile}\n" +
+							"...... - Current : {nfile}"
+						).format(
+							index = indexstr,
+							i     = i + 1,
+							key   = key,
+							k     = k,
+							ofile = ofile,
+							nfile = nfile
+						), 'debug', logkey)
 						return False
 					if timekey and ntime > otime:
-						with Job.LOGLOCK:
-							self.proc.log("%s not cached because file %s is newer for %s files(%s): %s" % (indexstr, i + 1, key, k, ofile), 'debug', timekey)
-							self.proc.log("...... - Previous: %s (%s)" % (otime, datetime.fromtimestamp(otime)), 'debug', timekey)
-							self.proc.log("...... - Current : %s (%s)" % (ntime, datetime.fromtimestamp(ntime)), 'debug', timekey)
+						#with Job.LOGLOCK:
+						self.proc.log((
+							"{index} not cached because file {i} is newer for {key} files({k}): {ofile}\n" +
+							"...... - Previous: {otime} ({transotime})\n" +
+							"...... - Current : {ntime} ({transntime})"
+						).format(
+							index      = indexstr,
+							i          = i + 1,
+							key        = key,
+							k          = k,
+							ofile      = ofile,
+							otime      = otime,
+							transotime = datetime.fromtimestamp(otime),
+							ntime      = ntime,
+							transntime = datetime.fromtimestamp(ntime)
+						), 'debug', timekey)
 						return False
 			return True
 
