@@ -7,6 +7,11 @@ from hashlib import md5
 from .box import Box
 from six import moves, string_types
 
+try:
+	from Queue import Queue, Empty as QueueEmpty
+except ImportError:
+	from queue import Queue, Empty as QueueEmpty
+
 def asStr(s, encoding = 'utf-8'):
 	"""
 	Convert everything (str, unicode, bytes) to str with python2, python3 compatiblity

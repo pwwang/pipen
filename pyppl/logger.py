@@ -5,11 +5,11 @@ import logging, re, sys
 from .utils import Box
 from .exception import LoggerThemeError
 from .template import TemplateLiquid
-from multiprocessing import Value, Lock
+from multiprocessing import Lock
 
 LOCK = Lock()
 # the entire format
-LOGFMT = "[%(asctime)s]%(message)s"
+LOGFMT = "[%(asctime)s%(message)s"
 # colors
 COLORS = Box(
 	none = '',        end       = '\033[0m',
@@ -39,10 +39,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.cyan, COLORS.bold + COLORS.cyan],
 		'DEPENDS' : COLORS.magenta,
-		'in:SUBMIT,JOBDONE,INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.green,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BUILD,SUBMIT,RUNNING,RETRY,JOBDONE,KILLING': COLORS.green,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
-		'in:CACHED,RUNNING,SKIPPED,RESUMED': COLORS.yellow,
+		'in:CACHED,SKIPPED,RESUMED': COLORS.yellow,
 		''        : COLORS.white
 	},
 	'blueOnBlack':  {
@@ -50,10 +50,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.cyan, COLORS.bold  + COLORS.cyan],
 		'DEPENDS' : COLORS.green,
-		'in:SUBMIT,JOBDONE,INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.blue,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BUILD,SUBMIT,RUNNING,RETRY,JOBDONE,KILLING': COLORS.blue,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
-		'in:CACHED,RUNNING,SKIPPED,RESUMED': COLORS.yellow,
+		'in:CACHED,SKIPPED,RESUMED': COLORS.yellow,
 		''        : COLORS.white
 	},
 	'magentaOnBlack':  {
@@ -61,10 +61,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.green, COLORS.bold + COLORS.green],
 		'DEPENDS' : COLORS.blue,
-		'in:SUBMIT,JOBDONE,INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.magenta,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BUILD,SUBMIT,RUNNING,RETRY,JOBDONE,KILLING': COLORS.magenta,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
-		'in:CACHED,RUNNING,SKIPPED,RESUMED': COLORS.yellow,
+		'in:CACHED,SKIPPED,RESUMED': COLORS.yellow,
 		''        : COLORS.white
 	},
 	'greenOnWhite': {
@@ -72,10 +72,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.blue],
 		'DEPENDS' : COLORS.magenta,
-		'in:SUBMIT,JOBDONE,INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.green,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BUILD,SUBMIT,RUNNING,RETRY,JOBDONE,KILLING': COLORS.green,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
-		'in:CACHED,RUNNING,SKIPPED,RESUMED': COLORS.yellow,
+		'in:CACHED,SKIPPED,RESUMED': COLORS.yellow,
 		''        : COLORS.black
 	},
 	'blueOnWhite':  {
@@ -83,10 +83,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.green, COLORS.bold + COLORS.green],
 		'DEPENDS' : COLORS.magenta,
-		'in:SUBMIT,JOBDONE,INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.blue,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BUILD,SUBMIT,RUNNING,RETRY,JOBDONE,KILLING': COLORS.blue,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
-		'in:CACHED,RUNNING,SKIPPED,RESUMED': COLORS.yellow,
+		'in:CACHED,SKIPPED,RESUMED': COLORS.yellow,
 		''        : COLORS.black
 	},
 	'magentaOnWhite':  {
@@ -94,22 +94,21 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.blue],
 		'DEPENDS' : COLORS.green,
-		'in:SUBMIT,JOBDONE,INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': COLORS.magenta,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BUILD,SUBMIT,RUNNING,RETRY,JOBDONE,KILLING': COLORS.magenta,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
-		'in:CACHED,RUNNING,SKIPPED,RESUMED': COLORS.yellow,
+		'in:CACHED,SKIPPED,RESUMED': COLORS.yellow,
 		''        : COLORS.black
 	}
 }
 
 LEVELS = {
-	'all':     ['INPUT', 'OUTPUT', 'BRINGS', 'SUBMIT', 'P.ARGS', 'P.PROPS', 'JOBDONE', 'DEBUG'],
+	'all':     ['INPUT', 'OUTPUT', 'P.ARGS', 'P.PROPS', 'DEBUG'],
 	'basic':   [],
-	'normal':  ['INPUT', 'OUTPUT', 'BRINGS', 'SUBMIT', 'P.ARGS', 'P.PROPS'],
-	'nodebug': ['INPUT', 'OUTPUT', 'BRINGS', 'SUBMIT', 'P.ARGS', 'P.PROPS', 'JOBDONE']
+	'normal':  ['INPUT', 'OUTPUT', 'P.ARGS', 'P.PROPS']
 }
 
-LEVELS_ALWAYS = ['PROCESS', 'SKIPPED', 'RESUMED', 'DEPENDS', 'STDOUT', 'STDERR', 'WARNING', 'ERROR', 'INFO', 'DONE', 'RUNNING', 'CACHED', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'RETRY']
+LEVELS_ALWAYS = ['PROCESS', 'SKIPPED', 'RESUMED', 'DEPENDS', 'STDOUT', 'STDERR', 'WARNING', 'ERROR', 'INFO', 'DONE', 'CACHED', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'BUILD', 'SUBMIT', 'RUNNING', 'RETRY', 'JOBDONE', 'KILLING']
 
 def _getLevel (record):
 	"""
@@ -238,8 +237,11 @@ class PyPPLLogFilter (logging.Filter):
 		@return:
 			`True` if the record to be kept else `False`
 		"""
-		level   = _getLevel(record)[0]
-		return self.levels and ( level in self.levels or level.startswith('_') )
+		if not hasattr(record, 'loglevel') or record.loglevel.startswith('_'):
+			return True
+		if not self.levels:
+			return False
+		return record.loglevel in self.levels
 
 class PyPPLLogFormatter (logging.Formatter):
 	"""
@@ -268,27 +270,29 @@ class PyPPLLogFormatter (logging.Formatter):
 		@returns:
 			The formatted record
 		"""
-		(level, msg) = _getLevel(record)
-		theme = 'greenOnBlack' if self.theme is True else self.theme
-		theme = THEMES[theme] if not isinstance(theme, dict) and theme in THEMES else theme
-		theme = _formatTheme(theme)
+		formatted = record.formatted if hasattr(record, 'formatted') else False
+		if not formatted:
+			level = record.loglevel if hasattr(record, 'loglevel') else record.levelname
+			theme = 'greenOnBlack' if self.theme is True else self.theme
+			theme = THEMES[theme] if not isinstance(theme, dict) and theme in THEMES else theme
+			theme = _formatTheme(theme)
 
-		if not theme:
-			colorLevelStart = COLORS.none
-			colorLevelEnd   = COLORS.none
-			colorMsgStart   = COLORS.none
-			colorMsgEnd     = COLORS.none
-		else:
-			(colorLevelStart, colorMsgStart) = _getColorFromTheme(level, theme)
-			colorLevelEnd   = COLORS.end
-			colorMsgEnd     = COLORS.end
-		
-		if self.secondary:
-			# keep _ for file handler
-			level = level[1:] if level.startswith('_') else level
-		level = level[:7]
-		record.msg = "[%s%7s%s] %s%s%s" % (colorLevelStart, level, colorLevelEnd, colorMsgStart, msg, colorMsgEnd)
-
+			if not theme:
+				colorLevelStart = COLORS.none
+				colorLevelEnd   = COLORS.none
+				colorMsgStart   = COLORS.none
+				colorMsgEnd     = COLORS.none
+			else:
+				(colorLevelStart, colorMsgStart) = _getColorFromTheme(level, theme)
+				colorLevelEnd   = COLORS.end
+				colorMsgEnd     = COLORS.end
+			
+			if self.secondary:
+				# keep _ for file handler
+				level = level[1:] if level.startswith('_') else level
+			level = level[:7]
+			record.msg = " %s%7s%s] %s%s%s" % (colorLevelStart, level, colorLevelEnd, colorMsgStart, record.msg, colorMsgEnd)
+			setattr(record, 'formatted', True)
 		return logging.Formatter.format(self, record)
 
 class PyPPLStreamHandler(logging.StreamHandler):
@@ -303,15 +307,15 @@ class PyPPLStreamHandler(logging.StreamHandler):
 		@params:
 			`stream`: The stream
 		"""
-		self.pbar_started = Value('i', 0)
+		self.prevbar = None
 		super(PyPPLStreamHandler, self).__init__(stream)
 
-	def _emit(self, record, terminator = "\n"):
+	def _emit(self, record, terminator = "\n", format = True):
 		"""
 		Helper function implementing a python2,3-compatible emit.
 		Allow to add "\n" or "\r" as terminator.
 		"""
-		if sys.version_info[0] > 2: # pragma: no cover
+		if sys.version_info.major > 2: # pragma: no cover
 			self.terminator = terminator
 			super(PyPPLStreamHandler, self).emit(record)
 		else:
@@ -351,20 +355,20 @@ class PyPPLStreamHandler(logging.StreamHandler):
 		"""
 		Emit the record.
 		"""
-		level, _ = _getLevel(record)
 		with LOCK:
-			if level in ['SUBMIT', 'JOBDONE']:
-				self.pbar_started.value = 1
-				terminator = "\r"
+			pbar = record.pbar if hasattr(record, 'pbar') else False
+			if pbar:
+				self.prevbar = record
+				self._emit(record, "\r")
+			elif not self.prevbar:
+				self._emit(record, "\n")
 			else:
-				terminator = "\n"
-				if self.pbar_started.value == 1:
-					self.stream.write('\n')
-					self.pbar_started.value = 0
-			self._emit(record, terminator)
+				record.msg = record.msg.ljust(len(self.prevbar.msg))
+				self._emit(record, "\n")
+				self._emit(self.prevbar, "\r")
 
 
-def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, pbar = 'expand', name='PyPPL'):
+def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, name='PyPPL'):
 	"""
 	Get the default logger
 	@params:
@@ -388,7 +392,7 @@ def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, pbar = '
 		fileCh.setFormatter(PyPPLLogFormatter(theme = None))
 		logger.addHandler (fileCh)
 		
-	streamCh  = PyPPLStreamHandler() if pbar != 'expand' else logging.StreamHandler()
+	streamCh  = PyPPLStreamHandler()
 	formatter = PyPPLLogFormatter(theme = theme, secondary = True)
 	filter    = PyPPLLogFilter(name = name, lvls = levels, lvldiff = lvldiff)
 	streamCh.addFilter(filter)
