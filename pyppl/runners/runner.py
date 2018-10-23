@@ -1,23 +1,20 @@
 """
 The base runner class
 """
-import sys
-import re
+import sys, re, atexit
 from os import path
 from time import sleep
-from multiprocessing import Value, Lock
 from subprocess import list2cmdline
 
-from ..utils import safefs
-
-flushlock = Lock()
+from pyppl.utils import safefs, cmd, ps
+from pyppl.logger import logger
 
 class Runner (object):
 	"""
 	The base runner class
 	"""
 	
-	INTERVAL = 1
+	INTERVAL = .1
 	
 	def __init__ (self, job):
 		"""
@@ -25,50 +22,26 @@ class Runner (object):
 		@params:
 			`job`:    The job object
 		"""
-		self.job       = job
-		self.helper    = None
-		self.script    = safefs.SafeFs(self.job.script).chmodX()
-		self.cmd2run   = list2cmdline (self.script)
-		self.ntry      = Value('i', 0, lock = Lock())
+		self.script  = safefs.SafeFs(job.script).chmodX()
+		self.job     = job
+		self.cmd2run = list2cmdline(self.script)
 
 	def kill(self):
 		"""
 		Try to kill the running jobs if I am exiting
 		"""
-		if self.helper:
-			self.helper.kill()
+		if self.job.pid:
+			ps.killtree(int(self.pid), killme = True, sig = 9)
 
 	def submit (self):
 		"""
 		Try to submit the job
 		"""
-		indexstr = self.job._indexIndicator()
-		if self.job.index not in self.job.proc.ncjobids:
-			return True
-		elif self.isRunning():
-			self.job.proc.log ("%s is already running at %s, skip submission." % (indexstr, self.helper.pid), 'submit')
-			return True
-		else:
-			self.job.reset(self.ntry.value)
-			r = self.helper.submit()
-			if r.rc != 0:
-				if r.stderr: # pragma: no cover
-					with open(self.job.errfile, 'w') as ferr:
-						ferr.write(r.stderr)
-				self.job.proc.log ('%s Submission failed: rc=%s; cmd=%s' % (indexstr, r.rc, list2cmdline(r.cmd) if isinstance(r.cmd, list) else r.cmd), 'error')
-				self.job.rc(self.job.RC_SUBMITFAIL)
-				return False
-			return True
-
-	def finish(self):
-		self.job.done()
-	
-	def getpid (self):
-		"""
-		Get the job id
-		"""
-		if self.helper:
-			self.job.pid(self.helper.pid)
+		c = cmd.run([
+			sys.executable, path.realpath(__file__), self.script
+		], bg = True)
+		c.rc = 0
+		return c
 
 	def run(self):
 		"""
@@ -76,38 +49,22 @@ class Runner (object):
 			True: success/fail
 			False: needs retry
 		"""
-		# cached jobs
-		if self.job.index not in self.job.proc.ncjobids:
-			self.finish()
-			return True
-
 		# stdout, stderr haven't been generated, wait
 		while not path.isfile(self.job.errfile) or not path.isfile(self.job.outfile):
 			sleep(self.INTERVAL)
-
+		
 		ferr = open(self.job.errfile)
 		fout = open(self.job.outfile)
 		lastout = ''
 		lasterr = ''
-
-		while self.job.rc() == self.job.RC_NOTGENERATE: # rc not generated yet
+		
+		while self.job.rc == self.job.RC_NOTGENERATE: # rc not generated yet
 			sleep (self.INTERVAL)
 			lastout, lasterr = self._flush(fout, ferr, lastout, lasterr)
 
 		self._flush(fout, ferr, lastout, lasterr, True)
 		ferr.close()
 		fout.close()
-		self.finish()
-		
-		return self.job.succeed()
-
-	def retry(self):
-		if self.job.proc.errhow == 'retry' and self.ntry.value < self.job.proc.errntry:
-			self.ntry.value += 1
-			self.job.proc.log ("%s Retrying job (%s/%s) ..." % (self.job._indexIndicator(), self.ntry.value, self.job.proc.errntry), 'RETRY')
-			return True
-		else:
-			return False
 
 	def isRunning (self):
 		"""
@@ -115,9 +72,9 @@ class Runner (object):
 		@returns:
 			`True` if yes, otherwise `False`
 		"""
-		if self.helper:
-			return self.helper.alive()
-		return False
+		if not self.job.pid:
+			return False
+		return ps.exists(int(self.job.pid))
 		
 	def _flush (self, fout, ferr, lastout, lasterr, end = False):
 		"""
@@ -129,12 +86,12 @@ class Runner (object):
 			`lasterr`: The leftovers of previously readlines of stderr
 			`end`: Whether this is the last time to flush
 		"""
-		if self.job.index not in self.job.proc.echo['jobs']:
+		if self.job.index not in self.job.config['echo']['jobs']:
 			return None, None
 
-		if 'stdout' in self.job.proc.echo['type']:
+		if 'stdout' in self.job.config['echo']['type']:
 			lines, lastout = safefs.SafeFs.flush(fout, lastout, end)
-			outfilter      = self.job.proc.echo['type']['stdout']
+			outfilter      = self.job.config['echo']['type']['stdout']
 			
 			for line in lines:
 				if not outfilter or re.search(outfilter, line):
@@ -153,11 +110,49 @@ class Runner (object):
 				loglevel = loglevel[1:] if loglevel else 'log'
 				
 				# '_' makes sure it's not filtered by log levels
-				self.job.proc.log (self.job._indexIndicator() + ' ' + logmsg.lstrip(), '_' + loglevel)
-			elif 'stderr' in self.job.proc.echo['type']:
-				errfilter = self.job.proc.echo['type']['stderr']
+				logger.info(logmsg.lstrip(), extra = {'loglevel': '_' + loglevel, 'pbar': False})
+			elif 'stderr' in self.job.config['echo']['type']:
+				errfilter = self.job.config['echo']['type']['stderr']
 				if not errfilter or re.search(errfilter, line):
 					with flushlock:
 						sys.stderr.write(line)
 		
 		return (lastout, lasterr)
+
+class _LocalSubmitter(object):
+	
+	def __init__(self, script):
+		scriptdir    = path.dirname(script)
+		self.script  = script
+		self.rcfile  = path.join(scriptdir, 'job.rc')
+		self.pidfile = path.join(scriptdir, 'job.pid')
+		self.outfile = path.join(scriptdir, 'job.stdout')
+		self.errfile = path.join(scriptdir, 'job.stderr')
+		self.outfd   = None
+		self.errfd   = None
+
+	def submit(self):
+		self.outfd = open(self.outfile, 'w')
+		self.errfd = open(self.errfile, 'w')
+		self.proc  = cmd.Cmd(safefs.SafeFs(self.script).chmodX(), stdout = self.outfd, stderr = self.errfd)
+		with open(self.pidfile, 'w') as fpid:
+			fpid.write(str(self.proc.pid))
+		try:
+			self.proc.run()
+		except KeyboardInterrupt:
+			self.proc.rc = 1
+
+	def quit(self):
+		if self.outfd:
+			self.outfd.close()
+		if self.errfd:
+			self.errfd.close()
+		# write rc
+		with open(self.rcfile, 'w') as frc:
+			frc.write(str(self.proc.rc))	
+
+if __name__ == '__main__': # pragma: no cover
+	# work as local submitter
+	submitter = _LocalSubmitter(sys.argv[1])
+	atexit.register(submitter.quit)
+	submitter.submit()

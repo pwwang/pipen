@@ -1,23 +1,16 @@
-import os
-
+import re, sys
+from os import path, getcwd
 from .runner import Runner
-from .helpers import SshHelper
-from ..utils import cmd
+from ..utils import cmd, safefs
 from ..exception import RunnerSshError
-from multiprocessing import Value, Lock, Array
+from multiprocessing import Array
+from subprocess import CalledProcessError, list2cmdline
 
 class RunnerSsh(Runner):
 	"""
 	The ssh runner
-
-	@static variables:
-		`SERVERID`: The incremental number used to calculate which server should be used.
-		- Don't touch unless you know what's going on!
-
 	"""
-	SERVERID     = Value('i', 0)
-	LIVE_SERVERS = None
-	LOCK         = Lock()
+	LIVE_SERVERS = Array('i', 255)
 	
 	@staticmethod
 	def isServerAlive(server, key = None):
@@ -44,11 +37,11 @@ class RunnerSsh(Runner):
 		
 		super(RunnerSsh, self).__init__(job)
 		# construct an ssh cmd
-		sshfile      = self.job.script + '.ssh'
+		self.script = self.job.script + '.ssh'
 
 		conf         = {}
-		if 'sshRunner' in self.job.proc.props or 'sshRunner' in self.job.proc.config:
-			conf     = self.job.proc.sshRunner
+		if 'sshRunner' in self.job.config['runnerOpts']:
+			conf = self.job.config['runnerOpts']['sshRunner']
 		
 		servers    = conf.get('servers', [])
 		keys       = conf.get('keys', [])
@@ -56,33 +49,29 @@ class RunnerSsh(Runner):
 		if not servers:
 			raise RunnerSshError('No server found for ssh runner.')
 
-		if checkAlive:
-			with RunnerSsh.LOCK:
-				if not RunnerSsh.LIVE_SERVERS:
-					live_server_ids = []
-					for i, server in enumerate(servers):
-						if RunnerSsh.isServerAlive(server, keys[i] if keys else None):
-							live_server_ids.append(i)
-					RunnerSsh.LIVE_SERVERS = Array('i', live_server_ids)
-		else:
-			RunnerSsh.LIVE_SERVERS = list(range(len(servers)))
+		with RunnerSsh.LIVE_SERVERS.get_lock():
+			if not RunnerSsh.LIVE_SERVERS:
+				if checkAlive:
+					RunnerSsh.LIVE_SERVERS = [
+						i for i, server in enumerate(servers)
+						if RunnerSsh.isServerAlive(server, keys[i] if keys else None)
+					]
+				else:
+					RunnerSsh.LIVE_SERVERS = list(range(len(servers)))
 
 		if len(RunnerSsh.LIVE_SERVERS) == 0:
 			raise RunnerSshError('No server is alive.')
 
-		sid    = RunnerSsh.LIVE_SERVERS[RunnerSsh.SERVERID.value % len (RunnerSsh.LIVE_SERVERS)]
+		sid    = RunnerSsh.LIVE_SERVERS[job.index % len (RunnerSsh.LIVE_SERVERS)]
 		server = servers[sid]
 		key    = keys[sid] if keys else None
-		
-		RunnerSsh.SERVERID.value += 1
-		
-		self.cmd2run = "cd %s; %s" % (os.getcwd(), self.cmd2run)
+
+		self.cmd2run = "cd %s; %s" % (getcwd(), self.cmd2run)
 		sshsrc       = [
 			'#!/usr/bin/env bash',
 			'# run on server: {}'.format(server),
 			''
 		]
-		
 		if 'preScript' in conf:
 			sshsrc.append (conf['preScript'])
 		
@@ -91,14 +80,65 @@ class RunnerSsh(Runner):
 		if 'postScript' in conf:
 			sshsrc.append (conf['postScript'])
 
-		with open (sshfile, 'w') as f:
+		with open (self.script, 'w') as f:
 			f.write ('\n'.join(sshsrc) + '\n')
 
-		sshcmd = ['ssh', '-t', server]
+		self.sshcmd = ['ssh', '-t', server]
 		if key:
-			sshcmd.append('-i')
-			sshcmd.append(key)
+			self.sshcmd.append('-i')
+			self.sshcmd.append(key)
 
-		self.helper = SshHelper(sshfile, sshcmd)
+	def submit(self):
+		"""
+		Submit the job
+		@returns:
+			The `utils.cmd.Cmd` instance if succeed 
+			else a `Box` object with stderr as the exception and rc as 1
+		"""
+		cmdlist = ['ls', self.script]
+		cmdlist = list2cmdline(cmdlist)
+		c = cmd.run(self.sshcmd + [cmdlist])
+		if c.rc != 0:
+			c.stderr += 'Probably the server ({}) is not using the same file system as the local machine.\n'.format(self.sshcmd)
+			return c
+		
+		# run self as a script
+		submitter = path.join(path.realpath(path.dirname(__file__)), 'runner.py')
+		cmdlist = [sys.executable, submitter, self.script]
+		cmdlist = list2cmdline(cmdlist)
+		c = cmd.run(self.sshcmd + [cmdlist], bg = True)
+		c.rc = 0
+		return c
+
+	def kill(self):
+		"""
+		Kill the job
+		"""
+		cmdlist = 'ps -o pid,ppid'
+		pidlist = cmd.run(self.sshcmd + [cmdlist]).stdout.splitlines()
+		pidlist = [line.strip().split() for line in pidlist]
+		pidlist = [pid for pid in pidlist if len(pid) == 2 and pid[0].isdigit() and pid[1].isdigit()]
+		dchilds     = ps.child(self.job.pid, pidlist)
+		allchildren = [str(self.job.pid)] + dchilds
+		while dchilds:
+			dchilds2 = sum([ps.child(p, pidlist) for p in dchilds], [])
+			allchildren.extend(dchilds2)
+			dchilds = dchilds2
+		
+		killcmd = ['kill', '-9'] + list(reversed(allchildren))
+		killcmd = list2cmdline(killcmd)
+		cmd.run(self.sshcmd + [killcmd])
+
+	def isRunning(self):
+		"""
+		Tell if the job is alive
+		@returns:
+			`True` if it is else `False`
+		"""
+		if not self.job.pid:
+			return False
+		cmdlist = ['kill', '-0', str(self.job.pid)]
+		cmdlist = list2cmdline(cmdlist)
+		return cmd.run(self.sshcmd + [cmdlist]).rc == 0
 
 

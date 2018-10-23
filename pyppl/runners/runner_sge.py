@@ -1,7 +1,7 @@
-import copy
-
+import re, copy
+from subprocess import CalledProcessError
 from .runner import Runner
-from .helpers import SgeHelper
+from ..utils import cmd
 
 class RunnerSge (Runner):
 	"""
@@ -24,22 +24,22 @@ class RunnerSge (Runner):
 		sgesrc  = ['#!/usr/bin/env bash']
 
 		conf = {}
-		if 'sgeRunner' in self.job.proc.props or 'sgeRunner' in self.job.proc.config:
-			conf = copy.copy (self.job.proc.sgeRunner)
+		if 'sgeRunner' in self.job.config['runnerOpts']:
+			conf = copy.copy(self.job.config['runnerOpts']['sgeRunner'])
 		
-		commands = {'qsub': 'qsub', 'qstat': 'qstat', 'qdel': 'qdel'}
+		self.commands = {'qsub': 'qsub', 'qstat': 'qstat', 'qdel': 'qdel'}
 		if 'qsub' in conf:
-			commands['qsub'] = conf['qsub']
+			self.commands['qsub'] = conf['qsub']
 		if 'qstat' in conf:
-			commands['qstat'] = conf['qstat']
+			self.commands['qstat'] = conf['qstat']
 		if 'qdel' in conf:
-			commands['qdel'] = conf['qdel']
+			self.commands['qdel'] = conf['qdel']
 			
 		if not 'sge.N' in conf:
 			jobname = '.'.join([
-				self.job.proc.id,
-				self.job.proc.tag,
-				self.job.proc._suffix(),
+				self.job.config['proc'],
+				self.job.config['tag'],
+				self.job.config['suffix'],
 				str(self.job.index + 1)
 			])
 			sgesrc.append('#$ -N %s' % jobname)
@@ -102,6 +102,54 @@ class RunnerSge (Runner):
 		with open (sgefile, 'w') as f:
 			f.write ('\n'.join(sgesrc) + '\n')
 		
-		self.helper = SgeHelper(sgefile, commands)
+	def submit(self):
+		"""
+		Submit the job
+		@returns:
+			The `utils.cmd.Cmd` instance if succeed 
+			else a `Box` object with stderr as the exception and rc as 1
+		"""
+		cmdlist = [self.commands['qsub'], self.job.script + '.sge']
+		try:
+			r = cmd.run(cmdlist)
+			# Your job 6556149 ("pSort.notag.3omQ6NdZ.0") has been submitted
+			m = re.search(r'\s(\d+)\s', r.stdout)
+			if not m:
+				r.rc = 1
+			else:
+				self.job.pid = m.group(1)
+			return r
+
+		except (OSError, CalledProcessError) as ex:
+			r        = Box()
+			r.stderr = str(ex)
+			r.rc     = 1
+			r.cmd    = cmdlist
+			return r
+
+	def kill(self):
+		"""
+		Kill the job
+		"""
+		cmdlist = [self.commands['qdel'], '-j', str(self.job.pid)]
+		try:
+			cmd.run(cmdlist)
+		except (OSError, CalledProcessError): # pragma: no cover
+			pass
+
+	def alive(self):
+		"""
+		Tell if the job is alive
+		@returns:
+			`True` if it is else `False`
+		"""
+		if not self.job.pid:
+			return False
+		cmdlist = [self.commands['qstat'], '-j', str(self.job.pid)]
+		try:
+			r = cmd.run(cmdlist)
+			return r.rc == 0
+		except (OSError, CalledProcessError):
+			return False
 
 

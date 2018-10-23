@@ -5,7 +5,27 @@ import inspect
 import re
 from hashlib import md5
 from .box import Box
-from six import moves, string_types
+from six import moves
+
+try:
+	from Queue import Queue, Empty as QueueEmpty
+except ImportError:
+	from queue import Queue, Empty as QueueEmpty
+
+try: # python2
+	import cPickle as pickle
+except ImportError: # python3
+	import pickle
+
+try:
+	string_types = basestring
+except NameError:
+	string_types = str
+
+try:
+	from ConfigParser import ConfigParser
+except ImportError:
+	from configparser import ConfigParser
 
 def asStr(s, encoding = 'utf-8'):
 	"""

@@ -189,7 +189,7 @@ class SafeFs(object):
 			if not SafeFs._exists(filepath, filetype):
 				return False
 			if filetype == SafeFs.FILETYPE_DIR:
-				rmtree(filepath)
+				rmtree(filepath, ignore_errors=True)
 			else:
 				osremove(filepath)
 			return True
@@ -516,7 +516,7 @@ class SafeFs(object):
 		for lfile in set(lockfiles):
 			lock = filelock.FileLock(lfile)
 			self.locks.append(lock)
-		
+
 		# have to lock it at the same time!
 		# otherwise it will be a deadlock if locks acquired by different instances
 		with SafeFs.LOCK:
