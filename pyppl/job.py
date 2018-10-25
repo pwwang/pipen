@@ -1110,11 +1110,12 @@ class Job(object):
 			self.status.value = Job.STATUS_DONEFAILED
 
 	def retry(self):
-		if self.status.value != Job.STATUS_DONEFAILED:
+		if not (self.status.value & 0b1):
 			return False
-		self.status.value = Job.STATUS_RETRYING
 		if self.config['errhow'] == 'halt':
+			self.status.value = Job.STATUS_ENDFAILED
 			return 'halt'
+		self.status.value = Job.STATUS_RETRYING
 		self.ntry.value += 1
 		return True
 

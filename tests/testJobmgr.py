@@ -1,34 +1,12 @@
-import helpers, testly
+import helpers, testly, sys
 from os import path, makedirs
 from shutil import rmtree
 from tempfile import gettempdir
-from time import sleep
-from six.moves.queue import Empty
-from multiprocessing import JoinableQueue, Process
-from threading import Thread
 
-from pyppl import Proc, utils
-from pyppl.job import Job
+from pyppl import Proc
 from pyppl.jobmgr import Jobmgr
-from pyppl.runners import RunnerLocal
 
-def createJob(testdir, index = 0, config = None):
-	config = config or {}
-	config['workdir']  = testdir
-	config['procsize'] = config.get('procsize', 1)
-	config['proc']     = config.get('proc', 'pTestRunner')
-	config['tag']      = config.get('tag', 'notag')
-	config['suffix']   = config.get('suffix', 'suffix')
-	jobdir = path.join(testdir, str(index+1))
-	if not path.exists(jobdir):
-		makedirs(jobdir)
-	with open(path.join(jobdir, 'job.script'), 'w') as f:
-		f.write('#!/usr/bin/env bash')
-		f.write(config.get('_script', ''))
-	open(path.join(jobdir, 'job.stdout'), 'w').close()
-	open(path.join(jobdir, 'job.stderr'), 'w').close()
-	return Job(index, config)
-
+# just high-level tests
 class TestJobmgr(testly.TestCase):
 	
 	def setUpMeta(self):
@@ -37,13 +15,59 @@ class TestJobmgr(testly.TestCase):
 			rmtree(self.testdir)
 		makedirs(self.testdir)
 
-	def dataProvider_testKillJob(self):
-		jobs = [job for job in Job()]
+	def testJmNoJobs(self):
+		with helpers.log2str():
+			pNoJobs = Proc()
+			pNoJobs.run()
 
-	def testKillJob(self, jm):
-		with self.assertStdOE() as (out, err):
-			jm.killJob(0)
-		self.assertIn('abc', err)
+	def testJm1(self):
+		with helpers.log2str():
+			p = Proc()
+			p.script = 'echo 123'
+			p.forks  = 1
+			p.input = {'a': [1, 2]}
+			p.run()
+
+	def testJm2(self):
+		with helpers.log2str():
+			p1 = Proc()
+			p1.script = 'echo 123'
+			p1.forks = Jobmgr.PBAR_SIZE * 2
+			p1.input = {'a': list(range(Jobmgr.PBAR_SIZE * 2))}
+			p1.run()
+
+	def testJm3(self):
+		with helpers.log2str():
+			p2 = Proc()
+			p2.script = '__err__ 123'
+			p2.forks = 20
+			p2.input = {'a': list(range(20))}
+			p2.errhow = 'halt'
+			try:
+				p2.run()
+			except SystemExit:
+				pass
+
+	def testJm4(self):
+		with helpers.log2str():
+			from time import time
+			p3         = Proc()
+			p3.forks   = 1
+			p3.lang    = sys.executable
+			p3.args.i  = time()
+			p3.input   = {'a': [0]}
+			p3.errntry = 10
+			p3.errhow  = 'retry'
+			p3.script  = '''#
+			# PYPPL INDENT REMOVE
+			from time import sleep, time
+			sleep(.1)
+			t = time() - {{args.i}}
+			if t < 1:
+				exit(1)
+			'''
+			p3.run()
+
 	
 if __name__ == '__main__':
 	testly.main(verbosity=2)

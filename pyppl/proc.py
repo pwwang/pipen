@@ -1139,6 +1139,7 @@ class Proc (object):
 			'proc' : self.name(False)
 		})
 
-		for jobidx, jobdata in Job.OUTPUT.items():
-			self.props['channel'][jobidx] = tuple(v['data'] for v in jobdata.values())
-		self.channel.attach(*Job.OUTPUT[0].keys())
+		if Job.OUTPUT:
+			for jobidx, jobdata in Job.OUTPUT.items():
+				self.props['channel'][jobidx] = tuple(v['data'] for v in jobdata.values())
+			self.channel.attach(*Job.OUTPUT[0].keys())

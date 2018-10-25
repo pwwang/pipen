@@ -1,9 +1,10 @@
 
-import signal
+import signal, os
 from multiprocessing import Pool, Process, Manager, Lock, current_process
 from multiprocessing.pool import ThreadPool
+from multiprocessing.managers import SyncManager
 from threading import Thread
-from .utils import QueueEmpty
+from .utils import QueueEmpty, ps
 from .job import Job
 from .logger import logger
 
@@ -44,17 +45,23 @@ class Jobmgr(object):
 		Job.STATUS_KILLING     : 'KILLING',
 		Job.STATUS_KILLED      : 'KILLING',
 	}
+	MANAGER = Manager()
+	PIDS    = None
+	LOCK    = Lock()
 
 	def __init__(self, jobs, config):
 		if not jobs:  # no jobs
 			return
-		manager       = Manager()
-		self.buldQ    = manager.Queue()
-		self.sbmtQ    = manager.Queue()
-		self.runnQ    = manager.Queue()
+		self.buldQ    = Jobmgr.MANAGER.Queue()
+		self.sbmtQ    = Jobmgr.MANAGER.Queue()
+		self.runnQ    = Jobmgr.MANAGER.Queue()
 		self.jobs     = jobs
 		self.config   = config
 		self.logger   = config.get('logger', logger)
+		if not Jobmgr.PIDS:
+			man = SyncManager()
+			man.start(signal.signal, (signal.SIGINT, signal.SIG_IGN))
+			Jobmgr.PIDS = man.list()
 		for i in range(len(jobs)):
 			self.buldQ.put(i)
 		for i in range(len(jobs)):
@@ -68,9 +75,9 @@ class Jobmgr(object):
 			self.locPool.join()
 			self.remPool.join()
 		except KeyboardInterrupt: # pragma: no cover
-			self.logger.info(
+			self.logger.warning(
 				'Ctrl-C detected, quitting pipeline ...'.ljust(Jobmgr.PBAR_SIZE + 50), 
-				extra = {'loglevel': 'WARNING', 'pbar': 'next'}
+				extra = {'pbar': 'next'}
 			)
 			self.cleanup()
 
@@ -126,11 +133,21 @@ class Jobmgr(object):
 			'proc'    : self.config['proc']
 		})
 
-	def cleanup(self):
+	def cleanup(self, pid = 0):
 		#signal.signal(signal.SIGINT, signal.SIG_IGN)
 		#self.locPool.join()
-		self.locPool.terminate()
-		self.remPool.terminate()
+		self.logger.debug('Clearning up queues ...'.ljust(Jobmgr.PBAR_SIZE + 50))
+		if hasattr(self, 'locPool'):
+			self.locPool.terminate()
+		# if I am in subprocess:
+		if hasattr(self, 'remPool'): # pragma: no cover
+			self.remPool.terminate()
+
+		pids = list(Jobmgr.PIDS)
+		for p in pids:
+			if p == pid: continue
+			ps.killtree(p)
+		Jobmgr.PIDS = None
 
 		runjobs  = [
 			job.index for job in self.jobs 
@@ -141,14 +158,17 @@ class Jobmgr(object):
 		killPool.close()
 		killPool.join()
 
-		failedjobs = [job for job in self.jobs if job.status.value & 0b1000000]
-		if not failedjobs:
-			failedjobs = [self.jobs[0]]
-		failedjobs[0].showError(len(failedjobs))
+		if not pid: # pragma: no cover
+			failedjobs = [job for job in self.jobs if job.status.value & 0b1000000]
+			if not failedjobs:
+				failedjobs = [self.jobs[0]]
+			failedjobs[0].showError(len(failedjobs))
+			
 		exit(1)
 
 	def buildWorker(self):
 		signal.signal(signal.SIGINT, signal.SIG_IGN)
+		Jobmgr.PIDS.append(os.getpid())
 		maybeBreak = [False, False]
 		while not all(maybeBreak):
 			if not maybeBreak[0]:
@@ -169,11 +189,12 @@ class Jobmgr(object):
 						#self.sbmtQ.put(None)
 					else:
 						self.buildJob(i)
-				except (QueueEmpty, IOError, EOFError):
+				except (QueueEmpty, IOError, EOFError): # pragma: no cover
 					pass
-				
+
 	def runWorker(self):
 		signal.signal(signal.SIGINT, signal.SIG_IGN)
+		Jobmgr.PIDS.append(os.getpid())
 		while not self.allJobsDone():
 			try:
 				i = self.runnQ.get(timeout = 1)
@@ -184,10 +205,11 @@ class Jobmgr(object):
 					self.runJob(i)
 					self.runnQ.task_done()
 
-			except (QueueEmpty, IOError, EOFError):
+			except (QueueEmpty, IOError, EOFError): # pragma: no cover
 				pass
 		for _ in range(self.config['nsub']):
 			self.sbmtQ.put(None)
+			self.runnQ.put(None)
 
 	def allJobsDone(self):
 		return not self.jobs or all(
@@ -218,14 +240,21 @@ class Jobmgr(object):
 		job.status.value = Job.STATUS_RUNNING
 		self.progressbar(i)
 		job.run()
+		self.progressbar(i)
 		retry = job.retry()
 		if retry == 'halt':
-			self.cleanup()
+			with Jobmgr.LOCK:
+				self.logger.warning(
+					'Error encountered (errhow = halt), quitting pipeline ...'.ljust(Jobmgr.PBAR_SIZE + 50), 
+					extra = {'pbar': 'next'}
+				)
+				self.cleanup(os.getpid())
 		elif retry is True:
 			self.progressbar(i)
 			self.sbmtQ.put(i)
 
-	def killJob(self, i):
+	# process killed, so coverage not included
+	def killJob(self, i): # pragma: no cover
 		job = self.jobs[i]
 		job.status.value = Job.STATUS_KILLING
 		self.progressbar(i)
