@@ -527,7 +527,9 @@ class Job(object):
 			self.logger.debug("Not cached because previous signature is empty.", extra = {
 				'level2': "CACHE_EMPTY_PREVSIG",
 				'jobidx': self.index,
-				'joblen': self.config['procsize']
+				'joblen': self.config['procsize'],
+				'pbar'  : False,
+				'proc'  : self.config['proc']
 			})
 			return False
 
@@ -537,7 +539,9 @@ class Job(object):
 			self.logger.debug("Not cached because current signature is empty.", extra = {
 				'level2': "CACHE_EMPTY_CURRSIG",
 				'jobidx': self.index,
-				'joblen': self.config['procsize']
+				'joblen': self.config['procsize'],
+				'pbar'  : False,
+				'proc'  : self.config['proc']
 			})
 			return False
 
@@ -554,7 +558,9 @@ class Job(object):
 				).format(key = key, k = k, prev = oval, curr = nval), extra = {
 					'level2': logkey,
 					'jobidx': self.index,
-					'joblen': self.config['procsize']
+					'joblen': self.config['procsize'],
+					'pbar'  : False,
+					'proc'  : self.config['proc']
 				})
 				return False
 			return True
@@ -573,7 +579,9 @@ class Job(object):
 					).format(key = key, k = k, prev = ofile, curr = nfile), extra = {
 						'level2': logkey,
 						'jobidx': self.index,
-						'joblen': self.config['procsize']
+						'joblen': self.config['procsize'],
+						'pbar'  : False,
+						'proc'  : self.config['proc']
 					})
 					return False
 				if timekey and ntime > otime:
@@ -593,7 +601,9 @@ class Job(object):
 					), extra = {
 						'level2': timekey,
 						'jobidx': self.index,
-						'joblen': self.config['procsize']
+						'joblen': self.config['procsize'],
+						'pbar'  : False,
+						'proc'  : self.config['proc']
 					})
 					return False
 			return True
@@ -629,7 +639,9 @@ class Job(object):
 						), extra = {
 							'level2': logkey,
 							'jobidx': self.index,
-							'joblen': self.config['procsize']
+							'joblen': self.config['procsize'],
+							'pbar'  : False,
+							'proc'  : self.config['proc']
 						})
 						return False
 					if timekey and ntime > otime:
@@ -650,7 +662,9 @@ class Job(object):
 						), extra = {
 							'level2': timekey,
 							'jobidx': self.index,
-							'joblen': self.config['procsize']
+							'joblen': self.config['procsize'],
+							'pbar'  : False,
+							'proc'  : self.config['proc']
 						})
 						return False
 			return True
@@ -723,21 +737,27 @@ class Job(object):
 			self.logger.warning("Job is not export-cached using symlink export.", extra = {
 				'level2': "EXPORT_CACHE_USING_SYMLINK",
 				'jobidx': self.index,
-				'joblen': self.config['procsize']
+				'joblen': self.config['procsize'],
+				'pbar'  : False,
+				'proc'  : self.config['proc']
 			})
 			return False
 		if self.config['expart'] and self.config['expart'][0].render(self.data):
 			self.logger.warning("Job is not export-cached using partial export.", extra = {
 				'level2': "EXPORT_CACHE_USING_EXPARTIAL",
 				'jobidx': self.index,
-				'joblen': self.config['procsize']
+				'joblen': self.config['procsize'],
+				'pbar'  : False,
+				'proc'  : self.config['proc']
 			})
 			return False
 		if not self.config['exdir']:
 			self.logger.debug("Job is not export-cached since export directory is not set.", extra = {
 				'level2': "EXPORT_CACHE_EXDIR_NOTSET",
 				'jobidx': self.index,
-				'joblen': self.config['procsize']
+				'joblen': self.config['procsize'],
+				'pbar'  : False,
+				'proc'  : self.config['proc']
 			})
 			return False
 
@@ -752,7 +772,9 @@ class Job(object):
 						self.logger.debug("Job is not export-cached since exported file not exists: %s." % exfile, extra = {
 							'level2': "EXPORT_CACHE_EXFILE_NOTEXISTS",
 							'jobidx': self.index,
-							'joblen': self.config['procsize']
+							'joblen': self.config['procsize'],
+							'pbar'  : False,
+							'proc'  : self.config['proc']
 						})
 						return False
 
@@ -760,7 +782,9 @@ class Job(object):
 						self.logger.warning('Overwrite file for export-caching: %s' % out['data'], extra = {
 							'level2': "EXPORT_CACHE_OUTFILE_EXISTS",
 							'jobidx': self.index,
-							'joblen': self.config['procsize']
+							'joblen': self.config['procsize'],
+							'pbar'  : False,
+							'proc'  : self.config['proc']
 						})
 						safefs.remove(out['data'])
 
@@ -772,7 +796,9 @@ class Job(object):
 						self.logger.debug("Job is not export-cached since exported file not exists: %s." % exfile, extra = {
 							'level2': "EXPORT_CACHE_EXFILE_NOTEXISTS",
 							'jobidx': self.index,
-							'joblen': self.config['procsize']
+							'joblen': self.config['procsize'],
+							'pbar'  : False,
+							'proc'  : self.config['proc']
 						})
 						return False
 
@@ -780,9 +806,11 @@ class Job(object):
 						self.logger.warning('Overwrite file for export-caching: %s' % out['data'], extra = {
 							'level2': "EXPORT_CACHE_OUTFILE_EXISTS",
 							'jobidx': self.index,
-							'joblen': self.config['procsize']
+							'joblen': self.config['procsize'],
+							'pbar'  : False,
+							'proc'  : self.config['proc']
 						})
-						remove (out['data'])
+						safefs.remove(out['data'])
 
 					safefs.ungz (exfile, out['data'])
 			else:
@@ -790,16 +818,20 @@ class Job(object):
 					self.logger.debug("Job is not export-cached since exported file not exists: %s." % exfile, extra = {
 						'level2': "EXPORT_CACHE_EXFILE_NOTEXISTS",
 						'jobidx': self.index,
-						'joblen': self.config['procsize']
+						'joblen': self.config['procsize'],
+						'pbar'  : False,
+						'proc'  : self.config['proc']
 					})
 					return False
 				if safefs.SafeFs(exfile, out['data']).samefile():
 					continue
 				if path.exists (out['data']) or path.islink(out['data']):
-					self.logger.debug('Overwrite file for export-caching: %s' % out['data'], extra = {
+					self.logger.warning('Overwrite file for export-caching: %s' % out['data'], extra = {
 						'level2': "EXPORT_CACHE_OUTFILE_EXISTS",
 						'jobidx': self.index,
-						'joblen': self.config['procsize']
+						'joblen': self.config['procsize'],
+						'pbar'  : False,
+						'proc'  : self.config['proc']
 					})
 					safefs.remove(out['data'])
 
@@ -846,7 +878,7 @@ class Job(object):
 				safefs.remove(jobfile)
 		open(self.outfile, 'w').close()
 		open(self.errfile, 'w').close()
-
+		
 		makedirs(self.outdir)
 		if self.index in Job.OUTPUT:
 			for out in Job.OUTPUT[self.index].values():
@@ -961,7 +993,9 @@ class Job(object):
 			self.logger.debug('Empty signature because of script file: %s.' % (self.script), extra = {
 				'level2': 'CACHE_EMPTY_CURRSIG',
 				'jobidx': self.index,
-				'joblen': self.config['procsize']
+				'joblen': self.config['procsize'],
+				'proc'  : self.config['proc'],
+				'pbar'  : False,
 			})
 			return ''
 		ret['script'] = sig
@@ -985,7 +1019,9 @@ class Job(object):
 					self.logger.debug('Empty signature because of input file: %s.' % (val['data']), extra = {
 						'level2': 'CACHE_EMPTY_CURRSIG',
 						'jobidx': self.index,
-						'joblen': self.config['procsize']
+						'joblen': self.config['procsize'],
+						'proc'  : self.config['proc'],
+						'pbar'  : False,
 					})
 					return ''
 				ret['i'][Proc.IN_FILETYPE[0]][key] = sig
@@ -997,7 +1033,9 @@ class Job(object):
 						self.logger.debug('Empty signature because of one of input files: %s.' % (infile), extra = {
 							'level2': 'CACHE_EMPTY_CURRSIG',
 							'jobidx': self.index,
-							'joblen': self.config['procsize']
+							'joblen': self.config['procsize'],
+							'proc'  : self.config['proc'],
+							'pbar'  : False,
 						})
 						return ''
 					ret['i'][Proc.IN_FILESTYPE[0]][key].append (sig)
@@ -1011,7 +1049,9 @@ class Job(object):
 					self.logger.debug('Empty signature because of output file: %s.' % (val['data']), extra = {
 						'level2': 'CACHE_EMPTY_CURRSIG',
 						'jobidx': self.index,
-						'joblen': self.config['procsize']
+						'joblen': self.config['procsize'],
+						'proc'  : self.config['proc'],
+						'pbar'  : False,
 					})
 					return ''
 				ret['o'][Proc.OUT_FILETYPE[0]][key] = sig
@@ -1021,7 +1061,9 @@ class Job(object):
 					self.logger.debug('Empty signature because of output dir: %s.' % (val['data']), extra = {
 						'level2': 'CACHE_EMPTY_CURRSIG',
 						'jobidx': self.index,
-						'joblen': self.config['procsize']
+						'joblen': self.config['procsize'],
+						'pbar'  : False,
+						'proc'  : self.config['proc']
 					})
 					return ''
 				ret['o'][Proc.OUT_DIRTYPE[0]][key] = sig
@@ -1030,12 +1072,12 @@ class Job(object):
 	def submit(self):
 		self.status.value = Job.STATUS_SUBMITTING
 		if self.runner.isRunning():
-			self.logger.info('is already running at {pid}, skip submission.'.format(pid = self.runner.pid), extra = {
-				'loglevel': 'submit',
+			self.logger.info('is already running at {pid}, skip submission.'.format(pid = self.pid), extra = {
+				'proc'    : self.config['proc'],
 				'jobidx'  : self.index,
 				'joblen'  : self.config['procsize'],
+				'loglevel': 'submit',
 				'pbar'    : False,
-				'proc'    : self.config['proc']
 			})
 			self.status.value = Job.STATUS_RUNNING
 		else:

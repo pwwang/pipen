@@ -949,9 +949,10 @@ class TestJob(testly.TestCase):
 	def dataProvider_testSignature(self):
 		# empty script
 		config = {}
-		config['workdir'] = path.join(self.testdir, 'pSignature', 'workdir')
-		config['script']  = TemplateLiquid('')
-		config['size']    = 10
+		config['workdir']  = path.join(self.testdir, 'pSignature', 'workdir')
+		config['script']   = TemplateLiquid('')
+		config['procsize'] = 10
+		config['proc']     = 'pSignature'
 		#pSignature.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
 		job = Job(0, config)
 		#job.init()
@@ -963,16 +964,24 @@ class TestJob(testly.TestCase):
 		infile1 = path.join(self.testdir, 'pSignature1.txt')
 		helpers.writeFile(infile1)
 		config = {}
-		config['workdir'] = path.join(self.testdir, 'pSignature1', 'workdir')
-		config['script']  = TemplateLiquid('')
-		config['size']    = 10
-		config['input']   = {
+		config['workdir']  = path.join(self.testdir, 'pSignature1', 'workdir')
+		config['script']   = TemplateLiquid('')
+		config['procsize'] = 10
+		config['proc']     = 'pSignature1'
+		config['iftype']   = 'indir'
+		config['dirsig']   = False
+		config['input']    = {
 			'a': {'type': 'file', 'data': [infile1]}
 		}
+		config['output']   = {}
 		#pSignature1.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
 		job1 = Job(0, config)
 		#job1.init()
 		#utils.safeRemove(infile1)
+		makedirs(job1.dir)
+		job1._prepInput()
+		job1._prepOutput()
+		job1._prepScript()
 		utils.safefs.remove(infile1)
 		yield job1, '', ['DEBUG', '[01/10] Empty signature because of input file']
 		
@@ -980,43 +989,62 @@ class TestJob(testly.TestCase):
 		infile2 = path.join(self.testdir, 'pSignature2.txt')
 		helpers.writeFile(infile2)
 		config = {}
-		config['workdir'] = path.join(self.testdir, 'pSignature2', 'workdir')
-		config['script']  = TemplateLiquid('')
-		config['size']    = 10
-		config['input']   = {
+		config['workdir']  = path.join(self.testdir, 'pSignature2', 'workdir')
+		config['script']   = TemplateLiquid('')
+		config['proc']     = 'pSignature2'
+		config['procsize'] = 10
+		config['iftype']   = 'indir'
+		config['dirsig']   = False
+		config['input']    = {
 			'a': {'type': 'files', 'data': [[infile2]]}
 		}
+		config['output']   = {}
 		#pSignature2.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
 		job2 = Job(0, config)
 		#job2.init()
 		#utils.safeRemove(infile2)
+		job2._prepInput()
+		job2._prepOutput()
+		job2._prepScript()
 		utils.safefs.remove(infile2)
 		yield job2, '', ['DEBUG', '[01/10] Empty signature because of one of input files']
 		
 		# outfile empty
 		config = {}
-		config['workdir'] = path.join(self.testdir, 'pSignature3', 'workdir')
-		config['script']  = TemplateLiquid('')
-		config['size']    = 10
-		config['output']  = {
+		config['workdir']  = path.join(self.testdir, 'pSignature3', 'workdir')
+		config['script']   = TemplateLiquid('')
+		config['procsize'] = 10
+		config['proc']     = 'pSignature3'
+		config['dirsig']   = False
+		config['input']    = {}
+		config['output']   = {
 			'a': ('file', TemplateLiquid('pSignature3.txt'))
 		}
 		#pSignature3.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
 		job3 = Job(0, config)
 		#job3.init()
+		job3._prepInput()
+		job3._prepOutput()
+		job3._prepScript()
 		yield job3, '', ['DEBUG', '[01/10] Empty signature because of output file']
 		
 		# outdir empty
 		config = {}
-		config['workdir'] = path.join(self.testdir, 'pSignature4', 'workdir')
-		config['script']  = TemplateLiquid('')
-		config['size']    = 10
-		config['output']  = {
+		config['workdir']  = path.join(self.testdir, 'pSignature4', 'workdir')
+		config['script']   = TemplateLiquid('')
+		config['procsize'] = 10
+		config['proc']     = 'pSignature4'
+		config['dirsig']   = False
+		config['input']    = {}
+		config['output']   = {
 			'a': ('dir', TemplateLiquid('pSignature4.dir'))
 		}
 		#pSignature4.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
 		job4 = Job(0, config)
 		#job4.init()
+		job4._prepInput()
+		job4._prepOutput()
+		job4._prepScript()
 		yield job4, '', ['DEBUG', '[01/10] Empty signature because of output dir']
 		
 		# normal signature
@@ -1027,21 +1055,27 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile5_1)
 		helpers.writeFile(infile5_2)
 		config = {}
-		config['workdir'] = path.join(self.testdir, 'pSignature5', 'workdir')
-		config['script']  = TemplateLiquid('')
-		config['size']    = 10
-		config['input']   = {
+		config['workdir']  = path.join(self.testdir, 'pSignature5', 'workdir')
+		config['script']   = TemplateLiquid('')
+		config['procsize'] = 10
+		config['proc']     = 'pSignature5'
+		config['iftype']   = 'indir'
+		config['dirsig']   = True
+		config['input']    = {
 			'a': {'type': 'file', 'data': [infile5]},
-			'b': {'type': 'files', 'data': [[infile5_1, infile5_2]]}
+			'b': {'type': 'files', 'data': [[infile5_1, infile5_2]]},
+			'c': {'type': 'var', 'data': 'a'}
 		}
 		config['output']  = {
 			'a': ('file', TemplateLiquid('pSignature5.txt')),
-			'b': ('dir', TemplateLiquid('pSignature5.dir'))
+			'b': ('dir', TemplateLiquid('pSignature5.dir')),
+			'c': ('var', TemplateLiquid('{{i.c}}'))
 		}
 		#pSignature5.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
 		job5 = Job(0, config)
-		#job5.init()
-		makedirs(job5.outdir)
+		job5._prepInput()
+		job5._prepOutput()
+		job5._prepScript()
 		ina = path.join(job5.indir, 'pSignature5.txt')
 		inb1 = path.join(job5.indir, 'pSignature5_1.txt')
 		inb2 = path.join(job5.indir, 'pSignature5_2.txt')
@@ -1050,6 +1084,78 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(outa)
 		makedirs(outb)
 		yield job5, {
+			'i': {
+				'file': {
+					'a': [ina, int(path.getmtime(ina))]
+				},
+				'files': {
+					'b': [
+						[inb1, int(path.getmtime(inb1))],
+						[inb2, int(path.getmtime(inb2))],
+					]
+				},
+				'var': {'c': 'a'}
+			},
+			'o': {
+				'dir': {
+					'b': [outb, int(path.getmtime(outb))]
+				},
+				'file': {
+					'a': [outa, int(path.getmtime(outa))]
+				},
+				'var': {'c': 'a'}
+			},
+			'script': [job5.script, int(path.getmtime(job5.script))]
+		}
+			
+	def testSignature(self, job, outsig, errs = []):
+		self.maxDiff = None
+		logger.PyPPLLogFilter._clearDebug()
+		with helpers.log2str(levels = 'all') as (out, err):
+			sig = job.signature()
+		self.assertEqual(sig, outsig)
+		stderr = err.getvalue()
+		for err in errs:
+			self.assertIn(err, stderr)		
+
+	def dataProvider_testCache(self):		
+		# normal signature
+		infile = path.join(self.testdir, 'pCache.txt')
+		infile_1 = path.join(self.testdir, 'pCache_1.txt')
+		infile_2 = path.join(self.testdir, 'pCache_2.txt')
+		helpers.writeFile(infile)
+		helpers.writeFile(infile_1)
+		helpers.writeFile(infile_2)
+		config = {}
+		config['workdir'] = path.join(self.testdir, 'pCache', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['cache']   = True
+		config['iftype']  = 'indir'
+		config['dirsig']  = False
+		config['size']    = 10
+		#pCache.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
+		config['input']   = {
+			'a': {'type': 'file', 'data': [infile]},
+			'b': {'type': 'files', 'data': [[infile_1, infile_2]]}
+		}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pCache.txt')),
+			'b': ('dir', TemplateLiquid('pCache.dir'))
+		}
+		#pCache.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
+		job = Job(0, config)
+		#job.init()
+		job._prepInput()
+		job._prepOutput()
+		job._prepScript()
+		ina = path.join(job.indir, 'pCache.txt')
+		inb1 = path.join(job.indir, 'pCache_1.txt')
+		inb2 = path.join(job.indir, 'pCache_2.txt')
+		outa = path.join(job.outdir, 'pCache.txt')
+		outb = path.join(job.outdir, 'pCache.dir')
+		helpers.writeFile(outa)
+		makedirs(outb)
+		yield job, True, {
 			'i': {
 				'file': {
 					'a': [ina, int(path.getmtime(ina))]
@@ -1071,798 +1177,1045 @@ class TestJob(testly.TestCase):
 				},
 				'var': {}
 			},
-			'script': [job5.script, int(path.getmtime(job5.script))]
+			'script': [job.script, int(path.getmtime(job.script))]
 		}
-			
-	def testSignature(self, job, outsig, errs = []):
-		self.maxDiff = None
-		with helpers.log2str(levels = 'all') as (out, err):
-			sig = job.signature()
-		if isinstance(sig, dict):
-			self.assertDictEqual(sig, outsig)
+		
+		#
+		config = {}
+		config['workdir'] = path.join(self.testdir, 'pCache1', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['cache']   = False
+		#pCache1.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
+		job1 = Job(0, config)
+		#job1.init()
+		yield job1, False, {}
+		
+	def testCache(self, job, cache, outsig):
+		helpers.log2sys(levels = 'all')
+		job.cache()
+		if not cache:
+			self.assertFalse(path.exists(job.cachefile))
 		else:
-			self.assertEqual(sig, outsig)
+			self.assertDictEqual(helpers.readFile(job.cachefile, json.loads), outsig)
+	
+	def dataProvider_testIsTrulyCached(self):
+		# no cache file
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['proc']    = 'pIsTrulyCached'
+		#pIsTrulyCached.LOG_NLINE['CACHE_SIGFILE_NOTEXISTS'] = -1
+		job = Job(0, config)
+		#job.init()
+		yield job, False, ['DEBUG', 'pIsTrulyCached', 'Not cached as cache file not exists.']
+		
+		# empty cache file
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached1', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['proc']    = 'pIsTrulyCached1'
+		#pIsTrulyCached1.LOG_NLINE['CACHE_EMPTY_PREVSIG'] = -1
+		job1 = Job(0, config)
+		#job1.init()
+		job1._prepInput()
+		job1._prepOutput()
+		job1._prepScript()
+		helpers.writeFile(job1.cachefile)
+		yield job1, False, ['DEBUG', 'pIsTrulyCached1', 'Not cached because previous signature is empty.']
+		
+		# current signature empty
+		infile = path.join(self.testdir, 'pIsTrulyCached2.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached2_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached2_2.txt')
+		helpers.writeFile(infile)
+		helpers.writeFile(infile_1)
+		helpers.writeFile(infile_2)
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached2', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['proc']    = 'pIsTrulyCached2'
+		config['cache']   = True
+		config['size']    = 10
+		#pIsTrulyCached2.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
+		config['input']   = {
+			'a': {'type': 'file', 'data': [infile]},
+			'b': {'type': 'files', 'data': [[infile_1, infile_2]]}
+		}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsTrulyCached2.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached2.dir'))
+		}
+		#del pIsTrulyCached2.LOG_NLINE['CACHE_EMPTY_CURRSIG']
+		job2 = Job(0, config)
+		#job2.init()
+		ina = path.join(job2.indir, 'pIsTrulyCached2.txt')
+		inb1 = path.join(job2.indir, 'pIsTrulyCached2_1.txt')
+		inb2 = path.join(job2.indir, 'pIsTrulyCached2_2.txt')
+		outa = path.join(job2.outdir, 'pIsTrulyCached2.txt')
+		outb = path.join(job2.outdir, 'pIsTrulyCached2.dir')
+		job2._prepInput()
+		job2._prepOutput()
+		job2._prepScript()
+		helpers.writeFile(outa)
+		makedirs(outb)
+		with helpers.log2str():
+			job2.cache()
+		#utils.safeRemove(outb)
+		utils.safefs.remove(outb)
+		yield job2, False, ['DEBUG', 'pIsTrulyCached2', 'mpty', 'signature', 'because']
+		
+		# script file newer
+		infile = path.join(self.testdir, 'pIsTrulyCached3.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached3_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached3_2.txt')
+		helpers.writeFile(infile)
+		helpers.writeFile(infile_1)
+		helpers.writeFile(infile_2)
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached3', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['proc']    = 'pIsTrulyCached3'
+		config['cache']   = True
+		config['size']    = 10
+		#pIsTrulyCached3.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
+		config['input']   = {
+			'a': {'type': 'file', 'data': [infile]},
+			'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
+			'c': {'type': 'var', 'data': ['var_c']}
+		}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsTrulyCached3.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached3.dir'))
+		}
+		#del pIsTrulyCached3.LOG_NLINE['CACHE_EMPTY_CURRSIG']
+		#del pIsTrulyCached3.LOG_NLINE['CACHE_SCRIPT_NEWER']
+		job3 = Job(0, config)
+		#job3.init()
+		job3._prepInput()
+		job3._prepOutput()
+		job3._prepScript()
+		ina = path.join(job3.indir, 'pIsTrulyCached3.txt')
+		inb1 = path.join(job3.indir, 'pIsTrulyCached3_1.txt')
+		inb2 = path.join(job3.indir, 'pIsTrulyCached3_2.txt')
+		outa = path.join(job3.outdir, 'pIsTrulyCached3.txt')
+		outb = path.join(job3.outdir, 'pIsTrulyCached3.dir')
+		helpers.writeFile(outa)
+		makedirs(outb)
+		with helpers.log2str():
+			job3.cache()
+		utime(job3.script, (time() + 10, time() + 10))
+		yield job3, False, ['DEBUG', 'pIsTrulyCached3', 'Not cached because script file(script) is newer:', '- Previous:', '- Current']
+		
+		# script file newer
+		infile = path.join(self.testdir, 'pIsTrulyCached4.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached4_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached4_2.txt')
+		helpers.writeFile(infile)
+		helpers.writeFile(infile_1)
+		helpers.writeFile(infile_2)
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached4', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['proc']    = 'pIsTrulyCached4'
+		config['cache']   = True
+		config['size']    = 10
+		#pIsTrulyCached4.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
+		config['input']   = {
+			'a': {'type': 'file', 'data': [infile]},
+			'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
+			'c': {'type': 'var', 'data': ['var_c']}
+		}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsTrulyCached4.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached4.dir'))
+		}
+		#del pIsTrulyCached4.LOG_NLINE['CACHE_EMPTY_CURRSIG']
+		#del pIsTrulyCached4.LOG_NLINE['CACHE_SIGINVAR_DIFF']
+		job4 = Job(0, config)
+		#job4.init()
+		job4._prepInput()
+		job4._prepOutput()
+		job4._prepScript()
+		ina = path.join(job4.indir, 'pIsTrulyCached4.txt')
+		inb1 = path.join(job4.indir, 'pIsTrulyCached4_1.txt')
+		inb2 = path.join(job4.indir, 'pIsTrulyCached4_2.txt')
+		outa = path.join(job4.outdir, 'pIsTrulyCached4.txt')
+		outb = path.join(job4.outdir, 'pIsTrulyCached4.dir')
+		helpers.writeFile(outa)
+		makedirs(outb)
+		with helpers.log2str():
+			job4.cache()
+		job4.input['c'] = {'type': 'var', 'data': 'd'}
+		yield job4, False, ['DEBUG', 'pIsTrulyCached4', 'Not cached because input variable(c) is different:', '- Previous: var_c', '- Current : d']
+		
+		# input file different
+		infile = path.join(self.testdir, 'pIsTrulyCached5.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached5_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached5_2.txt')
+		helpers.writeFile(infile)
+		helpers.writeFile(infile_1)
+		helpers.writeFile(infile_2)
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached5', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['proc']    = 'pIsTrulyCached5'
+		config['cache']   = True
+		config['size']    = 10
+		#pIsTrulyCached5.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
+		config['input']   = {
+			'a': {'type': 'file', 'data': [infile]},
+			'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
+			'c': {'type': 'var', 'data': ['var_c']}
+		}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsTrulyCached5.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached5.dir'))
+		}
+		#del pIsTrulyCached5.LOG_NLINE['CACHE_EMPTY_CURRSIG']
+		#del pIsTrulyCached5.LOG_NLINE['CACHE_SIGINFILE_DIFF']
+		job5 = Job(0, config)
+		#job5.init()
+		job5._prepInput()
+		job5._prepOutput()
+		job5._prepScript()
+		ina = path.join(job5.indir, 'pIsTrulyCached5.txt')
+		inb1 = path.join(job5.indir, 'pIsTrulyCached5_1.txt')
+		inb2 = path.join(job5.indir, 'pIsTrulyCached5_2.txt')
+		outa = path.join(job5.outdir, 'pIsTrulyCached5.txt')
+		outb = path.join(job5.outdir, 'pIsTrulyCached5.dir')
+		helpers.writeFile(outa)
+		makedirs(outb)
+		with helpers.log2str():
+			job5.cache()
+		job5.input['a'] = {'type': 'file', 'data': infile_1}
+		yield job5, False, ['DEBUG', 'pIsTrulyCached5', 'Not cached because input file(a) is different:']
+		
+		# input file newer
+		infile = path.join(self.testdir, 'pIsTrulyCached6.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached6_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached6_2.txt')
+		helpers.writeFile(infile)
+		helpers.writeFile(infile_1)
+		helpers.writeFile(infile_2)
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached6', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['proc']    = 'pIsTrulyCached6'
+		config['cache']   = True
+		config['size']    = 10
+		#pIsTrulyCached6.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
+		config['input']   = {
+			'a': {'type': 'file', 'data': [infile]},
+			'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
+			'c': {'type': 'var', 'data': ['var_c']}
+		}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsTrulyCached6.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached6.dir'))
+		}
+		#del pIsTrulyCached6.LOG_NLINE['CACHE_EMPTY_CURRSIG']
+		#del pIsTrulyCached6.LOG_NLINE['CACHE_SIGINFILE_NEWER']
+		job6 = Job(0, config)
+		#job6.init()
+		job6._prepInput()
+		job6._prepOutput()
+		job6._prepScript()
+		ina = path.join(job6.indir, 'pIsTrulyCached6.txt')
+		inb1 = path.join(job6.indir, 'pIsTrulyCached6_1.txt')
+		inb2 = path.join(job6.indir, 'pIsTrulyCached6_2.txt')
+		outa = path.join(job6.outdir, 'pIsTrulyCached6.txt')
+		outb = path.join(job6.outdir, 'pIsTrulyCached6.dir')
+		helpers.writeFile(outa)
+		makedirs(outb)
+		with helpers.log2str():
+			job6.cache()
+		utime(infile, (time() + 1, time() + 1))
+		yield job6, False, ['DEBUG', 'pIsTrulyCached6', 'Not cached because input file(a) is newer:']
+		
+		# input files diff
+		infile = path.join(self.testdir, 'pIsTrulyCached7.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached7_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached7_2.txt')
+		helpers.writeFile(infile)
+		helpers.writeFile(infile_1)
+		helpers.writeFile(infile_2)
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached7', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['proc']    = 'pIsTrulyCached7'
+		config['cache']   = True
+		config['size']    = 10
+		#pIsTrulyCached7.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
+		config['input']   = {
+			'a': {'type': 'file', 'data': [infile]},
+			'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
+			'c': {'type': 'var', 'data': ['var_c']}
+		}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsTrulyCached7.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached7.dir'))
+		}
+		#del pIsTrulyCached7.LOG_NLINE['CACHE_EMPTY_CURRSIG']
+		#del pIsTrulyCached7.LOG_NLINE['CACHE_SIGINFILES_DIFF']
+		job7 = Job(0, config)
+		#job7.init()
+		job7._prepInput()
+		job7._prepOutput()
+		job7._prepScript()
+		ina = path.join(job7.indir, 'pIsTrulyCached7.txt')
+		inb1 = path.join(job7.indir, 'pIsTrulyCached7_1.txt')
+		inb2 = path.join(job7.indir, 'pIsTrulyCached7_2.txt')
+		outa = path.join(job7.outdir, 'pIsTrulyCached7.txt')
+		outb = path.join(job7.outdir, 'pIsTrulyCached7.dir')
+		helpers.writeFile(outa)
+		makedirs(outb)
+		with helpers.log2str():
+			job7.cache()
+		job7.input['b']['data'].append(infile_2)
+		yield job7, False, ['DEBUG', 'pIsTrulyCached7', 'Not cached because file 3 is different for input files(b):']
+		
+		# input files diff 2
+		infile = path.join(self.testdir, 'pIsTrulyCached71.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached71_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached71_2.txt')
+		helpers.writeFile(infile)
+		helpers.writeFile(infile_1)
+		helpers.writeFile(infile_2)
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached71', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['proc']    = 'pIsTrulyCached71'
+		config['cache']   = True
+		config['size']    = 10
+		config['input']   = {
+			'a': {'type': 'file', 'data': [infile]},
+			'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
+			'c': {'type': 'var', 'data': ['var_c']}
+		}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsTrulyCached71.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached71.dir'))
+		}
+		job71 = Job(0, config)
+		#job71.init()
+		job71._prepInput()
+		job71._prepOutput()
+		job71._prepScript()
+		ina = path.join(job71.indir, 'pIsTrulyCached71.txt')
+		inb1 = path.join(job71.indir, 'pIsTrulyCached71.txt')
+		inb2 = path.join(job71.indir, 'pIsTrulyCached71.txt')
+		outa = path.join(job71.outdir, 'pIsTrulyCached71.txt')
+		outb = path.join(job71.outdir, 'pIsTrulyCached71.dir')
+		helpers.writeFile(outa)
+		makedirs(outb)
+		with helpers.log2str():
+			job71.cache()
+		del job71.input['b']['data'][1]
+		yield job71, False, ['DEBUG', 'pIsTrulyCached71', 'Not cached because file 2 is different for input files(b):']
+		
+		# input files newer
+		infile = path.join(self.testdir, 'pIsTrulyCached8.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached8_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached8_2.txt')
+		helpers.writeFile(infile)
+		helpers.writeFile(infile_1)
+		helpers.writeFile(infile_2)
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached8', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['proc']    = 'pIsTrulyCached8'
+		config['cache']   = True
+		config['size']    = 10
+		#pIsTrulyCached8.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
+		config['input']   = {
+			'a': {'type': 'file', 'data': [infile]},
+			'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
+			'c': {'type': 'var', 'data': ['var_c']}
+		}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsTrulyCached8.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached8.dir'))
+		}
+		#del pIsTrulyCached8.LOG_NLINE['CACHE_EMPTY_CURRSIG']
+		#del pIsTrulyCached8.LOG_NLINE['CACHE_SIGINFILES_NEWER']
+		job8 = Job(0, config)
+		#job8.init()
+		job8._prepInput()
+		job8._prepOutput()
+		job8._prepScript()
+		ina = path.join(job8.indir, 'pIsTrulyCached8.txt')
+		inb1 = path.join(job8.indir, 'pIsTrulyCached8_1.txt')
+		inb2 = path.join(job8.indir, 'pIsTrulyCached8_2.txt')
+		outa = path.join(job8.outdir, 'pIsTrulyCached8.txt')
+		outb = path.join(job8.outdir, 'pIsTrulyCached8.dir')
+		helpers.writeFile(outa)
+		makedirs(outb)
+		with helpers.log2str():
+			job8.cache()
+		utime(job8.input['b']['data'][0], (time() + 1, time() + 1))
+		yield job8, False, ['DEBUG', 'pIsTrulyCached8', 'Not cached because file 1 is newer for input files(b):']
+		
+		# out var diff
+		infile = path.join(self.testdir, 'pIsTrulyCached9.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached9_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached9_2.txt')
+		helpers.writeFile(infile)
+		helpers.writeFile(infile_1)
+		helpers.writeFile(infile_2)
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached9', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['proc']    = 'pIsTrulyCached9'
+		config['cache']   = True
+		config['size']    = 10
+		#pIsTrulyCached9.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
+		config['input']   = {
+			'a': {'type': 'file', 'data': [infile]},
+			'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
+			'c': {'type': 'var', 'data': ['var_c']}
+		}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsTrulyCached9.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached9.dir')),
+			'c': ('var', TemplateLiquid('hello_c')),
+		}
+		#del pIsTrulyCached9.LOG_NLINE['CACHE_EMPTY_CURRSIG']
+		#del pIsTrulyCached9.LOG_NLINE['CACHE_SIGOUTVAR_DIFF']
+		job9 = Job(0, config)
+		#job9.init()
+		job9._prepInput()
+		job9._prepOutput()
+		job9._prepScript()
+		ina = path.join(job9.indir, 'pIsTrulyCached9.txt')
+		inb1 = path.join(job9.indir, 'pIsTrulyCached9_1.txt')
+		inb2 = path.join(job9.indir, 'pIsTrulyCached9_2.txt')
+		outa = path.join(job9.outdir, 'pIsTrulyCached9.txt')
+		outb = path.join(job9.outdir, 'pIsTrulyCached9.dir')
+		helpers.writeFile(outa)
+		makedirs(outb)
+		with helpers.log2str():
+			job9.cache()
+		job9.output['c']['data'] = 'new_c'
+		yield job9, False, ['DEBUG', 'pIsTrulyCached9', 'Not cached because output variable(c) is different:']
+		
+		# out file diff
+		infile = path.join(self.testdir, 'pIsTrulyCached10.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached10_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached10_2.txt')
+		helpers.writeFile(infile)
+		helpers.writeFile(infile_1)
+		helpers.writeFile(infile_2)
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached10', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['proc']    = 'pIsTrulyCached10'
+		config['cache']   = True
+		config['size']    = 10
+		config['input']   = {
+			'a': {'type': 'file', 'data': [infile]},
+			'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
+			'c': {'type': 'var', 'data': ['var_c']}
+		}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsTrulyCached10.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached10.dir')),
+			'c': ('var', TemplateLiquid('hello_c')),
+		}
+		#del pIsTrulyCached10.LOG_NLINE['CACHE_SIGOUTFILE_DIFF']
+		job10 = Job(0, config)
+		#job10.init()
+		job10._prepInput()
+		job10._prepOutput()
+		job10._prepScript()
+		ina = path.join(job10.indir, 'pIsTrulyCached10.txt')
+		inb1 = path.join(job10.indir, 'pIsTrulyCached10_1.txt')
+		inb2 = path.join(job10.indir, 'pIsTrulyCached10_2.txt')
+		outa = path.join(job10.outdir, 'pIsTrulyCached10.txt')
+		outb = path.join(job10.outdir, 'pIsTrulyCached10.dir')
+		helpers.writeFile(outa)
+		makedirs(outb)
+		with helpers.log2str():
+			job10.cache()
+		job10.output['a']['data'] = infile
+		yield job10, False, ['DEBUG', 'pIsTrulyCached10', 'Not cached because output file(a) is different:']
+		
+		# out dir diff
+		infile = path.join(self.testdir, 'pIsTrulyCached11.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached11_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached11_2.txt')
+		helpers.writeFile(infile)
+		helpers.writeFile(infile_1)
+		helpers.writeFile(infile_2)
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached11', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['proc']    = 'pIsTrulyCached11'
+		config['cache']   = True
+		config['size']    = 10
+		config['input']   = {
+			'a': {'type': 'file', 'data': [infile]},
+			'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
+			'c': {'type': 'var', 'data': ['var_c']}
+		}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsTrulyCached11.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached11.dir')),
+			'c': ('var', TemplateLiquid('hello_c')),
+		}
+		#del pIsTrulyCached11.LOG_NLINE['CACHE_SIGOUTDIR_DIFF']
+		job11 = Job(0, config)
+		#job11.init()
+		job11._prepInput()
+		job11._prepOutput()
+		job11._prepScript()
+		ina = path.join(job11.indir, 'pIsTrulyCached11.txt')
+		inb1 = path.join(job11.indir, 'pIsTrulyCached11_1.txt')
+		inb2 = path.join(job11.indir, 'pIsTrulyCached11_2.txt')
+		outa = path.join(job11.outdir, 'pIsTrulyCached11.txt')
+		outb = path.join(job11.outdir, 'pIsTrulyCached11.dir')
+		helpers.writeFile(outa)
+		makedirs(outb)
+		with helpers.log2str():
+			job11.cache()
+		job11.output['b']['data'] = infile
+		yield job11, False, ['DEBUG', 'pIsTrulyCached11', 'Not cached because output dir file(b) is different:']
+		
+		# True
+		infile = path.join(self.testdir, 'pIsTrulyCached12.txt')
+		infile_1 = path.join(self.testdir, 'pIsTrulyCached12_1.txt')
+		infile_2 = path.join(self.testdir, 'pIsTrulyCached12_2.txt')
+		helpers.writeFile(infile)
+		helpers.writeFile(infile_1)
+		helpers.writeFile(infile_2)
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached12', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['cache']   = True
+		config['proc']    = 'pIsTrulyCached12'
+		config['size']    = 10
+		config['input']   = {
+			'a': {'type': 'file', 'data': [infile]},
+			'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
+			'c': {'type': 'var', 'data': ['var_c']}
+		}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsTrulyCached12.txt')),
+			'b': ('dir', TemplateLiquid('pIsTrulyCached12.dir')),
+			'c': ('var', TemplateLiquid('hello_c')),
+		}
+		job12 = Job(0, config)
+		#job12.init()
+		job12._prepInput()
+		job12._prepOutput()
+		job12._prepScript()
+		ina = path.join(job12.indir, 'pIsTrulyCached12.txt')
+		inb1 = path.join(job12.indir, 'pIsTrulyCached12_1.txt')
+		inb2 = path.join(job12.indir, 'pIsTrulyCached12_2.txt')
+		outa = path.join(job12.outdir, 'pIsTrulyCached12.txt')
+		outb = path.join(job12.outdir, 'pIsTrulyCached12.dir')
+		helpers.writeFile(outa)
+		makedirs(outb)
+		with helpers.log2str():
+			job12.cache()
+		yield job12, True
+		
+	def testIsTrulyCached(self, job, ret, errs = []):
+		#helpers.log2sys(levels = 'all')
+		logger.PyPPLLogFilter._clearDebug()
+		with helpers.log2str(levels = 'all') as (out, err):
+			r = job.isTrulyCached()
+		self.assertEqual(r, ret)
+		if r: self.assertEqual(job.rc, 0)
 		stderr = err.getvalue()
 		for err in errs:
 			self.assertIn(err, stderr)		
 
-	# def dataProvider_testInit(self):
-	# 	pInit = Proc()
-	# 	pInit.props['workdir'] = path.join(self.testdir, 'pInit', 'workdir')
-	# 	pInit.props['script']  = TemplateLiquid('')
-	# 	yield 0, pInit
-
-	# def testInit(self, index, proc):
-	# 	self.maxDiff = None
-	# 	job = Job(index, proc)
-	# 	predata = deepcopy(job.data)
-	# 	job.init()
-	# 	self.assertTrue(path.exists(job.dir))
-	# 	self.assertTrue(path.exists(job.indir))
-	# 	self.assertTrue(path.exists(job.outfile))
-	# 	self.assertTrue(path.exists(job.errfile))
-	# 	self.assertDictEqual(predata['job'], job.data['job'])
-
-
-			
+	def dataProvider_testIsExptCached(self):
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsExptCached', 'workdir')
+		config['cache']   = True
+		job = Job(0, config)
+		#0
+		yield job, False
 		
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsExptCached1', 'workdir')
+		config['proc']    = 'pIsExptCached1'
+		config['cache']   = 'export'
+		config['exhow']   = 'link'
+		#pIsExptCached1.__dict__['LOG_NLINE'] = {}
+		job1 = Job(0, config)
+		#1
+		yield job1, False, ['WARNING', 'pIsExptCached1', 'Job is not export-cached using symlink export.']
+		
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsExptCached2', 'workdir')
+		config['proc']    = 'pIsExptCached2'
+		config['cache']   = 'export'
+		config['exhow']   = 'move'
+		config['expart']  = [TemplateLiquid('link')]
+		job2 = Job(0, config)
+		#2
+		yield job2, False, ['WARNING', 'pIsExptCached2', 'Job is not export-cached using partial export.']
+		
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsExptCached3', 'workdir')
+		config['cache']   = 'export'
+		config['proc']    = 'pIsExptCached3'
+		config['exhow']   = 'move'
+		config['expart']  = []
+		config['exdir']   = None
+		job3 = Job(0, config)
+		#3
+		yield job3, False, ['DEBUG', 'pIsExptCached3', 'Job is not export-cached since export directory is not set.']
+		
+		# tgz, but file not exists
+		#region #4
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsExptCached4', 'workdir')
+		config['cache']  = 'export'
+		config['proc']   = 'pIsExptCached4'
+		config['exhow']  = 'gz'
+		config['exow']   = True
+		config['expart'] = []
+		config['exdir']  = path.join(self.testdir, 'exdir')
+		config['script'] = TemplateLiquid('')
+		config['output'] = {
+			'b': ('dir', TemplateLiquid('pIsExptCached4.dir')),
+		}
+		
+		job4 = Job(0, config)
+		#job4.init()
+		job4._prepInput()
+		job4._prepOutput()
+		job4._prepScript()
+		# generate output files
+		makedirs(config['exdir'])
+		outb = path.join(job4.outdir, 'pIsExptCached4.dir')
+		outbfile = path.join(outb, 'pIsExptCached4.txt')
+		makedirs(outb)
+		helpers.writeFile(outbfile, 'pIsExptCached4')
+		# file not exists
+		#with helpers.log2str():
+		#	job4.export()
+		#remove(path.join(config['exdir'], 'pIsExptCached4.dir.tgz'))
+		#4
+		yield job4, False, ['DEBUG', 'pIsExptCached4', 'Job is not export-cached since exported file not exists: ']
+		#endregion
+		
+		# tgz
+		#region #5
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsExptCached5', 'workdir')
+		config['cache']   = 'export'
+		config['proc']    = 'pIsExptCached5'
+		config['exhow']   = 'gz'
+		config['exow']    = True
+		config['expart']  = []
+		config['exdir']   = path.join(self.testdir, 'exdir')
+		config['script']  = TemplateLiquid('')
+		#pIsExptCached5.__dict__['LOG_NLINE'] = {}
+		config['output']  = {
+			'b': ('dir', TemplateLiquid('pIsExptCached5.dir')),
+		}		
+		job5 = Job(0, config)
+		#job5.init()
+		job5._prepInput()
+		job5._prepOutput()
+		job5._prepScript()
+		# generate output files
+		outb = path.join(job5.outdir, 'pIsExptCached5.dir')
+		outbfile = path.join(outb, 'pIsExptCached5.txt')
+		makedirs(outb)
+		helpers.writeFile(outbfile, 'pIsExptCached5')
+		if not path.exists(path.join(self.testdir, 'exdir')):
+			makedirs(path.join(self.testdir, 'exdir'))
+		with helpers.log2str():
+			job5.export()
+		#5
+		yield job5, True
+		#endregion
+		
+		# gz: file not exists
+		#region #6
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsExptCached6', 'workdir')
+		config['cache']   = 'export'
+		config['proc']    = 'pIsExptCached6'
+		config['exhow']   = 'gz'
+		config['expart']  = []
+		config['exdir']   = path.join(self.testdir, 'exdir')
+		config['script']  = TemplateLiquid('')
+		#pIsExptCached6.__dict__['LOG_NLINE'] = {}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsExptCached6.txt')),
+		}		
+		job6 = Job(0, config)
+		#job6.init()
+		job6._prepInput()
+		job6._prepOutput()
+		job6._prepScript()
+		# generate output files
+		outb = path.join(job6.outdir, 'pIsExptCached6.dir')
+		outbfile = path.join(outb, 'pIsExptCached6.txt')
+		makedirs(outb)
+		helpers.writeFile(outbfile, 'pIsExptCached6')
+		exfile = path.join(config['exdir'], 'pIsExptCached6.txt')
+		#6
+		yield job6, False, ['DEBUG', 'Job is not export-cached since exported file not exists: ']
+		#endregion
+		
+		# gz
+		#region #7
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsExptCached7', 'workdir')
+		config['cache']   = 'export'
+		config['proc']    = 'pIsExptCached7'
+		config['exhow']   = 'gz'
+		config['exow']    = True
+		config['expart']  = []
+		config['exdir']   = path.join(self.testdir, 'exdir')
+		config['script']  = TemplateLiquid('')
+		#pIsExptCached7.__dict__['LOG_NLINE'] = {}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsExptCached7.txt')),
+		}		
+		job7 = Job(0, config)
+		#job7.init()
+		job7._prepInput()
+		job7._prepOutput()
+		job7._prepScript()
+		# generate output files
+		outa = path.join(job7.outdir, 'pIsExptCached7.txt')
+		helpers.writeFile(outa)
+		job7.export()
+		#7
+		yield job7, True
+		#endregion
+		
+		# other: file not exist
+		#region #8
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsExptCached8', 'workdir')
+		config['cache']   = 'export'
+		config['proc']    = 'pIsExptCached8'
+		config['expart']  = []
+		config['exhow']   = 'copy'
+		config['exdir']   = path.join(self.testdir, 'exdir')
+		config['script']  = TemplateLiquid('')
+		#pIsExptCached8.__dict__['LOG_NLINE'] = {}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsExptCached8.txt')),
+		}		
+		job8 = Job(0, config)
+		#job8.init()
+		job8._prepInput()
+		job8._prepOutput()
+		job8._prepScript()
+		# generate output files
+		outa = path.join(job8.outdir, 'pIsExptCached8.txt')
+		helpers.writeFile(outa)
+		#8
+		yield job8, False, ['DEBUG', 'pIsExptCached8', 'Job is not export-cached since exported file not exists: ']
+		#endregion
+		
+		# other: same file
+		#region #9
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsExptCached9', 'workdir')
+		config['cache']   = 'export'
+		config['exhow']   = 'copy'
+		config['expart']  = []
+		config['exdir']   = path.join(self.testdir, 'exdir')
+		config['script']  = TemplateLiquid('')
+		#pIsExptCached9.__dict__['LOG_NLINE'] = {}
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsExptCached9.txt')),
+		}		
+		job9 = Job(0, config)
+		#job9.init()
+		job9._prepInput()
+		job9._prepOutput()
+		job9._prepScript()
+		# generate output files
+		outa = path.join(job9.outdir, 'pIsExptCached9.txt')
+		helpers.writeFile(outa)
+		symlink(outa, path.join(self.testdir, 'exdir', 'pIsExptCached9.txt'))
+		#9
+		yield job9, True
+		#endregion
+		
+		# other: overwrite
+		#region #10
+		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pIsExptCached10', 'workdir')
+		config['cache']   = 'export'
+		config['proc']    = 'pIsExptCached10'
+		config['exhow']   = 'copy'
+		config['exow']    = True
+		config['expart']  = []
+		config['exdir']   = path.join(self.testdir, 'exdir')
+		config['script']  = TemplateLiquid('')
+		#del pIsExptCached10.LOG_NLINE['EXPORT_CACHE_OUTFILE_EXISTS']
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pIsExptCached10.txt')),
+		}		
+		job10 = Job(0, config)
+		#job10.init()
+		job10._prepInput()
+		job10._prepOutput()
+		job10._prepScript()
+		# generate output files
+		outa = path.join(job10.outdir, 'pIsExptCached10.txt')
+		helpers.writeFile(outa)
+		job10.export()
+		#10
+		yield job10, True, ['WARNING', 'Overwrite file for export-caching: ']
+		#endregion
+			
+	def testIsExptCached(self, job, ret, errs = []):
+		logger.PyPPLLogFilter._clearDebug()
+		with helpers.log2str(levels = 'all') as (out, err):
+			r = job.isExptCached()
+		stderr = err.getvalue()
+		self.assertEqual(r, ret)
+		for err in errs:
+			self.assertIn(err, stderr)
+		if ret:
+			self.assertEqual(job.rc, 0)
+			self.assertTrue(job.isTrulyCached())
+			
+	def dataProvider_testDone(self):
+		# other: overwrite
+		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}
+		config['workdir'] = path.join(self.testdir, 'pDone', 'workdir')
+		config['script']  = TemplateLiquid('')
+		config['expect']  = TemplateLiquid('')
+		config['output']  = {
+			'a': ('file', TemplateLiquid('pDone.txt')),
+		}		
+		job = Job(0, config)
+		#job.init()
+		job._prepInput()
+		job._prepOutput()
+		job._prepScript()
+		# generate output files
+		outa = path.join(job.outdir, 'pDone.txt')
+		helpers.writeFile(outa)
+		helpers.writeFile(job.rcfile, 0)
+		yield job,
+			
+	def testDone(self, job):
+		with helpers.log2str():
+			job.done()
+		self.assertEqual(job.rc, 0)
+
+	def dataProvider_testBuild(self):
+		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}
+		config['workdir']  = path.join(self.testdir, 'pBuild', 'workdir')
+		config['proc']     = 'pBuild'
+		config['procsize'] = 1
+		config['script']   = TemplateLiquid('')
+		config['expect']   = TemplateLiquid('')
+		config['output']   = {
+			'a': ('file', TemplateLiquid('pBuild.txt')),
+		}		
+		job = Job(0, config)
+		yield job, Job.STATUS_BUILT, 
+
+		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}
+		config['workdir']  = path.join(self.testdir, 'pBuild1', 'workdir')
+		config['proc']     = 'pBuild1'
+		config['procsize'] = 1
+		config['script']   = TemplateLiquid('')
+		config['expect']   = TemplateLiquid('')
+		config['output']   = {
+			'a': ('file', TemplateLiquid('pBuild1.txt')),
+		}		
+		job1 = Job(0, config)
+		job1._prepInput()
+		job1._prepOutput()
+		job1._prepScript()
+		helpers.writeFile(path.join(job1.outdir, 'pBuild1.txt'))
+		job1.cache()
+		yield job1, Job.STATUS_DONECACHED, 
+
+		config = {}
+		config['workdir']  = path.join(self.testdir, 'pBuild2', 'workdir')
+		job2 = Job(0, config)
+		yield job2, Job.STATUS_BUILTFAILED, ["KeyError: 'input'"]
+
+	def testBuild(self, job, status, errs = None):
+		job.build()
+		self.assertEqual(job.status.value, status)
+		errs = errs or []
+		if errs and path.isfile(job.errfile):
+			stderrs = helpers.readFile(job.errfile)
+			for err in errs:
+				self.assertIn(err, stderrs)
+
+	def dataProvider_testSubmit(self):
+		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}
+		config['workdir']  = path.join(self.testdir, 'pSubmit', 'workdir')
+		config['proc']     = 'pSubmit'
+		config['procsize'] = 1
+		config['script']   = TemplateLiquid('')
+		config['expect']   = TemplateLiquid('')
+		config['output']   = {}
+		config['runner']   = RunnerLocal
+		job = Job(0, config)
+		makedirs(job.dir)
+		r = utils.cmd.Cmd('sleep 3')
+		job.pid = r.pid
+		yield job, Job.STATUS_RUNNING, ['pSubmit: [1/1] is already running at']
+
+		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}
+		config['workdir']  = path.join(self.testdir, 'pSubmit1', 'workdir')
+		config['proc']     = 'pSubmit1'
+		config['procsize'] = 1
+		config['script']   = TemplateLiquid('')
+		config['expect']   = TemplateLiquid('')
+		config['output']   = {}
+		config['runner']   = RunnerLocal
+		job1 = Job(0, config)
+		yield job1, Job.STATUS_SUBMITTED, 
+
+		class RunnerLocalFail(RunnerLocal):
+			def submit(self):
+				return utils.Box(rc = 1, cmd = 'submission failed')
+		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}
+		config['workdir']  = path.join(self.testdir, 'pSubmit2', 'workdir')
+		config['proc']     = 'pSubmit2'
+		config['procsize'] = 1
+		config['script']   = TemplateLiquid('')
+		config['expect']   = TemplateLiquid('')
+		config['output']   = {}
+		config['runner']   = RunnerLocalFail
+		job2 = Job(0, config)
+		yield job2, Job.STATUS_SUBMITFAILED, ['ERROR', 'pSubmit2: [1/1] Submission failed (rc = 1, cmd = submission failed)']
+
+	def testSubmit(self, job, status, logs = None):
+		Job.OUTPUT[0] = {}
+		with helpers.log2str(levels = 'all') as (out, err):
+			job.build()
+			job.submit()
+		#print out.getvalue()
+		self.assertEqual(job.status.value, status)
+		logs = logs or []
+		for l in logs:
+			self.assertIn(l, err.getvalue())
+
+	def dataProvider_testRun(self):
+		class RunnerLocalNoRun(RunnerLocal):
+			def run(self):
+				pass
+
+		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}
+		config['workdir']  = path.join(self.testdir, 'pRun', 'workdir')
+		config['proc']     = 'pRun'
+		config['procsize'] = 1
+		config['script']   = TemplateLiquid('')
+		config['expect']   = TemplateLiquid('')
+		config['output']   = {}
+		config['rcs']      = [0]
+		config['runner']   = RunnerLocalNoRun
+		job = Job(0, config)
+		makedirs(job.dir)
+		helpers.writeFile(job.rcfile, '0')
+		yield job, Job.STATUS_DONE
+
+		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}
+		config['workdir']  = path.join(self.testdir, 'pRun1', 'workdir')
+		config['proc']     = 'pRun1'
+		config['procsize'] = 1
+		config['script']   = TemplateLiquid('')
+		config['expect']   = TemplateLiquid('')
+		config['output']   = {}
+		config['errhow']   = 'terminate'
+		config['rcs']      = [0]
+		config['runner']   = RunnerLocalNoRun
+		job1 = Job(0, config)
+		makedirs(job1.dir)
+		helpers.writeFile(job1.rcfile, '1')
+		yield job1, Job.STATUS_ENDFAILED
+
+		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}
+		config['workdir']  = path.join(self.testdir, 'pRun2', 'workdir')
+		config['proc']     = 'pRun2'
+		config['procsize'] = 1
+		config['script']   = TemplateLiquid('')
+		config['expect']   = TemplateLiquid('')
+		config['output']   = {}
+		config['errhow']   = 'retry'
+		config['errntry']  = 3
+		config['rcs']      = [0]
+		config['runner']   = RunnerLocalNoRun
+		job2 = Job(0, config)
+		makedirs(job2.dir)
+		helpers.writeFile(job2.rcfile, '1')
+		yield job2, Job.STATUS_DONEFAILED
+
+	def testRun(self, job, status):
+		Job.OUTPUT[0] = {}
+		job.build()
+		job.run()
+		self.assertEqual(job.status.value, status)
+
+	def dataProvider_testRetry(self):
+		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}
+		config['workdir']  = path.join(self.testdir, 'pRetry', 'workdir')
+		config['proc']     = 'pRetry'
+		config['procsize'] = 1
+		config['script']   = TemplateLiquid('')
+		config['expect']   = TemplateLiquid('')
+		config['output']   = {}
+		config['errhow']   = 'retry'
+		config['errntry']  = 3
+		config['rcs']      = [0]
+		config['runner']   = RunnerLocal
+		job = Job(0, config)
+		yield job, False
+
+		job1 = Job(0, config)
+		yield job1, True, Job.STATUS_RETRYING, Job.STATUS_DONEFAILED, 1
+
+		config2 = config.copy()
+		config2['errhow'] = 'halt'
+		job2 = Job(0, config2)
+		yield job2, 'halt', Job.STATUS_RETRYING, Job.STATUS_DONEFAILED
+
+	def testRetry(self, job, ret, status = Job.STATUS_BUILT, status_set = None, ntry = 0):
+		Job.OUTPUT[0] = {}
+		job.build()
+		if status_set:
+			job.status.value = status_set
+		r = job.retry()
+		self.assertEqual(r, ret)
+		self.assertEqual(job.ntry.value, ntry)
+		self.assertEqual(job.status.value, status)
+
+	def dataProvider_testKill(self):
+		class RunnerLocalNoKill(RunnerLocal):
+			def kill(self):
+				pass
+
+		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}
+		config['workdir']  = path.join(self.testdir, 'pKill', 'workdir')
+		config['proc']     = 'pKill'
+		config['procsize'] = 1
+		config['script']   = TemplateLiquid('')
+		config['expect']   = TemplateLiquid('')
+		config['output']   = {}
+		config['errhow']   = 'retry'
+		config['errntry']  = 3
+		config['rcs']      = [0]
+		config['runner']   = RunnerLocalNoKill
+
+		yield Job(0, config),
+		
+	def testKill(self, job):
+		job.kill()
+		self.assertEqual(job.status.value, Job.STATUS_KILLED)
 	
-	
-	# def dataProvider_testCache(self):		
-	# 	# normal signature
-	# 	infile = path.join(self.testdir, 'pCache.txt')
-	# 	infile_1 = path.join(self.testdir, 'pCache_1.txt')
-	# 	infile_2 = path.join(self.testdir, 'pCache_2.txt')
-	# 	helpers.writeFile(infile)
-	# 	helpers.writeFile(infile_1)
-	# 	helpers.writeFile(infile_2)
-	# 	pCache = Proc()
-	# 	pCache.props['workdir'] = path.join(self.testdir, 'pCache', 'workdir')
-	# 	pCache.props['script']  = TemplateLiquid('')
-	# 	pCache.props['cache']   = True
-	# 	pCache.props['size']    = 10
-	# 	pCache.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
-	# 	pCache.props['input']   = {
-	# 		'a': {'type': 'file', 'data': [infile]},
-	# 		'b': {'type': 'files', 'data': [[infile_1, infile_2]]}
-	# 	}
-	# 	pCache.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pCache.txt')),
-	# 		'b': ('dir', TemplateLiquid('pCache.dir'))
-	# 	}
-	# 	pCache.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
-	# 	job = Job(0, pCache)
-	# 	job.init()
-	# 	ina = path.join(job.indir, 'pCache.txt')
-	# 	inb1 = path.join(job.indir, 'pCache_1.txt')
-	# 	inb2 = path.join(job.indir, 'pCache_2.txt')
-	# 	outa = path.join(job.outdir, 'pCache.txt')
-	# 	outb = path.join(job.outdir, 'pCache.dir')
-	# 	helpers.writeFile(outa)
-	# 	makedirs(outb)
-	# 	yield job, True, {
-	# 		'i': {
-	# 			'file': {
-	# 				'a': [ina, int(path.getmtime(ina))]
-	# 			},
-	# 			'files': {
-	# 				'b': [
-	# 					[inb1, int(path.getmtime(inb1))],
-	# 					[inb2, int(path.getmtime(inb2))],
-	# 				]
-	# 			},
-	# 			'var': {}
-	# 		},
-	# 		'o': {
-	# 			'dir': {
-	# 				'b': [outb, int(path.getmtime(outb))]
-	# 			},
-	# 			'file': {
-	# 				'a': [outa, int(path.getmtime(outa))]
-	# 			},
-	# 			'var': {}
-	# 		},
-	# 		'script': [job.script, int(path.getmtime(job.script))]
-	# 	}
-		
-	# 	#
-	# 	pCache1 = Proc()
-	# 	pCache1.props['workdir'] = path.join(self.testdir, 'pCache1', 'workdir')
-	# 	pCache1.props['script']  = TemplateLiquid('')
-	# 	pCache1.props['cache']   = False
-	# 	pCache1.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
-	# 	job1 = Job(0, pCache1)
-	# 	job1.init()
-	# 	yield job1, False, {}
-		
-	# def testCache(self, job, cache, outsig):
-	# 	helpers.log2sys(levels = 'all')
-	# 	job.cache()
-	# 	if not cache:
-	# 		self.assertFalse(path.exists(job.cachefile))
-	# 	else:
-	# 		self.assertDictEqual(helpers.readFile(job.cachefile, json.loads), outsig)
-			
-	# def dataProvider_testIsTrulyCached(self):
-	# 	# no cache file
-	# 	pIsTrulyCached = Proc()
-	# 	pIsTrulyCached.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached', 'workdir')
-	# 	pIsTrulyCached.props['script']  = TemplateLiquid('')
-	# 	pIsTrulyCached.LOG_NLINE['CACHE_SIGFILE_NOTEXISTS'] = -1
-	# 	job = Job(0, pIsTrulyCached)
-	# 	job.init()
-	# 	yield job, False, ['DEBUG', 'not cached as cache file not exists.']
-		
-	# 	# empty cache file
-	# 	pIsTrulyCached1 = Proc()
-	# 	pIsTrulyCached1.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached1', 'workdir')
-	# 	pIsTrulyCached1.props['script']  = TemplateLiquid('')
-	# 	pIsTrulyCached1.LOG_NLINE['CACHE_EMPTY_PREVSIG'] = -1
-	# 	job1 = Job(0, pIsTrulyCached1)
-	# 	job1.init()
-	# 	helpers.writeFile(job1.cachefile)
-	# 	yield job1, False, ['DEBUG', 'not cached because previous signature is empty.']
-		
-	# 	# current signature empty
-	# 	infile = path.join(self.testdir, 'pIsTrulyCached2.txt')
-	# 	infile_1 = path.join(self.testdir, 'pIsTrulyCached2_1.txt')
-	# 	infile_2 = path.join(self.testdir, 'pIsTrulyCached2_2.txt')
-	# 	helpers.writeFile(infile)
-	# 	helpers.writeFile(infile_1)
-	# 	helpers.writeFile(infile_2)
-	# 	pIsTrulyCached2 = Proc()
-	# 	pIsTrulyCached2.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached2', 'workdir')
-	# 	pIsTrulyCached2.props['script']  = TemplateLiquid('')
-	# 	pIsTrulyCached2.props['cache']   = True
-	# 	pIsTrulyCached2.props['size']    = 10
-	# 	pIsTrulyCached2.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
-	# 	pIsTrulyCached2.props['input']   = {
-	# 		'a': {'type': 'file', 'data': [infile]},
-	# 		'b': {'type': 'files', 'data': [[infile_1, infile_2]]}
-	# 	}
-	# 	pIsTrulyCached2.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsTrulyCached2.txt')),
-	# 		'b': ('dir', TemplateLiquid('pIsTrulyCached2.dir'))
-	# 	}
-	# 	del pIsTrulyCached2.LOG_NLINE['CACHE_EMPTY_CURRSIG']
-	# 	job2 = Job(0, pIsTrulyCached2)
-	# 	job2.init()
-	# 	ina = path.join(job2.indir, 'pIsTrulyCached2.txt')
-	# 	inb1 = path.join(job2.indir, 'pIsTrulyCached2_1.txt')
-	# 	inb2 = path.join(job2.indir, 'pIsTrulyCached2_2.txt')
-	# 	outa = path.join(job2.outdir, 'pIsTrulyCached2.txt')
-	# 	outb = path.join(job2.outdir, 'pIsTrulyCached2.dir')
-	# 	helpers.writeFile(outa)
-	# 	makedirs(outb)
-	# 	with helpers.log2str():
-	# 		job2.cache()
-	# 	#utils.safeRemove(outb)
-	# 	utils.safefs.remove(outb)
-	# 	yield job2, False, ['DEBUG', 'mpty', 'signature', 'because']
-		
-	# 	# script file newer
-	# 	infile = path.join(self.testdir, 'pIsTrulyCached3.txt')
-	# 	infile_1 = path.join(self.testdir, 'pIsTrulyCached3_1.txt')
-	# 	infile_2 = path.join(self.testdir, 'pIsTrulyCached3_2.txt')
-	# 	helpers.writeFile(infile)
-	# 	helpers.writeFile(infile_1)
-	# 	helpers.writeFile(infile_2)
-	# 	pIsTrulyCached3 = Proc()
-	# 	pIsTrulyCached3.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached3', 'workdir')
-	# 	pIsTrulyCached3.props['script']  = TemplateLiquid('')
-	# 	pIsTrulyCached3.props['cache']   = True
-	# 	pIsTrulyCached3.props['size']    = 10
-	# 	pIsTrulyCached3.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
-	# 	pIsTrulyCached3.props['input']   = {
-	# 		'a': {'type': 'file', 'data': [infile]},
-	# 		'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
-	# 		'c': {'type': 'var', 'data': ['var_c']}
-	# 	}
-	# 	pIsTrulyCached3.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsTrulyCached3.txt')),
-	# 		'b': ('dir', TemplateLiquid('pIsTrulyCached3.dir'))
-	# 	}
-	# 	del pIsTrulyCached3.LOG_NLINE['CACHE_EMPTY_CURRSIG']
-	# 	del pIsTrulyCached3.LOG_NLINE['CACHE_SCRIPT_NEWER']
-	# 	job3 = Job(0, pIsTrulyCached3)
-	# 	job3.init()
-	# 	ina = path.join(job3.indir, 'pIsTrulyCached3.txt')
-	# 	inb1 = path.join(job3.indir, 'pIsTrulyCached3_1.txt')
-	# 	inb2 = path.join(job3.indir, 'pIsTrulyCached3_2.txt')
-	# 	outa = path.join(job3.outdir, 'pIsTrulyCached3.txt')
-	# 	outb = path.join(job3.outdir, 'pIsTrulyCached3.dir')
-	# 	helpers.writeFile(outa)
-	# 	makedirs(outb)
-	# 	with helpers.log2str():
-	# 		job3.cache()
-	# 	utime(job3.script, (time() + 10, time() + 10))
-	# 	yield job3, False, ['DEBUG', 'not cached because script file(script) is newer:', '- Previous:', '- Current']
-		
-	# 	# script file newer
-	# 	infile = path.join(self.testdir, 'pIsTrulyCached4.txt')
-	# 	infile_1 = path.join(self.testdir, 'pIsTrulyCached4_1.txt')
-	# 	infile_2 = path.join(self.testdir, 'pIsTrulyCached4_2.txt')
-	# 	helpers.writeFile(infile)
-	# 	helpers.writeFile(infile_1)
-	# 	helpers.writeFile(infile_2)
-	# 	pIsTrulyCached4 = Proc()
-	# 	pIsTrulyCached4.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached4', 'workdir')
-	# 	pIsTrulyCached4.props['script']  = TemplateLiquid('')
-	# 	pIsTrulyCached4.props['cache']   = True
-	# 	pIsTrulyCached4.props['size']    = 10
-	# 	pIsTrulyCached4.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
-	# 	pIsTrulyCached4.props['input']   = {
-	# 		'a': {'type': 'file', 'data': [infile]},
-	# 		'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
-	# 		'c': {'type': 'var', 'data': ['var_c']}
-	# 	}
-	# 	pIsTrulyCached4.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsTrulyCached4.txt')),
-	# 		'b': ('dir', TemplateLiquid('pIsTrulyCached4.dir'))
-	# 	}
-	# 	del pIsTrulyCached4.LOG_NLINE['CACHE_EMPTY_CURRSIG']
-	# 	del pIsTrulyCached4.LOG_NLINE['CACHE_SIGINVAR_DIFF']
-	# 	job4 = Job(0, pIsTrulyCached4)
-	# 	job4.init()
-	# 	ina = path.join(job4.indir, 'pIsTrulyCached4.txt')
-	# 	inb1 = path.join(job4.indir, 'pIsTrulyCached4_1.txt')
-	# 	inb2 = path.join(job4.indir, 'pIsTrulyCached4_2.txt')
-	# 	outa = path.join(job4.outdir, 'pIsTrulyCached4.txt')
-	# 	outb = path.join(job4.outdir, 'pIsTrulyCached4.dir')
-	# 	helpers.writeFile(outa)
-	# 	makedirs(outb)
-	# 	with helpers.log2str():
-	# 		job4.cache()
-	# 	job4.input['c'] = {'type': 'var', 'data': 'd'}
-	# 	yield job4, False, ['DEBUG', 'not cached because input variable(c) is different:', '- Previous: var_c', '- Current : d']
-		
-	# 	# input file different
-	# 	infile = path.join(self.testdir, 'pIsTrulyCached5.txt')
-	# 	infile_1 = path.join(self.testdir, 'pIsTrulyCached5_1.txt')
-	# 	infile_2 = path.join(self.testdir, 'pIsTrulyCached5_2.txt')
-	# 	helpers.writeFile(infile)
-	# 	helpers.writeFile(infile_1)
-	# 	helpers.writeFile(infile_2)
-	# 	pIsTrulyCached5 = Proc()
-	# 	pIsTrulyCached5.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached5', 'workdir')
-	# 	pIsTrulyCached5.props['script']  = TemplateLiquid('')
-	# 	pIsTrulyCached5.props['cache']   = True
-	# 	pIsTrulyCached5.props['size']    = 10
-	# 	pIsTrulyCached5.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
-	# 	pIsTrulyCached5.props['input']   = {
-	# 		'a': {'type': 'file', 'data': [infile]},
-	# 		'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
-	# 		'c': {'type': 'var', 'data': ['var_c']}
-	# 	}
-	# 	pIsTrulyCached5.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsTrulyCached5.txt')),
-	# 		'b': ('dir', TemplateLiquid('pIsTrulyCached5.dir'))
-	# 	}
-	# 	del pIsTrulyCached5.LOG_NLINE['CACHE_EMPTY_CURRSIG']
-	# 	del pIsTrulyCached5.LOG_NLINE['CACHE_SIGINFILE_DIFF']
-	# 	job5 = Job(0, pIsTrulyCached5)
-	# 	job5.init()
-	# 	ina = path.join(job5.indir, 'pIsTrulyCached5.txt')
-	# 	inb1 = path.join(job5.indir, 'pIsTrulyCached5_1.txt')
-	# 	inb2 = path.join(job5.indir, 'pIsTrulyCached5_2.txt')
-	# 	outa = path.join(job5.outdir, 'pIsTrulyCached5.txt')
-	# 	outb = path.join(job5.outdir, 'pIsTrulyCached5.dir')
-	# 	helpers.writeFile(outa)
-	# 	makedirs(outb)
-	# 	with helpers.log2str():
-	# 		job5.cache()
-	# 	job5.input['a'] = {'type': 'file', 'data': infile_1}
-	# 	yield job5, False, ['DEBUG', 'not cached because input file(a) is different:']
-		
-	# 	# input file newer
-	# 	infile = path.join(self.testdir, 'pIsTrulyCached6.txt')
-	# 	infile_1 = path.join(self.testdir, 'pIsTrulyCached6_1.txt')
-	# 	infile_2 = path.join(self.testdir, 'pIsTrulyCached6_2.txt')
-	# 	helpers.writeFile(infile)
-	# 	helpers.writeFile(infile_1)
-	# 	helpers.writeFile(infile_2)
-	# 	pIsTrulyCached6 = Proc()
-	# 	pIsTrulyCached6.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached6', 'workdir')
-	# 	pIsTrulyCached6.props['script']  = TemplateLiquid('')
-	# 	pIsTrulyCached6.props['cache']   = True
-	# 	pIsTrulyCached6.props['size']    = 10
-	# 	pIsTrulyCached6.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
-	# 	pIsTrulyCached6.props['input']   = {
-	# 		'a': {'type': 'file', 'data': [infile]},
-	# 		'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
-	# 		'c': {'type': 'var', 'data': ['var_c']}
-	# 	}
-	# 	pIsTrulyCached6.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsTrulyCached6.txt')),
-	# 		'b': ('dir', TemplateLiquid('pIsTrulyCached6.dir'))
-	# 	}
-	# 	del pIsTrulyCached6.LOG_NLINE['CACHE_EMPTY_CURRSIG']
-	# 	del pIsTrulyCached6.LOG_NLINE['CACHE_SIGINFILE_NEWER']
-	# 	job6 = Job(0, pIsTrulyCached6)
-	# 	job6.init()
-	# 	ina = path.join(job6.indir, 'pIsTrulyCached6.txt')
-	# 	inb1 = path.join(job6.indir, 'pIsTrulyCached6_1.txt')
-	# 	inb2 = path.join(job6.indir, 'pIsTrulyCached6_2.txt')
-	# 	outa = path.join(job6.outdir, 'pIsTrulyCached6.txt')
-	# 	outb = path.join(job6.outdir, 'pIsTrulyCached6.dir')
-	# 	helpers.writeFile(outa)
-	# 	makedirs(outb)
-	# 	with helpers.log2str():
-	# 		job6.cache()
-	# 	utime(infile, (time() + 1, time() + 1))
-	# 	yield job6, False, ['DEBUG', 'not cached because input file(a) is newer:']
-		
-	# 	# input files diff
-	# 	infile = path.join(self.testdir, 'pIsTrulyCached7.txt')
-	# 	infile_1 = path.join(self.testdir, 'pIsTrulyCached7_1.txt')
-	# 	infile_2 = path.join(self.testdir, 'pIsTrulyCached7_2.txt')
-	# 	helpers.writeFile(infile)
-	# 	helpers.writeFile(infile_1)
-	# 	helpers.writeFile(infile_2)
-	# 	pIsTrulyCached7 = Proc()
-	# 	pIsTrulyCached7.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached7', 'workdir')
-	# 	pIsTrulyCached7.props['script']  = TemplateLiquid('')
-	# 	pIsTrulyCached7.props['cache']   = True
-	# 	pIsTrulyCached7.props['size']    = 10
-	# 	pIsTrulyCached7.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
-	# 	pIsTrulyCached7.props['input']   = {
-	# 		'a': {'type': 'file', 'data': [infile]},
-	# 		'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
-	# 		'c': {'type': 'var', 'data': ['var_c']}
-	# 	}
-	# 	pIsTrulyCached7.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsTrulyCached7.txt')),
-	# 		'b': ('dir', TemplateLiquid('pIsTrulyCached7.dir'))
-	# 	}
-	# 	del pIsTrulyCached7.LOG_NLINE['CACHE_EMPTY_CURRSIG']
-	# 	del pIsTrulyCached7.LOG_NLINE['CACHE_SIGINFILES_DIFF']
-	# 	job7 = Job(0, pIsTrulyCached7)
-	# 	job7.init()
-	# 	ina = path.join(job7.indir, 'pIsTrulyCached7.txt')
-	# 	inb1 = path.join(job7.indir, 'pIsTrulyCached7_1.txt')
-	# 	inb2 = path.join(job7.indir, 'pIsTrulyCached7_2.txt')
-	# 	outa = path.join(job7.outdir, 'pIsTrulyCached7.txt')
-	# 	outb = path.join(job7.outdir, 'pIsTrulyCached7.dir')
-	# 	helpers.writeFile(outa)
-	# 	makedirs(outb)
-	# 	with helpers.log2str():
-	# 		job7.cache()
-	# 	job7.input['b']['data'].append(infile_2)
-	# 	yield job7, False, ['DEBUG', 'not cached because file 3 is different for input files(b):']
-		
-	# 	# input files diff 2
-	# 	infile = path.join(self.testdir, 'pIsTrulyCached71.txt')
-	# 	infile_1 = path.join(self.testdir, 'pIsTrulyCached71_1.txt')
-	# 	infile_2 = path.join(self.testdir, 'pIsTrulyCached71_2.txt')
-	# 	helpers.writeFile(infile)
-	# 	helpers.writeFile(infile_1)
-	# 	helpers.writeFile(infile_2)
-	# 	pIsTrulyCached71 = Proc()
-	# 	pIsTrulyCached71.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached71', 'workdir')
-	# 	pIsTrulyCached71.props['script']  = TemplateLiquid('')
-	# 	pIsTrulyCached71.props['cache']   = True
-	# 	pIsTrulyCached71.props['size']    = 10
-	# 	pIsTrulyCached71.props['input']   = {
-	# 		'a': {'type': 'file', 'data': [infile]},
-	# 		'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
-	# 		'c': {'type': 'var', 'data': ['var_c']}
-	# 	}
-	# 	pIsTrulyCached71.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsTrulyCached71.txt')),
-	# 		'b': ('dir', TemplateLiquid('pIsTrulyCached71.dir'))
-	# 	}
-	# 	job71 = Job(0, pIsTrulyCached71)
-	# 	job71.init()
-	# 	ina = path.join(job71.indir, 'pIsTrulyCached71.txt')
-	# 	inb1 = path.join(job71.indir, 'pIsTrulyCached71.txt')
-	# 	inb2 = path.join(job71.indir, 'pIsTrulyCached71.txt')
-	# 	outa = path.join(job71.outdir, 'pIsTrulyCached71.txt')
-	# 	outb = path.join(job71.outdir, 'pIsTrulyCached71.dir')
-	# 	helpers.writeFile(outa)
-	# 	makedirs(outb)
-	# 	with helpers.log2str():
-	# 		job71.cache()
-	# 	del job71.input['b']['data'][1]
-	# 	yield job71, False, ['DEBUG', 'not cached because file 2 is different for input files(b):']
-		
-	# 	# input files newer
-	# 	infile = path.join(self.testdir, 'pIsTrulyCached8.txt')
-	# 	infile_1 = path.join(self.testdir, 'pIsTrulyCached8_1.txt')
-	# 	infile_2 = path.join(self.testdir, 'pIsTrulyCached8_2.txt')
-	# 	helpers.writeFile(infile)
-	# 	helpers.writeFile(infile_1)
-	# 	helpers.writeFile(infile_2)
-	# 	pIsTrulyCached8 = Proc()
-	# 	pIsTrulyCached8.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached8', 'workdir')
-	# 	pIsTrulyCached8.props['script']  = TemplateLiquid('')
-	# 	pIsTrulyCached8.props['cache']   = True
-	# 	pIsTrulyCached8.props['size']    = 10
-	# 	pIsTrulyCached8.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
-	# 	pIsTrulyCached8.props['input']   = {
-	# 		'a': {'type': 'file', 'data': [infile]},
-	# 		'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
-	# 		'c': {'type': 'var', 'data': ['var_c']}
-	# 	}
-	# 	pIsTrulyCached8.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsTrulyCached8.txt')),
-	# 		'b': ('dir', TemplateLiquid('pIsTrulyCached8.dir'))
-	# 	}
-	# 	del pIsTrulyCached8.LOG_NLINE['CACHE_EMPTY_CURRSIG']
-	# 	del pIsTrulyCached8.LOG_NLINE['CACHE_SIGINFILES_NEWER']
-	# 	job8 = Job(0, pIsTrulyCached8)
-	# 	job8.init()
-	# 	ina = path.join(job8.indir, 'pIsTrulyCached8.txt')
-	# 	inb1 = path.join(job8.indir, 'pIsTrulyCached8_1.txt')
-	# 	inb2 = path.join(job8.indir, 'pIsTrulyCached8_2.txt')
-	# 	outa = path.join(job8.outdir, 'pIsTrulyCached8.txt')
-	# 	outb = path.join(job8.outdir, 'pIsTrulyCached8.dir')
-	# 	helpers.writeFile(outa)
-	# 	makedirs(outb)
-	# 	with helpers.log2str():
-	# 		job8.cache()
-	# 	utime(job8.input['b']['data'][0], (time() + 1, time() + 1))
-	# 	yield job8, False, ['DEBUG', 'not cached because file 1 is newer for input files(b):']
-		
-	# 	# out var diff
-	# 	infile = path.join(self.testdir, 'pIsTrulyCached9.txt')
-	# 	infile_1 = path.join(self.testdir, 'pIsTrulyCached9_1.txt')
-	# 	infile_2 = path.join(self.testdir, 'pIsTrulyCached9_2.txt')
-	# 	helpers.writeFile(infile)
-	# 	helpers.writeFile(infile_1)
-	# 	helpers.writeFile(infile_2)
-	# 	pIsTrulyCached9 = Proc()
-	# 	pIsTrulyCached9.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached9', 'workdir')
-	# 	pIsTrulyCached9.props['script']  = TemplateLiquid('')
-	# 	pIsTrulyCached9.props['cache']   = True
-	# 	pIsTrulyCached9.props['size']    = 10
-	# 	pIsTrulyCached9.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
-	# 	pIsTrulyCached9.props['input']   = {
-	# 		'a': {'type': 'file', 'data': [infile]},
-	# 		'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
-	# 		'c': {'type': 'var', 'data': ['var_c']}
-	# 	}
-	# 	pIsTrulyCached9.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsTrulyCached9.txt')),
-	# 		'b': ('dir', TemplateLiquid('pIsTrulyCached9.dir')),
-	# 		'c': ('var', TemplateLiquid('hello_c')),
-	# 	}
-	# 	del pIsTrulyCached9.LOG_NLINE['CACHE_EMPTY_CURRSIG']
-	# 	del pIsTrulyCached9.LOG_NLINE['CACHE_SIGOUTVAR_DIFF']
-	# 	job9 = Job(0, pIsTrulyCached9)
-	# 	job9.init()
-	# 	ina = path.join(job9.indir, 'pIsTrulyCached9.txt')
-	# 	inb1 = path.join(job9.indir, 'pIsTrulyCached9_1.txt')
-	# 	inb2 = path.join(job9.indir, 'pIsTrulyCached9_2.txt')
-	# 	outa = path.join(job9.outdir, 'pIsTrulyCached9.txt')
-	# 	outb = path.join(job9.outdir, 'pIsTrulyCached9.dir')
-	# 	helpers.writeFile(outa)
-	# 	makedirs(outb)
-	# 	with helpers.log2str():
-	# 		job9.cache()
-	# 	job9.output['c']['data'] = 'new_c'
-	# 	yield job9, False, ['DEBUG', 'not cached because output variable(c) is different:']
-		
-	# 	# out file diff
-	# 	infile = path.join(self.testdir, 'pIsTrulyCached10.txt')
-	# 	infile_1 = path.join(self.testdir, 'pIsTrulyCached10_1.txt')
-	# 	infile_2 = path.join(self.testdir, 'pIsTrulyCached10_2.txt')
-	# 	helpers.writeFile(infile)
-	# 	helpers.writeFile(infile_1)
-	# 	helpers.writeFile(infile_2)
-	# 	pIsTrulyCached10 = Proc()
-	# 	pIsTrulyCached10.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached10', 'workdir')
-	# 	pIsTrulyCached10.props['script']  = TemplateLiquid('')
-	# 	pIsTrulyCached10.props['cache']   = True
-	# 	pIsTrulyCached10.props['size']    = 10
-	# 	pIsTrulyCached10.props['input']   = {
-	# 		'a': {'type': 'file', 'data': [infile]},
-	# 		'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
-	# 		'c': {'type': 'var', 'data': ['var_c']}
-	# 	}
-	# 	pIsTrulyCached10.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsTrulyCached10.txt')),
-	# 		'b': ('dir', TemplateLiquid('pIsTrulyCached10.dir')),
-	# 		'c': ('var', TemplateLiquid('hello_c')),
-	# 	}
-	# 	del pIsTrulyCached10.LOG_NLINE['CACHE_SIGOUTFILE_DIFF']
-	# 	job10 = Job(0, pIsTrulyCached10)
-	# 	job10.init()
-	# 	ina = path.join(job10.indir, 'pIsTrulyCached10.txt')
-	# 	inb1 = path.join(job10.indir, 'pIsTrulyCached10_1.txt')
-	# 	inb2 = path.join(job10.indir, 'pIsTrulyCached10_2.txt')
-	# 	outa = path.join(job10.outdir, 'pIsTrulyCached10.txt')
-	# 	outb = path.join(job10.outdir, 'pIsTrulyCached10.dir')
-	# 	helpers.writeFile(outa)
-	# 	makedirs(outb)
-	# 	with helpers.log2str():
-	# 		job10.cache()
-	# 	job10.output['a']['data'] = infile
-	# 	yield job10, False, ['DEBUG', 'not cached because output file(a) is different:']
-		
-	# 	# out dir diff
-	# 	infile = path.join(self.testdir, 'pIsTrulyCached11.txt')
-	# 	infile_1 = path.join(self.testdir, 'pIsTrulyCached11_1.txt')
-	# 	infile_2 = path.join(self.testdir, 'pIsTrulyCached11_2.txt')
-	# 	helpers.writeFile(infile)
-	# 	helpers.writeFile(infile_1)
-	# 	helpers.writeFile(infile_2)
-	# 	pIsTrulyCached11 = Proc()
-	# 	pIsTrulyCached11.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached11', 'workdir')
-	# 	pIsTrulyCached11.props['script']  = TemplateLiquid('')
-	# 	pIsTrulyCached11.props['cache']   = True
-	# 	pIsTrulyCached11.props['size']    = 10
-	# 	pIsTrulyCached11.props['input']   = {
-	# 		'a': {'type': 'file', 'data': [infile]},
-	# 		'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
-	# 		'c': {'type': 'var', 'data': ['var_c']}
-	# 	}
-	# 	pIsTrulyCached11.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsTrulyCached11.txt')),
-	# 		'b': ('dir', TemplateLiquid('pIsTrulyCached11.dir')),
-	# 		'c': ('var', TemplateLiquid('hello_c')),
-	# 	}
-	# 	del pIsTrulyCached11.LOG_NLINE['CACHE_SIGOUTDIR_DIFF']
-	# 	job11 = Job(0, pIsTrulyCached11)
-	# 	job11.init()
-	# 	ina = path.join(job11.indir, 'pIsTrulyCached11.txt')
-	# 	inb1 = path.join(job11.indir, 'pIsTrulyCached11_1.txt')
-	# 	inb2 = path.join(job11.indir, 'pIsTrulyCached11_2.txt')
-	# 	outa = path.join(job11.outdir, 'pIsTrulyCached11.txt')
-	# 	outb = path.join(job11.outdir, 'pIsTrulyCached11.dir')
-	# 	helpers.writeFile(outa)
-	# 	makedirs(outb)
-	# 	with helpers.log2str():
-	# 		job11.cache()
-	# 	job11.output['b']['data'] = infile
-	# 	yield job11, False, ['DEBUG', 'not cached because output dir file(b) is different:']
-		
-	# 	# True
-	# 	infile = path.join(self.testdir, 'pIsTrulyCached12.txt')
-	# 	infile_1 = path.join(self.testdir, 'pIsTrulyCached12_1.txt')
-	# 	infile_2 = path.join(self.testdir, 'pIsTrulyCached12_2.txt')
-	# 	helpers.writeFile(infile)
-	# 	helpers.writeFile(infile_1)
-	# 	helpers.writeFile(infile_2)
-	# 	pIsTrulyCached12 = Proc()
-	# 	pIsTrulyCached12.props['workdir'] = path.join(self.testdir, 'pIsTrulyCached12', 'workdir')
-	# 	pIsTrulyCached12.props['script']  = TemplateLiquid('')
-	# 	pIsTrulyCached12.props['cache']   = True
-	# 	pIsTrulyCached12.props['size']    = 10
-	# 	pIsTrulyCached12.props['input']   = {
-	# 		'a': {'type': 'file', 'data': [infile]},
-	# 		'b': {'type': 'files', 'data': [[infile_1, infile_2]]},
-	# 		'c': {'type': 'var', 'data': ['var_c']}
-	# 	}
-	# 	pIsTrulyCached12.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsTrulyCached12.txt')),
-	# 		'b': ('dir', TemplateLiquid('pIsTrulyCached12.dir')),
-	# 		'c': ('var', TemplateLiquid('hello_c')),
-	# 	}
-	# 	job12 = Job(0, pIsTrulyCached12)
-	# 	job12.init()
-	# 	ina = path.join(job12.indir, 'pIsTrulyCached12.txt')
-	# 	inb1 = path.join(job12.indir, 'pIsTrulyCached12_1.txt')
-	# 	inb2 = path.join(job12.indir, 'pIsTrulyCached12_2.txt')
-	# 	outa = path.join(job12.outdir, 'pIsTrulyCached12.txt')
-	# 	outb = path.join(job12.outdir, 'pIsTrulyCached12.dir')
-	# 	helpers.writeFile(outa)
-	# 	makedirs(outb)
-	# 	with helpers.log2str():
-	# 		job12.cache()
-	# 	yield job12, True
-		
-	# def testIsTrulyCached(self, job, ret, errs = []):
-	# 	#helpers.log2sys(levels = 'all')
-	# 	with helpers.log2str(levels = 'all') as (out, err):
-	# 		r = job.isTrulyCached()
-	# 	self.assertEqual(r, ret)
-	# 	if r: self.assertEqual(job.rc(), 0)
-	# 	stderr = err.getvalue()
-	# 	for err in errs:
-	# 		self.assertIn(err, stderr)
-	
-	# def dataProvider_testIsExptCached(self):
-	# 	pIsExptCached = Proc()
-	# 	pIsExptCached.props['workdir'] = path.join(self.testdir, 'pIsExptCached', 'workdir')
-	# 	pIsExptCached.props['cache']   = True
-	# 	job = Job(0, pIsExptCached)
-	# 	yield job, False
-		
-	# 	pIsExptCached1 = Proc()
-	# 	pIsExptCached1.props['workdir'] = path.join(self.testdir, 'pIsExptCached1', 'workdir')
-	# 	pIsExptCached1.props['cache']   = 'export'
-	# 	pIsExptCached1.props['exhow']   = 'link'
-	# 	pIsExptCached1.__dict__['LOG_NLINE'] = {}
-	# 	job1 = Job(0, pIsExptCached1)
-	# 	yield job1, False, ['WARNING', 'Job is not export-cached using symlink export.']
-		
-	# 	pIsExptCached2 = Proc()
-	# 	pIsExptCached2.props['workdir'] = path.join(self.testdir, 'pIsExptCached2', 'workdir')
-	# 	pIsExptCached2.props['cache']   = 'export'
-	# 	pIsExptCached2.props['expart']   = [TemplateLiquid('link')]
-	# 	job2 = Job(0, pIsExptCached2)
-	# 	yield job2, False, ['WARNING', 'Job is not export-cached using partial export.']
-		
-	# 	pIsExptCached3 = Proc()
-	# 	pIsExptCached3.props['workdir'] = path.join(self.testdir, 'pIsExptCached3', 'workdir')
-	# 	pIsExptCached3.props['cache'] = 'export'
-	# 	job3 = Job(0, pIsExptCached3)
-	# 	yield job3, False, ['DEBUG', 'Job is not export-cached since export directory is not set.']
-		
-	# 	# tgz, but file not exists
-	# 	pIsExptCached4 = Proc()
-	# 	pIsExptCached4.props['workdir'] = path.join(self.testdir, 'pIsExptCached4', 'workdir')
-	# 	pIsExptCached4.props['cache'] = 'export'
-	# 	pIsExptCached4.props['exhow'] = 'gz'
-	# 	pIsExptCached4.props['exdir'] = path.join(self.testdir, 'exdir')
-	# 	pIsExptCached4.props['script'] = TemplateLiquid('')
-	# 	pIsExptCached4.props['output']  = {
-	# 		'b': ('dir', TemplateLiquid('pIsExptCached4.dir')),
-	# 	}
-		
-	# 	job4 = Job(0, pIsExptCached4)
-	# 	job4.init()
-	# 	# generate output files
-	# 	outb = path.join(job4.outdir, 'pIsExptCached4.dir')
-	# 	outbfile = path.join(outb, 'pIsExptCached4.txt')
-	# 	makedirs(outb)
-	# 	helpers.writeFile(outbfile, 'pIsExptCached4')
-	# 	# file not exists
-	# 	#job4.export()
-	# 	yield job4, False, ['DEBUG', 'Job is not export-cached since exported file not exists: ']
-		
-	# 	# tgz
-	# 	pIsExptCached5 = Proc()
-	# 	pIsExptCached5.props['workdir'] = path.join(self.testdir, 'pIsExptCached5', 'workdir')
-	# 	pIsExptCached5.props['cache'] = 'export'
-	# 	pIsExptCached5.props['exhow'] = 'gz'
-	# 	pIsExptCached5.props['exdir'] = path.join(self.testdir, 'exdir')
-	# 	pIsExptCached5.props['script'] = TemplateLiquid('')
-	# 	pIsExptCached5.__dict__['LOG_NLINE'] = {}
-	# 	pIsExptCached5.props['output']  = {
-	# 		'b': ('dir', TemplateLiquid('pIsExptCached5.dir')),
-	# 	}		
-	# 	job5 = Job(0, pIsExptCached5)
-	# 	job5.init()
-	# 	# generate output files
-	# 	outb = path.join(job5.outdir, 'pIsExptCached5.dir')
-	# 	outbfile = path.join(outb, 'pIsExptCached5.txt')
-	# 	makedirs(outb)
-	# 	helpers.writeFile(outbfile, 'pIsExptCached5')
-	# 	if not path.exists(path.join(self.testdir, 'exdir')):
-	# 		makedirs(path.join(self.testdir, 'exdir'))
-	# 	with helpers.log2str():
-	# 		job5.export()
-	# 	yield job5, True
-		
-	# 	# gz: file not exists
-	# 	pIsExptCached6 = Proc()
-	# 	pIsExptCached6.props['workdir'] = path.join(self.testdir, 'pIsExptCached6', 'workdir')
-	# 	pIsExptCached6.props['cache'] = 'export'
-	# 	pIsExptCached6.props['exhow'] = 'gz'
-	# 	pIsExptCached6.props['exdir'] = path.join(self.testdir, 'exdir')
-	# 	pIsExptCached6.props['script'] = TemplateLiquid('')
-	# 	pIsExptCached6.__dict__['LOG_NLINE'] = {}
-	# 	pIsExptCached6.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsExptCached6.txt')),
-	# 	}		
-	# 	job6 = Job(0, pIsExptCached6)
-	# 	job6.init()
-	# 	# generate output files
-	# 	outb = path.join(job6.outdir, 'pIsExptCached6.dir')
-	# 	outbfile = path.join(outb, 'pIsExptCached6.txt')
-	# 	makedirs(outb)
-	# 	helpers.writeFile(outbfile, 'pIsExptCached6')
-	# 	yield job6, False, ['DEBUG', 'Job is not export-cached since exported file not exists: ']
-		
-	# 	# gz
-	# 	pIsExptCached7 = Proc()
-	# 	pIsExptCached7.props['workdir'] = path.join(self.testdir, 'pIsExptCached7', 'workdir')
-	# 	pIsExptCached7.props['cache'] = 'export'
-	# 	pIsExptCached7.props['exhow'] = 'gz'
-	# 	pIsExptCached7.props['exdir'] = path.join(self.testdir, 'exdir')
-	# 	pIsExptCached7.props['script'] = TemplateLiquid('')
-	# 	pIsExptCached7.__dict__['LOG_NLINE'] = {}
-	# 	pIsExptCached7.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsExptCached7.txt')),
-	# 	}		
-	# 	job7 = Job(0, pIsExptCached7)
-	# 	job7.init()
-	# 	# generate output files
-	# 	outa = path.join(job7.outdir, 'pIsExptCached7.txt')
-	# 	helpers.writeFile(outa)
-	# 	job7.export()
-	# 	yield job7, True
-		
-	# 	# other: file not exist
-	# 	pIsExptCached8 = Proc()
-	# 	pIsExptCached8.props['workdir'] = path.join(self.testdir, 'pIsExptCached8', 'workdir')
-	# 	pIsExptCached8.props['cache'] = 'export'
-	# 	pIsExptCached8.props['exhow'] = 'copy'
-	# 	pIsExptCached8.props['exdir'] = path.join(self.testdir, 'exdir')
-	# 	pIsExptCached8.props['script'] = TemplateLiquid('')
-	# 	pIsExptCached8.__dict__['LOG_NLINE'] = {}
-	# 	pIsExptCached8.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsExptCached8.txt')),
-	# 	}		
-	# 	job8 = Job(0, pIsExptCached8)
-	# 	job8.init()
-	# 	# generate output files
-	# 	outa = path.join(job8.outdir, 'pIsExptCached8.txt')
-	# 	helpers.writeFile(outa)
-	# 	yield job8, False, ['DEBUG', 'Job is not export-cached since exported file not exists: ']
-		
-	# 	# other: same file
-	# 	pIsExptCached9 = Proc()
-	# 	pIsExptCached9.props['workdir'] = path.join(self.testdir, 'pIsExptCached9', 'workdir')
-	# 	pIsExptCached9.props['cache'] = 'export'
-	# 	pIsExptCached9.props['exhow'] = 'copy'
-	# 	pIsExptCached9.props['exdir'] = path.join(self.testdir, 'exdir')
-	# 	pIsExptCached9.props['script'] = TemplateLiquid('')
-	# 	pIsExptCached9.__dict__['LOG_NLINE'] = {}
-	# 	pIsExptCached9.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsExptCached9.txt')),
-	# 	}		
-	# 	job9 = Job(0, pIsExptCached9)
-	# 	job9.init()
-	# 	# generate output files
-	# 	outa = path.join(job9.outdir, 'pIsExptCached9.txt')
-	# 	helpers.writeFile(outa)
-	# 	symlink(outa, path.join(self.testdir, 'exdir', 'pIsExptCached9.txt'))
-	# 	yield job9, True
-		
-	# 	# other: overwrite
-	# 	pIsExptCached10 = Proc()
-	# 	pIsExptCached10.props['workdir'] = path.join(self.testdir, 'pIsExptCached10', 'workdir')
-	# 	pIsExptCached10.props['cache'] = 'export'
-	# 	pIsExptCached10.props['exhow'] = 'copy'
-	# 	pIsExptCached10.props['exdir'] = path.join(self.testdir, 'exdir')
-	# 	pIsExptCached10.props['script'] = TemplateLiquid('')
-	# 	del pIsExptCached10.LOG_NLINE['EXPORT_CACHE_OUTFILE_EXISTS']
-	# 	pIsExptCached10.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pIsExptCached10.txt')),
-	# 	}		
-	# 	job10 = Job(0, pIsExptCached10)
-	# 	job10.init()
-	# 	# generate output files
-	# 	outa = path.join(job10.outdir, 'pIsExptCached10.txt')
-	# 	helpers.writeFile(outa)
-	# 	job10.export()
-	# 	yield job10, True, ['WARNING', 'Overwrite file for export-caching: ']
-			
-	# def testIsExptCached(self, job, ret, errs = []):
-	# 	with helpers.log2str(levels = 'all') as (out, err):
-	# 		r = job.isExptCached()
-	# 	stderr = err.getvalue()
-	# 	self.assertEqual(r, ret)
-	# 	for err in errs:
-	# 		self.assertIn(err, stderr)
-	# 	if ret:
-	# 		self.assertEqual(job.rc(), 0)
-	# 		self.assertTrue(job.isTrulyCached())
-			
-	# def dataProvider_testDone(self):
-	# 	# other: overwrite
-	# 	pDone = Proc()
-	# 	pDone.props['workdir'] = path.join(self.testdir, 'pDone', 'workdir')
-	# 	pDone.props['script']  = TemplateLiquid('')
-	# 	pDone.props['expect']  = TemplateLiquid('')
-	# 	pDone.props['output']  = {
-	# 		'a': ('file', TemplateLiquid('pDone.txt')),
-	# 	}		
-	# 	job = Job(0, pDone)
-	# 	job.init()
-	# 	# generate output files
-	# 	outa = path.join(job.outdir, 'pDone.txt')
-	# 	helpers.writeFile(outa)
-	# 	helpers.writeFile(job.rcfile, 0)
-	# 	yield job,
-			
-	# def testDone(self, job):
-	# 	with helpers.log2str():
-	# 		job.done()
-	# 	self.assertEqual(job.rc(), 0)
-
-
 if __name__ == '__main__':
 	testly.main(verbosity=2)
