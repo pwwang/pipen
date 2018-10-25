@@ -539,9 +539,9 @@ class Proc (object):
 				efailedjobs = len(efailedjobs),
 				cachedjobs  = len(cachedjobs)
 			), extra = {
-				'loglevel': 'P.DONE',
-				'proc': self.name(False),
-				'pbar': 'next'
+				'loglevel': 'P.DONE' if len(cachedjobs) < self.size else 'CACHED',
+				'proc'    : self.name(False),
+				'pbar'    : 'next'
 			})
 
 			logger.logger.debug('Cached           : {}'.format(utils.briefList(cachedjobs)), extra = {'proc': self.name(False)})
@@ -991,7 +991,7 @@ class Proc (object):
 			tplfile = script[5:].strip()
 			if not path.exists (tplfile):
 				raise ProcScriptError (tplfile, 'No such template file')
-			logger.logger.debug("Using template file: %s" % tplfile)
+			logger.logger.debug("Using template file: %s" % tplfile, extra = {'proc': self.name(False)})
 			with open(tplfile) as f:
 				script = f.read().strip()
 		
@@ -1134,12 +1134,11 @@ class Proc (object):
 		Submit and run the jobs
 		"""
 		jobmgr = Jobmgr(self.jobs, {
-			'nsub' : min(self.nsub, self.size),
+			'nsub' : min(self.nsub, self.forks, self.size),
 			'forks': min(self.forks, self.size),
 			'proc' : self.name(False)
 		})
 
 		for jobidx, jobdata in Job.OUTPUT.items():
-			if jobidx == 0:
-				self.channel.attach(*jobdata.keys())
 			self.props['channel'][jobidx] = tuple(v['data'] for v in jobdata.values())
+		self.channel.attach(*Job.OUTPUT[0].keys())

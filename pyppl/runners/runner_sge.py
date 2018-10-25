@@ -1,7 +1,7 @@
 import re, copy
 from subprocess import CalledProcessError
 from .runner import Runner
-from ..utils import cmd
+from ..utils import cmd, box
 
 class RunnerSge (Runner):
 	"""
@@ -20,12 +20,11 @@ class RunnerSge (Runner):
 		super(RunnerSge, self).__init__(job)
 
 		# construct an sge script
-		sgefile = self.job.script + '.sge'
+		self.script = self.job.script + '.sge'
 		sgesrc  = ['#!/usr/bin/env bash']
 
-		conf = {}
-		if 'sgeRunner' in self.job.config['runnerOpts']:
-			conf = copy.copy(self.job.config['runnerOpts']['sgeRunner'])
+		conf = self.job.config.get('runnerOpts', {})
+		conf = copy.copy(conf.get('sgeRunner', {}))
 		
 		self.commands = {'qsub': 'qsub', 'qstat': 'qstat', 'qdel': 'qdel'}
 		if 'qsub' in conf:
@@ -99,7 +98,7 @@ class RunnerSge (Runner):
 		if 'postScript' in conf:
 			sgesrc.append (conf['postScript'])
 		
-		with open (sgefile, 'w') as f:
+		with open (self.script, 'w') as f:
 			f.write ('\n'.join(sgesrc) + '\n')
 		
 	def submit(self):
@@ -109,7 +108,7 @@ class RunnerSge (Runner):
 			The `utils.cmd.Cmd` instance if succeed 
 			else a `Box` object with stderr as the exception and rc as 1
 		"""
-		cmdlist = [self.commands['qsub'], self.job.script + '.sge']
+		cmdlist = [self.commands['qsub'], self.script]
 		try:
 			r = cmd.run(cmdlist)
 			# Your job 6556149 ("pSort.notag.3omQ6NdZ.0") has been submitted
@@ -121,7 +120,7 @@ class RunnerSge (Runner):
 			return r
 
 		except (OSError, CalledProcessError) as ex:
-			r        = Box()
+			r        = box.Box()
 			r.stderr = str(ex)
 			r.rc     = 1
 			r.cmd    = cmdlist
@@ -137,7 +136,7 @@ class RunnerSge (Runner):
 		except (OSError, CalledProcessError): # pragma: no cover
 			pass
 
-	def alive(self):
+	def isRunning(self):
 		"""
 		Tell if the job is alive
 		@returns:

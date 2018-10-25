@@ -1,5 +1,7 @@
-import copy
+import re, copy
+from subprocess import CalledProcessError
 from .runner import Runner
+from ..utils import cmd, box
 
 class RunnerSlurm (Runner):
 	"""
@@ -21,9 +23,8 @@ class RunnerSlurm (Runner):
 		self.script = self.job.script + '.slurm'
 		slurmsrc    = ['#!/usr/bin/env bash']
 	
-		conf = {}
-		if 'slurmRunner' in self.job.config['runnerOpts']:
-			conf = copy.copy (self.job.config['runnerOpts']['slurmRunner'])
+		conf = self.job.config.get('runnerOpts', {})
+		conf = copy.copy(conf.get('slurmRunner', {}))
 
 		self.commands = {'sbatch': 'sbatch', 'srun': 'srun', 'squeue': 'squeue', 'scancel': 'scancel'}
 		if 'sbatch' in conf:
@@ -35,7 +36,7 @@ class RunnerSlurm (Runner):
 		if 'scancel' in conf:
 			self.commands['scancel'] = conf['scancel']
 		
-		cmdPrefix = commands['srun']
+		cmdPrefix = self.commands['srun']
 		if 'cmdPrefix' in conf:
 			cmdPrefix = conf['cmdPrefix']
 		
@@ -98,8 +99,8 @@ class RunnerSlurm (Runner):
 		cmdlist = [self.commands['sbatch'], self.script]
 		try:
 			r = cmd.run(cmdlist)
-			# Your job 6556149 ("pSort.notag.3omQ6NdZ.0") has been submitted
-			m = re.search(r'\s(\d+)\s', r.stdout)
+			# Submitted batch job 1823334668
+			m = re.search(r'\s(\d+)$', r.stdout.strip())
 			if not m:
 				r.rc = 1
 			else:
@@ -107,7 +108,7 @@ class RunnerSlurm (Runner):
 			return r
 
 		except (OSError, CalledProcessError) as ex:
-			r        = Box()
+			r        = box.Box()
 			r.stderr = str(ex)
 			r.rc     = 1
 			r.cmd    = cmdlist
@@ -117,7 +118,7 @@ class RunnerSlurm (Runner):
 		"""
 		Kill the job
 		"""
-		cmdlist = [self.commands['scancel'], '-j', str(self.job.pid)]
+		cmdlist = [self.commands['scancel'], str(self.job.pid)]
 		try:
 			cmd.run(cmdlist)
 		except (OSError, CalledProcessError): # pragma: no cover

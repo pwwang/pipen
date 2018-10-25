@@ -30,8 +30,12 @@ def exists(pid):
 			# here. If we do let's be explicit in considering this
 			# an error.
 			raise err
-	else: # pragma: no cover
-		return True
+	else:
+		# if process has been killed
+		# PID TTY          TIME CMD
+		# 53464 pts/9    00:00:00 sleep <defunct>
+		r = Cmd(['kill', '-0', str(pid)]).run()
+		return r.rc == 0
 
 def kill(pids, sig = signal.SIGKILL):
 	if not isinstance(pids, list):

@@ -22,7 +22,8 @@ class RunnerLocal (Runner):
 		self.script = job.script + '.local'
 		localsrc  = ['#!/usr/bin/env bash']
 
-		conf = job.config.get('localRunner', {})
+		conf = job.config.get('runnerOpts', {})
+		conf = conf.get('localRunner', {})
 
 		if 'preScript' in conf:
 			localsrc.append (conf['preScript'])

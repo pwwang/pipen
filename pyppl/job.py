@@ -6,8 +6,9 @@ from multiprocessing.managers import SyncManager
 from collections import OrderedDict
 from datetime import datetime
 from .logger import logger
-from .utils import safefs, string_types
+from .utils import cmd, safefs, string_types
 from .utils.box import Box
+from .exception import JobInputParseError, JobOutputParseError
 
 MANAGER = SyncManager()
 MANAGER.start(signal.signal, (signal.SIGINT, signal.SIG_IGN))
@@ -92,15 +93,15 @@ class Job(object):
 		msg = []
 		if self.rc == Job.RC_NOTGENERATE:
 			msg.append('Rcfile not generated')
-		if self.rc & 0b10000000:
-			msg.append('Outfile not generated')
 		if self.rc & 0b100000000:
+			msg.append('Outfile not generated')
+		if self.rc & 0b1000000000:
 			msg.append('Expectation not met')
 		msg = ', '.join(msg)
 		if self.config['errhow'] == 'ignore':
 			self.logger.warning('Failed but ignored (totally {total}). Return code: {rc} {msg}.'.format(
 				total = totalfailed,
-				rc    = self.rc & 0b001111111,
+				rc    = self.rc & 0b0011111111,
 				msg   = msg if not msg else '({})'.format(msg)
 			), extra = {
 				'proc'  : self.config['proc'],
@@ -110,9 +111,9 @@ class Job(object):
 			})
 			return
 
-		self.logger.error('Failed. Return code: {rc} {msg}.'.format(
+		self.logger.error('Failed (totally {total}). Return code: {rc} {msg}.'.format(
 			total = totalfailed,
-			rc    = self.rc & 0b001111111,
+			rc    = self.rc & 0b0011111111,
 			msg   = msg if not msg else '({})'.format(msg)
 		), extra = {
 			'proc'  : self.config['proc'],
@@ -128,7 +129,7 @@ class Job(object):
 		self.logger.error('Stderr: {}'.format(self.errfile), extra = {
 			'proc': self.config['proc'], 'jobidx': self.index, 'joblen': self.config['procsize']})
 
-		# errors are not echoed, print them out
+		# errors are not echoed, echo them out
 		if self.index not in self.config['echo']['jobs'] or 'stderr' not in self.config['echo']['type']:
 			self.logger.error('Check STDERR below:', extra = {
 				'proc': self.config['proc'], 'jobidx': self.index, 'joblen': self.config['procsize']})
@@ -270,9 +271,11 @@ class Job(object):
 		if safefs.SafeFs(infile, orgfile).samefile():
 			return infile
 
-		#(fn, ext) = path.splitext(basename)
-		(fn, ext) = basename.split('.', 1)
-		ext       = '.' + ext
+		if '.' in basename:
+			(fn, ext) = basename.split('.', 1)
+			ext       = '.' + ext
+		else:
+			fn, ext = basename, ''
 		# takes long time if we have a long list of files
 		existInfiles = glob (path.join(self.indir, fn + '[[]*[]]' + ext))
 		if not existInfiles:
@@ -290,7 +293,7 @@ class Job(object):
 			if num > 0:
 				infile = path.join (self.indir, fn + '[' + str(num+1) + ']' + ext)
 				safefs.link(orgfile, infile)
-		else:
+		else: # pragma: no cover
 			num = max([
 				int(path.basename(eifile)[len(fn)+1 : -len(ext)-1]) 
 				for eifile in existInfiles
@@ -305,7 +308,7 @@ class Job(object):
 		"""
 		from . import Proc
 		safefs.remove(self.indir)
-		makedirs (self.indir)
+		makedirs(self.indir)
 
 		for key, val in self.config['input'].items():
 			self.input[key] = {}
@@ -327,9 +330,11 @@ class Job(object):
 					infile   = self._linkInfile(indata)
 					if basename != safefs.SafeFs.basename(infile):
 						self.logger.warning ("Input file renamed: %s -> %s" % (basename, safefs.SafeFs.basename(infile)), extra = {
-							'level2': 'INFILE_RENAMING',
+							'proc'  : self.config['proc'],
+							'joblen': self.config['procsize'],
 							'jobidx': self.index,
-							'joblen': self.config['procisze']
+							'level2': 'INFILE_RENAMING',
+							'pbar'  : False
 						})
 
 				if self.config['iftype'] == 'origin':
@@ -373,10 +378,12 @@ class Job(object):
 						basename = path.basename(data)
 						infile   = self._linkInfile(data)
 						if basename != path.basename(infile):
-							logger.logger.warning("Input file renamed: %s -> %s" % (basename, path.basename(infile)), extra = {
-								'level2': 'INFILE_RENAMING',
+							self.logger.warning('Input file renamed: {} -> {}'.format(basename, path.basename(infile)), extra = {
+								'proc'  : self.config['proc'],
+								'joblen': self.config['procsize'],
 								'jobidx': self.index,
-								'joblen': self.config['procisze']
+								'level2': 'INFILE_RENAMING',
+								'pbar'  : False
 							})
 
 					if self.config['iftype'] == 'origin':
@@ -420,7 +427,6 @@ class Job(object):
 		assert isinstance(output, dict)
 		# allow empty output
 		if not output: return
-
 		for key, val in output.items():
 			outtype, outtpl = val
 			outdata = outtpl.render(self.data)
@@ -467,7 +473,7 @@ class Job(object):
 		Get the return code
 		Exception not meet
 		  |
-		0b110000000
+		0b1100000000
 		   |
 		   outfile not generated
 		"""
@@ -834,9 +840,8 @@ class Job(object):
 				safefs.remove(retrydir)
 
 		for jobfile in [self.rcfile, self.outfile, self.errfile, self.pidfile, self.outdir]:
-			mvfile = path.join(retrydir, path.basename(jobfile))
 			if retry:
-				safefs.move(jobfile, mvfile)
+				safefs.move(jobfile, path.join(retrydir, path.basename(jobfile)))
 			else:
 				safefs.remove(jobfile)
 		open(self.outfile, 'w').close()
@@ -874,8 +879,8 @@ class Job(object):
 		else:
 			for expart in self.config['expart']:
 				expart = expart.render(self.data)
-				if expart in Job.OUTPUT[self.index]['data']:
-					files2ex.append(Job.OUTPUT[self.index]['data'][expart])
+				if self.index in Job.OUTPUT and expart in Job.OUTPUT[self.index]:
+					files2ex.append(Job.OUTPUT[self.index][expart]['data'])
 				else:
 					files2ex.extend(glob(path.join(self.outdir, expart)))
 		
@@ -912,25 +917,27 @@ class Job(object):
 			for out in Job.OUTPUT[self.index].values():
 				if out['type'] in Proc.OUT_VARTYPE: continue
 				if not path.exists(out['data']):
-					self.rc = self.rc | 0b10000000
+					self.rc = self.rc | 0b100000000
 					self.logger.debug('Outfile not generated: {}'.format(out['data']), extra = {
 						'level2': 'OUTFILE_NOT_EXISTS',
 						'jobidx': self.index,
-						'joblen': self.config['procsize']
+						'joblen': self.config['procsize'],
+						'proc'  : self.config['proc']
 					})
 
 		expectCmd = self.config['expect'].render(self.data)
 
-		if expectCmd and expect:
-			self.logger.debug ('%s check expectation: %s' % (indexstr, expectCmd), extra = {
+		if expectCmd:
+			self.logger.debug ('Check expectation: %s' % (expectCmd), extra = {
 					'level2': 'EXPECT_CHECKING',
 					'jobidx': self.index,
-					'joblen': self.config['procsize']
+					'joblen': self.config['procsize'],
+					'proc'  : self.config['proc']
 				})
 			#rc = utils.dumbPopen (expectCmd, shell=True).wait()
 			c = cmd.run(expectCmd, raiseExc = False, shell = True)
 			if c.rc != 0:	
-				self.rc = self.rc | 0b100000000
+				self.rc = self.rc | 0b1000000000
 		return self.rc in self.config['rcs']
 
 	def done (self):

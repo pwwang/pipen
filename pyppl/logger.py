@@ -10,6 +10,7 @@ from .template import TemplateLiquid
 
 MANAGER = SyncManager()
 MANAGER.start(signal.signal, (signal.SIGINT, signal.SIG_IGN))
+
 # the entire format
 LOGFMT = "[%(asctime)s%(message)s"
 # colors
@@ -41,10 +42,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.cyan, COLORS.bold + COLORS.cyan],
 		'DEPENDS' : COLORS.magenta,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING,P.DONE': COLORS.green,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.green,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
-		'in:WORKDIR': COLORS.yellow,
+		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
 		''        : COLORS.white
 	},
 	'blueOnBlack':  {
@@ -52,10 +53,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.cyan, COLORS.bold  + COLORS.cyan],
 		'DEPENDS' : COLORS.green,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING,P.DONE': COLORS.blue,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.blue,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
-		'in:WORKDIR': COLORS.yellow,
+		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
 		''        : COLORS.white
 	},
 	'magentaOnBlack':  {
@@ -63,10 +64,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.green, COLORS.bold + COLORS.green],
 		'DEPENDS' : COLORS.blue,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING,P.DONE': COLORS.magenta,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.magenta,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
-		'in:WORKDIR': COLORS.yellow,
+		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
 		''        : COLORS.white
 	},
 	'greenOnWhite': {
@@ -74,10 +75,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.blue],
 		'DEPENDS' : COLORS.magenta,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING,P.DONE': COLORS.green,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.green,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
-		'in:WORKDIR': COLORS.yellow,
+		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
 		''        : COLORS.black
 	},
 	'blueOnWhite':  {
@@ -85,10 +86,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.green, COLORS.bold + COLORS.green],
 		'DEPENDS' : COLORS.magenta,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING,P.DONE': COLORS.blue,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.blue,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
-		'in:WORKDIR': COLORS.yellow,
+		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
 		''        : COLORS.black
 	},
 	'magentaOnWhite':  {
@@ -96,10 +97,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.blue],
 		'DEPENDS' : COLORS.green,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING,P.DONE': COLORS.magenta,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.magenta,
 		'has:ERR' : COLORS.red,
 		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
-		'in:WORKDIR': COLORS.yellow,
+		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
 		''        : COLORS.black
 	}
 }
@@ -110,7 +111,7 @@ LEVELS = {
 	'normal':  ['INPUT', 'OUTPUT', 'P.ARGS', 'P.PROPS']
 }
 
-LEVELS_ALWAYS = ['PROCESS', 'WORKDIR', 'RESUMED', 'SKIPPED', 'DEPENDS', 'STDOUT', 'STDERR', 'WARNING', 'ERROR', 'INFO', 'DONE', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'BLDING', 'SUBMIT', 'RUNNING', 'RETRY', 'JOBDONE', 'KILLING', 'P.DONE']
+LEVELS_ALWAYS = ['PROCESS', 'WORKDIR', 'RESUMED', 'SKIPPED', 'DEPENDS', 'STDOUT', 'STDERR', 'WARNING', 'ERROR', 'INFO', 'DONE', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'BLDING', 'SUBMIT', 'RUNNING', 'RETRY', 'JOBDONE', 'KILLING', 'P.DONE', 'CACHED']
 
 DEBUG_LINES = {
 	'EXPORT_CACHE_OUTFILE_EXISTS': -1,
@@ -259,7 +260,6 @@ class PyPPLLogFilter (logging.Filter):
 			`True` if the record to be kept else `False`
 		"""
 		level = record.loglevel.upper() if hasattr(record, 'loglevel') else record.levelname
-		
 		if level.startswith('_'):
 			return True
 		if not PyPPLLogFilter.LEVELS:
@@ -391,10 +391,8 @@ class PyPPLStreamHandler(logging.StreamHandler):
 		Emit the record.
 		"""
 		from .jobmgr import Jobmgr
-		#self.acquire()
 		try:
 			pbar = record.pbar if hasattr(record, 'pbar') else None
-			#print 'pbar', pbar, PyPPLStreamHandler.PREVBAR.value
 			if pbar == 'next':
 				if PyPPLStreamHandler.PREVBAR[0]:
 					self.stream.write("\n")
@@ -455,7 +453,7 @@ class PyPPLStreamHandler(logging.StreamHandler):
 						rec = pycopy(record)
 						if i == len(msgs) - 1 and m.startswith('...... max='):
 							rec.msg = m.ljust(justlen)
-							delattr(rec, 'jobidx')
+							#delattr(rec, 'jobidx')
 						else:
 							rec.msg = m.ljust(justlen)
 						self._emit(rec, "\n")
@@ -466,7 +464,6 @@ class PyPPLStreamHandler(logging.StreamHandler):
 			self.handleError(record)
 		finally:
 			pass
-			#self.release()
 
 
 def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, name='PyPPL'):

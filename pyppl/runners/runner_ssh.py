@@ -1,21 +1,23 @@
 import re, sys
 from os import path, getcwd
 from .runner import Runner
-from ..utils import cmd, safefs
+from ..utils import cmd, safefs, ps
 from ..exception import RunnerSshError
 from multiprocessing import Array
 from subprocess import CalledProcessError, list2cmdline
+
+MAX_SERVERS = 255
 
 class RunnerSsh(Runner):
 	"""
 	The ssh runner
 	"""
-	LIVE_SERVERS = Array('i', 255)
+	LIVE_SERVERS = Array('i', [-1] * MAX_SERVERS)
 	
 	@staticmethod
 	def isServerAlive(server, key = None):
 		cmdlist = ['ssh', server]
-		if key:
+		if key: # pragma: no cover
 			cmdlist.append('-i')
 			cmdlist.append(key)
 		cmdlist.append('-o')
@@ -40,7 +42,7 @@ class RunnerSsh(Runner):
 		self.script = self.job.script + '.ssh'
 
 		conf         = {}
-		if 'sshRunner' in self.job.config['runnerOpts']:
+		if 'sshRunner' in self.job.config.get('runnerOpts', {}):
 			conf = self.job.config['runnerOpts']['sshRunner']
 		
 		servers    = conf.get('servers', [])
@@ -50,19 +52,21 @@ class RunnerSsh(Runner):
 			raise RunnerSshError('No server found for ssh runner.')
 
 		with RunnerSsh.LIVE_SERVERS.get_lock():
-			if not RunnerSsh.LIVE_SERVERS:
+			if sum(RunnerSsh.LIVE_SERVERS) == -MAX_SERVERS:
 				if checkAlive:
-					RunnerSsh.LIVE_SERVERS = [
+					liveservs = [
 						i for i, server in enumerate(servers)
 						if RunnerSsh.isServerAlive(server, keys[i] if keys else None)
 					]
 				else:
-					RunnerSsh.LIVE_SERVERS = list(range(len(servers)))
-
-		if len(RunnerSsh.LIVE_SERVERS) == 0:
+					liveservs = range(len(servers))
+				for idx, servid in enumerate(liveservs):
+					RunnerSsh.LIVE_SERVERS[idx] = servid
+				
+		if sum(RunnerSsh.LIVE_SERVERS) == -MAX_SERVERS:
 			raise RunnerSshError('No server is alive.')
 
-		sid    = RunnerSsh.LIVE_SERVERS[job.index % len (RunnerSsh.LIVE_SERVERS)]
+		sid    = RunnerSsh.LIVE_SERVERS[job.index % list(RunnerSsh.LIVE_SERVERS).index(-1)]
 		server = servers[sid]
 		key    = keys[sid] if keys else None
 
@@ -120,7 +124,7 @@ class RunnerSsh(Runner):
 		pidlist = [pid for pid in pidlist if len(pid) == 2 and pid[0].isdigit() and pid[1].isdigit()]
 		dchilds     = ps.child(self.job.pid, pidlist)
 		allchildren = [str(self.job.pid)] + dchilds
-		while dchilds:
+		while dchilds: # pragma: no cover
 			dchilds2 = sum([ps.child(p, pidlist) for p in dchilds], [])
 			allchildren.extend(dchilds2)
 			dchilds = dchilds2

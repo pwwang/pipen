@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-import sys, os
-from subprocess import list2cmdline
-
-if '-i' in sys.argv:
-	argv = sys.argv[4:]
-else:
-	argv = sys.argv[2:]
-	
-os.system(list2cmdline(argv))
+import sys
+from pyppl.utils import cmd
+r = cmd.run(sys.argv[1])
+if r.rc != 0:
+	exit(1)

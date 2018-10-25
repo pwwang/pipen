@@ -67,7 +67,7 @@ class Jobmgr(object):
 		try:
 			self.locPool.join()
 			self.remPool.join()
-		except KeyboardInterrupt:
+		except KeyboardInterrupt: # pragma: no cover
 			self.logger.info(
 				'Ctrl-C detected, quitting pipeline ...'.ljust(Jobmgr.PBAR_SIZE + 50), 
 				extra = {'loglevel': 'WARNING', 'pbar': 'next'}

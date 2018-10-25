@@ -5,6 +5,7 @@ import sys, re, atexit
 from os import path
 from time import sleep
 from subprocess import list2cmdline
+from multiprocessing import Lock
 
 from pyppl.utils import safefs, cmd, ps
 from pyppl.logger import logger
@@ -14,7 +15,8 @@ class Runner (object):
 	The base runner class
 	"""
 	
-	INTERVAL = .1
+	INTERVAL  = .1
+	FLUSHLOCK = Lock()
 	
 	def __init__ (self, job):
 		"""
@@ -31,14 +33,16 @@ class Runner (object):
 		Try to kill the running jobs if I am exiting
 		"""
 		if self.job.pid:
-			ps.killtree(int(self.pid), killme = True, sig = 9)
+			ps.killtree(int(self.job.pid), killme = True, sig = 9)
 
 	def submit (self):
 		"""
 		Try to submit the job
 		"""
 		c = cmd.run([
-			sys.executable, path.realpath(__file__), self.script
+			sys.executable, 
+			path.realpath(__file__), 
+			self.script[-1] if isinstance(self.script, list) else self.script
 		], bg = True)
 		c.rc = 0
 		return c
@@ -51,7 +55,7 @@ class Runner (object):
 		"""
 		# stdout, stderr haven't been generated, wait
 		while not path.isfile(self.job.errfile) or not path.isfile(self.job.outfile):
-			sleep(self.INTERVAL)
+			sleep(self.INTERVAL) # pragma: no cover
 		
 		ferr = open(self.job.errfile)
 		fout = open(self.job.outfile)
@@ -95,7 +99,7 @@ class Runner (object):
 			
 			for line in lines:
 				if not outfilter or re.search(outfilter, line):
-					with flushlock:
+					with Runner.FLUSHLOCK:
 						sys.stdout.write(line)
 
 		lines, lasterr = safefs.SafeFs.flush(ferr, lasterr, end)		
@@ -110,11 +114,17 @@ class Runner (object):
 				loglevel = loglevel[1:] if loglevel else 'log'
 				
 				# '_' makes sure it's not filtered by log levels
-				logger.info(logmsg.lstrip(), extra = {'loglevel': '_' + loglevel, 'pbar': False})
+				logger.info(logmsg.lstrip(), extra = {
+					'loglevel': '_' + loglevel,
+					'pbar'    : False,
+					'jobidx'  : self.job.index,
+					'joblen'  : self.job.config['procsize'],
+					'proc'    : self.job.config['proc']
+				})
 			elif 'stderr' in self.job.config['echo']['type']:
 				errfilter = self.job.config['echo']['type']['stderr']
 				if not errfilter or re.search(errfilter, line):
-					with flushlock:
+					with Runner.FLUSHLOCK:
 						sys.stderr.write(line)
 		
 		return (lastout, lasterr)
@@ -139,7 +149,7 @@ class _LocalSubmitter(object):
 			fpid.write(str(self.proc.pid))
 		try:
 			self.proc.run()
-		except KeyboardInterrupt:
+		except KeyboardInterrupt: # pragma: no cover
 			self.proc.rc = 1
 
 	def quit(self):
