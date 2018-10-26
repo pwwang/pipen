@@ -1,4 +1,3 @@
-six
 filelock
 futures
 liquidpy

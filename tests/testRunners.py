@@ -166,6 +166,8 @@ class TestRunner(testly.TestCase):
 
 	def testRun(self, job, stdout = '', stderr = ''):
 		r = Runner(job)
+		helpers.writeFile(job.outfile)
+		helpers.writeFile(job.errfile)
 		r.submit()
 		r.run()
 		with open(job.outfile, 'r') as f:
