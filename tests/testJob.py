@@ -2182,7 +2182,7 @@ class TestJob(testly.TestCase):
 		config2 = config.copy()
 		config2['errhow'] = 'halt'
 		job2 = Job(0, config2)
-		yield job2, 'halt', Job.STATUS_RETRYING, Job.STATUS_DONEFAILED
+		yield job2, 'halt', Job.STATUS_ENDFAILED, Job.STATUS_DONEFAILED
 
 	def testRetry(self, job, ret, status = Job.STATUS_BUILT, status_set = None, ntry = 0):
 		Job.OUTPUT[0] = {}

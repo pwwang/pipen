@@ -219,20 +219,21 @@ class PyPPLLogFilter (logging.Filter):
 
 		logging.Filter.__init__(self, name)
 		PyPPLLogFilter.LEVELS[:] = []
-			
-		if not isinstance(lvls, list):
-			if lvls in LEVELS:
-				PyPPLLogFilter.LEVELS += LEVELS[lvls]
-			elif lvls == 'ALL':
-				PyPPLLogFilter.LEVELS += LEVELS['all']
-			elif lvls:
-				PyPPLLogFilter.LEVELS += [lvls]
-			elif lvls is False:
-				return
-		else:
-			PyPPLLogFilter.LEVELS += lvls
+		
+		if lvls is not None:
+			if not isinstance(lvls, list):
+				if lvls in LEVELS:
+					PyPPLLogFilter.LEVELS += LEVELS[lvls]
+				elif lvls == 'ALL':
+					PyPPLLogFilter.LEVELS += LEVELS['all']
+				elif lvls:
+					PyPPLLogFilter.LEVELS += [lvls]
+				elif lvls is False:
+					return
+			else:
+				PyPPLLogFilter.LEVELS += lvls
 
-		PyPPLLogFilter.LEVELS += LEVELS_ALWAYS
+			PyPPLLogFilter.LEVELS += LEVELS_ALWAYS
 			
 		lvldiff = lvldiff or []
 		if not isinstance(lvldiff, list):
@@ -458,12 +459,10 @@ class PyPPLStreamHandler(logging.StreamHandler):
 							rec.msg = m.ljust(justlen)
 						self._emit(rec, "\n")
 				self._emit(prevbar, "\r")
-		except (KeyboardInterrupt, SystemExit, IOError, EOFError):
+		except (KeyboardInterrupt, SystemExit, IOError, EOFError): # pragma: no cover
 			raise
-		except Exception:
+		except Exception: # pragma: no cover
 			self.handleError(record)
-		finally:
-			pass
 
 
 def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, name='PyPPL'):
