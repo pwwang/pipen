@@ -541,11 +541,11 @@ class Proc (object):
 			logger.logger.info(
 				'Time: %s. Jobs (Cached: %s, Succ: %s, B.Fail: %s, S.Fail: %s, R.Fail: %s)',
 				utils.formatSecs(time() - self.timer),
+				len(cachedjobs),
 				len(successjobs),
 				len(bfailedjobs),
 				len(sfailedjobs),
 				len(efailedjobs),
-				len(cachedjobs),
 				extra = {
 					'loglevel': 'P.DONE' if len(cachedjobs) < self.size else 'CACHED',
 					'proc'    : self.name(False),

@@ -53,6 +53,7 @@ class Jobmgr(object):
 	MANAGER = Manager()
 	PIDS    = None
 	LOCK    = Lock()
+	PID     = os.getpid()
 
 	def __init__(self, jobs, config):
 		if not jobs:  # no jobs
@@ -169,12 +170,13 @@ class Jobmgr(object):
 		killPool.close()
 		killPool.join()
 
-		if not pid: # pragma: no cover
-			failedjobs = [job for job in self.jobs if job.status.value & 0b1000000]
-			if not failedjobs:
-				failedjobs = [self.jobs[0]]
-			failedjobs[0].showError(len(failedjobs))
-			
+		failedjobs = [job for job in self.jobs if job.status.value & 0b1000000]
+		if not failedjobs:
+			failedjobs = [self.jobs[0]]
+		failedjobs[0].showError(len(failedjobs))
+		
+		# in case main process not quit
+		ps.killtree(Jobmgr.PID, True)
 		exit(1)
 
 	def buildWorker(self):

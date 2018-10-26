@@ -467,7 +467,7 @@ class PyPPLStreamHandler(logging.StreamHandler):
 						rec = pycopy(record)
 						if i == len(msgs) - 1 and m.startswith('...... max='):
 							rec.msg = m.ljust(justlen)
-							#delattr(rec, 'jobidx')
+							delattr(rec, 'jobidx')
 						else:
 							rec.msg = m.ljust(justlen)
 						self._emit(rec, "\n")

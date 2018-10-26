@@ -1154,6 +1154,9 @@ class Job(object):
 		if self.config['errhow'] == 'halt':
 			self.status.value = Job.STATUS_ENDFAILED
 			return 'halt'
+		if self.config['errhow'] != 'retry':
+			self.status.value = Job.STATUS_ENDFAILED
+			return False
 		self.status.value = Job.STATUS_RETRYING
 		self.ntry.value += 1
 		return True

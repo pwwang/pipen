@@ -39,17 +39,18 @@ class TestJobmgr(testly.TestCase):
 		p1.run()
 		Jobmgr.PBAR_SIZE = oPBAR_SIZE
 
-	def testJm3(self):
-		p2 = Proc()
-		p2.script = '__err__ 123'
-		p2.forks = 20
-		p2.nsub = 1
-		p2.input = {'a': list(range(20))}
-		p2.errhow = 'halt'
-		try:
-			p2.run()
-		except SystemExit:
-			pass
+	# whole test process will be killed.
+	# def testJm3(self):
+	# 	p2 = Proc()
+	# 	p2.script = '__err__ 123'
+	# 	p2.forks = 20
+	# 	p2.nsub = 1
+	# 	p2.input = {'a': list(range(20))}
+	# 	p2.errhow = 'halt'
+	# 	try:
+	# 		p2.run()
+	# 	except SystemExit:
+	# 		pass
 
 	def testJm4(self):
 		from time import time
