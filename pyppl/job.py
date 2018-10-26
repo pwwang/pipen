@@ -495,12 +495,12 @@ class Job(object):
 	def pid(self):
 		if not path.exists(self.pidfile):
 			return ''
-		with open(self.pidfile, 'rb') as f:
+		with open(self.pidfile, 'r') as f:
 			return f.read().strip()
 	
 	@pid.setter
 	def pid(self, val):
-		with open(self.pidfile, 'wb') as f:
+		with open(self.pidfile, 'w') as f:
 			f.write(str(val))
 
 	def isTrulyCached (self):

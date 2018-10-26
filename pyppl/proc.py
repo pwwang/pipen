@@ -79,12 +79,10 @@ class Proc (object):
 		# computed props
 		self.__dict__['props']    = {}
 
-		self.props['timer'] = time()
-
 		self.config['id']         = utils.varname() if id is None else id
 
 		if ' ' in tag:
-			raise ProcTagError("No space is allowed in tag ('{tag}'). Do you mean 'desc' instead of 'tag'?".format(tag))
+			raise ProcTagError("No space is allowed in tag ('{}'). Do you mean 'desc' instead of 'tag'?".format(tag))
 
 		# The command to run after jobs start
 		self.config['afterCmd']   = ""
@@ -251,6 +249,8 @@ class Proc (object):
 		self.config['template']   = ''
 		# The template class
 		self.props['template']    = None
+
+		self.props['timer']       = None
 
 		# The template environment
 		self.config['tplenvs']    = utils.box.Box()
@@ -490,6 +490,7 @@ class Proc (object):
 			if self.resume not in ['skip+', 'resume']:
 				self._saveSettings()
 			self._buildJobs ()
+			self.props['timer'] = time()
 		except Exception: # pragma: no cover
 			if self.lock.is_locked:
 				self.lock.release()
@@ -550,14 +551,20 @@ class Proc (object):
 			logger.logger.debug('Submission failed: {}'.format(utils.briefList(sfailedjobs)), extra = {'proc': self.name(False)})
 			logger.logger.debug('Running failed   : {}'.format(utils.briefList(efailedjobs)), extra = {'proc': self.name(False)})
 
-			if len(successjobs) + len(cachedjobs) == self.size or self.errhow == 'ignore':
+			donejobs = successjobs + cachedjobs
+			failjobs = bfailedjobs + sfailedjobs + efailedjobs
+			showjob  = failjobs[0] if failjobs else 0
+
+			if len(donejobs) == self.size or self.errhow == 'ignore':
 				if callable(self.callback):
 					logger.logger.debug('Calling callback ...', extra = {'proc': self.name(False)})
 					self.callback (self)
+				if self.errhow == 'ignore':
+					logger.logger.warning('Jobs failed but ignored.', extra = {'proc': self.name(False)})
+					self.jobs[showjob].showError(len(failjobs))
 			else:
-				self.jobs[(bfailedjobs + sfailedjobs + efailedjobs)[0]].showError(len(bfailedjobs + sfailedjobs + efailedjobs))
-				if self.errhow != 'ignore':
-					sys.exit(1)
+				self.jobs[showjob].showError(len(failjobs))
+				sys.exit(1)
 
 	def name (self, aggr = True):
 		"""
@@ -1029,15 +1036,12 @@ class Proc (object):
 			logger.logger.warning('No data found for jobs, process will be skipped.', extra = {'proc': self.name(False)})
 			return
 		
-		try:
-			from . import PyPPL
-			runner    = PyPPL.RUNNERS[self.runner]
-		except KeyError:
-			raise ProcAttributeError(self.runner, 'No such runner')
-
+		from . import PyPPL
+		if self.runner not in PyPPL.RUNNERS:
+			raise ProcAttributeError('No such runner: {}.'.format(self.runner))
 		config = {
 			'workdir'   : self.workdir,
-			'runner'    : runner,
+			'runner'    : PyPPL.RUNNERS[self.runner],
 			'runnerOpts': {key: val for key, val in self.config.items() if key.endswith('Runner')},
 			'procvars'  : self.procvars,
 			'procsize'  : self.size,
@@ -1120,7 +1124,7 @@ class Proc (object):
 		cmdstr = self.template(self.config[key], **self.tplenvs).render(self.procvars)
 		logger.logger.info('Running <%s> ...' % (key))
 
-		c = cmd.run(cmdstr, bg = True, shell = True, executable = '/bin/bash')
+		c = utils.cmd.run(cmdstr, bg = True, shell = True, executable = '/bin/bash')
 		for line in iter(c.p.stdout.readline, ''):
 			logger.logger.info ('[ CMDOUT] %s' % line.rstrip("\n"))
 		for line in iter(c.p.stderr.readline, ''):

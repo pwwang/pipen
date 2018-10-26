@@ -1790,7 +1790,8 @@ class TestJob(testly.TestCase):
 		job4._prepOutput()
 		job4._prepScript()
 		# generate output files
-		makedirs(config['exdir'])
+		if not path.isdir(config['exdir']):
+			makedirs(config['exdir'])
 		outb = path.join(job4.outdir, 'pIsExptCached4.dir')
 		outbfile = path.join(outb, 'pIsExptCached4.txt')
 		makedirs(outb)

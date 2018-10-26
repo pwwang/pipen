@@ -247,15 +247,15 @@ class TestRunnerLocal(testly.TestCase):
 			rmtree(self.testdir)
 		makedirs(self.testdir)
 	
- 	def dataProvider_testInit(self):
- 		job = createJob(
- 			self.testdir, 
- 			config = {
+	def dataProvider_testInit(self):
+		job = createJob(
+			self.testdir, 
+			config = {
 				'runnerOpts': {
 					'localRunner': {'preScript': 'prescript', 'postScript': 'postscript'}
 				}
 			}
- 		)
+		)
 		yield job, '#!/usr/bin/env bash\nprescript\n\n{}\n\npostscript'.format(job.script)
 
 	def testInit(self, job, content):
@@ -275,7 +275,7 @@ class TestRunnerDry(testly.TestCase):
 		makedirs(self.testdir)
 
 	def dataProvider_testInit(self):
- 		job = createJob(self.testdir)
+		job = createJob(self.testdir)
 		Job.OUTPUT = {
 			0: {
 				'a' : {'type': 'file', 'data': 'a.txt'},
