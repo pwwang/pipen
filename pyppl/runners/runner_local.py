@@ -1,11 +1,6 @@
 """
-A runner wrapper for a single script
-Author: pwwang@pwwang.com
-Examples:
-	@see runner.unittest.py
+Local runner
 """
-import copy
-
 from .runner import Runner
 
 class RunnerLocal (Runner):
@@ -37,6 +32,3 @@ class RunnerLocal (Runner):
 		
 		with open (self.script, 'w') as f:
 			f.write ('\n'.join(localsrc) + '\n')
-		
-
-			

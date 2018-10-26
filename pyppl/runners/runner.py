@@ -1,7 +1,9 @@
 """
 The base runner class
 """
-import sys, re, atexit
+import sys
+import re
+import atexit
 from os import path
 from time import sleep
 from subprocess import list2cmdline
@@ -142,6 +144,9 @@ class _LocalSubmitter(object):
 		self.errfd   = None
 
 	def submit(self):
+		"""
+		Submit the real job.
+		"""
 		self.outfd = open(self.outfile, 'w')
 		self.errfd = open(self.errfile, 'w')
 		self.proc  = cmd.Cmd(safefs.SafeFs(self.script).chmodX(), stdout = self.outfd, stderr = self.errfd)
@@ -153,6 +158,9 @@ class _LocalSubmitter(object):
 			self.proc.rc = 1
 
 	def quit(self):
+		"""
+		Clean up.
+		"""
 		if self.outfd:
 			self.outfd.close()
 		if self.errfd:

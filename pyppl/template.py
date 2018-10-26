@@ -1,10 +1,13 @@
+"""
+Template adaptor for PyPPL
+"""
+
 __all__ = ['Template', 'TemplateLiquid', 'TemplateJinja2']
 
 import json
 from os import path, readlink
-from six import string_types
 from liquid import Liquid
-from .utils import asStr
+from .utils import string_types
 Liquid.MODE  = 'mixed'
 Liquid.DEBUG = False
 
@@ -52,8 +55,8 @@ def _R(x, ignoreintkey = True):
 		if x.upper() == 'NA' or x.upper() == 'NULL':
 			return x
 		if x.startswith('r:') or x.startswith('R:'):
-			return asStr(x)[2:]
-		return repr(asStr(x))
+			return str(x)[2:]
+		return repr(str(x))
 	if isinstance(x, (list, tuple, set)):
 		return 'c({})'.format(','.join([_R(i) for i in x]))
 	if isinstance(x, dict):
@@ -61,7 +64,7 @@ def _R(x, ignoreintkey = True):
 		return 'list({})'.format(','.join([
 			'`{0}`={1}'.format(k, _R(v)) if isinstance(k, int) and not ignoreintkey else \
 			_R(v) if isinstance(k, int) and ignoreintkey else \
-			'{0}={1}'.format(asStr(k).split('#')[0], _R(v)) for k, v in sorted(x.items())
+			'{0}={1}'.format(str(k).split('#')[0], _R(v)) for k, v in sorted(x.items())
 		]))
 	return repr(x)
 
@@ -114,9 +117,19 @@ class Template(object):
 		self.envs.update(envs)
 
 	def registerEnvs(self, **envs):
+		"""
+		Register extra environment
+		@params:
+			`**envs`: The environment
+		"""
 		self.envs.update(envs)
 
 	def render(self, data = None):
+		"""
+		Render the template
+		@parmas:
+			`data`: The data used to render
+		"""
 		return self._render(data or {})
 
 	# in order to dump setting
@@ -189,4 +202,3 @@ class TemplateJinja2 (Template):
 			The rendered string
 		"""
 		return self.engine.render(data)
-

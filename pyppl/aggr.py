@@ -1,7 +1,6 @@
 """
 The aggregation of procs
 """
-from six import string_types
 from collections import OrderedDict
 from .exception import AggrAttributeError, AggrCopyError, AggrKeyError
 from . import utils
@@ -123,7 +122,7 @@ class Aggr (object):
 		"""
 		if not isinstance(attrs, (tuple, list)):
 			attrs = utils.alwaysList(attrs)
-		if isinstance(procs, string_types):
+		if isinstance(procs, utils.string_types):
 			procs = utils.alwaysList(procs)
 		elif not isinstance(procs, (tuple, list)):
 			procs = [procs]
@@ -132,7 +131,7 @@ class Aggr (object):
 		for proc in procs:
 			if proc == 'starts' or proc == 'ends':
 				theprocs.append(proc)
-			elif isinstance(proc, string_types):
+			elif isinstance(proc, utils.string_types):
 				theprocs.append(self._procs[proc])
 			else:
 				theprocs.append(proc)
@@ -162,7 +161,7 @@ class Aggr (object):
 		"""
 		if isinstance(key, (slice, int)):
 			ret = list(self._procs.values())[key]
-		elif isinstance(key, string_types):
+		elif isinstance(key, utils.string_types):
 			if ',' in key:
 				ret = self._select(utils.alwaysList(key))
 			elif key == 'starts':
@@ -295,6 +294,7 @@ class Aggr (object):
 		ends_shared    = ends_shared or {}
 
 		def on(a):
+			"""Turn on a module"""
 			a.addStart(starts)
 			for key, val in depends.items():
 				if isinstance(a[key], _Proxy):
@@ -304,6 +304,7 @@ class Aggr (object):
 			a.addEnd(ends)
 
 		def off(a):
+			"""Turn off a module"""
 			startsdel = a._select(starts, forceList = True)
 			# get all starts that need to keep
 			startskeep = []
@@ -479,7 +480,7 @@ class Aggr (object):
 		if delegates:
 			for k, procs in self._delegates.items():
 				ret._delegates[k] = [
-					proc if isinstance(proc, string_types) else ret._procs[proc.id] 
+					proc if isinstance(proc, utils.string_types) else ret._procs[proc.id] 
 					for proc in procs
 				]
 		else:

@@ -39,7 +39,9 @@ class ProcNode(object):
 
 
 class ProcTree(object):
-
+	"""
+	A tree of processes.
+	"""
 	# all processes, key is the object id
 	# use static, because we want different pipelines in the same session
 	# have unique (id and tag)
@@ -134,7 +136,7 @@ class ProcTree(object):
 					node.prev.append(dnode)
 
 	@classmethod
-	def setStarts(self, starts):
+	def setStarts(cls, starts):
 		"""
 		Set the start processes
 		@params:
@@ -215,7 +217,7 @@ class ProcTree(object):
 		starts = set(self.getStarts())
 		passed = True
 		for path in paths:
-			if not (starts & set(path)):
+			if not starts & set(path):
 				passed = path
 				break
 		return passed
@@ -226,36 +228,41 @@ class ProcTree(object):
 		@returns:
 			The end processes
 		"""
-		if not self.ends:
-			failedPaths = []
-			nodes = [ProcTree.NODES[s] for s in self.getStarts()]
-			while nodes:
-				# check loops
-				for n in nodes: self.getPaths(n)
+		if self.ends:
+			return self.ends
+			
+		failedPaths = []
+		nodes = [ProcTree.NODES[s] for s in self.getStarts()]
+		while nodes:
+			# check loops
+			for n in nodes: self.getPaths(n)
 
-				nodes2 = []
-				for node in nodes:
-					if not node.next:
-						passed = self.checkPath(node)
-						if passed is True:
-							if node.proc not in self.ends: 
-								self.ends.append(node.proc)
-						else:
-							passed.insert(0, node.proc)
-							failedPaths.append(passed)
+			nodes2 = []
+			for node in nodes:
+				if not node.next:
+					passed = self.checkPath(node)
+					if passed is True:
+						if node.proc not in self.ends: 
+							self.ends.append(node.proc)
 					else:
-						nodes2.extend(node.next)
-				nodes = set(nodes2)
-
-			# didn't find any ends
-			if not self.ends:
-				if failedPaths:
-					raise ProcTreeParseError(' <- '.join([fn.name() for fn in failedPaths[0]]), 'Failed to determine end processes, one of the paths cannot go through')
+						passed.insert(0, node.proc)
+						failedPaths.append(passed)
 				else:
-					raise ProcTreeParseError(', '.join(s.name() for s in self.getStarts()), 'Failed to determine end processes by start processes')
+					nodes2.extend(node.next)
+			nodes = set(nodes2)
+
+		# didn't find any ends
+		if not self.ends:
+			if failedPaths:
+				raise ProcTreeParseError(' <- '.join([fn.name() for fn in failedPaths[0]]), 'Failed to determine end processes, one of the paths cannot go through')
+			else:
+				raise ProcTreeParseError(', '.join(s.name() for s in self.getStarts()), 'Failed to determine end processes by start processes')
 		return self.ends
 
 	def getAllPaths(self):
+		"""
+		Get all paths of the pipeline
+		"""
 		ret = set()
 		ends = self.getEnds()
 		for end in ends:
@@ -275,7 +282,7 @@ class ProcTree(object):
 						ret.add(pstr)
 
 	@classmethod
-	def getNextToRun(self):
+	def getNextToRun(cls):
 		"""
 		Get the process to run next
 		@returns:

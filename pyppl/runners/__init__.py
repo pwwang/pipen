@@ -1,3 +1,7 @@
+"""
+runners for PyPPL
+"""
+
 from .runner import Runner
 from .runner_local import RunnerLocal
 from .runner_sge import RunnerSge

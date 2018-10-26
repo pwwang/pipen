@@ -1,4 +1,6 @@
-VERSION = "1.2.0"
+"""
+The main module of PyPPL
+"""
 
 import json
 import random
@@ -17,6 +19,7 @@ from .exception import PyPPLProcFindError, PyPPLProcRelationError
 from .utils import Box
 from . import logger, utils, runners
 
+VERSION = "1.2.0"
 class PyPPL (object):
 	"""
 	The PyPPL class
@@ -90,7 +93,8 @@ class PyPPL (object):
 				else:
 					utils.dictUpdate(fconfig, json.load(cfgf))
 
-		if config is None:	config = {}
+		if config is None:
+			config = {}
 		utils.dictUpdate(fconfig, config)
 		self.config = fconfig
 
@@ -120,15 +124,16 @@ class PyPPL (object):
 			del self.config['_log']
 
 		logger.getLogger (logconfig['levels'], logconfig['theme'], logconfig['file'], logconfig['lvldiff'], logconfig['pbar'])
-		logger.logger.info ('Version: {}'.format(VERSION), extra = {'loglevel': 'pyppl'})
+		logger.logger.info ('Version: %s', VERSION, extra = {'loglevel': 'pyppl'})
 		logger.logger.info (random.choice(PyPPL.TIPS), extra = {'loglevel': 'tips'})
 
-		for cfile in (PyPPL.DEFAULT_CFGFILES + [str(cfgfile)]):
-			if not path.isfile(cfile): continue
+		for cfile in PyPPL.DEFAULT_CFGFILES + [str(cfgfile)]:
+			if not path.isfile(cfile): 
+				continue
 			if cfile in cfgIgnored:
-				logger.logger.warning('Module yaml not installed, config file ignored: %s' % (cfile))
+				logger.logger.warning('Module yaml not installed, config file ignored: %s', cfile)
 			else:
-				logger.logger.info('Read from %s' % cfile, extra = {
+				logger.logger.info('Read from %s', cfile, extra = {
 					'loglevel': 'config'
 				})
 
@@ -151,10 +156,7 @@ class PyPPL (object):
 				nostart.add(start)
 				names = [p.name(True) for p in pristarts]
 				names = names[:3] + ['...'] if len(names) > 3 else names
-				logger.logger.warning('Start process %s ignored, depending on [%s]' % (
-					start.name(True),
-					', '.join(names)
-				))
+				logger.logger.warning('Start process %s ignored, depending on [%s]', start.name(True), ', '.join(names))
 		self.tree.setStarts(starts - nostart)
 		return self
 
@@ -173,10 +175,12 @@ class PyPPL (object):
 		#starts   = self.tree.getStarts()
 		# check whether all ends can be reached
 		for end in ends:
-			if end in resumes: continue
+			if end in resumes: 
+				continue
 			paths = self.tree.getPathsToStarts(end)
 			failedpaths = [ps for ps in paths if not any([p in ps for p in resumes])]
-			if not failedpaths: continue
+			if not failedpaths: 
+				continue
 			failedpath = failedpaths[0]
 			raise PyPPLProcRelationError('%s <- [%s]' % (end.name(), ', '.join([p.name() for p in failedpath])), 'One of the routes cannot be achived from resumed processes')
 
@@ -184,8 +188,8 @@ class PyPPL (object):
 		for rsproc in resumes:
 			rsproc.resume = rflag
 			paths = self.tree.getPathsToStarts(rsproc)
-			for path in paths:
-				for p in path:
+			for pt in paths:
+				for p in pt:
 					if not p.resume:
 						p.resume = sflag
 
@@ -197,7 +201,8 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
-		if not args or (len(args) == 1 and not args[0]): return self
+		if not args or (len(args) == 1 and not args[0]): 
+			return self
 		self._resume(*args, plus = False)
 		return self
 
@@ -209,7 +214,8 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
-		if not args or (len(args) == 1 and not args[0]): return self
+		if not args or (len(args) == 1 and not args[0]): 
+			return self
 		self._resume(*args, plus = True)
 		return self
 
@@ -221,11 +227,12 @@ class PyPPL (object):
 		#paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths()])
 		paths  = sorted([[p.name() for p in reversed(ps)] for ps in self.tree.getAllPaths()])
 		paths2 = [] # processes merged from the same aggr
-		for path in paths:
+		for pt in paths:
 			prevaggr = None
 			path2    = []
-			for p in path:
-				if not '@' in p: path2.append(p)
+			for p in pt:
+				if not '@' in p: 
+					path2.append(p)
 				else:
 					aggr = p.split('@')[-1]
 					if not prevaggr or prevaggr != aggr:
@@ -233,14 +240,14 @@ class PyPPL (object):
 						prevaggr = aggr
 					elif prevaggr == aggr:
 						continue
-			if not path2 in paths2:
+			if path2 not in paths2:
 				paths2.append(path2)
 			# see details for aggregations
 			#if path != path2:
 			#	logger.logger.info('[  DEBUG] * %s' % (' -> '.join(path)))
 
-		for path in paths2:
-			logger.logger.debug('* %s' % (' -> '.join(path)))
+		for pt in paths2:
+			logger.logger.debug('* %s', ' -> '.join(pt))
 		return self
 
 	def run (self, profile = 'default'):
@@ -267,11 +274,13 @@ class PyPPL (object):
 			logger.logger.info ('-' * decorlen, extra = {'loglevel': 'PROCESS'})
 			logger.logger.info (name, extra = {'loglevel': 'PROCESS'})
 			logger.logger.info ('-' * decorlen, extra = {'loglevel': 'PROCESS'})
-			logger.logger.info ('{} => {} => {}'.format(
+			logger.logger.info (
+				'%s => %s => %s', 
 				ProcTree.getPrevStr(proc), 
 				proc.name(), 
-				ProcTree.getNextStr(proc)
-			), extra = {'loglevel': 'DEPENDS', 'proc': proc.name(False)})
+				ProcTree.getNextStr(proc), 
+				extra = {'loglevel': 'DEPENDS', 'proc': proc.name(False)}
+			)
 			proc.run(profile, pycopy.deepcopy(self.config))
 
 			proc = self.tree.getNextToRun()
@@ -281,11 +290,13 @@ class PyPPL (object):
 			klen  = max([len(k) for k in unran.keys()])
 			for key, val in unran.items():
 				fmtstr = "%-"+ str(klen) +"s won't run as path can't be reached: %s <- %s"
-				logger.logger.warning (fmtstr % (key, key, ' <- '.join(val)))
+				logger.logger.warning(fmtstr, key, key, ' <- '.join(val))
 
-		logger.logger.info ('Total time: %s' % utils.formatSecs (time()-timer), extra = {
-			'loglevel': 'DONE'
-		})
+		logger.logger.info (
+			'Total time: %s', 
+			utils.formatSecs(time()-timer), 
+			extra = {'loglevel': 'DONE'}
+		)
 		return self
 
 	def flowchart (self, fcfile = None, dotfile = None):
@@ -318,12 +329,14 @@ class PyPPL (object):
 				for p in ps:
 					fc.addNode(p)
 					nextps = ProcTree.getNext(p)
-					if not nextps: continue
-					for np in nextps: fc.addLink(p, np)
+					if not nextps: 
+						continue
+					for np in nextps: 
+						fc.addLink(p, np)
 
 		fc.generate()
-		logger.logger.info ('Flowchart file saved to: %s' % fc.fcfile)
-		logger.logger.info ('DOT file saved to: %s' % fc.dotfile)
+		logger.logger.info ('Flowchart file saved to: %s', fc.fcfile)
+		logger.logger.info ('DOT file saved to: %s', fc.dotfile)
 		return self
 
 	@staticmethod
@@ -383,18 +396,18 @@ class PyPPL (object):
 		ProcTree.check(proc)
 
 	@staticmethod
-	def registerRunner(runner):
+	def registerRunner(r):
 		"""
 		Register a runner
 		@params:
-			`runner`: The runner to be registered.
+			`r`: The runner to be registered.
 		"""
-		runnerName = runner.__name__
+		runnerName = r.__name__
 		if runnerName.startswith('Runner'):
 			runnerName = runnerName[6:].lower()
 
 		if not runnerName in PyPPL.RUNNERS:
-			PyPPL.RUNNERS[runnerName] = runner
+			PyPPL.RUNNERS[runnerName] = r
 
 
 for runnername in dir(runners):

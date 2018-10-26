@@ -1,15 +1,20 @@
 
-import signal, os
-from multiprocessing import Pool, Process, Manager, Lock, current_process
+"""
+jobmgr module for PyPPL
+"""
+import signal
+import os
+from multiprocessing import Pool, Manager, Lock
 from multiprocessing.pool import ThreadPool
 from multiprocessing.managers import SyncManager
-from threading import Thread
 from .utils import QueueEmpty, ps
 from .job import Job
 from .logger import logger
 
 class Jobmgr(object):
-
+	"""
+	A job manager for PyPPL
+	"""
 	PBAR_SIZE  = 50
 	PBAR_MARKS = {
 		Job.STATUS_INITIATED   : ' ',
@@ -90,7 +95,7 @@ class Jobmgr(object):
 		@returns:
 			The string representing the progressbar
 		"""
-		bar     = '['
+		pbar    = '['
 		barjobs = []
 		joblen  = len(self.jobs)
 		status = [job.status.value for job in self.jobs]
@@ -115,17 +120,17 @@ class Jobmgr(object):
 		job = self.jobs[jobidx]
 		for bj in barjobs:
 			if jobidx in bj:
-				bar += Jobmgr.PBAR_MARKS[job.status.value]
+				pbar += Jobmgr.PBAR_MARKS[job.status.value]
 			else:
 				bjstatus  = [status[i] for i in bj]
 				ss        = max(s & 0b0111111 for s in bjstatus)
 				doneS     = ss | 0b1000000
-				bar      += Jobmgr.PBAR_MARKS[doneS if doneS in bjstatus else ss]
+				pbar     += Jobmgr.PBAR_MARKS[doneS if doneS in bjstatus else ss]
 
-		bar += '] Done: {:5.1f}% | Running: {}'.format(
+		pbar += '] Done: {:5.1f}% | Running: {}'.format(
 			100.0 * float(ncompleted) / float(joblen), 
 			str(nrunning).ljust(len(str(joblen))))
-		self.logger.info(bar, extra = {
+		self.logger.info(pbar, extra = {
 			'loglevel': Jobmgr.PBAR_LEVEL[job.status.value], 
 			'jobidx'  : jobidx, 
 			'joblen'  : joblen, 
@@ -134,6 +139,14 @@ class Jobmgr(object):
 		})
 
 	def cleanup(self, pid = 0):
+		"""
+		Cleanup the pipeline when
+		- Ctrl-c hit
+		- error encountered and `proc.errhow` = 'terminate'
+		@params:
+			`pid`: The pid of the process where this is running 
+				- Don't try to kill me.
+		"""
 		#signal.signal(signal.SIGINT, signal.SIG_IGN)
 		#self.locPool.join()
 		self.logger.debug('Clearning up queues ...'.ljust(Jobmgr.PBAR_SIZE + 50))
@@ -143,11 +156,9 @@ class Jobmgr(object):
 		if hasattr(self, 'remPool'): # pragma: no cover
 			self.remPool.terminate()
 
-		pids = list(Jobmgr.PIDS)
-		for p in pids:
-			if p == pid: continue
-			ps.killtree(p)
+		pids = [p for p in Jobmgr.PIDS if p != pid]
 		Jobmgr.PIDS = None
+		ps.kill(pids)
 
 		runjobs  = [
 			job.index for job in self.jobs 
@@ -167,6 +178,9 @@ class Jobmgr(object):
 		exit(1)
 
 	def buildWorker(self):
+		"""
+		The build and submit worker
+		"""
 		signal.signal(signal.SIGINT, signal.SIG_IGN)
 		Jobmgr.PIDS.append(os.getpid())
 		maybeBreak = [False, False]
@@ -193,6 +207,9 @@ class Jobmgr(object):
 					pass
 
 	def runWorker(self):
+		"""
+		The job running worker
+		"""
 		signal.signal(signal.SIGINT, signal.SIG_IGN)
 		Jobmgr.PIDS.append(os.getpid())
 		while not self.allJobsDone():
@@ -212,12 +229,22 @@ class Jobmgr(object):
 			self.runnQ.put(None)
 
 	def allJobsDone(self):
+		"""
+		Tell if all jobs are done.
+		@return:
+			`True` if they are else `False`
+		"""
 		return not self.jobs or all(
 			job.status.value & 0b1000000 
 			for job in self.jobs
 		)
 
 	def buildJob(self, i):
+		"""
+		Build job
+		@params:
+			`i`: The job index
+		"""
 		job = self.jobs[i]
 		job.status.value = Job.STATUS_BUILDING
 		self.progressbar(i)
@@ -227,6 +254,11 @@ class Jobmgr(object):
 		self.progressbar(i)
 
 	def submitJob(self, i):
+		"""
+		Submit job
+		@params:
+			`i`: The job index
+		"""
 		job = self.jobs[i]
 		job.status.value = Job.STATUS_SUBMITTING
 		self.progressbar(i)
@@ -236,6 +268,11 @@ class Jobmgr(object):
 		self.progressbar(i)
 
 	def runJob(self, i):
+		"""
+		Wait for the job to run
+		@params:
+			`i`: The job index
+		"""
 		job = self.jobs[i]
 		job.status.value = Job.STATUS_RUNNING
 		self.progressbar(i)
@@ -255,6 +292,11 @@ class Jobmgr(object):
 
 	# process killed, so coverage not included
 	def killJob(self, i): # pragma: no cover
+		"""
+		Kill job
+		@params:
+			`i`: The job index
+		"""
 		job = self.jobs[i]
 		job.status.value = Job.STATUS_KILLING
 		self.progressbar(i)

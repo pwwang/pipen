@@ -1,10 +1,13 @@
-import re, sys
+"""
+The ssh runner
+"""
+import sys
 from os import path, getcwd
-from .runner import Runner
-from ..utils import cmd, safefs, ps
-from ..exception import RunnerSshError
 from multiprocessing import Array
-from subprocess import CalledProcessError, list2cmdline
+from subprocess import list2cmdline
+from .runner import Runner
+from ..utils import cmd, ps
+from ..exception import RunnerSshError
 
 MAX_SERVERS = 255
 
@@ -16,6 +19,9 @@ class RunnerSsh(Runner):
 	
 	@staticmethod
 	def isServerAlive(server, key = None):
+		"""
+		Check if an ssh server is alive
+		"""
 		cmdlist = ['ssh', server]
 		if key: # pragma: no cover
 			cmdlist.append('-i')
@@ -144,5 +150,3 @@ class RunnerSsh(Runner):
 		cmdlist = ['kill', '-0', str(self.job.pid)]
 		cmdlist = list2cmdline(cmdlist)
 		return cmd.run(self.sshcmd + [cmdlist]).rc == 0
-
-

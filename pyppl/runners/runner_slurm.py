@@ -1,4 +1,8 @@
-import re, copy
+"""
+Slurm runner for PyPPL
+"""
+import re
+import copy
 from subprocess import CalledProcessError
 from .runner import Runner
 from ..utils import cmd, box
@@ -138,4 +142,3 @@ class RunnerSlurm (Runner):
 			return r.rc == 0
 		except (OSError, CalledProcessError):
 			return False
-

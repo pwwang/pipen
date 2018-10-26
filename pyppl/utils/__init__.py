@@ -5,7 +5,6 @@ import inspect
 import re
 from hashlib import md5
 from .box import Box
-from six import moves
 
 try:
 	from Queue import Queue, Empty as QueueEmpty
@@ -27,17 +26,21 @@ try:
 except ImportError:
 	from configparser import ConfigParser
 
-def asStr(s, encoding = 'utf-8'):
-	"""
-	Convert everything (str, unicode, bytes) to str with python2, python3 compatiblity
-	"""
-	try: # pragma: no cover
-		# python2
-		unicode
-		return s.encode(encoding) if isinstance(s, unicode) else str(s)
-	except NameError: # pragma: no cover
-		# python3
-		return s.decode(encoding) if isinstance(s, bytes) else str(s)
+ftools = Box()
+try:
+	from functools import reduce, map, filter
+	ftools.reduce = reduce
+	ftools.map    = map
+	ftools.filter = filter
+except ImportError:
+	ftools.reduce = reduce
+	ftools.map    = map
+	ftools.filter = filter
+
+try:
+	ftools.range = xrange
+except NameError:
+	ftools.range = range
 
 def varname (maxline = 20, incldot = False):
 	"""
@@ -98,7 +101,7 @@ def reduce(func, vec):
 	@returns:
 		The reduced value
 	"""
-	return moves.reduce(func, vec)
+	return ftools.reduce(func, vec)
 
 def map(func, vec):
 	"""
@@ -109,7 +112,7 @@ def map(func, vec):
 	@returns:
 		The maped list
 	"""
-	return list(moves.map(func, vec))
+	return list(ftools.map(func, vec))
 
 def filter(func, vec):
 	"""
@@ -120,7 +123,7 @@ def filter(func, vec):
 	@returns:
 		The filtered list
 	"""
-	return list(moves.filter(func, vec))
+	return list(ftools.filter(func, vec))
 
 def range (i, *args, **kwargs):
 	"""
@@ -130,7 +133,7 @@ def range (i, *args, **kwargs):
 	@returns:
 		The converted list
 	"""
-	return list(moves.range(i, *args, **kwargs))
+	return list(ftools.range(i, *args, **kwargs))
 
 def split (s, delimter, trim = True):
 	"""

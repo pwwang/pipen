@@ -1,4 +1,9 @@
-import json, signal
+"""
+job module for PyPPL
+"""
+
+import json
+import signal
 from os import path, makedirs, utime
 from glob import glob
 from multiprocessing import Value
@@ -14,7 +19,9 @@ MANAGER = SyncManager()
 MANAGER.start(signal.signal, (signal.SIGINT, signal.SIG_IGN))
 
 class Job(object):
-	
+	"""
+	PyPPL Job
+	"""
 	# 0b
 	# 1 (0: Job needs running, 1: Job done)
 	# 1 (0: Non-killing step, 1: Killing step)
@@ -81,6 +88,13 @@ class Job(object):
 
 	@property
 	def runner(self):
+		"""
+		Get the runner of the job.
+		Because the job is manipulated in different processes, 
+		have to make sure the runner is available.
+		@return:
+			The runner.
+		"""
 		if not self._runner:
 			self._runner = self.config['runner'](self)
 		return self._runner
@@ -493,6 +507,11 @@ class Job(object):
 	
 	@property
 	def pid(self):
+		"""
+		Get pid of the job
+		@return:
+			The job id, could be the process id or job id for other platform.
+		"""
 		if not path.exists(self.pidfile):
 			return ''
 		with open(self.pidfile, 'r') as f:
@@ -521,7 +540,7 @@ class Job(object):
 			return False
 
 		with open (self.cachefile, 'rb') as f:
-			sig = f.read()
+			sig = f.read().decode()
 
 		if not sig:
 			self.logger.debug("Not cached because previous signature is empty.", extra = {
@@ -546,6 +565,7 @@ class Job(object):
 			return False
 
 		def compareVar(osig, nsig, key, logkey):
+			"""Compare var in signature"""
 			for k in osig.keys():
 				oval = osig[k]
 				nval = nsig[k]
@@ -566,6 +586,7 @@ class Job(object):
 			return True
 
 		def compareFile(osig, nsig, key, logkey, timekey = None):
+			"""Compare var in file"""
 			for k in osig.keys():
 				ofile, otime = osig[k]
 				nfile, ntime = nsig[k]
@@ -609,6 +630,7 @@ class Job(object):
 			return True
 
 		def compareFiles(osig, nsig, key, logkey, timekey = True):
+			"""Compare var in files"""
 			for k in osig.keys():
 				oval = sorted(osig[k])
 				nval = sorted(nsig[k])
@@ -943,6 +965,12 @@ class Job(object):
 			})
 
 	def succeed(self):
+		"""
+		Tell if a job succeeds.
+		Check whether output files generated, expectation met and return code met.
+		@return:
+			`True` if succeed else `False`
+		"""
 		from . import Proc
 		utime (self.outdir, None)
 		if self.index in Job.OUTPUT:
@@ -1070,6 +1098,9 @@ class Job(object):
 		return ret
 
 	def submit(self):
+		"""
+		Submit the job
+		"""
 		self.status.value = Job.STATUS_SUBMITTING
 		if self.runner.isRunning():
 			self.logger.info('is already running at {pid}, skip submission.'.format(pid = self.pid), extra = {
@@ -1099,6 +1130,9 @@ class Job(object):
 				self.status.value = Job.STATUS_SUBMITFAILED
 
 	def run(self):
+		"""
+		Wait for the job to run
+		"""
 		self.status.value = Job.STATUS_RUNNING
 		self.runner.run()
 		if self.succeed():
@@ -1110,7 +1144,12 @@ class Job(object):
 			self.status.value = Job.STATUS_DONEFAILED
 
 	def retry(self):
-		if not (self.status.value & 0b100) or not (self.status.value & 0b1):
+		"""
+		If the job is available to retry
+		@return:
+			`True` if it is else `False`
+		"""
+		if not self.status.value & 0b100 or not self.status.value & 0b1:
 			return False
 		if self.config['errhow'] == 'halt':
 			self.status.value = Job.STATUS_ENDFAILED
@@ -1120,6 +1159,9 @@ class Job(object):
 		return True
 
 	def kill(self):
+		"""
+		Kill the job
+		"""
 		self.status.value = Job.STATUS_KILLING
 		try:
 			self.runner.kill()

@@ -1,7 +1,6 @@
 """
-Dry runner
+Dry runner for PyPPL
 """
-from os import path, utime, remove
 from .runner import Runner
 from ..job import Job
 from ..proc import Proc

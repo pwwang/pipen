@@ -1,17 +1,19 @@
-
-import filelock
+"""
+safefs utility for PyPPL
+"""
 import tempfile
 
 from stat import S_IEXEC
 from os import path, remove as osremove, readlink, symlink, getcwd, makedirs, walk, stat, chmod, chdir
 from shutil import rmtree, move as shmove, copyfileobj, copytree, copyfile
+from multiprocessing import Lock
+import filelock
 
 try:
 	ChmodError = (OSError, PermissionError, UnicodeDecodeError)
 except NameError:
 	ChmodError = OSError
 
-from multiprocessing import Lock
 
 class SafeFs(object):
 	"""
@@ -379,7 +381,8 @@ class SafeFs(object):
 					if not overwrite or not SafeFs._remove(file2, filetype2):
 						return False
 				if filetype1 in [SafeFs.FILETYPE_DIR, SafeFs.FILETYPE_DIRLINK]:
-					import tarfile, glob
+					import tarfile
+					import glob
 					tar = tarfile.open(file2, 'w:gz')
 					cwd = getcwd()
 					chdir(file1)
@@ -909,5 +912,3 @@ def ungz(file1, file2, overwrite = True, callback = None):
 		`True` if succeed else `False`
 	"""
 	return SafeFs(file1, file2).ungz(overwrite, callback)
-
-

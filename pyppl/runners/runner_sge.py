@@ -1,4 +1,9 @@
-import re, copy
+"""
+SGE runner for PyPPL
+"""
+
+import re
+import copy
 from subprocess import CalledProcessError
 from .runner import Runner
 from ..utils import cmd, box
@@ -150,5 +155,3 @@ class RunnerSge (Runner):
 			return r.rc == 0
 		except (OSError, CalledProcessError):
 			return False
-
-

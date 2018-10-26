@@ -1,7 +1,10 @@
 """
 A customized logger for pyppl
 """
-import logging, re, sys, signal
+import logging
+import re
+import sys
+import signal
 from copy import copy as pycopy
 from multiprocessing.managers import SyncManager
 from .utils import Box, pickle
@@ -156,11 +159,19 @@ def _getColorFromTheme (level, theme):
 	for key, val in theme.items():
 		if not isinstance(val, list):
 			val = [val] * 2
-		if key == level or \
-		   key.startswith('in:') and level in key[3:].split(',') or \
-		   key.startswith('starts:') and level.startswith(key[7:]) or \
-		   key.startswith('has:') and key[4:] in level or \
-		   key.startswith('re:') and re.search(key[3:], level):
+		if key == level:
+			ret = val
+			break
+		if key.startswith('in:') and level in key[3:].split(','):
+			ret = val
+			break
+		if key.startswith('starts:') and level.startswith(key[7:]):
+			ret = val
+			break
+		if key.startswith('has:') and key[4:] in level:
+			ret = val
+			break
+		if key.startswith('re:') and re.search(key[3:], level):
 			ret = val
 			break
 	return tuple(ret)
@@ -205,7 +216,7 @@ class PyPPLLogFilter (logging.Filter):
 
 	@staticmethod
 	def _clearDebug():
-		for key in DEBUG_LINES.keys():
+		for key, _ in DEBUG_LINES.items():
 			PyPPLLogFilter.DEBUGS[key] = 0
 	
 	def __init__(self, name='', lvls='normal', lvldiff=None):
@@ -350,6 +361,8 @@ class PyPPLStreamHandler(logging.StreamHandler):
 			`stream`: The stream
 		"""
 		super(PyPPLStreamHandler, self).__init__(stream)
+		# Attribute 'terminator' defined outside __init__ (attribute-defined-outside-init)
+		self.terminator = "\n"
 
 	def _emit(self, record, terminator = "\n"):
 		"""

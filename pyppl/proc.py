@@ -1,9 +1,14 @@
-import sys, json, filelock
+"""
+proc module for PyPPL
+"""
+import sys
+import json
 import copy as pycopy
-from os import path, makedirs, remove
 from time import time
 from collections import OrderedDict
+from os import path, makedirs, remove
 from multiprocessing import cpu_count
+import filelock
 from . import logger, utils, template
 from .job import Job
 from .jobmgr import Jobmgr
@@ -262,7 +267,6 @@ class Proc (object):
 
 		self.props['logs']        = {}
 
-		# TODO: add tests
 		for key, val in kwargs.items():
 			self.__setattr__(key, val)
 
@@ -301,10 +305,12 @@ class Proc (object):
 		
 		# profile will be deprecated, use runner instead
 		if name in Proc.DEPRECATED:
-			logger.logger.warning('Attribute "{}" is deprecated{}.'.format(
-				name, ', use "{}" instead'.format(
-					Proc.DEPRECATED[name]) if name in Proc.DEPRECATED and Proc.DEPRECATED[name] else ''
-				), extra = { 'proc': self.name(False) }
+			logger.logger.warning(
+				'Attribute "%s" is deprecated%s.', 
+				name, 
+				', use "{}" instead'.format(
+					Proc.DEPRECATED[name]) if name in Proc.DEPRECATED and Proc.DEPRECATED[name] else '',
+				extra = {'proc': self.name(False)}
 			)
 
 		if name in Proc.ALIAS:
@@ -351,7 +357,7 @@ class Proc (object):
 					  ', '.join(previn.keys()) if isinstance(previn, dict) else previn
 			self.config[name] = {prevkey: value}
 			if isinstance(previn, dict) and len(previn) > 1:
-				logger.logger.warning("Previous input is a dict with multiple keys. Now the key sequence is: %s" % prevkey)
+				logger.logger.warning("Previous input is a dict with multiple keys. Now the key sequence is: %s", prevkey, extra = {'proc': self.name(False)})
 		else:
 			self.config[name] = value
 
@@ -532,24 +538,25 @@ class Proc (object):
 				#elif job.status.value == Job.STATUS_KILLING or job.status.value == Job.STATUS_KILLED:
 				#	killedjobs.append(job.index)
 
-			logger.logger.info('Time: {time}. Jobs (Cached: {cachedjobs}, Succ: {successjobs}, B.Fail: {bfailedjobs}, S.Fail: {sfailedjobs}, R.Fail: {efailedjobs})'.format(
-				time        = utils.formatSecs(time() - self.timer),
-				successjobs = len(successjobs),
-				bfailedjobs = len(bfailedjobs),
-				sfailedjobs = len(sfailedjobs),
-				efailedjobs = len(efailedjobs),
-				cachedjobs  = len(cachedjobs)
-			), extra = {
-				'loglevel': 'P.DONE' if len(cachedjobs) < self.size else 'CACHED',
-				'proc'    : self.name(False),
-				'pbar'    : 'next'
-			})
+			logger.logger.info(
+				'Time: %s. Jobs (Cached: %s, Succ: %s, B.Fail: %s, S.Fail: %s, R.Fail: %s)',
+				utils.formatSecs(time() - self.timer),
+				len(successjobs),
+				len(bfailedjobs),
+				len(sfailedjobs),
+				len(efailedjobs),
+				len(cachedjobs),
+				extra = {
+					'loglevel': 'P.DONE' if len(cachedjobs) < self.size else 'CACHED',
+					'proc'    : self.name(False),
+					'pbar'    : 'next'
+				})
 
-			logger.logger.debug('Cached           : {}'.format(utils.briefList(cachedjobs)), extra = {'proc': self.name(False)})
-			logger.logger.debug('Successful       : {}'.format(utils.briefList(successjobs)), extra = {'proc': self.name(False)})
-			logger.logger.debug('Building failed  : {}'.format(utils.briefList(bfailedjobs)), extra = {'proc': self.name(False)})
-			logger.logger.debug('Submission failed: {}'.format(utils.briefList(sfailedjobs)), extra = {'proc': self.name(False)})
-			logger.logger.debug('Running failed   : {}'.format(utils.briefList(efailedjobs)), extra = {'proc': self.name(False)})
+			logger.logger.debug('Cached           : %s', utils.briefList(cachedjobs), extra = {'proc': self.name(False)})
+			logger.logger.debug('Successful       : %s', utils.briefList(successjobs), extra = {'proc': self.name(False)})
+			logger.logger.debug('Building failed  : %s', utils.briefList(bfailedjobs), extra = {'proc': self.name(False)})
+			logger.logger.debug('Submission failed: %s', utils.briefList(sfailedjobs), extra = {'proc': self.name(False)})
+			logger.logger.debug('Running failed   : %s', utils.briefList(efailedjobs), extra = {'proc': self.name(False)})
 
 			donejobs = successjobs + cachedjobs
 			failjobs = bfailedjobs + sfailedjobs + efailedjobs
@@ -686,7 +693,7 @@ class Proc (object):
 			if isinstance(self.echo['jobs'], int):
 				self.echo['jobs'] = [self.echo['jobs']]
 			elif isinstance(self.echo['jobs'], utils.string_types):
-				self.echo['jobs'] = list(map(lambda x: int(x.strip()), self.echo['jobs'].split(',')))
+				self.echo['jobs'] = [int(x.strip()) for x in self.echo['jobs'].split(',')]
 			else:
 				self.echo['jobs'] = list(self.echo['jobs'])
 
@@ -710,7 +717,7 @@ class Proc (object):
 			expart = utils.alwaysList(self.config['expart'])
 			self.props['expart'] = [self.template(e, **self.tplenvs) for e in expart]
 
-			logger.logger.debug('Properties set explictly: %s' % str(self.sets), extra = {'proc': self.name(False)})
+			logger.logger.debug('Properties set explictly: %s', self.sets, extra = {'proc': self.name(False)})
 		except Exception: # pragma: no cover
 			if self.lock.is_locked:
 				self.lock.release()
@@ -723,9 +730,11 @@ class Proc (object):
 		settingsfile = path.join(self.workdir, 'proc.settings')
 
 		def pickKey(key):
+			"""Pickle key"""
 			return key if key else "''"
 
 		def flatData(data):
+			"""Flatten data"""
 			if isinstance(data, dict):
 				return {k:flatData(v) for k,v in data.items()}
 			elif isinstance(data, list):
@@ -740,6 +749,7 @@ class Proc (object):
 				return data
 
 		def pickData(data, splitline = False, forcelist = False):
+			"""Pickle data"""
 			data = flatData(data)
 			if isinstance(data, dict):
 				ret = json.dumps(data, sort_keys = True)
@@ -754,6 +764,7 @@ class Proc (object):
 			return ret
 
 		def dump(key, data):
+			"""Dump data"""
 			ret = ['[%s]' % key]
 			if key in ['jobs', 'ncjobids', 'logs', 'lock']:
 				return ''
@@ -797,7 +808,7 @@ class Proc (object):
 				val = self.props[key]
 				f.write(dump(key, val))
 
-		logger.logger.debug('Settings saved to: %s' % settingsfile, extra = {'proc': self.name(False)})
+		logger.logger.debug('Settings saved to: %s', settingsfile, extra = {'proc': self.name(False)})
 
 	# self.resume != 'skip'
 	def _buildInput (self):
@@ -881,14 +892,14 @@ class Proc (object):
 
 			wdata   = invals.width()
 			if len(pinkeys) < wdata:
-				logger.logger.warning('Not all data are used as input, %s column(s) wasted.' % (wdata - len(pinkeys)))
+				logger.logger.warning('Not all data are used as input, %s column(s) wasted.', (wdata - len(pinkeys)))
 			for i, inkey in enumerate(pinkeys):
 				self.props['input'][inkey] = {}
 				self.props['input'][inkey]['type'] = pintypes[i]
 				if i < wdata:
 					self.props['input'][inkey]['data'] = invals.flatten(i)
 				else:
-					logger.logger.warning('No data found for input key "%s", use empty strings/lists instead.' % inkey)
+					logger.logger.warning('No data found for input key "%s", use empty strings/lists instead.', inkey)
 					self.props['input'][inkey]['data'] = [[] if pintypes[i] in Proc.IN_FILESTYPE else ''] * self.size
 
 	def _buildProcVars (self):
@@ -934,12 +945,12 @@ class Proc (object):
 			elif key not in nokeys:
 				procvars[key] = val
 		for key in sorted(procargs.keys()):
-			logger.logger.info('%s => %s' % (key.ljust(maxlen), repr(procargs[key])), extra = {
+			logger.logger.info('%s => %r', key.ljust(maxlen), procargs[key], extra = {
 				'loglevel': 'p.args',
 				'proc': self.name(False)
 			})
 		for key in sorted(propout.keys()):
-			logger.logger.info('%s => %s' % (key.ljust(maxlen), propout[key]), extra = {
+			logger.logger.info('%s => %s', key.ljust(maxlen), propout[key], extra = {
 				'loglevel': 'p.props',
 				'proc': self.name(False)
 			})
@@ -998,7 +1009,7 @@ class Proc (object):
 			tplfile = script[5:].strip()
 			if not path.exists (tplfile):
 				raise ProcScriptError (tplfile, 'No such template file')
-			logger.logger.debug("Using template file: %s" % tplfile, extra = {'proc': self.name(False)})
+			logger.logger.debug("Using template file: %s", tplfile, extra = {'proc': self.name(False)})
 			with open(tplfile) as f:
 				script = f.read().strip()
 		
@@ -1122,13 +1133,13 @@ class Proc (object):
 		"""
 		if not self.config[key]: return
 		cmdstr = self.template(self.config[key], **self.tplenvs).render(self.procvars)
-		logger.logger.info('Running <%s> ...' % (key))
+		logger.logger.info('Running <%s> ...', key, extra = {'proc': self.name(False)})
 
 		c = utils.cmd.run(cmdstr, bg = True, shell = True, executable = '/bin/bash')
 		for line in iter(c.p.stdout.readline, ''):
-			logger.logger.info ('[ CMDOUT] %s' % line.rstrip("\n"))
+			logger.logger.info ('[ CMDOUT] %s', line.rstrip("\n"), extra = {'proc': self.name(False)})
 		for line in iter(c.p.stderr.readline, ''):
-			logger.logger.info ('[ CMDERR] %s' % line.rstrip("\n"))
+			logger.logger.info ('[ CMDERR] %s', line.rstrip("\n"), extra = {'proc': self.name(False)})
 		c.run()
 		if c.rc != 0:
 			raise ProcRunCmdError(cmdstr, key)
@@ -1137,7 +1148,7 @@ class Proc (object):
 		"""
 		Submit and run the jobs
 		"""
-		jobmgr = Jobmgr(self.jobs, {
+		Jobmgr(self.jobs, {
 			'nsub' : min(self.nsub, self.forks, self.size),
 			'forks': min(self.forks, self.size),
 			'proc' : self.name(False)
