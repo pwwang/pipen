@@ -158,24 +158,23 @@ class TestRunner(testly.TestCase):
 		r = Runner(job)
 		self.assertEqual(r.submit().cmd, cmd)
 
-	def dataProvider_testRun(self):
-		job = createJob(path.join(self.testdir, 'pTestRun'), config = {
-			'echo': {'jobs': [0], 'type': {'stderr': None, 'stdout': None}}
-		})
-		yield job, 
+	# Covered by job.run
+	# def dataProvider_testRun(self):
+	# 	job = createJob(path.join(self.testdir, 'pTestRun'), config = {
+	# 		'echo': {'jobs': [0], 'type': {'stderr': None, 'stdout': None}}
+	# 	})
+	# 	yield job, 
 
-	def testRun(self, job, stdout = '', stderr = ''):
-		r = Runner(job)
-		helpers.writeFile(job.outfile)
-		helpers.writeFile(job.errfile)
-		r.submit()
-		r.run()
-		with open(job.outfile, 'r') as f:
-			self.assertEqual(f.read().strip(), stdout)
-		with open(job.errfile, 'r') as f:
-			self.assertEqual(f.read().strip(), stderr)
-		with open(job.rcfile, 'r') as f:
-			self.assertEqual(f.read().strip(), '0')
+	# def testRun(self, job, stdout = '', stderr = ''):
+	# 	r = Runner(job)
+	# 	r.submit()
+	# 	r.run()
+	# 	with open(job.outfile, 'r') as f:
+	# 		self.assertEqual(f.read().strip(), stdout)
+	# 	with open(job.errfile, 'r') as f:
+	# 		self.assertEqual(f.read().strip(), stderr)
+	# 	with open(job.rcfile, 'r') as f:
+	# 		self.assertEqual(f.read().strip(), '0')
 
 
 class TestLocalSubmitter(testly.TestCase):
