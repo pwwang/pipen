@@ -50,6 +50,7 @@ class Jobmgr(object):
 		Job.STATUS_KILLING     : 'KILLING',
 		Job.STATUS_KILLED      : 'KILLING',
 	}
+
 	MANAGER = Manager()
 	PIDS    = None
 	LOCK    = Lock()
@@ -68,6 +69,7 @@ class Jobmgr(object):
 			man = SyncManager()
 			man.start(signal.signal, (signal.SIGINT, signal.SIG_IGN))
 			Jobmgr.PIDS = man.list()
+
 		for i in range(len(jobs)):
 			self.buldQ.put(i)
 		for i in range(len(jobs)):

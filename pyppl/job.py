@@ -1,7 +1,6 @@
 """
 job module for PyPPL
 """
-
 import json
 import signal
 from os import path, makedirs, utime
@@ -22,6 +21,7 @@ class Job(object):
 	"""
 	PyPPL Job
 	"""
+
 	# 0b
 	# 1 (0: Job needs running, 1: Job done)
 	# 1 (0: Non-killing step, 1: Killing step)

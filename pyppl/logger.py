@@ -114,7 +114,11 @@ LEVELS = {
 	'normal':  ['INPUT', 'OUTPUT', 'P.ARGS', 'P.PROPS']
 }
 
-LEVELS_ALWAYS = ['PROCESS', 'WORKDIR', 'RESUMED', 'SKIPPED', 'DEPENDS', 'STDOUT', 'STDERR', 'WARNING', 'ERROR', 'INFO', 'DONE', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'BLDING', 'SUBMIT', 'RUNNING', 'RETRY', 'JOBDONE', 'KILLING', 'P.DONE', 'CACHED']
+LEVELS_ALWAYS = [
+    'PROCESS', 'WORKDIR', 'RESUMED', 'SKIPPED', 'DEPENDS', 'STDOUT', 'STDERR', 'WARNING', 
+    'ERROR', 'INFO', 'DONE', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'BLDING', 
+    'SUBMIT', 'RUNNING', 'RETRY', 'JOBDONE', 'KILLING', 'P.DONE', 'CACHED'
+]
 
 DEBUG_LINES = {
 	'EXPORT_CACHE_OUTFILE_EXISTS': -1,
@@ -316,6 +320,7 @@ class PyPPLLogFormatter (logging.Formatter):
 		formatted = record.formatted if hasattr(record, 'formatted') else False
 		if not formatted:
 			level = record.loglevel.upper() if hasattr(record, 'loglevel') else record.levelname
+
 			theme = 'greenOnBlack' if self.theme is True else self.theme
 			theme = THEMES[theme] if not isinstance(theme, dict) and theme in THEMES else theme
 			theme = _formatTheme(theme)
@@ -364,7 +369,7 @@ class PyPPLStreamHandler(logging.StreamHandler):
 		# Attribute 'terminator' defined outside __init__ (attribute-defined-outside-init)
 		self.terminator = "\n"
 
-	def _emit(self, record, terminator = "\n"):
+	def _emit(self, record, terminator = "\n", format = True):
 		"""
 		Helper function implementing a python2,3-compatible emit.
 		Allow to add "\n" or "\r" as terminator.
@@ -476,7 +481,6 @@ class PyPPLStreamHandler(logging.StreamHandler):
 			raise
 		except Exception: # pragma: no cover
 			self.handleError(record)
-
 
 def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, name='PyPPL'):
 	"""
