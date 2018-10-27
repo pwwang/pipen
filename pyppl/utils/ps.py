@@ -1,4 +1,10 @@
-import errno, signal, os, subprocess
+"""
+ps utility for PyPPL
+"""
+import errno
+import signal
+import os
+import subprocess
 from .cmd import Cmd
 
 def exists(pid):
@@ -30,10 +36,17 @@ def exists(pid):
 			# here. If we do let's be explicit in considering this
 			# an error.
 			raise err
-	else: # pragma: no cover
-		return True
+	else:
+		# if process has been killed
+		# PID TTY          TIME CMD
+		# 53464 pts/9    00:00:00 sleep <defunct>
+		r = Cmd(['kill', '-0', str(pid)]).run()
+		return r.rc == 0
 
 def kill(pids, sig = signal.SIGKILL):
+	"""
+	Kill a batch of processes
+	"""
 	if not isinstance(pids, list):
 		pids = [pids]
 	try:
@@ -65,6 +78,9 @@ def child(pid, pidlist = None):
 		return []
 
 def children(pid):
+	"""
+	Find the children of a mother process
+	"""
 	pidlist = Cmd(['ps', '-o', 'pid,ppid']).run().stdout.splitlines()
 	pidlist = [line.strip().split() for line in pidlist]
 	pidlist = [p for p in pidlist if len(p) == 2 and p[0].isdigit() and p[1].isdigit()]
@@ -77,6 +93,9 @@ def children(pid):
 	return ret
 
 def killtree(ppid, killme = True, sig = signal.SIGKILL):
+	"""
+	Kill process and its children
+	"""
 	cids = list(reversed(children(ppid)))
 	if killme:
 		cids.append(ppid)

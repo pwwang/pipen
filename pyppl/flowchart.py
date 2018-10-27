@@ -1,3 +1,6 @@
+"""
+flowchart module for PyPPL
+"""
 from os import path
 from copy import deepcopy
 from graphviz import Digraph
@@ -186,4 +189,3 @@ class Flowchart(object):
 		self._assemble()
 		self.graph.save(self.dotfile)
 		self.graph.render(path.splitext(self.fcfile)[0], cleanup = True)
-

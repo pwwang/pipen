@@ -5,7 +5,6 @@ import sys
 
 from os import path
 from glob import glob
-from six import string_types
 from . import utils
 
 class Channel (list):
@@ -26,7 +25,7 @@ class Channel (list):
 		@returns:
 			The converted element
 		"""
-		if isinstance(tu, (string_types, list)):
+		if isinstance(tu, (utils.string_types, list)):
 			tu = (tu, )
 		else:
 			try:

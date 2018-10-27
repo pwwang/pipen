@@ -4,7 +4,11 @@ from setuptools import setup, find_packages
 from os import path
 verfile = path.join(path.dirname(__file__), 'pyppl', '__init__.py')
 with open(verfile) as vf:
-	VERSION = vf.readline().split('=')[1].strip()[1:-1]
+	for line in vf:
+		if not line.startswith('VERSION'): 
+			continue
+		VERSION = line.split('=')[1].strip()[1:-1]
+		break
 
 setup (
 	name             = 'PyPPL',
@@ -18,7 +22,7 @@ setup (
 	packages         = find_packages(),
 	scripts          = ['bin/pyppl'],
 	install_requires = [
-		'six', 'filelock', 'futures', 'liquidpy'
+		'filelock', 'futures', 'liquidpy'
 	],
 	classifiers      = [
 		"Intended Audience :: Developers",

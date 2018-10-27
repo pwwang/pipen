@@ -1,16 +1,17 @@
+"""
+parameters module for PyPPL
+"""
+
 import sys
 import json
 import re
 from os import path
-from six import string_types
-from six.moves import configparser
 from collections import OrderedDict
-from .utils import Box
+from .utils import Box, string_types, ConfigParser
 from .exception import ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError
 from .logger import COLORS
 
 class HelpAssembler(object):
-
 	"""
 	A helper class to help assembling the help information page.
 	@staticvars
@@ -250,7 +251,6 @@ class HelpAssembler(object):
 		return ret
 
 class Parameter (object):
-
 	"""
 	The class for a single parameter
 	"""
@@ -402,7 +402,6 @@ class Parameters (object):
 	"""
 	A set of parameters
 	"""
-
 	ARG_TYPES = dict(
 		a = 'auto',  auto  = 'auto',
 		i = 'int',   int   = 'int',
@@ -785,33 +784,27 @@ class Parameters (object):
 			if len(posopt.desc) == 1 and posopt.desc[0].startswith('Default: '):
 				posopt = None
 
-		prefix = self._props['prefix']
-
 		requiredOptions   = []
 		optionalOptions   = []
-		for val in revparams.keys():
+		for val, _ in revparams.items():
 			# options not suppose to show
-			if not val.show:
+			if not val.show or val.name == Parameters.POSITIONAL:
 				continue
-			if val.name == Parameters.POSITIONAL:
-				continue
-			else:
-				option = (
-					', '.join([prefix + k for k in sorted(revparams[val], key = len)]),
-					(val.type or '').upper(), 
-					val.desc
-				)
+			option = (
+				', '.join([self._props['prefix'] + k for k in sorted(revparams[val], key = len)]),
+				(val.type or '').upper(), 
+				val.desc
+			)
 			if val.required:
 				requiredOptions.append(option)
 			else:
 				optionalOptions.append(option)
-		
+
 		if posopt:
-			option = ('POSITIONAL', '', posopt.desc)
 			if posopt.required:
-				requiredOptions.append(option)
+				requiredOptions.append(('POSITIONAL', '', posopt.desc))
 			else:
-				optionalOptions.append(option)			
+				optionalOptions.append(('POSITIONAL', '', posopt.desc))
 
 		helpitems = OrderedDict()
 		if self._props['desc']:
@@ -826,7 +819,7 @@ class Parameters (object):
 					continue
 				defusage.append('<{} {}>'.format(
 					optname, 
-					opttype or optname[len(prefix):].upper())
+					opttype or optname[len(self._props['prefix']):].upper())
 				)
 			if optionalOptions:
 				defusage.append('[OPTIONS]')
@@ -849,12 +842,11 @@ class Parameters (object):
 			ret = [self._assembler.error(err.strip()) for err in error]
 		ret += self._assembler.assemble(helpitems, self._prog)
 
-		out = '\n'.join(ret) + '\n'
 		if printNexit:
-			sys.stderr.write(out)
+			sys.stderr.write('\n'.join(ret) + '\n')
 			sys.exit(1)
 		else:
-			return out
+			return '\n'.join(ret) + '\n'
 
 	def loadDict (self, dictVar, show = False):
 		"""
@@ -908,7 +900,7 @@ class Parameters (object):
 			with open(cfgfile) as f:
 				config = yaml.safe_load(f)
 		else:
-			cp = configparser.ConfigParser()
+			cp = ConfigParser()
 			cp.optionxform = str
 			cp.read(cfgfile)
 			sec = cp.sections()
@@ -1059,9 +1051,7 @@ class Commands(object):
 		@returns:
 			The help information if `printNexit` is `False`
 		"""
-
 		helpitems = OrderedDict()
-
 		if self._desc:
 			helpitems['description'] = self._desc
 		

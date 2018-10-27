@@ -52,7 +52,7 @@ except PyPPLProcRelationError as ex:
 
 # even without p1, p2, p3 and p8's workdir
 for p in [p1,p2,p3,p8]:
-	rmtree(p.workdir)
+	rmtree(p.workdir, ignore_errors=True)
 logger('Resume from p4.')
 clear()
 PyPPL(config).start(p1, p8).resume(p4).run()

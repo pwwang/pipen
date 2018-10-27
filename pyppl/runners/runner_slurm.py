@@ -1,6 +1,11 @@
+"""
+Slurm runner for PyPPL
+"""
+import re
 import copy
-from .helpers import SlurmHelper
+from subprocess import CalledProcessError
 from .runner import Runner
+from ..utils import cmd, box
 
 class RunnerSlurm (Runner):
 	"""
@@ -19,33 +24,31 @@ class RunnerSlurm (Runner):
 		super(RunnerSlurm, self).__init__(job)
 
 		# construct an slurm script
-		slurmfile = self.job.script + '.slurm'
-		
-		slurmsrc  = ['#!/usr/bin/env bash']
+		self.script = self.job.script + '.slurm'
+		slurmsrc    = ['#!/usr/bin/env bash']
 	
-		conf = {}
-		if 'slurmRunner' in self.job.proc.props or 'slurmRunner' in self.job.proc.config:
-			conf = copy.copy (self.job.proc.slurmRunner)
+		conf = self.job.config.get('runnerOpts', {})
+		conf = copy.copy(conf.get('slurmRunner', {}))
 
-		commands = {'sbatch': 'sbatch', 'srun': 'srun', 'squeue': 'squeue', 'scancel': 'scancel'}
+		self.commands = {'sbatch': 'sbatch', 'srun': 'srun', 'squeue': 'squeue', 'scancel': 'scancel'}
 		if 'sbatch' in conf:
-			commands['sbatch']  = conf['sbatch']
+			self.commands['sbatch']  = conf['sbatch']
 		if 'srun' in conf:
-			commands['srun']    = conf['srun']
+			self.commands['srun']    = conf['srun']
 		if 'squeue' in conf:
-			commands['squeue']  = conf['squeue']
+			self.commands['squeue']  = conf['squeue']
 		if 'scancel' in conf:
-			commands['scancel'] = conf['scancel']
+			self.commands['scancel'] = conf['scancel']
 		
-		cmdPrefix = commands['srun']
+		cmdPrefix = self.commands['srun']
 		if 'cmdPrefix' in conf:
 			cmdPrefix = conf['cmdPrefix']
 		
 		if not 'slurm.J' in conf:
 			jobname = '.'.join([
-				self.job.proc.id,
-				self.job.proc.tag,
-				self.job.proc._suffix(),
+				self.job.config['proc'],
+				self.job.config['tag'],
+				self.job.config['suffix'],
 				str(self.job.index + 1)
 			])
 			slurmsrc.append('#SBATCH -J %s' % jobname)
@@ -87,9 +90,55 @@ class RunnerSlurm (Runner):
 		if 'postScript' in conf:
 			slurmsrc.append (conf['postScript'])
 		
-		with open (slurmfile, 'w') as f:
+		with open (self.script, 'w') as f:
 			f.write ('\n'.join(slurmsrc) + '\n')
 		
-		self.helper = SlurmHelper(slurmfile, commands)
+	def submit(self):
+		"""
+		Submit the job
+		@returns:
+			The `utils.cmd.Cmd` instance if succeed 
+			else a `Box` object with stderr as the exception and rc as 1
+		"""
+		cmdlist = [self.commands['sbatch'], self.script]
+		try:
+			r = cmd.run(cmdlist)
+			# Submitted batch job 1823334668
+			m = re.search(r'\s(\d+)$', r.stdout.strip())
+			if not m:
+				r.rc = 1
+			else:
+				self.job.pid = m.group(1)
+			return r
 
+		except (OSError, CalledProcessError) as ex:
+			r        = box.Box()
+			r.stderr = str(ex)
+			r.rc     = 1
+			r.cmd    = cmdlist
+			return r
 
+	def kill(self):
+		"""
+		Kill the job
+		"""
+		cmdlist = [self.commands['scancel'], str(self.job.pid)]
+		try:
+			cmd.run(cmdlist)
+		except (OSError, CalledProcessError): # pragma: no cover
+			pass
+
+	def isRunning(self):
+		"""
+		Tell if the job is alive
+		@returns:
+			`True` if it is else `False`
+		"""
+		if not self.job.pid:
+			return False
+		cmdlist = [self.commands['squeue'], '-j', str(self.job.pid)]
+		try:
+			r = cmd.run(cmdlist)
+			return r.rc == 0
+		except (OSError, CalledProcessError):
+			return False

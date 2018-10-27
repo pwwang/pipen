@@ -10,7 +10,6 @@ from pyppl import utils
 from pyppl.utils import Box, uid, ps
 from pyppl.utils.cmd import Cmd
 from pyppl.utils.safefs import SafeFs
-from pyppl.utils.parallel import Parallel
 from time import time, sleep
 from shutil import copyfile, rmtree, copyfileobj
 from subprocess import Popen
@@ -362,8 +361,8 @@ class TestSafeFs(testly.TestCase):
 		self.assertEqual(r, rout)
 		if r:
 			if path.isfile(file1):
-				with open(file1) as f1, gzip.open(file2) as f2:
-					helpers.assertTextEqual(self, utils.asStr(f1.read()), utils.asStr(f2.read()))
+				with open(file1, 'rb') as f1, gzip.open(file2, 'rb') as f2:
+					helpers.assertTextEqual(self, str(f1.read().decode()), str(f2.read().decode()))
 			else:
 				# test tar.gz
 				self.assertTrue(path.isdir(file1))
@@ -417,8 +416,8 @@ class TestSafeFs(testly.TestCase):
 		self.assertEqual(r, rout)
 		if r:
 			if path.isfile(file2):
-				with gzip.open(file1) as f1, open(file2) as f2:
-					helpers.assertTextEqual(self, utils.asStr(f1.read()), utils.asStr(f2.read()))
+				with gzip.open(file1, 'rb') as f1, open(file2, 'rb') as f2:
+					helpers.assertTextEqual(self, str(f1.read().decode()), str(f2.read().decode()))
 			else:
 				# test tar.gz
 				self.assertTrue(path.isfile(file1))
@@ -902,7 +901,6 @@ class TestUtils (testly.TestCase):
 	def testBox(self, box, out):
 		self.assertDictEqual(box, out)
 
-
 	def dataProvider_testParallel(self):
 		yield ([(1,2), (3,4), (5,6), (7,8)], 4, 'thread')
 		yield ([(1,2), (3,4), (5,6), (7,8)], 4, 'thread')
@@ -918,11 +916,11 @@ class TestUtils (testly.TestCase):
 			a/b # raise exception
 
 		if exception:
-			self.assertRaises(exception, utils.parallel.run, func, data, nthread, method)
+			self.assertRaises(exception, helpers.parallel, func, data, nthread, method)
 		else:
 			t0 = time()
 			#Parallel(nthread, method).run(func, data)
-			utils.parallel.run(func, data, nthread, method)
+			helpers.parallel(func, data, nthread, method)
 			t = time() - t0
 			if method == 'thread':
 				self.assertCountEqual(utils.reduce(lambda x, y: list(x) + list(y), data), globalVars)
@@ -1263,7 +1261,7 @@ class TestUtils (testly.TestCase):
 		yield (func6,  file6,  10, lambda: path.exists(flag6))
 
 	def test1FS(self, func, f, length, state):
-		Parallel(length, 'thread').run(func, [(f, ) for _ in range(length)])
+		helpers.Parallel(length, 'thread').run(func, [(f, ) for _ in range(length)])
 		self.assertTrue(state())
 
 	def dataProvider_test2FS(self):
@@ -1962,7 +1960,7 @@ class TestUtils (testly.TestCase):
 
 
 	def test2FS(self, func, f1, f2, length, state, msg = None):
-		Parallel(length, 'thread').run(func, [(f1, f2) for _ in range(length)])
+		helpers.Parallel(length, 'thread').run(func, [(f1, f2) for _ in range(length)])
 		self.assertTrue(state(), msg)
 
 	def dataProvider_testDumbPopen(self):

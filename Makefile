@@ -45,7 +45,7 @@ tutorial:
 	@wd=`pwd`;                                                                         \
 	for t in ./tutorials/*; do                                                         \
 		echo "";                                                                       \
-		echo "Running tutorial: $$t";                                                  \
+		echo "Running tutorial: $(PYTHON) $$t";                                                  \
 		echo '----------------------------------------------------------------------'; \
 		cd $$t;                                                                        \
 		for p in *.py; do                                                              \

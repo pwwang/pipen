@@ -1,3 +1,6 @@
+"""
+box module for PyPPL
+"""
 from collections import OrderedDict
 
 class Box(OrderedDict):

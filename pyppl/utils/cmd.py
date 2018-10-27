@@ -1,17 +1,22 @@
+"""
+cmd utility for PyPPL
+"""
 import subprocess
 import shlex
-import six
 from os import environ
 from time import time, sleep
 import warnings
+from . import string_types
 # I am intended to run in background.
 try:
 	ResourceWarning
 except NameError:
 	class ResourceWarning(Warning):
+		"""ResourceWarning for python2"""
 		pass
 
 class Timeout(Exception):
+	"""Command Timeout Exception"""
 	pass
 
 class Cmd(object):
@@ -52,7 +57,7 @@ class Cmd(object):
 				cmd = ' '.join([str(c) for c in cmd])
 			# else: assume string
 		else:
-			if isinstance(cmd, six.string_types):
+			if isinstance(cmd, string_types):
 				cmd = shlex.split(self.cmd)
 			else: 
 				cmd = [str(c) for c in cmd]
@@ -124,4 +129,3 @@ def run(cmd, bg = False, raiseExc = True, timeout = None, **kwargs):
 		The `Command` instance
 	"""
 	return Cmd(cmd, raiseExc = raiseExc, timeout = timeout, **kwargs).run(bg = bg)
-

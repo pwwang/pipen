@@ -1,13 +1,19 @@
 """
 A customized logger for pyppl
 """
-import logging, re, sys
-from .utils import Box
+import logging
+import re
+import sys
+import signal
+from copy import copy as pycopy
+from multiprocessing.managers import SyncManager
+from .utils import Box, pickle
 from .exception import LoggerThemeError
 from .template import TemplateLiquid
-from multiprocessing import Lock
 
-LOCK = Lock()
+MANAGER = SyncManager()
+MANAGER.start(signal.signal, (signal.SIGINT, signal.SIG_IGN))
+
 # the entire format
 LOGFMT = "[%(asctime)s%(message)s"
 # colors
@@ -39,10 +45,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.cyan, COLORS.bold + COLORS.cyan],
 		'DEPENDS' : COLORS.magenta,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BUILD,SUBMIT,RUNNING,RETRY,JOBDONE,KILLING': COLORS.green,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.green,
 		'has:ERR' : COLORS.red,
-		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
-		'in:CACHED,SKIPPED,RESUMED': COLORS.yellow,
+		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
+		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
 		''        : COLORS.white
 	},
 	'blueOnBlack':  {
@@ -50,10 +56,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.cyan, COLORS.bold  + COLORS.cyan],
 		'DEPENDS' : COLORS.green,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BUILD,SUBMIT,RUNNING,RETRY,JOBDONE,KILLING': COLORS.blue,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.blue,
 		'has:ERR' : COLORS.red,
-		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
-		'in:CACHED,SKIPPED,RESUMED': COLORS.yellow,
+		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
+		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
 		''        : COLORS.white
 	},
 	'magentaOnBlack':  {
@@ -61,10 +67,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.green, COLORS.bold + COLORS.green],
 		'DEPENDS' : COLORS.blue,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BUILD,SUBMIT,RUNNING,RETRY,JOBDONE,KILLING': COLORS.magenta,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.magenta,
 		'has:ERR' : COLORS.red,
-		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
-		'in:CACHED,SKIPPED,RESUMED': COLORS.yellow,
+		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
+		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
 		''        : COLORS.white
 	},
 	'greenOnWhite': {
@@ -72,10 +78,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.blue],
 		'DEPENDS' : COLORS.magenta,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BUILD,SUBMIT,RUNNING,RETRY,JOBDONE,KILLING': COLORS.green,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.green,
 		'has:ERR' : COLORS.red,
-		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
-		'in:CACHED,SKIPPED,RESUMED': COLORS.yellow,
+		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
+		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
 		''        : COLORS.black
 	},
 	'blueOnWhite':  {
@@ -83,10 +89,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.green, COLORS.bold + COLORS.green],
 		'DEPENDS' : COLORS.magenta,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BUILD,SUBMIT,RUNNING,RETRY,JOBDONE,KILLING': COLORS.blue,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.blue,
 		'has:ERR' : COLORS.red,
-		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
-		'in:CACHED,SKIPPED,RESUMED': COLORS.yellow,
+		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
+		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
 		''        : COLORS.black
 	},
 	'magentaOnWhite':  {
@@ -94,10 +100,10 @@ THEMES = {
 		'DEBUG'   : COLORS.bold + COLORS.black,
 		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.blue],
 		'DEPENDS' : COLORS.green,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BUILD,SUBMIT,RUNNING,RETRY,JOBDONE,KILLING': COLORS.magenta,
+		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.magenta,
 		'has:ERR' : COLORS.red,
-		'in:WARNING,RETRY' : COLORS.bold + COLORS.yellow,
-		'in:CACHED,SKIPPED,RESUMED': COLORS.yellow,
+		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
+		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
 		''        : COLORS.black
 	}
 }
@@ -108,21 +114,39 @@ LEVELS = {
 	'normal':  ['INPUT', 'OUTPUT', 'P.ARGS', 'P.PROPS']
 }
 
-LEVELS_ALWAYS = ['PROCESS', 'SKIPPED', 'RESUMED', 'DEPENDS', 'STDOUT', 'STDERR', 'WARNING', 'ERROR', 'INFO', 'DONE', 'CACHED', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'BUILD', 'SUBMIT', 'RUNNING', 'RETRY', 'JOBDONE', 'KILLING']
+LEVELS_ALWAYS = [
+    'PROCESS', 'WORKDIR', 'RESUMED', 'SKIPPED', 'DEPENDS', 'STDOUT', 'STDERR', 'WARNING', 
+    'ERROR', 'INFO', 'DONE', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'BLDING', 
+    'SUBMIT', 'RUNNING', 'RETRY', 'JOBDONE', 'KILLING', 'P.DONE', 'CACHED'
+]
 
-def _getLevel (record):
-	"""
-	Get the flags of a record
-	@params:
-		`record`:  The logging record
-	"""
-	level = record.levelname
-	msg   = record.msg.lstrip()
-	m     = re.match(r'\[\s*([\w>._]+)\s*\](.*)', record.msg)
-	if m:
-		level = m.group(1).upper()
-		msg   = m.group(2).lstrip()
-	return (level, msg)
+DEBUG_LINES = {
+	'EXPORT_CACHE_OUTFILE_EXISTS': -1,
+	'EXPORT_CACHE_USING_SYMLINK': 1,
+	'EXPORT_CACHE_USING_EXPARTIAL': 1,
+	'EXPORT_CACHE_EXFILE_NOTEXISTS': 1,
+	'EXPORT_CACHE_EXDIR_NOTSET': 1,
+	'CACHE_EMPTY_PREVSIG': -1,
+	'CACHE_EMPTY_CURRSIG': -2,
+	'CACHE_SCRIPT_NEWER': -1,
+	'CACHE_SIGINVAR_DIFF': -1,
+	'CACHE_SIGINFILE_DIFF': -1,
+	'CACHE_SIGINFILE_NEWER': -1,
+	'CACHE_SIGINFILES_DIFF': -1,
+	'CACHE_SIGINFILES_NEWER': -1,
+	'CACHE_SIGOUTVAR_DIFF': -1,
+	'CACHE_SIGOUTFILE_DIFF': -1,
+	'CACHE_SIGOUTDIR_DIFF': -1,
+	'CACHE_SIGFILE_NOTEXISTS': -1,
+	'EXPECT_CHECKING': -1,
+	'INFILE_RENAMING': -1,
+	'SUBMISSION_FAIL': -3,
+	#'BRINGFILE_NOTFOUND': -3,
+	'OUTFILE_NOT_EXISTS': -1,
+	'OUTDIR_CREATED_AFTER_RESET': -1,
+	'SCRIPT_EXISTS': -2,
+	'JOB_RESETTING': -1
+}
 
 def _getColorFromTheme (level, theme):
 	"""
@@ -139,11 +163,19 @@ def _getColorFromTheme (level, theme):
 	for key, val in theme.items():
 		if not isinstance(val, list):
 			val = [val] * 2
-		if key == level or \
-		   key.startswith('in:') and level in key[3:].split(',') or \
-		   key.startswith('starts:') and level.startswith(key[7:]) or \
-		   key.startswith('has:') and key[4:] in level or \
-		   key.startswith('re:') and re.search(key[3:], level):
+		if key == level:
+			ret = val
+			break
+		if key.startswith('in:') and level in key[3:].split(','):
+			ret = val
+			break
+		if key.startswith('starts:') and level.startswith(key[7:]):
+			ret = val
+			break
+		if key.startswith('has:') and key[4:] in level:
+			ret = val
+			break
+		if key.startswith('re:') and re.search(key[3:], level):
 			ret = val
 			break
 	return tuple(ret)
@@ -182,6 +214,14 @@ class PyPPLLogFilter (logging.Filter):
 	"""
 	logging filter by levels (flags)
 	"""
+
+	DEBUGS = MANAGER.dict()
+	LEVELS = []
+
+	@staticmethod
+	def _clearDebug():
+		for key, _ in DEBUG_LINES.items():
+			PyPPLLogFilter.DEBUGS[key] = 0
 	
 	def __init__(self, name='', lvls='normal', lvldiff=None):
 		"""
@@ -191,26 +231,24 @@ class PyPPLLogFilter (logging.Filter):
 			`lvls`: The levels of records to keep
 			`lvldiff`: The adjustments to `lvls`
 		"""
+
 		logging.Filter.__init__(self, name)
-		if not isinstance(lvls, list):
-			if lvls in LEVELS:
-				self.levels = LEVELS[lvls]
-			elif lvls == 'ALL':
-				self.levels = LEVELS['all']
-			elif lvls:
-				self.levels = [lvls]
+		PyPPLLogFilter.LEVELS[:] = []
+		
+		if lvls is not None:
+			if not isinstance(lvls, list):
+				if lvls in LEVELS:
+					PyPPLLogFilter.LEVELS += LEVELS[lvls]
+				elif lvls == 'ALL':
+					PyPPLLogFilter.LEVELS += LEVELS['all']
+				elif lvls:
+					PyPPLLogFilter.LEVELS += [lvls]
+				elif lvls is False:
+					return
 			else:
-				self.levels = lvls
-		else:
-			self.levels = lvls
+				PyPPLLogFilter.LEVELS += lvls
 
-		if self.levels is False: return
-
-		if self.levels is not None:
-			self.levels += LEVELS_ALWAYS
-			self.levels = list(set(self.levels))
-		else:
-			self.levels = []
+			PyPPLLogFilter.LEVELS += LEVELS_ALWAYS
 			
 		lvldiff = lvldiff or []
 		if not isinstance(lvldiff, list):
@@ -218,16 +256,16 @@ class PyPPLLogFilter (logging.Filter):
 		for ld in lvldiff:
 			if ld.startswith('-'):
 				ld = ld[1:].upper()
-				if ld in self.levels: 
-					del self.levels[self.levels.index(ld)]
+				if ld in PyPPLLogFilter.LEVELS: 
+					del PyPPLLogFilter.LEVELS[PyPPLLogFilter.LEVELS.index(ld)]
 			elif ld.startswith('+'):
 				ld = ld[1:].upper()
-				if ld not in self.levels:
-					self.levels.append(ld)
+				if ld not in PyPPLLogFilter.LEVELS:
+					PyPPLLogFilter.LEVELS.append(ld)
 			else:
 				ld = ld.upper()
-				if ld not in self.levels:
-					self.levels.append(ld)
+				if ld not in PyPPLLogFilter.LEVELS:
+					PyPPLLogFilter.LEVELS.append(ld)
 	
 	def filter (self, record):
 		"""
@@ -237,11 +275,21 @@ class PyPPLLogFilter (logging.Filter):
 		@return:
 			`True` if the record to be kept else `False`
 		"""
-		if not hasattr(record, 'loglevel') or record.loglevel.startswith('_'):
+		level = record.loglevel.upper() if hasattr(record, 'loglevel') else record.levelname
+		if level.startswith('_'):
 			return True
-		if not self.levels:
+		if not PyPPLLogFilter.LEVELS:
 			return False
-		return record.loglevel in self.levels
+		if level in PyPPLLogFilter.LEVELS:
+			level2 = record.level2 if hasattr(record, 'level2') else None
+			if not level2 or level2 not in DEBUG_LINES:
+				return True
+			PyPPLLogFilter.DEBUGS[level2] += 1
+			if PyPPLLogFilter.DEBUGS[level2] <= abs(DEBUG_LINES[level2]):
+				if DEBUG_LINES[level2] < 0 and PyPPLLogFilter.DEBUGS[level2] == abs(DEBUG_LINES[level2]):
+					record.msg += "\n...... max={max} ({key}) reached, further information will be ignored.".format(max = abs(DEBUG_LINES[level2]), key = level2)
+				return True
+		return False
 
 class PyPPLLogFormatter (logging.Formatter):
 	"""
@@ -261,7 +309,6 @@ class PyPPLLogFormatter (logging.Formatter):
 		# whether it's a secondary formatter (for fileHandler)
 		self.secondary = secondary
 		
-	
 	def format(self, record):
 		"""
 		Format the record
@@ -272,7 +319,8 @@ class PyPPLLogFormatter (logging.Formatter):
 		"""
 		formatted = record.formatted if hasattr(record, 'formatted') else False
 		if not formatted:
-			level = record.loglevel if hasattr(record, 'loglevel') else record.levelname
+			level = record.loglevel.upper() if hasattr(record, 'loglevel') else record.levelname
+
 			theme = 'greenOnBlack' if self.theme is True else self.theme
 			theme = THEMES[theme] if not isinstance(theme, dict) and theme in THEMES else theme
 			theme = _formatTheme(theme)
@@ -291,7 +339,15 @@ class PyPPLLogFormatter (logging.Formatter):
 				# keep _ for file handler
 				level = level[1:] if level.startswith('_') else level
 			level = level[:7]
-			record.msg = " %s%7s%s] %s%s%s" % (colorLevelStart, level, colorLevelEnd, colorMsgStart, record.msg, colorMsgEnd)
+			record.msg = " {lstart_c}{level}{lend_c}] {mstart_c}{proc}{jobindex}{msg}{mend_c}".format(
+				lstart_c = colorLevelStart,
+				level    = level.rjust(7),
+				lend_c   = colorLevelEnd,
+				mstart_c = colorMsgStart,
+				proc     = '{}: '.format(record.proc) if hasattr(record, 'proc') else '',
+				jobindex = '[{ji}/{jt}] '.format(ji = str(record.jobidx + 1).zfill(len(str(record.joblen))), jt = record.joblen) if hasattr(record, 'jobidx') else '',
+				msg      = record.msg,
+				mend_c   = colorMsgEnd)
 			setattr(record, 'formatted', True)
 		return logging.Formatter.format(self, record)
 
@@ -301,14 +357,17 @@ class PyPPLStreamHandler(logging.StreamHandler):
 	To implement the progress bar for JOBONE and SUBMIT logs.
 	"""
 
+	PREVBAR = MANAGER.list([''])
+
 	def __init__(self, stream = None):
 		"""
 		Constructor
 		@params:
 			`stream`: The stream
 		"""
-		self.prevbar = None
 		super(PyPPLStreamHandler, self).__init__(stream)
+		# Attribute 'terminator' defined outside __init__ (attribute-defined-outside-init)
+		self.terminator = "\n"
 
 	def _emit(self, record, terminator = "\n", format = True):
 		"""
@@ -319,54 +378,109 @@ class PyPPLStreamHandler(logging.StreamHandler):
 			self.terminator = terminator
 			super(PyPPLStreamHandler, self).emit(record)
 		else:
-			try:
-				msg = self.format(record)
-				stream = self.stream
-				fs = "%s" + terminator
-				#if no unicode support...
-				if not logging._unicode: # pragma: no cover
-					stream.write(fs % msg)
-				else:
-					try:
-						if (isinstance(msg, unicode) and
-							getattr(stream, 'encoding', None)): # pragma: no cover
-							ufs = u'%s' + terminator
-							try:
-								stream.write(ufs % msg)
-							except UnicodeEncodeError:
-								#Printing to terminals sometimes fails. For example,
-								#with an encoding of 'cp1251', the above write will
-								#work if written to a stream opened or wrapped by
-								#the codecs module, but fail when writing to a
-								#terminal even when the codepage is set to cp1251.
-								#An extra encoding step seems to be needed.
-								stream.write((ufs % msg).encode(stream.encoding))
-						else:
-							stream.write(fs % msg)
-					except UnicodeError: # pragma: no cover
-						stream.write(fs % msg.encode("UTF-8"))
-				self.flush()
-			except (KeyboardInterrupt, SystemExit): # pragma: no cover
-				raise
-			except Exception: # pragma: no cover
-				self.handleError(record)
+			msg = self.format(record)
+			stream = self.stream
+			fs = "%s" + terminator
+			#if no unicode support...
+			if not logging._unicode: # pragma: no cover
+				stream.write(fs % msg)
+			else:
+				try:
+					if (isinstance(msg, unicode) and
+						getattr(stream, 'encoding', None)): # pragma: no cover
+						ufs = u'%s' + terminator
+						try:
+							stream.write(ufs % msg)
+						except UnicodeEncodeError:
+							#Printing to terminals sometimes fails. For example,
+							#with an encoding of 'cp1251', the above write will
+							#work if written to a stream opened or wrapped by
+							#the codecs module, but fail when writing to a
+							#terminal even when the codepage is set to cp1251.
+							#An extra encoding step seems to be needed.
+							stream.write((ufs % msg).encode(stream.encoding))
+					else:
+						stream.write(fs % msg)
+				except UnicodeError: # pragma: no cover
+					stream.write(fs % msg.encode("UTF-8"))
+			self.flush()
 
 	def emit(self, record):
 		"""
 		Emit the record.
 		"""
-		with LOCK:
-			pbar = record.pbar if hasattr(record, 'pbar') else False
-			if pbar:
-				self.prevbar = record
+		from .jobmgr import Jobmgr
+		try:
+			pbar = record.pbar if hasattr(record, 'pbar') else None
+			if pbar == 'next':
+				if PyPPLStreamHandler.PREVBAR[0]:
+					self.stream.write("\n")
+				self._emit(record, "\n")
+			elif pbar is None:
+				# break pbars
+				if not "\n" in record.msg:
+					self._emit(record, "\n")
+				else:
+					msgs = record.msg.splitlines()
+					for i, m in enumerate(msgs):
+						rec = pycopy(record)
+						rec.msg = m
+						if i == len(msgs) - 1 and m.startswith('...... max='):
+							delattr(rec, 'jobidx')
+						self._emit(rec, "\n")
+				PyPPLStreamHandler.PREVBAR[0] = ''
+			elif pbar is True:
+				# pbar, replace previous pbar
+				PyPPLStreamHandler.PREVBAR[0] = pickle.dumps(record)
 				self._emit(record, "\r")
-			elif not self.prevbar:
-				self._emit(record, "\n")
+			elif not PyPPLStreamHandler.PREVBAR[0]:
+				# not pbar and not prev pbar
+				justlen = Jobmgr.PBAR_SIZE + 32
+				if hasattr(record, 'proc'):
+					justlen += len(record.proc) + 2
+				if hasattr(record, 'jobidx'):
+					justlen += len(str(record.joblen)) * 3
+				justlen = max(justlen, Jobmgr.PBAR_SIZE + 32)
+				if not "\n" in record.msg:
+					record.msg = record.msg.ljust(justlen)
+					self._emit(record, "\n")
+				else:
+					msgs = record.msg.splitlines()
+					for i, m in enumerate(msgs):
+						rec = pycopy(record)
+						if i == len(msgs) - 1 and m.startswith('...... max='):
+							rec.msg = m.ljust(justlen)
+							delattr(rec, 'jobidx')
+						else:
+							rec.msg = m.ljust(justlen)
+						self._emit(rec, "\n")
 			else:
-				record.msg = record.msg.ljust(len(self.prevbar.msg))
-				self._emit(record, "\n")
-				self._emit(self.prevbar, "\r")
-
+				# not pbar but prev pbar
+				prevbar = pickle.loads(PyPPLStreamHandler.PREVBAR[0])
+				justlen = Jobmgr.PBAR_SIZE + 32
+				if hasattr(prevbar, 'proc'):
+					justlen += len(prevbar.proc) + 2
+				if hasattr(prevbar, 'jobidx'):
+					justlen += len(str(prevbar.joblen)) * 3
+				justlen = max(justlen, Jobmgr.PBAR_SIZE + 32)
+				if not "\n" in record.msg:
+					record.msg = record.msg.ljust(justlen)
+					self._emit(record, "\n")
+				else:
+					msgs = record.msg.splitlines()
+					for i, m in enumerate(msgs):
+						rec = pycopy(record)
+						if i == len(msgs) - 1 and m.startswith('...... max='):
+							rec.msg = m.ljust(justlen)
+							delattr(rec, 'jobidx')
+						else:
+							rec.msg = m.ljust(justlen)
+						self._emit(rec, "\n")
+				self._emit(prevbar, "\r")
+		except (KeyboardInterrupt, SystemExit, IOError, EOFError): # pragma: no cover
+			raise
+		except Exception: # pragma: no cover
+			self.handleError(record)
 
 def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, name='PyPPL'):
 	"""
