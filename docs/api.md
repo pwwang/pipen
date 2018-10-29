@@ -1,5 +1,7 @@
 # module: pyppl
   
+The main module of PyPPL  
+  
 !!! example "class: `PyPPL`"
   
 	The PyPPL class  
@@ -31,12 +33,12 @@
 		- **returns:**  
 			The pipeline object itself.  
   
-	!!! abstract "staticmethod: `registerRunner (runner)`"
+	!!! abstract "staticmethod: `registerRunner (r)`"
   
 		Register a runner  
 
 		- **params:**  
-			`runner`: The runner to be registered.  
+			`r`: The runner to be registered.  
   
 	!!! abstract "method: `resume (self, *args)`"
   
@@ -118,9 +120,9 @@
 			`id`:   The identify of the process  
 
 		- **config:**  
-			id, input, output, ppldir, forks, cache, cclean, rc, echo, runner, script, depends, tag, desc, dirsig  
+			id, input, output, ppldir, forks, cache, acache, rc, echo, runner, script, depends, tag, desc, dirsig  
 			exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr  
-			callfront, callback, expect, expart, template, tplenvs, resume, nthread  
+			callfront, callback, expect, expart, template, tplenvs, resume, nsub  
 
 		- **props**  
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect  
@@ -145,15 +147,6 @@
 
 		- **returns:**  
 			The new process  
-  
-	!!! abstract "method: `log (self, msg, level, key)`"
-  
-		The log function with aggregation name, process id and tag integrated.  
-
-		- **params:**  
-			`msg`:   The message to log  
-			`level`: The log level  
-			`key`:   The type of messages  
   
 	!!! abstract "method: `name (self, aggr)`"
   
@@ -723,6 +716,8 @@ Channel for pyppl
   
 # module: pyppl.flowchart
   
+flowchart module for PyPPL  
+  
 !!! example "class: `Flowchart`"
   
 	Draw flowchart for pipelines  
@@ -769,7 +764,7 @@ Channel for pyppl
   
 # module: pyppl.job
   
-Job module for pyppl  
+job module for PyPPL  
   
 !!! example "class: `Box`"
   
@@ -784,25 +779,57 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
         If not specified, the value defaults to None.  
   
   
+!!! example "class: `SyncManager`"
+  
+    Subclass of `BaseManager` which supports a number of shared object types.  
+  
+    The types registered are those intended for the synchronization  
+    of threads, plus `dict`, `list` and `Namespace`.  
+  
+    The `multiprocessing.Manager()` function creates started instances of  
+    this class.  
+  
+	!!! abstract "method: `BoundedSemaphore (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Condition (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Event (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Namespace (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Pool (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Queue (self, *args, **kwds)`"
+  
+	!!! abstract "method: `RLock (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Semaphore (self, *args, **kwds)`"
+  
+	!!! abstract "method: `dict (self, *args, **kwds)`"
+  
+	!!! abstract "method: `list (self, *args, **kwds)`"
+  
+	!!! abstract "method: `register (cls, typeid, callable, proxytype, exposed, method_to_typeid, create_method)`"
+  
+        Register a typeid with the manager type  
+  
+!!! example "class: `string_types`"
+Type basestring cannot be instantiated; it is the base for str and unicode.  
+	!!! abstract "method: `__new__ ()`"
+T.__new__(S, ...) -> a new object with type S, a subtype of T  
 !!! example "class: `Job`"
   
-	Job class, defining a job in a process  
+	PyPPL Job  
   
-	!!! abstract "method: `__init__ (self, index, proc)`"
+	!!! abstract "method: `__init__ (self, index, config)`"
   
-		Constructor  
-
-		- **params:**  
-			`index`:   The index of the job in a process  
-			`proc`:    The process  
+	!!! abstract "method: `build (self)`"
+  
+		Initiate a job, make directory and prepare input, output and script.  
   
 	!!! abstract "method: `cache (self)`"
   
 		Truly cache the job (by signature)  
-  
-	!!! abstract "method: `checkOutfiles (self, expect)`"
-  
-		Check whether output files are generated, if not, add - to rc.  
   
 	!!! abstract "method: `done (self)`"
   
@@ -811,10 +838,6 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 	!!! abstract "method: `export (self)`"
   
 		Export the output files  
-  
-	!!! abstract "method: `init (self)`"
-  
-		Initiate a job, make directory and prepare input, output and script.  
   
 	!!! abstract "method: `isExptCached (self)`"
   
@@ -825,33 +848,28 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
   
 		Check whether a job is truly cached (by signature)  
   
-	!!! abstract "method: `pid (self, val)`"
+	!!! abstract "method: `kill (self)`"
   
-		Get/Set the job id (pid or the id from queue system)  
-
-		- **params:**  
-			`val`: The id to be set  
-  
-	!!! abstract "method: `rc (self, val)`"
-  
-		Get/Set the return code  
-
-		- **params:**  
-			`val`: The return code to be set. If it is None, return the return code. Default: `None`  
-			If val == -1000: the return code will be negative of current one. 0 will be '-0'  
-
-		- **returns:**  
-			The return code if `val` is `None`  
-			If rcfile does not exist or is empty, return 9999, otherwise return -rc  
-			A negative rc (including -0) means output files not generated  
+		Kill the job  
   
 	!!! abstract "method: `report (self)`"
   
 		Report the job information to logger  
   
-	!!! abstract "method: `reset (self, retry)`"
+	!!! abstract "method: `reset (self)`"
   
 		Clear the intermediate files and output files  
+  
+	!!! abstract "method: `retry (self)`"
+  
+		If the job is available to retry  
+
+		- **return:**  
+			`True` if it is else `False`  
+  
+	!!! abstract "method: `run (self)`"
+  
+		Wait for the job to run  
   
 	!!! abstract "method: `signature (self)`"
   
@@ -860,79 +878,211 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 		- **returns:**  
 			The signature of the job  
   
+	!!! abstract "method: `submit (self)`"
+  
+		Submit the job  
+  
 	!!! abstract "method: `succeed (self)`"
   
-		Tell if the job is successful by return code, and output file expectations.  
+		Tell if a job succeeds.  
+		Check whether output files generated, expectation met and return code met.  
 
-		- **returns:**  
-			True if succeed else False  
+		- **return:**  
+			`True` if succeed else `False`  
   
 # module: pyppl.jobmgr
   
+jobmgr module for PyPPL  
+  
 !!! example "class: `Jobmgr`"
   
-	Job Manager  
+	A job manager for PyPPL  
   
-	!!! abstract "method: `__init__ (self, proc, runner)`"
-  
-		Job manager constructor  
-
-		- **params:**  
-			`proc`     : The process  
-			`runner`   : The runner class  
+	!!! abstract "method: `__init__ (self, jobs, config)`"
   
 	!!! abstract "method: `allJobsDone (self)`"
   
-		Tell whether all jobs are done.  
-		No need to lock as it only runs in one process (the watcher process)  
+		Tell if all jobs are done.  
 
-		- **returns:**  
-			`True` if all jobs are done else `False`  
+		- **return:**  
+			`True` if they are else `False`  
   
-	!!! abstract "method: `canSubmit (self)`"
+	!!! abstract "method: `buildJob (self, i)`"
   
-		Tell whether we can submit jobs.  
+		Build job  
 
-		- **returns:**  
-			`True` if we can, otherwise `False`  
+		- **params:**  
+			`i`: The job index  
   
-	!!! abstract "method: `halt (self, halt_anyway)`"
+	!!! abstract "method: `buildWorker (self)`"
   
-		Halt the pipeline if needed  
+		The build and submit worker  
   
-	!!! abstract "method: `progressbar (self, jid, loglevel)`"
+	!!! abstract "method: `cleanup (self, pid)`"
+  
+		Cleanup the pipeline when  
+		- Ctrl-c hit  
+		- error encountered and `proc.errhow` = 'terminate'  
+
+		- **params:**  
+			`pid`: The pid of the process where this is running  
+				- Don't try to kill me.  
+  
+	!!! abstract "method: `killJob (self, i)`"
+  
+		Kill job  
+
+		- **params:**  
+			`i`: The job index  
+  
+	!!! abstract "method: `progressbar (self, jobidx)`"
   
 		Generate progressbar.  
 
 		- **params:**  
-			`jid`: The job index.  
+			`jobidx`: The job index.  
 			`loglevel`: The log level in PyPPL log system  
 
 		- **returns:**  
 			The string representing the progressbar  
   
+	!!! abstract "method: `runJob (self, i)`"
+  
+		Wait for the job to run  
+
+		- **params:**  
+			`i`: The job index  
+  
+	!!! abstract "method: `runWorker (self)`"
+  
+		The job running worker  
+  
+	!!! abstract "method: `submitJob (self, i)`"
+  
+		Submit job  
+
+		- **params:**  
+			`i`: The job index  
+  
+!!! example "class: `SyncManager`"
+  
+    Subclass of `BaseManager` which supports a number of shared object types.  
+  
+    The types registered are those intended for the synchronization  
+    of threads, plus `dict`, `list` and `Namespace`.  
+  
+    The `multiprocessing.Manager()` function creates started instances of  
+    this class.  
+  
+	!!! abstract "method: `BoundedSemaphore (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Condition (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Event (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Namespace (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Pool (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Queue (self, *args, **kwds)`"
+  
+	!!! abstract "method: `RLock (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Semaphore (self, *args, **kwds)`"
+  
+	!!! abstract "method: `dict (self, *args, **kwds)`"
+  
+	!!! abstract "method: `list (self, *args, **kwds)`"
+  
+	!!! abstract "method: `register (cls, typeid, callable, proxytype, exposed, method_to_typeid, create_method)`"
+  
+        Register a typeid with the manager type  
+  
+!!! example "function: `Manager`"
+  
+    Returns a manager associated with a running server process  
+  
+    The managers methods such as `Lock()`, `Condition()` and `Queue()`  
+    can be used to create shared objects.  
+  
+!!! example "class: `QueueEmpty`"
+Exception raised by Queue.get(block=0)/get_nowait().  
+!!! example "class: `Job`"
+  
+	PyPPL Job  
+  
+	!!! abstract "method: `__init__ (self, index, config)`"
+  
+	!!! abstract "method: `build (self)`"
+  
+		Initiate a job, make directory and prepare input, output and script.  
+  
+	!!! abstract "method: `cache (self)`"
+  
+		Truly cache the job (by signature)  
+  
+	!!! abstract "method: `done (self)`"
+  
+		Do some cleanup when job finished  
+  
+	!!! abstract "method: `export (self)`"
+  
+		Export the output files  
+  
+	!!! abstract "method: `isExptCached (self)`"
+  
+		Prepare to use export files as cached information  
+		True if succeed, otherwise False  
+  
+	!!! abstract "method: `isTrulyCached (self)`"
+  
+		Check whether a job is truly cached (by signature)  
+  
+	!!! abstract "method: `kill (self)`"
+  
+		Kill the job  
+  
+	!!! abstract "method: `report (self)`"
+  
+		Report the job information to logger  
+  
+	!!! abstract "method: `reset (self)`"
+  
+		Clear the intermediate files and output files  
+  
+	!!! abstract "method: `retry (self)`"
+  
+		If the job is available to retry  
+
+		- **return:**  
+			`True` if it is else `False`  
+  
 	!!! abstract "method: `run (self)`"
   
-		Start to run the jobs  
+		Wait for the job to run  
   
-	!!! abstract "method: `runPool (self, rq, sq)`"
+	!!! abstract "method: `signature (self)`"
   
-		The pool to run jobs (wait jobs to be done)  
+		Calculate the signature of the job based on the input/output and the script  
 
-		- **params:**  
-			`rq`: The run queue  
-			`sq`: The submit queue  
+		- **returns:**  
+			The signature of the job  
   
-	!!! abstract "method: `submitPool (self, sq)`"
+	!!! abstract "method: `submit (self)`"
   
-		The pool to submit jobs  
+		Submit the job  
+  
+	!!! abstract "method: `succeed (self)`"
+  
+		Tell if a job succeeds.  
+		Check whether output files generated, expectation met and return code met.  
 
-		- **params:**  
-			`sq`: The submit queue  
+		- **return:**  
+			`True` if succeed else `False`  
   
-	!!! abstract "method: `watchPool (self, rq, sq)`"
+!!! example "function: `Pool`"
   
-		The watchdog, checking whether all jobs are done.  
+    Returns a process pool object  
   
 # module: pyppl.logger
   
@@ -961,6 +1111,11 @@ A customized logger for pyppl
 		- **returns:**  
 			The formatted record  
   
+!!! example "function: `pycopy`"
+Shallow copy operation on arbitrary Python objects.  
+  
+    See the module's __doc__ string for more info.  
+  
 !!! example "class: `PyPPLLogFilter`"
   
 	logging filter by levels (flags)  
@@ -983,6 +1138,40 @@ A customized logger for pyppl
 
 		- **return:**  
 			`True` if the record to be kept else `False`  
+  
+!!! example "class: `SyncManager`"
+  
+    Subclass of `BaseManager` which supports a number of shared object types.  
+  
+    The types registered are those intended for the synchronization  
+    of threads, plus `dict`, `list` and `Namespace`.  
+  
+    The `multiprocessing.Manager()` function creates started instances of  
+    this class.  
+  
+	!!! abstract "method: `BoundedSemaphore (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Condition (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Event (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Namespace (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Pool (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Queue (self, *args, **kwds)`"
+  
+	!!! abstract "method: `RLock (self, *args, **kwds)`"
+  
+	!!! abstract "method: `Semaphore (self, *args, **kwds)`"
+  
+	!!! abstract "method: `dict (self, *args, **kwds)`"
+  
+	!!! abstract "method: `list (self, *args, **kwds)`"
+  
+	!!! abstract "method: `register (cls, typeid, callable, proxytype, exposed, method_to_typeid, create_method)`"
+  
+        Register a typeid with the manager type  
   
 !!! example "class: `PyPPLStreamHandler`"
   
@@ -1017,6 +1206,8 @@ A customized logger for pyppl
 		The logger  
   
 # module: pyppl.parameters
+  
+parameters module for PyPPL  
   
 !!! example "class: `Parameters`"
   
@@ -1288,9 +1479,144 @@ A customized logger for pyppl
 		- **returns:**  
 			A `tuple` with first element the subcommand and second the parameters being parsed.  
   
+!!! example "class: `string_types`"
+Type basestring cannot be instantiated; it is the base for str and unicode.  
+	!!! abstract "method: `__new__ ()`"
+T.__new__(S, ...) -> a new object with type S, a subtype of T  
 # module: pyppl.proctree
   
 Manage process relations  
+  
+!!! example "class: `ProcTree`"
+  
+	A tree of processes.  
+  
+	!!! abstract "method: `__init__ (self)`"
+  
+		Constructor, set the status of all `ProcNode`s  
+  
+	!!! abstract "staticmethod: `check (proc)`"
+  
+		Check whether a process with the same id and tag exists  
+
+		- **params:**  
+			`proc`: The `Proc` instance  
+  
+	!!! abstract "method: `checkPath (self, proc)`"
+  
+		Check whether paths of a process can start from a start process  
+
+		- **params:**  
+			`proc`: The process  
+
+		- **returns:**  
+			`True` if all paths can pass  
+			The failed path otherwise  
+  
+	!!! abstract "method: `getAllPaths (self)`"
+  
+		Get all paths of the pipeline  
+  
+	!!! abstract "method: `getEnds (self)`"
+  
+		Get the end processes  
+
+		- **returns:**  
+			The end processes  
+  
+	!!! abstract "staticmethod: `getNext (proc)`"
+  
+		Get next processes of process  
+
+		- **params:**  
+			`proc`: The `Proc` instance  
+
+		- **returns:**  
+			The processes depend on this process  
+  
+	!!! abstract "staticmethod: `getNextStr (proc)`"
+  
+		Get the names of processes depend on a process  
+
+		- **params:**  
+			`proc`: The `Proc` instance  
+
+		- **returns:**  
+			The names  
+  
+	!!! abstract "method: `getNextToRun (cls)`"
+  
+		Get the process to run next  
+
+		- **returns:**  
+			The process next to run  
+  
+	!!! abstract "method: `getPaths (self, proc, proc0)`"
+  
+		Infer the path to a process  
+
+		- **params:**  
+			`proc`: The process  
+			`proc0`: The original process, because this function runs recursively.  
+
+		- **returns:**  
+			```  
+			p1 -> p2 -> p3  
+			      p4  _/  
+			Paths for p3: [[p4], [p2, p1]]  
+			```  
+  
+	!!! abstract "method: `getPathsToStarts (self, proc)`"
+  
+		Filter the paths with start processes  
+
+		- **params:**  
+			`proc`: The process  
+
+		- **returns:**  
+			The filtered path  
+  
+	!!! abstract "staticmethod: `getPrevStr (proc)`"
+  
+		Get the names of processes a process depends on  
+
+		- **params:**  
+			`proc`: The `Proc` instance  
+
+		- **returns:**  
+			The names  
+  
+	!!! abstract "method: `getStarts (self)`"
+  
+		Get the start processes  
+
+		- **returns:**  
+			The start processes  
+  
+	!!! abstract "staticmethod: `register (proc)`"
+  
+		Register the process  
+
+		- **params:**  
+			`proc`: The `Proc` instance  
+  
+	!!! abstract "staticmethod: `reset ()`"
+  
+		Reset the status of all `ProcNode`s  
+  
+	!!! abstract "method: `setStarts (cls, starts)`"
+  
+		Set the start processes  
+
+		- **params:**  
+			`starts`: The start processes  
+  
+	!!! abstract "method: `unranProcs (self)`"
+  
+		Get the unran processes.  
+
+		- **returns:**  
+			The processes haven't run.  
   
 !!! example "class: `ProcNode`"
   
@@ -1359,12 +1685,6 @@ The base runner class
 		- **params:**  
 			`job`:    The job object  
   
-	!!! abstract "method: `finish (self)`"
-  
-	!!! abstract "method: `getpid (self)`"
-  
-		Get the job id  
-  
 	!!! abstract "method: `isRunning (self)`"
   
 		Try to tell whether the job is still running.  
@@ -1375,8 +1695,6 @@ The base runner class
 	!!! abstract "method: `kill (self)`"
   
 		Try to kill the running jobs if I am exiting  
-  
-	!!! abstract "method: `retry (self)`"
   
 	!!! abstract "method: `run (self)`"
   
@@ -1391,7 +1709,7 @@ The base runner class
   
 # module: pyppl.runners.runner_dry
   
-Dry runner  
+Dry runner for PyPPL  
   
 !!! example "class: `Runner`"
   
@@ -1404,12 +1722,6 @@ Dry runner
 		- **params:**  
 			`job`:    The job object  
   
-	!!! abstract "method: `finish (self)`"
-  
-	!!! abstract "method: `getpid (self)`"
-  
-		Get the job id  
-  
 	!!! abstract "method: `isRunning (self)`"
   
 		Try to tell whether the job is still running.  
@@ -1420,8 +1732,6 @@ Dry runner
 	!!! abstract "method: `kill (self)`"
   
 		Try to kill the running jobs if I am exiting  
-  
-	!!! abstract "method: `retry (self)`"
   
 	!!! abstract "method: `run (self)`"
   
@@ -1434,6 +1744,79 @@ Dry runner
   
 		Try to submit the job  
   
+!!! example "class: `Job`"
+  
+	PyPPL Job  
+  
+	!!! abstract "method: `__init__ (self, index, config)`"
+  
+	!!! abstract "method: `build (self)`"
+  
+		Initiate a job, make directory and prepare input, output and script.  
+  
+	!!! abstract "method: `cache (self)`"
+  
+		Truly cache the job (by signature)  
+  
+	!!! abstract "method: `done (self)`"
+  
+		Do some cleanup when job finished  
+  
+	!!! abstract "method: `export (self)`"
+  
+		Export the output files  
+  
+	!!! abstract "method: `isExptCached (self)`"
+  
+		Prepare to use export files as cached information  
+		True if succeed, otherwise False  
+  
+	!!! abstract "method: `isTrulyCached (self)`"
+  
+		Check whether a job is truly cached (by signature)  
+  
+	!!! abstract "method: `kill (self)`"
+  
+		Kill the job  
+  
+	!!! abstract "method: `report (self)`"
+  
+		Report the job information to logger  
+  
+	!!! abstract "method: `reset (self)`"
+  
+		Clear the intermediate files and output files  
+  
+	!!! abstract "method: `retry (self)`"
+  
+		If the job is available to retry  
+
+		- **return:**  
+			`True` if it is else `False`  
+  
+	!!! abstract "method: `run (self)`"
+  
+		Wait for the job to run  
+  
+	!!! abstract "method: `signature (self)`"
+  
+		Calculate the signature of the job based on the input/output and the script  
+
+		- **returns:**  
+			The signature of the job  
+  
+	!!! abstract "method: `submit (self)`"
+  
+		Submit the job  
+  
+	!!! abstract "method: `succeed (self)`"
+  
+		Tell if a job succeeds.  
+		Check whether output files generated, expectation met and return code met.  
+
+		- **return:**  
+			`True` if succeed else `False`  
+  
 !!! example "class: `RunnerDry`"
   
 	The dry runner  
@@ -1445,17 +1828,87 @@ Dry runner
 		- **params:**  
 			`job`:    The job object  
   
-	!!! abstract "method: `finish (self)`"
+!!! example "class: `Proc`"
   
-		Do some cleanup work when jobs finish  
+	The Proc class defining a process  
+  
+
+	- **static variables:**  
+		`RUNNERS`:       The regiested runners  
+		`ALIAS`:         The alias for the properties  
+		`LOG_NLINE`:     The limit of lines of logging information of same type of messages  
+  
+
+	- **magic methods:**  
+		`__getattr__(self, name)`: get the value of a property in `self.props`  
+		`__setattr__(self, name, value)`: set the value of a property in `self.config`  
+  
+	!!! abstract "method: `__getattr__ (self, name)`"
+  
+		Get the value of a property in `self.props`  
+		It recognizes alias as well.  
+
+		- **params:**  
+			`name`: The name of the property  
+
+		- **returns:**  
+			The value of the property  
+  
+	!!! abstract "method: `__init__ (self, tag, desc, id, **kwargs)`"
+  
+		Constructor  
+
+		- **params:**  
+			`tag`:  The tag of the process  
+			`desc`: The description of the process  
+			`id`:   The identify of the process  
+
+		- **config:**  
+			id, input, output, ppldir, forks, cache, acache, rc, echo, runner, script, depends, tag, desc, dirsig  
+			exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr  
+			callfront, callback, expect, expart, template, tplenvs, resume, nsub  
+
+		- **props**  
+			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect  
+			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs  
+  
+	!!! abstract "method: `__setattr__ (self, name, value)`"
+  
+		Set the value of a property in `self.config`  
+
+		- **params:**  
+			`name` : The name of the property.  
+			`value`: The new value of the property.  
+  
+	!!! abstract "method: `copy (self, tag, desc, id)`"
+  
+		Copy a process  
+
+		- **params:**  
+			`id`: The new id of the process, default: `None` (use the varname)  
+			`tag`:   The tag of the new process, default: `None` (used the old one)  
+			`desc`:  The desc of the new process, default: `None` (used the old one)  
+
+		- **returns:**  
+			The new process  
+  
+	!!! abstract "method: `name (self, aggr)`"
+  
+		Get my name include `aggr`, `id`, `tag`  
+
+		- **returns:**  
+			the name  
+  
+	!!! abstract "method: `run (self, profile, profiles)`"
+  
+		Run the jobs with a configuration  
+
+		- **params:**  
+			`config`: The configuration  
   
 # module: pyppl.runners.runner_local
   
-A runner wrapper for a single script  
-Author: pwwang@pwwang.com  
-Examples:  
-
-	- **see runner.unittest.py**  
+Local runner  
   
 !!! example "class: `Runner`"
   
@@ -1468,12 +1921,6 @@ Examples:
 		- **params:**  
 			`job`:    The job object  
   
-	!!! abstract "method: `finish (self)`"
-  
-	!!! abstract "method: `getpid (self)`"
-  
-		Get the job id  
-  
 	!!! abstract "method: `isRunning (self)`"
   
 		Try to tell whether the job is still running.  
@@ -1484,8 +1931,6 @@ Examples:
 	!!! abstract "method: `kill (self)`"
   
 		Try to kill the running jobs if I am exiting  
-  
-	!!! abstract "method: `retry (self)`"
   
 	!!! abstract "method: `run (self)`"
   
@@ -1510,6 +1955,8 @@ Examples:
   
 # module: pyppl.runners.runner_sge
   
+SGE runner for PyPPL  
+  
 !!! example "class: `Runner`"
   
 	The base runner class  
@@ -1521,12 +1968,6 @@ Examples:
 		- **params:**  
 			`job`:    The job object  
   
-	!!! abstract "method: `finish (self)`"
-  
-	!!! abstract "method: `getpid (self)`"
-  
-		Get the job id  
-  
 	!!! abstract "method: `isRunning (self)`"
   
 		Try to tell whether the job is still running.  
@@ -1537,8 +1978,6 @@ Examples:
 	!!! abstract "method: `kill (self)`"
   
 		Try to kill the running jobs if I am exiting  
-  
-	!!! abstract "method: `retry (self)`"
   
 	!!! abstract "method: `run (self)`"
   
@@ -1563,7 +2002,28 @@ Examples:
 			`job`:    The job object  
 			`config`: The properties of the process  
   
+	!!! abstract "method: `isRunning (self)`"
+  
+		Tell if the job is alive  
+
+		- **returns:**  
+			`True` if it is else `False`  
+  
+	!!! abstract "method: `kill (self)`"
+  
+		Kill the job  
+  
+	!!! abstract "method: `submit (self)`"
+  
+		Submit the job  
+
+		- **returns:**  
+			The `utils.cmd.Cmd` instance if succeed  
+			else a `Box` object with stderr as the exception and rc as 1  
+  
 # module: pyppl.runners.runner_slurm
+  
+Slurm runner for PyPPL  
   
 !!! example "class: `Runner`"
   
@@ -1576,12 +2036,6 @@ Examples:
 		- **params:**  
 			`job`:    The job object  
   
-	!!! abstract "method: `finish (self)`"
-  
-	!!! abstract "method: `getpid (self)`"
-  
-		Get the job id  
-  
 	!!! abstract "method: `isRunning (self)`"
   
 		Try to tell whether the job is still running.  
@@ -1592,8 +2046,6 @@ Examples:
 	!!! abstract "method: `kill (self)`"
   
 		Try to kill the running jobs if I am exiting  
-  
-	!!! abstract "method: `retry (self)`"
   
 	!!! abstract "method: `run (self)`"
   
@@ -1618,7 +2070,62 @@ Examples:
 			`job`:    The job object  
 			`config`: The properties of the process  
   
+	!!! abstract "method: `isRunning (self)`"
+  
+		Tell if the job is alive  
+
+		- **returns:**  
+			`True` if it is else `False`  
+  
+	!!! abstract "method: `kill (self)`"
+  
+		Kill the job  
+  
+	!!! abstract "method: `submit (self)`"
+  
+		Submit the job  
+
+		- **returns:**  
+			The `utils.cmd.Cmd` instance if succeed  
+			else a `Box` object with stderr as the exception and rc as 1  
+  
 # module: pyppl.runners.runner_ssh
+  
+The ssh runner  
+  
+!!! example "class: `RunnerSsh`"
+  
+	The ssh runner  
+  
+	!!! abstract "method: `__init__ (self, job)`"
+  
+		Constructor  
+
+		- **params:**  
+			`job`:    The job object  
+  
+	!!! abstract "method: `isRunning (self)`"
+  
+		Tell if the job is alive  
+
+		- **returns:**  
+			`True` if it is else `False`  
+  
+	!!! abstract "staticmethod: `isServerAlive (server, key)`"
+  
+		Check if an ssh server is alive  
+  
+	!!! abstract "method: `kill (self)`"
+  
+		Kill the job  
+  
+	!!! abstract "method: `submit (self)`"
+  
+		Submit the job  
+
+		- **returns:**  
+			The `utils.cmd.Cmd` instance if succeed  
+			else a `Box` object with stderr as the exception and rc as 1  
   
 !!! example "class: `Runner`"
   
@@ -1631,12 +2138,6 @@ Examples:
 		- **params:**  
 			`job`:    The job object  
   
-	!!! abstract "method: `finish (self)`"
-  
-	!!! abstract "method: `getpid (self)`"
-  
-		Get the job id  
-  
 	!!! abstract "method: `isRunning (self)`"
   
 		Try to tell whether the job is still running.  
@@ -1647,8 +2148,6 @@ Examples:
 	!!! abstract "method: `kill (self)`"
   
 		Try to kill the running jobs if I am exiting  
-  
-	!!! abstract "method: `retry (self)`"
   
 	!!! abstract "method: `run (self)`"
   
@@ -1661,26 +2160,9 @@ Examples:
   
 		Try to submit the job  
   
-!!! example "class: `RunnerSsh`"
-  
-	The ssh runner  
-  
-
-	- **static variables:**  
-		`SERVERID`: The incremental number used to calculate which server should be used.  
-		- Don't touch unless you know what's going on!  
-  
-  
-	!!! abstract "method: `__init__ (self, job)`"
-  
-		Constructor  
-
-		- **params:**  
-			`job`:    The job object  
-  
-	!!! abstract "staticmethod: `isServerAlive (server, key)`"
-  
 # module: pyppl.template
+  
+Template adaptor for PyPPL  
   
 !!! example "class: `Template`"
   
@@ -1690,8 +2172,22 @@ Examples:
   
 	!!! abstract "method: `registerEnvs (self, **envs)`"
   
+		Register extra environment  
+
+		- **params:**  
+			`**envs`: The environment  
+  
 	!!! abstract "method: `render (self, data)`"
   
+		Render the template  
+
+		- **parmas:**  
+			`data`: The data used to render  
+  
+!!! example "class: `string_types`"
+Type basestring cannot be instantiated; it is the base for str and unicode.  
+	!!! abstract "method: `__new__ ()`"
+T.__new__(S, ...) -> a new object with type S, a subtype of T  
 !!! example "class: `TemplateJinja2`"
   
 	Jinja2 template wrapper  
@@ -1706,7 +2202,7 @@ Examples:
   
 !!! example "class: `TemplateLiquid`"
   
-	liquid.py template wrapper.  
+	liquidpy template wrapper.  
   
 	!!! abstract "method: `__init__ (self, source, **envs)`"
   
@@ -1755,23 +2251,6 @@ A set of utitities for PyPPL
 
 	- **returns:**  
 		The signature  
-  
-!!! example "function: `alwaysList`"
-  
-	Convert a string or a list with element  
-
-	- **params:**  
-		`data`: the data to be converted  
-
-	- **examples:**  
-		```python  
-		data = ["a, b, c", "d"]  
-		ret  = alwaysList (data)  
-		# ret == ["a", "b", "c", "d"]  
-		```  
-
-	- **returns:**  
-		The split list  
   
 !!! example "function: `formatSecs`"
   
@@ -1824,6 +2303,23 @@ A set of utitities for PyPPL
 	- **returns:**  
 		The maped list  
   
+!!! example "function: `alwaysList`"
+  
+	Convert a string or a list with element  
+
+	- **params:**  
+		`data`: the data to be converted  
+
+	- **examples:**  
+		```python  
+		data = ["a, b, c", "d"]  
+		ret  = alwaysList (data)  
+		# ret == ["a", "b", "c", "d"]  
+		```  
+
+	- **returns:**  
+		The split list  
+  
 !!! example "function: `varname`"
   
 	Get the variable name for ini  
@@ -1835,6 +2331,10 @@ A set of utitities for PyPPL
 	- **returns:**  
 		The variable name  
   
+!!! example "class: `string_types`"
+Type basestring cannot be instantiated; it is the base for str and unicode.  
+	!!! abstract "method: `__new__ ()`"
+T.__new__(S, ...) -> a new object with type S, a subtype of T  
 !!! example "function: `filter`"
   
 	Python2 and Python3 compatible filter  
@@ -1875,11 +2375,9 @@ A set of utitities for PyPPL
 	- **returns:**  
 		The converted list  
   
-!!! example "function: `asStr`"
-  
-	Convert everything (str, unicode, bytes) to str with python2, python3 compatiblity  
-  
 # module: pyppl.utils.box
+  
+box module for PyPPL  
   
 !!! example "class: `Box`"
   
@@ -1895,6 +2393,8 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
   
   
 # module: pyppl.utils.cmd
+  
+cmd utility for PyPPL  
   
 !!! example "function: `run`"
   
@@ -1953,7 +2453,33 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 		- **returns:**  
 			`self`  
   
+!!! example "class: `string_types`"
+Type basestring cannot be instantiated; it is the base for str and unicode.  
+	!!! abstract "method: `__new__ ()`"
+T.__new__(S, ...) -> a new object with type S, a subtype of T  
+!!! example "class: `Timeout`"
+Command Timeout Exception  
+!!! example "class: `ResourceWarning`"
+ResourceWarning for python2  
 # module: pyppl.utils.parallel
+  
+!!! example "function: `as_completed`"
+An iterator over the given futures that yields each as it completes.  
+  
+    Args:  
+        fs: The sequence of Futures (possibly created by different Executors) to  
+            iterate over.  
+        timeout: The maximum number of seconds to wait. If None, then there  
+            is no limit on the wait time.  
+  
+    Returns:  
+        An iterator that yields the given Futures as they complete (finished or  
+        cancelled). If any given Futures are duplicated, they will be returned  
+        once.  
+  
+    Raises:  
+        TimeoutError: If the entire result iterator could not be generated  
+            before the given timeout.  
   
 !!! example "function: `run`"
   
@@ -1997,6 +2523,8 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 			The merged results from each job.  
   
 # module: pyppl.utils.ps
+  
+ps utility for PyPPL  
   
 !!! example "function: `exists`"
   
@@ -2044,11 +2572,25 @@ OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.
 		- **returns:**  
 			`self`  
   
+!!! example "function: `killtree`"
+  
+	Kill process and its children  
+  
+!!! example "function: `kill`"
+  
+	Kill a batch of processes  
+  
 !!! example "function: `child`"
   
 	Direct children  
   
+!!! example "function: `children`"
+  
+	Find the children of a mother process  
+  
 # module: pyppl.utils.safefs
+  
+safefs utility for PyPPL  
   
 !!! example "function: `exists`"
   

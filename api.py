@@ -104,7 +104,7 @@ if __name__ == '__main__':
 		'runners.runner_slurm',
 		'runners.runner_ssh',
 		('template', ['asStr', 'Liquid']),
-		('utils', ['Box']),
+		('utils', ['Box', 'Queue']),
 		('utils.box', ['fromkeys']),
 		'utils.cmd',
 		'utils.parallel',
