@@ -2,6 +2,7 @@
 """
 jobmgr module for PyPPL
 """
+import random
 from threading import Lock
 from .utils import Queue, QueueEmpty, threadpool
 from .job import Job
@@ -203,7 +204,7 @@ class Jobmgr(object):
 			
 		failedjobs = [job for job in self.jobs if job.status & 0b1000000]
 		if not failedjobs:
-			failedjobs = [self.jobs[0]]
+			failedjobs = [random.choice(self.jobs)]
 		failedjobs[0].showError(len(failedjobs))
 
 		if ex and not isinstance(ex, (JobFailException, JobBuildingException, JobSubmissionException, KeyboardInterrupt)):

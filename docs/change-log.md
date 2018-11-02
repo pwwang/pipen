@@ -1,4 +1,11 @@
 # Change log
+## 1.3.0 (Nov. 2, 2018)
+- Use threading instead of multiprocess to save resources and rewrite queue system
+- Change `cclean` to `acache` (after cache)
+- Change `nthread` to `nsub` (# threads used to submit jobs)
+- Remove `six` dependency
+- Cleanup pipeline when halt (Ctrl-c hit or error encountered while `errhow = halt`)
+
 ## 1.2.0 (Sept. 28, 2018)
 - Use `liquidpy` as default template engine (see how to migrate in FAQ).
 - Fix other bugs.
