@@ -8,22 +8,22 @@ from .box import Box
 
 try:
 	from Queue import Queue, Empty as QueueEmpty
-except ImportError:
+except ImportError: # pragma: no cover
 	from queue import Queue, Empty as QueueEmpty
 
 try: # python2
 	import cPickle as pickle
-except ImportError: # python3
+except ImportError: # pragma: no cover
 	import pickle
 
 try:
 	string_types = basestring
-except NameError:
+except NameError: # pragma: no cover
 	string_types = str
 
 try:
 	from ConfigParser import ConfigParser
-except ImportError:
+except ImportError: # pragma: no cover
 	from configparser import ConfigParser
 
 ftools = Box()
@@ -32,14 +32,14 @@ try:
 	ftools.reduce = reduce
 	ftools.map    = map
 	ftools.filter = filter
-except ImportError:
+except ImportError: # pragma: no cover
 	ftools.reduce = reduce
 	ftools.map    = map
 	ftools.filter = filter
 
 try:
 	ftools.range = xrange
-except NameError:
+except NameError: # pragma: no cover
 	ftools.range = range
 
 def varname (maxline = 20, incldot = False):

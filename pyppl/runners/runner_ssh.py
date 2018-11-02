@@ -3,19 +3,18 @@ The ssh runner
 """
 import sys
 from os import path, getcwd
-from multiprocessing import Array
 from subprocess import list2cmdline
+from threading import Lock
 from .runner import Runner
 from ..utils import cmd, ps
 from ..exception import RunnerSshError
-
-MAX_SERVERS = 255
 
 class RunnerSsh(Runner):
 	"""
 	The ssh runner
 	"""
-	LIVE_SERVERS = Array('i', [-1] * MAX_SERVERS)
+	LIVE_SERVERS = []
+	LOCK         = Lock()
 	
 	@staticmethod
 	def isServerAlive(server, key = None):
@@ -57,22 +56,20 @@ class RunnerSsh(Runner):
 		if not servers:
 			raise RunnerSshError('No server found for ssh runner.')
 
-		with RunnerSsh.LIVE_SERVERS.get_lock():
-			if sum(RunnerSsh.LIVE_SERVERS) == -MAX_SERVERS:
+		with RunnerSsh.LOCK:
+			if not RunnerSsh.LIVE_SERVERS:
 				if checkAlive:
-					liveservs = [
+					RunnerSsh.LIVE_SERVERS = [
 						i for i, server in enumerate(servers)
 						if RunnerSsh.isServerAlive(server, keys[i] if keys else None)
 					]
 				else:
-					liveservs = range(len(servers))
-				for idx, servid in enumerate(liveservs):
-					RunnerSsh.LIVE_SERVERS[idx] = servid
+					RunnerSsh.LIVE_SERVERS = list(range(len(servers)))
 				
-		if sum(RunnerSsh.LIVE_SERVERS) == -MAX_SERVERS:
+		if not RunnerSsh.LIVE_SERVERS:
 			raise RunnerSshError('No server is alive.')
 
-		sid    = RunnerSsh.LIVE_SERVERS[job.index % list(RunnerSsh.LIVE_SERVERS).index(-1)]
+		sid    = RunnerSsh.LIVE_SERVERS[job.index % len(RunnerSsh.LIVE_SERVERS)]
 		server = servers[sid]
 		key    = keys[sid] if keys else None
 

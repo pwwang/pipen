@@ -2,20 +2,14 @@
 job module for PyPPL
 """
 import json
-import signal
 from os import path, makedirs, utime
 from glob import glob
-from multiprocessing import Value
-from multiprocessing.managers import SyncManager
 from collections import OrderedDict
 from datetime import datetime
 from .logger import logger
 from .utils import cmd, safefs, string_types
 from .utils.box import Box
 from .exception import JobInputParseError, JobOutputParseError
-
-MANAGER = SyncManager()
-MANAGER.start(signal.signal, (signal.SIGINT, signal.SIG_IGN))
 
 class Job(object):
 	"""
@@ -48,13 +42,10 @@ class Job(object):
 	STATUS_KILLED       = 0b1100001
 
 	RC_NOTGENERATE = 99
-	
-	# shared output to attach to process channel
-	OUTPUT = MANAGER.dict()
 
 	def __init__(self, index, config):
 		self.index     = index
-		self.status    = Value('i', Job.STATUS_INITIATED, lock = False)
+		self.status    = Job.STATUS_INITIATED
 		self.config    = config
 		self.dir       = path.abspath(path.join (config['workdir'], str(index + 1)))
 		self.indir     = path.join (self.dir, "input")
@@ -66,7 +57,7 @@ class Job(object):
 		self.cachefile = path.join (self.dir, "job.cache")
 		self.pidfile   = path.join (self.dir, "job.pid")
 		self.logger    = config.get('logger', logger)
-		self.ntry      = Value('i', 0)
+		self.ntry      = 0
 		self.input     = {}
 		# need to pass this to next procs, so have to keep order
 		self.output    = OrderedDict()
@@ -84,20 +75,9 @@ class Job(object):
 			o = Box()
 		)
 		self.data.update(self.config.get('procvars', {}))
-		self._runner = None
-
-	@property
-	def runner(self):
-		"""
-		Get the runner of the job.
-		Because the job is manipulated in different processes, 
-		have to make sure the runner is available.
-		@return:
-			The runner.
-		"""
-		if not self._runner:
-			self._runner = self.config['runner'](self)
-		return self._runner
+		self.runner = None
+		self._rc    = None
+		self._pid   = None
 
 	def showError (self, totalfailed):
 		"""
@@ -243,7 +223,7 @@ class Job(object):
 		Initiate a job, make directory and prepare input, output and script.
 		"""
 		try:
-			self.status.value = Job.STATUS_BUILDING
+			self.status = Job.STATUS_BUILDING
 			if not path.exists(self.dir):
 				makedirs (self.dir)
 			# run may come first before submit
@@ -261,15 +241,16 @@ class Job(object):
 			self._prepScript()
 			# check cache
 			if self.isTrulyCached() or self.isExptCached():
-				self.status.value = Job.STATUS_DONECACHED
+				self.status = Job.STATUS_DONECACHED
 				self.done()
 			else:
-				self.status.value = Job.STATUS_BUILT
+				self.runner = self.config['runner'](self)
+				self.status = Job.STATUS_BUILT
 		except Exception:
 			from traceback import format_exc
 			with open(self.errfile, 'w') as f:
 				f.write(str(format_exc()))
-			self.status.value = Job.STATUS_BUILTFAILED
+			self.status = Job.STATUS_BUILTFAILED
 
 	def _linkInfile(self, orgfile):
 		"""
@@ -454,7 +435,6 @@ class Job(object):
 					raise JobOutputParseError(outdata, 'Absolute path not allowed for output file/dir for key %s' % repr(key))
 				self.output[key]['data'] = path.join(self.outdir, outdata)
 				self.data['o'][key] = path.join(self.outdir, outdata)
-		Job.OUTPUT.update({self.index: self.output})
 
 	def _prepScript (self):
 		"""
@@ -491,6 +471,8 @@ class Job(object):
 		   |
 		   outfile not generated
 		"""
+		if self._rc is not None:
+			return self._rc
 		if not path.exists(self.rcfile):
 			open(self.rcfile, 'w').close()
 			return Job.RC_NOTGENERATE
@@ -502,6 +484,7 @@ class Job(object):
 
 	@rc.setter
 	def rc(self, val):
+		self._rc = val
 		with open(self.rcfile, 'w') as f:
 			f.write(str(val))
 	
@@ -512,6 +495,8 @@ class Job(object):
 		@return:
 			The job id, could be the process id or job id for other platform.
 		"""
+		if self._pid is not None:
+			return self._pid
 		if not path.exists(self.pidfile):
 			return ''
 		with open(self.pidfile, 'r') as f:
@@ -519,6 +504,7 @@ class Job(object):
 	
 	@pid.setter
 	def pid(self, val):
+		self._pid = str(val)
 		with open(self.pidfile, 'w') as f:
 			f.write(str(val))
 
@@ -883,7 +869,7 @@ class Job(object):
 		"""
 		from . import Proc
 		#self.logger.info('Resetting job #%s ...' % self.index, 'debug', 'JOB_RESETTING')
-		retry = self.ntry.value
+		retry = self.ntry
 		retrydir = path.join(self.dir, 'retry.' + str(retry))
 		
 		if retry:
@@ -902,14 +888,13 @@ class Job(object):
 		open(self.errfile, 'w').close()
 		
 		makedirs(self.outdir)
-		if self.index in Job.OUTPUT:
-			for out in Job.OUTPUT[self.index].values():
-				if out['type'] in Proc.OUT_DIRTYPE:
-					makedirs(out['data'])
-				if out['type'] in Proc.OUT_STDOUTTYPE:
-					safefs.SafeFs._link(self.outfile, out['data'])
-				if out['type'] in Proc.OUT_STDERRTYPE:
-					safefs.SafeFs._link(self.errfile, out['data'])
+		for out in self.output.values():
+			if out['type'] in Proc.OUT_DIRTYPE:
+				makedirs(out['data'])
+			if out['type'] in Proc.OUT_STDOUTTYPE:
+				safefs.SafeFs._link(self.outfile, out['data'])
+			if out['type'] in Proc.OUT_STDERRTYPE:
+				safefs.SafeFs._link(self.errfile, out['data'])
 
 	def export (self):
 		"""
@@ -926,15 +911,14 @@ class Job(object):
 		files2ex = []
 		if not self.config['expart'] or (
 			len(self.config['expart']) == 1 and not self.config['expart'][0].render(self.data)):
-			if self.index in Job.OUTPUT:
-				for out in Job.OUTPUT[self.index].values():
-					if out['type'] in Proc.OUT_VARTYPE: continue
-					files2ex.append (out['data'])
+			for out in self.output.values():
+				if out['type'] in Proc.OUT_VARTYPE: continue
+				files2ex.append (out['data'])
 		else:
 			for expart in self.config['expart']:
 				expart = expart.render(self.data)
-				if self.index in Job.OUTPUT and expart in Job.OUTPUT[self.index]:
-					files2ex.append(Job.OUTPUT[self.index][expart]['data'])
+				if expart in self.output:
+					files2ex.append(self.output[expart]['data'])
 				else:
 					files2ex.extend(glob(path.join(self.outdir, expart)))
 		
@@ -973,17 +957,16 @@ class Job(object):
 		"""
 		from . import Proc
 		utime (self.outdir, None)
-		if self.index in Job.OUTPUT:
-			for out in Job.OUTPUT[self.index].values():
-				if out['type'] in Proc.OUT_VARTYPE: continue
-				if not path.exists(out['data']):
-					self.rc = self.rc | 0b100000000
-					self.logger.debug('Outfile not generated: {}'.format(out['data']), extra = {
-						'level2': 'OUTFILE_NOT_EXISTS',
-						'jobidx': self.index,
-						'joblen': self.config['procsize'],
-						'proc'  : self.config['proc']
-					})
+		for out in self.output.values():
+			if out['type'] in Proc.OUT_VARTYPE: continue
+			if not path.exists(out['data']):
+				self.rc = self.rc | 0b100000000
+				self.logger.debug('Outfile not generated: {}'.format(out['data']), extra = {
+					'level2': 'OUTFILE_NOT_EXISTS',
+					'jobidx': self.index,
+					'joblen': self.config['procsize'],
+					'proc'  : self.config['proc']
+				})
 
 		expectCmd = self.config['expect'].render(self.data)
 
@@ -1101,7 +1084,7 @@ class Job(object):
 		"""
 		Submit the job
 		"""
-		self.status.value = Job.STATUS_SUBMITTING
+		self.status = Job.STATUS_SUBMITTING
 		if self.runner.isRunning():
 			self.logger.info('is already running at {pid}, skip submission.'.format(pid = self.pid), extra = {
 				'proc'    : self.config['proc'],
@@ -1110,12 +1093,12 @@ class Job(object):
 				'loglevel': 'submit',
 				'pbar'    : False,
 			})
-			self.status.value = Job.STATUS_RUNNING
+			self.status = Job.STATUS_RUNNING
 		else:
 			self.reset()
 			rs = self.runner.submit()
 			if rs.rc == 0:
-				self.status.value = Job.STATUS_SUBMITTED
+				self.status = Job.STATUS_SUBMITTED
 			else:
 				self.logger.error(
 					'Submission failed (rc = {rc}, cmd = {cmd})'.format(rc = rs.rc, cmd = rs.cmd), 
@@ -1127,21 +1110,21 @@ class Job(object):
 						'proc'    : self.config['proc']
 					}
 				)
-				self.status.value = Job.STATUS_SUBMITFAILED
+				self.status = Job.STATUS_SUBMITFAILED
 
 	def run(self):
 		"""
 		Wait for the job to run
 		"""
-		self.status.value = Job.STATUS_RUNNING
+		self.status = Job.STATUS_RUNNING
 		self.runner.run()
 		if self.succeed():
-			self.status.value = Job.STATUS_DONE
+			self.status = Job.STATUS_DONE
 			self.done()
-		elif self.config['errhow'] != 'retry' or self.ntry.value > self.config['errntry']:
-			self.status.value = Job.STATUS_ENDFAILED
+		elif self.config['errhow'] != 'retry' or self.ntry > self.config['errntry']:
+			self.status = Job.STATUS_ENDFAILED
 		else:
-			self.status.value = Job.STATUS_DONEFAILED
+			self.status = Job.STATUS_DONEFAILED
 
 	def retry(self):
 		"""
@@ -1149,25 +1132,25 @@ class Job(object):
 		@return:
 			`True` if it is else `False`
 		"""
-		if not self.status.value & 0b100 or not self.status.value & 0b1:
+		if not self.status & 0b100 or not self.status & 0b1:
 			return False
 		if self.config['errhow'] == 'halt':
-			self.status.value = Job.STATUS_ENDFAILED
+			self.status = Job.STATUS_ENDFAILED
 			return 'halt'
 		if self.config['errhow'] != 'retry':
-			self.status.value = Job.STATUS_ENDFAILED
+			self.status = Job.STATUS_ENDFAILED
 			return False
-		self.status.value = Job.STATUS_RETRYING
-		self.ntry.value += 1
+		self.status = Job.STATUS_RETRYING
+		self.ntry += 1
 		return True
 
 	def kill(self):
 		"""
 		Kill the job
 		"""
-		self.status.value = Job.STATUS_KILLING
+		self.status = Job.STATUS_KILLING
 		try:
 			self.runner.kill()
 		except Exception:
 			pass
-		self.status.value = Job.STATUS_KILLED
+		self.status = Job.STATUS_KILLED

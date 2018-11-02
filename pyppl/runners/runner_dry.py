@@ -23,15 +23,14 @@ class RunnerDry (Runner):
 		drysrc  = ['#!/usr/bin/env bash']
 		
 		drysrc.append ('')
-		if job.index in Job.OUTPUT:
-			for val in Job.OUTPUT[job.index].values():
-				if val['type'] in Proc.OUT_VARTYPE:
-					continue
-					
-				if val['type'] in Proc.OUT_FILETYPE:
-					drysrc.append("touch '{}'".format(val['data']))
-				elif val['type'] in Proc.OUT_DIRTYPE:
-					drysrc.append("mkdir -p '{}'".format(val['data']))
+		for val in job.output.values():
+			if val['type'] in Proc.OUT_VARTYPE:
+				continue
+				
+			if val['type'] in Proc.OUT_FILETYPE:
+				drysrc.append("touch '{}'".format(val['data']))
+			elif val['type'] in Proc.OUT_DIRTYPE:
+				drysrc.append("mkdir -p '{}'".format(val['data']))
 
 		with open (self.script, 'w') as f:
 			f.write ('\n'.join(drysrc) + '\n')

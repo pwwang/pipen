@@ -6,13 +6,9 @@ import re
 import sys
 import signal
 from copy import copy as pycopy
-from multiprocessing.managers import SyncManager
 from .utils import Box, pickle
 from .exception import LoggerThemeError
 from .template import TemplateLiquid
-
-MANAGER = SyncManager()
-MANAGER.start(signal.signal, (signal.SIGINT, signal.SIG_IGN))
 
 # the entire format
 LOGFMT = "[%(asctime)s%(message)s"
@@ -214,14 +210,6 @@ class PyPPLLogFilter (logging.Filter):
 	"""
 	logging filter by levels (flags)
 	"""
-
-	DEBUGS = MANAGER.dict()
-	LEVELS = []
-
-	@staticmethod
-	def _clearDebug():
-		for key, _ in DEBUG_LINES.items():
-			PyPPLLogFilter.DEBUGS[key] = 0
 	
 	def __init__(self, name='', lvls='normal', lvldiff=None):
 		"""
@@ -233,22 +221,23 @@ class PyPPLLogFilter (logging.Filter):
 		"""
 
 		logging.Filter.__init__(self, name)
-		PyPPLLogFilter.LEVELS[:] = []
+		self.debugs = {key: 0 for key, _ in DEBUG_LINES.items()}
+		self.levels = []
 		
 		if lvls is not None:
 			if not isinstance(lvls, list):
 				if lvls in LEVELS:
-					PyPPLLogFilter.LEVELS += LEVELS[lvls]
+					self.levels += LEVELS[lvls]
 				elif lvls == 'ALL':
-					PyPPLLogFilter.LEVELS += LEVELS['all']
+					self.levels += LEVELS['all']
 				elif lvls:
-					PyPPLLogFilter.LEVELS += [lvls]
+					self.levels += [lvls]
 				elif lvls is False:
 					return
 			else:
-				PyPPLLogFilter.LEVELS += lvls
+				self.levels += lvls
 
-			PyPPLLogFilter.LEVELS += LEVELS_ALWAYS
+			self.levels += LEVELS_ALWAYS
 			
 		lvldiff = lvldiff or []
 		if not isinstance(lvldiff, list):
@@ -256,16 +245,16 @@ class PyPPLLogFilter (logging.Filter):
 		for ld in lvldiff:
 			if ld.startswith('-'):
 				ld = ld[1:].upper()
-				if ld in PyPPLLogFilter.LEVELS: 
-					del PyPPLLogFilter.LEVELS[PyPPLLogFilter.LEVELS.index(ld)]
+				if ld in self.levels: 
+					del self.levels[self.levels.index(ld)]
 			elif ld.startswith('+'):
 				ld = ld[1:].upper()
-				if ld not in PyPPLLogFilter.LEVELS:
-					PyPPLLogFilter.LEVELS.append(ld)
+				if ld not in self.levels:
+					self.levels.append(ld)
 			else:
 				ld = ld.upper()
-				if ld not in PyPPLLogFilter.LEVELS:
-					PyPPLLogFilter.LEVELS.append(ld)
+				if ld not in self.levels:
+					self.levels.append(ld)
 	
 	def filter (self, record):
 		"""
@@ -278,15 +267,15 @@ class PyPPLLogFilter (logging.Filter):
 		level = record.loglevel.upper() if hasattr(record, 'loglevel') else record.levelname
 		if level.startswith('_'):
 			return True
-		if not PyPPLLogFilter.LEVELS:
+		if not self.levels:
 			return False
-		if level in PyPPLLogFilter.LEVELS:
+		if level in self.levels:
 			level2 = record.level2 if hasattr(record, 'level2') else None
 			if not level2 or level2 not in DEBUG_LINES:
 				return True
-			PyPPLLogFilter.DEBUGS[level2] += 1
-			if PyPPLLogFilter.DEBUGS[level2] <= abs(DEBUG_LINES[level2]):
-				if DEBUG_LINES[level2] < 0 and PyPPLLogFilter.DEBUGS[level2] == abs(DEBUG_LINES[level2]):
+			self.debugs[level2] += 1
+			if self.debugs[level2] <= abs(DEBUG_LINES[level2]):
+				if DEBUG_LINES[level2] < 0 and self.debugs[level2] == abs(DEBUG_LINES[level2]):
 					record.msg += "\n...... max={max} ({key}) reached, further information will be ignored.".format(max = abs(DEBUG_LINES[level2]), key = level2)
 				return True
 		return False
@@ -357,7 +346,7 @@ class PyPPLStreamHandler(logging.StreamHandler):
 	To implement the progress bar for JOBONE and SUBMIT logs.
 	"""
 
-	PREVBAR = MANAGER.list([''])
+	#PREVBAR = MANAGER.list([''])
 
 	def __init__(self, stream = None):
 		"""
@@ -368,12 +357,14 @@ class PyPPLStreamHandler(logging.StreamHandler):
 		super(PyPPLStreamHandler, self).__init__(stream)
 		# Attribute 'terminator' defined outside __init__ (attribute-defined-outside-init)
 		self.terminator = "\n"
+		self.prevbar = None
 
 	def _emit(self, record, terminator = "\n", format = True):
 		"""
 		Helper function implementing a python2,3-compatible emit.
 		Allow to add "\n" or "\r" as terminator.
 		"""
+		#terminator = '\n'
 		if sys.version_info.major > 2: # pragma: no cover
 			self.terminator = terminator
 			super(PyPPLStreamHandler, self).emit(record)
@@ -413,7 +404,7 @@ class PyPPLStreamHandler(logging.StreamHandler):
 		try:
 			pbar = record.pbar if hasattr(record, 'pbar') else None
 			if pbar == 'next':
-				if PyPPLStreamHandler.PREVBAR[0]:
+				if self.prevbar:
 					self.stream.write("\n")
 				self._emit(record, "\n")
 			elif pbar is None:
@@ -428,12 +419,12 @@ class PyPPLStreamHandler(logging.StreamHandler):
 						if i == len(msgs) - 1 and m.startswith('...... max='):
 							delattr(rec, 'jobidx')
 						self._emit(rec, "\n")
-				PyPPLStreamHandler.PREVBAR[0] = ''
+				self.prevbar = None
 			elif pbar is True:
 				# pbar, replace previous pbar
-				PyPPLStreamHandler.PREVBAR[0] = pickle.dumps(record)
+				self.prevbar = record
 				self._emit(record, "\r")
-			elif not PyPPLStreamHandler.PREVBAR[0]:
+			elif not self.prevbar:
 				# not pbar and not prev pbar
 				justlen = Jobmgr.PBAR_SIZE + 32
 				if hasattr(record, 'proc'):
@@ -456,12 +447,11 @@ class PyPPLStreamHandler(logging.StreamHandler):
 						self._emit(rec, "\n")
 			else:
 				# not pbar but prev pbar
-				prevbar = pickle.loads(PyPPLStreamHandler.PREVBAR[0])
 				justlen = Jobmgr.PBAR_SIZE + 32
-				if hasattr(prevbar, 'proc'):
-					justlen += len(prevbar.proc) + 2
-				if hasattr(prevbar, 'jobidx'):
-					justlen += len(str(prevbar.joblen)) * 3
+				if hasattr(self.prevbar, 'proc'):
+					justlen += len(self.prevbar.proc) + 2
+				if hasattr(self.prevbar, 'jobidx'):
+					justlen += len(str(self.prevbar.joblen)) * 3
 				justlen = max(justlen, Jobmgr.PBAR_SIZE + 32)
 				if not "\n" in record.msg:
 					record.msg = record.msg.ljust(justlen)
@@ -476,7 +466,7 @@ class PyPPLStreamHandler(logging.StreamHandler):
 						else:
 							rec.msg = m.ljust(justlen)
 						self._emit(rec, "\n")
-				self._emit(prevbar, "\r")
+				self._emit(self.prevbar, "\r")
 		except (KeyboardInterrupt, SystemExit, IOError, EOFError): # pragma: no cover
 			raise
 		except Exception: # pragma: no cover

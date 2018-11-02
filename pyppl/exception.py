@@ -173,3 +173,12 @@ class AggrKeyError(KeyError):
 	"""
 	def __init__(self, key, msg = 'Key error'):
 		super(AggrKeyError, self).__init__(str(msg) + ': ' + repr(key))
+
+class JobFailException(Exception):
+	pass
+
+class JobSubmissionException(Exception):
+	pass
+
+class JobBuildingException(Exception):
+	pass

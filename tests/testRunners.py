@@ -150,7 +150,7 @@ class TestRunner(testly.TestCase):
 		job = createJob(path.join(self.testdir, 'pTestSubmit'))
 		yield job, [
 			sys.executable,
-			runners.runner.__file__,
+			path.realpath(runners.runner.__file__),
 			job.script
 		]
 
@@ -277,12 +277,10 @@ class TestRunnerDry(testly.TestCase):
 
 	def dataProvider_testInit(self):
 		job = createJob(self.testdir)
-		Job.OUTPUT = {
-			0: {
-				'a' : {'type': 'file', 'data': 'a.txt'},
-				'b' : {'type': 'dir' , 'data': 'b.dir'},
-				'c' : {'type': 'var' , 'data': 'c'},
-			}
+		job.output = {
+			'a' : {'type': 'file', 'data': 'a.txt'},
+			'b' : {'type': 'dir' , 'data': 'b.dir'},
+			'c' : {'type': 'var' , 'data': 'c'}
 		}
 		yield job, "#!/usr/bin/env bash\n\ntouch 'a.txt'\nmkdir -p 'b.dir'"
 
@@ -382,7 +380,7 @@ class TestRunnerSsh(testly.TestCase):
 
 	def testInit(self, job, exception = None, msg = None):
 		self.maxDiff = None
-		RunnerSsh.LIVE_SERVERS[:] = [-1] * runners.runner_ssh.MAX_SERVERS
+		RunnerSsh.LIVE_SERVERS = []
 		if exception:
 			self.assertRaisesRegex(exception, msg, RunnerSsh, job)
 		else:
@@ -390,7 +388,7 @@ class TestRunnerSsh(testly.TestCase):
 			servers = job.config['runnerOpts']['sshRunner']['servers']
 			keys = job.config['runnerOpts']['sshRunner']['keys']
 
-			sid = RunnerSsh.LIVE_SERVERS[job.index % list(RunnerSsh.LIVE_SERVERS).index(-1)]
+			sid = RunnerSsh.LIVE_SERVERS[job.index % len(RunnerSsh.LIVE_SERVERS)]
 			server = servers[sid]
 			key = ('-i ' + keys[sid]) if keys[sid] else ''
 			self.assertIsInstance(r, RunnerSsh)
@@ -427,7 +425,7 @@ class TestRunnerSsh(testly.TestCase):
 			path.join(__here__, 'mocks', 'ssh'), 
 			list2cmdline([
 				sys.executable, 
-				runners.runner.__file__ if not runners.runner.__file__.endswith('c') else runners.runner.__file__[:-1], 
+				path.realpath(runners.runner.__file__) if not runners.runner.__file__.endswith('c') else path.realpath(runners.runner.__file__)[:-1], 
 				job0.script + '.ssh'
 			])
 		]
@@ -446,7 +444,7 @@ class TestRunnerSsh(testly.TestCase):
 			path.join(__here__, 'mocks', 'ssh'), 
 			list2cmdline([
 				sys.executable, 
-				runners.runner.__file__ if not runners.runner.__file__.endswith('c') else runners.runner.__file__[:-1], 
+				path.realpath(runners.runner.__file__) if not runners.runner.__file__.endswith('c') else path.realpath(runners.runner.__file__)[:-1], 
 				job1.script + '.ssh'
 			])
 		]
@@ -471,7 +469,7 @@ class TestRunnerSsh(testly.TestCase):
 	
 	def testSubmit(self, job, cmd, rc = 0):
 		RunnerSsh.INTERVAL = .1
-		RunnerSsh.LIVE_SERVERS[:] = [-1] * runners.runner_ssh.MAX_SERVERS
+		RunnerSsh.LIVE_SERVERS = []
 		if job.config['runnerOpts']['sshRunner']['checkAlive'] and not RunnerSsh.isServerAlive('localhost'):
 			self.assertRaises(RunnerSshError, RunnerSsh, job)
 		else:
@@ -499,7 +497,7 @@ class TestRunnerSsh(testly.TestCase):
 	
 	def testKill(self, job):
 		RunnerSsh.INTERVAL = .1
-		RunnerSsh.LIVE_SERVERS[:] = [-1] * runners.runner_ssh.MAX_SERVERS
+		RunnerSsh.LIVE_SERVERS = []
 		r = RunnerSsh(job)
 		r.sshcmd = [path.join(__here__, 'mocks', 'ssh')]
 		self.assertFalse(r.isRunning())

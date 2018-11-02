@@ -71,7 +71,6 @@ class Proc (object):
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect
 			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs
 		"""
-		logger.PyPPLLogFilter._clearDebug()
 		# Don't go through __getattr__ and __setattr__
 		# To get a prop  : proc.echo   --> proc.props['echo']
 		# To get a config: proc.ppldir --> proc.config['ppldir']
@@ -525,17 +524,17 @@ class Proc (object):
 			successjobs = []
 			cachedjobs  = []
 			for job in self.jobs:
-				if job.status.value == Job.STATUS_BUILTFAILED:
+				if job.status == Job.STATUS_BUILTFAILED:
 					bfailedjobs.append(job.index)
-				elif job.status.value == Job.STATUS_SUBMITFAILED:
+				elif job.status == Job.STATUS_SUBMITFAILED:
 					sfailedjobs.append(job.index)
-				elif job.status.value == Job.STATUS_DONE:
+				elif job.status == Job.STATUS_DONE:
 					successjobs.append(job.index)
-				elif job.status.value == Job.STATUS_DONECACHED:
+				elif job.status == Job.STATUS_DONECACHED:
 					cachedjobs.append(job.index)
-				elif job.status.value == Job.STATUS_ENDFAILED:
+				elif job.status == Job.STATUS_ENDFAILED:
 					efailedjobs.append(job.index)
-				#elif job.status.value == Job.STATUS_KILLING or job.status.value == Job.STATUS_KILLED:
+				#elif job.status == Job.STATUS_KILLING or job.status == Job.STATUS_KILLED:
 				#	killedjobs.append(job.index)
 
 			logger.logger.info(
@@ -1076,7 +1075,6 @@ class Proc (object):
 			'tag'       : self.tag,
 			'suffix'    : self.suffix
 		}
-		Job.OUTPUT.clear()
 		for i in range(self.size):
 			self.jobs[i] = Job(i, config)
 
@@ -1151,10 +1149,13 @@ class Proc (object):
 		Jobmgr(self.jobs, {
 			'nsub' : min(self.nsub, self.forks, self.size),
 			'forks': min(self.forks, self.size),
-			'proc' : self.name(False)
+			'proc' : self.name(False),
+			'lock' : self.lock._lock_file
 		})
 
-		if Job.OUTPUT:
-			for jobidx, jobdata in Job.OUTPUT.items():
-				self.props['channel'][jobidx] = tuple(v['data'] for v in jobdata.values())
-			self.channel.attach(*Job.OUTPUT[0].keys())
+		self.props['channel'] = Channel.create([
+			tuple(job.data.o.values())
+			for job in self.jobs
+		])
+		if self.jobs:
+			self.channel.attach(*self.jobs[0].data.o.keys())

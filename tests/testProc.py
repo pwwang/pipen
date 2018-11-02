@@ -1011,7 +1011,7 @@ class TestProc(testly.TestCase):
 		p.props['resume'] = resume
 		for job in p.jobs:
 			job.build()
-			job.status.value = Job.STATUS_DONE if done else Job.STATUS_ENDFAILED
+			job.status = Job.STATUS_DONE if done else Job.STATUS_ENDFAILED
 		if exception:
 			self.assertRaises(exception, p._tidyAfterRun)
 		else:
@@ -1037,6 +1037,7 @@ class TestProc(testly.TestCase):
 		if exception:
 			self.assertRaises(exception, p._tidyBeforeRun)
 		else:
+			p._tidyBeforeRun()
 			self.assertIsNone(p._runJobs())
 		
 	def dataProvider_testRun(self):

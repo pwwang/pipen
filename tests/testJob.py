@@ -55,7 +55,7 @@ class TestJob(testly.TestCase):
 		self.assertEqual(job.index, index)
 		self.assertEqual(job.input, {})
 		self.assertEqual(job.output, {})
-		self.assertEqual(job._runner, None)
+		self.assertEqual(job.runner, None)
 		self.assertEqual(job.data, {
 			'job': {
 				'index'   : job.index,
@@ -73,13 +73,20 @@ class TestJob(testly.TestCase):
 	def dataProvider_testRunner(self):
 		config = {
 			'workdir': path.join(self.testdir, 'pRunner'),
-			'runner' : RunnerLocal
+			'runner' : RunnerLocal,
+			'input'  : {},
+			'output' : {},
+			'cache'  : True,
+			'procsize': 1,
+			'proc': 'pRunner',
+			'script' : TemplateLiquid('')
 		}
 		makedirs(path.join(config['workdir'], '1'))
 		open(path.join(config['workdir'], '1', 'job.script'), 'w').close()
 		yield Job(0, config),
 
 	def testRunner(self, job):
+		job.build()
 		self.assertIsInstance(job.runner, RunnerLocal)
 
 	def dataProvider_testPrepInput(self):
@@ -323,7 +330,6 @@ class TestJob(testly.TestCase):
 
 	def testPrepInput(self, index, config, jobinput, indata, exception = None, msg = None, errmsg = None):
 		self.maxDiff = None
-		logger.PyPPLLogFilter._clearDebug()
 		job = Job(index, config)
 		if path.isdir(job.indir):
 			rmtree(job.indir)
@@ -787,7 +793,7 @@ class TestJob(testly.TestCase):
 		config['output']  = {
 			'a': ('file', TemplateLiquid('whatever.out'))
 		}
-		Job.OUTPUT[0] = {}
+		#Job.OUTPUT[0] = {}
 		job = Job(0, config)
 		outfile = path.join(job.outdir, 'whatever.out')
 		if createOfs:
@@ -841,7 +847,7 @@ class TestJob(testly.TestCase):
 		
 	def testReset(self, job, retry, outfiles = [], outdirs = []):
 
-		job.ntry.value = retry 
+		job.ntry = retry 
 		job.build()
 		helpers.writeFile(job.outfile)
 		helpers.writeFile(job.errfile)
@@ -1110,7 +1116,6 @@ class TestJob(testly.TestCase):
 			
 	def testSignature(self, job, outsig, errs = []):
 		self.maxDiff = None
-		logger.PyPPLLogFilter._clearDebug()
 		with helpers.log2str(levels = 'all') as (out, err):
 			sig = job.signature()
 		self.assertEqual(sig, outsig)
@@ -1721,7 +1726,6 @@ class TestJob(testly.TestCase):
 		
 	def testIsTrulyCached(self, job, ret, errs = []):
 		#helpers.log2sys(levels = 'all')
-		logger.PyPPLLogFilter._clearDebug()
 		with helpers.log2str(levels = 'all') as (out, err):
 			r = job.isTrulyCached()
 		self.assertEqual(r, ret)
@@ -1975,7 +1979,6 @@ class TestJob(testly.TestCase):
 		#endregion
 			
 	def testIsExptCached(self, job, ret, errs = []):
-		logger.PyPPLLogFilter._clearDebug()
 		with helpers.log2str(levels = 'all') as (out, err):
 			r = job.isExptCached()
 		stderr = err.getvalue()
@@ -2015,6 +2018,7 @@ class TestJob(testly.TestCase):
 		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}
 		config['workdir']  = path.join(self.testdir, 'pBuild', 'workdir')
 		config['proc']     = 'pBuild'
+		config['runner']   = RunnerLocal
 		config['procsize'] = 1
 		config['script']   = TemplateLiquid('')
 		config['expect']   = TemplateLiquid('')
@@ -2048,7 +2052,7 @@ class TestJob(testly.TestCase):
 
 	def testBuild(self, job, status, errs = None):
 		job.build()
-		self.assertEqual(job.status.value, status)
+		self.assertEqual(job.status, status)
 		errs = errs or []
 		if errs and path.isfile(job.errfile):
 			stderrs = helpers.readFile(job.errfile)
@@ -2096,12 +2100,12 @@ class TestJob(testly.TestCase):
 		yield job2, Job.STATUS_SUBMITFAILED, ['ERROR', 'pSubmit2: [1/1] Submission failed (rc = 1, cmd = submission failed)']
 
 	def testSubmit(self, job, status, logs = None):
-		Job.OUTPUT[0] = {}
+		#Job.OUTPUT[0] = {}
 		with helpers.log2str(levels = 'all') as (out, err):
 			job.build()
 			job.submit()
 		#print out.getvalue()
-		self.assertEqual(job.status.value, status)
+		self.assertEqual(job.status, status)
 		logs = logs or []
 		for l in logs:
 			self.assertIn(l, err.getvalue())
@@ -2157,10 +2161,10 @@ class TestJob(testly.TestCase):
 		yield job2, Job.STATUS_DONEFAILED
 
 	def testRun(self, job, status):
-		Job.OUTPUT[0] = {}
+		#Job.OUTPUT[0] = {}
 		job.build()
 		job.run()
-		self.assertEqual(job.status.value, status)
+		self.assertEqual(job.status, status)
 
 	def dataProvider_testRetry(self):
 		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}
@@ -2186,14 +2190,14 @@ class TestJob(testly.TestCase):
 		yield job2, 'halt', Job.STATUS_ENDFAILED, Job.STATUS_DONEFAILED
 
 	def testRetry(self, job, ret, status = Job.STATUS_BUILT, status_set = None, ntry = 0):
-		Job.OUTPUT[0] = {}
+		#Job.OUTPUT[0] = {}
 		job.build()
 		if status_set:
-			job.status.value = status_set
+			job.status = status_set
 		r = job.retry()
 		self.assertEqual(r, ret)
-		self.assertEqual(job.ntry.value, ntry)
-		self.assertEqual(job.status.value, status)
+		self.assertEqual(job.ntry, ntry)
+		self.assertEqual(job.status, status)
 
 	def dataProvider_testKill(self):
 		class RunnerLocalNoKill(RunnerLocal):
@@ -2216,7 +2220,7 @@ class TestJob(testly.TestCase):
 		
 	def testKill(self, job):
 		job.kill()
-		self.assertEqual(job.status.value, Job.STATUS_KILLED)
+		self.assertEqual(job.status, Job.STATUS_KILLED)
 	
 if __name__ == '__main__':
 	testly.main(verbosity=2)

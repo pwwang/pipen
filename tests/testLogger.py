@@ -25,13 +25,13 @@ class TestPyPPLLogFilter(testly.TestCase):
 
 	def testInit(self, name, lvls, lvldiff, outlvls):
 		self.maxDiff = None
-		PyPPLLogFilter.LEVELS[:] = []
+		#PyPPLLogFilter.LEVELS[:] = []
 		pf = PyPPLLogFilter(name, lvls, lvldiff)
 		self.assertIsInstance(pf, PyPPLLogFilter)
 		if outlvls is None:
-			self.assertListEqual(list(pf.LEVELS), [])
+			self.assertListEqual(list(pf.levels), [])
 		else:
-			self.assertCountEqual(list(pf.LEVELS),  list(set(outlvls)))
+			self.assertCountEqual(list(pf.levels),  list(set(outlvls)))
 
 	def dataProvider_testFilter(self):
 		r = logging.LogRecord(
@@ -100,7 +100,7 @@ class TestPyPPLStreamHandler(testly.TestCase):
 
 	def testInit(self):
 		handler = PyPPLStreamHandler()
-		self.assertListEqual(list(handler.PREVBAR), [''])
+		self.assertEqual(handler.prevbar, None)
 
 	def dataProvider_test_emit(self):
 		record  = logging.makeLogRecord(dict(
@@ -257,7 +257,7 @@ class TestLogger(testly.TestCase):
 		yield 'ABCDEF', {'pbar': False, 'proc': 'pProc', 'jobidx': 2, 'joblen': 10, 'level2': 'INFILE_RENAMING'}, ['ABCDEF']
 
 	def testExtra(self, msg, extra, outs):
-		PyPPLLogFilter._clearDebug()
+		#PyPPLLogFilter._clearDebug()
 		log = logger.getLogger('all', None, lvldiff = 'DEBUG')
 		with helpers.log2str('all', None, lvldiff = 'DEBUG') as (out, err):
 			log.info(msg, extra = extra)
@@ -265,7 +265,7 @@ class TestLogger(testly.TestCase):
 			self.assertIn(out, err.getvalue())
 
 	def testMulti(self):
-		PyPPLLogFilter._clearDebug()
+		#PyPPLLogFilter._clearDebug()
 		log = logger.getLogger('all', None, lvldiff = 'DEBUG')
 		with helpers.log2str('all', None, lvldiff = 'DEBUG') as (out, err):
 			log.info('ABC', extra = {'level2': 'EXPECT_CHECKING', 'jobidx': 1, 'joblen': 2})
@@ -275,7 +275,7 @@ class TestLogger(testly.TestCase):
 		self.assertNotIn('EFG', err.getvalue())
 
 	def testMulti1(self):
-		PyPPLLogFilter._clearDebug()
+		#PyPPLLogFilter._clearDebug()
 		log = logger.getLogger('all', None, lvldiff = 'DEBUG')
 		with helpers.log2str('all', None, lvldiff = 'DEBUG') as (out, err):
 			log.info('ABC', extra = {'pbar': True, 'jobidx': 1, 'joblen': 2})
@@ -284,16 +284,16 @@ class TestLogger(testly.TestCase):
 		self.assertIn('EFG\n', err.getvalue())
 
 	def testMulti2(self):
-		PyPPLLogFilter._clearDebug()
+		#PyPPLLogFilter._clearDebug()
 		log = logger.getLogger('all', None, lvldiff = 'DEBUG')
 		with helpers.log2str('all', None, lvldiff = 'DEBUG') as (out, err):
 			log.info('ABC', extra = {'pbar': False, 'proc': 'p', 'jobidx': 1, 'joblen': 2})
 			log.info('EFG', extra = {'pbar': 'next', 'jobidx': 1, 'joblen': 2})
-		self.assertIn('INFO] [2/2] ABC\r\n', err.getvalue())
+		self.assertIn('INFO] p: [2/2] ABC', err.getvalue())
 		self.assertIn('EFG\n', err.getvalue())
 
 	def testMulti3(self):
-		PyPPLLogFilter._clearDebug()
+		#PyPPLLogFilter._clearDebug()
 		log = logger.getLogger('all', None, lvldiff = 'DEBUG')
 		with helpers.log2str('all', None, lvldiff = 'DEBUG') as (out, err):
 			log.info('ABC', extra = {'pbar': True, 'proc': 'p', 'jobidx': 1, 'joblen': 2})
@@ -302,7 +302,7 @@ class TestLogger(testly.TestCase):
 		self.assertIn('EFG  ', err.getvalue())
 
 	def testMulti4(self):
-		PyPPLLogFilter._clearDebug()
+		#PyPPLLogFilter._clearDebug()
 		log = logger.getLogger('all', None, lvldiff = 'DEBUG')
 		with helpers.log2str('all', None, lvldiff = 'DEBUG') as (out, err):
 			log.info('ABC', extra = {'pbar': True, 'proc': 'p', 'jobidx': 1, 'joblen': 2})
