@@ -472,7 +472,7 @@ class Proc (object):
 			sigs['depends'] = [p.name(True) + '#' + p._suffix() for p in self.depends]
 
 		signature = json.dumps(sigs, sort_keys = True)
-		logger.logger.debug('Suffix decided by: ' + signature, extra = {'proc': self.name(False)})
+		logger.logger.debug('Suffix decided by: %s', signature, extra = {'proc': self.name(False)})
 		# suffix is only depending on where it comes from (sys.argv[0]) and it's name (id and tag) to avoid too many different workdirs being generated
 		self.props['suffix'] = utils.uid(signature)
 		#self.props['suffix'] = utils.uid(path.realpath(sys.argv[0]) + ':' + self.name(False))
@@ -660,9 +660,9 @@ class Proc (object):
 			self.lock.acquire(timeout = 3)
 		except filelock.Timeout: # pragma: no cover
 			proclock = path.join(self.workdir, 'proc.lock')
-			logger.logger.warning('Another instance of this process is running, waiting ...')
-			logger.logger.warning('If not, remove the process lock file (or hit Ctrl-c) and try again:')
-			logger.logger.warning('- ' + proclock)
+			logger.logger.warning('Another instance of this process is running, waiting ...', extra = {'proc': self.name(False)})
+			logger.logger.warning('If not, remove the process lock file (or hit Ctrl-c) and try again:', extra = {'proc': self.name(False)})
+			logger.logger.warning('- %s', proclock, extra = {'proc': self.name(False)})
 			try:
 				self.lock.acquire()
 			except KeyboardInterrupt:
@@ -744,8 +744,7 @@ class Proc (object):
 				return str(data)
 			elif callable(data):
 				return utils.funcsig(data)
-			else:
-				return data
+			return data
 
 		def pickData(data, splitline = False, forcelist = False):
 			"""Pickle data"""
@@ -1002,7 +1001,7 @@ class Proc (object):
 		script = self.config['script'].strip()
 
 		if not script:
-			logger.logger.warning('No script specified')
+			logger.logger.warning('No script specified', extra = {'proc': self.name(False)})
 
 		if script.startswith ('file:'):
 			tplfile = script[5:].strip()

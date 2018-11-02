@@ -2,9 +2,8 @@
 """
 jobmgr module for PyPPL
 """
-import os
 from threading import Lock
-from .utils import Queue, QueueEmpty, ps, threadpool
+from .utils import Queue, QueueEmpty, threadpool
 from .job import Job
 from .logger import logger
 from .exception import JobFailException, JobSubmissionException, JobBuildingException
@@ -75,6 +74,10 @@ class Jobmgr(object):
 		self.pool.join(cleanup = self.cleanup)
 
 	def worker(self, index):
+		"""
+		Worker for threads, use first `nsub` workers to build and submit jobs,
+		and the rest of them to run (wait for) the jobs.
+		"""
 		if index < self.config['nsub']:
 			self.buildWorker()
 		else:
@@ -172,22 +175,22 @@ class Jobmgr(object):
 		if isinstance(ex, JobBuildingException):
 			self.logger.warning(
 				'Job building failed, quitting pipeline ...',
-				extra = {'pbar': 'next'}
+				extra = {'pbar': 'next', 'proc': self.config['proc']}
 			)
 		elif isinstance(ex, JobSubmissionException):
 			self.logger.warning(
 				'Job submission failed, quitting pipeline ...',
-				extra = {'pbar': 'next'}
+				extra = {'pbar': 'next', 'proc': self.config['proc']}
 			)
 		elif isinstance(ex, JobFailException):
 			self.logger.warning(
 				'Error encountered (errhow = halt), quitting pipeline ...',
-				extra = {'pbar': 'next'}
+				extra = {'pbar': 'next', 'proc': self.config['proc']}
 			)
 		elif isinstance(ex, KeyboardInterrupt):
 			self.logger.warning(
 				'Ctrl-C detected, quitting pipeline ...'.ljust(Jobmgr.PBAR_SIZE + 50), 
-				extra = {'pbar': 'next'}
+				extra = {'pbar': 'next', 'proc': self.config['proc']}
 			)
 
 		runningQ = Queue()
@@ -203,11 +206,16 @@ class Jobmgr(object):
 			failedjobs = [self.jobs[0]]
 		failedjobs[0].showError(len(failedjobs))
 
-		if not isinstance(ex, (JobFailException, JobBuildingException, JobSubmissionException, KeyboardInterrupt)):
+		if ex and not isinstance(ex, (JobFailException, JobBuildingException, JobSubmissionException, KeyboardInterrupt)):
 			raise ex
 		exit(1)
 
 	def killWorker(self, rq):
+		"""
+		The worker to kill the jobs.
+		@params:
+			`rq`: The queue that has running jobs.
+		"""
 		while not rq.empty():
 			i = rq.get()
 			self.killJob(i)

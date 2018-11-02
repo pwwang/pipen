@@ -11,11 +11,6 @@ try:
 except ImportError: # pragma: no cover
 	from queue import Queue, Empty as QueueEmpty
 
-try: # python2
-	import cPickle as pickle
-except ImportError: # pragma: no cover
-	import pickle
-
 try:
 	string_types = basestring
 except NameError: # pragma: no cover
@@ -299,7 +294,7 @@ def briefList(l):
 	@returns:
 		The string to show for the briefed list.
 	"""
-	if len(l) == 0: return "[]"
+	if not l: return "[]"
 	if len(l) == 1: return str(l[0])
 	l       = sorted(l)
 	groups  = [[]]

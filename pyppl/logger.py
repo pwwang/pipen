@@ -4,9 +4,8 @@ A customized logger for pyppl
 import logging
 import re
 import sys
-import signal
 from copy import copy as pycopy
-from .utils import Box, pickle
+from .utils import Box
 from .exception import LoggerThemeError
 from .template import TemplateLiquid
 
@@ -359,7 +358,7 @@ class PyPPLStreamHandler(logging.StreamHandler):
 		self.terminator = "\n"
 		self.prevbar = None
 
-	def _emit(self, record, terminator = "\n", format = True):
+	def _emit(self, record, terminator = "\n"):
 		"""
 		Helper function implementing a python2,3-compatible emit.
 		Allow to add "\n" or "\r" as terminator.

@@ -103,8 +103,8 @@ class Aggr (object):
 
 		if 'depends' not in kwargs or kwargs['depends']:
 			procs = list(self._procs.values())
-			self.starts = [procs[0]] if len(procs) > 0 else []
-			self.ends   = [procs[-1]] if len(procs) > 0 else []
+			self.starts = [procs[0]] if procs else []
+			self.ends   = [procs[-1]] if procs else []
 			for i, proc in enumerate(procs):
 				if i == 0: continue
 				proc.depends = procs[i-1]

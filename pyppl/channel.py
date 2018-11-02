@@ -236,7 +236,7 @@ class Channel (list):
 			The expanded Channel
 		"""
 		ret = Channel.create()
-		if len(self) == 0: return ret
+		if not self: return ret
 		
 		for row in self:
 			row    = list(row)
@@ -257,7 +257,7 @@ class Channel (list):
 		@returns:
 			The collapsed Channel
 		"""
-		if len(self) == 0:
+		if not self:
 			raise ValueError('Cannot collapse an empty Channel.')
 			
 		paths = self.colAt(col).flatten()

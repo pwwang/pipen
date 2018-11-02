@@ -72,8 +72,7 @@ def _Rlist(x, ignoreintkey = True):
 	assert isinstance(x, (list, tuple, set, dict))
 	if isinstance(x, dict):
 		return _R(x, ignoreintkey)
-	else:
-		return 'as.list({})'.format(_R(x, ignoreintkey))
+	return 'as.list({})'.format(_R(x, ignoreintkey))
 
 class Template(object):
 	"""

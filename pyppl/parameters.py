@@ -655,7 +655,7 @@ class Parameters (object):
 						value = list(value)
 					except TypeError:
 						value = [value]
-				subtype = ':' in t and t.split(':')[1] or 'auto'
+				subtype = t.split(':')[1] if ':' in t else 'auto'
 				if subtype == 'one':
 					return [value]
 				return [Parameters._coerceValue(x, subtype) for x in value]
@@ -708,7 +708,7 @@ class Parameters (object):
 		@returns:
 			A `Box`/`dict` object containing all option names and values.
 		"""
-		args = args is None and sys.argv[1:] or args
+		args = sys.argv[1:] if args is None else args
 
 		if self._shouldPrintHelp(args) and not arbi:
 			self.help(printNexit = True)
@@ -983,7 +983,7 @@ class Commands(object):
 
 	def __setattr__(self, name, value):
 		if name.startswith('__') or name.startswith('_Commands'): # pragma: no cover
-			return super(Commands, self).__setattr__(name, value)
+			super(Commands, self).__setattr__(name, value)
 		elif name == '_desc':
 			self._setDesc(value)
 		elif name == '_theme':
@@ -1016,7 +1016,7 @@ class Commands(object):
 		@returns:
 			A `tuple` with first element the subcommand and second the parameters being parsed.
 		"""
-		args = args is None and sys.argv[1:] or args
+		args = sys.argv[1:] if args is None else args
 		if arbi:
 			if not args:
 				return '', Box()

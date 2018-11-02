@@ -111,16 +111,15 @@ class SafeFs(object):
 					return SafeFs.FILETYPE_FILELINK
 				elif path.isdir(filepath):
 					return SafeFs.FILETYPE_DIRLINK
-				elif not path.exists(filepath):
-					return SafeFs.FILETYPE_NOENTLINK
+				#elif not path.exists(filepath):
+				return SafeFs.FILETYPE_NOENTLINK
 			elif not path.exists(filepath):
 				return SafeFs.FILETYPE_NOENT
 			elif path.isfile(filepath):
 				return SafeFs.FILETYPE_FILE
 			elif path.isdir(filepath):
 				return SafeFs.FILETYPE_DIR
-			else:
-				return SafeFs.FILETYPE_UNKNOWN
+			return SafeFs.FILETYPE_UNKNOWN
 		except Exception:
 			return SafeFs.FILETYPE_UNKNOWN
 
@@ -150,8 +149,7 @@ class SafeFs(object):
 		if file1 == file2:
 			if SafeFs._exists(file1, filetype1):
 				return SafeFs.FILES_SAME_STRENT
-			else:
-				return SafeFs.FILES_SAME_STRNOENT
+			return SafeFs.FILES_SAME_STRNOENT
 		else:
 			if not SafeFs._exists(file1, filetype1) and not SafeFs._exists(file2, filetype2):
 				return SafeFs.FILES_DIFF_BOTHNOENT
@@ -169,12 +167,10 @@ class SafeFs(object):
 						return SafeFs.FILES_SAME_BOTHLINKS2
 					elif file2 == readlink(file1):
 						return SafeFs.FILES_SAME_BOTHLINKS1
-					else:
-						return SafeFs.FILES_SAME_BOTHLINKS
+					return SafeFs.FILES_SAME_BOTHLINKS
 				elif filetype2 in [SafeFs.FILETYPE_FILELINK, SafeFs.FILETYPE_DIRLINK]:
 					return SafeFs.FILES_SAME_REAL1
-				else:
-					return SafeFs.FILES_SAME_REAL2
+				return SafeFs.FILES_SAME_REAL2
 
 	@staticmethod
 	def _remove(filepath, filetype = None):

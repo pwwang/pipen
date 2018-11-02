@@ -2,7 +2,6 @@
 Dry runner for PyPPL
 """
 from .runner import Runner
-from ..job import Job
 from ..proc import Proc
 
 class RunnerDry (Runner):

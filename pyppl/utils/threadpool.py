@@ -22,6 +22,9 @@ class ThreadEx(Thread):
 			self.ex = type(ex)(format_exc())
 
 class ThreadPool(object):
+	"""
+	A thread manager for ThreadEx.
+	"""
 
 	def __init__(self, nthread, initializer = None, initargs = None):
 		self.threads = []
@@ -33,6 +36,12 @@ class ThreadPool(object):
 			self.threads.append(thread)
 
 	def join(self, interval = .1, cleanup = None):
+		"""
+		Try to join the threads, able to respond to KeyboardInterrupt
+		@params:
+			`interval`: The interval/timeout to join every time.
+			`cleanup` : The cleanup function
+		"""
 		try:
 			while any(thread.isAlive() for thread in self.threads):
 				for thread in self.threads:
@@ -43,4 +52,5 @@ class ThreadPool(object):
 							raise thread.ex
 					thread.join(timeout = interval)
 		except KeyboardInterrupt as ex:
-			callable(cleanup) and cleanup(ex = ex)
+			if callable(cleanup):
+				cleanup(ex = ex)

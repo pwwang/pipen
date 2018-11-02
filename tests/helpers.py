@@ -3,7 +3,7 @@ from os import path, makedirs, symlink, remove
 # just in case that package not installed in sys.path
 sys.path.insert(0, path.join(
 	path.dirname(path.dirname(path.dirname(path.realpath(__file__)))),
-	'PyPPL2'
+	'PyPPL'
 ))
 
 import tempfile, inspect, shutil
