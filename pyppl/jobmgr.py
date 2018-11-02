@@ -22,7 +22,7 @@ class Jobmgr(object):
 		Job.STATUS_SUBMITTED   : '-',
 		Job.STATUS_SUBMITFAILED: '*',
 		Job.STATUS_RUNNING     : '>',
-		Job.STATUS_RETRYING    : '>',
+		Job.STATUS_RETRYING    : '-',
 		Job.STATUS_DONE        : '=',
 		Job.STATUS_DONECACHED  : 'z',
 		Job.STATUS_DONEFAILED  : 'x',

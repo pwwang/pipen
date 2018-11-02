@@ -766,53 +766,6 @@ flowchart module for PyPPL
   
 job module for PyPPL  
   
-!!! example "class: `Box`"
-  
-	Allow dot operation for OrderedDict  
-  
-	!!! abstract "method: `__getattr__ (self, name)`"
-  
-	!!! abstract "method: `__setattr__ (self, name, val)`"
-  
-	!!! abstract "method: `fromkeys (cls, iterable, value)`"
-OD.fromkeys(S[, v]) -> New ordered dictionary with keys from S.  
-        If not specified, the value defaults to None.  
-  
-  
-!!! example "class: `SyncManager`"
-  
-    Subclass of `BaseManager` which supports a number of shared object types.  
-  
-    The types registered are those intended for the synchronization  
-    of threads, plus `dict`, `list` and `Namespace`.  
-  
-    The `multiprocessing.Manager()` function creates started instances of  
-    this class.  
-  
-	!!! abstract "method: `BoundedSemaphore (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Condition (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Event (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Namespace (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Pool (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Queue (self, *args, **kwds)`"
-  
-	!!! abstract "method: `RLock (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Semaphore (self, *args, **kwds)`"
-  
-	!!! abstract "method: `dict (self, *args, **kwds)`"
-  
-	!!! abstract "method: `list (self, *args, **kwds)`"
-  
-	!!! abstract "method: `register (cls, typeid, callable, proxytype, exposed, method_to_typeid, create_method)`"
-  
-        Register a typeid with the manager type  
-  
 !!! example "class: `string_types`"
 Type basestring cannot be instantiated; it is the base for str and unicode.  
 	!!! abstract "method: `__new__ ()`"
@@ -918,15 +871,21 @@ jobmgr module for PyPPL
   
 		The build and submit worker  
   
-	!!! abstract "method: `cleanup (self, pid)`"
+	!!! abstract "method: `canSubmit (self)`"
+  
+		Tell if jobs can be submitted.  
+
+		- **return:**  
+			`True` if they can else `False`  
+  
+	!!! abstract "method: `cleanup (self, ex)`"
   
 		Cleanup the pipeline when  
 		- Ctrl-c hit  
 		- error encountered and `proc.errhow` = 'terminate'  
 
 		- **params:**  
-			`pid`: The pid of the process where this is running  
-				- Don't try to kill me.  
+			`ex`: The exception raised by workers  
   
 	!!! abstract "method: `killJob (self, i)`"
   
@@ -934,6 +893,13 @@ jobmgr module for PyPPL
 
 		- **params:**  
 			`i`: The job index  
+  
+	!!! abstract "method: `killWorker (self, rq)`"
+  
+		The worker to kill the jobs.  
+
+		- **params:**  
+			`rq`: The queue that has running jobs.  
   
 	!!! abstract "method: `progressbar (self, jobidx)`"
   
@@ -964,49 +930,17 @@ jobmgr module for PyPPL
 		- **params:**  
 			`i`: The job index  
   
-!!! example "class: `SyncManager`"
+	!!! abstract "method: `worker (self, index)`"
   
-    Subclass of `BaseManager` which supports a number of shared object types.  
+		Worker for threads, use first `nsub` workers to build and submit jobs,  
+		and the rest of them to run (wait for) the jobs.  
   
-    The types registered are those intended for the synchronization  
-    of threads, plus `dict`, `list` and `Namespace`.  
-  
-    The `multiprocessing.Manager()` function creates started instances of  
-    this class.  
-  
-	!!! abstract "method: `BoundedSemaphore (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Condition (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Event (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Namespace (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Pool (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Queue (self, *args, **kwds)`"
-  
-	!!! abstract "method: `RLock (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Semaphore (self, *args, **kwds)`"
-  
-	!!! abstract "method: `dict (self, *args, **kwds)`"
-  
-	!!! abstract "method: `list (self, *args, **kwds)`"
-  
-	!!! abstract "method: `register (cls, typeid, callable, proxytype, exposed, method_to_typeid, create_method)`"
-  
-        Register a typeid with the manager type  
-  
-!!! example "function: `Manager`"
-  
-    Returns a manager associated with a running server process  
-  
-    The managers methods such as `Lock()`, `Condition()` and `Queue()`  
-    can be used to create shared objects.  
-  
-!!! example "class: `QueueEmpty`"
-Exception raised by Queue.get(block=0)/get_nowait().  
+!!! example "class: `JobBuildingException`"
+Raise when a job failed to build  
+!!! example "class: `JobSubmissionException`"
+Raise when a job failed to submit  
+!!! example "class: `JobFailException`"
+Raise when a job failed to run  
 !!! example "class: `Job`"
   
 	PyPPL Job  
@@ -1080,10 +1014,6 @@ Exception raised by Queue.get(block=0)/get_nowait().
 		- **return:**  
 			`True` if succeed else `False`  
   
-!!! example "function: `Pool`"
-  
-    Returns a process pool object  
-  
 # module: pyppl.logger
   
 A customized logger for pyppl  
@@ -1138,40 +1068,6 @@ Shallow copy operation on arbitrary Python objects.
 
 		- **return:**  
 			`True` if the record to be kept else `False`  
-  
-!!! example "class: `SyncManager`"
-  
-    Subclass of `BaseManager` which supports a number of shared object types.  
-  
-    The types registered are those intended for the synchronization  
-    of threads, plus `dict`, `list` and `Namespace`.  
-  
-    The `multiprocessing.Manager()` function creates started instances of  
-    this class.  
-  
-	!!! abstract "method: `BoundedSemaphore (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Condition (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Event (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Namespace (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Pool (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Queue (self, *args, **kwds)`"
-  
-	!!! abstract "method: `RLock (self, *args, **kwds)`"
-  
-	!!! abstract "method: `Semaphore (self, *args, **kwds)`"
-  
-	!!! abstract "method: `dict (self, *args, **kwds)`"
-  
-	!!! abstract "method: `list (self, *args, **kwds)`"
-  
-	!!! abstract "method: `register (cls, typeid, callable, proxytype, exposed, method_to_typeid, create_method)`"
-  
-        Register a typeid with the manager type  
   
 !!! example "class: `PyPPLStreamHandler`"
   
@@ -1711,123 +1607,6 @@ The base runner class
   
 Dry runner for PyPPL  
   
-!!! example "class: `Runner`"
-  
-	The base runner class  
-  
-	!!! abstract "method: `__init__ (self, job)`"
-  
-		Constructor  
-
-		- **params:**  
-			`job`:    The job object  
-  
-	!!! abstract "method: `isRunning (self)`"
-  
-		Try to tell whether the job is still running.  
-
-		- **returns:**  
-			`True` if yes, otherwise `False`  
-  
-	!!! abstract "method: `kill (self)`"
-  
-		Try to kill the running jobs if I am exiting  
-  
-	!!! abstract "method: `run (self)`"
-  
-
-		- **returns:**  
-			True: success/fail  
-			False: needs retry  
-  
-	!!! abstract "method: `submit (self)`"
-  
-		Try to submit the job  
-  
-!!! example "class: `Job`"
-  
-	PyPPL Job  
-  
-	!!! abstract "method: `__init__ (self, index, config)`"
-  
-	!!! abstract "method: `build (self)`"
-  
-		Initiate a job, make directory and prepare input, output and script.  
-  
-	!!! abstract "method: `cache (self)`"
-  
-		Truly cache the job (by signature)  
-  
-	!!! abstract "method: `done (self)`"
-  
-		Do some cleanup when job finished  
-  
-	!!! abstract "method: `export (self)`"
-  
-		Export the output files  
-  
-	!!! abstract "method: `isExptCached (self)`"
-  
-		Prepare to use export files as cached information  
-		True if succeed, otherwise False  
-  
-	!!! abstract "method: `isTrulyCached (self)`"
-  
-		Check whether a job is truly cached (by signature)  
-  
-	!!! abstract "method: `kill (self)`"
-  
-		Kill the job  
-  
-	!!! abstract "method: `report (self)`"
-  
-		Report the job information to logger  
-  
-	!!! abstract "method: `reset (self)`"
-  
-		Clear the intermediate files and output files  
-  
-	!!! abstract "method: `retry (self)`"
-  
-		If the job is available to retry  
-
-		- **return:**  
-			`True` if it is else `False`  
-  
-	!!! abstract "method: `run (self)`"
-  
-		Wait for the job to run  
-  
-	!!! abstract "method: `signature (self)`"
-  
-		Calculate the signature of the job based on the input/output and the script  
-
-		- **returns:**  
-			The signature of the job  
-  
-	!!! abstract "method: `submit (self)`"
-  
-		Submit the job  
-  
-	!!! abstract "method: `succeed (self)`"
-  
-		Tell if a job succeeds.  
-		Check whether output files generated, expectation met and return code met.  
-
-		- **return:**  
-			`True` if succeed else `False`  
-  
-!!! example "class: `RunnerDry`"
-  
-	The dry runner  
-  
-	!!! abstract "method: `__init__ (self, job)`"
-  
-		Constructor  
-
-		- **params:**  
-			`job`:    The job object  
-  
 !!! example "class: `Proc`"
   
 	The Proc class defining a process  
@@ -1910,255 +1689,17 @@ Dry runner for PyPPL
   
 Local runner  
   
-!!! example "class: `Runner`"
-  
-	The base runner class  
-  
-	!!! abstract "method: `__init__ (self, job)`"
-  
-		Constructor  
-
-		- **params:**  
-			`job`:    The job object  
-  
-	!!! abstract "method: `isRunning (self)`"
-  
-		Try to tell whether the job is still running.  
-
-		- **returns:**  
-			`True` if yes, otherwise `False`  
-  
-	!!! abstract "method: `kill (self)`"
-  
-		Try to kill the running jobs if I am exiting  
-  
-	!!! abstract "method: `run (self)`"
-  
-
-		- **returns:**  
-			True: success/fail  
-			False: needs retry  
-  
-	!!! abstract "method: `submit (self)`"
-  
-		Try to submit the job  
-  
-!!! example "class: `RunnerLocal`"
-  
-	Constructor  
-
-	- **params:**  
-		`job`:    The job object  
-		`config`: The properties of the process  
-  
-	!!! abstract "method: `__init__ (self, job)`"
-  
 # module: pyppl.runners.runner_sge
   
 SGE runner for PyPPL  
-  
-!!! example "class: `Runner`"
-  
-	The base runner class  
-  
-	!!! abstract "method: `__init__ (self, job)`"
-  
-		Constructor  
-
-		- **params:**  
-			`job`:    The job object  
-  
-	!!! abstract "method: `isRunning (self)`"
-  
-		Try to tell whether the job is still running.  
-
-		- **returns:**  
-			`True` if yes, otherwise `False`  
-  
-	!!! abstract "method: `kill (self)`"
-  
-		Try to kill the running jobs if I am exiting  
-  
-	!!! abstract "method: `run (self)`"
-  
-
-		- **returns:**  
-			True: success/fail  
-			False: needs retry  
-  
-	!!! abstract "method: `submit (self)`"
-  
-		Try to submit the job  
-  
-!!! example "class: `RunnerSge`"
-  
-	The sge runner  
-  
-	!!! abstract "method: `__init__ (self, job)`"
-  
-		Constructor  
-
-		- **params:**  
-			`job`:    The job object  
-			`config`: The properties of the process  
-  
-	!!! abstract "method: `isRunning (self)`"
-  
-		Tell if the job is alive  
-
-		- **returns:**  
-			`True` if it is else `False`  
-  
-	!!! abstract "method: `kill (self)`"
-  
-		Kill the job  
-  
-	!!! abstract "method: `submit (self)`"
-  
-		Submit the job  
-
-		- **returns:**  
-			The `utils.cmd.Cmd` instance if succeed  
-			else a `Box` object with stderr as the exception and rc as 1  
   
 # module: pyppl.runners.runner_slurm
   
 Slurm runner for PyPPL  
   
-!!! example "class: `Runner`"
-  
-	The base runner class  
-  
-	!!! abstract "method: `__init__ (self, job)`"
-  
-		Constructor  
-
-		- **params:**  
-			`job`:    The job object  
-  
-	!!! abstract "method: `isRunning (self)`"
-  
-		Try to tell whether the job is still running.  
-
-		- **returns:**  
-			`True` if yes, otherwise `False`  
-  
-	!!! abstract "method: `kill (self)`"
-  
-		Try to kill the running jobs if I am exiting  
-  
-	!!! abstract "method: `run (self)`"
-  
-
-		- **returns:**  
-			True: success/fail  
-			False: needs retry  
-  
-	!!! abstract "method: `submit (self)`"
-  
-		Try to submit the job  
-  
-!!! example "class: `RunnerSlurm`"
-  
-	The slurm runner  
-  
-	!!! abstract "method: `__init__ (self, job)`"
-  
-		Constructor  
-
-		- **params:**  
-			`job`:    The job object  
-			`config`: The properties of the process  
-  
-	!!! abstract "method: `isRunning (self)`"
-  
-		Tell if the job is alive  
-
-		- **returns:**  
-			`True` if it is else `False`  
-  
-	!!! abstract "method: `kill (self)`"
-  
-		Kill the job  
-  
-	!!! abstract "method: `submit (self)`"
-  
-		Submit the job  
-
-		- **returns:**  
-			The `utils.cmd.Cmd` instance if succeed  
-			else a `Box` object with stderr as the exception and rc as 1  
-  
 # module: pyppl.runners.runner_ssh
   
 The ssh runner  
-  
-!!! example "class: `RunnerSsh`"
-  
-	The ssh runner  
-  
-	!!! abstract "method: `__init__ (self, job)`"
-  
-		Constructor  
-
-		- **params:**  
-			`job`:    The job object  
-  
-	!!! abstract "method: `isRunning (self)`"
-  
-		Tell if the job is alive  
-
-		- **returns:**  
-			`True` if it is else `False`  
-  
-	!!! abstract "staticmethod: `isServerAlive (server, key)`"
-  
-		Check if an ssh server is alive  
-  
-	!!! abstract "method: `kill (self)`"
-  
-		Kill the job  
-  
-	!!! abstract "method: `submit (self)`"
-  
-		Submit the job  
-
-		- **returns:**  
-			The `utils.cmd.Cmd` instance if succeed  
-			else a `Box` object with stderr as the exception and rc as 1  
-  
-!!! example "class: `Runner`"
-  
-	The base runner class  
-  
-	!!! abstract "method: `__init__ (self, job)`"
-  
-		Constructor  
-
-		- **params:**  
-			`job`:    The job object  
-  
-	!!! abstract "method: `isRunning (self)`"
-  
-		Try to tell whether the job is still running.  
-
-		- **returns:**  
-			`True` if yes, otherwise `False`  
-  
-	!!! abstract "method: `kill (self)`"
-  
-		Try to kill the running jobs if I am exiting  
-  
-	!!! abstract "method: `run (self)`"
-  
-
-		- **returns:**  
-			True: success/fail  
-			False: needs retry  
-  
-	!!! abstract "method: `submit (self)`"
-  
-		Try to submit the job  
   
 # module: pyppl.template
   
@@ -2530,47 +2071,6 @@ ps utility for PyPPL
   
 	Check whether pid exists in the current process table.  
 	From https://github.com/kennethreitz/delegator.py/blob/master/delegator.py  
-  
-!!! example "class: `Cmd`"
-  
-	A command (subprocess) wapper  
-  
-	!!! abstract "method: `__init__ (self, cmd, raiseExc, timeout, **kwargs)`"
-  
-		Constructor  
-
-		- **params:**  
-			`cmd`     : The command, could be a string or a list  
-			`raiseExc`: raise the expcetion or not  
-			`**kwargs`: other arguments for `Popen`  
-  
-	!!! abstract "method: `pipe (self, cmd, **kwargs)`"
-  
-		Pipe another command  
-
-		- **examples:**  
-			```python  
-			c = Command('seq 1 3').pipe('grep 1').run()  
-			c.stdout == '1\n'  
-			```  
-
-		- **params:**  
-			`cmd`: The other command  
-			`**kwargs`: Other arguments for `Popen` for the other command  
-
-		- **returns:**  
-			`Command` instance of the other command  
-  
-	!!! abstract "method: `run (self, bg)`"
-  
-		Wait for the command to run  
-
-		- **params:**  
-			`bg`: Run in background or not. Default: `False`  
-				- If it is `True`, `rc` and `stdout/stderr` will be default (no value retrieved).  
-
-		- **returns:**  
-			`self`  
   
 !!! example "function: `killtree`"
   

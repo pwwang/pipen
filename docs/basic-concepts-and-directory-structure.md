@@ -13,7 +13,7 @@ Actually, what you need to do is just specify the first input channel, and then 
 |-- pipeline.py
 `-- workdir/
 	`-- PyPPL.<id>.<tag>.<suffix>/
-		|-- lock
+		|-- proc.lock
 		|-- proc.settings
 		`-- <job.index>/
 			|-- input/

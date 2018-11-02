@@ -19,7 +19,7 @@
 
 ## Requirements
 - OS: Linux or OSX
-- Python packages: [six][25], [filelock][35], [futures][21] and [liquidpy][17] (suggested: [graphviz][36], [pyyaml][33] and [python-testly][5]).
+- Python packages: [filelock][35], [futures][21] and [liquidpy][17] (suggested: [graphviz][36], [pyyaml][33] and [python-testly][5]).
 
 ## Installation
 ```bash
