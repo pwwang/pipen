@@ -1121,8 +1121,6 @@ class Job(object):
 		if self.succeed():
 			self.status = Job.STATUS_DONE
 			self.done()
-		elif self.config['errhow'] != 'retry' or self.ntry > self.config['errntry']:
-			self.status = Job.STATUS_ENDFAILED
 		else:
 			self.status = Job.STATUS_DONEFAILED
 
@@ -1132,12 +1130,16 @@ class Job(object):
 		@return:
 			`True` if it is else `False`
 		"""
+		# if job is not running or job hasn't failed
 		if not self.status & 0b100 or not self.status & 0b1:
 			return False
 		if self.config['errhow'] == 'halt':
 			self.status = Job.STATUS_ENDFAILED
 			return 'halt'
 		if self.config['errhow'] != 'retry':
+			self.status = Job.STATUS_ENDFAILED
+			return False
+		if self.ntry >= self.config['errntry']:
 			self.status = Job.STATUS_ENDFAILED
 			return False
 		self.status = Job.STATUS_RETRYING

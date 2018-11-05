@@ -2142,7 +2142,7 @@ class TestJob(testly.TestCase):
 		job1 = Job(0, config)
 		makedirs(job1.dir)
 		helpers.writeFile(job1.rcfile, '1')
-		yield job1, Job.STATUS_ENDFAILED
+		yield job1, Job.STATUS_DONEFAILED
 
 		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}
 		config['workdir']  = path.join(self.testdir, 'pRun2', 'workdir')
