@@ -230,7 +230,6 @@ class Jobmgr(object):
 		while not all(maybeBreak) and not self.stop:
 			if not maybeBreak[0]:
 				try:
-					#with Jobmgr.LOCK:
 					if self.canSubmit():
 						i = self.sbmtQ.get_nowait()
 						if i is None:
@@ -260,20 +259,15 @@ class Jobmgr(object):
 		"""
 		while not self.allJobsDone() and not self.stop:
 			try:
-				i = self.runnQ.get(timeout = 1)
-				if i is None:
-					self.runnQ.task_done()
-					break
-				else:
-					self.runJob(i)
-					self.runnQ.task_done()
-
+				i = self.runnQ.get(timeout = .1)
+				self.runJob(i)
+				self.runnQ.task_done()
 			except QueueEmpty:
 				pass
 			except KeyboardInterrupt:
 				break
+		# also terminate the submission queue
 		self.sbmtQ.put(None)
-		self.runnQ.put(None)
 
 	def canSubmit(self):
 		"""
