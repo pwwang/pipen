@@ -17,7 +17,7 @@ class Runner (object):
 	The base runner class
 	"""
 	
-	INTERVAL  = .1
+	INTERVAL  = 1
 	FLUSHLOCK = Lock()
 	
 	def __init__ (self, job):

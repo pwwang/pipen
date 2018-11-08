@@ -35,7 +35,7 @@ class ThreadPool(object):
 			thread.start()
 			self.threads.append(thread)
 
-	def join(self, interval = .1, cleanup = None):
+	def join(self, interval = 1, cleanup = None):
 		"""
 		Try to join the threads, able to respond to KeyboardInterrupt
 		@params:

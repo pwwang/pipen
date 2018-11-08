@@ -454,7 +454,8 @@ class Job(object):
 				self.logger.debug ("Script file updated: %s" % self.script, extra = {
 					'level2': 'SCRIPT_EXISTS',
 					'jobidx': self.index,
-					'joblen': self.config['procsize']
+					'joblen': self.config['procsize'],
+					'proc'  : self.config['proc']
 				})
 		
 		if write:

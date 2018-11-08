@@ -3,6 +3,7 @@
 jobmgr module for PyPPL
 """
 import random
+from time import sleep
 from threading import Lock
 from .utils import Queue, QueueEmpty, threadpool
 from .job import Job
@@ -252,6 +253,9 @@ class Jobmgr(object):
 					pass
 				except KeyboardInterrupt:
 					break
+			else:
+				# save some cpu usage
+				sleep(.1)
 
 	def runWorker(self):
 		"""
