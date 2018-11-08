@@ -1,4 +1,8 @@
 # Change log
+## 1.3.1 (Nov. 8, 2018)
+- Fix pipeline not quitting if retry times reached.
+- Optimize CPU usage.
+
 ## 1.3.0 (Nov. 2, 2018)
 - Use threading instead of multiprocess to save resources and rewrite queue system
 - Change `cclean` to `acache` (after cache)
