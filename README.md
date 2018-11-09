@@ -75,7 +75,7 @@ Sort 5 files simultaneously:
 **Line 7**: Set your script to run.  
 **Line 8**: Set the starting process and run the pipeline.  
 
-![getStarted.svg][20]
+![getStarted.gif][20]
 
 ```shell
 > ls -l ./export
@@ -502,7 +502,7 @@ To generate svg file, you have to have [graphviz][36] installed.
 [17]: https://github.com/pwwang/liquidpy
 [18]: https://raw.githubusercontent.com/pwwang/PyPPL/master/docs/drawFlowchart_pyppl.png
 [19]: https://pwwang.github.io/PyPPL/change-log/
-[20]: https://pwwang.github.io/PyPPL/getStarted.svg
+[20]: https://pwwang.github.io/PyPPL/getStarted.gif
 [21]: https://pypi.org/project/futures/
 [22]: https://img.shields.io/pypi/v/pyppl.svg?style=flat-square
 [23]: https://img.shields.io/github/tag/pwwang/PyPPL.svg?style=flat-square
