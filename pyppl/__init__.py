@@ -279,7 +279,7 @@ class PyPPL (object):
 				ProcTree.getPrevStr(proc), 
 				proc.name(), 
 				ProcTree.getNextStr(proc), 
-				extra = {'loglevel': 'DEPENDS', 'proc': proc.name(False)}
+				extra = {'loglevel': 'DEPENDS', 'proc': proc.id}
 			)
 			proc.run(profile, pycopy.deepcopy(self.config))
 

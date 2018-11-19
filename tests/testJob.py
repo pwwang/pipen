@@ -420,6 +420,7 @@ class TestJob(testly.TestCase):
 		config['input']  = input
 		config['output'] = output
 		config['script'] = script
+		config['proc']   = 'pPrepScript'
 		job = Job(index, config)
 		job._prepInput()
 		job._prepOutput()

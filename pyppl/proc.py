@@ -309,7 +309,7 @@ class Proc (object):
 				name, 
 				', use "{}" instead'.format(
 					Proc.DEPRECATED[name]) if name in Proc.DEPRECATED and Proc.DEPRECATED[name] else '',
-				extra = {'proc': self.name(False)}
+				extra = {'proc': self.id}
 			)
 
 		if name in Proc.ALIAS:
@@ -356,7 +356,7 @@ class Proc (object):
 					  ', '.join(previn.keys()) if isinstance(previn, dict) else previn
 			self.config[name] = {prevkey: value}
 			if isinstance(previn, dict) and len(previn) > 1:
-				logger.logger.warning("Previous input is a dict with multiple keys. Now the key sequence is: %s", prevkey, extra = {'proc': self.name(False)})
+				logger.logger.warning("Previous input is a dict with multiple keys. Now the key sequence is: %s", prevkey, extra = {'proc': self.id})
 		else:
 			self.config[name] = value
 
@@ -472,10 +472,10 @@ class Proc (object):
 			sigs['depends'] = [p.name(True) + '#' + p._suffix() for p in self.depends]
 
 		signature = json.dumps(sigs, sort_keys = True)
-		logger.logger.debug('Suffix decided by: %s', signature, extra = {'proc': self.name(False)})
+		logger.logger.debug('Suffix decided by: %s', signature, extra = {'proc': self.id})
 		# suffix is only depending on where it comes from (sys.argv[0]) and it's name (id and tag) to avoid too many different workdirs being generated
 		self.props['suffix'] = utils.uid(signature)
-		#self.props['suffix'] = utils.uid(path.realpath(sys.argv[0]) + ':' + self.name(False))
+		#self.props['suffix'] = utils.uid(path.realpath(sys.argv[0]) + ':' + self.id)
 		return self.suffix
 
 	# self.resume != 'skip'
@@ -547,15 +547,15 @@ class Proc (object):
 				len(efailedjobs),
 				extra = {
 					'loglevel': 'P.DONE' if len(cachedjobs) < self.size else 'CACHED',
-					'proc'    : self.name(False),
+					'proc'    : self.id,
 					'pbar'    : 'next'
 				})
 
-			logger.logger.debug('Cached           : %s', utils.briefList(cachedjobs), extra = {'proc': self.name(False)})
-			logger.logger.debug('Successful       : %s', utils.briefList(successjobs), extra = {'proc': self.name(False)})
-			logger.logger.debug('Building failed  : %s', utils.briefList(bfailedjobs), extra = {'proc': self.name(False)})
-			logger.logger.debug('Submission failed: %s', utils.briefList(sfailedjobs), extra = {'proc': self.name(False)})
-			logger.logger.debug('Running failed   : %s', utils.briefList(efailedjobs), extra = {'proc': self.name(False)})
+			logger.logger.debug('Cached           : %s', utils.briefList(cachedjobs), extra = {'proc': self.id})
+			logger.logger.debug('Successful       : %s', utils.briefList(successjobs), extra = {'proc': self.id})
+			logger.logger.debug('Building failed  : %s', utils.briefList(bfailedjobs), extra = {'proc': self.id})
+			logger.logger.debug('Submission failed: %s', utils.briefList(sfailedjobs), extra = {'proc': self.id})
+			logger.logger.debug('Running failed   : %s', utils.briefList(efailedjobs), extra = {'proc': self.id})
 
 			donejobs = successjobs + cachedjobs
 			failjobs = bfailedjobs + sfailedjobs + efailedjobs
@@ -563,10 +563,10 @@ class Proc (object):
 
 			if len(donejobs) == self.size or self.errhow == 'ignore':
 				if callable(self.callback):
-					logger.logger.debug('Calling callback ...', extra = {'proc': self.name(False)})
+					logger.logger.debug('Calling callback ...', extra = {'proc': self.id})
 					self.callback (self)
 				if self.errhow == 'ignore':
-					logger.logger.warning('Jobs failed but ignored.', extra = {'proc': self.name(False)})
+					logger.logger.warning('Jobs failed but ignored.', extra = {'proc': self.id})
 					self.jobs[showjob].showError(len(failjobs))
 			else:
 				self.jobs[showjob].showError(len(failjobs))
@@ -647,7 +647,7 @@ class Proc (object):
 			self.props['workdir'] = self.config['workdir']
 		elif not self.props['workdir']:
 			self.props['workdir'] = path.join(self.ppldir, "PyPPL.%s.%s.%s" % (self.id, self.tag, self._suffix()))
-		logger.logger.info(self.workdir, extra = {'proc': self.name(False), 'loglevel': 'WORKDIR'})
+		logger.logger.info(self.workdir, extra = {'proc': self.id, 'loglevel': 'WORKDIR'})
 
 		if not path.exists (self.workdir):
 			if self.resume in ['skip+', 'resume'] and self.cache != 'export':
@@ -660,9 +660,9 @@ class Proc (object):
 			self.lock.acquire(timeout = 3)
 		except filelock.Timeout: # pragma: no cover
 			proclock = path.join(self.workdir, 'proc.lock')
-			logger.logger.warning('Another instance of this process is running, waiting ...', extra = {'proc': self.name(False)})
-			logger.logger.warning('If not, remove the process lock file (or hit Ctrl-c) and try again:', extra = {'proc': self.name(False)})
-			logger.logger.warning('- %s', proclock, extra = {'proc': self.name(False)})
+			logger.logger.warning('Another instance of this process is running, waiting ...', extra = {'proc': self.id})
+			logger.logger.warning('If not, remove the process lock file (or hit Ctrl-c) and try again:', extra = {'proc': self.id})
+			logger.logger.warning('- %s', proclock, extra = {'proc': self.id})
 			try:
 				self.lock.acquire()
 			except KeyboardInterrupt:
@@ -716,7 +716,7 @@ class Proc (object):
 			expart = utils.alwaysList(self.config['expart'])
 			self.props['expart'] = [self.template(e, **self.tplenvs) for e in expart]
 
-			logger.logger.debug('Properties set explictly: %s', self.sets, extra = {'proc': self.name(False)})
+			logger.logger.debug('Properties set explictly: %s', self.sets, extra = {'proc': self.id})
 		except Exception: # pragma: no cover
 			if self.lock.is_locked:
 				self.lock.release()
@@ -806,7 +806,7 @@ class Proc (object):
 				val = self.props[key]
 				f.write(dump(key, val))
 
-		logger.logger.debug('Settings saved to: %s', settingsfile, extra = {'proc': self.name(False)})
+		logger.logger.debug('Settings saved to: %s', settingsfile, extra = {'proc': self.id})
 
 	# self.resume != 'skip'
 	def _buildInput (self):
@@ -945,12 +945,12 @@ class Proc (object):
 		for key in sorted(procargs.keys()):
 			logger.logger.info('%s => %r', key.ljust(maxlen), procargs[key], extra = {
 				'loglevel': 'p.args',
-				'proc': self.name(False)
+				'proc': self.id
 			})
 		for key in sorted(propout.keys()):
 			logger.logger.info('%s => %s', key.ljust(maxlen), propout[key], extra = {
 				'loglevel': 'p.props',
-				'proc': self.name(False)
+				'proc': self.id
 			})
 		self.props['procvars'] = {'proc': procvars, 'args': procargs}
 
@@ -1001,13 +1001,13 @@ class Proc (object):
 		script = self.config['script'].strip()
 
 		if not script:
-			logger.logger.warning('No script specified', extra = {'proc': self.name(False)})
+			logger.logger.warning('No script specified', extra = {'proc': self.id})
 
 		if script.startswith ('file:'):
 			tplfile = script[5:].strip()
 			if not path.exists (tplfile):
 				raise ProcScriptError (tplfile, 'No such template file')
-			logger.logger.debug("Using template file: %s", tplfile, extra = {'proc': self.name(False)})
+			logger.logger.debug("Using template file: %s", tplfile, extra = {'proc': self.id})
 			with open(tplfile) as f:
 				script = f.read().strip()
 		
@@ -1042,7 +1042,7 @@ class Proc (object):
 		"""
 		self.props['channel'] = Channel.create([None] * self.size)
 		if self.size == 0:
-			logger.logger.warning('No data found for jobs, process will be skipped.', extra = {'proc': self.name(False)})
+			logger.logger.warning('No data found for jobs, process will be skipped.', extra = {'proc': self.id})
 			return
 		
 		from . import PyPPL
@@ -1070,7 +1070,7 @@ class Proc (object):
 			'rcs'       : self.rc,
 			'cache'     : self.cache,
 			'dirsig'    : self.dirsig,
-			'proc'      : self.name(False),
+			'proc'      : self.id,
 			'tag'       : self.tag,
 			'suffix'    : self.suffix
 		}
@@ -1130,13 +1130,13 @@ class Proc (object):
 		"""
 		if not self.config[key]: return
 		cmdstr = self.template(self.config[key], **self.tplenvs).render(self.procvars)
-		logger.logger.info('Running <%s> ...', key, extra = {'proc': self.name(False)})
+		logger.logger.info('Running <%s> ...', key, extra = {'proc': self.id})
 
 		c = utils.cmd.run(cmdstr, bg = True, shell = True, executable = '/bin/bash')
 		for line in iter(c.p.stdout.readline, ''):
-			logger.logger.info ('[ CMDOUT] %s', line.rstrip("\n"), extra = {'proc': self.name(False)})
+			logger.logger.info ('[ CMDOUT] %s', line.rstrip("\n"), extra = {'proc': self.id})
 		for line in iter(c.p.stderr.readline, ''):
-			logger.logger.info ('[ CMDERR] %s', line.rstrip("\n"), extra = {'proc': self.name(False)})
+			logger.logger.info ('[ CMDERR] %s', line.rstrip("\n"), extra = {'proc': self.id})
 		c.run()
 		if c.rc != 0:
 			raise ProcRunCmdError(cmdstr, key)
@@ -1148,7 +1148,7 @@ class Proc (object):
 		Jobmgr(self.jobs, {
 			'nsub' : min(self.nsub, self.forks, self.size),
 			'forks': min(self.forks, self.size),
-			'proc' : self.name(False),
+			'proc' : self.id,
 			'lock' : self.lock._lock_file
 		})
 
