@@ -84,7 +84,13 @@ class Job(object):
 		Show the error message if the job failed.
 		"""
 
-		msg = []
+		extra = {
+			'proc'  : self.config['proc'],
+			'jobidx': self.index,
+			'joblen': self.config['procsize'],
+			'pbar'  : False
+		}
+		msg   = []
 		if self.rc == Job.RC_NOTGENERATE:
 			msg.append('Rcfile not generated')
 		if self.rc & 0b100000000:
@@ -97,36 +103,22 @@ class Job(object):
 				total = totalfailed,
 				rc    = self.rc & 0b0011111111,
 				msg   = msg if not msg else '({})'.format(msg)
-			), extra = {
-				'proc'  : self.config['proc'],
-				'jobidx': self.index,
-				'joblen': self.config['procsize'],
-				'pbar'  : False
-			})
+			), extra = extra)
 			return
 
 		self.logger.error('Failed (totally {total}). Return code: {rc} {msg}.'.format(
 			total = totalfailed,
 			rc    = self.rc & 0b0011111111,
 			msg   = msg if not msg else '({})'.format(msg)
-		), extra = {
-			'proc'  : self.config['proc'],
-			'jobidx': self.index,
-			'joblen': self.config['procsize'],
-			'pbar'  : False
-		})
+		), extra = extra)
 		
-		self.logger.error('Script: {}'.format(self.script), extra = {
-			'proc': self.config['proc'], 'jobidx': self.index, 'joblen': self.config['procsize']})
-		self.logger.error('Stdout: {}'.format(self.outfile), extra = {
-			'proc': self.config['proc'], 'jobidx': self.index, 'joblen': self.config['procsize']})
-		self.logger.error('Stderr: {}'.format(self.errfile), extra = {
-			'proc': self.config['proc'], 'jobidx': self.index, 'joblen': self.config['procsize']})
+		self.logger.error('Script: {}'.format(self.script),  extra = extra)
+		self.logger.error('Stdout: {}'.format(self.outfile), extra = extra)
+		self.logger.error('Stderr: {}'.format(self.errfile), extra = extra)
 
 		# errors are not echoed, echo them out
 		if self.index not in self.config['echo']['jobs'] or 'stderr' not in self.config['echo']['type']:
-			self.logger.error('Check STDERR below:', extra = {
-				'proc': self.config['proc'], 'jobidx': self.index, 'joblen': self.config['procsize']})
+			self.logger.error('Check STDERR below:', extra = extra)
 			errmsgs = []
 			if path.exists (self.errfile):
 				with open(self.errfile) as f:
@@ -136,23 +128,13 @@ class Job(object):
 				errmsgs = ['<EMPTY STDERR>']
 
 			for errmsg in errmsgs[-20:] if len(errmsgs) > 20 else errmsgs:
-				self.logger.info(errmsg, extra = {
-					'loglevel': 'stderr',
-					'proc'    : self.config['proc'],
-					'jobidx'  : self.index,
-					'joblen'  : self.config['procsize']
-				})
+				self.logger.info(errmsg, extra = dict(loglevel = 'stderr', **extra))
 
 			if len(errmsgs) > 20:
-				self.logger.info(' ... top {top} line(s) ignored (see all in "{errfile}").'.format(
+				self.logger.info(' ^^^^^^ top {top} line(s) ignored (see all in stderr file).'.format(
 					top     = len(errmsgs) - 20,
 					errfile = self.errfile
-				), extra = {
-					'loglevel': 'stderr',
-					'proc'    : self.config['proc'],
-					'jobidx'  : self.index,
-					'joblen'  : self.config['procsize']
-				})
+				), extra = dict(loglevel = 'stderr', **extra))
 
 	def report (self):
 		"""
@@ -474,8 +456,8 @@ class Job(object):
 		"""
 		if self._rc is not None:
 			return self._rc
-		if not path.exists(self.rcfile):
-			open(self.rcfile, 'w').close()
+		
+		if not path.isfile(self.rcfile):
 			return Job.RC_NOTGENERATE
 		with open(self.rcfile, 'r') as f:
 			r = f.read().strip()
@@ -946,7 +928,8 @@ class Job(object):
 				'joblen'  : self.config['procsize'],
 				'jobidx'  : self.index,
 				'proc'    : self.config['proc'],
-				'loglevel': 'EXPORT'
+				'loglevel': 'EXPORT',
+				'pbar'    : False
 			})
 
 	def succeed(self):

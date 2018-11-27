@@ -156,7 +156,9 @@ class Jobmgr(object):
 
 		pbar += '] Done: {:5.1f}% | Running: {}'.format(
 			100.0 * float(ncompleted) / float(joblen), 
-			str(nrunning).ljust(len(str(joblen))))
+			str(nrunning).ljust(len(str(joblen)))
+		)
+		
 		self.logger.info(pbar, extra = {
 			'loglevel': Jobmgr.PBAR_LEVEL[job.status], 
 			'jobidx'  : jobidx, 
@@ -331,7 +333,7 @@ class Jobmgr(object):
 			`i`: The job index
 		"""
 		job = self.jobs[i]
-		job.status = Job.STATUS_RUNNING
+		#job.status = Job.STATUS_RUNNING
 		self.progressbar(i)
 		job.run()
 		self.progressbar(i)

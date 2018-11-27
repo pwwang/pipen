@@ -167,7 +167,7 @@ class _LocalSubmitter(object):
 			self.errfd.close()
 		# write rc
 		with open(self.rcfile, 'w') as frc:
-			frc.write(str(self.proc.rc))	
+			frc.write(str(self.proc.rc))
 
 if __name__ == '__main__': # pragma: no cover
 	# work as local submitter
