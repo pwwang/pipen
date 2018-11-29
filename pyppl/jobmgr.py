@@ -333,7 +333,7 @@ class Jobmgr(object):
 			`i`: The job index
 		"""
 		job = self.jobs[i]
-		#job.status = Job.STATUS_RUNNING
+		job.status = Job.STATUS_RUNNING
 		self.progressbar(i)
 		job.run()
 		self.progressbar(i)
