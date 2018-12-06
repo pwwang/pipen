@@ -88,7 +88,7 @@ class Job(object):
 			'proc'  : self.config['proc'],
 			'jobidx': self.index,
 			'joblen': self.config['procsize'],
-			'pbar'  : False
+			'pbar'  : None
 		}
 		msg   = []
 		if self.rc == Job.RC_NOTGENERATE:
