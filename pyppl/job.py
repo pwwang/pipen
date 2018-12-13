@@ -131,7 +131,7 @@ class Job(object):
 				self.logger.info(errmsg, extra = dict(loglevel = 'stderr', **extra))
 
 			if len(errmsgs) > 20:
-				self.logger.info(' ^^^^^^ top {top} line(s) ignored (see all in stderr file).'.format(
+				self.logger.info('[ Top {top} line(s) ignored, see all in stderr file. ]'.format(
 					top     = len(errmsgs) - 20,
 					errfile = self.errfile
 				), extra = dict(loglevel = 'stderr', **extra))
@@ -454,7 +454,7 @@ class Job(object):
 		   |
 		   outfile not generated
 		"""
-		if self._rc is not None:
+		if self._rc is not None and self._rc != Job.RC_NOTGENERATE:
 			return self._rc
 		
 		if not path.isfile(self.rcfile):
@@ -478,7 +478,7 @@ class Job(object):
 		@return:
 			The job id, could be the process id or job id for other platform.
 		"""
-		if self._pid is not None:
+		if self._pid:
 			return self._pid
 		if not path.exists(self.pidfile):
 			return ''
@@ -870,10 +870,16 @@ class Job(object):
 		open(self.outfile, 'w').close()
 		open(self.errfile, 'w').close()
 		
-		makedirs(self.outdir)
+		try:
+			makedirs(self.outdir)
+		except OSError:
+			pass
 		for out in self.output.values():
 			if out['type'] in Proc.OUT_DIRTYPE:
-				makedirs(out['data'])
+				try:
+					makedirs(out['data'])
+				except OSError:
+					pass
 			if out['type'] in Proc.OUT_STDOUTTYPE:
 				safefs.SafeFs._link(self.outfile, out['data'])
 			if out['type'] in Proc.OUT_STDERRTYPE:
@@ -1126,8 +1132,10 @@ class Job(object):
 		if self.ntry >= self.config['errntry']:
 			self.status = Job.STATUS_ENDFAILED
 			return False
-		self.status = Job.STATUS_RETRYING
-		self.ntry += 1
+		self.status  = Job.STATUS_RETRYING
+		self.ntry   += 1
+		self.rc      = Job.RC_NOTGENERATE
+		self.pid     = ''
 		return True
 
 	def kill(self):
