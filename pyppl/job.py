@@ -6,6 +6,7 @@ from os import path, makedirs, utime
 from glob import glob
 from collections import OrderedDict
 from datetime import datetime
+from threading import Lock
 from .logger import logger
 from .utils import cmd, safefs, string_types
 from .utils.box import Box
@@ -43,6 +44,8 @@ class Job(object):
 
 	RC_NOTGENERATE = 99
 
+	LOCK = Lock()
+
 	def __init__(self, index, config):
 		self.index     = index
 		self.status    = Job.STATUS_INITIATED
@@ -54,6 +57,10 @@ class Job(object):
 		self.rcfile    = path.join (self.dir, "job.rc")
 		self.outfile   = path.join (self.dir, "job.stdout")
 		self.errfile   = path.join (self.dir, "job.stderr")
+		self.fout      = None
+		self.ferr      = None
+		self.lastout   = None
+		self.lasterr   = None
 		self.cachefile = path.join (self.dir, "job.cache")
 		self.pidfile   = path.join (self.dir, "job.pid")
 		self.logger    = config.get('logger', logger)
@@ -205,7 +212,6 @@ class Job(object):
 		Initiate a job, make directory and prepare input, output and script.
 		"""
 		try:
-			self.status = Job.STATUS_BUILDING
 			if not path.exists(self.dir):
 				makedirs (self.dir)
 			# run may come first before submit
@@ -1074,7 +1080,6 @@ class Job(object):
 		"""
 		Submit the job
 		"""
-		self.status = Job.STATUS_SUBMITTING
 		if self.runner.isRunning():
 			self.logger.info('is already running at {pid}, skip submission.'.format(pid = self.pid), extra = {
 				'proc'    : self.config['proc'],
@@ -1083,7 +1088,7 @@ class Job(object):
 				'loglevel': 'submit',
 				'pbar'    : False,
 			})
-			self.status = Job.STATUS_RUNNING
+			self.status = Job.STATUS_SUBMITTED
 		else:
 			self.reset()
 			rs = self.runner.submit()
@@ -1102,17 +1107,71 @@ class Job(object):
 				)
 				self.status = Job.STATUS_SUBMITFAILED
 
-	def run(self):
+	def poll(self):
 		"""
-		Wait for the job to run
+		Check the status of a running job
 		"""
-		self.status = Job.STATUS_RUNNING
-		self.runner.run()
-		if self.succeed():
-			self.status = Job.STATUS_DONE
-			self.done()
-		else:
-			self.status = Job.STATUS_DONEFAILED
+		if not path.isfile(self.errfile) or not path.isfile(self.outfile):
+			self.status = Job.STATUS_RUNNING
+		elif self.rc != Job.RC_NOTGENERATE:
+			self._flush(end = True)
+			self.status = Job.STATUS_DONE if self.succeed() else Job.STATUS_DONEFAILED
+		else: # running
+			self._flush()
+			self.status = Job.STATUS_RUNNING
+
+	def _flush (self, end = False):
+		"""
+		Flush stdout/stderr
+		@params:
+			`fout`: The stdout file handler
+			`ferr`: The stderr file handler
+			`lastout`: The leftovers of previously readlines of stdout
+			`lasterr`: The leftovers of previously readlines of stderr
+			`end`: Whether this is the last time to flush
+		"""
+		if self.index not in self.config['echo']['jobs']:
+			return
+
+		self.fout = self.fout or open(self.outfile)
+		self.ferr = self.ferr or open(self.errfile)
+		if 'stdout' in self.config['echo']['type']:
+			lines, self.lastout = safefs.SafeFs.flush(self.fout, self.lastout, end)
+			outfilter = self.config['echo']['type']['stdout']
+			
+			for line in lines:
+				if not outfilter or re.search(outfilter, line):
+					with Job.LOCK:
+						sys.stdout.write(line)
+
+		lines, self.lasterr = safefs.SafeFs.flush(self.ferr, self.lasterr, end)		
+		for line in lines:
+			if line.startswith('pyppl.log'):
+				line = line.rstrip('\n')
+				logstrs  = line[9:].lstrip().split(':', 1)
+				if len(logstrs) == 1:
+					logstrs.append('')
+				(loglevel, logmsg) = logstrs
+				
+				loglevel = loglevel[1:] if loglevel else 'log'
+				
+				# '_' makes sure it's not filtered by log levels
+				logger.info(logmsg.lstrip(), extra = {
+					'loglevel': '_' + loglevel,
+					'pbar'    : False,
+					'jobidx'  : self.index,
+					'joblen'  : self.config['procsize'],
+					'proc'    : self.config['proc']
+				})
+			elif 'stderr' in self.config['echo']['type']:
+				errfilter = self.config['echo']['type']['stderr']
+				if not errfilter or re.search(errfilter, line):
+					with Job.LOCK:
+						sys.stderr.write(line)
+		
+		if end:
+			self.fout and self.fout.close()
+			self.ferr and self.ferr.close()
 
 	def retry(self):
 		"""

@@ -66,7 +66,7 @@ class Proc (object):
 		@config:
 			id, input, output, ppldir, forks, cache, acache, rc, echo, runner, script, depends, tag, desc, dirsig
 			exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr
-			callfront, callback, expect, expart, template, tplenvs, resume, nsub
+			callfront, callback, expect, expart, template, tplenvs, resume, nthread
 		@props
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect
 			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs
@@ -195,7 +195,7 @@ class Proc (object):
 		# non-cached job ids
 		self.props['ncjobids']    = []
 		# number of threads used to build jobs and to check job cache status
-		self.config['nsub']       = min(int(cpu_count() / 2), 16)
+		self.config['nthread']       = min(int(cpu_count() / 2), 16)
 
 		self.props['origin']      = self.config['id']
 
@@ -1146,7 +1146,7 @@ class Proc (object):
 		Submit and run the jobs
 		"""
 		Jobmgr(self.jobs, {
-			'nsub' : min(self.nsub, self.forks, self.size),
+			'nthread' : min(self.nthread, self.forks, self.size),
 			'forks': min(self.forks, self.size),
 			'proc' : self.id,
 			'lock' : self.lock._lock_file
