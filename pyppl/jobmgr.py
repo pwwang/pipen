@@ -61,8 +61,9 @@ class Jobmgr(object):
 		for job in self.jobs:
 			queue.put(job.index, where = 'min')
 		
+		self.nslots  = min(queue.batch_len, config['nthread'])
 		ThreadPool(
-			min(queue.batch_len, config['nthread']),
+			self.nslots,
 			initializer = self.worker,
 			initargs = queue
 		).join(cleanup = self.cleanup)
@@ -90,10 +91,13 @@ class Jobmgr(object):
 				pass
 			elif job.status == Job.STATUS_BUILTFAILED:
 				raise JobBuildingException()
-			else: # STATUS_BUILT
+			elif self.nslots <= self.config['forks']: # STATUS_BUILT
+				# if I don't have enought slots
 				# try to submit the jobs as soon as possible
-				queue.put(index, where = 'min')
-		elif job.status == Job.STATUS_BUILT:
+				queue.put(index, where = 'min-1')
+			else: # we have enough threads
+				queue.put(index, where = 'max+1')
+		elif job.status == Job.STATUS_BUILT or job.status == Job.STATUS_RETRYING:
 			# when slots are available
 			if self.canSubmit():
 				self.progressbar(index)
@@ -282,7 +286,7 @@ class Jobmgr(object):
 			`rq`: The queue that has running jobs.
 		"""
 		while not rq.empty():
-			i = rq.get()
+			i = rq.get()[0]
 			job = self.jobs[i]
 			job.status = Job.STATUS_KILLING
 			self.progressbar(i)

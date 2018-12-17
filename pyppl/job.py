@@ -59,8 +59,8 @@ class Job(object):
 		self.errfile   = path.join (self.dir, "job.stderr")
 		self.fout      = None
 		self.ferr      = None
-		self.lastout   = None
-		self.lasterr   = None
+		self.lastout   = ''
+		self.lasterr   = ''
 		self.cachefile = path.join (self.dir, "job.cache")
 		self.pidfile   = path.join (self.dir, "job.pid")
 		self.logger    = config.get('logger', logger)
