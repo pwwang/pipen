@@ -42,9 +42,10 @@ class Job(object):
 	STATUS_KILLING      = 0b1100010
 	STATUS_KILLED       = 0b1100001
 
-	RC_NOTGENERATE = 99
+	RC_NOTGENERATE  = 99
+	RC_SUBMITFAILED = 88
 
-	LOCK = Lock()
+	LOGLOCK = Lock()
 
 	def __init__(self, index, config):
 		self.index     = index
@@ -104,20 +105,32 @@ class Job(object):
 			msg.append('Outfile not generated')
 		if self.rc & 0b1000000000:
 			msg.append('Expectation not met')
+		if self.rc == Job.RC_SUBMITFAILED:
+			msg.append('Submission failed')
 		msg = ', '.join(msg)
 		if self.config['errhow'] == 'ignore':
-			self.logger.warning('Failed but ignored (totally {total}). Return code: {rc} {msg}.'.format(
+			self.logger.warning('Failed but ignored (totally {total}). Return code: {rc}{msg}.'.format(
 				total = totalfailed,
 				rc    = self.rc & 0b0011111111,
-				msg   = msg if not msg else '({})'.format(msg)
-			), extra = extra)
+				msg   = msg if not msg else ' ({})'.format(msg)
+			), extra = dict(
+				proc   = extra['proc'],
+				jobidx = extra['jobidx'],
+				joblen = extra['joblen'],
+				pbar   = False
+			))
 			return
 
-		self.logger.error('Failed (totally {total}). Return code: {rc} {msg}.'.format(
+		self.logger.error('Failed (totally {total}). Return code: {rc}{msg}.'.format(
 			total = totalfailed,
 			rc    = self.rc & 0b0011111111,
-			msg   = msg if not msg else '({})'.format(msg)
-		), extra = extra)
+			msg   = msg if not msg else ' ({})'.format(msg)
+		), extra = dict(
+			proc   = extra['proc'],
+			jobidx = extra['jobidx'],
+			joblen = extra['joblen'],
+			pbar   = False
+		))
 		
 		self.logger.error('Script: {}'.format(self.script),  extra = extra)
 		self.logger.error('Stdout: {}'.format(self.outfile), extra = extra)
@@ -448,7 +461,7 @@ class Job(object):
 		
 		if write:
 			with open (self.script, 'w') as f:
-				f.write (script)
+				f.write(script)
 
 	@property
 	def rc(self):
@@ -545,7 +558,6 @@ class Job(object):
 				oval = osig[k]
 				nval = nsig[k]
 				if nval == oval: continue
-				#with Job.LOGLOCK:
 				self.logger.debug((
 					"Not cached because {key} variable({k}) is different:\n" +
 					"...... - Previous: {prev}\n" +
@@ -567,7 +579,6 @@ class Job(object):
 				nfile, ntime = nsig[k]
 				if nfile == ofile and ntime <= otime: continue
 				if nfile != ofile:
-					#with Job.LOGLOCK:
 					self.logger.debug((
 						"Not cached because {key} file({k}) is different:\n" +
 						"...... - Previous: {prev}\n" + 
@@ -581,7 +592,6 @@ class Job(object):
 					})
 					return False
 				if timekey and ntime > otime:
-					#with Job.LOGLOCK:
 					self.logger.debug((
 						"Not cached because {key} file({k}) is newer: {ofile}\n" +
 						"...... - Previous: {otime} ({transotime})\n" +
@@ -622,7 +632,6 @@ class Job(object):
 						nfile, ntime = nval[i]
 					if nfile == ofile and ntime <= otime: continue
 					if nfile != ofile:
-						#with Job.LOGLOCK:
 						self.logger.debug((
 							"Not cached because file {i} is different for {key} files({k}):\n" +
 							"...... - Previous: {ofile}\n" +
@@ -642,7 +651,6 @@ class Job(object):
 						})
 						return False
 					if timekey and ntime > otime:
-						#with Job.LOGLOCK:
 						self.logger.debug((
 							"Not cached because file {i} is newer for {key} files({k}): {ofile}\n" +
 							"...... - Previous: {otime} ({transotime})\n" +
@@ -1141,7 +1149,7 @@ class Job(object):
 			
 			for line in lines:
 				if not outfilter or re.search(outfilter, line):
-					with Job.LOCK:
+					with Job.LOGLOCK:
 						sys.stdout.write(line)
 
 		lines, self.lasterr = safefs.SafeFs.flush(self.ferr, self.lasterr, end)		
@@ -1166,7 +1174,7 @@ class Job(object):
 			elif 'stderr' in self.config['echo']['type']:
 				errfilter = self.config['echo']['type']['stderr']
 				if not errfilter or re.search(errfilter, line):
-					with Job.LOCK:
+					with Job.LOGLOCK:
 						sys.stderr.write(line)
 		
 		if end:

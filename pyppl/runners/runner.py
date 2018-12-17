@@ -77,13 +77,27 @@ class _LocalSubmitter(object):
 		"""
 		self.outfd = open(self.outfile, 'w')
 		self.errfd = open(self.errfile, 'w')
-		self.proc  = cmd.Cmd(safefs.SafeFs(self.script).chmodX(), stdout = self.outfd, stderr = self.errfd)
-		with open(self.pidfile, 'w') as fpid:
-			fpid.write(str(self.proc.pid))
 		try:
-			self.proc.run()
-		except KeyboardInterrupt: # pragma: no cover
-			self.proc.rc = 1
+			self.proc = cmd.Cmd(safefs.SafeFs(self.script).chmodX(), stdout = self.outfd, stderr = self.errfd)
+			with open(self.pidfile, 'w') as fpid:
+				fpid.write(str(self.proc.pid))
+			try:
+				self.proc.run()
+			except KeyboardInterrupt: # pragma: no cover
+				self.proc.rc = 88
+		except Exception:
+			from traceback import format_exc
+			ex = format_exc()
+			if 'Text file busy' in ex:
+				sleep(.1)
+				self.outfd.close()
+				self.errfd.close()
+				self.submit()
+			else:
+				with open(self.errfile, 'w') as f:
+					f.write(str(ex))
+				self.proc    = lambda: None
+				self.proc.rc = 88
 
 	def quit(self):
 		"""

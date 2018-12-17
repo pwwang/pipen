@@ -1146,7 +1146,7 @@ class Proc (object):
 		Submit and run the jobs
 		"""
 		Jobmgr(self.jobs, {
-			'nthread' : min(self.nthread, self.forks, self.size),
+			'nthread' : self.nthread,
 			'forks': min(self.forks, self.size),
 			'proc' : self.id,
 			'lock' : self.lock._lock_file

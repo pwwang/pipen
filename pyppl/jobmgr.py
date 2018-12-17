@@ -20,7 +20,7 @@ class Jobmgr(object):
 		Job.STATUS_BUILT       : '-',
 		Job.STATUS_BUILTFAILED : '!',
 		Job.STATUS_SUBMITTING  : '-',
-		Job.STATUS_SUBMITTED   : '-',
+		Job.STATUS_SUBMITTED   : '>',
 		Job.STATUS_SUBMITFAILED: '*',
 		Job.STATUS_RUNNING     : '>',
 		Job.STATUS_RETRYING    : '-',
@@ -61,9 +61,8 @@ class Jobmgr(object):
 		for job in self.jobs:
 			queue.put(job.index, where = 'min')
 		
-		self.nslots  = min(queue.batch_len, config['nthread'])
 		ThreadPool(
-			self.nslots,
+			min(queue.batch_len, config['nthread']),
 			initializer = self.worker,
 			initargs = queue
 		).join(cleanup = self.cleanup)
@@ -91,12 +90,13 @@ class Jobmgr(object):
 				pass
 			elif job.status == Job.STATUS_BUILTFAILED:
 				raise JobBuildingException()
-			elif self.nslots <= self.config['forks']: # STATUS_BUILT
-				# if I don't have enought slots
-				# try to submit the jobs as soon as possible
-				queue.put(index, where = 'min-1')
+			#elif self.nslots <= self.config['forks']: # STATUS_BUILT
+			#	# if I don't have enought slots
+			#	# try to submit the jobs as soon as possible
+			#	queue.put(index, where = 'min-1')
 			else: # we have enough threads
-				queue.put(index, where = 'max+1')
+				#queue.put(index, where = 'max+1')
+				queue.put(index, where = 'min-1')
 		elif job.status == Job.STATUS_BUILT or job.status == Job.STATUS_RETRYING:
 			# when slots are available
 			if self.canSubmit():
@@ -107,9 +107,10 @@ class Jobmgr(object):
 				self.progressbar(index)
 				if job.status == Job.STATUS_SUBMITFAILED:
 					raise JobSubmissionException()
-
-			# give it enough time for me or other jobs to run
-			queue.put(index, where = 'max+1')
+				# wait a little bit
+				queue.put(index, where = 'min')
+			else:
+				queue.put(index, where = 'min-1')
 		elif job.status == Job.STATUS_SUBMITTED or job.status == Job.STATUS_RUNNING:
 			oldstatus = job.status
 			if oldstatus == Job.STATUS_RUNNING:
@@ -125,10 +126,10 @@ class Jobmgr(object):
 			if job.status == Job.STATUS_RUNNING:
 				if oldstatus != job.status:
 					self.progressbar(index)
-					queue.put(index, where = 'min')
+					queue.put(index, where = 'min-1')
 				else:
 					# give it enough time to run
-					queue.put(index, where = 'max+1')
+					queue.put(index, where = 'max')
 
 			elif job.status == Job.STATUS_DONEFAILED:
 				if job.retry() == 'halt':
@@ -180,7 +181,7 @@ class Jobmgr(object):
 				jobx += step
 
 		ncompleted = sum(1 for s in status if s & 0b1000000)
-		nrunning   = sum(1 for s in status if s == Job.STATUS_RUNNING)
+		nrunning   = min(self.config['forks'], sum(1 for s in status if s == Job.STATUS_RUNNING or s == Job.STATUS_SUBMITTED))
 
 		job = self.jobs[jobidx]
 		for bj in barjobs:
