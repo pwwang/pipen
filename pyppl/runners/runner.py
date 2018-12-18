@@ -26,7 +26,7 @@ class Runner (object):
 		@params:
 			`job`:    The job object
 		"""
-		self.script  = safefs.SafeFs(job.script).chmodX()
+		self.script  = safefs.SafeFs._chmodX(job.script)
 		self.job     = job
 		self.cmd2run = list2cmdline(self.script)
 
@@ -78,7 +78,7 @@ class _LocalSubmitter(object):
 		self.outfd = open(self.outfile, 'w')
 		self.errfd = open(self.errfile, 'w')
 		try:
-			self.proc = cmd.Cmd(safefs.SafeFs(self.script).chmodX(), stdout = self.outfd, stderr = self.errfd)
+			self.proc = cmd.Cmd(safefs.SafeFs._chmodX(self.script), stdout = self.outfd, stderr = self.errfd)
 			with open(self.pidfile, 'w') as fpid:
 				fpid.write(str(self.proc.pid))
 			try:
@@ -88,7 +88,7 @@ class _LocalSubmitter(object):
 		except Exception:
 			from traceback import format_exc
 			ex = format_exc()
-			if 'Text file busy' in ex:
+			if 'Text file busy' in str(ex):
 				sleep(.1)
 				self.outfd.close()
 				self.errfd.close()

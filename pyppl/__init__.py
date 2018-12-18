@@ -123,7 +123,11 @@ class PyPPL (object):
 			utils.dictUpdate(logconfig, self.config['_log'])
 			del self.config['_log']
 
-		logger.getLogger (logconfig['levels'], logconfig['theme'], logconfig['file'], logconfig['lvldiff'], logconfig['pbar'])
+		logger.getLogger(
+			levels  = logconfig['levels'],
+			theme   = logconfig['theme'],
+			logfile = logconfig['file'],
+			lvldiff = logconfig['lvldiff'])
 		logger.logger.info ('Version: %s', VERSION, extra = {'loglevel': 'pyppl'})
 		logger.logger.info (random.choice(PyPPL.TIPS), extra = {'loglevel': 'tips'})
 

@@ -59,37 +59,22 @@ class ThreadPool(object):
 			if callable(cleanup):
 				cleanup(ex = ex)
 
-class TQueue(PriorityQueue):
+class PQueue(PriorityQueue):
 
-	def __init__(self, maxsize = 0, init_batch_min = 100, init_batch_max = 100, batch_len = None):
+	def __init__(self, maxsize = 0, batch_len = None):
 		if not batch_len:
-			raise ValueError('`batch_len` is required for TQueue.')
+			raise ValueError('`batch_len` is required for PQueue.')
 		PriorityQueue.__init__(self, maxsize)
-		self.batch_min = init_batch_min
-		self.batch_max = init_batch_max
 		self.batch_len = batch_len
 		self.lock      = Lock()
 
-	def _item(self, item, where = 'max+1'):
-		where = where.replace(' ', '')
-		shift = 0
-		place = where[:3]
-		if place not in ['min', 'max']:
-			raise ValueError('Invalid where parameter for TQueue.put')
-		shift = int(where[3:] or 0)
-		placedict = {'min': self.batch_min, 'max': self.batch_max}
-		item2put = self.batch_len * (placedict[place] + shift) + item
-		self.batch_min = min(placedict[place] + shift, self.batch_min)
-		self.batch_max = max(placedict[place] + shift, self.batch_max)
-		return item2put
-
-	def put(self, item, block = True, timeout = None, where = 'max+1'):
+	def put(self, item, block = True, timeout = None, where = 0):
 		with self.lock:
-			PriorityQueue.put(self, self._item(item, where), block, timeout)
+			PriorityQueue.put(self, item + where * self.batch_len, block, timeout)
 	
-	def put_nowait(self, item, where = 'max+1'):
+	def put_nowait(self, item, where = 0):
 		with self.lock:
-			PriorityQueue.put_nowait(self, self._item(item, where))
+			PriorityQueue.put_nowait(self, item + where * self.batch_len)
 
 	def get(self, block = True, timeout = None):
 		item = PriorityQueue.get(self, block, timeout)

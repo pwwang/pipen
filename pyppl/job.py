@@ -230,8 +230,8 @@ class Job(object):
 			# run may come first before submit
 			# preserve the outfile and errfile of previous run
 			# issue #30
-			safefs.move(self.outfile, self.outfile + '.bak')
-			safefs.move(self.errfile, self.errfile + '.bak')
+			safefs.SafeFs._move(self.outfile, self.outfile + '.bak')
+			safefs.SafeFs._move(self.errfile, self.errfile + '.bak')
 			# did in reset
 			#open(self.outfile, 'w').close()
 			#open(self.errfile, 'w').close()
@@ -261,10 +261,12 @@ class Job(object):
 		@returns:
 			The link to the original file.
 		"""
-		basename = safefs.SafeFs.basename (orgfile)
+		basename = path.basename (orgfile)
 		infile   = path.join (self.indir, basename)
-		safefs.link(orgfile, infile, overwrite = False)
-		if safefs.SafeFs(infile, orgfile).samefile():
+		#return infile
+		safefs.SafeFs._link(orgfile, infile, overwrite = False)
+		#if safefs.SafeFs(infile, orgfile).samefile():
+		if path.samefile(infile, orgfile):
 			return infile
 
 		if '.' in basename:
@@ -276,11 +278,12 @@ class Job(object):
 		existInfiles = glob (path.join(self.indir, fn + '[[]*[]]' + ext))
 		if not existInfiles:
 			infile = path.join (self.indir, fn + '[1]' + ext)
-			safefs.link(orgfile, infile, overwrite = False)
+			safefs.SafeFs._link(orgfile, infile, overwrite = False)
 		elif len(existInfiles) < 100:
 			num = 0
 			for eifile in existInfiles:
-				if safefs.SafeFs(eifile, orgfile).samefile():
+				#if safefs.SafeFs(eifile, orgfile).samefile():
+				if path.samefile(eifile, orgfile):
 					num = 0
 					return eifile
 				n   = int(path.basename(eifile)[len(fn)+1 : -len(ext)-1])
@@ -288,14 +291,14 @@ class Job(object):
 
 			if num > 0:
 				infile = path.join (self.indir, fn + '[' + str(num+1) + ']' + ext)
-				safefs.link(orgfile, infile)
+				safefs.SafeFs._link(orgfile, infile)
 		else: # pragma: no cover
 			num = max([
 				int(path.basename(eifile)[len(fn)+1 : -len(ext)-1]) 
 				for eifile in existInfiles
 			])
 			infile = path.join (self.indir, fn + '[' + str(num+1) + ']' + ext)
-			safefs.link(orgfile, infile)
+			safefs.SafeFs._link(orgfile, infile)
 		return infile
 
 	def _prepInput (self):
@@ -303,7 +306,7 @@ class Job(object):
 		Prepare input, create link to input files and set other placeholders
 		"""
 		from . import Proc
-		safefs.remove(self.indir)
+		safefs.SafeFs._remove(self.indir)
 		makedirs(self.indir)
 
 		for key, val in self.config['input'].items():
@@ -322,10 +325,10 @@ class Job(object):
 						raise JobInputParseError(indata, 'File not exists for input type "%s"' % intype)
 
 					indata   = path.abspath(indata)
-					basename = safefs.SafeFs.basename(indata)
+					basename = path.basename(indata)
 					infile   = self._linkInfile(indata)
-					if basename != safefs.SafeFs.basename(infile):
-						self.logger.warning ("Input file renamed: %s -> %s" % (basename, safefs.SafeFs.basename(infile)), extra = {
+					if basename != path.basename(infile):
+						self.logger.warning ("Input file renamed: %s -> %s" % (basename, path.basename(infile)), extra = {
 							'proc'  : self.config['proc'],
 							'joblen': self.config['procsize'],
 							'jobidx': self.index,
@@ -451,7 +454,7 @@ class Job(object):
 				write = False
 			else:
 				# for debug
-				safefs.move(self.script, self.script + '.bak')
+				safefs.SafeFs._move(self.script, self.script + '.bak')
 				self.logger.debug ("Script file updated: %s" % self.script, extra = {
 					'level2': 'SCRIPT_EXISTS',
 					'jobidx': self.index,
@@ -843,7 +846,7 @@ class Job(object):
 				safefs.link(path.realpath(exfile), out['data'])
 
 		# Make sure no need to calculate next time
-		self.cache()
+		#self.cache()
 		self.rc = 0
 		#safefs.move(self.outfile + '.bak', self.outfile)
 		#safefs.move(self.errfile + '.bak', self.errfile)
@@ -870,17 +873,17 @@ class Job(object):
 		retrydir = path.join(self.dir, 'retry.' + str(retry))
 		
 		if retry:
-			safefs.remove(retrydir)
+			safefs.SafeFs._remove(retrydir)
 			makedirs(retrydir)
 		else:
 			for retrydir in glob(path.join(self.dir, 'retry.*')):
-				safefs.remove(retrydir)
+				safefs.SafeFs._remove(retrydir)
 
 		for jobfile in [self.rcfile, self.outfile, self.errfile, self.pidfile, self.outdir]:
 			if retry:
-				safefs.move(jobfile, path.join(retrydir, path.basename(jobfile)))
+				safefs.SafeFs._move(jobfile, path.join(retrydir, path.basename(jobfile)))
 			else:
-				safefs.remove(jobfile)
+				safefs.SafeFs._remove(jobfile)
 		open(self.outfile, 'w').close()
 		open(self.errfile, 'w').close()
 		
@@ -1003,7 +1006,7 @@ class Job(object):
 		"""
 		from . import Proc
 		ret = {}
-		sig = safefs.SafeFs(self.script).filesig()
+		sig = safefs.SafeFs._filesig(self.script)
 		if not sig:
 			self.logger.debug('Empty signature because of script file: %s.' % (self.script), extra = {
 				'level2': 'CACHE_EMPTY_CURRSIG',
@@ -1029,7 +1032,7 @@ class Job(object):
 			if val['type'] in Proc.IN_VARTYPE:
 				ret['i'][Proc.IN_VARTYPE[0]][key] = val['data']
 			elif val['type'] in Proc.IN_FILETYPE:
-				sig = safefs.SafeFs(val['data']).filesig(self.config['dirsig'])
+				sig = safefs.SafeFs._filesig(val['data'], dirsig = self.config['dirsig'])
 				if not sig:
 					self.logger.debug('Empty signature because of input file: %s.' % (val['data']), extra = {
 						'level2': 'CACHE_EMPTY_CURRSIG',
@@ -1043,7 +1046,7 @@ class Job(object):
 			elif val['type'] in Proc.IN_FILESTYPE:
 				ret['i'][Proc.IN_FILESTYPE[0]][key] = []
 				for infile in sorted(val['data']):
-					sig = safefs.SafeFs(infile).filesig(self.config['dirsig'])
+					sig = safefs.SafeFs._filesig(infile, dirsig = self.config['dirsig'])
 					if not sig:
 						self.logger.debug('Empty signature because of one of input files: %s.' % (infile), extra = {
 							'level2': 'CACHE_EMPTY_CURRSIG',
@@ -1059,7 +1062,7 @@ class Job(object):
 			if val['type'] in Proc.OUT_VARTYPE:
 				ret['o'][Proc.OUT_VARTYPE[0]][key] = val['data']
 			elif val['type'] in Proc.OUT_FILETYPE:
-				sig = safefs.SafeFs(val['data']).filesig(self.config['dirsig'])
+				sig = safefs.SafeFs._filesig(val['data'], dirsig = self.config['dirsig'])
 				if not sig:
 					self.logger.debug('Empty signature because of output file: %s.' % (val['data']), extra = {
 						'level2': 'CACHE_EMPTY_CURRSIG',
@@ -1071,7 +1074,7 @@ class Job(object):
 					return ''
 				ret['o'][Proc.OUT_FILETYPE[0]][key] = sig
 			elif val['type'] in Proc.OUT_DIRTYPE:
-				sig = safefs.SafeFs(val['data']).filesig(self.config['dirsig'])
+				sig = safefs.SafeFs._filesig(val['data'], dirsig = self.config['dirsig'])
 				if not sig:
 					self.logger.debug('Empty signature because of output dir: %s.' % (val['data']), extra = {
 						'level2': 'CACHE_EMPTY_CURRSIG',
@@ -1123,7 +1126,11 @@ class Job(object):
 			self.status = Job.STATUS_RUNNING
 		elif self.rc != Job.RC_NOTGENERATE:
 			self._flush(end = True)
-			self.status = Job.STATUS_DONE if self.succeed() else Job.STATUS_DONEFAILED
+			if self.succeed():
+				self.done()
+				self.status = Job.STATUS_DONE
+			else:
+				self.status = Job.STATUS_DONEFAILED
 		else: # running
 			self._flush()
 			self.status = Job.STATUS_RUNNING

@@ -4,7 +4,7 @@ jobmgr module for PyPPL
 """
 import random
 from time import sleep
-from .utils.taskmgr import TQueue, ThreadPool
+from .utils.taskmgr import PQueue, ThreadPool
 from .job import Job
 from .logger import logger
 from .exception import JobFailException, JobSubmissionException, JobBuildingException
@@ -57,12 +57,18 @@ class Jobmgr(object):
 		self.logger  = config.get('logger', logger)
 		self.stop    = False
 
-		queue  = TQueue(batch_len = len(jobs))
+		queue  = PQueue(batch_len = len(jobs))
+		nslots = min(queue.batch_len, config['nthread'])
+
 		for job in self.jobs:
-			queue.put(job.index, where = 'min')
+			# say nslots = 40
+			# where = 0 if job.index = [0, 19]
+			# where = 1 if job.index = [20, 39]
+			# ...
+			queue.put(job.index, where = int(2*job.index/nslots))
 		
 		ThreadPool(
-			min(queue.batch_len, config['nthread']),
+			nslots,
 			initializer = self.worker,
 			initargs = queue
 		).join(cleanup = self.cleanup)
@@ -73,11 +79,11 @@ class Jobmgr(object):
 		and the rest of them to run (wait for) the jobs.
 		"""
 		while not queue.empty() and not self.stop:
-			index = queue.get()
-			self.workon(index[0], queue)
+			self.workon(queue.get(), queue)
 			queue.task_done()
 
 	def workon(self, index, queue):
+		index, batch = index
 		job = self.jobs[index]
 		if job.status == Job.STATUS_INITIATED:
 			self.progressbar(index)
@@ -90,13 +96,8 @@ class Jobmgr(object):
 				pass
 			elif job.status == Job.STATUS_BUILTFAILED:
 				raise JobBuildingException()
-			#elif self.nslots <= self.config['forks']: # STATUS_BUILT
-			#	# if I don't have enought slots
-			#	# try to submit the jobs as soon as possible
-			#	queue.put(index, where = 'min-1')
-			else: # we have enough threads
-				#queue.put(index, where = 'max+1')
-				queue.put(index, where = 'min-1')
+			else: 
+				queue.put(index, where = batch+3)
 		elif job.status == Job.STATUS_BUILT or job.status == Job.STATUS_RETRYING:
 			# when slots are available
 			if self.canSubmit():
@@ -107,10 +108,7 @@ class Jobmgr(object):
 				self.progressbar(index)
 				if job.status == Job.STATUS_SUBMITFAILED:
 					raise JobSubmissionException()
-				# wait a little bit
-				queue.put(index, where = 'min')
-			else:
-				queue.put(index, where = 'min-1')
+			queue.put(index, where = batch+3)
 		elif job.status == Job.STATUS_SUBMITTED or job.status == Job.STATUS_RUNNING:
 			oldstatus = job.status
 			if oldstatus == Job.STATUS_RUNNING:
@@ -126,10 +124,7 @@ class Jobmgr(object):
 			if job.status == Job.STATUS_RUNNING:
 				if oldstatus != job.status:
 					self.progressbar(index)
-					queue.put(index, where = 'min-1')
-				else:
-					# give it enough time to run
-					queue.put(index, where = 'max')
+				queue.put(index, where = batch+3)
 
 			elif job.status == Job.STATUS_DONEFAILED:
 				if job.retry() == 'halt':
@@ -145,7 +140,7 @@ class Jobmgr(object):
 						'proc'    : self.config['proc']
 					})
 					# retry as soon as possible
-					queue.put(index, where = 'min')
+					queue.put(index, where = batch+3)
 				else: # STATUS_ENDFAILED
 					self.progressbar(index)
 			else:
@@ -261,9 +256,9 @@ class Jobmgr(object):
 			job.index for job in self.jobs 
 			if job.status in (Job.STATUS_RUNNING, Job.STATUS_SUBMITTED, Job.STATUS_SUBMITTING)
 		]
-		killQ = TQueue(batch_len = len(self.jobs))
+		killQ = PQueue(batch_len = len(self.jobs))
 		for rjob in rjobs:
-			killQ.put(rjob, where = 'min')
+			killQ.put(rjob)
 
 		ThreadPool(
 			min(len(rjobs), self.config['nthread']), 

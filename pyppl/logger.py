@@ -485,7 +485,7 @@ def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, name='Py
 	@returns:
 		The logger
 	"""
-	logger    = logging.getLogger (name)
+	logger = logging.getLogger (name)
 	for handler in logger.handlers:
 		handler.close()
 	del logger.handlers[:]
@@ -497,8 +497,8 @@ def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, name='Py
 		
 	streamCh  = PyPPLStreamHandler()
 	formatter = PyPPLLogFormatter(theme = theme, secondary = True)
-	filter    = PyPPLLogFilter(name = name, lvls = levels, lvldiff = lvldiff)
-	streamCh.addFilter(filter)
+	filter_   = PyPPLLogFilter(name = name, lvls = levels, lvldiff = lvldiff)
+	streamCh.addFilter(filter_)
 	streamCh.setFormatter(formatter)
 	logger.addHandler (streamCh)
 	
