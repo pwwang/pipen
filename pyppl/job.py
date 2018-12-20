@@ -271,7 +271,7 @@ class Job(object):
 			# check cache
 			if self.isTrulyCached() or self.isExptCached():
 				self.status = Job.STATUS_DONECACHED
-				self.done()
+				self.done(export = self.config['acache'])
 			else:
 				self.runner = self.config['runner'](self)
 				self.status = Job.STATUS_BUILT
@@ -1018,12 +1018,14 @@ class Job(object):
 				self.rc = self.rc | 0b1000000000
 		return self.rc in self.config['rcs']
 
-	def done (self):
+	def done(self, export = True):
 		"""
 		Do some cleanup when job finished
+		@params:
+			`export`: Whether do export
 		"""
-		#if self.succeed():
-		self.export()
+		if export:
+			self.export()
 		self.cache()
 
 	def signature (self):

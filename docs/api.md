@@ -822,9 +822,12 @@ job module for PyPPL
   
 		Truly cache the job (by signature)  
   
-	!!! abstract "method: `done (self)`"
+	!!! abstract "method: `done (self, export)`"
   
 		Do some cleanup when job finished  
+
+		- **params:**  
+			`export`: Whether do export  
   
 	!!! abstract "method: `export (self)`"
   

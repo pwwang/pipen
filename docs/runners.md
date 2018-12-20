@@ -292,21 +292,6 @@ class RunnerMy (Runner):
 
 The base class `Runner` defines the runners where the jobs will immediately run after submission; while `RunnerQueue` defines the runners where the jobs will be put into a queue and wait for its turn to run (for example, clusters).
 
-Before you define your own runner, you may have to write a helper class, which includes following methods:
-
-- `__init__(self, script, cmds = None)` The constructor.
-  - `script`: The real script to run.
-  - `cmds`: Some extra commands, such as `qsub`, `qstat` and `qdel` for sge runner
-- `@property pid(self)`: How to get the job id from job pid file.
-- `@pid.setter pid(self, pid)`: Save job id to job pid file.
-- `submit(self)`: How to submit the job
-- `kill(self)`: How to kill the job
-- `alive(self)`: Tell if a job is alive
-
-See https://github.com/pwwang/PyPPL/blob/master/pyppl/runners/helpers.py .
-
-Then it's easy to write your own runner, just parse the configuration and create a real script to run, and use it to initialize a `helper`.
-
 Example: a delay runner:
 ```python
 class RunnerDelay (Runner):
@@ -327,12 +312,13 @@ class RunnerDelay (Runner):
 		with open (delayfile, 'w') as f:
 			f.write ('\n'.join(delaysrc) + '\n')
 		
-		self.helper = DelayHelper(delayfile)
+		self.script = delayfile
 ```
 
 **Key points in writing your own runner**:
 
-- Write a proper helper class
+- Write a proper `__init__` function
+- Write proper functions (`submit`, `kill` and `isRunning`) to submit, kill a job and tell if a job is running.
 - Compose the right script to run the job (`self.script`) in `__init__`.
 - MAKE SURE you save the identity of the job to `job.pidfile`, rc to `job.rcfile`, stdout to `job.outfile` and `stderr` to `job.errfile`
 

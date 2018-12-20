@@ -2034,6 +2034,7 @@ class TestJob(testly.TestCase):
 		config['workdir']  = path.join(self.testdir, 'pBuild1', 'workdir')
 		config['proc']     = 'pBuild1'
 		config['procsize'] = 1
+		config['acache']   = True
 		config['script']   = TemplateLiquid('')
 		config['expect']   = TemplateLiquid('')
 		config['output']   = {

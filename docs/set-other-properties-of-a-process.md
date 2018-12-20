@@ -20,7 +20,6 @@ Currently we introduced in previous chapters a set of attributes of a process an
 | `ppldir` | The directory to store `<workdir>s` for all processes in this pipeline | `str` | `"./workdir"`|[Link][7]|
 | `workdir` | The work directory of the process | `str` | `"<id>.<tag>.<uid>"`|[Link][7]|
 | `expart` | Partial export | `str`/`list` | | [Link][4] |
-| `brings` | Definition of bring-in files| `str`/`list`||[Link][1]|
 | `template` | The name of the template engine | `str` | `PyPPL` | [Link][8] |
 | `envs` | Environments for the template engine | `dict` |  | [Link][8] |
 | `acache` | Whether do cleanup (output checking/exporting) if a job was cached. | `bool` | `False` | [Link][11] |
@@ -28,7 +27,7 @@ Currently we introduced in previous chapters a set of attributes of a process an
 | `errhow` | What's next if jobs fail | `"terminate"`, `"retry"`, `"ignore"` | `"terminate"`| [Link][12] |
 | `errntry` | If `errhow` is `"retry"`, how many time to re-try? | `int` | 3 | [Link][12] |
 | `expect` | A command to check whether expected results generated | `str` | | [Link][12] |
-| `nsub` | Number of theads used for job construction and submission | `int` | `min(int(cpu_count() / 2), 16)` | - |
+| `nthread` | Number of theads used for job construction and submission | `int` | `min(int(cpu_count() / 2), 16)` | - |
 | `args` | The arguments for the process | `dict` | `{}` | This chapter |
 | `rc` | Valid return codes | `str`/`list`/`int` | `0` | This chapter |
 | `beforeCmd` | The command to run before jobs run | `str` | | This chapter |
