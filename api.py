@@ -107,7 +107,7 @@ if __name__ == '__main__':
 		('utils', ['Box', 'Queue']),
 		('utils.box', ['Box.fromkeys']),
 		('utils.cmd', ['Timeout', 'ResourceWarning']),
-		'utils.parallel',
+		#'utils.parallel',
 		('utils.ps', ['Cmd']),
 		'utils.safefs',
 		('utils.taskmgr', ['Thread$', 'PriorityQueue'])

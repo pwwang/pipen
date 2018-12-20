@@ -128,10 +128,8 @@ class Jobmgr(object):
 				s = job.submit()
 				with Jobmgr.SBMLOCK:
 					job.status = Job.STATUS_SUBMITTED if s else Job.STATUS_SUBMITFAILED
-				# status then could be:
-				# STATUS_SUBMITTED or STATUS_SUBMITFAILED
-				self.progressbar(index)
 				if job.status == Job.STATUS_SUBMITFAILED:
+					self.progressbar(index)
 					raise JobSubmissionException()
 			queue.put(index, where = batch+3)
 		elif job.status == Job.STATUS_SUBMITTED or job.status == Job.STATUS_RUNNING:

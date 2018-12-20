@@ -2015,49 +2015,6 @@ cmd utility for PyPPL
 		- **returns:**  
 			`self`  
   
-# module: pyppl.utils.parallel
-  
-!!! example "function: `run`"
-  
-	A shortcut of `Parallel.run`  
-
-	- **params:**  
-		`func`    : The function to run  
-		`args`    : The arguments for the function, should be a `list` with `tuple`s  
-		`nthread` : Number of jobs to run simultaneously. Default: `1`  
-		`backend` : The backend, either `process` (default) or `thread`  
-		`raiseExc`: Whether raise exception or not. Default: `True`  
-
-	- **returns:**  
-		The merged results from each job.  
-  
-!!! example "class: `Parallel`"
-  
-	A parallel runner  
-  
-	!!! abstract "method: `__init__ (self, nthread, backend, raiseExc)`"
-  
-		Constructor  
-
-		- **params:**  
-			`nthread` : Number of jobs to run simultaneously. Default: `1`  
-			`backend` : The backend, either `process` (default) or `thread`  
-			`raiseExc`: Whether raise exception or not. Default: `True`  
-  
-	!!! abstract "method: `run (self, func, args)`"
-  
-		Run parallel jobs  
-
-		- **params:**  
-			`func`    : The function to run  
-			`args`    : The arguments for the function, should be a `list` with `tuple`s  
-			`nthread` : Number of jobs to run simultaneously. Default: `1`  
-			`backend` : The backend, either `process` (default) or `thread`  
-			`raiseExc`: Whether raise exception or not. Default: `True`  
-
-		- **returns:**  
-			The merged results from each job.  
-  
 # module: pyppl.utils.ps
   
 ps utility for PyPPL  
