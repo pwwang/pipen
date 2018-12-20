@@ -12,6 +12,12 @@ from .exception import JobFailException, JobSubmissionException, JobBuildingExce
 class Jobmgr(object):
 	"""
 	A job manager for PyPPL
+
+	@static variables
+		`PBAR_SIZE`:  The length of the progressbar
+		`PBAR_MARKS`: The marks for different job status
+		`PBAR_LEVEL`: The log levels for different job status
+		`SMBLOCK`   : The lock used to relatively safely to tell whether jobs can be submitted.
 	"""
 	PBAR_SIZE  = 50
 	PBAR_MARKS = {
@@ -52,6 +58,12 @@ class Jobmgr(object):
 	SBMLOCK = Lock()
 
 	def __init__(self, jobs, config):
+		"""
+		Initialize the job manager
+		@params:
+			`jobs`: All the jobs
+			`config`: The configurations for the job manager
+		"""
 		if not jobs:  # no jobs
 			return
 		self.jobs    = jobs
@@ -78,12 +90,20 @@ class Jobmgr(object):
 	def worker(self, queue):
 		"""
 		Worker for the queue
+		@params:
+			`queue`: The priority queue
 		"""
 		while not queue.empty() and not self.stop:
 			self.workon(queue.get(), queue)
 			queue.task_done()
 
 	def workon(self, index, queue):
+		"""
+		Work on a queue item
+		@params:
+			`index`: The job index and batch number, got from the queue
+			`queue`: The priority queue
+		"""
 		index, batch = index
 		job = self.jobs[index]
 		if job.status == Job.STATUS_INITIATED:

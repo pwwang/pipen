@@ -28,6 +28,7 @@ class PyPPL (object):
 		`TIPS`: The tips for users
 		`RUNNERS`: Registered runners
 		`DEFAULT_CFGFILES`: Default configuration file
+		`COUNTER`: The counter for `PyPPL` instance
 	"""
 
 	TIPS = [

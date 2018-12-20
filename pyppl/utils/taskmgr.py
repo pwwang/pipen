@@ -60,8 +60,17 @@ class ThreadPool(object):
 				cleanup(ex = ex)
 
 class PQueue(PriorityQueue):
+	"""
+	A modified PriorityQueue, which allows jobs to be submitted in batch
+	"""
 
 	def __init__(self, maxsize = 0, batch_len = None):
+		"""
+		Initialize the queue
+		@params:
+			`maxsize`  : The maxsize of the queue
+			`batch_len`: What's the length of a batch
+		"""
 		if not batch_len:
 			raise ValueError('`batch_len` is required for PQueue.')
 		PriorityQueue.__init__(self, maxsize)
@@ -69,19 +78,35 @@ class PQueue(PriorityQueue):
 		self.lock      = Lock()
 
 	def put(self, item, block = True, timeout = None, where = 0):
+		"""
+		Put item to the queue, just like `PriorityQueue.put` but with an extra argument
+		@params:
+			`where`: Which batch to put the item
+		"""
 		with self.lock:
 			PriorityQueue.put(self, item + where * self.batch_len, block, timeout)
 	
 	def put_nowait(self, item, where = 0):
+		"""
+		Put item to the queue, just like `PriorityQueue.put_nowait` but with an extra argument
+		@params:
+			`where`: Which batch to put the item
+		"""
 		with self.lock:
 			PriorityQueue.put_nowait(self, item + where * self.batch_len)
 
 	def get(self, block = True, timeout = None):
+		"""
+		Get an item from the queue
+		"""
 		item = PriorityQueue.get(self, block, timeout)
 		ret  = divmod(item, self.batch_len)
 		return (ret[1], ret[0])
 
 	def get_nowait(self):
+		"""
+		Get an item from the queue without waiting
+		"""
 		item = PriorityQueue.get(self)
 		ret  = divmod(item, self.batch_len)
 		return (ret[1], ret[0])

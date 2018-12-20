@@ -17,6 +17,26 @@ from .exception import JobInputParseError, JobOutputParseError
 class Job(object):
 	"""
 	PyPPL Job
+
+	@static variables:
+		`STATUS_INITIATED`    : Job status when a job has just initiated
+		`STATUS_BUILDING`     : Job status when a job is being built
+		`STATUS_BUILT`        : Job status when a job has been built
+		`STATUS_BUILTFAILED`  : Job status when a job fails to build
+		`STATUS_SUBMITTING`   : Job status when a job is submitting
+		`STATUS_SUBMITTED`    : Job status when a job has submitted
+		`STATUS_SUBMITFAILED` : Job status when a job fails to submit
+		`STATUS_RUNNING`      : Job status when a job is running
+		`STATUS_RETRYING`     : Job status when a job is about to retry
+		`STATUS_DONE`         : Job status when a job has done
+		`STATUS_DONECACHED`   : Job status when a job has cached
+		`STATUS_DONEFAILED`   : Job status when a job fails temporarily (may retry later)
+		`STATUS_ENDFAILED`    : Job status when a job fails finally
+		`STATUS_KILLING`      : Job status when a job is being killed
+		`STATUS_KILLED`       : Job status when a job has been killed
+
+		`RC_NOTGENERATE` : A return code if no rcfile has been generated
+		`RC_SUBMITFAILED`: A return code when a job fails to submit
 	"""
 
 	# 0b
@@ -50,6 +70,12 @@ class Job(object):
 	LOGLOCK = Lock()
 
 	def __init__(self, index, config):
+		"""
+		Initiate a job
+		@params:
+			`index`:  The index of the job.
+			`config`: The configurations of the job.
+		"""
 		self.index     = index
 		self.status    = Job.STATUS_INITIATED
 		self.config    = config

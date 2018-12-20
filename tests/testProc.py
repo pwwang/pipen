@@ -200,7 +200,7 @@ class TestProc(testly.TestCase):
 		aSetAttr = Aggr(pSetAttrAggr)
 		aSetAttr.ends = [aSetAttr.pSetAttrAggr]
 		yield pSetAttr, '__nosuchattr__', None, None, ProcAttributeError, 'Cannot set attribute for process'
-		yield pSetAttr, 'profile', 'sge', 'local', None, None, ['WARNING', 'Attribute "profile" is deprecated']
+		#yield pSetAttr, 'profile', 'sge', 'local', None, None, ['WARNING', 'Attribute "profile" is deprecated']
 		yield pSetAttr, 'envs', {'a': 1}
 		yield pSetAttr, 'depends', pSetAttr, None, ProcAttributeError, 'Process depends on itself'
 		yield pSetAttr, 'depends', 1, None, ProcAttributeError, "Process dependents should be 'Proc/Aggr', not: 'int'"

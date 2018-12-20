@@ -44,7 +44,6 @@ def loadModule(modname, excludes = None, global_excludes = None):
 			ret['class.' + funcname] = classfuncs
 		elif inspect.isfunction(obj):
 			ret[funcname] = obj
-
 	return mod, ret
 
 def formatDoc(func, name, level = None):
@@ -64,6 +63,8 @@ def formatDoc(func, name, level = None):
 		level = level.replace('method', 'staticmethod')
 	if level and ('class' in level or 'function' in level):
 		ret = '!!! example "{}: `{}`"\n'.format(level, name)
+	elif level and 'staticmethod' in level:
+		ret = '\t!!! tip "{}: `{} ({})`"\n'.format(level, name, ", ".join(strargs))
 	elif level and 'method' in level:
 		ret = '\t!!! abstract "{}: `{} ({})`"\n'.format(level, name, ", ".join(strargs))
 	elif level:
@@ -81,9 +82,8 @@ def formatDoc(func, name, level = None):
 
 if __name__ == '__main__':
 	modules = [
-		('', [
-			r'[^P].+', 'Parameters', 'ProcTree'
-		]),
+		('', [r'[^P].+', 'Parameters', 'ProcTree', 'Proc']),
+		('proc', ['Channel', 'Jobmgr', 'Job', 'Aggr']),
 		'aggr',
 		('channel', [
 			'Channel.append', 'Channel.count', 'Channel.extend',
@@ -92,26 +92,30 @@ if __name__ == '__main__':
 		]),
 		'flowchart',
 		('job', ['Box']),
-		('jobmgr', ['Queue', 'QueueEmpty']),
+		('jobmgr', ['Job$', 'Queue', 'QueueEmpty', 'JobBuildingException', 'JobSubmissionException', 'JobFailException', 'ThreadPool']),
 		('logger', ['Box', 'TemplateLiquid']),
 		('parameters', ['Box']),
 		('proctree', ['ProcTreeProcExists']),
-		('runners.helpers', ['Box', 'SafeFs']),
+		#('runners.helpers', ['Box', 'SafeFs']),
 		'runners.runner',
-		('runners.runner_dry', ['Runner']),
-		('runners.runner_local', ['Runner']),
-		('runners.runner_sge', ['Runner']),
-		('runners.runner_slurm', ['Runner']),
-		('runners.runner_ssh', ['Runner']),
+		('runners.runner_dry', ['Runner$', 'Proc']),
+		('runners.runner_local', ['Runner$']),
+		('runners.runner_sge', ['Runner$']),
+		('runners.runner_slurm', ['Runner$']),
+		('runners.runner_ssh', ['Runner$']),
 		('template', ['Liquid']),
 		('utils', ['Box', 'Queue']),
-		('utils.box', ['fromkeys']),
-		'utils.cmd',
+		('utils.box', ['Box.fromkeys']),
+		('utils.cmd', ['Timeout', 'ResourceWarning']),
 		'utils.parallel',
 		('utils.ps', ['Cmd']),
 		'utils.safefs',
+		('utils.taskmgr', ['Thread$', 'PriorityQueue'])
 	]
 	global_excludes = [
+		'pycopy',
+		'as_completed',
+		'string_types',
 		'OrderedDict',
 		'cpu_count',
 		'makedirs',

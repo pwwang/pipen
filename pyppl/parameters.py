@@ -286,12 +286,25 @@ class Parameter (object):
 			self.setType(t)
 
 	def __setattr__(self, name, value):
+		"""
+		Set the value of the attribute
+		@params:
+			`name` : The name of the attribute
+			`value`: The value of the attribute
+		"""
 		if name.startswith('__') or name.startswith('_Parameter'):
 			super(Parameter, self).__setattr__(name, value)
 		else:
 			getattr(self, 'set' + name.capitalize())(value)
 
 	def __getattr__(self, name):
+		"""
+		Get the value of the attribute
+		@params:
+			`name` : The name of the attribute
+		@returns:
+			The value of the attribute
+		"""
 		if name.startswith('__') or name.startswith('_Parameter'): # pragma: no cover
 			return super(Parameter, self).__getattr__(name)
 		elif name == 'desc' and not self.required:
@@ -401,6 +414,20 @@ class Parameter (object):
 class Parameters (object):
 	"""
 	A set of parameters
+
+	@static variables:
+		`ARG_TYPES`           : shortcuts for argument types
+		`ARG_NAME_PATTERN`    : A pattern to recognize an argument name
+		`ARG_VALINT_PATTERN`  : An integer argument pattern
+		`ARG_VALFLOAT_PATTERN`: A float argument pattern
+		`ARG_VALBOOL_PATTERN` : A bool argument pattern
+		`ARG_VALPY_PATTERN`   : A python expression argument pattern
+
+		`VAL_TRUES` : Values translated to `True`
+		`VAL_FALSES`: Values translated to `False`
+
+		`POSITIONAL`   : Flag for positional arguments
+		`ALLOWED_TYPES`: All allowed argument types
 	"""
 	ARG_TYPES = dict(
 		a = 'auto',  auto  = 'auto',
@@ -517,6 +544,12 @@ class Parameters (object):
 		return self
 
 	def __setattr__(self, name, value):
+		"""
+		Change the value of an existing `Parameter` or create a `Parameter` using the `name` and `value`. If `name` is an attribute, return its value.
+		@params:
+			`name` : The name of the Parameter
+			`value`: The value of the Parameter
+		"""
 		if name.startswith('__') or name.startswith('_Parameters'): # pragma: no cover
 			super(Parameters, self).__setattr__(name, value)
 		elif name in self.__dict__: # pragma: no cover
@@ -531,6 +564,14 @@ class Parameters (object):
 			self._params[name] = Parameter(name, value)
 
 	def __getattr__(self, name):
+		"""
+		Get a `Parameter` instance if possible, otherwise return an attribute value
+		@params:
+			`name`: The name of the `Parameter` or the attribute
+		@returns:
+			A `Parameter` instance if `name` exists in `self._params`, otherwise,
+			the value of the attribute `name`
+		"""
 		if name.startswith('__') or name.startswith('_Parameters'): # pragma: no cover
 			return super(Parameters, self).__getattr__(name)
 		elif not name in self._params:
@@ -538,9 +579,18 @@ class Parameters (object):
 		return self._params[name]
 
 	def __setitem__(self, name, value):
+		"""
+		Compose a `Parameter` using the `name` and `value`
+		@params:
+			`name` : The name of the `Parameter`
+			`value`: The value of the `Parameter`
+		"""
 		self._params[name] = Parameter(name, value)
 
 	def __getitem__(self, name):
+		"""
+		Alias of `__getattr__`
+		"""
 		return getattr(self, name)
 
 	def __call__(self, option, value):
@@ -975,6 +1025,13 @@ class Commands(object):
 		return self
 	
 	def __getattr__(self, name):
+		"""
+		Get the value of the attribute
+		@params:
+			`name` : The name of the attribute
+		@returns:
+			The value of the attribute
+		"""
 		if name.startswith('__') or name.startswith('_Commands'): # pragma: no cover
 			return super(Commands, self).__getattr__(name)
 		elif not name in self._cmds:
@@ -982,6 +1039,12 @@ class Commands(object):
 		return self._cmds[name]
 
 	def __setattr__(self, name, value):
+		"""
+		Set the value of the attribute
+		@params:
+			`name` : The name of the attribute
+			`value`: The value of the attribute
+		"""
 		if name.startswith('__') or name.startswith('_Commands'): # pragma: no cover
 			super(Commands, self).__setattr__(name, value)
 		elif name == '_desc':
@@ -1005,6 +1068,9 @@ class Commands(object):
 				self._cmds[name]('desc', value if isinstance(value, list) else [value])
 
 	def __getitem__(self, name):
+		"""
+		Alias of `__getattr__`
+		"""
 		return getattr(self, name)
 
 	def parse(self, args = None, arbi = False):
