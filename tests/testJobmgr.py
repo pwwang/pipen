@@ -17,14 +17,14 @@ class TestJobmgr(testly.TestCase):
 
 	def testJmNoJobs(self):
 		pNoJobs = Proc()
-		pNoJobs.nsub = 1
+		pNoJobs.nthread = 1
 		pNoJobs.run()
 
 	def testJm1(self):
 		p = Proc()
 		p.script = 'echo 123'
 		p.forks  = 1
-		p.nsub = 1
+		p.nthread = 1
 		p.input = {'a': [1, 2]}
 		p.run()
 
@@ -34,7 +34,7 @@ class TestJobmgr(testly.TestCase):
 		p1 = Proc()
 		p1.script = 'echo 123'
 		p1.forks = Jobmgr.PBAR_SIZE * 2
-		p1.nsub = 1
+		p1.nthread = 1
 		p1.input = {'a': list(range(Jobmgr.PBAR_SIZE * 2))}
 		p1.run()
 		Jobmgr.PBAR_SIZE = oPBAR_SIZE
@@ -44,7 +44,7 @@ class TestJobmgr(testly.TestCase):
 	# 	p2 = Proc()
 	# 	p2.script = '__err__ 123'
 	# 	p2.forks = 20
-	# 	p2.nsub = 1
+	# 	p2.nthread = 1
 	# 	p2.input = {'a': list(range(20))}
 	# 	p2.errhow = 'halt'
 	# 	try:
@@ -56,7 +56,7 @@ class TestJobmgr(testly.TestCase):
 		from time import time
 		p3         = Proc()
 		p3.forks   = 1
-		p3.nsub    = 1
+		p3.nthread    = 1
 		p3.lang    = sys.executable
 		p3.args.i  = time()
 		p3.input   = {'a': [0]}

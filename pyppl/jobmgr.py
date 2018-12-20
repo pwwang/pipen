@@ -77,8 +77,7 @@ class Jobmgr(object):
 
 	def worker(self, queue):
 		"""
-		Worker for threads, use first `nsub` workers to build and submit jobs,
-		and the rest of them to run (wait for) the jobs.
+		Worker for the queue
 		"""
 		while not queue.empty() and not self.stop:
 			self.workon(queue.get(), queue)

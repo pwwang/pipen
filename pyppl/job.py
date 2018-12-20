@@ -1,6 +1,8 @@
 """
 job module for PyPPL
 """
+import sys
+import re
 import json
 from os import path, makedirs, utime
 from glob import glob
@@ -1152,7 +1154,6 @@ class Job(object):
 		if 'stdout' in self.config['echo']['type']:
 			lines, self.lastout = safefs.SafeFs.flush(self.fout, self.lastout, end)
 			outfilter = self.config['echo']['type']['stdout']
-			
 			for line in lines:
 				if not outfilter or re.search(outfilter, line):
 					with Job.LOGLOCK:

@@ -74,7 +74,7 @@ class TestProc(testly.TestCase):
 			'iftype': 'indir',
 			'input': '',
 			'lang': 'bash',
-			'nsub': min(int(cpu_count() / 2), 16),
+			'nthread': min(int(cpu_count() / 2), 16),
 			'output': '',
 			'ppldir': path.realpath('./workdir'),
 			'rc': 0,
@@ -139,7 +139,7 @@ class TestProc(testly.TestCase):
 			'iftype': 'indir',
 			'input': '',
 			'lang': 'bash',
-			'nsub': min(int(cpu_count() / 2), 16),
+			'nthread': min(int(cpu_count() / 2), 16),
 			'output': '',
 			'ppldir': path.realpath('./workdir'),
 			'rc': 0,
@@ -168,7 +168,7 @@ class TestProc(testly.TestCase):
 			del config2['desc']
 			del config2['id']
 			p2 = Proc(tag, desc, id = config['id'], **config2)
-			props['sets'] = list(sorted(['runner', 'echo', 'depends', 'expect', 'callfront', 'script', 'cache', 'nsub', 'beforeCmd', 'template', 'rc', 'input', 'forks', 'iftype', 'acache', 'workdir', 'resume', 'exhow', 'args', 'exow', 'dirsig', 'ppldir', 'errhow', 'lang', 'tplenvs', 'exdir', 'expart', 'afterCmd', 'callback', 'aggr', 'output', 'errntry']))
+			props['sets'] = list(sorted(['runner', 'echo', 'depends', 'expect', 'callfront', 'script', 'cache', 'nthread', 'beforeCmd', 'template', 'rc', 'input', 'forks', 'iftype', 'acache', 'workdir', 'resume', 'exhow', 'args', 'exow', 'dirsig', 'ppldir', 'errhow', 'lang', 'tplenvs', 'exdir', 'expart', 'afterCmd', 'callback', 'aggr', 'output', 'errntry']))
 			p2.props['sets'] = list(sorted(p2.sets))
 			self.assertDictEqual(p2.props, props)
 			self.assertDictEqual(p2.config, config)
@@ -309,7 +309,7 @@ class TestProc(testly.TestCase):
 			'id': 'pCopy',
 			'input': '',
 			'lang': 'bash',
-			'nsub': min(int(cpu_count() / 2), 16),
+			'nthread': min(int(cpu_count() / 2), 16),
 			'output': '',
 			'ppldir': path.realpath('./workdir'),
 			'rc': 0,
@@ -370,7 +370,7 @@ class TestProc(testly.TestCase):
 			'iftype': 'indir',
 			'input': '',
 			'lang': 'bash',
-			'nsub': min(int(cpu_count() / 2), 16),
+			'nthread': min(int(cpu_count() / 2), 16),
 			'output': '',
 			'ppldir': path.realpath('./workdir'),
 			'rc': 0,
@@ -950,7 +950,7 @@ class TestProc(testly.TestCase):
 		yield 't4', 'xxx', {'xxx': {}, 'default': {}}, 'xxx', {'runner': 'xxx'}
 		yield 't5', 'xxx', {'xxx': {}}, 'local', {'runner': 'xxx'}
 		yield 't6', 'xxx', {'yyy': {}}, 'xxx', {'runner': 'xxx'}
-		yield 't7', 'sge1d', {'sge1d': {'runner': 'sge', 'nsub': 10, 'forks': 4, 'ppldir': self.testdir}}, 'sge', {'runner': 'sge1d', 'forks': 4, 'nsub': 10, 'ppldir': self.testdir}
+		yield 't7', 'sge1d', {'sge1d': {'runner': 'sge', 'nthread': 10, 'forks': 4, 'ppldir': self.testdir}}, 'sge', {'runner': 'sge1d', 'forks': 4, 'nthread': 10, 'ppldir': self.testdir}
 		yield 't8', {'forks': 10}, {'default': {'forks': 20}}, 'local', {'forks': 10, 'runner': {'forks': 10}}
 		yield 't9', {'forks': 10}, {'default': {'envs': {'a': 1}}}, 'local', {'forks': 10}
 		

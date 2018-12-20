@@ -34,7 +34,6 @@ class Proc (object):
 	ALIAS        = {
 		'envs'   : 'tplenvs',
 		'profile': 'runner',
-		#'nsub'   : 'maxsubmit'
 	}
 	# deprecated
 	DEPRECATED   = {
