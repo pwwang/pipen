@@ -19,7 +19,7 @@ from .exception import PyPPLProcFindError, PyPPLProcRelationError
 from .utils import Box
 from . import logger, utils, runners
 
-VERSION = "1.3.1"
+VERSION = "1.4.0"
 class PyPPL (object):
 	"""
 	The PyPPL class
@@ -28,6 +28,7 @@ class PyPPL (object):
 		`TIPS`: The tips for users
 		`RUNNERS`: Registered runners
 		`DEFAULT_CFGFILES`: Default configuration file
+		`COUNTER`: The counter for `PyPPL` instance
 	"""
 
 	TIPS = [
@@ -123,7 +124,11 @@ class PyPPL (object):
 			utils.dictUpdate(logconfig, self.config['_log'])
 			del self.config['_log']
 
-		logger.getLogger (logconfig['levels'], logconfig['theme'], logconfig['file'], logconfig['lvldiff'], logconfig['pbar'])
+		logger.getLogger(
+			levels  = logconfig['levels'],
+			theme   = logconfig['theme'],
+			logfile = logconfig['file'],
+			lvldiff = logconfig['lvldiff'])
 		logger.logger.info ('Version: %s', VERSION, extra = {'loglevel': 'pyppl'})
 		logger.logger.info (random.choice(PyPPL.TIPS), extra = {'loglevel': 'tips'})
 

@@ -26,7 +26,7 @@ class Runner (object):
 		@params:
 			`job`:    The job object
 		"""
-		self.script  = safefs.SafeFs(job.script).chmodX()
+		self.script  = safefs.SafeFs._chmodX(job.script)
 		self.job     = job
 		self.cmd2run = list2cmdline(self.script)
 
@@ -49,29 +49,6 @@ class Runner (object):
 		c.rc = 0
 		return c
 
-	def run(self):
-		"""
-		@returns:
-			True: success/fail
-			False: needs retry
-		"""
-		# stdout, stderr haven't been generated, wait
-		while not path.isfile(self.job.errfile) or not path.isfile(self.job.outfile):
-			sleep(self.INTERVAL) # pragma: no cover
-		
-		ferr = open(self.job.errfile)
-		fout = open(self.job.outfile)
-		lastout = ''
-		lasterr = ''
-		
-		while self.job.rc == self.job.RC_NOTGENERATE: # rc not generated yet
-			sleep (self.INTERVAL)
-			lastout, lasterr = self._flush(fout, ferr, lastout, lasterr)
-
-		self._flush(fout, ferr, lastout, lasterr, True)
-		ferr.close()
-		fout.close()
-
 	def isRunning (self):
 		"""
 		Try to tell whether the job is still running.
@@ -81,55 +58,6 @@ class Runner (object):
 		if not self.job.pid:
 			return False
 		return ps.exists(int(self.job.pid))
-		
-	def _flush (self, fout, ferr, lastout, lasterr, end = False):
-		"""
-		Flush stdout/stderr
-		@params:
-			`fout`: The stdout file handler
-			`ferr`: The stderr file handler
-			`lastout`: The leftovers of previously readlines of stdout
-			`lasterr`: The leftovers of previously readlines of stderr
-			`end`: Whether this is the last time to flush
-		"""
-		if self.job.index not in self.job.config['echo']['jobs']:
-			return None, None
-
-		if 'stdout' in self.job.config['echo']['type']:
-			lines, lastout = safefs.SafeFs.flush(fout, lastout, end)
-			outfilter      = self.job.config['echo']['type']['stdout']
-			
-			for line in lines:
-				if not outfilter or re.search(outfilter, line):
-					with Runner.FLUSHLOCK:
-						sys.stdout.write(line)
-
-		lines, lasterr = safefs.SafeFs.flush(ferr, lasterr, end)		
-		for line in lines:
-			if line.startswith('pyppl.log'):
-				line = line.rstrip('\n')
-				logstrs  = line[9:].lstrip().split(':', 1)
-				if len(logstrs) == 1:
-					logstrs.append('')
-				(loglevel, logmsg) = logstrs
-				
-				loglevel = loglevel[1:] if loglevel else 'log'
-				
-				# '_' makes sure it's not filtered by log levels
-				logger.info(logmsg.lstrip(), extra = {
-					'loglevel': '_' + loglevel,
-					'pbar'    : False,
-					'jobidx'  : self.job.index,
-					'joblen'  : self.job.config['procsize'],
-					'proc'    : self.job.config['proc']
-				})
-			elif 'stderr' in self.job.config['echo']['type']:
-				errfilter = self.job.config['echo']['type']['stderr']
-				if not errfilter or re.search(errfilter, line):
-					with Runner.FLUSHLOCK:
-						sys.stderr.write(line)
-		
-		return (lastout, lasterr)
 
 class _LocalSubmitter(object):
 	
@@ -149,13 +77,27 @@ class _LocalSubmitter(object):
 		"""
 		self.outfd = open(self.outfile, 'w')
 		self.errfd = open(self.errfile, 'w')
-		self.proc  = cmd.Cmd(safefs.SafeFs(self.script).chmodX(), stdout = self.outfd, stderr = self.errfd)
-		with open(self.pidfile, 'w') as fpid:
-			fpid.write(str(self.proc.pid))
 		try:
-			self.proc.run()
-		except KeyboardInterrupt: # pragma: no cover
-			self.proc.rc = 1
+			self.proc = cmd.Cmd(safefs.SafeFs._chmodX(self.script), stdout = self.outfd, stderr = self.errfd)
+			with open(self.pidfile, 'w') as fpid:
+				fpid.write(str(self.proc.pid))
+			try:
+				self.proc.run()
+			except KeyboardInterrupt: # pragma: no cover
+				self.proc.rc = 88
+		except Exception:
+			from traceback import format_exc
+			ex = format_exc()
+			if 'Text file busy' in str(ex):
+				sleep(.1)
+				self.outfd.close()
+				self.errfd.close()
+				self.submit()
+			else:
+				with open(self.errfile, 'w') as f:
+					f.write(str(ex))
+				self.proc    = lambda: None
+				self.proc.rc = 88
 
 	def quit(self):
 		"""

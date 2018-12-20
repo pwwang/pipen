@@ -467,6 +467,57 @@ class SafeFs(object):
 				mtime = max(m, mtime)
 		return mtime
 
+	@staticmethod
+	def _filesig(filepath, dirsig = True, filetype = None):
+		"""
+		Generate a signature for a file
+		@params:
+			`dirsig`: Whether expand the directory? Default: True
+		@returns:
+			The signature
+		"""
+		if not filepath:
+			return ['', 0]
+		if not SafeFs._exists(filepath):
+			return False
+		
+		filetype = filetype or SafeFs._filetype(filepath)
+		if dirsig and filetype in [SafeFs.FILETYPE_DIR, SafeFs.FILETYPE_DIRLINK]:
+			mtime = SafeFs._dirmtime(filepath)
+		else:
+			mtime = path.getmtime(filepath)
+		return [filepath, int(mtime)]
+
+	@staticmethod
+	def _chmodX(filepath, filetype = None):
+		"""
+		Convert file1 to executable or add extract shebang to cmd line
+		@returns:
+			A list with or without the path of the interpreter as the first element and the script file as the last element
+		"""
+		filetype = filetype or SafeFs._filetype(filepath)
+		if not filetype in [SafeFs.FILETYPE_FILE, SafeFs.FILETYPE_FILELINK]:
+			raise OSError('Unable to make {} as executable'.format(filepath))
+		
+		ret = [filepath]
+		try:
+			chmod(filepath, stat(filepath).st_mode | S_IEXEC)
+		except ChmodError:
+			shebang = None
+			fsb = open(filepath)
+			try:
+				shebang = fsb.readline().strip()
+			except ChmodError: # pragma: no cover
+				# may raise UnicodeDecodeError for python3
+				pass
+			finally:
+				# make sure file's closed, otherwise a File text busy will be raised when trying to execute it
+				fsb.close()
+			if not shebang or not shebang.startswith('#!'):
+				raise OSError('Unable to make {} as executable by chmod and detect interpreter from shebang.'.format(filepath))
+			ret = shebang[2:].strip().split() + [filepath]
+		return ret
+
 	def __init__(self, file1, file2 = None, tmpdir = None):
 		"""
 		Constructor
@@ -711,19 +762,12 @@ class SafeFs(object):
 			The signature
 		"""
 		self._lock(lock1 = 'real')
-		if not self.file1:
+		ret = None
+		try:
+			ret = SafeFs._filesig(self.file1, filetype = self.filetype1, dirsig = dirsig)
+		finally:
 			self._unlock()
-			return ['', 0]
-		if not SafeFs._exists(self.file1):
-			self._unlock()
-			return False
-
-		if dirsig and self.filetype1 in [SafeFs.FILETYPE_DIR, SafeFs.FILETYPE_DIRLINK]:
-			mtime = SafeFs._dirmtime(self.file1)
-		else:
-			mtime = path.getmtime(self.file1)
-		self._unlock()
-		return [self.file1, int(mtime)]
+		return ret
 
 	def chmodX(self):
 		"""
@@ -731,24 +775,10 @@ class SafeFs(object):
 		@returns:
 			A list with or without the path of the interpreter as the first element and the script file as the last element
 		"""
-		if not self.filetype1 in [SafeFs.FILETYPE_FILE, SafeFs.FILETYPE_FILELINK]:
-			raise OSError('Unable to make {} as executable'.format(self.file1))
-		
-		ret = [self.file1]
 		self._lock(lock1 = 'real')
+		ret = None
 		try:
-			chmod(self.file1, stat(self.file1).st_mode | S_IEXEC)
-		except ChmodError:
-			shebang = None
-			with open(self.file1) as fsb:
-				try:
-					shebang = fsb.readline().strip()
-				except ChmodError: # pragma: no cover
-					# may raise UnicodeDecodeError for python3
-					pass
-			if not shebang or not shebang.startswith('#!'):
-				raise OSError('Unable to make {} as executable by chmod and detect interpreter from shebang.'.format(self.file1))
-			ret = shebang[2:].strip().split() + [self.file1]
+			ret = SafeFs._chmodX(self.file1, self.filetype1)
 		finally:
 			self._unlock()
 		return ret

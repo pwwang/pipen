@@ -21,52 +21,57 @@ class Proc (object):
 	The Proc class defining a process
 
 	@static variables:
-		`RUNNERS`:       The regiested runners
 		`ALIAS`:         The alias for the properties
-		`LOG_NLINE`:     The limit of lines of logging information of same type of messages
+		`DEPRECATED`:    Deprecated property names
 
-	@magic methods:
-		`__getattr__(self, name)`: get the value of a property in `self.props`
-		`__setattr__(self, name, value)`: set the value of a property in `self.config`
+		`OUT_VARTYPE`:    Variable types for output
+		`OUT_FILETYPE`:   File types for output
+		`OUT_DIRTYPE`:    Directory types for output
+		`OUT_STDOUTTYPE`: Stdout types for output
+		`OUT_STDERRTYPE`: Stderr types for output
+
+		`IN_VARTYPE`:   Variable types for input
+		`IN_FILETYPE`:  File types for input
+		`IN_FILESTYPE`: Files types for input
+
+		`EX_GZIP`: `exhow` value to gzip output files while exporting them
+		`EX_COPY`: `exhow` value to copy output files while exporting them
+		`EX_MOVE`: `exhow` value to move output files while exporting them
+		`EX_LINK`: `exhow` value to link output files while exporting them
 	"""
 
 	# for future use, shortcuts
-	ALIAS        = {
-		'envs'   : 'tplenvs',
-		'profile': 'runner',
-		#'nsub'   : 'maxsubmit'
-	}
+	ALIAS = {'envs': 'tplenvs'}
 	# deprecated
-	DEPRECATED   = {
-		'profile': 'runner'
-	}
+	DEPRECATED = {}
 
-	OUT_VARTYPE     = ['var']
-	OUT_FILETYPE    = ['file', 'path']
-	OUT_DIRTYPE     = ['dir', 'folder']
-	OUT_STDOUTTYPE  = ['stdout']
-	OUT_STDERRTYPE  = ['stderr']
+	OUT_VARTYPE    = ['var']
+	OUT_FILETYPE   = ['file', 'path']
+	OUT_DIRTYPE    = ['dir', 'folder']
+	OUT_STDOUTTYPE = ['stdout']
+	OUT_STDERRTYPE = ['stderr']
 
 	IN_VARTYPE   = ['var']
 	IN_FILETYPE  = ['file', 'path', 'dir', 'folder']
 	IN_FILESTYPE = ['files', 'paths', 'dirs', 'folders']
 
-	EX_GZIP      = ['gzip', 'gz']
-	EX_COPY      = ['copy', 'cp']
-	EX_MOVE      = ['move', 'mv']
-	EX_LINK      = ['link', 'symlink', 'symbol']
+	EX_GZIP = ['gzip', 'gz']
+	EX_COPY = ['copy', 'cp']
+	EX_MOVE = ['move', 'mv']
+	EX_LINK = ['link', 'symlink', 'symbol']
 
 	def __init__ (self, tag = 'notag', desc = 'No description.', id = None, **kwargs):
 		"""
 		Constructor
 		@params:
-			`tag`:  The tag of the process
-			`desc`: The description of the process
-			`id`:   The identify of the process
+			`tag`     : The tag of the process
+			`desc`    : The description of the process
+			`id`      : The identify of the process
+			`**kwargs`: Other properties of the process, which can be set by `proc.xxx` later.
 		@config:
 			id, input, output, ppldir, forks, cache, acache, rc, echo, runner, script, depends, tag, desc, dirsig
 			exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr
-			callfront, callback, expect, expart, template, tplenvs, resume, nsub
+			callfront, callback, expect, expart, template, tplenvs, resume, nthread
 		@props
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect
 			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs
@@ -195,7 +200,7 @@ class Proc (object):
 		# non-cached job ids
 		self.props['ncjobids']    = []
 		# number of threads used to build jobs and to check job cache status
-		self.config['nsub']       = min(int(cpu_count() / 2), 16)
+		self.config['nthread']       = min(int(cpu_count() / 2), 16)
 
 		self.props['origin']      = self.config['id']
 
@@ -1146,7 +1151,7 @@ class Proc (object):
 		Submit and run the jobs
 		"""
 		Jobmgr(self.jobs, {
-			'nsub' : min(self.nsub, self.forks, self.size),
+			'nthread' : self.nthread,
 			'forks': min(self.forks, self.size),
 			'proc' : self.id,
 			'lock' : self.lock._lock_file

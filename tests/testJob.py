@@ -885,7 +885,7 @@ class TestJob(testly.TestCase):
 		#job.init()
 		makedirs(job.dir)
 		job.rc = 1
-		yield job, 1, ['WARNING', '[1/1] Failed but ignored (totally 1). Return code: 1 .'], ['ERROR']
+		yield job, 1, ['WARNING', '[1/1] Failed but ignored (totally 1). Return code: 1.'], ['ERROR']
 		
 		# empty stderr
 		config = {'proc': 'pShowError1', 'procsize': 1}
@@ -926,7 +926,7 @@ class TestJob(testly.TestCase):
 		makedirs(job3.dir)
 		job3.rc = 1
 		helpers.writeFile(job3.errfile, '\n'.join(['Error' + str(i) for i in range(25)]))
-		yield job3, 10, ['ERROR', '[1/1] Failed (totally 10). Return code: 1 .', 'Error5', 'Error15', 'Error19', 'Error24'], ['Error0', 'Error4']
+		yield job3, 10, ['ERROR', '[1/1] Failed (totally 10). Return code: 1.', 'Error5', 'Error15', 'Error19', 'Error24'], ['Error0', 'Error4']
 		# Error1, Error2 will be found as Error10, Error20 are there
 		# Error3 will be found because pShowError3
 		
@@ -1932,6 +1932,7 @@ class TestJob(testly.TestCase):
 		config['cache']   = 'export'
 		config['exhow']   = 'copy'
 		config['expart']  = []
+		config['proc']    = 'pIsExptCached9'
 		config['exdir']   = path.join(self.testdir, 'exdir')
 		config['script']  = TemplateLiquid('')
 		#pIsExptCached9.__dict__['LOG_NLINE'] = {}
@@ -1988,7 +1989,7 @@ class TestJob(testly.TestCase):
 			self.assertIn(err, stderr)
 		if ret:
 			self.assertEqual(job.rc, 0)
-			self.assertTrue(job.isTrulyCached())
+			#self.assertTrue(job.isTrulyCached())
 			
 	def dataProvider_testDone(self):
 		# other: overwrite
@@ -2033,6 +2034,7 @@ class TestJob(testly.TestCase):
 		config['workdir']  = path.join(self.testdir, 'pBuild1', 'workdir')
 		config['proc']     = 'pBuild1'
 		config['procsize'] = 1
+		config['acache']   = True
 		config['script']   = TemplateLiquid('')
 		config['expect']   = TemplateLiquid('')
 		config['output']   = {
@@ -2073,7 +2075,7 @@ class TestJob(testly.TestCase):
 		makedirs(job.dir)
 		r = utils.cmd.Cmd('sleep 3')
 		job.pid = r.pid
-		yield job, Job.STATUS_RUNNING, ['pSubmit: [1/1] is already running at']
+		yield job, True, ['pSubmit: [1/1] is already running at']
 
 		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}
 		config['workdir']  = path.join(self.testdir, 'pSubmit1', 'workdir')
@@ -2084,7 +2086,7 @@ class TestJob(testly.TestCase):
 		config['output']   = {}
 		config['runner']   = RunnerLocal
 		job1 = Job(0, config)
-		yield job1, Job.STATUS_SUBMITTED, 
+		yield job1, True, 
 
 		class RunnerLocalFail(RunnerLocal):
 			def submit(self):
@@ -2098,20 +2100,20 @@ class TestJob(testly.TestCase):
 		config['output']   = {}
 		config['runner']   = RunnerLocalFail
 		job2 = Job(0, config)
-		yield job2, Job.STATUS_SUBMITFAILED, ['ERROR', 'pSubmit2: [1/1] Submission failed (rc = 1, cmd = submission failed)']
+		yield job2, False, ['ERROR', 'pSubmit2: [1/1] Submission failed (rc = 1, cmd = submission failed)']
 
 	def testSubmit(self, job, status, logs = None):
 		#Job.OUTPUT[0] = {}
 		with helpers.log2str(levels = 'all') as (out, err):
 			job.build()
-			job.submit()
+			r = job.submit()
 		#print out.getvalue()
-		self.assertEqual(job.status, status)
+		self.assertEqual(r, status)
 		logs = logs or []
 		for l in logs:
 			self.assertIn(l, err.getvalue())
 
-	def dataProvider_testRun(self):
+	def dataProvider_testPoll(self):
 		class RunnerLocalNoRun(RunnerLocal):
 			def run(self):
 				pass
@@ -2124,6 +2126,7 @@ class TestJob(testly.TestCase):
 		config['expect']   = TemplateLiquid('')
 		config['output']   = {}
 		config['rcs']      = [0]
+		config['echo']     = {'jobs': []}
 		config['runner']   = RunnerLocalNoRun
 		job = Job(0, config)
 		makedirs(job.dir)
@@ -2139,6 +2142,7 @@ class TestJob(testly.TestCase):
 		config['output']   = {}
 		config['errhow']   = 'terminate'
 		config['rcs']      = [0]
+		config['echo']     = {'jobs': []}
 		config['runner']   = RunnerLocalNoRun
 		job1 = Job(0, config)
 		makedirs(job1.dir)
@@ -2155,17 +2159,123 @@ class TestJob(testly.TestCase):
 		config['errhow']   = 'retry'
 		config['errntry']  = 3
 		config['rcs']      = [0]
+		config['echo']     = {'jobs': []}
 		config['runner']   = RunnerLocalNoRun
 		job2 = Job(0, config)
 		makedirs(job2.dir)
 		helpers.writeFile(job2.rcfile, '1')
 		yield job2, Job.STATUS_DONEFAILED
 
-	def testRun(self, job, status):
+	def testPoll(self, job, status):
 		#Job.OUTPUT[0] = {}
 		job.build()
-		job.run()
+		helpers.writeFile(job.errfile)
+		helpers.writeFile(job.outfile)
+		job.poll()
 		self.assertEqual(job.status, status)
+
+	def dataProvider_testFlush(self):
+		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}
+		config['workdir']  = path.join(self.testdir, 'pFlush', 'workdir')
+		config['procsize'] = 1
+		config['proc'] = 'pFlush'
+		config['echo'] = {'jobs': [0], 'type': {'stdout': None, 'stderr': None}}
+		job = Job(0, config)
+		makedirs(job.dir)
+		helpers.writeFile(job.outfile)
+		helpers.writeFile(job.errfile)
+		yield job, [[('', ''), ('', '', '', '')]]
+		
+		config = config.copy()
+		config['echo'] = {'jobs': [1], 'type': {'stdout': None, 'stderr': None}}
+		job1 = Job(1, config)
+		makedirs(job1.dir)
+		helpers.writeFile(job1.outfile)
+		helpers.writeFile(job1.errfile)
+		yield job1, [[('123', ''), ('123\n', '', '', '')]]
+
+		job1 = Job(1, config)
+		yield job1, [
+			[('123\n', '456\n78'), ('123\n', '456\n', '', '78')],
+			[('', '910'), ('', '78910\n', '', '')]
+		]
+		# filter
+		config = config.copy()
+		config['echo'] = {'jobs': [2], 'type': {'stdout': r'^a', 'stderr': None}}
+		job2 = Job(2, config)
+		makedirs(job2.dir)
+		helpers.writeFile(job2.outfile)
+		helpers.writeFile(job2.errfile)
+		yield job2, [[('', ''), ('', '', '', '')]]
+
+		job2 = Job(2, config)
+		yield job2, [[('123', ''), ('', '', '', '')]]
+
+		job2 = Job(2, config)
+		yield job2, [
+			[('123\n', '456\na78'), ('', '456\n', '', 'a78')],
+			[('', '910'), ('', 'a78910\n', '', '')]
+		]
+
+		# stderr
+		config = config.copy()
+		config['echo'] = {'jobs': [3], 'type': {'stdout': None, 'stderr': None}}
+		job3 = Job(3, config)
+		makedirs(job3.dir)
+		helpers.writeFile(job3.outfile)
+		helpers.writeFile(job3.errfile)
+		yield job3, [
+			[('', 'pyppl.log: 123'), ('', '[4/1] 123', '', '')]
+		]
+		
+		job3 = Job(3, config)
+		yield job3, [
+			[('', '456\n78'), ('', '456\n', '', '78')],
+			[('', '9\npyppl.log'), ('', '789\n', '', 'pyppl.log')],
+			[('', ': 123'), ('', '', '', 'pyppl.log: 123')],
+			[('', 'a\n78'), ('', '[4/1] 123a', '', '78')],
+			[('', 'b'), ('', '78b\n', '', '')]
+		]
+
+		# stderr filter
+		config = config.copy()
+		config['echo'] = {'jobs': [4], 'type': {'stdout': None, 'stderr': '^7'}}
+		job4 = Job(4, config)
+		makedirs(job4.dir)
+		helpers.writeFile(job4.outfile)
+		helpers.writeFile(job4.errfile)
+		yield job4, [
+			[('', 'pyppl.log.flag '), ('', '[5/1] ', '', '')]
+		]
+
+		job4 = Job(4, config)
+		yield job4, [
+			[('', '456\n78'),      ('', '', '', '78')],
+			[('', '9\npyppl.log'), ('', '789\n', '', 'pyppl.log')],
+			[('', ': 123'),        ('', '', '', 'pyppl.log: 123')],
+			[('', 'a\n78'),        ('', '[5/1] 123a', '', '78')],
+			[('', 'b'),            ('', '78b\n', '', '')]
+		]
+		
+	def testFlush(self, job, info):
+		foutw = open(job.outfile, 'w')
+		ferrw = open(job.errfile, 'w')
+		for i, pair in enumerate(info):
+			outtow , errtow  = pair[0]
+			stdout, stderr, lastout, lasterr = pair[1]
+			end = i == len(info) - 1
+			foutw.write(outtow)
+			ferrw.write(errtow)
+			foutw.flush()
+			ferrw.flush()
+			with helpers.log2str() as (out, err):
+				job._flush(end)
+			self.assertIn(stdout, out.getvalue())
+			self.assertIn(stderr, err.getvalue())
+			self.assertEqual(job.lastout, lastout)
+			self.assertEqual(job.lasterr, lasterr)
+		foutw.close()
+		ferrw.close()
 
 	def dataProvider_testRetry(self):
 		config = {'input': {}, 'exdir': None, 'cache': True, 'dirsig': False}

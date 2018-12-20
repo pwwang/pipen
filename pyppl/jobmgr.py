@@ -4,8 +4,7 @@ jobmgr module for PyPPL
 """
 import random
 from time import sleep
-from threading import Lock
-from .utils import Queue, QueueEmpty, threadpool
+from .utils.taskmgr import PQueue, ThreadPool, Lock
 from .job import Job
 from .logger import logger
 from .exception import JobFailException, JobSubmissionException, JobBuildingException
@@ -13,6 +12,12 @@ from .exception import JobFailException, JobSubmissionException, JobBuildingExce
 class Jobmgr(object):
 	"""
 	A job manager for PyPPL
+
+	@static variables
+		`PBAR_SIZE`:  The length of the progressbar
+		`PBAR_MARKS`: The marks for different job status
+		`PBAR_LEVEL`: The log levels for different job status
+		`SMBLOCK`   : The lock used to relatively safely to tell whether jobs can be submitted.
 	"""
 	PBAR_SIZE  = 50
 	PBAR_MARKS = {
@@ -21,7 +26,7 @@ class Jobmgr(object):
 		Job.STATUS_BUILT       : '-',
 		Job.STATUS_BUILTFAILED : '!',
 		Job.STATUS_SUBMITTING  : '-',
-		Job.STATUS_SUBMITTED   : '-',
+		Job.STATUS_SUBMITTED   : '>',
 		Job.STATUS_SUBMITFAILED: '*',
 		Job.STATUS_RUNNING     : '>',
 		Job.STATUS_RETRYING    : '-',
@@ -49,41 +54,121 @@ class Jobmgr(object):
 		Job.STATUS_KILLING     : 'KILLING',
 		Job.STATUS_KILLED      : 'KILLING',
 	}
-
-	LOCK    = Lock()
+	# submission lock
+	SBMLOCK = Lock()
 
 	def __init__(self, jobs, config):
+		"""
+		Initialize the job manager
+		@params:
+			`jobs`: All the jobs
+			`config`: The configurations for the job manager
+		"""
 		if not jobs:  # no jobs
 			return
-		self.buldQ  = Queue()
-		self.sbmtQ  = Queue()
-		self.runnQ  = Queue()
-		self.jobs   = jobs
-		self.config = config
-		self.logger = config.get('logger', logger)
-		self.stop   = False
+		self.jobs    = jobs
+		self.config  = config
+		self.logger  = config.get('logger', logger)
+		self.stop    = False
 
-		for i in range(len(jobs)):
-			self.buldQ.put(i)
-		for i in range(len(jobs)):
-			self.buldQ.put(None)
+		queue  = PQueue(batch_len = len(jobs))
+		nslots = min(queue.batch_len, config['nthread'])
 
-		self.pool = threadpool.ThreadPool(
-			config['nsub'] + config['forks'],  
+		for job in self.jobs:
+			# say nslots = 40
+			# where = 0 if job.index = [0, 19]
+			# where = 1 if job.index = [20, 39]
+			# ...
+			queue.put(job.index, where = int(2*job.index/nslots))
+		
+		ThreadPool(
+			nslots,
 			initializer = self.worker,
-			initargs = [(i, ) for i in range(config['nsub'] + config['forks'])]
-		)
-		self.pool.join(cleanup = self.cleanup)
+			initargs = queue
+		).join(cleanup = self.cleanup)
 
-	def worker(self, index):
+	def worker(self, queue):
 		"""
-		Worker for threads, use first `nsub` workers to build and submit jobs,
-		and the rest of them to run (wait for) the jobs.
+		Worker for the queue
+		@params:
+			`queue`: The priority queue
 		"""
-		if index < self.config['nsub']:
-			self.buildWorker()
-		else:
-			self.runWorker()
+		while not queue.empty() and not self.stop:
+			self.workon(queue.get(), queue)
+			queue.task_done()
+
+	def workon(self, index, queue):
+		"""
+		Work on a queue item
+		@params:
+			`index`: The job index and batch number, got from the queue
+			`queue`: The priority queue
+		"""
+		index, batch = index
+		job = self.jobs[index]
+		if job.status == Job.STATUS_INITIATED:
+			self.progressbar(index)
+			job.status = Job.STATUS_BUILDING
+			job.build()
+			# status then could be: 
+			# STATUS_DONECACHED, STATUS_BUILT, STATUS_BUILTFAILED
+			self.progressbar(index)
+			if job.status == Job.STATUS_DONECACHED:
+				pass
+			elif job.status == Job.STATUS_BUILTFAILED:
+				raise JobBuildingException()
+			else: 
+				queue.put(index, where = batch+3)
+		elif job.status == Job.STATUS_BUILT or job.status == Job.STATUS_RETRYING:
+			# when slots are available
+			if self.canSubmit():
+				with Jobmgr.SBMLOCK:
+					job.status = Job.STATUS_SUBMITTING
+				self.progressbar(index)
+				s = job.submit()
+				with Jobmgr.SBMLOCK:
+					job.status = Job.STATUS_SUBMITTED if s else Job.STATUS_SUBMITFAILED
+				if job.status == Job.STATUS_SUBMITFAILED:
+					self.progressbar(index)
+					raise JobSubmissionException()
+			queue.put(index, where = batch+3)
+		elif job.status == Job.STATUS_SUBMITTED or job.status == Job.STATUS_RUNNING:
+			oldstatus = job.status
+			if oldstatus == Job.STATUS_RUNNING:
+				# Just don't run it too frequently
+				sleep(.5)
+			else:
+				self.progressbar(index)
+
+			# check if job finishes, or any logs to output
+			job.poll()
+			# status then could be:
+			# STATUS_RUNNING, STATUS_DONEFAILED, STATUS_DONE
+			if job.status == Job.STATUS_RUNNING:
+				if oldstatus != job.status:
+					self.progressbar(index)
+				queue.put(index, where = batch+3)
+
+			elif job.status == Job.STATUS_DONEFAILED:
+				if job.retry() == 'halt':
+					# status:
+					# STATUS_ENDFAILED, STATUS_RETRYING
+					raise JobFailException()
+				if job.status == Job.STATUS_RETRYING:
+					self.logger.warning("Retrying %s/%s ...", job.ntry, job.config['errntry'], extra = {
+						'loglevel': Jobmgr.PBAR_LEVEL[job.status], 
+						'jobidx'  : index, 
+						'joblen'  : queue.batch_len, 
+						'pbar'    : False,
+						'proc'    : self.config['proc']
+					})
+					# retry as soon as possible
+					queue.put(index, where = batch+3)
+				else: # STATUS_ENDFAILED
+					self.progressbar(index)
+			else:
+				self.progressbar(index)
+
 
 	def progressbar(self, jobidx):
 		"""
@@ -114,7 +199,7 @@ class Jobmgr(object):
 				jobx += step
 
 		ncompleted = sum(1 for s in status if s & 0b1000000)
-		nrunning   = sum(1 for s in status if s == Job.STATUS_RUNNING)
+		nrunning   = sum(1 for s in status if s == Job.STATUS_RUNNING or s == Job.STATUS_SUBMITTED)
 
 		job = self.jobs[jobidx]
 		for bj in barjobs:
@@ -177,35 +262,34 @@ class Jobmgr(object):
 		"""
 		self.stop = True
 		if isinstance(ex, JobBuildingException):
-			self.logger.warning(
-				'Job building failed, quitting pipeline ...',
-				extra = {'pbar': 'next', 'proc': self.config['proc']}
-			)
+			message = 'Job building failed, quitting pipeline ...'
 		elif isinstance(ex, JobSubmissionException):
-			self.logger.warning(
-				'Job submission failed, quitting pipeline ...',
-				extra = {'pbar': 'next', 'proc': self.config['proc']}
-			)
+			message = 'Job submission failed, quitting pipeline ...'
 		elif isinstance(ex, JobFailException):
-			self.logger.warning(
-				'Error encountered (errhow = halt), quitting pipeline ...',
-				extra = {'pbar': 'next', 'proc': self.config['proc']}
-			)
+			message = 'Error encountered (errhow = halt), quitting pipeline ...'
 		elif isinstance(ex, KeyboardInterrupt):
-			self.logger.warning(
-				'Ctrl-C detected, quitting pipeline ...'.ljust(Jobmgr.PBAR_SIZE + 50), 
-				extra = {'pbar': 'next', 'proc': self.config['proc']}
-			)
+			message = 'Ctrl-C detected, quitting pipeline ...'
+		else:
+			message = None
+		if message:
+			self.logger.warning(message, extra = {'pbar': 'next', 'proc': self.config['proc']})
+		
+		# kill running jobs
+		rjobs = [
+			job.index for job in self.jobs 
+			if job.status in (Job.STATUS_RUNNING, Job.STATUS_SUBMITTED, Job.STATUS_SUBMITTING)
+		]
+		killQ = PQueue(batch_len = len(self.jobs))
+		for rjob in rjobs:
+			killQ.put(rjob)
 
-		runningQ = Queue()
-		for job in self.jobs:
-			if job.status in (Job.STATUS_RUNNING, Job.STATUS_SUBMITTED, Job.STATUS_SUBMITTING):
-				runningQ.put(job.index)
-
-		killPool = threadpool.ThreadPool(self.config['nsub'], initializer = self.killWorker, initargs = runningQ)
-		killPool.join()
+		ThreadPool(
+			min(len(rjobs), self.config['nthread']), 
+			initializer = self.killWorker,
+			initargs    = killQ
+		).join()
 			
-		failedjobs = [job for job in self.jobs if job.status & 0b1000000]
+		failedjobs = [job for job in self.jobs if job.status & 0b1]
 		if not failedjobs:
 			failedjobs = [random.choice(self.jobs)]
 		failedjobs[0].showError(len(failedjobs))
@@ -221,59 +305,13 @@ class Jobmgr(object):
 			`rq`: The queue that has running jobs.
 		"""
 		while not rq.empty():
-			i = rq.get()
-			self.killJob(i)
+			i = rq.get()[0]
+			job = self.jobs[i]
+			job.status = Job.STATUS_KILLING
+			self.progressbar(i)
+			job.kill()
+			self.progressbar(i)
 			rq.task_done()
-
-	def buildWorker(self):
-		"""
-		The build and submit worker
-		"""
-		maybeBreak = [False, False]
-		while not all(maybeBreak) and not self.stop:
-			if not maybeBreak[0]:
-				try:
-					if self.canSubmit():
-						i = self.sbmtQ.get_nowait()
-						if i is None:
-							maybeBreak[0] = True
-						else:
-							self.submitJob(i)
-				except QueueEmpty:
-					pass
-				except KeyboardInterrupt:
-					break
-
-			if not maybeBreak[1]:
-				try:
-					i = self.buldQ.get_nowait()
-					if i is None:
-						maybeBreak[1] = True
-					else:
-						self.buildJob(i)
-				except QueueEmpty:
-					pass
-				except KeyboardInterrupt:
-					break
-			else:
-				# save some cpu usage
-				sleep(.1)
-
-	def runWorker(self):
-		"""
-		The job running worker
-		"""
-		while not self.allJobsDone() and not self.stop:
-			try:
-				i = self.runnQ.get(timeout = .1)
-				self.runJob(i)
-				self.runnQ.task_done()
-			except QueueEmpty:
-				pass
-			except KeyboardInterrupt:
-				break
-		# also terminate the submission queue
-		self.sbmtQ.put(None)
 
 	def canSubmit(self):
 		"""
@@ -281,83 +319,9 @@ class Jobmgr(object):
 		@return:
 			`True` if they can else `False`
 		"""
-		return sum(
-			job.status in (Job.STATUS_RUNNING, Job.STATUS_SUBMITTED)
-			for job in self.jobs
-		) < self.config['forks']
-		
-	def allJobsDone(self):
-		"""
-		Tell if all jobs are done.
-		@return:
-			`True` if they are else `False`
-		"""
-		return all(job.status & 0b1000000 for job in self.jobs)
+		with Jobmgr.SBMLOCK:
+			return sum(
+				1 for job in self.jobs
+				if job.status in (Job.STATUS_RUNNING, Job.STATUS_SUBMITTED, Job.STATUS_SUBMITTING)
+			) < self.config['forks']
 
-	def buildJob(self, i):
-		"""
-		Build job
-		@params:
-			`i`: The job index
-		"""
-		job = self.jobs[i]
-		job.status = Job.STATUS_BUILDING
-		self.progressbar(i)
-		job.build()
-		if job.status == Job.STATUS_BUILT:
-			self.sbmtQ.put(i)
-		elif job.status == Job.STATUS_BUILTFAILED:
-			raise JobBuildingException()
-		self.progressbar(i)
-
-	def submitJob(self, i):
-		"""
-		Submit job
-		@params:
-			`i`: The job index
-		"""
-		job = self.jobs[i]
-		job.status = Job.STATUS_SUBMITTING
-		self.progressbar(i)
-		job.submit()
-		if job.status == Job.STATUS_SUBMITTED:
-			self.runnQ.put(i)
-		elif job.status == Job.STATUS_SUBMITFAILED:
-			raise JobSubmissionException()
-		self.progressbar(i)
-
-	def runJob(self, i):
-		"""
-		Wait for the job to run
-		@params:
-			`i`: The job index
-		"""
-		job = self.jobs[i]
-		job.status = Job.STATUS_RUNNING
-		self.progressbar(i)
-		job.run()
-		self.progressbar(i)
-		retry = job.retry()
-		if retry == 'halt':
-			raise JobFailException()
-		elif retry is True:
-			self.logger.warning("Retrying %s/%s ...", job.ntry, job.config['errntry'], extra = {
-				'loglevel': Jobmgr.PBAR_LEVEL[job.status], 
-				'jobidx'  : job.index, 
-				'joblen'  : len(self.jobs), 
-				'pbar'    : False,
-				'proc'    : self.config['proc']
-			})
-			self.sbmtQ.put(i)
-
-	# process killed, so coverage not included
-	def killJob(self, i): # pragma: no cover
-		"""
-		Kill job
-		@params:
-			`i`: The job index
-		"""
-		job = self.jobs[i]
-		job.status = Job.STATUS_KILLING
-		self.progressbar(i)
-		job.kill()

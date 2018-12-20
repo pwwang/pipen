@@ -1,11 +1,14 @@
 """
 job module for PyPPL
 """
+import sys
+import re
 import json
 from os import path, makedirs, utime
 from glob import glob
 from collections import OrderedDict
 from datetime import datetime
+from threading import Lock
 from .logger import logger
 from .utils import cmd, safefs, string_types
 from .utils.box import Box
@@ -14,6 +17,26 @@ from .exception import JobInputParseError, JobOutputParseError
 class Job(object):
 	"""
 	PyPPL Job
+
+	@static variables:
+		`STATUS_INITIATED`    : Job status when a job has just initiated
+		`STATUS_BUILDING`     : Job status when a job is being built
+		`STATUS_BUILT`        : Job status when a job has been built
+		`STATUS_BUILTFAILED`  : Job status when a job fails to build
+		`STATUS_SUBMITTING`   : Job status when a job is submitting
+		`STATUS_SUBMITTED`    : Job status when a job has submitted
+		`STATUS_SUBMITFAILED` : Job status when a job fails to submit
+		`STATUS_RUNNING`      : Job status when a job is running
+		`STATUS_RETRYING`     : Job status when a job is about to retry
+		`STATUS_DONE`         : Job status when a job has done
+		`STATUS_DONECACHED`   : Job status when a job has cached
+		`STATUS_DONEFAILED`   : Job status when a job fails temporarily (may retry later)
+		`STATUS_ENDFAILED`    : Job status when a job fails finally
+		`STATUS_KILLING`      : Job status when a job is being killed
+		`STATUS_KILLED`       : Job status when a job has been killed
+
+		`RC_NOTGENERATE` : A return code if no rcfile has been generated
+		`RC_SUBMITFAILED`: A return code when a job fails to submit
 	"""
 
 	# 0b
@@ -27,9 +50,9 @@ class Job(object):
 
 	STATUS_INITIATED    = 0b0000000
 	STATUS_BUILDING     = 0b0010010
-	STATUS_BUILT        = 0b0010001
-	STATUS_BUILTFAILED  = 0b1010000
-	STATUS_SUBMITTING   = 0b0001011
+	STATUS_BUILT        = 0b0010000
+	STATUS_BUILTFAILED  = 0b1010001
+	STATUS_SUBMITTING   = 0b0001010
 	STATUS_SUBMITTED    = 0b0001000
 	STATUS_SUBMITFAILED = 0b1001001
 	STATUS_RUNNING      = 0b0000110
@@ -39,11 +62,20 @@ class Job(object):
 	STATUS_DONEFAILED   = 0b0000101
 	STATUS_ENDFAILED    = 0b1000101
 	STATUS_KILLING      = 0b1100010
-	STATUS_KILLED       = 0b1100001
+	STATUS_KILLED       = 0b1100000
 
-	RC_NOTGENERATE = 99
+	RC_NOTGENERATE  = 99
+	RC_SUBMITFAILED = 88
+
+	LOGLOCK = Lock()
 
 	def __init__(self, index, config):
+		"""
+		Initiate a job
+		@params:
+			`index`:  The index of the job.
+			`config`: The configurations of the job.
+		"""
 		self.index     = index
 		self.status    = Job.STATUS_INITIATED
 		self.config    = config
@@ -54,6 +86,10 @@ class Job(object):
 		self.rcfile    = path.join (self.dir, "job.rc")
 		self.outfile   = path.join (self.dir, "job.stdout")
 		self.errfile   = path.join (self.dir, "job.stderr")
+		self.fout      = None
+		self.ferr      = None
+		self.lastout   = ''
+		self.lasterr   = ''
 		self.cachefile = path.join (self.dir, "job.cache")
 		self.pidfile   = path.join (self.dir, "job.pid")
 		self.logger    = config.get('logger', logger)
@@ -97,20 +133,32 @@ class Job(object):
 			msg.append('Outfile not generated')
 		if self.rc & 0b1000000000:
 			msg.append('Expectation not met')
+		if self.rc == Job.RC_SUBMITFAILED:
+			msg.append('Submission failed')
 		msg = ', '.join(msg)
 		if self.config['errhow'] == 'ignore':
-			self.logger.warning('Failed but ignored (totally {total}). Return code: {rc} {msg}.'.format(
+			self.logger.warning('Failed but ignored (totally {total}). Return code: {rc}{msg}.'.format(
 				total = totalfailed,
 				rc    = self.rc & 0b0011111111,
-				msg   = msg if not msg else '({})'.format(msg)
-			), extra = extra)
+				msg   = msg if not msg else ' ({})'.format(msg)
+			), extra = dict(
+				proc   = extra['proc'],
+				jobidx = extra['jobidx'],
+				joblen = extra['joblen'],
+				pbar   = False
+			))
 			return
 
-		self.logger.error('Failed (totally {total}). Return code: {rc} {msg}.'.format(
+		self.logger.error('Failed (totally {total}). Return code: {rc}{msg}.'.format(
 			total = totalfailed,
 			rc    = self.rc & 0b0011111111,
-			msg   = msg if not msg else '({})'.format(msg)
-		), extra = extra)
+			msg   = msg if not msg else ' ({})'.format(msg)
+		), extra = dict(
+			proc   = extra['proc'],
+			jobidx = extra['jobidx'],
+			joblen = extra['joblen'],
+			pbar   = False
+		))
 		
 		self.logger.error('Script: {}'.format(self.script),  extra = extra)
 		self.logger.error('Stdout: {}'.format(self.outfile), extra = extra)
@@ -205,14 +253,13 @@ class Job(object):
 		Initiate a job, make directory and prepare input, output and script.
 		"""
 		try:
-			self.status = Job.STATUS_BUILDING
 			if not path.exists(self.dir):
 				makedirs (self.dir)
 			# run may come first before submit
 			# preserve the outfile and errfile of previous run
 			# issue #30
-			safefs.move(self.outfile, self.outfile + '.bak')
-			safefs.move(self.errfile, self.errfile + '.bak')
+			safefs.SafeFs._move(self.outfile, self.outfile + '.bak')
+			safefs.SafeFs._move(self.errfile, self.errfile + '.bak')
 			# did in reset
 			#open(self.outfile, 'w').close()
 			#open(self.errfile, 'w').close()
@@ -224,7 +271,7 @@ class Job(object):
 			# check cache
 			if self.isTrulyCached() or self.isExptCached():
 				self.status = Job.STATUS_DONECACHED
-				self.done()
+				self.done(export = self.config['acache'])
 			else:
 				self.runner = self.config['runner'](self)
 				self.status = Job.STATUS_BUILT
@@ -242,10 +289,12 @@ class Job(object):
 		@returns:
 			The link to the original file.
 		"""
-		basename = safefs.SafeFs.basename (orgfile)
+		basename = path.basename (orgfile)
 		infile   = path.join (self.indir, basename)
-		safefs.link(orgfile, infile, overwrite = False)
-		if safefs.SafeFs(infile, orgfile).samefile():
+		#return infile
+		safefs.SafeFs._link(orgfile, infile, overwrite = False)
+		#if safefs.SafeFs(infile, orgfile).samefile():
+		if path.samefile(infile, orgfile):
 			return infile
 
 		if '.' in basename:
@@ -257,11 +306,12 @@ class Job(object):
 		existInfiles = glob (path.join(self.indir, fn + '[[]*[]]' + ext))
 		if not existInfiles:
 			infile = path.join (self.indir, fn + '[1]' + ext)
-			safefs.link(orgfile, infile, overwrite = False)
+			safefs.SafeFs._link(orgfile, infile, overwrite = False)
 		elif len(existInfiles) < 100:
 			num = 0
 			for eifile in existInfiles:
-				if safefs.SafeFs(eifile, orgfile).samefile():
+				#if safefs.SafeFs(eifile, orgfile).samefile():
+				if path.samefile(eifile, orgfile):
 					num = 0
 					return eifile
 				n   = int(path.basename(eifile)[len(fn)+1 : -len(ext)-1])
@@ -269,14 +319,14 @@ class Job(object):
 
 			if num > 0:
 				infile = path.join (self.indir, fn + '[' + str(num+1) + ']' + ext)
-				safefs.link(orgfile, infile)
+				safefs.SafeFs._link(orgfile, infile)
 		else: # pragma: no cover
 			num = max([
 				int(path.basename(eifile)[len(fn)+1 : -len(ext)-1]) 
 				for eifile in existInfiles
 			])
 			infile = path.join (self.indir, fn + '[' + str(num+1) + ']' + ext)
-			safefs.link(orgfile, infile)
+			safefs.SafeFs._link(orgfile, infile)
 		return infile
 
 	def _prepInput (self):
@@ -284,7 +334,7 @@ class Job(object):
 		Prepare input, create link to input files and set other placeholders
 		"""
 		from . import Proc
-		safefs.remove(self.indir)
+		safefs.SafeFs._remove(self.indir)
 		makedirs(self.indir)
 
 		for key, val in self.config['input'].items():
@@ -303,10 +353,10 @@ class Job(object):
 						raise JobInputParseError(indata, 'File not exists for input type "%s"' % intype)
 
 					indata   = path.abspath(indata)
-					basename = safefs.SafeFs.basename(indata)
+					basename = path.basename(indata)
 					infile   = self._linkInfile(indata)
-					if basename != safefs.SafeFs.basename(infile):
-						self.logger.warning ("Input file renamed: %s -> %s" % (basename, safefs.SafeFs.basename(infile)), extra = {
+					if basename != path.basename(infile):
+						self.logger.warning ("Input file renamed: %s -> %s" % (basename, path.basename(infile)), extra = {
 							'proc'  : self.config['proc'],
 							'joblen': self.config['procsize'],
 							'jobidx': self.index,
@@ -432,7 +482,7 @@ class Job(object):
 				write = False
 			else:
 				# for debug
-				safefs.move(self.script, self.script + '.bak')
+				safefs.SafeFs._move(self.script, self.script + '.bak')
 				self.logger.debug ("Script file updated: %s" % self.script, extra = {
 					'level2': 'SCRIPT_EXISTS',
 					'jobidx': self.index,
@@ -442,7 +492,7 @@ class Job(object):
 		
 		if write:
 			with open (self.script, 'w') as f:
-				f.write (script)
+				f.write(script)
 
 	@property
 	def rc(self):
@@ -539,7 +589,6 @@ class Job(object):
 				oval = osig[k]
 				nval = nsig[k]
 				if nval == oval: continue
-				#with Job.LOGLOCK:
 				self.logger.debug((
 					"Not cached because {key} variable({k}) is different:\n" +
 					"...... - Previous: {prev}\n" +
@@ -561,7 +610,6 @@ class Job(object):
 				nfile, ntime = nsig[k]
 				if nfile == ofile and ntime <= otime: continue
 				if nfile != ofile:
-					#with Job.LOGLOCK:
 					self.logger.debug((
 						"Not cached because {key} file({k}) is different:\n" +
 						"...... - Previous: {prev}\n" + 
@@ -575,7 +623,6 @@ class Job(object):
 					})
 					return False
 				if timekey and ntime > otime:
-					#with Job.LOGLOCK:
 					self.logger.debug((
 						"Not cached because {key} file({k}) is newer: {ofile}\n" +
 						"...... - Previous: {otime} ({transotime})\n" +
@@ -616,7 +663,6 @@ class Job(object):
 						nfile, ntime = nval[i]
 					if nfile == ofile and ntime <= otime: continue
 					if nfile != ofile:
-						#with Job.LOGLOCK:
 						self.logger.debug((
 							"Not cached because file {i} is different for {key} files({k}):\n" +
 							"...... - Previous: {ofile}\n" +
@@ -636,7 +682,6 @@ class Job(object):
 						})
 						return False
 					if timekey and ntime > otime:
-						#with Job.LOGLOCK:
 						self.logger.debug((
 							"Not cached because file {i} is newer for {key} files({k}): {ofile}\n" +
 							"...... - Previous: {otime} ({transotime})\n" +
@@ -829,7 +874,7 @@ class Job(object):
 				safefs.link(path.realpath(exfile), out['data'])
 
 		# Make sure no need to calculate next time
-		self.cache()
+		#self.cache()
 		self.rc = 0
 		#safefs.move(self.outfile + '.bak', self.outfile)
 		#safefs.move(self.errfile + '.bak', self.errfile)
@@ -856,17 +901,17 @@ class Job(object):
 		retrydir = path.join(self.dir, 'retry.' + str(retry))
 		
 		if retry:
-			safefs.remove(retrydir)
+			safefs.SafeFs._remove(retrydir)
 			makedirs(retrydir)
 		else:
 			for retrydir in glob(path.join(self.dir, 'retry.*')):
-				safefs.remove(retrydir)
+				safefs.SafeFs._remove(retrydir)
 
 		for jobfile in [self.rcfile, self.outfile, self.errfile, self.pidfile, self.outdir]:
 			if retry:
-				safefs.move(jobfile, path.join(retrydir, path.basename(jobfile)))
+				safefs.SafeFs._move(jobfile, path.join(retrydir, path.basename(jobfile)))
 			else:
-				safefs.remove(jobfile)
+				safefs.SafeFs._remove(jobfile)
 		open(self.outfile, 'w').close()
 		open(self.errfile, 'w').close()
 		
@@ -973,12 +1018,14 @@ class Job(object):
 				self.rc = self.rc | 0b1000000000
 		return self.rc in self.config['rcs']
 
-	def done (self):
+	def done(self, export = True):
 		"""
 		Do some cleanup when job finished
+		@params:
+			`export`: Whether do export
 		"""
-		#if self.succeed():
-		self.export()
+		if export:
+			self.export()
 		self.cache()
 
 	def signature (self):
@@ -989,7 +1036,7 @@ class Job(object):
 		"""
 		from . import Proc
 		ret = {}
-		sig = safefs.SafeFs(self.script).filesig()
+		sig = safefs.SafeFs._filesig(self.script)
 		if not sig:
 			self.logger.debug('Empty signature because of script file: %s.' % (self.script), extra = {
 				'level2': 'CACHE_EMPTY_CURRSIG',
@@ -1015,7 +1062,7 @@ class Job(object):
 			if val['type'] in Proc.IN_VARTYPE:
 				ret['i'][Proc.IN_VARTYPE[0]][key] = val['data']
 			elif val['type'] in Proc.IN_FILETYPE:
-				sig = safefs.SafeFs(val['data']).filesig(self.config['dirsig'])
+				sig = safefs.SafeFs._filesig(val['data'], dirsig = self.config['dirsig'])
 				if not sig:
 					self.logger.debug('Empty signature because of input file: %s.' % (val['data']), extra = {
 						'level2': 'CACHE_EMPTY_CURRSIG',
@@ -1029,7 +1076,7 @@ class Job(object):
 			elif val['type'] in Proc.IN_FILESTYPE:
 				ret['i'][Proc.IN_FILESTYPE[0]][key] = []
 				for infile in sorted(val['data']):
-					sig = safefs.SafeFs(infile).filesig(self.config['dirsig'])
+					sig = safefs.SafeFs._filesig(infile, dirsig = self.config['dirsig'])
 					if not sig:
 						self.logger.debug('Empty signature because of one of input files: %s.' % (infile), extra = {
 							'level2': 'CACHE_EMPTY_CURRSIG',
@@ -1045,7 +1092,7 @@ class Job(object):
 			if val['type'] in Proc.OUT_VARTYPE:
 				ret['o'][Proc.OUT_VARTYPE[0]][key] = val['data']
 			elif val['type'] in Proc.OUT_FILETYPE:
-				sig = safefs.SafeFs(val['data']).filesig(self.config['dirsig'])
+				sig = safefs.SafeFs._filesig(val['data'], dirsig = self.config['dirsig'])
 				if not sig:
 					self.logger.debug('Empty signature because of output file: %s.' % (val['data']), extra = {
 						'level2': 'CACHE_EMPTY_CURRSIG',
@@ -1057,7 +1104,7 @@ class Job(object):
 					return ''
 				ret['o'][Proc.OUT_FILETYPE[0]][key] = sig
 			elif val['type'] in Proc.OUT_DIRTYPE:
-				sig = safefs.SafeFs(val['data']).filesig(self.config['dirsig'])
+				sig = safefs.SafeFs._filesig(val['data'], dirsig = self.config['dirsig'])
 				if not sig:
 					self.logger.debug('Empty signature because of output dir: %s.' % (val['data']), extra = {
 						'level2': 'CACHE_EMPTY_CURRSIG',
@@ -1074,7 +1121,6 @@ class Job(object):
 		"""
 		Submit the job
 		"""
-		self.status = Job.STATUS_SUBMITTING
 		if self.runner.isRunning():
 			self.logger.info('is already running at {pid}, skip submission.'.format(pid = self.pid), extra = {
 				'proc'    : self.config['proc'],
@@ -1083,36 +1129,92 @@ class Job(object):
 				'loglevel': 'submit',
 				'pbar'    : False,
 			})
-			self.status = Job.STATUS_RUNNING
-		else:
-			self.reset()
-			rs = self.runner.submit()
-			if rs.rc == 0:
-				self.status = Job.STATUS_SUBMITTED
-			else:
-				self.logger.error(
-					'Submission failed (rc = {rc}, cmd = {cmd})'.format(rc = rs.rc, cmd = rs.cmd), 
-					extra = {
-						'level2': 'SUBMISSION_FAIL',
-						'jobidx'  : self.index,
-						'joblen'  : self.config['procsize'],
-						'pbar'    : False,
-						'proc'    : self.config['proc']
-					}
-				)
-				self.status = Job.STATUS_SUBMITFAILED
+			return True
+		
+		self.reset()
+		rs = self.runner.submit()
+		if rs.rc == 0:
+			return True
+		self.logger.error(
+			'Submission failed (rc = {rc}, cmd = {cmd})'.format(rc = rs.rc, cmd = rs.cmd), 
+			extra = {
+				'level2': 'SUBMISSION_FAIL',
+				'jobidx'  : self.index,
+				'joblen'  : self.config['procsize'],
+				'pbar'    : False,
+				'proc'    : self.config['proc']
+			}
+		)
+		return False
 
-	def run(self):
+	def poll(self):
 		"""
-		Wait for the job to run
+		Check the status of a running job
 		"""
-		self.status = Job.STATUS_RUNNING
-		self.runner.run()
-		if self.succeed():
-			self.status = Job.STATUS_DONE
-			self.done()
-		else:
-			self.status = Job.STATUS_DONEFAILED
+		if not path.isfile(self.errfile) or not path.isfile(self.outfile):
+			self.status = Job.STATUS_RUNNING
+		elif self.rc != Job.RC_NOTGENERATE:
+			self._flush(end = True)
+			if self.succeed():
+				self.done()
+				self.status = Job.STATUS_DONE
+			else:
+				self.status = Job.STATUS_DONEFAILED
+		else: # running
+			self._flush()
+			self.status = Job.STATUS_RUNNING
+
+	def _flush (self, end = False):
+		"""
+		Flush stdout/stderr
+		@params:
+			`fout`: The stdout file handler
+			`ferr`: The stderr file handler
+			`lastout`: The leftovers of previously readlines of stdout
+			`lasterr`: The leftovers of previously readlines of stderr
+			`end`: Whether this is the last time to flush
+		"""
+		if self.index not in self.config['echo']['jobs']:
+			return
+
+		self.fout = self.fout or open(self.outfile)
+		self.ferr = self.ferr or open(self.errfile)
+		if 'stdout' in self.config['echo']['type']:
+			lines, self.lastout = safefs.SafeFs.flush(self.fout, self.lastout, end)
+			outfilter = self.config['echo']['type']['stdout']
+			for line in lines:
+				if not outfilter or re.search(outfilter, line):
+					with Job.LOGLOCK:
+						sys.stdout.write(line)
+
+		lines, self.lasterr = safefs.SafeFs.flush(self.ferr, self.lasterr, end)		
+		for line in lines:
+			if line.startswith('pyppl.log'):
+				line = line.rstrip('\n')
+				logstrs  = line[9:].lstrip().split(':', 1)
+				if len(logstrs) == 1:
+					logstrs.append('')
+				(loglevel, logmsg) = logstrs
+				
+				loglevel = loglevel[1:] if loglevel else 'log'
+				
+				# '_' makes sure it's not filtered by log levels
+				logger.info(logmsg.lstrip(), extra = {
+					'loglevel': '_' + loglevel,
+					'pbar'    : False,
+					'jobidx'  : self.index,
+					'joblen'  : self.config['procsize'],
+					'proc'    : self.config['proc']
+				})
+			elif 'stderr' in self.config['echo']['type']:
+				errfilter = self.config['echo']['type']['stderr']
+				if not errfilter or re.search(errfilter, line):
+					with Job.LOGLOCK:
+						sys.stderr.write(line)
+		
+		if end:
+			self.fout and self.fout.close()
+			self.ferr and self.ferr.close()
 
 	def retry(self):
 		"""

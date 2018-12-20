@@ -135,7 +135,7 @@ class RunnerSge (Runner):
 		"""
 		Kill the job
 		"""
-		cmdlist = [self.commands['qdel'], '-j', str(self.job.pid)]
+		cmdlist = [self.commands['qdel'], '--force', str(self.job.pid)]
 		try:
 			cmd.run(cmdlist)
 		except (OSError, CalledProcessError): # pragma: no cover
