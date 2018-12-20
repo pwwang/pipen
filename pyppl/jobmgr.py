@@ -4,7 +4,7 @@ jobmgr module for PyPPL
 """
 import random
 from time import sleep
-from .utils.taskmgr import PQueue, ThreadPool
+from .utils.taskmgr import PQueue, ThreadPool, Lock
 from .job import Job
 from .logger import logger
 from .exception import JobFailException, JobSubmissionException, JobBuildingException
@@ -48,6 +48,8 @@ class Jobmgr(object):
 		Job.STATUS_KILLING     : 'KILLING',
 		Job.STATUS_KILLED      : 'KILLING',
 	}
+	# submission lock
+	SBMLOCK = Lock()
 
 	def __init__(self, jobs, config):
 		if not jobs:  # no jobs
@@ -101,8 +103,12 @@ class Jobmgr(object):
 		elif job.status == Job.STATUS_BUILT or job.status == Job.STATUS_RETRYING:
 			# when slots are available
 			if self.canSubmit():
+				with Jobmgr.SBMLOCK:
+					job.status = Job.STATUS_SUBMITTING
 				self.progressbar(index)
-				job.submit()
+				s = job.submit()
+				with Jobmgr.SBMLOCK:
+					job.status = Job.STATUS_SUBMITTED if s else Job.STATUS_SUBMITFAILED
 				# status then could be:
 				# STATUS_SUBMITTED or STATUS_SUBMITFAILED
 				self.progressbar(index)
@@ -176,7 +182,7 @@ class Jobmgr(object):
 				jobx += step
 
 		ncompleted = sum(1 for s in status if s & 0b1000000)
-		nrunning   = min(self.config['forks'], sum(1 for s in status if s == Job.STATUS_RUNNING or s == Job.STATUS_SUBMITTED))
+		nrunning   = sum(1 for s in status if s == Job.STATUS_RUNNING or s == Job.STATUS_SUBMITTED)
 
 		job = self.jobs[jobidx]
 		for bj in barjobs:
@@ -266,7 +272,7 @@ class Jobmgr(object):
 			initargs    = killQ
 		).join()
 			
-		failedjobs = [job for job in self.jobs if job.status & 0b1000000]
+		failedjobs = [job for job in self.jobs if job.status & 0b1]
 		if not failedjobs:
 			failedjobs = [random.choice(self.jobs)]
 		failedjobs[0].showError(len(failedjobs))
@@ -296,8 +302,9 @@ class Jobmgr(object):
 		@return:
 			`True` if they can else `False`
 		"""
-		return sum(
-			job.status == Job.STATUS_RUNNING or job.status == Job.STATUS_SUBMITTED
-			for job in self.jobs
-		) < self.config['forks']
+		with Jobmgr.SBMLOCK:
+			return sum(
+				1 for job in self.jobs
+				if job.status in (Job.STATUS_RUNNING, Job.STATUS_SUBMITTED, Job.STATUS_SUBMITTING)
+			) < self.config['forks']
 

@@ -28,9 +28,9 @@ class Job(object):
 
 	STATUS_INITIATED    = 0b0000000
 	STATUS_BUILDING     = 0b0010010
-	STATUS_BUILT        = 0b0010001
-	STATUS_BUILTFAILED  = 0b1010000
-	STATUS_SUBMITTING   = 0b0001011
+	STATUS_BUILT        = 0b0010000
+	STATUS_BUILTFAILED  = 0b1010001
+	STATUS_SUBMITTING   = 0b0001010
 	STATUS_SUBMITTED    = 0b0001000
 	STATUS_SUBMITFAILED = 0b1001001
 	STATUS_RUNNING      = 0b0000110
@@ -40,7 +40,7 @@ class Job(object):
 	STATUS_DONEFAILED   = 0b0000101
 	STATUS_ENDFAILED    = 0b1000101
 	STATUS_KILLING      = 0b1100010
-	STATUS_KILLED       = 0b1100001
+	STATUS_KILLED       = 0b1100000
 
 	RC_NOTGENERATE  = 99
 	RC_SUBMITFAILED = 88
@@ -1099,24 +1099,23 @@ class Job(object):
 				'loglevel': 'submit',
 				'pbar'    : False,
 			})
-			self.status = Job.STATUS_SUBMITTED
-		else:
-			self.reset()
-			rs = self.runner.submit()
-			if rs.rc == 0:
-				self.status = Job.STATUS_SUBMITTED
-			else:
-				self.logger.error(
-					'Submission failed (rc = {rc}, cmd = {cmd})'.format(rc = rs.rc, cmd = rs.cmd), 
-					extra = {
-						'level2': 'SUBMISSION_FAIL',
-						'jobidx'  : self.index,
-						'joblen'  : self.config['procsize'],
-						'pbar'    : False,
-						'proc'    : self.config['proc']
-					}
-				)
-				self.status = Job.STATUS_SUBMITFAILED
+			return True
+		
+		self.reset()
+		rs = self.runner.submit()
+		if rs.rc == 0:
+			return True
+		self.logger.error(
+			'Submission failed (rc = {rc}, cmd = {cmd})'.format(rc = rs.rc, cmd = rs.cmd), 
+			extra = {
+				'level2': 'SUBMISSION_FAIL',
+				'jobidx'  : self.index,
+				'joblen'  : self.config['procsize'],
+				'pbar'    : False,
+				'proc'    : self.config['proc']
+			}
+		)
+		return False
 
 	def poll(self):
 		"""
