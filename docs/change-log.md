@@ -1,4 +1,9 @@
 # Change log
+## 1.4.0 (Dec. 20, 2018)
+- Implement jobmgr with PriorityQueue, and put job building, submission and polling in the same queue
+- Remove file locks while job initiation to speed up
+- Other bug fixes.
+
 ## 1.3.1 (Nov. 8, 2018)
 - Fix pipeline not quitting if retry times reached.
 - Optimize CPU usage.

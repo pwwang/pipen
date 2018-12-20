@@ -55,7 +55,6 @@ Now you can access them by: `{{i.a}}`, `{{i.b}}` and `{{o.a}}`
 |---------|------------|-------|
 |`pXXX.beforeCmd`|`{{proc.*}}`|Command to run before job starts|
 |`pXXX.afterCmd`|`{{proc.*}}`|Command to run after job finishes|
-|`pXXX.brings`|`{{proc.*}}`, `{{job.*}}`, `{{i.*}}`|The bring-in files|
 |`pXXX.output`|`{{proc.*}}`, `{{job.*}}`, `{{i.*}}`, `{{bring.*}}`|The output of the process|
 |`pXXX.expect`|All above-mentioned data|Command to check output|
 |`pXXX.expart`|All above-mentioned data|Partial export|
