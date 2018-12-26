@@ -6,7 +6,6 @@ import shlex
 from os import environ
 from time import time, sleep
 import warnings
-from . import string_types
 # I am intended to run in background.
 try:
 	ResourceWarning
@@ -54,14 +53,17 @@ class Cmd(object):
 		cmd = self.cmd
 		if popenargs['shell']:
 			if isinstance(cmd, list):
-				cmd = ' '.join([str(c) for c in cmd])
+				#cmd = ' '.join([str(c) for c in cmd])
+				cmd = subprocess.list2cmdline([str(c) for c in cmd])
 			# else: assume string
 		else:
-			if isinstance(cmd, string_types):
-				cmd = shlex.split(self.cmd)
-			else: 
+			if isinstance(cmd, (list, type)):
 				cmd = [str(c) for c in cmd]
-				
+			else: 
+				cmd = shlex.split(self.cmd)
+		
+		self.cmd = cmd if not isinstance(cmd, list) else subprocess.list2cmdline(cmd)
+
 		try:
 			self.p   = subprocess.Popen(cmd, **popenargs)
 			self.pid = self.p.pid
@@ -111,7 +113,9 @@ class Cmd(object):
 			`Command` instance of the other command
 		"""
 		kwargs['stdin'] = self.p.stdout
-		return Cmd(cmd, **kwargs)
+		c = Cmd(cmd, **kwargs)
+		c.cmd = '{} | {}'.format(self.cmd, c.cmd)
+		return c
 
 # shortcuts
 def run(cmd, bg = False, raiseExc = True, timeout = None, **kwargs):

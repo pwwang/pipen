@@ -3,7 +3,7 @@ Slurm runner for PyPPL
 """
 import re
 import copy
-from subprocess import CalledProcessError
+from subprocess import CalledProcessError, list2cmdline
 from .runner import Runner
 from ..utils import cmd, box
 
@@ -115,7 +115,7 @@ class RunnerSlurm (Runner):
 			r        = box.Box()
 			r.stderr = str(ex)
 			r.rc     = 1
-			r.cmd    = cmdlist
+			r.cmd    = list2cmdline(cmdlist)
 			return r
 
 	def kill(self):

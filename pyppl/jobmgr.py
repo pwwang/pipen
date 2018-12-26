@@ -112,10 +112,10 @@ class Jobmgr(object):
 			job.build()
 			# status then could be: 
 			# STATUS_DONECACHED, STATUS_BUILT, STATUS_BUILTFAILED
-			self.progressbar(index)
 			if job.status == Job.STATUS_DONECACHED:
-				pass
+				self.progressbar(index)
 			elif job.status == Job.STATUS_BUILTFAILED:
+				self.progressbar(index)
 				raise JobBuildingException()
 			else: 
 				queue.put(index, where = batch+3)

@@ -12,7 +12,7 @@ from pyppl.utils.cmd import Cmd
 from pyppl.utils.safefs import SafeFs
 from time import time, sleep
 from shutil import copyfile, rmtree, copyfileobj
-from subprocess import Popen
+from subprocess import Popen, list2cmdline
 from tempfile import gettempdir
 
 class TestSafeFs(testly.TestCase):
@@ -2002,13 +2002,13 @@ class TestCmd(testly.TestCase):
 			self.assertRaises(exception, Cmd, cmd, raiseExc, **kwargs)
 		else:
 			c = Cmd(cmd, raiseExc, **kwargs)
-			self.assertEqual(c.cmd, cmd)
+			self.assertEqual(c.cmd, list2cmdline(cmd) if isinstance(cmd, list) else cmd)
 			self.assertIsInstance(c.p, Popen)
 			self.assertIsNone(c.stdout)
 			self.assertIsNone(c.stderr)
 			self.assertEqual(c.rc, 1)
 			self.assertGreater(c.pid, 0)
-			self.assertEqual(repr(c), '<Cmd {!r}>'.format(cmd))
+			self.assertEqual(repr(c), '<Cmd {!r}>'.format(list2cmdline(cmd) if isinstance(cmd, list) else cmd))
 
 	def dataProvider_testInit(self):
 		yield ['ls'], True, {'shell': True}

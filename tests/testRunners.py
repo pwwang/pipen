@@ -80,7 +80,7 @@ class TestRunner(testly.TestCase):
 
 	def testSubmit(self, job, cmd):
 		r = Runner(job)
-		self.assertEqual(r.submit().cmd, cmd)
+		self.assertEqual(r.submit().cmd, list2cmdline(cmd))
 
 	# Covered by job.run
 	# def dataProvider_testRun(self):
@@ -128,7 +128,7 @@ class TestLocalSubmitter(testly.TestCase):
 		makedirs(path.dirname(script1))
 		with open(script1, 'w') as f:
 			f.write('#!/usr/bin/env bash\necho 1\necho 2 >&2')
-		yield runners.runner._LocalSubmitter(script1), [script1], '1', '2'
+		yield runners.runner._LocalSubmitter(script1), script1, '1', '2'
 
 	def testSubmit(self, ls, cmd, stdout = '', stderr = ''):
 		ls.submit()
@@ -403,7 +403,7 @@ class TestRunnerSsh(testly.TestCase):
 			r.sshcmd = [path.join(__here__, 'mocks', 'ssh')]
 			c = r.submit()
 			self.assertEqual(c.rc, rc)
-			self.assertEqual(c.cmd, cmd)
+			self.assertEqual(c.cmd, list2cmdline(cmd))
 
 	def dataProvider_testKill(self):
 		job0 = createJob(
@@ -573,7 +573,7 @@ class TestRunnerSge(testly.TestCase):
 		r = RunnerSge(job)
 		c = r.submit()
 		self.assertEqual(c.rc, rc)
-		self.assertEqual(c.cmd, cmd)
+		self.assertEqual(c.cmd, list2cmdline(cmd))
 
 	def dataProvider_testKill(self):
 		job0 = createJob(
@@ -771,7 +771,7 @@ class TestRunnerSlurm(testly.TestCase):
 		r = RunnerSlurm(job)
 		c = r.submit()
 		self.assertEqual(c.rc, rc)
-		self.assertEqual(c.cmd, cmd)
+		self.assertEqual(c.cmd, list2cmdline(cmd))
 
 	def dataProvider_testKill(self):
 		job0 = createJob(
