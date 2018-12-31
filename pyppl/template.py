@@ -111,16 +111,33 @@ class _TemplateFilter(object):
 		return 'as.list({})'.format(_TemplateFilter.R(x, ignoreintkey))
 	
 	@staticmethod
-	def render(x):
+	def render(x, data = None):
 		"""
 		Render a template variable, using the shared environment
 		"""
-		data = inspect.currentframe().f_back.f_locals
-		if '_Context__self' in data:
-			return TemplateJinja2(x).render(dict(data['_Context__self']))
-		else:
-			return TemplateLiquid(x).render(data)
-			
+		if not isinstance(x, string_types):
+			return x
+		frames = inspect.getouterframes(inspect.currentframe())
+		evars  = data or {}
+		for frame in frames:
+			lvars = frame[0].f_locals
+			if lvars.get('__engine') == 'liquid':
+				lvars.update(evars)
+				evars = lvars
+				break
+			if '_Context__self' in lvars:
+				lvars = dict(lvars['_Context__self'])
+				lvars.update(evars)
+				evars = lvars
+				break
+		
+		engine = evars.get('__engine')
+		if not engine:
+			raise RuntimeError("I don't know which template engine to use to render {}...".format(x[:10]))
+		
+		engine = TemplateJinja2 if engine == 'jinja2' else TemplateLiquid
+		return engine(x).render(evars)
+
 class Template(object):
 	"""
 	Template wrapper base
@@ -211,6 +228,7 @@ class TemplateLiquid (Template):
 			`envs`: The env data
 		"""
 		super(TemplateLiquid, self).__init__(source ,**envs)
+		self.envs['__engine'] = 'liquid'
 		self.engine = Liquid(source, **self.envs)
 		self.source = source
 
@@ -238,6 +256,7 @@ class TemplateJinja2 (Template):
 		"""
 		import jinja2
 		super(TemplateJinja2, self).__init__(source ,**envs)
+		self.envs['__engine'] = 'jinja2'
 		self.engine = jinja2.Template(source)
 		self.engine.globals = self.envs
 		self.source = source
