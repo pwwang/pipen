@@ -111,6 +111,7 @@ class TestTemplateLiquid (testly.TestCase):
 		yield '{{[1,2,3] | Rlist}}', {}, 'as.list(c(1,2,3))'
 		yield '{{ {0:1} | Rlist}}', {}, 'list(1)'
 		yield '{{ {0:1} | Rlist: False}}', {}, 'list(`0`=1)'
+		yield '{{x | render}}', {'x': '{{i}}', 'i': 2}, '2'
 
 	def testRender(self, source, data, out):
 		tpl = TemplateLiquid(source)
@@ -203,6 +204,7 @@ class TestTemplateJinja2(testly.TestCase):
 		yield '{{read(a)}}', {'a': __file__}, helpers.readFile(__file__)
 		file2read = path.join(path.dirname(__file__), 'helpers.py')
 		yield '{{"\\n".join(readlines(a))}}', {'a': file2read}, helpers.readFile(file2read, lambda x: '\n'.join(str(y) for y in x.splitlines() if y))
+		yield '{{render(x)}}', {'x': '{{i}}', 'i': 2}, '2'
 
 	@unittest.skipIf(not helpers.moduleInstalled('jinja2'), 'Jinja2 not installed.')
 	def testRender(self, s, e, out):
