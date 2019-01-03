@@ -1,7 +1,11 @@
 site_name: PyPPL
-theme: 'material'
+theme: 
+    name: 'material'
+    font:
+      text: 'Ubuntu'
+      code: 'Ubuntu Mono'
 markdown_extensions:
-    - markdown.extensions.admonition:
+    - markdown.extensions.admonition
     - pymdownx.superfences:
         preserve_tabs: true
     - toc:
