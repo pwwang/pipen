@@ -257,36 +257,37 @@ class TestParameters(testly.TestCase):
 	def dataProvider_testParseName(self):
 		ps = Parameters()
 		ps('prefix', '---')
-		yield ps, '-a', None, 'auto', None
-		yield ps, '----a', None, 'auto', None
-		yield ps, '---a', 'a', 'auto', None
-		yield ps, '---a:i', 'a', 'int', None
-		yield ps, '---a:int', 'a', 'int', None
-		yield ps, '---a:s', 'a', 'str', None
-		yield ps, '---a:str', 'a', 'str', None
-		yield ps, '---a:b', 'a', 'bool', None
-		yield ps, '---a:bool', 'a', 'bool', None
-		yield ps, '---a:f', 'a', 'float', None
-		yield ps, '---a:float', 'a', 'float', None
-		yield ps, '---a:l', 'a', 'list:auto', None
-		yield ps, '---a:list', 'a', 'list:auto', None
-		yield ps, '---a:l:s', 'a', 'list:str', None
-		yield ps, '---a:list:s', 'a', 'list:str', None
-		yield ps, '---a:list:str', 'a', 'list:str', None
-		yield ps, '---a:l:i', 'a', 'list:int', None
-		yield ps, '---a:list:i', 'a', 'list:int', None
-		yield ps, '---a:list:int', 'a', 'list:int', None
-		yield ps, '---a:l:f', 'a', 'list:float', None
-		yield ps, '---a:list:f', 'a', 'list:float', None
-		yield ps, '---a:list:float', 'a', 'list:float', None
-		yield ps, '---a:l:b', 'a', 'list:bool', None
-		yield ps, '---a:list:b', 'a', 'list:bool', None
-		yield ps, '---a:list:bool', 'a', 'list:bool', None
+		yield ps, '-a', None, 'auto', 'auto', None
+		yield ps, '----a', None, 'auto', 'auto', None
+		yield ps, '---a', 'a', 'auto', 'auto', None
+		yield ps, '---a:i', 'a', 'int', 'auto', None
+		yield ps, '---a:int', 'a', 'int', 'auto', None
+		yield ps, '---a:s', 'a', 'str', 'auto', None
+		yield ps, '---a:str', 'a', 'str', 'auto', None
+		yield ps, '---a:b', 'a', 'bool', 'auto', None
+		yield ps, '---a:bool', 'a', 'bool', 'auto', None
+		yield ps, '---a:f', 'a', 'float', 'auto', None
+		yield ps, '---a:float', 'a', 'float', 'auto', None
+		yield ps, '---a:l', 'a', 'list', 'auto', None
+		yield ps, '---a:list', 'a', 'list', 'auto', None
+		yield ps, '---a:l:s', 'a', 'list', 'str', None
+		yield ps, '---a:list:s', 'a', 'list', 'str', None
+		yield ps, '---a:list:str', 'a', 'list', 'str', None
+		yield ps, '---a:l:i', 'a', 'list', 'int', None
+		yield ps, '---a:list:i', 'a', 'list', 'int', None
+		yield ps, '---a:list:int', 'a', 'list', 'int', None
+		yield ps, '---a:l:f', 'a', 'list', 'float', None
+		yield ps, '---a:list:f', 'a', 'list', 'float', None
+		yield ps, '---a:list:float', 'a', 'list', 'float', None
+		yield ps, '---a:l:b', 'a', 'list', 'bool', None
+		yield ps, '---a:list:b', 'a', 'list', 'bool', None
+		yield ps, '---a:list:bool', 'a', 'list', 'bool', None
 	
-	def testParseName(self, ps, argname, an, at, av):
-		an1, at1, av1 = ps._parseName(argname)
+	def testParseName(self, ps, argname, an, at, st, av):
+		an1, at1, st1, av1 = ps._parseName(argname)
 		self.assertEqual(an1, an)
 		self.assertEqual(at1, at)
+		self.assertEqual(st1, st)
 		self.assertEqual(av1, av)
 
 	def dataProvider_testShouldPrintHelp(self):
@@ -333,23 +334,27 @@ class TestParameters(testly.TestCase):
 
 	def dataProvider_testPutValue(self):
 		ps = Parameters()
-		yield ps, 'noSuchArgname', None, None, None, False
+		yield ps, 'noSuchArgname', None, None, None, 'auto'
 		ps.a.type = 'list'
-		yield ps, 'a', 'auto', 1, 1, False
-		yield ps, 'a', 'auto', '2', 2, False
-		yield ps, 'a', 'auto', '', '', False
-		yield ps, 'a', 'list:str', 3, ['3'], True
+		yield ps, 'a', 'auto', 1, 1, 'auto'
+		yield ps, 'a', 'auto', '2', 2, 'auto'
+		yield ps, 'a', 'auto', '', '', 'auto'
+		yield ps, 'a', 'list', 3, ['3'], 'str'
 		ps.b.type = 'bool'
-		yield ps, 'b', 'auto', 'F', False, False
+		yield ps, 'b', 'auto', 'F', False, 'auto'
 		ps.c.type = 'list'
-		yield ps, 'c', 'list:one', 1, [[1]], True
-		yield ps, 'd', 'auto', '1', 1, False, True
+		yield ps, 'c', 'list', 1, [[1]], 'one'
+		yield ps, 'd', 'auto', '1', 1, 'auto', True
+		ps.e.type = 'list'
+		ps.e = [1,2,3]
+		yield ps, 'e', 'list', '4', [1,2,3,4], 'auto', True
+		ps.f = [1,2,3]
+		yield ps, 'f', 'list', '4', [], None, True
 
 
-	def testPutValue(self, ps, argname, argtype, argval, outval, ret, arbi = False):
+	def testPutValue(self, ps, argname, argtype, argval, outval, subtype, arbi = False):
 		with self.assertStdOE():
-			r = ps._putValue(argname, argtype, argval, arbi)
-		self.assertEqual(r, ret)
+			ps._putValue(argname, argtype, subtype, argval, arbi)
 		if argname in ps._params:
 			self.assertEqual(ps._params[argname].value, outval)
 
@@ -419,7 +424,7 @@ class TestParameters(testly.TestCase):
 		ps5 = Parameters()
 		ps5('prefix', '--param-')
 		ps5.g = ''
-		yield ps5, ['--param-g'], {'g': True, '_': []}, 'Warning: Decleared type "str" ignored, use "bool" instead for option --param-g.'
+		yield ps5, ['--param-g'], {'g': '', '_': []}, ''
 		yield ps5, ['--param-g', 'a', 'b'], {'g': 'a', '_': ['b']}
 
 		ps6 = Parameters()
@@ -466,12 +471,17 @@ class TestParameters(testly.TestCase):
 		ps11.d = False
 		ps11.e = []
 		yield ps11, ['--param-d'], {'a':None, 'b':'a', 'c':1, 'd': True, 'e':[], '_': []}
-		yield ps11, ['a', '--param-d', 'no', 'b', '--param-c=100', '--param-e:l:s', '-1', '-2'], {'a': None, 'b':'a', 'c':100, 'd': False, 'e':['-1', '-2'], '_': ['a', 'b']}, 'Warning: Decleared type "list" ignored, use "list:str" instead for option --param-e.'
+		yield ps11, ['a', '--param-d', 'no', 'b', '--param-c=100', '--param-e:l:s', '-1', '-2'], {'a': None, 'b':'a', 'c':100, 'd': False, 'e':['-1', '-2'], '_': ['a']}, 'Warning: Unexpected value(s): b.'
 
+		# 30
 		ps12 = Parameters()
 		ps12.a
 		ps12.b
 		yield ps12, ['-a', '-b=1'], {'a':True, 'b':1, '_': []}
+
+		ps13 = Parameters()
+		ps13.a.type = list
+		yield ps13, ['-a', '1', '-a', '-a', '2', '3'], {'a': [2,3], '_':[]}
 
 	def testParse(self, ps, args, values, stderr = [], exception = None, msg = None):
 		if exception:
@@ -782,8 +792,8 @@ class TestCommands(testly.TestCase):
 		cmds1._cmds['None'] = None
 		yield cmds1, [], '', {}, True
 
-		args1 = ['-a', '1', '-b', '2', '3', '-c:list', '4', '5', '-d']
-		yield cmds1, args1, '-a', {'_': [1, 3], 'b': 2, 'c': [4, 5], 'd': True}, True
+		args1 = ['1', '3', '-a', '1', '-b', '2', '-c:list', '4', '5', '-d']
+		yield cmds1, args1, '1', {'_': [3], 'a': 1, 'b': 2, 'c': [4, 5], 'd': True}, True
 
 		args2 = ['subcmd', '-a', '1', '-b', '2', '3', '-c:list', '4', '5', '-d']
 		yield cmds1, args2, 'subcmd', {'a': 1, '_': [3], 'b': 2, 'c': [4, 5], 'd': True}, True

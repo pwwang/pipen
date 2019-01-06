@@ -353,7 +353,7 @@ class Parameter (object):
 		if not isinstance(t, string_types):
 			t = t.__name__
 		tcolon = t if ':' in t else t + ':'
-		t1, t2 = tcolon.split(':', 2)
+		t1, t2 = tcolon.split(':', 1)
 		if t1 in Parameters.ARG_TYPES:
 			t1 = Parameters.ARG_TYPES[t1]
 		if t2 in Parameters.ARG_TYPES:
@@ -609,46 +609,55 @@ class Parameters (object):
 
 	def _parseName(self, argname):
 		"""
-		If `argname` is the name of an option
+		Parse an argument name
 		@params:
 			`argname`: The argname
 		@returns:
 			`an`: clean argument name
 			`at`: normalized argument type
+			`st`: normalized subtype
 			`av`: the argument value, if `argname` is like: `-a=1`
 		"""
-		an, at, av = None, 'auto', None
+		an, at, st, av = None, 'auto', 'auto', None
 		if not argname.startswith(self._props['prefix']):
-			return an, at, av
+			# it's a value
+			return an, at, st, av
 		argname = argname[len(self._props['prefix']):]
 		m = re.match(Parameters.ARG_NAME_PATTERN, argname)
-		if not m: return an, at, av
+		if not m: 
+			# it's not desired argument name
+			return an, at, st, av
 		an = m.group(1)
-		at = m.group(2) or 'auto'
+		at = m.group(2)
 		av = m.group(3)
+		if not at and an in self._params and self._params[an].type:
+			at = self._params[an].type
+		at = at or 'auto'
 		if ':' in at:
-			at, att = at.split(':')
-			at = Parameters.ARG_TYPES[at] + ':' + Parameters.ARG_TYPES[att]
+			# I have a subtype, n
+			at, st = at.split(':', 1)
+			at = Parameters.ARG_TYPES[at]
+			st = Parameters.ARG_TYPES[st]
 		else:
 			at = Parameters.ARG_TYPES[at]
-
-		if an not in self._params:
-			return an, 'list:auto' if at == 'list' else at, av
 		
+		if an not in self._params:
+			# return everything if argument is not defined
+			return an, at, st, av
+
 		# check if the parameter is defined and type is assigned
-		if at == 'auto':
-			at = self._params[an].type or 'auto'
-		else:
-			if self._params[an].type and self._params[an].type != at:
-				sys.stderr.write(self._assembler.warning(
-					'Decleared type "{dtype}" ignored, use "{ptype}" instead for option {prefix}{option}.\n'.format(
-						dtype  = self._params[an].type,
-						ptype  = at,
-						prefix = self._props['prefix'],
-						option = an
-					)
-				))
-		return an, 'list:auto' if at == 'list' else at, av
+		if self._params[an].type and self._params[an].type.split(':', 1)[0] != at:
+			# warn if type is different as definition
+			sys.stderr.write(self._assembler.warning(
+				'Decleared type "{dtype}" ignored, use "{ptype}" instead for option {prefix}{option}.\n'.format(
+					dtype  = self._params[an].type,
+					ptype  = at,
+					prefix = self._props['prefix'],
+					option = an
+				)
+			))
+
+		return an, at, st, av
 		
 	def _shouldPrintHelp(self, args):
 		if self._props['hbald'] and not args:
@@ -714,13 +723,14 @@ class Parameters (object):
 		except (ValueError, TypeError):
 			raise ParameterTypeError(t, 'Unable to coerce value %s to type' % (repr(value)))
 
-	def _putValue(self, argname, argtype, argval, arbi = False):
+	def _putValue(self, argname, argtype, subtype, argval, arbi = False):
 		"""
 		Save the values.
 		@params:
 			`argname`: The option name
 			`argtype`: The parsed type
 			`argval`:  The option value
+			`subtype`: The subtype of a list argument
 			`arbi`:    Whether allow pass options arbitrarily (without definition)
 		@return:
 			`True` if value append to a list option successfully, otherwise `False`
@@ -732,22 +742,25 @@ class Parameters (object):
 				))
 				return False
 			else:
-				getattr(self, argname).type = 'str' if argtype == 'auto' else argtype
-
-		if argtype.startswith('list'):
-			if not self._params[argname].value:
+				# create an argument
+				newparam = getattr(self, argname)
+				if argtype != 'auto':
+					newparam.type = argtype
+					
+		if argtype == 'list':
+			if subtype is None or not self._params[argname].value:
+				# reset the list
 				self._params[argname].value = []
-			subtype = argtype.split(':')[1]
+			if not isinstance(argval, list):
+				argval = [argval]
 			if subtype == 'one':
 				if not self._params[argname].value:
 					self._params[argname].value.append([])
-				self._params[argname].value[0].append(argval)
-			else:
-				self._params[argname].value.append(Parameters._coerceValue(argval, subtype))
-			return True
+				self._params[argname].value[0].extend(argval)
+			elif subtype:
+				self._params[argname].value.extend([Parameters._coerceValue(av, subtype) for av in argval])
 		else:
 			self._params[argname].value = Parameters._coerceValue(argval, argtype)
-			return False
 
 	def parse (self, args = None, arbi = False):
 		"""
@@ -762,46 +775,48 @@ class Parameters (object):
 
 		if self._shouldPrintHelp(args) and not arbi:
 			self.help(printNexit = True)
+		
+		# split args in groups
+		groups = [[]]
+		for arg in args:
+			if arg.startswith(self._props['prefix']):
+				groups.append([])
+			groups[-1].append(arg)
 
 		setattr(self, Parameters.POSITIONAL, [])
-		# arbitrarily parse the arguments
-		argname, argtype = None, 'auto'
-		for arg in args:
-			argname2, argtype2, argvalue = self._parseName(arg)
-			if not argname: # argname not reached yet
-				if argname2: # I am the first argname
-					# it's not -a=1 format, just -a or it's list (-a:list=1)
-					# or it's a list option, keep the argname and argtype
-					if argvalue is None or self._putValue(argname2, argtype2, argvalue, arbi): 
-						argname, argtype = argname2, argtype2
-				else: # argname not reached yet and I am not an argname, so I am positional
-					self._putValue(Parameters.POSITIONAL, 'list:auto', arg, arbi)
-			else: # argname reached
-				if argname2: # it's argname
-					# type 'list' hasn't closed, so it should not be bool
-					if not argtype or not argtype.startswith('list'):
-						self._putValue(argname, 'bool', 'True', arbi)
-					# no value offered or it's a list option
-					if argvalue is None or self._putValue(argname2, argtype2, argvalue, arbi):
-						argname, argtype = argname2, argtype2
-					# single-value option, reset
+		for group in groups:
+			if not group:
+				continue
+			maybename = group.pop(0)
+			argname, argtype, subtype, argvalue = self._parseName(maybename)
+			if argname:
+				if argvalue:
+					group.insert(0, argvalue)
+					
+				if argtype == 'list':
+					# reset list 
+					if not group:
+						self._putValue(argname, argtype, None, None, arbi)
 					else:
-						argname, argtype = None, 'auto'
-				else: # it's value
-					if not self._putValue(argname, argtype, arg, arbi):
-						argname, argtype = None, 'auto'
+						self._putValue(argname, argtype, subtype, group, arbi)
+				else:
+					if not group and argtype and argtype != 'auto' and argtype != 'bool':
+						# ignore argument without values
+						continue
+					# group or argtype == 'bool'
+					if not group:
+						self._putValue(argname, argtype, subtype, 'True', arbi)
+					else:
+						self._putValue(argname, argtype, subtype, group.pop(0), arbi)
 
-		if argname and not (argtype and argtype.startswith('list')):
-			if argtype != 'auto' and argtype != 'bool':
-				sys.stderr.write(self._assembler.warning(
-					'Decleared type "{dtype}" ignored, use "{ptype}" instead for option {prefix}{option}.\n'.format(
-						dtype  = argtype,
-						ptype  = 'bool',
-						prefix = self._props['prefix'],
-						option = argname
-					)
-				))
-			self._putValue(argname, 'bool', 'True', arbi)
+					if group and self._params[Parameters.POSITIONAL].value:
+						sys.stderr.write(self._assembler.warning(
+							'Unexpected value(s): {}.\n'.format(', '.join(group))
+						))
+					elif group:
+						self._putValue(Parameters.POSITIONAL, 'list', 'auto', group, arbi)
+			else:
+				self._putValue(Parameters.POSITIONAL, 'list', 'auto', [maybename] + group, arbi)
 
 		# check the types, values of the params
 		errors = []
