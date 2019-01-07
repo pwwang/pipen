@@ -1371,6 +1371,8 @@ parameters module for PyPPL
 			`name` : The name of the attribute  
 			`value`: The value of the attribute  
   
+	!!! abstract "method: `setCallback (self, callback)`"
+  
 	!!! abstract "method: `setDesc (self, d)`"
   
 		Set the description of the parameter  
@@ -1722,9 +1724,17 @@ The ssh runner
 		- **returns:**  
 			`True` if it is else `False`  
   
-	!!! tip "staticmethod: `isServerAlive (server, key)`"
+	!!! tip "staticmethod: `isServerAlive (server, key, timeout)`"
   
 		Check if an ssh server is alive  
+
+		- **params:**  
+			`server`: The server to check  
+			`key`   : The keyfile to login the server  
+			`timeout`: The timeout to check whether the server is alive.  
+
+		- **returns:**  
+			`True` if alive else `False`  
   
 	!!! abstract "method: `kill (self)`"
   
