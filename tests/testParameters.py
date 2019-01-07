@@ -514,18 +514,18 @@ class TestParameters(testly.TestCase):
 				for stde in stderr:
 					self.assertIn(stde, err.getvalue())
 		else:
-			#with helpers.captured_output() as (out, err):
+			with helpers.captured_output() as (out, err):
 				d = ps.parse(args)
 
-			# if stderr:
-			# 	if not isinstance(stderr, list):
-			# 		stderr = [stderr]
-			# 	for stde in stderr:
-			# 		self.assertIn(stde, err.getvalue())
-			# else:
-			# 	self.assertEqual(err.getvalue(), '')
+			if stderr:
+				if not isinstance(stderr, list):
+					stderr = [stderr]
+				for stde in stderr:
+					self.assertIn(stde, err.getvalue())
+			else:
+				self.assertEqual(err.getvalue(), '')
 
-			# self.assertDictEqual(d, values)
+			self.assertDictEqual(d, values)
 
 	def dataProvider_testHelp(self):
 		ps = Parameters()
