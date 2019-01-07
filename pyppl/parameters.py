@@ -267,7 +267,8 @@ class Parameter (object):
 			show     = True,
 			type     = None,
 			name     = name,
-			value    = value
+			value    = value,
+			callback = None
 		)
 		if not isinstance(name, string_types):
 			raise ParameterNameError(name, 'Not a string')
@@ -366,6 +367,11 @@ class Parameter (object):
 		if not self.value is None:
 			self._forceType()
 		return self
+
+	def setCallback(self, callback):
+		if not callable(callback):
+			raise TypeError('Callback for parameter must be callable')
+		self._props['callback'] = callback
 
 	def _forceType (self):
 		"""
@@ -823,6 +829,15 @@ class Parameters (object):
 		for name in self._params:
 			if self._params[name].required and self._params[name].value is None:
 				errors.append('Option {}{} is required.'.format(self._props['prefix'], name))
+				continue
+			if callable(self._params[name].callback):
+				try:
+					ret = self._params[name].callback(self._params[name])
+				except TypeError: # wrong # arguments
+					ret = self._params[name].callback(self._params[name], self)
+				if ret is True or ret is None or isinstance(ret, Parameter):
+					continue
+				errors.extend([ret] if not isinstance(ret, list) else ret)
 		if errors:
 			self.help(error = errors, printNexit = True)
 

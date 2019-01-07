@@ -13,13 +13,19 @@ class RunnerSsh(Runner):
 	"""
 	The ssh runner
 	"""
-	LIVE_SERVERS = []
+	LIVE_SERVERS = None
 	LOCK         = Lock()
 	
 	@staticmethod
-	def isServerAlive(server, key = None):
+	def isServerAlive(server, key = None, timeout = 3):
 		"""
 		Check if an ssh server is alive
+		@params:
+			`server`: The server to check
+			`key`   : The keyfile to login the server 
+			`timeout`: The timeout to check whether the server is alive.
+		@returns:
+			`True` if alive else `False`
 		"""
 		cmdlist = ['ssh', server]
 		if key: # pragma: no cover
@@ -31,7 +37,7 @@ class RunnerSsh(Runner):
 		cmdlist.append('ConnectionAttempts=1')
 		cmdlist.append('true')
 		try:
-			return cmd.run(cmdlist, timeout = 3).rc == 0
+			return cmd.run(cmdlist, timeout = timeout).rc == 0
 		except cmd.Timeout: # pragma: no cover
 			return False
 
@@ -57,15 +63,20 @@ class RunnerSsh(Runner):
 			raise RunnerSshError('No server found for ssh runner.')
 
 		with RunnerSsh.LOCK:
-			if not RunnerSsh.LIVE_SERVERS:
-				if checkAlive:
+			if RunnerSsh.LIVE_SERVERS is None:
+				if checkAlive is True:
 					RunnerSsh.LIVE_SERVERS = [
 						i for i, server in enumerate(servers)
 						if RunnerSsh.isServerAlive(server, keys[i] if keys else None)
 					]
+				elif isinstance(checkAlive, (float, int)):
+					RunnerSsh.LIVE_SERVERS = [
+						i for i, server in enumerate(servers)
+						if RunnerSsh.isServerAlive(server, keys[i] if keys else None, checkAlive)
+					]
 				else:
 					RunnerSsh.LIVE_SERVERS = list(range(len(servers)))
-				
+
 		if not RunnerSsh.LIVE_SERVERS:
 			raise RunnerSshError('No server is alive.')
 

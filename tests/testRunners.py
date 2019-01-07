@@ -269,8 +269,8 @@ class TestRunnerSsh(testly.TestCase):
 				'postScript': 'ls',
 			}}}
 		),
-		
-		if RunnerSsh.isServerAlive('localhost', None):
+		# 4
+		if RunnerSsh.isServerAlive('localhost', None, 1):
 			# should be localhost'
 			yield createJob(
 				self.testdir,
@@ -278,7 +278,7 @@ class TestRunnerSsh(testly.TestCase):
 				config = {'runnerOpts': {'sshRunner': {
 					'servers': servers,
 					'keys'   : keys,
-					'checkAlive': True
+					'checkAlive': 1
 				}}}
 			),
 		else:
@@ -288,7 +288,7 @@ class TestRunnerSsh(testly.TestCase):
 				config = {'runnerOpts': {'sshRunner': {
 					'servers': servers,
 					'keys'   : keys,
-					'checkAlive': True
+					'checkAlive': 1
 				}}}
 			), RunnerSshError, 'No server is alive.'
 		
@@ -304,7 +304,7 @@ class TestRunnerSsh(testly.TestCase):
 
 	def testInit(self, job, exception = None, msg = None):
 		self.maxDiff = None
-		RunnerSsh.LIVE_SERVERS = []
+		RunnerSsh.LIVE_SERVERS = None
 		if exception:
 			self.assertRaisesRegex(exception, msg, RunnerSsh, job)
 		else:
@@ -360,7 +360,7 @@ class TestRunnerSsh(testly.TestCase):
 				'echo': {'jobs': [1], 'type': {'stdout': None}},
 				'runnerOpts': {'sshRunner': {
 					'servers': ['server1', 'server2', 'localhost'],
-					'checkAlive': True,
+					'checkAlive': 1,
 				}},
 			}
 		)
@@ -393,8 +393,8 @@ class TestRunnerSsh(testly.TestCase):
 	
 	def testSubmit(self, job, cmd, rc = 0):
 		RunnerSsh.INTERVAL = .1
-		RunnerSsh.LIVE_SERVERS = []
-		if job.config['runnerOpts']['sshRunner']['checkAlive'] and not RunnerSsh.isServerAlive('localhost'):
+		RunnerSsh.LIVE_SERVERS = None
+		if job.config['runnerOpts']['sshRunner']['checkAlive'] and not RunnerSsh.isServerAlive('localhost', timeout = 1):
 			self.assertRaises(RunnerSshError, RunnerSsh, job)
 		else:
 			r = RunnerSsh(job)
@@ -421,7 +421,7 @@ class TestRunnerSsh(testly.TestCase):
 	
 	def testKill(self, job):
 		RunnerSsh.INTERVAL = .1
-		RunnerSsh.LIVE_SERVERS = []
+		RunnerSsh.LIVE_SERVERS = None
 		r = RunnerSsh(job)
 		r.sshcmd = [path.join(__here__, 'mocks', 'ssh')]
 		self.assertFalse(r.isRunning())

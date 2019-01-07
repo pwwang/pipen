@@ -62,6 +62,7 @@ An option has server properties:
 - `type`: The type of the option value. Default: `str`
 - `name`: The name of the option, then in command line, `-<name>` refers to the option.
 - `value`: The default value of the option.
+- `callback`: The callback to check or transform the value
 
 You can either set the value of an option by 
 ```python
@@ -128,6 +129,29 @@ Then we will get: `params.opt.value == [1,2,3]` instead of `params.opt.value == 
 Flexibly, we can have mixed types of elements in a list option:  
 `> program -opt:list:bool 1 -opt:list:int 2 -opt:list:str 3`  
 We will get: `params.opt.value == [True, 2, '3']`
+
+## Callback
+You may use a callback function to check the value of an option:
+```python
+params.infile.type = str
+params.infile.callback: lambda opt: path.isfile(opt.value) or '"infile" does not exist.'
+# python pipeline.py -infile __no_such_file__
+# gives error: "infile" does not exist.
+```
+
+Or transform the value. Let's we want to get the full path of a file by passing its dirname and filename:
+```python
+from os import path
+params.dir.type = str
+params.fn.type = str
+params.fn.callback: lambda opt, params: path.join(params.dir.value, opt.value)
+# python pipeline.py -dir path/to/dir -fn a.txt
+# params.fn.value then will be "path/to/dir/a.txt" instead of "a.txt"
+```
+
+!!! hint
+    About the returns of the callback:  
+    If it returns `True`, `None` or an instance of `Parameter`, then no errors assumed. Otherwise, a string or a list of errors should be returned.
 
 # Load params from a dict
 You can define a `dict`, and then load it to `params`:
@@ -255,6 +279,17 @@ command, params = commands.parse()
 #          To get the value of an option: params.wdir
 # if you want to get the Parameter objects:
 # params.wdir == commands[command].wdir.value
+```
+
+## Alias of a command:
+You can simply add an alias for an option by:
+```python
+commands.list = 'list work directories under <wdir>'
+commands.show = commands.list
+# the help page gives:
+# COMMANDS:
+#   list | show                           - list work directories under <wdir>                        
+#   help <COMMAND>                        - Print help information for the command   
 ```
 
 ## Use a different 'help' command

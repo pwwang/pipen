@@ -111,9 +111,12 @@ To tell a process the available ssh servers:
 ```python
 pXXX.sshRunner = {
 	"servers": ["server1", "server2", ...], 
-	"keys": ["/path/to/keyfile1", "/path/to/keyfile2", ...]
+	"keys": ["/path/to/keyfile1", "/path/to/keyfile2", ...],
+	"checkAlive": False
 }
 ``` 
+`checkAlive` is to tell the pipeline to check whether the `servers` are alive, then use only the alive servers. Otherwise use all the `servers`.  
+You may also specify a number for `checkAlive` to set a timeout. (see: https://pwwang.github.io/PyPPL/api/#module-pypplrunnersrunner_ssh)
 
 You can have complicated ssh configurations which can be set by the system ssh config subsystem:
 
