@@ -1,13 +1,11 @@
-# Basic concepts and folder structure
-
 <!-- toc -->
 
-## Layers of a pipeline
+# Layers of a pipeline
 ![Basic concepts](./concept.png)
 The pipeline consists of channels and processes. A process may have many jobs. Each job uses the corresponding elements from the input channel of the process, and generates values for output channel.  
 Actually, what you need to do is just specify the first input channel, and then tell `PyPPL` the dependencies of the processes. The later processes will use the output channel of the processes they depend on. Of course, you can interfere by using functions in the input specification.
 
-## Folder structure
+# Folder structure
 ```
 ./
 |-- pipeline.py
@@ -50,7 +48,7 @@ Actually, what you need to do is just specify the first input channel, and then 
 !!! note
 	You are encouraged to set `p.ppldir` **BUT NOT** `p.workdir`, as it contains a unique `suffix` that is automatically computed.  
 
-## Symbols used in this documentation
+# Symbols used in this documentation
 * `<workdir>` refers to `./workdir/PyPPL.<id>.<tag>.<suffix>/`,  
 * `<indir>` refers to `./workdir/PyPPL.<id>.<tag>.<suffix>/<job.index>/input/`  
 * `<outdir>` refers to `./workdir/PyPPL.<id>.<tag>.<suffix>/<job.index>/output/`  

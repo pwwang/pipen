@@ -1,4 +1,3 @@
-# FAQ
 
 **Q: How should I migrate from 0.8.x?**
 

@@ -1,10 +1,10 @@
-# Draw flowchart of a pipeline
+
 <!-- toc -->
 
 `PyPPL` will generate a graph in [DOT language][1], according to the process dependencies. 
 You can have multiple [renderers][2] to visualize to graph. A typical one is [Graphviz][3]. With its python port [graphviz][7] installed, you can output the flowchart to an svg figure. 
 
-## Generate the flowchart
+# Generate the flowchart
 For example, if we have a pipeline written in `pipeline.py`:
 ```python
 from pyppl import PyPPL, Proc
@@ -66,7 +66,7 @@ The graph (`svgfile`) will be like:
 
 The green processes are the starting processes; ones with purple text are processes that will export the output files; and nodes in red are the end processes of the pipeline.
 
-## Use the dark theme
+# Use the dark theme
 ```python
 PyPPL({
 	'_flowchart': {'theme': 'dark'}
@@ -74,7 +74,7 @@ PyPPL({
 ```
 ![Pipeline-flowchart-dark][5]
 
-## Define your own theme
+# Define your own theme
 You just need to define the style for each type of nodes (refer [DOT node shapes][6] for detailed styles):
 You may also put the definition in the default configuration file (`~/.PyPPL.json`)
 ```python

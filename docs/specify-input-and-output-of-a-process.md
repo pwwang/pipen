@@ -1,6 +1,5 @@
-# Input and output of a process
 
-## Specify input of a process
+# Specify input of a process
 
 The input of a process of basically a `dict` with keys as the placeholders and the values as the input channels:
 
@@ -96,7 +95,7 @@ p4.input = "in1, in2"
 # Job#2: {{i.in1}} -> 3, {{i.in2}} -> c
 ```
 
-### Specify files as input
+## Specify files as input
 - Use a single file:
   When you specify file as input, you should use `file` (a.k.a `path`, `dir` or `folder`) flag for the type: 
   ```python
@@ -125,7 +124,7 @@ p4.input = "in1, in2"
   ```
   Remember both files will have symblic links created in `<indir>`. To avoid `infile2` being overwritten, the basename of the link will be `theSameBasename[1].txt`. If you are using built-in template functions to get the filename (`{{i.file2 | fn}}`), we can still get `theSameBasename.txt` instead of `theSameBasename[1].txt`. `bn`, `basename`, `prefix` act similarly.
 
-### Use callback to modify the input channel
+## Use callback to modify the input channel
 You can modify the input channel of a process by a callback. For example:
 ```python
 p1 = Proc()
@@ -148,7 +147,7 @@ You can check more examples in some channel methods: [channel.expand](./channels
     # all channels from p2.depends are passed to each function
     ```
 
-## Specify output of a process
+# Specify output of a process
 Different from input, instead of channels, you have to tell `PyPPL` how to compute the output channel. The output can be a `list`, `str` or `OrderedDict` (**but not a `dict`, as the order of keys has to be kept**). If it's `str`, a comma (`,`) is used to separate different keys:
 ```python
 p.input  = {"invar":[1], "infile:file": ["/a/b/c.txt"]}
@@ -164,7 +163,7 @@ p.channel.outfile == [('<outdir>/c.txt2', )]
 p.channel.outdir  == [('<outdir>/c-dir', )]
 ```
 
-## Types of input and output
+# Types of input and output
 
 |Input/Output|Type|Aliases|Behavior|Example-assignment (`p.input/output=?`)|Example-template-value|
 |------------|----|-------|--------|---------------------------------------|----------------------|

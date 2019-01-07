@@ -1,7 +1,6 @@
-# Caching and resuming processes
 <!-- toc -->
 
-## Process caching
+# Process caching
 Once a job is cached, `PyPPL` will skip running this job. But you have to tell a process how to cache its jobs by setting `pXXX.cache` with a valid caching method:
 
 |Caching method (`p.cache=?`)|How|
@@ -14,7 +13,7 @@ Once a job is cached, `PyPPL` will skip running this job. But you have to tell a
 > **Hint**: `p.cache = "export"` is extremely useful for a process that you only want it to run successfully once, export the result files and never run the process again. You can even delete the `<workdir>` of the process, but `PyPPL` will find the exported files and use them as the input for processes depending on it, so that you don't need to modify the pipeline.  
 One scenario is that you can use it to download some files and never need to download them again.
 
-## Resuming from processes
+# Resuming from processes
 Sometimes, you may not want to start at the very begining of a pipeline. Then you can resume it from some intermediate processes.  
 To resume pipeline from a process, you have to make sure that the output files of the processes that this process depends on are already generated. Then you can do:
 ```python
@@ -33,7 +32,7 @@ p3 = Proc(newid = 'p', tag = '3rd')
 PyPPL().start(...).resume('p').run()
 ```
 
-## Calculating signatures for caching
+# Calculating signatures for caching
 By default, `PyPPL` uses the last modified time to generate signatures for files and directories. However, for large directories, it may take notably long time to walk over all the files in those directories. If not necessary, you may simply as `PyPPL` to get the last modified time for the directories themselves instead of the infiles inside them by setting `p.dirsig = False`
 
 

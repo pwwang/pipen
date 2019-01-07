@@ -1,4 +1,4 @@
-# Export output files
+
 <!-- toc -->
 
 Output files are generated in `<outdir>`(`<job.index>/output`) if you specify the basename for a `file/path/dir` for process output. You can export them to a specific directory by specify the directory to `exdir` of a process: `pXXX.exdir = <exdir>`.
@@ -19,7 +19,7 @@ You can ask `PyPPL` whether to overwrite the existing files in the export direct
 !!! note
 	if the directory you specified to `pXXX.exdir` does not exist, it will be created automatically, including those intermediate directories if necessary.
 
-## Partial export
+# Partial export
 You can also partially export the output files by set value to `pXXX.expart`.  
 You have 2 ways to select the files:
 - Output key. For example, for `p.output = "outfile1:file:a.txt1, outfile2:file:b.txt2"`, you can export only `outfile1` by: `p.expart = "outfile1"`
@@ -39,5 +39,5 @@ You can have multiple selectors: `p.expart = ["*.txt1", "outfile2"]` to export a
 	```
 	then `b.txt2` will be exported instead of `<job.outdir>/outfile2`
 
-## Control of export of cached jobs
+# Control of export of cached jobs
 By default, if a job is cached, then it will not try to export the output files again (assuming that you have already successfully run the job and exported the output files). But you can force to export them anyway by setting `p.cclean = True`

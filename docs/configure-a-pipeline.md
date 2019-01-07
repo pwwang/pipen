@@ -1,4 +1,3 @@
-# Full pipeline configuration
 
 To configure your pipeline, you just pass the configurations (a `dict`) to the constructor:
 ```python
@@ -56,7 +55,7 @@ Here is the full structure of the configurations (**`yaml` configuration file is
 !!! caution
     You cannot define profiles with names `_flowchart` and `_log`
 
-## Priority of configuration options
+# Priority of configuration options
 See [here][5] for use of configuration files.  
 Now you have 3 ways to set attributes for a process: 
 - directly set the process attributes _(1)_, 
@@ -104,7 +103,7 @@ ppl = PyPPL()
 # p.forks == 5
 ```
 
-## Starting processes
+# Starting processes
 It's very easy to set the starting processes of the pipeline, just pass them to `start` function. A pipeline can have multiple starting processes:
 ```python
 PyPPL().start(p1,p2,p3).run()

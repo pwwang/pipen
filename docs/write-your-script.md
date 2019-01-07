@@ -1,7 +1,7 @@
-# Write and debug your script
+
 <!-- toc -->
 
-## Choose your language
+# Choose your language
 You can either specify the path of interpreter to `pXXX.lang`. If the interpreter is in `$PATH`, you can directly give the basename of the interpreter.  
 For example, if you have your own perl installed at `/home/user/bin/perl`, then you need to tell `PyPPL` where it is: `pXXX.lang = "/home/user/bin/perl"`. If `/home/user/bin` is in your `$PATH`, you can simply do: `p.lang = "perl"`  
 You can also use [shebang][1] to specify the interperter:
@@ -10,7 +10,7 @@ You can also use [shebang][1] to specify the interperter:
 # You perl code goes here
 ```
 
-## Use script from a file
+# Use script from a file
 You can also put the script into a file, and use it with a `file:` prefix: `pXXX.script = "file:/a/b/c.pl"`  
 
 !!! note
@@ -50,7 +50,7 @@ You may use `# PYPPL INDENT KEEP` to stop removing the white spaces for the foll
 !!! caution
     `# PYPPL INDENT REMOVE` Should not be at the beginning of the file, otherwise the leading spaces will be stripped so we can detect how many spaces should be removed for the following lines.
 
-## Debug your script
+# Debug your script
 If you need to debug your script, you just need to find the real running script, which is at: `<workdir>/<job.index>/job.script`. The template is rendered already in the file. You can debug it using the tool according to the language you used for the script.
 
 You may also add logs to pyppl's main logs on the screen or in log files. To do that, you just need to print you message starting with `pyppl.log` to STDERR:
@@ -97,7 +97,7 @@ Then the log message will be:
 
     You can define filters or themes for this kind of logs, just remember the actual level name has an `_` prefix. See [here][2] to learn how to define filters and themes.
 
-## Output stdout/stderr to PyPPL logs
+# Output stdout/stderr to PyPPL logs
 Instead of log some information, you may also choose to output the stdout/stderr from the jobs to the main `PyPPL` log.
 
 This is controlled by setting `p.echo`, which is set to `False` by default. The full configuration of the value could be:

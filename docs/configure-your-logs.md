@@ -1,8 +1,7 @@
-# Configure your logs
 
 `PyPPL` has fancy logs. You can define how they look like (theme) and what messages to show (levels).
 
-## Built-in log themes
+# Built-in log themes
 We have some built-in themes:
 
 greenOnBlack (default):
@@ -41,7 +40,7 @@ PyPPL({"_log": {"theme": "magentaOnWhite"}}).start(...).run()
 If you want to disable the theme, just set `"theme"` to `False` (`false` for `json`)
 If you set `theme` to `True`, then default theme `greenOnBlack` is used.
 
-## Levels of pyppl logs
+# Levels of pyppl logs
 Please note that the levels are different from those of python's `logging` module. For `logging` module has [6 levels][9], with different int values. However, pyppl's log has many levels, or more suitable, flags, which don't have corresponding values. They are somehow equal, but some of them always print out unless you ask them not to.
 
 |Log level|Belongs to groups|Meaning
@@ -104,7 +103,7 @@ Even you can modify the base groups:
 ```
 Then the `DEBUG`, `P.ARGS` messages will show, and `SUBMIT` will hide.
 
-## Define your theme
+# Define your theme
 
 Let's see how the built-in theme looks like first:
 in `pyppl/logger.py`:
@@ -181,13 +180,13 @@ If you define a theme in a configuration file, you may use the escape sequences 
 }
 ```
 
-## Log to file
+# Log to file
 By default, pyppl will not log to a file until you set a file path to `{"_log": {"file": "/path/to/logfile"}}` in the configuration. Or you can specfiy `False` to it to disable logging to file. If you set it to `True`, a default log file will be used, which is: `"./pipeline.pyppl.log"` if your pipeline is from file: `./pipeline.py`
 
 !!! note
     Filters and themes are not applied to handler to log to file. So you can always find all logs in the log file if your have it enabled.
 
-## Progress bar
+# Progress bar
 Job status and progress are indicated in the log with progress bar:
 ```
 [==============================XXXXX!!!!!>>>>>-----]

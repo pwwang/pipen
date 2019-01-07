@@ -1,4 +1,3 @@
-# Channels
 
 Channels are used to pass data from one process (an instance of `Proc`) to another. It is derived from a `list`, where each element is a `tuple`. **So all python functions/methods that apply on `list` will also apply on `Channel`.** The length a the `tuple` corresponds to the number of variables of the input or output of a `proc`.
 ```python
@@ -23,7 +22,7 @@ Then the values for different variables in different jobs wil be:
 | ...       |... | ... |... |
 
 
-## Initialize a channel
+# Initialize a channel
 There are several ways to initialize a channel:
 
 - From a non-iterable element (string is considered non-iterable):  
@@ -130,15 +129,15 @@ There are several ways to initialize a channel:
   # ch == [('a', 2)]
   ```
 
-## Methods for channels
-### Get the length and width of a channel
+# Methods for channels
+## Get the length and width of a channel
 ```python
 chan = Channel.create ([(1,2,3), (4,5,6)])
 #chan.length() == 2 == len(chan)
 #chan.width()  == 3
 ```
 
-### Get value from a channel
+## Get value from a channel
 ```python
 chan = Channel.create ([(1,2,3), (4,5,6)])
 # chan.get() == 1
@@ -150,7 +149,7 @@ chan = Channel.create ([(1,2,3), (4,5,6)])
 # chan.get(5) == 6
 ```
 
-### Repeat rows and columns
+## Repeat rows and columns
 ```python
 chan = Channel.create ([(1,2,3), (4,5,6)])
 chan2 = chan.repCol()
@@ -163,7 +162,7 @@ chan5 = chan.repRow(n=3)
 # chan5 == [(1,2,3), (4,5,6), (1,2,3), (4,5,6), (1,2,3), (4,5,6)]
 ```
 
-### Expand a channel by directory
+## Expand a channel by directory
 `Channel.expand (col= 0, pattern = '*', t='any', sortby='name', reverse=False)`
 
 Sometimes we prepare files in one process (for example, split a big file into small ones in a directory), then handle these files by different jobs in another process, so that they can be processed simultaneously. 
@@ -210,7 +209,7 @@ p2.input   = {"invar,infile:file": lambda ch: ch.expand(1, "*.txt")}
     * `expand` only works for original channels with length is 1, which will expand to `N` (number of files included). If original channel has more than 1 element, only first element will be used, and other elements will be ignored.
     * Only the value of the column to be expanded will be changed, values of other columns remain the same. 
 
-### Collapse a channel by files in a common ancestor directory
+## Collapse a channel by files in a common ancestor directory
 `Channel.collapse(col=0)`
 
 It's basically the reverse process of `expand`. It applies when you deal with different files and in next process you need them all involved (i.e. combine the results):
@@ -252,7 +251,7 @@ p2.input  = {"indir:file": lambda ch: ch.collapse(1)}
     * `os.path.dirname(os.path.commonprefix(...))` is used to detect the common ancestor directory, so the files could be `['/a/1/1.file', '/a/2/1.file']`. In this case `/a/` will be returned.
     * values at other columns should be the same, `PyPPL` will NOT check it, the first value at the column will be used.
 
-### Fetch rows from a channel
+## Fetch rows from a channel
 - `Channel.rowAt(index)`  
 
   ```python
@@ -265,7 +264,7 @@ p2.input  = {"indir:file": lambda ch: ch.collapse(1)}
   chan3 == chan1
   ```
 
-### Fetch columns from a channel
+## Fetch columns from a channel
 - `Channel.slice(start, length=None)`
 
   ```python
@@ -287,7 +286,7 @@ p2.input  = {"indir:file": lambda ch: ch.collapse(1)}
   chan.colAt([1,2]) == chan.slice(1, 2)
   ```
 
-### Flatten a channel
+## Flatten a channel
 `Channel.flatten(col = None)`
 Flatten a channel, make it into a list.
 ```python
@@ -298,7 +297,7 @@ f2 = chan.flatten(1)
 # f1 == [2,5]
 ```
 
-### Split a channel to single-width channels
+## Split a channel to single-width channels
 `Channel.split(flatten = False)`
 ```python
 chan  = Channel.create ([(1,2,3), (4,5,6)])
@@ -318,7 +317,7 @@ chans2 = chan.split(True)
 # ]
 ```
 
-### Attach column names
+## Attach column names
 `Channel.attach(*names)`
 We can attach the column names and then use them to access the columns.
 ```python
@@ -337,7 +336,7 @@ ch.attach ('col1', 'col2', 'col3', True)
 # isinstance(ch.col1, Channel) == False
 ```
 
-### Map, filter, reduce
+## Map, filter, reduce
 - `Channel.map(func)`
 - `Channel.mapCol(func, col=0)`
   ```python
@@ -385,7 +384,7 @@ ch.attach ('col1', 'col2', 'col3', True)
   ch1.reduceCol(lambda x,y: x+y) == 15           # x and y are numbers
   ```
 
-### Add rows/columns to a channel
+## Add rows/columns to a channel
 
 - `Channel.rbind(*rows)`  
 
@@ -485,7 +484,7 @@ ch.attach ('col1', 'col2', 'col3', True)
   ch1.insert(0, ch2, ch3, ch4, ch5, ch6) == [(21, 3, 41, 51, 'a'), (22, 3, 42, 52, 'a')]
   ```
 
-### Fold a channel
+## Fold a channel
 `Channel.fold(n = 1)`
 Fold a `channel`, Make a row to n-length chunk rows
 For example, you have the following channel:
@@ -502,12 +501,32 @@ After apply `chan.fold(2)` you will get:
 |b1|b2|
 |b3|b4|
 
-### Unfold a channel
+## Unfold a channel
 `Channel.unfold(n=2)`
 Combine n-rows into one row; do the reverse thing as `Channel.fold`. But note that the different meaning of `n`. In `fold`, `n` means the length of the chunk that a row is cut to; will in `unfold`, it means how many rows to combine.
 
-### Copy a channel
-`Channel.copy()`
+## Copy a channel
+`Channel.copy()` 
+Make a copy of the channel.
+
+## Transpose a channel
+`Channel.t()`
+Transpose this:
+
+| Job Index | v1 | v2  | v3 |
+|-----------|----|-----|----|
+| 0         | a1 | b1  | c1 |
+| 1         | a2 | b2  | c2 |
+| ...       |... | ... |... |
+
+Into:
+
+| Job Index | v1 | v2  |... |
+|-----------|----|-----|----|
+| 0         | a1 | a2  |... |
+| 1         | b1 | b2  |... |
+| 2         | c1 | c2  |... |
+| ...       |... | ... |... |
 
 [1]: ./command-line-argument-parser/
 

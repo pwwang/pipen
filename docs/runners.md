@@ -1,6 +1,5 @@
-# Runners and running profiles
 
-## Running profile
+# Running profile
 A running profile defines the parameters that needed for a pipeline to run. Generally it contains the runner, the parameters for the runner and the common settings for the processes.
 A typical running profile is as follows:
 ```python
@@ -23,7 +22,7 @@ A typical running profile is as follows:
 	}
 	```
 
-## Defining running profiles
+# Defining running profiles
 You may pre-define some profiles so that you can easily swith them by:
 ```python
 PyPPL().start(pXXX).run('profile1')
@@ -95,12 +94,12 @@ PyPPL().start(pXXX).run({
 !!! note
 	This has the highest priority.
 
-## Built-in runners
+# Built-in runners
 We have 5 built-in runners (`RunnerLocal`, `RunnerSsh`, `RunnerSge`, `RunnerSlurm`, `runnerDry`), you can also define you own runners.
 
 You can either tell one process to use a runner, or even, you can tell the pipeline to use one runner for all the processes. That means each process can have the same runner or a different one. To tell a process which runner to use, just specify the runner name to `pXXX.runner` (for example, `pXXX.runner = "sge"` to use the sge runner). Each process may use different configuration for the runner (`pXXX.sgeRunner`) or the same one by [configuring the pipeline](./configure-a-pipeline/).
 
-## Configurations for ssh runner
+# Configurations for ssh runner
 Ssh runner takes the advantage to use the computing resources from other servers that can be connected via `ssh`. The `ssh` command allows us to pass the command to the server and execute it: `ssh [options] [command]`
 
 !!! caution
@@ -166,7 +165,7 @@ The constructor of the runner will change the actual script to run the following
 ssh -i "/path/to/key1" user1@server1 "cd <cwd>; <workdir>/0/job.script"
 ```
 
-## Configurations for sge runner
+# Configurations for sge runner
 Similarly, you can also submit your jobs to SGE servers using `qsub`. To set the options for a process:
 ```python
 pXXX.sgeRunner = {
@@ -216,7 +215,7 @@ source /home/whoever/.bash_profile >&/dev/null; mkdir /tmp/my
 rm -rf /tmp/my
 ```
 
-## Configurations for slurm runner
+# Configurations for slurm runner
 **Where to configure it:**
 For single process:
 ```python
@@ -269,7 +268,7 @@ PyPPL(config).start(...).run() # uses configurations of 'proc'
 }
 ```
 
-## Dry-run a pipeline
+# Dry-run a pipeline
 You can use dry runner to dry-run a pipeline. The real script will not be running, instead, it just tries to touch the output files and create the output directories.
 
 !!! note "When `RunnerDry` is being used"
@@ -280,7 +279,7 @@ You can use dry runner to dry-run a pipeline. The real script will not be runnin
 	- Output files/directories won't be exported.
 	- Better set runner of all processes in a pipeline to `dry`. (`pyppl().starts(...).run('dry')`), since empty file/directory will be created for output. Problems will happen if you have a non-dry-run process depending on dry-run processes.
 
-## Define your own runner
+# Define your own runner
 You are also able to define your own runner, which should be a class extends `Runner` (jobs run immediately after submission) or `RunnerQueue` (jobs are put into a queue after submission). There are several methods and variables you may need to redefine (You may check the [API documentation](./API/#runner) for all available methods and variables).
 
 The class name **MUST** start with `Runner` and end with the runner name with first letter capitalized. For example, to define the runner `my`:
@@ -322,7 +321,7 @@ class RunnerDelay (Runner):
 - Compose the right script to run the job (`self.script`) in `__init__`.
 - MAKE SURE you save the identity of the job to `job.pidfile`, rc to `job.rcfile`, stdout to `job.outfile` and `stderr` to `job.errfile`
 
-## Register your runner
+# Register your runner
 It very easy to register your runner, just do `PyPPL.registerRunner (RunnerMy)` (static method) before you start to run the pipeline.
 The 5 built-in runners have already been registered: 
 ```python

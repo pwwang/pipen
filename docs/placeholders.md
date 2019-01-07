@@ -1,8 +1,7 @@
-# Templating
 
 `PyPPL` uses [liquidpy][1] as default template engine. It also supports [Jinja2][2] if you have it installed and specify `"Jinja2"` to `pXXX.template`.
 
-## Common data avaible for rendering
+# Common data avaible for rendering
 When rendering a template, following data are fed to the render function. So that you can use those values in the template. Some attribute values of a process are shared for all templates that are applied:
 
 * `proc.aggr`: The aggregation name of the process
@@ -31,7 +30,7 @@ When rendering a template, following data are fed to the render function. So tha
 * `proc.tag`: The tag of the process
 * `proc.workdir`: The workdir of the process
 
-## Other data for rendering
+# Other data for rendering
 For each job, we also have some value available for rendering:
 
 * `job.index`: The index of the job
@@ -50,17 +49,17 @@ pXXX.output = "a:{{i.a}} world!"
 ```
 Now you can access them by: `{{i.a}}`, `{{i.b}}` and `{{o.a}}`
 
-## The scope of data
+# The scope of data
 |Attribute|Data available|Meaning|
 |---------|------------|-------|
 |`pXXX.beforeCmd`|`{{proc.*}}`|Command to run before job starts|
 |`pXXX.afterCmd`|`{{proc.*}}`|Command to run after job finishes|
-|`pXXX.output`|`{{proc.*}}`, `{{job.*}}`, `{{i.*}}`, `{{bring.*}}`|The output of the process|
+|`pXXX.output`|`{{proc.*}}`, `{{job.*}}`, `{{i.*}}`|The output of the process|
 |`pXXX.expect`|All above-mentioned data|Command to check output|
 |`pXXX.expart`|All above-mentioned data|Partial export|
 |`pXXX.script`|All above-mentioned data|The script to run|
 
-## Built-in filters
+# Built-in filters
 Sometimes we need to transform the data in a template. We have some built-in functions available for the transformation.  
 For built-in template engine, you may use pipe, for example: `{{i.file | basename}}`; for `Jinja2`, you have to use functions as "functions", for example: `{{basename(in.file)}}`. Here we give the examples with built-in template engine syntax.
 
@@ -68,18 +67,23 @@ For built-in template engine, you may use pipe, for example: `{{i.file | basenam
 
 | Usage | Data | Result |
 |-------|------|--------|
-| `{{v `&#x7c;` R}}` | `{'v': True}` | `TRUE` |
+| `{{v ` &#x7c; ` R}}` | `{'v': True}` | `TRUE` |
 || `{'v': 'TRUE'}` | `TRUE` | 
 || `{'v': 'NA'}` | `NA` |  
 || `{'v': 'NULL'}` | `NULL` |
 || `{'v': 1}` | `1` |
 || `{'v': 'r:c(1,2,3)'}` | `c(1,2,3)` |
+|| `{'v': [1,2,3]}` | `c(1,2,3)` |
+|| `{'v': {'a':1, 'b':2}}` | `list(a=1, b=2)` |
 || `{'v': 'plainstring'}` | `"plainstring"` |
   
-- `Rvec`: Transform a python list to a R vector. For example:
-  - `{{v | Rvec}}` with `{'v': [1,2,3]}` results in `c(1,2,3)`
+- ~~`Rvec`: Transform a python list to a R vector. For example:~~ will be deprecated, use `R` instead.
+  - ~~`{{v | Rvec}}` with `{'v': [1,2,3]}` results in `c(1,2,3)`~~
 - `Rlist`: Transform a python dict to a R list. For example:
   - `{{v | Rlist}}` with `{'v': {'a':1, 'b':2}}` results in `list(a=1, b=2)`
+  - `{{v | Rlist}}` with `{'v': {0:1, 1:2}}` results in ```list(`0`=1, `1`=2)```
+  - `{{v | Rlist: False}}` with `{'v': {0:1, 1:2}}` results in ```list(1, 2)```
+  - This also applies for `R`
 - `realpath`: Alias of `os.path.realpath`
 - `readlink`: Alias of `os.readlink`
 - `dirname`: Alias of `os.path.dirname`
@@ -87,13 +91,14 @@ For built-in template engine, you may use pipe, for example: `{{i.file | basenam
 
 | Usage | Data | Result |
 |-------|------|--------|
-| `{{v `&#x7c;` basename}}` | `{'v': '/path/to/file.txt'}` | `file.txt` |
+| `{{v ` &#x7c; ` basename}}` | `{'v': '/path/to/file.txt'}` | `file.txt` |
 || `{'v': '/path/to/file[1].txt'}` | `file.txt` |
-| `{{v, orig `&#x7c;` basename}}` | `{'v': '/path/to/file[1].txt', 'orig': True}` | `file[1].txt`| 
+| `{{v ` &#x7c; ` basename: True}}` | `{'v': '/path/to/file[1].txt'}` | `file[1].txt`| 
   
 - `bn`: Alias of `basename`
 - `filename`: Similar as `basename` but without extension.
 - `fn`: Alias of `filename`
+- `stem`: Alias of `filename`
 - `filename2`: Get the filename without dot.
 - `fn2`: Alias of `filename2`. (i.e: `/a/b/c.d.e.txt` -> `c`)
 - `ext`: Get extension of a file. Alias of `os.path.splitext(x)[1]`
@@ -111,10 +116,10 @@ For built-in template engine, you may use pipe, for example: `{{i.file | basenam
   - `{{v, skipEmptyLines | readlines}}`
 - `repr`: Alias of python `repr` built-in function.
 
-## Use `Liquid`:
+# Use `Liquid`:
 For usage of `Jinja2`, you may refer to its [official documentation][1].
 
-## Use Jinja2
+# Use Jinja2
 All the data and environment definition mentioned above are all applicable when you use `Jinja2` as your template engine.  
 For usage of `Jinja2`, you may refer to its [official documentation][2].
 
