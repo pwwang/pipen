@@ -833,7 +833,9 @@ class Parameters (object):
 			if callable(self._params[name].callback):
 				try:
 					ret = self._params[name].callback(self._params[name])
-				except TypeError: # wrong # arguments
+				except TypeError as ex: # wrong # arguments
+					if 'argument' not in str(ex):
+						raise
 					ret = self._params[name].callback(self._params[name], self)
 				if ret is True or ret is None or isinstance(ret, Parameter):
 					continue
