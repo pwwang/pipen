@@ -1,4 +1,9 @@
 
+# 1.4.1 (Jan. 9, 2019)
+- Add `render` function for template to allow variables to be rendered in template.
+- Allow reset for list parameter in parameters
+- Add callback for Parameter
+
 # 1.4.0 (Dec. 20, 2018)
 - Implement jobmgr with PriorityQueue, and put job building, submission and polling in the same queue
 - Remove file locks while job initiation to speed up
