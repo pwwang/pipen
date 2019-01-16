@@ -103,28 +103,30 @@ class HelpAssembler(object):
 				pagewidth = max(pagewidth, HelpAssembler.MAXPAGEWIDTH)
 		return pagewidth, optwidth
 				
-	def error(self, msg):
+	def error(self, msg, withPrefix = True):
 		"""
 		Render an error message
 		@params:
 			`msg`: The error message
 		"""
 		msg = msg.replace('{prog}', self.prog(self.progname))
-		return '{colorstart}Error: {msg}{colorend}'.format(
+		return '{colorstart}{prefix}{msg}{colorend}'.format(
 			colorstart = self.theme['error'],
+			prefix     = 'Error: ' if withPrefix else '',
 			msg        = msg,
 			colorend   = COLORS.end
 		)
 	
-	def warning(self, msg):
+	def warning(self, msg, withPrefix = True):
 		"""
 		Render an warning message
 		@params:
 			`msg`: The warning message
 		"""
 		msg = msg.replace('{prog}', self.prog(self.progname))
-		return '{colorstart}Warning: {msg}{colorend}'.format(
+		return '{colorstart}{prefix}{msg}{colorend}'.format(
 			colorstart = self.theme['warning'],
+			prefix     = 'Warning: ' if withPrefix else '',
 			msg        = msg,
 			colorend   = COLORS.end
 		)
