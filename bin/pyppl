@@ -16,7 +16,8 @@ from datetime import date, timedelta, datetime
 from multiprocessing import Lock
 from pyppl import PyPPL, Proc, commands
 from pyppl.logger import COLORS
-from pyppl.utils import parallel
+#from pyppl.utils import parallel
+from concurrent.futures import ThreadPoolExecutor
 
 try:
 	input = raw_input
@@ -60,6 +61,10 @@ commands.compare.wdir       = commands.list.wdir
 commands.compare.proc       = commands.list.proc
 commands.compare.proc1.desc = 'The first full process name to compare.'
 commands.compare.proc2.desc = 'The second full process name to compare.'
+
+commands.runner              = 'List available runners.'
+commands.runner._hbald       = False
+commands.runner.cfgfile.desc = 'An extra configuration file.'
 
 command, params = commands.parse()
 
@@ -206,7 +211,11 @@ def remove_proc(proc, nthread = 1, msg = '', lock = None):
 		if lock:
 			with lock:
 				streamout(msg)
-	parallel.run(rmtree, [(d, ) for d in glob(path.join(proc, '*')) if path.isdir(d)], nthread, 'thread')
+	#parallel.run(rmtree, [(d, ) for d in glob(path.join(proc, '*')) if path.isdir(d)], nthread, 'thread')
+	with ThreadPoolExecutor(max_workders = nthread) as executor:
+		for d in glob(path.join(proc, '*')):
+			if path.isdir(d):
+				executor.submit(rmtree, d)
 	rmtree(proc)
 
 def clean_procs(procs, nthread, force):
@@ -217,7 +226,10 @@ def clean_procs(procs, nthread, force):
 	if force:
 		lock = Lock()
 		lenprocs = len(procs)
-		parallel.run(remove_proc, [(procinfo[0], 1, 'Removeing [{}/{}]: {}'.format(i, lenprocs, procinfo[0]), lock) for i, procinfo in enumerate(procs)], nthread, 'thread')
+		with ThreadPoolExecutor(max_workders = nthread) as executor:
+			for i, procinfo in enumerate(procs):
+				executor.submit(remove_proc, procinfo[0], 1, 'Removeing [{}/{}]: {}'.format(i, lenprocs, procinfo[0]), lock)
+		#parallel.run(remove_proc, [(procinfo[0], 1, 'Removeing [{}/{}]: {}'.format(i, lenprocs, procinfo[0]), lock) for i, procinfo in enumerate(procs)], nthread, 'thread')
 	else:
 		procgroups = {}
 		for proc, mtime, fail in procs:
@@ -245,7 +257,27 @@ def clean_procs(procs, nthread, force):
 
 if __name__ == '__main__':
 
-	if command == 'compare':
+	if command == 'runner':
+		from pprint import PrettyPrinter
+		p = PyPPL(
+			{'_log': {'level': 'base', 'lvldiff': ['-PYPPL', '-TIPS']}}, 
+			cfgfile = params.cfgfile
+		)
+		pp = PrettyPrinter(indent = 4)
+		default_runner = p.config.get('default', {})
+		if not default_runner:
+			streamout('WARNING: no default runner.', 'yellow')
+		else:
+			del p.config['default']
+			streamout('')
+			streamout('default:', 'green')
+			pp.pprint(default_runner)
+		for key, val in p.config.items():
+			streamout('')
+			streamout(key + ':', 'green')
+			pp.pprint(val)
+
+	elif command == 'compare':
 		if params.proc:
 			pattern = path.join(params.wdir, 'PyPPL.{}.*'.format(params.proc))
 			procs   = glob(pattern)

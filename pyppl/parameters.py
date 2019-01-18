@@ -473,7 +473,7 @@ class Parameters (object):
 		self.__dict__['_props'] = dict(
 			usage  = [],
 			desc   = [],
-			hopts  = ['-h', '--help', '-H', '-?'],
+			hopts  = ['-h', '--help', '-H'],
 			prefix = '-',
 			hbald  = True
 		)
