@@ -317,3 +317,25 @@ def briefList(l):
 		else:
 			ret.append(str(group[0]) + '-' + str(group[-1]))
 	return ', '.join(ret)
+
+def briefPath(p, cutoff = 5, keeplast = 3, shorten = 1):
+	"""
+	Show briefed path in logs
+	/abcde/hijklm/opqrst/uvwxyz/123456 will be shorted as:
+	/a/h/opqrst/uvwxyz/123456
+	@params:
+		`p`       : The path
+		`cutoff`  : Shorten the whole path if it has no less than N parts. Default: `5`
+		`keeplast`: Keep last N path parts. Default: `3`
+		`shorten` : Shorten first path parts to N chars. Default: `1`
+	@returns:
+		The shorted path
+	"""
+	from os import path, sep
+	parts = path.normpath(p).split(sep)
+	if len(parts) < cutoff:
+		return p
+	newparts = [part[:shorten] for part in parts[0:-keeplast]] + parts[-keeplast:]
+	newparts[0] = newparts[0] or sep
+	return path.join(*newparts)
+

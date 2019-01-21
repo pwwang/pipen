@@ -10,7 +10,7 @@ from collections import OrderedDict
 from datetime import datetime
 from threading import Lock
 from .logger import logger
-from .utils import cmd, safefs, string_types
+from .utils import cmd, safefs, string_types, briefPath
 from .utils.box import Box
 from .exception import JobInputParseError, JobOutputParseError
 
@@ -124,7 +124,7 @@ class Job(object):
 			'proc'  : self.config['proc'],
 			'jobidx': self.index,
 			'joblen': self.config['procsize'],
-			'pbar'  : None
+			'pbar'  : False
 		}
 		msg   = []
 		if self.rc == Job.RC_NOTGENERATE:
@@ -141,28 +141,19 @@ class Job(object):
 				total = totalfailed,
 				rc    = self.rc & 0b0011111111,
 				msg   = msg if not msg else ' ({})'.format(msg)
-			), extra = dict(
-				proc   = extra['proc'],
-				jobidx = extra['jobidx'],
-				joblen = extra['joblen'],
-				pbar   = False
-			))
+			), extra = extra)
 			return
 
 		self.logger.error('Failed (totally {total}). Return code: {rc}{msg}.'.format(
 			total = totalfailed,
 			rc    = self.rc & 0b0011111111,
 			msg   = msg if not msg else ' ({})'.format(msg)
-		), extra = dict(
-			proc   = extra['proc'],
-			jobidx = extra['jobidx'],
-			joblen = extra['joblen'],
-			pbar   = False
-		))
-		
-		self.logger.error('Script: {}'.format(self.script),  extra = extra)
-		self.logger.error('Stdout: {}'.format(self.outfile), extra = extra)
-		self.logger.error('Stderr: {}'.format(self.errfile), extra = extra)
+		), extra = extra)
+
+		shortpath = self.config.get('shortpath', {'cutoff': 100})
+		self.logger.error('Script: {}'.format(briefPath(self.script, **shortpath)), extra = extra)
+		self.logger.error('Script: {}'.format(briefPath(self.outfile, **shortpath)), extra = extra)
+		self.logger.error('Script: {}'.format(briefPath(self.errfile, **shortpath)), extra = extra)
 
 		# errors are not echoed, echo them out
 		if self.index not in self.config['echo']['jobs'] or 'stderr' not in self.config['echo']['type']:
@@ -199,16 +190,24 @@ class Job(object):
 			maxken = max([len(key) for key in self.output.keys()])
 			maxlen = max(maxlen, maxken)
 
+		shortpath = self.config.get('shortpath', {'cutoff': 100})
 		for key in sorted(inkeys):
 			if key.startswith('_'): continue
 			if self.input[key]['type'] in Proc.IN_VARTYPE:
 				self._reportItem(key, maxlen, self.input[key]['data'], 'input')
 			else:
-				self._reportItem(key, maxlen, self.input[key]['data'], 'input')
-				#self._reportItem('_' + key, maxlen, self.input[key]['orig'], 'input')
+				if isinstance(self.input[key]['data'], list):
+					data = [briefPath(d, **shortpath) for d in self.input[key]['data']]
+				else:
+					data = briefPath(self.input[key]['data'], **shortpath)
+				self._reportItem(key, maxlen, data, 'input')
 		
 		for key in sorted(self.output.keys()):
-			self._reportItem(key, maxlen, self.output[key]['data'], 'output')
+			if isinstance(self.output[key]['data'], list):
+				data = [briefPath(d, **shortpath) for d in self.output[key]['data']]
+			else:
+				data = briefPath(self.output[key]['data'], **shortpath)
+			self._reportItem(key, maxlen, data, 'output')
 
 	def _reportItem(self, key, maxlen, data, loglevel):
 		"""
@@ -956,7 +955,8 @@ class Job(object):
 				else:
 					files2ex.extend(glob(path.join(self.outdir, expart)))
 		
-		files2ex = set(files2ex)
+		files2ex  = set(files2ex)
+		shortpath = self.config.get('shortpath', {'cutoff': 100})
 		for file2ex in files2ex:
 			bname  = path.basename (file2ex)
 			# exported file
@@ -975,7 +975,7 @@ class Job(object):
 				else:
 					safefs.moveWithLink(file2ex, exfile, overwrite = self.config['exow'])
 
-			self.logger.info('Exported: {}'.format(exfile), extra = {
+			self.logger.info('Exported: {}'.format(briefPath(exfile, **shortpath)), extra = {
 				'joblen'  : self.config['procsize'],
 				'jobidx'  : self.index,
 				'proc'    : self.config['proc'],

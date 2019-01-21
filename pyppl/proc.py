@@ -74,7 +74,7 @@ class Proc (object):
 			callfront, callback, expect, expart, template, tplenvs, resume, nthread
 		@props
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect
-			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs
+			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs, shortpath
 		"""
 		# Don't go through __getattr__ and __setattr__
 		# To get a prop  : proc.echo   --> proc.props['echo']
@@ -245,6 +245,8 @@ class Proc (object):
 
 		# remember which property is set, then it won't be overwritten by configurations
 		self.props['sets']        = []
+		# shorten the path in logs
+		self.props['shortpath']   = False
 		# The size of the process (# jobs)
 		self.props['size']        = 0
 
@@ -652,7 +654,8 @@ class Proc (object):
 			self.props['workdir'] = self.config['workdir']
 		elif not self.props['workdir']:
 			self.props['workdir'] = path.join(self.ppldir, "PyPPL.%s.%s.%s" % (self.id, self.tag, self._suffix()))
-		logger.logger.info(self.workdir, extra = {'proc': self.id, 'loglevel': 'WORKDIR'})
+		shortpath = self.config.get('shortpath', {'cutoff': 100})
+		logger.logger.info(utils.briefPath(self.workdir, **shortpath), extra = {'proc': self.id, 'loglevel': 'WORKDIR'})
 
 		if not path.exists (self.workdir):
 			if self.resume in ['skip+', 'resume'] and self.cache != 'export':
@@ -1059,6 +1062,7 @@ class Proc (object):
 			'runnerOpts': {key: val for key, val in self.config.items() if key.endswith('Runner')},
 			'procvars'  : self.procvars,
 			'procsize'  : self.size,
+			'shortpath' : self.shortpath or {},
 			'echo'      : self.echo,
 			'input'     : self.input,
 			'output'    : self.output,

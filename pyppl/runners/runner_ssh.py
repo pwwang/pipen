@@ -69,13 +69,13 @@ class RunnerSsh(Runner):
 						i for i, server in enumerate(servers)
 						if RunnerSsh.isServerAlive(server, keys[i] if keys else None)
 					]
-				elif isinstance(checkAlive, (float, int)):
+				elif checkAlive is False:
+					RunnerSsh.LIVE_SERVERS = list(range(len(servers)))
+				else:
 					RunnerSsh.LIVE_SERVERS = [
 						i for i, server in enumerate(servers)
 						if RunnerSsh.isServerAlive(server, keys[i] if keys else None, checkAlive)
 					]
-				else:
-					RunnerSsh.LIVE_SERVERS = list(range(len(servers)))
 
 		if not RunnerSsh.LIVE_SERVERS:
 			raise RunnerSshError('No server is alive.')

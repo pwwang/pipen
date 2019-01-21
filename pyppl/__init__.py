@@ -108,10 +108,10 @@ class PyPPL (object):
 		self.fcconfig = fcconfig
 
 		logconfig = {
-			'levels' : 'normal',
-			'theme'  : True,
-			'lvldiff': [],
-			'pbar'   : 'expand',
+			'levels'   : 'normal',
+			'theme'    : True,
+			'lvldiff'  : [],
+			'pbar'     : 'expand',
 			# current directory instead of script directory
 			'file':    './%s%s.pyppl.log' % (
 				path.splitext(path.basename(sys.argv[0]))[0], 

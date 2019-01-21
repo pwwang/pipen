@@ -155,7 +155,7 @@ class TestParameters(testly.TestCase):
 		self.assertIsInstance(ps, Parameters)
 		self.assertEqual(ps._props['usage'], [])
 		self.assertEqual(ps._props['desc'], [])
-		self.assertListEqual(ps._props['hopts'], ['-h', '--help', '-H', '-?'])
+		self.assertListEqual(ps._props['hopts'], ['-h', '--help', '-H'])
 		self.assertEqual(ps._props['prefix'], '-')
 		self.assertIsInstance(ps.__dict__['_assembler'], HelpAssembler)
 		self.assertEqual(ps._assembler.theme, HelpAssembler.THEMES['default'])
@@ -534,7 +534,7 @@ class TestParameters(testly.TestCase):
 			'  testParameters.py',
 			'',
 			'OPTIONAL OPTIONS:',
-			'  -h, --help, -H, -?                    - Print this help information',
+			'  -h, --help, -H                        - Print this help information',
 			''
 		]
 		
@@ -558,7 +558,7 @@ class TestParameters(testly.TestCase):
 			'',
 			'OPTIONAL OPTIONS:',
 			'  --param-a                             - Default: None',
-			'  -h, --help, -H, -?                    - Print this help information',
+			'  -h, --help, -H                        - Print this help information',
 			''
 		]
 
@@ -576,7 +576,7 @@ class TestParameters(testly.TestCase):
 			'',
 			'OPTIONAL OPTIONS:',
 			'  -e (BOOL)                             - Default: False',
-			'  -h, --help, -H, -?                    - Print this help information',
+			'  -h, --help, -H                        - Print this help information',
 			''
 		]
 
@@ -614,7 +614,7 @@ class TestParameters(testly.TestCase):
 			'                                          Default: []',
 			'  POSITIONAL                            - positional options',
 			'                                          Default: None',
-			'  -h, --help, -H, -?                    - Print this help information',
+			'  -h, --help, -H                        - Print this help information',
 			'',
 			'END:',
 			'  Bye!',
@@ -631,7 +631,7 @@ class TestParameters(testly.TestCase):
 			'  testParameters.py',
 			'',
 			'OPTIONAL OPTIONS:',
-			'  -h, --help, -H, -?                    - Print this help information',
+			'  -h, --help, -H                        - Print this help information',
 			''
 		], 'This is an error!'
 
