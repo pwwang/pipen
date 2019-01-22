@@ -124,7 +124,7 @@ class Job(object):
 			'proc'  : self.config['proc'],
 			'jobidx': self.index,
 			'joblen': self.config['procsize'],
-			'pbar'  : False
+			'pbar'  : None
 		}
 		msg   = []
 		if self.rc == Job.RC_NOTGENERATE:
@@ -152,8 +152,8 @@ class Job(object):
 
 		shortpath = self.config.get('shortpath', {'cutoff': 100})
 		self.logger.error('Script: {}'.format(briefPath(self.script, **shortpath)), extra = extra)
-		self.logger.error('Script: {}'.format(briefPath(self.outfile, **shortpath)), extra = extra)
-		self.logger.error('Script: {}'.format(briefPath(self.errfile, **shortpath)), extra = extra)
+		self.logger.error('Stdout: {}'.format(briefPath(self.outfile, **shortpath)), extra = extra)
+		self.logger.error('Stderr: {}'.format(briefPath(self.errfile, **shortpath)), extra = extra)
 
 		# errors are not echoed, echo them out
 		if self.index not in self.config['echo']['jobs'] or 'stderr' not in self.config['echo']['type']:
@@ -386,6 +386,16 @@ class Job(object):
 				self.data  ['i']['IN_' + key] = []
 				self.data  ['i']['OR_' + key] = []
 				self.data  ['i']['RL_' + key] = []
+
+				if not indata:
+					self.logger.warning('No data provided for "{}:{}", use empty list instead.'.format(key, intype), extra = {
+						'proc'  : self.config['proc'],
+						'joblen': self.config['procsize'],
+						'jobidx': self.index,
+						'level2': 'INFILE_RENAMING',
+						'pbar'  : False
+					})
+					continue
 
 				if not isinstance(indata, list):
 					raise JobInputParseError(indata, 'Not a list for input type "%s"' % intype)

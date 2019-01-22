@@ -12,6 +12,7 @@ from time import time
 from .aggr import Aggr
 from .proc import Proc
 from .job import Job
+from .jobmgr import Jobmgr
 from .channel import Channel
 from .parameters import params, Parameters, commands
 from .proctree import ProcTree
@@ -111,7 +112,7 @@ class PyPPL (object):
 			'levels'   : 'normal',
 			'theme'    : True,
 			'lvldiff'  : [],
-			'pbar'     : 'expand',
+			'pbar'     : 50,
 			# current directory instead of script directory
 			'file':    './%s%s.pyppl.log' % (
 				path.splitext(path.basename(sys.argv[0]))[0], 
@@ -124,11 +125,12 @@ class PyPPL (object):
 			utils.dictUpdate(logconfig, self.config['_log'])
 			del self.config['_log']
 
-		logger.getLogger(
-			levels  = logconfig['levels'],
-			theme   = logconfig['theme'],
-			logfile = logconfig['file'],
-			lvldiff = logconfig['lvldiff'])
+		Jobmgr.PBAR_SIZE = logconfig['pbar']
+		logconfig['logfile'] = logconfig['file']
+		del logconfig['pbar']
+		del logconfig['file']
+
+		logger.getLogger(**logconfig)
 		logger.logger.info ('Version: %s', VERSION, extra = {'loglevel': 'pyppl'})
 		logger.logger.info (random.choice(PyPPL.TIPS), extra = {'loglevel': 'tips'})
 
