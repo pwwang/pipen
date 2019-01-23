@@ -1,3 +1,8 @@
+# 1.4.2 (Jan. 23, 2019)
+- Add `runner` subcommand for `bin/pyppl` to show available runners.
+- Allow length of the progress bar configurable.
+- Allow the paths to be shortened in logs.
+- Fix other bugs.
 
 # 1.4.1 (Jan. 9, 2019)
 - Add `render` function for template to allow variables to be rendered in template.

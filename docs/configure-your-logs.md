@@ -196,6 +196,17 @@ The bar length defaults to `50`. You can change it in your code:
 from pyppl import Jobmgr
 Jobmgr.PBAR_SIZE = 80
 ```
+Or you can also now (v1.4.2+) configure the length of the progress bar:
+```jsonc
+{
+    "_log": {
+        #...
+        "pbar": 30,
+        #...
+    }
+}
+```
+
 Here is an explanation about how a cell (one sign or element of the bar) corresponds to job(s):
 Let's say `Jobmgr.PBAR_SIZE = 9` and we have 5 jobs, then every two cells represent 1 job for first 8 cells, and last one represents job #5. The rule is trying to equally distributed the cells to jobs:
 ```
@@ -227,6 +238,32 @@ But if the progress bar belongs to a job (shown when a job is submitted or done)
 ```
 So even job #2 belongs to the first cell and it's running, the sign is still `=`.
 
+# Shorten the paths in logs
+As in most cases, we use real paths. So sometimes they can be so long to show in the logs. We now (v1.4.2+) allow to shorten these paths in the way of changing:
+```
+/abcdef/ghijkl/mnopqr/stuvw/xyz1234
+```
+to
+```
+/a/g/m/s/xyz1234
+```
+The are 3 parameters to configure:
+1. `cutoff`: The cutoff of # parts (split by `/`) whether we should do shortening. Remember `/abc` will be 2 parts.  
+2. `keeplast`: # last parts to keep. It is `1` in the above case.  
+3. `shorten`: The length of first parts to be shortened to. It is `1` in the above case.  
+
+By default, the paths won't be shorted (`cutoff = 999`), and the default values for `keeplast` and `shorten` is `3` and `1`, respectively.
+
+You can configure them in the configuration file:
+```jsonc
+{
+    "_log": {
+        #...
+        "shortpath": {"cutoff": 5, "keeplast": 3, "shorten": 1},
+        #...
+    }
+}
+```
 
 [1]: ./blueOnBlack.png
 [2]: ./blueOnWhite.png

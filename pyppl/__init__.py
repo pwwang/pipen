@@ -20,7 +20,7 @@ from .exception import PyPPLProcFindError, PyPPLProcRelationError
 from .utils import Box
 from . import logger, utils, runners
 
-VERSION = "1.4.1"
+VERSION = "1.4.2"
 class PyPPL (object):
 	"""
 	The PyPPL class
