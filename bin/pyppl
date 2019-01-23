@@ -260,7 +260,7 @@ if __name__ == '__main__':
 	if command == 'runner':
 		from pprint import PrettyPrinter
 		p = PyPPL(
-			{'_log': {'level': 'base', 'lvldiff': ['-PYPPL', '-TIPS']}}, 
+			{'_log': {'levels': 'base', 'lvldiff': ['-PYPPL', '-TIPS']}}, 
 			cfgfile = params.cfgfile
 		)
 		pp = PrettyPrinter(indent = 4)
