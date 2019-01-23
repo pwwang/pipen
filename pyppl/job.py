@@ -150,10 +150,10 @@ class Job(object):
 			msg   = msg if not msg else ' ({})'.format(msg)
 		), extra = extra)
 
-		shortpath = self.config.get('shortpath', {'cutoff': 100})
-		self.logger.error('Script: {}'.format(briefPath(self.script, **shortpath)), extra = extra)
-		self.logger.error('Stdout: {}'.format(briefPath(self.outfile, **shortpath)), extra = extra)
-		self.logger.error('Stderr: {}'.format(briefPath(self.errfile, **shortpath)), extra = extra)
+		from . import Proc
+		self.logger.error('Script: {}'.format(briefPath(self.script,  **Proc.SHORTPATH)), extra = extra)
+		self.logger.error('Stdout: {}'.format(briefPath(self.outfile, **Proc.SHORTPATH)), extra = extra)
+		self.logger.error('Stderr: {}'.format(briefPath(self.errfile, **Proc.SHORTPATH)), extra = extra)
 
 		# errors are not echoed, echo them out
 		if self.index not in self.config['echo']['jobs'] or 'stderr' not in self.config['echo']['type']:
@@ -190,23 +190,22 @@ class Job(object):
 			maxken = max([len(key) for key in self.output.keys()])
 			maxlen = max(maxlen, maxken)
 
-		shortpath = self.config.get('shortpath', {'cutoff': 100})
 		for key in sorted(inkeys):
 			if key.startswith('_'): continue
 			if self.input[key]['type'] in Proc.IN_VARTYPE:
 				self._reportItem(key, maxlen, self.input[key]['data'], 'input')
 			else:
 				if isinstance(self.input[key]['data'], list):
-					data = [briefPath(d, **shortpath) for d in self.input[key]['data']]
+					data = [briefPath(d, **Proc.SHORTPATH) for d in self.input[key]['data']]
 				else:
-					data = briefPath(self.input[key]['data'], **shortpath)
+					data = briefPath(self.input[key]['data'], **Proc.SHORTPATH)
 				self._reportItem(key, maxlen, data, 'input')
 		
 		for key in sorted(self.output.keys()):
 			if isinstance(self.output[key]['data'], list):
-				data = [briefPath(d, **shortpath) for d in self.output[key]['data']]
+				data = [briefPath(d, **Proc.SHORTPATH) for d in self.output[key]['data']]
 			else:
-				data = briefPath(self.output[key]['data'], **shortpath)
+				data = briefPath(self.output[key]['data'], **Proc.SHORTPATH)
 			self._reportItem(key, maxlen, data, 'output')
 
 	def _reportItem(self, key, maxlen, data, loglevel):
@@ -966,7 +965,6 @@ class Job(object):
 					files2ex.extend(glob(path.join(self.outdir, expart)))
 		
 		files2ex  = set(files2ex)
-		shortpath = self.config.get('shortpath', {'cutoff': 100})
 		for file2ex in files2ex:
 			bname  = path.basename (file2ex)
 			# exported file
@@ -985,7 +983,7 @@ class Job(object):
 				else:
 					safefs.moveWithLink(file2ex, exfile, overwrite = self.config['exow'])
 
-			self.logger.info('Exported: {}'.format(briefPath(exfile, **shortpath)), extra = {
+			self.logger.info('Exported: {}'.format(briefPath(exfile, **Proc.SHORTPATH)), extra = {
 				'joblen'  : self.config['procsize'],
 				'jobidx'  : self.index,
 				'proc'    : self.config['proc'],

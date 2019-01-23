@@ -129,7 +129,7 @@ class TestJob(testly.TestCase):
 				[filed0, filed1],
 				[filed2],
 				[filed3, filed4],
-				{},
+				{}, # can be passed, empty list will be used.
 				[[], filed4],
 				[filec1, filed4],
 				[filed4, filed4],
@@ -159,7 +159,7 @@ class TestJob(testly.TestCase):
 		config3 = config.copy()
 		config3['workdir'] = path.join(self.testdir, 'pPrepInput3')
 		config3['iftype'] = 'origin'
-
+		
 		yield 0, config2, {
 			'a': {'type': 'var', 'data': 1},
 			'b': {'type': 'var', 'data': 'a'},
@@ -211,10 +211,10 @@ class TestJob(testly.TestCase):
 			'OR_d3': [filed30, filed31], 
 			'RL_d3': [path.realpath(filed30), path.realpath(filed31)], 
 		}
-
+		
 		yield 1, config, {}, {}, JobInputParseError, 'File not exists for input type'
 		yield 2, config, {}, {}, JobInputParseError, 'Not a string for input type'
-		yield 3, config, {}, {}, JobInputParseError, 'Not a list for input type'
+		#yield 3, config, {}, {}, JobInputParseError, 'Not a list for input type'
 		yield 4, config, {}, {}, JobInputParseError, 'Not a string for element of input type'
 		yield 5, config, {}, {}, JobInputParseError, 'File not exists for element of input type'
 		yield 6, config3, OrderedDict([ # make sure c comes first, instead of d3

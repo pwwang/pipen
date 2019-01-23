@@ -60,6 +60,9 @@ class Proc (object):
 	EX_MOVE = ['move', 'mv']
 	EX_LINK = ['link', 'symlink', 'symbol']
 
+	# shorten paths in logs
+	SHORTPATH = {'cutoff': 999, 'keeplast': 3, 'shorten': 1}
+
 	def __init__ (self, tag = 'notag', desc = 'No description.', id = None, **kwargs):
 		"""
 		Constructor
@@ -74,7 +77,7 @@ class Proc (object):
 			callfront, callback, expect, expart, template, tplenvs, resume, nthread
 		@props
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect
-			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs, shortpath
+			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix, logs
 		"""
 		# Don't go through __getattr__ and __setattr__
 		# To get a prop  : proc.echo   --> proc.props['echo']
@@ -245,8 +248,6 @@ class Proc (object):
 
 		# remember which property is set, then it won't be overwritten by configurations
 		self.props['sets']        = []
-		# shorten the path in logs
-		self.props['shortpath']   = False
 		# The size of the process (# jobs)
 		self.props['size']        = 0
 
@@ -654,8 +655,7 @@ class Proc (object):
 			self.props['workdir'] = self.config['workdir']
 		elif not self.props['workdir']:
 			self.props['workdir'] = path.join(self.ppldir, "PyPPL.%s.%s.%s" % (self.id, self.tag, self._suffix()))
-		shortpath = self.config.get('shortpath', {'cutoff': 100})
-		logger.logger.info(utils.briefPath(self.workdir, **shortpath), extra = {'proc': self.id, 'loglevel': 'WORKDIR'})
+		logger.logger.info(utils.briefPath(self.workdir, **Proc.SHORTPATH), extra = {'proc': self.id, 'loglevel': 'WORKDIR'})
 
 		if not path.exists (self.workdir):
 			if self.resume in ['skip+', 'resume'] and self.cache != 'export':
@@ -944,6 +944,10 @@ class Proc (object):
 					propout[key]  = val
 				else:
 					propout[key]  = val + ' [profile: %s]' % self.config['runner']
+			elif key == 'exdir':
+				procvars[key] = val
+				maxlen        = max(maxlen, len(key))
+				propout[key]  = utils.briefPath(val, **Proc.SHORTPATH)
 			elif key in pvkeys:
 				procvars[key] = val
 				maxlen        = max(maxlen, len(key))
@@ -1062,7 +1066,6 @@ class Proc (object):
 			'runnerOpts': {key: val for key, val in self.config.items() if key.endswith('Runner')},
 			'procvars'  : self.procvars,
 			'procsize'  : self.size,
-			'shortpath' : self.shortpath or {},
 			'echo'      : self.echo,
 			'input'     : self.input,
 			'output'    : self.output,

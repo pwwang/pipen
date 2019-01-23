@@ -183,7 +183,7 @@ class TestPyPPL(testly.TestCase):
 		           p5 /
 		'''
 		with helpers.log2str():
-			pp = PyPPL({'_log': {'_file': None}})
+			pp = PyPPL({'_log': {'file': None}})
 		p_resume1 = Proc()
 		p_resume2 = Proc()
 		p_resume3 = Proc()

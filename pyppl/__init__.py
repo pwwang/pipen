@@ -113,6 +113,7 @@ class PyPPL (object):
 			'theme'    : True,
 			'lvldiff'  : [],
 			'pbar'     : 50,
+			'shortpath': {'cutoff': 999},
 			# current directory instead of script directory
 			'file':    './%s%s.pyppl.log' % (
 				path.splitext(path.basename(sys.argv[0]))[0], 
@@ -126,9 +127,11 @@ class PyPPL (object):
 			del self.config['_log']
 
 		Jobmgr.PBAR_SIZE = logconfig['pbar']
+		Proc.SHORTPATH.update(logconfig['shortpath'])
 		logconfig['logfile'] = logconfig['file']
 		del logconfig['pbar']
 		del logconfig['file']
+		del logconfig['shortpath']
 
 		logger.getLogger(**logconfig)
 		logger.logger.info ('Version: %s', VERSION, extra = {'loglevel': 'pyppl'})

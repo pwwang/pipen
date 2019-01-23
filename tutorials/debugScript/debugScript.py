@@ -15,7 +15,7 @@ pHeatmap.lang      = 'Rscript' # or /path/to/Rscript if it's not in $PATH
 pHeatmap.script = """
 set.seed({{i.seed}})
 Sys.sleep({{job.index}})
-mat = matrix(rnorm({{args.ncol, args.nrow | lambda x, y: x*y}}), ncol={{args.ncol}})
+mat = matrix(rnorm({{args.ncol, args.nrow | *lambda x, y: x*y}}), ncol={{args.ncol}})
 png(filename = "{{o.outfile}}", width=150, height=150)
 
 # have to be on stderr
