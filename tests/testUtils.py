@@ -879,6 +879,17 @@ class TestUtils (testly.TestCase):
 		if path.exists(self.testdir):
 			rmtree(self.testdir)
 		makedirs(self.testdir)
+
+	def dataProvider_testBriefPath(self):
+		yield "/abcd/efghi", 10, 1, "/abc/efghi"
+		yield "/abcdef/efghi", 10, 1, "/abc/efghi"
+		yield "/abcdef/efghi", 0, 1, "/abcdef/efghi"
+		yield "/abcdef/efghi", 10, 5, "/abcde/efghi"
+		yield "/abc/def/ghi", 20, 1, "/abc/def/ghi"
+		yield "/.~abc/def/ghi", 10, 1, "/.~a/d/ghi"
+
+	def testBriefPath(self, p, cutoff, keep, result):
+		self.assertEqual(utils.briefPath(p, cutoff, keep), result)
 		
 	def dataProvider_testBox(self):
 		box = Box()
@@ -2076,6 +2087,7 @@ class TestPs(testly.TestCase):
 		# use ps command instead
 		c3 = Cmd('ps -p ' + str(c.pid)).pipe('grep -v defunct').pipe('grep -v ")$"').run()
 		self.assertNotIn(str(c.pid), c3.stdout)
+
 
 if __name__ == '__main__':
 	testly.main(verbosity=2, failfast = True)

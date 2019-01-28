@@ -25,12 +25,7 @@ class TestJob(testly.TestCase):
 
 	def file2indir(workdir, index, f, suffix = ''):
 		basename = path.basename(f)
-		if '.' in basename:
-			(prefix, _, ext) = basename.rpartition('.')
-			ext = '.' + ext
-		else:
-			prefix, ext = basename, ''
-		return path.join(workdir, str(index + 1), 'input', prefix + suffix + ext)
+		return path.join(workdir, str(index + 1), 'input', '{}{}'.format(suffix, basename) if suffix else basename)
 
 	def dataProvider_testInit(self):
 		config = {
@@ -90,7 +85,7 @@ class TestJob(testly.TestCase):
 		self.assertIsInstance(job.runner, RunnerLocal)
 
 	def dataProvider_testPrepInput(self):
-		config = {'iftype': 'indir', 'proc': 'pPrepInput', 'procsize': 1}
+		config = {'proc': 'pPrepInput', 'procsize': 1}
 		# make sure the infile renaming log output
 		#p.LOG_NLINE['INFILE_RENAMING'] = -1
 		config['workdir'] = path.join(self.testdir, 'pPrepInput')
@@ -155,61 +150,65 @@ class TestJob(testly.TestCase):
 		}
 		config2 = config.copy()
 		config2['workdir'] = path.join(self.testdir, 'pPrepInput2')
-		config2['iftype']  = 'real'
+		#config2['iftype']  = 'real'
 		config3 = config.copy()
 		config3['workdir'] = path.join(self.testdir, 'pPrepInput3')
-		config3['iftype'] = 'origin'
+		#config3['iftype'] = 'origin'
 		
 		yield 0, config2, {
 			'a': {'type': 'var', 'data': 1},
 			'b': {'type': 'var', 'data': 'a'},
-			'c': {'type': 'file', 'orig':'', 'data': ''},
-			'd': {'type': 'files', 'orig':[filed0, filed1], 'data': [
+			#'c': {'type': 'file', 'orig':'', 'data': ''},
+			'c': {'type': 'file', 'data': ''},
+			#'d': {'type': 'files', 'orig':[filed0, filed1], 'data': [
+			'd': {'type': 'files', 'data': [
 				self.file2indir(config2['workdir'], 0, filed0), 
 				self.file2indir(config2['workdir'], 0, filed1)
 			]},
-			'd2': {'type': 'files', 'orig': [filed20], 'data': [
+			#'d2': {'type': 'files', 'orig': [filed20], 'data': [
+			'd2': {'type': 'files', 'data': [
 				self.file2indir(config2['workdir'], 0, filed20)
 			]},
-			'd3': {'type': 'files', 'orig': [filed30, filed31], 'data': [
+			#'d3': {'type': 'files', 'orig': [filed30, filed31], 'data': [
+			'd3': {'type': 'files', 'data': [
 				self.file2indir(config2['workdir'], 0, filed30),
 				self.file2indir(config2['workdir'], 0, filed31)
 			]}, 
 		}, {
 			'a': 1,
 			'b': 'a',
-			'c': path.realpath(''),
-			'IN_c': '',
-			'OR_c': '',
-			'RL_c': path.realpath(''),
+			'c': '',
+			# 'IN_c': '',
+			# 'OR_c': '',
+			# 'RL_c': path.realpath(''),
 			'd': [
-				path.realpath(filed0), 
-				path.realpath(filed1)
-			],
-			'IN_d': [
 				self.file2indir(config2['workdir'], 0, filed0), 
 				self.file2indir(config2['workdir'], 0, filed1)
 			],
-			'OR_d': [filed0, filed1],
-			'RL_d': [path.realpath(filed0), path.realpath(filed1)],
+			# 'IN_d': [
+			# 	self.file2indir(config2['workdir'], 0, filed0), 
+			# 	self.file2indir(config2['workdir'], 0, filed1)
+			# ],
+			# 'OR_d': [filed0, filed1],
+			# 'RL_d': [path.realpath(filed0), path.realpath(filed1)],
 			'd2': [
-				path.realpath(filed20)
-			],
-			'IN_d2': [
 				self.file2indir(config2['workdir'], 0, filed20)
 			],
-			'OR_d2': [filed20],
-			'RL_d2': [path.realpath(filed20)],
+			# 'IN_d2': [
+			# 	self.file2indir(config2['workdir'], 0, filed20)
+			# ],
+			# 'OR_d2': [filed20],
+			# 'RL_d2': [path.realpath(filed20)],
 			'd3': [
-				path.realpath(filed30),
-				path.realpath(filed31)
-			], 
-			'IN_d3': [
 				self.file2indir(config2['workdir'], 0, filed30),
 				self.file2indir(config2['workdir'], 0, filed31)
 			], 
-			'OR_d3': [filed30, filed31], 
-			'RL_d3': [path.realpath(filed30), path.realpath(filed31)], 
+			# 'IN_d3': [
+			# 	self.file2indir(config2['workdir'], 0, filed30),
+			# 	self.file2indir(config2['workdir'], 0, filed31)
+			# ], 
+			# 'OR_d3': [filed30, filed31], 
+			# 'RL_d3': [path.realpath(filed30), path.realpath(filed31)], 
 		}
 		
 		yield 1, config, {}, {}, JobInputParseError, 'File not exists for input type'
@@ -220,74 +219,81 @@ class TestJob(testly.TestCase):
 		yield 6, config3, OrderedDict([ # make sure c comes first, instead of d3
 			('a', {'type': 'var', 'data': 7}),
 			('b', {'type': 'var', 'data': 'g'}),
-			('c', {'type': 'file', 'orig': filec2, 'data': self.file2indir(config3['workdir'], 6, filec2)}),
-			('d', {'type': 'files', 'orig':[filed4, filed4], 'data': [
+			#('c', {'type': 'file', 'orig': filec2, 'data': self.file2indir(config3['workdir'], 6, filec2)}),
+			('c', {'type': 'file', 'data': self.file2indir(config3['workdir'], 6, filec2)}),
+			#('d', {'type': 'files', 'orig':[filed4, filed4], 'data': [
+			('d', {'type': 'files', 'data': [
 				self.file2indir(config3['workdir'], 6, filed4), 
 				self.file2indir(config3['workdir'], 6, filed4)
 			]}),
-			('d2', {'type': 'files', 'orig': [''], 'data': [
+			#('d2', {'type': 'files', 'orig': [''], 'data': [
+			('d2', {'type': 'files', 'data': [
 				''
 			]}),
 			#                               not file34
-			('d3', {'type': 'files', 'orig': [filed35], 'data': [
+			#('d3', {'type': 'files', 'orig': [filed35], 'data': [
+			('d3', {'type': 'files', 'data': [
 				self.file2indir(config3['workdir'], 6, filed35, '[1]')
 			]})
 		]), {
 			'a': 7,
 			'b': 'g',
-			'c': filec2,
-			'IN_c': self.file2indir(config3['workdir'], 6, filec2),
-			'OR_c': filec2,
-			'RL_c': path.realpath(filec2),
+			'c': self.file2indir(config3['workdir'], 6, filec2),
+			# 'IN_c': self.file2indir(config3['workdir'], 6, filec2),
+			# 'OR_c': filec2,
+			# 'RL_c': path.realpath(filec2),
 			'd': [
-				filed4, 
-				filed4
-			],
-			'IN_d': [
 				self.file2indir(config3['workdir'], 6, filed4), 
 				self.file2indir(config3['workdir'], 6, filed4)
 			],
-			'OR_d': [filed4, filed4],
-			'RL_d': [path.realpath(filed4), path.realpath(filed4)],
+			# 'IN_d': [
+			# 	self.file2indir(config3['workdir'], 6, filed4), 
+			# 	self.file2indir(config3['workdir'], 6, filed4)
+			# ],
+			# 'OR_d': [filed4, filed4],
+			# 'RL_d': [path.realpath(filed4), path.realpath(filed4)],
 			'd2': [''],
-			'IN_d2': [''],
-			'OR_d2': [''],
-			'RL_d2': [path.realpath('')],
+			# 'IN_d2': [''],
+			# 'OR_d2': [''],
+			# 'RL_d2': [path.realpath('')],
 			'd3': [
-				filed35
-			], 
-			'IN_d3': [
 				self.file2indir(config3['workdir'], 6, filed35, '[1]')
 			], 
-			'OR_d3': [filed35], 
-			'RL_d3': [path.realpath(filed35)]
-		}, None, None, 'Input file renamed: filec2.txt -> filec2[1].txt'
+			# 'IN_d3': [
+			# 	self.file2indir(config3['workdir'], 6, filed35, '[1]')
+			# ], 
+			# 'OR_d3': [filed35], 
+			# 'RL_d3': [path.realpath(filed35)]
+		}, None, None, 'Input file renamed: filec2.txt -> [1]filec2.txt'
 		
 		config21 = {}
 		# make sure the infile renaming log output
 		#p21.LOG_NLINE['INFILE_RENAMING'] = -1
 		config21['proc'] = 'pPrepInput21'
 		config21['procsize'] = 1
-		config21['iftype'] = 'origin'
+		#config21['iftype'] = 'origin'
 		config21['workdir'] = path.join(self.testdir, 'pPrepInput21')
 		config21['input']   = OrderedDict([
 			('c1', {'type': 'file', 'data': [filec2]}),
 			('c2', {'type': 'file', 'data': [filed35]}),
 		])
+		# 6
 		yield 0, config21, OrderedDict([
-			('c1', {'type': 'file', 'orig': filec2, 'data': self.file2indir(config21['workdir'], 0, filec2)}),
-			('c2', {'type': 'file', 'orig': filed35, 'data': self.file2indir(config21['workdir'], 0, filed35, '[1]')}),
+			#('c1', {'type': 'file', 'orig': filec2, 'data': self.file2indir(config21['workdir'], 0, filec2)}),
+			('c1', {'type': 'file', 'data': self.file2indir(config21['workdir'], 0, filec2)}),
+			#('c2', {'type': 'file', 'orig': filed35, 'data': self.file2indir(config21['workdir'], 0, filed35, '[1]')}),
+			('c2', {'type': 'file', 'data': self.file2indir(config21['workdir'], 0, filed35, '[1]')}),
 		
 		]), {
-			'c1': filec2,
-			'IN_c1': self.file2indir(config21['workdir'], 0, filec2),
-			'OR_c1': filec2,
-			'RL_c1': path.realpath(filec2),
-			'c2': filed35,
-			'IN_c2': self.file2indir(config21['workdir'], 0, filed35, '[1]'),
-			'OR_c2': filed35,
-			'RL_c2': path.realpath(filed35),
-		}, None, None, 'Input file renamed: filec2.txt -> filec2[1].txt'
+			'c1': self.file2indir(config21['workdir'], 0, filec2),
+			# 'IN_c1': self.file2indir(config21['workdir'], 0, filec2),
+			# 'OR_c1': filec2,
+			# 'RL_c1': path.realpath(filec2),
+			'c2': self.file2indir(config21['workdir'], 0, filed35, '[1]'),
+			# 'IN_c2': self.file2indir(config21['workdir'], 0, filed35, '[1]'),
+			# 'OR_c2': filed35,
+			# 'RL_c2': path.realpath(filed35),
+		}, None, None, 'Input file renamed: filec2.txt -> [1]filec2.txt'
 
 		config22 = {}
 		dir0 = path.join(self.testdir, 'dir')
@@ -296,11 +302,12 @@ class TestJob(testly.TestCase):
 		makedirs(dir2)
 		config22['proc']     = 'pPrepInput22'
 		config22['procsize'] = 1
-		config22['iftype']   = 'indir'
+		#config22['iftype']   = 'indir'
 		config22['workdir']  = path.join(self.testdir, 'pPrepInput22')
 		config22['input']    = {'a': {'type': 'files', 'data': [[dir0, dir1, dir2, dir2]]}}
 		yield 0, config22, {
-			'a': {'type': 'files', 'orig': [dir0, dir1, dir2, dir2], 'data': [
+			#'a': {'type': 'files', 'orig': [dir0, dir1, dir2, dir2], 'data': [
+			'a': {'type': 'files', 'data': [
 				self.file2indir(config22['workdir'], 0, dir0),
 				self.file2indir(config22['workdir'], 0, dir1, '[1]'),
 				self.file2indir(config22['workdir'], 0, dir2, '[2]'),
@@ -313,19 +320,19 @@ class TestJob(testly.TestCase):
 				self.file2indir(config22['workdir'], 0, dir2, '[2]'),
 				self.file2indir(config22['workdir'], 0, dir2, '[2]')
 			]),
-			('IN_a', [
-				self.file2indir(config22['workdir'], 0, dir0),
-				self.file2indir(config22['workdir'], 0, dir1, '[1]'),
-				self.file2indir(config22['workdir'], 0, dir2, '[2]'),
-				self.file2indir(config22['workdir'], 0, dir2, '[2]')
-			]),
-			('OR_a', [dir0, dir1, dir2, dir2]),
-			('RL_a', [
-				path.realpath(dir0),
-				path.realpath(dir1),
-				path.realpath(dir2),
-				path.realpath(dir2),
-			]),
+			# ('IN_a', [
+			# 	self.file2indir(config22['workdir'], 0, dir0),
+			# 	self.file2indir(config22['workdir'], 0, dir1, '[1]'),
+			# 	self.file2indir(config22['workdir'], 0, dir2, '[2]'),
+			# 	self.file2indir(config22['workdir'], 0, dir2, '[2]')
+			# ]),
+			# ('OR_a', [dir0, dir1, dir2, dir2]),
+			# ('RL_a', [
+			# 	path.realpath(dir0),
+			# 	path.realpath(dir1),
+			# 	path.realpath(dir2),
+			# 	path.realpath(dir2),
+			# ]),
 		])
 
 	def testPrepInput(self, index, config, jobinput, indata, exception = None, msg = None, errmsg = None):
@@ -453,7 +460,7 @@ class TestJob(testly.TestCase):
 			self.assertIn(o, err.getvalue())
 
 	def dataProvider_testReport(self):
-		config = {'iftype': 'indir', 'proc': 'pReport', 'procsize': 100}
+		config = {'proc': 'pReport', 'procsize': 100}
 		config['workdir'] = path.join(self.testdir, 'pReport')
 		fileprdir = path.join(self.testdir, 'pReportDir')
 		makedirs(fileprdir)
@@ -975,7 +982,7 @@ class TestJob(testly.TestCase):
 		config['script']   = TemplateLiquid('')
 		config['procsize'] = 10
 		config['proc']     = 'pSignature1'
-		config['iftype']   = 'indir'
+		#config['iftype']   = 'indir'
 		config['dirsig']   = False
 		config['input']    = {
 			'a': {'type': 'file', 'data': [infile1]}
@@ -1000,7 +1007,7 @@ class TestJob(testly.TestCase):
 		config['script']   = TemplateLiquid('')
 		config['proc']     = 'pSignature2'
 		config['procsize'] = 10
-		config['iftype']   = 'indir'
+		#config['iftype']   = 'indir'
 		config['dirsig']   = False
 		config['input']    = {
 			'a': {'type': 'files', 'data': [[infile2]]}
@@ -1066,7 +1073,7 @@ class TestJob(testly.TestCase):
 		config['script']   = TemplateLiquid('')
 		config['procsize'] = 10
 		config['proc']     = 'pSignature5'
-		config['iftype']   = 'indir'
+		#config['iftype']   = 'indir'
 		config['dirsig']   = True
 		config['input']    = {
 			'a': {'type': 'file', 'data': [infile5]},
@@ -1136,7 +1143,7 @@ class TestJob(testly.TestCase):
 		config['workdir'] = path.join(self.testdir, 'pCache', 'workdir')
 		config['script']  = TemplateLiquid('')
 		config['cache']   = True
-		config['iftype']  = 'indir'
+		#config['iftype']  = 'indir'
 		config['dirsig']  = False
 		config['size']    = 10
 		#pCache.LOG_NLINE['CACHE_EMPTY_CURRSIG'] = -1
@@ -1206,7 +1213,7 @@ class TestJob(testly.TestCase):
 	
 	def dataProvider_testIsTrulyCached(self):
 		# no cache file
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached', 'workdir')
 		config['script']  = TemplateLiquid('')
 		config['proc']    = 'pIsTrulyCached'
@@ -1216,7 +1223,7 @@ class TestJob(testly.TestCase):
 		yield job, False, ['DEBUG', 'pIsTrulyCached', 'Not cached as cache file not exists.']
 		
 		# empty cache file
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached1', 'workdir')
 		config['script']  = TemplateLiquid('')
 		config['proc']    = 'pIsTrulyCached1'
@@ -1236,7 +1243,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached2', 'workdir')
 		config['script']  = TemplateLiquid('')
 		config['proc']    = 'pIsTrulyCached2'
@@ -1277,7 +1284,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached3', 'workdir')
 		config['script']  = TemplateLiquid('')
 		config['proc']    = 'pIsTrulyCached3'
@@ -1319,7 +1326,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached4', 'workdir')
 		config['script']  = TemplateLiquid('')
 		config['proc']    = 'pIsTrulyCached4'
@@ -1361,7 +1368,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached5', 'workdir')
 		config['script']  = TemplateLiquid('')
 		config['proc']    = 'pIsTrulyCached5'
@@ -1403,7 +1410,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached6', 'workdir')
 		config['script']  = TemplateLiquid('')
 		config['proc']    = 'pIsTrulyCached6'
@@ -1445,7 +1452,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached7', 'workdir')
 		config['script']  = TemplateLiquid('')
 		config['proc']    = 'pIsTrulyCached7'
@@ -1487,7 +1494,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached71', 'workdir')
 		config['script']  = TemplateLiquid('')
 		config['proc']    = 'pIsTrulyCached71'
@@ -1526,7 +1533,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached8', 'workdir')
 		config['script']  = TemplateLiquid('')
 		config['proc']    = 'pIsTrulyCached8'
@@ -1568,7 +1575,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached9', 'workdir')
 		config['script']  = TemplateLiquid('')
 		config['proc']    = 'pIsTrulyCached9'
@@ -1611,7 +1618,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached10', 'workdir')
 		config['script']  = TemplateLiquid('')
 		config['proc']    = 'pIsTrulyCached10'
@@ -1652,7 +1659,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached11', 'workdir')
 		config['script']  = TemplateLiquid('')
 		config['proc']    = 'pIsTrulyCached11'
@@ -1693,7 +1700,7 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(infile)
 		helpers.writeFile(infile_1)
 		helpers.writeFile(infile_2)
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsTrulyCached12', 'workdir')
 		config['script']  = TemplateLiquid('')
 		config['cache']   = True
@@ -1736,14 +1743,14 @@ class TestJob(testly.TestCase):
 			self.assertIn(err, stderr)		
 
 	def dataProvider_testIsExptCached(self):
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsExptCached', 'workdir')
 		config['cache']   = True
 		job = Job(0, config)
 		#0
 		yield job, False
 		
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsExptCached1', 'workdir')
 		config['proc']    = 'pIsExptCached1'
 		config['cache']   = 'export'
@@ -1753,7 +1760,7 @@ class TestJob(testly.TestCase):
 		#1
 		yield job1, False, ['WARNING', 'pIsExptCached1', 'Job is not export-cached using symlink export.']
 		
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsExptCached2', 'workdir')
 		config['proc']    = 'pIsExptCached2'
 		config['cache']   = 'export'
@@ -1763,7 +1770,7 @@ class TestJob(testly.TestCase):
 		#2
 		yield job2, False, ['WARNING', 'pIsExptCached2', 'Job is not export-cached using partial export.']
 		
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsExptCached3', 'workdir')
 		config['cache']   = 'export'
 		config['proc']    = 'pIsExptCached3'
@@ -1776,7 +1783,7 @@ class TestJob(testly.TestCase):
 		
 		# tgz, but file not exists
 		#region #4
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsExptCached4', 'workdir')
 		config['cache']  = 'export'
 		config['proc']   = 'pIsExptCached4'
@@ -1811,7 +1818,7 @@ class TestJob(testly.TestCase):
 		
 		# tgz
 		#region #5
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsExptCached5', 'workdir')
 		config['cache']   = 'export'
 		config['proc']    = 'pIsExptCached5'
@@ -1844,7 +1851,7 @@ class TestJob(testly.TestCase):
 		
 		# gz: file not exists
 		#region #6
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsExptCached6', 'workdir')
 		config['cache']   = 'export'
 		config['proc']    = 'pIsExptCached6'
@@ -1873,7 +1880,7 @@ class TestJob(testly.TestCase):
 		
 		# gz
 		#region #7
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsExptCached7', 'workdir')
 		config['cache']   = 'export'
 		config['proc']    = 'pIsExptCached7'
@@ -1901,7 +1908,7 @@ class TestJob(testly.TestCase):
 		
 		# other: file not exist
 		#region #8
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsExptCached8', 'workdir')
 		config['cache']   = 'export'
 		config['proc']    = 'pIsExptCached8'
@@ -1927,7 +1934,7 @@ class TestJob(testly.TestCase):
 		
 		# other: same file
 		#region #9
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsExptCached9', 'workdir')
 		config['cache']   = 'export'
 		config['exhow']   = 'copy'
@@ -1954,7 +1961,7 @@ class TestJob(testly.TestCase):
 		
 		# other: overwrite
 		#region #10
-		config = {'input': {}, 'output': {}, 'iftype': 'indir', 'cache': True, 'procsize': 1, 'dirsig': False}
+		config = {'input': {}, 'output': {}, 'cache': True, 'procsize': 1, 'dirsig': False}
 		config['workdir'] = path.join(self.testdir, 'pIsExptCached10', 'workdir')
 		config['cache']   = 'export'
 		config['proc']    = 'pIsExptCached10'

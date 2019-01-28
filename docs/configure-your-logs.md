@@ -247,22 +247,30 @@ to
 ```
 /a/g/m/s/xyz1234
 ```
-The are 3 parameters to configure:
-1. `cutoff`: The cutoff of # parts (split by `/`) whether we should do shortening. Remember `/abc` will be 2 parts.  
-2. `keeplast`: # last parts to keep. It is `1` in the above case.  
-3. `shorten`: The length of first parts to be shortened to. It is `1` in the above case.  
-
-By default, the paths won't be shorted (`cutoff = 999`), and the default values for `keeplast` and `shorten` is `3` and `1`, respectively.
+The are 2 parameters to configure:
+1. `cutoff`: The cutoff length of the path. Default: `0` (don't shorten)  
+2. `keep`  : The minimal # chars to keep for each part of the path  
 
 You can configure them in the configuration file:
 ```jsonc
 {
     "_log": {
         #...
-        "shortpath": {"cutoff": 5, "keeplast": 3, "shorten": 1},
+        "shortpath": {"cutoff": 50, "keep": 3},
         #...
     }
 }
+```
+
+Examples:
+```
+# shortpath: {"cutoff": 10, "keep": 1}
+"/abcd/efghi" -> "/abc/efghi" (final length: 10)
+"/abcdef/efghi" -> "/abc/efghi" (final length: 10)
+
+# shortpath: {"cutoff": 10, "keep": 5}
+"/abcdef/efghi" -> "/abcde/efghi" (final length: 12)
+# at least 5 chars to be kept for "abcdef"
 ```
 
 [1]: ./blueOnBlack.png

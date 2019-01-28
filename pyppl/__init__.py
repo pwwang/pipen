@@ -113,7 +113,7 @@ class PyPPL (object):
 			'theme'    : True,
 			'lvldiff'  : [],
 			'pbar'     : 50,
-			'shortpath': {'cutoff': 999},
+			'shortpath': {},
 			# current directory instead of script directory
 			'file':    './%s%s.pyppl.log' % (
 				path.splitext(path.basename(sys.argv[0]))[0], 

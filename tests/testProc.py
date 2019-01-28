@@ -71,7 +71,7 @@ class TestProc(testly.TestCase):
 			'expect': '',
 			'forks': 1,
 			'id': 'p',
-			'iftype': 'indir',
+			#'iftype': 'indir',
 			'input': '',
 			'lang': 'bash',
 			'nthread': min(int(cpu_count() / 2), 16),
@@ -136,7 +136,7 @@ class TestProc(testly.TestCase):
 			'expect': '',
 			'forks': 1,
 			'id': 'someId',
-			'iftype': 'indir',
+			#'iftype': 'indir',
 			'input': '',
 			'lang': 'bash',
 			'nthread': min(int(cpu_count() / 2), 16),
@@ -168,7 +168,7 @@ class TestProc(testly.TestCase):
 			del config2['desc']
 			del config2['id']
 			p2 = Proc(tag, desc, id = config['id'], **config2)
-			props['sets'] = list(sorted(['runner', 'echo', 'depends', 'expect', 'callfront', 'script', 'cache', 'nthread', 'beforeCmd', 'template', 'rc', 'input', 'forks', 'iftype', 'acache', 'workdir', 'resume', 'exhow', 'args', 'exow', 'dirsig', 'ppldir', 'errhow', 'lang', 'tplenvs', 'exdir', 'expart', 'afterCmd', 'callback', 'aggr', 'output', 'errntry']))
+			props['sets'] = list(sorted(['runner', 'echo', 'depends', 'expect', 'callfront', 'script', 'cache', 'nthread', 'beforeCmd', 'template', 'rc', 'input', 'forks', 'acache', 'workdir', 'resume', 'exhow', 'args', 'exow', 'dirsig', 'ppldir', 'errhow', 'lang', 'tplenvs', 'exdir', 'expart', 'afterCmd', 'callback', 'aggr', 'output', 'errntry']))
 			p2.props['sets'] = list(sorted(p2.sets))
 			self.assertDictEqual(p2.props, props)
 			self.assertDictEqual(p2.config, config)
@@ -287,7 +287,7 @@ class TestProc(testly.TestCase):
 			'afterCmd': '',
 			'aggr': None,
 			'args': Box(),
-			'iftype': 'indir',
+			#'iftype': 'indir',
 			'beforeCmd': '',
 			# 'brings': {},
 			'cache': True,
@@ -367,7 +367,7 @@ class TestProc(testly.TestCase):
 			'expect': '',
 			'forks': 1,
 			'id': 'p',
-			'iftype': 'indir',
+			#'iftype': 'indir',
 			'input': '',
 			'lang': 'bash',
 			'nthread': min(int(cpu_count() / 2), 16),

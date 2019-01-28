@@ -35,22 +35,10 @@ class _TemplateFilter(object):
 	@staticmethod
 	def basename(x, orig = False):
 		bname = path.basename(x)
-		if orig: 
+		if orig or not bname.startswith('['): 
 			return bname
 
-		filename = bname.split('.', 1)
-		if len(filename) == 1:
-			filename, ext = filename[0], ''
-		else:
-			filename, ext = filename
-			ext = '.' + ext
-
-		if  not filename.endswith(']') or \
-			not '[' in filename or \
-			not filename[:-1].split('[', 1)[1].isdigit(): 
-			return bname
-		
-		return filename.split('[', 1)[0] + ext
+		return bname[bname.find(']')+1:]
 
 	@staticmethod
 	def filename(x, orig = False, dot = -1):

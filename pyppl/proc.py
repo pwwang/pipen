@@ -61,7 +61,7 @@ class Proc (object):
 	EX_LINK = ['link', 'symlink', 'symbol']
 
 	# shorten paths in logs
-	SHORTPATH = {'cutoff': 999, 'keeplast': 3, 'shorten': 1}
+	SHORTPATH = {'cutoff': 0, 'keep': 1}
 
 	def __init__ (self, tag = 'notag', desc = 'No description.', id = None, **kwargs):
 		"""
@@ -226,7 +226,7 @@ class Proc (object):
 		# - indir:  The symbolic links in input directory
 		# - origin: The original file specified by input channel
 		# - real:   The realpath of the input file
-		self.config['iftype']     = 'indir'
+		#self.config['iftype']     = 'indir'
 
 		# resume flag of the process
 		# ''       : Normal, don't resume
@@ -1069,7 +1069,7 @@ class Proc (object):
 			'echo'      : self.echo,
 			'input'     : self.input,
 			'output'    : self.output,
-			'iftype'    : self.iftype,
+			#'iftype'    : self.iftype,
 			'script'    : self.script,
 			'errntry'   : self.errntry,
 			'errhow'    : self.errhow,

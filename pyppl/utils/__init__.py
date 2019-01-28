@@ -318,24 +318,38 @@ def briefList(l):
 			ret.append(str(group[0]) + '-' + str(group[-1]))
 	return ', '.join(ret)
 
-def briefPath(p, cutoff = 5, keeplast = 3, shorten = 1):
+def briefPath(p, cutoff = 0, keep = 1):
 	"""
 	Show briefed path in logs
 	/abcde/hijklm/opqrst/uvwxyz/123456 will be shorted as:
 	/a/h/opqrst/uvwxyz/123456
 	@params:
 		`p`       : The path
-		`cutoff`  : Shorten the whole path if it has no less than N parts. Default: `5`
-		`keeplast`: Keep last N path parts. Default: `3`
-		`shorten` : Shorten first path parts to N chars. Default: `1`
+		`cutoff`  : Shorten the whole path if it more than length of cutoff. Default: `0`
+		`keep`    : First N alphabetic chars to keep. Default: `1`
 	@returns:
 		The shorted path
 	"""
-	from os import path, sep
-	parts = path.normpath(p).split(sep)
-	if len(parts) < cutoff:
+	if not cutoff:
 		return p
-	newparts = [part[:shorten] for part in parts[0:-keeplast]] + parts[-keeplast:]
-	newparts[0] = newparts[0] or sep
-	return path.join(*newparts)
+	from os import path, sep
+	p = path.normpath(p)
+	lenp = len(p)
+	if lenp <= cutoff:
+		return p
+	
+	more = lenp - cutoff
+	parts = p.split(sep)
+	parts[0] = parts[0] or sep
+	
+	lenparts = len(parts)
+	for i, part in enumerate(parts[:-1]):
+		newpart = re.sub(r'^([^A-Za-z0-9]*\w{%s}).*$' % keep, r'\1', part)
+		newlen  = len(newpart)
+		more = more - (len(part) - newlen)
+		if more < 0:
+			parts[i] = part[:newlen-more]
+			break
+		parts[i] = newpart
+	return path.join(*parts)
 

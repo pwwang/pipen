@@ -164,14 +164,14 @@ class TestTemplateJinja2(testly.TestCase):
 		#yield ('{{readlink(v5)}}', {'v5': path.join(path.dirname(path.realpath(path.abspath(__file__))), 'helpers.py')yield , path.relpath(path.jo(path.dirname(path.dirname(path.abspath(__file__))), 'bin', 'helpers.py'))),
 		yield '{{dirname(v6)}}', {'v6': '/a/b/c'}, '/a/b'
 		yield '{{basename(v7)}}{{bn(v7)}}', {'v7': '/a/b/c.txt'}, 'c.txtc.txt'
-		yield '{{basename(v8)}}{{bn(v8)}}', {'v8': '/a/b/c[1].txt'}, 'c.txtc.txt'
+		yield '{{basename(v8)}}{{bn(v8)}}', {'v8': '/a/b/[1]c.txt'}, 'c.txtc.txt'
 		yield '{{basename(v9, v9b)}}{{bn(v9, v9b)}}', {'v9': '/a/b/c.txt', 'v9b': True}, 'c.txtc.txt'
 		# 10
 		yield '{{basename(v10, v10b)}}{{bn(v10, v10b)}} {{ext(v10)}}', {'v10': '/a/b/c[1].txt', 'v10b': True}, 'c[1].txtc[1].txt .txt'
 		yield '{{filename(v11)}}{{fn(v11)}} {{prefix(v11)}}', {'v11': '/a/b/a.txt'}, 'aa /a/b/a'
-		yield '{{filename(v12)}}{{fn(v12)}}', {'v12': '/a/b/b[1].txt'}, 'bb'
+		yield '{{filename(v12)}}{{fn(v12)}}', {'v12': '/a/b/[1]b.txt'}, 'bb'
 		yield '{{filename(v13, v13b)}}{{fn(v13, v13b)}}', {'v13': '/a/b/d.txt', 'v13b': True}, 'dd'
-		yield '{{filename(v14, v14b)}}{{fn(v14, v14b)}}', {'v14': '/a/b/c[1].txt', 'v14b': True}, 'c[1]c[1]'
+		yield '{{filename(v14, v14b)}}{{fn(v14, v14b)}}', {'v14': '/a/b/[1]c.txt', 'v14b': True}, '[1]c[1]c'
 		# 15
 		yield '{{R(var1)}}', {'var1': 'NULL'}, 'NULL'
 		yield '{{R(var2)}}', {'var2': 'abc'}, "'abc'"

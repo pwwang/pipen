@@ -4,7 +4,7 @@ job module for PyPPL
 import sys
 import re
 import json
-from os import path, makedirs, utime
+from os import path, makedirs, utime, listdir
 from glob import glob
 from collections import OrderedDict
 from datetime import datetime
@@ -287,44 +287,31 @@ class Job(object):
 		@returns:
 			The link to the original file.
 		"""
-		basename = path.basename (orgfile)
-		infile   = path.join (self.indir, basename)
+		basename = path.basename(orgfile)
+		infile   = path.join(self.indir, basename)
 		#return infile
 		safefs.SafeFs._link(orgfile, infile, overwrite = False)
 		#if safefs.SafeFs(infile, orgfile).samefile():
 		if path.samefile(infile, orgfile):
 			return infile
 
-		if '.' in basename:
-			(fn, ext) = basename.split('.', 1)
-			ext       = '.' + ext
-		else:
-			fn, ext = basename, ''
-		# takes long time if we have a long list of files
-		existInfiles = glob (path.join(self.indir, fn + '[[]*[]]' + ext))
+		existInfiles = [fn for fn in listdir(self.indir) if fn.endswith(']' + basename)]
 		if not existInfiles:
-			infile = path.join (self.indir, fn + '[1]' + ext)
-			safefs.SafeFs._link(orgfile, infile, overwrite = False)
+			num = 1
 		elif len(existInfiles) < 100:
 			num = 0
 			for eifile in existInfiles:
+				infile = path.join(self.indir, eifile)
 				#if safefs.SafeFs(eifile, orgfile).samefile():
-				if path.samefile(eifile, orgfile):
-					num = 0
-					return eifile
-				n   = int(path.basename(eifile)[len(fn)+1 : -len(ext)-1])
-				num = max (num, n)
-
-			if num > 0:
-				infile = path.join (self.indir, fn + '[' + str(num+1) + ']' + ext)
-				safefs.SafeFs._link(orgfile, infile)
+				if path.samefile(infile, orgfile):
+					return infile
+				n   = int(eifile[1:eifile.find(']')])
+				num = max(num, n) + 1
 		else: # pragma: no cover
-			num = max([
-				int(path.basename(eifile)[len(fn)+1 : -len(ext)-1]) 
-				for eifile in existInfiles
-			])
-			infile = path.join (self.indir, fn + '[' + str(num+1) + ']' + ext)
-			safefs.SafeFs._link(orgfile, infile)
+			num = max(int(eifile[1:eifile.find(']')]) for eifile in existInfiles) + 1
+
+		infile = path.join(self.indir, '[{}]{}'.format(num, basename))
+		safefs.SafeFs._link(orgfile, infile)
 		return infile
 
 	def _prepInput (self):
@@ -362,29 +349,17 @@ class Job(object):
 							'pbar'  : False
 						})
 
-				if self.config['iftype'] == 'origin':
-					self.data['i'][key] = indata
-				elif self.config['iftype'] == 'indir':
-					self.data['i'][key] = infile
-				else:
-					self.data['i'][key] = path.realpath(indata)
-
-				self.data['i']['IN_' + key] = infile
-				self.data['i']['OR_' + key] = indata
-				self.data['i']['RL_' + key] = path.realpath(indata)
+				self.data['i'][key] = infile
 
 				self.input[key]['type'] = intype
 				self.input[key]['data'] = infile
-				self.input[key]['orig'] = indata
+				#self.input[key]['orig'] = indata
 
 			elif intype in Proc.IN_FILESTYPE:
 				self.input[key]['type']       = intype
-				self.input[key]['orig']       = []
+				#self.input[key]['orig']       = []
 				self.input[key]['data']       = []
 				self.data  ['i'][key]         = []
-				self.data  ['i']['IN_' + key] = []
-				self.data  ['i']['OR_' + key] = []
-				self.data  ['i']['RL_' + key] = []
 
 				if not indata:
 					self.logger.warning('No data provided for "{}:{}", use empty list instead.'.format(key, intype), extra = {
@@ -421,18 +396,9 @@ class Job(object):
 								'pbar'  : False
 							})
 
-					if self.config['iftype'] == 'origin':
-						self.data['i'][key].append(data)
-					elif self.config['iftype'] == 'indir':
-						self.data['i'][key].append(infile)
-					else:
-						self.data['i'][key].append(path.realpath(data))
+					self.data['i'][key].append(infile)
 
-					self.data['i']['IN_' + key].append (infile)
-					self.data['i']['OR_' + key].append (data)
-					self.data['i']['RL_' + key].append (path.realpath(data))
-
-					self.input[key]['orig'].append (data)
+					#self.input[key]['orig'].append (data)
 					self.input[key]['data'].append (infile)
 			else:
 				self.input[key]['type'] = intype
