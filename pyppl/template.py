@@ -52,10 +52,10 @@ class _TemplateFilter(object):
 				- `-2`: the 2nd last one ...
 				- `1` : remove all dots.
 		"""
-		parts = _TemplateFilter.basename(x, orig).split('.')
-		if '.' not in x:
-			return parts[0]
-		return '.'.join(parts[0:dot])
+		bname = _TemplateFilter.basename(x, orig)
+		if '.' not in bname:
+			return bname
+		return '.'.join(bname.split('.')[0:dot])
 	
 	@staticmethod
 	def prefix(x, orig = False, dot = -1):
