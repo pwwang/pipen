@@ -884,6 +884,20 @@ job module for PyPPL
 		- **return:**  
 			`True` if succeed else `False`  
   
+!!! example "function: `briefPath`"
+  
+	Show briefed path in logs  
+	/abcde/hijklm/opqrst/uvwxyz/123456 will be shorted as:  
+	/a/h/opqrst/uvwxyz/123456  
+
+	- **params:**  
+		`p`       : The path  
+		`cutoff`  : Shorten the whole path if it more than length of cutoff. Default: `0`  
+		`keep`    : First N alphabetic chars to keep. Default: `1`  
+
+	- **returns:**  
+		The shorted path  
+  
 # module: pyppl.jobmgr
   
 jobmgr module for PyPPL  
@@ -1285,7 +1299,7 @@ parameters module for PyPPL
 		- **returns:**  
 			lines (`list`) of the help information.  
   
-	!!! abstract "method: `error (self, msg)`"
+	!!! abstract "method: `error (self, msg, withPrefix)`"
   
 		Render an error message  
 
@@ -1334,7 +1348,7 @@ parameters module for PyPPL
 		- **params:**  
 			`msg`: The section title  
   
-	!!! abstract "method: `warning (self, msg)`"
+	!!! abstract "method: `warning (self, msg, withPrefix)`"
   
 		Render an warning message  
 
@@ -1903,6 +1917,20 @@ A set of utitities for PyPPL
 
 	- **returns:**  
 		The split list  
+  
+!!! example "function: `briefPath`"
+  
+	Show briefed path in logs  
+	/abcde/hijklm/opqrst/uvwxyz/123456 will be shorted as:  
+	/a/h/opqrst/uvwxyz/123456  
+
+	- **params:**  
+		`p`       : The path  
+		`cutoff`  : Shorten the whole path if it more than length of cutoff. Default: `0`  
+		`keep`    : First N alphabetic chars to keep. Default: `1`  
+
+	- **returns:**  
+		The shorted path  
   
 !!! example "function: `varname`"
   
