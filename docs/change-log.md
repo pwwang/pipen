@@ -1,3 +1,8 @@
+# 1.4.3 (Jan. 28, 2019)
+- Change path shortening cutoff to total length.
+- Fix a bug for template function `fn` (filename/stem).
+- Fix logger formatter conflicts.
+
 # 1.4.2 (Jan. 23, 2019)
 - Add `runner` subcommand for `bin/pyppl` to show available runners.
 - Allow length of the progress bar configurable.
