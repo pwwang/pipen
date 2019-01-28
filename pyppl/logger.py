@@ -305,38 +305,38 @@ class PyPPLLogFormatter (logging.Formatter):
 		@returns:
 			The formatted record
 		"""
-		formatted = record.formatted if hasattr(record, 'formatted') else False
-		if not formatted:
-			level = record.loglevel.upper() if hasattr(record, 'loglevel') else record.levelname
+		if not hasattr(record, 'raw'):
+			setattr(record, 'raw', record.msg)
 
-			theme = 'greenOnBlack' if self.theme is True else self.theme
-			theme = THEMES[theme] if not isinstance(theme, dict) and theme in THEMES else theme
-			theme = _formatTheme(theme)
+		level = record.loglevel.upper() if hasattr(record, 'loglevel') else record.levelname
 
-			if not theme:
-				colorLevelStart = COLORS.none
-				colorLevelEnd   = COLORS.none
-				colorMsgStart   = COLORS.none
-				colorMsgEnd     = COLORS.none
-			else:
-				(colorLevelStart, colorMsgStart) = _getColorFromTheme(level, theme)
-				colorLevelEnd   = COLORS.end
-				colorMsgEnd     = COLORS.end
-			
-			if self.secondary:
-				# keep _ for file handler
-				level = level[1:] if level.startswith('_') else level
-			level = level[:7]
-			record.msg = " {lstart_c}{level}{lend_c}] {mstart_c}{proc}{jobindex}{msg}{mend_c}".format(
-				lstart_c = colorLevelStart,
-				level    = level.rjust(7),
-				lend_c   = colorLevelEnd,
-				mstart_c = colorMsgStart,
-				proc     = '{}: '.format(record.proc) if hasattr(record, 'proc') else '',
-				jobindex = '[{ji}/{jt}] '.format(ji = str(record.jobidx + 1).zfill(len(str(record.joblen))), jt = record.joblen) if hasattr(record, 'jobidx') else '',
-				msg      = record.msg,
-				mend_c   = colorMsgEnd)
-			setattr(record, 'formatted', True)
+		theme = 'greenOnBlack' if self.theme is True else self.theme
+		theme = THEMES[theme] if not isinstance(theme, dict) and theme in THEMES else theme
+		theme = _formatTheme(theme)
+
+		if not theme:
+			colorLevelStart = COLORS.none
+			colorLevelEnd   = COLORS.none
+			colorMsgStart   = COLORS.none
+			colorMsgEnd     = COLORS.none
+		else:
+			(colorLevelStart, colorMsgStart) = _getColorFromTheme(level, theme)
+			colorLevelEnd   = COLORS.end
+			colorMsgEnd     = COLORS.end
+		
+		if self.secondary:
+			# keep _ for file handler
+			level = level[1:] if level.startswith('_') else level
+		level = level[:7]
+		record.msg = " {lstart_c}{level}{lend_c}] {mstart_c}{proc}{jobindex}{msg}{mend_c}".format(
+			lstart_c = colorLevelStart,
+			level    = level.rjust(7),
+			lend_c   = colorLevelEnd,
+			mstart_c = colorMsgStart,
+			proc     = '{}: '.format(record.proc) if hasattr(record, 'proc') else '',
+			jobindex = '[{ji}/{jt}] '.format(ji = str(record.jobidx + 1).zfill(len(str(record.joblen))), jt = record.joblen) if hasattr(record, 'jobidx') else '',
+			msg      = record.raw,
+			mend_c   = colorMsgEnd)
 		return logging.Formatter.format(self, record)
 
 class PyPPLStreamHandler(logging.StreamHandler):

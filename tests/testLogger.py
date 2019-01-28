@@ -231,7 +231,7 @@ class TestLogger(testly.TestCase):
 		yield 'normal', None, None, None, '[info]a', '   INFO] [info]a'
 		
 		logfile = path.join(self.testdir, 'logfile.txt')
-		yield 'normal', True, logfile, None, '[info]a', '   INFO] [info]a', '   INFO] [info]a'
+		yield 'normal', None, logfile, None, '[info]a', '   INFO] [info]a', '   INFO] [info]a'
 		
 		yield 'normal', None, logfile, None, '[debug]a', '   INFO] [debug]a', '   INFO] [debug]a'
 
