@@ -342,7 +342,6 @@ def briefPath(p, cutoff = 0, keep = 1):
 	parts = p.split(sep)
 	parts[0] = parts[0] or sep
 	
-	lenparts = len(parts)
 	for i, part in enumerate(parts[:-1]):
 		newpart = re.sub(r'^([^A-Za-z0-9]*\w{%s}).*$' % keep, r'\1', part)
 		newlen  = len(newpart)
