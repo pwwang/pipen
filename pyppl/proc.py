@@ -1059,7 +1059,7 @@ class Proc (object):
 		
 		from . import PyPPL
 		if self.runner not in PyPPL.RUNNERS:
-			raise ProcAttributeError('No such runner: {}.'.format(self.runner))
+			raise ProcAttributeError('No such runner: {}. If it is a profile, did you forget to specify a basic runner?'.format(self.runner))
 		config = {
 			'workdir'   : self.workdir,
 			'runner'    : PyPPL.RUNNERS[self.runner],
@@ -1146,9 +1146,9 @@ class Proc (object):
 
 		c = utils.cmd.run(cmdstr, bg = True, shell = True, executable = '/bin/bash')
 		for line in iter(c.p.stdout.readline, ''):
-			logger.logger.info ('[ CMDOUT] %s', line.rstrip("\n"), extra = {'proc': self.id})
+			logger.logger.info ('  %s', line.rstrip("\n"), extra = {'loglevel': 'cmdout', 'proc': self.id})
 		for line in iter(c.p.stderr.readline, ''):
-			logger.logger.info ('[ CMDERR] %s', line.rstrip("\n"), extra = {'proc': self.id})
+			logger.logger.info ('  %s', line.rstrip("\n"), extra = {'loglevel': 'cmderr', 'proc': self.id})
 		c.run()
 		if c.rc != 0:
 			raise ProcRunCmdError(cmdstr, key)
