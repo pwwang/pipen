@@ -9,7 +9,7 @@ from os import path
 from collections import OrderedDict
 from .utils import Box, string_types, ConfigParser
 from .exception import ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError
-from .logger import COLORS
+from colorama import Fore, Back, Style
 
 class HelpAssembler(object):
 	"""
@@ -27,24 +27,24 @@ class HelpAssembler(object):
 
 	THEMES = dict(
 		default = dict(
-			error   = COLORS.red,
-			warning = COLORS.yellow,
-			title   = COLORS.bold + COLORS.underline + COLORS.cyan,
-			prog    = COLORS.bold + COLORS.green,
-			default = COLORS.magenta,
-			optname = COLORS.bold + COLORS.green,
-			opttype = COLORS.blue,
+			error   = Fore.RED,
+			warning = Fore.YELLOW,
+			title   = Style.BRIGHT + Fore.CYAN,
+			prog    = Style.BRIGHT + Fore.GREEN,
+			default = Fore.MAGENTA,
+			optname = Style.BRIGHT + Fore.GREEN,
+			opttype = Fore.BLUE,
 			optdesc = ''
 		),
 
 		blue = dict(
-			error   = COLORS.red,
-			warning = COLORS.yellow,
-			title   = COLORS.bold + COLORS.underline + COLORS.green,
-			prog    = COLORS.bold + COLORS.blue,
-			default = COLORS.magenta,
-			optname = COLORS.bold + COLORS.blue,
-			opttype = COLORS.bold,
+			error   = Fore.RED,
+			warning = Fore.YELLOW,
+			title   = Style.BRIGHT + Fore.GREEN,
+			prog    = Style.BRIGHT + Fore.BLUE,
+			default = Fore.MAGENTA,
+			optname = Style.BRIGHT + Fore.BLUE,
+			opttype = Style.BRIGHT,
 			optdesc = ''
 		),
 
@@ -114,7 +114,7 @@ class HelpAssembler(object):
 			colorstart = self.theme['error'],
 			prefix     = 'Error: ' if withPrefix else '',
 			msg        = msg,
-			colorend   = COLORS.end
+			colorend   = Style.RESET_ALL
 		)
 	
 	def warning(self, msg, withPrefix = True):
@@ -128,7 +128,7 @@ class HelpAssembler(object):
 			colorstart = self.theme['warning'],
 			prefix     = 'Warning: ' if withPrefix else '',
 			msg        = msg,
-			colorend   = COLORS.end
+			colorend   = Style.RESET_ALL
 		)
 
 	def title(self, msg):
@@ -140,7 +140,7 @@ class HelpAssembler(object):
 		return '{colorstart}{msg}{colorend}:'.format(
 			colorstart = self.theme['title'],
 			msg        = msg.upper(),
-			colorend   = COLORS.end
+			colorend   = Style.RESET_ALL
 		)
 
 	def prog(self, prog = None):
@@ -153,7 +153,7 @@ class HelpAssembler(object):
 		return '{colorstart}{prog}{colorend}'.format(
 			colorstart = self.theme['prog'],
 			prog       = prog,
-			colorend   = COLORS.end
+			colorend   = Style.RESET_ALL
 		)
 
 	def optname(self, msg):
@@ -165,7 +165,7 @@ class HelpAssembler(object):
 		return '{colorstart}  {msg}{colorend}'.format(
 			colorstart = self.theme['optname'],
 			msg        = msg,
-			colorend   = COLORS.end
+			colorend   = Style.RESET_ALL
 		)
 
 	def opttype(self, msg):
@@ -180,7 +180,7 @@ class HelpAssembler(object):
 		return '{colorstart}{msg}{colorend}'.format(
 			colorstart = self.theme['opttype'],
 			msg        = ('({})' if trimmedmsg == 'BOOL' else '<{}>').format(trimmedmsg),
-			colorend   = COLORS.end
+			colorend   = Style.RESET_ALL
 		) + ' ' * (len(msg) - len(trimmedmsg))
 
 	def optdesc(self, msg):
@@ -194,12 +194,12 @@ class HelpAssembler(object):
 			msg = '{colorstart}{msg}{colorend}'.format(
 				colorstart = self.theme['default'],
 				msg        = msg,
-				colorend   = COLORS.end
+				colorend   = Style.RESET_ALL
 			)
 		return '{colorstart}{msg}{colorend}'.format(
 			colorstart = self.theme['optdesc'],
 			msg        = msg,
-			colorend   = COLORS.end
+			colorend   = Style.RESET_ALL
 		)
 
 	def plain(self, msg):
@@ -212,7 +212,7 @@ class HelpAssembler(object):
 		return '{colorstart}{msg}{colorend}'.format(
 			colorstart = '',
 			msg        = msg,
-			colorend   = ''
+			colorend   = Style.RESET_ALL
 		)
 
 	def assemble(self, helps, progname = None):

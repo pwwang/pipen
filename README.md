@@ -19,7 +19,7 @@
 
 ## Requirements
 - OS: Linux or OSX
-- Python packages: [filelock][35], [futures][21] and [liquidpy][17] (suggested: [graphviz][36], [pyyaml][33] and [python-testly][5]).
+- Python packages: [filelock][35], [colorama][40], [futures][21] and [liquidpy][17] (suggested: [graphviz][36], [pyyaml][33] and [python-testly][5]).
 
 ## Installation
 ```bash
@@ -522,3 +522,4 @@ To generate svg file, you have to have [graphviz][36] installed.
 [37]: https://img.shields.io/pypi/pyversions/PyPPL.svg?style=flat-square
 [38]: https://img.shields.io/github/license/pwwang/PyPPL.svg?style=flat-square
 [39]: http://jinja.pocoo.org/
+[40]: https://pypi.org/project/colorama/

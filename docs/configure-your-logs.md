@@ -110,16 +110,16 @@ in `pyppl/logger.py`:
 ```python
 themes = {
   'greenOnBlack': {
-    'PROCESS' : [colors.bold + colors.cyan, colors.bold + colors.underline + colors.cyan],
-    'DONE'    : colors.bold + colors.green,
-    'DEBUG'   : colors.bold + colors.black,
-    'DEPENDS' : colors.magenta,
-    'PROCESS' : [colors.bold + colors.cyan, colors.bold + colors.underline + colors.cyan],
-    'in:SUBMIT,JOBDONE,INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': colors.green,
-    'has:ERR' : colors.red,
-    'in:WARNING,RETRY' : colors.bold + colors.yellow,
-    'in:CACHED,RUNNING': colors.yellow,
-    ''        : colors.white
+    'PROCESS' : [Style.BRIGHT + Fore.CYAN, Style.BRIGHT + Fore.CYAN],
+    'DONE'    : Style.BRIGHT + Fore.GREEN,
+    'DEBUG'   : Style.BRIGHT + Fore.BLACK,
+    'DEPENDS' : Fore.MAGENTA,
+    'PROCESS' : [Style.BRIGHT + Fore.CYAN, Style.BRIGHT + Fore.CYAN],
+    'in:SUBMIT,JOBDONE,INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BRINGS': Fore.GREEN,
+    'has:ERR' : Fore.RED,
+    'in:WARNING,RETRY' : Style.BRIGHT + Fore.YELLOW,
+    'in:CACHED,RUNNING': Fore.YELLOW,
+    ''        : Fore.WHITE
   },
   # other themes
 }
@@ -136,7 +136,7 @@ For the values, basically it's a 2-element list, where the first one defines the
 If you just want to modify the built-in themes, you can do it before you specify it to the pyppl constructor:
 ```python
 from PyPPL import logger, PyPPL
-logger.themes['greenOnBlack']['DONE'] = logger.colors.cyan
+logger.themes['greenOnBlack']['DONE'] = logger.Fore.CYAN
 # ... define some procs
 PyPPL({'_log':{'theme': 'greenOnBlack'}}).start(...).run()
 ```
@@ -147,34 +147,24 @@ from pyppl import logger, PyPPL
 # ... define procs
 PyPPL({'_log': 
     {'theme': {
-        'DONE': logger.colors.green,
-        'DEBUG': logger.colors.black,
-        'starts:LOG': logger.colors.bgwhite + logger.colors.black,
+        'DONE': logger.Fore.GREEN,
+        'DEBUG': logger.Fore.BLACK,
+        'starts:LOG': logger.Back.WHITE + logger.Fore.BLACK,
         # ...
     }}
 }).start(...).run()
 ```
 
-Available colors in `logger.colors`:
-
-|Key|Color|Key|Color|Key|Color|Key|Color|Key|Color|
-|---|-----|---|-----|---|-----|---|-----|---|-----|
-|`none`|`''`<sup>1</sup>|`black`|![A][10]|`red`|![A][11]|`green`|![A][12]|`yellow`|![A][13]|
-|`end`|<sup>2</sup>|`blue`|![A][14]|`magenta`|![A][15]|`cyan`|![A][16]|`white`|![A][17]|
-|`bold`|**A**<sup>3</sup>|`bgblack`|![A][18]|`bgred`|![A][19]|`bggreen`|![A][20]|`bgyellow`|![A][21]|
-|`underline`|_<sup>4</sup>|`bgblue`|![A][22]|`bgmagenta`|![A][23]|`bgcyan`|![A][24]|`bgwhite`|![A][25]|
-
-1. An empty string; 2. End of coloring; 3. Show bold characters; 4. Show underline characters.
-
+See available colors and styles [here][28]
 You can also use the directly terminal escape sequences, like `\033[30m` for black (check [here][26]).
 
 If you define a theme in a configuration file, you may use the escape sequences or also use the color names:
 ```json
 {
     "_log": {"theme": {
-        "DONE": "{{colors.green}}",
-        "DEBUG": "{{colors.black}}",
-        "starts:LOG": "{{colors.bgwhite}}{{colors.black}}",
+        "DONE": "{{Fore.GREEN}}",
+        "DEBUG": "{{Fore.BLACK}}",
+        "starts:LOG": "{{Back.WHITE}}{{Fore.BLACK}}",
         # ...
     }}
 }
@@ -300,3 +290,4 @@ Examples:
 [25]: https://placehold.it/32/ffffff/eeeeee?text=A
 [26]: https://en.wikipedia.org/wiki/ANSI_escape_code
 [27]: ./write-your-script/#debug-your-script
+[28]: https://pypi.org/project/colorama/

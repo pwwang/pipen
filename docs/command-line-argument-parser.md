@@ -315,23 +315,24 @@ params = Parameters(theme = 'blue')
 ## Use you own theme:
 Instead of passing a theme name to `Commands/Parameters`, you may also pass the entire theme:
 ```python
-from pyppl.logger import COLORS
+from colorama import Fore, Back, Style
+# or from colorama import Fore, Back, Style
 
 commands = Commands(theme = {
     # the color for errors
-    error   = COLORS.red,     
+    error   = Fore.RED,     
     # the color for warnings
-    warning = COLORS.yellow,  
+    warning = Fore.YELLOW,  
     # the color for the title of each section
-    title   = COLORS.bold + COLORS.underline + COLORS.cyan, 
+    title   = Style.BRIGHT + Fore.CYAN, 
     # the color for the programe name in any sections
-    prog    = COLORS.bold + COLORS.green,
+    prog    = Style.BRIGHT + Fore.GREEN,
     # the color for default values
-    default = COLORS.magenta,
+    default = Fore.MAGENTA,
     # the color for option names
-    optname = COLORS.bold + COLORS.green,
+    optname = Style.BRIGHT + Fore.GREEN,
     # the color for option types or placeholders
-    opttype = COLORS.blue,
+    opttype = Fore.BLUE,
     # the color for option descriptions
     optdesc = '' # leave it as default
 })

@@ -15,7 +15,7 @@ from shutil import rmtree
 from datetime import date, timedelta, datetime
 from multiprocessing import Lock
 from pyppl import PyPPL, Proc, commands
-from pyppl.logger import COLORS
+from pyppl.logger import Fore, Back, Style
 #from pyppl.utils import parallel
 from concurrent.futures import ThreadPoolExecutor
 
@@ -72,7 +72,7 @@ def streamout(msg, decors = None, end = '\n'):
 	decors = decors or []
 	if not isinstance(decors, list):
 		decors = [decors]
-	sys.stdout.write(''.join([COLORS[dec] for dec in decors]) + str(msg) + COLORS['end'] + end)
+	sys.stdout.write(''.join([getattr(Fore, dec.upper()) for dec in decors]) + str(msg) + Style.RESET_ALL + end)
 
 # params check
 error = []
@@ -212,7 +212,7 @@ def remove_proc(proc, nthread = 1, msg = '', lock = None):
 			with lock:
 				streamout(msg)
 	#parallel.run(rmtree, [(d, ) for d in glob(path.join(proc, '*')) if path.isdir(d)], nthread, 'thread')
-	with ThreadPoolExecutor(max_workders = nthread) as executor:
+	with ThreadPoolExecutor(max_workers = nthread) as executor:
 		for d in glob(path.join(proc, '*')):
 			if path.isdir(d):
 				executor.submit(rmtree, d)
@@ -226,7 +226,7 @@ def clean_procs(procs, nthread, force):
 	if force:
 		lock = Lock()
 		lenprocs = len(procs)
-		with ThreadPoolExecutor(max_workders = nthread) as executor:
+		with ThreadPoolExecutor(max_workers = nthread) as executor:
 			for i, procinfo in enumerate(procs):
 				executor.submit(remove_proc, procinfo[0], 1, 'Removeing [{}/{}]: {}'.format(i, lenprocs, procinfo[0]), lock)
 		#parallel.run(remove_proc, [(procinfo[0], 1, 'Removeing [{}/{}]: {}'.format(i, lenprocs, procinfo[0]), lock) for i, procinfo in enumerate(procs)], nthread, 'thread')

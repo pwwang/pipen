@@ -5,28 +5,19 @@ import logging
 import re
 import sys
 from copy import copy as pycopy
+from colorama import init as coloramaInit, Fore, Back, Style
+# Fore: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
+# Back: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
+# Style: DIM, NORMAL, BRIGHT, RESET_ALL 
 from .utils import Box
 from .exception import LoggerThemeError
 from .template import TemplateLiquid
 
+coloramaInit(autoreset = False)
+
 # the entire format
 LOGFMT = "[%(asctime)s%(message)s"
-# colors
-COLORS = Box(
-	none = '',        end       = '\033[0m',
-	bold = '\033[1m', underline = '\033[4m',
 
-	# regular colors
-	black = '\033[30m', red     = '\033[31m',
-	green = '\033[32m', yellow  = '\033[33m',
-	blue  = '\033[34m', magenta = '\033[35m',
-	cyan  = '\033[36m', white   = '\033[37m',
-	# bgcolors
-	bgblack = '\033[40m', bgred     = '\033[41m',
-	bggreen = '\033[42m', bgyellow  = '\033[43m',
-	bgblue  = '\033[44m', bgmagenta = '\033[45m',
-	bgcyan  = '\033[46m', bgwhite   = '\033[47m',
-)
 # the themes
 # keys:
 # - no colon: match directory
@@ -35,72 +26,79 @@ COLORS = Box(
 # - re: The regular expression to match
 # - has: with the string in flag
 THEMES = {
-	'greenOnBlack': {
-		'DONE'    : COLORS.bold + COLORS.green,
-		'DEBUG'   : COLORS.bold + COLORS.black,
-		'PROCESS' : [COLORS.bold + COLORS.cyan, COLORS.bold + COLORS.cyan],
-		'DEPENDS' : COLORS.magenta,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.green,
-		'has:ERR' : COLORS.red,
-		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
-		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
-		''        : COLORS.white
-	},
-	'blueOnBlack':  {
-		'DONE'    : COLORS.bold + COLORS.blue,
-		'DEBUG'   : COLORS.bold + COLORS.black,
-		'PROCESS' : [COLORS.bold + COLORS.cyan, COLORS.bold  + COLORS.cyan],
-		'DEPENDS' : COLORS.green,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.blue,
-		'has:ERR' : COLORS.red,
-		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
-		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
-		''        : COLORS.white
-	},
-	'magentaOnBlack':  {
-		'DONE'    : COLORS.bold + COLORS.magenta,
-		'DEBUG'   : COLORS.bold + COLORS.black,
-		'PROCESS' : [COLORS.bold + COLORS.green, COLORS.bold + COLORS.green],
-		'DEPENDS' : COLORS.blue,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.magenta,
-		'has:ERR' : COLORS.red,
-		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
-		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
-		''        : COLORS.white
-	},
-	'greenOnWhite': {
-		'DONE'    : COLORS.bold + COLORS.green,
-		'DEBUG'   : COLORS.bold + COLORS.black,
-		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.blue],
-		'DEPENDS' : COLORS.magenta,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.green,
-		'has:ERR' : COLORS.red,
-		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
-		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
-		''        : COLORS.black
-	},
-	'blueOnWhite':  {
-		'DONE'    : COLORS.bold + COLORS.blue,
-		'DEBUG'   : COLORS.bold + COLORS.black,
-		'PROCESS' : [COLORS.bold + COLORS.green, COLORS.bold + COLORS.green],
-		'DEPENDS' : COLORS.magenta,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.blue,
-		'has:ERR' : COLORS.red,
-		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
-		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
-		''        : COLORS.black
-	},
-	'magentaOnWhite':  {
-		'DONE'    : COLORS.bold + COLORS.magenta,
-		'DEBUG'   : COLORS.bold + COLORS.black,
-		'PROCESS' : [COLORS.bold + COLORS.blue, COLORS.bold + COLORS.blue],
-		'DEPENDS' : COLORS.green,
-		'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': COLORS.magenta,
-		'has:ERR' : COLORS.red,
-		'in:WARNING,RETRY,RESUMED,SKIPPED' : COLORS.bold + COLORS.yellow,
-		'in:WORKDIR,CACHED,P.DONE': COLORS.yellow,
-		''        : COLORS.black
-	}
+	'greenOnBlack': Box([
+		('DONE',     Style.BRIGHT + Fore.GREEN),
+		('DEBUG',    Style.BRIGHT + Fore.BLACK),
+					 # levelname color,         message color
+		('PROCESS',  [Style.BRIGHT + Fore.CYAN, Style.BRIGHT + Fore.CYAN]),
+		('DEPENDS',  Fore.MAGENTA),
+		('in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING', Fore.GREEN),
+		('CMDERR',   Style.BRIGHT + Fore.YELLOW),
+		('has:ERR',  Fore.RED),
+		('in:WARNING,RETRY,RESUMED,SKIPPED',  Style.BRIGHT + Fore.YELLOW),
+		('in:WORKDIR,CACHED,P.DONE', Fore.YELLOW),
+		('',         Fore.WHITE)
+	]),
+	'blueOnBlack':  Box([
+		('DONE',     Style.BRIGHT + Fore.BLUE),
+		('DEBUG',    Style.BRIGHT + Fore.BLACK),
+		('PROCESS',  [Style.BRIGHT + Fore.CYAN, Style.BRIGHT  + Fore.CYAN]),
+		('DEPENDS',  Fore.GREEN),
+		('in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING', Fore.BLUE),
+		('CMDERR',   Style.BRIGHT + Fore.YELLOW),
+		('has:ERR',  Fore.RED),
+		('in:WARNING,RETRY,RESUMED,SKIPPED',  Style.BRIGHT + Fore.YELLOW),
+		('in:WORKDIR,CACHED,P.DONE', Fore.YELLOW),
+		('',         Fore.WHITE)
+	]),
+	'magentaOnBlack':  Box([
+		('DONE',     Style.BRIGHT + Fore.MAGENTA),
+		('DEBUG',    Style.BRIGHT + Fore.BLACK),
+		('PROCESS',  [Style.BRIGHT + Fore.GREEN, Style.BRIGHT + Fore.GREEN]),
+		('DEPENDS',  Fore.BLUE),
+		('in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING', Fore.MAGENTA),
+		('CMDERR',   Style.BRIGHT + Fore.YELLOW),
+		('has:ERR',  Fore.RED),
+		('in:WARNING,RETRY,RESUMED,SKIPPED',  Style.BRIGHT + Fore.YELLOW),
+		('in:WORKDIR,CACHED,P.DONE', Fore.YELLOW),
+		('',         Fore.WHITE)
+	]),
+	'greenOnWhite': Box([
+		('DONE',     Style.BRIGHT + Fore.GREEN),
+		('DEBUG',    Style.BRIGHT + Fore.BLACK),
+		('PROCESS',  [Style.BRIGHT + Fore.BLUE, Style.BRIGHT + Fore.BLUE]),
+		('DEPENDS',  Fore.MAGENTA),
+		('in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING', Fore.GREEN),
+		('CMDERR',   Style.BRIGHT + Fore.YELLOW),
+		('has:ERR',  Fore.RED),
+		('in:WARNING,RETRY,RESUMED,SKIPPED',  Style.BRIGHT + Fore.YELLOW),
+		('in:WORKDIR,CACHED,P.DONE', Fore.YELLOW),
+		('',         Fore.BLACK)
+	]),
+	'blueOnWhite':  Box([
+		('DONE',     Style.BRIGHT + Fore.BLUE),
+		('DEBUG',    Style.BRIGHT + Fore.BLACK),
+		('PROCESS',  [Style.BRIGHT + Fore.GREEN, Style.BRIGHT + Fore.GREEN]),
+		('DEPENDS',  Fore.MAGENTA),
+		('in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING', Fore.BLUE),
+		('CMDERR',   Style.BRIGHT + Fore.YELLOW),
+		('has:ERR',  Fore.RED),
+		('in:WARNING,RETRY,RESUMED,SKIPPED',  Style.BRIGHT + Fore.YELLOW),
+		('in:WORKDIR,CACHED,P.DONE', Fore.YELLOW),
+		('',         Fore.BLACK)
+	]),
+	'magentaOnWhite':  Box([
+		('DONE',     Style.BRIGHT + Fore.MAGENTA),
+		('DEBUG',    Style.BRIGHT + Fore.BLACK),
+		('PROCESS',  [Style.BRIGHT + Fore.BLUE, Style.BRIGHT + Fore.BLUE]),
+		('DEPENDS',  Fore.GREEN),
+		('in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING', Fore.MAGENTA),
+		('CMDERR',   Style.BRIGHT + Fore.YELLOW),
+		('has:ERR',  Fore.RED),
+		('in:WARNING,RETRY,RESUMED,SKIPPED',  Style.BRIGHT + Fore.YELLOW),
+		('in:WORKDIR,CACHED,P.DONE', Fore.YELLOW),
+		('',         Fore.BLACK)
+	])
 }
 
 LEVELS = {
@@ -152,33 +150,26 @@ def _getColorFromTheme (level, theme):
 	@returns:
 		The colors
 	"""
-	ret = theme[''] if isinstance(theme[''], list) else [theme['']] * 2
 	level = level.upper()
-	
 	for key, val in theme.items():
-		if not isinstance(val, list):
-			val = [val] * 2
+		val = tuple(val)
 		if key == level:
-			ret = val
-			break
+			return val
 		if key.startswith('in:') and level in key[3:].split(','):
-			ret = val
-			break
+			return val
 		if key.startswith('starts:') and level.startswith(key[7:]):
-			ret = val
-			break
+			return val
 		if key.startswith('has:') and key[4:] in level:
-			ret = val
-			break
+			return val
 		if key.startswith('re:') and re.search(key[3:], level):
-			ret = val
-			break
-	return tuple(ret)
+			return val
+	return tuple(theme.get('',  (Fore.WHITE, Fore.WHITE)))
 	
 def _formatTheme(theme):
 	"""
 	Make them in the standard form with bgcolor and fgcolor in raw terminal color strings
-	If the theme is read from file, try to translate "COLORS.xxx" to terminal color strings
+	If the theme is read from file, try to translate "Fore.XXX", "Back.XXX" and "Style.XXX" 
+	to terminal color strings
 	@params:
 		`theme`: The theme
 	@returns:
@@ -191,15 +182,16 @@ def _formatTheme(theme):
 	if not isinstance(theme, dict):
 		raise LoggerThemeError(theme, 'No such theme')
 	
-	ret = {'': [COLORS.white, COLORS.white]}
+	ret = theme.copy()
+	ret[''] = ret.get('', [Fore.WHITE] * 2)
 	for key, val in theme.items():
-		if not isinstance(val, list):
+		if not isinstance(val, (tuple, list)):
 			val = [val]
 		if len(val) == 1:
 			val = val * 2
 
 		for i, v in enumerate(val):
-			t = TemplateLiquid(v, colors = COLORS)
+			t = TemplateLiquid(v, Fore = Fore, Back = Back, Style = Style)
 			val[i] = t.render()
 
 		ret[key] = val
@@ -315,28 +307,25 @@ class PyPPLLogFormatter (logging.Formatter):
 		theme = _formatTheme(theme)
 
 		if not theme:
-			colorLevelStart = COLORS.none
-			colorLevelEnd   = COLORS.none
-			colorMsgStart   = COLORS.none
-			colorMsgEnd     = COLORS.none
+			colorLevelStart = ''
+			colorMsgStart   = ''
+			colorLevelEnd   = ''
 		else:
 			(colorLevelStart, colorMsgStart) = _getColorFromTheme(level, theme)
-			colorLevelEnd   = COLORS.end
-			colorMsgEnd     = COLORS.end
+			colorLevelEnd   = Style.RESET_ALL
 		
 		if self.secondary:
 			# keep _ for file handler
 			level = level[1:] if level.startswith('_') else level
 		level = level[:7]
-		record.msg = " {lstart_c}{level}{lend_c}] {mstart_c}{proc}{jobindex}{msg}{mend_c}".format(
+		record.msg = " {lstart_c}{level}{lend_c}] {mstart_c}{proc}{jobindex}{msg}{lend_c}".format(
 			lstart_c = colorLevelStart,
 			level    = level.rjust(7),
 			lend_c   = colorLevelEnd,
 			mstart_c = colorMsgStart,
 			proc     = '{}: '.format(record.proc) if hasattr(record, 'proc') else '',
 			jobindex = '[{ji}/{jt}] '.format(ji = str(record.jobidx + 1).zfill(len(str(record.joblen))), jt = record.joblen) if hasattr(record, 'jobidx') else '',
-			msg      = record.raw,
-			mend_c   = colorMsgEnd)
+			msg      = record.raw)
 		return logging.Formatter.format(self, record)
 
 class PyPPLStreamHandler(logging.StreamHandler):

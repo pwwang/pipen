@@ -22,7 +22,7 @@ setup (
 	packages         = find_packages(),
 	scripts          = ['bin/pyppl'],
 	install_requires = [
-		'filelock', 'futures', 'liquidpy'
+		'filelock', 'futures', 'liquidpy', 'colorama'
 	],
 	classifiers      = [
 		"Intended Audience :: Developers",

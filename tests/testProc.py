@@ -771,7 +771,7 @@ class TestProc(testly.TestCase):
 			'[sets]',
 			'value: [\'ppldir\']',
 			'[size]',
-			'value: %s' % (len(sys.argv) - 1), 
+			'value: 0', 
 			'[suffix]',
 			'value: ',
 			'[template]',
@@ -909,13 +909,13 @@ class TestProc(testly.TestCase):
 		pRunCmd1 = Proc()
 		pRunCmd1.ppldir = self.testdir
 		pRunCmd1.beforeCmd = "echo 456; echo 123 >&2"
-		yield pRunCmd1, 'beforeCmd', None, None, [
+		yield pRunCmd1, 'preCmd', None, None, [
 			'INFO',
-			'Running <beforeCmd> ...',
+			'Running <preCmd> ...',
+			'CMDERR',
+			'123',
 			'CMDOUT',
 			'456',
-			'CMDERR',
-			'123'
 		]
 		pRunCmd2 = Proc()
 		pRunCmd2.ppldir = self.testdir

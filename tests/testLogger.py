@@ -4,7 +4,7 @@ from os import path, makedirs
 from shutil import rmtree
 from tempfile import gettempdir
 from pyppl import logger
-from pyppl.logger import LEVELS, LEVELS_ALWAYS, COLORS, THEMES, PyPPLLogFilter, PyPPLLogFormatter, PyPPLStreamHandler
+from pyppl.logger import LEVELS, LEVELS_ALWAYS, Fore, Back, Style, THEMES, PyPPLLogFilter, PyPPLLogFormatter, PyPPLStreamHandler
 from liquid import LiquidRenderError
 from pyppl.exception import LoggerThemeError
 
@@ -72,10 +72,10 @@ class TestPyPPLLogFormatter(testly.TestCase):
 		self.assertEqual(lf.theme, theme)
 
 	def dataProvider_testFormat(self):
-		yield None, True, '[info]a', '%s   INFO%s] %s[info]a%s' % (COLORS.green, COLORS.end, COLORS.green, COLORS.end)
-		yield None, 'greenOnBlack', '[info]a', '%s   INFO%s] %s[info]a%s' % (COLORS.green, COLORS.end, COLORS.green, COLORS.end)
-		yield None, 'magentaOnWhite', '[info]a', '%s   INFO%s] %s[info]a%s' % (COLORS.magenta, COLORS.end, COLORS.magenta, COLORS.end)
-		yield None, 'greenOnBlack', '[warning] ', '%s   INFO%s] %s[warning] %s' % (COLORS.green, COLORS.end, COLORS.green, COLORS.end)
+		yield None, True, '[info]a', '%s   INFO%s] %s[info]a' % (Fore.GREEN, Style.RESET_ALL, Fore.GREEN)
+		yield None, 'greenOnBlack', '[info]a', '%s   INFO%s] %s[info]a' % (Fore.GREEN, Style.RESET_ALL, Fore.GREEN)
+		yield None, 'magentaOnWhite', '[info]a', '%s   INFO%s] %s[info]a' % (Fore.MAGENTA, Style.RESET_ALL, Fore.MAGENTA)
+		yield None, 'greenOnBlack', '[warning] ', '%s   INFO%s] %s[warning] ' % (Fore.GREEN, Style.RESET_ALL, Fore.GREEN)
 		yield None, '', '[warning] ', '   INFO] [%swarning%s] %s%s' % ('', '', '', '')
 		yield None, None, '[warning] ', '   INFO] [%swarning%s] %s%s' % ('', '', '', '')
 
@@ -173,6 +173,7 @@ class TestLogger(testly.TestCase):
 
 	def dataProvider_testGetColorFromTheme(self):
 		for tname in ['greenOnBlack', 'blueOnBlack', 'magentaOnBlack', 'greenOnWhite', 'blueOnWhite', 'magentaOnWhite']:
+			# 0, 9, 18, 27, 36
 			yield tname, 'DONE', self.theme_done_key
 			yield tname, 'DEBUG', self.theme_debug_key
 			yield tname, 'PROCESS', self.theme_process_key
@@ -184,8 +185,8 @@ class TestLogger(testly.TestCase):
 			yield tname, '123', self.theme_other_key
 		
 	def testGetColorFromTheme (self, tname, level, key):
-		theme = THEMES[tname]
-		c = theme[key] if key in theme else theme[self.theme_other_key]
+		theme = logger._formatTheme(THEMES[tname])
+		c = theme.get(key, theme[self.theme_other_key])
 		c = tuple(c) if isinstance(c, list) else (c, )
 		c = c * 2 if len(c) == 1 else c
 		ret = logger._getColorFromTheme(level, theme)
@@ -198,18 +199,19 @@ class TestLogger(testly.TestCase):
 		yield False, False
 		yield 1, None, LoggerThemeError
 		yield {
-			'DONE'    : "{{colors.bold}}{{colors.green}}",
-			'DEBUG'   : "{{colors.bold}}{{colors.black}}",
-			'PROCESS' : ["{{colors.bold}}{{colors.cyan}}", "{{colors.bold}}{{colors.cyan}}"],
-			'DEPENDS' : "{{colors.magenta}}",
-			'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': "{{colors.green}}",
-			'has:ERR' : "{{colors.red}}",
-			'in:WARNING,RETRY,RESUMED,SKIPPED' : "\x1b[1m{{colors.yellow}}",
-			'in:WORKDIR,CACHED,P.DONE': "{{colors.yellow}}",
-			''        : "{{colors.white}}"
+			'DONE'    : "{{Style.BRIGHT}}{{Fore.GREEN}}",
+			'DEBUG'   : "{{Style.BRIGHT}}{{Fore.BLACK}}",
+			'PROCESS' : ["{{Style.BRIGHT}}{{Fore.CYAN}}", "{{Style.BRIGHT}}{{Fore.CYAN}}"],
+			'DEPENDS' : "{{Fore.MAGENTA}}",
+			'in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING': "{{Fore.GREEN}}",
+			'CMDERR'  : "{{Style.BRIGHT}}{{Fore.YELLOW}}",
+			'has:ERR' : "{{Fore.RED}}",
+			'in:WARNING,RETRY,RESUMED,SKIPPED' : "\x1b[1m{{Fore.YELLOW}}",
+			'in:WORKDIR,CACHED,P.DONE': "{{Fore.YELLOW}}",
+			''        : "{{Fore.WHITE}}"
 		}, THEMES['greenOnBlack']
 		yield {
-			'DONE': "{{colors.whatever}}"
+			'DONE': "{{Fore.whatever}}"
 		}, {}, LiquidRenderError
 		yield {
 			'DONE': "{{a}} x"
@@ -226,7 +228,7 @@ class TestLogger(testly.TestCase):
 				self.assertDictEqual(logger._formatTheme(tname), logger._formatTheme(theme))
 
 	def dataProvider_testGetLogger(self):
-		yield 'normal', True, None, None, '[info]a', '%s   INFO%s] %s[info]a%s' % (COLORS.green, COLORS.end, COLORS.green, COLORS.end)
+		yield 'normal', True, None, None, '[info]a', '%s   INFO%s] %s[info]a' % (Fore.GREEN, Style.RESET_ALL, Fore.GREEN)
 		
 		yield 'normal', None, None, None, '[info]a', '   INFO] [info]a'
 		

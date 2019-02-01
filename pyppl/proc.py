@@ -41,7 +41,11 @@ class Proc (object):
 	"""
 
 	# for future use, shortcuts
-	ALIAS = {'envs': 'tplenvs'}
+	ALIAS = {
+		'envs'   : 'tplenvs',
+		'preCmd' : 'beforeCmd',
+		'postCmd': 'afterCmd'
+	}
 	# deprecated
 	DEPRECATED = {}
 
@@ -618,11 +622,11 @@ class Proc (object):
 			self._tidyBeforeRun ()
 
 			try:
-				self._runCmd('beforeCmd')
+				self._runCmd('preCmd')
 				if self.resume: # resume or resume+
 					logger.logger.info("Previous processes skipped.", extra = {'loglevel': 'resumed'})
 				self._runJobs()
-				self._runCmd('afterCmd')
+				self._runCmd('postCmd')
 				self._tidyAfterRun ()
 			finally:
 				self.lock.release()
@@ -828,7 +832,7 @@ class Proc (object):
 		for 1,2 channels will be the combined channel from dependents, if there is not dependents, it will be sys.argv[1:]
 		"""
 		self.props['input'] = {}
-
+		
 		if self.resume in ['skip+', 'resume']:
 			psfile = path.join(self.workdir, 'proc.settings')
 			if not path.isfile(psfile):
@@ -859,11 +863,13 @@ class Proc (object):
 			self.props['jobs'] = [None] * self.size
 		else:
 			indata = self.config['input']
-			if not isinstance (indata, dict):
-				indata   = ','.join(utils.alwaysList(indata))
+			if not indata:
+				indata = {}
+			elif not isinstance (indata, dict):
 				indata   = {
-					indata: Channel.fromChannels (*[d.channel for d in self.depends]) \
-						if self.depends else Channel.fromArgv()
+					','.join(utils.alwaysList(indata)): Channel.fromChannels(
+						*[d.channel for d in self.depends]
+					) if self.depends else Channel.fromArgv()
 				}
 
 			inkeys   = list(indata.keys())
@@ -1140,17 +1146,22 @@ class Proc (object):
 		@returns:
 			The return code of the command
 		"""
-		if not self.config[key]: return
-		cmdstr = self.template(self.config[key], **self.tplenvs).render(self.procvars)
-		logger.logger.info('Running <%s> ...', key, extra = {'proc': self.id})
+		#if not self.config[key]: return
+		cmdstr = self.template(getattr(self, key), **self.tplenvs).render(self.procvars)
+		if cmdstr.strip():
+			logger.logger.info('Running <%s> ...', key, extra = {'proc': self.id})
 
-		c = utils.cmd.run(cmdstr, bg = True, shell = True, executable = '/bin/bash')
-		for line in iter(c.p.stdout.readline, ''):
-			logger.logger.info ('  %s', line.rstrip("\n"), extra = {'loglevel': 'cmdout', 'proc': self.id})
-		for line in iter(c.p.stderr.readline, ''):
-			logger.logger.info ('  %s', line.rstrip("\n"), extra = {'loglevel': 'cmderr', 'proc': self.id})
-		c.run()
-		if c.rc != 0:
+		c = utils.cmd.Cmd(cmdstr, shell = True, stdin = None, executable = '/bin/bash')
+		while c.p.poll() is None:
+			errline = c.p.stderr.readline()
+			if not errline:
+				break
+			logger.logger.info ('  %s', errline.rstrip("\n"), extra = {'loglevel': 'cmderr', 'proc': self.id})
+		for errline in c.p.stderr:
+			logger.logger.info ('  %s', errline.rstrip("\n"), extra = {'loglevel': 'cmderr', 'proc': self.id})
+		for outline in c.p.stdout:
+			logger.logger.info ('  %s', outline.rstrip("\n"), extra = {'loglevel': 'cmdout', 'proc': self.id})
+		if c.p.wait() != 0:
 			raise ProcRunCmdError(cmdstr, key)
 
 	def _runJobs (self):
