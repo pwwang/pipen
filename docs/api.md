@@ -2045,6 +2045,17 @@ cmd utility for PyPPL
 		- **returns:**  
 			`Command` instance of the other command  
   
+	!!! abstract "method: `readline (self, stream, saveother)`"
+  
+		Stream out the stderr or stdout  
+
+		- **params:**  
+			`stream`: Which stream to stream out, stdout or stderr. Default: `stderr`  
+			`saveother`: Save the other stream to self.stdout or self.stderr. Default: `False`  
+
+		- **yield:**  
+			Generator of lines from stderr or stdout  
+  
 	!!! abstract "method: `run (self, bg)`"
   
 		Wait for the command to run  
