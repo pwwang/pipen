@@ -72,10 +72,10 @@ class TestPyPPLLogFormatter(testly.TestCase):
 		self.assertEqual(lf.theme, theme)
 
 	def dataProvider_testFormat(self):
-		yield None, True, '[info]a', '%s   INFO%s] %s[info]a' % (Fore.GREEN, Style.RESET_ALL, Fore.GREEN)
-		yield None, 'greenOnBlack', '[info]a', '%s   INFO%s] %s[info]a' % (Fore.GREEN, Style.RESET_ALL, Fore.GREEN)
-		yield None, 'magentaOnWhite', '[info]a', '%s   INFO%s] %s[info]a' % (Fore.MAGENTA, Style.RESET_ALL, Fore.MAGENTA)
-		yield None, 'greenOnBlack', '[warning] ', '%s   INFO%s] %s[warning] ' % (Fore.GREEN, Style.RESET_ALL, Fore.GREEN)
+		yield None, True, '[info]a', '%s   INFO%s] %s[info]a%s' % (Fore.GREEN, Style.RESET_ALL, Fore.GREEN, Style.RESET_ALL)
+		yield None, 'greenOnBlack', '[info]a', '%s   INFO%s] %s[info]a%s' % (Fore.GREEN, Style.RESET_ALL, Fore.GREEN, Style.RESET_ALL)
+		yield None, 'magentaOnWhite', '[info]a', '%s   INFO%s] %s[info]a%s' % (Fore.MAGENTA, Style.RESET_ALL, Fore.MAGENTA, Style.RESET_ALL)
+		yield None, 'greenOnBlack', '[warning] ', '%s   INFO%s] %s[warning] %s' % (Fore.GREEN, Style.RESET_ALL, Fore.GREEN, Style.RESET_ALL)
 		yield None, '', '[warning] ', '   INFO] [%swarning%s] %s%s' % ('', '', '', '')
 		yield None, None, '[warning] ', '   INFO] [%swarning%s] %s%s' % ('', '', '', '')
 
@@ -228,7 +228,7 @@ class TestLogger(testly.TestCase):
 				self.assertDictEqual(logger._formatTheme(tname), logger._formatTheme(theme))
 
 	def dataProvider_testGetLogger(self):
-		yield 'normal', True, None, None, '[info]a', '%s   INFO%s] %s[info]a' % (Fore.GREEN, Style.RESET_ALL, Fore.GREEN)
+		yield 'normal', True, None, None, '[info]a', '%s   INFO%s] %s[info]a%s' % (Fore.GREEN, Style.RESET_ALL, Fore.GREEN, Style.RESET_ALL)
 		
 		yield 'normal', None, None, None, '[info]a', '   INFO] [info]a'
 		
