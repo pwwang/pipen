@@ -6,7 +6,7 @@ __all__ = ['Template', 'TemplateLiquid', 'TemplateJinja2']
 
 import json, inspect
 from os import path, readlink
-from liquid import Liquid, LiquidRenderError
+from liquid import Liquid
 from .utils import string_types
 Liquid.MODE  = 'mixed'
 Liquid.DEBUG = False

@@ -45,9 +45,14 @@ class Cmd(object):
 			'stdout'            : subprocess.PIPE,
 			'stderr'            : subprocess.PIPE,
 			'shell'             : False,
-			'universal_newlines': True,
-			'bufsize'           : 0
+			'universal_newlines': True
 		}
+		if 'envs' in kwargs:
+			popenargs['env'].update({k:str(v) for k, v in kwargs['envs'].items()})
+			del kwargs['envs']
+		if 'env' in kwargs:
+			popenargs['env'].update({k:str(v) for k, v in kwargs['env'].items()})
+			del kwargs['env']
 		popenargs.update(kwargs)
 
 		cmd = self.cmd
@@ -89,14 +94,40 @@ class Cmd(object):
 			else:
 				t0 = time()
 				while self.p.poll() is None:
-					sleep (.1)
+					sleep (.01)
 					if time() - t0 > self.timeout:
 						self.p.terminate()
 						raise Timeout
-				self.rc = self.p.returncode
+				self.rc = self.p.wait()
 			self.stdout = self.p.stdout and self.p.stdout.read()
 			self.stderr = self.p.stderr and self.p.stderr.read()
 		return self
+
+	def readline(self, stream = 'stderr', saveother = False):
+		"""
+		Stream out the stderr or stdout
+		@params:
+			`stream`: Which stream to stream out, stdout or stderr. Default: `stderr`
+			`saveother`: Save the other stream to self.stdout or self.stderr. Default: `False`
+		@yield:
+			Generator of lines from stderr or stdout
+		"""
+		if self.p:
+			t0 = time()
+			while self.p.poll() is None:
+				sleep (.01)
+				if self.timeout and time() - t0 > self.timeout:
+					self.p.terminate()
+					raise Timeout
+				yield getattr(self.p, stream).readline()
+			for line in getattr(self.p, stream):
+				yield line
+			self.rc = self.p.wait()
+			if saveother:
+				if stream == 'stderr':
+					self.stdout = self.p.stdout and self.p.stdout.read()
+				else:
+					self.stderr = self.p.stderr and self.p.stderr.read()
 
 	def pipe(self, cmd, **kwargs):
 		"""

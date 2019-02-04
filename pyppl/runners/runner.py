@@ -2,15 +2,12 @@
 The base runner class
 """
 import sys
-import re
 import atexit
 from os import path
 from time import sleep
 from subprocess import list2cmdline
 from multiprocessing import Lock
-
 from pyppl.utils import safefs, cmd, ps
-from pyppl.logger import logger
 
 class Runner (object):
 	"""

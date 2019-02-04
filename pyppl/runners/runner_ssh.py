@@ -65,32 +65,17 @@ class RunnerSsh(Runner):
 		with RunnerSsh.LOCK:
 			if RunnerSsh.LIVE_SERVERS is None:
 				if checkAlive is True:
-					# don't have to check all servers
-					# RunnerSsh.LIVE_SERVERS = [
-					# 	i for i, server in enumerate(servers)
-					# 	if RunnerSsh.isServerAlive(server, keys[i] if keys else None)
-					# ]
-					RunnerSsh.LIVE_SERVERS = []
-					for i, server in enumerate(servers):
-						if not RunnerSsh.isServerAlive(server, keys[i] if keys else None):
-							continue
-						RunnerSsh.LIVE_SERVERS.append(i)
-						if len(RunnerSsh.LIVE_SERVERS) >= job.config['procsize']:
-							break
+					RunnerSsh.LIVE_SERVERS = [
+						i for i, server in enumerate(servers)
+						if RunnerSsh.isServerAlive(server, keys[i] if keys else None)
+					]
 				elif checkAlive is False:
 					RunnerSsh.LIVE_SERVERS = list(range(len(servers)))
 				else:
-					# RunnerSsh.LIVE_SERVERS = [
-					# 	i for i, server in enumerate(servers)
-					# 	if RunnerSsh.isServerAlive(server, keys[i] if keys else None, checkAlive)
-					# ]
-					RunnerSsh.LIVE_SERVERS = []
-					for i, server in enumerate(servers):
-						if not RunnerSsh.isServerAlive(server, keys[i] if keys else None, checkAlive):
-							continue
-						RunnerSsh.LIVE_SERVERS.append(i)
-						if len(RunnerSsh.LIVE_SERVERS) >= job.config['procsize']:
-							break
+					RunnerSsh.LIVE_SERVERS = [
+						i for i, server in enumerate(servers)
+						if RunnerSsh.isServerAlive(server, keys[i] if keys else None, checkAlive)
+					]
 
 		if not RunnerSsh.LIVE_SERVERS:
 			raise RunnerSshError('No server is alive.')

@@ -1113,7 +1113,7 @@ class Proc (object):
 			profiles['default'] = {'runner': 'local'}
 		
 		config = profiles['default']
-
+		
 		if isinstance(profile, dict):
 			utils.dictUpdate(config, profile)
 			if 'runner' not in config:
@@ -1136,7 +1136,11 @@ class Proc (object):
 			
 			if key in Proc.ALIAS:
 				key = Proc.ALIAS[key]
-			self.config[key] = val
+
+			if key in self.config and isinstance(self.config[key], dict):
+				utils.dictUpdate(self.config[key], val)
+			else:
+				self.config[key] = val
 
 	def _runCmd (self, key):
 		"""
