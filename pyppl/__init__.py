@@ -127,7 +127,7 @@ class PyPPL (object):
 			del self.config['_log']
 
 		Jobmgr.PBAR_SIZE = logconfig['pbar']
-		Proc.SHORTPATH.update(logconfig['shortpath'])
+		Proc.SHORTPATH.update(logconfig['shortpath'] or {})
 		logconfig['logfile'] = logconfig['file']
 		del logconfig['pbar']
 		del logconfig['file']

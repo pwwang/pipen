@@ -330,12 +330,12 @@ class Job(object):
 
 			if intype in Proc.IN_FILETYPE:
 				if not isinstance(indata, string_types):
-					raise JobInputParseError(indata, 'Not a string for input type "%s"' % intype)
+					raise JobInputParseError(indata, 'Not a string for input "%s:%s"' % (key, intype))
 				if not indata:
 					infile  = ''
 				else:
 					if not path.exists(indata):
-						raise JobInputParseError(indata, 'File not exists for input type "%s"' % intype)
+						raise JobInputParseError(indata, 'File not exists for input type "%s:%s"' % (key, intype))
 
 					indata   = path.abspath(indata)
 					basename = path.basename(indata)

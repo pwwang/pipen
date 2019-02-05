@@ -103,12 +103,16 @@ class Cmd(object):
 			self.stderr = self.p.stderr and self.p.stderr.read()
 		return self
 
-	def readline(self, stream = 'stderr', saveother = False):
+	def readline(self, stream = 'stderr', save = None):
 		"""
 		Stream out the stderr or stdout
 		@params:
 			`stream`: Which stream to stream out, stdout or stderr. Default: `stderr`
-			`saveother`: Save the other stream to self.stdout or self.stderr. Default: `False`
+			`save`  : Save the stream to self.stdout and/or self.stderr. Default: `None`
+				- `None` : don't save
+				- `other`: Save the other stream, other than `stream`
+				- `same` : Save the same stream,  as `stream`
+				- `both` : Save both streams
 		@yield:
 			Generator of lines from stderr or stdout
 		"""
@@ -119,11 +123,16 @@ class Cmd(object):
 				if self.timeout and time() - t0 > self.timeout:
 					self.p.terminate()
 					raise Timeout
-				yield getattr(self.p, stream).readline()
+				line = getattr(self.p, stream).readline()
+				yield line
+				if save in ['same', 'both']:
+					setattr(self, stream, getattr(self, stream) or '' + line)
 			for line in getattr(self.p, stream):
 				yield line
+				if save in ['same', 'both']:
+					setattr(self, stream, getattr(self, stream) or '' + line)
 			self.rc = self.p.wait()
-			if saveother:
+			if save == 'other':
 				if stream == 'stderr':
 					self.stdout = self.p.stdout and self.p.stdout.read()
 				else:
