@@ -5,9 +5,6 @@ matrix:
       env: PY=2.7.13
     - os: osx
       language: generic
-      env: PY=3.3.6
-    - os: osx
-      language: generic
       env: PY=3.4.4
     - os: osx
       language: generic
@@ -22,8 +19,6 @@ matrix:
       python: 2.7
       sudo: required
       env: UPCOV=1
-    - os: linux
-      python: 3.3
     - os: linux
       python: 3.4
     - os: linux
