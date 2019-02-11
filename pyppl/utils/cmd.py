@@ -126,11 +126,11 @@ class Cmd(object):
 				line = getattr(self.p, stream).readline()
 				yield line
 				if save in ['same', 'both']:
-					setattr(self, stream, getattr(self, stream) or '' + line)
+					setattr(self, stream, (getattr(self, stream) or '') + line)
 			for line in getattr(self.p, stream):
 				yield line
 				if save in ['same', 'both']:
-					setattr(self, stream, getattr(self, stream) or '' + line)
+					setattr(self, stream, (getattr(self, stream) or '') + line)
 			self.rc = self.p.wait()
 			if save == 'other':
 				if stream == 'stderr':
