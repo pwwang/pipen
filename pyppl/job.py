@@ -10,7 +10,7 @@ from collections import OrderedDict
 from datetime import datetime
 from threading import Lock
 from .logger import logger
-from .utils import cmd, safefs, string_types, briefPath
+from .utils import cmd, safefs, string_types, briefPath, jsonLoads
 from .utils.box import Box
 from .exception import JobInputParseError, JobOutputParseError
 
@@ -548,7 +548,7 @@ class Job(object):
 			})
 			return False
 
-		sigOld = json.loads(sig)
+		sigOld = jsonLoads(sig)
 		sigNow = self.signature()
 		if not sigNow:
 			self.logger.debug("Not cached because current signature is empty.", extra = {

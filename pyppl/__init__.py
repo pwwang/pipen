@@ -17,7 +17,7 @@ from .channel import Channel
 from .parameters import params, Parameters, commands
 from .proctree import ProcTree
 from .exception import PyPPLProcFindError, PyPPLProcRelationError
-from .utils import Box
+from .utils import Box, jsonLoads
 from . import logger, utils, runners
 
 VERSION = "1.4.3"
@@ -82,7 +82,7 @@ class PyPPL (object):
 						except ImportError: # pragma: no cover
 							cfgIgnored[cfile] = 1
 					else:
-						utils.dictUpdate(fconfig, json.load(cf))
+						utils.dictUpdate(fconfig, jsonLoads(cf.read()))
 
 		if cfgfile is not None and path.exists(cfgfile):
 			with open(cfgfile) as cfgf:
@@ -93,7 +93,7 @@ class PyPPL (object):
 					except ImportError:
 						cfgIgnored[cfgfile] = 1
 				else:
-					utils.dictUpdate(fconfig, json.load(cfgf))
+					utils.dictUpdate(fconfig, jsonLoads(cfgf.read()))
 
 		if config is None:
 			config = {}

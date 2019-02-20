@@ -3,6 +3,7 @@ A set of utitities for PyPPL
 """
 import inspect
 import re
+import json
 from hashlib import md5
 from .box import Box
 
@@ -31,6 +32,21 @@ except ImportError: # pragma: no cover
 	ftools.reduce = reduce
 	ftools.map    = map
 	ftools.filter = filter
+
+try:
+	unicode
+	def _byteify(input, encoding='utf-8'):
+		if isinstance(input, dict):
+			return {_byteify(key): _byteify(value) for key, value in input.items()}
+		elif isinstance(input, list):
+			return [_byteify(element) for element in input]
+		elif isinstance(input, unicode):
+			return input.encode(encoding)
+		else:
+			return input
+	jsonLoads = lambda s, encoding = 'utf-8': _byteify(json.loads(s), encoding)
+except NameError: # py3
+	jsonLoads = json.loads
 
 try:
 	ftools.range = xrange

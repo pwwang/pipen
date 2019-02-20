@@ -844,7 +844,7 @@ class Proc (object):
 			cp = utils.ConfigParser()
 			cp.optionxform = str
 			cp.read(psfile)
-			self.props['size'] = int(json.loads(cp.get('size', 'value')))
+			self.props['size'] = int(utils.jsonLoads(cp.get('size', 'value')))
 
 			indata = OrderedDict(cp.items('input'))
 			intype = ''
@@ -859,9 +859,9 @@ class Proc (object):
 					}
 				elif key.startswith(inname + '.data#'):
 					if intype in Proc.IN_FILESTYPE:
-						data = [json.loads(s) for s in filter(None, indata[key].splitlines())]
+						data = [utils.jsonLoads(s) for s in filter(None, indata[key].splitlines())]
 					else:
-						data = json.loads(indata[key].strip())
+						data = utils.jsonLoads(indata[key].strip())
 					self.props['input'][inname]['data'].append(data)
 			self.props['jobs'] = [None] * self.size
 		else:

@@ -7,7 +7,7 @@ import json
 import re
 from os import path
 from collections import OrderedDict
-from .utils import Box, string_types, ConfigParser
+from .utils import Box, string_types, ConfigParser, jsonLoads
 from .exception import ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError
 from colorama import Fore, Back, Style
 
@@ -978,7 +978,7 @@ class Parameters (object):
 		config = {}
 		if cfgfile.endswith('.json'):
 			with open(cfgfile) as f:
-				config = json.load(f)
+				config = jsonLoads(f.read())
 		elif cfgfile.endswith('yml') or cfgfile.endswith('yaml'):
 			import yaml
 			with open(cfgfile) as f:
