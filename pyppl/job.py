@@ -193,7 +193,10 @@ class Job(object):
 		for key in sorted(inkeys):
 			if key.startswith('_'): continue
 			if self.input[key]['type'] in Proc.IN_VARTYPE:
-				self._reportItem(key, maxlen, self.input[key]['data'], 'input')
+				data = self.input[key]['data']
+				if isinstance(data, string_types) and len(data) > 100:
+					data = data[:47] + ' ... ' + data[-48:]
+				self._reportItem(key, maxlen, data, 'input')
 			else:
 				if isinstance(self.input[key]['data'], list):
 					data = [briefPath(d, **Proc.SHORTPATH) for d in self.input[key]['data']]
@@ -335,7 +338,7 @@ class Job(object):
 					infile  = ''
 				else:
 					if not path.exists(indata):
-						raise JobInputParseError(indata, 'File not exists for input type "%s:%s"' % (key, intype))
+						raise JobInputParseError(indata, 'File not exists for input "%s:%s"' % (key, intype))
 
 					indata   = path.abspath(indata)
 					basename = path.basename(indata)
@@ -366,23 +369,23 @@ class Job(object):
 						'proc'  : self.config['proc'],
 						'joblen': self.config['procsize'],
 						'jobidx': self.index,
-						'level2': 'INFILE_RENAMING',
+						'level2': 'INFILE_EMPTY',
 						'pbar'  : False
 					})
 					continue
 
 				if not isinstance(indata, list):
-					raise JobInputParseError(indata, 'Not a list for input type "%s"' % intype)
+					raise JobInputParseError(indata, 'Not a list for input "%s:%s"' % (key, intype))
 
 				for data in indata:
 					if not isinstance(data, string_types):
-						raise JobInputParseError(data, 'Not a string for element of input type "%s"' % intype)
+						raise JobInputParseError(data, 'Not a string for element of input "%s:%s"' % (key, intype))
 
 					if not data:
 						infile  = ''
 					else:
 						if not path.exists(data):
-							raise JobInputParseError(data, 'File not exists for element of input type "%s"' % intype)
+							raise JobInputParseError(data, 'File not exists for element of input "%s:%s"' % (key, intype))
 
 						data     = path.abspath(data)
 						basename = path.basename(data)

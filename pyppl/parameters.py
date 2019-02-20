@@ -274,8 +274,8 @@ class Parameter (object):
 		)
 		if not isinstance(name, string_types):
 			raise ParameterNameError(name, 'Not a string')
-		if not re.search(r'^[A-Za-z0-9_\-.]{1,32}$', name):
-			raise ParameterNameError(name, 'Expect a string with alphabetics and underlines in length 1~32, but we got')
+		if not re.search(r'^[A-Za-z0-9_\-.]{1,255}$', name):
+			raise ParameterNameError(name, 'Expect a string with alphabetics and underlines in length 1~255, but we got')
 		if value is not None:
 			t = type(value).__name__
 			if t in ['tuple', 'set']:

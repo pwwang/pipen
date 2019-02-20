@@ -352,7 +352,10 @@ class Proc (object):
 			if not path.isabs(scriptpath):
 				from inspect import getframeinfo, stack
 				caller = getframeinfo(stack()[1][0])
-				scriptpath = path.join(path.dirname(path.realpath(caller.filename)), scriptpath)
+				scriptdir = path.dirname(path.abspath(caller.filename))
+				if not path.isfile(path.join(scriptdir, scriptpath)):
+					scriptdir = path.dirname(path.realpath(caller.filename))
+				scriptpath = path.join(scriptdir, scriptpath)
 			self.config[name] = "file:%s" % scriptpath
 
 		elif name == 'args' or name == 'tplenvs':

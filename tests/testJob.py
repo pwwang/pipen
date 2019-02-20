@@ -211,11 +211,11 @@ class TestJob(testly.TestCase):
 			# 'RL_d3': [path.realpath(filed30), path.realpath(filed31)], 
 		}
 		
-		yield 1, config, {}, {}, JobInputParseError, 'File not exists for input type'
-		yield 2, config, {}, {}, JobInputParseError, 'Not a string for input type'
+		yield 1, config, {}, {}, JobInputParseError, 'File not exists for input'
+		yield 2, config, {}, {}, JobInputParseError, 'Not a string for input'
 		#yield 3, config, {}, {}, JobInputParseError, 'Not a list for input type'
-		yield 4, config, {}, {}, JobInputParseError, 'Not a string for element of input type'
-		yield 5, config, {}, {}, JobInputParseError, 'File not exists for element of input type'
+		yield 4, config, {}, {}, JobInputParseError, 'Not a string for element of input'
+		yield 5, config, {}, {}, JobInputParseError, 'File not exists for element of input'
 		yield 6, config3, OrderedDict([ # make sure c comes first, instead of d3
 			('a', {'type': 'var', 'data': 7}),
 			('b', {'type': 'var', 'data': 'g'}),
