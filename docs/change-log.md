@@ -1,40 +1,47 @@
-# 1.4.3 (Jan. 28, 2019)
+# 2019.2.20
+- Use date as version naming.
+- Adopt colorama for teminal colors.
+- Allow configs to update recursively.
+- Remove python 3.3 support.
+- Fix #48: unicode loaded when config file is in json
+
+# 1.4.3 (2019.1.28)
 - Change path shortening cutoff to total length.
 - Fix a bug for template function `fn` (filename/stem).
 - Fix logger formatter conflicts.
 
-# 1.4.2 (Jan. 23, 2019)
+# 1.4.2 (2019.1.23)
 - Add `runner` subcommand for `bin/pyppl` to show available runners.
 - Allow length of the progress bar configurable.
 - Allow the paths to be shortened in logs.
 - Fix other bugs.
 
-# 1.4.1 (Jan. 9, 2019)
+# 1.4.1 (2019.1.9)
 - Add `render` function for template to allow variables to be rendered in template.
 - Allow reset for list parameter in parameters
 - Add callback for Parameter
 
-# 1.4.0 (Dec. 20, 2018)
+# 1.4.0 (2018.12.20)
 - Implement jobmgr with PriorityQueue, and put job building, submission and polling in the same queue
 - Remove file locks while job initiation to speed up
 - Other bug fixes.
 
-# 1.3.1 (Nov. 8, 2018)
+# 1.3.1 (2018.11.8)
 - Fix pipeline not quitting if retry times reached.
 - Optimize CPU usage.
 
-# 1.3.0 (Nov. 2, 2018)
+# 1.3.0 (2018.11.2)
 - Use threading instead of multiprocess to save resources and rewrite queue system
 - Change `cclean` to `acache` (after cache)
 - Change `nthread` to `nsub` (# threads used to submit jobs)
 - Remove `six` dependency
 - Cleanup pipeline when halt (Ctrl-c hit or error encountered while `errhow = halt`)
 
-# 1.2.0 (Sept. 28, 2018)
+# 1.2.0 (2018.9.28)
 - Use `liquidpy` as default template engine (see how to migrate in FAQ).
 - Fix other bugs.
 
-# 1.1.2 (Sept. 13, 2018)
+# 1.1.2 (2018.9.13)
 - Optimize check server alive for ssh runner.
 - Rwrite command line tool: bin/pyppl
 - Add commands to allow subcommand in command line argument parser.
@@ -44,14 +51,14 @@
 - Rewrite API generator and regenerate API docs.
 - Fix other bugs.
 
-# 1.1.1 (Aug 30, 2018)
+# 1.1.1 (2018.8.30)
 - Allow progress bar to be collapsed in stream log.
 - Remove loky dependency, so `PyPPL` could run on cygwin/msys2.
 - Add `~/pyppl.yml`, `~/pyppl.yaml`, `~/pyppl` and `~/pyppl.json` to default configuration files.
 - Update docs.
 - Fix other bugs.
 
-# 1.1.0 (Aug 20, 2018)
+# 1.1.0 (2018.8.20)
 - Let pipeline halt if any job fails (#33).
 - Add KeyboardInterupt handling.
 - Add Warning message when a process is locked (another instance is running)
@@ -61,14 +68,14 @@
 - Add shortcut for lambda function in builtin templates.
 - Add `nones` and `transpose` method for `Channel`.
 
-# 1.0.1 (July 31, 2018)
+# 1.0.1 (2018.7.31)
 - Change the default path of flowchart and log from script directory to current directory.
 - Rewrite the way of attribute setting for aggregations.
 - Introduce modules for aggregations.
 - Allow setting attributes from Proc constructor.
 - Implement #33, `Ctrl-c` now also halts the pipeline, and hides the exception details.
 
-# 1.0.0 ! (July 10, 2018)
+# 1.0.0 ! (2018.7.10)
 - Fix runner name issue #31.
 - Use mkdocs to generate documentations and host them on GitHub pages.
 - Keep stdout and stderr when a job is cached: #30.
@@ -76,7 +83,7 @@
 - Host the testing procedures with Travis.
 - Fix other bugs.
 
-# 0.9.6 (June 8, 2018)
+# 0.9.6 (2018.6.8)
 - Auto-delegate common proc config names to aggr
 - Add proc.origin to save the original proc id for copied procs
 - Remove brings, add proc.infile to swith '{{in.(infile)}}' to job.indir path, original path or realpath of the input file
@@ -85,7 +92,7 @@
 - Merge template function Rvec and Rlist into R, add repr
 - Fix #29 and #31, and fix other bugs
 
-# 0.9.5 (Mar 6, 2018)
+# 0.9.5 (2018.3.6)
 - Add proc.dirsig to disable/enable calculating signatures from deep directories
 - Add Jobmgr class to handle job distribution
 - Allow channel.rowAt and colAt to return multiple rows and columns, respectively
@@ -97,7 +104,7 @@
 - Add progress bar for jobs
 - Allow stdout and stderr file as output
 
-# 0.9.4 (Dec 27, 2017)
+# 0.9.4 (2017.12.27)
 - Add yaml support for config file (#26).
 - Allow empty list for input files.
 - Merge continuous job ids in log (Make the list shorter).
@@ -107,7 +114,7 @@
 - Use repr to output p.args and p.props.
 - Merge Proc attributes profile and runner. Profile is now an alias of runner, and will be removed finally.
 
-# 0.9.3 (Nov 20, 2017)
+# 0.9.3 (2017.11.20)
 - Beautify parameters help page.
 - Enable multithreading for job construction and cache checking (set by proc.nthread).
 - Uniform multiprocessing/threading.
@@ -122,7 +129,7 @@
 - Fix params loaded from file get overwriten.
 - Add coverage report.
 
-# 0.9.2 (Oct 23, 2017)
+# 0.9.2 (2017.10.23)
 - Add profile for Proc so different procs can run with different profiles.
 - Add delegate for Aggr.
 - Add get, repCol, repRow, rowAt method for Channel.
@@ -130,7 +137,7 @@
 - Add header argument for Channel.fromFile.
 - Fix a bunch of bugs.
 
-# 0.9.1 (Oct 6, 2017)
+# 0.9.1 (2017.10.6)
 - Fix issues reported by codacy
 - Fix an issue checking whether output files generated
 - Deepcopy args and tplenvs when copy a process
@@ -145,7 +152,7 @@
 - Fix output channel key sequence does not keep
 - Use object id instead of name as key for PyPPL nexts/paths in case tag is set in pipeline configrations
 
-# 0.9.0 (Sept 22, 2017)
+# 0.9.0 (2017.9.22)
 - Change class name with first letter capitalized
 - Add resuming from processes (#20)
 - Fix #19
@@ -157,7 +164,7 @@
 - Enhancer templating, support Jinja2
 - Set attributes of processes in aggregation with `set`
 
-# 0.8.1 (Aug 4, 2017)
+# 0.8.1 (2017.8.4)
 - Add partial echo
 - Add interactive log from the script
 - Add partial export
@@ -165,7 +172,7 @@
 - Add compare to command line tool
 - Fix bugs
 
-# 0.8.0 (Aug 1, 2017)
+# 0.8.0 (2017.8.1)
 - Add slurm and dry runner
 - Fix bugs when more than 2 input files have same basename
 - Add indent mark for script, specially useful for python
@@ -174,7 +181,7 @@
 - Add command line argument parse
 - Fix a bug that threads do not exit after process is done
 
-# 0.7.4 (July 18, 2017)
+# 0.7.4 (2017.7.18)
 - Docs updated (thanks @marchon for some grammer corrections)
 - Some shortcut functions for placeholders added
 - Check running during polling removed
@@ -182,7 +189,7 @@
 - `p.args['key']` can be set also by `p.args.key` now
 - Bug fixes
 
-# 0.7.3 (July 3, 2017)
+# 0.7.3 (2017.7.3)
 - Config file defaults to `~/.pyppl.json` (`~/.pyppl` also works)
 - Callfront added
 - Empty input allowed
@@ -193,21 +200,21 @@
 - Private key supported for ssh runner
 - Feature #7 Implemented
 
-# 0.7.2 (June 20, 2017)
+# 0.7.2 (2017.6.20)
 - Optimize isRunning function (using specific job id)
 - Support python3 now
 - Test on OSX
 - More debug information for caching
 - Bug fixes
 
-# 0.7.1 (June 15, 2017)
+# 0.7.1 (2017.6.15)
 - Move pyppl-cli to bin/pyppl
 - channel.collapse now return the most common directory of paths
 - Report oringinal file of input and bring files
 - Show number of omitted logs
 - Bug fixes
 
-# 0.7.0 (June 13, 2017)
+# 0.7.0 (2017.6.13)
 - Add colored log
 - Put jobs in different directories (files with same basename can be used as input files, otherwise it will be overwritten).
 - Add configuration `checkrun` for `pyppl` allow `runner.isRunning` to be disabled (save resources on local machine).
@@ -217,7 +224,7 @@
 - Update command line tool accordingly
 - Split base runner class into two.
 
-# 0.6.2 (May 30, 2017)
+# 0.6.2 (2017.5.30)
 - Update docs and fix compilation errors from gitbook
 - Change pyppl.dot to pyppl.pyppl.dot; 
 - Add channel.fromFile method; 
@@ -233,13 +240,13 @@
 - add pyppl-cli;
 - Change rc code, make it consistent with real rc code.
 
-# 0.6.1 (Apr 27, 2017)
+# 0.6.1 (2017.4.27)
 - Overwrite input file if it exists and not the same file; 
 - fix varname bug when there are dots in the function name;
 - Add brings feature;
 - Add features to README, and brings to docs
 
-# 0.6.0 (Apr 26, 2017)
+# 0.6.0 (2017.4.26)
 - Set job signature to False if any of the item is False (that means expected files not exists); - Do cache by job itself; 
 - Make it possible to cache and export successful jobs even when some jobs failed
 - Host docs in gitbook
@@ -250,7 +257,7 @@
 - Rewrite runner_local so it fits other runners to extend;
 - Fix proc depends on mixed list of procs and aggrs
 
-# 0.5.0 (Apr 18, 2017)
+# 0.5.0 (2017.4.18)
 - Fix local runner not waiting (continuiously submitting jobs);
 - Add property alias for aggr; 
 - Output cleared if job not cached
@@ -260,7 +267,7 @@
 - add timer; 
 - add isRunning for job so that even if the main thread quit, we can still retrieve the job status;
 
-# 0.4.0 (Apr 13, 2017)
+# 0.4.0 (2017.4.13)
 - Add files (array) support for input; 
 - Recursive update for configuration;
 - Add aggregations;
@@ -278,7 +285,7 @@
 - Rewrite buildInput and buildOutput; 
 - Use job to construct runners;
 
-# 0.2.0 (Mar 14, 2017)
+# 0.2.0 (2017.3.14)
 - Basic functions
 
-# Initiate (Jan 27, 2017)
+# Initiate (2017.1.27)

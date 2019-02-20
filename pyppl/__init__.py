@@ -20,7 +20,7 @@ from .exception import PyPPLProcFindError, PyPPLProcRelationError
 from .utils import Box, jsonLoads
 from . import logger, utils, runners
 
-VERSION = "1.4.3"
+VERSION = "2019.2.20"
 class PyPPL (object):
 	"""
 	The PyPPL class
