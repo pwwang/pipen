@@ -236,6 +236,8 @@ class HelpAssembler(object):
 			if isinstance(helpitems[0], tuple):
 				for optname, opttype, optdesc in helpitems:
 					opttype = opttype.strip()
+					if not optdesc:
+						optdesc = ['[ No description. ]']
 					if not isinstance(optdesc, list):
 						optdesc = [optdesc]
 					for i, od in enumerate(optdesc):
