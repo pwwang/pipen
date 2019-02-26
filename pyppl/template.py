@@ -86,11 +86,11 @@ class _TemplateFilter(object):
 		if isinstance(x, (list, tuple, set)):
 			return 'c({})'.format(','.join([_TemplateFilter.R(i) for i in x]))
 		if isinstance(x, dict):
-			#                                                   list allow repeated names
+			# list allow repeated names
 			return 'list({})'.format(','.join([
 				'`{0}`={1}'.format(k, _TemplateFilter.R(v)) if isinstance(k, int) and not ignoreintkey else \
 				_TemplateFilter.R(v) if isinstance(k, int) and ignoreintkey else \
-				'{0}={1}'.format(str(k).split('#')[0], _TemplateFilter.R(v)) for k, v in sorted(x.items())
+				'`{0}`={1}'.format(str(k).split('#')[0], _TemplateFilter.R(v)) for k, v in sorted(x.items())
 			]))
 		return repr(x)
 

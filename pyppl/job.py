@@ -1178,7 +1178,7 @@ class Job(object):
 				# '_' makes sure it's not filtered by log levels
 				logger.info(logmsg.lstrip(), extra = {
 					'loglevel': '_' + loglevel,
-					'pbar'    : False,
+					'pbar'    : None,
 					'jobidx'  : self.index,
 					'joblen'  : self.config['procsize'],
 					'proc'    : self.config['proc']
