@@ -180,7 +180,7 @@ class TestTemplateJinja2(testly.TestCase):
 		yield '{% for k,v in data.items() %}{{k}}:{{v}}{% endfor %}', {'data': OrderedDict([('a', 1), ('b', 2)])}, 'a:1b:2'
 		# 20
 		yield '{{quote(a)}}', {'a':''}, '""'
-		yield '{{R(x)}}', {'x': OrderedDict([(u'key1', 'val1'), ('key2', u'val2')])}, "list(key1='val1',key2='val2')"
+		yield '{{R(x)}}', {'x': OrderedDict([(u'key1', 'val1'), ('key2', u'val2')])}, "list(`key1`='val1',`key2`='val2')"
 		yield '{{asquote(b)}}', {'b':[1,2]}, '"1" "2"'
 		yield '{{acquote(c)}}', {'c':[1,2]}, '"1", "2"'
 		yield '{{squote(d)}}', {'d':'1'}, "'1'"

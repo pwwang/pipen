@@ -66,6 +66,13 @@ commands.runner              = 'List available runners.'
 commands.runner._hbald       = False
 commands.runner.cfgfile.desc = 'An extra configuration file.'
 
+commands.status               = 'Check the status of a running process.'
+commands.status.wdir          = commands.list.wdir
+commands.status.ncol          = 5
+commands.status.ncol.desc     = 'Number of jobs to show in a row.'
+commands.status.proc.required = True
+commands.status.proc.desc     = 'The process working directory. If path separator exists, then `-wdir` will be ignored.'
+
 command, params = commands.parse()
 
 def streamout(msg, decors = None, end = '\n'):
@@ -276,6 +283,69 @@ if __name__ == '__main__':
 			streamout('')
 			streamout(key + ':', 'green')
 			pp.pprint(val)
+
+	if command == 'status':
+		if path.sep in params.proc:
+			procdir = params.proc
+		else:
+			proc = params.proc if params.proc.startswith('PyPPL.') else 'PyPPL.' + params.proc
+			proc = glob(path.join(params.wdir, proc + '*'))
+			if len(proc) > 1:
+				streamout('WARNING: there are more than 1 processes named with "{}", first one used.'.format(params.proc), 'yellow')
+			procdir = proc[0]
+		streamout('')
+		streamout('Working with directory: {}'.format(procdir))
+		streamout('-' * (len(procdir) + 24))
+		lockfile = path.join(procdir, 'proc.lock')
+		if not path.isfile(lockfile):
+			streamout('WARNING: Lock file does not exist. It is not a process directory or the process is not running.', 'yellow')
+		else:
+			import math
+			jobdirs = list(sorted(glob(path.join(procdir, '*', '')), key = lambda x: int(path.basename(x[:-1]))))
+			n = int(math.ceil(math.log(len(jobdirs), 10))) + 1
+			colors = {
+				'Unknown': 'magenta',
+				'Pending': 'white',
+				'Running': 'green',
+				'Done'   : 'cyan',
+				'Failed' : 'red',
+			}
+			counts = {
+				'Unknown': 0,
+				'Pending': 0,
+				'Running': 0,
+				'Done'   : 0,
+				'Failed' : 0,
+			}
+			for jobdir in jobdirs:
+				jobdir  = path.normpath(jobdir)
+				pidfile = path.join(jobdir, 'job.pid')
+				jobid   = path.basename(jobdir)
+				status  = 'Unknown'
+				rc      = '-'
+				if not path.isfile(pidfile):
+					status = 'Pending'
+				else:
+					rcfile = path.join(jobdir, 'job.rc')
+					if not path.isfile(rcfile):
+						status = 'Running'
+					else:
+						with open(rcfile) as f:
+							rc = f.read().strip()
+						if rc == '0':
+							status = 'Done'
+						else:
+							status = 'Failed'
+				counts[status] += 1
+				jobstr = ('Job ' + jobid).ljust(n + 4)
+				streamout(jobstr, end = ': ')
+				streamout(status.ljust(8) + ('[' + rc + ']    ').rjust(8), decors = colors[status], end = '' if int(jobid) % params.ncol > 0 else '\n')
+
+			streamout('-' * (params.ncol * (n + 22) - 4))
+			streamout('Total: ', end = '')
+			for key, c in counts.items():
+				streamout(key + ': ' + str(c), decors = colors[key], end = ', ')
+			streamout('')
 
 	elif command == 'compare':
 		if params.proc:
