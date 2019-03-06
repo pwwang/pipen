@@ -320,10 +320,12 @@ if __name__ == '__main__':
 			for jobdir in jobdirs:
 				jobdir  = path.normpath(jobdir)
 				pidfile = path.join(jobdir, 'job.pid')
+				outfile = path.join(jobdir, 'job.stdout')
+				errfile = path.join(jobdir, 'job.stderr')
 				jobid   = path.basename(jobdir)
 				status  = 'Unknown'
 				rc      = '-'
-				if not path.isfile(pidfile):
+				if not path.isfile(pidfile) or not path.isfile(outfile) or not path.isfile(errfile):
 					status = 'Pending'
 				else:
 					rcfile = path.join(jobdir, 'job.rc')

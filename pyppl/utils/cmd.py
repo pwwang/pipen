@@ -103,7 +103,7 @@ class Cmd(object):
 			self.stderr = self.p.stderr and self.p.stderr.read()
 		return self
 
-	def readline(self, stream = 'stderr', save = None):
+	def readline(self, stream = 'stderr', save = None, interval = .01):
 		"""
 		Stream out the stderr or stdout
 		@params:
@@ -119,7 +119,8 @@ class Cmd(object):
 		if self.p:
 			t0 = time()
 			while self.p.poll() is None:
-				sleep (.01)
+				if interval > 0:
+					sleep (interval)
 				if self.timeout and time() - t0 > self.timeout:
 					self.p.terminate()
 					raise Timeout
@@ -132,11 +133,10 @@ class Cmd(object):
 				if save in ['same', 'both']:
 					setattr(self, stream, (getattr(self, stream) or '') + line)
 			self.rc = self.p.wait()
-			if save == 'other':
-				if stream == 'stderr':
-					self.stdout = self.p.stdout and self.p.stdout.read()
-				else:
-					self.stderr = self.p.stderr and self.p.stderr.read()
+			if not self.stdout and (save == 'stdout' or (save == 'other' and stream == 'stderr')):
+				self.stdout = self.p.stdout and self.p.stdout.read()
+			elif not self.stderr and (save == 'stderr' or (save == 'other' and stream == 'stdout')):
+				self.stderr = self.p.stderr and self.p.stderr.read()
 
 	def pipe(self, cmd, **kwargs):
 		"""
