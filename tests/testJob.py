@@ -57,6 +57,7 @@ class TestJob(testly.TestCase):
 				'indir'   : job.indir,
 				'outdir'  : job.outdir,
 				'dir'     : job.dir,
+				'cachedir': job.cachedir,
 				'outfile' : job.outfile,
 				'errfile' : job.errfile,
 				'pidfile' : job.pidfile
@@ -848,18 +849,33 @@ class TestJob(testly.TestCase):
 		helpers.writeFile(job3.rcfile, 0)
 		helpers.writeFile(job3.pidfile)
 		makedirs(path.join(job3.dir, 'retry.8'))
+		# cachedir
+		job4 = Job(4, config)
+		#job4.init()
+		makedirs(job4.cachedir)
+		helpers.writeFile(job4.rcfile, 0)
+		helpers.writeFile(job4.pidfile)
+
+		job5 = Job(5, config)
+		#job5.init()
+		makedirs(job5.cachedir)
+		helpers.writeFile(job5.rcfile, 0)
+		helpers.writeFile(job5.pidfile)
 		yield job, 0, ['preset.txt'], ['preset.dir']
 		yield job1, 1, ['preset.txt'], ['preset.dir']
 		yield job2, 2, ['preset.txt'], ['preset.dir']
 		yield job3, 0, ['preset.txt'], ['preset.dir']
+		yield job4, 0, ['preset.txt'], ['preset.dir']
+		yield job5, 1, ['preset.txt'], ['preset.dir']
 		
 	def testReset(self, job, retry, outfiles = [], outdirs = []):
-
 		job.ntry = retry 
 		job.build()
+		cachedir_exists = path.isdir(job.cachedir)
 		helpers.writeFile(job.outfile)
 		helpers.writeFile(job.errfile)
 		job.reset()
+		self.assertIs(path.isdir(job.cachedir), cachedir_exists)
 		if not retry:
 			retrydirs = glob(path.join(job.dir, 'retry.*'))
 			self.assertListEqual(retrydirs, [])

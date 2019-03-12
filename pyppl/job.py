@@ -80,18 +80,19 @@ class Job(object):
 		self.status    = Job.STATUS_INITIATED
 		self.config    = config
 		self.dir       = path.abspath(path.join (config['workdir'], str(index + 1)))
-		self.indir     = path.join (self.dir, "input")
-		self.outdir    = path.join (self.dir, "output")
-		self.script    = path.join (self.dir, "job.script")
-		self.rcfile    = path.join (self.dir, "job.rc")
-		self.outfile   = path.join (self.dir, "job.stdout")
-		self.errfile   = path.join (self.dir, "job.stderr")
+		self.indir     = path.join(self.dir, "input")
+		self.outdir    = path.join(self.dir, "output")
+		self.script    = path.join(self.dir, "job.script")
+		self.rcfile    = path.join(self.dir, "job.rc")
+		self.outfile   = path.join(self.dir, "job.stdout")
+		self.errfile   = path.join(self.dir, "job.stderr")
 		self.fout      = None
 		self.ferr      = None
 		self.lastout   = ''
 		self.lasterr   = ''
-		self.cachefile = path.join (self.dir, "job.cache")
-		self.pidfile   = path.join (self.dir, "job.pid")
+		self.cachefile = path.join(self.dir, "job.cache")
+		self.cachedir  = path.join(self.outdir, '.pypplcache')
+		self.pidfile   = path.join(self.dir, "job.pid")
 		self.logger    = config.get('logger', logger)
 		self.ntry      = 0
 		self.input     = {}
@@ -99,13 +100,14 @@ class Job(object):
 		self.output    = OrderedDict()
 		self.data      = Box(
 			job = Box(
-				index   = self.index,
-				indir   = self.indir,
-				outdir  = self.outdir,
-				dir     = self.dir,
-				outfile = self.outfile,
-				errfile = self.errfile,
-				pidfile = self.pidfile
+				index    = self.index,
+				indir    = self.indir,
+				outdir   = self.outdir,
+				dir      = self.dir,
+				outfile  = self.outfile,
+				errfile  = self.errfile,
+				pidfile  = self.pidfile,
+				cachedir = self.cachedir
 			),
 			i = Box(),
 			o = Box()
@@ -874,9 +876,10 @@ class Job(object):
 		"""
 		from . import Proc
 		#self.logger.info('Resetting job #%s ...' % self.index, 'debug', 'JOB_RESETTING')
-		retry = self.ntry
+		retry    = self.ntry
 		retrydir = path.join(self.dir, 'retry.' + str(retry))
 		
+		#cleanup retrydir
 		if retry:
 			safefs.SafeFs._remove(retrydir)
 			makedirs(retrydir)
@@ -884,11 +887,31 @@ class Job(object):
 			for retrydir in glob(path.join(self.dir, 'retry.*')):
 				safefs.SafeFs._remove(retrydir)
 
-		for jobfile in [self.rcfile, self.outfile, self.errfile, self.pidfile, self.outdir]:
+		for jobfile in (self.rcfile, self.outfile, self.errfile, self.pidfile):
 			if retry:
 				safefs.SafeFs._move(jobfile, path.join(retrydir, path.basename(jobfile)))
 			else:
 				safefs.SafeFs._remove(jobfile)
+		# try to keep the cache dir, which, in case, if some program can resume from
+		if not self.cachedir:
+			if retry:
+				safefs.SafeFs._move(self.outdir, path.join(retrydir, path.basename(self.outdir)))
+			else:
+				safefs.SafeFs._remove(self.outdir)
+		elif retry:
+			retryoutdir = path.join(retrydir, path.basename(self.outdir))
+			makedirs(retryoutdir)
+			# move everything to retrydir but the cachedir
+			for fn in listdir(self.outdir):
+				if fn == path.basename(self.cachedir):
+					continue
+				safefs.SafeFs._move(path.join(self.outdir, fn), path.join(retryoutdir, fn))
+		else:
+			for fn in listdir(self.outdir):
+				if fn == path.basename(self.cachedir):
+					continue
+				safefs.SafeFs._remove(path.join(self.outdir, fn))
+		
 		open(self.outfile, 'w').close()
 		open(self.errfile, 'w').close()
 		

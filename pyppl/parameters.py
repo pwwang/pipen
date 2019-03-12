@@ -276,8 +276,8 @@ class Parameter (object):
 		)
 		if not isinstance(name, string_types):
 			raise ParameterNameError(name, 'Not a string')
-		if not re.search(r'^[A-Za-z0-9_\-.]{1,255}$', name):
-			raise ParameterNameError(name, 'Expect a string with alphabetics and underlines in length 1~255, but we got')
+		if not re.search(r'^[A-Za-z0-9_,\-.]{1,255}$', name):
+			raise ParameterNameError(name, 'Expect a string with comma, alphabetics and/or underlines in length 1~255, but we got')
 		if value is not None:
 			t = type(value).__name__
 			if t in ['tuple', 'set']:
@@ -450,7 +450,7 @@ class Parameters (object):
 		l = 'list',  list  = 'list',  array  = 'list'
 	)
 
-	ARG_NAME_PATTERN     = r'^([a-zA-Z][\w\._-]*)(?::(p|py|python|a|auto|i|int|f|float|b|bool|s|str|l|list|array|(?:array|l|list):(?:a|auto|i|int|f|float|b|bool|s|str|l|list|array|o|one|p|py|python)))?(?:=(.+))?$'
+	ARG_NAME_PATTERN     = r'^([a-zA-Z][\w,\._-]*)(?::(p|py|python|a|auto|i|int|f|float|b|bool|s|str|l|list|array|(?:array|l|list):(?:a|auto|i|int|f|float|b|bool|s|str|l|list|array|o|one|p|py|python)))?(?:=(.+))?$'
 	ARG_VALINT_PATTERN   = r'^[+-]?\d+$'
 	ARG_VALFLOAT_PATTERN = r'^[+-]?(?:\d*\.)?\d+(?:[Ee][+-]\d+)?$'
 	ARG_VALBOOL_PATTERN  = r'^(t|T|True|TRUE|true|1|Y|y|Yes|YES|yes|on|ON|On|f|F|False|FALSE|false|0|N|n|No|NO|off|Off|OFF)$'

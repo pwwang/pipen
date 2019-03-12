@@ -11,9 +11,9 @@ noANSI = lambda s: '\n'.join(line.rstrip() for line in re.sub(r'\x1B\[[0-?]*[ -/
 class TestParameter (testly.TestCase):
 
 	def dataProvider_testInit(self):
-		yield '', '', None, None, ParameterNameError, 'Expect a string with alphabetics and underlines in length 1~255'
-		yield '+', '', None, None, ParameterNameError, 'Expect a string with alphabetics and underlines in length 1~255'
-		yield 'a?', '', None, None, ParameterNameError, 'Expect a string with alphabetics and underlines in length 1~255'
+		yield '', '', None, None, ParameterNameError, 'Expect a string with comma, alphabetics and/or underlines in length 1~255'
+		yield '+', '', None, None, ParameterNameError, 'Expect a string with comma, alphabetics and/or underlines in length 1~255'
+		yield 'a?', '', None, None, ParameterNameError, 'Expect a string with comma, alphabetics and/or underlines in length 1~255'
 		yield int, '', None, None, ParameterNameError, 'Not a string'
 		yield 'a', 1, 'int', ['Default: 1']
 		yield 'a', [], 'list', ['Default: []']
