@@ -346,7 +346,7 @@ def briefPath(p, cutoff = 0, keep = 1):
 	@returns:
 		The shorted path
 	"""
-	if not cutoff:
+	if not cutoff or not p:
 		return p
 	from os import path, sep
 	p = path.normpath(p)
