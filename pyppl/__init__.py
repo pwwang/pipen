@@ -1,14 +1,19 @@
 """
 The main module of PyPPL
 """
+VERSION = "2019.2.20"
 
 import json
 import random
 import sys
 import copy as pycopy
+# used to update logger according to new config
+
 from os import path
 from time import time
 
+from simpleconf import config
+from .logger2 import logger
 from .aggr import Aggr
 from .proc import Proc
 from .job import Job
@@ -18,9 +23,8 @@ from .parameters import params, Parameters, commands
 from .proctree import ProcTree
 from .exception import PyPPLProcFindError, PyPPLProcRelationError
 from .utils import Box, jsonLoads
-from . import logger, utils, runners
+from . import utils, runners
 
-VERSION = "2019.2.20"
 class PyPPL (object):
 	"""
 	The PyPPL class
@@ -46,106 +50,46 @@ class PyPPL (object):
 	RUNNERS  = {}
 	# ~/.PyPPL.json has higher priority
 	DEFAULT_CFGFILES = [
-		'~/.pyppl.yaml',
 		'~/.PyPPL.yaml', 
-		'~/.pyppl.yml',
-		'~/.PyPPL.yml', 
-		'~/.pyppl', 
-		'~/.PyPPL', 
-		'~/.pyppl.json',
-		'~/.PyPPL.json'
+		'~/.pyppl.yaml',
+		'~/.PyPPL.toml'
+		'~/.pyppl.toml',
 	]
 	# counter
 	COUNTER  = 0
 
-	def __init__(self, config = None, cfgfile = None):
+	def __init__(self, conf = None, cfgfile = None):
 		"""
 		Constructor
 		@params:
-			`config`: the configurations for the pipeline, default: {}
+			`conf`: the configurations for the pipeline, default: {}
 			`cfgfile`:  the configuration file for the pipeline, default: `~/.PyPPL.json` or `./.PyPPL`
 		"""
 		self.counter = PyPPL.COUNTER
 		PyPPL.COUNTER += 1
 
-		fconfig    = {}
-		cfgIgnored = {}
-		for i in list(range(len(PyPPL.DEFAULT_CFGFILES))):
-			cfile = path.expanduser(PyPPL.DEFAULT_CFGFILES[i])
-			PyPPL.DEFAULT_CFGFILES[i] = cfile
-			if path.exists(cfile):
-				with open(cfile) as cf:
-					if cfile.endswith('.yaml') or cfile.endswith('.yml'):
-						try:
-							import yaml
-							utils.dictUpdate(fconfig, yaml.load(cf.read().replace('\t', '  ')))
-						except ImportError: # pragma: no cover
-							cfgIgnored[cfile] = 1
-					else:
-						utils.dictUpdate(fconfig, jsonLoads(cf.read()))
-
-		if cfgfile is not None and path.exists(cfgfile):
-			with open(cfgfile) as cfgf:
-				if cfgfile.endswith('.yaml') or cfgfile.endswith('.yml'):
-					try:
-						import yaml
-						utils.dictUpdate(fconfig, yaml.load(cfgf.read().replace('\t', '  ')))
-					except ImportError:
-						cfgIgnored[cfgfile] = 1
-				else:
-					utils.dictUpdate(fconfig, jsonLoads(cfgf.read()))
-
-		if config is None:
-			config = {}
-		utils.dictUpdate(fconfig, config)
-		self.config = fconfig
-
-		fcconfig = {
-			'theme': 'default'
-		}
-		if '_flowchart' in self.config:
-			utils.dictUpdate(fcconfig, self.config['_flowchart'])
-			del self.config['_flowchart']
-		self.fcconfig = fcconfig
-
-		logconfig = {
-			'levels'   : 'normal',
-			'theme'    : True,
-			'lvldiff'  : [],
-			'pbar'     : 50,
-			'shortpath': {},
-			# current directory instead of script directory
-			'file':    './%s%s.pyppl.log' % (
-				path.splitext(path.basename(sys.argv[0]))[0], 
-				('_%s' % self.counter) if self.counter else ''
-			)
-		}
-		if '_log' in self.config:
-			if 'file' in self.config['_log'] and self.config['_log']['file'] is True:
-				del self.config['_log']['file']
-			utils.dictUpdate(logconfig, self.config['_log'])
-			del self.config['_log']
-
-		Jobmgr.PBAR_SIZE = logconfig['pbar']
-		Proc.SHORTPATH.update(logconfig['shortpath'] or {})
-		logconfig['logfile'] = logconfig['file']
-		del logconfig['pbar']
-		del logconfig['file']
-		del logconfig['shortpath']
-
-		logger.getLogger(**logconfig)
-		logger.logger.info ('Version: %s', VERSION, extra = {'loglevel': 'pyppl'})
-		logger.logger.info (random.choice(PyPPL.TIPS), extra = {'loglevel': 'tips'})
+		config._load(*PyPPL.DEFAULT_CFGFILES)
+		
+		# reinitiate logger according to new config
+		logger.init()
+		logger.pyppl('Version: %s', VERSION)
+		logger.tips(random.choice(PyPPL.TIPS))
 
 		for cfile in PyPPL.DEFAULT_CFGFILES + [str(cfgfile)]:
 			if not path.isfile(cfile): 
 				continue
-			if cfile in cfgIgnored:
-				logger.logger.warning('Module yaml not installed, config file ignored: %s', cfile)
-			else:
-				logger.logger.info('Read from %s', cfile, extra = {
-					'loglevel': 'config'
-				})
+			if cfile.endswith('.yaml') or cfile.endswith('yml'):
+				try:
+					import yaml
+					logger.config('Read from %s', cfile)
+				except ImportError:
+					logger.warning('Module PyYAML not installed, config file ignored: %s', cfile)
+			elif cfile.endswith('.toml'):
+				try: 
+					import toml
+					logger.config('Read from %s', cfile)
+				except ImportError:
+					logger.warning('Module toml not installed, config file ignored: %s', cfile)
 
 		self.tree = ProcTree()
 
@@ -166,7 +110,7 @@ class PyPPL (object):
 				nostart.add(start)
 				names = [p.name(True) for p in pristarts]
 				names = names[:3] + ['...'] if len(names) > 3 else names
-				logger.logger.warning('Start process %s ignored, depending on [%s]', start.name(True), ', '.join(names))
+				logger.warning('Start process %s ignored, depending on [%s]', start.name(True), ', '.join(names))
 		self.tree.setStarts(starts - nostart)
 		return self
 
@@ -233,7 +177,7 @@ class PyPPL (object):
 		"""
 		Show all the routes in the log.
 		"""
-		logger.logger.debug('ALL ROUTES:')
+		logger.debug('ALL ROUTES:')
 		#paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths()])
 		paths  = sorted([[p.name() for p in reversed(ps)] for ps in self.tree.getAllPaths()])
 		paths2 = [] # processes merged from the same aggr
@@ -257,7 +201,7 @@ class PyPPL (object):
 			#	logger.logger.info('[  DEBUG] * %s' % (' -> '.join(path)))
 
 		for pt in paths2:
-			logger.logger.debug('* %s', ' -> '.join(pt))
+			logger.debug('* %s', ' -> '.join(pt))
 		return self
 
 	def run (self, profile = 'default'):
@@ -281,15 +225,15 @@ class PyPPL (object):
 			#logger.logger.info ('[PROCESS] +' + '-'*(nlen-3) + '+')
 			#logger.logger.info ('[PROCESS] |%s%s|' % (name, ' '*(nlen - 3 - len(name))))
 			decorlen = max(80, len(name))
-			logger.logger.info ('-' * decorlen, extra = {'loglevel': 'PROCESS'})
-			logger.logger.info (name, extra = {'loglevel': 'PROCESS'})
-			logger.logger.info ('-' * decorlen, extra = {'loglevel': 'PROCESS'})
-			logger.logger.info (
+			logger.process ('-' * decorlen)
+			logger.process (name)
+			logger.process ('-' * decorlen)
+			logger.depends (
 				'%s => %s => %s', 
 				ProcTree.getPrevStr(proc), 
 				proc.name(), 
 				ProcTree.getNextStr(proc), 
-				extra = {'loglevel': 'DEPENDS', 'proc': proc.id}
+				proc = proc.id
 			)
 			proc.run(profile, pycopy.deepcopy(self.config))
 
@@ -300,12 +244,11 @@ class PyPPL (object):
 			klen  = max([len(k) for k in unran.keys()])
 			for key, val in unran.items():
 				fmtstr = "%-"+ str(klen) +"s won't run as path can't be reached: %s <- %s"
-				logger.logger.warning(fmtstr, key, key, ' <- '.join(val))
+				logger.warning(fmtstr, key, key, ' <- '.join(val))
 
-		logger.logger.info (
+		logger.done (
 			'Total time: %s', 
-			utils.formatSecs(time()-timer), 
-			extra = {'loglevel': 'DONE'}
+			utils.formatSecs(time() - timer)
 		)
 		return self
 
@@ -345,8 +288,8 @@ class PyPPL (object):
 						fc.addLink(p, np)
 
 		fc.generate()
-		logger.logger.info ('Flowchart file saved to: %s', fc.fcfile)
-		logger.logger.info ('DOT file saved to: %s', fc.dotfile)
+		logger.info ('Flowchart file saved to: %s', fc.fcfile)
+		logger.info ('DOT file saved to: %s', fc.dotfile)
 		return self
 
 	@staticmethod

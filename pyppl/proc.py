@@ -9,12 +9,13 @@ from collections import OrderedDict
 from os import path, makedirs, remove
 from multiprocessing import cpu_count
 import filelock
-from . import logger, utils, template
+from .logger2 import logger
 from .job import Job
 from .jobmgr import Jobmgr
 from .aggr import Aggr
 from .channel import Channel
 from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
+from . import utils, template
 
 class Proc (object):
 	"""
@@ -316,12 +317,13 @@ class Proc (object):
 		
 		# profile will be deprecated, use runner instead
 		if name in Proc.DEPRECATED:
-			logger.logger.warning(
+			logger.warning(
 				'Attribute "%s" is deprecated%s.', 
 				name, 
 				', use "{}" instead'.format(
-					Proc.DEPRECATED[name]) if name in Proc.DEPRECATED and Proc.DEPRECATED[name] else '',
-				extra = {'proc': self.id}
+					Proc.DEPRECATED[name]
+				) if name in Proc.DEPRECATED and Proc.DEPRECATED[name] else '',
+				proc = self.id
 			)
 
 		if name in Proc.ALIAS:
@@ -371,7 +373,7 @@ class Proc (object):
 					  ', '.join(previn.keys()) if isinstance(previn, dict) else previn
 			self.config[name] = {prevkey: value}
 			if isinstance(previn, dict) and len(previn) > 1:
-				logger.logger.warning("Previous input is a dict with multiple keys. Now the key sequence is: %s", prevkey, extra = {'proc': self.id})
+				logger.warning("Previous input is a dict with multiple keys. Now the key sequence is: %s", prevkey, proc = self.id)
 		else:
 			self.config[name] = value
 
@@ -487,7 +489,7 @@ class Proc (object):
 			sigs['depends'] = [p.name(True) + '#' + p._suffix() for p in self.depends]
 
 		signature = json.dumps(sigs, sort_keys = True)
-		logger.logger.debug('Suffix decided by: %s', signature, extra = {'proc': self.id})
+		logger.debug('Suffix decided by: %s', signature, prod = self.id)
 		# suffix is only depending on where it comes from (sys.argv[0]) and it's name (id and tag) to avoid too many different workdirs being generated
 		self.props['suffix'] = utils.uid(signature)
 		#self.props['suffix'] = utils.uid(path.realpath(sys.argv[0]) + ':' + self.id)
@@ -501,7 +503,7 @@ class Proc (object):
 		self._buildProps()
 		try:
 			if callable (self.callfront):
-				logger.logger.debug("Calling callfront ...")
+				logger.debug("Calling callfront ...", proc = self.id)
 				self.callfront (self)
 			self._buildInput()
 			self._buildProcVars()
@@ -528,7 +530,7 @@ class Proc (object):
 		"""
 		if self.resume == 'skip+':
 			if callable (self.callback):
-				logger.logger.debug('Calling callback ...')
+				logger.debug('Calling callback ...', proc = self.id)
 				self.callback (self)
 		else: # '', resume, resume+
 			# summarize jobs
@@ -552,7 +554,7 @@ class Proc (object):
 				#elif job.status == Job.STATUS_KILLING or job.status == Job.STATUS_KILLED:
 				#	killedjobs.append(job.index)
 
-			logger.logger.info(
+			getattr(logger, 'P.DONE' if len(cachedjobs) < self.size else 'CACHED')(
 				'Time: %s. Jobs (Cached: %s, Succ: %s, B.Fail: %s, S.Fail: %s, R.Fail: %s)',
 				utils.formatSecs(time() - self.timer),
 				len(cachedjobs),
@@ -560,17 +562,13 @@ class Proc (object):
 				len(bfailedjobs),
 				len(sfailedjobs),
 				len(efailedjobs),
-				extra = {
-					'loglevel': 'P.DONE' if len(cachedjobs) < self.size else 'CACHED',
-					'proc'    : self.id,
-					'pbar'    : 'next'
-				})
+				proc = self.id)
 
-			logger.logger.debug('Cached           : %s', utils.briefList(cachedjobs), extra = {'proc': self.id})
-			logger.logger.debug('Successful       : %s', utils.briefList(successjobs), extra = {'proc': self.id})
-			logger.logger.debug('Building failed  : %s', utils.briefList(bfailedjobs), extra = {'proc': self.id})
-			logger.logger.debug('Submission failed: %s', utils.briefList(sfailedjobs), extra = {'proc': self.id})
-			logger.logger.debug('Running failed   : %s', utils.briefList(efailedjobs), extra = {'proc': self.id})
+			logger.debug('Cached           : %s', utils.briefList(cachedjobs), proc = self.id)
+			logger.debug('Successful       : %s', utils.briefList(successjobs), proc = self.id)
+			logger.debug('Building failed  : %s', utils.briefList(bfailedjobs), proc = self.id)
+			logger.debug('Submission failed: %s', utils.briefList(sfailedjobs), proc = self.id)
+			logger.debug('Running failed   : %s', utils.briefList(efailedjobs), proc = self.id)
 
 			donejobs = successjobs + cachedjobs
 			failjobs = bfailedjobs + sfailedjobs + efailedjobs
@@ -578,10 +576,10 @@ class Proc (object):
 
 			if len(donejobs) == self.size or self.errhow == 'ignore':
 				if callable(self.callback):
-					logger.logger.debug('Calling callback ...', extra = {'proc': self.id})
+					logger.debug('Calling callback ...', proc = self.id)
 					self.callback (self)
 				if self.errhow == 'ignore':
-					logger.logger.warning('Jobs failed but ignored.', extra = {'proc': self.id})
+					logger.warning('Jobs failed but ignored.', proc = self.id)
 					self.jobs[showjob].showError(len(failjobs))
 			else:
 				self.jobs[showjob].showError(len(failjobs))
@@ -609,14 +607,10 @@ class Proc (object):
 			self.config['cache'] = False
 
 		if self.resume == 'skip':
-			logger.logger.info("Pipeline will resume from future processes.", extra = {
-				'loglevel': 'skipped'
-			})
+			logger.skipped("Pipeline will resume from future processes.")
 		elif self.resume == 'skip+':
 			self._tidyBeforeRun()
-			logger.logger.info("Data loaded, pipeline will resume from future processes.", extra = {
-				'loglevel': 'skipped'
-			})
+			logger.skipped("Data loaded, pipeline will resume from future processes.")
 			try:
 				self._tidyAfterRun ()
 			finally:
@@ -627,7 +621,7 @@ class Proc (object):
 			try:
 				self._runCmd('preCmd')
 				if self.resume: # resume or resume+
-					logger.logger.info("Previous processes skipped.", extra = {'loglevel': 'resumed'})
+					logger.resumed("Previous processes skipped.")
 				self._runJobs()
 				self._runCmd('postCmd')
 				self._tidyAfterRun ()
@@ -662,7 +656,7 @@ class Proc (object):
 			self.props['workdir'] = self.config['workdir']
 		elif not self.props['workdir']:
 			self.props['workdir'] = path.join(self.ppldir, "PyPPL.%s.%s.%s" % (self.id, self.tag, self._suffix()))
-		logger.logger.info(utils.briefPath(self.workdir, **Proc.SHORTPATH), extra = {'proc': self.id, 'loglevel': 'WORKDIR'})
+		logger.workdir(utils.briefPath(self.workdir, **Proc.SHORTPATH), proc = self.id)
 
 		if not path.exists (self.workdir):
 			if self.resume in ['skip+', 'resume'] and self.cache != 'export':
@@ -675,9 +669,9 @@ class Proc (object):
 			self.lock.acquire(timeout = 3)
 		except filelock.Timeout: # pragma: no cover
 			proclock = path.join(self.workdir, 'proc.lock')
-			logger.logger.warning('Another instance of this process is running, waiting ...', extra = {'proc': self.id})
-			logger.logger.warning('If not, remove the process lock file (or hit Ctrl-c) and try again:', extra = {'proc': self.id})
-			logger.logger.warning('- %s', proclock, extra = {'proc': self.id})
+			logger.warning('Another instance of this process is running, waiting ...', proc = self.id)
+			logger.warning('If not, remove the process lock file (or hit Ctrl-c) and try again:', proc = self.id)
+			logger.warning('- %s', proclock, proc = self.id)
 			try:
 				self.lock.acquire()
 			except KeyboardInterrupt:
@@ -731,7 +725,7 @@ class Proc (object):
 			expart = utils.alwaysList(self.config['expart'])
 			self.props['expart'] = [self.template(e, **self.tplenvs) for e in expart]
 
-			logger.logger.debug('Properties set explictly: %s', self.sets, extra = {'proc': self.id})
+			logger.debug('Properties set explictly: %s', self.sets, proc = self.id)
 		except Exception: # pragma: no cover
 			if self.lock.is_locked:
 				self.lock.release()
@@ -821,7 +815,7 @@ class Proc (object):
 				val = self.props[key]
 				f.write(dump(key, val))
 
-		logger.logger.debug('Settings saved to: %s', settingsfile, extra = {'proc': self.id})
+		logger.debug('Settings saved to: %s', settingsfile, proc = self.id)
 
 	# self.resume != 'skip'
 	def _buildInput (self):
@@ -907,14 +901,14 @@ class Proc (object):
 
 			wdata   = invals.width()
 			if len(pinkeys) < wdata:
-				logger.logger.warning('Not all data are used as input, %s column(s) wasted.', (wdata - len(pinkeys)))
+				logger.warning('Not all data are used as input, %s column(s) wasted.', (wdata - len(pinkeys)))
 			for i, inkey in enumerate(pinkeys):
 				self.props['input'][inkey] = {}
 				self.props['input'][inkey]['type'] = pintypes[i]
 				if i < wdata:
 					self.props['input'][inkey]['data'] = invals.flatten(i)
 				else:
-					logger.logger.warning('No data found for input key "%s", use empty strings/lists instead.', inkey)
+					logger.warning('No data found for input key "%s", use empty strings/lists instead.', inkey)
 					self.props['input'][inkey]['data'] = [[] if pintypes[i] in Proc.IN_FILESTYPE else ''] * self.size
 
 	def _buildProcVars (self):
@@ -964,15 +958,9 @@ class Proc (object):
 			elif key not in nokeys:
 				procvars[key] = val
 		for key in sorted(procargs.keys()):
-			logger.logger.info('%s => %r', key.ljust(maxlen), procargs[key], extra = {
-				'loglevel': 'p.args',
-				'proc': self.id
-			})
+			logger.p_args('%s => %r', key.ljust(maxlen), procargs[key], proc = self.id)
 		for key in sorted(propout.keys()):
-			logger.logger.info('%s => %s', key.ljust(maxlen), propout[key], extra = {
-				'loglevel': 'p.props',
-				'proc': self.id
-			})
+			logger.p_props('%s => %s', key.ljust(maxlen), propout[key], proc = self.id)
 		self.props['procvars'] = {'proc': procvars, 'args': procargs}
 
 	def _buildOutput(self):
@@ -1022,13 +1010,13 @@ class Proc (object):
 		script = self.config['script'].strip()
 
 		if not script:
-			logger.logger.warning('No script specified', extra = {'proc': self.id})
+			logger.warning('No script specified', proc = self.id)
 
 		if script.startswith ('file:'):
 			tplfile = script[5:].strip()
 			if not path.exists (tplfile):
 				raise ProcScriptError (tplfile, 'No such template file')
-			logger.logger.debug("Using template file: %s", tplfile, extra = {'proc': self.id})
+			logger.debug("Using template file: %s", tplfile, proc = self.id)
 			with open(tplfile) as f:
 				script = f.read().strip()
 		
@@ -1063,7 +1051,7 @@ class Proc (object):
 		"""
 		self.props['channel'] = Channel.create([None] * self.size)
 		if self.size == 0:
-			logger.logger.warning('No data found for jobs, process will be skipped.', extra = {'proc': self.id})
+			logger.warning('No data found for jobs, process will be skipped.', proc = self.id)
 			return
 		
 		from . import PyPPL
@@ -1156,18 +1144,18 @@ class Proc (object):
 		#if not self.config[key]: return
 		cmdstr = self.template(getattr(self, key), **self.tplenvs).render(self.procvars)
 		if cmdstr.strip():
-			logger.logger.info('Running <%s> ...', key, extra = {'proc': self.id})
+			logger.info('Running <%s> ...', key, proc = self.id)
 
 		c = utils.cmd.Cmd(cmdstr, shell = True, stdin = None, executable = '/bin/bash')
 		while c.p.poll() is None:
 			errline = c.p.stderr.readline()
 			if not errline:
 				break
-			logger.logger.info ('  %s', errline.rstrip("\n"), extra = {'loglevel': 'cmderr', 'proc': self.id})
+			logger.cmderr('  %s', errline.rstrip("\n"), proc = self.id)
 		for errline in c.p.stderr:
-			logger.logger.info ('  %s', errline.rstrip("\n"), extra = {'loglevel': 'cmderr', 'proc': self.id})
+			logger.cmderr('  %s', errline.rstrip("\n"), proc = self.id)
 		for outline in c.p.stdout:
-			logger.logger.info ('  %s', outline.rstrip("\n"), extra = {'loglevel': 'cmdout', 'proc': self.id})
+			logger.cmdout('  %s', outline.rstrip("\n"), proc = self.id)
 		if c.p.wait() != 0:
 			raise ProcRunCmdError(cmdstr, key)
 

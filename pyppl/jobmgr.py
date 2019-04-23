@@ -4,9 +4,10 @@ jobmgr module for PyPPL
 """
 import random
 from time import sleep
+from simpleconf import config
 from .utils.taskmgr import PQueue, ThreadPool, Lock
 from .job import Job
-from .logger import logger
+from .logger2 import logger
 from .exception import JobFailException, JobSubmissionException, JobBuildingException
 
 class Jobmgr(object):
@@ -19,7 +20,7 @@ class Jobmgr(object):
 		`PBAR_LEVEL`: The log levels for different job status
 		`SMBLOCK`   : The lock used to relatively safely to tell whether jobs can be submitted.
 	"""
-	PBAR_SIZE  = 50
+	PBAR_SIZE  = int(config._LOG.pbar or 50)
 	PBAR_MARKS = {
 		Job.STATUS_INITIATED   : ' ',
 		Job.STATUS_BUILDING    : '~',
@@ -155,11 +156,9 @@ class Jobmgr(object):
 					# STATUS_ENDFAILED, STATUS_RETRYING
 					raise JobFailException()
 				if job.status == Job.STATUS_RETRYING:
-					self.logger.warning("Retrying %s/%s ...", job.ntry, job.config['errntry'], extra = {
-						'loglevel': Jobmgr.PBAR_LEVEL[job.status], 
+					getattr(self.logger, Jobmgr.PBAR_LEVEL[job.status])("Retrying %s/%s ...", job.ntry, job.config['errntry'], extra = {
 						'jobidx'  : index, 
 						'joblen'  : queue.batch_len, 
-						'pbar'    : False,
 						'proc'    : self.config['proc']
 					})
 					# retry as soon as possible
@@ -244,11 +243,9 @@ class Jobmgr(object):
 			str(nrunning).ljust(len(str(joblen)))
 		)
 		
-		self.logger.info(pbar, extra = {
-			'loglevel': Jobmgr.PBAR_LEVEL[job.status], 
+		getattr(self.logger.pbar, Jobmgr.PBAR_LEVEL[job.status])(pbar, extra = {
 			'jobidx'  : jobidx, 
 			'joblen'  : joblen, 
-			'pbar'    : True,
 			'proc'    : self.config['proc']
 		})
 
@@ -272,7 +269,7 @@ class Jobmgr(object):
 		else:
 			message = None
 		if message:
-			self.logger.warning(message, extra = {'pbar': 'next', 'proc': self.config['proc']})
+			self.logger.warning(message, extra = {'proc': self.config['proc']})
 		
 		# kill running jobs
 		rjobs = [
