@@ -9,7 +9,7 @@ from collections import OrderedDict
 from os import path, makedirs, remove
 from multiprocessing import cpu_count
 import filelock
-from simpleconf import config
+from simpleconf import config, NoSuchProfile
 from .logger2 import logger
 from .job import Job
 from .jobmgr import Jobmgr
@@ -1103,10 +1103,9 @@ class Proc (object):
 			self.config['runner'] = '__tmp__'
 			self.props ['runner'] = config.RUNNER
 		else:
-			c0 = config._use()
-			config._use(profile)
-			# no such profile
-			if c0 == config:
+			try:
+				config._use(profile, raise_exc = True)
+			except NoSuchProfile:
 				config._load({
 					profile: dict(runner = profile) 
 				})
