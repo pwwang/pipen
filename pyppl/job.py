@@ -224,7 +224,7 @@ class Job(object):
 		logfunc = getattr(self.logger, loglevel)
 
 		if not isinstance(data, list):
-			logfunc("{} => {}".format(key.ljust(maxlen), data))
+			logfunc("{} => {}".format(key.ljust(maxlen), data), **self.logextra)
 		else:
 			ldata = len(data)
 			if ldata == 0:
@@ -319,11 +319,6 @@ class Job(object):
 		from . import Proc
 		safefs.SafeFs._remove(self.indir)
 		makedirs(self.indir)
-		extra = {
-			'proc'  : self.config['proc'],
-			'jobidx': self.index,
-			'joblen': self.config['procsize'],
-		}
 
 		for key, val in self.config['input'].items():
 			self.input[key] = {}
