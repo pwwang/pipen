@@ -243,11 +243,7 @@ class Jobmgr(object):
 			str(nrunning).ljust(len(str(joblen)))
 		)
 		
-		getattr(self.logger.pbar, Jobmgr.PBAR_LEVEL[job.status])(pbar, extra = {
-			'jobidx'  : jobidx, 
-			'joblen'  : joblen, 
-			'proc'    : self.config['proc']
-		})
+		getattr(self.logger.pbar, Jobmgr.PBAR_LEVEL[job.status])(pbar, jobidx = jobidx, joblen = joblen, proc = self.config['proc'], done = ncompleted == joblen)
 
 	def cleanup(self, ex = None):
 		"""

@@ -14,19 +14,6 @@ from simpleconf import config
 
 colorama.init(autoreset = False)
 
-config.clear()
-config._load(dict(default = dict(
-	_log = dict(
-		file       = None,
-		theme      = 'greenOnBlack',
-		levels     = 'normal',
-		leveldiffs = [],
-		pbar       = 50,
-		shortpath  = {'cutoff': 0, 'keep': 1},
-	),
-	_flowchart = dict(theme = 'default')
-)), '~/.PyPPL.toml', './.PyPPL.toml', 'PYPPL.osenv')
-
 LOGFMT = "[%(asctime)s%(message)s"
 LOGTIMEFMT = "%Y-%m-%d %H:%M:%S"
 

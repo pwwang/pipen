@@ -7,12 +7,26 @@ import json
 import random
 import sys
 import copy as pycopy
-# used to update logger according to new config
 
 from os import path
 from time import time
 
 from simpleconf import config
+
+config.clear()
+config._load(dict(default = dict(
+	_log = dict(
+		file       = None,
+		theme      = 'greenOnBlack',
+		levels     = 'normal',
+		leveldiffs = [],
+		pbar       = 50,
+		shortpath  = {'cutoff': 0, 'keep': 1},
+	),
+	_flowchart = dict(theme = 'default'),
+	runner     = 'local'
+)), '~/.PyPPL.yaml', '~/.PyPPL.toml', './.PyPPL.yaml', './.PyPPL.toml', 'PYPPL.osenv')
+
 from .logger2 import logger
 from .aggr import Aggr
 from .proc import Proc
@@ -235,7 +249,7 @@ class PyPPL (object):
 				ProcTree.getNextStr(proc), 
 				proc = proc.id
 			)
-			proc.run(profile, pycopy.deepcopy(self.config))
+			proc.run(profile)
 
 			proc = self.tree.getNextToRun()
 
@@ -271,7 +285,7 @@ class PyPPL (object):
 		)
 		dotfile = dotfile or '%s.dot' % (path.splitext(fcfile)[0])
 		fc  = Flowchart(fcfile = fcfile, dotfile = dotfile)
-		fc.setTheme(self.fcconfig['theme'])
+		fc.setTheme(config._FLOWCHART.theme)
 
 		for start in self.tree.getStarts():
 			fc.addNode(start, 'start')

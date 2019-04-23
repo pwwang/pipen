@@ -9,6 +9,7 @@ from collections import OrderedDict
 from os import path, makedirs, remove
 from multiprocessing import cpu_count
 import filelock
+from simpleconf import config
 from .logger2 import logger
 from .job import Job
 from .jobmgr import Jobmgr
@@ -595,13 +596,13 @@ class Proc (object):
 		tag   = ".%s" % self.tag  if self.tag != "notag" else ""
 		return "%s%s%s" % (self.id, tag, aggrName)
 
-	def run (self, profile = None, profiles = None):
+	def run (self, profile = None):
 		"""
 		Run the jobs with a configuration
 		@params:
 			`config`: The configuration
 		"""
-		self._readConfig (profile, profiles)
+		self._readConfig (profile)
 
 		if self.runner == 'dry':
 			self.config['cache'] = False
@@ -1057,7 +1058,7 @@ class Proc (object):
 		from . import PyPPL
 		if self.runner not in PyPPL.RUNNERS:
 			raise ProcAttributeError('No such runner: {}. If it is a profile, did you forget to specify a basic runner?'.format(self.runner))
-		config = {
+		jobcfg = {
 			'workdir'   : self.workdir,
 			'runner'    : PyPPL.RUNNERS[self.runner],
 			'runnerOpts': {key: val for key, val in self.config.items() if key.endswith('Runner')},
@@ -1084,45 +1085,34 @@ class Proc (object):
 			'suffix'    : self.suffix
 		}
 		for i in range(self.size):
-			self.jobs[i] = Job(i, config)
+			self.jobs[i] = Job(i, jobcfg)
 
-	def _readConfig (self, profile, profiles):
+	def _readConfig (self, profile):
 		"""
 		Read the configuration
 		@params:
 			`config`: The configuration
 		"""
-		if 'runner' in self.sets:
-			profile = self.config['runner']
-		else:
-			profile = profile or self.config['runner']
-
-		profiles = profiles or {
-			'default': {'runner': 'local'}
-		}
-		if 'default' not in profiles:
-			profiles['default'] = {'runner': 'local'}
-		
-		config = profiles['default']
-		
 		if isinstance(profile, dict):
-			utils.dictUpdate(config, profile)
-			if 'runner' not in config:
-				config['runner'] = 'local'
+			if 'runner' in self.sets or 'runner' not in profile:
+				profile['runner'] = self.config['runner']
+			config._load(dict(
+				__tmp__ = profile
+			))
+			config._use('__tmp__')
+			self.config['runner'] = '__tmp__'
+			self.props ['runner'] = config.RUNNER
 		else:
-			if profile in profiles:
-				utils.dictUpdate(config, profiles[profile])
-				if 'runner' not in config:
-					config['runner'] = 'local' if profile == 'default' else profile
-			else:
-				config['runner'] = profile
+			c0 = config._use()
+			config._use(profile)
+			# no such profile
+			if c0 == config:
+				config._load({
+					profile: dict(runner = profile) 
+				})
 
-		self.config['runner'] = profile
-		self.props['runner']  = config['runner']
-		del config['runner']
-		
 		for key, val in config.items():
-			if key in self.sets:
+			if key in self.sets or key.startswith('_'):
 				continue
 			
 			if key in Proc.ALIAS:
