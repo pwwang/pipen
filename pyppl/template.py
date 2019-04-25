@@ -1,8 +1,7 @@
 """
 Template adaptor for PyPPL
 """
-
-__all__ = ['Template', 'TemplateLiquid', 'TemplateJinja2']
+from __future__ import unicode_literals
 
 import json, inspect
 from os import path, readlink
@@ -10,6 +9,8 @@ from liquid import Liquid
 from .utils import string_types
 Liquid.MODE  = 'mixed'
 Liquid.DEBUG = False
+
+__all__ = ['Template', 'TemplateLiquid', 'TemplateJinja2']
 
 class _TemplateFilter(object):
 	"""
@@ -261,3 +262,4 @@ class TemplateJinja2 (Template):
 			The rendered string
 		"""
 		return self.engine.render(data)
+

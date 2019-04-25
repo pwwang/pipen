@@ -1,10 +1,13 @@
 import helpers, testly, json, sys
 import copy as pycopy
 
+import yaml
 from os import path, makedirs
+from box import Box
 from shutil import rmtree
 from tempfile import gettempdir
 from collections import OrderedDict
+from simpleconf import config
 from multiprocessing import cpu_count
 from pyppl import Proc, Box, Aggr, utils, ProcTree, Channel, Job, logger
 from pyppl.exception import ProcTagError, ProcAttributeError, ProcTreeProcExists, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
@@ -34,15 +37,14 @@ class TestProc(testly.TestCase):
 			'input': {},
 			'jobs': [],
 			'lock': None,
-			'logs': {},
 			'ncjobids': [],
-			'output': OrderedDict(),
+			'output': Box(ordered_box = True),
 			'origin': 'p',
 			'procvars': {},
 			'rc': [0],
 			'runner': 'local',
 			'script': None,
-			'sets': [],
+			'sets': set(),
 			'timer': None,
 			'size': 0,
 			'suffix': '',
@@ -96,18 +98,17 @@ class TestProc(testly.TestCase):
 			'expect': None,
 			'input': {},
 			'jobs': [],
-			'logs': {},
 			'ncjobids': [],
 			'lock': None,
 			'origin': 'someId',
-			'output': OrderedDict(),
+			'output': Box(ordered_box = True),
 			'procvars': {},
 			'rc': [0],
 			'lock': None,
 			'origin': 'someId',
 			'runner': 'local',
 			'script': None,
-			'sets': [],
+			'sets': set(),
 			'size': 0,
 			'suffix': '',
 			'template': None,
@@ -162,16 +163,16 @@ class TestProc(testly.TestCase):
 		else:
 			p = Proc(tag = tag, desc = desc, id = id)
 			self.assertDictEqual(p.props, props)
-			self.assertDictEqual(p.config, config)
+			self.assertDictEqual({k:v for k,v in p.config.items() if not k.startswith('_')}, config)
 			config2 = config.copy()
 			del config2['tag']
 			del config2['desc']
 			del config2['id']
-			p2 = Proc(tag, desc, id = config['id'], **config2)
-			props['sets'] = list(sorted(['runner', 'echo', 'depends', 'expect', 'callfront', 'script', 'cache', 'nthread', 'beforeCmd', 'template', 'rc', 'input', 'forks', 'acache', 'workdir', 'resume', 'exhow', 'args', 'exow', 'dirsig', 'ppldir', 'errhow', 'lang', 'tplenvs', 'exdir', 'expart', 'afterCmd', 'callback', 'aggr', 'output', 'errntry']))
-			p2.props['sets'] = list(sorted(p2.sets))
+			p2 = Proc(config['id'], tag, desc, **config2)
+			#props['sets'] = list(sorted(['runner', 'echo', 'depends', 'expect', 'callfront', 'script', 'cache', 'nthread', 'beforeCmd', 'template', 'rc', 'input', 'forks', 'acache', 'workdir', 'resume', 'exhow', 'args', 'exow', 'dirsig', 'ppldir', 'errhow', 'lang', 'tplenvs', 'exdir', 'expart', 'afterCmd', 'callback', 'aggr', 'output', 'errntry']))
+			p2.props['sets'] = set()
 			self.assertDictEqual(p2.props, props)
-			self.assertDictEqual(p2.config, config)
+			self.assertDictEqual({k:v for k,v in p2.config.items() if not k.startswith('_')}, config)
 
 			
 	def dataProvider_testGetAttr(self):
@@ -270,14 +271,13 @@ class TestProc(testly.TestCase):
 			'origin': 'pCopy',
 			'input': {},
 			'jobs': [],
-			'logs': {},
 			'ncjobids': [],
 			'output': OrderedDict(),
 			'procvars': {},
 			'rc': [0],
 			'runner': 'local',
 			'script': None,
-			'sets': ['workdir'],
+			'sets': {'workdir'},
 			'size': 0,
 			'suffix': '',
 			'template': None,
@@ -331,14 +331,13 @@ class TestProc(testly.TestCase):
 			'origin': 'pCopy',
 			'input': {},
 			'jobs': [],
-			'logs': {},
 			'ncjobids': [],
 			'output': OrderedDict(),
 			'procvars': {},
 			'rc': [0],
 			'runner': 'local',
 			'script': None,
-			'sets': ['workdir'],
+			'sets': {'workdir'},
 			'timer': None,
 			'size': 0,
 			'suffix': '',
@@ -387,16 +386,17 @@ class TestProc(testly.TestCase):
 		self.maxDiff = None
 		p = orgp.copy(tag = tag, desc = desc, id = newid)
 		self.assertDictEqual(p.props, nprops)
-		self.assertDictEqual(p.config, nconfig)
+		self.assertDictEqual({k:v for k,v in p.config.items() if not k.startswith('_')}, nconfig)
 		p.args.a = 1
 		p.props['output']['a:var'] = 'outputa'
 		p.tplenvs.b = 2
 		p.tag = 'newtag'
 		self.assertEqual(orgp.tag, 'notag')
 		self.assertEqual(orgp.output, {})
-		self.assertEqual(orgp.envs, p.envs)
+		self.assertEqual(orgp.envs, {})
+		self.assertEqual(p.envs.b, 2)
 		self.assertEqual(orgp.args, {})
-		self.assertEqual(orgp.sets, ['workdir'])
+		self.assertEqual(orgp.sets, {'workdir'})
 		self.assertIsInstance(p.args, Box)
 		self.assertEqual(p.args, {'a': 1})
 		self.assertEqual(p.output, {'a:var': 'outputa'})
@@ -405,7 +405,7 @@ class TestProc(testly.TestCase):
 		# original process keeps intact
 		self.assertDictEqual(orgp.props, oprops)
 		orgp.config['tplenvs'] = Box()
-		self.assertDictEqual(orgp.config, oconfig)
+		self.assertDictEqual({k:v for k,v in orgp.config.items() if not k.startswith('_')}, oconfig)
 		
 	def dataProvider_testSuffix(self):
 		pSuffix = Proc()
@@ -415,16 +415,17 @@ class TestProc(testly.TestCase):
 		pSuffix1 = Proc()
 		pSuffix1.input = {'in': lambda ch: ch}
 		pSuffix1.depends = pSuffix
-		config = {key:val for key, val in pSuffix1.config.items() if key in [
-			'id', 'tag', 'input'
-		]}
-		config['argv0'] = path.realpath(sys.argv[0])
-		if isinstance(config['input'], dict):
-			config['input'] = pycopy.copy(config['input'])
-			for key, val in config['input'].items():
-				config['input'][key] = utils.funcsig(val) if callable(val) else val
-		config['depends'] = [pSuffix.name(True) + '#' + pSuffix._suffix()]
-		yield pSuffix1, utils.uid(json.dumps(config, sort_keys = True))
+		sigs = Box(ordered_box = True)
+		sigs.argv0 = path.realpath(sys.argv[0])
+		sigs.id    = pSuffix1.id
+		sigs.tag   = pSuffix1.tag
+
+		if isinstance(pSuffix1.config.input, dict):
+			sigs.input = pycopy.copy(pSuffix1.config.input)
+			for key, val in pSuffix1.config.input.items():
+				sigs.input[key] = utils.funcsig(val) if callable(val) else val
+		sigs['depends'] = [pSuffix.name(True) + '#' + pSuffix._suffix()]
+		yield pSuffix1, utils.uid(sigs.to_json())
 		
 	def testSuffix(self, p, suffix):
 		s = p._suffix()
@@ -541,6 +542,7 @@ class TestProc(testly.TestCase):
 		pBuildInput2.depends = pBuildInputDep1, pBuildInputDep2
 		yield pBuildInput2, 'a', {'a': {'data': [1,2], 'type': 'var'}}, None, None, ['Not all data are used as input, 1 column(s) wasted.']
 		
+		# 5
 		pBuildInput3 = Proc()
 		pBuildInput3.depends = pBuildInputDep1, pBuildInputDep2
 		yield pBuildInput2, {'a,b,c': lambda ch1, ch2: ch1.cbind(ch2)}, {'a': {'data': [1,2], 'type': 'var'}, 'b': {'data': [3,4], 'type': 'var'}, 'c': {'data': ['',''], 'type': 'var'}}, None, None, ['No data found for input key "c", use empty strings/lists instead.']
@@ -556,10 +558,10 @@ class TestProc(testly.TestCase):
 		pBuildInput5 = Proc()
 		pBuildInput5.ppldir = self.testdir
 		pBuildInput5.input  = {'a': ['h"i\'nihao'], 'b': 2, 'c': [1,2], 'd:files':[[self.testdir, self.testdir]]}
-		with helpers.log2str():
-			pBuildInput5._buildInput()
-			pBuildInput5._buildProps()
-			pBuildInput5._saveSettings()
+		#with helpers.log2str():
+		pBuildInput5._buildInput()
+		pBuildInput5._buildProps()
+		pBuildInput5._saveSettings()
 		pBuildInput5.props['resume'] = 'skip+'
 		yield pBuildInput5, {}, {
 			'a': {'data': ['h"i\'nihao','h"i\'nihao'], 'type': 'var'},
@@ -582,6 +584,7 @@ class TestProc(testly.TestCase):
 			with helpers.log2str(levels = 'all') as (out, err):
 				#p._buildInput()
 				pass
+			
 			p._buildInput()
 			stderr = err.getvalue()
 			self.assertDictEqual(p.input, pin)
@@ -592,7 +595,7 @@ class TestProc(testly.TestCase):
 		pBuildProcVars = Proc()
 		pBuildProcVars.ppldir = self.testdir
 		yield pBuildProcVars, {}, {'size': 0, 'ppldir': self.testdir}, [
-			'P.PROPS',
+			'P_PROPS',
 			'ppldir => %s' % repr(self.testdir),
 			'size   => 0',
 		]
@@ -605,11 +608,11 @@ class TestProc(testly.TestCase):
 		# because the runner closes in proc.run
 		#pBuildProcVars1.runner = 'ssh'  
 		yield pBuildProcVars1, {'a': 1}, {'size': 0, 'ppldir': self.testdir, 'runner': 'ssh'}, [
-			'P.PROPS',
+			'P_PROPS',
 			'ppldir => %s' % repr(self.testdir),
 			'runner => ssh',
 			'size   => 0',
-			'P.ARGS',
+			'P_ARGS',
 			'a      => 1'
 		]
 		
@@ -743,42 +746,27 @@ class TestProc(testly.TestCase):
 	def dataProvider_testSaveSettings(self):
 		pSaveSettings = Proc()
 		pSaveSettings.ppldir = self.testdir
-		yield pSaveSettings, [
-			# '[brings]',
-			'[channel]',
-			'value: []',
-			'[depends]',
-			'procs: []',
-			'[echo]',
-			'jobs: []',
-			'type: {"stderr": null, "stdout": null}',
-			'[expart]',
-			'value_0: TemplateLiquid <  >',
-			'[expect]',
-			'value: TemplateLiquid <  >',
-			'[input]',
-			'[output]',
-			'[procvars]',
-			'args: {}',
-			'proc: {',
-			'[rc]',
-			'value: [0]',
-			'[runner]',
-			'value: local',
-			'[script]',
-			'value:',
-			'	"TemplateLiquid < #!/usr/bin/env bash >"',
-			'[sets]',
-			'value: [\'ppldir\']',
-			'[size]',
-			'value: 0', 
-			'[suffix]',
-			'value: ',
-			'[template]',
-			'name: TemplateLiquid',
-			'[workdir]',
-			'value: ',
-		]
+		yield pSaveSettings, {
+			'origin': 'pSaveSettings', 
+			'jobs': [None],  
+			'runner': 'local', 
+			'lock': None, 
+			'sets': set(['ppldir']), 
+			'echo': {'jobs': [], 'type': {'stderr': None, 'stdout': None}}, 
+			'depends': [], 
+			'expect': 'TemplateLiquid <  >', 
+			'input': OrderedDict(), 
+			'size': 1, 
+			'script': 'TemplateLiquid < #!/usr/bin/env bash >', 
+			'expart': ['TemplateLiquid <  >'], 
+			'timer': None, 
+			'procvars': {}, 
+			'ncjobids': [], 
+			'template': 'TemplateLiquid',
+			'rc': [0], 
+			'output': {}, 
+			'channel': []
+		}
 		
 		pSaveSettings1 = Proc()
 		pSaveSettings1.ppldir = self.testdir
@@ -801,58 +789,28 @@ class TestProc(testly.TestCase):
 		pSaveSettings1.script   = 'echo {{i.a}} > {{o.out}}'
 		pSaveSettings1.template = 'jinja2'
 		if helpers.moduleInstalled('jinja2'):
-			yield pSaveSettings1, [
-				#'[brings]',
-				#'b: [\'TemplateJinja2 < {{fn(i.b)}}.br >\']',
-				'[channel]',
-				'value: []',
-				'[depends]',
-				'procs: []',
-				'[echo]',
-				'jobs: [0, 1]',
-				'type: {"stderr": null, "stdout": null}',
-				'[expart]',
-				'value_0: TemplateJinja2 < *-1.out >',
-				'[expect]',
-				'value: TemplateJinja2 < grep 1 {{o.out}} >',
-				'[input]',
-				'a.type: var',
-				'a.data#0',
-				'	1',
-				'a.data#1',
-				'	1',
-				'b.type: file',
-				'b.data#0',
-				'pSaveSettings1-in1.txt',
-				'b.data#1',
-				'pSaveSettings1-in2.txt',
-				'[output]',
-				'out.type: file',
-				'out.data: TemplateJinja2 < {{fn(i.b)}}-{{i.a}}.out >',
-				'[procvars]',
-				'args: {"a": "a"}',
-				'proc: {',
-				'[rc]',
-				'value: [0, 1]',
-				'[runner]',
-				'value: local',
-				'[script]',
-				'value:',
-				'	"TemplateJinja2 <<<"',
-				'	"\\t#!/usr/bin/env bash"',
-				'	"\\techo {{i.a}} > {{o.out}}"',
-				'	">>>"',
-				'[sets]',
-				'value: [\'ppldir\', \'input\', \'output\', \'echo\', \'expart\', \'expect\', \'rc\', \'script\', \'template\']',
-				'[size]',
-				'value: 2',
-				'[suffix]',
-				'value: ',
-				'[template]',
-				'name: TemplateJinja2',
-				'[workdir]',
-				'value: ',
-			]
+			yield pSaveSettings1, {
+				'origin'  : 'pSaveSettings1',
+				'jobs'    : [None, None],
+				'runner'  : 'local',
+				'lock'    : None,
+				'sets'    : set(['ppldir', 'script', 'expart', 'output', 'expect', 'template', 'rc', 'input', 'echo', ]),
+				'echo'    : {'jobs': [0, 1], 'type': {'stderr': None, 'stdout': None}},
+				'depends' : [],
+				'expect'  : 'TemplateJinja2 < grep 1 {{o.out}} >',
+				'input'   : OrderedDict([('a', {'data': [1, 1], 'type': 'var'}), ('b', {'data': [infile1, infile2], 'type': 'file'}), ('c', {'data': [[infile1, infile2], [infile1, infile2]], 'type': 'files'})]),
+				'size'    : 2,
+				'script'  : "TemplateJinja2 <<<\n\t#!/usr/bin/env bash\n\techo {{i.a}} > {{o.out}}\n>>>",
+				'expart'  : ['TemplateJinja2 < *-1.out >'],
+				'timer'   : None,
+				'procvars': {},
+				'ncjobids': [],
+				'template': 'TemplateJinja2',
+				'rc'      : [0, 1],
+				'output'  : OrderedDict([('out', "('file', TemplateJinja2 < {{fn(i.b)}}-{{i.a}}.out >)")]),
+				'channel' : []
+			}
+
 		
 	def testSaveSettings(self, p, settings):
 		self.maxDiff = None
@@ -864,13 +822,13 @@ class TestProc(testly.TestCase):
 			p._buildOutput()
 			p._buildScript()
 			p._saveSettings()
-		psettings = helpers.readFile(path.join(p.workdir, 'proc.settings'), str)
-		for setting in settings:
-			self.assertIn(setting, psettings)
-			psettings = psettings[(psettings.find(setting) + len(setting)):]
+		psettings = helpers.readFile(path.join(p.workdir, 'proc.settings.yaml'), yaml.load)
+		for key, val in settings.items():
+			self.assertEqual(psettings[key], val)
 	
 	def dataProvider_testBuildJobs(self):
 		pBuildJobs = Proc()
+		pBuildJobs.input = {}
 		pBuildJobs1 = Proc()
 		pBuildJobs1.input = {'a':[1,2,3]}
 		yield pBuildJobs, 0
@@ -891,7 +849,7 @@ class TestProc(testly.TestCase):
 		yield pTidyBeforeRun, []
 		pTidyBeforeRun1 = Proc()
 		pTidyBeforeRun1.ppldir = self.testdir
-		pTidyBeforeRun1.props['callfront'] = lambda p: logger.logger.info('hello')
+		pTidyBeforeRun1.props['callfront'] = lambda p: logger.info('hello')
 		yield pTidyBeforeRun1, ['DEBUG', 'Calling callfront ...', 'INFO', 'hello']
 	
 	def testTidyBeforeRun(self, p, errs = []):
@@ -946,23 +904,27 @@ class TestProc(testly.TestCase):
 		pReadConfig = Proc()
 		yield 't1', None, None, 'local', {'runner': 'local'}
 		yield 't2', 'sge', None, 'sge', {'runner': 'sge'}
-		yield 't3', 'default', {'default': {'runner': 'sge'}}, 'sge', {'runner': 'default'}
-		yield 't4', 'xxx', {'xxx': {}, 'default': {}}, 'xxx', {'runner': 'xxx'}
+		yield 't3', 'default1', {'default1': {'runner': 'sge'}}, 'sge', {'runner': 'default1'}
+		yield 't4', 'xxx', {'xxx': {}, 'default': {}}, 'local', {'runner': 'xxx'}
 		yield 't5', 'xxx', {'xxx': {}}, 'local', {'runner': 'xxx'}
-		yield 't6', 'xxx', {'yyy': {}}, 'xxx', {'runner': 'xxx'}
+		yield 't6', 'xxx', {'yyy': {}}, 'local', {'runner': 'xxx'}
 		yield 't7', 'sge1d', {'sge1d': {'runner': 'sge', 'nthread': 10, 'forks': 4, 'ppldir': self.testdir}}, 'sge', {'runner': 'sge1d', 'forks': 4, 'nthread': 10, 'ppldir': self.testdir}
-		yield 't8', {'forks': 10}, {'default': {'forks': 20}}, 'local', {'forks': 10, 'runner': {'forks': 10}}
+		yield 't8', {'forks': 10}, {'default': {'forks': 20}}, 'local', {'forks': 10, 'runner': '__tmp__'}
 		yield 't9', {'forks': 10}, {'default': {'envs': {'a': 1}}}, 'local', {'forks': 10}
 		
 	def testReadConfig(self, tag, profile, inconfig, runner, outconfig):
 		pReadConfig = Proc(tag = tag)
-		pReadConfig._readConfig(profile, inconfig)
+		cfgprofile = config._protected['profile']
+		if inconfig:
+			config._load(inconfig)
+		pReadConfig._readConfig(profile)
 		self.assertEqual(pReadConfig.runner, runner)
 		self.assertDictContains(outconfig, pReadConfig.config)
+		config._use(cfgprofile)
 		
 	def dataProvider_testTidyAfterRun(self):
 		pTidyAfterRun = Proc()
-		pTidyAfterRun.props['callback'] = lambda p: logger.logger.info('goodbye')
+		pTidyAfterRun.props['callback'] = lambda p: logger.info('goodbye')
 		yield pTidyAfterRun, 'terminate', 'skip+', None, [
 			'DEBUG',
 			'Calling callback ...',
@@ -973,7 +935,7 @@ class TestProc(testly.TestCase):
 		pTidyAfterRun1 = Proc()
 		pTidyAfterRun1.ppldir = self.testdir
 		pTidyAfterRun1.input = {'in': [1,2]}
-		pTidyAfterRun1.props['callback'] = lambda p: logger.logger.info('goodbye')
+		pTidyAfterRun1.props['callback'] = lambda p: logger.info('goodbye')
 		pTidyAfterRun1._tidyBeforeRun()
 		# write rc to job.rc
 		#for job in pTidyAfterRun1.jobs:

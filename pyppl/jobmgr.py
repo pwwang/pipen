@@ -7,7 +7,7 @@ from time import sleep
 from simpleconf import config
 from .utils.taskmgr import PQueue, ThreadPool, Lock
 from .job import Job
-from .logger2 import logger
+from .logger import logger
 from .exception import JobFailException, JobSubmissionException, JobBuildingException
 
 class Jobmgr(object):
@@ -20,7 +20,7 @@ class Jobmgr(object):
 		`PBAR_LEVEL`: The log levels for different job status
 		`SMBLOCK`   : The lock used to relatively safely to tell whether jobs can be submitted.
 	"""
-	PBAR_SIZE  = int(config._LOG.pbar or 50)
+	PBAR_SIZE  = int(config._log.pbar or 50)
 	PBAR_MARKS = {
 		Job.STATUS_INITIATED   : ' ',
 		Job.STATUS_BUILDING    : '~',
@@ -58,22 +58,21 @@ class Jobmgr(object):
 	# submission lock
 	SBMLOCK = Lock()
 
-	def __init__(self, jobs, config):
+	def __init__(self, jobs, conf):
 		"""
 		Initialize the job manager
 		@params:
 			`jobs`: All the jobs
-			`config`: The configurations for the job manager
+			`conf`: The configurations for the job manager
 		"""
 		if not jobs:  # no jobs
 			return
 		self.jobs    = jobs
-		self.config  = config
-		self.logger  = config.get('logger', logger)
+		self.config  = conf
 		self.stop    = False
 
 		queue  = PQueue(batch_len = len(jobs))
-		nslots = min(queue.batch_len, config['nthread'])
+		nslots = min(queue.batch_len, conf['nthread'])
 
 		for job in self.jobs:
 			# say nslots = 40
@@ -156,11 +155,11 @@ class Jobmgr(object):
 					# STATUS_ENDFAILED, STATUS_RETRYING
 					raise JobFailException()
 				if job.status == Job.STATUS_RETRYING:
-					getattr(self.logger, Jobmgr.PBAR_LEVEL[job.status])("Retrying %s/%s ...", job.ntry, job.config['errntry'], extra = {
-						'jobidx'  : index, 
-						'joblen'  : queue.batch_len, 
-						'proc'    : self.config['proc']
-					})
+					logger[Jobmgr.PBAR_LEVEL[job.status]]("Retrying %s/%s ...", 
+						job.ntry, job.config['errntry'], 
+						jobidx = index,
+						joblen = queue.batch_len,
+						proc   = self.config['proc'])
 					# retry as soon as possible
 					queue.put(index, where = batch+3)
 				else: # STATUS_ENDFAILED
@@ -199,7 +198,7 @@ class Jobmgr(object):
 
 		ncompleted = sum(1 for s in status if s & 0b1000000)
 		nrunning   = sum(1 for s in status if s == Job.STATUS_RUNNING or s == Job.STATUS_SUBMITTED)
-
+		
 		job = self.jobs[jobidx]
 		for bj in barjobs:
 			if jobidx in bj:
@@ -243,7 +242,7 @@ class Jobmgr(object):
 			str(nrunning).ljust(len(str(joblen)))
 		)
 		
-		getattr(self.logger.pbar, Jobmgr.PBAR_LEVEL[job.status])(pbar, jobidx = jobidx, joblen = joblen, proc = self.config['proc'], done = ncompleted == joblen)
+		logger.pbar[Jobmgr.PBAR_LEVEL[job.status]](pbar, jobidx = jobidx, joblen = joblen, proc = self.config['proc'], done = ncompleted == joblen)
 
 	def cleanup(self, ex = None):
 		"""
@@ -265,7 +264,7 @@ class Jobmgr(object):
 		else:
 			message = None
 		if message:
-			self.logger.warning(message, extra = {'proc': self.config['proc']})
+			logger.warning(message, proc = self.config['proc'])
 		
 		# kill running jobs
 		rjobs = [

@@ -10,7 +10,7 @@ from functools import partial
 from collections import OrderedDict
 from datetime import datetime
 from threading import Lock
-from .logger2 import logger
+from .logger import logger
 from .utils import cmd, safefs, string_types, briefPath, jsonLoads
 from .utils.box import Box
 from .exception import JobInputParseError, JobOutputParseError
@@ -49,21 +49,21 @@ class Job(object):
 	# 1 (0: Non-ing, 1: -ing)
 	# 1 (0: Sucessded, 1: Failed)
 
-	STATUS_INITIATED    = 0b0000000
-	STATUS_BUILDING     = 0b0010010
-	STATUS_BUILT        = 0b0010000
-	STATUS_BUILTFAILED  = 0b1010001
-	STATUS_SUBMITTING   = 0b0001010
-	STATUS_SUBMITTED    = 0b0001000
-	STATUS_SUBMITFAILED = 0b1001001
-	STATUS_RUNNING      = 0b0000110
-	STATUS_RETRYING     = 0b0000111
-	STATUS_DONE         = 0b1000100
-	STATUS_DONECACHED   = 0b1000000
-	STATUS_DONEFAILED   = 0b0000101
-	STATUS_ENDFAILED    = 0b1000101
-	STATUS_KILLING      = 0b1100010
-	STATUS_KILLED       = 0b1100000
+	STATUS_INITIATED    = 0b0000000 # 0 
+	STATUS_BUILDING     = 0b0010010 # 18 
+	STATUS_BUILT        = 0b0010000 # 16
+	STATUS_BUILTFAILED  = 0b1010001 # 81
+	STATUS_SUBMITTING   = 0b0001010 # 10
+	STATUS_SUBMITTED    = 0b0001000 # 8
+	STATUS_SUBMITFAILED = 0b1001001 # 73
+	STATUS_RUNNING      = 0b0000110 # 6
+	STATUS_RETRYING     = 0b0000111 # 7
+	STATUS_DONE         = 0b1000100 # 68
+	STATUS_DONECACHED   = 0b1000000 # 64
+	STATUS_DONEFAILED   = 0b0000101 # 5
+	STATUS_ENDFAILED    = 0b1000101 # 69
+	STATUS_KILLING      = 0b1100010 # 98
+	STATUS_KILLED       = 0b1100000 # 96
 
 	RC_NOTGENERATE  = 99
 	RC_SUBMITFAILED = 88
@@ -94,7 +94,6 @@ class Job(object):
 		self.cachefile = path.join(self.dir, "job.cache")
 		self.cachedir  = path.join(self.outdir, '.pypplcache')
 		self.pidfile   = path.join(self.dir, "job.pid")
-		self.logger    = config.get('logger', logger)
 		self.ntry      = 0
 		self.input     = {}
 		# need to pass this to next procs, so have to keep order
@@ -117,11 +116,11 @@ class Job(object):
 		self.runner   = None
 		self._rc      = None
 		self._pid     = None
-		self.logextra = {
-			'proc'  : self.config['proc'],
-			'jobidx': self.index,
-			'joblen': self.config['procsize'],
-		}
+		self.logger   = logger.bake(
+			proc   = self.config['proc'],
+			jobidx = self.index,
+			joblen = self.config['procsize'],
+		)
 
 	def showError (self, totalfailed):
 		"""
@@ -142,23 +141,23 @@ class Job(object):
 				total = totalfailed,
 				rc    = self.rc & 0b0011111111,
 				msg   = msg if not msg else ' ({})'.format(msg)
-			), **self.logextra)
+			))
 			return
 
 		self.logger.error('Failed (totally {total}). Return code: {rc}{msg}.'.format(
 			total = totalfailed,
 			rc    = self.rc & 0b0011111111,
 			msg   = msg if not msg else ' ({})'.format(msg)
-		), **self.logextra)
+		))
 
 		from . import Proc
-		self.logger.error('Script: {}'.format(briefPath(self.script,  **Proc.SHORTPATH)), **self.logextra)
-		self.logger.error('Stdout: {}'.format(briefPath(self.outfile, **Proc.SHORTPATH)), **self.logextra)
-		self.logger.error('Stderr: {}'.format(briefPath(self.errfile, **Proc.SHORTPATH)), **self.logextra)
+		self.logger.error('Script: {}'.format(briefPath(self.script,  **Proc.SHORTPATH)))
+		self.logger.error('Stdout: {}'.format(briefPath(self.outfile, **Proc.SHORTPATH)))
+		self.logger.error('Stderr: {}'.format(briefPath(self.errfile, **Proc.SHORTPATH)))
 
 		# errors are not echoed, echo them out
 		if self.index not in self.config['echo']['jobs'] or 'stderr' not in self.config['echo']['type']:
-			self.logger.error('Check STDERR below:', **self.logextra)
+			self.logger.error('Check STDERR below:')
 			errmsgs = []
 			if path.exists (self.errfile):
 				with open(self.errfile) as f:
@@ -168,13 +167,13 @@ class Job(object):
 				errmsgs = ['<EMPTY STDERR>']
 
 			for errmsg in errmsgs[-20:] if len(errmsgs) > 20 else errmsgs:
-				self.logger.stderr(errmsg, **self.logextra)
+				self.logger.stderr(errmsg)
 
 			if len(errmsgs) > 20:
 				self.logger.stderr('[ Top {top} line(s) ignored, see all in stderr file. ]'.format(
 					top     = len(errmsgs) - 20,
 					errfile = self.errfile
-				), **self.logextra)
+				))
 
 	def report (self):
 		"""
@@ -224,25 +223,25 @@ class Job(object):
 		logfunc = getattr(self.logger, loglevel)
 
 		if not isinstance(data, list):
-			logfunc("{} => {}".format(key.ljust(maxlen), data), **self.logextra)
+			logfunc("{} => {}".format(key.ljust(maxlen), data))
 		else:
 			ldata = len(data)
 			if ldata == 0:
-				logfunc("{} => [ {} ]".format(key.ljust(maxlen), ''), **self.logextra)
+				logfunc("{} => [ {} ]".format(key.ljust(maxlen), ''))
 			elif ldata == 1:
-				logfunc("{} => [ {} ]".format(key.ljust(maxlen), data[0]), **self.logextra)
+				logfunc("{} => [ {} ]".format(key.ljust(maxlen), data[0]))
 			elif ldata == 2:
-				logfunc("{} => [ {},".format(key.ljust(maxlen), data[0]), **self.logextra)
-				logfunc("{}      {} ]".format(' '.ljust(maxlen), data[1]), **self.logextra)
+				logfunc("{} => [ {},".format(key.ljust(maxlen), data[0]))
+				logfunc("{}      {} ]".format(' '.ljust(maxlen), data[1]))
 			elif ldata == 3:
-				logfunc("{} => [ {},".format(key.ljust(maxlen), data[0]), **self.logextra)
-				logfunc("{}      {},".format(' '.ljust(maxlen), data[1]), **self.logextra)
-				logfunc("{}      {} ]".format(' '.ljust(maxlen), data[2]), **self.logextra)
+				logfunc("{} => [ {},".format(key.ljust(maxlen), data[0]))
+				logfunc("{}      {},".format(' '.ljust(maxlen), data[1]))
+				logfunc("{}      {} ]".format(' '.ljust(maxlen), data[2]))
 			else:
-				logfunc("{} => [ {},".format(key.ljust(maxlen), data[0]), **self.logextra)
-				logfunc("{}      {},".format(' '.ljust(maxlen), data[1]), **self.logextra)
-				logfunc("{}      ... ({}),".format(' '.ljust(maxlen), len(data) - 3), **self.logextra)
-				logfunc("{}      {} ]".format(' '.ljust(maxlen), data[-1]), **self.logextra)
+				logfunc("{} => [ {},".format(key.ljust(maxlen), data[0]))
+				logfunc("{}      {},".format(' '.ljust(maxlen), data[1]))
+				logfunc("{}      ... ({}),".format(' '.ljust(maxlen), len(data) - 3))
+				logfunc("{}      {} ]".format(' '.ljust(maxlen), data[-1]))
 
 	def build(self):
 		"""
@@ -319,7 +318,7 @@ class Job(object):
 		from . import Proc
 		safefs.SafeFs._remove(self.indir)
 		makedirs(self.indir)
-
+		
 		for key, val in self.config['input'].items():
 			self.input[key] = {}
 			intype = val['type']
@@ -339,7 +338,7 @@ class Job(object):
 					basename = path.basename(indata)
 					infile   = self._linkInfile(indata)
 					if basename != path.basename(infile):
-						self.logger.warning ("Input file renamed: %s -> %s" % (basename, path.basename(infile)), dlevel = 'INFILE_RENAMING', **self.logextra)
+						self.logger.warning ("Input file renamed: %s -> %s" % (basename, path.basename(infile)), dlevel = 'INFILE_RENAMING')
 
 				self.data['i'][key] = infile
 
@@ -354,7 +353,7 @@ class Job(object):
 				self.data  ['i'][key]         = []
 
 				if not indata:
-					self.logger.warning('No data provided for "{}:{}", use empty list instead.'.format(key, intype), dlevel = 'INFILE_EMPTY', **self.logextra)
+					self.logger.warning('No data provided for "{}:{}", use empty list instead.'.format(key, intype), dlevel = 'INFILE_EMPTY')
 					continue
 
 				if not isinstance(indata, list):
@@ -374,7 +373,7 @@ class Job(object):
 						basename = path.basename(data)
 						infile   = self._linkInfile(data)
 						if basename != path.basename(infile):
-							self.logger.warning('Input file renamed: {} -> {}'.format(basename, path.basename(infile)), dlevel = 'INFILE_RENAMING', **self.logextra)
+							self.logger.warning('Input file renamed: {} -> {}'.format(basename, path.basename(infile)), dlevel = 'INFILE_RENAMING')
 
 					self.data['i'][key].append(infile)
 
@@ -437,7 +436,7 @@ class Job(object):
 			else:
 				# for debug
 				safefs.SafeFs._move(self.script, self.script + '.bak')
-				self.logger.debug("Script file updated: %s", self.script, dlevel = 'SCRIPT_EXISTS', **self.logextra)
+				self.logger.debug("Script file updated: %s", self.script, dlevel = 'SCRIPT_EXISTS')
 		
 		if write:
 			with open (self.script, 'w') as f:
@@ -498,20 +497,20 @@ class Job(object):
 			return False
 		from . import Proc
 		if not path.exists (self.cachefile):
-			self.logger.debug("Not cached as cache file not exists.", dlevel = "CACHE_SIGFILE_NOTEXISTS", **self.logextra)
+			self.logger.debug("Not cached as cache file not exists.", dlevel = "CACHE_SIGFILE_NOTEXISTS")
 			return False
 
 		with open (self.cachefile, 'rb') as f:
 			sig = f.read().decode()
 
 		if not sig:
-			self.logger.debug("Not cached because previous signature is empty.", dlevel = "CACHE_EMPTY_PREVSIG", **self.logextra)
+			self.logger.debug("Not cached because previous signature is empty.", dlevel = "CACHE_EMPTY_PREVSIG")
 			return False
 
 		sigOld = jsonLoads(sig)
 		sigNow = self.signature()
 		if not sigNow:
-			self.logger.debug("Not cached because current signature is empty.", dlevel = "CACHE_EMPTY_CURRSIG", **self.logextra)
+			self.logger.debug("Not cached because current signature is empty.", dlevel = "CACHE_EMPTY_CURRSIG")
 			return False
 
 		def compareVar(osig, nsig, key, logkey):
@@ -524,7 +523,7 @@ class Job(object):
 					"Not cached because {key} variable({k}) is different:\n" +
 					"...... - Previous: {prev}\n" +
 					"...... - Current : {curr}"
-				).format(key = key, k = k, prev = oval, curr = nval), dlevel = 'logkey', **self.logextra)
+				).format(key = key, k = k, prev = oval, curr = nval), dlevel = 'logkey')
 				return False
 			return True
 
@@ -539,7 +538,7 @@ class Job(object):
 						"Not cached because {key} file({k}) is different:\n" +
 						"...... - Previous: {prev}\n" + 
 						"...... - Current : {curr}"
-					).format(key = key, k = k, prev = ofile, curr = nfile), dlevel = logkey, **self.logextra)
+					).format(key = key, k = k, prev = ofile, curr = nfile), dlevel = logkey)
 					return False
 				if timekey and ntime > otime:
 					self.logger.debug((
@@ -554,7 +553,7 @@ class Job(object):
 						transotime = datetime.fromtimestamp(otime),
 						ntime      = ntime,
 						transntime = datetime.fromtimestamp(ntime)
-					), dlevel = timekey, **self.logextra)
+					), dlevel = timekey)
 					return False
 			return True
 
@@ -586,7 +585,7 @@ class Job(object):
 							k     = k,
 							ofile = ofile,
 							nfile = nfile
-						), dlevel = logkey, **self.logextra)
+						), dlevel = logkey)
 						return False
 					if timekey and ntime > otime:
 						self.logger.debug((
@@ -602,7 +601,7 @@ class Job(object):
 							transotime = datetime.fromtimestamp(otime),
 							ntime      = ntime,
 							transntime = datetime.fromtimestamp(ntime)
-						), dlevel = timekey, **self.logextra)
+						), dlevel = timekey)
 						return False
 			return True
 
@@ -671,13 +670,13 @@ class Job(object):
 		if self.config['cache'] != 'export':
 			return False
 		if self.config['exhow'] in Proc.EX_LINK:
-			self.logger.warning("Job is not export-cached using symlink export.", dlevel = "EXPORT_CACHE_USING_SYMLINK", **self.logextra)
+			self.logger.warning("Job is not export-cached using symlink export.", dlevel = "EXPORT_CACHE_USING_SYMLINK")
 			return False
 		if self.config['expart'] and self.config['expart'][0].render(self.data):
-			self.logger.warning("Job is not export-cached using partial export.", dlevel = "EXPORT_CACHE_USING_EXPARTIAL", **self.logextra)
+			self.logger.warning("Job is not export-cached using partial export.", dlevel = "EXPORT_CACHE_USING_EXPARTIAL")
 			return False
 		if not self.config['exdir']:
-			self.logger.debug("Job is not export-cached since export directory is not set.", dlevel = "EXPORT_CACHE_EXDIR_NOTSET", **self.logextra)
+			self.logger.debug("Job is not export-cached since export directory is not set.", dlevel = "EXPORT_CACHE_EXDIR_NOTSET")
 			return False
 
 		for out in self.output.values():
@@ -688,11 +687,11 @@ class Job(object):
 				if path.isdir(out['data']) or out['type'] in Proc.OUT_DIRTYPE:
 					exfile += '.tgz'
 					if not path.exists(exfile):
-						self.logger.debug("Job is not export-cached since exported file not exists: %s." % exfile, dlevel = "EXPORT_CACHE_EXFILE_NOTEXISTS", **self.logextra)
+						self.logger.debug("Job is not export-cached since exported file not exists: %s." % exfile, dlevel = "EXPORT_CACHE_EXFILE_NOTEXISTS")
 						return False
 
 					if path.exists (out['data']) or path.islink (out['data']):
-						self.logger.warning('Overwrite file for export-caching: %s' % out['data'], dlevel = "EXPORT_CACHE_OUTFILE_EXISTS", **self.logextra)
+						self.logger.warning('Overwrite file for export-caching: %s' % out['data'], dlevel = "EXPORT_CACHE_OUTFILE_EXISTS")
 						safefs.remove(out['data'])
 
 					makedirs(out['data'])
@@ -700,22 +699,22 @@ class Job(object):
 				else:
 					exfile += '.gz'
 					if not path.exists (exfile):
-						self.logger.debug("Job is not export-cached since exported file not exists: %s." % exfile, dlevel = "EXPORT_CACHE_EXFILE_NOTEXISTS", **self.logextra)
+						self.logger.debug("Job is not export-cached since exported file not exists: %s." % exfile, dlevel = "EXPORT_CACHE_EXFILE_NOTEXISTS")
 						return False
 
 					if path.exists (out['data']) or path.islink (out['data']):
-						self.logger.warning('Overwrite file for export-caching: %s' % out['data'], dlevel = "EXPORT_CACHE_OUTFILE_EXISTS", **self.logextra)
+						self.logger.warning('Overwrite file for export-caching: %s' % out['data'], dlevel = "EXPORT_CACHE_OUTFILE_EXISTS")
 						safefs.remove(out['data'])
 
 					safefs.ungz (exfile, out['data'])
 			else:
 				if not path.exists (exfile):
-					self.logger.debug("Job is not export-cached since exported file not exists: %s." % exfile, dlevel = "EXPORT_CACHE_EXFILE_NOTEXISTS", **self.logextra)
+					self.logger.debug("Job is not export-cached since exported file not exists: %s." % exfile, dlevel = "EXPORT_CACHE_EXFILE_NOTEXISTS")
 					return False
 				if safefs.SafeFs(exfile, out['data']).samefile():
 					continue
 				if path.exists (out['data']) or path.islink(out['data']):
-					self.logger.warning('Overwrite file for export-caching: %s' % out['data'], dlevel = "EXPORT_CACHE_OUTFILE_EXISTS", **self.logextra)
+					self.logger.warning('Overwrite file for export-caching: %s' % out['data'], dlevel = "EXPORT_CACHE_OUTFILE_EXISTS")
 					safefs.remove(out['data'])
 
 				safefs.link(path.realpath(exfile), out['data'])
@@ -862,12 +861,12 @@ class Job(object):
 			if out['type'] in Proc.OUT_VARTYPE: continue
 			if not path.exists(out['data']):
 				self.rc = self.rc | 0b100000000
-				self.logger.debug('Outfile not generated: {}'.format(out['data']), dlevel = "OUTFILE_NOT_EXISTS", **self.logextra)
+				self.logger.debug('Outfile not generated: {}'.format(out['data']), dlevel = "OUTFILE_NOT_EXISTS")
 
 		expectCmd = self.config['expect'].render(self.data)
 
 		if expectCmd:
-			self.logger.debug ('Check expectation: %s' % (expectCmd), dlevel = "EXPECT_CHECKING", **self.logextra)
+			self.logger.debug ('Check expectation: %s' % (expectCmd), dlevel = "EXPECT_CHECKING")
 			#rc = utils.dumbPopen (expectCmd, shell=True).wait()
 			c = cmd.run(expectCmd, raiseExc = False, shell = True)
 			if c.rc != 0:	
@@ -894,7 +893,7 @@ class Job(object):
 		ret = {}
 		sig = safefs.SafeFs._filesig(self.script)
 		if not sig:
-			self.logger.debug('Empty signature because of script file: %s.' % (self.script), dlevel = "CACHE_EMPTY_CURRSIG", **self.logextra)
+			self.logger.debug('Empty signature because of script file: %s.' % (self.script), dlevel = "CACHE_EMPTY_CURRSIG")
 			return ''
 		ret['script'] = sig
 		ret['i']     = {
@@ -914,7 +913,7 @@ class Job(object):
 			elif val['type'] in Proc.IN_FILETYPE:
 				sig = safefs.SafeFs._filesig(val['data'], dirsig = self.config['dirsig'])
 				if not sig:
-					self.logger.debug('Empty signature because of input file: %s.' % (val['data']), dlevel = "CACHE_EMPTY_CURRSIG", **self.logextra)
+					self.logger.debug('Empty signature because of input file: %s.' % (val['data']), dlevel = "CACHE_EMPTY_CURRSIG")
 					return ''
 				ret['i'][Proc.IN_FILETYPE[0]][key] = sig
 			elif val['type'] in Proc.IN_FILESTYPE:
@@ -922,7 +921,7 @@ class Job(object):
 				for infile in sorted(val['data']):
 					sig = safefs.SafeFs._filesig(infile, dirsig = self.config['dirsig'])
 					if not sig:
-						self.logger.debug('Empty signature because of one of input files: %s.' % (infile), dlevel = "CACHE_EMPTY_CURRSIG", **self.logextra)
+						self.logger.debug('Empty signature because of one of input files: %s.' % (infile), dlevel = "CACHE_EMPTY_CURRSIG")
 						return ''
 					ret['i'][Proc.IN_FILESTYPE[0]][key].append (sig)
 
@@ -932,13 +931,13 @@ class Job(object):
 			elif val['type'] in Proc.OUT_FILETYPE:
 				sig = safefs.SafeFs._filesig(val['data'], dirsig = self.config['dirsig'])
 				if not sig:
-					self.logger.debug('Empty signature because of output file: %s.' % (val['data']), dlevel = "CACHE_EMPTY_CURRSIG", **self.logextra)
+					self.logger.debug('Empty signature because of output file: %s.' % (val['data']), dlevel = "CACHE_EMPTY_CURRSIG")
 					return ''
 				ret['o'][Proc.OUT_FILETYPE[0]][key] = sig
 			elif val['type'] in Proc.OUT_DIRTYPE:
 				sig = safefs.SafeFs._filesig(val['data'], dirsig = self.config['dirsig'])
 				if not sig:
-					self.logger.debug('Empty signature because of output dir: %s.' % (val['data']), dlevel = "CACHE_EMPTY_CURRSIG", **self.logextra)
+					self.logger.debug('Empty signature because of output dir: %s.' % (val['data']), dlevel = "CACHE_EMPTY_CURRSIG")
 					return ''
 				ret['o'][Proc.OUT_DIRTYPE[0]][key] = sig
 		return ret
@@ -948,7 +947,7 @@ class Job(object):
 		Submit the job
 		"""
 		if self.runner.isRunning():
-			self.logger.submit('is already running at {pid}, skip submission.'.format(pid = self.pid), **self.logextra)
+			self.logger.submit('is already running at {pid}, skip submission.'.format(pid = self.pid))
 			return True
 		
 		self.reset()
@@ -957,7 +956,7 @@ class Job(object):
 			return True
 		self.logger.error(
 			'Submission failed (rc = {rc}, cmd = {cmd})'.format(rc = rs.rc, cmd = rs.cmd), 
-			dlevel = 'SUBMISSION_FAIL', **self.logextra)
+			dlevel = 'SUBMISSION_FAIL')
 		return False
 
 	def poll(self):
@@ -1012,7 +1011,7 @@ class Job(object):
 				loglevel = loglevel[1:] if loglevel else 'log'
 				
 				# '_' makes sure it's not filtered by log levels
-				getattr(self.logger, '_' + loglevel)(logmsg.lstrip(), **self.logextra)
+				getattr(self.logger, '_' + loglevel)(logmsg.lstrip())
 			elif 'stderr' in self.config['echo']['type']:
 				errfilter = self.config['echo']['type']['stderr']
 				if not errfilter or re.search(errfilter, line):

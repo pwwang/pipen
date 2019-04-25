@@ -8,7 +8,9 @@ sys.path.insert(0, path.join(
 
 import tempfile, inspect, shutil
 from hashlib import md5
-from pyppl import logger, Box
+from box import Box
+from simpleconf import config
+from pyppl.logger import logger
 
 from contextlib import contextmanager
 from six import StringIO, with_metaclass, assertRaisesRegex as sixAssertRaisesRegex
@@ -22,8 +24,7 @@ def writeFile(f, contents = ''):
 		fin.write(str(contents))
 
 def readFile(f, transform = None):
-	from io import open
-	with open(f, 'r', encoding = "ISO-8859-1") as fin:
+	with open(f, 'r') as fin:
 		r = fin.read()
 	return transform(r) if callable(transform) else r
 
@@ -50,19 +51,19 @@ def captured_output():
 	finally:
 		sys.stdout, sys.stderr = old_out, old_err
 
-def log2sys(levels = 'normal', theme = True, logfile = None, lvldiff = None):
-	logger.getLogger(levels = levels, theme = theme, logfile = logfile, lvldiff = lvldiff)
-
 @contextmanager
 def log2str(levels = 'normal', theme = True, logfile = None, lvldiff = None):
 	new_out, new_err = StringIO(), StringIO()
 	old_out, old_err = sys.stdout, sys.stderr
+	profile = config._protected['profile']
 	try:
 		sys.stdout, sys.stderr = new_out, new_err
 		#yield sys.stdout.getvalue(), sys.stderr.getvalue()
-		logger.getLogger(levels = levels, theme = theme, logfile = logfile, lvldiff = lvldiff)
+		config._log.update(levels = levels, theme = theme, file = logfile, leveldiffs = lvldiff)
+		logger.init()
 		yield sys.stdout, sys.stderr
 	finally:
+		config._use(profile)
 		sys.stdout, sys.stderr = old_out, old_err
 
 assertTextEqual = lambda t, first, second, msg = None: t.assertListEqual(

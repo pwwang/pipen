@@ -3,16 +3,20 @@ The main module of PyPPL
 """
 VERSION = "2019.2.20"
 
-import json
+# give random tips in the log
 import random
+# access sys.argv
 import sys
-import copy as pycopy
 
 from os import path
 from time import time
+from multiprocessing import cpu_count
 
+from box import Box
 from simpleconf import config
 
+# load configurations
+DEFAULT_CFGFILES = ('~/.PyPPL.yaml', '~/.PyPPL.toml', './.PyPPL.yaml', './.PyPPL.toml', 'PYPPL.osenv')
 config.clear()
 config._load(dict(default = dict(
 	_log = dict(
@@ -24,10 +28,80 @@ config._load(dict(default = dict(
 		shortpath  = {'cutoff': 0, 'keep': 1},
 	),
 	_flowchart = dict(theme = 'default'),
-	runner     = 'local'
-)), '~/.PyPPL.yaml', '~/.PyPPL.toml', './.PyPPL.yaml', './.PyPPL.toml', 'PYPPL.osenv')
+	# The command to run after jobs start
+	afterCmd   = '',
+	# The extra arguments for the process
+	args       = Box(),
+	# The command to run before jobs start
+	beforeCmd  = '',
+	# The cache option, True/False/export
+	cache      = True,
+	# Do cleanup for cached jobs?
+	acache     = False,
+	# The description of the job
+	desc       = 'No description',
+	# Whether expand directory to check signature
+	dirsig     = True,
+	# Whether to echo the stdout and stderr of the jobs to the screen
+	# Could also be:
+	# {
+	#   'jobs':   0           # or [0, 1, 2], just echo output of those jobs.
+	#   'type':   'stderr'    # only echo stderr. (stdout: only echo stdout; [don't specify]: echo all)
+	# }
+	# You can also specify a filter to the type
+	# {
+	#   'jobs':  0
+	#   'type':  {'stderr': r'^Error'}	# only output lines starting with 'Error' in stderr
+	# }
+	# self.echo = True     <=> self.echo = { 'jobs': [0], 'type': {'stderr': None, 'stdout': None} }
+	# self.echo = False    <=> self.echo = { 'jobs': [] }
+	# self.echo = 'stderr' <=> self.echo = { 'jobs': [0], 'type': {'stderr': None} }
+	# self.echo = {'jobs': 0, 'type': 'stdout'} <=> self.echo = { 'jobs': [0], 'type': {'stdout': None} }
+	# self.echo = {'type': {'all': r'^output'}} <=> self.echo = { 'jobs': [0], 'type': {'stdout': r'^output', 'stderr': r'^output'} }
+	echo       = False,
+	# How to deal with the errors
+	# retry, ignore, halt
+	# halt to halt the whole pipeline, no submitting new jobs
+	# terminate to just terminate the job itself
+	errhow     = 'terminate',
+	# How many times to retry to jobs once error occurs
+	errntry    = 3,
+	# The directory to export the output files
+	exdir      = '',
+	# How to export # link, copy, gzip
+	exhow      = 'move',
+	# Whether to overwrite the existing files # overwrite
+	exow       = True,
+	# partial export, either the key of output file or the pattern
+	expart     = '',
+	# expect
+	expect     = '',
+	# How many jobs to run concurrently
+	forks      = 1,
+	# Default shell/language
+	lang       = 'bash',
+	# number of threads used to build jobs and to check job cache status
+	nthread    = min(int(cpu_count() / 2), 16),
+	# Where cache file and workdir located
+	ppldir     = path.abspath('./workdir'),
+	# Valid return codes
+	rc         = 0,
+	# Select the runner
+	runner     = 'local',
+	# The script of the jobs
+	script     = '',
+	# The tag of the job
+	tag        = 'notag',
+	# The template engine (name)
+	template   = '',
+	# The template environment
+	tplenvs    = Box(),
+	# working directory for the process
+	workdir    = ''
+)), *DEFAULT_CFGFILES)
 
-from .logger2 import logger
+# load logger
+from .logger import logger
 from .aggr import Aggr
 from .proc import Proc
 from .job import Job
@@ -36,7 +110,6 @@ from .channel import Channel
 from .parameters import params, Parameters, commands
 from .proctree import ProcTree
 from .exception import PyPPLProcFindError, PyPPLProcRelationError
-from .utils import Box, jsonLoads
 from . import utils, runners
 
 class PyPPL (object):
@@ -62,13 +135,7 @@ class PyPPL (object):
 	]
 
 	RUNNERS  = {}
-	# ~/.PyPPL.json has higher priority
-	DEFAULT_CFGFILES = [
-		'~/.PyPPL.yaml', 
-		'~/.pyppl.yaml',
-		'~/.PyPPL.toml'
-		'~/.pyppl.toml',
-	]
+
 	# counter
 	COUNTER  = 0
 
@@ -82,14 +149,18 @@ class PyPPL (object):
 		self.counter = PyPPL.COUNTER
 		PyPPL.COUNTER += 1
 
-		config._load(*PyPPL.DEFAULT_CFGFILES)
-		
+		if cfgfile and path.isfile(cfgfile):
+			config._load(cfgfile)
+		if isinstance(conf, dict):
+			config.update(conf or {})
 		# reinitiate logger according to new config
 		logger.init()
 		logger.pyppl('Version: %s', VERSION)
 		logger.tips(random.choice(PyPPL.TIPS))
 
-		for cfile in PyPPL.DEFAULT_CFGFILES + [str(cfgfile)]:
+		for cfile in DEFAULT_CFGFILES + (str(cfgfile), ):
+			if cfile.endswith('.osenv'):
+				logger.config('Read from environment variables with prefix: %s', path.basename(cfile)[:-6])
 			if not path.isfile(cfile): 
 				continue
 			if cfile.endswith('.yaml') or cfile.endswith('yml'):
@@ -104,6 +175,8 @@ class PyPPL (object):
 					logger.config('Read from %s', cfile)
 				except ImportError:
 					logger.warning('Module toml not installed, config file ignored: %s', cfile)
+			else:
+				logger.config('Read from %s', cfile)
 
 		self.tree = ProcTree()
 
@@ -135,8 +208,8 @@ class PyPPL (object):
 			`args`: the processes to be marked. The last element is the mark for processes to be skipped.
 		"""
 
-		sflag    = 'skip+' if kwargs['plus'] else 'skip'
-		rflag    = 'resume+' if kwargs['plus'] else 'resume'
+		sflag    = 'skip+' if kwargs.get('plus') else 'skip'
+		rflag    = 'resume+' if kwargs.get('plus') else 'resume'
 		resumes  = PyPPL._any2procs(*args)
 
 		ends     = self.tree.getEnds()
@@ -171,7 +244,7 @@ class PyPPL (object):
 		"""
 		if not args or (len(args) == 1 and not args[0]): 
 			return self
-		self._resume(*args, plus = False)
+		self._resume(*args)
 		return self
 
 	def resume2 (self, *args):
