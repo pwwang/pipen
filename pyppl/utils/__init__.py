@@ -5,7 +5,9 @@ import inspect
 import re
 import json
 from hashlib import md5
-from .box import Box
+from box import Box
+from simpleconf import Config
+config = Config()
 
 try:
 	from Queue import Queue, Empty as QueueEmpty
@@ -53,7 +55,7 @@ try:
 except NameError: # pragma: no cover
 	ftools.range = range
 
-def varname (maxline = 20, incldot = False):
+def varname(context = 31):
 	"""
 	Get the variable name for ini
 	@params:
@@ -62,44 +64,25 @@ def varname (maxline = 20, incldot = False):
 	@returns:
 		The variable name
 	"""
-	stack     = inspect.stack()
-
-	if 'self' in stack[1][0].f_locals:
-		theclass  = stack[1][0].f_locals["self"].__class__.__name__
-		themethod = stack[1][0].f_code.co_name
-	else:
-		theclass  = stack[1][0].f_code.co_name
-		themethod = ''
-
-	srcfile   = stack[2][1]
-	srclineno = stack[2][2]
-	try:
-		with open(srcfile) as f:
-			srcs   = list(reversed(f.readlines()[max(0, srclineno-maxline): srclineno]))
-
-		re_var = r'([A-Za-z_][\w.]*)' if incldot else r'([A-Za-z_]\w*)'
-		if themethod and themethod != '__init__':
-			#            var =     pp          .copy    (
-			re_hit  = r'%s\s*=\s*([A-Za-z_]\w*\.)+%s\s*\(' % (re_var, themethod)
-			#           pp.copy    (
-			re_stop = r'([A-Za-z_]\w*\.)+%s\s*\(' % themethod
-		else:
-			#           var  =
-			re_hit  = r'%s\s*=\s*([A-Za-z_]\w*\.)*%s\s*\(' % (re_var, theclass)
-			re_stop = r'([A-Za-z_]\w*\.)*%s\s*\(' % theclass
-
-		for src in srcs:
-			hitgroup = re.search(re_hit, src)
-			if hitgroup: return hitgroup.group(1)
-			stopgroup = re.search(re_stop, src)
-			if stopgroup: break
-		
-		varname.index += 1
-		return 'var_%s' % (varname.index - 1)
-
-	except Exception: # pragma: no cover
-		varname.index += 1
-		return 'var_%s' % (varname.index - 1)
+	stacks   = inspect.stack(context)
+	parent   = stacks[1]
+	grandpar = stacks[2]
+	keyword  = parent[3]
+	# find the class name
+	if keyword == '__init__': 
+		keyword = parent[0].f_locals['self'].__class__.__name__
+	
+	for i in range(grandpar[5], 0, -1):
+		code = grandpar[4][i]
+		if not keyword in code:
+			continue
+		m = re.search(r'([\w_]+)\s*=\s*[\w_.]*' + keyword, code)
+		if not m:
+			break
+		return m.group(1)
+	
+	varname.index += 1
+	return 'var_%s' % (varname.index - 1)
 
 varname.index = 0
 
@@ -215,7 +198,7 @@ def dictUpdate(origDict, newDict):
 	for k, v in newDict.items():
 
 		if isinstance(v, list):
-			origDict[k] = [e for e in v]
+			origDict[k] = v[:]
 		elif k in origDict and isinstance(origDict[k], dict) and isinstance(v, dict):
 			dictUpdate(origDict[k], newDict[k])
 		else:

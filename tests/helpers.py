@@ -55,15 +55,15 @@ def captured_output():
 def log2str(levels = 'normal', theme = True, logfile = None, lvldiff = None):
 	new_out, new_err = StringIO(), StringIO()
 	old_out, old_err = sys.stdout, sys.stderr
-	profile = config._protected['profile']
 	try:
 		sys.stdout, sys.stderr = new_out, new_err
-		#yield sys.stdout.getvalue(), sys.stderr.getvalue()
-		config._log.update(levels = levels, theme = theme, file = logfile, leveldiffs = lvldiff)
+		logconfig = dict(logconfig = dict(_log = dict(levels = levels, theme = theme, file = logfile, leveldiffs = lvldiff)))
+		config._load(logconfig)
+		config._use('logconfig')
 		logger.init()
 		yield sys.stdout, sys.stderr
 	finally:
-		config._use(profile)
+		config._revert()
 		sys.stdout, sys.stderr = old_out, old_err
 
 assertTextEqual = lambda t, first, second, msg = None: t.assertListEqual(

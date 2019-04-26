@@ -4,7 +4,8 @@ jobmgr module for PyPPL
 """
 import random
 from time import sleep
-from simpleconf import config
+from contextlib import contextmanager
+from .utils import config
 from .utils.taskmgr import PQueue, ThreadPool, Lock
 from .job import Job
 from .logger import logger
@@ -80,7 +81,7 @@ class Jobmgr(object):
 			# where = 1 if job.index = [20, 39]
 			# ...
 			queue.put(job.index, where = int(2*job.index/nslots))
-		
+
 		ThreadPool(
 			nslots,
 			initializer = self.worker,
@@ -94,7 +95,8 @@ class Jobmgr(object):
 			`queue`: The priority queue
 		"""
 		while not queue.empty() and not self.stop:
-			self.workon(queue.get(), queue)
+			q = queue.get()
+			self.workon(q, queue)
 			queue.task_done()
 
 	def workon(self, index, queue):
@@ -120,17 +122,21 @@ class Jobmgr(object):
 			else: 
 				queue.put(index, where = batch+3)
 		elif job.status == Job.STATUS_BUILT or job.status == Job.STATUS_RETRYING:
-			# when slots are available
-			if self.canSubmit():
-				with Jobmgr.SBMLOCK:
+			# when slots are available, and reserve it
+			with self.canSubmit() as can:
+				if can:
 					job.status = Job.STATUS_SUBMITTING
-				self.progressbar(index)
+					self.progressbar(index)
+			if job.status == Job.STATUS_SUBMITTING:
 				s = job.submit()
+				# in case other thread is check canSubmit
 				with Jobmgr.SBMLOCK:
 					job.status = Job.STATUS_SUBMITTED if s else Job.STATUS_SUBMITFAILED
 				if job.status == Job.STATUS_SUBMITFAILED:
 					self.progressbar(index)
 					raise JobSubmissionException()
+			else:
+				sleep(.05)
 			queue.put(index, where = batch+3)
 		elif job.status == Job.STATUS_SUBMITTED or job.status == Job.STATUS_RUNNING:
 			oldstatus = job.status
@@ -305,6 +311,7 @@ class Jobmgr(object):
 			self.progressbar(i)
 			rq.task_done()
 
+	@contextmanager
 	def canSubmit(self):
 		"""
 		Tell if jobs can be submitted.
@@ -312,7 +319,7 @@ class Jobmgr(object):
 			`True` if they can else `False`
 		"""
 		with Jobmgr.SBMLOCK:
-			return sum(
+			yield sum(
 				1 for job in self.jobs
 				if job.status in (Job.STATUS_RUNNING, Job.STATUS_SUBMITTED, Job.STATUS_SUBMITTING)
 			) < self.config['forks']

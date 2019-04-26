@@ -7,14 +7,14 @@ from box import Box
 from shutil import rmtree
 from tempfile import gettempdir
 from collections import OrderedDict
-from simpleconf import config
 from multiprocessing import cpu_count
-from pyppl import Proc, Box, Aggr, utils, ProcTree, Channel, Job, logger
+from pyppl import Proc, Box, Aggr, utils, ProcTree, Channel, Job, logger, config
 from pyppl.exception import ProcTagError, ProcAttributeError, ProcTreeProcExists, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
 from pyppl.template import TemplateLiquid
 if helpers.moduleInstalled('jinja2'):
 	from pyppl.template import TemplateJinja2
 from pyppl.runners import RunnerLocal
+from simpleconf import config
 
 __folder__ = path.realpath(path.dirname(__file__))
 
@@ -156,23 +156,23 @@ class TestProc(testly.TestCase):
 		yield 'tag no allowed', '', None, {}, {}, ProcTagError
 		
 	
-	def testInit(self, tag, desc, id, props, config, exception = None):
+	def testInit(self, tag, desc, id, props, cfg, exception = None):
 		self.maxDiff = None
 		if exception:
 			self.assertRaises(exception, Proc, tag = tag, desc = desc, id = id)
 		else:
 			p = Proc(tag = tag, desc = desc, id = id)
 			self.assertDictEqual(p.props, props)
-			self.assertDictEqual({k:v for k,v in p.config.items() if not k.startswith('_')}, config)
-			config2 = config.copy()
+			self.assertDictEqual({k:v for k,v in p.config.items() if not k.startswith('_')}, cfg)
+			config2 = cfg.copy()
 			del config2['tag']
 			del config2['desc']
 			del config2['id']
-			p2 = Proc(config['id'], tag, desc, **config2)
+			p2 = Proc(cfg['id'], tag, desc, **config2)
 			#props['sets'] = list(sorted(['runner', 'echo', 'depends', 'expect', 'callfront', 'script', 'cache', 'nthread', 'beforeCmd', 'template', 'rc', 'input', 'forks', 'acache', 'workdir', 'resume', 'exhow', 'args', 'exow', 'dirsig', 'ppldir', 'errhow', 'lang', 'tplenvs', 'exdir', 'expart', 'afterCmd', 'callback', 'aggr', 'output', 'errntry']))
 			p2.props['sets'] = set()
 			self.assertDictEqual(p2.props, props)
-			self.assertDictEqual({k:v for k,v in p2.config.items() if not k.startswith('_')}, config)
+			self.assertDictEqual({k:v for k,v in p2.config.items() if not k.startswith('_')}, cfg)
 
 			
 	def dataProvider_testGetAttr(self):
@@ -260,7 +260,7 @@ class TestProc(testly.TestCase):
 	def dataProvider_testCopy(self):
 		pCopy = Proc()
 		pCopy.workdir = path.join(self.testdir, 'pCopy')
-		yield pCopy, None, 'DESCRIPTION', None, {
+		yield pCopy, None, 'DESCRIPTION', None, { # oprops
 			# 'brings': {},
 			'channel': [],
 			'depends': [],
@@ -272,7 +272,7 @@ class TestProc(testly.TestCase):
 			'input': {},
 			'jobs': [],
 			'ncjobids': [],
-			'output': OrderedDict(),
+			'output': Box(ordered_box = True),
 			'procvars': {},
 			'rc': [0],
 			'runner': 'local',
@@ -283,7 +283,7 @@ class TestProc(testly.TestCase):
 			'template': None,
 			'timer': None,
 			'workdir': ''
-		}, {
+		}, { # oconfig
 			'afterCmd': '',
 			'aggr': None,
 			'args': Box(),
@@ -320,7 +320,7 @@ class TestProc(testly.TestCase):
 			'template': '',
 			'tplenvs': Box(),
 			'workdir': path.join(self.testdir, 'pCopy')
-		}, {
+		}, { # nprops
 			# 'brings': {},
 			'channel': [],
 			'depends': [],
@@ -332,7 +332,7 @@ class TestProc(testly.TestCase):
 			'input': {},
 			'jobs': [],
 			'ncjobids': [],
-			'output': OrderedDict(),
+			'output': Box(ordered_box = True),
 			'procvars': {},
 			'rc': [0],
 			'runner': 'local',
@@ -343,7 +343,7 @@ class TestProc(testly.TestCase):
 			'suffix': '',
 			'template': None,
 			'workdir': ''
-		}, {
+		}, { # nconfig
 			'afterCmd': '',
 			'aggr': None,
 			'args': Box(),
@@ -747,25 +747,25 @@ class TestProc(testly.TestCase):
 		pSaveSettings = Proc()
 		pSaveSettings.ppldir = self.testdir
 		yield pSaveSettings, {
-			'origin': 'pSaveSettings', 
-			'jobs': [None],  
-			'runner': 'local', 
-			'lock': None, 
-			'sets': set(['ppldir']), 
-			'echo': {'jobs': [], 'type': {'stderr': None, 'stdout': None}}, 
-			'depends': [], 
-			'expect': 'TemplateLiquid <  >', 
-			'input': OrderedDict(), 
-			'size': 1, 
-			'script': 'TemplateLiquid < #!/usr/bin/env bash >', 
-			'expart': ['TemplateLiquid <  >'], 
-			'timer': None, 
-			'procvars': {}, 
-			'ncjobids': [], 
+			'origin'  : 'pSaveSettings',
+			'jobs'    : [],
+			'runner'  : 'local',
+			'lock'    : None,
+			'sets'    : set(['ppldir']),
+			'echo'    : {'jobs': [], 'type': {'stderr': None, 'stdout': None}},
+			'depends' : [],
+			'expect'  : 'TemplateLiquid <  >',
+			'input'   : OrderedDict(),
+			'size'    : 0,
+			'script'  : 'TemplateLiquid < #!/usr/bin/env bash >',
+			'expart'  : ['TemplateLiquid <  >'],
+			'timer'   : None,
+			'procvars': {},
+			'ncjobids': [],
 			'template': 'TemplateLiquid',
-			'rc': [0], 
-			'output': {}, 
-			'channel': []
+			'rc'      : [0],
+			'output'  : {},
+			'channel' : []
 		}
 		
 		pSaveSettings1 = Proc()
@@ -824,7 +824,7 @@ class TestProc(testly.TestCase):
 			p._saveSettings()
 		psettings = helpers.readFile(path.join(p.workdir, 'proc.settings.yaml'), yaml.load)
 		for key, val in settings.items():
-			self.assertEqual(psettings[key], val)
+			self.assertEqual({key:psettings[key]}, {key:val})
 	
 	def dataProvider_testBuildJobs(self):
 		pBuildJobs = Proc()
@@ -914,13 +914,12 @@ class TestProc(testly.TestCase):
 		
 	def testReadConfig(self, tag, profile, inconfig, runner, outconfig):
 		pReadConfig = Proc(tag = tag)
-		cfgprofile = config._protected['profile']
 		if inconfig:
 			config._load(inconfig)
 		pReadConfig._readConfig(profile)
 		self.assertEqual(pReadConfig.runner, runner)
 		self.assertDictContains(outconfig, pReadConfig.config)
-		config._use(cfgprofile)
+		config._revert()
 		
 	def dataProvider_testTidyAfterRun(self):
 		pTidyAfterRun = Proc()
@@ -1009,10 +1008,11 @@ class TestProc(testly.TestCase):
 		with helpers.log2str():
 			pRun._tidyBeforeRun()
 		yield pRun, {'runner': 'dry'}, False, [
-			'RUNNING',
 			pRun.workdir,
-			'INFO',
-			'Done (time: '
+			'P_PROPS',
+			'RUNNING',
+			'P_DONE',
+			'Time:'
 		]
 		pRun1 = Proc()
 		pRun1.ppldir = self.testdir
@@ -1036,14 +1036,17 @@ class TestProc(testly.TestCase):
 		pRun3 = Proc()
 		pRun3.ppldir = self.testdir
 		pRun3.input  = {'a': [1,2]}
+		pRun3.script = 'echo {{i.a}}'
 		with helpers.log2str():
 			pRun3._tidyBeforeRun()
 		for job in pRun3.jobs:
+			job.build()
 			job.cache()
 		yield pRun3, {}, True, [
+			pRun3.workdir,
 			'CACHED',
-			pRun3.workdir
 		]
+
 		pRun4 = Proc()
 		pRun4.ppldir = self.testdir
 		pRun4.input  = {'a': [1,2]}
@@ -1053,22 +1056,22 @@ class TestProc(testly.TestCase):
 			job.cache()
 		pRun4.props['resume'] = 'resume'		
 		yield pRun4, {}, True, [
+			pRun4.workdir,
 			'RESUMED',
-			pRun4.workdir
 		]
 		
 		
-	def testRun(self, p, config, cache, errs = []):
+	def testRun(self, p, cfg, cache, errs = []):
 		RunnerLocal.INTERVAL = .1
-		#with helpers.log2str(levels = 'all') as (out, err):
-		p.run(config)
+		with helpers.log2str(levels = 'all') as (out, err):
+			p.run(cfg)
 		self.assertEqual(p.cache, cache)
-		# stderr = err.getvalue()
-		# print o.getvalue()
+		stderr = err.getvalue()
+		# print out.getvalue()
 		# print stderr
-		# for err in errs:
-		# 	self.assertIn(err, stderr)
-		# 	stderr = stderr[(stderr.find(err) + len(err)):]
+		for err in errs:
+			self.assertIn(err, stderr)
+			stderr = stderr[(stderr.find(err) + len(err)):]
 	
 if __name__ == '__main__':
 	testly.main(verbosity=2, failfast = True)

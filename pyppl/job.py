@@ -496,7 +496,8 @@ class Job(object):
 		if not self.config['cache']:
 			return False
 		from . import Proc
-		if not path.exists (self.cachefile):
+
+		if not path.exists(self.cachefile):
 			self.logger.debug("Not cached as cache file not exists.", dlevel = "CACHE_SIGFILE_NOTEXISTS")
 			return False
 
@@ -906,7 +907,6 @@ class Job(object):
 			Proc.OUT_FILETYPE[0]: {},
 			Proc.OUT_DIRTYPE[0]:  {}
 		}
-
 		for key, val in self.input.items():
 			if val['type'] in Proc.IN_VARTYPE:
 				ret['i'][Proc.IN_VARTYPE[0]][key] = val['data']

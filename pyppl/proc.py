@@ -11,7 +11,7 @@ from os import path, makedirs, remove
 from box import Box
 from multiprocessing import cpu_count
 import filelock
-from simpleconf import config, NoSuchProfile
+from simpleconf import NoSuchProfile
 from .logger import logger
 from .job import Job
 from .jobmgr import Jobmgr
@@ -89,7 +89,7 @@ class Proc (object):
 		"""
 		# Don't go through __getattr__ and __setattr__
 		# Get configuration from config
-		self.__dict__['config']   = config.copy()
+		self.__dict__['config']   = utils.config.copy()
 		# computed props
 		self.__dict__['props']    = Box()
 
@@ -102,7 +102,7 @@ class Proc (object):
 		# The aggregation name of the process, not configurable
 		self.config.aggr       = None
 		# The extra arguments for the process
-		self.config.args       = config.args.copy()
+		self.config.args       = utils.config.args.copy()
 		# The callfront function of the process
 		self.config.callfront  = None
 		# The callback function of the process
@@ -166,7 +166,7 @@ class Proc (object):
 		# timer for running time
 		self.props.timer       = None
 		# The template environment
-		self.config.tplenvs    = config.get('tplenvs', config.get('envs', Box())).copy()
+		self.config.tplenvs    = utils.config.get('tplenvs', utils.config.get('envs', Box())).copy()
 		# The computed workdir
 		self.props.workdir     = ''
 
@@ -212,7 +212,7 @@ class Proc (object):
 		"""
 		if not name in self.config and not name in Proc.ALIAS and not name.endswith ('Runner'):
 			raise ProcAttributeError(name, 'Cannot set attribute for process')
-
+		
 		# profile will be deprecated, use runner instead
 		if name in Proc.DEPRECATED:
 			logger.warning(
@@ -227,8 +227,7 @@ class Proc (object):
 		if name in Proc.ALIAS:
 			name = Proc.ALIAS[name]
 
-		if name not in self.sets:
-			self.sets.add(name)
+		self.sets.add(name)
 
 		# depends have to be computed here, as it's used to infer the relation before run
 		if name == 'depends':
@@ -244,6 +243,8 @@ class Proc (object):
 					self.props.depends.append(depend)
 				elif isinstance(depend, Aggr):
 					self.props.depends.extend(depend.ends)
+				elif isinstance(depend, list):
+					self.props.depends.extend(depend)
 				else:
 					raise ProcAttributeError(type(value).__name__, "Process dependents should be 'Proc/Aggr', not")
 
@@ -272,6 +273,9 @@ class Proc (object):
 			self.config[name] = {prevkey: value}
 			if isinstance(previn, dict) and len(previn) > 1:
 				logger.warning("Previous input is a dict with multiple keys. Now the key sequence is: %s", prevkey, proc = self.id)
+		elif name == 'runner':
+			self.config[name] = value
+			self.props[name]  = value
 		else:
 			self.config[name] = value
 
@@ -298,8 +302,15 @@ class Proc (object):
 		@returns:
 			The new process
 		"""
-		conf  = {}
-		props = {}
+		conf    = {}
+		props   = {}
+		newsets = set()
+		if id:
+			newsets.add('id')
+		if tag:
+			newsets.add('tag')
+		if desc:
+			newsets.add('desc')
 
 		for key in self.config.keys():
 			if key == 'id':
@@ -331,7 +342,7 @@ class Proc (object):
 			elif key == 'channel':
 				props[key] = Channel.create()
 			elif key == 'sets':
-				props[key] = self.props[key].copy() 
+				props[key] = self.props[key].copy() | newsets
 			elif isinstance(self.props[key], dict):
 				props[key] = pycopy.deepcopy(self.props[key])
 			else:
@@ -481,14 +492,13 @@ class Proc (object):
 		tag   = ".%s" % self.tag  if self.tag != "notag" else ""
 		return "%s%s%s" % (self.id, tag, aggrName)
 
-	def run (self, profile = None):
+	def run (self, profile = None, config = None):
 		"""
 		Run the jobs with a configuration
 		@params:
 			`config`: The configuration
 		"""
-		self._readConfig (profile)
-
+		self._readConfig (profile, config)
 		if self.runner == 'dry':
 			self.config.cache = False
 
@@ -503,7 +513,6 @@ class Proc (object):
 				self.lock.release()
 		else: # '', resume, resume+
 			self._tidyBeforeRun ()
-
 			try:
 				self._runCmd('preCmd')
 				if self.resume: # resume or resume+
@@ -612,6 +621,7 @@ class Proc (object):
 			self.props.expart = [self.template(e, **self.tplenvs) for e in expart]
 
 			logger.debug('Properties set explictly: %s', self.sets, proc = self.id)
+			
 		except Exception: # pragma: no cover
 			if self.lock.is_locked:
 				self.lock.release()
@@ -628,6 +638,7 @@ class Proc (object):
 		props.template = props.template.__name__
 		props.expect   = str(props.expect)
 		props.expart   = [str(ep) for ep in props.expart]
+		props.depends  = [repr(p) for p in self.depends]
 		props.script   = str(props.script)
 		props.procvars = {}
 		props.output   = OrderedDict([(key, str(val)) for key, val in props.output.items()])
@@ -830,7 +841,6 @@ class Proc (object):
 		Build the script template waiting to be rendered.
 		"""
 		script = self.config.script.strip()
-
 		if not script:
 			logger.warning('No script specified', proc = self.id)
 
@@ -909,7 +919,7 @@ class Proc (object):
 		for i in range(self.size):
 			self.jobs[i] = Job(i, jobcfg)
 
-	def _readConfig (self, profile):
+	def _readConfig (self, profile, config):
 		"""
 		Read the configuration
 		@params:
@@ -926,24 +936,25 @@ class Proc (object):
 			))
 			config._use('__tmp__')
 			self.props.runner = config.runner
-			config.runner = '__tmp__'
+			realprofile       = None
 		else:
 			try:
 				config._use(profile, raise_exc = True)
-				realrunner    = config.runner
-				config.runner = profile
+				realrunner  = config.runner
+				realprofile = profile
 			except NoSuchProfile:
 				config._load({
 					profile: dict(runner = profile) 
 				})
 				config._use(profile)
-				realrunner = config.runner
-				config.runner = profile
+				realrunner  = config.runner
+				realprofile = profile
 			finally:
 				# the real runner
 				self.props.runner = realrunner
 
-		self.config.update(config)
+		self.config.update({k:v for k,v in config.items() if k not in self.sets})
+		self.config.runner = realprofile
 
 	def _runCmd (self, key):
 		"""

@@ -11,7 +11,7 @@ import colorama
 from collections import OrderedDict
 from copy import copy
 from functools import partial
-from simpleconf import config
+from .utils import config
 
 colorama.init(autoreset = False)
 
@@ -29,7 +29,7 @@ THEMES = dict(
 		('has:ERR', '{f.RED}'),
 		('in:WARNING,RETRY,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
 		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
-		('', '{f.WHITE}'),
+		('', ''),
 	]),
 
 	blueOnBlack = OrderedDict([
@@ -42,7 +42,7 @@ THEMES = dict(
 		('has:ERR', '{f.RED}'),
 		('in:WARNING,RETRY,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
 		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
-		('', '{f.WHITE}'),
+		('', ''),
 	]),
 
 	magentaOnBlack = OrderedDict([
@@ -55,7 +55,7 @@ THEMES = dict(
 		('has:ERR', '{f.RED}'),
 		('in:WARNING,RETRY,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
 		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
-		('', '{f.WHITE}'),
+		('', ''),
 	]),
 
 	greenOnWhite = OrderedDict([
@@ -68,7 +68,7 @@ THEMES = dict(
 		('has:ERR', '{f.RED}'),
 		('in:WARNING,RETRY,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
 		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
-		('', '{f.BLACK}'),
+		('', ''),
 	]),
 
 	blueOnWhite = OrderedDict([
@@ -81,7 +81,7 @@ THEMES = dict(
 		('has:ERR', '{f.RED}'),
 		('in:WARNING,RETRY,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
 		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
-		('', '{f.BLACK}'),
+		('', ''),
 	]),
 
 	magentaOnWhite = OrderedDict([
@@ -94,19 +94,19 @@ THEMES = dict(
 		('has:ERR', '{f.RED}'),
 		('in:WARNING,RETRY,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
 		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
-		('', '{f.BLACK}'),
+		('', ''),
 	]),
 )
 
 LEVELS = {
-	'all':     ['INPUT', 'OUTPUT', 'P_ARGS', 'P_PROPS', 'DEBUG', 'WARNING'],
-	'basic':   [],
-	'normal':  ['INPUT', 'OUTPUT', 'P_ARGS', 'P_PROPS', 'WARNING']
+	'all':     set(['INPUT', 'OUTPUT', 'P_ARGS', 'P_PROPS', 'DEBUG', 'WARNING']),
+	'basic':   set(),
+	'normal':  set(['INPUT', 'OUTPUT', 'P_ARGS', 'P_PROPS', 'WARNING'])
 }
 
-LEVELS_ALWAYS = [
+LEVELS_ALWAYS = set([
     'PROCESS', 'WORKDIR', 'RESUMED', 'SKIPPED', 'DEPENDS', 'STDOUT', 'STDERR', 'ERROR', 'INFO', 'DONE', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'BLDING', 'SUBMIT', 'RUNNING', 'RETRY', 'JOBDONE', 'KILLING', 'P_DONE', 'CACHED'
-]
+])
 
 DEBUG_LINES = {
 	'EXPORT_CACHE_OUTFILE_EXISTS'  : -1,
@@ -138,7 +138,7 @@ DEBUG_LINES = {
 
 class Theme(object):
 
-	def __init__(self, theme = 'greenOnBlank'):
+	def __init__(self, theme = 'greenOnBlack'):
 		if theme is True:
 			theme = 'greenOnBlack'
 		if not theme:
@@ -148,8 +148,8 @@ class Theme(object):
 		elif theme in THEMES:
 			self.theme = THEMES[theme]
 		else:
-			raise ValueError('No such theme: %s', theme)
-		
+			raise ValueError('No such theme: %s' % theme)
+
 		self.colors = dict(
 			Style = colorama.Style, s = colorama.Style,
 			Back  = colorama.Back,  b = colorama.Back,
@@ -169,7 +169,7 @@ class Theme(object):
 				return val.format(**self.colors)
 			if key.startswith('re:') and re.search(key[3:], level):
 				return val.format(**self.colors)
-		return colorama.Style.RESET_ALL
+		return ''
 
 class StreamFormatter(logging.Formatter):
 	
@@ -183,6 +183,16 @@ class StreamFormatter(logging.Formatter):
 
 		# save the formatted, for all handlers
 		level = record.mylevel
+		if '\n' in record.msg:
+			record.tails = []
+			msgs = record.msg.splitlines()
+			record.msg = msgs[0]
+			for m in msgs[1:]:
+				rec = copy(record)
+				rec.msg = m
+				self.format(rec)
+				record.tails.append(rec)
+
 		record.msg = ' {COLOR}{LEVEL}{RESET_ALL}] {COLOR}{PROC}{JOBS}{MSG}{RESET_ALL}'.format(
 			COLOR     = self.theme.getColor(level),
 			LEVEL     = level.rjust(7),
@@ -262,13 +272,15 @@ class StreamHandler(logging.StreamHandler):
 			if pbarlog:
 				self.stream.write(' ' * len(pbarlog.formatted) + '\r')
 				self._emit(record, '\n')
-				if hasattr(record, 'dsummary'):
-					self._emit(record.dsummary, '\n')
+				if hasattr(record, 'tails'):
+					for t in record.tails:
+						self._emit(t, '\n')
 				self._emit(pbarlog, '\r')
 			else:
 				self._emit(record, '\n')
-				if hasattr(record, 'dsummary'):
-					self._emit(record.dsummary, '\n')
+				if hasattr(record, 'tails'):
+					for t in record.tails:
+						self._emit(t, '\n')
 
 class StreamFilter(logging.Filter):
 	
@@ -290,7 +302,7 @@ class StreamFilter(logging.Filter):
 			return False
 		
 		# debug information
-		dlevel = record.dlevel
+		dlevel = record.dlevel if hasattr(record, 'dlevel') else None
 		if not dlevel or dlevel not in DEBUG_LINES:
 			return True
 
@@ -311,9 +323,7 @@ class StreamFilter(logging.Filter):
 			return True
 		# ==
 		if print_summary:
-			record_summary = copy(record)
-			record_summary.msg = "...... max={max} ({dlevel}) reached, further information will be ignored.".format(max = allowed_lines, dlevel = dlevel)
-			record.dsummary = record_summary
+			record.msg += "\n...... max={max} ({dlevel}) reached, further information will be ignored.".format(max = allowed_lines, dlevel = dlevel)
 		return True
 
 class FileFilter(StreamFilter):
@@ -338,31 +348,33 @@ class Logger(object):
 
 	@staticmethod
 	def initLevels(levels, leveldiffs):
-		ret = []
-		if levels is not None:
-			if not isinstance(levels, (tuple, list)):
+		ret = set()
+		if levels is not None and not levels is False:
+			if not isinstance(levels, (tuple, list, set)):
+				if levels is True:
+					levels = 'normal'
 				if levels.lower() in LEVELS:
-					ret.extend(LEVELS[levels.lower()])
+					ret |= LEVELS[levels.lower()]
 				elif levels:
-					ret.append(levels)
+					ret.add(levels)
 			else:
-				ret.extend(list(levels))
-			ret.extend(LEVELS_ALWAYS)
-		
-		leveldiffs = leveldiffs = []
-		if not isinstance(leveldiffs, (tuple, list)):
-			leveldiffs = [leveldiffs]
+				ret |= set(levels)
+			ret |= LEVELS_ALWAYS
+
+		if not leveldiffs:
+			return ret
+		if not isinstance(leveldiffs, (tuple, list, set)):
+			leveldiffs = set([leveldiffs])
 		for level in leveldiffs:
 			level = level.upper()
 			if level.startswith('-'):
 				level = level[1:]
 				if level in ret:
-					del ret[ret.index(level)]
+					ret.remove(level)
 			else:
 				if level.startswith('+'):
 					level = level[1:]
-				if level not in ret:
-					ret.append(level)
+				ret.add(level)
 		return ret
 
 	def __init__(self, name = 'PyPPL', bake = False):
@@ -382,7 +394,6 @@ class Logger(object):
 		del self.logger.handlers[:]
 
 		theme = Theme(config._log.theme)
-		
 		levels = Logger.initLevels(config._log.levels, config._log.leveldiffs)
 
 		stream_handler = StreamHandler()

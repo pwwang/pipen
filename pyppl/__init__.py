@@ -13,92 +13,94 @@ from time import time
 from multiprocessing import cpu_count
 
 from box import Box
-from simpleconf import config
+from .utils import config
 
-# load configurations
-DEFAULT_CFGFILES = ('~/.PyPPL.yaml', '~/.PyPPL.toml', './.PyPPL.yaml', './.PyPPL.toml', 'PYPPL.osenv')
-config.clear()
-config._load(dict(default = dict(
-	_log = dict(
-		file       = None,
-		theme      = 'greenOnBlack',
-		levels     = 'normal',
-		leveldiffs = [],
-		pbar       = 50,
-		shortpath  = {'cutoff': 0, 'keep': 1},
-	),
-	_flowchart = dict(theme = 'default'),
-	# The command to run after jobs start
-	afterCmd   = '',
-	# The extra arguments for the process
-	args       = Box(),
-	# The command to run before jobs start
-	beforeCmd  = '',
-	# The cache option, True/False/export
-	cache      = True,
-	# Do cleanup for cached jobs?
-	acache     = False,
-	# The description of the job
-	desc       = 'No description',
-	# Whether expand directory to check signature
-	dirsig     = True,
-	# Whether to echo the stdout and stderr of the jobs to the screen
-	# Could also be:
-	# {
-	#   'jobs':   0           # or [0, 1, 2], just echo output of those jobs.
-	#   'type':   'stderr'    # only echo stderr. (stdout: only echo stdout; [don't specify]: echo all)
-	# }
-	# You can also specify a filter to the type
-	# {
-	#   'jobs':  0
-	#   'type':  {'stderr': r'^Error'}	# only output lines starting with 'Error' in stderr
-	# }
-	# self.echo = True     <=> self.echo = { 'jobs': [0], 'type': {'stderr': None, 'stdout': None} }
-	# self.echo = False    <=> self.echo = { 'jobs': [] }
-	# self.echo = 'stderr' <=> self.echo = { 'jobs': [0], 'type': {'stderr': None} }
-	# self.echo = {'jobs': 0, 'type': 'stdout'} <=> self.echo = { 'jobs': [0], 'type': {'stdout': None} }
-	# self.echo = {'type': {'all': r'^output'}} <=> self.echo = { 'jobs': [0], 'type': {'stdout': r'^output', 'stderr': r'^output'} }
-	echo       = False,
-	# How to deal with the errors
-	# retry, ignore, halt
-	# halt to halt the whole pipeline, no submitting new jobs
-	# terminate to just terminate the job itself
-	errhow     = 'terminate',
-	# How many times to retry to jobs once error occurs
-	errntry    = 3,
-	# The directory to export the output files
-	exdir      = '',
-	# How to export # link, copy, gzip
-	exhow      = 'move',
-	# Whether to overwrite the existing files # overwrite
-	exow       = True,
-	# partial export, either the key of output file or the pattern
-	expart     = '',
-	# expect
-	expect     = '',
-	# How many jobs to run concurrently
-	forks      = 1,
-	# Default shell/language
-	lang       = 'bash',
-	# number of threads used to build jobs and to check job cache status
-	nthread    = min(int(cpu_count() / 2), 16),
-	# Where cache file and workdir located
-	ppldir     = path.abspath('./workdir'),
-	# Valid return codes
-	rc         = 0,
-	# Select the runner
-	runner     = 'local',
-	# The script of the jobs
-	script     = '',
-	# The tag of the job
-	tag        = 'notag',
-	# The template engine (name)
-	template   = '',
-	# The template environment
-	tplenvs    = Box(),
-	# working directory for the process
-	workdir    = ''
-)), *DEFAULT_CFGFILES)
+def load_configuratiaons():
+	# load configurations
+	config.clear()
+	config._load(dict(default = dict(
+		_log = dict(
+			file       = None,
+			theme      = 'greenOnBlack',
+			levels     = 'normal',
+			leveldiffs = [],
+			pbar       = 50,
+			shortpath  = {'cutoff': 0, 'keep': 1},
+		),
+		_flowchart = dict(theme = 'default'),
+		# The command to run after jobs start
+		afterCmd   = '',
+		# The extra arguments for the process
+		args       = Box(),
+		# The command to run before jobs start
+		beforeCmd  = '',
+		# The cache option, True/False/export
+		cache      = True,
+		# Do cleanup for cached jobs?
+		acache     = False,
+		# The description of the job
+		desc       = 'No description',
+		# Whether expand directory to check signature
+		dirsig     = True,
+		# Whether to echo the stdout and stderr of the jobs to the screen
+		# Could also be:
+		# {
+		#   'jobs':   0           # or [0, 1, 2], just echo output of those jobs.
+		#   'type':   'stderr'    # only echo stderr. (stdout: only echo stdout; [don't specify]: echo all)
+		# }
+		# You can also specify a filter to the type
+		# {
+		#   'jobs':  0
+		#   'type':  {'stderr': r'^Error'}	# only output lines starting with 'Error' in stderr
+		# }
+		# self.echo = True     <=> self.echo = { 'jobs': [0], 'type': {'stderr': None, 'stdout': None} }
+		# self.echo = False    <=> self.echo = { 'jobs': [] }
+		# self.echo = 'stderr' <=> self.echo = { 'jobs': [0], 'type': {'stderr': None} }
+		# self.echo = {'jobs': 0, 'type': 'stdout'} <=> self.echo = { 'jobs': [0], 'type': {'stdout': None} }
+		# self.echo = {'type': {'all': r'^output'}} <=> self.echo = { 'jobs': [0], 'type': {'stdout': r'^output', 'stderr': r'^output'} }
+		echo       = False,
+		# How to deal with the errors
+		# retry, ignore, halt
+		# halt to halt the whole pipeline, no submitting new jobs
+		# terminate to just terminate the job itself
+		errhow     = 'terminate',
+		# How many times to retry to jobs once error occurs
+		errntry    = 3,
+		# The directory to export the output files
+		exdir      = '',
+		# How to export # link, copy, gzip
+		exhow      = 'move',
+		# Whether to overwrite the existing files # overwrite
+		exow       = True,
+		# partial export, either the key of output file or the pattern
+		expart     = '',
+		# expect
+		expect     = '',
+		# How many jobs to run concurrently
+		forks      = 1,
+		# Default shell/language
+		lang       = 'bash',
+		# number of threads used to build jobs and to check job cache status
+		nthread    = min(int(cpu_count() / 2), 16),
+		# Where cache file and workdir located
+		ppldir     = path.abspath('./workdir'),
+		# Valid return codes
+		rc         = 0,
+		# Select the runner
+		runner     = 'local',
+		# The script of the jobs
+		script     = '',
+		# The tag of the job
+		tag        = 'notag',
+		# The template engine (name)
+		template   = '',
+		# The template environment
+		tplenvs    = Box(),
+		# working directory for the process
+		workdir    = ''
+	)), '~/.PyPPL.yaml', '~/.PyPPL.toml', './.PyPPL.yaml', './.PyPPL.toml', 'PYPPL.osenv')
+
+load_configuratiaons()
 
 # load logger
 from .logger import logger
@@ -149,10 +151,17 @@ class PyPPL (object):
 		self.counter = PyPPL.COUNTER
 		PyPPL.COUNTER += 1
 
+		self.config = config.copy()
 		if cfgfile and path.isfile(cfgfile):
-			config._load(cfgfile)
+			self.config._load(cfgfile)
 		if isinstance(conf, dict):
-			config.update(conf or {})
+			self.config.update(conf or {})
+		
+		if self.config._log.file is True:
+			self.config._log.file = './%s%s.pyppl.log' % (
+				path.splitext(path.basename(sys.argv[0]))[0], 
+				('_%s' % self.counter) if self.counter else ''
+			)
 		# reinitiate logger according to new config
 		logger.init()
 		logger.pyppl('Version: %s', VERSION)
@@ -322,7 +331,7 @@ class PyPPL (object):
 				ProcTree.getNextStr(proc), 
 				proc = proc.id
 			)
-			proc.run(profile)
+			proc.run(profile, self.config)
 
 			proc = self.tree.getNextToRun()
 
@@ -358,7 +367,7 @@ class PyPPL (object):
 		)
 		dotfile = dotfile or '%s.dot' % (path.splitext(fcfile)[0])
 		fc  = Flowchart(fcfile = fcfile, dotfile = dotfile)
-		fc.setTheme(config._FLOWCHART.theme)
+		fc.setTheme(self.config._flowchart.theme)
 
 		for start in self.tree.getStarts():
 			fc.addNode(start, 'start')
