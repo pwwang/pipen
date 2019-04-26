@@ -81,6 +81,8 @@ def load_configuratiaons():
 		expect     = '',
 		# How many jobs to run concurrently
 		forks      = 1,
+		# Hide the process in flowchart
+		hide       = False,
 		# Default shell/language
 		lang       = 'bash',
 		# number of threads used to build jobs and to check job cache status

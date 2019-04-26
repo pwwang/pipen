@@ -5,6 +5,7 @@ import sys
 import re
 import json
 from os import path, makedirs, utime, listdir
+from box import Box
 from glob import glob
 from functools import partial
 from collections import OrderedDict
@@ -12,7 +13,6 @@ from datetime import datetime
 from threading import Lock
 from .logger import logger
 from .utils import cmd, safefs, string_types, briefPath, jsonLoads
-from .utils.box import Box
 from .exception import JobInputParseError, JobOutputParseError
 
 class Job(object):
@@ -99,7 +99,7 @@ class Job(object):
 		# need to pass this to next procs, so have to keep order
 		self.output    = OrderedDict()
 		self.data      = Box(
-			job = Box(
+			job = dict(
 				index    = self.index,
 				indir    = self.indir,
 				outdir   = self.outdir,
@@ -109,8 +109,8 @@ class Job(object):
 				pidfile  = self.pidfile,
 				cachedir = self.cachedir
 			),
-			i = Box(),
-			o = Box()
+			i = {},
+			o = {}
 		)
 		self.data.update(self.config.get('procvars', {}))
 		self.runner   = None

@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 from pyppl import Proc
 from pyppl.proctree import ProcTree, ProcNode
-from pyppl.exception import ProcTreeProcExists, ProcTreeParseError
+from pyppl.exception import ProcTreeProcExists, ProcTreeParseError, ProcHideError
 
 class TestProcNode(testly.TestCase):
 
@@ -159,6 +159,31 @@ class TestProcTree(testly.TestCase):
 				self.assertIn(nproc, ndepend.next)
 				self.assertIn(ndepend, nproc.prev)
 
+	def testHideError(self):
+		proc_testHideError1 = Proc()
+		proc_testHideError2 = Proc()
+		proc_testHideError3 = Proc()
+		proc_testHideError4 = Proc()
+		proc_testHideError5 = Proc()
+		proc_testHideError3.hide = True
+		proc_testHideError3.depends = [proc_testHideError1, proc_testHideError2]
+		proc_testHideError4.depends = proc_testHideError3
+		proc_testHideError5.depends = proc_testHideError3
+		self.assertRaises(ProcHideError, ProcTree)
+
+		proc_testHideError3.hide = False
+		pt = ProcTree()
+		proc_testHideError3.hide = True
+		self.assertRaises(ProcHideError, pt.setStarts, [proc_testHideError3])
+
+		proc_testHideError3.hide = False
+		proc_testHideError5.hide = True
+		pt.setStarts([proc_testHideError1, proc_testHideError2])
+		self.assertRaises(ProcHideError, pt.getEnds)
+
+		
+
+
 	def dataProvider_testSetGetStarts(self):
 		proc_testSetGetStarts1 = Proc()
 		proc_testSetGetStarts2 = Proc()
@@ -236,6 +261,34 @@ class TestProcTree(testly.TestCase):
 		proc_testGetPaths14.depends = proc_testGetPaths13
 		ps4 = [proc_testGetPaths13, proc_testGetPaths14, proc_testGetPaths15]
 		yield ps4, proc_testGetPaths15, [[proc_testGetPaths13], [proc_testGetPaths14, proc_testGetPaths13]]
+
+		proc_testGetPaths16 = Proc()
+		proc_testGetPaths17 = Proc()
+		proc_testGetPaths18 = Proc()
+		proc_testGetPaths17.hide = True
+		proc_testGetPaths17.depends = proc_testGetPaths16
+		proc_testGetPaths18.depends = proc_testGetPaths17
+		yield [proc_testGetPaths16, proc_testGetPaths17, proc_testGetPaths18], proc_testGetPaths18, [[proc_testGetPaths16]]
+
+		proc_testGetPaths20 = Proc()
+		proc_testGetPaths21 = Proc()
+		proc_testGetPaths22 = Proc()
+		proc_testGetPaths23 = Proc()
+		proc_testGetPaths22.hide = True
+		proc_testGetPaths23.depends = proc_testGetPaths22
+		proc_testGetPaths22.depends = [proc_testGetPaths20, proc_testGetPaths21]
+		yield [proc_testGetPaths20, proc_testGetPaths21, proc_testGetPaths22, proc_testGetPaths23], proc_testGetPaths23, [[proc_testGetPaths20], [proc_testGetPaths21]]
+
+		proc_testGetPaths24 = Proc()
+		proc_testGetPaths25 = Proc()
+		proc_testGetPaths26 = Proc()
+		proc_testGetPaths27 = Proc()
+		proc_testGetPaths25.hide = True
+		proc_testGetPaths26.hide = True
+		proc_testGetPaths27.depends = [proc_testGetPaths25, proc_testGetPaths26]
+		proc_testGetPaths25.depends = proc_testGetPaths24
+		proc_testGetPaths26.depends = proc_testGetPaths24
+		yield [proc_testGetPaths24, proc_testGetPaths25, proc_testGetPaths26, proc_testGetPaths27], proc_testGetPaths27, [[proc_testGetPaths24]]
 
 
 	def testGetPaths(self, procs, proc, paths, exception = None):

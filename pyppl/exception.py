@@ -100,6 +100,11 @@ class ProcRunCmdError(Exception):
 		msg += cmd
 		super(ProcRunCmdError, self).__init__(msg)
 
+class ProcHideError(Exception):
+	"""Raise when a process cannot be hidden in the flowchart"""
+	def __init__(self, proc, msg):
+		super(ProcHideError, self).__init__('%s: %s' % (proc.name(), msg))
+
 class PyPPLProcRelationError(Exception):
 	"""Raise when failed to parse the relation of processes"""
 	def __init__(self, p, msg):

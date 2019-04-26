@@ -4,9 +4,13 @@ The aggregation of procs
 import fnmatch
 from box import Box
 from collections import OrderedDict
-from . import utils
+from .utils import varname
 
 class _Proxy(list):
+	"""
+	A proxy class extended from list to enable dot access
+	to all members and set attributes for all members.
+	"""
 	def __getattr__(self, item):
 		if hasattr(super(_Proxy, self), item):
 			return super(_Proxy, self).getattr(item)
@@ -35,6 +39,13 @@ class _Proxy(list):
 		return self.__setattr__(item, value)
 
 	def add(self, anything):
+		"""
+		Add elements to the list.
+		@params:
+			`anything`: anything that is to be added.
+				If it is a _Proxy, element will be added individually
+				Otherwise the whole `anything` will be added as one element.
+		"""
 		if isinstance(anything, _Proxy):
 			for at in anything:
 				self.add(at)
@@ -42,12 +53,24 @@ class _Proxy(list):
 			self.append(anything)
 
 class Aggr(Box):
+	"""
+	The aggregation of a set of processes
+	"""
 
 	def __init__(self, *procs, **kwargs):
+		"""
+		Constructor
+		@params:
+			`*procs` : the set of processes
+			`depends`: Whether auto deduce depends. Default: True
+			`id`     : The id of the aggr. Default: None (the variable name)
+			`tag`    : The tag of the processes. Default: None (a unique 4-char str according to the id)
+			`copy`   : Whether copy the processes or just use them. Default: `True`
+		"""
 		from . import Proc
 		boxargs = OrderedDict()
 
-		boxargs['id']               = kwargs.get('id') or utils.varname()
+		boxargs['id']               = kwargs.get('id') or varname()
 		boxargs['tag']              = kwargs.get('tag')
 		boxargs['starts']           = _Proxy()
 		boxargs['ends']             = _Proxy()
@@ -80,10 +103,28 @@ class Aggr(Box):
 		super(Aggr, self).__init__(boxargs.items(), ordered_box = True, box_intact_types = [_Proxy])
 
 	def setGroup(self, name, *items):
+		"""
+		Set up groups
+		@params:
+			`name`: The name of the group. Once set, you can access it by:
+				`aggr.<name>` or `aggr[<name>]`
+			`*items`: The selectors of processes, which will be passed to `__getitem__`
+		"""
 		self.groups[name] = _Proxy(sum((self[item] for item in items), _Proxy()))
 	
 	def copy (self, id = None, tag = None, depends = True, groups = True):
-		id  = id or utils.varname()
+		"""
+		Like `proc`'s `copy` function, copy an aggregation. Each processes will be copied.
+		@params:
+			`tag`    : The new tag of all copied processes
+			`depends`: Whether to copy the dependencies or not. Default: True
+				- dependences for processes in starts will not be copied
+			`id`   : Use a different id if you don't want to use the variant name
+			`grups`: Copy grups? Default: `True`
+		@returns:
+			The new aggregation
+		"""
+		id  = id or varname()
 		ret = self.__class__(
 			*[self[key] for key in self._idprocs], id = id, tag = tag, depends = False
 		)

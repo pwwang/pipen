@@ -2,3 +2,5 @@ filelock
 futures
 liquidpy
 colorama
+python-simpleconf
+python-box
