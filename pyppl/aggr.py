@@ -61,11 +61,13 @@ class Aggr(Box):
 			assert isinstance(proc, Proc), 'Argument has to be a Proc object: %r.' % proc
 			boxargs['_idprocs'].append(proc.id)
 			if ifcopy:
-				boxargs[proc.id] = proc.copy(proc.id, tag = boxargs['tag'] or 
-					proc.tag.split('@')[0] + '@' + boxargs['id'])
+				boxargs[proc.id] = proc.copy(proc.id, 
+					tag = (boxargs['tag'] or proc.tag.split('@', 1)[0]) + '@' + boxargs['id']
+				)
 			else:
-				proc.tag = boxargs['tag'] or proc.tag.split('@')[0] + '@' + boxargs['id']
+				proc.tag = (boxargs['tag'] or proc.tag.split('@', 1)[0]) + '@' + boxargs['id']
 				boxargs[proc.id] = proc
+			boxargs[proc.id].aggr = boxargs['id']
 			if depends and i > 0:
 				boxargs[proc.id].depends = boxargs[boxargs['_idprocs'][i - 1]]
 
@@ -101,6 +103,16 @@ class Aggr(Box):
 
 		return ret
 
+	def __setattr__(self, item, value):
+		if item in ('starts', 'ends'):
+			super(Aggr, self).__setattr__(item, _Proxy(value))
+		elif item in ('depends', 'input'):
+			self.starts.__setattr__(item, value)
+		elif item in ('exdir', 'exhow', 'exow', 'expart'):
+			self.ends.__setattr__(item, value)
+		else:
+			super(Aggr, self).__setattr__(item, value)
+		
 	def __getitem__(self, item, _ignore_default = True):
 		from . import Proc
 		if isinstance(item, slice):

@@ -1,7 +1,7 @@
 import testly
 
 from pyppl import Proc, ProcTree
-from pyppl.exception import LoggerThemeError, ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError, ProcTreeProcExists, ProcTreeParseError, JobInputParseError, JobOutputParseError, RunnerSshError, ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcFindError, PyPPLProcRelationError, PyPPLConfigError, AggrAttributeError, AggrCopyError, AggrKeyError
+from pyppl.exception import LoggerThemeError, ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError, ProcTreeProcExists, ProcTreeParseError, JobInputParseError, JobOutputParseError, RunnerSshError, ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError, PyPPLProcRelationError, PyPPLConfigError
 
 class TestException(testly.TestCase):
 
@@ -24,12 +24,8 @@ class TestException(testly.TestCase):
 		yield ProcOutputError('', ''), ProcOutputError
 		yield ProcScriptError('', ''), ProcScriptError
 		yield ProcRunCmdError('', ''), ProcRunCmdError
-		yield PyPPLProcFindError('', ''), PyPPLProcFindError
 		yield PyPPLProcRelationError('', ''), PyPPLProcRelationError
 		yield PyPPLConfigError('', ''), PyPPLConfigError
-		yield AggrAttributeError('', ''), AggrAttributeError
-		yield AggrCopyError('', ''), AggrCopyError
-		yield AggrKeyError('', ''), AggrKeyError
 		
 	def testInit(self, exc, Exc, Super = Exception):
 		self.assertIsInstance(exc, Exc)

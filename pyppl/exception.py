@@ -100,11 +100,6 @@ class ProcRunCmdError(Exception):
 		msg += cmd
 		super(ProcRunCmdError, self).__init__(msg)
 
-class PyPPLProcFindError(Exception):
-	"""Raise when failed to find a proc"""
-	def __init__(self, p, msg = 'Failed to find process'):
-		super(PyPPLProcFindError, self).__init__(str(msg) + ': ' + repr(p))
-
 class PyPPLProcRelationError(Exception):
 	"""Raise when failed to parse the relation of processes"""
 	def __init__(self, p, msg):
@@ -114,21 +109,6 @@ class PyPPLConfigError(Exception):
 	"""Raise when failed to parse the configuration of pyppl"""
 	def __init__(self, key, msg):
 		super(PyPPLConfigError, self).__init__(str(msg) + ': ' + repr(key))
-
-class AggrAttributeError(AttributeError):
-	"""Raise when there is an error to set/get Aggr attributes"""
-	def __init__(self, key, msg):
-		super(AggrAttributeError, self).__init__(str(msg) + ': ' + repr(key))
-
-class AggrCopyError(Exception):
-	"""Raise when there is an error to set/get Aggr attributes"""
-	def __init__(self, key, msg = 'Failed to copy aggregation'):
-		super(AggrCopyError, self).__init__(str(msg) + ': ' + repr(key))
-
-class AggrKeyError(KeyError):
-	"""Raise when error occurred doing aggr[...]"""
-	def __init__(self, key, msg = 'Key error'):
-		super(AggrKeyError, self).__init__(str(msg) + ': ' + repr(key))
 
 class JobFailException(Exception):
 	"""Raise when a job failed to run"""

@@ -7,8 +7,8 @@ from collections import OrderedDict
 from glob import glob
 from pyppl import Proc, PyPPL, ProcTree, Aggr
 from pyppl.runners import RunnerLocal, RunnerSge, RunnerSlurm, RunnerSsh, RunnerDry
-from pyppl.exception import PyPPLProcFindError, PyPPLProcRelationError, PyPPLConfigError
-from simpleconf import config
+from pyppl.exception import PyPPLProcRelationError, PyPPLConfigError
+from pyppl.utils import config
 
 class TestPyPPL(testly.TestCase):
 
@@ -56,9 +56,9 @@ class TestPyPPL(testly.TestCase):
 		stderr = err.getvalue()
 		self.assertIsInstance(pp, PyPPL)
 		self.assertIsInstance(pp.tree, ProcTree)
-		config.forks = config.int('forks')
-		self.assertDictContains(outconf, config)
-		self.assertDictEqual(config._flowchart, outfcconf)
+		pp.config.forks = pp.config.int('forks')
+		self.assertDictContains(outconf, pp.config)
+		self.assertDictEqual(pp.config._flowchart, outfcconf)
 		for err in errs:
 			self.assertIn(err, stderr)
 			stderr = stderr[(stderr.find(err) + len(err)):]
@@ -87,18 +87,15 @@ class TestPyPPL(testly.TestCase):
 		aAggr = Aggr(pAny2Procs6, pAny2Procs7)
 		aAggr.starts = [aAggr.pAny2Procs6, aAggr.pAny2Procs7]
 		yield [pAny2Procs1], [pAny2Procs1]
-		yield ['abc'], [], PyPPLProcFindError, 'Failed to find process'
+		yield ['abc'], []
 		yield [aAggr], [aAggr.pAny2Procs6, aAggr.pAny2Procs7]
 		yield ['pAny2Procs5'], [pAny2Procs51, pAny2Procs52]
 		yield ['pAny2Procs5.51'], [pAny2Procs51]
 		yield ['pAny2Procs1.notag'], [pAny2Procs1]
 		yield ['pAny2Procs5', aAggr, [pAny2Procs2, 'pAny2Procs1.notag']], [pAny2Procs51, pAny2Procs52, pAny2Procs1, pAny2Procs2, aAggr.pAny2Procs6, aAggr.pAny2Procs7]
 		
-	def testAny2Procs(self, args, procs, exception = None, msg = None):
-		if exception:
-			self.assertRaisesRegex(exception, msg, PyPPL._any2procs, *args)
-		else:
-			self.assertCountEqual(PyPPL._any2procs(*args), procs)
+	def testAny2Procs(self, args, procs):
+		self.assertCountEqual(PyPPL._any2procs(args), procs)
 			
 	def dataProvider_testStart(self):
 		'''
@@ -295,7 +292,7 @@ class TestPyPPL(testly.TestCase):
 		aAggr.starts = [aAggr.pShowAllRoutes7]
 		aAggr.pShowAllRoutes8.depends = aAggr.pShowAllRoutes7
 		aAggr.pShowAllRoutes9.depends = aAggr.pShowAllRoutes7
-		aAggr.depends2 = [pShowAllRoutes3, pShowAllRoutes6]
+		aAggr.depends = [pShowAllRoutes3, pShowAllRoutes6]
 		yield [pShowAllRoutes1, pShowAllRoutes5], [
 			'DEBUG',
 			'* pShowAllRoutes1 -> pShowAllRoutes10',
@@ -347,7 +344,7 @@ class TestPyPPL(testly.TestCase):
 		aAggr.starts = [aAggr.pFlowchart7]
 		aAggr.pFlowchart8.depends = aAggr.pFlowchart7
 		aAggr.pFlowchart9.depends = aAggr.pFlowchart7
-		aAggr.depends2 = [pFlowchart3, pFlowchart6]
+		aAggr.depends = [pFlowchart3, pFlowchart6]
 		
 		dotfile = path.join(self.testdir, 'test.dot')
 		fcfile  = path.join(self.testdir, 'test.svg')
@@ -421,38 +418,18 @@ class TestPyPPL(testly.TestCase):
 		aAggr.starts = [aAggr.pRun7]
 		aAggr.pRun8.depends = aAggr.pRun7
 		aAggr.pRun9.depends = aAggr.pRun7
-		aAggr.depends2 = [pRun3, pRun6]
+		aAggr.depends = [pRun3, pRun6]
 		yield [pRun1, pRun5], 'profile', 'sge', [
-			'--------------------------------------------------------------------------------',
 			'pRun1 (pRun0): No description.',
-			'--------------------------------------------------------------------------------',
-			'--------------------------------------------------------------------------------',
 			'pRun2: No description.',
-			'--------------------------------------------------------------------------------',
-			'--------------------------------------------------------------------------------',
 			'pRun3: No description.',
-			'--------------------------------------------------------------------------------',
-			'--------------------------------------------------------------------------------',
 			'pRun4: No description.',
-			'--------------------------------------------------------------------------------',
-			'--------------------------------------------------------------------------------',
 			'pRun5: No description.',
-			'--------------------------------------------------------------------------------',
-			'--------------------------------------------------------------------------------',
 			'pRun6: No description.',
-			'--------------------------------------------------------------------------------',
-			'--------------------------------------------------------------------------------',
 			'pRun10: No description.',
-			'--------------------------------------------------------------------------------',
-			'--------------------------------------------------------------------------------',
-			'pRun7.5gPF@aAggr: No description.',
-			'--------------------------------------------------------------------------------',
-			'--------------------------------------------------------------------------------',
-			'pRun8.5gPF@aAggr: No description.',
-			'--------------------------------------------------------------------------------',
-			'--------------------------------------------------------------------------------',
-			'pRun9.5gPF@aAggr: No description.',
-			'--------------------------------------------------------------------------------',
+			'pRun7@aAggr: No description.',
+			'pRun8@aAggr: No description.',
+			'pRun9@aAggr: No description.',
 		]
 
 		# pRun21 -> pRun22
@@ -474,7 +451,7 @@ class TestPyPPL(testly.TestCase):
 		argv = sys.argv
 		sys.argv = [sys.argv[0]]
 		#helpers.log2sys()
-		config._load({profile: dict(runner = runner)})
+		pp.config._load({profile: dict(runner = runner)})
 		with helpers.log2str(levels = 'all') as (out, err):
 			pp.run(profile)
 		#print out.getvalue()

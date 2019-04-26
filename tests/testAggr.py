@@ -81,7 +81,7 @@ class TestAggr(testly.TestCase):
 
 		a = Aggr(p1, p2, p3, p4, id = 'b', tag = 'tag')
 		self.assertEqual(a.p1.id, 'p1')
-		self.assertEqual(a.p1.tag, 'tag')
+		self.assertEqual(a.p1.tag, 'tag@b')
 
 		self.assertEqual(a.p2.depends, [a.p1])
 

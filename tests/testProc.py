@@ -8,13 +8,12 @@ from shutil import rmtree
 from tempfile import gettempdir
 from collections import OrderedDict
 from multiprocessing import cpu_count
-from pyppl import Proc, Box, Aggr, utils, ProcTree, Channel, Job, logger, config
+from pyppl import Proc, Box, Aggr, utils, ProcTree, Channel, Job, logger
 from pyppl.exception import ProcTagError, ProcAttributeError, ProcTreeProcExists, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
 from pyppl.template import TemplateLiquid
 if helpers.moduleInstalled('jinja2'):
 	from pyppl.template import TemplateJinja2
 from pyppl.runners import RunnerLocal
-from simpleconf import config
 
 __folder__ = path.realpath(path.dirname(__file__))
 
@@ -250,7 +249,7 @@ class TestProc(testly.TestCase):
 		yield pRepr, '<Proc(pRepr) @ %s>' % hex(id(pRepr))
 		pRepr1 = Proc(tag = 'atag')
 		yield pRepr1, '<Proc(pRepr1.atag) @ %s>' % hex(id(pRepr1))
-		pRepr2 = Proc(tag = 'aggr')
+		pRepr2 = Proc(tag = 'aggr@aggr')
 		pRepr2.aggr = 'aggr'
 		yield pRepr2, '<Proc(pRepr2.aggr@aggr) @ %s>' % hex(id(pRepr2))
 		
@@ -337,7 +336,7 @@ class TestProc(testly.TestCase):
 			'rc': [0],
 			'runner': 'local',
 			'script': None,
-			'sets': {'workdir'},
+			'sets': {'workdir', 'desc'},
 			'timer': None,
 			'size': 0,
 			'suffix': '',
@@ -433,7 +432,7 @@ class TestProc(testly.TestCase):
 		
 	def dataProvider_testName(self):
 		pName = Proc()
-		pName.tag = 'tag'
+		pName.tag = 'tag@aggr'
 		pName.aggr = 'aggr'
 		yield pName, True, 'pName.tag@aggr'
 		yield pName, False, 'pName.tag'
@@ -903,7 +902,7 @@ class TestProc(testly.TestCase):
 	def dataProvider_testReadConfig(self):
 		pReadConfig = Proc()
 		yield 't1', None, None, 'local', {'runner': 'local'}
-		yield 't2', 'sge', None, 'sge', {'runner': 'sge'}
+		yield 't2', 'sge', None, 'sge', {'runner': None}
 		yield 't3', 'default1', {'default1': {'runner': 'sge'}}, 'sge', {'runner': 'default1'}
 		yield 't4', 'xxx', {'xxx': {}, 'default': {}}, 'local', {'runner': 'xxx'}
 		yield 't5', 'xxx', {'xxx': {}}, 'local', {'runner': 'xxx'}
@@ -914,12 +913,9 @@ class TestProc(testly.TestCase):
 		
 	def testReadConfig(self, tag, profile, inconfig, runner, outconfig):
 		pReadConfig = Proc(tag = tag)
-		if inconfig:
-			config._load(inconfig)
-		pReadConfig._readConfig(profile)
+		pReadConfig._readConfig(profile, inconfig)
 		self.assertEqual(pReadConfig.runner, runner)
 		self.assertDictContains(outconfig, pReadConfig.config)
-		config._revert()
 		
 	def dataProvider_testTidyAfterRun(self):
 		pTidyAfterRun = Proc()

@@ -91,7 +91,7 @@ class Proc (object):
 		# Get configuration from config
 		self.__dict__['config']   = utils.config.copy()
 		# computed props
-		self.__dict__['props']    = Box()
+		self.__dict__['props']    = Box(box_intact_types = [Channel])
 
 		# The id (actually, it's the showing name) of the process
 		self.config.id = id if id else utils.varname()
@@ -488,9 +488,9 @@ class Proc (object):
 		@returns:
 			the name
 		"""
-		aggrName  = "@%s" % self.aggr if self.aggr and aggr else ""
-		tag   = ".%s" % self.tag  if self.tag != "notag" else ""
-		return "%s%s%s" % (self.id, tag, aggrName)
+		ret = '%s.%s' % (self.id, self.tag)
+		ret = ''.join(ret.split('.notag', 1))
+		return ret if aggr else ret.split('@', 1)[0]
 
 	def run (self, profile = None, config = None):
 		"""
@@ -890,7 +890,6 @@ class Proc (object):
 		if self.runner not in PyPPL.RUNNERS:
 			raise ProcAttributeError('No such runner: {}. If it is a profile, did you forget to specify a basic runner?'.format(self.runner))
 
-		# TODO: pass the proc to job to save memory
 		jobcfg = {
 			'workdir'   : self.workdir,
 			'runner'    : PyPPL.RUNNERS[self.runner],
@@ -927,34 +926,35 @@ class Proc (object):
 		"""
 		if not profile:
 			return
-
+		
+		# configs have been set
+		setconfigs = {key:self.config[key] for key in self.sets}
+		self.config._load(config or {})
 		if isinstance(profile, dict):
-			if 'runner' in self.sets or 'runner' not in profile:
-				profile['runner'] = self.config.runner
-			config._load(dict(
+			profile['runner'] = profile.get('runner', self.config.runner)
+			self.config._load(dict(
 				__tmp__ = profile
 			))
-			config._use('__tmp__')
-			self.props.runner = config.runner
-			realprofile       = None
+			self.config._use('__tmp__')
+			self.config.update(setconfigs)
+			# the real runner
+			self.props.runner  = self.config.runner
+			# the real profile
+			self.config.runner = '__tmp__'
 		else:
 			try:
-				config._use(profile, raise_exc = True)
-				realrunner  = config.runner
-				realprofile = profile
+				self.config._use(profile, raise_exc = True)
+				self.config.update(setconfigs)
+				self.props.runner  = self.config.runner
+				self.config.runner = profile
 			except NoSuchProfile:
-				config._load({
+				self.config._load({
 					profile: dict(runner = profile) 
 				})
-				config._use(profile)
-				realrunner  = config.runner
-				realprofile = profile
-			finally:
-				# the real runner
-				self.props.runner = realrunner
-
-		self.config.update({k:v for k,v in config.items() if k not in self.sets})
-		self.config.runner = realprofile
+				self.config._use(profile)
+				self.config.update(setconfigs)
+				self.props.runner  = self.config.runner
+				self.config.runner = None
 
 	def _runCmd (self, key):
 		"""

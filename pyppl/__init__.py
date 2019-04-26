@@ -7,6 +7,8 @@ VERSION = "2019.2.20"
 import random
 # access sys.argv
 import sys
+# any2proc
+import fnmatch
 
 from os import path
 from time import time
@@ -15,6 +17,7 @@ from multiprocessing import cpu_count
 from box import Box
 from .utils import config
 
+DEFAULT_CFGFILES = ('~/.PyPPL.yaml', '~/.PyPPL.toml', './.PyPPL.yaml', './.PyPPL.toml', 'PYPPL.osenv')
 def load_configuratiaons():
 	# load configurations
 	config.clear()
@@ -98,20 +101,20 @@ def load_configuratiaons():
 		tplenvs    = Box(),
 		# working directory for the process
 		workdir    = ''
-	)), '~/.PyPPL.yaml', '~/.PyPPL.toml', './.PyPPL.yaml', './.PyPPL.toml', 'PYPPL.osenv')
+	)), *DEFAULT_CFGFILES)
 
 load_configuratiaons()
 
 # load logger
 from .logger import logger
-from .aggr import Aggr
+from .aggr import Aggr, _Proxy
 from .proc import Proc
 from .job import Job
 from .jobmgr import Jobmgr
 from .channel import Channel
 from .parameters import params, Parameters, commands
 from .proctree import ProcTree
-from .exception import PyPPLProcFindError, PyPPLProcRelationError
+from .exception import PyPPLProcRelationError
 from . import utils, runners
 
 class PyPPL (object):
@@ -197,7 +200,7 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
-		starts  = set(PyPPL._any2procs(*args))
+		starts  = set(PyPPL._any2procs(args))
 		nostart = set()
 		for start in starts:
 			paths = self.tree.getPaths(start)
@@ -219,7 +222,7 @@ class PyPPL (object):
 
 		sflag    = 'skip+' if kwargs.get('plus') else 'skip'
 		rflag    = 'resume+' if kwargs.get('plus') else 'resume'
-		resumes  = PyPPL._any2procs(*args)
+		resumes  = PyPPL._any2procs(args)
 
 		ends     = self.tree.getEnds()
 		#starts   = self.tree.getStarts()
@@ -389,40 +392,26 @@ class PyPPL (object):
 		return self
 
 	@staticmethod
-	def _any2procs (*args):
-		"""
-		Get procs from anything (aggr.starts, proc, procs, proc names)
-		@params:
-			`arg`: anything
-		@returns:
-			A set of procs
-		"""
-		# convert all to flat list
-		procs = [a for a in args if not isinstance(a, list)]
-		for a in args:
-			if isinstance(a, list):
-				procs.extend(a)
-
-		ret = []
-
-		for pany in set(procs):
-			if isinstance(pany, Proc):
-				ret.append(pany)
-			elif isinstance(pany, Aggr):
-				ret.extend([p for p in pany.starts])
+	def _any2procs(anything):
+		ret = _Proxy()
+		if not isinstance(anything, (tuple, list)):
+			if isinstance(anything, Proc):
+				ret.add(anything)
+			elif isinstance(anything, Aggr):
+				ret.add(anything.starts)
 			else:
-				found = False
 				for node in ProcTree.NODES.values():
-					p = node.proc
-					if p.id == pany:
-						found = True
-						ret.append(p)
-					elif p.id + '.' + p.tag == pany:
-						found = True
-						ret.append(p)
-				if not found:
-					raise PyPPLProcFindError(pany)
-		return list(set(ret))
+					if anything == node.proc.id:
+						ret.add(node.proc)
+					elif anything == node.proc.id + '.' + node.proc.tag:
+						ret.add(node.proc)
+						break
+					elif fnmatch.fnmatch(anything, node.proc.id + '.' + node.proc.tag):
+						ret.add(node.proc)
+		else:
+			for a in anything:
+				ret.add(PyPPL._any2procs(a))
+		return ret
 
 	@staticmethod
 	def _registerProc(proc):
