@@ -7,7 +7,7 @@ import copy
 from box import Box
 from subprocess import CalledProcessError, list2cmdline
 from .runner import Runner
-from ..utils import cm
+from ..utils import cmd
 
 class RunnerSge (Runner):
 	"""
