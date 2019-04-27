@@ -3,9 +3,10 @@ Slurm runner for PyPPL
 """
 import re
 import copy
+from box import Box
 from subprocess import CalledProcessError, list2cmdline
 from .runner import Runner
-from ..utils import cmd, box
+from ..utils import cmd
 
 class RunnerSlurm (Runner):
 	"""
@@ -112,7 +113,7 @@ class RunnerSlurm (Runner):
 			return r
 
 		except (OSError, CalledProcessError) as ex:
-			r        = box.Box()
+			r        = Box()
 			r.stderr = str(ex)
 			r.rc     = 1
 			r.cmd    = list2cmdline(cmdlist)
