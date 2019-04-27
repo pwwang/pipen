@@ -65,6 +65,8 @@ install:
   - pip install --user --ignore-installed codacy-coverage
   - pip install --user --ignore-installed liquidpy
   - pip install --user --ignore-installed colorama
+  - pip install --user --ignore-installed python-simpleconf
+  - pip install --user --ignore-installed python-box
 # command to run tests
 script:
   - make cov

@@ -326,6 +326,30 @@ class Parameter (object):
 	def __str__(self):
 		return str(self.value)
 
+	def str(self):
+		return str(self)
+
+	def int(self):
+		return int(self.value)
+
+	def float(self):
+		return float(self.value)
+
+	def __add__(self, other):
+		return str(self) + other
+
+	def __contains__(self, other):
+		return other in str(self)
+
+	def __eq__(self, other):
+		return str(self) == other
+
+	def __ne__(self, other):
+		return not self.__eq__(other)
+
+	def __bool__(self):
+		return bool(self.value)
+
 	def setDesc (self, d = ''):
 		"""
 		Set the description of the parameter
