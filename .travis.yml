@@ -58,6 +58,7 @@ install:
   - export PYTHONPATH="$(pwd):$(echo $PYTHONUSERBASE/lib*/python*/site-packages):$PYTHONPATH"
   - echo $PYTHONPATH
   - export PATH="$PYTHONUSERBASE/bin:$PATH"
+  - export PYPPL_default__log="py:{'levels':'all'}"
   #- pip install --user --upgrade pip
   - pip install --user --ignore-installed -r requirements.txt
   - pip install --user --ignore-installed python-testly
