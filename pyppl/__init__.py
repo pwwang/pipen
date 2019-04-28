@@ -116,7 +116,7 @@ from .jobmgr import Jobmgr
 from .channel import Channel
 from .parameters import params, Parameters, commands
 from .proctree import ProcTree
-from .exception import PyPPLProcRelationError
+from .exceptions import PyPPLProcRelationError
 from . import utils, runners
 
 class PyPPL (object):

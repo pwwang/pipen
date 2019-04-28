@@ -5,7 +5,7 @@ import errno
 import signal
 import os
 import subprocess
-from .cmd import Cmd
+import cmdy
 
 def exists(pid):
 	"""
@@ -40,8 +40,11 @@ def exists(pid):
 		# if process has been killed
 		# PID TTY          TIME CMD
 		# 53464 pts/9    00:00:00 sleep <defunct>
-		r = Cmd(['kill', '-0', str(pid)]).run()
-		return r.rc == 0
+		try:
+			r = cmdy.kill(_ = pid, s = 0)
+			return r.rc == 0
+		except cmdy.cmdyReturnCodeException:
+			return False
 
 def kill(pids, sig = signal.SIGKILL):
 	"""
@@ -53,7 +56,7 @@ def kill(pids, sig = signal.SIGKILL):
 		for pid in pids:
 			os.kill(int(pid), sig)
 	except OSError: # pragma: no cover
-		Cmd(['kill', '-' + str(sig)] + [str(pid) for pid in pids]).run()
+		cmdy.kill(_ = pids, s = sig)
 
 def child(pid, pidlist = None):
 	"""
@@ -70,7 +73,7 @@ def child(pid, pidlist = None):
 	try:
 		# --no-heading, --ppid not supported in osx
 		# cids = Cmd(['ps', '--no-heading', '-o', 'pid', '--ppid', pid]).run()
-		pidlist = Cmd(['ps', '-o', 'pid,ppid']).run().stdout.splitlines()
+		pidlist = cmdy.ps(o = 'pid,ppid').stdout.splitlines()
 		pidlist = [line.strip().split() for line in pidlist]
 		pidlist = [p for p in pidlist if len(p) == 2 and p[0].isdigit() and p[1].isdigit()]
 		return child(pid, pidlist)
@@ -81,7 +84,7 @@ def children(pid):
 	"""
 	Find the children of a mother process
 	"""
-	pidlist = Cmd(['ps', '-o', 'pid,ppid']).run().stdout.splitlines()
+	pidlist = cmdy.ps(o = 'pid,ppid').stdout.splitlines()
 	pidlist = [line.strip().split() for line in pidlist]
 	pidlist = [p for p in pidlist if len(p) == 2 and p[0].isdigit() and p[1].isdigit()]
 	cids = child(pid, pidlist)

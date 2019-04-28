@@ -3,7 +3,7 @@ Manage process relations
 """
 import traceback
 from collections import OrderedDict
-from .exception import ProcTreeProcExists, ProcTreeParseError, ProcHideError
+from .exceptions import ProcTreeProcExists, ProcTreeParseError, ProcHideError
 
 class ProcNode(object):
 	"""

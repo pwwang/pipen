@@ -22,8 +22,8 @@ setup (
 	packages         = find_packages(),
 	scripts          = ['bin/pyppl'],
 	install_requires = [
-		'filelock', 'futures', 'liquidpy', 'colorama',
-		'python-simpleconf', 'python-box'
+		'filelock', 'futures', 'liquidpy', 'colorama', 'psutil',
+		'python-simpleconf', 'python-box', 'cmdy', 'pyyaml'
 	],
 	classifiers      = [
 		"Intended Audience :: Developers",

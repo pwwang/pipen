@@ -68,6 +68,9 @@ install:
   - pip install --user --ignore-installed colorama
   - pip install --user --ignore-installed python-simpleconf
   - pip install --user --ignore-installed python-box
+  - pip install --user --ignore-installed pyyaml
+  - pip install --user --ignore-installed cmdy
+  - pip install --user --ignore-installed psutil
 # command to run tests
 script:
   - make cov

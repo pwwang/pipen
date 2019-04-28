@@ -8,7 +8,7 @@ import re
 from os import path
 from collections import OrderedDict
 from .utils import Box, string_types, ConfigParser, jsonLoads
-from .exception import ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError
+from .exceptions import ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError
 from colorama import Fore, Back, Style
 
 class HelpAssembler(object):

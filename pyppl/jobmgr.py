@@ -9,7 +9,7 @@ from .utils import config
 from .utils.taskmgr import PQueue, ThreadPool, Lock
 from .job import Job
 from .logger import logger
-from .exception import JobFailException, JobSubmissionException, JobBuildingException
+from .exceptions import JobFailException, JobSubmissionException, JobBuildingException
 
 class Jobmgr(object):
 	"""

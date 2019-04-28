@@ -3,7 +3,10 @@ A set of utitities for PyPPL
 """
 import inspect
 import re
+import cmdy
 import json
+import psutil
+from time import sleep
 from hashlib import md5
 from box import Box
 from simpleconf import Config
@@ -350,4 +353,16 @@ def briefPath(p, cutoff = 0, keep = 1):
 			break
 		parts[i] = newpart
 	return path.join(*parts)
+
+def killtree(pid, killme = True, sig = 9, timeout = None): # signal.SIGKILL
+
+	me = psutil.Process(pid)
+	children = me.children(recursive=True)
+	if killme:
+		children.append(me)
+	for p in children:
+		p.send_signal(sig)
+	
+	return psutil.wait_procs(children, timeout=timeout)
+
 

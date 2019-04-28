@@ -13,7 +13,7 @@ from datetime import datetime
 from threading import Lock
 from .logger import logger
 from .utils import cmd, safefs, string_types, briefPath, jsonLoads
-from .exception import JobInputParseError, JobOutputParseError
+from .exceptions import JobInputParseError, JobOutputParseError
 
 class Job(object):
 	"""

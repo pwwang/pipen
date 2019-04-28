@@ -4,3 +4,6 @@ liquidpy
 colorama
 python-simpleconf
 python-box
+cmdy
+pyyaml
+psutil

@@ -17,7 +17,7 @@ from .job import Job
 from .jobmgr import Jobmgr
 from .aggr import Aggr
 from .channel import Channel
-from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
+from .exceptions import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
 from . import utils, template
 
 class Proc (object):

@@ -7,9 +7,8 @@ from hashlib import md5
 from collections import OrderedDict
 from subprocess import list2cmdline
 from pyppl import Job, utils, runners
-from pyppl.runners import Runner, RunnerLocal, RunnerDry, RunnerSsh, RunnerSge, RunnerSlurm
+from pyppl.runners import Runner, RunnerLocal, RunnerDry, RunnerSsh, RunnerSge, RunnerSlurm, RunnerSshError
 from pyppl.template import TemplateLiquid
-from pyppl.exception import RunnerSshError
 #from pyppl.runners.helpers import Helper, LocalHelper, SgeHelper, SlurmHelper, SshHelper
 
 __here__ = path.realpath(path.dirname(__file__))
@@ -74,7 +73,7 @@ class TestRunner(testly.TestCase):
 		job = createJob(path.join(self.testdir, 'pTestSubmit'))
 		yield job, [
 			sys.executable,
-			path.realpath(runners.runner.__file__),
+			path.realpath(runners.__file__),
 			job.script
 		]
 
@@ -113,7 +112,7 @@ class TestLocalSubmitter(testly.TestCase):
 		yield path.join(self.testdir, 'pTestInit', '1', 'job.script'),
 
 	def testInit(self, script):
-		ls = runners.runner._LocalSubmitter(script)
+		ls = runners._LocalSubmitter(script)
 		scriptdir = path.dirname(script)
 		self.assertEqual(ls.script, script)
 		self.assertEqual(ls.rcfile, path.join(scriptdir, 'job.rc'))
@@ -128,7 +127,7 @@ class TestLocalSubmitter(testly.TestCase):
 		makedirs(path.dirname(script1))
 		with open(script1, 'w') as f:
 			f.write('#!/usr/bin/env bash\necho 1\necho 2 >&2')
-		yield runners.runner._LocalSubmitter(script1), script1, '1', '2'
+		yield runners._LocalSubmitter(script1), script1, '1', '2'
 
 	def testSubmit(self, ls, cmd, stdout = '', stderr = ''):
 		ls.submit()
@@ -150,11 +149,10 @@ class TestLocalSubmitter(testly.TestCase):
 		yield script2, '1', '2'
 
 	def testMain(self, script, stdout = '', stderr = ''):
-		cmd = [sys.executable, runners.runner.__file__, script]
-		utils.cmd.run(cmd)
+		r = RunnerLocal.SUBMITTER(script)
 		scriptdir = path.dirname(script)
 		rcfile  = path.join(scriptdir, 'job.rc')
-		pidfile = path.join(scriptdir, 'job.pid')
+		#pidfile = path.join(scriptdir, 'job.pid')
 		outfile = path.join(scriptdir, 'job.stdout')
 		errfile = path.join(scriptdir, 'job.stderr')
 		with open(outfile, 'r') as f:
@@ -349,7 +347,7 @@ class TestRunnerSsh(testly.TestCase):
 			path.join(__here__, 'mocks', 'ssh'), 
 			list2cmdline([
 				sys.executable, 
-				path.realpath(runners.runner.__file__) if not runners.runner.__file__.endswith('c') else path.realpath(runners.runner.__file__)[:-1], 
+				path.realpath(runners.__file__) if not runners.__file__.endswith('c') else path.realpath(runners.__file__)[:-1], 
 				job0.script + '.ssh'
 			])
 		]
@@ -368,7 +366,7 @@ class TestRunnerSsh(testly.TestCase):
 			path.join(__here__, 'mocks', 'ssh'), 
 			list2cmdline([
 				sys.executable, 
-				path.realpath(runners.runner.__file__) if not runners.runner.__file__.endswith('c') else path.realpath(runners.runner.__file__)[:-1], 
+				path.realpath(runners.__file__) if not runners.__file__.endswith('c') else path.realpath(runners.__file__)[:-1], 
 				job1.script + '.ssh'
 			])
 		]
