@@ -1,3 +1,6 @@
+from os import environ
+environ['PYPPL_default__log'] = 'py:{"levels": "all"}'
+
 import helpers, testly, sys, json
 
 from time import time

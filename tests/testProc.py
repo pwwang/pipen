@@ -1,3 +1,5 @@
+from os import environ
+environ['PYPPL_default__log'] = 'py:{"levels": "all"}'
 import helpers, testly, json, sys
 import copy as pycopy
 

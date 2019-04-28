@@ -1,3 +1,5 @@
+from os import environ
+environ['PYPPL_default__log'] = 'py:{"levels": "all"}'
 import helpers, testly, unittest
 
 from os import path, remove, makedirs

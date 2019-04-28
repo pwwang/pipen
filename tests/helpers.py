@@ -86,15 +86,12 @@ def assertInSvgFile(t, text, file, starts = None, msg = None):
 	text = text if isinstance(text, (tuple, list)) else text.split('\n')
 	if starts:
 		text = [line for line in text if line.startswith(starts)]
-	msg  = msg or '\n"{text}" is not in SVG file "{file}"\n'.format(
-		text = '\n'.join(text), file = file
-	)
 	with open(file) as f:
-		t.assertSeqContains(text, [
-			line.rstrip('\n') 
-			for line in f 
-			if not starts or line.startswith(starts)
-		], msg)
+		contents = f.read()
+	while text and contents:
+		line = text.pop(0)
+		t.assertIn(line, contents, msg)
+		contents = contents[(contents.find(line) + len(line)):]
 
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 #from loky import ProcessPoolExecutor
