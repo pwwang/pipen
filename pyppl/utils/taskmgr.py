@@ -1,6 +1,7 @@
 """
 A thread module for PyPPL
 """
+from cmdy import CmdyReturnCodeException
 try:
 	from Queue import PriorityQueue
 except ImportError: # pragma: no cover
@@ -23,7 +24,8 @@ class ThreadEx(Thread):
 			Thread.run(self)
 		except Exception as ex:
 			from traceback import format_exc
-			self.ex = type(ex)(format_exc())
+			self.ex = RuntimeError(format_exc()) if isinstance(ex, CmdyReturnCodeException) \
+				else type(ex)(format_exc())
 
 class ThreadPool(object):
 	"""

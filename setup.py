@@ -23,7 +23,7 @@ setup (
 	scripts          = ['bin/pyppl'],
 	install_requires = [
 		'filelock', 'futures', 'liquidpy', 'colorama', 'psutil',
-		'python-simpleconf', 'python-box', 'cmdy', 'pyyaml'
+		'python-simpleconf', 'python-box', 'cmdy', 'pyyaml', 'safefs'
 	],
 	classifiers      = [
 		"Intended Audience :: Developers",

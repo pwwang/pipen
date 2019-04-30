@@ -365,4 +365,37 @@ def killtree(pid, killme = True, sig = 9, timeout = None): # signal.SIGKILL
 	
 	return psutil.wait_procs(children, timeout=timeout)
 
+def chmodX(filepath, filetype = None):
+	"""
+	Convert file1 to executable or add extract shebang to cmd line
+	@returns:
+		A list with or without the path of the interpreter as the first element and the script file as the last element
+	"""
+	from stat import S_IEXEC
+	from os import path, chmod, stat
+	if not path.isfile(filepath):
+		raise OSError('Unable to make {} as executable'.format(filepath))
 
+	try:
+		ChmodError = (OSError, PermissionError, UnicodeDecodeError)
+	except NameError:
+		ChmodError = OSError
+	
+	ret = [filepath]
+	try:
+		chmod(filepath, stat(filepath).st_mode | S_IEXEC)
+	except ChmodError:
+		shebang = None
+		fsb = open(filepath)
+		try:
+			shebang = fsb.readline().strip()
+		except ChmodError: # pragma: no cover
+			# may raise UnicodeDecodeError for python3
+			pass
+		finally:
+			# make sure file's closed, otherwise a File text busy will be raised when trying to execute it
+			fsb.close()
+		if not shebang or not shebang.startswith('#!'):
+			raise OSError('Unable to make {} as executable by chmod and detect interpreter from shebang.'.format(filepath))
+		ret = shebang[2:].strip().split() + [filepath]
+	return ret

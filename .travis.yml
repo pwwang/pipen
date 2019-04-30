@@ -71,6 +71,7 @@ install:
   - pip install --user --ignore-installed pyyaml
   - pip install --user --ignore-installed cmdy
   - pip install --user --ignore-installed psutil
+  - pip install --user --ignore-installed safefs
 # command to run tests
 script:
   - make cov

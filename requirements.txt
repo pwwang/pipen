@@ -7,3 +7,4 @@ python-box
 cmdy
 pyyaml
 psutil
+safefs
