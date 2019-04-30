@@ -5,6 +5,7 @@ import re
 import sys
 import cmdy
 from os import getcwd
+from box import Box
 from psutil import pid_exists
 from multiprocessing import Lock
 from .utils import killtree, chmodX
@@ -79,7 +80,7 @@ class Runner (object):
 		"""
 		Try to submit the job
 		"""
-		c = cmdy.bash(self.script)
+		c = cmdy.bash(self.script, _bg = True)
 		c.rc = 0
 		return c
 
@@ -134,9 +135,9 @@ class RunnerDry (Runner):
 				continue
 				
 			if val['type'] in Proc.OUT_FILETYPE:
-				realScript.append("touch '{}'".format(val['data']))
+				realScript.append("touch %s" % cmdy._shquote(val['data']))
 			elif val['type'] in Proc.OUT_DIRTYPE:
-				realScript.append("mkdir -p '{}'".format(val['data']))
+				realScript.append("mkdir -p %s" % cmdy._shquote(val['data']))
 
 		self.wrapScript(realScript = realScript)
 
@@ -147,10 +148,10 @@ class RunnerSsh(Runner):
 	"""
 	LIVE_SERVERS = None
 	LOCK         = Lock()
-	SSH          = cmdy.ssh.bake(_dupkey = True, _okcode = '0~256')
+	SSH          = cmdy.ssh.bake(_dupkey = True, _okcode = '-999~999')
 	
 	@staticmethod
-	def isServerAlive(server, key = None, timeout = 3):
+	def isServerAlive(server, key = None, timeout = 3, ssh = 'ssh'):
 		"""
 		Check if an ssh server is alive
 		@params:
@@ -160,10 +161,11 @@ class RunnerSsh(Runner):
 		@returns:
 			`True` if alive else `False`
 		"""
-		params = {'': server, '_timout': timeout, '_': 'true'}
+		params = {'': server, '_timeout': timeout, '_': 'true'}
 		if key:
 			params['i'] = key
-		params['o'] = ['BatchMode=yes', 'ConnectionAttempts=1']
+		params['o']    = ['BatchMode=yes', 'ConnectionAttempts=1']
+		params['_exe'] = ssh
 		try:
 			c = RunnerSsh.SSH(**params)
 			return c.rc == 0
@@ -180,10 +182,9 @@ class RunnerSsh(Runner):
 		super(RunnerSsh, self).__init__(job)
 		# construct an ssh cmd
 
-		conf         = {}
-		if 'sshRunner' in self.job.config.get('runnerOpts', {}):
-			conf = self.job.config['runnerOpts']['sshRunner']
+		conf       = self.job.config.get('runnerOpts', {}).get('sshRunner', {})
 		
+		ssh        = conf.get('ssh', 'ssh')
 		servers    = conf.get('servers', [])
 		keys       = conf.get('keys', [])
 		checkAlive = conf.get('checkAlive', False)
@@ -195,14 +196,14 @@ class RunnerSsh(Runner):
 				if checkAlive is True:
 					RunnerSsh.LIVE_SERVERS = [
 						i for i, server in enumerate(servers)
-						if RunnerSsh.isServerAlive(server, keys[i] if keys else None)
+						if RunnerSsh.isServerAlive(server, keys[i] if keys else None, ssh = ssh)
 					]
 				elif checkAlive is False:
 					RunnerSsh.LIVE_SERVERS = list(range(len(servers)))
 				else:
 					RunnerSsh.LIVE_SERVERS = [
 						i for i, server in enumerate(servers)
-						if RunnerSsh.isServerAlive(server, keys[i] if keys else None, checkAlive)
+						if RunnerSsh.isServerAlive(server, keys[i] if keys else None, checkAlive, ssh = ssh)
 					]
 
 		if not RunnerSsh.LIVE_SERVERS:
@@ -222,7 +223,7 @@ class RunnerSsh(Runner):
 		self.wrapScript(head = head, preScript = preScript, 
 			realScript = realScript, postScript = postScript)
 		
-		baked = dict(t = server, i = key)		
+		baked = dict(t = server, i = key, _exe = ssh)		
 		self.ssh = RunnerSsh.SSH.bake(**baked)
 
 	def submit(self):
@@ -234,8 +235,12 @@ class RunnerSsh(Runner):
 		"""
 		c = self.ssh(_ = cmdy.ls(self.script, _dry = True).cmd)
 		if c.rc != 0:
-			c.stderr += 'Probably the server ({}) is not using the same file system as the local machine.\n'.format(self.sshcmd)
-			return c
+			d        = Box()
+			d.rc     = self.job.RC_SUBMITFAILED
+			d.cmd    = c.cmd
+			d.pid    = -1
+			d.stderr = c.stderr + '\nProbably the server ({}) is not using the same file system as the local machine.\n'.format(self.ssh.keywords['t'])
+			return d
 
 		c = self.ssh(_bg = True, _ = self.runnercmd)
 		c.rc = 0
@@ -249,7 +254,7 @@ class RunnerSsh(Runner):
 			_exe = sys.executable,
 			c    = 'from pyppl.utils import killtree; killtree(%s, killme = True)' % self.job.pid,
 			_dry = True).cmd
-		self.ssh(cmd)
+		self.ssh(_ = cmd)
 
 	def isRunning(self):
 		"""
@@ -259,8 +264,12 @@ class RunnerSsh(Runner):
 		"""
 		if not self.job.pid:
 			return False
-		cmd = cmdy.kill(s = 0, _ = self.job.pid, _dry = True).cmd
-		return self.ssh(cmd).rc == 0
+
+		cmd = cmdy.python(
+			_exe = sys.executable,
+			c    = 'from psutil import pid_exists; assert {pid} > 0 and pid_exists({pid})'.format(pid = self.job.pid),
+			_dry = True).cmd
+		return self.ssh(_ = cmd).rc == 0
 
 class RunnerSge (Runner):
 	"""
@@ -294,21 +303,21 @@ class RunnerSge (Runner):
 		]))
 		head.append('#$ -N %s' % sge_N)
 
-		sge_q = conf.pop('sge.q')
+		sge_q = conf.pop('sge.q', None)
 		if sge_q: 
 			head.append('#$ -q %s' % sge_q)
 
-		sge_j = conf.pop('sge.j')
+		sge_j = conf.pop('sge.j', None)
 		if sge_j: 
 			head.append('#$ -j %s' % sge_j)
 		
 		head.append('#$ -cwd')
 
-		sge_M = conf.pop('sge.M')
+		sge_M = conf.pop('sge.M', None)
 		if sge_M:
 			head.append('#$ -M %s' % sge_M)
 
-		sge_m = conf.pop('sge.m')
+		sge_m = conf.pop('sge.m', None)
 		if sge_m:
 			head.append('#$ -m %s' % sge_m)
 		
@@ -338,7 +347,7 @@ class RunnerSge (Runner):
 			# Your job 6556149 ("pSort.notag.3omQ6NdZ.0") has been submitted
 			m = re.search(r'\s(\d+)\s', c.stdout.strip())
 			if not m:
-				c.rc = 5
+				c.rc = self.job.RC_SUBMITFAILED
 			else:
 				self.job.pid = m.group(1)
 		return c
@@ -376,7 +385,7 @@ class RunnerSlurm (Runner):
 		super(RunnerSlurm, self).__init__(job)
 
 		conf = self.job.config.get('runnerOpts', {})
-		conf = copy.copy(conf.get('slurmRunner', {}))
+		conf = conf.get('slurmRunner', {}).copy()
 
 		self.sbatch  = cmdy.sbatch.bake(_exe = conf.get('sbatch'))
 		self.srun    = cmdy.srun.bake(_exe = conf.get('srun'))
@@ -401,7 +410,7 @@ class RunnerSlurm (Runner):
 				src += ' ' + str(v)
 			head.append(src)
 
-		realScript = self.srun(chmodX(self.job.script), _dry = True).cmd
+		realScript = self.srun(*chmodX(self.job.script), _dry = True).cmd
 		preScript  = conf.get('preScript')
 		postScript = conf.get('postScript')
 

@@ -1,4 +1,4 @@
-import helpers, testly, unittest, sys
+import helpers, testly, unittest, sys, cmdy
 
 from os import path, getcwd, makedirs, remove
 from shutil import rmtree
@@ -30,7 +30,7 @@ def createJob(testdir, index = 0, config = None):
 	if not path.exists(jobdir):
 		makedirs(jobdir)
 	with open(path.join(jobdir, 'job.script'), 'w') as f:
-		f.write('#!/usr/bin/env bash')
+		f.write('#!/usr/bin/env bash\n')
 		f.write(config.get('_script', ''))
 	open(path.join(jobdir, 'job.stdout'), 'w').close()
 	open(path.join(jobdir, 'job.stderr'), 'w').close()
@@ -51,8 +51,6 @@ class TestRunner(testly.TestCase):
 		r = Runner(job)
 		self.assertIsInstance(r, Runner)
 		self.assertIs(r.job, job)
-		self.assertEqual(r.script, [job.script])
-		self.assertEqual(r.cmd2run, job.script)
 	
 	def dataProvider_testIsRunning(self):
 		yield createJob(path.join(self.testdir, 'pTestIsRunning'), 0), False
@@ -71,15 +69,13 @@ class TestRunner(testly.TestCase):
 	
 	def dataProvider_testSubmit(self):
 		job = createJob(path.join(self.testdir, 'pTestSubmit'))
-		yield job, [
-			sys.executable,
-			path.realpath(runners.__file__),
-			job.script
-		]
+		yield job, cmdy.bash(job.script, _dry = True).cmd
 
 	def testSubmit(self, job, cmd):
 		r = Runner(job)
-		self.assertEqual(r.submit().cmd, list2cmdline(cmd))
+		r.wrapScript()
+		self.assertEqual(r.script, job.script + '.') # Runner doesn't have a name
+		self.assertEqual(r.submit().cmd, cmd + '.')
 
 	# Covered by job.run
 	# def dataProvider_testRun(self):
@@ -98,69 +94,6 @@ class TestRunner(testly.TestCase):
 	# 		self.assertEqual(f.read().strip(), stderr)
 	# 	with open(job.rcfile, 'r') as f:
 	# 		self.assertEqual(f.read().strip(), '0')
-
-
-class TestLocalSubmitter(testly.TestCase):
-
-	def setUpMeta(self):
-		self.testdir = path.join(gettempdir(), 'PyPPL_unittest', 'TestLocalSubmitter')
-		if path.exists(self.testdir):
-			rmtree(self.testdir)
-		makedirs(self.testdir)
-
-	def dataProvider_testInit(self):
-		yield path.join(self.testdir, 'pTestInit', '1', 'job.script'),
-
-	def testInit(self, script):
-		ls = runners._LocalSubmitter(script)
-		scriptdir = path.dirname(script)
-		self.assertEqual(ls.script, script)
-		self.assertEqual(ls.rcfile, path.join(scriptdir, 'job.rc'))
-		self.assertEqual(ls.pidfile, path.join(scriptdir, 'job.pid'))
-		self.assertEqual(ls.outfile, path.join(scriptdir, 'job.stdout'))
-		self.assertEqual(ls.errfile, path.join(scriptdir, 'job.stderr'))
-		self.assertEqual(ls.outfd, None)
-		self.assertEqual(ls.errfd, None)
-
-	def dataProvider_testSubmit(self):
-		script1 = path.join(self.testdir, 'pTestInit', '1', 'job.script')
-		makedirs(path.dirname(script1))
-		with open(script1, 'w') as f:
-			f.write('#!/usr/bin/env bash\necho 1\necho 2 >&2')
-		yield runners._LocalSubmitter(script1), script1, '1', '2'
-
-	def testSubmit(self, ls, cmd, stdout = '', stderr = ''):
-		ls.submit()
-		ls.quit()
-		self.assertEqual(ls.proc.rc, 0)
-		self.assertEqual(ls.proc.cmd, cmd)
-		with open(ls.outfile, 'r') as f:
-			self.assertEqual(f.read().strip(), stdout)
-		with open(ls.errfile, 'r') as f:
-			self.assertEqual(f.read().strip(), stderr)
-		with open(ls.rcfile, 'r') as f:
-			self.assertEqual(f.read().strip(), '0')
-
-	def dataProvider_testMain(self):
-		script2 = path.join(self.testdir, 'pTestInit', '2', 'job.script')
-		makedirs(path.dirname(script2))
-		with open(script2, 'w') as f:
-			f.write('#!/usr/bin/env bash\necho 1\necho 2 >&2')
-		yield script2, '1', '2'
-
-	def testMain(self, script, stdout = '', stderr = ''):
-		r = RunnerLocal.SUBMITTER(script)
-		scriptdir = path.dirname(script)
-		rcfile  = path.join(scriptdir, 'job.rc')
-		#pidfile = path.join(scriptdir, 'job.pid')
-		outfile = path.join(scriptdir, 'job.stdout')
-		errfile = path.join(scriptdir, 'job.stderr')
-		with open(outfile, 'r') as f:
-			self.assertEqual(f.read().strip(), stdout)
-		with open(errfile, 'r') as f:
-			self.assertEqual(f.read().strip(), stderr)
-		with open(rcfile, 'r') as f:
-			self.assertEqual(f.read().strip(), '0')
 	
 class TestRunnerLocal(testly.TestCase):
 
@@ -179,7 +112,23 @@ class TestRunnerLocal(testly.TestCase):
 				}
 			}
 		)
-		yield job, '#!/usr/bin/env bash\nprescript\n\n{}\n\npostscript'.format(job.script)
+		yield job, """#!/usr/bin/env bash
+#
+# Collect return code on exit
+trap "status=\$?; echo \$status > {jobdir}/job.rc; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
+#
+# Save pid
+echo $$ > {jobdir}/job.pid
+#
+# Run pre-script
+prescript
+#
+# Run the real script
+{jobdir}/job.script 1> {jobdir}/job.stdout 2> {jobdir}/job.stderr
+#
+# Run post-script
+postscript
+#""".format(jobdir = path.dirname(job.rcfile))
 
 	def testInit(self, job, content):
 		r = RunnerLocal(job)
@@ -204,7 +153,22 @@ class TestRunnerDry(testly.TestCase):
 			'b' : {'type': 'dir' , 'data': 'b.dir'},
 			'c' : {'type': 'var' , 'data': 'c'}
 		}
-		yield job, "#!/usr/bin/env bash\n\ntouch 'a.txt'\nmkdir -p 'b.dir'"
+		yield job, """#!/usr/bin/env bash
+#
+# Collect return code on exit
+trap "status=\$?; echo \$status > {jobdir}/job.rc; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
+#
+# Save pid
+echo $$ > {jobdir}/job.pid
+#
+# Run pre-script
+#
+# Run the real script
+touch a.txt
+mkdir -p b.dir 1> {jobdir}/job.stdout 2> {jobdir}/job.stderr
+#
+# Run post-script
+#""".format(jobdir = path.dirname(job.rcfile))
 
 	def testInit(self, job, content):
 		r = RunnerDry(job)
@@ -319,18 +283,24 @@ class TestRunnerSsh(testly.TestCase):
 			preScript  = job.config['runnerOpts']['sshRunner'].get('preScript', '')
 			preScript  = preScript and preScript + '\n'
 			postScript = job.config['runnerOpts']['sshRunner'].get('postScript', '')
-			postScript = postScript and '\n' + postScript
-			helpers.assertTextEqual(self, helpers.readFile(job.script + '.ssh', str), '\n'.join([
-				"#!/usr/bin/env bash",
-				"# run on server: {}".format(server),
-				"",
-				'%scd %s; %s%s',
-			]) % (
-				preScript, 
-				getcwd(), 
-				job.script, 
-				postScript
-			) + '\n')
+			postScript = postScript and postScript + '\n'
+			helpers.assertTextEqual(self, helpers.readFile(job.script + '.ssh', str), """#!/usr/bin/env bash
+# run on server: {server}
+#
+# Collect return code on exit
+trap "status=\$?; echo \$status > {jobdir}/job.rc; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
+#
+# Save pid
+echo $$ > {jobdir}/job.pid
+#
+# Run pre-script
+{preScript}#
+# Run the real script
+cd {cwd}
+{jobdir}/job.script 1> {jobdir}/job.stdout 2> {jobdir}/job.stderr
+#
+# Run post-script
+{postScript}#""".format(server = server, jobdir = path.dirname(job.script), cwd = getcwd(), preScript = preScript, postScript = postScript))
 		
 	def dataProvider_testSubmit(self):
 		job0 = createJob(
@@ -340,17 +310,17 @@ class TestRunnerSsh(testly.TestCase):
 				'runnerOpts': {'sshRunner': {
 					'servers': ['server1', 'server2', 'localhost'],
 					'checkAlive': False,
+					'ssh': path.join(__here__, 'mocks', 'ssh')
 				}},
 			}
 		)
-		yield job0, [
+
+		yield job0, ' '.join([
 			path.join(__here__, 'mocks', 'ssh'), 
-			list2cmdline([
-				sys.executable, 
-				path.realpath(runners.__file__) if not runners.__file__.endswith('c') else path.realpath(runners.__file__)[:-1], 
-				job0.script + '.ssh'
-			])
-		]
+			'-t',
+			'server1',
+			"'bash " + job0.script + ".ssh'"
+		])
 		job1 = createJob(
 			path.join(self.testdir, 'pTestSubmit'),
 			index = 1,
@@ -362,14 +332,13 @@ class TestRunnerSsh(testly.TestCase):
 				}},
 			}
 		)
-		yield job1, [
+		yield job1, ' '.join([
 			path.join(__here__, 'mocks', 'ssh'), 
-			list2cmdline([
-				sys.executable, 
-				path.realpath(runners.__file__) if not runners.__file__.endswith('c') else path.realpath(runners.__file__)[:-1], 
-				job1.script + '.ssh'
-			])
-		]
+			'-t',
+			'server1',
+			"'bash " + job1.script + ".ssh'"
+		])
+
 		job2 = createJob(
 			path.join(self.testdir, 'pTestSubmit'),
 			index = 2,
@@ -381,13 +350,12 @@ class TestRunnerSsh(testly.TestCase):
 				}},
 			}
 		)
-		yield job2, [
-			path.join(__here__, 'mocks', 'ssh'), 
-			list2cmdline([
-				'ls',
-				job2.script + '.ssh'
-			])
-		], 1
+		yield job2, ' '.join([
+			'ssh', 
+			'-t',
+			'localhost',
+			"'ls " + job2.script + ".ssh'"
+		]), job2.RC_SUBMITFAILED
 	
 	def testSubmit(self, job, cmd, rc = 0):
 		RunnerSsh.INTERVAL = .1
@@ -398,19 +366,20 @@ class TestRunnerSsh(testly.TestCase):
 			r = RunnerSsh(job)
 			if rc == 1:
 				remove(r.script)
-			r.sshcmd = [path.join(__here__, 'mocks', 'ssh')]
 			c = r.submit()
 			self.assertEqual(c.rc, rc)
-			self.assertEqual(c.cmd, list2cmdline(cmd))
+			self.assertEqual(c.cmd, cmd)
 
 	def dataProvider_testKill(self):
 		job0 = createJob(
 			path.join(self.testdir, 'pTestKill'),
+			index  = 9,
 			config = {
 				'echo': {'jobs': [0], 'type': {'stdout': None}},
 				'runnerOpts': {'sshRunner': {
 					'servers': ['server1', 'server2', 'localhost'],
 					'checkAlive': False,
+					'ssh': path.join(__here__, 'mocks', 'ssh')
 				}},
 				'_script': 'sleep 3; sleep 3 &'
 			}
@@ -421,7 +390,6 @@ class TestRunnerSsh(testly.TestCase):
 		RunnerSsh.INTERVAL = .1
 		RunnerSsh.LIVE_SERVERS = None
 		r = RunnerSsh(job)
-		r.sshcmd = [path.join(__here__, 'mocks', 'ssh')]
 		self.assertFalse(r.isRunning())
 		r.job.pid = r.submit().pid
 		self.assertTrue(r.isRunning())
@@ -445,8 +413,6 @@ class TestRunnerSge(testly.TestCase):
 					'sge.N': 'SgeJobName',
 					'sge.q': 'queue',
 					'sge.j': 'y',
-					'sge.o': path.join(self.testdir, 'stdout'),
-					'sge.e': path.join(self.testdir, 'stderr'),
 					'sge.M': 'xxx@abc.com',
 					'sge.m': 'yes',
 					'sge.mem': '4G',
@@ -478,36 +444,35 @@ class TestRunnerSge(testly.TestCase):
 		),
 		
 	def testInit(self, job, jobname = None, outfile = None, errfile = None):
-		self.maxDiff = None
+		self.maxDiff = 10000
 		r = RunnerSge(job)
 		self.assertIsInstance(r, RunnerSge)
 		self.assertEqual(r.script, job.script + '.sge')
 		self.assertTrue(r.script)
-		helpers.assertTextEqual(self, helpers.readFile(job.script + '.sge', str), '\n'.join([
-			"#!/usr/bin/env bash",
-			'#$ -N %s' % (jobname if jobname else '.'.join([
-				job.config['proc'],
-				job.config['tag'],
-				job.config['suffix'],
-				str(job.index + 1)
-			])),
-			'#$ -q queue',
-			'#$ -j y',
-			'#$ -o %s' % (outfile if outfile else job.outfile),
-			'#$ -e %s' % (errfile if errfile else job.errfile),
-			'#$ -cwd',
-			'#$ -M xxx@abc.com',
-			'#$ -m yes',
-			'#$ -mem 4G',
-			'#$ -notify',
-			'',
-			'trap "status=\\$?; echo \\$status >\'%s\'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % job.rcfile,
-			'alias qsub="%s"' % (path.join(__here__, 'mocks', 'qsub')),
-			'',
-			job.script,
-			'',
-			''
-		]))
+		helpers.assertTextEqual(self, helpers.readFile(job.script + '.sge', str), """#!/usr/bin/env bash
+#$ -N {name}
+#$ -q queue
+#$ -j y
+#$ -cwd
+#$ -M xxx@abc.com
+#$ -m yes
+#$ -mem 4G
+#$ -notify
+#
+# Collect return code on exit
+trap "status=\$?; echo \$status > {jobdir}/job.rc; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
+#
+# Save pid
+echo $$ > {jobdir}/job.pid
+#
+# Run pre-script
+alias qsub="/home/pwwang/PyPPL/tests/mocks/qsub"
+#
+# Run the real script
+{jobdir}/job.script 1> {jobdir}/job.stdout 2> {jobdir}/job.stderr
+#
+# Run post-script
+#""".format(jobdir = path.dirname(r.script), name = jobname or '{config[proc]}.{config[tag]}.{config[suffix]}.{index}'.format(config = r.job.config, index = r.job.index + 1)))
 	
 	def dataProvider_testSubmit(self):
 		job0 = createJob(
@@ -545,7 +510,7 @@ class TestRunnerSge(testly.TestCase):
 		yield job1, [
 			path.join(__here__, 'mocks', 'sbatch'), 
 			job1.script + '.sge'
-		], 1
+		], job1.RC_SUBMITFAILED
 
 		job2 = createJob(
 			path.join(self.testdir, 'pTestSubmit'),
@@ -564,7 +529,7 @@ class TestRunnerSge(testly.TestCase):
 		yield job2, [
 			path.join(__here__, 'mocks', '_notexist_'), 
 			job2.script + '.sge'
-		], 1
+		], 127 # command not found
 	
 	def testSubmit(self, job, cmd, rc = 0):
 		RunnerSge.INTERVAL = .1
@@ -631,8 +596,6 @@ class TestRunnerSlurm(testly.TestCase):
 					'slurm.J': 'SlurmJobName',
 					'slurm.q': 'queue',
 					'slurm.j': 'y',
-					'slurm.o': path.join(self.testdir, 'stdout'),
-					'slurm.e': path.join(self.testdir, 'stderr'),
 					'slurm.M': 'xxx@abc.com',
 					'slurm.m': 'yes',
 					'slurm.mem': '4G',
@@ -656,8 +619,6 @@ class TestRunnerSlurm(testly.TestCase):
 					#'slurm.J': 'SlurmJobName',
 					'slurm.q': 'queue',
 					'slurm.j': 'y',
-					'slurm.o': path.join(self.testdir, 'pTestInit', '2', 'job.stdout'),
-					'slurm.e': path.join(self.testdir, 'pTestInit', '2', 'job.stderr'),
 					'slurm.M': 'xxx@abc.com',
 					'slurm.m': 'yes',
 					'slurm.mem': '4G',
@@ -674,35 +635,33 @@ class TestRunnerSlurm(testly.TestCase):
 		),
 		
 	def testInit(self, job, jobname = None, outfile = None, errfile = None):
-		self.maxDiff = None
+		self.maxDiff = 10000
 		r = RunnerSlurm(job)
 		self.assertIsInstance(r, RunnerSlurm)
 		self.assertEqual(r.script, job.script + '.slurm')
 		self.assertTrue(r.script)
-		helpers.assertTextEqual(self, helpers.readFile(job.script + '.slurm', str), '\n'.join([
-			"#!/usr/bin/env bash",
-			'#SBATCH -J %s' % (jobname if jobname else '.'.join([
-				job.config['proc'],
-				job.config['tag'],
-				job.config['suffix'],
-				str(job.index + 1)
-			])),
-			'#SBATCH -o %s' % (outfile if outfile else job.outfile),
-			'#SBATCH -e %s' % (errfile if errfile else job.errfile),
-			'#SBATCH -M xxx@abc.com',
-			'#SBATCH -j y',
-			'#SBATCH -m yes',
-			'#SBATCH --mem 4G',
-			'#SBATCH --notify',
-			'#SBATCH -q queue',
-			'',
-			'trap "status=\\$?; echo \\$status >\'%s\'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % job.rcfile,
-			'',
-			'',
-			'srun prefix ' + job.script,
-			'',
-			''
-		]))
+		helpers.assertTextEqual(self, helpers.readFile(job.script + '.slurm', str), """#!/usr/bin/env bash
+#SBATCH -J {name}
+#SBATCH -M xxx@abc.com
+#SBATCH -j y
+#SBATCH -m yes
+#SBATCH --mem 4G
+#SBATCH --notify
+#SBATCH -q queue
+#
+# Collect return code on exit
+trap "status=\$?; echo \$status > {jobdir}/job.rc; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
+#
+# Save pid
+echo $$ > {jobdir}/job.pid
+#
+# Run pre-script
+#
+# Run the real script
+{srun} {jobdir}/job.script 1> {jobdir}/job.stdout 2> {jobdir}/job.stderr
+#
+# Run post-script
+#""".format(jobdir = path.dirname(job.script), name = jobname or '{config[proc]}.{config[tag]}.{config[suffix]}.{index}'.format(config = job.config, index = job.index + 1), srun = r.srun.call_args['_exe'], ))
 	
 	def dataProvider_testSubmit(self):
 		job0 = createJob(
@@ -762,7 +721,7 @@ class TestRunnerSlurm(testly.TestCase):
 		yield job2, [
 			path.join(__here__, 'mocks', '_notexist_'), 
 			job2.script + '.slurm'
-		], 1
+		], 127
 	
 	def testSubmit(self, job, cmd, rc = 0):
 		RunnerSlurm.INTERVAL = .1
