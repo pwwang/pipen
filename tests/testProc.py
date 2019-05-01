@@ -821,6 +821,7 @@ class TestProc(testly.TestCase):
 		
 	def testSaveSettings(self, p, settings):
 		self.maxDiff = None
+		from functools import partial
 		with helpers.log2str() as (out, err, _):
 			p._buildInput()
 			p._buildProcVars ()
@@ -828,7 +829,10 @@ class TestProc(testly.TestCase):
 			p._buildOutput()
 			p._buildScript()
 			p._saveSettings()
-		psettings = helpers.readFile(path.join(p.workdir, 'proc.settings.yaml'), yaml.load)
+		psettings = helpers.readFile(
+			path.join(p.workdir, 'proc.settings.yaml'), 
+			partial(yaml.load, Loader = yaml.Loader)
+		)
 		for key, val in settings.items():
 			self.assertEqual({key:psettings[key]}, {key:val})
 	

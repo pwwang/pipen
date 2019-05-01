@@ -666,7 +666,7 @@ class Proc (object):
 				raise ProcInputError(settingsfile, 'Cannot parse input for skip+/resume process, no such file')
 
 			with open(settingsfile, 'r') as f:
-				cp = yaml.load(f)
+				cp = yaml.load(f, Loader = yaml.Loader)
 			
 			self.props.size = int(cp.get('size', 0))
 			self.props.input = cp.get('input', OrderedDict())
