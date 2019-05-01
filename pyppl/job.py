@@ -93,7 +93,7 @@ class Job(object):
 		self.lastout   = ''
 		self.lasterr   = ''
 		self.cachefile = path.join(self.dir, "job.cache")
-		self.cachedir  = path.join(self.outdir, '.pypplcache')
+		self.cachedir  = path.join(self.outdir, '.jobcache')
 		self.pidfile   = path.join(self.dir, "job.pid")
 		self.ntry      = 0
 		self.input     = {}
@@ -291,7 +291,10 @@ class Job(object):
 		infile   = path.join(self.indir, basename)
 		#return infile
 		#safefs.SafeFs._link(orgfile, infile, overwrite = False)
-		safefs.link(orgfile, infile)
+		try:
+			safefs.link(orgfile, infile, overwrite = False)
+		except OSError:
+			pass
 		#if safefs.SafeFs(infile, orgfile).samefile():
 		if safefs.samefile(infile, orgfile):
 			return infile
@@ -324,7 +327,7 @@ class Job(object):
 		#safefs.SafeFs._remove(self.indir)
 		safefs.remove(self.indir)
 		safefs.makedirs(self.indir)
-		
+
 		for key, val in self.config['input'].items():
 			self.input[key] = {}
 			intype = val['type']
@@ -506,11 +509,12 @@ class Job(object):
 			self.logger.debug("Not cached as cache file not exists.", dlevel = "CACHE_SIGFILE_NOTEXISTS")
 			return False
 
-		sigOld = Box.from_yaml(filename = self.cachefile)
-		if not sigOld:
-			self.logger.debug("Not cached because previous signature is empty.", dlevel = "CACHE_EMPTY_PREVSIG")
-			return False
+		with open(self.cachefile) as f:
+			if not f.read().strip():
+				self.logger.debug("Not cached because previous signature is empty.", dlevel = "CACHE_EMPTY_PREVSIG")
+				return False
 
+		sigOld = Box.from_yaml(filename = self.cachefile)
 		sigNow = self.signature()
 		if not sigNow:
 			self.logger.debug("Not cached because current signature is empty.", dlevel = "CACHE_EMPTY_CURRSIG")
@@ -692,36 +696,38 @@ class Job(object):
 				else:
 					exfile += '.gz'
 
-				with safefs.exists(exfile, _context = True) as ex, \
-					safefs.exists(out['data'], _context = True) as ed, \
-					safefs.islink(out['data'], _context = True) as el:
-
+				with safefs.lock(exfile, out['data'], _context = True):
+					ex = safefs.exists(exfile)
+					ed = safefs.exists(out['data'])
+					el = safefs.islink(out['data'])
 					if not ex:
-						self.logger.debug("Job is not export-cached since exported file not exists: %s.",
-							exfile, dlevel = "EXPORT_CACHE_EXFILE_NOTEXISTS")
+						self.logger.debug(
+							"Job is not export-cached since exported file not exists: %s." % exfile, 
+							dlevel = "EXPORT_CACHE_EXFILE_NOTEXISTS")
 						return False
 
 					if ed or el:
-						self.logger.warning('Overwrite file for export-caching: %s', 
-							out['data'], dlevel = "EXPORT_CACHE_OUTFILE_EXISTS")
+						self.logger.warning('Overwrite file for export-caching: %s' % out['data'], 
+							dlevel = "EXPORT_CACHE_OUTFILE_EXISTS")
 				
 					safefs.gunzip(exfile, out['data'])
 			else: # exhow not gzip
-
-				with safefs.exists(exfile, _context = True) as ex, \
-					safefs.exists(out['data'], _context = True) as ed, \
-					safefs.islink(out['data'], _context = True) as el:
-
+				
+				with safefs.lock(exfile, out['data'], _context = True):
+					ex = safefs.exists(exfile)
+					ed = safefs.exists(out['data'])
+					el = safefs.islink(out['data'])
 					if not ex:
 						self.logger.debug(
-							"Job is not export-cached since exported file not exists: %s.",
-							exfile, dlevel = "EXPORT_CACHE_EXFILE_NOTEXISTS")
+							"Job is not export-cached since exported file not exists: %s." % exfile, 
+							dlevel = "EXPORT_CACHE_EXFILE_NOTEXISTS")
 						return False
 					if safefs.samefile(exfile, out['data']):
 						continue
 					if ed or el:
-						self.logger.warning('Overwrite file for export-caching: %s',
-							out['data'], dlevel = "EXPORT_CACHE_OUTFILE_EXISTS")
+						self.logger.warning(
+							'Overwrite file for export-caching: %s' % out['data'], 
+							dlevel = "EXPORT_CACHE_OUTFILE_EXISTS")
 
 					safefs.link(exfile, out['data'])
 
@@ -746,7 +752,6 @@ class Job(object):
 		#self.logger.info('Resetting job #%s ...' % self.index, 'debug', 'JOB_RESETTING')
 		retry    = self.ntry
 		retrydir = path.join(self.dir, 'retry.' + str(retry))
-		
 		#cleanup retrydir
 		if retry:
 			safefs.remove(retrydir)
@@ -784,19 +789,19 @@ class Job(object):
 		open(self.errfile, 'w').close()
 		
 		try:
-			safefs.makedirs(self.outdir)
+			safefs.makedirs(self.outdir, overwrite = False)
 		except OSError:
 			pass
 		for out in self.output.values():
 			if out['type'] in Proc.OUT_DIRTYPE:
 				try:
-					safefs.makedirs(out['data'])
+					safefs.makedirs(out['data'], overwrite = False)
 				except OSError:
 					pass
 			if out['type'] in Proc.OUT_STDOUTTYPE:
-				safefs.symlink(self.outfile, out['data'])
+				safefs.link(self.outfile, out['data'])
 			if out['type'] in Proc.OUT_STDERRTYPE:
-				safefs.symlink(self.errfile, out['data'])
+				safefs.link(self.errfile, out['data'])
 
 	def export(self):
 		"""
@@ -1000,9 +1005,9 @@ class Job(object):
 			outfilter = self.config['echo']['type']['stdout']
 			for line in lines:
 				if not outfilter or re.search(outfilter, line):
-					self.logger.stdout(line.rstrip('\n'))
+					self.logger._stdout(line.rstrip('\n'))
 
-		lines, self.lasterr = fileflush(self.ferr, self.lasterr, end)		
+		lines, self.lasterr = fileflush(self.ferr, self.lasterr, end)
 		for line in lines:
 			if line.startswith('pyppl.log'):
 				line = line.rstrip('\n')
@@ -1018,7 +1023,7 @@ class Job(object):
 			elif 'stderr' in self.config['echo']['type']:
 				errfilter = self.config['echo']['type']['stderr']
 				if not errfilter or re.search(errfilter, line):
-					self.logger.stderr(line.rstrip('\n'))
+					self.logger._stderr(line.rstrip('\n'))
 		
 		if end:
 			self.fout and self.fout.close()

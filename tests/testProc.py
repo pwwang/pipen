@@ -231,7 +231,7 @@ class TestProc(testly.TestCase):
 		else:
 			if expect is None:
 				expect = val
-			with helpers.log2str() as (out, err):
+			with helpers.log2str() as (out, err, _):
 				p.__setattr__(name, val)
 			stderr = err.getvalue()
 			v = p.__getattr__(name)
@@ -586,7 +586,7 @@ class TestProc(testly.TestCase):
 		if exception:
 			self.assertRaisesRegex(exception, msg, p._buildInput)
 		else:
-			with helpers.log2str(levels = 'all') as (out, err):
+			with helpers.log2str(levels = 'all') as (out, err, _):
 				#p._buildInput()
 				pass
 			
@@ -622,7 +622,7 @@ class TestProc(testly.TestCase):
 		]
 		
 	def testBuildProcVars(self, p, procargs, procvars, errs = []):
-		with helpers.log2str(levels = 'all') as (out, err):
+		with helpers.log2str(levels = 'all') as (out, err, _):
 			p._buildProps()
 			p._buildProcVars()
 		stderr = err.getvalue()
@@ -740,7 +740,7 @@ class TestProc(testly.TestCase):
 		if exception:
 			self.assertRaisesRegex(exception, msg, p._buildScript)
 		else:
-			with helpers.log2str(levels = 'all') as (out, err):
+			with helpers.log2str(levels = 'all') as (out, err, _):
 				p._buildProps()
 				p._buildScript()
 			helpers.assertTextEqual(self, p.script.source, outscript)
@@ -820,7 +820,7 @@ class TestProc(testly.TestCase):
 		
 	def testSaveSettings(self, p, settings):
 		self.maxDiff = None
-		with helpers.log2str() as (out, err):
+		with helpers.log2str() as (out, err, _):
 			p._buildInput()
 			p._buildProcVars ()
 			p._buildProps()
@@ -858,7 +858,7 @@ class TestProc(testly.TestCase):
 		yield pTidyBeforeRun1, ['DEBUG', 'Calling callfront ...', 'INFO', 'hello']
 	
 	def testTidyBeforeRun(self, p, errs = []):
-		with helpers.log2str(levels = 'all') as (out, err):
+		with helpers.log2str(levels = 'all') as (out, err, _):
 			p._tidyBeforeRun()
 		stderr = err.getvalue()
 		for err in errs:
@@ -898,7 +898,7 @@ class TestProc(testly.TestCase):
 		if exception:
 			self.assertRaisesRegex(exception, msg, p._runCmd, key)
 		else:
-			with helpers.log2str() as (out, err):
+			with helpers.log2str() as (out, err, _):
 				p._runCmd(key)
 			stderr = err.getvalue()
 			for err in errs:
@@ -978,7 +978,7 @@ class TestProc(testly.TestCase):
 		if exception:
 			self.assertRaises(exception, p._tidyAfterRun)
 		else:
-			with helpers.log2str(levels = 'all') as (out, err):
+			with helpers.log2str(levels = 'all') as (out, err, _):
 				p._tidyAfterRun()
 			stderr = err.getvalue()
 			for err in errs:
@@ -1065,7 +1065,7 @@ class TestProc(testly.TestCase):
 		
 	def testRun(self, p, cfg, cache, errs = []):
 		RunnerLocal.INTERVAL = .1
-		with helpers.log2str(levels = 'all') as (out, err):
+		with helpers.log2str(levels = 'all') as (out, err, _):
 			p.run(cfg)
 		self.assertEqual(p.cache, cache)
 		stderr = err.getvalue()

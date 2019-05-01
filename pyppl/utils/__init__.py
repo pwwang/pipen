@@ -450,5 +450,6 @@ def fileflush(fd, lastmsg, end = False):
 	elif lastmsg and end:
 		lines.append(lastmsg + '\n')
 		lastmsg = ''
+	print lines, 'lines, ret'
 	return lines, lastmsg
 	

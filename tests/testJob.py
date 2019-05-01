@@ -1,12 +1,12 @@
 from os import environ
 environ['PYPPL_default__log'] = 'py:{"levels": "all"}'
 
-import helpers, testly, sys, json
+import helpers, testly, sys, json, safefs
 
 from time import time
 from glob import glob
 from box import Box
-from os import path, symlink, makedirs, utime, remove
+from os import path, symlink, utime, remove
 from tempfile import gettempdir
 from collections import OrderedDict
 from shutil import rmtree
@@ -17,7 +17,7 @@ from pyppl.jobmgr import Jobmgr
 from pyppl.runners import RunnerLocal
 from pyppl.exceptions import JobInputParseError, JobOutputParseError
 from pyppl.template import TemplateLiquid
-from pyppl import logger, utils
+from pyppl import utils
 
 CONFIG = Box({
 	'workdir' : path.join(gettempdir(), 'PyPPL_unittest', 'TestJob'),
@@ -41,7 +41,7 @@ class TestJob(testly.TestCase):
 		self.testdir = path.join(gettempdir(), 'PyPPL_unittest', 'TestJob')
 		if path.exists(self.testdir):
 			rmtree(self.testdir)
-		makedirs(self.testdir)
+		safefs.makedirs(self.testdir)
 
 	def file2indir(workdir, index, f, suffix = ''):
 		basename = path.basename(f)
@@ -91,7 +91,7 @@ class TestJob(testly.TestCase):
 			'workdir': path.join(self.testdir, 'pRunner'),
 			'proc': 'pRunner'
 		})
-		makedirs(path.join(config.workdir, '1'))
+		safefs.makedirs(path.join(config.workdir, '1'))
 		open(path.join(config.workdir, '1', 'job.script'), 'w').close()
 		yield Job(0, config),
 
@@ -129,7 +129,7 @@ class TestJob(testly.TestCase):
 			filed4, filed20, filed21, filed22, filed23, filed24, filed30, 
 			filed31, filed32, filed33, filed34]:
 			helpers.writeFile(f)
-		makedirs(path.dirname(filed35))
+		safefs.makedirs(path.dirname(filed35))
 		symlink(filed34, filed35)
 		config.input   = {
 			'a': {'type': 'var', 'data': [1, 2, 3, 4, 5, 6, 7]},
@@ -312,7 +312,7 @@ class TestJob(testly.TestCase):
 		dir1          = path.join(dir0, 'dir')
 		dir2          = path.join(dir1, 'dir')
 		config22.proc = 'pPrepInput22'
-		makedirs(dir2)
+		safefs.makedirs(dir2)
 		config22.workdir = path.join(self.testdir, 'pPrepInput22')
 		config22.input  = {'a': {'type': 'files', 'data': [[dir0, dir1, dir2, dir2]]}}
 		yield 0, config22, {
@@ -355,7 +355,12 @@ class TestJob(testly.TestCase):
 			self.assertRaisesRegex(exception, msg, job._prepInput)
 			self.assertTrue(path.isdir(job.indir))
 		else:
-			with helpers.log2str() as (out, err):
+			with helpers.log2str() as (out, err, logger):
+				job.logger = logger.bake(
+					proc   = job.config['proc'],
+					jobidx = job.index,
+					joblen = job.config['procsize'],
+				)
 				job._prepInput()
 			if errmsg:
 				self.assertIn(errmsg, err.getvalue())
@@ -423,12 +428,12 @@ class TestJob(testly.TestCase):
 		yield 0, config, {}, {}, TemplateLiquid('{{x}}'), '', LiquidRenderError, "NameError: name 'x' is not defined"
 		
 		sfile = path.join(config.workdir, '1', 'job.script')
-		makedirs(path.dirname(sfile))
+		safefs.makedirs(path.dirname(sfile))
 		helpers.writeFile(sfile)
 		yield 0, config, {'x': {'type': 'var', 'data': [0]}}, {}, TemplateLiquid('1{{i.x}}'), '10', None, None, 'Script file updated'
 		
 		sfile = path.join(config.workdir, '2', 'job.script')
-		makedirs(path.dirname(sfile))
+		safefs.makedirs(path.dirname(sfile))
 		helpers.writeFile(sfile, '11')
 		yield 1, config, {'x': {'type': 'var', 'data': [0, 1]}}, {}, TemplateLiquid('1{{i.x}}'), '11'
 
@@ -443,7 +448,7 @@ class TestJob(testly.TestCase):
 		if exception:
 			self.assertRaisesRegex(exception, msg, job._prepScript)
 		else:
-			with helpers.log2str(levels = 'all') as (out, err):
+			with helpers.log2str(levels = 'all') as (out, err, _):
 				job._prepScript()
 			if errmsg:
 				self.assertIn(errmsg, err.getvalue())
@@ -464,7 +469,7 @@ class TestJob(testly.TestCase):
 		
 	def testReportItem(self, index, config, key, maxlen, data, loglevel, outs):
 		job = Job(index, config)
-		with helpers.log2str() as (out, err):
+		with helpers.log2str() as (out, err, _):
 			job._reportItem(key, maxlen, data, loglevel)
 		for o in outs:
 			self.assertIn(o, err.getvalue())
@@ -475,7 +480,7 @@ class TestJob(testly.TestCase):
 		config.procsize = 100
 		config.workdir  = path.join(self.testdir, 'pReport')
 		fileprdir       = path.join(self.testdir, 'pReportDir')
-		makedirs(fileprdir)
+		safefs.makedirs(fileprdir)
 		filepb0 = path.join(fileprdir, 'testReport.br')
 		filepb1 = path.join(fileprdir, 'whatever.txt')
 		filepb2 = path.join(self.testdir, 'testReport.txt')
@@ -498,7 +503,7 @@ class TestJob(testly.TestCase):
 
 	def testReport(self, index, config, outs):
 		job = Job(index, config)
-		with helpers.log2str() as (out, err):
+		with helpers.log2str() as (out, err, _):
 			# report called
 			job.build()
 		
@@ -512,9 +517,9 @@ class TestJob(testly.TestCase):
 		job            = Job(0, config)
 		job1           = Job(1, config)
 		job2           = Job(2, config)
-		makedirs(path.join(config.workdir, '1'))
-		makedirs(path.join(config.workdir, '2'))
-		makedirs(path.join(config.workdir, '3'))
+		safefs.makedirs(path.join(config.workdir, '1'))
+		safefs.makedirs(path.join(config.workdir, '2'))
+		safefs.makedirs(path.join(config.workdir, '3'))
 		helpers.writeFile(job1.rcfile)
 		helpers.writeFile(job2.rcfile, '-8')
 		yield job, None, Job.RC_NOTGENERATE
@@ -537,9 +542,9 @@ class TestJob(testly.TestCase):
 		job            = Job(0, config)
 		job1           = Job(1, config)
 		job2           = Job(2, config)
-		makedirs(path.join(config.workdir, '1'))
-		makedirs(path.join(config.workdir, '2'))
-		makedirs(path.join(config.workdir, '3'))
+		safefs.makedirs(path.join(config.workdir, '1'))
+		safefs.makedirs(path.join(config.workdir, '2'))
+		safefs.makedirs(path.join(config.workdir, '3'))
 		helpers.writeFile(job1.pidfile)
 		helpers.writeFile(job2.pidfile, 'a pid')
 		yield job, None, ''
@@ -575,7 +580,7 @@ class TestJob(testly.TestCase):
 		config3.expart  = 1
 		job3            = Job(1, config3)
 		if not path.exists(config3.exdir):
-			makedirs(config3.exdir)
+			safefs.makedirs(config3.exdir)
 		yield job3, [], [], AssertionError
 		
 		config4         = CONFIG.copy()
@@ -592,7 +597,7 @@ class TestJob(testly.TestCase):
 		}
 		job4 = Job(0, config4)
 		#job4.init()
-		makedirs(job4.outdir)
+		safefs.makedirs(job4.outdir)
 		afile4    = path.join(job4.outdir, 'whatever.txt')
 		afile4_ex = path.join(config4.exdir, 'whatever.txt')
 		helpers.writeFile(afile4)
@@ -612,7 +617,7 @@ class TestJob(testly.TestCase):
 		}
 		job5 = Job(0, config5)
 		#job5.init()
-		makedirs(job5.outdir)
+		safefs.makedirs(job5.outdir)
 		afile5    = path.join(job5.outdir, 'whatever.txt')
 		afile5_ex = path.join(config5.exdir, 'whatever.txt')
 		helpers.writeFile(afile5)
@@ -634,13 +639,13 @@ class TestJob(testly.TestCase):
 		}
 		job6 = Job(0, config6)
 		#job6.init()
-		makedirs(job6.outdir)
+		safefs.makedirs(job6.outdir)
 		afile6    = path.join(job6.outdir, 'whatever.txt')
 		afile6_ex = path.join(config6.exdir, 'whatever.txt.gz')
 		bfile6    = path.join(job6.outdir, 'whatever.dir')
 		bfile6_ex = path.join(config6.exdir, 'whatever.dir.tgz')
 		helpers.writeFile(afile6)
-		makedirs(bfile6)
+		safefs.makedirs(bfile6)
 		yield job6, [(path.isfile, afile6_ex), (path.isfile, bfile6_ex), (path.isdir, bfile6), (path.exists, afile6)], []
 		
 		config7         = CONFIG.copy()
@@ -657,7 +662,7 @@ class TestJob(testly.TestCase):
 		}
 		job7 = Job(0, config7)
 		#job7.init()
-		makedirs(job7.outdir)
+		safefs.makedirs(job7.outdir)
 		afile7    = path.join(job7.outdir, 'whatever7.txt')
 		afile7_ex = path.join(config7.exdir, 'whatever7.txt')
 		helpers.writeFile(afile7)
@@ -680,7 +685,7 @@ class TestJob(testly.TestCase):
 		}
 		job8 = Job(0, config8)
 		#job8.init()
-		makedirs(job8.outdir)
+		safefs.makedirs(job8.outdir)
 		afile8    = path.join(job8.outdir, 'whatever8.txt')
 		afile8_ex = path.join(config8.exdir, 'whatever8.txt')
 		helpers.writeFile(afile8)
@@ -701,7 +706,7 @@ class TestJob(testly.TestCase):
 		}
 		job9 = Job(0, config9)
 		#job9.init()
-		makedirs(job9.outdir)
+		safefs.makedirs(job9.outdir)
 		afile9    = path.join(job9.outdir, 'whatever9.txt')
 		afile9_ex = path.join(config9.exdir, 'whatever9.txt')
 		helpers.writeFile(afile9)
@@ -722,7 +727,7 @@ class TestJob(testly.TestCase):
 		}
 		job10 = Job(0, config10)
 		#job10.init()
-		makedirs(job10.outdir)
+		safefs.makedirs(job10.outdir)
 		afile10    = path.join(job10.outdir, 'whatever10.txt')
 		afile10_ex = path.join(config10.exdir, 'whatever10.txt')
 		helpers.writeFile(afile10)
@@ -743,7 +748,7 @@ class TestJob(testly.TestCase):
 		}
 		job11 = Job(0, config11)
 		#job11.init()
-		makedirs(job11.outdir)
+		safefs.makedirs(job11.outdir)
 		afile11    = path.join(job11.outdir, 'whatever11.txt')
 		afile11_ex = path.join(config11.exdir, 'whatever11.txt')
 		helpers.writeFile(afile11)
@@ -762,7 +767,7 @@ class TestJob(testly.TestCase):
 		}
 		job12 = Job(0, config12)
 		#job12.init()
-		makedirs(job12.outdir)
+		safefs.makedirs(job12.outdir)
 		afile12    = path.join(job12.outdir, 'whatever12.txt')
 		afile12_ex = path.join(config12.exdir, 'whatever12.txt')
 		helpers.writeFile(afile12)
@@ -783,7 +788,7 @@ class TestJob(testly.TestCase):
 		}
 		job13 = Job(0, config13)
 		#job13.init()
-		makedirs(job13.outdir)
+		safefs.makedirs(job13.outdir)
 		afile13_0  = path.join(job13.outdir, 'whatever.out0')
 		afile13    = path.join(job13.outdir, 'whatever.out')
 		afile13_ex = path.join(config13.exdir, 'whatever.out')
@@ -832,7 +837,7 @@ class TestJob(testly.TestCase):
 		outfile = path.join(job.outdir, 'whatever.out')
 		if createOfs:
 			if not path.isdir(job.outdir):
-				makedirs(job.outdir)
+				safefs.makedirs(job.outdir)
 			helpers.writeFile(outfile, '123')
 		else:
 			if path.isfile(outfile):
@@ -857,35 +862,35 @@ class TestJob(testly.TestCase):
 		}
 		job = Job(0, config)
 		#job.init()
-		makedirs(job.outdir)
+		safefs.makedirs(job.outdir)
 		helpers.writeFile(job.rcfile, 0)
 		helpers.writeFile(job.pidfile)
 		job1 = Job(1, config)
 		#job1.init()
-		makedirs(job1.outdir)
+		safefs.makedirs(job1.outdir)
 		helpers.writeFile(job1.rcfile, 0)
 		helpers.writeFile(job1.pidfile)
 		job2 = Job(2, config)
 		#job2.init()
-		makedirs(job2.outdir)
+		safefs.makedirs(job2.outdir)
 		helpers.writeFile(job2.rcfile, 0)
 		helpers.writeFile(job2.pidfile)
 		job3 = Job(3, config)
 		#job3.init()
-		makedirs(job3.outdir)
+		safefs.makedirs(job3.outdir)
 		helpers.writeFile(job3.rcfile, 0)
 		helpers.writeFile(job3.pidfile)
-		makedirs(path.join(job3.dir, 'retry.8'))
+		safefs.makedirs(path.join(job3.dir, 'retry.8'))
 		# cachedir
 		job4 = Job(4, config)
 		#job4.init()
-		makedirs(job4.cachedir)
+		safefs.makedirs(job4.cachedir)
 		helpers.writeFile(job4.rcfile, 0)
 		helpers.writeFile(job4.pidfile)
 
 		job5 = Job(5, config)
 		#job5.init()
-		makedirs(job5.cachedir)
+		safefs.makedirs(job5.cachedir)
 		helpers.writeFile(job5.rcfile, 0)
 		helpers.writeFile(job5.pidfile)
 		yield job, 0, ['preset.txt'], ['preset.dir']
@@ -933,7 +938,7 @@ class TestJob(testly.TestCase):
 		config.errhow  = 'ignore'
 		job            = Job(0, config)
 		#job.init()
-		makedirs(job.dir)
+		safefs.makedirs(job.dir)
 		job.rc = 1
 		yield job, 1, ['WARNING', '[1/1] Failed but ignored (totally 1). Return code: 1.'], ['ERROR']
 		
@@ -946,7 +951,7 @@ class TestJob(testly.TestCase):
 		config.errhow   = 'terminate'
 		job1            = Job(0, config)
 		#job1.init()
-		makedirs(job1.dir)
+		safefs.makedirs(job1.dir)
 		job1.rc = Job.RC_NOTGENERATE
 		yield job1, 10, ['ERROR', '[1/1] Failed (totally 10). Return code: %s (Rcfile not generated).' % (Job.RC_NOTGENERATE), '<EMPTY STDERR>']
 		
@@ -959,7 +964,7 @@ class TestJob(testly.TestCase):
 		config.errhow   = 'terminate'
 		job2            = Job(0, config)
 		#job2.init()
-		makedirs(job2.dir)
+		safefs.makedirs(job2.dir)
 		job2.rc = 0b1000000010
 		helpers.writeFile(job2.errfile, '\n'.join(['Error' + str(i) for i in range(5)]))
 		yield job2, 10, ['ERROR', '[1/1] Failed (totally 10). Return code: 2 (Expectation not met).', 'Error0', 'Error1', 'Error2', 'Error3', 'Error4'], ['Error5', 'ignored'] 
@@ -973,7 +978,7 @@ class TestJob(testly.TestCase):
 		config.errhow   = 'terminate'
 		job3            = Job(0, config)
 		#job3.init()
-		makedirs(job3.dir)
+		safefs.makedirs(job3.dir)
 		job3.rc = 1
 		helpers.writeFile(job3.errfile, '\n'.join(['Error' + str(i) for i in range(25)]))
 		yield job3, 10, ['ERROR', '[1/1] Failed (totally 10). Return code: 1.', 'Error5', 'Error15', 'Error19', 'Error24'], ['Error0', 'Error4']
@@ -989,13 +994,13 @@ class TestJob(testly.TestCase):
 		config.errhow   = 'terminate'
 		job4            = Job(0, config)
 		#job4.init()
-		makedirs(job4.dir)
+		safefs.makedirs(job4.dir)
 		job4.rc = 140 | 0b100000000
 		helpers.writeFile(job4.errfile, '\n'.join(['Error' + str(i) for i in range(25)]))
 		yield job4, 10, ['ERROR', '[1/1] Failed (totally 10). Return code: 140 (Outfile not generated).'], ['Error0', 'Error5', 'Error15', 'Error19', 'Error24']
 	
 	def testShowError(self, job, totalfailed, errs, errsnotin = []):
-		with helpers.log2str() as (out, err):
+		with helpers.log2str() as (out, err, _):
 			job.showError(totalfailed)
 		stderr = err.getvalue()
 		for err in errs:
@@ -1012,7 +1017,7 @@ class TestJob(testly.TestCase):
 		job             = Job(0, config)
 		#job.init()
 		#utils.safeRemove(job.script)
-		utils.safefs.remove(job.script)
+		safefs.remove(job.script)
 		yield job, '', ['DEBUG', '[01/10] Empty signature because of script file']
 		
 		# input file empty
@@ -1030,11 +1035,11 @@ class TestJob(testly.TestCase):
 		job1 = Job(0, config)
 		#job1.init()
 		#utils.safeRemove(infile1)
-		makedirs(job1.dir)
+		safefs.makedirs(job1.dir)
 		job1._prepInput()
 		job1._prepOutput()
 		job1._prepScript()
-		utils.safefs.remove(infile1)
+		safefs.remove(infile1)
 		yield job1, '', ['DEBUG', '[01/10] Empty signature because of input file']
 		
 		# input files empty
@@ -1055,7 +1060,7 @@ class TestJob(testly.TestCase):
 		job2._prepInput()
 		job2._prepOutput()
 		job2._prepScript()
-		utils.safefs.remove(infile2)
+		safefs.remove(infile2)
 		yield job2, '', ['DEBUG', '[01/10] Empty signature because of one of input files']
 		
 		# outfile empty
@@ -1123,7 +1128,7 @@ class TestJob(testly.TestCase):
 		outa = path.join(job5.outdir, 'pSignature5.txt')
 		outb = path.join(job5.outdir, 'pSignature5.dir')
 		helpers.writeFile(outa)
-		makedirs(outb)
+		safefs.makedirs(outb)
 		yield job5, {
 			'i': {
 				'file': {
@@ -1151,7 +1156,7 @@ class TestJob(testly.TestCase):
 			
 	def testSignature(self, job, outsig, errs = []):
 		self.maxDiff = None
-		with helpers.log2str(levels = 'all') as (out, err):
+		with helpers.log2str(levels = 'all') as (out, err, _):
 			sig = job.signature()
 		self.assertEqual(sig, outsig)
 		stderr = err.getvalue()
@@ -1191,7 +1196,7 @@ class TestJob(testly.TestCase):
 		outa = path.join(job.outdir, 'pCache.txt')
 		outb = path.join(job.outdir, 'pCache.dir')
 		helpers.writeFile(outa)
-		makedirs(outb)
+		safefs.makedirs(outb)
 		yield job, True, {
 			'i': {
 				'file': {
@@ -1291,11 +1296,11 @@ class TestJob(testly.TestCase):
 		job2._prepOutput()
 		job2._prepScript()
 		helpers.writeFile(outa)
-		makedirs(outb)
+		safefs.makedirs(outb)
 		with helpers.log2str():
 			job2.cache()
 		#utils.safeRemove(outb)
-		utils.safefs.remove(outb)
+		safefs.remove(outb)
 		yield job2, False, ['DEBUG', 'pIsTrulyCached2', 'mpty', 'signature', 'because']
 		
 		# script file newer
@@ -1330,7 +1335,7 @@ class TestJob(testly.TestCase):
 		outa = path.join(job3.outdir, 'pIsTrulyCached3.txt')
 		outb = path.join(job3.outdir, 'pIsTrulyCached3.dir')
 		helpers.writeFile(outa)
-		makedirs(outb)
+		safefs.makedirs(outb)
 		with helpers.log2str():
 			job3.cache()
 		utime(job3.script, (time() + 10, time() + 10))
@@ -1368,7 +1373,7 @@ class TestJob(testly.TestCase):
 		outa = path.join(job4.outdir, 'pIsTrulyCached4.txt')
 		outb = path.join(job4.outdir, 'pIsTrulyCached4.dir')
 		helpers.writeFile(outa)
-		makedirs(outb)
+		safefs.makedirs(outb)
 		with helpers.log2str():
 			job4.cache()
 		job4.input['c'] = {'type': 'var', 'data': 'd'}
@@ -1406,7 +1411,7 @@ class TestJob(testly.TestCase):
 		outa = path.join(job5.outdir, 'pIsTrulyCached5.txt')
 		outb = path.join(job5.outdir, 'pIsTrulyCached5.dir')
 		helpers.writeFile(outa)
-		makedirs(outb)
+		safefs.makedirs(outb)
 		with helpers.log2str():
 			job5.cache()
 		job5.input['a'] = {'type': 'file', 'data': infile_1}
@@ -1444,7 +1449,7 @@ class TestJob(testly.TestCase):
 		outa = path.join(job6.outdir, 'pIsTrulyCached6.txt')
 		outb = path.join(job6.outdir, 'pIsTrulyCached6.dir')
 		helpers.writeFile(outa)
-		makedirs(outb)
+		safefs.makedirs(outb)
 		with helpers.log2str():
 			job6.cache()
 		utime(infile, (time() + 1, time() + 1))
@@ -1482,7 +1487,7 @@ class TestJob(testly.TestCase):
 		outa = path.join(job7.outdir, 'pIsTrulyCached7.txt')
 		outb = path.join(job7.outdir, 'pIsTrulyCached7.dir')
 		helpers.writeFile(outa)
-		makedirs(outb)
+		safefs.makedirs(outb)
 		with helpers.log2str():
 			job7.cache()
 		job7.input['b']['data'].append(infile_2)
@@ -1520,7 +1525,7 @@ class TestJob(testly.TestCase):
 		outa = path.join(job71.outdir, 'pIsTrulyCached71.txt')
 		outb = path.join(job71.outdir, 'pIsTrulyCached71.dir')
 		helpers.writeFile(outa)
-		makedirs(outb)
+		safefs.makedirs(outb)
 		with helpers.log2str():
 			job71.cache()
 		del job71.input['b']['data'][1]
@@ -1558,7 +1563,7 @@ class TestJob(testly.TestCase):
 		outa = path.join(job8.outdir, 'pIsTrulyCached8.txt')
 		outb = path.join(job8.outdir, 'pIsTrulyCached8.dir')
 		helpers.writeFile(outa)
-		makedirs(outb)
+		safefs.makedirs(outb)
 		with helpers.log2str():
 			job8.cache()
 		utime(job8.input['b']['data'][0], (time() + 1, time() + 1))
@@ -1597,7 +1602,7 @@ class TestJob(testly.TestCase):
 		outa = path.join(job9.outdir, 'pIsTrulyCached9.txt')
 		outb = path.join(job9.outdir, 'pIsTrulyCached9.dir')
 		helpers.writeFile(outa)
-		makedirs(outb)
+		safefs.makedirs(outb)
 		with helpers.log2str():
 			job9.cache()
 		job9.output['c']['data'] = 'new_c'
@@ -1636,7 +1641,7 @@ class TestJob(testly.TestCase):
 		outa = path.join(job10.outdir, 'pIsTrulyCached10.txt')
 		outb = path.join(job10.outdir, 'pIsTrulyCached10.dir')
 		helpers.writeFile(outa)
-		makedirs(outb)
+		safefs.makedirs(outb)
 		with helpers.log2str():
 			job10.cache()
 		job10.output['a']['data'] = infile
@@ -1675,7 +1680,7 @@ class TestJob(testly.TestCase):
 		outa = path.join(job11.outdir, 'pIsTrulyCached11.txt')
 		outb = path.join(job11.outdir, 'pIsTrulyCached11.dir')
 		helpers.writeFile(outa)
-		makedirs(outb)
+		safefs.makedirs(outb)
 		with helpers.log2str():
 			job11.cache()
 		job11.output['b']['data'] = infile
@@ -1713,14 +1718,19 @@ class TestJob(testly.TestCase):
 		outa = path.join(job12.outdir, 'pIsTrulyCached12.txt')
 		outb = path.join(job12.outdir, 'pIsTrulyCached12.dir')
 		helpers.writeFile(outa)
-		makedirs(outb)
+		safefs.makedirs(outb)
 		with helpers.log2str():
 			job12.cache()
 		yield job12, True
 		
 	def testIsTrulyCached(self, job, ret, errs = []):
 		#helpers.log2sys(levels = 'all')
-		with helpers.log2str(levels = 'all') as (out, err):
+		with helpers.log2str(levels = 'all') as (out, err, logger):
+			job.logger = logger.bake(
+				proc   = job.config['proc'],
+				jobidx = job.index,
+				joblen = job.config['procsize'],
+			)
 			r = job.isTrulyCached()
 		self.assertEqual(r, ret)
 		if r: self.assertEqual(job.rc, 0)
@@ -1786,10 +1796,10 @@ class TestJob(testly.TestCase):
 		job4._prepScript()
 		# generate output files
 		if not path.isdir(config.exdir):
-			makedirs(config.exdir)
+			safefs.makedirs(config.exdir)
 		outb = path.join(job4.outdir, 'pIsExptCached4.dir')
 		outbfile = path.join(outb, 'pIsExptCached4.txt')
-		makedirs(outb)
+		safefs.makedirs(outb)
 		helpers.writeFile(outbfile, 'pIsExptCached4')
 		# file not exists
 		#with helpers.log2str():
@@ -1821,10 +1831,10 @@ class TestJob(testly.TestCase):
 		# generate output files
 		outb = path.join(job5.outdir, 'pIsExptCached5.dir')
 		outbfile = path.join(outb, 'pIsExptCached5.txt')
-		makedirs(outb)
+		safefs.makedirs(outb)
 		helpers.writeFile(outbfile, 'pIsExptCached5')
 		if not path.exists(path.join(self.testdir, 'exdir')):
-			makedirs(path.join(self.testdir, 'exdir'))
+			safefs.makedirs(path.join(self.testdir, 'exdir'))
 		with helpers.log2str():
 			job5.export()
 		#5
@@ -1850,7 +1860,7 @@ class TestJob(testly.TestCase):
 		# generate output files
 		outb = path.join(job6.outdir, 'pIsExptCached6.dir')
 		outbfile = path.join(outb, 'pIsExptCached6.txt')
-		makedirs(outb)
+		safefs.makedirs(outb)
 		helpers.writeFile(outbfile, 'pIsExptCached6')
 		exfile = path.join(config.exdir, 'pIsExptCached6.txt')
 		#6
@@ -1958,7 +1968,7 @@ class TestJob(testly.TestCase):
 		#endregion
 			
 	def testIsExptCached(self, job, ret, errs = []):
-		with helpers.log2str(levels = 'all') as (out, err):
+		with helpers.log2str(levels = 'all') as (out, err, _):
 			r = job.isExptCached()
 		stderr = err.getvalue()
 		self.assertEqual(r, ret)
@@ -2047,7 +2057,7 @@ class TestJob(testly.TestCase):
 		config.output   = {}
 		config.runner   = RunnerLocal
 		job             = Job(0, config)
-		makedirs(job.dir)
+		safefs.makedirs(job.dir)
 		r = utils.cmdy.bash(c = 'sleep 12', _bg = True)
 		job.pid = r.pid
 		yield job, True, ['pSubmit: [1/1] is already running at']
@@ -2075,7 +2085,7 @@ class TestJob(testly.TestCase):
 
 	def testSubmit(self, job, status, logs = None):
 		#Job.OUTPUT[0] = {}
-		with helpers.log2str(levels = 'all') as (out, err):
+		with helpers.log2str(levels = 'all') as (out, err, _):
 			job.build()
 			r = job.submit()
 			
@@ -2097,7 +2107,7 @@ class TestJob(testly.TestCase):
 		config.rcs      = [0]
 		config.echo     = {'jobs': []}
 		job             = Job(0, config)
-		makedirs(job.dir)
+		safefs.makedirs(job.dir)
 		helpers.writeFile(job.rcfile, '0')
 		yield job, Job.STATUS_DONE
 
@@ -2111,7 +2121,7 @@ class TestJob(testly.TestCase):
 		config.echo    = {'jobs': []}
 		config.runner  = RunnerLocalNoRun
 		job1 = Job(0, config)
-		makedirs(job1.dir)
+		safefs.makedirs(job1.dir)
 		helpers.writeFile(job1.rcfile, '1')
 		yield job1, Job.STATUS_DONEFAILED
 
@@ -2126,7 +2136,7 @@ class TestJob(testly.TestCase):
 		config.echo    = {'jobs': []}
 		config.runner  = RunnerLocalNoRun
 		job2           = Job(0, config)
-		makedirs(job2.dir)
+		safefs.makedirs(job2.dir)
 		helpers.writeFile(job2.rcfile, '1')
 		yield job2, Job.STATUS_DONEFAILED
 
@@ -2144,7 +2154,7 @@ class TestJob(testly.TestCase):
 		config.proc     = 'pFlush'
 		config.echo     = {'jobs': [0], 'type': {'stdout': None, 'stderr': None}}
 		job             = Job(0, config)
-		makedirs(job.dir)
+		safefs.makedirs(job.dir)
 		helpers.writeFile(job.outfile)
 		helpers.writeFile(job.errfile)
 		yield job, [[('', ''), ('', '', '', '')]]
@@ -2152,7 +2162,7 @@ class TestJob(testly.TestCase):
 		config      = config.copy()
 		config.echo = {'jobs': [1], 'type': {'stdout': None, 'stderr': None}}
 		job1        = Job(1, config)
-		makedirs(job1.dir)
+		safefs.makedirs(job1.dir)
 		helpers.writeFile(job1.outfile)
 		helpers.writeFile(job1.errfile)
 		yield job1, [[('123', ''), ('123\n', '', '', '')]]
@@ -2166,7 +2176,7 @@ class TestJob(testly.TestCase):
 		config      = config.copy()
 		config.echo = {'jobs': [2], 'type': {'stdout': r'^a', 'stderr': None}}
 		job2        = Job(2, config)
-		makedirs(job2.dir)
+		safefs.makedirs(job2.dir)
 		helpers.writeFile(job2.outfile)
 		helpers.writeFile(job2.errfile)
 		yield job2, [[('', ''), ('', '', '', '')]]
@@ -2184,7 +2194,7 @@ class TestJob(testly.TestCase):
 		config      = config.copy()
 		config.echo = {'jobs': [3], 'type': {'stdout': None, 'stderr': None}}
 		job3        = Job(3, config)
-		makedirs(job3.dir)
+		safefs.makedirs(job3.dir)
 		helpers.writeFile(job3.outfile)
 		helpers.writeFile(job3.errfile)
 		yield job3, [
@@ -2204,7 +2214,7 @@ class TestJob(testly.TestCase):
 		config      = config.copy()
 		config.echo = {'jobs': [4], 'type': {'stdout': None, 'stderr': '^7'}}
 		job4        = Job(4, config)
-		makedirs(job4.dir)
+		safefs.makedirs(job4.dir)
 		helpers.writeFile(job4.outfile)
 		helpers.writeFile(job4.errfile)
 		yield job4, [
@@ -2231,10 +2241,18 @@ class TestJob(testly.TestCase):
 			ferrw.write(errtow)
 			foutw.flush()
 			ferrw.flush()
-			with helpers.log2str() as (out, err):
+			with helpers.log2str() as (out, err, logger):
+				job.logger = logger.bake(
+					proc   = job.config['proc'],
+					jobidx = job.index,
+					joblen = job.config['procsize'],
+				)
 				job._flush(end)
-			self.assertIn(stdout, out.getvalue())
-			self.assertIn(stderr, err.getvalue())
+			err = err.getvalue()
+			for line in stdout.splitlines():
+				self.assertIn(line, err)
+			for line in stderr.splitlines():
+				self.assertIn(line, err)
 			self.assertEqual(job.lastout, lastout)
 			self.assertEqual(job.lasterr, lasterr)
 		foutw.close()

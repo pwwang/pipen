@@ -9,8 +9,7 @@ sys.path.insert(0, path.join(
 import tempfile, inspect, shutil
 from hashlib import md5
 from box import Box
-from simpleconf import config
-from pyppl.logger import logger
+from pyppl.logger import logger, config
 
 from contextlib import contextmanager
 from six import StringIO, with_metaclass, assertRaisesRegex as sixAssertRaisesRegex
@@ -45,23 +44,23 @@ def moduleInstalled(mod):
 def captured_output():
 	new_out, new_err = StringIO(), StringIO()
 	old_out, old_err = sys.stdout, sys.stderr
+	sys.stdout, sys.stderr = new_out, new_err
 	try:
-		sys.stdout, sys.stderr = new_out, new_err
 		yield sys.stdout, sys.stderr
 	finally:
 		sys.stdout, sys.stderr = old_out, old_err
 
 @contextmanager
-def log2str(levels = 'normal', theme = True, logfile = None, lvldiff = None):
+def log2str(levels = 'all', theme = True, logfile = None, lvldiff = None):
 	new_out, new_err = StringIO(), StringIO()
 	old_out, old_err = sys.stdout, sys.stderr
+	sys.stdout, sys.stderr = new_out, new_err
+	logconfig = dict(logconfig = dict(_log = dict(levels = levels, theme = theme, file = logfile, leveldiffs = lvldiff)))
+	config._load(logconfig)
+	config._use('logconfig')
 	try:
-		sys.stdout, sys.stderr = new_out, new_err
-		logconfig = dict(logconfig = dict(_log = dict(levels = levels, theme = theme, file = logfile, leveldiffs = lvldiff)))
-		config._load(logconfig)
-		config._use('logconfig')
 		logger.init()
-		yield sys.stdout, sys.stderr
+		yield sys.stdout, sys.stderr, logger
 	finally:
 		config._revert()
 		sys.stdout, sys.stderr = old_out, old_err
