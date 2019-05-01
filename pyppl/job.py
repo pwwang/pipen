@@ -100,7 +100,7 @@ class Job(object):
 		# need to pass this to next procs, so have to keep order
 		self.output    = OrderedDict()
 		self.data      = Box(
-			job = dict(
+			job = Box(
 				index    = self.index,
 				indir    = self.indir,
 				outdir   = self.outdir,
@@ -110,8 +110,8 @@ class Job(object):
 				pidfile  = self.pidfile,
 				cachedir = self.cachedir
 			),
-			i = {},
-			o = {}
+			i = Box(),
+			o = Box()
 		)
 		self.data.update(self.config.get('procvars', {}))
 		self.runner   = None
