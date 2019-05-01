@@ -679,7 +679,7 @@ class Proc (object):
 			input_keys_and_types = []
 			# string/list/tupl
 			if not isinstance(self.config.input, dict):
-				input_keys_and_types = utils.alwaysList(self.config.input)
+				input_keys_and_types = utils.alwaysList(self.config.input) if self.config.input else []
 			else: # either raw dict or OrderedDict
 				input_keys_and_types = sum((
 					utils.alwaysList(key) 
@@ -965,22 +965,21 @@ class Proc (object):
 			The return code of the command
 		"""
 		#if not self.config[key]: return
-		cmdstr = self.template(getattr(self, key), **self.tplenvs).render(self.procvars)
-		if cmdstr.strip():
-			logger.info('Running <%s> ...', key, proc = self.id)
+		cmdstr = self.template(getattr(self, key), **self.tplenvs).render(self.procvars).strip()
 
-		c = utils.cmd.Cmd(cmdstr, shell = True, stdin = None, executable = '/bin/bash')
-		while c.p.poll() is None:
-			errline = c.p.stderr.readline()
-			if not errline:
-				break
-			logger.cmderr('  %s', errline.rstrip("\n"), proc = self.id)
-		for errline in c.p.stderr:
-			logger.cmderr('  %s', errline.rstrip("\n"), proc = self.id)
-		for outline in c.p.stdout:
-			logger.cmdout('  %s', outline.rstrip("\n"), proc = self.id)
-		if c.p.wait() != 0:
-			raise ProcRunCmdError(cmdstr, key)
+		if not cmdstr:
+			return
+		
+		logger.info('Running <%s> ...', key, proc = self.id)
+
+		c = utils.cmdy.bash(c = cmdstr, _iter = 'err')
+		for err in c:
+			logger.cmderr('  ' + err.rstrip("\n"), proc = self.id)
+		for out in c.stdout.splitlines():
+			logger.cmdout('  ' + out.rstrip("\n"), proc = self.id)
+			
+		if c.rc != 0:
+			raise ProcRunCmdError(repr(cmdstr), key)
 
 	def _runJobs (self):
 		"""

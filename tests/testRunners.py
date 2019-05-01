@@ -1,4 +1,4 @@
-import helpers, testly, unittest, sys, cmdy
+import helpers, testly, unittest, sys
 
 from os import path, getcwd, makedirs, remove
 from shutil import rmtree
@@ -56,7 +56,7 @@ class TestRunner(testly.TestCase):
 		yield createJob(path.join(self.testdir, 'pTestIsRunning'), 0), False
 
 		job1 = createJob(path.join(self.testdir, 'pTestIsRunning'), 1)
-		r = utils.cmd.run('sleep 10', bg = True)
+		r = utils.cmdy.bash(c = 'sleep 10', bg = True)
 		job1.pid = r.pid
 		yield job1, True
 
@@ -69,7 +69,7 @@ class TestRunner(testly.TestCase):
 	
 	def dataProvider_testSubmit(self):
 		job = createJob(path.join(self.testdir, 'pTestSubmit'))
-		yield job, cmdy.bash(job.script, _dry = True).cmd
+		yield job, utils.cmdy.bash(job.script, _hold = True).cmd
 
 	def testSubmit(self, job, cmd):
 		r = Runner(job)
@@ -117,9 +117,6 @@ class TestRunnerLocal(testly.TestCase):
 # Collect return code on exit
 trap "status=\$?; echo \$status > {jobdir}/job.rc; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
 #
-# Save pid
-echo $$ > {jobdir}/job.pid
-#
 # Run pre-script
 prescript
 #
@@ -157,9 +154,6 @@ class TestRunnerDry(testly.TestCase):
 #
 # Collect return code on exit
 trap "status=\$?; echo \$status > {jobdir}/job.rc; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
-#
-# Save pid
-echo $$ > {jobdir}/job.pid
 #
 # Run pre-script
 #
@@ -290,9 +284,6 @@ class TestRunnerSsh(testly.TestCase):
 # Collect return code on exit
 trap "status=\$?; echo \$status > {jobdir}/job.rc; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
 #
-# Save pid
-echo $$ > {jobdir}/job.pid
-#
 # Run pre-script
 {preScript}#
 # Run the real script
@@ -332,12 +323,13 @@ cd {cwd}
 				}},
 			}
 		)
-		yield job1, ' '.join([
-			path.join(__here__, 'mocks', 'ssh'), 
-			'-t',
-			'server1',
-			"'bash " + job1.script + ".ssh'"
-		])
+		if RunnerSsh.isServerAlive('localhost', None, 1):
+			yield job1, ' '.join([
+				'ssh', 
+				'-t',
+				'localhost',
+				"'bash " + job1.script + ".ssh'"
+			])
 
 		job2 = createJob(
 			path.join(self.testdir, 'pTestSubmit'),
@@ -350,12 +342,13 @@ cd {cwd}
 				}},
 			}
 		)
-		yield job2, ' '.join([
-			'ssh', 
-			'-t',
-			'localhost',
-			"'ls " + job2.script + ".ssh'"
-		]), job2.RC_SUBMITFAILED
+		if RunnerSsh.isServerAlive('localhost', None, 1):
+			yield job2, ' '.join([
+				'ssh', 
+				'-t',
+				'localhost',
+				"'bash " + job2.script + ".ssh'"
+			]), 0
 	
 	def testSubmit(self, job, cmd, rc = 0):
 		RunnerSsh.INTERVAL = .1
@@ -456,23 +449,29 @@ class TestRunnerSge(testly.TestCase):
 #$ -cwd
 #$ -M xxx@abc.com
 #$ -m yes
+#$ -o {jobdir}/job.stdout
+#$ -e {jobdir}/job.stderr
 #$ -mem 4G
 #$ -notify
 #
 # Collect return code on exit
 trap "status=\$?; echo \$status > {jobdir}/job.rc; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
 #
-# Save pid
-echo $$ > {jobdir}/job.pid
-#
 # Run pre-script
-alias qsub="/home/pwwang/PyPPL/tests/mocks/qsub"
+alias qsub="{qsub}"
 #
 # Run the real script
-{jobdir}/job.script 1> {jobdir}/job.stdout 2> {jobdir}/job.stderr
+{jobdir}/job.script
 #
 # Run post-script
-#""".format(jobdir = path.dirname(r.script), name = jobname or '{config[proc]}.{config[tag]}.{config[suffix]}.{index}'.format(config = r.job.config, index = r.job.index + 1)))
+#""".format(
+		jobdir = path.dirname(r.script), 
+		name   = jobname or '{config[proc]}.{config[tag]}.{config[suffix]}.{index}'.format(
+			config = r.job.config,
+			index  = r.job.index + 1
+		),
+		qsub = (path.join(__here__, 'mocks', 'qsub'))
+	))
 	
 	def dataProvider_testSubmit(self):
 		job0 = createJob(
@@ -642,6 +641,8 @@ class TestRunnerSlurm(testly.TestCase):
 		self.assertTrue(r.script)
 		helpers.assertTextEqual(self, helpers.readFile(job.script + '.slurm', str), """#!/usr/bin/env bash
 #SBATCH -J {name}
+#SBATCH -o {jobdir}/job.stdout
+#SBATCH -e {jobdir}/job.stderr
 #SBATCH -M xxx@abc.com
 #SBATCH -j y
 #SBATCH -m yes
@@ -652,16 +653,16 @@ class TestRunnerSlurm(testly.TestCase):
 # Collect return code on exit
 trap "status=\$?; echo \$status > {jobdir}/job.rc; exit \$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
 #
-# Save pid
-echo $$ > {jobdir}/job.pid
-#
 # Run pre-script
 #
 # Run the real script
-{srun} {jobdir}/job.script 1> {jobdir}/job.stdout 2> {jobdir}/job.stderr
+{srun} {jobdir}/job.script
 #
 # Run post-script
-#""".format(jobdir = path.dirname(job.script), name = jobname or '{config[proc]}.{config[tag]}.{config[suffix]}.{index}'.format(config = job.config, index = job.index + 1), srun = r.srun.call_args['_exe'], ))
+#""".format(
+		jobdir = path.dirname(job.script), 
+		name = jobname or '{config[proc]}.{config[tag]}.{config[suffix]}.{index}'.format(config = job.config, index = job.index + 1), 
+		srun = r.srun.call_args['_exe'], ))
 	
 	def dataProvider_testSubmit(self):
 		job0 = createJob(

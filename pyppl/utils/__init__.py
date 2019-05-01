@@ -5,11 +5,14 @@ import inspect
 import re
 import cmdy
 import json
+import safefs
 import psutil
+from os import path, walk
 from time import sleep
 from hashlib import md5
 from box import Box
 from simpleconf import Config
+cmdy   = cmdy(_raise = False)
 config = Config()
 
 try:
@@ -399,3 +402,53 @@ def chmodX(filepath, filetype = None):
 			raise OSError('Unable to make {} as executable by chmod and detect interpreter from shebang.'.format(filepath))
 		ret = shebang[2:].strip().split() + [filepath]
 	return ret
+
+def filesig(filepath, dirsig = True):
+	"""
+	Generate a signature for a file
+	@params:
+		`dirsig`: Whether expand the directory? Default: True
+	@returns:
+		The signature
+	"""
+	if not filepath:
+		return ['', 0]
+	if not safefs.exists(filepath):
+		return False
+	
+	if dirsig and safefs.isdir(filepath):
+		mtime = path.getmtime(filepath)
+		for root, dirs, files in walk(filepath):
+			for d in dirs:
+				mtime2 = path.getmtime(path.join(root, d))
+				mtime  = max(mtime, mtime2)
+			for f in files:
+				mtime2 = path.getmtime(path.join(root, f))
+				mtime  = max(mtime, mtime2)
+	else:
+		mtime = path.getmtime(filepath)
+	return [filepath, int(mtime)]
+
+def fileflush(fd, lastmsg, end = False):
+	"""
+	Flush a file descriptor
+	@params:
+		`fd`     : The file handler
+		`lastmsg`: The remaining content of last flush
+		`end`    : The file ends? Default: `False`
+	"""
+	fd.flush()
+	# OSX cannot tell the pointer automatically
+	fd.seek(fd.tell())
+	lines = fd.readlines() or []
+	if lines:
+		lines[0] = lastmsg + lines[0]
+		lastmsg  = '' if lines[-1].endswith('\n') else lines.pop(-1)
+		if lastmsg and end:
+			lines.append(lastmsg + '\n')
+			lastmsg = ''
+	elif lastmsg and end:
+		lines.append(lastmsg + '\n')
+		lastmsg = ''
+	return lines, lastmsg
+	

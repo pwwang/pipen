@@ -15,7 +15,7 @@ from liquid import LiquidRenderError
 from pyppl.job import Job
 from pyppl.jobmgr import Jobmgr
 from pyppl.runners import RunnerLocal
-from pyppl.exception import JobInputParseError, JobOutputParseError
+from pyppl.exceptions import JobInputParseError, JobOutputParseError
 from pyppl.template import TemplateLiquid
 from pyppl import logger, utils
 
@@ -1181,6 +1181,7 @@ class TestJob(testly.TestCase):
 		}
 		job = Job(0, config)
 		#job.init()
+		#with helpers.log2str():
 		job._prepInput()
 		job._prepOutput()
 		job._prepScript()
@@ -1231,7 +1232,10 @@ class TestJob(testly.TestCase):
 		if not cache:
 			self.assertFalse(path.exists(job.cachefile))
 		else:
-			self.assertDictEqual(helpers.readFile(job.cachefile, json.loads), outsig)
+			sig = Box.from_yaml(filename = job.cachefile)
+			self.assertDictEqual(sig.i, outsig['i'])
+			self.assertDictEqual(sig.o, outsig['o'])
+			self.assertListEqual(sig.script, outsig['script'])
 	
 	def dataProvider_testIsTrulyCached(self):
 		# no cache file
@@ -2044,7 +2048,7 @@ class TestJob(testly.TestCase):
 		config.runner   = RunnerLocal
 		job             = Job(0, config)
 		makedirs(job.dir)
-		r = utils.cmd.Cmd('sleep 3')
+		r = utils.cmdy.bash(c = 'sleep 12', _bg = True)
 		job.pid = r.pid
 		yield job, True, ['pSubmit: [1/1] is already running at']
 
@@ -2059,7 +2063,7 @@ class TestJob(testly.TestCase):
 
 		class RunnerLocalFail(RunnerLocal):
 			def submit(self):
-				return utils.Box(rc = 1, cmd = 'submission failed')
+				return utils.Box(rc = 1, cmd = 'submission failed', stderr = 'failed')
 		config          = CONFIG.copy()
 		config.workdir  = path.join(self.testdir, 'pSubmit2', 'workdir')
 		config.proc     = 'pSubmit2'

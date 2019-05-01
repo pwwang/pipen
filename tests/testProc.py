@@ -11,7 +11,7 @@ from tempfile import gettempdir
 from collections import OrderedDict
 from multiprocessing import cpu_count
 from pyppl import Proc, Box, Aggr, utils, ProcTree, Channel, Job, logger
-from pyppl.exception import ProcTagError, ProcAttributeError, ProcTreeProcExists, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
+from pyppl.exceptions import ProcTagError, ProcAttributeError, ProcTreeProcExists, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
 from pyppl.template import TemplateLiquid
 if helpers.moduleInstalled('jinja2'):
 	from pyppl.template import TemplateJinja2
@@ -751,17 +751,18 @@ class TestProc(testly.TestCase):
 	def dataProvider_testSaveSettings(self):
 		pSaveSettings = Proc()
 		pSaveSettings.ppldir = self.testdir
+		pSaveSettings.input  = {'in': [1]} # otherwise argv will be used
 		yield pSaveSettings, {
 			'origin'  : 'pSaveSettings',
-			'jobs'    : [],
+			'jobs'    : [None],
 			'runner'  : 'local',
 			'lock'    : None,
-			'sets'    : set(['ppldir']),
+			'sets'    : set(['input', 'ppldir']),
 			'echo'    : {'jobs': [], 'type': {'stderr': None, 'stdout': None}},
 			'depends' : [],
 			'expect'  : 'TemplateLiquid <  >',
-			'input'   : OrderedDict(),
-			'size'    : 0,
+			'input'   : {'in': {'data': [1], 'type': 'var'}},
+			'size'    : 1,
 			'script'  : 'TemplateLiquid < #!/usr/bin/env bash >',
 			'expart'  : ['TemplateLiquid <  >'],
 			'timer'   : None,
@@ -823,7 +824,6 @@ class TestProc(testly.TestCase):
 			p._buildInput()
 			p._buildProcVars ()
 			p._buildProps()
-			# p._buildBrings()
 			p._buildOutput()
 			p._buildScript()
 			p._saveSettings()

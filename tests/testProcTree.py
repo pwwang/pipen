@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 from pyppl import Proc
 from pyppl.proctree import ProcTree, ProcNode
-from pyppl.exception import ProcTreeProcExists, ProcTreeParseError, ProcHideError
+from pyppl.exceptions import ProcTreeProcExists, ProcTreeParseError, ProcHideError
 
 class TestProcNode(testly.TestCase):
 

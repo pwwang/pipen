@@ -4,7 +4,7 @@ from os import path, makedirs
 from shutil import rmtree
 from tempfile import gettempdir
 from pyppl.logger import logger, LEVELS, LEVELS_ALWAYS, colorama, THEMES, StreamFormatter, StreamHandler, StreamFilter, FileFilter, FileFormatter, Logger, Theme
-from pyppl.exception import LoggerThemeError
+from pyppl.exceptions import LoggerThemeError
 Fore, Back, Style = colorama.Fore, colorama.Back, colorama.Style
 
 class TestFilter(testly.TestCase):

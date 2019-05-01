@@ -9,7 +9,7 @@ from collections import OrderedDict
 from glob import glob
 from pyppl import Proc, PyPPL, ProcTree, Aggr
 from pyppl.runners import RunnerLocal, RunnerSge, RunnerSlurm, RunnerSsh, RunnerDry
-from pyppl.exception import PyPPLProcRelationError, PyPPLConfigError
+from pyppl.exceptions import PyPPLProcRelationError, PyPPLConfigError
 from pyppl.utils import config
 
 class TestPyPPL(testly.TestCase):

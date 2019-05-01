@@ -7,8 +7,7 @@ from glob import glob
 from copy import deepcopy
 from os import path, symlink, remove, rename, makedirs, utime, X_OK, access, W_OK, getcwd, chdir, getpid
 from pyppl import utils
-from pyppl.utils import uid, ps
-from pyppl.utils.cmd import Cmd
+from pyppl.utils import uid
 from pyppl.utils.safefs import SafeFs
 from time import time, sleep
 from shutil import copyfile, rmtree, copyfileobj
@@ -1953,21 +1952,21 @@ class TestUtils (testly.TestCase):
 		helpers.Parallel(length, 'thread').run(func, [(f1, f2) for _ in range(length)])
 		self.assertTrue(state(), msg)
 
-	def dataProvider_testDumbPopen(self):
-		yield 'ls', 0
-		yield 'bash -c "exit 1"', 1
-		yield 'ls2', 1
+	# def dataProvider_testDumbPopen(self):
+	# 	yield 'ls', 0
+	# 	yield 'bash -c "exit 1"', 1
+	# 	yield 'ls2', 1
 
-	def testDumbPopen(self, cmd, rc = 0):
-		with helpers.captured_output() as (out, err):
-			p = Cmd(cmd, raiseExc = False).run()
-			r = p.rc
+	# def testDumbPopen(self, cmd, rc = 0):
+	# 	with helpers.captured_output() as (out, err):
+	# 		p = Cmd(cmd, raiseExc = False).run()
+	# 		r = p.rc
 
-		if p.p:
-			self.assertIsInstance(p.p, Popen)
-		self.assertEqual(out.getvalue(), '')
-		self.assertEqual(err.getvalue(), '')
-		self.assertEqual(r, rc)
+	# 	if p.p:
+	# 		self.assertIsInstance(p.p, Popen)
+	# 	self.assertEqual(out.getvalue(), '')
+	# 	self.assertEqual(err.getvalue(), '')
+	# 	self.assertEqual(r, rc)
 
 	def dataProvider_testBriefList(self):
 		yield ([0, 1, 2, 3, 4, 5, 6, 7], "0-7")
@@ -1978,94 +1977,94 @@ class TestUtils (testly.TestCase):
 	def testBriefList(self, list2Brief, collapsedStr):
 		self.assertEqual(utils.briefList(list2Brief), collapsedStr)
 
-class TestCmd(testly.TestCase):
+# class TestCmd(testly.TestCase):
 
-	def setUpMeta(self):
-		self.testdir = path.join(gettempdir(), 'PyPPL_unittest', 'TestCmd')
-		if path.exists(self.testdir):
-			rmtree(self.testdir)
-		makedirs(self.testdir)
+# 	def setUpMeta(self):
+# 		self.testdir = path.join(gettempdir(), 'PyPPL_unittest', 'TestCmd')
+# 		if path.exists(self.testdir):
+# 			rmtree(self.testdir)
+# 		makedirs(self.testdir)
 
-	def testInit(self, cmd, raiseExc = True, kwargs = None, exception = None):
-		kwargs = kwargs or {}
-		if exception:
-			self.assertRaises(exception, Cmd, cmd, raiseExc, **kwargs)
-		else:
-			c = Cmd(cmd, raiseExc, **kwargs)
-			self.assertEqual(c.cmd, list2cmdline(cmd) if isinstance(cmd, list) else cmd)
-			self.assertIsInstance(c.p, Popen)
-			self.assertIsNone(c.stdout)
-			self.assertIsNone(c.stderr)
-			self.assertEqual(c.rc, 1)
-			self.assertGreater(c.pid, 0)
-			self.assertEqual(repr(c), '<Cmd {!r}>'.format(list2cmdline(cmd) if isinstance(cmd, list) else cmd))
+# 	def testInit(self, cmd, raiseExc = True, kwargs = None, exception = None):
+# 		kwargs = kwargs or {}
+# 		if exception:
+# 			self.assertRaises(exception, Cmd, cmd, raiseExc, **kwargs)
+# 		else:
+# 			c = Cmd(cmd, raiseExc, **kwargs)
+# 			self.assertEqual(c.cmd, list2cmdline(cmd) if isinstance(cmd, list) else cmd)
+# 			self.assertIsInstance(c.p, Popen)
+# 			self.assertIsNone(c.stdout)
+# 			self.assertIsNone(c.stderr)
+# 			self.assertEqual(c.rc, 1)
+# 			self.assertGreater(c.pid, 0)
+# 			self.assertEqual(repr(c), '<Cmd {!r}>'.format(list2cmdline(cmd) if isinstance(cmd, list) else cmd))
 
-	def dataProvider_testInit(self):
-		yield ['ls'], True, {'shell': True}
-		yield 'ls2', True, None, OSError
+# 	def dataProvider_testInit(self):
+# 		yield ['ls'], True, {'shell': True}
+# 		yield 'ls2', True, None, OSError
 
-	def testRunTimeout(self):
-		c = Cmd('sleep .2', timeout = .1)
-		self.assertRaises(utils.cmd.Timeout, c.run)
-		self.assertEqual(c.rc, 1)
-		c = Cmd('sleep .2', timeout = 1).run()
-		self.assertEqual(c.rc, 0)
+# 	def testRunTimeout(self):
+# 		c = Cmd('sleep .2', timeout = .1)
+# 		self.assertRaises(utils.cmd.Timeout, c.run)
+# 		self.assertEqual(c.rc, 1)
+# 		c = Cmd('sleep .2', timeout = 1).run()
+# 		self.assertEqual(c.rc, 0)
 
-	def testRunPipe(self, cmd, bg, rc, stdout, stderr):
-		cmd.run(bg)
-		self.assertEqual(cmd.rc, rc)
-		self.assertEqual(cmd.stdout, stdout)
-		self.assertEqual(cmd.stderr, stderr)
+# 	def testRunPipe(self, cmd, bg, rc, stdout, stderr):
+# 		cmd.run(bg)
+# 		self.assertEqual(cmd.rc, rc)
+# 		self.assertEqual(cmd.stdout, stdout)
+# 		self.assertEqual(cmd.stderr, stderr)
 
-	def dataProvider_testRunPipe(self):
-		yield Cmd('echo 1'), False, 0, '1\n', ''
-		yield Cmd('echo 1'), True, 1, None, None
-		yield Cmd('seq 1 3').pipe('grep 1'), False, 0, '1\n', ''
-		yield Cmd('seq 1 3').pipe('grep 1'), True, 1, None, None
+# 	def dataProvider_testRunPipe(self):
+# 		yield Cmd('echo 1'), False, 0, '1\n', ''
+# 		yield Cmd('echo 1'), True, 1, None, None
+# 		yield Cmd('seq 1 3').pipe('grep 1'), False, 0, '1\n', ''
+# 		yield Cmd('seq 1 3').pipe('grep 1'), True, 1, None, None
 
-	def testStd2file(self, cmd, fout, out):
-		with open(fout, 'w') as f:
-			c = utils.cmd.run(cmd, stdout = f)
-		with open(fout, 'r') as f:
-			helpers.assertTextEqual(self, f.read(), out)
+# 	def testStd2file(self, cmd, fout, out):
+# 		with open(fout, 'w') as f:
+# 			c = utils.cmd.run(cmd, stdout = f)
+# 		with open(fout, 'r') as f:
+# 			helpers.assertTextEqual(self, f.read(), out)
 
-	def dataProvider_testStd2file(self):
-		yield 'seq 1 3', path.join(self.testdir, 'testStd2file'), '1\n2\n3\n'
+# 	def dataProvider_testStd2file(self):
+# 		yield 'seq 1 3', path.join(self.testdir, 'testStd2file'), '1\n2\n3\n'
 
-class TestPs(testly.TestCase):
+# class TestPs(testly.TestCase):
 
-	def testExists(self, pid, ret, exception = None):
-		if exception:
-			self.assertRaises(exception, ps.exists, pid)
-		else:
-			self.assertEqual(ps.exists(pid), ret)
+# 	def testExists(self, pid, ret, exception = None):
+# 		if exception:
+# 			self.assertRaises(exception, ps.exists, pid)
+# 		else:
+# 			self.assertEqual(ps.exists(pid), ret)
 
-	def dataProvider_testExists(self):
-		yield 123456, False
-		yield getpid(), True
+# 	def dataProvider_testExists(self):
+# 		yield 123456, False
+# 		yield getpid(), True
 
-	def testChild(self, pid, child):
-		self.assertIn(child, ps.child(pid))
-		self.assertIn(child, ps.children(pid))
+# 	def testChild(self, pid, child):
+# 		self.assertIn(child, ps.child(pid))
+# 		self.assertIn(child, ps.children(pid))
 
-	def dataProvider_testChild(self):
-		from os import getpid
-		c = Cmd('sleep 1').run(bg = True)
-		yield getpid(), str(c.pid)
+# 	def dataProvider_testChild(self):
+# 		from os import getpid
+# 		c = Cmd('sleep 1').run(bg = True)
+# 		yield getpid(), str(c.pid)
 
-	def testKill(self):
-		c = Cmd('sleep .5').run(bg = True)
-		self.assertTrue(ps.exists(c.pid))
-		# osx shows zombie process as quoted: "(sleep)"
-		c2 = Cmd('ps -p ' + str(c.pid)).pipe('grep -v defunct').pipe('grep -v ")$"').run()
-		self.assertIn(str(c.pid), c2.stdout)
-		ps.killtree(c.pid)
-		# The process will become a <defunct> process
-		# ps.exists can still detect it
-		# self.assertFalse(ps.exists(r.pid))
-		# use ps command instead
-		c3 = Cmd('ps -p ' + str(c.pid)).pipe('grep -v defunct').pipe('grep -v ")$"').run()
-		self.assertNotIn(str(c.pid), c3.stdout)
+# 	def testKill(self):
+# 		c = Cmd('sleep .5').run(bg = True)
+# 		self.assertTrue(ps.exists(c.pid))
+# 		# osx shows zombie process as quoted: "(sleep)"
+# 		c2 = Cmd('ps -p ' + str(c.pid)).pipe('grep -v defunct').pipe('grep -v ")$"').run()
+# 		self.assertIn(str(c.pid), c2.stdout)
+# 		ps.killtree(c.pid)
+# 		# The process will become a <defunct> process
+# 		# ps.exists can still detect it
+# 		# self.assertFalse(ps.exists(r.pid))
+# 		# use ps command instead
+# 		c3 = Cmd('ps -p ' + str(c.pid)).pipe('grep -v defunct').pipe('grep -v ")$"').run()
+# 		self.assertNotIn(str(c.pid), c3.stdout)
 
 
 if __name__ == '__main__':

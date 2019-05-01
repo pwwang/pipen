@@ -4,7 +4,7 @@ from os import path, makedirs
 from shutil import rmtree
 from tempfile import gettempdir
 from pyppl.parameters import Parameter, Parameters, HelpAssembler, Commands
-from pyppl.exception import ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError
+from pyppl.exceptions import ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError
 
 noANSI = lambda s: '\n'.join(line.rstrip() for line in re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', s).split('\n'))
 
