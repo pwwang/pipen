@@ -5,8 +5,7 @@ jobmgr module for PyPPL
 import random
 from time import sleep
 from contextlib import contextmanager
-from .utils import config
-from .utils.taskmgr import PQueue, ThreadPool, Lock
+from .utils import config, PQueue, ThreadPool, Lock
 from .job import Job
 from .logger import logger
 from .exceptions import JobFailException, JobSubmissionException, JobBuildingException

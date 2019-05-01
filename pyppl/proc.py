@@ -633,15 +633,15 @@ class Proc (object):
 		"""
 		settingsfile = path.join(self.workdir, 'proc.settings.yaml')
 
-		props          = self.props.copy()
-		props.lock     = None
-		props.template = props.template.__name__
-		props.expect   = str(props.expect)
-		props.expart   = [str(ep) for ep in props.expart]
-		props.depends  = [repr(p) for p in self.depends]
-		props.script   = str(props.script)
-		props.procvars = {}
-		props.output   = OrderedDict([(key, str(val)) for key, val in props.output.items()])
+		props           = self.props.copy()
+		props.lock      = None
+		props.template  = props.template.__name__
+		props.expect    = str(props.expect)
+		props.expart    = [str(ep) for ep in props.expart]
+		props.depends   = [repr(p) for p in self.depends]
+		props.script    = str(props.script)
+		props.procvars  = {}
+		props.output    = OrderedDict([(key, str(val)) for key, val in props.output.items()])
 		props.to_yaml(filename = settingsfile)
 
 		logger.debug('Settings saved to: %s', settingsfile, proc = self.id)

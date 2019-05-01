@@ -474,7 +474,8 @@ class TestProc(testly.TestCase):
 		yield pBuildProps2, {'rc': [0, 1]}, {'rc': [0, 1]}
 		yield pBuildProps2, {'workdir': path.join(testdir, 'pBuildProps2')}, {'workdir': path.join(testdir, 'pBuildProps2')}
 		# 10
-		pBuildProps3 = Proc()
+		with helpers.log2str():
+			pBuildProps3 = Proc()
 		pBuildProps3.ppldir = testdir
 		yield pBuildProps3, {}, {'workdir': path.join(testdir, 'PyPPL.pBuildProps3.notag.%s' % pBuildProps3._suffix())}, None, None, [lambda p: path.isdir(p.workdir)]
 		
@@ -854,7 +855,7 @@ class TestProc(testly.TestCase):
 		yield pTidyBeforeRun, []
 		pTidyBeforeRun1 = Proc()
 		pTidyBeforeRun1.ppldir = self.testdir
-		pTidyBeforeRun1.props['callfront'] = lambda p: logger.info('hello')
+		pTidyBeforeRun1.callfront = lambda p: logger.info('hello')
 		yield pTidyBeforeRun1, ['DEBUG', 'Calling callfront ...', 'INFO', 'hello']
 	
 	def testTidyBeforeRun(self, p, errs = []):
@@ -925,7 +926,7 @@ class TestProc(testly.TestCase):
 		
 	def dataProvider_testTidyAfterRun(self):
 		pTidyAfterRun = Proc()
-		pTidyAfterRun.props['callback'] = lambda p: logger.info('goodbye')
+		pTidyAfterRun.callback = lambda p: logger.info('goodbye')
 		yield pTidyAfterRun, 'terminate', 'skip+', None, [
 			'DEBUG',
 			'Calling callback ...',
@@ -936,7 +937,7 @@ class TestProc(testly.TestCase):
 		pTidyAfterRun1 = Proc()
 		pTidyAfterRun1.ppldir = self.testdir
 		pTidyAfterRun1.input = {'in': [1,2]}
-		pTidyAfterRun1.props['callback'] = lambda p: logger.info('goodbye')
+		pTidyAfterRun1.callback = lambda p: logger.info('goodbye')
 		pTidyAfterRun1._tidyBeforeRun()
 		# write rc to job.rc
 		#for job in pTidyAfterRun1.jobs:

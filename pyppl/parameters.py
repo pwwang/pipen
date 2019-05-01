@@ -896,7 +896,8 @@ class Parameters (object):
 
 		requiredOptions   = []
 		optionalOptions   = []
-		for val, _ in revparams.items():
+
+		for val in revparams.keys():
 			# options not suppose to show
 			if not val.show or val.name == Parameters.POSITIONAL:
 				continue
@@ -910,7 +911,7 @@ class Parameters (object):
 			else:
 				optionalOptions.append(option)
 
-		if posopt:
+		if isinstance(posopt, Parameter):
 			if posopt.required:
 				requiredOptions.append(('POSITIONAL', '', posopt.desc))
 			else:
@@ -933,7 +934,7 @@ class Parameters (object):
 				)
 			if optionalOptions:
 				defusage.append('[OPTIONS]')
-			if posopt:
+			if isinstance(posopt, Parameter):
 				defusage.append('POSITIONAL' if posopt.required else '[POSITIONAL]')
 
 			helpitems['usage'] = [' '.join(defusage)]

@@ -137,7 +137,7 @@ class TestPyPPL(testly.TestCase):
 		]
 			
 	def testStart(self, pp, starts, outstarts, errs = []):
-		with helpers.log2str(levels = 'all') as (out, err):
+		with helpers.log2str(levels = 'all') as (out, err, _):
 			self.assertIs(pp.start(starts), pp)
 		for outstart in outstarts:
 			self.assertTrue(ProcTree.NODES[outstart].start)
@@ -307,7 +307,7 @@ class TestPyPPL(testly.TestCase):
 		with helpers.log2str():
 			pp = PyPPL({'_log': {'file': None}})
 		pp.start(start)
-		with helpers.log2str(levels = 'all') as (out, err):
+		with helpers.log2str(levels = 'all') as (out, err, _):
 			pp.showAllRoutes()
 		stderr = err.getvalue()
 		for err in errs:
@@ -378,7 +378,7 @@ class TestPyPPL(testly.TestCase):
 		with helpers.log2str():
 			pp = PyPPL({'_log': {'file': None}})
 		pp.start(start)
-		with helpers.log2str(levels = 'all') as (out, err):
+		with helpers.log2str(levels = 'all') as (out, err, _):
 			pp.flowchart(fcfile = fcfile, dotfile = dotfile)
 		self.assertTrue(path.isfile(fcfile))
 		self.assertTrue(path.isfile(dotfile or path.splitext(fcfile)[0] + '.dot'))
@@ -454,7 +454,7 @@ class TestPyPPL(testly.TestCase):
 		sys.argv = [sys.argv[0]]
 		#helpers.log2sys()
 		pp.config._load({profile: dict(runner = runner)})
-		with helpers.log2str(levels = 'all') as (out, err):
+		with helpers.log2str(levels = 'all') as (out, err, _):
 			pp.run(profile)
 		#print out.getvalue()
 		#print err.getvalue()
