@@ -72,7 +72,7 @@ class Jobmgr(object):
 		self.stop    = False
 
 		queue  = PQueue(batch_len = len(jobs))
-		nslots = min(queue.batch_len, conf['nthread'])
+		nslots = min(queue.batchLen, conf['nthread'])
 
 		for job in self.jobs:
 			# say nslots = 40
@@ -94,8 +94,8 @@ class Jobmgr(object):
 			`queue`: The priority queue
 		"""
 		while not queue.empty() and not self.stop:
-			q = queue.get()
-			self.workon(q, queue)
+			qval = queue.get()
+			self.workon(qval, queue)
 			queue.task_done()
 
 	def workon(self, index, queue):
@@ -127,10 +127,10 @@ class Jobmgr(object):
 					job.status = Job.STATUS_SUBMITTING
 					self.progressbar(index)
 			if job.status == Job.STATUS_SUBMITTING:
-				s = job.submit()
+				submitted = job.submit()
 				# in case other thread is check canSubmit
 				with Jobmgr.SBMLOCK:
-					job.status = Job.STATUS_SUBMITTED if s else Job.STATUS_SUBMITFAILED
+					job.status = Job.STATUS_SUBMITTED if submitted else Job.STATUS_SUBMITFAILED
 				if job.status == Job.STATUS_SUBMITFAILED:
 					self.progressbar(index)
 					raise JobSubmissionException()
@@ -160,11 +160,8 @@ class Jobmgr(object):
 					# STATUS_ENDFAILED, STATUS_RETRYING
 					raise JobFailException()
 				if job.status == Job.STATUS_RETRYING:
-					logger[Jobmgr.PBAR_LEVEL[job.status]]("Retrying %s/%s ...", 
-						job.ntry, job.config['errntry'], 
-						jobidx = index,
-						joblen = queue.batch_len,
-						proc   = self.config['proc'])
+					job.logger[Jobmgr.PBAR_LEVEL[job.status]](
+						"Retrying %s/%s ...", job.ntry, job.config['errntry'])
 					# retry as soon as possible
 					queue.put(index, where = batch+3)
 				else: # STATUS_ENDFAILED
@@ -188,66 +185,67 @@ class Jobmgr(object):
 		status = [job.status for job in self.jobs]
 		# distribute the jobs to bars
 		if joblen <= Jobmgr.PBAR_SIZE:
-			n, m = divmod(Jobmgr.PBAR_SIZE, joblen)
+			div, mod = divmod(Jobmgr.PBAR_SIZE, joblen)
 			for j in range(joblen):
-				step = n + 1 if j < m else n
+				step = div + 1 if j < mod else div
 				for _ in range(step):
 					barjobs.append([j])
 		else:
 			jobx = 0
-			n, m = divmod(joblen, Jobmgr.PBAR_SIZE)
+			div, mod = divmod(joblen, Jobmgr.PBAR_SIZE)
 			for i in range(Jobmgr.PBAR_SIZE):
-				step = n + 1 if i < m else n
-				barjobs.append([jobx + s for s in range(step)])
+				step = div + 1 if i < mod else div
+				barjobs.append([jobx + jobstep for jobstep in range(step)])
 				jobx += step
 
-		ncompleted = sum(1 for s in status if s & 0b1000000)
-		nrunning   = sum(1 for s in status if s == Job.STATUS_RUNNING or s == Job.STATUS_SUBMITTED)
+		ncompleted = sum(1 for stat in status if stat & 0b1000000)
+		nrunning   = sum(
+			1 for stat in status if stat == Job.STATUS_RUNNING or stat == Job.STATUS_SUBMITTED)
 		
 		job = self.jobs[jobidx]
-		for bj in barjobs:
-			if jobidx in bj:
+		for barjob in barjobs:
+			if jobidx in barjob:
 				pbar += Jobmgr.PBAR_MARKS[job.status]
 			else:
-				bjstatus  = [status[i] for i in bj]
+				bjstatus  = [status[i] for i in barjob]
 				if Job.STATUS_BUILTFAILED in bjstatus:
-					s = Job.STATUS_BUILTFAILED
+					stat = Job.STATUS_BUILTFAILED
 				elif Job.STATUS_SUBMITFAILED in bjstatus:
-					s = Job.STATUS_SUBMITFAILED
+					stat = Job.STATUS_SUBMITFAILED
 				elif Job.STATUS_ENDFAILED in bjstatus:
-					s = Job.STATUS_ENDFAILED
+					stat = Job.STATUS_ENDFAILED
 				elif Job.STATUS_DONEFAILED in bjstatus:
-					s = Job.STATUS_DONEFAILED
+					stat = Job.STATUS_DONEFAILED
 				elif Job.STATUS_BUILDING in bjstatus:
-					s = Job.STATUS_BUILDING
+					stat = Job.STATUS_BUILDING
 				elif Job.STATUS_BUILT in bjstatus:
-					s = Job.STATUS_BUILT
+					stat = Job.STATUS_BUILT
 				elif Job.STATUS_SUBMITTING in bjstatus:
-					s = Job.STATUS_SUBMITTING
+					stat = Job.STATUS_SUBMITTING
 				elif Job.STATUS_SUBMITTED in bjstatus:
-					s = Job.STATUS_SUBMITTED
+					stat = Job.STATUS_SUBMITTED
 				elif Job.STATUS_RETRYING in bjstatus:
-					s = Job.STATUS_RETRYING
+					stat = Job.STATUS_RETRYING
 				elif Job.STATUS_RUNNING in bjstatus:
-					s = Job.STATUS_RUNNING
+					stat = Job.STATUS_RUNNING
 				elif Job.STATUS_DONE in bjstatus:
-					s = Job.STATUS_DONE
+					stat = Job.STATUS_DONE
 				elif Job.STATUS_DONECACHED in bjstatus:
-					s = Job.STATUS_DONECACHED
+					stat = Job.STATUS_DONECACHED
 				elif Job.STATUS_KILLING in bjstatus:
-					s = Job.STATUS_KILLING
+					stat = Job.STATUS_KILLING
 				elif Job.STATUS_KILLED in bjstatus:
-					s = Job.STATUS_KILLED
+					stat = Job.STATUS_KILLED
 				else:
-					s = Job.STATUS_INITIATED
-				pbar += Jobmgr.PBAR_MARKS[s]
+					stat = Job.STATUS_INITIATED
+				pbar += Jobmgr.PBAR_MARKS[stat]
 
 		pbar += '] Done: {:5.1f}% | Running: {}'.format(
 			100.0 * float(ncompleted) / float(joblen), 
 			str(nrunning).ljust(len(str(joblen)))
 		)
 		
-		logger.pbar[Jobmgr.PBAR_LEVEL[job.status]](pbar, jobidx = jobidx, joblen = joblen, proc = self.config['proc'], done = ncompleted == joblen)
+		job.logger.pbar[Jobmgr.PBAR_LEVEL[job.status]](pbar, done = ncompleted == joblen)
 
 	def cleanup(self, ex = None):
 		"""
@@ -276,14 +274,14 @@ class Jobmgr(object):
 			job.index for job in self.jobs 
 			if job.status in (Job.STATUS_RUNNING, Job.STATUS_SUBMITTED, Job.STATUS_SUBMITTING)
 		]
-		killQ = PQueue(batch_len = len(self.jobs))
+		killq = PQueue(batch_len = len(self.jobs))
 		for rjob in rjobs:
-			killQ.put(rjob)
+			killq.put(rjob)
 
 		ThreadPool(
 			min(len(rjobs), self.config['nthread']), 
 			initializer = self.killWorker,
-			initargs    = killQ
+			initargs    = killq
 		).join()
 			
 		failedjobs = [job for job in self.jobs if job.status & 0b1]
@@ -291,24 +289,25 @@ class Jobmgr(object):
 			failedjobs = [random.choice(self.jobs)]
 		failedjobs[0].showError(len(failedjobs))
 
-		if ex and not isinstance(ex, (JobFailException, JobBuildingException, JobSubmissionException, KeyboardInterrupt)):
+		if ex and not isinstance(ex, (JobFailException, JobBuildingException, 
+			JobSubmissionException, KeyboardInterrupt)):
 			raise ex
 		exit(1)
 
-	def killWorker(self, rq):
+	def killWorker(self, runq):
 		"""
 		The worker to kill the jobs.
 		@params:
-			`rq`: The queue that has running jobs.
+			`runq`: The queue that has running jobs.
 		"""
-		while not rq.empty():
-			i = rq.get()[0]
+		while not runq.empty():
+			i = runq.get()[0]
 			job = self.jobs[i]
 			job.status = Job.STATUS_KILLING
 			self.progressbar(i)
 			job.kill()
 			self.progressbar(i)
-			rq.task_done()
+			runq.task_done()
 
 	@contextmanager
 	def canSubmit(self):

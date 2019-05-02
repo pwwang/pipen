@@ -1,7 +1,4 @@
-"""
-The main module of PyPPL
-"""
-VERSION = "2019.2.20"
+"""The main module of PyPPL"""
 
 # give random tips in the log
 import random
@@ -17,9 +14,14 @@ from multiprocessing import cpu_count
 from box import Box
 from .utils import config
 
-DEFAULT_CFGFILES = ('~/.PyPPL.yaml', '~/.PyPPL.toml', './.PyPPL.yaml', './.PyPPL.toml', 'PYPPL.osenv')
-def load_configuratiaons():
-	# load configurations
+__version__ = "2019.2.20"
+
+DEFAULT_CFGFILES = (
+	'~/.PyPPL.yaml', '~/.PyPPL.toml', './.PyPPL.yaml', './.PyPPL.toml', 'PYPPL.osenv')
+def loadConfiguratiaons():
+	"""
+	Load default configurations.
+	"""
 	config.clear()
 	config._load(dict(default = dict(
 		_log = dict(
@@ -48,19 +50,24 @@ def load_configuratiaons():
 		# Whether to echo the stdout and stderr of the jobs to the screen
 		# Could also be:
 		# {
-		#   'jobs':   0           # or [0, 1, 2], just echo output of those jobs.
-		#   'type':   'stderr'    # only echo stderr. (stdout: only echo stdout; [don't specify]: echo all)
+		#    # or [0, 1, 2], just echo output of those jobs.
+		#   'jobs': 0           
+		#    # only echo stderr. (stdout: only echo stdout; [don't specify]: echo all)
+		#   'type': 'stderr'
 		# }
 		# You can also specify a filter to the type
 		# {
 		#   'jobs':  0
 		#   'type':  {'stderr': r'^Error'}	# only output lines starting with 'Error' in stderr
 		# }
-		# self.echo = True     <=> self.echo = { 'jobs': [0], 'type': {'stderr': None, 'stdout': None} }
+		# self.echo = True <=>
+		#     self.echo = { 'jobs': [0], 'type': {'stderr': None, 'stdout': None} }
 		# self.echo = False    <=> self.echo = { 'jobs': [] }
 		# self.echo = 'stderr' <=> self.echo = { 'jobs': [0], 'type': {'stderr': None} }
-		# self.echo = {'jobs': 0, 'type': 'stdout'} <=> self.echo = { 'jobs': [0], 'type': {'stdout': None} }
-		# self.echo = {'type': {'all': r'^output'}} <=> self.echo = { 'jobs': [0], 'type': {'stdout': r'^output', 'stderr': r'^output'} }
+		# self.echo = {'jobs': 0, 'type': 'stdout'} <=>
+		#     self.echo = { 'jobs': [0], 'type': {'stdout': None} }
+		# self.echo = {'type': {'all': r'^output'}} <=>
+		#     self.echo = { 'jobs': [0], 'type': {'stdout': r'^output', 'stderr': r'^output'} }
 		echo       = False,
 		# How to deal with the errors
 		# retry, ignore, halt
@@ -105,7 +112,7 @@ def load_configuratiaons():
 		workdir    = ''
 	)), *DEFAULT_CFGFILES)
 
-load_configuratiaons()
+loadConfiguratiaons()
 
 # load logger
 from .logger import logger
@@ -137,7 +144,8 @@ class PyPPL (object):
 		"Check documentation at: https://pwwang.github.io/PyPPL",
 		"You cannot have two processes with the same id and tag",
 		"beforeCmd and afterCmd only run locally",
-		"If 'workdir' is not set for a process, it will be PyPPL.<proc-id>.<proc-tag>.<suffix> under default <ppldir>",
+		"If 'workdir' is not set for a process, "
+		"it will be PyPPL.<proc-id>.<proc-tag>.<suffix> under default <ppldir>",
 		"The default <ppldir> is './workdir'",
 	]
 
@@ -151,7 +159,7 @@ class PyPPL (object):
 		Constructor
 		@params:
 			`conf`: the configurations for the pipeline, default: {}
-			`cfgfile`:  the configuration file for the pipeline, default: `~/.PyPPL.json` or `./.PyPPL`
+			`cfgfile`: the configuration file for the pipeline, default: None
 		"""
 		self.counter = PyPPL.COUNTER
 		PyPPL.COUNTER += 1
@@ -169,12 +177,13 @@ class PyPPL (object):
 			)
 		# reinitiate logger according to new config
 		logger.init()
-		logger.pyppl('Version: %s', VERSION)
+		logger.pyppl('Version: %s', __version__)
 		logger.tips(random.choice(PyPPL.TIPS))
 
 		for cfile in DEFAULT_CFGFILES + (str(cfgfile), ):
 			if cfile.endswith('.osenv'):
-				logger.config('Read from environment variables with prefix: %s', path.basename(cfile)[:-6])
+				logger.config('Read from environment variables with prefix: %s', 
+					path.basename(cfile)[:-6])
 			if not path.isfile(cfile): 
 				continue
 			if cfile.endswith('.yaml') or cfile.endswith('yml'):
@@ -206,12 +215,13 @@ class PyPPL (object):
 		nostart = set()
 		for start in starts:
 			paths = self.tree.getPaths(start)
-			pristarts = [p for sublist in paths for p in sublist if p in starts]
+			pristarts = [pnode for sublist in paths for pnode in sublist if pnode in starts]
 			if pristarts:
 				nostart.add(start)
-				names = [p.name(True) for p in pristarts]
+				names = [pnode.name(True) for pnode in pristarts]
 				names = names[:3] + ['...'] if len(names) > 3 else names
-				logger.warning('Start process %s ignored, depending on [%s]', start.name(True), ', '.join(names))
+				logger.warning('Start process %s ignored, depending on [%s]', start.name(True),
+					', '.join(names))
 		self.tree.setStarts(starts - nostart)
 		return self
 
@@ -233,20 +243,23 @@ class PyPPL (object):
 			if end in resumes: 
 				continue
 			paths = self.tree.getPathsToStarts(end)
-			failedpaths = [ps for ps in paths if not any([p in ps for p in resumes])]
+			failedpaths = [apath for apath in paths 
+				if not any([pnode in apath for pnode in resumes])]
 			if not failedpaths: 
 				continue
 			failedpath = failedpaths[0]
-			raise PyPPLProcRelationError('%s <- [%s]' % (end.name(), ', '.join([p.name() for p in failedpath])), 'One of the routes cannot be achived from resumed processes')
+			raise PyPPLProcRelationError('%s <- [%s]' % (
+				end.name(), ', '.join([pnode.name() for pnode in failedpath])),
+				'One of the routes cannot be achived from resumed processes')
 
 		# set prior processes to skip
 		for rsproc in resumes:
 			rsproc.resume = rflag
 			paths = self.tree.getPathsToStarts(rsproc)
-			for pt in paths:
-				for p in pt:
-					if not p.resume:
-						p.resume = sflag
+			for apath in paths:
+				for pnode in apath:
+					if not pnode.resume:
+						pnode.resume = sflag
 
 	def resume (self, *args):
 		"""
@@ -280,16 +293,17 @@ class PyPPL (object):
 		"""
 		logger.debug('ALL ROUTES:')
 		#paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths()])
-		paths  = sorted([[p.name() for p in reversed(ps)] for ps in self.tree.getAllPaths()])
+		paths  = sorted([[pnode.name() for pnode in reversed(apath)] 
+			for apath in self.tree.getAllPaths()])
 		paths2 = [] # processes merged from the same aggr
-		for pt in paths:
+		for apath in paths:
 			prevaggr = None
 			path2    = []
-			for p in pt:
-				if not '@' in p: 
-					path2.append(p)
+			for pnode in apath:
+				if not '@' in pnode: 
+					path2.append(pnode)
 				else:
-					aggr = p.split('@')[-1]
+					aggr = pnode.split('@')[-1]
 					if not prevaggr or prevaggr != aggr:
 						path2.append('[%s]' % aggr)
 						prevaggr = aggr
@@ -301,15 +315,16 @@ class PyPPL (object):
 			#if path != path2:
 			#	logger.logger.info('[  DEBUG] * %s' % (' -> '.join(path)))
 
-		for pt in paths2:
-			logger.debug('* %s', ' -> '.join(pt))
+		for path2 in paths2:
+			logger.debug('* %s', ' -> '.join(path2))
 		return self
 
 	def run (self, profile = 'default'):
 		"""
 		Run the pipeline
 		@params:
-			`profile`: the profile used to run, if not found, it'll be used as runner name. default: 'default'
+			`profile`: the profile used to run, if not found, it'll be used as runner name.
+				- default: 'default'
 		@returns:
 			The pipeline object itself.
 		"""
@@ -357,10 +372,11 @@ class PyPPL (object):
 		"""
 		Generate graph in dot language and visualize it.
 		@params:
-			`dotfile`: Where to same the dot graph. Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.dot"`)
-			`fcfile`:  The flowchart file. Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.svg"`)
-			- For example: run `python pipeline.py` will save it to `pipeline.pyppl.svg`
-			`dot`:     The dot visulizer. Default: "dot -Tsvg {{dotfile}} > {{fcfile}}"
+			`dotfile`: Where to same the dot graph. 
+				- Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.dot"`)
+			`fcfile`:  The flowchart file. 
+				- Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.svg"`)
+				- For example: run `python pipeline.py` will save it to `pipeline.pyppl.svg`
 		@returns:
 			The pipeline object itself.
 		"""
@@ -371,26 +387,26 @@ class PyPPL (object):
 			('_%s' % self.counter) if self.counter else ''
 		)
 		dotfile = dotfile or '%s.dot' % (path.splitext(fcfile)[0])
-		fc  = Flowchart(fcfile = fcfile, dotfile = dotfile)
-		fc.setTheme(self.config._flowchart.theme)
+		fchart  = Flowchart(fcfile = fcfile, dotfile = dotfile)
+		fchart.setTheme(self.config._flowchart.theme)
 
 		for start in self.tree.getStarts():
-			fc.addNode(start, 'start')
+			fchart.addNode(start, 'start')
 
 		for end in self.tree.getEnds():
-			fc.addNode(end, 'end')
-			for ps in self.tree.getPathsToStarts(end):
-				for p in ps:
-					fc.addNode(p)
-					nextps = ProcTree.getNext(p)
+			fchart.addNode(end, 'end')
+			for apath in self.tree.getPathsToStarts(end):
+				for pnode in apath:
+					fchart.addNode(pnode)
+					nextps = ProcTree.getNext(pnode)
 					if not nextps: 
 						continue
-					for np in nextps: 
-						fc.addLink(p, np)
+					for nextp in nextps: 
+						fchart.addLink(pnode, nextp)
 
-		fc.generate()
-		logger.info ('Flowchart file saved to: %s', fc.fcfile)
-		logger.info ('DOT file saved to: %s', fc.dotfile)
+		fchart.generate()
+		logger.info ('Flowchart file saved to: %s', fchart.fcfile)
+		logger.info ('DOT file saved to: %s', fchart.dotfile)
 		return self
 
 	@staticmethod
@@ -411,8 +427,8 @@ class PyPPL (object):
 					elif fnmatch.fnmatch(anything, node.proc.id + '.' + node.proc.tag):
 						ret.add(node.proc)
 		else:
-			for a in anything:
-				ret.add(PyPPL._any2procs(a))
+			for thing in anything:
+				ret.add(PyPPL._any2procs(thing))
 		return ret
 
 	@staticmethod
@@ -436,18 +452,18 @@ class PyPPL (object):
 		ProcTree.check(proc)
 
 	@staticmethod
-	def registerRunner(r):
+	def registerRunner(runner):
 		"""
 		Register a runner
 		@params:
-			`r`: The runner to be registered.
+			`runner`: The runner to be registered.
 		"""
-		runnerName = r.__name__
-		if runnerName.startswith('Runner'):
-			runnerName = runnerName[6:].lower()
+		runner_name = runner.__name__
+		if runner_name.startswith('Runner'):
+			runner_name = runner_name[6:].lower()
 
-		if not runnerName in PyPPL.RUNNERS:
-			PyPPL.RUNNERS[runnerName] = r
+		if not runner_name in PyPPL.RUNNERS:
+			PyPPL.RUNNERS[runner_name] = runner
 
 
 for runnername in dir(runners):

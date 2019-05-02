@@ -179,8 +179,8 @@ class Flowchart(object):
 				self.graph.subgraph(graph)
 		
 		# edges
-		for n1, n2 in self.links:
-			self.graph.edge(n1.name(False), n2.name(False))
+		for node1, node2 in self.links:
+			self.graph.edge(node1.name(False), node2.name(False))
 
 	def generate(self):
 		"""

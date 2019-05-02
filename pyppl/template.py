@@ -18,97 +18,100 @@ class _TemplateFilter(object):
 	"""
 
 	@staticmethod
-	def read(x):
-		with open(x) as f:
-			return f.read()
+	def read(var):
+		with open(var) as fvar:
+			return fvar.read()
 
 	@staticmethod
-	def readlines(x, skipEmptyLines = True):
+	def readlines(var, skip_empty_lines = True):
 		ret = []
-		with open(x) as f:
-			for line in f:
+		with open(var) as fvar:
+			for line in fvar:
 				line = line.rstrip('\n\r')
-				if not line and skipEmptyLines:
+				if not line and skip_empty_lines:
 					continue
 				ret.append(line)
 		return ret
 
 	@staticmethod
-	def basename(x, orig = False):
-		bname = path.basename(x)
+	def basename(var, orig = False):
+		bname = path.basename(var)
 		if orig or not bname.startswith('['): 
 			return bname
 
 		return bname[bname.find(']')+1:]
 
 	@staticmethod
-	def filename(x, orig = False, dot = -1):
+	def filename(var, orig = False, dot = -1):
 		"""
 		Return the stem of the basename (stripping extension(s))
 		@params:
-			`x`: The path
-			`orig`: If the path is a renamed file (like: `origin[1].txt`), whether return its original filename or the parsed filename (`origin.txt`)
+			`var`: The path
+			`orig`: If the path is a renamed file (like: `origin[1].txt`), 
+				- whether return its original filename or the parsed filename (`origin.txt`)
 			`dot`: Strip to which dot. 
 				- `-1`: the last one
 				- `-2`: the 2nd last one ...
 				- `1` : remove all dots.
 		"""
-		bname = _TemplateFilter.basename(x, orig)
+		bname = _TemplateFilter.basename(var, orig)
 		if '.' not in bname:
 			return bname
 		return '.'.join(bname.split('.')[0:dot])
 	
 	@staticmethod
-	def prefix(x, orig = False, dot = -1):
-		return path.join(path.dirname(x), _TemplateFilter.filename(x, orig, dot))
+	def prefix(var, orig = False, dot = -1):
+		return path.join(path.dirname(var), _TemplateFilter.filename(var, orig, dot))
 
 	@staticmethod
-	def R(x, ignoreintkey = True):
-		if x is True:
+	def R(var, ignoreintkey = True): # pylint: disable=invalid-name
+		if var is True:
 			return 'TRUE'
-		if x is False:
+		if var is False:
 			return 'FALSE'
-		if x is None:
+		if var is None:
 			return 'NULL'
-		if isinstance(x, string_types):
-			if x.upper() in ['+INF', 'INF']:
+		if isinstance(var, string_types):
+			if var.upper() in ['+INF', 'INF']:
 				return 'Inf'
-			if x.upper() == '-INF':
+			if var.upper() == '-INF':
 				return '-Inf'
-			if x.upper() == 'TRUE':
+			if var.upper() == 'TRUE':
 				return 'TRUE'
-			if x.upper() == 'FALSE':
+			if var.upper() == 'FALSE':
 				return 'FALSE'
-			if x.upper() == 'NA' or x.upper() == 'NULL':
-				return x
-			if x.startswith('r:') or x.startswith('R:'):
-				return str(x)[2:]
-			return repr(str(x))
-		if isinstance(x, (list, tuple, set)):
-			return 'c({})'.format(','.join([_TemplateFilter.R(i) for i in x]))
-		if isinstance(x, dict):
+			if var.upper() == 'NA' or var.upper() == 'NULL':
+				return var
+			if var.startswith('r:') or var.startswith('R:'):
+				return str(var)[2:]
+			return repr(str(var))
+		if isinstance(var, (list, tuple, set)):
+			return 'c({})'.format(','.join([_TemplateFilter.R(i) for i in var]))
+		if isinstance(var, dict):
 			# list allow repeated names
 			return 'list({})'.format(','.join([
-				'`{0}`={1}'.format(k, _TemplateFilter.R(v)) if isinstance(k, int) and not ignoreintkey else \
-				_TemplateFilter.R(v) if isinstance(k, int) and ignoreintkey else \
-				'`{0}`={1}'.format(str(k).split('#')[0], _TemplateFilter.R(v)) for k, v in sorted(x.items())
-			]))
-		return repr(x)
+				'`{0}`={1}'.format(
+					k, 
+					_TemplateFilter.R(v)) if isinstance(k, int) and not ignoreintkey else \
+					_TemplateFilter.R(v) if isinstance(k, int) and ignoreintkey else \
+					'`{0}`={1}'.format(str(k).split('#')[0], _TemplateFilter.R(v)) 
+				for k, v in sorted(var.items())]))
+		return repr(var)
 
 	@staticmethod
-	def Rlist(x, ignoreintkey = True):
-		assert isinstance(x, (list, tuple, set, dict))
-		if isinstance(x, dict):
-			return _TemplateFilter.R(x, ignoreintkey)
-		return 'as.list({})'.format(_TemplateFilter.R(x, ignoreintkey))
+	def Rlist(var, ignoreintkey = True): # pylint: disable=invalid-name
+		assert isinstance(var, (list, tuple, set, dict))
+		if isinstance(var, dict):
+			return _TemplateFilter.R(var, ignoreintkey)
+		return 'as.list({})'.format(_TemplateFilter.R(var, ignoreintkey))
 	
 	@staticmethod
-	def render(x, data = None):
+	def render(var, data = None):
 		"""
 		Render a template variable, using the shared environment
 		"""
-		if not isinstance(x, string_types):
-			return x
+		if not isinstance(var, string_types):
+			return var
 		frames = inspect.getouterframes(inspect.currentframe())
 		evars  = data or {}
 		for frame in frames:
@@ -125,10 +128,11 @@ class _TemplateFilter(object):
 		
 		engine = evars.get('__engine')
 		if not engine:
-			raise RuntimeError("I don't know which template engine to use to render {}...".format(x[:10]))
+			raise RuntimeError(
+				"I don't know which template engine to use to render {}...".format(var[:10]))
 		
 		engine = TemplateJinja2 if engine == 'jinja2' else TemplateLiquid
-		return engine(x).render(evars)
+		return engine(var).render(evars)
 
 class Template(object):
 	"""
@@ -149,24 +153,24 @@ class Template(object):
 		'filename' : _TemplateFilter.filename,
 		'fn'       : _TemplateFilter.filename,
 		# /a/b/c.d.e.txt => c
-		'filename2': lambda x, orig = False, dot = 1: _TemplateFilter.filename(x, orig, dot),
-		'fn2'      : lambda x, orig = False, dot = 1: _TemplateFilter.filename(x, orig, dot),
+		'filename2': lambda var, orig = False, dot = 1: _TemplateFilter.filename(var, orig, dot),
+		'fn2'      : lambda var, orig = False, dot = 1: _TemplateFilter.filename(var, orig, dot),
 		# /a/b/c.txt => .txt
-		'ext'      : lambda x: path.splitext(x)[1],
+		'ext'      : lambda var: path.splitext(var)[1],
 		# /a/b/c[1].txt => /a/b/c
 		'prefix'   : _TemplateFilter.prefix,
 		# /a/b/c.d.e.txt => /a/b/c
-		'prefix2'  : lambda x, orig = False, dot = 1: _TemplateFilter.prefix(x, orig, dot),
-		'quote'    : lambda x: json.dumps(str(x)),
+		'prefix2'  : lambda var, orig = False, dot = 1: _TemplateFilter.prefix(var, orig, dot),
+		'quote'    : lambda var: json.dumps(str(var)),
 		'squote'   : repr,
 		'json'     : json.dumps,
 		'read'     : _TemplateFilter.read,
 		'readlines': _TemplateFilter.readlines,
 		'render'   : _TemplateFilter.render,
 		# single quote of all elements of an array
-		'asquote'  : lambda x: '''%s''' % (" " .join([json.dumps(str(e)) for e in x])),
+		'asquote'  : lambda var: '''%s''' % (" " .join([json.dumps(str(e)) for e in var])),
 		# double quote of all elements of an array
-		'acquote'  : lambda x: """%s""" % (", ".join([json.dumps(str(e)) for e in x]))
+		'acquote'  : lambda var: """%s""" % (", ".join([json.dumps(str(e)) for e in var]))
 	}
 
 	def __init__(self, source, **envs):
@@ -262,4 +266,3 @@ class TemplateJinja2 (Template):
 			The rendered string
 		"""
 		return self.engine.render(data)
-

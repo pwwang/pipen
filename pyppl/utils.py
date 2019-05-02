@@ -13,8 +13,8 @@ from time import sleep
 from hashlib import md5
 from threading import Thread, Lock
 from simpleconf import Config
-cmdy   = cmdy(_raise = False)
-config = Config()
+cmdy   = cmdy(_raise = False) # pylint: disable=invalid-name
+config = Config() # pylint: disable=invalid-name
 
 
 try:
@@ -23,16 +23,16 @@ except ImportError: # pragma: no cover
 	from queue import Queue, PriorityQueue, Empty as QueueEmpty
 
 try:
-	string_types = basestring
+	string_types = basestring # pylint: disable=invalid-name
 except NameError: # pragma: no cover
-	string_types = str
+	string_types = str # pylint: disable=invalid-name
 
 try:
 	from ConfigParser import ConfigParser
 except ImportError: # pragma: no cover
 	from configparser import ConfigParser
 
-ftools = Box()
+ftools = Box() # pylint: disable=invalid-name
 try:
 	from functools import reduce, map, filter
 	ftools.reduce = reduce
@@ -54,9 +54,10 @@ try:
 			return input.encode(encoding)
 		else:
 			return input
-	jsonLoads = lambda s, encoding = 'utf-8': _byteify(json.loads(s), encoding)
+	# pylint: disable=invalid-name
+	jsonLoads = lambda string, encoding = 'utf-8': _byteify(json.loads(string), encoding)
 except NameError: # py3
-	jsonLoads = json.loads
+	jsonLoads = json.loads # pylint: disable=invalid-name
 
 try:
 	ftools.range = xrange
@@ -84,10 +85,10 @@ def varname(context = 31):
 		code = grandpar[4][i]
 		if not keyword in code:
 			continue
-		m = re.search(r'([\w_]+)\s*=\s*[\w_.]*' + keyword, code)
-		if not m:
+		match = re.search(r'([\w_]+)\s*=\s*[\w_.]*' + keyword, code)
+		if not match:
 			break
-		return m.group(1)
+		return match.group(1)
 	
 	varname.index += 1
 	return 'var_%s' % (varname.index - 1)
@@ -137,11 +138,11 @@ def range (i, *args, **kwargs):
 	"""
 	return list(ftools.range(i, *args, **kwargs))
 
-def split (s, delimter, trim = True):
+def split (string, delimter, trim = True):
 	"""
 	Split a string using a single-character delimter
 	@params:
-		`s`: the string
+		`string`: the string
 		`delimter`: the single-character delimter
 		`trim`: whether to trim each part. Default: True
 	@examples:
@@ -161,37 +162,37 @@ def split (s, delimter, trim = True):
 	flags2   = [False, False]
 	flags3   = False
 	start = 0
-	for i, c in enumerate(s):
-		if c == special3:
+	for i, char in enumerate(string):
+		if char == special3:
 			flags3 = not flags3
 		elif not flags3:
-			if c in special1:
-				index = special1.index(c)
+			if char in special1:
+				index = special1.index(char)
 				if index % 2 == 0:
 					flags1[int(index/2)] += 1
 				else:
 					flags1[int(index/2)] -= 1
-			elif c in special2:
-				index = special2.index(c)
+			elif char in special2:
+				index = special2.index(char)
 				flags2[index] = not flags2[index]
-			elif c == delimter and not any(flags1) and not any(flags2):
-				r = s[start:i]
-				if trim: r = r.strip()
-				ret.append(r)
+			elif char == delimter and not any(flags1) and not any(flags2):
+				rest = string[start:i]
+				if trim: rest = rest.strip()
+				ret.append(rest)
 				start = i + 1
 		else:
 			flags3 = False
-	r = s[start:]
-	if trim: r = r.strip()
-	ret.append(r)
+	rest = string[start:]
+	if trim: rest = rest.strip()
+	ret.append(rest)
 	return ret
 
-def dictUpdate(origDict, newDict):
+def dictUpdate(orig_dict, new_dict):
 	"""
 	Update a dictionary recursively.
 	@params:
-		`origDict`: The original dictionary
-		`newDict`:  The new dictionary
+		`orig_dict`: The original dictionary
+		`new_dict`:  The new dictionary
 	@examples:
 		```python
 		od1 = {"a": {"b": {"c": 1, "d":1}}}
@@ -203,14 +204,14 @@ def dictUpdate(origDict, newDict):
 		# od2 == {"a": {"b": {"c": 1, "d": 2}}}
 		```
 	"""
-	for k, v in newDict.items():
+	for key, val in new_dict.items():
 
-		if isinstance(v, list):
-			origDict[k] = v[:]
-		elif k in origDict and isinstance(origDict[k], dict) and isinstance(v, dict):
-			dictUpdate(origDict[k], newDict[k])
+		if isinstance(val, list):
+			orig_dict[key] = val[:]
+		elif key in orig_dict and isinstance(orig_dict[key], dict) and isinstance(val, dict):
+			dictUpdate(orig_dict[key], new_dict[key])
 		else:
-			origDict[k] = newDict[k]
+			orig_dict[key] = new_dict[key]
 
 def funcsig (func):
 	"""
@@ -231,27 +232,28 @@ def funcsig (func):
 		sig = 'None'
 	return sig
 
-def uid(s, l = 8, alphabet='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'):
+def uid(string, length = 8, 
+	alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'):
 	"""
 	Calculate a short uid based on a string.
 	Safe enough, tested on 1000000 32-char strings, no repeated uid found.
 	This is used to calcuate a uid for a process
 	@params:
-		`s`: the base string
-		`l`: the length of the uid
+		`string`: the base string
+		`length`: the length of the uid
 		`alphabet`: the charset used to generate the uid
 	@returns:
 		The uid
 	"""
-	s = md5(str(s).encode('utf-8')).hexdigest()
-	number = int (s, 16)
+	string = md5(str(string).encode('utf-8')).hexdigest()
+	number = int (string, 16)
 	base = ''
 
 	while number != 0:
 		number, i = divmod(number, len(alphabet))
 		base = alphabet[i] + base
 
-	return base[:l]
+	return base[:length]
 
 def formatSecs (seconds):
 	"""
@@ -262,9 +264,9 @@ def formatSecs (seconds):
 		The formated string.
 		For example: "01:01:01.001" stands for 1 hour 1 min 1 sec and 1 minisec.
 	"""
-	m, s = divmod(seconds, 60)
-	h, m = divmod(m, 60)
-	return "%02d:%02d:%02d.%03.0f" % (h, m, s, 1000*(s-int(s)))
+	minute, sec  = divmod(seconds, 60)
+	hour, minute = divmod(minute, 60)
+	return "%02d:%02d:%02d.%03.0f" % (hour, minute, sec, 1000*(sec-int(sec)))
 
 def alwaysList (data):
 	"""
@@ -284,37 +286,37 @@ def alwaysList (data):
 		ret = split (data, ',')
 	elif isinstance(data, list):
 		ret = []
-		for d in data:
-			if ',' in d:
-				ret += split(d, ',')
+		for dat in data:
+			if ',' in dat:
+				ret += split(dat, ',')
 			else:
-				ret.append (d)
+				ret.append (dat)
 	else:
 		raise ValueError('Expect string or list to convert to list.')
-	return [x.strip() for x in ret]
+	return [item.strip() for item in ret]
 
-def briefList(l):
+def briefList(blist):
 	"""
 	Briefly show an integer list, combine the continuous numbers.
 	@params:
-		`l`: The list
+		`blist`: The list
 	@returns:
 		The string to show for the briefed list.
 	"""
-	if not l: return "[]"
-	if len(l) == 1: return str(l[0])
-	l       = sorted(l)
+	if not blist: return "[]"
+	if len(blist) == 1: return str(blist[0])
+	blist       = sorted(blist)
 	groups  = [[]]
 	ret     = []
-	for i in range(0, len(l) - 1):
-		e0 = l[i]
-		e1 = l[i + 1]
-		if e1 - e0 > 1:
-			groups[-1].append(e0)
+	for i in range(0, len(blist) - 1):
+		ele0 = blist[i]
+		ele1 = blist[i + 1]
+		if ele1 - ele0 > 1:
+			groups[-1].append(ele0)
 			groups.append([])
 		else:
-			groups[-1].append(e0)
-	groups[-1].append(l[-1])
+			groups[-1].append(ele0)
+	groups[-1].append(blist[-1])
 	for group in groups:
 		if len(group) == 1:
 			ret.append(str(group[0]))
@@ -325,28 +327,28 @@ def briefList(l):
 			ret.append(str(group[0]) + '-' + str(group[-1]))
 	return ', '.join(ret)
 
-def briefPath(p, cutoff = 0, keep = 1):
+def briefPath(bpath, cutoff = 0, keep = 1):
 	"""
 	Show briefed path in logs
 	/abcde/hijklm/opqrst/uvwxyz/123456 will be shorted as:
 	/a/h/opqrst/uvwxyz/123456
 	@params:
-		`p`       : The path
+		`bpath`       : The path
 		`cutoff`  : Shorten the whole path if it more than length of cutoff. Default: `0`
 		`keep`    : First N alphabetic chars to keep. Default: `1`
 	@returns:
 		The shorted path
 	"""
-	if not cutoff or not p:
-		return p
+	if not cutoff or not bpath:
+		return bpath
 	from os import path, sep
-	p = path.normpath(p)
-	lenp = len(p)
+	bpath = path.normpath(bpath)
+	lenp = len(bpath)
 	if lenp <= cutoff:
-		return p
+		return bpath
 	
 	more = lenp - cutoff
-	parts = p.split(sep)
+	parts = bpath.split(sep)
 	parts[0] = parts[0] or sep
 	
 	for i, part in enumerate(parts[:-1]):
@@ -361,12 +363,12 @@ def briefPath(p, cutoff = 0, keep = 1):
 
 def killtree(pid, killme = True, sig = 9, timeout = None): # signal.SIGKILL
 
-	me = psutil.Process(pid)
-	children = me.children(recursive=True)
+	myself = psutil.Process(pid)
+	children = myself.children(recursive=True)
 	if killme:
-		children.append(me)
-	for p in children:
-		p.send_signal(sig)
+		children.append(myself)
+	for proc in children:
+		proc.send_signal(sig)
 	
 	return psutil.wait_procs(children, timeout=timeout)
 
@@ -374,7 +376,8 @@ def chmodX(filepath, filetype = None):
 	"""
 	Convert file1 to executable or add extract shebang to cmd line
 	@returns:
-		A list with or without the path of the interpreter as the first element and the script file as the last element
+		A list with or without the path of the interpreter as the first element 
+		and the script file as the last element
 	"""
 	from stat import S_IEXEC
 	from os import path, chmod, stat
@@ -382,8 +385,10 @@ def chmodX(filepath, filetype = None):
 		raise OSError('Unable to make {} as executable'.format(filepath))
 
 	try:
+		# pylint: disable=invalid-name
 		ChmodError = (OSError, PermissionError, UnicodeDecodeError)
 	except NameError:
+		# pylint: disable=invalid-name
 		ChmodError = OSError
 	
 	ret = [filepath]
@@ -398,10 +403,13 @@ def chmodX(filepath, filetype = None):
 			# may raise UnicodeDecodeError for python3
 			pass
 		finally:
-			# make sure file's closed, otherwise a File text busy will be raised when trying to execute it
+			# make sure file's closed, 
+			# otherwise a File text busy will be raised when trying to execute it
 			fsb.close()
 		if not shebang or not shebang.startswith('#!'):
-			raise OSError('Unable to make {} as executable by chmod and detect interpreter from shebang.'.format(filepath))
+			raise OSError(
+				('Unable to make {} as executable by chmod ' +
+				'and detect interpreter from shebang.').format(filepath))
 		ret = shebang[2:].strip().split() + [filepath]
 	return ret
 
@@ -421,28 +429,28 @@ def filesig(filepath, dirsig = True):
 	if dirsig and safefs.isdir(filepath):
 		mtime = path.getmtime(filepath)
 		for root, dirs, files in walk(filepath):
-			for d in dirs:
-				mtime2 = path.getmtime(path.join(root, d))
+			for directory in dirs:
+				mtime2 = path.getmtime(path.join(root, directory))
 				mtime  = max(mtime, mtime2)
-			for f in files:
-				mtime2 = path.getmtime(path.join(root, f))
+			for filename in files:
+				mtime2 = path.getmtime(path.join(root, filename))
 				mtime  = max(mtime, mtime2)
 	else:
 		mtime = path.getmtime(filepath)
 	return [filepath, int(mtime)]
 
-def fileflush(fd, lastmsg, end = False):
+def fileflush(filed, lastmsg, end = False):
 	"""
 	Flush a file descriptor
 	@params:
-		`fd`     : The file handler
+		`filed`     : The file handler
 		`lastmsg`: The remaining content of last flush
 		`end`    : The file ends? Default: `False`
 	"""
-	fd.flush()
+	filed.flush()
 	# OSX cannot tell the pointer automatically
-	fd.seek(fd.tell())
-	lines = fd.readlines() or []
+	filed.seek(filed.tell())
+	lines = filed.readlines() or []
 	if lines:
 		lines[0] = lastmsg + lines[0]
 		lastmsg  = '' if lines[-1].endswith('\n') else lines.pop(-1)
@@ -522,8 +530,8 @@ class PQueue(PriorityQueue):
 		if not batch_len:
 			raise ValueError('`batch_len` is required for PQueue.')
 		PriorityQueue.__init__(self, maxsize)
-		self.batch_len = batch_len
-		self.lock      = Lock()
+		self.batchLen = batch_len
+		self.lock     = Lock()
 
 	def put(self, item, block = True, timeout = None, where = 0):
 		"""
@@ -532,7 +540,7 @@ class PQueue(PriorityQueue):
 			`where`: Which batch to put the item
 		"""
 		with self.lock:
-			PriorityQueue.put(self, item + where * self.batch_len, block, timeout)
+			PriorityQueue.put(self, item + where * self.batchLen, block, timeout)
 	
 	def put_nowait(self, item, where = 0):
 		"""
@@ -541,14 +549,14 @@ class PQueue(PriorityQueue):
 			`where`: Which batch to put the item
 		"""
 		with self.lock:
-			PriorityQueue.put_nowait(self, item + where * self.batch_len)
+			PriorityQueue.put_nowait(self, item + where * self.batchLen)
 
 	def get(self, block = True, timeout = None):
 		"""
 		Get an item from the queue
 		"""
 		item = PriorityQueue.get(self, block, timeout)
-		ret  = divmod(item, self.batch_len)
+		ret  = divmod(item, self.batchLen)
 		return (ret[1], ret[0])
 
 	def get_nowait(self):
@@ -556,7 +564,7 @@ class PQueue(PriorityQueue):
 		Get an item from the queue without waiting
 		"""
 		item = PriorityQueue.get(self)
-		ret  = divmod(item, self.batch_len)
+		ret  = divmod(item, self.batchLen)
 		return (ret[1], ret[0])
 
 

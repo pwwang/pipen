@@ -13,42 +13,42 @@ class Channel (list):
 	"""
 
 	@staticmethod
-	def _tuplize(tu):
+	def _tuplize(atuple):
 		"""
 		A private method, try to convert an element to tuple
-		If it's a string, convert it to `(tu, )`
-		Else if it is iterable, convert it to `tuple(tu)`
-		Otherwise, convert it to `(tu, )`
+		If it's a string, convert it to `(atuple, )`
+		Else if it is iterable, convert it to `tuple(atuple)`
+		Otherwise, convert it to `(atuple, )`
 		Notice that string is also iterable.
 		@params:
-			`tu`: the element to be converted
+			`atuple`: the element to be converted
 		@returns:
 			The converted element
 		"""
-		if isinstance(tu, (utils.string_types, list)):
-			tu = (tu, )
+		if isinstance(atuple, (utils.string_types, list)):
+			atuple = (atuple, )
 		else:
 			try:
-				iter(tu)
+				iter(atuple)
 			except Exception:
-				tu = (tu, )
-		return tuple (tu)
+				atuple = (atuple, )
+		return tuple (atuple)
 
 	@staticmethod
-	def create(l = None):
+	def create(alist = None):
 		"""
 		Create a Channel from a list
 		@params:
-			`l`: The list, default: []
+			`alist`: The list, default: []
 		@returns:
 			The Channel created from the list
 		"""
-		if l is None: l = []
-		if not isinstance(l, list): l = [l]
+		if alist is None: alist = []
+		if not isinstance(alist, list): alist = [alist]
 		ret = Channel()
 		length = 0
-		for e in l:
-			row = Channel._tuplize(e)
+		for ele in alist:
+			row = Channel._tuplize(ele)
 			if length == 0: length = len(row)
 			if length != len(row):
 				raise ValueError('Inconsistent width of row (%s) with previous row (%s)' % (len(row), length))
@@ -84,12 +84,12 @@ class Channel (list):
 		return ret.insert (None, *args)
 	
 	@staticmethod
-	def fromPattern(pattern, t = 'any', sortby = 'name', reverse=False):
+	def fromPattern(pattern, ftype = 'any', sortby = 'name', reverse=False):
 		"""
 		Create a Channel from a path pattern
 		@params:
 			`pattern`: the pattern with wild cards
-			`t`:       the type of the files/dirs to include
+			`ftype`:       the type of the files/dirs to include
 			  - 'dir', 'file', 'link' or 'any' (default)
 			`sortby`:  how the list is sorted
 			  - 'name' (default), 'mtime', 'size'
@@ -104,14 +104,14 @@ class Channel (list):
 		elif sortby == 'size':
 			key = path.getsize
 		
-		filt  = lambda f: True
-		if t == 'link':
+		filt  = lambda afile: True
+		if ftype == 'link':
 			filt = path.islink
-		elif t == 'dir':
-			filt = lambda f: path.isdir(f) and not path.islink(f)
-		elif t == 'file':
-			filt = lambda f: path.isfile(f) and not path.islink(f)
-		files = [f for f in glob(pattern) if filt(f)]
+		elif ftype == 'dir':
+			filt = lambda afile: path.isdir(afile) and not path.islink(afile)
+		elif ftype == 'file':
+			filt = lambda afile: path.isfile(afile) and not path.islink(afile)
+		files = [afile for afile in glob(pattern) if filt(afile)]
 		return Channel.create(sorted(files, key=key, reverse=reverse))
 
 	@staticmethod
@@ -123,20 +123,20 @@ class Channel (list):
 		@returns:
 			The Channel create from every 2 files match the pattern
 		"""
-		ret = sorted(glob(pattern))
-		c = Channel.create()
+		ret  = sorted(glob(pattern))
+		chan = Channel.create()
 		for i in range(0, len(ret), 2):
-			c.append ((ret[i], ret[i+1]))
-		return c
+			chan.append ((ret[i], ret[i+1]))
+		return chan
 	
 	@staticmethod
-	def fromFile(fn, header = False, skip = 0, delimit = "\t"):
+	def fromFile(filename, header = False, skip = 0, delimit = "\t"):
 		"""
 		Create Channel from the file content
 		It's like a matrix file, each row is a row for a Channel.
 		And each column is a column for a Channel.
 		@params:
-			`fn`:      the file
+			`filename`:      the file
 			`header`:  Whether the file contains header. If True, will attach the header
 				- So you can use `channel.<header>` to fetch the column
 			`skip`:    first lines to skip
@@ -147,8 +147,8 @@ class Channel (list):
 		ret     = Channel.create()
 		i       = -1
 		headers = []
-		with open(fn) as f:
-			for line in f:
+		with open(filename) as fhandler:
+			for line in fhandler:
 				i += 1
 				if i < skip: continue
 				line = line.strip()
@@ -217,7 +217,7 @@ class Channel (list):
 			ret.attach(*pnames)
 		return ret
 	
-	def expand(self, col = 0, pattern = "*", t = 'any', sortby = 'name', reverse=False):
+	def expand(self, col = 0, pattern = "*", ftype = 'any', sortby = 'name', reverse=False):
 		"""
 		expand the Channel according to the files in <col>, other cols will keep the same
 		`[(dir1/dir2, 1)].expand (0, "*")` will expand to
@@ -227,7 +227,7 @@ class Channel (list):
 		@params:
 			`col`:     the index of the column used to expand
 			`pattern`: use a pattern to filter the files/dirs, default: `*`
-			`t`:       the type of the files/dirs to include
+			`ftype`:       the type of the files/dirs to include
 			  - 'dir', 'file', 'link' or 'any' (default)
 			`sortby`:  how the list is sorted
 			  - 'name' (default), 'mtime', 'size'
@@ -241,9 +241,9 @@ class Channel (list):
 		for row in self:
 			row    = list(row)
 			folder = row[col]
-			files  = Channel.fromPattern(path.join(folder, pattern), t=t, sortby=sortby, reverse=reverse).flatten()
-			for f in files:
-				row[col] = f
+			files  = Channel.fromPattern(path.join(folder, pattern), ftype=ftype, sortby=sortby, reverse=reverse).flatten()
+			for afile in files:
+				row[col] = afile
 				ret.append(tuple(row))
 		return ret
 		
@@ -378,7 +378,7 @@ class Channel (list):
 			if ret.length() == 0:
 				ret = row
 			elif row.width() == 1:
-				ret.extend([r * ret.width() for r in row])
+				ret.extend([rele * ret.width() for rele in row])
 			elif ret.width() == 1:
 				for i in range(ret.length()):
 					ret[i] *= row.width()
@@ -497,51 +497,51 @@ class Channel (list):
 		return Channel([s[start:(start + length)] for s in self]) \
 				if length and start != -1 else Channel.create([s[start:] for s in self])
 	
-	def fold (self, n = 1):
+	def fold (self, nfold = 1):
 		"""
 		Fold a Channel. Make a row to n-length chunk rows
 		```
 		a1	a2	a3	a4
 		b1	b2	b3	b4
-		if n==2, fold(2) will change it to:
+		if nfold==2, fold(2) will change it to:
 		a1	a2
 		a3	a4
 		b1	b2
 		b3	b4
 		```
 		@params:
-			`n`: the size of the chunk
+			`nfold`: the size of the chunk
 		@returns
 			The new Channel
 		"""
-		if n <= 0 or self.width() % n != 0:
-			raise ValueError ('Failed to fold, the width %s cannot be divided by %s' % (self.width(), n))
+		if nfold <= 0 or self.width() % nfold != 0:
+			raise ValueError ('Failed to fold, the width %s cannot be divided by %s' % (self.width(), nfold))
 		
-		nrows = int(self.width() / n)
+		nrows = int(self.width() / nfold)
 		ret = []
 		for row in self:
-			for i in [x*n for x in range(nrows)]:
-				ret.append (row[i:i+n])
+			for i in [x*nfold for x in range(nrows)]:
+				ret.append (row[i:i+nfold])
 		return Channel(ret)
 	
-	def unfold (self, n = 2):
+	def unfold (self, nfold = 2):
 		"""
 		Do the reverse thing as self.fold does
 		@params:
-			`n`: How many rows to combind each time. default: 2
+			`nfold`: How many rows to combind each time. default: 2
 		@returns:
 			The unfolded Channel
 		"""
-		if n <= 0 or len(self) % n != 0:
-			raise ValueError ('Failed to unfold, the length %s cannot be divided by %s' % (len(self), n))
+		if nfold <= 0 or len(self) % nfold != 0:
+			raise ValueError ('Failed to unfold, the length %s cannot be divided by %s' % (len(self), nfold))
 		
-		nrows = int(len(self) / n)
+		nrows = int(len(self) / nfold)
 		ret = []
 		for i in range(nrows):
-			r = ()
-			for j in range(n):
-				r += self[i*n + j]
-			ret.append(r)
+			row = ()
+			for j in range(nfold):
+				row += self[i*nfold + j]
+			ret.append(row)
 		return Channel.create(ret)		
 	
 	def split (self, flatten=False):
@@ -581,26 +581,26 @@ class Channel (list):
 		"""
 		return self.flatten()[idx]
 
-	def repCol(self, n = 2):
+	def repCol(self, nrep = 2):
 		"""
 		Repeat column and return a new channel
 		@params:
-			`n`: how many times to repeat.
+			`nrep`: how many times to repeat.
 		@returns:
 			The new channel with repeated columns
 		"""
-		cols = [self] * (n - 1) 
+		cols = [self] * (nrep - 1) 
 		return self.cbind(*cols)
 
-	def repRow(self, n = 2):
+	def repRow(self, nrep = 2):
 		"""
 		Repeat row and return a new channel
 		@params:
-			`n`: how many times to repeat.
+			`nrep`: how many times to repeat.
 		@returns:
 			The new channel with repeated rows
 		"""
-		rows = [self] * (n - 1) 
+		rows = [self] * (nrep - 1) 
 		return self.rbind(*rows)
 
 	def flatten (self, col = None):
@@ -615,6 +615,7 @@ class Channel (list):
 		return [item for sublist in self for item in sublist] if col is None else \
 			   [sublist[col] for sublist in self]
 
+	# pylint: disable=invalid-name
 	def t(self):
 		"""
 		Transpose the channel
@@ -622,11 +623,11 @@ class Channel (list):
 			The transposed channel.
 		"""
 		ret = Channel.nones(length = self.width(), width = self.length())
-		ret = [list(r) for r in ret]
+		ret = [list(row) for row in ret]
 		for i, row in enumerate(self):
 			for j, val in enumerate(row):
 				ret[j][i] = val
-		ret = [tuple(r) for r in ret]
+		ret = [tuple(row) for row in ret]
 		return Channel(ret)
 
 	transpose = t

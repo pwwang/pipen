@@ -5,7 +5,7 @@ from os import path
 verfile = path.join(path.dirname(__file__), 'pyppl', '__init__.py')
 with open(verfile) as vf:
 	for line in vf:
-		if not line.startswith('VERSION'): 
+		if not line.startswith('__version__'): 
 			continue
 		VERSION = line.split('=')[1].strip()[1:-1]
 		break

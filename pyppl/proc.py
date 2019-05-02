@@ -87,7 +87,7 @@ class Proc (object):
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect
 			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix
 		"""
-		# Don't go through __getattr__ and __setattr__
+		# Do not go through __getattr__ and __setattr__
 		# Get configuration from config
 		self.__dict__['config']   = utils.config.copy()
 		# computed props
@@ -147,10 +147,10 @@ class Proc (object):
 		#self.config.iftype     = 'indir'
 
 		# resume flag of the process
-		# ''       : Normal, don't resume
+		# ''       : Normal, do not resume
 		# 'skip+'  : Load data from previous run, pipeline resumes from future processes
 		# 'resume+': Deduce input from 'skip+' processes
-		# 'skip'   : Just skip, don't load data
+		# 'skip'   : Just skip, do not load data
 		# 'resume' : Load data from previous run, resume pipeline
 		self.config.resume     = ''
 		# get the runner from the profile
@@ -172,7 +172,7 @@ class Proc (object):
 
 		# update the conf with kwargs
 		self.config.update(dict(tag = tag, desc = desc, **kwargs))
-		# remember which property is set, then it won't be overwritten by configurations, don't put any values here because we want
+		# remember which property is set, then it will not be overwritten by configurations, do not put any values here because we want
 		# the kwargs to be overwritten by the configurations but keep the values set by:
 		# p.xxx = xxx
 		self.props.sets        = set()
@@ -292,6 +292,7 @@ class Proc (object):
 	def __ne__(self, other):
 		return not self.__eq__(other)
 
+	# pylint: disable=invalid-name
 	def copy (self, id = None, tag = None, desc = None):
 		"""
 		Copy a process
@@ -608,7 +609,7 @@ class Proc (object):
 			if 'all' in self.echo['type']:
 				self.echo['type'] = {'stderr': self.echo['type']['all'], 'stdout': self.echo['type']['all']}
 
-			# don't cache for dry runner
+			# do not cache for dry runner
 			# runner is decided when run (in config)
 			#if self.runner == 'dry':
 			#	self.props.cache = False
@@ -665,11 +666,11 @@ class Proc (object):
 			if not path.isfile(settingsfile):
 				raise ProcInputError(settingsfile, 'Cannot parse input for skip+/resume process, no such file')
 
-			with open(settingsfile, 'r') as f:
-				cp = yaml.load(f, Loader = yaml.Loader)
+			with open(settingsfile, 'r') as fset:
+				cached_props = yaml.load(fset, Loader = yaml.Loader)
 			
-			self.props.size = int(cp.get('size', 0))
-			self.props.input = cp.get('input', OrderedDict())
+			self.props.size = int(cached_props.get('size', 0))
+			self.props.input = cached_props.get('input', OrderedDict())
 			self.props.jobs = [None] * self.size
 		else:
 			# parse self.config.input keys
@@ -688,16 +689,16 @@ class Proc (object):
 
 			input_keys  = []
 			input_types = []
-			for kt in input_keys_and_types:
-				if ':' not in kt:
-					input_keys.append(kt)
+			for keytype in input_keys_and_types:
+				if ':' not in keytype:
+					input_keys.append(keytype)
 					input_types.append(Proc.IN_VARTYPE[0])
 				else:
-					k, t = kt.split(':', 1)
-					if t not in Proc.IN_VARTYPE + Proc.IN_FILESTYPE + Proc.IN_FILETYPE:
-						raise ProcInputError(t, 'Unknown input type')
-					input_keys.append(k)
-					input_types.append(t)
+					thekey, thetype = keytype.split(':', 1)
+					if thetype not in Proc.IN_VARTYPE + Proc.IN_FILESTYPE + Proc.IN_FILETYPE:
+						raise ProcInputError(thetype, 'Unknown input type')
+					input_keys.append(thekey)
+					input_types.append(thetype)
 			del input_keys_and_types
 
 			indata = self.config.input
@@ -772,7 +773,7 @@ class Proc (object):
 				procvars['args'] = val
 				procargs         = val
 				if val: 
-					maxlen = max(maxlen, max([len(k) for k in val.keys()]))
+					maxlen = max(maxlen, max([len(thekey) for thekey in val.keys()]))
 			elif key == 'runner':
 				procvars[key] = val
 				maxlen        = max(maxlen, len(key))
@@ -808,13 +809,13 @@ class Proc (object):
 
 		outdict = OrderedDict()
 		if isinstance(output, list):
-			for op in output:
-				ops = utils.split(op, ':')
+			for out in output:
+				ops = utils.split(out, ':')
 				lenops = len(ops)
 				if lenops < 2:
-					raise ProcOutputError(op, 'One of <key>:<type>:<value> missed for process output in')
+					raise ProcOutputError(out, 'One of <key>:<type>:<value> missed for process output in')
 				elif lenops > 3:
-					raise ProcOutputError(op, 'Too many parts for process output in')
+					raise ProcOutputError(out, 'Too many parts for process output in')
 				outdict[':'.join(ops[:-1])] = ops[-1]
 		else:
 			outdict = self.config.output
@@ -826,15 +827,15 @@ class Proc (object):
 			kparts = utils.split(key, ':')
 			lparts = len(kparts)
 			if lparts == 1:
-				k, t = key, Proc.OUT_VARTYPE[0]
+				thekey, thetype = key, Proc.OUT_VARTYPE[0]
 			elif lparts == 2:
-				k, t = kparts
+				thekey, thetype = kparts
 			else:
 				raise ProcOutputError(key, 'Too many parts for process output key in')
 
-			if t not in Proc.OUT_DIRTYPE + Proc.OUT_FILETYPE + Proc.OUT_VARTYPE + Proc.OUT_STDOUTTYPE + Proc.OUT_STDERRTYPE:
-				raise ProcOutputError(t, 'Unknown output type')
-			self.props.output[k] = (t, self.template(val, **self.tplenvs))
+			if thetype not in Proc.OUT_DIRTYPE + Proc.OUT_FILETYPE + Proc.OUT_VARTYPE + Proc.OUT_STDOUTTYPE + Proc.OUT_STDERRTYPE:
+				raise ProcOutputError(thetype, 'Unknown output type')
+			self.props.output[thekey] = (thetype, self.template(val, **self.tplenvs))
 
 	def _buildScript(self):
 		"""
@@ -849,8 +850,8 @@ class Proc (object):
 			if not path.exists (tplfile):
 				raise ProcScriptError (tplfile, 'No such template file')
 			logger.debug("Using template file: %s", tplfile, proc = self.id)
-			with open(tplfile) as f:
-				script = f.read().strip()
+			with open(tplfile) as ftpl:
+				script = ftpl.read().strip()
 		
 		# original lines
 		olines = script.splitlines()
@@ -972,13 +973,13 @@ class Proc (object):
 		
 		logger.info('Running <%s> ...', key, proc = self.id)
 
-		c = utils.cmdy.bash(c = cmdstr, _iter = 'err')
-		for err in c:
+		cmd = utils.cmdy.bash(c = cmdstr, _iter = 'err')
+		for err in cmd:
 			logger.cmderr('  ' + err.rstrip("\n"), proc = self.id)
-		for out in c.stdout.splitlines():
+		for out in cmd.stdout.splitlines():
 			logger.cmdout('  ' + out.rstrip("\n"), proc = self.id)
 			
-		if c.rc != 0:
+		if cmd.rc != 0:
 			raise ProcRunCmdError(repr(cmdstr), key)
 
 	def _runJobs (self):

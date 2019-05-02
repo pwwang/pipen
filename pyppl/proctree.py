@@ -65,10 +65,10 @@ class ProcTree(object):
 		@params:
 			`proc`: The `Proc` instance
 		"""
-		for p in ProcTree.NODES.keys():
-			if p is proc: continue
-			if ProcTree.NODES[p].sameIdTag(proc):
-				raise ProcTreeProcExists(ProcTree.NODES[p], ProcTree.NODES[proc])
+		for pnode in ProcTree.NODES.keys():
+			if pnode is proc: continue
+			if ProcTree.NODES[pnode].sameIdTag(proc):
+				raise ProcTreeProcExists(ProcTree.NODES[pnode], ProcTree.NODES[proc])
 
 	@staticmethod
 	def getPrevStr(proc):
@@ -80,7 +80,7 @@ class ProcTree(object):
 			The names
 		"""
 		node = ProcTree.NODES[proc]
-		prev = [np.proc.name() for np in node.prev]
+		prev = [prevnode.proc.name() for prevnode in node.prev]
 		return 'START' if not prev else '[%s]' % ', '.join(prev)
 	
 	@staticmethod
@@ -147,12 +147,12 @@ class ProcTree(object):
 		@params:
 			`starts`: The start processes
 		"""
-		for n in ProcTree.NODES.values():
-			n.start = False
-		for s in starts:
-			if s.hide:
-				raise ProcHideError(s, 'start process cannot be hidden.')
-			ProcTree.NODES[s].start = True
+		for node in ProcTree.NODES.values():
+			node.start = False
+		for start in starts:
+			if start.hide:
+				raise ProcHideError(start, 'start process cannot be hidden.')
+			ProcTree.NODES[start].start = True
 
 	def getStarts(self):
 		"""
@@ -161,10 +161,10 @@ class ProcTree(object):
 			The start processes
 		"""
 		if not self.starts: 
-			self.starts = [n.proc for n in ProcTree.NODES.values() if n.start]
+			self.starts = [node.proc for node in ProcTree.NODES.values() if node.start]
 		return self.starts
 
-	def getPaths(self, proc, proc0 = None, checkHide = True):
+	def getPaths(self, proc, proc0 = None, check_hide = True):
 		"""
 		Infer the path to a process
 		@params:
@@ -180,23 +180,23 @@ class ProcTree(object):
 		node  = proc if isinstance(proc, ProcNode) else ProcTree.NODES[proc]
 		proc0 = proc0 or [node]
 		paths = []
-		for np in node.prev:
-			if np in proc0:
-				raise ProcTreeParseError(np.proc, 'Loop dependency through')
-			if not np.prev:
+		for prevnode in node.prev:
+			if prevnode in proc0:
+				raise ProcTreeParseError(prevnode.proc, 'Loop dependency through')
+			if not prevnode.prev:
 				# starting
-				ps = [[np.proc]]
+				apath = [[prevnode.proc]]
 			else:
-				ps = self.getPaths(np, proc0 + [np], checkHide = checkHide)
-				for p in ps: 
-					if not np.proc.hide:
-						p.insert(0, np.proc)
-			for p in ps:
-				if p not in paths:
-					paths.append(p)
+				apath = self.getPaths(prevnode, proc0 + [prevnode], check_hide = check_hide)
+				for pnode in apath: 
+					if not prevnode.proc.hide:
+						pnode.insert(0, prevnode.proc)
+			for pnode in apath:
+				if pnode not in paths:
+					paths.append(pnode)
 		return paths
 
-	def getPathsToStarts(self, proc, checkHide = True):
+	def getPathsToStarts(self, proc, check_hide = True):
 		"""
 		Filter the paths with start processes
 		@params:
@@ -204,13 +204,13 @@ class ProcTree(object):
 		@returns:
 			The filtered path
 		"""
-		paths  = self.getPaths(proc, checkHide = checkHide)
+		paths  = self.getPaths(proc, check_hide = check_hide)
 		ret    = []
 		starts = self.getStarts()
 		for path in paths:
-			overlap = [p for p in path if p in starts]
+			overlap = [pnode for pnode in path if pnode in starts]
 			if not overlap: continue
-			index   = max([path.index(p) for p in overlap])
+			index   = max([path.index(pnode) for pnode in overlap])
 			path    = path[:(index+1)]
 			if path:
 				ret.append(path[:(index+1)])
@@ -243,11 +243,11 @@ class ProcTree(object):
 		if self.ends:
 			return self.ends
 			
-		failedPaths = []
-		nodes = [ProcTree.NODES[s] for s in self.getStarts()]
+		failed_paths = []
+		nodes = [ProcTree.NODES[start] for start in self.getStarts()]
 		while nodes:
 			# check loops
-			for n in nodes: self.getPaths(n, False)
+			for node in nodes: self.getPaths(node, False)
 
 			nodes2 = []
 			for node in nodes:
@@ -260,17 +260,17 @@ class ProcTree(object):
 							self.ends.append(node.proc)
 					else:
 						passed.insert(0, node.proc)
-						failedPaths.append(passed)
+						failed_paths.append(passed)
 				else:
 					nodes2.extend(node.next)
 			nodes = set(nodes2)
 
 		# didn't find any ends
 		if not self.ends:
-			if failedPaths:
-				raise ProcTreeParseError(' <- '.join([fn.name() for fn in failedPaths[0]]), 'Failed to determine end processes, one of the paths cannot go through')
+			if failed_paths:
+				raise ProcTreeParseError(' <- '.join([fn.name() for fn in failed_paths[0]]), 'Failed to determine end processes, one of the paths cannot go through')
 			else:
-				raise ProcTreeParseError(', '.join(s.name() for s in self.getStarts()), 'Failed to determine end processes by start processes')
+				raise ProcTreeParseError(', '.join(start.name() for start in self.getStarts()), 'Failed to determine end processes by start processes')
 		return self.ends
 
 	def getAllPaths(self):
@@ -282,17 +282,17 @@ class ProcTree(object):
 		for end in ends:
 			paths = self.getPathsToStarts(end)
 			if not paths:
-				p = [end]
-				pstr = str(p)
+				pnode = [end]
+				pstr = str(pnode)
 				if pstr not in ret:
 					yield [end]
 					ret.add(pstr)
 			else:
-				for p in paths:
-					p = [end] + p
-					pstr = str(p)
+				for pnode in paths:
+					pnode = [end] + pnode
+					pstr = str(pnode)
 					if pstr not in ret:
-						yield p
+						yield pnode
 						ret.add(pstr)
 
 	@classmethod
@@ -309,7 +309,7 @@ class ProcTree(object):
 			# not a start and not depends on any procs
 			if not node.start and not node.prev: continue
 			# start
-			if node.start or all([p.ran for p in node.prev]):
+			if node.start or all([pnode.ran for pnode in node.prev]):
 				node.ran = True
 				return node.proc
 				#ret.append(node.proc)
@@ -327,12 +327,12 @@ class ProcTree(object):
 			# just for possible end process
 			if node.next: continue
 			# don't report obsolete process
-			if not self.getPathsToStarts(node, checkHide = False): continue
+			if not self.getPathsToStarts(node, check_hide = False): continue
 			# check paths can't reach
 			paths = self.getPaths(node, False)
-			for ps in paths:
+			for apath in paths:
 				# the path can be reached
-				if set(ps) & set(starts): continue
-				ret[node.proc.name()] = [p.name() for p in ps]
+				if set(apath) & set(starts): continue
+				ret[node.proc.name()] = [pnode.name() for pnode in apath]
 				break
 		return ret

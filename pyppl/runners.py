@@ -26,19 +26,19 @@ class Runner (object):
 		"""
 		self.job = job
 
-	def wrapScript(self, head = None, preScript = None, postScript = None, 
-		realScript = None, suffix = None, saveOE = True):
+	def wrapScript(self, head = None, pre_script = None, post_script = None, 
+		real_script = None, suffix = None, save_oe = True):
 
 		suffix      = suffix or '.' + self.__class__.__name__[6:].lower()
 		self.script = self.job.script + suffix
 
-		realScript = realScript or ' '.join(cmdy._shquote(x) for x in chmodX(self.job.script))
+		real_script = real_script or ' '.join(cmdy._shquote(x) for x in chmodX(self.job.script))
 		# redirect stdout and stderr
-		if saveOE:
-			if isinstance(realScript, list):
-				realScript[-1] += ' 1> %s 2> %s' % (cmdy._shquote(self.job.outfile), cmdy._shquote(self.job.errfile))
+		if save_oe:
+			if isinstance(real_script, list):
+				real_script[-1] += ' 1> %s 2> %s' % (cmdy._shquote(self.job.outfile), cmdy._shquote(self.job.errfile))
 			else:
-				realScript += ' 1> %s 2> %s' % (cmdy._shquote(self.job.outfile), cmdy._shquote(self.job.errfile))
+				real_script += ' 1> %s 2> %s' % (cmdy._shquote(self.job.outfile), cmdy._shquote(self.job.errfile))
 
 		src       = ['#!/usr/bin/env bash']
 		srcappend = src.append
@@ -51,17 +51,17 @@ class Runner (object):
 		addsrc('trap "status=\\$?; echo \\$status > %s; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % cmdy._shquote(self.job.rcfile))
 		addsrc('#')
 		addsrc('# Run pre-script')
-		addsrc(preScript)
+		addsrc(pre_script)
 		addsrc('#')
 		addsrc('# Run the real script')
-		addsrc(realScript)
+		addsrc(real_script)
 		addsrc('#')
 		addsrc('# Run post-script')
-		addsrc(postScript)
+		addsrc(post_script)
 		addsrc('#')
 
-		with open(self.script, 'w') as f:
-			f.write('\n'.join(src))
+		with open(self.script, 'w') as fscript:
+			fscript.write('\n'.join(src))
 
 	@property
 	def runnercmd(self):
@@ -78,10 +78,10 @@ class Runner (object):
 		"""
 		Try to submit the job
 		"""
-		c = cmdy.bash(self.script, _bg = True)
-		c.rc = 0
-		self.job.pid = c.pid
-		return c
+		cmd = cmdy.bash(self.script, _bg = True)
+		cmd.rc = 0
+		self.job.pid = cmd.pid
+		return cmd
 
 	def isRunning (self):
 		"""
@@ -107,10 +107,10 @@ class RunnerLocal (Runner):
 		conf = job.config.get('runnerOpts', {})
 		conf = conf.get('localRunner', {})
 
-		preScript  = conf.get('preScript')
-		postScript = conf.get('postScript')
+		pre_script  = conf.get('preScript')
+		post_script = conf.get('postScript')
 
-		self.wrapScript(preScript = preScript, postScript = postScript)
+		self.wrapScript(pre_script = pre_script, post_script = post_script)
 
 
 class RunnerDry (Runner):
@@ -127,18 +127,18 @@ class RunnerDry (Runner):
 		super(RunnerDry, self).__init__(job)
 		from .proc import Proc
 
-		realScript = []
+		real_script = []
 
 		for val in job.output.values():
 			if val['type'] in Proc.OUT_VARTYPE:
 				continue
 				
 			if val['type'] in Proc.OUT_FILETYPE:
-				realScript.append("touch %s" % cmdy._shquote(val['data']))
+				real_script.append("touch %s" % cmdy._shquote(val['data']))
 			elif val['type'] in Proc.OUT_DIRTYPE:
-				realScript.append("mkdir -p %s" % cmdy._shquote(val['data']))
+				real_script.append("mkdir -p %s" % cmdy._shquote(val['data']))
 
-		self.wrapScript(realScript = realScript)
+		self.wrapScript(real_script = real_script)
 
 
 class RunnerSsh(Runner):
@@ -166,8 +166,8 @@ class RunnerSsh(Runner):
 		params['o']    = ['BatchMode=yes', 'ConnectionAttempts=1']
 		params['_exe'] = ssh
 		try:
-			c = RunnerSsh.SSH(**params)
-			return c.rc == 0
+			cmd = RunnerSsh.SSH(**params)
+			return cmd.rc == 0
 		except cmdy.CmdyTimeoutException:
 			return False
 
@@ -183,26 +183,26 @@ class RunnerSsh(Runner):
 
 		conf       = self.job.config.get('runnerOpts', {}).get('sshRunner', {})
 		
-		ssh        = conf.get('ssh', 'ssh')
-		servers    = conf.get('servers', [])
-		keys       = conf.get('keys', [])
-		checkAlive = conf.get('checkAlive', False)
+		ssh         = conf.get('ssh', 'ssh')
+		servers     = conf.get('servers', [])
+		keys        = conf.get('keys', [])
+		check_alive = conf.get('checkAlive', False)
 		if not servers:
 			raise RunnerSshError('No server found for ssh runner.')
 
 		with RunnerSsh.LOCK:
 			if RunnerSsh.LIVE_SERVERS is None:
-				if checkAlive is True:
+				if check_alive is True:
 					RunnerSsh.LIVE_SERVERS = [
 						i for i, server in enumerate(servers)
 						if RunnerSsh.isServerAlive(server, keys[i] if keys else None, ssh = ssh)
 					]
-				elif checkAlive is False:
+				elif check_alive is False:
 					RunnerSsh.LIVE_SERVERS = list(range(len(servers)))
 				else:
 					RunnerSsh.LIVE_SERVERS = [
 						i for i, server in enumerate(servers)
-						if RunnerSsh.isServerAlive(server, keys[i] if keys else None, checkAlive, ssh = ssh)
+						if RunnerSsh.isServerAlive(server, keys[i] if keys else None, check_alive, ssh = ssh)
 					]
 
 		if not RunnerSsh.LIVE_SERVERS:
@@ -213,14 +213,14 @@ class RunnerSsh(Runner):
 		key    = keys[sid] if keys else False
 		
 		head       = '# run on server: {}'.format(server)
-		preScript  = conf.get('preScript')
-		realScript = [
+		pre_script  = conf.get('preScript')
+		real_script = [
 			'cd %s' % cmdy._shquote(getcwd()),
 			' '.join(cmdy._shquote(x) for x in chmodX(self.job.script))
 		]
-		postScript = conf.get('postScript')
-		self.wrapScript(head = head, preScript = preScript, 
-			realScript = realScript, postScript = postScript)
+		post_script = conf.get('postScript')
+		self.wrapScript(head = head, pre_script = pre_script, 
+			real_script = real_script, post_script = post_script)
 		
 		baked = dict(t = server, i = key, _exe = ssh)		
 		self.ssh = RunnerSsh.SSH.bake(**baked)
@@ -232,19 +232,19 @@ class RunnerSsh(Runner):
 			The `utils.cmd.Cmd` instance if succeed 
 			else a `Box` object with stderr as the exception and rc as 1
 		"""
-		c = self.ssh(_ = cmdy.ls(self.script, _hold = True).cmd)
-		if c.rc != 0:
-			d        = Box()
-			d.rc     = self.job.RC_SUBMITFAILED
-			d.cmd    = c.cmd
-			d.pid    = -1
-			d.stderr = c.stderr + '\nProbably the server ({}) is not using the same file system as the local machine.\n'.format(self.ssh.keywords['t'])
-			return d
+		cmd = self.ssh(_ = cmdy.ls(self.script, _hold = True).cmd)
+		if cmd.rc != 0:
+			dbox        = Box()
+			dbox.rc     = self.job.RC_SUBMITFAILED
+			dbox.cmd    = cmd.cmd
+			dbox.pid    = -1
+			dbox.stderr = cmd.stderr + '\nProbably the server ({}) is not using the same file system as the local machine.\n'.format(self.ssh.keywords['t'])
+			return dbox
 
-		c = self.ssh(_bg = True, _ = self.runnercmd)
-		c.rc = 0
-		self.job.pid = c.pid
-		return c
+		cmd = self.ssh(_bg = True, _ = self.runnercmd)
+		cmd.rc = 0
+		self.job.pid = cmd.pid
+		return cmd
 
 	def kill(self):
 		"""
@@ -295,13 +295,13 @@ class RunnerSge (Runner):
 		self.qdel  = cmdy.qdel.bake(_exe  = conf.get('qdel'))
 
 		head = []
-		sge_N = conf.pop('sge.N', '.'.join([
+		sge_bign = conf.pop('sge.N', '.'.join([
 			self.job.config['proc'],
 			self.job.config['tag'],
 			self.job.config['suffix'],
 			str(self.job.index + 1)
 		]))
-		head.append('#$ -N %s' % sge_N)
+		head.append('#$ -N %s' % sge_bign)
 
 		sge_q = conf.pop('sge.q', None)
 		if sge_q: 
@@ -313,9 +313,9 @@ class RunnerSge (Runner):
 		
 		head.append('#$ -cwd')
 
-		sge_M = conf.pop('sge.M', None)
-		if sge_M:
-			head.append('#$ -M %s' % sge_M)
+		sge_bigm = conf.pop('sge.M', None)
+		if sge_bigm:
+			head.append('#$ -M %s' % sge_bigm)
 
 		sge_m = conf.pop('sge.m', None)
 		if sge_m:
@@ -326,18 +326,18 @@ class RunnerSge (Runner):
 		
 		for k in sorted(conf.keys()):
 			if not k.startswith ('sge.'): continue
-			v = conf[k]
+			val = conf[k]
 			k = k[4:].strip()
 			src = '#$ -' + k
-			if v != True: # {'notify': True} ==> -notify
-				src += ' ' + str(v)
+			if val != True: # {'notify': True} ==> -notify
+				src += ' ' + str(val)
 			head.append(src)
 
-		preScript = conf.get('preScript')
-		postScript = conf.get('postScript')
+		pre_script = conf.get('preScript')
+		post_script = conf.get('postScript')
 
-		self.wrapScript(head = head, preScript = preScript, 
-			postScript = postScript, saveOE = False)
+		self.wrapScript(head = head, pre_script = pre_script, 
+			post_script = post_script, save_oe = False)
 		
 	def submit(self):
 		"""
@@ -346,15 +346,15 @@ class RunnerSge (Runner):
 			The `utils.cmd.Cmd` instance if succeed 
 			else a `Box` object with stderr as the exception and rc as 1
 		"""
-		c = self.qsub(self.script)
-		if c.rc == 0:
+		cmd = self.qsub(self.script)
+		if cmd.rc == 0:
 			# Your job 6556149 ("pSort.notag.3omQ6NdZ.0") has been submitted
-			m = re.search(r'\s(\d+)\s', c.stdout.strip())
-			if not m:
-				c.rc = self.job.RC_SUBMITFAILED
+			match = re.search(r'\s(\d+)\s', cmd.stdout.strip())
+			if not match:
+				cmd.rc = self.job.RC_SUBMITFAILED
 			else:
-				self.job.pid = m.group(1)
-		return c
+				self.job.pid = match.group(1)
+		return cmd
 
 	def kill(self):
 		"""
@@ -397,31 +397,31 @@ class RunnerSlurm (Runner):
 		self.scancel = cmdy.scancel.bake(_exe = conf.get('scancel'))
 
 		head = []
-		slurm_J = conf.pop('slurm.J', '.'.join([
+		slurm_bigj = conf.pop('slurm.J', '.'.join([
 			self.job.config['proc'],
 			self.job.config['tag'],
 			self.job.config['suffix'],
 			str(self.job.index + 1)
 		]))
-		head.append('#SBATCH -J %s' % slurm_J)
+		head.append('#SBATCH -J %s' % slurm_bigj)
 		head.append('#SBATCH -o %s' % self.job.outfile)
 		head.append('#SBATCH -e %s' % self.job.errfile)
 
 		for k in sorted(conf.keys()):
 			if not k.startswith ('slurm.'): continue
-			v = conf[k]
+			val = conf[k]
 			k = k[6:].strip()
 			src = '#SBATCH -' + (k if len(k)==1 else '-' + k)
-			if v != True: # {'notify': True} ==> -notify
-				src += ' ' + str(v)
+			if val != True: # {'notify': True} ==> -notify
+				src += ' ' + str(val)
 			head.append(src)
 
-		realScript = self.srun(*chmodX(self.job.script), _hold = True).cmd
-		preScript  = conf.get('preScript')
-		postScript = conf.get('postScript')
+		real_script = self.srun(*chmodX(self.job.script), _hold = True).cmd
+		pre_script  = conf.get('preScript')
+		post_script = conf.get('postScript')
 
-		self.wrapScript(head = head, preScript = preScript, realScript = realScript, 
-			postScript = postScript, saveOE = False)
+		self.wrapScript(head = head, pre_script = pre_script, real_script = real_script, 
+			post_script = post_script, save_oe = False)
 		
 	def submit(self):
 		"""
@@ -430,15 +430,15 @@ class RunnerSlurm (Runner):
 			The `utils.cmd.Cmd` instance if succeed 
 			else a `Box` object with stderr as the exception and rc as 1
 		"""
-		c = self.sbatch(self.script)
-		if c.rc == 0:
+		cmd = self.sbatch(self.script)
+		if cmd.rc == 0:
 			# Submitted batch job 1823334668
-			m = re.search(r'\s(\d+)$', c.stdout.strip())
-			if not m:
-				c.rc = 1
+			match = re.search(r'\s(\d+)$', cmd.stdout.strip())
+			if not match:
+				cmd.rc = 1
 			else:
-				self.job.pid = m.group(1)
-		return c
+				self.job.pid = match.group(1)
+		return cmd
 
 	def kill(self):
 		"""

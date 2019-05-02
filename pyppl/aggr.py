@@ -15,7 +15,7 @@ class _Proxy(list):
 		if hasattr(super(_Proxy, self), item):
 			return super(_Proxy, self).getattr(item)
 
-		return self.__class__(getattr(x, item) for x in self)
+		return self.__class__(getattr(proxy, item) for proxy in self)
 
 	def __setattr__(self, name, value):
 		if hasattr(super(_Proxy, self), name):
@@ -25,8 +25,8 @@ class _Proxy(list):
 			for i, val in enumerate(value):
 				setattr(self[i], name, val)
 		else:
-			for x in self:
-				setattr(x, name, value)
+			for proxy in self:
+				setattr(proxy, name, value)
 
 	def __getitem__(self, item):
 		if isinstance(item, (int, slice)):
@@ -47,8 +47,8 @@ class _Proxy(list):
 				Otherwise the whole `anything` will be added as one element.
 		"""
 		if isinstance(anything, _Proxy):
-			for at in anything:
-				self.add(at)
+			for thing in anything:
+				self.add(thing)
 		elif not anything in self:
 			self.append(anything)
 
@@ -157,13 +157,13 @@ class Aggr(Box):
 	def __getitem__(self, item, _ignore_default = True):
 		from . import Proc
 		if isinstance(item, slice):
-			return _Proxy(self[it] for it in self._idprocs[item])
+			return _Proxy(self[itm] for itm in self._idprocs[item])
 		if isinstance(item, int):
 			return self[self._idprocs[item]]
 		if isinstance(item, (tuple, list)):
 			ret = _Proxy()
-			for it in item:
-				ret.add(self[it])
+			for itm in item:
+				ret.add(self[itm])
 			return ret
 		if item in self:
 			return super(Aggr, self).__getitem__(item)

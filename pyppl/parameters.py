@@ -8,7 +8,8 @@ import re
 from os import path
 from collections import OrderedDict
 from .utils import Box, string_types, ConfigParser, jsonLoads
-from .exceptions import ParameterNameError, ParameterTypeError, ParametersParseError, ParametersLoadError
+from .exceptions import ParameterNameError, ParameterTypeError, \
+	ParametersParseError, ParametersLoadError
 from colorama import Fore, Back, Style
 
 class HelpAssembler(object):
@@ -16,7 +17,8 @@ class HelpAssembler(object):
 	A helper class to help assembling the help information page.
 	@staticvars
 		`MAXPAGEWIDTH`: the max width of the help page, not including the leading space
-		`MAXOPTWIDTH` : the max width of the option name (include the type and placeholder, but not the leading space)
+		`MAXOPTWIDTH` : the max width of the option name 
+			- (include the type and placeholder, but not the leading space)
 		`THEMES`      : the themes
 	"""
 
@@ -89,21 +91,21 @@ class HelpAssembler(object):
 				continue
 			# descriptional
 			if isinstance(val[0], tuple):
-				optwidth     = max([len(v[0]) + len(v[1]) + 3  for v in val])
+				optwidth     = max([len(valitem[0]) + len(valitem[1]) + 3  for valitem in val])
 				optwidth     = max(optwidth, HelpAssembler.MAXOPTWIDTH)
 				maxdescwidth = max([
 					HelpAssembler._reallen(w, progname) 
-					for v in val 
-					for w in (v[2] if isinstance(v[2], list) else [v[2]])
+					for valitem in val 
+					for w in (valitem[2] if isinstance(valitem[2], list) else [valitem[2]])
 				] or [0])
 				maxdescwidth = max(maxdescwidth, HelpAssembler.MAXPAGEWIDTH - optwidth)
 				pagewidth    = optwidth + maxdescwidth
 			else:
-				pagewidth = max([HelpAssembler._reallen(v, progname) for v in val])
+				pagewidth = max([HelpAssembler._reallen(valitem, progname) for valitem in val])
 				pagewidth = max(pagewidth, HelpAssembler.MAXPAGEWIDTH)
 		return pagewidth, optwidth
 				
-	def error(self, msg, withPrefix = True):
+	def error(self, msg, with_prefix = True):
 		"""
 		Render an error message
 		@params:
@@ -112,12 +114,12 @@ class HelpAssembler(object):
 		msg = msg.replace('{prog}', self.prog(self.progname))
 		return '{colorstart}{prefix}{msg}{colorend}'.format(
 			colorstart = self.theme['error'],
-			prefix     = 'Error: ' if withPrefix else '',
+			prefix     = 'Error: ' if with_prefix else '',
 			msg        = msg,
 			colorend   = Style.RESET_ALL
 		)
 	
-	def warning(self, msg, withPrefix = True):
+	def warning(self, msg, with_prefix = True):
 		"""
 		Render an warning message
 		@params:
@@ -126,7 +128,7 @@ class HelpAssembler(object):
 		msg = msg.replace('{prog}', self.prog(self.progname))
 		return '{colorstart}{prefix}{msg}{colorend}'.format(
 			colorstart = self.theme['warning'],
-			prefix     = 'Warning: ' if withPrefix else '',
+			prefix     = 'Warning: ' if with_prefix else '',
 			msg        = msg,
 			colorend   = Style.RESET_ALL
 		)
@@ -240,17 +242,20 @@ class HelpAssembler(object):
 						optdesc = ['[ No description. ]']
 					if not isinstance(optdesc, list):
 						optdesc = [optdesc]
-					for i, od in enumerate(optdesc):
+					for i, optd in enumerate(optdesc):
 						if i == 0:
 							line  = self.optname(optname) + ' '
-							line += self.opttype(opttype.ljust(optwidth - len(optname) - 3)) if opttype else ' ' * (optwidth - len(optname) - 1)
-							line += '- ' + self.optdesc(od.ljust(pagewidth - optwidth - 2))
+							line += self.opttype(opttype.ljust(optwidth - len(optname) - 3)) \
+								if opttype else ' ' * (optwidth - len(optname) - 1)
+							line += '- ' + self.optdesc(optd.ljust(pagewidth - optwidth - 2))
 							ret.append(line)
 						else:
-							ret.append(' ' * (optwidth + 2) + '  ' + self.optdesc(od.ljust(pagewidth - optwidth - 2)))
+							ret.append(
+								' ' * (optwidth + 2) + '  ' + 
+								self.optdesc(optd.ljust(pagewidth - optwidth - 2)))
 			else:
-				for h in helpitems:
-					ret.append('  ' + self.plain(h.ljust(pagewidth)))
+				for hitem in helpitems:
+					ret.append('  ' + self.plain(hitem.ljust(pagewidth)))
 			ret.append('')
 		return ret
 
@@ -277,18 +282,21 @@ class Parameter (object):
 		if not isinstance(name, string_types):
 			raise ParameterNameError(name, 'Not a string')
 		if not re.search(r'^[A-Za-z0-9_,\-.]{1,255}$', name):
-			raise ParameterNameError(name, 'Expect a string with comma, alphabetics and/or underlines in length 1~255, but we got')
+			raise ParameterNameError(
+				name, 
+				'Expect a string with comma, alphabetics ' +
+				'and/or underlines in length 1~255, but we got')
 		if value is not None:
-			t = type(value).__name__
-			if t in ['tuple', 'set']:
-				t = 'list'
+			typename = type(value).__name__
+			if typename in ['tuple', 'set']:
+				typename = 'list'
 				self._props['value'] = list(value)
-			elif t == 'unicode': # py2
-				t = 'str'
+			elif typename == 'unicode': # py2
+				typename = 'str'
 				self._props['value'] = value.encode()
-			elif not t in Parameters.ALLOWED_TYPES:
-				raise ParameterTypeError('Unsupported parameter type: ' + t)
-			self.setType(t)
+			elif not typename in Parameters.ALLOWED_TYPES:
+				raise ParameterTypeError('Unsupported parameter type: ' + typename)
+			self.setType(typename)
 
 	def __setattr__(self, name, value):
 		"""
@@ -321,7 +329,8 @@ class Parameter (object):
 		return self._props[name]
 
 	def __repr__(self):
-		return '<Parameter({}) @ {}>'.format(','.join([key+'='+repr(val) for key, val in self._props.items()]), hex(id(self)))
+		return '<Parameter({}) @ {}>'.format(','.join([
+			key+'='+repr(val) for key, val in self._props.items()]), hex(id(self)))
 
 	def __str__(self):
 		return str(self.value)
@@ -350,47 +359,48 @@ class Parameter (object):
 	def __bool__(self):
 		return bool(self.value)
 
-	def setDesc (self, d = ''):
+	def setDesc (self, desc = ''):
 		"""
 		Set the description of the parameter
 		@params:
-			`d`: The description
+			`desc`: The description
 		"""
-		if not isinstance(d, list):
-			d = d.splitlines()
-		self._props['desc'] = d
+		if not isinstance(desc, list):
+			desc = desc.splitlines()
+		self._props['desc'] = desc
 		return self
 
-	def setRequired (self, r = True):
+	def setRequired (self, req = True):
 		"""
 		Set whether this parameter is required
 		@params:
-			`r`: True if required else False. Default: True
+			`req`: True if required else False. Default: True
 		"""
 		if self._props['type'] == 'bool':
-			raise ParameterTypeError(self.value, 'Bool option "%s" cannot be set as required' % self.name)
-		self._props['required'] = r
+			raise ParameterTypeError(
+				self.value, 'Bool option "%s" cannot be set as required' % self.name)
+		self._props['required'] = req
 		return self
 
-	def setType (self, t = 'str'):
+	def setType (self, typename = 'str'):
 		"""
 		Set the type of the parameter
 		@params:
-			`t`: The type of the value. Default: str
+			`typename`: The type of the value. Default: str
 			- Note: str rather then 'str'
 		"""
-		if not isinstance(t, string_types):
-			t = t.__name__
-		tcolon = t if ':' in t else t + ':'
-		t1, t2 = tcolon.split(':', 1)
-		if t1 in Parameters.ARG_TYPES:
-			t1 = Parameters.ARG_TYPES[t1]
-		if t2 in Parameters.ARG_TYPES:
-			t2 = Parameters.ARG_TYPES[t2]
+		if not isinstance(typename, string_types):
+			typename = typename.__name__
+		tcolon = typename if ':' in typename else typename + ':'
+		type1, type2 = tcolon.split(':', 1)
+		if type1 in Parameters.ARG_TYPES:
+			type1 = Parameters.ARG_TYPES[type1]
+		if type2 in Parameters.ARG_TYPES:
+			type2 = Parameters.ARG_TYPES[type2]
 		
-		t2use = t1 + ':' + t2 if t2 else t1
+		t2use = type1 + ':' + type2 if type2 else type1
 		if t2use not in Parameters.ALLOWED_TYPES and not t2use.startswith('list'):
-			raise ParameterTypeError(t, 'Unsupported type for option "%s"' % self.name)
+			raise ParameterTypeError(typename, 'Unsupported type for option "%s"' % self.name)
 		self._props['type'] = t2use
 		if not self.value is None:
 			self._forceType()
@@ -409,31 +419,31 @@ class Parameter (object):
 		if self.type is None: return
 		self.value = Parameters._coerceValue(self.value, self.type)
 
-	def setShow (self, s = True):
+	def setShow (self, show = True):
 		"""
 		Set whether this parameter should be shown in help information
 		@params:
-			`s`: True if it shows else False. Default: True
+			`show`: True if it shows else False. Default: True
 		"""
-		self._props['show'] = s
+		self._props['show'] = show
 		return self
 
-	def setValue (self, v):
+	def setValue (self, val):
 		"""
 		Set the value of the parameter
 		@params:
-			`v`: The value
+			`val`: The value
 		"""
-		self._props['value'] = v
+		self._props['value'] = val
 		return self
 
-	def setName (self, n):
+	def setName (self, name):
 		"""
 		Set the name of the parameter
 		@params:
-			`n`: The name
+			`name`: The name
 		"""
-		self._props['name'] = n
+		self._props['name'] = name
 		return self
 
 	def __hash__(self):
@@ -474,14 +484,20 @@ class Parameters (object):
 		l = 'list',  list  = 'list',  array  = 'list'
 	)
 
-	ARG_NAME_PATTERN     = r'^([a-zA-Z][\w,\._-]*)(?::(p|py|python|a|auto|i|int|f|float|b|bool|s|str|l|list|array|(?:array|l|list):(?:a|auto|i|int|f|float|b|bool|s|str|l|list|array|o|one|p|py|python)))?(?:=(.+))?$'
+	ARG_NAME_PATTERN     = r"^([a-zA-Z][\w,\._-]*)" + \
+		r'(?::(p|py|python|a|auto|i|int|f|float|b|bool|s|str|l|list|array|(?:array|l|list):' + \
+		r'(?:a|auto|i|int|f|float|b|bool|s|str|l|list|array|o|one|p|py|python)))?(?:=(.+))?$'
 	ARG_VALINT_PATTERN   = r'^[+-]?\d+$'
 	ARG_VALFLOAT_PATTERN = r'^[+-]?(?:\d*\.)?\d+(?:[Ee][+-]\d+)?$'
-	ARG_VALBOOL_PATTERN  = r'^(t|T|True|TRUE|true|1|Y|y|Yes|YES|yes|on|ON|On|f|F|False|FALSE|false|0|N|n|No|NO|off|Off|OFF)$'
+	ARG_VALBOOL_PATTERN  = r'^(t|T|True|TRUE|true|1|Y|y|Yes|YES|yes|on|ON|On|f|F|False' + \
+		r'|FALSE|false|0|N|n|No|NO|off|Off|OFF)$'
 	ARG_VALPY_PATTERN    = r'^(?:py|expr):(.+)$'
 
-	VAL_TRUES  = ['t', 'T', 'True' , 'TRUE' , 'true' , '1', 'Y', 'y', 'Yes', 'YES', 'yes', 'on' , 'ON' , 'On' ]
-	VAL_FALSES = ['f', 'F', 'False', 'FALSE', 'false', '0', 'N', 'n', 'No' , 'NO' , 'no' , 'off', 'OFF', 'Off']
+	VAL_TRUES  = [
+		't', 'T', 'True' , 'TRUE' , 'true' , '1', 'Y', 'y', 'Yes',
+		'YES', 'yes', 'on' , 'ON' , 'On' ]
+	VAL_FALSES = ['f', 'F', 'False', 'FALSE', 'false', '0', 'N',
+		'n', 'No' , 'NO' , 'no' , 'off', 'OFF', 'Off']
 
 	POSITIONAL = '_'
 
@@ -540,7 +556,8 @@ class Parameters (object):
 		@params:
 			`hopts`: The help options
 		"""
-		self._props['hopts'] = hopts if isinstance(hopts, list) else [ho.strip() for ho in hopts.split(',')]
+		self._props['hopts'] = hopts if isinstance(hopts, list) else \
+			[ho.strip() for ho in hopts.split(',')]
 		return self
 
 	def __repr__(self):
@@ -579,7 +596,8 @@ class Parameters (object):
 
 	def __setattr__(self, name, value):
 		"""
-		Change the value of an existing `Parameter` or create a `Parameter` using the `name` and `value`. If `name` is an attribute, return its value.
+		Change the value of an existing `Parameter` or create a `Parameter`
+		using the `name` and `value`. If `name` is an attribute, return its value.
 		@params:
 			`name` : The name of the Parameter
 			`value`: The value of the Parameter
@@ -641,57 +659,58 @@ class Parameters (object):
 		setattr(self, '_' + option, value)
 		return self
 
-	def _parseName(self, argname):
+	def _parseName(self, argumentname):
 		"""
 		Parse an argument name
 		@params:
-			`argname`: The argname
+			`argumentname`: The argumentname
 		@returns:
-			`an`: clean argument name
-			`at`: normalized argument type
-			`st`: normalized subtype
-			`av`: the argument value, if `argname` is like: `-a=1`
+			`argname`: clean argument name
+			`argtype`: normalized argument type
+			`subtype`: normalized subtype
+			`argval`: the argument value, if `argumentname` is like: `-a=1`
 		"""
-		an, at, st, av = None, 'auto', 'auto', None
-		if not argname.startswith(self._props['prefix']):
+		argname, argtype, subtype, argval = None, 'auto', 'auto', None
+		if not argumentname.startswith(self._props['prefix']):
 			# it's a value
-			return an, at, st, av
-		argname = argname[len(self._props['prefix']):]
-		m = re.match(Parameters.ARG_NAME_PATTERN, argname)
-		if not m: 
+			return argname, argtype, subtype, argval
+		argumentname = argumentname[len(self._props['prefix']):]
+		match = re.match(Parameters.ARG_NAME_PATTERN, argumentname)
+		if not match: 
 			# it's not desired argument name
-			return an, at, st, av
-		an = m.group(1)
-		at = m.group(2)
-		av = m.group(3)
-		if not at and an in self._params and self._params[an].type:
-			at = self._params[an].type
-		at = at or 'auto'
-		if ':' in at:
+			return argname, argtype, subtype, argval
+		argname = match.group(1)
+		argtype = match.group(2)
+		argval = match.group(3)
+		if not argtype and argname in self._params and self._params[argname].type:
+			argtype = self._params[argname].type
+		argtype = argtype or 'auto'
+		if ':' in argtype:
 			# I have a subtype, n
-			at, st = at.split(':', 1)
-			at = Parameters.ARG_TYPES[at]
-			st = Parameters.ARG_TYPES[st]
+			argtype, subtype = argtype.split(':', 1)
+			argtype = Parameters.ARG_TYPES[argtype]
+			subtype = Parameters.ARG_TYPES[subtype]
 		else:
-			at = Parameters.ARG_TYPES[at]
+			argtype = Parameters.ARG_TYPES[argtype]
 		
-		if an not in self._params:
+		if argname not in self._params:
 			# return everything if argument is not defined
-			return an, at, st, av
+			return argname, argtype, subtype, argval
 
 		# check if the parameter is defined and type is assigned
-		if self._params[an].type and self._params[an].type.split(':', 1)[0] != at:
+		if self._params[argname].type and self._params[argname].type.split(':', 1)[0] != argtype:
 			# warn if type is different as definition
 			sys.stderr.write(self._assembler.warning(
-				'Decleared type "{dtype}" ignored, use "{ptype}" instead for option {prefix}{option}.\n'.format(
-					dtype  = self._params[an].type,
-					ptype  = at,
+				('Decleared type "{dtype}" ignored, ' + 
+				'use "{ptype}" instead for option {prefix}{option}.\n').format(
+					dtype  = self._params[argname].type,
+					ptype  = argtype,
 					prefix = self._props['prefix'],
-					option = an
+					option = argname
 				)
 			))
 
-		return an, at, st, av
+		return argname, argtype, subtype, argval
 		
 	def _shouldPrintHelp(self, args):
 		if self._props['hbald'] and not args:
@@ -700,47 +719,48 @@ class Parameters (object):
 		return any([arg in self._props['hopts'] for arg in args])
 
 	@staticmethod
-	def _coerceValue(value, t = 'auto'):
+	def _coerceValue(value, typename = 'auto'):
 		"""
 		Coerce a value to another type.
 		@params:
 			`value`: The value
-			`t`: The type
+			`typename`: The type
 		"""
 		try:
-			if t == 'int' and not isinstance(value, int):
+			if typename == 'int' and not isinstance(value, int):
 				return int(value)
-			elif t == 'float' and not isinstance(value, float):
+			elif typename == 'float' and not isinstance(value, float):
 				return float(value)
-			elif t == 'bool' and not isinstance(value, (int, bool)):
+			elif typename == 'bool' and not isinstance(value, (int, bool)):
 				if value in Parameters.VAL_TRUES:
 					return True
 				elif value in Parameters.VAL_FALSES:
 					return False
 				else:
-					raise ParameterTypeError(t, 'Unable to coerce value %s to bool' % (repr(value)))
-			elif t == 'py':
+					raise ParameterTypeError(
+						typename, 'Unable to coerce value %s to bool' % (repr(value)))
+			elif typename == 'py':
 				return eval(value)
-			elif t == 'str':
+			elif typename == 'str':
 				return str(value)
-			elif t == 'auto':
+			elif typename == 'auto':
 				try:
 					if re.match(Parameters.ARG_VALINT_PATTERN, value):
-						t = 'int'
+						typename = 'int'
 					elif re.match(Parameters.ARG_VALFLOAT_PATTERN, value):
-						t = 'float'
+						typename = 'float'
 					elif re.match(Parameters.ARG_VALBOOL_PATTERN, value):
-						t = 'bool'
+						typename = 'bool'
 					else:
-						t = None
-						m = re.match(Parameters.ARG_VALPY_PATTERN, value)
-						if m: 
-							t = 'py'
-							value = m.group(1)
-					return Parameters._coerceValue(value, t)
+						typename = None
+						match = re.match(Parameters.ARG_VALPY_PATTERN, value)
+						if match: 
+							typename = 'py'
+							value = match.group(1)
+					return Parameters._coerceValue(value, typename)
 				except TypeError: # value is not a string, cannot do re.match
 					return value
-			elif not t is None and t.startswith('list'):
+			elif not typename is None and typename.startswith('list'):
 				if isinstance(value, string_types):
 					value = [value]
 				else:
@@ -748,14 +768,15 @@ class Parameters (object):
 						value = list(value)
 					except TypeError:
 						value = [value]
-				subtype = t.split(':')[1] if ':' in t else 'auto'
+				subtype = typename.split(':')[1] if ':' in typename else 'auto'
 				if subtype == 'one':
 					return [value]
 				return [Parameters._coerceValue(x, subtype) for x in value]
 			else:
 				return value
 		except (ValueError, TypeError):
-			raise ParameterTypeError(t, 'Unable to coerce value %s to type' % (repr(value)))
+			raise ParameterTypeError(
+				typename, 'Unable to coerce value %s to type' % (repr(value)))
 
 	def _putValue(self, argname, argtype, subtype, argval, arbi = False):
 		"""
@@ -792,7 +813,8 @@ class Parameters (object):
 					self._params[argname].value.append([])
 				self._params[argname].value[0].extend(argval)
 			elif subtype:
-				self._params[argname].value.extend([Parameters._coerceValue(av, subtype) for av in argval])
+				self._params[argname].value.extend(
+					[Parameters._coerceValue(aval, subtype) for aval in argval])
 		else:
 			self._params[argname].value = Parameters._coerceValue(argval, argtype)
 
@@ -801,14 +823,15 @@ class Parameters (object):
 		Parse the arguments.
 		@params:
 			`args`: The arguments (list). `sys.argv[1:]` will be used if it is `None`.
-			`arbi`: Whether do an arbitrary parse. If True, options don't need to be defined. Default: `False`
+			`arbi`: Whether do an arbitrary parse. 
+				If True, options don'typename need to be defined. Default: `False`
 		@returns:
 			A `Box`/`dict` object containing all option names and values.
 		"""
 		args = sys.argv[1:] if args is None else args
 
 		if self._shouldPrintHelp(args) and not arbi:
-			self.help(printNexit = True)
+			self.help(print_and_exit = True)
 		
 		# split args in groups
 		groups = [[]]
@@ -869,16 +892,17 @@ class Parameters (object):
 					continue
 				errors.extend([ret] if not isinstance(ret, list) else ret)
 		if errors:
-			self.help(error = errors, printNexit = True)
+			self.help(error = errors, print_and_exit = True)
 
 		return self.asDict()
 
-	def help (self, error = '', printNexit = False):
+	def help (self, error = '', print_and_exit = False):
 		"""
 		Calculate the help page
 		@params:
 			`error`: The error message to show before the help information. Default: `''`
-			`printNexit`: Print the help page and exit the program? Default: `False` (return the help information)
+			`print_and_exit`: Print the help page and exit the program? 
+				Default: `False` (return the help information)
 		@return:
 			The help information
 		"""
@@ -894,28 +918,29 @@ class Parameters (object):
 			if len(posopt.desc) == 1 and posopt.desc[0].startswith('Default: '):
 				posopt = None
 
-		requiredOptions   = []
-		optionalOptions   = []
+		required_options   = []
+		optional_options   = []
 
 		for val in revparams.keys():
 			# options not suppose to show
 			if not val.show or val.name == Parameters.POSITIONAL:
 				continue
 			option = (
-				', '.join([self._props['prefix'] + k for k in sorted(revparams[val], key = len)]),
+				', '.join([self._props['prefix'] + k 
+					for k in sorted(revparams[val], key = len)]),
 				(val.type or '').upper(), 
 				val.desc
 			)
 			if val.required:
-				requiredOptions.append(option)
+				required_options.append(option)
 			else:
-				optionalOptions.append(option)
+				optional_options.append(option)
 
 		if isinstance(posopt, Parameter):
 			if posopt.required:
-				requiredOptions.append(('POSITIONAL', '', posopt.desc))
+				required_options.append(('POSITIONAL', '', posopt.desc))
 			else:
-				optionalOptions.append(('POSITIONAL', '', posopt.desc))
+				optional_options.append(('POSITIONAL', '', posopt.desc))
 
 		helpitems = OrderedDict()
 		if self._props['desc']:
@@ -925,23 +950,25 @@ class Parameters (object):
 			helpitems['usage'] = self._props['usage']
 		else: # default usage
 			defusage = ['{prog}']
-			for optname, opttype, _ in requiredOptions:
+			for optname, opttype, _ in required_options:
 				if optname == 'POSITIONAL':
 					continue
 				defusage.append('<{} {}>'.format(
 					optname, 
 					opttype or optname[len(self._props['prefix']):].upper())
 				)
-			if optionalOptions:
+			if optional_options:
 				defusage.append('[OPTIONS]')
 			if isinstance(posopt, Parameter):
 				defusage.append('POSITIONAL' if posopt.required else '[POSITIONAL]')
 
 			helpitems['usage'] = [' '.join(defusage)]
 
-		optionalOptions.append((', '.join(filter(None, self._props['hopts'])), '', ['Print this help information']))
-		helpitems['required options'] = requiredOptions
-		helpitems['optional options'] = optionalOptions
+		optional_options.append((
+			', '.join(filter(None, self._props['hopts'])),
+			'', ['Print this help information']))
+		helpitems['required options'] = required_options
+		helpitems['optional options'] = optional_options
 
 		if callable(self._helpx):
 			helpitems = self._helpx(helpitems)
@@ -953,25 +980,25 @@ class Parameters (object):
 			ret = [self._assembler.error(err.strip()) for err in error]
 		ret += self._assembler.assemble(helpitems, self._prog)
 
-		if printNexit:
+		if print_and_exit:
 			sys.stderr.write('\n'.join(ret) + '\n')
 			sys.exit(1)
 		else:
 			return '\n'.join(ret) + '\n'
 
-	def loadDict (self, dictVar, show = False):
+	def loadDict (self, dict_var, show = False):
 		"""
 		Load parameters from a dict
 		@params:
-			`dictVar`: The dict variable.
+			`dict_var`: The dict variable.
 			- Properties are set by "<param>.required", "<param>.show", ...
 			`show`:    Whether these parameters should be shown in help information
-				- Default: False (don't show parameter from config object in help page)
+				- Default: False (don'typename show parameter from config object in help page)
 				- It'll be overwritten by the `show` property inside dict variable.
 				- If it is None, will inherit the param's show value
 		"""
 		# load the param first
-		for key, val in dictVar.items():
+		for key, val in dict_var.items():
 			if '.' in key: continue
 			if not key in self._params:
 				self._params[key] = Parameter(key, val)
@@ -979,11 +1006,12 @@ class Parameters (object):
 			if show is not None:
 				self._params[key].show = show
 		# then load property
-		for key, val in dictVar.items():
+		for key, val in dict_var.items():
 			if '.' not in key: continue
 			k, prop = key.split('.', 1)
 			if not k in self._params:
-				raise ParametersLoadError(key, 'Cannot set attribute of an undefined option %s' % repr(k))
+				raise ParametersLoadError(
+					key, 'Cannot set attribute of an undefined option %s' % repr(k))
 			if not prop in ['desc', 'required', 'show', 'type']:
 				raise ParametersLoadError(prop, 'Unknown attribute name for option %s' % repr(k))
 
@@ -999,31 +1027,35 @@ class Parameters (object):
 		@params:
 			`cfgfile`: The config file
 			`show`:    Whether these parameters should be shown in help information
-				- Default: False (don't show parameter from config file in help page)
+				- Default: False (don'typename show parameter from config file in help page)
 				- It'll be overwritten by the `show` property inside the config file.
 		"""
 		config = {}
 		if cfgfile.endswith('.json'):
-			with open(cfgfile) as f:
-				config = jsonLoads(f.read())
+			with open(cfgfile) as fcfg:
+				config = jsonLoads(fcfg.read())
 		elif cfgfile.endswith('yml') or cfgfile.endswith('yaml'):
 			import yaml
-			with open(cfgfile) as f:
-				config = yaml.safe_load(f)
+			with open(cfgfile) as fcfg:
+				config = yaml.safe_load(fcfg)
 		else:
-			cp = ConfigParser()
-			cp.optionxform = str
-			cp.read(cfgfile)
-			sec = cp.sections()
+			cparser = ConfigParser()
+			cparser.optionxform = str
+			cparser.read(cfgfile)
+			sections = cparser.sections()
 			config = {}
-			for s in sec:
-				config.update(dict(cp.items(s)))
+			for sec in sections:
+				config.update(dict(cparser.items(sec)))
 
 		for key, val in config.items():
 			if key.endswith('.type'):
 				config[key] = val
-				if val.startswith('list') and key[:-5] in config and not isinstance(config[key[:-5]], list):
+				if val.startswith('list') and \
+					key[:-5] in config and \
+					not isinstance(config[key[:-5]], list):
+
 					config[key[:-5]] = config[key[:-5]].strip().splitlines()
+
 			elif key.endswith('.show') or key.endswith('.required'):
 				if isinstance(val, bool): continue
 				config[key] = Parameters._coerceValue(val, 'bool')
@@ -1139,7 +1171,8 @@ class Commands(object):
 		Parse the arguments.
 		@params:
 			`args`: The arguments (list). `sys.argv[1:]` will be used if it is `None`.
-			`arbi`: Whether do an arbitrary parse. If True, options don't need to be defined. Default: `False`
+			`arbi`: Whether do an arbitrary parse. 
+				If True, options do not need to be defined. Default: `False`
 		@returns:
 			A `tuple` with first element the subcommand and second the parameters being parsed.
 		"""
@@ -1155,28 +1188,29 @@ class Commands(object):
 				return command, Box({Parameters.POSITIONAL: args})
 		else:
 			if not args or (len(args) == 1 and args[0] == self._hcmd):
-				self.help(printNexit = True)
+				self.help(print_and_exit = True)
 
 			command = args.pop(0)
 			if (command == self._hcmd and args[0] not in self._cmds) or \
 				(command != self._hcmd and command not in self._cmds):
 				self.help(
-					error = 'Unknown command: {}'.format(args[0] if command == self._hcmd else command), 
-					printNexit = True
+					error = 'Unknown command: {}'.format(
+						args[0] if command == self._hcmd else command), 
+					print_and_exit = True
 				)
 			if command == self._hcmd:
-				self._cmds[args[0]].help(printNexit = True)
+				self._cmds[args[0]].help(print_and_exit = True)
 			
 			return command, self._cmds[command].parse(args)
 
-	def help(self, error = '', printNexit = False):
+	def help(self, error = '', print_and_exit = False):
 		"""
 		Construct the help page
 		@params:
 			`error`: the error message
-			`printNexit`: print the help page and exit instead of return the help information
+			`print_and_exit`: print the help page and exit instead of return the help information
 		@returns:
-			The help information if `printNexit` is `False`
+			The help information if `print_and_exit` is `False`
 		"""
 		helpitems = OrderedDict()
 		if self._desc:
@@ -1192,7 +1226,8 @@ class Commands(object):
 			
 		for key, val in revcmds.items():
 			helpitems['commands'].append((' | '.join(val), '', key._props['desc']))
-		helpitems['commands'].append((self._hcmd, 'command', ['Print help information for the command']))
+		helpitems['commands'].append(
+			(self._hcmd, 'command', ['Print help information for the command']))
 
 		if callable(self._helpx):
 			helpitems = self._helpx(helpitems)
@@ -1203,11 +1238,12 @@ class Commands(object):
 		ret += self._assembler.assemble(helpitems)
 
 		out = '\n'.join(ret) + '\n'
-		if printNexit:
+		if print_and_exit:
 			sys.stderr.write(out)
 			sys.exit(1)
 		else:
 			return out
 
+# pylint: disable=invalid-name
 params   = Parameters()
 commands = Commands()

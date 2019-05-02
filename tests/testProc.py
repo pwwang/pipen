@@ -1017,7 +1017,8 @@ class TestProc(testly.TestCase):
 		yield pRun, {'runner': 'dry'}, False, [
 			pRun.workdir,
 			'P_PROPS',
-			'RUNNING',
+			#'RUNNING',
+			'SUBMIT',
 			'P_DONE',
 			'Time:'
 		]
