@@ -3,14 +3,14 @@ A set of utitities for PyPPL
 """
 import inspect
 import re
-import cmdy
 import json
-import safefs
-import psutil
 from os import path, walk
-from box import Box
 from hashlib import md5
 from threading import Thread, Lock
+import cmdy
+import safefs
+import psutil
+from box import Box
 from simpleconf import Config
 cmdy   = cmdy(_raise = False) # pylint: disable=invalid-name
 config = Config() # pylint: disable=invalid-name
@@ -301,8 +301,10 @@ def briefList(blist):
 	@returns:
 		The string to show for the briefed list.
 	"""
-	if not blist: return "[]"
-	if len(blist) == 1: return str(blist[0])
+	if not blist:
+		return "[]"
+	if len(blist) == 1:
+		return str(blist[0])
 	blist       = sorted(blist)
 	groups  = [[]]
 	ret     = []
@@ -339,7 +341,7 @@ def briefPath(bpath, cutoff = 0, keep = 1):
 	"""
 	if not cutoff or not bpath:
 		return bpath
-	from os import path, sep
+	from os import sep
 	bpath = path.normpath(bpath)
 	lenp = len(bpath)
 	if lenp <= cutoff:
@@ -378,7 +380,7 @@ def chmodX(filepath, filetype = None):
 		and the script file as the last element
 	"""
 	from stat import S_IEXEC
-	from os import path, chmod, stat
+	from os import chmod, stat
 	if not path.isfile(filepath):
 		raise OSError('Unable to make {} as executable'.format(filepath))
 
@@ -564,6 +566,3 @@ class PQueue(PriorityQueue):
 		item = PriorityQueue.get(self)
 		ret  = divmod(item, self.batchLen)
 		return (ret[1], ret[0])
-
-
-

@@ -35,7 +35,8 @@ class ProcNode(object):
 		return proc.id == self.proc.id and proc.tag  == self.proc.tag
 
 	def __repr__(self):
-		return '<ProcNode(<Proc(id=%s,tag=%s) @ %s>) @ %s>' % (self.proc.id, self.proc.tag, hex(id(self.proc)), hex(id(self)))
+		return '<ProcNode(<Proc(id=%s,tag=%s) @ %s>) @ %s>' % (
+			self.proc.id, self.proc.tag, hex(id(self.proc)), hex(id(self)))
 
 
 class ProcTree(object):
@@ -138,7 +139,8 @@ class ProcTree(object):
 					node.prev.append(dnode)
 		for node in ProcTree.NODES.values():
 			if node.proc.hide and len(node.prev) > 1 and len(node.next) > 1:
-				raise ProcHideError(node.proc, 'cannot be hidden in flowchart as it has both more than 1 parent and child.')
+				raise ProcHideError(node.proc,
+					'cannot be hidden in flowchart as it has both more than 1 parent and child.')
 
 	@classmethod
 	def setStarts(cls, starts):
@@ -268,9 +270,13 @@ class ProcTree(object):
 		# didn't find any ends
 		if not self.ends:
 			if failed_paths:
-				raise ProcTreeParseError(' <- '.join([fn.name() for fn in failed_paths[0]]), 'Failed to determine end processes, one of the paths cannot go through')
+				raise ProcTreeParseError(
+					' <- '.join([fn.name() for fn in failed_paths[0]]), 
+					'Failed to determine end processes, one of the paths cannot go through')
 			else:
-				raise ProcTreeParseError(', '.join(start.name() for start in self.getStarts()), 'Failed to determine end processes by start processes')
+				raise ProcTreeParseError(
+					', '.join(start.name() for start in self.getStarts()),
+					'Failed to determine end processes by start processes')
 		return self.ends
 
 	def getAllPaths(self):
@@ -305,9 +311,11 @@ class ProcTree(object):
 		#ret = []
 		for node in ProcTree.NODES.values():
 			# already ran
-			if node.ran: continue
+			if node.ran:
+				continue
 			# not a start and not depends on any procs
-			if not node.start and not node.prev: continue
+			if not node.start and not node.prev:
+				continue
 			# start
 			if node.start or all([pnode.ran for pnode in node.prev]):
 				node.ran = True
@@ -325,14 +333,17 @@ class ProcTree(object):
 		starts = set(self.getStarts())
 		for node in ProcTree.NODES.values():
 			# just for possible end process
-			if node.next: continue
+			if node.next:
+				continue
 			# don't report obsolete process
-			if not self.getPathsToStarts(node, check_hide = False): continue
+			if not self.getPathsToStarts(node, check_hide = False):
+				continue
 			# check paths can't reach
 			paths = self.getPaths(node, False)
 			for apath in paths:
 				# the path can be reached
-				if set(apath) & set(starts): continue
+				if set(apath) & set(starts):
+					continue
 				ret[node.proc.name()] = [pnode.name() for pnode in apath]
 				break
 		return ret

@@ -36,19 +36,23 @@ class Runner (object):
 		# redirect stdout and stderr
 		if save_oe:
 			if isinstance(real_script, list):
-				real_script[-1] += ' 1> %s 2> %s' % (cmdy._shquote(self.job.outfile), cmdy._shquote(self.job.errfile))
+				real_script[-1] += ' 1> %s 2> %s' % (
+					cmdy._shquote(self.job.outfile), cmdy._shquote(self.job.errfile))
 			else:
-				real_script += ' 1> %s 2> %s' % (cmdy._shquote(self.job.outfile), cmdy._shquote(self.job.errfile))
+				real_script += ' 1> %s 2> %s' % (
+					cmdy._shquote(self.job.outfile), cmdy._shquote(self.job.errfile))
 
 		src       = ['#!/usr/bin/env bash']
 		srcappend = src.append
 		srcextend = src.extend
-		addsrc    = lambda code: (srcextend if isinstance(code, list) else srcappend)(code) if code else None
+		addsrc    = lambda code: (srcextend if isinstance(code, list) else \
+			srcappend)(code) if code else None
 
 		addsrc(head)
 		addsrc('#')
 		addsrc('# Collect return code on exit')
-		addsrc('trap "status=\\$?; echo \\$status > %s; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % cmdy._shquote(self.job.rcfile))
+		addsrc(('trap "status=\\$?; echo \\$status > %s;' % cmdy._shquote(self.job.rcfile)) + \
+			' exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT')
 		addsrc('#')
 		addsrc('# Run pre-script')
 		addsrc(pre_script)
@@ -202,7 +206,8 @@ class RunnerSsh(Runner):
 				else:
 					RunnerSsh.LIVE_SERVERS = [
 						i for i, server in enumerate(servers)
-						if RunnerSsh.isServerAlive(server, keys[i] if keys else None, check_alive, ssh = ssh)
+						if RunnerSsh.isServerAlive(
+							server, keys[i] if keys else None, check_alive, ssh = ssh)
 					]
 
 		if not RunnerSsh.LIVE_SERVERS:
@@ -238,7 +243,9 @@ class RunnerSsh(Runner):
 			dbox.rc     = self.job.RC_SUBMITFAILED
 			dbox.cmd    = cmd.cmd
 			dbox.pid    = -1
-			dbox.stderr = cmd.stderr + '\nProbably the server ({}) is not using the same file system as the local machine.\n'.format(self.ssh.keywords['t'])
+			dbox.stderr = cmd.stderr
+			dbox.stderr += '\nProbably the server ({})'.format(self.ssh.keywords['t'])
+			dbox.stderr += ' is not using the same file system as the local machine.\n'
 			return dbox
 
 		cmd = self.ssh(_bg = True, _ = self.runnercmd)
@@ -266,8 +273,9 @@ class RunnerSsh(Runner):
 			return False
 
 		cmd = cmdy.python(
-			_exe = sys.executable,
-			c    = 'from psutil import pid_exists; assert {pid} > 0 and pid_exists({pid})'.format(pid = self.job.pid),
+			_exe  = sys.executable,
+			c     = 'from psutil import pid_exists; ' + \
+				'assert {pid} > 0 and pid_exists({pid})'.format(pid = self.job.pid),
 			_hold = True).cmd
 		return self.ssh(_ = cmd).rc == 0
 

@@ -2,12 +2,12 @@
 proc module for PyPPL
 """
 import sys
-import yaml
 import copy as pycopy
 from time import time
 from collections import OrderedDict
 from os import path, makedirs, remove
 from box import Box
+import yaml
 import filelock
 from simpleconf import NoSuchProfile
 from .logger import logger
@@ -79,9 +79,10 @@ class Proc (object):
 			`id`      : The identify of the process
 			`**kwargs`: Other properties of the process, which can be set by `proc.xxx` later.
 		@config:
-			id, input, output, ppldir, forks, cache, acache, rc, echo, runner, script, depends, tag, desc, dirsig
-			exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd, workdir, args, aggr
-			callfront, callback, expect, expart, template, tplenvs, resume, nthread
+			id, input, output, ppldir, forks, cache, acache, rc, echo, runner, script, depends,
+			tag, desc, dirsig, exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd,
+			workdir, args, aggr, callfront, callback, expect, expart, template, tplenvs,
+			resume, nthread
 		@props
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect
 			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix
@@ -96,7 +97,9 @@ class Proc (object):
 		self.config.id = id if id else utils.varname()
 
 		if ' ' in tag:
-			raise ProcTagError("No space is allowed in tag ('{}'). Do you mean 'desc' instead of 'tag'?".format(tag))
+			raise ProcTagError(
+				"No space is allowed in tag " +
+				"('{}'). Do you mean 'desc' instead of 'tag'?".format(tag))
 
 		# The aggregation name of the process, not configurable
 		self.config.aggr       = None
@@ -171,7 +174,8 @@ class Proc (object):
 
 		# update the conf with kwargs
 		self.config.update(dict(tag = tag, desc = desc, **kwargs))
-		# remember which property is set, then it will not be overwritten by configurations, do not put any values here because we want
+		# remember which property is set, then it will not be overwritten by configurations,
+		# do not put any values here because we want
 		# the kwargs to be overwritten by the configurations but keep the values set by:
 		# p.xxx = xxx
 		self.props.sets        = set()
@@ -245,7 +249,8 @@ class Proc (object):
 				elif isinstance(depend, list):
 					self.props.depends.extend(depend)
 				else:
-					raise ProcAttributeError(type(value).__name__, "Process dependents should be 'Proc/Aggr', not")
+					raise ProcAttributeError(type(value).__name__,
+						"Process dependents should be 'Proc/Aggr', not")
 
 		elif name == 'script' and value.startswith('file:'):
 			scriptpath = value[5:]
@@ -271,7 +276,9 @@ class Proc (object):
 					  ', '.join(previn.keys()) if isinstance(previn, dict) else previn
 			self.config[name] = {prevkey: value}
 			if isinstance(previn, dict) and len(previn) > 1:
-				logger.warning("Previous input is a dict with multiple keys. Now the key sequence is: %s", prevkey, proc = self.id)
+				logger.warning(
+					"Previous input is a dict with multiple keys. Now the key sequence is: %s" %
+					prevkey, proc = self.id)
 		elif name == 'runner':
 			self.config[name] = value
 			self.props[name]  = value
@@ -379,7 +386,8 @@ class Proc (object):
 		else:
 			sigs.input = str(self.config.input)
 
-		# Add depends to avoid the same suffix for processes with the same depends but different input files
+		# Add depends to avoid the same suffix for processes with the same depends
+		# but different input files
 		# They could have the same suffix because they are using input callbacks
 		# callbacks could be the same though even if the input files are different
 		if self.depends:
@@ -387,7 +395,8 @@ class Proc (object):
 
 		signature = sigs.to_json()
 		logger.debug('Suffix decided by: %s', signature, proc = self.id)
-		# suffix is only depending on where it comes from (sys.argv[0]) and it's name (id and tag) to avoid too many different workdirs being generated
+		# suffix is only depending on where it comes from (sys.argv[0]) and
+		# it's name (id and tag) to avoid too many different workdirs being generated
 		self.props.suffix = utils.uid(signature)
 		#self.props.suffix = utils.uid(path.realpath(sys.argv[0]) + ':' + self.id)
 		return self.suffix
@@ -550,7 +559,8 @@ class Proc (object):
 		if 'workdir' in self.sets:
 			self.props.workdir = self.config.workdir
 		elif not self.props.workdir:
-			self.props.workdir = path.join(self.ppldir, "PyPPL.%s.%s.%s" % (self.id, self.tag, self._suffix()))
+			self.props.workdir = path.join(self.ppldir, "PyPPL.%s.%s.%s" %
+				(self.id, self.tag, self._suffix()))
 		logger.workdir(utils.briefPath(self.workdir, **Proc.SHORTPATH), proc = self.id)
 
 		if not path.exists (self.workdir):
@@ -564,8 +574,10 @@ class Proc (object):
 			self.lock.acquire(timeout = 3)
 		except filelock.Timeout: # pragma: no cover
 			proclock = path.join(self.workdir, 'proc.lock')
-			logger.warning('Another instance of this process is running, waiting ...', proc = self.id)
-			logger.warning('If not, remove the process lock file (or hit Ctrl-c) and try again:', proc = self.id)
+			logger.warning('Another instance of this process is running, waiting ...',
+				proc = self.id)
+			logger.warning('If not, remove the process lock file (or hit Ctrl-c) and try again:',
+				proc = self.id)
 			logger.warning('- %s', proclock, proc = self.id)
 			try:
 				self.lock.acquire()
@@ -606,7 +618,8 @@ class Proc (object):
 				# must be a string, either stderr or stdout
 				self.echo['type'] = {self.echo['type']: None}
 			if 'all' in self.echo['type']:
-				self.echo['type'] = {'stderr': self.echo['type']['all'], 'stdout': self.echo['type']['all']}
+				self.echo['type'] = {
+					'stderr': self.echo['type']['all'], 'stdout': self.echo['type']['all']}
 
 			# do not cache for dry runner
 			# runner is decided when run (in config)
@@ -655,7 +668,8 @@ class Proc (object):
 		2. str : "input, infile:file" <=> input:var, infile:path
 		3. dict: {"input": channel1, "infile:file": channel2}
 		   or    {"input:var, input:file" : channel3}
-		for 1,2 channels will be the combined channel from dependents, if there is not dependents, it will be sys.argv[1:]
+		for 1,2 channels will be the combined channel from dependents,
+			if there is not dependents, it will be sys.argv[1:]
 		"""
 		self.props.input = OrderedDict()
 
@@ -663,7 +677,8 @@ class Proc (object):
 			# read input from settings file
 			settingsfile = path.join(self.workdir, 'proc.settings.yaml')
 			if not path.isfile(settingsfile):
-				raise ProcInputError(settingsfile, 'Cannot parse input for skip+/resume process, no such file')
+				raise ProcInputError(settingsfile,
+					'Cannot parse input for skip+/resume process, no such file')
 
 			with open(settingsfile, 'r') as fset:
 				cached_props = yaml.load(fset, Loader = yaml.Loader)
@@ -679,7 +694,8 @@ class Proc (object):
 			input_keys_and_types = []
 			# string/list/tupl
 			if not isinstance(self.config.input, dict):
-				input_keys_and_types = utils.alwaysList(self.config.input) if self.config.input else []
+				input_keys_and_types = utils.alwaysList(self.config.input) \
+					if self.config.input else []
 			else: # either raw dict or OrderedDict
 				input_keys_and_types = sum((
 					utils.alwaysList(key)
@@ -714,7 +730,8 @@ class Proc (object):
 				# a callback, on all channels
 				if callable(invalue):
 					input_channel = input_channel.cbind(
-						invalue(*[d.channel for d in self.depends] if self.depends else Channel.fromArgv())
+						invalue(*[d.channel for d in self.depends] \
+							if self.depends else Channel.fromArgv())
 					)
 				elif isinstance(invalue, Channel):
 					input_channel = input_channel.cbind(invalue)
@@ -730,14 +747,17 @@ class Proc (object):
 			data_width = input_channel.width()
 			key_width  = len(input_keys)
 			if key_width < data_width:
-				logger.warning('Not all data are used as input, %s column(s) wasted.', (data_width - key_width), proc = self.id)
+				logger.warning('Not all data are used as input, %s column(s) wasted.',
+					(data_width - key_width), proc = self.id)
 			# compose self.props.input
 			for i, inkey in enumerate(input_keys):
 				self.props.input[inkey] = {'type': input_types[i]}
 				if i < data_width:
 					self.props.input[inkey]['data'] = input_channel.flatten(i)
 					continue
-				logger.warning('No data found for input key "%s", use empty strings/lists instead.', inkey, proc = self.id)
+				logger.warning(
+					'No data found for input key "%s", use empty strings/lists instead.' %
+						inkey, proc = self.id)
 				# initiate some data
 				if input_types[i] in Proc.IN_FILESTYPE:
 					self.props.input[inkey]['data'] = [[]] * self.size
@@ -752,7 +772,8 @@ class Proc (object):
 		show    = ['size', 'args']
 		if self.runner != 'local':
 			show.append('runner')
-		hide    = ['desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'aggr', 'input', 'output', 'depends', 'script']
+		hide    = ['desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'aggr',
+			'input', 'output', 'depends', 'script']
 		nokeys  = ['tplenvs', 'input', 'output', 'depends', 'lock', 'jobs']
 		allkeys = [key for key in set(self.props.keys()) | set(self.config.keys())]
 		pvkeys  = [
@@ -812,7 +833,8 @@ class Proc (object):
 				ops = utils.split(out, ':')
 				lenops = len(ops)
 				if lenops < 2:
-					raise ProcOutputError(out, 'One of <key>:<type>:<value> missed for process output in')
+					raise ProcOutputError(out,
+						'One of <key>:<type>:<value> missed for process output in')
 				elif lenops > 3:
 					raise ProcOutputError(out, 'Too many parts for process output in')
 				outdict[':'.join(ops[:-1])] = ops[-1]
@@ -820,7 +842,8 @@ class Proc (object):
 			outdict = self.config.output
 
 		if not isinstance(outdict, OrderedDict):
-			raise ProcOutputError(type(outdict).__name__, 'Process output should be str/list/OrderedDict, not')
+			raise ProcOutputError(type(outdict).__name__,
+				'Process output should be str/list/OrderedDict, not')
 
 		for key, val in outdict.items():
 			kparts = utils.split(key, ':')
@@ -832,7 +855,8 @@ class Proc (object):
 			else:
 				raise ProcOutputError(key, 'Too many parts for process output key in')
 
-			if thetype not in Proc.OUT_DIRTYPE + Proc.OUT_FILETYPE + Proc.OUT_VARTYPE + Proc.OUT_STDOUTTYPE + Proc.OUT_STDERRTYPE:
+			if thetype not in Proc.OUT_DIRTYPE + Proc.OUT_FILETYPE + Proc.OUT_VARTYPE + \
+				Proc.OUT_STDOUTTYPE + Proc.OUT_STDERRTYPE:
 				raise ProcOutputError(thetype, 'Unknown output type')
 			self.props.output[thekey] = (thetype, self.template(val, **self.tplenvs))
 
@@ -888,7 +912,9 @@ class Proc (object):
 
 		from . import PyPPL
 		if self.runner not in PyPPL.RUNNERS:
-			raise ProcAttributeError('No such runner: {}. If it is a profile, did you forget to specify a basic runner?'.format(self.runner))
+			raise ProcAttributeError(
+				'No such runner: {}. '.format(self.runner) +
+				'If it is a profile, did you forget to specify a basic runner?')
 
 		jobcfg = {
 			'workdir'   : self.workdir,
