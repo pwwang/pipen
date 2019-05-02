@@ -774,8 +774,7 @@ class Job(object):
 			if self.config['exhow'] in Proc.EX_GZIP:
 				exfile += '.tgz' if path.isdir(file2ex) else '.gz'
 
-			with safefs.exists(file2ex, _context = True), \
-				safefs.exists(exfile, _context = True):
+			with safefs.lock(file2ex, exfile):
 
 				if self.config['exhow'] in Proc.EX_GZIP:
 					safefs.gzip(file2ex, exfile, overwrite = self.config['exow'])

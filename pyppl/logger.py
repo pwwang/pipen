@@ -230,29 +230,7 @@ class StreamHandler(logging.StreamHandler):
 	"""
 	Logging handler for stream (sys.stderr)
 	"""
-	CACHE = threading.local()
-
-	@staticmethod
-	def putprev(record):
-		"""
-		Put a pbar record in the cache
-		@params:
-			`record`: The record to put
-		"""
-		if not hasattr(StreamHandler.CACHE, 'prevlog'):
-			setattr(StreamHandler.CACHE, 'prevlog', None)
-		StreamHandler.CACHE.prevlog = record
-
-	@staticmethod
-	def getprev():
-		"""
-		Get a cached pbar record
-		@returns:
-			The pbar record
-		"""
-		if not hasattr(StreamHandler.CACHE, 'prevlog'):
-			setattr(StreamHandler.CACHE, 'prevlog', None)
-		return StreamHandler.CACHE.prevlog
+	DATA = {'prevbar': None, 'done': {}}
 
 	def __init__(self, stream = None):
 		super(StreamHandler, self).__init__(stream)
@@ -300,10 +278,20 @@ class StreamHandler(logging.StreamHandler):
 
 	def emit(self, record):
 		if record.ispbar:
-			StreamHandler.putprev(record)
-			self._emit(record, '\n' if record.done else '\r')
+			if record.done:
+				proc = record.proc if hasattr(record, 'proc') else ''
+				with self.lock:
+					# make sure done pbar is only shown once.
+					if not StreamHandler.DATA['done'].get(proc, False):
+						self._emit(record, '\n')
+						# clear previous pbars if any
+						StreamHandler.DATA['prevbar'] = None
+						StreamHandler.DATA['done'][proc] = True
+			else:
+				self._emit(record, '\r')
+				StreamHandler.DATA['prevbar'] = record
 		else:
-			pbarlog = StreamHandler.getprev()
+			pbarlog = StreamHandler.DATA['prevbar']
 			if pbarlog:
 				self.stream.write(' ' * len(pbarlog.formatted) + '\r')
 
@@ -476,7 +464,7 @@ class Logger(object):
 		return self
 
 	def _emit(self, *args, **kwargs):
-		extra = {'jobidx': None, 'proc': ''}
+		extra = {'jobidx': None, 'proc': '', 'done': False}
 		extra.update(self.baked)
 		extra.update({'mylevel': kwargs.pop('_level')})
 		extra.update(kwargs.pop('_extra'))

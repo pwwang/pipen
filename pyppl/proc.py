@@ -70,7 +70,7 @@ class Proc (object):
 	# shorten paths in logs
 	SHORTPATH = {'cutoff': 0, 'keep': 1}
 
-	def __init__ (self, id = None, tag = 'notag', desc = 'No description.', **kwargs):
+	def __init__(self, id = None, tag = 'notag', desc = 'No description.', **kwargs):
 		"""
 		Constructor
 		@params:
@@ -183,7 +183,7 @@ class Proc (object):
 		from . import PyPPL
 		PyPPL._registerProc(self)
 
-	def __getattr__ (self, name):
+	def __getattr__(self, name):
 		"""
 		Get the value of a property in `self.props`
 		It recognizes alias as well.
@@ -206,7 +206,7 @@ class Proc (object):
 
 		return self.props.get(name, self.config.get(name))
 
-	def __setattr__ (self, name, value):
+	def __setattr__(self, name, value):
 		"""
 		Set the value of a property in `self.config`
 		@params:
@@ -286,7 +286,7 @@ class Proc (object):
 			self.config[name] = value
 
 	def __repr__(self):
-		return '<Proc(%s) @ %s>' % (self.name(), hex(id(self)))
+		return '<Proc(%s) @ %s>' %(self.name(), hex(id(self)))
 
 	# make Proc hashable
 	def __hash__(self):
@@ -299,7 +299,7 @@ class Proc (object):
 		return not self.__eq__(other)
 
 	# pylint: disable=invalid-name
-	def copy (self, id = None, tag = None, desc = None):
+	def copy(self, id = None, tag = None, desc = None):
 		"""
 		Copy a process
 		@params:
@@ -360,7 +360,7 @@ class Proc (object):
 		newproc.props.update(props)
 		return newproc
 
-	def _suffix (self):
+	def _suffix(self):
 		"""
 		Calcuate a uid for the process according to the configuration
 		The philosophy:
@@ -402,22 +402,22 @@ class Proc (object):
 		return self.suffix
 
 	# self.resume != 'skip'
-	def _tidyBeforeRun (self):
+	def _tidyBeforeRun(self):
 		"""
 		Do some preparation before running jobs
 		"""
 		self._buildProps()
 		try:
-			if callable (self.callfront):
+			if callable(self.callfront):
 				logger.debug("Calling callfront ...", proc = self.id)
-				self.callfront (self)
+				self.callfront(self)
 			self._buildInput()
 			self._buildProcVars()
 			self._buildOutput()
 			self._buildScript()
 			if self.resume not in ['skip+', 'resume']:
 				self._saveSettings()
-			self._buildJobs ()
+			self._buildJobs()
 			self.props.timer = time()
 		except Exception: # pragma: no cover
 			if self.lock.is_locked:
@@ -425,7 +425,7 @@ class Proc (object):
 			raise
 
 	# self.resume != 'skip'
-	def _tidyAfterRun (self):
+	def _tidyAfterRun(self):
 		"""
 		Do some cleaning after running jobs
 		self.resume can only be:
@@ -435,9 +435,9 @@ class Proc (object):
 		- resume+: get data from workdir/proc.settings, and resume
 		"""
 		if self.resume == 'skip+':
-			if callable (self.callback):
+			if callable(self.callback):
 				logger.debug('Calling callback ...', proc = self.id)
-				self.callback (self)
+				self.callback(self)
 		else: # '', resume, resume+
 			# summarize jobs
 			bfailedjobs = []
@@ -460,8 +460,9 @@ class Proc (object):
 				#elif job.status == Job.STATUS_KILLING or job.status == Job.STATUS_KILLED:
 				#	killedjobs.append(job.index)
 
-			(logger.P_DONE if len(cachedjobs) < self.size else logger.CACHED)(
-				'Time: %s. Jobs (Cached: %s, Succ: %s, B.Fail: %s, S.Fail: %s, R.Fail: %s)',
+			(logger.P_DONE, logger.CACHED)[int(
+				len(cachedjobs) == self.size and self.size > 0
+			)]('Time: %s. Jobs (Cached: %s, Succ: %s, B.Fail: %s, S.Fail: %s, R.Fail: %s)',
 				utils.formatSecs(time() - self.timer),
 				len(cachedjobs),
 				len(successjobs),
@@ -483,7 +484,7 @@ class Proc (object):
 			if len(donejobs) == self.size or self.errhow == 'ignore':
 				if callable(self.callback):
 					logger.debug('Calling callback ...', proc = self.id)
-					self.callback (self)
+					self.callback(self)
 				if self.errhow == 'ignore':
 					logger.warning('Jobs failed but ignored.', proc = self.id)
 					self.jobs[showjob].showError(len(failjobs))
@@ -491,17 +492,17 @@ class Proc (object):
 				self.jobs[showjob].showError(len(failjobs))
 				sys.exit(1)
 
-	def name (self, aggr = True):
+	def name(self, aggr = True):
 		"""
 		Get my name include `aggr`, `id`, `tag`
 		@returns:
 			the name
 		"""
-		ret = '%s.%s' % (self.id, self.tag)
+		ret = '%s.%s' %(self.id, self.tag)
 		ret = ''.join(ret.split('.notag', 1))
 		return ret if aggr else ret.split('@', 1)[0]
 
-	def run (self, profile = None, config = None):
+	def run(self, profile = None, config = None):
 		"""
 		Run the jobs with a configuration
 		@params:
@@ -517,22 +518,22 @@ class Proc (object):
 			self._tidyBeforeRun()
 			logger.skipped("Data loaded, pipeline will resume from future processes.")
 			try:
-				self._tidyAfterRun ()
+				self._tidyAfterRun()
 			finally:
 				self.lock.release()
 		else: # '', resume, resume+
-			self._tidyBeforeRun ()
+			self._tidyBeforeRun()
 			try:
 				self._runCmd('preCmd')
 				if self.resume: # resume or resume+
 					logger.resumed("Previous processes skipped.")
 				self._runJobs()
 				self._runCmd('postCmd')
-				self._tidyAfterRun ()
+				self._tidyAfterRun()
 			finally:
 				self.lock.release()
 
-	def _buildProps (self):
+	def _buildProps(self):
 		"""
 		Compute some properties
 		"""
@@ -563,10 +564,10 @@ class Proc (object):
 				(self.id, self.tag, self._suffix()))
 		logger.workdir(utils.briefPath(self.workdir, **Proc.SHORTPATH), proc = self.id)
 
-		if not path.exists (self.workdir):
+		if not path.exists(self.workdir):
 			if self.resume in ['skip+', 'resume'] and self.cache != 'export':
 				raise ProcAttributeError(self.workdir, 'Cannot skip process, as workdir not exists')
-			makedirs (self.workdir)
+			makedirs(self.workdir)
 
 		self.props.lock = filelock.FileLock(path.join(self.workdir, 'proc.lock'))
 
@@ -589,8 +590,8 @@ class Proc (object):
 			# exdir
 			if self.exdir:
 				self.config.exdir = path.abspath(self.exdir)
-				if not path.exists (self.exdir):
-					makedirs (self.exdir)
+				if not path.exists(self.exdir):
+					makedirs(self.exdir)
 
 			# echo
 			if self.config.echo in [True, False, 'stderr', 'stdout']:
@@ -640,7 +641,7 @@ class Proc (object):
 				self.lock.release()
 			raise
 
-	def _saveSettings (self):
+	def _saveSettings(self):
 		"""
 		Save all settings in proc.settings, mostly for debug
 		"""
@@ -660,7 +661,7 @@ class Proc (object):
 		logger.debug('Settings saved to: %s', settingsfile, proc = self.id)
 
 	# self.resume != 'skip'
-	def _buildInput (self):
+	def _buildInput(self):
 		"""
 		Build the input data
 		Input could be:
@@ -764,7 +765,7 @@ class Proc (object):
 				else:
 					self.props.input[inkey]['data'] = [''] * self.size
 
-	def _buildProcVars (self):
+	def _buildProcVars(self):
 		"""
 		Build proc attribute values for template rendering,
 		and also echo some out.
@@ -901,7 +902,7 @@ class Proc (object):
 
 		self.props.script = self.template(modeline + '\n'.join(nlines) + '\n', **self.tplenvs)
 
-	def _buildJobs (self):
+	def _buildJobs(self):
 		"""
 		Build the jobs.
 		"""
@@ -944,7 +945,7 @@ class Proc (object):
 		for i in range(self.size):
 			self.jobs[i] = Job(i, jobcfg)
 
-	def _readConfig (self, profile, config):
+	def _readConfig(self, profile, config):
 		"""
 		Read the configuration
 		@params:
@@ -982,7 +983,7 @@ class Proc (object):
 				self.props.runner  = self.config.runner
 				self.config.runner = None
 
-	def _runCmd (self, key):
+	def _runCmd(self, key):
 		"""
 		Run the `beforeCmd` or `afterCmd`
 		@params:
@@ -1007,7 +1008,7 @@ class Proc (object):
 		if cmd.rc != 0:
 			raise ProcRunCmdError(repr(cmdstr), key)
 
-	def _runJobs (self):
+	def _runJobs(self):
 		"""
 		Submit and run the jobs
 		"""

@@ -202,7 +202,7 @@ class Jobmgr(object):
 
 		ncompleted = nrunning = 0
 		for stat in status:
-			ncompleted += int(stat & 0b1000000)
+			ncompleted += int(bool(stat & 0b1000000))
 			nrunning   += int(stat in (Job.STATUS_RUNNING, Job.STATUS_SUBMITTED))
 
 		for barjob in barjobs:
