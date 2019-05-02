@@ -1,3 +1,5 @@
+# pylint: disable=invalid-name,missing-docstring
+
 import testly
 
 from pyppl import Proc, Box
@@ -20,7 +22,7 @@ class TestProxy(testly.TestCase):
 
 	def testSetAttr(self):
 		a = _Proxy([1,2,3])
-		a.__doc__ = 'proxy'
+		a.__dict__['__doc__'] = 'proxy'
 		self.assertEqual(a.__doc__, 'proxy')
 
 		a = _Proxy([

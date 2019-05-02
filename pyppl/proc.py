@@ -2,14 +2,12 @@
 proc module for PyPPL
 """
 import sys
-import json
 import yaml
 import copy as pycopy
 from time import time
 from collections import OrderedDict
 from os import path, makedirs, remove
 from box import Box
-from multiprocessing import cpu_count
 import filelock
 from simpleconf import NoSuchProfile
 from .logger import logger
@@ -17,7 +15,8 @@ from .job import Job
 from .jobmgr import Jobmgr
 from .aggr import Aggr
 from .channel import Channel
-from .exceptions import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
+from .exceptions import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, \
+	ProcScriptError, ProcRunCmdError
 from . import utils, template
 
 class Proc (object):
@@ -95,7 +94,7 @@ class Proc (object):
 
 		# The id (actually, it's the showing name) of the process
 		self.config.id = id if id else utils.varname()
-		
+
 		if ' ' in tag:
 			raise ProcTagError("No space is allowed in tag ('{}'). Do you mean 'desc' instead of 'tag'?".format(tag))
 
@@ -212,12 +211,12 @@ class Proc (object):
 		"""
 		if not name in self.config and not name in Proc.ALIAS and not name.endswith ('Runner'):
 			raise ProcAttributeError(name, 'Cannot set attribute for process')
-		
+
 		# profile will be deprecated, use runner instead
 		if name in Proc.DEPRECATED:
 			logger.warning(
-				'Attribute "%s" is deprecated%s.', 
-				name, 
+				'Attribute "%s" is deprecated%s.',
+				name,
 				', use "{}" instead'.format(
 					Proc.DEPRECATED[name]
 				) if name in Proc.DEPRECATED and Proc.DEPRECATED[name] else '',
@@ -560,7 +559,7 @@ class Proc (object):
 			makedirs (self.workdir)
 
 		self.props.lock = filelock.FileLock(path.join(self.workdir, 'proc.lock'))
-		
+
 		try:
 			self.lock.acquire(timeout = 3)
 		except filelock.Timeout: # pragma: no cover
@@ -622,7 +621,7 @@ class Proc (object):
 			self.props.expart = [self.template(e, **self.tplenvs) for e in expart]
 
 			logger.debug('Properties set explictly: %s', self.sets, proc = self.id)
-			
+
 		except Exception: # pragma: no cover
 			if self.lock.is_locked:
 				self.lock.release()
@@ -668,7 +667,7 @@ class Proc (object):
 
 			with open(settingsfile, 'r') as fset:
 				cached_props = yaml.load(fset, Loader = yaml.Loader)
-			
+
 			self.props.size = int(cached_props.get('size', 0))
 			self.props.input = cached_props.get('input', OrderedDict())
 			self.props.jobs = [None] * self.size
@@ -683,7 +682,7 @@ class Proc (object):
 				input_keys_and_types = utils.alwaysList(self.config.input) if self.config.input else []
 			else: # either raw dict or OrderedDict
 				input_keys_and_types = sum((
-					utils.alwaysList(key) 
+					utils.alwaysList(key)
 					for key in self.config.input.keys()
 				), [])
 
@@ -772,7 +771,7 @@ class Proc (object):
 			if key == 'args':
 				procvars['args'] = val
 				procargs         = val
-				if val: 
+				if val:
 					maxlen = max(maxlen, max([len(thekey) for thekey in val.keys()]))
 			elif key == 'runner':
 				procvars[key] = val
@@ -852,7 +851,7 @@ class Proc (object):
 			logger.debug("Using template file: %s", tplfile, proc = self.id)
 			with open(tplfile) as ftpl:
 				script = ftpl.read().strip()
-		
+
 		# original lines
 		olines = script.splitlines()
 		# new lines
@@ -886,7 +885,7 @@ class Proc (object):
 		if self.size == 0:
 			logger.warning('No data found for jobs, process will be skipped.', proc = self.id)
 			return
-		
+
 		from . import PyPPL
 		if self.runner not in PyPPL.RUNNERS:
 			raise ProcAttributeError('No such runner: {}. If it is a profile, did you forget to specify a basic runner?'.format(self.runner))
@@ -927,7 +926,7 @@ class Proc (object):
 		"""
 		if not profile:
 			return
-		
+
 		# configs have been set
 		setconfigs = {key:self.config[key] for key in self.sets}
 		self.config._load(config or {})
@@ -950,7 +949,7 @@ class Proc (object):
 				self.config.runner = profile
 			except NoSuchProfile:
 				self.config._load({
-					profile: dict(runner = profile) 
+					profile: dict(runner = profile)
 				})
 				self.config._use(profile)
 				self.config.update(setconfigs)
@@ -970,7 +969,7 @@ class Proc (object):
 
 		if not cmdstr:
 			return
-		
+
 		logger.info('Running <%s> ...', key, proc = self.id)
 
 		cmd = utils.cmdy.bash(c = cmdstr, _iter = 'err')
@@ -978,7 +977,7 @@ class Proc (object):
 			logger.cmderr('  ' + err.rstrip("\n"), proc = self.id)
 		for out in cmd.stdout.splitlines():
 			logger.cmdout('  ' + out.rstrip("\n"), proc = self.id)
-			
+
 		if cmd.rc != 0:
 			raise ProcRunCmdError(repr(cmdstr), key)
 

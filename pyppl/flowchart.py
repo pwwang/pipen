@@ -117,7 +117,8 @@ class Flowchart(object):
 		"""
 		Set the theme to be used
 		@params:
-			`theme`: The theme, could be the key of Flowchart.THEMES or a dict of a theme definition.
+			`theme`: The theme, could be the key of Flowchart.
+				THEMES or a dict of a theme definition.
 			`base` : The base theme to be based on you pass custom theme
 		"""
 		if isinstance(theme, dict):
@@ -125,7 +126,7 @@ class Flowchart(object):
 			utils.dictUpdate(self.theme, theme)
 		else:
 			self.theme = Flowchart.THEMES[theme]
-	
+
 	def addNode(self, node, role = None):
 		"""
 		Add a node to the chart
@@ -152,7 +153,7 @@ class Flowchart(object):
 		"""
 		if (node1, node2) not in self.links:
 			self.links.append((node1, node2))
-		
+
 	def _assemble(self):
 		"""
 		Assemble the graph for printing and rendering
@@ -177,7 +178,7 @@ class Flowchart(object):
 			if group != Flowchart.ROOTGROUP:
 				graph.attr(label = group, **{k:str(v) for k,v in self.theme['aggr'].items()})
 				self.graph.subgraph(graph)
-		
+
 		# edges
 		for node1, node2 in self.links:
 			self.graph.edge(node1.name(False), node2.name(False))

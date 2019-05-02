@@ -51,7 +51,7 @@ def loadConfiguratiaons():
 		# Could also be:
 		# {
 		#    # or [0, 1, 2], just echo output of those jobs.
-		#   'jobs': 0           
+		#   'jobs': 0
 		#    # only echo stderr. (stdout: only echo stdout; [don't specify]: echo all)
 		#   'type': 'stderr'
 		# }
@@ -115,6 +115,7 @@ def loadConfiguratiaons():
 loadConfiguratiaons()
 
 # load logger
+# pylint: disable=wrong-import-position
 from .logger import logger
 from .aggr import Aggr, _Proxy
 from .proc import Proc
@@ -147,7 +148,7 @@ class PyPPL (object):
 		"If 'workdir' is not set for a process, "
 		"it will be PyPPL.<proc-id>.<proc-tag>.<suffix> under default <ppldir>",
 		"The default <ppldir> is './workdir'",
-	]
+		]
 
 	RUNNERS  = {}
 
@@ -169,10 +170,10 @@ class PyPPL (object):
 			self.config._load(cfgfile)
 		if isinstance(conf, dict):
 			self.config.update(conf or {})
-		
+
 		if self.config._log.file is True:
 			self.config._log.file = './%s%s.pyppl.log' % (
-				path.splitext(path.basename(sys.argv[0]))[0], 
+				path.splitext(path.basename(sys.argv[0]))[0],
 				('_%s' % self.counter) if self.counter else ''
 			)
 		# reinitiate logger according to new config
@@ -182,19 +183,20 @@ class PyPPL (object):
 
 		for cfile in DEFAULT_CFGFILES + (str(cfgfile), ):
 			if cfile.endswith('.osenv'):
-				logger.config('Read from environment variables with prefix: %s', 
+				logger.config('Read from environment variables with prefix: %s',
 					path.basename(cfile)[:-6])
-			if not path.isfile(cfile): 
+			if not path.isfile(cfile):
 				continue
 			if cfile.endswith('.yaml') or cfile.endswith('yml'):
 				try:
-					import yaml
+					import yaml # pylint: disable=unused-variable
 					logger.config('Read from %s', cfile)
 				except ImportError:
 					logger.warning('Module PyYAML not installed, config file ignored: %s', cfile)
 			elif cfile.endswith('.toml'):
-				try: 
-					import toml
+				try:
+
+					import toml # pylint: disable=unused-variable
 					logger.config('Read from %s', cfile)
 				except ImportError:
 					logger.warning('Module toml not installed, config file ignored: %s', cfile)
@@ -229,7 +231,8 @@ class PyPPL (object):
 		"""
 		Mark processes as to be resumed
 		@params:
-			`args`: the processes to be marked. The last element is the mark for processes to be skipped.
+			`args`: the processes to be marked.
+				The last element is the mark for processes to be skipped.
 		"""
 
 		sflag    = 'skip+' if kwargs.get('plus') else 'skip'
@@ -240,12 +243,12 @@ class PyPPL (object):
 		#starts   = self.tree.getStarts()
 		# check whether all ends can be reached
 		for end in ends:
-			if end in resumes: 
+			if end in resumes:
 				continue
 			paths = self.tree.getPathsToStarts(end)
-			failedpaths = [apath for apath in paths 
+			failedpaths = [apath for apath in paths
 				if not any([pnode in apath for pnode in resumes])]
-			if not failedpaths: 
+			if not failedpaths:
 				continue
 			failedpath = failedpaths[0]
 			raise PyPPLProcRelationError('%s <- [%s]' % (
@@ -269,7 +272,7 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
-		if not args or (len(args) == 1 and not args[0]): 
+		if not args or (len(args) == 1 and not args[0]):
 			return self
 		self._resume(*args)
 		return self
@@ -282,7 +285,7 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
-		if not args or (len(args) == 1 and not args[0]): 
+		if not args or (len(args) == 1 and not args[0]):
 			return self
 		self._resume(*args, plus = True)
 		return self
@@ -293,14 +296,14 @@ class PyPPL (object):
 		"""
 		logger.debug('ALL ROUTES:')
 		#paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths()])
-		paths  = sorted([[pnode.name() for pnode in reversed(apath)] 
+		paths  = sorted([[pnode.name() for pnode in reversed(apath)]
 			for apath in self.tree.getAllPaths()])
 		paths2 = [] # processes merged from the same aggr
 		for apath in paths:
 			prevaggr = None
 			path2    = []
 			for pnode in apath:
-				if not '@' in pnode: 
+				if not '@' in pnode:
 					path2.append(pnode)
 				else:
 					aggr = pnode.split('@')[-1]
@@ -345,10 +348,10 @@ class PyPPL (object):
 			logger.process (name)
 			logger.process ('-' * decorlen)
 			logger.depends (
-				'%s => %s => %s', 
-				ProcTree.getPrevStr(proc), 
-				proc.name(), 
-				ProcTree.getNextStr(proc), 
+				'%s => %s => %s',
+				ProcTree.getPrevStr(proc),
+				proc.name(),
+				ProcTree.getNextStr(proc),
 				proc = proc.id
 			)
 			proc.run(profile, self.config)
@@ -357,13 +360,13 @@ class PyPPL (object):
 
 		unran = self.tree.unranProcs()
 		if unran:
-			klen  = max([len(k) for k in unran.keys()])
+			klen  = max([len(key) for key, _ in unran.items()])
 			for key, val in unran.items():
 				fmtstr = "%-"+ str(klen) +"s won't run as path can't be reached: %s <- %s"
 				logger.warning(fmtstr, key, key, ' <- '.join(val))
 
 		logger.done (
-			'Total time: %s', 
+			'Total time: %s',
 			utils.formatSecs(time() - timer)
 		)
 		return self
@@ -372,9 +375,9 @@ class PyPPL (object):
 		"""
 		Generate graph in dot language and visualize it.
 		@params:
-			`dotfile`: Where to same the dot graph. 
+			`dotfile`: Where to same the dot graph.
 				- Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.dot"`)
-			`fcfile`:  The flowchart file. 
+			`fcfile`:  The flowchart file.
 				- Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.svg"`)
 				- For example: run `python pipeline.py` will save it to `pipeline.pyppl.svg`
 		@returns:
@@ -383,7 +386,7 @@ class PyPPL (object):
 		from .flowchart import Flowchart
 		self.showAllRoutes()
 		fcfile  = fcfile or './%s%s.pyppl.svg' % (
-			path.splitext(path.basename(sys.argv[0]))[0], 
+			path.splitext(path.basename(sys.argv[0]))[0],
 			('_%s' % self.counter) if self.counter else ''
 		)
 		dotfile = dotfile or '%s.dot' % (path.splitext(fcfile)[0])
@@ -399,9 +402,9 @@ class PyPPL (object):
 				for pnode in apath:
 					fchart.addNode(pnode)
 					nextps = ProcTree.getNext(pnode)
-					if not nextps: 
+					if not nextps:
 						continue
-					for nextp in nextps: 
+					for nextp in nextps:
 						fchart.addLink(pnode, nextp)
 
 		fchart.generate()
@@ -465,9 +468,14 @@ class PyPPL (object):
 		if not runner_name in PyPPL.RUNNERS:
 			PyPPL.RUNNERS[runner_name] = runner
 
+def registerDefaultRunners():
+	"""
+	Register builtin runners
+	"""
+	for runnername in dir(runners):
+		if not runnername.startswith('Runner') or runnername in ['Runner', 'RunnerQueue']:
+			continue
+		runner = getattr(runners, runnername)
+		PyPPL.registerRunner(runner)
 
-for runnername in dir(runners):
-	if not runnername.startswith('Runner') or runnername in ['Runner', 'RunnerQueue']:
-		continue
-	runner = getattr(runners, runnername)
-	PyPPL.registerRunner(runner)
+registerDefaultRunners()

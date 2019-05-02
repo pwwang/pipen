@@ -7,7 +7,7 @@ from os import path
 from glob import glob
 from . import utils
 
-class Channel (list):
+class Channel(list):
 	"""
 	The channen class, extended from `list`
 	"""
@@ -43,15 +43,19 @@ class Channel (list):
 		@returns:
 			The Channel created from the list
 		"""
-		if alist is None: alist = []
-		if not isinstance(alist, list): alist = [alist]
+		if alist is None:
+			alist = []
+		if not isinstance(alist, list):
+			alist = [alist]
 		ret = Channel()
 		length = 0
 		for ele in alist:
 			row = Channel._tuplize(ele)
-			if length == 0: length = len(row)
+			if length == 0:
+				length = len(row)
 			if length != len(row):
-				raise ValueError('Inconsistent width of row (%s) with previous row (%s)' % (len(row), length))
+				raise ValueError('Inconsistent width of row (%s) with previous row (%s)' %
+					(len(row), length))
 			ret.append (row)
 		return ret
 
@@ -82,7 +86,7 @@ class Channel (list):
 		"""
 		ret = Channel.create()
 		return ret.insert (None, *args)
-	
+
 	@staticmethod
 	def fromPattern(pattern, ftype = 'any', sortby = 'name', reverse=False):
 		"""
@@ -103,7 +107,7 @@ class Channel (list):
 			key = path.getmtime
 		elif sortby == 'size':
 			key = path.getsize
-		
+
 		filt  = lambda afile: True
 		if ftype == 'link':
 			filt = path.islink
@@ -128,7 +132,7 @@ class Channel (list):
 		for i in range(0, len(ret), 2):
 			chan.append ((ret[i], ret[i+1]))
 		return chan
-	
+
 	@staticmethod
 	def fromFile(filename, header = False, skip = 0, delimit = "\t"):
 		"""
@@ -150,23 +154,26 @@ class Channel (list):
 		with open(filename) as fhandler:
 			for line in fhandler:
 				i += 1
-				if i < skip: continue
+				if i < skip:
+					continue
 				line = line.strip()
-				if not line: continue
-				if header: 
+				if not line:
+					continue
+				if header:
 					headers = line.split(delimit)
 					header  = False
 				else:
 					ret.append (tuple(line.split(delimit)))
-		if headers: 
+		if headers:
 			lenheaders = len(headers)
 			channelwid = ret.width()
 			if lenheaders == channelwid - 1:
 				headers.insert(0, 'RowNames')
 			elif lenheaders != channelwid:
-				raise ValueError('Number of headers and columns doesn\'t match: %s, %s.' % (lenheaders, channelwid))
+				raise ValueError('Number of headers and columns doesn\'t match: %s, %s.' %
+					(lenheaders, channelwid))
 			ret.attach(*headers)
-			
+
 		return ret
 
 	@staticmethod
@@ -181,17 +188,19 @@ class Channel (list):
 		ret  = Channel.create()
 		args = sys.argv[1:]
 		alen = len (args)
-		if alen == 0: return ret
-		
+		if alen == 0:
+			return ret
+
 		width = None
 		for arg in args:
 			items = tuple(utils.split(arg, ','))
 			if width is not None and width != len(items):
-				raise ValueError('Width %s (%s) is not consistent with previous %s' % (len(items), arg, width))
+				raise ValueError('Width %s (%s) is not consistent with previous %s' %
+					(len(items), arg, width))
 			width = len(items)
 			ret.append (items)
 		return ret
-		
+
 	@staticmethod
 	def fromParams(*pnames):
 		"""
@@ -210,14 +219,16 @@ class Channel (list):
 			if not param.type.startswith('list'):
 				data = [param.value]
 			if width is not None and width != len(data):
-				raise ValueError('Width %s (%s) is not consistent with previous %s' % (len(data), data, width))
+				raise ValueError('Width %s (%s) is not consistent with previous %s' %
+					(len(data), data, width))
 			width = len(data)
 			ret = ret.cbind(data)
 		if ret:
 			ret.attach(*pnames)
 		return ret
-	
-	def expand(self, col = 0, pattern = "*", ftype = 'any', sortby = 'name', reverse=False):
+
+	# pylint: disable=too-many-arguments
+	def expand(self, col = 0, pattern = "*", ftype = 'any', sortby = 'name', reverse = False):
 		"""
 		expand the Channel according to the files in <col>, other cols will keep the same
 		`[(dir1/dir2, 1)].expand (0, "*")` will expand to
@@ -236,17 +247,19 @@ class Channel (list):
 			The expanded Channel
 		"""
 		ret = Channel.create()
-		if not self: return ret
-		
+		if not self:
+			return ret
+
 		for row in self:
 			row    = list(row)
 			folder = row[col]
-			files  = Channel.fromPattern(path.join(folder, pattern), ftype=ftype, sortby=sortby, reverse=reverse).flatten()
+			files  = Channel.fromPattern(
+				path.join(folder, pattern), ftype=ftype, sortby=sortby, reverse=reverse).flatten()
 			for afile in files:
 				row[col] = afile
 				ret.append(tuple(row))
 		return ret
-		
+
 	def collapse(self, col = 0):
 		"""
 		Do the reverse of expand
@@ -259,13 +272,13 @@ class Channel (list):
 		"""
 		if not self:
 			raise ValueError('Cannot collapse an empty Channel.')
-			
+
 		paths = self.colAt(col).flatten()
 		compx = path.dirname(path.commonprefix(paths))
 		row   = list(self[0])
 		row[col] = compx
 		return Channel.create(tuple(row))
-	
+
 	def copy(self):
 		"""
 		Copy a Channel using `copy.copy`
@@ -280,9 +293,10 @@ class Channel (list):
 		@returns:
 			The width of the Channel
 		"""
-		if not self: return 0
+		if not self:
+			return 0
 		return len(self[0]) if isinstance(self[0], tuple) else 1
-	
+
 	def length(self):
 		"""
 		Get the length of a Channel
@@ -301,7 +315,7 @@ class Channel (list):
 			The transformed Channel
 		"""
 		return Channel.create(utils.map(func, self))
-		
+
 	def mapCol(self, func, col = 0):
 		"""
 		Map for a column
@@ -324,7 +338,7 @@ class Channel (list):
 			The filtered Channel
 		"""
 		return Channel.create(utils.filter(func, self))
-	
+
 	def filterCol(self, func = None, col = 0):
 		"""
 		Just filter on the first column
@@ -334,7 +348,8 @@ class Channel (list):
 		@returns:
 			The filtered Channel
 		"""
-		if func is None: func = bool
+		if func is None:
+			func = bool
 		return Channel.create([s for s in self if func(s[col])])
 
 	def reduce (self, func):
@@ -346,7 +361,7 @@ class Channel (list):
 			The reduced value
 		"""
 		return utils.reduce(func, self)
-		
+
 	def reduceCol (self, func, col = 0):
 		"""
 		Reduce a column
@@ -357,7 +372,7 @@ class Channel (list):
 			The reduced value
 		"""
 		return utils.reduce(func, [s[col] for s in self])
-	
+
 	def rbind (self, *rows):
 		"""
 		The multiple-argument versoin of `rbind`
@@ -369,10 +384,11 @@ class Channel (list):
 		"""
 		ret = self.copy()
 		for row in rows:
-			if not row: continue
+			if not row:
+				continue
 			if not isinstance(row, Channel):
 				row = Channel.create(row)
-			if row.length() == 0 or row.width() == 0: 
+			if row.length() == 0 or row.width() == 0:
 				continue
 
 			if ret.length() == 0:
@@ -384,11 +400,12 @@ class Channel (list):
 					ret[i] *= row.width()
 				ret.extend(row)
 			elif row.width() != ret.width():
-				raise ValueError('Unable to rbind unequal width channels (%s, %s)' % (ret.width(), row.width()))
+				raise ValueError('Unable to rbind unequal width channels (%s, %s)' %
+					(ret.width(), row.width()))
 			else:
 				ret.extend(row)
 		return ret
-	
+
 	def insert (self, cidx, *cols):
 		"""
 		Insert columns to a channel
@@ -404,8 +421,9 @@ class Channel (list):
 		# fix #29
 		cols = [col if isinstance(col, Channel) else Channel.create(col) for col in cols]
 		cols = [col for col in cols if col.width() > 0 and col.length() > 0]
-		if not cols: return ret
-		
+		if not cols:
+			return ret
+
 		if cidx is None:
 			colsbefore = ret
 			colsafter  = []
@@ -418,22 +436,27 @@ class Channel (list):
 		if ret.length() == 1:
 			colsbefore *= maxlen
 			colsafter  *= maxlen
-		
+
 		length = max(len(colsbefore), len(colsafter))
 		for col in cols:
-			if col.width() == 0: continue
+			if col.width() == 0:
+				continue
 			if col.length() == 1:
 				# oringal col has been changed
 				#col *= maxlen
 				col = col.repRow(maxlen)
 			if length > 0 and length != col.length():
-				raise ValueError('Cannot bind column (length: %s) to Channel (length: %s).' % (col.length(), length))
+				raise ValueError(
+					'Cannot bind column (length: %s) to Channel (length: %s).' % (
+						col.length(), length
+					))
 
 			colsbefore = [colsbefore[i] + c for i, c in enumerate(col)] if colsbefore else col
 			length = max(len(colsbefore), len(colsafter))
-		
-		return Channel([c + colsafter[i] for i, c in enumerate(colsbefore)] if colsafter else colsbefore)
-		
+
+		return Channel([c + colsafter[i] for i, c in enumerate(colsbefore)]
+			if colsafter else colsbefore)
+
 	def cbind(self, *cols):
 		"""
 		Add columns to the channel
@@ -443,7 +466,7 @@ class Channel (list):
 			The channel with the columns inserted.
 		"""
 		return self.insert(None, *cols)
-	
+
 	def colAt (self, index):
 		"""
 		Fetch one column of a Channel
@@ -458,7 +481,7 @@ class Channel (list):
 		for idx in index:
 			chs.append(self.slice (idx, 1))
 		return Channel.fromChannels(*chs)
-	
+
 	def rowAt (self, index):
 		"""
 		Fetch one row of a Channel
@@ -484,7 +507,7 @@ class Channel (list):
 			if not row in rows:
 				rows.append(row)
 		return Channel(rows)
-	
+
 	def slice (self, start, length = None):
 		"""
 		Fetch some columns of a Channel
@@ -496,7 +519,7 @@ class Channel (list):
 		"""
 		return Channel([s[start:(start + length)] for s in self]) \
 				if length and start != -1 else Channel.create([s[start:] for s in self])
-	
+
 	def fold (self, nfold = 1):
 		"""
 		Fold a Channel. Make a row to n-length chunk rows
@@ -515,15 +538,16 @@ class Channel (list):
 			The new Channel
 		"""
 		if nfold <= 0 or self.width() % nfold != 0:
-			raise ValueError ('Failed to fold, the width %s cannot be divided by %s' % (self.width(), nfold))
-		
+			raise ValueError ('Failed to fold, the width %s cannot be divided by %s' %
+				(self.width(), nfold))
+
 		nrows = int(self.width() / nfold)
 		ret = []
 		for row in self:
 			for i in [x*nfold for x in range(nrows)]:
 				ret.append (row[i:i+nfold])
 		return Channel(ret)
-	
+
 	def unfold (self, nfold = 2):
 		"""
 		Do the reverse thing as self.fold does
@@ -533,8 +557,9 @@ class Channel (list):
 			The unfolded Channel
 		"""
 		if nfold <= 0 or len(self) % nfold != 0:
-			raise ValueError ('Failed to unfold, the length %s cannot be divided by %s' % (len(self), nfold))
-		
+			raise ValueError ('Failed to unfold, the length %s cannot be divided by %s' %
+				(len(self), nfold))
+
 		nrows = int(len(self) / nfold)
 		ret = []
 		for i in range(nrows):
@@ -542,8 +567,8 @@ class Channel (list):
 			for j in range(nfold):
 				row += self[i*nfold + j]
 			ret.append(row)
-		return Channel.create(ret)		
-	
+		return Channel.create(ret)
+
 	def split (self, flatten=False):
 		"""
 		Split a Channel to single-column Channels
@@ -558,19 +583,26 @@ class Channel (list):
 		Attach columns to names of Channel, so we can access each column by:
 		`ch.col0` == ch.colAt(0)
 		@params:
-			`names`: The names. Have to be as length as channel's width. None of them should be Channel's property name
+			`names`: The names. Have to be as length as channel's width.
+				None of them should be Channel's property name
 			`flatten`: Whether flatten the channel for the name being attached
 		"""
 		flatten = False if 'flatten' not in kwargs else kwargs['flatten']
 		mywidth = self.width()
 		lnames  = len(names)
 		if mywidth < lnames:
-			raise ValueError('More names (%s) to attach than the width (%s) of the channel.' % (lnames, mywidth))
+			raise ValueError(
+				'More names (%s) to attach than the width (%s) of the channel.' %
+				(lnames, mywidth))
 		for i, name in enumerate(names):
-			if hasattr(self, name) and not isinstance(getattr(self, name), Channel) and not isinstance(getattr(self, name), list):
-				raise AttributeError('Cannot attach column to "%s" as it is already an attribute of Channel.' % name)
+			if hasattr(self, name) and \
+				not isinstance(getattr(self, name), Channel) and \
+				not isinstance(getattr(self, name), list):
+				raise AttributeError(
+					'Cannot attach column to "%s" as it is already an attribute of Channel.' %
+					name)
 			setattr(self, name, self.flatten(i) if flatten else self.colAt(i))
-	
+
 	def get(self, idx = 0):
 		"""
 		Get the element of a flattened channel
@@ -589,7 +621,7 @@ class Channel (list):
 		@returns:
 			The new channel with repeated columns
 		"""
-		cols = [self] * (nrep - 1) 
+		cols = [self] * (nrep - 1)
 		return self.cbind(*cols)
 
 	def repRow(self, nrep = 2):
@@ -600,7 +632,7 @@ class Channel (list):
 		@returns:
 			The new channel with repeated rows
 		"""
-		rows = [self] * (nrep - 1) 
+		rows = [self] * (nrep - 1)
 		return self.rbind(*rows)
 
 	def flatten (self, col = None):

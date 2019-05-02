@@ -9,13 +9,11 @@ import safefs
 import psutil
 from os import path, walk
 from box import Box
-from time import sleep
 from hashlib import md5
 from threading import Thread, Lock
 from simpleconf import Config
 cmdy   = cmdy(_raise = False) # pylint: disable=invalid-name
 config = Config() # pylint: disable=invalid-name
-
 
 try:
 	from Queue import Queue, PriorityQueue, Empty as QueueEmpty
@@ -78,9 +76,9 @@ def varname(context = 31):
 	grandpar = stacks[2]
 	keyword  = parent[3]
 	# find the class name
-	if keyword == '__init__': 
+	if keyword == '__init__':
 		keyword = parent[0].f_locals['self'].__class__.__name__
-	
+
 	for i in range(grandpar[5], 0, -1):
 		code = grandpar[4][i]
 		if not keyword in code:
@@ -89,7 +87,7 @@ def varname(context = 31):
 		if not match:
 			break
 		return match.group(1)
-	
+
 	varname.index += 1
 	return 'var_%s' % (varname.index - 1)
 
@@ -232,7 +230,7 @@ def funcsig (func):
 		sig = 'None'
 	return sig
 
-def uid(string, length = 8, 
+def uid(string, length = 8,
 	alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'):
 	"""
 	Calculate a short uid based on a string.
@@ -346,11 +344,11 @@ def briefPath(bpath, cutoff = 0, keep = 1):
 	lenp = len(bpath)
 	if lenp <= cutoff:
 		return bpath
-	
+
 	more = lenp - cutoff
 	parts = bpath.split(sep)
 	parts[0] = parts[0] or sep
-	
+
 	for i, part in enumerate(parts[:-1]):
 		newpart = re.sub(r'^([^A-Za-z0-9]*\w{%s}).*$' % keep, r'\1', part)
 		newlen  = len(newpart)
@@ -369,14 +367,14 @@ def killtree(pid, killme = True, sig = 9, timeout = None): # signal.SIGKILL
 		children.append(myself)
 	for proc in children:
 		proc.send_signal(sig)
-	
+
 	return psutil.wait_procs(children, timeout=timeout)
 
 def chmodX(filepath, filetype = None):
 	"""
 	Convert file1 to executable or add extract shebang to cmd line
 	@returns:
-		A list with or without the path of the interpreter as the first element 
+		A list with or without the path of the interpreter as the first element
 		and the script file as the last element
 	"""
 	from stat import S_IEXEC
@@ -390,7 +388,7 @@ def chmodX(filepath, filetype = None):
 	except NameError:
 		# pylint: disable=invalid-name
 		ChmodError = OSError
-	
+
 	ret = [filepath]
 	try:
 		chmod(filepath, stat(filepath).st_mode | S_IEXEC)
@@ -403,7 +401,7 @@ def chmodX(filepath, filetype = None):
 			# may raise UnicodeDecodeError for python3
 			pass
 		finally:
-			# make sure file's closed, 
+			# make sure file's closed,
 			# otherwise a File text busy will be raised when trying to execute it
 			fsb.close()
 		if not shebang or not shebang.startswith('#!'):
@@ -425,7 +423,7 @@ def filesig(filepath, dirsig = True):
 		return ['', 0]
 	if not safefs.exists(filepath):
 		return False
-	
+
 	if dirsig and safefs.isdir(filepath):
 		mtime = path.getmtime(filepath)
 		for root, dirs, files in walk(filepath):
@@ -541,7 +539,7 @@ class PQueue(PriorityQueue):
 		"""
 		with self.lock:
 			PriorityQueue.put(self, item + where * self.batchLen, block, timeout)
-	
+
 	def put_nowait(self, item, where = 0):
 		"""
 		Put item to the queue, just like `PriorityQueue.put_nowait` but with an extra argument

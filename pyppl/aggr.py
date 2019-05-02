@@ -2,8 +2,8 @@
 The aggregation of procs
 """
 import fnmatch
-from box import Box
 from collections import OrderedDict
+from box import Box
 from .utils import varname
 
 class _Proxy(list):
@@ -13,13 +13,13 @@ class _Proxy(list):
 	"""
 	def __getattr__(self, item):
 		if hasattr(super(_Proxy, self), item):
-			return super(_Proxy, self).getattr(item)
+			return getattr(super(_Proxy, self), item)
 
 		return self.__class__(getattr(proxy, item) for proxy in self)
 
 	def __setattr__(self, name, value):
 		if hasattr(super(_Proxy, self), name):
-			return super(_Proxy, self).__setattr__(name, value)
+			super(_Proxy, self).__setattr__(name, value)
 
 		if isinstance(value, tuple):
 			for i, val in enumerate(value):
@@ -84,7 +84,7 @@ class Aggr(Box):
 			assert isinstance(proc, Proc), 'Argument has to be a Proc object: %r.' % proc
 			boxargs['_idprocs'].append(proc.id)
 			if ifcopy:
-				boxargs[proc.id] = proc.copy(proc.id, 
+				boxargs[proc.id] = proc.copy(proc.id,
 					tag = (boxargs['tag'] or proc.tag.split('@', 1)[0]) + '@' + boxargs['id']
 				)
 			else:
@@ -111,7 +111,9 @@ class Aggr(Box):
 			`*items`: The selectors of processes, which will be passed to `__getitem__`
 		"""
 		self.groups[name] = _Proxy(sum((self[item] for item in items), _Proxy()))
-	
+
+	# pylint: disable=arguments-differ,redefined-builtin,unused-argument,fixme
+	# TODO: also copy depends relationship, then remove unsed-argument and fixme
 	def copy (self, id = None, tag = None, depends = True, groups = True):
 		"""
 		Like `proc`'s `copy` function, copy an aggregation. Each processes will be copied.
@@ -153,9 +155,8 @@ class Aggr(Box):
 			self.ends.__setattr__(item, value)
 		else:
 			super(Aggr, self).__setattr__(item, value)
-		
+
 	def __getitem__(self, item, _ignore_default = True):
-		from . import Proc
 		if isinstance(item, slice):
 			return _Proxy(self[itm] for itm in self._idprocs[item])
 		if isinstance(item, int):
@@ -169,8 +170,5 @@ class Aggr(Box):
 			return super(Aggr, self).__getitem__(item)
 		if item in self.groups:
 			return self.groups[item]
-		if item in self.groups:
-			return self.groups[item]
 		keys = fnmatch.filter(self._idprocs, item)
 		return _Proxy(self[key] for key in keys)
-

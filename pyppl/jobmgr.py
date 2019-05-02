@@ -98,6 +98,7 @@ class Jobmgr(object):
 			self.workon(qval, queue)
 			queue.task_done()
 
+	# pylint: disable=too-many-branches
 	def workon(self, index, queue):
 		"""
 		Work on a queue item
@@ -111,14 +112,14 @@ class Jobmgr(object):
 			self.progressbar(index)
 			job.status = Job.STATUS_BUILDING
 			job.build()
-			# status then could be: 
+			# status then could be:
 			# STATUS_DONECACHED, STATUS_BUILT, STATUS_BUILTFAILED
 			if job.status == Job.STATUS_DONECACHED:
 				self.progressbar(index)
 			elif job.status == Job.STATUS_BUILTFAILED:
 				self.progressbar(index)
 				raise JobBuildingException()
-			else: 
+			else:
 				queue.put(index, where = batch+3)
 		elif job.status == Job.STATUS_BUILT or job.status == Job.STATUS_RETRYING:
 			# when slots are available, and reserve it
@@ -169,7 +170,7 @@ class Jobmgr(object):
 			else:
 				self.progressbar(index)
 
-
+	# pylint: disable=too-many-locals,too-many-statements
 	def progressbar(self, jobidx):
 		"""
 		Generate progressbar.
@@ -182,6 +183,7 @@ class Jobmgr(object):
 		pbar    = '['
 		barjobs = []
 		joblen  = len(self.jobs)
+		# cache status
 		status = [job.status for job in self.jobs]
 		# distribute the jobs to bars
 		if joblen <= Jobmgr.PBAR_SIZE:
@@ -198,14 +200,14 @@ class Jobmgr(object):
 				barjobs.append([jobx + jobstep for jobstep in range(step)])
 				jobx += step
 
-		ncompleted = sum(1 for stat in status if stat & 0b1000000)
-		nrunning   = sum(
-			1 for stat in status if stat == Job.STATUS_RUNNING or stat == Job.STATUS_SUBMITTED)
-		
-		job = self.jobs[jobidx]
+		ncompleted = nrunning = 0
+		for stat in status:
+			ncompleted += int(stat & 0b1000000)
+			nrunning   += int(stat in (Job.STATUS_RUNNING, Job.STATUS_SUBMITTED))
+
 		for barjob in barjobs:
 			if jobidx in barjob:
-				pbar += Jobmgr.PBAR_MARKS[job.status]
+				pbar += Jobmgr.PBAR_MARKS[status[jobidx]]
 			else:
 				bjstatus  = [status[i] for i in barjob]
 				if Job.STATUS_BUILTFAILED in bjstatus:
@@ -241,11 +243,12 @@ class Jobmgr(object):
 				pbar += Jobmgr.PBAR_MARKS[stat]
 
 		pbar += '] Done: {:5.1f}% | Running: {}'.format(
-			100.0 * float(ncompleted) / float(joblen), 
+			100.0 * float(ncompleted) / float(joblen),
 			str(nrunning).ljust(len(str(joblen)))
 		)
-		
-		job.logger.pbar[Jobmgr.PBAR_LEVEL[job.status]](pbar, done = ncompleted == joblen)
+
+		self.jobs[jobidx].logger.pbar[Jobmgr.PBAR_LEVEL[status[jobidx]]](
+			pbar, done = ncompleted == joblen)
 
 	def cleanup(self, ex = None):
 		"""
@@ -268,10 +271,10 @@ class Jobmgr(object):
 			message = None
 		if message:
 			logger.warning(message, proc = self.config['proc'])
-		
+
 		# kill running jobs
 		rjobs = [
-			job.index for job in self.jobs 
+			job.index for job in self.jobs
 			if job.status in (Job.STATUS_RUNNING, Job.STATUS_SUBMITTED, Job.STATUS_SUBMITTING)
 		]
 		killq = PQueue(batch_len = len(self.jobs))
@@ -279,19 +282,19 @@ class Jobmgr(object):
 			killq.put(rjob)
 
 		ThreadPool(
-			min(len(rjobs), self.config['nthread']), 
+			min(len(rjobs), self.config['nthread']),
 			initializer = self.killWorker,
 			initargs    = killq
 		).join()
-			
+
 		failedjobs = [job for job in self.jobs if job.status & 0b1]
 		if not failedjobs:
 			failedjobs = [random.choice(self.jobs)]
 		failedjobs[0].showError(len(failedjobs))
 
-		if ex and not isinstance(ex, (JobFailException, JobBuildingException, 
+		if ex and not isinstance(ex, (JobFailException, JobBuildingException,
 			JobSubmissionException, KeyboardInterrupt)):
-			raise ex
+			raise ex # pylint: disable=raising-bad-type
 		exit(1)
 
 	def killWorker(self, runq):
@@ -321,4 +324,3 @@ class Jobmgr(object):
 				1 for job in self.jobs
 				if job.status in (Job.STATUS_RUNNING, Job.STATUS_SUBMITTED, Job.STATUS_SUBMITTING)
 			) < self.config['forks']
-

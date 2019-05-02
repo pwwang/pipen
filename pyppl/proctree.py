@@ -82,7 +82,7 @@ class ProcTree(object):
 		node = ProcTree.NODES[proc]
 		prev = [prevnode.proc.name() for prevnode in node.prev]
 		return 'START' if not prev else '[%s]' % ', '.join(prev)
-	
+
 	@staticmethod
 	def getNextStr(proc):
 		"""
@@ -118,7 +118,7 @@ class ProcTree(object):
 			node.next   = []
 			node.ran    = False
 			node.start  = False
-	
+
 	def __init__(self):
 		"""
 		Constructor, set the status of all `ProcNode`s
@@ -160,7 +160,7 @@ class ProcTree(object):
 		@returns:
 			The start processes
 		"""
-		if not self.starts: 
+		if not self.starts:
 			self.starts = [node.proc for node in ProcTree.NODES.values() if node.start]
 		return self.starts
 
@@ -188,7 +188,7 @@ class ProcTree(object):
 				apath = [[prevnode.proc]]
 			else:
 				apath = self.getPaths(prevnode, proc0 + [prevnode], check_hide = check_hide)
-				for pnode in apath: 
+				for pnode in apath:
 					if not prevnode.proc.hide:
 						pnode.insert(0, prevnode.proc)
 			for pnode in apath:
@@ -242,7 +242,7 @@ class ProcTree(object):
 		"""
 		if self.ends:
 			return self.ends
-			
+
 		failed_paths = []
 		nodes = [ProcTree.NODES[start] for start in self.getStarts()]
 		while nodes:
@@ -254,7 +254,7 @@ class ProcTree(object):
 				if not node.next:
 					passed = self.checkPath(node)
 					if passed is True:
-						if node.proc not in self.ends: 
+						if node.proc not in self.ends:
 							if node.proc.hide:
 								raise ProcHideError(node.proc, 'end process cannot be hidden.')
 							self.ends.append(node.proc)

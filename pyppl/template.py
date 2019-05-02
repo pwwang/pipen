@@ -36,7 +36,7 @@ class _TemplateFilter(object):
 	@staticmethod
 	def basename(var, orig = False):
 		bname = path.basename(var)
-		if orig or not bname.startswith('['): 
+		if orig or not bname.startswith('['):
 			return bname
 
 		return bname[bname.find(']')+1:]
@@ -47,9 +47,9 @@ class _TemplateFilter(object):
 		Return the stem of the basename (stripping extension(s))
 		@params:
 			`var`: The path
-			`orig`: If the path is a renamed file (like: `origin[1].txt`), 
+			`orig`: If the path is a renamed file (like: `origin[1].txt`),
 				- whether return its original filename or the parsed filename (`origin.txt`)
-			`dot`: Strip to which dot. 
+			`dot`: Strip to which dot.
 				- `-1`: the last one
 				- `-2`: the 2nd last one ...
 				- `1` : remove all dots.
@@ -58,7 +58,7 @@ class _TemplateFilter(object):
 		if '.' not in bname:
 			return bname
 		return '.'.join(bname.split('.')[0:dot])
-	
+
 	@staticmethod
 	def prefix(var, orig = False, dot = -1):
 		return path.join(path.dirname(var), _TemplateFilter.filename(var, orig, dot))
@@ -91,10 +91,10 @@ class _TemplateFilter(object):
 			# list allow repeated names
 			return 'list({})'.format(','.join([
 				'`{0}`={1}'.format(
-					k, 
+					k,
 					_TemplateFilter.R(v)) if isinstance(k, int) and not ignoreintkey else \
 					_TemplateFilter.R(v) if isinstance(k, int) and ignoreintkey else \
-					'`{0}`={1}'.format(str(k).split('#')[0], _TemplateFilter.R(v)) 
+					'`{0}`={1}'.format(str(k).split('#')[0], _TemplateFilter.R(v))
 				for k, v in sorted(var.items())]))
 		return repr(var)
 
@@ -104,7 +104,7 @@ class _TemplateFilter(object):
 		if isinstance(var, dict):
 			return _TemplateFilter.R(var, ignoreintkey)
 		return 'as.list({})'.format(_TemplateFilter.R(var, ignoreintkey))
-	
+
 	@staticmethod
 	def render(var, data = None):
 		"""
@@ -125,12 +125,12 @@ class _TemplateFilter(object):
 				lvars.update(evars)
 				evars = lvars
 				break
-		
+
 		engine = evars.get('__engine')
 		if not engine:
 			raise RuntimeError(
 				"I don't know which template engine to use to render {}...".format(var[:10]))
-		
+
 		engine = TemplateJinja2 if engine == 'jinja2' else TemplateLiquid
 		return engine(var).render(evars)
 
