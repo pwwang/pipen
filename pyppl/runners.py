@@ -4,9 +4,9 @@ Built-in runners for PyPPL
 import re
 import sys
 from os import getcwd
-from box import Box
-from psutil import pid_exists
 from multiprocessing import Lock
+from psutil import pid_exists
+from box import Box
 from .utils import killtree, chmodX, cmdy
 from .exceptions import RunnerSshError
 
@@ -25,9 +25,14 @@ class Runner (object):
 			`job`: The job object
 		"""
 		self.job = job
+		self.script = None
 
+	# pylint: disable=too-many-arguments
 	def wrapScript(self, head = None, pre_script = None, post_script = None,
 		real_script = None, suffix = None, save_oe = True):
+		"""
+		Wrap the script to run
+		"""
 
 		suffix      = suffix or '.' + self.__class__.__name__[6:].lower()
 		self.script = self.job.script + suffix
@@ -69,6 +74,9 @@ class Runner (object):
 
 	@property
 	def runnercmd(self):
+		"""
+		The command to run the real script
+		"""
 		return cmdy.bash(self.script, _hold = True).cmd
 
 	def kill(self):
@@ -215,7 +223,6 @@ class RunnerSsh(Runner):
 
 		sid    = RunnerSsh.LIVE_SERVERS[job.index % len(RunnerSsh.LIVE_SERVERS)]
 		server = servers[sid]
-		key    = keys[sid] if keys else False
 
 		head       = '# run on server: {}'.format(server)
 		pre_script  = conf.get('preScript')
@@ -227,7 +234,7 @@ class RunnerSsh(Runner):
 		self.wrapScript(head = head, pre_script = pre_script,
 			real_script = real_script, post_script = post_script)
 
-		baked = dict(t = server, i = key, _exe = ssh)
+		baked = dict(t = server, i = keys[sid] if keys else False, _exe = ssh)
 		self.ssh = RunnerSsh.SSH.bake(**baked)
 
 	def submit(self):
@@ -333,11 +340,12 @@ class RunnerSge (Runner):
 		head.append('#$ -e %s' % self.job.errfile)
 
 		for k in sorted(conf.keys()):
-			if not k.startswith ('sge.'): continue
+			if not k.startswith ('sge.'):
+				continue
 			val = conf[k]
 			k = k[4:].strip()
 			src = '#$ -' + k
-			if val != True: # {'notify': True} ==> -notify
+			if val is not True: # {'notify': True} ==> -notify
 				src += ' ' + str(val)
 			head.append(src)
 
@@ -416,11 +424,12 @@ class RunnerSlurm (Runner):
 		head.append('#SBATCH -e %s' % self.job.errfile)
 
 		for k in sorted(conf.keys()):
-			if not k.startswith ('slurm.'): continue
+			if not k.startswith ('slurm.'):
+				continue
 			val = conf[k]
 			k = k[6:].strip()
 			src = '#SBATCH -' + (k if len(k)==1 else '-' + k)
-			if val != True: # {'notify': True} ==> -notify
+			if val is not True: # {'notify': True} ==> -notify
 				src += ' ' + str(val)
 			head.append(src)
 

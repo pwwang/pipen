@@ -521,6 +521,7 @@ class Proc (object):
 				self._tidyAfterRun()
 			finally:
 				self.lock.release()
+				remove(path.join(self.workdir, 'proc.lock'))
 		else: # '', resume, resume+
 			self._tidyBeforeRun()
 			try:
@@ -532,6 +533,9 @@ class Proc (object):
 				self._tidyAfterRun()
 			finally:
 				self.lock.release()
+				# remove the lock file, so that I know this process has done
+				# or hasn't started yet, externally.
+				remove(path.join(self.workdir, 'proc.lock'))
 
 	def _buildProps(self):
 		"""

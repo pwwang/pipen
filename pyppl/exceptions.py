@@ -117,12 +117,9 @@ class PyPPLConfigError(Exception):
 
 class JobFailException(Exception):
 	"""Raise when a job failed to run"""
-	pass
 
 class JobSubmissionException(Exception):
 	"""Raise when a job failed to submit"""
-	pass
 
 class JobBuildingException(Exception):
 	"""Raise when a job failed to build"""
-	pass

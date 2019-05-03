@@ -72,7 +72,7 @@ class Jobmgr(object):
 		self.stop    = False
 
 		queue  = PQueue(batch_len = len(jobs))
-		nslots = min(queue.batchLen, conf['nthread'])
+		nslots = min(queue.batchLen, int(conf['nthread']))
 
 		for job in self.jobs:
 			# say nslots = 40
@@ -292,9 +292,9 @@ class Jobmgr(object):
 			failedjobs = [random.choice(self.jobs)]
 		failedjobs[0].showError(len(failedjobs))
 
-		if ex and not isinstance(ex, (JobFailException, JobBuildingException,
-			JobSubmissionException, KeyboardInterrupt)):
-			raise ex # pylint: disable=raising-bad-type
+		if isinstance(ex, Exception) and not isinstance(ex, (JobFailException,
+			JobBuildingException, JobSubmissionException, KeyboardInterrupt)):
+			raise ex
 		exit(1)
 
 	def killWorker(self, runq):

@@ -11,13 +11,13 @@ class TestFilter(testly.TestCase):
 
 	def dataProvider_testStreamFilter(self):
 		r = logging.LogRecord(
-			name     = 'noname',
-			pathname = __file__,
-			args     = None,
-			exc_info = None,
-			level    = logging.INFO,
-			lineno   = 10,
-			msg      = '',
+			name      = 'noname',
+			pathname  = __file__,
+			args      = None,
+			exc_info  = None,
+			level     = logging.INFO,
+			lineno    = 10,
+			msg       = ''
 		)
 		yield '', False, None, r, 'INFO', False
 		yield '', [], None, r, '_INFO', True
@@ -34,10 +34,11 @@ class TestFilter(testly.TestCase):
 
 
 	def testStreamFilter(self, name, levels, leveldiffs, record, msg, out, logfilter = StreamFilter, ispbar = False, done = False):
-		pf = logfilter(name, Logger.initLevels(levels, leveldiffs))
-		record.mylevel = msg
-		record.ispbar = ispbar
-		record.done = done
+		pf               = logfilter(name, Logger.initLevels(levels, leveldiffs))
+		record.mylevel   = msg
+		record.ispbar    = ispbar
+		record.formatted = None
+		record.done      = done
 		self.assertEqual(pf.filter(record), out)
 
 class TestFormatter(testly.TestCase):

@@ -67,7 +67,8 @@ class ProcTree(object):
 			`proc`: The `Proc` instance
 		"""
 		for pnode in ProcTree.NODES.keys():
-			if pnode is proc: continue
+			if pnode is proc:
+				continue
 			if ProcTree.NODES[pnode].sameIdTag(proc):
 				raise ProcTreeProcExists(ProcTree.NODES[pnode], ProcTree.NODES[proc])
 
@@ -130,7 +131,8 @@ class ProcTree(object):
 		# build prevs and nexts
 		for node in ProcTree.NODES.values():
 			depends = node.proc.depends
-			if not depends: continue
+			if not depends:
+				continue
 			for dep in depends:
 				dnode = ProcTree.NODES[dep]
 				if node not in dnode.next:
@@ -211,7 +213,8 @@ class ProcTree(object):
 		starts = self.getStarts()
 		for path in paths:
 			overlap = [pnode for pnode in path if pnode in starts]
-			if not overlap: continue
+			if not overlap:
+				continue
 			index   = max([path.index(pnode) for pnode in overlap])
 			path    = path[:(index+1)]
 			if path:
@@ -249,18 +252,18 @@ class ProcTree(object):
 		nodes = [ProcTree.NODES[start] for start in self.getStarts()]
 		while nodes:
 			# check loops
-			for node in nodes: self.getPaths(node, False)
+			for node in nodes:
+				self.getPaths(node, False)
 
 			nodes2 = []
 			for node in nodes:
 				if not node.next:
 					passed = self.checkPath(node)
-					if passed is True:
-						if node.proc not in self.ends:
-							if node.proc.hide:
-								raise ProcHideError(node.proc, 'end process cannot be hidden.')
-							self.ends.append(node.proc)
-					else:
+					if passed is True and node.proc not in self.ends:
+						if node.proc.hide:
+							raise ProcHideError(node.proc, 'end process cannot be hidden.')
+						self.ends.append(node.proc)
+					elif passed is not True:
 						passed.insert(0, node.proc)
 						failed_paths.append(passed)
 				else:
@@ -271,12 +274,11 @@ class ProcTree(object):
 		if not self.ends:
 			if failed_paths:
 				raise ProcTreeParseError(
-					' <- '.join([fn.name() for fn in failed_paths[0]]), 
+					' <- '.join([fn.name() for fn in failed_paths[0]]),
 					'Failed to determine end processes, one of the paths cannot go through')
-			else:
-				raise ProcTreeParseError(
-					', '.join(start.name() for start in self.getStarts()),
-					'Failed to determine end processes by start processes')
+			raise ProcTreeParseError(
+				', '.join(start.name() for start in self.getStarts()),
+				'Failed to determine end processes by start processes')
 		return self.ends
 
 	def getAllPaths(self):

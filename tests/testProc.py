@@ -165,8 +165,9 @@ class TestProc(testly.TestCase):
 			self.assertRaises(exception, Proc, tag = tag, desc = desc, id = id)
 		else:
 			p = Proc(tag = tag, desc = desc, id = id)
+			cfg['nthread'] = p.config.nthread
 			self.assertDictEqual(p.props, props)
-			self.assertDictEqual({k:v for k,v in p.config.items() if not k.startswith('_')}, cfg)
+			self.assertDictEqual({k:v for k,v in p.config.items() if k in cfg}, cfg)
 			config2 = cfg.copy()
 			del config2['tag']
 			del config2['desc']
@@ -175,7 +176,7 @@ class TestProc(testly.TestCase):
 			#props['sets'] = list(sorted(['runner', 'echo', 'depends', 'expect', 'callfront', 'script', 'cache', 'nthread', 'beforeCmd', 'template', 'rc', 'input', 'forks', 'acache', 'workdir', 'resume', 'exhow', 'args', 'exow', 'dirsig', 'ppldir', 'errhow', 'lang', 'tplenvs', 'exdir', 'expart', 'afterCmd', 'callback', 'aggr', 'output', 'errntry']))
 			p2.props['sets'] = set()
 			self.assertDictEqual(p2.props, props)
-			self.assertDictEqual({k:v for k,v in p2.config.items() if not k.startswith('_')}, cfg)
+			self.assertDictEqual({k:v for k,v in p2.config.items() if k in cfg}, cfg)
 
 			
 	def dataProvider_testGetAttr(self):
@@ -313,7 +314,7 @@ class TestProc(testly.TestCase):
 			'id': 'pCopy',
 			'input': '',
 			'lang': 'bash',
-			'nthread': min(int(cpu_count() / 2), 16),
+			'nthread': pCopy.config.nthread,
 			'output': '',
 			'ppldir': path.realpath('./workdir'),
 			'rc': 0,
@@ -374,7 +375,7 @@ class TestProc(testly.TestCase):
 			#'iftype': 'indir',
 			'input': '',
 			'lang': 'bash',
-			'nthread': min(int(cpu_count() / 2), 16),
+			'nthread': pCopy.config.nthread,
 			'output': '',
 			'ppldir': path.realpath('./workdir'),
 			'rc': 0,
@@ -391,7 +392,7 @@ class TestProc(testly.TestCase):
 		self.maxDiff = None
 		p = orgp.copy(tag = tag, desc = desc, id = newid)
 		self.assertDictEqual(p.props, nprops)
-		self.assertDictEqual({k:v for k,v in p.config.items() if not k.startswith('_')}, nconfig)
+		self.assertDictEqual({k:v for k,v in p.config.items() if k in nconfig}, nconfig)
 		p.args.a = 1
 		p.props['output']['a:var'] = 'outputa'
 		p.tplenvs.b = 2
@@ -410,7 +411,7 @@ class TestProc(testly.TestCase):
 		# original process keeps intact
 		self.assertDictEqual(orgp.props, oprops)
 		orgp.config['tplenvs'] = Box()
-		self.assertDictEqual({k:v for k,v in orgp.config.items() if not k.startswith('_')}, oconfig)
+		self.assertDictEqual({k:v for k,v in orgp.config.items() if k in oconfig}, oconfig)
 		
 	def dataProvider_testSuffix(self):
 		pSuffix = Proc()

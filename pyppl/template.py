@@ -3,7 +3,8 @@ Template adaptor for PyPPL
 """
 from __future__ import unicode_literals
 
-import json, inspect
+import json
+import inspect
 from os import path, readlink
 from liquid import Liquid
 from .utils import string_types
@@ -19,11 +20,13 @@ class _TemplateFilter(object):
 
 	@staticmethod
 	def read(var):
+		"""Read the contents from a file"""
 		with open(var) as fvar:
 			return fvar.read()
 
 	@staticmethod
 	def readlines(var, skip_empty_lines = True):
+		"""Read the lines from a file"""
 		ret = []
 		with open(var) as fvar:
 			for line in fvar:
@@ -35,6 +38,7 @@ class _TemplateFilter(object):
 
 	@staticmethod
 	def basename(var, orig = False):
+		"""Get the basename of a path"""
 		bname = path.basename(var)
 		if orig or not bname.startswith('['):
 			return bname
@@ -61,10 +65,13 @@ class _TemplateFilter(object):
 
 	@staticmethod
 	def prefix(var, orig = False, dot = -1):
+		"""Get the prefix part of a path"""
 		return path.join(path.dirname(var), _TemplateFilter.filename(var, orig, dot))
 
+	# pylint: disable=invalid-name,too-many-return-statements
 	@staticmethod
-	def R(var, ignoreintkey = True): # pylint: disable=invalid-name
+	def R(var, ignoreintkey = True):
+		"""Convert a value into R values"""
 		if var is True:
 			return 'TRUE'
 		if var is False:
@@ -100,6 +107,7 @@ class _TemplateFilter(object):
 
 	@staticmethod
 	def Rlist(var, ignoreintkey = True): # pylint: disable=invalid-name
+		"""Convert a dict into an R list"""
 		assert isinstance(var, (list, tuple, set, dict))
 		if isinstance(var, dict):
 			return _TemplateFilter.R(var, ignoreintkey)

@@ -4,7 +4,6 @@ Custome logger for PyPPL
 import re
 import sys
 import logging
-import threading
 from collections import OrderedDict
 from copy import copy
 from functools import partial
@@ -352,7 +351,7 @@ class FileFilter(StreamFilter):
 	Logging filter for file
 	"""
 	def filter(self, record):
-		if record.ispbar and not record.done:
+		if (record.ispbar and not record.done) or not hasattr(record, 'formatted'):
 			return False
 		return super(FileFilter, self).filter(record)
 
@@ -368,7 +367,9 @@ class FileFormatter(logging.Formatter):
 	def format(self, record):
 		# record has already been formatted by StreamFormatter
 		# just remove the colors
-		return self.ansiRegex.sub('', record.formatted)
+		if hasattr(record, 'formatted'):
+			return self.ansiRegex.sub('', record.formatted)
+		return super(FileFormatter, self).format(record)
 
 class Logger(object):
 	"""

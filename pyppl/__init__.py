@@ -185,18 +185,19 @@ class PyPPL (object):
 			if cfile.endswith('.osenv'):
 				logger.config('Read from environment variables with prefix: %s',
 					path.basename(cfile)[:-6])
+			cfile = path.expanduser(cfile)
 			if not path.isfile(cfile):
 				continue
 			if cfile.endswith('.yaml') or cfile.endswith('yml'):
 				try:
-					import yaml # pylint: disable=unused-variable
+					import yaml # pylint: disable=W0611
 					logger.config('Read from %s', cfile)
 				except ImportError:
 					logger.warning('Module PyYAML not installed, config file ignored: %s', cfile)
 			elif cfile.endswith('.toml'):
 				try:
 
-					import toml # pylint: disable=unused-variable
+					import toml # pylint: disable=W0611
 					logger.config('Read from %s', cfile)
 				except ImportError:
 					logger.warning('Module toml not installed, config file ignored: %s', cfile)
