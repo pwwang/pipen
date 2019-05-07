@@ -5,10 +5,9 @@ from datetime import datetime
 from threading import Lock
 from glob import glob
 from collections import OrderedDict
-from box import Box
 import safefs
 from .logger import logger
-from .utils import cmdy, string_types, briefPath, filesig, fileflush
+from .utils import cmdy, string_types, briefPath, filesig, fileflush, Box
 from .exceptions import JobInputParseError, JobOutputParseError
 
 class Job(object):
@@ -746,7 +745,8 @@ class Job(object):
 		if not self.config['exdir']:
 			return
 
-		assert path.exists(self.config['exdir'])
+		assert path.exists(self.config['exdir']) and path.isdir(self.config['exdir']), \
+			'Export directory has to be a directory.'
 		assert isinstance(self.config['expart'], list)
 
 		from . import Proc

@@ -6,11 +6,11 @@ import copy as pycopy
 from time import time
 from collections import OrderedDict
 from os import path, makedirs, remove
-from box import Box
 import yaml
 import filelock
 from simpleconf import NoSuchProfile
 from .logger import logger
+from .utils import Box
 from .job import Job
 from .jobmgr import Jobmgr
 from .aggr import Aggr
@@ -446,6 +446,7 @@ class Proc (object):
 			#killedjobs  = []
 			successjobs = []
 			cachedjobs  = []
+			
 			for job in self.jobs:
 				if job.status == Job.STATUS_BUILTFAILED:
 					bfailedjobs.append(job.index)

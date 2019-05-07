@@ -6,14 +6,42 @@ import re
 import json
 from os import path, walk
 from hashlib import md5
-from threading import Thread, Lock
+from threading import Thread
 import cmdy
 import safefs
 import psutil
-from box import Box
+from box import Box as _Box
 from simpleconf import Config
 cmdy   = cmdy(_raise = False) # pylint: disable=invalid-name
 config = Config() # pylint: disable=invalid-name
+
+class Box(_Box):
+
+	def __init__(self, *args, **kwargs):
+		kwargs['box_intact_types'] = [list]
+		super(Box, self).__init__(*args, **kwargs)
+
+	def __repr__(self):
+		"""Make sure repr can retrieve the object back"""
+		return 'Box(%r)' % self.items()
+
+	def copy(self):
+		return self.__class__(super(_Box, self).copy())
+
+	def __copy__(self):
+		return self.__class__(super(_Box, self).copy())
+
+class OBox(Box):
+
+	def __init__(self, *args, **kwargs):
+		kwargs['ordered_box'] = True
+		super(Box, self).__init__(*args, **kwargs)
+
+	def __repr__(self):
+		"""Make sure repr can retrieve the object back"""
+		return 'Box(%r, ordered_box = True)' % self.items()
+
+OrderedBox = OBox # pylint: disable=invalid-name
 
 try:
 	from Queue import Queue, PriorityQueue, Empty as QueueEmpty
@@ -372,7 +400,7 @@ def killtree(pid, killme = True, sig = 9, timeout = None): # signal.SIGKILL
 
 	return psutil.wait_procs(children, timeout=timeout)
 
-def chmodX(filepath, filetype = None):
+def chmodX(filepath):
 	"""
 	Convert file1 to executable or add extract shebang to cmd line
 	@returns:
@@ -503,14 +531,17 @@ class ThreadPool(object):
 			`cleanup` : The cleanup function
 		"""
 		try:
-			while any(thread.isAlive() for thread in self.threads):
-				for thread in self.threads:
-					if thread.ex:
-						if callable(cleanup):
-							cleanup(ex = thread.ex)
-						else:
-							raise thread.ex
+			threads_alive = 0
+			for thread in self.threads:
+				if thread.isAlive():
+					threads_alive += 1
 					thread.join(timeout = interval)
+					if thread.ex:
+						if not callable(cleanup):
+							raise thread.ex
+						cleanup(ex = thread.ex)
+			if threads_alive > 0:
+				self.join(interval = interval, cleanup = cleanup)
 		except KeyboardInterrupt as ex:
 			if callable(cleanup):
 				cleanup(ex = ex)
@@ -531,38 +562,39 @@ class PQueue(PriorityQueue):
 			raise ValueError('`batch_len` is required for PQueue.')
 		PriorityQueue.__init__(self, maxsize)
 		self.batchLen = batch_len
-		self.lock     = Lock()
 
-	def put(self, item, block = True, timeout = None, where = 0):
+		# batches
+		# 0: first run trial     # try to run a job has been built asap
+		# 1: first submit trial  # try to submit a job has been built asap
+		# 2: build               # if all built jobs has been ran and submitted, build new ones
+		# 3: second run trial    # first runs haven't done, don't block building
+		# 4: second submit trial # first runs haven't done, don't block building
+		# 5: empty               # just for easy-caculation of index
+		# 6: third run trial
+		# 7: third submit trial
+		# 8: empty
+
+	def putToFirstRun(self, item, block = True, timeout = None):
+		super(PQueue, self).put(item, block = block, timeout = timeout)
+
+	def putToFirstSubmit(self, item, block = True, timeout = True):
+		super(PQueue, self).put(item + self.batchLen, block = block, timeout = timeout)
+	
+	def putToBuild(self, item, block = True, timeout = None):
+		super(PQueue, self).put(item + 2 * self.batchLen, block = block, timeout = timeout)
+
+	def put(self, item, batch, block = True, timeout = None):
 		"""
 		Put item to the queue, just like `PriorityQueue.put` but with an extra argument
 		@params:
 			`where`: Which batch to put the item
 		"""
-		with self.lock:
-			PriorityQueue.put(self, item + where * self.batchLen, block, timeout)
-
-	def put_nowait(self, item, where = 0):
-		"""
-		Put item to the queue, just like `PriorityQueue.put_nowait` but with an extra argument
-		@params:
-			`where`: Which batch to put the item
-		"""
-		with self.lock:
-			PriorityQueue.put_nowait(self, item + where * self.batchLen)
+		super(PQueue, self).put(item + (3 + batch) * self.batchLen, block, timeout)
 
 	def get(self, block = True, timeout = None):
 		"""
 		Get an item from the queue
 		"""
-		item = PriorityQueue.get(self, block, timeout)
+		item = super(PQueue, self).get(block, timeout)
 		ret  = divmod(item, self.batchLen)
-		return (ret[1], ret[0])
-
-	def get_nowait(self):
-		"""
-		Get an item from the queue without waiting
-		"""
-		item = PriorityQueue.get(self)
-		ret  = divmod(item, self.batchLen)
-		return (ret[1], ret[0])
+		return ret[1], ret[0]

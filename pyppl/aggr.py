@@ -3,8 +3,7 @@ The aggregation of procs
 """
 import fnmatch
 from collections import OrderedDict
-from box import Box
-from .utils import varname
+from .utils import varname, Box
 
 class _Proxy(list):
 	"""

@@ -142,6 +142,18 @@ class _TemplateFilter(object):
 		engine = TemplateJinja2 if engine == 'jinja2' else TemplateLiquid
 		return engine(var).render(evars)
 
+	@staticmethod
+	def box(var):
+		if not isinstance(var, dict):
+			raise TypeError('Cannot coerce non-dict object to Box.')
+		return 'Box(%r)' % var.items()
+	
+	@staticmethod
+	def obox(var):
+		if not isinstance(var, dict):
+			raise TypeError('Cannot coerce non-dict object to OrderedBox.')
+		return 'Box(%r, ordered_box = True)' % var.items()
+
 class Template(object):
 	"""
 	Template wrapper base

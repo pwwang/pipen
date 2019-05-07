@@ -5,7 +5,8 @@ jobmgr module for PyPPL
 import random
 from time import sleep
 from contextlib import contextmanager
-from .utils import config, PQueue, ThreadPool, Lock
+from threading import Lock
+from .utils import config, Queue, PQueue, ThreadPool
 from .job import Job
 from .logger import logger
 from .exceptions import JobFailException, JobSubmissionException, JobBuildingException
@@ -75,11 +76,7 @@ class Jobmgr(object):
 		nslots = min(queue.batchLen, int(conf['nthread']))
 
 		for job in self.jobs:
-			# say nslots = 40
-			# where = 0 if job.index = [0, 19]
-			# where = 1 if job.index = [20, 39]
-			# ...
-			queue.put(job.index, where = int(2*job.index/nslots))
+			queue.putToBuild(job.index)
 
 		ThreadPool(
 			nslots,
@@ -94,82 +91,89 @@ class Jobmgr(object):
 			`queue`: The priority queue
 		"""
 		while not queue.empty() and not self.stop:
-			qval = queue.get()
-			self.workon(qval, queue)
+			index, batch = queue.get()
+			self._workonBuilding(index, batch, queue)
+			self._workonSubmitting(index, batch, queue)
+			self._workonRunning(index, batch, queue)
 			queue.task_done()
 
-	# pylint: disable=too-many-branches
-	def workon(self, index, queue):
-		"""
-		Work on a queue item
-		@params:
-			`index`: The job index and batch number, got from the queue
-			`queue`: The priority queue
-		"""
-		index, batch = index
+	def _workonBuilding(self, index, batch, queue):
 		job = self.jobs[index]
-		if job.status == Job.STATUS_INITIATED:
+		if job.status != Job.STATUS_INITIATED:
+			return
+		self.progressbar(index)
+		job.status = Job.STATUS_BUILDING
+		job.build()
+		# status then could be:
+		# STATUS_DONECACHED, STATUS_BUILT, STATUS_BUILTFAILED
+		if job.status == Job.STATUS_DONECACHED:
 			self.progressbar(index)
-			job.status = Job.STATUS_BUILDING
-			job.build()
-			# status then could be:
-			# STATUS_DONECACHED, STATUS_BUILT, STATUS_BUILTFAILED
-			if job.status == Job.STATUS_DONECACHED:
+		elif job.status == Job.STATUS_BUILTFAILED:
+			self.progressbar(index)
+			raise JobBuildingException()
+		else:
+			queue.putToFirstSubmit(index)
+	
+	def _workonSubmitting(self, index, batch, queue):
+		job = self.jobs[index]
+		if not job.status == Job.STATUS_BUILT and not job.status == Job.STATUS_RETRYING:
+			return
+		with self.canSubmit() as can:
+			if can:
+				job.status = Job.STATUS_SUBMITTING
 				self.progressbar(index)
-			elif job.status == Job.STATUS_BUILTFAILED:
-				self.progressbar(index)
-				raise JobBuildingException()
-			else:
-				queue.put(index, where = batch+3)
-		elif job.status == Job.STATUS_BUILT or job.status == Job.STATUS_RETRYING:
-			# when slots are available, and reserve it
-			with self.canSubmit() as can:
-				if can:
-					job.status = Job.STATUS_SUBMITTING
-					self.progressbar(index)
-			if job.status == Job.STATUS_SUBMITTING:
-				submitted = job.submit()
-				# in case other thread is check canSubmit
-				with Jobmgr.SBMLOCK:
-					job.status = Job.STATUS_SUBMITTED if submitted else Job.STATUS_SUBMITFAILED
-				if job.status == Job.STATUS_SUBMITFAILED:
-					self.progressbar(index)
-					raise JobSubmissionException()
-			else:
-				sleep(.05)
-			queue.put(index, where = batch+3)
-		elif job.status == Job.STATUS_SUBMITTED or job.status == Job.STATUS_RUNNING:
-			oldstatus = job.status
-			if oldstatus == Job.STATUS_RUNNING:
-				# Just don't run it too frequently
-				sleep(.5)
-			else:
-				self.progressbar(index)
+		if job.status == Job.STATUS_SUBMITTING:
+			submitted = job.submit()
+			# in case other thread is check canSubmit
+			with Jobmgr.SBMLOCK:
+				job.status = Job.STATUS_SUBMITTED if submitted else Job.STATUS_SUBMITFAILED
 
-			# check if job finishes, or any logs to output
-			job.poll()
-			# status then could be:
-			# STATUS_RUNNING, STATUS_DONEFAILED, STATUS_DONE
-			if job.status == Job.STATUS_RUNNING:
-				if oldstatus != job.status:
-					self.progressbar(index)
-				queue.put(index, where = batch+3)
-
-			elif job.status == Job.STATUS_DONEFAILED:
-				if job.retry() == 'halt':
-					# status:
-					# STATUS_ENDFAILED, STATUS_RETRYING
-					raise JobFailException()
-				if job.status == Job.STATUS_RETRYING:
-					job.logger[Jobmgr.PBAR_LEVEL[job.status]](
-						"Retrying %s/%s ...", job.ntry, job.config['errntry'])
-					# retry as soon as possible
-					queue.put(index, where = batch+3)
-				else: # STATUS_ENDFAILED
-					self.progressbar(index)
-			else:
+			if job.status == Job.STATUS_SUBMITFAILED:
 				self.progressbar(index)
+				raise JobSubmissionException()
+		elif batch == 1:
+			queue.putToFirstRun(index)
+		else:
+			sleep(.5)
+			queue.put(index, batch - 1)
 
+	def _workonRunning(self, index, batch, queue):
+		job = self.jobs[index]
+		if not job.status == Job.STATUS_SUBMITTED and not job.status == Job.STATUS_RUNNING:
+			return
+
+		if batch % 3 == 0: # previously running
+			# Just don't query it too frequently
+			sleep(.5)
+		else:
+			self.progressbar(index)
+
+		# check if job finishes, or any logs to output
+		job.poll()
+		# status then could be:
+		# STATUS_RUNNING, STATUS_DONEFAILED, STATUS_DONE
+		if job.status == Job.STATUS_RUNNING:
+			if batch % 3 != 0:
+				self.progressbar(index)
+			queue.put(index, batch)
+
+		elif job.status == Job.STATUS_DONEFAILED:
+			rrr = job.retry()
+			if rrr == 'halt':
+				# status:
+				# STATUS_ENDFAILED, STATUS_RETRYING
+				raise JobFailException()
+			if job.status == Job.STATUS_RETRYING:
+				job.logger[Jobmgr.PBAR_LEVEL[job.status]](
+					"Retrying %s/%s ...", job.ntry, job.config['errntry'])
+				# retry as soon as possible
+				queue.put(index, 1)
+			else: # STATUS_ENDFAILED
+				self.progressbar(index)
+		else:
+			self.progressbar(index)
+		
+		
 	# pylint: disable=too-many-locals,too-many-statements
 	def progressbar(self, jobidx):
 		"""
@@ -277,7 +281,7 @@ class Jobmgr(object):
 			job.index for job in self.jobs
 			if job.status in (Job.STATUS_RUNNING, Job.STATUS_SUBMITTED, Job.STATUS_SUBMITTING)
 		]
-		killq = PQueue(batch_len = len(self.jobs))
+		killq = Queue()
 		for rjob in rjobs:
 			killq.put(rjob)
 
@@ -304,11 +308,12 @@ class Jobmgr(object):
 			`runq`: The queue that has running jobs.
 		"""
 		while not runq.empty():
-			i = runq.get()[0]
+			i = runq.get()
 			job = self.jobs[i]
 			job.status = Job.STATUS_KILLING
 			self.progressbar(i)
 			job.kill()
+			job.status = Job.STATUS_KILLED
 			self.progressbar(i)
 			runq.task_done()
 

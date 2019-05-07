@@ -6,8 +6,7 @@ import sys
 from os import getcwd
 from multiprocessing import Lock
 from psutil import pid_exists
-from box import Box
-from .utils import killtree, chmodX, cmdy
+from .utils import killtree, chmodX, cmdy, Box
 from .exceptions import RunnerSshError
 
 class Runner (object):

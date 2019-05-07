@@ -11,8 +11,7 @@ from os import path
 from time import time
 from multiprocessing import cpu_count
 
-from box import Box
-from .utils import config
+from .utils import config, Box, OBox
 
 __version__ = "2019.2.20"
 
@@ -36,7 +35,7 @@ def loadConfiguratiaons():
 		# The command to run after jobs start
 		afterCmd   = '',
 		# The extra arguments for the process
-		args       = Box(),
+		args       = OBox(),
 		# The command to run before jobs start
 		beforeCmd  = '',
 		# The cache option, True/False/export

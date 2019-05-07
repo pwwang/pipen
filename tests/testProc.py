@@ -5,12 +5,12 @@ import copy as pycopy
 
 import yaml
 from os import path, makedirs
-from box import Box
 from shutil import rmtree
 from tempfile import gettempdir
 from collections import OrderedDict
 from multiprocessing import cpu_count
-from pyppl import Proc, Box, Aggr, utils, ProcTree, Channel, Job, logger
+from pyppl import Proc, Aggr, utils, ProcTree, Channel, Job, logger
+from pyppl.utils import Box
 from pyppl.exceptions import ProcTagError, ProcAttributeError, ProcTreeProcExists, ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
 from pyppl.template import TemplateLiquid
 if helpers.moduleInstalled('jinja2'):
@@ -403,7 +403,7 @@ class TestProc(testly.TestCase):
 		self.assertEqual(p.envs.b, 2)
 		self.assertEqual(orgp.args, {})
 		self.assertEqual(orgp.sets, {'workdir'})
-		self.assertIsInstance(p.args, Box)
+		self.assertIsInstance(p.args, dict) # ConfigBox
 		self.assertEqual(p.args, {'a': 1})
 		self.assertEqual(p.output, {'a:var': 'outputa'})
 		self.assertEqual(p.envs, {'b': 2})

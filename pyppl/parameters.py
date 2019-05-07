@@ -351,12 +351,6 @@ class Parameter (object):
 	def __contains__(self, other):
 		return other in str(self)
 
-	def __eq__(self, other):
-		return str(self) == str(other)
-
-	def __ne__(self, other):
-		return not self.__eq__(other)
-
 	def __bool__(self):
 		return bool(self.value)
 
@@ -444,6 +438,9 @@ class Parameter (object):
 		self._props['value'] = val
 		return self
 
+	def __eq__(self, other):
+		return str(self) == str(other)
+
 	def setName (self, name):
 		"""
 		Set the name of the parameter
@@ -456,6 +453,8 @@ class Parameter (object):
 	def __hash__(self):
 		return id(self)
 
+	def __ne__(self, other):
+		return not self.__eq__(other)
 
 class Parameters (object):
 	"""
@@ -559,6 +558,9 @@ class Parameters (object):
 			[ho.strip() for ho in hopts.split(',')]
 		return self
 
+	def __eq__(self, other):
+		return id(self) == id(other)
+
 	def __repr__(self):
 		return '<Parameters({}) @ {}>'.format(','.join(
 			p.name+':'+str(p.type) for p in self._params.values()
@@ -566,9 +568,6 @@ class Parameters (object):
 
 	def __hash__(self):
 		return id(self)
-
-	def __eq__(self, other):
-		return id(self) == id(other)
 
 	def __ne__(self, other):
 		return not self.__eq__(other)
