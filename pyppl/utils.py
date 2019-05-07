@@ -575,13 +575,13 @@ class PQueue(PriorityQueue):
 		# 8: empty
 
 	def putToFirstRun(self, item, block = True, timeout = None):
-		super(PQueue, self).put(item, block = block, timeout = timeout)
+		PriorityQueue.put(self, item, block = block, timeout = timeout)
 
 	def putToFirstSubmit(self, item, block = True, timeout = True):
-		super(PQueue, self).put(item + self.batchLen, block = block, timeout = timeout)
+		PriorityQueue.put(self, item + self.batchLen, block = block, timeout = timeout)
 	
 	def putToBuild(self, item, block = True, timeout = None):
-		super(PQueue, self).put(item + 2 * self.batchLen, block = block, timeout = timeout)
+		PriorityQueue.put(self, item + 2 * self.batchLen, block = block, timeout = timeout)
 
 	def put(self, item, batch, block = True, timeout = None):
 		"""
@@ -589,12 +589,12 @@ class PQueue(PriorityQueue):
 		@params:
 			`where`: Which batch to put the item
 		"""
-		super(PQueue, self).put(item + (3 + batch) * self.batchLen, block, timeout)
+		PriorityQueue.put(self, item + (3 + batch) * self.batchLen, block, timeout)
 
 	def get(self, block = True, timeout = None):
 		"""
 		Get an item from the queue
 		"""
-		item = super(PQueue, self).get(block, timeout)
+		item = PriorityQueue.get(self, block, timeout)
 		ret  = divmod(item, self.batchLen)
 		return ret[1], ret[0]
