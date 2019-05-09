@@ -1,10 +1,10 @@
 """
 A set of utitities for PyPPL
 """
-import inspect
 import re
-import json
-from os import path, walk
+import math
+import inspect
+from os import path, walk, sep as pathsep
 from hashlib import md5
 from threading import Thread
 import cmdy
@@ -23,7 +23,7 @@ class Box(_Box):
 
 	def __repr__(self):
 		"""Make sure repr can retrieve the object back"""
-		return 'Box(%r)' % self.items()
+		return 'Box(%r, box_intact_types = (list,))' % self.items()
 
 	def copy(self):
 		return self.__class__(super(_Box, self).copy())
@@ -35,11 +35,11 @@ class OBox(Box):
 
 	def __init__(self, *args, **kwargs):
 		kwargs['ordered_box'] = True
-		super(Box, self).__init__(*args, **kwargs)
+		super(OBox, self).__init__(*args, **kwargs)
 
 	def __repr__(self):
 		"""Make sure repr can retrieve the object back"""
-		return 'Box(%r, ordered_box = True)' % self.items()
+		return 'Box(%r, box_intact_types = (list,), ordered_box = True)' % self.items()
 
 OrderedBox = OBox # pylint: disable=invalid-name
 
@@ -52,43 +52,6 @@ try:
 	string_types = basestring # pylint: disable=invalid-name
 except NameError: # pragma: no cover
 	string_types = str # pylint: disable=invalid-name
-
-try:
-	from ConfigParser import ConfigParser
-except ImportError: # pragma: no cover
-	from configparser import ConfigParser
-
-ftools = Box() # pylint: disable=invalid-name
-try:
-	from functools import reduce, map, filter
-	ftools.reduce = reduce
-	ftools.map    = map
-	ftools.filter = filter
-except ImportError: # pragma: no cover
-	ftools.reduce = reduce
-	ftools.map    = map
-	ftools.filter = filter
-
-try:
-	unicode
-	def _byteify(input, encoding='utf-8'):
-		if isinstance(input, dict):
-			return {_byteify(key): _byteify(value) for key, value in input.items()}
-		elif isinstance(input, list):
-			return [_byteify(element) for element in input]
-		elif isinstance(input, unicode):
-			return input.encode(encoding)
-		else:
-			return input
-	# pylint: disable=invalid-name
-	jsonLoads = lambda string, encoding = 'utf-8': _byteify(json.loads(string), encoding)
-except NameError: # py3
-	jsonLoads = json.loads # pylint: disable=invalid-name
-
-try:
-	ftools.range = xrange
-except NameError: # pragma: no cover
-	ftools.range = range
 
 def varname(context = 31):
 	"""
@@ -120,49 +83,6 @@ def varname(context = 31):
 	return 'var_%s' % (varname.index - 1)
 
 varname.index = 0
-
-def reduce(func, vec):
-	"""
-	Python2 and Python3 compatible reduce
-	@params:
-		`func`: The reduce function
-		`vec`: The list to be reduced
-	@returns:
-		The reduced value
-	"""
-	return ftools.reduce(func, vec)
-
-def map(func, vec):
-	"""
-	Python2 and Python3 compatible map
-	@params:
-		`func`: The map function
-		`vec`: The list to be maped
-	@returns:
-		The maped list
-	"""
-	return list(ftools.map(func, vec))
-
-def filter(func, vec):
-	"""
-	Python2 and Python3 compatible filter
-	@params:
-		`func`: The filter function
-		`vec`:  The list to be filtered
-	@returns:
-		The filtered list
-	"""
-	return list(ftools.filter(func, vec))
-
-def range (i, *args, **kwargs):
-	"""
-	Convert a range to list, because in python3, range is not a list
-	@params:
-		`r`: the range data
-	@returns:
-		The converted list
-	"""
-	return list(ftools.range(i, *args, **kwargs))
 
 def split (string, delimter, trim = True):
 	"""
@@ -213,32 +133,6 @@ def split (string, delimter, trim = True):
 	ret.append(rest)
 	return ret
 
-def dictUpdate(orig_dict, new_dict):
-	"""
-	Update a dictionary recursively.
-	@params:
-		`orig_dict`: The original dictionary
-		`new_dict`:  The new dictionary
-	@examples:
-		```python
-		od1 = {"a": {"b": {"c": 1, "d":1}}}
-		od2 = {key:value for key:value in od1.items()}
-		nd  = {"a": {"b": {"d": 2}}}
-		od1.update(nd)
-		# od1 == {"a": {"b": {"d": 2}}}, od1["a"]["b"] is lost
-		dictUpdate(od2, nd)
-		# od2 == {"a": {"b": {"c": 1, "d": 2}}}
-		```
-	"""
-	for key, val in new_dict.items():
-
-		if isinstance(val, list):
-			orig_dict[key] = val[:]
-		elif key in orig_dict and isinstance(orig_dict[key], dict) and isinstance(val, dict):
-			dictUpdate(orig_dict[key], new_dict[key])
-		else:
-			orig_dict[key] = new_dict[key]
-
 def funcsig (func):
 	"""
 	Get the signature of a function
@@ -251,7 +145,7 @@ def funcsig (func):
 	if callable (func):
 		try:
 			from inspect import getsource
-			sig = getsource(func)
+			sig = getsource(func).strip()
 		except Exception: # pragma: no cover
 			sig = func.__name__
 	else:
@@ -294,11 +188,12 @@ def formatSecs (seconds):
 	hour, minute = divmod(minute, 60)
 	return "%02d:%02d:%02d.%03.0f" % (hour, minute, sec, 1000*(sec-int(sec)))
 
-def alwaysList (data):
+def alwaysList (data, trim = True):
 	"""
 	Convert a string or a list with element
 	@params:
 		`data`: the data to be converted
+		`trim`: trim the whitespaces for each item or not. Default: True
 	@examples:
 		```python
 		data = ["a, b, c", "d"]
@@ -309,17 +204,10 @@ def alwaysList (data):
 		The split list
 	"""
 	if isinstance(data, string_types):
-		ret = split (data, ',')
-	elif isinstance(data, list):
-		ret = []
-		for dat in data:
-			if ',' in dat:
-				ret += split(dat, ',')
-			else:
-				ret.append (dat)
-	else:
-		raise ValueError('Expect string or list to convert to list.')
-	return [item.strip() for item in ret]
+		return split(data, ',', trim)
+	if isinstance(data, list):
+		return sum((alwaysList(dat, trim) for dat in data), [])
+	raise ValueError('Expect string or list to convert to list.')
 
 def briefList(blist):
 	"""
@@ -355,39 +243,53 @@ def briefList(blist):
 			ret.append(str(group[0]) + '-' + str(group[-1]))
 	return ', '.join(ret)
 
-def briefPath(bpath, cutoff = 0, keep = 1):
+def briefPath(bpath, cutoff = 0):
 	"""
 	Show briefed path in logs
 	/abcde/hijklm/opqrst/uvwxyz/123456 will be shorted as:
 	/a/h/opqrst/uvwxyz/123456
 	@params:
-		`bpath`       : The path
-		`cutoff`  : Shorten the whole path if it more than length of cutoff. Default: `0`
-		`keep`    : First N alphabetic chars to keep. Default: `1`
+		`bpath` : The path
+		`cutoff`: Shorten the whole path if it more than length of cutoff. Default: `0`
 	@returns:
 		The shorted path
 	"""
 	if not cutoff or not bpath:
 		return bpath
-	from os import sep
+
 	bpath = path.normpath(bpath)
-	lenp = len(bpath)
-	if lenp <= cutoff:
+	lenp  = len(bpath)
+	more  = lenp - cutoff
+
+	if more <= 0:
 		return bpath
 
-	more = lenp - cutoff
-	parts = bpath.split(sep)
-	parts[0] = parts[0] or sep
+	parts = bpath.split(pathsep)
+	if len(parts) == 1:
+		return bpath
 
-	for i, part in enumerate(parts[:-1]):
-		newpart = re.sub(r'^([^A-Za-z0-9]*\w{%s}).*$' % keep, r'\1', part)
-		newlen  = len(newpart)
-		more = more - (len(part) - newlen)
-		if more < 0:
-			parts[i] = part[:newlen-more]
+	if not parts[0]:
+		parts[0] = pathsep
+	basename = parts.pop(-1)
+	while more > 0:
+		lens      = [len(part) for part in parts]
+		maxlen    = max(lens)
+		nextlen   = max([length for length in lens if length < maxlen] + [1])
+		if nextlen == maxlen: # == 1, nothing to delete
 			break
-		parts[i] = newpart
-	return path.join(*parts)
+		maxidx    = [i for i, length in enumerate(lens) if length == maxlen]
+		nmax      = len(maxidx)
+		if more < nmax:
+			for i in range(more):
+				parts[maxidx[nmax-i-1]] = parts[maxidx[nmax-i-1]][:-1]
+			more = 0
+			continue
+		lentodel = min(maxlen - nextlen, int(more/nmax))
+		for i in maxidx:
+			more -= lentodel
+			parts[i] = parts[i][:-lentodel]
+
+	return path.join(*(parts + [basename]))
 
 def killtree(pid, killme = True, sig = 9, timeout = None): # signal.SIGKILL
 
@@ -415,7 +317,7 @@ def chmodX(filepath):
 	try:
 		# pylint: disable=invalid-name
 		ChmodError = (OSError, PermissionError, UnicodeDecodeError)
-	except NameError:
+	except NameError: # pragma: no cover
 		# pylint: disable=invalid-name
 		ChmodError = OSError
 
@@ -424,16 +326,13 @@ def chmodX(filepath):
 		chmod(filepath, stat(filepath).st_mode | S_IEXEC)
 	except ChmodError:
 		shebang = None
-		fsb = open(filepath)
-		try:
-			shebang = fsb.readline().strip()
-		except ChmodError: # pragma: no cover
-			# may raise UnicodeDecodeError for python3
-			pass
-		finally:
-			# make sure file's closed,
-			# otherwise a File text busy will be raised when trying to execute it
-			fsb.close()
+		with open(filepath) as fsb:
+			try:
+				shebang = fsb.readline().strip()
+			except ChmodError: # pragma: no cover
+				# may raise UnicodeDecodeError for python3
+				pass
+
 		if not shebang or not shebang.startswith('#!'):
 			raise OSError(
 				('Unable to make {} as executable by chmod ' +
@@ -467,12 +366,12 @@ def filesig(filepath, dirsig = True):
 		mtime = path.getmtime(filepath)
 	return [filepath, int(mtime)]
 
-def fileflush(filed, lastmsg, end = False):
+def fileflush(filed, residue, end = False):
 	"""
 	Flush a file descriptor
 	@params:
-		`filed`     : The file handler
-		`lastmsg`: The remaining content of last flush
+		`filed`  : The file handler
+		`residue`: The remaining content of last flush
 		`end`    : The file ends? Default: `False`
 	"""
 	filed.flush()
@@ -480,15 +379,15 @@ def fileflush(filed, lastmsg, end = False):
 	filed.seek(filed.tell())
 	lines = filed.readlines() or []
 	if lines:
-		lines[0] = lastmsg + lines[0]
-		lastmsg  = '' if lines[-1].endswith('\n') else lines.pop(-1)
-		if lastmsg and end:
-			lines.append(lastmsg + '\n')
-			lastmsg = ''
-	elif lastmsg and end:
-		lines.append(lastmsg + '\n')
-		lastmsg = ''
-	return lines, lastmsg
+		lines[0] = residue + lines[0]
+		residue  = '' if lines[-1].endswith('\n') else lines.pop(-1)
+		if residue and end:
+			lines.append(residue + '\n')
+			residue = ''
+	elif residue and end:
+		lines.append(residue + '\n')
+		residue = ''
+	return lines, residue
 
 class ThreadEx(Thread):
 	"""
@@ -533,16 +432,20 @@ class ThreadPool(object):
 		try:
 			threads_alive = 0
 			for thread in self.threads:
-				if thread.isAlive():
+				# check if the thread is done
+				thread.join(timeout = interval)
+				if thread.ex:
+					# exception raised, try to quit and cleanup
+					if not callable(cleanup):
+						raise thread.ex
+					cleanup(thread.ex)
+					threads_alive = 0
+					break
+				elif thread.is_alive():
 					threads_alive += 1
-					thread.join(timeout = interval)
-					if thread.ex:
-						if not callable(cleanup):
-							raise thread.ex
-						cleanup(ex = thread.ex)
 			if threads_alive > 0:
 				self.join(interval = interval, cleanup = cleanup)
-		except KeyboardInterrupt as ex:
+		except KeyboardInterrupt as ex: # pragma: no cover
 			if callable(cleanup):
 				cleanup(ex = ex)
 
@@ -579,7 +482,7 @@ class PQueue(PriorityQueue):
 
 	def putToFirstSubmit(self, item, block = True, timeout = True):
 		PriorityQueue.put(self, item + self.batchLen, block = block, timeout = timeout)
-	
+
 	def putToBuild(self, item, block = True, timeout = None):
 		PriorityQueue.put(self, item + 2 * self.batchLen, block = block, timeout = timeout)
 
@@ -598,3 +501,25 @@ class PQueue(PriorityQueue):
 		item = PriorityQueue.get(self, block, timeout)
 		ret  = divmod(item, self.batchLen)
 		return ret[1], ret[0]
+
+class Hashable(object):
+	"""
+	A class for object that can be hashable
+	"""
+	def __hash__(self):
+		"""
+		Use id as identifier for hash
+		"""
+		return id(self)
+
+	def __eq__(self, other):
+		"""
+		How to compare the hash keys
+		"""
+		return id(self) == id(other)
+
+	def __ne__(self, other):
+		"""
+		Compare hash keys
+		"""
+		return not self.__eq__(other)

@@ -10,7 +10,7 @@ import yaml
 import filelock
 from simpleconf import NoSuchProfile
 from .logger import logger
-from .utils import Box
+from .utils import Box, Hashable
 from .job import Job
 from .jobmgr import Jobmgr
 from .aggr import Aggr
@@ -19,7 +19,7 @@ from .exceptions import ProcTagError, ProcAttributeError, ProcInputError, ProcOu
 	ProcScriptError, ProcRunCmdError
 from . import utils, template
 
-class Proc (object):
+class Proc (Hashable):
 	"""
 	The Proc class defining a process
 
@@ -288,16 +288,6 @@ class Proc (object):
 	def __repr__(self):
 		return '<Proc(%s) @ %s>' %(self.name(), hex(id(self)))
 
-	# make Proc hashable
-	def __hash__(self):
-		return id(self)
-
-	def __eq__(self, other):
-		return id(self) == id(other)
-
-	def __ne__(self, other):
-		return not self.__eq__(other)
-
 	# pylint: disable=invalid-name
 	def copy(self, id = None, tag = None, desc = None):
 		"""
@@ -446,7 +436,7 @@ class Proc (object):
 			#killedjobs  = []
 			successjobs = []
 			cachedjobs  = []
-			
+
 			for job in self.jobs:
 				if job.status == Job.STATUS_BUILTFAILED:
 					bfailedjobs.append(job.index)

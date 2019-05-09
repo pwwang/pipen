@@ -5,7 +5,9 @@ import sys
 import re
 from os import path
 from collections import OrderedDict
-from .utils import Box, string_types, ConfigParser, jsonLoads
+from simpleconf import Config
+from cmdy import _Valuable
+from .utils import Box, string_types, Hashable
 from .exceptions import ParameterNameError, ParameterTypeError, \
 	ParametersParseError, ParametersLoadError
 from colorama import Fore, Back, Style # pylint: disable=unused-import
@@ -257,7 +259,7 @@ class HelpAssembler(object):
 			ret.append('')
 		return ret
 
-class Parameter (object):
+class Parameter(Hashable, _Valuable):
 	"""
 	The class for a single parameter
 	"""
@@ -329,30 +331,6 @@ class Parameter (object):
 	def __repr__(self):
 		return '<Parameter({}) @ {}>'.format(','.join([
 			key+'='+repr(val) for key, val in self._props.items()]), hex(id(self)))
-
-	def __str__(self):
-		return str(self.value)
-
-	def str(self):
-		"""Get the value in str"""
-		return str(self)
-
-	def int(self):
-		"""Coerce value to integer"""
-		return int(self.value)
-
-	def float(self):
-		"""Coerce value to float"""
-		return float(self.value)
-
-	def __add__(self, other):
-		return str(self) + str(other)
-
-	def __contains__(self, other):
-		return other in str(self)
-
-	def __bool__(self):
-		return bool(self.value)
 
 	def setDesc (self, desc = ''):
 		"""
@@ -438,9 +416,6 @@ class Parameter (object):
 		self._props['value'] = val
 		return self
 
-	def __eq__(self, other):
-		return str(self) == str(other)
-
 	def setName (self, name):
 		"""
 		Set the name of the parameter
@@ -450,13 +425,7 @@ class Parameter (object):
 		self._props['name'] = name
 		return self
 
-	def __hash__(self):
-		return id(self)
-
-	def __ne__(self, other):
-		return not self.__eq__(other)
-
-class Parameters (object):
+class Parameters (Hashable):
 	"""
 	A set of parameters
 
@@ -558,19 +527,11 @@ class Parameters (object):
 			[ho.strip() for ho in hopts.split(',')]
 		return self
 
-	def __eq__(self, other):
-		return id(self) == id(other)
-
 	def __repr__(self):
 		return '<Parameters({}) @ {}>'.format(','.join(
 			p.name+':'+str(p.type) for p in self._params.values()
 		), hex(id(self)))
 
-	def __hash__(self):
-		return id(self)
-
-	def __ne__(self, other):
-		return not self.__eq__(other)
 
 	def _setPrefix(self, prefix):
 		"""
@@ -1028,26 +989,12 @@ class Parameters (object):
 				- Default: False (don'typename show parameter from config file in help page)
 				- It'll be overwritten by the `show` property inside the config file.
 		"""
-		config = {}
-		if cfgfile.endswith('.json'):
-			with open(cfgfile) as fcfg:
-				config = jsonLoads(fcfg.read())
-		elif cfgfile.endswith('yml') or cfgfile.endswith('yaml'):
-			import yaml
-			with open(cfgfile) as fcfg:
-				config = yaml.safe_load(fcfg)
-		else:
-			cparser = ConfigParser()
-			cparser.optionxform = str
-			cparser.read(cfgfile)
-			sections = cparser.sections()
-			config = {}
-			for sec in sections:
-				config.update(dict(cparser.items(sec)))
+		config = Config(with_profile = False)
+		config.load(cfgfile)
 
 		for key, val in config.items():
 			if key.endswith('.type'):
-				config[key] = val
+				conf[key] = val
 				if val.startswith('list') and \
 					key[:-5] in config and \
 					not isinstance(config[key[:-5]], list):

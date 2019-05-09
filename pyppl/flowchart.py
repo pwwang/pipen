@@ -123,7 +123,7 @@ class Flowchart(object):
 		"""
 		if isinstance(theme, dict):
 			self.theme = deepcopy(Flowchart.THEMES[base])
-			utils.dictUpdate(self.theme, theme)
+			self.theme.update(theme)
 		else:
 			self.theme = Flowchart.THEMES[theme]
 

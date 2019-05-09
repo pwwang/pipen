@@ -113,7 +113,7 @@ class Jobmgr(object):
 			raise JobBuildingException()
 		else:
 			queue.putToFirstSubmit(index)
-	
+
 	def _workonSubmitting(self, index, batch, queue):
 		job = self.jobs[index]
 		if not job.status == Job.STATUS_BUILT and not job.status == Job.STATUS_RETRYING:
@@ -172,8 +172,8 @@ class Jobmgr(object):
 				self.progressbar(index)
 		else:
 			self.progressbar(index)
-		
-		
+
+
 	# pylint: disable=too-many-locals,too-many-statements
 	def progressbar(self, jobidx):
 		"""

@@ -144,12 +144,18 @@ class _TemplateFilter(object):
 
 	@staticmethod
 	def box(var):
+		"""
+		Turn a dict into a Box object
+		"""
 		if not isinstance(var, dict):
 			raise TypeError('Cannot coerce non-dict object to Box.')
 		return 'Box(%r)' % var.items()
-	
+
 	@staticmethod
 	def obox(var):
+		"""
+		Turn a dict into an ordered Box object
+		"""
 		if not isinstance(var, dict):
 			raise TypeError('Cannot coerce non-dict object to OrderedBox.')
 		return 'Box(%r, ordered_box = True)' % var.items()

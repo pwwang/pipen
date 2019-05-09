@@ -925,8 +925,12 @@ class Job(object):
 		"""
 		if self.index not in self.config['echo']['jobs']:
 			return
-		self.fout = self.fout or open(self.outfile)
-		self.ferr = self.ferr or open(self.errfile)
+
+		if not self.fout or self.fout.closed:
+			self.fout = open(self.outfile)
+		if not self.ferr or self.ferr.closed:
+			self.ferr = open(self.errfile)
+
 		if 'stdout' in self.config['echo']['type']:
 			lines, self.lastout = fileflush(self.fout, self.lastout, end)
 			outfilter = self.config['echo']['type']['stdout']
@@ -948,9 +952,10 @@ class Job(object):
 				errfilter = self.config['echo']['type']['stderr']
 				if not errfilter or re.search(errfilter, line):
 					self.logger._stderr(line.rstrip('\n'))
-		if end and self.fout:
+
+		if end and self.fout and not self.fout.closed:
 			self.fout.close()
-		if end and self.ferr:
+		if end and self.ferr and not self.ferr.closed:
 			self.ferr.close()
 
 	def retry(self):
