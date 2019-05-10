@@ -124,5 +124,3 @@ class JobSubmissionException(Exception):
 class JobBuildingException(Exception):
 	"""Raise when a job failed to build"""
 
-class JobUnexpectedStateException(Exception):
-	"""Raise when a job has an unexpected state in queue"""

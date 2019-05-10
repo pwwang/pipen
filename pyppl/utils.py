@@ -10,8 +10,7 @@ from threading import Thread
 import cmdy
 import safefs
 import psutil
-from transitions import Transition
-from transitions.extensions import LockedMachine
+from transitions import Transition, Machine
 from box import Box as _Box
 from simpleconf import Config
 cmdy   = cmdy(_raise = False) # pylint: disable=invalid-name
@@ -458,9 +457,16 @@ class PQueue(PriorityQueue):
 
 	def __init__(self, maxsize = 0, batch_len = None):
 		"""
-		Initialize the queue
+		A Priority Queue for PyPPL jobs
+
+			0                              0 done,             wait for 1
+			  1        start 0    1        start 1             start 2
+			    2      ------>  0   2      ------>      2      --------->
+			      3                   3               1   3                    3
+			        4                   4                   4                2   4
+			                                                               1
 		@params:
-			`maxsize`  : The maxsize of the queue
+			`maxsize`  : The maxsize of the queue. Default: None
 			`batch_len`: What's the length of a batch
 		"""
 		if not batch_len:
@@ -468,41 +474,20 @@ class PQueue(PriorityQueue):
 		PriorityQueue.__init__(self, maxsize)
 		self.batchLen = batch_len
 
-		# batches
-		# 0: first run trial     # try to run a job has been built asap
-		# 1: first submit trial  # try to submit a job has been built asap
-		# 2: build               # if all built jobs has been ran and submitted, build new ones
-		# 3: second run trial    # first runs haven't done, don't block building
-		# 4: second submit trial # first runs haven't done, don't block building
-		# 5: empty               # just for easy-caculation of index
-		# 6: third run trial
-		# 7: third submit trial
-		# 8: empty
+	def putNext(self, item, batch):
+		self.put(item, batch + 2)
 
-	def putToFirstRun(self, item, block = True, timeout = None):
-		PriorityQueue.put(self, item, block = block, timeout = timeout)
+	def put(self, item, batch = None):
+		batch = batch or item
+		PriorityQueue.put(self, item + batch * self.batchLen)
 
-	def putToFirstSubmit(self, item, block = True, timeout = True):
-		PriorityQueue.put(self, item + self.batchLen, block = block, timeout = timeout)
-
-	def putToBuild(self, item, block = True, timeout = None):
-		PriorityQueue.put(self, item + 2 * self.batchLen, block = block, timeout = timeout)
-
-	def put(self, item, batch, block = True, timeout = None):
-		"""
-		Put item to the queue, just like `PriorityQueue.put` but with an extra argument
-		@params:
-			`where`: Which batch to put the item
-		"""
-		PriorityQueue.put(self, item + batch * self.batchLen, block, timeout)
-
-	def get(self, block = True, timeout = None):
+	def get(self):
 		"""
 		Get an item from the queue
 		"""
-		item = PriorityQueue.get(self, block, timeout)
-		ret  = divmod(item, self.batchLen)
-		return ret[1], ret[0]
+		item = PriorityQueue.get(self)
+		batch, index  = divmod(item, self.batchLen)
+		return index, batch
 
 class Hashable(object):
 	"""
@@ -555,5 +540,5 @@ class MultiDestTransition(Transition):
 	def dest(self, value):
 		self._dest = value
 
-class StateMachine(LockedMachine):
+class StateMachine(Machine):
 	transition_cls = MultiDestTransition

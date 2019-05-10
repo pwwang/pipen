@@ -25,7 +25,7 @@ def test_init(jobs_default):
 	queue_index = []
 	while not jm.queue.empty():
 		queue_index.append(jm.queue.get())
-	assert queue_index == [(job.index, 2) for job in jobs_default]
+	assert queue_index == [(job.index, job.index) for job in jobs_default]
 
 @pytest.mark.parametrize('exc, expect_msg', [
 	(None, ['Job error']),
@@ -82,9 +82,9 @@ def test_trigger_build(job_building, buildfunc, expt_state):
 	job_building.restore_state()
 	if expt_state == STATES.BUILTFAILED:
 		with pytest.raises(JobBuildingException):
-			job_building.triggerBuild()
+			job_building.triggerBuild(batch = 1)
 	else:
-		job_building.triggerBuild()
+		job_building.triggerBuild(batch = 1)
 	assert job_building.state == expt_state
 
 def test_trigger_startsubmit(job_built):
@@ -121,9 +121,9 @@ def test_trigger_retry(job_submitfailed, retryfunc, errhow, expt_state):
 	jm.proc.errhow = errhow
 	if expt_state == STATES.ENDFAILED and jm.proc.errhow == 'halt':
 		with pytest.raises(JobFailException):
-			job_submitfailed.triggerRetry()
+			job_submitfailed.triggerRetry(batch = 1)
 	else:
-		job_submitfailed.triggerRetry()
+		job_submitfailed.triggerRetry(batch = 1)
 	assert job_submitfailed.state == expt_state
 
 def test_trigger_startpoll(job_submitted):
@@ -167,15 +167,23 @@ def test_start_1(job_done):
 	jm = Jobmgr([job_done])
 	jm.start()
 
-def test_start_all(jobs_all):
+def test_start_10(jobs_all, caplog):
 	jm = Jobmgr(jobs_all)
 	jm.start()
+	assert '[XXXXXXXXXXXXXXXXXXXXXXXXXX======zzzzzz======XXXXXX]' in caplog.text
 
-def test_start_all_running(job_done, jobindex_reset):
-	jobs = [copy(job_done) for _ in range(20)]
+@pytest.mark.parametrize('forks', [
+	1,
+	4,
+	10
+]) # len(jobs_all) == 8
+def test_start_all_running(job_done, jobindex_reset, forks, caplog):
+	jobs = [copy(job_done) for _ in range(30)]
 	jobindex_reset(jobs)
+	jobs[0].proc.forks = forks
 	jm = Jobmgr(jobs)
 	jm.start()
+	assert '[==================================================]' in caplog.text
 
 @pytest.mark.parametrize('pbarsize, expect', [
 	(8, [[0],[1],[2],[3],[4],[5],[6],[7]]),

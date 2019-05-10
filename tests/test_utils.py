@@ -1,5 +1,4 @@
 import sys
-from threading import RLock
 import pytest
 import psutil
 from faker import Faker
@@ -210,25 +209,21 @@ def test_threadpool(fixt_threadpool):
 	assert all([not thread.is_alive() for thread in pool.threads])
 
 @pytest.mark.parametrize('batch_len,puts,expect', [
-	(10, {
-		5: 'putToBuild',
-		4: 'putToFirstSubmit',
-		0: 'putToFirstRun',
-		6: 'putToBuild',
-		7: 'putToFirstRun',
-		3: 3,
-		'3 ': 6
-	}, [(0, 0), (7, 0), (4, 1), (5, 2), (6, 2), (3, 6), (3, 9)])
+	(10, [
+		('put', 5, 0),
+		('put', 0, 0),
+		('put', 7, 0),
+		('putNext', 4, 2),
+		('putNext', 6, 3),
+		('putNext', 3, 3),
+		('put', 3, 3),
+		('put', 6, 3),
+	], [(0, 0), (3, 3), (6, 3), (4, 4), (3, 5), (5, 5), (6, 5), (7, 7)])
 ])
 def test_pqueue(batch_len, puts, expect):
 	pqueue = PQueue(batch_len = batch_len)
-	for key, val in puts.items():
-		if not isinstance(key, int):
-			key = int(key.strip())
-		if isinstance(val, int):
-			pqueue.put(key, val)
-		else:
-			getattr(pqueue, val)(key)
+	for method, item, batch in puts:
+		getattr(pqueue, method)(item, batch)
 	ret = []
 	while not pqueue.empty():
 		ret.append(pqueue.get())
@@ -263,8 +258,7 @@ def test_statemachine():
 	model = Model()
 	machine = StateMachine(
 		model = model,
-		states = ['solid', 'liquid', 'gas'], initial = 'solid',
-		machine_context = RLock())
+		states = ['solid', 'liquid', 'gas'], initial = 'solid')
 	machine.add_transition(
 		'heat', 'solid', {'turntoliquid': 'liquid', 'turntogas': 'gas'}, depends_on = 'depends_on')
 	model.heat()

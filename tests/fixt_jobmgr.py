@@ -1,5 +1,5 @@
 from copy import copy
-
+from time import sleep
 import pytest
 from pyppl.jobmgr2 import Jobmgr, STATES
 from pyppl.logger import logger
@@ -43,6 +43,7 @@ class Job(object):
 		return 'cached' if 'cached' in self.orig_state else True
 
 	def submit(self):
+		#sleep (2)
 		return 'done' in self.orig_state or 'submit' in self.orig_state
 
 	def poll(self):
