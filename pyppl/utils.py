@@ -10,6 +10,8 @@ from threading import Thread
 import cmdy
 import safefs
 import psutil
+from transitions import Transition
+from transitions.extensions import LockedMachine
 from box import Box as _Box
 from simpleconf import Config
 cmdy   = cmdy(_raise = False) # pylint: disable=invalid-name
@@ -492,7 +494,7 @@ class PQueue(PriorityQueue):
 		@params:
 			`where`: Which batch to put the item
 		"""
-		PriorityQueue.put(self, item + (3 + batch) * self.batchLen, block, timeout)
+		PriorityQueue.put(self, item + batch * self.batchLen, block, timeout)
 
 	def get(self, block = True, timeout = None):
 		"""
@@ -523,3 +525,35 @@ class Hashable(object):
 		Compare hash keys
 		"""
 		return not self.__eq__(other)
+
+class MultiDestTransition(Transition):
+
+	def __init__(self, source, dest, conditions=None, unless=None,
+		before=None, after=None, prepare=None, **kwargs):
+
+		self._result = self._dest = None
+		super(MultiDestTransition, self).__init__(
+			source, dest, conditions, unless, before, after, prepare)
+		if isinstance(dest, dict):
+			self._func = kwargs.pop('depends_on', None)
+			if not self._func:
+				raise AttributeError("A multi-destination transition requires a 'depends_on'")
+		else:
+			# use base version in case transition does not need special handling
+			self.execute = super(MultiDestTransition, self).execute
+
+	def execute(self, event_data):
+		func = self._func if callable(self._func) else getattr(event_data.model, self._func)
+		self._result = func()
+		super(MultiDestTransition, self).execute(event_data)
+
+	@property
+	def dest(self):
+		return self._dest[self._result] if self._result is not None else self._dest
+
+	@dest.setter
+	def dest(self, value):
+		self._dest = value
+
+class StateMachine(LockedMachine):
+	transition_cls = MultiDestTransition

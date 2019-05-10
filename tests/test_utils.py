@@ -1,10 +1,11 @@
 import sys
+from threading import RLock
 import pytest
 import psutil
 from faker import Faker
 from pyppl.utils import Box, OrderedBox, split, funcsig, uid, formatSecs, alwaysList, \
 	briefList, briefPath, killtree, chmodX, filesig, fileflush, ThreadEx, ThreadPool, \
-	PQueue, Hashable
+	PQueue, Hashable, MultiDestTransition, StateMachine
 # load fixtures
 pytest_plugins = ["tests.fixt_utils"]
 
@@ -20,7 +21,7 @@ def test_box_init(construct):
 	({}, "Box([], box_intact_types = (list,))"),
 	([('a', 1), ('b', 2)], "Box([('a', 1), ('b', 2)], box_intact_types = (list,))"),
 ])
-def test_box_repr(construct,expect):
+def test_box_repr(construct, expect):
 	assert repr(Box(construct)) == expect
 
 @pytest.mark.box
@@ -203,7 +204,7 @@ def test_threadpool(fixt_threadpool):
 	else:
 		# make sure thread alive after one round join
 		# so that is_alive will be executed
-		pool.join(cleanup = cleanup, interval = .01) 
+		pool.join(cleanup = cleanup, interval = .01)
 	for thread in pool.threads:
 		thread.join()
 	assert all([not thread.is_alive() for thread in pool.threads])
@@ -250,4 +251,22 @@ def test_hashable():
 		else:
 			assert key == h2
 			assert key is h2
+
+def test_statemachine():
+	with pytest.raises(AttributeError):
+		MultiDestTransition('solid', {})
+	MultiDestTransition('solid', 'liquid', depends_on = 'depends_on')
+
+	class Model(object):
+		def depends_on(self):
+			return 'turntoliquid'
+	model = Model()
+	machine = StateMachine(
+		model = model,
+		states = ['solid', 'liquid', 'gas'], initial = 'solid',
+		machine_context = RLock())
+	machine.add_transition(
+		'heat', 'solid', {'turntoliquid': 'liquid', 'turntogas': 'gas'}, depends_on = 'depends_on')
+	model.heat()
+	assert model.state == 'liquid'
 

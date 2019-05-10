@@ -8,3 +8,4 @@ cmdy
 pyyaml
 psutil
 safefs
+transitions
