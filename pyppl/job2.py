@@ -1,20 +1,18 @@
 """job module for PyPPL"""
-import re
-from os import path, utime, listdir
-from datetime import datetime
+from os import path, listdir, utime
 from glob import glob
-from collections import OrderedDict
+from datetime import datetime
+import cmdy
 import safefs
+from .utils import Box, OBox, chmodX, briefPath, string_types, filesig, fileflush
 from .logger import logger
-from .utils import cmdy, string_types, briefPath, filesig, fileflush, Box
-from .exceptions import JobInputParseError, JobOutputParseError
 
 class Job(object):
 
 	RC_NOTGENERATE  = 99
 	RC_SUBMITFAILED = 88
 
-	def __init__(self, index, config):
+	def __init__(self, index, proc):
 		"""
 		Initiate a job
 		@params:
@@ -22,9 +20,9 @@ class Job(object):
 			`config`: The configurations of the job.
 		"""
 		self.index     = index
-		self.status    = Job.STATUS_INITIATED
-		self.config    = config
-		self.dir       = path.abspath(path.join (config['workdir'], str(index + 1)))
+		self.proc      = proc
+
+		self.dir       = path.abspath(path.join(self.proc.workdir, str(index + 1)))
 		self.indir     = path.join(self.dir, "input")
 		self.outdir    = path.join(self.dir, "output")
 		self.script    = path.join(self.dir, "job.script")
@@ -41,7 +39,8 @@ class Job(object):
 		self.ntry      = 0
 		self.input     = {}
 		# need to pass this to next procs, so have to keep order
-		self.output    = OrderedDict()
+		self.output    = OBox()
+
 		self.data      = Box(
 			job = Box(
 				index    = self.index,   indir    = self.indir,
@@ -50,14 +49,65 @@ class Job(object):
 				pidfile  = self.pidfile, cachedir = self.cachedir
 			), i = Box(), o = Box()
 		)
-		self.data.update(self.config.get('procvars', {}))
-		self.runner   = None
-		self._rc      = None
-		self._pid     = None
-		self.logger   = logger.bake(
-			proc   = self.config['proc'], jobidx = self.index,
-			joblen = self.config['procsize'],
+		self.data.update(self.proc.props.procvars)
+		self.wrapped_script = None
+		self.scripts        = Box(
+			header = '',
+			save_oe = True
 		)
+		self._rc            = None
+		self._pid           = None
+		self.logger         = logger.bake(
+			proc   = self.proc.name(False), jobidx = self.index,
+			joblen = self.proc.size,
+		)
+
+	# pylint: disable=too-many-arguments
+	def wrapScript(self, header = None, save_oe = True):
+		"""
+		Wrap the script to run
+		"""
+		suffix = self.__class__.__name__[6:].lower()
+		self.wrapped_script = self.script + '.' + suffix
+		self.logger.debug('Wrapping up script: %s', self.wrapped_script)
+
+		real_script = self.scripts.get('real_script') or \
+			' '.join(cmdy._shquote(x) for x in chmodX(self.script))
+		# redirect stdout and stderr
+		if self.scripts.get('save_oe'):
+			if isinstance(real_script, list):
+				real_script[-1] += ' 1> %s 2> %s' % (
+					cmdy._shquote(self.outfile), cmdy._shquote(self.errfile))
+			else:
+				real_script += ' 1> %s 2> %s' % (
+					cmdy._shquote(self.outfile), cmdy._shquote(self.errfile))
+
+		src       = ['#!/usr/bin/env bash']
+		srcappend = src.append
+		srcextend = src.extend
+		addsrc    = lambda code: (srcextend if isinstance(code, list) else \
+			srcappend)(code) if code else None
+
+		addsrc(self.scripts.get('header', ''))
+		addsrc('#')
+		addsrc('# Collect return code on exit')
+		addsrc(('trap "status=\\$?; echo \\$status > %s;' % cmdy._shquote(self.rcfile)) + \
+			' exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT')
+		addsrc('#')
+		addsrc('# Run pre-script')
+		addsrc(self.scripts.get('pre_script', ''))
+		addsrc('#')
+		addsrc('# Run the real script')
+		addsrc(real_script)
+		addsrc('#')
+		addsrc('# Run post-script')
+		addsrc(self.scripts.get('post_script', ''))
+		addsrc('#')
+
+		with open(self.wrapped_script, 'w') as fscript:
+			fscript.write('\n'.join(src))
+
+		del self.scripts
 
 	def showError (self, totalfailed):
 		"""Show the error message if the job failed."""
@@ -71,7 +121,7 @@ class Job(object):
 		if self.rc == Job.RC_SUBMITFAILED:
 			msg.append('Submission failed')
 		msg = ', '.join(msg)
-		if self.config['errhow'] == 'ignore':
+		if self.proc.errhow == 'ignore':
 			self.logger.warning(
 				'Failed but ignored (totally {total}). Return code: {rc}{msg}.'.format(
 					total = totalfailed, rc = self.rc & 0b0011111111,
@@ -85,13 +135,13 @@ class Job(object):
 		))
 
 		from . import Proc
-		self.logger.error('Script: {}'.format(briefPath(self.script,  **Proc.SHORTPATH)))
-		self.logger.error('Stdout: {}'.format(briefPath(self.outfile, **Proc.SHORTPATH)))
-		self.logger.error('Stderr: {}'.format(briefPath(self.errfile, **Proc.SHORTPATH)))
+		self.logger.error('Script: {}'.format(briefPath(self.script,  **self.proc._log.shortpath)))
+		self.logger.error('Stdout: {}'.format(briefPath(self.outfile, **self.proc._log.shortpath)))
+		self.logger.error('Stderr: {}'.format(briefPath(self.errfile, **self.proc._log.shortpath)))
 
 		# errors are not echoed, echo them out
-		if self.index not in self.config['echo']['jobs'] or \
-			'stderr' not in self.config['echo']['type']:
+		if self.index not in self.proc.echo.jobs or \
+			'stderr' not in self.proc.echo.type:
 
 			self.logger.error('Check STDERR below:')
 			errmsgs = []
@@ -132,16 +182,16 @@ class Job(object):
 				self._reportItem(key, maxlen, data, 'input')
 			else:
 				if isinstance(self.input[key]['data'], list):
-					data = [briefPath(d, **Proc.SHORTPATH) for d in self.input[key]['data']]
+					data = [briefPath(d, **self.proc._log.shortpath) for d in self.input[key]['data']]
 				else:
-					data = briefPath(self.input[key]['data'], **Proc.SHORTPATH)
+					data = briefPath(self.input[key]['data'], **self.proc._log.shortpath)
 				self._reportItem(key, maxlen, data, 'input')
 
 		for key in sorted(self.output.keys()):
 			if isinstance(self.output[key]['data'], list):
-				data = [briefPath(d, **Proc.SHORTPATH) for d in self.output[key]['data']]
+				data = [briefPath(d, **self.proc._log.shortpath) for d in self.output[key]['data']]
 			else:
-				data = briefPath(self.output[key]['data'], **Proc.SHORTPATH)
+				data = briefPath(self.output[key]['data'], **self.proc._log.shortpath)
 			self._reportItem(key, maxlen, data, 'output')
 
 	def _reportItem(self, key, maxlen, data, loglevel):
@@ -176,10 +226,11 @@ class Job(object):
 				logfunc("{}      ... ({}),".format(' '.ljust(maxlen), len(data) - 3))
 				logfunc("{}      {} ]".format(' '.ljust(maxlen), data[-1]))
 
-	def building(self):
+	def build(self):
 		"""
 		Initiate a job, make directory and prepare input, output and script.
 		"""
+		self.logger.debug('Builing the job ...')
 		try:
 			if not path.exists(self.dir):
 				safefs.makedirs (self.dir)
@@ -196,16 +247,14 @@ class Job(object):
 			self._prepScript()
 			# check cache
 			if self.isTrulyCached() or self.isExptCached():
-				self.status = Job.STATUS_DONECACHED
-				self.done(export = self.config['acache'])
-			else:
-				self.runner = self.config['runner'](self)
-				self.status = Job.STATUS_BUILT
+				self.done(cached = True)
+				return 'cached'
+			return True
 		except Exception:
 			from traceback import format_exc
 			with open(self.errfile, 'w') as ferr:
 				ferr.write(str(format_exc()))
-			self.status = Job.STATUS_BUILTFAILED
+			return False
 
 	def _linkInfile(self, orgfile):
 		"""
@@ -252,7 +301,7 @@ class Job(object):
 		safefs.remove(self.indir)
 		safefs.makedirs(self.indir)
 
-		for key, val in self.config['input'].items():
+		for key, val in self.proc.input.items():
 			self.input[key] = {}
 			intype = val['type']
 			# the original input file(s)
@@ -273,9 +322,7 @@ class Job(object):
 					if basename != path.basename(infile):
 						self.logger.warning("Input file renamed: %s -> %s" %
 							(basename, path.basename(infile)), dlevel = 'INFILE_RENAMING')
-
 				self.data['i'][key] = infile
-
 				self.input[key]['type'] = intype
 				self.input[key]['data'] = infile
 
@@ -311,7 +358,6 @@ class Job(object):
 						if basename != path.basename(infile):
 							self.logger.warning('Input file renamed: {} -> {}'.format(
 								basename, path.basename(infile)), dlevel = 'INFILE_RENAMING')
-
 					self.data['i'][key].append(infile)
 					self.input[key]['data'].append (infile)
 			else:
@@ -325,7 +371,7 @@ class Job(object):
 		if not path.exists (self.outdir):
 			safefs.makedirs (self.outdir)
 
-		output = self.config['output']
+		output = self.proc.output
 		# has to be OrderedDict
 		assert isinstance(output, dict)
 		# allow empty output
@@ -348,7 +394,7 @@ class Job(object):
 		"""
 		Build the script, interpret the placeholders
 		"""
-		script = self.config['script'].render(self.data)
+		script = self.proc.script.render(self.data)
 
 		write = True
 		if path.isfile (self.script):
@@ -364,6 +410,8 @@ class Job(object):
 		if write:
 			with open (self.script, 'w') as fscript:
 				fscript.write(script)
+
+		self.wrapScript()
 
 	@property
 	def rc(self): # pylint: disable=invalid-name
@@ -417,7 +465,7 @@ class Job(object):
 		"""
 		Check whether a job is truly cached (by signature)
 		"""
-		if not self.config['cache']:
+		if not self.proc.cache:
 			return False
 		from . import Proc
 
@@ -570,18 +618,18 @@ class Job(object):
 		True if succeed, otherwise False
 		"""
 		from . import Proc
-		if self.config['cache'] != 'export':
+		if self.proc.cache != 'export':
 			return False
-		if self.config['exhow'] in Proc.EX_LINK:
+		if self.proc.exhow in Proc.EX_LINK:
 			self.logger.warning(
 				"Job is not export-cached using symlink export.",
 				dlevel = "EXPORT_CACHE_USING_SYMLINK")
 			return False
-		if self.config['expart'] and self.config['expart'][0].render(self.data):
+		if self.proc.expart and self.proc.expart[0].render(self.data):
 			self.logger.warning("Job is not export-cached using partial export.",
 				dlevel = "EXPORT_CACHE_USING_EXPARTIAL")
 			return False
-		if not self.config['exdir']:
+		if not self.proc.exdir:
 			self.logger.debug("Job is not export-cached since export directory is not set.",
 				dlevel = "EXPORT_CACHE_EXDIR_NOTSET")
 			return False
@@ -589,9 +637,9 @@ class Job(object):
 		for out in self.output.values():
 			if out['type'] in Proc.OUT_VARTYPE:
 				continue
-			exfile = path.abspath(path.join(self.config['exdir'], path.basename(out['data'])))
+			exfile = path.abspath(path.join(self.proc.exdir, path.basename(out['data'])))
 
-			if self.config['exhow'] in Proc.EX_GZIP:
+			if self.proc.exhow in Proc.EX_GZIP:
 				exfile += '.tgz' if path.isdir(out['data']) or \
 					out['type'] in Proc.OUT_DIRTYPE else '.gz'
 				with safefs.lock(exfile, out['data']): # pylint: disable=not-context-manager
@@ -631,7 +679,7 @@ class Job(object):
 
 	def cache (self):
 		"""Truly cache the job (by signature)"""
-		if not self.config['cache']:
+		if not self.proc.cache:
 			return
 		sig  = self.signature()
 		if sig:
@@ -695,24 +743,23 @@ class Job(object):
 
 	def export(self):
 		"""Export the output files"""
-		if not self.config['exdir']:
+		if not self.proc.exdir:
 			return
-
-		assert path.exists(self.config['exdir']) and path.isdir(self.config['exdir']), \
+		assert path.exists(self.proc.exdir) and path.isdir(self.proc.exdir), \
 			'Export directory has to be a directory.'
-		assert isinstance(self.config['expart'], list)
+		assert isinstance(self.proc.expart, list)
 
 		from . import Proc
 		# output files to export
 		files2ex = []
-		if not self.config['expart'] or (len(self.config['expart']) == 1 \
-			and not self.config['expart'][0].render(self.data)):
+		if not self.proc.expart or (len(self.proc.expart) == 1 \
+			and not self.proc.expart[0].render(self.data)):
 			for out in self.output.values():
 				if out['type'] in Proc.OUT_VARTYPE:
 					continue
 				files2ex.append (out['data'])
 		else:
-			for expart in self.config['expart']:
+			for expart in self.proc.expart:
 				expart = expart.render(self.data)
 				if expart in self.output:
 					files2ex.append(self.output[expart]['data'])
@@ -723,25 +770,25 @@ class Job(object):
 		for file2ex in files2ex:
 			bname  = path.basename (file2ex)
 			# exported file
-			exfile = path.join(self.config['exdir'], bname)
-			if self.config['exhow'] in Proc.EX_GZIP:
+			exfile = path.join(self.proc.exdir, bname)
+			if self.proc.exhow in Proc.EX_GZIP:
 				exfile += '.tgz' if path.isdir(file2ex) else '.gz'
 
 			with safefs.lock(file2ex, exfile): # pylint: disable=not-context-manager
-				if self.config['exhow'] in Proc.EX_GZIP:
-					safefs.gzip(file2ex, exfile, overwrite = self.config['exow'])
-				elif self.config['exhow'] in Proc.EX_COPY:
-					safefs.copy(file2ex, exfile, overwrite = self.config['exow'])
-				elif self.config['exhow'] in Proc.EX_LINK:
-					safefs.link(file2ex, exfile, overwrite = self.config['exow'])
+				if self.proc.exhow in Proc.EX_GZIP:
+					safefs.gzip(file2ex, exfile, overwrite = self.proc.exow)
+				elif self.proc.exhow in Proc.EX_COPY:
+					safefs.copy(file2ex, exfile, overwrite = self.proc.exow)
+				elif self.proc.exhow in Proc.EX_LINK:
+					safefs.link(file2ex, exfile, overwrite = self.proc.exow)
 				else: # move
 					if safefs.islink(file2ex):
-						safefs.copy(file2ex, exfile, overwrite = self.config['exow'])
+						safefs.copy(file2ex, exfile, overwrite = self.proc.exow)
 					else:
-						safefs.move(file2ex, exfile, overwrite = self.config['exow'])
+						safefs.move(file2ex, exfile, overwrite = self.proc.exow)
 						safefs.link(exfile, file2ex)
 
-			self.logger.export('Exported: {}'.format(briefPath(exfile, **Proc.SHORTPATH)))
+			self.logger.export('Exported: {}'.format(briefPath(exfile, **self.proc._log.shortpath)))
 
 	def succeed(self):
 		"""
@@ -759,24 +806,26 @@ class Job(object):
 				self.rc |= 0b100000000
 				self.logger.debug('Outfile not generated: {}'.format(out['data']),
 					dlevel = "OUTFILE_NOT_EXISTS")
-		expect_cmd = self.config['expect'].render(self.data)
+		expect_cmd = self.proc.expect.render(self.data)
 
 		if expect_cmd:
 			self.logger.debug('Check expectation: %s' % expect_cmd, dlevel = "EXPECT_CHECKING")
 			cmd = cmdy.bash(c = expect_cmd)
 			if cmd.rc != 0:
 				self.rc |= 0b1000000000
-		return self.rc in self.config['rcs']
+		return self.rc in self.proc.rc
 
-	def done(self, export = True):
+	def done(self, cached = False):
 		"""
 		Do some cleanup when job finished
 		@params:
 			`export`: Whether do export
 		"""
-		if export:
+		self.logger.debug('Finishing up the job ...')
+		if not cached or self.proc.acache:
 			self.export()
-		self.cache()
+		if not cached:
+			self.cache()
 
 	def signature (self):
 		"""
@@ -798,7 +847,7 @@ class Job(object):
 			if val['type'] in Proc.IN_VARTYPE:
 				ret.i[Proc.IN_VARTYPE[0]][key] = val['data']
 			elif val['type'] in Proc.IN_FILETYPE:
-				sig = filesig(val['data'], dirsig = self.config['dirsig'])
+				sig = filesig(val['data'], dirsig = self.proc.dirsig)
 				if not sig:
 					self.logger.debug(
 						'Empty signature because of input file: %s.' % val['data'],
@@ -808,7 +857,7 @@ class Job(object):
 			elif val['type'] in Proc.IN_FILESTYPE:
 				ret.i[Proc.IN_FILESTYPE[0]][key] = []
 				for infile in sorted(val['data']):
-					sig = filesig(infile, dirsig = self.config['dirsig'])
+					sig = filesig(infile, dirsig = self.proc.dirsig)
 					if not sig:
 						self.logger.debug(
 							'Empty signature because of one of input files: %s.' % infile,
@@ -819,7 +868,7 @@ class Job(object):
 			if val['type'] in Proc.OUT_VARTYPE:
 				ret.o[Proc.OUT_VARTYPE[0]][key] = val['data']
 			elif val['type'] in Proc.OUT_FILETYPE:
-				sig = filesig(val['data'], dirsig = self.config['dirsig'])
+				sig = filesig(val['data'], dirsig = self.proc.dirsig)
 				if not sig:
 					self.logger.debug(
 						'Empty signature because of output file: %s.' % val['data'],
@@ -827,7 +876,7 @@ class Job(object):
 					return ''
 				ret.o[Proc.OUT_FILETYPE[0]][key] = sig
 			elif val['type'] in Proc.OUT_DIRTYPE:
-				sig = filesig(val['data'], dirsig = self.config['dirsig'])
+				sig = filesig(val['data'], dirsig = self.proc.dirsig)
 				if not sig:
 					self.logger.debug(
 						'Empty signature because of output dir: %s.' % val['data'],
@@ -838,12 +887,13 @@ class Job(object):
 
 	def submit(self):
 		"""Submit the job"""
-		if self.runner.isRunning():
+		self.logger.debug('Submitting the job ...')
+		if self.isRunningImpl():
 			self.logger.submit(
 				'is already running at {pid}, skip submission.'.format(pid = self.pid))
 			return True
 		self.reset()
-		rscmd = self.runner.submit()
+		rscmd = self.submitImpl()
 		if rscmd.rc == 0:
 			return True
 		self.logger.error(
@@ -853,18 +903,16 @@ class Job(object):
 
 	def poll(self):
 		"""Check the status of a running job"""
+		self.logger.debug('Polling the job ...')
 		if not path.isfile(self.errfile) or not path.isfile(self.outfile):
-			self.status = Job.STATUS_RUNNING
+			return 'running'
+
 		elif self.rc != Job.RC_NOTGENERATE:
 			self._flush(end = True)
-			if self.succeed():
-				self.done()
-				self.status = Job.STATUS_DONE
-			else:
-				self.status = Job.STATUS_DONEFAILED
+			return self.succeed()
 		else: # running
 			self._flush()
-			self.status = Job.STATUS_RUNNING
+			return 'running'
 
 	def _flush (self, end = False):
 		"""
@@ -876,7 +924,7 @@ class Job(object):
 			`lasterr`: The leftovers of previously readlines of stderr
 			`end`: Whether this is the last time to flush
 		"""
-		if self.index not in self.config['echo']['jobs']:
+		if self.index not in self.proc.echo['jobs']:
 			return
 
 		if not self.fout or self.fout.closed:
@@ -884,9 +932,9 @@ class Job(object):
 		if not self.ferr or self.ferr.closed:
 			self.ferr = open(self.errfile)
 
-		if 'stdout' in self.config['echo']['type']:
+		if 'stdout' in self.proc.echo['type']:
 			lines, self.lastout = fileflush(self.fout, self.lastout, end)
-			outfilter = self.config['echo']['type']['stdout']
+			outfilter = self.proc.echo['type']['stdout']
 			for line in lines:
 				if not outfilter or re.search(outfilter, line):
 					self.logger._stdout(line.rstrip('\n'))
@@ -901,8 +949,8 @@ class Job(object):
 				loglevel = loglevel[1:] if loglevel else 'log'
 				# '_' makes sure it's not filtered by log levels
 				self.logger['_' + loglevel](logmsg.lstrip())
-			elif 'stderr' in self.config['echo']['type']:
-				errfilter = self.config['echo']['type']['stderr']
+			elif 'stderr' in self.proc.echo['type']:
+				errfilter = self.proc.echo['type']['stderr']
 				if not errfilter or re.search(errfilter, line):
 					self.logger._stderr(line.rstrip('\n'))
 
@@ -917,31 +965,20 @@ class Job(object):
 		@return:
 			`True` if it is else `False`
 		"""
-		# if job is not running or job hasn't failed
-		if not self.status & 0b100 or not self.status & 0b1:
+		self.logger.debug('Retrying the job ...')
+		if self.proc.errhow == 'ignore':
+			return 'ignored'
+		if self.proc.errhow != 'retry':
 			return False
-		if self.config['errhow'] == 'halt':
-			self.status = Job.STATUS_ENDFAILED
-			return 'halt'
-		if self.config['errhow'] != 'retry':
-			self.status = Job.STATUS_ENDFAILED
-			return False
-		if self.ntry >= self.config['errntry']:
-			self.status = Job.STATUS_ENDFAILED
-			return False
-		self.status  = Job.STATUS_RETRYING
-		self.ntry   += 1
-		self.rc      = Job.RC_NOTGENERATE
-		self.pid     = ''
-		return True
+		self.ntry += 1
+		return self.ntry < self.proc.errntry
 
 	def kill(self):
 		"""
 		Kill the job
 		"""
-		self.status = Job.STATUS_KILLING
+		self.logger.debug('Killing the job ...')
 		try:
-			self.runner.kill()
+			self.killImpl()
 		except Exception:
-			pass
-		self.status = Job.STATUS_KILLED
+			self.pid = ''

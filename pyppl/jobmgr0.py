@@ -76,7 +76,7 @@ class Jobmgr(object):
 		nslots = min(queue.batchLen, int(conf['nthread']))
 
 		for job in self.jobs:
-			queue.putToBuild(job.index)
+			queue.put(job.index)
 
 		ThreadPool(
 			nslots,

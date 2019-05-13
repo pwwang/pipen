@@ -11,8 +11,7 @@ import filelock
 from simpleconf import NoSuchProfile
 from .logger import logger
 from .utils import Box, Hashable
-from .job import Job
-from .jobmgr import Jobmgr
+from .jobmgr2 import Jobmgr, STATES
 from .aggr import Aggr
 from .channel import Channel
 from .exceptions import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, \
@@ -66,9 +65,6 @@ class Proc (Hashable):
 	EX_COPY = ['copy', 'cp']
 	EX_MOVE = ['move', 'mv']
 	EX_LINK = ['link', 'symlink', 'symbol']
-
-	# shorten paths in logs
-	SHORTPATH = {'cutoff': 0, 'keep': 1}
 
 	def __init__(self, id = None, tag = 'notag', desc = 'No description.', **kwargs):
 		"""
@@ -438,17 +434,17 @@ class Proc (Hashable):
 			cachedjobs  = []
 
 			for job in self.jobs:
-				if job.status == Job.STATUS_BUILTFAILED:
+				if job.state == STATES.BUILTFAILED:
 					bfailedjobs.append(job.index)
-				elif job.status == Job.STATUS_SUBMITFAILED:
+				elif job.state == STATES.SUBMITFAILED:
 					sfailedjobs.append(job.index)
-				elif job.status == Job.STATUS_DONE:
+				elif job.state == STATES.DONE:
 					successjobs.append(job.index)
-				elif job.status == Job.STATUS_DONECACHED:
+				elif job.state == STATES.DONECACHED:
 					cachedjobs.append(job.index)
-				elif job.status == Job.STATUS_ENDFAILED:
+				elif job.state == STATES.ENDFAILED:
 					efailedjobs.append(job.index)
-				#elif job.status == Job.STATUS_KILLING or job.status == Job.STATUS_KILLED:
+				#elif job.state == STATES.KILLING or job.state == STATES.KILLED:
 				#	killedjobs.append(job.index)
 
 			(logger.P_DONE, logger.CACHED)[int(
@@ -557,7 +553,7 @@ class Proc (Hashable):
 		elif not self.props.workdir:
 			self.props.workdir = path.join(self.ppldir, "PyPPL.%s.%s.%s" %
 				(self.id, self.tag, self._suffix()))
-		logger.workdir(utils.briefPath(self.workdir, **Proc.SHORTPATH), proc = self.id)
+		logger.workdir(utils.briefPath(self.workdir, **self._log.shortpath), proc = self.id)
 
 		if not path.exists(self.workdir):
 			if self.resume in ['skip+', 'resume'] and self.cache != 'export':
@@ -591,13 +587,13 @@ class Proc (Hashable):
 			# echo
 			if self.config.echo in [True, False, 'stderr', 'stdout']:
 				if self.config.echo is True:
-					self.props.echo = { 'jobs': 0 }
+					self.props.echo = Box({ 'jobs': 0 })
 				elif self.config.echo is False:
-					self.props.echo = { 'jobs': [], 'type': 'all' }
+					self.props.echo = Box({ 'jobs': [], 'type': 'all' })
 				else:
-					self.props.echo = { 'jobs': 0, 'type': {self.config.echo: None} }
+					self.props.echo = Box({ 'jobs': 0, 'type': Box({self.config.echo: None}) })
 			else:
-				self.props.echo = self.config.echo
+				self.props.echo = Box(self.config.echo)
 
 			if not 'jobs' in self.echo:
 				self.echo['jobs'] = 0
@@ -800,7 +796,7 @@ class Proc (Hashable):
 			elif key == 'exdir':
 				procvars[key] = val
 				maxlen        = max(maxlen, len(key))
-				propout[key]  = utils.briefPath(val, **Proc.SHORTPATH)
+				propout[key]  = utils.briefPath(val, **self._log.shortpath)
 			elif key in pvkeys:
 				procvars[key] = val
 				maxlen        = max(maxlen, len(key))
@@ -912,33 +908,8 @@ class Proc (Hashable):
 				'No such runner: {}. '.format(self.runner) +
 				'If it is a profile, did you forget to specify a basic runner?')
 
-		jobcfg = {
-			'workdir'   : self.workdir,
-			'runner'    : PyPPL.RUNNERS[self.runner],
-			'runnerOpts': {key: val for key, val in self.config.items() if key.endswith('Runner')},
-			'procvars'  : self.procvars,
-			'procsize'  : self.size,
-			'echo'      : self.echo,
-			'input'     : self.input,
-			'output'    : self.output,
-			'script'    : self.script,
-			'errntry'   : self.errntry,
-			'errhow'    : self.errhow,
-			'expect'    : self.expect,
-			'exhow'     : self.exhow,
-			'exow'      : self.exow,
-			'expart'    : self.expart,
-			'exdir'     : self.exdir,
-			'acache'    : self.acache,
-			'rcs'       : self.rc,
-			'cache'     : self.cache,
-			'dirsig'    : self.dirsig,
-			'proc'      : self.id,
-			'tag'       : self.tag,
-			'suffix'    : self.suffix
-		}
 		for i in range(self.size):
-			self.jobs[i] = Job(i, jobcfg)
+			self.jobs[i] = PyPPL.RUNNERS[self.runner](i, self)
 
 	def _readConfig(self, profile, config):
 		"""
@@ -1007,12 +978,7 @@ class Proc (Hashable):
 		"""
 		Submit and run the jobs
 		"""
-		Jobmgr(self.jobs, {
-			'nthread': self.nthread,
-			'forks'  : min(self.forks, self.size),
-			'proc'   : self.id,
-			'lock'   : self.lock._lock_file
-		})
+		Jobmgr(self.jobs).start()
 
 		self.props.channel = Channel.create([
 			tuple(job.data.o.values())

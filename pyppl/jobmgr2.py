@@ -71,19 +71,9 @@ class Jobmgr(object):
 
 		self.lock = RLock()
 
-		states = [
-			# State(
-			# 	STATES.RUNNING,
-			# 	on_enter = lambda event: self.lock.acquire(),
-			# 	on_exit  = self._tryReleaseLock) \
-			# if state == STATES.RUNNING else state
-			state
-			for _, state in STATES.items()
-		]
-
 		machine = StateMachine(
 			model              = jobs,
-			states             = states,
+			states             = STATES.values(),
 			initial            = STATES.INIT,
 			send_event         = True,
 			after_state_change = self.progressbar)
@@ -177,6 +167,8 @@ class Jobmgr(object):
 			depends_on = 'kill')
 
 	def start(self):
+		if not hasattr(self, 'lock'):
+			return
 		ThreadPool(self.nslots, initializer = self.worker).join(cleanup = self.cleanup)
 		self.progressbar(Box(model = self.jobs[-1]))
 
@@ -250,15 +242,15 @@ class Jobmgr(object):
 			STATES.BUILT, STATES.SUBMITTING, STATES.SUBMITTED,
 			STATES.RUNNING, STATES.RETRYING, STATES.DONEFAILED,
 		)
-		killq = Queue()
-		for rjob in running_jobs:
-			killq.put(rjob)
+		# killq = Queue()
+		# for rjob in running_jobs:
+		# 	killq.put(rjob)
 
-		ThreadPool(
-			min(len(running_jobs), self.proc.nthread),
-			initializer = self.killWorker,
-			initargs    = killq
-		).join()
+		# ThreadPool(
+		# 	min(len(running_jobs), self.proc.nthread),
+		# 	initializer = self.killWorker,
+		# 	initargs    = killq
+		# ).join()
 
 		with self.lock:
 			failed_jobs = self._getJobs(

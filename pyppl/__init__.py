@@ -29,7 +29,7 @@ def loadConfiguratiaons():
 			levels     = 'normal',
 			leveldiffs = [],
 			pbar       = 50,
-			shortpath  = {'cutoff': 0, 'keep': 1},
+			shortpath  = {'cutoff': 0},
 		),
 		_flowchart = dict(theme = 'default'),
 		# The command to run after jobs start
@@ -118,13 +118,13 @@ loadConfiguratiaons()
 from .logger import logger
 from .aggr import Aggr, _Proxy
 from .proc import Proc
-from .job import Job
-from .jobmgr import Jobmgr
+from .job2 import Job
+from .jobmgr2 import Jobmgr
 from .channel import Channel
 from .parameters import params, Parameters, commands
 from .proctree import ProcTree
 from .exceptions import PyPPLProcRelationError
-from . import utils, runners
+from . import utils, runners2 as runners
 
 class PyPPL (object):
 	"""

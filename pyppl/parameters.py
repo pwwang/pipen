@@ -990,7 +990,7 @@ class Parameters (Hashable):
 				- It'll be overwritten by the `show` property inside the config file.
 		"""
 		config = Config(with_profile = False)
-		config.load(cfgfile)
+		config._load(cfgfile)
 
 		for key, val in config.items():
 			if key.endswith('.type'):
