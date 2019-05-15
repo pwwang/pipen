@@ -213,7 +213,8 @@ class Jobmgr(object):
 			else PBAR_MARKS[max(states[index] for index in indexes)]
 			for indexes in index_bjobs)
 		pbar += '] Done: {:5.1f}% | Running: {}'.format(
-			100.0*float(ncompleted)/float(len(self.jobs)), nrunning)
+			100.0*float(ncompleted)/float(len(self.jobs)),
+			str(nrunning).ljust(len(str(self.proc.forks))))
 
 		job.logger.pbar[PBAR_LEVEL[states[job.index]]](
 			pbar, done = ncompleted == len(self.jobs))
