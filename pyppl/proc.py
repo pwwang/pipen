@@ -434,6 +434,7 @@ class Proc (Hashable):
 			cachedjobs  = []
 
 			for job in self.jobs:
+				#logger.debug(job.state)
 				if job.state == STATES.BUILTFAILED:
 					bfailedjobs.append(job.index)
 				elif job.state == STATES.SUBMITFAILED:
@@ -804,7 +805,7 @@ class Proc (Hashable):
 			elif key not in nokeys:
 				procvars[key] = val
 		for key in sorted(procargs.keys()):
-			logger.p_args('%s => %r', key.ljust(maxlen), procargs[key], proc = self.id)
+			logger.p_args('%s => %s', key.ljust(maxlen), procargs[key], proc = self.id)
 		for key in sorted(propout.keys()):
 			logger.p_props('%s => %s', key.ljust(maxlen), propout[key], proc = self.id)
 		self.props.procvars = {'proc': procvars, 'args': procargs}
@@ -889,7 +890,7 @@ class Proc (Hashable):
 				nlines.append(line)
 
 		if not nlines or not nlines[0].startswith('#!'):
-			nlines.insert(0, '#!/usr/bin/env ' + self.lang)
+			nlines.insert(0, '#!/usr/bin/env ' + str(self.lang))
 
 		self.props.script = self.template(modeline + '\n'.join(nlines) + '\n', **self.tplenvs)
 

@@ -2,7 +2,7 @@
 import sys
 import random
 from time import sleep
-from threading import RLock
+from threading import Lock
 from transitions import State, MachineError
 from .utils import Box, StateMachine, PQueue, Queue, ThreadPool
 from .logger import logger
@@ -69,7 +69,7 @@ class Jobmgr(object):
 		if not jobs:  # no jobs
 			return
 
-		self.lock = RLock()
+		self.lock = Lock()
 
 		machine = StateMachine(
 			model              = jobs,
@@ -167,6 +167,7 @@ class Jobmgr(object):
 			depends_on = 'kill')
 
 	def start(self):
+		# no jobs
 		if not hasattr(self, 'lock'):
 			return
 		ThreadPool(self.nslots, initializer = self.worker).join(cleanup = self.cleanup)
@@ -198,13 +199,13 @@ class Jobmgr(object):
 		index_bjobs = self._distributeJobsToPbar()
 
 		# get all states in this moment
-		with self.lock:
-			states = [job.state for job in self.jobs]
+		#with self.lock:
+		states = [job.state for job in self.jobs]
 		ncompleted = nrunning = 0
 		for state in states:
 			ncompleted += int(state in (
 				STATES.DONE, STATES.DONECACHED, STATES.ENDFAILED))
-			nrunning   += int(state in (STATES.RUNNING, STATES.SUBMITTED))
+			nrunning   += int(state in (STATES.RUNNING, STATES.SUBMITTING, STATES.SUBMITTED))
 
 		pbar  = '['
 		pbar += ''.join(
@@ -226,14 +227,17 @@ class Jobmgr(object):
 			`ex`: The exception raised by workers
 		"""
 		self.stop = True
+		message = None
 		if isinstance(ex, JobBuildingException):
-			message = 'Job building failed, quitting pipeline ...'
+			message = 'Job building failed, quitting pipeline ' + \
+				'(Ctrl-c to skip killing jobs) ...'
 		elif isinstance(ex, JobFailException):
-			message = 'Error encountered (errhow = halt), quitting pipeline ...'
+			message = 'Error encountered (errhow = halt), quitting pipeline ' + \
+				'(Ctrl-c to skip killing jobs) ...'
 		elif isinstance(ex, KeyboardInterrupt):
-			message = '[Ctrl-c] detected, quitting pipeline ...'
-		else:
-			message = None
+			message = '[Ctrl-c] detected, quitting pipeline ' + \
+				'(Ctrl-c again to skip killing jobs) ...'
+
 		if message:
 			logger.warning(message, proc = self.proc.name())
 
@@ -318,7 +322,8 @@ class Jobmgr(object):
 				job.triggerBuild(batch = batch)
 			elif job.state == STATES.BUILT:
 				with self.lock:
-					if len(self._getJobs(STATES.RUNNING, STATES.SUBMITTED)) < self.proc.forks:
+					if len(self._getJobs(
+						STATES.RUNNING, STATES.SUBMITTING, STATES.SUBMITTED)) < self.proc.forks:
 						job.triggerStartSubmit()
 				if job.state == STATES.SUBMITTING:
 					job.triggerSubmit(batch = batch)

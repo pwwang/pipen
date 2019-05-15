@@ -6,6 +6,7 @@ import cmdy
 import safefs
 from .utils import Box, OBox, chmodX, briefPath, string_types, filesig, fileflush
 from .logger import logger
+from .exceptions import JobInputParseError
 
 class Job(object):
 
@@ -247,7 +248,6 @@ class Job(object):
 			self._prepScript()
 			# check cache
 			if self.isTrulyCached() or self.isExptCached():
-				self.done(cached = True)
 				return 'cached'
 			return True
 		except Exception:
