@@ -132,6 +132,7 @@ class Jobmgr(object):
 				'ignored': STATES.DONE,
 				False    : STATES.ENDFAILED },
 			depends_on = 'retry',
+			before  = lambda event: sleep(.5),
 			after   = self._afterRetry)
 
 		# switch from submitted to running
@@ -247,15 +248,15 @@ class Jobmgr(object):
 			STATES.BUILT, STATES.SUBMITTING, STATES.SUBMITTED,
 			STATES.RUNNING, STATES.RETRYING, STATES.DONEFAILED,
 		)
-		# killq = Queue()
-		# for rjob in running_jobs:
-		# 	killq.put(rjob)
+		killq = Queue()
+		for rjob in running_jobs:
+			killq.put(rjob)
 
-		# ThreadPool(
-		# 	min(len(running_jobs), self.proc.nthread),
-		# 	initializer = self.killWorker,
-		# 	initargs    = killq
-		# ).join()
+		ThreadPool(
+			min(len(running_jobs), self.proc.nthread),
+			initializer = self.killWorker,
+			initargs    = killq
+		).join()
 
 		with self.lock:
 			failed_jobs = self._getJobs(

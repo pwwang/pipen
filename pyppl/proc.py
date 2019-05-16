@@ -805,7 +805,7 @@ class Proc (Hashable):
 			elif key not in nokeys:
 				procvars[key] = val
 		for key in sorted(procargs.keys()):
-			logger.p_args('%s => %s', key.ljust(maxlen), procargs[key], proc = self.id)
+			logger.p_args('%s => %r', key.ljust(maxlen), procargs[key], proc = self.id)
 		for key in sorted(propout.keys()):
 			logger.p_props('%s => %s', key.ljust(maxlen), propout[key], proc = self.id)
 		self.props.procvars = {'proc': procvars, 'args': procargs}

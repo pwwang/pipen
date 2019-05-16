@@ -965,11 +965,15 @@ class Job(object):
 		@return:
 			`True` if it is else `False`
 		"""
-		self.logger.debug('Retrying the job ...')
 		if self.proc.errhow == 'ignore':
 			return 'ignored'
 		if self.proc.errhow != 'retry':
 			return False
+
+		self.logger.rtrying('Retrying {} out of {} times ...'.format(
+			str(self.ntry + 1).ljust(len(str(self.proc.errntry)), '0'),
+			self.proc.errntry
+		))
 		self.ntry += 1
 		return self.ntry < self.proc.errntry
 
@@ -980,5 +984,7 @@ class Job(object):
 		self.logger.debug('Killing the job ...')
 		try:
 			self.killImpl()
+			return True
 		except Exception:
 			self.pid = ''
+			return False

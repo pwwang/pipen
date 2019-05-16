@@ -22,7 +22,7 @@ class Box(_Box):
 		kwargs['box_intact_types'] = [list]
 		super(Box, self).__init__(*args, **kwargs)
 
-	def __repr__(self):
+	def __str__(self):
 		"""Make sure repr can retrieve the object back"""
 		return 'Box(%r, box_intact_types = (list,))' % self.items()
 
@@ -38,7 +38,7 @@ class OBox(Box):
 		kwargs['ordered_box'] = True
 		super(OBox, self).__init__(*args, **kwargs)
 
-	def __repr__(self):
+	def __str__(self):
 		"""Make sure repr can retrieve the object back"""
 		return 'Box(%r, box_intact_types = (list,), ordered_box = True)' % self.items()
 
@@ -431,21 +431,22 @@ class ThreadPool(object):
 			`cleanup` : The cleanup function
 		"""
 		try:
-			threads_alive = 0
-			for thread in self.threads:
-				# check if the thread is done
-				thread.join(timeout = interval)
-				if thread.ex:
-					# exception raised, try to quit and cleanup
-					if not callable(cleanup):
-						raise thread.ex
-					cleanup(thread.ex)
-					threads_alive = 0
+			while True:
+				threads_alive = 0
+				for thread in self.threads:
+					# check if the thread is done
+					thread.join(timeout = interval)
+					if thread.ex:
+						# exception raised, try to quit and cleanup
+						if not callable(cleanup):
+							raise thread.ex
+						cleanup(thread.ex)
+						threads_alive = 0
+						break
+					elif thread.is_alive():
+						threads_alive += 1
+				if threads_alive == 0:
 					break
-				elif thread.is_alive():
-					threads_alive += 1
-			if threads_alive > 0:
-				self.join(interval = interval, cleanup = cleanup)
 		except KeyboardInterrupt as ex: # pragma: no cover
 			if callable(cleanup):
 				cleanup(ex = ex)
