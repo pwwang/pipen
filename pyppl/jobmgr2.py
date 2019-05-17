@@ -244,29 +244,31 @@ class Jobmgr(object):
 			logger.warning(message, proc = self.proc.name())
 
 		# kill running jobs
-		running_jobs = self._getJobs(
-			STATES.BUILT, STATES.SUBMITTING, STATES.SUBMITTED,
-			STATES.RUNNING, STATES.RETRYING, STATES.DONEFAILED,
-		)
-		killq = Queue()
-		for rjob in running_jobs:
-			killq.put(rjob)
-
-		ThreadPool(
-			min(len(running_jobs), self.proc.nthread),
-			initializer = self.killWorker,
-			initargs    = killq
-		).join()
-
 		with self.lock:
-			failed_jobs = self._getJobs(
-				STATES.BUILTFAILED,
-				STATES.SUBMITFAILED,
-				STATES.ENDFAILED
-			)
-			failed_jobs = failed_jobs or self.jobs
 
-			random.choice(failed_jobs).showError(len(failed_jobs))
+			failed_jobs = self._getJobs(STATES.ENDFAILED)
+			if not failed_jobs:
+				failed_jobs = self._getJobs(STATES.DONEFAILED)
+			if not failed_jobs:
+				failed_jobs = self._getJobs(STATES.SUBMITFAILED)
+			if not failed_jobs:
+				failed_jobs = self._getJobs(STATES.BUILTFAILED)
+
+			running_jobs = self._getJobs(
+				STATES.BUILT, STATES.SUBMITTING, STATES.SUBMITTED,
+				STATES.RUNNING, STATES.RETRYING, STATES.DONEFAILED,
+			)
+			killq = Queue()
+			for rjob in running_jobs:
+				killq.put(rjob)
+
+			ThreadPool(
+				min(len(running_jobs), self.proc.nthread),
+				initializer = self.killWorker,
+				initargs    = killq
+			).join()
+
+			random.choice(failed_jobs or running_jobs).showError(len(failed_jobs))
 
 			if isinstance(ex, Exception) and not isinstance(ex, (
 				JobFailException, JobBuildingException, KeyboardInterrupt)):
