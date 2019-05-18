@@ -30,9 +30,9 @@ def test_init(jobs_default):
 @pytest.mark.parametrize('exc, expect_msg', [
 	(None, ['Job error']),
 	(OSError, ['ERROR']),
-	(JobBuildingException, ['Job building failed, quitting pipeline ...']),
-	(JobFailException, ['Error encountered (errhow = halt), quitting pipeline ...']),
-	(KeyboardInterrupt, ['[Ctrl-c] detected, quitting pipeline ...']),
+	(JobBuildingException, ['Job building failed, quitting pipeline']),
+	(JobFailException, ['Error encountered (errhow = halt), quitting pipeline']),
+	(KeyboardInterrupt, ['[Ctrl-c] detected, quitting pipeline']),
 ])
 def test_cleanup(jobs_default, caplog, exc, expect_msg):
 	jm = Jobmgr(jobs_default)
@@ -162,6 +162,9 @@ def test_trigger_kill(job_killing, killfunc, expt_state):
 	job_killing.restore_state()
 	job_killing.triggerKill()
 	assert job_killing.state == expt_state
+
+def test_start_0():
+	assert Jobmgr([]).start() is None
 
 def test_start_1(job_done):
 	jm = Jobmgr([job_done])

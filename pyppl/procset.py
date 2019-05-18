@@ -1,5 +1,5 @@
 """
-The aggregation of procs
+The procset for a set of procs
 """
 import fnmatch
 from collections import OrderedDict
@@ -11,14 +11,15 @@ class _Proxy(list):
 	to all members and set attributes for all members.
 	"""
 	def __getattr__(self, item):
-		if hasattr(super(_Proxy, self), item):
+		try:
 			return getattr(super(_Proxy, self), item)
-
-		return self.__class__(getattr(proxy, item) for proxy in self)
+		except AttributeError:
+			return self.__class__(getattr(proxy, item) for proxy in self)
 
 	def __setattr__(self, name, value):
-		if hasattr(super(_Proxy, self), name):
-			super(_Proxy, self).__setattr__(name, value)
+		# We are unable to setattr of existing attribute of list
+		#if hasattr(super(_Proxy, self), name):
+		#	super(_Proxy, self).__setattr__(name, value)
 
 		if isinstance(value, tuple):
 			for i, val in enumerate(value):
@@ -28,13 +29,15 @@ class _Proxy(list):
 				setattr(proxy, name, value)
 
 	def __getitem__(self, item):
-		if isinstance(item, (int, slice)):
+		if isinstance(item, int):
 			return super(_Proxy, self).__getitem__(item)
+		if isinstance(item, slice):
+			return self.__class__(super(_Proxy, self).__getitem__(item))
 		return self.__getattr__(item)
 
 	def __setitem__(self, item, value):
 		if isinstance(item, (int, slice)):
-			return super(_Proxy, self).__setattr__(item, value)
+			return super(_Proxy, self).__setitem__(item, value)
 		return self.__setattr__(item, value)
 
 	def add(self, anything):
@@ -51,9 +54,9 @@ class _Proxy(list):
 		elif not anything in self:
 			self.append(anything)
 
-class Aggr(Box):
+class ProcSet(Box):
 	"""
-	The aggregation of a set of processes
+	The ProcSet for a set of processes
 	"""
 
 	def __init__(self, *procs, **kwargs):
@@ -62,7 +65,7 @@ class Aggr(Box):
 		@params:
 			`*procs` : the set of processes
 			`depends`: Whether auto deduce depends. Default: True
-			`id`     : The id of the aggr. Default: None (the variable name)
+			`id`     : The id of the procset. Default: None (the variable name)
 			`tag`    : The tag of the processes. Default: None (a unique 4-char str according to the id)
 			`copy`   : Whether copy the processes or just use them. Default: `True`
 		"""
@@ -89,7 +92,7 @@ class Aggr(Box):
 			else:
 				proc.tag = (boxargs['tag'] or proc.tag.split('@', 1)[0]) + '@' + boxargs['id']
 				boxargs[proc.id] = proc
-			boxargs[proc.id].aggr = boxargs['id']
+			boxargs[proc.id].procset = boxargs['id']
 			if depends and i > 0:
 				boxargs[proc.id].depends = boxargs[boxargs['_idprocs'][i - 1]]
 
@@ -99,14 +102,15 @@ class Aggr(Box):
 		boxargs['groups']['starts'] = boxargs['starts']
 		boxargs['groups']['ends']   = boxargs['ends']
 
-		super(Aggr, self).__init__(boxargs.items(), ordered_box = True, box_intact_types = [_Proxy])
+		super(ProcSet, self).__init__(
+			boxargs.items(), ordered_box = True, box_intact_types = [_Proxy])
 
 	def setGroup(self, name, *items):
 		"""
 		Set up groups
 		@params:
 			`name`: The name of the group. Once set, you can access it by:
-				`aggr.<name>` or `aggr[<name>]`
+				`procset.<name>` or `procset[<name>]`
 			`*items`: The selectors of processes, which will be passed to `__getitem__`
 		"""
 		self.groups[name] = _Proxy(sum((self[item] for item in items), _Proxy()))
@@ -115,7 +119,7 @@ class Aggr(Box):
 	# TODO: also copy depends relationship, then remove unsed-argument and fixme
 	def copy (self, id = None, tag = None, depends = True, groups = True):
 		"""
-		Like `proc`'s `copy` function, copy an aggregation. Each processes will be copied.
+		Like `proc`'s `copy` function, copy a procset. Each processes will be copied.
 		@params:
 			`tag`    : The new tag of all copied processes
 			`depends`: Whether to copy the dependencies or not. Default: True
@@ -123,7 +127,7 @@ class Aggr(Box):
 			`id`   : Use a different id if you don't want to use the variant name
 			`grups`: Copy grups? Default: `True`
 		@returns:
-			The new aggregation
+			The new procset
 		"""
 		id  = id or varname()
 		ret = self.__class__(
@@ -147,13 +151,13 @@ class Aggr(Box):
 
 	def __setattr__(self, item, value):
 		if item in ('starts', 'ends'):
-			super(Aggr, self).__setattr__(item, _Proxy(value))
+			super(ProcSet, self).__setattr__(item, _Proxy(value))
 		elif item in ('depends', 'input'):
 			self.starts.__setattr__(item, value)
 		elif item in ('exdir', 'exhow', 'exow', 'expart'):
 			self.ends.__setattr__(item, value)
 		else:
-			super(Aggr, self).__setattr__(item, value)
+			super(ProcSet, self).__setattr__(item, value)
 
 	def __getitem__(self, item, _ignore_default = True):
 		if isinstance(item, slice):
@@ -166,7 +170,7 @@ class Aggr(Box):
 				ret.add(self[itm])
 			return ret
 		if item in self:
-			return super(Aggr, self).__getitem__(item)
+			return super(ProcSet, self).__getitem__(item)
 		if item in self.groups:
 			return self.groups[item]
 		keys = fnmatch.filter(self._idprocs, item)

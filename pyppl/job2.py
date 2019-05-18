@@ -971,7 +971,7 @@ class Job(object):
 			return False
 
 		self.logger.rtrying('Retrying {} out of {} times ...'.format(
-			str(self.ntry + 1).ljust(len(str(self.proc.errntry)), '0'),
+			str(self.ntry + 1).rjust(len(str(self.proc.errntry)), '0'),
 			self.proc.errntry
 		))
 		self.ntry += 1

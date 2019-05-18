@@ -46,7 +46,7 @@ class Flowchart(object):
 			'resume+': {
 				'fillcolor': '#58b773', # green
 			},
-			'aggr': {
+			'procset': {
 				'style': 'filled',
 				'color': '#eeeeee', # almost white
 			}
@@ -85,7 +85,7 @@ class Flowchart(object):
 			'resume+': {
 				'fillcolor': '#a7f2bb', # light green
 			},
-			'aggr': {
+			'procset': {
 				'style': 'filled',
 				'color': '#eeeeee', # almost white
 			}
@@ -138,7 +138,7 @@ class Flowchart(object):
 			self.starts.append(node)
 		if role == 'end' and node not in self.ends:
 			self.ends.append(node)
-		gname = node.aggr or Flowchart.ROOTGROUP
+		gname = node.procset or Flowchart.ROOTGROUP
 		if not gname in self.nodes:
 			self.nodes[gname] = []
 		if not node in self.nodes[gname]:
@@ -176,7 +176,7 @@ class Flowchart(object):
 					theme['tooltip'] = node.desc
 				graph.node(node.name(False), **{k:str(v) for k, v in theme.items()})
 			if group != Flowchart.ROOTGROUP:
-				graph.attr(label = group, **{k:str(v) for k,v in self.theme['aggr'].items()})
+				graph.attr(label = group, **{k:str(v) for k,v in self.theme['procset'].items()})
 				self.graph.subgraph(graph)
 
 		# edges

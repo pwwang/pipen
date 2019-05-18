@@ -94,7 +94,7 @@ def loadConfiguratiaons():
 		# number of threads used to build jobs and to check job cache status
 		nthread    = min(int(cpu_count() / 2), 16),
 		# Where cache file and workdir located
-		ppldir     = path.abspath('./workdir'),
+		ppldir     = './workdir',
 		# Valid return codes
 		rc         = 0,
 		# Select the runner
@@ -116,7 +116,7 @@ loadConfiguratiaons()
 # load logger
 # pylint: disable=wrong-import-position
 from .logger import logger
-from .aggr import Aggr, _Proxy
+from .procset import ProcSet, _Proxy
 from .proc import Proc
 from .job2 import Job
 from .jobmgr2 import Jobmgr
@@ -298,23 +298,23 @@ class PyPPL (object):
 		#paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths()])
 		paths  = sorted([[pnode.name() for pnode in reversed(apath)]
 			for apath in self.tree.getAllPaths()])
-		paths2 = [] # processes merged from the same aggr
+		paths2 = [] # processes merged from the same procset
 		for apath in paths:
-			prevaggr = None
+			prevset = None
 			path2    = []
 			for pnode in apath:
 				if not '@' in pnode:
 					path2.append(pnode)
 				else:
-					aggr = pnode.split('@')[-1]
-					if not prevaggr or prevaggr != aggr:
-						path2.append('[%s]' % aggr)
-						prevaggr = aggr
-					elif prevaggr == aggr:
+					procset = pnode.split('@')[-1]
+					if not prevset or prevset != procset:
+						path2.append('[%s]' % procset)
+						prevset = procset
+					elif prevset == procset:
 						continue
 			if path2 not in paths2:
 				paths2.append(path2)
-			# see details for aggregations
+			# see details for procset
 			#if path != path2:
 			#	logger.logger.info('[  DEBUG] * %s' % (' -> '.join(path)))
 
@@ -418,7 +418,7 @@ class PyPPL (object):
 		if not isinstance(anything, (tuple, list)):
 			if isinstance(anything, Proc):
 				ret.add(anything)
-			elif isinstance(anything, Aggr):
+			elif isinstance(anything, ProcSet):
 				ret.add(anything.starts)
 			else:
 				for node in ProcTree.NODES.values():

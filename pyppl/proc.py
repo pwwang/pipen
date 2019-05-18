@@ -12,7 +12,7 @@ from simpleconf import NoSuchProfile
 from .logger import logger
 from .utils import Box, Hashable
 from .jobmgr2 import Jobmgr, STATES
-from .aggr import Aggr
+from .procset import ProcSet
 from .channel import Channel
 from .exceptions import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, \
 	ProcScriptError, ProcRunCmdError
@@ -77,7 +77,7 @@ class Proc (Hashable):
 		@config:
 			id, input, output, ppldir, forks, cache, acache, rc, echo, runner, script, depends,
 			tag, desc, dirsig, exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd,
-			workdir, args, aggr, callfront, callback, expect, expart, template, tplenvs,
+			workdir, args, procset, callfront, callback, expect, expart, template, tplenvs,
 			resume, nthread
 		@props
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect
@@ -97,8 +97,8 @@ class Proc (Hashable):
 				"No space is allowed in tag " +
 				"('{}'). Do you mean 'desc' instead of 'tag'?".format(tag))
 
-		# The aggregation name of the process, not configurable
-		self.config.aggr       = None
+		# The procset name of the process, not configurable
+		self.config.procset    = None
 		# The extra arguments for the process
 		self.config.args       = utils.config.args.copy()
 		# The callfront function of the process
@@ -232,7 +232,7 @@ class Proc (Hashable):
 		if name == 'depends':
 			self.props.depends = []
 			depends = list(value) if isinstance(value, tuple) else \
-				value.ends if isinstance(value, Aggr) else \
+				value.ends if isinstance(value, ProcSet) else \
 				value if isinstance(value, list) else [value]
 
 			for depend in depends:
@@ -240,13 +240,13 @@ class Proc (Hashable):
 					if depend is self:
 						raise ProcAttributeError(self.name(True), 'Process depends on itself')
 					self.props.depends.append(depend)
-				elif isinstance(depend, Aggr):
+				elif isinstance(depend, ProcSet):
 					self.props.depends.extend(depend.ends)
 				elif isinstance(depend, list):
 					self.props.depends.extend(depend)
 				else:
 					raise ProcAttributeError(type(value).__name__,
-						"Process dependents should be 'Proc/Aggr', not")
+						"Process dependents should be 'Proc/ProcSet', not")
 
 		elif name == 'script' and value.startswith('file:'):
 			scriptpath = value[5:]
@@ -312,7 +312,7 @@ class Proc (Hashable):
 				conf[key] = tag
 			elif key == 'desc' and desc:
 				conf[key] = desc
-			elif key == 'aggr':
+			elif key == 'procset':
 				conf[key] = None
 			elif key in ['workdir', 'resume']:
 				conf[key] = ''
@@ -480,15 +480,15 @@ class Proc (Hashable):
 				self.jobs[showjob].showError(len(failjobs))
 				sys.exit(1)
 
-	def name(self, aggr = True):
+	def name(self, procset = True):
 		"""
-		Get my name include `aggr`, `id`, `tag`
+		Get my name include `procset`, `id`, `tag`
 		@returns:
 			the name
 		"""
 		ret = '%s.%s' %(self.id, self.tag)
 		ret = ''.join(ret.split('.notag', 1))
-		return ret if aggr else ret.split('@', 1)[0]
+		return ret if procset else ret.split('@', 1)[0]
 
 	def run(self, profile = None, config = None):
 		"""
@@ -765,7 +765,7 @@ class Proc (Hashable):
 		show    = ['size', 'args']
 		if self.runner != 'local':
 			show.append('runner')
-		hide    = ['desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'aggr',
+		hide    = ['desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'procset',
 			'input', 'output', 'depends', 'script']
 		nokeys  = ['tplenvs', 'input', 'output', 'depends', 'lock', 'jobs']
 		allkeys = [key for key in set(self.props.keys()) | set(self.config.keys())]

@@ -268,7 +268,7 @@ class Jobmgr(object):
 				initargs    = killq
 			).join()
 
-			random.choice(failed_jobs or running_jobs).showError(len(failed_jobs))
+			random.choice(failed_jobs or running_jobs or self.jobs).showError(len(failed_jobs))
 
 			if isinstance(ex, Exception) and not isinstance(ex, (
 				JobFailException, JobBuildingException, KeyboardInterrupt)):
