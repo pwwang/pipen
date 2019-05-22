@@ -22,9 +22,12 @@ class Box(_Box):
 		kwargs['box_intact_types'] = [list]
 		super(Box, self).__init__(*args, **kwargs)
 
-	def __str__(self):
+	def __repr__(self):
 		"""Make sure repr can retrieve the object back"""
 		return 'Box(%r, box_intact_types = (list,))' % self.items()
+
+	def __str__(self):
+		return super(Box, self).__repr__()
 
 	def copy(self):
 		return self.__class__(super(_Box, self).copy())
