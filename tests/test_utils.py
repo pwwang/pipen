@@ -16,12 +16,14 @@ def test_box_init(construct):
 	assert Box(construct).__dict__['_box_config']['box_intact_types'] == (list, )
 
 @pytest.mark.box
-@pytest.mark.parametrize('construct,expect', [
-	({}, "Box([], box_intact_types = (list,))"),
-	([('a', 1), ('b', 2)], "Box([('a', 1), ('b', 2)], box_intact_types = (list,))"),
+@pytest.mark.parametrize('construct,expect,strexpt', [
+	({}, "Box([], box_intact_types = (list,))", "<Box: {}>"),
+	([('a', 1), ('b', 2)],
+		"Box([('a', 1), ('b', 2)], box_intact_types = (list,))", "<Box: {'a': 1, 'b': 2}>"),
 ])
-def test_box_str(construct, expect):
-	assert str(Box(construct)) == expect
+def test_box_repr(construct, expect, strexpt):
+	assert repr(Box(construct)) == expect
+	assert str(Box(construct)) == strexpt
 
 @pytest.mark.box
 @pytest.mark.parametrize('construct', [
@@ -50,7 +52,7 @@ def test_obox_init(construct):
 	([('b', 1), ('a', 2)], "Box([('b', 1), ('a', 2)], box_intact_types = (list,), ordered_box = True)"),
 ])
 def test_obox_repr(construct,expect):
-	assert str(OrderedBox(construct)) == expect
+	assert repr(OrderedBox(construct)) == expect
 
 def test_varname(fixt_varname):
 	assert fixt_varname.var == fixt_varname.expt

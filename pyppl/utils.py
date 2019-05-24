@@ -35,13 +35,44 @@ class Box(_Box):
 	def __copy__(self):
 		return self.__class__(super(_Box, self).copy())
 
+	def __convert_and_store(self, item, value): # pragma: no cover
+		if (item in self._box_config['__converted'] or
+				(self._box_config['box_intact_types'] and
+				 isinstance(value, self._box_config['box_intact_types']))):
+			return value
+		if isinstance(value, dict) and not isinstance(value, Box):
+			value = Box(value, __box_heritage=(self, item),
+								   **self.__box_config())
+			self[item] = value
+		elif isinstance(value, list) and not isinstance(value, BoxList):
+			if self._box_config['frozen_box']:
+				value = _recursive_tuples(value, Box,
+										  recreate_tuples=self._box_config[
+											  'modify_tuples_box'],
+										  __box_heritage=(self, item),
+										  **self.__box_config())
+			else:
+				value = BoxList(value, __box_heritage=(self, item),
+								box_class=Box,
+								**self.__box_config())
+			self[item] = value
+		elif (self._box_config['modify_tuples_box'] and
+			  isinstance(value, tuple)):
+			value = _recursive_tuples(value, Box,
+									  recreate_tuples=True,
+									  __box_heritage=(self, item),
+									  **self.__box_config())
+			self[item] = value
+		self._box_config['__converted'].add(item)
+		return value
+
 class OBox(Box):
 
 	def __init__(self, *args, **kwargs):
 		kwargs['ordered_box'] = True
 		super(OBox, self).__init__(*args, **kwargs)
 
-	def __str__(self):
+	def __repr__(self):
 		"""Make sure repr can retrieve the object back"""
 		return 'Box(%r, box_intact_types = (list,), ordered_box = True)' % self.items()
 
@@ -465,10 +496,10 @@ class PQueue(PriorityQueue):
 
 			0                              0 done,             wait for 1
 			  1        start 0    1        start 1             start 2
-			    2      ------>  0   2      ------>      2      --------->
-			      3                   3               1   3                    3
-			        4                   4                   4                2   4
-			                                                               1
+				2      ------>  0   2      ------>      2      --------->
+				  3                   3               1   3                    3
+					4                   4                   4                2   4
+																		   1
 		@params:
 			`maxsize`  : The maxsize of the queue. Default: None
 			`batch_len`: What's the length of a batch

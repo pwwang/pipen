@@ -1,27 +1,31 @@
 """
 The procset for a set of procs
 """
-import fnmatch
+import inspect
+from types import GeneratorType
+from fnmatch import fnmatch, filter as fnfilter
+from functools import partial
 from collections import OrderedDict
-from .utils import varname, Box
+from .utils import varname, Box, OBox
 
-class _Proxy(list):
+class Proxy(list):
 	"""
 	A proxy class extended from list to enable dot access
 	to all members and set attributes for all members.
 	"""
+
 	def __getattr__(self, item):
 		try:
-			return getattr(super(_Proxy, self), item)
+			# Get the attributes of list
+			return getattr(super(Proxy, self), item)
 		except AttributeError:
 			return self.__class__(getattr(proxy, item) for proxy in self)
 
 	def __setattr__(self, name, value):
 		# We are unable to setattr of existing attribute of list
-		#if hasattr(super(_Proxy, self), name):
-		#	super(_Proxy, self).__setattr__(name, value)
-
-		if isinstance(value, tuple):
+		#if hasattr(super(Proxy, self), name):
+		#	super(Proxy, self).__setattr__(name, value)
+		if isinstance(value, Values):
 			for i, val in enumerate(value):
 				setattr(self[i], name, val)
 		else:
@@ -30,14 +34,14 @@ class _Proxy(list):
 
 	def __getitem__(self, item):
 		if isinstance(item, int):
-			return super(_Proxy, self).__getitem__(item)
+			return super(Proxy, self).__getitem__(item)
 		if isinstance(item, slice):
-			return self.__class__(super(_Proxy, self).__getitem__(item))
+			return self.__class__(super(Proxy, self).__getitem__(item))
 		return self.__getattr__(item)
 
 	def __setitem__(self, item, value):
 		if isinstance(item, (int, slice)):
-			return super(_Proxy, self).__setitem__(item, value)
+			return super(Proxy, self).__setitem__(item, value)
 		return self.__setattr__(item, value)
 
 	def add(self, anything):
@@ -45,16 +49,55 @@ class _Proxy(list):
 		Add elements to the list.
 		@params:
 			`anything`: anything that is to be added.
-				If it is a _Proxy, element will be added individually
+				If it is a Proxy, element will be added individually
 				Otherwise the whole `anything` will be added as one element.
 		"""
-		if isinstance(anything, _Proxy):
+		if not anything:
+			return
+		if isinstance(anything, Proxy):
 			for thing in anything:
 				self.add(thing)
-		elif not anything in self:
+		elif anything not in self:
 			self.append(anything)
 
-class ProcSet(Box):
+class Values(Proxy):
+
+	def __init__(self, *args, **kwargs):
+		super(Values, self).__init__(args, **kwargs)
+
+class PSProxy(object):
+
+	def __init__(self, procset, path = None):
+		self.__dict__['procset'] = procset
+		self.__dict__['path']    = path or []
+
+	def _delegatedAttrs(self, attr_to_set):
+		path_to_check = '.'.join(self.path + [attr_to_set])
+		for dele_name in self.procset.delegates.keys():
+			if fnmatch(path_to_check, dele_name):
+				procs = self.procset.delegated(dele_name)
+				break
+		else:
+			procs = Proxy(self.procset.procs.values())
+		for p in self.path:
+			procs = getattr(procs, p)
+		return procs
+
+	def __getattr__(self, item):
+		self.path.append(item)
+		return self
+
+	def __setattr__(self, name, value):
+		attrs = self._delegatedAttrs(name)
+
+		if isinstance(value, Values):
+			for i, val in enumerate(value):
+				setattr(attrs[i], name, val)
+		else:
+			for attr in attrs:
+				setattr(attr, name, value)
+
+class ProcSet(object):
 	"""
 	The ProcSet for a set of processes
 	"""
@@ -69,109 +112,149 @@ class ProcSet(Box):
 			`tag`    : The tag of the processes. Default: None (a unique 4-char str according to the id)
 			`copy`   : Whether copy the processes or just use them. Default: `True`
 		"""
-		from . import Proc
-		boxargs = OrderedDict()
 
-		boxargs['id']               = kwargs.get('id') or varname()
-		boxargs['tag']              = kwargs.get('tag')
-		boxargs['starts']           = _Proxy()
-		boxargs['ends']             = _Proxy()
-		boxargs['groups']           = Box(box_intact_types = [_Proxy])
-		boxargs['_idprocs']          = []
+		self.__dict__['id']        = kwargs.get('id') or varname(context = 101)
+		self.__dict__['tag']       = kwargs.get('tag')
+		self.__dict__['starts']    = Proxy()
+		self.__dict__['ends']      = Proxy()
+		self.__dict__['delegates'] = OBox()
+		self.__dict__['procs']     = OBox()
+		self.__dict__['modules']   = Box()
+		# save initial states before a module is called
+		# states will be resumed before each module is called
+		self.__dict__['initials']  = Box()
 
 		ifcopy  = kwargs.get('copy', True)
 		depends = kwargs.get('depends', True)
 
-		for i, proc in enumerate(procs):
-			assert isinstance(proc, Proc), 'Argument has to be a Proc object: %r.' % proc
-			boxargs['_idprocs'].append(proc.id)
+		prevproc = None
+		for proc in procs:
+			assert hasattr(proc, 'id') and hasattr(proc, 'tag'), \
+				'Argument has to be a Proc object: %r.' % proc
 			if ifcopy:
-				boxargs[proc.id] = proc.copy(proc.id,
-					tag = (boxargs['tag'] or proc.tag.split('@', 1)[0]) + '@' + boxargs['id']
-				)
+				self.procs[proc.id] = proc.copy(proc.id,
+					tag = (self.tag or proc.tag.split('@', 1)[0]) + '@' + self.id)
 			else:
-				proc.tag = (boxargs['tag'] or proc.tag.split('@', 1)[0]) + '@' + boxargs['id']
-				boxargs[proc.id] = proc
-			boxargs[proc.id].procset = boxargs['id']
-			if depends and i > 0:
-				boxargs[proc.id].depends = boxargs[boxargs['_idprocs'][i - 1]]
+				self.procs[proc.id] = proc
+				proc.tag = (self.tag or proc.tag.split('@', 1)[0]) + '@' + self.id
 
-		if depends and boxargs['_idprocs']:
-			boxargs['starts'] = _Proxy([boxargs[boxargs['_idprocs'][0]]])
-			boxargs['ends']   = _Proxy([boxargs[boxargs['_idprocs'][-1]]])
-		boxargs['groups']['starts'] = boxargs['starts']
-		boxargs['groups']['ends']   = boxargs['ends']
+			self.procs[proc.id].procset = self.id
 
-		super(ProcSet, self).__init__(
-			boxargs.items(), ordered_box = True, box_intact_types = [_Proxy])
+			if depends and prevproc is None:
+				self.starts.add(self[proc.id])
 
-	def setGroup(self, name, *items):
-		"""
-		Set up groups
-		@params:
-			`name`: The name of the group. Once set, you can access it by:
-				`procset.<name>` or `procset[<name>]`
-			`*items`: The selectors of processes, which will be passed to `__getitem__`
-		"""
-		self.groups[name] = _Proxy(sum((self[item] for item in items), _Proxy()))
+			if depends and prevproc:
+				self.procs[proc.id].depends = prevproc
+
+			prevproc = self.procs[proc.id]
+
+		if depends and prevproc:
+			self.ends.add(prevproc)
+
+		self.delegate('input', 'starts')
+		self.delegate('depends', 'starts')
+		self.delegate('ex*', 'ends')
+
+	def delegate(self, *procs):
+		procs = list(procs)
+		name  = procs.pop(0)
+		self.delegates[name] = procs
+
+	def delegated(self, name):
+		if name not in self.delegates:
+			return None
+		return self[self.delegates[name]]
+
+	def restoreStates(self):
+		if not self.initials: # extract the inital states
+			self.initials.starts  = self.starts[:]
+			self.initials.ends    = self.ends[:]
+			self.initials.depends = {pid: proc.depends for pid, proc in self.procs.items()}
+		else:
+			self.__dict__['starts'] = self.initials.starts[:]
+			self.__dict__['ends']   = self.initials.ends[:]
+			for pid, depends in self.initials.items():
+				self.procs[pid] = depends
+
+	def module(self, name):
+		if callable(name):
+			funcname = name.__name__
+			if funcname.startswith(self.id + '_'):
+				funcname = funcname[(len(self.id) + 1):]
+			return self.module(funcname)(name)
+
+		def decorator(func):
+			signature = inspect.signature(func)
+			defaults  = {
+				key: val.default
+				for key, val in signature.parameters.items()
+				if val.default is not inspect.Parameter.empty}
+			def modfun(*args, **kwargs):
+				if defaults.get('restore', kwargs.get('restore', True)):
+					self.restoreStates()
+				func(self, *args, **kwargs)
+
+			self.modules[name] = modfun
+			return self.modules[name]
+		return decorator
 
 	# pylint: disable=arguments-differ,redefined-builtin,unused-argument,fixme
-	# TODO: also copy depends relationship, then remove unsed-argument and fixme
-	def copy (self, id = None, tag = None, depends = True, groups = True):
+	def copy (self, id = None, tag = None, depends = True):
 		"""
 		Like `proc`'s `copy` function, copy a procset. Each processes will be copied.
 		@params:
+			`id`     : Use a different id if you don't want to use the variant name
 			`tag`    : The new tag of all copied processes
 			`depends`: Whether to copy the dependencies or not. Default: True
 				- dependences for processes in starts will not be copied
-			`id`   : Use a different id if you don't want to use the variant name
-			`grups`: Copy grups? Default: `True`
 		@returns:
 			The new procset
 		"""
 		id  = id or varname()
-		ret = self.__class__(
-			*[self[key] for key in self._idprocs], id = id, tag = tag, depends = False
-		)
-		for key in reversed(self._idprocs):
-			ret[key].depends = [ret[proc.id] for proc in self[key].depends if proc.id in self]
+		ret = self.__class__(*self.procs.values(), id = id, tag = tag, copy = True, depends = False)
 
-		ret.starts.extend(ret[proc.id] for proc in self.starts)
-		ret.ends.extend(ret[proc.id] for proc in self.ends)
+		if depends:
+			for procid, proc in ret.procs.items():
+				proc.depends = [ret.procs[dep.id] if dep is self.procs[dep.id] else dep
+					for dep in self.procs[proc.id].depends]
 
-		if groups:
-			ret.groups.starts = ret.starts
-			ret.groups.ends = ret.ends
-			for group in self.groups.keys():
-				if group in ('starts', 'ends'):
-					continue
-				ret.groups[group] = ret[self.groups[group]['id']]
+			ret.starts.add(Proxy(ret.procs[proc.id] for proc in self.starts))
+			ret.ends.add(Proxy(ret.procs[proc.id] for proc in self.ends))
 
 		return ret
 
 	def __setattr__(self, item, value):
 		if item in ('starts', 'ends'):
-			super(ProcSet, self).__setattr__(item, _Proxy(value))
-		elif item in ('depends', 'input'):
-			self.starts.__setattr__(item, value)
-		elif item in ('exdir', 'exhow', 'exow', 'expart'):
-			self.ends.__setattr__(item, value)
+			self.__dict__[item] = self[value]
+		elif item in ('id', 'tag'):
+			self.__dict__[item] = value
 		else:
-			super(ProcSet, self).__setattr__(item, value)
+			PSProxy(procset = self).__setattr__(item, value)
+
+	def __getattr__(self, item):
+		if item in self.__dict__:
+			return self.__dict__[item]
+		if item in self.procs:
+			return self.procs[item]
+		return PSProxy(procset = self, path = [item])
 
 	def __getitem__(self, item, _ignore_default = True):
+		"""Process selector, always return Proxy object"""
+		if item in ('starts', 'ends'):
+			return self.__getattr__(item)
+		if hasattr(item, 'id') and hasattr(item, 'tag') and not isinstance(item, ProcSet):
+			return Proxy([self.procs[item.id]])
 		if isinstance(item, slice):
-			return _Proxy(self[itm] for itm in self._idprocs[item])
+			return Proxy(self.__getattr__(procid) for procid in self.procs.keys()[item])
 		if isinstance(item, int):
-			return self[self._idprocs[item]]
-		if isinstance(item, (tuple, list)):
-			ret = _Proxy()
-			for itm in item:
-				ret.add(self[itm])
+			return self[self.procs.keys()[item]]
+		if isinstance(item, (tuple, list, GeneratorType)):
+			ret = Proxy()
+			ret.add(Proxy(it for itm in item for it in self[itm]))
 			return ret
-		if item in self:
-			return super(ProcSet, self).__getitem__(item)
-		if item in self.groups:
-			return self.groups[item]
-		keys = fnmatch.filter(self._idprocs, item)
-		return _Proxy(self[key] for key in keys)
+		if item in self.procs:
+			return Proxy([self.procs[item]])
+		if ',' in item:
+			return self[(it.strip() for it in item.split(','))]
+
+		return self[fnfilter(self.procs.keys(), item)]

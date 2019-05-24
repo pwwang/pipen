@@ -116,7 +116,7 @@ loadConfiguratiaons()
 # load logger
 # pylint: disable=wrong-import-position
 from .logger import logger
-from .procset import ProcSet, _Proxy
+from .procset import ProcSet, Proxy
 from .proc import Proc
 from .job2 import Job
 from .jobmgr2 import Jobmgr
@@ -414,7 +414,7 @@ class PyPPL (object):
 
 	@staticmethod
 	def _any2procs(anything):
-		ret = _Proxy()
+		ret = Proxy()
 		if not isinstance(anything, (tuple, list)):
 			if isinstance(anything, Proc):
 				ret.add(anything)
