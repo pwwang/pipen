@@ -37,7 +37,7 @@ class RunnerLocal (Job):
 		"""
 		Try to submit the job
 		"""
-		cmd = cmdy.bash(self.wrapped_script, _bg = True)
+		cmd = cmdy.bash(self.wrapped_script, _raise = False, _bg = True)
 		cmd.rc = 0
 		self.pid = cmd.pid
 		return cmd

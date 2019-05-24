@@ -2,6 +2,7 @@
 Channel for pyppl
 """
 import sys
+import functools
 
 from os import path
 from glob import glob
@@ -314,7 +315,7 @@ class Channel(list):
 		@returns:
 			The transformed Channel
 		"""
-		return Channel.create(utils.map(func, self))
+		return Channel.create([func(x) for x in self])
 
 	def mapCol(self, func, col = 0):
 		"""
@@ -337,7 +338,8 @@ class Channel(list):
 		@returns:
 			The filtered Channel
 		"""
-		return Channel.create(utils.filter(func, self))
+		func = func or bool
+		return Channel.create([x for x in self if func(x)])
 
 	def filterCol(self, func = None, col = 0):
 		"""
@@ -348,8 +350,7 @@ class Channel(list):
 		@returns:
 			The filtered Channel
 		"""
-		if func is None:
-			func = bool
+		func = func or bool
 		return Channel.create([s for s in self if func(s[col])])
 
 	def reduce (self, func):
@@ -360,7 +361,7 @@ class Channel(list):
 		@returns:
 			The reduced value
 		"""
-		return utils.reduce(func, self)
+		return functools.reduce(func, self)
 
 	def reduceCol (self, func, col = 0):
 		"""
@@ -371,7 +372,7 @@ class Channel(list):
 		@returns:
 			The reduced value
 		"""
-		return utils.reduce(func, [s[col] for s in self])
+		return functools.reduce(func, [s[col] for s in self])
 
 	def rbind (self, *rows):
 		"""
