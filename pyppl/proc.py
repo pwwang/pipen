@@ -87,7 +87,7 @@ class Proc (Hashable):
 		# Get configuration from config
 		self.__dict__['config']   = utils.config.copy()
 		# computed props
-		self.__dict__['props']    = Box(box_intact_types = [Channel])
+		self.__dict__['props']    = Box(box_intact_types = [Channel, list])
 
 		# The id (actually, it's the showing name) of the process
 		self.config.id = id if id else utils.varname()
@@ -783,8 +783,8 @@ class Proc (Hashable):
 		for key in allkeys:
 			val = getattr(self, key)
 			if key == 'args':
-				procvars['args'] = val
-				procargs         = val
+				procvars['args'] = self.args
+				procargs         = self.args
 				if val:
 					maxlen = max(maxlen, max([len(thekey) for thekey in val.keys()]))
 			elif key == 'runner':
