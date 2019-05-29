@@ -784,8 +784,8 @@ class Proc (Hashable):
 		for key in allkeys:
 			val = getattr(self, key)
 			if key == 'args':
-				procvars['args'] = self.args
-				procargs         = self.args
+				procvars['args'] = val
+				procargs         = val
 				if val:
 					maxlen = max(maxlen, max([len(thekey) for thekey in val.keys()]))
 			elif key == 'runner':
