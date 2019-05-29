@@ -66,6 +66,7 @@ class Proc (Hashable):
 	EX_MOVE = ['move', 'mv']
 	EX_LINK = ['link', 'symlink', 'symbol']
 
+	# pylint: disable=redefined-builtin
 	def __init__(self, id = None, tag = 'notag', desc = 'No description.', **kwargs):
 		"""
 		Constructor

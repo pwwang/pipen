@@ -27,13 +27,13 @@ class Channel(list):
 			The converted element
 		"""
 		if isinstance(atuple, (utils.string_types, list)):
-			atuple = (atuple, )
-		else:
-			try:
-				iter(atuple)
-			except Exception:
-				atuple = (atuple, )
-		return tuple (atuple)
+			return (atuple, )
+
+		try:
+			iter(atuple)
+		except TypeError:
+			return (atuple, )
+		return tuple(atuple)
 
 	@staticmethod
 	def create(alist = None):
@@ -46,8 +46,10 @@ class Channel(list):
 		"""
 		if alist is None:
 			alist = []
+
 		if not isinstance(alist, list):
 			alist = [alist]
+
 		ret = Channel()
 		length = 0
 		for ele in alist:

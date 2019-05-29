@@ -2,21 +2,37 @@
 A set of utitities for PyPPL
 """
 import re
-import math
 import inspect
 from os import path, walk, sep as pathsep
 from hashlib import md5
 from threading import Thread
-import cmdy
-import safefs
 import psutil
 from transitions import Transition, Machine
-from box import Box as _Box
+from box import Box as _Box, BoxList
+import safefs
+import cmdy
 from simpleconf import Config
-cmdy   = cmdy(_raise = False) # pylint: disable=invalid-name
+cmdy   = cmdy(_raise = False) # pylint: disable=invalid-name,not-callable
 config = Config() # pylint: disable=invalid-name
 
+# pylint: disable=invalid-name
+def _recursive_tuples(iterable, box_class, recreate_tuples=False, **kwargs):
+	out_list = []
+	for i in iterable:
+		if isinstance(i, dict):
+			out_list.append(box_class(i, **kwargs))
+		elif isinstance(i, list) or (recreate_tuples and isinstance(i, tuple)):
+			out_list.append(_recursive_tuples(i, box_class,
+											  recreate_tuples, **kwargs))
+		else:
+			out_list.append(i)
+	return tuple(out_list)
+
 class Box(_Box):
+	"""
+	Subclass of box.Box to fix box_intact_types to [list] and
+	rewrite __repr__ to make the string results back to object
+	"""
 
 	def __init__(self, *args, **kwargs):
 		kwargs['box_intact_types'] = [list]
@@ -30,9 +46,11 @@ class Box(_Box):
 		return super(Box, self).__repr__()
 
 	def copy(self):
+		# pylint: disable=bad-super-call
 		return self.__class__(super(_Box, self).copy())
 
 	def __copy__(self):
+		# pylint: disable=bad-super-call
 		return self.__class__(super(_Box, self).copy())
 
 	def __convert_and_store(self, item, value): # pragma: no cover
