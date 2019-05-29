@@ -35,12 +35,13 @@ class Box(_Box):
 	"""
 
 	def __init__(self, *args, **kwargs):
-		kwargs['box_intact_types'] = [list]
+		kwargs['box_intact_types'] = kwargs.pop('box_intact_types', [list])
 		super(Box, self).__init__(*args, **kwargs)
 
 	def __repr__(self):
 		"""Make sure repr can retrieve the object back"""
-		return 'Box(%r, box_intact_types = (list,))' % self.items()
+		ret = 'Box(%r, box_intact_types = (list,))' % self.items()
+		return ret.replace('<BoxList: [', '[').replace(']>', ']')
 
 	def __str__(self):
 		return super(Box, self).__repr__()
