@@ -358,7 +358,8 @@ class Proc (Hashable):
 		@returns:
 			The uniq id of the process
 		"""
-		if self.suffix: return self.suffix
+		if self.suffix:
+			return self.suffix
 
 		sigs = Box(ordered_box = True)
 		sigs.argv0 = path.realpath(sys.argv[0])
@@ -845,7 +846,8 @@ class Proc (Hashable):
 			if lparts == 1:
 				thekey, thetype = key, Proc.OUT_VARTYPE[0]
 			elif lparts == 2:
-				thekey, thetype = kparts
+				thekey  = kparts[0]
+				thetype = kparts[1]
 			else:
 				raise ProcOutputError(key, 'Too many parts for process output key in')
 
