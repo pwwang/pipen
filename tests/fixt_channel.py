@@ -60,3 +60,38 @@ def paired_files(tmp_test_dir):
 	for f in files:
 		f.write_text('')
 	return pfiles
+
+@pytest.fixture(scope="module")
+def file_files(tmp_test_dir):
+	pfiles = ['testFromFile1.txt', 'testFromFile2.txt',
+			  'testFromFile3.txt', 'testFromFile4.txt']
+
+	tmpdir = tmp_test_dir / 'test_fromfile'
+	if tmpdir.exists():
+		rmtree(tmpdir.as_posix())
+	tmpdir.mkdir()
+	files = [tmpdir / f for f in pfiles]
+
+	files[0].write_text(
+		"a1\tb1\tc1\n" +
+		"a2\tb2\tc2")
+	files[1].write_text(
+		"a,b,c\n" +
+		"a1,b1,c1\n" +
+		"a2,b2,c2"
+	)
+	files[2].write_text(
+		"#a,b,c\n" +
+		"#a,b,c\n" +
+		"b,c\n" +
+		"\n" +
+		"a1,b1,c1\n" +
+		"a2,b2,c2"
+	)
+	files[3].write_text(
+		"#a,b,c\n" +
+		"b,c,d,e\n" +
+		"a1,b1,c1\n" +
+		"a2,b2,c2"
+	)
+	return pfiles

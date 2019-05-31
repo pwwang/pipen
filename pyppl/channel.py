@@ -159,7 +159,7 @@ class Channel(list):
 				i += 1
 				if i < skip:
 					continue
-				line = line.strip()
+				line = line.rstrip("\n")
 				if not line:
 					continue
 				if header:

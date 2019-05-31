@@ -92,3 +92,42 @@ def test_frompairs(tmp_test_dir, pattern, expt, paired_files):
 		((tmp_test_dir / 'test_frompairs' / paired_files[e[0]]).as_posix(),
 		 (tmp_test_dir / 'test_frompairs' / paired_files[e[1]]).as_posix()
 		) for e in expt]
+
+@pytest.mark.parametrize('fileidx, kwargs, expt, headers', [
+	(0, Box(header = False, skip = 0, delimit = "\t"),
+	 [("a1", "b1", "c1"), ("a2", "b2", "c2")],
+	 []),
+	(1, Box(header = True, skip = 0, delimit = ","),
+	 [("a1", "b1", "c1"), ("a2", "b2", "c2")],
+	 ["a", "b", "c"]),
+	(2, Box(header = True, skip = 2, delimit = ","),
+	 [("a1", "b1", "c1"), ("a2", "b2", "c2")],
+	 ["RowNames", "b", "c"]),
+])
+def test_fromfile(tmp_test_dir, fileidx, kwargs, expt, headers, file_files):
+	ch = Channel.fromFile(
+		(tmp_test_dir / 'test_fromfile' / file_files[fileidx]).as_posix(),
+		**kwargs)
+	assert ch == expt
+	assert all(head in dir(ch) for head in headers)
+
+def test_fromfile_exc(tmp_test_dir, file_files):
+	thefile = tmp_test_dir / 'test_fromfile' / file_files[3]
+	with pytest.raises(ValueError):
+		Channel.fromFile(thefile.as_posix(), header = True, skip = 1, delimit=",")
+
+@pytest.mark.parametrize('args,expt', [
+	(["prog", "a", "b", "c"], [("a",), ("b",), ("c",)]),
+	(["prog", "a1,a2", "b1,b2", "c1,c2"], [("a1","a2"), ("b1","b2"), ("c1","c2")]),
+	(["prog"], []),
+])
+def test_fromargs(args, expt):
+	import sys
+	sys.argv = args
+	assert Channel.fromArgv() == expt
+
+def test_fromargs_exc():
+	import sys
+	sys.argv = ["prog", "a1,a2", "b1", "c1,c2"]
+	with pytest.raises(ValueError):
+		Channel.fromArgv()
