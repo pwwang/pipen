@@ -97,15 +97,17 @@ class OBox(Box):
 
 OrderedBox = OBox # pylint: disable=invalid-name
 
-try:
-	from Queue import Queue, PriorityQueue, Empty as QueueEmpty
-except ImportError: # pragma: no cover
-	from queue import Queue, PriorityQueue, Empty as QueueEmpty
+# remove python2 support
+# try:
+# 	from Queue import Queue, PriorityQueue, Empty as QueueEmpty
+# except ImportError: # pragma: no cover
+# 	from queue import Queue, PriorityQueue, Empty as QueueEmpty
+from queue import PriorityQueue
 
-try:
-	string_types = basestring # pylint: disable=invalid-name
-except NameError: # pragma: no cover
-	string_types = str # pylint: disable=invalid-name
+# try:
+# 	string_types = basestring # pylint: disable=invalid-name
+# except NameError: # pragma: no cover
+# 	string_types = str # pylint: disable=invalid-name
 
 def varname(context = 31):
 	"""

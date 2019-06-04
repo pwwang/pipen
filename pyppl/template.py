@@ -7,7 +7,6 @@ import json
 import inspect
 from os import path, readlink
 from liquid import Liquid
-from .utils import string_types
 Liquid.MODE  = 'mixed'
 Liquid.DEBUG = False
 
@@ -78,7 +77,7 @@ class _TemplateFilter(object):
 			return 'FALSE'
 		if var is None:
 			return 'NULL'
-		if isinstance(var, string_types):
+		if isinstance(var, str):
 			if var.upper() in ['+INF', 'INF']:
 				return 'Inf'
 			if var.upper() == '-INF':
@@ -118,7 +117,7 @@ class _TemplateFilter(object):
 		"""
 		Render a template variable, using the shared environment
 		"""
-		if not isinstance(var, string_types):
+		if not isinstance(var, str):
 			return var
 		frames = inspect.getouterframes(inspect.currentframe())
 		evars  = data or {}

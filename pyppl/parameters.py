@@ -7,7 +7,7 @@ from os import path
 from collections import OrderedDict
 from simpleconf import Config
 from cmdy import _Valuable
-from .utils import Box, string_types, Hashable
+from .utils import Box, Hashable
 from .exceptions import ParameterNameError, ParameterTypeError, \
 	ParametersParseError, ParametersLoadError
 from colorama import Fore, Back, Style # pylint: disable=unused-import
@@ -279,7 +279,7 @@ class Parameter(Hashable, _Valuable):
 			value    = value,
 			callback = None
 		)
-		if not isinstance(name, string_types):
+		if not isinstance(name, str):
 			raise ParameterNameError(name, 'Not a string')
 		if not re.search(r'^[A-Za-z0-9_,\-.]{1,255}$', name):
 			raise ParameterNameError(
@@ -362,7 +362,7 @@ class Parameter(Hashable, _Valuable):
 			`typename`: The type of the value. Default: str
 			- Note: str rather then 'str'
 		"""
-		if not isinstance(typename, string_types):
+		if not isinstance(typename, str):
 			typename = typename.__name__
 		tcolon = typename if ':' in typename else typename + ':'
 		type1, type2 = tcolon.split(':', 1)
@@ -720,7 +720,7 @@ class Parameters (Hashable):
 				except TypeError: # value is not a string, cannot do re.match
 					return value
 			elif not typename is None and typename.startswith('list'):
-				if isinstance(value, string_types):
+				if isinstance(value, str):
 					value = [value]
 				else:
 					try:

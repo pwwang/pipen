@@ -4,7 +4,7 @@ from glob import glob
 from datetime import datetime
 import cmdy
 import safefs
-from .utils import Box, OBox, chmodX, briefPath, string_types, filesig, fileflush
+from .utils import Box, OBox, chmodX, briefPath, filesig, fileflush
 from .logger import logger
 from .exceptions import JobInputParseError
 
@@ -178,7 +178,7 @@ class Job(object):
 				continue
 			if self.input[key]['type'] in Proc.IN_VARTYPE:
 				data = self.input[key]['data']
-				if isinstance(data, string_types) and len(data) > 100:
+				if isinstance(data, str) and len(data) > 100:
 					data = data[:47] + ' ... ' + data[-48:]
 				self._reportItem(key, maxlen, data, 'input')
 			else:
@@ -307,7 +307,7 @@ class Job(object):
 			# the original input file(s)
 			indata = val['data'][self.index]
 			if intype in Proc.IN_FILETYPE:
-				if not isinstance(indata, string_types):
+				if not isinstance(indata, str):
 					raise JobInputParseError(
 						indata, 'Not a string for input "%s:%s"' % (key, intype))
 				if not indata:
@@ -342,7 +342,7 @@ class Job(object):
 						indata, 'Not a list for input "%s:%s"' % (key, intype))
 
 				for data in indata:
-					if not isinstance(data, string_types):
+					if not isinstance(data, str):
 						raise JobInputParseError(
 							data, 'Not a string for element of input "%s:%s"' % (key, intype))
 
