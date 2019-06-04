@@ -1,5 +1,4 @@
 filelock
-futures
 liquidpy
 colorama
 python-simpleconf

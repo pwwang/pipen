@@ -265,15 +265,15 @@ class Parameter(Hashable, _Valuable):
 			`name`:  The name of the parameter
 			`value`: The initial value of the parameter
 		"""
-		self.__dict__['_props'] = Box(
-			desc     = [],
-			required = False,
-			show     = True,
-			type     = None,
-			name     = name,
-			value    = value,
-			callback = None
-		)
+		self._desc     = []
+		self._required = False
+		self.show      = True
+		self.type      = None
+		self.name      = name
+		self.value     = None
+		self.tstack    = []
+		self.vstack    = []
+		self.callback  = None
 
 		# We cannot change name later on
 		if not isinstance(name, str):
@@ -283,25 +283,14 @@ class Parameter(Hashable, _Valuable):
 				'Expect a string with comma, alphabetics ' +
 				'and/or underlines in length 1~255, but we got')
 
-		if value is not None:
-			typename = type(value).__name__
-			if typename in ['tuple', 'set']:
-				typename = 'list'
-			elif not typename in ALLOWED_OPT_TYPES:
-				raise ParameterTypeError('Unsupported parameter type: ' + typename)
-			self.type = typename
+		self.parse()
 
-	@property
-	def value(self):
-		return self._props.value
-
-	@value.setter
-	def value(self, val):
-		self._props.value = val
+	def parse(self):
+		pass
 
 	@property
 	def desc(self):
-		return self._props.desc
+		return self._desc
 
 	@desc.setter
 	def desc(self, description):
@@ -315,40 +304,18 @@ class Parameter(Hashable, _Valuable):
 			if description[-1]:
 				description[-1] += ' '
 			description[-1] += 'Default: ' + repr(self.value)
-		self._props.desc = description
-
-	@property
-	def name(self):
-		return self._props.name
+		self._desc = description
 
 	@property
 	def required(self):
-		return self._props.required
+		return self._required
 
 	@required.setter
 	def required(self, req):
 		if self.type == 'bool':
 			raise ParameterTypeError(
 				self.value, 'Bool option %r cannot be set as required' % self.name)
-		self._props.required = req
-
-	@property
-	def show(self):
-		return self._props.show
-
-	@show.setter
-	def show(self, show):
-		self._props.show = show
-
-	@property
-	def callback(self):
-		return self._props.callback
-
-	@callback.setter
-	def callback(self, callback):
-		if callback is not None and not callable(callback):
-			raise TypeError('Callback for parameter must be callable for option: %r' % self.name)
-		self._props.callback = callback
+		self._required = req
 
 	@property
 	def type(self):
@@ -694,8 +661,8 @@ class Parameters (Hashable):
 			param._props.type = param.type[-1]
 
 		if param.type:
-			if not param.type.startswith('list')
-			param.value = param.value[-1]
+			if not param.type.startswith('list'):
+				param.value = param.value[-1]
 			# trigger type conversion
 
 			param.type  = param.type
