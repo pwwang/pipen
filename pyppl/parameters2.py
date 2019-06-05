@@ -47,13 +47,13 @@ THEMES = dict(
 		default = '', optname = '', opttype = '', optdesc = '')
 )
 
-ALLOWED_OPT_TYPES = ('str', 'int', 'float', 'bool', 'list', 'py', 'none', 'dict')
+ALLOWED_OPT_TYPES = ('str', 'int', 'float', 'bool', 'list', 'py', 'NoneType', 'dict')
 
 OPT_TYPE_MAPPINGS = dict(
-	a = 'auto',  auto  = 'auto',  i = 'int',   int   = 'int',  n = 'none', none = 'none',
-	f = 'float', float = 'float', b = 'bool',  bool  = 'bool', d = 'dict', dict = 'dict',
-	s = 'str',   str   = 'str',   o = 'one',   one   = 'one',  box = 'dict',
-	p = 'py',    py    = 'py',    python = 'py',
+	a = 'auto',  auto  = 'auto',  i = 'int',   int   = 'int',  n = 'NoneType',
+	f = 'float', float = 'float', b = 'bool',  bool  = 'bool', none = 'NoneType',
+	s = 'str',   str   = 'str',   d = 'dict',  dict = 'dict',  box = 'dict',
+	p = 'py',    py    = 'py',    python = 'py', r = 'reset',  reset = 'reset',
 	l = 'list',  list  = 'list',  array  = 'list',
 )
 
@@ -74,6 +74,8 @@ OPT_BOOL_PATTERN  = r'^(t|T|True|TRUE|true|1|Y|y|Yes|YES|yes|on|ON|On|f|F|False'
 OPT_PY_PATTERN    = r'^(?:py|repr):(.+)$'
 
 OPT_POSITIONAL_KEY = '_'
+
+VALUE_NOT_SET = '__Parameter_Value_Not_Set__'
 
 class HelpAssembler:
 	"""A helper class to help assembling the help information page."""
@@ -258,21 +260,22 @@ class Parameter(Hashable, _Valuable):
 	"""
 	The class for a single parameter
 	"""
-	def __init__(self, name, value):
+	def __init__(self, name, value = VALUE_NOT_SET):
 		"""
 		Constructor
 		@params:
 			`name`:  The name of the parameter
 			`value`: The initial value of the parameter
 		"""
+		self.value, self._type = Parameter._typeFromValue(value)
+
 		self._desc     = []
 		self._required = False
+		self._type     = typename
+		self.value     = value
 		self.show      = True
-		self.type      = None
 		self.name      = name
-		self.value     = None
-		self.tstack    = []
-		self.vstack    = []
+		self.stacks    = []
 		self.callback  = None
 
 		# We cannot change name later on
@@ -283,10 +286,96 @@ class Parameter(Hashable, _Valuable):
 				'Expect a string with comma, alphabetics ' +
 				'and/or underlines in length 1~255, but we got')
 
-		self.parse()
+	@staticmethod
+	def _typeFromValue(value):
+		typename = type(value).__name__
+		if isinstance(value, (tuple, set)):
+			typename = 'list'
+			value = list(value)
+		# dict could have a lot of subclasses
+		elif isinstance(value, dict):
+			typename = 'dict'
+		elif value != VALUE_NOT_SET:
+			if typename not in ALLOWED_OPT_TYPES:
+				raise ParameterTypeError(value, 'Type not allowed: %r' % typename)
+		else:
+			typename = None
+			value    = None
+		return value, Parameter._normalizeType(typename)
 
-	def parse(self):
-		pass
+	@staticmethod
+	def _normalizeType(typename):
+		if not isinstance(typename, str):
+			typename = typename.__name__
+		tcolon = typename if ':' in typename else typename + ':'
+		type1, type2 = tcolon.split(':', 1)
+		type1 = OPT_TYPE_MAPPINGS.get(type1, type1)
+		type2 = OPT_TYPE_MAPPINGS.get(type2, type2)
+		if type2 and type1 != 'list':
+			raise ParameterTypeError('', 'Subtype is only allowed for list: %r' % type2)
+		# make sure split returns 2 elements, even if type2 == ''
+		return '%s:%s' % (type1, type2)
+
+	def push(self, value, typename = None):
+		# if typename is set
+		if typename:
+			typename = Parameter._normalizeType(typename)
+			type1, type2 = typename.split(':')
+			if not self.stacks:
+				self.stacks.append((typename, [[value]] if type2 == 'list' else [value]))
+			else:
+				prevtype, prevalue = self.stacks[-1]
+				if prevtype == typename and type2 != 'reset':
+					prevalue.append([value] if type2 == 'list' else value)
+				else:
+					self.stacks.append((typename, [[value]] if type2 == 'list' else [value]))
+		else:
+			if not self.stacks and not self.type:
+				value, typename = Parameter._normalizeType(Parameter._typeFromValue(value))
+			elif self.stacks:
+				typename = self.stacks[-1][0]
+			else:
+				typename = self.type
+			if not self.stacks:
+				self.push(value, typename)
+			else:
+				type1, type2 = typename.split(':')
+				prevtype, prevalue = self.stacks[-1]
+				if prevtype == typename:
+					if type2 == 'list':
+						prevalue[-1].append(value)
+					else:
+						prevalue.append(value)
+				else:
+					self.stacks.append((typename, [[value]] if type2 == 'list' else [value]))
+
+	def checkout(self):
+		if not self.stacks:
+			return []
+
+		typename, value = self.stacks.pop(-1)
+		warns = ['Previous settings (type=%r, value=%r) were ignored for option %r' % (
+				 wtype, wval, self.name) for wtype, wval in self.stacks]
+		self.stacks = []
+
+		type1, type2 = typename.split(':')
+		if type2 == 'list':
+			self._type = typename
+			self.value = value
+		elif type2 == 'reset':
+			self._type = Parameter._normalizeType(type1)
+			self.value = value
+		elif type1 == 'list':
+			self._type = typename
+			self.value = Parameter.forceType(value, typename)
+		else:
+			self._type = typename
+			self.value = Parameter.forceType(value.pop(-1), typename)
+			for val in value:
+				warns.append('Previous value %r was ignored for option %r (type=%r)' % (
+					val, self.name, typename))
+
+		return warns
 
 	@property
 	def desc(self):
@@ -319,64 +408,54 @@ class Parameter(Hashable, _Valuable):
 
 	@property
 	def type(self):
-		return self._props.type
+		return self._type
 
 	@type.setter
 	def type(self, typename):
 		if not isinstance(typename, str):
 			typename = typename.__name__
-		tcolon = typename if ':' in typename else typename + ':'
-		type1, type2 = tcolon.split(':', 1)
-		type1 = OPT_TYPE_MAPPINGS.get(type1, type1)
-		type2 = OPT_TYPE_MAPPINGS.get(type2, type2)
-
-		t2use = type1 + ':' + type2 if type2 else type1
-		if t2use not in ALLOWED_OPT_TYPES and not t2use.startswith('list'):
-			raise ParameterTypeError(typename, 'Unsupported type for option %r' % self.name)
-
-		self._props.type = t2use
-		if self.value is not None:
-			self.value = Parameter.forceType(self.value, t2use)
+		self._type = Parameter._normalizeType(typename)
 
 	@staticmethod
 	def forceType(value, typename):
 		if not typename:
 			return value
+		type1, type2 = typename.split(':')
 		try:
-			if typename in ('int', 'float', 'str'):
-				return __builtins__[typename](value)
+			if type1 in ('int', 'float', 'str'):
+				return __builtins__[type1](value)
 
-			if typename == 'bool':
+			if type1 == 'bool':
 				if value in OPT_BOOL_TRUES:
 					return True
 				if value in OPT_BOOL_FALSES:
 					return False
-				raise ParameterTypeError(typename, 'Unable to coerce value %r to bool' % value)
+				raise ParameterTypeError(type1, 'Unable to coerce value %r to bool' % value)
 
-			if typename == 'none':
+			if type1 == 'NoneType':
 				if not value in OPT_NONES:
-					raise ParameterTypeError(typename, 'Unexpected value %r for NoneType' % value)
+					raise ParameterTypeError(type1, 'Unexpected value %r for NoneType' % value)
 				return None
 
-			if typename == 'py':
+			if type1 == 'py':
 				value = value[3:] if value.startswith('py:') else \
 						value[5:] if value.startswith('repr:') else value
 				return ast.literal_eval(value)
 
-			if typename == 'dict':
+			if type1 == 'dict':
 				if not isinstance(value, dict):
 					if not value:
 						value = {}
 					try:
 						value = dict(value)
 					except TypeError:
-						raise ParameterTypeError(typename, 'Cannot coerce %r to dict.' % value)
+						raise ParameterTypeError(type1, 'Cannot coerce %r to dict.' % value)
 				return OBox(value.items())
 
-			if typename == 'auto':
+			if type1 == 'auto':
 				try:
 					if re.match(OPT_NONE_PATTERN, value):
-						typename = 'none'
+						typename = 'NoneType'
 					elif re.match(OPT_INT_PATTERN, value):
 						typename = 'int'
 					elif re.match(OPT_FLOAT_PATTERN, value):
@@ -387,30 +466,24 @@ class Parameter(Hashable, _Valuable):
 						typename = 'py'
 					else:
 						typename = 'str'
-					return Parameter.forceType(value, typename)
+					return Parameter.forceType(value, Parameter._normalizeType(typename))
 				except TypeError: # value is not a string, cannot do re.match
 					return value
 
-			if typename.startswith('list'):
-				if isinstance(value, str):
-					value = [value]
-				try:
-					value = list(value)
-				except TypeError:
-					value = [value]
-				subtype = typename[5:] or 'auto'
-				if subtype == 'one':
-					return [value]
-				return [Parameter.forceType(x, subtype) for x in value]
+			if type1 == 'list':
+				type2 = type2 or 'auto'
+				if type2 in ('reset', 'list'):
+					return value
+				type2 = Parameter._normalizeType(type2)
+				return [Parameter.forceType(x, type2) for x in value]
 
 			raise TypeError
 		except (ValueError, TypeError):
 			raise ParameterTypeError(typename, 'Unable to coerce value %r to type' % value)
 
-
 	def __repr__(self):
 		return '<Parameter({}) @ {}>'.format(
-			','.join('%s=%r' % (key, val) for key,val in sorted(self._props.items())),
+			','.join('name=%r,value=%r,type=%r' % (self.name, self.value, self.type)),
 			hex(id(self)))
 
 	def setDesc (self, desc):
@@ -431,7 +504,7 @@ class Parameter(Hashable, _Valuable):
 		self.required = req
 		return self
 
-	def setType (self, typename = 'str'):
+	def setType (self, typename):
 		"""
 		Set the type of the parameter
 		@params:
@@ -459,17 +532,14 @@ class Parameter(Hashable, _Valuable):
 		self.show = show
 		return self
 
-	def setValue(self, val):
+	def setValue(self, value):
 		"""
 		Set the value of the parameter
 		@params:
 			`val`: The value
 		"""
-		self.value = val
+		self.value = value
 		return self
-
-	def isList(self):
-		return self.type in ('l', 'list', 'array')
 
 class Parameters (Hashable):
 	"""
@@ -684,7 +754,7 @@ class Parameters (Hashable):
 					sys.stderr.write(self._assembler.warn('Unexpected option: %r' % name) + "\n")
 				elif name in self._params:
 					if not param.type:
-
+						pass
 
 					if len(param.type) > 1:
 						warn = 'Type %r set earlier for option %r will be overwritten by %r' % (
