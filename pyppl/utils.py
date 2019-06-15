@@ -3,35 +3,30 @@ A set of utitities for PyPPL
 """
 import re
 import inspect
-from os import path, walk, sep as pathsep
+import tempfile
+from queue import PriorityQueue
+from os import path, walk, sep as pathsep, remove as osremove, \
+	symlink, makedirs as osmakedirs, getcwd, chdir
 from hashlib import md5
-from threading import Thread
+from threading import Thread, Lock
+from contextlib import contextmanager
+import shutil
 import psutil
 from transitions import Transition, Machine
 from box import Box as _Box, BoxList
 import safefs
+from filelock import FileLock
 import cmdy
 from simpleconf import Config
+
 cmdy   = cmdy(_raise = False) # pylint: disable=invalid-name,not-callable
 config = Config() # pylint: disable=invalid-name
-
-# pylint: disable=invalid-name
-def _recursive_tuples(iterable, box_class, recreate_tuples=False, **kwargs):
-	out_list = []
-	for i in iterable:
-		if isinstance(i, dict):
-			out_list.append(box_class(i, **kwargs))
-		elif isinstance(i, list) or (recreate_tuples and isinstance(i, tuple)):
-			out_list.append(_recursive_tuples(i, box_class,
-											  recreate_tuples, **kwargs))
-		else:
-			out_list.append(i)
-	return tuple(out_list)
 
 class Box(_Box):
 	"""
 	Subclass of box.Box to fix box_intact_types to [list] and
 	rewrite __repr__ to make the string results back to object
+	Requires python-box ^3.4.1
 	"""
 
 	def __init__(self, *args, **kwargs):
@@ -45,45 +40,6 @@ class Box(_Box):
 
 	def __str__(self):
 		return super(Box, self).__repr__()
-
-	def copy(self):
-		# pylint: disable=bad-super-call
-		return self.__class__(super(_Box, self).copy())
-
-	def __copy__(self):
-		# pylint: disable=bad-super-call
-		return self.__class__(super(_Box, self).copy())
-
-	def __convert_and_store(self, item, value): # pragma: no cover
-		if (item in self._box_config['__converted'] or
-				(self._box_config['box_intact_types'] and
-				 isinstance(value, self._box_config['box_intact_types']))):
-			return value
-		if isinstance(value, dict) and not isinstance(value, Box):
-			value = Box(value, __box_heritage=(self, item),
-								   **self.__box_config())
-			self[item] = value
-		elif isinstance(value, list) and not isinstance(value, BoxList):
-			if self._box_config['frozen_box']:
-				value = _recursive_tuples(value, Box,
-										  recreate_tuples=self._box_config[
-											  'modify_tuples_box'],
-										  __box_heritage=(self, item),
-										  **self.__box_config())
-			else:
-				value = BoxList(value, __box_heritage=(self, item),
-								box_class=Box,
-								**self.__box_config())
-			self[item] = value
-		elif (self._box_config['modify_tuples_box'] and
-			  isinstance(value, tuple)):
-			value = _recursive_tuples(value, Box,
-									  recreate_tuples=True,
-									  __box_heritage=(self, item),
-									  **self.__box_config())
-			self[item] = value
-		self._box_config['__converted'].add(item)
-		return value
 
 class OBox(Box):
 
@@ -102,7 +58,7 @@ OrderedBox = OBox # pylint: disable=invalid-name
 # 	from Queue import Queue, PriorityQueue, Empty as QueueEmpty
 # except ImportError: # pragma: no cover
 # 	from queue import Queue, PriorityQueue, Empty as QueueEmpty
-from queue import PriorityQueue
+
 
 # try:
 # 	string_types = basestring # pylint: disable=invalid-name
@@ -179,13 +135,15 @@ def split (string, delimter, trim = True):
 				flags2[index] = not flags2[index]
 			elif char == delimter and not any(flags1) and not any(flags2):
 				rest = string[start:i]
-				if trim: rest = rest.strip()
+				if trim:
+					rest = rest.strip()
 				ret.append(rest)
 				start = i + 1
 		else:
 			flags3 = False
 	rest = string[start:]
-	if trim: rest = rest.strip()
+	if trim:
+		rest = rest.strip()
 	ret.append(rest)
 	return ret
 
@@ -259,7 +217,7 @@ def alwaysList (data, trim = True):
 	@returns:
 		The split list
 	"""
-	if isinstance(data, string_types):
+	if isinstance(data, str):
 		return split(data, ',', trim)
 	if isinstance(data, list):
 		return sum((alwaysList(dat, trim) for dat in data), [])
@@ -598,3 +556,148 @@ class MultiDestTransition(Transition):
 
 class StateMachine(Machine):
 	transition_cls = MultiDestTransition
+
+
+class TargetExistsError(OSError):
+	"""Raise when target exists and not able to overwrite"""
+
+class TargetNotExistsError(OSError):
+	"""Raise when target does not exist and not able to ignore"""
+
+class Fs:
+
+	TMPDIR    = path.join(tempfile.gettempdir(), 'fsutil.locks')
+	MULTILOCK = Lock()
+
+	@staticmethod
+	def _getLockFile(pat):
+		basename = md5(str(pat).encode()).hexdigest()
+		return path.join(Fs.TMPDIR, basename + '.lock')
+
+	@staticmethod
+	@contextmanager
+	def lock(*files, resolve = False):
+		files = [path.realpath(pat) if resolve else path.abspath(pat) for pat in files]
+		locks = [FileLock(Fs._getLockFile(pat)) for pat in files]
+		if len(files) == 1:
+			with locks[0]:
+				yield locks[0]
+		else:
+			with Fs.MULTILOCK:
+				_ = [lock.acquire() for lock in locks]
+				yield locks
+			_ = [lock.release() for lock in locks]
+
+	@staticmethod
+	def autolock(func, *filekws, resolve = False):
+
+		def realfunc(*args, **kwargs):
+			files = [pat for i, pat in enumerate(args) if i in filekws]
+			files.extend([pat for kw, pat in kwargs.items() if kw in filekws])
+			files = set(files or [args[0]])
+			with Fs.lock(*files, resolve = resolve) as locks:
+				func.lock = locks
+				return func(*args, **kwargs)
+		return realfunc
+
+	exists = path.exists
+	isfile = path.isfile
+	isdir  = path.isdir
+	islink = path.islink
+
+	@staticmethod
+	def remove(pat, ignore_nonexist = True):
+		if path.islink(pat):
+			osremove(pat)
+		if path.isdir(pat):
+			shutil.rmtree(pat)
+		if not Fs.exists(pat):
+			if not ignore_nonexist:
+				raise TargetNotExistsError(pat)
+			return
+		osremove(pat)
+
+	@staticmethod
+	def move(src, dst, overwrite = True):
+		if overwrite:
+			Fs.remove(dst)
+		elif Fs.exists(dst):
+			raise TargetExistsError(dst)
+		shutil.move(src, dst)
+
+	@staticmethod
+	def copy(src, dst, overwrite = True):
+		if overwrite:
+			Fs.remove(dst)
+		elif Fs.exists(dst):
+			raise TargetExistsError(dst)
+		if Fs.isdir(src):
+			shutil.copytree(src, dst)
+		else:
+			shutil.copy2(src, dst)
+
+	@staticmethod
+	def link(src, dst, overwrite = True):
+		if overwrite:
+			Fs.remove(dst)
+		elif Fs.exists(dst):
+			raise TargetExistsError(dst)
+		symlink(src, dst)
+
+	@staticmethod
+	def samefile(path1, path2):
+		exist1 = Fs.exists(path1)
+		exist2 = Fs.exists(path2)
+		if not exist1 and not exist2:
+			return path1 == path2
+		if not exist1 or not exist2:
+			return False
+		return path.samefile(path1, path2)
+
+	@staticmethod
+	def makedirs(pat, overwrite = True):
+		if overwrite:
+			Fs.remove(pat)
+		elif Fs.exists(pat):
+			raise TargetExistsError(pat)
+		osmakedirs(pat)
+	mkdir = makedirs
+
+	@staticmethod
+	def gzip(src, dst, overwrite = True):
+		if overwrite:
+			Fs.remove(dst)
+		elif Fs.exists(dst):
+			raise TargetExistsError(dst)
+		if path.isdir(src): # tar.gz
+			import tarfile
+			from glob import glob
+			cwd = getcwd()
+			chdir(src)
+			with tarfile.open(dst, 'w:gz') as tar:
+				for name in glob('./*'):
+					tar.add(name)
+			chdir(cwd)
+		else:
+			import gzip as _gzip
+			with open(src, 'rb') as srcf, _gzip.open(dst, 'wb') as dstf:
+				shutil.copyfileobj(srcf, dstf)
+
+	@staticmethod
+	def gunzip(src, dst, overwrite = True):
+		if overwrite:
+			Fs.remove(dst)
+		elif Fs.exists(dst):
+			raise TargetExistsError(dst)
+		if str(src).endswith('.tgz') or str(src).endswith('.tar.gz'):
+			import tarfile
+			Fs.makedirs(dst, overwrite)
+			with tarfile.open(src, 'r:gz') as tar:
+				tar.extractall(dst)
+		else:
+			import gzip as _gzip
+			with _gzip.open(src, 'rb') as srcf, open(dst, 'wb') as dstf:
+				shutil.copyfileobj(srcf, dstf)
+
+if not Fs.exists(Fs.TMPDIR):
+	Fs.mkdir(Fs.TMPDIR)
