@@ -124,3 +124,5 @@ class JobSubmissionException(Exception):
 class JobBuildingException(Exception):
 	"""Raise when a job failed to build"""
 
+class RunnerClassNameError(Exception):
+	"""Raise when a runner class is not like 'RunnerXXX'"""

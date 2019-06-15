@@ -26,7 +26,7 @@ class Channel(list):
 		@returns:
 			The converted element
 		"""
-		if isinstance(atuple, (utils.string_types, list)):
+		if isinstance(atuple, (str, list)):
 			return (atuple, )
 
 		try:
@@ -213,13 +213,13 @@ class Channel(list):
 		@returns:
 			The Channel
 		"""
-		from .parameters import params
+		from pyparam import params
 		ret = Channel.create()
 		width = None
 		for pname in pnames:
 			param = getattr(params, pname)
-			data = param.value
-			if not param.type.startswith('list'):
+			data  = param.value
+			if not param.type.startswith('list') or not isinstance(data, list):
 				data = [param.value]
 			if width is not None and width != len(data):
 				raise ValueError('Width %s (%s) is not consistent with previous %s' %
@@ -383,7 +383,6 @@ class Channel(list):
 			`rows`: the rows to be bound to Channel
 		@returns:
 			The combined Channel
-			Note, self is also changed
 		"""
 		ret = self.copy()
 		for row in rows:
@@ -417,7 +416,6 @@ class Channel(list):
 			`cols`: the columns to be bound to Channel
 		@returns:
 			The combined Channel
-			Note, self is also changed
 		"""
 		ret  = self.copy()
 		#cols = [col if isinstance(col, Channel) else Channel.create(col) for col in cols if col]
@@ -442,8 +440,9 @@ class Channel(list):
 
 		length = max(len(colsbefore), len(colsafter))
 		for col in cols:
-			if col.width() == 0:
-				continue
+			# has been filtered with col.width() > 0
+			#if col.width() == 0:
+			#	continue
 			if col.length() == 1:
 				# oringal col has been changed
 				#col *= maxlen
@@ -650,8 +649,7 @@ class Channel(list):
 		return [item for sublist in self for item in sublist] if col is None else \
 			   [sublist[col] for sublist in self]
 
-	# pylint: disable=invalid-name
-	def t(self):
+	def transpose(self):
 		"""
 		Transpose the channel
 		@returns:
@@ -665,4 +663,4 @@ class Channel(list):
 		ret = [tuple(row) for row in ret]
 		return Channel(ret)
 
-	transpose = t
+	t = transpose

@@ -95,3 +95,22 @@ def file_files(tmp_test_dir):
 		"a2,b2,c2"
 	)
 	return pfiles
+
+@pytest.fixture(scope="module")
+def expand_dirs(tmp_test_dir):
+	tmpdir = tmp_test_dir / 'test_expand'
+	if tmpdir.exists():
+		rmtree(tmpdir.as_posix())
+	tmpdir.mkdir()
+
+	dir1 = tmpdir / 'testExpand'
+	dir1.mkdir()
+	(dir1 / 'testExpand1.txt').write_text('')
+	(dir1 / 'testExpand2.txt').write_text('')
+
+	dir2 = tmp_test_dir / 'testExpand2'
+	dir2.mkdir()
+	(dir2 / 'testExpand3.txt').write_text('')
+	(dir2 / 'testExpand4.txt').write_text('')
+
+	return [dir1, dir2]
