@@ -5,10 +5,10 @@ from pyppl.jobmgr2 import Jobmgr, STATES
 from pyppl.logger import logger
 from pyppl.utils import Box
 
-class Proc(Box):
+class Proc(dict):
 	def __init__(self, *args, **kwargs):
 		kwargs['nthread'] = 10
-		kwargs['name']    = lambda: 'pProc'
+		kwargs['name']    = lambda procset = True: 'pProc'
 		kwargs['errhow']  = 'terminate'
 		kwargs['errntry'] = 3
 		kwargs['forks']   = 1
@@ -16,6 +16,9 @@ class Proc(Box):
 			_log = {}
 		)
 		super(Proc, self).__init__(*args, **kwargs)
+
+	def __getattr__(self, item):
+		return super().__getitem__(item)
 
 # Mock job
 class Job(object):

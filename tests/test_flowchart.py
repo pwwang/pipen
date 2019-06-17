@@ -5,7 +5,6 @@ try:
 except ImportError:
 	pytest.skip('graphviz is not installed', allow_module_level=True)
 
-from pyppl import Proc
 from pyppl.flowchart import Flowchart, THEMES, ROOTGROUP
 
 pytest_plugins = ["tests.fixt_flowchart"]

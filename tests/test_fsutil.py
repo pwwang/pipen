@@ -4,12 +4,9 @@ import pytest
 import tempfile
 import shutil
 from pathlib import Path
-# make L14 covered
-if os.path.exists(os.path.join(tempfile.gettempdir(), 'fsutil.locks')):
-	shutil.rmtree(os.path.join(tempfile.gettempdir(), 'fsutil.locks'))
 from hashlib import md5
 from filelock import FileLock
-from pyppl.utils import Fs as fsutil, TargetExistsError
+from pyppl.utils import fs as fsutil
 
 @pytest.mark.parametrize('path, lockfile', [
 	('a', os.path.join(fsutil.TMPDIR, md5('a'.encode()).hexdigest() + '.lock'))

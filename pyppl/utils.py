@@ -3,21 +3,16 @@ A set of utitities for PyPPL
 """
 import re
 import inspect
-import tempfile
 from queue import PriorityQueue
-from os import path, walk, sep as pathsep, remove as osremove, \
-	symlink, makedirs as osmakedirs, getcwd, chdir
+from os import path, walk, sep as pathsep
 from hashlib import md5
-from threading import Thread, Lock
-from contextlib import contextmanager
-import shutil
+from threading import Thread
 import psutil
 from transitions import Transition, Machine
-from box import Box as _Box, BoxList
-import safefs
-from filelock import FileLock
+from box import Box as _Box
 import cmdy
 from simpleconf import Config
+from . import _fsutil as fs
 
 cmdy   = cmdy(_raise = False) # pylint: disable=invalid-name,not-callable
 config = Config() # pylint: disable=invalid-name
@@ -42,7 +37,7 @@ class Box(_Box):
 		return super(Box, self).__repr__()
 
 class OBox(Box):
-
+	"""Ordered Box"""
 	def __init__(self, *args, **kwargs):
 		kwargs['ordered_box'] = True
 		super(OBox, self).__init__(*args, **kwargs)
@@ -160,7 +155,7 @@ def funcsig (func):
 		try:
 			from inspect import getsource
 			sig = getsource(func).strip()
-		except Exception: # pragma: no cover
+		except (TypeError, ValueError): # pragma: no cover
 			sig = func.__name__
 	else:
 		sig = 'None'
@@ -268,7 +263,7 @@ def briefPath(bpath, cutoff = 0):
 	@returns:
 		The shorted path
 	"""
-	if not cutoff or not bpath:
+	if not cutoff or not bpath or not str(bpath):
 		return bpath
 
 	bpath = path.normpath(bpath)
@@ -306,7 +301,7 @@ def briefPath(bpath, cutoff = 0):
 	return path.join(*(parts + [basename]))
 
 def killtree(pid, killme = True, sig = 9, timeout = None): # signal.SIGKILL
-
+	"""Kill a process and its childrent"""
 	myself = psutil.Process(pid)
 	children = myself.children(recursive=True)
 	if killme:
@@ -364,10 +359,10 @@ def filesig(filepath, dirsig = True):
 	"""
 	if not filepath:
 		return ['', 0]
-	if not safefs.exists(filepath):
+	if not fs.exists(filepath):
 		return False
 
-	if dirsig and safefs.isdir(filepath):
+	if dirsig and fs.isdir(filepath):
 		mtime = path.getmtime(filepath)
 		for root, dirs, files in walk(filepath):
 			for directory in dirs:
@@ -417,10 +412,12 @@ class ThreadEx(Thread):
 	def run(self):
 		try:
 			Thread.run(self)
-		except Exception as ex:
+		except cmdy.CmdyReturnCodeException:
 			from traceback import format_exc
-			self.ex = RuntimeError(format_exc()) if isinstance(ex, cmdy.CmdyReturnCodeException) \
-				else type(ex)(format_exc())
+			self.ex = RuntimeError(format_exc())
+		except Exception as ex: # pylint: disable=broad-except
+			from traceback import format_exc
+			self.ex = type(ex)(format_exc())
 
 class ThreadPool(object):
 	"""
@@ -489,13 +486,14 @@ class PQueue(PriorityQueue):
 		self.batchLen = batch_len
 
 	def putNext(self, item, batch):
+		"""Put item to next batch"""
 		self.put(item, batch + 2)
 
-	def put(self, item, batch = None):
+	def put(self, item, batch = None): # pylint: disable=arguments-differ
 		batch = batch or item
 		PriorityQueue.put(self, item + batch * self.batchLen)
 
-	def get(self):
+	def get(self): # pylint: disable=arguments-differ
 		"""
 		Get an item from the queue
 		"""
@@ -526,7 +524,7 @@ class Hashable(object):
 		return not self.__eq__(other)
 
 class MultiDestTransition(Transition):
-
+	"""Transition with multiple destination"""
 	def __init__(self, source, dest, conditions=None, unless=None,
 		before=None, after=None, prepare=None, **kwargs):
 
@@ -541,13 +539,14 @@ class MultiDestTransition(Transition):
 			# use base version in case transition does not need special handling
 			self.execute = super(MultiDestTransition, self).execute
 
-	def execute(self, event_data):
+	def execute(self, event_data): # pylint: disable=method-hidden
 		func = self._func if callable(self._func) else getattr(event_data.model, self._func)
 		self._result = func()
 		super(MultiDestTransition, self).execute(event_data)
 
 	@property
 	def dest(self):
+		"""Get the destination"""
 		return self._dest[self._result] if self._result is not None else self._dest
 
 	@dest.setter
@@ -555,149 +554,5 @@ class MultiDestTransition(Transition):
 		self._dest = value
 
 class StateMachine(Machine):
+	"""StateMachine with multiple destination support"""
 	transition_cls = MultiDestTransition
-
-
-class TargetExistsError(OSError):
-	"""Raise when target exists and not able to overwrite"""
-
-class TargetNotExistsError(OSError):
-	"""Raise when target does not exist and not able to ignore"""
-
-class Fs:
-
-	TMPDIR    = path.join(tempfile.gettempdir(), 'fsutil.locks')
-	MULTILOCK = Lock()
-
-	@staticmethod
-	def _getLockFile(pat):
-		basename = md5(str(pat).encode()).hexdigest()
-		return path.join(Fs.TMPDIR, basename + '.lock')
-
-	@staticmethod
-	@contextmanager
-	def lock(*files, resolve = False):
-		files = [path.realpath(pat) if resolve else path.abspath(pat) for pat in files]
-		locks = [FileLock(Fs._getLockFile(pat)) for pat in files]
-		if len(files) == 1:
-			with locks[0]:
-				yield locks[0]
-		else:
-			with Fs.MULTILOCK:
-				_ = [lock.acquire() for lock in locks]
-				yield locks
-			_ = [lock.release() for lock in locks]
-
-	@staticmethod
-	def autolock(func, *filekws, resolve = False):
-
-		def realfunc(*args, **kwargs):
-			files = [pat for i, pat in enumerate(args) if i in filekws]
-			files.extend([pat for kw, pat in kwargs.items() if kw in filekws])
-			files = set(files or [args[0]])
-			with Fs.lock(*files, resolve = resolve) as locks:
-				func.lock = locks
-				return func(*args, **kwargs)
-		return realfunc
-
-	exists = path.exists
-	isfile = path.isfile
-	isdir  = path.isdir
-	islink = path.islink
-
-	@staticmethod
-	def remove(pat, ignore_nonexist = True):
-		if path.islink(pat):
-			osremove(pat)
-		if path.isdir(pat):
-			shutil.rmtree(pat)
-		if not Fs.exists(pat):
-			if not ignore_nonexist:
-				raise TargetNotExistsError(pat)
-			return
-		osremove(pat)
-
-	@staticmethod
-	def move(src, dst, overwrite = True):
-		if overwrite:
-			Fs.remove(dst)
-		elif Fs.exists(dst):
-			raise TargetExistsError(dst)
-		shutil.move(src, dst)
-
-	@staticmethod
-	def copy(src, dst, overwrite = True):
-		if overwrite:
-			Fs.remove(dst)
-		elif Fs.exists(dst):
-			raise TargetExistsError(dst)
-		if Fs.isdir(src):
-			shutil.copytree(src, dst)
-		else:
-			shutil.copy2(src, dst)
-
-	@staticmethod
-	def link(src, dst, overwrite = True):
-		if overwrite:
-			Fs.remove(dst)
-		elif Fs.exists(dst):
-			raise TargetExistsError(dst)
-		symlink(src, dst)
-
-	@staticmethod
-	def samefile(path1, path2):
-		exist1 = Fs.exists(path1)
-		exist2 = Fs.exists(path2)
-		if not exist1 and not exist2:
-			return path1 == path2
-		if not exist1 or not exist2:
-			return False
-		return path.samefile(path1, path2)
-
-	@staticmethod
-	def makedirs(pat, overwrite = True):
-		if overwrite:
-			Fs.remove(pat)
-		elif Fs.exists(pat):
-			raise TargetExistsError(pat)
-		osmakedirs(pat)
-	mkdir = makedirs
-
-	@staticmethod
-	def gzip(src, dst, overwrite = True):
-		if overwrite:
-			Fs.remove(dst)
-		elif Fs.exists(dst):
-			raise TargetExistsError(dst)
-		if path.isdir(src): # tar.gz
-			import tarfile
-			from glob import glob
-			cwd = getcwd()
-			chdir(src)
-			with tarfile.open(dst, 'w:gz') as tar:
-				for name in glob('./*'):
-					tar.add(name)
-			chdir(cwd)
-		else:
-			import gzip as _gzip
-			with open(src, 'rb') as srcf, _gzip.open(dst, 'wb') as dstf:
-				shutil.copyfileobj(srcf, dstf)
-
-	@staticmethod
-	def gunzip(src, dst, overwrite = True):
-		if overwrite:
-			Fs.remove(dst)
-		elif Fs.exists(dst):
-			raise TargetExistsError(dst)
-		if str(src).endswith('.tgz') or str(src).endswith('.tar.gz'):
-			import tarfile
-			Fs.makedirs(dst, overwrite)
-			with tarfile.open(src, 'r:gz') as tar:
-				tar.extractall(dst)
-		else:
-			import gzip as _gzip
-			with _gzip.open(src, 'rb') as srcf, open(dst, 'wb') as dstf:
-				shutil.copyfileobj(srcf, dstf)
-
-if not Fs.exists(Fs.TMPDIR):
-	Fs.mkdir(Fs.TMPDIR)

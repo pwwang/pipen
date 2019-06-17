@@ -29,7 +29,7 @@ def loadConfiguratiaons():
 			levels     = 'normal',
 			leveldiffs = [],
 			pbar       = 50,
-			shortpath  = {'cutoff': 0},
+			shorten    = 0,
 		),
 		_flowchart = dict(theme = 'default'),
 		# The command to run after jobs start
