@@ -202,6 +202,7 @@ class StreamFormatter(logging.Formatter):
 
 		# save the formatted, for all handlers
 		level = record.mylevel
+		record.msg = str(record.msg)
 		if '\n' in record.msg:
 			record.tails = []
 			msgs = record.msg.splitlines()

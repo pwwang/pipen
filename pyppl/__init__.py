@@ -13,8 +13,6 @@ from multiprocessing import cpu_count
 
 from .utils import config, Box, OBox
 
-__version__ = "2019.2.20"
-
 DEFAULT_CFGFILES = (
 	'~/.PyPPL.yaml', '~/.PyPPL.toml', './.PyPPL.yaml', './.PyPPL.toml', 'PYPPL.osenv')
 def loadConfiguratiaons():

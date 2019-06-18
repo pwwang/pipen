@@ -3,6 +3,7 @@ proc module for PyPPL
 """
 import sys
 import copy as pycopy
+from pathlib import Path
 from time import time
 from collections import OrderedDict
 from os import path, makedirs, remove
@@ -10,7 +11,7 @@ import yaml
 import filelock
 from simpleconf import NoSuchProfile
 from .logger import logger
-from .utils import Box, Hashable
+from .utils import Box, Hashable, OBox
 from .jobmgr2 import Jobmgr, STATES
 from .procset import ProcSet
 from .channel import Channel
@@ -94,9 +95,7 @@ class Proc (Hashable):
 		self.config.id = id if id else utils.varname()
 
 		if ' ' in tag:
-			raise ProcTagError(
-				"No space is allowed in tag " +
-				"('{}'). Do you mean 'desc' instead of 'tag'?".format(tag))
+			raise ProcTagError("No space is allowed in tag.")
 
 		# The procset name of the process, not configurable
 		self.config.procset    = None
@@ -157,9 +156,11 @@ class Proc (Hashable):
 		# The computed script. Template object
 		self.props.script      = None
 		# The size of the process (# jobs)
-		self.props.size        = 0
+		# use property
+		#self.props.size        = 0
 		# The unique identify of the process
-		self.props.suffix      = ''
+		# cache the suffix
+		self.props._suffix     = ''
 		# The template class
 		self.props.template    = None
 		# timer for running time
@@ -214,15 +215,12 @@ class Proc (Hashable):
 			raise ProcAttributeError(name, 'Cannot set attribute for process')
 
 		# profile will be deprecated, use runner instead
-		if name in Proc.DEPRECATED:
-			logger.warning(
-				'Attribute "%s" is deprecated%s.',
-				name,
-				', use "{}" instead'.format(
-					Proc.DEPRECATED[name]
-				) if name in Proc.DEPRECATED and Proc.DEPRECATED[name] else '',
-				proc = self.id
-			)
+		# currently nothing deprecated
+		if name in Proc.DEPRECATED: # pragma: no cover
+			logger.warning('Attribute "%s" is deprecated%s.', name,
+				', use "{}" instead'.format(Proc.DEPRECATED[name]) \
+					if name in Proc.DEPRECATED and Proc.DEPRECATED[name] else '',
+				proc = self.id)
 
 		if name in Proc.ALIAS:
 			name = Proc.ALIAS[name]
@@ -250,14 +248,14 @@ class Proc (Hashable):
 						"Process dependents should be 'Proc/ProcSet', not")
 
 		elif name == 'script' and value.startswith('file:'):
-			scriptpath = value[5:]
-			if not path.isabs(scriptpath):
+			scriptpath = Path(value[5:])
+			if not scriptpath.is_absolute():
 				from inspect import getframeinfo, stack
 				caller = getframeinfo(stack()[1][0])
-				scriptdir = path.dirname(path.abspath(caller.filename))
-				if not path.isfile(path.join(scriptdir, scriptpath)):
-					scriptdir = path.dirname(path.realpath(caller.filename))
-				scriptpath = path.join(scriptdir, scriptpath)
+				scriptdir = Path(caller.filename).parent.resolve()
+				scriptpath = scriptdir / scriptpath
+			if not scriptpath.is_file():
+				raise ProcAttributeError('Script not exists: %s' % scriptpath)
 			self.config[name] = "file:%s" % scriptpath
 
 		elif name == 'args' or name == 'tplenvs':
@@ -265,7 +263,7 @@ class Proc (Hashable):
 
 		elif name == 'input' \
 			and self.config[name] \
-			and not isinstance(value, utils.string_types) \
+			and not isinstance(value, str) \
 			and not isinstance(value, dict):
 			# specify data
 			previn  = self.config[name]
@@ -274,8 +272,9 @@ class Proc (Hashable):
 			self.config[name] = {prevkey: value}
 			if isinstance(previn, dict) and len(previn) > 1:
 				logger.warning(
-					"Previous input is a dict with multiple keys. Now the key sequence is: %s" %
-					prevkey, proc = self.id)
+					"Previous input is a dict with multiple keys and key order may be changed.",
+					proc = self.id)
+				logger.warning("Now the key order is: %s" % prevkey, proc = self.id)
 		elif name == 'runner':
 			self.config[name] = value
 			self.props[name]  = value
@@ -306,7 +305,7 @@ class Proc (Hashable):
 		if desc:
 			newsets.add('desc')
 
-		for key in self.config.keys():
+		for key in self.config:
 			if key == 'id':
 				conf[key]  = id if id else utils.varname()
 			elif key == 'tag' and tag:
@@ -317,21 +316,19 @@ class Proc (Hashable):
 				conf[key] = None
 			elif key in ['workdir', 'resume']:
 				conf[key] = ''
-			elif isinstance(self.config[key], dict) and 'envs' not in key:
+			elif isinstance(self.config[key], dict) and 'tplenvs' not in key:
 				conf[key] = pycopy.deepcopy(self.config[key])
 			else:
 				conf[key] = self.config[key]
 
-		for key in self.props.keys():
+		for key in self.props:
 			if key in ['depends', 'jobs', 'ncjobids']:
 				props[key] = []
 			elif key in ['procvars']:
 				props[key] = {}
-			elif key == 'size':
-				props[key] = 0
 			elif key == 'origin':
 				props['origin'] = self.origin
-			elif key in ['workdir', 'suffix']:
+			elif key in ['workdir', '_suffix']:
 				props[key] = ''
 			elif key == 'channel':
 				props[key] = Channel.create()
@@ -343,11 +340,17 @@ class Proc (Hashable):
 				props[key] = self.props[key]
 
 		newproc = Proc()
-		newproc.config.update(conf)
-		newproc.props.update(props)
+		# don't copy the dicts not intended to be copied
+		dict.update(newproc.config, conf)
+		dict.update(newproc.props, props)
 		return newproc
 
-	def _suffix(self):
+	@property
+	def size(self):
+		return len(self.jobs)
+
+	@property
+	def suffix(self):
 		"""
 		Calcuate a uid for the process according to the configuration
 		The philosophy:
@@ -358,8 +361,8 @@ class Proc (Hashable):
 		@returns:
 			The uniq id of the process
 		"""
-		if self.suffix:
-			return self.suffix
+		if self.props._suffix:
+			return self.props._suffix
 
 		sigs = Box(ordered_box = True)
 		sigs.argv0 = path.realpath(sys.argv[0])
@@ -379,15 +382,341 @@ class Proc (Hashable):
 		# They could have the same suffix because they are using input callbacks
 		# callbacks could be the same though even if the input files are different
 		if self.depends:
-			sigs.depends = [p.name(True) + '#' + p._suffix() for p in self.depends]
+			sigs.depends = [p.name(True) + '#' + p.suffix for p in self.depends]
 
 		signature = sigs.to_json()
 		logger.debug('Suffix decided by: %s', signature, proc = self.id)
 		# suffix is only depending on where it comes from (sys.argv[0]) and
 		# it's name (id and tag) to avoid too many different workdirs being generated
-		self.props.suffix = utils.uid(signature)
+		self.props._suffix = utils.uid(signature)
 		#self.props.suffix = utils.uid(path.realpath(sys.argv[0]) + ':' + self.id)
-		return self.suffix
+		return self._suffix
+
+	def _buildProps(self):
+		"""
+		Compute some properties
+		"""
+		from . import PyPPL
+		PyPPL._checkProc(self)
+
+		# get Template
+		if callable(self.config.template):
+			self.props.template = self.config.template
+		elif not self.config.template:
+			self.props.template = getattr(template, 'TemplateLiquid')
+		else:
+			self.props.template = getattr(template, 'Template' + self.config.template.capitalize())
+
+		# build rc
+		if isinstance(self.config.rc, str):
+			self.props.rc = [int(i) for i in utils.split(self.config.rc, ',') if i]
+		elif isinstance(self.config.rc, int):
+			self.props.rc = [self.config.rc]
+		else:
+			self.props.rc = self.config.rc
+
+		# workdir
+		if 'workdir' in self.sets:
+			self.props.workdir = self.config.workdir
+		elif not self.props.workdir:
+			self.props.workdir = path.join(self.ppldir, "PyPPL.%s.%s.%s" %
+				(self.id, self.tag, self.suffix))
+		logger.workdir(utils.briefPath(self.workdir, self._log.shorten), proc = self.id)
+
+		if not path.exists(self.workdir):
+			if self.resume in ['skip+', 'resume'] and self.cache != 'export':
+				raise ProcAttributeError(self.workdir, 'Cannot skip process, as workdir not exists')
+			makedirs(self.workdir)
+
+		self.props.lock = filelock.FileLock(path.join(self.workdir, 'proc.lock'))
+
+		try:
+			self.lock.acquire(timeout = 3)
+		except filelock.Timeout: # pragma: no cover
+			proclock = path.join(self.workdir, 'proc.lock')
+			logger.warning('Another instance of this process is running, waiting ...',
+				proc = self.id)
+			logger.warning('If not, remove the process lock file (or hit Ctrl-c) and try again:',
+				proc = self.id)
+			logger.warning('- %s', proclock, proc = self.id)
+			try:
+				self.lock.acquire()
+			except KeyboardInterrupt:
+				remove(path.join(proclock))
+				self.lock.acquire()
+
+		try:
+			# exdir
+			if self.exdir:
+				self.config.exdir = path.abspath(self.exdir)
+				if not path.exists(self.exdir):
+					makedirs(self.exdir)
+
+			# echo
+			if self.config.echo in [True, False, 'stderr', 'stdout']:
+				if self.config.echo is True:
+					self.props.echo = Box({ 'jobs': 0 })
+				elif self.config.echo is False:
+					self.props.echo = Box({ 'jobs': [], 'type': 'all' })
+				else:
+					self.props.echo = Box({ 'jobs': 0, 'type': Box({self.config.echo: None}) })
+			else:
+				self.props.echo = Box(self.config.echo)
+
+			if not 'jobs' in self.echo:
+				self.echo['jobs'] = 0
+			if isinstance(self.echo['jobs'], int):
+				self.echo['jobs'] = [self.echo['jobs']]
+			elif isinstance(self.echo['jobs'], str):
+				self.echo['jobs'] = [int(x.strip()) for x in self.echo['jobs'].split(',')]
+			else:
+				self.echo['jobs'] = list(self.echo['jobs'])
+
+			if not 'type' in self.echo or self.echo['type'] == 'all':
+				self.echo['type'] = {'stderr': None, 'stdout': None}
+			if not isinstance(self.echo['type'], dict):
+				# must be a string, either stderr or stdout
+				self.echo['type'] = {self.echo['type']: None}
+			if 'all' in self.echo['type']:
+				self.echo['type'] = {
+					'stderr': self.echo['type']['all'], 'stdout': self.echo['type']['all']}
+
+			# do not cache for dry runner
+			# runner is decided when run (in config)
+			#if self.runner == 'dry':
+			#	self.props.cache = False
+
+			# expect
+			self.props.expect = self.template(self.config.expect, **self.tplenvs)
+
+			# expart
+			expart = utils.alwaysList(self.config.expart)
+			self.props.expart = [self.template(e, **self.tplenvs) for e in expart]
+
+			logger.debug('Properties set explictly: %s', self.sets, proc = self.id)
+
+		except Exception: # pragma: no cover
+			if self.lock.is_locked:
+				self.lock.release()
+			raise
+
+	# self.resume != 'skip'
+	def _buildInput(self):
+		"""
+		Build the input data
+		Input could be:
+		1. list: ['input', 'infile:file'] <=> ['input:var', 'infile:path']
+		2. str : "input, infile:file" <=> input:var, infile:path
+		3. dict: {"input": channel1, "infile:file": channel2}
+		   or    {"input:var, input:file" : channel3}
+		for 1,2 channels will be the combined channel from dependents,
+			if there is not dependents, it will be sys.argv[1:]
+		"""
+		self.props.input = OrderedDict()
+
+		if self.resume in ['skip+', 'resume']:
+			# read input from settings file
+			settingsfile = path.join(self.workdir, 'proc.settings.yaml')
+			if not path.isfile(settingsfile):
+				raise ProcInputError(settingsfile,
+					'Cannot parse input for skip+/resume process, no such file')
+
+			with open(settingsfile, 'r') as fset:
+				cached_props = yaml.load(fset, Loader = yaml.Loader)
+
+			self.props.input = cached_props.get('input', OrderedDict())
+			if self.props.input: # {'a': ('var', [1,2,3])}
+				self.props.jobs = [None] * len(list(self.props.input.values())[0][1])
+		else:
+			indata = self.config.input
+			# parse self.config.input keys
+			# even for skipped or resumed process
+			# because we need to keep the order
+			# however, yaml does not
+			# ['a:var', 'b:file', ...]
+			input_keys_and_types = sum((utils.alwaysList(key) for key in indata), []) \
+				if isinstance(indata, dict) else utils.alwaysList(indata) \
+				if indata else []
+
+			# {'a': 'var', 'b': 'file', ...}
+			input_keytypes  = OrderedDict()
+			for keytype in input_keys_and_types:
+				if not keytype.strip():
+					continue
+				if ':' not in keytype:
+					input_keytypes[keytype] = Proc.IN_VARTYPE[0]
+				else:
+					thekey, thetype = keytype.split(':', 1)
+					if thetype not in Proc.IN_VARTYPE + Proc.IN_FILESTYPE + Proc.IN_FILETYPE:
+						raise ProcInputError(thetype, 'Unknown input type')
+					input_keytypes[thekey] = thetype
+			del input_keys_and_types
+
+			# no data specified, inherit from depends or argv
+			input_values = list(indata.values()) \
+				if isinstance(indata, dict) else [Channel.fromChannels(*[
+					d.channel for d in self.depends])
+					if self.depends else Channel.fromArgv()]
+
+			input_channel = Channel.create()
+			for invalue in input_values:
+				# a callback, on all channels
+				if callable(invalue):
+					input_channel = input_channel.cbind(
+						invalue(*[d.channel for d in self.depends] \
+							if self.depends else Channel.fromArgv()))
+				elif isinstance(invalue, Channel):
+					input_channel = input_channel.cbind(invalue)
+				else:
+					input_channel = input_channel.cbind(Channel.create(invalue))
+
+			self.props.jobs = [None] * input_channel.length()
+
+			data_width = input_channel.width()
+			key_width  = len(input_keytypes)
+			if key_width < data_width:
+				logger.warning('Not all data are used as input, %s column(s) wasted.',
+					(data_width - key_width), proc = self.id)
+			# compose self.props.input
+			for i, inkey in enumerate(input_keytypes):
+				intype = input_keytypes[inkey]
+				self.props.input[inkey] = (intype, [])
+
+				if i >= data_width:
+					if intype in Proc.IN_FILESTYPE:
+						self.props.input[inkey][1].extend([[]] * self.size)
+					else:
+						self.props.input[inkey][1].extend([''] * self.size)
+					logger.warning('No data found for input key "%s"'
+						', use empty strings/lists instead.' % inkey, proc = self.id)
+				else:
+					self.props.input[inkey][1].extend(input_channel.flatten(i))
+
+	def _buildProcVars(self):
+		"""
+		Build proc attribute values for template rendering,
+		and also echo some out.
+		"""
+		# attributes shown in log
+		show    = {'size', 'runner'}
+		# attributes hidden in log
+		hide    = {'desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'procset',
+			'input', 'output', 'depends', 'script'}
+		# keys should not be put in procvars for template rendering
+		nokeys  = {'tplenvs', 'input', 'output', 'depends', 'lock', 'jobs', 'args',
+				   '_log', '_flowchart', 'callback', 'callfront', 'channel', 'timer',
+				   'ncjobids', '_suffix'}
+		allkeys = set(self.props) | set(self.config) | {'size', 'suffix'}
+		# preserved keys
+		pvkeys  = {key for key in allkeys
+			if key in show or (key in self.sets and key not in hide)}
+
+		procvars = Box()
+		procargs = self.args
+		if not isinstance(procargs, Box):
+			procargs = Box(procargs)
+
+		alias   = { val:key for key, val in Proc.ALIAS.items() }
+		maxlen  = 0 # used to calculate the alignment
+		# props to be output in log
+		propout = {}
+		for key in allkeys:
+			val = getattr(self, key)
+			if key == 'args' and val:
+				maxlen = max(maxlen, max(len(thekey) for thekey in val))
+			elif key == 'runner':
+				procvars[key] = val
+				maxlen = max(maxlen, len(key))
+				propout[key] = val if val == self.config.runner \
+					else val + ' [profile: %s]' % self.config.runner
+			elif key == 'exdir':
+				procvars[key] = val
+				if val:
+					maxlen = max(maxlen, len(key))
+					propout[key] = utils.briefPath(val, self._log.shorten)
+			elif key in pvkeys:
+				procvars[key] = val
+				maxlen = max(maxlen, len(key))
+				propout[key] = '%r [%s]' % (val, alias[key]) if key in alias else repr(val)
+			elif key not in nokeys:
+				procvars[key] = val
+		for key in sorted(procargs):
+			logger.p_args('%s => %s', key.ljust(maxlen), procargs[key], proc = self.id)
+		for key in sorted(propout):
+			logger.p_props('%s => %s', key.ljust(maxlen), propout[key], proc = self.id)
+		self.props.procvars = {'proc': procvars, 'args': procargs}
+
+	def _buildOutput(self):
+		"""
+		Build the output data templates waiting to be rendered.
+		"""
+		# ['a:{{i.invar}}', 'b:file:{{i.infile|fn}}']
+		output = self.config.output
+		if isinstance(output, (list, str)):
+			outlist = list(filter(None, utils.alwaysList(output)))
+			output  = OrderedDict()
+			for out in outlist:
+				outparts = utils.split(out, ':')
+				lenparts = len(outparts)
+				if lenparts < 2:
+					raise ProcOutputError(out,
+						'One of <key>:<type>:<value> missed for process output in')
+				if lenparts > 3:
+					raise ProcOutputError(out, 'Too many parts for process output in')
+				output[':'.join(outparts[:-1])] = outparts[-1]
+		elif not (isinstance(output, (OBox, OrderedDict)) or (
+			isinstance(output, dict) and len(output) == 1)):
+			raise ProcOutputError(type(output).__name__,
+				'Process output type should be one of list/str/OrderedDict/OBox/OrderedBox, '
+				'or dict with len=1, not')
+
+		# output => {'a': '{{i.invar}}', 'b:file': '{{i.infile | fn}}'}
+		for keytype, outdata in output.items():
+			if ':' not in keytype:
+				keytype += ':' + Proc.OUT_VARTYPE[0]
+			thekey, thetype = keytype.split(':', 1)
+
+			if thetype not in Proc.OUT_DIRTYPE + Proc.OUT_FILETYPE + Proc.OUT_VARTYPE + \
+				Proc.OUT_STDOUTTYPE + Proc.OUT_STDERRTYPE:
+				raise ProcOutputError(thetype, 'Unknown output type')
+
+			self.props.output[thekey] = (thetype, self.template(outdata, **self.tplenvs))
+
+	def _buildScript(self):
+		"""
+		Build the script template waiting to be rendered.
+		"""
+		script = self.config.script.strip()
+		if not script:
+			logger.warning('No script specified', proc = self.id)
+
+		if script.startswith ('file:'):
+			tplfile = Path(script[5:])
+			if not fs.exists (tplfile):
+				raise ProcScriptError (tplfile, 'No such template file')
+			logger.debug("Using template file: %s", tplfile, proc = self.id)
+			script = tplfile.read_text()
+
+		# original lines
+		olines = script.splitlines()
+		# new lines
+		nlines = []
+		indent = ''
+		for i, line in enumerate(olines):
+			if '# PYPPL INDENT REMOVE' in line:
+				indent = line[:-len(line.lstrip())]
+			elif '# PYPPL INDENT KEEP' in line:
+				indent = ''
+			elif indent and line.startswith(indent):
+				nlines.append(line[len(indent):])
+			else:
+				nlines.append(line)
+
+		if not nlines or not nlines[0].startswith('#!'):
+			nlines.insert(0, '#!/usr/bin/env ' + str(self.lang))
+		nlines.append('')
+
+		self.props.script = self.template('\n'.join(nlines), **self.tplenvs)
 
 	# self.resume != 'skip'
 	def _tidyBeforeRun(self):
@@ -527,114 +856,6 @@ class Proc (Hashable):
 				# or hasn't started yet, externally.
 				remove(path.join(self.workdir, 'proc.lock'))
 
-	def _buildProps(self):
-		"""
-		Compute some properties
-		"""
-		from . import PyPPL
-		PyPPL._checkProc(self)
-
-		# get Template
-		if callable(self.config.template):
-			self.props.template = self.config.template
-		elif not self.config.template:
-			self.props.template = getattr(template, 'TemplateLiquid')
-		else:
-			self.props.template = getattr(template, 'Template' + self.config.template.capitalize())
-
-		# build rc
-		if isinstance(self.config.rc, utils.string_types):
-			self.props.rc = [int(i) for i in utils.split(self.config.rc, ',') if i]
-		elif isinstance(self.config.rc, int):
-			self.props.rc = [self.config.rc]
-		else:
-			self.props.rc = self.config.rc
-
-		# workdir
-		if 'workdir' in self.sets:
-			self.props.workdir = self.config.workdir
-		elif not self.props.workdir:
-			self.props.workdir = path.join(self.ppldir, "PyPPL.%s.%s.%s" %
-				(self.id, self.tag, self._suffix()))
-		logger.workdir(utils.briefPath(self.workdir, **self._log.shortpath), proc = self.id)
-
-		if not path.exists(self.workdir):
-			if self.resume in ['skip+', 'resume'] and self.cache != 'export':
-				raise ProcAttributeError(self.workdir, 'Cannot skip process, as workdir not exists')
-			makedirs(self.workdir)
-
-		self.props.lock = filelock.FileLock(path.join(self.workdir, 'proc.lock'))
-
-		try:
-			self.lock.acquire(timeout = 3)
-		except filelock.Timeout: # pragma: no cover
-			proclock = path.join(self.workdir, 'proc.lock')
-			logger.warning('Another instance of this process is running, waiting ...',
-				proc = self.id)
-			logger.warning('If not, remove the process lock file (or hit Ctrl-c) and try again:',
-				proc = self.id)
-			logger.warning('- %s', proclock, proc = self.id)
-			try:
-				self.lock.acquire()
-			except KeyboardInterrupt:
-				remove(path.join(proclock))
-				self.lock.acquire()
-
-		try:
-			# exdir
-			if self.exdir:
-				self.config.exdir = path.abspath(self.exdir)
-				if not path.exists(self.exdir):
-					makedirs(self.exdir)
-
-			# echo
-			if self.config.echo in [True, False, 'stderr', 'stdout']:
-				if self.config.echo is True:
-					self.props.echo = Box({ 'jobs': 0 })
-				elif self.config.echo is False:
-					self.props.echo = Box({ 'jobs': [], 'type': 'all' })
-				else:
-					self.props.echo = Box({ 'jobs': 0, 'type': Box({self.config.echo: None}) })
-			else:
-				self.props.echo = Box(self.config.echo)
-
-			if not 'jobs' in self.echo:
-				self.echo['jobs'] = 0
-			if isinstance(self.echo['jobs'], int):
-				self.echo['jobs'] = [self.echo['jobs']]
-			elif isinstance(self.echo['jobs'], utils.string_types):
-				self.echo['jobs'] = [int(x.strip()) for x in self.echo['jobs'].split(',')]
-			else:
-				self.echo['jobs'] = list(self.echo['jobs'])
-
-			if not 'type' in self.echo or self.echo['type'] == 'all':
-				self.echo['type'] = {'stderr': None, 'stdout': None}
-			if not isinstance(self.echo['type'], dict):
-				# must be a string, either stderr or stdout
-				self.echo['type'] = {self.echo['type']: None}
-			if 'all' in self.echo['type']:
-				self.echo['type'] = {
-					'stderr': self.echo['type']['all'], 'stdout': self.echo['type']['all']}
-
-			# do not cache for dry runner
-			# runner is decided when run (in config)
-			#if self.runner == 'dry':
-			#	self.props.cache = False
-
-			# expect
-			self.props.expect = self.template(self.config.expect, **self.tplenvs)
-
-			# expart
-			expart = utils.alwaysList(self.config.expart)
-			self.props.expart = [self.template(e, **self.tplenvs) for e in expart]
-
-			logger.debug('Properties set explictly: %s', self.sets, proc = self.id)
-
-		except Exception: # pragma: no cover
-			if self.lock.is_locked:
-				self.lock.release()
-			raise
-
 	def _saveSettings(self):
 		"""
 		Save all settings in proc.settings, mostly for debug
@@ -653,249 +874,6 @@ class Proc (Hashable):
 		props.to_yaml(filename = settingsfile)
 
 		logger.debug('Settings saved to: %s', settingsfile, proc = self.id)
-
-	# self.resume != 'skip'
-	def _buildInput(self):
-		"""
-		Build the input data
-		Input could be:
-		1. list: ['input', 'infile:file'] <=> ['input:var', 'infile:path']
-		2. str : "input, infile:file" <=> input:var, infile:path
-		3. dict: {"input": channel1, "infile:file": channel2}
-		   or    {"input:var, input:file" : channel3}
-		for 1,2 channels will be the combined channel from dependents,
-			if there is not dependents, it will be sys.argv[1:]
-		"""
-		self.props.input = OrderedDict()
-
-		if self.resume in ['skip+', 'resume']:
-			# read input from settings file
-			settingsfile = path.join(self.workdir, 'proc.settings.yaml')
-			if not path.isfile(settingsfile):
-				raise ProcInputError(settingsfile,
-					'Cannot parse input for skip+/resume process, no such file')
-
-			with open(settingsfile, 'r') as fset:
-				cached_props = yaml.load(fset, Loader = yaml.Loader)
-
-			self.props.size = int(cached_props.get('size', 0))
-			self.props.input = cached_props.get('input', OrderedDict())
-			self.props.jobs = [None] * self.size
-		else:
-			# parse self.config.input keys
-			# even for skipped or resumed process
-			# because we need to keep the order
-			# however, yaml does not
-			input_keys_and_types = []
-			# string/list/tupl
-			if not isinstance(self.config.input, dict):
-				input_keys_and_types = utils.alwaysList(self.config.input) \
-					if self.config.input else []
-			else: # either raw dict or OrderedDict
-				input_keys_and_types = sum((
-					utils.alwaysList(key)
-					for key in self.config.input.keys()
-				), [])
-
-			input_keys  = []
-			input_types = []
-			for keytype in input_keys_and_types:
-				if ':' not in keytype:
-					input_keys.append(keytype)
-					input_types.append(Proc.IN_VARTYPE[0])
-				else:
-					thekey, thetype = keytype.split(':', 1)
-					if thetype not in Proc.IN_VARTYPE + Proc.IN_FILESTYPE + Proc.IN_FILETYPE:
-						raise ProcInputError(thetype, 'Unknown input type')
-					input_keys.append(thekey)
-					input_types.append(thetype)
-			del input_keys_and_types
-
-			indata = self.config.input
-			# no data specified, inherit from depends or argv
-			if not isinstance(indata, dict):
-				input_values = [Channel.fromChannels(
-					*[d.channel for d in self.depends]
-				) if self.depends else Channel.fromArgv()]
-			else:
-				input_values = list(indata.values())
-
-			input_channel = Channel.create()
-			for invalue in input_values:
-				# a callback, on all channels
-				if callable(invalue):
-					input_channel = input_channel.cbind(
-						invalue(*[d.channel for d in self.depends] \
-							if self.depends else Channel.fromArgv())
-					)
-				elif isinstance(invalue, Channel):
-					input_channel = input_channel.cbind(invalue)
-				else:
-					input_channel = input_channel.cbind(Channel.create(invalue))
-
-			self.props.size = input_channel.length()
-			self.props.jobs = [None] * self.size
-
-			# support empty input
-			input_keys = list(filter(None, input_keys))
-
-			data_width = input_channel.width()
-			key_width  = len(input_keys)
-			if key_width < data_width:
-				logger.warning('Not all data are used as input, %s column(s) wasted.',
-					(data_width - key_width), proc = self.id)
-			# compose self.props.input
-			for i, inkey in enumerate(input_keys):
-				self.props.input[inkey] = {'type': input_types[i]}
-				if i < data_width:
-					self.props.input[inkey]['data'] = input_channel.flatten(i)
-					continue
-				logger.warning(
-					'No data found for input key "%s", use empty strings/lists instead.' %
-						inkey, proc = self.id)
-				# initiate some data
-				if input_types[i] in Proc.IN_FILESTYPE:
-					self.props.input[inkey]['data'] = [[]] * self.size
-				else:
-					self.props.input[inkey]['data'] = [''] * self.size
-
-	def _buildProcVars(self):
-		"""
-		Build proc attribute values for template rendering,
-		and also echo some out.
-		"""
-		show    = ['size', 'args']
-		if self.runner != 'local':
-			show.append('runner')
-		hide    = ['desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'procset',
-			'input', 'output', 'depends', 'script']
-		nokeys  = ['tplenvs', 'input', 'output', 'depends', 'lock', 'jobs']
-		allkeys = [key for key in set(self.props.keys()) | set(self.config.keys())]
-		pvkeys  = [
-			key for key in allkeys \
-			if key in show or (key in self.sets and key not in hide)
-		]
-
-		procvars = Box()
-		procargs = Box()
-
-		alias   = { val:key for key, val in Proc.ALIAS.items() }
-		maxlen  = 0
-		propout = {}
-		for key in allkeys:
-			val = getattr(self, key)
-			if key == 'args':
-				procvars['args'] = val
-				procargs         = val
-				if val:
-					maxlen = max(maxlen, max([len(thekey) for thekey in val.keys()]))
-			elif key == 'runner':
-				procvars[key] = val
-				maxlen        = max(maxlen, len(key))
-				if val == self.config.runner:
-					propout[key]  = val
-				else:
-					propout[key]  = val + ' [profile: %s]' % self.config.runner
-			elif key == 'exdir':
-				procvars[key] = val
-				maxlen        = max(maxlen, len(key))
-				propout[key]  = utils.briefPath(val, **self._log.shortpath)
-			elif key in pvkeys:
-				procvars[key] = val
-				maxlen        = max(maxlen, len(key))
-				propout[key]  = (repr(val) + ' [%s]' % alias[key]) if key in alias else repr(val)
-			elif key not in nokeys:
-				procvars[key] = val
-		for key in sorted(procargs.keys()):
-			logger.p_args('%s => %s', key.ljust(maxlen), procargs[key], proc = self.id)
-		for key in sorted(propout.keys()):
-			logger.p_props('%s => %s', key.ljust(maxlen), propout[key], proc = self.id)
-		self.props.procvars = {'proc': procvars, 'args': procargs}
-
-	def _buildOutput(self):
-		"""
-		Build the output data templates waiting to be rendered.
-		"""
-		output = self.config.output
-		if isinstance(output, utils.string_types):
-			output = utils.split(output, ',')
-		if isinstance(output, list):
-			output = list(filter(None, utils.alwaysList(output)))
-
-		outdict = OrderedDict()
-		if isinstance(output, list):
-			for out in output:
-				ops = utils.split(out, ':')
-				lenops = len(ops)
-				if lenops < 2:
-					raise ProcOutputError(out,
-						'One of <key>:<type>:<value> missed for process output in')
-				elif lenops > 3:
-					raise ProcOutputError(out, 'Too many parts for process output in')
-				outdict[':'.join(ops[:-1])] = ops[-1]
-		else:
-			outdict = self.config.output
-
-		if not isinstance(outdict, OrderedDict):
-			raise ProcOutputError(type(outdict).__name__,
-				'Process output should be str/list/OrderedDict, not')
-
-		for key, val in outdict.items():
-			kparts = utils.split(key, ':')
-			lparts = len(kparts)
-			if lparts == 1:
-				thekey, thetype = key, Proc.OUT_VARTYPE[0]
-			elif lparts == 2:
-				thekey  = kparts[0]
-				thetype = kparts[1]
-			else:
-				raise ProcOutputError(key, 'Too many parts for process output key in')
-
-			if thetype not in Proc.OUT_DIRTYPE + Proc.OUT_FILETYPE + Proc.OUT_VARTYPE + \
-				Proc.OUT_STDOUTTYPE + Proc.OUT_STDERRTYPE:
-				raise ProcOutputError(thetype, 'Unknown output type')
-			self.props.output[thekey] = (thetype, self.template(val, **self.tplenvs))
-
-	def _buildScript(self):
-		"""
-		Build the script template waiting to be rendered.
-		"""
-		script = self.config.script.strip()
-		if not script:
-			logger.warning('No script specified', proc = self.id)
-
-		if script.startswith ('file:'):
-			tplfile = script[5:].strip()
-			if not path.exists (tplfile):
-				raise ProcScriptError (tplfile, 'No such template file')
-			logger.debug("Using template file: %s", tplfile, proc = self.id)
-			with open(tplfile) as ftpl:
-				script = ftpl.read().strip()
-
-		# original lines
-		olines = script.splitlines()
-		# new lines
-		nlines   = []
-		indent   = ''
-		modeline = ''
-		for i, line in enumerate(olines):
-			if i == 0 and line.lstrip().startswith('{%') \
-				and line.lstrip()[2:].lstrip().startswith('mode'):
-				modeline = line + '\n'
-				continue
-			if '# PYPPL INDENT REMOVE' in line:
-				indent = line[:-len(line.lstrip())]
-			elif '# PYPPL INDENT KEEP' in line:
-				indent = ''
-			elif indent and line.startswith(indent):
-				nlines.append(line[len(indent):])
-			else:
-				nlines.append(line)
-
-		if not nlines or not nlines[0].startswith('#!'):
-			nlines.insert(0, '#!/usr/bin/env ' + str(self.lang))
-
-		self.props.script = self.template(modeline + '\n'.join(nlines) + '\n', **self.tplenvs)
 
 	def _buildJobs(self):
 		"""
