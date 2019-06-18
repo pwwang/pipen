@@ -231,49 +231,11 @@ class StreamHandler(logging.StreamHandler):
 	"""
 	DATA = {'prevbar': None, 'done': {}}
 
-	def __init__(self, stream = None):
-		super(StreamHandler, self).__init__(stream)
-		self.terminator = "\n"
-
 	def _emit(self, record, terminator = "\n"):
-		"""
-		Helper function implementing a python2,3-compatible emit.
-		Allow to add "\n" or "\r" as terminator.
-		"""
-		#terminator = '\n'
-		if sys.version_info.major > 2: # pragma: no cover
-			self.terminator = terminator
-			super(StreamHandler, self).emit(record)
-		else:
-			msg    = self.format(record)
-			stream = self.stream
-			tmsg   = "%s" + terminator
-			# if no unicode support...
-			# # pragma: no cover # pylint: disable=no-member
-			if not logging._unicode:
-				stream.write(tmsg % msg)
-			else:
-				try:
-					# # pragma: no cover pylint: disable=undefined-variable
-					if isinstance(msg, unicode) \
-						and getattr(stream, 'encoding', None):
-
-						ufs = u'%s' + terminator
-						try:
-							stream.write(ufs % msg)
-						except UnicodeEncodeError:
-							#Printing to terminals sometimes fails. For example,
-							#with an encoding of 'cp1251', the above write will
-							#work if written to a stream opened or wrapped by
-							#the codecs module, but fail when writing to a
-							#terminal even when the codepage is set to cp1251.
-							#An extra encoding step seems to be needed.
-							stream.write((ufs % msg).encode(stream.encoding))
-					else:
-						stream.write(tmsg % msg)
-				except UnicodeError: # pragma: no cover
-					stream.write(tmsg % msg.encode("UTF-8"))
-			self.flush()
+		prevterm = self.terminator
+		self.terminator = terminator
+		super(StreamHandler, self).emit(record)
+		self.terminator = prevterm
 
 	def emit(self, record):
 		if record.ispbar:
@@ -281,7 +243,7 @@ class StreamHandler(logging.StreamHandler):
 				proc = record.proc if hasattr(record, 'proc') else ''
 				with self.lock:
 					# make sure done pbar is only shown once.
-					if not StreamHandler.DATA['done'].get(proc, False):
+					if not StreamHandler.DATA['done'].get(proc):
 						self._emit(record, '\n')
 						# clear previous pbars if any
 						StreamHandler.DATA['prevbar'] = None
