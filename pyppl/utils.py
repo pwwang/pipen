@@ -373,7 +373,7 @@ def filesig(filepath, dirsig = True):
 				mtime  = max(mtime, mtime2)
 	else:
 		mtime = path.getmtime(filepath)
-	return [filepath, int(mtime)]
+	return [str(filepath), int(mtime)]
 
 def fileflush(filed, residue, end = False):
 	"""

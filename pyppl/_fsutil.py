@@ -67,6 +67,9 @@ def remove(path, ignore_nonexist = True):
 
 def move(src, dst, overwrite = True):
 	"""Move src to dst. If overwrite is False and dst exists, a TargetExistsError raises"""
+	if not islink(dst) and samefile(src, dst):
+		remove(src)
+		return
 	if overwrite:
 		remove(dst)
 	elif exists(dst):
@@ -75,6 +78,8 @@ def move(src, dst, overwrite = True):
 
 def copy(src, dst, overwrite = True):
 	"""Copy src to dst. If overwrite is False and dst exists, a TargetExistsError raises"""
+	if not islink(dst) and samefile(src, dst):
+		return
 	if overwrite:
 		remove(dst)
 	elif exists(dst):
@@ -87,6 +92,10 @@ def copy(src, dst, overwrite = True):
 def link(src, dst, overwrite = True):
 	"""Symbolically link src to dst.
 	If overwrite is False and dst exists, a TargetExistsError raises"""
+	if not islink(dst) and samefile(src, dst):
+		move(dst, src)
+		link(src, dst)
+		return
 	if overwrite:
 		remove(dst)
 	elif exists(dst):

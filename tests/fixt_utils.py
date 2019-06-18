@@ -140,7 +140,7 @@ def fixt_filesig(request, tmp_path):
 	if request.param == 'a_file':
 		afile = tmp_path / 'filesig_afile'
 		afile.write_text('')
-		return Box(file = afile, expt = [afile, int(path.getmtime(afile))])
+		return Box(file = afile, expt = [str(afile), int(path.getmtime(afile))])
 	if request.param == 'nonexists':
 		return Box(file = '/path/to/__non_exists__', expt = False)
 	if request.param == 'a_link':
@@ -148,41 +148,41 @@ def fixt_filesig(request, tmp_path):
 		alink_orig = tmp_path / 'filesig_alink_orig'
 		alink_orig.write_text('')
 		alink.symlink_to(alink_orig)
-		return Box(file = alink, expt = [alink, int(path.getmtime(alink_orig))])
+		return Box(file = alink, expt = [str(alink), int(path.getmtime(alink_orig))])
 	if request.param == 'a_link_to_dir':
 		alink = tmp_path / 'filesig_alink_to_dir'
 		adir  = tmp_path / 'filesig_adir'
 		adir.mkdir()
 		alink.symlink_to(adir)
-		return Box(file = alink, expt = [alink, int(path.getmtime(adir))])
+		return Box(file = alink, expt = [str(alink), int(path.getmtime(adir))])
 	if request.param == 'a_dir_with_subdir':
 		adir = tmp_path / 'filesig_another_dir'
 		adir.mkdir()
 		utime(adir, (path.getmtime(adir) + 100, ) * 2)
 		asubdir = adir / 'filesig_another_subdir'
 		asubdir.mkdir()
-		return Box(file = adir, expt = [adir, int(path.getmtime(adir))])
+		return Box(file = adir, expt = [str(adir), int(path.getmtime(adir))])
 	if request.param == 'a_dir_with_file':
 		adir = tmp_path / 'filesig_another_dir4'
 		adir.mkdir()
 		utime(adir, (path.getmtime(adir) - 100, ) * 2)
 		afile = adir / 'filesig_another_file4'
 		afile.write_text('')
-		return Box(file = adir, expt = [adir, int(path.getmtime(afile))])
+		return Box(file = adir, expt = [str(adir), int(path.getmtime(afile))])
 	if request.param == 'a_dir_subdir_newer':
 		adir = tmp_path / 'filesig_another_dir2'
 		adir.mkdir()
 		utime(adir, (path.getmtime(adir) - 100, ) * 2)
 		asubdir = adir / 'filesig_another_subdir2'
 		asubdir.mkdir()
-		return Box(file = adir, expt = [adir, int(path.getmtime(asubdir))])
+		return Box(file = adir, expt = [str(adir), int(path.getmtime(asubdir))])
 	if request.param == 'a_dir_subdir_newer_dirsig_false':
 		adir = tmp_path / 'filesig_another_dir3'
 		adir.mkdir()
 		utime(adir, (path.getmtime(adir) - 100, ) * 2)
 		asubdir = adir / 'filesig_another_subdir3'
 		asubdir.mkdir()
-		return Box(file = adir, dirsig = False, expt = [adir, int(path.getmtime(adir))])
+		return Box(file = adir, dirsig = False, expt = [str(adir), int(path.getmtime(adir))])
 
 @pytest.fixture
 def fd_fileflush(tmp_path):

@@ -1,11 +1,27 @@
 from copy import copy
 from time import sleep
 import pytest
+from pyppl import Proc as _Proc
 from pyppl.jobmgr2 import Jobmgr, STATES
 from pyppl.logger import logger
 from pyppl.utils import Box
 
 class Proc(dict):
+	OUT_VARTYPE    = _Proc.OUT_VARTYPE
+	OUT_FILETYPE   = _Proc.OUT_FILETYPE
+	OUT_DIRTYPE    = _Proc.OUT_DIRTYPE
+	OUT_STDOUTTYPE = _Proc.OUT_STDOUTTYPE
+	OUT_STDERRTYPE = _Proc.OUT_STDERRTYPE
+
+	IN_VARTYPE   = _Proc.IN_VARTYPE
+	IN_FILETYPE  = _Proc.IN_FILETYPE
+	IN_FILESTYPE = _Proc.IN_FILESTYPE
+
+	EX_GZIP = _Proc.EX_GZIP
+	EX_COPY = _Proc.EX_COPY
+	EX_MOVE = _Proc.EX_MOVE
+	EX_LINK = _Proc.EX_LINK
+
 	def __init__(self, *args, **kwargs):
 		kwargs['nthread'] = 10
 		kwargs['name']    = lambda procset = True: 'pProc'
