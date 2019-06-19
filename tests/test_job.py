@@ -1,7 +1,7 @@
 import pytest
 
 from os import environ, utime
-environ['PYPPL_default__log'] = "py:{'file': None, 'theme': 'greenOnBlack', 'levels': 'all', 'leveldiffs': [], 'pbar': 50, 'shorten': 0}"
+environ['PYPPL_default__log'] = "py:{'levels': 'all'}"
 from pyppl.job2 import Job, JobInputParseError, JobOutputParseError, RC_NO_RCFILE
 from pyppl.utils import fs, Box, OBox, filesig
 from pyppl.exceptions import RunnerClassNameError
@@ -48,6 +48,9 @@ def test_data(job0):
 def test_logger(job0, caplog):
 	job0.logger('hello world!', level = 'info')
 	assert 'pProc: [1/1] hello world!' in caplog.text
+	caplog.clear()
+	job0.logger('PBAR!', level = 'info', pbar = True)
+	assert 'PBAR!' in caplog.text
 
 def test_checkClassName():
 	with pytest.raises(RunnerClassNameError):
@@ -58,7 +61,7 @@ def test_wrapScript(job0, job1):
 	assert job0.script.read_text() == """#!/usr/bin/env bash
 #
 # Collect return code on exit
-trap "status = \\$?; echo \\$status > '{jobdir}/job.rc'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
+trap "status=\\$?; echo \\$status > '{jobdir}/job.rc'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
 #
 # Run pre-script
 #
@@ -72,7 +75,7 @@ trap "status = \\$?; echo \\$status > '{jobdir}/job.rc'; exit \\$status" 1 2 3 6
 	assert job1.script.read_text() == """#!/usr/bin/env bash
 #
 # Collect return code on exit
-trap "status = \\$?; echo \\$status > '{jobdir}/job.rc'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
+trap "status=\\$?; echo \\$status > '{jobdir}/job.rc'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
 #
 # Run pre-script
 pre

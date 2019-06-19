@@ -28,6 +28,7 @@ class Proc(dict):
 		kwargs['errhow']  = 'terminate'
 		kwargs['errntry'] = 3
 		kwargs['forks']   = 1
+		kwargs['size']    = 1
 		kwargs['config']  = Box(
 			_log = {}
 		)
@@ -42,9 +43,19 @@ class Job(object):
 		self.index      = index
 		self.proc       = proc
 		self.orig_state = STATES.INIT
-		self.logger     = logger
 		self.state      = None
 		self.ntry       = 0
+
+	def logger(self, *args, **kwargs):
+		"""A logger wrapper to avoid instanize a logger object for each job"""
+		level = kwargs.pop('level', 'info')
+		kwargs['proc']   = self.proc.name(False)
+		kwargs['jobidx'] = self.index
+		kwargs['joblen'] = self.proc.size
+		if kwargs.pop('pbar', False):
+			logger.pbar[level](*args, **kwargs)
+		else:
+			logger[level](*args, **kwargs)
 
 	def restore_state(self):
 		self.state = self.orig_state
@@ -116,10 +127,6 @@ def jobindex_reset():
 	def func(jobs):
 		for i, job in enumerate(jobs):
 			job.index = i
-			job.logger = logger.bake(
-				proc   = 'pProc', jobidx = i,
-				joblen =  len(jobs),
-			)
 	return func
 
 @pytest.fixture(params = [

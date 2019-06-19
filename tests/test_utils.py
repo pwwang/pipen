@@ -4,9 +4,12 @@ import psutil
 from faker import Faker
 from pyppl.utils import Box, OrderedBox, split, funcsig, uid, formatSecs, alwaysList, \
 	briefList, briefPath, killtree, chmodX, filesig, fileflush, ThreadEx, ThreadPool, \
-	PQueue, Hashable, MultiDestTransition, StateMachine
+	PQueue, Hashable, MultiDestTransition, StateMachine, varname
 # load fixtures
 pytest_plugins = ["tests.fixt_utils"]
+
+def setup_module(module):
+	varname.index = 0
 
 @pytest.mark.box
 @pytest.mark.parametrize('construct', [

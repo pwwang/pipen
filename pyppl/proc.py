@@ -6,7 +6,7 @@ import copy as pycopy
 from pathlib import Path
 from time import time
 from collections import OrderedDict
-from os import path, makedirs, remove
+from os import path
 import yaml
 import filelock
 from simpleconf import NoSuchProfile
@@ -388,6 +388,7 @@ class Proc (Hashable):
 			return self.props._suffix
 
 		sigs = OBox()
+		# use cmdy.which instead? what about "python test.py"
 		sigs.argv0 = path.realpath(sys.argv[0])
 		sigs.id    = self.id
 		sigs.tag   = self.tag
@@ -407,7 +408,7 @@ class Proc (Hashable):
 		if self.depends:
 			sigs.depends = [p.name(True) + '#' + p.suffix for p in self.depends]
 		signature = sigs.to_json()
-		logger.debug('Suffix decided by: %s', signature, proc = self.id)
+		logger.debug('Suffix decided by: %s' % signature, proc = self.id)
 		# suffix is only depending on where it comes from (sys.argv[0]) and
 		# it's name (id and tag) to avoid too many different workdirs being generated
 		self.props._suffix = utils.uid(signature)
@@ -445,10 +446,10 @@ class Proc (Hashable):
 				(self.id, self.tag, self.suffix))
 		logger.workdir(utils.briefPath(self.workdir, self._log.shorten), proc = self.id)
 
-		if not path.exists(self.workdir):
+		if not fs.exists(self.workdir):
 			if self.resume in ['skip+', 'resume'] and self.cache != 'export':
 				raise ProcAttributeError(self.workdir, 'Cannot skip process, as workdir not exists')
-			makedirs(self.workdir)
+			fs.makedirs(self.workdir)
 
 		self.props.lock = filelock.FileLock(path.join(self.workdir, 'proc.lock'))
 
@@ -464,15 +465,15 @@ class Proc (Hashable):
 			try:
 				self.lock.acquire()
 			except KeyboardInterrupt:
-				remove(path.join(proclock))
+				fs.remove(path.join(proclock))
 				self.lock.acquire()
 
 		try:
 			# exdir
 			if self.exdir:
 				self.config.exdir = path.abspath(self.exdir)
-				if not path.exists(self.exdir):
-					makedirs(self.exdir)
+				if not fs.exists(self.exdir):
+					fs.makedirs(self.exdir)
 
 			# echo
 			if self.config.echo in [True, False, 'stderr', 'stdout']:
@@ -515,7 +516,7 @@ class Proc (Hashable):
 			expart = utils.alwaysList(self.config.expart)
 			self.props.expart = [self.template(e, **self.tplenvs) for e in expart]
 
-			logger.debug('Properties set explictly: %s', self.sets, proc = self.id)
+			logger.debug('Properties set explictly: %s' % self.sets, proc = self.id)
 
 		except Exception: # pragma: no cover
 			if self.lock.is_locked:
@@ -539,7 +540,7 @@ class Proc (Hashable):
 		if self.resume in ['skip+', 'resume']:
 			# read input from settings file
 			settingsfile = path.join(self.workdir, 'proc.settings.yaml')
-			if not path.isfile(settingsfile):
+			if not fs.isfile(settingsfile):
 				raise ProcInputError(settingsfile,
 					'Cannot parse input for skip+/resume process, no such file')
 
@@ -649,7 +650,7 @@ class Proc (Hashable):
 			elif key == 'runner':
 				procvars[key] = val
 				maxlen = max(maxlen, len(key))
-				propout[key] = val if val == self.config.runner \
+				propout[key] = val if self.config.runner in (val, '__tmp__') \
 					else val + ' [profile: %s]' % self.config.runner
 			elif key == 'exdir':
 				procvars[key] = val
@@ -757,7 +758,7 @@ class Proc (Hashable):
 		props.output    = OrderedDict([(key, str(val)) for key, val in props.output.items()])
 		props.to_yaml(filename = settingsfile)
 
-		logger.debug('Settings saved to: %s', settingsfile, proc = self.id)
+		logger.debug('Settings saved to: %s' % settingsfile, proc = self.id)
 
 	def _buildJobs(self):
 		"""
@@ -777,6 +778,70 @@ class Proc (Hashable):
 
 		for i in range(self.size):
 			self.jobs[i] = PyPPL.RUNNERS[self.runner](i, self)
+
+	def _readConfig(self, profile, config):
+		"""
+		Read the configuration
+		@params:
+			`config`: The configuration
+		"""
+		if not profile:
+			return
+
+		# configs have been set
+		setconfigs = {key:self.config[key] for key in self.sets}
+		self.config._load(config or {})
+		if isinstance(profile, dict):
+			profile['runner'] = profile.get('runner', self.config.runner)
+			self.config._load(dict(
+				__tmp__ = profile
+			))
+			self.config._use('__tmp__')
+			self.config.update(setconfigs)
+			# the real runner
+			self.props.runner  = self.config.runner
+			# the real profile
+			self.config.runner = '__tmp__'
+		else:
+			try:
+				self.config._use(profile, raise_exc = True)
+			except NoSuchProfile:
+				self.config._load({profile: dict(runner = profile)})
+				self.config._use(profile)
+			self.config.update(setconfigs)
+			self.props.runner  = self.config.runner
+			self.config.runner = profile
+
+	def _runCmd(self, key):
+		"""
+		Run the `beforeCmd` or `afterCmd`
+		@params:
+			key (str): "beforeCmd/preCmd/afterCmd/postCmd" or above without "Cmd"
+		@returns:
+			The return code of the command
+		@raises:
+			ProcRunCmdError: if command returns other than 1.
+		"""
+		if not key.endswith('Cmd'):
+			key += 'Cmd'
+		if key in Proc.ALIAS:
+			key = Proc.ALIAS[key]
+
+		cmdstr = self.template(getattr(self, key), **self.tplenvs).render(self.procvars).strip()
+
+		if not cmdstr:
+			return
+
+		logger.info('Running <%s> ...', key, proc = self.id)
+
+		cmd = utils.cmdy.bash(c = cmdstr, _iter = 'err')
+		for err in cmd:
+			logger.cmderr('  ' + err.rstrip("\n"), proc = self.id)
+		for out in cmd.stdout.splitlines():
+			logger.cmdout('  ' + out.rstrip("\n"), proc = self.id)
+
+		if cmd.rc != 0:
+			raise ProcRunCmdError(repr(cmdstr), key)
 
 	# self.resume != 'skip'
 	def _preRunTidy(self):
@@ -800,6 +865,19 @@ class Proc (Hashable):
 			if self.lock.is_locked:
 				self.lock.release()
 			raise
+
+	def _runJobs(self):
+		"""
+		Submit and run the jobs
+		"""
+		Jobmgr(self.jobs).start()
+
+		self.props.channel = Channel.create([
+			tuple(value[1] for value in job.output.values())
+			for job in self.jobs
+		])
+		if self.jobs:
+			self.channel.attach(*self.jobs[0].output.keys())
 
 	# self.resume != 'skip'
 	def _postRunTidy(self):
@@ -860,24 +938,27 @@ class Proc (Hashable):
 			failjobs = bfailedjobs + sfailedjobs + efailedjobs
 			showjob  = failjobs[0] if failjobs else 0
 
-			if len(donejobs) == self.size or self.errhow == 'ignore':
-				if callable(self.callback):
-					logger.debug('Calling callback ...', proc = self.id)
-					self.callback(self)
+			if (len(donejobs) == self.size or self.errhow == 'ignore') and \
+				callable(self.callback):
+				logger.debug('Calling callback ...', proc = self.id)
+				self.callback(self)
+			# there are jobs failed
+			if len(donejobs) < self.size:
 				if self.errhow == 'ignore':
 					logger.warning('Jobs failed but ignored.', proc = self.id)
 					self.jobs[showjob].showError(len(failjobs))
-			else:
-				self.jobs[showjob].showError(len(failjobs))
-				sys.exit(1)
+				else:
+					self.jobs[showjob].showError(len(failjobs))
+					sys.exit(1)
 
 	def run(self, profile = None, config = None):
-		"""
-		Run the jobs with a configuration
+		"""@api
+		Run the process with a profile and/or a configuration
 		@params:
-			`config`: The configuration
+			profile (str): The profile from a configuration file.
+			config (dict): A configuration passed to PyPPL construct.
 		"""
-		self._readConfig (profile, config)
+		self._readConfig(profile, config)
 		if self.runner == 'dry':
 			self.config.cache = False
 
@@ -890,7 +971,7 @@ class Proc (Hashable):
 				self._postRunTidy()
 			finally:
 				self.lock.release()
-				remove(path.join(self.workdir, 'proc.lock'))
+				fs.remove(path.join(self.workdir, 'proc.lock'))
 		else: # '', resume, resume+
 			self._preRunTidy()
 			try:
@@ -904,80 +985,4 @@ class Proc (Hashable):
 				self.lock.release()
 				# remove the lock file, so that I know this process has done
 				# or hasn't started yet, externally.
-				remove(path.join(self.workdir, 'proc.lock'))
-
-	def _readConfig(self, profile, config):
-		"""
-		Read the configuration
-		@params:
-			`config`: The configuration
-		"""
-		if not profile:
-			return
-
-		# configs have been set
-		setconfigs = {key:self.config[key] for key in self.sets}
-		self.config._load(config or {})
-		if isinstance(profile, dict):
-			profile['runner'] = profile.get('runner', self.config.runner)
-			self.config._load(dict(
-				__tmp__ = profile
-			))
-			self.config._use('__tmp__')
-			self.config.update(setconfigs)
-			# the real runner
-			self.props.runner  = self.config.runner
-			# the real profile
-			self.config.runner = '__tmp__'
-		else:
-			try:
-				self.config._use(profile, raise_exc = True)
-				self.config.update(setconfigs)
-				self.props.runner  = self.config.runner
-				self.config.runner = profile
-			except NoSuchProfile:
-				self.config._load({
-					profile: dict(runner = profile)
-				})
-				self.config._use(profile)
-				self.config.update(setconfigs)
-				self.props.runner  = self.config.runner
-				self.config.runner = None
-
-	def _runCmd(self, key):
-		"""
-		Run the `beforeCmd` or `afterCmd`
-		@params:
-			`key`: "beforeCmd" or "afterCmd"
-		@returns:
-			The return code of the command
-		"""
-		#if not self.config[key]: return
-		cmdstr = self.template(getattr(self, key), **self.tplenvs).render(self.procvars).strip()
-
-		if not cmdstr:
-			return
-
-		logger.info('Running <%s> ...', key, proc = self.id)
-
-		cmd = utils.cmdy.bash(c = cmdstr, _iter = 'err')
-		for err in cmd:
-			logger.cmderr('  ' + err.rstrip("\n"), proc = self.id)
-		for out in cmd.stdout.splitlines():
-			logger.cmdout('  ' + out.rstrip("\n"), proc = self.id)
-
-		if cmd.rc != 0:
-			raise ProcRunCmdError(repr(cmdstr), key)
-
-	def _runJobs(self):
-		"""
-		Submit and run the jobs
-		"""
-		Jobmgr(self.jobs).start()
-
-		self.props.channel = Channel.create([
-			tuple(job.data.o.values())
-			for job in self.jobs
-		])
-		if self.jobs:
-			self.channel.attach(*self.jobs[0].data.o.keys())
+				fs.remove(path.join(self.workdir, 'proc.lock'))

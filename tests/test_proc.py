@@ -1,13 +1,17 @@
+import os
+os.environ['PYPPL_default__log'] = 'py:{"levels": "all"}'
 import sys
+import logging
 import pytest
 from pathlib import Path
 from pyppl.utils import config, uid, Box, OBox, fs
 from pyppl.proc import Proc
 from pyppl.template import TemplateLiquid
 from pyppl.channel import Channel
+from pyppl.jobmgr2 import STATES
 from pyppl.procset import ProcSet
 from pyppl.exceptions import ProcTagError, ProcAttributeError, ProcTreeProcExists, \
-	ProcInputError, ProcOutputError, ProcScriptError
+	ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
 
 @pytest.fixture
 def tmpdir(tmpdir):
@@ -294,6 +298,13 @@ def test_buildinput(tmpdir, caplog):
 	assert p10.input['b'] == ('files', [[], []])
 	assert p10.input['c'] == ('var', ['', ''])
 
+def test_buildinput_empty(tmpdir):
+	sys.argv = ['pytest']
+	p102 = Proc()
+	p102._buildInput()
+	assert p102.size == 0
+	assert p102.jobs == []
+
 def test_buildprocvars(tmpdir, caplog):
 	p11 = Proc()
 	p11.args = {'a': 1}
@@ -396,3 +407,127 @@ def test_buildjobs(tmpdir, caplog):
 	assert len(p15.props.jobs) == 3
 	assert p15.props.jobs[0].__class__.__name__ == 'RunnerLocal'
 
+def test_readconfig(tmpdir):
+	p16 = Proc()
+	# nothing updated
+	p16._readConfig(None, None)
+
+	p16.forks = 10
+	p16._readConfig({'forks': 30}, {'forks': 20})
+	assert p16.forks == 10
+	assert p16.runner == 'local'
+	assert p16.config.runner == '__tmp__'
+
+	p17 = Proc()
+	p17.forks = 10
+	# no such profile in config
+	p17._readConfig('dry', {'forks': 20})
+	assert p17.forks == 10
+	assert p17.runner == 'dry'
+	assert p17.config.runner == 'dry'
+
+	p18 = Proc()
+	p18.config._load({'xyz': {'runner': 'sge'}})
+	p18._readConfig('xyz', None)
+	assert p18.runner == 'sge'
+	assert p18.config.runner == 'xyz'
+
+def test_runcmd(tmpdir, caplog):
+	p19 = Proc()
+	p19.props.template = TemplateLiquid
+	p19._runCmd('pre')
+	assert 'Running ' not in caplog.text
+
+	p19.preCmd = 'echo "Hello world!"'
+	p19._runCmd('before')
+	assert 'Running <beforeCmd> ...' in caplog.text
+	assert 'Hello world!' in caplog.text
+
+	p19.postCmd = 'nosuchcommand'
+	with pytest.raises(ProcRunCmdError):
+		p19._runCmd('post')
+
+def test_preruntidy(tmpdir, caplog):
+	p20 = Proc()
+	p20.input = 'a, b'
+	p20.input = [(1,2), (3,4), (5,6)]
+	p20.callfront = lambda p: setattr(p, 'forks', 20)
+	p20._preRunTidy()
+	assert 'Calling callfront ...' in caplog.text
+	assert p20.forks == 20
+	assert p20.size == 3
+
+def test_runjobs(tmpdir):
+	p21 = Proc()
+	p21.forks = 3
+	p21.input = 'a, b'
+	p21.input = [(1,2), (3,4), (5,6)]
+	p21.output = 'a:{{i.a}}, b:{{i.b}}'
+	p21.script = 'echo Hello world!'
+	p21._preRunTidy()
+	p21._runJobs()
+	assert p21.channel == [('1','2'), ('3','4'), ('5','6')]
+	assert p21.channel.a.flatten() == ['1','3','5']
+	assert p21.channel.b.flatten() == ['2','4','6']
+
+def test_postruntidy(tmpdir, caplog):
+	p22 = Proc()
+	p22.resume = 'skip+'
+	p22.callback = lambda p: p.props.update({'channel': p.channel.cbind(1, 2)})
+	p22._postRunTidy()
+	assert p22.channel == [(1, 2)]
+
+	p23 = Proc()
+	p23.forks = 5
+	p23.input = 'a, b'
+	p23.input = [(1,2), (3,4), (5,6), (7,8), (9,10)]
+	p23.output = 'a:{{i.a}}, b:{{i.b}}'
+	p23.script = 'echo Hello world!'
+	p23.errhow = 'ignore'
+	p23.callback = lambda p: setattr(p, 'forks', 10)
+	p23._preRunTidy()
+	p23._runJobs()
+	p23.jobs[0].state = STATES.BUILTFAILED
+	p23.jobs[1].state = STATES.SUBMITFAILED
+	p23.jobs[2].state = STATES.DONE
+	p23.jobs[3].state = STATES.DONECACHED
+	p23.jobs[4].state = STATES.ENDFAILED
+	p23._postRunTidy()
+	assert ' Jobs (Cached: 1, Succ: 1, B.Fail: 1, S.Fail: 1, R.Fail: 1)' in caplog.text
+	assert 'Failed but ignored (totally 3).' in caplog.text
+	assert p23.forks == 10
+
+	p23.errhow = 'terminate'
+	caplog.clear()
+	with pytest.raises(SystemExit):
+		p23._postRunTidy()
+	assert 'Cached           : 3' in caplog.text
+	assert 'Successful       : 2' in caplog.text
+	assert 'Building failed  : 0' in caplog.text
+	assert 'Submission failed: 1' in caplog.text
+	assert 'Running failed   : 4' in caplog.text
+
+def test_run(tmpdir, caplog):
+	sys.argv = ['pytest']
+	p24 = Proc()
+	p24.resume = 'resume'
+	p24.props.workdir = tmpdir / 'test_run_p24'
+	fs.mkdir(p24.workdir)
+	(p24.workdir / 'proc.settings.yaml').write_text('input: ')
+	p24.run('dry', None)
+	assert 'Previous processes skipped.' in caplog.text
+	assert p24.runner == 'dry'
+
+	p25 = Proc()
+	p25.resume = 'skip'
+	caplog.clear()
+	p25.run(None, None)
+	assert 'Pipeline will resume from future processes.' in caplog.text
+
+	p25.resume = 'skip+'
+	caplog.clear()
+	p25.props.workdir = tmpdir / 'test_run_p25'
+	fs.mkdir(p25.workdir)
+	(p25.workdir / 'proc.settings.yaml').write_text('input: ')
+	p25.run(None, None)
+	assert 'Data loaded, pipeline will resume from future processes.' in caplog.text

@@ -111,7 +111,10 @@ class Job(object):
 		kwargs['proc']   = self.proc.name(False)
 		kwargs['jobidx'] = self.index
 		kwargs['joblen'] = self.proc.size
-		_logger[level](*args, **kwargs)
+		if kwargs.pop('pbar', False):
+			_logger.pbar[level](*args, **kwargs)
+		else:
+			_logger[level](*args, **kwargs)
 
 	def _checkClassName(self):
 		if not self.__class__.__name__.startswith('Runner'):
@@ -121,7 +124,7 @@ class Job(object):
 		"""
 		Wrap the script to run
 		"""
-		self.logger('Wrapping up script: %s', self.script, level = 'debug')
+		self.logger('Wrapping up script: %s' % self.script, level = 'debug')
 		script_parts = self.scriptParts
 
 		# redirect stdout and stderr
@@ -145,7 +148,7 @@ class Job(object):
 		addsrc('#')
 		addsrc('# Collect return code on exit')
 
-		trapcmd = "status = \\$?; echo \\$status > %r; exit \\$status" % str(self.dir / FILE_RC)
+		trapcmd = "status=\\$?; echo \\$status > %r; exit \\$status" % str(self.dir / FILE_RC)
 		addsrc('trap "%s" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % trapcmd)
 		addsrc('#')
 		addsrc('# Run pre-script')

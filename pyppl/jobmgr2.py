@@ -218,8 +218,8 @@ class Jobmgr(object):
 			100.0*float(ncompleted)/float(len(self.jobs)),
 			str(nrunning).ljust(len(str(self.proc.forks))))
 
-		job.logger.pbar[PBAR_LEVEL[states[job.index]]](
-			pbar, done = ncompleted == len(self.jobs))
+		job.logger(pbar, pbar = True,
+			done = ncompleted == len(self.jobs), level = PBAR_LEVEL[states[job.index]])
 
 	def cleanup(self, ex = None):
 		"""
