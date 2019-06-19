@@ -16,6 +16,7 @@ from pyppl.utils import Box, varname
 	Box(klass = False, multi = False, docopy = False, array = True),
 ])
 def fixt_varname(request):
+	#varname.index = 0
 	class Klass(object):
 		def __init__(self, default='', d2=''):
 			self.id = varname()

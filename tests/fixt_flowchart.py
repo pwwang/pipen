@@ -19,15 +19,21 @@ def p4():
 
 @pytest.fixture
 def p_procset1():
-	return Proc('p_procset1', procset = 'procset1')
+	p = Proc('p_procset1')
+	p.config.tag = 'notag@procset1'
+	return p
 
 @pytest.fixture
 def p_procset2():
-	return Proc('p_procset2', procset = 'procset2')
+	p = Proc('p_procset2')
+	p.config.tag = 'notag@procset2'
+	return p
 
 @pytest.fixture
 def p_procset3():
-	return Proc('p_procset3', procset = 'procset3')
+	p = Proc('p_procset3')
+	p.config.tag = 'notag@p_procset3'
+	return p
 
 @pytest.fixture
 def p_tag_1st():
@@ -47,11 +53,15 @@ def p_exdir():
 
 @pytest.fixture
 def p_procset1_skipplus():
-	return Proc('p_procset1_skipplus', procset = 'procset1', resume = 'skip+')
+	p = Proc('p_procset1_skipplus', resume = 'skip+')
+	p.config.tag = 'notag@procset1'
+	return p
 
 @pytest.fixture
 def p_procset2_exdir():
-	return Proc('p_procset2_exdir', procset = 'procset2', exdir = '.')
+	p = Proc('p_procset2_exdir', exdir = '.')
+	p.config.tag = 'notag@procset2'
+	return p
 
 @pytest.fixture
 def procs(p1, p2, p3, p4, p_procset1, p_procset2, p_procset3,

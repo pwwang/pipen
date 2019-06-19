@@ -136,9 +136,7 @@ class ProcSet(object):
 					tag = (self.tag or proc.tag.split('@', 1)[0]) + '@' + self.id)
 			else:
 				self.procs[proc.id] = proc
-				proc.tag = (self.tag or proc.tag.split('@', 1)[0]) + '@' + self.id
-
-			self.procs[proc.id].procset = self.id
+				proc.config.tag = (self.tag or proc.tag.split('@', 1)[0]) + '@' + self.id
 
 			if depends and prevproc is None:
 				self.starts.add(self[proc.id])

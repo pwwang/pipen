@@ -11,7 +11,7 @@ import yaml
 import filelock
 from simpleconf import NoSuchProfile
 from .logger import logger
-from .utils import Box, Hashable, OBox
+from .utils import Box, OBox, Hashable, fs
 from .jobmgr2 import Jobmgr, STATES
 from .procset import ProcSet
 from .channel import Channel
@@ -79,7 +79,7 @@ class Proc (Hashable):
 		@config:
 			id, input, output, ppldir, forks, cache, acache, rc, echo, runner, script, depends,
 			tag, desc, dirsig, exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd,
-			workdir, args, procset, callfront, callback, expect, expart, template, tplenvs,
+			workdir, args, callfront, callback, expect, expart, template, tplenvs,
 			resume, nthread
 		@props
 			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect
@@ -94,11 +94,9 @@ class Proc (Hashable):
 		# The id (actually, it's the showing name) of the process
 		self.config.id = id if id else utils.varname()
 
-		if ' ' in tag:
-			raise ProcTagError("No space is allowed in tag.")
+		if ' ' in tag or '@' in tag:
+			raise ProcTagError("No space or '@' is allowed in tag.")
 
-		# The procset name of the process, not configurable
-		self.config.procset    = None
 		# The extra arguments for the process
 		self.config.args       = utils.config.args.copy()
 		# The callfront function of the process
@@ -117,6 +115,8 @@ class Proc (Hashable):
 		self.props.expart      = []
 		# computed expect
 		self.props.expect      = None
+		# whether hide in flowchart
+		self.config.hide       = False
 		# The input that user specified
 		self.config.input      = ''
 		# The computed input
@@ -132,7 +132,7 @@ class Proc (Hashable):
 		# The output that user specified
 		self.config.output     = ''
 		# The computed output
-		self.props.output      = Box(ordered_box=True)
+		self.props.output      = OBox()
 		# data for proc.xxx in template
 		self.props.procvars    = {}
 		# Valid return code
@@ -278,6 +278,8 @@ class Proc (Hashable):
 		elif name == 'runner':
 			self.config[name] = value
 			self.props[name]  = value
+		elif name == 'tag' and (' ' in value or '@' in value):
+			raise ProcAttributeError("No space or '@' is allowed in tag")
 		else:
 			self.config[name] = value
 
@@ -312,8 +314,6 @@ class Proc (Hashable):
 				conf[key] = tag
 			elif key == 'desc' and desc:
 				conf[key] = desc
-			elif key == 'procset':
-				conf[key] = None
 			elif key in ['workdir', 'resume']:
 				conf[key] = ''
 			elif isinstance(self.config[key], dict) and 'tplenvs' not in key:
@@ -345,8 +345,31 @@ class Proc (Hashable):
 		dict.update(newproc.props, props)
 		return newproc
 
+	def name(self, procset = True):
+		"""
+		Get my name include `procset`, `id`, `tag`
+		@returns:
+			the name
+		"""
+		tag = self.tag
+		if '@' not in tag:
+			tag += '@'
+		tag, pst = tag.split('@')
+		tag = '' if tag in ('notag', '') else '.' + tag
+		pst = '@' + pst if pst else ''
+		return self.id + tag + pst if procset else self.id + tag
+
+	@property
+	def procset(self):
+		"""Get the name of the procset"""
+		parts = self.tag.split('@')
+		if len(parts) == 1:
+			return None
+		return parts[1]
+
 	@property
 	def size(self):
+		"""Get the size of the  process"""
 		return len(self.jobs)
 
 	@property
@@ -364,7 +387,7 @@ class Proc (Hashable):
 		if self.props._suffix:
 			return self.props._suffix
 
-		sigs = Box(ordered_box = True)
+		sigs = OBox()
 		sigs.argv0 = path.realpath(sys.argv[0])
 		sigs.id    = self.id
 		sigs.tag   = self.tag
@@ -383,7 +406,6 @@ class Proc (Hashable):
 		# callbacks could be the same though even if the input files are different
 		if self.depends:
 			sigs.depends = [p.name(True) + '#' + p.suffix for p in self.depends]
-
 		signature = sigs.to_json()
 		logger.debug('Suffix decided by: %s', signature, proc = self.id)
 		# suffix is only depending on where it comes from (sys.argv[0]) and
@@ -600,7 +622,7 @@ class Proc (Hashable):
 		# attributes shown in log
 		show    = {'size', 'runner'}
 		# attributes hidden in log
-		hide    = {'desc', 'id', 'sets', 'tag', 'suffix', 'workdir', 'procset',
+		hide    = {'desc', 'id', 'sets', 'tag', 'suffix', 'workdir',
 			'input', 'output', 'depends', 'script'}
 		# keys should not be put in procvars for template rendering
 		nokeys  = {'tplenvs', 'input', 'output', 'depends', 'lock', 'jobs', 'args',
@@ -693,7 +715,7 @@ class Proc (Hashable):
 		if script.startswith ('file:'):
 			tplfile = Path(script[5:])
 			if not fs.exists (tplfile):
-				raise ProcScriptError (tplfile, 'No such template file')
+				raise ProcScriptError(tplfile, 'No such template file')
 			logger.debug("Using template file: %s", tplfile, proc = self.id)
 			script = tplfile.read_text()
 
@@ -702,7 +724,7 @@ class Proc (Hashable):
 		# new lines
 		nlines = []
 		indent = ''
-		for i, line in enumerate(olines):
+		for line in olines:
 			if '# PYPPL INDENT REMOVE' in line:
 				indent = line[:-len(line.lstrip())]
 			elif '# PYPPL INDENT KEEP' in line:
@@ -718,8 +740,46 @@ class Proc (Hashable):
 
 		self.props.script = self.template('\n'.join(nlines), **self.tplenvs)
 
+	def _saveSettings(self):
+		"""
+		Save all settings in proc.settings, mostly for debug
+		"""
+		settingsfile = path.join(self.workdir, 'proc.settings.yaml')
+
+		props           = self.props.copy()
+		props.lock      = None
+		props.template  = props.template.__name__
+		props.expect    = str(props.expect)
+		props.expart    = [str(ep) for ep in props.expart]
+		props.depends   = [repr(p) for p in self.depends]
+		props.script    = str(props.script)
+		props.procvars  = {}
+		props.output    = OrderedDict([(key, str(val)) for key, val in props.output.items()])
+		props.to_yaml(filename = settingsfile)
+
+		logger.debug('Settings saved to: %s', settingsfile, proc = self.id)
+
+	def _buildJobs(self):
+		"""
+		Build the jobs.
+		"""
+		self.props.channel = Channel.nones(self.size, 1)
+
+		if not self.input:
+			logger.warning('No data found for jobs, process will be skipped.', proc = self.id)
+			return
+
+		from . import PyPPL
+		if self.runner not in PyPPL.RUNNERS:
+			raise ProcAttributeError(
+				'No such runner: {}. '.format(self.runner) +
+				'If it is a profile, did you forget to specify a basic runner?')
+
+		for i in range(self.size):
+			self.jobs[i] = PyPPL.RUNNERS[self.runner](i, self)
+
 	# self.resume != 'skip'
-	def _tidyBeforeRun(self):
+	def _preRunTidy(self):
 		"""
 		Do some preparation before running jobs
 		"""
@@ -742,7 +802,7 @@ class Proc (Hashable):
 			raise
 
 	# self.resume != 'skip'
-	def _tidyAfterRun(self):
+	def _postRunTidy(self):
 		"""
 		Do some cleaning after running jobs
 		self.resume can only be:
@@ -811,16 +871,6 @@ class Proc (Hashable):
 				self.jobs[showjob].showError(len(failjobs))
 				sys.exit(1)
 
-	def name(self, procset = True):
-		"""
-		Get my name include `procset`, `id`, `tag`
-		@returns:
-			the name
-		"""
-		ret = '%s.%s' %(self.id, self.tag)
-		ret = ''.join(ret.split('.notag', 1))
-		return ret if procset else ret.split('@', 1)[0]
-
 	def run(self, profile = None, config = None):
 		"""
 		Run the jobs with a configuration
@@ -834,64 +884,27 @@ class Proc (Hashable):
 		if self.resume == 'skip':
 			logger.skipped("Pipeline will resume from future processes.")
 		elif self.resume == 'skip+':
-			self._tidyBeforeRun()
+			self._preRunTidy()
 			logger.skipped("Data loaded, pipeline will resume from future processes.")
 			try:
-				self._tidyAfterRun()
+				self._postRunTidy()
 			finally:
 				self.lock.release()
 				remove(path.join(self.workdir, 'proc.lock'))
 		else: # '', resume, resume+
-			self._tidyBeforeRun()
+			self._preRunTidy()
 			try:
 				self._runCmd('preCmd')
 				if self.resume: # resume or resume+
 					logger.resumed("Previous processes skipped.")
 				self._runJobs()
 				self._runCmd('postCmd')
-				self._tidyAfterRun()
+				self._postRunTidy()
 			finally:
 				self.lock.release()
 				# remove the lock file, so that I know this process has done
 				# or hasn't started yet, externally.
 				remove(path.join(self.workdir, 'proc.lock'))
-
-	def _saveSettings(self):
-		"""
-		Save all settings in proc.settings, mostly for debug
-		"""
-		settingsfile = path.join(self.workdir, 'proc.settings.yaml')
-
-		props           = self.props.copy()
-		props.lock      = None
-		props.template  = props.template.__name__
-		props.expect    = str(props.expect)
-		props.expart    = [str(ep) for ep in props.expart]
-		props.depends   = [repr(p) for p in self.depends]
-		props.script    = str(props.script)
-		props.procvars  = {}
-		props.output    = OrderedDict([(key, str(val)) for key, val in props.output.items()])
-		props.to_yaml(filename = settingsfile)
-
-		logger.debug('Settings saved to: %s', settingsfile, proc = self.id)
-
-	def _buildJobs(self):
-		"""
-		Build the jobs.
-		"""
-		self.props.channel = Channel.create([None] * self.size)
-		if self.size == 0:
-			logger.warning('No data found for jobs, process will be skipped.', proc = self.id)
-			return
-
-		from . import PyPPL
-		if self.runner not in PyPPL.RUNNERS:
-			raise ProcAttributeError(
-				'No such runner: {}. '.format(self.runner) +
-				'If it is a profile, did you forget to specify a basic runner?')
-
-		for i in range(self.size):
-			self.jobs[i] = PyPPL.RUNNERS[self.runner](i, self)
 
 	def _readConfig(self, profile, config):
 		"""

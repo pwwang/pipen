@@ -17,15 +17,6 @@ class RunnerLocal (Job):
 		`job`:    The job object
 		`config`: The properties of the process
 	"""
-
-	def __init__ (self, index, proc):
-		super(RunnerLocal, self).__init__(index, proc)
-
-		conf = proc.config.get('localRunner', {})
-
-		self.scripts.pre_script  = conf.get('preScript')
-		self.scripts.post_script = conf.get('postScript')
-
 	def killImpl(self):
 		"""
 		Try to kill the running jobs if I am exiting
