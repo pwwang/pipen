@@ -944,11 +944,8 @@ class Proc (Hashable):
 				self.callback(self)
 			# there are jobs failed
 			if len(donejobs) < self.size:
-				if self.errhow == 'ignore':
-					logger.warning('Jobs failed but ignored.', proc = self.id)
-					self.jobs[showjob].showError(len(failjobs))
-				else:
-					self.jobs[showjob].showError(len(failjobs))
+				self.jobs[showjob].showError(len(failjobs))
+				if self.errhow != 'ignore':
 					sys.exit(1)
 
 	def run(self, profile = None, config = None):

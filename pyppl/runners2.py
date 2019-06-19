@@ -10,7 +10,7 @@ from .job2 import Job
 from .utils import killtree, chmodX, cmdy, Box
 from .exceptions import RunnerSshError
 
-class RunnerLocal (Job):
+class RunnerLocal(Job):
 	"""
 	Constructor
 	@params:
