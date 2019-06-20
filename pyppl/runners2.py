@@ -6,7 +6,7 @@ import sys
 from os import getcwd
 from multiprocessing import Lock
 from psutil import pid_exists
-from .job2 import Job, FILE_SCRIPT, FILE_STDOUT, FILE_STDERR, DIR_OUTPUT, RC_ERROR_SUBMISSION
+from .job2 import Job, FILE_STDOUT, FILE_STDERR, DIR_OUTPUT, RC_ERROR_SUBMISSION
 from .utils import killtree, chmodX, cmdy, Box
 from .exceptions import RunnerSshError
 
@@ -72,7 +72,7 @@ class RunnerDry(RunnerLocal):
 		parts.saveoe  = False
 		return parts
 
-class RunnerSsh(Job):
+class RunnerSsh(RunnerLocal):
 	"""
 	The ssh runner
 	"""
@@ -117,14 +117,14 @@ class RunnerSsh(Job):
 			if RunnerSsh.LIVE_SERVERS is None:
 				if check_alive is True:
 					RunnerSsh.LIVE_SERVERS = [i for i, server in enumerate(servers)
-						if RunnerSsh.isServerAlive(server, keys[i] if keys else None, ssh = ssh)]
+						if RunnerSsh.isServerAlive(server, keys and keys[i], ssh = ssh)]
 				elif check_alive is False:
 					RunnerSsh.LIVE_SERVERS = list(range(len(servers)))
 				else:
 					RunnerSsh.LIVE_SERVERS = [
 						i for i, server in enumerate(servers)
 						if RunnerSsh.isServerAlive(
-							server, keys[i] if keys else None, check_alive, ssh = ssh)]
+							server, keys and keys[i], timeout = check_alive, ssh = ssh)]
 
 		if not RunnerSsh.LIVE_SERVERS:
 			raise RunnerSshError('No server is alive.')
@@ -181,7 +181,7 @@ class RunnerSsh(Job):
 		@returns:
 			`True` if it is else `False`
 		"""
-		if not self.pid:
+		if self.pid < 0:
 			return False
 
 		cmd = cmdy.python(
@@ -228,9 +228,10 @@ class RunnerSge (Job):
 				continue
 			if key in ('sge.o', 'sge.e', 'sge.cwd'):
 				raise ValueError('-o, -e and -cwd are not allowed to be configured.')
+			val = self.config[key]
 			key = key[4:]
 			# {'notify': True} ==> -notify
-			src = key if conf[key] is True else key + ' ' + str(conf[key])
+			src = key if val is True else key + ' ' + str(val)
 			parts.header += '#$ -%s\n' % src
 
 		parts.saveoe = False
@@ -306,9 +307,10 @@ class RunnerSlurm (Job):
 				continue
 			if key in ('slurm.o', 'slurm.e'):
 				raise ValueError('-o and -e are not allowed to be configured.')
+			val = self.config[key]
 			key = key[6:]
 			# {'notify': True} ==> -notify
-			src = key if conf[key] is True else key + ' ' + str(conf[key])
+			src = key if val is True else key + ' ' + str(val)
 			parts.header += '#$SBATCH -%s\n' % src
 
 		parts.saveoe  = False

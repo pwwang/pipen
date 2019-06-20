@@ -1,22 +1,18 @@
 #!/usr/bin/env python
 
 import sys
-from os import path
+from pathlib import Path
+from importlib.util import spec_from_loader, module_from_spec
+from importlib.machinery import SourceFileLoader
+from pyparam import params
+from box import Box
 
-# qdel -j jobid
-job = sys.argv[2]
+spec = spec_from_loader("qsub", SourceFileLoader("qsub", str(Path(__file__).parent.resolve() / 'qsub')))
+qsub = module_from_spec(spec)
+spec.loader.exec_module(qsub)
 
-piddb = path.join(path.dirname(__file__), 'qsub.queue.txt')
-if not path.isfile(piddb):
-	pids = []
-else:
-	with open(piddb) as f:
-		pids = [line.strip() for line in f]
+params.force.desc = 'The job id'
+params.force.type = str
+opts = params._parse(dict_wrapper = Box)
 
-if job in pids:
-	del pids[pids.index(job)]
-
-with open(piddb, 'w') as f:
-	f.write('\n'.join(pids))
-
-sys.stdout.write('Your job %s ("job.name") has been deleted' % job)
+qsub.SgeJob().kill(opts.force)
