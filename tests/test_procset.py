@@ -211,7 +211,6 @@ def test_procset_module(ps3_copy_depends):
 		pass
 
 	with pytest.raises(TypeError):
-		print(ps3_copy_depends.modules)
 		ps3_copy_depends.modules.mod()
 
 	@ps3_copy_depends.module('reset')

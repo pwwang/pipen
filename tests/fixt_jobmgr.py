@@ -39,6 +39,7 @@ class Proc(dict):
 
 # Mock job
 class Job(object):
+	POLL_INTERVAL = 1
 	def __init__(self, index, proc):
 		self.index      = index
 		self.proc       = proc

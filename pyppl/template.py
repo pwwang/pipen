@@ -1,8 +1,6 @@
 """
 Template adaptor for PyPPL
 """
-from __future__ import unicode_literals
-
 import json
 import inspect
 from os import path, readlink

@@ -18,6 +18,7 @@ include = "pyppl/*.py"
 [tool.poetry.dependencies]
 python = "^3.5"
 python-box = "^3.4.1"
+liquidpy = "^0.0.7"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
