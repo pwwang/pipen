@@ -340,7 +340,8 @@ class Jobmgr(object):
 				job.triggerStartPoll()
 				job.triggerPoll(batch = batch)
 			elif job.state == STATES.RUNNING:
-				sleep(1) # have to be longer than ThreadPool.join's interval
+				# have to be longer than ThreadPool.join's interval
+				sleep(job.__class__.POLL_INTERVAL)
 				job.triggerPoll(batch = batch)
 			#else: # endfailed but ignored, after retry
 			#	pass

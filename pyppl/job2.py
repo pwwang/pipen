@@ -36,6 +36,8 @@ RCMSG_NO_RCFILE        = 'Rcfile not generated'
 class Job(object):
 	"""Describes a job, also as a base class for runner"""
 
+	POLL_INTERVAL = 1
+
 	def __init__(self, index, proc):
 		"""
 		Initiate a job
@@ -85,7 +87,7 @@ class Job(object):
 			pre     = self.config.get('preScript', ''),
 			post    = self.config.get('postScript', ''),
 			saveoe  = True,
-			command = [cmdy._shquote(x) for x in chmodX(str(self.dir / 'job.script'))])
+			command = [cmdy._shquote(x) for x in chmodX(self.dir / 'job.script')])
 
 	@property
 	def data(self):
@@ -161,8 +163,7 @@ class Job(object):
 		addsrc(script_parts.post)
 		addsrc('#')
 
-		with self.script.open('w') as fscript:
-			fscript.write('\n'.join(src))
+		self.script.write_text('\n'.join(src))
 
 	def showError(self, totalfailed):
 		"""Show the error message if the job failed."""

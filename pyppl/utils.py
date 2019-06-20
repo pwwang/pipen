@@ -320,32 +320,25 @@ def chmodX(filepath):
 	"""
 	from stat import S_IEXEC
 	from os import chmod, stat
+	filepath = str(filepath)
 	if not path.isfile(filepath):
 		raise OSError('Unable to make {} as executable'.format(filepath))
-
-	try:
-		# pylint: disable=invalid-name
-		ChmodError = (OSError, PermissionError, UnicodeDecodeError)
-	except NameError: # pragma: no cover
-		# pylint: disable=invalid-name
-		ChmodError = OSError
-
+	# in case it's a Path-like object
 	ret = [filepath]
 	try:
 		chmod(filepath, stat(filepath).st_mode | S_IEXEC)
-	except ChmodError:
+	except (OSError, PermissionError):
 		shebang = None
 		with open(filepath) as fsb:
 			try:
 				shebang = fsb.readline().strip()
-			except ChmodError: # pragma: no cover
+			except (OSError, PermissionError, UnicodeDecodeError):
 				# may raise UnicodeDecodeError for python3
 				pass
 
 		if not shebang or not shebang.startswith('#!'):
-			raise OSError(
-				('Unable to make {} as executable by chmod ' +
-				'and detect interpreter from shebang.').format(filepath))
+			raise OSError('Unable to make {} as executable by chmod '
+				'and detect interpreter from shebang.'.format(filepath))
 		ret = shebang[2:].strip().split() + [filepath]
 	return ret
 

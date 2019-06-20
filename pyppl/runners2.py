@@ -6,23 +6,29 @@ import sys
 from os import getcwd
 from multiprocessing import Lock
 from psutil import pid_exists
-from .job2 import Job
+from .job2 import Job, FILE_SCRIPT, FILE_STDOUT, FILE_STDERR, DIR_OUTPUT, RC_ERROR_SUBMISSION
 from .utils import killtree, chmodX, cmdy, Box
 from .exceptions import RunnerSshError
 
 class RunnerLocal(Job):
 	"""
-	Constructor
-	@params:
-		`job`:    The job object
-		`config`: The properties of the process
+	Local runer
 	"""
+	@property
+	def pid(self):
+		ret = super().pid or -1
+		return int(ret)
+
+	@pid.setter
+	def pid(self, val):
+		super(RunnerLocal, type(self)).pid.fset(self, val)
+
 	def killImpl(self):
 		"""
 		Try to kill the running jobs if I am exiting
 		"""
-		if self.pid:
-			killtree(int(self.pid), killme = True)
+		if self.pid > 0:
+			killtree(self.pid, killme = True)
 
 	def submitImpl(self):
 		"""
@@ -39,37 +45,32 @@ class RunnerLocal(Job):
 		@returns:
 			`True` if yes, otherwise `False`
 		"""
-		if not self.pid:
+		if self.pid < 0:
 			return False
-		return pid_exists(int(self.pid))
+		return pid_exists(self.pid)
 
-class RunnerDry (Job):
+class RunnerDry(RunnerLocal):
 	"""
 	The dry runner
 	"""
+	@property
+	def scriptParts(self):
+		parts  = super().scriptParts
+		procclass = self.proc.__class__
 
-	def __init__ (self, job):
-		"""
-		Constructor
-		@params:
-			`job`:    The job object
-		"""
-		super(RunnerDry, self).__init__(job)
-		from .proc import Proc
+		parts.pre += '\n'
+		parts.pre += '# Dry-run script to create empty output files and directories.\n'
+		parts.pre += '\n'
 
-		real_script = []
-
-		for val in job.output.values():
-			if val['type'] in Proc.OUT_VARTYPE:
-				continue
-
-			if val['type'] in Proc.OUT_FILETYPE:
-				real_script.append("touch %s" % cmdy._shquote(val['data']))
-			elif val['type'] in Proc.OUT_DIRTYPE:
-				real_script.append("mkdir -p %s" % cmdy._shquote(val['data']))
-
-		self.wrapScript(real_script = real_script)
-
+		for vtype, value in self.output.values():
+			if vtype in procclass.OUT_FILETYPE:
+				parts.pre += "touch %s\n" % cmdy._shquote(str(self.dir / DIR_OUTPUT / value))
+			elif vtype in procclass.OUT_DIRTYPE:
+				parts.pre += "mkdir -p %s\n" % cmdy._shquote(str(self.dir / DIR_OUTPUT / value))
+		# don't run the real script
+		parts.command = ''
+		parts.saveoe  = False
+		return parts
 
 class RunnerSsh(Job):
 	"""
@@ -101,61 +102,47 @@ class RunnerSsh(Job):
 		except cmdy.CmdyTimeoutException:
 			return False
 
-	def __init__ (self, job):
-		"""
-		Constructor
-		@params:
-			`job`:    The job object
-		"""
+	def __init__ (self, index, proc):
 
-		super(RunnerSsh, self).__init__(job)
-		# construct an ssh cmd
+		super().__init__(index, proc)
 
-		conf       = self.job.config.get('runnerOpts', {}).get('sshRunner', {})
-
-		ssh         = conf.get('ssh', 'ssh')
-		servers     = conf.get('servers', [])
-		keys        = conf.get('keys', [])
-		check_alive = conf.get('checkAlive', False)
+		ssh         = self.config.get('ssh', 'ssh')
+		servers     = self.config.get('servers', [])
+		keys        = self.config.get('keys', [])
+		check_alive = self.config.get('checkAlive', False)
 		if not servers:
 			raise RunnerSshError('No server found for ssh runner.')
 
 		with RunnerSsh.LOCK:
 			if RunnerSsh.LIVE_SERVERS is None:
 				if check_alive is True:
-					RunnerSsh.LIVE_SERVERS = [
-						i for i, server in enumerate(servers)
-						if RunnerSsh.isServerAlive(server, keys[i] if keys else None, ssh = ssh)
-					]
+					RunnerSsh.LIVE_SERVERS = [i for i, server in enumerate(servers)
+						if RunnerSsh.isServerAlive(server, keys[i] if keys else None, ssh = ssh)]
 				elif check_alive is False:
 					RunnerSsh.LIVE_SERVERS = list(range(len(servers)))
 				else:
 					RunnerSsh.LIVE_SERVERS = [
 						i for i, server in enumerate(servers)
 						if RunnerSsh.isServerAlive(
-							server, keys[i] if keys else None, check_alive, ssh = ssh)
-					]
+							server, keys[i] if keys else None, check_alive, ssh = ssh)]
 
 		if not RunnerSsh.LIVE_SERVERS:
 			raise RunnerSshError('No server is alive.')
 
-		sid    = RunnerSsh.LIVE_SERVERS[job.index % len(RunnerSsh.LIVE_SERVERS)]
+		sid    = RunnerSsh.LIVE_SERVERS[self.index % len(RunnerSsh.LIVE_SERVERS)]
 		server = servers[sid]
 
-		head       = '# run on server: {}'.format(server)
-		pre_script  = conf.get('preScript')
-		real_script = [
-			'cd %s' % cmdy._shquote(getcwd()),
-			' '.join(cmdy._shquote(x) for x in chmodX(self.job.script))
-		]
-		post_script = conf.get('postScript')
-		self.wrapScript(head = head, pre_script = pre_script,
-			real_script = real_script, post_script = post_script)
+		self.ssh = RunnerSsh.SSH.bake(
+			t = server, i = keys[sid] if keys else False, _exe = ssh)
 
-		baked = dict(t = server, i = keys[sid] if keys else False, _exe = ssh)
-		self.ssh = RunnerSsh.SSH.bake(**baked)
+	@property
+	def scriptParts(self):
+		parts = super().scriptParts
+		parts.header  = '#\n# Running job on server: %s\n#' % self.ssh.keywords['t']
+		parts.pre    += '\ncd %s' % cmdy._shquote(getcwd())
+		return parts
 
-	def submit(self):
+	def submitImpl(self):
 		"""
 		Submit the job
 		@returns:
@@ -165,7 +152,7 @@ class RunnerSsh(Job):
 		cmd = self.ssh(_ = cmdy.ls(self.script, _hold = True).cmd)
 		if cmd.rc != 0:
 			dbox        = Box()
-			dbox.rc     = self.job.RC_SUBMITFAILED
+			dbox.rc     = RC_ERROR_SUBMISSION
 			dbox.cmd    = cmd.cmd
 			dbox.pid    = -1
 			dbox.stderr = cmd.stderr
@@ -173,34 +160,34 @@ class RunnerSsh(Job):
 			dbox.stderr += ' is not using the same file system as the local machine.\n'
 			return dbox
 
-		cmd = self.ssh(_bg = True, _ = self.runnercmd)
+		cmd = self.ssh(_bg = True, _ = chmodX(self.script))
 		cmd.rc = 0
-		self.job.pid = cmd.pid
+		self.pid = cmd.pid
 		return cmd
 
-	def kill(self):
+	def killImpl(self):
 		"""
 		Kill the job
 		"""
 		cmd = cmdy.python(
 			_exe = sys.executable,
-			c    = 'from pyppl.utils import killtree; killtree(%s, killme = True)' % self.job.pid,
+			c    = 'from pyppl.utils import killtree; killtree(%s, killme = True)' % self.pid,
 			_hold = True).cmd
 		self.ssh(_ = cmd)
 
-	def isRunning(self):
+	def isRunningImpl(self):
 		"""
 		Tell if the job is alive
 		@returns:
 			`True` if it is else `False`
 		"""
-		if not self.job.pid:
+		if not self.pid:
 			return False
 
 		cmd = cmdy.python(
 			_exe  = sys.executable,
 			c     = 'from psutil import pid_exists; ' + \
-				'assert {pid} > 0 and pid_exists({pid})'.format(pid = self.job.pid),
+				'assert {pid} > 0 and pid_exists({pid})'.format(pid = self.pid),
 			_hold = True).cmd
 		return self.ssh(_ = cmd).rc == 0
 
@@ -209,71 +196,47 @@ class RunnerSge (Job):
 	The sge runner
 	"""
 
-	INTERVAL = 5
+	POLL_INTERVAL = 5
 
-	def __init__ (self, job):
+	def __init__ (self, index, proc):
 		"""
 		Constructor
 		@params:
 			`job`:    The job object
 			`config`: The properties of the process
 		"""
-		super(RunnerSge, self).__init__(job)
+		super().__init__(index, proc)
 
-		conf = self.job.config.get('runnerOpts', {})
-		conf = conf.get('sgeRunner', {}).copy()
+		self.qsub  = cmdy.qsub.bake(_exe  = self.config.get('qsub'))
+		self.qstat = cmdy.qstat.bake(_exe = self.config.get('qstat'))
+		self.qdel  = cmdy.qdel.bake(_exe  = self.config.get('qdel'))
 
-		self.qsub  = cmdy.qsub.bake(_exe  = conf.get('qsub'))
-		self.qstat = cmdy.qstat.bake(_exe = conf.get('qstat'))
-		self.qdel  = cmdy.qdel.bake(_exe  = conf.get('qdel'))
+	@property
+	def scriptParts(self):
+		parts = super().scriptParts
 
-		head = []
-		sge_bign = conf.pop('sge.N', '.'.join([
-			self.job.config['proc'],
-			self.job.config['tag'],
-			self.job.config['suffix'],
-			str(self.job.index + 1)
-		]))
-		head.append('#$ -N %s' % sge_bign)
+		sge_n = self.config.get('sge.N', '%s.%s.%s.%s' % (
+			self.proc.id, self.proc.tag, self.proc.suffix, self.index + 1))
+		parts.header += '#$ -N %s\n' % self.proc.template(
+			sge_n, **self.proc.envs).render(self.data)
+		parts.header += '#$ -cwd\n'
+		parts.header += '#$ -o %s\n' % (self.dir / FILE_STDOUT)
+		parts.header += '#$ -e %s\n' % (self.dir / FILE_STDERR)
 
-		sge_q = conf.pop('sge.q', None)
-		if sge_q:
-			head.append('#$ -q %s' % sge_q)
-
-		sge_j = conf.pop('sge.j', None)
-		if sge_j:
-			head.append('#$ -j %s' % sge_j)
-
-		head.append('#$ -cwd')
-
-		sge_bigm = conf.pop('sge.M', None)
-		if sge_bigm:
-			head.append('#$ -M %s' % sge_bigm)
-
-		sge_m = conf.pop('sge.m', None)
-		if sge_m:
-			head.append('#$ -m %s' % sge_m)
-
-		head.append('#$ -o %s' % self.job.outfile)
-		head.append('#$ -e %s' % self.job.errfile)
-
-		for k in sorted(conf.keys()):
-			if not k.startswith ('sge.'):
+		for key in sorted(self.config):
+			if not key.startswith ('sge.') or key == 'sge.N':
 				continue
-			val = conf[k]
-			k = k[4:].strip()
-			src = '#$ -' + k
-			if val is not True: # {'notify': True} ==> -notify
-				src += ' ' + str(val)
-			head.append(src)
+			if key in ('sge.o', 'sge.e', 'sge.cwd'):
+				raise ValueError('-o, -e and -cwd are not allowed to be configured.')
+			key = key[4:]
+			# {'notify': True} ==> -notify
+			src = key if conf[key] is True else key + ' ' + str(conf[key])
+			parts.header += '#$ -%s\n' % src
 
-		pre_script = conf.get('preScript')
-		post_script = conf.get('postScript')
+		parts.saveoe = False
+		return parts
 
-		self.wrapScript(head = head, pre_script = pre_script,
-			post_script = post_script, save_oe = False)
-
-	def submit(self):
+	def submitImpl(self):
 		"""
 		Submit the job
 		@returns:
@@ -285,26 +248,26 @@ class RunnerSge (Job):
 			# Your job 6556149 ("pSort.notag.3omQ6NdZ.0") has been submitted
 			match = re.search(r'\s(\d+)\s', cmd.stdout.strip())
 			if not match:
-				cmd.rc = self.job.RC_SUBMITFAILED
+				cmd.rc = RC_ERROR_SUBMISSION
 			else:
-				self.job.pid = match.group(1)
+				self.pid = match.group(1)
 		return cmd
 
-	def kill(self):
+	def killImpl(self):
 		"""
 		Kill the job
 		"""
-		self.qdel(force = self.job.pid)
+		self.qdel(force = self.pid)
 
-	def isRunning(self):
+	def isRunningImpl(self):
 		"""
 		Tell if the job is alive
 		@returns:
 			`True` if it is else `False`
 		"""
-		if not self.job.pid:
+		if not self.pid:
 			return False
-		return self.qstat(j = self.job.pid).rc == 0
+		return self.qstat(j = self.pid).rc == 0
 
 class RunnerSlurm (Job):
 	"""
@@ -313,52 +276,47 @@ class RunnerSlurm (Job):
 
 	INTERVAL = 5
 
-	def __init__ (self, job):
+	def __init__ (self, index, proc):
 		"""
 		Constructor
 		@params:
 			`job`:    The job object
 			`config`: The properties of the process
 		"""
-		super(RunnerSlurm, self).__init__(job)
+		super(RunnerSlurm, self).__init__(index, proc)
 
-		conf = self.job.config.get('runnerOpts', {})
-		conf = conf.get('slurmRunner', {}).copy()
+		self.sbatch  = cmdy.sbatch.bake(_exe = self.config.get('sbatch'))
+		self.srun    = cmdy.srun.bake(_exe = self.config.get('srun'))
+		self.squeue  = cmdy.squeue.bake(_exe = self.config.get('squeue'))
+		self.scancel = cmdy.scancel.bake(_exe = self.config.get('scancel'))
 
-		self.sbatch  = cmdy.sbatch.bake(_exe = conf.get('sbatch'))
-		self.srun    = cmdy.srun.bake(_exe = conf.get('srun'))
-		self.squeue  = cmdy.squeue.bake(_exe = conf.get('squeue'))
-		self.scancel = cmdy.scancel.bake(_exe = conf.get('scancel'))
+	@property
+	def scriptParts(self):
+		parts = super().scriptParts
 
-		head = []
-		slurm_bigj = conf.pop('slurm.J', '.'.join([
-			self.job.config['proc'],
-			self.job.config['tag'],
-			self.job.config['suffix'],
-			str(self.job.index + 1)
-		]))
-		head.append('#SBATCH -J %s' % slurm_bigj)
-		head.append('#SBATCH -o %s' % self.job.outfile)
-		head.append('#SBATCH -e %s' % self.job.errfile)
+		slurm_j = self.config.get('slurm.J', '%s.%s.%s.%s' % (
+			self.proc.id, self.proc.tag, self.proc.suffix, self.index + 1))
+		parts.header += '#SBATCH -J %s\n' % self.proc.template(
+			slurm_j, **self.proc.envs).render(self.data)
+		parts.header += '#$SBATCH -o %s\n' % (self.dir / FILE_STDOUT)
+		parts.header += '#$SBATCH -e %s\n' % (self.dir / FILE_STDERR)
 
-		for k in sorted(conf.keys()):
-			if not k.startswith ('slurm.'):
+		for key in sorted(self.config):
+			if not key.startswith ('slurm.') or key == 'slurm.J':
 				continue
-			val = conf[k]
-			k = k[6:].strip()
-			src = '#SBATCH -' + (k if len(k)==1 else '-' + k)
-			if val is not True: # {'notify': True} ==> -notify
-				src += ' ' + str(val)
-			head.append(src)
+			if key in ('slurm.o', 'slurm.e'):
+				raise ValueError('-o and -e are not allowed to be configured.')
+			key = key[6:]
+			# {'notify': True} ==> -notify
+			src = key if conf[key] is True else key + ' ' + str(conf[key])
+			parts.header += '#$SBATCH -%s\n' % src
 
-		real_script = self.srun(*chmodX(self.job.script), _hold = True).cmd
-		pre_script  = conf.get('preScript')
-		post_script = conf.get('postScript')
+		parts.saveoe  = False
+		parts.command = self.srun(*parts.command, _hold = True).cmd
 
-		self.wrapScript(head = head, pre_script = pre_script, real_script = real_script,
-			post_script = post_script, save_oe = False)
+		return parts
 
-	def submit(self):
+	def submitImpl(self):
 		"""
 		Submit the job
 		@returns:
@@ -372,21 +330,21 @@ class RunnerSlurm (Job):
 			if not match:
 				cmd.rc = 1
 			else:
-				self.job.pid = match.group(1)
+				self.pid = match.group(1)
 		return cmd
 
-	def kill(self):
+	def killImpl(self):
 		"""
 		Kill the job
 		"""
-		self.scancel(self.job.pid)
+		self.scancel(self.pid)
 
-	def isRunning(self):
+	def isRunningImpl(self):
 		"""
 		Tell if the job is alive
 		@returns:
 			`True` if it is else `False`
 		"""
-		if not self.job.pid:
+		if not self.pid:
 			return False
-		return self.squeue(j = self.job.pid).rc == 0
+		return self.squeue(j = self.pid).rc == 0

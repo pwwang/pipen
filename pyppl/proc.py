@@ -873,7 +873,7 @@ class Proc (Hashable):
 		Jobmgr(self.jobs).start()
 
 		self.props.channel = Channel.create([
-			tuple(value[1] for value in job.output.values())
+			tuple(value for _, value in job.output.values())
 			for job in self.jobs
 		])
 		if self.jobs:

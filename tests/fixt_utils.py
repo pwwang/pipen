@@ -103,26 +103,33 @@ def fixt_killtree(request):
 	'success',
 	'failed_to_chmod',
 	'from_shebang',
+	'unierr_shebang'
 ])
 def fixt_chmodx(request, tmp_path):
 	if request.param == 'not_a_file':
-		file = tmp_path / 'chmodxtest_not_a_file'
-		file.mkdir()
-		return Box(file = file, expt = OSError)
+		xfile = tmp_path / 'chmodxtest_not_a_file'
+		xfile.mkdir()
+		return Box(file = xfile, expt = OSError)
 	elif request.param == 'success':
-		file = tmp_path / 'chmodxtest_success'
-		file.write_text('')
-		return Box(file = file, expt = [file])
+		xfile = tmp_path / 'chmodxtest_success'
+		xfile.write_text('')
+		return Box(file = xfile, expt = [str(xfile)])
 	elif getuid() == 0:
 		pytest.skip('I am root, I cannot fail chmod and read from shebang')
 	elif request.param == 'failed_to_chmod':
-		file = '/etc/passwd'
-		return Box(file = file, expt = OSError)
+		xfile = '/etc/passwd'
+		return Box(file = xfile, expt = OSError)
 	elif request.param == 'from_shebang':
 		if not path.isfile('/bin/zcat'):
 			pytest.skip('/bin/zcat not exists.')
 		else:
 			return Box(file = '/bin/zcat', expt = ['/bin/sh', '/bin/zcat'])
+	elif request.param == 'unierr_shebang':
+		xfile = '/bin/bash'
+		if not path.isfile('/bin/bash'):
+			pytest.skip('/bin/bash not exists.')
+		else:
+			return Box(file = xfile, expt = OSError) # UnicodeDecodeError
 
 @pytest.fixture(params = [
 	'',
