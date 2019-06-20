@@ -155,8 +155,8 @@ def test_ssh_init_checktimeout(proc, ssh):
 	proc.sshRunner = Box(
 		ssh = ssh,
 		servers = ['server1', 'server2', 'server3', 'server4'],
-		keys = ['server1', 'server2', 'server3+.8', 'wrongkey'],
-		checkAlive = .5)
+		keys = ['server1', 'server2', 'server3+1.5', 'wrongkey'],
+		checkAlive = 1)
 	r = RunnerSsh(0, proc)
 	assert RunnerSsh.LIVE_SERVERS == [0,1]
 	assert r.ssh.keywords['t'] == 'server1'
@@ -240,5 +240,55 @@ def test_sge_impl(proc, sge):
 
 	# fail
 	r.script.write_text('#!/usr/bin/env bash\n# ShouldFail\n#$ -N Jobname1\nsleep 3')
+	cmd = r.submitImpl()
+	assert cmd.rc == RC_ERROR_SUBMISSION
+
+def test_slurm_init(proc, slurm):
+	proc.slurmRunner = slurm.copy()
+	proc.slurmRunner.preScript = 'ls'
+	# need a number, just testing the boolean options
+	proc.slurmRunner['slurm.ntasks'] = True
+	proc.slurmRunner['slurm.x'] = 1
+	proc.slurmRunner['srun.opts'] = '-n8 --mpi=pmix_v1'
+	proc.slurmRunner['slurm.J'] = 'Jobname{{job.index}}'
+	proc.props.template = TemplateLiquid
+	r = RunnerSlurm(0, proc)
+	r.dir.mkdir()
+	(r.dir / 'job.script').write_text('#!/usr/bin/env bash')
+	parts = r.scriptParts
+	assert parts.saveoe == False
+	assert parts.header == '''#SBATCH -J Jobname0
+#SBATCH -o {jobdir}/job.stdout
+#SBATCH -e {jobdir}/job.stderr
+#SBATCH --ntasks
+#SBATCH -x 1
+'''.format(jobdir = r.dir)
+	assert parts.pre == 'ls'
+	assert parts.post == ''
+	assert parts.command == '%s -n8 --mpi=pmix_v1 %s' % (slurm.srun, (r.dir / 'job.script'))
+
+def test_slurm_init_error(proc, slurm):
+	proc.slurmRunner = slurm.copy()
+	proc.slurmRunner['slurm.o'] = '/path/to/stdout'
+	proc.props.template = TemplateLiquid
+	r = RunnerSlurm(0, proc)
+	r.dir.mkdir()
+	(r.dir / 'job.script').write_text('#!/usr/bin/env bash')
+	with pytest.raises(ValueError):
+		r.scriptParts
+
+def test_slurm_impl(proc, slurm):
+	proc.slurmRunner = slurm.copy()
+	r = RunnerSlurm(0, proc)
+	assert not r.isRunningImpl()
+	r.dir.mkdir()
+	r.script.write_text('#!/usr/bin/env bash\n#SBATCH -J Jobname1\nsleep 3')
+	r.submitImpl()
+	assert r.isRunningImpl()
+	r.killImpl()
+	assert not r.isRunningImpl()
+
+	# fail
+	r.script.write_text('#!/usr/bin/env bash\n# ShouldFail\n#SBATCH -J Jobname1\nsleep 3')
 	cmd = r.submitImpl()
 	assert cmd.rc == RC_ERROR_SUBMISSION

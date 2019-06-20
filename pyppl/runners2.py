@@ -295,26 +295,33 @@ class RunnerSlurm (Job):
 	def scriptParts(self):
 		parts = super().scriptParts
 
-		slurm_j = self.config.get('slurm.J', '%s.%s.%s.%s' % (
-			self.proc.id, self.proc.tag, self.proc.suffix, self.index + 1))
+		slurm_j = self.config.get('slurm.J')
+		slurm_j = slurm_j or self.config.get('slurm.job-name')
+		slurm_j = slurm_j or '%s.%s.%s.%s' % (
+			self.proc.id, self.proc.tag, self.proc.suffix, self.index + 1)
 		parts.header += '#SBATCH -J %s\n' % self.proc.template(
 			slurm_j, **self.proc.envs).render(self.data)
-		parts.header += '#$SBATCH -o %s\n' % (self.dir / FILE_STDOUT)
-		parts.header += '#$SBATCH -e %s\n' % (self.dir / FILE_STDERR)
+		parts.header += '#SBATCH -o %s\n' % (self.dir / FILE_STDOUT)
+		parts.header += '#SBATCH -e %s\n' % (self.dir / FILE_STDERR)
 
 		for key in sorted(self.config):
-			if not key.startswith ('slurm.') or key == 'slurm.J':
+			if not key.startswith ('slurm.') or key in ('slurm.J', 'slurm.job-name'):
 				continue
 			if key in ('slurm.o', 'slurm.e'):
 				raise ValueError('-o and -e are not allowed to be configured.')
 			val = self.config[key]
 			key = key[6:]
 			# {'notify': True} ==> -notify
-			src = key if val is True else key + ' ' + str(val)
-			parts.header += '#$SBATCH -%s\n' % src
+			if len(key) == 1:
+				src = '-' + key if val is True else '-' + key + ' ' + str(val)
+			else:
+				src = '--' + key if val is True else '--' + key + '=' + str(val)
+			parts.header += '#SBATCH %s\n' % src
 
 		parts.saveoe  = False
-		parts.command = self.srun(*parts.command, _hold = True).cmd
+		srunopts = self.config.get('srun.opts', '').split()
+		srunopts.extend(parts.command)
+		parts.command = self.srun(*srunopts, _hold = True).cmd
 
 		return parts
 
@@ -330,7 +337,7 @@ class RunnerSlurm (Job):
 			# Submitted batch job 1823334668
 			match = re.search(r'\s(\d+)$', cmd.stdout.strip())
 			if not match:
-				cmd.rc = 1
+				cmd.rc = RC_ERROR_SUBMISSION
 			else:
 				self.pid = match.group(1)
 		return cmd

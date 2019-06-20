@@ -1,24 +1,84 @@
 #!/usr/bin/env python
 
-import sys, hashlib, subprocess
-from os import path
+import sys
+import cmdy
+from pyppl.utils import killtree
+from hashlib import md5
+from pathlib import Path
+from box import Box
+from pyparam import params
 
-cmd = sys.argv[1]
-fakepid = str(int(hashlib.md5(cmd.encode()).hexdigest()[:8], 16))
+DATABASE = Path(__file__).resolve().parent / 'slurm.jobs.log'
 
-piddb = path.join(path.dirname(__file__), 'sbatch.queue.txt')
-if not path.isfile(piddb):
-	pids = []
-else:
-	with open(piddb) as f:
-		pids = [line.strip() for line in f]
+class SlurmJob:
 
-pids.append(fakepid)
-with open(piddb, 'w') as f:
-	f.write('\n'.join(pids))
+	def __init__(self, script = ''):
+		if not DATABASE.exists():
+			DATABASE.write_text('')
+		self.job        = SlurmJob._jobNameFromSlurmScript(script)
+		self.shouldfail = SlurmJob._shouldFail(script)
+		md5job          = md5(self.job.encode()).hexdigest()
+		self.jobid      = str(int(md5job, 16))
+		self.script     = script
 
-sys.stdout.write('Submitted batch job %s' % fakepid)
-	
-subprocess.Popen(['bash', cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	@property
+	def jobs(self):
+		return [tuple(line.split(',')) for line in DATABASE.read_text().splitlines()]
 
+	@jobs.setter
+	def jobs(self, jobids):
+		DATABASE.write_text('\n'.join(','.join(jid) for jid in jobids))
 
+	@staticmethod
+	def _shouldFail(script):
+		if not script:
+			return False
+		with open(script) as fscript:
+			for line in fscript:
+				if line.startswith('# ShouldFail'):
+					return True
+		return False
+
+	@staticmethod
+	def _jobNameFromSlurmScript(script):
+		if not script:
+			return ''
+		with open(script) as fscript:
+			for line in fscript:
+				if line.startswith('#SBATCH -J'):
+					return line[5:].strip()
+				if line.startswith('#SBATCH --job-name='):
+					return line[19:].strip()
+
+	def submit(self):
+		if self.shouldfail:
+			return
+		sys.stdout.write("Submitted batch job %s" % (self.jobid))
+		c = cmdy.bash(self.script, _bg = True)
+		if not self.isRunning():
+			self.jobs = self.jobs + [(self.jobid, str(c.pid))]
+
+	def isRunning(self, jobid = None):
+		jobid = jobid or self.jobid
+		return any(jobid == jid for jid, _ in self.jobs)
+
+	def kill(self, jobid = None):
+		jobid = jobid or self.jobid
+		jobs = []
+		for jid, pid in self.jobs:
+			if jid == jobid:
+				pid = int(pid)
+				if pid > 0:
+					sys.stdout.write('Job %s (%s) is killed.' % (jobid, pid))
+					try:
+						killtree(pid)
+					except:
+						pass
+			else:
+				jobs.append((jid, pid))
+		self.jobs = jobs
+
+if __name__ == "__main__":
+	params._.desc = 'Job to submit'
+	opts = params._parse(dict_wrapper=Box)
+	SlurmJob(opts._).submit()
