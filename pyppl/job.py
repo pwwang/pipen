@@ -48,29 +48,18 @@ class Job(object):
 			`index`:  The index of the job.
 			`config`: The configurations of the job.
 		"""
-		self.index     = index
-		self.proc      = proc
-
-		self.dir       = (Path(self.proc.workdir) / str(index+1)).resolve()
-		# self.indir     = path.join(self.dir, "input")
-		# self.outdir    = path.join(self.dir, "output")
-		# self.script    = path.join(self.dir, "job.script")
-		# self.rcfile    = path.join(self.dir, "job.rc")
-		# self.outfile   = path.join(self.dir, "job.stdout")
-		# self.errfile   = path.join(self.dir, "job.stderr")
-		self.fout      = None
-		self.ferr      = None
-		self.lastout   = ''
-		self.lasterr   = ''
-		# self.cachefile = path.join(self.dir, "job.cache")
-		# self.cachedir  = path.join(self.outdir, '.jobcache')
-		# self.pidfile   = path.join(self.dir, "job.pid")
-		self.ntry      = 0
-		# key => (datatype, data)
-		self.input     = {}
-		# key => (datatype, data)
-		# need to pass this to next procs, so have to keep order
-		self.output    = OBox()
+		self.index   = index
+		self.proc    = proc
+		self.dir     = self.proc.workdir if isinstance(self.proc.workdir, Path) \
+			else Path(self.proc.workdir)
+		self.dir     = (self.dir / str(index+1)).resolve()
+		self.fout    = None
+		self.ferr    = None
+		self.lastout = ''
+		self.lasterr = ''
+		self.ntry    = 0
+		self.input   = {}
+		self.output  = OBox()
 
 		runner_name = self.__class__.__name__[6:].lower()
 		self.config = self.proc.config.get(runner_name + 'Runner', {})

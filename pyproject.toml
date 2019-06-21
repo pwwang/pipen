@@ -16,7 +16,7 @@ repository = "https://github.com/pwwang/PyPPL"
 include = "pyppl/*.py"
 
 [tool.poetry.dependencies]
-python = "^3.5"
+python = "^3.6"
 python-box = "^3.4.1"
 liquidpy = "^0.0.7"
 pyparam = "^0.1.6"
