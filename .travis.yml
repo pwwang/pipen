@@ -12,7 +12,7 @@ install:
   - poetry install -v
   - pip install tox-travis
   - pip install codacy-coverage
-  - sudo apt-get instal graphviz
+  - sudo apt-get install graphviz
 script:
   - pytest tests/
 after_success: |
