@@ -6,9 +6,9 @@ import sys
 from os import getcwd
 from multiprocessing import Lock
 from psutil import pid_exists
-from .job2 import Job, FILE_STDOUT, FILE_STDERR, DIR_OUTPUT, RC_ERROR_SUBMISSION
+from .job import Job, FILE_STDOUT, FILE_STDERR, DIR_OUTPUT, RC_ERROR_SUBMISSION
 from .utils import killtree, chmodX, cmdy, Box
-from .exceptions import RunnerSshError
+from .exception import RunnerSshError
 
 class RunnerLocal(Job):
 	"""

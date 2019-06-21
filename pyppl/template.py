@@ -3,6 +3,7 @@ Template adaptor for PyPPL
 """
 import json
 import inspect
+from .utils import Box, OBox
 from os import path, readlink
 from liquid import Liquid
 Liquid.MODE  = 'mixed'
@@ -155,7 +156,7 @@ class _TemplateFilter(object):
 		"""
 		if not isinstance(var, dict):
 			raise TypeError('Cannot coerce non-dict object to OrderedBox.')
-		return 'Box(%r, ordered_box = True)' % var.items()
+		return 'OBox(%r)' % var.items()
 
 class Template(object):
 	"""
@@ -163,6 +164,8 @@ class Template(object):
 	"""
 
 	DEFAULT_ENVS = {
+		'Box'      : Box,
+		'OBox'      : OBox,
 		'R'        : _TemplateFilter.R,
 		'Rvec'     : _TemplateFilter.R, # will be deprecated!
 		'Rlist'    : _TemplateFilter.Rlist,
@@ -172,6 +175,8 @@ class Template(object):
 		# /a/b/c[1].txt => c.txt
 		'basename' : _TemplateFilter.basename,
 		'bn'       : _TemplateFilter.basename,
+		'box'      : _TemplateFilter.box,
+		'obox'     : _TemplateFilter.obox,
 		'stem'     : _TemplateFilter.filename,
 		'filename' : _TemplateFilter.filename,
 		'fn'       : _TemplateFilter.filename,

@@ -2,9 +2,9 @@ import pytest
 
 from os import environ, utime
 environ['PYPPL_default__log'] = "py:{'levels': 'all'}"
-from pyppl.job2 import Job, JobInputParseError, JobOutputParseError, RC_NO_RCFILE
+from pyppl.job import Job, JobInputParseError, JobOutputParseError, RC_NO_RCFILE
 from pyppl.utils import fs, Box, OBox, filesig
-from pyppl.exceptions import RunnerClassNameError
+from pyppl.exception import RunnerClassNameError
 from pyppl.template import TemplateLiquid
 pytest_plugins = ["tests.fixt_job"]
 

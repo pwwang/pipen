@@ -1,5 +1,7 @@
 """The main module of PyPPL"""
 
+__version__ = '1.4.3'
+
 # give random tips in the log
 import random
 # access sys.argv
@@ -7,7 +9,7 @@ import sys
 # any2proc
 import fnmatch
 
-from os import path
+from pathlib import Path
 from time import time
 from multiprocessing import cpu_count
 
@@ -116,13 +118,12 @@ loadConfiguratiaons()
 from .logger import logger
 from .procset import ProcSet, Proxy
 from .proc import Proc
-from .job2 import Job
-from .jobmgr2 import Jobmgr
+from .job import Job
+from .jobmgr import Jobmgr
 from .channel import Channel
-from .parameters import params, Parameters, commands
 from .proctree import ProcTree
-from .exceptions import PyPPLProcRelationError
-from . import utils, runners2 as runners
+from .exception import PyPPLProcRelationError
+from . import utils, runner
 
 class PyPPL (object):
 	"""
@@ -163,45 +164,61 @@ class PyPPL (object):
 		PyPPL.COUNTER += 1
 
 		self.config = config.copy()
-		if cfgfile and path.isfile(cfgfile):
+		if cfgfile:
 			self.config._load(cfgfile)
-		if isinstance(conf, dict):
-			self.config.update(conf or {})
+		self.config.update(conf or {})
 
 		if self.config._log.file is True:
-			self.config._log.file = './%s%s.pyppl.log' % (
-				path.splitext(path.basename(sys.argv[0]))[0],
-				('_%s' % self.counter) if self.counter else ''
-			)
+			self.config._log.file = (Path('./') / Path(sys.argv[0]).stem).with_suffix(
+				'%s.pyppl.log' % ('.' + str(self.counter) if self.counter else ''))
+
 		# reinitiate logger according to new config
-		logger.init()
+		logger.init(self.config)
 		logger.pyppl('Version: %s', __version__)
 		logger.tips(random.choice(PyPPL.TIPS))
 
 		for cfile in DEFAULT_CFGFILES + (str(cfgfile), ):
 			if cfile.endswith('.osenv'):
-				logger.config('Read from environment variables with prefix: %s',
-					path.basename(cfile)[:-6])
-			cfile = path.expanduser(cfile)
-			if not path.isfile(cfile):
+				logger.config('Read from environment variables with prefix: "%s_"',
+					Path(cfile).name[:-6])
+			cfile = Path(cfile).expanduser()
+			if not utils.fs.isfile(cfile):
+				if cfile == cfgfile:
+					logger.warning('Configuration file does not exist: %s', cfile)
 				continue
-			if cfile.endswith('.yaml') or cfile.endswith('yml'):
+			elif cfile.suffix in ('.yaml', 'yml'):
 				try:
 					import yaml # pylint: disable=W0611
-					logger.config('Read from %s', cfile)
-				except ImportError:
+				except ImportError: # pragma: no cover
 					logger.warning('Module PyYAML not installed, config file ignored: %s', cfile)
-			elif cfile.endswith('.toml'):
+			elif cfile.suffix == '.toml':
 				try:
-
 					import toml # pylint: disable=W0611
-					logger.config('Read from %s', cfile)
-				except ImportError:
+				except ImportError: # pragma: no cover
 					logger.warning('Module toml not installed, config file ignored: %s', cfile)
-			else:
-				logger.config('Read from %s', cfile)
+			logger.config('Read from %s', cfile)
 
 		self.tree = ProcTree()
+
+	@staticmethod
+	def _procsSelector(selector):
+		ret = Proxy()
+		if isinstance(selector, Proc):
+			ret.add(selector)
+		elif isinstance(selector, ProcSet):
+			ret.add(selector.starts)
+		elif isinstance(selector, (tuple, list)):
+			for thing in selector:
+				ret.add(PyPPL._procsSelector(thing))
+		else:
+			for proc, node in ProcTree.NODES.items():
+				if selector == proc.id:
+					ret.add(proc)
+				elif selector == proc.id + '.' + proc.tag:
+					ret.add(proc)
+				elif fnmatch.fnmatch(proc.id + '.' + proc.tag, selector):
+					ret.add(proc)
+		return ret
 
 	def start (self, *args):
 		"""
@@ -211,7 +228,7 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
-		starts  = set(PyPPL._any2procs(args))
+		starts  = set(PyPPL._procsSelector(args))
 		nostart = set()
 		for start in starts:
 			paths = self.tree.getPaths(start)
@@ -235,7 +252,7 @@ class PyPPL (object):
 
 		sflag    = 'skip+' if kwargs.get('plus') else 'skip'
 		rflag    = 'resume+' if kwargs.get('plus') else 'resume'
-		resumes  = PyPPL._any2procs(args)
+		resumes  = PyPPL._procsSelector(args)
 
 		ends     = self.tree.getEnds()
 		#starts   = self.tree.getStarts()
@@ -383,11 +400,9 @@ class PyPPL (object):
 		"""
 		from .flowchart import Flowchart
 		self.showAllRoutes()
-		fcfile  = fcfile or './%s%s.pyppl.svg' % (
-			path.splitext(path.basename(sys.argv[0]))[0],
-			('_%s' % self.counter) if self.counter else ''
-		)
-		dotfile = dotfile or '%s.dot' % (path.splitext(fcfile)[0])
+		fcfile  = fcfile or (Path('.') / Path(sys.argv[0]).stem).with_suffix(
+			'%s.pyppl.svg' % ('.' + str(self.counter) if self.counter else ''))
+		dotfile = dotfile if dotfile else Path(fcfile).with_suffix('.dot')
 		fchart  = Flowchart(fcfile = fcfile, dotfile = dotfile)
 		fchart.setTheme(self.config._flowchart.theme)
 
@@ -410,27 +425,6 @@ class PyPPL (object):
 		logger.info ('DOT file saved to: %s', fchart.dotfile)
 		return self
 
-	@staticmethod
-	def _any2procs(anything):
-		ret = Proxy()
-		if not isinstance(anything, (tuple, list)):
-			if isinstance(anything, Proc):
-				ret.add(anything)
-			elif isinstance(anything, ProcSet):
-				ret.add(anything.starts)
-			else:
-				for node in ProcTree.NODES.values():
-					if anything == node.proc.id:
-						ret.add(node.proc)
-					elif anything == node.proc.id + '.' + node.proc.tag:
-						ret.add(node.proc)
-						break
-					elif fnmatch.fnmatch(anything, node.proc.id + '.' + node.proc.tag):
-						ret.add(node.proc)
-		else:
-			for thing in anything:
-				ret.add(PyPPL._any2procs(thing))
-		return ret
 
 	@staticmethod
 	def _registerProc(proc):
@@ -453,27 +447,27 @@ class PyPPL (object):
 		ProcTree.check(proc)
 
 	@staticmethod
-	def registerRunner(runner):
+	def registerRunner(runner_to_reg):
 		"""
 		Register a runner
 		@params:
 			`runner`: The runner to be registered.
 		"""
-		runner_name = runner.__name__
+		runner_name = runner_to_reg.__name__
 		if runner_name.startswith('Runner'):
 			runner_name = runner_name[6:].lower()
 
 		if not runner_name in PyPPL.RUNNERS:
-			PyPPL.RUNNERS[runner_name] = runner
+			PyPPL.RUNNERS[runner_name] = runner_to_reg
 
-def registerDefaultRunners():
+def _registerDefaultRunners():
 	"""
 	Register builtin runners
 	"""
-	for runnername in dir(runners):
-		if not runnername.startswith('Runner') or runnername in ['Runner', 'RunnerQueue']:
+	for runnername in dir(runner):
+		if not runnername.startswith('Runner'):
 			continue
-		runner = getattr(runners, runnername)
-		PyPPL.registerRunner(runner)
+		runner_to_reg = getattr(runner, runnername)
+		PyPPL.registerRunner(runner_to_reg)
 
-registerDefaultRunners()
+_registerDefaultRunners()

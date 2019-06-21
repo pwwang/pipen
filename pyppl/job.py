@@ -6,7 +6,7 @@ from datetime import datetime
 import cmdy
 from .utils import Box, OBox, chmodX, briefPath, filesig, fileflush, fs
 from .logger import logger as _logger
-from .exceptions import JobInputParseError, RunnerClassNameError, JobOutputParseError
+from .exception import JobInputParseError, RunnerClassNameError, JobOutputParseError
 
 # File names
 DIR_INPUT       = 'input'

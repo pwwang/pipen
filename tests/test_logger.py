@@ -198,6 +198,9 @@ def test_logger_init(tmpdir):
 	logger.init()
 	assert len(logger.logger.handlers) == 2
 
+	logger.init({'_log': {'file': False}})
+	assert len(logger.logger.handlers) == 1
+
 def test_logger_bake():
 	logger = Logger()
 	logger2 = logger.bake(a = 1, b = 2)

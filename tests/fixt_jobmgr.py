@@ -2,7 +2,7 @@ from copy import copy
 from time import sleep
 import pytest
 from pyppl import Proc as _Proc
-from pyppl.jobmgr2 import Jobmgr, STATES
+from pyppl.jobmgr import Jobmgr, STATES
 from pyppl.logger import logger
 from pyppl.utils import Box
 

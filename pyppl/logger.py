@@ -386,28 +386,35 @@ class Logger(object):
 		else:
 			self.init()
 
-	def init(self):
+	def init(self, conf = None):
 		"""
 		Initiate the logger, called by the construct,
 		Just in case, we want to change the config and
 		Reinitiate the logger.
 		"""
+		if not conf:
+			conf = config
+		else:
+			conf2 = config.copy()
+			conf2.update(conf)
+			conf = conf2
+
 		self.logger = logging.getLogger(self.name)
 		self.logger.setLevel(1)
 		for handler in self.logger.handlers:
 			handler.close()
 		del self.logger.handlers[:]
 
-		theme = Theme(config._log.theme)
-		levels = Logger.initLevels(config._log.levels, config._log.leveldiffs)
+		theme = Theme(conf._log.theme)
+		levels = Logger.initLevels(conf._log.levels, conf._log.leveldiffs)
 
 		stream_handler = StreamHandler()
 		stream_handler.addFilter(StreamFilter(self.name, levels))
 		stream_handler.setFormatter(StreamFormatter(theme))
 		self.logger.addHandler(stream_handler)
 
-		if config._log.file:
-			file_handler = logging.FileHandler(config._log.file)
+		if conf._log.file:
+			file_handler = logging.FileHandler(conf._log.file)
 			file_handler.addFilter(FileFilter(self.name, levels))
 			file_handler.setFormatter(FileFormatter())
 			self.logger.addHandler(file_handler)

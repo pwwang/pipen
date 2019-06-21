@@ -1,37 +1,6 @@
 """
 A set of exceptions used by PyPPL
 """
-
-class LoggerThemeError(Exception):
-	"""Theme errors for logger"""
-	def __init__(self, name, msg = None):
-		msg = msg or "Logger theme error"
-		super(LoggerThemeError, self).__init__(str(msg) + ': ' + repr(name))
-
-class ParameterNameError(Exception):
-	"""Malformed name not allowed"""
-	def __init__(self, name, msg = None):
-		msg = msg or "Parameter name error"
-		super(ParameterNameError, self).__init__(str(msg) + ': ' + repr(name))
-
-class ParameterTypeError(TypeError):
-	"""Unable to set type"""
-	def __init__(self, name, msg = None):
-		msg = msg or "Parameter type error"
-		super(ParameterTypeError, self).__init__(str(msg) + ': ' + repr(name))
-
-class ParametersParseError(Exception):
-	"""Error when parsing the parameters"""
-	def __init__(self, name, msg = None):
-		msg = msg or 'Error when parsing command line arguments'
-		super(ParametersParseError, self).__init__(str(msg) + ': ' + repr(name))
-
-class ParametersLoadError(Exception):
-	"""Error loading dict to Parameters"""
-	def __init__(self, name, msg = None):
-		msg = msg or 'Error loading dict to Parameters'
-		super(ParametersLoadError, self).__init__(str(msg) + ': ' + repr(name))
-
 class ProcTreeProcExists(Exception):
 	"""Raise when two Procs with same id and tag defined"""
 	def __init__(self, pn1, pn2):
@@ -109,11 +78,6 @@ class PyPPLProcRelationError(Exception):
 	"""Raise when failed to parse the relation of processes"""
 	def __init__(self, p, msg):
 		super(PyPPLProcRelationError, self).__init__(str(msg) + ': ' + repr(p))
-
-class PyPPLConfigError(Exception):
-	"""Raise when failed to parse the configuration of pyppl"""
-	def __init__(self, key, msg):
-		super(PyPPLConfigError, self).__init__(str(msg) + ': ' + repr(key))
 
 class JobFailException(Exception):
 	"""Raise when a job failed to run"""

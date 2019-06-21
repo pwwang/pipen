@@ -4,8 +4,8 @@ from pathlib import Path
 from psutil import pid_exists
 import cmdy
 from pyppl import Proc, utils, Box
-from pyppl.runners2 import RunnerLocal, RunnerDry, RunnerSsh, RunnerSge, RunnerSlurm, RC_ERROR_SUBMISSION
-from pyppl.exceptions import RunnerSshError
+from pyppl.runner import RunnerLocal, RunnerDry, RunnerSsh, RunnerSge, RunnerSlurm, RC_ERROR_SUBMISSION
+from pyppl.exception import RunnerSshError
 from pyppl.template import TemplateLiquid
 
 @pytest.fixture(scope='function')

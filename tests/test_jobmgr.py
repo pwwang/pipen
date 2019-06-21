@@ -4,8 +4,8 @@ from copy import copy
 import pytest
 from transitions.core import MachineError
 from pyppl.utils import PQueue
-from pyppl.jobmgr2 import Jobmgr, STATES
-from pyppl.exceptions import JobBuildingException, JobFailException
+from pyppl.jobmgr import Jobmgr, STATES
+from pyppl.exception import JobBuildingException, JobFailException
 
 pytest_plugins = ["tests.fixt_jobmgr"]
 logging.getLogger('transitions').setLevel(logging.INFO)

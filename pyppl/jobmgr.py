@@ -7,7 +7,7 @@ from queue import Queue
 from transitions import State, MachineError
 from .utils import Box, StateMachine, PQueue, ThreadPool
 from .logger import logger
-from .exceptions import JobBuildingException, JobFailException
+from .exception import JobBuildingException, JobFailException
 
 STATES = Box(
 	INIT         = '00_init',

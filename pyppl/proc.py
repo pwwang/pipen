@@ -12,10 +12,10 @@ import filelock
 from simpleconf import NoSuchProfile
 from .logger import logger
 from .utils import Box, OBox, Hashable, fs
-from .jobmgr2 import Jobmgr, STATES
+from .jobmgr import Jobmgr, STATES
 from .procset import ProcSet
 from .channel import Channel
-from .exceptions import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, \
+from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, \
 	ProcScriptError, ProcRunCmdError
 from . import utils, template
 

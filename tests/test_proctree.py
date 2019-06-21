@@ -2,7 +2,7 @@ import pytest
 
 from pyppl import Proc, Box, ProcSet
 from pyppl.proctree import ProcNode, ProcTree
-from pyppl.exceptions import ProcTreeProcExists, ProcTreeParseError, ProcHideError
+from pyppl.exception import ProcTreeProcExists, ProcTreeParseError, ProcHideError
 
 @pytest.fixture(autouse = True)
 def resetNodes():

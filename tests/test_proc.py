@@ -8,9 +8,9 @@ from pyppl.utils import config, uid, Box, OBox, fs
 from pyppl.proc import Proc
 from pyppl.template import TemplateLiquid
 from pyppl.channel import Channel
-from pyppl.jobmgr2 import STATES
+from pyppl.jobmgr import STATES
 from pyppl.procset import ProcSet
-from pyppl.exceptions import ProcTagError, ProcAttributeError, ProcTreeProcExists, \
+from pyppl.exception import ProcTagError, ProcAttributeError, ProcTreeProcExists, \
 	ProcInputError, ProcOutputError, ProcScriptError, ProcRunCmdError
 
 @pytest.fixture
