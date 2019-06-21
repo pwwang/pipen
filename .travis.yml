@@ -1,4 +1,3 @@
-sudo: false
 language: python
 python:
   - "3.5"
@@ -13,6 +12,7 @@ install:
   - poetry install -v
   - pip install tox-travis
   - pip install codacy-coverage
+  - sudo apt-get instal graphviz
 script:
   - pytest tests/
 after_success: |
