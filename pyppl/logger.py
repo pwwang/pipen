@@ -2,7 +2,6 @@
 Custome logger for PyPPL
 """
 import re
-import sys
 import logging
 from collections import OrderedDict
 from copy import copy

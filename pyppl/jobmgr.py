@@ -4,7 +4,6 @@ import random
 from time import sleep
 from threading import Lock
 from queue import Queue
-from transitions import State, MachineError
 from .utils import Box, StateMachine, PQueue, ThreadPool
 from .logger import logger
 from .exception import JobBuildingException, JobFailException
@@ -276,6 +275,7 @@ class Jobmgr(object):
 				raise ex from None
 			sys.exit(1)
 
+	@classmethod
 	def killWorker(self, killq):
 		while not killq.empty():
 			job = killq.get()

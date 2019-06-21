@@ -1,4 +1,3 @@
-from sys import argv
 from pathlib import Path
 from pyppl import PyPPL, Proc, Channel
 
