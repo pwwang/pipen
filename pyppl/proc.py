@@ -491,7 +491,7 @@ class Proc (Hashable):
 			if isinstance(self.echo['jobs'], int):
 				self.echo['jobs'] = [self.echo['jobs']]
 			elif isinstance(self.echo['jobs'], str):
-				self.echo['jobs'] = [int(x.strip()) for x in self.echo['jobs'].split(',')]
+				self.echo['jobs'] = utils.expandNumbers(self.echo['jobs'])
 			else:
 				self.echo['jobs'] = list(self.echo['jobs'])
 
@@ -659,13 +659,17 @@ class Proc (Hashable):
 			elif key in pvkeys:
 				procvars[key] = val
 				maxlen = max(maxlen, len(key))
-				propout[key] = '%r [%s]' % (val, alias[key]) if key in alias else repr(val)
+				propout[key] = val
 			elif key not in nokeys:
 				procvars[key] = val
 		for key in sorted(procargs):
-			logger.p_args('%s => %s', key.ljust(maxlen), procargs[key], proc = self.id)
+			logger.p_args('%s => %s' % (key.ljust(maxlen),
+					utils.formatDict(procargs[key], keylen = maxlen)),
+				proc = self.id)
 		for key in sorted(propout):
-			logger.p_props('%s => %s', key.ljust(maxlen), propout[key], proc = self.id)
+			logger.p_props('%s => %s' % (key.ljust(maxlen),
+					utils.formatDict(propout[key], keylen = maxlen, alias = alias.get(key))),
+				proc = self.id)
 		self.props.procvars = {'proc': procvars, 'args': procargs}
 
 	def _buildOutput(self):

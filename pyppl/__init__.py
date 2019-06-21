@@ -408,19 +408,17 @@ class PyPPL (object):
 		fchart.setTheme(self.config._flowchart.theme)
 
 		for start in self.tree.getStarts():
-			fchart.addNode(start, 'start')
-
+		 	fchart.addNode(start, 'start')
 		for end in self.tree.getEnds():
 			fchart.addNode(end, 'end')
-			for apath in self.tree.getPathsToStarts(end):
-				for pnode in apath:
-					fchart.addNode(pnode)
-					nextps = ProcTree.getNext(pnode)
-					# will not happen?
-					if not nextps: # pragma: no cover
-						continue
-					for nextp in nextps:
-						fchart.addLink(pnode, nextp)
+			for apath in self.tree.getPathsToStarts(end, check_hide = True):
+				for i, pnode in enumerate(apath):
+					if i == 0:
+						fchart.addNode(pnode)
+						fchart.addLink(pnode, end)
+					else:
+						fchart.addNode(pnode)
+						fchart.addLink(pnode, apath[i-1])
 
 		fchart.generate()
 		logger.info ('Flowchart file saved to: %s', fchart.fcfile)

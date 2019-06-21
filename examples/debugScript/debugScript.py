@@ -7,7 +7,7 @@ pHeatmap.exdir     = "./export"
 # Don't cache jobs for debugging
 pHeatmap.cache     = False
 # Output debug information for all jobs, but don't echo stdout and stderr
-pHeatmap.echo      = {'jobs': range(5), 'type': ''}
+pHeatmap.echo      = {'jobs': '0-5', 'type': ''}
 pHeatmap.forks     = 5
 pHeatmap.args.ncol = 10
 pHeatmap.args.nrow = 10
@@ -25,9 +25,4 @@ heatmap(mat)
 dev.off()
 """
 
-PyPPL({
-	'_log': {
-		'levels' : 'basic',
-		'lvldiff': []
-	}
-}).start(pHeatmap).run()
+PyPPL({'_log': {'levels' : 'basic'}}).start(pHeatmap).run()

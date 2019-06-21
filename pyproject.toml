@@ -17,7 +17,9 @@ include = "pyppl/*.py"
 
 [tool.poetry.dependencies]
 python = "^3.6"
-python-box = "^3.4.1"
+# we will wait for 4.0 to solve the leading _ issue #87
+# install with pip for now
+#python-box = { git = "https://github.com/pwwang/Box.git", branch = "master" }
 liquidpy = "^0.0.7"
 pyparam = "^0.1.6"
 filelock = "^3.0.0"

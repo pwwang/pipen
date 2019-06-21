@@ -15,4 +15,5 @@ params.force.desc = 'The job id'
 params.force.type = str
 opts = params._parse(dict_wrapper = Box)
 
+sys.stderr.write('Killing %s ...' % opts.force)
 qsub.SgeJob().kill(opts.force)

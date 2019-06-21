@@ -1,10 +1,10 @@
 """
 	    p1         p8
-	 /      \    /    
-	p2        p3      
+	 /      \    /
+	p2        p3
 	 \      /
-		p4        
-	 /      \     
+		p4
+	 /      \
 	p5        p6
 	 \      /
 	    p7
@@ -13,7 +13,7 @@
 from sys import stderr
 from shutil import rmtree
 from pyppl import Proc, PyPPL
-from pyppl.exceptions import PyPPLProcRelationError
+from pyppl.exception import PyPPLProcRelationError
 
 p1  = Proc()
 p2  = Proc()

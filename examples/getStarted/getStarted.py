@@ -11,4 +11,4 @@ pSort.script   = """
   sort -k1r {{i.infile}} > {{o.outfile}}
 """
 
-PyPPL({'_log':{'levels':'all'}}).start(pSort).run()
+PyPPL({'_log':{'levels':'all', 'leveldiffs': '-DEBUG'}}).start(pSort).run()

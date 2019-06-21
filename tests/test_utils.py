@@ -4,7 +4,7 @@ import psutil
 from faker import Faker
 from pyppl.utils import Box, OrderedBox, split, funcsig, uid, formatSecs, alwaysList, \
 	briefList, briefPath, killtree, chmodX, filesig, fileflush, ThreadEx, ThreadPool, \
-	PQueue, Hashable, MultiDestTransition, StateMachine, varname
+	PQueue, Hashable, MultiDestTransition, StateMachine, varname, expandNumbers, formatDict
 # load fixtures
 pytest_plugins = ["tests.fixt_utils"]
 
@@ -270,3 +270,35 @@ def test_statemachine():
 	model.heat()
 	assert model.state == 'liquid'
 
+@pytest.mark.parametrize('numbers,expt',[
+	('1,2,3,4', [1,2,3,4]),
+	('1-4', [1,2,3,4]),
+	('1-4,7,8-10', [1,2,3,4,7,8,9,10]),
+])
+def test_expandNumbers(numbers, expt):
+	assert expandNumbers(numbers) == expt
+
+@pytest.mark.parametrize('val,keylen,alias,expt',[
+	('a', 0, None, 'a'),
+	('a', 0, 'b', '[b] a'),
+	({"a":1}, 0, 'l', '[l] { a: 1 }'),
+	({"a":1, "b":2}, 0, 'x',
+	# =>
+	    '[x] { a: 1,\n'
+	'          b: 2, }'),
+	({"a":1, "b11":2}, 0, None,
+	# =>
+	    '{ a  : 1,\n'
+	'      b11: 2, }'),
+	({"a":1, "b":2}, 4, 'x11',
+	# =>
+	        '[x11] { a: 1,\n'
+	'                b: 2, }'),
+	(OrderedBox([("a",1), ("b",2)]), 4, 'x11',
+	# =>
+	        '[x11] <OBox> \n'
+	'              { a: 1,\n'
+	'                b: 2, }'),
+])
+def test_formatDict(val, keylen, alias, expt):
+	assert formatDict(val, keylen, alias) == expt

@@ -13,7 +13,7 @@ p9 = Proc()
 """
 		   p1         p8
 		/      \      /
-	 p2           p3
+	 p2        (  p3 : hide )
 		\      /
 		   p4         p9
 		/      \      /
@@ -23,6 +23,7 @@ p9 = Proc()
 """
 p2.depends = p1
 p3.depends = p1, p8
+p3.hide = True
 p4.depends = p2, p3
 p4.exdir   = "./export"
 p5.depends = p4

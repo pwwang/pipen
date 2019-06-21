@@ -218,6 +218,25 @@ def alwaysList (data, trim = True):
 		return sum((alwaysList(dat, trim) for dat in data), [])
 	raise ValueError('Expect string or list to convert to list.')
 
+def expandNumbers(numbers):
+	"""
+	Expand a descriptive numbers like '0,3-5,7' into read numbers:
+	[0,3,4,5,7]
+	@params:
+		numbers (str): The string of numbers to expand.
+	@returns:
+		list: The real numbers
+	"""
+	numberstrs = alwaysList(numbers)
+	numbers = []
+	for numberstr in numberstrs:
+		if '-' not in numberstr:
+			numbers.append(int(numberstr))
+		else:
+			numstart, numend = numberstr.split('-')
+			numbers.extend(range(int(numstart), int(numend)+1))
+	return numbers
+
 def briefList(blist):
 	"""
 	Briefly show an integer list, combine the continuous numbers.
@@ -299,6 +318,50 @@ def briefPath(bpath, cutoff = 0):
 			parts[i] = parts[i][:-lentodel]
 
 	return path.join(*(parts + [basename]))
+
+def formatDict(val, keylen, alias = None):
+	"""Format the dict values in log
+	Value            | Alias | Formatted
+	-----------------|-------|-------------
+	"a"              |       | a
+	"a"              | b     | [b] a
+	{"a": 1}         | l     | [l] { a: 1 }
+	{"a": 1, "b": 2} | x     | [x] { a: 1,
+	                 |       |       b: 2 }
+	Box(a=1)         |       | <Box> { a: 1 }
+	Box(a=1,b=2)     | b     | [b] <Box>
+	                 |       |     { a: 1,
+	                 |       |       b: 2 }
+	"""
+	alias = '[%s] ' % alias if alias else ''
+	if not isinstance(val, dict):
+		ret = alias
+		return ret + ("''" if val == '' else str(val))
+
+	valtype = val.__class__.__name__
+	valtype = '' if valtype == 'dict' else '<%s> ' % valtype
+
+	if len(val) == 1:
+		return formatDict(alias + valtype + '{ %s: %s }' % list(val.items())[0], 0)
+
+	valkeylen = max(len(key) for key in val)
+	ret = [alias + valtype]
+	key0, val0 = list(val.items())[0]
+	if not alias or not valtype:
+		braceindt = len(alias + valtype)
+		ret[0] += '{ %s: %s,' % (key0.ljust(valkeylen), "''" if val0 == '' else val0)
+	else:
+		braceindt = len(alias)
+
+	for keyi, vali in val.items():
+		if keyi == key0 and (not alias or not valtype):
+			continue
+		fmt = '%s{ %s: %s,' if keyi == key0 else '%s  %s: %s,'
+		ret.append(fmt % (' ' * (braceindt + keylen + 4),
+			keyi.ljust(valkeylen), "''" if vali == '' else vali))
+	ret[-1] += ' }'
+	return '\n'.join(ret)
+
 
 def killtree(pid, killme = True, sig = 9, timeout = None): # signal.SIGKILL
 	"""Kill a process and its childrent"""
@@ -406,11 +469,11 @@ class ThreadEx(Thread):
 		try:
 			Thread.run(self)
 		except cmdy.CmdyReturnCodeException:
-			from traceback import format_exc
-			self.ex = RuntimeError(format_exc())
+			#from traceback import format_exc
+			self.ex = RuntimeError('cmdy.CmdyReturnCodeException')
 		except Exception as ex: # pylint: disable=broad-except
-			from traceback import format_exc
-			self.ex = type(ex)(format_exc())
+			#from traceback import format_exc
+			self.ex = ex
 
 class ThreadPool(object):
 	"""

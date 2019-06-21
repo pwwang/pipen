@@ -48,11 +48,28 @@ class SgeJob:
 				if line.startswith('#$ -N'):
 					return line[5:].strip()
 
+	@staticmethod
+	def _outerrFromSgeScript(script):
+		if not script:
+			return (None, None)
+		outfile = None
+		errfile = None
+		with open(script) as fscript:
+			for line in fscript:
+				if line.startswith('#$ -o'):
+					outfile = line[5:].strip()
+				elif line.startswith('#$ -e'):
+					errfile = line[5:].strip()
+		return outfile, errfile
+
 	def submit(self):
 		if self.shouldfail:
 			return
 		sys.stdout.write("Your job %s (%s) has been submitted" % (self.jobid, self.job))
-		c = cmdy.bash(self.script, _bg = True)
+		outfile, errfile = SgeJob._outerrFromSgeScript(self.script)
+		c = cmdy.bash(c = 'bash ' + self.script + '; sleep 3; %s --force %s' %
+			(Path(__file__).resolve().parent / 'qdel', self.jobid),
+				_bg = True, _out = outfile, _err = errfile)
 		if not self.isRunning():
 			self.jobs = self.jobs + [(self.jobid, str(c.pid))]
 

@@ -203,7 +203,7 @@ def test_flowchart(pset, caplog, tmp_path):
 	assert 'p17 -> p19' in dot
 	assert 'p17 -> p20' in dot
 	assert 'p16 -> p17' in dot
-	assert 'p16 -> p18' in dot
+	#assert 'p16 -> p18' in dot # hidden
 	assert 'p14 -> p16' in dot
 	assert 'p15 -> p16' in dot
 

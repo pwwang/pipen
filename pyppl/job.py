@@ -953,7 +953,7 @@ class Job(object):
 		self.logger('Submitting the job ...', level = 'debug')
 		if self.isRunningImpl():
 			self.logger('is already running at %s, skip submission.' %
-				self.pid, level = 'submit')
+				self.pid, level = 'SBMTING')
 			return True
 		self.reset()
 		rscmd = self.submitImpl()
@@ -966,14 +966,16 @@ class Job(object):
 
 	def poll(self):
 		"""Check the status of a running job"""
-		self.logger('Polling the job ...', level = 'debug')
 		if not fs.isfile(self.dir / FILE_STDERR) or not fs.isfile(self.dir / FILE_STDOUT):
+			self.logger('Polling the job ... stderr/out file not generared.', level = 'debug')
 			return 'running'
 
 		elif self.rc != RC_NO_RCFILE:
+			self.logger('Polling the job ... rc file not generared.', level = 'debug')
 			self._flush(end = True)
 			return self.succeed()
 		else: # running
+			self.logger('Polling the job ... done.', level = 'debug')
 			self._flush()
 			return 'running'
 
@@ -994,11 +996,10 @@ class Job(object):
 			self.fout = (self.dir / FILE_STDOUT).open()
 		if not self.ferr or self.ferr.closed:
 			self.ferr = (self.dir / FILE_STDERR).open()
+		outfilter = self.proc.echo['type'].get('stdout', '__noout__')
+		errfilter = self.proc.echo['type'].get('stderr', '__noerr__')
 
-		outfilter = self.proc.echo['type']['stdout']
-		errfilter = self.proc.echo['type']['stderr']
-
-		if 'stdout' in self.proc.echo['type']:
+		if outfilter != '__noout__':
 			lines, self.lastout = fileflush(self.fout, self.lastout, end)
 			for line in lines:
 				if not outfilter or re.search(outfilter, line):
@@ -1013,7 +1014,7 @@ class Job(object):
 				loglevel = loglevel[1:] if loglevel else 'log'
 				# '_' makes sure it's not filtered by log levels
 				self.logger(logmsg.lstrip(), level = '_' + loglevel)
-			elif 'stderr' in self.proc.echo['type']:
+			elif errfilter != '__noerr__':
 				if not errfilter or re.search(errfilter, line):
 					self.logger(line.rstrip('\n'), level = '_stderr')
 

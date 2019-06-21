@@ -273,7 +273,7 @@ class Jobmgr(object):
 
 			if isinstance(ex, Exception) and not isinstance(ex, (
 				JobFailException, JobBuildingException, KeyboardInterrupt)):
-				raise ex
+				raise ex from None
 			sys.exit(1)
 
 	def killWorker(self, killq):
@@ -322,6 +322,7 @@ class Jobmgr(object):
 		while not self.queue.empty() and not self.stop:
 			index, batch = self.queue.get()
 			job = self.jobs[index]
+
 			if job.state == STATES.INIT:
 				job.triggerStartBuild()
 				job.triggerBuild(batch = batch)
