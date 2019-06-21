@@ -122,7 +122,7 @@ from .job import Job
 from .jobmgr import Jobmgr
 from .channel import Channel
 from .proctree import ProcTree
-from .exception import PyPPLProcRelationError
+from .exception import PyPPLProcRelationError, RunnerClassNameError
 from . import utils, runner
 
 class PyPPL (object):
@@ -211,7 +211,7 @@ class PyPPL (object):
 			for thing in selector:
 				ret.add(PyPPL._procsSelector(thing))
 		else:
-			for proc, node in ProcTree.NODES.items():
+			for proc in ProcTree.NODES:
 				if selector == proc.id:
 					ret.add(proc)
 				elif selector == proc.id + '.' + proc.tag:
@@ -231,6 +231,7 @@ class PyPPL (object):
 		starts  = set(PyPPL._procsSelector(args))
 		nostart = set()
 		for start in starts:
+			# Let's check if we have any other procs on the path of start process
 			paths = self.tree.getPaths(start)
 			pristarts = [pnode for sublist in paths for pnode in sublist if pnode in starts]
 			if pristarts:
@@ -242,7 +243,7 @@ class PyPPL (object):
 		self.tree.setStarts(starts - nostart)
 		return self
 
-	def _resume(self, *args, **kwargs):
+	def _resume(self, *args, plus = False):
 		"""
 		Mark processes as to be resumed
 		@params:
@@ -250,8 +251,8 @@ class PyPPL (object):
 				The last element is the mark for processes to be skipped.
 		"""
 
-		sflag    = 'skip+' if kwargs.get('plus') else 'skip'
-		rflag    = 'resume+' if kwargs.get('plus') else 'resume'
+		sflag    = 'skip+' if plus else 'skip'
+		rflag    = 'resume+' if plus else 'resume'
 		resumes  = PyPPL._procsSelector(args)
 
 		ends     = self.tree.getEnds()
@@ -262,12 +263,12 @@ class PyPPL (object):
 				continue
 			paths = self.tree.getPathsToStarts(end)
 			failedpaths = [apath for apath in paths
-				if not any([pnode in apath for pnode in resumes])]
+				if not any(pnode in apath for pnode in resumes)]
 			if not failedpaths:
 				continue
 			failedpath = failedpaths[0]
 			raise PyPPLProcRelationError('%s <- [%s]' % (
-				end.name(), ', '.join([pnode.name() for pnode in failedpath])),
+				end.name(), ', '.join(pnode.name() for pnode in failedpath)),
 				'One of the routes cannot be achived from resumed processes')
 
 		# set prior processes to skip
@@ -311,8 +312,8 @@ class PyPPL (object):
 		"""
 		logger.debug('ALL ROUTES:')
 		#paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths()])
-		paths  = sorted([[pnode.name() for pnode in reversed(apath)]
-			for apath in self.tree.getAllPaths()])
+		paths  = sorted([pnode.name() for pnode in reversed(apath)]
+			for apath in self.tree.getAllPaths(check_hide = False))
 		paths2 = [] # processes merged from the same procset
 		for apath in paths:
 			prevset = None
@@ -415,7 +416,8 @@ class PyPPL (object):
 				for pnode in apath:
 					fchart.addNode(pnode)
 					nextps = ProcTree.getNext(pnode)
-					if not nextps:
+					# will not happen?
+					if not nextps: # pragma: no cover
 						continue
 					for nextp in nextps:
 						fchart.addLink(pnode, nextp)
@@ -454,10 +456,11 @@ class PyPPL (object):
 			`runner`: The runner to be registered.
 		"""
 		runner_name = runner_to_reg.__name__
-		if runner_name.startswith('Runner'):
-			runner_name = runner_name[6:].lower()
+		if not runner_name.startswith('Runner'):
+			raise RunnerClassNameError('The class name of a runner should start with "Runner"')
+		runner_name = runner_name[6:].lower()
 
-		if not runner_name in PyPPL.RUNNERS:
+		if runner_name not in PyPPL.RUNNERS:
 			PyPPL.RUNNERS[runner_name] = runner_to_reg
 
 def _registerDefaultRunners():

@@ -580,7 +580,6 @@ class Proc (Hashable):
 				if isinstance(indata, dict) else [Channel.fromChannels(*[
 					d.channel for d in self.depends])
 					if self.depends else Channel.fromArgv()]
-
 			input_channel = Channel.create()
 			for invalue in input_values:
 				# a callback, on all channels

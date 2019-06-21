@@ -25,6 +25,7 @@ python-simpleconf = "^0.1.5"
 cmdy = "^0.1.9"
 colorama = "^0.4.1"
 psutil = "^5.6"
+transitions = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"

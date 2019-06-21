@@ -6,7 +6,7 @@ from datetime import datetime
 import cmdy
 from .utils import Box, OBox, chmodX, briefPath, filesig, fileflush, fs
 from .logger import logger as _logger
-from .exception import JobInputParseError, RunnerClassNameError, JobOutputParseError
+from .exception import JobInputParseError, JobOutputParseError
 
 # File names
 DIR_INPUT       = 'input'
@@ -38,6 +38,9 @@ class Job(object):
 
 	POLL_INTERVAL = 1
 
+	__slots__ = ('index', 'proc', 'dir', 'fout', 'ferr', 'lastout', 'lasterr', \
+		'ntry', 'input', 'output', 'config', 'script', '_rc', '_pid')
+
 	def __init__(self, index, proc):
 		"""
 		Initiate a job
@@ -45,9 +48,6 @@ class Job(object):
 			`index`:  The index of the job.
 			`config`: The configurations of the job.
 		"""
-		__slots__ = ('index', 'proc', 'dir', 'fout', 'ferr', 'lastout', 'lasterr', \
-			'ntry', 'input', 'output', 'config', 'script', '_rc', '_pid')
-		self._checkClassName()
 		self.index     = index
 		self.proc      = proc
 
@@ -117,10 +117,6 @@ class Job(object):
 			_logger.pbar[level](*args, **kwargs)
 		else:
 			_logger[level](*args, **kwargs)
-
-	def _checkClassName(self):
-		if not self.__class__.__name__.startswith('Runner'):
-			raise RunnerClassNameError('Runner class name is supposed to start with "Runner"')
 
 	def wrapScript(self):
 		"""

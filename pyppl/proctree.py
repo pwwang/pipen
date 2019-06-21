@@ -295,7 +295,7 @@ class ProcTree(object):
 				'Failed to determine end processes by start processes')
 		return self.ends
 
-	def getAllPaths(self):
+	def getAllPaths(self, check_hide = True):
 		"""
 		Get all paths of the pipeline, only used to be displayed in debug
 		So hide those hidden processes.
@@ -303,7 +303,7 @@ class ProcTree(object):
 		ret = set()
 		ends = self.getEnds()
 		for end in ends:
-			paths = self.getPathsToStarts(end, check_hide = True)
+			paths = self.getPathsToStarts(end, check_hide = check_hide)
 			if not paths:
 				pnode = [end] # list is not hashable for set
 				pstr = str(pnode)

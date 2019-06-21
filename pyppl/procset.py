@@ -4,8 +4,6 @@ The procset for a set of procs
 import inspect
 from types import GeneratorType
 from fnmatch import fnmatch, filter as fnfilter
-from functools import partial
-from collections import OrderedDict
 from .utils import varname, Box, OBox
 
 class Proxy(list):
@@ -79,8 +77,8 @@ class PSProxy(object):
 				break
 		else:
 			procs = Proxy(self.procset.procs.values())
-		for p in self.path:
-			procs = getattr(procs, p)
+		for pat in self.path:
+			procs = getattr(procs, pat)
 		return procs
 
 	def __getattr__(self, item):
@@ -196,7 +194,7 @@ class ProcSet(object):
 			return self.modules[name]
 		return decorator
 
-	# pylint: disable=arguments-differ,redefined-builtin,unused-argument,fixme
+	# pylint: disable=arguments-differ,redefined-builtin,unused-argument,invalid-name
 	def copy (self, id = None, tag = None, depends = True):
 		"""
 		Like `proc`'s `copy` function, copy a procset. Each processes will be copied.
@@ -212,7 +210,7 @@ class ProcSet(object):
 		ret = self.__class__(*self.procs.values(), id = id, tag = tag, copy = True, depends = False)
 
 		if depends:
-			for procid, proc in ret.procs.items():
+			for proc in ret.procs.values():
 				proc.depends = [ret.procs[dep.id] if dep is self.procs[dep.id] else dep
 					for dep in self.procs[proc.id].depends]
 
