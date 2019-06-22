@@ -14,8 +14,8 @@ from glob import glob
 from shutil import rmtree
 from datetime import date, timedelta, datetime
 from multiprocessing import Lock
-from pyppl import PyPPL, Proc, commands
-from pyppl.logger import Fore, Back, Style
+from pyppl import PyPPL, Proc, commands, utils
+from colorama import Fore, Back, Style
 #from pyppl.utils import parallel
 from concurrent.futures import ThreadPoolExecutor
 
@@ -65,6 +65,7 @@ commands.compare.proc2.desc = 'The second full process name to compare.'
 commands.runner              = 'List available runners.'
 commands.runner._hbald       = False
 commands.runner.cfgfile.desc = 'An extra configuration file.'
+commands.runner.profile.desc = 'Show the runner information of given profile.'
 
 commands.status               = 'Check the status of a running process.'
 commands.status.wdir          = commands.list.wdir
@@ -265,26 +266,23 @@ def clean_procs(procs, nthread, force):
 if __name__ == '__main__':
 
 	if command == 'runner':
-		from pprint import PrettyPrinter
-		p = PyPPL(
-			{'_log': {'levels': 'base', 'lvldiff': ['-PYPPL', '-TIPS']}}, 
-			cfgfile = params.cfgfile
-		)
-		pp = PrettyPrinter(indent = 4)
-		default_runner = p.config.get('default', {})
-		if not default_runner:
-			streamout('WARNING: no default runner.', 'yellow')
+		
+		config = utils.config
+		if params.cfgfile:
+			config._load(config)
+		
+		if not params.profile:
+			streamout('')
+			streamout('default', 'green')
+			for profile in config._profiles:
+				if profile:
+					streamout(profile, 'green')
 		else:
-			del p.config['default']
-			streamout('')
-			streamout('default:', 'green')
-			pp.pprint(default_runner)
-		for key, val in p.config.items():
-			streamout('')
-			streamout(key + ':', 'green')
-			pp.pprint(val)
-
-	if command == 'status':
+			streamout(params.profile, 'green')
+			with utils.config._with(params.profile):
+				streamout(utils.config.to_yaml())
+		
+	elif command == 'status':
 		if path.sep in params.proc:
 			procdir = params.proc
 		else:
@@ -343,6 +341,7 @@ if __name__ == '__main__':
 				streamout(jobstr, end = ': ')
 				streamout(status.ljust(8) + ('[' + rc + ']    ').rjust(8), decors = colors[status], end = '' if int(jobid) % params.ncol > 0 else '\n')
 
+			streamout('')
 			streamout('-' * (params.ncol * (n + 22) - 4))
 			streamout('Total: ', end = '')
 			for key, c in counts.items():

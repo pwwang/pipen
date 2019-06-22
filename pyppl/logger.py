@@ -1,117 +1,119 @@
 """
-A customized logger for pyppl
+Custome logger for PyPPL
 """
-import logging
 import re
-import sys
-from copy import copy as pycopy
-from colorama import init as coloramaInit, Fore, Back, Style
-# Fore: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
-# Back: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
-# Style: DIM, NORMAL, BRIGHT, RESET_ALL 
-from .utils import Box
-from .exception import LoggerThemeError
-from .template import TemplateLiquid
+import logging
+from collections import OrderedDict
+from copy import copy
+from functools import partial
 
-coloramaInit(autoreset = False)
+import colorama
+# Fore/Back: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
+# Style: DIM, NORMAL, BRIGHT, RESET_ALL
+from .utils import config
 
-# the entire format
-LOGFMT = "[%(asctime)s%(message)s"
+colorama.init(autoreset = False)
 
-# the themes
-# keys:
-# - no colon: match directory
-# - in: from the the list
-# - starts: startswith the string
-# - re: The regular expression to match
-# - has: with the string in flag
-THEMES = {
-	'greenOnBlack': Box([
-		('DONE',     Style.BRIGHT + Fore.GREEN),
-		('DEBUG',    Style.BRIGHT + Fore.BLACK),
-					 # levelname color,         message color
-		('PROCESS',  [Style.BRIGHT + Fore.CYAN, Style.BRIGHT + Fore.CYAN]),
-		('DEPENDS',  Fore.MAGENTA),
-		('in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING', Fore.GREEN),
-		('CMDERR',   Style.BRIGHT + Fore.YELLOW),
-		('has:ERR',  Fore.RED),
-		('in:WARNING,RETRY,RESUMED,SKIPPED',  Style.BRIGHT + Fore.YELLOW),
-		('in:WORKDIR,CACHED,P.DONE', Fore.YELLOW),
-		('',         Fore.WHITE)
+LOGFMT     = "[%(asctime)s%(message)s"
+LOGTIMEFMT = "%Y-%m-%d %H:%M:%S"
+
+THEMES = dict(
+	greenOnBlack = OrderedDict([
+		('DONE', '{s.BRIGHT}{f.GREEN}'),
+		('DEBUG', '{s.DIM}{f.WHITE}'),
+		('PROCESS', '{s.BRIGHT}{f.CYAN}'),
+		('DEPENDS', '{f.MAGENTA}'),
+		('in:INFO,P_PROPS,OUTPUT,EXPORT,INPUT,P_ARGS,BLDING,SBMTING,RUNNING,JOBDONE,KILLING',
+		 '{f.GREEN}'),
+		('CMDERR', '{s.BRIGHT}{f.YELLOW}'),
+		('has:ERR', '{f.RED}'),
+		('in:WARNING,RTRYING,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
+		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
+		('', ''),
 	]),
-	'blueOnBlack':  Box([
-		('DONE',     Style.BRIGHT + Fore.BLUE),
-		('DEBUG',    Style.BRIGHT + Fore.BLACK),
-		('PROCESS',  [Style.BRIGHT + Fore.CYAN, Style.BRIGHT  + Fore.CYAN]),
-		('DEPENDS',  Fore.GREEN),
-		('in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING', Fore.BLUE),
-		('CMDERR',   Style.BRIGHT + Fore.YELLOW),
-		('has:ERR',  Fore.RED),
-		('in:WARNING,RETRY,RESUMED,SKIPPED',  Style.BRIGHT + Fore.YELLOW),
-		('in:WORKDIR,CACHED,P.DONE', Fore.YELLOW),
-		('',         Fore.WHITE)
+
+	blueOnBlack = OrderedDict([
+		('DONE', '{s.BRIGHT}{f.BLUE}'),
+		('DEBUG', '{s.DIM}{f.WHITE}'),
+		('PROCESS', '{s.BRIGHT}{f.CYAN}'),
+		('DEPENDS', '{f.GREEN}'),
+		('in:INFO,P_PROPS,OUTPUT,EXPORT,INPUT,P_ARGS,BLDING,SBMTING,RUNNING,JOBDONE,KILLING',
+		 '{f.BLUE}'),
+		('CMDERR', '{s.BRIGHT}{f.YELLOW}'),
+		('has:ERR', '{f.RED}'),
+		('in:WARNING,RTRYING,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
+		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
+		('', ''),
 	]),
-	'magentaOnBlack':  Box([
-		('DONE',     Style.BRIGHT + Fore.MAGENTA),
-		('DEBUG',    Style.BRIGHT + Fore.BLACK),
-		('PROCESS',  [Style.BRIGHT + Fore.GREEN, Style.BRIGHT + Fore.GREEN]),
-		('DEPENDS',  Fore.BLUE),
-		('in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING', Fore.MAGENTA),
-		('CMDERR',   Style.BRIGHT + Fore.YELLOW),
-		('has:ERR',  Fore.RED),
-		('in:WARNING,RETRY,RESUMED,SKIPPED',  Style.BRIGHT + Fore.YELLOW),
-		('in:WORKDIR,CACHED,P.DONE', Fore.YELLOW),
-		('',         Fore.WHITE)
+
+	magentaOnBlack = OrderedDict([
+		('DONE', '{s.BRIGHT}{f.MAGENTA}'),
+		('DEBUG', '{s.DIM}{f.WHITE}'),
+		('PROCESS', '{s.BRIGHT}{f.GREEN}'),
+		('DEPENDS', '{f.BLUE}'),
+		('in:INFO,P_PROPS,OUTPUT,EXPORT,INPUT,P_ARGS,BLDING,SBMTING,RUNNING,JOBDONE,KILLING',
+		 '{f.MAGENTA}'),
+		('CMDERR', '{s.BRIGHT}{f.YELLOW}'),
+		('has:ERR', '{f.RED}'),
+		('in:WARNING,RTRYING,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
+		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
+		('', ''),
 	]),
-	'greenOnWhite': Box([
-		('DONE',     Style.BRIGHT + Fore.GREEN),
-		('DEBUG',    Style.BRIGHT + Fore.BLACK),
-		('PROCESS',  [Style.BRIGHT + Fore.BLUE, Style.BRIGHT + Fore.BLUE]),
-		('DEPENDS',  Fore.MAGENTA),
-		('in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING', Fore.GREEN),
-		('CMDERR',   Style.BRIGHT + Fore.YELLOW),
-		('has:ERR',  Fore.RED),
-		('in:WARNING,RETRY,RESUMED,SKIPPED',  Style.BRIGHT + Fore.YELLOW),
-		('in:WORKDIR,CACHED,P.DONE', Fore.YELLOW),
-		('',         Fore.BLACK)
+
+	greenOnWhite = OrderedDict([
+		('DONE', '{s.BRIGHT}{f.GREEN}'),
+		('DEBUG', '{s.DIM}{f.BLACK}'),
+		('PROCESS', '{s.BRIGHT}{f.BLUE}'),
+		('DEPENDS', '{f.MAGENTA}'),
+		('in:INFO,P_PROPS,OUTPUT,EXPORT,INPUT,P_ARGS,BLDING,SBMTING,RUNNING,JOBDONE,KILLING',
+		 '{f.GREEN}'),
+		('CMDERR', '{s.BRIGHT}{f.YELLOW}'),
+		('has:ERR', '{f.RED}'),
+		('in:WARNING,RTRYING,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
+		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
+		('', ''),
 	]),
-	'blueOnWhite':  Box([
-		('DONE',     Style.BRIGHT + Fore.BLUE),
-		('DEBUG',    Style.BRIGHT + Fore.BLACK),
-		('PROCESS',  [Style.BRIGHT + Fore.GREEN, Style.BRIGHT + Fore.GREEN]),
-		('DEPENDS',  Fore.MAGENTA),
-		('in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING', Fore.BLUE),
-		('CMDERR',   Style.BRIGHT + Fore.YELLOW),
-		('has:ERR',  Fore.RED),
-		('in:WARNING,RETRY,RESUMED,SKIPPED',  Style.BRIGHT + Fore.YELLOW),
-		('in:WORKDIR,CACHED,P.DONE', Fore.YELLOW),
-		('',         Fore.BLACK)
+
+	blueOnWhite = OrderedDict([
+		('DONE', '{s.BRIGHT}{f.BLUE}'),
+		('DEBUG', '{s.DIM}{f.BLACK}'),
+		('PROCESS', '{s.BRIGHT}{f.GREEN}'),
+		('DEPENDS', '{f.MAGENTA}'),
+		('in:INFO,P_PROPS,OUTPUT,EXPORT,INPUT,P_ARGS,BLDING,SBMTING,RUNNING,JOBDONE,KILLING',
+		 '{f.BLUE}'),
+		('CMDERR', '{s.BRIGHT}{f.YELLOW}'),
+		('has:ERR', '{f.RED}'),
+		('in:WARNING,RTRYING,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
+		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
+		('', ''),
 	]),
-	'magentaOnWhite':  Box([
-		('DONE',     Style.BRIGHT + Fore.MAGENTA),
-		('DEBUG',    Style.BRIGHT + Fore.BLACK),
-		('PROCESS',  [Style.BRIGHT + Fore.BLUE, Style.BRIGHT + Fore.BLUE]),
-		('DEPENDS',  Fore.GREEN),
-		('in:INFO,P.PROPS,OUTPUT,EXPORT,INPUT,P.ARGS,BLDING,SUBMIT,RUNNING,JOBDONE,KILLING', Fore.MAGENTA),
-		('CMDERR',   Style.BRIGHT + Fore.YELLOW),
-		('has:ERR',  Fore.RED),
-		('in:WARNING,RETRY,RESUMED,SKIPPED',  Style.BRIGHT + Fore.YELLOW),
-		('in:WORKDIR,CACHED,P.DONE', Fore.YELLOW),
-		('',         Fore.BLACK)
-	])
-}
+
+	magentaOnWhite = OrderedDict([
+		('DONE', '{s.BRIGHT}{f.MAGENTA}'),
+		('DEBUG', '{s.DIM}{f.BLACK}'),
+		('PROCESS', '{s.BRIGHT}{f.BLUE}'),
+		('DEPENDS', '{f.GREEN}'),
+		('in:INFO,P_PROPS,OUTPUT,EXPORT,INPUT,P_ARGS,BLDING,SBMTING,RUNNING,JOBDONE,KILLING',
+		 '{f.MAGENTA}'),
+		('CMDERR', '{s.BRIGHT}{f.YELLOW}'),
+		('has:ERR', '{f.RED}'),
+		('in:WARNING,RTRYING,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
+		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
+		('', ''),
+	]),
+)
 
 LEVELS = {
-	'all':     ['INPUT', 'OUTPUT', 'P.ARGS', 'P.PROPS', 'DEBUG'],
-	'basic':   [],
-	'normal':  ['INPUT', 'OUTPUT', 'P.ARGS', 'P.PROPS']
+	'all'   : set(['INPUT', 'OUTPUT', 'P_ARGS', 'P_PROPS', 'DEBUG', 'WARNING']),
+	'basic' : set(),
+	'normal': set(['INPUT', 'OUTPUT', 'P_ARGS', 'P_PROPS', 'WARNING'])
 }
 
-LEVELS_ALWAYS = [
-    'PROCESS', 'WORKDIR', 'RESUMED', 'SKIPPED', 'DEPENDS', 'STDOUT', 'STDERR', 'WARNING', 
-    'ERROR', 'INFO', 'DONE', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'BLDING', 
-    'SUBMIT', 'RUNNING', 'RETRY', 'JOBDONE', 'KILLING', 'P.DONE', 'CACHED'
-]
+LEVELS_ALWAYS = set([
+	'PROCESS', 'WORKDIR', 'RESUMED', 'SKIPPED', 'DEPENDS', 'STDOUT', 'STDERR', 'ERROR',
+	'INFO', 'DONE', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'BLDING',
+	'SBMTING', 'RUNNING', 'RTRYING', 'JOBDONE', 'KILLING', 'P_DONE', 'CACHED'
+])
 
 DEBUG_LINES = {
 	'EXPORT_CACHE_OUTFILE_EXISTS'  : -1,
@@ -141,358 +143,313 @@ DEBUG_LINES = {
 	'JOB_RESETTING'                : -1
 }
 
-def _getColorFromTheme (level, theme):
+class Theme(object):
 	"""
-	Get colors from a them
-	@params:
-		`level`: Our own log record level
-		`theme`: The theme
-	@returns:
-		The colors
+	The theme for the logger
 	"""
-	level = level.upper()
-	for key, val in theme.items():
-		val = tuple(val)
-		if key == level:
-			return val
-		if key.startswith('in:') and level in key[3:].split(','):
-			return val
-		if key.startswith('starts:') and level.startswith(key[7:]):
-			return val
-		if key.startswith('has:') and key[4:] in level:
-			return val
-		if key.startswith('re:') and re.search(key[3:], level):
-			return val
-	return tuple(theme.get('',  (Fore.WHITE, Fore.WHITE)))
-	
-def _formatTheme(theme):
-	"""
-	Make them in the standard form with bgcolor and fgcolor in raw terminal color strings
-	If the theme is read from file, try to translate "Fore.XXX", "Back.XXX" and "Style.XXX" 
-	to terminal color strings
-	@params:
-		`theme`: The theme
-	@returns:
-		The formatted colors
-	"""
-	if theme is True:
-		theme = THEMES['greenOnBlack']
-	if not theme:
-		return False
-	if not isinstance(theme, dict):
-		raise LoggerThemeError(theme, 'No such theme')
-	
-	ret = theme.copy()
-	ret[''] = ret.get('', [Fore.WHITE] * 2)
-	for key, val in theme.items():
-		if not isinstance(val, (tuple, list)):
-			val = [val]
-		if len(val) == 1:
-			val = val * 2
-
-		for i, v in enumerate(val):
-			t = TemplateLiquid(v, Fore = Fore, Back = Back, Style = Style)
-			val[i] = t.render()
-
-		ret[key] = val
-	return ret
-	
-class PyPPLLogFilter (logging.Filter):
-	"""
-	logging filter by levels (flags)
-	"""
-	
-	def __init__(self, name='', lvls='normal', lvldiff=None):
-		"""
-		Constructor
-		@params:
-			`name`: The name of the logger
-			`lvls`: The levels of records to keep
-			`lvldiff`: The adjustments to `lvls`
-		"""
-
-		logging.Filter.__init__(self, name)
-		self.debugs = {key: 0 for key, _ in DEBUG_LINES.items()}
-		self.levels = []
-		
-		if lvls is not None:
-			if not isinstance(lvls, list):
-				if lvls in LEVELS:
-					self.levels += LEVELS[lvls]
-				elif lvls == 'ALL':
-					self.levels += LEVELS['all']
-				elif lvls:
-					self.levels += [lvls]
-				elif lvls is False:
-					return
-			else:
-				self.levels += lvls
-
-			self.levels += LEVELS_ALWAYS
-			
-		lvldiff = lvldiff or []
-		if not isinstance(lvldiff, list):
-			lvldiff = [lvldiff]
-		for ld in lvldiff:
-			if ld.startswith('-'):
-				ld = ld[1:].upper()
-				if ld in self.levels: 
-					del self.levels[self.levels.index(ld)]
-			elif ld.startswith('+'):
-				ld = ld[1:].upper()
-				if ld not in self.levels:
-					self.levels.append(ld)
-			else:
-				ld = ld.upper()
-				if ld not in self.levels:
-					self.levels.append(ld)
-	
-	def filter (self, record):
-		"""
-		Filter the record
-		@params:
-			`record`: The record to be filtered
-		@return:
-			`True` if the record to be kept else `False`
-		"""
-		level = record.loglevel.upper() if hasattr(record, 'loglevel') else record.levelname
-		if level.startswith('_'):
-			return True
-		if not self.levels:
-			return False
-		if level in self.levels:
-			level2 = record.level2 if hasattr(record, 'level2') else None
-			if not level2 or level2 not in DEBUG_LINES:
-				return True
-			self.debugs[level2] += 1
-			if self.debugs[level2] <= abs(DEBUG_LINES[level2]):
-				if DEBUG_LINES[level2] < 0 and self.debugs[level2] == abs(DEBUG_LINES[level2]):
-					record.msg += "\n...... max={max} ({key}) reached, further information will be ignored.".format(max = abs(DEBUG_LINES[level2]), key = level2)
-				return True
-		return False
-
-class PyPPLLogFormatter (logging.Formatter):
-	"""
-	logging formatter for pyppl
-	"""
-	def __init__(self, fmt=None, theme='greenOnBlack', secondary = False):
-		"""
-		Constructor
-		@params:
-			`fmt`      : The format
-			`theme`    : The theme
-			`secondary`: Whether this is a secondary formatter or not (another formatter applied before this).
-		"""
-		fmt = LOGFMT if fmt is None else fmt
-		logging.Formatter.__init__(self, fmt, "%Y-%m-%d %H:%M:%S")
-		self.theme     = theme
-		# whether it's a secondary formatter (for fileHandler)
-		self.secondary = secondary
-		
-	def format(self, record):
-		"""
-		Format the record
-		@params:
-			`record`: The log record
-		@returns:
-			The formatted record
-		"""
-		if not hasattr(record, 'raw'):
-			setattr(record, 'raw', record.msg)
-
-		level = record.loglevel.upper() if hasattr(record, 'loglevel') else record.levelname
-
-		theme = 'greenOnBlack' if self.theme is True else self.theme
-		theme = THEMES[theme] if not isinstance(theme, dict) and theme in THEMES else theme
-		theme = _formatTheme(theme)
-
+	def __init__(self, theme = 'greenOnBlack'):
+		if theme is True:
+			theme = 'greenOnBlack'
 		if not theme:
-			colorLevelStart = ''
-			colorMsgStart   = ''
-			colorLevelEnd   = ''
+			self.theme = {}
+		elif isinstance(theme, dict):
+			self.theme = theme
+		elif theme in THEMES:
+			self.theme = THEMES[theme]
 		else:
-			(colorLevelStart, colorMsgStart) = _getColorFromTheme(level, theme)
-			colorLevelEnd   = Style.RESET_ALL
-		
-		if self.secondary:
-			# keep _ for file handler
-			level = level[1:] if level.startswith('_') else level
-		level = level[:7]
-		record.msg = " {lstart_c}{level}{lend_c}] {mstart_c}{proc}{jobindex}{msg}{lend_c}".format(
-			lstart_c = colorLevelStart,
-			level    = level.rjust(7),
-			lend_c   = colorLevelEnd,
-			mstart_c = colorMsgStart,
-			proc     = '{}: '.format(record.proc) if hasattr(record, 'proc') else '',
-			jobindex = '[{ji}/{jt}] '.format(ji = str(record.jobidx + 1).zfill(len(str(record.joblen))), jt = record.joblen) if hasattr(record, 'jobidx') else '',
-			msg      = record.raw)
-		return logging.Formatter.format(self, record)
+			raise ValueError('No such theme: %s' % theme)
 
-class PyPPLStreamHandler(logging.StreamHandler):
-	"""
-	PyPPL stream log handler.
-	To implement the progress bar for JOBONE and SUBMIT logs.
-	"""
+		self.colors = dict(
+			Style = colorama.Style, s = colorama.Style,
+			Back  = colorama.Back,  b = colorama.Back,
+			Fore  = colorama.Fore,  f = colorama.Fore,
+		)
 
-	#PREVBAR = MANAGER.list([''])
-
-	def __init__(self, stream = None):
+	def getColor(self, level):
 		"""
-		Constructor
+		Get the color for a given level
 		@params:
-			`stream`: The stream
+			`level`: The level
+		@returns:
+			The color of the level by the theme.
 		"""
-		super(PyPPLStreamHandler, self).__init__(stream)
-		# Attribute 'terminator' defined outside __init__ (attribute-defined-outside-init)
-		self.terminator = "\n"
-		self.prevbar = None
+		level = level.upper()
+		for key, val in self.theme.items():
+			if key == level:
+				return val.format(**self.colors)
+			if key.startswith('in:') and level in key[3:].split(','):
+				return val.format(**self.colors)
+			if key.startswith('starts:') and level.startswith(key[7:]):
+				return val.format(**self.colors)
+			if key.startswith('has:') and key[4:] in level:
+				return val.format(**self.colors)
+			if key.startswith('re:') and re.search(key[3:], level):
+				return val.format(**self.colors)
+		return ''
+
+class StreamFormatter(logging.Formatter):
+	"""
+	Logging formatter for stream (sys.stderr)
+	"""
+	def __init__(self, theme):
+		logging.Formatter.__init__(self, LOGFMT, LOGTIMEFMT)
+		self.theme = theme
+
+	def format(self, record):
+		if hasattr(record, 'formatted') and record.formatted:
+			return record.formatted
+
+		# save the formatted, for all handlers
+		level = record.mylevel
+		record.msg = str(record.msg)
+		if '\n' in record.msg:
+			record.tails = []
+			msgs = record.msg.splitlines()
+			record.msg = msgs[0]
+			for msg in msgs[1:]:
+				rec     = copy(record)
+				rec.msg = msg
+				self.format(rec)
+				record.tails.append(rec)
+
+		record.msg = ' {COLOR}{LEVEL}{RESET_ALL}] {COLOR}{PROC}{JOBS}{MSG}{RESET_ALL}'.format(
+			COLOR     = self.theme.getColor(level),
+			LEVEL     = level.rjust(7),
+			RESET_ALL = colorama.Style.RESET_ALL,
+			PROC      = record.proc + ': ' if record.proc else '',
+			MSG       = record.msg,
+			JOBS      = '' if record.jobidx is None else '[{ji}/{jt}] '.format(
+				ji = str(record.jobidx + 1).zfill(len(str(record.joblen))),
+				jt = record.joblen)
+		)
+		setattr(record, 'formatted', logging.Formatter.format(self, record))
+		return record.formatted
+
+class StreamHandler(logging.StreamHandler):
+	"""
+	Logging handler for stream (sys.stderr)
+	"""
+	DATA = {'prevbar': None, 'done': {}}
 
 	def _emit(self, record, terminator = "\n"):
-		"""
-		Helper function implementing a python2,3-compatible emit.
-		Allow to add "\n" or "\r" as terminator.
-		"""
-		#terminator = '\n'
-		if sys.version_info.major > 2: # pragma: no cover
-			self.terminator = terminator
-			super(PyPPLStreamHandler, self).emit(record)
-		else:
-			msg = self.format(record)
-			stream = self.stream
-			fs = "%s" + terminator
-			#if no unicode support...
-			if not logging._unicode: # pragma: no cover
-				stream.write(fs % msg)
-			else:
-				try:
-					if (isinstance(msg, unicode) and
-						getattr(stream, 'encoding', None)): # pragma: no cover
-						ufs = u'%s' + terminator
-						try:
-							stream.write(ufs % msg)
-						except UnicodeEncodeError:
-							#Printing to terminals sometimes fails. For example,
-							#with an encoding of 'cp1251', the above write will
-							#work if written to a stream opened or wrapped by
-							#the codecs module, but fail when writing to a
-							#terminal even when the codepage is set to cp1251.
-							#An extra encoding step seems to be needed.
-							stream.write((ufs % msg).encode(stream.encoding))
-					else:
-						stream.write(fs % msg)
-				except UnicodeError: # pragma: no cover
-					stream.write(fs % msg.encode("UTF-8"))
-			self.flush()
+		prevterm = self.terminator
+		self.terminator = terminator
+		super(StreamHandler, self).emit(record)
+		self.terminator = prevterm
 
 	def emit(self, record):
-		"""
-		Emit the record.
-		"""
-		from .jobmgr import Jobmgr
-		try:
-			pbar = record.pbar if hasattr(record, 'pbar') else None
-			if pbar == 'next':
-				if self.prevbar:
-					self.stream.write("\n")
-				self._emit(record, "\n")
-			elif pbar is None:
-				# break pbars
-				if not "\n" in record.msg:
-					self._emit(record, "\n")
-				else:
-					msgs = record.msg.splitlines()
-					for i, m in enumerate(msgs):
-						rec = pycopy(record)
-						rec.msg = m
-						if i == len(msgs) - 1 and m.startswith('...... max='):
-							delattr(rec, 'jobidx')
-						self._emit(rec, "\n")
-				self.prevbar = None
-			elif pbar is True:
-				# pbar, replace previous pbar
-				self.prevbar = record
-				self._emit(record, "\r")
-			elif not self.prevbar:
-				# not pbar and not prev pbar
-				justlen = Jobmgr.PBAR_SIZE + 32
-				if hasattr(record, 'proc'):
-					justlen += len(record.proc) + 2
-				if hasattr(record, 'jobidx'):
-					justlen += len(str(record.joblen)) * 3
-				justlen = max(justlen, Jobmgr.PBAR_SIZE + 32)
-				if not "\n" in record.msg:
-					record.msg = record.msg.ljust(justlen)
-					self._emit(record, "\n")
-				else:
-					msgs = record.msg.splitlines()
-					for i, m in enumerate(msgs):
-						rec = pycopy(record)
-						if i == len(msgs) - 1 and m.startswith('...... max='):
-							rec.msg = m.ljust(justlen)
-							delattr(rec, 'jobidx')
-						else:
-							rec.msg = m.ljust(justlen)
-						self._emit(rec, "\n")
+		if record.ispbar:
+			if record.done:
+				proc = record.proc if hasattr(record, 'proc') else ''
+				with self.lock:
+					# make sure done pbar is only shown once.
+					if not StreamHandler.DATA['done'].get(proc):
+						self._emit(record, '\n')
+						# clear previous pbars if any
+						StreamHandler.DATA['prevbar'] = None
+						StreamHandler.DATA['done'][proc] = True
 			else:
-				# not pbar but prev pbar
-				justlen = Jobmgr.PBAR_SIZE + 32
-				if hasattr(self.prevbar, 'proc'):
-					justlen += len(self.prevbar.proc) + 2
-				if hasattr(self.prevbar, 'jobidx'):
-					justlen += len(str(self.prevbar.joblen)) * 3
-				justlen = max(justlen, Jobmgr.PBAR_SIZE + 32)
-				if not "\n" in record.msg:
-					record.msg = record.msg.ljust(justlen)
-					self._emit(record, "\n")
-				else:
-					msgs = record.msg.splitlines()
-					for i, m in enumerate(msgs):
-						rec = pycopy(record)
-						if i == len(msgs) - 1 and m.startswith('...... max='):
-							rec.msg = m.ljust(justlen)
-							delattr(rec, 'jobidx')
-						else:
-							rec.msg = m.ljust(justlen)
-						self._emit(rec, "\n")
-				self._emit(self.prevbar, "\r")
-		except (KeyboardInterrupt, SystemExit, IOError, EOFError): # pragma: no cover
-			raise
-		except Exception: # pragma: no cover
-			self.handleError(record)
+				self._emit(record, '\r')
+				StreamHandler.DATA['prevbar'] = record
+		else:
+			pbarlog = StreamHandler.DATA['prevbar']
+			if pbarlog:
+				self.stream.write(' ' * len(pbarlog.formatted) + '\r')
 
-def getLogger (levels='normal', theme=True, logfile=None, lvldiff=None, name='PyPPL'):
+			self._emit(record, '\n')
+			if hasattr(record, 'tails'):
+				for tail in record.tails:
+					self._emit(tail, '\n')
+
+			if pbarlog:
+				self._emit(pbarlog, '\r')
+
+class StreamFilter(logging.Filter):
 	"""
-	Get the default logger
-	@params:
-		`levels`: The log levels(tags), default: basic
-		`theme`:  The theme of the logs on terminal. Default: True (default theme will be used)
-			- False to disable theme
-		`logfile`:The log file. Default: None (don't white to log file)
-		`lvldiff`:The diff levels for log
-			- ["-depends", "jobdone", "+debug"]: show jobdone, hide depends and debug
-		`name`:   The name of the logger, default: PyPPL
-	@returns:
-		The logger
+	Logging filter for stream (sys.stderr)
 	"""
-	logger = logging.getLogger (name)
-	for handler in logger.handlers:
-		handler.close()
-	del logger.handlers[:]
-	
-	if logfile:
-		fileCh = logging.FileHandler(logfile)
-		fileCh.setFormatter(PyPPLLogFormatter(theme = None))
-		logger.addHandler (fileCh)
-		
-	streamCh  = PyPPLStreamHandler()
-	formatter = PyPPLLogFormatter(theme = theme, secondary = True)
-	filter_   = PyPPLLogFilter(name = name, lvls = levels, lvldiff = lvldiff)
-	streamCh.addFilter(filter_)
-	streamCh.setFormatter(formatter)
-	logger.addHandler (streamCh)
-	
-	logger.setLevel(1)
-	# Output all logs
-	return logger
-	
-logger = getLogger()
+	def __init__(self, name, levels):
+		super(StreamFilter, self).__init__(name)
+		self.levels = levels
+		self.debugs = {}
+
+	def filter(self, record):
+		# logging is disabled
+		if not self.levels:
+			return False
+
+		level = record.mylevel
+		dlevel = record.dlevel if hasattr(record, 'dlevel') else None
+		# user logs
+		if level.startswith('_') or \
+			(level in self.levels and \
+			(not dlevel or dlevel not in DEBUG_LINES)): # debug
+			return True
+
+		if level not in self.levels or \
+			not hasattr(record, 'proc') or not record.proc: # independent
+			return False
+
+		# the limitation is only for one process
+		if record.proc not in self.debugs:
+			self.debugs = {record.proc: dict(zip(DEBUG_LINES.keys(), [0] * len(DEBUG_LINES)))}
+
+		self.debugs[record.proc][dlevel] += 1
+		allowed_lines = abs(DEBUG_LINES[dlevel])
+		print_summary = DEBUG_LINES[dlevel] < 0
+		if self.debugs[record.proc][dlevel] > allowed_lines:
+			return False
+		if self.debugs[record.proc][dlevel] < allowed_lines:
+			return True
+		# ==
+		if print_summary:
+			record.msg += "\n...... max={max} ({dlevel}) reached".format(
+				max = allowed_lines, dlevel = dlevel)
+			record.msg += ", further information will be ignored."
+		return True
+
+class FileFilter(StreamFilter):
+	"""
+	Logging filter for file
+	"""
+	def filter(self, record):
+		if (record.ispbar and not record.done) or not hasattr(record, 'formatted'):
+			return False
+		return super(FileFilter, self).filter(record)
+
+class FileFormatter(logging.Formatter):
+	"""
+	Logging formatter for file,
+	Extends StreamFormatter, removes the terminal colors
+	"""
+	def __init__(self):
+		logging.Formatter.__init__(self, LOGFMT, LOGTIMEFMT)
+		self.ansiRegex = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+
+	def format(self, record):
+		# record has already been formatted by StreamFormatter
+		# just remove the colors
+		if hasattr(record, 'formatted'):
+			return self.ansiRegex.sub('', record.formatted)
+		return super(FileFormatter, self).format(record)
+
+class Logger(object):
+	"""
+	A wrapper of logger
+	"""
+	@staticmethod
+	def initLevels(levels, leveldiffs):
+		"""
+		Initiate the levels, get real levels.
+		@params:
+			`levels`: The levels or level names
+			`leveldiffs`: The diffs of levels
+		@returns:
+			The real levels.
+		"""
+		ret = set()
+		if isinstance(levels, (tuple, list, set)):
+			ret |= set(levels)
+			ret |= LEVELS_ALWAYS
+		elif levels not in (None, False):
+			if levels is True:
+				levels = 'normal'
+			if levels.lower() in LEVELS:
+				ret |= LEVELS[levels.lower()]
+			elif levels:
+				ret.add(levels)
+			ret |= LEVELS_ALWAYS
+
+		if not leveldiffs:
+			return ret
+		if not isinstance(leveldiffs, (tuple, list, set)):
+			leveldiffs = set([leveldiffs])
+		for level in leveldiffs:
+			level = level.upper()
+			if level.startswith('-'):
+				level = level[1:]
+				if level in ret:
+					ret.remove(level)
+			else:
+				if level.startswith('+'):
+					level = level[1:]
+				ret.add(level)
+		return ret
+
+	def __init__(self, name = 'PyPPL', bake = False):
+		self.baked  = bake or {}
+		self.name   = name
+		self.ispbar = False
+		if bake:
+			self.logger = logging.getLogger(self.name)
+		else:
+			self.init()
+
+	def init(self, conf = None):
+		"""
+		Initiate the logger, called by the construct,
+		Just in case, we want to change the config and
+		Reinitiate the logger.
+		"""
+		if not conf:
+			conf = config
+		else:
+			conf2 = config.copy()
+			conf2.update(conf)
+			conf = conf2
+
+		self.logger = logging.getLogger(self.name)
+		self.logger.setLevel(1)
+		for handler in self.logger.handlers:
+			handler.close()
+		del self.logger.handlers[:]
+
+		theme = Theme(conf._log.theme)
+		levels = Logger.initLevels(conf._log.levels, conf._log.leveldiffs)
+
+		stream_handler = StreamHandler()
+		stream_handler.addFilter(StreamFilter(self.name, levels))
+		stream_handler.setFormatter(StreamFormatter(theme))
+		self.logger.addHandler(stream_handler)
+
+		if conf._log.file:
+			file_handler = logging.FileHandler(conf._log.file)
+			file_handler.addFilter(FileFilter(self.name, levels))
+			file_handler.setFormatter(FileFormatter())
+			self.logger.addHandler(file_handler)
+
+	def bake(self, **kwargs):
+		"""
+		Bake the logger with certain arguments
+		"""
+		return self.__class__(self.name, bake = kwargs)
+
+	@property
+	def pbar(self):
+		"""
+		Mark the record as a progress record.
+		Allow `logger.pbar.info` access
+		"""
+		self.ispbar = True
+		return self
+
+	def _emit(self, *args, **kwargs):
+		extra = {'jobidx': None, 'proc': '', 'done': False}
+		extra.update(self.baked)
+		extra.update({'mylevel': kwargs.pop('_level')})
+		extra.update(kwargs.pop('_extra'))
+		extra.update(kwargs.pop('extra', {}))
+		extra.update(kwargs)
+		self.logger.info(*args, extra = extra)
+
+	def __getitem__(self, name):
+		return self.__getattr__(name)
+
+	def __getattr__(self, name):
+		ispbar = self.ispbar
+		self.ispbar = False
+		return partial(self._emit, _level = name.upper(), _extra = dict(
+			ispbar = ispbar, dlevel = None))
+
+# pylint: disable=invalid-name
+logger = Logger()

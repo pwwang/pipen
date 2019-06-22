@@ -1,89 +1,27 @@
+language: python
+dist: xenial
 matrix:
   include:
-    - os: osx
-      language: generic
-      env: PY=2.7.13
-    - os: osx
-      language: generic
-      env: PY=3.4.4
-    - os: osx
-      language: generic
-      env: PY=3.5.1
-    - os: osx
-      language: generic
-      env: PY=3.6.6
-    - os: osx
-      language: generic
-      env: PY=3.7.0
-    - os: linux
-      python: 2.7
-      sudo: required
-      env: UPCOV=1
-    - os: linux
-      python: 3.4
-    - os: linux
-      python: 3.5
-    - os: linux
-      python: 3.6
-    - os: linux
-      python: 3.7
-
-before_install: |
-  if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-    brew update
-    # Per the `pyenv homebrew recommendations <https://github.com/yyuu/pyenv/wiki#suggested-build-environment>`_.
-    brew install openssl readline
-    # See https://docs.travis-ci.com/user/osx-ci-environment/#A-note-on-upgrading-packages.
-    # I didn't do this above because it works and I'm lazy.
-    brew outdated pyenv || brew upgrade pyenv
-    # virtualenv doesn't work without pyenv knowledge. venv in Python 3.3
-    # doesn't provide Pip by default. So, use `pyenv-virtualenv <https://github.com/yyuu/pyenv-virtualenv/blob/master/README.md>`_.
-    brew install pyenv-virtualenv
-    pyenv install $PY
-    # I would expect something like ``pyenv init; pyenv local $PYTHON`` or
-    # ``pyenv shell $PYTHON`` would work, but ``pyenv init`` doesn't seem to
-    # modify the Bash environment. ??? So, I hand-set the variables instead.
-    export PYENV_VERSION=$PY
-    export PATH="/Users/travis/.pyenv/shims:${PATH}"
-    pyenv-virtualenv venv
-    source venv/bin/activate
-    # A manual check that the correct version of Python is running.
-    python --version
-  fi
-
-# command to install dependencies
+    - python: 3.6
+    - python: 3.7
+      dist: xenial
+before_install:
+  - pip install poetry
 install:
-  #- python setup.py install
-  - export PYTHONUSERBASE="$(pwd)/pylib"
-  - export PYTHONPATH="$(pwd):$(echo $PYTHONUSERBASE/lib*/python*/site-packages):$PYTHONPATH"
-  - echo $PYTHONPATH
-  - export PATH="$PYTHONUSERBASE/bin:$PATH"
-  #- pip install --user --upgrade pip
-  - pip install --user --ignore-installed -r requirements.txt
-  - pip install --user --ignore-installed python-testly
-  - pip install --user --ignore-installed coverage
-  - pip install --user --ignore-installed codacy-coverage
-  - pip install --user --ignore-installed liquidpy
-  - pip install --user --ignore-installed colorama
-# command to run tests
+  - poetry install -v
+  - pip install tox-travis
+  - pip install codacy-coverage
+  - pip install -U git+https://github.com/pwwang/Box.git@3.4.1
+  - sudo apt-get install graphviz
 script:
-  - make cov
-  - pip install --user --ignore-installed graphviz jinja2
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install graphviz; else sudo apt-get install -y graphviz; fi
-  - cd tests
-  - coverage run -a --concurrency=multiprocessing testPyPPL.py TestPyPPL.testFlowchart
-  - coverage combine
-  - coverage run -a --concurrency=multiprocessing testTemplates.py TestTemplateJinja2
-  - coverage combine
-# upload the coverage
+  - pytest tests/
 after_success: |
-  if [ "$UPCOV" == "1" ]; then
-    export CODACY_PROJECT_TOKEN=b8ba4ff9257e4061b2c29e105255433c
-    coverage xml
-    coverage report
-    cd -
-    make covupload
+  if [ "$TRAVIS_PYTHON_VERSION" == "3.7" ]; then
+    python-codacy-coverage -r .coverage.xml
   fi
-  
-
-  
+deploy:
+  provider: script
+  script: poetry publish --build -u $PYPI_USER -p $PYPI_PASSWORD
+  on:
+    tags: true
+    condition: "$TRAVIS_PYTHON_VERSION == 3.7"
