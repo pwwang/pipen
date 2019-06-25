@@ -109,10 +109,10 @@ def split (string, delimter, trim = True):
 	"""
 	ret   = []
 	special1 = ['(', ')', '[', ']', '{', '}']
-	special2 = ['\'', '"']
+	special2 = ['\'', '"', '`']
 	special3 = '\\'
 	flags1   = [0, 0, 0]
-	flags2   = [False, False]
+	flags2   = [False, False, False]
 	flags3   = False
 	start = 0
 	for i, char in enumerate(string):
