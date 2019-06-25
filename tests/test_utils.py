@@ -279,8 +279,9 @@ def test_expandNumbers(numbers, expt):
 	assert expandNumbers(numbers) == expt
 
 @pytest.mark.parametrize('val,keylen,alias,expt',[
-	('a', 0, None, 'a'),
-	('a', 0, 'b', '[b] a'),
+	('a', 0, None, "a"),
+	('a', 0, 'b', "[b] a"),
+	(Box(), 0, 'l', '[l] <Box> {  }'),
 	({"a":1}, 0, 'l', '[l] { a: 1 }'),
 	({"a":1, "b":2}, 0, 'x',
 	# =>

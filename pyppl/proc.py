@@ -662,13 +662,13 @@ class Proc (Hashable):
 				propout[key] = val
 			elif key not in nokeys:
 				procvars[key] = val
-		for key in sorted(procargs):
-			logger.p_args('%s => %s' % (key.ljust(maxlen),
-					utils.formatDict(procargs[key], keylen = maxlen)),
-				proc = self.id)
 		for key in sorted(propout):
 			logger.p_props('%s => %s' % (key.ljust(maxlen),
 					utils.formatDict(propout[key], keylen = maxlen, alias = alias.get(key))),
+				proc = self.id)
+		for key in sorted(procargs):
+			logger.p_args('%s => %s' % (key.ljust(maxlen),
+					utils.formatDict(procargs[key], keylen = maxlen)),
 				proc = self.id)
 		self.props.procvars = {'proc': procvars, 'args': procargs}
 

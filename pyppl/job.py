@@ -285,6 +285,7 @@ class Job(object):
 		try:
 			if not self.dir.exists():
 				self.dir.mkdir()
+
 			# preserve the outfile and errfile of previous run
 			# issue #30
 			if (self.dir / FILE_STDOUT).exists():
@@ -301,7 +302,8 @@ class Job(object):
 			if self.isTrulyCached() or self.isExptCached():
 				return 'cached'
 			return True
-		except: # pylint: disable=bare-except
+		except Exception as ex: # pylint: disable=bare-except
+			self.logger('Failed to build job: %s' % ex, level = 'debug')
 			from traceback import format_exc
 			with (self.dir / FILE_STDERR).open('w') as ferr:
 				ferr.write(str(format_exc()))
@@ -445,8 +447,9 @@ class Job(object):
 			fs.move(realsfile, self.dir / FILE_SCRIPT_BAK)
 			self.logger("Script file updated: %s" % realsfile,
 				dlevel = 'SCRIPT_EXISTS', level = 'debug')
-
-		realsfile.write_text(script)
+			realsfile.write_text(script)
+		elif not fs.isfile(realsfile):
+			realsfile.write_text(script)
 		self.wrapScript()
 
 	@property

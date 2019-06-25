@@ -336,11 +336,13 @@ def formatDict(val, keylen, alias = None):
 	alias = '[%s] ' % alias if alias else ''
 	if not isinstance(val, dict):
 		ret = alias
-		return ret + ("''" if val == '' else str(val))
+		return ret + (repr(val) if val == '' else str(val))
 
 	valtype = val.__class__.__name__
 	valtype = '' if valtype == 'dict' else '<%s> ' % valtype
 
+	if len(val) == 0:
+		return alias + valtype + '{  }'
 	if len(val) == 1:
 		return formatDict(alias + valtype + '{ %s: %s }' % list(val.items())[0], 0)
 
@@ -349,7 +351,8 @@ def formatDict(val, keylen, alias = None):
 	key0, val0 = list(val.items())[0]
 	if not alias or not valtype:
 		braceindt = len(alias + valtype)
-		ret[0] += '{ %s: %s,' % (key0.ljust(valkeylen), "''" if val0 == '' else val0)
+		ret[0] += '{ %s: %s,' % (
+			key0.ljust(valkeylen), repr(val0) if val0 == '' else val0)
 	else:
 		braceindt = len(alias)
 
@@ -358,7 +361,7 @@ def formatDict(val, keylen, alias = None):
 			continue
 		fmt = '%s{ %s: %s,' if keyi == key0 else '%s  %s: %s,'
 		ret.append(fmt % (' ' * (braceindt + keylen + 4),
-			keyi.ljust(valkeylen), "''" if vali == '' else vali))
+			keyi.ljust(valkeylen), repr(vali) if vali == '' else vali))
 	ret[-1] += ' }'
 	return '\n'.join(ret)
 
