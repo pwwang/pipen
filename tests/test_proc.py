@@ -76,6 +76,8 @@ def test_proc_setattr(tmpdir, caplog):
 	assert p3.depends == [p4]
 	p3.depends = [p4], ps
 	assert p3.depends == [p4, ps.p4]
+	assert p4.tag == 'notag'
+	assert ps.p4.tag == 'notag@ps'
 
 	with pytest.raises(ProcAttributeError):
 		p3.depends = p3
@@ -111,6 +113,8 @@ def test_proc_setattr(tmpdir, caplog):
 
 def test_repr(tmpdir):
 	p4 = Proc()
+	assert p4.id == 'p4'
+	assert p4.tag == 'notag'
 	assert repr(p4).startswith('<Proc(p4) @')
 
 def test_copy(tmpdir):
@@ -125,7 +129,7 @@ def test_copy(tmpdir):
 	assert p6.config.args == {}
 	assert p6.config.args is not p5.config.args
 	assert p6.envs == {}
-	assert p6.envs is p5.envs
+	assert p6.envs is not p5.envs
 
 	assert p6.depends == []
 	assert p6.jobs == []
@@ -184,6 +188,7 @@ def test_buildprops(tmpdir):
 		Proc(id = 'p9')._buildProps()
 	p9.id = 'p89'
 	p9.template = TemplateLiquid
+	p9.ppldir = Path(tmpdir / 'test_buildprops')
 	p9.rc = '0,1'
 	p9.workdir = tmpdir / 'p8'
 	p9.exdir = tmpdir / 'p8.exdir'
@@ -208,7 +213,7 @@ def test_buildprops(tmpdir):
 	p9._buildProps()
 	assert p9.template is TemplateLiquid
 	assert p9.rc == [1]
-	assert p9.workdir == str(Path(p9.ppldir) / ('PyPPL.p89.notag.%s' % p9.suffix))
+	assert Path(p9.workdir) == Path(p9.ppldir) / ('PyPPL.p89.notag.%s' % p9.suffix)
 	assert p9.echo == dict(jobs=[], type=dict(stderr=None, stdout=None))
 
 	p9.template = 'liquid'

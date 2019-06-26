@@ -19,7 +19,7 @@ from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOut
 	ProcScriptError, ProcRunCmdError
 from . import utils, template
 
-class Proc (Hashable):
+class Proc(Hashable):
 	"""
 	The Proc class defining a process
 
@@ -87,62 +87,54 @@ class Proc (Hashable):
 		"""
 		# Do not go through __getattr__ and __setattr__
 		# Get configuration from config
-		self.__dict__['config']   = utils.config.copy()
+		self.__dict__['config'] = utils.config.copy()
 		# computed props
-		self.__dict__['props']    = Box(box_intact_types = [Channel, list])
+		self.__dict__['props'] = Box(box_intact_types = [Channel, list])
 
+		defaultconfig = Box()
 		# The id (actually, it's the showing name) of the process
-		self.config.id = id if id else utils.varname()
-
-		if ' ' in tag or '@' in tag:
-			raise ProcTagError("No space or '@' is allowed in tag.")
+		defaultconfig.id = id if id else utils.varname()
+		if ' ' in tag:
+			raise ProcTagError("No space allowed in tag.")
 
 		# The extra arguments for the process
-		self.config.args       = utils.config.args.copy()
+		defaultconfig.args = utils.config.args.copy()
 		# The callfront function of the process
-		self.config.callfront  = None
+		defaultconfig.callfront = None
 		# The callback function of the process
-		self.config.callback   = None
+		defaultconfig.callback = None
 		# The output channel of the process
-		self.props.channel     = Channel.create()
+		self.props.channel = Channel.create()
 		# The dependencies specified
-		self.config.depends    = []
+		defaultconfig.depends = []
 		# The dependencies computed
-		self.props.depends     = []
+		self.props.depends = []
 		# the computed echo option
-		self.props.echo        = {}
+		self.props.echo = {}
 		# computed expart
-		self.props.expart      = []
+		self.props.expart = []
 		# computed expect
-		self.props.expect      = None
-		# whether hide in flowchart
-		self.config.hide       = False
+		self.props.expect = None
 		# The input that user specified
-		self.config.input      = ''
+		defaultconfig.input = ''
 		# The computed input
-		self.props.input       = {}
+		self.props.input = {}
 		# The jobs
-		self.props.jobs        = []
+		self.props.jobs = []
 		# The locker for the process
-		self.props.lock        = None
+		self.props.lock = None
 		# non-cached job ids
-		self.props.ncjobids    = []
+		self.props.ncjobids = []
 		# The original name of the process if it's copied
-		self.props.origin      = self.config.id
+		self.props.origin = defaultconfig.id
 		# The output that user specified
-		self.config.output     = ''
+		defaultconfig.output = ''
 		# The computed output
-		self.props.output      = OBox()
+		self.props.output = OBox()
 		# data for proc.xxx in template
-		self.props.procvars    = {}
+		self.props.procvars = {}
 		# Valid return code
-		self.props.rc          = [0]
-
-		# which input file to use:
-		# - indir:  The symbolic links in input directory
-		# - origin: The original file specified by input channel
-		# - real:   The realpath of the input file
-		#self.config.iftype     = 'indir'
+		self.props.rc = [0]
 
 		# resume flag of the process
 		# ''       : Normal, do not resume
@@ -150,33 +142,35 @@ class Proc (Hashable):
 		# 'resume+': Deduce input from 'skip+' processes
 		# 'skip'   : Just skip, do not load data
 		# 'resume' : Load data from previous run, resume pipeline
-		self.config.resume     = ''
+		defaultconfig.resume = ''
 		# get the runner from the profile
-		self.props.runner      = 'local'
+		self.props.runner = 'local'
 		# The computed script. Template object
-		self.props.script      = None
-		# The size of the process (# jobs)
-		# use property
-		#self.props.size        = 0
+		self.props.script = None
 		# The unique identify of the process
 		# cache the suffix
-		self.props._suffix     = ''
+		self.props._suffix = ''
 		# The template class
-		self.props.template    = None
+		self.props.template = None
 		# timer for running time
-		self.props.timer       = None
+		self.props.timer = None
 		# The template environment
-		self.config.tplenvs    = utils.config.get('tplenvs', utils.config.get('envs', Box())).copy()
+		defaultconfig.tplenvs = utils.config.get(
+			'tplenvs', utils.config.get('envs', Box())).copy()
 		# The computed workdir
-		self.props.workdir     = ''
+		self.props.workdir = ''
 
 		# update the conf with kwargs
-		self.config.update(dict(tag = tag, desc = desc, **kwargs))
+		defaultconfig.update(dict(tag = tag, desc = desc, **kwargs))
 		# remember which property is set, then it will not be overwritten by configurations,
 		# do not put any values here because we want
 		# the kwargs to be overwritten by the configurations but keep the values set by:
-		# p.xxx = xxx
-		self.props.sets        = set()
+		# p.xxx           = xxx
+		self.props.sets = set()
+		self.config._load({'default': defaultconfig})
+
+		# reload config
+		self.config._use()
 
 		from . import PyPPL
 		PyPPL._registerProc(self)
@@ -309,7 +303,7 @@ class Proc (Hashable):
 
 		for key in self.config:
 			if key == 'id':
-				conf[key]  = id if id else utils.varname()
+				conf[key] = id if id else utils.varname()
 			elif key == 'tag' and tag:
 				conf[key] = tag
 			elif key == 'desc' and desc:
@@ -339,9 +333,7 @@ class Proc (Hashable):
 			else:
 				props[key] = self.props[key]
 
-		newproc = Proc()
-		# don't copy the dicts not intended to be copied
-		dict.update(newproc.config, conf)
+		newproc = Proc(**conf)
 		dict.update(newproc.props, props)
 		return newproc
 
@@ -801,14 +793,10 @@ class Proc (Hashable):
 		# configs have been set
 		setconfigs = {key:self.config[key] for key in self.sets if key != 'runner'}
 		if config and isinstance(config, dict):
-			self.config._load(config or {})
+			self.config._load(config)
 		if isinstance(profile, dict):
-			profile.update(curconfigs)
 			profile['runner'] = profile.get('runner', self.config.runner)
-
-			self.config._load(dict(
-				__tmp__ = profile
-			))
+			self.config._load({'__tmp__': profile})
 			self.config._use('__tmp__')
 			self.config.update(setconfigs)
 			# the real runner

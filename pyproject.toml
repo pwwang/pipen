@@ -20,11 +20,11 @@ python = "^3.6"
 # we will wait for 4.0 to solve the leading _ issue #87
 # install with pip for now
 #python-box = { git = "https://github.com/pwwang/Box.git", branch = "master" }
-liquidpy = "^0.0.7"
-pyparam = "^0.1.6"
+liquidpy = "*"
+pyparam = "*"
 filelock = "^3.0.0"
-python-simpleconf = "^0.1.6"
-cmdy = "^0.1.9"
+python-simpleconf = "*"
+cmdy = "*"
 colorama = "^0.4.1"
 psutil = "^5.6"
 transitions = "^0.6.0"
