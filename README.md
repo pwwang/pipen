@@ -1,6 +1,6 @@
 # [PyPPL][3] - A [Py](#)thon [P](#)i[P](#)e[L](#)ine framework
 
-[![Pypi][10]][18] [![Github][11]][3] [![PythonVers][14]][18] [![Travis building][5]][7] [![Codacy][4]][8] [![Codacy coverage][6]][8]
+[![Pypi][10]][18] [![Github][11]][3] [![PythonVers][14]][18] [![docs][19]][1] [![Travis building][5]][7] [![Codacy][4]][8] [![Codacy coverage][6]][8]
 
 [Documentation][1] | [API][2] | [Change log][9]
 
@@ -20,10 +20,8 @@ pip install PyPPL
 
 ## Writing pipelines with predefined processes
 Let's say we are implementing the [TCGA DNA-Seq Re-alignment Workflow][16]
-
-(The very left part of following figure):
-
-For demonstration, we will skip the QC and the Co-clean part here.
+(The very left part of following figure).
+For demonstration, we will skip the QC and the co-clean parts here.
 
 [![DNA_Seq_Variant_Calling_Pipeline][15]][16]
 
@@ -139,3 +137,4 @@ Note that this function requires [Graphviz][13] and [graphviz for python][12].
 [16]: https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/DNA_Seq_Variant_Calling_Pipeline/
 [17]: https://raw.githubusercontent.com/pwwang/PyPPL/development/examples/demo/demo.pyppl.svg?sanitize=true
 [18]: https://pypi.org/project/PyPPL/
+[19]: https://img.shields.io/readthedocs/pyppl.svg?style=flat-square
