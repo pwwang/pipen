@@ -88,11 +88,11 @@ class ProcTree(object):
 		@params:
 			`proc`: The `Proc` instance
 		"""
-		for pnode in ProcTree.NODES.keys():
+		for pnode, node in ProcTree.NODES.items():
 			if pnode is proc:
 				continue
-			if ProcTree.NODES[pnode].sameIdTag(proc):
-				raise ProcTreeProcExists(ProcTree.NODES[pnode], ProcTree.NODES[proc])
+			if node.sameIdTag(proc):
+				raise ProcTreeProcExists(node, ProcTree.NODES[proc])
 
 	@staticmethod
 	def getPrevStr(proc):

@@ -76,6 +76,8 @@ def test_proc_setattr(tmpdir, caplog):
 	assert p3.depends == [p4]
 	p3.depends = [p4], ps
 	assert p3.depends == [p4, ps.p4]
+	assert p4.tag == 'notag'
+	assert ps.p4.tag == 'notag@ps'
 
 	with pytest.raises(ProcAttributeError):
 		p3.depends = p3
@@ -111,6 +113,8 @@ def test_proc_setattr(tmpdir, caplog):
 
 def test_repr(tmpdir):
 	p4 = Proc()
+	assert p4.id == 'p4'
+	assert p4.tag == 'notag'
 	assert repr(p4).startswith('<Proc(p4) @')
 
 def test_copy(tmpdir):
@@ -125,7 +129,7 @@ def test_copy(tmpdir):
 	assert p6.config.args == {}
 	assert p6.config.args is not p5.config.args
 	assert p6.envs == {}
-	assert p6.envs is p5.envs
+	assert p6.envs is not p5.envs
 
 	assert p6.depends == []
 	assert p6.jobs == []
@@ -184,6 +188,7 @@ def test_buildprops(tmpdir):
 		Proc(id = 'p9')._buildProps()
 	p9.id = 'p89'
 	p9.template = TemplateLiquid
+	p9.ppldir = Path(tmpdir / 'test_buildprops')
 	p9.rc = '0,1'
 	p9.workdir = tmpdir / 'p8'
 	p9.exdir = tmpdir / 'p8.exdir'
@@ -208,7 +213,7 @@ def test_buildprops(tmpdir):
 	p9._buildProps()
 	assert p9.template is TemplateLiquid
 	assert p9.rc == [1]
-	assert p9.workdir == str(Path(p9.ppldir) / ('PyPPL.p89.notag.%s' % p9.suffix))
+	assert Path(p9.workdir) == Path(p9.ppldir) / ('PyPPL.p89.notag.%s' % p9.suffix)
 	assert p9.echo == dict(jobs=[], type=dict(stderr=None, stdout=None))
 
 	p9.template = 'liquid'
@@ -409,11 +414,14 @@ def test_buildjobs(tmpdir, caplog):
 
 def test_readconfig(tmpdir):
 	p16 = Proc()
+	assert p16.id == 'p16'
 	# nothing updated
 	p16._readConfig(None, None)
+	assert p16.id == 'p16'
 
 	p16.forks = 10
-	p16._readConfig({'forks': 30}, {'forks': 20})
+	p16._readConfig({'forks': 30}, {'f20': {'forks': 20}})
+	assert p16.id == 'p16'
 	assert p16.forks == 10
 	assert p16.runner == 'local'
 	assert p16.config.runner == '__tmp__'
@@ -421,16 +429,25 @@ def test_readconfig(tmpdir):
 	p17 = Proc()
 	p17.forks = 10
 	# no such profile in config
-	p17._readConfig('dry', {'forks': 20})
+	p17._readConfig('dry', {'f30': {'forks': 20}})
 	assert p17.forks == 10
 	assert p17.runner == 'dry'
 	assert p17.config.runner == 'dry'
 
 	p18 = Proc()
-	p18.config._load({'xyz': {'runner': 'sge'}})
+	p18.config._load({'xyz': {'runner': 'sge', 'forks': 50}})
 	p18._readConfig('xyz', None)
 	assert p18.runner == 'sge'
+	assert p18.forks == 50
 	assert p18.config.runner == 'xyz'
+
+	p181 = Proc()
+	p181.runner = 'xyz'
+	p181._readConfig('', {'xyz': {'runner': 'sge', 'forks': 50}})
+	assert p181.runner == 'sge'
+	assert p181.forks == 50
+	assert p181.config.runner == 'xyz'
+
 
 def test_runcmd(tmpdir, caplog):
 	p19 = Proc()
