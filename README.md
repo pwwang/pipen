@@ -1,6 +1,6 @@
 # [PyPPL][3] - A [Py](#)thon [P](#)i[P](#)e[L](#)ine framework
 
-[![Pypi][10]][18] [![Github][11]][3] [![PythonVers][14]][46] [![Travis building][5]][7] [![Codacy][4]][8] [![Codacy coverage][6]][8]
+[![Pypi][10]][18] [![Github][11]][3] [![PythonVers][14]][18] [![Travis building][5]][7] [![Codacy][4]][8] [![Codacy coverage][6]][8]
 
 [Documentation][1] | [API][2] | [Change log][9]
 
