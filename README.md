@@ -1,56 +1,59 @@
-# [PyPPL][3] - A [Py](#)thon [P](#)i[P](#)e[L](#)ine framework 
+# [PyPPL][3] - A [Py](#)thon [P](#)i[P](#)e[L](#)ine framework
 
 ![Pypi][22] ![Github][23] ![PythonVers][37] ![Travis building][8]  ![Codacy][4] ![Codacy coverage][11]
 
-[Documentation][1] | [API][2] | [Change log][19] | [FAQ][26]
+[Documentation][1] | [API][2] | [Change log][19]
 
 <!-- toc -->
 ## Features
-- [Easy-to-use command line parser.][27]
-- [Fancy logs.][28]
 - [Process caching.][6]
-- [Script templating][7] (Either [liquidpy][17] or [Jinja2][39])
+- [Process error handling.][10]
 - [Runner customization][9].
-- [Error handling for processes.][10]
 - [Easy-switching running profile.][9]
-- Flowchat in [DOT][14] for your pipelines ([Details][15]).
-- [Aggregations (a set of processes predefined).][16]
-- Highly reusable processes (see [a set of highly reusable bioinformatics processes][24]).
-
-## Requirements
-- OS: Linux or OSX
-- Python packages: [filelock][35], [colorama][40], [futures][21] and [liquidpy][17] (suggested: [graphviz][36], [pyyaml][33] and [python-testly][5]).
+- [Pipeline flowchart][15]
 
 ## Installation
 ```bash
-# install latest version
-git clone https://github.com/pwwang/PyPPL.git
-cd PyPPL
-python setup.py install
-# or simply:
-pip install git+git://github.com/pwwang/PyPPL.git
-
-# install released version
 pip install PyPPL
+```
 
-# run tests 
-pip install python-testly
-# or pip install git+git://github.com/pwwang/testly.git
-make test
+## Writing a pipeline with predefined processes
+For exampe, a mutation calling pipeline for next generation sequencing data:
 
-# run tests only for python2
-make test2
+```python
+from pyppl import PyPPL, Channel
+# import predefined processes
+from procs import (pTrimmomaticPE,          # Trim reads
+                   pAlignPEByBWA,           # Align to reference genome
+                   pSortSam,                # Sort sam file and convert it into bam
+                   pMarkDuplicates,         # Mark duplicates
+                   pIndexBam,               # Index the bam file
+                   pRealignerTargetCreator, # GATK RealignerTargetCreator
+                   pIndelRealigner,         # GATK IndelRealigner
+                   pBaseRecalibrator,       # GATK BaseRecalibrator
+                   pPrintReads)             # GATK PrintReads
 
-# run tests only for python3
-make test3
+# Specify the raw read files
+pTrimmomaticPE.input            = Channel.fromPairs('/path/to/*.fq.gz')
+# Alignment processes depend on the trimed files
+pAlignPEByBWA.depends           = pTrimmomaticPE
+# Sort file after alignment
+pSortSam.depends                = pAlignPEByBWA
+# Mark duplicates
+pMarkDuplicates.depends         = pSortSam
+# Index bam file
+pIndexBam.depends               = pMarkDuplicates
 
-# run tutorials
-make tutorials
+pRealignerTargetCreator.depends = pIndexBam
+pIndelRealigner.depends         = pIndexBam, pRealignerTargetCreator
+pBaseRecalibrator.depends       = pIndelRealigner
+pPrintReads.depends             = pIndelRealigner, pBaseRecalibrator
+
 ```
 
 ## Get started
-See `tutorials/getStarted/`  
-Sort 5 files simultaneously: 
+See `tutorials/getStarted/`
+Sort 5 files simultaneously:
 ```python
 1. from pyppl import PyPPL, Proc, Channel
 
@@ -60,20 +63,20 @@ Sort 5 files simultaneously:
 5. pSort.forks   = 5
 6. pSort.exdir   = './export'
 7. pSort.script  = """
-  sort -k1r {{i.infile}} > {{o.outfile}} 
-""" 
+  sort -k1r {{i.infile}} > {{o.outfile}}
+"""
 
 8. PyPPL().start(pSort).run()
 ```
 
-**Line 1**: Import the modules.  
-**Line 2**: Define the process with a description.  
-**Line 3**: Define the input data for the process.  
-**Line 4**: Define the output. Templates are also applied here.  
-**Line 5**: Define how many jobs are running simultaneously.  
-**Line 6**: Set the directory to export the output files.  
-**Line 7**: Set your script to run.  
-**Line 8**: Set the starting process and run the pipeline.  
+**Line 1**: Import the modules.
+**Line 2**: Define the process with a description.
+**Line 3**: Define the input data for the process.
+**Line 4**: Define the output. Templates are also applied here.
+**Line 5**: Define how many jobs are running simultaneously.
+**Line 6**: Set the directory to export the output files.
+**Line 7**: Set your script to run.
+**Line 8**: Set the starting process and run the pipeline.
 
 ![getStarted.gif][20]
 
@@ -88,8 +91,8 @@ total 0
 ```
 
 ## Infer input channel from dependent process
-See `tutorials/inputFromDependent/`  
-If a process depends on another one, the input channel can be inferred from the output channel of the latter process.  
+See `tutorials/inputFromDependent/`
+If a process depends on another one, the input channel can be inferred from the output channel of the latter process.
 Sort 5 files and then add line number to each line.
 ```python
 from pyppl import PyPPL, Proc, Channel
@@ -99,19 +102,19 @@ pSort.input  = {"infile:file": Channel.fromPattern("./data/*.txt")}
 pSort.output = "outfile:file:{{i.infile | fn}}.sorted"
 pSort.forks  = 5
 pSort.script = """
-  sort -k1r {{i.infile}} > {{o.outfile}} 
-""" 
+  sort -k1r {{i.infile}} > {{o.outfile}}
+"""
 
 pAddPrefix         = Proc(desc = 'Add line number to each line.')
 pAddPrefix.depends = pSort
 # automatically inferred from pSort.output
-pAddPrefix.input   = "infile:file"  
+pAddPrefix.input   = "infile:file"
 pAddPrefix.output  = "outfile:file:{{i.infile | fn}}.ln"
 pAddPrefix.exdir   = './export'
 pAddPrefix.forks   = 5
 pAddPrefix.script  = """
 paste -d. <(seq 1 $(wc -l {{i.infile}} | cut -f1 -d' ')) {{i.infile}} > {{o.outfile}}
-""" 
+"""
 
 PyPPL().start(pSort).run()
 ```
@@ -123,7 +126,7 @@ PyPPL().start(pSort).run()
 ```
 
 ## Modify input channel
-See `tutorials/transformInputChannels/`  
+See `tutorials/transformInputChannels/`
 Sort 5 files, add line numbers, and merge them into one file.
 ```python
 from pyppl import PyPPL, Proc, Channel
@@ -133,8 +136,8 @@ pSort.input  = {"infile:file": Channel.fromPattern("./data/*.txt")}
 pSort.output = "outfile:file:{{i.infile | fn}}.sorted"
 pSort.forks  = 5
 pSort.script = """
-  sort -k1r {{i.infile}} > {{o.outfile}} 
-""" 
+  sort -k1r {{i.infile}} > {{o.outfile}}
+"""
 
 pAddPrefix         = Proc(desc = 'Add line number to each line.')
 pAddPrefix.depends = pSort
@@ -143,7 +146,7 @@ pAddPrefix.output  = "outfile:file:{{i.infile | fn}}.ln"
 pAddPrefix.forks   = 5
 pAddPrefix.script  = """
 paste -d. <(seq 1 $(wc -l {{i.infile}} | cut -f1 -d' ')) {{i.infile}} > {{o.outfile}}
-""" 
+"""
 
 pMergeFiles         = Proc(desc = 'Merge files, each as a column.')
 pMergeFiles.depends = pAddPrefix
@@ -166,7 +169,7 @@ PyPPL().start(pSort).run()
 ```
 
 ## Use a different language
-See `tutorials/differentLang/`  
+See `tutorials/differentLang/`
 Plot heatmap using R.
 ```python
 from pyppl import PyPPL, Proc
@@ -178,7 +181,7 @@ pHeatmap.exdir  = './export'
 # Use full path "/path/to/Rscript" if it's not in $PATH
 # You can also use a shebang in script
 # in this case: #!/usr/bin/env Rscript
-pHeatmap.lang   = 'Rscript' 
+pHeatmap.lang   = 'Rscript'
 pHeatmap.script = """
 set.seed({{i.seed}})
 mat = matrix(rnorm(100), ncol=10)
@@ -189,12 +192,12 @@ dev.off()
 
 PyPPL().start(pHeatmap).run()
 ```
-`./export/heatmap.png`  
+`./export/heatmap.png`
 ![heatmap.png][29]
 
 ## Use args
-See `tutorials/useArgs/`  
-If the jobs are sharing the same set of configurations (in this case, the number of rows and columns of the matrix), they can be set in `pXXX.args`. The other benefit is to make the channels intact if the configurations are not suppose to be channeling.  
+See `tutorials/useArgs/`
+If the jobs are sharing the same set of configurations (in this case, the number of rows and columns of the matrix), they can be set in `pXXX.args`. The other benefit is to make the channels intact if the configurations are not suppose to be channeling.
 ```python
 from pyppl import PyPPL, Proc
 
@@ -222,7 +225,7 @@ PyPPL().start(pHeatmap).run()
 |  ![heatmap1.png][30]  |  ![heatmap2.png][31]  |  ![heatmap3.png][32]  |
 
 ## Use the command line argument parser
-See `tutorials/useParams/`  
+See `tutorials/useParams/`
 ```python
 from pyppl import PyPPL, Proc, Channel, params
 
@@ -242,13 +245,13 @@ pSort.output  = "outfile:file:{{i.infile | fn}}.sorted"
 pSort.forks   = 5
 pSort.exdir   = './export'
 pSort.script  = """
-  sort -k1r {{i.infile}} > {{o.outfile}} 
-""" 
+  sort -k1r {{i.infile}} > {{o.outfile}}
+"""
 
 PyPPL().start(pSort).run()
 
 ```
-Run the pipeline:  
+Run the pipeline:
 `> python useParams.py`
 ```
 USAGE:
@@ -260,7 +263,7 @@ REQUIRED OPTIONS:
 OPTIONAL OPTIONS:
   -h, --help, -H, -?                    Print this help information.
 ```
-Provide value to `-datadir`:  
+Provide value to `-datadir`:
 `> python useParams.py -datadir ./data`
 
 ## Use a different runner
@@ -280,8 +283,8 @@ pSort.sgeRunner = {
 pSort.forks   = 5
 pSort.exdir   = './export'
 pSort.script  = """
-  sort -k1r {{i.infile}} > {{o.outfile}} 
-""" 
+  sort -k1r {{i.infile}} > {{o.outfile}}
+"""
 
 PyPPL().start(pSort).run()
 # or run all process with sge runner:
@@ -289,7 +292,7 @@ PyPPL().start(pSort).run()
 # or:
 # PyPPL({
 #   'default': {
-#       'runner': 'sge', 
+#       'runner': 'sge',
 #       'sgeRunner': {'sge.q': '1-day'}
 #   }
 # }).start(pSort).run()
@@ -310,15 +313,15 @@ pSort.forks    = 5
 pSort.template = 'Jinja2'
 pSort.exdir    = './export'
 pSort.script   = """
-  sort -k1r {{i.infile}} > {{o.outfile}} 
-""" 
+  sort -k1r {{i.infile}} > {{o.outfile}}
+"""
 
 PyPPL().start(pSort).run()
 ```
 
 ## Debug your script
-See `/tutorials/debugScript/`  
-You can directly go to `<workdir>/<job.index>/job.script` to debug your script, or you can also print some values out throught `PyPPL` log system.  
+See `/tutorials/debugScript/`
+You can directly go to `<workdir>/<job.index>/job.script` to debug your script, or you can also print some values out throught `PyPPL` log system.
 ```python
 from pyppl import PyPPL, Proc
 
@@ -356,7 +359,7 @@ You will get something like this in your log:
 ![debugScript.png][34]
 
 ## Switch runner profiles
-See `tutorials/siwthcRunnerProfile/`  
+See `tutorials/siwthcRunnerProfile/`
 We can define a set of runner profiles in a `json` file (`./profiles.json`):
 
 ```json
@@ -366,7 +369,7 @@ We can define a set of runner profiles in a `json` file (`./profiles.json`):
     "forks" : 1,
     "sgeRunner": {
       "sge.q": "1-day"
-    } 
+    }
   },
   "local5": {
     "runner": "local",
@@ -410,7 +413,7 @@ PyPPL(cfgfile = "./profiles.json").start(pHeatmap).run()
 ```
 
 ## Draw the pipeline chart
-`PyPPL` can generate the graph in [DOT language][14]. 
+`PyPPL` can generate the graph in [DOT language][14].
 ```python
 from pyppl import PyPPL, Proc
 
@@ -476,8 +479,8 @@ digraph PyPPL {
 }
 ```
 
-To generate svg file, you have to have [graphviz][36] installed.  
-`drawFlowchart.pyppl.svg`:  
+To generate svg file, you have to have [graphviz][36] installed.
+`drawFlowchart.pyppl.svg`:
 ![PyPPL chart][18]
 
 
