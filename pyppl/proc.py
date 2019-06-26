@@ -788,11 +788,12 @@ class Proc (Hashable):
 		@params:
 			`config`: The configuration
 		"""
-		if not profile:
-			return
+		# if runner is set, then profile should be ignored
+		if 'runner' in self.sets or not profile:
+			profile = self.config.runner
 
 		# configs have been set
-		setconfigs = {key:self.config[key] for key in self.sets}
+		setconfigs = {key:self.config[key] for key in self.sets if key != 'runner'}
 		self.config._load(config or {})
 		if isinstance(profile, dict):
 			profile['runner'] = profile.get('runner', self.config.runner)

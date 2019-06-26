@@ -3,6 +3,7 @@ import re
 from os import path, utime
 from pathlib import Path
 from datetime import datetime
+import yaml
 import cmdy
 from .utils import Box, OBox, chmodX, briefPath, filesig, fileflush, fs
 from .logger import logger as _logger
@@ -558,7 +559,7 @@ class Job(object):
 					return ''
 				ret.o[outype_dir][key] = sig
 			else:
-				ret.o[outype_var][key] = data
+				ret.o[outype_var][key] = str(data)
 		return ret
 
 	def _compareVar(self, osig, nsig, key, logkey):
@@ -667,7 +668,7 @@ class Job(object):
 				dlevel = "CACHE_EMPTY_CURRSIG", level = 'debug')
 			return False
 
-		sig_old = Box.from_yaml(cachedata)
+		sig_old = yaml.safe_load(cachedata)
 
 		if not self._compareFile(
 			{'script': sig_old['script']},
@@ -974,11 +975,11 @@ class Job(object):
 			return 'running'
 
 		elif self.rc != RC_NO_RCFILE:
-			self.logger('Polling the job ... rc file not generared.', level = 'debug')
+			self.logger('Polling the job ... done.', level = 'debug')
 			self._flush(end = True)
 			return self.succeed()
 		else: # running
-			self.logger('Polling the job ... done.', level = 'debug')
+			self.logger('Polling the job ... rc file not generated.', level = 'debug')
 			self._flush()
 			return 'running'
 
