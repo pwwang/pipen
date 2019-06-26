@@ -779,6 +779,7 @@ class Proc (Hashable):
 				'No such runner: {}. '.format(self.runner) +
 				'If it is a profile, did you forget to specify a basic runner?')
 
+		logger.debug('Constructing jobs ...', proc = self.id)
 		for i in range(self.size):
 			self.jobs[i] = PyPPL.RUNNERS[self.runner](i, self)
 
@@ -792,11 +793,19 @@ class Proc (Hashable):
 		if 'runner' in self.sets or not profile:
 			profile = self.config.runner
 
+		# current configs
+		curconfigs = dict.copy(self.config)
+		# make sure configs in __init__ be loaded
+		self.config._load({'default': curconfigs})
+
 		# configs have been set
 		setconfigs = {key:self.config[key] for key in self.sets if key != 'runner'}
-		self.config._load(config or {})
+		if config and isinstance(config, dict):
+			self.config._load(config or {})
 		if isinstance(profile, dict):
+			profile.update(curconfigs)
 			profile['runner'] = profile.get('runner', self.config.runner)
+
 			self.config._load(dict(
 				__tmp__ = profile
 			))
@@ -874,6 +883,7 @@ class Proc (Hashable):
 		"""
 		Submit and run the jobs
 		"""
+		logger.debug('Queue starts ...', proc = self.id)
 		Jobmgr(self.jobs).start()
 
 		self.props.channel = Channel.create([

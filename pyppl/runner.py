@@ -115,6 +115,7 @@ class RunnerSsh(RunnerLocal):
 
 		with RunnerSsh.LOCK:
 			if RunnerSsh.LIVE_SERVERS is None:
+				self.logger('Checking status of servers ...', level = 'debug')
 				if check_alive is True:
 					RunnerSsh.LIVE_SERVERS = [i for i, server in enumerate(servers)
 						if RunnerSsh.isServerAlive(server, keys and keys[i], ssh = ssh)]

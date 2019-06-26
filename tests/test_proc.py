@@ -409,11 +409,14 @@ def test_buildjobs(tmpdir, caplog):
 
 def test_readconfig(tmpdir):
 	p16 = Proc()
+	assert p16.id == 'p16'
 	# nothing updated
 	p16._readConfig(None, None)
+	assert p16.id == 'p16'
 
 	p16.forks = 10
-	p16._readConfig({'forks': 30}, {'forks': 20})
+	p16._readConfig({'forks': 30}, {'f20': {'forks': 20}})
+	assert p16.id == 'p16'
 	assert p16.forks == 10
 	assert p16.runner == 'local'
 	assert p16.config.runner == '__tmp__'
@@ -421,16 +424,24 @@ def test_readconfig(tmpdir):
 	p17 = Proc()
 	p17.forks = 10
 	# no such profile in config
-	p17._readConfig('dry', {'forks': 20})
+	p17._readConfig('dry', {'f30': {'forks': 20}})
 	assert p17.forks == 10
 	assert p17.runner == 'dry'
 	assert p17.config.runner == 'dry'
 
 	p18 = Proc()
-	p18.config._load({'xyz': {'runner': 'sge'}})
+	p18.config._load({'xyz': {'runner': 'sge', 'forks': 50}})
 	p18._readConfig('xyz', None)
 	assert p18.runner == 'sge'
+	assert p18.forks == 50
 	assert p18.config.runner == 'xyz'
+
+	p181 = Proc()
+	p181.runner = 'xyz'
+	p181._readConfig('', {'xyz': {'runner': 'sge', 'forks': 50}})
+	assert p181.runner == 'sge'
+	assert p181.forks == 50
+	assert p181.config.runner == 'xyz'
 
 def test_runcmd(tmpdir, caplog):
 	p19 = Proc()

@@ -49,8 +49,11 @@ class Job(object):
 			`index`:  The index of the job.
 			`config`: The configurations of the job.
 		"""
+
 		self.index   = index
 		self.proc    = proc
+
+		self.logger('Initializing Job ...', level = 'debug')
 		self.dir     = self.proc.workdir if isinstance(self.proc.workdir, Path) \
 			else Path(self.proc.workdir)
 		self.dir     = (self.dir / str(index+1)).resolve()
