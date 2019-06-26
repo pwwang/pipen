@@ -1,6 +1,6 @@
 """The main module of PyPPL"""
 
-__version__ = '1.4.3'
+__version__ = '2.0.0'
 
 # give random tips in the log
 import random
@@ -143,10 +143,8 @@ class PyPPL (object):
 		"Check documentation at: https://pwwang.github.io/PyPPL",
 		"You cannot have two processes with the same id and tag",
 		"beforeCmd and afterCmd only run locally",
-		"If 'workdir' is not set for a process, "
-		"it will be PyPPL.<proc-id>.<proc-tag>.<suffix> under default <ppldir>",
-		"The default <ppldir> is './workdir'",
-		]
+		"Workdir defaults to PyPPL.<id>.<tag>.<suffix> under default <ppldir>",
+		"The default <ppldir> is './workdir'"]
 
 	RUNNERS  = {}
 
