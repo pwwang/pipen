@@ -15,6 +15,4 @@ pMarkDups.depends = pBamMerge
 # Export the results
 pMarkDups.exdir = './export/realigned_Bams'
 # Specify the start process and run the pipeline
-PyPPL(
-	{'default': {'forks': 2, '_log': {'shorten': 40}}}
-).start(pBamToFastq).flowchart().run()
+PyPPL({'forks': 2, '_log': {'shorten': 40}}).start(pBamToFastq).flowchart().run()

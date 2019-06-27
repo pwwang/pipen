@@ -176,7 +176,7 @@ def test_run(pset, caplog, tmp_path):
 		p.input = {'a': [1]}
 		p.output = 'a:var:{{i.a}}'
 	ppl = PyPPL({'ppldir': tmp_path / 'test_run_ppldir'}).start(pset.p14, pset.p15)
-	ppl.run()
+	ppl.run({'ppldir': tmp_path / 'test_run_ppldir2'})
 	# see if we have the right depends
 	assert 'p14: START => p14 => [p16]' in caplog.text
 	assert 'p15: START => p15 => [p16]' in caplog.text
@@ -186,6 +186,16 @@ def test_run(pset, caplog, tmp_path):
 	assert 'p19: [p17] => p19 => END' in caplog.text
 	assert 'p20: [p17] => p20 => END' in caplog.text
 	assert "p2 won't run as path can't be reached: p2 <- p1" in caplog.text
+	assert pset.p14.ppldir == tmp_path / 'test_run_ppldir2'
+
+def test_run_noprofile(pset, tmp_path):
+	pset.p14.props.origin = 'pOrig'
+	for p in pset.values():
+		p.input = {'a': [1]}
+		p.output = 'a:var:{{i.a}}'
+	ppl = PyPPL({'ppldir': tmp_path / 'test_run_noprofile'}).start(pset.p14, pset.p15)
+	ppl.run()
+	assert pset.p14.ppldir == tmp_path / 'test_run_noprofile'
 
 def test_flowchart(pset, caplog, tmp_path):
 	for p in pset.values():

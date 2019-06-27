@@ -12,7 +12,7 @@ import fnmatch
 from pathlib import Path
 from time import time
 from multiprocessing import cpu_count
-
+from simpleconf import Config
 from .utils import config, Box, OBox
 
 DEFAULT_CFGFILES = (
@@ -161,7 +161,8 @@ class PyPPL (object):
 		self.counter = PyPPL.COUNTER
 		PyPPL.COUNTER += 1
 
-		self.config = config.copy()
+		self.config = Config()
+		self.config._load({'default': config})
 		if cfgfile:
 			self.config._load(cfgfile)
 		self.config.update(conf or {})
@@ -336,7 +337,7 @@ class PyPPL (object):
 			logger.debug('* %s', ' -> '.join(path2))
 		return self
 
-	def run (self, profile = 'default'):
+	def run (self, profile = None):
 		"""
 		Run the pipeline
 		@params:
@@ -345,9 +346,15 @@ class PyPPL (object):
 		@returns:
 			The pipeline object itself.
 		"""
-		timer     = time()
+		timer = time()
 
-		#dftconfig = self._getProfile(profile)
+		if not profile:
+			profile = self.config
+		elif isinstance(profile, dict):
+			tmp = dict.copy(self.config)
+			tmp.update(profile)
+			profile = tmp
+
 		proc = self.tree.getNextToRun()
 		while proc:
 			if proc.origin != proc.id:
@@ -369,7 +376,6 @@ class PyPPL (object):
 				proc = proc.id
 			)
 			proc.run(profile, self.config)
-
 			proc = self.tree.getNextToRun()
 
 		unran = self.tree.unranProcs()

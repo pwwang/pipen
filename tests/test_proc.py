@@ -4,6 +4,7 @@ import sys
 import logging
 import pytest
 from pathlib import Path
+from simpleconf import Config
 from pyppl.utils import config, uid, Box, OBox, fs
 from pyppl.proc import Proc
 from pyppl.template import TemplateLiquid
@@ -416,11 +417,13 @@ def test_readconfig(tmpdir):
 	p16 = Proc()
 	assert p16.id == 'p16'
 	# nothing updated
-	p16._readConfig(None, None)
+	p16._readConfig(None, Config())
 	assert p16.id == 'p16'
 
+	config = Config()
+	config._load({'f20': {'forks': 20}})
 	p16.forks = 10
-	p16._readConfig({'forks': 30}, {'f20': {'forks': 20}})
+	p16._readConfig({'forks': 30}, config)
 	assert p16.id == 'p16'
 	assert p16.forks == 10
 	assert p16.runner == 'local'
@@ -428,22 +431,33 @@ def test_readconfig(tmpdir):
 
 	p17 = Proc()
 	p17.forks = 10
+	config = Config()
+	config._load({'f30': {'forks': 20}})
 	# no such profile in config
-	p17._readConfig('dry', {'f30': {'forks': 20}})
+	p17._readConfig('dry', config)
 	assert p17.forks == 10
 	assert p17.runner == 'dry'
 	assert p17.config.runner == 'dry'
 
 	p18 = Proc()
 	p18.config._load({'xyz': {'runner': 'sge', 'forks': 50}})
-	p18._readConfig('xyz', None)
+	p18._readConfig('xyz', Config())
 	assert p18.runner == 'sge'
 	assert p18.forks == 50
 	assert p18.config.runner == 'xyz'
 
+def test_readconfig_preset(tmpdir):
 	p181 = Proc()
 	p181.runner = 'xyz'
-	p181._readConfig('', {'xyz': {'runner': 'sge', 'forks': 50}})
+	config = Config()
+	cfile = tmpdir / 'test_readconfig_preset.ini'
+	cfile.write_text("""
+[xyz]
+runner: sge
+forks: 50
+""")
+	config._load(cfile)
+	p181._readConfig('', config)
 	assert p181.runner == 'sge'
 	assert p181.forks == 50
 	assert p181.config.runner == 'xyz'
@@ -530,14 +544,14 @@ def test_run(tmpdir, caplog):
 	p24.props.workdir = tmpdir / 'test_run_p24'
 	fs.mkdir(p24.workdir)
 	(p24.workdir / 'proc.settings.yaml').write_text('input: ')
-	p24.run('dry', None)
+	p24.run('dry', Config())
 	assert 'Previous processes skipped.' in caplog.text
 	assert p24.runner == 'dry'
 
 	p25 = Proc()
 	p25.resume = 'skip'
 	caplog.clear()
-	p25.run(None, None)
+	p25.run(None, Config())
 	assert 'Pipeline will resume from future processes.' in caplog.text
 
 	p25.resume = 'skip+'
@@ -545,5 +559,5 @@ def test_run(tmpdir, caplog):
 	p25.props.workdir = tmpdir / 'test_run_p25'
 	fs.mkdir(p25.workdir)
 	(p25.workdir / 'proc.settings.yaml').write_text('input: ')
-	p25.run(None, None)
+	p25.run(None, Config())
 	assert 'Data loaded, pipeline will resume from future processes.' in caplog.text

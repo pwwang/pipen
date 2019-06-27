@@ -779,7 +779,7 @@ class Proc(Hashable):
 		"""
 		Read the configuration
 		@params:
-			`config`: The configuration
+			`config`: The configuration loaded by PyPPL()
 		"""
 		# if runner is set, then profile should be ignored
 		if 'runner' in self.sets or not profile:
@@ -790,10 +790,15 @@ class Proc(Hashable):
 		# make sure configs in __init__ be loaded
 		self.config._load({'default': curconfigs})
 
+		assert isinstance(config, type(self.config))
+		# load extra profiles specified to PyPPL()
+		for key, val in config._protected['cached'].items():
+			if key not in self.config._protected['cached'] \
+				and (fs.isfile(key) or key.endswith('.osenv')):
+				self.config._load(val)
+
 		# configs have been set
 		setconfigs = {key:self.config[key] for key in self.sets if key != 'runner'}
-		if config and isinstance(config, dict):
-			self.config._load(config)
 		if isinstance(profile, dict):
 			profile['runner'] = profile.get('runner', self.config.runner)
 			self.config._load({'__tmp__': profile})
@@ -807,6 +812,7 @@ class Proc(Hashable):
 			try:
 				self.config._use(profile, raise_exc = True)
 			except NoSuchProfile:
+				print(repr(profile))
 				self.config._load({profile: dict(runner = profile)})
 				self.config._use(profile)
 			self.config.update(setconfigs)

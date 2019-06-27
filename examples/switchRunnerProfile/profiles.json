@@ -1,5 +1,5 @@
 {
-	"proc": {
+	"default": {
 		"runner": "local",
 		"forks" : 1,
 		"sgeRunner": {

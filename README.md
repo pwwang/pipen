@@ -25,6 +25,7 @@ For demonstration, we will skip the QC and the co-clean parts here.
 
 [![DNA_Seq_Variant_Calling_Pipeline][15]][16]
 
+`demo.py`:
 ```python
 from pyppl import PyPPL, Channel
 # import predefined processes
@@ -45,6 +46,8 @@ pMarkDups.exdir = '/path/to/realigned_Bams'
 # Specify the start process and run the pipeline
 PyPPL().start(pBamToFastq).run()
 ```
+
+[![asciicast](https://asciinema.org/a/i9LBa5l6bSPWrx1ETTesIoK1Q.svg)](https://asciinema.org/a/i9LBa5l6bSPWrx1ETTesIoK1Q)
 
 ## Implementing individual processes
 `TCGAprocs.py`:
