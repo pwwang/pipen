@@ -61,7 +61,7 @@ def test_init(tmp_path, caplog):
 	tomlfile.write_text('[default]\nforks = 2')
 	ppl = PyPPL(cfgfile = tomlfile)
 	assert ppl.config.forks == 2
-	ppl = PyPPL({'forks': 3}, cfgfile = tomlfile)
+	ppl = PyPPL({'default': {'forks': 3}}, cfgfile = tomlfile)
 	assert ppl.config.forks == 3
 
 	yamlfile = tmp_path / 'test_init.yaml'
@@ -175,7 +175,7 @@ def test_run(pset, caplog, tmp_path):
 	for p in pset.values():
 		p.input = {'a': [1]}
 		p.output = 'a:var:{{i.a}}'
-	ppl = PyPPL({'ppldir': tmp_path / 'test_run_ppldir'}).start(pset.p14, pset.p15)
+	ppl = PyPPL({'default': {'ppldir': tmp_path / 'test_run_ppldir'}}).start(pset.p14, pset.p15)
 	ppl.run({'ppldir': tmp_path / 'test_run_ppldir2'})
 	# see if we have the right depends
 	assert 'p14: START => p14 => [p16]' in caplog.text
@@ -193,7 +193,7 @@ def test_run_noprofile(pset, tmp_path):
 	for p in pset.values():
 		p.input = {'a': [1]}
 		p.output = 'a:var:{{i.a}}'
-	ppl = PyPPL({'ppldir': tmp_path / 'test_run_noprofile'}).start(pset.p14, pset.p15)
+	ppl = PyPPL({'default': {'ppldir': tmp_path / 'test_run_noprofile'}}).start(pset.p14, pset.p15)
 	ppl.run()
 	assert pset.p14.ppldir == tmp_path / 'test_run_noprofile'
 

@@ -162,10 +162,12 @@ class PyPPL (object):
 		PyPPL.COUNTER += 1
 
 		self.config = Config()
-		self.config._load({'default': config})
+		# __noloading__ tells processes not load it as they have it initiated.
+		self.config._load({'default': config, '__noloading__': None})
 		if cfgfile:
 			self.config._load(cfgfile)
-		self.config.update(conf or {})
+		if conf and isinstance(conf, dict):
+			self.config._load(conf)
 
 		if self.config._log.file is True:
 			self.config._log.file = (Path('./') / Path(sys.argv[0]).stem).with_suffix(
@@ -337,7 +339,7 @@ class PyPPL (object):
 			logger.debug('* %s', ' -> '.join(path2))
 		return self
 
-	def run (self, profile = None):
+	def run (self, profile = 'default'):
 		"""
 		Run the pipeline
 		@params:
@@ -347,13 +349,6 @@ class PyPPL (object):
 			The pipeline object itself.
 		"""
 		timer = time()
-
-		if not profile:
-			profile = self.config
-		elif isinstance(profile, dict):
-			tmp = dict.copy(self.config)
-			tmp.update(profile)
-			profile = tmp
 
 		proc = self.tree.getNextToRun()
 		while proc:
@@ -373,8 +368,7 @@ class PyPPL (object):
 				ProcTree.getPrevStr(proc),
 				proc.name(),
 				ProcTree.getNextStr(proc),
-				proc = proc.id
-			)
+				proc = proc.id)
 			proc.run(profile, self.config)
 			proc = self.tree.getNextToRun()
 

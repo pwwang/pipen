@@ -9,7 +9,7 @@ from collections import OrderedDict
 from os import path
 import yaml
 import filelock
-from simpleconf import NoSuchProfile
+from simpleconf import NoSuchProfile, Config
 from .logger import logger
 from .utils import Box, OBox, Hashable, fs
 from .jobmgr import Jobmgr, STATES
@@ -87,26 +87,40 @@ class Proc(Hashable):
 		"""
 		# Do not go through __getattr__ and __setattr__
 		# Get configuration from config
-		self.__dict__['config'] = utils.config.copy()
+		self.__dict__['config'] = Config()
 		# computed props
 		self.__dict__['props'] = Box(box_intact_types = [Channel, list])
 
-		defaultconfig = Box()
+		defaultconfig = dict.copy(utils.config)
 		# The id (actually, it's the showing name) of the process
-		defaultconfig.id = id if id else utils.varname()
+		defaultconfig['id'] = id if id else utils.varname()
 		if ' ' in tag:
 			raise ProcTagError("No space allowed in tag.")
 
 		# The extra arguments for the process
-		defaultconfig.args = utils.config.args.copy()
+		defaultconfig['args'] = defaultconfig['args'].copy()
 		# The callfront function of the process
-		defaultconfig.callfront = None
+		defaultconfig['callfront'] = None
 		# The callback function of the process
-		defaultconfig.callback = None
+		defaultconfig['callback'] = None
+		# The dependencies specified
+		defaultconfig['depends'] = []
+		# The input that user specified
+		defaultconfig['input'] = ''
+		# The output that user specified
+		defaultconfig['output'] = ''
+		# resume flag of the process
+		# ''       : Normal, do not resume
+		# 'skip+'  : Load data from previous run, pipeline resumes from future processes
+		# 'resume+': Deduce input from 'skip+' processes
+		# 'skip'   : Just skip, do not load data
+		# 'resume' : Load data from previous run, resume pipeline
+		defaultconfig['resume'] = ''
+		# The template environment
+		defaultconfig['tplenvs'] = defaultconfig.get('envs', defaultconfig['tplenvs']).copy()
+
 		# The output channel of the process
 		self.props.channel = Channel.create()
-		# The dependencies specified
-		defaultconfig.depends = []
 		# The dependencies computed
 		self.props.depends = []
 		# the computed echo option
@@ -115,8 +129,6 @@ class Proc(Hashable):
 		self.props.expart = []
 		# computed expect
 		self.props.expect = None
-		# The input that user specified
-		defaultconfig.input = ''
 		# The computed input
 		self.props.input = {}
 		# The jobs
@@ -126,23 +138,13 @@ class Proc(Hashable):
 		# non-cached job ids
 		self.props.ncjobids = []
 		# The original name of the process if it's copied
-		self.props.origin = defaultconfig.id
-		# The output that user specified
-		defaultconfig.output = ''
+		self.props.origin = defaultconfig['id']
 		# The computed output
 		self.props.output = OBox()
 		# data for proc.xxx in template
 		self.props.procvars = {}
 		# Valid return code
 		self.props.rc = [0]
-
-		# resume flag of the process
-		# ''       : Normal, do not resume
-		# 'skip+'  : Load data from previous run, pipeline resumes from future processes
-		# 'resume+': Deduce input from 'skip+' processes
-		# 'skip'   : Just skip, do not load data
-		# 'resume' : Load data from previous run, resume pipeline
-		defaultconfig.resume = ''
 		# get the runner from the profile
 		self.props.runner = 'local'
 		# The computed script. Template object
@@ -154,23 +156,18 @@ class Proc(Hashable):
 		self.props.template = None
 		# timer for running time
 		self.props.timer = None
-		# The template environment
-		defaultconfig.tplenvs = utils.config.get(
-			'tplenvs', utils.config.get('envs', Box())).copy()
 		# The computed workdir
 		self.props.workdir = ''
-
-		# update the conf with kwargs
-		defaultconfig.update(dict(tag = tag, desc = desc, **kwargs))
 		# remember which property is set, then it will not be overwritten by configurations,
 		# do not put any values here because we want
 		# the kwargs to be overwritten by the configurations but keep the values set by:
 		# p.xxx           = xxx
 		self.props.sets = set()
-		self.config._load({'default': defaultconfig})
 
-		# reload config
-		self.config._use()
+		# update the conf with kwargs
+		defaultconfig.update(dict(tag = tag, desc = desc, **kwargs))
+		# collapse the loading trace, we don't need it anymore.
+		self.config._load({'default': defaultconfig})
 
 		from . import PyPPL
 		PyPPL._registerProc(self)
@@ -793,8 +790,7 @@ class Proc(Hashable):
 		assert isinstance(config, type(self.config))
 		# load extra profiles specified to PyPPL()
 		for key, val in config._protected['cached'].items():
-			if key not in self.config._protected['cached'] \
-				and (fs.isfile(key) or key.endswith('.osenv')):
+			if '__noloading__' not in val:
 				self.config._load(val)
 
 		# configs have been set
