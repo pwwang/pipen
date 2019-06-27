@@ -97,6 +97,29 @@ Then the log message will be:
 
     You can define filters or themes for this kind of logs, just remember the actual level name has an `_` prefix. See [here][2] to learn how to define filters and themes.
 
+# Caching your results
+Each time when we re-run the job, job status will get cleared, including the return code, stdout, stderr and the output results, as well. For complex jobs or jobs with multiple intermediate files, sometime, you may not want to re-generate those intermediate files. In this case, you can save those files in `{{job.cachedir}}`. For example, following job has two steps, append one line to the input file, and then append another.
+```python
+# pXXX.lang = 'python'
+from pathlib import Path
+infile = Path({{i.infile | quote}})
+outfile = Path({{o.outfile | quote}})
+cachedir = Path({{job.cachedir | quote}})
+cachefile = cachedir / (infile.name + 'intermediate')
+imfile = Path({{job.outdir}}) / (infile.name + 'intermediate')
+# let's check if cached intermediate file exists
+if not cachefile.exists():
+    # do step 1
+    cachefile.write_text(infile.read_text() + '\nLine 1')
+# create a link to the cache file
+# next time when we run this job, cache file still exists,
+# we just need to create a link for the intermediate file.
+imfile.symlink_to(cachefile)
+
+# do step 2
+outfile.write_text(imfile.read_text() + '\nLine 2')
+```
+
 # Output stdout/stderr to PyPPL logs
 Instead of log some information, you may also choose to output the stdout/stderr from the jobs to the main `PyPPL` log.
 
@@ -122,4 +145,4 @@ For job indexes, you can also use abbreviations, for example,
 `0-5` for `[0,1,2,3,4,5]` and `1, 4-6` for `[1,4,5,6]`
 
 [1]: https://en.wikipedia.org/wiki/Shebang_(Unix)
-[2]: ./configure-your-logs/
+[2]: ./logs/

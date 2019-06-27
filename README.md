@@ -47,7 +47,7 @@ pMarkDups.exdir = '/path/to/realigned_Bams'
 PyPPL().start(pBamToFastq).run()
 ```
 
-[![asciicast](https://asciinema.org/a/i9LBa5l6bSPWrx1ETTesIoK1Q.svg)](https://asciinema.org/a/i9LBa5l6bSPWrx1ETTesIoK1Q)
+[![asciicast][20]][21]
 
 ## Implementing individual processes
 `TCGAprocs.py`:
@@ -123,14 +123,14 @@ Note that this function requires [Graphviz][13] and [graphviz for python][12].
 
 
 [1]: https://pyppl.readthedocs.io/en/latest/
-[2]: https://pwwang.github.io/PyPPL/api/
+[2]: https://pyppl.readthedocs.io/en/latest/api/
 [3]: https://github.com/pwwang/pyppl/
 [4]: https://img.shields.io/codacy/grade/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
 [5]: https://img.shields.io/travis/pwwang/PyPPL.svg?style=flat-square
 [6]: https://img.shields.io/codacy/coverage/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
 [7]: https://travis-ci.org/pwwang/PyPPL
 [8]: https://app.codacy.com/project/pwwang/PyPPL/dashboard
-[9]: https://pwwang.github.io/PyPPL/change-log/
+[9]: https://pyppl.readthedocs.io/en/latest/CHANGELOG/
 [10]: https://img.shields.io/pypi/v/pyppl.svg?style=flat-square
 [11]: https://img.shields.io/github/tag/pwwang/PyPPL.svg?style=flat-square
 [12]: https://github.com/xflr6/graphviz
@@ -141,3 +141,5 @@ Note that this function requires [Graphviz][13] and [graphviz for python][12].
 [17]: https://raw.githubusercontent.com/pwwang/PyPPL/development/examples/demo/demo.pyppl.svg?sanitize=true
 [18]: https://pypi.org/project/PyPPL/
 [19]: https://img.shields.io/readthedocs/pyppl.svg?style=flat-square
+[20]: https://asciinema.org/a/i9LBa5l6bSPWrx1ETTesIoK1Q.svg?sanitize=true
+[21]: https://asciinema.org/a/i9LBa5l6bSPWrx1ETTesIoK1Q

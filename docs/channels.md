@@ -25,7 +25,7 @@ Then the values for different variables in different jobs wil be:
 # Initialize a channel
 There are several ways to initialize a channel:
 
-- From a non-iterable element (string is considered non-iterable):  
+- From a non-iterable element (string is considered non-iterable):
   This will create a single element channel.
   ```python
   from PyPPL import Channel
@@ -41,14 +41,14 @@ There are several ways to initialize a channel:
   # produce [("a", ), ("b", )]
   c = Channel.create(("a", "b"))
   # produce [("a", "b")]
-  ```  
+  ```
 !!! note
-    Please use `Channel.create(...)` instead of `Channel(...)` unless each element is 'tuplized' properly. 
+    Please use `Channel.create(...)` instead of `Channel(...)` unless each element is 'tuplized' properly.
     ```python
     Channel.create([1,2,3]) != Channel([1,2,3])
     Channel.create([1,2,3]) == Channel([(1,), (2,), (3,)])
     ```
-- From other channels:   
+- From other channels:
   ```python
   ch1 = Channel.create([(1, 2), (3, 4)])
   ch2 = Channel.create('a')
@@ -58,10 +58,10 @@ There are several ways to initialize a channel:
   # ch == [(1, 2, 'a', 5), (3, 4, 'a', 6)]
   ```
 
-- From a file path pattern:  
+- From a file path pattern:
   Use `glob.glob` to grab files by the pattern, you may use different arguments for filter, sort or reverse the list:
 
-  - filter the files with type (`t`): `dir`, `file`, `link` or `any` (default), 
+  - filter the files with type (`t`): `dir`, `file`, `link` or `any` (default),
   - sort them by (`sortby`): `size`, `mtime` or `name` (default)
   - reverse the list (`reverse`): `False` (default, don't reverse)
 
@@ -75,15 +75,15 @@ There are several ways to initialize a channel:
   # the files will be sorted by names and then split into pairs
   # c == [("/a/b/a1.txt", "/a/b/a2.txt"), ("/a/b/b1.txt", "/a/b/b2.txt")]
   ```
-  
-- From file content:  
+
+- From file content:
   `Channel.fromFile(fn, header=False, skip=0, delimit="\t")`
   For example, we have a file `"chan.txt"` with content:
   ```
   A<tab>B<tab>C
   a1<tab>b1<tab>c1
   a2<tab>b2<tab>c2
-  ```  
+  ```
   Read the file as a channel:
   ```python
   c = Channel.fromFile ("chan.txt")
@@ -98,7 +98,7 @@ There are several ways to initialize a channel:
   ```
 
 - From `sys.argv` (command line arguments):
-  ```python    
+  ```python
   c == channel.fromArgv()
   # python whatever.py /a/b/*.txt
   # c == [("/a/b/1.txt",), ("/a/b/2.txt",), ("/a/b/3.txt",), ("/a/b/4.txt",)]
@@ -106,11 +106,12 @@ There are several ways to initialize a channel:
   # python whatever.py /a/b/1.txt,/a/b/2.txt /a/b/3.txt,/a/b/4.txt
   # c == [("/a/b/1.txt", "/a/b/2.txt"), ("/a/b/3.txt", "/a/b/4.txt")]
   ```
-  
+
 - From command line argument parser:
-  See [command line argument parser][1] for details.
+  See [pyparam][1] for details.
   ```python
-  from PyPPL import Channel, params
+  from pyparam import params
+  from PyPPL import Channel
   params.a = 'a'
   params.b = 2
   params.b.type = int
@@ -165,9 +166,9 @@ chan5 = chan.repRow(n=3)
 ## Expand a channel by directory
 `Channel.expand (col= 0, pattern = '*', t='any', sortby='name', reverse=False)`
 
-Sometimes we prepare files in one process (for example, split a big file into small ones in a directory), then handle these files by different jobs in another process, so that they can be processed simultaneously. 
+Sometimes we prepare files in one process (for example, split a big file into small ones in a directory), then handle these files by different jobs in another process, so that they can be processed simultaneously.
 
-![channel.expand](./channel-expand.png) 
+![channel.expand](./channel-expand.png)
 
 For example:
 ```python
@@ -184,7 +185,7 @@ p2.depends = p1
 p2.input   = {"infile:file": lambda ch: ch.expand()}
 p2.output  = {"outfile:file:{{i.infile | fn}}.result"}
 p2.script  = """
-# work on each file (1.txt, 2.txt, 3.txt, ...) 
+# work on each file (1.txt, 2.txt, 3.txt, ...)
 # to result file (1.result, 2.result, 3.result, ...)
 """
 
@@ -196,7 +197,7 @@ p1.output = "outvar:{{i.infile | ext | [1:]}}, outdir:dir:{{i.infile | fn}}"
 # ...
 p2.depends = p1
 p2.input   = {"invar,infile:file": lambda ch: ch.expand(1)}
-# expands to: 
+# expands to:
 # [("txt", "outdir/a/1.txt"), ("txt", "outdir/a/2.txt"), ("txt", "outdir/a/3.txt"), ...]
 # ...
 ```
@@ -207,14 +208,14 @@ p2.input   = {"invar,infile:file": lambda ch: ch.expand(1, "*.txt")}
 ```
 !!! caution
     * `expand` only works for original channels with length is 1, which will expand to `N` (number of files included). If original channel has more than 1 element, only first element will be used, and other elements will be ignored.
-    * Only the value of the column to be expanded will be changed, values of other columns remain the same. 
+    * Only the value of the column to be expanded will be changed, values of other columns remain the same.
 
 ## Collapse a channel by files in a common ancestor directory
 `Channel.collapse(col=0)`
 
 It's basically the reverse process of `expand`. It applies when you deal with different files and in next process you need them all involved (i.e. combine the results):
 
-![channel.expand](./channel-collapse.png) 
+![channel.expand](./channel-collapse.png)
 
 For example:
 ```python
@@ -230,7 +231,7 @@ p1.script = """
 
 p2 = Proc()
 p2.depends = p1
-# collapse channel [("<outdir>/1.txt2",), ("<outdir>/2.txt2",), ("<outdir>/3.txt2",)] 
+# collapse channel [("<outdir>/1.txt2",), ("<outdir>/2.txt2",), ("<outdir>/3.txt2",)]
 # to channel: [("<outdir>/", )]
 p2.input   = {"indir:file": lambda ch: ch.collapse()}
 p2.output  = {"outfile:file:{{i.indir | fn}}.result"}
@@ -239,7 +240,7 @@ p2.script  = """
 """
 PyPPL().start(p1).run()
 ```
-If the files in the channel are not at column 0, you have to specify it: 
+If the files in the channel are not at column 0, you have to specify it:
 ```python
 p1.input  = {"infile:file": [("a", "/a/b/1.txt"), ("a", "/a/b/2.txt"), ("a", "/a/b/3.txt")]}
 # ...
@@ -252,7 +253,7 @@ p2.input  = {"indir:file": lambda ch: ch.collapse(1)}
     * values at other columns should be the same, `PyPPL` will NOT check it, the first value at the column will be used.
 
 ## Fetch rows from a channel
-- `Channel.rowAt(index)`  
+- `Channel.rowAt(index)`
 
   ```python
   chan1 = Channel.create ([(1,2,3,4), (4,5,6,7)])
@@ -361,14 +362,14 @@ ch.attach ('col1', 'col2', 'col3', True)
     ([],   [1],   [2], [0]),
   ])
   # Filter by the first column, only first three rows remained
-  ch1.filterCol() == ch1[:3] 
+  ch1.filterCol() == ch1[:3]
   # Filter by the second column, only the last row remained
   ch1.filterCol(col = 1) == ch1[3:4]
   # Filter by the third column, the 2nd and 4th row remained
   ch1.filterCol(col = 2) == [ch1[1], ch1[3]]
   # Filter by the fourth column, all rows remained
   ch1.filterCol(col = 3) == ch1
-  # Filter with a function:		
+  # Filter with a function:
   ch1.filter(lambda x: isinstance(x[2], int)) == [ch1[0], ch1[2]]
   # filter & filterCol return an instance of Channel
   ```
@@ -386,9 +387,9 @@ ch.attach ('col1', 'col2', 'col3', True)
 
 ## Add rows/columns to a channel
 
-- `Channel.rbind(*rows)`  
+- `Channel.rbind(*rows)`
 
-  Each row can be either a channel, a tuple, a list or a non-iterable element(including string)   
+  Each row can be either a channel, a tuple, a list or a non-iterable element(including string)
   ```python
   ch1 = Channel.create()
   ch2 = Channel.create((1,2,3))
@@ -442,7 +443,7 @@ ch.attach ('col1', 'col2', 'col3', True)
   ch1.cbind(ch3).cbind(ch6) == [(3, 'a')]
   ```
 
-- `Channel.insert(index, col)`  
+- `Channel.insert(index, col)`
   ```python
   ch1 = Channel.create([(1, 2), (3, 4)])
   ch2 = Channel.create([5, 6])
@@ -478,7 +479,7 @@ ch.attach ('col1', 'col2', 'col3', True)
   ch4 = [41, 42]
   ch5 = (51, 52)
   ch6 = "a"
-  # Raises ValueError, when 1 is inserted, it is a 1-width channel, 
+  # Raises ValueError, when 1 is inserted, it is a 1-width channel,
   # then you can't insert a 2-width to it.
   ch1.insert(1, ch2)
   ch1.insert(0, ch2, ch3, ch4, ch5, ch6) == [(21, 3, 41, 51, 'a'), (22, 3, 42, 52, 'a')]
@@ -506,7 +507,7 @@ After apply `chan.fold(2)` you will get:
 Combine n-rows into one row; do the reverse thing as `Channel.fold`. But note that the different meaning of `n`. In `fold`, `n` means the length of the chunk that a row is cut to; will in `unfold`, it means how many rows to combine.
 
 ## Copy a channel
-`Channel.copy()` 
+`Channel.copy()`
 Make a copy of the channel.
 
 ## Transpose a channel
@@ -528,5 +529,5 @@ Into:
 | 2         | c1 | c2  |... |
 | ...       |... | ... |... |
 
-[1]: ./command-line-argument-parser/
+[1]: https://github.com/pwwang/pyparam
 

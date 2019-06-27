@@ -14,7 +14,9 @@ A typical running profile is as follows:
 
 !!! caution
     You may also put other settings of processes into a running profile, but keep in mind:
+
     1. The value will not be overridden if the attribute is set explicitly (i.e: `p.forks = 10`)
+
     2. Only set common attributes for all processes in a pipeline to avoid unexprected behavior. For example, you probably don't want this in general cases to set the same script for all processes:
     ```python
     {
@@ -28,7 +30,7 @@ You may pre-define some profiles so that you can easily swith them by:
 PyPPL().start(pXXX).run('profile1')
 PyPPL().start(pXXX).run('profile2')
 ```
-You can define profiles in `PyPPL`'s default configuration files: `$HOME/.PyPPL.yaml`, `$HOME/.PyPPL` and/or `$HOME/.PyPPL.json`. The latter ones have high priorities. `$HOME/.PyPPL` should also be in `JSON` format. Take `$HOME/.PyPPL.yaml` (requiring `pyyaml`) for example, the content is like:
+You can define profiles in `PyPPL`'s default configuration files: `$HOME/.PyPPL.yaml`, `$HOME/.PyPPL.toml`, `./.PyPPL.yaml` and `./.PyPPL.toml`. The latter ones have high priorities.  Take `$HOME/.PyPPL.yaml` for example, it is like:
 ```yaml
 default:
     runner: local
@@ -44,6 +46,10 @@ profile2:
         queue: 7-days
 ```
 
+Beyond the configuration files, we may also use environment variables, for example, we want to run all jobs using `ssh` but with `default` profile:
+```shell
+PYPPL_default_runner="ssh" python pipeline.py ...
+```
 
 You may also define some profiles in a file somewhere else, say `/path/to/myprofiles.yaml`. Just pass the file to `PyPPL` constructor:
 ```python
@@ -51,20 +57,20 @@ PyPPL(cfgfile = '/path/to/myprofiles.yaml').start(pXXX).run('profile1')
 ```
 
 !!! note
-    This has higher priority than default configuration files.
+    This has higher priority than default configuration files (including the environment variables).
 
 You can also pass a temporary to `PyPPL` constructor directly:
 ```python
-PyPPL({
+PyPPL({'sge': {
     'runner': 'sge',
     'sgeRunner': {'queue': '1-day'}
-}).start(pXXX).run()
+}}).start(pXXX).run('sge')
 ```
 
 !!! note
     In this way, the profiles have higher priorities than the ones defined in configuration files.
 
-Or even, you can also specify a profile to `run` function to ask the pipeline run with the profile directly:
+Or even, you can also specify a profile to `run` function to ask the pipeline run with the profile directly (WITHOUT profile name):
 ```python
 PyPPL().start(pXXX).run({
     'runner': 'sge',
@@ -75,7 +81,7 @@ PyPPL().start(pXXX).run({
 ```
 
 !!! note
-    This has the even higher priority. If both specified, the one in `run` will overwrite the on in `PyPPL`
+    This has the even higher priority.
 
 # Built-in runners
 We have 5 built-in runners (`RunnerLocal`, `RunnerSsh`, `RunnerSge`, `RunnerSlurm`, `runnerDry`), you can also define you own runners.
@@ -255,7 +261,7 @@ PyPPL(config).start(...).run() # uses configurations of 'proc'
 ```
 
 # Dry-run a pipeline
-You can use dry runner to dry-run a pipeline. The real script will not be running, instead, it just tries to touch the output files and create the output directories.
+You can use dry runner to dry-run a pipeline. The real script (`<job.dir>/job.script`) will not be running, instead, it just tries to touch the output files and create the output directories.
 
 !!! note "When `RunnerDry` is being used"
 
@@ -266,46 +272,81 @@ You can use dry runner to dry-run a pipeline. The real script will not be runnin
     - Better set runner of all processes in a pipeline to `dry`. (`pyppl().starts(...).run('dry')`), since empty file/directory will be created for output. Problems will happen if you have a non-dry-run process depending on dry-run processes.
 
 # Define your own runner
-You are also able to define your own runner, which should be a class extends `Runner` (jobs run immediately after submission) or `RunnerQueue` (jobs are put into a queue after submission). There are several methods and variables you may need to redefine (You may check the [API documentation](./API/#runner) for all available methods and variables).
+You are also able to define your own runner, which should be a class extends `Job`.
 
 The class name **MUST** start with `Runner` and end with the runner name with first letter capitalized. For example, to define the runner `my`:
 ```python
-from pyppl.runners import Runner
+from pyppl import Job
 class RunnerMy (Runner):
     pass
 ```
 
-The base class `Runner` defines the runners where the jobs will immediately run after submission; while `RunnerQueue` defines the runners where the jobs will be put into a queue and wait for its turn to run (for example, clusters).
-
 Example: a delay runner:
 ```python
 class RunnerDelay (Runner):
-    def __init__ (self, job):
-        """
-        Constructor
-        @params:
-            `job`: The job object
-        """
-        super(RunnerDelay, self).__init__(job)
-
-        # construct an local script
-        delayfile = self.job.script + '.delay'
-        delaysrc  = ['#!/usr/bin/env bash']
-        delaysrc.append('sleep 10')
-        delaysrc.append(self.cmd2run)
-
-        with open (delayfile, 'w') as f:
-            f.write ('\n'.join(delaysrc) + '\n')
-
-        self.script = delayfile
+    @property
+    def scriptParts(self):
+        parts = super().scriptParts()
+        parts.pre += 'sleep 10\n'
+        return parts
 ```
+And then that's it!
 
-**Key points in writing your own runner**:
+Things you may need to redefine with your own runner:
+- How to kill a job (`killImpl`)
+  You can use the `pid` to kill the job. For example, kill a local job:
+  ```python
+  def killImple(self):
+      import cmdy
+      cmdy.kill('-9', self.pid)
+  ```
+  Or kill an SGE job:
+  ```python
+  def killImple(self):
+      cmdy.qdel(self.pid)
+  ```
 
-- Write a proper `__init__` function
-- Write proper functions (`submit`, `kill` and `isRunning`) to submit, kill a job and tell if a job is running.
-- Compose the right script to run the job (`self.script`) in `__init__`.
-- MAKE SURE you save the identity of the job to `job.pidfile`, rc to `job.rcfile`, stdout to `job.outfile` and `stderr` to `job.errfile`
+- How to submit a job (`submitImpl`)
+  The wrapper script is at `self.script`, defaults to `<job.dir>/job.script.<suffix>`. The `suffix` is decided by the runner name, for example, your `RunnerMy` will have `self.script` at `<job.dir>/job.script.my`. What you need in `submitImpl` is to submit that script in BACKGROUND mode, otherwise the program will hang there until the job is done. And also don't forget to save your job id (pid) by `self.pid = <pid>`
+
+- Tell if a job is running (`isRunningImpl`)
+  For example, tell if a local job is running:
+  ```python
+  def isRunningImpl(self):
+      return psutil.pid_exists(int(self.pid))
+  ```
+- How to wrap the script (`@property scriptParts`)
+  The structure of wrapped script looks like:
+  ```shell
+  #!/usr/bin/env bash
+  # 1. header
+  <header>
+  trap command to capture return code
+  # 2. pre
+  <pre script>
+  # 3. command   4. saveoe
+  <command to run the real script> [1> <job.stdout> 2> <job.stderr>]
+  # 5. post
+  <post script>
+  ```
+  You can redefine the whole wrapper by overriding `wrapScript` to make sure you have the right thing written in `self.script`, including running the real script and capture the return code to `<job.dir>/job.rc` at exit. However here, we have a template for the wrapper, what you need to do is just to redefine those 5 parts:
+
+  ```python
+  @property
+  def scriptParts(self):
+      parts = super().scriptParts
+      parts.header = ...
+      parts.pre = ...
+      parts.command = ...
+      parts.saveoe = True/False
+      parts.post = ...
+      return parts
+  ```
+  1. `header`: We have nothing for it by default. You may use it to define some arguments, for example, arguments for `qsub` or `sbatch`.
+  2. `pre`: The pre script used to load some environments. By default, it will use the `preScript` defined in running configuration. For example: `pXXX.sgeRunner = {'preScript': 'source $HOME/.bash_profile'}`
+  3. `command`: Command to run the real script. By default, we will use the shebang or try to make the file executable and submit it.
+  4. `saveoe`: Whether we should redirect the stdout and stderr. It's `True` by default, however, for instance, `qsub` can do it if we have `#$ -o` and `#$ -e` in the `header`. In this case, we may set `saveoe` to `False`
+  5. `post`: Similar as `pre`.
 
 # Register your runner
 It very easy to register your runner, just do `PyPPL.registerRunner (RunnerMy)` (static method) before you start to run the pipeline.

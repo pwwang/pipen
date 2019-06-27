@@ -48,6 +48,8 @@ pXXX.args.x = 1
 Now you can access them by: `{{i.a}}`, `{{i.b}}`, `{{o.a}}` and `{{args.x}}`
 
 # The scope of data
+`{{args.*}}` can be used in all positions listed below
+
 |Attribute|Data available|Meaning|
 |---------|------------|-------|
 |`pXXX.preCmd`|`{{proc.*}}`, |Command to run before job starts|
@@ -63,20 +65,19 @@ For built-in template engine, you may use pipe, for example: `{{i.file | basenam
 
 - `R`: Transform a python value to R value. For example:
 
-| Usage | Data | Result |
-|-------|------|--------|
-| `{{v ` &#x7c; ` R}}` | `{'v': True}` | `TRUE` |
-|| `{'v': 'TRUE'}` | `TRUE` |
-|| `{'v': 'NA'}` | `NA` |
-|| `{'v': 'NULL'}` | `NULL` |
-|| `{'v': 1}` | `1` |
-|| `{'v': 'r:c(1,2,3)'}` | `c(1,2,3)` |
-|| `{'v': [1,2,3]}` | `c(1,2,3)` |
-|| `{'v': {'a':1, 'b':2}}` | `list(a=1, b=2)` |
-|| `{'v': 'plainstring'}` | `"plainstring"` |
+    | Usage | Data | Result |
+    |-------|------|--------|
+    | `{{v ` &#x7c; ` R}}` | `{'v': True}` | `TRUE` |
+    || `{'v': 'TRUE'}` | `TRUE` |
+    || `{'v': 'NA'}` | `NA` |
+    || `{'v': 'NULL'}` | `NULL` |
+    || `{'v': 1}` | `1` |
+    || `{'v': 'r:c(1,2,3)'}` | `c(1,2,3)` |
+    || `{'v': [1,2,3]}` | `c(1,2,3)` |
+    || `{'v': {'a':1, 'b':2}}` | `list(a=1, b=2)` |
+    || `{'v': 'plainstring'}` | `"plainstring"` |
 
-- ~~`Rvec`: Transform a python list to a R vector. For example:~~ will be deprecated, use `R` instead.
-  - ~~`{{v | Rvec}}` with `{'v': [1,2,3]}` results in `c(1,2,3)`~~
+
 - `Rlist`: Transform a python dict to a R list. For example:
   - `{{v | Rlist}}` with `{'v': {'a':1, 'b':2}}` results in `list(a=1, b=2)`
   - `{{v | Rlist}}` with `{'v': {0:1, 1:2}}` results in ```list(`0`=1, `1`=2)```
@@ -87,11 +88,11 @@ For built-in template engine, you may use pipe, for example: `{{i.file | basenam
 - `dirname`: Alias of `os.path.dirname`
 - `basename`: Get the basename of a file. If a file is renamed by `PyPPL` in case of input files with the same basename, it tries to get the original basename. For example:
 
-| Usage | Data | Result |
-|-------|------|--------|
-| `{{v ` &#x7c; ` basename}}` | `{'v': '/path/to/file.txt'}` | `file.txt` |
-|| `{'v': '/path/to/file[1].txt'}` | `file.txt` |
-| `{{v ` &#x7c; ` basename: True}}` | `{'v': '/path/to/file[1].txt'}` | `file[1].txt`|
+    | Usage | Data | Result |
+    |-------|------|--------|
+    | `{{v ` &#x7c; ` basename}}` | `{'v': '/path/to/file.txt'}` | `file.txt` |
+    || `{'v': '/path/to/file[1].txt'}` | `file.txt` |
+    | `{{v ` &#x7c; ` basename: True}}` | `{'v': '/path/to/file[1].txt'}` | `file[1].txt`|
 
 - `bn`: Alias of `basename`
 - `filename`: Similar as `basename` but without extension.
