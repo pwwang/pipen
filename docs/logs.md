@@ -255,5 +255,5 @@ default:
 [24]: https://placehold.it/32/00ffff/eeeeee?text=A
 [25]: https://placehold.it/32/ffffff/eeeeee?text=A
 [26]: https://en.wikipedia.org/wiki/ANSI_escape_code
-[27]: ./script/#debug-your-script
+[27]: ../script/#debug-your-script
 [28]: https://pypi.org/project/colorama/

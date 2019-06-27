@@ -145,4 +145,4 @@ For job indexes, you can also use abbreviations, for example,
 `0-5` for `[0,1,2,3,4,5]` and `1, 4-6` for `[1,4,5,6]`
 
 [1]: https://en.wikipedia.org/wiki/Shebang_(Unix)
-[2]: ./logs/
+[2]: ../logs/

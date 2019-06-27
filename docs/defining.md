@@ -23,7 +23,7 @@ p.desc = 'description'
     # then p.id == 'p'
     ```
 
-# Set arguments of a process `pXXX.args`
+# Set arguments of a process
 It is a `dict` used to set some common arguments shared within the process (different jobs). For example, all jobs use the same program: `bedtools`. but to make the process portable and shareable, you may want others can give a different path of `bedtools` as well. Then you can use `pXXX.args`:
 ```python
 pXXX = Proc()
@@ -56,20 +56,20 @@ Of course, you can do that, but a common argument is not usually generated from 
     pXXX.args.bedtools = 'bedtools'
     ```
 
-# Set the valid return/exit codes `pXXX.rc`
+# Set the valid return/exit codes
 When a program exits, it will return a code (or [exit status][16]), usually a small integer to exhibit it's status. Generally if a program finishes successfully, it will return `0`, which is the default value of `p.rc`. `pyppl` relies on this return code to determine whether a job finishes successfully.  If not, `p.errorhow` will be triggered. You can set multiple valid return codes for a process:
 ```python
 p.rc = [0, 1] #or "0,1"
 # exit code with 0 or 1 will be both regarded as success
 ```
 
-# Command to run before/after jobs run `pXXX.preCmd`/`pXXX.postCmd`
+# Command to run before/after jobs
 You can run some commands before and after the jobs run. The commands should be fit for [`Popen`][15] with `shell=True`. For example, you can set up some environment before the jobs start to run, and remove it when they finish.
 !!! caution
     `preCmd`/`postCmd` only run locally, no matter which runner you choose to run the jobs.
 
 
-# Set the processes current process depends on `pXXX.depends`
+# Set the processes current process depends on
 A process can not only depend on a single process:
 ```python
 p2.depends = p1
@@ -85,7 +85,7 @@ To set prior processes not only let the process use the output channel as input 
 
     When you specify new dependents for a process, its original ones will be removed, which means each time `pXXX.depends` will overwrite the previous setting.
 
-# Use callback to modify the process `pXXX.callback`
+# Use callback to modify the process
 The processes **NOT** initialized until it's ready to run. So you may not be able to modify some of the values until it is initialized. For example, you may want to change the output channel before it passes to the its dependent process:
 ```python
 pSingle = Proc ()
@@ -112,7 +112,7 @@ PyPPL().start (pSingle).run()
 ```
 You can also use a callback in `pCombine.input` to modify the channel, see [here][13], which is recommended. Because `p.callback` will change the original output channel of `pSingle`, but the `input` callback will keep the output channel intact. However, `p.callback` can not only change the output channel, but also change other properties of current process or even set the properties of coming processes.
 
-# Use callfront to modify the process `pXXX.callfront`
+# Use callfront to modify the process
 One possible scenario is that, value in  `pXXX.args` depends on the other process.
 For example:
 ```python

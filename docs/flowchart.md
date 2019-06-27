@@ -62,6 +62,7 @@ PyPPL().start(p1, p8, p9).flowchart(
 ```
 
 The graph (`svgfile`) will be like:
+
 ![Pipeline][4]
 
 The green processes are the starting processes; ones with purple text are processes that will export the output files; and nodes in red are the end processes of the pipeline.

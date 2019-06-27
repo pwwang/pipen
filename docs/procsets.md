@@ -259,4 +259,4 @@ a2 = a.copy(tag = 'copied')
 a2 = a.copy('newps', tag = 'copied')
 # a2.id == 'newps'
 ```
-[1]: ./configuration/#starting-processes
+[1]: ../configuration/#starting-processes

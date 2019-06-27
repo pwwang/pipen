@@ -125,8 +125,8 @@ PyPPL().start('p').run()
     2. If a process is not depending on any other processes, you have to set it as start process. Otherwise, it won't start to run.
 
 [1]: https://docs.python.org/2/library/logging.html#logging-levels
-[2]: ./defining/
-[3]: ./logs/
-[4]: ./flowchart/
-[5]: ./runners/#defining-running-profiles
+[2]: ../defining/
+[3]: ../logs/
+[4]: ../flowchart/
+[5]: ../runners/#defining-running-profiles
 [6]: https://github.com/toml-lang/toml
