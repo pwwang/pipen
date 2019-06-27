@@ -172,19 +172,19 @@ PyPPL().start(pBam, pRef).run()
 | `callfront` | The callfront, called after properties are computed | `callable` | | This chapter |
 
 
-[1]: ./input-output/#specify-input-of-a-process
-[2]: ./input-output/#specify-output-of-a-process
-[3]: ./script/
-[4]: ./export/
-[5]: ./caching/
-[6]: ./runners/
-[7]: ./basics/#folder-structure
-[8]: ./placeholders/#proc-property-placeholders
-[9]: ./input-output/#use-a-callback-to-modify-the-output-channel-of-the-prior-process
-[10]: ./caching/#calculating-signatures-for-caching
-[11]: ./export/#control-of-export-of-cached-jobs
-[12]: ./error/
-[13]: ./input-output/
+[1]: ../input-output/#specify-input-of-a-process
+[2]: ../input-output/#specify-output-of-a-process
+[3]: ../script/
+[4]: ../export/
+[5]: ../caching/
+[6]: ../runners/
+[7]: ../basics/#folder-structure
+[8]: ../templating/#proc-property-placeholders
+[9]: ../input-output/#use-a-callback-to-modify-the-output-channel-of-the-prior-process
+[10]: ../caching/#calculating-signatures-for-caching
+[11]: ../export/#control-of-export-of-cached-jobs
+[12]: ../error/
+[13]: ../input-output/
 [14]: https://pypi.org/project/python-box/
 [15]: https://docs.python.org/2/library/subprocess.html#popen-constructor
 [16]: https://en.wikipedia.org/wiki/Exit_status
