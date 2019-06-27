@@ -1,5 +1,5 @@
 site_name: PyPPL
-theme: 
+theme:
     name: 'material'
     font:
       text: 'Ubuntu'
@@ -12,10 +12,10 @@ markdown_extensions:
         baselevel: 2
 nav:
     - 'Introduction': 'index.md'
-    - 'Basics and folder structure': 'basic-concepts-and-directory-structure.md'
-    - 'Templating': 'placeholders.md'
+    - 'Basics and folder structure': 'basics.md'
+    - 'Templating': 'templating.md'
     - 'Channels': 'channels.md'
-    - 'Input and output of a process': 'specify-input-and-output-of-a-process.md'
+    - 'Input and output of a process': 'input-output.md'
     - 'The heart: script': 'write-your-script.md'
     - 'Output file exporting': 'export-output-files.md'
     - 'Caching and resuming processes': 'caching.md'

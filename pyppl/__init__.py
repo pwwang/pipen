@@ -412,7 +412,7 @@ class PyPPL (object):
 		fchart.setTheme(self.config._flowchart.theme)
 
 		for start in self.tree.getStarts():
-		 	fchart.addNode(start, 'start')
+			fchart.addNode(start, 'start')
 		for end in self.tree.getEnds():
 			fchart.addNode(end, 'end')
 			for apath in self.tree.getPathsToStarts(end, check_hide = True):

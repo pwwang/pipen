@@ -4,23 +4,23 @@ A running profile defines the parameters that needed for a pipeline to run. Gene
 A typical running profile is as follows:
 ```python
 {
-	'runner': 'sge',
-	'sgeRunner': {
-		'queue': '1-day'
-	},
-	'forks': 32
+    'runner': 'sge',
+    'sgeRunner': {
+        'queue': '1-day'
+    },
+    'forks': 32
 }
 ```
 
 !!! caution
-	You may also put other settings of processes into a running profile, but keep in mind:
-	1. The value will not be overridden if the attribute is set explicitly (i.e: `p.forks = 10`)
-	2. Only set common attributes for all processes in a pipeline to avoid unexprected behavior. For example, you probably don't want this in general cases to set the same script for all processes: 
-	```python
-	{
-		'script': 'file:/path/to/script'
-	}
-	```
+    You may also put other settings of processes into a running profile, but keep in mind:
+    1. The value will not be overridden if the attribute is set explicitly (i.e: `p.forks = 10`)
+    2. Only set common attributes for all processes in a pipeline to avoid unexprected behavior. For example, you probably don't want this in general cases to set the same script for all processes:
+    ```python
+    {
+        'script': 'file:/path/to/script'
+    }
+    ```
 
 # Defining running profiles
 You may pre-define some profiles so that you can easily swith them by:
@@ -30,22 +30,20 @@ PyPPL().start(pXXX).run('profile2')
 ```
 You can define profiles in `PyPPL`'s default configuration files: `$HOME/.PyPPL.yaml`, `$HOME/.PyPPL` and/or `$HOME/.PyPPL.json`. The latter ones have high priorities. `$HOME/.PyPPL` should also be in `JSON` format. Take `$HOME/.PyPPL.yaml` (requiring `pyyaml`) for example, the content is like:
 ```yaml
-default: 
-	runner: local
-	forks: 1
-	echo: stderr
+default:
+    runner: local
+    forks: 1
+    echo: stderr
 profile1:
-	runner: sge
-	sgeRunner:
-		queue: 1-day
+    runner: sge
+    sgeRunner:
+        queue: 1-day
 profile2:
-	runner: sge
-	sgeRunner:
-		queue: 7-days
+    runner: sge
+    sgeRunner:
+        queue: 7-days
 ```
 
-!!! note
-	If a `key` is not in a profile, then it will be inherited from `default`.
 
 You may also define some profiles in a file somewhere else, say `/path/to/myprofiles.yaml`. Just pass the file to `PyPPL` constructor:
 ```python
@@ -53,46 +51,31 @@ PyPPL(cfgfile = '/path/to/myprofiles.yaml').start(pXXX).run('profile1')
 ```
 
 !!! note
-	This has higher priority than default configuration files.
+    This has higher priority than default configuration files.
 
-You can also pass the profiles to `PyPPL` constructor directly:
+You can also pass a temporary to `PyPPL` constructor directly:
 ```python
 PyPPL({
-	'default': {
-		'runner': 'local',
-		'forks': 1,
-		'echo': 'stderr'
-	},
-	'profile1': {
-		'runner': 'sge',
-		'sgeRunner': {
-			'queue': '1-day'
-		}
-	},
-	'profile2': {
-		'runner': 'sge',
-		'sgeRunner': {
-			'queue': '7-days'
-		}
-	}
-}).start(pXXX).run('profile1')
+    'runner': 'sge',
+    'sgeRunner': {'queue': '1-day'}
+}).start(pXXX).run()
 ```
 
 !!! note
-	In this way, the profiles have higher priorities than the ones defined in configuration files.
+    In this way, the profiles have higher priorities than the ones defined in configuration files.
 
 Or even, you can also specify a profile to `run` function to ask the pipeline run with the profile directly:
 ```python
 PyPPL().start(pXXX).run({
-	'runner': 'sge',
-	'sgeRunner': {
-		'queue': '1-day'
-	}
+    'runner': 'sge',
+    'sgeRunner': {
+        'queue': '1-day'
+    }
 })
 ```
 
 !!! note
-	This has the highest priority.
+    This has the even higher priority. If both specified, the one in `run` will overwrite the on in `PyPPL`
 
 # Built-in runners
 We have 5 built-in runners (`RunnerLocal`, `RunnerSsh`, `RunnerSge`, `RunnerSlurm`, `runnerDry`), you can also define you own runners.
@@ -103,19 +86,19 @@ You can either tell one process to use a runner, or even, you can tell the pipel
 Ssh runner takes the advantage to use the computing resources from other servers that can be connected via `ssh`. The `ssh` command allows us to pass the command to the server and execute it: `ssh [options] [command]`
 
 !!! caution
-	1. ssh runner only works when the servers share the same file system.
-	2. you have to [configure](http://www.linuxproblem.org/art_9.html) so that you don't need a password to log onto the servers, or use a private key to connect to the ssh servers.
-	3. The jobs will be distributed equally to the servers.
+    1. ssh runner only works when the servers share the same file system.
+    2. you have to [configure](http://www.linuxproblem.org/art_9.html) so that you don't need a password to log onto the servers, or use a private key to connect to the ssh servers.
+    3. The jobs will be distributed equally to the servers.
 
 To tell a process the available ssh servers:
 ```python
 pXXX.sshRunner = {
-	"servers": ["server1", "server2", ...], 
-	"keys": ["/path/to/keyfile1", "/path/to/keyfile2", ...],
-	"checkAlive": False
+    "servers": ["server1", "server2", ...],
+    "keys": ["/path/to/keyfile1", "/path/to/keyfile2", ...],
+    "checkAlive": False
 }
-``` 
-`checkAlive` is to tell the pipeline to check whether the `servers` are alive, then use only the alive servers. Otherwise use all the `servers`.  
+```
+`checkAlive` is to tell the pipeline to check whether the `servers` are alive, then use only the alive servers. Otherwise use all the `servers`.
 You may also specify a number for `checkAlive` to set a timeout. (see: https://pwwang.github.io/PyPPL/api/#module-pypplrunnersrunner_ssh)
 
 You can have complicated ssh configurations which can be set by the system ssh config subsystem:
@@ -124,9 +107,9 @@ You can have complicated ssh configurations which can be set by the system ssh c
 ```
 # contents of $HOME/.ssh/config
 Host dev
-	HostName dev.example.com
-	Port 22000
-	User fooey
+    HostName dev.example.com
+    Port 22000
+    User fooey
 ```
 
 If you use different usernames to log on the servers, you may also specify the usernames as well:
@@ -137,26 +120,26 @@ pXXX.sshRunner = {"servers": ["user1@server1", "user2@server2", ...]}
 You can also add `preScript` and `postScript` for all jobs:
 ```python
 pXXX.sshRunner = {
-	"servers":[...], 
-	"preScript": "mkdir some/dir/to/be/made", 
-	"postScript": "rm -rf /path/to/job/tmp/dir"
+    "servers":[...],
+    "preScript": "mkdir some/dir/to/be/made",
+    "postScript": "rm -rf /path/to/job/tmp/dir"
 }
 ```
 
 To make a running profile with it for a pipeline for all processes:
 ```python
 PyPPL ({
-	# default profile
-	'default': {
-		'sshRunner': {"servers": ["user1@server1", "user2@server2", ...]}
-	},
-	'ssh3': {
-		'runner': 'ssh',
-		'sshRunner': {
-			"servers": ["server1", "server2", "server3"],
-			"keys": ["/path/to/key1", "/path/to/key2", "/path/to/key3"]
-		}
-	}
+    # default profile
+    'default': {
+        'sshRunner': {"servers": ["user1@server1", "user2@server2", ...]}
+    },
+    'ssh3': {
+        'runner': 'ssh',
+        'sshRunner': {
+            "servers": ["server1", "server2", "server3"],
+            "keys": ["/path/to/key1", "/path/to/key2", "/path/to/key3"]
+        }
+    }
 })
 ```
 Also see "[pipeline configration](./configure-a-pipeline/)" for more details.
@@ -172,15 +155,15 @@ ssh -i "/path/to/key1" user1@server1 "cd <cwd>; <workdir>/0/job.script"
 Similarly, you can also submit your jobs to SGE servers using `qsub`. To set the options for a process:
 ```python
 pXXX.sgeRunner = {
-	"sge.q" : "1-day",          # the queue
-	"sge.M" : "user@domain.com",# The email for notification
-	"sge.l" : "h_vmem=4G",        
-	"sge.l ": "h_stack=512M",   # Remember to add an extra space 
-								# so that it won't override the previous "sge.l"
-	"sge.m" : "abe",            # When to notify
-	"sge.notify": True,
-	"preScript":  "source /home/user/.bash_profile >&/dev/null; mkdir /tmp/my",  # load the environment and create the temporary directory
-	"postScript": "rm -rf /tmp/my" # clean up
+    "sge.q" : "1-day",          # the queue
+    "sge.M" : "user@domain.com",# The email for notification
+    "sge.l" : "h_vmem=4G",
+    "sge.l ": "h_stack=512M",   # Remember to add an extra space
+                                # so that it won't override the previous "sge.l"
+    "sge.m" : "abe",            # When to notify
+    "sge.notify": True,
+    "preScript":  "source /home/user/.bash_profile >&/dev/null; mkdir /tmp/my",  # load the environment and create the temporary directory
+    "postScript": "rm -rf /tmp/my" # clean up
 }
 ```
 Please check `man qsub` to find other options. Remember to add a `sge.` prefix to the option name.
@@ -188,11 +171,11 @@ Please check `man qsub` to find other options. Remember to add a `sge.` prefix t
 To make a running profile with it for a pipeline for all processes:
 ```python
 PyPPL({
-	'proc': {
-		'sgeRunner': {
-			#...
-		}
-	}
+    'proc': {
+        'sgeRunner': {
+            #...
+        }
+    }
 })
 ```
 Also see "[pipeline configuration](./configure-a-pipeline/)" for more details.
@@ -227,19 +210,19 @@ pXXX.slurmRunner = {...}
 For running profiles:
 ```python
 config = {
-  "proc": {
-	... # other configurations
-	"runner": "slurm", # all processes run with slurm
-	"slurmRunner": {
-	   ...
-	}
+  "default": {
+    ... # other configurations
+    "runner": "slurm", # all processes run with slurm
+    "slurmRunner": {
+       ...
+    }
   }, # or you can also create a profile
   "runWithSlurm": {
-	... # other configurations
-	"runner": "slurm", 
-	"slurmRunner": {
-	   ...
-	}
+    ... # other configurations
+    "runner": "slurm",
+    "slurmRunner": {
+       ...
+    }
   }
 }
 PyPPL(config).start(...).run() # uses configurations of 'proc'
@@ -276,11 +259,11 @@ You can use dry runner to dry-run a pipeline. The real script will not be runnin
 
 !!! note "When `RunnerDry` is being used"
 
-	- All processes are running on local machine.
-	- Expectations won't be checked.
-	- Processes won't be cached.
-	- Output files/directories won't be exported.
-	- Better set runner of all processes in a pipeline to `dry`. (`pyppl().starts(...).run('dry')`), since empty file/directory will be created for output. Problems will happen if you have a non-dry-run process depending on dry-run processes.
+    - All processes are running on local machine.
+    - Expectations won't be checked.
+    - Processes won't be cached.
+    - Output files/directories won't be exported.
+    - Better set runner of all processes in a pipeline to `dry`. (`pyppl().starts(...).run('dry')`), since empty file/directory will be created for output. Problems will happen if you have a non-dry-run process depending on dry-run processes.
 
 # Define your own runner
 You are also able to define your own runner, which should be a class extends `Runner` (jobs run immediately after submission) or `RunnerQueue` (jobs are put into a queue after submission). There are several methods and variables you may need to redefine (You may check the [API documentation](./API/#runner) for all available methods and variables).
@@ -289,7 +272,7 @@ The class name **MUST** start with `Runner` and end with the runner name with fi
 ```python
 from pyppl.runners import Runner
 class RunnerMy (Runner):
-	pass
+    pass
 ```
 
 The base class `Runner` defines the runners where the jobs will immediately run after submission; while `RunnerQueue` defines the runners where the jobs will be put into a queue and wait for its turn to run (for example, clusters).
@@ -297,24 +280,24 @@ The base class `Runner` defines the runners where the jobs will immediately run 
 Example: a delay runner:
 ```python
 class RunnerDelay (Runner):
-	def __init__ (self, job):
-		"""
-		Constructor
-		@params:
-			`job`: The job object
-		"""
-		super(RunnerDelay, self).__init__(job)
+    def __init__ (self, job):
+        """
+        Constructor
+        @params:
+            `job`: The job object
+        """
+        super(RunnerDelay, self).__init__(job)
 
-		# construct an local script
-		delayfile = self.job.script + '.delay'
-		delaysrc  = ['#!/usr/bin/env bash']
-		delaysrc.append('sleep 10')
-		delaysrc.append(self.cmd2run)
-		
-		with open (delayfile, 'w') as f:
-			f.write ('\n'.join(delaysrc) + '\n')
-		
-		self.script = delayfile
+        # construct an local script
+        delayfile = self.job.script + '.delay'
+        delaysrc  = ['#!/usr/bin/env bash']
+        delaysrc.append('sleep 10')
+        delaysrc.append(self.cmd2run)
+
+        with open (delayfile, 'w') as f:
+            f.write ('\n'.join(delaysrc) + '\n')
+
+        self.script = delayfile
 ```
 
 **Key points in writing your own runner**:
@@ -326,7 +309,7 @@ class RunnerDelay (Runner):
 
 # Register your runner
 It very easy to register your runner, just do `PyPPL.registerRunner (RunnerMy)` (static method) before you start to run the pipeline.
-The 5 built-in runners have already been registered: 
+The 5 built-in runners have already been registered:
 ```python
 PyPPL.registerRunner (RunnerLocal)
 PyPPL.registerRunner (RunnerSsh)

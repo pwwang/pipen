@@ -2,8 +2,8 @@
 <!-- toc -->
 
 # Choose your language
-You can either specify the path of interpreter to `pXXX.lang`. If the interpreter is in `$PATH`, you can directly give the basename of the interpreter.  
-For example, if you have your own perl installed at `/home/user/bin/perl`, then you need to tell `PyPPL` where it is: `pXXX.lang = "/home/user/bin/perl"`. If `/home/user/bin` is in your `$PATH`, you can simply do: `p.lang = "perl"`  
+You can either specify the path of interpreter to `pXXX.lang`. If the interpreter is in `$PATH`, you can directly give the basename of the interpreter.
+For example, if you have your own perl installed at `/home/user/bin/perl`, then you need to tell `PyPPL` where it is: `pXXX.lang = "/home/user/bin/perl"`. If `/home/user/bin` is in your `$PATH`, you can simply do: `p.lang = "perl"`
 You can also use [shebang][1] to specify the interperter:
 ```perl
 #!/home/usr/bin/perl
@@ -11,7 +11,7 @@ You can also use [shebang][1] to specify the interperter:
 ```
 
 # Use script from a file
-You can also put the script into a file, and use it with a `file:` prefix: `pXXX.script = "file:/a/b/c.pl"`  
+You can also put the script into a file, and use it with a `file:` prefix: `pXXX.script = "file:/a/b/c.pl"`
 
 !!! note
     You may also use a relative-path template, which is relative to where `pXXX.script` is defined. For example: `pXXX.script = "file:./scripts/script.py"` is defined in `/a/b/pipeline.py`, then the script file refers to `/a/b/scripts/script.py`
@@ -44,7 +44,7 @@ def test():
         pass
     """
 ```
-The leading white spaces of line `# PYPPL INDENT REMOVE` will be removed for each line (including itself) below it. In this case, the extra `<tab>` of pass will be kept.  
+The leading white spaces of line `# PYPPL INDENT REMOVE` will be removed for each line (including itself) below it. In this case, the extra `<tab>` of pass will be kept.
 You may use `# PYPPL INDENT KEEP` to stop removing the white spaces for the following lines.
 
 !!! caution
@@ -93,7 +93,7 @@ Then the log message will be:
     ```
 
 !!! note
-    The level name you specified after `pyppl.log` does not apply to [normal log filters or themes][2], because the actual level is `_FLAG` in this case. So unless you set `loglevels` to `None`, it will be anyway printed out. For themes, the color at the empty string key will be used. 
+    The level name you specified after `pyppl.log` does not apply to [normal log filters or themes][2], because the actual level is `_FLAG` in this case. So unless you set `loglevels` to `None`, it will be anyway printed out. For themes, the color at the empty string key will be used.
 
     You can define filters or themes for this kind of logs, just remember the actual level name has an `_` prefix. See [here][2] to learn how to define filters and themes.
 
@@ -105,7 +105,7 @@ This is controlled by setting `p.echo`, which is set to `False` by default. The 
 {
     'jobs': [0, 1], # the jobs that are allowed to output
     # the regular expression for each type of output
-    'type': {'stdout': r'^STDOUT:', 'stderr': r'^STDERR'} 
+    'type': {'stdout': r'^STDOUT:', 'stderr': r'^STDERR'}
 }
 ```
 But there are also some abbrevations for the setting:
@@ -117,6 +117,9 @@ But there are also some abbrevations for the setting:
 |`'stderr'`|`{'jobs':[0], 'type': {'stderr':None}}`|Output all stderr of job #0|
 |`{'jobs':0, 'type': 'stdout'}`|`{'jobs':[0], 'type': {'stdout':None}}`|Output all stdout of job #0|
 |`{'type': {'all': r'^output'}}`|`{ 'jobs': [0], 'type': {'stdout': r'^output', 'stderr': r'^output'} }`|Output all lines starting with `"output"` from stdout/stderr of job #0|
+
+For job indexes, you can also use abbreviations, for example,
+`0-5` for `[0,1,2,3,4,5]` and `1, 4-6` for `[1,4,5,6]`
 
 [1]: https://en.wikipedia.org/wiki/Shebang_(Unix)
 [2]: ./configure-your-logs/
