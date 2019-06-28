@@ -1,6 +1,15 @@
 [TAGIT]
-changelog = py:'docs/CHANGELOG.md'
+; The change log file to check when version is mentioned.
+changelog = docs/CHANGELOG.md
+; Whether publish the package after the tag pushed to server.
 publish = py:False
-source = py:'pyppl'
-checktoml = py:True
+; Whether check the version (__version__) in source file.
+checksource = py:False
+; Whether check the version in pyproject.toml file.
+checktoml = py:False
+; The source file or the package name.
+versource = pyppl
+; The toml file, typically pyproject.toml.
+vertoml = ./pyproject.toml
+; Which part of the version to increment for auto-tagging.
 increment = patch
