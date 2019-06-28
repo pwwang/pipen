@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "PyPPL"
-version = "1.4.3"
+version = "2.0.0"
 description = "A Python PiPeLine framework"
 authors = [ "pwwang <pwwang@pwwang.com>",]
 license = "MIT"
@@ -19,7 +19,7 @@ include = "pyppl/*.py"
 python = "^3.6"
 # we will wait for 4.0 to solve the leading _ issue #87
 # install with pip for now
-#python-box = { git = "https://github.com/pwwang/Box.git", branch = "master" }
+python-box = { git = "https://github.com/pwwang/Box.git", branch = "master" }
 liquidpy = "*"
 pyparam = "*"
 filelock = "^3.0.0"
@@ -36,3 +36,6 @@ jinja2 = "^2.0.0"
 pyyaml = "^5.0.0"
 faker = "^1.0.0"
 graphviz = "^0.11"
+
+[tool.poetry.scripts]
+pyppl = "pyppl.console:main"
