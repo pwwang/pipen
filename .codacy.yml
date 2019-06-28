@@ -3,4 +3,5 @@ exclude_paths:
   - 'api.py'
   - 'site/**'
   - 'tests/**'
-  - 'tutorials/**'
+  - 'examples/**'
+  - 'pyppl/console.py'

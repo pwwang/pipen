@@ -102,3 +102,6 @@ site/
 
 # poetry
 poetry.lock
+
+# backup files
+*.bak

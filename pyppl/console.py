@@ -7,9 +7,8 @@ from pprint import pformat
 from datetime import date, timedelta, datetime
 from concurrent.futures import ThreadPoolExecutor
 import cmdy
-from colorama import Fore, Back, Style
+from colorama import Fore, Style
 from pyparam import commands, Helps, HelpAssembler
-from . import PyPPL
 from .utils import Box, config, fs
 
 HELP_ASSEMBLER = HelpAssembler()
@@ -192,7 +191,6 @@ def read_sections (sfile):
 	return ret
 
 def compare_procs(proc1, proc2):
-	from difflib import unified_diff
 	setfile1 = path.join(proc1, 'proc.settings.yaml')
 	setfile2 = path.join(proc2, 'proc.settings.yaml')
 	streamout('1. {}'.format(setfile1), 'green')

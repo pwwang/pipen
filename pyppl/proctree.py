@@ -60,6 +60,7 @@ class ProcTree(object):
 		self.starts  = [] # start procs
 		self.ends    = [] # end procs
 
+	@classmethod
 	def init(self):
 		"""@API
 		Set the status of all `ProcNode`s
