@@ -230,16 +230,19 @@ class PyPPL (object):
 			(PyPPL): The pipeline object itself.
 		"""
 		starts  = set(PyPPL._procsSelector(args))
+		PyPPL._registerProc(*starts)
+		self.tree.init()
+
 		nostart = set()
-		for start in starts:
+		for startproc in starts:
 			# Let's check if we have any other procs on the path of start process
-			paths = self.tree.getPaths(start)
+			paths = self.tree.getPaths(startproc)
 			pristarts = [pnode for sublist in paths for pnode in sublist if pnode in starts]
 			if pristarts:
-				nostart.add(start)
+				nostart.add(startproc)
 				names = [pnode.name(True) for pnode in pristarts]
 				names = names[:3] + ['...'] if len(names) > 3 else names
-				logger.warning('Start process %s ignored, depending on [%s]', start.name(True),
+				logger.warning('Start process %s ignored, depending on [%s]', startproc.name(True),
 					', '.join(names))
 		self.tree.setStarts(starts - nostart)
 		return self
@@ -374,12 +377,12 @@ class PyPPL (object):
 			proc.run(profile, self.config)
 			proc = self.tree.getNextToRun()
 
-		unran = self.tree.unranProcs()
-		if unran:
-			klen  = max([len(key) for key, _ in unran.items()])
-			for key, val in unran.items():
-				fmtstr = "%-"+ str(klen) +"s won't run as path can't be reached: %s <- %s"
-				logger.warning(fmtstr, key, key, ' <- '.join(val))
+		# unran = self.tree.unranProcs()
+		# if unran:
+		# 	klen  = max([len(key) for key, _ in unran.items()])
+		# 	for key, val in unran.items():
+		# 		fmtstr = "%-"+ str(klen) +"s won't run as path can't be reached: %s <- %s"
+		# 		logger.warning(fmtstr, key, key, ' <- '.join(val))
 
 		logger.done (
 			'Total time: %s',
@@ -427,13 +430,13 @@ class PyPPL (object):
 
 
 	@staticmethod
-	def _registerProc(proc):
+	def _registerProc(*procs):
 		"""
 		Register the process
 		@params:
-			`proc`: The process
+			`*procs`: The process
 		"""
-		ProcTree.register(proc)
+		ProcTree.register(*procs)
 
 	@staticmethod
 	def _checkProc(proc):

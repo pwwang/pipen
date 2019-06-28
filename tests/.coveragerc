@@ -1,9 +1,1 @@
-[run]
-source =
-	../pyppl
-omit =
-	**/testly/__init__.py
-	test*.py
-	workdir/*.py
-	helpers.py
-
+../.coveragerc

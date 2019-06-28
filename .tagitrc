@@ -1,0 +1,6 @@
+[TAGIT]
+changelog = py:'docs/CHANGELOG.md'
+publish = py:True
+source = py:'pyppl'
+checktoml = py:True
+increment = patch

@@ -54,16 +54,23 @@ class ProcTree(object):
 
 	def __init__(self):
 		"""@API
-		Constructor, set the status of all `ProcNode`s
+		ProcTruee constructor
 		"""
 		ProcTree.reset()
 		self.starts  = [] # start procs
 		self.ends    = [] # end procs
+
+	def init(self):
+		"""@API
+		Set the status of all `ProcNode`s
+		"""
 		# build prevs and nexts
 		for proc, node in ProcTree.NODES.items():
 			if not proc.depends:
 				continue
 			for dep in proc.depends:
+				if dep not in ProcTree.NODES:
+					continue
 				dnode = ProcTree.NODES[dep]
 				if node not in dnode.next:
 					dnode.next.append(node)
@@ -75,13 +82,14 @@ class ProcTree(object):
 					'it has both more than 1 parents and children.')
 
 	@staticmethod
-	def register(proc):
+	def register(*procs):
 		"""@API
 		Register the process
 		@params:
-			proc (Proc): The `Proc` instance
+			*procs (Proc): The `Proc` instance
 		"""
-		ProcTree.NODES[proc] = ProcNode(proc)
+		for proc in procs:
+			ProcTree.NODES[proc] = ProcNode(proc)
 
 	@staticmethod
 	def check(proc):
@@ -91,7 +99,7 @@ class ProcTree(object):
 			proc (Proc): The `Proc` instance
 		"""
 		for pnode, node in ProcTree.NODES.items():
-			if pnode is proc:
+			if pnode is proc or proc not in ProcTree.NODES:
 				continue
 			if node.sameIdTag(proc):
 				raise ProcTreeProcExists(node, ProcTree.NODES[proc])
@@ -346,30 +354,30 @@ class ProcTree(object):
 				#ret.append(node.proc)
 		return None
 
-	def unranProcs(self):
-		"""@API
-		Report the processes that won't run in a path can't be reached.
-		Say start process not specified in that path.
-		This is trying to alert people if they forget specify the start processes along those paths.
-		@returns:
-			(dict{procname: [path]}): The processes won't run.
-		"""
-		ret = {}
-		starts = set(self.getStarts())
-		for proc, node in ProcTree.NODES.items():
-			# only check possible end process
-			# and then report the paths can't be reached
-			# - skip impossbile end proscess
-			# - skip absolete processes
-			# - skip those processes have run
-			# - skip procsets
-			if node.next or node.ran or (not node.prev and not node.next) or proc.procset:
-				continue
-			paths = self.getPaths(node, check_hide = False)
-			# we should have paths, otherwise it's an absolete process
-			for path in paths:
-				if not (set(path) & starts):
-					ret[proc.name()] = [pnode.name() for pnode in path]
-					# just report one path
-					break
-		return ret
+	# def unranProcs(self):
+	# 	"""@API
+	# 	Report the processes that won't run in a path can't be reached.
+	# 	Say start process not specified in that path.
+	# 	This is trying to alert people if they forget specify the start processes along those paths.
+	# 	@returns:
+	# 		(dict{procname: [path]}): The processes won't run.
+	# 	"""
+	# 	ret = {}
+	# 	starts = set(self.getStarts())
+	# 	for proc, node in ProcTree.NODES.items():
+	# 		# only check possible end process
+	# 		# and then report the paths can't be reached
+	# 		# - skip impossbile end proscess
+	# 		# - skip absolete processes
+	# 		# - skip those processes have run
+	# 		# - skip procsets
+	# 		if node.next or node.ran or (not node.prev and not node.next) or proc.procset:
+	# 			continue
+	# 		paths = self.getPaths(node, check_hide = False)
+	# 		# we should have paths, otherwise it's an absolete process
+	# 		for path in paths:
+	# 			if not (set(path) & starts):
+	# 				ret[proc.name()] = [pnode.name() for pnode in path]
+	# 				# just report one path
+	# 				break
+	# 	return ret

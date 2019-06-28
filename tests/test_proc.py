@@ -5,6 +5,7 @@ import logging
 import pytest
 from pathlib import Path
 from simpleconf import Config
+from pyppl import PyPPL
 from pyppl.utils import config, uid, Box, OBox, fs
 from pyppl.proc import Proc
 from pyppl.template import TemplateLiquid
@@ -54,6 +55,9 @@ def test_proc_init(tmpdir):
 
 	with pytest.raises(ProcTagError):
 		Proc(tag = 'a b')
+
+	with pytest.raises(ProcAttributeError):
+		Proc(depends = 1)
 
 def test_proc_getattr(tmpdir):
 	p2 = Proc()
@@ -184,9 +188,14 @@ def test_suffix(tmpdir):
 	assert p8.suffix == uid(sigs.to_json())
 
 def test_buildprops(tmpdir):
+	from pyppl import ProcTree
 	p9 = Proc()
+	p91 = Proc(id = 'p9')
+	ProcTree.register(p9)
+	ProcTree.register(p91)
 	with pytest.raises(ProcTreeProcExists):
-		Proc(id = 'p9')._buildProps()
+		p91._buildProps()
+
 	p9.id = 'p89'
 	p9.template = TemplateLiquid
 	p9.ppldir = Path(tmpdir / 'test_buildprops')
@@ -439,8 +448,9 @@ def test_readconfig(tmpdir):
 	assert p17.runner == 'dry'
 	assert p17.config.runner == 'dry'
 
+def test_readconfig_preload(tmpdir):
+	config._load({'xyz': {'runner': 'sge', 'forks': 50}})
 	p18 = Proc()
-	p18.config._load({'xyz': {'runner': 'sge', 'forks': 50}})
 	p18._readConfig('xyz', Config())
 	assert p18.runner == 'sge'
 	assert p18.forks == 50

@@ -1076,7 +1076,7 @@
 		- `NODES (OrderedDict)`:  The processes registered.
 
 	!!! abstract "method: `__init__ (self)`"
-		Constructor, set the status of all `ProcNode`s
+		ProcTruee constructor
 		
 
 	!!! tip "staticmethod: `check (proc)`"
@@ -1210,13 +1210,17 @@
 
 			- `(list[Proc])`:  The start processes
 
-	!!! tip "staticmethod: `register (proc)`"
+	!!! abstract "method: `init (self)`"
+		Set the status of all `ProcNode`s
+		
+
+	!!! tip "staticmethod: `register (*procs)`"
 		Register the process
 
 		- **params**
 
 
-			- `proc (Proc)`:  The `Proc` instance
+			- `*procs (Proc)`:  The `Proc` instance
 
 	!!! tip "staticmethod: `reset ()`"
 		Reset the status of all `ProcNode`s
@@ -1229,16 +1233,6 @@
 
 
 			- `starts (list[Proc])`:  The start processes
-
-	!!! abstract "method: `unranProcs (self)`"
-		Report the processes that won't run in a path can't be reached.
-		Say start process not specified in that path.
-		This is trying to alert people if they forget specify the start processes along those paths.
-
-		- **returns**
-
-
-			- `(dict{procname`:  [path]}): The processes won't run.
 
 ## class: Logger
 

@@ -88,6 +88,8 @@ class Proc(Hashable):
 		defaultconfig['id'] = id if id else utils.varname()
 		if ' ' in tag:
 			raise ProcTagError("No space allowed in tag.")
+		if 'depends' in kwargs:
+			raise ProcAttributeError("Attribute 'depends' has to be set using `__setattr__`")
 
 		# The extra arguments for the process
 		defaultconfig['args'] = defaultconfig['args'].copy()
@@ -161,9 +163,6 @@ class Proc(Hashable):
 		# collapse the loading trace, we don't need it anymore.
 		self.config._load({'default': defaultconfig})
 
-		from . import PyPPL
-		PyPPL._registerProc(self)
-
 	def __getattr__(self, name):
 		"""
 		Get the value of a property in `self.props`
@@ -212,6 +211,7 @@ class Proc(Hashable):
 
 		# depends have to be computed here, as it's used to infer the relation before run
 		if name == 'depends':
+
 			self.props.depends = []
 			depends = list(value) if isinstance(value, tuple) else \
 				value.ends if isinstance(value, ProcSet) else \
@@ -229,6 +229,10 @@ class Proc(Hashable):
 				else:
 					raise ProcAttributeError(type(value).__name__,
 						"Process dependents should be 'Proc/ProcSet', not")
+			if depends:
+				from . import PyPPL
+				# only register the procs that will be involved.
+				PyPPL._registerProc(self)
 
 		elif name == 'script' and value.startswith('file:'):
 			scriptpath = Path(value[5:])
@@ -301,6 +305,8 @@ class Proc(Hashable):
 				conf[key] = ''
 			elif isinstance(self.config[key], dict) and 'tplenvs' not in key:
 				conf[key] = pycopy.deepcopy(self.config[key])
+			elif key == 'depends':
+				continue
 			else:
 				conf[key] = self.config[key]
 
@@ -323,6 +329,7 @@ class Proc(Hashable):
 				props[key] = self.props[key]
 
 		newproc = Proc(**conf)
+		newproc.depends = []
 		dict.update(newproc.props, props)
 		return newproc
 
@@ -784,23 +791,25 @@ class Proc(Hashable):
 		if 'runner' in self.sets or not profile:
 			profile = self.config.runner
 
-		# current configs
-		curconfigs = dict.copy(self.config)
+		config_with_profiles = utils.config.copy()
 		# make sure configs in __init__ be loaded
-		self.config._load({'default': curconfigs})
+		config_with_profiles._load({'default': dict.copy(self.config)})
 
 		assert isinstance(config, type(self.config))
 		# load extra profiles specified to PyPPL()
 		for key, val in config._protected['cached'].items():
 			if '__noloading__' not in val:
-				self.config._load(val)
+				config_with_profiles._load(val)
 
 		# configs have been set
 		setconfigs = {key:self.config[key] for key in self.sets if key != 'runner'}
 		if isinstance(profile, dict):
 			profile['runner'] = profile.get('runner', self.config.runner)
-			self.config._load({'__tmp__': profile})
-			self.config._use('__tmp__')
+			config_with_profiles._load({'__tmp__': profile})
+			config_with_profiles._use('__tmp__')
+			# now config_with_profiles carries the right profile
+			# update it back to self.config
+			self.config.update(config_with_profiles)
 			self.config.update(setconfigs)
 			# the real runner
 			self.props.runner  = self.config.runner
@@ -808,14 +817,17 @@ class Proc(Hashable):
 			self.config.runner = '__tmp__'
 		else:
 			try:
-				self.config._use(profile, raise_exc = True)
+				config_with_profiles._use(profile, raise_exc = True)
 			except NoSuchProfile:
-				print(repr(profile))
-				self.config._load({profile: dict(runner = profile)})
-				self.config._use(profile)
+				config_with_profiles._load({profile: dict(runner = profile)})
+				config_with_profiles._use(profile)
+			# now config_with_profiles carries the right profile
+			# update it back to self.config
+			self.config.update(config_with_profiles)
 			self.config.update(setconfigs)
 			self.props.runner  = self.config.runner
 			self.config.runner = profile
+		del config_with_profiles
 
 	def _runCmd(self, key):
 		"""
