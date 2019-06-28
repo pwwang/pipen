@@ -12,6 +12,7 @@ markdown_extensions:
         baselevel: 2
 nav:
     - 'Introduction': 'index.md'
+    - 'Examples': 'examples.md'
     - 'Basics and folder structure': 'basics.md'
     - 'Defining a process': 'defining.md'
     - 'Templating': 'templating.md'
