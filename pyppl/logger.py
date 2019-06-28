@@ -334,18 +334,18 @@ class FileFormatter(logging.Formatter):
 		return super(FileFormatter, self).format(record)
 
 class Logger(object):
-	"""
+	"""@API
 	A wrapper of logger
 	"""
 	@staticmethod
 	def initLevels(levels, leveldiffs):
-		"""
+		"""@API
 		Initiate the levels, get real levels.
 		@params:
-			`levels`: The levels or level names
-			`leveldiffs`: The diffs of levels
+			levels (str|list): The levels or level names
+			leveldiffs (str|list): The diffs of levels
 		@returns:
-			The real levels.
+			(set): The real levels.
 		"""
 		ret = set()
 		if isinstance(levels, (tuple, list, set)):
@@ -377,6 +377,12 @@ class Logger(object):
 		return ret
 
 	def __init__(self, name = 'PyPPL', bake = False):
+		"""@API
+		The logger wrapper construct
+		@params:
+			name (str): The logger name. Default: `PyPPL`
+			bake (dict): The arguments to bake a new logger.
+		"""
 		self.baked  = bake or {}
 		self.name   = name
 		self.ispbar = False
@@ -386,10 +392,12 @@ class Logger(object):
 			self.init()
 
 	def init(self, conf = None):
-		"""
+		"""@API
 		Initiate the logger, called by the construct,
 		Just in case, we want to change the config and
 		Reinitiate the logger.
+		@params:
+			conf (Config): The configuration used to initiate logger.
 		"""
 		if not conf:
 			conf = config
@@ -419,16 +427,22 @@ class Logger(object):
 			self.logger.addHandler(file_handler)
 
 	def bake(self, **kwargs):
-		"""
+		"""@API
 		Bake the logger with certain arguments
+		@params
+			*kwargs: arguments used to bake a new logger
+		@returns:
+			(Logger): The new logger.
 		"""
 		return self.__class__(self.name, bake = kwargs)
 
 	@property
 	def pbar(self):
-		"""
+		"""@API
 		Mark the record as a progress record.
 		Allow `logger.pbar.info` access
+		@returns:
+			(Logger): The Logger object itself
 		"""
 		self.ispbar = True
 		return self
@@ -443,9 +457,18 @@ class Logger(object):
 		self.logger.info(*args, extra = extra)
 
 	def __getitem__(self, name):
+		"""@API
+		Alias of `__getattr__`"""
 		return self.__getattr__(name)
 
 	def __getattr__(self, name):
+		"""@API
+		Allows logger.info way to specify the level
+		@params:
+			name (str): The level name.
+		@returns:
+			(callable): The logger with the level
+		"""
 		ispbar = self.ispbar
 		self.ispbar = False
 		return partial(self._emit, _level = name.upper(), _extra = dict(

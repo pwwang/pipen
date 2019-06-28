@@ -126,14 +126,13 @@ from .exception import PyPPLProcRelationError, RunnerClassNameError
 from . import utils, runner
 
 class PyPPL (object):
-	"""
+	"""@API
 	The PyPPL class
 
 	@static variables:
-		`TIPS`: The tips for users
-		`RUNNERS`: Registered runners
-		`DEFAULT_CFGFILES`: Default configuration file
-		`COUNTER`: The counter for `PyPPL` instance
+		TIPS (list): The tips for users
+		RUNNERS (dict): Registered runners
+		COUNTER (int): The counter for `PyPPL` instance
 	"""
 
 	TIPS = [
@@ -152,11 +151,12 @@ class PyPPL (object):
 	COUNTER  = 0
 
 	def __init__(self, conf = None, cfgfile = None):
-		"""
-		Constructor
+		"""@API
+		PyPPL Constructor
 		@params:
-			`conf`: the configurations for the pipeline, default: {}
-			`cfgfile`: the configuration file for the pipeline, default: None
+			conf (dict): the configurations for the pipeline, default: `None`
+				- Remember the profile name should be included.
+			cfgfile (file): the configuration file for the pipeline, default: `None`
 		"""
 		self.counter = PyPPL.COUNTER
 		PyPPL.COUNTER += 1
@@ -222,12 +222,12 @@ class PyPPL (object):
 		return ret
 
 	def start (self, *args):
-		"""
+		"""@API
 		Set the starting processes of the pipeline
 		@params:
-			`args`: the starting processes
+			*args (Proc|str): process selectors
 		@returns:
-			The pipeline object itself.
+			(PyPPL): The pipeline object itself.
 		"""
 		starts  = set(PyPPL._procsSelector(args))
 		nostart = set()
@@ -282,12 +282,12 @@ class PyPPL (object):
 						pnode.resume = sflag
 
 	def resume (self, *args):
-		"""
+		"""@API
 		Mark processes as to be resumed
 		@params:
-			`args`: the processes to be marked
+			*args (Proc|str): the processes to be marked
 		@returns:
-			The pipeline object itself.
+			(PyPPL): The pipeline object itself.
 		"""
 		if not args or (len(args) == 1 and not args[0]):
 			return self
@@ -295,12 +295,12 @@ class PyPPL (object):
 		return self
 
 	def resume2 (self, *args):
-		"""
+		"""@API
 		Mark processes as to be resumed
 		@params:
-			`args`: the processes to be marked
+			*args (Proc|str): the processes to be marked
 		@returns:
-			The pipeline object itself.
+			(PyPPL): The pipeline object itself.
 		"""
 		if not args or (len(args) == 1 and not args[0]):
 			return self
@@ -308,8 +308,10 @@ class PyPPL (object):
 		return self
 
 	def showAllRoutes(self):
-		"""
+		"""@API
 		Show all the routes in the log.
+		@returns:
+			(PyPPL): The pipeline object itself.
 		"""
 		logger.debug('ALL ROUTES:')
 		#paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths()])
@@ -340,13 +342,13 @@ class PyPPL (object):
 		return self
 
 	def run (self, profile = 'default'):
-		"""
+		"""@API
 		Run the pipeline
 		@params:
-			`profile`: the profile used to run, if not found, it'll be used as runner name.
+			profile (str|dict): the profile used to run, if not found, it'll be used as runner name.
 				- default: 'default'
 		@returns:
-			The pipeline object itself.
+			(PyPPL): The pipeline object itself.
 		"""
 		timer = time()
 
@@ -386,16 +388,16 @@ class PyPPL (object):
 		return self
 
 	def flowchart (self, fcfile = None, dotfile = None):
-		"""
+		"""@API
 		Generate graph in dot language and visualize it.
 		@params:
-			`dotfile`: Where to same the dot graph.
+			dotfile (file): Where to same the dot graph.
 				- Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.dot"`)
-			`fcfile`:  The flowchart file.
+			fcfile (file):  The flowchart file.
 				- Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.svg"`)
 				- For example: run `python pipeline.py` will save it to `pipeline.pyppl.svg`
 		@returns:
-			The pipeline object itself.
+			(PyPPL): The pipeline object itself.
 		"""
 		from .flowchart import Flowchart
 		self.showAllRoutes()
@@ -446,10 +448,10 @@ class PyPPL (object):
 
 	@staticmethod
 	def registerRunner(runner_to_reg):
-		"""
+		"""@API
 		Register a runner
 		@params:
-			`runner`: The runner to be registered.
+			`runner_to_reg`: The runner to be registered.
 		"""
 		runner_name = runner_to_reg.__name__
 		if not runner_name.startswith('Runner'):

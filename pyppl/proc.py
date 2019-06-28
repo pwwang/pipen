@@ -20,27 +20,27 @@ from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOut
 from . import utils, template
 
 class Proc(Hashable):
-	"""
+	"""@API
 	The Proc class defining a process
 
 	@static variables:
-		`ALIAS`:         The alias for the properties
-		`DEPRECATED`:    Deprecated property names
+		ALIAS      (dict): The alias for the properties
+		DEPRECATED (dict): Deprecated property names
 
-		`OUT_VARTYPE`:    Variable types for output
-		`OUT_FILETYPE`:   File types for output
-		`OUT_DIRTYPE`:    Directory types for output
-		`OUT_STDOUTTYPE`: Stdout types for output
-		`OUT_STDERRTYPE`: Stderr types for output
+		OUT_VARTYPE    (list): Variable types for output
+		OUT_FILETYPE   (list): File types for output
+		OUT_DIRTYPE    (list): Directory types for output
+		OUT_STDOUTTYPE (list): Stdout types for output
+		OUT_STDERRTYPE (list): Stderr types for output
 
-		`IN_VARTYPE`:   Variable types for input
-		`IN_FILETYPE`:  File types for input
-		`IN_FILESTYPE`: Files types for input
+		IN_VARTYPE   (list): Variable types for input
+		IN_FILETYPE  (list): File types for input
+		IN_FILESTYPE (list): Files types for input
 
-		`EX_GZIP`: `exhow` value to gzip output files while exporting them
-		`EX_COPY`: `exhow` value to copy output files while exporting them
-		`EX_MOVE`: `exhow` value to move output files while exporting them
-		`EX_LINK`: `exhow` value to link output files while exporting them
+		EX_GZIP (list): `exhow` value to gzip output files while exporting them
+		EX_COPY (list): `exhow` value to copy output files while exporting them
+		EX_MOVE (list): `exhow` value to move output files while exporting them
+		EX_LINK (list): `exhow` value to link output files while exporting them
 	"""
 
 	# for future use, shortcuts
@@ -69,21 +69,13 @@ class Proc(Hashable):
 
 	# pylint: disable=redefined-builtin
 	def __init__(self, id = None, tag = 'notag', desc = 'No description.', **kwargs):
-		"""
-		Constructor
+		"""@API
+		Proc constructor
 		@params:
-			`tag`     : The tag of the process
-			`desc`    : The description of the process
-			`id`      : The identify of the process
-			`**kwargs`: Other properties of the process, which can be set by `proc.xxx` later.
-		@config:
-			id, input, output, ppldir, forks, cache, acache, rc, echo, runner, script, depends,
-			tag, desc, dirsig, exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd,
-			workdir, args, callfront, callback, expect, expart, template, tplenvs,
-			resume, nthread
-		@props
-			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect
-			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix
+			tag  (str)   : The tag of the process
+			desc (str)   : The description of the process
+			id   (str)   : The identify of the process
+			**kwargs: Other properties of the process, which can be set by `proc.xxx` later.
 		"""
 		# Do not go through __getattr__ and __setattr__
 		# Get configuration from config
@@ -279,14 +271,14 @@ class Proc(Hashable):
 
 	# pylint: disable=invalid-name
 	def copy(self, id = None, tag = None, desc = None):
-		"""
+		"""@API
 		Copy a process
 		@params:
-			`id`: The new id of the process, default: `None` (use the varname)
-			`tag`:   The tag of the new process, default: `None` (used the old one)
-			`desc`:  The desc of the new process, default: `None` (used the old one)
+			id (str): The new id of the process, default: `None` (use the varname)
+			tag (str):   The tag of the new process, default: `None` (used the old one)
+			desc (str):  The desc of the new process, default: `None` (used the old one)
 		@returns:
-			The new process
+			(Proc): The new process
 		"""
 		conf    = {}
 		props   = {}
@@ -335,10 +327,12 @@ class Proc(Hashable):
 		return newproc
 
 	def name(self, procset = True):
-		"""
+		"""@API
 		Get my name include `procset`, `id`, `tag`
+		@params:
+			procset (bool): Whether include the procset name or not.
 		@returns:
-			the name
+			(str): the name
 		"""
 		tag = self.tag
 		if '@' not in tag:
@@ -350,7 +344,11 @@ class Proc(Hashable):
 
 	@property
 	def procset(self):
-		"""Get the name of the procset"""
+		"""@API
+		Get the name of the procset
+		@returns:
+			(str): The procset name
+		"""
 		parts = self.tag.split('@')
 		if len(parts) == 1:
 			return None
@@ -358,12 +356,16 @@ class Proc(Hashable):
 
 	@property
 	def size(self):
-		"""Get the size of the  process"""
+		"""@API
+		Get the size of the  process
+		@returns:
+			(int): The number of jobs
+		"""
 		return len(self.jobs)
 
 	@property
 	def suffix(self):
-		"""
+		"""@API
 		Calcuate a uid for the process according to the configuration
 		The philosophy:
 		1. procs from different script must have different suffix (sys.argv[0])
@@ -371,7 +373,7 @@ class Proc(Hashable):
 			- procs with different id or tag have different suffix
 			- procs with different input have different suffix (depends, input)
 		@returns:
-			The uniq id of the process
+			(str): The uniq id of the process
 		"""
 		if self.props._suffix:
 			return self.props._suffix
@@ -953,7 +955,7 @@ class Proc(Hashable):
 					sys.exit(1)
 
 	def run(self, profile = None, config = None):
-		"""@api
+		"""@API
 		Run the process with a profile and/or a configuration
 		@params:
 			profile (str): The profile from a configuration file.

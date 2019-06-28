@@ -86,16 +86,16 @@ THEMES = {
 ROOTGROUP = '__ROOT__'
 
 class Flowchart:
-	"""
+	"""@API
 	Draw flowchart for pipelines
 	"""
 
 	def __init__(self, fcfile, dotfile):
-		"""
-		The constructor
+		"""@API
+		The flowchart constructor
 		@params:
-			`fcfile`: The flowchart file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.svg'`
-			`dotfile`: The dot file. Default: `path.splitext(sys.argv[0])[0] + '.pyppl.dot'`
+			fcfile (file): The flowchart file.
+			dotfile (file): The dot file.
 		"""
 		self.fcfile  = fcfile
 		self.dotfile = dotfile
@@ -109,12 +109,12 @@ class Flowchart:
 		self.links   = []
 
 	def setTheme(self, theme, base = 'default'):
-		"""
+		"""@API
 		Set the theme to be used
 		@params:
-			`theme`: The theme, could be the key of Flowchart.
-				THEMES or a dict of a theme definition.
-			`base` : The base theme to be based on you pass custom theme
+			theme (str|dict): The theme, could be the key of Flowchart.
+				- THEMES or a dict of a theme definition.
+			base (str): The base theme to be based on you pass custom theme
 		"""
 		if isinstance(theme, dict):
 			self.theme = deepcopy(THEMES[base])
@@ -124,11 +124,11 @@ class Flowchart:
 			self.theme = THEMES[theme]
 
 	def addNode(self, node, role = None):
-		"""
+		"""@API
 		Add a node to the chart
 		@params:
-			`node`: The node
-			`role`: Is it a starting node, an ending node or None. Default: None.
+			node (Proc): The process node
+			role (str): Is it a starting node, an ending node or None. Default: `None`.
 		"""
 		if role == 'start' and node not in self.starts:
 			self.starts.append(node)
@@ -141,11 +141,11 @@ class Flowchart:
 			self.nodes[gname].append(node)
 
 	def addLink(self, node1, node2):
-		"""
+		"""@API
 		Add a link to the chart
 		@params:
-			`node1`: The first node.
-			`node2`: The second node.
+			node1 (Proc): The first process node.
+			node2 (Proc): The second process node.
 		"""
 		if (node1, node2) not in self.links:
 			self.links.append((node1, node2))
@@ -180,7 +180,7 @@ class Flowchart:
 			self.graph.edge(node1.name(False), node2.name(False))
 
 	def generate(self):
-		"""
+		"""@API
 		Generate the dot file and graph file.
 		"""
 		self._assemble()

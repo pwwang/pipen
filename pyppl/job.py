@@ -35,7 +35,11 @@ RCMSG_UNMET_EXPECT     = 'Expectation not met'
 RCMSG_NO_RCFILE        = 'Rcfile not generated'
 
 class Job(object):
-	"""Describes a job, also as a base class for runner"""
+	"""@API
+	Describes a job, also as a base class for runner
+	@static variables
+		POLL_INTERVAL (int): The interval between each job state polling.
+	"""
 
 	POLL_INTERVAL = 1
 
@@ -43,11 +47,11 @@ class Job(object):
 		'ntry', 'input', 'output', 'config', 'script', '_rc', '_pid')
 
 	def __init__(self, index, proc):
-		"""
+		"""@API
 		Initiate a job
 		@params:
-			`index`:  The index of the job.
-			`config`: The configurations of the job.
+			index (int):  The index of the job.
+			proc (Proc): The process of the job.
 		"""
 
 		self.index   = index
@@ -74,7 +78,11 @@ class Job(object):
 
 	@property
 	def scriptParts(self):
-		"""Prepare parameters for script wrapping"""
+		"""@API
+		Prepare parameters for script wrapping
+		@returns:
+			(Box): A `Box` containing the parts to wrap the script.
+		"""
 		return Box(
 			header  = '',
 			pre     = self.config.get('preScript', ''),
@@ -84,7 +92,11 @@ class Job(object):
 
 	@property
 	def data(self):
-		"""Data for rendering templates"""
+		"""@API
+		Data for rendering templates
+		@returns:
+			(dict): The data used to render the templates.
+		"""
 		ret  = Box(
 			job = Box(
 				index    = self.index,
@@ -101,7 +113,12 @@ class Job(object):
 		return ret
 
 	def logger(self, *args, **kwargs):
-		"""A logger wrapper to avoid instanize a logger object for each job"""
+		"""@API
+		A logger wrapper to avoid instanize a logger object for each job
+		@params:
+			*args (str): messages to be logged.
+			*kwargs: Other parameters for the logger.
+		"""
 		level = kwargs.pop('level', 'info')
 		kwargs['proc']   = self.proc.name(False)
 		kwargs['jobidx'] = self.index
@@ -112,7 +129,7 @@ class Job(object):
 			_logger[level](*args, **kwargs)
 
 	def wrapScript(self):
-		"""
+		"""@API
 		Wrap the script to run
 		"""
 		self.logger('Wrapping up script: %s' % self.script, level = 'debug')
@@ -155,7 +172,11 @@ class Job(object):
 		self.script.write_text('\n'.join(src))
 
 	def showError(self, totalfailed):
-		"""Show the error message if the job failed."""
+		"""@API
+		Show the error message if the job failed.
+		@params:
+			totalfailed (int): Total number of jobs failed.
+		"""
 		msg = []
 		rc  = self.rc
 		if rc >> RCBIT_NO_OUTFILE:
@@ -208,8 +229,10 @@ class Job(object):
 					'[ Top {top} line(s) ignored, see all in stderr file. ]'.format(
 						top = len(errmsgs) - 20), level = 'stderr')
 
-	def report (self):
-		"""Report the job information to logger"""
+	def report(self):
+		"""@API
+		Report the job information to log
+		"""
 		procclass = self.proc.__class__
 		maxlen = 0
 		inkeys = [key for key, _ in self.input.items() if not key.startswith('_')]
@@ -282,7 +305,7 @@ class Job(object):
 					' '.ljust(maxlen), data[-1]), level = loglevel)
 
 	def build(self):
-		"""
+		"""@API
 		Initiate a job, make directory and prepare input, output and script.
 		"""
 		self.logger('Builing the job ...', level = 'debug')
@@ -349,7 +372,7 @@ class Job(object):
 		return infile
 
 	# pylint: disable=too-many-branches
-	def _prepInput (self):
+	def _prepInput(self):
 		"""
 		Prepare input, create link to input files and set other placeholders
 		"""
@@ -414,7 +437,7 @@ class Job(object):
 			else:
 				self.input[key] = (intype, indata)
 
-	def _prepOutput (self):
+	def _prepOutput(self):
 		"""Build the output data"""
 		procclass = self.proc.__class__
 		# keep the output dir if exists
@@ -458,13 +481,10 @@ class Job(object):
 
 	@property
 	def rc(self): # pylint: disable=invalid-name
-		"""
+		"""@API
 		Get the return code
-		Exception not meet
-		  |
-		0b1100000000
-		   |
-		   outfile not generated
+		@returns:
+			(int): The return code.
 		"""
 		if self._rc is not None and self._rc != RC_NO_RCFILE:
 			return self._rc
@@ -479,16 +499,21 @@ class Job(object):
 
 	@rc.setter
 	def rc(self, val): # pylint: disable=invalid-name
+		"""@API
+		Set and save the return code
+		@params:
+			val (int|str): The return code.
+		"""
 		self._rc = val
 		with (self.dir / FILE_RC).open('w') as frc:
 			frc.write(str(val))
 
 	@property
 	def pid(self):
-		"""
+		"""@API
 		Get pid of the job
-		@return:
-			The job id, could be the process id or job id for other platform.
+		@returns:
+			(str): The job id, could be the process id or job id for other platform.
 		"""
 		if self._pid:
 			return self._pid
@@ -498,14 +523,19 @@ class Job(object):
 
 	@pid.setter
 	def pid(self, val):
+		"""@API
+		Set and save the pid or job id.
+		@params:
+			val (int|str): The pid or the job id from other platform.
+		"""
 		self._pid = str(val)
 		(self.dir / FILE_PID).write_text(str(val))
 
 	def signature (self):
-		"""
+		"""@API
 		Calculate the signature of the job based on the input/output and the script
 		@returns:
-			The signature of the job
+			(Box): The signature of the job
 		"""
 		sig = filesig(self.dir / FILE_SCRIPT)
 		if not sig:
@@ -648,8 +678,10 @@ class Job(object):
 
 	# pylint: disable=too-many-return-statements
 	def isTrulyCached (self):
-		"""
+		"""@API
 		Check whether a job is truly cached (by signature)
+		@returns:
+			(bool): Whether the job is truly cached.
 		"""
 		if not self.proc.cache:
 			return False
@@ -726,9 +758,10 @@ class Job(object):
 		return True
 
 	def isExptCached (self):
-		"""
+		"""@API
 		Prepare to use export files as cached information
-		True if succeed, otherwise False
+		@returns:
+			(bool): Whether the job is export-cached.
 		"""
 		if self.proc.cache != 'export':
 			return False
@@ -787,7 +820,9 @@ class Job(object):
 		return True
 
 	def cache (self):
-		"""Truly cache the job (by signature)"""
+		"""@API
+		Truly cache the job (by signature)
+		"""
 		if not self.proc.cache:
 			return
 		sig  = self.signature()
@@ -795,7 +830,8 @@ class Job(object):
 			sig.to_yaml(filename = self.dir / FILE_CACHE)
 
 	def reset (self):
-		"""Clear the intermediate files and output files"""
+		"""@API
+		Clear the intermediate files and output files"""
 		retry    = self.ntry
 		retrydir = self.dir / ('retry.' + str(retry))
 		#cleanup retrydir
@@ -850,7 +886,8 @@ class Job(object):
 				fs.link(self.dir / FILE_STDERR, outdata)
 
 	def export(self):
-		"""Export the output files"""
+		"""@API
+		Export the output files"""
 		if not self.proc.exdir:
 			return
 		assert path.exists(self.proc.exdir) and path.isdir(self.proc.exdir), \
@@ -900,11 +937,11 @@ class Job(object):
 				level = 'EXPORT')
 
 	def succeed(self):
-		"""
+		"""@API
 		Tell if a job succeeds.
 		Check whether output files generated, expectation met and return code met.
 		@return:
-			`True` if succeed else `False`
+			(bool): `True` if succeeds else `False`
 		"""
 		procclass = self.proc.__class__
 		# first check if bare rc is allowed
@@ -932,10 +969,10 @@ class Job(object):
 		return True
 
 	def done(self, cached = False):
-		"""
+		"""@API
 		Do some cleanup when job finished
 		@params:
-			`export`: Whether do export
+			cached (bool): Whether this is running for a cached job.
 		"""
 		self.logger('Finishing up the job ...', level = 'debug')
 		if not cached or self.proc.acache:
@@ -944,19 +981,27 @@ class Job(object):
 			self.cache()
 
 	def isRunningImpl(self):
-		"""Implemetation of telling whether the job is running"""
+		"""@API
+		Implemetation of telling whether the job is running
+		@returns:
+			(bool): Should return whether a job is running."""
 		raise NotImplementedError()
 
 	def submitImpl(self):
-		"""Implemetation of submission"""
+		"""@API
+		Implemetation of submission"""
 		raise NotImplementedError()
 
 	def killImpl(self):
-		"""Implemetation of killing a job"""
+		"""@API
+		Implemetation of killing a job"""
 		raise NotImplementedError()
 
 	def submit(self):
-		"""Submit the job"""
+		"""@API
+		Submit the job
+		@returns:
+			(bool): `True` if succeeds else `False`"""
 		self.logger('Submitting the job ...', level = 'debug')
 		if self.isRunningImpl():
 			self.logger('is already running at %s, skip submission.' %
@@ -972,7 +1017,12 @@ class Job(object):
 		return False
 
 	def poll(self):
-		"""Check the status of a running job"""
+		"""@API
+		Check the status of a running job
+		@returns:
+			(bool|str): `True/False` if rcfile generared and whether job succeeds, \
+				otherwise returns `running`.
+		"""
 		if not fs.isfile(self.dir / FILE_STDERR) or not fs.isfile(self.dir / FILE_STDOUT):
 			self.logger('Polling the job ... stderr/out file not generared.', level = 'debug')
 			return 'running'
@@ -1031,10 +1081,11 @@ class Job(object):
 			self.ferr.close()
 
 	def retry(self):
-		"""
+		"""@API
 		If the job is available to retry
-		@return:
-			`True` if it is else `False`
+		@returns:
+			(bool|str): `ignore` if `errhow` is `ignore`, otherwise \
+				returns whether we could submit the job to retry.
 		"""
 		if self.proc.errhow == 'ignore':
 			return 'ignored'
@@ -1052,8 +1103,10 @@ class Job(object):
 		return True
 
 	def kill(self):
-		"""
+		"""@API
 		Kill the job
+		@returns:
+			(bool): `True` if succeeds else `False`
 		"""
 		self.logger('Killing the job ...', level = 'debug')
 		try:
