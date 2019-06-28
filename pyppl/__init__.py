@@ -1,6 +1,6 @@
 """The main module of PyPPL"""
 
-__version__ = '2.0.0'
+__version__ = "2.0.0"
 
 # give random tips in the log
 import random
