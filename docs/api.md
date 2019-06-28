@@ -1,652 +1,1415 @@
-# module: pyppl
-The main module of PyPPL  
-!!! example "class: `Path`"
-PurePath subclass that can make system calls.  
-  
-    Path represents a filesystem path but unlike PurePath, also offers  
-    methods to do system calls on path objects. Depending on your system,  
-    instantiating a Path will return either a PosixPath or a WindowsPath  
-    object. You can also instantiate a PosixPath or WindowsPath directly,  
-    but cannot instantiate a WindowsPath on a POSIX system or vice versa.  
-  
-	!!! tip "staticmethod: `__enter__ (self)`"
-  
-	!!! tip "staticmethod: `__exit__ (self, t, v, tb)`"
-  
-	!!! tip "staticmethod: `__new__ (cls, *args, **kwargs)`"
-  
-	!!! tip "staticmethod: `absolute (self)`"
-Return an absolute version of this path.  This function works  
-        even if the path doesn't point to anything.  
-  
-        No normalization is done, i.e. all '.' and '..' will be kept along.  
-        Use resolve() to get the canonical path to a file.  
-  
-	!!! tip "staticmethod: `chmod (self, mode)`"
-  
-        Change the permissions of the path, like os.chmod().  
-  
-	!!! abstract "method: `cwd (cls)`"
-Return a new path pointing to the current working directory  
-        (as returned by os.getcwd()).  
-  
-	!!! tip "staticmethod: `exists (self)`"
-  
-        Whether this path exists.  
-  
-	!!! tip "staticmethod: `expanduser (self)`"
- Return a new path with expanded ~ and ~user constructs  
-        (as returned by os.path.expanduser)  
-  
-	!!! tip "staticmethod: `group (self)`"
-  
-        Return the group name of the file gid.  
-  
-	!!! abstract "method: `home (cls)`"
-Return a new path pointing to the user's home directory (as  
-        returned by os.path.expanduser('~')).  
-  
-	!!! tip "staticmethod: `is_block_device (self)`"
-  
-        Whether this path is a block device.  
-  
-	!!! tip "staticmethod: `is_char_device (self)`"
-  
-        Whether this path is a character device.  
-  
-	!!! tip "staticmethod: `is_dir (self)`"
-  
-        Whether this path is a directory.  
-  
-	!!! tip "staticmethod: `is_fifo (self)`"
-  
-        Whether this path is a FIFO.  
-  
-	!!! tip "staticmethod: `is_file (self)`"
-  
-        Whether this path is a regular file (also True for symlinks pointing  
-        to regular files).  
-  
-	!!! tip "staticmethod: `is_mount (self)`"
-  
-        Check if this path is a POSIX mount point  
-  
-	!!! tip "staticmethod: `is_socket (self)`"
-  
-        Whether this path is a socket.  
-  
-	!!! tip "staticmethod: `is_symlink (self)`"
-  
-        Whether this path is a symbolic link.  
-  
-	!!! tip "staticmethod: `iterdir (self)`"
-Iterate over the files in this directory.  Does not yield any  
-        result for the special paths '.' and '..'.  
-  
-	!!! tip "staticmethod: `lchmod (self, mode)`"
-  
-        Like chmod(), except if the path points to a symlink, the symlink's  
-        permissions are changed, rather than its target's.  
-  
-	!!! tip "staticmethod: `lstat (self)`"
-  
-        Like stat(), except if the path points to a symlink, the symlink's  
-        status information is returned, rather than its target's.  
-  
-	!!! tip "staticmethod: `mkdir (self, mode, parents, exist_ok)`"
-  
-        Create a new directory at this given path.  
-  
-	!!! tip "staticmethod: `open (self, mode, buffering, encoding, errors, newline)`"
-  
-        Open the file pointed by this path and return a file object, as  
-        the built-in open() function does.  
-  
-	!!! tip "staticmethod: `owner (self)`"
-  
-        Return the login name of the file owner.  
-  
-	!!! tip "staticmethod: `read_bytes (self)`"
-  
-        Open the file in bytes mode, read it, and close the file.  
-  
-	!!! tip "staticmethod: `read_text (self, encoding, errors)`"
-  
-        Open the file in text mode, read it, and close the file.  
-  
-	!!! tip "staticmethod: `rename (self, target)`"
-  
-        Rename this path to the given path.  
-  
-	!!! tip "staticmethod: `replace (self, target)`"
-  
-        Rename this path to the given path, clobbering the existing  
-        destination if it exists.  
-  
-	!!! tip "staticmethod: `resolve (self, strict)`"
-  
-        Make the path absolute, resolving all symlinks on the way and also  
-        normalizing it (for example turning slashes into backslashes under  
-        Windows).  
-  
-	!!! tip "staticmethod: `rglob (self, pattern)`"
-Recursively yield all existing files (of any kind, including  
-        directories) matching the given pattern, anywhere in this subtree.  
-  
-	!!! tip "staticmethod: `rmdir (self)`"
-  
-        Remove this directory.  The directory must be empty.  
-  
-	!!! tip "staticmethod: `samefile (self, other_path)`"
-Return whether other_path is the same or not as this file  
-        (as returned by os.path.samefile()).  
-  
-	!!! tip "staticmethod: `stat (self)`"
-  
-        Return the result of the stat() system call on this path, like  
-        os.stat() does.  
-  
-	!!! tip "staticmethod: `symlink_to (self, target, target_is_directory)`"
-  
-        Make this path a symlink pointing to the given path.  
-        Note the order of arguments (self, target) is the reverse of os.symlink's.  
-  
-	!!! tip "staticmethod: `touch (self, mode, exist_ok)`"
-  
-        Create this file with the given access mode, if it doesn't exist.  
-  
-	!!! tip "staticmethod: `unlink (self)`"
-  
-        Remove this file or link.  
-        If the path is a directory, use rmdir() instead.  
-  
-	!!! tip "staticmethod: `write_bytes (self, data)`"
-  
-        Open the file in bytes mode, write to it, and close the file.  
-  
-	!!! tip "staticmethod: `write_text (self, data, encoding, errors)`"
-  
-        Open the file in text mode, write to it, and close the file.  
-  
-!!! example "class: `Proxy`"
-  
-	A proxy class extended from list to enable dot access  
-	to all members and set attributes for all members.  
-  
-	!!! tip "staticmethod: `__getattr__ (self, item)`"
-  
-	!!! tip "staticmethod: `__getitem__ (self, item)`"
-  
-	!!! tip "staticmethod: `__setattr__ (self, name, value)`"
-  
-	!!! tip "staticmethod: `__setitem__ (self, item, value)`"
-  
-	!!! tip "staticmethod: `add (self, anything)`"
-  
-		Add elements to the list.  
+## class: PyPPL
 
-		- **params:**  
-			`anything`: anything that is to be added.  
-				If it is a Proxy, element will be added individually  
-				Otherwise the whole `anything` will be added as one element.  
-  
-!!! example "class: `PyPPL`"
-  
-	The PyPPL class  
-  
+!!! example "class: `PyPPL (self, conf, cfgfile)`"
+	The PyPPL class
 
-	- **static variables:**  
-		`TIPS`: The tips for users  
-		`RUNNERS`: Registered runners  
-		`DEFAULT_CFGFILES`: Default configuration file  
-		`COUNTER`: The counter for `PyPPL` instance  
-  
-	!!! tip "staticmethod: `__init__ (self, conf, cfgfile)`"
-  
-		Constructor  
+	- **static variables**
 
-		- **params:**  
-			`conf`: the configurations for the pipeline, default: {}  
-			`cfgfile`: the configuration file for the pipeline, default: None  
-  
-	!!! tip "staticmethod: `flowchart (self, fcfile, dotfile)`"
-  
-		Generate graph in dot language and visualize it.  
 
-		- **params:**  
-			`dotfile`: Where to same the dot graph.  
-				- Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.dot"`)  
-			`fcfile`:  The flowchart file.  
-				- Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.svg"`)  
-				- For example: run `python pipeline.py` will save it to `pipeline.pyppl.svg`  
+		- `TIPS (list)`:  The tips for users
 
-		- **returns:**  
-			The pipeline object itself.  
-  
+		- `RUNNERS (dict)`:  Registered runners
+
+		- `COUNTER (int)`:  The counter for `PyPPL` instance
+
+	!!! abstract "method: `__init__ (self, conf, cfgfile)`"
+		PyPPL Constructor
+
+		- **params**
+
+
+			- `conf (dict)`:  the configurations for the pipeline, default: `None`
+
+				  - Remember the profile name should be included.
+
+			- `cfgfile (file)`:  the configuration file for the pipeline, default: `None`
+
+	!!! abstract "method: `flowchart (self, fcfile, dotfile)`"
+		Generate graph in dot language and visualize it.
+
+		- **params**
+
+
+			- `dotfile (file)`:  Where to same the dot graph.
+
+				  - Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.dot"`)
+
+			- `fcfile (file)`:   The flowchart file.
+
+				  - Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.svg"`)
+
+				  - For example: run `python pipeline.py` will save it to `pipeline.pyppl.svg`
+
+		- **returns**
+
+
+			- `(PyPPL)`:  The pipeline object itself.
+
 	!!! tip "staticmethod: `registerRunner (runner_to_reg)`"
-  
-		Register a runner  
+		Register a runner
 
-		- **params:**  
-			`runner`: The runner to be registered.  
-  
-	!!! tip "staticmethod: `resume (self, *args)`"
-  
-		Mark processes as to be resumed  
+		- **params**
 
-		- **params:**  
-			`args`: the processes to be marked  
 
-		- **returns:**  
-			The pipeline object itself.  
-  
-	!!! tip "staticmethod: `resume2 (self, *args)`"
-  
-		Mark processes as to be resumed  
+			- ``runner_to_reg``:  The runner to be registered.
 
-		- **params:**  
-			`args`: the processes to be marked  
+	!!! abstract "method: `resume (self, *args)`"
+		Mark processes as to be resumed
 
-		- **returns:**  
-			The pipeline object itself.  
-  
-	!!! tip "staticmethod: `run (self, profile)`"
-  
-		Run the pipeline  
+		- **params**
 
-		- **params:**  
-			`profile`: the profile used to run, if not found, it'll be used as runner name.  
-				- default: 'default'  
 
-		- **returns:**  
-			The pipeline object itself.  
-  
-	!!! tip "staticmethod: `showAllRoutes (self)`"
-  
-		Show all the routes in the log.  
-  
-	!!! tip "staticmethod: `start (self, *args)`"
-  
-		Set the starting processes of the pipeline  
+			- `*args (Proc|str)`:  the processes to be marked
 
-		- **params:**  
-			`args`: the starting processes  
+		- **returns**
 
-		- **returns:**  
-			The pipeline object itself.  
-  
-# module: pyppl.proc
-  
-proc module for PyPPL  
-  
-!!! example "class: `ProcSet`"
-  
-	The ProcSet for a set of processes  
-  
-	!!! tip "staticmethod: `__getattr__ (self, item)`"
-  
-	!!! tip "staticmethod: `__getitem__ (self, item, _ignore_default)`"
-Process selector, always return Proxy object  
-	!!! tip "staticmethod: `__init__ (self, *procs, **kwargs)`"
-  
-		Constructor  
 
-		- **params:**  
-			`*procs` : the set of processes  
-			`depends`: Whether auto deduce depends. Default: True  
-			`id`     : The id of the procset. Default: None (the variable name)  
-			`tag`    : The tag of the processes. Default: None (a unique 4-char str according to the id)  
-			`copy`   : Whether copy the processes or just use them. Default: `True`  
-  
-	!!! tip "staticmethod: `__setattr__ (self, item, value)`"
-  
-	!!! tip "staticmethod: `copy (self, id, tag, depends)`"
-  
-		Like `proc`'s `copy` function, copy a procset. Each processes will be copied.  
+			- `(PyPPL)`:  The pipeline object itself.
 
-		- **params:**  
-			`id`     : Use a different id if you don't want to use the variant name  
-			`tag`    : The new tag of all copied processes  
-			`depends`: Whether to copy the dependencies or not. Default: True  
-				- dependences for processes in starts will not be copied  
+	!!! abstract "method: `resume2 (self, *args)`"
+		Mark processes as to be resumed
 
-		- **returns:**  
-			The new procset  
-  
-	!!! tip "staticmethod: `delegate (self, *procs)`"
-  
-	!!! tip "staticmethod: `delegated (self, name)`"
-  
-	!!! tip "staticmethod: `module (self, name)`"
-  
-	!!! tip "staticmethod: `restoreStates (self)`"
-  
-!!! example "class: `Path`"
-PurePath subclass that can make system calls.  
-  
-    Path represents a filesystem path but unlike PurePath, also offers  
-    methods to do system calls on path objects. Depending on your system,  
-    instantiating a Path will return either a PosixPath or a WindowsPath  
-    object. You can also instantiate a PosixPath or WindowsPath directly,  
-    but cannot instantiate a WindowsPath on a POSIX system or vice versa.  
-  
-	!!! tip "staticmethod: `__enter__ (self)`"
-  
-	!!! tip "staticmethod: `__exit__ (self, t, v, tb)`"
-  
-	!!! tip "staticmethod: `__new__ (cls, *args, **kwargs)`"
-  
-	!!! tip "staticmethod: `absolute (self)`"
-Return an absolute version of this path.  This function works  
-        even if the path doesn't point to anything.  
-  
-        No normalization is done, i.e. all '.' and '..' will be kept along.  
-        Use resolve() to get the canonical path to a file.  
-  
-	!!! tip "staticmethod: `chmod (self, mode)`"
-  
-        Change the permissions of the path, like os.chmod().  
-  
-	!!! abstract "method: `cwd (cls)`"
-Return a new path pointing to the current working directory  
-        (as returned by os.getcwd()).  
-  
-	!!! tip "staticmethod: `exists (self)`"
-  
-        Whether this path exists.  
-  
-	!!! tip "staticmethod: `expanduser (self)`"
- Return a new path with expanded ~ and ~user constructs  
-        (as returned by os.path.expanduser)  
-  
-	!!! tip "staticmethod: `group (self)`"
-  
-        Return the group name of the file gid.  
-  
-	!!! abstract "method: `home (cls)`"
-Return a new path pointing to the user's home directory (as  
-        returned by os.path.expanduser('~')).  
-  
-	!!! tip "staticmethod: `is_block_device (self)`"
-  
-        Whether this path is a block device.  
-  
-	!!! tip "staticmethod: `is_char_device (self)`"
-  
-        Whether this path is a character device.  
-  
-	!!! tip "staticmethod: `is_dir (self)`"
-  
-        Whether this path is a directory.  
-  
-	!!! tip "staticmethod: `is_fifo (self)`"
-  
-        Whether this path is a FIFO.  
-  
-	!!! tip "staticmethod: `is_file (self)`"
-  
-        Whether this path is a regular file (also True for symlinks pointing  
-        to regular files).  
-  
-	!!! tip "staticmethod: `is_mount (self)`"
-  
-        Check if this path is a POSIX mount point  
-  
-	!!! tip "staticmethod: `is_socket (self)`"
-  
-        Whether this path is a socket.  
-  
-	!!! tip "staticmethod: `is_symlink (self)`"
-  
-        Whether this path is a symbolic link.  
-  
-	!!! tip "staticmethod: `iterdir (self)`"
-Iterate over the files in this directory.  Does not yield any  
-        result for the special paths '.' and '..'.  
-  
-	!!! tip "staticmethod: `lchmod (self, mode)`"
-  
-        Like chmod(), except if the path points to a symlink, the symlink's  
-        permissions are changed, rather than its target's.  
-  
-	!!! tip "staticmethod: `lstat (self)`"
-  
-        Like stat(), except if the path points to a symlink, the symlink's  
-        status information is returned, rather than its target's.  
-  
-	!!! tip "staticmethod: `mkdir (self, mode, parents, exist_ok)`"
-  
-        Create a new directory at this given path.  
-  
-	!!! tip "staticmethod: `open (self, mode, buffering, encoding, errors, newline)`"
-  
-        Open the file pointed by this path and return a file object, as  
-        the built-in open() function does.  
-  
-	!!! tip "staticmethod: `owner (self)`"
-  
-        Return the login name of the file owner.  
-  
-	!!! tip "staticmethod: `read_bytes (self)`"
-  
-        Open the file in bytes mode, read it, and close the file.  
-  
-	!!! tip "staticmethod: `read_text (self, encoding, errors)`"
-  
-        Open the file in text mode, read it, and close the file.  
-  
-	!!! tip "staticmethod: `rename (self, target)`"
-  
-        Rename this path to the given path.  
-  
-	!!! tip "staticmethod: `replace (self, target)`"
-  
-        Rename this path to the given path, clobbering the existing  
-        destination if it exists.  
-  
-	!!! tip "staticmethod: `resolve (self, strict)`"
-  
-        Make the path absolute, resolving all symlinks on the way and also  
-        normalizing it (for example turning slashes into backslashes under  
-        Windows).  
-  
-	!!! tip "staticmethod: `rglob (self, pattern)`"
-Recursively yield all existing files (of any kind, including  
-        directories) matching the given pattern, anywhere in this subtree.  
-  
-	!!! tip "staticmethod: `rmdir (self)`"
-  
-        Remove this directory.  The directory must be empty.  
-  
-	!!! tip "staticmethod: `samefile (self, other_path)`"
-Return whether other_path is the same or not as this file  
-        (as returned by os.path.samefile()).  
-  
-	!!! tip "staticmethod: `stat (self)`"
-  
-        Return the result of the stat() system call on this path, like  
-        os.stat() does.  
-  
-	!!! tip "staticmethod: `symlink_to (self, target, target_is_directory)`"
-  
-        Make this path a symlink pointing to the given path.  
-        Note the order of arguments (self, target) is the reverse of os.symlink's.  
-  
-	!!! tip "staticmethod: `touch (self, mode, exist_ok)`"
-  
-        Create this file with the given access mode, if it doesn't exist.  
-  
-	!!! tip "staticmethod: `unlink (self)`"
-  
-        Remove this file or link.  
-        If the path is a directory, use rmdir() instead.  
-  
-	!!! tip "staticmethod: `write_bytes (self, data)`"
-  
-        Open the file in bytes mode, write to it, and close the file.  
-  
-	!!! tip "staticmethod: `write_text (self, data, encoding, errors)`"
-  
-        Open the file in text mode, write to it, and close the file.  
-  
-!!! example "class: `NoSuchProfile`"
-Raises when configuration profile does not exist  
-!!! example "class: `Proc`"
-  
-	The Proc class defining a process  
-  
+		- **params**
 
-	- **static variables:**  
-		`ALIAS`:         The alias for the properties  
-		`DEPRECATED`:    Deprecated property names  
-  
-		`OUT_VARTYPE`:    Variable types for output  
-		`OUT_FILETYPE`:   File types for output  
-		`OUT_DIRTYPE`:    Directory types for output  
-		`OUT_STDOUTTYPE`: Stdout types for output  
-		`OUT_STDERRTYPE`: Stderr types for output  
-  
-		`IN_VARTYPE`:   Variable types for input  
-		`IN_FILETYPE`:  File types for input  
-		`IN_FILESTYPE`: Files types for input  
-  
-		`EX_GZIP`: `exhow` value to gzip output files while exporting them  
-		`EX_COPY`: `exhow` value to copy output files while exporting them  
-		`EX_MOVE`: `exhow` value to move output files while exporting them  
-		`EX_LINK`: `exhow` value to link output files while exporting them  
-  
-	!!! tip "staticmethod: `__getattr__ (self, name)`"
-  
-		Get the value of a property in `self.props`  
-		It recognizes alias as well.  
 
-		- **params:**  
-			`name`: The name of the property  
+			- `*args (Proc|str)`:  the processes to be marked
 
-		- **returns:**  
-			The value of the property  
-  
-	!!! tip "staticmethod: `__init__ (self, id, tag, desc, **kwargs)`"
-  
-		Constructor  
+		- **returns**
 
-		- **params:**  
-			`tag`     : The tag of the process  
-			`desc`    : The description of the process  
-			`id`      : The identify of the process  
-			`**kwargs`: Other properties of the process, which can be set by `proc.xxx` later.  
 
-		- **config:**  
-			id, input, output, ppldir, forks, cache, acache, rc, echo, runner, script, depends,  
-			tag, desc, dirsig, exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd,  
-			workdir, args, callfront, callback, expect, expart, template, tplenvs,  
-			resume, nthread  
+			- `(PyPPL)`:  The pipeline object itself.
 
-		- **props**  
-			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect  
-			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix  
-  
-	!!! tip "staticmethod: `__setattr__ (self, name, value)`"
-  
-		Set the value of a property in `self.config`  
+	!!! abstract "method: `run (self, profile)`"
+		Run the pipeline
 
-		- **params:**  
-			`name` : The name of the property.  
-			`value`: The new value of the property.  
-  
-	!!! tip "staticmethod: `copy (self, id, tag, desc)`"
-  
-		Copy a process  
+		- **params**
 
-		- **params:**  
-			`id`: The new id of the process, default: `None` (use the varname)  
-			`tag`:   The tag of the new process, default: `None` (used the old one)  
-			`desc`:  The desc of the new process, default: `None` (used the old one)  
 
-		- **returns:**  
-			The new process  
-  
-	!!! tip "staticmethod: `name (self, procset)`"
-  
-		Get my name include `procset`, `id`, `tag`  
+			- `profile (str|dict)`:  the profile used to run, if not found, it'll be used as runner name.
 
-		- **returns:**  
-			the name  
-  
-	!!! tip "staticmethod: `run (self, profile, config)`"
+				  - default: 'default'
 
-- **api**  
-		Run the process with a profile and/or a configuration  
+		- **returns**
 
-		- **params:**  
-			profile (str): The profile from a configuration file.  
-			config (dict): A configuration passed to PyPPL construct.  
-  
-!!! example "class: `OBox`"
-Ordered Box  
-	!!! tip "staticmethod: `__init__ (self, *args, **kwargs)`"
-  
-	!!! abstract "method: `from_json (cls, json_string, filename, encoding, errors, **kwargs)`"
-  
-        Transform a json object string into a Box object. If the incoming  
-        json is a list, you must use BoxList.from_json.  
-  
-        :param json_string: string to pass to `json.loads`  
-        :param filename: filename to open and pass to `json.load`  
-        :param encoding: File encoding  
-        :param errors: How to handle encoding errors  
-        :param kwargs: parameters to pass to `Box()` or `json.loads`  
-        :return: Box object from json data  
-  
-	!!! abstract "method: `from_yaml (cls, yaml_string, filename, encoding, errors, loader, **kwargs)`"
-  
-            Transform a yaml object string into a Box object.  
-  
-            :param yaml_string: string to pass to `yaml.load`  
-            :param filename: filename to open and pass to `yaml.load`  
-            :param encoding: File encoding  
-            :param errors: How to handle encoding errors  
-            :param loader: YAML Loader, defaults to SafeLoader  
-            :param kwargs: parameters to pass to `Box()` or `yaml.load`  
-            :return: Box object from yaml data  
-  
-	!!! abstract "method: `fromkeys (type, iterable, value)`"
-Create a new dictionary with keys from iterable and values set to value.  
-!!! example "class: `Hashable`"
-  
-	A class for object that can be hashable  
-  
-!!! example "class: `Box`"
-  
-	Subclass of box.Box to fix box_intact_types to [list] and  
-	rewrite __repr__ to make the string results back to object  
-	Requires python-box ^3.4.1  
-  
-	!!! tip "staticmethod: `__init__ (self, *args, **kwargs)`"
-  
-	!!! abstract "method: `from_json (cls, json_string, filename, encoding, errors, **kwargs)`"
-  
-        Transform a json object string into a Box object. If the incoming  
-        json is a list, you must use BoxList.from_json.  
-  
-        :param json_string: string to pass to `json.loads`  
-        :param filename: filename to open and pass to `json.load`  
-        :param encoding: File encoding  
-        :param errors: How to handle encoding errors  
-        :param kwargs: parameters to pass to `Box()` or `json.loads`  
-        :return: Box object from json data  
-  
-	!!! abstract "method: `from_yaml (cls, yaml_string, filename, encoding, errors, loader, **kwargs)`"
-  
-            Transform a yaml object string into a Box object.  
-  
-            :param yaml_string: string to pass to `yaml.load`  
-            :param filename: filename to open and pass to `yaml.load`  
-            :param encoding: File encoding  
-            :param errors: How to handle encoding errors  
-            :param loader: YAML Loader, defaults to SafeLoader  
-            :param kwargs: parameters to pass to `Box()` or `yaml.load`  
-            :return: Box object from yaml data  
-  
-	!!! abstract "method: `fromkeys (type, iterable, value)`"
-Create a new dictionary with keys from iterable and values set to value.  
+
+			- `(PyPPL)`:  The pipeline object itself.
+
+	!!! abstract "method: `showAllRoutes (self)`"
+		Show all the routes in the log.
+
+		- **returns**
+
+
+			- `(PyPPL)`:  The pipeline object itself.
+
+	!!! abstract "method: `start (self, *args)`"
+		Set the starting processes of the pipeline
+
+		- **params**
+
+
+			- `*args (Proc|str)`:  process selectors
+
+		- **returns**
+
+
+			- `(PyPPL)`:  The pipeline object itself.
+
+## class: Channel
+
+!!! example "class: `Channel (iterable)`"
+	The channen class, extended from `list`
+	
+
+	!!! tip "staticmethod: `_tuplize (atuple)`"
+		A private method, try to convert an element to tuple
+		If it's a string, convert it to `(atuple, )`
+		Else if it is iterable, convert it to `tuple(atuple)`
+		Otherwise, convert it to `(atuple, )`
+		Notice that string is also iterable.
+
+		- **params**
+
+
+			- `atuple (str|list|tuple)`:  the element to be converted
+
+		- **returns**
+
+
+			- `(tuple)`:  The converted element
+
+	!!! abstract "method: `attach (self, *names)`"
+		Attach columns to names of Channel, so we can access each column by:
+		`ch.col0` == ch.colAt(0)
+
+		- **params**
+
+
+			- `*names (str)`:  The names. Have to be as length as channel's width.
+
+				  None of them should be Channel's property name
+
+			- `flatten (bool)`:  Whether flatten the channel for the name being attached
+
+	!!! abstract "method: `cbind (self, *cols)`"
+		Add columns to the channel
+
+		- **params**
+
+
+			- `*cols (any)`:  The columns
+
+		- **returns**
+
+
+			- `(Channel)`:  The channel with the columns inserted.
+
+	!!! abstract "method: `colAt (self, index)`"
+		Fetch one column of a Channel
+
+		- **params**
+
+
+			- `index (int)`:  which column to fetch
+
+		- **returns**
+
+
+			- `(Channel)`:  The Channel with that column
+
+	!!! abstract "method: `collapse (self, col)`"
+		Do the reverse of expand
+		length: N -> 1
+		width:  M -> M
+
+		- **params**
+
+
+			- `col (int)`:      the index of the column used to collapse
+
+		- **returns**
+
+
+			- `(Channel)`:  The collapsed Channel
+
+	!!! abstract "method: `copy (self)`"
+		Copy a Channel using `copy.copy`
+
+		- **returns**
+
+
+			- `(Channel)`:  The copied Channel
+
+	!!! tip "staticmethod: `create (alist)`"
+		Create a Channel from a list
+
+		- **params**
+
+
+			- `alist (list|Channel)`:  The list, default: []
+
+		- **returns**
+
+
+			- `(Channel)`:  The Channel created from the list
+
+	!!! abstract "method: `expand (self, col, pattern, ftype, sortby, reverse)`"
+		expand the Channel according to the files in <col>, other cols will keep the same
+		`[(dir1/dir2, 1)].expand (0, "*")` will expand to
+		`[(dir1/dir2/file1, 1), (dir1/dir2/file2, 1), ...]`
+		length: 1 -> N
+		width:  M -> M
+
+		- **params**
+
+
+			- `col (int)`:  the index of the column used to expand
+
+			- `pattern (str)`:  use a pattern to filter the files/dirs, default: `*`
+
+			- `ftype (str)`:  the type of the files/dirs to include
+
+				  - 'dir', 'file', 'link' or 'any' (default)
+
+			- `sortby (str)`:   how the list is sorted
+
+				  - 'name' (default), 'mtime', 'size'
+
+			- `reverse (bool)`:  reverse sort. Default: False
+
+		- **returns**
+
+
+			- `(Channel)`:  The expanded Channel
+
+	!!! abstract "method: `filter (self, func)`"
+		Alias of python builtin `filter`
+
+		- **params**
+
+
+			- `func (callable)`:  the function. Default: `None`
+
+		- **returns**
+
+
+			- `(Channel)`:  The filtered Channel
+
+	!!! abstract "method: `filterCol (self, func, col)`"
+		Just filter on the specific column
+
+		- **params**
+
+
+			- `func (callable)`:  the function
+
+			- `col (int)`:  the column to filter
+
+		- **returns**
+
+
+			- `(Channel)`:  The filtered Channel
+
+	!!! abstract "method: `flatten (self, col)`"
+		Convert a single-column Channel to a list (remove the tuple signs)
+		`[(a,), (b,)]` to `[a, b]`
+
+		- **params**
+
+
+			- `col (int)`:  The column to flat. None for all columns (default)
+
+		- **returns**
+
+
+			- `(list)`:  The list converted from the Channel.
+
+	!!! abstract "method: `fold (self, nfold)`"
+		Fold a Channel. Make a row to n-length chunk rows
+		```
+		a1  a2  a3  a4
+		b1  b2  b3  b4
+		if nfold==2, fold(2) will change it to:
+		a1  a2
+		a3  a4
+		b1  b2
+		b3  b4
+		```
+
+		- **params**
+
+
+			- `nfold (int)`:  the size of the chunk
+
+		- **returns**
+
+
+			- `(Channel)`:  The new Channel
+
+	!!! tip "staticmethod: `fromArgv ()`"
+		Create a Channel from `sys.argv[1:]`
+		"python test.py a b c" creates a width=1 Channel
+		"python test.py a,1 b,2 c,3" creates a width=2 Channel
+
+		- **returns**
+
+
+			- `(Channel)`:  The Channel created from the command line arguments
+
+	!!! tip "staticmethod: `fromChannels (*args)`"
+		Create a Channel from Channels
+
+		- **params**
+
+
+			- `*args (any)`:  The Channels or anything can be created as a `Channel`
+
+		- **returns**
+
+
+			- `(Channel)`:  The Channel merged from other Channels
+
+	!!! tip "staticmethod: `fromFile (filename, header, skip, delimit)`"
+		Create Channel from the file content
+		It's like a matrix file, each row is a row for a Channel.
+		And each column is a column for a Channel.
+
+		- **params**
+
+
+			- `filename (file)`:  the file
+
+			- `header (bool)`:   Whether the file contains header. If True, will attach the header
+
+				  - So you can use `channel.<header>` to fetch the column
+
+			- `skip (int)`:  first lines to skip, default: `0`
+
+			- `delimit (str)`:  the delimit for columns, default: `  `
+
+		- **returns**
+
+
+			- `(Channel)`:  A Channel created from the file
+
+	!!! tip "staticmethod: `fromPairs (pattern)`"
+		Create a width = 2 Channel from a pattern
+
+		- **params**
+
+
+			- `pattern (str)`:  the pattern
+
+		- **returns**
+
+
+			- `(Channel)`:  The Channel create from every 2 files match the pattern
+
+	!!! tip "staticmethod: `fromParams (*pnames)`"
+		Create a Channel from params
+
+		- **params**
+
+
+			- `*pnames (str)`:  The names of the option
+
+		- **returns**
+
+
+			- `(Channel)`:  The Channel created from `pyparam`.
+
+	!!! tip "staticmethod: `fromPattern (pattern, ftype, sortby, reverse)`"
+		Create a Channel from a path pattern
+
+		- **params**
+
+
+			- `pattern (str)`:  the pattern with wild cards
+
+			- `ftype (str)`:  the type of the files/dirs to include
+
+				  - 'dir', 'file', 'link' or 'any' (default)
+
+			- `sortby (str)`:   how the list is sorted
+
+				  - 'name' (default), 'mtime', 'size'
+
+			- `reverse (bool)`:  reverse sort. Default: `False`
+
+		- **returns**
+
+
+			- `(Channel)`:  The Channel created from the path
+
+	!!! abstract "method: `get (self, idx)`"
+		Get the element of a flattened channel
+
+		- **params**
+
+
+			- `idx (int)`:  The index of the element to get. Default: 0
+
+		- **return**
+
+
+			- `(any)`:  The element
+
+	!!! abstract "method: `insert (self, cidx, *cols)`"
+		Insert columns to a channel
+
+		- **params**
+
+
+			- `cidx (int)`:  Insert into which index of column?
+
+			- `*cols (any)`:  the columns to be bound to Channel
+
+		- **returns**
+
+
+			- `(Channel)`:  The combined Channel
+
+	!!! abstract "method: `length (self)`"
+		Get the length of a Channel
+		It's just an alias of `len(chan)`
+
+		- **returns**
+
+
+			- `(int)`:  The length of the Channel
+
+	!!! abstract "method: `map (self, func)`"
+		Alias of python builtin `map`
+
+		- **params**
+
+
+			- `func (callable)`:  the function
+
+		- **returns**
+
+
+			- `(Channel)`:  The transformed Channel
+
+	!!! abstract "method: `mapCol (self, func, col)`"
+		Map for a column
+
+		- **params**
+
+
+			- `func (callable)`:  the function
+
+			- `col (int)`:  the index of the column. Default: `0`
+
+		- **returns**
+
+
+			- `(Channel)`:  The transformed Channel
+
+	!!! tip "staticmethod: `nones (length, width)`"
+		Create a channel with `None`s
+
+		- **params**
+
+
+			- `length (int)`:  The length of the channel
+
+			- `width (int)`:   The width of the channel
+
+		- **returns**
+
+
+			- `(Channel)`:  The created channel
+
+	!!! abstract "method: `rbind (self, *rows)`"
+		The multiple-argument versoin of `rbind`
+
+		- **params**
+
+
+			- `*rows (any)`:  the rows to be bound to Channel
+
+		- **returns**
+
+
+			- `(Channel)`:  The combined Channel
+
+	!!! abstract "method: `reduce (self, func)`"
+		Alias of python builtin `reduce`
+
+		- **params**
+
+
+			- `func (callable)`:  the function
+
+		- **returns**
+
+
+			- `(Channel)`:  The reduced value
+
+	!!! abstract "method: `reduceCol (self, func, col)`"
+		Reduce a column
+
+		- **params**
+
+
+			- `func (callable)`:  the function
+
+			- `col (int)`:  the column to reduce
+
+		- **returns**
+
+
+			- `(Channel)`:  The reduced value
+
+	!!! abstract "method: `repCol (self, nrep)`"
+		Repeat column and return a new channel
+
+		- **params**
+
+
+			- `nrep (int)`:  how many times to repeat.
+
+		- **returns**
+
+
+			- `(Channel)`:  The new channel with repeated columns
+
+	!!! abstract "method: `repRow (self, nrep)`"
+		Repeat row and return a new channel
+
+		- **params**
+
+
+			- `nrep (int)`:  how many times to repeat.
+
+		- **returns**
+
+
+			- `(Channel)`:  The new channel with repeated rows
+
+	!!! abstract "method: `rowAt (self, index)`"
+		Fetch one row of a Channel
+
+		- **params**
+
+
+			- `index (int)`:  which row to fetch
+
+		- **returns**
+
+
+			- `(Channel)`:  The Channel with that row
+
+	!!! abstract "method: `slice (self, start, length)`"
+		Fetch some columns of a Channel
+
+		- **params**
+
+
+			- `start (int)`:   from column to start
+
+			- `length (int)`:  how many columns to fetch, default: None (from start to the end)
+
+		- **returns**
+
+
+			- `(Channel)`:  The Channel with fetched columns
+
+	!!! abstract "method: `split (self, flatten)`"
+		Split a Channel to single-column Channels
+
+		- **returns**
+
+
+			- `(list[Channel])`:  The list of single-column Channels
+
+	!!! abstract "method: `t (self)`"
+		Transpose the channel
+
+		- **returns**
+
+
+			- `(Channel)`:  The transposed channel.
+
+	!!! abstract "method: `transpose (self)`"
+		Transpose the channel
+
+		- **returns**
+
+
+			- `(Channel)`:  The transposed channel.
+
+	!!! abstract "method: `unfold (self, nfold)`"
+		Do the reverse thing as self.fold does
+
+		- **params**
+
+
+			- `nfold (int)`:  How many rows to combind each time. default: 2
+
+		- **returns**
+
+
+			- `(Channel)`:  The unfolded Channel
+
+	!!! abstract "method: `unique (self)`"
+		Make the channel unique, remove duplicated rows
+		Try to keep the order
+
+		- **returns**
+
+
+			- `(Channel)`:  The channel with unique rows.
+
+	!!! abstract "method: `width (self)`"
+		Get the width of a Channel
+
+		- **returns**
+
+
+			- `(int)`:  The width of the Channel
+
+## class: Job
+
+!!! example "class: `Job (self, index, proc)`"
+	Describes a job, also as a base class for runner
+
+	- **static variables**
+
+
+		- `POLL_INTERVAL (int)`:  The interval between each job state polling.
+
+	!!! abstract "method: `__init__ (self, index, proc)`"
+		Initiate a job
+
+		- **params**
+
+
+			- `index (int)`:   The index of the job.
+
+			- `proc (Proc)`:  The process of the job.
+
+	!!! abstract "method: `build (self)`"
+		Initiate a job, make directory and prepare input, output and script.
+		
+
+	!!! abstract "method: `cache (self)`"
+		Truly cache the job (by signature)
+		
+
+	!!! note "property: `data ()`"
+		Data for rendering templates
+
+		- **returns**
+
+
+			- `(dict)`:  The data used to render the templates.
+
+	!!! abstract "method: `done (self, cached)`"
+		Do some cleanup when job finished
+
+		- **params**
+
+
+			- `cached (bool)`:  Whether this is running for a cached job.
+
+	!!! abstract "method: `export (self)`"
+		Export the output files
+
+	!!! abstract "method: `isExptCached (self)`"
+		Prepare to use export files as cached information
+
+		- **returns**
+
+
+			- `(bool)`:  Whether the job is export-cached.
+
+	!!! abstract "method: `isRunningImpl (self)`"
+		Implemetation of telling whether the job is running
+
+		- **returns**
+
+
+			- `(bool)`:  Should return whether a job is running.
+
+	!!! abstract "method: `isTrulyCached (self)`"
+		Check whether a job is truly cached (by signature)
+
+		- **returns**
+
+
+			- `(bool)`:  Whether the job is truly cached.
+
+	!!! abstract "method: `kill (self)`"
+		Kill the job
+
+		- **returns**
+
+
+			- `(bool)`:  `True` if succeeds else `False`
+
+	!!! abstract "method: `killImpl (self)`"
+		Implemetation of killing a job
+
+	!!! abstract "method: `logger (self, *args, **kwargs)`"
+		A logger wrapper to avoid instanize a logger object for each job
+
+		- **params**
+
+
+			- `*args (str)`:  messages to be logged.
+
+			- `*kwargs`:  Other parameters for the logger.
+
+	!!! note "property: `pid ()`"
+		Get pid of the job
+
+		- **returns**
+
+
+			- `(str)`:  The job id, could be the process id or job id for other platform.
+
+	!!! abstract "method: `poll (self)`"
+		Check the status of a running job
+
+		- **returns**
+
+
+			- `(bool|str)`:  `True/False` if rcfile generared and whether job succeeds,         otherwise returns `running`.
+
+	!!! note "property: `rc ()`"
+		Get the return code
+
+		- **returns**
+
+
+			- `(int)`:  The return code.
+
+	!!! abstract "method: `report (self)`"
+		Report the job information to log
+		
+
+	!!! abstract "method: `reset (self)`"
+		Clear the intermediate files and output files
+
+	!!! abstract "method: `retry (self)`"
+		If the job is available to retry
+
+		- **returns**
+
+
+			- `(bool|str)`:  `ignore` if `errhow` is `ignore`, otherwise         returns whether we could submit the job to retry.
+
+	!!! note "property: `scriptParts ()`"
+		Prepare parameters for script wrapping
+
+		- **returns**
+
+
+			- `(Box)`:  A `Box` containing the parts to wrap the script.
+
+	!!! abstract "method: `showError (self, totalfailed)`"
+		Show the error message if the job failed.
+
+		- **params**
+
+
+			- `totalfailed (int)`:  Total number of jobs failed.
+
+	!!! abstract "method: `signature (self)`"
+		Calculate the signature of the job based on the input/output and the script
+
+		- **returns**
+
+
+			- `(Box)`:  The signature of the job
+
+	!!! abstract "method: `submit (self)`"
+		Submit the job
+
+		- **returns**
+
+
+			- `(bool)`:  `True` if succeeds else `False`
+
+	!!! abstract "method: `submitImpl (self)`"
+		Implemetation of submission
+
+	!!! abstract "method: `succeed (self)`"
+		Tell if a job succeeds.
+		Check whether output files generated, expectation met and return code met.
+
+		- **return**
+
+
+			- `(bool)`:  `True` if succeeds else `False`
+
+	!!! abstract "method: `wrapScript (self)`"
+		Wrap the script to run
+		
+
+## class: Jobmgr
+
+!!! example "class: `Jobmgr (self, jobs)`"
+	Job manager
+
+	!!! abstract "method: `__init__ (self, jobs)`"
+		Job manager constructor
+
+		- **params**
+
+
+			- `jobs (list)`:  All jobs of a process
+
+	!!! abstract "method: `cleanup (self, ex)`"
+		Cleanup the pipeline when
+		- Ctrl-c hit
+		- error encountered and `proc.errhow` = 'terminate'
+
+		- **params**
+
+
+			- `ex (Exception)`:  The exception raised by workers
+
+	!!! abstract "method: `killWorker (self, killq)`"
+		The killing worker to kill the jobs
+
+	!!! abstract "method: `progressbar (self, event)`"
+		Generate the progress bar.
+
+		- **params**
+
+
+			- `event (StateMachine event)`:  The event including job as model.
+
+	!!! abstract "method: `start (self)`"
+		Start the queue.
+		
+
+	!!! abstract "method: `worker (self)`"
+		The worker to build, submit and poll the jobs
+
+## class: Proc
+
+!!! example "class: `Proc (self, id, tag, desc, **kwargs)`"
+	The Proc class defining a process
+
+	- **static variables**
+
+
+		- `ALIAS      (dict)`:  The alias for the properties
+
+		- `DEPRECATED (dict)`:  Deprecated property names
+
+		- `OUT_VARTYPE    (list)`:  Variable types for output
+
+		- `OUT_FILETYPE   (list)`:  File types for output
+
+		- `OUT_DIRTYPE    (list)`:  Directory types for output
+
+		- `OUT_STDOUTTYPE (list)`:  Stdout types for output
+
+		- `OUT_STDERRTYPE (list)`:  Stderr types for output
+
+		- `IN_VARTYPE   (list)`:  Variable types for input
+
+		- `IN_FILETYPE  (list)`:  File types for input
+
+		- `IN_FILESTYPE (list)`:  Files types for input
+
+		- `EX_GZIP (list)`:  `exhow` value to gzip output files while exporting them
+
+		- `EX_COPY (list)`:  `exhow` value to copy output files while exporting them
+
+		- `EX_MOVE (list)`:  `exhow` value to move output files while exporting them
+
+		- `EX_LINK (list)`:  `exhow` value to link output files while exporting them
+
+	!!! abstract "method: `__init__ (self, id, tag, desc, **kwargs)`"
+		Proc constructor
+
+		- **params**
+
+
+			- `tag  (str)   `:  The tag of the process
+
+			- `desc (str)   `:  The description of the process
+
+			- `id   (str)   `:  The identify of the process
+
+			- `**kwargs`:  Other properties of the process, which can be set by `proc.xxx` later.
+
+	!!! abstract "method: `copy (self, id, tag, desc)`"
+		Copy a process
+
+		- **params**
+
+
+			- `id (str)`:  The new id of the process, default: `None` (use the varname)
+
+			- `tag (str)`:    The tag of the new process, default: `None` (used the old one)
+
+			- `desc (str)`:   The desc of the new process, default: `None` (used the old one)
+
+		- **returns**
+
+
+			- `(Proc)`:  The new process
+
+	!!! abstract "method: `name (self, procset)`"
+		Get my name include `procset`, `id`, `tag`
+
+		- **params**
+
+
+			- `procset (bool)`:  Whether include the procset name or not.
+
+		- **returns**
+
+
+			- `(str)`:  the name
+
+	!!! note "property: `procset ()`"
+		Get the name of the procset
+
+		- **returns**
+
+
+			- `(str)`:  The procset name
+
+	!!! abstract "method: `run (self, profile, config)`"
+		Run the process with a profile and/or a configuration
+
+		- **params**
+
+
+			- `profile (str)`:  The profile from a configuration file.
+
+			- `config (dict)`:  A configuration passed to PyPPL construct.
+
+	!!! note "property: `size ()`"
+		Get the size of the  process
+
+		- **returns**
+
+
+			- `(int)`:  The number of jobs
+
+	!!! note "property: `suffix ()`"
+		Calcuate a uid for the process according to the configuration
+		The philosophy:
+		1. procs from different script must have different suffix (sys.argv[0])
+		2. procs from the same script:
+		  - procs with different id or tag have different suffix
+		  - procs with different input have different suffix (depends, input)
+
+		- **returns**
+
+
+			- `(str)`:  The uniq id of the process
+
+## class: ProcSet
+
+!!! example "class: `ProcSet (self, *procs, **kwargs)`"
+	The ProcSet for a set of processes
+	
+
+	!!! abstract "method: `__getitem__ (self, item, _ignore_default)`"
+		Process selector, always return Proxy object
+
+		- **params**
+
+
+			- `item (any)`:  The process selector.
+
+		- **returns**
+
+
+			- `(Proxy)`:  The processes match the item.
+
+	!!! abstract "method: `__init__ (self, *procs, **kwargs)`"
+		Constructor
+
+		- **params**
+
+
+			- `*procs (Proc) `:  the set of processes
+
+			- `**kwargs`:  Other arguments to instantiate a `ProcSet`
+
+				  depends (bool): Whether auto deduce depends. Default: `True`
+
+				  id (str): The id of the procset. Default: `None` (the variable name)
+
+				  tag (str): The tag of the processes. Default: `None`
+
+				  copy (bool): Whether copy the processes or just use them. Default: `True`
+
+	!!! abstract "method: `copy (self, id, tag, depends)`"
+		Like `proc`'s `copy` function, copy a procset. Each processes will be copied.
+
+		- **params**
+
+
+			- `id (str)`:  Use a different id if you don't want to use the variant name
+
+			- `tag (str)`:  The new tag of all copied processes
+
+			- `depends (bool)`:  Whether to copy the dependencies or not. Default: True
+
+				  - dependences for processes in starts will not be copied
+
+		- **returns**
+
+
+			- `(ProcSet)`:  The new procset
+
+	!!! abstract "method: `delegate (self, *procs)`"
+		Delegate process attributes to procset.
+
+		- **params**
+
+
+			- `*procs (str|Proc)`:  The first argument is the name of the attributes.
+
+				  - The rest of them should be `Proc`s or `Proc` selectors.
+
+	!!! abstract "method: `delegated (self, name)`"
+		Get the detegated processes by specific attribute name
+
+		- **params**
+
+
+			- `name (str)`:  the attribute name to query
+
+		- **returns**
+
+
+			- `(Proxy)`:  The set of processes
+
+	!!! abstract "method: `module (self, name)`"
+		A decorator used to define a module.
+
+		- **params**
+
+
+			- `name (callable|str)`:  The function to be decorated or the name of the module.
+
+		- **returns**
+
+
+			- `(callable)`:  The decorator
+
+	!!! abstract "method: `restoreStates (self)`"
+		Restore the initial state of a procset
+		
+
+## class: ProcTree
+
+!!! example "class: `ProcTree (self)`"
+	A tree of processes.
+
+	- **static variables**
+
+
+		- `NODES (OrderedDict)`:  The processes registered.
+
+	!!! abstract "method: `__init__ (self)`"
+		Constructor, set the status of all `ProcNode`s
+		
+
+	!!! tip "staticmethod: `check (proc)`"
+		Check whether a process with the same id and tag exists
+
+		- **params**
+
+
+			- `proc (Proc)`:  The `Proc` instance
+
+	!!! abstract "method: `checkPath (self, proc)`"
+		Check whether paths of a process can start from a start process
+
+		- **params**
+
+
+			- `proc (Proc)`:  The process
+
+		- **returns**
+
+
+			- `(bool|list)`:  `True` if all paths can pass, otherwise first failed path.
+
+	!!! abstract "method: `getAllPaths (self, check_hide)`"
+		Get all paths of the pipeline, only used to be displayed in debug
+		So hide those hidden processes.
+
+		- **params**
+
+
+			- `check_hide (bool)`:  Whether check the hiding processes or not. Default: `True`
+
+		- **yields**
+
+
+			- `(list[Proc])`:  The paths.
+
+	!!! abstract "method: `getEnds (self)`"
+		Get the end processes
+
+		- **returns**
+
+
+			- `(list[Proc])`:  The end processes
+
+	!!! tip "staticmethod: `getNext (proc)`"
+		Get next processes of process
+
+		- **params**
+
+
+			- `proc (Proc)`:  The `Proc` instance
+
+		- **returns**
+
+
+			- `(list[Proc])`:  The processes depend on this process
+
+	!!! tip "staticmethod: `getNextStr (proc)`"
+		Get the names of processes depend on a process
+
+		- **params**
+
+
+			- `proc (Proc)`:  The `Proc` instance
+
+		- **returns**
+
+
+			- `(str)`:  The names
+
+	!!! abstract "method: `getNextToRun (cls)`"
+		Get the process to run next
+
+		- **returns**
+
+
+			- `(Proc)`:  The process next to run
+
+	!!! abstract "method: `getPaths (self, proc, proc0, check_hide)`"
+		Infer the path to a process
+		```
+		p1 -> p2 -> p3
+		    p4  _/
+		Paths for p3: [[p4], [p2, p1]]
+		```
+
+		- **params**
+
+
+			- `proc (Proc)`:  The process
+
+			- `proc0 (Proc)`:  The original process, because this function runs recursively.
+
+		- **returns**
+
+
+			- `(list[list])`:  The path to the process.
+
+	!!! abstract "method: `getPathsToStarts (self, proc, check_hide)`"
+		Filter the paths with start processes
+
+		- **params**
+
+
+			- `proc (Proc)`:  The process
+
+		- **returns**
+
+
+			- `(list[list])`:  The filtered path
+
+	!!! tip "staticmethod: `getPrevStr (proc)`"
+		Get the names of processes a process depends on
+
+		- **params**
+
+
+			- `proc (Proc)`:  The `Proc` instance
+
+		- **returns**
+
+
+			- `(str)`:  The names
+
+	!!! abstract "method: `getStarts (self)`"
+		Get the start processes
+
+		- **returns**
+
+
+			- `(list[Proc])`:  The start processes
+
+	!!! tip "staticmethod: `register (proc)`"
+		Register the process
+
+		- **params**
+
+
+			- `proc (Proc)`:  The `Proc` instance
+
+	!!! tip "staticmethod: `reset ()`"
+		Reset the status of all `ProcNode`s
+		
+
+	!!! abstract "method: `setStarts (self, starts)`"
+		Set the start processes
+
+		- **params**
+
+
+			- `starts (list[Proc])`:  The start processes
+
+	!!! abstract "method: `unranProcs (self)`"
+		Report the processes that won't run in a path can't be reached.
+		Say start process not specified in that path.
+		This is trying to alert people if they forget specify the start processes along those paths.
+
+		- **returns**
+
+
+			- `(dict{procname`:  [path]}): The processes won't run.
+
+## class: Logger
+
+!!! example "class: `Logger (self, name, bake)`"
+	A wrapper of logger
+	
+
+	!!! abstract "method: `__getattr__ (self, name)`"
+		Allows logger.info way to specify the level
+
+		- **params**
+
+
+			- `name (str)`:  The level name.
+
+		- **returns**
+
+
+			- `(callable)`:  The logger with the level
+
+	!!! abstract "method: `__getitem__ (self, name)`"
+		Alias of `__getattr__`
+
+	!!! abstract "method: `__init__ (self, name, bake)`"
+		The logger wrapper construct
+
+		- **params**
+
+
+			- `name (str)`:  The logger name. Default: `PyPPL`
+
+			- `bake (dict)`:  The arguments to bake a new logger.
+
+	!!! abstract "method: `bake (self, **kwargs)`"
+		Bake the logger with certain arguments
+
+		- **params**
+
+
+			- `*kwargs`:  arguments used to bake a new logger
+
+		- **returns**
+
+
+			- `(Logger)`:  The new logger.
+
+	!!! abstract "method: `init (self, conf)`"
+		Initiate the logger, called by the construct,
+		Just in case, we want to change the config and
+		Reinitiate the logger.
+
+		- **params**
+
+
+			- `conf (Config)`:  The configuration used to initiate logger.
+
+	!!! tip "staticmethod: `initLevels (levels, leveldiffs)`"
+		Initiate the levels, get real levels.
+
+		- **params**
+
+
+			- `levels (str|list)`:  The levels or level names
+
+			- `leveldiffs (str|list)`:  The diffs of levels
+
+		- **returns**
+
+
+			- `(set)`:  The real levels.
+
+	!!! note "property: `pbar ()`"
+		Mark the record as a progress record.
+		Allow `logger.pbar.info` access
+
+		- **returns**
+
+
+			- `(Logger)`:  The Logger object itself
+
+## class: Flowchart
+
+!!! example "class: `Flowchart (self, fcfile, dotfile)`"
+	Draw flowchart for pipelines
+	
+
+	!!! abstract "method: `__init__ (self, fcfile, dotfile)`"
+		The flowchart constructor
+
+		- **params**
+
+
+			- `fcfile (file)`:  The flowchart file.
+
+			- `dotfile (file)`:  The dot file.
+
+	!!! abstract "method: `addLink (self, node1, node2)`"
+		Add a link to the chart
+
+		- **params**
+
+
+			- `node1 (Proc)`:  The first process node.
+
+			- `node2 (Proc)`:  The second process node.
+
+	!!! abstract "method: `addNode (self, node, role)`"
+		Add a node to the chart
+
+		- **params**
+
+
+			- `node (Proc)`:  The process node
+
+			- `role (str)`:  Is it a starting node, an ending node or None. Default: `None`.
+
+	!!! abstract "method: `generate (self)`"
+		Generate the dot file and graph file.
+		
+
+	!!! abstract "method: `setTheme (self, theme, base)`"
+		Set the theme to be used
+
+		- **params**
+
+
+			- `theme (str|dict)`:  The theme, could be the key of Flowchart.
+
+				  - THEMES or a dict of a theme definition.
+
+			- `base (str)`:  The base theme to be based on you pass custom theme
+
+## class: Template
+
+!!! example "class: `Template (self, source, **envs)`"
+	Template wrapper base class
+
+	- **static variables**
+
+
+		- `DEFAULT_ENVS (dict)`:  The default environment.
+
+	!!! abstract "method: `__init__ (self, source, **envs)`"
+		Template construct
+		
+
+	!!! abstract "method: `registerEnvs (self, **envs)`"
+		Register extra environment
+
+		- **params**
+
+
+			- `**envs`:  The environment
+
+	!!! abstract "method: `render (self, data)`"
+		Render the template
+
+		- **parmas**
+
+
+			- `data (dict)`:  The data used to render
+
+## class: TemplateLiquid
+
+!!! example "class: `TemplateLiquid (self, source, **envs)`"
+	liquidpy template wrapper.
+	
+
+## class: TemplateJinja2
+
+!!! example "class: `TemplateJinja2 (self, source, **envs)`"
+	Jinja2 template wrapper
+	
+
