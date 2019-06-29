@@ -36,4 +36,3 @@ graphviz = "^0.11"
 
 [tool.poetry.scripts]
 pyppl = "pyppl.console:main"
-
