@@ -61,7 +61,7 @@ def test_init(tmp_path, caplog):
 	tomlfile.write_text('[default]\nforks = 2')
 	ppl = PyPPL(cfgfile = tomlfile)
 	assert ppl.config.forks == 2
-	ppl = PyPPL({'forks': 3}, cfgfile = tomlfile)
+	ppl = PyPPL({'default': {'forks': 3}}, cfgfile = tomlfile)
 	assert ppl.config.forks == 3
 
 	yamlfile = tmp_path / 'test_init.yaml'
@@ -83,6 +83,12 @@ def defprocs():
 		pAny2Procs7 = Proc(),)
 	ret.aAggr = ProcSet(ret.pAny2Procs6, ret.pAny2Procs7)
 	ret.aAggr.starts = [ret.aAggr.pAny2Procs6, ret.aAggr.pAny2Procs7]
+	ProcTree.register(ret.pAny2Procs1)
+	ProcTree.register(ret.pAny2Procs2)
+	ProcTree.register(ret.pAny2Procs3)
+	ProcTree.register(ret.pAny2Procs4)
+	ProcTree.register(ret.pAny2Procs51)
+	ProcTree.register(ret.pAny2Procs52)
 	return ret
 
 @pytest.mark.parametrize('args,procnames', [
@@ -175,17 +181,48 @@ def test_run(pset, caplog, tmp_path):
 	for p in pset.values():
 		p.input = {'a': [1]}
 		p.output = 'a:var:{{i.a}}'
-	ppl = PyPPL({'ppldir': tmp_path / 'test_run_ppldir'}).start(pset.p14, pset.p15)
-	ppl.run()
+	ppl = PyPPL({'default': {'ppldir': tmp_path / 'test_run_ppldir'}}).start(pset.p14, pset.p15)
+	ppl.run({'ppldir': tmp_path / 'test_run_ppldir2'})
 	# see if we have the right depends
 	assert 'p14: START => p14 => [p16]' in caplog.text
 	assert 'p15: START => p15 => [p16]' in caplog.text
 	assert 'p16: [p14, p15] => p16 => [p17, p18]' in caplog.text
 	assert 'p18: [p16] => p18 => [p17]' in caplog.text
-	assert 'p17: [p16, p18] => p17 => [p19, p20]' in caplog.text
+	assert 'p17: [p16, p18] => p17 => [p20, p19]' in caplog.text
 	assert 'p19: [p17] => p19 => END' in caplog.text
 	assert 'p20: [p17] => p20 => END' in caplog.text
-	assert "p2 won't run as path can't be reached: p2 <- p1" in caplog.text
+	#assert "p2 won't run as path can't be reached: p2 <- p1" in caplog.text
+	assert pset.p14.ppldir == tmp_path / 'test_run_ppldir2'
+
+def test_run_noprofile(pset, tmp_path):
+	pset.p14.props.origin = 'pOrig'
+	for p in pset.values():
+		p.input = {'a': [1]}
+		p.output = 'a:var:{{i.a}}'
+	ppl = PyPPL({'default': {'ppldir': tmp_path / 'test_run_noprofile'}}).start(pset.p14, pset.p15)
+	ppl.run()
+	assert pset.p14.ppldir == tmp_path / 'test_run_noprofile'
+
+def test_run_extrafile(tmp_path):
+	cfile = tmp_path / 'test_run_extrafile.ini'
+	cfile.write_text('''
+[default]
+forks = 2
+[f10]
+forks = 10
+''')
+	pCfile = Proc()
+	pCfile.input = {'a': [0]}
+	PyPPL(cfgfile = cfile).start(pCfile).run('f10')
+	assert pCfile.forks == 10
+
+def test_run_defaultcfg(tmp_path):
+	os.environ['PYPPL2_f100_forks'] = '100'
+	config._load('PYPPL2.osenv')
+	pF100 = Proc()
+	pF100.input = {'a': [0]}
+	PyPPL().start(pF100).run('f100')
+	assert pF100.forks == 100
 
 def test_flowchart(pset, caplog, tmp_path):
 	for p in pset.values():
@@ -215,6 +252,8 @@ def test_registerProc():
 def test_checkProc():
 	py = Proc()
 	pz = Proc(id = 'py')
+	PyPPL._registerProc(py)
+	PyPPL._registerProc(pz)
 	with pytest.raises(ProcTreeProcExists):
 		PyPPL._checkProc(pz)
 

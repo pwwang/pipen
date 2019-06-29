@@ -159,8 +159,11 @@ class _TemplateFilter(object):
 		return 'OBox(%r)' % var.items()
 
 class Template(object):
-	"""
-	Template wrapper base
+	"""@API
+	Template wrapper base class
+
+	@static variables:
+		DEFAULT_ENVS (dict): The default environment.
 	"""
 
 	DEFAULT_ENVS = {
@@ -202,23 +205,26 @@ class Template(object):
 	}
 
 	def __init__(self, source, **envs):
+		"""@API
+		Template construct
+		"""
 		self.source = source
 		self.envs   = Template.DEFAULT_ENVS.copy()
 		self.envs.update(envs)
 
 	def registerEnvs(self, **envs):
-		"""
+		"""@API
 		Register extra environment
 		@params:
-			`**envs`: The environment
+			**envs: The environment
 		"""
 		self.envs.update(envs)
 
 	def render(self, data = None):
-		"""
+		"""@API
 		Render the template
 		@parmas:
-			`data`: The data used to render
+			data (dict): The data used to render
 		"""
 		return self._render(data or {})
 
@@ -240,7 +246,7 @@ class Template(object):
 		raise NotImplementedError()
 
 class TemplateLiquid (Template):
-	"""
+	"""@API
 	liquidpy template wrapper.
 	"""
 
@@ -267,7 +273,7 @@ class TemplateLiquid (Template):
 		return self.engine.render(**data)
 
 class TemplateJinja2 (Template):
-	"""
+	"""@API
 	Jinja2 template wrapper
 	"""
 

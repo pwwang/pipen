@@ -24,7 +24,7 @@ p1.script = "# your logic here"
 
 p2 = proc()
 p2.depends = p1
-p2.input   = "in1, in2"  
+p2.input   = "in1, in2"
 # will automatically use output channel of p1
 ```
 !!! danger
@@ -51,31 +51,15 @@ p2.input   = "in1, in2"
     But you cannot do:
     ```python
     p1.input = "in"
-    p1.input = "a" 
+    p1.input = "a"
     # the right way is p.input = ["a"]
     # because PyPPL will take "a" as the input key instead of data, as it's a string
     ```
 
 !!! note
-    When a job is being prepared, the input files (type: `file`, `path`, `dir` or `folder`) will be linked to `<indir>`. In the template, for example, you may use `{{i.infile}}` to get its path. However, it may have different paths:  
-    
-    * The original path
-    * The path from `<indir>` 
-    * The realpath (if the original file specified to the job is a symbolic link, it will be different from the original path)
+    When a job is being prepared, the input files (type: `file`, `path`, `dir` or `folder`) will be linked to `<indir>`. In the template, for example, you may use `{{i.infile}}` to get its path. Then you may use `os.readlink` to get its original path and `os.realpath` to get its real path.
 
-    Then you are able to swith the value of `{{i.infile}}` using the setting `p.infile`:  
 
-    * `"indir"` (default): The path from `<indir>`
-    * `"origin"`: The original path
-    * `"real"`: The realpath
-
-    You may also use them directly by:
-
-    * `{{i.IN_infile}}`: The path from `<indir>`
-    * `{{i.OR_infile}}`: The original path
-    * `{{i.RE_infile}}`: The realpath
-  
-  
 Use `sys.argv` (see details for [`Channel.fromArgv`](./channels/#initialize-a-channel)):
 ```python
 p3 = Proc()
@@ -97,14 +81,14 @@ p4.input = "in1, in2"
 
 ## Specify files as input
 - Use a single file:
-  When you specify file as input, you should use `file` (a.k.a `path`, `dir` or `folder`) flag for the type: 
+  When you specify file as input, you should use `file` (a.k.a `path`, `dir` or `folder`) flag for the type:
   ```python
   p.input = {"infile:file": channel.fromPattern("./*.txt")}
   ```
-  Then `PyPPL` will create symbolic links in `<workdir>/<job.index>/input/`. 
-  
+  Then `PyPPL` will create symbolic links in `<workdir>/<job.index>/input/`.
+
   > **Note** The `{{i.infile}}`
-   will return the path of the link in `<indir>` pointing to the actual input file. If you want to get the path of the actual path, you may use: 
+   will return the path of the link in `<indir>` pointing to the actual input file. If you want to get the path of the actual path, you may use:
   ```
   {{ i.infile | readlink }} or {{ i._infile }}
   ```
@@ -118,11 +102,11 @@ p4.input = "in1, in2"
   When there are input files (different files) with the same basename, later ones will be renamed in `<indir>`. For example:
   ```python
   pXXX.input = {
-    "infile1:file": "/path1/to/theSameBasename.txt", 
+    "infile1:file": "/path1/to/theSameBasename.txt",
     "infile2:file": "/path2/to/theSameBasename.txt"
   }
   ```
-  Remember both files will have symblic links created in `<indir>`. To avoid `infile2` being overwritten, the basename of the link will be `theSameBasename[1].txt`. If you are using built-in template functions to get the filename (`{{i.file2 | fn}}`), we can still get `theSameBasename.txt` instead of `theSameBasename[1].txt`. `bn`, `basename`, `prefix` act similarly.
+  Remember both files will have symblic links created in `<indir>`. To avoid `infile2` being overwritten, the basename of the link will be `theSameBasename[1].txt`. If you are using built-in template functions to get the filename (`{{i.file2 | fn}}`), we can still get `theSameBasename.txt` instead of `[1]theSameBasename.txt`. `bn`, `basename`, `prefix` act similarly.
 
 ## Use callback to modify the input channel
 You can modify the input channel of a process by a callback. For example:
@@ -133,7 +117,7 @@ p1.output = "out1:{{ph1}},out2:{{ph2}}"
 p1.script = "# your logic here"
 # the output channel is [(1,4), (2,5), (3,6)]
 p2.depends = p1
-p2.input   = {"in1, in2": lambda ch: ch.slice(1)}  
+p2.input   = {"in1, in2": lambda ch: ch.slice(1)}
 # just use the last 2 columns: [(2,5), (3,6)]
 # p1.channel keeps intact
 ```

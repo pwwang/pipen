@@ -20,7 +20,7 @@ You can ask `PyPPL` whether to overwrite the existing files in the export direct
 	if the directory you specified to `pXXX.exdir` does not exist, it will be created automatically, including those intermediate directories if necessary.
 
 # Partial export
-You can also partially export the output files by set value to `pXXX.expart`.  
+You can also partially export the output files by set value to `pXXX.expart`.
 You have 2 ways to select the files:
 - Output key. For example, for `p.output = "outfile1:file:a.txt1, outfile2:file:b.txt2"`, you can export only `outfile1` by: `p.expart = "outfile1"`
 - Glob patterns. In the above example, you can also do: `p.expart = "*.txt1"`
@@ -29,8 +29,8 @@ You can have multiple selectors: `p.expart = ["*.txt1", "outfile2"]` to export a
 
 !!! note
 	1. Export-caching will not be allowed when using partial export.
-	2. Templating is applied for this option.  
-	3. `expart` will first match output keys and then be used as a glob pattern. So if you have 
+	2. Templating is applied for this option.
+	3. `expart` will first match output keys and then be used as a glob pattern. So if you have
 	```python
 	# ...
 	p.output = "outfile1:file:outfile2, outfile2:file:b.txt2"
@@ -40,4 +40,4 @@ You can have multiple selectors: `p.expart = ["*.txt1", "outfile2"]` to export a
 	then `b.txt2` will be exported instead of `<job.outdir>/outfile2`
 
 # Control of export of cached jobs
-By default, if a job is cached, then it will not try to export the output files again (assuming that you have already successfully run the job and exported the output files). But you can force to export them anyway by setting `p.cclean = True`
+By default, if a job is cached, then it will not try to export the output files again (assuming that you have already successfully run the job and exported the output files). But you can force to export them anyway by setting `p.acache = True`

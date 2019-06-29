@@ -96,19 +96,20 @@ class PSProxy(object):
 				setattr(attr, name, value)
 
 class ProcSet(object):
-	"""
+	"""@API
 	The ProcSet for a set of processes
 	"""
 
 	def __init__(self, *procs, **kwargs):
-		"""
+		"""@API
 		Constructor
 		@params:
-			`*procs` : the set of processes
-			`depends`: Whether auto deduce depends. Default: True
-			`id`     : The id of the procset. Default: None (the variable name)
-			`tag`    : The tag of the processes. Default: None (a unique 4-char str according to the id)
-			`copy`   : Whether copy the processes or just use them. Default: `True`
+			*procs (Proc) : the set of processes
+			**kwargs: Other arguments to instantiate a `ProcSet`
+				depends (bool): Whether auto deduce depends. Default: `True`
+				id (str): The id of the procset. Default: `None` (the variable name)
+				tag (str): The tag of the processes. Default: `None`
+				copy (bool): Whether copy the processes or just use them. Default: `True`
 		"""
 
 		self.__dict__['id']        = kwargs.get('id') or varname(context = 101)
@@ -152,16 +153,32 @@ class ProcSet(object):
 		self.delegate('ex*', 'ends')
 
 	def delegate(self, *procs):
+		"""@API
+		Delegate process attributes to procset.
+		@params:
+			*procs (str|Proc): The first argument is the name of the attributes.
+				- The rest of them should be `Proc`s or `Proc` selectors.
+		"""
 		procs = list(procs)
 		name  = procs.pop(0)
 		self.delegates[name] = procs
 
 	def delegated(self, name):
+		"""@API
+		Get the detegated processes by specific attribute name
+		@params:
+			name (str): the attribute name to query
+		@returns:
+			(Proxy): The set of processes
+		"""
 		if name not in self.delegates:
 			return None
 		return self[self.delegates[name]]
 
 	def restoreStates(self):
+		"""@API
+		Restore the initial state of a procset
+		"""
 		if not self.initials: # extract the inital states
 			self.initials.starts  = self.starts[:]
 			self.initials.ends    = self.ends[:]
@@ -173,6 +190,13 @@ class ProcSet(object):
 				self.procs[pid] = depends
 
 	def module(self, name):
+		"""@API
+		A decorator used to define a module.
+		@params:
+			name (callable|str): The function to be decorated or the name of the module.
+		@returns:
+			(callable): The decorator
+		"""
 		if callable(name):
 			funcname = name.__name__
 			if funcname.startswith(self.id + '_'):
@@ -196,15 +220,15 @@ class ProcSet(object):
 
 	# pylint: disable=arguments-differ,redefined-builtin,unused-argument,invalid-name
 	def copy (self, id = None, tag = None, depends = True):
-		"""
+		"""@API
 		Like `proc`'s `copy` function, copy a procset. Each processes will be copied.
 		@params:
-			`id`     : Use a different id if you don't want to use the variant name
-			`tag`    : The new tag of all copied processes
-			`depends`: Whether to copy the dependencies or not. Default: True
+			id (str): Use a different id if you don't want to use the variant name
+			tag (str): The new tag of all copied processes
+			depends (bool): Whether to copy the dependencies or not. Default: True
 				- dependences for processes in starts will not be copied
 		@returns:
-			The new procset
+			(ProcSet): The new procset
 		"""
 		id  = id or varname()
 		ret = self.__class__(*self.procs.values(), id = id, tag = tag, copy = True, depends = False)
@@ -235,7 +259,12 @@ class ProcSet(object):
 		return PSProxy(procset = self, path = [item])
 
 	def __getitem__(self, item, _ignore_default = True):
-		"""Process selector, always return Proxy object"""
+		"""@API:
+		Process selector, always return Proxy object
+		@params:
+			item (any): The process selector.
+		@returns:
+			(Proxy): The processes match the item."""
 		if item in ('starts', 'ends'):
 			return self.__getattr__(item)
 		if hasattr(item, 'id') and hasattr(item, 'tag') and not isinstance(item, ProcSet):

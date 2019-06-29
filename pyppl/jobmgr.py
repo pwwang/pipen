@@ -64,8 +64,15 @@ PBAR_LEVEL = {
 }
 
 class Jobmgr(object):
+	"""@API
+	Job manager"""
 
 	def __init__(self, jobs):
+		"""@API
+		Job manager constructor
+		@params:
+			jobs (list): All jobs of a process
+		"""
 		if not jobs:  # no jobs
 			return
 
@@ -168,6 +175,9 @@ class Jobmgr(object):
 			depends_on = 'kill')
 
 	def start(self):
+		"""@API
+		Start the queue.
+		"""
 		# no jobs
 		if not hasattr(self, 'lock'):
 			return
@@ -196,6 +206,11 @@ class Jobmgr(object):
 		return index_bjobs
 
 	def progressbar(self, event):
+		"""@API
+		Generate the progress bar.
+		@params:
+			event (StateMachine event): The event including job as model.
+		"""
 		job         = event.model
 		index_bjobs = self._distributeJobsToPbar()
 
@@ -221,12 +236,12 @@ class Jobmgr(object):
 			done = ncompleted == len(self.jobs), level = PBAR_LEVEL[states[job.index]])
 
 	def cleanup(self, ex = None):
-		"""
+		"""@API
 		Cleanup the pipeline when
 		- Ctrl-c hit
 		- error encountered and `proc.errhow` = 'terminate'
 		@params:
-			`ex`: The exception raised by workers
+			ex (Exception): The exception raised by workers
 		"""
 		self.stop = True
 		message = None
@@ -277,6 +292,8 @@ class Jobmgr(object):
 
 	@classmethod
 	def killWorker(self, killq):
+		"""@API
+		The killing worker to kill the jobs"""
 		while not killq.empty():
 			job = killq.get()
 			job.triggerStartKill()
@@ -319,6 +336,8 @@ class Jobmgr(object):
 			job.triggerRetry(batch = event.kwargs['batch'])
 
 	def worker(self):
+		"""@API
+		The worker to build, submit and poll the jobs"""
 		while not self.queue.empty() and not self.stop:
 			index, batch = self.queue.get()
 			job = self.jobs[index]

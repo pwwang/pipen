@@ -1,3 +1,20 @@
+# 2.0.0 (2019.6.28)
+- Change versioning back to semantic
+- Drop support for python <= 3.5
+- Adopt more of 3rd-party packages
+- Use poetry to manage dependencies and publish package
+- Rewrite runner system and make it easier to write a custom runner
+- Rewrite logger system
+- Migrate `bin/pyppl` to `pyppl/console.py`
+- Use a state machine to manage job states
+- Rewrite job queue strategy
+- Adopt `pytest` for testing
+- Change `Aggr` to `ProcSet` and rewrite some methods
+- Show a more intuitive example in README
+- Move docs to readthedocs
+- Optimize `Job` class to save memories
+- Fix other bugs
+
 # 2019.2.20
 - Use date as version naming.
 - Adopt colorama for teminal colors.
@@ -226,63 +243,63 @@
 
 # 0.6.2 (2017.5.30)
 - Update docs and fix compilation errors from gitbook
-- Change pyppl.dot to pyppl.pyppl.dot; 
-- Add channel.fromFile method; 
-- Add aggr.addProc method; 
-- Fix proc/aggr copy bugs; 
+- Change pyppl.dot to pyppl.pyppl.dot;
+- Add channel.fromFile method;
+- Add aggr.addProc method;
+- Fix proc/aggr copy bugs;
 - Fix utils.varname bugs;
 - Fix bugs: channel._tuplize does not change list to tuple any more.
-- Add fold/unfold to channel; 
-- cache job immediately after it's done; 
-- remove proc in nexts of its depends when its depends are reset; 
+- Add fold/unfold to channel;
+- cache job immediately after it's done;
+- remove proc in nexts of its depends when its depends are reset;
 - add dir for input files, prefix for output files;
-- Fix utilfs.dirmtime if file not exists; 
+- Fix utilfs.dirmtime if file not exists;
 - add pyppl-cli;
 - Change rc code, make it consistent with real rc code.
 
 # 0.6.1 (2017.4.27)
-- Overwrite input file if it exists and not the same file; 
+- Overwrite input file if it exists and not the same file;
 - fix varname bug when there are dots in the function name;
 - Add brings feature;
 - Add features to README, and brings to docs
 
 # 0.6.0 (2017.4.26)
-- Set job signature to False if any of the item is False (that means expected files not exists); - Do cache by job itself; 
+- Set job signature to False if any of the item is False (that means expected files not exists); - Do cache by job itself;
 - Make it possible to cache and export successful jobs even when some jobs failed
 - Host docs in gitbook
-- Init job with log func from proc; 
-- Add docstring for API generation; 
-- Redefine return code for outfile not generated; 
-- Error ignore works now; 
+- Init job with log func from proc;
+- Add docstring for API generation;
+- Redefine return code for outfile not generated;
+- Error ignore works now;
 - Rewrite runner_local so it fits other runners to extend;
 - Fix proc depends on mixed list of procs and aggrs
 
 # 0.5.0 (2017.4.18)
 - Fix local runner not waiting (continuiously submitting jobs);
-- Add property alias for aggr; 
+- Add property alias for aggr;
 - Output cleared if job not cached
-- Fix bugs when export if outfiles are links; 
-- change default export method to move; 
-- add id and tag to calculate suffix for proc; 
-- add timer; 
+- Fix bugs when export if outfiles are links;
+- change default export method to move;
+- add id and tag to calculate suffix for proc;
+- add timer;
 - add isRunning for job so that even if the main thread quit, we can still retrieve the job status;
 
 # 0.4.0 (2017.4.13)
-- Add files (array) support for input; 
+- Add files (array) support for input;
 - Recursive update for configuration;
 - Add aggregations;
-- Move functions to utils; 
+- Move functions to utils;
 - Separate run for runners to submit and wait;
-- Add use job class for jobs in a proc; 
-- Use "1,2 3,4" for channel.fromArgs for multi-width channels; 
-- Add rbind, cbind, slice for channel; 
-- Add alias for some proc properties; 
-- Remove callfront for proc; 
-- Add export cache mode; 
-- Add gzip export support (#1); 
-- Unify loggers; 
-- Use job cache instead of proc cache so that a proc can be partly cached; 
-- Rewrite buildInput and buildOutput; 
+- Add use job class for jobs in a proc;
+- Use "1,2 3,4" for channel.fromArgs for multi-width channels;
+- Add rbind, cbind, slice for channel;
+- Add alias for some proc properties;
+- Remove callfront for proc;
+- Add export cache mode;
+- Add gzip export support (#1);
+- Unify loggers;
+- Use job cache instead of proc cache so that a proc can be partly cached;
+- Rewrite buildInput and buildOutput;
 - Use job to construct runners;
 
 # 0.2.0 (2017.3.14)

@@ -99,3 +99,9 @@ export/
 *.dot
 *.queue.txt
 site/
+
+# poetry
+poetry.lock
+
+# backup files
+*.bak

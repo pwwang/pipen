@@ -9,7 +9,7 @@ from collections import OrderedDict
 from os import path
 import yaml
 import filelock
-from simpleconf import NoSuchProfile
+from simpleconf import NoSuchProfile, Config
 from .logger import logger
 from .utils import Box, OBox, Hashable, fs
 from .jobmgr import Jobmgr, STATES
@@ -19,28 +19,28 @@ from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOut
 	ProcScriptError, ProcRunCmdError
 from . import utils, template
 
-class Proc (Hashable):
-	"""
+class Proc(Hashable):
+	"""@API
 	The Proc class defining a process
 
 	@static variables:
-		`ALIAS`:         The alias for the properties
-		`DEPRECATED`:    Deprecated property names
+		ALIAS      (dict): The alias for the properties
+		DEPRECATED (dict): Deprecated property names
 
-		`OUT_VARTYPE`:    Variable types for output
-		`OUT_FILETYPE`:   File types for output
-		`OUT_DIRTYPE`:    Directory types for output
-		`OUT_STDOUTTYPE`: Stdout types for output
-		`OUT_STDERRTYPE`: Stderr types for output
+		OUT_VARTYPE    (list): Variable types for output
+		OUT_FILETYPE   (list): File types for output
+		OUT_DIRTYPE    (list): Directory types for output
+		OUT_STDOUTTYPE (list): Stdout types for output
+		OUT_STDERRTYPE (list): Stderr types for output
 
-		`IN_VARTYPE`:   Variable types for input
-		`IN_FILETYPE`:  File types for input
-		`IN_FILESTYPE`: Files types for input
+		IN_VARTYPE   (list): Variable types for input
+		IN_FILETYPE  (list): File types for input
+		IN_FILESTYPE (list): Files types for input
 
-		`EX_GZIP`: `exhow` value to gzip output files while exporting them
-		`EX_COPY`: `exhow` value to copy output files while exporting them
-		`EX_MOVE`: `exhow` value to move output files while exporting them
-		`EX_LINK`: `exhow` value to link output files while exporting them
+		EX_GZIP (list): `exhow` value to gzip output files while exporting them
+		EX_COPY (list): `exhow` value to copy output files while exporting them
+		EX_MOVE (list): `exhow` value to move output files while exporting them
+		EX_LINK (list): `exhow` value to link output files while exporting them
 	"""
 
 	# for future use, shortcuts
@@ -69,117 +69,99 @@ class Proc (Hashable):
 
 	# pylint: disable=redefined-builtin
 	def __init__(self, id = None, tag = 'notag', desc = 'No description.', **kwargs):
-		"""
-		Constructor
+		"""@API
+		Proc constructor
 		@params:
-			`tag`     : The tag of the process
-			`desc`    : The description of the process
-			`id`      : The identify of the process
-			`**kwargs`: Other properties of the process, which can be set by `proc.xxx` later.
-		@config:
-			id, input, output, ppldir, forks, cache, acache, rc, echo, runner, script, depends,
-			tag, desc, dirsig, exdir, exhow, exow, errhow, errntry, lang, beforeCmd, afterCmd,
-			workdir, args, callfront, callback, expect, expart, template, tplenvs,
-			resume, nthread
-		@props
-			input, output, rc, echo, script, depends, beforeCmd, afterCmd, workdir, expect
-			expart, template, channel, jobs, ncjobids, size, sets, procvars, suffix
+			tag  (str)   : The tag of the process
+			desc (str)   : The description of the process
+			id   (str)   : The identify of the process
+			**kwargs: Other properties of the process, which can be set by `proc.xxx` later.
 		"""
 		# Do not go through __getattr__ and __setattr__
 		# Get configuration from config
-		self.__dict__['config']   = utils.config.copy()
+		self.__dict__['config'] = Config()
 		# computed props
-		self.__dict__['props']    = Box(box_intact_types = [Channel, list])
+		self.__dict__['props'] = Box(box_intact_types = [Channel, list])
 
+		defaultconfig = dict.copy(utils.config)
 		# The id (actually, it's the showing name) of the process
-		self.config.id = id if id else utils.varname()
-
-		if ' ' in tag or '@' in tag:
-			raise ProcTagError("No space or '@' is allowed in tag.")
+		defaultconfig['id'] = id if id else utils.varname()
+		if ' ' in tag:
+			raise ProcTagError("No space allowed in tag.")
+		if 'depends' in kwargs:
+			raise ProcAttributeError("Attribute 'depends' has to be set using `__setattr__`")
 
 		# The extra arguments for the process
-		self.config.args       = utils.config.args.copy()
+		defaultconfig['args'] = defaultconfig['args'].copy()
 		# The callfront function of the process
-		self.config.callfront  = None
+		defaultconfig['callfront'] = None
 		# The callback function of the process
-		self.config.callback   = None
-		# The output channel of the process
-		self.props.channel     = Channel.create()
+		defaultconfig['callback'] = None
 		# The dependencies specified
-		self.config.depends    = []
-		# The dependencies computed
-		self.props.depends     = []
-		# the computed echo option
-		self.props.echo        = {}
-		# computed expart
-		self.props.expart      = []
-		# computed expect
-		self.props.expect      = None
-		# whether hide in flowchart
-		self.config.hide       = False
+		defaultconfig['depends'] = []
 		# The input that user specified
-		self.config.input      = ''
-		# The computed input
-		self.props.input       = {}
-		# The jobs
-		self.props.jobs        = []
-		# The locker for the process
-		self.props.lock        = None
-		# non-cached job ids
-		self.props.ncjobids    = []
-		# The original name of the process if it's copied
-		self.props.origin      = self.config.id
+		defaultconfig['input'] = ''
 		# The output that user specified
-		self.config.output     = ''
-		# The computed output
-		self.props.output      = OBox()
-		# data for proc.xxx in template
-		self.props.procvars    = {}
-		# Valid return code
-		self.props.rc          = [0]
-
-		# which input file to use:
-		# - indir:  The symbolic links in input directory
-		# - origin: The original file specified by input channel
-		# - real:   The realpath of the input file
-		#self.config.iftype     = 'indir'
-
+		defaultconfig['output'] = ''
 		# resume flag of the process
 		# ''       : Normal, do not resume
 		# 'skip+'  : Load data from previous run, pipeline resumes from future processes
 		# 'resume+': Deduce input from 'skip+' processes
 		# 'skip'   : Just skip, do not load data
 		# 'resume' : Load data from previous run, resume pipeline
-		self.config.resume     = ''
+		defaultconfig['resume'] = ''
+		# The template environment
+		defaultconfig['tplenvs'] = defaultconfig.get('envs', defaultconfig['tplenvs']).copy()
+
+		# The output channel of the process
+		self.props.channel = Channel.create()
+		# The dependencies computed
+		self.props.depends = []
+		# the computed echo option
+		self.props.echo = {}
+		# computed expart
+		self.props.expart = []
+		# computed expect
+		self.props.expect = None
+		# The computed input
+		self.props.input = {}
+		# The jobs
+		self.props.jobs = []
+		# The locker for the process
+		self.props.lock = None
+		# non-cached job ids
+		self.props.ncjobids = []
+		# The original name of the process if it's copied
+		self.props.origin = defaultconfig['id']
+		# The computed output
+		self.props.output = OBox()
+		# data for proc.xxx in template
+		self.props.procvars = {}
+		# Valid return code
+		self.props.rc = [0]
 		# get the runner from the profile
-		self.props.runner      = 'local'
+		self.props.runner = 'local'
 		# The computed script. Template object
-		self.props.script      = None
-		# The size of the process (# jobs)
-		# use property
-		#self.props.size        = 0
+		self.props.script = None
 		# The unique identify of the process
 		# cache the suffix
-		self.props._suffix     = ''
+		self.props._suffix = ''
 		# The template class
-		self.props.template    = None
+		self.props.template = None
 		# timer for running time
-		self.props.timer       = None
-		# The template environment
-		self.config.tplenvs    = utils.config.get('tplenvs', utils.config.get('envs', Box())).copy()
+		self.props.timer = None
 		# The computed workdir
-		self.props.workdir     = ''
-
-		# update the conf with kwargs
-		self.config.update(dict(tag = tag, desc = desc, **kwargs))
+		self.props.workdir = ''
 		# remember which property is set, then it will not be overwritten by configurations,
 		# do not put any values here because we want
 		# the kwargs to be overwritten by the configurations but keep the values set by:
-		# p.xxx = xxx
-		self.props.sets        = set()
+		# p.xxx           = xxx
+		self.props.sets = set()
 
-		from . import PyPPL
-		PyPPL._registerProc(self)
+		# update the conf with kwargs
+		defaultconfig.update(dict(tag = tag, desc = desc, **kwargs))
+		# collapse the loading trace, we don't need it anymore.
+		self.config._load({'default': defaultconfig})
 
 	def __getattr__(self, name):
 		"""
@@ -229,6 +211,7 @@ class Proc (Hashable):
 
 		# depends have to be computed here, as it's used to infer the relation before run
 		if name == 'depends':
+
 			self.props.depends = []
 			depends = list(value) if isinstance(value, tuple) else \
 				value.ends if isinstance(value, ProcSet) else \
@@ -246,6 +229,10 @@ class Proc (Hashable):
 				else:
 					raise ProcAttributeError(type(value).__name__,
 						"Process dependents should be 'Proc/ProcSet', not")
+			if depends:
+				from . import PyPPL
+				# only register the procs that will be involved.
+				PyPPL._registerProc(self)
 
 		elif name == 'script' and value.startswith('file:'):
 			scriptpath = Path(value[5:])
@@ -288,14 +275,14 @@ class Proc (Hashable):
 
 	# pylint: disable=invalid-name
 	def copy(self, id = None, tag = None, desc = None):
-		"""
+		"""@API
 		Copy a process
 		@params:
-			`id`: The new id of the process, default: `None` (use the varname)
-			`tag`:   The tag of the new process, default: `None` (used the old one)
-			`desc`:  The desc of the new process, default: `None` (used the old one)
+			id (str): The new id of the process, default: `None` (use the varname)
+			tag (str):   The tag of the new process, default: `None` (used the old one)
+			desc (str):  The desc of the new process, default: `None` (used the old one)
 		@returns:
-			The new process
+			(Proc): The new process
 		"""
 		conf    = {}
 		props   = {}
@@ -309,7 +296,7 @@ class Proc (Hashable):
 
 		for key in self.config:
 			if key == 'id':
-				conf[key]  = id if id else utils.varname()
+				conf[key] = id if id else utils.varname()
 			elif key == 'tag' and tag:
 				conf[key] = tag
 			elif key == 'desc' and desc:
@@ -318,6 +305,8 @@ class Proc (Hashable):
 				conf[key] = ''
 			elif isinstance(self.config[key], dict) and 'tplenvs' not in key:
 				conf[key] = pycopy.deepcopy(self.config[key])
+			elif key == 'depends':
+				continue
 			else:
 				conf[key] = self.config[key]
 
@@ -339,17 +328,18 @@ class Proc (Hashable):
 			else:
 				props[key] = self.props[key]
 
-		newproc = Proc()
-		# don't copy the dicts not intended to be copied
-		dict.update(newproc.config, conf)
+		newproc = Proc(**conf)
+		newproc.depends = []
 		dict.update(newproc.props, props)
 		return newproc
 
 	def name(self, procset = True):
-		"""
+		"""@API
 		Get my name include `procset`, `id`, `tag`
+		@params:
+			procset (bool): Whether include the procset name or not.
 		@returns:
-			the name
+			(str): the name
 		"""
 		tag = self.tag
 		if '@' not in tag:
@@ -361,7 +351,11 @@ class Proc (Hashable):
 
 	@property
 	def procset(self):
-		"""Get the name of the procset"""
+		"""@API
+		Get the name of the procset
+		@returns:
+			(str): The procset name
+		"""
 		parts = self.tag.split('@')
 		if len(parts) == 1:
 			return None
@@ -369,12 +363,16 @@ class Proc (Hashable):
 
 	@property
 	def size(self):
-		"""Get the size of the  process"""
+		"""@API
+		Get the size of the  process
+		@returns:
+			(int): The number of jobs
+		"""
 		return len(self.jobs)
 
 	@property
 	def suffix(self):
-		"""
+		"""@API
 		Calcuate a uid for the process according to the configuration
 		The philosophy:
 		1. procs from different script must have different suffix (sys.argv[0])
@@ -382,7 +380,7 @@ class Proc (Hashable):
 			- procs with different id or tag have different suffix
 			- procs with different input have different suffix (depends, input)
 		@returns:
-			The uniq id of the process
+			(str): The uniq id of the process
 		"""
 		if self.props._suffix:
 			return self.props._suffix
@@ -779,6 +777,7 @@ class Proc (Hashable):
 				'No such runner: {}. '.format(self.runner) +
 				'If it is a profile, did you forget to specify a basic runner?')
 
+		logger.debug('Constructing jobs ...', proc = self.id)
 		for i in range(self.size):
 			self.jobs[i] = PyPPL.RUNNERS[self.runner](i, self)
 
@@ -786,20 +785,31 @@ class Proc (Hashable):
 		"""
 		Read the configuration
 		@params:
-			`config`: The configuration
+			`config`: The configuration loaded by PyPPL()
 		"""
-		if not profile:
-			return
+		# if runner is set, then profile should be ignored
+		if 'runner' in self.sets or not profile:
+			profile = self.config.runner
+
+		config_with_profiles = utils.config.copy()
+		# make sure configs in __init__ be loaded
+		config_with_profiles._load({'default': dict.copy(self.config)})
+
+		assert isinstance(config, type(self.config))
+		# load extra profiles specified to PyPPL()
+		for key, val in config._protected['cached'].items():
+			if '__noloading__' not in val:
+				config_with_profiles._load(val)
 
 		# configs have been set
-		setconfigs = {key:self.config[key] for key in self.sets}
-		self.config._load(config or {})
+		setconfigs = {key:self.config[key] for key in self.sets if key != 'runner'}
 		if isinstance(profile, dict):
 			profile['runner'] = profile.get('runner', self.config.runner)
-			self.config._load(dict(
-				__tmp__ = profile
-			))
-			self.config._use('__tmp__')
+			config_with_profiles._load({'__tmp__': profile})
+			config_with_profiles._use('__tmp__')
+			# now config_with_profiles carries the right profile
+			# update it back to self.config
+			self.config.update(config_with_profiles)
 			self.config.update(setconfigs)
 			# the real runner
 			self.props.runner  = self.config.runner
@@ -807,13 +817,17 @@ class Proc (Hashable):
 			self.config.runner = '__tmp__'
 		else:
 			try:
-				self.config._use(profile, raise_exc = True)
+				config_with_profiles._use(profile, raise_exc = True)
 			except NoSuchProfile:
-				self.config._load({profile: dict(runner = profile)})
-				self.config._use(profile)
+				config_with_profiles._load({profile: dict(runner = profile)})
+				config_with_profiles._use(profile)
+			# now config_with_profiles carries the right profile
+			# update it back to self.config
+			self.config.update(config_with_profiles)
 			self.config.update(setconfigs)
 			self.props.runner  = self.config.runner
 			self.config.runner = profile
+		del config_with_profiles
 
 	def _runCmd(self, key):
 		"""
@@ -873,6 +887,7 @@ class Proc (Hashable):
 		"""
 		Submit and run the jobs
 		"""
+		logger.debug('Queue starts ...', proc = self.id)
 		Jobmgr(self.jobs).start()
 
 		self.props.channel = Channel.create([
@@ -952,7 +967,7 @@ class Proc (Hashable):
 					sys.exit(1)
 
 	def run(self, profile = None, config = None):
-		"""@api
+		"""@API
 		Run the process with a profile and/or a configuration
 		@params:
 			profile (str): The profile from a configuration file.

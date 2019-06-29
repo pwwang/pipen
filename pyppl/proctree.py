@@ -6,15 +6,15 @@ from collections import OrderedDict
 from .exception import ProcTreeProcExists, ProcTreeParseError, ProcHideError
 
 class ProcNode(object):
-	"""
+	"""@API
 	The node for processes to manage relations between each other
 	"""
 
 	def __init__(self, proc):
-		"""
-		Constructor
+		"""@API
+		A process node constructor
 		@params:
-			`proc`: The `Proc` instance
+			proc (Proc): The `Proc` instance
 		"""
 		self.proc    = proc
 		self.prev    = [] # prev nodes
@@ -24,13 +24,12 @@ class ProcNode(object):
 		self.defs    = traceback.format_stack()[:-4]
 
 	def sameIdTag(self, proc):
-		"""
+		"""@API
 		Check if the process has the same id and tag with me.
 		@params:
-			`proc`: The `Proc` instance
+			proc (Proc): The `Proc` instance
 		@returns:
-			`True` if it is.
-			`False` if not.
+			(bool): Whether the proc (Proc) has the same id and tag.
 		"""
 		return proc.id == self.proc.id and proc.tag  == self.proc.tag
 
@@ -40,8 +39,11 @@ class ProcNode(object):
 
 
 class ProcTree(object):
-	"""
+	"""@API
 	A tree of processes.
+
+	@static variables
+		NODES (OrderedDict): The processes registered.
 	"""
 	# all processes, key is the object id
 	# use static, because we want different pipelines in the same session
@@ -51,17 +53,25 @@ class ProcTree(object):
 	NODES    = OrderedDict()
 
 	def __init__(self):
-		"""
-		Constructor, set the status of all `ProcNode`s
+		"""@API
+		ProcTruee constructor
 		"""
 		ProcTree.reset()
 		self.starts  = [] # start procs
 		self.ends    = [] # end procs
+
+	@classmethod
+	def init(self):
+		"""@API
+		Set the status of all `ProcNode`s
+		"""
 		# build prevs and nexts
 		for proc, node in ProcTree.NODES.items():
 			if not proc.depends:
 				continue
 			for dep in proc.depends:
+				if dep not in ProcTree.NODES:
+					continue
 				dnode = ProcTree.NODES[dep]
 				if node not in dnode.next:
 					dnode.next.append(node)
@@ -73,35 +83,36 @@ class ProcTree(object):
 					'it has both more than 1 parents and children.')
 
 	@staticmethod
-	def register(proc):
-		"""
+	def register(*procs):
+		"""@API
 		Register the process
 		@params:
-			`proc`: The `Proc` instance
+			*procs (Proc): The `Proc` instance
 		"""
-		ProcTree.NODES[proc] = ProcNode(proc)
+		for proc in procs:
+			ProcTree.NODES[proc] = ProcNode(proc)
 
 	@staticmethod
 	def check(proc):
-		"""
+		"""@API
 		Check whether a process with the same id and tag exists
 		@params:
-			`proc`: The `Proc` instance
+			proc (Proc): The `Proc` instance
 		"""
-		for pnode in ProcTree.NODES.keys():
-			if pnode is proc:
+		for pnode, node in ProcTree.NODES.items():
+			if pnode is proc or proc not in ProcTree.NODES:
 				continue
-			if ProcTree.NODES[pnode].sameIdTag(proc):
-				raise ProcTreeProcExists(ProcTree.NODES[pnode], ProcTree.NODES[proc])
+			if node.sameIdTag(proc):
+				raise ProcTreeProcExists(node, ProcTree.NODES[proc])
 
 	@staticmethod
 	def getPrevStr(proc):
-		"""
+		"""@API
 		Get the names of processes a process depends on
 		@params:
-			`proc`: The `Proc` instance
+			proc (Proc): The `Proc` instance
 		@returns:
-			The names
+			(str): The names
 		"""
 		node = ProcTree.NODES[proc]
 		prev = [prevnode.proc.name() for prevnode in node.prev]
@@ -109,12 +120,12 @@ class ProcTree(object):
 
 	@staticmethod
 	def getNextStr(proc):
-		"""
+		"""@API
 		Get the names of processes depend on a process
 		@params:
-			`proc`: The `Proc` instance
+			proc (Proc): The `Proc` instance
 		@returns:
-			The names
+			(str): The names
 		"""
 		node = ProcTree.NODES[proc]
 		nexs = [nextn.proc.name() for nextn in node.next]
@@ -122,19 +133,19 @@ class ProcTree(object):
 
 	@staticmethod
 	def getNext(proc):
-		"""
+		"""@API
 		Get next processes of process
 		@params:
-			`proc`: The `Proc` instance
+			proc (Proc): The `Proc` instance
 		@returns:
-			The processes depend on this process
+			(list[Proc]): The processes depend on this process
 		"""
 		node = ProcTree.NODES[proc]
 		return [nextn.proc for nextn in node.next]
 
 	@staticmethod
 	def reset():
-		"""
+		"""@API
 		Reset the status of all `ProcNode`s
 		"""
 		for node in ProcTree.NODES.values():
@@ -144,7 +155,7 @@ class ProcTree(object):
 			node.start  = False
 
 	def setStarts(self, starts):
-		"""
+		"""@API
 		Set the start processes
 		@params:
 			starts (list[Proc]): The start processes
@@ -165,27 +176,28 @@ class ProcTree(object):
 			self.starts.append(start)
 
 	def getStarts(self):
-		"""
+		"""@API
 		Get the start processes
 		@returns:
-			The start processes
+			(list[Proc]): The start processes
 		"""
 		if not self.starts:
 			self.starts = [proc for proc, node in ProcTree.NODES.items() if node.start]
 		return self.starts
 
 	def getPaths(self, proc, proc0 = None, check_hide = True):
-		"""
+		"""@API
 		Infer the path to a process
+		```
+		p1 -> p2 -> p3
+				p4  _/
+		Paths for p3: [[p4], [p2, p1]]
+		```
 		@params:
 			proc (Proc): The process
 			proc0 (Proc): The original process, because this function runs recursively.
 		@returns:
-			```
-			p1 -> p2 -> p3
-			      p4  _/
-			Paths for p3: [[p4], [p2, p1]]
-			```
+			(list[list]): The path to the process.
 		"""
 		node  = proc if isinstance(proc, ProcNode) else ProcTree.NODES[proc]
 		proc0 = proc0 or [node]
@@ -213,12 +225,12 @@ class ProcTree(object):
 		return paths
 
 	def getPathsToStarts(self, proc, check_hide = True):
-		"""
+		"""@API
 		Filter the paths with start processes
 		@params:
-			`proc`: The process
+			proc (Proc): The process
 		@returns:
-			The filtered path
+			(list[list]): The filtered path
 		"""
 		# get the full paths first
 		paths  = self.getPaths(proc, check_hide = check_hide)
@@ -238,13 +250,12 @@ class ProcTree(object):
 		return ret
 
 	def checkPath(self, proc):
-		"""
+		"""@API
 		Check whether paths of a process can start from a start process
 		@params:
 			proc (Proc): The process
 		@returns:
-			True: if all paths can pass
-			First failed path: otherwise
+			(bool|list): `True` if all paths can pass, otherwise first failed path.
 		"""
 		paths  = self.getPaths(proc, check_hide = False)
 		starts = set(self.getStarts())
@@ -254,10 +265,10 @@ class ProcTree(object):
 		return True
 
 	def getEnds(self):
-		"""
+		"""@API
 		Get the end processes
 		@returns:
-			The end processes
+			(list[Proc]): The end processes
 		"""
 		if self.ends:
 			return self.ends
@@ -296,9 +307,13 @@ class ProcTree(object):
 		return self.ends
 
 	def getAllPaths(self, check_hide = True):
-		"""
+		"""@API
 		Get all paths of the pipeline, only used to be displayed in debug
 		So hide those hidden processes.
+		@params:
+			check_hide (bool): Whether check the hiding processes or not. Default: `True`
+		@yields:
+			(list[Proc]): The paths.
 		"""
 		ret = set()
 		ends = self.getEnds()
@@ -320,10 +335,10 @@ class ProcTree(object):
 
 	@classmethod
 	def getNextToRun(cls):
-		"""
+		"""@API
 		Get the process to run next
 		@returns:
-			The process next to run
+			(Proc): The process next to run
 		"""
 		#ret = []
 		for proc, node in ProcTree.NODES.items():
@@ -340,30 +355,30 @@ class ProcTree(object):
 				#ret.append(node.proc)
 		return None
 
-	def unranProcs(self):
-		"""
-		Report the processes that won't run in a path can't be reached.
-		Say start process not specified in that path.
-		This is trying to alert people if they forget specify the start processes along those paths.
-		@returns:
-			{procname: [path]}: The processes won't run.
-		"""
-		ret = {}
-		starts = set(self.getStarts())
-		for proc, node in ProcTree.NODES.items():
-			# only check possible end process
-			# and then report the paths can't be reached
-			# - skip impossbile end proscess
-			# - skip absolete processes
-			# - skip those processes have run
-			# - skip procsets
-			if node.next or node.ran or (not node.prev and not node.next) or proc.procset:
-				continue
-			paths = self.getPaths(node, check_hide = False)
-			# we should have paths, otherwise it's an absolete process
-			for path in paths:
-				if not (set(path) & starts):
-					ret[proc.name()] = [pnode.name() for pnode in path]
-					# just report one path
-					break
-		return ret
+	# def unranProcs(self):
+	# 	"""@API
+	# 	Report the processes that won't run in a path can't be reached.
+	# 	Say start process not specified in that path.
+	# 	This is trying to alert people if they forget specify the start processes along those paths.
+	# 	@returns:
+	# 		(dict{procname: [path]}): The processes won't run.
+	# 	"""
+	# 	ret = {}
+	# 	starts = set(self.getStarts())
+	# 	for proc, node in ProcTree.NODES.items():
+	# 		# only check possible end process
+	# 		# and then report the paths can't be reached
+	# 		# - skip impossbile end proscess
+	# 		# - skip absolete processes
+	# 		# - skip those processes have run
+	# 		# - skip procsets
+	# 		if node.next or node.ran or (not node.prev and not node.next) or proc.procset:
+	# 			continue
+	# 		paths = self.getPaths(node, check_hide = False)
+	# 		# we should have paths, otherwise it's an absolete process
+	# 		for path in paths:
+	# 			if not (set(path) & starts):
+	# 				ret[proc.name()] = [pnode.name() for pnode in path]
+	# 				# just report one path
+	# 				break
+	# 	return ret

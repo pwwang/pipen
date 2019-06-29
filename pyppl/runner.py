@@ -11,11 +11,16 @@ from .utils import killtree, chmodX, cmdy, Box
 from .exception import RunnerSshError
 
 class RunnerLocal(Job):
-	"""
-	Local runer
+	"""@API
+	The local runer
 	"""
 	@property
 	def pid(self):
+		"""
+		Get the pid in integer format
+		@returns:
+			(int): The pid
+		"""
 		ret = super().pid or -1
 		return int(ret)
 
@@ -50,7 +55,7 @@ class RunnerLocal(Job):
 		return pid_exists(self.pid)
 
 class RunnerDry(RunnerLocal):
-	"""
+	"""@API
 	The dry runner
 	"""
 	@property
@@ -73,8 +78,10 @@ class RunnerDry(RunnerLocal):
 		return parts
 
 class RunnerSsh(RunnerLocal):
-	"""
+	"""@API
 	The ssh runner
+	@static variables:
+		LIVE_SERVERS (list): The live servers
 	"""
 	LIVE_SERVERS = None
 	LOCK         = Lock()
@@ -82,14 +89,14 @@ class RunnerSsh(RunnerLocal):
 
 	@staticmethod
 	def isServerAlive(server, key = None, timeout = 3, ssh = 'ssh'):
-		"""
+		"""@API
 		Check if an ssh server is alive
 		@params:
-			`server`: The server to check
-			`key`   : The keyfile to login the server
-			`timeout`: The timeout to check whether the server is alive.
+			server (str): The server to check
+			key (str): The keyfile to login the server
+			timeout (int|float): The timeout to check whether the server is alive.
 		@returns:
-			`True` if alive else `False`
+			(bool): `True` if alive else `False`
 		"""
 		params = {'': server, '_timeout': timeout, '_': 'true'}
 		if key:
@@ -115,6 +122,7 @@ class RunnerSsh(RunnerLocal):
 
 		with RunnerSsh.LOCK:
 			if RunnerSsh.LIVE_SERVERS is None:
+				self.logger('Checking status of servers ...', level = 'debug')
 				if check_alive is True:
 					RunnerSsh.LIVE_SERVERS = [i for i, server in enumerate(servers)
 						if RunnerSsh.isServerAlive(server, keys and keys[i], ssh = ssh)]
@@ -192,8 +200,10 @@ class RunnerSsh(RunnerLocal):
 		return self.ssh(_ = cmd).rc == 0
 
 class RunnerSge (Job):
-	"""
+	"""@API
 	The sge runner
+	@static variables:
+		POLL_INTERVAL (int=5): The inteval between each job state polling.
 	"""
 
 	POLL_INTERVAL = 5
@@ -201,9 +211,6 @@ class RunnerSge (Job):
 	def __init__ (self, index, proc):
 		"""
 		Constructor
-		@params:
-			`job`:    The job object
-			`config`: The properties of the process
 		"""
 		super().__init__(index, proc)
 
@@ -271,8 +278,10 @@ class RunnerSge (Job):
 		return self.qstat(j = self.pid).rc == 0
 
 class RunnerSlurm (Job):
-	"""
+	"""@API
 	The slurm runner
+	@static variables:
+		POLL_INTERVAL (int=5): The inteval between each job state polling.
 	"""
 
 	INTERVAL = 5

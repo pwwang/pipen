@@ -158,7 +158,16 @@ def test_killtree(fixt_killtree):
 	assert len(fixt_killtree.children) > 1
 	for child in fixt_killtree.children + [fixt_killtree.pid]:
 		assert psutil.pid_exists(child)
-	killtree(fixt_killtree.pid, killme = fixt_killtree.killme)
+	try:
+		killtree(fixt_killtree.pid, killme = fixt_killtree.killme)
+	except psutil.NoSuchProcess:
+		from time import sleep
+		# python3.6 issue
+		sleep(1)
+		try:
+			killtree(fixt_killtree.pid, killme = fixt_killtree.killme)
+		except psutil.NoSuchProcess:
+			pass
 	if fixt_killtree.killme:
 		for child in fixt_killtree.children + [fixt_killtree.pid]:
 			assert not psutil.pid_exists(child)

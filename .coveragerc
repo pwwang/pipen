@@ -1,0 +1,8 @@
+[run]
+source =
+	../pyppl
+omit =
+	pyppl/console.py
+	test*.py
+	workdir/*.py
+

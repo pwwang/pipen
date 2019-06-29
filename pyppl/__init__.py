@@ -1,6 +1,6 @@
 """The main module of PyPPL"""
 
-__version__ = '1.4.3'
+__version__ = "2.0.0"
 
 # give random tips in the log
 import random
@@ -12,7 +12,7 @@ import fnmatch
 from pathlib import Path
 from time import time
 from multiprocessing import cpu_count
-
+from simpleconf import Config
 from .utils import config, Box, OBox
 
 DEFAULT_CFGFILES = (
@@ -126,27 +126,24 @@ from .exception import PyPPLProcRelationError, RunnerClassNameError
 from . import utils, runner
 
 class PyPPL (object):
-	"""
+	"""@API
 	The PyPPL class
 
 	@static variables:
-		`TIPS`: The tips for users
-		`RUNNERS`: Registered runners
-		`DEFAULT_CFGFILES`: Default configuration file
-		`COUNTER`: The counter for `PyPPL` instance
+		TIPS (list): The tips for users
+		RUNNERS (dict): Registered runners
+		COUNTER (int): The counter for `PyPPL` instance
 	"""
 
 	TIPS = [
 		"You can find the stdout in <workdir>/<job.index>/job.stdout",
 		"You can find the stderr in <workdir>/<job.index>/job.stderr",
 		"You can find the script in <workdir>/<job.index>/job.script",
-		"Check documentation at: https://pwwang.github.io/PyPPL",
+		"Check documentation at: https://pyppl.readthedocs.io/en/latest/",
 		"You cannot have two processes with the same id and tag",
 		"beforeCmd and afterCmd only run locally",
-		"If 'workdir' is not set for a process, "
-		"it will be PyPPL.<proc-id>.<proc-tag>.<suffix> under default <ppldir>",
-		"The default <ppldir> is './workdir'",
-		]
+		"Workdir defaults to PyPPL.<id>.<tag>.<suffix> under default <ppldir>",
+		"The default <ppldir> is './workdir'"]
 
 	RUNNERS  = {}
 
@@ -154,19 +151,23 @@ class PyPPL (object):
 	COUNTER  = 0
 
 	def __init__(self, conf = None, cfgfile = None):
-		"""
-		Constructor
+		"""@API
+		PyPPL Constructor
 		@params:
-			`conf`: the configurations for the pipeline, default: {}
-			`cfgfile`: the configuration file for the pipeline, default: None
+			conf (dict): the configurations for the pipeline, default: `None`
+				- Remember the profile name should be included.
+			cfgfile (file): the configuration file for the pipeline, default: `None`
 		"""
 		self.counter = PyPPL.COUNTER
 		PyPPL.COUNTER += 1
 
-		self.config = config.copy()
+		self.config = Config()
+		# __noloading__ tells processes not load it as they have it initiated.
+		self.config._load({'default': config, '__noloading__': None})
 		if cfgfile:
 			self.config._load(cfgfile)
-		self.config.update(conf or {})
+		if conf and isinstance(conf, dict):
+			self.config._load(conf)
 
 		if self.config._log.file is True:
 			self.config._log.file = (Path('./') / Path(sys.argv[0]).stem).with_suffix(
@@ -221,24 +222,27 @@ class PyPPL (object):
 		return ret
 
 	def start (self, *args):
-		"""
+		"""@API
 		Set the starting processes of the pipeline
 		@params:
-			`args`: the starting processes
+			*args (Proc|str): process selectors
 		@returns:
-			The pipeline object itself.
+			(PyPPL): The pipeline object itself.
 		"""
 		starts  = set(PyPPL._procsSelector(args))
+		PyPPL._registerProc(*starts)
+		self.tree.init()
+
 		nostart = set()
-		for start in starts:
+		for startproc in starts:
 			# Let's check if we have any other procs on the path of start process
-			paths = self.tree.getPaths(start)
+			paths = self.tree.getPaths(startproc)
 			pristarts = [pnode for sublist in paths for pnode in sublist if pnode in starts]
 			if pristarts:
-				nostart.add(start)
+				nostart.add(startproc)
 				names = [pnode.name(True) for pnode in pristarts]
 				names = names[:3] + ['...'] if len(names) > 3 else names
-				logger.warning('Start process %s ignored, depending on [%s]', start.name(True),
+				logger.warning('Start process %s ignored, depending on [%s]', startproc.name(True),
 					', '.join(names))
 		self.tree.setStarts(starts - nostart)
 		return self
@@ -281,12 +285,12 @@ class PyPPL (object):
 						pnode.resume = sflag
 
 	def resume (self, *args):
-		"""
+		"""@API
 		Mark processes as to be resumed
 		@params:
-			`args`: the processes to be marked
+			*args (Proc|str): the processes to be marked
 		@returns:
-			The pipeline object itself.
+			(PyPPL): The pipeline object itself.
 		"""
 		if not args or (len(args) == 1 and not args[0]):
 			return self
@@ -294,12 +298,12 @@ class PyPPL (object):
 		return self
 
 	def resume2 (self, *args):
-		"""
+		"""@API
 		Mark processes as to be resumed
 		@params:
-			`args`: the processes to be marked
+			*args (Proc|str): the processes to be marked
 		@returns:
-			The pipeline object itself.
+			(PyPPL): The pipeline object itself.
 		"""
 		if not args or (len(args) == 1 and not args[0]):
 			return self
@@ -307,8 +311,10 @@ class PyPPL (object):
 		return self
 
 	def showAllRoutes(self):
-		"""
+		"""@API
 		Show all the routes in the log.
+		@returns:
+			(PyPPL): The pipeline object itself.
 		"""
 		logger.debug('ALL ROUTES:')
 		#paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths()])
@@ -339,17 +345,16 @@ class PyPPL (object):
 		return self
 
 	def run (self, profile = 'default'):
-		"""
+		"""@API
 		Run the pipeline
 		@params:
-			`profile`: the profile used to run, if not found, it'll be used as runner name.
+			profile (str|dict): the profile used to run, if not found, it'll be used as runner name.
 				- default: 'default'
 		@returns:
-			The pipeline object itself.
+			(PyPPL): The pipeline object itself.
 		"""
-		timer     = time()
+		timer = time()
 
-		#dftconfig = self._getProfile(profile)
 		proc = self.tree.getNextToRun()
 		while proc:
 			if proc.origin != proc.id:
@@ -368,18 +373,16 @@ class PyPPL (object):
 				ProcTree.getPrevStr(proc),
 				proc.name(),
 				ProcTree.getNextStr(proc),
-				proc = proc.id
-			)
+				proc = proc.id)
 			proc.run(profile, self.config)
-
 			proc = self.tree.getNextToRun()
 
-		unran = self.tree.unranProcs()
-		if unran:
-			klen  = max([len(key) for key, _ in unran.items()])
-			for key, val in unran.items():
-				fmtstr = "%-"+ str(klen) +"s won't run as path can't be reached: %s <- %s"
-				logger.warning(fmtstr, key, key, ' <- '.join(val))
+		# unran = self.tree.unranProcs()
+		# if unran:
+		# 	klen  = max([len(key) for key, _ in unran.items()])
+		# 	for key, val in unran.items():
+		# 		fmtstr = "%-"+ str(klen) +"s won't run as path can't be reached: %s <- %s"
+		# 		logger.warning(fmtstr, key, key, ' <- '.join(val))
 
 		logger.done (
 			'Total time: %s',
@@ -388,16 +391,16 @@ class PyPPL (object):
 		return self
 
 	def flowchart (self, fcfile = None, dotfile = None):
-		"""
+		"""@API
 		Generate graph in dot language and visualize it.
 		@params:
-			`dotfile`: Where to same the dot graph.
+			dotfile (file): Where to same the dot graph.
 				- Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.dot"`)
-			`fcfile`:  The flowchart file.
+			fcfile (file):  The flowchart file.
 				- Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.svg"`)
 				- For example: run `python pipeline.py` will save it to `pipeline.pyppl.svg`
 		@returns:
-			The pipeline object itself.
+			(PyPPL): The pipeline object itself.
 		"""
 		from .flowchart import Flowchart
 		self.showAllRoutes()
@@ -408,7 +411,7 @@ class PyPPL (object):
 		fchart.setTheme(self.config._flowchart.theme)
 
 		for start in self.tree.getStarts():
-		 	fchart.addNode(start, 'start')
+			fchart.addNode(start, 'start')
 		for end in self.tree.getEnds():
 			fchart.addNode(end, 'end')
 			for apath in self.tree.getPathsToStarts(end, check_hide = True):
@@ -427,13 +430,13 @@ class PyPPL (object):
 
 
 	@staticmethod
-	def _registerProc(proc):
+	def _registerProc(*procs):
 		"""
 		Register the process
 		@params:
-			`proc`: The process
+			`*procs`: The process
 		"""
-		ProcTree.register(proc)
+		ProcTree.register(*procs)
 
 	@staticmethod
 	def _checkProc(proc):
@@ -448,10 +451,10 @@ class PyPPL (object):
 
 	@staticmethod
 	def registerRunner(runner_to_reg):
-		"""
+		"""@API
 		Register a runner
 		@params:
-			`runner`: The runner to be registered.
+			`runner_to_reg`: The runner to be registered.
 		"""
 		runner_name = runner_to_reg.__name__
 		if not runner_name.startswith('Runner'):

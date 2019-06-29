@@ -9,22 +9,22 @@ from glob import glob
 from . import utils
 
 class Channel(list):
-	"""
+	"""@API
 	The channen class, extended from `list`
 	"""
 
 	@staticmethod
 	def _tuplize(atuple):
-		"""
+		"""@API
 		A private method, try to convert an element to tuple
 		If it's a string, convert it to `(atuple, )`
 		Else if it is iterable, convert it to `tuple(atuple)`
 		Otherwise, convert it to `(atuple, )`
 		Notice that string is also iterable.
 		@params:
-			`atuple`: the element to be converted
+			atuple (str|list|tuple): the element to be converted
 		@returns:
-			The converted element
+			(tuple): The converted element
 		"""
 		if isinstance(atuple, (str, list)):
 			return (atuple, )
@@ -37,12 +37,12 @@ class Channel(list):
 
 	@staticmethod
 	def create(alist = None):
-		"""
+		"""@API
 		Create a Channel from a list
 		@params:
-			`alist`: The list, default: []
+			alist (list|Channel): The list, default: []
 		@returns:
-			The Channel created from the list
+			(Channel): The Channel created from the list
 		"""
 		if alist is None:
 			alist = []
@@ -64,13 +64,13 @@ class Channel(list):
 
 	@staticmethod
 	def nones(length, width):
-		"""
+		"""@API
 		Create a channel with `None`s
 		@params:
-			`length`: The length of the channel
-			`width`:  The width of the channel
+			length (int): The length of the channel
+			width (int):  The width of the channel
 		@returns:
-			The created channel
+			(Channel): The created channel
 		"""
 		ret = Channel()
 		row = (None, ) * width
@@ -80,29 +80,29 @@ class Channel(list):
 
 	@staticmethod
 	def fromChannels(*args):
-		"""
+		"""@API
 		Create a Channel from Channels
 		@params:
-			`args`: The Channels
+			*args (any): The Channels or anything can be created as a `Channel`
 		@returns:
-			The Channel merged from other Channels
+			(Channel): The Channel merged from other Channels
 		"""
 		ret = Channel.create()
 		return ret.insert (None, *args)
 
 	@staticmethod
 	def fromPattern(pattern, ftype = 'any', sortby = 'name', reverse=False):
-		"""
+		"""@API
 		Create a Channel from a path pattern
 		@params:
-			`pattern`: the pattern with wild cards
-			`ftype`:       the type of the files/dirs to include
+			pattern (str): the pattern with wild cards
+			ftype (str): the type of the files/dirs to include
 			  - 'dir', 'file', 'link' or 'any' (default)
-			`sortby`:  how the list is sorted
+			sortby (str):  how the list is sorted
 			  - 'name' (default), 'mtime', 'size'
-			`reverse`: reverse sort. Default: False
+			reverse (bool): reverse sort. Default: `False`
 		@returns:
-			The Channel created from the path
+			(Channel): The Channel created from the path
 		"""
 		if sortby == 'name':
 			key = str
@@ -123,12 +123,12 @@ class Channel(list):
 
 	@staticmethod
 	def fromPairs(pattern):
-		"""
+		"""@API
 		Create a width = 2 Channel from a pattern
 		@params:
-			`pattern`: the pattern
+			pattern (str): the pattern
 		@returns:
-			The Channel create from every 2 files match the pattern
+			(Channel): The Channel create from every 2 files match the pattern
 		"""
 		ret  = sorted(glob(pattern))
 		chan = Channel.create()
@@ -138,18 +138,18 @@ class Channel(list):
 
 	@staticmethod
 	def fromFile(filename, header = False, skip = 0, delimit = "\t"):
-		"""
+		"""@API
 		Create Channel from the file content
 		It's like a matrix file, each row is a row for a Channel.
 		And each column is a column for a Channel.
 		@params:
-			`filename`:      the file
-			`header`:  Whether the file contains header. If True, will attach the header
+			filename (file): the file
+			header (bool):  Whether the file contains header. If True, will attach the header
 				- So you can use `channel.<header>` to fetch the column
-			`skip`:    first lines to skip
-			`delimit`: the delimit for columns
+			skip (int): first lines to skip, default: `0`
+			delimit (str): the delimit for columns, default: `\t`
 		@returns:
-			A Channel created from the file
+			(Channel): A Channel created from the file
 		"""
 		ret     = Channel.create()
 		i       = -1
@@ -181,12 +181,12 @@ class Channel(list):
 
 	@staticmethod
 	def fromArgv():
-		"""
+		"""@API
 		Create a Channel from `sys.argv[1:]`
 		"python test.py a b c" creates a width=1 Channel
 		"python test.py a,1 b,2 c,3" creates a width=2 Channel
 		@returns:
-			The Channel created from the command line arguments
+			(Channel): The Channel created from the command line arguments
 		"""
 		ret  = Channel.create()
 		args = sys.argv[1:]
@@ -206,12 +206,12 @@ class Channel(list):
 
 	@staticmethod
 	def fromParams(*pnames):
-		"""
+		"""@API
 		Create a Channel from params
 		@params:
-			`*pnames`: The names of the option
+			*pnames (str): The names of the option
 		@returns:
-			The Channel
+			(Channel): The Channel created from `pyparam`.
 		"""
 		from pyparam import params
 		ret = Channel.create()
@@ -232,22 +232,22 @@ class Channel(list):
 
 	# pylint: disable=too-many-arguments
 	def expand(self, col = 0, pattern = "*", ftype = 'any', sortby = 'name', reverse = False):
-		"""
+		"""@API
 		expand the Channel according to the files in <col>, other cols will keep the same
 		`[(dir1/dir2, 1)].expand (0, "*")` will expand to
 		`[(dir1/dir2/file1, 1), (dir1/dir2/file2, 1), ...]`
 		length: 1 -> N
 		width:  M -> M
 		@params:
-			`col`:     the index of the column used to expand
-			`pattern`: use a pattern to filter the files/dirs, default: `*`
-			`ftype`:       the type of the files/dirs to include
+			col (int): the index of the column used to expand
+			pattern (str): use a pattern to filter the files/dirs, default: `*`
+			ftype (str): the type of the files/dirs to include
 			  - 'dir', 'file', 'link' or 'any' (default)
-			`sortby`:  how the list is sorted
+			sortby (str):  how the list is sorted
 			  - 'name' (default), 'mtime', 'size'
-			`reverse`: reverse sort. Default: False
+			reverse (bool): reverse sort. Default: False
 		@returns:
-			The expanded Channel
+			(Channel): The expanded Channel
 		"""
 		ret = Channel.create()
 		if not self:
@@ -264,14 +264,14 @@ class Channel(list):
 		return ret
 
 	def collapse(self, col = 0):
-		"""
+		"""@API
 		Do the reverse of expand
 		length: N -> 1
 		width:  M -> M
 		@params:
-			`col`:     the index of the column used to collapse
+			col (int):     the index of the column used to collapse
 		@returns:
-			The collapsed Channel
+			(Channel): The collapsed Channel
 		"""
 		if not self:
 			raise ValueError('Cannot collapse an empty Channel.')
@@ -283,106 +283,106 @@ class Channel(list):
 		return Channel.create(tuple(row))
 
 	def copy(self):
-		"""
+		"""@API
 		Copy a Channel using `copy.copy`
 		@returns:
-			The copied Channel
+			(Channel): The copied Channel
 		"""
 		return self.slice(0)
 
 	def width(self):
-		"""
+		"""@API
 		Get the width of a Channel
 		@returns:
-			The width of the Channel
+			(int): The width of the Channel
 		"""
 		if not self:
 			return 0
 		return len(self[0]) if isinstance(self[0], tuple) else 1
 
 	def length(self):
-		"""
+		"""@API
 		Get the length of a Channel
 		It's just an alias of `len(chan)`
 		@returns:
-			The length of the Channel
+			(int): The length of the Channel
 		"""
 		return len(self)
 
-	def map (self, func):
-		"""
+	def map(self, func):
+		"""@API
 		Alias of python builtin `map`
 		@params:
-			`func`: the function
+			func (callable): the function
 		@returns:
-			The transformed Channel
+			(Channel): The transformed Channel
 		"""
 		return Channel.create([func(x) for x in self])
 
 	def mapCol(self, func, col = 0):
-		"""
+		"""@API
 		Map for a column
 		@params:
-			`func`: the function
-			`col`: the index of the column. Default: 0
+			func (callable): the function
+			col (int): the index of the column. Default: `0`
 		@returns:
-			The transformed Channel
+			(Channel): The transformed Channel
 		"""
 		return Channel.create([
 			s[:col] + (func(s[col]), ) + s[(col+1):] for s in self
 		])
 
 	def filter (self, func = None):
-		"""
+		"""@API
 		Alias of python builtin `filter`
 		@params:
-			`func`: the function. Default: None
+			func (callable): the function. Default: `None`
 		@returns:
-			The filtered Channel
+			(Channel): The filtered Channel
 		"""
 		func = func or bool
 		return Channel.create([x for x in self if func(x)])
 
 	def filterCol(self, func = None, col = 0):
-		"""
-		Just filter on the first column
+		"""@API
+		Just filter on the specific column
 		@params:
-			`func`: the function
-			`col`: the column to filter
+			func (callable): the function
+			col (int): the column to filter
 		@returns:
-			The filtered Channel
+			(Channel): The filtered Channel
 		"""
 		func = func or bool
 		return Channel.create([s for s in self if func(s[col])])
 
 	def reduce (self, func):
-		"""
+		"""@API
 		Alias of python builtin `reduce`
 		@params:
-			`func`: the function
+			func (callable): the function
 		@returns:
-			The reduced value
+			(Channel): The reduced value
 		"""
 		return functools.reduce(func, self)
 
 	def reduceCol (self, func, col = 0):
-		"""
+		"""@API
 		Reduce a column
 		@params:
-			`func`: the function
-			`col`: the column to reduce
+			func (callable): the function
+			col (int): the column to reduce
 		@returns:
-			The reduced value
+			(Channel): The reduced value
 		"""
 		return functools.reduce(func, [s[col] for s in self])
 
 	def rbind (self, *rows):
-		"""
+		"""@API
 		The multiple-argument versoin of `rbind`
 		@params:
-			`rows`: the rows to be bound to Channel
+			*rows (any): the rows to be bound to Channel
 		@returns:
-			The combined Channel
+			(Channel): The combined Channel
 		"""
 		ret = self.copy()
 		for row in rows:
@@ -409,13 +409,13 @@ class Channel(list):
 		return ret
 
 	def insert (self, cidx, *cols):
-		"""
+		"""@API
 		Insert columns to a channel
 		@params:
-			`cidx`: Insert into which index of column?
-			`cols`: the columns to be bound to Channel
+			cidx (int): Insert into which index of column?
+			*cols (any): the columns to be bound to Channel
 		@returns:
-			The combined Channel
+			(Channel): The combined Channel
 		"""
 		ret  = self.copy()
 		#cols = [col if isinstance(col, Channel) else Channel.create(col) for col in cols if col]
@@ -460,22 +460,22 @@ class Channel(list):
 			if colsafter else colsbefore)
 
 	def cbind(self, *cols):
-		"""
+		"""@API
 		Add columns to the channel
 		@params:
-			`cols`: The columns
+			*cols (any): The columns
 		@returns:
-			The channel with the columns inserted.
+			(Channel): The channel with the columns inserted.
 		"""
 		return self.insert(None, *cols)
 
 	def colAt (self, index):
-		"""
+		"""@API
 		Fetch one column of a Channel
 		@params:
-			`index`: which column to fetch
+			index (int): which column to fetch
 		@returns:
-			The Channel with that column
+			(Channel): The Channel with that column
 		"""
 		if not isinstance(index, list):
 			index = [index]
@@ -485,12 +485,12 @@ class Channel(list):
 		return Channel.fromChannels(*chs)
 
 	def rowAt (self, index):
-		"""
+		"""@API
 		Fetch one row of a Channel
 		@params:
-			`index`: which row to fetch
+			index (int): which row to fetch
 		@returns:
-			The Channel with that row
+			(Channel): The Channel with that row
 		"""
 		if not isinstance(index, list):
 			index = [index]
@@ -500,9 +500,11 @@ class Channel(list):
 		return Channel(rows)
 
 	def unique(self):
-		"""
+		"""@API
 		Make the channel unique, remove duplicated rows
 		Try to keep the order
+		@returns:
+			(Channel): The channel with unique rows.
 		"""
 		rows = []
 		for row in self:
@@ -511,19 +513,19 @@ class Channel(list):
 		return Channel(rows)
 
 	def slice (self, start, length = None):
-		"""
+		"""@API
 		Fetch some columns of a Channel
 		@params:
-			`start`:  from column to start
-			`length`: how many columns to fetch, default: None (from start to the end)
+			start (int):  from column to start
+			length (int): how many columns to fetch, default: None (from start to the end)
 		@returns:
-			The Channel with fetched columns
+			(Channel): The Channel with fetched columns
 		"""
 		return Channel([s[start:(start + length)] for s in self]) \
 				if length and start != -1 else Channel.create([s[start:] for s in self])
 
 	def fold (self, nfold = 1):
-		"""
+		"""@API
 		Fold a Channel. Make a row to n-length chunk rows
 		```
 		a1	a2	a3	a4
@@ -535,9 +537,9 @@ class Channel(list):
 		b3	b4
 		```
 		@params:
-			`nfold`: the size of the chunk
+			nfold (int): the size of the chunk
 		@returns
-			The new Channel
+			(Channel): The new Channel
 		"""
 		if nfold <= 0 or self.width() % nfold != 0:
 			raise ValueError ('Failed to fold, the width %s cannot be divided by %s' %
@@ -551,12 +553,12 @@ class Channel(list):
 		return Channel(ret)
 
 	def unfold (self, nfold = 2):
-		"""
+		"""@API
 		Do the reverse thing as self.fold does
 		@params:
-			`nfold`: How many rows to combind each time. default: 2
+			nfold (int): How many rows to combind each time. default: 2
 		@returns:
-			The unfolded Channel
+			(Channel): The unfolded Channel
 		"""
 		if nfold <= 0 or len(self) % nfold != 0:
 			raise ValueError ('Failed to unfold, the length %s cannot be divided by %s' %
@@ -572,24 +574,23 @@ class Channel(list):
 		return Channel.create(ret)
 
 	def split (self, flatten=False):
-		"""
+		"""@API
 		Split a Channel to single-column Channels
 		@returns:
-			The list of single-column Channels
+			(list[Channel]): The list of single-column Channels
 		"""
 		return [ self.flatten(i) for i in range(self.width()) ] if flatten else \
 			   [ self.colAt(i) for i in range(self.width()) ]
 
-	def attach(self, *names, **kwargs):
-		"""
+	def attach(self, *names, flatten = False):
+		"""@API
 		Attach columns to names of Channel, so we can access each column by:
 		`ch.col0` == ch.colAt(0)
 		@params:
-			`names`: The names. Have to be as length as channel's width.
+			*names (str): The names. Have to be as length as channel's width.
 				None of them should be Channel's property name
-			`flatten`: Whether flatten the channel for the name being attached
+			flatten (bool): Whether flatten the channel for the name being attached
 		"""
-		flatten = False if 'flatten' not in kwargs else kwargs['flatten']
 		mywidth = self.width()
 		lnames  = len(names)
 		if mywidth < lnames:
@@ -606,54 +607,54 @@ class Channel(list):
 			setattr(self, name, self.flatten(i) if flatten else self.colAt(i))
 
 	def get(self, idx = 0):
-		"""
+		"""@API
 		Get the element of a flattened channel
 		@params:
-			`idx`: The index of the element to get. Default: 0
+			idx (int): The index of the element to get. Default: 0
 		@return:
-			The element
+			(any): The element
 		"""
 		return self.flatten()[idx]
 
 	def repCol(self, nrep = 2):
-		"""
+		"""@API
 		Repeat column and return a new channel
 		@params:
-			`nrep`: how many times to repeat.
+			nrep (int): how many times to repeat.
 		@returns:
-			The new channel with repeated columns
+			(Channel): The new channel with repeated columns
 		"""
 		cols = [self] * (nrep - 1)
 		return self.cbind(*cols)
 
 	def repRow(self, nrep = 2):
-		"""
+		"""@API
 		Repeat row and return a new channel
 		@params:
-			`nrep`: how many times to repeat.
+			nrep (int): how many times to repeat.
 		@returns:
-			The new channel with repeated rows
+			(Channel): The new channel with repeated rows
 		"""
 		rows = [self] * (nrep - 1)
 		return self.rbind(*rows)
 
 	def flatten (self, col = None):
-		"""
+		"""@API
 		Convert a single-column Channel to a list (remove the tuple signs)
 		`[(a,), (b,)]` to `[a, b]`
 		@params:
-			`col`: The column to flat. None for all columns (default)
+			col (int): The column to flat. None for all columns (default)
 		@returns:
-			The list converted from the Channel.
+			(list): The list converted from the Channel.
 		"""
 		return [item for sublist in self for item in sublist] if col is None else \
 			   [sublist[col] for sublist in self]
 
 	def transpose(self):
-		"""
+		"""@API
 		Transpose the channel
 		@returns:
-			The transposed channel.
+			(Channel): The transposed channel.
 		"""
 		ret = Channel.nones(length = self.width(), width = self.length())
 		ret = [list(row) for row in ret]
