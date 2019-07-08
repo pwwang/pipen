@@ -141,5 +141,5 @@ Note that this function requires [Graphviz][13] and [graphviz for python][12].
 [17]: https://raw.githubusercontent.com/pwwang/PyPPL/development/examples/demo/demo.pyppl.svg?sanitize=true
 [18]: https://pypi.org/project/PyPPL/
 [19]: https://img.shields.io/readthedocs/pyppl.svg?style=flat-square
-[20]: https://asciinema.org/a/i9LBa5l6bSPWrx1ETTesIoK1Q.svg?sanitize=true
-[21]: https://asciinema.org/a/i9LBa5l6bSPWrx1ETTesIoK1Q
+[20]: https://asciinema.org/a/Uiz6Wdo1buGCGPFd89bWiZzwn.svg?sanitize=true
+[21]: https://asciinema.org/a/Uiz6Wdo1buGCGPFd89bWiZzwn
