@@ -391,11 +391,12 @@ class Proc(Hashable):
 		sigs.id    = self.id
 		sigs.tag   = self.tag
 
-		# lambda is not pickable
 		if isinstance(self.config.input, dict):
 			sigs.input = pycopy.copy(self.config.input)
 			for key, val in self.config.input.items():
-				sigs.input[key] = utils.funcsig(val) if callable(val) else val
+				# lambda is not pickable
+				# convert others to string to make sure it's pickable. Issue #65
+				sigs.input[key] = utils.funcsig(val) if callable(val) else str(val)
 		else:
 			sigs.input = str(self.config.input)
 
@@ -405,7 +406,10 @@ class Proc(Hashable):
 		# callbacks could be the same though even if the input files are different
 		if self.depends:
 			sigs.depends = [p.name(True) + '#' + p.suffix for p in self.depends]
-		signature = sigs.to_json()
+		try:
+			signature = sigs.to_json()
+		except TypeError as exc:
+			raise ProcInputError('Unexpected input data type: %s' % exc) from None
 		logger.debug('Suffix decided by: %s' % signature, proc = self.id)
 		# suffix is only depending on where it comes from (sys.argv[0]) and
 		# it's name (id and tag) to avoid too many different workdirs being generated

@@ -401,7 +401,7 @@ class Job(object):
 						self.logger("Input file renamed: %s -> %s" %
 							(indata.name, infile.name),
 							dlevel = 'INFILE_RENAMING', level = "warning")
-				self.input[key] = (intype, infile)
+				self.input[key] = (intype, str(infile))
 
 			elif intype in procclass.IN_FILESTYPE:
 				self.input[key] = (intype, [])
@@ -433,7 +433,7 @@ class Job(object):
 							self.logger('Input file renamed: %s -> %s' %
 								(data.name, infile.name),
 								dlevel = 'INFILE_RENAMING', level = "warning")
-					self.input[key][1].append (infile)
+					self.input[key][1].append(str(infile))
 			else:
 				self.input[key] = (intype, indata)
 
