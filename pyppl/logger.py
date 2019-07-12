@@ -19,7 +19,7 @@ LOGTIMEFMT = "%Y-%m-%d %H:%M:%S"
 
 THEMES = dict(
 	greenOnBlack = OrderedDict([
-		('DONE', '{s.BRIGHT}{f.GREEN}'),
+		('in:DONE,REPORT', '{s.BRIGHT}{f.GREEN}'),
 		('DEBUG', '{s.DIM}{f.WHITE}'),
 		('PROCESS', '{s.BRIGHT}{f.CYAN}'),
 		('DEPENDS', '{f.MAGENTA}'),
@@ -33,7 +33,7 @@ THEMES = dict(
 	]),
 
 	blueOnBlack = OrderedDict([
-		('DONE', '{s.BRIGHT}{f.BLUE}'),
+		('in:DONE,REPORT', '{s.BRIGHT}{f.BLUE}'),
 		('DEBUG', '{s.DIM}{f.WHITE}'),
 		('PROCESS', '{s.BRIGHT}{f.CYAN}'),
 		('DEPENDS', '{f.GREEN}'),
@@ -47,7 +47,7 @@ THEMES = dict(
 	]),
 
 	magentaOnBlack = OrderedDict([
-		('DONE', '{s.BRIGHT}{f.MAGENTA}'),
+		('in:DONE,REPORT', '{s.BRIGHT}{f.MAGENTA}'),
 		('DEBUG', '{s.DIM}{f.WHITE}'),
 		('PROCESS', '{s.BRIGHT}{f.GREEN}'),
 		('DEPENDS', '{f.BLUE}'),
@@ -61,7 +61,7 @@ THEMES = dict(
 	]),
 
 	greenOnWhite = OrderedDict([
-		('DONE', '{s.BRIGHT}{f.GREEN}'),
+		('in:DONE,REPORT', '{s.BRIGHT}{f.GREEN}'),
 		('DEBUG', '{s.DIM}{f.BLACK}'),
 		('PROCESS', '{s.BRIGHT}{f.BLUE}'),
 		('DEPENDS', '{f.MAGENTA}'),
@@ -75,7 +75,7 @@ THEMES = dict(
 	]),
 
 	blueOnWhite = OrderedDict([
-		('DONE', '{s.BRIGHT}{f.BLUE}'),
+		('in:DONE,REPORT', '{s.BRIGHT}{f.BLUE}'),
 		('DEBUG', '{s.DIM}{f.BLACK}'),
 		('PROCESS', '{s.BRIGHT}{f.GREEN}'),
 		('DEPENDS', '{f.MAGENTA}'),
@@ -89,7 +89,7 @@ THEMES = dict(
 	]),
 
 	magentaOnWhite = OrderedDict([
-		('DONE', '{s.BRIGHT}{f.MAGENTA}'),
+		('in:DONE,REPORT', '{s.BRIGHT}{f.MAGENTA}'),
 		('DEBUG', '{s.DIM}{f.BLACK}'),
 		('PROCESS', '{s.BRIGHT}{f.BLUE}'),
 		('DEPENDS', '{f.GREEN}'),
@@ -112,7 +112,7 @@ LEVELS = {
 LEVELS_ALWAYS = set([
 	'PROCESS', 'WORKDIR', 'RESUMED', 'SKIPPED', 'DEPENDS', 'STDOUT', 'STDERR', 'ERROR',
 	'INFO', 'DONE', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'BLDING',
-	'SBMTING', 'RUNNING', 'RTRYING', 'JOBDONE', 'KILLING', 'P_DONE', 'CACHED'
+	'SBMTING', 'RUNNING', 'RTRYING', 'JOBDONE', 'KILLING', 'P_DONE', 'CACHED', 'REPORT'
 ])
 
 DEBUG_LINES = {

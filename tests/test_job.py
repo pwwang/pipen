@@ -204,13 +204,13 @@ def test_prepinput(job0, tmpdir, caplog):
 	job0._prepInput()
 	assert len(job0.input) == 8
 	assert job0.input['invar'] == ('var', 'abc')
-	assert job0.input['infile'] == ('file', job0.dir / 'input' / 'test_prepinput.txt')
-	assert job0.input['infiles'] == ('files', [job0.dir / 'input' / 'test_prepinput.txt'])
+	assert job0.input['infile'] == ('file', str(job0.dir / 'input' / 'test_prepinput.txt'))
+	assert job0.input['infiles'] == ('files', [str(job0.dir / 'input' / 'test_prepinput.txt')])
 	assert job0.input['emptyfile'] == ('file', '')
 	assert job0.input['emptyfiles'] == ('files', [''])
-	assert job0.input['renamed'] == ('file', job0.dir / 'input' / '[1]test_prepinput.txt')
+	assert job0.input['renamed'] == ('file', str(job0.dir / 'input' / '[1]test_prepinput.txt'))
 	assert job0.input['nodatafiles'] == ('files', [])
-	assert job0.input['renamedfiles'] == ('files', [job0.dir / 'input' / '[1]test_prepinput.txt'])
+	assert job0.input['renamedfiles'] == ('files', [str(job0.dir / 'input' / '[1]test_prepinput.txt')])
 	assert 'pProc: [1/1] Input file renamed: test_prepinput.txt -> [1]test_prepinput.txt' in caplog.text
 	assert 'No data provided for [nodatafiles:files], use empty list instead.' in caplog.text
 

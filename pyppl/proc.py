@@ -234,7 +234,8 @@ class Proc(Hashable):
 				# only register the procs that will be involved.
 				PyPPL._registerProc(self)
 
-		elif name == 'script' and value.startswith('file:'):
+		elif name in ('script', 'report') and value.startswith('file:'):
+			# convert relative path to absolute
 			scriptpath = Path(value[5:])
 			if not scriptpath.is_absolute():
 				from inspect import getframeinfo, stack
@@ -242,7 +243,8 @@ class Proc(Hashable):
 				scriptdir = Path(caller.filename).parent.resolve()
 				scriptpath = scriptdir / scriptpath
 			if not scriptpath.is_file():
-				raise ProcAttributeError('Script not exists: %s' % scriptpath)
+				raise ProcAttributeError(
+					'Script/Report template file does not exist: %s' % scriptpath)
 			self.config[name] = "file:%s" % scriptpath
 
 		elif name == 'args' or name == 'tplenvs':
@@ -969,6 +971,35 @@ class Proc(Hashable):
 				self.jobs[showjob].showError(len(failjobs))
 				if self.errhow != 'ignore':
 					sys.exit(1)
+
+	def genreport(self):
+		"""@API
+		Generate report for the process"""
+		if not self.report:
+			return None
+
+		logger.debug('Rendering report template ...')
+		report = self.report
+		if report.startswith ('file:'):
+			tplfile = Path(report[5:])
+			if not fs.exists (tplfile):
+				raise ProcAttributeError(tplfile, 'No such report template file')
+			logger.debug("Using report template: %s", tplfile, proc = self.id)
+			report = tplfile.read_text()
+
+		report  = self.template(report, **self.tplenvs)
+		rptfile = Path(self.workdir) / 'proc.report'
+		rptdata = Box(jobs = [], **self.procvars)
+		for job in self.jobs:
+			jobdata  = job.data
+			datafile = job.dir / 'output' / 'job.report.data.yaml'
+			data = {}
+			data.update(jobdata.job)
+			if datafile.is_file():
+				data.update(yaml.safe_load(str(datafile)))
+			rptdata.jobs.append(Box(i = jobdata.i, o = jobdata.o, **data))
+		rptfile.write_text(report.render(rptdata))
+		return rptfile
 
 	def run(self, profile = None, config = None):
 		"""@API

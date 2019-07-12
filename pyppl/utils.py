@@ -48,6 +48,10 @@ class OBox(Box):
 
 OrderedBox = OBox # pylint: disable=invalid-name
 
+def loadConfigurations(conf, *cfgfiles):
+	conf.clear()
+	conf._load(*cfgfiles)
+
 # remove python2 support
 # try:
 # 	from Queue import Queue, PriorityQueue, Empty as QueueEmpty
