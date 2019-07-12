@@ -28,7 +28,6 @@ python-box87 = "3.4.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
-pytest-cov = "*"
 jinja2 = "^2.0.0"
 pyyaml = "^5.0.0"
 faker = "^1.0.0"

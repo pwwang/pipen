@@ -90,3 +90,6 @@ class JobBuildingException(Exception):
 
 class RunnerClassNameError(Exception):
 	"""Raise when a runner class is not like 'RunnerXXX'"""
+
+class PyPPLFuncWrongPositionError(Exception):
+	"""raises when the function put in wrong position"""

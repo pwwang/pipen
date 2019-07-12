@@ -13,107 +13,109 @@ from pathlib import Path
 from time import time
 from multiprocessing import cpu_count
 from simpleconf import Config
-from .utils import config, Box, OBox
+from .utils import config, loadConfigurations, Box, OBox
 
 DEFAULT_CFGFILES = (
 	'~/.PyPPL.yaml', '~/.PyPPL.toml', './.PyPPL.yaml', './.PyPPL.toml', 'PYPPL.osenv')
-def loadConfiguratiaons():
-	"""
-	Load default configurations.
-	"""
-	config.clear()
-	config._load(dict(default = dict(
-		_log = dict(
-			file       = None,
-			theme      = 'greenOnBlack',
-			levels     = 'normal',
-			leveldiffs = [],
-			pbar       = 50,
-			shorten    = 0,
-		),
-		_flowchart = dict(theme = 'default'),
-		# The command to run after jobs start
-		afterCmd   = '',
-		# The extra arguments for the process
-		args       = OBox(),
-		# The command to run before jobs start
-		beforeCmd  = '',
-		# The cache option, True/False/export
-		cache      = True,
-		# Do cleanup for cached jobs?
-		acache     = False,
-		# The description of the job
-		desc       = 'No description',
-		# Whether expand directory to check signature
-		dirsig     = True,
-		# Whether to echo the stdout and stderr of the jobs to the screen
-		# Could also be:
-		# {
-		#    # or [0, 1, 2], just echo output of those jobs.
-		#   'jobs': 0
-		#    # only echo stderr. (stdout: only echo stdout; [don't specify]: echo all)
-		#   'type': 'stderr'
-		# }
-		# You can also specify a filter to the type
-		# {
-		#   'jobs':  0
-		#   'type':  {'stderr': r'^Error'}	# only output lines starting with 'Error' in stderr
-		# }
-		# self.echo = True <=>
-		#     self.echo = { 'jobs': [0], 'type': {'stderr': None, 'stdout': None} }
-		# self.echo = False    <=> self.echo = { 'jobs': [] }
-		# self.echo = 'stderr' <=> self.echo = { 'jobs': [0], 'type': {'stderr': None} }
-		# self.echo = {'jobs': 0, 'type': 'stdout'} <=>
-		#     self.echo = { 'jobs': [0], 'type': {'stdout': None} }
-		# self.echo = {'type': {'all': r'^output'}} <=>
-		#     self.echo = { 'jobs': [0], 'type': {'stdout': r'^output', 'stderr': r'^output'} }
-		echo       = False,
-		# How to deal with the errors
-		# retry, ignore, halt
-		# halt to halt the whole pipeline, no submitting new jobs
-		# terminate to just terminate the job itself
-		errhow     = 'terminate',
-		# How many times to retry to jobs once error occurs
-		errntry    = 3,
-		# The directory to export the output files
-		exdir      = '',
-		# How to export # link, copy, gzip
-		exhow      = 'move',
-		# Whether to overwrite the existing files # overwrite
-		exow       = True,
-		# partial export, either the key of output file or the pattern
-		expart     = '',
-		# expect
-		expect     = '',
-		# How many jobs to run concurrently
-		forks      = 1,
-		# Hide the process in flowchart
-		hide       = False,
-		# Default shell/language
-		lang       = 'bash',
-		# number of threads used to build jobs and to check job cache status
-		nthread    = min(int(cpu_count() / 2), 16),
-		# Where cache file and workdir located
-		ppldir     = './workdir',
-		# Valid return codes
-		rc         = 0,
-		# The report template
-		report     = '',
-		# Select the runner
-		runner     = 'local',
-		# The script of the jobs
-		script     = '',
-		# The tag of the job
-		tag        = 'notag',
-		# The template engine (name)
-		template   = '',
-		# The template environment
-		tplenvs    = Box(),
-		# working directory for the process
-		workdir    = ''
-	)), *DEFAULT_CFGFILES)
 
-loadConfiguratiaons()
+DEFAULT_CONFIG = dict(default = dict(
+	# default plugins
+	_plugins = ['pyppl-report'],
+	# log options
+	_log = dict(
+		file       = None,
+		theme      = 'greenOnBlack',
+		levels     = 'normal',
+		leveldiffs = [],
+		pbar       = 50,
+		shorten    = 0,
+	),
+	_flowchart = dict(theme = 'default'),
+	# The command to run after jobs start
+	afterCmd   = '',
+	# The extra arguments for the process
+	args       = OBox(),
+	# The command to run before jobs start
+	beforeCmd  = '',
+	# The cache option, True/False/export
+	cache      = True,
+	# Do cleanup for cached jobs?
+	acache     = False,
+	# The description of the job
+	desc       = 'No description',
+	# Whether expand directory to check signature
+	dirsig     = True,
+	# Whether to echo the stdout and stderr of the jobs to the screen
+	# Could also be:
+	# {
+	#    # or [0, 1, 2], just echo output of those jobs.
+	#   'jobs': 0
+	#    # only echo stderr. (stdout: only echo stdout; [don't specify]: echo all)
+	#   'type': 'stderr'
+	# }
+	# You can also specify a filter to the type
+	# {
+	#   'jobs':  0
+	#   'type':  {'stderr': r'^Error'}	# only output lines starting with 'Error' in stderr
+	# }
+	# self.echo = True <=>
+	#     self.echo = { 'jobs': [0], 'type': {'stderr': None, 'stdout': None} }
+	# self.echo = False    <=> self.echo = { 'jobs': [] }
+	# self.echo = 'stderr' <=> self.echo = { 'jobs': [0], 'type': {'stderr': None} }
+	# self.echo = {'jobs': 0, 'type': 'stdout'} <=>
+	#     self.echo = { 'jobs': [0], 'type': {'stdout': None} }
+	# self.echo = {'type': {'all': r'^output'}} <=>
+	#     self.echo = { 'jobs': [0], 'type': {'stdout': r'^output', 'stderr': r'^output'} }
+	echo       = False,
+	# How to deal with the errors
+	# retry, ignore, halt
+	# halt to halt the whole pipeline, no submitting new jobs
+	# terminate to just terminate the job itself
+	errhow     = 'terminate',
+	# How many times to retry to jobs once error occurs
+	errntry    = 3,
+	# The directory to export the output files
+	exdir      = '',
+	# How to export # link, copy, gzip
+	exhow      = 'move',
+	# Whether to overwrite the existing files # overwrite
+	exow       = True,
+	# partial export, either the key of output file or the pattern
+	expart     = '',
+	# expect
+	expect     = '',
+	# How many jobs to run concurrently
+	forks      = 1,
+	# Hide the process in flowchart
+	hide       = False,
+	# Default shell/language
+	lang       = 'bash',
+	# number of threads used to build jobs and to check job cache status
+	nthread    = min(int(cpu_count() / 2), 16),
+	# Where cache file and workdir located
+	ppldir     = './workdir',
+	# Valid return codes
+	rc         = 0,
+	# Select the runner
+	runner     = 'local',
+	# The script of the jobs
+	script     = '',
+	# The tag of the job
+	tag        = 'notag',
+	# The template engine (name)
+	template   = '',
+	# The template environment
+	tplenvs    = Box(),
+	# working directory for the process
+	workdir    = ''
+))
+
+loadConfigurations(config, DEFAULT_CONFIG, *DEFAULT_CFGFILES)
+
+from .plugin import registerPlugins, pluginmgr
+registerPlugins(config['_plugins'], DEFAULT_CONFIG['default']['_plugins'])
+
+pluginmgr.hook.setup(config = config)
 
 # load logger
 # pylint: disable=wrong-import-position
@@ -124,7 +126,6 @@ from .job import Job
 from .jobmgr import Jobmgr
 from .channel import Channel
 from .proctree import ProcTree
-from .report import Report
 from .exception import PyPPLProcRelationError, RunnerClassNameError
 from . import utils, runner
 
@@ -202,8 +203,11 @@ class PyPPL (object):
 					logger.warning('Module toml not installed, config file ignored: %s', cfile)
 			logger.config('Read from %s', cfile)
 
-		self.tree    = ProcTree()
-		self.reports = []
+		self.tree  = ProcTree()
+		# save the procs in order for plugin use
+		self.procs = []
+		pluginmgr.hook.pypplRegisterPreRunFunc(ppl = self)
+		pluginmgr.hook.pypplRegisterPostRunFunc(ppl = self)
 
 	@staticmethod
 	def _procsSelector(selector):
@@ -379,9 +383,7 @@ class PyPPL (object):
 				ProcTree.getNextStr(proc),
 				proc = proc.id)
 			proc.run(profile, self.config)
-			report = proc.genreport()
-			if report:
-				self.reports.append(report)
+			self.procs.append(proc)
 			proc = self.tree.getNextToRun()
 
 		# unran = self.tree.unranProcs()
@@ -393,34 +395,6 @@ class PyPPL (object):
 
 		logger.done('Total time: %s', utils.formatSecs(time() - timer))
 		return self
-
-	def report(self, outfile = None,
-		title = 'A report generated by pipeline powered by PyPPL.',
-		standalone = True, template = False, filters = False):
-		"""@API
-		Generate report for the pipeline.
-		Currently only HTML format supported.
-		@params:
-			outfile (file): The report file.
-			title (str): The title of the report.
-				- Default: 'A report generated by pipeline powered by PyPPL.'
-			standalone (bool): A standalone html file? Default: True
-		@returns:
-			(PyPPL): The pipeline object itself.
-		"""
-		if not self.reports:
-			return
-
-		outfile = outfile or (Path('.') / Path(sys.artv[0]).stem).with_suffix(
-			'%s.report.html' % ('.' + str(self.counter) if self.counter else ''))
-		logger.report('Generating report using pandoc ...')
-		cmd = Report(self.reports, outfile, title).generate(standalone, template, filters)
-		logger.report('Command: ' + cmd.cmd)
-		if cmd.rc == 0:
-			logger.report('Report generated: ' + str(outfile))
-		else:
-			logger.error(cmd.stderr)
-			sys.exit(1)
 
 	def flowchart (self, fcfile = None, dotfile = None):
 		"""@API
@@ -459,7 +433,6 @@ class PyPPL (object):
 		logger.info ('Flowchart file saved to: %s', fchart.fcfile)
 		logger.info ('DOT file saved to: %s', fchart.dotfile)
 		return self
-
 
 	@staticmethod
 	def _registerProc(*procs):

@@ -18,6 +18,7 @@ from .channel import Channel
 from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, \
 	ProcScriptError, ProcRunCmdError
 from . import utils, template
+from .plugin import pluginmgr
 
 class Proc(Hashable):
 	"""@API
@@ -179,12 +180,15 @@ class Proc(Hashable):
 			raise ProcAttributeError(name)
 
 		if name in self.props or name in self.config:
-			return self.props.get(name, self.config.get(name))
-
-		if name in Proc.ALIAS:
+			pass
+		elif name in Proc.ALIAS:
 			name = Proc.ALIAS[name]
 
-		return self.props.get(name, self.config.get(name))
+		ret = pluginmgr.hook.procGetAttr(proc = self, name = name)
+		if ret is None:
+			return self.props.get(name, self.config.get(name))
+
+		return pluginmgr.hook.procGetAttr(proc = self, name = name)
 
 	def __setattr__(self, name, value):
 		"""
@@ -234,7 +238,7 @@ class Proc(Hashable):
 				# only register the procs that will be involved.
 				PyPPL._registerProc(self)
 
-		elif name in ('script', 'report') and value.startswith('file:'):
+		elif name == 'script' and value.startswith('file:'):
 			# convert relative path to absolute
 			scriptpath = Path(value[5:])
 			if not scriptpath.is_absolute():
@@ -244,7 +248,7 @@ class Proc(Hashable):
 				scriptpath = scriptdir / scriptpath
 			if not scriptpath.is_file():
 				raise ProcAttributeError(
-					'Script/Report template file does not exist: %s' % scriptpath)
+					'Script file does not exist: %s' % scriptpath)
 			self.config[name] = "file:%s" % scriptpath
 
 		elif name == 'args' or name == 'tplenvs':
@@ -269,7 +273,7 @@ class Proc(Hashable):
 			self.props[name]  = value
 		elif name == 'tag' and (' ' in value or '@' in value):
 			raise ProcAttributeError("No space or '@' is allowed in tag")
-		else:
+		elif not pluginmgr.hook.procSetAttr(proc = self, name = name, value = value):
 			self.config[name] = value
 
 	def __repr__(self):
@@ -972,35 +976,6 @@ class Proc(Hashable):
 				if self.errhow != 'ignore':
 					sys.exit(1)
 
-	def genreport(self):
-		"""@API
-		Generate report for the process"""
-		if not self.report:
-			return None
-
-		logger.debug('Rendering report template ...')
-		report = self.report
-		if report.startswith ('file:'):
-			tplfile = Path(report[5:])
-			if not fs.exists (tplfile):
-				raise ProcAttributeError(tplfile, 'No such report template file')
-			logger.debug("Using report template: %s", tplfile, proc = self.id)
-			report = tplfile.read_text()
-
-		report  = self.template(report, **self.tplenvs)
-		rptfile = Path(self.workdir) / 'proc.report'
-		rptdata = Box(jobs = [], **self.procvars)
-		for job in self.jobs:
-			jobdata  = job.data
-			datafile = job.dir / 'output' / 'job.report.data.yaml'
-			data = {}
-			data.update(jobdata.job)
-			if datafile.is_file():
-				data.update(yaml.safe_load(str(datafile)))
-			rptdata.jobs.append(Box(i = jobdata.i, o = jobdata.o, **data))
-		rptfile.write_text(report.render(rptdata))
-		return rptfile
-
 	def run(self, profile = None, config = None):
 		"""@API
 		Run the process with a profile and/or a configuration
@@ -1036,3 +1011,4 @@ class Proc(Hashable):
 				# remove the lock file, so that I know this process has done
 				# or hasn't started yet, externally.
 				fs.remove(path.join(self.workdir, 'proc.lock'))
+		pluginmgr.hook.procPostRun(proc = self)
