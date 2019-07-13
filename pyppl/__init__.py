@@ -20,7 +20,7 @@ DEFAULT_CFGFILES = (
 
 DEFAULT_CONFIG = dict(default = dict(
 	# default plugins
-	_plugins = ['pyppl-report'],
+	_plugins = ['pyppl-report', 'pyppl-flowchart'],
 	# log options
 	_log = dict(
 		file       = None,
@@ -30,7 +30,6 @@ DEFAULT_CONFIG = dict(default = dict(
 		pbar       = 50,
 		shorten    = 0,
 	),
-	_flowchart = dict(theme = 'default'),
 	# The command to run after jobs start
 	afterCmd   = '',
 	# The extra arguments for the process
@@ -86,8 +85,6 @@ DEFAULT_CONFIG = dict(default = dict(
 	expect     = '',
 	# How many jobs to run concurrently
 	forks      = 1,
-	# Hide the process in flowchart
-	hide       = False,
 	# Default shell/language
 	lang       = 'bash',
 	# number of threads used to build jobs and to check job cache status
@@ -206,8 +203,7 @@ class PyPPL (object):
 		self.tree  = ProcTree()
 		# save the procs in order for plugin use
 		self.procs = []
-		pluginmgr.hook.pypplRegisterPreRunFunc(ppl = self)
-		pluginmgr.hook.pypplRegisterPostRunFunc(ppl = self)
+		pluginmgr.hook.pypplRegisterFunc(ppl = self)
 
 	@staticmethod
 	def _procsSelector(selector):
@@ -318,40 +314,6 @@ class PyPPL (object):
 		self._resume(*args, plus = True)
 		return self
 
-	def showAllRoutes(self):
-		"""@API
-		Show all the routes in the log.
-		@returns:
-			(PyPPL): The pipeline object itself.
-		"""
-		logger.debug('ALL ROUTES:')
-		#paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths()])
-		paths  = sorted([pnode.name() for pnode in reversed(apath)]
-			for apath in self.tree.getAllPaths(check_hide = False))
-		paths2 = [] # processes merged from the same procset
-		for apath in paths:
-			prevset = None
-			path2    = []
-			for pnode in apath:
-				if not '@' in pnode:
-					path2.append(pnode)
-				else:
-					procset = pnode.split('@')[-1]
-					if not prevset or prevset != procset:
-						path2.append('[%s]' % procset)
-						prevset = procset
-					elif prevset == procset:
-						continue
-			if path2 not in paths2:
-				paths2.append(path2)
-			# see details for procset
-			#if path != path2:
-			#	logger.logger.info('[  DEBUG] * %s' % (' -> '.join(path)))
-
-		for path2 in paths2:
-			logger.debug('* %s', ' -> '.join(path2))
-		return self
-
 	def run(self, profile = 'default'):
 		"""@API
 		Run the pipeline
@@ -394,44 +356,6 @@ class PyPPL (object):
 		# 		logger.warning(fmtstr, key, key, ' <- '.join(val))
 
 		logger.done('Total time: %s', utils.formatSecs(time() - timer))
-		return self
-
-	def flowchart (self, fcfile = None, dotfile = None):
-		"""@API
-		Generate graph in dot language and visualize it.
-		@params:
-			dotfile (file): Where to same the dot graph.
-				- Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.dot"`)
-			fcfile (file):  The flowchart file.
-				- Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.svg"`)
-				- For example: run `python pipeline.py` will save it to `pipeline.pyppl.svg`
-		@returns:
-			(PyPPL): The pipeline object itself.
-		"""
-		from .flowchart import Flowchart
-		self.showAllRoutes()
-		fcfile  = fcfile or (Path('.') / Path(sys.argv[0]).stem).with_suffix(
-			'%s.pyppl.svg' % ('.' + str(self.counter) if self.counter else ''))
-		dotfile = dotfile if dotfile else Path(fcfile).with_suffix('.dot')
-		fchart  = Flowchart(fcfile = fcfile, dotfile = dotfile)
-		fchart.setTheme(self.config._flowchart.theme)
-
-		for start in self.tree.getStarts():
-			fchart.addNode(start, 'start')
-		for end in self.tree.getEnds():
-			fchart.addNode(end, 'end')
-			for apath in self.tree.getPathsToStarts(end, check_hide = True):
-				for i, pnode in enumerate(apath):
-					if i == 0:
-						fchart.addNode(pnode)
-						fchart.addLink(pnode, end)
-					else:
-						fchart.addNode(pnode)
-						fchart.addLink(pnode, apath[i-1])
-
-		fchart.generate()
-		logger.info ('Flowchart file saved to: %s', fchart.fcfile)
-		logger.info ('DOT file saved to: %s', fchart.dotfile)
 		return self
 
 	@staticmethod

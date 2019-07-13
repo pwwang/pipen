@@ -43,12 +43,9 @@ def procPostRun(proc):
 	"""After a process has done"""
 
 @hookspec
-def pypplRegisterPreRunFunc(ppl):
+def pypplRegisterFunc(ppl):
 	"""A set of functions run before all processes start"""
 
-@hookspec
-def pypplRegisterPostRunFunc(ppl):
-	"""A set of functions run after all processes finish"""
 
 pluginmgr = pluggy.PluginManager(PMNAME)
 pluginmgr.add_hookspecs(sys.modules[__name__])
