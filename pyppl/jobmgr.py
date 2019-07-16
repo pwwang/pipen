@@ -7,6 +7,7 @@ from queue import Queue
 from .utils import Box, StateMachine, PQueue, ThreadPool
 from .logger import logger
 from .exception import JobBuildingException, JobFailException
+from .plugin import pluginmgr
 
 STATES = Box(
 	INIT         = '00_init',
@@ -288,7 +289,10 @@ class Jobmgr(object):
 			if isinstance(ex, Exception) and not isinstance(ex, (
 				JobFailException, JobBuildingException, KeyboardInterrupt)):
 				raise ex from None
+
+			pluginmgr.hook.procFail(proc = self.jobs[0].proc)
 			sys.exit(1)
+
 
 	@classmethod
 	def killWorker(self, killq):

@@ -8,6 +8,7 @@ import cmdy
 from .utils import Box, OBox, chmodX, briefPath, filesig, fileflush, fs
 from .logger import logger as _logger
 from .exception import JobInputParseError, JobOutputParseError
+from .plugin import pluginmgr
 
 # File names
 DIR_INPUT       = 'input'
@@ -946,6 +947,7 @@ class Job(object):
 		procclass = self.proc.__class__
 		# first check if bare rc is allowed
 		if self.rc not in self.proc.rc:
+			pluginmgr.hook.jobFail(job = self)
 			return False
 
 		# refresh output directory
@@ -956,6 +958,7 @@ class Job(object):
 				self.rc += (1 << RCBIT_NO_OUTFILE)
 				self.logger('Outfile not generated: {}'.format(outdata),
 					dlevel = "OUTFILE_NOT_EXISTS", level = 'debug')
+				pluginmgr.hook.jobFail(job = self)
 				return False
 
 		expect_cmd = self.proc.expect.render(self.data)
@@ -965,6 +968,7 @@ class Job(object):
 			cmd = cmdy.bash(c = expect_cmd) # pylint: disable=no-member
 			if cmd.rc != 0:
 				self.rc += (1 << RCBIT_UNMET_EXPECT)
+				pluginmgr.hook.jobFail(job = self)
 				return False
 		return True
 
@@ -979,6 +983,7 @@ class Job(object):
 			self.export()
 		if not cached:
 			self.cache()
+		pluginmgr.hook.jobPostRun(job = self)
 
 	def isRunningImpl(self):
 		"""@API
@@ -1023,6 +1028,7 @@ class Job(object):
 			(bool|str): `True/False` if rcfile generared and whether job succeeds, \
 				otherwise returns `running`.
 		"""
+		pluginmgr.hook.jobPreRun(job = self)
 		if not fs.isfile(self.dir / FILE_STDERR) or not fs.isfile(self.dir / FILE_STDOUT):
 			self.logger('Polling the job ... stderr/out file not generared.', level = 'debug')
 			return 'running'

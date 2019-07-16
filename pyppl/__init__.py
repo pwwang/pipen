@@ -325,6 +325,7 @@ class PyPPL (object):
 		"""
 		timer = time()
 
+		pluginmgr.hook.pypplPreRun(ppl = self)
 		proc = self.tree.getNextToRun()
 		while proc:
 			if proc.origin != proc.id:
@@ -355,6 +356,7 @@ class PyPPL (object):
 		# 		fmtstr = "%-"+ str(klen) +"s won't run as path can't be reached: %s <- %s"
 		# 		logger.warning(fmtstr, key, key, ' <- '.join(val))
 
+		pluginmgr.hook.pypplPostRun(ppl = self)
 		logger.done('Total time: %s', utils.formatSecs(time() - timer))
 		return self
 

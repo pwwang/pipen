@@ -39,13 +39,40 @@ def procGetAttr(proc, name):
 	return proc.props.get(name, proc.config.get(name))
 
 @hookspec
+def procPreRun(proc):
+	"""After a process starts"""
+
+@hookspec
 def procPostRun(proc):
 	"""After a process has done"""
+
+@hookspec
+def procFail(proc):
+	"""When a process fails"""
 
 @hookspec
 def pypplRegisterFunc(ppl):
 	"""A set of functions run before all processes start"""
 
+@hookspec
+def pypplPreRun(ppl):
+	"""A set of functions run when pipeline starts"""
+
+@hookspec
+def pypplPostRun(ppl):
+	"""A set of functions run when pipeline ends"""
+
+@hookspec
+def jobPreRun(job):
+	"""A set of functions run when job starts"""
+
+@hookspec
+def jobPostRun(job):
+	"""A set of functions run when job ends"""
+
+@hookspec
+def jobFail(job):
+	"""A set of function run when job fails"""
 
 pluginmgr = pluggy.PluginManager(PMNAME)
 pluginmgr.add_hookspecs(sys.modules[__name__])

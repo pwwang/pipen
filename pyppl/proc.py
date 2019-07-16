@@ -987,6 +987,7 @@ class Proc(Hashable):
 		if self.runner == 'dry':
 			self.config.cache = False
 
+		pluginmgr.hook.procPreRun(proc = self)
 		if self.resume == 'skip':
 			logger.skipped("Pipeline will resume from future processes.")
 		elif self.resume == 'skip+':
