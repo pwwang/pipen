@@ -1019,3 +1019,5 @@ class Proc(Hashable):
 				# or hasn't started yet, externally.
 				fs.remove(path.join(self.workdir, 'proc.lock'))
 		pluginmgr.hook.procPostRun(proc = self)
+		# gc
+		del self.jobs[:]
