@@ -241,7 +241,7 @@ def expandNumbers(numbers):
 			numbers.extend(range(int(numstart), int(numend)+1))
 	return numbers
 
-def briefList(blist):
+def briefList(blist, base = 0):
 	"""
 	Briefly show an integer list, combine the continuous numbers.
 	@params:
@@ -251,6 +251,7 @@ def briefList(blist):
 	"""
 	if not blist:
 		return "[]"
+	blist = [b + base for b in blist]
 	if len(blist) == 1:
 		return str(blist[0])
 	blist       = sorted(blist)

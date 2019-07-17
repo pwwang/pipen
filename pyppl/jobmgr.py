@@ -89,6 +89,7 @@ class Jobmgr(object):
 		self.jobs = jobs
 		self.proc = jobs[0].proc
 		self.stop = False
+		#self.pool = None
 
 		self.queue  = PQueue(batch_len = len(jobs))
 		self.nslots = min(self.queue.batchLen, int(self.proc.nthread))
@@ -169,7 +170,8 @@ class Jobmgr(object):
 		# killed/failed to kill
 		machine.add_transition(
 			trigger    = 'triggerKill',
-			source     = STATES.KILLING,
+			# STATES.KILLING not guareteed, as this will be running in a separate queue
+			source     = '*',
 			dest       = {
 				True : STATES.KILLED,
 				False: STATES.KILLFAILED},
@@ -182,7 +184,8 @@ class Jobmgr(object):
 		# no jobs
 		if not hasattr(self, 'lock'):
 			return
-		ThreadPool(self.nslots, initializer = self.worker).join(cleanup = self.cleanup)
+		pool = ThreadPool(self.nslots, initializer = self.worker)
+		pool.join(cleanup = self.cleanup)
 		self.progressbar(Box(model = self.jobs[-1]))
 
 	def _getJobs(self, *states):
@@ -300,7 +303,11 @@ class Jobmgr(object):
 		The killing worker to kill the jobs"""
 		while not killq.empty():
 			job = killq.get()
+			# Since this queue may be running at the same time as main queue is
+			# So this is not thread-safe
 			job.triggerStartKill()
+			# we need to change state to *
+			# as killing is not guareteed
 			job.triggerKill()
 			killq.task_done()
 
@@ -345,6 +352,10 @@ class Jobmgr(object):
 		while not self.queue.empty() and not self.stop:
 			index, batch = self.queue.get()
 			job = self.jobs[index]
+			# make sure quit me for killWorker
+			# and don't use a GIL, as it blocks regular jobs
+			if self.stop:
+				break
 
 			if job.state == STATES.INIT:
 				job.triggerStartBuild()
@@ -367,6 +378,9 @@ class Jobmgr(object):
 				# have to be longer than ThreadPool.join's interval
 				sleep(job.__class__.POLL_INTERVAL)
 				job.triggerPoll(batch = batch)
+			elif job.state == STATES.KILLING:
+				break
 			#else: # endfailed but ignored, after retry
 			#	pass
+
 			self.queue.task_done()

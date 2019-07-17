@@ -118,7 +118,7 @@ class Channel(list):
 			filt = lambda afile: path.isdir(afile) and not path.islink(afile)
 		elif ftype == 'file':
 			filt = lambda afile: path.isfile(afile) and not path.islink(afile)
-		files = [afile for afile in glob(pattern) if filt(afile)]
+		files = [afile for afile in glob(str(pattern)) if filt(afile)]
 		return Channel.create(sorted(files, key=key, reverse=reverse))
 
 	@staticmethod

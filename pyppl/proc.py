@@ -956,11 +956,17 @@ class Proc(Hashable):
 				len(efailedjobs),
 				proc = self.id)
 
-			logger.debug('Cached           : %s', utils.briefList(cachedjobs), proc = self.id)
-			logger.debug('Successful       : %s', utils.briefList(successjobs), proc = self.id)
-			logger.debug('Building failed  : %s', utils.briefList(bfailedjobs), proc = self.id)
-			logger.debug('Submission failed: %s', utils.briefList(sfailedjobs), proc = self.id)
-			logger.debug('Running failed   : %s', utils.briefList(efailedjobs), proc = self.id)
+			logger.debug('Cached: %s', utils.briefList(cachedjobs, 1), proc = self.id)
+			logger.debug('Succeeded: %s', utils.briefList(successjobs, 1), proc = self.id)
+			if bfailedjobs:
+				logger.error('Building failed: %s',
+					utils.briefList(bfailedjobs, 1), proc = self.id)
+			if sfailedjobs:
+				logger.error('Submission failed: %s',
+					utils.briefList(sfailedjobs, 1), proc = self.id)
+			if efailedjobs:
+				logger.error('Running failed: %s',
+					utils.briefList(efailedjobs, 1), proc = self.id)
 
 			donejobs = successjobs + cachedjobs
 			failjobs = bfailedjobs + sfailedjobs + efailedjobs
