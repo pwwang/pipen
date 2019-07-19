@@ -82,7 +82,7 @@ class Proc(Hashable):
 		# Get configuration from config
 		self.__dict__['config'] = Config()
 		# computed props
-		self.__dict__['props'] = Box(box_intact_types = [Channel, list])
+		self.__dict__['props'] = Box(box_intact_types = [list])
 
 		defaultconfig = dict.copy(utils.config)
 		# The id (actually, it's the showing name) of the process
@@ -93,7 +93,7 @@ class Proc(Hashable):
 			raise ProcAttributeError("Attribute 'depends' has to be set using `__setattr__`")
 
 		# The extra arguments for the process
-		defaultconfig['args'] = defaultconfig['args'].copy()
+		defaultconfig['args'] = dict.copy(defaultconfig['args'])
 		# The callfront function of the process
 		defaultconfig['callfront'] = None
 		# The callback function of the process

@@ -3,6 +3,7 @@ Template adaptor for PyPPL
 """
 import json
 import inspect
+from pathlib import Path
 from .utils import Box, OBox
 from os import path, readlink
 from liquid import Liquid
@@ -89,6 +90,8 @@ class _TemplateFilter(object):
 				return var
 			if var.startswith('r:') or var.startswith('R:'):
 				return str(var)[2:]
+			return repr(str(var))
+		if isinstance(var, Path):
 			return repr(str(var))
 		if isinstance(var, (list, tuple, set)):
 			return 'c({})'.format(','.join([_TemplateFilter.R(i) for i in var]))

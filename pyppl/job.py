@@ -854,15 +854,7 @@ class Job(object):
 			if retry:
 				fs.move(self.dir / DIR_OUTPUT, retrydir / DIR_OUTPUT)
 			else:
-				try:
-					fs.remove(self.dir / DIR_OUTPUT)
-				except OSError:
-					# In case of "Device or resource busy"
-					for directory in (self.dir / DIR_OUTPUT).glob('*'):
-						try:
-							fs.remove(directory)
-						except OSError:
-							pass
+				fs.remove(self.dir / DIR_OUTPUT)
 		elif retry:
 			retryoutdir = retrydir / DIR_OUTPUT
 			fs.makedirs(retryoutdir)

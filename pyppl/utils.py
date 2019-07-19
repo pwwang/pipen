@@ -219,8 +219,10 @@ def alwaysList (data, trim = True):
 	if isinstance(data, str):
 		return split(data, ',', trim)
 	if isinstance(data, list):
-		return sum((alwaysList(dat, trim) for dat in data), [])
-	raise ValueError('Expect string or list to convert to list.')
+		return sum((alwaysList(dat, trim)
+			if isinstance(dat, (str, list)) else [dat]
+			for dat in data), [])
+	raise ValueError('Expect str/list to convert to list, but got %r.' % type(data).__name__)
 
 def expandNumbers(numbers):
 	"""
