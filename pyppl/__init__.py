@@ -200,10 +200,13 @@ class PyPPL (object):
 					logger.warning('Module toml not installed, config file ignored: %s', cfile)
 			logger.config('Read from %s', cfile)
 
+		for plugin in self.config._plugins:
+			logger.plugin('Using plugin: %s', plugin)
+
 		self.tree  = ProcTree()
 		# save the procs in order for plugin use
 		self.procs = []
-		pluginmgr.hook.pypplRegisterFunc(ppl = self)
+		pluginmgr.hook.pypplInit(ppl = self)
 
 	@staticmethod
 	def _procsSelector(selector):

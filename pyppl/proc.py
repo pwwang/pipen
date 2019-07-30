@@ -111,8 +111,9 @@ class Proc(Hashable):
 		# 'skip'   : Just skip, do not load data
 		# 'resume' : Load data from previous run, resume pipeline
 		defaultconfig['resume'] = ''
-		# The template environment
-		defaultconfig['tplenvs'] = defaultconfig.get('envs', defaultconfig['tplenvs']).copy()
+		# The template environment, keep process indenpendent, even for the subconfigs
+		defaultconfig['tplenvs'] = pycopy.deepcopy(
+			defaultconfig.get('envs', defaultconfig['tplenvs']))
 
 		# The output channel of the process
 		self.props.channel = Channel.create()
@@ -309,7 +310,7 @@ class Proc(Hashable):
 				conf[key] = desc
 			elif key in ['workdir', 'resume']:
 				conf[key] = ''
-			elif isinstance(self.config[key], dict) and 'tplenvs' not in key:
+			elif isinstance(self.config[key], dict):
 				conf[key] = pycopy.deepcopy(self.config[key])
 			elif key == 'depends':
 				continue

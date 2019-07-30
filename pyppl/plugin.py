@@ -7,21 +7,26 @@ PMNAME = "pyppl"
 hookimpl = pluggy.HookimplMarker(PMNAME)
 hookspec = pluggy.HookspecMarker(PMNAME)
 
-def pypplPreRunFunc(ppl, name, func):
-	def wrapper(*args, **kwargs):
+def prerun(func):
+	def wrapper(ppl, *args, **kwargs):
 		if ppl.procs: # processes has run
 			raise PyPPLFuncWrongPositionError('Function %r should be put before .run()' % name)
 		func(ppl, *args, **kwargs)
 		return ppl
-	setattr(ppl, name, wrapper)
+	return wrapper
 
-def pypplPostRunFunc(ppl, name, func):
-	def wrapper(*args, **kwargs):
+def postrun(func):
+	def wrapper(ppl, *args, **kwargs):
 		if not ppl.procs: # processes has run
 			raise PyPPLFuncWrongPositionError('Function %r should be put after .run()' % name)
 		func(ppl, *args, **kwargs)
 		return ppl
-	setattr(ppl, name, wrapper)
+	return wrapper
+
+def addmethod(ppl, name, method):
+	def func(*args, **kwargs):
+		method(ppl, *args, **kwargs)
+	setattr(ppl, name, func)
 
 @hookspec
 def setup(config):
@@ -51,7 +56,7 @@ def procFail(proc):
 	"""When a process fails"""
 
 @hookspec
-def pypplRegisterFunc(ppl):
+def pypplInit(ppl):
 	"""A set of functions run before all processes start"""
 
 @hookspec
