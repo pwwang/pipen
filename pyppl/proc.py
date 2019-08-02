@@ -780,6 +780,8 @@ class Proc(Hashable):
 
 		if not self.input:
 			logger.warning('No data found for jobs, process will be skipped.', proc = self.id)
+			if self.jobs: # clear up Nones
+				del self.jobs[:]
 			return
 
 		from . import PyPPL

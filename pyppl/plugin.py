@@ -10,7 +10,8 @@ hookspec = pluggy.HookspecMarker(PMNAME)
 def prerun(func):
 	def wrapper(ppl, *args, **kwargs):
 		if ppl.procs: # processes has run
-			raise PyPPLFuncWrongPositionError('Function %r should be put before .run()' % name)
+			raise PyPPLFuncWrongPositionError(
+				'Function %r should be called before .run()' % func.__name__)
 		func(ppl, *args, **kwargs)
 		return ppl
 	return wrapper
@@ -18,7 +19,8 @@ def prerun(func):
 def postrun(func):
 	def wrapper(ppl, *args, **kwargs):
 		if not ppl.procs: # processes has run
-			raise PyPPLFuncWrongPositionError('Function %r should be put after .run()' % name)
+			raise PyPPLFuncWrongPositionError(
+				'Function %r should be called after .run()' % func.__name__)
 		func(ppl, *args, **kwargs)
 		return ppl
 	return wrapper
