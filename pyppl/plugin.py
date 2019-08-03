@@ -28,6 +28,7 @@ def postrun(func):
 def addmethod(ppl, name, method):
 	def func(*args, **kwargs):
 		method(ppl, *args, **kwargs)
+		return ppl
 	setattr(ppl, name, func)
 
 @hookspec
