@@ -1,4 +1,5 @@
 """The main module of PyPPL"""
+# pylint: disable=protected-access,no-member
 
 __version__ = "2.0.0"
 
@@ -13,6 +14,7 @@ from pathlib import Path
 from time import time
 from multiprocessing import cpu_count
 from simpleconf import Config
+from .plugin import registerPlugins, pluginmgr
 from .utils import config, loadConfigurations, Box, OBox
 
 DEFAULT_CFGFILES = (
@@ -108,10 +110,7 @@ DEFAULT_CONFIG = dict(default = dict(
 ))
 
 loadConfigurations(config, DEFAULT_CONFIG, *DEFAULT_CFGFILES)
-
-from .plugin import registerPlugins, pluginmgr
 registerPlugins(config['_plugins'], DEFAULT_CONFIG['default']['_plugins'])
-
 pluginmgr.hook.setup(config = config)
 
 # load logger

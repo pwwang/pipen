@@ -1,13 +1,21 @@
+"""
+Plugin system for PyPPL
+"""
+# pylint: disable=unused-argument
 import sys
 import pluggy
 from .exception import PyPPLFuncWrongPositionError
 
 PMNAME = "pyppl"
 
+# pylint: disable=invalid-name
 hookimpl = pluggy.HookimplMarker(PMNAME)
 hookspec = pluggy.HookspecMarker(PMNAME)
 
 def prerun(func):
+	"""@API
+	Wrap up method that called before .run()
+	"""
 	def wrapper(ppl, *args, **kwargs):
 		if ppl.procs: # processes has run
 			raise PyPPLFuncWrongPositionError(
@@ -17,6 +25,9 @@ def prerun(func):
 	return wrapper
 
 def postrun(func):
+	"""@API
+	Wrap up method that called after .run()
+	"""
 	def wrapper(ppl, *args, **kwargs):
 		if not ppl.procs: # processes has run
 			raise PyPPLFuncWrongPositionError(
@@ -26,6 +37,13 @@ def postrun(func):
 	return wrapper
 
 def addmethod(ppl, name, method):
+	"""@API
+	Add method to PyPPL object
+	@params:
+		ppl (PyPPL): The pipeline object
+		name (str): The name of the method
+		method (callable): The method
+	"""
 	def func(*args, **kwargs):
 		method(ppl, *args, **kwargs)
 		return ppl
@@ -87,6 +105,9 @@ pluginmgr.add_hookspecs(sys.modules[__name__])
 pluginmgr.load_setuptools_entrypoints(PMNAME)
 
 def registerPlugins(plugins, default_plugins):
+	"""
+	Register plugins.
+	"""
 	# register 3rd-party plugins first, so that 3rd-party plugins have higher priorty
 	# Queue is LIFO
 	for plugin in reversed(plugins):
