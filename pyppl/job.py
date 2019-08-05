@@ -76,6 +76,7 @@ class Job(object):
 		self.script = self.dir / (FILE_SCRIPT + '.' + runner_name)
 		self._rc    = None
 		self._pid   = None
+		pluginmgr.hook.jobPreRun(job = self)
 
 	@property
 	def scriptParts(self):
@@ -1028,7 +1029,6 @@ class Job(object):
 			(bool|str): `True/False` if rcfile generared and whether job succeeds, \
 				otherwise returns `running`.
 		"""
-		pluginmgr.hook.jobPreRun(job = self)
 		if not fs.isfile(self.dir / FILE_STDERR) or not fs.isfile(self.dir / FILE_STDOUT):
 			self.logger('Polling the job ... stderr/out file not generared.', level = 'debug')
 			return 'running'

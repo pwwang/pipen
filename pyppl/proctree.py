@@ -3,7 +3,7 @@ Manage process relations
 """
 import traceback
 from collections import OrderedDict
-from .exception import ProcTreeProcExists, ProcTreeParseError, ProcHideError
+from .exception import ProcTreeProcExists, ProcTreeParseError#, ProcHideError
 
 class ProcNode(object):
 	"""@API
@@ -215,9 +215,9 @@ class ProcTree(object):
 				# get the paths for prev node
 				apath = self.getPaths(prevnode, proc0 + [prevnode])
 				# add prev node back to make it paths for current node
-				# for pnode in apath:
+				for pnode in apath:
 				# 	if not prevnode.proc.hide or not check_hide:
-				# 		pnode.insert(0, prevnode.proc)
+					pnode.insert(0, prevnode.proc)
 			# add unique path to path set
 			for pnode in apath:
 				if pnode not in paths:
@@ -310,7 +310,7 @@ class ProcTree(object):
 		"""@API
 		Get all paths of the pipeline, only used to be displayed in debug
 		@yields:
-			(list[Proc]): The paths.
+			(list[Proc]): The paths (end to start).
 		"""
 		ret = set()
 		ends = self.getEnds()

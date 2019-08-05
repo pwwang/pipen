@@ -53,7 +53,8 @@ isfile = os.path.isfile # pylint: disable=invalid-name
 isdir  = os.path.isdir  # pylint: disable=invalid-name
 islink = os.path.islink # pylint: disable=invalid-name
 
-def _removeBusyDir(path):
+# haven't figured out a way to mimic this
+def _removeBusyDir(path): # pragma: no cover
 	"""Try to remove directory with files being ocupied by open process"""
 	for root, _, files in os.walk(path):
 		for fname in files:
@@ -78,7 +79,7 @@ def remove(path, ignore_nonexist = True):
 	if os.path.isdir(path):
 		try:
 			shutil.rmtree(path)
-		except OSError as ex:
+		except OSError as ex: # pragma: no cover
 			if 'busy' not in str(ex):
 				raise
 			_removeBusyDir(path)

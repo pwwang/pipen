@@ -189,7 +189,7 @@ class Proc(Hashable):
 		if ret is None:
 			return self.props.get(name, self.config.get(name))
 
-		return pluginmgr.hook.procGetAttr(proc = self, name = name)
+		return ret
 
 	def __setattr__(self, name, value):
 		"""
@@ -274,8 +274,10 @@ class Proc(Hashable):
 			self.props[name]  = value
 		elif name == 'tag' and (' ' in value or '@' in value):
 			raise ProcAttributeError("No space or '@' is allowed in tag")
-		elif not pluginmgr.hook.procSetAttr(proc = self, name = name, value = value):
+		else:
 			self.config[name] = value
+			# plugins can overwrite it
+			pluginmgr.hook.procSetAttr(proc = self, name = name, value = value)
 
 	def __repr__(self):
 		return '<Proc(%s) @ %s>' %(self.name(), hex(id(self)))
@@ -415,7 +417,7 @@ class Proc(Hashable):
 			sigs.depends = [p.name(True) + '#' + p.suffix for p in self.depends]
 		try:
 			signature = sigs.to_json()
-		except TypeError as exc:
+		except TypeError as exc: # pragma: no cover
 			raise ProcInputError('Unexpected input data type: %s' % exc) from None
 		logger.debug('Suffix decided by: %s' % signature, proc = self.id)
 		# suffix is only depending on where it comes from (sys.argv[0]) and

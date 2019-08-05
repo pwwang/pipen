@@ -56,13 +56,10 @@ def setup(config):
 @hookspec
 def procSetAttr(proc, name, value):
 	"""Pre-calculate the attribute"""
-	proc.config[name] = value
-	return True
 
 @hookspec(firstresult=True)
 def procGetAttr(proc, name):
 	"""Pre-calculate the attribute"""
-	return proc.props.get(name, proc.config.get(name))
 
 @hookspec
 def procPreRun(proc):
@@ -104,10 +101,13 @@ pluginmgr = pluggy.PluginManager(PMNAME)
 pluginmgr.add_hookspecs(sys.modules[__name__])
 pluginmgr.load_setuptools_entrypoints(PMNAME)
 
-def registerPlugins(plugins, default_plugins):
+def registerPlugins(plugins, default_plugins = None):
 	"""
 	Register plugins.
 	"""
+	if plugins is None:
+		return
+	default_plugins = default_plugins or []
 	# register 3rd-party plugins first, so that 3rd-party plugins have higher priorty
 	# Queue is LIFO
 	for plugin in reversed(plugins):

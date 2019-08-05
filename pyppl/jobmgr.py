@@ -354,7 +354,7 @@ class Jobmgr(object):
 			job = self.jobs[index]
 			# make sure quit me for killWorker
 			# and don't use a GIL, as it blocks regular jobs
-			if self.stop:
+			if self.stop: # pragma: no cover
 				break
 
 			if job.state == STATES.INIT:
@@ -378,7 +378,7 @@ class Jobmgr(object):
 				# have to be longer than ThreadPool.join's interval
 				sleep(job.__class__.POLL_INTERVAL)
 				job.triggerPoll(batch = batch)
-			elif job.state == STATES.KILLING:
+			elif job.state == STATES.KILLING: # pragma: no cover
 				break
 			#else: # endfailed but ignored, after retry
 			#	pass

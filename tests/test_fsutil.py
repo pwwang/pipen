@@ -194,3 +194,5 @@ def test_gzip(tmpdir):
 	assert fs.exists(dir2 / 'test')
 	with pytest.raises(OSError):
 		fs.gunzip(tgz, dir2, False)
+
+

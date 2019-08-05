@@ -199,8 +199,8 @@ class PyPPL (object):
 					logger.warning('Module toml not installed, config file ignored: %s', cfile)
 			logger.config('Read from %s', cfile)
 
-		for plugin in self.config._plugins:
-			logger.plugin('Using plugin: %s', plugin)
+		for plgname, plugin in pluginmgr.list_name_plugin():
+			logger.plugin('Loaded %s: %s', plgname, plugin)
 
 		self.tree  = ProcTree()
 		# save the procs in order for plugin use
