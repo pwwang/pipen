@@ -1,6 +1,7 @@
 """The main module of PyPPL"""
+# pylint: disable=protected-access,no-member
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 
 # give random tips in the log
 import random
@@ -13,105 +14,104 @@ from pathlib import Path
 from time import time
 from multiprocessing import cpu_count
 from simpleconf import Config
-from .utils import config, Box, OBox
+from .plugin import registerPlugins, pluginmgr
+from .utils import config, loadConfigurations, Box, OBox
 
 DEFAULT_CFGFILES = (
 	'~/.PyPPL.yaml', '~/.PyPPL.toml', './.PyPPL.yaml', './.PyPPL.toml', 'PYPPL.osenv')
-def loadConfiguratiaons():
-	"""
-	Load default configurations.
-	"""
-	config.clear()
-	config._load(dict(default = dict(
-		_log = dict(
-			file       = None,
-			theme      = 'greenOnBlack',
-			levels     = 'normal',
-			leveldiffs = [],
-			pbar       = 50,
-			shorten    = 0,
-		),
-		_flowchart = dict(theme = 'default'),
-		# The command to run after jobs start
-		afterCmd   = '',
-		# The extra arguments for the process
-		args       = OBox(),
-		# The command to run before jobs start
-		beforeCmd  = '',
-		# The cache option, True/False/export
-		cache      = True,
-		# Do cleanup for cached jobs?
-		acache     = False,
-		# The description of the job
-		desc       = 'No description',
-		# Whether expand directory to check signature
-		dirsig     = True,
-		# Whether to echo the stdout and stderr of the jobs to the screen
-		# Could also be:
-		# {
-		#    # or [0, 1, 2], just echo output of those jobs.
-		#   'jobs': 0
-		#    # only echo stderr. (stdout: only echo stdout; [don't specify]: echo all)
-		#   'type': 'stderr'
-		# }
-		# You can also specify a filter to the type
-		# {
-		#   'jobs':  0
-		#   'type':  {'stderr': r'^Error'}	# only output lines starting with 'Error' in stderr
-		# }
-		# self.echo = True <=>
-		#     self.echo = { 'jobs': [0], 'type': {'stderr': None, 'stdout': None} }
-		# self.echo = False    <=> self.echo = { 'jobs': [] }
-		# self.echo = 'stderr' <=> self.echo = { 'jobs': [0], 'type': {'stderr': None} }
-		# self.echo = {'jobs': 0, 'type': 'stdout'} <=>
-		#     self.echo = { 'jobs': [0], 'type': {'stdout': None} }
-		# self.echo = {'type': {'all': r'^output'}} <=>
-		#     self.echo = { 'jobs': [0], 'type': {'stdout': r'^output', 'stderr': r'^output'} }
-		echo       = False,
-		# How to deal with the errors
-		# retry, ignore, halt
-		# halt to halt the whole pipeline, no submitting new jobs
-		# terminate to just terminate the job itself
-		errhow     = 'terminate',
-		# How many times to retry to jobs once error occurs
-		errntry    = 3,
-		# The directory to export the output files
-		exdir      = '',
-		# How to export # link, copy, gzip
-		exhow      = 'move',
-		# Whether to overwrite the existing files # overwrite
-		exow       = True,
-		# partial export, either the key of output file or the pattern
-		expart     = '',
-		# expect
-		expect     = '',
-		# How many jobs to run concurrently
-		forks      = 1,
-		# Hide the process in flowchart
-		hide       = False,
-		# Default shell/language
-		lang       = 'bash',
-		# number of threads used to build jobs and to check job cache status
-		nthread    = min(int(cpu_count() / 2), 16),
-		# Where cache file and workdir located
-		ppldir     = './workdir',
-		# Valid return codes
-		rc         = 0,
-		# Select the runner
-		runner     = 'local',
-		# The script of the jobs
-		script     = '',
-		# The tag of the job
-		tag        = 'notag',
-		# The template engine (name)
-		template   = '',
-		# The template environment
-		tplenvs    = Box(),
-		# working directory for the process
-		workdir    = ''
-	)), *DEFAULT_CFGFILES)
 
-loadConfiguratiaons()
+DEFAULT_CONFIG = dict(default = dict(
+	# default plugins
+	_plugins = ['pyppl-report', 'pyppl-flowchart'],
+	# log options
+	_log = dict(
+		file       = None,
+		theme      = 'greenOnBlack',
+		levels     = 'normal',
+		leveldiffs = [],
+		pbar       = 50,
+		shorten    = 0,
+	),
+	# The command to run after jobs start
+	afterCmd   = '',
+	# The extra arguments for the process
+	args       = OBox(),
+	# The command to run before jobs start
+	beforeCmd  = '',
+	# The cache option, True/False/export
+	cache      = True,
+	# Do cleanup for cached jobs?
+	acache     = False,
+	# The description of the job
+	desc       = 'No description',
+	# Whether expand directory to check signature
+	dirsig     = True,
+	# Whether to echo the stdout and stderr of the jobs to the screen
+	# Could also be:
+	# {
+	#    # or [0, 1, 2], just echo output of those jobs.
+	#   'jobs': 0
+	#    # only echo stderr. (stdout: only echo stdout; [don't specify]: echo all)
+	#   'type': 'stderr'
+	# }
+	# You can also specify a filter to the type
+	# {
+	#   'jobs':  0
+	#   'type':  {'stderr': r'^Error'}	# only output lines starting with 'Error' in stderr
+	# }
+	# self.echo = True <=>
+	#     self.echo = { 'jobs': [0], 'type': {'stderr': None, 'stdout': None} }
+	# self.echo = False    <=> self.echo = { 'jobs': [] }
+	# self.echo = 'stderr' <=> self.echo = { 'jobs': [0], 'type': {'stderr': None} }
+	# self.echo = {'jobs': 0, 'type': 'stdout'} <=>
+	#     self.echo = { 'jobs': [0], 'type': {'stdout': None} }
+	# self.echo = {'type': {'all': r'^output'}} <=>
+	#     self.echo = { 'jobs': [0], 'type': {'stdout': r'^output', 'stderr': r'^output'} }
+	echo       = False,
+	# How to deal with the errors
+	# retry, ignore, halt
+	# halt to halt the whole pipeline, no submitting new jobs
+	# terminate to just terminate the job itself
+	errhow     = 'terminate',
+	# How many times to retry to jobs once error occurs
+	errntry    = 3,
+	# The directory to export the output files
+	exdir      = '',
+	# How to export # link, copy, gzip
+	exhow      = 'move',
+	# Whether to overwrite the existing files # overwrite
+	exow       = True,
+	# partial export, either the key of output file or the pattern
+	expart     = '',
+	# expect
+	expect     = '',
+	# How many jobs to run concurrently
+	forks      = 1,
+	# Default shell/language
+	lang       = 'bash',
+	# number of threads used to build jobs and to check job cache status
+	nthread    = min(int(cpu_count() / 2), 16),
+	# Where cache file and workdir located
+	ppldir     = './workdir',
+	# Valid return codes
+	rc         = 0,
+	# Select the runner
+	runner     = 'local',
+	# The script of the jobs
+	script     = '',
+	# The tag of the job
+	tag        = 'notag',
+	# The template engine (name)
+	template   = '',
+	# The template environment
+	tplenvs    = Box(),
+	# working directory for the process
+	workdir    = ''
+))
+
+loadConfigurations(config, DEFAULT_CONFIG, *DEFAULT_CFGFILES)
+registerPlugins(config['_plugins'], DEFAULT_CONFIG['default']['_plugins'])
+pluginmgr.hook.setup(config = config)
 
 # load logger
 # pylint: disable=wrong-import-position
@@ -199,7 +199,13 @@ class PyPPL (object):
 					logger.warning('Module toml not installed, config file ignored: %s', cfile)
 			logger.config('Read from %s', cfile)
 
-		self.tree = ProcTree()
+		for plgname, plugin in pluginmgr.list_name_plugin():
+			logger.plugin('Loaded %s: %s', plgname, plugin)
+
+		self.tree  = ProcTree()
+		# save the procs in order for plugin use
+		self.procs = []
+		pluginmgr.hook.pypplInit(ppl = self)
 
 	@staticmethod
 	def _procsSelector(selector):
@@ -310,41 +316,7 @@ class PyPPL (object):
 		self._resume(*args, plus = True)
 		return self
 
-	def showAllRoutes(self):
-		"""@API
-		Show all the routes in the log.
-		@returns:
-			(PyPPL): The pipeline object itself.
-		"""
-		logger.debug('ALL ROUTES:')
-		#paths  = sorted([list(reversed(path)) for path in self.tree.getAllPaths()])
-		paths  = sorted([pnode.name() for pnode in reversed(apath)]
-			for apath in self.tree.getAllPaths(check_hide = False))
-		paths2 = [] # processes merged from the same procset
-		for apath in paths:
-			prevset = None
-			path2    = []
-			for pnode in apath:
-				if not '@' in pnode:
-					path2.append(pnode)
-				else:
-					procset = pnode.split('@')[-1]
-					if not prevset or prevset != procset:
-						path2.append('[%s]' % procset)
-						prevset = procset
-					elif prevset == procset:
-						continue
-			if path2 not in paths2:
-				paths2.append(path2)
-			# see details for procset
-			#if path != path2:
-			#	logger.logger.info('[  DEBUG] * %s' % (' -> '.join(path)))
-
-		for path2 in paths2:
-			logger.debug('* %s', ' -> '.join(path2))
-		return self
-
-	def run (self, profile = 'default'):
+	def run(self, profile = 'default'):
 		"""@API
 		Run the pipeline
 		@params:
@@ -355,6 +327,7 @@ class PyPPL (object):
 		"""
 		timer = time()
 
+		pluginmgr.hook.pypplPreRun(ppl = self)
 		proc = self.tree.getNextToRun()
 		while proc:
 			if proc.origin != proc.id:
@@ -375,6 +348,7 @@ class PyPPL (object):
 				ProcTree.getNextStr(proc),
 				proc = proc.id)
 			proc.run(profile, self.config)
+			self.procs.append(proc)
 			proc = self.tree.getNextToRun()
 
 		# unran = self.tree.unranProcs()
@@ -384,50 +358,9 @@ class PyPPL (object):
 		# 		fmtstr = "%-"+ str(klen) +"s won't run as path can't be reached: %s <- %s"
 		# 		logger.warning(fmtstr, key, key, ' <- '.join(val))
 
-		logger.done (
-			'Total time: %s',
-			utils.formatSecs(time() - timer)
-		)
+		pluginmgr.hook.pypplPostRun(ppl = self)
+		logger.done('Total time: %s', utils.formatSecs(time() - timer))
 		return self
-
-	def flowchart (self, fcfile = None, dotfile = None):
-		"""@API
-		Generate graph in dot language and visualize it.
-		@params:
-			dotfile (file): Where to same the dot graph.
-				- Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.dot"`)
-			fcfile (file):  The flowchart file.
-				- Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.svg"`)
-				- For example: run `python pipeline.py` will save it to `pipeline.pyppl.svg`
-		@returns:
-			(PyPPL): The pipeline object itself.
-		"""
-		from .flowchart import Flowchart
-		self.showAllRoutes()
-		fcfile  = fcfile or (Path('.') / Path(sys.argv[0]).stem).with_suffix(
-			'%s.pyppl.svg' % ('.' + str(self.counter) if self.counter else ''))
-		dotfile = dotfile if dotfile else Path(fcfile).with_suffix('.dot')
-		fchart  = Flowchart(fcfile = fcfile, dotfile = dotfile)
-		fchart.setTheme(self.config._flowchart.theme)
-
-		for start in self.tree.getStarts():
-			fchart.addNode(start, 'start')
-		for end in self.tree.getEnds():
-			fchart.addNode(end, 'end')
-			for apath in self.tree.getPathsToStarts(end, check_hide = True):
-				for i, pnode in enumerate(apath):
-					if i == 0:
-						fchart.addNode(pnode)
-						fchart.addLink(pnode, end)
-					else:
-						fchart.addNode(pnode)
-						fchart.addLink(pnode, apath[i-1])
-
-		fchart.generate()
-		logger.info ('Flowchart file saved to: %s', fchart.fcfile)
-		logger.info ('DOT file saved to: %s', fchart.dotfile)
-		return self
-
 
 	@staticmethod
 	def _registerProc(*procs):

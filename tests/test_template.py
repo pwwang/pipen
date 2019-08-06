@@ -4,6 +4,8 @@ from liquid import Liquid, LiquidRenderError
 from collections import OrderedDict
 from pyppl.template import Template, TemplateJinja2, TemplateLiquid
 
+HERE = Path(__file__).resolve().parent
+
 def installed(module):
 	try:
 		__import__(module)
@@ -106,6 +108,7 @@ class TestTemplateLiquid:
 			3
 		"""),
 
+		('{% python from pathlib import Path %}{{Path("/a/b/c") | R}}', {}, "'/a/b/c'"),
 		('{{True | R}}', {}, 'TRUE'),
 		('{{None | R}}', {}, 'NULL'),
 		('{{"+INF" | R}}', {}, 'Inf'),
@@ -117,6 +120,9 @@ class TestTemplateLiquid:
 		('{{ {0:1} | Rlist: False}}', {}, 'list(`0`=1)'),
 		('{{x | render}}', {'x': '{{i}}', 'i': 2}, '2'),
 		('{{x | lambda a, render = render:render(a[0])}}', {'x': ('{{i}}', 1), 'i': 2}, '2'),
+		('{{glob1(here, "test_template.py")}}', {'here': HERE}, str(Path(__file__).resolve())),
+		('{{glob1(here, "test_template_not_exists.py")}}', {'here': HERE}, '__NoNeXiStFiLe__'),
+		('{{glob1(here, "test_template.py", first = False)[0]}}', {'here': HERE}, str(Path(__file__).resolve())),
 	])
 	def testRender(self, source, data, out):
 		tpl = TemplateLiquid(source)

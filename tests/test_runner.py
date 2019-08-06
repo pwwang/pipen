@@ -155,8 +155,8 @@ def test_ssh_init_checktimeout(proc, ssh):
 	proc.sshRunner = Box(
 		ssh = ssh,
 		servers = ['server1', 'server2', 'server3', 'server4'],
-		keys = ['server1', 'server2', 'server3+1.5', 'wrongkey'],
-		checkAlive = 1)
+		keys = ['server1', 'server2', 'server3+2.5', 'wrongkey'],
+		checkAlive = 2)
 	r = RunnerSsh(0, proc)
 	assert RunnerSsh.LIVE_SERVERS == [0,1]
 	assert r.ssh.keywords['t'] == 'server1'

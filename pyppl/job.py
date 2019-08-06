@@ -8,6 +8,7 @@ import cmdy
 from .utils import Box, OBox, chmodX, briefPath, filesig, fileflush, fs
 from .logger import logger as _logger
 from .exception import JobInputParseError, JobOutputParseError
+from .plugin import pluginmgr
 
 # File names
 DIR_INPUT       = 'input'
@@ -75,6 +76,7 @@ class Job(object):
 		self.script = self.dir / (FILE_SCRIPT + '.' + runner_name)
 		self._rc    = None
 		self._pid   = None
+		pluginmgr.hook.jobPreRun(job = self)
 
 	@property
 	def scriptParts(self):
@@ -401,7 +403,7 @@ class Job(object):
 						self.logger("Input file renamed: %s -> %s" %
 							(indata.name, infile.name),
 							dlevel = 'INFILE_RENAMING', level = "warning")
-				self.input[key] = (intype, infile)
+				self.input[key] = (intype, str(infile))
 
 			elif intype in procclass.IN_FILESTYPE:
 				self.input[key] = (intype, [])
@@ -433,7 +435,7 @@ class Job(object):
 							self.logger('Input file renamed: %s -> %s' %
 								(data.name, infile.name),
 								dlevel = 'INFILE_RENAMING', level = "warning")
-					self.input[key][1].append (infile)
+					self.input[key][1].append(str(infile))
 			else:
 				self.input[key] = (intype, indata)
 
@@ -946,6 +948,7 @@ class Job(object):
 		procclass = self.proc.__class__
 		# first check if bare rc is allowed
 		if self.rc not in self.proc.rc:
+			pluginmgr.hook.jobFail(job = self)
 			return False
 
 		# refresh output directory
@@ -956,6 +959,7 @@ class Job(object):
 				self.rc += (1 << RCBIT_NO_OUTFILE)
 				self.logger('Outfile not generated: {}'.format(outdata),
 					dlevel = "OUTFILE_NOT_EXISTS", level = 'debug')
+				pluginmgr.hook.jobFail(job = self)
 				return False
 
 		expect_cmd = self.proc.expect.render(self.data)
@@ -965,6 +969,7 @@ class Job(object):
 			cmd = cmdy.bash(c = expect_cmd) # pylint: disable=no-member
 			if cmd.rc != 0:
 				self.rc += (1 << RCBIT_UNMET_EXPECT)
+				pluginmgr.hook.jobFail(job = self)
 				return False
 		return True
 
@@ -979,6 +984,7 @@ class Job(object):
 			self.export()
 		if not cached:
 			self.cache()
+		pluginmgr.hook.jobPostRun(job = self)
 
 	def isRunningImpl(self):
 		"""@API

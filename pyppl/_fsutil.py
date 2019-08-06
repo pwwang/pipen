@@ -6,6 +6,7 @@ from hashlib import md5
 from contextlib import contextmanager
 from threading import Lock
 from filelock import FileLock
+import cmdy
 
 MULTILOCK = Lock()
 TMPDIR    = os.path.join(tempfile.gettempdir(), 'fsutil.locks')
@@ -52,13 +53,36 @@ isfile = os.path.isfile # pylint: disable=invalid-name
 isdir  = os.path.isdir  # pylint: disable=invalid-name
 islink = os.path.islink # pylint: disable=invalid-name
 
+# haven't figured out a way to mimic this
+def _removeBusyDir(path): # pragma: no cover
+	"""Try to remove directory with files being ocupied by open process"""
+	for root, _, files in os.walk(path):
+		for fname in files:
+			if not fname.startswith('.'):
+				continue
+			fpath = os.path.join(root, fname)
+			lsof = cmdy.lsof(fpath, _raise = False)
+			if lsof.rc != 0:
+				continue
+			lsof = lsof.splitlines()
+			if len(lsof) < 2:
+				continue
+			pid = lsof[-1].split()[1]
+			cmdy.kill({'9': pid})
+	shutil.rmtree(path)
+
 def remove(path, ignore_nonexist = True):
 	"""Remove anything. If ignore_nonexist is False and path does not exists,
 	a TargetNotExistsError raises."""
 	if os.path.islink(path):
 		os.remove(path)
 	if os.path.isdir(path):
-		shutil.rmtree(path)
+		try:
+			shutil.rmtree(path)
+		except OSError as ex: # pragma: no cover
+			if 'busy' not in str(ex):
+				raise
+			_removeBusyDir(path)
 	if not exists(path):
 		if not ignore_nonexist:
 			raise TargetNotExistsError(path)

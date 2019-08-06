@@ -3,6 +3,8 @@ Template adaptor for PyPPL
 """
 import json
 import inspect
+from pathlib import Path
+from glob import glob
 from .utils import Box, OBox
 from os import path, readlink
 from liquid import Liquid
@@ -90,6 +92,8 @@ class _TemplateFilter(object):
 			if var.startswith('r:') or var.startswith('R:'):
 				return str(var)[2:]
 			return repr(str(var))
+		if isinstance(var, Path):
+			return repr(str(var))
 		if isinstance(var, (list, tuple, set)):
 			return 'c({})'.format(','.join([_TemplateFilter.R(i) for i in var]))
 		if isinstance(var, dict):
@@ -158,6 +162,18 @@ class _TemplateFilter(object):
 			raise TypeError('Cannot coerce non-dict object to OrderedBox.')
 		return 'OBox(%r)' % var.items()
 
+	@staticmethod
+	def glob1(*paths, first = True):
+		"""
+		Return the paths matches the paths
+		"""
+		ret = glob(path.join(*paths))
+		if ret and first:
+			return ret[0]
+		if not ret and first:
+			return '__NoNeXiStFiLe__'
+		return ret
+
 class Template(object):
 	"""@API
 	Template wrapper base class
@@ -188,6 +204,7 @@ class Template(object):
 		'fn2'      : lambda var, orig = False, dot = 1: _TemplateFilter.filename(var, orig, dot),
 		# /a/b/c.txt => .txt
 		'ext'      : lambda var: path.splitext(var)[1],
+		'glob1'    : _TemplateFilter.glob1,
 		# /a/b/c[1].txt => /a/b/c
 		'prefix'   : _TemplateFilter.prefix,
 		# /a/b/c.d.e.txt => /a/b/c

@@ -6,7 +6,7 @@ import inspect
 import types
 import pyppl
 from pyppl.utils import OBox
-from pyppl.flowchart import Flowchart
+#from pyppl.flowchart import Flowchart
 from pyppl.template import Template, TemplateLiquid, TemplateJinja2
 
 class Member:
@@ -94,7 +94,7 @@ class Klass(Member):
 	@staticmethod
 	def allClasses():
 		classes = [getattr(pyppl, klass) for klass in dir(pyppl)]
-		classes.extend([Flowchart, Template, TemplateLiquid, TemplateJinja2])
+		classes.extend([Template, TemplateLiquid, TemplateJinja2])
 		ret = []
 		for klass in classes:
 			if klass.__doc__ and klass.__doc__.startswith('@API'):

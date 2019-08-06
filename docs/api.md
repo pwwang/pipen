@@ -24,27 +24,6 @@
 
 			- `cfgfile (file)`:  the configuration file for the pipeline, default: `None`
 
-	!!! abstract "method: `flowchart (self, fcfile, dotfile)`"
-		Generate graph in dot language and visualize it.
-
-		- **params**
-
-
-			- `dotfile (file)`:  Where to same the dot graph.
-
-				  - Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.dot"`)
-
-			- `fcfile (file)`:   The flowchart file.
-
-				  - Default: `None` (`path.splitext(sys.argv[0])[0] + ".pyppl.svg"`)
-
-				  - For example: run `python pipeline.py` will save it to `pipeline.pyppl.svg`
-
-		- **returns**
-
-
-			- `(PyPPL)`:  The pipeline object itself.
-
 	!!! tip "staticmethod: `registerRunner (runner_to_reg)`"
 		Register a runner
 
@@ -88,14 +67,6 @@
 			- `profile (str|dict)`:  the profile used to run, if not found, it'll be used as runner name.
 
 				  - default: 'default'
-
-		- **returns**
-
-
-			- `(PyPPL)`:  The pipeline object itself.
-
-	!!! abstract "method: `showAllRoutes (self)`"
-		Show all the routes in the log.
 
 		- **returns**
 
@@ -1100,19 +1071,13 @@
 
 			- `(bool|list)`:  `True` if all paths can pass, otherwise first failed path.
 
-	!!! abstract "method: `getAllPaths (self, check_hide)`"
+	!!! abstract "method: `getAllPaths (self)`"
 		Get all paths of the pipeline, only used to be displayed in debug
-		So hide those hidden processes.
-
-		- **params**
-
-
-			- `check_hide (bool)`:  Whether check the hiding processes or not. Default: `True`
 
 		- **yields**
 
 
-			- `(list[Proc])`:  The paths.
+			- `(list[Proc])`:  The paths (end to start).
 
 	!!! abstract "method: `getEnds (self)`"
 		Get the end processes
@@ -1156,7 +1121,7 @@
 
 			- `(Proc)`:  The process next to run
 
-	!!! abstract "method: `getPaths (self, proc, proc0, check_hide)`"
+	!!! abstract "method: `getPaths (self, proc, proc0)`"
 		Infer the path to a process
 		```
 		p1 -> p2 -> p3
@@ -1176,7 +1141,7 @@
 
 			- `(list[list])`:  The path to the process.
 
-	!!! abstract "method: `getPathsToStarts (self, proc, check_hide)`"
+	!!! abstract "method: `getPathsToStarts (self, proc)`"
 		Filter the paths with start processes
 
 		- **params**
@@ -1312,58 +1277,6 @@
 
 
 			- `(Logger)`:  The Logger object itself
-
-## class: Flowchart
-
-!!! example "class: `Flowchart (self, fcfile, dotfile)`"
-	Draw flowchart for pipelines
-	
-
-	!!! abstract "method: `__init__ (self, fcfile, dotfile)`"
-		The flowchart constructor
-
-		- **params**
-
-
-			- `fcfile (file)`:  The flowchart file.
-
-			- `dotfile (file)`:  The dot file.
-
-	!!! abstract "method: `addLink (self, node1, node2)`"
-		Add a link to the chart
-
-		- **params**
-
-
-			- `node1 (Proc)`:  The first process node.
-
-			- `node2 (Proc)`:  The second process node.
-
-	!!! abstract "method: `addNode (self, node, role)`"
-		Add a node to the chart
-
-		- **params**
-
-
-			- `node (Proc)`:  The process node
-
-			- `role (str)`:  Is it a starting node, an ending node or None. Default: `None`.
-
-	!!! abstract "method: `generate (self)`"
-		Generate the dot file and graph file.
-		
-
-	!!! abstract "method: `setTheme (self, theme, base)`"
-		Set the theme to be used
-
-		- **params**
-
-
-			- `theme (str|dict)`:  The theme, could be the key of Flowchart.
-
-				  - THEMES or a dict of a theme definition.
-
-			- `base (str)`:  The base theme to be based on you pass custom theme
 
 ## class: Template
 

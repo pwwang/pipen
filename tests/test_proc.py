@@ -32,7 +32,7 @@ def test_proc_init(tmpdir):
 	assert p1.props.echo == {}
 	assert p1.props.expart == []
 	assert p1.props.expect == None
-	assert p1.config.hide == False
+	#assert p1.config.hide == False
 	assert p1.config.input == ''
 	assert p1.props.input == {}
 	assert p1.props.jobs == []
@@ -164,28 +164,37 @@ def test_size(tmpdir):
 	p7.props.jobs = [1,2,3]
 	assert p7.size == 3
 
-def test_suffix(tmpdir):
+def test_suffix_preset(tmpdir):
 	p75 = Proc()
 	p8 = Proc()
 	p8.depends = p75
 	p8.props._suffix = '123'
 	assert p8.suffix == '123'
 
-	p8.props._suffix = ''
-	p8.input = 'a'
+def test_suffix_compute(tmpdir):
+	p76 = Proc()
+	p81 = Proc()
+	p81.depends = p76
+	p81.input = 'a'
 	sigs = OBox()
 	sigs.argv0 = str(Path(sys.argv[0]).resolve())
-	sigs.id = 'p8'
+	sigs.id = 'p81'
 	sigs.tag = 'notag'
 	sigs.input = 'a'
-	sigs.depends = ['p75#' + p75.suffix]
-	assert p8.suffix == uid(sigs.to_json())
+	sigs.depends = ['p76#' + p76.suffix]
+	assert p81.suffix == uid(sigs.to_json())
 
-	p8.props._suffix = ''
-	p8.input = [1]
-	assert p8.config.input == {'a': [1]}
-	sigs.input = {'a': [1]}
-	assert p8.suffix == uid(sigs.to_json())
+def test_suffix_input(tmpdir):
+	p82 = Proc()
+	p82.input = 'a'
+	p82.input = [1]
+	sigs = OBox()
+	sigs.argv0 = str(Path(sys.argv[0]).resolve())
+	sigs.id = 'p82'
+	sigs.tag = 'notag'
+	assert p82.config.input == {'a': [1]}
+	sigs.input = {'a': "[1]"}
+	assert p82.suffix == uid(sigs.to_json())
 
 def test_buildprops(tmpdir):
 	from pyppl import ProcTree
@@ -408,6 +417,7 @@ def test_savesettings(tmpdir, caplog):
 
 def test_buildjobs(tmpdir, caplog):
 	p15 = Proc()
+	p15.props.jobs = [None, None]
 	p15._buildJobs()
 	assert 'No data found for jobs, process will be skipped.' in caplog.text
 
@@ -541,11 +551,11 @@ def test_postruntidy(tmpdir, caplog):
 	caplog.clear()
 	with pytest.raises(SystemExit):
 		p23._postRunTidy()
-	assert 'Cached           : 3' in caplog.text
-	assert 'Successful       : 2' in caplog.text
-	assert 'Building failed  : 0' in caplog.text
-	assert 'Submission failed: 1' in caplog.text
-	assert 'Running failed   : 4' in caplog.text
+	assert 'Cached: 4' in caplog.text
+	assert 'Succeeded: 3' in caplog.text
+	assert 'Building failed: 1' in caplog.text
+	assert 'Submission failed: 2' in caplog.text
+	assert 'Running failed: 5' in caplog.text
 
 def test_run(tmpdir, caplog):
 	sys.argv = ['pytest']

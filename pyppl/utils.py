@@ -48,6 +48,10 @@ class OBox(Box):
 
 OrderedBox = OBox # pylint: disable=invalid-name
 
+def loadConfigurations(conf, *cfgfiles):
+	conf.clear()
+	conf._load(*cfgfiles)
+
 # remove python2 support
 # try:
 # 	from Queue import Queue, PriorityQueue, Empty as QueueEmpty
@@ -215,8 +219,10 @@ def alwaysList (data, trim = True):
 	if isinstance(data, str):
 		return split(data, ',', trim)
 	if isinstance(data, list):
-		return sum((alwaysList(dat, trim) for dat in data), [])
-	raise ValueError('Expect string or list to convert to list.')
+		return sum((alwaysList(dat, trim)
+			if isinstance(dat, (str, list)) else [dat]
+			for dat in data), [])
+	raise ValueError('Expect str/list to convert to list, but got %r.' % type(data).__name__)
 
 def expandNumbers(numbers):
 	"""
@@ -237,7 +243,7 @@ def expandNumbers(numbers):
 			numbers.extend(range(int(numstart), int(numend)+1))
 	return numbers
 
-def briefList(blist):
+def briefList(blist, base = 0):
 	"""
 	Briefly show an integer list, combine the continuous numbers.
 	@params:
@@ -247,6 +253,7 @@ def briefList(blist):
 	"""
 	if not blist:
 		return "[]"
+	blist = [b + base for b in blist]
 	if len(blist) == 1:
 		return str(blist[0])
 	blist       = sorted(blist)

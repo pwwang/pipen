@@ -2,7 +2,7 @@ import pytest
 
 from pyppl import Proc, Box, ProcSet
 from pyppl.proctree import ProcNode, ProcTree
-from pyppl.exception import ProcTreeProcExists, ProcTreeParseError, ProcHideError
+from pyppl.exception import ProcTreeProcExists, ProcTreeParseError#, ProcHideError
 
 @pytest.fixture(autouse = True)
 def resetNodes():
@@ -20,7 +20,7 @@ def set1():
 	#        hide
 	# p15 -> p16  ->  p17 -> 19
 	#         \_ p18_/  \_ p20
-	p16.hide = True
+	#p16.hide = True
 	p20.depends = p17
 	p19.depends = p17
 	p17.depends = p16, p18
@@ -41,7 +41,7 @@ def set2():
 	# p15 -> p16  ->  p17 -> 19
 	# p14 _/  \_ p18_/  \_ p20
 	#           hide
-	p18.hide = True
+	#p18.hide = True
 	p20.depends = p17
 	p19.depends = p17
 	p17.depends = p16, p18
@@ -72,15 +72,16 @@ def test_proctree_init():
 	p24 = Proc()
 	p25 = Proc()
 	p23.depends = p21, p22
-	p23.hide    = True
+	#p23.hide    = True
 	p24.depends = p23
 	p25.depends = p23
 	ProcTree.register(p21)
 	ProcTree.register(p22)
 
 	pt = ProcTree()
-	with pytest.raises(ProcHideError):
-		pt.init()
+	pt.init()
+	# with pytest.raises(ProcHideError):
+	# 	pt.init()
 	assert p21 in ProcTree.NODES
 	assert p22 in ProcTree.NODES
 	assert p23 in ProcTree.NODES
@@ -154,14 +155,14 @@ def test_proctree_setgetstarts():
 	p12 = Proc()
 	p13 = Proc()
 	p14 = Proc()
-	p14.hide = True
+	#p14.hide = True
 	p12.depends = p13
 	ProcTree.register(p13)
 	ProcTree.register(p14)
 	pt = ProcTree()
 	pt.init()
-	with pytest.raises(ProcHideError):
-		pt.setStarts([p14])
+	# with pytest.raises(ProcHideError):
+	# 	pt.setStarts([p14])
 	pt.ends = [1,2,3]
 	pt.setStarts([p13])
 	assert ProcTree.NODES[p12].start == False
@@ -182,14 +183,14 @@ def test_proctree_getpaths(set1):
 	pt = ProcTree()
 	pt.init()
 	assert pt.getPaths(set1.p15) == []
-	assert pt.getPaths(set1.p19, check_hide = False) == [
+	assert pt.getPaths(set1.p19) == [
 		[set1.p17, set1.p16, set1.p15], [set1.p17, set1.p18, set1.p16, set1.p15]]
-	assert pt.getPaths(set1.p20, check_hide = False) == [
+	assert pt.getPaths(set1.p20) == [
 		[set1.p17, set1.p16, set1.p15], [set1.p17, set1.p18, set1.p16, set1.p15]]
-	assert pt.getPaths(set1.p19, check_hide = True)  == [
-		[set1.p17, set1.p15], [set1.p17, set1.p18, set1.p15]]
-	assert pt.getPaths(set1.p20, check_hide = True)  == [
-		[set1.p17, set1.p15], [set1.p17, set1.p18, set1.p15]]
+	# assert pt.getPaths(set1.p19, check_hide = True)  == [
+	# 	[set1.p17, set1.p15], [set1.p17, set1.p18, set1.p15]]
+	# assert pt.getPaths(set1.p20, check_hide = True)  == [
+	# 	[set1.p17, set1.p15], [set1.p17, set1.p18, set1.p15]]
 
 	# circulic dependence
 	p21 = Proc()
@@ -212,37 +213,37 @@ def test_proctree_getpathstostarts(set2):
 	pt.init()
 	pt.setStarts([set2.p15])
 	assert pt.getPathsToStarts(set2.p15) == []
-	assert pt.getPathsToStarts(set2.p19, check_hide = False) == [[set2.p17, set2.p16, set2.p15], [set2.p17, set2.p18, set2.p16, set2.p15]]
-	assert pt.getPathsToStarts(set2.p20, check_hide = False) == [[set2.p17, set2.p16, set2.p15], [set2.p17, set2.p18, set2.p16, set2.p15]]
-	assert pt.getPathsToStarts(set2.p19, check_hide = True) == [[set2.p17, set2.p16, set2.p15]]
-	assert pt.getPathsToStarts(set2.p20, check_hide = True) == [[set2.p17, set2.p16, set2.p15]]
+	assert pt.getPathsToStarts(set2.p19) == [[set2.p17, set2.p16, set2.p15], [set2.p17, set2.p18, set2.p16, set2.p15]]
+	assert pt.getPathsToStarts(set2.p20) == [[set2.p17, set2.p16, set2.p15], [set2.p17, set2.p18, set2.p16, set2.p15]]
+	# assert pt.getPathsToStarts(set2.p19, check_hide = True) == [[set2.p17, set2.p16, set2.p15]]
+	# assert pt.getPathsToStarts(set2.p20, check_hide = True) == [[set2.p17, set2.p16, set2.p15]]
 
 	pt.setStarts([set2.p14, set2.p15])
 	assert pt.getPathsToStarts(set2.p14) == []
 	assert pt.getPathsToStarts(set2.p15) == []
 	assert pt.getPathsToStarts(set2.p16) == [[set2.p14], [set2.p15]]
 	assert pt.getPathsToStarts(set2.p18) == [[set2.p16, set2.p14], [set2.p16, set2.p15]]
-	assert pt.getPathsToStarts(set2.p17, check_hide = False) == [
+	assert pt.getPathsToStarts(set2.p17) == [
 		[set2.p16, set2.p14],
 		[set2.p16, set2.p15],
 		[set2.p18, set2.p16, set2.p14],
 		[set2.p18, set2.p16, set2.p15],
 	]
-	assert pt.getPathsToStarts(set2.p19, check_hide = False) == [
+	assert pt.getPathsToStarts(set2.p19) == [
 		[set2.p17, set2.p16, set2.p14],
 		[set2.p17, set2.p16, set2.p15],
 		[set2.p17, set2.p18, set2.p16, set2.p14],
 		[set2.p17, set2.p18, set2.p16, set2.p15],
 	]
-	assert pt.getPathsToStarts(set2.p20, check_hide = False) == [
+	assert pt.getPathsToStarts(set2.p20) == [
 		[set2.p17, set2.p16, set2.p14],
 		[set2.p17, set2.p16, set2.p15],
 		[set2.p17, set2.p18, set2.p16, set2.p14],
 		[set2.p17, set2.p18, set2.p16, set2.p15],
 	]
-	assert pt.getPathsToStarts(set2.p17, check_hide = True) == [[set2.p16, set2.p14], [set2.p16, set2.p15]]
-	assert pt.getPathsToStarts(set2.p19, check_hide = True) == [[set2.p17, set2.p16, set2.p14], [set2.p17, set2.p16, set2.p15]]
-	assert pt.getPathsToStarts(set2.p20, check_hide = True) == [[set2.p17, set2.p16, set2.p14], [set2.p17, set2.p16, set2.p15]]
+	# assert pt.getPathsToStarts(set2.p17, check_hide = True) == [[set2.p16, set2.p14], [set2.p16, set2.p15]]
+	# assert pt.getPathsToStarts(set2.p19, check_hide = True) == [[set2.p17, set2.p16, set2.p14], [set2.p17, set2.p16, set2.p15]]
+	# assert pt.getPathsToStarts(set2.p20, check_hide = True) == [[set2.p17, set2.p16, set2.p14], [set2.p17, set2.p16, set2.p15]]
 
 def test_proctree_chechpath(set2):
 	# p15 -> p16  ->  p17 -> 19
@@ -268,10 +269,10 @@ def test_proctree_getends(set2):
 	assert set(pt.ends) == {set2.p19, set2.p20}
 	assert set(pt.getEnds()) == {set2.p19, set2.p20}
 
-	set2.p19.hide = True
+	#set2.p19.hide = True
 	pt.ends = []
-	with pytest.raises(ProcHideError):
-		pt.getEnds()
+	# with pytest.raises(ProcHideError):
+	# 	pt.getEnds()
 
 def test_proctree_getends_failed():
 	p1 = Proc()
@@ -296,16 +297,20 @@ def test_proctree_getends_failed():
 def test_proctree_getallpaths(set2):
 	# p15 -> p16  ->  p17 -> 19
 	# p14 _/  \_ p18_/  \_ p20
-	#           hide
+	#         ##hide moved to plugin
 	pt = ProcTree()
 	pt.init()
 	pt.setStarts([set2.p14, set2.p15])
 	allpath = list(pt.getAllPaths())
-	assert len(allpath) == 4
+	assert len(allpath) == 8
 	assert [set2.p19, set2.p17, set2.p16, set2.p14] in allpath
 	assert [set2.p19, set2.p17, set2.p16, set2.p15] in allpath
 	assert [set2.p20, set2.p17, set2.p16, set2.p14] in allpath
 	assert [set2.p20, set2.p17, set2.p16, set2.p15] in allpath
+	assert [set2.p19, set2.p17, set2.p18, set2.p16, set2.p14] in allpath
+	assert [set2.p19, set2.p17, set2.p18, set2.p16, set2.p15] in allpath
+	assert [set2.p20, set2.p17, set2.p18, set2.p16, set2.p14] in allpath
+	assert [set2.p20, set2.p17, set2.p18, set2.p16, set2.p15] in allpath
 
 def test_proctree_getallpaths_single():
 	p1 = Proc()

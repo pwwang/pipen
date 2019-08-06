@@ -8,6 +8,9 @@ from pyppl.utils import config, fs
 from pyppl.proctree import ProcTree
 from pyppl.exception import PyPPLProcRelationError, ProcTreeProcExists, RunnerClassNameError
 
+def setup_module(module):
+	PyPPL.COUNTER = 0
+
 def teardown_module(module):
 	for path in Path().glob('*.log'):
 		fs.remove(path)
@@ -29,7 +32,7 @@ def pset():
 	# p15 -> p16  ->  p17 -> 19
 	# p14 _/  \_ p18_/  \_ p20
 	#           hide
-	p18.hide = True
+	#p18.hide = True
 	p20.depends = p17
 	p19.depends = p17
 	p17.depends = p16, p18
@@ -152,26 +155,27 @@ def test_resume2(pset):
 	assert pset.p14.resume == 'skip+'
 	assert pset.p15.resume == 'skip+'
 
-def test_showallroutes(pset, caplog):
-	# p15 -> p16  ->  ps -> p19
-	# p14 _/  \_ p18_/  \_ p20
-	#           hide
-	pset.p17.depends = []
-	ps = ProcSet(Proc(id = 'p1'), Proc(id = 'p2'))
-	ps.depends = pset.p16, pset.p18
-	pset.p19.depends = ps
-	pset.p20.depends = ps
-	ppl = PyPPL().start(pset.p14, pset.p15)
-	ppl.showAllRoutes()
-	assert 'ALL ROUTES:' in caplog.text
-	assert '* p14 -> p16 -> p18 -> [ps] -> p19' in caplog.text
-	assert '* p14 -> p16 -> p18 -> [ps] -> p20' in caplog.text
-	assert '* p14 -> p16 -> [ps] -> p19' in caplog.text
-	assert '* p14 -> p16 -> [ps] -> p20' in caplog.text
-	assert '* p15 -> p16 -> p18 -> [ps] -> p19' in caplog.text
-	assert '* p15 -> p16 -> p18 -> [ps] -> p20' in caplog.text
-	assert '* p15 -> p16 -> [ps] -> p19' in caplog.text
-	assert '* p15 -> p16 -> [ps] -> p20' in caplog.text
+# moved to flowchart plugin
+# def test_showallroutes(pset, caplog):
+# 	# p15 -> p16  ->  ps -> p19
+# 	# p14 _/  \_ p18_/  \_ p20
+# 	#           hide
+# 	pset.p17.depends = []
+# 	ps = ProcSet(Proc(id = 'p1'), Proc(id = 'p2'))
+# 	ps.depends = pset.p16, pset.p18
+# 	pset.p19.depends = ps
+# 	pset.p20.depends = ps
+# 	ppl = PyPPL().start(pset.p14, pset.p15)
+# 	ppl.showAllRoutes()
+# 	assert 'ALL ROUTES:' in caplog.text
+# 	assert '* p14 -> p16 -> p18 -> [ps] -> p19' in caplog.text
+# 	assert '* p14 -> p16 -> p18 -> [ps] -> p20' in caplog.text
+# 	assert '* p14 -> p16 -> [ps] -> p19' in caplog.text
+# 	assert '* p14 -> p16 -> [ps] -> p20' in caplog.text
+# 	assert '* p15 -> p16 -> p18 -> [ps] -> p19' in caplog.text
+# 	assert '* p15 -> p16 -> p18 -> [ps] -> p20' in caplog.text
+# 	assert '* p15 -> p16 -> [ps] -> p19' in caplog.text
+# 	assert '* p15 -> p16 -> [ps] -> p20' in caplog.text
 
 def test_run(pset, caplog, tmp_path):
 	p1 = Proc()
@@ -224,25 +228,26 @@ def test_run_defaultcfg(tmp_path):
 	PyPPL().start(pF100).run('f100')
 	assert pF100.forks == 100
 
-def test_flowchart(pset, caplog, tmp_path):
-	for p in pset.values():
-		p.input = {'a': [1]}
-		p.output = 'a:var:{{i.a}}'
-	ppl = PyPPL({'ppldir': tmp_path / 'test_flowchart_ppldir'}).start(pset.p14, pset.p15)
-	ppl.counter = 0
-	ppl.flowchart()
-	assert 'Flowchart file saved to:' in caplog.text
-	assert 'DOT file saved to:' in caplog.text
-	assert fs.exists('./%s.pyppl.svg' % Path(sys.argv[0]).stem)
-	assert fs.exists('./%s.pyppl.dot' % Path(sys.argv[0]).stem)
+# moved to plugin
+# def test_flowchart(pset, caplog, tmp_path):
+# 	for p in pset.values():
+# 		p.input = {'a': [1]}
+# 		p.output = 'a:var:{{i.a}}'
+# 	ppl = PyPPL({'ppldir': tmp_path / 'test_flowchart_ppldir'}).start(pset.p14, pset.p15)
+# 	ppl.counter = 0
+# 	ppl.flowchart()
+# 	assert 'Flowchart file saved to:' in caplog.text
+# 	assert 'DOT file saved to:' in caplog.text
+# 	assert fs.exists('./%s.pyppl.svg' % Path(sys.argv[0]).stem)
+# 	assert fs.exists('./%s.pyppl.dot' % Path(sys.argv[0]).stem)
 
-	dot = Path('./%s.pyppl.dot' % Path(sys.argv[0]).stem).read_text()
-	assert 'p17 -> p19' in dot
-	assert 'p17 -> p20' in dot
-	assert 'p16 -> p17' in dot
-	#assert 'p16 -> p18' in dot # hidden
-	assert 'p14 -> p16' in dot
-	assert 'p15 -> p16' in dot
+# 	dot = Path('./%s.pyppl.dot' % Path(sys.argv[0]).stem).read_text()
+# 	assert 'p17 -> p19' in dot
+# 	assert 'p17 -> p20' in dot
+# 	assert 'p16 -> p17' in dot
+# 	#assert 'p16 -> p18' in dot # hidden
+# 	assert 'p14 -> p16' in dot
+# 	assert 'p15 -> p16' in dot
 
 def test_registerProc():
 	px = Proc()

@@ -18,6 +18,7 @@ from .channel import Channel
 from .exception import ProcTagError, ProcAttributeError, ProcInputError, ProcOutputError, \
 	ProcScriptError, ProcRunCmdError
 from . import utils, template
+from .plugin import pluginmgr
 
 class Proc(Hashable):
 	"""@API
@@ -81,7 +82,7 @@ class Proc(Hashable):
 		# Get configuration from config
 		self.__dict__['config'] = Config()
 		# computed props
-		self.__dict__['props'] = Box(box_intact_types = [Channel, list])
+		self.__dict__['props'] = Box(box_intact_types = [list])
 
 		defaultconfig = dict.copy(utils.config)
 		# The id (actually, it's the showing name) of the process
@@ -92,7 +93,7 @@ class Proc(Hashable):
 			raise ProcAttributeError("Attribute 'depends' has to be set using `__setattr__`")
 
 		# The extra arguments for the process
-		defaultconfig['args'] = defaultconfig['args'].copy()
+		defaultconfig['args'] = dict.copy(defaultconfig['args'])
 		# The callfront function of the process
 		defaultconfig['callfront'] = None
 		# The callback function of the process
@@ -110,8 +111,9 @@ class Proc(Hashable):
 		# 'skip'   : Just skip, do not load data
 		# 'resume' : Load data from previous run, resume pipeline
 		defaultconfig['resume'] = ''
-		# The template environment
-		defaultconfig['tplenvs'] = defaultconfig.get('envs', defaultconfig['tplenvs']).copy()
+		# The template environment, keep process indenpendent, even for the subconfigs
+		defaultconfig['tplenvs'] = pycopy.deepcopy(
+			defaultconfig.get('envs', defaultconfig['tplenvs']))
 
 		# The output channel of the process
 		self.props.channel = Channel.create()
@@ -179,12 +181,15 @@ class Proc(Hashable):
 			raise ProcAttributeError(name)
 
 		if name in self.props or name in self.config:
-			return self.props.get(name, self.config.get(name))
-
-		if name in Proc.ALIAS:
+			pass
+		elif name in Proc.ALIAS:
 			name = Proc.ALIAS[name]
 
-		return self.props.get(name, self.config.get(name))
+		ret = pluginmgr.hook.procGetAttr(proc = self, name = name)
+		if ret is None:
+			return self.props.get(name, self.config.get(name))
+
+		return ret
 
 	def __setattr__(self, name, value):
 		"""
@@ -235,6 +240,7 @@ class Proc(Hashable):
 				PyPPL._registerProc(self)
 
 		elif name == 'script' and value.startswith('file:'):
+			# convert relative path to absolute
 			scriptpath = Path(value[5:])
 			if not scriptpath.is_absolute():
 				from inspect import getframeinfo, stack
@@ -242,7 +248,8 @@ class Proc(Hashable):
 				scriptdir = Path(caller.filename).parent.resolve()
 				scriptpath = scriptdir / scriptpath
 			if not scriptpath.is_file():
-				raise ProcAttributeError('Script not exists: %s' % scriptpath)
+				raise ProcAttributeError(
+					'Script file does not exist: %s' % scriptpath)
 			self.config[name] = "file:%s" % scriptpath
 
 		elif name == 'args' or name == 'tplenvs':
@@ -269,6 +276,8 @@ class Proc(Hashable):
 			raise ProcAttributeError("No space or '@' is allowed in tag")
 		else:
 			self.config[name] = value
+			# plugins can overwrite it
+			pluginmgr.hook.procSetAttr(proc = self, name = name, value = value)
 
 	def __repr__(self):
 		return '<Proc(%s) @ %s>' %(self.name(), hex(id(self)))
@@ -303,7 +312,7 @@ class Proc(Hashable):
 				conf[key] = desc
 			elif key in ['workdir', 'resume']:
 				conf[key] = ''
-			elif isinstance(self.config[key], dict) and 'tplenvs' not in key:
+			elif isinstance(self.config[key], dict):
 				conf[key] = pycopy.deepcopy(self.config[key])
 			elif key == 'depends':
 				continue
@@ -391,11 +400,12 @@ class Proc(Hashable):
 		sigs.id    = self.id
 		sigs.tag   = self.tag
 
-		# lambda is not pickable
 		if isinstance(self.config.input, dict):
 			sigs.input = pycopy.copy(self.config.input)
 			for key, val in self.config.input.items():
-				sigs.input[key] = utils.funcsig(val) if callable(val) else val
+				# lambda is not pickable
+				# convert others to string to make sure it's pickable. Issue #65
+				sigs.input[key] = utils.funcsig(val) if callable(val) else str(val)
 		else:
 			sigs.input = str(self.config.input)
 
@@ -405,7 +415,10 @@ class Proc(Hashable):
 		# callbacks could be the same though even if the input files are different
 		if self.depends:
 			sigs.depends = [p.name(True) + '#' + p.suffix for p in self.depends]
-		signature = sigs.to_json()
+		try:
+			signature = sigs.to_json()
+		except TypeError as exc: # pragma: no cover
+			raise ProcInputError('Unexpected input data type: %s' % exc) from None
 		logger.debug('Suffix decided by: %s' % signature, proc = self.id)
 		# suffix is only depending on where it comes from (sys.argv[0]) and
 		# it's name (id and tag) to avoid too many different workdirs being generated
@@ -769,6 +782,8 @@ class Proc(Hashable):
 
 		if not self.input:
 			logger.warning('No data found for jobs, process will be skipped.', proc = self.id)
+			if self.jobs: # clear up Nones
+				del self.jobs[:]
 			return
 
 		from . import PyPPL
@@ -946,11 +961,17 @@ class Proc(Hashable):
 				len(efailedjobs),
 				proc = self.id)
 
-			logger.debug('Cached           : %s', utils.briefList(cachedjobs), proc = self.id)
-			logger.debug('Successful       : %s', utils.briefList(successjobs), proc = self.id)
-			logger.debug('Building failed  : %s', utils.briefList(bfailedjobs), proc = self.id)
-			logger.debug('Submission failed: %s', utils.briefList(sfailedjobs), proc = self.id)
-			logger.debug('Running failed   : %s', utils.briefList(efailedjobs), proc = self.id)
+			logger.debug('Cached: %s', utils.briefList(cachedjobs, 1), proc = self.id)
+			logger.debug('Succeeded: %s', utils.briefList(successjobs, 1), proc = self.id)
+			if bfailedjobs:
+				logger.error('Building failed: %s',
+					utils.briefList(bfailedjobs, 1), proc = self.id)
+			if sfailedjobs:
+				logger.error('Submission failed: %s',
+					utils.briefList(sfailedjobs, 1), proc = self.id)
+			if efailedjobs:
+				logger.error('Running failed: %s',
+					utils.briefList(efailedjobs, 1), proc = self.id)
 
 			donejobs = successjobs + cachedjobs
 			failjobs = bfailedjobs + sfailedjobs + efailedjobs
@@ -977,6 +998,7 @@ class Proc(Hashable):
 		if self.runner == 'dry':
 			self.config.cache = False
 
+		pluginmgr.hook.procPreRun(proc = self)
 		if self.resume == 'skip':
 			logger.skipped("Pipeline will resume from future processes.")
 		elif self.resume == 'skip+':
@@ -1001,3 +1023,6 @@ class Proc(Hashable):
 				# remove the lock file, so that I know this process has done
 				# or hasn't started yet, externally.
 				fs.remove(path.join(self.workdir, 'proc.lock'))
+		pluginmgr.hook.procPostRun(proc = self)
+		# gc
+		del self.jobs[:]

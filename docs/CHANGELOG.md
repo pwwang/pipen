@@ -1,3 +1,8 @@
+# 2.1.0 (2019.8.5)
+- Add plugin system
+- Move flowchart and report as separate plugins
+- Add template function glob1
+
 # 2.0.0 (2019.6.28)
 - Change versioning back to semantic
 - Drop support for python <= 3.5

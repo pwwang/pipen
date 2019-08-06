@@ -3,7 +3,7 @@ Manage process relations
 """
 import traceback
 from collections import OrderedDict
-from .exception import ProcTreeProcExists, ProcTreeParseError, ProcHideError
+from .exception import ProcTreeProcExists, ProcTreeParseError#, ProcHideError
 
 class ProcNode(object):
 	"""@API
@@ -77,10 +77,10 @@ class ProcTree(object):
 					dnode.next.append(node)
 				if dnode not in node.prev:
 					node.prev.append(dnode)
-		for proc, node in ProcTree.NODES.items():
-			if proc.hide and len(node.prev) > 1 and len(node.next) > 1:
-				raise ProcHideError(node.proc, 'cannot be hidden in flowchart as '
-					'it has both more than 1 parents and children.')
+		# for proc, node in ProcTree.NODES.items():
+		# 	if proc.hide and len(node.prev) > 1 and len(node.next) > 1:
+		# 		raise ProcHideError(node.proc, 'cannot be hidden in flowchart as '
+		# 			'it has both more than 1 parents and children.')
 
 	@staticmethod
 	def register(*procs):
@@ -170,8 +170,8 @@ class ProcTree(object):
 		for node in ProcTree.NODES.values():
 			node.start = False
 		for start in starts:
-			if start.hide:
-				raise ProcHideError(start, 'start process cannot be hidden.')
+			# if start.hide:
+			# 	raise ProcHideError(start, 'start process cannot be hidden.')
 			ProcTree.NODES[start].start = True
 			self.starts.append(start)
 
@@ -185,7 +185,7 @@ class ProcTree(object):
 			self.starts = [proc for proc, node in ProcTree.NODES.items() if node.start]
 		return self.starts
 
-	def getPaths(self, proc, proc0 = None, check_hide = True):
+	def getPaths(self, proc, proc0 = None):
 		"""@API
 		Infer the path to a process
 		```
@@ -204,7 +204,7 @@ class ProcTree(object):
 		paths = []
 		# loop each prev node
 		for prevnode in node.prev:
-			# if we hide some nodes that being hit before
+			# if we hit some nodes that being hit before
 			if prevnode in proc0:
 				raise ProcTreeParseError(prevnode.proc, 'Loop dependency through')
 			# start nodes
@@ -213,18 +213,18 @@ class ProcTree(object):
 			# some nodes in-between
 			else:
 				# get the paths for prev node
-				apath = self.getPaths(prevnode, proc0 + [prevnode], check_hide = check_hide)
+				apath = self.getPaths(prevnode, proc0 + [prevnode])
 				# add prev node back to make it paths for current node
 				for pnode in apath:
-					if not prevnode.proc.hide or not check_hide:
-						pnode.insert(0, prevnode.proc)
+				# 	if not prevnode.proc.hide or not check_hide:
+					pnode.insert(0, prevnode.proc)
 			# add unique path to path set
 			for pnode in apath:
 				if pnode not in paths:
 					paths.append(pnode)
 		return paths
 
-	def getPathsToStarts(self, proc, check_hide = True):
+	def getPathsToStarts(self, proc):
 		"""@API
 		Filter the paths with start processes
 		@params:
@@ -233,7 +233,7 @@ class ProcTree(object):
 			(list[list]): The filtered path
 		"""
 		# get the full paths first
-		paths  = self.getPaths(proc, check_hide = check_hide)
+		paths  = self.getPaths(proc)
 		ret    = []
 		starts = self.getStarts()
 		for path in paths:
@@ -257,7 +257,7 @@ class ProcTree(object):
 		@returns:
 			(bool|list): `True` if all paths can pass, otherwise first failed path.
 		"""
-		paths  = self.getPaths(proc, check_hide = False)
+		paths  = self.getPaths(proc)
 		starts = set(self.getStarts())
 		for path in paths:
 			if not starts & set(path):
@@ -278,7 +278,7 @@ class ProcTree(object):
 		while nodes:
 			# check loops
 			for node in nodes:
-				self.getPaths(node, check_hide = False)
+				self.getPaths(node)
 
 			nodes2 = []
 			for node in nodes:
@@ -287,8 +287,8 @@ class ProcTree(object):
 					continue
 				passed = self.checkPath(node)
 				if passed is True and node.proc not in self.ends:
-					if node.proc.hide:
-						raise ProcHideError(node.proc, 'end process cannot be hidden.')
+					# if node.proc.hide:
+					# 	raise ProcHideError(node.proc, 'end process cannot be hidden.')
 					self.ends.append(node.proc)
 				elif passed is not True:
 					passed.insert(0, node.proc)
@@ -306,19 +306,16 @@ class ProcTree(object):
 				'Failed to determine end processes by start processes')
 		return self.ends
 
-	def getAllPaths(self, check_hide = True):
+	def getAllPaths(self):
 		"""@API
 		Get all paths of the pipeline, only used to be displayed in debug
-		So hide those hidden processes.
-		@params:
-			check_hide (bool): Whether check the hiding processes or not. Default: `True`
 		@yields:
-			(list[Proc]): The paths.
+			(list[Proc]): The paths (end to start).
 		"""
 		ret = set()
 		ends = self.getEnds()
 		for end in ends:
-			paths = self.getPathsToStarts(end, check_hide = check_hide)
+			paths = self.getPathsToStarts(end)
 			if not paths:
 				pnode = [end] # list is not hashable for set
 				pstr = str(pnode)
@@ -355,30 +352,4 @@ class ProcTree(object):
 				#ret.append(node.proc)
 		return None
 
-	# def unranProcs(self):
-	# 	"""@API
-	# 	Report the processes that won't run in a path can't be reached.
-	# 	Say start process not specified in that path.
-	# 	This is trying to alert people if they forget specify the start processes along those paths.
-	# 	@returns:
-	# 		(dict{procname: [path]}): The processes won't run.
-	# 	"""
-	# 	ret = {}
-	# 	starts = set(self.getStarts())
-	# 	for proc, node in ProcTree.NODES.items():
-	# 		# only check possible end process
-	# 		# and then report the paths can't be reached
-	# 		# - skip impossbile end proscess
-	# 		# - skip absolete processes
-	# 		# - skip those processes have run
-	# 		# - skip procsets
-	# 		if node.next or node.ran or (not node.prev and not node.next) or proc.procset:
-	# 			continue
-	# 		paths = self.getPaths(node, check_hide = False)
-	# 		# we should have paths, otherwise it's an absolete process
-	# 		for path in paths:
-	# 			if not (set(path) & starts):
-	# 				ret[proc.name()] = [pnode.name() for pnode in path]
-	# 				# just report one path
-	# 				break
-	# 	return ret
+
