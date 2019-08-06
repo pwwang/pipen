@@ -110,9 +110,9 @@ def registerPlugins(plugins, default_plugins = None):
 	default_plugins = default_plugins or []
 	# register 3rd-party plugins first, so that 3rd-party plugins have higher priorty
 	# Queue is FIFO
-
 	for plugin in default_plugins:
 		pluginmgr.register(__import__(plugin))
 	for plugin in plugins:
 		if plugin not in default_plugins:
 			pluginmgr.register(__import__(plugin))
+
