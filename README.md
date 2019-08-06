@@ -11,7 +11,9 @@
 - Process error handling.
 - Runner customization.
 - Running profile switching.
-- Pipeline flowchart.
+- Plugin system.
+- Pipeline flowchart (using plugin [pyppl-flowchart][22]).
+- Pipeline report (using plugin [pyppl-report][23]).
 
 ## Installation
 ```bash
@@ -116,7 +118,40 @@ PyPPL().start(pBamToFastq).flowchart().run()
 Then an SVG file endswith `.pyppl.svg` will be generated under current directory.
 Note that this function requires [Graphviz][13] and [graphviz for python][12].
 
+See plugin [details][22].
+
 ![flowchart][17]
+
+## Pipeline report
+See plugin [details][23]
+
+````python
+pPyClone.report = """
+## {{title}}
+
+PyClone[1] is a tool using Probabilistic model for inferring clonal population structure from deep NGS sequencing.
+
+![Similarity matrix]({{path.join(job.o.outdir, "plots/loci/similarity_matrix.svg")}})
+
+```table
+caption: Clusters
+file: "{{path.join(job.o.outdir, "tables/cluster.tsv")}}"
+rows: 10
+```
+
+[1]: Roth, Andrew, et al. "PyClone: statistical inference of clonal population structure in cancer." Nature methods 11.4 (2014): 396.
+"""
+
+# or use a template file
+
+pPyClone.report = "file:/path/to/template.md"
+````
+
+```python
+PyPPL().start(pPyClone).run().report('/path/to/report', title = 'Clonality analysis using PyClone')
+```
+
+![report][24]
 
 ## Full documentation
 [ReadTheDocs][1]
@@ -143,3 +178,6 @@ Note that this function requires [Graphviz][13] and [graphviz for python][12].
 [19]: https://img.shields.io/readthedocs/pyppl.svg?style=flat-square
 [20]: https://asciinema.org/a/Uiz6Wdo1buGCGPFd89bWiZzwn.svg?sanitize=true
 [21]: https://asciinema.org/a/Uiz6Wdo1buGCGPFd89bWiZzwn
+[22]: https://github.com/pwwang/pyppl-flowchart
+[23]: https://github.com/pwwang/pyppl-report
+[24]: https://pyppl-report.readthedocs.io/en/latest/snapshot.png

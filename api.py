@@ -2,6 +2,7 @@
 """
 Generate API docs for PyPPL
 """
+import sys
 import inspect
 import types
 import pyppl
@@ -118,6 +119,7 @@ class Klass(Member):
 
 def main():
 	for klass in Klass.allClasses():
+		sys.stderr.write("- Generating APIs for class: %s\n" % klass.name)
 		print('## class: %s' % klass.name)
 		print(klass.markdown())
 
