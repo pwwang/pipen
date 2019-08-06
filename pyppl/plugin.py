@@ -63,7 +63,7 @@ def procGetAttr(proc, name):
 
 @hookspec
 def procPreRun(proc):
-	"""After a process starts"""
+	"""Before a process starts"""
 
 @hookspec
 def procPostRun(proc):
@@ -75,7 +75,7 @@ def procFail(proc):
 
 @hookspec
 def pypplInit(ppl):
-	"""A set of functions run before all processes start"""
+	"""Right after a pipeline initiates"""
 
 @hookspec
 def pypplPreRun(ppl):
@@ -109,9 +109,10 @@ def registerPlugins(plugins, default_plugins = None):
 		return
 	default_plugins = default_plugins or []
 	# register 3rd-party plugins first, so that 3rd-party plugins have higher priorty
-	# Queue is LIFO
-	for plugin in reversed(plugins):
+	# Queue is FIFO
+
+	for plugin in default_plugins:
+		pluginmgr.register(__import__(plugin))
+	for plugin in plugins:
 		if plugin not in default_plugins:
 			pluginmgr.register(__import__(plugin))
-	for plugin in reversed(default_plugins):
-		pluginmgr.register(__import__(plugin))
