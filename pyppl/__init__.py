@@ -1,7 +1,7 @@
 """The main module of PyPPL"""
 # pylint: disable=protected-access,no-member
 
-__version__ = "2.1.0"
+__version__ = "2.1.1"
 
 # give random tips in the log
 import random
