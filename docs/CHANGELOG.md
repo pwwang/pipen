@@ -1,3 +1,6 @@
+# 2.1.1 (2019.8.8)
+- Drop proc.tplenvs, use proc.envs instead
+
 # 2.1.0 (2019.8.5)
 - Add plugin system
 - Move flowchart and report as separate plugins

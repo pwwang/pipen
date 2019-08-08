@@ -4,7 +4,7 @@ from pyppl import logger
 
 @hookimpl
 def setup(config):
-	config.tplenvs.plugin = 'test'
+	config.envs.plugin = 'test'
 	config['ptest'] = 0
 
 @prerun

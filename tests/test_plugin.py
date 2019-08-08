@@ -20,7 +20,7 @@ def teardown_module(module):
 	plugin.pluginmgr.unregister(pyppl_empty)
 	plugin.pluginmgr.unregister(pyppl_report)
 	plugin.pluginmgr.unregister(pyppl_flowchart)
-	config.tplenvs.clear()
+	config.envs.clear()
 
 def test_register():
 	assert plugin.pluginmgr.is_registered(pyppl_test)
