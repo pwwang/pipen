@@ -714,7 +714,6 @@ class Proc(Hashable):
 			if thetype not in Proc.OUT_DIRTYPE + Proc.OUT_FILETYPE + Proc.OUT_VARTYPE + \
 				Proc.OUT_STDOUTTYPE + Proc.OUT_STDERRTYPE:
 				raise ProcOutputError(thetype, 'Unknown output type')
-			print(outdata, self.envs, self.envs)
 			self.props.output[thekey] = (thetype, self.template(outdata, **self.envs))
 
 	def _buildScript(self):
