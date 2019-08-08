@@ -46,7 +46,6 @@ class Proc(Hashable):
 
 	# for future use, shortcuts
 	ALIAS = {
-		'envs'   : 'tplenvs',
 		'preCmd' : 'beforeCmd',
 		'postCmd': 'afterCmd'
 	}
@@ -112,8 +111,7 @@ class Proc(Hashable):
 		# 'resume' : Load data from previous run, resume pipeline
 		defaultconfig['resume'] = ''
 		# The template environment, keep process indenpendent, even for the subconfigs
-		defaultconfig['tplenvs'] = pycopy.deepcopy(
-			defaultconfig.get('envs', defaultconfig['tplenvs']))
+		defaultconfig['envs'] = pycopy.deepcopy(defaultconfig['envs'])
 
 		# The output channel of the process
 		self.props.channel = Channel.create()
@@ -252,7 +250,7 @@ class Proc(Hashable):
 					'Script file does not exist: %s' % scriptpath)
 			self.config[name] = "file:%s" % scriptpath
 
-		elif name == 'args' or name == 'tplenvs':
+		elif name == 'args' or name == 'envs':
 			self.config[name] = Box(value)
 
 		elif name == 'input' \
@@ -521,11 +519,11 @@ class Proc(Hashable):
 			#	self.props.cache = False
 
 			# expect
-			self.props.expect = self.template(self.config.expect, **self.tplenvs)
+			self.props.expect = self.template(self.config.expect, **self.envs)
 
 			# expart
 			expart = utils.alwaysList(self.config.expart)
-			self.props.expart = [self.template(e, **self.tplenvs) for e in expart]
+			self.props.expart = [self.template(e, **self.envs) for e in expart]
 
 			logger.debug('Properties set explictly: %s' % self.sets, proc = self.id)
 
@@ -636,7 +634,7 @@ class Proc(Hashable):
 		hide    = {'desc', 'id', 'sets', 'tag', 'suffix', 'workdir',
 			'input', 'output', 'depends', 'script'}
 		# keys should not be put in procvars for template rendering
-		nokeys  = {'tplenvs', 'input', 'output', 'depends', 'lock', 'jobs', 'args',
+		nokeys  = {'envs', 'input', 'output', 'depends', 'lock', 'jobs', 'args',
 				   '_log', '_flowchart', 'callback', 'callfront', 'channel', 'timer',
 				   'ncjobids', '_suffix'}
 		allkeys = set(self.props) | set(self.config) | {'size', 'suffix'}
@@ -716,8 +714,8 @@ class Proc(Hashable):
 			if thetype not in Proc.OUT_DIRTYPE + Proc.OUT_FILETYPE + Proc.OUT_VARTYPE + \
 				Proc.OUT_STDOUTTYPE + Proc.OUT_STDERRTYPE:
 				raise ProcOutputError(thetype, 'Unknown output type')
-
-			self.props.output[thekey] = (thetype, self.template(outdata, **self.tplenvs))
+			print(outdata, self.envs, self.envs)
+			self.props.output[thekey] = (thetype, self.template(outdata, **self.envs))
 
 	def _buildScript(self):
 		"""
@@ -753,7 +751,7 @@ class Proc(Hashable):
 			nlines.insert(0, '#!/usr/bin/env ' + str(self.lang))
 		nlines.append('')
 
-		self.props.script = self.template('\n'.join(nlines), **self.tplenvs)
+		self.props.script = self.template('\n'.join(nlines), **self.envs)
 
 	def _saveSettings(self):
 		"""
@@ -859,7 +857,7 @@ class Proc(Hashable):
 		if key in Proc.ALIAS:
 			key = Proc.ALIAS[key]
 
-		cmdstr = self.template(getattr(self, key), **self.tplenvs).render(self.procvars).strip()
+		cmdstr = self.template(getattr(self, key), **self.envs).render(self.procvars).strip()
 
 		if not cmdstr:
 			return

@@ -261,7 +261,7 @@ def profile(opts):
 		'args': {},
 		'sgeRunner': {},
 		'sshRunner': {},
-		'tplenvs': {}}
+		'envs': {}}
 
 	helps = Helps()
 	helps.add('Profile: "default"', sectype = 'plain')

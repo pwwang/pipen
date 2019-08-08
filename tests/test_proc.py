@@ -49,7 +49,7 @@ def test_proc_init(tmpdir):
 	assert p1.props._suffix == ''
 	assert p1.props.template == None
 	assert p1.props.timer == None
-	assert p1.config.tplenvs == {}
+	assert p1.config.envs == {}
 	assert p1.props.workdir == ''
 	assert p1.props.sets == set()
 

@@ -104,7 +104,7 @@ DEFAULT_CONFIG = dict(default = dict(
 	# The template engine (name)
 	template   = '',
 	# The template environment
-	tplenvs    = Box(),
+	envs       = Box(),
 	# working directory for the process
 	workdir    = ''
 ))
