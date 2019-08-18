@@ -200,7 +200,8 @@ class PyPPL (object):
 			logger.config('Read from %s', cfile)
 
 		for plgname, plugin in pluginmgr.list_name_plugin():
-			logger.plugin('Loaded %s: %s', plgname, plugin)
+			logger.plugin('Loaded %s: v%s', 
+				plgname, plugin.__version__ if hasattr(plugin, '__version__') else 'Unknown')
 
 		self.tree  = ProcTree()
 		# save the procs in order for plugin use
