@@ -1,7 +1,7 @@
 """The main module of PyPPL"""
 # pylint: disable=protected-access,no-member
 
-__version__ = "2.1.1"
+__version__ = "2.1.2"
 
 # give random tips in the log
 import random
@@ -200,7 +200,8 @@ class PyPPL (object):
 			logger.config('Read from %s', cfile)
 
 		for plgname, plugin in pluginmgr.list_name_plugin():
-			logger.plugin('Loaded %s: %s', plgname, plugin)
+			logger.plugin('Loaded %s: v%s', 
+				plgname, plugin.__version__ if hasattr(plugin, '__version__') else 'Unknown')
 
 		self.tree  = ProcTree()
 		# save the procs in order for plugin use

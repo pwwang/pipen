@@ -576,7 +576,7 @@ class Job(object):
 						return ''
 					ret.i[intype_files][key].append(sig)
 			else:
-				ret.i[intype_var][key] = data
+				ret.i[intype_var][key] = str(data)
 		for key, val in self.output.items():
 			(datatype, data) = val
 			if datatype in procclass.OUT_FILETYPE:

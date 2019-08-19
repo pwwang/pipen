@@ -65,6 +65,11 @@ def test_proc_getattr(tmpdir):
 	with pytest.raises(ProcAttributeError):
 		p2.x
 
+	# alias
+	p2.afterCmd = 'after cmd'
+
+	assert p2.postCmd == 'after cmd'
+
 	assert p2.id == 'p2'
 	assert p2.envs == {}
 

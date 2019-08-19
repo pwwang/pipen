@@ -30,8 +30,9 @@ class Box(_Box):
 
 	def __repr__(self):
 		"""Make sure repr can retrieve the object back"""
-		ret = 'Box(%r, box_intact_types = (list,))' % self.items()
-		return ret.replace('<BoxList: [', '[').replace(']>', ']')
+		ret = 'Box(%r)' % self.items()
+		#return ret.replace('<BoxList: [', '[').replace(']>', ']')
+		return ret
 
 	def __str__(self):
 		return super(Box, self).__repr__()
@@ -44,7 +45,7 @@ class OBox(Box):
 
 	def __repr__(self):
 		"""Make sure repr can retrieve the object back"""
-		return 'Box(%r, box_intact_types = (list,), ordered_box = True)' % self.items()
+		return 'OBox(%r)' % self.items()
 
 OrderedBox = OBox # pylint: disable=invalid-name
 

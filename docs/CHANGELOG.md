@@ -1,3 +1,7 @@
+# 2.1.2 (2019.8.19)
+- Save 'var' type of input as string to avoid error when reading it
+- Report plugin version in logger
+
 # 2.1.1 (2019.8.8)
 - Drop proc.tplenvs, use proc.envs instead
 
