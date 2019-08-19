@@ -20,9 +20,9 @@ def test_box_init(construct):
 
 @pytest.mark.box
 @pytest.mark.parametrize('construct,expect,strexpt', [
-	({}, "Box([], box_intact_types = (list,))", "<Box: {}>"),
+	({}, "Box([])", "<Box: {}>"),
 	([('a', 1), ('b', 2)],
-		"Box([('a', 1), ('b', 2)], box_intact_types = (list,))", "<Box: {'a': 1, 'b': 2}>"),
+		"Box([('a', 1), ('b', 2)])", "<Box: {'a': 1, 'b': 2}>"),
 ])
 def test_box_repr(construct, expect, strexpt):
 	assert repr(Box(construct)) == expect
@@ -51,8 +51,8 @@ def test_obox_init(construct):
 
 @pytest.mark.repr
 @pytest.mark.parametrize('construct,expect', [
-	({}, "Box([], box_intact_types = (list,), ordered_box = True)"),
-	([('b', 1), ('a', 2)], "Box([('b', 1), ('a', 2)], box_intact_types = (list,), ordered_box = True)"),
+	({}, "OBox([])"),
+	([('b', 1), ('a', 2)], "OBox([('b', 1), ('a', 2)])"),
 ])
 def test_obox_repr(construct,expect):
 	assert repr(OrderedBox(construct)) == expect
