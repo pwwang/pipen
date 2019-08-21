@@ -25,9 +25,9 @@ pluggy = "^0.12"
 colorama = "^0.4.1"
 psutil = "^5.6"
 transitions = "^0.6.0"
-python-box87 = "3.4.1"
-pyppl-report = "*"
-pyppl-flowchart = "*"
+python-box87 = "*"
+pyppl_report = "*"
+pyppl_flowchart = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"

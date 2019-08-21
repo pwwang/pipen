@@ -22,7 +22,7 @@ DEFAULT_CFGFILES = (
 
 DEFAULT_CONFIG = dict(default = dict(
 	# default plugins
-	_plugins = ['pyppl-report', 'pyppl-flowchart'],
+	_plugins = ['pyppl_report', 'pyppl_flowchart'],
 	# log options
 	_log = dict(
 		file       = None,
