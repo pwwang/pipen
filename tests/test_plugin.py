@@ -5,13 +5,13 @@ from pyppl import plugin, PyPPL, Proc, config, __version__
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-pyppl_test      = __import__('pyppl-test')
-pyppl_empty     = __import__('pyppl-empty')
-pyppl_report    = __import__('pyppl-report')
-pyppl_flowchart = __import__('pyppl-flowchart')
+pyppl_test      = __import__('pyppl_test')
+pyppl_empty     = __import__('pyppl_empty')
+pyppl_report    = __import__('pyppl_report')
+pyppl_flowchart = __import__('pyppl_flowchart')
 
 def setup_module(module):
-	plugin.registerPlugins(['pyppl-test', 'pyppl-empty'], ['pyppl-report', 'pyppl-flowchart'])
+	plugin.registerPlugins(['pyppl_test', 'pyppl_empty'], ['pyppl_report', 'pyppl_flowchart'])
 	plugin.pluginmgr.hook.setup(config = config)
 
 def teardown_module(module):

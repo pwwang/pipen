@@ -3,16 +3,16 @@
 You can use configurations to enable plugins:
 ```yaml
 default:
-	_plugins: ['pyppl-report', 'pyppl-flowchart']
+	_plugins: ['pyppl_report', 'pyppl_flowchart']
 ```
 
 Remember the plugins have to on the `$PYPHONPATH`.
 
-Order of plugin registering: FIFO. That means later registered plugin has higher prioity. In the above example, `pyppl-flowchart` has higher prioity. If they use the same `Proc` attribute, while with `__setattr__` and `__getattr__`, `pyppl-flowchart` will overwrite the one that has been set/get by `pyppl-report`.
+Order of plugin registering: FIFO. That means later registered plugin has higher prioity. In the above example, `pyppl_flowchart` has higher prioity. If they use the same `Proc` attribute, while with `__setattr__` and `__getattr__`, `pyppl_flowchart` will overwrite the one that has been set/get by `pyppl_report`.
 
 !!! hint
 
-	By default, we will have [`pyppl-report`](https://github.com/pwwang/pyppl-report) and [`pyppl-flowchart`](https://github.com/pwwang/pyppl-flowchart) enabled. However, if you want to disable all plugins, you can set `_plugins` with `None`. For example, you can use environment variable:
+	By default, we will have [`pyppl_report`](https://github.com/pwwang/pyppl_report) and [`pyppl_flowchart`](https://github.com/pwwang/pyppl_flowchart) enabled. However, if you want to disable all plugins, you can set `_plugins` with `None`. For example, you can use environment variable:
 	```shell
 	PYPPL_default__plugins="py:None" python your-pipeline.py
 	```

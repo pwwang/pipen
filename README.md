@@ -12,8 +12,8 @@
 - Runner customization.
 - Running profile switching.
 - Plugin system.
-- Pipeline flowchart (using plugin [pyppl-flowchart][22]).
-- Pipeline report (using plugin [pyppl-report][23]).
+- Pipeline flowchart (using plugin [pyppl_flowchart][22]).
+- Pipeline report (using plugin [pyppl_report][23]).
 
 ## Installation
 ```bash
@@ -178,6 +178,6 @@ PyPPL().start(pPyClone).run().report('/path/to/report', title = 'Clonality analy
 [19]: https://img.shields.io/readthedocs/pyppl.svg?style=flat-square
 [20]: https://asciinema.org/a/Uiz6Wdo1buGCGPFd89bWiZzwn.svg?sanitize=true
 [21]: https://asciinema.org/a/Uiz6Wdo1buGCGPFd89bWiZzwn
-[22]: https://github.com/pwwang/pyppl-flowchart
-[23]: https://github.com/pwwang/pyppl-report
-[24]: https://pyppl-report.readthedocs.io/en/latest/snapshot.png
+[22]: https://github.com/pwwang/pyppl_flowchart
+[23]: https://github.com/pwwang/pyppl_report
+[24]: https://pyppl_report.readthedocs.io/en/latest/snapshot.png

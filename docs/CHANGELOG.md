@@ -1,3 +1,6 @@
+# 2.1.3 (2019.8.21)
+- Rename plugins from pyppl-* to pyppl_* due to inability of dashes in entry_point
+
 # 2.1.2 (2019.8.19)
 - Save 'var' type of input as string to avoid error when reading it
 - Report plugin version in logger

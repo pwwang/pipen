@@ -11,7 +11,6 @@ install:
   - poetry install -v
   - pip install tox-travis
   - pip install codacy-coverage
-  - pip install -U python-box87
   - sudo apt-get install graphviz
 script:
   - pytest tests/
