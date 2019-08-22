@@ -7,16 +7,17 @@ matrix:
       dist: xenial
 before_install:
   - pip install poetry
+  - sudo apt-get install graphviz
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
 install:
   - poetry install -v
-  - pip install tox-travis
-  - pip install codacy-coverage
-  - sudo apt-get install graphviz
 script:
   - pytest tests/
 after_success: |
   if [ "$TRAVIS_PYTHON_VERSION" == "3.7" ]; then
-    python-codacy-coverage -r .coverage.xml
+    ./cc-test-reporter format-coverage .coverage.xml --input-type coverage.py
+    ./cc-test-reporter upload-coverage
   fi
 deploy:
   provider: script
