@@ -1,0 +1,10 @@
+engines:
+  bandit:
+    enabled: true
+    checks:
+      blacklist:
+        enabled: false
+      any_other_function_with_shell_equals_true:
+        enabled: false
+      assert_used:
+        enabled: false
