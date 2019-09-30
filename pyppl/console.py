@@ -99,7 +99,7 @@ def checkdate(value):
 	if not value:
 		value = '{today.year}-{today.month}-{today.day}'.format(today = date.today())
 	dateregx1 = r'^(0?[1-9]|1[012])/(0?[1-9]|[12][0-9])(?:/(\d{4}))?$'
-	dateregx2 = r'^(?:(\d{4})-)?(0?[1-9]|1[012])-(0?[1-9]|[12][0-9])$'
+	dateregx2 = r'^(?:(\d{4})-)?(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])$'
 	m1 = re.match(dateregx1, value)
 	if m1:
 		y = m1.group(3) or date.today().year
