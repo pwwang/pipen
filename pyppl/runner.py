@@ -223,7 +223,8 @@ class RunnerSge (Job):
 		parts = super().scriptParts
 
 		sge_n = self.config.get('sge.N', '%s.%s.%s.%s' % (
-			self.proc.id, self.proc.tag, self.proc.suffix, self.index + 1))
+			#                          fix @ not allowed in job names
+			self.proc.id, self.proc.tag.replace('@', '_'), self.proc.suffix, self.index + 1))
 		parts.header += '#$ -N %s\n' % self.proc.template(
 			sge_n, **self.proc.envs).render(self.data)
 		parts.header += '#$ -cwd\n'
