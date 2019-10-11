@@ -56,7 +56,7 @@ def test_wrapScript(job0, job1):
 	assert job0.script.read_text() == """#!/usr/bin/env bash
 #
 # Collect return code on exit
-trap "status=\\$?; echo \\$status > '{jobdir}/job.rc'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
+trap "status=\\$?; echo \\$status > '{jobdir}/job.rc'; if [ ! -e '{jobdir}/job.stdout' ]; then touch '{jobdir}/job.stdout'; fi; if [ ! -e '{jobdir}/job.stderr' ]; then touch '{jobdir}/job.stderr'; fi; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
 #
 # Run pre-script
 #
@@ -70,7 +70,7 @@ trap "status=\\$?; echo \\$status > '{jobdir}/job.rc'; exit \\$status" 1 2 3 6 7
 	assert job1.script.read_text() == """#!/usr/bin/env bash
 #
 # Collect return code on exit
-trap "status=\\$?; echo \\$status > '{jobdir}/job.rc'; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
+trap "status=\\$?; echo \\$status > '{jobdir}/job.rc'; if [ ! -e '{jobdir}/job.stdout' ]; then touch '{jobdir}/job.stdout'; fi; if [ ! -e '{jobdir}/job.stderr' ]; then touch '{jobdir}/job.stderr'; fi; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
 #
 # Run pre-script
 pre
