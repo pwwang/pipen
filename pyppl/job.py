@@ -158,7 +158,11 @@ class Job(object):
 		addsrc('#')
 		addsrc('# Collect return code on exit')
 
-		trapcmd = "status=\\$?; echo \\$status > %r; exit \\$status" % str(self.dir / FILE_RC)
+		trapcmd  = "status=\\$?; echo \\$status > {!r}; ".format(str(self.dir / FILE_RC))
+		# make sure stdout/err has been created when script exits.
+		trapcmd += "if [ ! -e {0!r} ]; then touch {0!r}; fi; ".format(str(self.dir / FILE_STDOUT))
+		trapcmd += "if [ ! -e {0!r} ]; then touch {0!r}; fi; ".format(str(self.dir / FILE_STDERR))
+		trapcmd += "exit \\$status"
 		addsrc('trap "%s" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % trapcmd)
 		addsrc('#')
 		addsrc('# Run pre-script')

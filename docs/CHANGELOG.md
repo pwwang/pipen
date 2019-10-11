@@ -1,3 +1,11 @@
+# 2.1.4 (2019.10.11)
+- Optimize CLI "pyppl list/clean" to show results immediately instead of loading all processes.
+- Fix CLI option "-before" validation.
+- Fix error when some objects cannot be deeply copied while coping a process.
+- Fix while @ in job names for sge runner.
+- Use TEMPDIR instead for _fsutil to avoid creating a subdirectory under it threading-unsafely.
+- Enhance if some SGE fails to generate stdout/err file.
+
 # 2.1.3 (2019.8.21)
 - Rename plugins from pyppl-* to pyppl_* due to inability of dashes in entry_point
 

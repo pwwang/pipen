@@ -27,8 +27,6 @@ commands.list.before.desc = [
 	'Before when the work directories to be removed.',
 	'Supported format: m/d, m-d, m/d/y and y-m-d'
 ]
-commands.list.all          = False
-commands.list.all.desc     = 'List all processes if # processes > 100.'
 commands.list.nocheck      = False
 commands.list.nocheck.desc = 'Don`t check failure of processes.'
 commands.list.error        = False
@@ -47,6 +45,8 @@ commands.clean.force        = False
 commands.clean.force.desc   = 'Don`t ask when remove work directories.'
 commands.clean.error        = commands.list.error
 commands.clean.wdir         = commands.list.wdir
+commands.clean.one          = False
+commands.clean.one.desc     = 'Just keep one process under a process group.'
 
 commands.compare            = 'compare two processes from different directories'
 commands.compare.proc       = 'The base process name to compare.'
@@ -98,7 +98,7 @@ def checkdate(value):
 	if not value:
 		value = '{today.year}-{today.month}-{today.day}'.format(today = date.today())
 	dateregx1 = r'^(0?[1-9]|1[012])/(0?[1-9]|[12][0-9])(?:/(\d{4}))?$'
-	dateregx2 = r'^(?:(\d{4})-)?(0?[1-9]|1[012])-(0?[1-9]|[12][0-9])$'
+	dateregx2 = r'^(?:(\d{4})-)?(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])$'
 	m1 = re.match(dateregx1, value)
 	if m1:
 		y = m1.group(3) or date.today().year
@@ -144,7 +144,7 @@ def proc_failed(proc):
 		if not path.basename(job).isdigit():
 			continue
 		rcfile = path.join(job, 'job.rc')
-		if not path.isfile(rcfile):
+		if not path.exists(rcfile):
 			return True
 		with open(rcfile) as f:
 			rc = f.read().strip()
@@ -153,29 +153,19 @@ def proc_failed(proc):
 	return False
 
 # list
-def list_procs(procs, listall, wdir):
-	if not procs:
-		streamout('WARNING: No process found in workdir: {}.'.format(wdir), 'yellow')
-		sys.exit(1)
-	if len(procs) > 100 and not listall:
-		streamout('WARNING: Got {} processes, listing first 100. Use -all to list all.'.format(len(procs)), 'yellow')
-		procs = procs[:100]
-	procgroups = {}
-	for proc, mtime, fail in procs:
-		pname = '.'.join(path.basename(proc).split('.')[1:3])
-		if pname not in procgroups:
-			procgroups[pname] = []
-		procgroups[pname].append((proc, mtime, fail))
+def list_procs(procs, wdir):
 
-	streamout('WORKDIR: {} ({} query processes)'.format(wdir, len(procs)), 'yellow')
-	for pname in sorted(procgroups.keys()):
-		streamout('\nPROCESS: {}'.format(pname))
-		for proc, mtime, fail in sorted(procgroups[pname], key = lambda p: p[1]):
-			streamout('{} {}: {}'.format(
-				'x' if fail else '-',
-				path.basename(proc),
-				mtime.strftime("%Y-%m-%d %H:%M:%S")
-			), 'red' if fail else 'green')
+	streamout('WORKDIR: {}'.format(wdir), 'yellow')
+	procname = None
+	n = 0
+	for proc, mtime, fail in procs:
+		n += 1
+		pname = '.'.join(path.basename(proc).split('.')[1:3])
+		if pname != procname:
+			procname = pname
+			streamout('\nPROCESS: {}'.format(pname))
+		show_proc(proc, mtime, fail)
+	streamout('\nTOTAL: {}'.format(n), 'white')
 
 def read_sections (sfile):
 	ret = {}
@@ -202,54 +192,50 @@ def compare_procs(proc1, proc2):
 	else:
 		streamout('ERROR: proc.settings.yaml of either processes not exists.', 'red')
 
-def remove_proc(proc, nthread = 1, msg = '', lock = None):
-	if msg:
-		if lock:
-			with lock:
-				streamout(msg)
-	#parallel.run(rmtree, [(d, ) for d in glob(path.join(proc, '*')) if path.isdir(d)], nthread, 'thread')
-	with ThreadPoolExecutor(max_workers = nthread) as executor:
-		for d in glob(path.join(proc, '*')):
-			if path.isdir(d):
-				executor.submit(fs.remove, d)
-	fs.remove(proc)
-
-def clean_procs(procs, nthread, force, wdir):
-	if not procs:
-		streamout('WARNING: No query processes found in workdir: {}.'.format(wdir), 'yellow')
-		sys.exit(1)
-
+def remove_proc(proc, nthread = 1, force = False):
 	if force:
-		lock = Lock()
-		lenprocs = len(procs)
+		streamout('  Removing ...', 'yellow')
 		with ThreadPoolExecutor(max_workers = nthread) as executor:
-			for i, procinfo in enumerate(procs):
-				executor.submit(remove_proc, procinfo[0], 1, 'Removeing [{}/{}]: {}'.format(i, lenprocs, procinfo[0]), lock)
-		#parallel.run(remove_proc, [(procinfo[0], 1, 'Removeing [{}/{}]: {}'.format(i, lenprocs, procinfo[0]), lock) for i, procinfo in enumerate(procs)], nthread, 'thread')
-	else:
-		procgroups = {}
-		for proc, mtime, fail in procs:
-			pname = '.'.join(path.basename(proc).split('.')[1:3])
-			if pname not in procgroups:
-				procgroups[pname] = []
-			procgroups[pname].append((proc, mtime, fail))
+			for d in glob(path.join(proc, '*')):
+				if path.isdir(d):
+					executor.submit(fs.remove, d)
+		try:
+			fs.remove(proc)
+			streamout('\x1b[1A  Removed!           ', 'yellow')
+		except Exception as ex:
+			#shutil.rmtree(proc)
+			streamout('\x1b[1A  Error: %s!           ' % ex, 'red')
 
-		ans = ['', 'Y', 'y', 'N', 'n']
-		streamout('WORKDIR: {} ({} query processes)'.format(wdir, len(procs)), 'yellow')
-		for pname in sorted(procgroups.keys()):
+	else:
+		r = input('  Remove it? [Y/n] ')
+		while r not in ('', 'Y', 'y', 'N', 'n'):
+			r = input('  Remove it? [Y/n] ')
+		if r in ['', 'Y', 'y']:
+			remove_proc(proc, nthread, True)
+
+def show_proc(proc, mtime, fail):
+	streamout('{} {}: {}'.format(
+		'x' if fail else '-',
+		path.basename(proc),
+		mtime.strftime("%Y-%m-%d %H:%M:%S")
+	), 'red' if fail else 'green')
+
+def clean_procs(procs, nthread, force, wdir, one):
+
+	#ans = ['', 'Y', 'y', 'N', 'n']
+	streamout('WORKDIR: {}'.format(wdir), 'yellow')
+	procname = None
+	for proc, mtime, fail in procs:
+		pname = '.'.join(path.basename(proc).split('.')[1:3])
+		if pname != procname:
+			procname = pname
 			streamout('\nPROCESS: {}'.format(pname))
-			for proc, mtime, fail in sorted(procgroups[pname], key = lambda p: p[1]):
-				streamout('{} {}: {}'.format(
-					'x' if fail else '-',
-					path.basename(proc),
-					mtime.strftime("%Y-%m-%d %H:%M:%S")
-				), 'red' if fail else 'green')
-				r = input('  Remove it? [Y/n] ')
-				while r not in ans:
-					r = input('  Remove it? [Y/n] ')
-				if r in ['', 'Y', 'y']:
-					remove_proc(proc, nthread)
-					streamout('\x1b[1A  Removed!           ', 'green')
+			show_proc(proc, mtime, fail)
+			if not one:
+				remove_proc(proc, nthread, force)
+		else:
+			show_proc(proc, mtime, fail)
+			remove_proc(proc, nthread, force)
 
 def profile(opts):
 	"""List avaiable running profiles"""
@@ -355,7 +341,11 @@ def getProcs(opts):
 	else:
 		pattern = path.join(opts.wdir, 'PyPPL.*')
 
-	procs   = glob(pattern)
+	procs   = sorted(glob(pattern))
+	if not procs:
+		streamout('WARNING: No query processes found in workdir: {}.'.format(opts.wdir), 'yellow')
+		sys.exit(1)
+
 	before  = None
 	if opts.ago:
 		before = date.today() - timedelta(days = opts.ago)
@@ -363,20 +353,18 @@ def getProcs(opts):
 	elif opts.before:
 		before = opts.before
 
-	procs2 = []
 	for proc in procs:
 		mtime = proc_mtime(proc)
 		if before and mtime >= before:
 			continue
 
 		if opts.nocheck:
-			procs2.append((proc, mtime, False))
+			yield (proc, mtime, False)
 		else:
 			fail = proc_failed(proc)
 			if opts.error and not fail:
 				continue
-			procs2.append((proc, mtime, fail))
-	return procs2
+			yield (proc, mtime, fail)
 
 def compare(opts):
 	if opts.proc:
@@ -409,12 +397,10 @@ def main():
 		command = 'profile'
 	if command == 'completions':
 		command = 'completion'
-	if command in ('clean', 'list'):
-		procs = getProcs(opts)
-		if command == 'clean':
-			clean_procs(procs, opts.nthread, opts.force, opts.wdir)
-		else:
-			list_procs(procs, opts.all, opts.wdir)
+	if command == 'clean':
+		clean_procs(getProcs(opts), opts.nthread, opts.force, opts.wdir, opts.one)
+	elif command == 'list':
+		list_procs(getProcs(opts), opts.wdir)
 	elif command == 'completion':
 		comp = commands._complete(shell = opts.s, auto = opts.a)
 		if not opts.a:

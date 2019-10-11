@@ -9,9 +9,11 @@ from filelock import FileLock
 import cmdy
 
 MULTILOCK = Lock()
-TMPDIR    = os.path.join(tempfile.gettempdir(), 'fsutil.locks')
-if not os.path.exists(TMPDIR): # pragma: no cover
-	os.makedirs(TMPDIR)
+TMPDIR    = tempfile.gettempdir()
+#TMPDIR   = os.path.join(tempfile.gettempdir(), 'fsutil.locks')
+## not threading-safe!!
+# if not os.path.exists(TMPDIR): # pragma: no cover
+# 	os.makedirs(TMPDIR)
 
 class TargetExistsError(OSError):
 	"""Raise when target exists and not able to overwrite"""

@@ -311,7 +311,13 @@ class Proc(Hashable):
 			elif key in ['workdir', 'resume']:
 				conf[key] = ''
 			elif isinstance(self.config[key], dict):
-				conf[key] = pycopy.deepcopy(self.config[key])
+				conf[key] = self.config[key].__class__()
+				for subkey, subval in self.config[key].items():
+					try:
+						# some objects cannot be deeply copied
+						conf[key][subkey] = pycopy.deepcopy(subval)
+					except TypeError:
+						conf[key][subkey] = subval
 			elif key == 'depends':
 				continue
 			else:
