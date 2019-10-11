@@ -1,7 +1,6 @@
 import sys
 import re
 import copy
-import shutil
 from os import path
 from glob import glob
 from pprint import pformat
@@ -223,7 +222,7 @@ def show_proc(proc, mtime, fail):
 
 def clean_procs(procs, nthread, force, wdir, one):
 
-	ans = ['', 'Y', 'y', 'N', 'n']
+	#ans = ['', 'Y', 'y', 'N', 'n']
 	streamout('WORKDIR: {}'.format(wdir), 'yellow')
 	procname = None
 	for proc, mtime, fail in procs:
