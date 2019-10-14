@@ -1,6 +1,6 @@
 """job module for PyPPL"""
 import re
-from os import path, utime
+from os import utime
 from pathlib import Path
 from datetime import datetime
 import yaml
@@ -332,7 +332,7 @@ class Job(object):
 				self.report()
 			self._prepScript()
 			# check cache
-			if self.isTrulyCached() or self.isExptCached():
+			if self.isTrulyCached() or self.isExptCached() or self.isForceCached():
 				return 'cached'
 			return True
 		except Exception as ex: # pylint: disable=bare-except
@@ -462,7 +462,7 @@ class Job(object):
 			#self.output[key] = {'type': outtype, 'data': outdata}
 			if outtype in procclass.OUT_FILETYPE + procclass.OUT_DIRTYPE + \
 				procclass.OUT_STDOUTTYPE + procclass.OUT_STDERRTYPE:
-				if path.isabs(outdata):
+				if Path(outdata).is_absolute():
 					raise JobOutputParseError(outdata,
 						'Absolute path not allowed for output file/dir for key %r' % key)
 				self.output[key] = (outtype, self.dir / DIR_OUTPUT / outdata)
@@ -825,6 +825,27 @@ class Job(object):
 		self.cache()
 		return True
 
+	def isForceCached(self):
+		"""@API
+		Force the job to be cached.
+		If the output was not generated in previous run, generate dry-run results for it.
+		"""
+		if self.proc.cache != 'force':
+			return False
+
+		procclass = self.proc.__class__
+		for outtype, outdata in self.output.values():
+			if outtype in procclass.OUT_VARTYPE:
+				continue
+			if outtype in procclass.OUT_FILETYPE and not fs.exists(outdata):
+				open(outdata, 'w').close()
+			elif outtype in procclass.OUT_DIRTYPE and not fs.exists(outdata):
+				fs.mkdir(outdata)
+
+		self.rc = 0
+		self.cache()
+		return True
+
 	def cache (self):
 		"""@API
 		Truly cache the job (by signature)
@@ -896,7 +917,7 @@ class Job(object):
 		Export the output files"""
 		if not self.proc.exdir:
 			return
-		assert path.exists(self.proc.exdir) and path.isdir(self.proc.exdir), \
+		assert fs.exists(self.proc.exdir) and fs.isdir(self.proc.exdir), \
 			'Export directory has to be a directory.'
 		assert isinstance(self.proc.expart, list)
 
@@ -921,7 +942,7 @@ class Job(object):
 		for file2ex in files2ex:
 			bname  = file2ex.name
 			# exported file
-			exfile = path.join(self.proc.exdir, bname)
+			exfile = str(Path(self.proc.exdir) / bname)
 			if self.proc.exhow in procclass.EX_GZIP:
 				exfile += '.tgz' if fs.isdir(file2ex) else '.gz'
 

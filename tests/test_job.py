@@ -591,6 +591,37 @@ def test_isexptcached(job0, tmpdir, caplog):
 	assert job0.isExptCached()
 	assert 'Overwrite file for export-caching: ' in caplog.text
 
+def test_isforcecached(job0, tmpdir):
+	job0.proc.cache = False
+	assert not job0.isForceCached()
+
+	job0.proc.cache = 'force'
+	outfile1 = tmpdir / 'test_isforcecached_outfile1.txt'
+	outfile1.write_text('forcecached')
+	outfile2 = tmpdir / 'test_isforcecached_outfile_not_exists.txt'
+	outdir1 = tmpdir / 'test_isforcecached_outdir1'
+	outdir1.mkdir()
+	outdir1file = tmpdir / 'test_isforcecached_outdir1' / 'odfile.txt'
+	outdir1file.write_text('odfile')
+	outdir2 = tmpdir / 'test_isforcecached_outdir_not_exists'
+	job0.output = OBox(
+		outfile1 = ('file', outfile1),
+		outfile2 = ('file', outfile2),
+		outdir1 = ('dir', outdir1),
+		outdir2 = ('dir', outdir2),
+		out = ('var', 'abc')
+	)
+
+	assert job0.isForceCached()
+	assert outfile1.is_file()
+	assert outfile1.read_text() == 'forcecached'
+	assert outfile2.is_file()
+	assert outdir1.is_dir()
+	assert outdir1file.is_file()
+	assert outdir1file.read_text() == 'odfile'
+	assert outdir2.is_dir()
+
+
 def test_build(job0, tmpdir, caplog):
 	job0.proc.input = {}
 	job0.proc.output = {}
