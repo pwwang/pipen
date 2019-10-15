@@ -316,7 +316,7 @@ class Proc(Hashable):
 					try:
 						# some objects cannot be deeply copied
 						conf[key][subkey] = pycopy.deepcopy(subval)
-					except TypeError:
+					except TypeError: # pragma: no cover
 						conf[key][subkey] = subval
 			elif key == 'depends':
 				continue
