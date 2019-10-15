@@ -319,21 +319,34 @@ class Job(object):
 			if not self.dir.exists():
 				self.dir.mkdir()
 
-			# preserve the outfile and errfile of previous run
-			# issue #30
-			if (self.dir / FILE_STDOUT).exists():
-				(self.dir / FILE_STDOUT).rename(self.dir / FILE_STDOUT_BAK)
-			if (self.dir / FILE_STDERR).exists():
-				(self.dir / FILE_STDERR).rename(self.dir / FILE_STDERR_BAK)
-
 			self._prepInput()
 			self._prepOutput()
 			if self.index == 0:
 				self.report()
 			self._prepScript()
 			# check cache
+			outfile     = self.dir / FILE_STDOUT
+			outfile_bak = self.dir / FILE_STDOUT_BAK
+			errfile     = self.dir / FILE_STDERR
+			errfile_bak = self.dir / FILE_STDERR_BAK
 			if self.isTrulyCached() or self.isExptCached() or self.isForceCached():
+				# we should get stdout/err file back, since job is cached,
+				# there is no way to generate new stdout/err,
+				# in case they are used somewhere later.
+				# we just link them back
+				if not fs.exists(outfile):
+					outfile.write_text('')
+				if not fs.exists(errfile):
+					errfile.write_text('')
 				return 'cached'
+
+			# preserve the outfile and errfile of previous run
+			# issue #30
+			if fs.exists(outfile):
+				fs.move(outfile, outfile_bak)
+			if fs.exists(errfile):
+				fs.move(errfile, errfile_bak)
+
 			return True
 		except Exception as ex: # pylint: disable=bare-except
 			self.logger('Failed to build job: %s' % ex, level = 'debug')
