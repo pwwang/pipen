@@ -1,22 +1,29 @@
 import sys
 import re
 import copy
+from io import StringIO
 from os import path
 from glob import glob
 from pprint import pformat
+from contextlib import redirect_stderr
 from datetime import date, timedelta, datetime
 from concurrent.futures import ThreadPoolExecutor
 import cmdy
 from colorama import Fore, Style
 from pyparam import commands, Helps, HelpAssembler
+from . import PyPPL
 from .utils import Box, config, fs
+from .plugin import pluginmgr
 
 HELP_ASSEMBLER = HelpAssembler()
+INITMSG        = StringIO()
+with redirect_stderr(INITMSG):
+	PyPPL()
 
-commands._prefix = '-'
-commands._desc   = 'PyPPL command line tool'
-
-commands._inherit    = True
+commands._prefix  = '-'
+commands._inherit = True
+commands._desc    = ['PyPPL Command Line Interface'] + \
+	['- ' + msg[0] + msg[22:] for msg in INITMSG.getvalue().splitlines()]
 
 commands.list             = 'list work directories under <wdir>'
 commands.list._hbald      = False
@@ -80,6 +87,8 @@ commands.completion.auto.desc = 'Whether automatically deploy the completion scr
 commands.completion.s = commands.completion.shell
 commands.completion.a = commands.completion.auto
 commands.completions  = commands.completion
+
+pluginmgr.hook.cliAddCommand(commands = commands)
 
 def subtractDict(bigger, smaller, prefix = ''):
 	"""Subtract a dict from another"""
@@ -405,5 +414,7 @@ def main():
 		comp = commands._complete(shell = opts.s, auto = opts.a)
 		if not opts.a:
 			print(comp)
-	else:
+	elif command in globals():
 		globals()[command](opts)
+	else:
+		pluginmgr.hook.cliExecCommand(command = command, opts = opts)
