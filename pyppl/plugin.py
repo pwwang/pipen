@@ -97,6 +97,14 @@ def jobPostRun(job):
 def jobFail(job):
 	"""A set of function run when job fails"""
 
+@hookspec
+def cliAddCommand(commands):
+	"""Add command and options to CLI"""
+
+@hookspec
+def cliExecCommand(command, opts):
+	"""Execute the command being added to CLI"""
+
 pluginmgr = pluggy.PluginManager(PMNAME)
 pluginmgr.add_hookspecs(sys.modules[__name__])
 pluginmgr.load_setuptools_entrypoints(PMNAME)
