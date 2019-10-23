@@ -1047,7 +1047,8 @@ class Job(object):
 		@returns:
 			(bool): `True` if succeeds else `False`"""
 		self.logger('Submitting the job ...', level = 'debug')
-		if self.isRunningImpl():
+		# If I am retrying, submit the job anyway.
+		if self.ntry == 0 and self.isRunningImpl():
 			self.logger('is already running at %s, skip submission.' %
 				self.pid, level = 'SBMTING')
 			return True
