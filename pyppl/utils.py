@@ -14,7 +14,6 @@ import cmdy
 from simpleconf import Config
 from . import _fsutil as fs
 
-cmdy   = cmdy(_raise = False) # pylint: disable=invalid-name,not-callable
 config = Config() # pylint: disable=invalid-name
 
 class Box(_Box):

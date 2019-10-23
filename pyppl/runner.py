@@ -6,8 +6,9 @@ import sys
 from os import getcwd
 from multiprocessing import Lock
 from psutil import pid_exists
+import cmdy
 from .job import Job, FILE_STDOUT, FILE_STDERR, DIR_OUTPUT, RC_ERROR_SUBMISSION
-from .utils import killtree, chmodX, cmdy, Box
+from .utils import killtree, chmodX, Box
 from .exception import RunnerSshError
 
 class RunnerLocal(Job):
@@ -85,7 +86,7 @@ class RunnerSsh(RunnerLocal):
 	"""
 	LIVE_SERVERS = None
 	LOCK         = Lock()
-	SSH          = cmdy.ssh.bake(_dupkey = True)
+	SSH          = cmdy.ssh.bake(_dupkey = True, _raise = False)
 
 	@staticmethod
 	def isServerAlive(server, key = None, timeout = 3, ssh = 'ssh'):
@@ -157,7 +158,7 @@ class RunnerSsh(RunnerLocal):
 			The `utils.cmd.Cmd` instance if succeed
 			else a `Box` object with stderr as the exception and rc as 1
 		"""
-		cmd = self.ssh(_ = cmdy.ls(self.script, _hold = True).cmd)
+		cmd = self.ssh(_ = cmdy.ls(self.script, _hold = True, _raise = False).cmd)
 		if cmd.rc != 0:
 			dbox        = Box()
 			dbox.rc     = RC_ERROR_SUBMISSION
@@ -178,9 +179,10 @@ class RunnerSsh(RunnerLocal):
 		Kill the job
 		"""
 		cmd = cmdy.python(
-			_exe = sys.executable,
-			c    = 'from pyppl.utils import killtree; killtree(%s, killme = True)' % self.pid,
-			_hold = True).cmd
+			c      = 'from pyppl.utils import killtree; killtree(%s, killme = True)' % self.pid,
+			_exe   = sys.executable,
+			_raise = False,
+			_hold  = True).cmd
 		self.ssh(_ = cmd)
 
 	def isRunningImpl(self):
@@ -193,10 +195,11 @@ class RunnerSsh(RunnerLocal):
 			return False
 
 		cmd = cmdy.python(
-			_exe  = sys.executable,
-			c     = 'from psutil import pid_exists; ' + \
+			c = 'from psutil import pid_exists; ' + \
 				'assert {pid} > 0 and pid_exists({pid})'.format(pid = self.pid),
-			_hold = True).cmd
+			_raise = False,
+			_exe   = sys.executable,
+			_hold  = True).cmd
 		return self.ssh(_ = cmd).rc == 0
 
 class RunnerSge (Job):
@@ -214,9 +217,9 @@ class RunnerSge (Job):
 		"""
 		super().__init__(index, proc)
 
-		self.qsub  = cmdy.qsub.bake(_exe  = self.config.get('qsub'))
-		self.qstat = cmdy.qstat.bake(_exe = self.config.get('qstat'))
-		self.qdel  = cmdy.qdel.bake(_exe  = self.config.get('qdel'))
+		self.qsub  = cmdy.qsub.bake(_exe  = self.config.get('qsub'), _raise = False)
+		self.qstat = cmdy.qstat.bake(_exe = self.config.get('qstat'), _raise = False)
+		self.qdel  = cmdy.qdel.bake(_exe  = self.config.get('qdel'), _raise = False)
 
 	@property
 	def scriptParts(self):
@@ -296,10 +299,10 @@ class RunnerSlurm (Job):
 		"""
 		super(RunnerSlurm, self).__init__(index, proc)
 
-		self.sbatch  = cmdy.sbatch.bake(_exe = self.config.get('sbatch'))
-		self.srun    = cmdy.srun.bake(_exe = self.config.get('srun'))
-		self.squeue  = cmdy.squeue.bake(_exe = self.config.get('squeue'))
-		self.scancel = cmdy.scancel.bake(_exe = self.config.get('scancel'))
+		self.sbatch  = cmdy.sbatch.bake(_exe = self.config.get('sbatch'), _raise = False)
+		self.srun    = cmdy.srun.bake(_exe = self.config.get('srun'), _raise = False)
+		self.squeue  = cmdy.squeue.bake(_exe = self.config.get('squeue'), _raise = False)
+		self.scancel = cmdy.scancel.bake(_exe = self.config.get('scancel'), _raise = False)
 
 	@property
 	def scriptParts(self):
