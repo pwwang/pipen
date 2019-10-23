@@ -656,6 +656,11 @@
 
 			- `(bool)`:  Whether the job is export-cached.
 
+	!!! abstract "method: `isForceCached (self)`"
+		Force the job to be cached.
+		If the output was not generated in previous run, generate dry-run results for it.
+		
+
 	!!! abstract "method: `isRunningImpl (self)`"
 		Implemetation of telling whether the job is running
 

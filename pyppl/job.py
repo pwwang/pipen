@@ -1,6 +1,6 @@
 """job module for PyPPL"""
 import re
-from os import path, utime
+from os import utime
 from pathlib import Path
 from datetime import datetime
 import yaml
@@ -319,21 +319,34 @@ class Job(object):
 			if not self.dir.exists():
 				self.dir.mkdir()
 
-			# preserve the outfile and errfile of previous run
-			# issue #30
-			if (self.dir / FILE_STDOUT).exists():
-				(self.dir / FILE_STDOUT).rename(self.dir / FILE_STDOUT_BAK)
-			if (self.dir / FILE_STDERR).exists():
-				(self.dir / FILE_STDERR).rename(self.dir / FILE_STDERR_BAK)
-
 			self._prepInput()
 			self._prepOutput()
 			if self.index == 0:
 				self.report()
 			self._prepScript()
 			# check cache
-			if self.isTrulyCached() or self.isExptCached():
+			outfile     = self.dir / FILE_STDOUT
+			outfile_bak = self.dir / FILE_STDOUT_BAK
+			errfile     = self.dir / FILE_STDERR
+			errfile_bak = self.dir / FILE_STDERR_BAK
+			if self.isTrulyCached() or self.isExptCached() or self.isForceCached():
+				# we should get stdout/err file back, since job is cached,
+				# there is no way to generate new stdout/err,
+				# in case they are used somewhere later.
+				# we just link them back
+				if not fs.exists(outfile):
+					outfile.write_text('')
+				if not fs.exists(errfile):
+					errfile.write_text('')
 				return 'cached'
+
+			# preserve the outfile and errfile of previous run
+			# issue #30
+			if fs.exists(outfile):
+				fs.move(outfile, outfile_bak)
+			if fs.exists(errfile):
+				fs.move(errfile, errfile_bak)
+
 			return True
 		except Exception as ex: # pylint: disable=bare-except
 			self.logger('Failed to build job: %s' % ex, level = 'debug')
@@ -462,7 +475,7 @@ class Job(object):
 			#self.output[key] = {'type': outtype, 'data': outdata}
 			if outtype in procclass.OUT_FILETYPE + procclass.OUT_DIRTYPE + \
 				procclass.OUT_STDOUTTYPE + procclass.OUT_STDERRTYPE:
-				if path.isabs(outdata):
+				if Path(outdata).is_absolute():
 					raise JobOutputParseError(outdata,
 						'Absolute path not allowed for output file/dir for key %r' % key)
 				self.output[key] = (outtype, self.dir / DIR_OUTPUT / outdata)
@@ -825,6 +838,27 @@ class Job(object):
 		self.cache()
 		return True
 
+	def isForceCached(self):
+		"""@API
+		Force the job to be cached.
+		If the output was not generated in previous run, generate dry-run results for it.
+		"""
+		if self.proc.cache != 'force':
+			return False
+
+		procclass = self.proc.__class__
+		for outtype, outdata in self.output.values():
+			if outtype in procclass.OUT_VARTYPE:
+				continue
+			if outtype in procclass.OUT_FILETYPE and not fs.exists(outdata):
+				open(outdata, 'w').close()
+			elif outtype in procclass.OUT_DIRTYPE and not fs.exists(outdata):
+				fs.mkdir(outdata)
+
+		self.rc = 0
+		self.cache()
+		return True
+
 	def cache (self):
 		"""@API
 		Truly cache the job (by signature)
@@ -896,7 +930,7 @@ class Job(object):
 		Export the output files"""
 		if not self.proc.exdir:
 			return
-		assert path.exists(self.proc.exdir) and path.isdir(self.proc.exdir), \
+		assert fs.exists(self.proc.exdir) and fs.isdir(self.proc.exdir), \
 			'Export directory has to be a directory.'
 		assert isinstance(self.proc.expart, list)
 
@@ -921,7 +955,7 @@ class Job(object):
 		for file2ex in files2ex:
 			bname  = file2ex.name
 			# exported file
-			exfile = path.join(self.proc.exdir, bname)
+			exfile = str(Path(self.proc.exdir) / bname)
 			if self.proc.exhow in procclass.EX_GZIP:
 				exfile += '.tgz' if fs.isdir(file2ex) else '.gz'
 
@@ -1013,7 +1047,8 @@ class Job(object):
 		@returns:
 			(bool): `True` if succeeds else `False`"""
 		self.logger('Submitting the job ...', level = 'debug')
-		if self.isRunningImpl():
+		# If I am retrying, submit the job anyway.
+		if self.ntry == 0 and self.isRunningImpl():
 			self.logger('is already running at %s, skip submission.' %
 				self.pid, level = 'SBMTING')
 			return True
