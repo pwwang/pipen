@@ -1,3 +1,8 @@
+# 2.2.0 (2019.10.23)
+- Add forced cache #78
+- Add CLI hooks for plugins
+- Fix job not submitting while retrying
+
 # 2.1.4 (2019.10.11)
 - Optimize CLI "pyppl list/clean" to show results immediately instead of loading all processes.
 - Fix CLI option "-before" validation.
