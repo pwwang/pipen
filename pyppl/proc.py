@@ -699,6 +699,9 @@ class Proc(Hashable):
 			for out in outlist:
 				outparts = utils.split(out, ':')
 				lenparts = len(outparts)
+				if not outparts[0].isidentifier():
+					raise ProcOutputError(out,
+						'Invalid output idnentifier {!r} in'.format(outparts[0]))
 				if lenparts < 2:
 					raise ProcOutputError(out,
 						'One of <key>:<type>:<value> missed for process output in')
