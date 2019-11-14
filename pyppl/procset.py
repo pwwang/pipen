@@ -210,7 +210,7 @@ class ProcSet(object):
 				for key, val in signature.parameters.items()
 				if val.default is not inspect.Parameter.empty}
 			def modfun(*args, **kwargs):
-				if defaults.get('restore', kwargs.get('restore', True)):
+				if kwargs.get('restore', defaults.get('restore', True)):
 					self.restoreStates()
 				func(self, *args, **kwargs)
 
