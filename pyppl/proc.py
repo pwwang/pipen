@@ -151,12 +151,17 @@ class Proc(Hashable):
 		self.props.timer = None
 		# The computed workdir
 		self.props.workdir = ''
+
+		# convert alias to its original name
+		for aliaskey, aliasval in Proc.ALIAS.items():
+			if aliaskey in kwargs:
+				kwargs[aliasval] = kwargs.pop(aliaskey)
+
 		# remember which property is set, then it will not be overwritten by configurations,
 		# do not put any values here because we want
 		# the kwargs to be overwritten by the configurations but keep the values set by:
 		# p.xxx           = xxx
-		self.props.sets = set()
-
+		self.props.sets = set(kwargs.keys())
 		# update the conf with kwargs
 		defaultconfig.update(dict(tag = tag, desc = desc, **kwargs))
 		# collapse the loading trace, we don't need it anymore.
@@ -670,6 +675,7 @@ class Proc(Hashable):
 				propout[key] = val
 			elif key not in nokeys:
 				procvars[key] = val
+
 		for key in sorted(propout):
 			logger.p_props('%s => %s' % (key.ljust(maxlen),
 					utils.formatDict(propout[key], keylen = maxlen, alias = alias.get(key))),

@@ -465,26 +465,27 @@ def fileflush(filed, residue, end = False):
 		residue = ''
 	return lines, residue
 
-def tryDeepCopy(obj):
+def tryDeepCopy(obj, _recurvise = True):
 	"""
 	Try do deepcopy an object. If fails, just do a shallow copy.
 	@params:
 		obj (any): The object
+		_recurvise (bool): A flag to avoid deep recursion
 	@returns:
 		The copied object
 	"""
-	if isinstance(obj, dict):
+	if _recurvise and isinstance(obj, dict):
 		# do a shallow copy first
 		# we don't start with an empty dictionary, because obj may be
 		# an object from a class extended from dict
 		ret = obj.copy()
 		for key, value in obj.items():
-			ret[key] = tryDeepCopy(value)
+			ret[key] = tryDeepCopy(value, False)
 		return ret
-	if isinstance(obj, list):
+	if _recurvise and isinstance(obj, list):
 		ret = obj[:]
 		for i, value in enumerate(obj):
-			ret[i] = tryDeepCopy(value)
+			ret[i] = tryDeepCopy(value, False)
 		return ret
 	try:
 		return deepcopy(obj)
