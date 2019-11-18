@@ -366,6 +366,9 @@ def test_buildoutput(tmpdir):
 	p12.output = 'a:b:c'
 	with pytest.raises(ProcOutputError):
 		p12._buildOutput()
+	p12.output = '1not.identifier:file'
+	with pytest.raises(ProcOutputError):
+		p12._buildOutput()
 	p12.output = 'a:1, b:file:infile'
 	p12.props.template = TemplateLiquid
 	p12._buildOutput()

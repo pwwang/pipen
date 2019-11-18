@@ -2,7 +2,6 @@
 proc module for PyPPL
 """
 import sys
-import copy as pycopy
 from pathlib import Path
 from time import time
 from collections import OrderedDict
@@ -111,7 +110,7 @@ class Proc(Hashable):
 		# 'resume' : Load data from previous run, resume pipeline
 		defaultconfig['resume'] = ''
 		# The template environment, keep process indenpendent, even for the subconfigs
-		defaultconfig['envs'] = pycopy.deepcopy(defaultconfig['envs'])
+		defaultconfig['envs'] = utils.tryDeepCopy(defaultconfig['envs'])
 
 		# The output channel of the process
 		self.props.channel = Channel.create()
@@ -311,13 +310,7 @@ class Proc(Hashable):
 			elif key in ['workdir', 'resume']:
 				conf[key] = ''
 			elif isinstance(self.config[key], dict):
-				conf[key] = self.config[key].__class__()
-				for subkey, subval in self.config[key].items():
-					try:
-						# some objects cannot be deeply copied
-						conf[key][subkey] = pycopy.deepcopy(subval)
-					except TypeError: # pragma: no cover
-						conf[key][subkey] = subval
+				conf[key] = utils.tryDeepCopy(self.config[key])
 			elif key == 'depends':
 				continue
 			else:
@@ -337,7 +330,7 @@ class Proc(Hashable):
 			elif key == 'sets':
 				props[key] = self.props[key].copy() | newsets
 			elif isinstance(self.props[key], dict):
-				props[key] = pycopy.deepcopy(self.props[key])
+				props[key] = utils.tryDeepCopy(self.props[key])
 			else:
 				props[key] = self.props[key]
 
@@ -405,7 +398,7 @@ class Proc(Hashable):
 		sigs.tag   = self.tag
 
 		if isinstance(self.config.input, dict):
-			sigs.input = pycopy.copy(self.config.input)
+			sigs.input = self.config.input.copy()
 			for key, val in self.config.input.items():
 				# lambda is not pickable
 				# convert others to string to make sure it's pickable. Issue #65
