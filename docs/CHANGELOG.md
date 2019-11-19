@@ -1,3 +1,10 @@
+# 2.3.0 (2019.11.18)
+- Add check for output names
+- Fix deepcopy problem in proc.copy
+- Remove template functions, as they are not necessary for the framework itself
+- Add keys in kwargs of Proc construct in sets
+- Fix other bugs
+
 # 2.2.0 (2019.10.23)
 - Add forced cache #78
 - Add CLI hooks for plugins
