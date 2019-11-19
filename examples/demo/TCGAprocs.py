@@ -1,4 +1,9 @@
+from os import path
 from pyppl import Proc
+
+def stem(filename):
+    return path.basename(filename).split('.')[0]
+
 pBamToFastq = Proc(desc = 'Convert bam files to fastq files.')
 pBamToFastq.input = 'infile:file'
 pBamToFastq.output = [
@@ -16,6 +21,7 @@ pBamToFastq.script = '''
 touch {{o.fq1}}
 touch {{o.fq2}}
 '''
+pBamToFastq.envs.stem = stem
 
 pAlignment = Proc(desc = 'Align reads to reference genome.')
 pAlignment.input = 'fq1:file, fq2:file'
@@ -26,6 +32,7 @@ pAlignment.script = '''
 #     samtools view -Shb -o {{o.bam}} -
 touch {{o.bam}}
 '''
+pAlignment.envs.stem = stem
 
 pBamSort = Proc(desc = 'Sort bam files.')
 pBamSort.input = 'inbam:file'
@@ -35,6 +42,7 @@ pBamSort.script = '''
 #     OUTPUT={{o.outbam}} SORT_ORDER=coordinate VALIDATION_STRINGENCY=STRICT
 touch {{o.outbam}}
 '''
+pBamSort.envs.basename = path.basename
 
 pBamMerge = Proc(desc = 'Merge bam files.')
 pBamMerge.input = 'inbam:file'
@@ -45,6 +53,7 @@ pBamMerge.script = '''
 #     SORT_ORDER=coordinate USE_THREADING=true VALIDATION_STRINGENCY=STRICT
 touch {{o.outbam}}
 '''
+pBamMerge.envs.basename = path.basename
 
 pMarkDups = Proc(desc = 'Mark duplicates.')
 pMarkDups.input = 'inbam:file'
@@ -54,3 +63,4 @@ pMarkDups.script = '''
 #     OUTPUT={{o.outbam}} VALIDATION_STRINGENCY=STRICT
 touch {{o.outbam}}
 '''
+pMarkDups.envs.basename = path.basename
