@@ -813,7 +813,8 @@ class Proc(Hashable):
 
 		config_with_profiles = utils.config.copy()
 		# make sure configs in __init__ be loaded
-		config_with_profiles._load({'default': dict.copy(self.config)})
+		# don't use default, which will overwrite utils.config.args, envs
+		config_with_profiles._load({'__self__': dict.copy(self.config)})
 
 		assert isinstance(config, type(self.config))
 		# load extra profiles specified to PyPPL()
@@ -1002,7 +1003,6 @@ class Proc(Hashable):
 		self._readConfig(profile, config)
 		if self.runner == 'dry':
 			self.config.cache = False
-
 		pluginmgr.hook.procPreRun(proc = self)
 		if self.resume == 'skip':
 			logger.skipped("Pipeline will resume from future processes.")
