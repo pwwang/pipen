@@ -4,7 +4,6 @@ Generate API docs for PyPPL
 """
 import sys
 import inspect
-import types
 import pyppl
 from pyppl.utils import OBox
 #from pyppl.flowchart import Flowchart

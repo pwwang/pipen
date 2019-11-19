@@ -1,3 +1,4 @@
+python ./api.py
 ## class: PyPPL
 
 !!! example "class: `PyPPL (self, conf, cfgfile)`"
