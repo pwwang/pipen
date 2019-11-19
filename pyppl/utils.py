@@ -3,6 +3,7 @@ A set of utitities for PyPPL
 """
 import re
 import inspect
+from copy import deepcopy
 from queue import PriorityQueue
 from os import path, walk, sep as pathsep
 from hashlib import md5
@@ -14,7 +15,6 @@ import cmdy
 from simpleconf import Config
 from . import _fsutil as fs
 
-cmdy   = cmdy(_raise = False) # pylint: disable=invalid-name,not-callable
 config = Config() # pylint: disable=invalid-name
 
 class Box(_Box):
@@ -464,6 +464,33 @@ def fileflush(filed, residue, end = False):
 		lines.append(residue + '\n')
 		residue = ''
 	return lines, residue
+
+def tryDeepCopy(obj, _recurvise = True):
+	"""
+	Try do deepcopy an object. If fails, just do a shallow copy.
+	@params:
+		obj (any): The object
+		_recurvise (bool): A flag to avoid deep recursion
+	@returns:
+		The copied object
+	"""
+	if _recurvise and isinstance(obj, dict):
+		# do a shallow copy first
+		# we don't start with an empty dictionary, because obj may be
+		# an object from a class extended from dict
+		ret = obj.copy()
+		for key, value in obj.items():
+			ret[key] = tryDeepCopy(value, False)
+		return ret
+	if _recurvise and isinstance(obj, list):
+		ret = obj[:]
+		for i, value in enumerate(obj):
+			ret[i] = tryDeepCopy(value, False)
+		return ret
+	try:
+		return deepcopy(obj)
+	except TypeError:
+		return obj
 
 class ThreadEx(Thread):
 	"""

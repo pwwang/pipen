@@ -1,10 +1,222 @@
 import pytest
+import inspect
+import json
 from pathlib import Path
+from glob import glob
+from os import path, readlink
 from liquid import Liquid, LiquidRenderError
 from collections import OrderedDict
 from pyppl.template import Template, TemplateJinja2, TemplateLiquid
+from pyppl.utils import Box, OBox
 
 HERE = Path(__file__).resolve().parent
+
+class _TemplateFilter(object):
+	"""
+	A set of builtin filters
+	"""
+
+	@staticmethod
+	def read(var):
+		"""Read the contents from a file"""
+		with open(var) as fvar:
+			return fvar.read()
+
+	@staticmethod
+	def readlines(var, skip_empty_lines = True):
+		"""Read the lines from a file"""
+		ret = []
+		with open(var) as fvar:
+			for line in fvar:
+				line = line.rstrip('\n\r')
+				if not line and skip_empty_lines:
+					continue
+				ret.append(line)
+		return ret
+
+	@staticmethod
+	def basename(var, orig = False):
+		"""Get the basename of a path"""
+		bname = path.basename(var)
+		if orig or not bname.startswith('['):
+			return bname
+
+		return bname[bname.find(']')+1:]
+
+	@staticmethod
+	def filename(var, orig = False, dot = -1):
+		"""
+		Return the stem of the basename (stripping extension(s))
+		@params:
+			`var`: The path
+			`orig`: If the path is a renamed file (like: `origin[1].txt`),
+				- whether return its original filename or the parsed filename (`origin.txt`)
+			`dot`: Strip to which dot.
+				- `-1`: the last one
+				- `-2`: the 2nd last one ...
+				- `1` : remove all dots.
+		"""
+		bname = _TemplateFilter.basename(var, orig)
+		if '.' not in bname:
+			return bname
+		return '.'.join(bname.split('.')[0:dot])
+
+	@staticmethod
+	def prefix(var, orig = False, dot = -1):
+		"""Get the prefix part of a path"""
+		return path.join(path.dirname(var), _TemplateFilter.filename(var, orig, dot))
+
+	# pylint: disable=invalid-name,too-many-return-statements
+	@staticmethod
+	def R(var, ignoreintkey = True):
+		"""Convert a value into R values"""
+		if var is True:
+			return 'TRUE'
+		if var is False:
+			return 'FALSE'
+		if var is None:
+			return 'NULL'
+		if isinstance(var, str):
+			if var.upper() in ['+INF', 'INF']:
+				return 'Inf'
+			if var.upper() == '-INF':
+				return '-Inf'
+			if var.upper() == 'TRUE':
+				return 'TRUE'
+			if var.upper() == 'FALSE':
+				return 'FALSE'
+			if var.upper() == 'NA' or var.upper() == 'NULL':
+				return var
+			if var.startswith('r:') or var.startswith('R:'):
+				return str(var)[2:]
+			return repr(str(var))
+		if isinstance(var, Path):
+			return repr(str(var))
+		if isinstance(var, (list, tuple, set)):
+			return 'c({})'.format(','.join([_TemplateFilter.R(i) for i in var]))
+		if isinstance(var, dict):
+			# list allow repeated names
+			return 'list({})'.format(','.join([
+				'`{0}`={1}'.format(
+					k,
+					_TemplateFilter.R(v)) if isinstance(k, int) and not ignoreintkey else \
+					_TemplateFilter.R(v) if isinstance(k, int) and ignoreintkey else \
+					'`{0}`={1}'.format(str(k).split('#')[0], _TemplateFilter.R(v))
+				for k, v in sorted(var.items())]))
+		return repr(var)
+
+	@staticmethod
+	def Rlist(var, ignoreintkey = True): # pylint: disable=invalid-name
+		"""Convert a dict into an R list"""
+		assert isinstance(var, (list, tuple, set, dict))
+		if isinstance(var, dict):
+			return _TemplateFilter.R(var, ignoreintkey)
+		return 'as.list({})'.format(_TemplateFilter.R(var, ignoreintkey))
+
+	@staticmethod
+	def render(var, data = None):
+		"""
+		Render a template variable, using the shared environment
+		"""
+		if not isinstance(var, str):
+			return var
+		frames = inspect.getouterframes(inspect.currentframe())
+		data   = data or {}
+		for frame in frames:
+			lvars = frame[0].f_locals
+			if lvars.get('__engine') == 'liquid':
+				evars = lvars.get('_liquid_context', {})
+				if 'true' in evars:
+					del evars['true']
+				if 'false' in evars:
+					del evars['false']
+				if 'nil' in evars:
+					del evars['nil']
+				if '_liquid_liquid_filters' in evars:
+					del evars['_liquid_liquid_filters']
+				break
+			if '_Context__self' in lvars:
+				evars = dict(lvars['_Context__self'])
+				break
+
+		engine = evars.get('__engine')
+		if not engine:
+			raise RuntimeError(
+				"I don't know which template engine to use to render {}...".format(var[:10]))
+
+		engine = TemplateJinja2 if engine == 'jinja2' else TemplateLiquid
+		return engine(var, **evars).render(data)
+
+	@staticmethod
+	def box(var):
+		"""
+		Turn a dict into a Box object
+		"""
+		if not isinstance(var, dict):
+			raise TypeError('Cannot coerce non-dict object to Box.')
+		return 'Box(%r)' % var.items()
+
+	@staticmethod
+	def obox(var):
+		"""
+		Turn a dict into an ordered Box object
+		"""
+		if not isinstance(var, dict):
+			raise TypeError('Cannot coerce non-dict object to OrderedBox.')
+		return 'OBox(%r)' % var.items()
+
+	@staticmethod
+	def glob1(*paths, first = True):
+		"""
+		Return the paths matches the paths
+		"""
+		ret = glob(path.join(*paths))
+		if ret and first:
+			return ret[0]
+		if not ret and first:
+			return '__NoNeXiStFiLe__'
+		return ret
+
+@pytest.fixture
+def default_envs():
+	return {
+		'Box'      : Box,
+		'OBox'     : OBox,
+		'R'        : _TemplateFilter.R,
+		'Rvec'     : _TemplateFilter.R, # will be deprecated!
+		'Rlist'    : _TemplateFilter.Rlist,
+		'realpath' : path.realpath,
+		'readlink' : readlink,
+		'dirname'  : path.dirname,
+		# /a/b/c[1].txt => c.txt
+		'basename' : _TemplateFilter.basename,
+		'bn'       : _TemplateFilter.basename,
+		'box'      : _TemplateFilter.box,
+		'obox'     : _TemplateFilter.obox,
+		'stem'     : _TemplateFilter.filename,
+		'filename' : _TemplateFilter.filename,
+		'fn'       : _TemplateFilter.filename,
+		# /a/b/c.d.e.txt => c
+		'filename2': lambda var, orig = False, dot = 1: _TemplateFilter.filename(var, orig, dot),
+		'fn2'      : lambda var, orig = False, dot = 1: _TemplateFilter.filename(var, orig, dot),
+		# /a/b/c.txt => .txt
+		'ext'      : lambda var: path.splitext(var)[1],
+		'glob1'    : _TemplateFilter.glob1,
+		# /a/b/c[1].txt => /a/b/c
+		'prefix'   : _TemplateFilter.prefix,
+		# /a/b/c.d.e.txt => /a/b/c
+		'prefix2'  : lambda var, orig = False, dot = 1: _TemplateFilter.prefix(var, orig, dot),
+		'quote'    : lambda var: json.dumps(str(var)),
+		'squote'   : repr,
+		'json'     : json.dumps,
+		'read'     : _TemplateFilter.read,
+		'readlines': _TemplateFilter.readlines,
+		'render'   : _TemplateFilter.render,
+		# single quote of all elements of an array
+		'asquote'  : lambda var: '''%s''' % (" " .join([json.dumps(str(e)) for e in var])),
+		# double quote of all elements of an array
+		'acquote'  : lambda var: """%s""" % (", ".join([json.dumps(str(e)) for e in var]))
+	}
 
 def installed(module):
 	try:
@@ -92,21 +304,16 @@ class TestTemplateLiquid:
 				['>>>'])
 
 	@pytest.mark.parametrize('source, data, out', [
-		("""
+		("""{% mode compact %}
 		whatever
-		{% if a in b %}
+		{%- if a in b -%}
 		{{a}}
-		{% else %}
+		{%- else -%}
 			{% for x in y %}
-			{{x}}
+			{{x-}}
 			{% endfor %}
 		{% endif %}
-		""", {'b': 'abc', 'a': 'd', 'y': [1,2,3]}, """
-		whatever
-			1
-			2
-			3
-		"""),
+		""", {'b': 'abc', 'a': 'd', 'y': [1,2,3]}, """		whatever123"""),
 
 		('{% python from pathlib import Path %}{{Path("/a/b/c") | R}}', {}, "'/a/b/c'"),
 		('{{True | R}}', {}, 'TRUE'),
@@ -119,38 +326,38 @@ class TestTemplateLiquid:
 		('{{ {0:1} | Rlist}}', {}, 'list(1)'),
 		('{{ {0:1} | Rlist: False}}', {}, 'list(`0`=1)'),
 		('{{x | render}}', {'x': '{{i}}', 'i': 2}, '2'),
-		('{{x | lambda a, render = render:render(a[0])}}', {'x': ('{{i}}', 1), 'i': 2}, '2'),
+		#('{{x | lambda a, render = render:render(a[0])}}', {'x': ('{{i}}', 1), 'i': 2}, '2'),
 		('{{glob1(here, "test_template.py")}}', {'here': HERE}, str(Path(__file__).resolve())),
 		('{{glob1(here, "test_template_not_exists.py")}}', {'here': HERE}, '__NoNeXiStFiLe__'),
 		('{{glob1(here, "test_template.py", first = False)[0]}}', {'here': HERE}, str(Path(__file__).resolve())),
 	])
-	def testRender(self, source, data, out):
-		tpl = TemplateLiquid(source)
+	def testRender(self, source, data, out, default_envs):
+		tpl = TemplateLiquid(source, **default_envs)
 		assert tpl.render(data) == out
 
-	def test_readlines_skip_empty(self, tmp_path):
+	def test_readlines_skip_empty(self, tmp_path, default_envs):
 		tmpfile = tmp_path / 'test_readlines_skip_empty.txt'
 		tmpfile.write_text("a\n\nb\n")
-		assert TemplateLiquid('{{readlines(a) | @join: "."}}').render({'a': tmpfile}) == "a.b"
-		assert TemplateLiquid('{{readlines(a, False) | @join: "."}}').render({'a': tmpfile}) == "a..b"
+		assert TemplateLiquid('{{readlines(a) | @join: "."}}', **default_envs).render({'a': tmpfile}) == "a.b"
+		assert TemplateLiquid('{{readlines(a, False) | @join: "."}}', **default_envs).render({'a': tmpfile}) == "a..b"
 
-	def test_filename_no_ext(self):
-		assert TemplateLiquid('{{a|fn}}').render({'a': 'abc'}) == "abc"
+	def test_filename_no_ext(self, default_envs):
+		assert TemplateLiquid('{{a|fn}}', **default_envs).render({'a': 'abc'}) == "abc"
 
-	def test_render_func(self):
-		assert TemplateLiquid('{{x | render}}').render({'x': '{{i}}', 'i': 2}) == '2'
-		assert TemplateLiquid('{{x | render}}').render({'x': [], 'i': 2}) == '[]'
-		liquid = TemplateLiquid('{{x | render}}')
+	def test_render_func(self, default_envs):
+		assert TemplateLiquid('{{x | render}}', **default_envs).render({'x': '{{i}}', 'i': 2}) == '2'
+		assert TemplateLiquid('{{x | render}}', **default_envs).render({'x': [], 'i': 2}) == '[]'
+		liquid = TemplateLiquid('{{x | render}}', **default_envs)
 		with pytest.raises(LiquidRenderError):
 			liquid.render({'x': '', '__engine': None})
 
-	def test_box(self):
+	def test_box(self, default_envs):
 		with pytest.raises(LiquidRenderError):
-			TemplateLiquid('{{x|box}}').render({'x': []})
+			TemplateLiquid('{{x|box}}', **default_envs).render({'x': []})
 		with pytest.raises(LiquidRenderError):
-			TemplateLiquid('{{x|obox}}').render({'x': []})
-		TemplateLiquid('{{x|box}}').render({'x': {}}) == {}
-		TemplateLiquid('{{x|obox}}').render({'x': {}}) == {}
+			TemplateLiquid('{{x|obox}}', **default_envs).render({'x': []})
+		TemplateLiquid('{{x|box}}', **default_envs).render({'x': {}}) == {}
+		TemplateLiquid('{{x|obox}}', **default_envs).render({'x': {}}) == {}
 
 
 @pytest.mark.skipif(not installed('jinja2'), reason = 'Jinja2 is not installed')
@@ -247,7 +454,7 @@ class TestTemplateJinja2:
 		('{{render(x)}}', {'x': '{{i}}', 'i': 2}, '2'),
 		('{{render(x[0])}}', {'x': ('{{i}}', 1), 'i': 2}, '2'),
 	])
-	def testRender(self, s, e, out):
-		t = TemplateJinja2(s)
+	def testRender(self, s, e, out, default_envs):
+		t = TemplateJinja2(s, **default_envs)
 		assert t.render(e) == out
 

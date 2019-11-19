@@ -1004,7 +1004,7 @@ class Job(object):
 		if expect_cmd:
 			self.logger('Check expectation: %s' % expect_cmd,
 				dlevel = "EXPECT_CHECKING", level = 'debug')
-			cmd = cmdy.bash(c = expect_cmd) # pylint: disable=no-member
+			cmd = cmdy.bash(c = expect_cmd, _raise = False) # pylint: disable=no-member
 			if cmd.rc != 0:
 				self.rc += (1 << RCBIT_UNMET_EXPECT)
 				pluginmgr.hook.jobFail(job = self)

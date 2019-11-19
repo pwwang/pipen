@@ -4,7 +4,8 @@ import psutil
 from faker import Faker
 from pyppl.utils import Box, OrderedBox, split, funcsig, uid, formatSecs, alwaysList, \
 	briefList, briefPath, killtree, chmodX, filesig, fileflush, ThreadEx, ThreadPool, \
-	PQueue, Hashable, MultiDestTransition, StateMachine, varname, expandNumbers, formatDict
+	PQueue, Hashable, MultiDestTransition, StateMachine, varname, expandNumbers, formatDict, \
+	tryDeepCopy
 # load fixtures
 pytest_plugins = ["tests.fixt_utils"]
 
@@ -312,3 +313,28 @@ def test_expandNumbers(numbers, expt):
 ])
 def test_formatDict(val, keylen, alias, expt):
 	assert formatDict(val, keylen, alias) == expt
+
+@pytest.mark.parametrize('val,expt,asserts', [
+	(None, None, ['is']),
+	(1, 1, ['is']),
+	(sys, sys, ['is']),
+	([1, sys, [1]], [1, sys, [1]], [(0, 'is'), (1, 'is'), (2, '=')]),
+	({'a': sys, 'b': [1]}, {'a': sys, 'b': [1]}, [('a', 'is'), ('b', '=')])
+])
+def test_trydeepcopy(val, expt, asserts):
+	copied = tryDeepCopy(val)
+
+	for ast in asserts:
+		if ast == '=':
+			assert copied == val
+			assert copied is not val
+		elif ast == 'is':
+			assert copied is val
+		else:
+			key, eq = ast
+			if eq == '=':
+				assert copied[key] == val[key]
+				assert copied[key] is not val[key]
+			else:
+				assert copied[key] is val[key]
+
