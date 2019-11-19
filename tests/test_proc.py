@@ -21,7 +21,7 @@ def tmpdir(tmpdir):
 	return Path(tmpdir)
 
 def test_proc_init(tmpdir):
-	p1 = Proc(id = 'p1', tag = 'tag', desc = 'desc')
+	p1 = Proc(id = 'p1', tag = 'tag', desc = 'desc', preCmd = 'ls')
 	assert p1.config.id == 'p1'
 	assert p1.config.args == {}
 	assert p1.config.callfront == None
@@ -51,7 +51,7 @@ def test_proc_init(tmpdir):
 	assert p1.props.timer == None
 	assert p1.config.envs == {}
 	assert p1.props.workdir == ''
-	assert p1.props.sets == set()
+	assert p1.props.sets == set(['beforeCmd'])
 
 	with pytest.raises(ProcTagError):
 		Proc(tag = 'a b')
