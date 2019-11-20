@@ -9,6 +9,8 @@ import random
 import sys
 # any2proc
 import fnmatch
+# log process name
+import textwrap
 
 from pathlib import Path
 from time import time
@@ -329,18 +331,18 @@ class PyPPL (object):
 		timer = time()
 
 		pluginmgr.hook.pypplPreRun(ppl = self)
-		proc = self.tree.getNextToRun()
+		proc      = self.tree.getNextToRun()
+		total_len = 80
 		while proc:
-			if proc.origin != proc.id:
-				name = '{} ({}): {}'.format(proc.name(True), proc.origin, proc.desc)
-			else:
-				name = '{}: {}'.format(proc.name(True), proc.desc)
-			#nlen = max(85, len(name) + 3)
-			#logger.logger.info ('[PROCESS] +' + '-'*(nlen-3) + '+')
-			#logger.logger.info ('[PROCESS] |%s%s|' % (name, ' '*(nlen - 3 - len(name))))
-			decorlen = max(80, len(name))
+			name = proc.name(True)
+			name += ': ' if proc.origin == proc.id else f' ({proc.origin}):'
+
+			lines = textwrap.wrap(name + proc.desc, total_len,
+				subsequent_indent = ' ' * len(name))
+			decorlen = max(total_len, max(len(line) for line in lines))
 			logger.process ('-' * decorlen)
-			logger.process (name)
+			for line in lines:
+				logger.process (line)
 			logger.process ('-' * decorlen)
 			logger.depends (
 				'%s => %s => %s',
