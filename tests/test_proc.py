@@ -59,6 +59,9 @@ def test_proc_init(tmpdir):
 	with pytest.raises(ProcAttributeError):
 		Proc(depends = 1)
 
+	with pytest.raises(ProcAttributeError):
+		Proc(xxx = 1)
+
 def test_proc_getattr(tmpdir):
 	p2 = Proc()
 

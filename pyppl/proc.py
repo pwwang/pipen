@@ -87,9 +87,9 @@ class Proc(Hashable):
 		defaultconfig['id'] = id if id else utils.varname()
 		if ' ' in tag:
 			raise ProcTagError("No space allowed in tag.")
-		if 'depends' in kwargs:
-			raise ProcAttributeError("Attribute 'depends' has to be set using `__setattr__`")
 
+		defaultconfig['tag'] = tag
+		defaultconfig['desc'] = desc
 		# The extra arguments for the process
 		defaultconfig['args'] = dict.copy(defaultconfig['args'])
 		# The callfront function of the process
@@ -151,21 +151,25 @@ class Proc(Hashable):
 		self.props.timer = None
 		# The computed workdir
 		self.props.workdir = ''
+		# Remember the attr being set, they have the highest priority
+		self.props.sets = set()
 
 		# convert alias to its original name
 		for aliaskey, aliasval in Proc.ALIAS.items():
 			if aliaskey in kwargs:
 				kwargs[aliasval] = kwargs.pop(aliaskey)
 
-		# remember which property is set, then it will not be overwritten by configurations,
-		# do not put any values here because we want
-		# the kwargs to be overwritten by the configurations but keep the values set by:
-		# p.xxx           = xxx
-		self.props.sets = set(kwargs.keys())
+		for key in kwargs:
+			if key not in defaultconfig:
+				raise ProcAttributeError(key)
+
 		# update the conf with kwargs
-		defaultconfig.update(dict(tag = tag, desc = desc, **kwargs))
+		defaultconfig.update(kwargs)
 		# collapse the loading trace, we don't need it anymore.
 		self.config._load({'default': defaultconfig})
+		for key, val in kwargs.items():
+			if key[0] != '_':
+				setattr(self, key, val)
 
 	def __getattr__(self, name):
 		"""
@@ -176,9 +180,9 @@ class Proc(Hashable):
 		@returns:
 			The value of the property
 		"""
-		if not name in self.props \
-			and not name in self.config \
-			and not name in Proc.ALIAS \
+		if name not in self.props \
+			and name not in self.config \
+			and name not in Proc.ALIAS \
 			and not name.endswith ('Runner'):
 			raise ProcAttributeError(name)
 
@@ -200,7 +204,8 @@ class Proc(Hashable):
 			`name` : The name of the property.
 			`value`: The new value of the property.
 		"""
-		if not name in self.config and not name in Proc.ALIAS and not name.endswith ('Runner'):
+		if name not in self.config and name not in Proc.ALIAS \
+			and not name.endswith ('Runner'):
 			raise ProcAttributeError(name, 'Cannot set attribute for process')
 
 		# profile will be deprecated, use runner instead
@@ -247,6 +252,8 @@ class Proc(Hashable):
 			if not scriptpath.is_absolute():
 				from inspect import getframeinfo, stack
 				caller = getframeinfo(stack()[1][0])
+				if path.samefile(__file__, caller.filename):
+					caller = getframeinfo(stack()[2][0])
 				scriptdir = Path(caller.filename).parent.resolve()
 				scriptpath = scriptdir / scriptpath
 			if not scriptpath.is_file():
