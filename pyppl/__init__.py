@@ -119,15 +119,15 @@ pluginmgr.hook.setup(config = config)
 # pylint: disable=wrong-import-position
 from .logger import logger
 from .procset import ProcSet, Proxy
-from .proc import Proc
 from .job import Job
 from .jobmgr import Jobmgr
 from .channel import Channel
+from .proc import Proc
 from .proctree import ProcTree
 from .exception import PyPPLProcRelationError, RunnerClassNameError
 from . import utils, runner
 
-class PyPPL (object):
+class PyPPL:
 	"""@API
 	The PyPPL class
 
@@ -189,7 +189,7 @@ class PyPPL (object):
 				if cfile == cfgfile:
 					logger.warning('Configuration file does not exist: %s', cfile)
 				continue
-			elif cfile.suffix in ('.yaml', 'yml'):
+			if cfile.suffix in ('.yaml', 'yml'):
 				try:
 					import yaml # pylint: disable=W0611
 				except ImportError: # pragma: no cover

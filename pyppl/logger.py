@@ -143,7 +143,7 @@ DEBUG_LINES = {
 	'JOB_RESETTING'                : -1
 }
 
-class Theme(object):
+class Theme: # pylint: disable=too-few-public-methods
 	"""
 	The theme for the logger
 	"""
@@ -264,7 +264,7 @@ class StreamHandler(logging.StreamHandler):
 			if pbarlog:
 				self._emit(pbarlog, '\r')
 
-class StreamFilter(logging.Filter):
+class StreamFilter(logging.Filter): # pylint: disable=too-few-public-methods
 	"""
 	Logging filter for stream (sys.stderr)
 	"""
@@ -308,7 +308,7 @@ class StreamFilter(logging.Filter):
 			record.msg += ", further information will be ignored."
 		return True
 
-class FileFilter(StreamFilter):
+class FileFilter(StreamFilter): # pylint: disable=too-few-public-methods
 	"""
 	Logging filter for file
 	"""
@@ -333,7 +333,7 @@ class FileFormatter(logging.Formatter):
 			return self.ansiRegex.sub('', record.formatted)
 		return super(FileFormatter, self).format(record)
 
-class Logger(object):
+class Logger:
 	"""@API
 	A wrapper of logger
 	"""

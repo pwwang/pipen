@@ -123,4 +123,3 @@ def registerPlugins(plugins, default_plugins = None):
 	for plugin in plugins:
 		if plugin not in default_plugins:
 			pluginmgr.register(__import__(plugin))
-

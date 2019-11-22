@@ -8,7 +8,7 @@ from os import path
 from glob import glob
 from . import utils
 
-class Channel(list):
+class Channel(list): # pylint: disable=too-many-public-methods
 	"""@API
 	The channen class, extended from `list`
 	"""

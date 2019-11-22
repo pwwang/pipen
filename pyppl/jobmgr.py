@@ -64,7 +64,7 @@ PBAR_LEVEL = {
 	STATES.KILLFAILED   : 'KILLING',
 }
 
-class Jobmgr(object):
+class Jobmgr:
 	"""@API
 	Job manager"""
 
@@ -97,7 +97,7 @@ class Jobmgr(object):
 		for job in jobs:
 			self.queue.put(job.index)
 
-		self.pbar_size = self.proc.config._log.get('pbar', 50)
+		self.pbarSize = self.proc.config._log.get('pbar', 50)
 
 		# switch state from init to building
 		machine.add_transition(
@@ -194,16 +194,16 @@ class Jobmgr(object):
 	def _distributeJobsToPbar(self):
 		joblen      = len(self.jobs)
 		index_bjobs = []
-		if joblen <= self.pbar_size:
-			div, mod = divmod(self.pbar_size, joblen)
+		if joblen <= self.pbarSize:
+			div, mod = divmod(self.pbarSize, joblen)
 			for j in range(joblen):
 				step = div + 1 if j < mod else div
 				for _ in range(step):
 					index_bjobs.append([j])
 		else:
 			jobx = 0
-			div, mod = divmod(joblen, self.pbar_size)
-			for i in range(self.pbar_size):
+			div, mod = divmod(joblen, self.pbarSize)
+			for i in range(self.pbarSize):
 				step = div + 1 if i < mod else div
 				index_bjobs.append([jobx + jobstep for jobstep in range(step)])
 				jobx += step
@@ -293,12 +293,12 @@ class Jobmgr(object):
 				JobFailException, JobBuildingException, KeyboardInterrupt)):
 				raise ex from None
 
-			pluginmgr.hook.procFail(proc = self.jobs[0].proc)
+			pluginmgr.hook.procFail(proc = self.jobs[0].proc) # pylint: disable=no-member
 			sys.exit(1)
 
 
 	@classmethod
-	def killWorker(self, killq):
+	def killWorker(cls, killq):
 		"""@API
 		The killing worker to kill the jobs"""
 		while not killq.empty():

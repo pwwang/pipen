@@ -195,6 +195,6 @@ def test_start_all_running(job_done, jobindex_reset, forks, caplog):
 ]) # len(jobs_all) == 8
 def test_distributejobstopbar(jobs_all, pbarsize, expect):
 	jm = Jobmgr(jobs_all)
-	jm.pbar_size = pbarsize
+	jm.pbarSize = pbarsize
 	assert jm._distributeJobsToPbar() == expect
 
