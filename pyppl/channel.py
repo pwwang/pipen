@@ -508,7 +508,7 @@ class Channel(list): # pylint: disable=too-many-public-methods
 		"""
 		rows = []
 		for row in self:
-			if not row in rows:
+			if row not in rows:
 				rows.append(row)
 		return Channel(rows)
 

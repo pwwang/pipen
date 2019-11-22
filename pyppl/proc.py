@@ -501,7 +501,7 @@ class Proc(Hashable):
 			else:
 				self.props.echo = Box(self.config.echo)
 
-			if not 'jobs' in self.echo:
+			if 'jobs' not in self.echo:
 				self.echo['jobs'] = 0
 			if isinstance(self.echo['jobs'], int):
 				self.echo['jobs'] = [self.echo['jobs']]
@@ -510,7 +510,7 @@ class Proc(Hashable):
 			else:
 				self.echo['jobs'] = list(self.echo['jobs'])
 
-			if not 'type' in self.echo or self.echo['type'] == 'all':
+			if 'type' not in self.echo or self.echo['type'] == 'all':
 				self.echo['type'] = {'stderr': None, 'stdout': None}
 			if not isinstance(self.echo['type'], dict):
 				# must be a string, either stderr or stdout
