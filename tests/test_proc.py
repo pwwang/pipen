@@ -243,7 +243,7 @@ def test_buildprops(tmpdir):
 	p9.echo = False
 	p9._buildProps()
 	assert p9.template is TemplateLiquid
-	assert p9.rc == [1]
+	assert p9.rc == [1, 0]
 	assert Path(p9.workdir) == Path(p9.ppldir) / ('PyPPL.p89.notag.%s' % p9.suffix)
 	assert p9.echo == dict(jobs=[], type=dict(stderr=None, stdout=None))
 

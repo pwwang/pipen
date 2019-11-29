@@ -1,8 +1,9 @@
 import pytest
-
+from pathlib import Path
 from os import environ, utime
 environ['PYPPL_default__log'] = "py:{'levels': 'all'}"
-from pyppl.job import Job, JobInputParseError, JobOutputParseError, RC_NO_RCFILE
+from pyppl.job import Job, JobInputParseError, JobOutputParseError, \
+	RC_NO_RCFILE, DIR_OUTPUT, FILE_STDERR, FILE_STDOUT
 from pyppl.utils import fs, Box, OBox, filesig
 from pyppl.template import TemplateLiquid
 pytest_plugins = ["tests.fixt_job"]
@@ -306,6 +307,7 @@ def test_signature(job0, tmpdir, caplog):
 		infile = ('file', infile),
 		infiles = ('files', [infile])
 	)
+	job0._signature = None
 	assert job0.signature().i == {
 		'var': {'invar': 'abc'},
 		'file': {'infile': filesig(infile)},
@@ -316,6 +318,7 @@ def test_signature(job0, tmpdir, caplog):
 		invar = ('var', 'abc'),
 		infile = ('file', infile1)
 	)
+	job0._signature = None
 	assert job0.signature() == ''
 	assert 'Empty signature because of input file' in caplog.text
 
@@ -323,6 +326,7 @@ def test_signature(job0, tmpdir, caplog):
 		invar = ('var', 'abc'),
 		infiles = ('files', [infile1])
 	)
+	job0._signature = None
 	assert job0.signature() == ''
 	assert 'Empty signature because of one of input files' in caplog.text
 
@@ -338,6 +342,7 @@ def test_signature(job0, tmpdir, caplog):
 		outfile = ('file', outfile),
 		outdir = ('dir', outdir)
 	)
+	job0._signature = None
 	assert job0.signature().o == {
 		'var': {'out': 'abc'},
 		'file': {'outfile': filesig(outfile)},
@@ -347,12 +352,14 @@ def test_signature(job0, tmpdir, caplog):
 	job0.output = OBox(
 		outfile = ('file', outfile1)
 	)
+	job0._signature = None
 	assert job0.signature() == ''
 	assert 'Empty signature because of output file:' in caplog.text
 
 	job0.output = OBox(
 		outdir = ('dir', outdir1)
 	)
+	job0._signature = None
 	assert job0.signature() == ''
 	assert 'Empty signature because of output dir:' in caplog.text
 
@@ -413,44 +420,104 @@ def test_comparefiles(job0, caplog):
 		'key', '', 'unlimited')
 	assert 'Not cached because file 1 is newer for key [files:key]: val' in caplog.text
 
+def test_issignaturevalid(job0, tmpdir, caplog):
+	scriptfile = job0.dir / 'job.script'
+	cachefile  = job0.dir / 'job.cache'
+	fs.mkdir(job0.dir / DIR_OUTPUT)
+	job0.rc = 0
+	assert not job0._isSignatureValid('')
+
+	outfile1 = tmpdir / 'test_issignaturevalid_out1.txt'
+	outfile1.write_text('')
+	job0.output = {'outfile': ('file', outfile1)}
+	job0._signature = None
+	job0.signature()
+	fs.remove(outfile1)
+	assert not job0._isSignatureValid()
+	assert 'Outfile (o.outfile) not exists:' in caplog.text
+	caplog.clear()
+
+	outfile1.write_text('')
+	job0._signature = None
+	assert job0._isSignatureValid()
+
+	utime(outfile1, (100, 100))
+	job0._signature = None
+	assert not job0._isSignatureValid()
+	assert 'Script file is newer than output file' in caplog.text
+	caplog.clear()
+
+	infile1 = tmpdir / 'test_issignaturevalid_in1.txt'
+	infile1.write_text('')
+	outfile1.write_text('')
+	job0._signature = None
+	job0.input = {'infile': ('file', infile1)}
+	job0.signature()
+	fs.remove(infile1)
+	assert not job0._isSignatureValid()
+	assert 'Infile (i.infile) not exists' in caplog.text
+	caplog.clear()
+
+	Path(job0.script).write_text('')
+	infile1.write_text('')
+	job0._signature = None
+	job0.signature()
+	utime(outfile1, (job0._signature.script[1] + 100, ) * 2)
+	utime(infile1, (job0._signature.script[1] + 200, ) * 2)
+	job0._signature = None
+	assert not job0._isSignatureValid()
+	assert 'Infile (i.infile) is newer than output file:' in caplog.text
+	caplog.clear()
+
+
 def test_istrulycached(job0, tmpdir, caplog):
 	scriptfile = job0.dir / 'job.script'
 	cachefile  = job0.dir / 'job.cache'
+	fs.mkdir(job0.dir / DIR_OUTPUT)
+	job0.rc = 0
 
 	job0.proc.cache = False
+	job0._signature = None
 	job0.cache()
 	assert not job0.isTrulyCached()
 
 	job0.proc.cache = True
+	job0._signature = None
 	assert not job0.isTrulyCached()
 	assert 'Not cached as cache file not exists.' in caplog.text
 
 	cachefile.write_text('')
+	job0._signature = None
 	assert not job0.isTrulyCached()
 	assert 'Not cached because previous signature is empty.' in caplog.text
 
 	job0.input = {}
 	job0.output = {}
 	fs.remove(scriptfile)
-	cachefile.write_text('a=1')
+	cachefile.write_text('')
+	job0._signature = None
 	assert not job0.isTrulyCached()
-	assert 'Not cached because current signature is empty.' in caplog.text
+	assert 'Empty signature because of script file' in caplog.text
 
 	# CACHE_SCRIPT_NEWER
 	scriptfile.write_text('')
 	mtime = scriptfile.stat().st_mtime
 	utime(scriptfile, (mtime - 10, mtime - 10))
+	job0._signature = None
 	job0.cache()
 	utime(scriptfile, (mtime, mtime))
 	caplog.clear()
+	job0._signature = None
 	assert not job0.isTrulyCached()
 	assert 'Not cached because script file(script) is newer' in caplog.text
 
 	# CACHE_SIGINVAR_DIFF
 	job0.input = {'in': ('var', 'abc')}
+	job0._signature = None
 	job0.cache()
 	job0.input = {'in': ('var', 'abc1')}
 	caplog.clear()
+	job0._signature = None
 	assert not job0.isTrulyCached()
 	assert 'Not cached because input variable(in) is different' in caplog.text
 
@@ -460,24 +527,30 @@ def test_istrulycached(job0, tmpdir, caplog):
 	infile1.write_text('')
 	infile2.write_text('')
 	job0.input = {'infile': ('file', infile1)}
+	job0._signature = None
 	job0.cache()
 	job0.input = {'infile': ('file', infile2)}
 	caplog.clear()
+	job0._signature = None
 	assert not job0.isTrulyCached()
 	assert 'Not cached because input file(infile) is different:' in caplog.text
 
 	# CACHE_SIGINFILE_NEWER
+	job0._signature = None
 	job0.cache()
 	utime(infile2, (mtime+100, mtime+100))
 	caplog.clear()
+	job0._signature = None
 	assert not job0.isTrulyCached()
 	assert 'Not cached because input file(infile) is newer: ' in caplog.text
 
 	# CACHE_SIGINFILES_DIFF
 	job0.input = {'infiles': ('files', [infile1])}
+	job0._signature = None
 	job0.cache()
 	job0.input = {'infiles': ('files', [infile1, infile2])}
 	caplog.clear()
+	job0._signature = None
 	assert not job0.isTrulyCached()
 	assert 'Not cached because lengths are different for input [files:infiles]:' in caplog.text
 
@@ -485,15 +558,18 @@ def test_istrulycached(job0, tmpdir, caplog):
 	job0.cache()
 	utime(infile2, (mtime+200, mtime+200))
 	caplog.clear()
+	job0._signature = None
 	assert not job0.isTrulyCached()
 	assert 'Not cached because file 2 is newer for input [files:infiles]:' in caplog.text
 
 	# CACHE_SIGOUTVAR_DIFF
 	job0.input = {}
 	job0.output = {'out': ('var', 'abc')}
+	job0._signature = None
 	job0.cache()
 	job0.output = {'out': ('var', 'abc1')}
 	caplog.clear()
+	job0._signature = None
 	assert not job0.isTrulyCached()
 	assert 'Not cached because output variable(out) is different' in caplog.text
 
@@ -503,9 +579,11 @@ def test_istrulycached(job0, tmpdir, caplog):
 	outfile1.write_text('')
 	outfile2.write_text('')
 	job0.output = {'outfile': ('file', outfile1)}
+	job0._signature = None
 	job0.cache()
 	job0.output = {'outfile': ('file', outfile2)}
 	caplog.clear()
+	job0._signature = None
 	assert not job0.isTrulyCached()
 	assert 'Not cached because output file(outfile) is different:' in caplog.text
 
@@ -515,14 +593,27 @@ def test_istrulycached(job0, tmpdir, caplog):
 	outdir1.mkdir()
 	outdir2.mkdir()
 	job0.output = {'outdir': ('dir', outdir1)}
+	job0._signature = None
 	job0.cache()
 	job0.output = {'outdir': ('dir', outdir2)}
 	caplog.clear()
+	job0._signature = None
 	assert not job0.isTrulyCached()
 	assert 'Not cached because output dir(outdir) is different:' in caplog.text
 
+	job0._signature = None
 	job0.cache()
 	assert job0.isTrulyCached()
+
+	fs.remove(job0.dir / 'job.cache') # even without cache file
+	assert job0.isTrulyCached()
+	caplog.clear()
+
+	job0.cache() # create cache file
+	fs.remove(job0.dir / 'job.script')
+	job0._signature = ''
+	assert not job0.isTrulyCached()
+
 
 def test_isexptcached(job0, tmpdir, caplog):
 	job0.proc.cache = False
@@ -591,35 +682,35 @@ def test_isexptcached(job0, tmpdir, caplog):
 	assert job0.isExptCached()
 	assert 'Overwrite file for export-caching: ' in caplog.text
 
-def test_isforcecached(job0, tmpdir):
-	job0.proc.cache = False
-	assert not job0.isForceCached()
+# def test_isforcecached(job0, tmpdir):
+# 	job0.proc.cache = False
+# 	assert not job0.isForceCached()
 
-	job0.proc.cache = 'force'
-	outfile1 = tmpdir / 'test_isforcecached_outfile1.txt'
-	outfile1.write_text('forcecached')
-	outfile2 = tmpdir / 'test_isforcecached_outfile_not_exists.txt'
-	outdir1 = tmpdir / 'test_isforcecached_outdir1'
-	outdir1.mkdir()
-	outdir1file = tmpdir / 'test_isforcecached_outdir1' / 'odfile.txt'
-	outdir1file.write_text('odfile')
-	outdir2 = tmpdir / 'test_isforcecached_outdir_not_exists'
-	job0.output = OBox(
-		outfile1 = ('file', outfile1),
-		outfile2 = ('file', outfile2),
-		outdir1 = ('dir', outdir1),
-		outdir2 = ('dir', outdir2),
-		out = ('var', 'abc')
-	)
+# 	job0.proc.cache = 'force'
+# 	outfile1 = tmpdir / 'test_isforcecached_outfile1.txt'
+# 	outfile1.write_text('forcecached')
+# 	outfile2 = tmpdir / 'test_isforcecached_outfile_not_exists.txt'
+# 	outdir1 = tmpdir / 'test_isforcecached_outdir1'
+# 	outdir1.mkdir()
+# 	outdir1file = tmpdir / 'test_isforcecached_outdir1' / 'odfile.txt'
+# 	outdir1file.write_text('odfile')
+# 	outdir2 = tmpdir / 'test_isforcecached_outdir_not_exists'
+# 	job0.output = OBox(
+# 		outfile1 = ('file', outfile1),
+# 		outfile2 = ('file', outfile2),
+# 		outdir1 = ('dir', outdir1),
+# 		outdir2 = ('dir', outdir2),
+# 		out = ('var', 'abc')
+# 	)
 
-	assert job0.isForceCached()
-	assert outfile1.is_file()
-	assert outfile1.read_text() == 'forcecached'
-	assert outfile2.is_file()
-	assert outdir1.is_dir()
-	assert outdir1file.is_file()
-	assert outdir1file.read_text() == 'odfile'
-	assert outdir2.is_dir()
+# 	assert job0.isForceCached()
+# 	assert outfile1.is_file()
+# 	assert outfile1.read_text() == 'forcecached'
+# 	assert outfile2.is_file()
+# 	assert outdir1.is_dir()
+# 	assert outdir1file.is_file()
+# 	assert outdir1file.read_text() == 'odfile'
+# 	assert outdir2.is_dir()
 
 
 def test_build(job0, tmpdir, caplog):
@@ -638,7 +729,17 @@ def test_build(job0, tmpdir, caplog):
 	assert job0.build()
 	assert fs.exists(job0.dir / 'job.stdout.bak')
 	assert fs.exists(job0.dir / 'job.stderr.bak')
+	fs.remove(job0.dir / FILE_STDERR)
+	fs.remove(job0.dir / FILE_STDOUT)
+	job0._signature = None
+	job0.rc = 0
+	job0.cache()
+	assert job0.build()
+	assert fs.isfile(job0.dir / FILE_STDERR)
+	assert fs.isfile(job0.dir / FILE_STDOUT)
 
+	job0._signature = None
+	job0.rc = 0
 	job0.cache()
 	assert job0.build() == 'cached'
 

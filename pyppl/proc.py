@@ -451,7 +451,9 @@ class Proc(Hashable):
 		elif isinstance(self.config.rc, int):
 			self.props.rc = [self.config.rc]
 		else:
-			self.props.rc = self.config.rc
+			self.props.rc = list(self.config.rc)
+		if 0 not in self.props.rc:
+			self.props.rc.append(0)
 
 		# workdir
 		if 'workdir' in self.sets:
@@ -474,7 +476,7 @@ class Proc(Hashable):
 			proclock = path.join(self.workdir, 'proc.lock')
 			logger.warning('Another instance of this process is running, waiting ...',
 				proc = self.id)
-			logger.warning('If not, remove the process lock file (or hit Ctrl-c) and try again:',
+			logger.warning('If not, remove the process lock file (or hit Ctrl-C) and try again:',
 				proc = self.id)
 			logger.warning('- %s', proclock, proc = self.id)
 			try:

@@ -242,7 +242,7 @@ class Jobmgr:
 	def cleanup(self, ex = None):
 		"""@API
 		Cleanup the pipeline when
-		- Ctrl-c hit
+		- Ctrl-C hit
 		- error encountered and `proc.errhow` = 'terminate'
 		@params:
 			ex (Exception): The exception raised by workers
@@ -251,13 +251,13 @@ class Jobmgr:
 		message = None
 		if isinstance(ex, JobBuildingException):
 			message = 'Job building failed, quitting pipeline ' + \
-				'(Ctrl-c to skip killing jobs) ...'
+				'(Ctrl-C to skip killing jobs) ...'
 		elif isinstance(ex, JobFailException):
 			message = 'Error encountered (errhow = halt), quitting pipeline ' + \
-				'(Ctrl-c to skip killing jobs) ...'
+				'(Ctrl-C to skip killing jobs) ...'
 		elif isinstance(ex, KeyboardInterrupt):
-			message = '[Ctrl-c] detected, quitting pipeline ' + \
-				'(Ctrl-c again to skip killing jobs) ...'
+			message = '[Ctrl-C] detected, quitting pipeline ' + \
+				'(Ctrl-C again to skip killing jobs) ...'
 
 		if message:
 			logger.warning(message, proc = self.proc.name())

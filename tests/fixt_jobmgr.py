@@ -2,6 +2,7 @@ from copy import copy
 from time import sleep
 import pytest
 from pyppl import Proc as _Proc
+from pyppl.template import TemplateLiquid
 from pyppl.jobmgr import Jobmgr, STATES
 from pyppl.logger import logger
 from pyppl.utils import Box
@@ -28,7 +29,9 @@ class Proc(dict):
 		kwargs['errhow']  = 'terminate'
 		kwargs['errntry'] = 3
 		kwargs['forks']   = 1
+		kwargs['expect']  = TemplateLiquid('')
 		kwargs['size']    = 1
+		kwargs['rc']      = [0]
 		kwargs['config']  = Box(
 			_log = {}
 		)
