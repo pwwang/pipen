@@ -1,7 +1,7 @@
 """The main module of PyPPL"""
 # pylint: disable=protected-access,no-member
 
-__version__ = "2.3.0"
+__version__ = "2.3.1"
 
 # give random tips in the log
 import random
@@ -9,6 +9,8 @@ import random
 import sys
 # any2proc
 import fnmatch
+# log process name
+import textwrap
 
 from pathlib import Path
 from time import time
@@ -117,15 +119,15 @@ pluginmgr.hook.setup(config = config)
 # pylint: disable=wrong-import-position
 from .logger import logger
 from .procset import ProcSet, Proxy
-from .proc import Proc
 from .job import Job
 from .jobmgr import Jobmgr
 from .channel import Channel
+from .proc import Proc
 from .proctree import ProcTree
 from .exception import PyPPLProcRelationError, RunnerClassNameError
 from . import utils, runner
 
-class PyPPL (object):
+class PyPPL:
 	"""@API
 	The PyPPL class
 
@@ -187,7 +189,7 @@ class PyPPL (object):
 				if cfile == cfgfile:
 					logger.warning('Configuration file does not exist: %s', cfile)
 				continue
-			elif cfile.suffix in ('.yaml', 'yml'):
+			if cfile.suffix in ('.yaml', 'yml'):
 				try:
 					import yaml # pylint: disable=W0611
 				except ImportError: # pragma: no cover
@@ -329,18 +331,18 @@ class PyPPL (object):
 		timer = time()
 
 		pluginmgr.hook.pypplPreRun(ppl = self)
-		proc = self.tree.getNextToRun()
+		proc      = self.tree.getNextToRun()
+		total_len = 80
 		while proc:
-			if proc.origin != proc.id:
-				name = '{} ({}): {}'.format(proc.name(True), proc.origin, proc.desc)
-			else:
-				name = '{}: {}'.format(proc.name(True), proc.desc)
-			#nlen = max(85, len(name) + 3)
-			#logger.logger.info ('[PROCESS] +' + '-'*(nlen-3) + '+')
-			#logger.logger.info ('[PROCESS] |%s%s|' % (name, ' '*(nlen - 3 - len(name))))
-			decorlen = max(80, len(name))
+			name = proc.name(True)
+			name += ': ' if proc.origin == proc.id else f' ({proc.origin}):'
+
+			lines = textwrap.wrap(name + proc.desc, total_len,
+				subsequent_indent = ' ' * len(name))
+			decorlen = max(total_len, max(len(line) for line in lines))
 			logger.process ('-' * decorlen)
-			logger.process (name)
+			for line in lines:
+				logger.process (line)
 			logger.process ('-' * decorlen)
 			logger.depends (
 				'%s => %s => %s',

@@ -808,7 +808,7 @@
 
 			- `ex (Exception)`:  The exception raised by workers
 
-	!!! abstract "method: `killWorker (self, killq)`"
+	!!! abstract "method: `killWorker (cls, killq)`"
 		The killing worker to kill the jobs
 
 	!!! abstract "method: `progressbar (self, event)`"
@@ -1180,7 +1180,7 @@
 
 			- `(list[Proc])`:  The start processes
 
-	!!! abstract "method: `init (self)`"
+	!!! abstract "method: `init (cls)`"
 		Set the status of all `ProcNode`s
 		
 

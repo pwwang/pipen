@@ -5,7 +5,7 @@ from liquid import Liquid
 
 __all__ = ['Template', 'TemplateLiquid', 'TemplateJinja2']
 
-class Template(object):
+class Template:
 	"""@API
 	Template wrapper base class
 

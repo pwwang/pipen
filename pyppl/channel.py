@@ -8,7 +8,7 @@ from os import path
 from glob import glob
 from . import utils
 
-class Channel(list):
+class Channel(list): # pylint: disable=too-many-public-methods
 	"""@API
 	The channen class, extended from `list`
 	"""
@@ -508,7 +508,7 @@ class Channel(list):
 		"""
 		rows = []
 		for row in self:
-			if not row in rows:
+			if row not in rows:
 				rows.append(row)
 		return Channel(rows)
 

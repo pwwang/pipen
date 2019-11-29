@@ -1,3 +1,9 @@
+# 2.3.1 (2019.11.29)
+- Fix global config.args been overwritten when multiple pipelines in one session
+- Wrap long process descriptions in log
+- Fix kwargs for Proc constructor not triggering `__setattr__`
+
+
 # 2.3.0 (2019.11.18)
 - Add check for output names
 - Fix deepcopy problem in proc.copy

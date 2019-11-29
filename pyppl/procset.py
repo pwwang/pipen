@@ -59,12 +59,12 @@ class Proxy(list):
 			self.append(anything)
 
 class Values(Proxy):
-
+	"""A Proxy class but element can be passed one by one"""
 	def __init__(self, *args, **kwargs):
-		super(Values, self).__init__(args, **kwargs)
+		super().__init__(args, **kwargs)
 
-class PSProxy(object):
-
+class PSProxy:
+	"""A Proxy for procset"""
 	def __init__(self, procset, path = None):
 		self.__dict__['procset'] = procset
 		self.__dict__['path']    = path or []
@@ -95,7 +95,7 @@ class PSProxy(object):
 			for attr in attrs:
 				setattr(attr, name, value)
 
-class ProcSet(object):
+class ProcSet:
 	"""@API
 	The ProcSet for a set of processes
 	"""
@@ -258,7 +258,7 @@ class ProcSet(object):
 			return self.procs[item]
 		return PSProxy(procset = self, path = [item])
 
-	def __getitem__(self, item, _ignore_default = True):
+	def __getitem__(self, item, _ignore_default = True): # pylint:disable=too-many-return-statements
 		"""@API:
 		Process selector, always return Proxy object
 		@params:

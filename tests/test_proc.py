@@ -59,6 +59,9 @@ def test_proc_init(tmpdir):
 	with pytest.raises(ProcAttributeError):
 		Proc(depends = 1)
 
+	with pytest.raises(ProcAttributeError):
+		Proc(xxx = 1)
+
 def test_proc_getattr(tmpdir):
 	p2 = Proc()
 
@@ -97,6 +100,10 @@ def test_proc_setattr(tmpdir, caplog):
 
 	p3.script = 'file:%s' % Path(__file__).name
 	assert p3.config.script == 'file:%s' % Path(__file__).resolve()
+
+	p31 = Proc(script = 'file:%s' % Path(__file__).name)
+	assert p31.config.script == 'file:%s' % Path(__file__).resolve()
+
 
 	with pytest.raises(ProcAttributeError):
 		p3.script = 'file:nosuchfile'

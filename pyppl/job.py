@@ -35,7 +35,7 @@ RCMSG_ERROR_SUBMISSION = 'Submission failed'
 RCMSG_UNMET_EXPECT     = 'Expectation not met'
 RCMSG_NO_RCFILE        = 'Rcfile not generated'
 
-class Job(object):
+class Job: # pylint: disable=too-many-instance-attributes, too-many-public-methods
 	"""@API
 	Describes a job, also as a base class for runner
 	@static variables
@@ -76,7 +76,7 @@ class Job(object):
 		self.script = self.dir / (FILE_SCRIPT + '.' + runner_name)
 		self._rc    = None
 		self._pid   = None
-		pluginmgr.hook.jobPreRun(job = self)
+		pluginmgr.hook.jobPreRun(job = self) # pylint: disable=no-member
 
 	@property
 	def scriptParts(self):
@@ -348,7 +348,7 @@ class Job(object):
 				fs.move(errfile, errfile_bak)
 
 			return True
-		except Exception as ex: # pylint: disable=bare-except
+		except Exception as ex: # pylint: disable=broad-except
 			self.logger('Failed to build job: %s' % ex, level = 'debug')
 			from traceback import format_exc
 			with (self.dir / FILE_STDERR).open('w') as ferr:
@@ -629,6 +629,7 @@ class Job(object):
 		return True
 
 	def _compareFile(self, osig, nsig, key, logkey, timekey = None):
+		# pylint: disable=too-many-arguments
 		"""Compare file in signature"""
 		key = key if key.endswith(' file') or key.endswith(' dir') else key + ' file'
 		for k in osig:
@@ -655,6 +656,7 @@ class Job(object):
 		return True
 
 	def _compareFiles(self, osig, nsig, key, logkey, timekey = True):
+		# pylint: disable=too-many-arguments
 		"""Compare files in signature"""
 		for k in osig:
 			olen = len(osig[k])
@@ -986,7 +988,7 @@ class Job(object):
 		procclass = self.proc.__class__
 		# first check if bare rc is allowed
 		if self.rc not in self.proc.rc:
-			pluginmgr.hook.jobFail(job = self)
+			pluginmgr.hook.jobFail(job = self) # pylint: disable=no-member
 			return False
 
 		# refresh output directory
@@ -997,7 +999,7 @@ class Job(object):
 				self.rc += (1 << RCBIT_NO_OUTFILE)
 				self.logger('Outfile not generated: {}'.format(outdata),
 					dlevel = "OUTFILE_NOT_EXISTS", level = 'debug')
-				pluginmgr.hook.jobFail(job = self)
+				pluginmgr.hook.jobFail(job = self) # pylint: disable=no-member
 				return False
 
 		expect_cmd = self.proc.expect.render(self.data)
@@ -1007,7 +1009,7 @@ class Job(object):
 			cmd = cmdy.bash(c = expect_cmd, _raise = False) # pylint: disable=no-member
 			if cmd.rc != 0:
 				self.rc += (1 << RCBIT_UNMET_EXPECT)
-				pluginmgr.hook.jobFail(job = self)
+				pluginmgr.hook.jobFail(job = self) # pylint: disable=no-member
 				return False
 		return True
 
@@ -1022,7 +1024,7 @@ class Job(object):
 			self.export()
 		if not cached:
 			self.cache()
-		pluginmgr.hook.jobPostRun(job = self)
+		pluginmgr.hook.jobPostRun(job = self) # pylint: disable=no-member
 
 	def isRunningImpl(self):
 		"""@API
@@ -1072,14 +1074,14 @@ class Job(object):
 			self.logger('Polling the job ... stderr/out file not generared.', level = 'debug')
 			return 'running'
 
-		elif self.rc != RC_NO_RCFILE:
+		if self.rc != RC_NO_RCFILE:
 			self.logger('Polling the job ... done.', level = 'debug')
 			self._flush(end = True)
 			return self.succeed()
-		else: # running
-			self.logger('Polling the job ... rc file not generated.', level = 'debug')
-			self._flush()
-			return 'running'
+		# running
+		self.logger('Polling the job ... rc file not generated.', level = 'debug')
+		self._flush()
+		return 'running'
 
 	def _flush (self, end = False):
 		"""

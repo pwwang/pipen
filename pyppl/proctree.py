@@ -5,7 +5,7 @@ import traceback
 from collections import OrderedDict
 from .exception import ProcTreeProcExists, ProcTreeParseError#, ProcHideError
 
-class ProcNode(object):
+class ProcNode:
 	"""@API
 	The node for processes to manage relations between each other
 	"""
@@ -38,7 +38,7 @@ class ProcNode(object):
 			self.proc.id, self.proc.tag, hex(id(self.proc)), hex(id(self)))
 
 
-class ProcTree(object):
+class ProcTree:
 	"""@API
 	A tree of processes.
 
@@ -61,7 +61,7 @@ class ProcTree(object):
 		self.ends    = [] # end procs
 
 	@classmethod
-	def init(self):
+	def init(cls):
 		"""@API
 		Set the status of all `ProcNode`s
 		"""
@@ -351,5 +351,3 @@ class ProcTree(object):
 				return proc
 				#ret.append(node.proc)
 		return None
-
-

@@ -63,14 +63,14 @@ def _removeBusyDir(path): # pragma: no cover
 			if not fname.startswith('.'):
 				continue
 			fpath = os.path.join(root, fname)
-			lsof = cmdy.lsof(fpath, _raise = False)
+			lsof = cmdy.lsof(fpath, _raise = False) # pylint: disable=no-member
 			if lsof.rc != 0:
 				continue
 			lsof = lsof.splitlines()
 			if len(lsof) < 2:
 				continue
 			pid = lsof[-1].split()[1]
-			cmdy.kill({'9': pid})
+			cmdy.kill({'9': pid})  # pylint: disable=no-member
 	shutil.rmtree(path)
 
 def remove(path, ignore_nonexist = True):

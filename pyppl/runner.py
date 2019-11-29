@@ -1,6 +1,7 @@
 """
 Built-in runners for PyPPL
 """
+# pylint: disable=no-member
 import re
 import sys
 from os import getcwd

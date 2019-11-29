@@ -87,9 +87,9 @@ class Proc(Hashable):
 		defaultconfig['id'] = id if id else utils.varname()
 		if ' ' in tag:
 			raise ProcTagError("No space allowed in tag.")
-		if 'depends' in kwargs:
-			raise ProcAttributeError("Attribute 'depends' has to be set using `__setattr__`")
 
+		defaultconfig['tag'] = tag
+		defaultconfig['desc'] = desc
 		# The extra arguments for the process
 		defaultconfig['args'] = dict.copy(defaultconfig['args'])
 		# The callfront function of the process
@@ -151,21 +151,25 @@ class Proc(Hashable):
 		self.props.timer = None
 		# The computed workdir
 		self.props.workdir = ''
+		# Remember the attr being set, they have the highest priority
+		self.props.sets = set()
 
 		# convert alias to its original name
 		for aliaskey, aliasval in Proc.ALIAS.items():
 			if aliaskey in kwargs:
 				kwargs[aliasval] = kwargs.pop(aliaskey)
 
-		# remember which property is set, then it will not be overwritten by configurations,
-		# do not put any values here because we want
-		# the kwargs to be overwritten by the configurations but keep the values set by:
-		# p.xxx           = xxx
-		self.props.sets = set(kwargs.keys())
+		for key in kwargs:
+			if key not in defaultconfig:
+				raise ProcAttributeError(key)
+
 		# update the conf with kwargs
-		defaultconfig.update(dict(tag = tag, desc = desc, **kwargs))
+		defaultconfig.update(kwargs)
 		# collapse the loading trace, we don't need it anymore.
 		self.config._load({'default': defaultconfig})
+		for key, val in kwargs.items():
+			if key[0] != '_':
+				setattr(self, key, val)
 
 	def __getattr__(self, name):
 		"""
@@ -176,9 +180,9 @@ class Proc(Hashable):
 		@returns:
 			The value of the property
 		"""
-		if not name in self.props \
-			and not name in self.config \
-			and not name in Proc.ALIAS \
+		if name not in self.props \
+			and name not in self.config \
+			and name not in Proc.ALIAS \
 			and not name.endswith ('Runner'):
 			raise ProcAttributeError(name)
 
@@ -187,20 +191,21 @@ class Proc(Hashable):
 		elif name in Proc.ALIAS:
 			name = Proc.ALIAS[name]
 
-		ret = pluginmgr.hook.procGetAttr(proc = self, name = name)
+		ret = pluginmgr.hook.procGetAttr(proc = self, name = name) # pylint: disable=no-member
 		if ret is None:
 			return self.props.get(name, self.config.get(name))
 
 		return ret
 
-	def __setattr__(self, name, value):
+	def __setattr__(self, name, value): # pylint: disable=too-many-branches,too-many-statements
 		"""
 		Set the value of a property in `self.config`
 		@params:
 			`name` : The name of the property.
 			`value`: The new value of the property.
 		"""
-		if not name in self.config and not name in Proc.ALIAS and not name.endswith ('Runner'):
+		if name not in self.config and name not in Proc.ALIAS \
+			and not name.endswith ('Runner'):
 			raise ProcAttributeError(name, 'Cannot set attribute for process')
 
 		# profile will be deprecated, use runner instead
@@ -211,14 +216,11 @@ class Proc(Hashable):
 					if name in Proc.DEPRECATED and Proc.DEPRECATED[name] else '',
 				proc = self.id)
 
-		if name in Proc.ALIAS:
-			name = Proc.ALIAS[name]
-
+		name = Proc.ALIAS[name] if name in Proc.ALIAS else name
 		self.sets.add(name)
 
 		# depends have to be computed here, as it's used to infer the relation before run
 		if name == 'depends':
-
 			self.props.depends = []
 			depends = list(value) if isinstance(value, tuple) else \
 				value.ends if isinstance(value, ProcSet) else \
@@ -247,16 +249,16 @@ class Proc(Hashable):
 			if not scriptpath.is_absolute():
 				from inspect import getframeinfo, stack
 				caller = getframeinfo(stack()[1][0])
+				if path.samefile(__file__, caller.filename):
+					caller = getframeinfo(stack()[2][0])
 				scriptdir = Path(caller.filename).parent.resolve()
 				scriptpath = scriptdir / scriptpath
 			if not scriptpath.is_file():
 				raise ProcAttributeError(
 					'Script file does not exist: %s' % scriptpath)
 			self.config[name] = "file:%s" % scriptpath
-
-		elif name == 'args' or name == 'envs':
+		elif name in ('args', 'envs'):
 			self.config[name] = Box(value)
-
 		elif name == 'input' \
 			and self.config[name] \
 			and not isinstance(value, str) \
@@ -272,20 +274,20 @@ class Proc(Hashable):
 					proc = self.id)
 				logger.warning("Now the key order is: %s" % prevkey, proc = self.id)
 		elif name == 'runner':
-			self.config[name] = value
-			self.props[name]  = value
+			self.config[name] = self.props[name] = value
 		elif name == 'tag' and (' ' in value or '@' in value):
 			raise ProcAttributeError("No space or '@' is allowed in tag")
 		else:
 			self.config[name] = value
 			# plugins can overwrite it
+			# pylint: disable=no-member
 			pluginmgr.hook.procSetAttr(proc = self, name = name, value = value)
 
 	def __repr__(self):
 		return '<Proc(%s) @ %s>' %(self.name(), hex(id(self)))
 
 	# pylint: disable=invalid-name
-	def copy(self, id = None, tag = None, desc = None):
+	def copy(self, id = None, tag = None, desc = None): # pylint: disable=too-many-branches
 		"""@API
 		Copy a process
 		@params:
@@ -340,7 +342,7 @@ class Proc(Hashable):
 				props[key] = self.props[key]
 
 		newproc = Proc(**conf)
-		newproc.depends = []
+		newproc.depends = [] # pylint: disable=attribute-defined-outside-init
 		dict.update(newproc.props, props)
 		return newproc
 
@@ -428,7 +430,7 @@ class Proc(Hashable):
 		#self.props.suffix = utils.uid(path.realpath(sys.argv[0]) + ':' + self.id)
 		return self._suffix
 
-	def _buildProps(self):
+	def _buildProps(self): # pylint: disable=too-many-branches,too-many-statements
 		"""
 		Compute some properties
 		"""
@@ -499,7 +501,7 @@ class Proc(Hashable):
 			else:
 				self.props.echo = Box(self.config.echo)
 
-			if not 'jobs' in self.echo:
+			if 'jobs' not in self.echo:
 				self.echo['jobs'] = 0
 			if isinstance(self.echo['jobs'], int):
 				self.echo['jobs'] = [self.echo['jobs']]
@@ -508,7 +510,7 @@ class Proc(Hashable):
 			else:
 				self.echo['jobs'] = list(self.echo['jobs'])
 
-			if not 'type' in self.echo or self.echo['type'] == 'all':
+			if 'type' not in self.echo or self.echo['type'] == 'all':
 				self.echo['type'] = {'stderr': None, 'stdout': None}
 			if not isinstance(self.echo['type'], dict):
 				# must be a string, either stderr or stdout
@@ -537,7 +539,7 @@ class Proc(Hashable):
 			raise
 
 	# self.resume != 'skip'
-	def _buildInput(self):
+	def _buildInput(self): # pylint: disable=too-many-branches,too-many-locals
 		"""
 		Build the input data
 		Input could be:
@@ -813,7 +815,8 @@ class Proc(Hashable):
 
 		config_with_profiles = utils.config.copy()
 		# make sure configs in __init__ be loaded
-		config_with_profiles._load({'default': dict.copy(self.config)})
+		# don't use default, which will overwrite utils.config.args, envs
+		config_with_profiles._load({'__self__': dict.copy(self.config)})
 
 		assert isinstance(config, type(self.config))
 		# load extra profiles specified to PyPPL()
@@ -871,7 +874,7 @@ class Proc(Hashable):
 
 		logger.info('Running <%s> ...', key, proc = self.id)
 
-		cmd = utils.cmdy.bash(c = cmdstr, _iter = 'err')
+		cmd = utils.cmdy.bash(c = cmdstr, _iter = 'err') # pylint: disable=no-member
 		for err in cmd:
 			logger.cmderr('  ' + err.rstrip("\n"), proc = self.id)
 		for out in cmd.stdout.splitlines():
@@ -931,66 +934,76 @@ class Proc(Hashable):
 			if callable(self.callback):
 				logger.debug('Calling callback ...', proc = self.id)
 				self.callback(self)
-		else: # '', resume, resume+
-			# summarize jobs
-			bfailedjobs = []
-			sfailedjobs = []
-			efailedjobs = []
-			#killedjobs  = []
-			successjobs = []
-			cachedjobs  = []
+			return
+		# '', resume, resume+
+		# summarize jobs
+		# bfailedjobs = []
+		# sfailedjobs = []
+		# efailedjobs = []
+		# #killedjobs  = []
+		# successjobs = []
+		# cachedjobs  = []
+		jobs = {
+			STATES.BUILTFAILED : [],
+			STATES.SUBMITFAILED: [],
+			STATES.DONE        : [],
+			STATES.DONECACHED  : [],
+			STATES.ENDFAILED   : [],
+		}
 
-			for job in self.jobs:
-				#logger.debug(job.state)
-				if job.state == STATES.BUILTFAILED:
-					bfailedjobs.append(job.index)
-				elif job.state == STATES.SUBMITFAILED:
-					sfailedjobs.append(job.index)
-				elif job.state == STATES.DONE:
-					successjobs.append(job.index)
-				elif job.state == STATES.DONECACHED:
-					cachedjobs.append(job.index)
-				elif job.state == STATES.ENDFAILED:
-					efailedjobs.append(job.index)
-				#elif job.state == STATES.KILLING or job.state == STATES.KILLED:
-				#	killedjobs.append(job.index)
+		for job in self.jobs:
+			if job.state in jobs:
+				jobs[job.state].append(job.index)
+			#logger.debug(job.state)
+			# if job.state == STATES.BUILTFAILED:
+			# 	bfailedjobs.append(job.index)
+			# elif job.state == STATES.SUBMITFAILED:
+			# 	sfailedjobs.append(job.index)
+			# elif job.state == STATES.DONE:
+			# 	successjobs.append(job.index)
+			# elif job.state == STATES.DONECACHED:
+			# 	cachedjobs.append(job.index)
+			# elif job.state == STATES.ENDFAILED:
+			# 	efailedjobs.append(job.index)
+			#elif job.state == STATES.KILLING or job.state == STATES.KILLED:
+			#	killedjobs.append(job.index)
 
-			(logger.P_DONE, logger.CACHED)[int(
-				len(cachedjobs) == self.size and self.size > 0
-			)]('Time: %s. Jobs (Cached: %s, Succ: %s, B.Fail: %s, S.Fail: %s, R.Fail: %s)',
-				utils.formatSecs(time() - self.timer),
-				len(cachedjobs),
-				len(successjobs),
-				len(bfailedjobs),
-				len(sfailedjobs),
-				len(efailedjobs),
-				proc = self.id)
+		(logger.P_DONE, logger.CACHED)[int(
+			len(jobs[STATES.DONECACHED]) == self.size and self.size > 0
+		)]('Time: %s. Jobs (Cached: %s, Succ: %s, B.Fail: %s, S.Fail: %s, R.Fail: %s)',
+			utils.formatSecs(time() - self.timer),
+			len(jobs[STATES.DONECACHED]),
+			len(jobs[STATES.DONE]),
+			len(jobs[STATES.BUILTFAILED]),
+			len(jobs[STATES.SUBMITFAILED]),
+			len(jobs[STATES.ENDFAILED]),
+			proc = self.id)
 
-			logger.debug('Cached: %s', utils.briefList(cachedjobs, 1), proc = self.id)
-			logger.debug('Succeeded: %s', utils.briefList(successjobs, 1), proc = self.id)
-			if bfailedjobs:
-				logger.error('Building failed: %s',
-					utils.briefList(bfailedjobs, 1), proc = self.id)
-			if sfailedjobs:
-				logger.error('Submission failed: %s',
-					utils.briefList(sfailedjobs, 1), proc = self.id)
-			if efailedjobs:
-				logger.error('Running failed: %s',
-					utils.briefList(efailedjobs, 1), proc = self.id)
+		logger.debug('Cached: %s', utils.briefList(jobs[STATES.DONECACHED], 1), proc = self.id)
+		logger.debug('Succeeded: %s', utils.briefList(jobs[STATES.DONE], 1), proc = self.id)
+		if jobs[STATES.BUILTFAILED]:
+			logger.error('Building failed: %s',
+				utils.briefList(jobs[STATES.BUILTFAILED], 1), proc = self.id)
+		if jobs[STATES.SUBMITFAILED]:
+			logger.error('Submission failed: %s',
+				utils.briefList(jobs[STATES.SUBMITFAILED], 1), proc = self.id)
+		if jobs[STATES.ENDFAILED]:
+			logger.error('Running failed: %s',
+				utils.briefList(jobs[STATES.ENDFAILED], 1), proc = self.id)
 
-			donejobs = successjobs + cachedjobs
-			failjobs = bfailedjobs + sfailedjobs + efailedjobs
-			showjob  = failjobs[0] if failjobs else 0
+		donejobs = jobs[STATES.DONE] + jobs[STATES.DONECACHED]
+		failjobs = jobs[STATES.BUILTFAILED] + jobs[STATES.SUBMITFAILED] + jobs[STATES.ENDFAILED]
+		showjob  = failjobs[0] if failjobs else 0
 
-			if (len(donejobs) == self.size or self.errhow == 'ignore') and \
-				callable(self.callback):
-				logger.debug('Calling callback ...', proc = self.id)
-				self.callback(self)
-			# there are jobs failed
-			if len(donejobs) < self.size:
-				self.jobs[showjob].showError(len(failjobs))
-				if self.errhow != 'ignore':
-					sys.exit(1)
+		if (len(donejobs) == self.size or self.errhow == 'ignore') and \
+			callable(self.callback):
+			logger.debug('Calling callback ...', proc = self.id)
+			self.callback(self)
+		# there are jobs failed
+		if len(donejobs) < self.size:
+			self.jobs[showjob].showError(len(failjobs))
+			if self.errhow != 'ignore':
+				sys.exit(1)
 
 	def run(self, profile = None, config = None):
 		"""@API
@@ -1002,8 +1015,7 @@ class Proc(Hashable):
 		self._readConfig(profile, config)
 		if self.runner == 'dry':
 			self.config.cache = False
-
-		pluginmgr.hook.procPreRun(proc = self)
+		pluginmgr.hook.procPreRun(proc = self) # pylint: disable=no-member
 		if self.resume == 'skip':
 			logger.skipped("Pipeline will resume from future processes.")
 		elif self.resume == 'skip+':
@@ -1028,6 +1040,6 @@ class Proc(Hashable):
 				# remove the lock file, so that I know this process has done
 				# or hasn't started yet, externally.
 				fs.remove(path.join(self.workdir, 'proc.lock'))
-		pluginmgr.hook.procPostRun(proc = self)
+		pluginmgr.hook.procPostRun(proc = self) # pylint: disable=no-member
 		# gc
 		del self.jobs[:]

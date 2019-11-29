@@ -17,7 +17,7 @@ from . import _fsutil as fs
 
 config = Config() # pylint: disable=invalid-name
 
-class Box(_Box):
+class Box(_Box): # pylint: disable=too-many-instance-attributes
 	"""
 	Subclass of box.Box to fix box_intact_types to [list] and
 	rewrite __repr__ to make the string results back to object
@@ -50,6 +50,7 @@ class OBox(Box):
 OrderedBox = OBox # pylint: disable=invalid-name
 
 def loadConfigurations(conf, *cfgfiles):
+	"""Load the configuration files"""
 	conf.clear()
 	conf._load(*cfgfiles)
 
@@ -84,7 +85,7 @@ def varname(context = 31):
 
 	for i in range(grandpar[5], 0, -1):
 		code = grandpar[4][i]
-		if not keyword in code:
+		if keyword not in code:
 			continue
 		match = re.search(r'([\w_]+)\s*=\s*[\w_.]*' + keyword, code)
 		if not match:
@@ -499,6 +500,7 @@ class ThreadEx(Thread):
 	"""
 
 	def __init__(self, group=None, target=None, name=None, args=None, kwargs=None):
+		# pylint: disable=too-many-arguments
 		Thread.__init__(self, group, target, name, args or (), kwargs or {})
 		self.daemon = True
 		self.ex     = None
@@ -513,7 +515,7 @@ class ThreadEx(Thread):
 			#from traceback import format_exc
 			self.ex = ex
 
-class ThreadPool(object):
+class ThreadPool: # pylint: disable=too-few-public-methods
 	"""
 	A thread manager for ThreadEx.
 	"""
@@ -547,7 +549,7 @@ class ThreadPool(object):
 						cleanup(thread.ex)
 						threads_alive = 0
 						break
-					elif thread.is_alive():
+					if thread.is_alive():
 						threads_alive += 1
 				if threads_alive == 0:
 					break
@@ -595,7 +597,7 @@ class PQueue(PriorityQueue):
 		batch, index  = divmod(item, self.batchLen)
 		return index, batch
 
-class Hashable(object):
+class Hashable:
 	"""
 	A class for object that can be hashable
 	"""
@@ -619,9 +621,9 @@ class Hashable(object):
 
 class MultiDestTransition(Transition):
 	"""Transition with multiple destination"""
+	# pylint: disable=too-many-arguments
 	def __init__(self, source, dest, conditions=None, unless=None,
 		before=None, after=None, prepare=None, **kwargs):
-
 		self._result = self._dest = None
 		super(MultiDestTransition, self).__init__(
 			source, dest, conditions, unless, before, after, prepare)
