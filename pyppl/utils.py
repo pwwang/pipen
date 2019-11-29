@@ -85,7 +85,7 @@ def varname(context = 31):
 
 	for i in range(grandpar[5], 0, -1):
 		code = grandpar[4][i]
-		if not keyword in code:
+		if keyword not in code:
 			continue
 		match = re.search(r'([\w_]+)\s*=\s*[\w_.]*' + keyword, code)
 		if not match:
