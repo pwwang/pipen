@@ -818,11 +818,11 @@ class Proc(Hashable):
 		config_with_profiles = utils.config.copy()
 		# make sure configs in __init__ be loaded
 		# don't use default, which will overwrite utils.config.args, envs
-		config_with_profiles._load({'__self__': dict.copy(self.config)})
-
+		config_with_profiles._load({'default': dict.copy(self.config)})
+		config_with_profiles._use()
 		assert isinstance(config, type(self.config))
 		# load extra profiles specified to PyPPL()
-		for key, val in config._protected['cached'].items():
+		for val in config._protected['cached'].values():
 			if '__noloading__' not in val:
 				config_with_profiles._load(val)
 
