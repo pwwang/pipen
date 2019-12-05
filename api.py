@@ -5,7 +5,7 @@ Generate API docs for PyPPL
 import sys
 import inspect
 import pyppl
-from pyppl.utils import OBox
+from diot import OrderedDiot
 #from pyppl.flowchart import Flowchart
 from pyppl.template import Template, TemplateLiquid, TemplateJinja2
 
@@ -47,7 +47,7 @@ class Member:
 		self.type  = objtype or type(self.ctype).__name__
 
 	def _docSecs(self):
-		ret   = OBox(desc = [])
+		ret   = OrderedDiot(desc = [])
 		name  = 'desc'
 		for line in self.docs:
 			if not line.startswith('@'):
