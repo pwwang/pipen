@@ -181,7 +181,7 @@ By default, the size of the progress bar has a length of `50`, you may change it
 
 Note that if a cell represents multiple jobs, it has a priority as listed below:
 ```python
-STATES = Box(
+STATES = Diot(
 	INIT         = '00_init',
 	BUILDING     = '99_building',
 	BUILT        = '97_built',

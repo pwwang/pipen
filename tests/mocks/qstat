@@ -5,7 +5,7 @@ from pathlib import Path
 from importlib.util import spec_from_loader, module_from_spec
 from importlib.machinery import SourceFileLoader
 from pyparam import params
-from box import Box
+from diot import Diot
 
 spec = spec_from_loader("qsub", SourceFileLoader("qsub", str(Path(__file__).parent.resolve() / 'qsub')))
 qsub = module_from_spec(spec)
@@ -13,7 +13,7 @@ spec.loader.exec_module(qsub)
 
 params.j.desc = 'The job id'
 params.j.type = str
-opts = params._parse(dict_wrapper = Box)
+opts = params._parse(dict_wrapper = Diot)
 
 if qsub.SgeJob().isRunning(opts.j):
 	sys.stdout.write('Job %s is running.' % opts.j)
