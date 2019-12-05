@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from pyppl import Job, Box
+from pyppl import Job, Diot
 from pyppl.utils import fs
 
 @pytest.fixture
@@ -30,10 +30,10 @@ def job0(tmpdir):
 		workdir  = tmpdir,
 		size     = 1,
 		dirsig   = True,
-		echo     = Box(jobs=[0], type=['stderr']),
+		echo     = Diot(jobs=[0], type=['stderr']),
 		procvars = {
 			'proc': {'errhow': 'terminate'}, 'args': {}},
-		_log = Box({'shorten': 0})))
+		_log = Diot({'shorten': 0})))
 	fs.mkdir(job.dir)
 	(job.dir / 'job.script').write_text('')
 	return job

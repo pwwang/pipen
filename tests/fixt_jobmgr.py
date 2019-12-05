@@ -1,11 +1,10 @@
 from copy import copy
 from time import sleep
 import pytest
-from pyppl import Proc as _Proc
+from pyppl import Proc as _Proc, Diot
 from pyppl.template import TemplateLiquid
 from pyppl.jobmgr import Jobmgr, STATES
 from pyppl.logger import logger
-from pyppl.utils import Box
 
 class Proc(dict):
 	OUT_VARTYPE    = _Proc.OUT_VARTYPE
@@ -32,9 +31,7 @@ class Proc(dict):
 		kwargs['expect']  = TemplateLiquid('')
 		kwargs['size']    = 1
 		kwargs['rc']      = [0]
-		kwargs['config']  = Box(
-			_log = {}
-		)
+		kwargs['config']  = Diot(_log = {})
 		super(Proc, self).__init__(*args, **kwargs)
 
 	def __getattr__(self, item):

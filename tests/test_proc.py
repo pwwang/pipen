@@ -5,8 +5,8 @@ import logging
 import pytest
 from pathlib import Path
 from simpleconf import Config
-from pyppl import PyPPL
-from pyppl.utils import config, uid, Box, OBox, fs
+from pyppl import PyPPL, Diot, OrderedDiot
+from pyppl.utils import config, uid, fs
 from pyppl.proc import Proc
 from pyppl.template import TemplateLiquid
 from pyppl.channel import Channel
@@ -188,7 +188,7 @@ def test_suffix_compute(tmpdir):
 	p81 = Proc()
 	p81.depends = p76
 	p81.input = 'a'
-	sigs = OBox()
+	sigs = OrderedDiot()
 	sigs.argv0 = str(Path(sys.argv[0]).resolve())
 	sigs.id = 'p81'
 	sigs.tag = 'notag'
@@ -200,7 +200,7 @@ def test_suffix_input(tmpdir):
 	p82 = Proc()
 	p82.input = 'a'
 	p82.input = [1]
-	sigs = OBox()
+	sigs = OrderedDiot()
 	sigs.argv0 = str(Path(sys.argv[0]).resolve())
 	sigs.id = 'p82'
 	sigs.tag = 'notag'
@@ -321,7 +321,7 @@ def test_buildinput(tmpdir, caplog):
 		p10._buildInput()
 	fs.mkdir(p10.workdir)
 
-	p10.props.input = OBox()
+	p10.props.input = OrderedDiot()
 	p10.input['a'] = ('files', [['infile1'], ['infile2']])
 	p10.input['b'] = ('files', [[], []])
 	p10.input['c'] = ('var', ['', ''])
@@ -357,7 +357,9 @@ def test_buildprocvars(tmpdir, caplog):
 	p11._buildProcVars()
 	assert 'p11: exdir  => abc' in caplog.text
 	assert p11.procvars['args'] == p11.args
-	assert p11.procvars['args'] is not p11.args
+	#assert p11.procvars['args'] is not p11.args
+	# p11.config.args now is a NestDiot
+	assert p11.procvars['args'] is p11.args
 
 def test_buildoutput(tmpdir):
 	p12 = Proc()

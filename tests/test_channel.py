@@ -1,5 +1,5 @@
 import pytest
-from pyppl import Box
+from pyppl import Diot
 from pyppl.channel import Channel
 
 pytest_plugins = ["tests.fixt_channel"]
@@ -61,13 +61,13 @@ def test_fromchannels(channels, expt):
 # 'testFromPattern8_Link.ext2', # 9 file
 # 'testFromPattern9_File.ext2'
 @pytest.mark.parametrize('pattern,kwargs,expt', [
-	('*', Box(), range(10)),
-	('*.ext2', Box(), [0, 6, 7, 8, 9]),
-	('*', Box(ftype = 'file'), [1, 3, 9]),
-	('*', Box(ftype = 'dir'), [0, 5, 6]),
-	('*', Box(ftype = 'link'), [2, 4, 7, 8]),
-	('testFromPattern?_F*.*', Box(ftype = 'any', sortby = 'mtime'), [9,3,1,0,5,6]),
-	('testFromPattern?_F*.*', Box(ftype = 'file', sortby = 'size', reverse = True), [3, 1, 9]),
+	('*', Diot(), range(10)),
+	('*.ext2', Diot(), [0, 6, 7, 8, 9]),
+	('*', Diot(ftype = 'file'), [1, 3, 9]),
+	('*', Diot(ftype = 'dir'), [0, 5, 6]),
+	('*', Diot(ftype = 'link'), [2, 4, 7, 8]),
+	('testFromPattern?_F*.*', Diot(ftype = 'any', sortby = 'mtime'), [9,3,1,0,5,6]),
+	('testFromPattern?_F*.*', Diot(ftype = 'file', sortby = 'size', reverse = True), [3, 1, 9]),
 ])
 def test_frompattern(tmp_test_dir, pattern, expt, kwargs, pattern_files):
 	assert Channel.fromPattern(
@@ -94,13 +94,13 @@ def test_frompairs(tmp_test_dir, pattern, expt, paired_files):
 		) for e in expt]
 
 @pytest.mark.parametrize('fileidx, kwargs, expt, headers', [
-	(0, Box(header = False, skip = 0, delimit = "\t"),
+	(0, Diot(header = False, skip = 0, delimit = "\t"),
 	 [("a1", "b1", "c1"), ("a2", "b2", "c2")],
 	 []),
-	(1, Box(header = True, skip = 0, delimit = ","),
+	(1, Diot(header = True, skip = 0, delimit = ","),
 	 [("a1", "b1", "c1"), ("a2", "b2", "c2")],
 	 ["a", "b", "c"]),
-	(2, Box(header = True, skip = 2, delimit = ","),
+	(2, Diot(header = True, skip = 2, delimit = ","),
 	 [("a1", "b1", "c1"), ("a2", "b2", "c2")],
 	 ["RowNames", "b", "c"]),
 ])

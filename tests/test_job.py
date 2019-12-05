@@ -1,10 +1,11 @@
 import pytest
 from pathlib import Path
 from os import environ, utime
+from diot import Diot, OrderedDiot
 environ['PYPPL_default__log'] = "py:{'levels': 'all'}"
 from pyppl.job import Job, JobInputParseError, JobOutputParseError, \
 	RC_NO_RCFILE, DIR_OUTPUT, FILE_STDERR, FILE_STDOUT
-from pyppl.utils import fs, Box, OBox, filesig
+from pyppl.utils import fs, filesig
 from pyppl.template import TemplateLiquid
 pytest_plugins = ["tests.fixt_job"]
 
@@ -145,12 +146,12 @@ def test_reportitem(job0, caplog):
 
 def test_report(job0, caplog):
 	job0.proc._log.shorten = 10
-	job0.input = Box(
+	job0.input = Diot(
 		a = ('var', 'abcdefghijkmnopq'),
 		bc = ('files', ['/long/path/to/file1']),
 		de = ('file', '/long/path/to/file2'),
 	)
-	job0.output = Box(
+	job0.output = Diot(
 		outfile = ('file', '/path/to/output/file1'),
 		outfiles = ('files', ['/path/to/output/file2'])
 	)
@@ -192,7 +193,7 @@ def test_prepinput(job0, tmpdir, caplog):
 	infile2 = tmpdir / 'renaming' / 'test_prepinput.txt'
 	infile2.parent.mkdir()
 	infile2.write_text('')
-	job0.proc.input = Box(
+	job0.proc.input = Diot(
 		invar = ('var', ['abc']),
 		infile = ('file', [infile1]),
 		infiles = ('files', [[infile1]]),
@@ -217,38 +218,38 @@ def test_prepinput(job0, tmpdir, caplog):
 
 def test_prepinput_exc(job0, tmpdir):
 	infile1 = tmpdir / 'test_prepinput_not_exists.txt'
-	job0.proc.input = Box(
+	job0.proc.input = Diot(
 		infile = ('file', [[]]), # no a strin gor path or input [infile:file]
 	)
 	with pytest.raises(JobInputParseError):
 		job0._prepInput()
 
-	job0.proc.input = Box(
+	job0.proc.input = Diot(
 		nefile = ('file', [infile1]), # not exists
 	)
 	with pytest.raises(JobInputParseError):
 		job0._prepInput()
 
-	job0.proc.input = Box(
+	job0.proc.input = Diot(
 		nlfiles = ('files', [1]), # not a list
 	)
 	with pytest.raises(JobInputParseError):
 		job0._prepInput()
 
-	job0.proc.input = Box(
+	job0.proc.input = Diot(
 		npfiles = ('files', [[None]]), # not a path
 	)
 	with pytest.raises(JobInputParseError):
 		job0._prepInput()
 
-	job0.proc.input = Box(
+	job0.proc.input = Diot(
 		nefiles = ('files', [[infile1]])
 	)
 	with pytest.raises(JobInputParseError):
 		job0._prepInput()
 
 def test_prepoutput(job0, tmpdir):
-	job0.proc.output = OBox()
+	job0.proc.output = OrderedDiot()
 	job0._prepOutput()
 	assert len(job0.output) == 0
 
@@ -295,14 +296,14 @@ def test_signature(job0, tmpdir, caplog):
 	fs.remove(job0.dir / 'job.script')
 	assert job0.signature() == ''
 	(job0.dir / 'job.script').write_text('')
-	assert job0.signature() == Box(
+	assert job0.signature() == Diot(
 		script = filesig(job0.dir / 'job.script'),
 		i = {'var': {}, 'file': {}, 'files': {}},
 		o = {'var': {}, 'file': {}, 'dir':{}})
 	infile = tmpdir / 'test_signature_input.txt'
 	infile.write_text('')
 	infile1 = tmpdir / 'test_signature_input_not_exists.txt'
-	job0.input = Box(
+	job0.input = Diot(
 		invar = ('var', 'abc'),
 		infile = ('file', infile),
 		infiles = ('files', [infile])
@@ -314,7 +315,7 @@ def test_signature(job0, tmpdir, caplog):
 		'files': {'infiles': [filesig(infile)]},
 	}
 
-	job0.input = Box(
+	job0.input = Diot(
 		invar = ('var', 'abc'),
 		infile = ('file', infile1)
 	)
@@ -322,7 +323,7 @@ def test_signature(job0, tmpdir, caplog):
 	assert job0.signature() == ''
 	assert 'Empty signature because of input file' in caplog.text
 
-	job0.input = Box(
+	job0.input = Diot(
 		invar = ('var', 'abc'),
 		infiles = ('files', [infile1])
 	)
@@ -337,7 +338,7 @@ def test_signature(job0, tmpdir, caplog):
 	outdir = tmpdir / 'test_signature_outdir'
 	outdir.mkdir()
 	outdir1 = tmpdir / 'test_signature_outdir_not_exists'
-	job0.output = OBox(
+	job0.output = OrderedDiot(
 		out = ('var', 'abc'),
 		outfile = ('file', outfile),
 		outdir = ('dir', outdir)
@@ -349,14 +350,14 @@ def test_signature(job0, tmpdir, caplog):
 		'dir': {'outdir': filesig(outdir, dirsig = job0.proc.dirsig)}
 	}
 
-	job0.output = OBox(
+	job0.output = OrderedDiot(
 		outfile = ('file', outfile1)
 	)
 	job0._signature = None
 	assert job0.signature() == ''
 	assert 'Empty signature because of output file:' in caplog.text
 
-	job0.output = OBox(
+	job0.output = OrderedDiot(
 		outdir = ('dir', outdir1)
 	)
 	job0._signature = None
@@ -646,7 +647,7 @@ def test_isexptcached(job0, tmpdir, caplog):
 	outdir1.mkdir()
 	fs.gzip(outfile1, job0.proc.exdir / (outfile1.name + '.gz'))
 	fs.gzip(outdir1, job0.proc.exdir / (outdir1.name + '.tgz'))
-	job0.output = OBox(
+	job0.output = OrderedDiot(
 		outfile = ('file', outfile1),
 		outdir = ('dir', outdir1),
 		out = ('var', 'abc')
@@ -665,7 +666,7 @@ def test_isexptcached(job0, tmpdir, caplog):
 	assert 'Job is not export-cached since exported file not exists:' in caplog.text
 	caplog.clear()
 
-	job0.output = OBox(
+	job0.output = OrderedDiot(
 		outfile = ('file', outfile1)
 	)
 	job0.proc.exhow = 'move'
@@ -791,7 +792,7 @@ def test_reest(job0):
 	assert not fs.exists(job0.dir / 'output' / 'outfile.txt')
 
 	# restore output directory and stdout, stderr
-	job0.output = OBox(
+	job0.output = OrderedDiot(
 		outdir = ('dir', job0.dir / 'output' / 'outdir'),
 		outfile = ('stdout', job0.dir / 'output' / 'outfile'),
 		errfile = ('stderr', job0.dir / 'output' / 'errfile'),
@@ -831,7 +832,7 @@ def test_export(job0, tmpdir, caplog):
 	outfile1 = job0.dir / 'output' / 'test_export_outfile.txt'
 	outfile1.parent.mkdir()
 	outfile1.write_text('')
-	job0.output = OBox(
+	job0.output = OrderedDiot(
 		outfile = ('file', outfile1)
 	)
 	job0.proc.exhow = 'copy'
@@ -888,7 +889,7 @@ def test_succeed(job0, caplog):
 	job0.proc.expect = TemplateLiquid('')
 	assert job0.succeed()
 
-	job0.output = OBox(
+	job0.output = OrderedDiot(
 		outfile = ('file', job0.dir / 'output' / 'notexists')
 	)
 	job0.rc = 1
@@ -927,10 +928,10 @@ def test_submit(job0, caplog):
 	assert 'is already running at' in caplog.text
 
 	job0.isRunningImpl = lambda: False
-	job0.submitImpl = lambda: Box(rc = 0)
+	job0.submitImpl = lambda: Diot(rc = 0)
 	assert job0.submit()
 
-	job0.submitImpl = lambda: Box(rc = 1, cmd = '', stderr = '')
+	job0.submitImpl = lambda: Diot(rc = 1, cmd = '', stderr = '')
 	caplog.clear()
 	assert not job0.submit()
 	assert 'Submission failed' in caplog.text

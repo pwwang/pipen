@@ -3,7 +3,7 @@ import pytest
 from pathlib import Path
 from psutil import pid_exists
 import cmdy
-from pyppl import Proc, utils, Box
+from pyppl import Proc, utils, Diot
 from pyppl.runner import RunnerLocal, RunnerDry, RunnerSsh, RunnerSge, RunnerSlurm, RC_ERROR_SUBMISSION
 from pyppl.exception import RunnerSshError
 from pyppl.template import TemplateLiquid
@@ -84,7 +84,7 @@ def ssh():
 
 @pytest.fixture
 def sge():
-	return Box(
+	return Diot(
 		qsub  = str(Path(__file__).parent / 'mocks' / 'qsub'),
 		qstat = str(Path(__file__).parent / 'mocks' / 'qstat'),
 		qdel  = str(Path(__file__).parent / 'mocks' / 'qdel'),
@@ -92,7 +92,7 @@ def sge():
 
 @pytest.fixture
 def slurm():
-	return Box(
+	return Diot(
 		sbatch  = str(Path(__file__).parent / 'mocks' / 'sbatch'),
 		srun    = str(Path(__file__).parent / 'mocks' / 'srun'),
 		squeue  = str(Path(__file__).parent / 'mocks' / 'squeue'),
@@ -114,7 +114,7 @@ def test_ssh_isserveralive(server, key, timeout, expt, ssh):
 	assert RunnerSsh.isServerAlive(server, key, timeout = timeout, ssh = ssh) == expt
 
 def test_ssh_init(proc, ssh):
-	proc.sshRunner = Box(
+	proc.sshRunner = Diot(
 		ssh = ssh,
 		servers = ['server1', 'server2', 'server3', 'server4'],
 		keys = ['server1', 'server2', 'server3', 'wrongkey'],
@@ -124,7 +124,7 @@ def test_ssh_init(proc, ssh):
 	assert r.ssh.keywords['t'] == 'server1'
 
 def test_ssh_init_noserver(proc, ssh):
-	proc.sshRunner = Box(
+	proc.sshRunner = Diot(
 		ssh = ssh,
 		servers = [],
 		keys = ['server1', 'server2', 'server3', 'wrongkey'],
@@ -133,7 +133,7 @@ def test_ssh_init_noserver(proc, ssh):
 		RunnerSsh(0, proc)
 
 def test_ssh_init_nolive(proc, ssh):
-	proc.sshRunner = Box(
+	proc.sshRunner = Diot(
 		ssh = ssh,
 		servers = ['a', 'b', 'c', 'd'],
 		keys = ['server1', 'server2', 'server3', 'wrongkey'],
@@ -142,7 +142,7 @@ def test_ssh_init_nolive(proc, ssh):
 		RunnerSsh(0, proc)
 
 def test_ssh_init_nocheck(proc, ssh):
-	proc.sshRunner = Box(
+	proc.sshRunner = Diot(
 		ssh = ssh,
 		servers = ['server1', 'server2', 'server3', 'server4'],
 		keys = ['server1', 'server2', 'server3', 'wrongkey'],
@@ -152,7 +152,7 @@ def test_ssh_init_nocheck(proc, ssh):
 	assert r.ssh.keywords['t'] == 'server1'
 
 def test_ssh_init_checktimeout(proc, ssh):
-	proc.sshRunner = Box(
+	proc.sshRunner = Diot(
 		ssh = ssh,
 		servers = ['server1', 'server2', 'server3', 'server4'],
 		keys = ['server1', 'server2', 'server3+2.5', 'wrongkey'],
@@ -162,7 +162,7 @@ def test_ssh_init_checktimeout(proc, ssh):
 	assert r.ssh.keywords['t'] == 'server1'
 
 def test_ssh_scriptparts(proc):
-	proc.sshRunner = Box(
+	proc.sshRunner = Diot(
 		ssh = ssh,
 		servers = ['server1'],
 		checkAlive = False)
@@ -177,7 +177,7 @@ def test_ssh_scriptparts(proc):
 	assert r.scriptParts.command == [str(r.dir / 'job.script')]
 
 def test_ssh_impl(proc, ssh):
-	proc.sshRunner = Box(
+	proc.sshRunner = Diot(
 		ssh = ssh,
 		servers = ['server1'],
 		checkAlive = False)

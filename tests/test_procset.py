@@ -1,6 +1,6 @@
 
 import pytest
-from pyppl import Box
+from pyppl import Diot
 from pyppl.procset import Proxy, Values, PSProxy, ProcSet
 
 pytest_plugins = ["tests.fixt_procset"]
@@ -10,7 +10,7 @@ def test_proxy():
 	assert p.count(1) == 2
 	assert p.denominator == [1] * 5
 
-	p1 = Proxy([Box(), Box(), Box()])
+	p1 = Proxy([Diot(), Diot(), Diot()])
 	p1.x = Values(1,2)
 	assert p1[0].x == 1
 	assert p1[1].x == 2
@@ -28,7 +28,7 @@ def test_proxy():
 
 	assert p1['y'] == [3,3,3]
 
-	p2[0] = Box(a = 1)
+	p2[0] = Diot(a = 1)
 	assert p2[0].a == 1
 
 	p2['y'] = 1
@@ -148,7 +148,7 @@ def test_procset_setattr(ps3_copy):
 	ps3_copy.tag = 'sometag'
 	assert ps3_copy.tag == 'sometag'
 
-	ps3_copy.args = Box(x = 1)
+	ps3_copy.args = Diot(x = 1)
 	assert ps3_copy.pProc1.args.x == 1
 	assert ps3_copy.pProc2.args.x == 1
 	assert ps3_copy.pProc3.args.x == 1

@@ -4,12 +4,13 @@ import random
 from time import sleep
 from threading import Lock
 from queue import Queue
-from .utils import Box, StateMachine, PQueue, ThreadPool
+from diot import Diot
+from .utils import StateMachine, PQueue, ThreadPool
 from .logger import logger
 from .exception import JobBuildingException, JobFailException
 from .plugin import pluginmgr
 
-STATES = Box(
+STATES = Diot(
 	INIT         = '00_init',
 	BUILDING     = '99_building',
 	BUILT        = '97_built',
@@ -81,7 +82,7 @@ class Jobmgr:
 
 		machine = StateMachine(
 			model              = jobs,
-			states             = STATES.values(),
+			states             = list(STATES.values()),
 			initial            = STATES.INIT,
 			send_event         = True,
 			after_state_change = self.progressbar)
@@ -186,7 +187,7 @@ class Jobmgr:
 			return
 		pool = ThreadPool(self.nslots, initializer = self.worker)
 		pool.join(cleanup = self.cleanup)
-		self.progressbar(Box(model = self.jobs[-1]))
+		self.progressbar(Diot(model = self.jobs[-1]))
 
 	def _getJobs(self, *states):
 		return [job for job in self.jobs if job.state in states]

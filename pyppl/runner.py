@@ -7,9 +7,10 @@ import sys
 from os import getcwd
 from multiprocessing import Lock
 from psutil import pid_exists
+from diot import Diot
 import cmdy
 from .job import Job, FILE_STDOUT, FILE_STDERR, DIR_OUTPUT, RC_ERROR_SUBMISSION
-from .utils import killtree, chmodX, Box
+from .utils import killtree, chmodX
 from .exception import RunnerSshError
 
 class RunnerLocal(Job):
@@ -157,11 +158,11 @@ class RunnerSsh(RunnerLocal):
 		Submit the job
 		@returns:
 			The `utils.cmd.Cmd` instance if succeed
-			else a `Box` object with stderr as the exception and rc as 1
+			else a `Diot` object with stderr as the exception and rc as 1
 		"""
 		cmd = self.ssh(_ = cmdy.ls(self.script, _hold = True, _raise = False).cmd)
 		if cmd.rc != 0:
-			dbox        = Box()
+			dbox        = Diot()
 			dbox.rc     = RC_ERROR_SUBMISSION
 			dbox.cmd    = cmd.cmd
 			dbox.pid    = -1
@@ -254,7 +255,7 @@ class RunnerSge (Job):
 		Submit the job
 		@returns:
 			The `utils.cmd.Cmd` instance if succeed
-			else a `Box` object with stderr as the exception and rc as 1
+			else a `Diot` object with stderr as the exception and rc as 1
 		"""
 		cmd = self.qsub(self.script)
 		if cmd.rc == 0:
@@ -344,7 +345,7 @@ class RunnerSlurm (Job):
 		Submit the job
 		@returns:
 			The `utils.cmd.Cmd` instance if succeed
-			else a `Box` object with stderr as the exception and rc as 1
+			else a `Diot` object with stderr as the exception and rc as 1
 		"""
 		cmd = self.sbatch(self.script)
 		if cmd.rc == 0:

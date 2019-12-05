@@ -1,11 +1,13 @@
 """job module for PyPPL"""
 import re
+from itertools import chain
 from os import utime
 from pathlib import Path
 from datetime import datetime
 import yaml
 import cmdy
-from .utils import Box, OBox, chmodX, briefPath, filesig, fileflush, fs
+from diot import Diot, OrderedDiot, NestDiot
+from .utils import chmodX, briefPath, filesig, fileflush, fs
 from .logger import logger as _logger
 from .exception import JobInputParseError, JobOutputParseError
 from .plugin import pluginmgr
@@ -68,7 +70,7 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 		self.lasterr = ''
 		self.ntry    = 0
 		self.input   = {}
-		self.output  = OBox()
+		self.output  = OrderedDiot()
 
 		runner_name = self.__class__.__name__[6:].lower()
 		self.config = self.proc.config.get(runner_name + 'Runner', {})
@@ -85,9 +87,9 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 		"""@API
 		Prepare parameters for script wrapping
 		@returns:
-			(Box): A `Box` containing the parts to wrap the script.
+			(Diot): A `Diot` containing the parts to wrap the script.
 		"""
-		return Box(
+		return Diot(
 			header  = '',
 			pre     = self.config.get('preScript', ''),
 			post    = self.config.get('postScript', ''),
@@ -101,8 +103,8 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 		@returns:
 			(dict): The data used to render the templates.
 		"""
-		ret  = Box(
-			job = Box(
+		ret  = NestDiot(
+			job = dict(
 				index    = self.index,
 				indir    = str(self.dir / DIR_INPUT),
 				outdir   = str(self.dir / DIR_OUTPUT),
@@ -111,8 +113,8 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 				errfile  = str(self.dir / FILE_STDERR),
 				pidfile  = str(self.dir / FILE_PID),
 				cachedir = str(self.dir / DIR_OUTPUT / '.jobcache')),
-			i = Box({key: val[1] for key, val in self.input.items()}),
-			o = Box({key: val[1] for key, val in self.output.items()}))
+			i = dict({key: val[1] for key, val in self.input.items()}),
+			o = dict({key: val[1] for key, val in self.output.items()}))
 		ret.update(self.proc.procvars)
 		return ret
 
@@ -558,7 +560,7 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 		"""@API
 		Calculate the signature of the job based on the input/output and the script
 		@returns:
-			(Box): The signature of the job
+			(Diot): The signature of the job
 		"""
 		if self._signature:
 			return self._signature
@@ -576,7 +578,7 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 		outype_file  = procclass.OUT_FILETYPE[0]
 		outype_dir   = procclass.OUT_DIRTYPE[0]
 
-		ret        = Box()
+		ret        = Diot()
 		ret.script = sig
 		ret.i      = {intype_var: {}, intype_file: {}, intype_files: {}}
 		ret.o      = {outype_var: {}, outype_file: {}, outype_dir: {}}
@@ -719,7 +721,7 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 		outype_file  = procclass.OUT_FILETYPE[0]
 		outype_dir   = procclass.OUT_DIRTYPE[0]
 		outmtime     = -1
-		for outype, sig in signature.o[outype_file].items() + signature.o[outype_dir].items():
+		for outype, sig in chain(signature.o[outype_file].items(), signature.o[outype_dir].items()):
 			if not sig or not fs.exists(sig[0]):
 				self.logger("Outfile (o.{}) not exists: {}".format(outype, sig[0]),
 					dlevel = "CACHE_SIGOUTFILE_DIFF", level = 'debug')
@@ -731,7 +733,8 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 				dlevel = "CACHE_SCRIPT_NEWER", level = 'debug')
 			return False
 		# check if input file or script is newer than output file
-		for intype, sig in signature.i[intype_files].items() + signature.i[intype_file].items():
+		for intype, sig in chain(signature.i[intype_files].items(),
+			signature.i[intype_file].items()):
 			if not sig or not fs.exists(sig[0]):
 				self.logger("Infile (i.{}) not exists: {}".format(intype, sig[0]),
 					dlevel = "CACHE_SIGINFILE_DIFF", level = 'debug')
