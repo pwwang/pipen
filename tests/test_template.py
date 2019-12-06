@@ -7,7 +7,7 @@ from os import path, readlink
 from liquid import Liquid, LiquidRenderError
 from collections import OrderedDict
 from pyppl.template import Template, TemplateJinja2, TemplateLiquid
-from pyppl.utils import Box, OBox
+from diot import Diot, OrderedDiot
 
 HERE = Path(__file__).resolve().parent
 
@@ -148,22 +148,22 @@ class _TemplateFilter(object):
 		return engine(var, **evars).render(data)
 
 	@staticmethod
-	def box(var):
+	def diot(var):
 		"""
-		Turn a dict into a Box object
+		Turn a dict into a Diot object
 		"""
 		if not isinstance(var, dict):
-			raise TypeError('Cannot coerce non-dict object to Box.')
-		return 'Box(%r)' % var.items()
+			raise TypeError('Cannot coerce non-dict object to Diot.')
+		return 'Diot(%r)' % var.items()
 
 	@staticmethod
-	def obox(var):
+	def odiot(var):
 		"""
-		Turn a dict into an ordered Box object
+		Turn a dict into an ordered Diot object
 		"""
 		if not isinstance(var, dict):
-			raise TypeError('Cannot coerce non-dict object to OrderedBox.')
-		return 'OBox(%r)' % var.items()
+			raise TypeError('Cannot coerce non-dict object to OrderedDiot.')
+		return 'OrderedDiot(%r)' % var.items()
 
 	@staticmethod
 	def glob1(*paths, first = True):
@@ -180,8 +180,8 @@ class _TemplateFilter(object):
 @pytest.fixture
 def default_envs():
 	return {
-		'Box'      : Box,
-		'OBox'     : OBox,
+		'Diot'      : Diot,
+		'ODiot'     : OrderedDiot,
 		'R'        : _TemplateFilter.R,
 		'Rvec'     : _TemplateFilter.R, # will be deprecated!
 		'Rlist'    : _TemplateFilter.Rlist,
@@ -191,8 +191,8 @@ def default_envs():
 		# /a/b/c[1].txt => c.txt
 		'basename' : _TemplateFilter.basename,
 		'bn'       : _TemplateFilter.basename,
-		'box'      : _TemplateFilter.box,
-		'obox'     : _TemplateFilter.obox,
+		'diot'      : _TemplateFilter.diot,
+		'odiot'     : _TemplateFilter.odiot,
 		'stem'     : _TemplateFilter.filename,
 		'filename' : _TemplateFilter.filename,
 		'fn'       : _TemplateFilter.filename,
@@ -351,13 +351,13 @@ class TestTemplateLiquid:
 		with pytest.raises(LiquidRenderError):
 			liquid.render({'x': '', '__engine': None})
 
-	def test_box(self, default_envs):
+	def test_diot(self, default_envs):
 		with pytest.raises(LiquidRenderError):
-			TemplateLiquid('{{x|box}}', **default_envs).render({'x': []})
+			TemplateLiquid('{{x|diot}}', **default_envs).render({'x': []})
 		with pytest.raises(LiquidRenderError):
-			TemplateLiquid('{{x|obox}}', **default_envs).render({'x': []})
-		TemplateLiquid('{{x|box}}', **default_envs).render({'x': {}}) == {}
-		TemplateLiquid('{{x|obox}}', **default_envs).render({'x': {}}) == {}
+			TemplateLiquid('{{x|odiot}}', **default_envs).render({'x': []})
+		TemplateLiquid('{{x|diot}}', **default_envs).render({'x': {}}) == {}
+		TemplateLiquid('{{x|odiot}}', **default_envs).render({'x': {}}) == {}
 
 
 @pytest.mark.skipif(not installed('jinja2'), reason = 'Jinja2 is not installed')

@@ -32,7 +32,7 @@ def test_init(jobs_default):
 	(OSError, ['ERROR']),
 	(JobBuildingException, ['Job building failed, quitting pipeline']),
 	(JobFailException, ['Error encountered (errhow = halt), quitting pipeline']),
-	(KeyboardInterrupt, ['[Ctrl-c] detected, quitting pipeline']),
+	(KeyboardInterrupt, ['[Ctrl-C] detected, quitting pipeline']),
 ])
 def test_cleanup(jobs_default, caplog, exc, expect_msg):
 	jm = Jobmgr(jobs_default)

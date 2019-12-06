@@ -363,6 +363,3 @@ To register yours:
 PyPPL.registerRunner(RunnerMy)
 ```
 After registration, you are able to ask a process to use it: `pXXX.runner = "my"`
-
-
-

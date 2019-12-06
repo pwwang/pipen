@@ -132,7 +132,7 @@ DEBUG_LINES = {
 	'CACHE_SIGOUTVAR_DIFF'         : -1,
 	'CACHE_SIGOUTFILE_DIFF'        : -1,
 	'CACHE_SIGOUTDIR_DIFF'         : -1,
-	'CACHE_SIGFILE_NOTEXISTS'      : -1,
+	'CACHE_SIGFILE_NOTEXISTS'      : -2,
 	'EXPECT_CHECKING'              : -1,
 	'INFILE_RENAMING'              : -1,
 	'INFILE_EMPTY'                 : -1,

@@ -5,7 +5,7 @@ import cmdy
 from pyppl.utils import killtree
 from hashlib import md5
 from pathlib import Path
-from box import Box
+from diot import Diot
 from pyparam import params
 
 DATABASE = Path(__file__).resolve().parent / 'sge.jobs.log'
@@ -95,5 +95,5 @@ class SgeJob:
 
 if __name__ == "__main__":
 	params._.desc = 'Job to submit'
-	opts = params._parse(dict_wrapper=Box)
+	opts = params._parse(dict_wrapper=Diot)
 	SgeJob(opts._).submit()

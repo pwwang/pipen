@@ -4,12 +4,13 @@ import random
 from time import sleep
 from threading import Lock
 from queue import Queue
-from .utils import Box, StateMachine, PQueue, ThreadPool
+from diot import Diot
+from .utils import StateMachine, PQueue, ThreadPool
 from .logger import logger
 from .exception import JobBuildingException, JobFailException
 from .plugin import pluginmgr
 
-STATES = Box(
+STATES = Diot(
 	INIT         = '00_init',
 	BUILDING     = '99_building',
 	BUILT        = '97_built',
@@ -81,7 +82,7 @@ class Jobmgr:
 
 		machine = StateMachine(
 			model              = jobs,
-			states             = STATES.values(),
+			states             = list(STATES.values()),
 			initial            = STATES.INIT,
 			send_event         = True,
 			after_state_change = self.progressbar)
@@ -186,7 +187,7 @@ class Jobmgr:
 			return
 		pool = ThreadPool(self.nslots, initializer = self.worker)
 		pool.join(cleanup = self.cleanup)
-		self.progressbar(Box(model = self.jobs[-1]))
+		self.progressbar(Diot(model = self.jobs[-1]))
 
 	def _getJobs(self, *states):
 		return [job for job in self.jobs if job.state in states]
@@ -242,7 +243,7 @@ class Jobmgr:
 	def cleanup(self, ex = None):
 		"""@API
 		Cleanup the pipeline when
-		- Ctrl-c hit
+		- Ctrl-C hit
 		- error encountered and `proc.errhow` = 'terminate'
 		@params:
 			ex (Exception): The exception raised by workers
@@ -251,13 +252,13 @@ class Jobmgr:
 		message = None
 		if isinstance(ex, JobBuildingException):
 			message = 'Job building failed, quitting pipeline ' + \
-				'(Ctrl-c to skip killing jobs) ...'
+				'(Ctrl-C to skip killing jobs) ...'
 		elif isinstance(ex, JobFailException):
 			message = 'Error encountered (errhow = halt), quitting pipeline ' + \
-				'(Ctrl-c to skip killing jobs) ...'
+				'(Ctrl-C to skip killing jobs) ...'
 		elif isinstance(ex, KeyboardInterrupt):
-			message = '[Ctrl-c] detected, quitting pipeline ' + \
-				'(Ctrl-c again to skip killing jobs) ...'
+			message = '[Ctrl-C] detected, quitting pipeline ' + \
+				'(Ctrl-C again to skip killing jobs) ...'
 
 		if message:
 			logger.warning(message, proc = self.proc.name())

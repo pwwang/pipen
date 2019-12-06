@@ -3,7 +3,7 @@ import os
 os.environ['PYPPL_default__log'] = 'py:{"levels": "all"}'
 from pathlib import Path
 import pytest
-from pyppl import PyPPL, Proc, Box, ProcSet, runner
+from pyppl import PyPPL, Proc, Diot, ProcSet, runner
 from pyppl.utils import config, fs
 from pyppl.proctree import ProcTree
 from pyppl.exception import PyPPLProcRelationError, ProcTreeProcExists, RunnerClassNameError
@@ -38,7 +38,7 @@ def pset():
 	p17.depends = p16, p18
 	p18.depends = p16
 	p16.depends = p14, p15
-	return Box(p15 = p15, p16 = p16, p17 = p17, p18 = p18, p19 = p19, p20 = p20, p14 = p14)
+	return Diot(p15 = p15, p16 = p16, p17 = p17, p18 = p18, p19 = p19, p20 = p20, p14 = p14)
 
 def test_preload_config():
 	assert config.desc == 'No description'
@@ -75,7 +75,7 @@ def test_init(tmp_path, caplog):
 @pytest.fixture
 def defprocs():
 	ProcTree.NODES.clear()
-	ret = Box(
+	ret = Diot(
 		pAny2Procs1 = Proc(),
 		pAny2Procs2 = Proc(),
 		pAny2Procs3 = Proc(),

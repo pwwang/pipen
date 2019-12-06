@@ -90,7 +90,7 @@
 
 !!! example "class: `Channel (iterable)`"
 	The channen class, extended from `list`
-	
+
 
 	!!! tip "staticmethod: `_tuplize (atuple)`"
 		A private method, try to convert an element to tuple
@@ -623,11 +623,11 @@
 
 	!!! abstract "method: `build (self)`"
 		Initiate a job, make directory and prepare input, output and script.
-		
+
 
 	!!! abstract "method: `cache (self)`"
 		Truly cache the job (by signature)
-		
+
 
 	!!! note "property: `data ()`"
 		Data for rendering templates
@@ -655,11 +655,6 @@
 
 
 			- `(bool)`:  Whether the job is export-cached.
-
-	!!! abstract "method: `isForceCached (self)`"
-		Force the job to be cached.
-		If the output was not generated in previous run, generate dry-run results for it.
-		
 
 	!!! abstract "method: `isRunningImpl (self)`"
 		Implemetation of telling whether the job is running
@@ -724,7 +719,7 @@
 
 	!!! abstract "method: `report (self)`"
 		Report the job information to log
-		
+
 
 	!!! abstract "method: `reset (self)`"
 		Clear the intermediate files and output files
@@ -743,7 +738,7 @@
 		- **returns**
 
 
-			- `(Box)`:  A `Box` containing the parts to wrap the script.
+			- `(Diot)`:  A `Diot` containing the parts to wrap the script.
 
 	!!! abstract "method: `showError (self, totalfailed)`"
 		Show the error message if the job failed.
@@ -759,7 +754,7 @@
 		- **returns**
 
 
-			- `(Box)`:  The signature of the job
+			- `(Diot)`:  The signature of the job
 
 	!!! abstract "method: `submit (self)`"
 		Submit the job
@@ -783,7 +778,7 @@
 
 	!!! abstract "method: `wrapScript (self)`"
 		Wrap the script to run
-		
+
 
 ## class: Jobmgr
 
@@ -800,7 +795,7 @@
 
 	!!! abstract "method: `cleanup (self, ex)`"
 		Cleanup the pipeline when
-		- Ctrl-c hit
+		- Ctrl-C hit
 		- error encountered and `proc.errhow` = 'terminate'
 
 		- **params**
@@ -821,7 +816,7 @@
 
 	!!! abstract "method: `start (self)`"
 		Start the queue.
-		
+
 
 	!!! abstract "method: `worker (self)`"
 		The worker to build, submit and poll the jobs
@@ -949,7 +944,7 @@
 
 !!! example "class: `ProcSet (self, *procs, **kwargs)`"
 	The ProcSet for a set of processes
-	
+
 
 	!!! abstract "method: `__getitem__ (self, item, _ignore_default)`"
 		Process selector, always return Proxy object
@@ -1039,7 +1034,7 @@
 
 	!!! abstract "method: `restoreStates (self)`"
 		Restore the initial state of a procset
-		
+
 
 ## class: ProcTree
 
@@ -1053,7 +1048,7 @@
 
 	!!! abstract "method: `__init__ (self)`"
 		ProcTruee constructor
-		
+
 
 	!!! tip "staticmethod: `check (proc)`"
 		Check whether a process with the same id and tag exists
@@ -1182,7 +1177,7 @@
 
 	!!! abstract "method: `init (cls)`"
 		Set the status of all `ProcNode`s
-		
+
 
 	!!! tip "staticmethod: `register (*procs)`"
 		Register the process
@@ -1194,7 +1189,7 @@
 
 	!!! tip "staticmethod: `reset ()`"
 		Reset the status of all `ProcNode`s
-		
+
 
 	!!! abstract "method: `setStarts (self, starts)`"
 		Set the start processes
@@ -1208,7 +1203,7 @@
 
 !!! example "class: `Logger (self, name, bake)`"
 	A wrapper of logger
-	
+
 
 	!!! abstract "method: `__getattr__ (self, name)`"
 		Allows logger.info way to specify the level
@@ -1295,7 +1290,7 @@
 
 	!!! abstract "method: `__init__ (self, source, **envs)`"
 		Template construct
-		
+
 
 	!!! abstract "method: `registerEnvs (self, **envs)`"
 		Register extra environment
@@ -1317,11 +1312,9 @@
 
 !!! example "class: `TemplateLiquid (self, source, **envs)`"
 	liquidpy template wrapper.
-	
+
 
 ## class: TemplateJinja2
 
 !!! example "class: `TemplateJinja2 (self, source, **envs)`"
 	Jinja2 template wrapper
-	
-

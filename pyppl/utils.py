@@ -10,44 +10,11 @@ from hashlib import md5
 from threading import Thread
 import psutil
 from transitions import Transition, Machine
-from box import Box as _Box
 import cmdy
 from simpleconf import Config
 from . import _fsutil as fs
 
 config = Config() # pylint: disable=invalid-name
-
-class Box(_Box): # pylint: disable=too-many-instance-attributes
-	"""
-	Subclass of box.Box to fix box_intact_types to [list] and
-	rewrite __repr__ to make the string results back to object
-	Requires python-box ^3.4.1
-	"""
-
-	def __init__(self, *args, **kwargs):
-		kwargs['box_intact_types'] = kwargs.pop('box_intact_types', [list])
-		super(Box, self).__init__(*args, **kwargs)
-
-	def __repr__(self):
-		"""Make sure repr can retrieve the object back"""
-		ret = 'Box(%r)' % self.items()
-		#return ret.replace('<BoxList: [', '[').replace(']>', ']')
-		return ret
-
-	def __str__(self):
-		return super(Box, self).__repr__()
-
-class OBox(Box):
-	"""Ordered Box"""
-	def __init__(self, *args, **kwargs):
-		kwargs['ordered_box'] = True
-		super(OBox, self).__init__(*args, **kwargs)
-
-	def __repr__(self):
-		"""Make sure repr can retrieve the object back"""
-		return 'OBox(%r)' % self.items()
-
-OrderedBox = OBox # pylint: disable=invalid-name
 
 def loadConfigurations(conf, *cfgfiles):
 	"""Load the configuration files"""
@@ -337,8 +304,8 @@ def formatDict(val, keylen, alias = None):
 	{"a": 1}         | l     | [l] { a: 1 }
 	{"a": 1, "b": 2} | x     | [x] { a: 1,
 	                 |       |       b: 2 }
-	Box(a=1)         |       | <Box> { a: 1 }
-	Box(a=1,b=2)     | b     | [b] <Box>
+	Diot(a=1)        |       | <Diot> { a: 1 }
+	Diot(a=1,b=2)    | b     | [b] <Diot>
 	                 |       |     { a: 1,
 	                 |       |       b: 2 }
 	"""
@@ -636,6 +603,7 @@ class MultiDestTransition(Transition):
 			self.execute = super(MultiDestTransition, self).execute
 
 	def execute(self, event_data): # pylint: disable=method-hidden
+		"""Excute the function"""
 		func = self._func if callable(self._func) else getattr(event_data.model, self._func)
 		self._result = func()
 		super(MultiDestTransition, self).execute(event_data)
@@ -649,6 +617,6 @@ class MultiDestTransition(Transition):
 	def dest(self, value):
 		self._dest = value
 
-class StateMachine(Machine):
+class StateMachine(Machine): # pylint: disable=too-few-public-methods
 	"""StateMachine with multiple destination support"""
 	transition_cls = MultiDestTransition

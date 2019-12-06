@@ -1,3 +1,8 @@
+# 2.3.2 (2019.12.5)
+- Infer job cache status when not job.cache file generated (main thread quits before job done)
+- Remove force cache mode
+- Use `diot` instead of `python-box`
+
 # 2.3.1 (2019.11.29)
 - Fix global config.args been overwritten when multiple pipelines in one session
 - Wrap long process descriptions in log

@@ -2,7 +2,8 @@ import sys
 import pytest
 import psutil
 from faker import Faker
-from pyppl.utils import Box, OrderedBox, split, funcsig, uid, formatSecs, alwaysList, \
+from diot import Diot, OrderedDiot
+from pyppl.utils import split, funcsig, uid, formatSecs, alwaysList, \
 	briefList, briefPath, killtree, chmodX, filesig, fileflush, ThreadEx, ThreadPool, \
 	PQueue, Hashable, MultiDestTransition, StateMachine, varname, expandNumbers, formatDict, \
 	tryDeepCopy
@@ -11,52 +12,6 @@ pytest_plugins = ["tests.fixt_utils"]
 
 def setup_module(module):
 	varname.index = 0
-
-@pytest.mark.box
-@pytest.mark.parametrize('construct', [
-	{}, {'a':1}
-])
-def test_box_init(construct):
-	assert Box(construct).__dict__['_box_config']['box_intact_types'] == (list, )
-
-@pytest.mark.box
-@pytest.mark.parametrize('construct,expect,strexpt', [
-	({}, "Box([])", "<Box: {}>"),
-	([('a', 1), ('b', 2)],
-		"Box([('a', 1), ('b', 2)])", "<Box: {'a': 1, 'b': 2}>"),
-])
-def test_box_repr(construct, expect, strexpt):
-	assert repr(Box(construct)) == expect
-	assert str(Box(construct)) == strexpt
-
-@pytest.mark.box
-@pytest.mark.parametrize('construct', [
-	{},
-	[('a', 1), ('b', 2)],
-])
-def test_box_copy(construct):
-	box = Box(construct)
-	box2 = box.copy()
-	assert id(box) != id(box2)
-	box3 = box.__copy__()
-	assert id(box) != id(box3)
-
-@pytest.mark.box
-@pytest.mark.parametrize('construct', [
-	{},
-	[('a', 1), ('b', 2)],
-])
-def test_obox_init(construct):
-	assert OrderedBox(construct).__dict__['_box_config']['box_intact_types'] == (list, )
-	assert OrderedBox(construct).__dict__['_box_config']['ordered_box']
-
-@pytest.mark.repr
-@pytest.mark.parametrize('construct,expect', [
-	({}, "OBox([])"),
-	([('b', 1), ('a', 2)], "OBox([('b', 1), ('a', 2)])"),
-])
-def test_obox_repr(construct,expect):
-	assert repr(OrderedBox(construct)) == expect
 
 def test_varname(fixt_varname):
 	assert fixt_varname.var == fixt_varname.expt
@@ -291,7 +246,7 @@ def test_expandNumbers(numbers, expt):
 @pytest.mark.parametrize('val,keylen,alias,expt',[
 	('a', 0, None, "a"),
 	('a', 0, 'b', "[b] a"),
-	(Box(), 0, 'l', '[l] <Box> {  }'),
+	(Diot(), 0, 'l', '[l] <Diot> {  }'),
 	({"a":1}, 0, 'l', '[l] { a: 1 }'),
 	({"a":1, "b":2}, 0, 'x',
 	# =>
@@ -305,9 +260,9 @@ def test_expandNumbers(numbers, expt):
 	# =>
 	        '[x11] { a: 1,\n'
 	'                b: 2, }'),
-	(OrderedBox([("a",1), ("b",2)]), 4, 'x11',
+	(OrderedDiot([("a",1), ("b",2)]), 4, 'x11',
 	# =>
-	        '[x11] <OBox> \n'
+	        '[x11] <OrderedDiot> \n'
 	'              { a: 1,\n'
 	'                b: 2, }'),
 ])
@@ -318,6 +273,7 @@ def test_formatDict(val, keylen, alias, expt):
 	(None, None, ['is']),
 	(1, 1, ['is']),
 	(sys, sys, ['is']),
+	(Diot(a = Diot(b = Diot(c=1))), Diot(a = Diot(b = Diot(c=1))), ['=']),
 	([1, sys, [1]], [1, sys, [1]], [(0, 'is'), (1, 'is'), (2, '=')]),
 	({'a': sys, 'b': [1]}, {'a': sys, 'b': [1]}, [('a', 'is'), ('b', '=')])
 ])

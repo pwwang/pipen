@@ -22,15 +22,14 @@ A: Basically, `args` are supposed to be arguments shared among all jobs in the p
 
 A: No, it will be a copy of the original one. So the original be used somewhere else.
 
-**Q: Can I dry-run a process?**  
+**Q: Can I dry-run a process?**
 
 A: Yes, just use the dry  runner: `p.runner = "dry"`. The runner will just create empty files/directories for output, and skip to run the script.
 
-**Q: Can I disable the logs on the terminal?**  
+**Q: Can I disable the logs on the terminal?**
 
 A: Yes, just set `{"log": {"levels": None}}` in pipeline configurations.
 
 **Q: How to migrate from 1.1.2**
 
 A: v1.2.0+ uses `liquidpy` as default template engine. Input and output are now under namespace `i` and `o` instead of `in` and `out`.
-

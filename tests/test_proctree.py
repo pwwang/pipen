@@ -1,6 +1,6 @@
 import pytest
 
-from pyppl import Proc, Box, ProcSet
+from pyppl import Proc, Diot, ProcSet
 from pyppl.proctree import ProcNode, ProcTree
 from pyppl.exception import ProcTreeProcExists, ProcTreeParseError#, ProcHideError
 
@@ -27,7 +27,7 @@ def set1():
 	p18.depends = p16
 	p16.depends = p15
 	ProcTree.register(p15)
-	return Box(p15 = p15, p16 = p16, p17 = p17, p18 = p18, p19 = p19, p20 = p20)
+	return Diot(p15 = p15, p16 = p16, p17 = p17, p18 = p18, p19 = p19, p20 = p20)
 
 @pytest.fixture(scope = 'function')
 def set2():
@@ -48,7 +48,7 @@ def set2():
 	p18.depends = p16
 	p16.depends = p14, p15
 	ProcTree.register(p14, p15)
-	return Box(p15 = p15, p16 = p16, p17 = p17, p18 = p18, p19 = p19, p20 = p20, p14 = p14)
+	return Diot(p15 = p15, p16 = p16, p17 = p17, p18 = p18, p19 = p19, p20 = p20, p14 = p14)
 
 def test_procnode():
 	# init

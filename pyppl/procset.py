@@ -4,7 +4,8 @@ The procset for a set of procs
 import inspect
 from types import GeneratorType
 from fnmatch import fnmatch, filter as fnfilter
-from .utils import varname, Box, OBox
+from diot import Diot, OrderedDiot
+from .utils import varname
 
 class Proxy(list):
 	"""
@@ -116,12 +117,12 @@ class ProcSet:
 		self.__dict__['tag']       = kwargs.get('tag')
 		self.__dict__['starts']    = Proxy()
 		self.__dict__['ends']      = Proxy()
-		self.__dict__['delegates'] = OBox()
-		self.__dict__['procs']     = OBox()
-		self.__dict__['modules']   = Box()
+		self.__dict__['delegates'] = OrderedDiot()
+		self.__dict__['procs']     = OrderedDiot()
+		self.__dict__['modules']   = Diot(diot_nest = False)
 		# save initial states before a module is called
 		# states will be resumed before each module is called
-		self.__dict__['initials']  = Box()
+		self.__dict__['initials']  = Diot(diot_nest = False)
 
 		ifcopy  = kwargs.get('copy', True)
 		depends = kwargs.get('depends', True)
@@ -270,9 +271,9 @@ class ProcSet:
 		if hasattr(item, 'id') and hasattr(item, 'tag') and not isinstance(item, ProcSet):
 			return Proxy([self.procs[item.id]])
 		if isinstance(item, slice):
-			return Proxy(self.__getattr__(procid) for procid in self.procs.keys()[item])
+			return Proxy(self.__getattr__(procid) for procid in list(self.procs.keys())[item])
 		if isinstance(item, int):
-			return self[self.procs.keys()[item]]
+			return self[list(self.procs.keys())[item]]
 		if isinstance(item, (tuple, list, GeneratorType)):
 			ret = Proxy()
 			ret.add(Proxy(it for itm in item for it in self[itm]))

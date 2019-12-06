@@ -8,9 +8,10 @@ from collections import OrderedDict
 from os import path
 import yaml
 import filelock
+from diot import Diot, OrderedDiot
 from simpleconf import NoSuchProfile, Config
 from .logger import logger
-from .utils import Box, OBox, Hashable, fs
+from .utils import Hashable, fs
 from .jobmgr import Jobmgr, STATES
 from .procset import ProcSet
 from .channel import Channel
@@ -80,7 +81,7 @@ class Proc(Hashable):
 		# Get configuration from config
 		self.__dict__['config'] = Config()
 		# computed props
-		self.__dict__['props'] = Box(box_intact_types = [list])
+		self.__dict__['props'] = Diot(diot_nest = False)
 
 		defaultconfig = dict.copy(utils.config)
 		# The id (actually, it's the showing name) of the process
@@ -133,7 +134,7 @@ class Proc(Hashable):
 		# The original name of the process if it's copied
 		self.props.origin = defaultconfig['id']
 		# The computed output
-		self.props.output = OBox()
+		self.props.output = OrderedDiot()
 		# data for proc.xxx in template
 		self.props.procvars = {}
 		# Valid return code
@@ -258,7 +259,7 @@ class Proc(Hashable):
 					'Script file does not exist: %s' % scriptpath)
 			self.config[name] = "file:%s" % scriptpath
 		elif name in ('args', 'envs'):
-			self.config[name] = Box(value)
+			self.config[name] = Diot(value)
 		elif name == 'input' \
 			and self.config[name] \
 			and not isinstance(value, str) \
@@ -398,7 +399,7 @@ class Proc(Hashable):
 		if self.props._suffix:
 			return self.props._suffix
 
-		sigs = OBox()
+		sigs = OrderedDiot()
 		# use cmdy.which instead? what about "python test.py"
 		sigs.argv0 = path.realpath(sys.argv[0])
 		sigs.id    = self.id
@@ -451,7 +452,9 @@ class Proc(Hashable):
 		elif isinstance(self.config.rc, int):
 			self.props.rc = [self.config.rc]
 		else:
-			self.props.rc = self.config.rc
+			self.props.rc = list(self.config.rc)
+		if 0 not in self.props.rc:
+			self.props.rc.append(0)
 
 		# workdir
 		if 'workdir' in self.sets:
@@ -474,7 +477,7 @@ class Proc(Hashable):
 			proclock = path.join(self.workdir, 'proc.lock')
 			logger.warning('Another instance of this process is running, waiting ...',
 				proc = self.id)
-			logger.warning('If not, remove the process lock file (or hit Ctrl-c) and try again:',
+			logger.warning('If not, remove the process lock file (or hit Ctrl-C) and try again:',
 				proc = self.id)
 			logger.warning('- %s', proclock, proc = self.id)
 			try:
@@ -493,13 +496,13 @@ class Proc(Hashable):
 			# echo
 			if self.config.echo in [True, False, 'stderr', 'stdout']:
 				if self.config.echo is True:
-					self.props.echo = Box({ 'jobs': 0 })
+					self.props.echo = Diot(jobs = 0)
 				elif self.config.echo is False:
-					self.props.echo = Box({ 'jobs': [], 'type': 'all' })
+					self.props.echo = Diot(jobs = [], type = 'all')
 				else:
-					self.props.echo = Box({ 'jobs': 0, 'type': Box({self.config.echo: None}) })
+					self.props.echo = Diot(jobs = 0, type = Diot({self.config.echo: None}))
 			else:
-				self.props.echo = Box(self.config.echo)
+				self.props.echo = Diot(self.config.echo)
 
 			if 'jobs' not in self.echo:
 				self.echo['jobs'] = 0
@@ -648,10 +651,10 @@ class Proc(Hashable):
 		pvkeys  = {key for key in allkeys
 			if key in show or (key in self.sets and key not in hide)}
 
-		procvars = Box()
+		procvars = Diot()
 		procargs = self.args
-		if not isinstance(procargs, Box):
-			procargs = Box(procargs)
+		# if not isinstance(procargs, Diot):
+		# 	procargs = Diot(procargs)
 
 		alias   = { val:key for key, val in Proc.ALIAS.items() }
 		maxlen  = 0 # used to calculate the alignment
@@ -709,10 +712,10 @@ class Proc(Hashable):
 				if lenparts > 3:
 					raise ProcOutputError(out, 'Too many parts for process output in')
 				output[':'.join(outparts[:-1])] = outparts[-1]
-		elif not (isinstance(output, (OBox, OrderedDict)) or (
+		elif not (isinstance(output, (OrderedDiot, OrderedDict)) or (
 			isinstance(output, dict) and len(output) == 1)):
 			raise ProcOutputError(type(output).__name__,
-				'Process output type should be one of list/str/OrderedDict/OBox/OrderedBox, '
+				'Process output type should be one of list/str/OrderedDict/OrderedDiot, '
 				'or dict with len=1, not')
 
 		# output => {'a': '{{i.invar}}', 'b:file': '{{i.infile | fn}}'}
@@ -816,11 +819,11 @@ class Proc(Hashable):
 		config_with_profiles = utils.config.copy()
 		# make sure configs in __init__ be loaded
 		# don't use default, which will overwrite utils.config.args, envs
-		config_with_profiles._load({'__self__': dict.copy(self.config)})
-
+		config_with_profiles._load({'default': dict.copy(self.config)})
+		config_with_profiles._use()
 		assert isinstance(config, type(self.config))
 		# load extra profiles specified to PyPPL()
-		for key, val in config._protected['cached'].items():
+		for val in config._protected['cached'].values():
 			if '__noloading__' not in val:
 				config_with_profiles._load(val)
 

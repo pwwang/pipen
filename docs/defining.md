@@ -51,7 +51,7 @@ Of course, you can do that, but a common argument is not usually generated from 
     When use a key with dot `.` in `pXXX.args`, we should  use `{{args[key]}}` to access it.
 
 !!! hint
-    `PyPPL` uses `Box` (from [`python-box`][14]) to allow dot to be used to refer the attributes. So you can set the value of `args` like this:
+    `PyPPL` uses `Diot` (from [`diot`][14]) to allow dot to be used to refer the attributes. So you can set the value of `args` like this:
     ```python
     pXXX.args.bedtools = 'bedtools'
     ```
@@ -185,6 +185,6 @@ PyPPL().start(pBam, pRef).run()
 [11]: ../export/#control-of-export-of-cached-jobs
 [12]: ../error/
 [13]: ../input-output/
-[14]: https://pypi.org/project/python-box/
+[14]: https://pypi.org/project/diot/
 [15]: https://docs.python.org/2/library/subprocess.html#popen-constructor
 [16]: https://en.wikipedia.org/wiki/Exit_status

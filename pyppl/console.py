@@ -10,11 +10,12 @@ from pprint import pformat
 from contextlib import redirect_stderr
 from datetime import date, timedelta, datetime
 from concurrent.futures import ThreadPoolExecutor
+from diot import Diot
 import cmdy
 from colorama import Fore, Style
 from pyparam import commands, Helps, HelpAssembler
 from . import PyPPL
-from .utils import Box, config, fs
+from .utils import config, fs
 from .plugin import pluginmgr
 
 HELP_ASSEMBLER = HelpAssembler()
@@ -405,7 +406,7 @@ def compare(opts):
 
 def main():
 	"""Main entrance"""
-	command, opts, _ = commands._parse(dict_wrapper = Box)
+	command, opts, _ = commands._parse(dict_wrapper = Diot)
 	if command == 'runner':
 		command = 'profile'
 	if command == 'completions':

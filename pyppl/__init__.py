@@ -1,7 +1,7 @@
 """The main module of PyPPL"""
 # pylint: disable=protected-access,no-member
 
-__version__ = "2.3.1"
+__version__ = "2.3.2"
 
 # give random tips in the log
 import random
@@ -15,9 +15,10 @@ import textwrap
 from pathlib import Path
 from time import time
 from multiprocessing import cpu_count
+from diot import Diot, OrderedDiot
 from simpleconf import Config
 from .plugin import registerPlugins, pluginmgr
-from .utils import config, loadConfigurations, Box, OBox
+from .utils import config, loadConfigurations
 
 DEFAULT_CFGFILES = (
 	'~/.PyPPL.yaml', '~/.PyPPL.toml', './.PyPPL.yaml', './.PyPPL.toml', 'PYPPL.osenv')
@@ -37,7 +38,7 @@ DEFAULT_CONFIG = dict(default = dict(
 	# The command to run after jobs start
 	afterCmd   = '',
 	# The extra arguments for the process
-	args       = OBox(),
+	args       = OrderedDiot(diot_nest = True),
 	# The command to run before jobs start
 	beforeCmd  = '',
 	# The cache option, True/False/export
@@ -106,7 +107,7 @@ DEFAULT_CONFIG = dict(default = dict(
 	# The template engine (name)
 	template   = '',
 	# The template environment
-	envs       = Box(),
+	envs       = Diot(),
 	# working directory for the process
 	workdir    = ''
 ))
@@ -244,6 +245,10 @@ class PyPPL:
 
 		nostart = set()
 		for startproc in starts:
+			# give warning if startproc is depending on other processes
+			if startproc.depends:
+				logger.warning("Start process %s is depending on other processes!",
+					startproc.name(True))
 			# Let's check if we have any other procs on the path of start process
 			paths = self.tree.getPaths(startproc)
 			pristarts = [pnode for sublist in paths for pnode in sublist if pnode in starts]

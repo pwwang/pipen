@@ -1,11 +1,13 @@
 """job module for PyPPL"""
 import re
+from itertools import chain
 from os import utime
 from pathlib import Path
 from datetime import datetime
 import yaml
 import cmdy
-from .utils import Box, OBox, chmodX, briefPath, filesig, fileflush, fs
+from diot import Diot, OrderedDiot
+from .utils import chmodX, briefPath, filesig, fileflush, fs
 from .logger import logger as _logger
 from .exception import JobInputParseError, JobOutputParseError
 from .plugin import pluginmgr
@@ -45,7 +47,7 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 	POLL_INTERVAL = 1
 
 	__slots__ = ('index', 'proc', 'dir', 'fout', 'ferr', 'lastout', 'lasterr', \
-		'ntry', 'input', 'output', 'config', 'script', '_rc', '_pid')
+		'ntry', 'input', 'output', 'config', 'script', '_rc', '_pid', '_signature')
 
 	def __init__(self, index, proc):
 		"""@API
@@ -68,14 +70,16 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 		self.lasterr = ''
 		self.ntry    = 0
 		self.input   = {}
-		self.output  = OBox()
+		self.output  = OrderedDiot()
 
 		runner_name = self.__class__.__name__[6:].lower()
 		self.config = self.proc.config.get(runner_name + 'Runner', {})
 		# the wrapper script
-		self.script = self.dir / (FILE_SCRIPT + '.' + runner_name)
-		self._rc    = None
-		self._pid   = None
+		self.script     = self.dir / (FILE_SCRIPT + '.' + runner_name)
+		self._rc        = None
+		self._pid       = None
+		self._signature = ''
+
 		pluginmgr.hook.jobPreRun(job = self) # pylint: disable=no-member
 
 	@property
@@ -83,9 +87,9 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 		"""@API
 		Prepare parameters for script wrapping
 		@returns:
-			(Box): A `Box` containing the parts to wrap the script.
+			(Diot): A `Diot` containing the parts to wrap the script.
 		"""
-		return Box(
+		return Diot(
 			header  = '',
 			pre     = self.config.get('preScript', ''),
 			post    = self.config.get('postScript', ''),
@@ -99,8 +103,8 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 		@returns:
 			(dict): The data used to render the templates.
 		"""
-		ret  = Box(
-			job = Box(
+		ret  = Diot(
+			job = dict(
 				index    = self.index,
 				indir    = str(self.dir / DIR_INPUT),
 				outdir   = str(self.dir / DIR_OUTPUT),
@@ -109,8 +113,8 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 				errfile  = str(self.dir / FILE_STDERR),
 				pidfile  = str(self.dir / FILE_PID),
 				cachedir = str(self.dir / DIR_OUTPUT / '.jobcache')),
-			i = Box({key: val[1] for key, val in self.input.items()}),
-			o = Box({key: val[1] for key, val in self.output.items()}))
+			i = dict({key: val[1] for key, val in self.input.items()}),
+			o = dict({key: val[1] for key, val in self.output.items()}))
 		ret.update(self.proc.procvars)
 		return ret
 
@@ -329,7 +333,7 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 			outfile_bak = self.dir / FILE_STDOUT_BAK
 			errfile     = self.dir / FILE_STDERR
 			errfile_bak = self.dir / FILE_STDERR_BAK
-			if self.isTrulyCached() or self.isExptCached() or self.isForceCached():
+			if self.isTrulyCached() or self.isExptCached():
 				# we should get stdout/err file back, since job is cached,
 				# there is no way to generate new stdout/err,
 				# in case they are used somewhere later.
@@ -344,12 +348,14 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 			# issue #30
 			if fs.exists(outfile):
 				fs.move(outfile, outfile_bak)
+				outfile.write_text('')
 			if fs.exists(errfile):
 				fs.move(errfile, errfile_bak)
+				errfile.write_text('')
 
 			return True
 		except Exception as ex: # pylint: disable=broad-except
-			self.logger('Failed to build job: %s' % ex, level = 'debug')
+			self.logger('Failed to build job: %s: %s' % (type(ex).__name__, ex), level = 'debug')
 			from traceback import format_exc
 			with (self.dir / FILE_STDERR).open('w') as ferr:
 				ferr.write(str(format_exc()))
@@ -554,8 +560,10 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 		"""@API
 		Calculate the signature of the job based on the input/output and the script
 		@returns:
-			(Box): The signature of the job
+			(Diot): The signature of the job
 		"""
+		if self._signature:
+			return self._signature
 		sig = filesig(self.dir / FILE_SCRIPT)
 		if not sig:
 			self.logger('Empty signature because of script file: %s.' %
@@ -570,7 +578,7 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 		outype_file  = procclass.OUT_FILETYPE[0]
 		outype_dir   = procclass.OUT_DIRTYPE[0]
 
-		ret        = Box()
+		ret        = Diot()
 		ret.script = sig
 		ret.i      = {intype_var: {}, intype_file: {}, intype_files: {}}
 		ret.o      = {outype_var: {}, outype_file: {}, outype_dir: {}}
@@ -612,6 +620,7 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 				ret.o[outype_dir][key] = sig
 			else:
 				ret.o[outype_var][key] = str(data)
+		self._signature = ret
 		return ret
 
 	def _compareVar(self, osig, nsig, key, logkey):
@@ -697,6 +706,45 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 					return False
 		return True
 
+	def _isSignatureValid(self, signature = None):
+		"""
+		Check if signature generated by current status is valid:
+		1. Input/output files/directories must exist
+		2. Output files/directories must be newer than input ones.
+		"""
+		signature = self.signature() if signature is None else signature
+		if not signature:
+			return False
+		procclass    = self.proc.__class__
+		intype_file  = procclass.IN_FILETYPE[0]
+		intype_files = procclass.IN_FILESTYPE[0]
+		outype_file  = procclass.OUT_FILETYPE[0]
+		outype_dir   = procclass.OUT_DIRTYPE[0]
+		outmtime     = -1
+		for outype, sig in chain(signature.o[outype_file].items(), signature.o[outype_dir].items()):
+			if not sig or not fs.exists(sig[0]):
+				self.logger("Outfile (o.{}) not exists: {}".format(outype, sig[0]),
+					dlevel = "CACHE_SIGOUTFILE_DIFF", level = 'debug')
+				return False
+			outmtime = sig[1] if outmtime < 0 or sig[1] < outmtime else outmtime
+		# check if input file or script is newer than output file
+		if signature.script[1] > outmtime:
+			self.logger("Script file is newer than output file",
+				dlevel = "CACHE_SCRIPT_NEWER", level = 'debug')
+			return False
+		# check if input file or script is newer than output file
+		for intype, sig in chain(signature.i[intype_files].items(),
+			signature.i[intype_file].items()):
+			if not sig or not fs.exists(sig[0]):
+				self.logger("Infile (i.{}) not exists: {}".format(intype, sig[0]),
+					dlevel = "CACHE_SIGINFILE_DIFF", level = 'debug')
+				return False
+			if sig[1] > outmtime:
+				self.logger("Infile (i.{}) is newer than output file: {}".format(intype, sig[0]),
+					dlevel = "CACHE_SIGINFILE_DIFF", level = 'debug')
+				return False
+		return True
+
 	# pylint: disable=too-many-return-statements
 	def isTrulyCached (self):
 		"""@API
@@ -704,10 +752,22 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 		@returns:
 			(bool): Whether the job is truly cached.
 		"""
-		if not self.proc.cache:
+		if not self.proc.cache or not self.succeed():
 			return False
 
+		sig_now = self.signature()
 		if not fs.exists(self.dir / FILE_CACHE):
+			self.logger("Cache file not exists, checking if it was a successful run ...",
+				dlevel = "CACHE_SIGFILE_NOTEXISTS", level = 'debug')
+			# In case the job is finished after the main process quit
+			# We just validate if the signature based on current files
+			# NOTE: this will not valid "var" type input and output
+			# Usually, you will use it in your script, it is fine since script file will be validated
+			# Just make sure if you only have them in proc.input and proc.output
+			if self._isSignatureValid(sig_now):
+				self.cache()
+				self.rc = 0
+				return True
 			self.logger("Not cached as cache file not exists.",
 				dlevel = "CACHE_SIGFILE_NOTEXISTS", level = 'debug')
 			return False
@@ -718,14 +778,12 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 				dlevel = "CACHE_EMPTY_PREVSIG", level = 'debug')
 			return False
 
-		sig_now = self.signature()
 		if not sig_now:
 			self.logger("Not cached because current signature is empty.",
 				dlevel = "CACHE_EMPTY_CURRSIG", level = 'debug')
 			return False
 
 		sig_old = yaml.safe_load(cachedata)
-
 		if not self._compareFile(
 			{'script': sig_old['script']},
 			{'script': sig_now['script']},
@@ -840,27 +898,6 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 		self.cache()
 		return True
 
-	def isForceCached(self):
-		"""@API
-		Force the job to be cached.
-		If the output was not generated in previous run, generate dry-run results for it.
-		"""
-		if self.proc.cache != 'force':
-			return False
-
-		procclass = self.proc.__class__
-		for outtype, outdata in self.output.values():
-			if outtype in procclass.OUT_VARTYPE:
-				continue
-			if outtype in procclass.OUT_FILETYPE and not fs.exists(outdata):
-				open(outdata, 'w').close()
-			elif outtype in procclass.OUT_DIRTYPE and not fs.exists(outdata):
-				fs.mkdir(outdata)
-
-		self.rc = 0
-		self.cache()
-		return True
-
 	def cache (self):
 		"""@API
 		Truly cache the job (by signature)
@@ -885,7 +922,7 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 			for retrydir in self.dir.glob('retry.*'):
 				fs.remove(retrydir)
 
-		for jobfile in (FILE_RC, FILE_STDOUT, FILE_STDERR, FILE_PID):
+		for jobfile in (FILE_RC, FILE_STDOUT, FILE_STDERR, FILE_PID, FILE_CACHE):
 			if retry and fs.exists(self.dir / jobfile):
 				fs.move(self.dir / jobfile, retrydir / jobfile)
 			else:
