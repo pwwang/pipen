@@ -358,7 +358,7 @@ def test_buildprocvars(tmpdir, caplog):
 	assert 'p11: exdir  => abc' in caplog.text
 	assert p11.procvars['args'] == p11.args
 	#assert p11.procvars['args'] is not p11.args
-	# p11.config.args now is a NestDiot
+	# p11.config.args now is a Diot
 	assert p11.procvars['args'] is p11.args
 
 def test_buildoutput(tmpdir):

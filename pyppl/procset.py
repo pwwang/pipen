@@ -119,10 +119,10 @@ class ProcSet:
 		self.__dict__['ends']      = Proxy()
 		self.__dict__['delegates'] = OrderedDiot()
 		self.__dict__['procs']     = OrderedDiot()
-		self.__dict__['modules']   = Diot()
+		self.__dict__['modules']   = Diot(diot_nest = False)
 		# save initial states before a module is called
 		# states will be resumed before each module is called
-		self.__dict__['initials']  = Diot()
+		self.__dict__['initials']  = Diot(diot_nest = False)
 
 		ifcopy  = kwargs.get('copy', True)
 		depends = kwargs.get('depends', True)

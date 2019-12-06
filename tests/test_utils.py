@@ -2,7 +2,7 @@ import sys
 import pytest
 import psutil
 from faker import Faker
-from diot import Diot, OrderedDiot, NestDiot
+from diot import Diot, OrderedDiot
 from pyppl.utils import split, funcsig, uid, formatSecs, alwaysList, \
 	briefList, briefPath, killtree, chmodX, filesig, fileflush, ThreadEx, ThreadPool, \
 	PQueue, Hashable, MultiDestTransition, StateMachine, varname, expandNumbers, formatDict, \
@@ -273,7 +273,7 @@ def test_formatDict(val, keylen, alias, expt):
 	(None, None, ['is']),
 	(1, 1, ['is']),
 	(sys, sys, ['is']),
-	(NestDiot(a = Diot(b = Diot(c=1))), NestDiot(a = Diot(b = Diot(c=1))), ['=']),
+	(Diot(a = Diot(b = Diot(c=1))), Diot(a = Diot(b = Diot(c=1))), ['=']),
 	([1, sys, [1]], [1, sys, [1]], [(0, 'is'), (1, 'is'), (2, '=')]),
 	({'a': sys, 'b': [1]}, {'a': sys, 'b': [1]}, [('a', 'is'), ('b', '=')])
 ])

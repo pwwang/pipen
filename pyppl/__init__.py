@@ -15,7 +15,7 @@ import textwrap
 from pathlib import Path
 from time import time
 from multiprocessing import cpu_count
-from diot import Diot, OrderedDiot, NestDiot
+from diot import Diot, OrderedDiot
 from simpleconf import Config
 from .plugin import registerPlugins, pluginmgr
 from .utils import config, loadConfigurations
@@ -107,7 +107,7 @@ DEFAULT_CONFIG = dict(default = dict(
 	# The template engine (name)
 	template   = '',
 	# The template environment
-	envs       = NestDiot(),
+	envs       = Diot(),
 	# working directory for the process
 	workdir    = ''
 ))

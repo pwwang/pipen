@@ -6,7 +6,7 @@ from pathlib import Path
 from datetime import datetime
 import yaml
 import cmdy
-from diot import Diot, OrderedDiot, NestDiot
+from diot import Diot, OrderedDiot
 from .utils import chmodX, briefPath, filesig, fileflush, fs
 from .logger import logger as _logger
 from .exception import JobInputParseError, JobOutputParseError
@@ -103,7 +103,7 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 		@returns:
 			(dict): The data used to render the templates.
 		"""
-		ret  = NestDiot(
+		ret  = Diot(
 			job = dict(
 				index    = self.index,
 				indir    = str(self.dir / DIR_INPUT),

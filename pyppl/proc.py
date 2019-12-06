@@ -8,7 +8,7 @@ from collections import OrderedDict
 from os import path
 import yaml
 import filelock
-from diot import Diot, NestDiot, OrderedDiot
+from diot import Diot, OrderedDiot
 from simpleconf import NoSuchProfile, Config
 from .logger import logger
 from .utils import Hashable, fs
@@ -81,7 +81,7 @@ class Proc(Hashable):
 		# Get configuration from config
 		self.__dict__['config'] = Config()
 		# computed props
-		self.__dict__['props'] = Diot()
+		self.__dict__['props'] = Diot(diot_nest = False)
 
 		defaultconfig = dict.copy(utils.config)
 		# The id (actually, it's the showing name) of the process
@@ -651,10 +651,10 @@ class Proc(Hashable):
 		pvkeys  = {key for key in allkeys
 			if key in show or (key in self.sets and key not in hide)}
 
-		procvars = NestDiot()
+		procvars = Diot()
 		procargs = self.args
 		# if not isinstance(procargs, Diot):
-		# 	procargs = NestDiot(procargs)
+		# 	procargs = Diot(procargs)
 
 		alias   = { val:key for key, val in Proc.ALIAS.items() }
 		maxlen  = 0 # used to calculate the alignment
