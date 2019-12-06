@@ -5,12 +5,12 @@ When you are debuggin a processes, specially when you are modify input, output a
 ```bash
 > bin/pyppl
 DESCRIPTION:
-  PyPPL command line tool                                                                           
+  PyPPL command line tool
 
 COMMANDS:
-  list                                    - list work directories under <wdir>                      
-  clean                                   - remove some work directories                            
-  compare                                 - compare two processes from different directories        
+  list                                    - list work directories under <wdir>
+  clean                                   - remove some work directories
+  compare                                 - compare two processes from different directories
   help <COMMAND>                          - Print help information for the command
 ```
 
@@ -34,7 +34,7 @@ You can remove all those older process directories without confirmation by `pypp
 # Compare the settings of two pipeines
 ![pyppl-compare][3]
 
-`pyppl compare` uses python's `difflib` to compare the `proc.settings` files in the directories of two processes. it can take a process group name (i.e. `-pro pSort.notag`, in this case, actually, the tag can be omitted if it is `notag`, so you can use `-pro pSort`) to compare the top 2 latest processes or two process names with suffices (i.e. `-proc1 pSort.notag.4HIhyVbp -proc2 pSort.notag.7hNBe2uT`. 
+`pyppl compare` uses python's `difflib` to compare the `proc.settings` files in the directories of two processes. it can take a process group name (i.e. `-pro pSort.notag`, in this case, actually, the tag can be omitted if it is `notag`, so you can use `-pro pSort`) to compare the top 2 latest processes or two process names with suffices (i.e. `-proc1 pSort.notag.4HIhyVbp -proc2 pSort.notag.7hNBe2uT`.
 
 
 [1]: ./pyppl-cli-list.png

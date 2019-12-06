@@ -30,5 +30,3 @@ examples: example
 
 api:
 	$(PYTHON) ./api.py
-
-

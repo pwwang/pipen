@@ -33,5 +33,3 @@ PyPPL().start(...).resume('p').run()
 
 # Calculating signatures for caching
 By default, `PyPPL` uses the last modified time to generate signatures for files and directories. However, for large directories, it may take notably long time to walk over all the files in those directories. If not necessary, you may simply as `PyPPL` to get the last modified time for the directories themselves instead of the infiles inside them by setting `p.dirsig = False`
-
-

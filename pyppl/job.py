@@ -47,7 +47,7 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 	POLL_INTERVAL = 1
 
 	__slots__ = ('index', 'proc', 'dir', 'fout', 'ferr', 'lastout', 'lasterr', \
-		'ntry', 'input', 'output', 'config', 'script', '_rc', '_pid')
+		'ntry', 'input', 'output', 'config', 'script', '_rc', '_pid', '_signature')
 
 	def __init__(self, index, proc):
 		"""@API

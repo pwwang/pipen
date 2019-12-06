@@ -603,6 +603,7 @@ class MultiDestTransition(Transition):
 			self.execute = super(MultiDestTransition, self).execute
 
 	def execute(self, event_data): # pylint: disable=method-hidden
+		"""Excute the function"""
 		func = self._func if callable(self._func) else getattr(event_data.model, self._func)
 		self._result = func()
 		super(MultiDestTransition, self).execute(event_data)
@@ -616,6 +617,6 @@ class MultiDestTransition(Transition):
 	def dest(self, value):
 		self._dest = value
 
-class StateMachine(Machine):
+class StateMachine(Machine): # pylint: disable=too-few-public-methods
 	"""StateMachine with multiple destination support"""
 	transition_cls = MultiDestTransition

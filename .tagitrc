@@ -22,4 +22,3 @@ increment = patch
 
 ; Extra commands to run before tag committed and pushed.
 extra = py:'python api.py > docs/api.md'
-

@@ -159,5 +159,3 @@ p.channel.outdir  == [('<outdir>/c-dir', )]
 |Output|`dir`|`folder`|Do the same thing as `file` but will create the directory|`"out:dir:{{i.infile `&#124;` fn}}-outdir"`|`{{o.out}} == <outdir>/<filename of infile>-outdir` <br />(automatically created)|
 |Output|`stdout`|-|Link `job.stdout` file to `<outdir>`|`out:stdout:{{i.infile `&#124;` fn}}.out` | `{{o.out}} == <outdir>/<filename of infile>.out`|
 |Output|`stderr`|-|Link `job.stderr` file to `<outdir>`|`err:stderr:{{i.infile `&#124;` fn}}.err` | `{{o.err}} == <outdir>/<filename of infile>.err`|
-
-
