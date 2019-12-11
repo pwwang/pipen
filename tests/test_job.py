@@ -4,7 +4,7 @@ from os import environ, utime
 from diot import Diot, OrderedDiot
 environ['PYPPL_default__log'] = "py:{'levels': 'all'}"
 from pyppl.job import Job, JobInputParseError, JobOutputParseError, \
-	RC_NO_RCFILE, DIR_OUTPUT, FILE_STDERR, FILE_STDOUT
+	RC_NO_RCFILE, DIR_OUTPUT, FILE_STDERR, FILE_STDOUT, DIR_INPUT
 from pyppl.utils import fs, filesig
 from pyppl.template import TemplateLiquid
 pytest_plugins = ["tests.fixt_job"]
@@ -215,6 +215,21 @@ def test_prepinput(job0, tmpdir, caplog):
 	assert job0.input['renamedfiles'] == ('files', [str(job0.dir / 'input' / '[1]test_prepinput.txt')])
 	assert 'pProc: [1/1] Input file renamed: test_prepinput.txt -> [1]test_prepinput.txt' in caplog.text
 	assert 'No data provided for [nodatafiles:files], use empty list instead.' in caplog.text
+
+def test_prepinput_nonsymlink(job0, tmpdir, caplog):
+	"""test when there is non-symbolic link file in input directory"""
+	infile1 = tmpdir / 'test_prepinput_nonsymlink.txt'
+	infile1.write_text('')
+	job0.proc.input = Diot(
+		infile = ('file', [infile1]),
+	)
+	nsfile = job0.dir.joinpath(DIR_INPUT, 'nonsymbolic-file')
+	nsfile.parent.mkdir(exist_ok = True)
+	nsfile.write_text('')
+	job0._prepInput()
+	assert nsfile.exists()
+	job0._prepInput() # recreate the symlinks but keep the nonsymlink
+	assert nsfile.exists()
 
 def test_prepinput_exc(job0, tmpdir):
 	infile1 = tmpdir / 'test_prepinput_not_exists.txt'

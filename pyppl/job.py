@@ -287,32 +287,26 @@ class Job: # pylint: disable=too-many-instance-attributes, too-many-public-metho
 
 		if not isinstance(data, list):
 			self.logger("{} => {}".format(key.ljust(maxlen), data), level = loglevel)
+			return
+		ldata = len(data)
+		if ldata <= 1:
+			self.logger("{} => [ {} ]".format(
+				key.ljust(maxlen), data and data[0] or ''), level = loglevel)
+		elif ldata == 2:
+			self.logger("{} => [ {},".format(
+				key.ljust(maxlen), data[0]), level = loglevel)
+			self.logger("{}      {} ]".format(
+				' '.ljust(maxlen), data[1]), level = loglevel)
 		else:
-			ldata = len(data)
-			if ldata <= 1:
-				self.logger("{} => [ {} ]".format(
-					key.ljust(maxlen), data and data[0] or ''), level = loglevel)
-			elif ldata == 2:
-				self.logger("{} => [ {},".format(
-					key.ljust(maxlen), data[0]), level = loglevel)
-				self.logger("{}      {} ]".format(
-					' '.ljust(maxlen), data[1]), level = loglevel)
-			elif ldata == 3:
-				self.logger("{} => [ {},".format(
-					key.ljust(maxlen), data[0]), level = loglevel)
-				self.logger("{}      {},".format(
-					' '.ljust(maxlen), data[1]), level = loglevel)
-				self.logger("{}      {} ]".format(
-					' '.ljust(maxlen), data[2]), level = loglevel)
-			else:
-				self.logger("{} => [ {},".format(
-					key.ljust(maxlen), data[0]), level = loglevel)
-				self.logger("{}      {},".format(
-					' '.ljust(maxlen), data[1]), level = loglevel)
+			self.logger("{} => [ {},".format(
+				key.ljust(maxlen), data[0]), level = loglevel)
+			self.logger("{}      {},".format(
+				' '.ljust(maxlen), data[1]), level = loglevel)
+			if ldata > 3:
 				self.logger("{}      ... ({}),".format(
 					' '.ljust(maxlen), len(data) - 3), level = loglevel)
-				self.logger("{}      {} ]".format(
-					' '.ljust(maxlen), data[-1]), level = loglevel)
+			self.logger("{}      {} ]".format(
+				' '.ljust(maxlen), data[-1]), level = loglevel)
 
 	def build(self):
 		"""@API
