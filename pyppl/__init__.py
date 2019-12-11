@@ -245,10 +245,6 @@ class PyPPL:
 
 		nostart = set()
 		for startproc in starts:
-			# give warning if startproc is depending on other processes
-			if startproc.depends:
-				logger.warning("Start process %s is depending on other processes!",
-					startproc.name(True))
 			# Let's check if we have any other procs on the path of start process
 			paths = self.tree.getPaths(startproc)
 			pristarts = [pnode for sublist in paths for pnode in sublist if pnode in starts]

@@ -222,6 +222,7 @@ class Proc(Hashable):
 
 		# depends have to be computed here, as it's used to infer the relation before run
 		if name == 'depends':
+			from . import PyPPL
 			self.props.depends = []
 			depends = list(value) if isinstance(value, tuple) else \
 				value.ends if isinstance(value, ProcSet) else \
@@ -231,16 +232,20 @@ class Proc(Hashable):
 				if isinstance(depend, Proc):
 					if depend is self:
 						raise ProcAttributeError(self.name(True), 'Process depends on itself')
+					PyPPL._registerProc(depend)
 					self.props.depends.append(depend)
 				elif isinstance(depend, ProcSet):
+					for end in depend.ends:
+						PyPPL._registerProc(end)
 					self.props.depends.extend(depend.ends)
 				elif isinstance(depend, list):
+					for dep in depend:
+						PyPPL._registerProc(dep)
 					self.props.depends.extend(depend)
 				else:
 					raise ProcAttributeError(type(value).__name__,
 						"Process dependents should be 'Proc/ProcSet', not")
 			if depends:
-				from . import PyPPL
 				# only register the procs that will be involved.
 				PyPPL._registerProc(self)
 
