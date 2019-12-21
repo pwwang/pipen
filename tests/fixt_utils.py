@@ -4,68 +4,6 @@ import cmdy
 import pytest
 import psutil
 from diot import Diot
-from pyppl.utils import varname
-
-@pytest.fixture(params = [
-	Diot(klass = True, multi = False, docopy = False, array = False),
-	Diot(klass = True, multi = True, docopy = False, array = False),
-	Diot(klass = True, multi = False, docopy = True, array = False),
-	Diot(klass = True, multi = True, docopy = True, array = False),
-	Diot(klass = True, multi = False, docopy = False, array = True),
-	Diot(klass = False, multi = False, docopy = False, array = False),
-	Diot(klass = False, multi = True, docopy = False, array = False),
-	Diot(klass = False, multi = False, docopy = False, array = True),
-])
-def fixt_varname(request):
-	#varname.index = 0
-	class Klass(object):
-		def __init__(self, default='', d2=''):
-			self.id = varname()
-		def copy(self, *arg):
-			return varname()
-	def func():
-		return varname()
-
-	param = request.param
-	if param.klass and not param.multi and \
-		not param.docopy and not param.array:
-		klass = Klass()
-		return Diot(var = klass.id, expt = 'klass')
-	if param.klass and param.multi and \
-		not param.docopy and not param.array:
-		klass = Klass(
-			default = 'a',
-			d2 = 'b',
-		)
-		return Diot(var = klass.id, expt = 'klass')
-	if param.klass and not param.multi and \
-		param.docopy and not param.array:
-		klass = Klass()
-		klass_copy = klass.copy()
-		return Diot(var = klass_copy, expt = 'klass_copy')
-	if param.klass and param.multi and \
-		param.docopy and not param.array:
-		klass = Klass()
-		klass_copy = klass.copy(
-			1,
-			2
-		)
-		return Diot(var = klass_copy, expt = 'klass_copy')
-	if param.klass and not param.multi and \
-		not param.docopy and param.array:
-		klass = [Klass()]
-		return Diot(var = klass[0].id, expt = 'var_0')
-	if not param.klass and not param.multi and not param.array:
-		fun = func()
-		return Diot(var = fun, expt = 'fun')
-	if not param.klass and param.multi and not param.array:
-		fun = func(
-
-		)
-		return Diot(var = fun, expt = 'fun')
-	if not param.klass and not param.multi and  param.array:
-		fun = [func()]
-		return Diot(var = fun[0], expt = 'var_1')
 
 @pytest.fixture(params = range(4))
 def fixt_funcsig(request):
@@ -79,25 +17,6 @@ def fixt_funcsig(request):
 		return Diot(func = "", expt = "None")
 	if request.param == 3:
 		return Diot(func = "A", expt = "None")
-
-@pytest.fixture(params = [
-	'killme',
-	'killchildren',
-])
-def fixt_killtree(request):
-	# spawn subprocesses
-	c = cmdy.python(c = 'import cmdy; cmdy.sleep(100)', _hold = True)
-	c = cmdy.python(c = 'import cmdy; cmdy.bash(c = "%s")' % c.cmd, _bg = True)
-
-	proc = psutil.Process(c.pid)
-	# take some time to spawn
-	while len(proc.children(recursive = True)) < 2:
-		sleep(.05)
-
-	return Diot(
-		pid = c.pid,
-		children = [p.pid for p in proc.children(recursive = True)],
-		killme = request.param == 'killme')
 
 @pytest.fixture(params = [
 	'not_a_file',
@@ -192,34 +111,6 @@ def fixt_filesig(request, tmp_path):
 		asubdir = adir / 'filesig_another_subdir3'
 		asubdir.mkdir()
 		return Diot(file = adir, dirsig = False, expt = [str(adir), int(path.getmtime(adir))])
-
-@pytest.fixture
-def fd_fileflush(tmp_path):
-	tmpfile = tmp_path / 'fileflush.txt'
-	tmpfile.write_text('')
-	with open(tmpfile, 'r') as fd_read, open(tmpfile, 'a') as fd_append:
-		yield fd_read, fd_append
-
-@pytest.fixture(params = range(5))
-def fixt_fileflush(request, fd_fileflush):
-	fd_read, fd_append = fd_fileflush
-	if request.param == 0:
-		return Diot(filed = fd_read, residue = '', expt_lines = [], expt_residue = '')
-	if request.param == 1:
-		fd_append.write('abcde')
-		fd_append.flush()
-		return Diot(filed = fd_read, residue = '', expt_lines = [], expt_residue = 'abcde')
-	if request.param == 2:
-		fd_append.write('ccc\ne1')
-		fd_append.flush()
-		return Diot(filed = fd_read, residue = 'abcde', expt_lines = ['abcdeccc\n'], expt_residue = 'e1')
-	if request.param == 3:
-		fd_append.write('ccc')
-		fd_append.flush()
-		return Diot(filed = fd_read, residue = '', end = True, expt_lines = ['ccc\n'], expt_residue = '')
-	if request.param == 4:
-		return Diot(filed = fd_read, residue = 'end', end = True, expt_lines = ['end\n'], expt_residue = '')
-
 
 @pytest.fixture(params = [
 	'noexc',

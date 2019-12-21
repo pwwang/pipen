@@ -2,7 +2,7 @@ import sys
 import logging
 import pytest
 from pyppl.logger import Theme, THEMES, StreamFormatter, StreamHandler, StreamFilter, \
-	FileFilter, FileFormatter, Logger, LEVELS_ALWAYS, LEVELS, config
+	FileFilter, FileFormatter, Logger, LEVELS_ALWAYS, LEVELS, default_config
 
 def test_theme_init():
 	theme = Theme(True)
@@ -194,7 +194,7 @@ def test_logger_initLevels():
 
 def test_logger_init(tmpdir):
 	logger = Logger(bake = True)
-	config._log.file = tmpdir / 'logger.txt'
+	default_config.logger.file = tmpdir / 'logger.txt'
 	logger.init()
 	assert len(logger.logger.handlers) == 2
 

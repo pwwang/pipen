@@ -6,7 +6,7 @@ import functools
 
 from os import path
 from glob import glob
-from . import utils
+from liquid import LiquidStream
 
 class Channel(list): # pylint: disable=too-many-public-methods
 	"""@API
@@ -196,7 +196,7 @@ class Channel(list): # pylint: disable=too-many-public-methods
 
 		width = None
 		for arg in args:
-			items = tuple(utils.split(arg, ','))
+			items = tuple(LiquidStream.from_string(arg).split(','))
 			if width is not None and width != len(items):
 				raise ValueError('Width %s (%s) is not consistent with previous %s' %
 					(len(items), arg, width))

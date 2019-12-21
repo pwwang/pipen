@@ -1,81 +1,51 @@
-import sys
 import pytest
-from pathlib import Path
-from pyppl import plugin, PyPPL, Proc, config, __version__
 
-HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
-pyppl_test      = __import__('pyppl_test')
-pyppl_empty     = __import__('pyppl_empty')
-pyppl_report    = __import__('pyppl_report')
-pyppl_flowchart = __import__('pyppl_flowchart')
+from pyppl.plugin import PluginConfig
+from pyppl.exception import PluginConfigKeyError
 
-def setup_module(module):
-	plugin.registerPlugins(['pyppl_test', 'pyppl_empty'], ['pyppl_report', 'pyppl_flowchart'])
-	plugin.pluginmgr.hook.setup(config = config)
+def test_plugin_config():
 
-def teardown_module(module):
-	# unregister plugins for further testing
-	plugin.pluginmgr.unregister(pyppl_test)
-	plugin.pluginmgr.unregister(pyppl_empty)
-	plugin.pluginmgr.unregister(pyppl_report)
-	plugin.pluginmgr.unregister(pyppl_flowchart)
-	config.envs.clear()
+	pconfig = PluginConfig()
+	assert pconfig.__raw__ == {}
+	assert pconfig.__cache__ == {}
+	assert pconfig.__converter__ == {}
 
-def test_register():
-	assert plugin.pluginmgr.is_registered(pyppl_test)
-	assert plugin.pluginmgr.is_registered(pyppl_report)
-	assert plugin.pluginmgr.is_registered(pyppl_flowchart)
+	pconfig.add('a')
+	assert pconfig.a == None
+	assert pconfig.setcounter('a') == 0
 
-def test_prerun(caplog):
-	sys.argv = [sys.argv[0]]
-	with pytest.raises(plugin.PyPPLFuncWrongPositionError):
-		PyPPL().start(Proc(id = 'pPreRun1')).run().preRun()
-	assert not any('PYPPL PRERUN' in msg for _,_,msg in caplog.record_tuples)
+	pconfig.add('b', default = 1, converter = lambda v: v+1)
+	assert pconfig.b == 2
+	assert pconfig.setcounter('b') == 0
+	pconfig.b = 2
+	assert pconfig.setcounter('b') == 1
+	assert pconfig.b == 3
 
-	PyPPL().start(Proc(id = 'pPreRun2')).preRun().run()
-	assert any('PYPPL PRERUN' in msg for _,_,msg in caplog.record_tuples)
+	pconfig['r.a'] = 4
+	assert pconfig.setcounter('r.a') == 1
+	assert pconfig['r.a'] == 4
 
-def test_postrun(caplog):
-	sys.argv = [sys.argv[0]]
-	with pytest.raises(plugin.PyPPLFuncWrongPositionError):
-		PyPPL().start(Proc(id = 'pPostRun1')).postRun().run()
-	assert not any('PYPPL POSTRUN' in msg for _,_,msg in caplog.record_tuples)
+	pconfig.add('x', update = 'ignore')
+	pconfig.update({'x': 1})
+	assert pconfig.x == 1
+	pconfig.x = 10
+	pconfig.update({'x': 1})
+	assert pconfig.x == 10
 
-	PyPPL().start(Proc(id = 'pPostRun2')).run().postRun()
-	assert any('PYPPL POSTRUN' in msg for _,_,msg in caplog.record_tuples)
+	pconfig.add('z', update = 'update', converter = lambda x: x * 2)
+	pconfig.z = 10
+	assert pconfig.z == 20
+	pconfig.update({'z': 1})
+	assert pconfig.z == 2
+	assert pconfig.z == 2 # use cache
 
-def test_setgetattr():
-	pSetAttr = Proc()
-	assert pSetAttr.ptest == 0
-	pSetAttr.ptest = 1
-	assert pSetAttr.ptest == 100
-	assert pSetAttr.pempty == 0
-	pSetAttr.pempty = 1
-	assert pSetAttr.pempty == 1
+	pconfig.add('c', update = 'update', converter = lambda x: x or {})
+	assert pconfig.c == {}
+	pconfig.update({'c': {'x': 1}})
+	assert pconfig.c['x'] == 1
+	pconfig.update({'c': {'x': 2}})
+	assert pconfig.c['x'] == 2
 
-def test_prepostrun(caplog):
-	p = Proc(id = 'pPrePostRun1')
-	p.input = {'a' : ['1']}
-	PyPPL().start(p).run()
-	expects = [
-		'PIPELINE STARTED',
-		'pPrePostRun1 STARTED',
-		'JOB 0 STARTED',
-		'JOB 0 ENDED',
-		'pPrePostRun1 ENDED',
-		'PIPELINE ENDED'
-	]
-	for name, level, msg in caplog.record_tuples:
-		if expects:
-			if expects[0] in msg:
-				expects.pop(0)
-	assert len(expects) == 0 # messages appear in order
+	with pytest.raises(PluginConfigKeyError):
+		pconfig.update({'y': 2})
 
-def test_jobfail(caplog):
-	p = Proc(id = 'pPluginJobFail')
-	p.input = {'a' : ['1']}
-	p.script = 'exit 1'
-	with pytest.raises(SystemExit):
-		PyPPL().start(p).run()
-	assert any('Job 0 failed' in msg for _,_,msg in caplog.record_tuples)

@@ -3,48 +3,15 @@ import pytest
 import psutil
 from faker import Faker
 from diot import Diot, OrderedDiot
-from pyppl.utils import split, funcsig, uid, formatSecs, alwaysList, \
-	briefList, briefPath, killtree, chmodX, filesig, fileflush, ThreadEx, ThreadPool, \
-	PQueue, Hashable, MultiDestTransition, StateMachine, varname, expandNumbers, formatDict, \
-	tryDeepCopy
+from pyppl.utils import funcsig, format_secs, always_list, \
+	brief_list, chmod_x, filesig, ThreadEx, ThreadPool, \
+	PQueue, _MultiDestTransition, StateMachine, expand_numbers, \
+	try_deepcopy
 # load fixtures
 pytest_plugins = ["tests.fixt_utils"]
 
-def setup_module(module):
-	varname.index = 0
-
-def test_varname(fixt_varname):
-	assert fixt_varname.var == fixt_varname.expt
-
-@pytest.mark.parametrize('string, delimit, trim, expect', [
-	("a\"|\"b", "|", True, ["a\"|\"b"]),
-	("a|b|c", "|", True, ["a", "b", "c"]),
-	('a|b\\|c', "|", True, ["a", "b\\|c"]),
-	('a|b\\|c|(|)', "|", True, ["a", "b\\|c", "(|)"]),
-	('a|b\\|c|(\\)|)', "|", True, ["a", "b\\|c", "(\\)|)"]),
-	('a|b\\|c|(\\)\\\'|)', "|", True, ["a", "b\\|c", "(\\)\\'|)"]),
-	('a|b\\|c |(\\)\\\'|)', "|", False, ["a", "b\\|c ", "(\\)\\'|)"]),
-	('outdir:dir:{{i.pattern | lambda x: __import__("glob").glob(x)[0] | fn }}_etc', ':', True, ["outdir", "dir", "{{i.pattern | lambda x: __import__(\"glob\").glob(x)[0] | fn }}_etc"]),
-])
-def test_split(string, delimit, trim, expect):
-	assert split(string, delimit, trim) == expect
-
 def test_funcsig(fixt_funcsig):
 	assert funcsig(fixt_funcsig.func) == fixt_funcsig.expt
-
-@pytest.mark.parametrize('string, length, alphabet, expect', [
-	('a', 8, '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 'O4JnVAW7'),
-	('', 8, '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', '6SFsQFoW'),
-])
-def test_uid(string, length, alphabet, expect):
-	assert uid(string, length, alphabet) == expect
-
-@pytest.mark.parametrize('randstrs', [
-	([Faker().text()] * 10000, )
-])
-def test_uid_uniq(randstrs):
-	uids = [uid(rstr) for rstr in randstrs]
-	assert len(set(uids)) == len(uids)
 
 @pytest.mark.parametrize('secs, expect', [
 	(1, "00:00:01.000"),
@@ -53,7 +20,7 @@ def test_uid_uniq(randstrs):
 	(7211, "02:00:11.000"),
 ])
 def test_formatsecs(secs, expect):
-	assert formatSecs(secs) == expect
+	assert format_secs(secs) == expect
 
 @pytest.mark.parametrize('data,trim,expect', [
 	("a, b,c", True, ['a', 'b', 'c']),
@@ -72,15 +39,15 @@ def test_formatsecs(secs, expect):
 		["o1:var:{{c1}}", "o2:var:c2 | __import__('math').pow float(_)", "2.0)}}", "o3:file:{{c3.fn}}2{{c3.ext}}"]
 	)
 ])
-def test_alwaysList(data, trim, expect):
-	assert alwaysList(data, trim) == expect
+def test_always_list(data, trim, expect):
+	assert always_list(data, trim) == expect
 
 @pytest.mark.parametrize('data', [
 	1, (1,), {}
 ])
-def test_alwaysList_raises(data):
+def test_always_list_raises(data):
 	with pytest.raises(ValueError):
-		alwaysList(data)
+		always_list(data)
 
 @pytest.mark.parametrize('inlist,expect', [
 	([], '[]'),
@@ -91,64 +58,19 @@ def test_alwaysList_raises(data):
 	([1, 3, 5, 7, 9, 4, 8, 12, 13], "1, 3-5, 7-9, 12, 13"),
 	([13, 9, 5, 7, 4, 3, 8, 1, 12], "1, 3-5, 7-9, 12, 13"),
 ])
-def test_briefList(inlist, expect):
-	assert briefList(inlist) == expect
+def test_brief_list(inlist, expect):
+	assert brief_list(inlist) == expect
 
-@pytest.mark.parametrize('inpath,cutoff,expect', [
-	("", 10, ""),
-	("veryveryverlongpath", 2, "veryveryverlongpath"),
-	("/abcd/efghi", None, "/abcd/efghi"),
-	("/abcdef/efghi", 0, "/abcdef/efghi"),
-	("/abcd/efghi", 20, "/abcd/efghi"),
-	("/aaaa/eeeee", 8, "/a/eeeee"),
-	("/aaaa/eeeee", 1, "/a/eeeee"),
-	("/aaaaaa/eeeee", 10, "/aaa/eeeee"),
-	("/1234567890/1234567890/eeeee", 20, "/123456/123456/eeeee"),
-	("/1234567890/1234567890/eeeee", 19, "/123456/12345/eeeee"),
-	("/1234567890/1234567890/abcdefg/eeeee", 19, "/1234/123/abc/eeeee"),
-])
-def test_briefPath(inpath, cutoff, expect):
-	assert briefPath(inpath, cutoff) == expect
-
-def test_killtree(fixt_killtree):
-	assert len(fixt_killtree.children) > 1
-	for child in fixt_killtree.children + [fixt_killtree.pid]:
-		assert psutil.pid_exists(child)
-	try:
-		killtree(fixt_killtree.pid, killme = fixt_killtree.killme)
-	except psutil.NoSuchProcess:
-		from time import sleep
-		# python3.6 issue
-		sleep(1)
-		try:
-			killtree(fixt_killtree.pid, killme = fixt_killtree.killme)
-		except psutil.NoSuchProcess:
-			pass
-	if fixt_killtree.killme:
-		for child in fixt_killtree.children + [fixt_killtree.pid]:
-			assert not psutil.pid_exists(child)
-	else:
-		for child in fixt_killtree.children:
-			assert not psutil.pid_exists(child)
-		# has problem at WSL ubuntu
-		#assert psutil.pid_exists(fixt_killtree.pid)
-
-def test_chmodX(fixt_chmodx):
+def test_chmod_x(fixt_chmodx):
 	if isinstance(fixt_chmodx.expt, type):
 		with pytest.raises(fixt_chmodx.expt):
-			chmodX(fixt_chmodx.file)
+			chmod_x(fixt_chmodx.file)
 	else:
-		assert chmodX(fixt_chmodx.file) == fixt_chmodx.expt
+		assert chmod_x(fixt_chmodx.file) == fixt_chmodx.expt
 
 def test_filesig(fixt_filesig):
 	fixt_filesig.dirsig = fixt_filesig.get('dirsig', True)
 	assert filesig(fixt_filesig.file, fixt_filesig.dirsig) == fixt_filesig.expt
-
-def test_fileflush(fixt_fileflush):
-	lines, residue = fileflush(
-		fixt_fileflush.filed, fixt_fileflush.residue, fixt_fileflush.get('end', False))
-	assert lines == fixt_fileflush.expt_lines
-	assert residue == fixt_fileflush.expt_residue
 
 def test_threadex(fixt_threadex):
 	thread = ThreadEx(target = fixt_threadex.worker)
@@ -184,9 +106,9 @@ def test_threadpool(fixt_threadpool):
 		('put', 5, 0),
 		('put', 0, 0),
 		('put', 7, 0),
-		('putNext', 4, 2),
-		('putNext', 6, 3),
-		('putNext', 3, 3),
+		('put_next', 4, 2),
+		('put_next', 6, 3),
+		('put_next', 3, 3),
 		('put', 3, 3),
 		('put', 6, 3),
 	], [(0, 0), (3, 3), (6, 3), (4, 4), (3, 5), (5, 5), (6, 5), (7, 7)])
@@ -204,24 +126,10 @@ def test_pqueue_batchlen():
 	with pytest.raises(ValueError):
 		PQueue()
 
-def test_hashable():
-	h1 = Hashable()
-	h2 = Hashable()
-	assert h1 != h2
-	assert not h1 == h2
-	adict = {h1: 1, h2: 2}
-	for key, val in adict.items():
-		if val == 1:
-			assert key == h1
-			assert key is h1
-		else:
-			assert key == h2
-			assert key is h2
-
 def test_statemachine():
 	with pytest.raises(AttributeError):
-		MultiDestTransition('solid', {})
-	MultiDestTransition('solid', 'liquid', depends_on = 'depends_on')
+		_MultiDestTransition('solid', {})
+	_MultiDestTransition('solid', 'liquid', depends_on = 'depends_on')
 
 	class Model(object):
 		def depends_on(self):
@@ -240,34 +148,8 @@ def test_statemachine():
 	('1-4', [1,2,3,4]),
 	('1-4,7,8-10', [1,2,3,4,7,8,9,10]),
 ])
-def test_expandNumbers(numbers, expt):
-	assert expandNumbers(numbers) == expt
-
-@pytest.mark.parametrize('val,keylen,alias,expt',[
-	('a', 0, None, "a"),
-	('a', 0, 'b', "[b] a"),
-	(Diot(), 0, 'l', '[l] <Diot> {  }'),
-	({"a":1}, 0, 'l', '[l] { a: 1 }'),
-	({"a":1, "b":2}, 0, 'x',
-	# =>
-	    '[x] { a: 1,\n'
-	'          b: 2, }'),
-	({"a":1, "b11":2}, 0, None,
-	# =>
-	    '{ a  : 1,\n'
-	'      b11: 2, }'),
-	({"a":1, "b":2}, 4, 'x11',
-	# =>
-	        '[x11] { a: 1,\n'
-	'                b: 2, }'),
-	(OrderedDiot([("a",1), ("b",2)]), 4, 'x11',
-	# =>
-	        '[x11] <OrderedDiot> \n'
-	'              { a: 1,\n'
-	'                b: 2, }'),
-])
-def test_formatDict(val, keylen, alias, expt):
-	assert formatDict(val, keylen, alias) == expt
+def test_expand_numbers(numbers, expt):
+	assert expand_numbers(numbers) == expt
 
 @pytest.mark.parametrize('val,expt,asserts', [
 	(None, None, ['is']),
@@ -278,7 +160,7 @@ def test_formatDict(val, keylen, alias, expt):
 	({'a': sys, 'b': [1]}, {'a': sys, 'b': [1]}, [('a', 'is'), ('b', '=')])
 ])
 def test_trydeepcopy(val, expt, asserts):
-	copied = tryDeepCopy(val)
+	copied = try_deepcopy(val)
 
 	for ast in asserts:
 		if ast == '=':

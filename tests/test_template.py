@@ -445,12 +445,12 @@ class TestTemplateJinja2:
 		\n\t\t"""),
 		(
 			'{{read(a).strip()}}',
-			{'a': Path(__file__).parent / 'mocks' / 'srun'},
-			(Path(__file__).parent / 'mocks' / 'srun').read_text().strip()),
+			{'a': Path(__file__)},
+			Path(__file__).read_text().strip()),
 		(
-			'{{"\\n".join(readlines(a)).strip()}}',
-			{'a': Path(__file__).parent / 'mocks' / 'srun'},
-			(Path(__file__).parent / 'mocks' / 'srun').read_text().strip()),
+			'{{"\\n".join(readlines(a, False)).strip()}}',
+			{'a': Path(__file__)},
+			Path(__file__).read_text().strip()),
 		('{{render(x)}}', {'x': '{{i}}', 'i': 2}, '2'),
 		('{{render(x[0])}}', {'x': ('{{i}}', 1), 'i': 2}, '2'),
 	])

@@ -7,8 +7,9 @@ from queue import Queue
 from diot import Diot
 from .utils import StateMachine, PQueue, ThreadPool
 from .logger import logger
-from .exception import JobBuildingException, JobFailException
+from .exception import JobBuildingError, JobFailError
 from .plugin import pluginmgr
+from .runner import poll_interval
 
 STATES = Diot(
 	INIT         = '00_init',
@@ -16,11 +17,10 @@ STATES = Diot(
 	BUILT        = '97_built',
 	BUILTFAILED  = '98_builtfailed',
 	SUBMITTING   = '89_submitting',
-	SUBMITTED    = '88_submitted',
 	SUBMITFAILED = '87_submitfailed',
 	RUNNING      = '78_running',
-	RETRYING     = '79_retrying',
 	DONE         = '67_done',
+	RETRYING     = '80_retrying',
 	DONECACHED   = '66_donecached',
 	DONEFAILED   = '68_donefailed',
 	ENDFAILED    = '69_endfailed',
@@ -29,45 +29,47 @@ STATES = Diot(
 	KILLFAILED   = '58_killfailed',
 )
 PBAR_MARKS = {
-	STATES.INIT         : ' ',
-	STATES.BUILDING     : '~',
-	STATES.BUILT        : '-',
-	STATES.BUILTFAILED  : '!',
-	STATES.SUBMITTING   : '+',
-	STATES.SUBMITTED    : '>',
-	STATES.SUBMITFAILED : '$',
-	STATES.RUNNING      : '>',
-	STATES.RETRYING     : '-',
-	STATES.DONE         : '=',
-	STATES.DONECACHED   : 'z',
-	STATES.DONEFAILED   : 'x',
-	STATES.ENDFAILED    : 'X',
-	STATES.KILLING      : '<',
-	STATES.KILLED       : '*',
-	STATES.KILLFAILED   : '*',
+	STATES.INIT        : ' ',
+	STATES.BUILDING    : '~',
+	STATES.BUILT       : '-',
+	STATES.BUILTFAILED : '!',
+	STATES.SUBMITTING  : '>',
+	STATES.SUBMITFAILED: '$',
+	STATES.RUNNING     : '>',
+	STATES.RETRYING    : '-',
+	STATES.DONE        : '=',
+	STATES.DONECACHED  : 'z',
+	STATES.DONEFAILED  : 'x',
+	STATES.ENDFAILED   : 'X',
+	STATES.KILLING     : '<',
+	STATES.KILLED      : '*',
+	STATES.KILLFAILED  : '*',
 }
 PBAR_LEVEL = {
-	STATES.INIT         : 'BLDING',
-	STATES.BUILDING     : 'BLDING',
-	STATES.BUILT        : 'BLDING',
-	STATES.BUILTFAILED  : 'BLDING',
-	STATES.SUBMITTING   : 'SBMTING',
-	STATES.SUBMITTED    : 'SBMTING',
-	STATES.SUBMITFAILED : 'SBMTING',
-	STATES.RUNNING      : 'RUNNING',
-	STATES.RETRYING     : 'RTRYING',
-	STATES.DONE         : 'JOBDONE',
-	STATES.DONECACHED   : 'JOBDONE',
-	STATES.DONEFAILED   : 'JOBDONE',
-	STATES.ENDFAILED    : 'JOBDONE',
-	STATES.KILLING      : 'KILLING',
-	STATES.KILLED       : 'KILLING',
-	STATES.KILLFAILED   : 'KILLING',
+	STATES.INIT        : 'BLDING',
+	STATES.BUILDING    : 'BLDING',
+	STATES.BUILT       : 'BLDING',
+	STATES.BUILTFAILED : 'BLDING',
+	STATES.SUBMITTING  : 'SBMTING',
+	STATES.SUBMITFAILED: 'SBMTING',
+	STATES.RUNNING     : 'RUNNING',
+	STATES.RETRYING    : 'RTRYING',
+	STATES.DONE        : 'JOBDONE',
+	STATES.DONECACHED  : 'JOBDONE',
+	STATES.DONEFAILED  : 'JOBDONE',
+	STATES.ENDFAILED   : 'JOBDONE',
+	STATES.KILLING     : 'KILLING',
+	STATES.KILLED      : 'KILLING',
+	STATES.KILLFAILED  : 'KILLING',
 }
+
+PBAR_SIZE = 50
 
 class Jobmgr:
 	"""@API
 	Job manager"""
+
+	__slots__ = ('jobs', 'proc', 'stop', 'queue', 'nslots', 'lock')
 
 	def __init__(self, jobs):
 		"""@API
@@ -90,92 +92,67 @@ class Jobmgr:
 		self.jobs = jobs
 		self.proc = jobs[0].proc
 		self.stop = False
-		#self.pool = None
 
 		self.queue  = PQueue(batch_len = len(jobs))
-		self.nslots = min(self.queue.batchLen, int(self.proc.nthread))
+		self.nslots = min(self.queue.batch_len, int(self.proc.nthread))
 
 		for job in jobs:
 			self.queue.put(job.index)
 
-		self.pbarSize = self.proc.config._log.get('pbar', 50)
-
-		# switch state from init to building
+		# start building
 		machine.add_transition(
-			trigger = 'triggerStartBuild',
-			source  = STATES.INIT,
-			dest    = STATES.BUILDING)
-
-		# do the real building
-		machine.add_transition(
-			trigger    = 'triggerBuild',
-			source     = STATES.BUILDING,
+			trigger    = 'trigger_build',
+			source     = STATES.INIT,
 			dest       = {
 				'cached': STATES.DONECACHED,
 				True    : STATES.BUILT,
 				False   : STATES.BUILTFAILED},
 			depends_on = 'build',
-			after      = self._afterBuild)
-
-		# switch state from built to submitting
-		machine.add_transition(
-			trigger = 'triggerStartSubmit',
-			source  = STATES.BUILT,
-			dest    = STATES.SUBMITTING)
+			before     = lambda event: setattr(event.model, 'state', STATES.BUILDING),
+			after      = self._post_event)
 
 		# do the real submit
 		machine.add_transition(
-			trigger    = 'triggerSubmit',
-			source     = STATES.SUBMITTING,
+			trigger    = 'trigger_submit',
+			source     = [STATES.BUILT, STATES.RETRYING],
 			dest       = {
-				True   : STATES.SUBMITTED,
+				True   : STATES.RUNNING,
 				False  : STATES.SUBMITFAILED},
 			depends_on = 'submit',
-			after      = self._afterSubmit)
+			after      = self._post_event)
 
 		# try to retry if submission failed or job itself failed
 		machine.add_transition(
-			trigger = 'triggerRetry',
+			trigger = 'trigger_retry',
 			source  = [STATES.SUBMITFAILED, STATES.DONEFAILED],
 			dest    = {
-				True     : STATES.BUILT,       # ready to re-submit
+				True     : STATES.RETRYING, # ready to re-submit
 				'ignored': STATES.DONE,
 				False    : STATES.ENDFAILED },
 			depends_on = 'retry',
 			before  = lambda event: sleep(.5),
-			after   = self._afterRetry)
-
-		# switch from submitted to running
-		machine.add_transition(
-			trigger = 'triggerStartPoll',
-			source  = STATES.SUBMITTED,
-			dest    = STATES.RUNNING)
+			after   = self._post_event)
 
 		# do the poll for the results
 		machine.add_transition(
-			trigger = 'triggerPoll',
+			trigger = 'trigger_poll',
 			source  = STATES.RUNNING,
 			dest    = {
 				'running': STATES.RUNNING,
 				True     : STATES.DONE,
 				False    : STATES.DONEFAILED},
 			depends_on = 'poll',
-			after      = self._afterPoll)
-
-		# start to kill the job
-		machine.add_transition(
-			trigger = 'triggerStartKill',
-			source  = '*',
-			dest    = STATES.KILLING)
+			after      = self._post_event)
 
 		# killed/failed to kill
 		machine.add_transition(
-			trigger    = 'triggerKill',
+			trigger    = 'trigger_kill',
 			# STATES.KILLING not guareteed, as this will be running in a separate queue
 			source     = '*',
 			dest       = {
 				True : STATES.KILLED,
 				False: STATES.KILLFAILED},
+			before     = lambda event: setattr(event.model, 'state', STATES.KILLING),
 			depends_on = 'kill')
 
 	def start(self):
@@ -189,22 +166,22 @@ class Jobmgr:
 		pool.join(cleanup = self.cleanup)
 		self.progressbar(Diot(model = self.jobs[-1]))
 
-	def _getJobs(self, *states):
+	def _get_jobs_by_states(self, *states):
 		return [job for job in self.jobs if job.state in states]
 
-	def _distributeJobsToPbar(self):
+	def _distribute_jobs_to_pbar(self):
 		joblen      = len(self.jobs)
 		index_bjobs = []
-		if joblen <= self.pbarSize:
-			div, mod = divmod(self.pbarSize, joblen)
+		if joblen <= PBAR_SIZE:
+			div, mod = divmod(PBAR_SIZE, joblen)
 			for j in range(joblen):
 				step = div + 1 if j < mod else div
 				for _ in range(step):
 					index_bjobs.append([j])
 		else:
 			jobx = 0
-			div, mod = divmod(joblen, self.pbarSize)
-			for i in range(self.pbarSize):
+			div, mod = divmod(joblen, PBAR_SIZE)
+			for i in range(PBAR_SIZE):
 				step = div + 1 if i < mod else div
 				index_bjobs.append([jobx + jobstep for jobstep in range(step)])
 				jobx += step
@@ -217,7 +194,7 @@ class Jobmgr:
 			event (StateMachine event): The event including job as model.
 		"""
 		job         = event.model
-		index_bjobs = self._distributeJobsToPbar()
+		index_bjobs = self._distribute_jobs_to_pbar()
 
 		# get all states in this moment
 		#with self.lock:
@@ -226,7 +203,7 @@ class Jobmgr:
 		for state in states:
 			ncompleted += int(state in (
 				STATES.DONE, STATES.DONECACHED, STATES.ENDFAILED))
-			nrunning   += int(state in (STATES.RUNNING, STATES.SUBMITTING, STATES.SUBMITTED))
+			nrunning   += int(state in (STATES.RUNNING, STATES.SUBMITTING))
 
 		pbar  = '['
 		pbar += ''.join(
@@ -250,10 +227,10 @@ class Jobmgr:
 		"""
 		self.stop = True
 		message = None
-		if isinstance(ex, JobBuildingException):
+		if isinstance(ex, JobBuildingError):
 			message = 'Job building failed, quitting pipeline ' + \
 				'(Ctrl-C to skip killing jobs) ...'
-		elif isinstance(ex, JobFailException):
+		elif isinstance(ex, JobFailError):
 			message = 'Error encountered (errhow = halt), quitting pipeline ' + \
 				'(Ctrl-C to skip killing jobs) ...'
 		elif isinstance(ex, KeyboardInterrupt):
@@ -261,21 +238,19 @@ class Jobmgr:
 				'(Ctrl-C again to skip killing jobs) ...'
 
 		if message:
-			logger.warning(message, proc = self.proc.name())
+			logger.warning(message, proc = self.proc.id)
 
 		# kill running jobs
 		with self.lock:
 
-			failed_jobs = self._getJobs(STATES.ENDFAILED)
-			if not failed_jobs:
-				failed_jobs = self._getJobs(STATES.DONEFAILED)
-			if not failed_jobs:
-				failed_jobs = self._getJobs(STATES.SUBMITFAILED)
-			if not failed_jobs:
-				failed_jobs = self._getJobs(STATES.BUILTFAILED)
+			failed_jobs =	self._get_jobs_by_states(STATES.ENDFAILED) or \
+							self._get_jobs_by_states(STATES.DONEFAILED) or \
+							self._get_jobs_by_states(STATES.SUBMITFAILED) or \
+							self._get_jobs_by_states(STATES.BUILTFAILED)
 
-			running_jobs = self._getJobs(
-				STATES.BUILT, STATES.SUBMITTING, STATES.SUBMITTED,
+			running_jobs = self._get_jobs_by_states(
+				# all possible states to go to next steps
+				STATES.BUILT, STATES.SUBMITTING,
 				STATES.RUNNING, STATES.RETRYING, STATES.DONEFAILED,
 			)
 			killq = Queue()
@@ -284,68 +259,48 @@ class Jobmgr:
 
 			ThreadPool(
 				min(len(running_jobs), self.proc.nthread),
-				initializer = self.killWorker,
+				initializer = self.kill_worker,
 				initargs    = killq
 			).join()
 
-			random.choice(failed_jobs or running_jobs or self.jobs).showError(len(failed_jobs))
+			#random.choice(failed_jobs or running_jobs or self.jobs).showError(len(failed_jobs))
+
+			pluginmgr.hook.proc_fail(proc = self.proc) # pylint: disable=no-member
 
 			if isinstance(ex, Exception) and not isinstance(ex, (
-				JobFailException, JobBuildingException, KeyboardInterrupt)):
+				JobFailError, JobBuildingError, KeyboardInterrupt)):
 				raise ex from None
 
-			pluginmgr.hook.procFail(proc = self.jobs[0].proc) # pylint: disable=no-member
 			sys.exit(1)
 
-
 	@classmethod
-	def killWorker(cls, killq):
+	def kill_worker(cls, killq):
 		"""@API
 		The killing worker to kill the jobs"""
 		while not killq.empty():
 			job = killq.get()
-			# Since this queue may be running at the same time as main queue is
-			# So this is not thread-safe
-			job.triggerStartKill()
-			# we need to change state to *
-			# as killing is not guareteed
-			job.triggerKill()
+			job.trigger_kill()
 			killq.task_done()
 
-	def _afterBuild(self, event):
+	def _post_event(self, event):
 		job = event.model
 		if job.state == STATES.DONECACHED:
 			job.done(cached = True)
-		elif job.state == STATES.BUILT:
-			self.queue.putNext(job.index, event.kwargs['batch'])
-		else: # BUILTFAILED, if any job failed to build, halt the pipeline
-			raise JobBuildingException()
-
-	def _afterSubmit(self, event):
-		job = event.model
-		if job.state == STATES.SUBMITTED:
-			self.queue.put(job.index, event.kwargs['batch'])
-		else: # SUBMITFAILED
-			job.triggerRetry(batch = event.kwargs['batch'])
-
-	def _afterRetry(self, event):
-		job = event.model
-		if job.state == STATES.BUILT:
-			self.queue.putNext(job.index, event.kwargs['batch'])
-		elif job.state == STATES.DONE:
-			job.done()
-		elif self.proc.errhow == 'halt': # ENDFAILED
-			raise JobFailException()
-		# else: endfailed but ignored
-
-	def _afterPoll(self, event):
-		job = event.model
-		if job.state == STATES.DONE:
-			job.done()
+		elif job.state in (STATES.BUILT, STATES.RETRYING):
+			self.queue.put_next(job.index, event.kwargs['batch'])
+		elif job.state == STATES.BUILTFAILED:
+			raise JobBuildingError()
 		elif job.state == STATES.RUNNING:
-			self.queue.putNext(job.index, event.kwargs['batch'])
-		else: # DONEFAILED
-			job.triggerRetry(batch = event.kwargs['batch'])
+			self.queue.put_next(job.index, event.kwargs['batch'])
+		elif job.state in (STATES.SUBMITFAILED, STATES.DONEFAILED):
+			job.trigger_retry(batch = event.kwargs['batch'])
+		elif job.state == STATES.DONE:
+			job.done(status = True)
+		elif job.state == STATES.ENDFAILED:
+			if self.proc.errhow == 'halt':
+				raise JobFailError()
+			# else: endfailed but ignored
+			job.done(status = False)
 
 	def worker(self):
 		"""@API
@@ -353,32 +308,28 @@ class Jobmgr:
 		while not self.queue.empty() and not self.stop:
 			index, batch = self.queue.get()
 			job = self.jobs[index]
-			# make sure quit me for killWorker
+			# make sure quit me for kill_worker
 			# and don't use a GIL, as it blocks regular jobs
 			if self.stop: # pragma: no cover
 				break
 
 			if job.state == STATES.INIT:
-				job.triggerStartBuild()
-				job.triggerBuild(batch = batch)
-			elif job.state == STATES.BUILT:
+				job.trigger_build(batch = batch)
+			elif job.state in (STATES.BUILT, STATES.RETRYING):
 				with self.lock:
-					if len(self._getJobs(
-						STATES.RUNNING, STATES.SUBMITTING, STATES.SUBMITTED)) < self.proc.forks:
-						job.triggerStartSubmit()
-				if job.state == STATES.SUBMITTING:
-					job.triggerSubmit(batch = batch)
-				else:
+					if len(self._get_jobs_by_states(
+						STATES.RUNNING, STATES.SUBMITTING)) < self.proc.forks:
+						print(job.name)
+						job.trigger_submit(batch = batch)
+				# if we successfully submitted
+				if job.state in (STATES.BUILT, STATES.RETRYING):
 					sleep(.5)
 					# put the job back to the queue
-					self.queue.putNext(index, batch)
-			elif job.state == STATES.SUBMITTED:
-				job.triggerStartPoll()
-				job.triggerPoll(batch = batch)
+					self.queue.put_next(index, batch)
 			elif job.state == STATES.RUNNING:
 				# have to be longer than ThreadPool.join's interval
-				sleep(job.__class__.POLL_INTERVAL)
-				job.triggerPoll(batch = batch)
+				sleep(poll_interval())
+				job.trigger_poll(batch = batch)
 			elif job.state == STATES.KILLING: # pragma: no cover
 				break
 			#else: # endfailed but ignored, after retry

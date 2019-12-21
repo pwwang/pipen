@@ -10,7 +10,7 @@ from functools import partial
 import colorama
 # Fore/Back: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
 # Style: DIM, NORMAL, BRIGHT, RESET_ALL
-from .utils import config
+from .config import config as default_config
 
 colorama.init(autoreset = False)
 
@@ -116,31 +116,16 @@ LEVELS_ALWAYS = set([
 ])
 
 DEBUG_LINES = {
-	'EXPORT_CACHE_OUTFILE_EXISTS'  : -1,
-	'EXPORT_CACHE_USING_SYMLINK'   : 1,
-	'EXPORT_CACHE_USING_EXPARTIAL' : 1,
-	'EXPORT_CACHE_EXFILE_NOTEXISTS': 1,
-	'EXPORT_CACHE_EXDIR_NOTSET'    : 1,
-	'CACHE_EMPTY_PREVSIG'          : -1,
-	'CACHE_EMPTY_CURRSIG'          : -2,
-	'CACHE_SCRIPT_NEWER'           : -1,
-	'CACHE_SIGINVAR_DIFF'          : -1,
-	'CACHE_SIGINFILE_DIFF'         : -1,
-	'CACHE_SIGINFILE_NEWER'        : -1,
-	'CACHE_SIGINFILES_DIFF'        : -1,
-	'CACHE_SIGINFILES_NEWER'       : -1,
-	'CACHE_SIGOUTVAR_DIFF'         : -1,
-	'CACHE_SIGOUTFILE_DIFF'        : -1,
-	'CACHE_SIGOUTDIR_DIFF'         : -1,
-	'CACHE_SIGFILE_NOTEXISTS'      : -2,
-	'EXPECT_CHECKING'              : -1,
-	'INFILE_RENAMING'              : -1,
-	'INFILE_EMPTY'                 : -1,
-	'SUBMISSION_FAIL'              : -3,
-	'OUTFILE_NOT_EXISTS'           : -1,
-	'OUTDIR_CREATED_AFTER_RESET'   : -1,
-	'SCRIPT_EXISTS'                : -2,
-	'JOB_RESETTING'                : -1
+	'CACHE_FAILED'              : -1,
+	'CACHE_INPUT_MODIFIED'      : -1,
+	'CACHE_OUTPUT_MODIFIED'     : -1,
+	'INFILE_RENAMING'           : -1,
+	'INFILE_EMPTY'              : -1,
+	'SUBMISSION_FAIL'           : -3,
+	'OUTFILE_NOT_EXISTS'        : -1,
+	'OUTDIR_CREATED_AFTER_RESET': -1,
+	'SCRIPT_EXISTS'             : -2,
+	'JOB_RESETTING'             : -1
 }
 
 class Theme: # pylint: disable=too-few-public-methods
@@ -338,7 +323,7 @@ class Logger:
 	A wrapper of logger
 	"""
 	@staticmethod
-	def initLevels(levels, leveldiffs):
+	def init_levels(levels, leveldiffs):
 		"""@API
 		Initiate the levels, get real levels.
 		@params:
@@ -391,20 +376,18 @@ class Logger:
 		else:
 			self.init()
 
-	def init(self, conf = None):
+	def init(self, config = None):
 		"""@API
 		Initiate the logger, called by the construct,
-		Just in case, we want to change the config and
+		Just in case, we want to change the config and as default_config
 		Reinitiate the logger.
 		@params:
 			conf (Config): The configuration used to initiate logger.
 		"""
-		if not conf:
-			conf = config
-		else:
-			conf2 = config.copy()
-			conf2.update(conf)
-			conf = conf2
+		config = config or default_config.logger
+		config2 = default_config.logger.copy()
+		config2.update(config)
+		config = config2
 
 		self.logger = logging.getLogger(self.name)
 		self.logger.setLevel(1)
@@ -412,16 +395,16 @@ class Logger:
 			handler.close()
 		del self.logger.handlers[:]
 
-		theme = Theme(conf._log.theme)
-		levels = Logger.initLevels(conf._log.levels, conf._log.leveldiffs)
+		theme = Theme(config.theme)
+		levels = Logger.init_levels(config.levels, config.leveldiffs)
 
 		stream_handler = StreamHandler()
 		stream_handler.addFilter(StreamFilter(self.name, levels))
 		stream_handler.setFormatter(StreamFormatter(theme))
 		self.logger.addHandler(stream_handler)
 
-		if conf._log.file:
-			file_handler = logging.FileHandler(conf._log.file)
+		if config.file:
+			file_handler = logging.FileHandler(config.file)
 			file_handler.addFilter(FileFilter(self.name, levels))
 			file_handler.setFormatter(FileFormatter())
 			self.logger.addHandler(file_handler)
