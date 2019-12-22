@@ -378,6 +378,49 @@ def test_run(caplog):
 		pRun.run(runtime_config)
 	assert pRun.channel == [(pRun.jobs[0].dir.joinpath('output/1.txt'),)]
 	assert 'WORKDIR' in caplog.text
+	assert 'pRun: Jobs [Cached: 0, Succ: 0, B.Fail: 0, S.Fail: 0, R.Fail: 0]' in caplog.text
+
+def test_run2(caplog):
+	from pyppl.job import Job
+	from pyppl.jobmgr import STATES
+	Job.state = STATES.BUILTFAILED
+	runtime_config = Config()
+	runtime_config._load({'default': {'dirsig': False}})
+
+	pRunRun2 = Proc()
+	pRunRun2.input = {'a': [1]}
+	pRunRun2.output = 'outfile:file:{{a}}.txt'
+	with pytest.raises(SystemExit):
+		pRunRun2.run(runtime_config)
+	assert 'pRunRun2: Jobs [Cached: 0, Succ: 0, B.Fail: 1, S.Fail: 0, R.Fail: 0]' in caplog.text
+
+def test_run3(caplog):
+	from pyppl.job import Job
+	from pyppl.jobmgr import STATES
+	Job.state = STATES.SUBMITFAILED
+	runtime_config = Config()
+	runtime_config._load({'default': {'dirsig': False}})
+
+	pRunRun3 = Proc()
+	pRunRun3.input = {'a': [1]}
+	pRunRun3.output = 'outfile:file:{{a}}.txt'
+	with pytest.raises(SystemExit):
+		pRunRun3.run(runtime_config)
+	assert 'pRunRun3: Jobs [Cached: 0, Succ: 0, B.Fail: 0, S.Fail: 1, R.Fail: 0]' in caplog.text
+
+def test_run4(caplog):
+	from pyppl.job import Job
+	from pyppl.jobmgr import STATES
+	Job.state = STATES.ENDFAILED
+	runtime_config = Config()
+	runtime_config._load({'default': {'dirsig': False}})
+
+	pRunRun4 = Proc()
+	pRunRun4.input = {'a': [1]}
+	pRunRun4.output = 'outfile:file:{{a}}.txt'
+	with pytest.raises(SystemExit):
+		pRunRun4.run(runtime_config)
+	assert 'pRunRun4: Jobs [Cached: 0, Succ: 0, B.Fail: 0, S.Fail: 0, R.Fail: 1]' in caplog.text
 
 def test_defs():
 	pDefs = Proc()

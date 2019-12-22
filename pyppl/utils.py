@@ -175,29 +175,6 @@ def chmod_x(filepath):
 		ret = shebang[2:].strip().split() + [filepath]
 	return ret
 
-def fileflush(filed, residue, end = False):
-	"""
-	Flush a file descriptor
-	@params:
-		`filed`  : The file handler
-		`residue`: The remaining content of last flush
-		`end`    : The file ends? Default: `False`
-	"""
-	filed.flush()
-	# OSX cannot tell the pointer automatically
-	filed.seek(filed.tell())
-	lines = filed.readlines() or []
-	if lines:
-		lines[0] = residue + lines[0]
-		residue  = '' if lines[-1].endswith('\n') else lines.pop(-1)
-		if residue and end:
-			lines.append(residue + '\n')
-			residue = ''
-	elif residue and end:
-		lines.append(residue + '\n')
-		residue = ''
-	return lines, residue
-
 def brief_list(blist, base = 0):
 	"""
 	Briefly show an integer list, combine the continuous numbers.

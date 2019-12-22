@@ -3,6 +3,7 @@ Plugin system for PyPPL
 """
 # pylint: disable=unused-argument
 import sys
+import inspect
 import types
 import pluggy
 from .exception import PyPPLPluginWrongPositionFunction, PluginConfigKeyError, PluginNoSuchPlugin, PluginWrongPluginType
@@ -26,12 +27,8 @@ def proc_prerun(proc):
 	"""Before a process starts"""
 
 @hookspec
-def proc_postrun(proc):
+def proc_postrun(proc, status):
 	"""After a process has done"""
-
-@hookspec
-def proc_fail(proc):
-	"""When a process fails"""
 
 @hookspec
 def pyppl_init(ppl):
@@ -50,7 +47,7 @@ def job_init(job):
 	"""Right after job initiates"""
 
 @hookspec
-def job_is_successed(job, status):
+def job_succeeded(job):
 	"""Tell if job is successfully done or not
 	One can add not rigorous check. By default, only
 	if returncode is 0 checked.
@@ -79,6 +76,10 @@ def job_done(job, status):
 	"""A set of function run when job fails"""
 
 @hookspec
+def logger_init(logger):
+	"""Initiate logger, most manipulate levels"""
+
+@hookspec
 def cli_addcmd(commands):
 	"""Add command and options to CLI"""
 
@@ -98,14 +99,12 @@ def _get_plugin(name):
 	if isinstance(name, str):
 		for plugin in pluginmgr.get_plugins():
 			plname = pluginmgr.get_name(plugin)
-			if	plname == 'pyppl-' + name or \
-				plname == 'pyppl_' + name or \
-				plname == 'PyPPL' + name.capitalize():
+			if plname.isdigit():
+				plname = plugin.__class__.__name__
+			if	plname in ('pyppl-'+name, 'pyppl_'+name, 'PyPPL'+name.capitalize()):
 				return plugin
-		if name[:6] not in ('pyppl-', 'pyppl_'):
-			name = 'pyppl-' + name
 		try:
-			return __import__(name)
+			__import__(name)
 		except ImportError as exc:
 			raise PluginNoSuchPlugin(name) from exc
 	return name
@@ -124,8 +123,6 @@ def config_plugins(*plugins):
 				pass
 		else:
 			plugin = _get_plugin(plugin)
-			if not isinstance(plugin, types.ModuleType) and isinstance(plugin, type):
-				raise PluginWrongPluginType('Expect a module or an instance of a class as a plugin, not a type/class.')
 			if not pluginmgr.is_registered(plugin):
 				if isinstance(plugin, types.ModuleType):
 					pluginmgr.register(plugin)

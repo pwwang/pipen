@@ -2,11 +2,11 @@ import sys
 import logging
 import pytest
 from pyppl.logger import Theme, THEMES, StreamFormatter, StreamHandler, StreamFilter, \
-	FileFilter, FileFormatter, Logger, LEVELS_ALWAYS, LEVELS, default_config
+	FileFilter, FileFormatter, Logger, LEVEL_GROUPS, default_config, get_group, init_levels, get_value
 
 def test_theme_init():
 	theme = Theme(True)
-	assert theme.theme == THEMES['greenOnBlack']
+	assert theme.theme == THEMES['green_on_black']
 
 	theme = Theme(False)
 	assert theme.theme == {}
@@ -17,18 +17,18 @@ def test_theme_init():
 	with pytest.raises(ValueError):
 		Theme('nosuchtheme')
 
-def test_theme_getcolor():
-	THEMES['test'] = THEMES['greenOnBlack'].copy()
-	THEMES['test']['starts:ABC'] = 'ABColor'
-	THEMES['test'][r're:^REGEX.+$'] = 'REGEXColor'
+def test_get_value():
+	assert get_value('_123') == 80
+	assert get_value('PROCESS') == 80
+
+def test_theme_get_color():
+	THEMES['test'] = THEMES['green_on_black'].copy()
 	theme = Theme('test')
-	assert theme.getColor('DONE') == THEMES['greenOnBlack']['DONE'].format(**theme.colors)
-	assert theme.getColor('INFO') == THEMES['greenOnBlack']['in:INFO,P_PROPS,OUTPUT,EXPORT,INPUT,P_ARGS,BLDING,SBMTING,RUNNING,JOBDONE,KILLING'].format(**theme.colors)
-	assert theme.getColor('ABCDEF') == 'ABColor'
-	assert theme.getColor('ERROR') == THEMES['greenOnBlack']['has:ERR'].format(**theme.colors)
-	assert theme.getColor('REGEXafwef') == 'REGEXColor'
-	assert theme.getColor('REGEXarrt') == 'REGEXColor'
-	assert theme.getColor('NOTEXIST') == ''
+	assert theme.get_color('DONE') == THEMES['test'][get_group('DONE')].format(**Theme.COLORS)
+	assert theme.get_color('INFO') == THEMES['test']['CRITICAL'].format(**Theme.COLORS)
+	assert theme.get_color('ABCDEF') == ''
+	assert theme.get_color('ERROR') == THEMES['green_on_black']['ERROR'].format(**Theme.COLORS)
+	assert theme.get_color('NOTEXIST') == ''
 
 def test_stream_formatter():
 	sfmt = StreamFormatter(Theme())
@@ -134,20 +134,21 @@ def test_stream_filter():
 		msg     = "This is logging record1.",
 		mylevel = "INFO",
 		proc    = 'pProc',
-		dlevel  = 'EXPORT_CACHE_USING_SYMLINK'
+		dlevel  = 'CACHE_FAILED'
 	))
 	assert sfilter.filter(record)
-	assert sfilter.debugs['pProc']['EXPORT_CACHE_USING_SYMLINK'] == 1
+	assert sfilter.debugs['pProc']['CACHE_FAILED'] == 1
 	assert not sfilter.filter(record)
 
 	record = logging.makeLogRecord(dict(
 		msg     = "This is logging record1.",
 		mylevel = "INFO",
 		proc    = 'pProc',
-		dlevel  = 'CACHE_EMPTY_CURRSIG'
+		dlevel  = 'SCRIPT_EXISTS'
 	))
 	assert sfilter.filter(record)
 	assert sfilter.filter(record)
+	assert not sfilter.filter(record)
 	assert 'further information will be ignored.' in record.msg
 
 def test_file_filter():
@@ -185,12 +186,13 @@ def test_file_formatter():
 	))
 	assert ffmt.format(record) == 'This is logging record2.'
 
-def test_logger_initLevels():
-	assert Logger.initLevels([], []) == LEVELS_ALWAYS
-	assert Logger.initLevels(True, []) == LEVELS_ALWAYS | LEVELS['normal']
-	assert Logger.initLevels('DEBUG', []) == LEVELS_ALWAYS | set(['DEBUG'])
-	assert Logger.initLevels([], ['+DEBUG', '-WORKDIR']) == LEVELS_ALWAYS - set(['WORKDIR']) | set(['DEBUG'])
-	assert Logger.initLevels([], 'DEBUG') == LEVELS_ALWAYS | set(['DEBUG'])
+def test_logger_init_levels():
+	assert init_levels('TITLE', []) == {'PROCESS'}
+	assert init_levels(True, []) == {'PROCESS', 'DEPENDS', 'WORKDIR', 'CACHED', 'P_DONE', 'INFO',
+		'BLDING', 'SBMTING', 'RUNNING', 'JOBDONE', 'KILLING', 'RTRYING', 'ERROR', 'WARNING'}
+	assert init_levels('DEBUG', []) == {'BLDING', 'CACHED', 'DEBUG', 'DEPENDS', 'ERROR', 'INFO', 'JOBDONE', 'KILLING', 'PROCESS', 'P_DONE', 'RTRYING', 'RUNNING', 'SBMTING', 'WARNING', 'WORKDIR'}
+	assert init_levels('CRITICAL', ['+DEBUG', '-WORKDIR']) == {'BLDING', 'CACHED', 'DEBUG', 'DEPENDS', 'INFO', 'JOBDONE', 'KILLING', 'PROCESS', 'P_DONE', 'RUNNING', 'SBMTING'}
+	assert init_levels('TITLE', 'DEBUG') == {'PROCESS', 'DEBUG'}
 
 def test_logger_init(tmpdir):
 	logger = Logger(bake = True)
@@ -198,7 +200,7 @@ def test_logger_init(tmpdir):
 	logger.init()
 	assert len(logger.logger.handlers) == 2
 
-	logger.init({'_log': {'file': False}})
+	logger.init({'file': False})
 	assert len(logger.logger.handlers) == 1
 
 def test_logger_bake():

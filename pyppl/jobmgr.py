@@ -8,7 +8,6 @@ from diot import Diot
 from .utils import StateMachine, PQueue, ThreadPool
 from .logger import logger
 from .exception import JobBuildingError, JobFailError
-from .plugin import pluginmgr
 from .runner import poll_interval
 
 STATES = Diot(
@@ -264,8 +263,6 @@ class Jobmgr:
 			).join()
 
 			#random.choice(failed_jobs or running_jobs or self.jobs).showError(len(failed_jobs))
-
-			pluginmgr.hook.proc_fail(proc = self.proc) # pylint: disable=no-member
 
 			if isinstance(ex, Exception) and not isinstance(ex, (
 				JobFailError, JobBuildingError, KeyboardInterrupt)):

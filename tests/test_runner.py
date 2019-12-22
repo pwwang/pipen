@@ -1,10 +1,15 @@
 import pytest
 import types
 import cmdy
-from pyppl.runner import register_runner, use_runner, current_runner, hookimpl, RUNNERS, runnermgr, _runner_name
+from pyppl import runner as module_runner
+from pyppl.runner import register_runner, use_runner, current_runner, hookimpl, RUNNERS, runnermgr, _runner_name, poll_interval
 from pyppl.exception import RunnerNoSuchRunner, RunnerMorethanOneRunnerEnabled, RunnerTypeError
 
+module_runner.DEFAULT_POLL_INTERVAL = 1
+
 class PyPPLRunnerTest1:
+
+	POLL_INTERVAL = 10
 
 	@hookimpl
 	def kill(self, job):
@@ -37,6 +42,7 @@ def test_runner_name(obj, name):
 
 def test_x_runner():
 	assert current_runner() == 'local'
+	assert poll_interval() == 1
 	with pytest.raises(RunnerNoSuchRunner):
 		use_runner('test1')
 	test1runner = PyPPLRunnerTest1()
@@ -46,6 +52,7 @@ def test_x_runner():
 
 	use_runner('test1')
 	assert current_runner() == 'test1'
+	assert poll_interval() == 10
 
 	with pytest.raises(RunnerNoSuchRunner):
 		use_runner('test2')
@@ -60,9 +67,11 @@ def test_x_runner():
 		current_runner()
 	use_runner('test2')
 	assert current_runner() == 'test2'
+	assert poll_interval() == 10
 
 	use_runner('local')
 	assert current_runner() == 'local'
+	assert poll_interval() == 1
 
 	runnermgr.unregister(list(runnermgr.get_plugins())[0])
 	with pytest.raises(RunnerNoSuchRunner):

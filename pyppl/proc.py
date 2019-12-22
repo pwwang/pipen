@@ -155,7 +155,7 @@ class Proc:
 				pluginmgr.hook.proc_postrun(proc = self, status = 'failed')
 				sys.exit(1)
 
-		pluginmgr.hook.proc_postrun(proc = self, status = 'successful')
+		pluginmgr.hook.proc_postrun(proc = self, status = 'succeeded')
 		del self.jobs[:]
 
 	def _save_settings(self):

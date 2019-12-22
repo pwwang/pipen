@@ -59,7 +59,7 @@ class Job:
 			self.signature.to_toml(filename = self.dir / 'job.cache')
 
 	def is_cached(self):
-		if not self.proc.cache or not self.is_successed() or \
+		if not self.proc.cache or not self.is_succeeded() or \
 			not self.dir.joinpath('job.cache').is_file():
 			self.logger('Not cached as proc.cache is False, job failed or cache file not found.',
 						dlevel = "CACHE_FAILED", level = 'debug')
@@ -157,17 +157,16 @@ class Job:
 			pluginmgr.hook.job_build(job = self, status = 'failed')
 			return False
 
-	def is_successed(self):
+	def is_succeeded(self):
 		"""See if the job is successfully done
 		Allow plugins to override the status
 		By default, we just do a simple check to see if
 		the return code is 0
 		"""
-		status = self.rc == 0
-		ret = pluginmgr.hook.job_is_successed(job = self, status = status)
+		ret = pluginmgr.hook.job_succeeded(job = self)
 		if ret and any(state is False for state in ret):
 			return False
-		return status
+		return self.rc == 0
 
 	def done(self, cached = False, status = True):
 		"""@API
@@ -280,7 +279,7 @@ class Job:
 		if self.rc != RC_NO_RCFILE:
 			self.logger('Polling the job ... done.', level = 'debug')
 			pluginmgr.hook.job_poll(job = self, status = 'done')
-			return self.is_successed()
+			return self.is_succeeded()
 		# running
 		self.logger('Polling the job ... rc file not generated.', level = 'debug')
 		pluginmgr.hook.job_poll(job = self, status = 'running')
@@ -317,12 +316,12 @@ class Job:
 		self.logger('Killing the job ...', level = 'debug')
 		try:
 			status = runnermgr.hook.kill(job = self)
-
-			pluginmgr.hook.job_kill(job = self, status = 'succeeded' if status else 'failed')
-			if status:
-				self.pid = ''
-			return status
 		except BaseException:
 			self.pid = ''
 			pluginmgr.hook.job_poll(job = self, status = 'failed')
 			return False
+
+		pluginmgr.hook.job_kill(job = self, status = 'succeeded' if status else 'failed')
+		if status:
+			self.pid = ''
+		return status

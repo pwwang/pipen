@@ -31,7 +31,7 @@ def proc_factory(tmp_path):
 		return ret
 	return wrapper
 
-def test_init(proc_factory):
+def test_init(proc_factory, caplog):
 	use_runner('local')
 	proc = proc_factory('pInit')
 	job = Job(0, proc)
@@ -51,6 +51,9 @@ def test_init(proc_factory):
 	assert job.signature.o == {'out:var':'1'}
 	assert job.pid == ''
 	assert job.plugin_config == {}
+
+	job.logger('HAHA', level = 'INFO', pbar = True)
+	assert 'pInit: [1/1] HAHA' in caplog.text
 
 def test_linkinfile(proc_factory, tmp_path):
 	proc = proc_factory('pLinkInfile')
@@ -321,6 +324,11 @@ def test_script_parts(proc_factory):
 	}
 	assert job.dir.joinpath('job.script._bak').is_file()
 
+	# try to cover when command is a string
+	job.script = ''
+	job.script_parts['command'] = job.script_parts['command'][0]
+	job.script
+
 
 def test_pid(proc_factory):
 	proc = proc_factory('pPid')
@@ -331,6 +339,15 @@ def test_pid(proc_factory):
 	del job.pid
 	job.pid = 'abc'
 	assert job.pid == 'abc'
+
+	del job.pid
+	job.pid = ''
+	assert job.pid == ''
+
+	job.dir.joinpath('job.pid').unlink()
+	del job.pid
+	job.pid = None
+	assert job.pid == ''
 
 # end of _job tests
 
@@ -450,7 +467,7 @@ def test_done(proc_factory, caplog):
 	job = Job(0, proc_factory('pDone', cache = True))
 	job.rc = 0
 	job.done()
-	assert job.is_successed()
+	assert job.is_succeeded()
 	assert job.is_cached()
 	assert 'Finishing up the job' in caplog.text
 

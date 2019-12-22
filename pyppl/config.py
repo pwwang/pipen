@@ -13,8 +13,8 @@ DEFAULT_CONFIG = dict(default = dict(
 	# logger options
 	logger = dict(
 		file       = None,
-		theme      = 'greenOnBlack',
-		levels     = 'normal',
+		theme      = 'green_on_black',
+		level      = 'info',
 		leveldiffs = []
 	),
 	# The cache option, True/False/export

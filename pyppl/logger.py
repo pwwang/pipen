@@ -11,109 +11,102 @@ import colorama
 # Fore/Back: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
 # Style: DIM, NORMAL, BRIGHT, RESET_ALL
 from .config import config as default_config
+from .plugin import pluginmgr
 
 colorama.init(autoreset = False)
 
-LOGFMT     = "[%(asctime)s%(message)s"
-LOGTIMEFMT = "%Y-%m-%d %H:%M:%S"
+LOG_FORMAT     = "[%(asctime)s%(message)s"
+LOGTIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-THEMES = dict(
-	greenOnBlack = OrderedDict([
-		('DONE', '{s.BRIGHT}{f.GREEN}'),
-		('DEBUG', '{s.DIM}{f.WHITE}'),
-		('PROCESS', '{s.BRIGHT}{f.CYAN}'),
-		('DEPENDS', '{f.MAGENTA}'),
-		('in:INFO,P_PROPS,OUTPUT,EXPORT,INPUT,P_ARGS,BLDING,SBMTING,RUNNING,JOBDONE,KILLING',
-		 '{f.GREEN}'),
-		('CMDERR', '{s.BRIGHT}{f.YELLOW}'),
-		('has:ERR', '{f.RED}'),
-		('in:WARNING,RTRYING,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
-		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
-		('', ''),
-	]),
-
-	blueOnBlack = OrderedDict([
-		('DONE', '{s.BRIGHT}{f.BLUE}'),
-		('DEBUG', '{s.DIM}{f.WHITE}'),
-		('PROCESS', '{s.BRIGHT}{f.CYAN}'),
-		('DEPENDS', '{f.GREEN}'),
-		('in:INFO,P_PROPS,OUTPUT,EXPORT,INPUT,P_ARGS,BLDING,SBMTING,RUNNING,JOBDONE,KILLING',
-		 '{f.BLUE}'),
-		('CMDERR', '{s.BRIGHT}{f.YELLOW}'),
-		('has:ERR', '{f.RED}'),
-		('in:WARNING,RTRYING,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
-		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
-		('', ''),
-	]),
-
-	magentaOnBlack = OrderedDict([
-		('DONE', '{s.BRIGHT}{f.MAGENTA}'),
-		('DEBUG', '{s.DIM}{f.WHITE}'),
-		('PROCESS', '{s.BRIGHT}{f.GREEN}'),
-		('DEPENDS', '{f.BLUE}'),
-		('in:INFO,P_PROPS,OUTPUT,EXPORT,INPUT,P_ARGS,BLDING,SBMTING,RUNNING,JOBDONE,KILLING',
-		 '{f.MAGENTA}'),
-		('CMDERR', '{s.BRIGHT}{f.YELLOW}'),
-		('has:ERR', '{f.RED}'),
-		('in:WARNING,RTRYING,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
-		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
-		('', ''),
-	]),
-
-	greenOnWhite = OrderedDict([
-		('DONE', '{s.BRIGHT}{f.GREEN}'),
-		('DEBUG', '{s.DIM}{f.BLACK}'),
-		('PROCESS', '{s.BRIGHT}{f.BLUE}'),
-		('DEPENDS', '{f.MAGENTA}'),
-		('in:INFO,P_PROPS,OUTPUT,EXPORT,INPUT,P_ARGS,BLDING,SBMTING,RUNNING,JOBDONE,KILLING',
-		 '{f.GREEN}'),
-		('CMDERR', '{s.BRIGHT}{f.YELLOW}'),
-		('has:ERR', '{f.RED}'),
-		('in:WARNING,RTRYING,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
-		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
-		('', ''),
-	]),
-
-	blueOnWhite = OrderedDict([
-		('DONE', '{s.BRIGHT}{f.BLUE}'),
-		('DEBUG', '{s.DIM}{f.BLACK}'),
-		('PROCESS', '{s.BRIGHT}{f.GREEN}'),
-		('DEPENDS', '{f.MAGENTA}'),
-		('in:INFO,P_PROPS,OUTPUT,EXPORT,INPUT,P_ARGS,BLDING,SBMTING,RUNNING,JOBDONE,KILLING',
-		 '{f.BLUE}'),
-		('CMDERR', '{s.BRIGHT}{f.YELLOW}'),
-		('has:ERR', '{f.RED}'),
-		('in:WARNING,RTRYING,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
-		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
-		('', ''),
-	]),
-
-	magentaOnWhite = OrderedDict([
-		('DONE', '{s.BRIGHT}{f.MAGENTA}'),
-		('DEBUG', '{s.DIM}{f.BLACK}'),
-		('PROCESS', '{s.BRIGHT}{f.BLUE}'),
-		('DEPENDS', '{f.GREEN}'),
-		('in:INFO,P_PROPS,OUTPUT,EXPORT,INPUT,P_ARGS,BLDING,SBMTING,RUNNING,JOBDONE,KILLING',
-		 '{f.MAGENTA}'),
-		('CMDERR', '{s.BRIGHT}{f.YELLOW}'),
-		('has:ERR', '{f.RED}'),
-		('in:WARNING,RTRYING,RESUMED,SKIPPED', '{s.BRIGHT}{f.YELLOW}'),
-		('in:WORKDIR,CACHED,P_DONE', '{f.YELLOW}'),
-		('', ''),
-	]),
+GROUP_VALUES = dict(
+	TITLE    = 80,
+	SUBTITLE = 70,
+	STATUS   = 60,
+	CRITICAL = 50,
+	ERROR    = 40,
+	WARNING  = 30,
+	INFO     = 20,
+	DEBUG    = 10,
+	NOTSET   = 0
 )
 
-LEVELS = {
-	'all'   : set(['INPUT', 'OUTPUT', 'P_ARGS', 'P_PROPS', 'DEBUG', 'WARNING']),
-	'basic' : set(),
-	'normal': set(['INPUT', 'OUTPUT', 'P_ARGS', 'P_PROPS', 'WARNING'])
-}
+LEVEL_GROUPS = dict(
+	TITLE    = ['PROCESS'],
+	SUBTITLE = ['DEPENDS'],
+	STATUS   = ['WORKDIR', 'CACHED', 'P_DONE'],
+	CRITICAL = ['INFO', 'BLDING', 'SBMTING', 'RUNNING', 'JOBDONE', 'KILLING'],
+	ERROR    = ['ERROR'],
+	WARNING  = ['WARNING', 'RTRYING'],
+	DEBUG    = ['DEBUG'],
+)
 
-LEVELS_ALWAYS = set([
-	'PROCESS', 'WORKDIR', 'RESUMED', 'SKIPPED', 'DEPENDS', 'STDOUT', 'STDERR', 'ERROR', 'PLUGIN',
-	'INFO', 'DONE', 'EXPORT', 'PYPPL', 'TIPS', 'CONFIG', 'CMDOUT', 'CMDERR', 'BLDING',
-	'SBMTING', 'RUNNING', 'RTRYING', 'JOBDONE', 'KILLING', 'P_DONE', 'CACHED'
-])
+THEMES = dict(
+	green_on_black = dict(
+		TITLE    = '{s.BRIGHT}{f.CYAN}',
+		SUBTITLE = '{f.MAGENTA}',
+		STATUS   = '{f.YELLOW}',
+		CRITICAL = '{f.GREEN}',
+		ERROR    = '{f.RED}',
+		WARNING  = '{s.BRIGHT}{f.YELLOW}',
+		DEBUG    = '{s.DIM}{f.WHITE}',
+		NOTSET   = ''
+	),
+
+	blue_on_black = dict(
+		TITLE    = '{s.BRIGHT}{f.CYAN}',
+		SUBTITLE = '{f.GREEN}',
+		STATUS   = '{f.YELLOW}',
+		CRITICAL = '{f.BLUE}',
+		ERROR    = '{f.RED}',
+		WARNING  = '{s.BRIGHT}{f.YELLOW}',
+		DEBUG    = '{s.DIM}{f.WHITE}',
+		NOTSET   = ''
+	),
+
+	magenta_on_black = dict(
+		TITLE    = '{s.BRIGHT}{f.GREEN}',
+		SUBTITLE = '{f.BLUE}',
+		STATUS   = '{f.YELLOW}',
+		CRITICAL = '{f.MAGENTA}',
+		ERROR    = '{f.RED}',
+		WARNING  = '{s.BRIGHT}{f.YELLOW}',
+		DEBUG    = '{s.DIM}{f.WHITE}',
+		NOTSET   = ''
+	),
+
+	green_on_white = dict(
+		TITLE    = '{s.BRIGHT}{f.BLUE}',
+		SUBTITLE = '{f.MAGENTA}',
+		STATUS   = '{f.YELLOW}',
+		CRITICAL = '{f.GREEN}',
+		ERROR    = '{f.RED}',
+		WARNING  = '{s.BRIGHT}{f.YELLOW}',
+		DEBUG    = '{s.DIM}{f.BLACK}',
+		NOTSET   = ''
+	),
+
+	blue_on_white = dict(
+		TITLE    = '{s.BRIGHT}{f.GREEN}',
+		SUBTITLE = '{f.MAGENTA}',
+		STATUS   = '{f.YELLOW}',
+		CRITICAL = '{f.BLUE}',
+		ERROR    = '{f.RED}',
+		WARNING  = '{s.BRIGHT}{f.YELLOW}',
+		DEBUG    = '{s.DIM}{f.BLACK}',
+		NOTSET   = ''
+	),
+
+	magenta_on_white = dict(
+		TITLE    = '{s.BRIGHT}{f.BLUE}',
+		SUBTITLE = '{f.GREEN}',
+		STATUS   = '{f.YELLOW}',
+		CRITICAL = '{f.MAGENTA}',
+		ERROR    = '{f.RED}',
+		WARNING  = '{s.BRIGHT}{f.YELLOW}',
+		DEBUG    = '{s.DIM}{f.BLACK}',
+		NOTSET   = ''
+	)
+)
 
 DEBUG_LINES = {
 	'CACHE_FAILED'              : -1,
@@ -128,13 +121,30 @@ DEBUG_LINES = {
 	'JOB_RESETTING'             : -1
 }
 
+def get_group(level):
+	for group, levels in LEVEL_GROUPS.items():
+		if level in levels:
+			return group
+	return 'NOTSET'
+
+def get_value(level):
+	if level[:1] == '_':
+		return max(GROUP_VALUES.values())
+	return GROUP_VALUES.get(get_group(level), 0)
+
 class Theme: # pylint: disable=too-few-public-methods
 	"""
 	The theme for the logger
 	"""
-	def __init__(self, theme = 'greenOnBlack'):
+	COLORS = dict(
+		Style = colorama.Style, s = colorama.Style,
+		Back  = colorama.Back,  b = colorama.Back,
+		Fore  = colorama.Fore,  f = colorama.Fore,
+	)
+
+	def __init__(self, theme = 'green_on_black'):
 		if theme is True:
-			theme = 'greenOnBlack'
+			theme = 'green_on_black'
 		if not theme:
 			self.theme = {}
 		elif isinstance(theme, dict):
@@ -144,13 +154,7 @@ class Theme: # pylint: disable=too-few-public-methods
 		else:
 			raise ValueError('No such theme: %s' % theme)
 
-		self.colors = dict(
-			Style = colorama.Style, s = colorama.Style,
-			Back  = colorama.Back,  b = colorama.Back,
-			Fore  = colorama.Fore,  f = colorama.Fore,
-		)
-
-	def getColor(self, level):
+	def get_color(self, level):
 		"""
 		Get the color for a given level
 		@params:
@@ -158,26 +162,15 @@ class Theme: # pylint: disable=too-few-public-methods
 		@returns:
 			The color of the level by the theme.
 		"""
-		level = level.upper()
-		for key, val in self.theme.items():
-			if key == level:
-				return val.format(**self.colors)
-			if key.startswith('in:') and level in key[3:].split(','):
-				return val.format(**self.colors)
-			if key.startswith('starts:') and level.startswith(key[7:]):
-				return val.format(**self.colors)
-			if key.startswith('has:') and key[4:] in level:
-				return val.format(**self.colors)
-			if key.startswith('re:') and re.search(key[3:], level):
-				return val.format(**self.colors)
-		return ''
+		group = get_group(level.upper())
+		return self.theme.get(group, '').format(**Theme.COLORS)
 
 class StreamFormatter(logging.Formatter):
 	"""
 	Logging formatter for stream (sys.stderr)
 	"""
 	def __init__(self, theme):
-		logging.Formatter.__init__(self, LOGFMT, LOGTIMEFMT)
+		logging.Formatter.__init__(self, LOG_FORMAT, LOGTIME_FORMAT)
 		self.theme = theme
 
 	def format(self, record):
@@ -198,7 +191,7 @@ class StreamFormatter(logging.Formatter):
 				record.tails.append(rec)
 
 		record.msg = ' {COLOR}{LEVEL}{RESET_ALL}] {COLOR}{PROC}{JOBS}{MSG}{RESET_ALL}'.format(
-			COLOR     = self.theme.getColor(level),
+			COLOR     = self.theme.get_color(level),
 			LEVEL     = level.rjust(7),
 			RESET_ALL = colorama.Style.RESET_ALL,
 			PROC      = record.proc + ': ' if record.proc else '',
@@ -308,7 +301,7 @@ class FileFormatter(logging.Formatter):
 	Extends StreamFormatter, removes the terminal colors
 	"""
 	def __init__(self):
-		logging.Formatter.__init__(self, LOGFMT, LOGTIMEFMT)
+		logging.Formatter.__init__(self, LOG_FORMAT, LOGTIME_FORMAT)
 		self.ansiRegex = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
 
 	def format(self, record):
@@ -318,48 +311,41 @@ class FileFormatter(logging.Formatter):
 			return self.ansiRegex.sub('', record.formatted)
 		return super(FileFormatter, self).format(record)
 
+def init_levels(group, leveldiffs):
+	"""@API
+	Initiate the levels, get real levels.
+	@params:
+		group (str): The group of levels
+		leveldiffs (str|list): The diffs of levels
+	@returns:
+		(set): The real levels.
+	"""
+	value  = GROUP_VALUES.get(group, GROUP_VALUES['INFO'])
+	groups = [key for key in GROUP_VALUES
+		if GROUP_VALUES[key] >= value]
+	ret    = set(level for group in groups
+		for level in LEVEL_GROUPS.get(group, []))
+
+	if not leveldiffs:
+		return ret
+	if not isinstance(leveldiffs, (tuple, list, set)):
+		leveldiffs = set([leveldiffs])
+	for level in leveldiffs:
+		prefix = level[:1] if level[:1] in ('+', '-') else '+'
+		level  = level[1:] if level[:1] in ('+', '-') else level
+		level  = level.upper()
+		if prefix == '-' and level in ret:
+			ret.remove(level)
+		elif prefix == '+':
+			ret.add(level)
+	return ret
+
 class Logger:
 	"""@API
 	A wrapper of logger
 	"""
-	@staticmethod
-	def init_levels(levels, leveldiffs):
-		"""@API
-		Initiate the levels, get real levels.
-		@params:
-			levels (str|list): The levels or level names
-			leveldiffs (str|list): The diffs of levels
-		@returns:
-			(set): The real levels.
-		"""
-		ret = set()
-		if isinstance(levels, (tuple, list, set)):
-			ret |= set(levels)
-			ret |= LEVELS_ALWAYS
-		elif levels not in (None, False):
-			if levels is True:
-				levels = 'normal'
-			if levels.lower() in LEVELS:
-				ret |= LEVELS[levels.lower()]
-			elif levels:
-				ret.add(levels)
-			ret |= LEVELS_ALWAYS
 
-		if not leveldiffs:
-			return ret
-		if not isinstance(leveldiffs, (tuple, list, set)):
-			leveldiffs = set([leveldiffs])
-		for level in leveldiffs:
-			level = level.upper()
-			if level.startswith('-'):
-				level = level[1:]
-				if level in ret:
-					ret.remove(level)
-			else:
-				if level.startswith('+'):
-					level = level[1:]
-				ret.add(level)
-		return ret
+	__slots__ = ('baked', 'name', 'ispbar', 'logger')
 
 	def __init__(self, name = 'PyPPL', bake = False):
 		"""@API
@@ -395,8 +381,10 @@ class Logger:
 			handler.close()
 		del self.logger.handlers[:]
 
-		theme = Theme(config.theme)
-		levels = Logger.init_levels(config.levels, config.leveldiffs)
+		pluginmgr.hook.logger_init(logger = self)
+
+		theme  = Theme(config.theme)
+		levels = init_levels(config.level.upper(), config.leveldiffs)
 
 		stream_handler = StreamHandler()
 		stream_handler.addFilter(StreamFilter(self.name, levels))
@@ -439,11 +427,6 @@ class Logger:
 		extra.update(kwargs)
 		self.logger.info(*args, extra = extra)
 
-	def __getitem__(self, name):
-		"""@API
-		Alias of `__getattr__`"""
-		return self.__getattr__(name)
-
 	def __getattr__(self, name):
 		"""@API
 		Allows logger.info way to specify the level
@@ -456,6 +439,8 @@ class Logger:
 		self.ispbar = False
 		return partial(self._emit, _level = name.upper(), _extra = dict(
 			ispbar = ispbar, dlevel = None))
+
+	__getitem__ = __getattr__
 
 # pylint: disable=invalid-name
 logger = Logger()
