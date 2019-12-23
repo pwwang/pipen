@@ -22,7 +22,7 @@ class Template:
 		self.envs   = Template.DEFAULT_ENVS.copy()
 		self.envs.update(envs)
 
-	def registerEnvs(self, **envs):
+	def register_envs(self, **envs):
 		"""@API
 		Register extra environment
 		@params:

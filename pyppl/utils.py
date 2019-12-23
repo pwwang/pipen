@@ -1,10 +1,10 @@
+"""Utility functions for PyPPL"""
 import re
 from os import path, walk
 from copy import deepcopy
 from queue import PriorityQueue
 from threading import Thread
 import cmdy
-import psutil
 from transitions import Transition, Machine
 from liquid.stream import LiquidStream
 from . import _fsutil as fs

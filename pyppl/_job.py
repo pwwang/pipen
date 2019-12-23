@@ -1,3 +1,4 @@
+"""Implementations for Job"""
 from pathlib import Path
 import cmdy
 from diot import Diot, OrderedDiot
@@ -5,11 +6,15 @@ from .logger import logger
 from .runner import runnermgr
 from .utils import chmod_x, fs, filesig
 from .exception import JobInputParseError, JobOutputParseError
-from ._proc import OUT_VARTYPE, OUT_FILETYPE, OUT_DIRTYPE, OUT_STDOUTTYPE, OUT_STDERRTYPE, IN_VARTYPE, IN_FILETYPE,IN_FILESTYPE
+from ._proc import OUT_VARTYPE, OUT_FILETYPE, \
+	OUT_DIRTYPE, OUT_STDOUTTYPE, OUT_STDERRTYPE, \
+	IN_VARTYPE, IN_FILETYPE,IN_FILESTYPE
+
+# pylint: disable=unused-argument
 
 RC_NO_RCFILE = 511
 
-def _linkInfile(orgfile, indir):
+def _link_infile(orgfile, indir):
 	"""
 	Create links for input files
 	@params:
@@ -45,6 +50,7 @@ def _linkInfile(orgfile, indir):
 	return infile
 
 def job_dir(this, value):
+	"""Try to create job dir when access it"""
 	ret = this.proc.workdir.joinpath(str(this.index + 1)).resolve()
 	if not ret.is_dir():
 		ret.mkdir(exist_ok = True)
@@ -73,12 +79,12 @@ def job_input(this, value):
 					indata, 'File not exists for input [%s:%s]' % (key, intype))
 			else:
 				indata = Path(indata).resolve()
-				infile = _linkInfile(indata, this.dir / 'input')
+				infile = _link_infile(indata, this.dir / 'input')
 
 				if indata.name != infile.name:
 					this.logger("Input file renamed: %s -> %s" %
 						(indata.name, infile.name),
-						dlevel = 'INFILE_RENAMING', level = "warning")
+						slevel = 'INFILE_RENAMING', level = "warning")
 			ret[key] = (intype, str(infile))
 
 		elif intype in IN_FILESTYPE:
@@ -87,7 +93,7 @@ def job_input(this, value):
 			if not indata:
 				this.logger(
 					'No data provided for [%s:%s], use empty list instead.' %
-					(key, intype), dlevel = 'INFILE_EMPTY', level = "warning")
+					(key, intype), slevel = 'INFILE_EMPTY', level = "warning")
 				continue
 
 			if not isinstance(indata, list):
@@ -106,11 +112,11 @@ def job_input(this, value):
 						'File not exists as an element of input [%s:%s]' % (key, intype))
 				else:
 					data   = Path(data).resolve()
-					infile = _linkInfile(data, this.dir / 'input')
+					infile = _link_infile(data, this.dir / 'input')
 					if data.name != infile.name:
 						this.logger('Input file renamed: %s -> %s' %
 							(data.name, infile.name),
-							dlevel = 'INFILE_RENAMING', level = "warning")
+							slevel = 'INFILE_RENAMING', level = "warning")
 				ret[key][1].append(str(infile))
 		else:
 			ret[key] = (intype, indata)
@@ -206,11 +212,13 @@ def job_signature(this, value):
 	return ret
 
 def job_rc_setter(this, value):
+	"""Try to save the returncode while set it to job.rc"""
 	if value is not None:
 		with (this.dir / 'job.rc').open('w') as frc:
 			frc.write(str(value))
 
 def job_rc_getter(this, value):
+	"""Try to read the returncode from job.rc file"""
 	if not fs.isfile(this.dir / 'job.rc'):
 		return RC_NO_RCFILE
 	with (this.dir / 'job.rc').open('r') as frc:
@@ -241,6 +249,7 @@ def job_data(this, value):
 	return ret
 
 def job_script(this, value):
+	"""Try to create the script while accessing it"""
 	scriptfile = this.dir.joinpath('job.script.' + this.runner)
 	this.logger('Wrapping up script: %s' % scriptfile, level = 'debug')
 	script_parts = this.script_parts
@@ -287,13 +296,14 @@ def job_script(this, value):
 	return scriptfile
 
 def job_script_parts(this, value):
+	"""Allow runners to modify the script parts"""
 	script = this.proc.script.render(this.data)
 		# real script file
 	realsfile = this.dir / 'job.script'
 	if fs.isfile(realsfile) and realsfile.read_text() != script:
 		fs.move(realsfile, this.dir / 'job.script._bak')
 		this.logger("Script file updated: %s" % realsfile,
-			dlevel = 'SCRIPT_EXISTS', level = 'debug')
+			slevel = 'SCRIPT_EXISTS', level = 'debug')
 		realsfile.write_text(script)
 	elif not fs.isfile(realsfile):
 		realsfile.write_text(script)
@@ -327,13 +337,14 @@ def job_logger(this, value):
 	return _logger
 
 def job_pid_setter(this, value):
+	"""Try to save the pid while setting it to job.pid"""
 	if value is None:
 		return ''
 	else:
 		this.dir.joinpath('job.pid').write_text(str(value))
 
-
 def job_pid_getter(this, value):
+	"""Try to read the pid from job.pid"""
 	if not this.dir.joinpath('job.pid').is_file():
 		return ''
 	return this.dir.joinpath('job.pid').read_text().strip()

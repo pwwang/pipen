@@ -1,3 +1,4 @@
+"""Pipeline for PyPPL"""
 # give random tips in the log
 import random
 import time
@@ -98,11 +99,11 @@ def _logo():
 			rname, rplugin.__version__ if hasattr(rplugin, '__version__') else 'Unknown')
 
 class PyPPL:
-
+	"""The class for the whole pipeline"""
 	# allow adding methods
 	__slots__ = 'name', 'runtime_config', 'procs', 'starts', 'ends', '__dict__'
 
-	def __init__(self, config = None, name = None, *config_files, **kwconfigs):
+	def __init__(self, config = None, name = None, config_files = None, **kwconfigs):
 		# check if keys in kwconfigs are valid
 		config = config or {}
 		config.update(kwconfigs)
@@ -118,7 +119,7 @@ class PyPPL:
 		PIPELINES[filename] = self
 
 		self.runtime_config = Config()
-		self.runtime_config._load(dict(default = config, *config_files))
+		self.runtime_config._load(dict(default = config, *(config_files or ())))
 
 		logger_config = try_deepcopy(default_config.logger.dict())
 		logger_config.update(self.runtime_config.pop('logger', {}))
@@ -141,6 +142,11 @@ class PyPPL:
 		pluginmgr.hook.pyppl_init(ppl = self)
 
 	def run(self, profile = 'default'):
+		"""@API
+		Run the pipeline with certain profile
+		@params:
+			profile (str): The profile name
+		"""
 		timer = time.time()
 		ret = pluginmgr.hook.pyppl_prerun(ppl = self)
 
@@ -170,7 +176,6 @@ class PyPPL:
 						[dproc.shortname for dproc in proc.depends] if proc.depends else 'START',
 						proc.name,
 						[nproc.shortname for nproc in proc.nexts] if proc.nexts else 'END')
-
 					proc.run(defconfig)
 
 		pluginmgr.hook.pyppl_postrun(ppl = self)
@@ -178,6 +183,7 @@ class PyPPL:
 		return self
 
 	def start(self, *anything):
+		"""Set the start processes for the pipeline"""
 		del self.procs[:]
 		del self.starts[:]
 		del self.ends[:]
@@ -196,7 +202,9 @@ class PyPPL:
 			for proc in self.procs:
 				self.ends.append(proc)
 				if proc.nexts:
-					logger.warning("%r will not run, as they depend on non-start processes or themselves.", proc.nexts)
+					logger.warning(
+						"%r will not run, as they depend on non-start processes or themselves.",
+						proc.nexts)
 			return self
 
 		while nexts:

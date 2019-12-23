@@ -1,16 +1,20 @@
+"""Job for PyPPL"""
 import attr
 import toml
 from attr_property import attr_property_class, attr_property
-from diot import Diot, OrderedDiot
+from diot import Diot
 from .runner import runnermgr, current_runner
 from .plugin import pluginmgr, PluginConfig
-from .utils import chmod_x, fs
-from ._proc import OUT_DIRTYPE, OUT_STDOUTTYPE, OUT_STDERRTYPE
-from ._job import job_dir, job_input, job_output, job_signature, job_rc_setter, job_rc_getter, job_data, job_script, job_logger, job_pid_setter, job_pid_getter, job_script_parts, RC_NO_RCFILE
+from .utils import fs, filesig
+from ._proc import OUT_DIRTYPE, OUT_STDOUTTYPE, OUT_STDERRTYPE, OUT_VARTYPE
+from ._job import job_dir, job_input, job_output, job_signature, \
+	job_rc_setter, job_rc_getter, job_data, job_script, job_logger, \
+	job_pid_setter, job_pid_getter, job_script_parts, RC_NO_RCFILE
 
 @attr_property_class
-@attr.s(slots = True)
+@attr.s
 class Job:
+	"""Job class"""
 
 	index = attr.ib()
 	proc = attr.ib()
@@ -49,6 +53,14 @@ class Job:
 		pluginmgr.hook.job_init(job = self)
 
 	def add_config(self, name, default = None, converter = None):
+		"""@API
+		Add a config to plugin config, used for plugins
+		@params:
+			name (str): The name of the config.
+				To proptect your config, better use a prefix
+			default (Any): The default value for the config
+			converter (callable): The converter for the value
+		"""
 		self.plugin_config.add(name, default, converter)
 
 	def cache(self):
@@ -58,12 +70,28 @@ class Job:
 		if self.proc.cache:
 			self.signature.to_toml(filename = self.dir / 'job.cache')
 
+	def _is_cached_without_cachefile(self):
+		# check if outfiles/dirs are newer than any input files/dirs
+		for datatype, data in self.output.values():
+			if datatype in OUT_VARTYPE:
+				continue
+			sig = filesig(data, dirsig = self.proc.dirsig and datatype in OUT_DIRTYPE)
+			if sig[1] < self.signature.mtime:
+				return False
+		return True
+
 	def is_cached(self):
-		if not self.proc.cache or not self.is_succeeded() or \
-			not self.dir.joinpath('job.cache').is_file():
-			self.logger('Not cached as proc.cache is False, job failed or cache file not found.',
-						dlevel = "CACHE_FAILED", level = 'debug')
+		"""Tell if the job is cached
+		@returns:
+			(bool): True if the job is cached else False
+		"""
+		if not self.proc.cache or not self.is_succeeded():
+			self.logger('Not cached as proc.cache is False or job failed.',
+						slevel = "CACHE_FAILED", level = 'debug')
 			return False
+
+		if not self.dir.joinpath('job.cache').is_file():
+			return self._is_cached_without_cachefile()
 
 		sig_now = self.signature
 		with open(self.dir.joinpath('job.cache')) as fcache:
@@ -71,7 +99,7 @@ class Job:
 		# time is easy to check, check it first
 		if sig_now.mtime > sig_old.mtime:
 			self.logger('Input or script has been modified.',
-						dlevel = "CACHE_INPUT_MODIFIED", level = 'debug')
+						slevel = "CACHE_INPUT_MODIFIED", level = 'debug')
 			return False
 
 		# check items
@@ -79,36 +107,38 @@ class Job:
 			additional= [key for key in sig_now.i if key not in sig_old.i]
 			if additional:
 				self.logger('Additional input items found: %s.' % additional,
-						dlevel = "CACHE_INPUT_MODIFIED", level = 'debug')
+						slevel = "CACHE_INPUT_MODIFIED", level = 'debug')
 				return False
 			missing = [key for key in sig_old.i if key not in sig_now.i]
 			if missing:
 				self.logger('Missing input items: %s.' % missing,
-						dlevel = "CACHE_INPUT_MODIFIED", level = 'debug')
+						slevel = "CACHE_INPUT_MODIFIED", level = 'debug')
 				return False
 		elif sig_now.i != sig_old.i:
 			diff_key = [key for key in sig_now.i
 				if sig_now.i[key] != sig_old.i[key]][0]
-			self.logger('Input item %r changed: %s -> %s' % (diff_key, sig_old.i[diff_key], sig_now.i[diff_key]),
-						dlevel = "CACHE_INPUT_MODIFIED", level = 'debug')
+			self.logger('Input item %r changed: %s -> %s' % (
+				diff_key, sig_old.i[diff_key], sig_now.i[diff_key]),
+				slevel = "CACHE_INPUT_MODIFIED", level = 'debug')
 			return False
 
 		if list(sig_now.o.keys()) != list(sig_old.o.keys()):
 			additional= [key for key in sig_now.o if key not in sig_old.o]
 			if additional:
 				self.logger('Additional output items found: %s.' % additional,
-						dlevel = "CACHE_OUTPUT_MODIFIED", level = 'debug')
+						slevel = "CACHE_OUTPUT_MODIFIED", level = 'debug')
 				return False
 			missing = [key for key in sig_old.o if key not in sig_now.o]
 			if missing:
 				self.logger('Missing output items: %s.' % missing,
-						dlevel = "CACHE_OUTPUT_MODIFIED", level = 'debug')
+						slevel = "CACHE_OUTPUT_MODIFIED", level = 'debug')
 				return False
 		elif sig_now.o != sig_old.o:
 			diff_key = [key for key in sig_now.o
 				if sig_now.o[key] != sig_old.o[key]][0]
-			self.logger('Output item %r changed: %s -> %s' % (diff_key, sig_old.o[diff_key], sig_now.o[diff_key]),
-						dlevel = "CACHE_OUTPUT_MODIFIED", level = 'debug')
+			self.logger('Output item %r changed: %s -> %s' % (
+				diff_key, sig_old.o[diff_key], sig_now.o[diff_key]),
+				slevel = "CACHE_OUTPUT_MODIFIED", level = 'debug')
 			return False
 		return True
 
@@ -119,9 +149,9 @@ class Job:
 		self.logger('Builing the job ...', level = 'debug')
 		try:
 			# trigger input/output/script building
-			self.input
-			self.output
-			self.script
+			self.input  # pylint: disable=pointless-statement
+			self.output # pylint: disable=pointless-statement
+			self.script # pylint: disable=pointless-statement
 			# check cache
 			outfile = self.dir / 'job.stdout'
 			errfile = self.dir / 'job.stderr'
@@ -259,7 +289,7 @@ class Job:
 			return True
 		self.logger(
 			'Submission failed (rc = {rscmd.rc}, cmd = {rscmd.cmd})\n{rscmd.stderr}'.format(
-				rscmd = rscmd), dlevel = 'SUBMISSION_FAIL', level = 'error')
+				rscmd = rscmd), slevel = 'SUBMISSION_FAIL', level = 'error')
 		pluginmgr.hook.job_submit(job = self, status = 'failed')
 		return False
 

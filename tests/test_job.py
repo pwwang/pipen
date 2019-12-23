@@ -1,12 +1,13 @@
 import time
 import pytest
+from pathlib import Path
 from os import path, utime
 from diot import Diot, OrderedDiot
 from simpleconf import Config
 from pyppl.config import config
 from pyppl.runner import use_runner
 from pyppl.job import Job
-from pyppl._job import RC_NO_RCFILE, _linkInfile
+from pyppl._job import RC_NO_RCFILE, _link_infile
 from pyppl.proc import Proc
 from pyppl.utils import fs, filesig
 from pyppl.exception import JobInputParseError, JobOutputParseError
@@ -55,30 +56,30 @@ def test_init(proc_factory, caplog):
 	job.logger('HAHA', level = 'INFO', pbar = True)
 	assert 'pInit: [1/1] HAHA' in caplog.text
 
-def test_linkinfile(proc_factory, tmp_path):
+def test_link_infile(proc_factory, tmp_path):
 	proc = proc_factory('pLinkInfile')
 	job = Job(0, proc)
 	# clear up the input directory
 	fs.mkdir(job.dir / 'input', overwrite = True)
-	infile1 = tmp_path / 'indir1' / 'test_linkinfile.infile.txt'
+	infile1 = tmp_path / 'indir1' / 'test_link_infile.infile.txt'
 	infile1.parent.mkdir()
 	infile1.write_text('')
-	assert _linkInfile(infile1, job.dir/'input') == job.dir / 'input' / 'test_linkinfile.infile.txt'
+	assert _link_infile(infile1, job.dir/'input') == job.dir / 'input' / 'test_link_infile.infile.txt'
 
 	# rename existing file with same name
-	infile2 = tmp_path / 'indir2' / 'test_linkinfile.infile.txt'
+	infile2 = tmp_path / 'indir2' / 'test_link_infile.infile.txt'
 	infile2.parent.mkdir()
 	infile2.write_text('')
-	assert _linkInfile(infile2, job.dir/'input') == job.dir / 'input' / '[1]test_linkinfile.infile.txt'
+	assert _link_infile(infile2, job.dir/'input') == job.dir / 'input' / '[1]test_link_infile.infile.txt'
 	# do it again and it will detect infile2 and [1]... are the same file
-	assert _linkInfile(infile2, job.dir/'input') == job.dir / 'input' / '[1]test_linkinfile.infile.txt'
+	assert _link_infile(infile2, job.dir/'input') == job.dir / 'input' / '[1]test_link_infile.infile.txt'
 
 	# if a malformat file exists
-	(job.dir / 'input' / '[a]test_linkinfile.infile.txt').write_text('')
-	infile3 = tmp_path / 'indir3' / 'test_linkinfile.infile.txt'
+	(job.dir / 'input' / '[a]test_link_infile.infile.txt').write_text('')
+	infile3 = tmp_path / 'indir3' / 'test_link_infile.infile.txt'
 	infile3.parent.mkdir()
 	infile3.write_text('')
-	assert _linkInfile(infile3, job.dir/'input') == job.dir / 'input' / '[2]test_linkinfile.infile.txt'
+	assert _link_infile(infile3, job.dir/'input') == job.dir / 'input' / '[2]test_link_infile.infile.txt'
 
 def test_dir(proc_factory):
 	proc = proc_factory('pDir')
@@ -419,16 +420,40 @@ def test_is_cached(proc_factory, caplog):
 	job.signature = ''
 	assert not job.is_cached()
 	assert "Additional output items found: ['out:var']" in caplog.text
-	caplog.clear()
 
 	job.cache()
 	assert job.is_cached()
 
+	# without job.cache file
+	job.dir.joinpath('job.cache').unlink()
+	assert job.is_cached()
+	job.cache()
 
-	job.__attrs_property_cached__['output'] = {'out': ('var', 10)}
+	caplog.clear()
 	job.signature = ''
+	job.__attrs_property_cached__['output'] = {'out': ('var', 10)}
 	assert not job.is_cached()
 	assert "Output item 'out:var' changed: 9 -> 10" in caplog.text
+
+def test_is_cached_without_cachefile(proc_factory, tmp_path):
+	infile = tmp_path / 'test_is_cached_without_cachefile.txt'
+	infile.write_text('')
+	outfile = tmp_path / 'test_is_cached_without_cachefile_out.txt'
+	outfile.write_text('')
+
+	proc = proc_factory('pIsCachedWithoutCacheFile',
+		input = {'infile:file': [infile]},
+		output = 'outfile:file:{{i.infile | __import__("pathlib").Path | .stem}}.txt')
+	job = Job(0, proc)
+	job.rc = 0
+	job.input
+	Path(job.output['outfile'][1]).write_text('')
+	assert job._is_cached_without_cachefile()
+	print(job.signature)
+	job.signature = ''
+	utime(infile, (path.getmtime(infile) + 100, ) * 2)
+	print(job.signature)
+	assert not job._is_cached_without_cachefile()
 
 def test_build(proc_factory):
 	job = Job(0, proc_factory('pBuild', cache = True, script = '# script'))

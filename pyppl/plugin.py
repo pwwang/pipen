@@ -3,10 +3,9 @@ Plugin system for PyPPL
 """
 # pylint: disable=unused-argument
 import sys
-import inspect
 import types
 import pluggy
-from .exception import PyPPLPluginWrongPositionFunction, PluginConfigKeyError, PluginNoSuchPlugin, PluginWrongPluginType
+from .exception import PluginConfigKeyError, PluginNoSuchPlugin
 
 PMNAME = "pyppl"
 
@@ -110,11 +109,22 @@ def _get_plugin(name):
 	return name
 
 def disable_plugin(plugin):
+	"""@API
+	Try to disable a plugin
+	@params:
+		plugin (any): A plugin or the name of a plugin
+	"""
 	plugin = _get_plugin(plugin)
 	if pluginmgr.is_registered(plugin):
 		pluginmgr.unregister(plugin)
 
 def config_plugins(*plugins):
+	"""@API
+	Parse configurations for plugins and enable/disable plugins accordingly.
+	@params:
+		*plugins ([any]): The plugins
+			plugins with 'no:' will be disabled.
+	"""
 	for plugin in plugins:
 		if isinstance(plugin, str) and plugin[:3] == 'no:':
 			try:
@@ -130,6 +140,7 @@ def config_plugins(*plugins):
 					pluginmgr.register(plugin, name = plugin.__class__.__name__)
 
 class PluginConfig(dict):
+	"""Plugin configuration for Proc/Job"""
 
 	def __init__(self, pconfig = None):
 		self.__dict__['__raw__'] = {}
@@ -172,6 +183,7 @@ class PluginConfig(dict):
 				self.__raw__[key] = value
 
 	def setcounter(self, name):
+		"""Get the set counter for properties"""
 		return self.__setcounter__.get(name, 0)
 
 	def __getattr__(self, name):

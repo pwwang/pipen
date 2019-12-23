@@ -1,10 +1,10 @@
+"""Process for PyPPL"""
 from functools import partial
 from pathlib import Path
 import sys
 import traceback
 import attr
 import toml
-import filelock
 from diot import Diot
 from attr_property import attr_property, attr_property_class
 from varname import varname
@@ -14,7 +14,6 @@ from ._proc import proc_depends_setter, proc_input, proc_output, proc_script, \
 	proc_runtime_config_setter, proc_id_setter, proc_tag_setter, \
 	proc_channel, proc_procset, proc_setter_count
 from .utils import try_deepcopy, brief_list
-from .channel import Channel
 from .config import config
 from .logger import logger
 from .jobmgr import STATES, Jobmgr
@@ -26,90 +25,227 @@ from .pyppl import register_proc
 class Proc:
 	"""Process of a pipeline"""
 	# Remember the attr being set, they have the highest priority
-	_setcounter = attr.ib(default = attr.Factory(dict), init = False, repr = False)
+	_setcounter = attr.ib(
+		default = attr.Factory(dict),
+		init    = False,
+		repr    = False)
 	# The id of the process
-	id = attr_property(default = attr.Factory(lambda: varname(caller = 2)), repr = False, setter = proc_id_setter)
+	id = attr_property(
+		default = attr.Factory(lambda: varname(caller = 2)),
+		repr    = False,
+		setter  = proc_id_setter)
 	# The tag of the process
-	tag = attr_property(default = config.tag, setter = proc_tag_setter, kw_only = True,repr = False)
+	tag = attr_property(
+		default = config.tag,
+		setter  = proc_tag_setter,
+		kw_only = True,
+		repr    = False)
 	# The description of the process
-	desc = attr.ib(default = 'No description.', kw_only = True,repr = False)
+	desc = attr.ib(
+		default = 'No description.',
+		kw_only = True,
+		repr    = False)
 	# The args of the process
-	args = attr.ib(default = attr.Factory(Diot), kw_only = True, repr = False)
+	args = attr.ib(
+		default = attr.Factory(Diot),
+		kw_only = True,
+		repr    = False)
 	# caching
-	cache = attr_property(default = config.cache, kw_only = True, repr = False,
-		setter = partial(proc_setter_count, name = 'cache'))
+	cache = attr_property(
+		default = config.cache,
+		kw_only = True,
+		repr    = False,
+		setter  = partial(proc_setter_count, name = 'cache'))
 	# The output channel
-	channel = attr_property(default = None, init = False, repr = False, getter = proc_channel)
+	channel = attr_property(
+		default = None,
+		init    = False,
+		repr    = False,
+		getter  = proc_channel)
 	# Save the definitions to indicate you when you have 2
 	# processes with the same id and tag defined
-	_defs = attr.ib(default = attr.Factory(lambda: traceback.format_stack()[-3]), init = False, repr = False)
+	_defs = attr.ib(
+		default = attr.Factory(lambda: traceback.format_stack()[-3]),
+		init    = False,
+		repr    = False)
 	# the dependencies of the process
-	depends = attr_property(default = attr.Factory(list), kw_only = True, repr = False, setter = proc_depends_setter, raw = '_')
+	depends = attr_property(
+		default = attr.Factory(list),
+		kw_only = True,
+		repr    = False,
+		setter  = proc_depends_setter, raw = '_')
 	# dirsig
-	dirsig = attr_property(default = config.dirsig, kw_only = True, repr = False,
-		setter = partial(proc_setter_count, name = 'dirsig'))
+	dirsig = attr_property(
+		default = config.dirsig,
+		kw_only = True,
+		repr    = False,
+		setter  = partial(proc_setter_count, name = 'dirsig'))
 	# envs used to render templates
-	envs = attr.ib(default = try_deepcopy(config.envs), kw_only = True, repr = False)
+	envs = attr.ib(
+		default = try_deepcopy(config.envs),
+		kw_only = True,
+		repr    = False)
 	# how to deal with errors
-	errhow = attr_property(default = config.errhow, kw_only = True, repr = False,
-		setter = partial(proc_setter_count, name = 'errhow'))
+	errhow = attr_property(
+		default = config.errhow,
+		kw_only = True,
+		repr    = False,
+		setter  = partial(proc_setter_count, name = 'errhow'))
 	# how many times to retry if errored
-	errntry = attr_property(default = config.errntry, kw_only = True, repr = False,
-		setter = partial(proc_setter_count, name = 'errntry'))
+	errntry = attr_property(
+		default = config.errntry,
+		kw_only = True,
+		repr    = False,
+		setter  = partial(proc_setter_count, name = 'errntry'))
 	# forks
-	forks = attr_property(default = config.forks, converter = int, converter_runtime = True,
-		kw_only = True, repr = False, setter = partial(proc_setter_count, name = 'forks'))
+	forks = attr_property(
+		default           = config.forks,
+		converter         = int,
+		converter_runtime = True,
+		kw_only           = True,
+		repr              = False,
+		setter            = partial(proc_setter_count, name = 'forks'))
 	# input of the process
-	input = attr_property(default = None, kw_only = True, getter = proc_input, setter = proc_input_setter, repr = False, raw = '_')
+	input = attr_property(
+		default = None,
+		kw_only = True,
+		getter  = proc_input,
+		setter  = proc_input_setter,
+		repr    = False,
+		raw     = '_')
 	# jobs
-	jobs = attr_property(default = attr.Factory(list), init = False, repr = False, getter = proc_jobs)
+	jobs = attr_property(
+		default = attr.Factory(list),
+		init    = False,
+		repr    = False,
+		getter  = proc_jobs)
 	# language
-	lang = attr_property(default = config.lang, kw_only = True, repr = False,
-		setter = partial(proc_setter_count, name = 'lang'), getter = proc_lang)
+	lang = attr_property(
+		default = config.lang,
+		kw_only = True,
+		repr    = False,
+		setter  = partial(proc_setter_count, name = 'lang'),
+		getter  = proc_lang)
 	# The full name, with procset
-	name = attr_property(init = False, getter = proc_name, setter = False, repr = True)
+	name = attr_property(
+		init   = False,
+		getter = proc_name,
+		setter = False,
+		repr   = True)
 	# Non-cached job indexes
-	_ncjobids = attr.ib(default = attr.Factory(list), init = False, repr = False)
+	_ncjobids = attr.ib(
+		default = attr.Factory(list),
+		init    = False,
+		repr    = False)
 	# who depends on me?
-	nexts = attr_property(init = False, setter = False, repr = False, getter = lambda this, value: [])
+	nexts = attr_property(
+		init   = False,
+		# will be automatically deduced from depends, not allowed to set
+		setter = False,
+		repr   = False,
+		getter = lambda this, value: [])
 	# nthread
-	nthread = attr.ib(default = config.nthread, converter = int, kw_only = True, repr = False)
+	nthread = attr.ib(
+		default   = config.nthread,
+		converter = int,
+		kw_only   = True,
+		repr      = False)
 	# original job id that I copied from
-	origin = attr.ib(default = None, init = False, repr = False)
+	origin = attr.ib(
+		default = None,
+		init    = False,
+		repr    = False)
 	# output of the process
-	output = attr_property(default = '', kw_only = True, getter = proc_output, raw = '_', repr = False)
+	output = attr_property(
+		default = '',
+		kw_only = True,
+		getter  = proc_output,
+		raw     = '_',
+		repr    = False)
 	# plugin configs
-	plugin_config = attr_property(init = False, getter = lambda this, value: PluginConfig(config.plugin_config), kw_only = True, setter = False, repr = False)
+	plugin_config = attr_property(
+		init    = False,
+		getter  = lambda this, value: PluginConfig(config.plugin_config),
+		kw_only = True,
+		setter  = False,
+		repr    = False)
 	# pipeline directory
-	ppldir = attr_property(default = config.ppldir, converter = Path, kw_only = True, repr = False, converter_runtime = True)
+	ppldir = attr_property(
+		default           = config.ppldir,
+		converter         = Path,
+		kw_only           = True,
+		repr              = False,
+		converter_runtime = True)
 	# name of the procset
-	procset = attr_property(setter = False, init = False, repr = False,
+	procset = attr_property(
+		setter = False,
+		init   = False,
+		repr   = False,
 		getter = proc_procset)
 	# runner
-	runner = attr_property(default = config.runner, kw_only = True, repr = False,
-		setter = partial(proc_setter_count, name = 'runner'), getter = proc_runner, raw = '_')
+	runner = attr_property(
+		default = config.runner,
+		kw_only = True,
+		repr    = False,
+		setter  = partial(proc_setter_count, name = 'runner'),
+		getter  = proc_runner,                                 raw = '_')
 	# runtime configuration, used to override all possible configurations
-	runtime_config = attr_property(default =None, init = False, repr = False, setter = proc_runtime_config_setter)
+	runtime_config = attr_property(
+		default = None,
+		init    = False,
+		repr    = False,
+		setter  = proc_runtime_config_setter)
 	# script
-	script = attr_property(default = None, kw_only = True, repr = False, getter = proc_script)
+	script = attr_property(
+		default = None,
+		kw_only = True,
+		repr    = False,
+		getter  = proc_script)
 	# Short name without procset
-	shortname = attr_property(setter = False, init = False, repr = False, getter = proc_shortname)
+	shortname = attr_property(
+		setter = False,
+		init   = False,
+		repr   = False,
+		getter = proc_shortname)
 	# size of the process
-	size = attr_property(init = False, repr = False, getter = proc_size, setter = False)
+	size = attr_property(
+		init   = False,
+		repr   = False,
+		getter = proc_size,
+		setter = False) # deduced from input
 	# suffix
-	suffix = attr_property(init = False, repr = False, getter = proc_suffix, setter = False)
+	suffix = attr_property(
+		init   = False,
+		repr   = False,
+		getter = proc_suffix,
+		setter = False)
 	# template
-	template = attr_property(default = config.template, kw_only = True, repr = False,
-		setter = partial(proc_setter_count, name = 'template'), getter = proc_template)
+	template = attr_property(
+		default = config.template,
+		kw_only = True,
+		repr    = False,
+		setter  = partial(proc_setter_count, name = 'template'),
+		getter  = proc_template)
 	# working directory
-	workdir = attr_property(default = '', kw_only = True, getter = proc_workdir, repr = False)
+	workdir = attr_property(
+		default = '',
+		kw_only = True,
+		getter  = proc_workdir,
+		repr    = False)
 
 	def __attrs_post_init__(self):
 		register_proc(self)
 		pluginmgr.hook.proc_init(proc = self)
 
 	def run(self, runtime_config):
+		"""@API
+		Run the process
+		@params:
+			runtime_config (simpleconf.Config): The runtime configuration
+		"""
 		self.runtime_config = runtime_config
+		self.output
+		self.suffix
 		ret = pluginmgr.hook.proc_prerun(proc = self)
 		# plugins can stop process from running
 		if ret is not False:
@@ -123,7 +259,7 @@ class Proc:
 		if self.jobs:
 			jobs = {}
 
-			for job in self.jobs:
+			for job in self.jobs: # pylint: disable=not-an-iterable
 				jobs.setdefault(job.state, []).append(job.index)
 
 			(logger.P_DONE, logger.CACHED)[int(
@@ -156,7 +292,7 @@ class Proc:
 				sys.exit(1)
 
 		pluginmgr.hook.proc_postrun(proc = self, status = 'succeeded')
-		del self.jobs[:]
+		del self.jobs[:] # pylint: disable=unsupported-delete-operation
 
 	def _save_settings(self):
 		with open(self.workdir / 'proc.settings.toml', 'w') as fsettings:
@@ -167,16 +303,25 @@ class Proc:
 		Jobmgr(self.jobs).start()
 
 		if self.jobs:
+			# pylint: disable=unsubscriptable-object
 			self.channel.attach(*self.jobs[0].output.keys())
 
-	def copy(self, *args, **kwargs):
-		newid = varname() if not args else args[0]
-		newproc = Proc(newid, **kwargs)
-		newproc.__attrs_property_raw__ = self.__attrs_property_raw__.copy()
-		del newproc.depends
-		newproc.depends = []
-		del newproc.nexts
-		newproc.origin = self.origin if self.origin else self.id
+	def copy(self, id = None, **kwargs):
+		"""Copy a process to a new one
+		Depends and nexts will be copied
+		@params:
+			id: The id of the new process
+			kwargs: Other arguments for constructing a process
+		"""
+		newid = id or varname()
+		raw_attrs = {key: try_deepcopy(value) \
+			for key, value in self.__attrs_property_raw__.items()
+			if key not in (
+				'id', 'channel', 'jobs', 'runtime_config', 'depends', 'nexts')}
+		raw_attrs.update(kwargs)
+		newproc = Proc(newid, **raw_attrs)
+		# pylint: disable=attribute-defined-outside-init
+		newproc.origin = self.origin or self.id
 		return newproc
 
 	def add_config(self, name, default = None, converter = None, runtime = 'update'):

@@ -8,6 +8,8 @@ from os import path
 from glob import glob
 from liquid import LiquidStream
 
+# pylint: disable=invalid-name
+
 class Channel(list): # pylint: disable=too-many-public-methods
 	"""@API
 	The channen class, extended from `list`
@@ -664,4 +666,17 @@ class Channel(list): # pylint: disable=too-many-public-methods
 		ret = [tuple(row) for row in ret]
 		return Channel(ret)
 
-	t = transpose
+	# We will try to deprecate the camelCase functions
+	t            = transpose
+	from_pattern = fromPattern
+	from_pairs   = fromPairs
+	fromFile     = fromFile
+	from_argv    = fromArgv
+	from_params  = fromParams
+	map_col      = mapCol
+	filter_col   = filterCol
+	reduce_col   = reduceCol
+	col_at       = colAt
+	row_at       = rowAt
+	rep_col      = repCol
+	rep_row      = repRow

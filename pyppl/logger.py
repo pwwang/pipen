@@ -3,7 +3,6 @@ Custome logger for PyPPL
 """
 import re
 import logging
-from collections import OrderedDict
 from copy import copy
 from functools import partial
 
@@ -38,6 +37,7 @@ LEVEL_GROUPS = dict(
 	ERROR    = ['ERROR'],
 	WARNING  = ['WARNING', 'RTRYING'],
 	DEBUG    = ['DEBUG'],
+	INFO     = []
 )
 
 THEMES = dict(
@@ -108,7 +108,7 @@ THEMES = dict(
 	)
 )
 
-DEBUG_LINES = {
+SUBLEVELS = {
 	'CACHE_FAILED'              : -1,
 	'CACHE_INPUT_MODIFIED'      : -1,
 	'CACHE_OUTPUT_MODIFIED'     : -1,
@@ -122,12 +122,26 @@ DEBUG_LINES = {
 }
 
 def get_group(level):
+	"""@API
+	Get the group name of the level
+	@params:
+		level (str): The level, should be UPPERCASE
+	@returns:
+		(str): The group name
+	"""
 	for group, levels in LEVEL_GROUPS.items():
 		if level in levels:
 			return group
 	return 'NOTSET'
 
 def get_value(level):
+	"""@API
+	Get the value of the level
+	@params:
+		level (str): The level, should be UPPERCASE
+	@returns:
+		(int): The value of the group where the level is in.
+	"""
 	if level[:1] == '_':
 		return max(GROUP_VALUES.values())
 	return GROUP_VALUES.get(get_group(level), 0)
@@ -194,7 +208,8 @@ class StreamFormatter(logging.Formatter):
 			COLOR     = self.theme.get_color(level),
 			LEVEL     = level.rjust(7),
 			RESET_ALL = colorama.Style.RESET_ALL,
-			PROC      = record.proc + ': ' if record.proc else '',
+			PROC      = record.proc + ': ' \
+				if hasattr(record, 'proc') and record.proc else '',
 			MSG       = record.msg,
 			JOBS      = '' if record.jobidx is None else '[{ji}/{jt}] '.format(
 				ji = str(record.jobidx + 1).zfill(len(str(record.joblen))),
@@ -249,7 +264,7 @@ class StreamFilter(logging.Filter): # pylint: disable=too-few-public-methods
 	def __init__(self, name, levels):
 		super(StreamFilter, self).__init__(name)
 		self.levels = levels
-		self.debugs = {}
+		self.subs = {}
 
 	def filter(self, record):
 		# logging is disabled
@@ -257,32 +272,34 @@ class StreamFilter(logging.Filter): # pylint: disable=too-few-public-methods
 			return False
 
 		level = record.mylevel
-		dlevel = record.dlevel if hasattr(record, 'dlevel') else None
-		# user logs
-		if level.startswith('_') or \
-			(level in self.levels and \
-			(not dlevel or dlevel not in DEBUG_LINES)): # debug
-			return True
+		slevel = record.slevel if hasattr(record, 'slevel') else None
+		proc = record.proc if hasattr(record, 'proc') else ''
 
-		if level not in self.levels or \
-			not hasattr(record, 'proc') or not record.proc: # independent
+		# user logs
+		if level[0] == '_':
+			return True
+		if level not in self.levels:
+			return False
+		if not slevel or slevel not in SUBLEVELS:
+			return True
+		if not proc:
 			return False
 
 		# the limitation is only for one process
-		if record.proc not in self.debugs:
-			self.debugs = {record.proc: dict(zip(DEBUG_LINES.keys(), [0] * len(DEBUG_LINES)))}
+		if proc not in self.subs:
+			self.subs = {proc: dict(zip(SUBLEVELS.keys(), [0] * len(SUBLEVELS)))}
 
-		self.debugs[record.proc][dlevel] += 1
-		allowed_lines = abs(DEBUG_LINES[dlevel])
-		print_summary = DEBUG_LINES[dlevel] < 0
-		if self.debugs[record.proc][dlevel] > allowed_lines:
+		self.subs[proc][slevel] += 1
+		allowed_lines = abs(SUBLEVELS[slevel])
+		print_summary = SUBLEVELS[slevel] < 0
+		if self.subs[proc][slevel] > allowed_lines:
 			return False
-		if self.debugs[record.proc][dlevel] < allowed_lines:
+		if self.subs[proc][slevel] < allowed_lines:
 			return True
 		# ==
 		if print_summary:
-			record.msg += "\n...... max={max} ({dlevel}) reached".format(
-				max = allowed_lines, dlevel = dlevel)
+			record.msg += "\n...... max={max} ({slevel}) reached".format(
+				max = allowed_lines, slevel = slevel)
 			record.msg += ", further information will be ignored."
 		return True
 
@@ -302,13 +319,13 @@ class FileFormatter(logging.Formatter):
 	"""
 	def __init__(self):
 		logging.Formatter.__init__(self, LOG_FORMAT, LOGTIME_FORMAT)
-		self.ansiRegex = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+		self.ansi_regex = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
 
 	def format(self, record):
 		# record has already been formatted by StreamFormatter
 		# just remove the colors
 		if hasattr(record, 'formatted'):
-			return self.ansiRegex.sub('', record.formatted)
+			return self.ansi_regex.sub('', record.formatted)
 		return super(FileFormatter, self).format(record)
 
 def init_levels(group, leveldiffs):
@@ -380,7 +397,6 @@ class Logger:
 		for handler in self.logger.handlers:
 			handler.close()
 		del self.logger.handlers[:]
-
 		pluginmgr.hook.logger_init(logger = self)
 
 		theme  = Theme(config.theme)
@@ -396,6 +412,31 @@ class Logger:
 			file_handler.addFilter(FileFilter(self.name, levels))
 			file_handler.setFormatter(FileFormatter())
 			self.logger.addHandler(file_handler)
+
+	def add_level(self, level, group = 'INFO'):
+		"""@API
+		@params:
+			level (str): The log level name
+				Make sure it's less than 7 characters
+			group (str): The group the level is to be added
+		"""
+		level = level.upper()
+		group = group.upper()
+		if group not in LEVEL_GROUPS:
+			raise ValueError('No such level group: {}, available ones are: {}'.format(
+				group, list(LEVEL_GROUPS.keys())
+			))
+		if level not in LEVEL_GROUPS[group]:
+			LEVEL_GROUPS[group].append(level)
+
+	def add_sublevel(self, slevel, lines = -1):
+		"""@API
+		@params:
+			slevel (str): The debug level
+			lines (int): The number of lines allowed for the debug level
+				- Negative value means a summary will be printed
+		"""
+		SUBLEVELS[slevel.upper()] = lines
 
 	def bake(self, **kwargs):
 		"""@API
@@ -438,7 +479,7 @@ class Logger:
 		ispbar = self.ispbar
 		self.ispbar = False
 		return partial(self._emit, _level = name.upper(), _extra = dict(
-			ispbar = ispbar, dlevel = None))
+			ispbar = ispbar, slevel = None))
 
 	__getitem__ = __getattr__
 

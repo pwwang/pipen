@@ -134,22 +134,43 @@ def test_stream_filter():
 		msg     = "This is logging record1.",
 		mylevel = "INFO",
 		proc    = 'pProc',
-		dlevel  = 'CACHE_FAILED'
+		slevel  = 'CACHE_FAILED'
 	))
 	assert sfilter.filter(record)
-	assert sfilter.debugs['pProc']['CACHE_FAILED'] == 1
+	assert sfilter.subs['pProc']['CACHE_FAILED'] == 1
 	assert not sfilter.filter(record)
 
 	record = logging.makeLogRecord(dict(
 		msg     = "This is logging record1.",
 		mylevel = "INFO",
 		proc    = 'pProc',
-		dlevel  = 'SCRIPT_EXISTS'
+		slevel  = 'SCRIPT_EXISTS'
 	))
 	assert sfilter.filter(record)
 	assert sfilter.filter(record)
 	assert not sfilter.filter(record)
 	assert 'further information will be ignored.' in record.msg
+
+	record = logging.makeLogRecord(dict(
+		msg     = "This is logging record1.",
+		mylevel = "INFO",
+		slevel  = 'SCRIPT_EXISTS'
+	))
+	assert not sfilter.filter(record)
+
+	# sub sublevel
+	record = logging.makeLogRecord(dict(
+		msg     = "This is logging record1.",
+		mylevel = "INFO",
+		proc    = 'SomeProc',
+		slevel  = 'NEW_SUBLEVEL'
+	))
+	assert sfilter.filter(record)
+	assert sfilter.filter(record)
+	logger = Logger()
+	logger.add_sublevel('NEW_SUBLEVEL', 1)
+	assert sfilter.filter(record)
+	assert not sfilter.filter(record)
 
 def test_file_filter():
 	ffilter = FileFilter('pyppl', ['INFO'])
@@ -225,4 +246,13 @@ def test_logger_getattr(caplog):
 	caplog.clear()
 	logger['info']('Hello world2!')
 	assert 'Hello world2!' in caplog.text
+
+def test_logger_add_level():
+	logger = Logger()
+	assert init_levels('TITLE', []) == {'PROCESS'}
+	logger.add_level('NOLEVEL', 'TITLE')
+	assert init_levels('TITLE', []) == {'PROCESS', 'NOLEVEL'}
+
+	with pytest.raises(ValueError):
+		logger.add_level('NOLEVEL', 'nosuchgroup')
 

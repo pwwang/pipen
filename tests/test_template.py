@@ -250,7 +250,7 @@ class TestTemplate:
 	])
 	def testRegisterEnvs(self, source, envs, newenvs):
 		tpl = Template(source, **envs)
-		tpl.registerEnvs(**newenvs)
+		tpl.register_envs(**newenvs)
 		assert tpl.source == source
 		assertDictContains(Template.DEFAULT_ENVS, tpl.envs)
 		assertDictContains(envs, tpl.envs)

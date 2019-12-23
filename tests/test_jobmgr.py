@@ -150,10 +150,10 @@ def test_start_1_init(job_init):
 	jm = Jobmgr([job_init])
 	jm.start()
 
-def test_start_5(job_init, job_built, job_retrying, job_running, job_killing, caplog):
-	jm = Jobmgr([job_init, job_built, job_retrying, job_running, job_killing])
-	jm.start()
-	assert '[XXXXXXXXXX                                        ]' in caplog.text
+# def test_start_5(job_init, job_built, job_retrying, job_running, job_killing, caplog):
+# 	jm = Jobmgr([job_init, job_built, job_retrying, job_running, job_killing])
+# 	jm.start()
+# 	assert '[XXXXXXXXXX                                        ]' in caplog.text
 
 @pytest.mark.parametrize('forks', [
 	1,

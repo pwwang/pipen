@@ -1,7 +1,8 @@
+"""Implementations for Proc"""
+
 import sys
 import uuid
 from pathlib import Path
-import toml
 import cmdy
 from simpleconf import NoSuchProfile
 from diot import OrderedDiot, Diot
@@ -9,10 +10,13 @@ from liquid.stream import LiquidStream
 from . import template
 from .runner import use_runner
 from .config import config
-from .exception import ProcessAttributeError, ProcessInputError, ProcessOutputError, ProcessScriptError
+from .exception import ProcessAttributeError, ProcessInputError, \
+	ProcessOutputError, ProcessScriptError
 from .channel import Channel
 from .logger import logger
 from .utils import funcsig, always_list, fs
+
+# pylint: disable=unused-argument
 
 OUT_VARTYPE    = ['var']
 OUT_FILETYPE   = ['file', 'path']
@@ -43,11 +47,17 @@ def _decache(this, name):
 		del this.__attrs_property_cached__[name]
 
 def proc_setter_count(this, value = None, name = None):
+	"""Counter for some properties
+	in order to prevent overwriting by runtime_config if
+	they are set by `pXXX.dirsig = True`
+	"""
 	this._setcounter.setdefault(name, -1)
 	# set it to 0 in __init__
 	this._setcounter[name] += 1
 
 def proc_runtime_config_setter(this, value):
+	"""Try to override the proc property values
+	if possible from runtime config"""
 	# replace the values in runtime config
 	if not value:
 		return
@@ -62,12 +72,14 @@ def proc_runtime_config_setter(this, value):
 			setattr(this, key, value)
 
 def proc_id_setter(this, value):
+	"""Don't allow id to be set using setter"""
 	if this._setcounter.get('id'):
 		raise ProcessAttributeError('Process id should be passed while instantization.')
 	proc_tag_setter(this, value, name = 'id')
 	this._setcounter['id'] += 1
 
 def proc_tag_setter(this, value, name = 'tag'):
+	"""Tag setter"""
 	this._setcounter.setdefault(name, -1)
 	this._setcounter[name] += 1
 	_decache(this, 'name')
@@ -75,15 +87,19 @@ def proc_tag_setter(this, value, name = 'tag'):
 	_decache(this, 'procset')
 
 def proc_procset(this, value):
+	"""Parse the procset from tag"""
 	_require(this, 'tag', strict = False, msg = 'Process procset requires tag to be specified.')
 	if '@' not in this.tag:
 		return ''
 	return this.tag.split('@', 1)[1]
 
 def proc_name(this, value):
+	"""Get the name of the process, including all parts of tag"""
 	return '{}.{}'.format(this.id, this.tag)
 
 def proc_shortname(this, value):
+	"""Get the shortname of the process,
+	if tag starts with "notag", don't include it"""
 	if not this.tag or this.tag == 'notag':
 		return this.id
 	if this.tag[:6] == 'notag@':
@@ -123,6 +139,7 @@ def proc_runner(this, value):
 	return runner_config
 
 def proc_depends_setter(this, value):
+	"""Try to convert all possible dependencies to processes"""
 	from .pyppl import anything2procs
 	depends = anything2procs(value, procset = 'ends')
 	try:
@@ -137,6 +154,12 @@ def proc_depends_setter(this, value):
 	return depends
 
 def proc_input_setter(this, value):
+	"""Allow input to be set twice:
+	proc.input = 'a'
+	proc.input = [1]
+	Then real input would be:
+	proc.input = {'a': [1]}
+	"""
 	# reset the size and jobs
 	_decache(this, 'size')
 	_decache(this, 'jobs')
@@ -152,6 +175,7 @@ def proc_input_setter(this, value):
 	return value
 
 def proc_input(this, value):
+	"""Parse and prepare the input, allowing jobs to easily access it"""
 	# parse this.config.input keys
 	# even for skipped or resumed process
 	# because we need to keep the order
@@ -220,6 +244,7 @@ def proc_input(this, value):
 	return ret
 
 def proc_output(this, value):
+	"""Parse the output for jobs to easily access it"""
 	# ['a:{{i.invar}}', 'b:file:{{i.infile|fn}}']
 	if isinstance(value, (list, str)):
 		outlist = list(filter(None, always_list(value)))
@@ -256,12 +281,14 @@ def proc_output(this, value):
 	return ret
 
 def proc_size(this, value):
+	"""Deduce the size (# jobs) of the processes from input"""
 	_require(this, 'input', strict = False, msg = 'Process size needs input to be initialized.')
 	if not this.input:
 		return 0
 	return len(list(this.input.values())[0][1])
 
 def proc_jobs(this, value):
+	"""Prepare the jobs"""
 	_require(this, 'size', strict = False, msg = 'Jobs need size to be initialized.')
 	use_runner(this.runner.runner)
 	# have to make sure this is the first time it is imported,
@@ -275,9 +302,11 @@ def proc_jobs(this, value):
 	return [Job(i, this) for i in range(this.size)]
 
 def proc_lang(this, value):
+	"""Get the path of the interpreter from lang"""
 	return cmdy.which(value).strip()
 
 def proc_script(this, value):
+	"""Prepare the script"""
 	_require(this, 'lang', msg = 'Process script needs lang to be initialized.')
 	_require(this, 'template', msg = 'Process script needs template to be initialized.')
 	if not value:
@@ -313,6 +342,7 @@ def proc_script(this, value):
 	return this.template('\n'.join(nlines), **this.envs)
 
 def proc_template(this, value):
+	"""Prepare the template"""
 	if callable(value):
 		return value
 	if not value:
@@ -320,6 +350,7 @@ def proc_template(this, value):
 	return getattr(template, 'Template' + value.capitalize())
 
 def proc_suffix(this, value):
+	"""Calculate the suffix"""
 	_require(this, 'input', msg = 'Process suffix needs input to be initialized.')
 	_require(this, 'name', msg = 'Process suffix needs name to be initialized.')
 	_require(this, 'output', msg = 'Process suffix needs output to be initialized.')
@@ -342,6 +373,7 @@ def proc_suffix(this, value):
 	return str(uuid.uuid5(uuid.NAMESPACE_URL, str(determines)))[:8]
 
 def proc_workdir(this, value):
+	"""Get the work directory and try to create it"""
 	if not value:
 		_require(this, 'ppldir', msg = 'Process workdir needs ppldir to be specified.')
 		_require(this, 'suffix', msg = 'Process workdir needs suffix to be initialized.')
@@ -357,6 +389,7 @@ def proc_workdir(this, value):
 	return workdir
 
 def proc_channel(this, value):
+	"""Assign the output of jobs to processes as channel"""
 	# make sure it's called after run
 	_require(this, 'runtime_config', 'Process channel can only be accessed after run.')
 	if this.jobs:

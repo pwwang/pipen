@@ -1,6 +1,5 @@
 """Job manager for PyPPL"""
 import sys
-import random
 from time import sleep
 from threading import Lock
 from queue import Queue
@@ -316,7 +315,6 @@ class Jobmgr:
 				with self.lock:
 					if len(self._get_jobs_by_states(
 						STATES.RUNNING, STATES.SUBMITTING)) < self.proc.forks:
-						print(job.name)
 						job.trigger_submit(batch = batch)
 				# if we successfully submitted
 				if job.state in (STATES.BUILT, STATES.RETRYING):

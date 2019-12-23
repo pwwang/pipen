@@ -68,7 +68,9 @@ disable=bad-whitespace,
         cyclic-import,
         no-member,
         not-callable,
-        broad-except
+        broad-except,
+        redefined-builtin,
+        super-init-not-called
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -256,6 +258,7 @@ good-names=i,
            k,
            ex,
            rc,
+           id,
            Run,
            _
 

@@ -49,9 +49,12 @@ def _runner_name(runner):
 	return name
 
 def use_runner(runner):
-	"""
-	runner should be a module or the name of a module, with or without "pyppl_runner_" prefix
+	"""@API
+	runner should be a module or the name of a module,
+	with or without "pyppl_runner_" prefix
 	To enable a runner, we need to disable other runners
+	@params:
+		runner (str): the name of runner
 	"""
 	if runner not in RUNNERS:
 		raise RunnerNoSuchRunner(runner)
@@ -65,6 +68,11 @@ def use_runner(runner):
 		'One runner is allow at a time. We have {}'.format(runnermgr.get_plugins())
 
 def current_runner():
+	"""@API
+	Get current runner name
+	@returns:
+		(str): current runner name
+	"""
 	all_runners = list(runnermgr.get_plugins())
 	if len(all_runners) > 1:
 		raise RunnerMorethanOneRunnerEnabled(str(all_runners))
@@ -77,23 +85,34 @@ def current_runner():
 	raise RunnerNoSuchRunner('No runners registered.')
 
 def poll_interval():
+	"""@API
+	Get the poll interval for current runner
+	@returns:
+		(int): poll interval for querying job status
+	"""
 	runner = RUNNERS[current_runner()]
 	if hasattr(runner, 'POLL_INTERVAL'):
 		return int(runner.POLL_INTERVAL)
 	return DEFAULT_POLL_INTERVAL
 
 def register_runner(runner, name = None):
+	"""@API
+	Register a runner
+	@params:
+		runner (callable): The runner, a module or a class object
+		name (str): The name of the runner to registered
+	"""
 	name = name or _runner_name(runner)
 	if not runnermgr.is_registered(runner):
 		# we only allow an object from one class to be registered once
 		for plugin in runnermgr.get_plugins():
 			if _runner_name(plugin) == name:
 				raise RunnerTypeError('Runner %r has already been registered.' % (name))
-		else:
-			runnermgr.register(runner, name = name)
+		runnermgr.register(runner, name = name)
 	RUNNERS[name] = runner
 
 class PyPPLRunnerLocal:
+	"""PyPPL's default runner"""
 
 	@hookimpl
 	def kill(self, job):

@@ -1,3 +1,5 @@
+"""Exceptions for PyPPL"""
+
 class PyPPLInvalidConfigurationKey(KeyError):
 	"""When invalid configuration key passed"""
 
@@ -9,12 +11,6 @@ class PyPPLResumeError(Exception):
 
 class PyPPLNameError(Exception):
 	"""Pipeline name duplicated after transformed by utils.name2filename"""
-
-class PyPPLPluginWrongPositionFunction(Exception):
-	"""When a function specified in a plugin for pyppl at wrong position"""
-
-class ProcessAlreadyRegistered(Exception):
-	"""When a process is already registered with the same id and tag"""
 
 class ProcessAttributeError(Exception):
 	"""Process AttributeError"""
@@ -62,9 +58,6 @@ class PluginConfigKeyError(Exception):
 class PluginNoSuchPlugin(Exception):
 	"""When try to find a plugin not existing"""
 
-class PluginWrongPluginType(Exception):
-	"""When use a class itself as a plugin"""
-
 class RunnerNoSuchRunner(Exception):
 	"""When no such runner is found"""
 
@@ -76,4 +69,3 @@ class RunnerMorethanOneRunnerEnabled(Exception):
 
 class RunnerTypeError(Exception):
 	"""Wrong type of runner"""
-

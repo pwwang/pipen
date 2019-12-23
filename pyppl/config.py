@@ -1,3 +1,4 @@
+"""Configuration for PyPPL"""
 from multiprocessing import cpu_count
 from diot import Diot
 from simpleconf import Config
@@ -48,8 +49,9 @@ DEFAULT_CONFIG = dict(default = dict(
 	plugin_config = {},
 ))
 
-config = Config()
+config = Config() # pylint: disable=invalid-name
 def load_config(default_config, *config_files):
+	"""Load the configurations"""
 	config.clear()
 	config._load(default_config, *config_files)
 	config._use()

@@ -99,7 +99,7 @@ class ProcSet:
 	"""@API
 	The ProcSet for a set of processes
 	"""
-
+	# pylint: disable=redefined-builtin
 	def __init__(self, *procs, id = None, tag = None, copy = True, depends = True):
 		"""@API
 		Constructor
