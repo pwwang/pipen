@@ -1,5 +1,11 @@
 """
 Make runners as plugins for PyPPL
+@variables:
+	PMNAME (str): The name of the runner manager
+	RUNNERS (dict): All ever registered runners
+	DEFAULT_POLL_INTERVAL (int): The default poll interval to check job status
+	hookimpl (pluggy.HookimplMarker): The marker for runner hook Implementations
+	hookspec (pluggy.HookspecMarker): The marker for runner hooks
 """
 # pylint: disable=unused-argument,invalid-name
 import sys
@@ -11,26 +17,46 @@ PMNAME = "pyppl-runner"
 # save all runners ever registered
 RUNNERS = {}
 # poll interval to check job status
-DEFAULT_POLL_INTERVAL = 1
+DEFAULT_POLL_INTERVAL = .5
 
 hookimpl = pluggy.HookimplMarker(PMNAME)
 hookspec = pluggy.HookspecMarker(PMNAME)
 
 @hookspec(firstresult = True)
 def isrunning(job):
-	"""Tell if the job is running"""
+	"""@API
+	RUNNER API
+	Tell if the job is running
+	@params:
+		job (Job): the job instance
+	"""
 
 @hookspec(firstresult = True)
 def submit(job):
-	"""Submit the job"""
+	"""@API
+	RUNNER API
+	Submit a job
+	@params:
+		job (Job): the job instance
+	"""
 
 @hookspec(firstresult = True)
 def kill(job):
-	"""Try to kill the job"""
+	"""@API
+	RUNNER API
+	Try to kill the job
+	@params:
+		job (Job): the job instance
+	"""
 
 @hookspec(firstresult = True)
 def script_parts(job):
-	"""Overwrite script parts"""
+	"""@API
+	RUNNER API
+	Overwrite script parts
+	@params:
+		job (Job): the job instance
+	"""
 
 runnermgr = pluggy.PluginManager(PMNAME)
 runnermgr.add_hookspecs(sys.modules[__name__])
@@ -112,12 +138,16 @@ def register_runner(runner, name = None):
 	RUNNERS[name] = runner
 
 class PyPPLRunnerLocal:
-	"""PyPPL's default runner"""
+	"""@API
+	PyPPL's default runner"""
+	# pylint: disable=no-self-use
 
 	@hookimpl
 	def kill(self, job):
-		"""
+		"""@API
 		Try to kill the running jobs if I am exiting
+		@params:
+			job (Job): the job instance
 		"""
 		if int(job.pid) > 0:
 			myself = psutil.Process(int(job.pid))
@@ -131,8 +161,10 @@ class PyPPLRunnerLocal:
 
 	@hookimpl
 	def submit(self, job):
-		"""
+		"""@API
 		Try to submit the job
+		@params:
+			job (Job): the job instance
 		"""
 		import cmdy
 		cmd = cmdy.bash(c = job.script, _raise = False, _bg = True)
@@ -142,8 +174,10 @@ class PyPPLRunnerLocal:
 
 	@hookimpl
 	def isrunning(self, job):
-		"""
+		"""@API
 		Try to tell whether the job is still running.
+		@params:
+			job (Job): the job instance
 		@returns:
 			`True` if yes, otherwise `False`
 		"""

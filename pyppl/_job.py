@@ -56,7 +56,7 @@ def job_dir(this, value):
 		ret.mkdir(exist_ok = True)
 	return ret
 
-def job_input(this, value):
+def job_input(this, value): # pylint: disable=too-many-branches
 	"""
 	Prepare input, create link to input files and set other placeholders
 	"""
@@ -71,12 +71,12 @@ def job_input(this, value):
 		if intype in IN_FILETYPE:
 			if not isinstance(indata, (Path, str)):
 				raise JobInputParseError(
-					indata, 'Not a string or path for input [%s:%s]' % (key, intype))
+					'Not a string or path for input [%s:%s]: %r' % (key, intype, indata))
 			if not indata: # allow empty input
 				infile  = ''
 			elif not fs.exists(indata):
 				raise JobInputParseError(
-					indata, 'File not exists for input [%s:%s]' % (key, intype))
+					'File not exists for input [%s:%s]: %r' % (key, intype, indata))
 			else:
 				indata = Path(indata).resolve()
 				infile = _link_infile(indata, this.dir / 'input')
@@ -98,18 +98,20 @@ def job_input(this, value):
 
 			if not isinstance(indata, list):
 				raise JobInputParseError(
-					indata, 'Not a list for input [%s:%s]' % (key, intype))
+					'Not a list for input [%s:%s]: %r' % (key, intype, indata))
 
 			for data in indata:
 				if not isinstance(data, (Path, str)):
-					raise JobInputParseError(data,
-						'Not a string or path as an element of input [%s:%s]' % (key, intype))
+					raise JobInputParseError(
+						'Not a string or path as an element of input [%s:%s]: %r' % (
+							key, intype, data))
 
 				if not data:
 					infile  = ''
 				elif not fs.exists(data):
-					raise JobInputParseError(data,
-						'File not exists as an element of input [%s:%s]' % (key, intype))
+					raise JobInputParseError(
+						'File not exists as an element of input [%s:%s]: %r' % (
+							key, intype, data))
 				else:
 					data   = Path(data).resolve()
 					infile = _link_infile(data, this.dir / 'input')
@@ -143,12 +145,12 @@ def job_output(this, value):
 		if outtype in OUT_FILETYPE + OUT_DIRTYPE + \
 			OUT_STDOUTTYPE + OUT_STDERRTYPE:
 			if Path(outdata).is_absolute():
-				raise JobOutputParseError(outdata,
-					'Absolute path not allowed for output file/dir for key %r' % key)
+				raise JobOutputParseError(
+					'Absolute path not allowed for [%s:%s]: %r' % (key, outtype, outdata))
 			ret[key] = (outtype, this.dir / 'output' / outdata)
 		else:
 			ret[key] = (outtype, outdata)
-		this.data.o[key] = outdata
+		this.data.o[key] = str(this.dir / 'output' / outdata)
 	return ret
 
 def job_signature(this, value):
@@ -293,7 +295,7 @@ def job_script(this, value):
 	addsrc('#')
 
 	scriptfile.write_text('\n'.join(src))
-	return scriptfile
+	return chmod_x(scriptfile)
 
 def job_script_parts(this, value):
 	"""Allow runners to modify the script parts"""
@@ -340,8 +342,8 @@ def job_pid_setter(this, value):
 	"""Try to save the pid while setting it to job.pid"""
 	if value is None:
 		return ''
-	else:
-		this.dir.joinpath('job.pid').write_text(str(value))
+	this.dir.joinpath('job.pid').write_text(str(value))
+	return str(value)
 
 def job_pid_getter(this, value):
 	"""Try to read the pid from job.pid"""

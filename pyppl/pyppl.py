@@ -1,4 +1,10 @@
-"""Pipeline for PyPPL"""
+"""Pipeline for PyPPL
+@variables:
+	SEPARATOR_LEN (int): the length of the separators in log
+	PROCESSES (set): The process pool where the processes are registered
+	TIPS (list): Some tips to show in log
+	PIPELINES (dict): Exists pipelines
+"""
 # give random tips in the log
 import random
 import time
@@ -24,21 +30,20 @@ TIPS = [
 	"You can find the script in <workdir>/<job.index>/job.script",
 	"Check documentation at: https://pyppl.readthedocs.io/en/latest/",
 	"You cannot have two processes with the same id and tag",
-	"beforeCmd and afterCmd only run locally",
 	"Workdir defaults to PyPPL.<id>.<tag>.<suffix> under default <ppldir>",
 	"The default <ppldir> is './workdir'"]
 
 # name of defined pipelines
 PIPELINES = {}
 
-def register_proc(proc):
+def _register_proc(proc):
 	"""Register process into the pool"""
 	for registered_proc in PROCESSES:
 		if registered_proc.name == proc.name and registered_proc is not proc:
 			raise ProcessAlreadyRegistered(proc1 = registered_proc, proc2 = proc)
 	PROCESSES.add(proc)
 
-def get_next_procs(procs):
+def _get_next_procs(procs):
 	"""Get next possible processes to run"""
 	nextprocs = [nextproc
 		for proc in procs if proc.nexts
@@ -50,7 +55,7 @@ def get_next_procs(procs):
 			ret.append(nproc)
 	return ret
 
-def anything2procs(*anything, procset = 'starts'):
+def _anything2procs(*anything, procset = 'starts'):
 	"""Translate anything to a list of processes
 	It actually serves as a process selector.
 	Keep in mind that the order of the processes is not guaranteed.
@@ -65,7 +70,7 @@ def anything2procs(*anything, procset = 'starts'):
 			ret.add(anyth.starts if procset == 'starts' else anyth.ends)
 		elif isinstance(anyth, (tuple, list)):
 			for thing in anyth:
-				ret.add(anything2procs(thing))
+				ret.add(_anything2procs(thing))
 		else:
 			for proc in PROCESSES:
 				if anyth in (proc.id, proc.shortname, proc.name):
@@ -98,12 +103,39 @@ def _logo():
 		logger.plugin('Loaded runner: %s (v%s)',
 			rname, rplugin.__version__ if hasattr(rplugin, '__version__') else 'Unknown')
 
+def _parse_kwconfigs(kwconfigs):
+	"""Allow logger = {'level': 'debug'} to be specified as logger_level = 'debug'"""
+	ret = {}
+	for key, val in kwconfigs.items():
+		if key[:7] == 'logger_':
+			ret.setdefault('logger', {})[key[7:]] = val
+		elif key[:5] == 'envs_':
+			ret.setdefault('envs', {})[key[5:]] = val
+		elif key[:14] == 'plugin_config_':
+			ret.setdefault('plugin_config', {})[key[14:]] = val
+		else:
+			ret[key] = val
+	return ret
+
 class PyPPL:
-	"""The class for the whole pipeline"""
+	"""@API
+	The class for the whole pipeline
+	"""
 	# allow adding methods
 	__slots__ = 'name', 'runtime_config', 'procs', 'starts', 'ends', '__dict__'
 
 	def __init__(self, config = None, name = None, config_files = None, **kwconfigs):
+		"""@API
+		The construct for PyPPL
+		@params:
+			config (dict): the runtime configuration for the pipeline
+			name (str): The name of the pipeline
+			config_files (list): A list of runtime configuration files
+			**kwconfigs: flattened runtime configurations, for example
+				- you can do: `PyPPL(forks = 10)`, or even
+				- `PyPPL(logger_level = 'debug')`
+		"""
+		kwconfigs = _parse_kwconfigs(kwconfigs)
 		# check if keys in kwconfigs are valid
 		config = config or {}
 		config.update(kwconfigs)
@@ -119,7 +151,7 @@ class PyPPL:
 		PIPELINES[filename] = self
 
 		self.runtime_config = Config()
-		self.runtime_config._load(dict(default = config, *(config_files or ())))
+		self.runtime_config._load(dict(default = config), *(config_files or ()))
 
 		logger_config = try_deepcopy(default_config.logger.dict())
 		logger_config.update(self.runtime_config.pop('logger', {}))
@@ -153,10 +185,14 @@ class PyPPL:
 		# plugins can stop pipeling being running
 		if ret is not False:
 			with default_config._with(profile = profile, copy = True) as defconfig:
+				# we should remove the DEFAULT_CONFIG
+				# otherwise, some configs will be overwritten by it again
+				del defconfig._protected['cached'][
+					list(defconfig._protected['cached'].keys())[0]]
 				defconfig._load(self.runtime_config)
 				defconfig._use(profile, raise_exc = True)
-				del defconfig.logger
-				del defconfig.plugins
+				defconfig.pop('logger', None)
+				defconfig.pop('plugins', None)
 				for proc in self.procs:
 					# print process name and description
 					name = proc.shortname
@@ -172,10 +208,12 @@ class PyPPL:
 					logger.process('-' * decorlen)
 
 					# print dependencies
-					logger.depends('%s => %s => %s',
-						[dproc.shortname for dproc in proc.depends] if proc.depends else 'START',
+					logger.depends('[%s] => %s => [%s]',
+						', '.join(dproc.shortname for dproc in proc.depends) \
+							if proc.depends else 'START',
 						proc.name,
-						[nproc.shortname for nproc in proc.nexts] if proc.nexts else 'END')
+						', '.join(nproc.shortname for nproc in proc.nexts) \
+							if proc.nexts else 'END')
 					proc.run(defconfig)
 
 		pluginmgr.hook.pyppl_postrun(ppl = self)
@@ -183,12 +221,18 @@ class PyPPL:
 		return self
 
 	def start(self, *anything):
-		"""Set the start processes for the pipeline"""
+		"""@API
+		Set the start processes for the pipeline
+		@params:
+			*anything: Anything that can be converted to processes
+				- Could be a string or a wildcard to search for processes
+				- or the process itself
+		"""
 		del self.procs[:]
 		del self.starts[:]
 		del self.ends[:]
 
-		self.starts = anything2procs(*anything)
+		self.starts = _anything2procs(*anything)
 		# Let's check if start process depending on others
 		for start in self.starts:
 			if start.depends:
@@ -197,7 +241,7 @@ class PyPPL:
 
 		self.procs  = self.starts[:]
 		# fetch all procs depending on starts in the order that they will be excuted.
-		nexts = get_next_procs(self.procs)
+		nexts = _get_next_procs(self.procs)
 		if not nexts:
 			for proc in self.procs:
 				self.ends.append(proc)
@@ -212,11 +256,15 @@ class PyPPL:
 				self.procs.append(nextproc)
 				if not nextproc.nexts:
 					self.ends.append(nextproc)
-			nexts = get_next_procs(self.procs)
+			nexts = _get_next_procs(self.procs)
 		return self
 
 	def method(self, func):
-		"""Add a method to PyPPL object"""
+		"""@API
+		Add a method to PyPPL object
+		@params:
+			func (callable): the function to add
+		"""
 		def wrapper(*args, **kwargs):
 			func(self, *args, **kwargs)
 			return self

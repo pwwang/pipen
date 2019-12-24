@@ -1,4 +1,10 @@
-"""Job manager for PyPPL"""
+"""Job manager for PyPPL
+@variables:
+	STATES (dict): Possible states for the job
+	PBAR_MARKS (dict): The marks on progress bar for different states
+	PBAR_LEVEL (dict): The levels for different states
+	PBAR_SIZE (int): the size of the progress bar
+"""
 import sys
 from time import sleep
 from threading import Lock
@@ -160,6 +166,7 @@ class Jobmgr:
 		# no jobs
 		if not hasattr(self, 'lock'):
 			return
+
 		pool = ThreadPool(self.nslots, initializer = self.worker)
 		pool.join(cleanup = self.cleanup)
 		self.progressbar(Diot(model = self.jobs[-1]))

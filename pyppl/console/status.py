@@ -1,5 +1,4 @@
 """Check the status of a process."""
-import math
 from glob import glob
 from os import path
 from ..plugin import hookimpl
@@ -17,7 +16,7 @@ def cli_addcmd(commands):
 	commands.status.wdir          = commands.list.wdir
 
 @hookimpl
-def cli_execcmd(command, opts):
+def cli_execcmd(command, opts): # pylint: disable=too-many-locals
 	"""Run the command"""
 	if command == 'status':
 		if path.sep in opts.proc:
@@ -27,20 +26,13 @@ def cli_execcmd(command, opts):
 			proc = glob(path.join(opts.wdir, proc + '*'))
 			if len(proc) > 1:
 				logger.warning(f'There are more than 1 processes named with "{opts.proc}", ' + \
-					'first one used.', 'yellow')
+					'first one used.')
 			procdir = proc[0]
 		logger.workdir(procdir)
 
 		jobdirs = list(sorted(glob(path.join(procdir, '*', '')),
 			key = lambda x: int(path.basename(x[:-1]))))
-		nnn = int(math.ceil(math.log(len(jobdirs), 10))) + 1 if jobdirs else 1
-		colors = {
-			'Unknown': 'magenta',
-			'Pending': 'white',
-			'Running': 'green',
-			'Done'   : 'cyan',
-			'Failed' : 'red',
-		}
+		nnn = len(str(len(jobdirs)))
 		counts = {
 			'Unknown': 0,
 			'Pending': 0,
@@ -48,7 +40,8 @@ def cli_execcmd(command, opts):
 			'Done'   : 0,
 			'Failed' : 0,
 		}
-		for jobdir in jobdirs:
+		logstr = ''
+		for i, jobdir in enumerate(jobdirs):
 			jobdir  = path.normpath(jobdir)
 			pidfile = path.join(jobdir, 'job.pid')
 			outfile = path.join(jobdir, 'job.stdout')
@@ -65,15 +58,19 @@ def cli_execcmd(command, opts):
 				else:
 					with open(rcfile) as frc:
 						rc = frc.read().strip()
-					rc = 'Done' if jstat == '0' else 'Failed'
+					jstat = 'Done' if rc == '0' else 'Failed'
 			counts[jstat] += 1
-			jobstr = ('Job ' + jobid).ljust(nnn + 4)
-			logger.info(jobstr, end = ': ')
-			logger.info(jstat.ljust(8) + ('[' + rc + ']    ').rjust(8),
-				decors = colors[jstat], end = '' if int(jobid) % opts.ncol > 0 else '\n')
+
+			jobstr = ('#' + jobid).rjust(nnn + 1)
+			logstr += jobstr + ': ' + jstat.ljust(8) + ('[' + rc + ']    ').rjust(8)
+			if (i+1) % 4 == 0:
+				logger.info(logstr)
+				logstr = ''
+		if logstr:
+			logger.info(logstr)
 
 		logger.info('')
 		logger.info('Total: ', end = '')
 		for key, count in counts.items():
-			logger.info('- ' + key + ': ' + str(count), decors = colors[key], end = ', ')
+			logger.info('- ' + key.ljust(8) + ': ' + str(count))
 		logger.info('')

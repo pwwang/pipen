@@ -667,16 +667,17 @@ class Channel(list): # pylint: disable=too-many-public-methods
 		return Channel(ret)
 
 	# We will try to deprecate the camelCase functions
-	t            = transpose
-	from_pattern = fromPattern
-	from_pairs   = fromPairs
-	fromFile     = fromFile
-	from_argv    = fromArgv
-	from_params  = fromParams
-	map_col      = mapCol
-	filter_col   = filterCol
-	reduce_col   = reduceCol
-	col_at       = colAt
-	row_at       = rowAt
-	rep_col      = repCol
-	rep_row      = repRow
+	t             = transpose
+	from_pattern  = fromPattern
+	from_pairs    = fromPairs
+	from_file     = fromFile
+	from_argv     = fromArgv
+	from_params   = fromParams
+	from_channels = fromChannels
+	map_col       = mapCol
+	filter_col    = filterCol
+	reduce_col    = reduceCol
+	col_at        = colAt
+	row_at        = rowAt
+	rep_col       = repCol
+	rep_row       = repRow

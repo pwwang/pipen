@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "PyPPL"
-version = "2.3.2"
+version = "3.0.0"
 description = "A Python PiPeLine framework"
 authors = [ "pwwang <pwwang@pwwang.com>",]
 license = "MIT"
@@ -29,8 +29,6 @@ diot = "*"
 attrs = "^19.3"
 attr_property = "*"
 python-varname = "*"
-pyppl_report = "*"
-pyppl_flowchart = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"

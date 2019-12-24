@@ -49,7 +49,7 @@ def proc_failed(proc):
 			return True
 	return False
 
-def get_procs(opts):
+def get_procs(opts): # pylint: disable=too-many-branches
 	"""Get the processes"""
 	if opts.proc:
 		pattern = path.join(opts.wdir, 'PyPPL.{}.*'.format(opts.proc))
@@ -66,7 +66,20 @@ def get_procs(opts):
 		before = date.today() - timedelta(days = opts.ago)
 		before = datetime(before.year, before.month, before.day)
 	elif opts.before:
-		before = opts.before
+		year = date.today().year
+		if opts.before.count('/'):
+			parts = opts.before.split('/')
+			if len(parts) == 2:
+				month, day = parts
+			else:
+				month, day, year = parts
+		else:
+			parts = opts.before.split('-')
+			if len(parts) == 2:
+				month, day = parts
+			else:
+				year, month, day = parts
+		before = datetime(int(year), int(month), int(day))
 
 	for proc in procs:
 		mtime = proc_mtime(proc)
@@ -90,7 +103,7 @@ def cli_addcmd(commands):
 	commands.list.ago.type    = 'int'
 	commands.list.ago.desc    = 'Work directories to be removed when modified N days ago.'
 	commands.list.before.desc = [
-		'Before when the work directories to be removed.',
+		'Before when the work directories to be listed.',
 		'Supported format: m/d, m-d, m/d/y and y-m-d'
 	]
 	commands.list.nocheck      = False

@@ -1,5 +1,9 @@
 """
 Plugin system for PyPPL
+@variables:
+	PMNAME (str): The name of the plugin manager
+	hookimpl (pluggy.HookimplMarker): Used to mark the implementation of hooks
+	hookspec (pluggy.HookspecMarker): Used to mark the hooks
 """
 # pylint: disable=unused-argument
 import sys
@@ -15,76 +19,188 @@ hookspec = pluggy.HookspecMarker(PMNAME)
 
 @hookspec
 def setup(config):
-	"""Add default configs"""
+	"""@API
+	PLUGIN API
+	Add default configs
+	@params:
+		config (Config): The default configurations
+	"""
 
 @hookspec
 def proc_init(proc):
-	"""At the end of __init__"""
+	"""@API
+	PLUGIN API
+	Right after a Proc being initialized
+	@params:
+		proc (Proc): The Proc instance
+	"""
 
 @hookspec(firstresult = True)
 def proc_prerun(proc):
-	"""Before a process starts"""
+	"""@API
+	PLUGIN API
+	Before a process starts
+	If False returned, process will not start
+	The value returned by the first plugin will be used, which means
+	once a plugin stops process from running, others cannot resume it.
+	@params:
+		proc (Proc): The Proc instance
+	"""
 
 @hookspec
 def proc_postrun(proc, status):
-	"""After a process has done"""
+	"""@API
+	PLUGIN API
+	After a process has done
+	@params:
+		proc (Proc): The Proc instance
+		status (str): succeeded/failed
+	"""
 
 @hookspec
 def pyppl_init(ppl):
-	"""Right after a pipeline initiates"""
+	"""@API
+	PLUGIN API
+	Right after a pipeline initiates
+	@params:
+		ppl (PyPPL): The PyPPL instance
+	"""
 
 @hookspec(firstresult = True)
 def pyppl_prerun(ppl):
-	"""A set of functions run when pipeline starts"""
+	"""@API
+	PLUGIN API
+	Before pipeline starts to run
+	If False returned, the pipeline will not run
+	The value returned by the first plugin will be used, which means
+	once a plugin stops process from running, others cannot resume it.
+	@params:
+		ppl (PyPPL): The PyPPL instance
+	"""
 
 @hookspec
 def pyppl_postrun(ppl):
-	"""A set of functions run when pipeline ends"""
+	"""@API
+	PLUGIN API
+	After the pipeline is done
+	If the pipeline fails, this won't run.
+	Use proc_postrun(proc = proc, status = 'failed') instead.
+	@params:
+		ppl (PyPPL): The PyPPL instance
+	"""
 
 @hookspec
 def job_init(job):
-	"""Right after job initiates"""
+	"""@API
+	PLUGIN API
+	Right after job initiates
+	@params:
+		job (Job): The Job instance
+	"""
 
 @hookspec
 def job_succeeded(job):
-	"""Tell if job is successfully done or not
+	"""@API
+	PLUGIN API
+	Tell if job is successfully done or not
 	One can add not rigorous check. By default, only
 	if returncode is 0 checked.
 	return False to tell if job is failed otherwise
 	use the default status or results from other plugins
+	@params:
+		job (Job): The Job instance
 	"""
 
 @hookspec
 def job_build(job, status):
-	"""A set of functions run when job starts"""
+	"""@API
+	PLUGIN API
+	After a job is being built
+	@params:
+		job (Job): The Job instance
+		status (str): The status of the job building
+			- True: The job is successfully built
+			- False: The job is failed to build
+			- cached: The job is cached
+	"""
 
 @hookspec
 def job_submit(job, status):
-	"""A set of functions run when job starts"""
+	"""@API
+	PLUGIN API
+	After a job is being submitted
+	@params:
+		job (Job): The Job instance
+		status (str): The status of the job submission
+			- 'succeeded': The job is successfully submitted
+			- 'failed': The job is failed to submit
+			- 'running': The job is already running
+	"""
 
 @hookspec
 def job_poll(job, status):
-	"""A set of functions run when job ends"""
+	"""@API
+	PLUGIN API
+	Poll the status of a job
+	@params:
+		job (Job): The Job instance
+		status (str): The status of the job
+			- 'running': The job is still running
+			- 'done': Polling is done, rcfile is generated
+	"""
 
 @hookspec
 def job_kill(job, status):
-	"""A set of function run when job fails"""
+	"""@API
+	PLUGIN API
+	After a job is being killed
+	@params:
+		job (Job): The Job instance
+		status (str): The status of the job killing
+			- 'succeeded': The job is successfully killed
+			- 'failed': The job is failed to kill
+	"""
 
 @hookspec
 def job_done(job, status):
-	"""A set of function run when job fails"""
+	"""@API
+	PLUGIN API
+	After a job is done
+	@params:
+		job (Job): The Job instance
+		status (str): The status of the job
+			- succeeded: The job is successfully done
+			- failed: The job is failed
+			- cached: The job is cached
+	"""
 
 @hookspec
 def logger_init(logger):
-	"""Initiate logger, most manipulate levels"""
+	"""@API
+	PLUGIN API
+	Initiate logger, most manipulate levels
+	@params:
+		logger (Logger): The Logger instance
+	"""
 
 @hookspec
 def cli_addcmd(commands):
-	"""Add command and options to CLI"""
+	"""@API
+	PLUGIN API
+	Add command and options to CLI
+	@params:
+		commands (Commands): The Commands instance
+	"""
 
 @hookspec
 def cli_execcmd(command, opts):
-	"""Execute the command being added to CLI"""
+	"""@API
+	PLUGIN API
+	Execute the command being added to CLI
+	@params:
+		command (str): The command
+		opts (dict): The options
+	"""
 
 pluginmgr = pluggy.PluginManager(PMNAME)
 pluginmgr.add_hookspecs(sys.modules[__name__])
@@ -140,9 +256,15 @@ def config_plugins(*plugins):
 					pluginmgr.register(plugin, name = plugin.__class__.__name__)
 
 class PluginConfig(dict):
-	"""Plugin configuration for Proc/Job"""
+	"""@API
+	Plugin configuration for Proc/Job"""
 
 	def __init__(self, pconfig = None):
+		"""@API
+		Construct for PluginConfig
+		@params:
+			pconfig (dict): the default plugin configuration
+		"""
 		self.__dict__['__raw__'] = {}
 		self.__dict__['__cache__'] = {}
 		self.__dict__['__converter__'] = {}
@@ -153,7 +275,7 @@ class PluginConfig(dict):
 			self.add(key, val)
 
 	def add(self, name, default = None, converter = None, update = 'update'):
-		"""
+		"""@API
 		Add a config item
 		@params:
 			name (str): The name of the config item.
@@ -169,6 +291,12 @@ class PluginConfig(dict):
 		return self
 
 	def update(self, pconfig):
+		"""@API
+		Update the configuration
+		Depends on `update` argument while the configuration is added
+		@params:
+			pconfig (dict): the configuration to update from
+		"""
 		for key, value in pconfig.items():
 			if key not in self.__raw__:
 				raise PluginConfigKeyError('Plugin configuration {!r} does not exist.'.format(key))
@@ -183,7 +311,11 @@ class PluginConfig(dict):
 				self.__raw__[key] = value
 
 	def setcounter(self, name):
-		"""Get the set counter for properties"""
+		"""@API
+		Get the set counter for properties
+		@params:
+			name (str): the name of the configuration item
+		"""
 		return self.__setcounter__.get(name, 0)
 
 	def __getattr__(self, name):

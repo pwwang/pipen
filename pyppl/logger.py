@@ -1,5 +1,12 @@
 """
 Custome logger for PyPPL
+@variables:
+	LOG_FORMAT (str): The format of loggers
+	LOGTIME_FORMAT (str): The format of time for loggers
+	GROUP_VALUES (dict): The values for each level group
+	LEVEL_GROUPS (dict): The groups of levels
+	THEMES (dict): The builtin themes
+	SUBLEVELS (dict): the sub levels used to limit loggers of the same type
 """
 import re
 import logging
@@ -31,7 +38,7 @@ GROUP_VALUES = dict(
 
 LEVEL_GROUPS = dict(
 	TITLE    = ['PROCESS'],
-	SUBTITLE = ['DEPENDS'],
+	SUBTITLE = ['DEPENDS', 'DONE'],
 	STATUS   = ['WORKDIR', 'CACHED', 'P_DONE'],
 	CRITICAL = ['INFO', 'BLDING', 'SBMTING', 'RUNNING', 'JOBDONE', 'KILLING'],
 	ERROR    = ['ERROR'],
@@ -118,7 +125,7 @@ SUBLEVELS = {
 	'OUTFILE_NOT_EXISTS'        : -1,
 	'OUTDIR_CREATED_AFTER_RESET': -1,
 	'SCRIPT_EXISTS'             : -2,
-	'JOB_RESETTING'             : -1
+	'JOB_RESETTING'             : -1,
 }
 
 def get_group(level):
@@ -147,8 +154,10 @@ def get_value(level):
 	return GROUP_VALUES.get(get_group(level), 0)
 
 class Theme: # pylint: disable=too-few-public-methods
-	"""
+	"""@API
 	The theme for the logger
+	@variables:
+		COLORS (dict): Color collections used to format theme
 	"""
 	COLORS = dict(
 		Style = colorama.Style, s = colorama.Style,
@@ -157,6 +166,11 @@ class Theme: # pylint: disable=too-few-public-methods
 	)
 
 	def __init__(self, theme = 'green_on_black'):
+		"""@API
+		Construct for Theme
+		@params:
+			theme (str): the name of the theme
+		"""
 		if theme is True:
 			theme = 'green_on_black'
 		if not theme:
@@ -169,7 +183,7 @@ class Theme: # pylint: disable=too-few-public-methods
 			raise ValueError('No such theme: %s' % theme)
 
 	def get_color(self, level):
-		"""
+		"""@API
 		Get the color for a given level
 		@params:
 			`level`: The level
@@ -413,7 +427,7 @@ class Logger:
 			file_handler.setFormatter(FileFormatter())
 			self.logger.addHandler(file_handler)
 
-	def add_level(self, level, group = 'INFO'):
+	def add_level(self, level, group = 'INFO'): # pylint: disable=no-self-use
 		"""@API
 		@params:
 			level (str): The log level name
@@ -429,7 +443,7 @@ class Logger:
 		if level not in LEVEL_GROUPS[group]:
 			LEVEL_GROUPS[group].append(level)
 
-	def add_sublevel(self, slevel, lines = -1):
+	def add_sublevel(self, slevel, lines = -1): # pylint: disable=no-self-use
 		"""@API
 		@params:
 			slevel (str): The debug level

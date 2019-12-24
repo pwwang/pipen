@@ -40,7 +40,7 @@ def test_init(proc_factory, caplog):
 	assert job.dir.resolve() == proc.workdir.joinpath('1').resolve()
 	assert job.input == {'a': ('var', 1)}
 	assert job.output == {'out': ('var', '1')}
-	assert job.script == job.dir / 'job.script.local'
+	assert job.script == [str(job.dir / 'job.script.local')]
 	assert job.rc == RC_NO_RCFILE
 	assert job.script_parts == {
 		'command': ['{0}/job.script 1> {0}/job.stdout 2> {0}/job.stderr'.format(job.dir)],
@@ -145,7 +145,7 @@ def test_output(proc_factory):
 	del job.__attrs_property_cached__['output']
 	with pytest.raises(JobOutputParseError) as exc:
 		job.output
-	assert 'Absolute path not allowed for output file/dir for key' in str(exc.value)
+	assert "Absolute path not allowed for [abs:file]: '/a/b/c'" in str(exc.value)
 
 def test_output_empty(tmp_path):
 	proc = Proc('pOutput3', workdir = tmp_path.joinpath('pOutput3'))
@@ -298,7 +298,7 @@ def test_data(proc_factory):
 	job.input
 	assert job.data.i == {'a': 1}
 	job.output
-	assert job.data.o == {'out': '1'}
+	assert job.data.o == {'out': str(job.dir / 'output/1')}
 
 def test_script_parts(proc_factory):
 	proc = proc_factory('pScriptParts')

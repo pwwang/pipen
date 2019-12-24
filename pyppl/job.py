@@ -12,42 +12,97 @@ from ._job import job_dir, job_input, job_output, job_signature, \
 	job_pid_setter, job_pid_getter, job_script_parts, RC_NO_RCFILE
 
 @attr_property_class
-@attr.s
+@attr.s(slots = True)
 class Job:
-	"""Job class"""
+	"""@API
+	Job class
+
+	@arguments:
+		index (int): The index of the job
+		proc (Proc): The process
+	"""
 
 	index = attr.ib()
 	proc = attr.ib()
 
+	# allow state machine to add attributes
+	__dict__ = attr.ib(
+		init = False,
+		repr = False)
+
 	# the job directory
-	dir = attr_property(init = False, repr = False,
-		getter = job_dir)
+	dir = attr_property(
+		init   = False,
+		repr   = False,
+		getter = job_dir,
+		doc    = 'The directory of the job.')
 	# max number of retries
-	ntry = attr.ib(default = 0, init = False, repr = False)
+	ntry = attr.ib(
+		default = 0,
+		init    = False,
+		repr    = False)
 	# the compiled input
-	input = attr_property(init = False, repr = False, getter = job_input)
+	input = attr_property(
+		init   = False,
+		repr   = False,
+		getter = job_input)
 	# the compiled output
-	output = attr_property(init = False, repr = False, getter = job_output)
+	output = attr_property(
+		init   = False,
+		repr   = False,
+		getter = job_output)
 	# the compiled script
-	script = attr_property(init = False, repr = False, getter = job_script)
+	script = attr_property(
+		init   = False,
+		repr   = False,
+		getter = job_script)
 	# parts of the script for runner
-	script_parts = attr_property(init = False, repr = False, getter = job_script_parts)
+	script_parts = attr_property(
+		init   = False,
+		repr   = False,
+		getter = job_script_parts)
 	# the signature of the job
-	signature = attr_property(init = False, repr = False, getter = job_signature)
+	signature = attr_property(
+		init   = False,
+		repr   = False,
+		getter = job_signature)
 	# the returncode of the job
-	rc = attr_property(init = False, repr = False, setter = job_rc_setter, getter = job_rc_getter)
+	rc = attr_property(
+		init   = False,
+		repr   = False,
+		setter = job_rc_setter,
+		getter = job_rc_getter,
+		doc    = 'The returncode of the job.')
 	# the pid or job id in runner system
-	pid = attr_property(init = False, repr = False,
-		getter = job_pid_getter, setter = job_pid_setter)
+	pid = attr_property(
+		init   = False,
+		repr   = False,
+		getter = job_pid_getter,
+		setter = job_pid_setter,
+		doc    = 'The pid/job id of the job in the running system.')
 	# current runner name
 	# make sure use_runner was called before class definitions
-	runner = attr_property(init = False, repr = False, getter = lambda this, value: current_runner())
+	runner = attr_property(
+		init   = False,
+		repr   = False,
+		getter = lambda this, value: current_runner(),
+		doc    = 'The name of current runner.')
 	# data to render templates
-	data = attr_property(init = False, repr = False, getter = job_data)
+	data = attr_property(
+		init   = False,
+		repr   = False,
+		getter = job_data,
+		doc    = 'The data used to render templates.')
 	# job logger
-	logger = attr_property(init = False, repr = False, getter = job_logger)
+	logger = attr_property(
+		init   = False,
+		repr   = False,
+		getter = job_logger)
 	# configs for plugins
-	plugin_config = attr.ib(default = attr.Factory(PluginConfig), kw_only = True, repr = False)
+	plugin_config = attr.ib(
+		default = attr.Factory(PluginConfig),
+		kw_only = True,
+		repr    = False)
 
 	def __attrs_post_init__(self):
 		pluginmgr.hook.job_init(job = self)
@@ -214,7 +269,7 @@ class Job:
 
 		pluginmgr.hook.job_done(job = self, status = 'succeeded' if status else 'failed')
 
-	def reset (self):
+	def reset (self): # pylint: disable=too-many-branches
 		"""@API
 		Clear the intermediate files and output files"""
 		retry    = self.ntry
@@ -300,6 +355,9 @@ class Job:
 			(bool|str): `True/False` if rcfile generared and whether job succeeds, \
 				otherwise returns `running`.
 		"""
+		# force to read rc from rcfile
+		del self.rc
+
 		if not self.dir.joinpath('job.stderr').is_file() or \
 			not self.dir.joinpath('job.stdout').is_file():
 			self.logger('Polling the job ... stderr/out file not generared.', level = 'debug')
@@ -351,7 +409,7 @@ class Job:
 			pluginmgr.hook.job_poll(job = self, status = 'failed')
 			return False
 
-		pluginmgr.hook.job_kill(job = self, status = 'succeeded' if status else 'failed')
 		if status:
 			self.pid = ''
+		pluginmgr.hook.job_kill(job = self, status = 'succeeded' if status else 'failed')
 		return status

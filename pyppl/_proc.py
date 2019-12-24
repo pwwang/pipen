@@ -61,15 +61,15 @@ def proc_runtime_config_setter(this, value):
 	# replace the values in runtime config
 	if not value:
 		return
-	for key, value in value.items():
+	for key, val in value.items():
 		if key == 'envs':
-			this.envs.update(value)
+			this.envs.update(val)
 		elif key == 'plugin_config':
-			this.plugin_config.update(value)
+			this.plugin_config.update(val)
 		elif this._setcounter.get(key) or key == 'runner':
 			continue
 		else:
-			setattr(this, key, value)
+			setattr(this, key, val)
 
 def proc_id_setter(this, value):
 	"""Don't allow id to be set using setter"""
@@ -140,8 +140,8 @@ def proc_runner(this, value):
 
 def proc_depends_setter(this, value):
 	"""Try to convert all possible dependencies to processes"""
-	from .pyppl import anything2procs
-	depends = anything2procs(value, procset = 'ends')
+	from .pyppl import _anything2procs
+	depends = _anything2procs(value, procset = 'ends')
 	try:
 		prev_depends = this._depends
 	except KeyError:
@@ -174,7 +174,7 @@ def proc_input_setter(this, value):
 		return {prev_input: value}
 	return value
 
-def proc_input(this, value):
+def proc_input(this, value): # pylint: disable=too-many-locals,too-many-branches
 	"""Parse and prepare the input, allowing jobs to easily access it"""
 	# parse this.config.input keys
 	# even for skipped or resumed process
@@ -183,7 +183,8 @@ def proc_input(this, value):
 	# ['a:var', 'b:file', ...]
 
 	# make sure it's called after .run()
-	_require(this, 'runtime_config', msg = 'Process input should be accessed after it starts running')
+	_require(this, 'runtime_config', strict = False,
+		msg = 'Process input should be accessed after it starts running')
 	input_keys_and_types = sum((always_list(key) for key in value), []) \
 		if isinstance(value, dict) else always_list(value) \
 		if value else []
@@ -206,16 +207,17 @@ def proc_input(this, value):
 	ret = OrderedDiot()
 	# no data specified, inherit from depends or argv
 	input_values = list(value.values()) \
-		if isinstance(value, dict) else [Channel.fromChannels(*[
+		if isinstance(value, dict) else [Channel.from_channels(*[
 			d.channel for d in this.depends])
-			if this.depends else Channel.fromArgv()]
+			if this.depends else Channel.from_argv()]
+
 	input_channel = Channel.create()
 	for invalue in input_values:
 		# a callback, on all channels
 		if callable(invalue):
 			input_channel = input_channel.cbind(
 				invalue(*[d.channel for d in this.depends] \
-					if this.depends else Channel.fromArgv()))
+					if this.depends else Channel.from_argv()))
 		elif isinstance(invalue, Channel):
 			input_channel = input_channel.cbind(invalue)
 		else:
@@ -391,7 +393,8 @@ def proc_workdir(this, value):
 def proc_channel(this, value):
 	"""Assign the output of jobs to processes as channel"""
 	# make sure it's called after run
-	_require(this, 'runtime_config', 'Process channel can only be accessed after run.')
+	_require(this, 'runtime_config', strict = False,
+		msg = 'Process channel can only be accessed after run.')
 	if this.jobs:
 		chan = Channel.create([
 			tuple(value for _, value in job.output.values())

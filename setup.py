@@ -24,7 +24,7 @@ if os.path.exists(readme_path):
 setup(
     long_description=readme,
     name='PyPPL',
-    version='2.3.2',
+    version='3.0.0',
     description='A Python PiPeLine framework',
     python_requires='==3.*,>=3.6.0',
     project_urls={"homepage": "https://github.com/pwwang/PyPPL", "repository": "https://github.com/pwwang/PyPPL"},
@@ -32,9 +32,9 @@ setup(
     author_email='pwwang@pwwang.com',
     license='MIT',
     entry_points={"console_scripts": ["pyppl = pyppl.console:main"]},
-    packages=['pyppl'],
+    packages=['pyppl', 'pyppl.console'],
     package_dir={"": "."},
-    package_data={"pyppl": ["*.bak"]},
-    install_requires=['cmdy', 'colorama==0.*,>=0.4.1', 'diot', 'filelock==3.*,>=3.0.0', 'liquidpy', 'pluggy==0.*,>=0.12.0', 'psutil==5.*,>=5.6.0', 'pyparam', 'pyppl-flowchart', 'pyppl-report', 'python-simpleconf', 'transitions==0.*,>=0.6.0'],
+    package_data={},
+    install_requires=['attr-property', 'attrs==19.*,>=19.3.0', 'cmdy', 'colorama==0.*,>=0.4.1', 'diot', 'filelock==3.*,>=3.0.0', 'liquidpy', 'pluggy==0.*,>=0.12.0', 'psutil==5.*,>=5.6.0', 'pyparam', 'python-simpleconf', 'python-varname', 'transitions==0.*,>=0.6.0'],
     extras_require={"dev": ["faker==1.*,>=1.0.0", "graphviz==0.*,>=0.11.0", "jinja2==2.*,>=2.0.0", "pytest", "pytest-cov", "pyyaml==5.*,>=5.0.0", "toml==0.*,>=0.10.0"]},
 )

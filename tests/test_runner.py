@@ -5,7 +5,7 @@ from pyppl import runner as module_runner
 from pyppl.runner import register_runner, use_runner, current_runner, hookimpl, RUNNERS, runnermgr, _runner_name, poll_interval
 from pyppl.exception import RunnerNoSuchRunner, RunnerMorethanOneRunnerEnabled, RunnerTypeError
 
-module_runner.DEFAULT_POLL_INTERVAL = 1
+module_runner.DEFAULT_POLL_INTERVAL = .5
 
 class PyPPLRunnerTest1:
 
@@ -42,7 +42,7 @@ def test_runner_name(obj, name):
 
 def test_x_runner():
 	assert current_runner() == 'local'
-	assert poll_interval() == 1
+	assert poll_interval() == .5
 	with pytest.raises(RunnerNoSuchRunner):
 		use_runner('test1')
 	test1runner = PyPPLRunnerTest1()
@@ -71,7 +71,7 @@ def test_x_runner():
 
 	use_runner('local')
 	assert current_runner() == 'local'
-	assert poll_interval() == 1
+	assert poll_interval() == .5
 
 	runnermgr.unregister(list(runnermgr.get_plugins())[0])
 	with pytest.raises(RunnerNoSuchRunner):

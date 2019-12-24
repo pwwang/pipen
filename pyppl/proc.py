@@ -18,12 +18,15 @@ from .config import config
 from .logger import logger
 from .jobmgr import STATES, Jobmgr
 from .plugin import pluginmgr, PluginConfig
-from .pyppl import register_proc
+from .pyppl import _register_proc
 
 @attr_property_class
 @attr.s(eq = False, slots = True)
 class Proc:
-	"""Process of a pipeline"""
+	"""@API
+	Process of a pipeline
+	"""
+	# pylint: disable=too-many-instance-attributes
 	# Remember the attr being set, they have the highest priority
 	_setcounter = attr.ib(
 		default = attr.Factory(dict),
@@ -31,15 +34,17 @@ class Proc:
 		repr    = False)
 	# The id of the process
 	id = attr_property(
-		default = attr.Factory(lambda: varname(caller = 2)),
+		default = attr.Factory(lambda: varname(caller = 2, context = 30)),
 		repr    = False,
-		setter  = proc_id_setter)
+		setter  = proc_id_setter,
+		doc     = "@API\nThe identity of the process")
 	# The tag of the process
 	tag = attr_property(
 		default = config.tag,
 		setter  = proc_tag_setter,
 		kw_only = True,
-		repr    = False)
+		repr    = False,
+		doc     = "@API\nThe tag of the process")
 	# The description of the process
 	desc = attr.ib(
 		default = 'No description.',
@@ -55,7 +60,8 @@ class Proc:
 		default = config.cache,
 		kw_only = True,
 		repr    = False,
-		setter  = partial(proc_setter_count, name = 'cache'))
+		setter  = partial(proc_setter_count, name = 'cache'),
+		doc     = '@API\nShould we cache the results or read results from cache?')
 	# The output channel
 	channel = attr_property(
 		default = None,
@@ -234,7 +240,7 @@ class Proc:
 		repr    = False)
 
 	def __attrs_post_init__(self):
-		register_proc(self)
+		_register_proc(self)
 		pluginmgr.hook.proc_init(proc = self)
 
 	def run(self, runtime_config):
@@ -244,6 +250,7 @@ class Proc:
 			runtime_config (simpleconf.Config): The runtime configuration
 		"""
 		self.runtime_config = runtime_config
+		self.input
 		self.output
 		self.suffix
 		ret = pluginmgr.hook.proc_prerun(proc = self)
@@ -295,8 +302,23 @@ class Proc:
 		del self.jobs[:] # pylint: disable=unsupported-delete-operation
 
 	def _save_settings(self):
+		def stringify(conf):
+			"""Convert Path to str, even if it is buried deeply"""
+			if isinstance(conf, Path):
+				return str(conf)
+			if isinstance(conf, Proc):
+				return conf.name
+			if isinstance(conf, dict):
+				return {key: stringify(val) for key, val in conf.items()}
+			if isinstance(conf, list):
+				return [stringify(val) for val in conf]
+			return conf
+
 		with open(self.workdir / 'proc.settings.toml', 'w') as fsettings:
-			toml.dump(self.__attrs_property_raw__, fsettings)
+			toml.dump({key: stringify(val) \
+				for key, val in self.__attrs_property_raw__.items()
+				if key not in ('id', 'jobs', 'runtime_config')
+			}, fsettings)
 
 	def _run_jobs(self):
 		logger.debug('Queue starts ...', proc = self.id)
@@ -307,7 +329,8 @@ class Proc:
 			self.channel.attach(*self.jobs[0].output.keys())
 
 	def copy(self, id = None, **kwargs):
-		"""Copy a process to a new one
+		"""@API
+		Copy a process to a new one
 		Depends and nexts will be copied
 		@params:
 			id: The id of the new process
@@ -325,7 +348,16 @@ class Proc:
 		return newproc
 
 	def add_config(self, name, default = None, converter = None, runtime = 'update'):
-		"""
-		runtime: override, update, ignore
+		"""@API
+		Add a plugin configuration
+		@params:
+			name (str): The name of the plugin configuration
+			default (any): The default value
+			converter (callable): The converter function for the value
+			runtime (str): How should we deal with it while \
+				runtime_config is passed and its setcounter > 1
+				- override: Override the value
+				- update: Update the value if it's a dict otherwise override its
+				- ignore: Ignore the value from runtime_config
 		"""
 		self.plugin_config.add(name, default, converter, runtime)

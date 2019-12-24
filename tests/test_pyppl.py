@@ -2,7 +2,7 @@ from pathlib import Path
 import traceback
 import pytest
 
-from pyppl.pyppl import register_proc, PROCESSES, get_next_procs, anything2procs, PyPPL
+from pyppl.pyppl import PROCESSES, _get_next_procs, _anything2procs, PyPPL, PIPELINES
 from pyppl.exception import ProcessAlreadyRegistered, PyPPLInvalidConfigurationKey, PyPPLNameError
 from pyppl.proc import Proc
 from pyppl.config import config
@@ -36,11 +36,11 @@ def test_next_possible_procs():
 	pNPProcs4.depends = pNPProcs3
 	pNPProcs5.depends = pNPProcs4
 
-	assert get_next_procs([pNPProcs1]) == [pNPProcs2]
-	assert get_next_procs([pNPProcs2]) == [pNPProcs3]
-	assert get_next_procs([pNPProcs3]) == [pNPProcs4]
-	assert get_next_procs([pNPProcs4]) == [pNPProcs5]
-	assert get_next_procs([pNPProcs5]) == []
+	assert _get_next_procs([pNPProcs1]) == [pNPProcs2]
+	assert _get_next_procs([pNPProcs2]) == [pNPProcs3]
+	assert _get_next_procs([pNPProcs3]) == [pNPProcs4]
+	assert _get_next_procs([pNPProcs4]) == [pNPProcs5]
+	assert _get_next_procs([pNPProcs5]) == []
 
 	pNPProcs11 = Proc()
 	pNPProcs12 = Proc()
@@ -52,9 +52,9 @@ def test_next_possible_procs():
 	pNPProcs14.depends = pNPProcs11, pNPProcs12
 	pNPProcs15.depends = pNPProcs11, pNPProcs14
 
-	assert get_next_procs([pNPProcs11]) == []
-	assert get_next_procs([pNPProcs11, pNPProcs12]) == [pNPProcs13, pNPProcs14]
-	assert get_next_procs([pNPProcs11, pNPProcs12, pNPProcs13, pNPProcs14]) == [pNPProcs15]
+	assert _get_next_procs([pNPProcs11]) == []
+	assert _get_next_procs([pNPProcs11, pNPProcs12]) == [pNPProcs13, pNPProcs14]
+	assert _get_next_procs([pNPProcs11, pNPProcs12, pNPProcs13, pNPProcs14]) == [pNPProcs15]
 
 	# cyclic dependencies
 	pNPProcs21 = Proc()
@@ -64,29 +64,30 @@ def test_next_possible_procs():
 	pNPProcs23.depends = pNPProcs22
 	pNPProcs21.depends = pNPProcs23
 
-	assert get_next_procs([pNPProcs21]) == [pNPProcs22]
-	assert get_next_procs([pNPProcs21, pNPProcs22]) == [pNPProcs23]
-	assert get_next_procs([pNPProcs21, pNPProcs22, pNPProcs23]) == []
+	assert _get_next_procs([pNPProcs21]) == [pNPProcs22]
+	assert _get_next_procs([pNPProcs21, pNPProcs22]) == [pNPProcs23]
+	assert _get_next_procs([pNPProcs21, pNPProcs22, pNPProcs23]) == []
 
 	# auto dependencies
 	pNPProcs31 = Proc()
 	pNPProcs31.depends = pNPProcs31
-	assert get_next_procs([pNPProcs31]) == []
+	assert _get_next_procs([pNPProcs31]) == []
 
 def test_anything2procs():
 	pAny2Procs1 = Proc()
 	pAny2Procs2 = Proc()
-	assert anything2procs(pAny2Procs1) == [pAny2Procs1]
-	assert anything2procs('pAny2Procs1') == [pAny2Procs1]
-	assert anything2procs(pAny2Procs1, pAny2Procs2) == [pAny2Procs1, pAny2Procs2]
-	assert set(anything2procs('pAny2Procs?')) == {pAny2Procs1, pAny2Procs2}
+	assert _anything2procs(pAny2Procs1) == [pAny2Procs1]
+	assert _anything2procs('pAny2Procs1') == [pAny2Procs1]
+	assert _anything2procs(pAny2Procs1, pAny2Procs2) == [pAny2Procs1, pAny2Procs2]
+	assert set(_anything2procs('pAny2Procs?')) == {pAny2Procs1, pAny2Procs2}
 
 	from pyppl.procset import ProcSet
 	psAny2Procs = ProcSet(pAny2Procs1, pAny2Procs2)
-	assert anything2procs(psAny2Procs) == [psAny2Procs.pAny2Procs1]
-	assert anything2procs(psAny2Procs, procset = 'ends') == [psAny2Procs.pAny2Procs2]
+	assert _anything2procs(psAny2Procs) == [psAny2Procs.pAny2Procs1]
+	assert _anything2procs(psAny2Procs, procset = 'ends') == [psAny2Procs.pAny2Procs2]
 
 def test_init(caplog):
+	PIPELINES.clear()
 	ppl = PyPPL(forks = 10)
 	assert 'Read from PYPPL.osenv' in caplog.text
 	assert 'PIPELINE: PyPPL_1' in caplog.text
@@ -165,16 +166,38 @@ def test_run(caplog):
 		@hookimpl
 		def proc_prerun(self, proc):
 			return False
-
+	from pyppl.job import Job
+	from pyppl.jobmgr import STATES
+	Job.state = STATES.DONE
 	pRun1 = Proc()
+	pRun1.input = {'a:var': [1]}
+	pRun1.output = 'a:var:1'
 	PyPPL(plugins = [pyppl_stoprun()]).start(pRun1).run()
 	assert 'pRun1: No description.' in caplog.text
 
 	caplog.clear()
 	pRun2 = pRun1.copy()
 	# plugins regiested
-	PyPPL().start(pRun2).run()
+	PyPPL(logger_level = 'debug', envs_k = 'k').start(pRun2).run()
 	assert 'pRun2 (pRun1): No description.' in caplog.text
+	assert pRun2.envs.k == 'k'
+
+def test_plugin_config_in_construct():
+	class pyppl_pconfig:
+		@hookimpl
+		def proc_init(self, proc):
+			proc.add_config('x')
+
+	from pyppl.plugin import config_plugins
+	config_plugins(pyppl_pconfig())
+	from pyppl.job import Job
+	from pyppl.jobmgr import STATES
+	Job.state = STATES.DONE
+	pPCIC = Proc()
+	pPCIC.input = {'a:var': [1]}
+	pPCIC.output = 'a:var:1'
+	PyPPL(plugin_config_x = 10).start(pPCIC).run()
+	assert pPCIC.plugin_config.x == 10
 
 def test_add_method(capsys):
 	ppl = PyPPL()

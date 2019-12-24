@@ -1,25 +1,26 @@
 """
 Template adaptor for PyPPL
+
+@variables:
+	DEFAULT_ENVS (dict): The default environments for templates
 """
 from liquid import Liquid
 
 __all__ = ['Template', 'TemplateLiquid', 'TemplateJinja2']
 
+DEFAULT_ENVS = {}
+
 class Template:
 	"""@API
-	Template wrapper base class
-
-	@static variables:
-		DEFAULT_ENVS (dict): The default environment.
+	Base class wrapper to wrap template for PyPPL
 	"""
-	DEFAULT_ENVS = {}
 
 	def __init__(self, source, **envs):
 		"""@API
 		Template construct
 		"""
 		self.source = source
-		self.envs   = Template.DEFAULT_ENVS.copy()
+		self.envs   = DEFAULT_ENVS.copy()
 		self.envs.update(envs)
 
 	def register_envs(self, **envs):

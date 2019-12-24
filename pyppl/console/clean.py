@@ -17,7 +17,8 @@ def remove_proc(proc, nthread = 1, force = False):
 		try:
 			fs.remove(proc)
 			logger.warning('  Removed!           ')
-		except Exception as ex: # pylint: disable=broad-except
+		# pylint: disable=broad-except
+		except BaseException as ex: # pragma: no cover
 			#shutil.rmtree(proc)
 			logger.error('  %s!           ' % ex)
 
@@ -32,14 +33,13 @@ def remove_proc(proc, nthread = 1, force = False):
 
 def clean_procs(procs, nthread, force, wdir, one):
 	"""Cleanup processes"""
-	#ans = ['', 'Y', 'y', 'N', 'n']
 	logger.workdir(wdir)
 	procname = None
 	for proc, mtime, fail in procs:
-		pname = '.'.join(path.basename(proc).split('.')[1:3])
-		if pname != procname:
-			procname = pname
-			logger.process(pname)
+		process_name = '.'.join(path.basename(proc).split('.')[1:3])
+		if process_name != procname:
+			procname = process_name
+			logger.process(process_name)
 			show_proc(proc, mtime, fail)
 			if not one:
 				remove_proc(proc, nthread, force)

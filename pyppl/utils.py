@@ -10,13 +10,19 @@ from liquid.stream import LiquidStream
 from . import _fsutil as fs
 
 def name2filename(name):
-	"""Convert any name to a valid filename"""
+	"""@API
+	Convert any name to a valid filename
+	@params:
+		name (str): The name to be converted
+	@returns:
+		(str): The converted name
+	"""
 	name = re.sub(r'[^\w_]+', '_', name)
 	name = re.sub(r'_+', '_', name)
 	return name.strip('_')
 
 def format_secs (seconds):
-	"""
+	"""@API
 	Format a time duration
 	@params:
 		`seconds`: the time duration in seconds
@@ -29,7 +35,7 @@ def format_secs (seconds):
 	return "%02d:%02d:%02d.%03.0f" % (hour, minute, sec, 1000*(sec-int(sec)))
 
 def filesig(filepath, dirsig = True):
-	"""
+	"""@API
 	Generate a signature for a file
 	@params:
 		`dirsig`: Whether expand the directory? Default: True
@@ -56,7 +62,7 @@ def filesig(filepath, dirsig = True):
 	return [str(filepath), int(mtime)]
 
 def funcsig (func):
-	"""
+	"""@API
 	Get the signature of a function
 	Try to get the source first, if failed, try to get its name, otherwise return None
 	@params:
@@ -75,13 +81,13 @@ def funcsig (func):
 	return sig
 
 def expand_numbers(numbers):
-	"""
+	"""@API
 	Expand a descriptive numbers like '0,3-5,7' into read numbers:
 	[0,3,4,5,7]
 	@params:
 		numbers (str): The string of numbers to expand.
 	@returns:
-		list: The real numbers
+		(list) The real numbers
 	"""
 	numberstrs = always_list(numbers)
 	numbers = []
@@ -94,7 +100,7 @@ def expand_numbers(numbers):
 	return numbers
 
 def always_list (data, trim = True):
-	"""
+	"""@API
 	Convert a string or a list with element
 	@params:
 		`data`: the data to be converted
@@ -117,13 +123,13 @@ def always_list (data, trim = True):
 	raise ValueError('Expect str/list to convert to list, but got %r.' % type(data).__name__)
 
 def try_deepcopy(obj, _recurvise = True):
-	"""
+	"""@API
 	Try do deepcopy an object. If fails, just do a shallow copy.
 	@params:
 		obj (any): The object
 		_recurvise (bool): A flag to avoid deep recursion
 	@returns:
-		The copied object
+		(any): The copied object
 	"""
 	if _recurvise and isinstance(obj, dict):
 		# do a shallow copy first
@@ -145,10 +151,12 @@ def try_deepcopy(obj, _recurvise = True):
 
 
 def chmod_x(filepath):
-	"""
+	"""@API
 	Convert file1 to executable or add extract shebang to cmd line
+	@params:
+		filepath (path): The file path
 	@returns:
-		A list with or without the path of the interpreter as the first element
+		(list): with or without the path of the interpreter as the first element
 		and the script file as the last element
 	"""
 	from stat import S_IEXEC
@@ -176,12 +184,12 @@ def chmod_x(filepath):
 	return ret
 
 def brief_list(blist, base = 0):
-	"""
+	"""@API
 	Briefly show an integer list, combine the continuous numbers.
 	@params:
-		`blist`: The list
+		blist: The list
 	@returns:
-		The string to show for the briefed list.
+		(str): The string to show for the briefed list.
 	"""
 	if not blist:
 		return "[]"
@@ -275,12 +283,12 @@ class ThreadPool: # pylint: disable=too-few-public-methods
 				cleanup(ex = ex)
 
 class PQueue(PriorityQueue):
-	"""
+	"""@API
 	A modified PriorityQueue, which allows jobs to be submitted in batch
 	"""
 	# pylint: disable=arguments-differ
 	def __init__(self, maxsize = 0, batch_len = None):
-		"""
+		"""@API
 		A Priority Queue for PyPPL jobs
 			0                              0 done,             wait for 1
 			  1        start 0    1        start 1             start 2
@@ -289,8 +297,8 @@ class PQueue(PriorityQueue):
 					4                   4                   4                2   4
 																		   1
 		@params:
-			`maxsize`  : The maxsize of the queue. Default: None
-			`batch_len`: What's the length of a batch
+			maxsize  : The maxsize of the queue. Default: None
+			batch_len: What's the length of a batch
 		"""
 		if not batch_len:
 			raise ValueError('`batch_len` is required for PQueue.')
@@ -298,16 +306,29 @@ class PQueue(PriorityQueue):
 		self.batch_len = batch_len
 
 	def put_next(self, item, batch):
-		"""Put item to next batch"""
+		"""@API
+		Put item to next batch
+		@params:
+			item (any): item to put
+			batch (int): current batch
+		"""
 		self.put(item, batch + 2)
 
 	def put(self, item, batch = None):
+		"""@API
+		Put item to any batch
+		@params:
+			item (any): item to put
+			batch (int): target batch
+		"""
 		batch = batch or item
 		PriorityQueue.put(self, item + batch * self.batch_len)
 
 	def get(self):
-		"""
+		"""@API
 		Get an item from the queue
+		@returns:
+			(int, int): The index of the item and the batch of it
 		"""
 		item = PriorityQueue.get(self)
 		batch, index  = divmod(item, self.batch_len)

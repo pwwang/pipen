@@ -2,6 +2,7 @@ import sys
 from multiprocessing import cpu_count
 from pathlib import Path
 import pytest
+import toml
 import cmdy
 from diot import Diot
 from simpleconf import Config
@@ -20,7 +21,12 @@ class Jobmgr:
 	def start(self):
 		pass
 
-proc.Jobmgr = Jobmgr
+@pytest.fixture
+def replace_jobmgr():
+	oldjm = proc.Jobmgr
+	proc.Jobmgr = Jobmgr
+	yield
+	proc.Jobmgr = oldjm
 
 def test_init():
 	pProcInit = Proc()
@@ -59,6 +65,10 @@ def test_init():
 def test_init2():
 	pProcInit2 = Proc(errhow = 'ignore')
 	assert pProcInit2.errhow == 'ignore'
+
+def test_init_tag():
+	pProcTag = Proc(tag = 'newtag')
+	assert pProcTag.tag == 'newtag'
 
 def test_id_setter():
 	pIdSetter = Proc()
@@ -148,11 +158,11 @@ def test_runtime_config():
 	assert pRuntimeConfig2.runner == {'runner': 'ssh', 'ssh.servers': [1]}
 	assert pRuntimeConfig2.template is TemplateLiquid
 
-def test_input_complex():
+def test_input_complex(tmp_path):
 	runtime_config = Config()
 	runtime_config._load({'default': {'dirsig': False}})
 
-	pInputSeparate = Proc()
+	pInputSeparate = Proc(ppldir = tmp_path)
 	pInputSeparate.input = 'a, b:file'
 	pInputSeparate.input = '1', 'infile'
 	pInputSeparate.runtime_config = runtime_config
@@ -169,7 +179,7 @@ def test_input_complex():
 	pInputSeparate.output = 'out1:var:3, out2:var:4'
 
 	# callback
-	pInputSeparate2 = Proc()
+	pInputSeparate2 = Proc(ppldir = tmp_path)
 	pInputSeparate2.depends = pInputSeparate
 	pInputSeparate2.input = 'a, b, c'
 	pInputSeparate2.input = lambda ch: ch.cbind(1)
@@ -317,7 +327,7 @@ def test_suffix():
 	assert suffix3 != suffix2 != suffix1 != suffix0
 
 def test_workdir(tmp_path):
-	pWorkdir = Proc()
+	pWorkdir = Proc(ppldir = tmp_path)
 	pWorkdir.input = 'x'
 	pWorkdir.output = 'x:1'
 	pWorkdir.runtime_config = {'dirsig': False}
@@ -333,6 +343,13 @@ def test_workdir(tmp_path):
 	pWorkdir.workdir = tmp_path.joinpath('pWorkdir')
 	assert pWorkdir.workdir.resolve() == tmp_path.joinpath('pWorkdir').resolve()
 	assert pWorkdir.workdir.is_dir()
+
+	pWorkdir2 = Proc(ppldir = tmp_path, tag = 'newtag')
+	pWorkdir2.input = 'x'
+	pWorkdir2.output = 'x:1'
+	pWorkdir2.runtime_config = {'dirsig': False}
+	assert '.newtag' in pWorkdir2.workdir.stem
+
 
 def test_jobs():
 	pJobs = Proc()
@@ -353,10 +370,10 @@ def test_channel():
 
 ### END of attribute tests
 
-def test_runjobs():
+def test_runjobs(replace_jobmgr, tmp_path):
 	runtime_config = Config()
 	runtime_config._load({'default': {'dirsig': False}})
-	pRunJobs = Proc()
+	pRunJobs = Proc(ppldir = tmp_path)
 	pRunJobs.runtime_config = runtime_config
 	pRunJobs.input = {'a': [1]}
 	pRunJobs.output = 'outfile:file:{{a}}.txt'
@@ -365,57 +382,66 @@ def test_runjobs():
 	pRunJobs._run_jobs()
 	assert pRunJobs.channel == [(pRunJobs.jobs[0].dir.joinpath('output/1.txt'),)]
 
-def test_run(caplog):
+def test_run(caplog, replace_jobmgr, tmp_path):
 	from pyppl.job import Job
 	Job.state = None
 	runtime_config = Config()
 	runtime_config._load({'default': {'dirsig': False}})
 
-	pRun = Proc()
-	pRun.input = {'a': [1]}
-	pRun.output = 'outfile:file:{{a}}.txt'
+	pProcRun = Proc(ppldir = tmp_path)
+	pProcRun.input = {'a': [1]}
+	pProcRun.output = 'outfile:file:{{a}}.txt'
 	with pytest.raises(SystemExit):
-		pRun.run(runtime_config)
-	assert pRun.channel == [(pRun.jobs[0].dir.joinpath('output/1.txt'),)]
+		pProcRun.run(runtime_config)
+	assert pProcRun.channel == [(pProcRun.jobs[0].dir.joinpath('output/1.txt'),)]
 	assert 'WORKDIR' in caplog.text
-	assert 'pRun: Jobs [Cached: 0, Succ: 0, B.Fail: 0, S.Fail: 0, R.Fail: 0]' in caplog.text
+	assert 'pProcRun: Jobs [Cached: 0, Succ: 0, B.Fail: 0, S.Fail: 0, R.Fail: 0]' in caplog.text
 
-def test_run2(caplog):
+	pProcRun1 = Proc(ppldir = tmp_path, input = 'a', output = 'a:var:1', errhow = 'ignore')
+	pProcRun2 = Proc(ppldir = tmp_path, input = 'a', depends = pProcRun1, output = 'a:var:1', errhow = 'ignore')
+	pProcRun1.run(runtime_config)
+	pProcRun2.run(runtime_config)
+	# see if depends have been saved in settings
+	with open(pProcRun2.workdir / 'proc.settings.toml') as f:
+		settings = toml.load(f)
+	assert settings['depends'] == ['pProcRun1.notag']
+
+def test_run2(caplog, replace_jobmgr, tmp_path):
 	from pyppl.job import Job
 	from pyppl.jobmgr import STATES
 	Job.state = STATES.BUILTFAILED
 	runtime_config = Config()
 	runtime_config._load({'default': {'dirsig': False}})
 
-	pRunRun2 = Proc()
+	pRunRun2 = Proc(ppldir = tmp_path)
 	pRunRun2.input = {'a': [1]}
 	pRunRun2.output = 'outfile:file:{{a}}.txt'
 	with pytest.raises(SystemExit):
 		pRunRun2.run(runtime_config)
 	assert 'pRunRun2: Jobs [Cached: 0, Succ: 0, B.Fail: 1, S.Fail: 0, R.Fail: 0]' in caplog.text
 
-def test_run3(caplog):
+def test_run3(caplog, replace_jobmgr, tmp_path):
 	from pyppl.job import Job
 	from pyppl.jobmgr import STATES
 	Job.state = STATES.SUBMITFAILED
 	runtime_config = Config()
 	runtime_config._load({'default': {'dirsig': False}})
 
-	pRunRun3 = Proc()
+	pRunRun3 = Proc(ppldir = tmp_path)
 	pRunRun3.input = {'a': [1]}
 	pRunRun3.output = 'outfile:file:{{a}}.txt'
 	with pytest.raises(SystemExit):
 		pRunRun3.run(runtime_config)
 	assert 'pRunRun3: Jobs [Cached: 0, Succ: 0, B.Fail: 0, S.Fail: 1, R.Fail: 0]' in caplog.text
 
-def test_run4(caplog):
+def test_run4(caplog, replace_jobmgr, tmp_path):
 	from pyppl.job import Job
 	from pyppl.jobmgr import STATES
 	Job.state = STATES.ENDFAILED
 	runtime_config = Config()
 	runtime_config._load({'default': {'dirsig': False}})
 
-	pRunRun4 = Proc()
+	pRunRun4 = Proc(ppldir = tmp_path)
 	pRunRun4.input = {'a': [1]}
 	pRunRun4.output = 'outfile:file:{{a}}.txt'
 	with pytest.raises(SystemExit):
