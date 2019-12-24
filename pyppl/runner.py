@@ -142,6 +142,10 @@ class PyPPLRunnerLocal:
 	PyPPL's default runner"""
 	# pylint: disable=no-self-use
 
+	def __init__(self):
+		from . import __version__
+		self.__version__ = __version__
+
 	@hookimpl
 	def kill(self, job):
 		"""@API

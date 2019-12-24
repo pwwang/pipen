@@ -141,7 +141,6 @@ class PyPPL:
 				- `PyPPL(logger_level = 'debug')`
 		"""
 		kwconfigs = _parse_kwconfigs(kwconfigs)
-		print(kwconfigs)
 		# check if keys in kwconfigs are valid
 		config = config or {}
 		config.update(kwconfigs)

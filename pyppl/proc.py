@@ -253,10 +253,10 @@ class Proc:
 		self.input
 		self.output
 		self.suffix
+		logger.workdir(self.workdir, proc = self.id)
 		ret = pluginmgr.hook.proc_prerun(proc = self)
 		# plugins can stop process from running
 		if ret is not False:
-			logger.workdir(self.workdir, proc = self.id)
 			self._save_settings()
 			self._run_jobs()
 

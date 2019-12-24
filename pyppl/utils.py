@@ -80,25 +80,6 @@ def funcsig (func):
 		sig = 'None'
 	return sig
 
-def expand_numbers(numbers):
-	"""@API
-	Expand a descriptive numbers like '0,3-5,7' into read numbers:
-	[0,3,4,5,7]
-	@params:
-		numbers (str): The string of numbers to expand.
-	@returns:
-		(list) The real numbers
-	"""
-	numberstrs = always_list(numbers)
-	numbers = []
-	for numberstr in numberstrs:
-		if '-' not in numberstr:
-			numbers.append(int(numberstr))
-		else:
-			numstart, numend = numberstr.split('-')
-			numbers.extend(range(int(numstart), int(numend)+1))
-	return numbers
-
 def always_list (data, trim = True):
 	"""@API
 	Convert a string or a list with element

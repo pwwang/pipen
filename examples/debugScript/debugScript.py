@@ -1,13 +1,14 @@
+# require pyppl-echo
 from pyppl import PyPPL, Proc
 
 pHeatmap           = Proc(desc = 'Draw heatmap.')
 pHeatmap.input     = {'seed': [1,2,3,4,5]}
 pHeatmap.output    = "outfile:file:heatmap{{i.seed}}.png"
-pHeatmap.exdir     = "./export"
+pHeatmap.plugin_config.export_dir     = "./export"
 # Don't cache jobs for debugging
 pHeatmap.cache     = False
-# Output debug information for all jobs, but don't echo stdout and stderr
-pHeatmap.echo      = {'jobs': '0-5', 'type': ''}
+pHeatmap.plugin_config.echo_jobs = '0-5'
+pHeatmap.plugin_config.echo_types = 'stderr'
 pHeatmap.forks     = 5
 pHeatmap.args.ncol = 10
 pHeatmap.args.nrow = 10
@@ -19,10 +20,10 @@ mat = matrix(rnorm({{args.ncol, args.nrow | *lambda x, y: x*y}}), ncol={{args.nc
 png(filename = "{{o.outfile}}", width=150, height=150)
 
 # have to be on stderr
-cat("pyppl.log.debug:Plotting heatmap #{{job.index | lambda x: int(x) + 1}} ...", file = stderr())
+cat("pyppl.logger.debug:Plotting heatmap #{{job.index | lambda x: int(x) + 1}} ...", file = stderr())
 
 heatmap(mat)
 dev.off()
 """
 
-PyPPL({'_log': {'levels' : 'basic'}}).start(pHeatmap).run()
+PyPPL().start(pHeatmap).run()

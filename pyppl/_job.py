@@ -235,7 +235,7 @@ def job_data(this, value):
 	@returns:
 		(dict): The data used to render the templates.
 	"""
-	ret  = Diot(
+	return Diot(
 		job = dict(
 			index    = this.index,
 			indir    = str(this.dir / 'input'),
@@ -245,10 +245,10 @@ def job_data(this, value):
 			errfile  = str(this.dir / 'job.stderr'),
 			pidfile  = str(this.dir / 'job.pid'),
 			cachedir = str(this.dir / 'output/.jobcache')),
-		i = {},
-		o = {})
-	ret.proc = this.proc
-	return ret
+		i    = {},
+		o    = {},
+		proc = this.proc,
+		args = this.proc.args)
 
 def job_script(this, value):
 	"""Try to create the script while accessing it"""

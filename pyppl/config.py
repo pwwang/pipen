@@ -7,7 +7,7 @@
 from multiprocessing import cpu_count
 from diot import Diot
 from simpleconf import Config
-from .plugin import config_plugins, pluginmgr
+from .plugin import config_plugins, pluginmgr, PMNAME
 
 # priority: lowest -> highest
 DEFAULT_CFGFILES = ('~/.PyPPL.toml', './.PyPPL.toml', 'PYPPL.osenv')
@@ -67,5 +67,6 @@ def load_config(default_config, *config_files):
 	config._use()
 
 load_config(*DEFAULT_CFGFILES)
+pluginmgr.load_setuptools_entrypoints(PMNAME)
 config_plugins(*config.plugins)
 pluginmgr.hook.setup(config = config)
