@@ -1,4 +1,9 @@
-"""Configuration for PyPPL"""
+"""Configuration for PyPPL
+@variables:
+	DEFAULT_CFGFILES (tuple): default configuration files
+	DEFAULT_CONFIG (dict): default configurations to be loaded
+	config (dict): The default configuration that will be used in the whole session
+"""
 from multiprocessing import cpu_count
 from diot import Diot
 from simpleconf import Config
@@ -51,11 +56,16 @@ DEFAULT_CONFIG = dict(default = dict(
 
 config = Config() # pylint: disable=invalid-name
 def load_config(default_config, *config_files):
-	"""Load the configurations"""
+	"""@API
+	Load the configurations
+	@params:
+		default_config (dict|path): A configuration dictionary or a path to a configuration file
+		*config_files: A list of configuration or configuration files
+	"""
 	config.clear()
-	config._load(default_config, *config_files)
+	config._load(DEFAULT_CONFIG, default_config, *config_files)
 	config._use()
 
-load_config(DEFAULT_CONFIG, *DEFAULT_CFGFILES)
+load_config(*DEFAULT_CFGFILES)
 config_plugins(*config.plugins)
 pluginmgr.hook.setup(config = config)

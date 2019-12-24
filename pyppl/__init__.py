@@ -7,4 +7,4 @@ from .proc import Proc
 from .channel import Channel
 from .plugin import config_plugins
 from .runner import register_runner
-from .config import config, load_config
+from .config import load_config

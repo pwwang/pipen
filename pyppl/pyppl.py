@@ -89,6 +89,7 @@ def _logo():
 	logger.pyppl('|' + r'_  ____/_  /_/ /_  ____/_  ____/_  /___'.center(SEPARATOR_LEN-2) + '|')
 	logger.pyppl('|' + r'/_/     _\__, / /_/     /_/     /_____/'.center(SEPARATOR_LEN-2) + '|')
 	logger.pyppl('|' + r'        /____/                         '.center(SEPARATOR_LEN-2) + '|')
+	logger.pyppl('|' + r''.center(SEPARATOR_LEN-2) + '|')
 	logger.pyppl('|' + r'v{}'.format(__version__).center(SEPARATOR_LEN-2) + '|')
 	logger.pyppl('|' + r''.center(SEPARATOR_LEN-2) + '|')
 	logger.pyppl('+' + r'-' * (SEPARATOR_LEN-2) + '+')
@@ -106,9 +107,13 @@ def _logo():
 def _parse_kwconfigs(kwconfigs):
 	"""Allow logger = {'level': 'debug'} to be specified as logger_level = 'debug'"""
 	ret = {}
+	if isinstance(kwconfigs.get('runner'), str):
+		ret['runner'] = dict(runner = kwconfigs.pop('runner'))
 	for key, val in kwconfigs.items():
 		if key[:7] == 'logger_':
 			ret.setdefault('logger', {})[key[7:]] = val
+		elif key[:7] == 'runner_':
+			ret.setdefault('runner', {})[key[7:]] = val
 		elif key[:5] == 'envs_':
 			ret.setdefault('envs', {})[key[5:]] = val
 		elif key[:14] == 'plugin_config_':
@@ -136,6 +141,7 @@ class PyPPL:
 				- `PyPPL(logger_level = 'debug')`
 		"""
 		kwconfigs = _parse_kwconfigs(kwconfigs)
+		print(kwconfigs)
 		# check if keys in kwconfigs are valid
 		config = config or {}
 		config.update(kwconfigs)
@@ -149,6 +155,9 @@ class PyPPL:
 			raise PyPPLNameError(
 				'Pipeline name {!r}({!r}) has been used.'.format(self.name, filename))
 		PIPELINES[filename] = self
+
+		if config_files and not isinstance(config_files, (tuple, list)):
+			config_files = [config_files]
 
 		self.runtime_config = Config()
 		self.runtime_config._load(dict(default = config), *(config_files or ()))

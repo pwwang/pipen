@@ -207,6 +207,8 @@ class Job:
 			self.input  # pylint: disable=pointless-statement
 			self.output # pylint: disable=pointless-statement
 			self.script # pylint: disable=pointless-statement
+
+			pluginmgr.hook.job_prebuild(job = self)
 			# check cache
 			outfile = self.dir / 'job.stdout'
 			errfile = self.dir / 'job.stderr'
@@ -233,6 +235,7 @@ class Job:
 				fs.move(errfile, errfile_bak)
 				errfile.write_text('')
 
+			pluginmgr.hook.job_build(job = self, status = 'succeeded')
 			return True
 		except BaseException as ex:
 			self.logger('Failed to build job: %s: %s' % (type(ex).__name__, ex), level = 'debug')

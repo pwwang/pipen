@@ -209,9 +209,9 @@ def test_file_formatter():
 
 def test_logger_init_levels():
 	assert init_levels('TITLE', []) == {'PROCESS'}
-	assert init_levels(True, []) == {'PROCESS', 'DONE', 'DEPENDS', 'WORKDIR', 'CACHED', 'P_DONE', 'INFO',
+	assert init_levels(True, []) == {'PROCESS', 'DONE', 'DEPENDS', 'WORKDIR', 'CACHED', 'P_DONE', 'INFO', 'CONFIG', 'PLUGIN', 'PYPPL', 'TIPS',
 		'BLDING', 'SBMTING', 'RUNNING', 'JOBDONE', 'KILLING', 'RTRYING', 'ERROR', 'WARNING'}
-	assert init_levels('DEBUG', []) == {'BLDING', 'CACHED', 'DEBUG', 'DEPENDS', 'ERROR', 'INFO', 'JOBDONE', 'KILLING', 'PROCESS', 'P_DONE', 'RTRYING', 'RUNNING', 'SBMTING', 'WARNING', 'WORKDIR', 'DONE'}
+	assert init_levels('DEBUG', []) == {'BLDING', 'CACHED', 'DEBUG', 'DEPENDS', 'ERROR', 'INFO', 'JOBDONE', 'KILLING', 'PROCESS', 'P_DONE', 'RTRYING', 'RUNNING', 'SBMTING', 'WARNING', 'WORKDIR', 'DONE', 'CONFIG', 'PLUGIN', 'PYPPL', 'TIPS'}
 	assert init_levels('CRITICAL', ['+DEBUG', '-WORKDIR']) == {'BLDING', 'CACHED', 'DEBUG', 'DEPENDS', 'INFO', 'JOBDONE', 'KILLING', 'PROCESS', 'P_DONE', 'RUNNING', 'SBMTING', 'DONE'}
 	assert init_levels('TITLE', 'DEBUG') == {'PROCESS', 'DEBUG'}
 

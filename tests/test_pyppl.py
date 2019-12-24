@@ -178,9 +178,12 @@ def test_run(caplog):
 	caplog.clear()
 	pRun2 = pRun1.copy()
 	# plugins regiested
-	PyPPL(logger_level = 'debug', envs_k = 'k').start(pRun2).run()
+	PyPPL(logger_level = 'TITLE', config_files = dict(default = {}),
+		runner = 'local', runner_sge_q = '1-day', envs_k = 'k').start(pRun2).run()
 	assert 'pRun2 (pRun1): No description.' in caplog.text
 	assert pRun2.envs.k == 'k'
+	assert pRun2.runner.runner == 'local'
+	assert pRun2.runner.sge_q == '1-day'
 
 def test_plugin_config_in_construct():
 	class pyppl_pconfig:

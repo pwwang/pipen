@@ -112,6 +112,15 @@ def job_succeeded(job):
 	"""
 
 @hookspec
+def job_prebuild(job):
+	"""@API
+	PLUGIN API
+	Before a job starts to build
+	@params:
+		job (Job): The Job instance
+	"""
+
+@hookspec
 def job_build(job, status):
 	"""@API
 	PLUGIN API

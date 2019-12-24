@@ -43,8 +43,8 @@ LEVEL_GROUPS = dict(
 	CRITICAL = ['INFO', 'BLDING', 'SBMTING', 'RUNNING', 'JOBDONE', 'KILLING'],
 	ERROR    = ['ERROR'],
 	WARNING  = ['WARNING', 'RTRYING'],
+	INFO     = ['PYPPL', 'PLUGIN', 'TIPS', 'CONFIG'],
 	DEBUG    = ['DEBUG'],
-	INFO     = []
 )
 
 THEMES = dict(
