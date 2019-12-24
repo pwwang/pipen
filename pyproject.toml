@@ -34,9 +34,7 @@ python-varname = "*"
 pytest = "*"
 pytest-cov = "*"
 jinja2 = "^2.0.0"
-pyyaml = "^5.0.0"
 faker = "^1.0.0"
-graphviz = "^0.11"
 toml = "^0.10"
 
 [tool.poetry.scripts]
