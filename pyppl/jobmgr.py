@@ -248,10 +248,10 @@ class Jobmgr:
 		# kill running jobs
 		with self.lock:
 
-			failed_jobs =	self._get_jobs_by_states(STATES.ENDFAILED) or \
-							self._get_jobs_by_states(STATES.DONEFAILED) or \
-							self._get_jobs_by_states(STATES.SUBMITFAILED) or \
-							self._get_jobs_by_states(STATES.BUILTFAILED)
+			# failed_jobs =	self._get_jobs_by_states(STATES.ENDFAILED) or \
+			# 				self._get_jobs_by_states(STATES.DONEFAILED) or \
+			# 				self._get_jobs_by_states(STATES.SUBMITFAILED) or \
+			# 				self._get_jobs_by_states(STATES.BUILTFAILED)
 
 			running_jobs = self._get_jobs_by_states(
 				# all possible states to go to next steps
