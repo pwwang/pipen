@@ -1,4 +1,4 @@
-"""Show PyPPL logo, version and loaded plugins and runners."""
+"""Show PyPPL logo, version and loaded plugins and runners, based on default configurations."""
 from ..plugin import hookimpl
 from ..pyppl import _logo
 

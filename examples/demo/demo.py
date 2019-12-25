@@ -1,4 +1,4 @@
-from pyppl import PyPPL, Channel
+from pyppl import PyPPL, Channel, config_plugins
 # import predefined processes
 from TCGAprocs import pBamToFastq, pAlignment, pBamSort, pBamMerge, pMarkDups
 

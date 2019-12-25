@@ -102,7 +102,10 @@ def _logo():
 			plug, plugin.__version__ if hasattr(plugin, '__version__') else 'Unknown')
 	for rname, rplugin in RUNNERS.items():
 		logger.plugin('Loaded runner: %s (v%s)',
-			rname, rplugin.__version__ if hasattr(rplugin, '__version__') else 'Unknown')
+			rname,
+			__version__ + '.builtin' if rname == 'local' else \
+				rplugin.__version__ if hasattr(rplugin, '__version__') else \
+				'Unknown')
 
 def _parse_kwconfigs(kwconfigs):
 	"""Allow logger = {'level': 'debug'} to be specified as logger_level = 'debug'"""
@@ -198,7 +201,9 @@ class PyPPL:
 				del defconfig._protected['cached'][
 					list(defconfig._protected['cached'].keys())[0]]
 				defconfig._load(self.runtime_config)
-				defconfig._use(profile, raise_exc = True)
+				if profile not in defconfig._profiles:
+					defconfig._load({profile: dict(runner = profile)})
+				defconfig._use(profile)
 				defconfig.pop('logger', None)
 				defconfig.pop('plugins', None)
 				for proc in self.procs:

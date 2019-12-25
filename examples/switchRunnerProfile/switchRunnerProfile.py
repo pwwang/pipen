@@ -3,7 +3,6 @@ from pyppl import PyPPL, Proc
 pHeatmap           = Proc(desc = 'Draw heatmap.')
 pHeatmap.input     = {'seed': [1,2,3,4,5]}
 pHeatmap.output    = "outfile:file:heatmap{{i.seed}}.png"
-pHeatmap.exdir     = "./export"
 pHeatmap.args.ncol = 10
 pHeatmap.args.nrow = 10
 pHeatmap.lang      = 'Rscript' # or /path/to/Rscript if it's not in $PATH
@@ -15,4 +14,4 @@ heatmap(mat)
 dev.off()
 """
 
-PyPPL(cfgfile = './profiles.json').start(pHeatmap).run('local5')
+PyPPL(config_files = ['./PyPPL.toml']).start(pHeatmap).run('local5')

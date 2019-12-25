@@ -8,6 +8,7 @@ from multiprocessing import cpu_count
 from diot import Diot
 from simpleconf import Config
 from .plugin import config_plugins, pluginmgr, PMNAME
+from .runner import runnermgr, RMNAME, register_runner
 
 # priority: lowest -> highest
 DEFAULT_CFGFILES = ('~/.PyPPL.toml', './.PyPPL.toml', 'PYPPL.osenv')
@@ -15,7 +16,7 @@ DEFAULT_CFGFILES = ('~/.PyPPL.toml', './.PyPPL.toml', 'PYPPL.osenv')
 # default configurations
 DEFAULT_CONFIG = dict(default = dict(
 	# plugins
-	plugins = ['no:flowchart', 'no:report'],
+	plugins = [],
 	# logger options
 	logger = dict(
 		file       = None,
@@ -68,5 +69,9 @@ def load_config(default_config, *config_files):
 
 load_config(*DEFAULT_CFGFILES)
 pluginmgr.load_setuptools_entrypoints(PMNAME)
+runnermgr.load_setuptools_entrypoints(RMNAME)
+for runner in runnermgr.get_plugins():
+	# save runners in memory
+	register_runner(runner)
 config_plugins(*config.plugins)
 pluginmgr.hook.setup(config = config)

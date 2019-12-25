@@ -18,6 +18,7 @@ from .config import config
 from .logger import logger
 from .jobmgr import STATES, Jobmgr
 from .plugin import pluginmgr, PluginConfig
+from .runner import runnermgr
 from .pyppl import _register_proc
 
 @attr_property_class
@@ -322,7 +323,11 @@ class Proc:
 
 	def _run_jobs(self):
 		logger.debug('Queue starts ...', proc = self.id)
-		Jobmgr(self.jobs).start()
+		jobmgr = Jobmgr(self.jobs)
+		# we need to jobs to be initialized, as during initialization
+		# use_runner called, and we only initialize that runner
+		runnermgr.hook.runner_init(proc = self)
+		jobmgr.start()
 
 		if self.jobs:
 			# pylint: disable=unsubscriptable-object

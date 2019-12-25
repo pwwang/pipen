@@ -310,15 +310,14 @@ def job_script_parts(this, value):
 	elif not fs.isfile(realsfile):
 		realsfile.write_text(script)
 
-	ret = runnermgr.hook.script_parts(job = this)
 	base = Diot(header = '',
 		pre = this.proc.runner.get(this.runner + '_prescript', ''),
 		post = this.proc.runner.get(this.runner + '_postscript', ''),
 		saveoe = True,
 		command = [cmdy._shquote(x) for x in chmod_x(realsfile)]
 	)
-	base.update(ret or {})
-	return base
+	ret = runnermgr.hook.script_parts(job = this, base = base)
+	return ret or base
 
 def job_logger(this, value):
 	"""@API

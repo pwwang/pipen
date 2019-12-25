@@ -7,9 +7,13 @@ from pyparam import commands
 from ..plugin import config_plugins, pluginmgr
 from .. import __version__
 
-config_plugins(*[importlib.import_module('.' + cmdfile.stem, __name__)
+console_plugins = [importlib.import_module('.' + cmdfile.stem, __name__)
 	for cmdfile in Path(__file__).parent.glob('*.py')
-	if cmdfile.stem[:1] != '_'])
+	if cmdfile.stem[:1] != '_']
+for console_plugin in console_plugins:
+	console_plugin.__version__ = __version__ + '.builtin'
+
+config_plugins(*console_plugins)
 
 commands._desc = 'Command Line Tool for PyPPL v{}'.format(__version__)
 pluginmgr.hook.cli_addcmd(commands = commands)
