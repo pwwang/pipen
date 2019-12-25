@@ -15,14 +15,14 @@ def cli_execcmd(command, opts): # pylint: disable=unused-argument
 	if command == 'plugins':
 		logger.init({'level': 'notset'})
 		for plugin in sorted(pluginmgr.get_plugins(),
-			key = lambda plug: pluginmgr.get_name(plug)):
+			key = pluginmgr.get_name):
 
 			logger.plugin('Plugin %s: v%s',
 				pluginmgr.get_name(plugin),
 				'Unknown' if not hasattr(plugin, '__version__') else plugin.__version__)
 
 		for plugin in sorted(runnermgr.get_plugins(),
-			key = lambda plug: _runner_name(plug)):
+			key = _runner_name):
 
 			logger.plugin('Runner %s: v%s',
 				_runner_name(plugin),
