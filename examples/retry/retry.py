@@ -4,6 +4,7 @@ from pyppl import PyPPL, Proc
 
 pRetry         = Proc(desc = 'Retry when error happens.')
 pRetry.input   = {"in": [0, 1]}
+pRetry.output  = "out:var:1"
 pRetry.errhow  = 'retry'
 pRetry.forks   = 2
 pRetry.errntry = 10

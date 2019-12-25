@@ -5,8 +5,7 @@ from faker import Faker
 from diot import Diot, OrderedDiot
 from pyppl.utils import funcsig, format_secs, always_list, \
 	brief_list, chmod_x, filesig, ThreadEx, ThreadPool, \
-	PQueue, _MultiDestTransition, StateMachine, expand_numbers, \
-	try_deepcopy
+	PQueue, _MultiDestTransition, StateMachine, try_deepcopy
 # load fixtures
 pytest_plugins = ["tests.fixt_utils"]
 
@@ -142,14 +141,6 @@ def test_statemachine():
 		'heat', 'solid', {'turntoliquid': 'liquid', 'turntogas': 'gas'}, depends_on = 'depends_on')
 	model.heat()
 	assert model.state == 'liquid'
-
-@pytest.mark.parametrize('numbers,expt',[
-	('1,2,3,4', [1,2,3,4]),
-	('1-4', [1,2,3,4]),
-	('1-4,7,8-10', [1,2,3,4,7,8,9,10]),
-])
-def test_expand_numbers(numbers, expt):
-	assert expand_numbers(numbers) == expt
 
 @pytest.mark.parametrize('val,expt,asserts', [
 	(None, None, ['is']),

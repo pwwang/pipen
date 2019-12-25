@@ -235,7 +235,7 @@ def job_data(this, value):
 	@returns:
 		(dict): The data used to render the templates.
 	"""
-	ret  = Diot(
+	return Diot(
 		job = dict(
 			index    = this.index,
 			indir    = str(this.dir / 'input'),
@@ -245,10 +245,10 @@ def job_data(this, value):
 			errfile  = str(this.dir / 'job.stderr'),
 			pidfile  = str(this.dir / 'job.pid'),
 			cachedir = str(this.dir / 'output/.jobcache')),
-		i = {},
-		o = {})
-	ret.proc = this.proc
-	return ret
+		i    = {},
+		o    = {},
+		proc = this.proc,
+		args = this.proc.args)
 
 def job_script(this, value):
 	"""Try to create the script while accessing it"""
@@ -310,15 +310,14 @@ def job_script_parts(this, value):
 	elif not fs.isfile(realsfile):
 		realsfile.write_text(script)
 
-	ret = runnermgr.hook.script_parts(job = this)
 	base = Diot(header = '',
 		pre = this.proc.runner.get(this.runner + '_prescript', ''),
 		post = this.proc.runner.get(this.runner + '_postscript', ''),
 		saveoe = True,
 		command = [cmdy._shquote(x) for x in chmod_x(realsfile)]
 	)
-	base.update(ret or {})
-	return base
+	ret = runnermgr.hook.script_parts(job = this, base = base)
+	return ret or base
 
 def job_logger(this, value):
 	"""@API

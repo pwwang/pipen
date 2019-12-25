@@ -105,7 +105,7 @@ def test_runtime_config():
 	pRuntimeConfig = Proc()
 	pRuntimeConfig.add_config('test_a')
 	pRuntimeConfig.add_config('test_b', runtime = 'ignore')
-	pRuntimeConfig.plugin_config.test_b = 3
+	pRuntimeConfig.config.test_b = 3
 	runtime_config = Config()
 	runtime_config._load({'default': dict(
 		tag      = 'uniformed_tag',
@@ -117,7 +117,7 @@ def test_runtime_config():
 		lang     = 'python',
 		runner   = 'sge',
 		template = 'jinja2',
-		plugin_config = {'test_a': 1, 'test_b': 10}
+		config = {'test_a': 1, 'test_b': 10}
 	)})
 	pRuntimeConfig.runtime_config = runtime_config
 	assert pRuntimeConfig.runtime_config == runtime_config
@@ -128,8 +128,8 @@ def test_runtime_config():
 	assert pRuntimeConfig.envs == {'a': 1}
 	assert pRuntimeConfig.errhow == 'retry'
 	assert pRuntimeConfig.errntry == 10
-	assert pRuntimeConfig.plugin_config.test_a == 1
-	assert pRuntimeConfig.plugin_config.test_b == 3
+	assert pRuntimeConfig.config.test_a == 1
+	assert pRuntimeConfig.config.test_b == 3
 	assert pRuntimeConfig.lang == cmdy.which('python').strip()
 	assert pRuntimeConfig.runner == {'runner': 'sge'}
 	assert pRuntimeConfig.template is TemplateJinja2

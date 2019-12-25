@@ -14,10 +14,11 @@ from ._proc import proc_depends_setter, proc_input, proc_output, proc_script, \
 	proc_runtime_config_setter, proc_id_setter, proc_tag_setter, \
 	proc_channel, proc_procset, proc_setter_count
 from .utils import try_deepcopy, brief_list
-from .config import config
+from .config import config as default_config
 from .logger import logger
 from .jobmgr import STATES, Jobmgr
 from .plugin import pluginmgr, PluginConfig
+from .runner import runnermgr
 from .pyppl import _register_proc
 
 @attr_property_class
@@ -40,7 +41,7 @@ class Proc:
 		doc     = "@API\nThe identity of the process")
 	# The tag of the process
 	tag = attr_property(
-		default = config.tag,
+		default = default_config.tag,
 		setter  = proc_tag_setter,
 		kw_only = True,
 		repr    = False,
@@ -57,7 +58,7 @@ class Proc:
 		repr    = False)
 	# caching
 	cache = attr_property(
-		default = config.cache,
+		default = default_config.cache,
 		kw_only = True,
 		repr    = False,
 		setter  = partial(proc_setter_count, name = 'cache'),
@@ -82,30 +83,30 @@ class Proc:
 		setter  = proc_depends_setter, raw = '_')
 	# dirsig
 	dirsig = attr_property(
-		default = config.dirsig,
+		default = default_config.dirsig,
 		kw_only = True,
 		repr    = False,
 		setter  = partial(proc_setter_count, name = 'dirsig'))
 	# envs used to render templates
 	envs = attr.ib(
-		default = try_deepcopy(config.envs),
+		default = try_deepcopy(default_config.envs),
 		kw_only = True,
 		repr    = False)
 	# how to deal with errors
 	errhow = attr_property(
-		default = config.errhow,
+		default = default_config.errhow,
 		kw_only = True,
 		repr    = False,
 		setter  = partial(proc_setter_count, name = 'errhow'))
 	# how many times to retry if errored
 	errntry = attr_property(
-		default = config.errntry,
+		default = default_config.errntry,
 		kw_only = True,
 		repr    = False,
 		setter  = partial(proc_setter_count, name = 'errntry'))
 	# forks
 	forks = attr_property(
-		default           = config.forks,
+		default           = default_config.forks,
 		converter         = int,
 		converter_runtime = True,
 		kw_only           = True,
@@ -127,7 +128,7 @@ class Proc:
 		getter  = proc_jobs)
 	# language
 	lang = attr_property(
-		default = config.lang,
+		default = default_config.lang,
 		kw_only = True,
 		repr    = False,
 		setter  = partial(proc_setter_count, name = 'lang'),
@@ -152,7 +153,7 @@ class Proc:
 		getter = lambda this, value: [])
 	# nthread
 	nthread = attr.ib(
-		default   = config.nthread,
+		default   = default_config.nthread,
 		converter = int,
 		kw_only   = True,
 		repr      = False)
@@ -169,15 +170,15 @@ class Proc:
 		raw     = '_',
 		repr    = False)
 	# plugin configs
-	plugin_config = attr_property(
+	config = attr_property(
 		init    = False,
-		getter  = lambda this, value: PluginConfig(config.plugin_config),
+		getter  = lambda this, value: PluginConfig(default_config.config),
 		kw_only = True,
 		setter  = False,
 		repr    = False)
 	# pipeline directory
 	ppldir = attr_property(
-		default           = config.ppldir,
+		default           = default_config.ppldir,
 		converter         = Path,
 		kw_only           = True,
 		repr              = False,
@@ -190,7 +191,7 @@ class Proc:
 		getter = proc_procset)
 	# runner
 	runner = attr_property(
-		default = config.runner,
+		default = default_config.runner,
 		kw_only = True,
 		repr    = False,
 		setter  = partial(proc_setter_count, name = 'runner'),
@@ -227,7 +228,7 @@ class Proc:
 		setter = False)
 	# template
 	template = attr_property(
-		default = config.template,
+		default = default_config.template,
 		kw_only = True,
 		repr    = False,
 		setter  = partial(proc_setter_count, name = 'template'),
@@ -253,10 +254,10 @@ class Proc:
 		self.input
 		self.output
 		self.suffix
+		logger.workdir(self.workdir, proc = self.id)
 		ret = pluginmgr.hook.proc_prerun(proc = self)
 		# plugins can stop process from running
 		if ret is not False:
-			logger.workdir(self.workdir, proc = self.id)
 			self._save_settings()
 			self._run_jobs()
 
@@ -322,7 +323,11 @@ class Proc:
 
 	def _run_jobs(self):
 		logger.debug('Queue starts ...', proc = self.id)
-		Jobmgr(self.jobs).start()
+		jobmgr = Jobmgr(self.jobs)
+		# we need to jobs to be initialized, as during initialization
+		# use_runner called, and we only initialize that runner
+		runnermgr.hook.runner_init(proc = self)
+		jobmgr.start()
 
 		if self.jobs:
 			# pylint: disable=unsubscriptable-object
@@ -360,4 +365,4 @@ class Proc:
 				- update: Update the value if it's a dict otherwise override its
 				- ignore: Ignore the value from runtime_config
 		"""
-		self.plugin_config.add(name, default, converter, runtime)
+		self.config.add(name, default, converter, runtime)

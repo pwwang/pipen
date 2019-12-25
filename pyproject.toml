@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "PyPPL"
-version = "3.0.0"
+version = "3.0.0pre1"
 description = "A Python PiPeLine framework"
 authors = [ "pwwang <pwwang@pwwang.com>",]
 license = "MIT"
@@ -13,6 +13,8 @@ homepage = "https://github.com/pwwang/PyPPL"
 repository = "https://github.com/pwwang/PyPPL"
 [[tool.poetry.packages]]
 include = "pyppl/*.py"
+[[tool.poetry.packages]]
+include = "pyppl/console/*.py"
 
 [tool.poetry.dependencies]
 python = "^3.6"
@@ -21,21 +23,28 @@ pyparam = "*"
 filelock = "^3.0.0"
 python-simpleconf = "*"
 cmdy = "*"
-pluggy = "^0.12"
+pluggy = "0.*"
 colorama = "^0.4.1"
 psutil = "^5.6"
-transitions = "^0.6.0"
+transitions = "^0.7"
 diot = "*"
 attrs = "^19.3"
 attr_property = "*"
 python-varname = "*"
+pyppl_flowchart = "*"
+pyppl_export = "*"
+pyppl_echo = "*"
+pyppl_rich = "*"
+pyppl_strict = "*"
+pyppl_lock = "*"
+pyppl_runners = "*"
+toml = "^0.10"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
 pytest-cov = "*"
 jinja2 = "^2.0.0"
 faker = "^1.0.0"
-toml = "^0.10"
 
 [tool.poetry.scripts]
 pyppl = "pyppl.console:main"

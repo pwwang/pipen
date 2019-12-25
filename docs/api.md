@@ -12,12 +12,12 @@
 !!! example "class: `Template`"
 
   Base class wrapper to wrap template for PyPPL
-
+  
 
   !!! abstract "method: `__init__(self, source, **envs)`"
 
     Template construct
-
+    
 
   !!! abstract "method: `register_envs(self, **envs)`"
 
@@ -38,7 +38,7 @@
 !!! example "class: `TemplateJinja2`"
 
   Jinja2 template wrapper
-
+  
 
   !!! abstract "method: `register_envs(self, **envs)`"
 
@@ -59,7 +59,7 @@
 !!! example "class: `TemplateLiquid`"
 
   liquidpy template wrapper.
-
+  
 
   !!! abstract "method: `register_envs(self, **envs)`"
 
@@ -86,7 +86,7 @@
 !!! example "class: `ProcSet`"
 
   The ProcSet for a set of processes
-
+  
 
   !!! abstract "method: `__init__(self, *procs)`"
 
@@ -161,7 +161,7 @@
   !!! abstract "method: `restore_states(self)`"
 
     Restore the initial state of a procset
-
+    
 ## pyppl.proc
 
 
@@ -172,7 +172,7 @@
 !!! example "class: `Proc`"
 
   Process of a pipeline
-
+  
 
   !!! note "property: `cache`"
 
@@ -283,19 +283,6 @@
 
       and the script file as the last element
 
-!!! abstract "method: `expand_numbers(numbers)`"
-
-  Expand a descriptive numbers like '0,3-5,7' into read numbers:
-  [0,3,4,5,7]
-
-  - **params**
-
-    - `numbers (str)`:  The string of numbers to expand.
-
-  - **returns**
-
-      (list) The real numbers
-
 !!! abstract "method: `filesig(filepath, dirsig)`"
 
   Generate a signature for a file
@@ -364,7 +351,7 @@
 !!! example "class: `PQueue`"
 
   A modified PriorityQueue, which allows jobs to be submitted in batch
-
+  
 
   !!! abstract "method: `__init__(self, maxsize, batch_len)`"
 
@@ -478,12 +465,12 @@
   !!! abstract "method: `build(self)`"
 
     Initiate a job, make directory and prepare input, output and script.
-
+    
 
   !!! abstract "method: `cache(self)`"
 
     Truly cache the job (by signature)
-
+    
 
   !!! abstract "method: `done(self, cached, status)`"
 
@@ -548,7 +535,7 @@
 !!! example "class: `PyPPL`"
 
   The class for the whole pipeline
-
+  
 
   !!! abstract "method: `__init__(self, config, name, config_files, **kwconfigs)`"
 
@@ -605,7 +592,7 @@
 !!! example "class: `Channel`"
 
   The channen class, extended from `list`
-
+  
 
   !!! abstract "method: `attach(self, *names)`"
 
@@ -1341,6 +1328,30 @@
 !!! example "class: `RunnerTypeError`"
 
   Wrong type of runner
+## pyppl.config
+
+
+- **desc**
+
+  Configuration for PyPPL
+
+- **variables**
+
+  - `DEFAULT_CFGFILES (tuple)`:  default configuration files
+
+  - `DEFAULT_CONFIG (dict)`:  default configurations to be loaded
+
+  - `config (dict)`:  The default configuration that will be used in the whole session
+
+!!! abstract "method: `load_config(default_config, *config_files)`"
+
+  Load the configurations
+
+  - **params**
+
+    - `default_config (dict|path)`:  A configuration dictionary or a path to a configuration file
+
+    - `*config_files`:  A list of configuration or configuration files
 ## pyppl.jobmgr
 
 
@@ -1395,7 +1406,7 @@
   !!! abstract "method: `start(self)`"
 
     Start the queue.
-
+    
 
   !!! abstract "method: `worker(self)`"
 
@@ -1525,6 +1536,15 @@
         - 'running': The job is still running
 
         - 'done': Polling is done, rcfile is generated
+
+!!! abstract "method: `job_prebuild(job)`"
+
+  PLUGIN API
+  Before a job starts to build
+
+  - **params**
+
+    - `job (Job)`:  The Job instance
 
 !!! abstract "method: `job_submit(job, status)`"
 
@@ -1744,7 +1764,7 @@
 !!! example "class: `Logger`"
 
   A wrapper of logger
-
+  
 
   !!! abstract "method: `__init__(self, name, bake)`"
 
@@ -1845,7 +1865,7 @@
 
 - **variables**
 
-  - `PMNAME (str)`:  The name of the runner manager
+  - `RMNAME (str)`:  The name of the runner manager
 
   - `RUNNERS (dict)`:  All ever registered runners
 
@@ -1899,7 +1919,16 @@
 
     - `name (str)`:  The name of the runner to registered
 
-!!! abstract "method: `script_parts(job)`"
+!!! abstract "method: `runner_init(proc)`"
+
+  RUNNER API
+  Initiate runner
+
+  - **params**
+
+    - `proc (Proc)`:  The Proc instance
+
+!!! abstract "method: `script_parts(job, base)`"
 
   RUNNER API
   Overwrite script parts
@@ -1907,6 +1936,8 @@
   - **params**
 
     - `job (Job)`:  the job instance
+
+    - `base (Diot)`:  The base script parts
 
 !!! abstract "method: `submit(job)`"
 

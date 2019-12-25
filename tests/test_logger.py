@@ -208,12 +208,13 @@ def test_file_formatter():
 	assert ffmt.format(record) == 'This is logging record2.'
 
 def test_logger_init_levels():
-	assert init_levels('TITLE', []) == {'PROCESS'}
-	assert init_levels(True, []) == {'PROCESS', 'DONE', 'DEPENDS', 'WORKDIR', 'CACHED', 'P_DONE', 'INFO', 'CONFIG', 'PLUGIN', 'PYPPL', 'TIPS',
-		'BLDING', 'SBMTING', 'RUNNING', 'JOBDONE', 'KILLING', 'RTRYING', 'ERROR', 'WARNING'}
-	assert init_levels('DEBUG', []) == {'BLDING', 'CACHED', 'DEBUG', 'DEPENDS', 'ERROR', 'INFO', 'JOBDONE', 'KILLING', 'PROCESS', 'P_DONE', 'RTRYING', 'RUNNING', 'SBMTING', 'WARNING', 'WORKDIR', 'DONE', 'CONFIG', 'PLUGIN', 'PYPPL', 'TIPS'}
-	assert init_levels('CRITICAL', ['+DEBUG', '-WORKDIR']) == {'BLDING', 'CACHED', 'DEBUG', 'DEPENDS', 'INFO', 'JOBDONE', 'KILLING', 'PROCESS', 'P_DONE', 'RUNNING', 'SBMTING', 'DONE'}
-	assert init_levels('TITLE', 'DEBUG') == {'PROCESS', 'DEBUG'}
+	# using issuperset instead of ==, because plugins can add levels
+	assert init_levels('TITLE', []).issuperset({'PROCESS'})
+	assert init_levels(True, []).issuperset({'PROCESS', 'DONE', 'DEPENDS', 'WORKDIR', 'CACHED', 'P_DONE', 'INFO', 'CONFIG', 'PLUGIN', 'PYPPL', 'TIPS',
+		'BLDING', 'SBMTING', 'RUNNING', 'JOBDONE', 'KILLING', 'RTRYING', 'ERROR', 'WARNING'})
+	assert init_levels('DEBUG', []).issuperset({'BLDING', 'CACHED', 'DEBUG', 'DEPENDS', 'ERROR', 'INFO', 'JOBDONE', 'KILLING', 'PROCESS', 'P_DONE', 'RTRYING', 'RUNNING', 'SBMTING', 'WARNING', 'WORKDIR', 'DONE', 'CONFIG', 'PLUGIN', 'PYPPL', 'TIPS'})
+	assert init_levels('CRITICAL', ['+DEBUG', '-WORKDIR']).issuperset({'BLDING', 'CACHED', 'DEBUG', 'DEPENDS', 'INFO', 'JOBDONE', 'KILLING', 'PROCESS', 'P_DONE', 'RUNNING', 'SBMTING', 'DONE'})
+	assert init_levels('TITLE', 'DEBUG').issuperset({'PROCESS', 'DEBUG'})
 
 def test_logger_init(tmpdir):
 	logger = Logger(bake = True)

@@ -213,7 +213,6 @@ def cli_execcmd(command, opts):
 
 pluginmgr = pluggy.PluginManager(PMNAME)
 pluginmgr.add_hookspecs(sys.modules[__name__])
-pluginmgr.load_setuptools_entrypoints(PMNAME)
 
 def _get_plugin(name):
 	"""

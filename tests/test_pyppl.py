@@ -172,7 +172,7 @@ def test_run(caplog):
 	pRun1 = Proc()
 	pRun1.input = {'a:var': [1]}
 	pRun1.output = 'a:var:1'
-	PyPPL(plugins = [pyppl_stoprun()]).start(pRun1).run()
+	PyPPL(plugins = [pyppl_stoprun()]).start(pRun1).run('local')
 	assert 'pRun1: No description.' in caplog.text
 
 	caplog.clear()
@@ -185,7 +185,7 @@ def test_run(caplog):
 	assert pRun2.runner.runner == 'local'
 	assert pRun2.runner.sge_q == '1-day'
 
-def test_plugin_config_in_construct():
+def test_config_in_construct():
 	class pyppl_pconfig:
 		@hookimpl
 		def proc_init(self, proc):
@@ -199,8 +199,8 @@ def test_plugin_config_in_construct():
 	pPCIC = Proc()
 	pPCIC.input = {'a:var': [1]}
 	pPCIC.output = 'a:var:1'
-	PyPPL(plugin_config_x = 10).start(pPCIC).run()
-	assert pPCIC.plugin_config.x == 10
+	PyPPL(config_x = 10).start(pPCIC).run()
+	assert pPCIC.config.x == 10
 
 def test_add_method(capsys):
 	ppl = PyPPL()

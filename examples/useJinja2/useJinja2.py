@@ -12,7 +12,6 @@ pSort.output   = "outfile:file:{{ fn(i.infile) }}.sorted"
 pSort.forks    = 5
 # You have to have Jinja2 installed (pip install Jinja2)
 pSort.template = 'Jinja2'
-pSort.exdir    = './export'
 pSort.envs.fn  = fn
 pSort.script   = """
   sort -k1r {{i.infile}} > {{o.outfile}}

@@ -1,7 +1,7 @@
 """
 Make runners as plugins for PyPPL
 @variables:
-	PMNAME (str): The name of the runner manager
+	RMNAME (str): The name of the runner manager
 	RUNNERS (dict): All ever registered runners
 	DEFAULT_POLL_INTERVAL (int): The default poll interval to check job status
 	hookimpl (pluggy.HookimplMarker): The marker for runner hook Implementations
@@ -13,14 +13,23 @@ import pluggy
 import psutil
 from .exception import RunnerNoSuchRunner, RunnerMorethanOneRunnerEnabled, RunnerTypeError
 
-PMNAME = "pyppl-runner"
+RMNAME = "pyppl_runner"
 # save all runners ever registered
 RUNNERS = {}
 # poll interval to check job status
 DEFAULT_POLL_INTERVAL = .5
 
-hookimpl = pluggy.HookimplMarker(PMNAME)
-hookspec = pluggy.HookspecMarker(PMNAME)
+hookimpl = pluggy.HookimplMarker(RMNAME)
+hookspec = pluggy.HookspecMarker(RMNAME)
+
+@hookspec
+def runner_init(proc):
+	"""@API
+	RUNNER API
+	Initiate runner
+	@params:
+		proc (Proc): The Proc instance
+	"""
 
 @hookspec(firstresult = True)
 def isrunning(job):
@@ -50,17 +59,17 @@ def kill(job):
 	"""
 
 @hookspec(firstresult = True)
-def script_parts(job):
+def script_parts(job, base):
 	"""@API
 	RUNNER API
 	Overwrite script parts
 	@params:
 		job (Job): the job instance
+		base (Diot): The base script parts
 	"""
 
-runnermgr = pluggy.PluginManager(PMNAME)
+runnermgr = pluggy.PluginManager(RMNAME)
 runnermgr.add_hookspecs(sys.modules[__name__])
-runnermgr.load_setuptools_entrypoints(PMNAME)
 
 def _runner_name(runner):
 	if hasattr(runner, '__name__'):
