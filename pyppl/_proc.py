@@ -64,8 +64,8 @@ def proc_runtime_config_setter(this, value):
 	for key, val in value.items():
 		if key == 'envs':
 			this.envs.update(val)
-		elif key == 'plugin_config':
-			this.plugin_config.update(val)
+		elif key == 'config':
+			this.config.update(val)
 		elif this._setcounter.get(key) or key == 'runner':
 			continue
 		else:

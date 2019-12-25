@@ -1,6 +1,7 @@
 import pytest
 import types
 import cmdy
+from diot import Diot
 from pyppl import runner as module_runner
 from pyppl.runner import register_runner, use_runner, current_runner, hookimpl, RUNNERS, runnermgr, _runner_name, poll_interval
 from pyppl.exception import RunnerNoSuchRunner, RunnerMorethanOneRunnerEnabled, RunnerTypeError
@@ -41,6 +42,7 @@ def test_runner_name(obj, name):
 	assert _runner_name(obj) == name
 
 def test_x_runner():
+	use_runner('local')
 	assert current_runner() == 'local'
 	assert poll_interval() == .5
 	with pytest.raises(RunnerNoSuchRunner):
@@ -106,7 +108,7 @@ class Action:
 		return runnermgr.hook.submit(job = self.job)
 
 	def script_parts(self):
-		return runnermgr.hook.script_parts(job = self.job)
+		return runnermgr.hook.script_parts(job = self.job, base = Diot())
 
 def test_hook():
 	use_runner('local')

@@ -51,7 +51,7 @@ def test_init(proc_factory, caplog):
 	assert job.signature.i == {'a:var': '1'}
 	assert job.signature.o == {'out:var':'1'}
 	assert job.pid == ''
-	assert job.plugin_config == {}
+	assert job.config == {}
 
 	job.logger('HAHA', level = 'INFO', pbar = True)
 	assert 'pInit: [1/1] HAHA' in caplog.text
@@ -355,10 +355,10 @@ def test_pid(proc_factory):
 def test_add_config(proc_factory):
 	job = Job(0, proc_factory('pAddConfig'))
 	job.add_config('a')
-	assert job.plugin_config.a == None
+	assert job.config.a == None
 
 	job.add_config('b', converter = str)
-	assert job.plugin_config.b == 'None'
+	assert job.config.b == 'None'
 
 def test_is_cached(proc_factory, caplog):
 	job = Job(0, proc_factory('pIsCached'))

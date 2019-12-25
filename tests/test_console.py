@@ -115,6 +115,12 @@ def test_clean(tmp_path):
 	assert 'PyPPL.pConsoleProc2.clean1' in cmd.stderr
 
 	wdir = get_ppldir(tmp_path, tag = 'clean2')
-	cmdy.mv(next(wdir.glob('PyPPL.pConsoleProc2.clean2.*')), wdir/'PyPPL.pConsoleProc1.clean2.suffix')
+	wdir.joinpath('PyPPL.pConsoleProc1.clean2.suffix').mkdir()
 	cmd = pyppl.clean(wdir = wdir, one = True, error = False, force = True)
-	assert cmd.stderr.count('Removed!') == 1 # only one removed
+	assert cmd.stderr.count('Removed!') == 1 # only one for each remained
+
+def test_logo():
+	assert 'Loaded plugin: pyppl.console.logo' in pyppl.logo().stderr
+
+def test_plugins():
+	assert 'Plugin pyppl.console.clean' in pyppl.plugins().stderr

@@ -119,8 +119,8 @@ def _parse_kwconfigs(kwconfigs):
 			ret.setdefault('runner', {})[key[7:]] = val
 		elif key[:5] == 'envs_':
 			ret.setdefault('envs', {})[key[5:]] = val
-		elif key[:14] == 'plugin_config_':
-			ret.setdefault('plugin_config', {})[key[14:]] = val
+		elif key[:7] == 'config_':
+			ret.setdefault('config', {})[key[7:]] = val
 		else:
 			ret[key] = val
 	return ret
@@ -171,8 +171,8 @@ class PyPPL:
 		logger.init(logger_config)
 		del logger_config
 
-		plugin_config = self.runtime_config.pop('plugins', [])
-		config_plugins(*plugin_config)
+		config = self.runtime_config.pop('plugins', [])
+		config_plugins(*config)
 
 		_logo()
 		logger.pyppl('~' * SEPARATOR_LEN)
@@ -195,11 +195,14 @@ class PyPPL:
 
 		# plugins can stop pipeling being running
 		if ret is not False:
-			with default_config._with(profile = profile, copy = True) as defconfig:
-				# we should remove the DEFAULT_CONFIG
+			with default_config._with(profile = profile,
+				base = '__nonexist_profile__', copy = True) as defconfig:
+				# we should remove the default profile
 				# otherwise, some configs will be overwritten by it again
-				del defconfig._protected['cached'][
-					list(defconfig._protected['cached'].keys())[0]]
+				for key, cached in defconfig._protected['cached'].items():
+					defconfig._protected['cached'][key] = {
+						k: v for k, v in cached.items() if k != 'default'
+					}
 				defconfig._load(self.runtime_config)
 				if profile not in defconfig._profiles:
 					defconfig._load({profile: dict(runner = profile)})

@@ -31,7 +31,7 @@ def test_disable_plugin():
 def test_config_plugins():
 	plugin = PyPPLPlugin()
 	pluginmgr.register(plugin)
-	config_plugins('no:plugin')
+	config_plugins('no:plugin', 'no:x')
 	assert not pluginmgr.is_registered(plugin)
 	with pytest.raises(PluginNoSuchPlugin):
 		config_plugins('plugin')

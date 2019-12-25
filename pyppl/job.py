@@ -99,7 +99,7 @@ class Job:
 		repr   = False,
 		getter = job_logger)
 	# configs for plugins
-	plugin_config = attr.ib(
+	config = attr.ib(
 		default = attr.Factory(PluginConfig),
 		kw_only = True,
 		repr    = False)
@@ -116,7 +116,7 @@ class Job:
 			default (Any): The default value for the config
 			converter (callable): The converter for the value
 		"""
-		self.plugin_config.add(name, default, converter)
+		self.config.add(name, default, converter)
 
 	def cache(self):
 		"""@API

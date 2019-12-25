@@ -52,7 +52,7 @@ DEFAULT_CONFIG = dict(default = dict(
 	# The template environment
 	envs       = Diot(),
 	# configs for plugins
-	plugin_config = {},
+	config = {},
 ))
 
 config = Config() # pylint: disable=invalid-name
