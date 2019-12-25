@@ -12,6 +12,9 @@ class PyPPLResumeError(Exception):
 class PyPPLNameError(Exception):
 	"""@API\nPipeline name duplicated after transformed by utils.name2filename"""
 
+class PyPPLWrongPositionMethod(Exception):
+	"""@API\nWrong position for plugin-added method"""
+
 class ProcessAttributeError(Exception):
 	"""@API\nProcess AttributeError"""
 
