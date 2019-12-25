@@ -1,1320 +1,1991 @@
-## class: PyPPL
+## pyppl.template
 
-!!! example "class: `PyPPL (self, conf, cfgfile)`"
-	The PyPPL class
 
-	- **static variables**
+- **desc**
 
+  Template adaptor for PyPPL
 
-		- `TIPS (list)`:  The tips for users
+- **variables**
 
-		- `RUNNERS (dict)`:  Registered runners
+  - `DEFAULT_ENVS (dict)`:  The default environments for templates
 
-		- `COUNTER (int)`:  The counter for `PyPPL` instance
+!!! example "class: `Template`"
 
-	!!! abstract "method: `__init__ (self, conf, cfgfile)`"
-		PyPPL Constructor
+  Base class wrapper to wrap template for PyPPL
+  
 
-		- **params**
+  !!! abstract "method: `__init__(self, source, **envs)`"
 
+    Template construct
+    
 
-			- `conf (dict)`:  the configurations for the pipeline, default: `None`
+  !!! abstract "method: `register_envs(self, **envs)`"
 
-				  - Remember the profile name should be included.
+    Register extra environment
 
-			- `cfgfile (file)`:  the configuration file for the pipeline, default: `None`
+    - **params**
 
-	!!! tip "staticmethod: `registerRunner (runner_to_reg)`"
-		Register a runner
+      - `**envs`:  The environment
 
-		- **params**
+  !!! abstract "method: `render(self, data)`"
 
+    Render the template
 
-			- ``runner_to_reg``:  The runner to be registered.
+    - **parmas**
 
-	!!! abstract "method: `resume (self, *args)`"
-		Mark processes as to be resumed
+      - `data (dict)`:  The data used to render
 
-		- **params**
+!!! example "class: `TemplateJinja2`"
 
+  Jinja2 template wrapper
+  
 
-			- `*args (Proc|str)`:  the processes to be marked
+  !!! abstract "method: `register_envs(self, **envs)`"
 
-		- **returns**
+    Register extra environment
 
+    - **params**
 
-			- `(PyPPL)`:  The pipeline object itself.
+      - `**envs`:  The environment
 
-	!!! abstract "method: `resume2 (self, *args)`"
-		Mark processes as to be resumed
+  !!! abstract "method: `render(self, data)`"
 
-		- **params**
+    Render the template
 
+    - **parmas**
 
-			- `*args (Proc|str)`:  the processes to be marked
+      - `data (dict)`:  The data used to render
 
-		- **returns**
+!!! example "class: `TemplateLiquid`"
 
+  liquidpy template wrapper.
+  
 
-			- `(PyPPL)`:  The pipeline object itself.
+  !!! abstract "method: `register_envs(self, **envs)`"
 
-	!!! abstract "method: `run (self, profile)`"
-		Run the pipeline
+    Register extra environment
 
-		- **params**
+    - **params**
 
+      - `**envs`:  The environment
 
-			- `profile (str|dict)`:  the profile used to run, if not found, it'll be used as runner name.
+  !!! abstract "method: `render(self, data)`"
 
-				  - default: 'default'
+    Render the template
 
-		- **returns**
+    - **parmas**
 
+      - `data (dict)`:  The data used to render
+## pyppl.procset
 
-			- `(PyPPL)`:  The pipeline object itself.
 
-	!!! abstract "method: `start (self, *args)`"
-		Set the starting processes of the pipeline
+- **desc**
 
-		- **params**
+  The procset for a set of procs
 
+!!! example "class: `ProcSet`"
 
-			- `*args (Proc|str)`:  process selectors
+  The ProcSet for a set of processes
+  
 
-		- **returns**
+  !!! abstract "method: `__init__(self, *procs)`"
 
+    Constructor
 
-			- `(PyPPL)`:  The pipeline object itself.
+    - **params**
 
-## class: Channel
+      - `*procs (Proc) `:  the set of processes
 
-!!! example "class: `Channel (iterable)`"
-	The channen class, extended from `list`
+      - `**kwargs`:  Other arguments to instantiate a `ProcSet`
 
+          depends (bool): Whether auto deduce depends. Default: `True`
 
-	!!! tip "staticmethod: `_tuplize (atuple)`"
-		A private method, try to convert an element to tuple
-		If it's a string, convert it to `(atuple, )`
-		Else if it is iterable, convert it to `tuple(atuple)`
-		Otherwise, convert it to `(atuple, )`
-		Notice that string is also iterable.
+          id (str): The id of the procset. Default: `None` (the variable name)
 
-		- **params**
+          tag (str): The tag of the processes. Default: `None`
 
+          copy (bool): Whether copy the processes or just use them. Default: `True`
 
-			- `atuple (str|list|tuple)`:  the element to be converted
+  !!! abstract "method: `copy(self, id, tag, depends)`"
 
-		- **returns**
+    Like `proc`'s `copy` function, copy a procset. Each processes will be copied.
 
+    - **params**
 
-			- `(tuple)`:  The converted element
+      - `id (str)`:  Use a different id if you don't want to use the variant name
 
-	!!! abstract "method: `attach (self, *names)`"
-		Attach columns to names of Channel, so we can access each column by:
-		`ch.col0` == ch.colAt(0)
+      - `tag (str)`:  The new tag of all copied processes
 
-		- **params**
+      - `depends (bool)`:  Whether to copy the dependencies or not. Default: True
 
+          - dependences for processes in starts will not be copied
 
-			- `*names (str)`:  The names. Have to be as length as channel's width.
+    - **returns**
 
-				  None of them should be Channel's property name
+      - `(ProcSet)`:  The new procset
 
-			- `flatten (bool)`:  Whether flatten the channel for the name being attached
+  !!! abstract "method: `delegate(self, attr, *procs)`"
 
-	!!! abstract "method: `cbind (self, *cols)`"
-		Add columns to the channel
+    Delegate process attributes to procset.
 
-		- **params**
+    - **params**
 
+      - `*procs (str|Proc)`:  The first argument is the name of the attributes.
 
-			- `*cols (any)`:  The columns
+          - The rest of them should be `Proc`s or `Proc` selectors.
 
-		- **returns**
+  !!! abstract "method: `delegated(self, name)`"
 
+    Get the detegated processes by specific attribute name
 
-			- `(Channel)`:  The channel with the columns inserted.
+    - **params**
 
-	!!! abstract "method: `colAt (self, index)`"
-		Fetch one column of a Channel
+      - `name (str)`:  the attribute name to query
 
-		- **params**
+    - **returns**
 
+      - `(Proxy)`:  The set of processes
 
-			- `index (int)`:  which column to fetch
+  !!! abstract "method: `module(self, name)`"
 
-		- **returns**
+    A decorator used to define a module.
 
+    - **params**
 
-			- `(Channel)`:  The Channel with that column
+      - `name (callable|str)`:  The function to be decorated or the name of the module.
 
-	!!! abstract "method: `collapse (self, col)`"
-		Do the reverse of expand
-		length: N -> 1
-		width:  M -> M
+    - **returns**
 
-		- **params**
+      - `(callable)`:  The decorator
 
+  !!! abstract "method: `restore_states(self)`"
 
-			- `col (int)`:      the index of the column used to collapse
+    Restore the initial state of a procset
+    
+## pyppl.proc
 
-		- **returns**
 
+- **desc**
 
-			- `(Channel)`:  The collapsed Channel
+  Process for PyPPL
 
-	!!! abstract "method: `copy (self)`"
-		Copy a Channel using `copy.copy`
+!!! example "class: `Proc`"
 
-		- **returns**
+  Process of a pipeline
+  
 
+  !!! note "property: `cache`"
 
-			- `(Channel)`:  The copied Channel
+    Should we cache the results or read results from cache?
 
-	!!! tip "staticmethod: `create (alist)`"
-		Create a Channel from a list
+  !!! note "property: `id`"
 
-		- **params**
+    The identity of the process
 
+  !!! note "property: `tag`"
 
-			- `alist (list|Channel)`:  The list, default: []
+    The tag of the process
 
-		- **returns**
+  !!! abstract "method: `add_config(self, name, default, converter, runtime)`"
 
+    Add a plugin configuration
 
-			- `(Channel)`:  The Channel created from the list
+    - **params**
 
-	!!! abstract "method: `expand (self, col, pattern, ftype, sortby, reverse)`"
-		expand the Channel according to the files in <col>, other cols will keep the same
-		`[(dir1/dir2, 1)].expand (0, "*")` will expand to
-		`[(dir1/dir2/file1, 1), (dir1/dir2/file2, 1), ...]`
-		length: 1 -> N
-		width:  M -> M
+      - `name (str)`:  The name of the plugin configuration
 
-		- **params**
+      - `default (any)`:  The default value
 
+      - `converter (callable)`:  The converter function for the value
 
-			- `col (int)`:  the index of the column used to expand
+      - `runtime (str)`:  How should we deal with it while         runtime_config is passed and its setcounter > 1
 
-			- `pattern (str)`:  use a pattern to filter the files/dirs, default: `*`
+          - override: Override the value
 
-			- `ftype (str)`:  the type of the files/dirs to include
+          - update: Update the value if it's a dict otherwise override its
 
-				  - 'dir', 'file', 'link' or 'any' (default)
+          - ignore: Ignore the value from runtime_config
 
-			- `sortby (str)`:   how the list is sorted
+  !!! abstract "method: `copy(self, id, **kwargs)`"
 
-				  - 'name' (default), 'mtime', 'size'
+    Copy a process to a new one
+    Depends and nexts will be copied
 
-			- `reverse (bool)`:  reverse sort. Default: False
+    - **params**
 
-		- **returns**
+      - `id`:  The id of the new process
 
+      - `kwargs`:  Other arguments for constructing a process
 
-			- `(Channel)`:  The expanded Channel
+  !!! abstract "method: `run(self, runtime_config)`"
 
-	!!! abstract "method: `filter (self, func)`"
-		Alias of python builtin `filter`
+    Run the process
 
-		- **params**
+    - **params**
 
+      - `runtime_config (simpleconf.Config)`:  The runtime configuration
+## pyppl.utils
 
-			- `func (callable)`:  the function. Default: `None`
 
-		- **returns**
+- **desc**
 
+  Utility functions for PyPPL
 
-			- `(Channel)`:  The filtered Channel
+!!! abstract "method: `always_list(data, trim)`"
 
-	!!! abstract "method: `filterCol (self, func, col)`"
-		Just filter on the specific column
+  Convert a string or a list with element
 
-		- **params**
+  - **params**
 
+    - ``data``:  the data to be converted
 
-			- `func (callable)`:  the function
+    - ``trim``:  trim the whitespaces for each item or not. Default: True
 
-			- `col (int)`:  the column to filter
+  - **examples**
 
-		- **returns**
+      ```python
 
+      data = ["a, b, c", "d"]
 
-			- `(Channel)`:  The filtered Channel
+      ret  = always_list (data)
 
-	!!! abstract "method: `flatten (self, col)`"
-		Convert a single-column Channel to a list (remove the tuple signs)
-		`[(a,), (b,)]` to `[a, b]`
+      # ret == ["a", "b", "c", "d"]
 
-		- **params**
+      ```
 
+  - **returns**
 
-			- `col (int)`:  The column to flat. None for all columns (default)
+      The split list
 
-		- **returns**
+!!! abstract "method: `brief_list(blist, base)`"
 
+  Briefly show an integer list, combine the continuous numbers.
 
-			- `(list)`:  The list converted from the Channel.
+  - **params**
 
-	!!! abstract "method: `fold (self, nfold)`"
-		Fold a Channel. Make a row to n-length chunk rows
-		```
-		a1  a2  a3  a4
-		b1  b2  b3  b4
-		if nfold==2, fold(2) will change it to:
-		a1  a2
-		a3  a4
-		b1  b2
-		b3  b4
-		```
+    - `blist`:  The list
 
-		- **params**
+  - **returns**
 
+    - `(str)`:  The string to show for the briefed list.
 
-			- `nfold (int)`:  the size of the chunk
+!!! abstract "method: `chmod_x(filepath)`"
 
-		- **returns**
+  Convert file1 to executable or add extract shebang to cmd line
 
+  - **params**
 
-			- `(Channel)`:  The new Channel
+    - `filepath (path)`:  The file path
 
-	!!! tip "staticmethod: `fromArgv ()`"
-		Create a Channel from `sys.argv[1:]`
-		"python test.py a b c" creates a width=1 Channel
-		"python test.py a,1 b,2 c,3" creates a width=2 Channel
+  - **returns**
 
-		- **returns**
+    - `(list)`:  with or without the path of the interpreter as the first element
 
+      and the script file as the last element
 
-			- `(Channel)`:  The Channel created from the command line arguments
+!!! abstract "method: `filesig(filepath, dirsig)`"
 
-	!!! tip "staticmethod: `fromChannels (*args)`"
-		Create a Channel from Channels
+  Generate a signature for a file
 
-		- **params**
+  - **params**
 
+    - ``dirsig``:  Whether expand the directory? Default: True
 
-			- `*args (any)`:  The Channels or anything can be created as a `Channel`
+  - **returns**
 
-		- **returns**
+      The signature
 
+!!! abstract "method: `format_secs(seconds)`"
 
-			- `(Channel)`:  The Channel merged from other Channels
+  Format a time duration
 
-	!!! tip "staticmethod: `fromFile (filename, header, skip, delimit)`"
-		Create Channel from the file content
-		It's like a matrix file, each row is a row for a Channel.
-		And each column is a column for a Channel.
+  - **params**
 
-		- **params**
+    - ``seconds``:  the time duration in seconds
 
+  - **returns**
 
-			- `filename (file)`:  the file
+      The formated string.
 
-			- `header (bool)`:   Whether the file contains header. If True, will attach the header
+    - `For example`:  "01:01:01.001" stands for 1 hour 1 min 1 sec and 1 minisec.
 
-				  - So you can use `channel.<header>` to fetch the column
+!!! abstract "method: `funcsig(func)`"
 
-			- `skip (int)`:  first lines to skip, default: `0`
+  Get the signature of a function
+  Try to get the source first, if failed, try to get its name, otherwise return None
 
-			- `delimit (str)`:  the delimit for columns, default: `  `
+  - **params**
 
-		- **returns**
+    - ``func``:  The function
 
+  - **returns**
 
-			- `(Channel)`:  A Channel created from the file
+      The signature
 
-	!!! tip "staticmethod: `fromPairs (pattern)`"
-		Create a width = 2 Channel from a pattern
+!!! abstract "method: `name2filename(name)`"
 
-		- **params**
+  Convert any name to a valid filename
 
+  - **params**
 
-			- `pattern (str)`:  the pattern
+    - `name (str)`:  The name to be converted
 
-		- **returns**
+  - **returns**
 
+    - `(str)`:  The converted name
 
-			- `(Channel)`:  The Channel create from every 2 files match the pattern
+!!! abstract "method: `try_deepcopy(obj, _recurvise)`"
 
-	!!! tip "staticmethod: `fromParams (*pnames)`"
-		Create a Channel from params
+  Try do deepcopy an object. If fails, just do a shallow copy.
 
-		- **params**
+  - **params**
 
+    - `obj (any)`:  The object
 
-			- `*pnames (str)`:  The names of the option
+    - `_recurvise (bool)`:  A flag to avoid deep recursion
 
-		- **returns**
+  - **returns**
 
+    - `(any)`:  The copied object
 
-			- `(Channel)`:  The Channel created from `pyparam`.
+!!! example "class: `PQueue`"
 
-	!!! tip "staticmethod: `fromPattern (pattern, ftype, sortby, reverse)`"
-		Create a Channel from a path pattern
+  A modified PriorityQueue, which allows jobs to be submitted in batch
+  
 
-		- **params**
+  !!! abstract "method: `__init__(self, maxsize, batch_len)`"
 
+    A Priority Queue for PyPPL jobs
+      0                              0 done,             wait for 1
+        1        start 0    1        start 1             start 2
+        2      ------>  0   2      ------>      2      --------->
+          3                   3               1   3                    3
+          4                   4                   4                2   4
+                                       1
 
-			- `pattern (str)`:  the pattern with wild cards
+    - **params**
 
-			- `ftype (str)`:  the type of the files/dirs to include
+      - `maxsize  `:  The maxsize of the queue. Default: None
 
-				  - 'dir', 'file', 'link' or 'any' (default)
+      - `batch_len`:  What's the length of a batch
 
-			- `sortby (str)`:   how the list is sorted
+  !!! abstract "method: `get(self)`"
 
-				  - 'name' (default), 'mtime', 'size'
+    Get an item from the queue
 
-			- `reverse (bool)`:  reverse sort. Default: `False`
+    - **returns**
 
-		- **returns**
+      - `(int, int)`:  The index of the item and the batch of it
 
+  !!! abstract "method: `put(self, item, batch)`"
 
-			- `(Channel)`:  The Channel created from the path
+    Put item to any batch
 
-	!!! abstract "method: `get (self, idx)`"
-		Get the element of a flattened channel
+    - **params**
 
-		- **params**
+      - `item (any)`:  item to put
 
+      - `batch (int)`:  target batch
 
-			- `idx (int)`:  The index of the element to get. Default: 0
+  !!! abstract "method: `put_next(self, item, batch)`"
 
-		- **return**
+    Put item to next batch
 
+    - **params**
 
-			- `(any)`:  The element
+      - `item (any)`:  item to put
 
-	!!! abstract "method: `insert (self, cidx, *cols)`"
-		Insert columns to a channel
+      - `batch (int)`:  current batch
+## pyppl.job
 
-		- **params**
 
+- **desc**
 
-			- `cidx (int)`:  Insert into which index of column?
+  Job for PyPPL
 
-			- `*cols (any)`:  the columns to be bound to Channel
+!!! example "class: `Job`"
 
-		- **returns**
+  Job class
 
+  - **arguments**
 
-			- `(Channel)`:  The combined Channel
+    - `index (int)`:  The index of the job
 
-	!!! abstract "method: `length (self)`"
-		Get the length of a Channel
-		It's just an alias of `len(chan)`
+    - `proc (Proc)`:  The process
 
-		- **returns**
+  !!! note "property: `logger`"
 
+    A logger wrapper to avoid instanize a logger object for each job
 
-			- `(int)`:  The length of the Channel
+    - **params**
 
-	!!! abstract "method: `map (self, func)`"
-		Alias of python builtin `map`
+      - `*args (str)`:  messages to be logged.
 
-		- **params**
+      - `*kwargs`:  Other parameters for the logger.
 
+  !!! note "property: `signature`"
 
-			- `func (callable)`:  the function
+    Calculate the signature of the job based on the input/output and the script.
+    If file does not exist, it will not be in the signature.
+    The signature is like:
+    ```json
+    {
+      "i": {
+        "invar:var": <invar>,
+        "infile:file": <infile>,
+        "infiles:files": [<infiles...>]
+      },
+      "o": {
+        "outvar:var": <outvar>,
+        "outfile:file": <outfile>,
+        "outdir:dir": <outdir>
+      }
+      "mtime": <max mtime of input and script>,
+    }
+    ```
 
-		- **returns**
+    - **returns**
 
+      - `(Diot)`:  The signature of the job
 
-			- `(Channel)`:  The transformed Channel
+  !!! abstract "method: `add_config(self, name, default, converter)`"
 
-	!!! abstract "method: `mapCol (self, func, col)`"
-		Map for a column
+    Add a config to plugin config, used for plugins
 
-		- **params**
+    - **params**
 
+      - `name (str)`:  The name of the config.
 
-			- `func (callable)`:  the function
+          To proptect your config, better use a prefix
 
-			- `col (int)`:  the index of the column. Default: `0`
+      - `default (Any)`:  The default value for the config
 
-		- **returns**
+      - `converter (callable)`:  The converter for the value
 
+  !!! abstract "method: `build(self)`"
 
-			- `(Channel)`:  The transformed Channel
+    Initiate a job, make directory and prepare input, output and script.
+    
 
-	!!! tip "staticmethod: `nones (length, width)`"
-		Create a channel with `None`s
+  !!! abstract "method: `cache(self)`"
 
-		- **params**
+    Truly cache the job (by signature)
+    
 
+  !!! abstract "method: `done(self, cached, status)`"
 
-			- `length (int)`:  The length of the channel
+    Do some cleanup when job finished
 
-			- `width (int)`:   The width of the channel
+    - **params**
 
-		- **returns**
+      - `cached (bool)`:  Whether this is running for a cached job.
 
+  !!! abstract "method: `kill(self)`"
 
-			- `(Channel)`:  The created channel
+    Kill the job
 
-	!!! abstract "method: `rbind (self, *rows)`"
-		The multiple-argument versoin of `rbind`
+    - **returns**
 
-		- **params**
+      - `(bool)`:  `True` if succeeds else `False`
 
+  !!! abstract "method: `poll(self)`"
 
-			- `*rows (any)`:  the rows to be bound to Channel
+    Check the status of a running job
 
-		- **returns**
+    - **returns**
 
+      - `(bool|str)`:  `True/False` if rcfile generared and whether job succeeds,         otherwise returns `running`.
 
-			- `(Channel)`:  The combined Channel
+  !!! abstract "method: `reset(self)`"
 
-	!!! abstract "method: `reduce (self, func)`"
-		Alias of python builtin `reduce`
+    Clear the intermediate files and output files
 
-		- **params**
+  !!! abstract "method: `retry(self)`"
 
+    If the job is available to retry
 
-			- `func (callable)`:  the function
+    - **returns**
 
-		- **returns**
+      - `(bool|str)`:  `ignore` if `errhow` is `ignore`, otherwise         returns whether we could submit the job to retry.
 
+  !!! abstract "method: `submit(self)`"
 
-			- `(Channel)`:  The reduced value
+    Submit the job
 
-	!!! abstract "method: `reduceCol (self, func, col)`"
-		Reduce a column
+    - **returns**
 
-		- **params**
+      - `(bool)`:  `True` if succeeds else `False`
+## pyppl.pyppl
 
 
-			- `func (callable)`:  the function
+- **desc**
 
-			- `col (int)`:  the column to reduce
+  Pipeline for PyPPL
 
-		- **returns**
+- **variables**
 
+  - `SEPARATOR_LEN (int)`:  the length of the separators in log
 
-			- `(Channel)`:  The reduced value
+  - `PROCESSES (set)`:  The process pool where the processes are registered
 
-	!!! abstract "method: `repCol (self, nrep)`"
-		Repeat column and return a new channel
+  - `TIPS (list)`:  Some tips to show in log
 
-		- **params**
+  - `PIPELINES (dict)`:  Exists pipelines
 
+!!! example "class: `PyPPL`"
 
-			- `nrep (int)`:  how many times to repeat.
+  The class for the whole pipeline
+  
 
-		- **returns**
+  !!! abstract "method: `__init__(self, config, name, config_files, **kwconfigs)`"
 
+    The construct for PyPPL
 
-			- `(Channel)`:  The new channel with repeated columns
+    - **params**
 
-	!!! abstract "method: `repRow (self, nrep)`"
-		Repeat row and return a new channel
+      - `config (dict)`:  the runtime configuration for the pipeline
 
-		- **params**
+      - `name (str)`:  The name of the pipeline
 
+      - `config_files (list)`:  A list of runtime configuration files
 
-			- `nrep (int)`:  how many times to repeat.
+      - `**kwconfigs`:  flattened runtime configurations, for example
 
-		- **returns**
+          - you can do: `PyPPL(forks = 10)`, or even
 
+          - `PyPPL(logger_level = 'debug')`
 
-			- `(Channel)`:  The new channel with repeated rows
+  !!! abstract "method: `method(self, func)`"
 
-	!!! abstract "method: `rowAt (self, index)`"
-		Fetch one row of a Channel
+    Add a method to PyPPL object
 
-		- **params**
+    - **params**
 
+      - `func (callable)`:  the function to add
 
-			- `index (int)`:  which row to fetch
+  !!! abstract "method: `run(self, profile)`"
 
-		- **returns**
+    Run the pipeline with certain profile
 
+    - **params**
 
-			- `(Channel)`:  The Channel with that row
+      - `profile (str)`:  The profile name
 
-	!!! abstract "method: `slice (self, start, length)`"
-		Fetch some columns of a Channel
+  !!! abstract "method: `start(self, *anything)`"
 
-		- **params**
+    Set the start processes for the pipeline
 
+    - **params**
 
-			- `start (int)`:   from column to start
+      - `*anything`:  Anything that can be converted to processes
 
-			- `length (int)`:  how many columns to fetch, default: None (from start to the end)
+          - Could be a string or a wildcard to search for processes
 
-		- **returns**
+          - or the process itself
+## pyppl.channel
 
 
-			- `(Channel)`:  The Channel with fetched columns
+- **desc**
 
-	!!! abstract "method: `split (self, flatten)`"
-		Split a Channel to single-column Channels
+  Channel for pyppl
 
-		- **returns**
+!!! example "class: `Channel`"
 
+  The channen class, extended from `list`
+  
 
-			- `(list[Channel])`:  The list of single-column Channels
+  !!! abstract "method: `attach(self, *names)`"
 
-	!!! abstract "method: `t (self)`"
-		Transpose the channel
+    Attach columns to names of Channel, so we can access each column by:
+    `ch.col0` == ch.colAt(0)
 
-		- **returns**
+    - **params**
 
+      - `*names (str)`:  The names. Have to be as length as channel's width.
 
-			- `(Channel)`:  The transposed channel.
+          None of them should be Channel's property name
 
-	!!! abstract "method: `transpose (self)`"
-		Transpose the channel
+      - `flatten (bool)`:  Whether flatten the channel for the name being attached
 
-		- **returns**
+  !!! abstract "method: `cbind(self, *cols)`"
 
+    Add columns to the channel
 
-			- `(Channel)`:  The transposed channel.
+    - **params**
 
-	!!! abstract "method: `unfold (self, nfold)`"
-		Do the reverse thing as self.fold does
+      - `*cols (any)`:  The columns
 
-		- **params**
+    - **returns**
 
+      - `(Channel)`:  The channel with the columns inserted.
 
-			- `nfold (int)`:  How many rows to combind each time. default: 2
+  !!! abstract "method: `colAt(self, index)`"
 
-		- **returns**
+    Fetch one column of a Channel
 
+    - **params**
 
-			- `(Channel)`:  The unfolded Channel
+      - `index (int)`:  which column to fetch
 
-	!!! abstract "method: `unique (self)`"
-		Make the channel unique, remove duplicated rows
-		Try to keep the order
+    - **returns**
 
-		- **returns**
+      - `(Channel)`:  The Channel with that column
 
+  !!! abstract "method: `col_at(self, index)`"
 
-			- `(Channel)`:  The channel with unique rows.
+    Fetch one column of a Channel
 
-	!!! abstract "method: `width (self)`"
-		Get the width of a Channel
+    - **params**
 
-		- **returns**
+      - `index (int)`:  which column to fetch
 
+    - **returns**
 
-			- `(int)`:  The width of the Channel
+      - `(Channel)`:  The Channel with that column
 
-## class: Job
+  !!! abstract "method: `collapse(self, col)`"
 
-!!! example "class: `Job (self, index, proc)`"
-	Describes a job, also as a base class for runner
+    Do the reverse of expand
+    length: N -> 1
+    width:  M -> M
 
-	- **static variables**
+    - **params**
 
+      - `col (int)`:      the index of the column used to collapse
 
-		- `POLL_INTERVAL (int)`:  The interval between each job state polling.
+    - **returns**
 
-	!!! abstract "method: `__init__ (self, index, proc)`"
-		Initiate a job
+      - `(Channel)`:  The collapsed Channel
 
-		- **params**
+  !!! abstract "method: `copy(self)`"
 
+    Copy a Channel using `copy.copy`
 
-			- `index (int)`:   The index of the job.
+    - **returns**
 
-			- `proc (Proc)`:  The process of the job.
+      - `(Channel)`:  The copied Channel
 
-	!!! abstract "method: `build (self)`"
-		Initiate a job, make directory and prepare input, output and script.
+  !!! abstract "method: `create(alist)`"
 
+    Create a Channel from a list
 
-	!!! abstract "method: `cache (self)`"
-		Truly cache the job (by signature)
+    - **params**
 
+      - `alist (list|Channel)`:  The list, default: []
 
-	!!! note "property: `data ()`"
-		Data for rendering templates
+    - **returns**
 
-		- **returns**
+      - `(Channel)`:  The Channel created from the list
 
+  !!! abstract "method: `expand(self, col, pattern, ftype, sortby, reverse)`"
 
-			- `(dict)`:  The data used to render the templates.
+    expand the Channel according to the files in <col>, other cols will keep the same
+    `[(dir1/dir2, 1)].expand (0, "*")` will expand to
+    `[(dir1/dir2/file1, 1), (dir1/dir2/file2, 1), ...]`
+    length: 1 -> N
+    width:  M -> M
 
-	!!! abstract "method: `done (self, cached)`"
-		Do some cleanup when job finished
+    - **params**
 
-		- **params**
+      - `col (int)`:  the index of the column used to expand
 
+      - `pattern (str)`:  use a pattern to filter the files/dirs, default: `*`
 
-			- `cached (bool)`:  Whether this is running for a cached job.
+      - `ftype (str)`:  the type of the files/dirs to include
 
-	!!! abstract "method: `export (self)`"
-		Export the output files
+          - 'dir', 'file', 'link' or 'any' (default)
 
-	!!! abstract "method: `isExptCached (self)`"
-		Prepare to use export files as cached information
+      - `sortby (str)`:   how the list is sorted
 
-		- **returns**
+          - 'name' (default), 'mtime', 'size'
 
+      - `reverse (bool)`:  reverse sort. Default: False
 
-			- `(bool)`:  Whether the job is export-cached.
+    - **returns**
 
-	!!! abstract "method: `isRunningImpl (self)`"
-		Implemetation of telling whether the job is running
+      - `(Channel)`:  The expanded Channel
 
-		- **returns**
+  !!! abstract "method: `filter(self, func)`"
 
+    Alias of python builtin `filter`
 
-			- `(bool)`:  Should return whether a job is running.
+    - **params**
 
-	!!! abstract "method: `isTrulyCached (self)`"
-		Check whether a job is truly cached (by signature)
+      - `func (callable)`:  the function. Default: `None`
 
-		- **returns**
+    - **returns**
 
+      - `(Channel)`:  The filtered Channel
 
-			- `(bool)`:  Whether the job is truly cached.
+  !!! abstract "method: `filterCol(self, func, col)`"
 
-	!!! abstract "method: `kill (self)`"
-		Kill the job
+    Just filter on the specific column
 
-		- **returns**
+    - **params**
 
+      - `func (callable)`:  the function
 
-			- `(bool)`:  `True` if succeeds else `False`
+      - `col (int)`:  the column to filter
 
-	!!! abstract "method: `killImpl (self)`"
-		Implemetation of killing a job
+    - **returns**
 
-	!!! abstract "method: `logger (self, *args, **kwargs)`"
-		A logger wrapper to avoid instanize a logger object for each job
+      - `(Channel)`:  The filtered Channel
 
-		- **params**
+  !!! abstract "method: `filter_col(self, func, col)`"
 
+    Just filter on the specific column
 
-			- `*args (str)`:  messages to be logged.
+    - **params**
 
-			- `*kwargs`:  Other parameters for the logger.
+      - `func (callable)`:  the function
 
-	!!! note "property: `pid ()`"
-		Get pid of the job
+      - `col (int)`:  the column to filter
 
-		- **returns**
+    - **returns**
 
+      - `(Channel)`:  The filtered Channel
 
-			- `(str)`:  The job id, could be the process id or job id for other platform.
+  !!! abstract "method: `flatten(self, col)`"
 
-	!!! abstract "method: `poll (self)`"
-		Check the status of a running job
+    Convert a single-column Channel to a list (remove the tuple signs)
+    `[(a,), (b,)]` to `[a, b]`
 
-		- **returns**
+    - **params**
 
+      - `col (int)`:  The column to flat. None for all columns (default)
 
-			- `(bool|str)`:  `True/False` if rcfile generared and whether job succeeds,         otherwise returns `running`.
+    - **returns**
 
-	!!! note "property: `rc ()`"
-		Get the return code
+      - `(list)`:  The list converted from the Channel.
 
-		- **returns**
+  !!! abstract "method: `fold(self, nfold)`"
 
+    Fold a Channel. Make a row to n-length chunk rows
+    ```
+    a1  a2  a3  a4
+    b1  b2  b3  b4
+    if nfold==2, fold(2) will change it to:
+    a1  a2
+    a3  a4
+    b1  b2
+    b3  b4
+    ```
 
-			- `(int)`:  The return code.
+    - **params**
 
-	!!! abstract "method: `report (self)`"
-		Report the job information to log
+      - `nfold (int)`:  the size of the chunk
 
+    - **returns**
 
-	!!! abstract "method: `reset (self)`"
-		Clear the intermediate files and output files
+      - `(Channel)`:  The new Channel
 
-	!!! abstract "method: `retry (self)`"
-		If the job is available to retry
+  !!! abstract "method: `fromArgv()`"
 
-		- **returns**
+    Create a Channel from `sys.argv[1:]`
+    "python test.py a b c" creates a width=1 Channel
+    "python test.py a,1 b,2 c,3" creates a width=2 Channel
 
+    - **returns**
 
-			- `(bool|str)`:  `ignore` if `errhow` is `ignore`, otherwise         returns whether we could submit the job to retry.
+      - `(Channel)`:  The Channel created from the command line arguments
 
-	!!! note "property: `scriptParts ()`"
-		Prepare parameters for script wrapping
+  !!! abstract "method: `fromChannels(*args)`"
 
-		- **returns**
+    Create a Channel from Channels
 
+    - **params**
 
-			- `(Diot)`:  A `Diot` containing the parts to wrap the script.
+      - `*args (any)`:  The Channels or anything can be created as a `Channel`
 
-	!!! abstract "method: `showError (self, totalfailed)`"
-		Show the error message if the job failed.
+    - **returns**
 
-		- **params**
+      - `(Channel)`:  The Channel merged from other Channels
 
+  !!! abstract "method: `fromFile(filename, header, skip, delimit)`"
 
-			- `totalfailed (int)`:  Total number of jobs failed.
+    Create Channel from the file content
+    It's like a matrix file, each row is a row for a Channel.
+    And each column is a column for a Channel.
 
-	!!! abstract "method: `signature (self)`"
-		Calculate the signature of the job based on the input/output and the script
+    - **params**
 
-		- **returns**
+      - `filename (file)`:  the file
 
+      - `header (bool)`:   Whether the file contains header. If True, will attach the header
 
-			- `(Diot)`:  The signature of the job
+          - So you can use `channel.<header>` to fetch the column
 
-	!!! abstract "method: `submit (self)`"
-		Submit the job
+      - `skip (int)`:  first lines to skip, default: `0`
 
-		- **returns**
+      - `delimit (str)`:  the delimit for columns, default: `  `
 
+    - **returns**
 
-			- `(bool)`:  `True` if succeeds else `False`
+      - `(Channel)`:  A Channel created from the file
 
-	!!! abstract "method: `submitImpl (self)`"
-		Implemetation of submission
+  !!! abstract "method: `fromPairs(pattern)`"
 
-	!!! abstract "method: `succeed (self)`"
-		Tell if a job succeeds.
-		Check whether output files generated, expectation met and return code met.
+    Create a width = 2 Channel from a pattern
 
-		- **return**
+    - **params**
 
+      - `pattern (str)`:  the pattern
 
-			- `(bool)`:  `True` if succeeds else `False`
+    - **returns**
 
-	!!! abstract "method: `wrapScript (self)`"
-		Wrap the script to run
+      - `(Channel)`:  The Channel create from every 2 files match the pattern
 
+  !!! abstract "method: `fromParams(*pnames)`"
 
-## class: Jobmgr
+    Create a Channel from params
 
-!!! example "class: `Jobmgr (self, jobs)`"
-	Job manager
+    - **params**
 
-	!!! abstract "method: `__init__ (self, jobs)`"
-		Job manager constructor
+      - `*pnames (str)`:  The names of the option
 
-		- **params**
+    - **returns**
 
+      - `(Channel)`:  The Channel created from `pyparam`.
 
-			- `jobs (list)`:  All jobs of a process
+  !!! abstract "method: `fromPattern(pattern, ftype, sortby, reverse)`"
 
-	!!! abstract "method: `cleanup (self, ex)`"
-		Cleanup the pipeline when
-		- Ctrl-C hit
-		- error encountered and `proc.errhow` = 'terminate'
+    Create a Channel from a path pattern
 
-		- **params**
+    - **params**
 
+      - `pattern (str)`:  the pattern with wild cards
 
-			- `ex (Exception)`:  The exception raised by workers
+      - `ftype (str)`:  the type of the files/dirs to include
 
-	!!! abstract "method: `killWorker (cls, killq)`"
-		The killing worker to kill the jobs
+          - 'dir', 'file', 'link' or 'any' (default)
 
-	!!! abstract "method: `progressbar (self, event)`"
-		Generate the progress bar.
+      - `sortby (str)`:   how the list is sorted
 
-		- **params**
+          - 'name' (default), 'mtime', 'size'
 
+      - `reverse (bool)`:  reverse sort. Default: `False`
 
-			- `event (StateMachine event)`:  The event including job as model.
+    - **returns**
 
-	!!! abstract "method: `start (self)`"
-		Start the queue.
+      - `(Channel)`:  The Channel created from the path
 
+  !!! abstract "method: `from_argv()`"
 
-	!!! abstract "method: `worker (self)`"
-		The worker to build, submit and poll the jobs
+    Create a Channel from `sys.argv[1:]`
+    "python test.py a b c" creates a width=1 Channel
+    "python test.py a,1 b,2 c,3" creates a width=2 Channel
 
-## class: Proc
+    - **returns**
 
-!!! example "class: `Proc (self, id, tag, desc, **kwargs)`"
-	The Proc class defining a process
+      - `(Channel)`:  The Channel created from the command line arguments
 
-	- **static variables**
+  !!! abstract "method: `from_channels(*args)`"
 
+    Create a Channel from Channels
 
-		- `ALIAS      (dict)`:  The alias for the properties
+    - **params**
 
-		- `DEPRECATED (dict)`:  Deprecated property names
+      - `*args (any)`:  The Channels or anything can be created as a `Channel`
 
-		- `OUT_VARTYPE    (list)`:  Variable types for output
+    - **returns**
 
-		- `OUT_FILETYPE   (list)`:  File types for output
+      - `(Channel)`:  The Channel merged from other Channels
 
-		- `OUT_DIRTYPE    (list)`:  Directory types for output
+  !!! abstract "method: `from_file(filename, header, skip, delimit)`"
 
-		- `OUT_STDOUTTYPE (list)`:  Stdout types for output
+    Create Channel from the file content
+    It's like a matrix file, each row is a row for a Channel.
+    And each column is a column for a Channel.
 
-		- `OUT_STDERRTYPE (list)`:  Stderr types for output
+    - **params**
 
-		- `IN_VARTYPE   (list)`:  Variable types for input
+      - `filename (file)`:  the file
 
-		- `IN_FILETYPE  (list)`:  File types for input
+      - `header (bool)`:   Whether the file contains header. If True, will attach the header
 
-		- `IN_FILESTYPE (list)`:  Files types for input
+          - So you can use `channel.<header>` to fetch the column
 
-		- `EX_GZIP (list)`:  `exhow` value to gzip output files while exporting them
+      - `skip (int)`:  first lines to skip, default: `0`
 
-		- `EX_COPY (list)`:  `exhow` value to copy output files while exporting them
+      - `delimit (str)`:  the delimit for columns, default: `  `
 
-		- `EX_MOVE (list)`:  `exhow` value to move output files while exporting them
+    - **returns**
 
-		- `EX_LINK (list)`:  `exhow` value to link output files while exporting them
+      - `(Channel)`:  A Channel created from the file
 
-	!!! abstract "method: `__init__ (self, id, tag, desc, **kwargs)`"
-		Proc constructor
+  !!! abstract "method: `from_pairs(pattern)`"
 
-		- **params**
+    Create a width = 2 Channel from a pattern
 
+    - **params**
 
-			- `tag  (str)   `:  The tag of the process
+      - `pattern (str)`:  the pattern
 
-			- `desc (str)   `:  The description of the process
+    - **returns**
 
-			- `id   (str)   `:  The identify of the process
+      - `(Channel)`:  The Channel create from every 2 files match the pattern
 
-			- `**kwargs`:  Other properties of the process, which can be set by `proc.xxx` later.
+  !!! abstract "method: `from_params(*pnames)`"
 
-	!!! abstract "method: `copy (self, id, tag, desc)`"
-		Copy a process
+    Create a Channel from params
 
-		- **params**
+    - **params**
 
+      - `*pnames (str)`:  The names of the option
 
-			- `id (str)`:  The new id of the process, default: `None` (use the varname)
+    - **returns**
 
-			- `tag (str)`:    The tag of the new process, default: `None` (used the old one)
+      - `(Channel)`:  The Channel created from `pyparam`.
 
-			- `desc (str)`:   The desc of the new process, default: `None` (used the old one)
+  !!! abstract "method: `from_pattern(pattern, ftype, sortby, reverse)`"
 
-		- **returns**
+    Create a Channel from a path pattern
 
+    - **params**
 
-			- `(Proc)`:  The new process
+      - `pattern (str)`:  the pattern with wild cards
 
-	!!! abstract "method: `name (self, procset)`"
-		Get my name include `procset`, `id`, `tag`
+      - `ftype (str)`:  the type of the files/dirs to include
 
-		- **params**
+          - 'dir', 'file', 'link' or 'any' (default)
 
+      - `sortby (str)`:   how the list is sorted
 
-			- `procset (bool)`:  Whether include the procset name or not.
+          - 'name' (default), 'mtime', 'size'
 
-		- **returns**
+      - `reverse (bool)`:  reverse sort. Default: `False`
 
+    - **returns**
 
-			- `(str)`:  the name
+      - `(Channel)`:  The Channel created from the path
 
-	!!! note "property: `procset ()`"
-		Get the name of the procset
+  !!! abstract "method: `get(self, idx)`"
 
-		- **returns**
+    Get the element of a flattened channel
 
+    - **params**
 
-			- `(str)`:  The procset name
+      - `idx (int)`:  The index of the element to get. Default: 0
 
-	!!! abstract "method: `run (self, profile, config)`"
-		Run the process with a profile and/or a configuration
+    - **return**
 
-		- **params**
+      - `(any)`:  The element
 
+  !!! abstract "method: `insert(self, cidx, *cols)`"
 
-			- `profile (str)`:  The profile from a configuration file.
+    Insert columns to a channel
 
-			- `config (dict)`:  A configuration passed to PyPPL construct.
+    - **params**
 
-	!!! note "property: `size ()`"
-		Get the size of the  process
+      - `cidx (int)`:  Insert into which index of column?
 
-		- **returns**
+      - `*cols (any)`:  the columns to be bound to Channel
 
+    - **returns**
 
-			- `(int)`:  The number of jobs
+      - `(Channel)`:  The combined Channel
 
-	!!! note "property: `suffix ()`"
-		Calcuate a uid for the process according to the configuration
-		The philosophy:
-		1. procs from different script must have different suffix (sys.argv[0])
-		2. procs from the same script:
-		  - procs with different id or tag have different suffix
-		  - procs with different input have different suffix (depends, input)
+  !!! abstract "method: `length(self)`"
 
-		- **returns**
+    Get the length of a Channel
+    It's just an alias of `len(chan)`
 
+    - **returns**
 
-			- `(str)`:  The uniq id of the process
+      - `(int)`:  The length of the Channel
 
-## class: ProcSet
+  !!! abstract "method: `map(self, func)`"
 
-!!! example "class: `ProcSet (self, *procs, **kwargs)`"
-	The ProcSet for a set of processes
+    Alias of python builtin `map`
 
+    - **params**
 
-	!!! abstract "method: `__getitem__ (self, item, _ignore_default)`"
-		Process selector, always return Proxy object
+      - `func (callable)`:  the function
 
-		- **params**
+    - **returns**
 
+      - `(Channel)`:  The transformed Channel
 
-			- `item (any)`:  The process selector.
+  !!! abstract "method: `mapCol(self, func, col)`"
 
-		- **returns**
+    Map for a column
 
+    - **params**
 
-			- `(Proxy)`:  The processes match the item.
+      - `func (callable)`:  the function
 
-	!!! abstract "method: `__init__ (self, *procs, **kwargs)`"
-		Constructor
+      - `col (int)`:  the index of the column. Default: `0`
 
-		- **params**
+    - **returns**
 
+      - `(Channel)`:  The transformed Channel
 
-			- `*procs (Proc) `:  the set of processes
+  !!! abstract "method: `map_col(self, func, col)`"
 
-			- `**kwargs`:  Other arguments to instantiate a `ProcSet`
+    Map for a column
 
-				  depends (bool): Whether auto deduce depends. Default: `True`
+    - **params**
 
-				  id (str): The id of the procset. Default: `None` (the variable name)
+      - `func (callable)`:  the function
 
-				  tag (str): The tag of the processes. Default: `None`
+      - `col (int)`:  the index of the column. Default: `0`
 
-				  copy (bool): Whether copy the processes or just use them. Default: `True`
+    - **returns**
 
-	!!! abstract "method: `copy (self, id, tag, depends)`"
-		Like `proc`'s `copy` function, copy a procset. Each processes will be copied.
+      - `(Channel)`:  The transformed Channel
 
-		- **params**
+  !!! abstract "method: `nones(length, width)`"
 
+    Create a channel with `None`s
 
-			- `id (str)`:  Use a different id if you don't want to use the variant name
+    - **params**
 
-			- `tag (str)`:  The new tag of all copied processes
+      - `length (int)`:  The length of the channel
 
-			- `depends (bool)`:  Whether to copy the dependencies or not. Default: True
+      - `width (int)`:   The width of the channel
 
-				  - dependences for processes in starts will not be copied
+    - **returns**
 
-		- **returns**
+      - `(Channel)`:  The created channel
 
+  !!! abstract "method: `rbind(self, *rows)`"
 
-			- `(ProcSet)`:  The new procset
+    The multiple-argument versoin of `rbind`
 
-	!!! abstract "method: `delegate (self, *procs)`"
-		Delegate process attributes to procset.
+    - **params**
 
-		- **params**
+      - `*rows (any)`:  the rows to be bound to Channel
 
+    - **returns**
 
-			- `*procs (str|Proc)`:  The first argument is the name of the attributes.
+      - `(Channel)`:  The combined Channel
 
-				  - The rest of them should be `Proc`s or `Proc` selectors.
+  !!! abstract "method: `reduce(self, func)`"
 
-	!!! abstract "method: `delegated (self, name)`"
-		Get the detegated processes by specific attribute name
+    Alias of python builtin `reduce`
 
-		- **params**
+    - **params**
 
+      - `func (callable)`:  the function
 
-			- `name (str)`:  the attribute name to query
+    - **returns**
 
-		- **returns**
+      - `(Channel)`:  The reduced value
 
+  !!! abstract "method: `reduceCol(self, func, col)`"
 
-			- `(Proxy)`:  The set of processes
+    Reduce a column
 
-	!!! abstract "method: `module (self, name)`"
-		A decorator used to define a module.
+    - **params**
 
-		- **params**
+      - `func (callable)`:  the function
 
+      - `col (int)`:  the column to reduce
 
-			- `name (callable|str)`:  The function to be decorated or the name of the module.
+    - **returns**
 
-		- **returns**
+      - `(Channel)`:  The reduced value
 
+  !!! abstract "method: `reduce_col(self, func, col)`"
 
-			- `(callable)`:  The decorator
+    Reduce a column
 
-	!!! abstract "method: `restoreStates (self)`"
-		Restore the initial state of a procset
+    - **params**
 
+      - `func (callable)`:  the function
 
-## class: ProcTree
+      - `col (int)`:  the column to reduce
 
-!!! example "class: `ProcTree (self)`"
-	A tree of processes.
+    - **returns**
 
-	- **static variables**
+      - `(Channel)`:  The reduced value
 
+  !!! abstract "method: `repCol(self, nrep)`"
 
-		- `NODES (OrderedDict)`:  The processes registered.
+    Repeat column and return a new channel
 
-	!!! abstract "method: `__init__ (self)`"
-		ProcTruee constructor
+    - **params**
 
+      - `nrep (int)`:  how many times to repeat.
 
-	!!! tip "staticmethod: `check (proc)`"
-		Check whether a process with the same id and tag exists
+    - **returns**
 
-		- **params**
+      - `(Channel)`:  The new channel with repeated columns
 
+  !!! abstract "method: `repRow(self, nrep)`"
 
-			- `proc (Proc)`:  The `Proc` instance
+    Repeat row and return a new channel
 
-	!!! abstract "method: `checkPath (self, proc)`"
-		Check whether paths of a process can start from a start process
+    - **params**
 
-		- **params**
+      - `nrep (int)`:  how many times to repeat.
 
+    - **returns**
 
-			- `proc (Proc)`:  The process
+      - `(Channel)`:  The new channel with repeated rows
 
-		- **returns**
+  !!! abstract "method: `rep_col(self, nrep)`"
 
+    Repeat column and return a new channel
 
-			- `(bool|list)`:  `True` if all paths can pass, otherwise first failed path.
+    - **params**
 
-	!!! abstract "method: `getAllPaths (self)`"
-		Get all paths of the pipeline, only used to be displayed in debug
+      - `nrep (int)`:  how many times to repeat.
 
-		- **yields**
+    - **returns**
 
+      - `(Channel)`:  The new channel with repeated columns
 
-			- `(list[Proc])`:  The paths (end to start).
+  !!! abstract "method: `rep_row(self, nrep)`"
 
-	!!! abstract "method: `getEnds (self)`"
-		Get the end processes
+    Repeat row and return a new channel
 
-		- **returns**
+    - **params**
 
+      - `nrep (int)`:  how many times to repeat.
 
-			- `(list[Proc])`:  The end processes
+    - **returns**
 
-	!!! tip "staticmethod: `getNext (proc)`"
-		Get next processes of process
+      - `(Channel)`:  The new channel with repeated rows
 
-		- **params**
+  !!! abstract "method: `rowAt(self, index)`"
 
+    Fetch one row of a Channel
 
-			- `proc (Proc)`:  The `Proc` instance
+    - **params**
 
-		- **returns**
+      - `index (int)`:  which row to fetch
 
+    - **returns**
 
-			- `(list[Proc])`:  The processes depend on this process
+      - `(Channel)`:  The Channel with that row
 
-	!!! tip "staticmethod: `getNextStr (proc)`"
-		Get the names of processes depend on a process
+  !!! abstract "method: `row_at(self, index)`"
 
-		- **params**
+    Fetch one row of a Channel
 
+    - **params**
 
-			- `proc (Proc)`:  The `Proc` instance
+      - `index (int)`:  which row to fetch
 
-		- **returns**
+    - **returns**
 
+      - `(Channel)`:  The Channel with that row
 
-			- `(str)`:  The names
+  !!! abstract "method: `slice(self, start, length)`"
 
-	!!! abstract "method: `getNextToRun (cls)`"
-		Get the process to run next
+    Fetch some columns of a Channel
 
-		- **returns**
+    - **params**
 
+      - `start (int)`:   from column to start
 
-			- `(Proc)`:  The process next to run
+      - `length (int)`:  how many columns to fetch, default: None (from start to the end)
 
-	!!! abstract "method: `getPaths (self, proc, proc0)`"
-		Infer the path to a process
-		```
-		p1 -> p2 -> p3
-		    p4  _/
-		Paths for p3: [[p4], [p2, p1]]
-		```
+    - **returns**
 
-		- **params**
+      - `(Channel)`:  The Channel with fetched columns
 
+  !!! abstract "method: `split(self, flatten)`"
 
-			- `proc (Proc)`:  The process
+    Split a Channel to single-column Channels
 
-			- `proc0 (Proc)`:  The original process, because this function runs recursively.
+    - **returns**
 
-		- **returns**
+      - `(list[Channel])`:  The list of single-column Channels
 
+  !!! abstract "method: `t(self)`"
 
-			- `(list[list])`:  The path to the process.
+    Transpose the channel
 
-	!!! abstract "method: `getPathsToStarts (self, proc)`"
-		Filter the paths with start processes
+    - **returns**
 
-		- **params**
+      - `(Channel)`:  The transposed channel.
 
+  !!! abstract "method: `transpose(self)`"
 
-			- `proc (Proc)`:  The process
+    Transpose the channel
 
-		- **returns**
+    - **returns**
 
+      - `(Channel)`:  The transposed channel.
 
-			- `(list[list])`:  The filtered path
+  !!! abstract "method: `unfold(self, nfold)`"
 
-	!!! tip "staticmethod: `getPrevStr (proc)`"
-		Get the names of processes a process depends on
+    Do the reverse thing as self.fold does
 
-		- **params**
+    - **params**
 
+      - `nfold (int)`:  How many rows to combind each time. default: 2
 
-			- `proc (Proc)`:  The `Proc` instance
+    - **returns**
 
-		- **returns**
+      - `(Channel)`:  The unfolded Channel
 
+  !!! abstract "method: `unique(self)`"
 
-			- `(str)`:  The names
+    Make the channel unique, remove duplicated rows
+    Try to keep the order
 
-	!!! abstract "method: `getStarts (self)`"
-		Get the start processes
+    - **returns**
 
-		- **returns**
+      - `(Channel)`:  The channel with unique rows.
 
+  !!! abstract "method: `width(self)`"
 
-			- `(list[Proc])`:  The start processes
+    Get the width of a Channel
 
-	!!! abstract "method: `init (cls)`"
-		Set the status of all `ProcNode`s
+    - **returns**
 
+      - `(int)`:  The width of the Channel
+## pyppl.exception
 
-	!!! tip "staticmethod: `register (*procs)`"
-		Register the process
 
-		- **params**
+- **desc**
 
+  Exceptions for PyPPL
 
-			- `*procs (Proc)`:  The `Proc` instance
+!!! example "class: `JobBuildingError`"
 
-	!!! tip "staticmethod: `reset ()`"
-		Reset the status of all `ProcNode`s
+  Failed to build the job
 
+!!! example "class: `JobFailError`"
 
-	!!! abstract "method: `setStarts (self, starts)`"
-		Set the start processes
+  Job results validation failed
 
-		- **params**
+!!! example "class: `JobInputParseError`"
 
+  Failed to parse job input
 
-			- `starts (list[Proc])`:  The start processes
+!!! example "class: `JobOutputParseError`"
 
-## class: Logger
+  Failed to parse job output
 
-!!! example "class: `Logger (self, name, bake)`"
-	A wrapper of logger
+!!! example "class: `PluginConfigKeyError`"
 
+  When try to update plugin config from a dictionary with key not added
 
-	!!! abstract "method: `__getattr__ (self, name)`"
-		Allows logger.info way to specify the level
+!!! example "class: `PluginNoSuchPlugin`"
 
-		- **params**
+  When try to find a plugin not existing
 
+!!! example "class: `ProcessAlreadyRegistered`"
 
-			- `name (str)`:  The level name.
+  Process already registered with the same id and tag
 
-		- **returns**
+  !!! abstract "method: `__init__(self, message, proc1, proc2)`"
 
+    Construct for ProcessAlreadyRegistered
 
-			- `(callable)`:  The logger with the level
+    - **params**
 
-	!!! abstract "method: `__getitem__ (self, name)`"
-		Alias of `__getattr__`
+      - `message (str)`:  The message, make the class to be compatible with Exception
 
-	!!! abstract "method: `__init__ (self, name, bake)`"
-		The logger wrapper construct
+      - `proc1 (Proc)`:  the first Proc
 
-		- **params**
+      - `proc2 (Proc)`:  the second Proc
 
+!!! example "class: `ProcessAttributeError`"
 
-			- `name (str)`:  The logger name. Default: `PyPPL`
+  Process AttributeError
 
-			- `bake (dict)`:  The arguments to bake a new logger.
+!!! example "class: `ProcessInputError`"
 
-	!!! abstract "method: `bake (self, **kwargs)`"
-		Bake the logger with certain arguments
+  Process Input error
 
-		- **params**
+!!! example "class: `ProcessOutputError`"
 
+  Process Output error
 
-			- `*kwargs`:  arguments used to bake a new logger
+!!! example "class: `ProcessScriptError`"
 
-		- **returns**
+  Process script building error
 
+!!! example "class: `PyPPLFindNoProcesses`"
 
-			- `(Logger)`:  The new logger.
+  When failed to find any processes with given pattern
 
-	!!! abstract "method: `init (self, conf)`"
-		Initiate the logger, called by the construct,
-		Just in case, we want to change the config and
-		Reinitiate the logger.
+!!! example "class: `PyPPLInvalidConfigurationKey`"
 
-		- **params**
+  When invalid configuration key passed
 
+!!! example "class: `PyPPLNameError`"
 
-			- `conf (Config)`:  The configuration used to initiate logger.
+  Pipeline name duplicated after transformed by utils.name2filename
 
-	!!! tip "staticmethod: `initLevels (levels, leveldiffs)`"
-		Initiate the levels, get real levels.
+!!! example "class: `PyPPLResumeError`"
 
-		- **params**
+  Try to resume when no start process has been specified
 
+!!! example "class: `RunnerMorethanOneRunnerEnabled`"
 
-			- `levels (str|list)`:  The levels or level names
+  When more than one runners are enabled
 
-			- `leveldiffs (str|list)`:  The diffs of levels
+!!! example "class: `RunnerNoSuchRunner`"
 
-		- **returns**
+  When no such runner is found
 
+!!! example "class: `RunnerTypeError`"
 
-			- `(set)`:  The real levels.
+  Wrong type of runner
+## pyppl.config
 
-	!!! note "property: `pbar ()`"
-		Mark the record as a progress record.
-		Allow `logger.pbar.info` access
 
-		- **returns**
+- **desc**
 
+  Configuration for PyPPL
 
-			- `(Logger)`:  The Logger object itself
+- **variables**
 
-## class: Template
+  - `DEFAULT_CFGFILES (tuple)`:  default configuration files
 
-!!! example "class: `Template (self, source, **envs)`"
-	Template wrapper base class
+  - `DEFAULT_CONFIG (dict)`:  default configurations to be loaded
 
-	- **static variables**
+  - `config (dict)`:  The default configuration that will be used in the whole session
 
+!!! abstract "method: `load_config(default_config, *config_files)`"
 
-		- `DEFAULT_ENVS (dict)`:  The default environment.
+  Load the configurations
 
-	!!! abstract "method: `__init__ (self, source, **envs)`"
-		Template construct
+  - **params**
 
+    - `default_config (dict|path)`:  A configuration dictionary or a path to a configuration file
 
-	!!! abstract "method: `registerEnvs (self, **envs)`"
-		Register extra environment
+    - `*config_files`:  A list of configuration or configuration files
+## pyppl.jobmgr
 
-		- **params**
 
+- **desc**
 
-			- `**envs`:  The environment
+  Job manager for PyPPL
 
-	!!! abstract "method: `render (self, data)`"
-		Render the template
+- **variables**
 
-		- **parmas**
+  - `STATES (dict)`:  Possible states for the job
 
+  - `PBAR_MARKS (dict)`:  The marks on progress bar for different states
 
-			- `data (dict)`:  The data used to render
+  - `PBAR_LEVEL (dict)`:  The levels for different states
 
-## class: TemplateLiquid
+  - `PBAR_SIZE (int)`:  the size of the progress bar
 
-!!! example "class: `TemplateLiquid (self, source, **envs)`"
-	liquidpy template wrapper.
+!!! example "class: `Jobmgr`"
 
+  Job manager
 
-## class: TemplateJinja2
+  !!! abstract "method: `__init__(self, jobs)`"
 
-!!! example "class: `TemplateJinja2 (self, source, **envs)`"
-	Jinja2 template wrapper
+    Job manager constructor
+
+    - **params**
+
+      - `jobs (list)`:  All jobs of a process
+
+  !!! abstract "method: `cleanup(self, ex)`"
+
+    Cleanup the pipeline when
+    - Ctrl-C hit
+    - error encountered and `proc.errhow` = 'terminate'
+
+    - **params**
+
+      - `ex (Exception)`:  The exception raised by workers
+
+  !!! hint "function: `kill_worker(cls, killq)`"
+
+    The killing worker to kill the jobs
+
+  !!! abstract "method: `progressbar(self, event)`"
+
+    Generate the progress bar.
+
+    - **params**
+
+      - `event (StateMachine event)`:  The event including job as model.
+
+  !!! abstract "method: `start(self)`"
+
+    Start the queue.
+    
+
+  !!! abstract "method: `worker(self)`"
+
+    The worker to build, submit and poll the jobs
+## pyppl.plugin
+
+
+- **desc**
+
+  Plugin system for PyPPL
+
+- **variables**
+
+  - `PMNAME (str)`:  The name of the plugin manager
+
+  - `hookimpl (pluggy.HookimplMarker)`:  Used to mark the implementation of hooks
+
+  - `hookspec (pluggy.HookspecMarker)`:  Used to mark the hooks
+
+!!! abstract "method: `cli_addcmd(commands)`"
+
+  PLUGIN API
+  Add command and options to CLI
+
+  - **params**
+
+    - `commands (Commands)`:  The Commands instance
+
+!!! abstract "method: `cli_execcmd(command, opts)`"
+
+  PLUGIN API
+  Execute the command being added to CLI
+
+  - **params**
+
+    - `command (str)`:  The command
+
+    - `opts (dict)`:  The options
+
+!!! abstract "method: `config_plugins(*plugins)`"
+
+  Parse configurations for plugins and enable/disable plugins accordingly.
+
+  - **params**
+
+    - `*plugins ([any])`:  The plugins
+
+        plugins with 'no:' will be disabled.
+
+!!! abstract "method: `disable_plugin(plugin)`"
+
+  Try to disable a plugin
+
+  - **params**
+
+    - `plugin (any)`:  A plugin or the name of a plugin
+
+!!! abstract "method: `job_build(job, status)`"
+
+  PLUGIN API
+  After a job is being built
+
+  - **params**
+
+    - `job (Job)`:  The Job instance
+
+    - `status (str)`:  The status of the job building
+
+        - True: The job is successfully built
+
+        - False: The job is failed to build
+
+        - cached: The job is cached
+
+!!! abstract "method: `job_done(job, status)`"
+
+  PLUGIN API
+  After a job is done
+
+  - **params**
+
+    - `job (Job)`:  The Job instance
+
+    - `status (str)`:  The status of the job
+
+        - succeeded: The job is successfully done
+
+        - failed: The job is failed
+
+        - cached: The job is cached
+
+!!! abstract "method: `job_init(job)`"
+
+  PLUGIN API
+  Right after job initiates
+
+  - **params**
+
+    - `job (Job)`:  The Job instance
+
+!!! abstract "method: `job_kill(job, status)`"
+
+  PLUGIN API
+  After a job is being killed
+
+  - **params**
+
+    - `job (Job)`:  The Job instance
+
+    - `status (str)`:  The status of the job killing
+
+        - 'succeeded': The job is successfully killed
+
+        - 'failed': The job is failed to kill
+
+!!! abstract "method: `job_poll(job, status)`"
+
+  PLUGIN API
+  Poll the status of a job
+
+  - **params**
+
+    - `job (Job)`:  The Job instance
+
+    - `status (str)`:  The status of the job
+
+        - 'running': The job is still running
+
+        - 'done': Polling is done, rcfile is generated
+
+!!! abstract "method: `job_prebuild(job)`"
+
+  PLUGIN API
+  Before a job starts to build
+
+  - **params**
+
+    - `job (Job)`:  The Job instance
+
+!!! abstract "method: `job_submit(job, status)`"
+
+  PLUGIN API
+  After a job is being submitted
+
+  - **params**
+
+    - `job (Job)`:  The Job instance
+
+    - `status (str)`:  The status of the job submission
+
+        - 'succeeded': The job is successfully submitted
+
+        - 'failed': The job is failed to submit
+
+        - 'running': The job is already running
+
+!!! abstract "method: `job_succeeded(job)`"
+
+  PLUGIN API
+  Tell if job is successfully done or not
+  One can add not rigorous check. By default, only
+  if returncode is 0 checked.
+  return False to tell if job is failed otherwise
+  use the default status or results from other plugins
+
+  - **params**
+
+    - `job (Job)`:  The Job instance
+
+!!! abstract "method: `logger_init(logger)`"
+
+  PLUGIN API
+  Initiate logger, most manipulate levels
+
+  - **params**
+
+    - `logger (Logger)`:  The Logger instance
+
+!!! abstract "method: `proc_init(proc)`"
+
+  PLUGIN API
+  Right after a Proc being initialized
+
+  - **params**
+
+    - `proc (Proc)`:  The Proc instance
+
+!!! abstract "method: `proc_postrun(proc, status)`"
+
+  PLUGIN API
+  After a process has done
+
+  - **params**
+
+    - `proc (Proc)`:  The Proc instance
+
+    - `status (str)`:  succeeded/failed
+
+!!! abstract "method: `proc_prerun(proc)`"
+
+  PLUGIN API
+  Before a process starts
+  If False returned, process will not start
+  The value returned by the first plugin will be used, which means
+  once a plugin stops process from running, others cannot resume it.
+
+  - **params**
+
+    - `proc (Proc)`:  The Proc instance
+
+!!! abstract "method: `pyppl_init(ppl)`"
+
+  PLUGIN API
+  Right after a pipeline initiates
+
+  - **params**
+
+    - `ppl (PyPPL)`:  The PyPPL instance
+
+!!! abstract "method: `pyppl_postrun(ppl)`"
+
+  PLUGIN API
+  After the pipeline is done
+  If the pipeline fails, this won't run.
+  Use proc_postrun(proc = proc, status = 'failed') instead.
+
+  - **params**
+
+    - `ppl (PyPPL)`:  The PyPPL instance
+
+!!! abstract "method: `pyppl_prerun(ppl)`"
+
+  PLUGIN API
+  Before pipeline starts to run
+  If False returned, the pipeline will not run
+  The value returned by the first plugin will be used, which means
+  once a plugin stops process from running, others cannot resume it.
+
+  - **params**
+
+    - `ppl (PyPPL)`:  The PyPPL instance
+
+!!! abstract "method: `setup(config)`"
+
+  PLUGIN API
+  Add default configs
+
+  - **params**
+
+    - `config (Config)`:  The default configurations
+
+!!! example "class: `PluginConfig`"
+
+  Plugin configuration for Proc/Job
+
+  !!! abstract "method: `__init__(self, pconfig)`"
+
+    Construct for PluginConfig
+
+    - **params**
+
+      - `pconfig (dict)`:  the default plugin configuration
+
+  !!! abstract "method: `add(self, name, default, converter, update)`"
+
+    Add a config item
+
+    - **params**
+
+      - `name (str)`:  The name of the config item.
+
+      - `default (any)`:  The default value
+
+      - `converter (callable)`:  The converter to convert the value whenever the value is set.
+
+      - `update (str)`:  With setcounter > 1, should we update the value or ignore it in .update()?
+
+          - if value is not a dictionary, update will just replace the value.
+
+  !!! abstract "method: `setcounter(self, name)`"
+
+    Get the set counter for properties
+
+    - **params**
+
+      - `name (str)`:  the name of the configuration item
+
+  !!! abstract "method: `update(self, pconfig)`"
+
+    Update the configuration
+    Depends on `update` argument while the configuration is added
+
+    - **params**
+
+      - `pconfig (dict)`:  the configuration to update from
+## pyppl.logger
+
+
+- **desc**
+
+  Custome logger for PyPPL
+
+- **variables**
+
+  - `LOG_FORMAT (str)`:  The format of loggers
+
+  - `LOGTIME_FORMAT (str)`:  The format of time for loggers
+
+  - `GROUP_VALUES (dict)`:  The values for each level group
+
+  - `LEVEL_GROUPS (dict)`:  The groups of levels
+
+  - `THEMES (dict)`:  The builtin themes
+
+  - `SUBLEVELS (dict)`:  the sub levels used to limit loggers of the same type
+
+!!! abstract "method: `get_group(level)`"
+
+  Get the group name of the level
+
+  - **params**
+
+    - `level (str)`:  The level, should be UPPERCASE
+
+  - **returns**
+
+    - `(str)`:  The group name
+
+!!! abstract "method: `get_value(level)`"
+
+  Get the value of the level
+
+  - **params**
+
+    - `level (str)`:  The level, should be UPPERCASE
+
+  - **returns**
+
+    - `(int)`:  The value of the group where the level is in.
+
+!!! abstract "method: `init_levels(group, leveldiffs)`"
+
+  Initiate the levels, get real levels.
+
+  - **params**
+
+    - `group (str)`:  The group of levels
+
+    - `leveldiffs (str|list)`:  The diffs of levels
+
+  - **returns**
+
+    - `(set)`:  The real levels.
+
+!!! example "class: `Logger`"
+
+  A wrapper of logger
+  
+
+  !!! abstract "method: `__init__(self, name, bake)`"
+
+    The logger wrapper construct
+
+    - **params**
+
+      - `name (str)`:  The logger name. Default: `PyPPL`
+
+      - `bake (dict)`:  The arguments to bake a new logger.
+
+  !!! note "property: `pbar`"
+
+    Mark the record as a progress record.
+    Allow `logger.pbar.info` access
+
+    - **returns**
+
+      - `(Logger)`:  The Logger object itself
+
+  !!! abstract "method: `add_level(self, level, group)`"
+
+
+    - **params**
+
+      - `level (str)`:  The log level name
+
+          Make sure it's less than 7 characters
+
+      - `group (str)`:  The group the level is to be added
+
+  !!! abstract "method: `add_sublevel(self, slevel, lines)`"
+
+
+    - **params**
+
+      - `slevel (str)`:  The debug level
+
+      - `lines (int)`:  The number of lines allowed for the debug level
+
+          - Negative value means a summary will be printed
+
+  !!! abstract "method: `bake(self, **kwargs)`"
+
+    Bake the logger with certain arguments
+
+    - **params**
+
+      - `*kwargs`:  arguments used to bake a new logger
+
+    - **returns**
+
+      - `(Logger)`:  The new logger.
+
+  !!! abstract "method: `init(self, config)`"
+
+    Initiate the logger, called by the construct,
+    Just in case, we want to change the config and as default_config
+    Reinitiate the logger.
+
+    - **params**
+
+      - `conf (Config)`:  The configuration used to initiate logger.
+
+!!! example "class: `Theme`"
+
+  The theme for the logger
+
+  - **variables**
+
+    - `COLORS (dict)`:  Color collections used to format theme
+
+  !!! abstract "method: `__init__(self, theme)`"
+
+    Construct for Theme
+
+    - **params**
+
+      - `theme (str)`:  the name of the theme
+
+  !!! abstract "method: `get_color(self, level)`"
+
+    Get the color for a given level
+
+    - **params**
+
+      - ``level``:  The level
+
+    - **returns**
+
+        The color of the level by the theme.
+## pyppl.runner
+
+
+- **desc**
+
+  Make runners as plugins for PyPPL
+
+- **variables**
+
+  - `RMNAME (str)`:  The name of the runner manager
+
+  - `RUNNERS (dict)`:  All ever registered runners
+
+  - `DEFAULT_POLL_INTERVAL (int)`:  The default poll interval to check job status
+
+  - `hookimpl (pluggy.HookimplMarker)`:  The marker for runner hook Implementations
+
+  - `hookspec (pluggy.HookspecMarker)`:  The marker for runner hooks
+
+!!! abstract "method: `current_runner()`"
+
+  Get current runner name
+
+  - **returns**
+
+    - `(str)`:  current runner name
+
+!!! abstract "method: `isrunning(job)`"
+
+  RUNNER API
+  Tell if the job is running
+
+  - **params**
+
+    - `job (Job)`:  the job instance
+
+!!! abstract "method: `kill(job)`"
+
+  RUNNER API
+  Try to kill the job
+
+  - **params**
+
+    - `job (Job)`:  the job instance
+
+!!! abstract "method: `poll_interval()`"
+
+  Get the poll interval for current runner
+
+  - **returns**
+
+    - `(int)`:  poll interval for querying job status
+
+!!! abstract "method: `register_runner(runner, name)`"
+
+  Register a runner
+
+  - **params**
+
+    - `runner (callable)`:  The runner, a module or a class object
+
+    - `name (str)`:  The name of the runner to registered
+
+!!! abstract "method: `runner_init(proc)`"
+
+  RUNNER API
+  Initiate runner
+
+  - **params**
+
+    - `proc (Proc)`:  The Proc instance
+
+!!! abstract "method: `script_parts(job, base)`"
+
+  RUNNER API
+  Overwrite script parts
+
+  - **params**
+
+    - `job (Job)`:  the job instance
+
+    - `base (Diot)`:  The base script parts
+
+!!! abstract "method: `submit(job)`"
+
+  RUNNER API
+  Submit a job
+
+  - **params**
+
+    - `job (Job)`:  the job instance
+
+!!! abstract "method: `use_runner(runner)`"
+
+  runner should be a module or the name of a module,
+  with or without "pyppl_runner_" prefix
+  To enable a runner, we need to disable other runners
+
+  - **params**
+
+    - `runner (str)`:  the name of runner
+
+!!! example "class: `PyPPLRunnerLocal`"
+
+  PyPPL's default runner
+
+  !!! abstract "method: `isrunning(self, job)`"
+
+    Try to tell whether the job is still running.
+
+    - **params**
+
+      - `job (Job)`:  the job instance
+
+    - **returns**
+
+        `True` if yes, otherwise `False`
+
+  !!! abstract "method: `kill(self, job)`"
+
+    Try to kill the running jobs if I am exiting
+
+    - **params**
+
+      - `job (Job)`:  the job instance
+
+  !!! abstract "method: `submit(self, job)`"
+
+    Try to submit the job
+
+    - **params**
+
+      - `job (Job)`:  the job instance

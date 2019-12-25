@@ -6,10 +6,9 @@ pSort.input   = {"infile:file": Channel.fromPattern("./data/*.txt")}
 pSort.output  = "outfile:file:{{i.infile | fn}}.sorted"
 pSort.forks   = 5
 pSort.nthread = 1
-pSort.exdir   = './export'
 pSort.envs.fn = lambda fpath: path.basename(fpath).split('.')[0]
 pSort.script  = """
   sort -k1r {{i.infile}} > {{o.outfile}}
 """
 
-PyPPL({'_log':{'levels':'all', 'leveldiffs': '-DEBUG'}}).start(pSort).run()
+PyPPL().start(pSort).run()

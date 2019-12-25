@@ -1,15 +1,15 @@
 from sys import argv
 from pyppl import PyPPL, Proc
 
-p1 = Proc()
-p2 = Proc()
-p3 = Proc()
-p4 = Proc()
-p5 = Proc()
-p6 = Proc()
-p7 = Proc()
-p8 = Proc()
-p9 = Proc()
+p1 = Proc(input = {"in": [0]}, output = "out:var:1")
+p2 = Proc(input = {"in": [0]}, output = "out:var:1")
+p3 = Proc(input = {"in": [0]}, output = "out:var:1")
+p4 = Proc(input = {"in": [0]}, output = "out:var:1")
+p5 = Proc(input = {"in": [0]}, output = "out:var:1")
+p6 = Proc(input = {"in": [0]}, output = "out:var:1")
+p7 = Proc(input = {"in": [0]}, output = "out:var:1")
+p8 = Proc(input = {"in": [0]}, output = "out:var:1")
+p9 = Proc(input = {"in": [0]}, output = "out:var:1")
 """
 		   p1         p8
 		/      \      /
@@ -23,21 +23,13 @@ p9 = Proc()
 """
 p2.depends = p1
 p3.depends = p1, p8
-p3.hide = True
+p3.plugin_config.flowchart_hide = True
 p4.depends = p2, p3
-p4.exdir   = "./export"
 p5.depends = p4
 p6.depends = p4, p9
-p6.exdir   = "./export"
 p7.depends = p5, p6
-p7.exdir   = "./export"
-
-# make sure at least one job is created.
-p1.input = {"in": [0]}
-p8.input = {"in": [0]}
-p9.input = {"in": [0]}
 
 if len(argv) > 1:
-	PyPPL({'flowchart': {'theme': 'dark'}}).start(p1, p8, p9).resume2(argv[1:]).flowchart().run()
+	PyPPL(flowchart_theme = 'dark').start(p1, p8, p9).flowchart().run()
 else:
 	PyPPL().start(p1, p8, p9).flowchart().run()

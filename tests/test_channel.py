@@ -1,5 +1,5 @@
 import pytest
-from pyppl import Diot
+from diot import Diot
 from pyppl.channel import Channel
 
 pytest_plugins = ["tests.fixt_channel"]

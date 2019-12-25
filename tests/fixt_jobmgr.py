@@ -1,26 +1,13 @@
 from copy import copy
 from time import sleep
 import pytest
-from pyppl import Proc as _Proc, Diot
+from diot import Diot
+from pyppl._proc import OUT_DIRTYPE, OUT_FILETYPE, OUT_VARTYPE, OUT_STDOUTTYPE, OUT_STDERRTYPE, IN_VARTYPE, IN_FILETYPE, IN_FILESTYPE
 from pyppl.template import TemplateLiquid
 from pyppl.jobmgr import Jobmgr, STATES
 from pyppl.logger import logger
 
 class Proc(dict):
-	OUT_VARTYPE    = _Proc.OUT_VARTYPE
-	OUT_FILETYPE   = _Proc.OUT_FILETYPE
-	OUT_DIRTYPE    = _Proc.OUT_DIRTYPE
-	OUT_STDOUTTYPE = _Proc.OUT_STDOUTTYPE
-	OUT_STDERRTYPE = _Proc.OUT_STDERRTYPE
-
-	IN_VARTYPE   = _Proc.IN_VARTYPE
-	IN_FILETYPE  = _Proc.IN_FILETYPE
-	IN_FILESTYPE = _Proc.IN_FILESTYPE
-
-	EX_GZIP = _Proc.EX_GZIP
-	EX_COPY = _Proc.EX_COPY
-	EX_MOVE = _Proc.EX_MOVE
-	EX_LINK = _Proc.EX_LINK
 
 	def __init__(self, *args, **kwargs):
 		kwargs['nthread'] = 10
@@ -28,10 +15,8 @@ class Proc(dict):
 		kwargs['errhow']  = 'terminate'
 		kwargs['errntry'] = 3
 		kwargs['forks']   = 1
-		kwargs['expect']  = TemplateLiquid('')
 		kwargs['size']    = 1
-		kwargs['rc']      = [0]
-		kwargs['config']  = Diot(_log = {})
+		kwargs['id']    = 'pProc'
 		super(Proc, self).__init__(*args, **kwargs)
 
 	def __getattr__(self, item):
@@ -40,12 +25,13 @@ class Proc(dict):
 # Mock job
 class Job(object):
 	POLL_INTERVAL = 1
-	def __init__(self, index, proc):
+	def __init__(self, index, proc, name = 'job'):
 		self.index      = index
 		self.proc       = proc
 		self.orig_state = STATES.INIT
 		self.state      = None
 		self.ntry       = 0
+		self.name = name
 
 	def logger(self, *args, **kwargs):
 		"""A logger wrapper to avoid instanize a logger object for each job"""
@@ -61,13 +47,10 @@ class Job(object):
 	def restore_state(self):
 		self.state = self.orig_state
 
-	def showError(self, joblen):
-		logger.error('%s/%s: Job error', self.index, joblen)
-
 	def kill(self):
 		return self.orig_state.endswith('ing')
 
-	def done(self, cached = False):
+	def done(self, cached = False, status = True):
 		logger.info('%s: Job done with cached: %s', self.index, cached)
 
 	def build(self):
@@ -94,23 +77,22 @@ class Job(object):
 def proc_default():
 	return Proc()
 
-def job_factory(index, state):
+def job_factory(index, state, name):
 	@pytest.fixture
 	def job_with_state(proc_default):
-		job       = Job(index, proc_default)
+		job       = Job(index, proc_default, name)
 		job.state = job.orig_state = state
 		return job
 	return job_with_state
 
 def inject_job_fixture(name, index, state):
-	globals()[name] = job_factory(index, state)
+	globals()[name] = job_factory(index, state, name)
 
 inject_job_fixture('job_init', 0, STATES.INIT)
 inject_job_fixture('job_building', 0, STATES.BUILDING)
 inject_job_fixture('job_built', 0, STATES.BUILT)
 inject_job_fixture('job_builtfailed', 0, STATES.BUILTFAILED)
 inject_job_fixture('job_submitting', 0, STATES.SUBMITTING)
-inject_job_fixture('job_submitted', 0, STATES.SUBMITTED)
 inject_job_fixture('job_submitfailed', 0, STATES.SUBMITFAILED)
 inject_job_fixture('job_running', 0, STATES.RUNNING)
 inject_job_fixture('job_retrying', 0, STATES.RETRYING)

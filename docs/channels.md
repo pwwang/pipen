@@ -529,4 +529,8 @@ Into:
 | 2         | c1 | c2  |... |
 | ...       |... | ... |... |
 
+!!! warning
+
+  All `camelCase` methods will be deprecated in the future, please use `snake_case` version instead.
+
 [1]: https://github.com/pwwang/pyparam

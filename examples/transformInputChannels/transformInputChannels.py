@@ -28,9 +28,8 @@ pMergeFiles.depends = pAddPrefix
 # ["test1.ln", "test2.ln", ..., "test5.ln"]
 pMergeFiles.input = {"infiles:files": lambda ch: [ch.flatten()]}
 pMergeFiles.output = "outfile:file:mergedfile.txt"
-pMergeFiles.exdir = "./export"
 pMergeFiles.script = """
-paste {{i.infiles | ' '.join}} > {{o.outfile}}
+paste {{i.infiles | map: str, _ | @join: " "}} > {{o.outfile}}
 """
 
 PyPPL().start(pSort).run()

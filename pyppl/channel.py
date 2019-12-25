@@ -6,7 +6,9 @@ import functools
 
 from os import path
 from glob import glob
-from . import utils
+from liquid import LiquidStream
+
+# pylint: disable=invalid-name
 
 class Channel(list): # pylint: disable=too-many-public-methods
 	"""@API
@@ -196,7 +198,7 @@ class Channel(list): # pylint: disable=too-many-public-methods
 
 		width = None
 		for arg in args:
-			items = tuple(utils.split(arg, ','))
+			items = tuple(LiquidStream.from_string(arg).split(','))
 			if width is not None and width != len(items):
 				raise ValueError('Width %s (%s) is not consistent with previous %s' %
 					(len(items), arg, width))
@@ -664,4 +666,18 @@ class Channel(list): # pylint: disable=too-many-public-methods
 		ret = [tuple(row) for row in ret]
 		return Channel(ret)
 
-	t = transpose
+	# We will try to deprecate the camelCase functions
+	t             = transpose
+	from_pattern  = fromPattern
+	from_pairs    = fromPairs
+	from_file     = fromFile
+	from_argv     = fromArgv
+	from_params   = fromParams
+	from_channels = fromChannels
+	map_col       = mapCol
+	filter_col    = filterCol
+	reduce_col    = reduceCol
+	col_at        = colAt
+	row_at        = rowAt
+	rep_col       = repCol
+	rep_row       = repRow

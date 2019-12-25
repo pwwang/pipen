@@ -23,15 +23,8 @@ pBaseRecalibrator.args.ref        = <reference>
 pBaseRecalibrator.args.knownSites = <dbsnp>
 pPrintReads.args.ref              = <reference>
 
-PyPPL({
-    'default': {
-        'forks': 100,
-        'runner': 'sge',
-        'sgeRunner': {
-            'sge.q': 'lg-mem'
-        }
-    }
-}).start(pTrimmomaticPE).run()
+PyPPL(forks = 100, runner_runner = 'sge', runner_sge_q = '4-days') \
+    .start(pTrimmomaticPE).run()
 ```
 This is a very commonly used Whole Genome Sequencing data cleanup pipeline from the raw reads according to the [GATK best practice](https://software.broadinstitute.org/gatk/best-practices/). And it will be used pretty much every time when the raw read files come.
 
@@ -67,13 +60,7 @@ Then every time you just need to call the proc set:
 ```python
 aFastqPE2Bam.input = channel.fromPairs ( datadir + '/*.fastq.gz' )
 aFastqPE2Bam.exdir = exdir
-PyPPL({
-    'default': {
-        'sgeRunner': {
-            'sge.q' : '1-day'
-        }
-    }
-}).start(aFastqPE2Bam).run()
+PyPPL(runner_sge_q = '1-day').start(aFastqPE2Bam).run()
 ```
 
 # Initializing a procset

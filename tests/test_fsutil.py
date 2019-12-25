@@ -11,21 +11,21 @@ from pyppl.utils import fs
 @pytest.mark.parametrize('path, lockfile', [
 	('a', os.path.join(fs.TMPDIR, md5('a'.encode()).hexdigest() + '.lock'))
 ])
-def test_getLockFile(path, lockfile):
-	assert fs._getLockFile(path) == lockfile
+def test_get_lock_file(path, lockfile):
+	assert fs._get_lock_file(path) == lockfile
 
 def test_lock(tmpdir):
 	testfile1 = tmpdir / 'test1'
 	testfile2 = tmpdir / 'test2'
 
 	with fs.lock(testfile1) as lock0:
-		assert os.path.exists(fs._getLockFile(testfile1))
+		assert os.path.exists(fs._get_lock_file(testfile1))
 		assert lock0.is_locked
 	assert not lock0.is_locked
 
 	with fs.lock(testfile1, testfile2) as locks:
-		assert os.path.exists(fs._getLockFile(testfile1))
-		assert os.path.exists(fs._getLockFile(testfile2))
+		assert os.path.exists(fs._get_lock_file(testfile1))
+		assert os.path.exists(fs._get_lock_file(testfile2))
 		assert locks[0].is_locked
 		assert locks[1].is_locked
 	assert not locks[0].is_locked

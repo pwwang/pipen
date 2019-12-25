@@ -19,7 +19,6 @@ pAddPrefix.depends = pSort
 # automatically inferred from pSort.output
 pAddPrefix.input   = "infile:file"
 pAddPrefix.output  = "outfile:file:{{i.infile | fn}}.ln"
-pAddPrefix.exdir   = './export'
 pAddPrefix.forks   = 5
 pAddPrefix.envs.fn = fn
 pAddPrefix.script  = """

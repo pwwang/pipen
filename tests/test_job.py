@@ -1,1024 +1,603 @@
+import time
 import pytest
 from pathlib import Path
-from os import environ, utime
+from os import path, utime
 from diot import Diot, OrderedDiot
-environ['PYPPL_default__log'] = "py:{'levels': 'all'}"
-from pyppl.job import Job, JobInputParseError, JobOutputParseError, \
-	RC_NO_RCFILE, DIR_OUTPUT, FILE_STDERR, FILE_STDOUT, DIR_INPUT
+from simpleconf import Config
+from pyppl.config import config
+from pyppl.runner import use_runner
+from pyppl.job import Job
+from pyppl._job import RC_NO_RCFILE, _link_infile
+from pyppl.proc import Proc
 from pyppl.utils import fs, filesig
-from pyppl.template import TemplateLiquid
-pytest_plugins = ["tests.fixt_job"]
+from pyppl.exception import JobInputParseError, JobOutputParseError
 
-def test_init(job0):
-	assert job0.index == 0
-	assert job0.dir.name == '1'
-	assert job0.fout is None
-	assert job0.ferr is None
-	assert job0.lastout == ''
-	assert job0.lasterr == ''
-	assert job0.ntry == 0
-	assert job0.input == {}
-	assert job0.output == {}
-	assert job0.config == {}
-	assert job0.script.name == 'job.script.test'
-	assert job0._rc is None
-	assert job0._pid is None
 
-def test_scriptParts(job0):
-	assert job0.scriptParts.header == ''
-	assert job0.scriptParts.pre == ''
-	assert job0.scriptParts.post == ''
-	assert job0.scriptParts.saveoe is True
-	assert job0.scriptParts.command == [str(job0.dir / 'job.script')]
+@pytest.fixture
+def proc_factory(tmp_path):
+	def wrapper(id = 'p', **kwargs):
+		runtime_config = Config()
+		runtime_config._load(config)
+		runtime_config.pop('logger', None)
+		runtime_config.pop('plugins', None)
+		configs = Diot(
+			input = {'a': [1]},
+			output = 'out:var:1',
+		)
+		configs.update(kwargs)
+		if 'workdir' not in configs:
+			configs.workdir = tmp_path.joinpath(id)
+		ret = Proc(id, **configs)
+		ret.runtime_config = runtime_config
+		return ret
+	return wrapper
 
-def test_data(job0):
-	assert job0.data.job.index == 0
-	assert job0.data.job.indir == str(job0.dir / 'input')
-	assert job0.data.job.outdir == str(job0.dir / 'output')
-	assert job0.data.job.dir == str(job0.dir)
-	assert job0.data.job.outfile == str(job0.dir / 'job.stdout')
-	assert job0.data.job.errfile == str(job0.dir / 'job.stderr')
-	assert job0.data.job.pidfile == str(job0.dir / 'job.pid')
-	assert job0.data.job.cachedir == str(job0.dir / 'output' / '.jobcache')
-	job0.input = {'infile': ('file', 'indata')}
-	job0.output = {'outfile': ('file', 'outdata')}
-	assert job0.data.i == {'infile': 'indata'}
-	assert job0.data.o == {'outfile': 'outdata'}
-	assert job0.data.proc.errhow == 'terminate'
+def test_init(proc_factory, caplog):
+	use_runner('local')
+	proc = proc_factory('pInit')
+	job = Job(0, proc)
+	assert job.runner == 'local'
+	assert job.dir.resolve() == proc.workdir.joinpath('1').resolve()
+	assert job.input == {'a': ('var', 1)}
+	assert job.output == {'out': ('var', '1')}
+	assert job.script == [str(job.dir / 'job.script.local')]
+	assert job.rc == RC_NO_RCFILE
+	assert job.script_parts == {
+		'command': ['{0}/job.script 1> {0}/job.stdout 2> {0}/job.stderr'.format(job.dir)],
+		'header': '',
+		'post': '',
+		'pre': '',
+		'saveoe': True}
+	assert job.signature.i == {'a:var': '1'}
+	assert job.signature.o == {'out:var':'1'}
+	assert job.pid == ''
+	assert job.config == {}
 
-def test_logger(job0, caplog):
-	job0.logger('hello world!', level = 'info')
-	assert 'pProc: [1/1] hello world!' in caplog.text
-	caplog.clear()
-	job0.logger('PBAR!', level = 'info', pbar = True)
-	assert 'PBAR!' in caplog.text
+	job.logger('HAHA', level = 'INFO', pbar = True)
+	assert 'pInit: [1/1] HAHA' in caplog.text
 
-def test_wrapScript(job0, job1):
-	job0.wrapScript()
-	assert job0.script.read_text() == """#!/usr/bin/env bash
-#
-# Collect return code on exit
-trap "status=\\$?; echo \\$status > '{jobdir}/job.rc'; if [ ! -e '{jobdir}/job.stdout' ]; then touch '{jobdir}/job.stdout'; fi; if [ ! -e '{jobdir}/job.stderr' ]; then touch '{jobdir}/job.stderr'; fi; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
-#
-# Run pre-script
-#
-# Run the real script
-{jobdir}/job.script 1> {jobdir}/job.stdout 2> {jobdir}/job.stderr
-#
-# Run post-script
-#""".format(jobdir = job0.dir)
-
-	job1.wrapScript()
-	assert job1.script.read_text() == """#!/usr/bin/env bash
-#
-# Collect return code on exit
-trap "status=\\$?; echo \\$status > '{jobdir}/job.rc'; if [ ! -e '{jobdir}/job.stdout' ]; then touch '{jobdir}/job.stdout'; fi; if [ ! -e '{jobdir}/job.stderr' ]; then touch '{jobdir}/job.stderr'; fi; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
-#
-# Run pre-script
-pre
-#
-# Run the real script
-command 1> {jobdir}/job.stdout 2> {jobdir}/job.stderr
-#
-# Run post-script
-post
-#""".format(jobdir = job1.dir)
-
-def test_showError(job0, caplog):
-	job0.showError(10)
-	assert 'Failed (totally 10).' in caplog.text
-	assert 'Rcfile not generated' in caplog.text
-	assert '/1/job.script' in caplog.text
-	assert '/1/job.stdout' in caplog.text
-	assert '/1/job.stderr' in caplog.text
-	job0.rc = 10
-	job0.showError(10)
-	assert 'Return code: 10.' in caplog.text
-	job0.rc = (1 << 9) + 10
-	job0.showError(10)
-	assert '10 [Outfile not generated]' in caplog.text
-	job0.rc = (1 << 9) + (1 << 10) + 10
-	job0.showError(10)
-	assert '10 [Outfile not generated; Expectation not met]' in caplog.text
-	job0.rc = 510
-	job0.showError(10)
-	assert 'Submission failed' in caplog.text
-	# stderr
-	job0.proc.echo.jobs = []
-	job0.showError(10)
-	assert 'Check STDERR below:' in caplog.text
-	assert '<EMPTY STDERR>' in caplog.text
-
-	(job0.dir / 'job.stderr').write_text('\n'.join([
-		'STDERR %s.' % (i+1) for i in range(21)
-	]))
-	job0.showError(10)
-	assert 'Check STDERR below:' in caplog.text
-	assert 'STDERR 2.' in caplog.text
-	assert 'STDERR 1.' not in caplog.text
-	assert 'Top 1 line(s) ignored' in caplog.text
-	# ignore
-	job0.proc.errhow = 'ignore'
-	job0.showError(10)
-	assert 'Failed but ignored' in caplog.text
-
-def test_reportitem(job0, caplog):
-	job0._reportItem(key = 'key', maxlen = 5, data = 'abc', loglevel = 'input')
-	assert 'INPUT' in caplog.text
-	assert 'pProc: [1/1] key   => abc' in caplog.text
-	job0._reportItem(key = 'key', maxlen = 5, data = [], loglevel = 'input')
-	assert 'pProc: [1/1] key   => [  ]' in caplog.text
-	job0._reportItem(key = 'key', maxlen = 5, data = ['abc'], loglevel = 'input')
-	assert 'pProc: [1/1] key   => [ abc ]' in caplog.text
-	job0._reportItem(key = 'key', maxlen = 5, data = ['abc', 'def'], loglevel = 'input')
-	assert 'pProc: [1/1] key   => [ abc,' in caplog.text
-	assert 'pProc: [1/1]            def ]' in caplog.text
-	job0._reportItem(key = 'key', maxlen = 5, data = ['abc', 'def', 'ghi'], loglevel = 'input')
-	assert 'pProc: [1/1] key   => [ abc,' in caplog.text
-	assert 'pProc: [1/1]            def,' in caplog.text
-	assert 'pProc: [1/1]            ghi ]' in caplog.text
-	job0._reportItem(key = 'key', maxlen = 5,
-		data = ['abc', 'def', 'ghi', 'lmn'], loglevel = 'input')
-	assert 'pProc: [1/1] key   => [ abc,' in caplog.text
-	assert 'pProc: [1/1]            def,' in caplog.text
-	assert 'pProc: [1/1]            ... (1),' in caplog.text
-	assert 'pProc: [1/1]            lmn ]' in caplog.text
-
-def test_report(job0, caplog):
-	job0.proc._log.shorten = 10
-	job0.input = Diot(
-		a = ('var', 'abcdefghijkmnopq'),
-		bc = ('files', ['/long/path/to/file1']),
-		de = ('file', '/long/path/to/file2'),
-	)
-	job0.output = Diot(
-		outfile = ('file', '/path/to/output/file1'),
-		outfiles = ('files', ['/path/to/output/file2'])
-	)
-	job0.report()
-	assert 'pProc: [1/1] a        => ab ... pq' in caplog.text
-	assert 'pProc: [1/1] bc       => [ /l/p/t/file1 ]' in caplog.text
-	assert 'pProc: [1/1] de       => /l/p/t/file2' in caplog.text
-	assert 'pProc: [1/1] outfile  => /p/t/o/file1' in caplog.text
-	assert 'pProc: [1/1] outfiles => [ /p/t/o/file2 ]' in caplog.text
-
-# test_build
-
-def test_linkinfile(job0, tmpdir):
+def test_link_infile(proc_factory, tmp_path):
+	proc = proc_factory('pLinkInfile')
+	job = Job(0, proc)
 	# clear up the input directory
-	fs.mkdir(job0.dir / 'input', overwrite = True)
-	infile1 = tmpdir / 'indir1' / 'test_linkinfile.infile.txt'
+	fs.mkdir(job.dir / 'input', overwrite = True)
+	infile1 = tmp_path / 'indir1' / 'test_link_infile.infile.txt'
 	infile1.parent.mkdir()
 	infile1.write_text('')
-	assert job0._linkInfile(infile1) == job0.dir / 'input' / 'test_linkinfile.infile.txt'
+	assert _link_infile(infile1, job.dir/'input') == job.dir / 'input' / 'test_link_infile.infile.txt'
 
 	# rename existing file with same name
-	infile2 = tmpdir / 'indir2' / 'test_linkinfile.infile.txt'
+	infile2 = tmp_path / 'indir2' / 'test_link_infile.infile.txt'
 	infile2.parent.mkdir()
 	infile2.write_text('')
-	assert job0._linkInfile(infile2) == job0.dir / 'input' / '[1]test_linkinfile.infile.txt'
+	assert _link_infile(infile2, job.dir/'input') == job.dir / 'input' / '[1]test_link_infile.infile.txt'
 	# do it again and it will detect infile2 and [1]... are the same file
-	assert job0._linkInfile(infile2) == job0.dir / 'input' / '[1]test_linkinfile.infile.txt'
+	assert _link_infile(infile2, job.dir/'input') == job.dir / 'input' / '[1]test_link_infile.infile.txt'
 
 	# if a malformat file exists
-	(job0.dir / 'input' / '[a]test_linkinfile.infile.txt').write_text('')
-	infile3 = tmpdir / 'indir3' / 'test_linkinfile.infile.txt'
+	(job.dir / 'input' / '[a]test_link_infile.infile.txt').write_text('')
+	infile3 = tmp_path / 'indir3' / 'test_link_infile.infile.txt'
 	infile3.parent.mkdir()
 	infile3.write_text('')
-	assert job0._linkInfile(infile3) == job0.dir / 'input' / '[2]test_linkinfile.infile.txt'
+	assert _link_infile(infile3, job.dir/'input') == job.dir / 'input' / '[2]test_link_infile.infile.txt'
 
-def test_prepinput(job0, tmpdir, caplog):
-	infile1 = tmpdir / 'test_prepinput.txt'
+def test_dir(proc_factory):
+	proc = proc_factory('pDir')
+	job = Job(0, proc)
+	assert job.dir.is_dir()
+
+def test_input(tmp_path, proc_factory, caplog):
+	infile1 = tmp_path / 'test_prepinput.txt'
 	infile1.write_text('')
-	infile2 = tmpdir / 'renaming' / 'test_prepinput.txt'
+	infile2 = tmp_path / 'renaming' / 'test_prepinput.txt'
 	infile2.parent.mkdir()
 	infile2.write_text('')
-	job0.proc.input = Diot(
-		invar = ('var', ['abc']),
-		infile = ('file', [infile1]),
-		infiles = ('files', [[infile1]]),
-		emptyfile = ('file', ['']),
-		emptyfiles = ('files', [['']]),
-		renamed = ('file', [infile2]),
-		nodatafiles = ('files', [[]]),
-		renamedfiles = ('files', [[infile2]]),
-	)
-	job0._prepInput()
-	assert len(job0.input) == 8
-	assert job0.input['invar'] == ('var', 'abc')
-	assert job0.input['infile'] == ('file', str(job0.dir / 'input' / 'test_prepinput.txt'))
-	assert job0.input['infiles'] == ('files', [str(job0.dir / 'input' / 'test_prepinput.txt')])
-	assert job0.input['emptyfile'] == ('file', '')
-	assert job0.input['emptyfiles'] == ('files', [''])
-	assert job0.input['renamed'] == ('file', str(job0.dir / 'input' / '[1]test_prepinput.txt'))
-	assert job0.input['nodatafiles'] == ('files', [])
-	assert job0.input['renamedfiles'] == ('files', [str(job0.dir / 'input' / '[1]test_prepinput.txt')])
-	assert 'pProc: [1/1] Input file renamed: test_prepinput.txt -> [1]test_prepinput.txt' in caplog.text
+	proc = proc_factory('pInput', input = {
+		'invar:var': ['abc'],
+		'infile      :file ': [infile1],
+		'infiles     :files':  [[infile1]],
+		'emptyfile   :file ': [''],
+		'emptyfiles  :files':  [['']],
+		'renamed     :file ': [infile2],
+		'nodatafiles :files':  [[]],
+		'renamedfiles:files':  [[infile2]],
+	})
+	job = Job(0, proc)
+	assert len(job.input) == 9
+	assert job.input['a'] == ('var', 1)
+	assert job.input['invar'] == ('var', 'abc')
+	assert job.input['infile'] == ('file', str(job.dir / 'input' / 'test_prepinput.txt'))
+	assert job.input['infiles'] == ('files', [str(job.dir / 'input' / 'test_prepinput.txt')])
+	assert job.input['emptyfile'] == ('file', '')
+	assert job.input['emptyfiles'] == ('files', [''])
+	assert job.input['renamed'] == ('file', str(job.dir / 'input' / '[1]test_prepinput.txt'))
+	assert job.input['nodatafiles'] == ('files', [])
+	assert job.input['renamedfiles'] == ('files', [str(job.dir / 'input' / '[1]test_prepinput.txt')])
+	assert 'pInput: [1/1] Input file renamed: test_prepinput.txt -> [1]test_prepinput.txt' in caplog.text
 	assert 'No data provided for [nodatafiles:files], use empty list instead.' in caplog.text
 
-def test_prepinput_nonsymlink(job0, tmpdir, caplog):
-	"""test when there is non-symbolic link file in input directory"""
-	infile1 = tmpdir / 'test_prepinput_nonsymlink.txt'
-	infile1.write_text('')
-	job0.proc.input = Diot(
-		infile = ('file', [infile1]),
-	)
-	nsfile = job0.dir.joinpath(DIR_INPUT, 'nonsymbolic-file')
-	nsfile.parent.mkdir(exist_ok = True)
-	nsfile.write_text('')
-	job0._prepInput()
-	assert nsfile.exists()
-	job0._prepInput() # recreate the symlinks but keep the nonsymlink
-	assert nsfile.exists()
+@pytest.mark.parametrize('input, error', [
+	({'infile:file': [[]]}, 'Not a string or path for input [infile:file]'),
+	({'nefile:file': ['__nonexist_file__']}, 'File not exists for input [nefile:file]'),
+	({'nlfile:files': [1]}, 'Not a list for input [nlfile:files]'),
+	({'npfiles:files': [[None]]}, 'Not a string or path as an element of input [npfiles:files]'),
+	({'nefiles:files': [['__nonexist_file__']]}, 'File not exists as an element of input [nefiles:files]'),
+])
+def test_input_exc(request, tmp_path, proc_factory, input, error):
+	infile1 = tmp_path / 'test_prepinput_not_exists.txt'
+	proc = proc_factory(request.node.name, input = input)
+	with pytest.raises(JobInputParseError) as exc:
+		Job(0, proc).input
+	assert error in str(exc.value)
 
-def test_prepinput_exc(job0, tmpdir):
-	infile1 = tmpdir / 'test_prepinput_not_exists.txt'
-	job0.proc.input = Diot(
-		infile = ('file', [[]]), # no a strin gor path or input [infile:file]
-	)
-	with pytest.raises(JobInputParseError):
-		job0._prepInput()
+def test_output(proc_factory):
+	proc = proc_factory('pOutput1', output = 'a:var')
+	job = Job(0, proc)
+	assert len(job.output) == 1
 
-	job0.proc.input = Diot(
-		nefile = ('file', [infile1]), # not exists
-	)
-	with pytest.raises(JobInputParseError):
-		job0._prepInput()
+	proc = proc_factory('pOutput2', output = 'out:var:abc, outfile:file:outfile0.txt')
+	job = Job(0, proc)
+	assert len(job.output) == 2
+	assert job.output.out == ('var', 'abc')
+	assert job.output.outfile == ('file', job.dir / 'output/outfile0.txt')
 
-	job0.proc.input = Diot(
-		nlfiles = ('files', [1]), # not a list
-	)
-	with pytest.raises(JobInputParseError):
-		job0._prepInput()
+	proc.output = 'abs:file:/a/b/c'
+	del job.__attrs_property_cached__['output']
+	with pytest.raises(JobOutputParseError) as exc:
+		job.output
+	assert "Absolute path not allowed for [abs:file]: '/a/b/c'" in str(exc.value)
 
-	job0.proc.input = Diot(
-		npfiles = ('files', [[None]]), # not a path
-	)
-	with pytest.raises(JobInputParseError):
-		job0._prepInput()
+def test_output_empty(tmp_path):
+	proc = Proc('pOutput3', workdir = tmp_path.joinpath('pOutput3'))
+	job = Job(0, proc)
+	assert job.output == {}
 
-	job0.proc.input = Diot(
-		nefiles = ('files', [[infile1]])
-	)
-	with pytest.raises(JobInputParseError):
-		job0._prepInput()
+def test_script(tmp_path, proc_factory):
+	proc = proc_factory('pScript', script = "# python script")
+	job = Job(0, proc)
 
-def test_prepoutput(job0, tmpdir):
-	job0.proc.output = OrderedDiot()
-	job0._prepOutput()
-	assert len(job0.output) == 0
+	job.script
+	assert (job.dir / 'job.script').read_text() == "#!/bin/bash\n# python script\n"
+	assert job.dir.joinpath('job.script.local').is_file()
 
-	job0.proc.output.out = ('var', TemplateLiquid('abc'))
-	job0.proc.output.outfile = ('file', TemplateLiquid('outfile{{job.index}}.txt'))
-	job0._prepOutput()
-	assert len(job0.output) == 2
-	assert job0.output.out == ('var', 'abc')
-	assert job0.output.outfile == ('file', job0.dir / 'output' / 'outfile0.txt')
 
-	job0.proc.output.clear()
-	job0.proc.output.abs = ('file', TemplateLiquid('/a/b/c'))
-	with pytest.raises(JobOutputParseError):
-		job0._prepOutput()
+def test_signature_input(tmp_path, proc_factory):
+	proc = proc_factory('pSignature')
+	job = Job(0, proc)
 
-def test_prepscript(job0, tmpdir):
-	job0.proc.script = TemplateLiquid(str("# python script"))
-	job0._prepScript()
-	assert (job0.dir / 'job.script').read_text() == "# python script"
-	job0.proc.script = TemplateLiquid(str("# python script2"))
-	job0._prepScript()
-	assert (job0.dir / 'job.script').read_text() == "# python script2"
-	assert fs.exists(job0.dir / 'job.script._bak')
+	# empty because of script
+	fs.remove(job.dir / 'job.script')
+	assert job.signature == {'i': {'a:var': '1'}, 'mtime': 0, 'o': {'out:var': '1'}}
 
-def test_rc(job0):
-	assert job0.rc == RC_NO_RCFILE
-	job0._rc = 1
-	assert job0.rc == 1
-	job0.rc = None
-	assert job0.rc == RC_NO_RCFILE
-	job0.rc = 2
-	job0._rc = None # force reading from rcfile
-	assert job0.rc == 2
+	(job.dir / 'job.script').write_text('')
+	job.signature = '' # clear cache
+	assert job.signature.mtime == filesig(job.dir / 'job.script')[1]
 
-def test_pid(job0):
-	assert job0.pid is ''
-	job0.pid = 'Job123'
-	assert job0.pid == 'Job123'
-	job0.pid = '123'
-	job0._pid = None # force reading from pidfile
-	assert job0.pid == '123'
-
-def test_signature(job0, tmpdir, caplog):
-	fs.remove(job0.dir / 'job.script')
-	assert job0.signature() == ''
-	(job0.dir / 'job.script').write_text('')
-	assert job0.signature() == Diot(
-		script = filesig(job0.dir / 'job.script'),
-		i = {'var': {}, 'file': {}, 'files': {}},
-		o = {'var': {}, 'file': {}, 'dir':{}})
-	infile = tmpdir / 'test_signature_input.txt'
+	infile = tmp_path / 'test_signature_input.txt'
 	infile.write_text('')
-	infile1 = tmpdir / 'test_signature_input_not_exists.txt'
-	job0.input = Diot(
-		invar = ('var', 'abc'),
-		infile = ('file', infile),
-		infiles = ('files', [infile])
-	)
-	job0._signature = None
-	assert job0.signature().i == {
-		'var': {'invar': 'abc'},
-		'file': {'infile': filesig(infile)},
-		'files': {'infiles': [filesig(infile)]},
-	}
+	infile1 = tmp_path / 'test_signature_input_not_exists.txt'
+	# normal signature
+	proc = proc_factory('pSignature2', input = {
+		'invar:var': ['abc'],
+		'infile:file': [infile],
+		'infiles:files': [[infile]]
+	})
+	job = Job(0, proc)
+	(job.dir / 'job.script').write_text('')
+	assert job.signature.i == {
+		'a:var': '1',
+		'infile:file': str(job.dir/'input'/infile.name),
+		'infiles:files': [str(job.dir/'input'/infile.name)],
+		'invar:var': 'abc'}
 
-	job0.input = Diot(
-		invar = ('var', 'abc'),
-		infile = ('file', infile1)
-	)
-	job0._signature = None
-	assert job0.signature() == ''
-	assert 'Empty signature because of input file' in caplog.text
+	# empty because of input file
+	proc = proc_factory('pSignature3', input = {
+		'invar:var': ['abc'],
+		'infile:file': [infile1],
+	})
+	infile1.write_text('')
+	job = Job(0, proc)
+	(job.dir / 'job.script').write_text('')
+	job.signature = ''
+	job.input
+	infile1.unlink()
+	assert job.signature.i == {'a:var': '1',       'invar:var': 'abc'}
+	assert job.signature.o == {'out:var': '1'}
+	assert job.signature.mtime > 0
 
-	job0.input = Diot(
-		invar = ('var', 'abc'),
-		infiles = ('files', [infile1])
-	)
-	job0._signature = None
-	assert job0.signature() == ''
-	assert 'Empty signature because of one of input files' in caplog.text
+	# empty because of one of input files
+	proc = proc_factory('pSignature4', input = {
+		'invar:var': ['abc'],
+		'infiles:files': [[infile1]],
+	})
+	infile1.write_text('')
+	job = Job(0, proc)
+	(job.dir / 'job.script').write_text('')
+	job.signature = ''
+	job.input
+	infile1.unlink()
+	assert job.signature.i ==  {'a:var': '1', 'infiles:files': [], 'invar:var': 'abc'}
+	assert job.signature.o == {'out:var': '1'}
+	assert job.signature.mtime > 0
 
-	job0.input = {}
-	outfile = tmpdir / 'test_signature_outfile.txt'
+def test_signature_output(tmp_path, proc_factory):
+	# normal signature with output
+	outfile = tmp_path / 'test_signature_outfile.txt'
+	outdir = tmp_path / 'test_signature_outdir'
+
+	proc = proc_factory('pSignature5', output = [
+		'out:var:abc',
+		'outfile:file:%s' % outfile.name,
+		'outdir:dir:%s' % outdir.name,
+	])
+	job = Job(0, proc)
+	(job.dir / 'job.script').write_text('')
+	outfile = job.dir / 'output' / outfile.name
+	outdir = job.dir / 'output' / outdir.name
+	outdir.mkdir(exist_ok = True, parents = True)
 	outfile.write_text('')
-	outfile1 = tmpdir / 'test_signature_outfile_not_exists.txt'
-	outdir = tmpdir / 'test_signature_outdir'
-	outdir.mkdir()
-	outdir1 = tmpdir / 'test_signature_outdir_not_exists'
-	job0.output = OrderedDiot(
-		out = ('var', 'abc'),
-		outfile = ('file', outfile),
-		outdir = ('dir', outdir)
-	)
-	job0._signature = None
-	assert job0.signature().o == {
-		'var': {'out': 'abc'},
-		'file': {'outfile': filesig(outfile)},
-		'dir': {'outdir': filesig(outdir, dirsig = job0.proc.dirsig)}
+	assert job.signature.o == {
+		'out:var': 'abc',
+		'outdir:dir': str(outdir),
+		'outfile:file': str(outfile)}
+
+	# Empty signature because of output file
+	proc = proc_factory('pSignature6', output = [
+		'out:var:abc',
+		'outfile:file:%s' % outfile.name,
+		'outdir:dir:%s' % outdir.name,
+	])
+	job = Job(0, proc)
+	assert job.signature.i == {'a:var': '1'}
+	assert job.signature.mtime == 0
+	assert job.signature.o == {'out:var': 'abc'}
+
+	# Empty signature because of output dir
+	proc = proc_factory('pSignature7', output = [
+		'out:var:abc',
+		'outdir:dir:%s' % outdir.name,
+	])
+	job = Job(0, proc)
+	assert job.signature.i == {'a:var': '1'}
+	assert job.signature.mtime == 0
+	assert job.signature.o == {'out:var': 'abc'}
+
+def test_rc(proc_factory):
+	job = Job(0, proc_factory('pRC1'))
+	job.rc = None
+	assert job.rc == RC_NO_RCFILE
+
+	del job.rc
+	job.rc = ''
+	assert job.rc == RC_NO_RCFILE
+
+	del job.rc
+	job.rc = 'None'
+	assert job.rc == RC_NO_RCFILE
+
+	del job.rc
+	job.rc = '0'
+	assert job.rc == 0
+
+def test_data(proc_factory):
+	proc = proc_factory('pData')
+	job = Job(0, proc)
+
+	assert job.data.job.index == 0
+	assert job.data.job.indir == str(job.dir / 'input')
+	assert job.data.job.outdir == str(job.dir / 'output')
+	assert job.data.job.dir == str(job.dir)
+	assert job.data.job.outfile == str(job.dir / 'job.stdout')
+	assert job.data.job.errfile == str(job.dir / 'job.stderr')
+	assert job.data.job.pidfile == str(job.dir / 'job.pid')
+	assert job.data.job.cachedir == str(job.dir / 'output/.jobcache')
+	assert job.data.i == {}
+	assert job.data.o == {}
+	assert job.data.proc is job.proc
+
+	job.input
+	assert job.data.i == {'a': 1}
+	job.output
+	assert job.data.o == {'out': str(job.dir / 'output/1')}
+
+def test_script_parts(proc_factory):
+	proc = proc_factory('pScriptParts')
+	job = Job(0, proc)
+
+	assert job.script_parts == {
+		'pre': '',
+		'post': '',
+		'header': '',
+		'saveoe': True,
+		'command': [str(job.dir / 'job.script')]
 	}
+	assert job.dir.joinpath('job.script').is_file()
+	assert not job.dir.joinpath('job.script._bak').is_file()
 
-	job0.output = OrderedDiot(
-		outfile = ('file', outfile1)
-	)
-	job0._signature = None
-	assert job0.signature() == ''
-	assert 'Empty signature because of output file:' in caplog.text
+	job.dir.joinpath('job.script').write_text('hello world')
+	job.script_parts = ''
+	assert job.script_parts == {
+		'pre': '',
+		'post': '',
+		'header': '',
+		'saveoe': True,
+		'command': [str(job.dir / 'job.script')]
+	}
+	assert job.dir.joinpath('job.script._bak').is_file()
 
-	job0.output = OrderedDiot(
-		outdir = ('dir', outdir1)
-	)
-	job0._signature = None
-	assert job0.signature() == ''
-	assert 'Empty signature because of output dir:' in caplog.text
+	# try to cover when command is a string
+	job.script = ''
+	job.script_parts['command'] = job.script_parts['command'][0]
+	job.script
 
-def test_comparevar(job0, caplog):
-	assert job0._compareVar(
-		{'key': 'val'},
-		{'key': 'val'},
-		'key', 'unlimited')
-	assert 'Not cached' not in caplog.text
 
-	assert not job0._compareVar(
-		{'key': 'val'},
-		{'key': 'val1'},
-		'key', 'unlimited')
-	assert 'Not cached' in caplog.text
+def test_pid(proc_factory):
+	proc = proc_factory('pPid')
+	job = Job(0, proc)
 
-def test_comparefile(job0, caplog):
-	assert job0._compareFile(
-		{'key': ('val', 1)},
-		{'key': ('val', 1)},
-		'key', 'unlimited')
-	assert 'Not cached' not in caplog.text
+	assert job.pid == ''
 
-	assert not job0._compareFile(
-		{'key': ('val', 1)},
-		{'key': ('val1', 1)},
-		'key', 'unlimited')
-	assert 'Not cached because key file(key) is different:' in caplog.text
+	del job.pid
+	job.pid = 'abc'
+	assert job.pid == 'abc'
 
-	assert not job0._compareFile(
-		{'key': ('val', 1)},
-		{'key': ('val', 2)},
-		'key', '', 'unlimited')
-	assert 'Not cached because key file(key) is newer: val' in caplog.text
+	del job.pid
+	job.pid = ''
+	assert job.pid == ''
 
-def test_comparefiles(job0, caplog):
-	assert job0._compareFiles(
-		{'key': [('val', 1)]},
-		{'key': [('val', 1)]},
-		'key', 'unlimited')
-	assert 'Not cached' not in caplog.text
+	job.dir.joinpath('job.pid').unlink()
+	del job.pid
+	job.pid = None
+	assert job.pid == ''
 
-	assert not job0._compareFiles(
-		{'key': [('val', 1), ()]},
-		{'key': [('val', 1)]},
-		'key', 'unlimited')
-	assert 'Not cached because lengths are different for key [files:key]:' in caplog.text
+# end of _job tests
 
-	assert not job0._compareFiles(
-		{'key': [('val', 1)]},
-		{'key': [('val1', 1)]},
-		'key', 'unlimited')
-	assert 'Not cached because file 1 is different for key [files:key]:' in caplog.text
+def test_add_config(proc_factory):
+	job = Job(0, proc_factory('pAddConfig'))
+	job.add_config('a')
+	assert job.config.a == None
 
-	assert not job0._compareFiles(
-		{'key': [('val', 1)]},
-		{'key': [('val', 2)]},
-		'key', '', 'unlimited')
-	assert 'Not cached because file 1 is newer for key [files:key]: val' in caplog.text
+	job.add_config('b', converter = str)
+	assert job.config.b == 'None'
 
-def test_issignaturevalid(job0, tmpdir, caplog):
-	scriptfile = job0.dir / 'job.script'
-	cachefile  = job0.dir / 'job.cache'
-	fs.mkdir(job0.dir / DIR_OUTPUT)
-	job0.rc = 0
-	assert not job0._isSignatureValid('')
+def test_is_cached(proc_factory, caplog):
+	job = Job(0, proc_factory('pIsCached'))
+	assert not job.is_cached()
 
-	outfile1 = tmpdir / 'test_issignaturevalid_out1.txt'
-	outfile1.write_text('')
-	job0.output = {'outfile': ('file', outfile1)}
-	job0._signature = None
-	job0.signature()
-	fs.remove(outfile1)
-	assert not job0._isSignatureValid()
-	assert 'Outfile (o.outfile) not exists:' in caplog.text
+	job.rc = 0
+	job.cache()
+	assert job.dir.joinpath('job.cache').is_file()
+	assert job.is_cached()
+
+	job.dir.joinpath('job.script').write_text('')
+	job.signature = ''
+	assert job.signature.mtime > 0
+	assert not job.is_cached()
+	assert 'Input or script has been modified' in caplog.text
 	caplog.clear()
 
-	outfile1.write_text('')
-	job0._signature = None
-	assert job0._isSignatureValid()
+	job.cache()
+	assert job.is_cached()
 
-	utime(outfile1, (100, 100))
-	job0._signature = None
-	assert not job0._isSignatureValid()
-	assert 'Script file is newer than output file' in caplog.text
+	job.__attrs_property_cached__['input'] = {'a': ('var', 2)}
+	job.signature = ''
+	assert not job.is_cached()
+	assert "Input item 'a:var' changed: 1 -> 2" in caplog.text
 	caplog.clear()
 
-	infile1 = tmpdir / 'test_issignaturevalid_in1.txt'
-	infile1.write_text('')
-	outfile1.write_text('')
-	job0._signature = None
-	job0.input = {'infile': ('file', infile1)}
-	job0.signature()
-	fs.remove(infile1)
-	assert not job0._isSignatureValid()
-	assert 'Infile (i.infile) not exists' in caplog.text
+	job.cache()
+	assert job.is_cached()
+
+	job.__attrs_property_cached__['input'] = {'a': ('var', 2), 'b': ('var', 3)}
+	job.signature = ''
+	assert not job.is_cached()
+	assert "Additional input items found: ['b:var']" in caplog.text
 	caplog.clear()
 
-	Path(job0.script).write_text('')
-	infile1.write_text('')
-	job0._signature = None
-	job0.signature()
-	utime(outfile1, (job0._signature.script[1] + 100, ) * 2)
-	utime(infile1, (job0._signature.script[1] + 200, ) * 2)
-	job0._signature = None
-	assert not job0._isSignatureValid()
-	assert 'Infile (i.infile) is newer than output file:' in caplog.text
+	job.cache()
+	assert job.is_cached()
+
+	del job.__attrs_property_cached__['input']['b']
+	job.signature = ''
+	assert not job.is_cached()
+	assert "Missing input items: ['b:var']" in caplog.text
 	caplog.clear()
 
+	# output
+	job.cache()
+	assert job.is_cached()
 
-def test_istrulycached(job0, tmpdir, caplog):
-	scriptfile = job0.dir / 'job.script'
-	cachefile  = job0.dir / 'job.cache'
-	fs.mkdir(job0.dir / DIR_OUTPUT)
-	job0.rc = 0
-
-	job0.proc.cache = False
-	job0._signature = None
-	job0.cache()
-	assert not job0.isTrulyCached()
-
-	job0.proc.cache = True
-	job0._signature = None
-	assert not job0.isTrulyCached()
-	assert 'Not cached as cache file not exists.' in caplog.text
-
-	cachefile.write_text('')
-	job0._signature = None
-	assert not job0.isTrulyCached()
-	assert 'Not cached because previous signature is empty.' in caplog.text
-
-	job0.input = {}
-	job0.output = {}
-	fs.remove(scriptfile)
-	cachefile.write_text('')
-	job0._signature = None
-	assert not job0.isTrulyCached()
-	assert 'Empty signature because of script file' in caplog.text
-
-	# CACHE_SCRIPT_NEWER
-	scriptfile.write_text('')
-	mtime = scriptfile.stat().st_mtime
-	utime(scriptfile, (mtime - 10, mtime - 10))
-	job0._signature = None
-	job0.cache()
-	utime(scriptfile, (mtime, mtime))
-	caplog.clear()
-	job0._signature = None
-	assert not job0.isTrulyCached()
-	assert 'Not cached because script file(script) is newer' in caplog.text
-
-	# CACHE_SIGINVAR_DIFF
-	job0.input = {'in': ('var', 'abc')}
-	job0._signature = None
-	job0.cache()
-	job0.input = {'in': ('var', 'abc1')}
-	caplog.clear()
-	job0._signature = None
-	assert not job0.isTrulyCached()
-	assert 'Not cached because input variable(in) is different' in caplog.text
-
-	# CACHE_SIGINFILE_DIFF
-	infile1 = tmpdir / 'test_istrulycached1.txt'
-	infile2 = tmpdir / 'test_istrulycached2.txt'
-	infile1.write_text('')
-	infile2.write_text('')
-	job0.input = {'infile': ('file', infile1)}
-	job0._signature = None
-	job0.cache()
-	job0.input = {'infile': ('file', infile2)}
-	caplog.clear()
-	job0._signature = None
-	assert not job0.isTrulyCached()
-	assert 'Not cached because input file(infile) is different:' in caplog.text
-
-	# CACHE_SIGINFILE_NEWER
-	job0._signature = None
-	job0.cache()
-	utime(infile2, (mtime+100, mtime+100))
-	caplog.clear()
-	job0._signature = None
-	assert not job0.isTrulyCached()
-	assert 'Not cached because input file(infile) is newer: ' in caplog.text
-
-	# CACHE_SIGINFILES_DIFF
-	job0.input = {'infiles': ('files', [infile1])}
-	job0._signature = None
-	job0.cache()
-	job0.input = {'infiles': ('files', [infile1, infile2])}
-	caplog.clear()
-	job0._signature = None
-	assert not job0.isTrulyCached()
-	assert 'Not cached because lengths are different for input [files:infiles]:' in caplog.text
-
-	# CACHE_SIGINFILES_NEWER
-	job0.cache()
-	utime(infile2, (mtime+200, mtime+200))
-	caplog.clear()
-	job0._signature = None
-	assert not job0.isTrulyCached()
-	assert 'Not cached because file 2 is newer for input [files:infiles]:' in caplog.text
-
-	# CACHE_SIGOUTVAR_DIFF
-	job0.input = {}
-	job0.output = {'out': ('var', 'abc')}
-	job0._signature = None
-	job0.cache()
-	job0.output = {'out': ('var', 'abc1')}
-	caplog.clear()
-	job0._signature = None
-	assert not job0.isTrulyCached()
-	assert 'Not cached because output variable(out) is different' in caplog.text
-
-	# CACHE_SIGOUTFILE_DIFF
-	outfile1 = tmpdir / 'test_istrulycached_out1.txt'
-	outfile2 = tmpdir / 'test_istrulycached_out2.txt'
-	outfile1.write_text('')
-	outfile2.write_text('')
-	job0.output = {'outfile': ('file', outfile1)}
-	job0._signature = None
-	job0.cache()
-	job0.output = {'outfile': ('file', outfile2)}
-	caplog.clear()
-	job0._signature = None
-	assert not job0.isTrulyCached()
-	assert 'Not cached because output file(outfile) is different:' in caplog.text
-
-	# CACHE_SIGOUTDIR_DIFF
-	outdir1 = tmpdir / 'test_istrulycached_dir1.txt'
-	outdir2 = tmpdir / 'test_istrulycached_dir2.txt'
-	outdir1.mkdir()
-	outdir2.mkdir()
-	job0.output = {'outdir': ('dir', outdir1)}
-	job0._signature = None
-	job0.cache()
-	job0.output = {'outdir': ('dir', outdir2)}
-	caplog.clear()
-	job0._signature = None
-	assert not job0.isTrulyCached()
-	assert 'Not cached because output dir(outdir) is different:' in caplog.text
-
-	job0._signature = None
-	job0.cache()
-	assert job0.isTrulyCached()
-
-	fs.remove(job0.dir / 'job.cache') # even without cache file
-	assert job0.isTrulyCached()
+	del job.__attrs_property_cached__['output']['out']
+	job.signature = ''
+	assert not job.is_cached()
+	assert "Missing output items: ['out:var']" in caplog.text
 	caplog.clear()
 
-	job0.cache() # create cache file
-	fs.remove(job0.dir / 'job.script')
-	job0._signature = ''
-	assert not job0.isTrulyCached()
+	job.cache()
+	assert job.is_cached()
 
+	job.__attrs_property_cached__['output'] = {'out': ('var', 9)}
+	job.signature = ''
+	assert not job.is_cached()
+	assert "Additional output items found: ['out:var']" in caplog.text
 
-def test_isexptcached(job0, tmpdir, caplog):
-	job0.proc.cache = False
-	assert not job0.isExptCached()
+	job.cache()
+	assert job.is_cached()
 
-	job0.proc.cache = 'export'
-	job0.proc.exhow = 'link'
-	assert not job0.isExptCached()
-	assert 'Job is not export-cached using symlink export.' in caplog.text
+	# without job.cache file
+	job.dir.joinpath('job.cache').unlink()
+	assert job.is_cached()
+	job.cache()
+
 	caplog.clear()
+	job.signature = ''
+	job.__attrs_property_cached__['output'] = {'out': ('var', 10)}
+	assert not job.is_cached()
+	assert "Output item 'out:var' changed: 9 -> 10" in caplog.text
 
-	job0.proc.exhow = 'copy'
-	job0.proc.expart = [TemplateLiquid('outfile')]
-	assert not job0.isExptCached()
-	assert 'Job is not export-cached using partial export.' in caplog.text
-	caplog.clear()
+def test_is_cached_without_cachefile(proc_factory, tmp_path):
+	infile = tmp_path / 'test_is_cached_without_cachefile.txt'
+	infile.write_text('')
+	outfile = tmp_path / 'test_is_cached_without_cachefile_out.txt'
+	outfile.write_text('')
 
-	job0.proc.expart = None
-	job0.proc.exdir = ''
-	assert not job0.isExptCached()
-	assert 'Job is not export-cached since export directory is not set.' in caplog.text
-	caplog.clear()
+	proc = proc_factory('pIsCachedWithoutCacheFile',
+		input = {'infile:file': [infile]},
+		output = 'outfile:file:{{i.infile | __import__("pathlib").Path | .stem}}.txt')
+	job = Job(0, proc)
+	job.rc = 0
+	job.input
+	Path(job.output['outfile'][1]).write_text('')
+	assert job._is_cached_without_cachefile()
+	print(job.signature)
+	job.signature = ''
+	utime(infile, (path.getmtime(infile) + 100, ) * 2)
+	print(job.signature)
+	assert not job._is_cached_without_cachefile()
 
-	job0.proc.exdir = tmpdir / 'test_isexptcached_exdir'
-	job0.proc.exdir.mkdir()
-	outfile1 = tmpdir / 'test_isexptcached_outfile1.txt'
-	outfile1.write_text('')
-	outfile2 = tmpdir / 'test_isexptcached_outfile_not_exists.txt'
-	outdir1 = tmpdir / 'test_isexptcached_outdir1'
-	outdir1.mkdir()
-	fs.gzip(outfile1, job0.proc.exdir / (outfile1.name + '.gz'))
-	fs.gzip(outdir1, job0.proc.exdir / (outdir1.name + '.tgz'))
-	job0.output = OrderedDiot(
-		outfile = ('file', outfile1),
-		outdir = ('dir', outdir1),
-		out = ('var', 'abc')
-	)
-	# overwriting existing
-	(job0.dir / 'output').mkdir()
-	(job0.dir / 'output' / outfile1.name).write_text('')
-	job0.proc.exhow = 'gzip'
-	assert job0.isExptCached()
-	assert 'Overwrite file for export-caching:' in caplog.text
-	assert job0.isTrulyCached()
-	caplog.clear()
+def test_build(proc_factory):
+	job = Job(0, proc_factory('pBuild', cache = True, script = '# script'))
+	fs.remove(job.dir)
+	assert job.build()
+	assert fs.isdir(job.dir)
+	assert not fs.exists(job.dir / 'job.stdout.bak')
+	assert not fs.exists(job.dir / 'job.stderr.bak')
 
-	fs.remove(job0.proc.exdir / (outfile1.name + '.gz'))
-	assert not job0.isExptCached()
-	assert 'Job is not export-cached since exported file not exists:' in caplog.text
-	caplog.clear()
+	(job.dir / 'job.stdout').write_text('')
+	(job.dir / 'job.stderr').write_text('')
+	assert job.build()
+	assert fs.exists(job.dir / 'job.stdout.bak')
+	assert fs.exists(job.dir / 'job.stderr.bak')
+	fs.remove(job.dir / 'job.stderr')
+	fs.remove(job.dir / 'job.stdout')
+	job.rc = 0
+	job.cache()
+	assert job.build()
+	assert fs.isfile(job.dir / 'job.stderr')
+	assert fs.isfile(job.dir / 'job.stdout')
 
-	job0.output = OrderedDiot(
-		outfile = ('file', outfile1)
-	)
-	job0.proc.exhow = 'move'
-	assert not job0.isExptCached()
-	assert 'Job is not export-cached since exported file not exists:' in caplog.text
-
-	fs.link(outfile1, job0.proc.exdir / outfile1.name)
-	assert job0.isExptCached()
-	caplog.clear()
-
-	# overwriting existing
-	fs.remove(job0.proc.exdir / outfile1.name)
-	(job0.proc.exdir / outfile1.name).write_text('')
-	assert job0.isExptCached()
-	assert 'Overwrite file for export-caching: ' in caplog.text
-
-# def test_isforcecached(job0, tmpdir):
-# 	job0.proc.cache = False
-# 	assert not job0.isForceCached()
-
-# 	job0.proc.cache = 'force'
-# 	outfile1 = tmpdir / 'test_isforcecached_outfile1.txt'
-# 	outfile1.write_text('forcecached')
-# 	outfile2 = tmpdir / 'test_isforcecached_outfile_not_exists.txt'
-# 	outdir1 = tmpdir / 'test_isforcecached_outdir1'
-# 	outdir1.mkdir()
-# 	outdir1file = tmpdir / 'test_isforcecached_outdir1' / 'odfile.txt'
-# 	outdir1file.write_text('odfile')
-# 	outdir2 = tmpdir / 'test_isforcecached_outdir_not_exists'
-# 	job0.output = OBox(
-# 		outfile1 = ('file', outfile1),
-# 		outfile2 = ('file', outfile2),
-# 		outdir1 = ('dir', outdir1),
-# 		outdir2 = ('dir', outdir2),
-# 		out = ('var', 'abc')
-# 	)
-
-# 	assert job0.isForceCached()
-# 	assert outfile1.is_file()
-# 	assert outfile1.read_text() == 'forcecached'
-# 	assert outfile2.is_file()
-# 	assert outdir1.is_dir()
-# 	assert outdir1file.is_file()
-# 	assert outdir1file.read_text() == 'odfile'
-# 	assert outdir2.is_dir()
-
-
-def test_build(job0, tmpdir, caplog):
-	job0.proc.input = {}
-	job0.proc.output = {}
-	job0.proc.cache = True
-	job0.proc.script = TemplateLiquid('# script')
-	fs.remove(job0.dir)
-	assert job0.build()
-	assert fs.isdir(job0.dir)
-	assert not fs.exists(job0.dir / 'job.stdout.bak')
-	assert not fs.exists(job0.dir / 'job.stderr.bak')
-
-	(job0.dir / 'job.stdout').write_text('')
-	(job0.dir / 'job.stderr').write_text('')
-	assert job0.build()
-	assert fs.exists(job0.dir / 'job.stdout.bak')
-	assert fs.exists(job0.dir / 'job.stderr.bak')
-	fs.remove(job0.dir / FILE_STDERR)
-	fs.remove(job0.dir / FILE_STDOUT)
-	job0._signature = None
-	job0.rc = 0
-	job0.cache()
-	assert job0.build()
-	assert fs.isfile(job0.dir / FILE_STDERR)
-	assert fs.isfile(job0.dir / FILE_STDOUT)
-
-	job0._signature = None
-	job0.rc = 0
-	job0.cache()
-	assert job0.build() == 'cached'
+	job.signature = ''
+	job.rc = 0
+	job.cache()
+	assert job.build() == 'cached'
 
 	# raise exception while building
-	del job0.proc.input
-	assert not job0.build()
-	assert 'KeyError' in (job0.dir / 'job.stderr').read_text()
+	old_exists = fs.exists
+	del fs.exists
+	assert not job.build()
+	assert 'AttributeError' in (job.dir / 'job.stderr').read_text()
+	fs.exists = old_exists
 
-def test_reest(job0):
-	job0.ntry = 0
-	(job0.dir / 'output').mkdir()
-	(job0.dir / 'output' / 'outfile.txt').write_text('')
-	(job0.dir / 'output' / '.jobcache').mkdir()
-	(job0.dir / 'job.rc').write_text('')
-	(job0.dir / 'job.stdout').write_text('out')
-	(job0.dir / 'job.stderr').write_text('err')
-	(job0.dir / 'job.pid').write_text('')
-	(job0.dir / 'retry.1').mkdir()
-	job0.reset()
-	assert not fs.exists(job0.dir / 'retry.1')
-	assert not fs.exists(job0.dir / 'job.rc')
-	# recreated
-	assert (job0.dir / 'job.stdout').read_text() == ''
-	assert (job0.dir / 'job.stderr').read_text() == ''
-	assert not fs.exists(job0.dir / 'job.pid')
-	assert fs.exists(job0.dir / 'output')
-	# recreated
-	assert not fs.exists(job0.dir / 'output' / 'outfile.txt')
-
-	job0.ntry = 1
-	(job0.dir / 'output' / 'outfile.txt').write_text('')
-	(job0.dir / 'output' / '.jobcache' / 'cached.txt').write_text('')
-	job0.reset()
-	assert fs.exists(job0.dir / 'retry.1')
-	assert not fs.exists(job0.dir / 'retry.1' / '.jobcache')
-	assert fs.exists(job0.dir / 'output' / '.jobcache' / 'cached.txt')
-
-	# remove whole output directory
-	job0.ntry = 0
-	fs.remove(job0.dir / 'output' / '.jobcache')
-	(job0.dir / 'output' / 'outfile.txt').write_text('')
-	job0.reset()
-	assert not fs.exists(job0.dir / 'output' / 'outfile.txt')
-	# move whole output directory
-	job0.ntry = 1
-	fs.remove(job0.dir / 'output' / '.jobcache')
-	(job0.dir / 'output' / 'outfile.txt').write_text('')
-	job0.reset()
-	assert not fs.exists(job0.dir / 'output' / 'outfile.txt')
-
-	# restore output directory and stdout, stderr
-	job0.output = OrderedDiot(
-		outdir = ('dir', job0.dir / 'output' / 'outdir'),
-		outfile = ('stdout', job0.dir / 'output' / 'outfile'),
-		errfile = ('stderr', job0.dir / 'output' / 'errfile'),
-	)
-	job0.ntry = 0
-	job0.reset()
-	assert fs.isdir(job0.dir / 'output' / 'outdir')
-	assert fs.islink(job0.dir / 'output' / 'outfile')
-	assert fs.islink(job0.dir / 'output' / 'errfile')
-	assert fs.samefile(job0.dir / 'job.stdout', job0.dir / 'output' / 'outfile')
-	assert fs.samefile(job0.dir / 'job.stderr', job0.dir / 'output' / 'errfile')
-
-	# what if outdir exists
-	job0.reset()
-
-def test_export(job0, tmpdir, caplog):
-	job0.proc.exdir = ''
-	job0.export()
-	assert 'Exported' not in caplog.text
-
-	job0.proc.exdir = '/path/not/exists'
-	with pytest.raises(AssertionError):
-		job0.export()
-
-	job0.proc.exdir = tmpdir / 'test_export'
-	job0.proc.exdir.mkdir()
-
-	job0.proc.expart = None
-	with pytest.raises(AssertionError):
-		job0.export()
-
-	job0.proc.expart = []
-	job0.export()
-	assert 'Exported' not in caplog.text
-
-	# export everything
-	outfile1 = job0.dir / 'output' / 'test_export_outfile.txt'
-	outfile1.parent.mkdir()
-	outfile1.write_text('')
-	job0.output = OrderedDiot(
-		outfile = ('file', outfile1)
-	)
-	job0.proc.exhow = 'copy'
-	job0.proc.exow = True
-	job0.proc._log.shorten = 0
-	job0.export()
-	assert fs.exists(job0.proc.exdir / outfile1.name)
-	assert not fs.islink(outfile1)
-	assert not fs.samefile(outfile1, job0.proc.exdir / outfile1.name)
-	assert ('Exported: %s' % (job0.proc.exdir / outfile1.name)) in caplog.text
-
-	job0.proc.exhow = 'move'
-	job0.export()
-	assert fs.exists(job0.proc.exdir / outfile1.name)
-	assert fs.islink(outfile1)
-	assert fs.samefile(outfile1, job0.proc.exdir / outfile1.name)
-	assert ('Exported: %s' % (job0.proc.exdir / outfile1.name)) in caplog.text
-
-	# outfile is a link, then copy the file
-	job0.export()
-	assert fs.exists(job0.proc.exdir / outfile1.name)
-	assert not fs.islink(job0.proc.exdir / outfile1.name)
-	assert fs.islink(outfile1)
-	assert fs.samefile(outfile1, job0.proc.exdir / outfile1.name)
-
-	job0.proc.exhow = 'link'
-	job0.export()
-	assert fs.exists(job0.proc.exdir / outfile1.name)
-	assert fs.islink(job0.proc.exdir / outfile1.name)
-	assert not fs.islink(outfile1)
-	assert fs.samefile(outfile1, job0.proc.exdir / outfile1.name)
-
-	job0.proc.exhow = 'gzip'
-	job0.export()
-	assert fs.exists(job0.proc.exdir / (outfile1.name + '.gz'))
-
-	job0.proc.expart = [TemplateLiquid('outfile')]
-	fs.remove(job0.proc.exdir / (outfile1.name + '.gz'))
-	job0.export()
-	assert fs.exists(job0.proc.exdir / (outfile1.name + '.gz'))
-
-	job0.proc.expart = [TemplateLiquid('*.txt')]
-	fs.remove(job0.proc.exdir / (outfile1.name + '.gz'))
-	job0.export()
-	assert fs.exists(job0.proc.exdir / (outfile1.name + '.gz'))
-
-def test_succeed(job0, caplog):
-	job0.rc = 1
-	job0.proc.rc = [0]
-	assert not job0.succeed()
-
-	job0.proc.rc = [0, 1]
-	(job0.dir / 'output').mkdir()
-	job0.proc.expect = TemplateLiquid('')
-	assert job0.succeed()
-
-	job0.output = OrderedDiot(
-		outfile = ('file', job0.dir / 'output' / 'notexists')
-	)
-	job0.rc = 1
-	caplog.clear()
-	assert not job0.succeed()
-	assert 'Outfile not generated' in caplog.text
-	assert job0.rc == 1 + (1<<9)
-
-	(job0.dir / 'output' / 'notexists').write_text('')
-	job0.proc.expect = TemplateLiquid('grep abc {{o.outfile}}')
-	job0.rc = 1
-	caplog.clear()
-	assert not job0.succeed()
-	assert 'Check expectation' in caplog.text
-	assert job0.rc == 1 + (1<<10)
-
-def test_done(job0, tmpdir, caplog):
-	job0.proc.exdir = tmpdir / 'test_done_exdir'
-	job0.proc.exdir.mkdir()
-	job0.proc.expart = []
-	job0.proc.cache = True
-	job0.done()
+def test_done(proc_factory, caplog):
+	job = Job(0, proc_factory('pDone', cache = True))
+	job.rc = 0
+	job.done()
+	assert job.is_succeeded()
+	assert job.is_cached()
 	assert 'Finishing up the job' in caplog.text
 
-def test_impl_notimplerror(job0):
-	with pytest.raises(NotImplementedError):
-		job0.isRunningImpl()
-	with pytest.raises(NotImplementedError):
-		job0.submitImpl()
-	with pytest.raises(NotImplementedError):
-		job0.killImpl()
+def test_reset(proc_factory):
+	job = Job(0, proc_factory('pReset', cache = True))
+	job.ntry = 0
+	(job.dir / 'output').mkdir()
+	(job.dir / 'output' / 'outfile.txt').write_text('')
+	(job.dir / 'output' / '.jobcache').mkdir()
+	(job.dir / 'job.rc').write_text('')
+	(job.dir / 'job.stdout').write_text('out')
+	(job.dir / 'job.stderr').write_text('err')
+	(job.dir / 'job.pid').write_text('')
+	(job.dir / 'retry.1').mkdir()
+	job.reset()
+	assert not fs.exists(job.dir / 'retry.1')
+	assert not fs.exists(job.dir / 'job.rc')
+	# recreated
+	assert (job.dir / 'job.stdout').read_text() == ''
+	assert (job.dir / 'job.stderr').read_text() == ''
+	assert not fs.exists(job.dir / 'job.pid')
+	assert fs.exists(job.dir / 'output')
+	# recreated
+	assert not fs.exists(job.dir / 'output' / 'outfile.txt')
 
-def test_submit(job0, caplog):
-	job0.isRunningImpl = lambda: True
-	assert job0.submit()
-	assert 'is already running at' in caplog.text
+	job.ntry = 1
+	(job.dir / 'output' / 'outfile.txt').write_text('')
+	(job.dir / 'output' / '.jobcache' / 'cached.txt').write_text('')
+	job.reset()
+	assert fs.exists(job.dir / 'retry.1')
+	assert not fs.exists(job.dir / 'retry.1' / '.jobcache')
+	assert fs.exists(job.dir / 'output' / '.jobcache' / 'cached.txt')
 
-	job0.isRunningImpl = lambda: False
-	job0.submitImpl = lambda: Diot(rc = 0)
-	assert job0.submit()
+	# remove whole output directory
+	job.ntry = 0
+	fs.remove(job.dir / 'output' / '.jobcache')
+	(job.dir / 'output' / 'outfile.txt').write_text('')
+	job.reset()
+	assert not fs.exists(job.dir / 'output' / 'outfile.txt')
+	# move whole output directory
+	job.ntry = 1
+	fs.remove(job.dir / 'output' / '.jobcache')
+	(job.dir / 'output' / 'outfile.txt').write_text('')
+	job.reset()
+	assert not fs.exists(job.dir / 'output' / 'outfile.txt')
 
-	job0.submitImpl = lambda: Diot(rc = 1, cmd = '', stderr = '')
+	# restore output directory and stdout, stderr
+	job.__attrs_property_cached__['output'] = OrderedDiot(
+		outdir = ('dir', job.dir / 'output' / 'outdir'),
+		outfile = ('stdout', job.dir / 'output' / 'outfile'),
+		errfile = ('stderr', job.dir / 'output' / 'errfile'),
+	)
+	job.ntry = 0
+	job.reset()
+	assert fs.isdir(job.dir / 'output' / 'outdir')
+	assert fs.islink(job.dir / 'output' / 'outfile')
+	assert fs.islink(job.dir / 'output' / 'errfile')
+	assert fs.samefile(job.dir / 'job.stdout', job.dir / 'output' / 'outfile')
+	assert fs.samefile(job.dir / 'job.stderr', job.dir / 'output' / 'errfile')
+
+	# what if outdir exists
+	job.reset()
+
+def test_submit(proc_factory, caplog):
+	job = Job(0, proc_factory('pSubmit'))
+	assert job.submit()
+	assert 'Submitting the job' in caplog.text
+
+def test_poll(proc_factory, caplog):
+	job = Job(0, proc_factory('pPoll'))
+	assert job.poll() == 'running'
+	assert 'Polling the job ... stderr/out file not generared.' in caplog.text
 	caplog.clear()
-	assert not job0.submit()
-	assert 'Submission failed' in caplog.text
 
-def test_poll(job0, caplog):
-	fs.remove(job0.dir / 'job.stderr')
-	fs.remove(job0.dir / 'job.stdout')
-	assert job0.poll() == 'running'
 
-	(job0.dir / 'output').mkdir()
-	(job0.dir / 'job.stderr').write_text('')
-	(job0.dir / 'job.stdout').write_text('')
-	job0.rc = 0
-	job0.proc.rc = [0]
-	job0.proc.expect = TemplateLiquid('')
-	job0.proc.echo = {'jobs': [0], 'type': {'stdout':'', 'stderr':''}}
-	assert job0.poll()
-
-	job0._rc = None
-	fs.remove(job0.dir / 'job.rc')
-	assert job0.poll() == 'running'
-
-def test_flush(job0, caplog):
-	job0.proc.echo = {'jobs': [1]}
-	job0._flush()
-	assert '' == caplog.text
-	assert job0.lastout == ''
-	assert job0.lasterr == ''
-
-	job0.proc.echo = {'jobs': [0], 'type': {'stdout': '', 'stderr': r'^[^&].+$'}}
-	(job0.dir / 'job.stdout').write_text('out: line1\nout: line2')
-	(job0.dir / 'job.stderr').write_text('err: line1\nerr: line2')
+	job.dir.joinpath('job.stdout').write_text('')
+	job.dir.joinpath('job.stderr').write_text('')
+	assert job.poll() == 'running'
+	assert 'Polling the job ... rc file not generated.' in caplog.text
 	caplog.clear()
-	job0._flush()
-	assert 'out: line1' in caplog.text
-	assert 'err: line1' in caplog.text
-	assert 'line2' not in caplog.text
-	assert job0.lastout == 'out: line2'
-	assert job0.lasterr == 'err: line2'
 
-	(job0.dir / 'job.stderr').write_text(
-		'err: line1\nerr: line23\n& ignored\npyppl.log.abc\npyppl.log.msg: hello world!')
+	job.rc = 0
+	assert job.poll()
+	assert 'Polling the job ... done.' in caplog.text
+
+def test_retry(proc_factory, caplog):
+	job = Job(0, proc_factory('pRetry'))
+	job.proc.errhow = 'ignore'
+	assert job.proc.errhow == 'ignore'
+	assert job.retry() == 'ignored'
+
+	job = Job(0, proc_factory('pRetry2'))
+	job.proc.errhow = 'terminate'
+	assert job.retry() == False
+
+	job = Job(0, proc_factory('pRetry3'))
+	job.proc.errhow = 'retry'
+	job.proc.errntry = 1
 	caplog.clear()
-	job0._flush(end = True)
-	assert 'err: line23' in caplog.text
-	assert '_MSG' in caplog.text
-	assert '_ABC' in caplog.text
-	assert 'hello world' in caplog.text
-	assert 'ignored' not in caplog.text
-	assert job0.lastout == ''
-	assert job0.lasterr == ''
-
-def test_retry(job0, caplog):
-	job0.proc.errhow = 'ignore'
-	assert job0.retry() == 'ignored'
-
-	job0.proc.errhow = 'terminate'
-	assert job0.retry() == False
-
-	job0.proc.errhow = 'retry'
-	job0.proc.errntry = 1
-	caplog.clear()
-	assert job0.retry()
-	assert job0.ntry == 1
+	assert job.retry()
+	assert job.ntry == 1
 	assert 'Retrying 1 out of 1 time(s) ...' in caplog.text
 
-	assert job0.retry() == False
+	assert job.retry() == False
 
-def test_kill(job0):
-	job0.killImpl = lambda: None
-	assert job0.kill()
-
-	job0.killImpl = lambda: 1/0
-	assert not job0.kill()
-	assert job0.pid == ''
+def test_kill(proc_factory):
+	job = Job(0, proc_factory('pKill'))
+	assert not job.kill()

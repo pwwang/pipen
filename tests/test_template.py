@@ -6,7 +6,7 @@ from glob import glob
 from os import path, readlink
 from liquid import Liquid, LiquidRenderError
 from collections import OrderedDict
-from pyppl.template import Template, TemplateJinja2, TemplateLiquid
+from pyppl.template import Template, TemplateJinja2, TemplateLiquid, DEFAULT_ENVS
 from diot import Diot, OrderedDiot
 
 HERE = Path(__file__).resolve().parent
@@ -240,7 +240,7 @@ class TestTemplate:
 		tpl = Template(source, **envs)
 		assert tpl.source == source
 
-		assertDictContains(Template.DEFAULT_ENVS, tpl.envs)
+		assertDictContains(DEFAULT_ENVS, tpl.envs)
 		assertDictContains(envs, tpl.envs)
 
 	@pytest.mark.parametrize('source, envs, newenvs', [
@@ -250,9 +250,9 @@ class TestTemplate:
 	])
 	def testRegisterEnvs(self, source, envs, newenvs):
 		tpl = Template(source, **envs)
-		tpl.registerEnvs(**newenvs)
+		tpl.register_envs(**newenvs)
 		assert tpl.source == source
-		assertDictContains(Template.DEFAULT_ENVS, tpl.envs)
+		assertDictContains(DEFAULT_ENVS, tpl.envs)
 		assertDictContains(envs, tpl.envs)
 		assertDictContains(newenvs, tpl.envs)
 
@@ -282,7 +282,7 @@ class TestTemplateLiquid:
 	def testInit(self, source, envs):
 		tpl = TemplateLiquid(source, **envs)
 		assert tpl.source == source
-		assertDictContains(Template.DEFAULT_ENVS, tpl.envs)
+		assertDictContains(DEFAULT_ENVS, tpl.envs)
 		assertDictContains(envs, tpl.envs)
 		assert isinstance(tpl.engine, Liquid)
 
@@ -371,7 +371,7 @@ class TestTemplateJinja2:
 		import jinja2
 		tpl = TemplateJinja2(source, **envs)
 		assert tpl.source == source
-		assertDictContains(Template.DEFAULT_ENVS, tpl.envs)
+		assertDictContains(DEFAULT_ENVS, tpl.envs)
 		assertDictContains(envs, tpl.envs)
 		assert isinstance(tpl.engine, jinja2.Template)
 
@@ -445,12 +445,12 @@ class TestTemplateJinja2:
 		\n\t\t"""),
 		(
 			'{{read(a).strip()}}',
-			{'a': Path(__file__).parent / 'mocks' / 'srun'},
-			(Path(__file__).parent / 'mocks' / 'srun').read_text().strip()),
+			{'a': Path(__file__)},
+			Path(__file__).read_text().strip()),
 		(
-			'{{"\\n".join(readlines(a)).strip()}}',
-			{'a': Path(__file__).parent / 'mocks' / 'srun'},
-			(Path(__file__).parent / 'mocks' / 'srun').read_text().strip()),
+			'{{"\\n".join(readlines(a, False)).strip()}}',
+			{'a': Path(__file__)},
+			Path(__file__).read_text().strip()),
 		('{{render(x)}}', {'x': '{{i}}', 'i': 2}, '2'),
 		('{{render(x[0])}}', {'x': ('{{i}}', 1), 'i': 2}, '2'),
 	])
