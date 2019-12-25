@@ -10,7 +10,6 @@ import random
 import time
 import textwrap
 import fnmatch
-from functools import partial
 from simpleconf import Config
 from .config import config as default_config, DEFAULT_CFGFILES
 from .logger import logger
