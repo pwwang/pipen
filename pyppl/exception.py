@@ -15,6 +15,9 @@ class PyPPLNameError(Exception):
 class PyPPLWrongPositionMethod(Exception):
 	"""@API\nWrong position for plugin-added method"""
 
+class PyPPLMethodExists(Exception):
+	"""@API\nMethod has already been registered"""
+
 class ProcessAttributeError(Exception):
 	"""@API\nProcess AttributeError"""
 

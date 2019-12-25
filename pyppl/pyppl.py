@@ -16,7 +16,7 @@ from .logger import logger
 from .plugin import pluginmgr, config_plugins
 from .runner import RUNNERS
 from .exception import PyPPLInvalidConfigurationKey, PyPPLNameError, \
-	ProcessAlreadyRegistered, PyPPLWrongPositionMethod
+	ProcessAlreadyRegistered, PyPPLWrongPositionMethod, PyPPLMethodExists
 from .utils import try_deepcopy, format_secs, name2filename, fs
 
 # length of separators in log
@@ -284,14 +284,17 @@ class PyPPL:
 		"""
 		name = func.__name__
 
-		if require == 'start' and not self.starts:
-			raise PyPPLWrongPositionMethod('%s requires .start() to be called.' % name)
-
-		if require == 'run' and (
-			not self.procs or not self.procs[0].channel):
-			raise PyPPLWrongPositionMethod('%s requires .run() to be called.' % name)
+		if hasattr(self, name):
+			raise PyPPLMethodExists('Method name %r has already been registered.' % name)
 
 		def wrapper(*args, **kwargs):
+			if require == 'start' and not self.starts:
+				raise PyPPLWrongPositionMethod('%s requires .start() to be called.' % name)
+
+			if require == 'run' and (
+				not self.procs or not self.procs[0].channel):
+				raise PyPPLWrongPositionMethod('%s requires .run() to be called.' % name)
+
 			func(self, *args, **kwargs)
 			return self
 

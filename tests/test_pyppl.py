@@ -3,7 +3,7 @@ import traceback
 import pytest
 from diot import Diot
 from pyppl.pyppl import PROCESSES, _get_next_procs, _anything2procs, PyPPL, PIPELINES
-from pyppl.exception import ProcessAlreadyRegistered, PyPPLInvalidConfigurationKey, PyPPLNameError, PyPPLWrongPositionMethod
+from pyppl.exception import ProcessAlreadyRegistered, PyPPLInvalidConfigurationKey, PyPPLNameError, PyPPLWrongPositionMethod, PyPPLMethodExists
 from pyppl.proc import Proc
 from pyppl.config import config
 from pyppl.logger import logger
@@ -208,11 +208,12 @@ def test_add_method(capsys):
 	def themethod(self, a, b = 1):
 		print('a = {}, b = {}'.format(a, b))
 
-	with pytest.raises(PyPPLWrongPositionMethod):
-		ppl.add_method(themethod)
-	ppl.starts = True
-
 	ppl.add_method(themethod)
+	with pytest.raises(PyPPLMethodExists):
+		ppl.add_method(themethod)
+	with pytest.raises(PyPPLWrongPositionMethod):
+		ppl.themethod(a = 3)
+	ppl.starts = True
 	ppl.themethod(a = 3)
 	assert 'a = 3, b = 1' in capsys.readouterr().out
 
@@ -220,11 +221,11 @@ def test_add_method(capsys):
 	def themethod2(self, a, b=4):
 		print('a = {}, b = {}'.format(a,b))
 
+	ppl2.add_method(themethod2, require = 'run')
 	with pytest.raises(PyPPLWrongPositionMethod):
-		ppl2.add_method(themethod2, require = 'run')
+		ppl2.themethod2(a = 3)
 
 	ppl2.procs = [Diot(channel = True)]
-	ppl2.add_method(themethod2, require = 'run')
 	ppl2.themethod2(a = 3)
 	assert 'a = 3, b = 4' in capsys.readouterr().out
 
