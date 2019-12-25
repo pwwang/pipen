@@ -276,28 +276,24 @@ class PyPPL:
 			nexts = _get_next_procs(self.procs)
 		return self
 
-	def method(self, maybe_method = None, require = 'start'):
+	def add_method(self, func, require = 'start'):
 		"""@API
 		Add a method to PyPPL object, used as a decorator
 		@params:
-			maybe_method (callable): the function to add
+			func (callable): the function to add
 			require (str): Require which function to be called before this
 		"""
-		if not maybe_method:
-			partial(self.add_method, require = require)
-			return
+		name = func.__name__
 
-		name = maybe_method.__name__
+		if require == 'start' and not self.starts:
+			raise PyPPLWrongPositionMethod('%s requires .start() to be called.' % name)
+
+		if require == 'run' and (
+			not self.procs or not self.procs[0].channel):
+			raise PyPPLWrongPositionMethod('%s requires .run() to be called.' % name)
+
 		def wrapper(*args, **kwargs):
-
-			if require == 'start' and not self.starts:
-				raise PyPPLWrongPositionMethod('%s requires .start() to be called.' % name)
-
-			if require == 'run' and (
-				not self.procs or not self.procs[0].channel):
-				raise PyPPLWrongPositionMethod('%s requires .run() to be called.' % name)
-
-			maybe_method(self, *args, **kwargs)
+			func(self, *args, **kwargs)
 			return self
 
 		self.__dict__[name] = wrapper

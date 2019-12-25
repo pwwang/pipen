@@ -1,9 +1,9 @@
 from pathlib import Path
 import traceback
 import pytest
-
+from diot import Diot
 from pyppl.pyppl import PROCESSES, _get_next_procs, _anything2procs, PyPPL, PIPELINES
-from pyppl.exception import ProcessAlreadyRegistered, PyPPLInvalidConfigurationKey, PyPPLNameError
+from pyppl.exception import ProcessAlreadyRegistered, PyPPLInvalidConfigurationKey, PyPPLNameError, PyPPLWrongPositionMethod
 from pyppl.proc import Proc
 from pyppl.config import config
 from pyppl.logger import logger
@@ -205,9 +205,26 @@ def test_config_in_construct():
 def test_add_method(capsys):
 	ppl = PyPPL()
 
-	@ppl.method
 	def themethod(self, a, b = 1):
 		print('a = {}, b = {}'.format(a, b))
 
+	with pytest.raises(PyPPLWrongPositionMethod):
+		ppl.add_method(themethod)
+	ppl.starts = True
+
+	ppl.add_method(themethod)
 	ppl.themethod(a = 3)
 	assert 'a = 3, b = 1' in capsys.readouterr().out
+
+	ppl2 = PyPPL()
+	def themethod2(self, a, b=4):
+		print('a = {}, b = {}'.format(a,b))
+
+	with pytest.raises(PyPPLWrongPositionMethod):
+		ppl2.add_method(themethod2, require = 'run')
+
+	ppl2.procs = [Diot(channel = True)]
+	ppl2.add_method(themethod2, require = 'run')
+	ppl2.themethod2(a = 3)
+	assert 'a = 3, b = 4' in capsys.readouterr().out
+
