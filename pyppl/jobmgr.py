@@ -11,6 +11,7 @@ from threading import Lock
 from queue import Queue
 from diot import Diot
 from .utils import StateMachine, PQueue, ThreadPool
+from .plugin import pluginmgr
 from .logger import logger
 from .exception import JobBuildingError, JobFailError
 from .runner import poll_interval
@@ -268,6 +269,7 @@ class Jobmgr:
 				initargs    = killq
 			).join()
 
+			pluginmgr.hook.proc_postrun(proc = self.proc, status = 'failed')
 			#random.choice(failed_jobs or running_jobs or self.jobs).showError(len(failed_jobs))
 
 			if isinstance(ex, Exception) and not isinstance(ex, (

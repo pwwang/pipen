@@ -4,6 +4,7 @@ from pathlib import Path
 from os import path, utime
 from diot import Diot, OrderedDiot
 from simpleconf import Config
+import cmdy
 from pyppl.config import config
 from pyppl.runner import use_runner
 from pyppl.job import Job
@@ -157,7 +158,7 @@ def test_script(tmp_path, proc_factory):
 	job = Job(0, proc)
 
 	job.script
-	assert (job.dir / 'job.script').read_text() == "#!/bin/bash\n# python script\n"
+	assert (job.dir / 'job.script').read_text() == "#!%s# python script\n" % cmdy.which('bash')
 	assert job.dir.joinpath('job.script.local').is_file()
 
 
