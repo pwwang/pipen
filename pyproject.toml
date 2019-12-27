@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "PyPPL"
-version = "3.0.0pre3"
+version = "3.0.0"
 description = "A Python PiPeLine framework"
 authors = [ "pwwang <pwwang@pwwang.com>",]
 license = "MIT"
@@ -13,6 +13,7 @@ homepage = "https://github.com/pwwang/PyPPL"
 repository = "https://github.com/pwwang/PyPPL"
 [[tool.poetry.packages]]
 include = "pyppl/*.py"
+
 [[tool.poetry.packages]]
 include = "pyppl/console/*.py"
 
