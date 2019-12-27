@@ -5,11 +5,13 @@
 	TIPS (list): Some tips to show in log
 	PIPELINES (dict): Exists pipelines
 """
+import sys
 # give random tips in the log
 import random
 import time
 import textwrap
 import fnmatch
+from pathlib import Path
 from simpleconf import Config
 from .config import config as default_config, DEFAULT_CFGFILES
 from .logger import logger
@@ -93,19 +95,41 @@ def _logo():
 	logger.pyppl('|' + r'v{}'.format(__version__).center(SEPARATOR_LEN-2) + '|')
 	logger.pyppl('|' + r''.center(SEPARATOR_LEN-2) + '|')
 	logger.pyppl('+' + r'-' * (SEPARATOR_LEN-2) + '+')
+
 	logger.tips(random.choice(TIPS))
+
 	for cfgfile in DEFAULT_CFGFILES:
 		if fs.exists(cfgfile) or str(cfgfile).endswith('.osenv'):
 			logger.config('Read from %s', cfgfile)
-	for plug, plugin in pluginmgr.list_name_plugin():
-		logger.plugin('Loaded plugin: %s (v%s)',
-			plug, plugin.__version__ if hasattr(plugin, '__version__') else 'Unknown')
-	for rname, rplugin in RUNNERS.items():
-		logger.plugin('Loaded runner: %s (v%s)',
-			rname,
-			__version__ + '.builtin' if rname == 'local' else \
-				rplugin.__version__ if hasattr(rplugin, '__version__') else \
-				'Unknown')
+	plugins_to_log = (
+		(name[6:] if name[:6] in ('pyppl_', 'pyppl-', 'pyppl.') else name,
+			plugin.__version__ if hasattr(plugin, '__version__') else 'unknown')
+		for name, plugin in pluginmgr.list_name_plugin())
+	plugins_to_log =  sorted(plugins_to_log, key = lambda nver: nver[1] != 'builtin')
+	plugins_to_log = ', '.join('-'.join(namever) for namever in plugins_to_log)
+	plugins_to_log = textwrap.wrap(plugins_to_log,
+		initial_indent = '  ',
+		subsequent_indent = '  ',
+		break_long_words = False,
+		break_on_hyphens = False)
+	logger.plugin('Loaded plugins:')
+	for plugin_to_log in plugins_to_log:
+		logger.plugin(plugin_to_log)
+
+	runners_to_log = (
+		(rname, rplugin.__version__ if hasattr(rplugin, '__version__') else 'unknown')
+		for rname, rplugin in RUNNERS.items()
+	)
+	runners_to_log = sorted(runners_to_log, key = lambda nver: nver[1] != 'builtin')
+	runners_to_log = ', '.join('-'.join(namever) for namever in runners_to_log)
+	runners_to_log = textwrap.wrap(runners_to_log,
+		initial_indent = '  ',
+		subsequent_indent = '  ',
+		break_long_words = False,
+		break_on_hyphens = False)
+	logger.plugin('Loaded runners:')
+	for runner_to_log in runners_to_log:
+		logger.plugin(runner_to_log)
 
 def _parse_kwconfigs(kwconfigs):
 	"""Allow logger = {'level': 'debug'} to be specified as logger_level = 'debug'"""
@@ -151,12 +175,13 @@ class PyPPL:
 			if key not in default_config:
 				raise PyPPLInvalidConfigurationKey('No such configuration key: ' + key)
 
-		self.name = name or 'PyPPL_{}'.format(len(PIPELINES) + 1)
-		filename = name2filename(self.name)
-		if filename in PIPELINES:
+		self.name = name2filename(name) \
+			if name else Path(sys.argv[0]).stem \
+			if not PIPELINES else Path(sys.argv[0]).stem + str(len(PIPELINES) + 1)
+		if self.name in PIPELINES:
 			raise PyPPLNameError(
-				'Pipeline name {!r}({!r}) has been used.'.format(self.name, filename))
-		PIPELINES[filename] = self
+				'Pipeline name {!r}({!r}) has been used.'.format(self.name, name))
+		PIPELINES[self.name] = self
 
 		if config_files and not isinstance(config_files, (tuple, list)):
 			config_files = [config_files]
@@ -167,7 +192,7 @@ class PyPPL:
 		logger_config = try_deepcopy(default_config.logger.dict())
 		logger_config.update(self.runtime_config.pop('logger', {}))
 		if logger_config['file'] is True:
-			logger_config['file'] = './{}.pyppl.log'.format(filename)
+			logger_config['file'] = './{}.pyppl.log'.format(self.name)
 		logger.init(logger_config)
 		del logger_config
 
@@ -175,9 +200,9 @@ class PyPPL:
 		config_plugins(*config)
 
 		_logo()
-		logger.pyppl('~' * SEPARATOR_LEN)
-		logger.pyppl('PIPELINE: {}'.format(self.name))
-		#logger.pyppl('+' * SEPARATOR_LEN)
+		logger.pyppl('=' * SEPARATOR_LEN)
+		logger.pyppl('>>> PIPELINE: {}'.format(self.name))
+		logger.pyppl('=' * SEPARATOR_LEN)
 
 		self.procs  = []
 		self.starts = []
@@ -211,7 +236,7 @@ class PyPPL:
 				defconfig.pop('plugins', None)
 				for proc in self.procs:
 					# print process name and description
-					name = proc.shortname
+					name = proc.name
 					if proc.origin and proc.origin != proc.id:
 						name += ' ({})'.format(proc.origin)
 					name += ': '

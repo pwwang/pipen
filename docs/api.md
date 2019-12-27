@@ -3,1989 +3,1991 @@
 
 - **desc**
 
-  Template adaptor for PyPPL
+	Template adaptor for PyPPL
 
 - **variables**
 
-  - `DEFAULT_ENVS (dict)`:  The default environments for templates
+	- `DEFAULT_ENVS (dict)`:  The default environments for templates
 
 !!! example "class: `Template`"
 
-  Base class wrapper to wrap template for PyPPL
-  
+	Base class wrapper to wrap template for PyPPL
+	
 
-  !!! abstract "method: `__init__(self, source, **envs)`"
+	!!! abstract "method: `__init__(self, source, **envs)`"
 
-    Template construct
-    
+		Template construct
+		
 
-  !!! abstract "method: `register_envs(self, **envs)`"
+	!!! abstract "method: `register_envs(self, **envs)`"
 
-    Register extra environment
+		Register extra environment
 
-    - **params**
+		- **params**
 
-      - `**envs`:  The environment
+			- `**envs`:  The environment
 
-  !!! abstract "method: `render(self, data)`"
+	!!! abstract "method: `render(self, data)`"
 
-    Render the template
+		Render the template
 
-    - **parmas**
+		- **parmas**
 
-      - `data (dict)`:  The data used to render
+			- `data (dict)`:  The data used to render
 
 !!! example "class: `TemplateJinja2`"
 
-  Jinja2 template wrapper
-  
+	Jinja2 template wrapper
+	
 
-  !!! abstract "method: `register_envs(self, **envs)`"
+	!!! abstract "method: `register_envs(self, **envs)`"
 
-    Register extra environment
+		Register extra environment
 
-    - **params**
+		- **params**
 
-      - `**envs`:  The environment
+			- `**envs`:  The environment
 
-  !!! abstract "method: `render(self, data)`"
+	!!! abstract "method: `render(self, data)`"
 
-    Render the template
+		Render the template
 
-    - **parmas**
+		- **parmas**
 
-      - `data (dict)`:  The data used to render
+			- `data (dict)`:  The data used to render
 
 !!! example "class: `TemplateLiquid`"
 
-  liquidpy template wrapper.
-  
+	liquidpy template wrapper.
+	
 
-  !!! abstract "method: `register_envs(self, **envs)`"
+	!!! abstract "method: `register_envs(self, **envs)`"
 
-    Register extra environment
+		Register extra environment
 
-    - **params**
+		- **params**
 
-      - `**envs`:  The environment
+			- `**envs`:  The environment
 
-  !!! abstract "method: `render(self, data)`"
+	!!! abstract "method: `render(self, data)`"
 
-    Render the template
+		Render the template
 
-    - **parmas**
+		- **parmas**
 
-      - `data (dict)`:  The data used to render
+			- `data (dict)`:  The data used to render
 ## pyppl.procset
 
 
 - **desc**
 
-  The procset for a set of procs
+	The procset for a set of procs
 
 !!! example "class: `ProcSet`"
 
-  The ProcSet for a set of processes
-  
+	The ProcSet for a set of processes
+	
 
-  !!! abstract "method: `__init__(self, *procs)`"
+	!!! abstract "method: `__init__(self, *procs)`"
 
-    Constructor
+		Constructor
 
-    - **params**
+		- **params**
 
-      - `*procs (Proc) `:  the set of processes
+			- `*procs (Proc) `:  the set of processes
 
-      - `**kwargs`:  Other arguments to instantiate a `ProcSet`
+			- `**kwargs`:  Other arguments to instantiate a `ProcSet`
 
-          depends (bool): Whether auto deduce depends. Default: `True`
+			  depends (bool): Whether auto deduce depends. Default: `True`
 
-          id (str): The id of the procset. Default: `None` (the variable name)
+			  id (str): The id of the procset. Default: `None` (the variable name)
 
-          tag (str): The tag of the processes. Default: `None`
+			  tag (str): The tag of the processes. Default: `None`
 
-          copy (bool): Whether copy the processes or just use them. Default: `True`
+			  copy (bool): Whether copy the processes or just use them. Default: `True`
 
-  !!! abstract "method: `copy(self, id, tag, depends)`"
+	!!! abstract "method: `copy(self, id, tag, depends)`"
 
-    Like `proc`'s `copy` function, copy a procset. Each processes will be copied.
+		Like `proc`'s `copy` function, copy a procset. Each processes will be copied.
 
-    - **params**
+		- **params**
 
-      - `id (str)`:  Use a different id if you don't want to use the variant name
+			- `id (str)`:  Use a different id if you don't want to use the variant name
 
-      - `tag (str)`:  The new tag of all copied processes
+			- `tag (str)`:  The new tag of all copied processes
 
-      - `depends (bool)`:  Whether to copy the dependencies or not. Default: True
+			- `depends (bool)`:  Whether to copy the dependencies or not. Default: True
 
-          - dependences for processes in starts will not be copied
+			  - dependences for processes in starts will not be copied
 
-    - **returns**
+		- **returns**
 
-      - `(ProcSet)`:  The new procset
+			- `(ProcSet)`:  The new procset
 
-  !!! abstract "method: `delegate(self, attr, *procs)`"
+	!!! abstract "method: `delegate(self, attr, *procs)`"
 
-    Delegate process attributes to procset.
+		Delegate process attributes to procset.
 
-    - **params**
+		- **params**
 
-      - `*procs (str|Proc)`:  The first argument is the name of the attributes.
+			- `*procs (str|Proc)`:  The first argument is the name of the attributes.
 
-          - The rest of them should be `Proc`s or `Proc` selectors.
+			  - The rest of them should be `Proc`s or `Proc` selectors.
 
-  !!! abstract "method: `delegated(self, name)`"
+	!!! abstract "method: `delegated(self, name)`"
 
-    Get the detegated processes by specific attribute name
+		Get the detegated processes by specific attribute name
 
-    - **params**
+		- **params**
 
-      - `name (str)`:  the attribute name to query
+			- `name (str)`:  the attribute name to query
 
-    - **returns**
+		- **returns**
 
-      - `(Proxy)`:  The set of processes
+			- `(Proxy)`:  The set of processes
 
-  !!! abstract "method: `module(self, name)`"
+	!!! abstract "method: `module(self, name)`"
 
-    A decorator used to define a module.
+		A decorator used to define a module.
 
-    - **params**
+		- **params**
 
-      - `name (callable|str)`:  The function to be decorated or the name of the module.
+			- `name (callable|str)`:  The function to be decorated or the name of the module.
 
-    - **returns**
+		- **returns**
 
-      - `(callable)`:  The decorator
+			- `(callable)`:  The decorator
 
-  !!! abstract "method: `restore_states(self)`"
+	!!! abstract "method: `restore_states(self)`"
 
-    Restore the initial state of a procset
-    
+		Restore the initial state of a procset
+		
 ## pyppl.proc
 
 
 - **desc**
 
-  Process for PyPPL
+	Process for PyPPL
 
 !!! example "class: `Proc`"
 
-  Process of a pipeline
-  
+	Process of a pipeline
+	
 
-  !!! note "property: `cache`"
+	!!! note "property: `cache`"
 
-    Should we cache the results or read results from cache?
+		Should we cache the results or read results from cache?
 
-  !!! note "property: `id`"
+	!!! note "property: `id`"
 
-    The identity of the process
+		The identity of the process
 
-  !!! note "property: `tag`"
+	!!! note "property: `tag`"
 
-    The tag of the process
+		The tag of the process
 
-  !!! abstract "method: `add_config(self, name, default, converter, runtime)`"
+	!!! abstract "method: `add_config(self, name, default, converter, runtime)`"
 
-    Add a plugin configuration
+		Add a plugin configuration
 
-    - **params**
+		- **params**
 
-      - `name (str)`:  The name of the plugin configuration
+			- `name (str)`:  The name of the plugin configuration
 
-      - `default (any)`:  The default value
+			- `default (any)`:  The default value
 
-      - `converter (callable)`:  The converter function for the value
+			- `converter (callable)`:  The converter function for the value
 
-      - `runtime (str)`:  How should we deal with it while         runtime_config is passed and its setcounter > 1
+			- `runtime (str)`:  How should we deal with it while         runtime_config is passed and its setcounter > 1
 
-          - override: Override the value
+			  - override: Override the value
 
-          - update: Update the value if it's a dict otherwise override its
+			  - update: Update the value if it's a dict otherwise override its
 
-          - ignore: Ignore the value from runtime_config
+			  - ignore: Ignore the value from runtime_config
 
-  !!! abstract "method: `copy(self, id, **kwargs)`"
+	!!! abstract "method: `copy(self, id, **kwargs)`"
 
-    Copy a process to a new one
-    Depends and nexts will be copied
+		Copy a process to a new one
+		Depends and nexts will be copied
 
-    - **params**
+		- **params**
 
-      - `id`:  The id of the new process
+			- `id`:  The id of the new process
 
-      - `kwargs`:  Other arguments for constructing a process
+			- `kwargs`:  Other arguments for constructing a process
 
-  !!! abstract "method: `run(self, runtime_config)`"
+	!!! abstract "method: `run(self, runtime_config)`"
 
-    Run the process
+		Run the process
 
-    - **params**
+		- **params**
 
-      - `runtime_config (simpleconf.Config)`:  The runtime configuration
+			- `runtime_config (simpleconf.Config)`:  The runtime configuration
 ## pyppl.utils
 
 
 - **desc**
 
-  Utility functions for PyPPL
+	Utility functions for PyPPL
 
 !!! abstract "method: `always_list(data, trim)`"
 
-  Convert a string or a list with element
+	Convert a string or a list with element
 
-  - **params**
+	- **params**
 
-    - ``data``:  the data to be converted
+		- ``data``:  the data to be converted
 
-    - ``trim``:  trim the whitespaces for each item or not. Default: True
+		- ``trim``:  trim the whitespaces for each item or not. Default: True
 
-  - **examples**
+	- **examples**
 
-      ```python
+		```python
 
-      data = ["a, b, c", "d"]
+		data = ["a, b, c", "d"]
 
-      ret  = always_list (data)
+		ret  = always_list (data)
 
-      # ret == ["a", "b", "c", "d"]
+		# ret == ["a", "b", "c", "d"]
 
-      ```
+		```
 
-  - **returns**
+	- **returns**
 
-      The split list
+		The split list
 
 !!! abstract "method: `brief_list(blist, base)`"
 
-  Briefly show an integer list, combine the continuous numbers.
+	Briefly show an integer list, combine the continuous numbers.
 
-  - **params**
+	- **params**
 
-    - `blist`:  The list
+		- `blist`:  The list
 
-  - **returns**
+	- **returns**
 
-    - `(str)`:  The string to show for the briefed list.
+		- `(str)`:  The string to show for the briefed list.
 
 !!! abstract "method: `chmod_x(filepath)`"
 
-  Convert file1 to executable or add extract shebang to cmd line
+	Convert file1 to executable or add extract shebang to cmd line
 
-  - **params**
+	- **params**
 
-    - `filepath (path)`:  The file path
+		- `filepath (path)`:  The file path
 
-  - **returns**
+	- **returns**
 
-    - `(list)`:  with or without the path of the interpreter as the first element
+		- `(list)`:  with or without the path of the interpreter as the first element
 
-      and the script file as the last element
+		and the script file as the last element
 
 !!! abstract "method: `filesig(filepath, dirsig)`"
 
-  Generate a signature for a file
+	Generate a signature for a file
 
-  - **params**
+	- **params**
 
-    - ``dirsig``:  Whether expand the directory? Default: True
+		- ``dirsig``:  Whether expand the directory? Default: True
 
-  - **returns**
+	- **returns**
 
-      The signature
+		The signature
 
 !!! abstract "method: `format_secs(seconds)`"
 
-  Format a time duration
+	Format a time duration
 
-  - **params**
+	- **params**
 
-    - ``seconds``:  the time duration in seconds
+		- ``seconds``:  the time duration in seconds
 
-  - **returns**
+	- **returns**
 
-      The formated string.
+		The formated string.
 
-    - `For example`:  "01:01:01.001" stands for 1 hour 1 min 1 sec and 1 minisec.
+		- `For example`:  "01:01:01.001" stands for 1 hour 1 min 1 sec and 1 minisec.
 
 !!! abstract "method: `funcsig(func)`"
 
-  Get the signature of a function
-  Try to get the source first, if failed, try to get its name, otherwise return None
+	Get the signature of a function
+	Try to get the source first, if failed, try to get its name, otherwise return None
 
-  - **params**
+	- **params**
 
-    - ``func``:  The function
+		- ``func``:  The function
 
-  - **returns**
+	- **returns**
 
-      The signature
+		The signature
 
 !!! abstract "method: `name2filename(name)`"
 
-  Convert any name to a valid filename
+	Convert any name to a valid filename
 
-  - **params**
+	- **params**
 
-    - `name (str)`:  The name to be converted
+		- `name (str)`:  The name to be converted
 
-  - **returns**
+	- **returns**
 
-    - `(str)`:  The converted name
+		- `(str)`:  The converted name
 
 !!! abstract "method: `try_deepcopy(obj, _recurvise)`"
 
-  Try do deepcopy an object. If fails, just do a shallow copy.
+	Try do deepcopy an object. If fails, just do a shallow copy.
 
-  - **params**
+	- **params**
 
-    - `obj (any)`:  The object
+		- `obj (any)`:  The object
 
-    - `_recurvise (bool)`:  A flag to avoid deep recursion
+		- `_recurvise (bool)`:  A flag to avoid deep recursion
 
-  - **returns**
+	- **returns**
 
-    - `(any)`:  The copied object
+		- `(any)`:  The copied object
 
 !!! example "class: `PQueue`"
 
-  A modified PriorityQueue, which allows jobs to be submitted in batch
-  
+	A modified PriorityQueue, which allows jobs to be submitted in batch
+	
 
-  !!! abstract "method: `__init__(self, maxsize, batch_len)`"
+	!!! abstract "method: `__init__(self, maxsize, batch_len)`"
 
-    A Priority Queue for PyPPL jobs
-      0                              0 done,             wait for 1
-        1        start 0    1        start 1             start 2
-        2      ------>  0   2      ------>      2      --------->
-          3                   3               1   3                    3
-          4                   4                   4                2   4
-                                       1
+		A Priority Queue for PyPPL jobs
+		  0                              0 done,             wait for 1
+		    1        start 0    1        start 1             start 2
+		    2      ------>  0   2      ------>      2      --------->
+		      3                   3               1   3                    3
+		      4                   4                   4                2   4
+		                                   1
 
-    - **params**
+		- **params**
 
-      - `maxsize  `:  The maxsize of the queue. Default: None
+			- `maxsize  `:  The maxsize of the queue. Default: None
 
-      - `batch_len`:  What's the length of a batch
+			- `batch_len`:  What's the length of a batch
 
-  !!! abstract "method: `get(self)`"
+	!!! abstract "method: `get(self)`"
 
-    Get an item from the queue
+		Get an item from the queue
 
-    - **returns**
+		- **returns**
 
-      - `(int, int)`:  The index of the item and the batch of it
+			- `(int, int)`:  The index of the item and the batch of it
 
-  !!! abstract "method: `put(self, item, batch)`"
+	!!! abstract "method: `put(self, item, batch)`"
 
-    Put item to any batch
+		Put item to any batch
 
-    - **params**
+		- **params**
 
-      - `item (any)`:  item to put
+			- `item (any)`:  item to put
 
-      - `batch (int)`:  target batch
+			- `batch (int)`:  target batch
 
-  !!! abstract "method: `put_next(self, item, batch)`"
+	!!! abstract "method: `put_next(self, item, batch)`"
 
-    Put item to next batch
+		Put item to next batch
 
-    - **params**
+		- **params**
 
-      - `item (any)`:  item to put
+			- `item (any)`:  item to put
 
-      - `batch (int)`:  current batch
+			- `batch (int)`:  current batch
 ## pyppl.job
 
 
 - **desc**
 
-  Job for PyPPL
+	Job for PyPPL
 
 !!! example "class: `Job`"
 
-  Job class
+	Job class
 
-  - **arguments**
+	- **arguments**
 
-    - `index (int)`:  The index of the job
+		- `index (int)`:  The index of the job
 
-    - `proc (Proc)`:  The process
+		- `proc (Proc)`:  The process
 
-  !!! note "property: `logger`"
+	!!! note "property: `logger`"
 
-    A logger wrapper to avoid instanize a logger object for each job
+		A logger wrapper to avoid instanize a logger object for each job
 
-    - **params**
+		- **params**
 
-      - `*args (str)`:  messages to be logged.
+			- `*args (str)`:  messages to be logged.
 
-      - `*kwargs`:  Other parameters for the logger.
+			- `*kwargs`:  Other parameters for the logger.
 
-  !!! note "property: `signature`"
+	!!! note "property: `signature`"
 
-    Calculate the signature of the job based on the input/output and the script.
-    If file does not exist, it will not be in the signature.
-    The signature is like:
-    ```json
-    {
-      "i": {
-        "invar:var": <invar>,
-        "infile:file": <infile>,
-        "infiles:files": [<infiles...>]
-      },
-      "o": {
-        "outvar:var": <outvar>,
-        "outfile:file": <outfile>,
-        "outdir:dir": <outdir>
-      }
-      "mtime": <max mtime of input and script>,
-    }
-    ```
+		Calculate the signature of the job based on the input/output and the script.
+		If file does not exist, it will not be in the signature.
+		The signature is like:
+		```json
+		{
+		  "i": {
+		    "invar:var": <invar>,
+		    "infile:file": <infile>,
+		    "infiles:files": [<infiles...>]
+		  },
+		  "o": {
+		    "outvar:var": <outvar>,
+		    "outfile:file": <outfile>,
+		    "outdir:dir": <outdir>
+		  }
+		  "mtime": <max mtime of input and script>,
+		}
+		```
 
-    - **returns**
+		- **returns**
 
-      - `(Diot)`:  The signature of the job
+			- `(Diot)`:  The signature of the job
 
-  !!! abstract "method: `add_config(self, name, default, converter)`"
+	!!! abstract "method: `add_config(self, name, default, converter)`"
 
-    Add a config to plugin config, used for plugins
+		Add a config to plugin config, used for plugins
 
-    - **params**
+		- **params**
 
-      - `name (str)`:  The name of the config.
+			- `name (str)`:  The name of the config.
 
-          To proptect your config, better use a prefix
+			  To proptect your config, better use a prefix
 
-      - `default (Any)`:  The default value for the config
+			- `default (Any)`:  The default value for the config
 
-      - `converter (callable)`:  The converter for the value
+			- `converter (callable)`:  The converter for the value
 
-  !!! abstract "method: `build(self)`"
+	!!! abstract "method: `build(self)`"
 
-    Initiate a job, make directory and prepare input, output and script.
-    
+		Initiate a job, make directory and prepare input, output and script.
+		
 
-  !!! abstract "method: `cache(self)`"
+	!!! abstract "method: `cache(self)`"
 
-    Truly cache the job (by signature)
-    
+		Truly cache the job (by signature)
+		
 
-  !!! abstract "method: `done(self, cached, status)`"
+	!!! abstract "method: `done(self, cached, status)`"
 
-    Do some cleanup when job finished
+		Do some cleanup when job finished
 
-    - **params**
+		- **params**
 
-      - `cached (bool)`:  Whether this is running for a cached job.
+			- `cached (bool)`:  Whether this is running for a cached job.
 
-  !!! abstract "method: `kill(self)`"
+	!!! abstract "method: `kill(self)`"
 
-    Kill the job
+		Kill the job
 
-    - **returns**
+		- **returns**
 
-      - `(bool)`:  `True` if succeeds else `False`
+			- `(bool)`:  `True` if succeeds else `False`
 
-  !!! abstract "method: `poll(self)`"
+	!!! abstract "method: `poll(self)`"
 
-    Check the status of a running job
+		Check the status of a running job
 
-    - **returns**
+		- **returns**
 
-      - `(bool|str)`:  `True/False` if rcfile generared and whether job succeeds,         otherwise returns `running`.
+			- `(bool|str)`:  `True/False` if rcfile generared and whether job succeeds,         otherwise returns `running`.
 
-  !!! abstract "method: `reset(self)`"
+	!!! abstract "method: `reset(self)`"
 
-    Clear the intermediate files and output files
+		Clear the intermediate files and output files
 
-  !!! abstract "method: `retry(self)`"
+	!!! abstract "method: `retry(self)`"
 
-    If the job is available to retry
+		If the job is available to retry
 
-    - **returns**
+		- **returns**
 
-      - `(bool|str)`:  `ignore` if `errhow` is `ignore`, otherwise         returns whether we could submit the job to retry.
+			- `(bool|str)`:  `ignore` if `errhow` is `ignore`, otherwise         returns whether we could submit the job to retry.
 
-  !!! abstract "method: `submit(self)`"
+	!!! abstract "method: `submit(self)`"
 
-    Submit the job
+		Submit the job
 
-    - **returns**
+		- **returns**
 
-      - `(bool)`:  `True` if succeeds else `False`
+			- `(bool)`:  `True` if succeeds else `False`
 ## pyppl.pyppl
 
 
 - **desc**
 
-  Pipeline for PyPPL
+	Pipeline for PyPPL
 
 - **variables**
 
-  - `SEPARATOR_LEN (int)`:  the length of the separators in log
+	- `SEPARATOR_LEN (int)`:  the length of the separators in log
 
-  - `PROCESSES (set)`:  The process pool where the processes are registered
+	- `PROCESSES (set)`:  The process pool where the processes are registered
 
-  - `TIPS (list)`:  Some tips to show in log
+	- `TIPS (list)`:  Some tips to show in log
 
-  - `PIPELINES (dict)`:  Exists pipelines
+	- `PIPELINES (dict)`:  Exists pipelines
 
 !!! example "class: `PyPPL`"
 
-  The class for the whole pipeline
-  
+	The class for the whole pipeline
+	
 
-  !!! abstract "method: `__init__(self, config, name, config_files, **kwconfigs)`"
+	!!! abstract "method: `__init__(self, config, name, config_files, **kwconfigs)`"
 
-    The construct for PyPPL
+		The construct for PyPPL
 
-    - **params**
+		- **params**
 
-      - `config (dict)`:  the runtime configuration for the pipeline
+			- `config (dict)`:  the runtime configuration for the pipeline
 
-      - `name (str)`:  The name of the pipeline
+			- `name (str)`:  The name of the pipeline
 
-      - `config_files (list)`:  A list of runtime configuration files
+			- `config_files (list)`:  A list of runtime configuration files
 
-      - `**kwconfigs`:  flattened runtime configurations, for example
+			- `**kwconfigs`:  flattened runtime configurations, for example
 
-          - you can do: `PyPPL(forks = 10)`, or even
+			  - you can do: `PyPPL(forks = 10)`, or even
 
-          - `PyPPL(logger_level = 'debug')`
+			  - `PyPPL(logger_level = 'debug')`
 
-  !!! abstract "method: `method(self, func)`"
+	!!! abstract "method: `add_method(self, func, require)`"
 
-    Add a method to PyPPL object
+		Add a method to PyPPL object, used as a decorator
 
-    - **params**
+		- **params**
 
-      - `func (callable)`:  the function to add
+			- `func (callable)`:  the function to add
 
-  !!! abstract "method: `run(self, profile)`"
+			- `require (str)`:  Require which function to be called before this
 
-    Run the pipeline with certain profile
+	!!! abstract "method: `run(self, profile)`"
 
-    - **params**
+		Run the pipeline with certain profile
 
-      - `profile (str)`:  The profile name
+		- **params**
 
-  !!! abstract "method: `start(self, *anything)`"
+			- `profile (str)`:  The profile name
 
-    Set the start processes for the pipeline
+	!!! abstract "method: `start(self, *anything)`"
 
-    - **params**
+		Set the start processes for the pipeline
 
-      - `*anything`:  Anything that can be converted to processes
+		- **params**
 
-          - Could be a string or a wildcard to search for processes
+			- `*anything`:  Anything that can be converted to processes
 
-          - or the process itself
+			  - Could be a string or a wildcard to search for processes
+
+			  - or the process itself
 ## pyppl.channel
 
 
 - **desc**
 
-  Channel for pyppl
+	Channel for pyppl
 
 !!! example "class: `Channel`"
 
-  The channen class, extended from `list`
-  
+	The channen class, extended from `list`
+	
 
-  !!! abstract "method: `attach(self, *names)`"
+	!!! abstract "method: `attach(self, *names)`"
 
-    Attach columns to names of Channel, so we can access each column by:
-    `ch.col0` == ch.colAt(0)
+		Attach columns to names of Channel, so we can access each column by:
+		`ch.col0` == ch.colAt(0)
 
-    - **params**
+		- **params**
 
-      - `*names (str)`:  The names. Have to be as length as channel's width.
+			- `*names (str)`:  The names. Have to be as length as channel's width.
 
-          None of them should be Channel's property name
+			  None of them should be Channel's property name
 
-      - `flatten (bool)`:  Whether flatten the channel for the name being attached
+			- `flatten (bool)`:  Whether flatten the channel for the name being attached
 
-  !!! abstract "method: `cbind(self, *cols)`"
+	!!! abstract "method: `cbind(self, *cols)`"
 
-    Add columns to the channel
+		Add columns to the channel
 
-    - **params**
+		- **params**
 
-      - `*cols (any)`:  The columns
+			- `*cols (any)`:  The columns
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The channel with the columns inserted.
+			- `(Channel)`:  The channel with the columns inserted.
 
-  !!! abstract "method: `colAt(self, index)`"
+	!!! abstract "method: `colAt(self, index)`"
 
-    Fetch one column of a Channel
+		Fetch one column of a Channel
 
-    - **params**
+		- **params**
 
-      - `index (int)`:  which column to fetch
+			- `index (int)`:  which column to fetch
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The Channel with that column
+			- `(Channel)`:  The Channel with that column
 
-  !!! abstract "method: `col_at(self, index)`"
+	!!! abstract "method: `col_at(self, index)`"
 
-    Fetch one column of a Channel
+		Fetch one column of a Channel
 
-    - **params**
+		- **params**
 
-      - `index (int)`:  which column to fetch
+			- `index (int)`:  which column to fetch
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The Channel with that column
+			- `(Channel)`:  The Channel with that column
 
-  !!! abstract "method: `collapse(self, col)`"
+	!!! abstract "method: `collapse(self, col)`"
 
-    Do the reverse of expand
-    length: N -> 1
-    width:  M -> M
+		Do the reverse of expand
+		length: N -> 1
+		width:  M -> M
 
-    - **params**
+		- **params**
 
-      - `col (int)`:      the index of the column used to collapse
+			- `col (int)`:      the index of the column used to collapse
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The collapsed Channel
+			- `(Channel)`:  The collapsed Channel
 
-  !!! abstract "method: `copy(self)`"
+	!!! abstract "method: `copy(self)`"
 
-    Copy a Channel using `copy.copy`
+		Copy a Channel using `copy.copy`
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The copied Channel
+			- `(Channel)`:  The copied Channel
 
-  !!! abstract "method: `create(alist)`"
+	!!! abstract "method: `create(alist)`"
 
-    Create a Channel from a list
+		Create a Channel from a list
 
-    - **params**
+		- **params**
 
-      - `alist (list|Channel)`:  The list, default: []
+			- `alist (list|Channel)`:  The list, default: []
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The Channel created from the list
+			- `(Channel)`:  The Channel created from the list
 
-  !!! abstract "method: `expand(self, col, pattern, ftype, sortby, reverse)`"
+	!!! abstract "method: `expand(self, col, pattern, ftype, sortby, reverse)`"
 
-    expand the Channel according to the files in <col>, other cols will keep the same
-    `[(dir1/dir2, 1)].expand (0, "*")` will expand to
-    `[(dir1/dir2/file1, 1), (dir1/dir2/file2, 1), ...]`
-    length: 1 -> N
-    width:  M -> M
+		expand the Channel according to the files in <col>, other cols will keep the same
+		`[(dir1/dir2, 1)].expand (0, "*")` will expand to
+		`[(dir1/dir2/file1, 1), (dir1/dir2/file2, 1), ...]`
+		length: 1 -> N
+		width:  M -> M
 
-    - **params**
+		- **params**
 
-      - `col (int)`:  the index of the column used to expand
+			- `col (int)`:  the index of the column used to expand
 
-      - `pattern (str)`:  use a pattern to filter the files/dirs, default: `*`
+			- `pattern (str)`:  use a pattern to filter the files/dirs, default: `*`
 
-      - `ftype (str)`:  the type of the files/dirs to include
+			- `ftype (str)`:  the type of the files/dirs to include
 
-          - 'dir', 'file', 'link' or 'any' (default)
+			  - 'dir', 'file', 'link' or 'any' (default)
 
-      - `sortby (str)`:   how the list is sorted
+			- `sortby (str)`:   how the list is sorted
 
-          - 'name' (default), 'mtime', 'size'
+			  - 'name' (default), 'mtime', 'size'
 
-      - `reverse (bool)`:  reverse sort. Default: False
+			- `reverse (bool)`:  reverse sort. Default: False
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The expanded Channel
+			- `(Channel)`:  The expanded Channel
 
-  !!! abstract "method: `filter(self, func)`"
+	!!! abstract "method: `filter(self, func)`"
 
-    Alias of python builtin `filter`
+		Alias of python builtin `filter`
 
-    - **params**
+		- **params**
 
-      - `func (callable)`:  the function. Default: `None`
+			- `func (callable)`:  the function. Default: `None`
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The filtered Channel
+			- `(Channel)`:  The filtered Channel
 
-  !!! abstract "method: `filterCol(self, func, col)`"
+	!!! abstract "method: `filterCol(self, func, col)`"
 
-    Just filter on the specific column
+		Just filter on the specific column
 
-    - **params**
+		- **params**
 
-      - `func (callable)`:  the function
+			- `func (callable)`:  the function
 
-      - `col (int)`:  the column to filter
+			- `col (int)`:  the column to filter
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The filtered Channel
+			- `(Channel)`:  The filtered Channel
 
-  !!! abstract "method: `filter_col(self, func, col)`"
+	!!! abstract "method: `filter_col(self, func, col)`"
 
-    Just filter on the specific column
+		Just filter on the specific column
 
-    - **params**
+		- **params**
 
-      - `func (callable)`:  the function
+			- `func (callable)`:  the function
 
-      - `col (int)`:  the column to filter
+			- `col (int)`:  the column to filter
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The filtered Channel
+			- `(Channel)`:  The filtered Channel
 
-  !!! abstract "method: `flatten(self, col)`"
+	!!! abstract "method: `flatten(self, col)`"
 
-    Convert a single-column Channel to a list (remove the tuple signs)
-    `[(a,), (b,)]` to `[a, b]`
+		Convert a single-column Channel to a list (remove the tuple signs)
+		`[(a,), (b,)]` to `[a, b]`
 
-    - **params**
+		- **params**
 
-      - `col (int)`:  The column to flat. None for all columns (default)
+			- `col (int)`:  The column to flat. None for all columns (default)
 
-    - **returns**
+		- **returns**
 
-      - `(list)`:  The list converted from the Channel.
+			- `(list)`:  The list converted from the Channel.
 
-  !!! abstract "method: `fold(self, nfold)`"
+	!!! abstract "method: `fold(self, nfold)`"
 
-    Fold a Channel. Make a row to n-length chunk rows
-    ```
-    a1  a2  a3  a4
-    b1  b2  b3  b4
-    if nfold==2, fold(2) will change it to:
-    a1  a2
-    a3  a4
-    b1  b2
-    b3  b4
-    ```
+		Fold a Channel. Make a row to n-length chunk rows
+		```
+		a1  a2  a3  a4
+		b1  b2  b3  b4
+		if nfold==2, fold(2) will change it to:
+		a1  a2
+		a3  a4
+		b1  b2
+		b3  b4
+		```
 
-    - **params**
+		- **params**
 
-      - `nfold (int)`:  the size of the chunk
+			- `nfold (int)`:  the size of the chunk
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The new Channel
+			- `(Channel)`:  The new Channel
 
-  !!! abstract "method: `fromArgv()`"
+	!!! abstract "method: `fromArgv()`"
 
-    Create a Channel from `sys.argv[1:]`
-    "python test.py a b c" creates a width=1 Channel
-    "python test.py a,1 b,2 c,3" creates a width=2 Channel
+		Create a Channel from `sys.argv[1:]`
+		"python test.py a b c" creates a width=1 Channel
+		"python test.py a,1 b,2 c,3" creates a width=2 Channel
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The Channel created from the command line arguments
+			- `(Channel)`:  The Channel created from the command line arguments
 
-  !!! abstract "method: `fromChannels(*args)`"
+	!!! abstract "method: `fromChannels(*args)`"
 
-    Create a Channel from Channels
+		Create a Channel from Channels
 
-    - **params**
+		- **params**
 
-      - `*args (any)`:  The Channels or anything can be created as a `Channel`
+			- `*args (any)`:  The Channels or anything can be created as a `Channel`
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The Channel merged from other Channels
+			- `(Channel)`:  The Channel merged from other Channels
 
-  !!! abstract "method: `fromFile(filename, header, skip, delimit)`"
+	!!! abstract "method: `fromFile(filename, header, skip, delimit)`"
 
-    Create Channel from the file content
-    It's like a matrix file, each row is a row for a Channel.
-    And each column is a column for a Channel.
+		Create Channel from the file content
+		It's like a matrix file, each row is a row for a Channel.
+		And each column is a column for a Channel.
 
-    - **params**
+		- **params**
 
-      - `filename (file)`:  the file
+			- `filename (file)`:  the file
 
-      - `header (bool)`:   Whether the file contains header. If True, will attach the header
+			- `header (bool)`:   Whether the file contains header. If True, will attach the header
 
-          - So you can use `channel.<header>` to fetch the column
+			  - So you can use `channel.<header>` to fetch the column
 
-      - `skip (int)`:  first lines to skip, default: `0`
+			- `skip (int)`:  first lines to skip, default: `0`
 
-      - `delimit (str)`:  the delimit for columns, default: `  `
+			- `delimit (str)`:  the delimit for columns, default: `  `
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  A Channel created from the file
+			- `(Channel)`:  A Channel created from the file
 
-  !!! abstract "method: `fromPairs(pattern)`"
+	!!! abstract "method: `fromPairs(pattern)`"
 
-    Create a width = 2 Channel from a pattern
+		Create a width = 2 Channel from a pattern
 
-    - **params**
+		- **params**
 
-      - `pattern (str)`:  the pattern
+			- `pattern (str)`:  the pattern
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The Channel create from every 2 files match the pattern
+			- `(Channel)`:  The Channel create from every 2 files match the pattern
 
-  !!! abstract "method: `fromParams(*pnames)`"
+	!!! abstract "method: `fromParams(*pnames)`"
 
-    Create a Channel from params
+		Create a Channel from params
 
-    - **params**
+		- **params**
 
-      - `*pnames (str)`:  The names of the option
+			- `*pnames (str)`:  The names of the option
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The Channel created from `pyparam`.
+			- `(Channel)`:  The Channel created from `pyparam`.
 
-  !!! abstract "method: `fromPattern(pattern, ftype, sortby, reverse)`"
+	!!! abstract "method: `fromPattern(pattern, ftype, sortby, reverse)`"
 
-    Create a Channel from a path pattern
+		Create a Channel from a path pattern
 
-    - **params**
+		- **params**
 
-      - `pattern (str)`:  the pattern with wild cards
+			- `pattern (str)`:  the pattern with wild cards
 
-      - `ftype (str)`:  the type of the files/dirs to include
+			- `ftype (str)`:  the type of the files/dirs to include
 
-          - 'dir', 'file', 'link' or 'any' (default)
+			  - 'dir', 'file', 'link' or 'any' (default)
 
-      - `sortby (str)`:   how the list is sorted
+			- `sortby (str)`:   how the list is sorted
 
-          - 'name' (default), 'mtime', 'size'
+			  - 'name' (default), 'mtime', 'size'
 
-      - `reverse (bool)`:  reverse sort. Default: `False`
+			- `reverse (bool)`:  reverse sort. Default: `False`
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The Channel created from the path
+			- `(Channel)`:  The Channel created from the path
 
-  !!! abstract "method: `from_argv()`"
+	!!! abstract "method: `from_argv()`"
 
-    Create a Channel from `sys.argv[1:]`
-    "python test.py a b c" creates a width=1 Channel
-    "python test.py a,1 b,2 c,3" creates a width=2 Channel
+		Create a Channel from `sys.argv[1:]`
+		"python test.py a b c" creates a width=1 Channel
+		"python test.py a,1 b,2 c,3" creates a width=2 Channel
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The Channel created from the command line arguments
+			- `(Channel)`:  The Channel created from the command line arguments
 
-  !!! abstract "method: `from_channels(*args)`"
+	!!! abstract "method: `from_channels(*args)`"
 
-    Create a Channel from Channels
+		Create a Channel from Channels
 
-    - **params**
+		- **params**
 
-      - `*args (any)`:  The Channels or anything can be created as a `Channel`
+			- `*args (any)`:  The Channels or anything can be created as a `Channel`
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The Channel merged from other Channels
+			- `(Channel)`:  The Channel merged from other Channels
 
-  !!! abstract "method: `from_file(filename, header, skip, delimit)`"
+	!!! abstract "method: `from_file(filename, header, skip, delimit)`"
 
-    Create Channel from the file content
-    It's like a matrix file, each row is a row for a Channel.
-    And each column is a column for a Channel.
+		Create Channel from the file content
+		It's like a matrix file, each row is a row for a Channel.
+		And each column is a column for a Channel.
 
-    - **params**
+		- **params**
 
-      - `filename (file)`:  the file
+			- `filename (file)`:  the file
 
-      - `header (bool)`:   Whether the file contains header. If True, will attach the header
+			- `header (bool)`:   Whether the file contains header. If True, will attach the header
 
-          - So you can use `channel.<header>` to fetch the column
+			  - So you can use `channel.<header>` to fetch the column
 
-      - `skip (int)`:  first lines to skip, default: `0`
+			- `skip (int)`:  first lines to skip, default: `0`
 
-      - `delimit (str)`:  the delimit for columns, default: `  `
+			- `delimit (str)`:  the delimit for columns, default: `  `
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  A Channel created from the file
+			- `(Channel)`:  A Channel created from the file
 
-  !!! abstract "method: `from_pairs(pattern)`"
+	!!! abstract "method: `from_pairs(pattern)`"
 
-    Create a width = 2 Channel from a pattern
+		Create a width = 2 Channel from a pattern
 
-    - **params**
+		- **params**
 
-      - `pattern (str)`:  the pattern
+			- `pattern (str)`:  the pattern
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The Channel create from every 2 files match the pattern
+			- `(Channel)`:  The Channel create from every 2 files match the pattern
 
-  !!! abstract "method: `from_params(*pnames)`"
+	!!! abstract "method: `from_params(*pnames)`"
 
-    Create a Channel from params
+		Create a Channel from params
 
-    - **params**
+		- **params**
 
-      - `*pnames (str)`:  The names of the option
+			- `*pnames (str)`:  The names of the option
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The Channel created from `pyparam`.
+			- `(Channel)`:  The Channel created from `pyparam`.
 
-  !!! abstract "method: `from_pattern(pattern, ftype, sortby, reverse)`"
+	!!! abstract "method: `from_pattern(pattern, ftype, sortby, reverse)`"
 
-    Create a Channel from a path pattern
+		Create a Channel from a path pattern
 
-    - **params**
+		- **params**
 
-      - `pattern (str)`:  the pattern with wild cards
+			- `pattern (str)`:  the pattern with wild cards
 
-      - `ftype (str)`:  the type of the files/dirs to include
+			- `ftype (str)`:  the type of the files/dirs to include
 
-          - 'dir', 'file', 'link' or 'any' (default)
+			  - 'dir', 'file', 'link' or 'any' (default)
 
-      - `sortby (str)`:   how the list is sorted
+			- `sortby (str)`:   how the list is sorted
 
-          - 'name' (default), 'mtime', 'size'
+			  - 'name' (default), 'mtime', 'size'
 
-      - `reverse (bool)`:  reverse sort. Default: `False`
+			- `reverse (bool)`:  reverse sort. Default: `False`
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The Channel created from the path
+			- `(Channel)`:  The Channel created from the path
 
-  !!! abstract "method: `get(self, idx)`"
+	!!! abstract "method: `get(self, idx)`"
 
-    Get the element of a flattened channel
+		Get the element of a flattened channel
 
-    - **params**
+		- **params**
 
-      - `idx (int)`:  The index of the element to get. Default: 0
+			- `idx (int)`:  The index of the element to get. Default: 0
 
-    - **return**
+		- **return**
 
-      - `(any)`:  The element
+			- `(any)`:  The element
 
-  !!! abstract "method: `insert(self, cidx, *cols)`"
+	!!! abstract "method: `insert(self, cidx, *cols)`"
 
-    Insert columns to a channel
+		Insert columns to a channel
 
-    - **params**
+		- **params**
 
-      - `cidx (int)`:  Insert into which index of column?
+			- `cidx (int)`:  Insert into which index of column?
 
-      - `*cols (any)`:  the columns to be bound to Channel
+			- `*cols (any)`:  the columns to be bound to Channel
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The combined Channel
+			- `(Channel)`:  The combined Channel
 
-  !!! abstract "method: `length(self)`"
+	!!! abstract "method: `length(self)`"
 
-    Get the length of a Channel
-    It's just an alias of `len(chan)`
+		Get the length of a Channel
+		It's just an alias of `len(chan)`
 
-    - **returns**
+		- **returns**
 
-      - `(int)`:  The length of the Channel
+			- `(int)`:  The length of the Channel
 
-  !!! abstract "method: `map(self, func)`"
+	!!! abstract "method: `map(self, func)`"
 
-    Alias of python builtin `map`
+		Alias of python builtin `map`
 
-    - **params**
+		- **params**
 
-      - `func (callable)`:  the function
+			- `func (callable)`:  the function
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The transformed Channel
+			- `(Channel)`:  The transformed Channel
 
-  !!! abstract "method: `mapCol(self, func, col)`"
+	!!! abstract "method: `mapCol(self, func, col)`"
 
-    Map for a column
+		Map for a column
 
-    - **params**
+		- **params**
 
-      - `func (callable)`:  the function
+			- `func (callable)`:  the function
 
-      - `col (int)`:  the index of the column. Default: `0`
+			- `col (int)`:  the index of the column. Default: `0`
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The transformed Channel
+			- `(Channel)`:  The transformed Channel
 
-  !!! abstract "method: `map_col(self, func, col)`"
+	!!! abstract "method: `map_col(self, func, col)`"
 
-    Map for a column
+		Map for a column
 
-    - **params**
+		- **params**
 
-      - `func (callable)`:  the function
+			- `func (callable)`:  the function
 
-      - `col (int)`:  the index of the column. Default: `0`
+			- `col (int)`:  the index of the column. Default: `0`
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The transformed Channel
+			- `(Channel)`:  The transformed Channel
 
-  !!! abstract "method: `nones(length, width)`"
+	!!! abstract "method: `nones(length, width)`"
 
-    Create a channel with `None`s
+		Create a channel with `None`s
 
-    - **params**
+		- **params**
 
-      - `length (int)`:  The length of the channel
+			- `length (int)`:  The length of the channel
 
-      - `width (int)`:   The width of the channel
+			- `width (int)`:   The width of the channel
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The created channel
+			- `(Channel)`:  The created channel
 
-  !!! abstract "method: `rbind(self, *rows)`"
+	!!! abstract "method: `rbind(self, *rows)`"
 
-    The multiple-argument versoin of `rbind`
+		The multiple-argument versoin of `rbind`
 
-    - **params**
+		- **params**
 
-      - `*rows (any)`:  the rows to be bound to Channel
+			- `*rows (any)`:  the rows to be bound to Channel
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The combined Channel
+			- `(Channel)`:  The combined Channel
 
-  !!! abstract "method: `reduce(self, func)`"
+	!!! abstract "method: `reduce(self, func)`"
 
-    Alias of python builtin `reduce`
+		Alias of python builtin `reduce`
 
-    - **params**
+		- **params**
 
-      - `func (callable)`:  the function
+			- `func (callable)`:  the function
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The reduced value
+			- `(Channel)`:  The reduced value
 
-  !!! abstract "method: `reduceCol(self, func, col)`"
+	!!! abstract "method: `reduceCol(self, func, col)`"
 
-    Reduce a column
+		Reduce a column
 
-    - **params**
+		- **params**
 
-      - `func (callable)`:  the function
+			- `func (callable)`:  the function
 
-      - `col (int)`:  the column to reduce
+			- `col (int)`:  the column to reduce
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The reduced value
+			- `(Channel)`:  The reduced value
 
-  !!! abstract "method: `reduce_col(self, func, col)`"
+	!!! abstract "method: `reduce_col(self, func, col)`"
 
-    Reduce a column
+		Reduce a column
 
-    - **params**
+		- **params**
 
-      - `func (callable)`:  the function
+			- `func (callable)`:  the function
 
-      - `col (int)`:  the column to reduce
+			- `col (int)`:  the column to reduce
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The reduced value
+			- `(Channel)`:  The reduced value
 
-  !!! abstract "method: `repCol(self, nrep)`"
+	!!! abstract "method: `repCol(self, nrep)`"
 
-    Repeat column and return a new channel
+		Repeat column and return a new channel
 
-    - **params**
+		- **params**
 
-      - `nrep (int)`:  how many times to repeat.
+			- `nrep (int)`:  how many times to repeat.
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The new channel with repeated columns
+			- `(Channel)`:  The new channel with repeated columns
 
-  !!! abstract "method: `repRow(self, nrep)`"
+	!!! abstract "method: `repRow(self, nrep)`"
 
-    Repeat row and return a new channel
+		Repeat row and return a new channel
 
-    - **params**
+		- **params**
 
-      - `nrep (int)`:  how many times to repeat.
+			- `nrep (int)`:  how many times to repeat.
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The new channel with repeated rows
+			- `(Channel)`:  The new channel with repeated rows
 
-  !!! abstract "method: `rep_col(self, nrep)`"
+	!!! abstract "method: `rep_col(self, nrep)`"
 
-    Repeat column and return a new channel
+		Repeat column and return a new channel
 
-    - **params**
+		- **params**
 
-      - `nrep (int)`:  how many times to repeat.
+			- `nrep (int)`:  how many times to repeat.
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The new channel with repeated columns
+			- `(Channel)`:  The new channel with repeated columns
 
-  !!! abstract "method: `rep_row(self, nrep)`"
+	!!! abstract "method: `rep_row(self, nrep)`"
 
-    Repeat row and return a new channel
+		Repeat row and return a new channel
 
-    - **params**
+		- **params**
 
-      - `nrep (int)`:  how many times to repeat.
+			- `nrep (int)`:  how many times to repeat.
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The new channel with repeated rows
+			- `(Channel)`:  The new channel with repeated rows
 
-  !!! abstract "method: `rowAt(self, index)`"
+	!!! abstract "method: `rowAt(self, index)`"
 
-    Fetch one row of a Channel
+		Fetch one row of a Channel
 
-    - **params**
+		- **params**
 
-      - `index (int)`:  which row to fetch
+			- `index (int)`:  which row to fetch
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The Channel with that row
+			- `(Channel)`:  The Channel with that row
 
-  !!! abstract "method: `row_at(self, index)`"
+	!!! abstract "method: `row_at(self, index)`"
 
-    Fetch one row of a Channel
+		Fetch one row of a Channel
 
-    - **params**
+		- **params**
 
-      - `index (int)`:  which row to fetch
+			- `index (int)`:  which row to fetch
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The Channel with that row
+			- `(Channel)`:  The Channel with that row
 
-  !!! abstract "method: `slice(self, start, length)`"
+	!!! abstract "method: `slice(self, start, length)`"
 
-    Fetch some columns of a Channel
+		Fetch some columns of a Channel
 
-    - **params**
+		- **params**
 
-      - `start (int)`:   from column to start
+			- `start (int)`:   from column to start
 
-      - `length (int)`:  how many columns to fetch, default: None (from start to the end)
+			- `length (int)`:  how many columns to fetch, default: None (from start to the end)
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The Channel with fetched columns
+			- `(Channel)`:  The Channel with fetched columns
 
-  !!! abstract "method: `split(self, flatten)`"
+	!!! abstract "method: `split(self, flatten)`"
 
-    Split a Channel to single-column Channels
+		Split a Channel to single-column Channels
 
-    - **returns**
+		- **returns**
 
-      - `(list[Channel])`:  The list of single-column Channels
+			- `(list[Channel])`:  The list of single-column Channels
 
-  !!! abstract "method: `t(self)`"
+	!!! abstract "method: `t(self)`"
 
-    Transpose the channel
+		Transpose the channel
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The transposed channel.
+			- `(Channel)`:  The transposed channel.
 
-  !!! abstract "method: `transpose(self)`"
+	!!! abstract "method: `transpose(self)`"
 
-    Transpose the channel
+		Transpose the channel
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The transposed channel.
+			- `(Channel)`:  The transposed channel.
 
-  !!! abstract "method: `unfold(self, nfold)`"
+	!!! abstract "method: `unfold(self, nfold)`"
 
-    Do the reverse thing as self.fold does
+		Do the reverse thing as self.fold does
 
-    - **params**
+		- **params**
 
-      - `nfold (int)`:  How many rows to combind each time. default: 2
+			- `nfold (int)`:  How many rows to combind each time. default: 2
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The unfolded Channel
+			- `(Channel)`:  The unfolded Channel
 
-  !!! abstract "method: `unique(self)`"
+	!!! abstract "method: `unique(self)`"
 
-    Make the channel unique, remove duplicated rows
-    Try to keep the order
+		Make the channel unique, remove duplicated rows
+		Try to keep the order
 
-    - **returns**
+		- **returns**
 
-      - `(Channel)`:  The channel with unique rows.
+			- `(Channel)`:  The channel with unique rows.
 
-  !!! abstract "method: `width(self)`"
+	!!! abstract "method: `width(self)`"
 
-    Get the width of a Channel
+		Get the width of a Channel
 
-    - **returns**
+		- **returns**
 
-      - `(int)`:  The width of the Channel
+			- `(int)`:  The width of the Channel
 ## pyppl.exception
 
 
 - **desc**
 
-  Exceptions for PyPPL
+	Exceptions for PyPPL
 
 !!! example "class: `JobBuildingError`"
 
-  Failed to build the job
+	Failed to build the job
 
 !!! example "class: `JobFailError`"
 
-  Job results validation failed
+	Job results validation failed
 
 !!! example "class: `JobInputParseError`"
 
-  Failed to parse job input
+	Failed to parse job input
 
 !!! example "class: `JobOutputParseError`"
 
-  Failed to parse job output
-
-!!! example "class: `PluginConfigKeyError`"
-
-  When try to update plugin config from a dictionary with key not added
+	Failed to parse job output
 
 !!! example "class: `PluginNoSuchPlugin`"
 
-  When try to find a plugin not existing
+	When try to find a plugin not existing
 
 !!! example "class: `ProcessAlreadyRegistered`"
 
-  Process already registered with the same id and tag
+	Process already registered with the same id and tag
 
-  !!! abstract "method: `__init__(self, message, proc1, proc2)`"
+	!!! abstract "method: `__init__(self, message, proc1, proc2)`"
 
-    Construct for ProcessAlreadyRegistered
+		Construct for ProcessAlreadyRegistered
 
-    - **params**
+		- **params**
 
-      - `message (str)`:  The message, make the class to be compatible with Exception
+			- `message (str)`:  The message, make the class to be compatible with Exception
 
-      - `proc1 (Proc)`:  the first Proc
+			- `proc1 (Proc)`:  the first Proc
 
-      - `proc2 (Proc)`:  the second Proc
+			- `proc2 (Proc)`:  the second Proc
 
 !!! example "class: `ProcessAttributeError`"
 
-  Process AttributeError
+	Process AttributeError
 
 !!! example "class: `ProcessInputError`"
 
-  Process Input error
+	Process Input error
 
 !!! example "class: `ProcessOutputError`"
 
-  Process Output error
+	Process Output error
 
 !!! example "class: `ProcessScriptError`"
 
-  Process script building error
+	Process script building error
 
 !!! example "class: `PyPPLFindNoProcesses`"
 
-  When failed to find any processes with given pattern
+	When failed to find any processes with given pattern
 
 !!! example "class: `PyPPLInvalidConfigurationKey`"
 
-  When invalid configuration key passed
+	When invalid configuration key passed
+
+!!! example "class: `PyPPLMethodExists`"
+
+	Method has already been registered
 
 !!! example "class: `PyPPLNameError`"
 
-  Pipeline name duplicated after transformed by utils.name2filename
+	Pipeline name duplicated after transformed by utils.name2filename
 
 !!! example "class: `PyPPLResumeError`"
 
-  Try to resume when no start process has been specified
+	Try to resume when no start process has been specified
+
+!!! example "class: `PyPPLWrongPositionMethod`"
+
+	Wrong position for plugin-added method
 
 !!! example "class: `RunnerMorethanOneRunnerEnabled`"
 
-  When more than one runners are enabled
+	When more than one runners are enabled
 
 !!! example "class: `RunnerNoSuchRunner`"
 
-  When no such runner is found
+	When no such runner is found
 
 !!! example "class: `RunnerTypeError`"
 
-  Wrong type of runner
+	Wrong type of runner
 ## pyppl.config
 
 
 - **desc**
 
-  Configuration for PyPPL
+	Configuration for PyPPL
 
 - **variables**
 
-  - `DEFAULT_CFGFILES (tuple)`:  default configuration files
+	- `DEFAULT_CFGFILES (tuple)`:  default configuration files
 
-  - `DEFAULT_CONFIG (dict)`:  default configurations to be loaded
+	- `DEFAULT_CONFIG (dict)`:  default configurations to be loaded
 
-  - `config (dict)`:  The default configuration that will be used in the whole session
+	- `config (dict)`:  The default configuration that will be used in the whole session
 
 !!! abstract "method: `load_config(default_config, *config_files)`"
 
-  Load the configurations
+	Load the configurations
 
-  - **params**
+	- **params**
 
-    - `default_config (dict|path)`:  A configuration dictionary or a path to a configuration file
+		- `default_config (dict|path)`:  A configuration dictionary or a path to a configuration file
 
-    - `*config_files`:  A list of configuration or configuration files
+		- `*config_files`:  A list of configuration or configuration files
 ## pyppl.jobmgr
 
 
 - **desc**
 
-  Job manager for PyPPL
+	Job manager for PyPPL
 
 - **variables**
 
-  - `STATES (dict)`:  Possible states for the job
+	- `STATES (dict)`:  Possible states for the job
 
-  - `PBAR_MARKS (dict)`:  The marks on progress bar for different states
+	- `PBAR_MARKS (dict)`:  The marks on progress bar for different states
 
-  - `PBAR_LEVEL (dict)`:  The levels for different states
+	- `PBAR_LEVEL (dict)`:  The levels for different states
 
-  - `PBAR_SIZE (int)`:  the size of the progress bar
+	- `PBAR_SIZE (int)`:  the size of the progress bar
 
 !!! example "class: `Jobmgr`"
 
-  Job manager
+	Job manager
 
-  !!! abstract "method: `__init__(self, jobs)`"
+	!!! abstract "method: `__init__(self, jobs)`"
 
-    Job manager constructor
+		Job manager constructor
 
-    - **params**
+		- **params**
 
-      - `jobs (list)`:  All jobs of a process
+			- `jobs (list)`:  All jobs of a process
 
-  !!! abstract "method: `cleanup(self, ex)`"
+	!!! abstract "method: `cleanup(self, ex)`"
 
-    Cleanup the pipeline when
-    - Ctrl-C hit
-    - error encountered and `proc.errhow` = 'terminate'
+		Cleanup the pipeline when
+		- Ctrl-C hit
+		- error encountered and `proc.errhow` = 'terminate'
 
-    - **params**
+		- **params**
 
-      - `ex (Exception)`:  The exception raised by workers
+			- `ex (Exception)`:  The exception raised by workers
 
-  !!! hint "function: `kill_worker(cls, killq)`"
+	!!! hint "function: `kill_worker(cls, killq)`"
 
-    The killing worker to kill the jobs
+		The killing worker to kill the jobs
 
-  !!! abstract "method: `progressbar(self, event)`"
+	!!! abstract "method: `progressbar(self, event)`"
 
-    Generate the progress bar.
+		Generate the progress bar.
 
-    - **params**
+		- **params**
 
-      - `event (StateMachine event)`:  The event including job as model.
+			- `event (StateMachine event)`:  The event including job as model.
 
-  !!! abstract "method: `start(self)`"
+	!!! abstract "method: `start(self)`"
 
-    Start the queue.
-    
+		Start the queue.
+		
 
-  !!! abstract "method: `worker(self)`"
+	!!! abstract "method: `worker(self)`"
 
-    The worker to build, submit and poll the jobs
+		The worker to build, submit and poll the jobs
 ## pyppl.plugin
 
 
 - **desc**
 
-  Plugin system for PyPPL
+	Plugin system for PyPPL
 
 - **variables**
 
-  - `PMNAME (str)`:  The name of the plugin manager
+	- `PMNAME (str)`:  The name of the plugin manager
 
-  - `hookimpl (pluggy.HookimplMarker)`:  Used to mark the implementation of hooks
+	- `hookimpl (pluggy.HookimplMarker)`:  Used to mark the implementation of hooks
 
-  - `hookspec (pluggy.HookspecMarker)`:  Used to mark the hooks
+	- `hookspec (pluggy.HookspecMarker)`:  Used to mark the hooks
 
 !!! abstract "method: `cli_addcmd(commands)`"
 
-  PLUGIN API
-  Add command and options to CLI
+	PLUGIN API
+	Add command and options to CLI
 
-  - **params**
+	- **params**
 
-    - `commands (Commands)`:  The Commands instance
+		- `commands (Commands)`:  The Commands instance
 
 !!! abstract "method: `cli_execcmd(command, opts)`"
 
-  PLUGIN API
-  Execute the command being added to CLI
+	PLUGIN API
+	Execute the command being added to CLI
 
-  - **params**
+	- **params**
 
-    - `command (str)`:  The command
+		- `command (str)`:  The command
 
-    - `opts (dict)`:  The options
+		- `opts (dict)`:  The options
 
 !!! abstract "method: `config_plugins(*plugins)`"
 
-  Parse configurations for plugins and enable/disable plugins accordingly.
+	Parse configurations for plugins and enable/disable plugins accordingly.
 
-  - **params**
+	- **params**
 
-    - `*plugins ([any])`:  The plugins
+		- `*plugins ([any])`:  The plugins
 
-        plugins with 'no:' will be disabled.
+		  plugins with 'no:' will be disabled.
 
 !!! abstract "method: `disable_plugin(plugin)`"
 
-  Try to disable a plugin
+	Try to disable a plugin
 
-  - **params**
+	- **params**
 
-    - `plugin (any)`:  A plugin or the name of a plugin
+		- `plugin (any)`:  A plugin or the name of a plugin
 
 !!! abstract "method: `job_build(job, status)`"
 
-  PLUGIN API
-  After a job is being built
+	PLUGIN API
+	After a job is being built
 
-  - **params**
+	- **params**
 
-    - `job (Job)`:  The Job instance
+		- `job (Job)`:  The Job instance
 
-    - `status (str)`:  The status of the job building
+		- `status (str)`:  The status of the job building
 
-        - True: The job is successfully built
+		  - True: The job is successfully built
 
-        - False: The job is failed to build
+		  - False: The job is failed to build
 
-        - cached: The job is cached
+		  - cached: The job is cached
 
 !!! abstract "method: `job_done(job, status)`"
 
-  PLUGIN API
-  After a job is done
+	PLUGIN API
+	After a job is done
 
-  - **params**
+	- **params**
 
-    - `job (Job)`:  The Job instance
+		- `job (Job)`:  The Job instance
 
-    - `status (str)`:  The status of the job
+		- `status (str)`:  The status of the job
 
-        - succeeded: The job is successfully done
+		  - succeeded: The job is successfully done
 
-        - failed: The job is failed
+		  - failed: The job is failed
 
-        - cached: The job is cached
+		  - cached: The job is cached
 
 !!! abstract "method: `job_init(job)`"
 
-  PLUGIN API
-  Right after job initiates
+	PLUGIN API
+	Right after job initiates
 
-  - **params**
+	- **params**
 
-    - `job (Job)`:  The Job instance
+		- `job (Job)`:  The Job instance
 
 !!! abstract "method: `job_kill(job, status)`"
 
-  PLUGIN API
-  After a job is being killed
+	PLUGIN API
+	After a job is being killed
 
-  - **params**
+	- **params**
 
-    - `job (Job)`:  The Job instance
+		- `job (Job)`:  The Job instance
 
-    - `status (str)`:  The status of the job killing
+		- `status (str)`:  The status of the job killing
 
-        - 'succeeded': The job is successfully killed
+		  - 'succeeded': The job is successfully killed
 
-        - 'failed': The job is failed to kill
+		  - 'failed': The job is failed to kill
 
 !!! abstract "method: `job_poll(job, status)`"
 
-  PLUGIN API
-  Poll the status of a job
+	PLUGIN API
+	Poll the status of a job
 
-  - **params**
+	- **params**
 
-    - `job (Job)`:  The Job instance
+		- `job (Job)`:  The Job instance
 
-    - `status (str)`:  The status of the job
+		- `status (str)`:  The status of the job
 
-        - 'running': The job is still running
+		  - 'running': The job is still running
 
-        - 'done': Polling is done, rcfile is generated
+		  - 'done': Polling is done, rcfile is generated
 
 !!! abstract "method: `job_prebuild(job)`"
 
-  PLUGIN API
-  Before a job starts to build
+	PLUGIN API
+	Before a job starts to build
 
-  - **params**
+	- **params**
 
-    - `job (Job)`:  The Job instance
+		- `job (Job)`:  The Job instance
 
 !!! abstract "method: `job_submit(job, status)`"
 
-  PLUGIN API
-  After a job is being submitted
+	PLUGIN API
+	After a job is being submitted
 
-  - **params**
+	- **params**
 
-    - `job (Job)`:  The Job instance
+		- `job (Job)`:  The Job instance
 
-    - `status (str)`:  The status of the job submission
+		- `status (str)`:  The status of the job submission
 
-        - 'succeeded': The job is successfully submitted
+		  - 'succeeded': The job is successfully submitted
 
-        - 'failed': The job is failed to submit
+		  - 'failed': The job is failed to submit
 
-        - 'running': The job is already running
+		  - 'running': The job is already running
 
 !!! abstract "method: `job_succeeded(job)`"
 
-  PLUGIN API
-  Tell if job is successfully done or not
-  One can add not rigorous check. By default, only
-  if returncode is 0 checked.
-  return False to tell if job is failed otherwise
-  use the default status or results from other plugins
+	PLUGIN API
+	Tell if job is successfully done or not
+	One can add not rigorous check. By default, only
+	if returncode is 0 checked.
+	return False to tell if job is failed otherwise
+	use the default status or results from other plugins
 
-  - **params**
+	- **params**
 
-    - `job (Job)`:  The Job instance
+		- `job (Job)`:  The Job instance
 
 !!! abstract "method: `logger_init(logger)`"
 
-  PLUGIN API
-  Initiate logger, most manipulate levels
+	PLUGIN API
+	Initiate logger, most manipulate levels
 
-  - **params**
+	- **params**
 
-    - `logger (Logger)`:  The Logger instance
+		- `logger (Logger)`:  The Logger instance
 
 !!! abstract "method: `proc_init(proc)`"
 
-  PLUGIN API
-  Right after a Proc being initialized
+	PLUGIN API
+	Right after a Proc being initialized
 
-  - **params**
+	- **params**
 
-    - `proc (Proc)`:  The Proc instance
+		- `proc (Proc)`:  The Proc instance
 
 !!! abstract "method: `proc_postrun(proc, status)`"
 
-  PLUGIN API
-  After a process has done
+	PLUGIN API
+	After a process has done
 
-  - **params**
+	- **params**
 
-    - `proc (Proc)`:  The Proc instance
+		- `proc (Proc)`:  The Proc instance
 
-    - `status (str)`:  succeeded/failed
+		- `status (str)`:  succeeded/failed
 
 !!! abstract "method: `proc_prerun(proc)`"
 
-  PLUGIN API
-  Before a process starts
-  If False returned, process will not start
-  The value returned by the first plugin will be used, which means
-  once a plugin stops process from running, others cannot resume it.
+	PLUGIN API
+	Before a process starts
+	If False returned, process will not start
+	The value returned by the first plugin will be used, which means
+	once a plugin stops process from running, others cannot resume it.
 
-  - **params**
+	- **params**
 
-    - `proc (Proc)`:  The Proc instance
+		- `proc (Proc)`:  The Proc instance
 
 !!! abstract "method: `pyppl_init(ppl)`"
 
-  PLUGIN API
-  Right after a pipeline initiates
+	PLUGIN API
+	Right after a pipeline initiates
 
-  - **params**
+	- **params**
 
-    - `ppl (PyPPL)`:  The PyPPL instance
+		- `ppl (PyPPL)`:  The PyPPL instance
 
 !!! abstract "method: `pyppl_postrun(ppl)`"
 
-  PLUGIN API
-  After the pipeline is done
-  If the pipeline fails, this won't run.
-  Use proc_postrun(proc = proc, status = 'failed') instead.
+	PLUGIN API
+	After the pipeline is done
+	If the pipeline fails, this won't run.
+	Use proc_postrun(proc = proc, status = 'failed') instead.
 
-  - **params**
+	- **params**
 
-    - `ppl (PyPPL)`:  The PyPPL instance
+		- `ppl (PyPPL)`:  The PyPPL instance
 
 !!! abstract "method: `pyppl_prerun(ppl)`"
 
-  PLUGIN API
-  Before pipeline starts to run
-  If False returned, the pipeline will not run
-  The value returned by the first plugin will be used, which means
-  once a plugin stops process from running, others cannot resume it.
+	PLUGIN API
+	Before pipeline starts to run
+	If False returned, the pipeline will not run
+	The value returned by the first plugin will be used, which means
+	once a plugin stops process from running, others cannot resume it.
 
-  - **params**
+	- **params**
 
-    - `ppl (PyPPL)`:  The PyPPL instance
+		- `ppl (PyPPL)`:  The PyPPL instance
 
 !!! abstract "method: `setup(config)`"
 
-  PLUGIN API
-  Add default configs
+	PLUGIN API
+	Add default configs
 
-  - **params**
+	- **params**
 
-    - `config (Config)`:  The default configurations
+		- `config (Config)`:  The default configurations
 
 !!! example "class: `PluginConfig`"
 
-  Plugin configuration for Proc/Job
+	Plugin configuration for Proc/Job
 
-  !!! abstract "method: `__init__(self, pconfig)`"
+	!!! abstract "method: `__init__(self, *args, **kwargs)`"
 
-    Construct for PluginConfig
+		Construct for PluginConfig
 
-    - **params**
+		- **params**
 
-      - `pconfig (dict)`:  the default plugin configuration
+			- `pconfig (dict)`:  the default plugin configuration
 
-  !!! abstract "method: `add(self, name, default, converter, update)`"
+	!!! abstract "method: `add(self, name, default, converter, update)`"
 
-    Add a config item
+		Add a config item
 
-    - **params**
+		- **params**
 
-      - `name (str)`:  The name of the config item.
+			- `name (str)`:  The name of the config item.
 
-      - `default (any)`:  The default value
+			- `default (any)`:  The default value
 
-      - `converter (callable)`:  The converter to convert the value whenever the value is set.
+			- `converter (callable)`:  The converter to convert the value whenever the value is set.
 
-      - `update (str)`:  With setcounter > 1, should we update the value or ignore it in .update()?
+			- `update (str)`:  With setcounter > 1, should we update the value or ignore it in .update()?
 
-          - if value is not a dictionary, update will just replace the value.
+			  - You can set plugin_config_check_update to False with .update to disable this
 
-  !!! abstract "method: `setcounter(self, name)`"
+			  - Could be ignore (don't update), replace (replace the whole value, even it is a
 
-    Get the set counter for properties
+			    dictionary) or update (replace the non-dict value and update dictionary values)
 
-    - **params**
+	!!! abstract "method: `update(self, *args, **kwargs)`"
 
-      - `name (str)`:  the name of the configuration item
+		Update the configuration
+		Depends on `update` argument while the configuration is added
 
-  !!! abstract "method: `update(self, pconfig)`"
+		- **params**
 
-    Update the configuration
-    Depends on `update` argument while the configuration is added
-
-    - **params**
-
-      - `pconfig (dict)`:  the configuration to update from
+			- `pconfig (dict)`:  the configuration to update from
 ## pyppl.logger
 
 
 - **desc**
 
-  Custome logger for PyPPL
+	Custome logger for PyPPL
 
 - **variables**
 
-  - `LOG_FORMAT (str)`:  The format of loggers
+	- `LOG_FORMAT (str)`:  The format of loggers
 
-  - `LOGTIME_FORMAT (str)`:  The format of time for loggers
+	- `LOGTIME_FORMAT (str)`:  The format of time for loggers
 
-  - `GROUP_VALUES (dict)`:  The values for each level group
+	- `GROUP_VALUES (dict)`:  The values for each level group
 
-  - `LEVEL_GROUPS (dict)`:  The groups of levels
+	- `LEVEL_GROUPS (dict)`:  The groups of levels
 
-  - `THEMES (dict)`:  The builtin themes
+	- `THEMES (dict)`:  The builtin themes
 
-  - `SUBLEVELS (dict)`:  the sub levels used to limit loggers of the same type
+	- `SUBLEVELS (dict)`:  the sub levels used to limit loggers of the same type
 
 !!! abstract "method: `get_group(level)`"
 
-  Get the group name of the level
+	Get the group name of the level
 
-  - **params**
+	- **params**
 
-    - `level (str)`:  The level, should be UPPERCASE
+		- `level (str)`:  The level, should be UPPERCASE
 
-  - **returns**
+	- **returns**
 
-    - `(str)`:  The group name
+		- `(str)`:  The group name
 
 !!! abstract "method: `get_value(level)`"
 
-  Get the value of the level
+	Get the value of the level
 
-  - **params**
+	- **params**
 
-    - `level (str)`:  The level, should be UPPERCASE
+		- `level (str)`:  The level, should be UPPERCASE
 
-  - **returns**
+	- **returns**
 
-    - `(int)`:  The value of the group where the level is in.
+		- `(int)`:  The value of the group where the level is in.
 
 !!! abstract "method: `init_levels(group, leveldiffs)`"
 
-  Initiate the levels, get real levels.
+	Initiate the levels, get real levels.
 
-  - **params**
+	- **params**
 
-    - `group (str)`:  The group of levels
+		- `group (str)`:  The group of levels
 
-    - `leveldiffs (str|list)`:  The diffs of levels
+		- `leveldiffs (str|list)`:  The diffs of levels
 
-  - **returns**
+	- **returns**
 
-    - `(set)`:  The real levels.
+		- `(set)`:  The real levels.
 
 !!! example "class: `Logger`"
 
-  A wrapper of logger
-  
+	A wrapper of logger
+	
 
-  !!! abstract "method: `__init__(self, name, bake)`"
+	!!! abstract "method: `__init__(self, name, bake)`"
 
-    The logger wrapper construct
+		The logger wrapper construct
 
-    - **params**
+		- **params**
 
-      - `name (str)`:  The logger name. Default: `PyPPL`
+			- `name (str)`:  The logger name. Default: `PyPPL`
 
-      - `bake (dict)`:  The arguments to bake a new logger.
+			- `bake (dict)`:  The arguments to bake a new logger.
 
-  !!! note "property: `pbar`"
+	!!! note "property: `pbar`"
 
-    Mark the record as a progress record.
-    Allow `logger.pbar.info` access
+		Mark the record as a progress record.
+		Allow `logger.pbar.info` access
 
-    - **returns**
+		- **returns**
 
-      - `(Logger)`:  The Logger object itself
+			- `(Logger)`:  The Logger object itself
 
-  !!! abstract "method: `add_level(self, level, group)`"
-
-
-    - **params**
-
-      - `level (str)`:  The log level name
-
-          Make sure it's less than 7 characters
-
-      - `group (str)`:  The group the level is to be added
-
-  !!! abstract "method: `add_sublevel(self, slevel, lines)`"
+	!!! abstract "method: `add_level(self, level, group)`"
 
 
-    - **params**
+		- **params**
 
-      - `slevel (str)`:  The debug level
+			- `level (str)`:  The log level name
 
-      - `lines (int)`:  The number of lines allowed for the debug level
+			  Make sure it's less than 7 characters
 
-          - Negative value means a summary will be printed
+			- `group (str)`:  The group the level is to be added
 
-  !!! abstract "method: `bake(self, **kwargs)`"
+	!!! abstract "method: `add_sublevel(self, slevel, lines)`"
 
-    Bake the logger with certain arguments
 
-    - **params**
+		- **params**
 
-      - `*kwargs`:  arguments used to bake a new logger
+			- `slevel (str)`:  The debug level
 
-    - **returns**
+			- `lines (int)`:  The number of lines allowed for the debug level
 
-      - `(Logger)`:  The new logger.
+			  - Negative value means a summary will be printed
 
-  !!! abstract "method: `init(self, config)`"
+	!!! abstract "method: `bake(self, **kwargs)`"
 
-    Initiate the logger, called by the construct,
-    Just in case, we want to change the config and as default_config
-    Reinitiate the logger.
+		Bake the logger with certain arguments
 
-    - **params**
+		- **params**
 
-      - `conf (Config)`:  The configuration used to initiate logger.
+			- `*kwargs`:  arguments used to bake a new logger
+
+		- **returns**
+
+			- `(Logger)`:  The new logger.
+
+	!!! abstract "method: `init(self, config)`"
+
+		Initiate the logger, called by the construct,
+		Just in case, we want to change the config and as default_config
+		Reinitiate the logger.
+
+		- **params**
+
+			- `conf (Config)`:  The configuration used to initiate logger.
 
 !!! example "class: `Theme`"
 
-  The theme for the logger
+	The theme for the logger
 
-  - **variables**
+	- **variables**
 
-    - `COLORS (dict)`:  Color collections used to format theme
+		- `COLORS (dict)`:  Color collections used to format theme
 
-  !!! abstract "method: `__init__(self, theme)`"
+	!!! abstract "method: `__init__(self, theme)`"
 
-    Construct for Theme
+		Construct for Theme
 
-    - **params**
+		- **params**
 
-      - `theme (str)`:  the name of the theme
+			- `theme (str)`:  the name of the theme
 
-  !!! abstract "method: `get_color(self, level)`"
+	!!! abstract "method: `get_color(self, level)`"
 
-    Get the color for a given level
+		Get the color for a given level
 
-    - **params**
+		- **params**
 
-      - ``level``:  The level
+			- ``level``:  The level
 
-    - **returns**
+		- **returns**
 
-        The color of the level by the theme.
+			The color of the level by the theme.
 ## pyppl.runner
 
 
 - **desc**
 
-  Make runners as plugins for PyPPL
+	Make runners as plugins for PyPPL
 
 - **variables**
 
-  - `RMNAME (str)`:  The name of the runner manager
+	- `RMNAME (str)`:  The name of the runner manager
 
-  - `RUNNERS (dict)`:  All ever registered runners
+	- `RUNNERS (dict)`:  All ever registered runners
 
-  - `DEFAULT_POLL_INTERVAL (int)`:  The default poll interval to check job status
+	- `DEFAULT_POLL_INTERVAL (int)`:  The default poll interval to check job status
 
-  - `hookimpl (pluggy.HookimplMarker)`:  The marker for runner hook Implementations
+	- `hookimpl (pluggy.HookimplMarker)`:  The marker for runner hook Implementations
 
-  - `hookspec (pluggy.HookspecMarker)`:  The marker for runner hooks
+	- `hookspec (pluggy.HookspecMarker)`:  The marker for runner hooks
 
 !!! abstract "method: `current_runner()`"
 
-  Get current runner name
+	Get current runner name
 
-  - **returns**
+	- **returns**
 
-    - `(str)`:  current runner name
+		- `(str)`:  current runner name
 
 !!! abstract "method: `isrunning(job)`"
 
-  RUNNER API
-  Tell if the job is running
+	RUNNER API
+	Tell if the job is running
 
-  - **params**
+	- **params**
 
-    - `job (Job)`:  the job instance
+		- `job (Job)`:  the job instance
 
 !!! abstract "method: `kill(job)`"
 
-  RUNNER API
-  Try to kill the job
+	RUNNER API
+	Try to kill the job
 
-  - **params**
+	- **params**
 
-    - `job (Job)`:  the job instance
+		- `job (Job)`:  the job instance
 
 !!! abstract "method: `poll_interval()`"
 
-  Get the poll interval for current runner
+	Get the poll interval for current runner
 
-  - **returns**
+	- **returns**
 
-    - `(int)`:  poll interval for querying job status
+		- `(int)`:  poll interval for querying job status
 
 !!! abstract "method: `register_runner(runner, name)`"
 
-  Register a runner
+	Register a runner
 
-  - **params**
+	- **params**
 
-    - `runner (callable)`:  The runner, a module or a class object
+		- `runner (callable)`:  The runner, a module or a class object
 
-    - `name (str)`:  The name of the runner to registered
+		- `name (str)`:  The name of the runner to registered
 
 !!! abstract "method: `runner_init(proc)`"
 
-  RUNNER API
-  Initiate runner
+	RUNNER API
+	Initiate runner
 
-  - **params**
+	- **params**
 
-    - `proc (Proc)`:  The Proc instance
+		- `proc (Proc)`:  The Proc instance
 
 !!! abstract "method: `script_parts(job, base)`"
 
-  RUNNER API
-  Overwrite script parts
+	RUNNER API
+	Overwrite script parts
 
-  - **params**
+	- **params**
 
-    - `job (Job)`:  the job instance
+		- `job (Job)`:  the job instance
 
-    - `base (Diot)`:  The base script parts
+		- `base (Diot)`:  The base script parts
 
 !!! abstract "method: `submit(job)`"
 
-  RUNNER API
-  Submit a job
+	RUNNER API
+	Submit a job
 
-  - **params**
+	- **params**
 
-    - `job (Job)`:  the job instance
+		- `job (Job)`:  the job instance
 
 !!! abstract "method: `use_runner(runner)`"
 
-  runner should be a module or the name of a module,
-  with or without "pyppl_runner_" prefix
-  To enable a runner, we need to disable other runners
+	runner should be a module or the name of a module,
+	with or without "pyppl_runner_" prefix
+	To enable a runner, we need to disable other runners
 
-  - **params**
+	- **params**
 
-    - `runner (str)`:  the name of runner
+		- `runner (str)`:  the name of runner
 
 !!! example "class: `PyPPLRunnerLocal`"
 
-  PyPPL's default runner
+	PyPPL's default runner
 
-  !!! abstract "method: `isrunning(self, job)`"
+	!!! abstract "method: `isrunning(self, job)`"
 
-    Try to tell whether the job is still running.
+		Try to tell whether the job is still running.
 
-    - **params**
+		- **params**
 
-      - `job (Job)`:  the job instance
+			- `job (Job)`:  the job instance
 
-    - **returns**
+		- **returns**
 
-        `True` if yes, otherwise `False`
+			`True` if yes, otherwise `False`
 
-  !!! abstract "method: `kill(self, job)`"
+	!!! abstract "method: `kill(self, job)`"
 
-    Try to kill the running jobs if I am exiting
+		Try to kill the running jobs if I am exiting
 
-    - **params**
+		- **params**
 
-      - `job (Job)`:  the job instance
+			- `job (Job)`:  the job instance
 
-  !!! abstract "method: `submit(self, job)`"
+	!!! abstract "method: `submit(self, job)`"
 
-    Try to submit the job
+		Try to submit the job
 
-    - **params**
+		- **params**
 
-      - `job (Job)`:  the job instance
+			- `job (Job)`:  the job instance

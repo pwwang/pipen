@@ -120,7 +120,7 @@ def test_clean(tmp_path):
 	assert cmd.stderr.count('Removed!') == 1 # only one for each remained
 
 def test_logo():
-	assert 'Loaded plugin: pyppl.console.logo' in pyppl.logo().stderr
+	assert 'Loaded plugins:' in pyppl.logo().stderr
 
 def test_plugins():
 	assert 'Plugin pyppl.console.clean' in pyppl.plugins().stderr

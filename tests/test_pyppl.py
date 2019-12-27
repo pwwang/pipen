@@ -1,5 +1,6 @@
 from pathlib import Path
 import traceback
+import sys
 import pytest
 from diot import Diot
 from pyppl.pyppl import PROCESSES, _get_next_procs, _anything2procs, PyPPL, PIPELINES
@@ -89,18 +90,19 @@ def test_anything2procs():
 def test_init(caplog):
 	PIPELINES.clear()
 	ppl = PyPPL(forks = 10)
+
+	assert ppl.name == Path(sys.argv[0]).stem
 	assert 'Read from PYPPL.osenv' in caplog.text
-	assert 'PIPELINE: PyPPL_1' in caplog.text
-	assert ppl.name == 'PyPPL_1'
+	assert ('PIPELINE: %s' % ppl.name) in caplog.text
 	assert ppl.runtime_config.forks == 10
 
 	with pytest.raises(PyPPLNameError):
-		PyPPL(name = 'PyPPL_1')
+		PyPPL(name = ppl.name)
 	with pytest.raises(PyPPLInvalidConfigurationKey):
 		PyPPL(a = 1)
 
 	ppl = PyPPL(logger = {'file': True})
-	logfile = Path('.') / 'PyPPL_2.pyppl.log'
+	logfile = Path('.') / ('%s.pyppl.log' % ppl.name)
 	assert logfile.is_file()
 	logfile.unlink()
 
@@ -109,7 +111,7 @@ def test_init(caplog):
 		__version__ = '0.1.0'
 
 	ppl = PyPPL(plugins = [pyppl_plugin()])
-	assert 'Loaded plugin: pyppl_plugin (v0.1.0)' in caplog.text
+	assert 'Loaded plugins:' in caplog.text
 
 def test_start(caplog):
 
@@ -161,7 +163,7 @@ def test_start_cyclic_dependencies(caplog):
 	ppl = PyPPL().start(pStart31, pStart32)
 	assert "Start process Proc(name='pStart31.notag') is depending on others: [Proc(name='pStart32.notag')]" in caplog.text
 
-def test_run(caplog):
+def test_run(caplog, tmp_path):
 	class pyppl_stoprun:
 		@hookimpl
 		def proc_prerun(self, proc):
@@ -169,23 +171,23 @@ def test_run(caplog):
 	from pyppl.job import Job
 	from pyppl.jobmgr import STATES
 	Job.state = STATES.DONE
-	pRun1 = Proc()
+	pRun1 = Proc(ppldir = tmp_path)
 	pRun1.input = {'a:var': [1]}
 	pRun1.output = 'a:var:1'
 	PyPPL(plugins = [pyppl_stoprun()]).start(pRun1).run('local')
-	assert 'pRun1: No description.' in caplog.text
+	assert 'pRun1.notag: No description.' in caplog.text
 
 	caplog.clear()
-	pRun2 = pRun1.copy()
+	pRun2 = pRun1.copy(ppldir = tmp_path)
 	# plugins regiested
 	PyPPL(logger_level = 'TITLE', config_files = dict(default = {}),
 		runner = 'local', runner_sge_q = '1-day', envs_k = 'k').start(pRun2).run()
-	assert 'pRun2 (pRun1): No description.' in caplog.text
+	assert 'pRun2.notag (pRun1): No description.' in caplog.text
 	assert pRun2.envs.k == 'k'
 	assert pRun2.runner.runner == 'local'
 	assert pRun2.runner.sge_q == '1-day'
 
-def test_config_in_construct():
+def test_config_in_construct(tmp_path):
 	class pyppl_pconfig:
 		@hookimpl
 		def proc_init(self, proc):
@@ -196,7 +198,7 @@ def test_config_in_construct():
 	from pyppl.job import Job
 	from pyppl.jobmgr import STATES
 	Job.state = STATES.DONE
-	pPCIC = Proc()
+	pPCIC = Proc(ppldir = tmp_path)
 	pPCIC.input = {'a:var': [1]}
 	pPCIC.output = 'a:var:1'
 	PyPPL(config_x = 10).start(pPCIC).run()

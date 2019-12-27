@@ -12,7 +12,6 @@ psutil==5.*,>=5.6.0
 pyparam
 pyppl-echo
 pyppl-export
-pyppl-flowchart
 pyppl-lock
 pyppl-rich
 pyppl-runners

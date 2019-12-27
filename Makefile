@@ -1,7 +1,7 @@
 SHELL=bash
 PYTHON=python
 
-.PHONY: example exampes api
+.PHONY: example exampes
 
 example:
 	@wd=`pwd`;                                                                         \
@@ -28,5 +28,5 @@ example:
 
 examples: example
 
-api:
-	$(PYTHON) ./api.py
+docs/api.md: pyppl/*.py
+	$(PYTHON) ./api.py > $@

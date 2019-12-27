@@ -62,7 +62,7 @@ class Function:
 			strargs.append("**" + str(args[2]))
 
 		secs   = self._doc_secs()
-		prefix = '  ' * (doclevel - 1)
+		prefix = '\t' * (doclevel - 1)
 		ret    = []
 
 		ret.append('\n%s!!! %s "%s: `%s%s`"\n' % (
@@ -71,40 +71,40 @@ class Function:
 			TYPEMAP.get(type(self.docable).__name__, 'function'),
 			self.name,
 			'(%s)' % ', '.join(strargs) if callable(self.docable) else ''))
-		ret.extend([prefix + '  ' + x for x in secs.pop('desc')])
+		ret.extend([prefix + '\t' + x for x in secs.pop('desc')])
 		for key, val in secs.items():
-			ret.append('\n' + prefix + '  - **%s**' % key)
+			ret.append('\n' + prefix + '\t- **%s**' % key)
 			val = deindent(val)
 			for v in val:
 				if (v and v[0] in ('\t', ' ')) or ':' not in v:
-					ret.append('\n' + prefix + '      ' + v)
+					ret.append('\n' + prefix + '\t\t' + v)
 				else:
 					name, desc = v.split(':', 1)
-					ret.append('\n' + prefix + '    - `%s`: %s' % (name, desc))
+					ret.append('\n' + prefix + '\t\t- `%s`: %s' % (name, desc))
 		print('\n'.join(ret))
 
 class Class (Function):
 
 	def markdown(self, doclevel = 1):
 		secs    = self._doc_secs()
-		prefix  = '  ' * (doclevel - 1)
+		prefix  = '\t' * (doclevel - 1)
 		ret     = []
 		ret.append('\n%s!!! %s "%s: `%s`"\n' % (
 			prefix,
 			BLOCKMAP.get(type(self.docable).__name__, 'hint'),
 			TYPEMAP.get(type(self.docable).__name__, 'class'),
 			self.docable.__name__))
-		ret.extend([prefix + '  ' + x for x in secs.pop('desc')])
+		ret.extend([prefix + '\t' + x for x in secs.pop('desc')])
 
 		for key, val in secs.items():
-			ret.append('\n' + prefix + '  - **%s**' % key)
+			ret.append('\n' + prefix + '\t- **%s**' % key)
 			val = deindent(val)
 			for v in val:
 				if (v and v[0] in ('\t', ' ')) or ':' not in v:
-					ret.append('\n' + prefix + '      ' + v)
+					ret.append('\n' + prefix + '\t\t' + v)
 				else:
 					name, desc = v.split(':', 1)
-					ret.append('\n' + prefix + '    - `%s`: %s' % (name, desc))
+					ret.append('\n' + prefix + '\t\t- `%s`: %s' % (name, desc))
 		print('\n'.join(ret))
 
 		if self.docable.__init__.__doc__ and self.docable.__init__.__doc__[:4] == '@API':
@@ -138,10 +138,10 @@ class Module(Function):
 			val = deindent(val)
 			for v in val:
 				if (v and v[0] in ('\t', ' ')) or ':' not in v:
-					ret.append('\n  ' + v)
+					ret.append('\n\t' + v)
 				else:
 					name, desc = v.split(':', 1)
-					ret.append('\n  - `%s`: %s' % (name, desc))
+					ret.append('\n\t- `%s`: %s' % (name, desc))
 		print('\n'.join(ret))
 
 		for docable in sorted(

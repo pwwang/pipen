@@ -65,9 +65,6 @@ class JobBuildingError(Exception):
 class JobFailError(Exception):
 	"""@API\nJob results validation failed"""
 
-class PluginConfigKeyError(Exception):
-	"""@API\nWhen try to update plugin config from a dictionary with key not added"""
-
 class PluginNoSuchPlugin(Exception):
 	"""@API\nWhen try to find a plugin not existing"""
 

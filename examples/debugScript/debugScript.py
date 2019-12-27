@@ -4,11 +4,11 @@ from pyppl import PyPPL, Proc
 pHeatmap           = Proc(desc = 'Draw heatmap.')
 pHeatmap.input     = {'seed': [1,2,3,4,5]}
 pHeatmap.output    = "outfile:file:heatmap{{i.seed}}.png"
-pHeatmap.plugin_config.export_dir     = "./export"
+pHeatmap.config.export_dir     = "./export"
 # Don't cache jobs for debugging
 pHeatmap.cache     = False
-pHeatmap.plugin_config.echo_jobs = '0-5'
-pHeatmap.plugin_config.echo_types = 'stderr'
+pHeatmap.config.echo_jobs = '0-5'
+pHeatmap.config.echo_types = 'stderr'
 pHeatmap.forks     = 5
 pHeatmap.args.ncol = 10
 pHeatmap.args.nrow = 10

@@ -36,7 +36,36 @@ pXXX.runner == dict(runner = "ssh")
 
 ## Runner APIs
 
-See [here](./api/#pyppl.runner) for all available APIs for runners
+See [here](https://pyppl.readthedocs.io/en/latest/api/#pypplrunner) for all available APIs for runners
+
+## Entry point
+
+You can register plugins by yourself using `pyppl.register_runner`. However, if you want to expose your runner to `PyPPL` by adding entrypoint to your `setup.py`, `pyproject.toml` or other equivalent packaging setting files:
+
+For `setup.py`, you will need:
+```python
+setup(
+	# ...
+	entry_points={"pyppl_runner": [
+		"pyppl_runner_dry = pyppl_runners:dry",
+		"pyppl_runner_ssh = pyppl_runners:ssh",
+		"pyppl_runner_sge = pyppl_runners:sge",
+		"pyppl_runner_slurm = pyppl_runners:slurm",
+	]},
+	# ...
+)
+```
+
+For `pyproject.toml`:
+```toml
+[tool.poetry.plugins.pyppl_runner]
+pyppl_runner_dry   = "pyppl_runners:dry"
+pyppl_runner_ssh   = "pyppl_runners:ssh"
+pyppl_runner_sge   = "pyppl_runners:sge"
+pyppl_runner_slurm = "pyppl_runners:slurm"
+```
+
 
 ## Runner gallery
 
+- [pyppl_runners](https://github.com/pwwang/pyppl_runners): Common runners for PyPPL

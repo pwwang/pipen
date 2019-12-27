@@ -2,7 +2,7 @@ import pytest
 import types
 from diot import Diot
 from pyppl.plugin import PluginConfig, _get_plugin, pluginmgr, disable_plugin, config_plugins, hookimpl
-from pyppl.exception import PluginConfigKeyError, PluginNoSuchPlugin
+from pyppl.exception import PluginNoSuchPlugin
 
 class PyPPLPlugin:
 	pass
@@ -42,27 +42,29 @@ def test_config_plugins():
 def test_plugin_config():
 
 	pconfig = PluginConfig({'a': 1})
+	assert pconfig == {'a': 1}
+	assert list(pconfig.items()) == [('a', 1)]
 	assert pconfig.a == 1
-	assert pconfig.setcounter('a') == 0
+	assert pconfig._meta.setcounter.get('a', 0) == 0
 
 	pconfig = PluginConfig()
-	assert pconfig.__raw__ == {}
-	assert pconfig.__cache__ == {}
-	assert pconfig.__converter__ == {}
+	assert pconfig._meta.raw == {}
+	assert pconfig == {}
+	assert pconfig._meta.converter == {}
 
 	pconfig.add('a')
 	assert pconfig.a is None
-	assert pconfig.setcounter('a') == 0
+	assert pconfig._meta.setcounter.get('a', 0) == 0
 
 	pconfig.add('b', default = 1, converter = lambda v: v+1)
 	assert pconfig.b == 2
-	assert pconfig.setcounter('b') == 0
+	assert pconfig._meta.setcounter.get('b', 0) == 0
 	pconfig.b = 2
-	assert pconfig.setcounter('b') == 1
+	assert pconfig._meta.setcounter.get('b', 0) == 1
 	assert pconfig.b == 3
 
 	pconfig['r.a'] = 4
-	assert pconfig.setcounter('r.a') == 1
+	assert pconfig._meta.setcounter.get('r.a', 0) == 1
 	assert pconfig['r.a'] == 4
 
 	pconfig.add('x', update = 'ignore')
@@ -72,7 +74,7 @@ def test_plugin_config():
 	pconfig.update({'x': 1})
 	assert pconfig.x == 10
 
-	pconfig.add('z', update = 'update', converter = lambda x: x * 2)
+	pconfig.add('z', default = 0, update = 'update', converter = lambda x: x * 2)
 	pconfig.z = 10
 	assert pconfig.z == 20
 	pconfig.update({'z': 1})
@@ -81,13 +83,23 @@ def test_plugin_config():
 
 	pconfig.add('c', update = 'update', converter = lambda x: x or {})
 	assert pconfig.c == {}
-	pconfig.update({'c': {'x': 1}})
+	pconfig.update({'c': {'x': 1, 'm': 0}})
 	assert pconfig.c['x'] == 1
 	pconfig.update({'c': {'x': 2}})
 	assert pconfig.c['x'] == 2
+	assert pconfig.c['m'] == 0
 
-	with pytest.raises(PluginConfigKeyError):
-		pconfig.update({'y': 2})
+	pconfig.add('d', update = 'replace')
+	pconfig.d = {'a': 1, 'b': 2}
+	assert pconfig.d == {'a': 1, 'b': 2}
+	pconfig.d = {'a': 3}
+	assert pconfig.d == {'a': 3}
+
+	pconfig.add('e')
+	pconfig.update(e = {})
+	assert pconfig.e == {}
+
+	pconfig.update({'y': 2})
 
 # test hooks
 def test_job_is_succeeded(tmp_path):
@@ -116,7 +128,8 @@ def test_job_done(tmp_path, capsys):
 	from pyppl.job import Job
 	workdir = tmp_path.joinpath('pJobDone')
 	workdir.mkdir()
-	job = Job(0, Diot(workdir = workdir, shortname = 'pJobDone', size = 0, cache = True, input = {}, output = {}))
+	job = Job(0, Diot(workdir = workdir, id = 'pJobDone',
+		shortname = 'pJobDone', size = 0, cache = True, input = {}, output = {}))
 	job.dir.mkdir(parents = True, exist_ok = True)
 	job.done(cached = True)
 	assert 'cached' in capsys.readouterr().out
@@ -146,7 +159,9 @@ def test_job_submit(tmp_path, capsys, caplog):
 	from pyppl.template import TemplateLiquid
 	workdir = tmp_path.joinpath('pJobSubmit')
 	workdir.mkdir()
-	job = Job(0, Diot(workdir = workdir, shortname = 'pJobSubmit', size = 0, cache = True, input = {}, output = {}, script = TemplateLiquid(''), runner = 'isrunning'))
+	job = Job(0, Diot(workdir = workdir, id = 'pJobSubmit',
+		shortname = 'pJobSubmit', size = 0, cache = True,
+		input = {}, output = {}, script = TemplateLiquid(''), runner = 'isrunning'))
 	job.dir.mkdir(parents = True, exist_ok = True)
 	job.submit()
 	assert 'running' in capsys.readouterr().out
@@ -175,7 +190,9 @@ def test_job_kill(tmp_path, capsys, caplog):
 	from pyppl.template import TemplateLiquid
 	workdir = tmp_path.joinpath('pJobKill')
 	workdir.mkdir()
-	job = Job(0, Diot(workdir = workdir, shortname = 'pJobKill', size = 0, cache = True, input = {}, output = {}, script = TemplateLiquid(''), runner = 'isrunning'))
+	job = Job(0, Diot(workdir = workdir, id = 'pJobKill',
+		shortname = 'pJobKill', size = 0, cache = True,
+		input = {}, output = {}, script = TemplateLiquid(''), runner = 'isrunning'))
 	job.dir.mkdir(parents = True, exist_ok = True)
 	assert job.kill()
 	assert 'succeeded' in capsys.readouterr().out

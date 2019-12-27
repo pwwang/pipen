@@ -9,7 +9,8 @@ Plugin system for PyPPL
 import sys
 import types
 import pluggy
-from .exception import PluginConfigKeyError, PluginNoSuchPlugin
+from diot import Diot
+from .exception import PluginNoSuchPlugin
 
 PMNAME = "pyppl"
 
@@ -263,24 +264,26 @@ def config_plugins(*plugins):
 				else:
 					pluginmgr.register(plugin, name = plugin.__class__.__name__)
 
-class PluginConfig(dict):
+
+class PluginConfig(Diot):
 	"""@API
 	Plugin configuration for Proc/Job"""
 
-	def __init__(self, pconfig = None):
+	def __init__(self, *args, **kwargs):
 		"""@API
 		Construct for PluginConfig
 		@params:
 			pconfig (dict): the default plugin configuration
 		"""
-		self.__dict__['__raw__'] = {}
-		self.__dict__['__cache__'] = {}
-		self.__dict__['__converter__'] = {}
-		self.__dict__['__setcounter__'] = {}
-		self.__dict__['__update__'] = {}
-		pconfig = pconfig or {}
-		for key, val in pconfig.items():
-			self.add(key, val)
+		self.__dict__['_meta'] = Diot(
+			raw        = {},
+			converter  = {},
+			setcounter = {},
+			updates    = {})
+		super().__init__(*args, **kwargs)
+		# reset all counters
+		for key in self._meta.setcounter:
+			self._meta.setcounter[key] = 0
 
 	def add(self, name, default = None, converter = None, update = 'update'):
 		"""@API
@@ -290,56 +293,52 @@ class PluginConfig(dict):
 			default (any): The default value
 			converter (callable): The converter to convert the value whenever the value is set.
 			update (str): With setcounter > 1, should we update the value or ignore it in .update()?
-				- if value is not a dictionary, update will just replace the value.
+				- You can set plugin_config_check_update to False with .update to disable this
+				- Could be ignore (don't update), replace (replace the whole value, even it is a
+				  dictionary) or update (replace the non-dict value and update dictionary values)
 		"""
-		self.__raw__[name] = default
-		self.__converter__[name] = converter
-		self.__setcounter__[name] = 0
-		self.__update__[name] = update
+		self._meta.converter [name] = converter
+		self._meta.updates   [name] = update
+		# setitem will run the converter
+		self[name] = default
+		# reset counter
+		self._meta.setcounter[name] = 0
 		return self
 
-	def update(self, pconfig):
+	def update(self, *args, **kwargs):
 		"""@API
 		Update the configuration
 		Depends on `update` argument while the configuration is added
 		@params:
 			pconfig (dict): the configuration to update from
 		"""
-		for key, value in pconfig.items():
-			if key not in self.__raw__:
-				raise PluginConfigKeyError('Plugin configuration {!r} does not exist.'.format(key))
-			if self.__update__[key] == 'ignore' and self.__setcounter__[key] > 0:
+		# if we should check using meta update information or
+		# just update directly
+		plugin_config_check_update = kwargs.pop("plugin_config_check_update", True)
+		dict_to_update = dict(*args, **kwargs)
+
+		for key, value in dict_to_update.items():
+
+			if plugin_config_check_update and \
+				self._meta.updates.get(key, 'update') == 'ignore' and \
+				self._meta.setcounter.get(key, 0) > 0:
 				continue
 
-			if key in self.__cache__:
-				del self.__cache__[key]
-			if isinstance(value, dict) and isinstance(self.__raw__[key], dict):
-				self.__raw__[key].update(value)
+			if plugin_config_check_update and \
+				self._meta.updates.get(key, 'update') == 'update' and \
+				isinstance(value, dict):
+				if key in self and isinstance(self[key], dict):
+					self[key].update(value)
+				else:
+					self[key] = value
 			else:
-				self.__raw__[key] = value
+				self[key] = value
 
-	def setcounter(self, name):
-		"""@API
-		Get the set counter for properties
-		@params:
-			name (str): the name of the configuration item
-		"""
-		return self.__setcounter__.get(name, 0)
-
-	def __getattr__(self, name):
-		if name in self.__cache__:
-			return self.__cache__[name]
-		if self.__converter__.get(name):
-			value = self.__converter__[name](self.__raw__[name])
-			self.__cache__[name] = value
-			return value
-		return self.__raw__[name]
-
-	def __setattr__(self, name, value):
-		if name in self.__cache__:
-			del self.__cache__[name]
-		self.__setcounter__[name] = self.__setcounter__.setdefault(name, 0) + 1
-		self.__raw__[name] = value
-
-	__getitem__ = __getattr__
-	__setitem__ = __setattr__
+	def __setitem__(self, name, value):
+		if name[:6] != '_diot_':
+			self._meta.setcounter[name] = \
+				self._meta.setcounter.setdefault(name, 0) + 1
+			self._meta.raw[name] = value
+			if self._meta.converter.get(name):
+				value = self._meta.converter[name](value)
+		super().__setitem__(name, value)

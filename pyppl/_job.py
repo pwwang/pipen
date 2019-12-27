@@ -100,11 +100,12 @@ def job_input(this, value): # pylint: disable=too-many-branches
 				raise JobInputParseError(
 					'Not a list for input [%s:%s]: %r' % (key, intype, indata))
 
-			for data in indata:
+			for i, data in enumerate(indata):
 				if not isinstance(data, (Path, str)):
 					raise JobInputParseError(
 						'Not a string or path as an element of input [%s:%s]: %r' % (
 							key, intype, data))
+				indata[i] = str(data)
 
 				if not data:
 					infile  = ''
@@ -283,16 +284,18 @@ def job_script(this, value):
 	trapcmd += "if [ ! -e {0!r} ]; then touch {0!r}; fi; ".format(str(this.dir / 'job.stderr'))
 	trapcmd += "exit \\$status"
 	addsrc('trap "%s" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % trapcmd)
-	addsrc('#')
-	addsrc('# Run pre-script')
+	addsrc('')
+	addsrc('# START pre-script')
 	addsrc(script_parts.pre)
-	addsrc('#')
-	addsrc('# Run the real script')
+	addsrc('# END pre-script')
+	addsrc('')
+	addsrc('# START real-script')
 	addsrc(script_parts.command) # pylint: disable=no-member
-	addsrc('#')
-	addsrc('# Run post-script')
+	addsrc('# END real-script')
+	addsrc('')
+	addsrc('# START post-script')
 	addsrc(script_parts.post)
-	addsrc('#')
+	addsrc('# END post-script')
 
 	scriptfile.write_text('\n'.join(src))
 	return chmod_x(scriptfile)
@@ -328,7 +331,7 @@ def job_logger(this, value):
 	"""
 	def _logger(*args, **kwargs):
 		level = kwargs.pop('level', 'info')
-		kwargs['proc']   = this.proc.shortname
+		kwargs['proc']   = this.proc.id
 		kwargs['jobidx'] = this.index
 		kwargs['joblen'] = this.proc.size
 		if kwargs.pop('pbar', False):

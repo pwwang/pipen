@@ -13,6 +13,6 @@ pBamMerge.depends = pBamSort
 # Mark duplicates
 pMarkDups.depends = pBamMerge
 # Export the results
-pMarkDups.plugin_config.export_dir = './export/realigned_Bams'
+pMarkDups.config.export_dir = './export/realigned_Bams'
 # Specify the start process and run the pipeline
 PyPPL(forks = 2).start(pBamToFastq).flowchart().run()

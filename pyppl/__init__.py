@@ -6,5 +6,6 @@ from .config import load_config
 from .plugin import config_plugins
 from .pyppl import PyPPL
 from .proc import Proc
+from .procset import ProcSet
 from .channel import Channel
 from .runner import register_runner

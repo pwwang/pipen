@@ -61,6 +61,22 @@ def test_init():
 	assert pProcInit.runtime_config == None
 	assert pProcInit.shortname == 'pProcInit'
 	assert pProcInit.template is TemplateLiquid
+	assert isinstance(pProcInit.config, dict)
+
+def test_config():
+	pProcConfig = Proc()
+	assert isinstance(pProcConfig.config, dict)
+
+	config.config.a = 1
+	config.config.b = 10
+	pProcConfig2 = Proc()
+	#
+	assert pProcConfig2.config.a == 1
+	assert pProcConfig2.config.b == 10
+
+	pProcConfig3 = Proc(config = {'b': 2})
+	assert pProcConfig3.config.a == 1
+	assert pProcConfig3.config.b == 2
 
 def test_init2():
 	pProcInit2 = Proc(errhow = 'ignore')
@@ -188,6 +204,13 @@ def test_input_complex(tmp_path):
 	assert pInputSeparate2.input['b'] == ('var', ['4', '4'])
 	assert pInputSeparate2.input['c'] == ('var', [1, 1])
 
+	pInputSeparate3 = Proc(ppldir = tmp_path)
+	pInputSeparate3.input = ['in1:file', 'in2:file']
+
+	pInputSeparate3.input = 1 # {'in1:file, in2:file': 1}
+	with pytest.raises(ProcessInputError):
+		pInputSeparate3.input = {1,2}
+
 def test_output():
 	pOutput = Proc()
 	pOutput.output = 'a'
@@ -222,20 +245,25 @@ def test_runner():
 		'profile2': {'runner': {'queue': '1-day'}}
 	})
 	pRunner.runner = 'special_profile'
-	assert pRunner.runner == {'runner': 'sge', 'someconfig': 1}
+	assert pRunner.runner['runner'] == 'sge'
+	assert pRunner.runner['someconfig'] == 1
 
 	pRunner.runner = 'ssh'
-	assert pRunner.runner == {'runner': 'ssh', 'someconfig': 1}
+	assert pRunner.runner['runner'] == 'ssh'
+	assert pRunner.runner['someconfig'] == 1
 
 	pRunner.runner = 'profile2'
-	assert pRunner.runner == {'runner': 'local', 'queue': '1-day', 'someconfig': 1}
+	assert pRunner.runner['runner'] == 'local'
+	assert pRunner.runner['queue'] == '1-day'
+	assert pRunner.runner['someconfig'] == 1
 
 	cfg = Config()
 	cfg._load({'default': {'runner': {'defaultconfigs_for_runners': 1}}})
 	pRunner.runtime_config = Config()
 	pRunner.runtime_config._load(cfg)
 	pRunner.runner = 'sge'
-	assert pRunner.runner == {'runner': 'sge', 'defaultconfigs_for_runners': 1}
+	assert pRunner.runner['runner'] == 'sge'
+	assert pRunner.runner['defaultconfigs_for_runners'] == 1
 
 def test_script(caplog, tmp_path):
 	pProcScript = Proc()

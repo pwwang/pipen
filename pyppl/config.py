@@ -5,13 +5,17 @@
 	config (dict): The default configuration that will be used in the whole session
 """
 from multiprocessing import cpu_count
+from pathlib import Path
 from diot import Diot
 from simpleconf import Config
 from .plugin import config_plugins, pluginmgr, PMNAME
 from .runner import runnermgr, RMNAME, register_runner
 
 # priority: lowest -> highest
-DEFAULT_CFGFILES = ('~/.PyPPL.toml', './.PyPPL.toml', 'PYPPL.osenv')
+DEFAULT_CFGFILES = (
+	Path('~/.PyPPL.toml').expanduser(),
+	Path('./.PyPPL.toml'),
+	'PYPPL.osenv')
 
 # default configurations
 DEFAULT_CONFIG = dict(default = dict(

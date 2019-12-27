@@ -151,6 +151,8 @@ class PyPPLRunnerLocal:
 	PyPPL's default runner"""
 	# pylint: disable=no-self-use
 
+	__version__ = 'builtin'
+
 	@hookimpl
 	def kill(self, job):
 		"""@API
@@ -176,7 +178,8 @@ class PyPPLRunnerLocal:
 			job (Job): the job instance
 		"""
 		import cmdy
-		cmd = cmdy.bash(c = job.script, _raise = False, _bg = True)
+		cmd = ' '.join(cmdy._shquote(part) for part in job.script)
+		cmd = cmdy.bash(c = cmd, _raise = False, _bg = True)
 		cmd.rc = 0
 		job.pid = cmd.pid
 		return cmd

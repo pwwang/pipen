@@ -8,13 +8,13 @@ import toml
 from diot import Diot
 from attr_property import attr_property, attr_property_class
 from varname import varname
+from .config import config as default_config
 from ._proc import proc_depends_setter, proc_input, proc_output, proc_script, \
 	proc_suffix, proc_lang, proc_name, proc_shortname, proc_jobs, proc_size, \
 	proc_runner, proc_template, proc_workdir, proc_input_setter, \
 	proc_runtime_config_setter, proc_id_setter, proc_tag_setter, \
 	proc_channel, proc_procset, proc_setter_count
 from .utils import try_deepcopy, brief_list
-from .config import config as default_config
 from .logger import logger
 from .jobmgr import STATES, Jobmgr
 from .plugin import pluginmgr, PluginConfig
@@ -52,7 +52,7 @@ class Proc:
 		kw_only = True,
 		repr    = False)
 	# The args of the process
-	args = attr.ib(
+	args = attr_property(
 		default = attr.Factory(Diot),
 		kw_only = True,
 		repr    = False)
@@ -169,13 +169,6 @@ class Proc:
 		getter  = proc_output,
 		raw     = '_',
 		repr    = False)
-	# plugin configs
-	config = attr_property(
-		init    = False,
-		getter  = lambda this, value: PluginConfig(default_config.config),
-		kw_only = True,
-		setter  = False,
-		repr    = False)
 	# pipeline directory
 	ppldir = attr_property(
 		default           = default_config.ppldir,
@@ -207,6 +200,7 @@ class Proc:
 		default = None,
 		kw_only = True,
 		repr    = False,
+		raw     = '_',
 		getter  = proc_script)
 	# Short name without procset
 	shortname = attr_property(
@@ -238,6 +232,18 @@ class Proc:
 		default = '',
 		kw_only = True,
 		getter  = proc_workdir,
+		repr    = False)
+	# plugin configs
+	config = attr_property(
+		# use a callback to make sure values added by plugins to be loaded
+		default = None,
+		setter  = lambda this, value: PluginConfig(value) \
+			if not this.config \
+			else (this.config.update(value or {}) or this.config),
+		getter  = lambda this, value: value or \
+			PluginConfig(default_config.config), # default value
+		init    = True,
+		kw_only = True,
 		repr    = False)
 
 	def __attrs_post_init__(self):

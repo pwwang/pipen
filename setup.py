@@ -24,7 +24,7 @@ if os.path.exists(readme_path):
 setup(
     long_description=readme,
     name='PyPPL',
-    version='3.0.0',
+    version='3.0.0pre3',
     description='A Python PiPeLine framework',
     python_requires='==3.*,>=3.6.0',
     project_urls={"homepage": "https://github.com/pwwang/PyPPL", "repository": "https://github.com/pwwang/PyPPL"},
@@ -34,7 +34,7 @@ setup(
     entry_points={"console_scripts": ["pyppl = pyppl.console:main"]},
     packages=['pyppl', 'pyppl.console'],
     package_dir={"": "."},
-    package_data={},
-    install_requires=['attr-property', 'attrs==19.*,>=19.3.0', 'cmdy', 'colorama==0.*,>=0.4.1', 'diot', 'filelock==3.*,>=3.0.0', 'liquidpy', 'pluggy==0.*,>=0.12.0', 'psutil==5.*,>=5.6.0', 'pyparam', 'python-simpleconf', 'python-varname', 'transitions==0.*,>=0.6.0'],
-    extras_require={"dev": ["faker==1.*,>=1.0.0", "jinja2==2.*,>=2.0.0", "pytest", "pytest-cov", "toml==0.*,>=0.10.0"]},
+    package_data={"pyppl": ["*.bak"]},
+    install_requires=['attr-property', 'attrs==19.*,>=19.3.0', 'cmdy', 'colorama==0.*,>=0.4.1', 'diot', 'filelock==3.*,>=3.0.0', 'liquidpy', 'pluggy==0.*', 'psutil==5.*,>=5.6.0', 'pyparam', 'pyppl-echo', 'pyppl-export', 'pyppl-lock', 'pyppl-rich', 'pyppl-runners', 'pyppl-strict', 'python-simpleconf', 'python-varname', 'toml==0.*,>=0.10.0', 'transitions==0.*,>=0.7.0'],
+    extras_require={"dev": ["faker==1.*,>=1.0.0", "jinja2==2.*,>=2.0.0", "pytest", "pytest-cov"]},
 )

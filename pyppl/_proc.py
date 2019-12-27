@@ -164,7 +164,8 @@ def proc_input_setter(this, value):
 	_decache(this, 'size')
 	_decache(this, 'jobs')
 	_decache(this, 'suffix')
-	if isinstance(value, str):
+	if isinstance(value, (dict, str)):
+		# ignore previous input
 		return value
 	try:
 		prev_input = this._input
@@ -172,7 +173,12 @@ def proc_input_setter(this, value):
 		return value
 	if isinstance(prev_input, str):
 		return {prev_input: value}
-	return value
+	# prev_input not a str, ignore it
+	if isinstance(value, (list, tuple)):
+		return ', '.join(value)
+	raise ProcessInputError('Unsupported input format, '
+		'expecting str, list, OrderedDict, diot.OrderedDiot '
+		'or dict with a sole key-value pair.')
 
 def proc_input(this, value): # pylint: disable=too-many-locals,too-many-branches
 	"""Parse and prepare the input, allowing jobs to easily access it"""
@@ -362,7 +368,7 @@ def proc_suffix(this, value):
 	determines.argv0 = Path(sys.argv[0]).resolve()
 	determines.name  = this.name
 	if isinstance(this._input, dict):
-		determines.input = this._input.copy()
+		determines.input = {}
 		for key, val in this._input.items():
 			# lambda is not pickable
 			# convert others to string to make sure it's pickable. Issue #65

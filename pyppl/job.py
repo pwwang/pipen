@@ -266,6 +266,7 @@ class Job:
 
 		if cached:
 			pluginmgr.hook.job_done(job = self, status = 'cached')
+			return
 
 		if status:
 			self.cache()
