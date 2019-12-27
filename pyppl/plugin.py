@@ -300,7 +300,8 @@ class PluginConfig(Diot):
 		self._meta.converter [name] = converter
 		self._meta.updates   [name] = update
 		# setitem will run the converter
-		self[name] = default
+		# if value exists, use it.
+		self[name] = self._meta.raw.get(name, default)
 		# reset counter
 		self._meta.setcounter[name] = 0
 		return self

@@ -4,7 +4,7 @@ __version__ = "3.0.0"
 
 from .config import load_config
 from .plugin import config_plugins
-from .pyppl import PyPPL
+from .pyppl import PyPPL, PROCESSES, PIPELINES
 from .proc import Proc
 from .procset import ProcSet
 from .channel import Channel

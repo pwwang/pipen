@@ -15,6 +15,7 @@ from .exception import ProcessAttributeError, ProcessInputError, \
 from .channel import Channel
 from .logger import logger
 from .utils import funcsig, always_list, fs
+from .plugin import PluginConfig
 
 # pylint: disable=unused-argument
 
@@ -70,6 +71,16 @@ def proc_runtime_config_setter(this, value):
 			continue
 		else:
 			setattr(this, key, val)
+
+def proc_config_setter(this, value):
+	"""Try to update config whever a config is passed"""
+	preval = this.__attrs_property_raw__.get('config')
+	if not preval:
+		default = PluginConfig(config.config)
+		default.update(value or {})
+		return default
+	preval.update(value or {})
+	return preval
 
 def proc_id_setter(this, value):
 	"""Don't allow id to be set using setter"""

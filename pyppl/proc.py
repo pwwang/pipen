@@ -13,7 +13,7 @@ from ._proc import proc_depends_setter, proc_input, proc_output, proc_script, \
 	proc_suffix, proc_lang, proc_name, proc_shortname, proc_jobs, proc_size, \
 	proc_runner, proc_template, proc_workdir, proc_input_setter, \
 	proc_runtime_config_setter, proc_id_setter, proc_tag_setter, \
-	proc_channel, proc_procset, proc_setter_count
+	proc_channel, proc_procset, proc_setter_count, proc_config_setter
 from .utils import try_deepcopy, brief_list
 from .logger import logger
 from .jobmgr import STATES, Jobmgr
@@ -236,12 +236,9 @@ class Proc:
 	# plugin configs
 	config = attr_property(
 		# use a callback to make sure values added by plugins to be loaded
-		default = None,
-		setter  = lambda this, value: PluginConfig(value) \
-			if not this.config \
-			else (this.config.update(value or {}) or this.config),
-		getter  = lambda this, value: value or \
-			PluginConfig(default_config.config), # default value
+		default = PluginConfig(default_config.config),
+		setter  = proc_config_setter,
+		#getter  = config_getter, # default value
 		init    = True,
 		kw_only = True,
 		repr    = False)

@@ -78,6 +78,11 @@ def test_config():
 	assert pProcConfig3.config.a == 1
 	assert pProcConfig3.config.b == 2
 
+	pProcConfig3.config = {'x': 3}
+	assert pProcConfig3.config.a == 1
+	assert pProcConfig3.config.b == 2
+	assert pProcConfig3.config.x == 3
+
 def test_init2():
 	pProcInit2 = Proc(errhow = 'ignore')
 	assert pProcInit2.errhow == 'ignore'
