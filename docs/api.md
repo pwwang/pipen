@@ -334,7 +334,7 @@
 
 		- `(str)`:  The converted name
 
-!!! abstract "method: `try_deepcopy(obj, _recurvise)`"
+!!! abstract "method: `try_deepcopy(obj, depth)`"
 
 	Try do deepcopy an object. If fails, just do a shallow copy.
 
@@ -342,7 +342,7 @@
 
 		- `obj (any)`:  The object
 
-		- `_recurvise (bool)`:  A flag to avoid deep recursion
+		- `depth (int)`:  A flag to avoid deep recursion
 
 	- **returns**
 

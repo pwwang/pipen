@@ -103,33 +103,34 @@ def always_list (data, trim = True):
 			for dat in data), [])
 	raise ValueError('Expect str/list to convert to list, but got %r.' % type(data).__name__)
 
-def try_deepcopy(obj, _recurvise = True):
+def try_deepcopy(obj, depth = 3):
 	"""@API
 	Try do deepcopy an object. If fails, just do a shallow copy.
 	@params:
 		obj (any): The object
-		_recurvise (bool): A flag to avoid deep recursion
+		depth (int): A flag to avoid deep recursion
 	@returns:
 		(any): The copied object
 	"""
-	if _recurvise and isinstance(obj, dict):
+	if depth <= 0:
+		return obj
+	if isinstance(obj, dict):
 		# do a shallow copy first
 		# we don't start with an empty dictionary, because obj may be
 		# an object from a class extended from dict
 		ret = obj.copy()
 		for key, value in obj.items():
-			ret[key] = try_deepcopy(value, False)
+			ret[key] = try_deepcopy(value, depth - 1)
 		return ret
-	if _recurvise and isinstance(obj, list):
+	if isinstance(obj, list):
 		ret = obj[:]
 		for i, value in enumerate(obj):
-			ret[i] = try_deepcopy(value, False)
+			ret[i] = try_deepcopy(value, depth - 1)
 		return ret
 	try:
 		return deepcopy(obj)
-	except TypeError:
+	except BaseException:
 		return obj
-
 
 def chmod_x(filepath):
 	"""@API
