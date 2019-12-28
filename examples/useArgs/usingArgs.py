@@ -3,7 +3,6 @@ from pyppl import PyPPL, Proc
 pHeatmap           = Proc(desc = 'Draw heatmap.')
 pHeatmap.input     = {'seed': [1,2,3]}
 pHeatmap.output    = "outfile:file:heatmap{{i.seed}}.png"
-pHeatmap.exdir     = "./export"
 pHeatmap.forks     = 3
 pHeatmap.args.ncol = 10
 pHeatmap.args.nrow = 10

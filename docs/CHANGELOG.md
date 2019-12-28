@@ -1,3 +1,15 @@
+# 3.0.0 (2019.12.26)
+- Fundamental:
+	- Rewrite `Proc` and `Job` using `attrs` and `attr_property`
+- Plugins:
+	- Refine plugin system
+	- Move some functions to plugins
+	- Re-organize log levels and enable plugins to add levels
+- Runners:
+	- Make runners also plugins
+- Other:
+	- Optimize and fix other bugs
+
 # 2.3.2 (2019.12.5)
 - Infer job cache status when not job.cache file generated (main thread quits before job done)
 - Remove force cache mode

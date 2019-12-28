@@ -1,6 +1,6 @@
 
 import pytest
-from pyppl import Diot
+from diot import Diot
 from pyppl.procset import Proxy, Values, PSProxy, ProcSet
 
 pytest_plugins = ["tests.fixt_procset"]
@@ -175,14 +175,13 @@ def test_psproxy(psp3):
 
 
 	procset.delegate('x', 'starts')
-	assert psp3._delegatedAttrs('x') == [procset.pProc1]
+	assert psp3._delegated_attrs('x') == [procset.pProc1]
 
 	psp3.__dict__['path'] = ['args']
 	procset.delegate('args.*', 'pProc?')
-	assert psp3._delegatedAttrs('x') == [procset.pProc1.args, procset.pProc2.args, procset.pProc3.args]
+	assert psp3._delegated_attrs('x') == [procset.pProc1.args, procset.pProc2.args, procset.pProc3.args]
 
 	assert psp3.args is psp3
-
 	procset.args.x = Values(1,2,3)
 	assert procset.pProc1.args.x == 1
 	assert procset.pProc2.args.x == 2

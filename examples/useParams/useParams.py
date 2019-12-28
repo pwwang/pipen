@@ -14,7 +14,6 @@ pSort         = Proc(desc = 'Sort files.')
 pSort.input   = {"infile:file": Channel.fromPattern(params['datadir'] + '/*.txt')}
 pSort.output  = "outfile:file:{{i.infile | fn}}.sorted"
 pSort.forks   = 5
-pSort.exdir   = './export'
 pSort.envs.fn = fn
 pSort.script  = """
   sort -k1r {{i.infile}} > {{o.outfile}}

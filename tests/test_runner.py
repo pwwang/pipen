@@ -1,294 +1,145 @@
-import os
 import pytest
-from pathlib import Path
-from psutil import pid_exists
+import types
 import cmdy
-from pyppl import Proc, utils, Diot
-from pyppl.runner import RunnerLocal, RunnerDry, RunnerSsh, RunnerSge, RunnerSlurm, RC_ERROR_SUBMISSION
-from pyppl.exception import RunnerSshError
-from pyppl.template import TemplateLiquid
+from diot import Diot
+from pyppl import runner as module_runner
+from pyppl.runner import register_runner, use_runner, current_runner, hookimpl, RUNNERS, runnermgr, _runner_name, poll_interval
+from pyppl.exception import RunnerNoSuchRunner, RunnerMorethanOneRunnerEnabled, RunnerTypeError
 
-@pytest.fixture(scope='function')
-def proc(tmp_path):
-	proc = Proc()
-	proc.props.workdir = tmp_path / 'test_runner'
-	proc.workdir.mkdir()
-	return proc
+module_runner.DEFAULT_POLL_INTERVAL = .5
 
-def test_local_kill_isrunning_impl(proc):
-	r = RunnerLocal(0, proc)
-	assert not r.isRunningImpl()
-	r.killImpl()
-	assert not pid_exists(r.pid)
+class PyPPLRunnerTest1:
 
-	c = cmdy.sleep(10, _bg = True, _raise = False)
-	r._pid = c.pid
-	assert r.isRunningImpl()
-	r.killImpl()
-	assert not r.isRunningImpl()
+	POLL_INTERVAL = 10
 
-	r._pid = 0
-	assert not r.isRunningImpl()
+	@hookimpl
+	def kill(self, job):
+		pass
 
-def test_local_submit_impl(proc):
+	@hookimpl
+	def submit(self, job):
+		pass
 
-	r = RunnerLocal(0, proc)
-	r.dir.mkdir()
-	r.script.write_text('sleep 3')
+	@hookimpl
+	def isrunning(self, job):
+		pass
 
-	cmd = r.submitImpl()
-	assert r.isRunningImpl()
-	assert cmd.rc == 0
-	assert r.pid == cmd.pid
-	r.killImpl()
-	assert not r.isRunningImpl()
+class PyPPLRunnerTest2(PyPPLRunnerTest1):
+	pass
 
-def test_dry(proc):
-	r = RunnerDry(0, proc)
-	r.dir.mkdir()
-	(r.dir / 'job.script').write_text('')
-	r.output.b = ('dir', 'b.dir') # make output directory first
-	r.output.a = ('file', 'a.txt')
-	r.wrapScript()
+class PyPPLRunnerModule(types.ModuleType, PyPPLRunnerTest1):
+	pass
 
-	assert r.script.read_text() == '''#!/usr/bin/env bash
-#
-# Collect return code on exit
-trap "status=\\$?; echo \\$status > '{jobdir}/job.rc'; if [ ! -e '{jobdir}/job.stdout' ]; then touch '{jobdir}/job.stdout'; fi; if [ ! -e '{jobdir}/job.stderr' ]; then touch '{jobdir}/job.stderr'; fi; exit \\$status" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT
-#
-# Run pre-script
+class pyppl_runner_xrunner(PyPPLRunnerTest1):
+	pass
 
-# Dry-run script to create empty output files and directories.
-
-mkdir -p {jobdir}/output/b.dir
-touch {jobdir}/output/a.txt
-
-#
-# Run the real script
-#
-# Run post-script
-#'''.format(jobdir = r.dir)
-
-	utils.fs.remove(r.dir / 'output' / 'b.dir')
-	utils.fs.remove(r.dir / 'output' / 'a.txt')
-
-	cmdy.bash(r.script, _fg = True)
-
-	# check if output file and directory generated
-	assert (r.dir / 'output' / 'b.dir').exists()
-	assert (r.dir / 'output' / 'a.txt').exists()
-
-@pytest.fixture
-def ssh():
-	return str(Path(__file__).parent / 'mocks' / 'ssh')
-
-@pytest.fixture
-def sge():
-	return Diot(
-		qsub  = str(Path(__file__).parent / 'mocks' / 'qsub'),
-		qstat = str(Path(__file__).parent / 'mocks' / 'qstat'),
-		qdel  = str(Path(__file__).parent / 'mocks' / 'qdel'),
-	)
-
-@pytest.fixture
-def slurm():
-	return Diot(
-		sbatch  = str(Path(__file__).parent / 'mocks' / 'sbatch'),
-		srun    = str(Path(__file__).parent / 'mocks' / 'srun'),
-		squeue  = str(Path(__file__).parent / 'mocks' / 'squeue'),
-		scancel = str(Path(__file__).parent / 'mocks' / 'scancel'),
-	)
-
-@pytest.fixture(autouse=True)
-def resetliveservers():
-	RunnerSsh.LIVE_SERVERS = None
-
-@pytest.mark.parametrize('server,key,timeout,expt', [
-	('host', 'host1', 0, False),
-	('host', 'host', 0, True),
-	('host', '', 0, True),
-	('host', 'host+0', 0, True),
-	('host', 'host+0.3', 0.1, False),
+@pytest.mark.parametrize('obj,name', [
+	(PyPPLRunnerTest1, 'test1'),
+	(PyPPLRunnerModule, 'module'),
+	(pyppl_runner_xrunner, 'xrunner'),
 ])
-def test_ssh_isserveralive(server, key, timeout, expt, ssh):
-	assert RunnerSsh.isServerAlive(server, key, timeout = timeout, ssh = ssh) == expt
+def test_runner_name(obj, name):
+	assert _runner_name(obj) == name
 
-def test_ssh_init(proc, ssh):
-	proc.sshRunner = Diot(
-		ssh = ssh,
-		servers = ['server1', 'server2', 'server3', 'server4'],
-		keys = ['server1', 'server2', 'server3', 'wrongkey'],
-		checkAlive = True)
-	r = RunnerSsh(0, proc)
-	assert RunnerSsh.LIVE_SERVERS == [0,1,2]
-	assert r.ssh.keywords['t'] == 'server1'
+def test_x_runner():
+	use_runner('local')
+	assert current_runner() == 'local'
+	assert poll_interval() == .5
+	with pytest.raises(RunnerNoSuchRunner):
+		use_runner('test1')
+	test1runner = PyPPLRunnerTest1()
+	register_runner(test1runner)
+	with pytest.raises(RunnerMorethanOneRunnerEnabled):
+		current_runner()
 
-def test_ssh_init_noserver(proc, ssh):
-	proc.sshRunner = Diot(
-		ssh = ssh,
-		servers = [],
-		keys = ['server1', 'server2', 'server3', 'wrongkey'],
-		checkAlive = True)
-	with pytest.raises(RunnerSshError):
-		RunnerSsh(0, proc)
+	use_runner('test1')
+	assert current_runner() == 'test1'
+	assert poll_interval() == 10
 
-def test_ssh_init_nolive(proc, ssh):
-	proc.sshRunner = Diot(
-		ssh = ssh,
-		servers = ['a', 'b', 'c', 'd'],
-		keys = ['server1', 'server2', 'server3', 'wrongkey'],
-		checkAlive = True)
-	with pytest.raises(RunnerSshError):
-		RunnerSsh(0, proc)
+	with pytest.raises(RunnerNoSuchRunner):
+		use_runner('test2')
 
-def test_ssh_init_nocheck(proc, ssh):
-	proc.sshRunner = Diot(
-		ssh = ssh,
-		servers = ['server1', 'server2', 'server3', 'server4'],
-		keys = ['server1', 'server2', 'server3', 'wrongkey'],
-		checkAlive = False)
-	r = RunnerSsh(0, proc)
-	assert RunnerSsh.LIVE_SERVERS == [0,1,2,3]
-	assert r.ssh.keywords['t'] == 'server1'
+	with pytest.raises(RunnerTypeError):
+		register_runner(PyPPLRunnerTest1())
 
-def test_ssh_init_checktimeout(proc, ssh):
-	proc.sshRunner = Diot(
-		ssh = ssh,
-		servers = ['server1', 'server2', 'server3', 'server4'],
-		keys = ['server1', 'server2', 'server3+2.5', 'wrongkey'],
-		checkAlive = 2)
-	r = RunnerSsh(0, proc)
-	assert RunnerSsh.LIVE_SERVERS == [0,1]
-	assert r.ssh.keywords['t'] == 'server1'
+	register_runner(test1runner)
 
-def test_ssh_scriptparts(proc):
-	proc.sshRunner = Diot(
-		ssh = ssh,
-		servers = ['server1'],
-		checkAlive = False)
-	r = RunnerSsh(0, proc)
-	r.dir.mkdir()
-	(r.dir / 'job.script').write_text('#!/usr/bin/env bash')
-	r.script.write_text('#!/usr/bin/env bash')
-	assert r.scriptParts.header == '#\n# Running job on server: server1\n#'
-	assert r.scriptParts.pre == "\ncd %s" % cmdy._shquote(os.getcwd())
-	assert r.scriptParts.post == ''
-	assert r.scriptParts.saveoe == True
-	assert r.scriptParts.command == [str(r.dir / 'job.script')]
+	register_runner(PyPPLRunnerTest2())
+	with pytest.raises(RunnerMorethanOneRunnerEnabled):
+		current_runner()
+	use_runner('test2')
+	assert current_runner() == 'test2'
+	assert poll_interval() == 10
 
-def test_ssh_impl(proc, ssh):
-	proc.sshRunner = Diot(
-		ssh = ssh,
-		servers = ['server1'],
-		checkAlive = False)
-	r = RunnerSsh(0, proc)
-	assert not r.isRunningImpl()
-	dbox = r.submitImpl()
-	assert dbox.rc == RC_ERROR_SUBMISSION
-	assert dbox.pid == -1
-	assert 'is not using the same file system as the local machine' in dbox.stderr
+	use_runner('local')
+	assert current_runner() == 'local'
+	assert poll_interval() == .5
 
-	r.dir.mkdir()
-	r.script.write_text('#!/usr/bin/env bash\nsleep 3')
-	cmd = r.submitImpl()
-	assert cmd.rc == 0
-	assert r.pid == cmd.pid
-	assert r.isRunningImpl()
-	r.killImpl()
-	assert not r.isRunningImpl()
+	runnermgr.unregister(list(runnermgr.get_plugins())[0])
+	with pytest.raises(RunnerNoSuchRunner):
+		current_runner()
 
-def test_sge_init(proc, sge):
-	proc.sgeRunner = sge.copy()
-	proc.sgeRunner.preScript = 'ls'
-	proc.sgeRunner['sge.notify'] = True
-	proc.sgeRunner['sge.N'] = 'Jobname{{job.index}}'
-	proc.props.template = TemplateLiquid
-	r = RunnerSge(0, proc)
-	r.dir.mkdir()
-	(r.dir / 'job.script').write_text('#!/usr/bin/env bash')
-	parts = r.scriptParts
-	assert parts.saveoe == False
-	assert parts.header == '''#$ -N Jobname0
-#$ -cwd
-#$ -o {jobdir}/job.stdout
-#$ -e {jobdir}/job.stderr
-#$ -notify
-'''.format(jobdir = r.dir)
-	assert parts.pre == 'ls'
-	assert parts.post == ''
+	register_runner(test1runner)
+	del RUNNERS['test1']
+	with pytest.raises(RunnerNoSuchRunner):
+		current_runner()
+	register_runner(test1runner)
 
-def test_sge_init_error(proc, sge):
-	proc.sgeRunner = sge.copy()
-	proc.sgeRunner['sge.cwd'] = True
-	proc.props.template = TemplateLiquid
-	r = RunnerSge(0, proc)
-	r.dir.mkdir()
-	(r.dir / 'job.script').write_text('#!/usr/bin/env bash')
-	with pytest.raises(ValueError):
-		r.scriptParts
+# start testing hooks
 
-def test_sge_impl(proc, sge):
-	proc.sgeRunner = sge.copy()
-	r = RunnerSge(0, proc)
-	assert not r.isRunningImpl()
-	r.dir.mkdir()
-	r.script.write_text('#!/usr/bin/env bash\n#$ -N Jobname1\nsleep 3')
-	r.submitImpl()
-	assert r.isRunningImpl()
-	r.killImpl()
-	assert not r.isRunningImpl()
+class Job:
 
-	# fail
-	r.script.write_text('#!/usr/bin/env bash\n# ShouldFail\n#$ -N Jobname1\nsleep 3')
-	cmd = r.submitImpl()
-	assert cmd.rc == RC_ERROR_SUBMISSION
+	def __init__(self, pid = 0, script = ['ls']):
+		self.pid = pid
+		self.script = script
 
-def test_slurm_init(proc, slurm):
-	proc.slurmRunner = slurm.copy()
-	proc.slurmRunner.preScript = 'ls'
-	# need a number, just testing the boolean options
-	proc.slurmRunner['slurm.ntasks'] = True
-	proc.slurmRunner['slurm.x'] = 1
-	proc.slurmRunner['srun.opts'] = '-n8 --mpi=pmix_v1'
-	proc.slurmRunner['slurm.J'] = 'Jobname{{job.index}}'
-	proc.props.template = TemplateLiquid
-	r = RunnerSlurm(0, proc)
-	r.dir.mkdir()
-	(r.dir / 'job.script').write_text('#!/usr/bin/env bash')
-	parts = r.scriptParts
-	assert parts.saveoe == False
-	assert parts.header == '''#SBATCH -J Jobname0
-#SBATCH -o {jobdir}/job.stdout
-#SBATCH -e {jobdir}/job.stderr
-#SBATCH --ntasks
-#SBATCH -x 1
-'''.format(jobdir = r.dir)
-	assert parts.pre == 'ls'
-	assert parts.post == ''
-	assert parts.command == '%s -n8 --mpi=pmix_v1 %s' % (slurm.srun, (r.dir / 'job.script'))
+class Action:
 
-def test_slurm_init_error(proc, slurm):
-	proc.slurmRunner = slurm.copy()
-	proc.slurmRunner['slurm.o'] = '/path/to/stdout'
-	proc.props.template = TemplateLiquid
-	r = RunnerSlurm(0, proc)
-	r.dir.mkdir()
-	(r.dir / 'job.script').write_text('#!/usr/bin/env bash')
-	with pytest.raises(ValueError):
-		r.scriptParts
+	def __init__(self, job):
+		self.job = job
 
-def test_slurm_impl(proc, slurm):
-	proc.slurmRunner = slurm.copy()
-	r = RunnerSlurm(0, proc)
-	assert not r.isRunningImpl()
-	r.dir.mkdir()
-	r.script.write_text('#!/usr/bin/env bash\n#SBATCH -J Jobname1\nsleep 3')
-	r.submitImpl()
-	assert r.isRunningImpl()
-	r.killImpl()
-	assert not r.isRunningImpl()
+	def isrunning(self):
+		return runnermgr.hook.isrunning(job = self.job)
 
-	# fail
-	r.script.write_text('#!/usr/bin/env bash\n# ShouldFail\n#SBATCH -J Jobname1\nsleep 3')
-	cmd = r.submitImpl()
-	assert cmd.rc == RC_ERROR_SUBMISSION
+	def kill(self):
+		return runnermgr.hook.kill(job = self.job)
+
+	def submit(self):
+		return runnermgr.hook.submit(job = self.job)
+
+	def script_parts(self):
+		return runnermgr.hook.script_parts(job = self.job, base = Diot())
+
+def test_hook():
+	use_runner('local')
+	action = Action(Job())
+	assert not action.isrunning()
+	assert action.kill()
+	assert action.submit().cmd == 'bash -c ls'
+	assert action.script_parts() is None
+
+def test_hook2():
+	import os
+	use_runner('local')
+	action = Action(Job(pid = os.getpid()))
+
+	assert action.isrunning()
+	assert action.submit().cmd == 'bash -c ls'
+	assert action.script_parts() is None
+
+def test_hook_kill():
+	from psutil import pid_exists
+	p = cmdy.sleep(100, _bg = True)
+	assert pid_exists(p.pid)
+
+	job = Job(pid = p.pid)
+	action = Action(job)
+
+	assert action.isrunning()
+	assert job.pid == p.pid
+	assert action.submit().cmd == 'bash -c ls'
+	job.pid = p.pid
+	assert action.script_parts() is None
+	assert action.kill()
+	assert not pid_exists(p.pid)
+

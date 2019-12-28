@@ -1,81 +1,198 @@
-import sys
 import pytest
-from pathlib import Path
-from pyppl import plugin, PyPPL, Proc, config, __version__
+import types
+from diot import Diot
+from pyppl.plugin import PluginConfig, _get_plugin, pluginmgr, disable_plugin, config_plugins, hookimpl
+from pyppl.exception import PluginNoSuchPlugin
 
-HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
-pyppl_test      = __import__('pyppl_test')
-pyppl_empty     = __import__('pyppl_empty')
-pyppl_report    = __import__('pyppl_report')
-pyppl_flowchart = __import__('pyppl_flowchart')
+class PyPPLPlugin:
+	pass
 
-def setup_module(module):
-	plugin.registerPlugins(['pyppl_test', 'pyppl_empty'], ['pyppl_report', 'pyppl_flowchart'])
-	plugin.pluginmgr.hook.setup(config = config)
+class PyPPLMPlugin(types.ModuleType):
+	pass
 
-def teardown_module(module):
-	# unregister plugins for further testing
-	plugin.pluginmgr.unregister(pyppl_test)
-	plugin.pluginmgr.unregister(pyppl_empty)
-	plugin.pluginmgr.unregister(pyppl_report)
-	plugin.pluginmgr.unregister(pyppl_flowchart)
-	config.envs.clear()
+def test_get_plugin():
+	plugin = PyPPLPlugin()
+	pluginmgr.register(plugin)
+	assert isinstance(_get_plugin('plugin'), PyPPLPlugin)
 
-def test_register():
-	assert plugin.pluginmgr.is_registered(pyppl_test)
-	assert plugin.pluginmgr.is_registered(pyppl_report)
-	assert plugin.pluginmgr.is_registered(pyppl_flowchart)
+	pluginmgr.unregister(plugin)
+	pluginmgr.register(PyPPLPlugin)
+	assert _get_plugin('plugin') is PyPPLPlugin
+	assert _get_plugin(PyPPLPlugin) is PyPPLPlugin
+	pluginmgr.unregister(PyPPLPlugin)
 
-def test_prerun(caplog):
-	sys.argv = [sys.argv[0]]
-	with pytest.raises(plugin.PyPPLFuncWrongPositionError):
-		PyPPL().start(Proc(id = 'pPreRun1')).run().preRun()
-	assert not any('PYPPL PRERUN' in msg for _,_,msg in caplog.record_tuples)
+def test_disable_plugin():
+	plugin = PyPPLPlugin()
+	pluginmgr.register(plugin)
+	assert pluginmgr.is_registered(plugin)
+	disable_plugin(plugin)
+	assert not pluginmgr.is_registered(plugin)
 
-	PyPPL().start(Proc(id = 'pPreRun2')).preRun().run()
-	assert any('PYPPL PRERUN' in msg for _,_,msg in caplog.record_tuples)
+def test_config_plugins():
+	plugin = PyPPLPlugin()
+	pluginmgr.register(plugin)
+	config_plugins('no:plugin', 'no:x')
+	assert not pluginmgr.is_registered(plugin)
+	with pytest.raises(PluginNoSuchPlugin):
+		config_plugins('plugin')
 
-def test_postrun(caplog):
-	sys.argv = [sys.argv[0]]
-	with pytest.raises(plugin.PyPPLFuncWrongPositionError):
-		PyPPL().start(Proc(id = 'pPostRun1')).postRun().run()
-	assert not any('PYPPL POSTRUN' in msg for _,_,msg in caplog.record_tuples)
+	config_plugins(1)
+	config_plugins(PyPPLMPlugin(name = 'pyppl_mplugin'))
 
-	PyPPL().start(Proc(id = 'pPostRun2')).run().postRun()
-	assert any('PYPPL POSTRUN' in msg for _,_,msg in caplog.record_tuples)
+def test_plugin_config():
 
-def test_setgetattr():
-	pSetAttr = Proc()
-	assert pSetAttr.ptest == 0
-	pSetAttr.ptest = 1
-	assert pSetAttr.ptest == 100
-	assert pSetAttr.pempty == 0
-	pSetAttr.pempty = 1
-	assert pSetAttr.pempty == 1
+	pconfig = PluginConfig({'a': 1})
+	assert pconfig == {'a': 1}
+	assert list(pconfig.items()) == [('a', 1)]
+	assert pconfig.a == 1
+	assert pconfig._meta.setcounter.get('a', 0) == 0
 
-def test_prepostrun(caplog):
-	p = Proc(id = 'pPrePostRun1')
-	p.input = {'a' : ['1']}
-	PyPPL().start(p).run()
-	expects = [
-		'PIPELINE STARTED',
-		'pPrePostRun1 STARTED',
-		'JOB 0 STARTED',
-		'JOB 0 ENDED',
-		'pPrePostRun1 ENDED',
-		'PIPELINE ENDED'
-	]
-	for name, level, msg in caplog.record_tuples:
-		if expects:
-			if expects[0] in msg:
-				expects.pop(0)
-	assert len(expects) == 0 # messages appear in order
+	pconfig = PluginConfig()
+	assert pconfig._meta.raw == {}
+	assert pconfig == {}
+	assert pconfig._meta.converter == {}
 
-def test_jobfail(caplog):
-	p = Proc(id = 'pPluginJobFail')
-	p.input = {'a' : ['1']}
-	p.script = 'exit 1'
-	with pytest.raises(SystemExit):
-		PyPPL().start(p).run()
-	assert any('Job 0 failed' in msg for _,_,msg in caplog.record_tuples)
+	pconfig.add('a')
+	assert pconfig.a is None
+	assert pconfig._meta.setcounter.get('a', 0) == 0
+
+	pconfig.add('b', default = 1, converter = lambda v: v+1)
+	assert pconfig.b == 2
+	assert pconfig._meta.setcounter.get('b', 0) == 0
+	pconfig.b = 2
+	assert pconfig._meta.setcounter.get('b', 0) == 1
+	assert pconfig.b == 3
+
+	pconfig['r.a'] = 4
+	assert pconfig._meta.setcounter.get('r.a', 0) == 1
+	assert pconfig['r.a'] == 4
+
+	pconfig.add('x', update = 'ignore')
+	pconfig.update({'x': 1})
+	assert pconfig.x == 1
+	pconfig.x = 10
+	pconfig.update({'x': 1})
+	assert pconfig.x == 10
+
+	pconfig.add('z', default = 0, update = 'update', converter = lambda x: x * 2)
+	pconfig.z = 10
+	assert pconfig.z == 20
+	pconfig.update({'z': 1})
+	assert pconfig.z == 2
+	assert pconfig.z == 2 # use cache
+
+	pconfig.add('c', update = 'update', converter = lambda x: x or {})
+	assert pconfig.c == {}
+	pconfig.update({'c': {'x': 1, 'm': 0}})
+	assert pconfig.c['x'] == 1
+	pconfig.update({'c': {'x': 2}})
+	assert pconfig.c['x'] == 2
+	assert pconfig.c['m'] == 0
+
+	pconfig.add('d', update = 'replace')
+	pconfig.d = {'a': 1, 'b': 2}
+	assert pconfig.d == {'a': 1, 'b': 2}
+	pconfig.d = {'a': 3}
+	assert pconfig.d == {'a': 3}
+
+	pconfig.add('e')
+	pconfig.update(e = {})
+	assert pconfig.e == {}
+
+	pconfig.update({'y': 2})
+
+# test hooks
+def test_job_is_succeeded(tmp_path):
+	class PyPPLJobIsSucceeded:
+
+		@hookimpl
+		def job_succeeded(self, job):
+			return False
+
+	pluginmgr.register(PyPPLJobIsSucceeded())
+	from pyppl.job import Job
+	workdir = tmp_path.joinpath('pJobIsSucceeded')
+	workdir.mkdir()
+	job = Job(0, Diot(workdir = workdir))
+	job.dir.mkdir(parents = True, exist_ok = True)
+	assert not job.is_succeeded()
+
+def test_job_done(tmp_path, capsys):
+	class PyPPLJobDone:
+
+		@hookimpl
+		def job_done(self, job, status):
+			print(status)
+
+	pluginmgr.register(PyPPLJobDone())
+	from pyppl.job import Job
+	workdir = tmp_path.joinpath('pJobDone')
+	workdir.mkdir()
+	job = Job(0, Diot(workdir = workdir, id = 'pJobDone',
+		shortname = 'pJobDone', size = 0, cache = True, input = {}, output = {}))
+	job.dir.mkdir(parents = True, exist_ok = True)
+	job.done(cached = True)
+	assert 'cached' in capsys.readouterr().out
+
+def test_job_submit(tmp_path, capsys, caplog):
+	class PyPPLJobSubmit:
+
+		@hookimpl
+		def job_submit(self, job, status):
+			print(status)
+
+	from pyppl.runner import hookimpl as runner_hookimpl, register_runner, use_runner
+	class PyPPLRunnerIsRunning:
+		@runner_hookimpl
+		def isrunning(self, job):
+			return True
+	class PyPPLRunnerSubmitFail:
+		@runner_hookimpl
+		def submit(self, job):
+			return Diot(rc = 1, cmd = 'helloworld', stderr = 'stderr')
+	register_runner(PyPPLRunnerIsRunning(), 'isrunning')
+	register_runner(PyPPLRunnerSubmitFail(), 'submitfail')
+	use_runner('isrunning')
+
+	pluginmgr.register(PyPPLJobSubmit())
+	from pyppl.job import Job
+	from pyppl.template import TemplateLiquid
+	workdir = tmp_path.joinpath('pJobSubmit')
+	workdir.mkdir()
+	job = Job(0, Diot(workdir = workdir, id = 'pJobSubmit',
+		shortname = 'pJobSubmit', size = 0, cache = True,
+		input = {}, output = {}, script = TemplateLiquid(''), runner = 'isrunning'))
+	job.dir.mkdir(parents = True, exist_ok = True)
+	job.submit()
+	assert 'running' in capsys.readouterr().out
+
+	use_runner('submitfail')
+	job.submit()
+	assert 'Submission failed (rc = 1, cmd = helloworld)' in caplog.text
+
+def test_job_kill(tmp_path, capsys, caplog):
+	class PyPPLJobKill:
+
+		@hookimpl
+		def job_kill(self, job, status):
+			print(status)
+
+	from pyppl.runner import hookimpl as runner_hookimpl, register_runner, use_runner
+	class PyPPLRunnerKill:
+		@runner_hookimpl
+		def kill(self, job):
+			return True
+	register_runner(PyPPLRunnerKill(), 'kill')
+	use_runner('kill')
+
+	pluginmgr.register(PyPPLJobKill())
+	from pyppl.job import Job
+	from pyppl.template import TemplateLiquid
+	workdir = tmp_path.joinpath('pJobKill')
+	workdir.mkdir()
+	job = Job(0, Diot(workdir = workdir, id = 'pJobKill',
+		shortname = 'pJobKill', size = 0, cache = True,
+		input = {}, output = {}, script = TemplateLiquid(''), runner = 'isrunning'))
+	job.dir.mkdir(parents = True, exist_ok = True)
+	assert job.kill()
+	assert 'succeeded' in capsys.readouterr().out

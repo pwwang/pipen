@@ -5,7 +5,7 @@ import inspect
 from types import GeneratorType
 from fnmatch import fnmatch, filter as fnfilter
 from diot import Diot, OrderedDiot
-from .utils import varname
+from varname import varname
 
 class Proxy(list):
 	"""
@@ -70,7 +70,7 @@ class PSProxy:
 		self.__dict__['procset'] = procset
 		self.__dict__['path']    = path or []
 
-	def _delegatedAttrs(self, attr_to_set):
+	def _delegated_attrs(self, attr_to_set):
 		path_to_check = '.'.join(self.path + [attr_to_set])
 		for dele_name in self.procset.delegates.keys():
 			if fnmatch(path_to_check, dele_name):
@@ -87,8 +87,7 @@ class PSProxy:
 		return self
 
 	def __setattr__(self, name, value):
-		attrs = self._delegatedAttrs(name)
-
+		attrs = self._delegated_attrs(name)
 		if isinstance(value, Values):
 			for i, val in enumerate(value):
 				setattr(attrs[i], name, val)
@@ -100,8 +99,8 @@ class ProcSet:
 	"""@API
 	The ProcSet for a set of processes
 	"""
-
-	def __init__(self, *procs, **kwargs):
+	# pylint: disable=redefined-builtin
+	def __init__(self, *procs, id = None, tag = None, copy = True, depends = True):
 		"""@API
 		Constructor
 		@params:
@@ -113,30 +112,27 @@ class ProcSet:
 				copy (bool): Whether copy the processes or just use them. Default: `True`
 		"""
 
-		self.__dict__['id']        = kwargs.get('id') or varname(context = 101)
-		self.__dict__['tag']       = kwargs.get('tag')
+		self.__dict__['id']        = id or varname(context = 50)
+		self.__dict__['tag']       = tag
 		self.__dict__['starts']    = Proxy()
 		self.__dict__['ends']      = Proxy()
-		self.__dict__['delegates'] = OrderedDiot()
-		self.__dict__['procs']     = OrderedDiot()
+		self.__dict__['delegates'] = OrderedDiot(diot_nest = False)
+		self.__dict__['procs']     = OrderedDiot(diot_nest = False)
 		self.__dict__['modules']   = Diot(diot_nest = False)
 		# save initial states before a module is called
 		# states will be resumed before each module is called
 		self.__dict__['initials']  = Diot(diot_nest = False)
 
-		ifcopy  = kwargs.get('copy', True)
-		depends = kwargs.get('depends', True)
-
 		prevproc = None
 		for proc in procs:
 			assert hasattr(proc, 'id') and hasattr(proc, 'tag'), \
 				'Argument has to be a Proc object: %r.' % proc
-			if ifcopy:
+			if copy:
 				self.procs[proc.id] = proc.copy(proc.id,
 					tag = (self.tag or proc.tag.split('@', 1)[0]) + '@' + self.id)
 			else:
 				self.procs[proc.id] = proc
-				proc.config.tag = (self.tag or proc.tag.split('@', 1)[0]) + '@' + self.id
+				proc.tag = (self.tag or proc.tag.split('@', 1)[0]) + '@' + self.id
 
 			if depends and prevproc is None:
 				self.starts.add(self[proc.id])
@@ -153,7 +149,7 @@ class ProcSet:
 		self.delegate('depends', 'starts')
 		self.delegate('ex*', 'ends')
 
-	def delegate(self, *procs):
+	def delegate(self, attr, *procs):
 		"""@API
 		Delegate process attributes to procset.
 		@params:
@@ -161,8 +157,7 @@ class ProcSet:
 				- The rest of them should be `Proc`s or `Proc` selectors.
 		"""
 		procs = list(procs)
-		name  = procs.pop(0)
-		self.delegates[name] = procs
+		self.delegates[attr] = procs
 
 	def delegated(self, name):
 		"""@API
@@ -176,7 +171,7 @@ class ProcSet:
 			return None
 		return self[self.delegates[name]]
 
-	def restoreStates(self):
+	def restore_states(self):
 		"""@API
 		Restore the initial state of a procset
 		"""
@@ -212,7 +207,7 @@ class ProcSet:
 				if val.default is not inspect.Parameter.empty}
 			def modfun(*args, **kwargs):
 				if kwargs.get('restore', defaults.get('restore', True)):
-					self.restoreStates()
+					self.restore_states()
 				func(self, *args, **kwargs)
 
 			self.modules[name] = modfun
@@ -232,15 +227,19 @@ class ProcSet:
 			(ProcSet): The new procset
 		"""
 		id  = id or varname()
-		ret = self.__class__(*self.procs.values(), id = id, tag = tag, copy = True, depends = False)
+		ret = self.__class__(*self.procs.values(),
+			id = id, tag = tag, copy = True, depends = False)
 
 		if depends:
 			for proc in ret.procs.values():
-				proc.depends = [ret.procs[dep.id] if dep is self.procs[dep.id] else dep
+				proc.depends = [ret.procs[dep.id]
+					if dep is self.procs[dep.id] else dep
 					for dep in self.procs[proc.id].depends]
 
-			ret.starts.add(Proxy(ret.procs[proc.id] for proc in self.starts))
-			ret.ends.add(Proxy(ret.procs[proc.id] for proc in self.ends))
+			ret.starts.add(
+				Proxy(ret.procs[proc.id] for proc in self.starts))
+			ret.ends.add(
+				Proxy(ret.procs[proc.id] for proc in self.ends))
 
 		return ret
 

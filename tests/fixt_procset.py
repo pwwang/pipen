@@ -4,16 +4,16 @@ from pyppl import Proc
 from pyppl.procset import Proxy, Values, PSProxy, ProcSet
 
 @pytest.fixture
-def pProc1():
-	return Proc('pProc1')
+def pProc1(request):
+	return Proc('pProc1', tag = request.node.name)
 
 @pytest.fixture
-def pProc2():
-	return Proc('pProc2')
+def pProc2(request):
+	return Proc('pProc2', tag = request.node.name)
 
 @pytest.fixture
-def pProc3():
-	return Proc('pProc3')
+def pProc3(request):
+	return Proc('pProc3', tag = request.node.name)
 
 @pytest.fixture
 def empty_psp():

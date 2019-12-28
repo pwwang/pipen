@@ -3,7 +3,7 @@ from pyppl import PyPPL, Proc
 pHeatmap        = Proc(desc = 'Draw a heatmap.')
 pHeatmap.input  = {'seed': 8525}
 pHeatmap.output = "outfile:file:heatmap.png"
-pHeatmap.exdir  = './export'
+pHeatmap.config.export_dir  = './export'
 # or /path/to/Rscript if it's not in $PATH
 pHeatmap.lang   = 'Rscript'
 pHeatmap.script = """

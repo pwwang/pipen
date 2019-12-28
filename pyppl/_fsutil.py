@@ -21,7 +21,7 @@ class TargetExistsError(OSError):
 class TargetNotExistsError(OSError):
 	"""Raise when target does not exist and not able to ignore"""
 
-def _getLockFile(path):
+def _get_lock_file(path):
 	basename = md5(str(path).encode()).hexdigest()
 	return os.path.join(TMPDIR, basename + '.lock')
 
@@ -29,7 +29,7 @@ def _getLockFile(path):
 def lock(*files, resolve = False):
 	"""Lock file context"""
 	files = [os.path.realpath(path) if resolve else os.path.abspath(path) for path in files]
-	locks = [FileLock(_getLockFile(path)) for path in files]
+	locks = [FileLock(_get_lock_file(path)) for path in files]
 	if len(files) == 1:
 		with locks[0]:
 			yield locks[0]
@@ -56,7 +56,7 @@ isdir  = os.path.isdir  # pylint: disable=invalid-name
 islink = os.path.islink # pylint: disable=invalid-name
 
 # haven't figured out a way to mimic this
-def _removeBusyDir(path): # pragma: no cover
+def _remove_busy_dir(path): # pragma: no cover
 	"""Try to remove directory with files being ocupied by open process"""
 	for root, _, files in os.walk(path):
 		for fname in files:
@@ -84,7 +84,7 @@ def remove(path, ignore_nonexist = True):
 		except OSError as ex: # pragma: no cover
 			if 'busy' not in str(ex):
 				raise
-			_removeBusyDir(path)
+			_remove_busy_dir(path)
 	if not exists(path):
 		if not ignore_nonexist:
 			raise TargetNotExistsError(path)

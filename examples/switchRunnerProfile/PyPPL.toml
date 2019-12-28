@@ -1,0 +1,6 @@
+[default]
+runner = "local"
+forks = 1
+
+[local5]
+forks = 5
