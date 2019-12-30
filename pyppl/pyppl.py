@@ -72,7 +72,7 @@ def _anything2procs(*anything, procset = 'starts'):
 			ret.add(anyth.starts if procset == 'starts' else anyth.ends)
 		elif isinstance(anyth, (tuple, list)):
 			for thing in anyth:
-				ret.add(_anything2procs(thing))
+				ret.add(_anything2procs(thing, procset = procset))
 		else:
 			for proc in PROCESSES:
 				if anyth in (proc.id, proc.shortname, proc.name):

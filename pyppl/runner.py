@@ -17,7 +17,7 @@ RMNAME = "pyppl_runner"
 # save all runners ever registered
 RUNNERS = {}
 # poll interval to check job status
-DEFAULT_POLL_INTERVAL = .5
+DEFAULT_POLL_INTERVAL = 1
 
 hookimpl = pluggy.HookimplMarker(RMNAME)
 hookspec = pluggy.HookspecMarker(RMNAME)
@@ -167,7 +167,7 @@ class PyPPLRunnerLocal:
 			for proc in children:
 				proc.send_signal(9)
 
-			return psutil.wait_procs(children)
+			return bool(psutil.wait_procs(children))
 		return True
 
 	@hookimpl

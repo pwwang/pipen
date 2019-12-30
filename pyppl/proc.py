@@ -331,10 +331,8 @@ class Proc:
 		# use_runner called, and we only initialize that runner
 		runnermgr.hook.runner_init(proc = self)
 		jobmgr.start()
-
-		if self.jobs:
-			# pylint: disable=unsubscriptable-object
-			self.channel.attach(*self.jobs[0].output.keys())
+		# force calculating channel
+		self.channel
 
 	def copy(self, id = None, **kwargs):
 		"""@API
