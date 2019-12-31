@@ -242,6 +242,12 @@ class Proc:
 		init    = True,
 		kw_only = True,
 		repr    = False)
+	# properties for plugins
+	props = attr.ib(
+		default = Diot(),
+		init    = False,
+		repr    = False
+	)
 
 	def __attrs_post_init__(self):
 		_register_proc(self)
@@ -331,10 +337,8 @@ class Proc:
 		# use_runner called, and we only initialize that runner
 		runnermgr.hook.runner_init(proc = self)
 		jobmgr.start()
-
-		if self.jobs:
-			# pylint: disable=unsubscriptable-object
-			self.channel.attach(*self.jobs[0].output.keys())
+		# force calculating channel
+		self.channel
 
 	def copy(self, id = None, **kwargs):
 		"""@API
@@ -349,6 +353,13 @@ class Proc:
 			for key, value in self.__attrs_property_raw__.items()
 			if key not in (
 				'id', 'channel', 'jobs', 'runtime_config', 'depends', 'nexts')}
+		# attr.ib not in __attrs_property_raw__
+		raw_attrs.update({
+			'desc'   : self.desc,
+			'envs'   : try_deepcopy(self.envs),
+			'nthread': self.nthread,
+		})
+		raw_attrs['envs'].update(kwargs.pop('envs', {}))
 		raw_attrs.update(kwargs)
 		newproc = Proc(newid, **raw_attrs)
 		# pylint: disable=attribute-defined-outside-init

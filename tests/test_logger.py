@@ -250,9 +250,9 @@ def test_logger_getattr(caplog):
 
 def test_logger_add_level():
 	logger = Logger()
-	assert init_levels('TITLE', []) == {'PROCESS'}
+	assert init_levels('TITLE', []) == {'PROCESS', 'DONE'}
 	logger.add_level('NOLEVEL', 'TITLE')
-	assert init_levels('TITLE', []) == {'PROCESS', 'NOLEVEL'}
+	assert init_levels('TITLE', []) == {'PROCESS', 'DONE', 'NOLEVEL'}
 
 	with pytest.raises(ValueError):
 		logger.add_level('NOLEVEL', 'nosuchgroup')

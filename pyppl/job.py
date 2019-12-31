@@ -28,6 +28,7 @@ class Job:
 	# allow state machine to add attributes
 	__dict__ = attr.ib(
 		init = False,
+		eq   = False,
 		repr = False)
 
 	# the job directory
@@ -40,36 +41,43 @@ class Job:
 	ntry = attr.ib(
 		default = 0,
 		init    = False,
+		eq      = False,
 		repr    = False)
 	# the compiled input
 	input = attr_property(
 		init   = False,
 		repr   = False,
+		eq     = False,
 		getter = job_input)
 	# the compiled output
 	output = attr_property(
 		init   = False,
 		repr   = False,
+		eq     = False,
 		getter = job_output)
 	# the compiled script
 	script = attr_property(
 		init   = False,
 		repr   = False,
+		eq     = False,
 		getter = job_script)
 	# parts of the script for runner
 	script_parts = attr_property(
 		init   = False,
 		repr   = False,
+		eq     = False,
 		getter = job_script_parts)
 	# the signature of the job
 	signature = attr_property(
 		init   = False,
 		repr   = False,
+		eq     = False,
 		getter = job_signature)
 	# the returncode of the job
 	rc = attr_property(
 		init   = False,
 		repr   = False,
+		eq     = False,
 		setter = job_rc_setter,
 		getter = job_rc_getter,
 		doc    = 'The returncode of the job.')
@@ -77,6 +85,7 @@ class Job:
 	pid = attr_property(
 		init   = False,
 		repr   = False,
+		eq     = False,
 		getter = job_pid_getter,
 		setter = job_pid_setter,
 		doc    = 'The pid/job id of the job in the running system.')
@@ -85,22 +94,26 @@ class Job:
 	runner = attr_property(
 		init   = False,
 		repr   = False,
+		eq     = False,
 		getter = lambda this, value: current_runner(),
 		doc    = 'The name of current runner.')
 	# data to render templates
 	data = attr_property(
 		init   = False,
 		repr   = False,
+		eq     = False,
 		getter = job_data,
 		doc    = 'The data used to render templates.')
 	# job logger
 	logger = attr_property(
 		init   = False,
 		repr   = False,
+		eq     = False,
 		getter = job_logger)
 	# configs for plugins
 	config = attr.ib(
 		default = attr.Factory(PluginConfig),
+		eq      = False,
 		kw_only = True,
 		repr    = False)
 

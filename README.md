@@ -31,8 +31,9 @@ pip install PyPPL
 - [pyppl_lock](https://github.com/pwwang/pyppl_lock)*: Preventing running processes from running again for PyPPL
 - [pyppl_annotate](https://github.com/pwwang/pyppl_annotate): Adding long description/annotation for processes
 - [pyppl_require](https://github.com/pwwang/pyppl_require): Checking and installing requirements for processes
-- [pyppl_require](https://github.com/pwwang/pyppl_jobtime): Job running time statistics for PyPPL
+- [pyppl_jobtime](https://github.com/pwwang/pyppl_jobtime): Job running time statistics for PyPPL
 - [pyppl_notify](https://github.com/pwwang/pyppl_notify): Email notifications for PyPPL
+- [pyppl_runcmd](https://github.com/pwwang/pyppl_runcmd): Allowing to run local command before and after each process for PyPPL
 - [pyppl_runners](https://github.com/pwwang/pyppl_runners): Common runners for PyPPL
 
 ## Writing pipelines with predefined processes

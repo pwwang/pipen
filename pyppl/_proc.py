@@ -239,7 +239,6 @@ def proc_input(this, value): # pylint: disable=too-many-locals,too-many-branches
 			input_channel = input_channel.cbind(invalue)
 		else:
 			input_channel = input_channel.cbind(Channel.create(invalue))
-
 	data_width = input_channel.width()
 	key_width  = len(input_keytypes)
 	if key_width < data_width:
@@ -310,6 +309,10 @@ def proc_jobs(this, value):
 	"""Prepare the jobs"""
 	_require(this, 'size', strict = False, msg = 'Jobs need size to be initialized.')
 	use_runner(this.runner.runner)
+	# try to compute data, since they are not thread-safe
+	this.input
+	this.output
+	this.script
 	# have to make sure this is the first time it is imported,
 	# as we need the runner to be set correctly for the
 	# default value of runner for Job
@@ -412,6 +415,7 @@ def proc_channel(this, value):
 	# make sure it's called after run
 	_require(this, 'runtime_config', strict = False,
 		msg = 'Process channel can only be accessed after run.')
+
 	if this.jobs:
 		chan = Channel.create([
 			tuple(value for _, value in job.output.values())

@@ -85,6 +85,7 @@ def job_input(this, value): # pylint: disable=too-many-branches
 					this.logger("Input file renamed: %s -> %s" %
 						(indata.name, infile.name),
 						slevel = 'INFILE_RENAMING', level = "warning")
+				indata = str(infile)
 			ret[key] = (intype, str(infile))
 
 		elif intype in IN_FILESTYPE:
@@ -120,6 +121,7 @@ def job_input(this, value): # pylint: disable=too-many-branches
 						this.logger('Input file renamed: %s -> %s' %
 							(data.name, infile.name),
 							slevel = 'INFILE_RENAMING', level = "warning")
+					indata[i] = str(infile)
 				ret[key][1].append(str(infile))
 		else:
 			ret[key] = (intype, indata)
@@ -139,9 +141,11 @@ def job_output(this, value):
 	# allow empty output
 	if not output:
 		return ret
+
 	for key, val in output.items():
 		outtype, outtpl = val
 		outdata = outtpl.render(this.data)
+
 		#this.output[key] = {'type': outtype, 'data': outdata}
 		if outtype in OUT_FILETYPE + OUT_DIRTYPE + \
 			OUT_STDOUTTYPE + OUT_STDERRTYPE:
@@ -202,6 +206,7 @@ def job_signature(this, value):
 		else:
 			ret.i[key + ":" + IN_VARTYPE[0]] = str(data)
 
+	# flush stat?
 	for key, val in this.output.items():
 		(datatype, data) = val
 		if datatype in OUT_VARTYPE:

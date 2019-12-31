@@ -15,7 +15,6 @@ class Proc(dict):
 		kwargs['errhow']  = 'terminate'
 		kwargs['errntry'] = 3
 		kwargs['forks']   = 1
-		kwargs['expect']  = TemplateLiquid('')
 		kwargs['size']    = 1
 		kwargs['id']    = 'pProc'
 		super(Proc, self).__init__(*args, **kwargs)
