@@ -1,3 +1,15 @@
+# 3.0.1 (2019.12.31)
+- Fix job.data.i.x not pointing to files in `<indir>`
+- Remove unnecessary job attribute from building `__eq__`
+- Fix channel buliding for procs
+- Fix `_anything2procs` not using procset argument when a list of ProcSets passed
+- Change runner DEFAULT_POLL_INTERVAL to 1 sec
+- Fix return value of kill of local runner (must be a bool value).
+- Fix `attr.ib` properties not copied during proc coping
+- Add proc props for plugins
+- Move timer to `pyppl_rich` plugin
+- Compute input, output and script for process before jobs created, as they are not thread-safe.
+
 # 3.0.0 (2019.12.26)
 - Fundamental:
 	- Rewrite `Proc` and `Job` using `attrs` and `attr_property`
