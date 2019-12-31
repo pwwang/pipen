@@ -8,10 +8,10 @@
 import sys
 # give random tips in the log
 import random
-import time
 import textwrap
 import fnmatch
 from pathlib import Path
+from diot import Diot
 from simpleconf import Config
 from .config import config as default_config, DEFAULT_CFGFILES
 from .logger import logger
@@ -19,7 +19,7 @@ from .plugin import pluginmgr, config_plugins
 from .runner import RUNNERS
 from .exception import PyPPLInvalidConfigurationKey, PyPPLNameError, \
 	ProcessAlreadyRegistered, PyPPLWrongPositionMethod, PyPPLMethodExists
-from .utils import try_deepcopy, format_secs, name2filename, fs
+from .utils import try_deepcopy, name2filename, fs
 
 # length of separators in log
 SEPARATOR_LEN = 80
@@ -154,7 +154,7 @@ class PyPPL:
 	The class for the whole pipeline
 	"""
 	# allow adding methods
-	__slots__ = 'name', 'runtime_config', 'procs', 'starts', 'ends', '__dict__'
+	__slots__ = 'name', 'runtime_config', 'procs', 'props', 'starts', 'ends', '__dict__'
 
 	def __init__(self, config = None, name = None, config_files = None, **kwconfigs):
 		"""@API
@@ -207,6 +207,7 @@ class PyPPL:
 		self.procs  = []
 		self.starts = []
 		self.ends   = []
+		self.props  = Diot() # for plugins
 		pluginmgr.hook.pyppl_init(ppl = self)
 
 	def run(self, profile = 'default'):
@@ -215,7 +216,6 @@ class PyPPL:
 		@params:
 			profile (str): The profile name
 		"""
-		timer = time.time()
 		ret = pluginmgr.hook.pyppl_prerun(ppl = self)
 
 		# plugins can stop pipeling being running
@@ -258,7 +258,6 @@ class PyPPL:
 					proc.run(defconfig)
 
 		pluginmgr.hook.pyppl_postrun(ppl = self)
-		logger.done('Total time: %s', format_secs(time.time() - timer))
 		return self
 
 	def start(self, *anything):

@@ -12,12 +12,12 @@
 !!! example "class: `Template`"
 
 	Base class wrapper to wrap template for PyPPL
-
+	
 
 	!!! abstract "method: `__init__(self, source, **envs)`"
 
 		Template construct
-
+		
 
 	!!! abstract "method: `register_envs(self, **envs)`"
 
@@ -38,7 +38,7 @@
 !!! example "class: `TemplateJinja2`"
 
 	Jinja2 template wrapper
-
+	
 
 	!!! abstract "method: `register_envs(self, **envs)`"
 
@@ -59,7 +59,7 @@
 !!! example "class: `TemplateLiquid`"
 
 	liquidpy template wrapper.
-
+	
 
 	!!! abstract "method: `register_envs(self, **envs)`"
 
@@ -86,7 +86,7 @@
 !!! example "class: `ProcSet`"
 
 	The ProcSet for a set of processes
-
+	
 
 	!!! abstract "method: `__init__(self, *procs)`"
 
@@ -161,7 +161,7 @@
 	!!! abstract "method: `restore_states(self)`"
 
 		Restore the initial state of a procset
-
+		
 ## pyppl.proc
 
 
@@ -172,7 +172,7 @@
 !!! example "class: `Proc`"
 
 	Process of a pipeline
-
+	
 
 	!!! note "property: `cache`"
 
@@ -351,7 +351,7 @@
 !!! example "class: `PQueue`"
 
 	A modified PriorityQueue, which allows jobs to be submitted in batch
-
+	
 
 	!!! abstract "method: `__init__(self, maxsize, batch_len)`"
 
@@ -465,12 +465,12 @@
 	!!! abstract "method: `build(self)`"
 
 		Initiate a job, make directory and prepare input, output and script.
-
+		
 
 	!!! abstract "method: `cache(self)`"
 
 		Truly cache the job (by signature)
-
+		
 
 	!!! abstract "method: `done(self, cached, status)`"
 
@@ -535,7 +535,7 @@
 !!! example "class: `PyPPL`"
 
 	The class for the whole pipeline
-
+	
 
 	!!! abstract "method: `__init__(self, config, name, config_files, **kwconfigs)`"
 
@@ -594,7 +594,7 @@
 !!! example "class: `Channel`"
 
 	The channen class, extended from `list`
-
+	
 
 	!!! abstract "method: `attach(self, *names)`"
 
@@ -1412,7 +1412,7 @@
 	!!! abstract "method: `start(self)`"
 
 		Start the queue.
-
+		
 
 	!!! abstract "method: `worker(self)`"
 
@@ -1766,7 +1766,7 @@
 !!! example "class: `Logger`"
 
 	A wrapper of logger
-
+	
 
 	!!! abstract "method: `__init__(self, name, bake)`"
 
