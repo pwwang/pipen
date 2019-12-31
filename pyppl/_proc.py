@@ -309,6 +309,10 @@ def proc_jobs(this, value):
 	"""Prepare the jobs"""
 	_require(this, 'size', strict = False, msg = 'Jobs need size to be initialized.')
 	use_runner(this.runner.runner)
+	# try to compute data, since they are not thread-safe
+	this.input
+	this.output
+	this.script
 	# have to make sure this is the first time it is imported,
 	# as we need the runner to be set correctly for the
 	# default value of runner for Job
