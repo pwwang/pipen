@@ -1,6 +1,6 @@
 """PyPPL - A Python PiPeLine framework."""
 
-__version__ = "3.0.0"
+__version__ = "3.0.1"
 
 from .config import load_config
 from .plugin import config_plugins
