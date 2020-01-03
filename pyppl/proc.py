@@ -273,43 +273,49 @@ class Proc:
 		self._post_run()
 
 	def _post_run(self):
+		jobs = {}
+
+		for job in (self.jobs or []): # pylint: disable=not-an-iterable
+			jobs.setdefault(job.state, []).append(job.index)
+
+		(logger.P_DONE, logger.CACHED)[int(
+			len(jobs.get(STATES.DONECACHED, [])) == self.size and self.size > 0
+		)]('Jobs [Cached: %s, Succ: %s, B.Fail: %s, S.Fail: %s, R.Fail: %s]',
+			len(jobs.get(STATES.DONECACHED, [])),
+			len(jobs.get(STATES.DONE, [])),
+			len(jobs.get(STATES.BUILTFAILED, [])),
+			len(jobs.get(STATES.SUBMITFAILED, [])),
+			len(jobs.get(STATES.ENDFAILED, [])),
+			proc = self.id)
+
+		logger.debug('Cached: %s', brief_list(jobs.get(STATES.DONECACHED, []), 1),
+			proc = self.id)
+		logger.debug('Succeeded: %s', brief_list(jobs.get(STATES.DONE, []), 1),
+			proc = self.id)
+		if STATES.BUILTFAILED in jobs:
+			logger.error('Building failed: %s', brief_list(jobs[STATES.BUILTFAILED], 1),
+				proc = self.id)
+		if STATES.SUBMITFAILED in jobs:
+			logger.error('Submission failed: %s', brief_list(jobs[STATES.SUBMITFAILED], 1),
+				proc = self.id)
+		if STATES.ENDFAILED in jobs:
+			logger.error('Running failed: %s', brief_list(jobs[STATES.ENDFAILED], 1),
+				proc = self.id)
+
+		donejobs = jobs.get(STATES.DONE, []) + jobs.get(STATES.DONECACHED, [])
+		if len(donejobs) < self.size and self.errhow != 'ignore':
+			pluginmgr.hook.proc_postrun(proc = self, status = 'failed')
+			sys.exit(1)
+
+
+		pluginmgr.hook.proc_postrun(
+			proc = self,
+			status = 'cached' \
+				if jobs and len(jobs.get(STATES.DONECACHED, [])) == self.size \
+				else 'succeeded')
+
 		if self.jobs:
-			jobs = {}
-
-			for job in self.jobs: # pylint: disable=not-an-iterable
-				jobs.setdefault(job.state, []).append(job.index)
-
-			(logger.P_DONE, logger.CACHED)[int(
-				len(jobs.get(STATES.DONECACHED, [])) == self.size and self.size > 0
-			)]('Jobs [Cached: %s, Succ: %s, B.Fail: %s, S.Fail: %s, R.Fail: %s]',
-				len(jobs.get(STATES.DONECACHED, [])),
-				len(jobs.get(STATES.DONE, [])),
-				len(jobs.get(STATES.BUILTFAILED, [])),
-				len(jobs.get(STATES.SUBMITFAILED, [])),
-				len(jobs.get(STATES.ENDFAILED, [])),
-				proc = self.id)
-
-			logger.debug('Cached: %s', brief_list(jobs.get(STATES.DONECACHED, []), 1),
-				proc = self.id)
-			logger.debug('Succeeded: %s', brief_list(jobs.get(STATES.DONE, []), 1),
-				proc = self.id)
-			if STATES.BUILTFAILED in jobs:
-				logger.error('Building failed: %s', brief_list(jobs[STATES.BUILTFAILED], 1),
-					proc = self.id)
-			if STATES.SUBMITFAILED in jobs:
-				logger.error('Submission failed: %s', brief_list(jobs[STATES.SUBMITFAILED], 1),
-					proc = self.id)
-			if STATES.ENDFAILED in jobs:
-				logger.error('Running failed: %s', brief_list(jobs[STATES.ENDFAILED], 1),
-					proc = self.id)
-
-			donejobs = jobs.get(STATES.DONE, []) + jobs.get(STATES.DONECACHED, [])
-			if len(donejobs) < self.size and self.errhow != 'ignore':
-				pluginmgr.hook.proc_postrun(proc = self, status = 'failed')
-				sys.exit(1)
-
-		pluginmgr.hook.proc_postrun(proc = self, status = 'succeeded')
-		del self.jobs[:] # pylint: disable=unsupported-delete-operation
+			del self.jobs[:]
 
 	def _save_settings(self):
 		def stringify(conf):
@@ -352,9 +358,13 @@ class Proc:
 		raw_attrs = {key: try_deepcopy(value) \
 			for key, value in self.__attrs_property_raw__.items()
 			if key not in (
-				'id', 'channel', 'jobs', 'runtime_config', 'depends', 'nexts')}
+				'input', 'id', 'channel', 'jobs', 'runtime_config', 'depends', 'nexts')}
 		# attr.ib not in __attrs_property_raw__
 		raw_attrs.update({
+			# only keep the keys of input
+			'input'  : ','.join(self._input) if isinstance(self._input, list) \
+				else ','.join(self._input.keys()) if isinstance(self._input, dict) \
+				else self._input,
 			'desc'   : self.desc,
 			'envs'   : try_deepcopy(self.envs),
 			'nthread': self.nthread,

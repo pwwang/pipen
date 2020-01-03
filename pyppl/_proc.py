@@ -264,6 +264,7 @@ def proc_input(this, value): # pylint: disable=too-many-locals,too-many-branches
 def proc_output(this, value):
 	"""Parse the output for jobs to easily access it"""
 	# ['a:{{i.invar}}', 'b:file:{{i.infile|fn}}']
+	output = value
 	if isinstance(value, (list, str)):
 		outlist = list(filter(None, always_list(value)))
 		output  = OrderedDiot()

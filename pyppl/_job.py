@@ -312,8 +312,7 @@ def job_script_parts(this, value):
 	realsfile = this.dir / 'job.script'
 	if fs.isfile(realsfile) and realsfile.read_text() != script:
 		fs.move(realsfile, this.dir / 'job.script._bak')
-		this.logger("Script file updated: %s" % realsfile,
-			slevel = 'SCRIPT_EXISTS', level = 'debug')
+		this.logger('Script updated: ' + str(realsfile), slevel = 'SCRIPT_UPDATED', level = 'debug')
 		realsfile.write_text(script)
 	elif not fs.isfile(realsfile):
 		realsfile.write_text(script)

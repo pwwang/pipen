@@ -1,4 +1,5 @@
 """Job for PyPPL"""
+from datetime import datetime
 import attr
 import toml
 from attr_property import attr_property_class, attr_property
@@ -166,8 +167,10 @@ class Job:
 			sig_old = Diot(toml.load(fcache))
 		# time is easy to check, check it first
 		if sig_now.mtime > sig_old.mtime:
-			self.logger('Input or script has been modified.',
-						slevel = "CACHE_INPUT_MODIFIED", level = 'debug')
+			self.logger('Input or script has been modified (mtime: {} -> {})'.format(
+							datetime.fromtimestamp(sig_old.mtime),
+							datetime.fromtimestamp(sig_now.mtime),
+						), slevel = "CACHE_INPUT_MODIFIED", level = 'debug')
 			return False
 
 		# check items

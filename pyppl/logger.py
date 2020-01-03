@@ -124,7 +124,7 @@ SUBLEVELS = {
 	'SUBMISSION_FAIL'           : -3,
 	'OUTFILE_NOT_EXISTS'        : -1,
 	'OUTDIR_CREATED_AFTER_RESET': -1,
-	'SCRIPT_EXISTS'             : -2,
+	'SCRIPT_UPDATED'            : -2,
 	'JOB_RESETTING'             : -1,
 }
 
