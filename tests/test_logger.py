@@ -144,7 +144,7 @@ def test_stream_filter():
 		msg     = "This is logging record1.",
 		mylevel = "INFO",
 		proc    = 'pProc',
-		slevel  = 'SCRIPT_EXISTS'
+		slevel  = 'SCRIPT_UPDATED'
 	))
 	assert sfilter.filter(record)
 	assert sfilter.filter(record)
@@ -154,7 +154,7 @@ def test_stream_filter():
 	record = logging.makeLogRecord(dict(
 		msg     = "This is logging record1.",
 		mylevel = "INFO",
-		slevel  = 'SCRIPT_EXISTS'
+		slevel  = 'SCRIPT_UPDATED'
 	))
 	assert not sfilter.filter(record)
 
