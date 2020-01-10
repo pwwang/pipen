@@ -263,11 +263,17 @@ class Jobmgr:
 			for rjob in running_jobs:
 				killq.put(rjob)
 
-			ThreadPool(
-				min(len(running_jobs), self.proc.nthread),
-				initializer = self.kill_worker,
-				initargs    = killq
-			).join()
+			try:
+				ThreadPool(
+					min(len(running_jobs), self.proc.nthread),
+					initializer = self.kill_worker,
+					initargs    = killq
+				).join()
+			# not enough resources to start the queue
+			except (RuntimeError, BlockingIOError): # pragma: no cover
+				logger.warning(
+					'Not enough resources (probably jobs with too many threads) '
+					'to kill jobs, skip.')
 
 			pluginmgr.hook.proc_postrun(proc = self.proc, status = 'failed')
 			#random.choice(failed_jobs or running_jobs or self.jobs).showError(len(failed_jobs))
@@ -322,12 +328,21 @@ class Jobmgr:
 				job.trigger_build(batch = batch)
 			elif job.state in (STATES.BUILT, STATES.RETRYING):
 				with self.lock:
-					if len(self._get_jobs_by_states(
-						STATES.RUNNING, STATES.SUBMITTING)) < self.proc.forks:
-						job.trigger_submit(batch = batch)
+					if len(
+						self._get_jobs_by_states(
+						STATES.RUNNING, STATES.SUBMITTING)
+					) < self.proc.forks:
+						try:
+							job.trigger_submit(batch = batch)
+						except (RuntimeError, BlockingIOError) as rbex: # pragma: no cover
+							if ("can't start new thread" not in str(rbex) and
+								"Resource temporarily unavailable" not in str(rbex)):
+								raise
+							# wait longer for heavy multithreading jobs
+							sleep(5)
 				# if we successfully submitted
 				if job.state in (STATES.BUILT, STATES.RETRYING):
-					sleep(.5)
+					sleep(1)
 					# put the job back to the queue
 					self.queue.put_next(index, batch)
 			elif job.state == STATES.RUNNING:

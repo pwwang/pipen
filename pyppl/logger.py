@@ -219,15 +219,19 @@ class StreamFormatter(logging.Formatter):
 				record.tails.append(rec)
 
 		record.msg = ' {COLOR}{LEVEL}{RESET_ALL}] {COLOR}{PROC}{JOBS}{MSG}{RESET_ALL}'.format(
-			COLOR     = self.theme.get_color(level),
-			LEVEL     = level.rjust(7),
+			COLOR = self.theme.get_color(level),
+			LEVEL = level.rjust(7),
 			RESET_ALL = colorama.Style.RESET_ALL,
-			PROC      = record.proc + ': ' \
-				if hasattr(record, 'proc') and record.proc else '',
-			MSG       = record.msg,
-			JOBS      = '' if record.jobidx is None else '[{ji}/{jt}] '.format(
-				ji = str(record.jobidx + 1).zfill(len(str(record.joblen))),
-				jt = record.joblen)
+			PROC = record.proc + ': ' \
+						if hasattr(record, 'proc') and record.proc \
+						else '',
+			MSG = record.msg,
+			JOBS = '' \
+				   if record.jobidx is None \
+				   else '[{ji}/{jt}] '.format(
+					   ji = str(record.jobidx + 1).zfill(len(str(record.joblen))),
+					   jt = record.joblen
+				   )
 		)
 		setattr(record, 'formatted', logging.Formatter.format(self, record))
 		return record.formatted
@@ -261,7 +265,12 @@ class StreamHandler(logging.StreamHandler):
 		else:
 			pbarlog = StreamHandler.DATA['prevbar']
 			if pbarlog:
-				self.stream.write(' ' * len(pbarlog.formatted) + '\r')
+				formatted = re.sub(
+					r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])',
+					'',
+					pbarlog.formatted
+				)
+				self.stream.write(' ' * len(formatted) + '\r')
 
 			self._emit(record, '\n')
 			if hasattr(record, 'tails'):

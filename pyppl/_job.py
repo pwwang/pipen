@@ -227,9 +227,10 @@ def job_rc_setter(this, value):
 
 def job_rc_getter(this, value):
 	"""Try to read the returncode from job.rc file"""
-	if not fs.isfile(this.dir / 'job.rc'):
+	rcfile = this.dir / 'job.rc'
+	if not fs.isfile(rcfile):
 		return RC_NO_RCFILE
-	with (this.dir / 'job.rc').open('r') as frc:
+	with rcfile.open('r') as frc:
 		returncode = frc.read().strip()
 		if not returncode or returncode == 'None':
 			return RC_NO_RCFILE
