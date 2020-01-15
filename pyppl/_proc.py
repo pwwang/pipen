@@ -130,7 +130,8 @@ def proc_runner(this, value):
 	config_to_look_for = this.runtime_config or config
 	if isinstance(value, str):
 		try:
-			with config_to_look_for._with(profile = value, raise_exc = True) as rconfig:
+			with config_to_look_for._with(profile=value,
+										  raise_exc=True) as rconfig:
 				value = rconfig.get('runner', {})
 		except NoSuchProfile:
 			pass
@@ -147,7 +148,10 @@ def proc_runner(this, value):
 
 	if 'runner' not in runner_config:
 		runner_config.runner = 'local'
-	return runner_config
+
+	ret = this._runner or {}
+	ret.update(runner_config)
+	return ret
 
 def proc_depends_setter(this, value):
 	"""Try to convert all possible dependencies to processes"""
@@ -282,9 +286,10 @@ def proc_output(this, value):
 			output[':'.join(outparts[:-1])] = outparts[-1]
 	elif not (isinstance(value, OrderedDiot) or (
 		isinstance(value, dict) and len(value) == 1)):
-		raise ProcessOutputError(type(value).__name__,
-			'Process output type should be one of list/str/OrderedDiot, '
-			'or dict with len=1, not')
+		raise ProcessOutputError(
+			'%s: Process output type should be one of list/str/OrderedDiot, '
+			'or dict with len=1, but get %s' % (this.id, type(value).__name__)
+		)
 
 	# output => {'a': '{{i.invar}}', 'b:file': '{{i.infile | fn}}'}
 	ret = OrderedDiot()

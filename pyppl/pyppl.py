@@ -42,7 +42,8 @@ def _register_proc(proc):
 	"""Register process into the pool"""
 	for registered_proc in PROCESSES:
 		if registered_proc.name == proc.name and registered_proc is not proc:
-			raise ProcessAlreadyRegistered(proc1 = registered_proc, proc2 = proc)
+			raise ProcessAlreadyRegistered(proc1=registered_proc,
+										   proc2=proc) from None
 	PROCESSES.add(proc)
 
 def _get_next_procs(procs):

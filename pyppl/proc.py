@@ -72,7 +72,11 @@ class Proc:
 	# Save the definitions to indicate you when you have 2
 	# processes with the same id and tag defined
 	_defs = attr.ib(
-		default = attr.Factory(lambda: traceback.format_stack()[-3]),
+		default = attr.Factory(
+			lambda: (stack
+					 for stack in traceback.format_stack()[:-3]
+					 if '<frozen importlib' not in stack)
+		),
 		init    = False,
 		repr    = False)
 	# the dependencies of the process

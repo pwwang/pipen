@@ -47,9 +47,9 @@ class ProcessAlreadyRegistered(Exception):
 				"There are two processes with id({}) and tag({})".format(proc1.id, proc1.tag),
 				"",
 				">>> One is defined here:",
-				proc1._defs,
+				''.join(defs for defs in proc1._defs),
 				">>> The other is defined here:",
-				proc2._defs
+				''.join(defs for defs in proc2._defs)
 			])
 		super().__init__(message)
 
