@@ -1,3 +1,11 @@
+# 3.0.2 (2020.1.15)
+- Add status for plugin API proc_postrun
+- Copy input keys while copying a process
+- Fix extra empty lines in log
+- Add check for threading resource availablility
+- Add full traceback for proc definition
+- Fix default runner config not loaded if running with different runner profile
+
 # 3.0.1 (2019.12.31)
 - Fix job.data.i.x not pointing to files in `<indir>`
 - Remove unnecessary job attribute from building `__eq__`
