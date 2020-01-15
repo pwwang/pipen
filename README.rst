@@ -26,12 +26,12 @@
    :target: https://img.shields.io/travis/pwwang/PyPPL.svg?style=flat-square
    :alt: Travis building
  <https://travis-ci.org/pwwang/PyPPL>`_ `
-.. image:: https://img.shields.io/codacy/grade/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
-   :target: https://img.shields.io/codacy/grade/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
+.. image:: https://img.shields.io/codacy/grade/30db7165ed6c4d7aa3261cd1f5530813.svg?style=flat-square
+   :target: https://img.shields.io/codacy/grade/30db7165ed6c4d7aa3261cd1f5530813.svg?style=flat-square
    :alt: Codacy
  <https://app.codacy.com/project/pwwang/PyPPL/dashboard>`_ `
-.. image:: https://img.shields.io/codacy/coverage/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
-   :target: https://img.shields.io/codacy/coverage/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
+.. image:: https://img.shields.io/codacy/coverage/30db7165ed6c4d7aa3261cd1f5530813.svg?style=flat-square
+   :target: https://img.shields.io/codacy/coverage/30db7165ed6c4d7aa3261cd1f5530813.svg?style=flat-square
    :alt: Codacy coverage
  <https://app.codacy.com/project/pwwang/PyPPL/dashboard>`_
 
