@@ -176,9 +176,9 @@ PyPPL().start(pPyClone).run().report('/path/to/report', title = 'Clonality analy
 [1]: https://pyppl.readthedocs.io/en/latest/
 [2]: https://pyppl.readthedocs.io/en/latest/api/
 [3]: https://github.com/pwwang/pyppl/
-[4]: https://img.shields.io/codacy/grade/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
+[4]: https://img.shields.io/codacy/grade/30db7165ed6c4d7aa3261cd1f5530813.svg?style=flat-square
 [5]: https://img.shields.io/travis/pwwang/PyPPL.svg?style=flat-square
-[6]: https://img.shields.io/codacy/coverage/a04aac445f384a8dbe47da19c779763f.svg?style=flat-square
+[6]: https://img.shields.io/codacy/coverage/30db7165ed6c4d7aa3261cd1f5530813.svg?style=flat-square
 [7]: https://travis-ci.org/pwwang/PyPPL
 [8]: https://app.codacy.com/project/pwwang/PyPPL/dashboard
 [9]: https://pyppl.readthedocs.io/en/latest/CHANGELOG/

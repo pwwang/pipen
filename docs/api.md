@@ -98,27 +98,38 @@
 
 			- `**kwargs`:  Other arguments to instantiate a `ProcSet`
 
-			  depends (bool): Whether auto deduce depends. Default: `True`
+			    depends (bool): Whether auto deduce depends.
 
-			  id (str): The id of the procset. Default: `None` (the variable name)
+			        Default: `True`
 
-			  tag (str): The tag of the processes. Default: `None`
+			    id (str): The id of the procset.
 
-			  copy (bool): Whether copy the processes or just use them. Default: `True`
+			        Default: `None` (the variable name)
+
+			    tag (str): The tag of the processes. Default: `None`
+
+			    copy (bool): Whether copy the processes or just use them.
+
+			        Default: `True`
 
 	!!! abstract "method: `copy(self, id, tag, depends)`"
 
-		Like `proc`'s `copy` function, copy a procset. Each processes will be copied.
+		Like `proc`'s `copy` function, copy a procset.
+		Each processes will be copied.
 
 		- **params**
 
-			- `id (str)`:  Use a different id if you don't want to use the variant name
+			- `id (str)`:  Use a different id if you don't
+
+			    want to use the variant name
 
 			- `tag (str)`:  The new tag of all copied processes
 
-			- `depends (bool)`:  Whether to copy the dependencies or not. Default: True
+			- `depends (bool)`:  Whether to copy the dependencies or not.
 
-			  - dependences for processes in starts will not be copied
+			    Default: True
+
+			    - dependences for processes in starts will not be copied
 
 		- **returns**
 
@@ -132,7 +143,7 @@
 
 			- `*procs (str|Proc)`:  The first argument is the name of the attributes.
 
-			  - The rest of them should be `Proc`s or `Proc` selectors.
+			    - The rest of them should be `Proc`s or `Proc` selectors.
 
 	!!! abstract "method: `delegated(self, name)`"
 
@@ -152,7 +163,9 @@
 
 		- **params**
 
-			- `name (callable|str)`:  The function to be decorated or the name of the module.
+			- `name (callable|str)`:  The function to be decorated or
+
+			    the name of the module.
 
 		- **returns**
 
@@ -198,13 +211,13 @@
 
 			- `converter (callable)`:  The converter function for the value
 
-			- `runtime (str)`:  How should we deal with it while         runtime_config is passed and its setcounter > 1
+			- `runtime (str)`:  How should we deal with it while                 runtime_config is passed and its setcounter > 1
 
-			  - override: Override the value
+			    - override: Override the value
 
-			  - update: Update the value if it's a dict otherwise override its
+			    - update: Update the value if it's a dict otherwise override its
 
-			  - ignore: Ignore the value from runtime_config
+			    - ignore: Ignore the value from runtime_config
 
 	!!! abstract "method: `copy(self, id, **kwargs)`"
 
@@ -312,7 +325,8 @@
 !!! abstract "method: `funcsig(func)`"
 
 	Get the signature of a function
-	Try to get the source first, if failed, try to get its name, otherwise return None
+	Try to get the source first, if failed, try to get its name,
+	otherwise return None
 
 	- **params**
 
@@ -356,12 +370,12 @@
 	!!! abstract "method: `__init__(self, maxsize, batch_len)`"
 
 		A Priority Queue for PyPPL jobs
-		  0                              0 done,             wait for 1
-		    1        start 0    1        start 1             start 2
-		    2      ------>  0   2      ------>      2      --------->
-		      3                   3               1   3                    3
-		      4                   4                   4                2   4
-		                                   1
+		    0                             0 done,           wait for 1
+		      1       start 0    1        start 1           start 2
+		        2     ------>  0   2      ------>    2      --------->
+		          3                  3             1   3                    3
+		            4                  4                 4                2   4
+		                                                                1
 
 		- **params**
 
@@ -456,7 +470,7 @@
 
 			- `name (str)`:  The name of the config.
 
-			  To proptect your config, better use a prefix
+			    To proptect your config, better use a prefix
 
 			- `default (Any)`:  The default value for the config
 
@@ -494,7 +508,9 @@
 
 		- **returns**
 
-			- `(bool|str)`:  `True/False` if rcfile generared and whether job succeeds,         otherwise returns `running`.
+			- `(bool|str)`:  `True/False` if rcfile generared and
+
+			    whether job succeeds, otherwise returns `running`.
 
 	!!! abstract "method: `reset(self)`"
 
@@ -506,7 +522,7 @@
 
 		- **returns**
 
-			- `(bool|str)`:  `ignore` if `errhow` is `ignore`, otherwise         returns whether we could submit the job to retry.
+			- `(bool|str)`:  `ignore` if `errhow` is `ignore`, otherwise                 returns whether we could submit the job to retry.
 
 	!!! abstract "method: `submit(self)`"
 
@@ -551,9 +567,9 @@
 
 			- `**kwconfigs`:  flattened runtime configurations, for example
 
-			  - you can do: `PyPPL(forks = 10)`, or even
+			    - you can do: `PyPPL(forks = 10)`, or even
 
-			  - `PyPPL(logger_level = 'debug')`
+			    - `PyPPL(logger_level = 'debug')`
 
 	!!! abstract "method: `add_method(self, func, require)`"
 
@@ -581,9 +597,9 @@
 
 			- `*anything`:  Anything that can be converted to processes
 
-			  - Could be a string or a wildcard to search for processes
+			    - Could be a string or a wildcard to search for processes
 
-			  - or the process itself
+			    - or the process itself
 ## pyppl.channel
 
 
@@ -605,9 +621,11 @@
 
 			- `*names (str)`:  The names. Have to be as length as channel's width.
 
-			  None of them should be Channel's property name
+			    None of them should be Channel's property name
 
-			- `flatten (bool)`:  Whether flatten the channel for the name being attached
+			- `flatten (bool)`:  Whether flatten the channel for
+
+			    the name being attached
 
 	!!! abstract "method: `cbind(self, *cols)`"
 
@@ -681,7 +699,8 @@
 
 	!!! abstract "method: `expand(self, col, pattern, ftype, sortby, reverse)`"
 
-		expand the Channel according to the files in <col>, other cols will keep the same
+		expand the Channel according to the files in <col>,
+		other cols will keep the same
 		`[(dir1/dir2, 1)].expand (0, "*")` will expand to
 		`[(dir1/dir2/file1, 1), (dir1/dir2/file2, 1), ...]`
 		length: 1 -> N
@@ -813,9 +832,11 @@
 
 			- `filename (file)`:  the file
 
-			- `header (bool)`:   Whether the file contains header. If True, will attach the header
+			- `header (bool)`:   Whether the file contains header.
 
-			  - So you can use `channel.<header>` to fetch the column
+			    If True, will attach the header
+
+			    - So you can use `channel.<header>` to fetch the column
 
 			- `skip (int)`:  first lines to skip, default: `0`
 
@@ -903,9 +924,11 @@
 
 			- `filename (file)`:  the file
 
-			- `header (bool)`:   Whether the file contains header. If True, will attach the header
+			- `header (bool)`:   Whether the file contains header.
 
-			  - So you can use `channel.<header>` to fetch the column
+			    If True, will attach the header
+
+			    - So you can use `channel.<header>` to fetch the column
 
 			- `skip (int)`:  first lines to skip, default: `0`
 
@@ -1182,7 +1205,9 @@
 
 			- `start (int)`:   from column to start
 
-			- `length (int)`:  how many columns to fetch, default: None (from start to the end)
+			- `length (int)`:  how many columns to fetch,
+
+			    default: None (from start to the end)
 
 		- **returns**
 
@@ -1313,7 +1338,8 @@
 
 !!! example "class: `PyPPLNameError`"
 
-	Pipeline name duplicated after transformed by utils.name2filename
+	Pipeline name duplicated after transformed
+	    by utils.name2filename
 
 !!! example "class: `PyPPLResumeError`"
 
@@ -1347,7 +1373,9 @@
 
 	- `DEFAULT_CONFIG (dict)`:  default configurations to be loaded
 
-	- `config (dict)`:  The default configuration that will be used in the whole session
+	- `config (dict)`:  The default configuration that will be
+
+	    used in the whole session
 
 !!! abstract "method: `load_config(default_config, *config_files)`"
 
@@ -1355,7 +1383,9 @@
 
 	- **params**
 
-		- `default_config (dict|path)`:  A configuration dictionary or a path to a configuration file
+		- `default_config (dict|path)`:  A configuration dictionary or
+
+		      a path to a configuration file
 
 		- `*config_files`:  A list of configuration or configuration files
 ## pyppl.jobmgr
@@ -1460,7 +1490,7 @@
 
 		- `*plugins ([any])`:  The plugins
 
-		  plugins with 'no:' will be disabled.
+		    plugins with 'no:' will be disabled.
 
 !!! abstract "method: `disable_plugin(plugin)`"
 
@@ -1481,11 +1511,11 @@
 
 		- `status (str)`:  The status of the job building
 
-		  - True: The job is successfully built
+		    - True: The job is successfully built
 
-		  - False: The job is failed to build
+		    - False: The job is failed to build
 
-		  - cached: The job is cached
+		    - cached: The job is cached
 
 !!! abstract "method: `job_done(job, status)`"
 
@@ -1498,11 +1528,11 @@
 
 		- `status (str)`:  The status of the job
 
-		  - succeeded: The job is successfully done
+		    - succeeded: The job is successfully done
 
-		  - failed: The job is failed
+		    - failed: The job is failed
 
-		  - cached: The job is cached
+		    - cached: The job is cached
 
 !!! abstract "method: `job_init(job)`"
 
@@ -1524,9 +1554,9 @@
 
 		- `status (str)`:  The status of the job killing
 
-		  - 'succeeded': The job is successfully killed
+		    - 'succeeded': The job is successfully killed
 
-		  - 'failed': The job is failed to kill
+		    - 'failed': The job is failed to kill
 
 !!! abstract "method: `job_poll(job, status)`"
 
@@ -1539,9 +1569,9 @@
 
 		- `status (str)`:  The status of the job
 
-		  - 'running': The job is still running
+		    - 'running': The job is still running
 
-		  - 'done': Polling is done, rcfile is generated
+		    - 'done': Polling is done, rcfile is generated
 
 !!! abstract "method: `job_prebuild(job)`"
 
@@ -1563,11 +1593,11 @@
 
 		- `status (str)`:  The status of the job submission
 
-		  - 'succeeded': The job is successfully submitted
+		    - 'succeeded': The job is successfully submitted
 
-		  - 'failed': The job is failed to submit
+		    - 'failed': The job is failed to submit
 
-		  - 'running': The job is already running
+		    - 'running': The job is already running
 
 !!! abstract "method: `job_succeeded(job)`"
 
@@ -1686,15 +1716,25 @@
 
 			- `default (any)`:  The default value
 
-			- `converter (callable)`:  The converter to convert the value whenever the value is set.
+			- `converter (callable)`:  The converter to convert the value
 
-			- `update (str)`:  With setcounter > 1, should we update the value or ignore it in .update()?
+			    whenever the value is set.
 
-			  - You can set plugin_config_check_update to False with .update to disable this
+			- `update (str)`:  With setcounter > 1,
 
-			  - Could be ignore (don't update), replace (replace the whole value, even it is a
+			    should we update the value or ignore it in .update()?
 
-			    dictionary) or update (replace the non-dict value and update dictionary values)
+			    - You can set plugin_config_check_update to False with
+
+			        .update to disable this
+
+			    - Could be ignore (don't update),
+
+			        replace (replace the whole value, even it is a
+
+			      dictionary) or update
+
+			        (replace the non-dict value and update dictionary values)
 
 	!!! abstract "method: `update(self, *args, **kwargs)`"
 
@@ -1794,7 +1834,7 @@
 
 			- `level (str)`:  The log level name
 
-			  Make sure it's less than 7 characters
+			    Make sure it's less than 7 characters
 
 			- `group (str)`:  The group the level is to be added
 
@@ -1807,7 +1847,7 @@
 
 			- `lines (int)`:  The number of lines allowed for the debug level
 
-			  - Negative value means a summary will be printed
+			    - Negative value means a summary will be printed
 
 	!!! abstract "method: `bake(self, **kwargs)`"
 
