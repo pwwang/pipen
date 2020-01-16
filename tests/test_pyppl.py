@@ -137,7 +137,8 @@ def test_start(caplog):
     caplog.clear()
     # start process depending on others
     ppl = PyPPL().start(pStart2)
-    assert "Start process Proc(name='pStart2.notag') is depending on others: [Proc(name='pStart1.notag')]" in caplog.text
+    assert "Start process 'pStart2.notag' ignored, as it's depending on:" in caplog.text
+    assert "[Proc(name='pStart1.notag')]" in caplog.text
 
 
 def test_start_nonstart_dependencies(caplog):
@@ -171,11 +172,13 @@ def test_start_cyclic_dependencies(caplog):
     pStart31.depends = pStart32
     caplog.clear()
     ppl = PyPPL().start(pStart31)
-    assert "Start process Proc(name='pStart31.notag') is depending on others: [Proc(name='pStart32.notag')]" in caplog.text
+    assert "Start process 'pStart31.notag' ignored, as it's depending on:" in caplog.text
+    assert "[Proc(name='pStart32.notag')]" in caplog.text
 
     caplog.clear()
     ppl = PyPPL().start(pStart31, pStart32)
-    assert "Start process Proc(name='pStart31.notag') is depending on others: [Proc(name='pStart32.notag')]" in caplog.text
+    assert "Start process 'pStart31.notag' ignored, as it's depending on:" in caplog.text
+    assert "[Proc(name='pStart32.notag')]" in caplog.text
 
 
 def test_run(caplog, tmp_path):

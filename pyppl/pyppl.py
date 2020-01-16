@@ -95,35 +95,18 @@ def _anything2procs(*anything, procset='starts'):
 def _logo():
     from . import __version__
     logger.pyppl('+' + r'-' * (SEPARATOR_LEN - 2) + '+')
-    logger.pyppl('|' + r''.center(SEPARATOR_LEN - 2) + '|')
-    logger.pyppl(
-        '|' +
-        r'________        ______________________ '.center(SEPARATOR_LEN - 2) +
-        '|')
-    logger.pyppl(
-        '|' +
-        r'___  __ \____  ____  __ \__  __ \__  / '.center(SEPARATOR_LEN - 2) +
-        '|')
-    logger.pyppl(
-        '|' +
-        r'__  /_/ /_  / / /_  /_/ /_  /_/ /_  /  '.center(SEPARATOR_LEN - 2) +
-        '|')
-    logger.pyppl(
-        '|' +
-        r'_  ____/_  /_/ /_  ____/_  ____/_  /___'.center(SEPARATOR_LEN - 2) +
-        '|')
-    logger.pyppl(
-        '|' +
-        r'/_/     _\__, / /_/     /_/     /_____/'.center(SEPARATOR_LEN - 2) +
-        '|')
-    logger.pyppl(
-        '|' +
-        r'        /____/                         '.center(SEPARATOR_LEN - 2) +
-        '|')
-    logger.pyppl('|' + r''.center(SEPARATOR_LEN - 2) + '|')
-    logger.pyppl('|' + r'v{}'.format(__version__).center(SEPARATOR_LEN - 2) +
-                 '|')
-    logger.pyppl('|' + r''.center(SEPARATOR_LEN - 2) + '|')
+    for logo_line in (r'',
+                      r'________        ______________________ ',
+                      r'___  __ \____  ____  __ \__  __ \__  / ',
+                      r'__  /_/ /_  / / /_  /_/ /_  /_/ /_  /  ',
+                      r'_  ____/_  /_/ /_  ____/_  ____/_  /___',
+                      r'/_/     _\__, / /_/     /_/     /_____/',
+                      r'        /____/                         ',
+                      r'',
+                      r'v{}'.format(__version__),
+                      r''):
+        logger.pyppl('|%s|' % logo_line.center(SEPARATOR_LEN - 2))
+
     logger.pyppl('+' + r'-' * (SEPARATOR_LEN - 2) + '+')
 
     logger.tips(random.choice(TIPS))
@@ -323,10 +306,11 @@ class PyPPL:
         # Let's check if start process depending on others
         for start in starts:
             if start.depends:
-                logger.warning('Start process %r is depending on others: %r, '
-                               'will be ignored.',
-                               start,
-                               start.depends)
+                logger.warning(
+                    "Start process %r ignored, as it's depending on:",
+                    start.name
+                )
+                logger.warning('  %s' % start.depends)
             else:
                 self.starts.append(start)
 
