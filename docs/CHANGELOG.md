@@ -1,3 +1,8 @@
+# 3.0.3 (2020.1.22)
+- Make better alignment in runner script file
+- Refine "pyppl profile" command
+- Add force cache mode
+
 # 3.0.2 (2020.1.15)
 - Add status for plugin API proc_postrun
 - Copy input keys while copying a process
