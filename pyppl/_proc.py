@@ -142,7 +142,8 @@ def proc_runner(this, value):
     if isinstance(value, str):
         try:
             with config_to_look_for._with(profile=value,
-                                          raise_exc=True) as rconfig:
+                                          raise_exc=True,
+                                          copy=True) as rconfig:
                 value = rconfig.get('runner', {})
         except NoSuchProfile:
             pass

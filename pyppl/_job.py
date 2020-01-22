@@ -275,34 +275,41 @@ def job_script(this, value):
 
     # redirect stdout and stderr
     if script_parts.saveoe:
+        redirect_oe = ''' \\
+        1> "$jobdir/job.stdout" \\
+        2> "$jobdir/job.stderr"
+        '''
         if isinstance(script_parts.command, list):
-            script_parts.command[-1] += ' 1> %s 2> %s' % (
-                cmdy._shquote(str(this.dir / 'job.stdout')),
-                cmdy._shquote(str(this.dir / 'job.stderr')))
+            script_parts.command[-1] += redirect_oe
         else:
-            script_parts.command += ' 1> %s 2> %s' % (
-                cmdy._shquote(str(this.dir / 'job.stdout')),
-                cmdy._shquote(str(this.dir / 'job.stderr')))
+            script_parts.command += redirect_oe
 
     src = ['#!/usr/bin/env bash']
     srcappend = src.append
     srcextend = src.extend
-    addsrc = lambda code: (srcextend if isinstance(code, list) else srcappend)(
-        code) if code else None
+    addsrc = lambda code: (None
+                           if code is None
+                           else [srcappend, srcextend][
+                               int(isinstance(code, list))
+                           ](code))
 
     addsrc(script_parts.header)
     addsrc('#')
+    addsrc('jobdir=%r' % str(this.dir))
     addsrc('# Collect return code on exit')
 
-    trapcmd = "status=\\$?; echo \\$status > {!r}; ".format(
-        str(this.dir / 'job.rc'))
+    trapcmd = ['status=\\$?; \\']
+    trapcmd.append('      echo \\$status > \\"$jobdir/job.rc\\"; \\')
     # make sure stdout/err has been created when script exits.
-    trapcmd += "if [ ! -e {0!r} ]; then touch {0!r}; fi; ".format(
-        str(this.dir / 'job.stdout'))
-    trapcmd += "if [ ! -e {0!r} ]; then touch {0!r}; fi; ".format(
-        str(this.dir / 'job.stderr'))
-    trapcmd += "exit \\$status"
-    addsrc('trap "%s" 1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % trapcmd)
+    trapcmd.append('      if [ ! -e \\"$jobdir/job.stdout\\" ]; then \\')
+    trapcmd.append('        touch \\"$jobdir/job.stdout\\"; \\')
+    trapcmd.append('      fi; \\')
+    trapcmd.append('      if [ ! -e \\"$jobdir/job.stderr\\" ]; then \\')
+    trapcmd.append('        touch \\"$jobdir/job.stderr\\"; \\')
+    trapcmd.append('      fi; \\')
+    trapcmd.append('      exit \\$status')
+    addsrc('trap "%s" '
+           '1 2 3 6 7 8 9 10 11 12 15 16 17 EXIT' % '\n'.join(trapcmd))
     addsrc('')
     addsrc('# START pre-script')
     addsrc(script_parts.pre)
@@ -315,6 +322,7 @@ def job_script(this, value):
     addsrc('# START post-script')
     addsrc(script_parts.post)
     addsrc('# END post-script')
+    addsrc('')
 
     scriptfile.write_text('\n'.join(src))
     return chmod_x(scriptfile)

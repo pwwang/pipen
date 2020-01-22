@@ -132,6 +132,10 @@ class Job:
                         level='debug')
             return False
 
+        if self.proc.cache == 'force':
+            self.cache()
+            return True
+
         if not self.dir.joinpath('job.cache').is_file():
             return self._is_cached_without_cachefile()
 

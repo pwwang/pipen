@@ -299,6 +299,7 @@ good-names=i,
            k,
            ex,
            rc,
+           eq,
            Run,
            _
 

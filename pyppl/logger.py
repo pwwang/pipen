@@ -417,7 +417,6 @@ class Logger:
 
         theme = Theme(config.theme)
         levels = init_levels(config.level.upper(), config.leveldiffs)
-
         stream_handler = StreamHandler()
         stream_handler.addFilter(StreamFilter(self.name, levels))
         stream_handler.setFormatter(StreamFormatter(theme))

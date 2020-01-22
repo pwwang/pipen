@@ -95,35 +95,18 @@ def _anything2procs(*anything, procset='starts'):
 def _logo():
     from . import __version__
     logger.pyppl('+' + r'-' * (SEPARATOR_LEN - 2) + '+')
-    logger.pyppl('|' + r''.center(SEPARATOR_LEN - 2) + '|')
-    logger.pyppl(
-        '|' +
-        r'________        ______________________ '.center(SEPARATOR_LEN - 2) +
-        '|')
-    logger.pyppl(
-        '|' +
-        r'___  __ \____  ____  __ \__  __ \__  / '.center(SEPARATOR_LEN - 2) +
-        '|')
-    logger.pyppl(
-        '|' +
-        r'__  /_/ /_  / / /_  /_/ /_  /_/ /_  /  '.center(SEPARATOR_LEN - 2) +
-        '|')
-    logger.pyppl(
-        '|' +
-        r'_  ____/_  /_/ /_  ____/_  ____/_  /___'.center(SEPARATOR_LEN - 2) +
-        '|')
-    logger.pyppl(
-        '|' +
-        r'/_/     _\__, / /_/     /_/     /_____/'.center(SEPARATOR_LEN - 2) +
-        '|')
-    logger.pyppl(
-        '|' +
-        r'        /____/                         '.center(SEPARATOR_LEN - 2) +
-        '|')
-    logger.pyppl('|' + r''.center(SEPARATOR_LEN - 2) + '|')
-    logger.pyppl('|' + r'v{}'.format(__version__).center(SEPARATOR_LEN - 2) +
-                 '|')
-    logger.pyppl('|' + r''.center(SEPARATOR_LEN - 2) + '|')
+    for logo_line in (r'',
+                      r'________        ______________________ ',
+                      r'___  __ \____  ____  __ \__  __ \__  / ',
+                      r'__  /_/ /_  / / /_  /_/ /_  /_/ /_  /  ',
+                      r'_  ____/_  /_/ /_  ____/_  ____/_  /___',
+                      r'/_/     _\__, / /_/     /_/     /_____/',
+                      r'        /____/                         ',
+                      r'',
+                      r'v{}'.format(__version__),
+                      r''):
+        logger.pyppl('|%s|' % logo_line.center(SEPARATOR_LEN - 2))
+
     logger.pyppl('+' + r'-' * (SEPARATOR_LEN - 2) + '+')
 
     logger.tips(random.choice(TIPS))
@@ -257,52 +240,77 @@ class PyPPL:
         @params:
             profile (str): The profile name
         """
-        ret = pluginmgr.hook.pyppl_prerun(ppl=self)
-
         # plugins can stop pipeling being running
-        if ret is not False:
-            with default_config._with(profile=profile,
-                                      base='__nonexist_profile__',
-                                      copy=True) as defconfig:
-                # we should remove the default profile
-                # otherwise, some configs will be overwritten by it again
-                for key, cached in defconfig._protected['cached'].items():
-                    defconfig._protected['cached'][key] = {
-                        k: v
-                        for k, v in cached.items() if k != 'default'
-                    }
-                defconfig._load(self.runtime_config)
-                if profile not in defconfig._profiles:
-                    defconfig._load({profile: dict(runner=profile)})
-                defconfig._use(profile)
-                defconfig.pop('logger', None)
-                defconfig.pop('plugins', None)
-                for proc in self.procs:
-                    # print process name and description
-                    name = proc.name
-                    if proc.origin and proc.origin != proc.id:
-                        name += ' ({})'.format(proc.origin)
-                    name += ': '
-                    lines = textwrap.wrap(name + proc.desc,
-                                          SEPARATOR_LEN,
-                                          subsequent_indent=' ' * len(name))
-                    decorlen = max(SEPARATOR_LEN,
-                                   max(len(line) for line in lines))
-                    logger.process('-' * decorlen)
-                    for line in lines:
-                        logger.process(line)
-                    logger.process('-' * decorlen)
+        if pluginmgr.hook.pyppl_prerun(ppl=self) is False:
+            pluginmgr.hook.pyppl_postrun(ppl=self)
+            return self
 
-                    # print dependencies
-                    logger.depends(
-                        '[%s] => %s => [%s]',
-                        ', '.join(dproc.shortname for dproc in proc.depends) \
-                            if proc.depends else 'START',
-                        proc.name,
-                        ', '.join(nproc.shortname for nproc in proc.nexts) \
-                            if proc.nexts else 'END'
-                    )
-                    proc.run(defconfig)
+        with default_config._with(profile=profile,
+                                  base='__nonexist_profile__',
+                                  copy=True) as defconfig:
+            # we should remove the default profile
+            # otherwise, some configs will be overwritten by it again
+            for key, cached in defconfig._protected['cached'].items():
+                defconfig._protected['cached'][key] = cached.copy()
+                if 'default' in cached:
+                    del defconfig._protected['cached'][key]['default']
+
+            defconfig._load(self.runtime_config)
+            if profile not in defconfig._profiles:
+                defconfig._load({profile: dict(runner=profile)})
+            defconfig._use(profile)
+            defconfig.pop('logger', None)
+            defconfig.pop('plugins', None)
+            for proc in self.procs:
+                # print process name and description
+                name = '%s%s: ' % (
+                    proc.name,
+                    ' (%s)' % proc.origin
+                    if proc.origin and proc.origin != proc.id
+                    else ''
+                )
+
+                logger.process('-' * SEPARATOR_LEN)
+                if len(name + proc.desc) > SEPARATOR_LEN:
+                    logger.process(name)
+                    for i in textwrap.wrap(proc.desc,
+                                           SEPARATOR_LEN,
+                                           initial_indent='  ',
+                                           subsequent_indent='  '):
+                        logger.process(i)
+                else:
+                    logger.process(name + proc.desc)
+
+                logger.process('-' * SEPARATOR_LEN)
+
+                # print dependencies
+                depends = ([dproc.name for dproc in proc.depends]
+                           if proc.depends
+                           else ['START'])
+                nexts = ([nproc.name for nproc in proc.nexts]
+                         if proc.nexts
+                         else ['END'])
+                depmaxlen = max([len(dep) for dep in depends])
+                nxtmaxlen = max([len(nxt) for nxt in nexts])
+                lendiff = len(depends) - len(nexts)
+                lessprocs = depends if lendiff < 0 else nexts
+                lendiff = abs(lendiff)
+                lessprocs.extend([''] * (lendiff - int(lendiff / 2)))
+                for i in range(int(lendiff/2)):
+                    lessprocs.insert(0, '')
+
+                for i in range(len(lessprocs)):
+                    if i == int((len(lessprocs) - 1) / 2):
+                        logger.depends('| %s | => %s => | %s |',
+                                       depends[i].ljust(depmaxlen),
+                                       proc.name,
+                                       nexts[i].ljust(nxtmaxlen))
+                    else:
+                        logger.depends('| %s |    %s    | %s |',
+                                       depends[i].ljust(depmaxlen),
+                                       ' ' * len(proc.name),
+                                       nexts[i].ljust(nxtmaxlen))
+                proc.run(defconfig)
 
         pluginmgr.hook.pyppl_postrun(ppl=self)
         return self
@@ -323,10 +331,11 @@ class PyPPL:
         # Let's check if start process depending on others
         for start in starts:
             if start.depends:
-                logger.warning('Start process %r is depending on others: %r, '
-                               'will be ignored.',
-                               start,
-                               start.depends)
+                logger.warning(
+                    "Start process %r ignored, as it's depending on:",
+                    start.name
+                )
+                logger.warning('  %s' % start.depends)
             else:
                 self.starts.append(start)
 

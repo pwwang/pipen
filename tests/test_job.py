@@ -47,7 +47,10 @@ def test_init(proc_factory, caplog):
     assert job.rc == RC_NO_RCFILE
     assert job.script_parts == {
         'command':
-        ['{0}/job.script 1> {0}/job.stdout 2> {0}/job.stderr'.format(job.dir)],
+        ['{0}/job.script \\\n'.format(job.dir) +
+         '        1> "$jobdir/job.stdout" \\\n'
+         '        2> "$jobdir/job.stderr"\n'
+         '        '],
         'header':
         '',
         'post':
