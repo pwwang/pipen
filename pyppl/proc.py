@@ -230,7 +230,6 @@ class Proc:
         if ret is not False:
             self._save_settings()
             self._run_jobs()
-
         self._post_run()
 
     def _post_run(self):

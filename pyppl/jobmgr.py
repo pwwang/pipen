@@ -105,27 +105,32 @@ class Jobmgr:
             self.queue.put(job.index)
 
         # start building
-        machine.add_transition(trigger='trigger_build',
-                               source=STATES.INIT,
-                               dest={
-                                   'cached': STATES.DONECACHED,
-                                   True: STATES.BUILT,
-                                   False: STATES.BUILTFAILED
-                               },
-                               depends_on='build',
-                               before=lambda event: setattr(
-                                   event.model, 'state', STATES.BUILDING),
-                               after=self._post_event)
+        machine.add_transition(
+            trigger='trigger_build',
+            source=STATES.INIT,
+            dest={
+                'cached': STATES.DONECACHED,
+                True: STATES.BUILT,
+                False: STATES.BUILTFAILED
+            },
+            depends_on='build',
+            before=lambda event: setattr(event.model,
+                                         'state',
+                                         STATES.BUILDING),
+            after=self._post_event
+        )
 
         # do the real submit
-        machine.add_transition(trigger='trigger_submit',
-                               source=[STATES.BUILT, STATES.RETRYING],
-                               dest={
-                                   True: STATES.RUNNING,
-                                   False: STATES.SUBMITFAILED
-                               },
-                               depends_on='submit',
-                               after=self._post_event)
+        machine.add_transition(
+            trigger='trigger_submit',
+            source=[STATES.BUILT, STATES.RETRYING],
+            dest={
+                True: STATES.RUNNING,
+                False: STATES.SUBMITFAILED
+            },
+            depends_on='submit',
+            after=self._post_event
+        )
 
         # try to retry if submission failed or job itself failed
         machine.add_transition(
@@ -138,18 +143,21 @@ class Jobmgr:
             },
             depends_on='retry',
             before=lambda event: sleep(.5),
-            after=self._post_event)
+            after=self._post_event
+        )
 
         # do the poll for the results
-        machine.add_transition(trigger='trigger_poll',
-                               source=STATES.RUNNING,
-                               dest={
-                                   'running': STATES.RUNNING,
-                                   True: STATES.DONE,
-                                   False: STATES.DONEFAILED
-                               },
-                               depends_on='poll',
-                               after=self._post_event)
+        machine.add_transition(
+            trigger='trigger_poll',
+            source=STATES.RUNNING,
+            dest={
+                'running': STATES.RUNNING,
+                True: STATES.DONE,
+                False: STATES.DONEFAILED
+            },
+            depends_on='poll',
+            after=self._post_event
+        )
 
         # killed/failed to kill
         machine.add_transition(
@@ -162,7 +170,8 @@ class Jobmgr:
                 False: STATES.KILLFAILED
             },
             before=lambda event: setattr(event.model, 'state', STATES.KILLING),
-            depends_on='kill')
+            depends_on='kill'
+        )
 
     def start(self):
         """@API
