@@ -289,10 +289,10 @@ class Proc:
             if isinstance(conf, Proc):
                 return conf.name
             if isinstance(conf, dict):
-                return {key: stringify(val) for key, val in conf.items()}
+                return {str(key): stringify(val) for key, val in conf.items()}
             if isinstance(conf, list):
                 return [stringify(val) for val in conf]
-            return conf
+            return str(conf)
 
         with open(self.workdir / 'proc.settings.toml', 'w') as fsettings:
             toml.dump({key: stringify(val)

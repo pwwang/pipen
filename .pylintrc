@@ -300,6 +300,8 @@ good-names=i,
            ex,
            rc,
            eq,
+           do,
+           by,
            Run,
            _
 
