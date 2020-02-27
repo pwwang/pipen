@@ -59,6 +59,9 @@ def filesig(filepath, dirsig=True):
                 mtime2 = getmtime(path.join(root, directory))
                 mtime = max(mtime, mtime2)
             for filename in files:
+                # links to non-existent files
+                if not fs.exists(path.join(root, filename)):
+                    continue
                 mtime2 = getmtime(path.join(root, filename))
                 mtime = max(mtime, mtime2)
     else:
