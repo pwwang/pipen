@@ -14,15 +14,17 @@ from ._proc import (OUT_VARTYPE, OUT_FILETYPE, OUT_DIRTYPE, OUT_STDOUTTYPE,
 RC_NO_RCFILE = 511
 
 
-def _link_infile(orgfile, indir):
+def _link_infile(orgfile, indir, basename=None):
     """
 	Create links for input files
 	@params:
-		`orgfile`: The original input file
+		orgfile (Path): The original input file
+        basename (str): use this basename if provided,
+                        otherwise use the basename of orgfile
 	@returns:
 		The link to the original file.
 	"""
-    infile = indir / orgfile.name
+    infile = indir.joinpath(basename or orgfile.name)
     try:
         fs.link(orgfile, infile, overwrite=False)
     except OSError:
@@ -45,7 +47,7 @@ def _link_infile(orgfile, indir):
         else:
             num = max(num, nexist)
 
-    infile = indir / '[{}]{}'.format(num + 1, orgfile.name)
+    infile = indir / '[{}]{}'.format(num + 1, basename or orgfile.name)
     fs.link(orgfile, infile)
     return infile
 
@@ -82,9 +84,10 @@ def job_input(this, value):  # pylint: disable=too-many-branches
                     'File not exists for input [%s:%s]: %r' %
                     (key, intype, indata))
             else:
-                indata = Path(indata).resolve()
-                infile = _link_infile(indata, this.dir / 'input')
-
+                indata = Path(indata)
+                infile = _link_infile(indata.resolve(),
+                                      this.dir / 'input',
+                                      indata.name)
                 if indata.name != infile.name:
                     this.logger("Input file renamed: %s -> %s" %
                                 (indata.name, infile.name),
@@ -122,8 +125,10 @@ def job_input(this, value):  # pylint: disable=too-many-branches
                         'File not exists as an element of input [%s:%s]: %r' %
                         (key, intype, data))
                 else:
-                    data = Path(data).resolve()
-                    infile = _link_infile(data, this.dir / 'input')
+                    data = Path(data)
+                    infile = _link_infile(data.resolve(),
+                                          this.dir / 'input',
+                                          data.name)
                     if data.name != infile.name:
                         this.logger('Input file renamed: %s -> %s' %
                                     (data.name, infile.name),
