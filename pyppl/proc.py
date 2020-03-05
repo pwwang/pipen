@@ -147,6 +147,7 @@ class Proc:
                            converter=Path,
                            kw_only=True,
                            repr=False,
+                           setter=partial(proc_setter_count, name='ppldir'),
                            converter_runtime=True)
     # name of the procset
     procset = attr_property(setter=False,

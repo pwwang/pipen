@@ -302,6 +302,7 @@ good-names=i,
            eq,
            do,
            by,
+           tf,
            Run,
            _
 

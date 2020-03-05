@@ -35,6 +35,7 @@ def replace_jobmgr():
 def test_init():
     pProcInit = Proc()
     assert pProcInit._setcounter == {
+        'ppldir': 0,
         'cache': 0,
         'id': 1,
         'dirsig': 0,
