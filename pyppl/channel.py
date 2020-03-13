@@ -493,7 +493,7 @@ class Channel(list):  # pylint: disable=too-many-public-methods
         """@API
         Fetch one column of a Channel
         @params:
-            index (int): which column to fetch
+            index (int|list): which column to fetch
         @returns:
             (Channel): The Channel with that column
         """

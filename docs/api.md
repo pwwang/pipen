@@ -645,7 +645,7 @@
 
 		- **params**
 
-			- `index (int)`:  which column to fetch
+			- `index (int|list)`:  which column to fetch
 
 		- **returns**
 
@@ -657,7 +657,7 @@
 
 		- **params**
 
-			- `index (int)`:  which column to fetch
+			- `index (int|list)`:  which column to fetch
 
 		- **returns**
 

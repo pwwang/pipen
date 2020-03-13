@@ -2,6 +2,7 @@
 
 import sys
 import uuid
+import textwrap
 from pathlib import Path
 import cmdy
 from simpleconf import NoSuchProfile
@@ -391,26 +392,11 @@ def proc_script(this, value):
         logger.debug("Using template file: %s", tplfile, proc=this.id)
         value = tplfile.read_text()
 
-    # original lines
-    olines = value.splitlines()
-    # new lines
-    nlines = []
-    indent = ''
-    for line in olines:
-        if '# PYPPL INDENT REMOVE' in line:
-            indent = line[:-len(line.lstrip())]
-        elif '# PYPPL INDENT KEEP' in line:
-            indent = ''
-        elif indent and line.startswith(indent):
-            nlines.append(line[len(indent):])
-        else:
-            nlines.append(line)
+    value = textwrap.dedent(value)
+    if not value.startswith('#!'):
+        value = '#!%s\n\n%s' % (this.lang, value)
 
-    if not nlines or not nlines[0].startswith('#!'):
-        nlines.insert(0, '#!' + this.lang)
-    nlines.append('')
-
-    return this.template('\n'.join(nlines), **this.envs)
+    return this.template(value.rstrip() + '\n', **this.envs)
 
 def proc_template(this, value):
     """Prepare the template"""

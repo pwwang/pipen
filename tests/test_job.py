@@ -206,7 +206,7 @@ def test_script(tmp_path, proc_factory):
 
     job.script
     assert (job.dir / 'job.script'
-            ).read_text() == "#!%s# python script\n" % cmdy.which('bash')
+            ).read_text() == "#!%s\n# python script\n" % cmdy.which('bash')
     assert job.dir.joinpath('job.script.local').is_file()
 
 

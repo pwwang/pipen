@@ -328,21 +328,20 @@ def test_script(caplog, tmp_path):
     with pytest.raises(ProcessScriptError):
         pProcScript.script
 
-    scriptfile.write_text('''# script
-	# PYPPL INDENT REMOVE
-	abs
-	bin
-	# PYPPL INDENT KEEP
-	callable
-	def''')
+    scriptfile.write_text('''
+    # script
+    abs
+    bin
+    callable
+    def''')
     caplog.clear()
     pProcScript.lang = 'python'
-    assert pProcScript.script.render() == '''#!%s
+    assert pProcScript.script.render() == '''#!%s\n\n
 # script
 abs
 bin
-	callable
-	def
+callable
+def
 ''' % (cmdy.which('python').strip())
     assert 'Using template file: ' in caplog.text
 
