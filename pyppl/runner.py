@@ -108,8 +108,11 @@ def use_runner(runner):
                 runnermgr.register(plugin)
         elif runnermgr.is_registered(plugin):
             runnermgr.unregister(plugin)
-    assert len(runnermgr.get_plugins()) == 1, \
-     'One runner is allow at a time. We have {}'.format(runnermgr.get_plugins())
+    assert len(runnermgr.get_plugins()) == 1, (
+        'One runner is allow at a time. We have {}'.format(
+            runnermgr.get_plugins()
+        )
+    )
 
 
 def current_runner():

@@ -17,8 +17,11 @@ from .config import config as default_config, DEFAULT_CFGFILES
 from .logger import logger
 from .plugin import pluginmgr, config_plugins
 from .runner import RUNNERS
-from .exception import PyPPLInvalidConfigurationKey, PyPPLNameError, \
- ProcessAlreadyRegistered, PyPPLWrongPositionMethod, PyPPLMethodExists
+from .exception import (PyPPLInvalidConfigurationKey,
+                        PyPPLNameError,
+                        ProcessAlreadyRegistered,
+                        PyPPLWrongPositionMethod,
+                        PyPPLMethodExists)
 from .utils import try_deepcopy, name2filename, fs
 
 # length of separators in log
@@ -198,9 +201,11 @@ class PyPPL:
                 raise PyPPLInvalidConfigurationKey(
                     'No such configuration key: ' + key)
 
-        self.name = name2filename(name) \
-         if name else Path(sys.argv[0]).stem \
-         if not PIPELINES else Path(sys.argv[0]).stem + str(len(PIPELINES) + 1)
+        self.name = (name2filename(name)
+                     if name
+                     else Path(sys.argv[0]).stem
+                     if not PIPELINES
+                     else Path(sys.argv[0]).stem + str(len(PIPELINES) + 1))
         if self.name in PIPELINES:
             raise PyPPLNameError(
                 'Pipeline name {!r}({!r}) has been used.'.format(

@@ -542,9 +542,9 @@ class Channel(list):  # pylint: disable=too-many-public-methods
         @returns:
             (Channel): The Channel with fetched columns
         """
-        return Channel([s[start:(start + length)] for s in self]) \
-               if length and start != -1 \
-               else Channel.create([s[start:] for s in self])
+        return (Channel([s[start:(start + length)] for s in self])
+                if length and start != -1
+                else Channel.create([s[start:] for s in self]))
 
     def fold(self, nfold=1):
         """@API
@@ -603,9 +603,9 @@ class Channel(list):  # pylint: disable=too-many-public-methods
         @returns:
             (list[Channel]): The list of single-column Channels
         """
-        return [self.flatten(i) for i in range(self.width())] \
-               if flatten \
-               else [self.colAt(i) for i in range(self.width())]
+        return ([self.flatten(i) for i in range(self.width())]
+                if flatten
+                else [self.colAt(i) for i in range(self.width())])
 
     def attach(self, *names, flatten=False):
         """@API
@@ -673,9 +673,9 @@ class Channel(list):  # pylint: disable=too-many-public-methods
         @returns:
             (list): The list converted from the Channel.
         """
-        return [item for sublist in self for item in sublist] \
-               if col is None \
-               else [sublist[col] for sublist in self]
+        return ([item for sublist in self for item in sublist]
+                if col is None
+                else [sublist[col] for sublist in self])
 
     def transpose(self):
         """@API

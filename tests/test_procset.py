@@ -57,10 +57,8 @@ def test_procset_init(ps3):
     assert ps3.ends == []
     assert ps3.delegates['input'] == ['starts']
     assert ps3.delegates['depends'] == ['starts']
-    assert ps3.delegates['ex*'] == ['ends']
     assert ps3.delegated('input') == []
     assert ps3.delegated('depends') == []
-    assert ps3.delegated('ex*') == []
 
 
 def test_procset_init_empty(empty_ps):
@@ -71,10 +69,8 @@ def test_procset_init_empty(empty_ps):
     assert empty_ps.ends == []
     assert empty_ps.delegates['input'] == ['starts']
     assert empty_ps.delegates['depends'] == ['starts']
-    assert empty_ps.delegates['ex*'] == ['ends']
     assert empty_ps.delegated('input') == []
     assert empty_ps.delegated('depends') == []
-    assert empty_ps.delegated('ex*') == []
 
 
 def test_procset_init_depends(ps3_depends, pProc1, pProc2, pProc3):
@@ -89,11 +85,9 @@ def test_procset_init_depends(ps3_depends, pProc1, pProc2, pProc3):
 
     assert ps3_depends.delegates['input'] == ['starts']
     assert ps3_depends.delegates['depends'] == ['starts']
-    assert ps3_depends.delegates['ex*'] == ['ends']
 
     assert ps3_depends.delegated('input') == [pProc1]
     assert ps3_depends.delegated('depends') == [pProc1]
-    assert ps3_depends.delegated('ex*') == [pProc3]
 
 
 def test_procset_init_copy(ps3_copy, pProc1, pProc2, pProc3):
@@ -108,11 +102,9 @@ def test_procset_init_copy(ps3_copy, pProc1, pProc2, pProc3):
 
     assert ps3_copy.delegates['input'] == ['starts']
     assert ps3_copy.delegates['depends'] == ['starts']
-    assert ps3_copy.delegates['ex*'] == ['ends']
 
     assert ps3_copy.delegated('input') == []
     assert ps3_copy.delegated('depends') == []
-    assert ps3_copy.delegated('ex*') == []
 
 
 def test_procset_init_copy_depends(ps3_copy_depends, pProc1, pProc2, pProc3):
@@ -127,11 +119,9 @@ def test_procset_init_copy_depends(ps3_copy_depends, pProc1, pProc2, pProc3):
 
     assert ps3_copy_depends.delegates['input'] == ['starts']
     assert ps3_copy_depends.delegates['depends'] == ['starts']
-    assert ps3_copy_depends.delegates['ex*'] == ['ends']
 
     assert ps3_copy_depends.delegated('input') == [ps3_copy_depends.pProc1]
     assert ps3_copy_depends.delegated('depends') == [ps3_copy_depends.pProc1]
-    assert ps3_copy_depends.delegated('ex*') == [ps3_copy_depends.pProc3]
 
 
 def test_procset_delegate(ps3_copy_depends):

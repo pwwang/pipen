@@ -132,8 +132,9 @@ class ProcSet:
 
         prevproc = None
         for proc in procs:
-            assert hasattr(proc, 'id') and hasattr(proc, 'tag'), \
-             'Argument has to be a Proc object: %r.' % proc
+            assert hasattr(proc, 'id') and hasattr(proc, 'tag'), (
+                'Argument has to be a Proc object: %r.' % proc
+            )
             if copy:
                 self.procs[proc.id] = proc.copy(
                     proc.id,
@@ -157,7 +158,8 @@ class ProcSet:
 
         self.delegate('input', 'starts')
         self.delegate('depends', 'starts')
-        self.delegate('ex*', 'ends')
+        # export functions moved to plugins
+        # self.delegate('ex*', 'ends')
 
     def delegate(self, attr, *procs):
         """@API
@@ -264,6 +266,10 @@ class ProcSet:
             ret.ends.add(Proxy(ret.procs[proc.id] for proc in self.ends))
 
         return ret
+
+    def __repr__(self):
+        return 'ProcSet(name="%s%s")' % (self.id,
+                                         '.' + self.tag if self.tag else '')
 
     def __setattr__(self, item, value):
         if item in ('starts', 'ends'):

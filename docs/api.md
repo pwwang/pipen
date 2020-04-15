@@ -522,7 +522,9 @@
 
 		- **returns**
 
-			- `(bool|str)`:  `ignore` if `errhow` is `ignore`, otherwise                 returns whether we could submit the job to retry.
+			- `(bool|str)`:  `ignore` if `errhow` is `ignore`, otherwise
+
+			    returns whether we could submit the job to retry.
 
 	!!! abstract "method: `submit(self)`"
 

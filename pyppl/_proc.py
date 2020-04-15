@@ -226,11 +226,11 @@ def proc_input(this, value): # pylint: disable=too-many-locals,too-many-branches
              'runtime_config',
              strict=False,
              msg='Process input should be accessed after it starts running')
-    input_keys_and_types = sum((always_list(key) for key in value), []) \
-                           if isinstance(value, dict) \
-                           else always_list(value) \
-                           if value \
-                           else []
+    input_keys_and_types = (sum((always_list(key) for key in value), [])
+                            if isinstance(value, dict)
+                            else always_list(value)
+                            if value
+                            else [])
 
     # {'a': 'var', 'b': 'file', ...}
     input_keytypes = OrderedDiot()
@@ -249,19 +249,21 @@ def proc_input(this, value): # pylint: disable=too-many-locals,too-many-branches
 
     ret = OrderedDiot()
     # no data specified, inherit from depends or argv
-    input_values = list(value.values()) \
-                   if isinstance(value, dict) \
-                   else [Channel.from_channels(*[
-                       d.channel for d in this.depends
-                   ]) if this.depends else Channel.from_argv()]
+    input_values = (list(value.values())
+                    if isinstance(value, dict)
+                    else [Channel.from_channels(*[d.channel
+                                                  for d in this.depends])
+                          if this.depends
+                          else Channel.from_argv()])
 
     input_channel = Channel.create()
     for invalue in input_values:
         # a callback, on all channels
         if callable(invalue):
             input_channel = input_channel.cbind(
-                invalue(*[d.channel for d in this.depends] \
-                    if this.depends else Channel.from_argv()))
+                invalue(*[d.channel for d in this.depends]
+                        if this.depends else Channel.from_argv())
+            )
         elif isinstance(invalue, Channel):
             input_channel = input_channel.cbind(invalue)
         else:

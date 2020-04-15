@@ -161,8 +161,10 @@ def job_output(this, value):
         outdata = outtpl.render(this.data)
 
         #this.output[key] = {'type': outtype, 'data': outdata}
-        if outtype in OUT_FILETYPE + OUT_DIRTYPE + \
-         OUT_STDOUTTYPE + OUT_STDERRTYPE:
+        if (outtype in OUT_FILETYPE or
+                outtype in OUT_DIRTYPE or
+                outtype in OUT_STDOUTTYPE or
+                outtype in OUT_STDERRTYPE):
             if Path(outdata).is_absolute():
                 raise JobOutputParseError(
                     'Absolute path not allowed for [%s:%s]: %r' %
