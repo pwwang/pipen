@@ -35,7 +35,7 @@ class Proc:
     _setcounter = attr.ib(default=attr.Factory(dict), init=False, repr=False)
     # The id of the process
     id = attr_property(
-        default=attr.Factory(lambda: varname(caller=2, context=30)),
+        default=attr.Factory(lambda: varname(caller=2)),
         repr=False,
         setter=proc_id_setter,
         doc="@API\nThe identity of the process")

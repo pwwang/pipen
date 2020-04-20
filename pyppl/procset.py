@@ -119,7 +119,7 @@ class ProcSet:
                     Default: `True`
         """
 
-        self.__dict__['id'] = id or varname(context=50)
+        self.__dict__['id'] = id or varname()
         self.__dict__['tag'] = tag
         self.__dict__['starts'] = Proxy()
         self.__dict__['ends'] = Proxy()

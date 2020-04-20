@@ -6,7 +6,7 @@ from queue import PriorityQueue
 from threading import Thread
 import cmdy
 from transitions import Transition, Machine
-from liquid.stream import LiquidStream
+from liquid.stream import safe_split
 from . import _fsutil as fs
 
 
@@ -106,7 +106,7 @@ def always_list(data, trim=True):
         The split list
     """
     if isinstance(data, str):
-        return LiquidStream.from_string(data).split(',', trim=trim)
+        return safe_split(data, ',', trim=trim)
     if isinstance(data, list):
         return sum(
             (always_list(dat, trim) if isinstance(dat, (str, list)) else [dat]

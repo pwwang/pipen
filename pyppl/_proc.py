@@ -7,7 +7,7 @@ from pathlib import Path
 import cmdy
 from simpleconf import NoSuchProfile
 from diot import OrderedDiot, Diot
-from liquid.stream import LiquidStream
+from liquid.stream import safe_split
 from . import template
 from .runner import use_runner
 from .config import config
@@ -302,7 +302,7 @@ def proc_output(this, value):
         outlist = list(filter(None, always_list(value)))
         output = OrderedDiot()
         for out in outlist:
-            outparts = LiquidStream.from_string(out).split(':')
+            outparts = safe_split(out, ':')
             lenparts = len(outparts)
             if not outparts[0].isidentifier():
                 raise ProcessOutputError(
@@ -405,7 +405,7 @@ def proc_template(this, value):
     if callable(value):
         return value
     if not value:
-        return getattr(template, 'TemplateLiquid')
+        return template.TemplateLiquid
     return getattr(template, 'Template' + value.capitalize())
 
 def proc_suffix(this, value):
