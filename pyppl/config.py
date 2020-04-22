@@ -56,6 +56,15 @@ DEFAULT_CONFIG = dict(default=dict(
 
 config = Config()  # pylint: disable=invalid-name
 
+def _config_factory(conf):
+    """The factory to convert runner to a dict"""
+    # we have profiles
+    for _, con in conf.items():
+        if 'runner' not in con or isinstance(con['runner'], dict):
+            continue
+        # you can't set profile in config, so it's direct runner
+        con['runner'] = {'runner': con['runner']}
+    return conf
 
 def load_config(default_config, *config_files):
     """@API
@@ -66,9 +75,8 @@ def load_config(default_config, *config_files):
         *config_files: A list of configuration or configuration files
     """
     config.clear()
-    config._load(DEFAULT_CONFIG, default_config, *config_files)
-    config._use()
-
+    config._load(DEFAULT_CONFIG, default_config, *config_files,
+                 factory=_config_factory)
 
 load_config(*DEFAULT_CFGFILES)
 pluginmgr.load_setuptools_entrypoints(PMNAME)

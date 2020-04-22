@@ -375,8 +375,8 @@ class Job:
         # force to read rc from rcfile
         del self.rc
 
-        if not self.dir.joinpath('job.stderr').is_file() or \
-         not self.dir.joinpath('job.stdout').is_file():
+        if (not self.dir.joinpath('job.stderr').is_file() or
+                not self.dir.joinpath('job.stdout').is_file()):
             self.logger('Polling the job ... stderr/out file not generared.',
                         level='debug')
             pluginmgr.hook.job_poll(job=self, status='running')
@@ -396,7 +396,7 @@ class Job:
         """@API
         If the job is available to retry
         @returns:
-            (bool|str): `ignore` if `errhow` is `ignore`, otherwise \
+            (bool|str): `ignore` if `errhow` is `ignore`, otherwise
                 returns whether we could submit the job to retry.
         """
         if self.proc.errhow == 'ignore':

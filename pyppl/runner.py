@@ -108,8 +108,11 @@ def use_runner(runner):
                 runnermgr.register(plugin)
         elif runnermgr.is_registered(plugin):
             runnermgr.unregister(plugin)
-    assert len(runnermgr.get_plugins()) == 1, \
-     'One runner is allow at a time. We have {}'.format(runnermgr.get_plugins())
+    assert len(runnermgr.get_plugins()) == 1, (
+        'One runner is allow at a time. We have {}'.format(
+            runnermgr.get_plugins()
+        )
+    )
 
 
 def current_runner():
@@ -159,6 +162,16 @@ def register_runner(runner, name=None):
         runnermgr.register(runner, name=name)
     RUNNERS[name] = runner
 
+def killtree(pid, killme=True, signal=9):
+    """Kill a process tree"""
+    myself = psutil.Process(int(pid))
+    children = myself.children(recursive=True)
+    if killme:
+        children.append(myself)
+    for proc in children:
+        proc.send_signal(signal)
+
+    return bool(psutil.wait_procs(children))
 
 class PyPPLRunnerLocal:
     """@API
@@ -175,13 +188,7 @@ class PyPPLRunnerLocal:
             job (Job): the job instance
         """
         if int(job.pid) > 0:
-            myself = psutil.Process(int(job.pid))
-            children = myself.children(recursive=True)
-            children.append(myself)
-            for proc in children:
-                proc.send_signal(9)
-
-            return bool(psutil.wait_procs(children))
+            return killtree(job.pid)
         return True
 
     @hookimpl

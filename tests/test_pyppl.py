@@ -1,5 +1,6 @@
 from pathlib import Path
 import traceback
+import os
 import sys
 import pytest
 from diot import Diot
@@ -8,11 +9,14 @@ from pyppl.exception import ProcessAlreadyRegistered, PyPPLInvalidConfigurationK
 from pyppl.proc import Proc
 from pyppl.config import config
 from pyppl.logger import logger
-from pyppl.plugin import hookimpl
+from pyppl.plugin import hookimpl, pluginmgr
 
 # avoid other tests registering processes
 PROCESSES.clear()
 
+def setup_function():
+    for plugin in pluginmgr.get_plugins():
+        pluginmgr.unregister(plugin)
 
 def test_register_proc():
     p1 = Proc('p1')
@@ -97,13 +101,12 @@ def test_anything2procs():
 
 def test_init(caplog):
     PIPELINES.clear()
-    ppl = PyPPL(forks=10)
+    ppl = PyPPL(name='ppl', forks=10)
 
-    assert ppl.name == Path(sys.argv[0]).stem
+    assert ppl.name == 'ppl'
     assert 'Read from PYPPL.osenv' in caplog.text
     assert ('PIPELINE: %s' % ppl.name) in caplog.text
     assert ppl.runtime_config.forks == 10
-
     with pytest.raises(PyPPLNameError):
         PyPPL(name=ppl.name)
     with pytest.raises(PyPPLInvalidConfigurationKey):
@@ -197,17 +200,45 @@ def test_run(caplog, tmp_path):
     assert 'pRun1.notag: No description.' in caplog.text
 
     caplog.clear()
-    pRun2 = pRun1.copy(ppldir=tmp_path)
+    pRun2 = pRun1.copy(ppldir=tmp_path, desc = 's'*200)
     # plugins regiested
     PyPPL(logger_level='TITLE',
           config_files=dict(default={}),
           runner='local',
           runner_sge_q='1-day',
           envs_k='k').start(pRun2).run()
-    assert 'pRun2.notag (pRun1): No description.' in caplog.text
+    assert 'pRun2.notag (pRun1): ' in caplog.text
+    assert '  sssssssssssss' in caplog.text
     assert pRun2.envs.k == 'k'
     assert pRun2.runner.runner == 'local'
     assert pRun2.runner.sge_q == '1-day'
+
+def test_run_settings(caplog, tmp_path):
+    # let's see if PyPPL().run(profile) is inheriting the default config's
+    # runner settings
+    # using PyPPL.osenv
+    os.environ['PYPPLTEST_default_runner'] = 'py:{"sge_prescript": "someprescripts"}'
+    os.environ['PYPPLTEST_sgexd_runner'] = 'py:{"sge_m": "b"}'
+    # we need to insert this to the config to mimic module is loaded before
+    # the envs are set
+    config._load('PYPPLTEST.osenv')
+    assert config.runner.sge_prescript == 'someprescripts'
+
+    pRun3 = Proc(ppldir=tmp_path)
+    pRun3.input = {'a:var': [1]}
+    pRun3.output = 'a:var:1'
+    PyPPL(runner_sge_q='x-day').start(pRun3).run('sgexd')
+    assert pRun3.runner.sge_m == 'b'
+    assert pRun3.runner.sge_prescript == 'someprescripts'
+
+    pRun4 = Proc(ppldir=tmp_path)
+    pRun4.input = {'a:var': [1]}
+    pRun4.output = 'a:var:1'
+    pRun4.runner = 'sgexd'
+    PyPPL(runner_sge_q='x-day').start(pRun4).run()
+    assert pRun4.runner.sge_m == 'b'
+    assert pRun4.runner.sge_prescript == 'someprescripts'
+
 
 
 def test_config_in_construct(tmp_path):
@@ -255,3 +286,57 @@ def test_add_method(capsys):
     ppl2.procs = [Diot(channel=True)]
     ppl2.themethod2(a=3)
     assert 'a = 3, b = 4' in capsys.readouterr().out
+
+def test_depends_printing(tmp_path, caplog):
+
+    pDepPrinting1 = Proc(ppldir=tmp_path)
+    pDepPrinting2 = Proc(ppldir=tmp_path)
+    pDepPrinting3 = Proc(ppldir=tmp_path)
+    pDepPrinting4 = Proc(ppldir=tmp_path)
+    pDepPrinting5 = Proc(ppldir=tmp_path)
+    pDepPrinting6 = Proc(ppldir=tmp_path)
+
+    pDepPrinting4.depends = pDepPrinting1, pDepPrinting2, pDepPrinting3,
+    pDepPrinting5.depends = pDepPrinting4
+    pDepPrinting6.depends = pDepPrinting4
+
+    pDepPrinting1.input = pDepPrinting2.input = pDepPrinting3.input = \
+        pDepPrinting4.input = pDepPrinting5.input = pDepPrinting6.input = {'a:var': [1]}
+    pDepPrinting1.output = pDepPrinting2.output = pDepPrinting3.output = \
+        pDepPrinting4.output = pDepPrinting5.output = pDepPrinting6.output = 'a:var:1'
+
+    PyPPL().start(pDepPrinting1, pDepPrinting2, pDepPrinting3).run()
+    assert '| pDepPrinting1.notag |                           | pDepPrinting5.notag |' in caplog.text
+    assert '| pDepPrinting2.notag | => pDepPrinting4.notag => | pDepPrinting6.notag |' in caplog.text
+    assert '| pDepPrinting3.notag |                           |                     |' in caplog.text
+
+    caplog.clear()
+
+    pDepPrinting11 = Proc(ppldir=tmp_path)
+    pDepPrinting12 = Proc(ppldir=tmp_path)
+    pDepPrinting13 = Proc(ppldir=tmp_path)
+    pDepPrinting14 = Proc(ppldir=tmp_path)
+    pDepPrinting15 = Proc(ppldir=tmp_path)
+    pDepPrinting16 = Proc(ppldir=tmp_path)
+    pDepPrinting17 = Proc(ppldir=tmp_path)
+
+    pDepPrinting11.input = pDepPrinting12.input = pDepPrinting13.input = \
+        pDepPrinting14.input = pDepPrinting15.input = pDepPrinting16.input = \
+        pDepPrinting17.input = {'a:var': [1]}
+    pDepPrinting11.output = pDepPrinting12.output = pDepPrinting13.output = \
+        pDepPrinting14.output = pDepPrinting15.output = pDepPrinting16.output = \
+        pDepPrinting17.output = 'a:var:1'
+
+    pDepPrinting13.depends = pDepPrinting11, pDepPrinting12
+    pDepPrinting14.depends = pDepPrinting13
+    pDepPrinting15.depends = pDepPrinting13
+    pDepPrinting16.depends = pDepPrinting13
+    pDepPrinting17.depends = pDepPrinting13
+
+    PyPPL().start(pDepPrinting11, pDepPrinting12).run()
+    assert '|                      |                            | pDepPrinting14.notag |' in caplog.text
+    assert '| pDepPrinting11.notag | => pDepPrinting13.notag => | pDepPrinting15.notag |' in caplog.text
+    assert '| pDepPrinting12.notag |                            | pDepPrinting16.notag |' in caplog.text
+    assert '|                      |                            | pDepPrinting17.notag |' in caplog.text
+
+

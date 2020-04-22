@@ -347,14 +347,14 @@ class PluginConfig(Diot):
 
         for key, value in dict_to_update.items():
 
-            if plugin_config_check_update and \
-             self._meta.updates.get(key, 'update') == 'ignore' and \
-             self._meta.setcounter.get(key, 0) > 0:
+            if (plugin_config_check_update and
+                    self._meta.updates.get(key, 'update') == 'ignore' and
+                    self._meta.setcounter.get(key, 0) > 0):
                 continue
 
-            if plugin_config_check_update and \
-             self._meta.updates.get(key, 'update') == 'update' and \
-             isinstance(value, dict):
+            if (plugin_config_check_update and
+                    self._meta.updates.get(key, 'update') == 'update' and
+                    isinstance(value, dict)):
                 if key in self and isinstance(self[key], dict):
                     self[key].update(value)
                 else:
@@ -364,8 +364,9 @@ class PluginConfig(Diot):
 
     def __setitem__(self, name, value):
         if name[:6] != '_diot_':
-            self._meta.setcounter[name] = \
-             self._meta.setcounter.setdefault(name, 0) + 1
+            self._meta.setcounter[
+                name
+            ] = self._meta.setcounter.setdefault(name, 0) + 1
             self._meta.raw[name] = value
             if self._meta.converter.get(name):
                 value = self._meta.converter[name](value)

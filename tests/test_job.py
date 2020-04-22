@@ -206,7 +206,7 @@ def test_script(tmp_path, proc_factory):
 
     job.script
     assert (job.dir / 'job.script'
-            ).read_text() == "#!%s# python script\n" % cmdy.which('bash')
+            ).read_text() == "#!%s\n# python script\n" % cmdy.which('bash')
     assert job.dir.joinpath('job.script.local').is_file()
 
 
@@ -511,6 +511,26 @@ def test_is_cached(proc_factory, caplog):
     assert not job.is_cached()
     assert "Output item 'out:var' changed: 9 -> 10" in caplog.text
 
+def test_force_cache(proc_factory, tmp_path):
+    infile = tmp_path / 'test_force_cache.txt'
+    infile.write_text('123')
+    workdir = tmp_path / 'pForceCache'
+    proc = proc_factory(
+        'pForceCache',
+        input={'infile:file': [infile]},
+        output=
+        'outfile:file:{{i.infile | __import__("pathlib").Path | .stem}}.txt',
+        script='cat {{i.infile}} > {{o.outfile}}',
+        workdir=workdir)
+    proc.cache = 'force'
+
+    outfile = workdir.joinpath('1', 'output', 'test_force_cache.txt')
+    outfile.parent.mkdir(parents=True, exist_ok=True)
+    outfile.write_text('456')
+    outfile.parent.parent.joinpath('job.rc').write_text('0')
+    proc.run(Config())
+    assert outfile.read_text() == '456'
+
 
 def test_is_cached_without_cachefile(proc_factory, tmp_path):
     infile = tmp_path / 'test_is_cached_without_cachefile.txt'
@@ -528,10 +548,10 @@ def test_is_cached_without_cachefile(proc_factory, tmp_path):
     job.input
     Path(job.output['outfile'][1]).write_text('')
     assert job._is_cached_without_cachefile()
-    print(job.signature)
+    #print(job.signature)
     job.signature = ''
     utime(infile, (path.getmtime(infile) + 100, ) * 2)
-    print(job.signature)
+    #print(job.signature)
     assert not job._is_cached_without_cachefile()
 
 

@@ -64,6 +64,7 @@ def fixt_chmodx(request, tmp_path):
     'a_dir_with_file',
     'a_dir_subdir_newer',
     'a_dir_subdir_newer_dirsig_false',
+    'a_dir_with_dead_links'
 ])
 def fixt_filesig(request, tmp_path):
     if not request.param:
@@ -118,6 +119,17 @@ def fixt_filesig(request, tmp_path):
         return Diot(file=adir,
                     dirsig=False,
                     expt=[str(adir), int(path.getmtime(adir))])
+    if request.param == 'a_dir_with_dead_links':
+        adir = tmp_path / 'a_dir_with_dead_links'
+        adir.mkdir()
+        livefile = adir / 'live.txt'
+        livefile.write_text('')
+        mtime = int(path.getmtime(adir))
+        deadlink = adir / 'deadlink'
+        deadlink.symlink_to(livefile)
+        livefile.unlink()
+        return Diot(file=adir, dirsig=True, expt=[str(adir), mtime])
+
 
 
 @pytest.fixture(params=['noexc', 'oserror', 'runtimeerror'])

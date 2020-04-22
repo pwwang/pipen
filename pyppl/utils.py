@@ -6,7 +6,7 @@ from queue import PriorityQueue
 from threading import Thread
 import cmdy
 from transitions import Transition, Machine
-from liquid.stream import LiquidStream
+from liquid.stream import safe_split
 from . import _fsutil as fs
 
 
@@ -59,6 +59,9 @@ def filesig(filepath, dirsig=True):
                 mtime2 = getmtime(path.join(root, directory))
                 mtime = max(mtime, mtime2)
             for filename in files:
+                # links to non-existent files
+                if not fs.exists(path.join(root, filename)):
+                    continue
                 mtime2 = getmtime(path.join(root, filename))
                 mtime = max(mtime, mtime2)
     else:
@@ -103,7 +106,7 @@ def always_list(data, trim=True):
         The split list
     """
     if isinstance(data, str):
-        return LiquidStream.from_string(data).split(',', trim=trim)
+        return safe_split(data, ',', trim=trim)
     if isinstance(data, list):
         return sum(
             (always_list(dat, trim) if isinstance(dat, (str, list)) else [dat]

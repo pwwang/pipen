@@ -9,7 +9,7 @@ from simpleconf import Config
 from pyppl import _proc, proc
 from pyppl.proc import Proc
 from pyppl._proc import _require, _decache
-from pyppl.config import config
+from pyppl.config import config, _config_factory
 from pyppl.channel import Channel
 from pyppl.template import TemplateLiquid, TemplateJinja2
 from pyppl.exception import ProcessAttributeError, ProcessInputError, ProcessOutputError, ProcessScriptError
@@ -35,6 +35,7 @@ def replace_jobmgr():
 def test_init():
     pProcInit = Proc()
     assert pProcInit._setcounter == {
+        'ppldir': 0,
         'cache': 0,
         'id': 1,
         'dirsig': 0,
@@ -164,7 +165,7 @@ def test_runtime_config():
                  'test_a': 1,
                  'test_b': 10
              })
-    })
+    }, factory=_config_factory)
     pRuntimeConfig.runtime_config = runtime_config
     assert pRuntimeConfig.runtime_config == runtime_config
 
@@ -201,7 +202,8 @@ def test_runtime_config():
     assert pRuntimeConfig2.errhow == 'terminate'
     assert pRuntimeConfig2.errntry == 3
     assert pRuntimeConfig2.lang == cmdy.which('bash').strip()
-    assert pRuntimeConfig2.runner == {'runner': 'ssh', 'ssh.servers': [1]}
+    assert pRuntimeConfig2.runner.runner == 'ssh'
+    assert pRuntimeConfig2.runner.ssh_servers == [1]
     assert pRuntimeConfig2.template is TemplateLiquid
 
 
@@ -290,7 +292,7 @@ def test_runner():
                     'queue': '1-day'
                 }
             }
-        })
+        }, factory=_config_factory)
     pRunner.runner = 'special_profile'
     assert pRunner.runner['runner'] == 'sge'
     assert pRunner.runner['someconfig'] == 1
@@ -327,21 +329,20 @@ def test_script(caplog, tmp_path):
     with pytest.raises(ProcessScriptError):
         pProcScript.script
 
-    scriptfile.write_text('''# script
-	# PYPPL INDENT REMOVE
-	abs
-	bin
-	# PYPPL INDENT KEEP
-	callable
-	def''')
+    scriptfile.write_text('''
+    # script
+    abs
+    bin
+    callable
+    def''')
     caplog.clear()
     pProcScript.lang = 'python'
-    assert pProcScript.script.render() == '''#!%s
+    assert pProcScript.script.render() == '''#!%s\n\n
 # script
 abs
 bin
-	callable
-	def
+callable
+def
 ''' % (cmdy.which('python').strip())
     assert 'Using template file: ' in caplog.text
 

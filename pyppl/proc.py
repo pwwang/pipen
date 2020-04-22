@@ -35,7 +35,7 @@ class Proc:
     _setcounter = attr.ib(default=attr.Factory(dict), init=False, repr=False)
     # The id of the process
     id = attr_property(
-        default=attr.Factory(lambda: varname(caller=2, context=30)),
+        default=attr.Factory(lambda: varname(caller=2)),
         repr=False,
         setter=proc_id_setter,
         doc="@API\nThe identity of the process")
@@ -147,6 +147,7 @@ class Proc:
                            converter=Path,
                            kw_only=True,
                            repr=False,
+                           setter=partial(proc_setter_count, name='ppldir'),
                            converter_runtime=True)
     # name of the procset
     procset = attr_property(setter=False,
@@ -289,10 +290,10 @@ class Proc:
             if isinstance(conf, Proc):
                 return conf.name
             if isinstance(conf, dict):
-                return {key: stringify(val) for key, val in conf.items()}
+                return {str(key): stringify(val) for key, val in conf.items()}
             if isinstance(conf, list):
                 return [stringify(val) for val in conf]
-            return conf
+            return str(conf)
 
         with open(self.workdir / 'proc.settings.toml', 'w') as fsettings:
             toml.dump({key: stringify(val)

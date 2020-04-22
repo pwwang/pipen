@@ -13,12 +13,15 @@ import fnmatch
 from pathlib import Path
 from diot import Diot
 from simpleconf import Config
-from .config import config as default_config, DEFAULT_CFGFILES
+from .config import config as default_config, DEFAULT_CFGFILES, _config_factory
 from .logger import logger
 from .plugin import pluginmgr, config_plugins
 from .runner import RUNNERS
-from .exception import PyPPLInvalidConfigurationKey, PyPPLNameError, \
- ProcessAlreadyRegistered, PyPPLWrongPositionMethod, PyPPLMethodExists
+from .exception import (PyPPLInvalidConfigurationKey,
+                        PyPPLNameError,
+                        ProcessAlreadyRegistered,
+                        PyPPLWrongPositionMethod,
+                        PyPPLMethodExists)
 from .utils import try_deepcopy, name2filename, fs
 
 # length of separators in log
@@ -38,7 +41,6 @@ TIPS = [
 
 # name of defined pipelines
 PIPELINES = {}
-
 
 def _register_proc(proc):
     """Register process into the pool"""
@@ -198,9 +200,11 @@ class PyPPL:
                 raise PyPPLInvalidConfigurationKey(
                     'No such configuration key: ' + key)
 
-        self.name = name2filename(name) \
-         if name else Path(sys.argv[0]).stem \
-         if not PIPELINES else Path(sys.argv[0]).stem + str(len(PIPELINES) + 1)
+        self.name = (name2filename(name)
+                     if name
+                     else Path(sys.argv[0]).stem
+                     if not PIPELINES
+                     else Path(sys.argv[0]).stem + str(len(PIPELINES) + 1))
         if self.name in PIPELINES:
             raise PyPPLNameError(
                 'Pipeline name {!r}({!r}) has been used.'.format(
@@ -211,7 +215,8 @@ class PyPPL:
             config_files = [config_files]
 
         self.runtime_config = Config()
-        self.runtime_config._load(dict(default=config), *(config_files or ()))
+        self.runtime_config._load(*(config_files or ()))
+        self.runtime_config._load(dict(default=config))
 
         logger_config = try_deepcopy(default_config.logger.dict())
         logger_config.update(self.runtime_config.pop('logger', {}))
@@ -245,72 +250,84 @@ class PyPPL:
             pluginmgr.hook.pyppl_postrun(ppl=self)
             return self
 
-        with default_config._with(profile=profile,
-                                  base='__nonexist_profile__',
-                                  copy=True) as defconfig:
-            # we should remove the default profile
-            # otherwise, some configs will be overwritten by it again
-            for key, cached in defconfig._protected['cached'].items():
-                defconfig._protected['cached'][key] = cached.copy()
-                if 'default' in cached:
-                    del defconfig._protected['cached'][key]['default']
+        # for default profile, we shall not load anything from default_config
+        # as part/base of runtime config, since they have alread been used as
+        # default values when initialize Proc object
+        if profile == 'default':
+            defconfig = Config()
+        elif profile in default_config._profiles:
+            # Otherwise, we just use the settings of profile from default_config
+            # as the base of runtime config
+            with default_config._with(profile, copy=True) as dconfig:
+                defconfig = dconfig
+        else: # assuming direct runner
+            defconfig = Config()
+            defconfig._load({'default': {'runner': profile}},
+                            factory=_config_factory)
 
-            defconfig._load(self.runtime_config)
-            if profile not in defconfig._profiles:
-                defconfig._load({profile: dict(runner=profile)})
-            defconfig._use(profile)
-            defconfig.pop('logger', None)
-            defconfig.pop('plugins', None)
-            for proc in self.procs:
-                # print process name and description
-                name = '%s%s: ' % (
-                    proc.name,
-                    ' (%s)' % proc.origin
-                    if proc.origin and proc.origin != proc.id
-                    else ''
-                )
+        defconfig._load(self.runtime_config)
+        # make available the direct runner
+        if profile not in defconfig._profiles:
+            defconfig._load({profile: dict(runner=profile)},
+                            factory=_config_factory)
 
-                logger.process('-' * SEPARATOR_LEN)
-                if len(name + proc.desc) > SEPARATOR_LEN:
-                    logger.process(name)
-                    for i in textwrap.wrap(proc.desc,
-                                           SEPARATOR_LEN,
-                                           initial_indent='  ',
-                                           subsequent_indent='  '):
-                        logger.process(i)
+        # use the profile, based on default profile
+        defconfig._use(profile, 'default')
+        # will not be used for procs
+        defconfig.pop('logger', None)
+        defconfig.pop('plugins', None)
+
+        for proc in self.procs:
+            # echo the process name and description
+            name = '%s%s: ' % (
+                proc.name,
+                ' (%s)' % proc.origin
+                if proc.origin and proc.origin != proc.id
+                else ''
+            )
+
+            logger.process('-' * SEPARATOR_LEN)
+            if len(name + proc.desc) > SEPARATOR_LEN:
+                logger.process(name)
+                for i in textwrap.wrap(proc.desc,
+                                       SEPARATOR_LEN,
+                                       initial_indent='  ',
+                                       subsequent_indent='  '):
+                    logger.process(i)
+            else:
+                logger.process(name + proc.desc)
+
+            logger.process('-' * SEPARATOR_LEN)
+
+            # echo the dependencies
+            depends = ([dproc.name for dproc in proc.depends]
+                       if proc.depends
+                       else ['START'])
+            nexts = ([nproc.name for nproc in proc.nexts]
+                     if proc.nexts
+                     else ['END'])
+            depmaxlen = max([len(dep) for dep in depends])
+            nxtmaxlen = max([len(nxt) for nxt in nexts])
+            lendiff = len(depends) - len(nexts)
+            lessprocs = depends if lendiff < 0 else nexts
+            lendiff = abs(lendiff)
+            lessprocs.extend([''] * (lendiff - int(lendiff / 2)))
+            for i in range(int(lendiff/2)):
+                lessprocs.insert(0, '')
+
+            for i in range(len(lessprocs)):
+                if i == int((len(lessprocs) - 1) / 2):
+                    logger.depends('| %s | => %s => | %s |',
+                                   depends[i].ljust(depmaxlen),
+                                   proc.name,
+                                   nexts[i].ljust(nxtmaxlen))
                 else:
-                    logger.process(name + proc.desc)
+                    logger.depends('| %s |    %s    | %s |',
+                                   depends[i].ljust(depmaxlen),
+                                   ' ' * len(proc.name),
+                                   nexts[i].ljust(nxtmaxlen))
 
-                logger.process('-' * SEPARATOR_LEN)
-
-                # print dependencies
-                depends = ([dproc.name for dproc in proc.depends]
-                           if proc.depends
-                           else ['START'])
-                nexts = ([nproc.name for nproc in proc.nexts]
-                         if proc.nexts
-                         else ['END'])
-                depmaxlen = max([len(dep) for dep in depends])
-                nxtmaxlen = max([len(nxt) for nxt in nexts])
-                lendiff = len(depends) - len(nexts)
-                lessprocs = depends if lendiff < 0 else nexts
-                lendiff = abs(lendiff)
-                lessprocs.extend([''] * (lendiff - int(lendiff / 2)))
-                for i in range(int(lendiff/2)):
-                    lessprocs.insert(0, '')
-
-                for i in range(len(lessprocs)):
-                    if i == int((len(lessprocs) - 1) / 2):
-                        logger.depends('| %s | => %s => | %s |',
-                                       depends[i].ljust(depmaxlen),
-                                       proc.name,
-                                       nexts[i].ljust(nxtmaxlen))
-                    else:
-                        logger.depends('| %s |    %s    | %s |',
-                                       depends[i].ljust(depmaxlen),
-                                       ' ' * len(proc.name),
-                                       nexts[i].ljust(nxtmaxlen))
-                proc.run(defconfig)
+            proc.run(defconfig)
 
         pluginmgr.hook.pyppl_postrun(ppl=self)
         return self

@@ -2,11 +2,12 @@
 
 import sys
 import uuid
+import textwrap
 from pathlib import Path
 import cmdy
-from simpleconf import NoSuchProfile
+from simpleconf import Config
 from diot import OrderedDiot, Diot
-from liquid.stream import LiquidStream
+from liquid.stream import safe_split
 from . import template
 from .runner import use_runner
 from .config import config
@@ -132,41 +133,41 @@ def proc_runner(this, value):
     """Turn a runner profile to a runner config
     If it is a config, update the default one with it,
     otherwise, read the runner config from profile
+    if value is a dict given by proc.runner = {...}, then we should make it
+    based on defaults (both config and runtime_config), otherwise, we should
+    check if it is a profile or a direct runner name
     """
-    # Use runtime_config's runner if not set
-    if not this._setcounter.get('runner') and this.runtime_config:
-        value = this.runtime_config.get('runner', {})
+    runtime_config = this.runtime_config or Config()
+    # Use runtime_config's runner if not set. default_config.runner
+    # should be ignored when initialized
+    if (not this._setcounter.get('runner')
+            and this.runtime_config.get('runner')):
+        value = this.runtime_config.runner
 
-    # If it is a profile or direct runner
-    config_to_look_for = this.runtime_config or config
-    if isinstance(value, str):
-        try:
-            with config_to_look_for._with(profile=value,
-                                          raise_exc=True,
-                                          copy=True) as rconfig:
-                value = rconfig.get('runner', {})
-        except NoSuchProfile:
-            pass
+    default_runner = {}
+    with config._with('default', copy=True) as dconf:
+        default_runner.update(dconf.get('runner', {}))
+    with runtime_config._with('default', copy=True) as dconf:
+        default_runner.update(dconf.get('runner', {}))
 
-        if not isinstance(value, dict):
-            value = dict(runner=value)
+    if isinstance(value, dict):
+        default_runner.update(value)
+    elif value in config._profiles:
+        with config._with(value, copy=True) as vconf:
+            default_runner.update(vconf.get('runner', {}))
+    elif value in runtime_config._profiles:
+        with runtime_config._with(value, copy=True) as vconf:
+            default_runner.update(vconf.get('runner', {}))
+    else:
+        default_runner['runner'] = value
 
-    assert isinstance(value, dict)
-    with config_to_look_for._with(profile='default', copy=True) as rconfig:
-        runner_config = rconfig.get('runner', {})
-        if not isinstance(runner_config, dict):
-            runner_config = Diot(runner=runner_config)
-        runner_config.update(value)
-
-    if 'runner' not in runner_config:
-        runner_config.runner = 'local'
-
-    ret = this._runner
-    if not isinstance(ret, dict):
-        ret = Diot(runner=this._runner)
-
-    ret.update(runner_config)
-    return ret
+    default_runner.setdefault('runner', 'local')
+    # in case we have 'sge.runner', we turn it into 'sge_runner'
+    # have to copy the keys, otherwise, dictionary changed size during
+    # iteration
+    for key in list(default_runner):
+        default_runner[key.replace('.', '_')] = default_runner.pop(key)
+    return Diot(default_runner)
 
 def proc_depends_setter(this, value):
     """Try to convert all possible dependencies to processes"""
@@ -225,11 +226,11 @@ def proc_input(this, value): # pylint: disable=too-many-locals,too-many-branches
              'runtime_config',
              strict=False,
              msg='Process input should be accessed after it starts running')
-    input_keys_and_types = sum((always_list(key) for key in value), []) \
-                           if isinstance(value, dict) \
-                           else always_list(value) \
-                           if value \
-                           else []
+    input_keys_and_types = (sum((always_list(key) for key in value), [])
+                            if isinstance(value, dict)
+                            else always_list(value)
+                            if value
+                            else [])
 
     # {'a': 'var', 'b': 'file', ...}
     input_keytypes = OrderedDiot()
@@ -248,19 +249,21 @@ def proc_input(this, value): # pylint: disable=too-many-locals,too-many-branches
 
     ret = OrderedDiot()
     # no data specified, inherit from depends or argv
-    input_values = list(value.values()) \
-                   if isinstance(value, dict) \
-                   else [Channel.from_channels(*[
-                       d.channel for d in this.depends
-                   ]) if this.depends else Channel.from_argv()]
+    input_values = (list(value.values())
+                    if isinstance(value, dict)
+                    else [Channel.from_channels(*[d.channel
+                                                  for d in this.depends])
+                          if this.depends
+                          else Channel.from_argv()])
 
     input_channel = Channel.create()
     for invalue in input_values:
         # a callback, on all channels
         if callable(invalue):
             input_channel = input_channel.cbind(
-                invalue(*[d.channel for d in this.depends] \
-                    if this.depends else Channel.from_argv()))
+                invalue(*[d.channel for d in this.depends]
+                        if this.depends else Channel.from_argv())
+            )
         elif isinstance(invalue, Channel):
             input_channel = input_channel.cbind(invalue)
         else:
@@ -299,7 +302,7 @@ def proc_output(this, value):
         outlist = list(filter(None, always_list(value)))
         output = OrderedDiot()
         for out in outlist:
-            outparts = LiquidStream.from_string(out).split(':')
+            outparts = safe_split(out, ':')
             lenparts = len(outparts)
             if not outparts[0].isidentifier():
                 raise ProcessOutputError(
@@ -391,33 +394,18 @@ def proc_script(this, value):
         logger.debug("Using template file: %s", tplfile, proc=this.id)
         value = tplfile.read_text()
 
-    # original lines
-    olines = value.splitlines()
-    # new lines
-    nlines = []
-    indent = ''
-    for line in olines:
-        if '# PYPPL INDENT REMOVE' in line:
-            indent = line[:-len(line.lstrip())]
-        elif '# PYPPL INDENT KEEP' in line:
-            indent = ''
-        elif indent and line.startswith(indent):
-            nlines.append(line[len(indent):])
-        else:
-            nlines.append(line)
+    value = textwrap.dedent(value)
+    if not value.startswith('#!'):
+        value = '#!%s\n\n%s' % (this.lang, value)
 
-    if not nlines or not nlines[0].startswith('#!'):
-        nlines.insert(0, '#!' + this.lang)
-    nlines.append('')
-
-    return this.template('\n'.join(nlines), **this.envs)
+    return this.template(value.rstrip() + '\n', **this.envs)
 
 def proc_template(this, value):
     """Prepare the template"""
     if callable(value):
         return value
     if not value:
-        return getattr(template, 'TemplateLiquid')
+        return template.TemplateLiquid
     return getattr(template, 'Template' + value.capitalize())
 
 def proc_suffix(this, value):

@@ -1,3 +1,12 @@
+# 3.1.0 (2020.4.22)
+- Fix error when keys in args are not strings
+- Fix `utils.filesig` when dead link found in a directory
+- Try to keep the basename for input files if they are symbolic links
+- Fix ppldir being overwritten by runtime_config if it is set explictly
+- Use `textwrap.dedent` for scripts
+- Add __repr__ for ProcSet
+- Adopt latest `python-simpleconf`, `python-varname` and `liquidpy`
+
 # 3.0.3 (2020.1.22)
 - Make better alignment in runner script file
 - Refine "pyppl profile" command

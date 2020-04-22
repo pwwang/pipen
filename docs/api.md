@@ -522,7 +522,9 @@
 
 		- **returns**
 
-			- `(bool|str)`:  `ignore` if `errhow` is `ignore`, otherwise                 returns whether we could submit the job to retry.
+			- `(bool|str)`:  `ignore` if `errhow` is `ignore`, otherwise
+
+			    returns whether we could submit the job to retry.
 
 	!!! abstract "method: `submit(self)`"
 
@@ -645,7 +647,7 @@
 
 		- **params**
 
-			- `index (int)`:  which column to fetch
+			- `index (int|list)`:  which column to fetch
 
 		- **returns**
 
@@ -657,7 +659,7 @@
 
 		- **params**
 
-			- `index (int)`:  which column to fetch
+			- `index (int|list)`:  which column to fetch
 
 		- **returns**
 
