@@ -59,6 +59,7 @@ def test_procset_init(ps3):
     assert ps3.delegates['depends'] == ['starts']
     assert ps3.delegated('input') == []
     assert ps3.delegated('depends') == []
+    assert repr(ps3) == f'ProcSet(name="ps3")'
 
 
 def test_procset_init_empty(empty_ps):

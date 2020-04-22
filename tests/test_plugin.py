@@ -1,6 +1,7 @@
 import pytest
 import types
 from diot import Diot
+from pyppl import PyPPL
 from pyppl.plugin import PluginConfig, _get_plugin, pluginmgr, disable_plugin, config_plugins, hookimpl
 from pyppl.exception import PluginNoSuchPlugin
 
@@ -230,3 +231,17 @@ def test_job_kill(tmp_path, capsys, caplog):
     job.dir.mkdir(parents=True, exist_ok=True)
     assert job.kill()
     assert 'succeeded' in capsys.readouterr().out
+
+
+def test_pyppl_prerun_stop_run(tmp_path):
+    class PyPPLStopRun:
+        @hookimpl
+        def pyppl_prerun(self, ppl):
+            return False
+
+        @hookimpl
+        def pyppl_postrun(self, ppl):
+            ppl.props.x = 1
+    pluginmgr.register(PyPPLStopRun())
+    ppl = PyPPL().run()
+    assert ppl.props.x == 1

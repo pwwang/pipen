@@ -5,7 +5,7 @@ import uuid
 import textwrap
 from pathlib import Path
 import cmdy
-from simpleconf import NoSuchProfile
+from simpleconf import Config
 from diot import OrderedDiot, Diot
 from liquid.stream import safe_split
 from . import template
@@ -133,41 +133,41 @@ def proc_runner(this, value):
     """Turn a runner profile to a runner config
     If it is a config, update the default one with it,
     otherwise, read the runner config from profile
+    if value is a dict given by proc.runner = {...}, then we should make it
+    based on defaults (both config and runtime_config), otherwise, we should
+    check if it is a profile or a direct runner name
     """
-    # Use runtime_config's runner if not set
-    if not this._setcounter.get('runner') and this.runtime_config:
-        value = this.runtime_config.get('runner', {})
+    runtime_config = this.runtime_config or Config()
+    # Use runtime_config's runner if not set. default_config.runner
+    # should be ignored when initialized
+    if (not this._setcounter.get('runner')
+            and this.runtime_config.get('runner')):
+        value = this.runtime_config.runner
 
-    # If it is a profile or direct runner
-    config_to_look_for = this.runtime_config or config
-    if isinstance(value, str):
-        try:
-            with config_to_look_for._with(profile=value,
-                                          raise_exc=True,
-                                          copy=True) as rconfig:
-                value = rconfig.get('runner', {})
-        except NoSuchProfile:
-            pass
+    default_runner = {}
+    with config._with('default', copy=True) as dconf:
+        default_runner.update(dconf.get('runner', {}))
+    with runtime_config._with('default', copy=True) as dconf:
+        default_runner.update(dconf.get('runner', {}))
 
-        if not isinstance(value, dict):
-            value = dict(runner=value)
+    if isinstance(value, dict):
+        default_runner.update(value)
+    elif value in config._profiles:
+        with config._with(value, copy=True) as vconf:
+            default_runner.update(vconf.get('runner', {}))
+    elif value in runtime_config._profiles:
+        with runtime_config._with(value, copy=True) as vconf:
+            default_runner.update(vconf.get('runner', {}))
+    else:
+        default_runner['runner'] = value
 
-    assert isinstance(value, dict)
-    with config_to_look_for._with(profile='default', copy=True) as rconfig:
-        runner_config = rconfig.get('runner', {})
-        if not isinstance(runner_config, dict):
-            runner_config = Diot(runner=runner_config)
-        runner_config.update(value)
-
-    if 'runner' not in runner_config:
-        runner_config.runner = 'local'
-
-    ret = this._runner
-    if not isinstance(ret, dict):
-        ret = Diot(runner=this._runner)
-
-    ret.update(runner_config)
-    return ret
+    default_runner.setdefault('runner', 'local')
+    # in case we have 'sge.runner', we turn it into 'sge_runner'
+    # have to copy the keys, otherwise, dictionary changed size during
+    # iteration
+    for key in list(default_runner):
+        default_runner[key.replace('.', '_')] = default_runner.pop(key)
+    return Diot(default_runner)
 
 def proc_depends_setter(this, value):
     """Try to convert all possible dependencies to processes"""

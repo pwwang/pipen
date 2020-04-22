@@ -55,7 +55,8 @@ def test_status(tmp_path):
 
 def test_profile():
     cmd = pyppl.profile()
-
+    assert '>>> default' in cmd.stderr
+    cmd = pyppl.profile(name='default', nodefault=True)
     assert '>>> default' in cmd.stderr
 
 
