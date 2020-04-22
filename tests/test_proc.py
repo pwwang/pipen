@@ -435,6 +435,14 @@ def test_workdir(tmp_path):
     pWorkdir2.runtime_config = {'dirsig': False}
     assert '.newtag' in pWorkdir2.workdir.stem
 
+    pWorkdir3 = Proc(ppldir=tmp_path)
+    pWorkdir3.tag = 'newtag@procset'
+    pWorkdir3.input = 'x'
+    pWorkdir3.output = 'x:1'
+    pWorkdir3.runtime_config = {'dirsig': False}
+    assert pWorkdir3.tag == 'newtag@procset'
+    assert '.newtag@procset' in pWorkdir3.workdir.stem
+
 
 def test_jobs():
     pJobs = Proc()
