@@ -4,10 +4,10 @@ import sys
 import uuid
 import textwrap
 from pathlib import Path
+from liquid.stream import safe_split
+from diot import OrderedDiot, Diot
 import cmdy
 from simpleconf import Config
-from diot import OrderedDiot, Diot
-from liquid.stream import safe_split
 from . import template
 from .runner import use_runner
 from .config import config
