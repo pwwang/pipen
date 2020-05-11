@@ -215,7 +215,7 @@ class StreamFormatter(logging.Formatter):
                 ))
         color = self.theme.get_color(record.mylevel)
         record.msg = (f" {color}{record.plugin:>7s}."
-                      f"{record.mylevel:7s}{colorama.Style.RESET_ALL}] "
+                      f"{record.mylevel:>7s}{colorama.Style.RESET_ALL}] "
                       f"{color}{proc}{jobs}{record.msg}"
                       f"{colorama.Style.RESET_ALL}")
 

@@ -50,7 +50,7 @@ def test_stream_formatter():
              proc='',
              jobidx=None))
     assert sfmt.format(record).endswith(
-        '\x1b[32m   MAIN.INFO   \x1b[0m] \x1b[32mThis is logging record.\x1b[0m')
+        '\x1b[32m   MAIN.   INFO\x1b[0m] \x1b[32mThis is logging record.\x1b[0m')
 
     record = logging.makeLogRecord(
         dict(
@@ -62,11 +62,11 @@ def test_stream_formatter():
             joblen=10,
         ))
     assert sfmt.format(record).endswith(
-        '\x1b[32m   MAIN.INFO   \x1b[0m] \x1b[32mpProc: [01/10] This is logging record1.\x1b[0m'
+        '\x1b[32m   MAIN.   INFO\x1b[0m] \x1b[32mpProc: [01/10] This is logging record1.\x1b[0m'
     )
     assert len(record.tails) == 1
     assert record.tails[0].formatted.endswith(
-        '\x1b[32m   MAIN.INFO   \x1b[0m] \x1b[32mpProc: [01/10] This is logging record2.\x1b[0m'
+        '\x1b[32m   MAIN.   INFO\x1b[0m] \x1b[32mpProc: [01/10] This is logging record2.\x1b[0m'
     )
 
 

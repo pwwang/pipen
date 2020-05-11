@@ -248,4 +248,4 @@ def test_pyppl_prerun_stop_run(tmp_path, caplog):
     ppl = PyPPL().run()
     assert ppl.props.x == 1
 
-    assert "STOPRUN.INFO   ] Stopped." in caplog.text
+    assert "STOPRUN.   INFO] Stopped." in caplog.text
