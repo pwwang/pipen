@@ -253,15 +253,15 @@ class PyPPL:
         # for default profile, we shall not load anything from default_config
         # as part/base of runtime config, since they have alread been used as
         # default values when initialize Proc object
+        defconfig = Config()
         if profile == 'default':
-            defconfig = Config()
+            pass
         elif profile in default_config._profiles:
             # Otherwise, we just use the settings of profile from default_config
             # as the base of runtime config
             with default_config._with(profile, copy=True) as dconfig:
-                defconfig = dconfig
+                defconfig._load({profile: dconfig.dict()})
         else: # assuming direct runner
-            defconfig = Config()
             defconfig._load({'default': {'runner': profile}},
                             factory=_config_factory)
 

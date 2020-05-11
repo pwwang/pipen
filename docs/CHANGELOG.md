@@ -1,3 +1,6 @@
+# 3.1.1 (2020.5.10)
+- Fix preset default still overwrite runtime config
+
 # 3.1.0 (2020.4.22)
 - Fix error when keys in args are not strings
 - Fix `utils.filesig` when dead link found in a directory
