@@ -22,7 +22,8 @@ from .plugin import pluginmgr
 colorama.init(autoreset=False)
 
 LOG_FORMAT = "[%(asctime)s%(message)s"
-LOGTIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+# [05-10 09:10:10    MAIN.  PYPPL] message
+LOGTIME_FORMAT = "%m-%d %H:%M:%S"
 
 GROUP_VALUES = dict(TITLE=80,
                     SUBTITLE=70,
@@ -192,7 +193,6 @@ class StreamFormatter(logging.Formatter):
             return record.formatted
 
         # save the formatted, for all handlers
-        level = record.mylevel
         record.msg = str(record.msg)
         if '\n' in record.msg:
             record.tails = []
@@ -204,23 +204,21 @@ class StreamFormatter(logging.Formatter):
                 self.format(rec)
                 record.tails.append(rec)
 
-        record.msg = (' {COLOR}{LEVEL}{RESET_ALL}] '
-                      '{COLOR}{PROC}{JOBS}{MSG}{RESET_ALL}').format(
-                          COLOR=self.theme.get_color(level),
-                          LEVEL=level.rjust(7),
-                          RESET_ALL=colorama.Style.RESET_ALL,
-                          PROC=record.proc + ': ' \
-                               if hasattr(record, 'proc') and record.proc \
-                               else '',
-                          MSG=record.msg,
-                          JOBS='' if record.jobidx is None \
-                                  else '[{ji}/{jt}] '.format(
-                                      ji=str(record.jobidx + 1).zfill(
-                                          len(str(record.joblen))
-                                      ),
-                                      jt=record.joblen
-                                  )
-                      )
+        proc = record.proc
+        proc += (': '
+                 if hasattr(record, 'proc') and record.proc
+                 else '')
+        jobs = ('' if record.jobidx is None
+                else '[{ji}/{jt}] '.format(
+                    ji=str(record.jobidx + 1).zfill(len(str(record.joblen))),
+                    jt=record.joblen
+                ))
+        color = self.theme.get_color(record.mylevel)
+        record.msg = (f" {color}{record.plugin:>7s}."
+                      f"{record.mylevel:7s}{colorama.Style.RESET_ALL}] "
+                      f"{color}{proc}{jobs}{record.msg}"
+                      f"{colorama.Style.RESET_ALL}")
+
         setattr(record, 'formatted', logging.Formatter.format(self, record))
         return record.formatted
 
@@ -376,26 +374,31 @@ def init_levels(group, leveldiffs):
 class Logger:
     """@API
     A wrapper of logger
+
+    All plugins or main process should initialize a logger like:
+    ```
+    logger = Logger(plugin="Main")
+
+    ```
     """
 
-    __slots__ = ('baked', 'name', 'ispbar', 'logger')
+    __slots__ = ('_plugin', '_name', '_ispbar', '_logger')
 
-    def __init__(self, name='PyPPL', bake=False):
+    def __init__(self, name: str = 'PyPPL', plugin: str = 'main'):
         """@API
         The logger wrapper construct
         @params:
             name (str): The logger name. Default: `PyPPL`
             bake (dict): The arguments to bake a new logger.
         """
-        self.baked = bake or {}
-        self.name = name
-        self.ispbar = False
-        if bake:
-            self.logger = logging.getLogger(self.name)
-        else:
-            self.init()
+        self._name = name
+        self._plugin = plugin.upper()
+        self._ispbar = False
+        self._logger = logging.getLogger(self._name)
+        if self._plugin == "MAIN":
+            self.initialize()
 
-    def init(self, config=None):
+    def initialize(self, config=None):
         """@API
         Initiate the logger, called by the construct,
         Just in case, we want to change the config and as default_config
@@ -403,30 +406,33 @@ class Logger:
         @params:
             conf (Config): The configuration used to initiate logger.
         """
+
         config = config or default_config.logger
         config2 = default_config.logger.copy()
         config2.update(config)
         config = config2
 
-        self.logger = logging.getLogger(self.name)
-        self.logger.setLevel(1)
-        for handler in self.logger.handlers:
+        # Set a low level level, let me control the logging level acutally
+        self._logger.setLevel(1)
+        # Remove existing logger handlers
+        for handler in self._logger.handlers:
             handler.close()
-        del self.logger.handlers[:]
-        pluginmgr.hook.logger_init(logger=self)
+        del self._logger.handlers[:]
 
         theme = Theme(config.theme)
         levels = init_levels(config.level.upper(), config.leveldiffs)
         stream_handler = StreamHandler()
-        stream_handler.addFilter(StreamFilter(self.name, levels))
+        stream_handler.addFilter(StreamFilter(self._name, levels))
         stream_handler.setFormatter(StreamFormatter(theme))
-        self.logger.addHandler(stream_handler)
+        self._logger.addHandler(stream_handler)
 
         if config.file:
             file_handler = logging.FileHandler(config.file)
-            file_handler.addFilter(FileFilter(self.name, levels))
+            file_handler.addFilter(FileFilter(self._name, levels))
             file_handler.setFormatter(FileFormatter())
-            self.logger.addHandler(file_handler)
+            self._logger.addHandler(file_handler)
+        # Plugins to add levels
+        pluginmgr.hook.logger_init(logger=self)
 
     def add_level(self, level, group='INFO'):  # pylint: disable=no-self-use
         """@API
@@ -453,16 +459,6 @@ class Logger:
         """
         SUBLEVELS[slevel.upper()] = lines
 
-    def bake(self, **kwargs):
-        """@API
-        Bake the logger with certain arguments
-        @params
-            *kwargs: arguments used to bake a new logger
-        @returns:
-            (Logger): The new logger.
-        """
-        return self.__class__(self.name, bake=kwargs)
-
     @property
     def pbar(self):
         """@API
@@ -471,17 +467,19 @@ class Logger:
         @returns:
             (Logger): The Logger object itself
         """
-        self.ispbar = True
+        self._ispbar = True
         return self
 
     def _emit(self, *args, **kwargs):
         extra = {'jobidx': None, 'proc': '', 'done': False}
-        extra.update(self.baked)
         extra.update({'mylevel': kwargs.pop('_level')})
         extra.update(kwargs.pop('_extra'))
         extra.update(kwargs.pop('extra', {}))
         extra.update(kwargs)
-        self.logger.info(*args, extra=extra)
+        # plugin is not supposed to be an argument
+        # overwriting all that passed in
+        extra['plugin'] = self._plugin
+        self._logger.info(*args, extra=extra)
 
     def __getattr__(self, name):
         """@API
@@ -491,8 +489,8 @@ class Logger:
         @returns:
             (callable): The logger with the level
         """
-        ispbar = self.ispbar
-        self.ispbar = False
+        ispbar = self._ispbar
+        self._ispbar = False
         return partial(self._emit,
                        _level=name.upper(),
                        _extra=dict(ispbar=ispbar, slevel=None))

@@ -337,7 +337,7 @@ class TestTemplateLiquid:
     @pytest.mark.parametrize(
         'source, data, out',
         [
-            ("""{% mode compact %}
+            ("""{% config mode=compact %}
 		whatever
 		{%- if a in b -%}
 		{{a}}

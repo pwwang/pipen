@@ -222,7 +222,7 @@ class PyPPL:
         logger_config.update(self.runtime_config.pop('logger', {}))
         if logger_config['file'] is True:
             logger_config['file'] = './{}.pyppl.log'.format(self.name)
-        logger.init(logger_config)
+        logger.initialize(logger_config)
         del logger_config
 
         config = self.runtime_config.pop('plugins', [])

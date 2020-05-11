@@ -4,7 +4,7 @@ from diot import Diot
 from pyppl import PyPPL
 from pyppl.plugin import PluginConfig, _get_plugin, pluginmgr, disable_plugin, config_plugins, hookimpl
 from pyppl.exception import PluginNoSuchPlugin
-
+from pyppl.logger import Logger
 
 class PyPPLPlugin:
     pass
@@ -233,10 +233,12 @@ def test_job_kill(tmp_path, capsys, caplog):
     assert 'succeeded' in capsys.readouterr().out
 
 
-def test_pyppl_prerun_stop_run(tmp_path):
+def test_pyppl_prerun_stop_run(tmp_path, caplog):
+    logger = Logger(plugin="stoprun")
     class PyPPLStopRun:
         @hookimpl
         def pyppl_prerun(self, ppl):
+            logger.info("Stopped.")
             return False
 
         @hookimpl
@@ -245,3 +247,5 @@ def test_pyppl_prerun_stop_run(tmp_path):
     pluginmgr.register(PyPPLStopRun())
     ppl = PyPPL().run()
     assert ppl.props.x == 1
+
+    assert "STOPRUN.INFO   ] Stopped." in caplog.text

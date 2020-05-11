@@ -46,25 +46,27 @@ def test_stream_formatter():
     record = logging.makeLogRecord(
         dict(msg="This is logging record.",
              mylevel="INFO",
+             plugin="MAIN",
              proc='',
              jobidx=None))
     assert sfmt.format(record).endswith(
-        '\x1b[32m   INFO\x1b[0m] \x1b[32mThis is logging record.\x1b[0m')
+        '\x1b[32m   MAIN.INFO   \x1b[0m] \x1b[32mThis is logging record.\x1b[0m')
 
     record = logging.makeLogRecord(
         dict(
             msg="This is logging record1.\nThis is logging record2.",
             mylevel="INFO",
             proc='pProc',
+            plugin="MAIN",
             jobidx=0,
             joblen=10,
         ))
     assert sfmt.format(record).endswith(
-        '\x1b[32m   INFO\x1b[0m] \x1b[32mpProc: [01/10] This is logging record1.\x1b[0m'
+        '\x1b[32m   MAIN.INFO   \x1b[0m] \x1b[32mpProc: [01/10] This is logging record1.\x1b[0m'
     )
     assert len(record.tails) == 1
     assert record.tails[0].formatted.endswith(
-        '\x1b[32m   INFO\x1b[0m] \x1b[32mpProc: [01/10] This is logging record2.\x1b[0m'
+        '\x1b[32m   MAIN.INFO   \x1b[0m] \x1b[32mpProc: [01/10] This is logging record2.\x1b[0m'
     )
 
 
@@ -244,25 +246,25 @@ def test_logger_init_levels():
 
 
 def test_logger_init(tmpdir):
-    logger = Logger(bake=True)
-    default_config.logger.file = tmpdir / 'logger.txt'
-    logger.init()
-    assert len(logger.logger.handlers) == 2
-
-    logger.init({'file': False})
-    assert len(logger.logger.handlers) == 1
-
-
-def test_logger_bake():
     logger = Logger()
-    logger2 = logger.bake(a=1, b=2)
-    assert logger2.baked == {'a': 1, 'b': 2}
+    default_config.logger.file = tmpdir / 'logger.txt'
+    logger.initialize()
+    assert len(logger._logger.handlers) == 2
+
+    logger.initialize({'file': False})
+    assert len(logger._logger.handlers) == 1
+
+
+# def test_logger_bake():
+#     logger = Logger()
+#     logger2 = logger.bake(a=1, b=2)
+#     assert logger2.baked == {'a': 1, 'b': 2}
 
 
 def test_logger_pbar():
     logger = Logger()
     assert logger.pbar is logger
-    assert logger.ispbar
+    assert logger._ispbar
 
 
 def test_logger_emit(caplog):

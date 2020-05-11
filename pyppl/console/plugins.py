@@ -16,7 +16,7 @@ def cli_addcmd(commands):
 def cli_execcmd(command, opts):  # pylint: disable=unused-argument
     """Run the command"""
     if command == 'plugins':
-        logger.init({'level': 'notset'})
+        logger.initialize({'level': 'notset'})
         for plugin in sorted(pluginmgr.get_plugins(), key=pluginmgr.get_name):
 
             logger.plugin(

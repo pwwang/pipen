@@ -26,5 +26,5 @@ def main():
     """Entry point"""
     command, opts, _ = commands._parse(dict_wrapper=Diot)
     pluginmgr.hook.logger_init(logger=logger)
-    logger.init()
+    logger.initialize()
     pluginmgr.hook.cli_execcmd(command=command, opts=opts)
