@@ -14,4 +14,4 @@ heatmap(mat)
 dev.off()
 """
 
-PyPPL(config_files = ['./PyPPL.toml']).start(pHeatmap).run('local5')
+PyPPL(config_files=['./PyPPL.toml']).start(pHeatmap).run('local5')
