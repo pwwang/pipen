@@ -419,6 +419,9 @@ class Logger:
             handler.close()
         del self._logger.handlers[:]
 
+        # Plugins to add levels
+        pluginmgr.hook.logger_init(logger=self)
+
         theme = Theme(config.theme)
         levels = init_levels(config.level.upper(), config.leveldiffs)
         stream_handler = StreamHandler()
@@ -431,8 +434,6 @@ class Logger:
             file_handler.addFilter(FileFilter(self._name, levels))
             file_handler.setFormatter(FileFormatter())
             self._logger.addHandler(file_handler)
-        # Plugins to add levels
-        pluginmgr.hook.logger_init(logger=self)
 
     def add_level(self, level, group='INFO'):  # pylint: disable=no-self-use
         """@API

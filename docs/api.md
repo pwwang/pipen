@@ -1808,9 +1808,13 @@
 !!! example "class: `Logger`"
 
 	A wrapper of logger
+	All plugins or main process should initialize a logger like:
+	```
+	logger = Logger(plugin="Main")
+	```
 	
 
-	!!! abstract "method: `__init__(self, name, bake)`"
+	!!! abstract "method: `__init__(self, name, plugin)`"
 
 		The logger wrapper construct
 
@@ -1851,19 +1855,7 @@
 
 			    - Negative value means a summary will be printed
 
-	!!! abstract "method: `bake(self, **kwargs)`"
-
-		Bake the logger with certain arguments
-
-		- **params**
-
-			- `*kwargs`:  arguments used to bake a new logger
-
-		- **returns**
-
-			- `(Logger)`:  The new logger.
-
-	!!! abstract "method: `init(self, config)`"
+	!!! abstract "method: `initialize(self, config)`"
 
 		Initiate the logger, called by the construct,
 		Just in case, we want to change the config and as default_config
