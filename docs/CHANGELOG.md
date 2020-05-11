@@ -1,3 +1,6 @@
+# 3.2.0 (2020.5.11)
+- Add plugin names in logging messages
+
 # 3.1.1 (2020.5.10)
 - Fix preset default still overwrite runtime config
 
