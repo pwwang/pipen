@@ -316,16 +316,16 @@ class PyPPL:
                     lessprocs.insert(0, '')
 
                 for i in range(len(lessprocs)):
-                    if i == int((len(lessprocs) - 1) / 2):
-                        logger.depends('| %s | => %s => | %s |',
-                                       depends[i].ljust(depmaxlen),
-                                       proc.name,
-                                       nexts[i].ljust(nxtmaxlen))
-                    else:
-                        logger.depends('| %s |    %s    | %s |',
-                                       depends[i].ljust(depmaxlen),
-                                       ' ' * len(proc.name),
-                                       nexts[i].ljust(nxtmaxlen))
+                    middle = (proc.name if i == int((len(lessprocs) - 1) / 2)
+                              else ' ' * len(proc.name))
+                    logger.depends(
+                        '| {0} | {1} {2} {1} | {3} |'.format(
+                            depends[i].ljust(depmaxlen),
+                            '=>' if i == int((len(lessprocs)-1)/2) else '  ',
+                            middle,
+                            nexts[i].ljust(nxtmaxlen)
+                        )
+                    )
 
                 proc.run(defconfig)
 
