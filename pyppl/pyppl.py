@@ -276,60 +276,67 @@ class PyPPL:
         # will not be used for procs
         defconfig.pop('logger', None)
         defconfig.pop('plugins', None)
+        try:
+            for proc in self.procs:
+                # echo the process name and description
+                name = '%s%s: ' % (
+                    proc.name,
+                    ' (%s)' % proc.origin
+                    if proc.origin and proc.origin != proc.id
+                    else ''
+                )
 
-        for proc in self.procs:
-            # echo the process name and description
-            name = '%s%s: ' % (
-                proc.name,
-                ' (%s)' % proc.origin
-                if proc.origin and proc.origin != proc.id
-                else ''
-            )
-
-            logger.process('-' * SEPARATOR_LEN)
-            if len(name + proc.desc) > SEPARATOR_LEN:
-                logger.process(name)
-                for i in textwrap.wrap(proc.desc,
-                                       SEPARATOR_LEN,
-                                       initial_indent='  ',
-                                       subsequent_indent='  '):
-                    logger.process(i)
-            else:
-                logger.process(name + proc.desc)
-
-            logger.process('-' * SEPARATOR_LEN)
-
-            # echo the dependencies
-            depends = ([dproc.name for dproc in proc.depends]
-                       if proc.depends
-                       else ['START'])
-            nexts = ([nproc.name for nproc in proc.nexts]
-                     if proc.nexts
-                     else ['END'])
-            depmaxlen = max([len(dep) for dep in depends])
-            nxtmaxlen = max([len(nxt) for nxt in nexts])
-            lendiff = len(depends) - len(nexts)
-            lessprocs = depends if lendiff < 0 else nexts
-            lendiff = abs(lendiff)
-            lessprocs.extend([''] * (lendiff - int(lendiff / 2)))
-            for i in range(int(lendiff/2)):
-                lessprocs.insert(0, '')
-
-            for i in range(len(lessprocs)):
-                if i == int((len(lessprocs) - 1) / 2):
-                    logger.depends('| %s | => %s => | %s |',
-                                   depends[i].ljust(depmaxlen),
-                                   proc.name,
-                                   nexts[i].ljust(nxtmaxlen))
+                logger.process('-' * SEPARATOR_LEN)
+                if len(name + proc.desc) > SEPARATOR_LEN:
+                    logger.process(name)
+                    for i in textwrap.wrap(proc.desc,
+                                           SEPARATOR_LEN,
+                                           initial_indent='  ',
+                                           subsequent_indent='  '):
+                        logger.process(i)
                 else:
-                    logger.depends('| %s |    %s    | %s |',
-                                   depends[i].ljust(depmaxlen),
-                                   ' ' * len(proc.name),
-                                   nexts[i].ljust(nxtmaxlen))
+                    logger.process(name + proc.desc)
 
-            proc.run(defconfig)
+                logger.process('-' * SEPARATOR_LEN)
 
-        pluginmgr.hook.pyppl_postrun(ppl=self)
+                # echo the dependencies
+                depends = ([dproc.name for dproc in proc.depends]
+                           if proc.depends
+                           else ['START'])
+                nexts = ([nproc.name for nproc in proc.nexts]
+                         if proc.nexts
+                         else ['END'])
+                depmaxlen = max([len(dep) for dep in depends])
+                nxtmaxlen = max([len(nxt) for nxt in nexts])
+                lendiff = len(depends) - len(nexts)
+                lessprocs = depends if lendiff < 0 else nexts
+                lendiff = abs(lendiff)
+                lessprocs.extend([''] * (lendiff - int(lendiff / 2)))
+                for i in range(int(lendiff/2)):
+                    lessprocs.insert(0, '')
+
+                for i in range(len(lessprocs)):
+                    if i == int((len(lessprocs) - 1) / 2):
+                        logger.depends('| %s | => %s => | %s |',
+                                       depends[i].ljust(depmaxlen),
+                                       proc.name,
+                                       nexts[i].ljust(nxtmaxlen))
+                    else:
+                        logger.depends('| %s |    %s    | %s |',
+                                       depends[i].ljust(depmaxlen),
+                                       ' ' * len(proc.name),
+                                       nexts[i].ljust(nxtmaxlen))
+
+                proc.run(defconfig)
+
+        except BaseException as ex:
+            logger.error(f"{type(ex).__name__}:")
+            logger.error(str(ex))
+            if pluginmgr.hook.pyppl_postrun(ppl=self) is not False:
+                raise
+        else:
+            pluginmgr.hook.pyppl_postrun(ppl=self)
+
         return self
 
     def start(self, *anything):
