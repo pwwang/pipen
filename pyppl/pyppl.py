@@ -245,10 +245,6 @@ class PyPPL:
         @params:
             profile (str): The profile name
         """
-        # plugins can stop pipeling being running
-        if pluginmgr.hook.pyppl_prerun(ppl=self) is False:
-            pluginmgr.hook.pyppl_postrun(ppl=self)
-            return self
 
         # for default profile, we shall not load anything from default_config
         # as part/base of runtime config, since they have alread been used as
@@ -276,6 +272,19 @@ class PyPPL:
         # will not be used for procs
         defconfig.pop('logger', None)
         defconfig.pop('plugins', None)
+
+        # update tags, and maybe someother props that are import in prerun
+        if 'tag' in defconfig:
+            for proc in self.procs:
+                if proc._setcounter.get('tag', 0) > 0:
+                    continue
+                proc.tag = defconfig.tag
+
+        # plugins can stop pipeling being running
+        if pluginmgr.hook.pyppl_prerun(ppl=self) is False:
+            pluginmgr.hook.pyppl_postrun(ppl=self)
+            return self
+
         try:
             for proc in self.procs:
                 # echo the process name and description
