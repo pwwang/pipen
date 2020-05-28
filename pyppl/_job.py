@@ -105,6 +105,7 @@ def job_input(this, value):  # pylint: disable=too-many-branches
                     (key, intype),
                     slevel='INFILE_EMPTY',
                     level="warning")
+                this.data.i[key] = []
                 continue
 
             if not isinstance(indata, list):
