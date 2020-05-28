@@ -336,6 +336,42 @@
 
 		The signature
 
+!!! abstract "method: `log_msg_len(procid, joblen, ret, fallback, maxlen, minlen)`"
+
+	Get the progress bar size (length) according to the terminal width
+
+	- **params**
+
+		- `procid (str)`:  The process id
+
+		- `joblen (int)`:  The number of jobs
+
+		- `fallback (int)`:  The value to return if we fail
+
+		- `adjust (int)`:  Adjust the length to get the length of message with
+
+		              or without proc id and/or job index indicators
+
+		    - `with-pbar`: return the progress bar size with everything
+
+		    - `with-nothing`: return the length without process id nor job
+
+		                      index indicator
+
+		    - `with-proc`: return the length of message with proc id only
+
+		    - `with-job`: return the length of message with proc id and
+
+		                  job index indicator
+
+		- `maxlen (int)`:  The maximum length of returned length
+
+		- `minlen (int)`:  The minimum length of returned length
+
+	- **returns**
+
+		- `(int)`:  The progress bar size
+
 !!! abstract "method: `name2filename(name)`"
 
 	Convert any name to a valid filename
@@ -1405,8 +1441,6 @@
 
 	- `PBAR_LEVEL (dict)`:  The levels for different states
 
-	- `PBAR_SIZE (int)`:  the size of the progress bar
-
 !!! example "class: `Jobmgr`"
 
 	Job manager
@@ -1641,7 +1675,7 @@
 
 		- `proc (Proc)`:  The Proc instance
 
-		- `status (str)`:  succeeded/failed
+		- `status (str)`:  succeeded/failed/cached
 
 !!! abstract "method: `proc_prerun(proc)`"
 
@@ -1668,8 +1702,9 @@
 
 	PLUGIN API
 	After the pipeline is done
-	If the pipeline fails, this won't run.
+	If you want to do something after a process fails
 	Use proc_postrun(proc = proc, status = 'failed') instead.
+	Return False will stop exception being raised
 
 	- **params**
 
@@ -1691,6 +1726,8 @@
 
 	PLUGIN API
 	Add default configs
+	Note that this is not running for runtime plugins, which are regiested later
+	after the module is loaded.
 
 	- **params**
 

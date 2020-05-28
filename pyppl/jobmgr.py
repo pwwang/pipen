@@ -3,14 +3,13 @@
     STATES (dict): Possible states for the job
     PBAR_MARKS (dict): The marks on progress bar for different states
     PBAR_LEVEL (dict): The levels for different states
-    PBAR_SIZE (int): the size of the progress bar
 """
 import sys
 from time import sleep
 from threading import Lock
 from queue import Queue
 from diot import Diot
-from .utils import StateMachine, PQueue, ThreadPool
+from .utils import StateMachine, PQueue, ThreadPool, log_msg_len
 from .plugin import pluginmgr
 from .logger import logger
 from .exception import JobBuildingError, JobFailError
@@ -68,14 +67,12 @@ PBAR_LEVEL = {
     STATES.KILLFAILED: 'KILLING',
 }
 
-PBAR_SIZE = 50
-
 
 class Jobmgr:
     """@API
     Job manager"""
 
-    __slots__ = ('jobs', 'proc', 'stop', 'queue', 'nslots', 'lock')
+    __slots__ = ('jobs', 'proc', 'stop', 'queue', 'nslots', 'lock', 'barsize')
 
     def __init__(self, jobs):
         """@API
@@ -100,6 +97,9 @@ class Jobmgr:
 
         self.queue = PQueue(batch_len=len(jobs))
         self.nslots = min(self.queue.batch_len, int(self.proc.nthread))
+
+        self.barsize = log_msg_len(procid=self.proc.id,
+                                   joblen=len(jobs))
 
         for job in jobs:
             self.queue.put(job.index)
@@ -178,7 +178,9 @@ class Jobmgr:
         Start the queue.
         """
         # no jobs
-        if not hasattr(self, 'lock'):
+        try:
+            self.jobs
+        except AttributeError:
             return
 
         pool = ThreadPool(self.nslots, initializer=self.worker)
@@ -191,16 +193,16 @@ class Jobmgr:
     def _distribute_jobs_to_pbar(self):
         joblen = len(self.jobs)
         index_bjobs = []
-        if joblen <= PBAR_SIZE:
-            div, mod = divmod(PBAR_SIZE, joblen)
+        if joblen <= self.barsize:
+            div, mod = divmod(self.barsize, joblen)
             for j in range(joblen):
                 step = div + 1 if j < mod else div
                 for _ in range(step):
                     index_bjobs.append([j])
         else:
             jobx = 0
-            div, mod = divmod(joblen, PBAR_SIZE)
-            for i in range(PBAR_SIZE):
+            div, mod = divmod(joblen, self.barsize)
+            for i in range(self.barsize):
                 step = div + 1 if i < mod else div
                 index_bjobs.append([jobx + jobstep for jobstep in range(step)])
                 jobx += step

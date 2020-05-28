@@ -1,3 +1,11 @@
+# 3.2.1 (2020.5.28)
+- Allow pyppl_postrun hook to stop the exception raising
+- Make proc_prerun hook access proc props and initialized jobs
+- Fix tag set in runtime not updated to proc in log
+- Get progress bar length according to the terminal width
+- Deprecate setup hook
+- Fix job input loses key of empty list
+
 # 3.2.0 (2020.5.11)
 - Add plugin names in logging messages
 

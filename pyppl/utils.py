@@ -4,6 +4,7 @@ from os import path, walk
 from copy import deepcopy
 from queue import PriorityQueue
 from threading import Thread
+import shutil
 import cmdy
 from transitions import Transition, Machine
 from liquid.stream import safe_split
@@ -22,6 +23,64 @@ def name2filename(name):
     name = re.sub(r'_+', '_', name)
     return name.strip('_')
 
+def log_msg_len(procid='', # pylint: disable=too-many-arguments
+                joblen=0,
+                ret='with-pbar',
+                fallback=50,
+                maxlen=80,
+                minlen=20):
+    """@API
+    Get the progress bar size (length) according to the terminal width
+    @params:
+        procid (str): The process id
+        joblen (int): The number of jobs
+        fallback (int): The value to return if we fail
+        adjust (int): Adjust the length to get the length of message with
+                      or without proc id and/or job index indicators
+            - `with-pbar`: return the progress bar size with everything
+            - `with-nothing`: return the length without process id nor job
+                              index indicator
+            - `with-proc`: return the length of message with proc id only
+            - `with-job`: return the length of message with proc id and
+                          job index indicator
+        maxlen (int): The maximum length of returned length
+        minlen (int): The minimum length of returned length
+    @returns:
+        (int): The progress bar size
+    """
+    # pylint: disable=line-too-long
+    # calculate # chars other than the pbar
+    # typically:
+    # [05-27 17:59:58    MAIN.JOBDONE] pProcess: [3/3] [ ...pbar... ] Done: 100.0% | Running: 0
+    # ---------------------------------<procid>---j-j---............--------------------------j
+    # pylint: enable=line-too-long
+    proclen = len(procid)
+    jobidlen = len(str(joblen))
+
+    if ret == 'with-pbar':
+        nonpbar_len = (33 + # logformat
+                       proclen+2 + # proc id
+                       1+jobidlen+1+jobidlen+2 + # job index indicator
+                       1 + # [
+                       2 + # ]<space>
+                       24+jobidlen) # Done ...
+    elif ret == 'with-nothing':
+        nonpbar_len = 33
+    elif ret == 'with-proc':
+        nonpbar_len = 33 + proclen+2
+    elif ret == 'with-job':
+        nonpbar_len = 33 + proclen+2 + 2*jobidlen+4
+
+    total_fallback = nonpbar_len + fallback
+
+    try:
+        total_width = shutil.get_terminal_size().columns - 1
+    except (OSError, AttributeError): # pragma: no cover
+        total_width = total_fallback
+
+    if not isinstance(total_width, int) or total_width <= nonpbar_len:
+        total_width = total_fallback
+    return max(minlen, min(maxlen, total_width - nonpbar_len))
 
 def format_secs(seconds):
     """@API

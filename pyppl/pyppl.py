@@ -22,10 +22,10 @@ from .exception import (PyPPLInvalidConfigurationKey,
                         ProcessAlreadyRegistered,
                         PyPPLWrongPositionMethod,
                         PyPPLMethodExists)
-from .utils import try_deepcopy, name2filename, fs
+from .utils import try_deepcopy, name2filename, fs, log_msg_len
 
 # length of separators in log
-SEPARATOR_LEN = 80
+SEPARATOR_LEN = log_msg_len(ret='with-nothing', minlen=45)
 # Regiester processes
 PROCESSES = set()
 # tips
@@ -239,16 +239,13 @@ class PyPPL:
         self.props = Diot()  # for plugins
         pluginmgr.hook.pyppl_init(ppl=self)
 
-    def run(self, profile='default'):
+    def run(self, profile='default'): # pylint: disable=too-many-branches
         """@API
         Run the pipeline with certain profile
         @params:
             profile (str): The profile name
         """
-        # plugins can stop pipeling being running
-        if pluginmgr.hook.pyppl_prerun(ppl=self) is False:
-            pluginmgr.hook.pyppl_postrun(ppl=self)
-            return self
+        # This function needs to be simplified later
 
         # for default profile, we shall not load anything from default_config
         # as part/base of runtime config, since they have alread been used as
@@ -277,59 +274,79 @@ class PyPPL:
         defconfig.pop('logger', None)
         defconfig.pop('plugins', None)
 
-        for proc in self.procs:
-            # echo the process name and description
-            name = '%s%s: ' % (
-                proc.name,
-                ' (%s)' % proc.origin
-                if proc.origin and proc.origin != proc.id
-                else ''
-            )
+        # update tags, and maybe someother props that are import in prerun
+        if 'tag' in defconfig:
+            for proc in self.procs:
+                if proc._setcounter.get('tag', 0) > 0:
+                    continue
+                proc.tag = defconfig.tag
 
-            logger.process('-' * SEPARATOR_LEN)
-            if len(name + proc.desc) > SEPARATOR_LEN:
-                logger.process(name)
-                for i in textwrap.wrap(proc.desc,
-                                       SEPARATOR_LEN,
-                                       initial_indent='  ',
-                                       subsequent_indent='  '):
-                    logger.process(i)
-            else:
-                logger.process(name + proc.desc)
+        # plugins can stop pipeling being running
+        if pluginmgr.hook.pyppl_prerun(ppl=self) is False:
+            pluginmgr.hook.pyppl_postrun(ppl=self)
+            return self
 
-            logger.process('-' * SEPARATOR_LEN)
+        try:
+            for proc in self.procs:
+                # echo the process name and description
+                name = '%s%s: ' % (
+                    proc.name,
+                    ' (%s)' % proc.origin
+                    if proc.origin and proc.origin != proc.id
+                    else ''
+                )
 
-            # echo the dependencies
-            depends = ([dproc.name for dproc in proc.depends]
-                       if proc.depends
-                       else ['START'])
-            nexts = ([nproc.name for nproc in proc.nexts]
-                     if proc.nexts
-                     else ['END'])
-            depmaxlen = max([len(dep) for dep in depends])
-            nxtmaxlen = max([len(nxt) for nxt in nexts])
-            lendiff = len(depends) - len(nexts)
-            lessprocs = depends if lendiff < 0 else nexts
-            lendiff = abs(lendiff)
-            lessprocs.extend([''] * (lendiff - int(lendiff / 2)))
-            for i in range(int(lendiff/2)):
-                lessprocs.insert(0, '')
-
-            for i in range(len(lessprocs)):
-                if i == int((len(lessprocs) - 1) / 2):
-                    logger.depends('| %s | => %s => | %s |',
-                                   depends[i].ljust(depmaxlen),
-                                   proc.name,
-                                   nexts[i].ljust(nxtmaxlen))
+                logger.process('-' * SEPARATOR_LEN)
+                if len(name + proc.desc) > SEPARATOR_LEN:
+                    logger.process(name)
+                    for i in textwrap.wrap(proc.desc,
+                                           SEPARATOR_LEN,
+                                           initial_indent='  ',
+                                           subsequent_indent='  '):
+                        logger.process(i)
                 else:
-                    logger.depends('| %s |    %s    | %s |',
-                                   depends[i].ljust(depmaxlen),
-                                   ' ' * len(proc.name),
-                                   nexts[i].ljust(nxtmaxlen))
+                    logger.process(name + proc.desc)
 
-            proc.run(defconfig)
+                logger.process('-' * SEPARATOR_LEN)
 
-        pluginmgr.hook.pyppl_postrun(ppl=self)
+                # echo the dependencies
+                depends = ([dproc.name for dproc in proc.depends]
+                           if proc.depends
+                           else ['START'])
+                nexts = ([nproc.name for nproc in proc.nexts]
+                         if proc.nexts
+                         else ['END'])
+                depmaxlen = max([len(dep) for dep in depends])
+                nxtmaxlen = max([len(nxt) for nxt in nexts])
+                lendiff = len(depends) - len(nexts)
+                lessprocs = depends if lendiff < 0 else nexts
+                lendiff = abs(lendiff)
+                lessprocs.extend([''] * (lendiff - int(lendiff / 2)))
+                for i in range(int(lendiff/2)):
+                    lessprocs.insert(0, '')
+
+                for i in range(len(lessprocs)):
+                    middle = (proc.name if i == int((len(lessprocs) - 1) / 2)
+                              else ' ' * len(proc.name))
+                    logger.depends(
+                        '| {0} | {1} {2} {1} | {3} |'.format(
+                            depends[i].ljust(depmaxlen),
+                            '=>' if i == int((len(lessprocs)-1)/2) else '  ',
+                            middle,
+                            nexts[i].ljust(nxtmaxlen)
+                        )
+                    )
+
+                proc.run(defconfig)
+
+        except BaseException as ex:
+            logger.error(f"{type(ex).__name__}:")
+            logger.error(str(ex))
+            if pluginmgr.hook.pyppl_postrun(ppl=self) is not False:
+                raise
+        else:
+            pluginmgr.hook.pyppl_postrun(ppl=self)
+
         return self
 
     def start(self, *anything):

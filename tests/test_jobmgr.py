@@ -179,8 +179,9 @@ def test_start_all_running(job_done, jobindex_reset, forks, caplog):
     jobindex_reset(jobs)
     jobs[0].proc.forks = forks
     jm = Jobmgr(jobs)
+    jm.barsize = 10
     jm.start()
-    assert '[==================================================]' in caplog.text
+    assert '[==========]' in caplog.text
 
 
 @pytest.mark.parametrize('pbarsize, expect', [
@@ -190,6 +191,7 @@ def test_start_all_running(job_done, jobindex_reset, forks, caplog):
 ])  # len(jobs_all) == 8
 def test_distributejobstopbar(jobs_all, pbarsize, expect):
     from pyppl import jobmgr
-    jobmgr.PBAR_SIZE = pbarsize
+    #jobmgr.PBAR_SIZE = pbarsize
     jm = Jobmgr(jobs_all)
+    jm.barsize = pbarsize
     assert jm._distribute_jobs_to_pbar() == expect

@@ -19,15 +19,20 @@ hookimpl = pluggy.HookimplMarker(PMNAME)
 hookspec = pluggy.HookspecMarker(PMNAME)
 
 
-@hookspec
+@hookspec(
+    warn_on_impl=DeprecationWarning("This hook is deprecated. "
+                                    "Please initialize configs inside "
+                                    "your plugin")
+)
 def setup(config):
     """@API
     PLUGIN API
     Add default configs
+    Note that this is not running for runtime plugins, which are regiested later
+    after the module is loaded.
     @params:
         config (Config): The default configurations
     """
-
 
 @hookspec
 def proc_init(proc):
@@ -51,7 +56,6 @@ def proc_prerun(proc):
         proc (Proc): The Proc instance
     """
 
-
 @hookspec
 def proc_postrun(proc, status):
     """@API
@@ -59,7 +63,7 @@ def proc_postrun(proc, status):
     After a process has done
     @params:
         proc (Proc): The Proc instance
-        status (str): succeeded/failed
+        status (str): succeeded/failed/cached
     """
 
 
@@ -86,13 +90,14 @@ def pyppl_prerun(ppl):
     """
 
 
-@hookspec
+@hookspec(firstresult=True)
 def pyppl_postrun(ppl):
     """@API
     PLUGIN API
     After the pipeline is done
-    If the pipeline fails, this won't run.
+    If you want to do something after a process fails
     Use proc_postrun(proc = proc, status = 'failed') instead.
+    Return False will stop exception being raised
     @params:
         ppl (PyPPL): The PyPPL instance
     """

@@ -226,11 +226,8 @@ class Proc:
         self.output  # pylint: disable=pointless-statement
         self.suffix  # pylint: disable=pointless-statement
         logger.workdir(self.workdir, proc=self.id)
-        ret = pluginmgr.hook.proc_prerun(proc=self)
-        # plugins can stop process from running
-        if ret is not False:
-            self._save_settings()
-            self._run_jobs()
+        self._save_settings()
+        self._run_jobs()
         self._post_run()
 
     def _post_run(self):
@@ -273,6 +270,7 @@ class Proc:
             pluginmgr.hook.proc_postrun(proc=self, status='failed')
             sys.exit(1)
 
+        logger.debug("Running hook.proc_postrun ...", proc=self.id)
         pluginmgr.hook.proc_postrun(
             proc=self,
             status='cached'
@@ -280,6 +278,7 @@ class Proc:
             'succeeded')
 
         if self.jobs:
+            # pylint: disable=unsupported-delete-operation
             del self.jobs[:]
 
     def _save_settings(self):
@@ -303,7 +302,18 @@ class Proc:
 
     def _run_jobs(self):
         logger.debug('Queue starts ...', proc=self.id)
+        # jobs are constructed here, hook.job_init called
         jobmgr = Jobmgr(self.jobs)
+
+        logger.debug("Running hook.proc_prerun ...", proc=self.id)
+        ret = pluginmgr.hook.proc_prerun(proc=self)
+        # plugins can stop process from running
+        # let's put it here since jobs have been init'ed
+        # we can then access proc.size, input, etc..
+        if ret is False:
+            # avoid error in _post_run
+            self.jobs = []
+            return
         # we need to jobs to be initialized, as during initialization
         # use_runner called, and we only initialize that runner
         runnermgr.hook.runner_init(proc=self)
