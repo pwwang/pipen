@@ -85,4 +85,5 @@ for runner in runnermgr.get_plugins():
     # save runners in memory
     register_runner(runner)
 config_plugins(*config.plugins)
+# deprecate this, since at this point, no plugins are loaded yet
 pluginmgr.hook.setup(config=config)

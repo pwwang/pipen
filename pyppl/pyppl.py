@@ -22,10 +22,10 @@ from .exception import (PyPPLInvalidConfigurationKey,
                         ProcessAlreadyRegistered,
                         PyPPLWrongPositionMethod,
                         PyPPLMethodExists)
-from .utils import try_deepcopy, name2filename, fs
+from .utils import try_deepcopy, name2filename, fs, log_msg_len
 
 # length of separators in log
-SEPARATOR_LEN = 80
+SEPARATOR_LEN = log_msg_len(ret='with-nothing', minlen=45)
 # Regiester processes
 PROCESSES = set()
 # tips
@@ -239,12 +239,13 @@ class PyPPL:
         self.props = Diot()  # for plugins
         pluginmgr.hook.pyppl_init(ppl=self)
 
-    def run(self, profile='default'):
+    def run(self, profile='default'): # pylint: disable=too-many-branches
         """@API
         Run the pipeline with certain profile
         @params:
             profile (str): The profile name
         """
+        # This function needs to be simplified later
 
         # for default profile, we shall not load anything from default_config
         # as part/base of runtime config, since they have alread been used as

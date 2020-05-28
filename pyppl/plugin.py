@@ -19,7 +19,11 @@ hookimpl = pluggy.HookimplMarker(PMNAME)
 hookspec = pluggy.HookspecMarker(PMNAME)
 
 
-@hookspec
+@hookspec(
+    warn_on_impl=DeprecationWarning("This hook is deprecated. "
+                                    "Please initialize configs inside "
+                                    "your plugin")
+)
 def setup(config):
     """@API
     PLUGIN API
@@ -29,7 +33,6 @@ def setup(config):
     @params:
         config (Config): The default configurations
     """
-
 
 @hookspec
 def proc_init(proc):
