@@ -21,7 +21,7 @@ if os.path.exists(readme_path):
 setup(
     long_description=readme,
     name='PyPPL',
-    version='3.2.1',
+    version='3.2.2',
     description='A Python PiPeLine framework',
     python_requires='==3.*,>=3.6.0',
     project_urls={
