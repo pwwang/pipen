@@ -1,3 +1,6 @@
+# 3.2.2 (2020.6.5)
+- Adopt latest cmdy
+
 # 3.2.1 (2020.5.28)
 - Allow pyppl_postrun hook to stop the exception raising
 - Make proc_prerun hook access proc props and initialized jobs
