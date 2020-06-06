@@ -1,6 +1,5 @@
 """Implementations for Job"""
 from pathlib import Path
-import cmdy
 from diot import Diot, OrderedDiot
 from .logger import logger
 from .runner import runnermgr
@@ -354,7 +353,7 @@ def job_script_parts(this, value):
                 pre=this.proc.runner.get(this.runner + '_prescript', ''),
                 post=this.proc.runner.get(this.runner + '_postscript', ''),
                 saveoe=True,
-                command=[cmdy._shquote(x) for x in chmod_x(realsfile)])
+                command=chmod_x(realsfile))
     ret = runnermgr.hook.script_parts(job=this, base=base)
     return ret or base
 

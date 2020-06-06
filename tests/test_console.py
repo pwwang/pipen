@@ -3,7 +3,9 @@ import pytest
 from pathlib import Path
 from pyppl import PyPPL, Proc, proc
 
-pyppl = cmdy.pyppl.bake(_exe=Path(__file__).parent.joinpath('pyppl'))
+@pytest.fixture()
+def pyppl():
+    return cmdy.pyppl.bake(_exe=Path(__file__).parent.joinpath('pyppl'))
 
 
 def get_ppldir(tmp_path, tag='notag'):
@@ -27,7 +29,7 @@ def get_ppldir(tmp_path, tag='notag'):
     return tmp_path / 'workdir'
 
 
-def test_status(tmp_path):
+def test_status(tmp_path, pyppl):
     wdir = get_ppldir(tmp_path, tag='status')
     cmd = pyppl.status(wdir=wdir, proc='pConsoleProc1')
     assert '#1: Done     [0]    #2: Done     [0]    #3: Done     [0]    #4: Done     [0]' in cmd.stderr
@@ -53,14 +55,15 @@ def test_status(tmp_path):
     assert 'Running : 1' in cmd.stderr
 
 
-def test_profile():
-    cmd = pyppl.profile()
-    assert '>>> default' in cmd.stderr
-    cmd = pyppl.profile(name='default', nodefault=True)
-    assert '>>> default' in cmd.stderr
+def test_profile(capsys, pyppl):
+    pyppl.profile().fg(poll_interval=1e-3)
+    assert '>>> default' in capsys.readouterr().err
+
+    pyppl.profile(name='default', nodefault=True).fg
+    assert '>>> default' in capsys.readouterr().err
 
 
-def test_list(tmp_path):
+def test_list(tmp_path, pyppl):
     wdir = get_ppldir(tmp_path, tag='list')
     cmd = pyppl.list(wdir=wdir)
     assert 'v PyPPL.pConsoleProc1.list' in cmd.stderr
@@ -103,7 +106,7 @@ def test_list(tmp_path):
     assert 'PyPPL.pConsoleProc2.list' not in cmd.stderr
 
 
-def test_clean(tmp_path):
+def test_clean(tmp_path, pyppl):
     wdir = get_ppldir(tmp_path, tag='clean1')
     cmd = pyppl.clean(wdir=wdir, error=True, force=True)
     assert str(wdir) in cmd.stderr
@@ -116,20 +119,20 @@ def test_clean(tmp_path):
     assert 'PyPPL.pConsoleProc2.clean1' not in cmd.stderr
 
     # interactive remove
-    cmd = pyppl.clean(wdir=wdir, error=False, force=False, _hold=True)
-    cmd = cmdy.printf('x\nx\nY\n', _pipe=True) | cmdy.bash(c=cmd)
-    assert 'PyPPL.pConsoleProc1.clean1' not in cmd.stderr
-    assert 'PyPPL.pConsoleProc2.clean1' in cmd.stderr
+    cmd = pyppl.clean(wdir=wdir, error=False, force=False).h
+    out = cmdy.printf('x\nx\nY\n').p | cmdy.bash(c=cmd.strcmd).r(cmdy.STDERR) ^ cmdy.STDOUT
+    assert 'PyPPL.pConsoleProc1.clean1' not in out
+    assert 'PyPPL.pConsoleProc2.clean1' in out
 
     wdir = get_ppldir(tmp_path, tag='clean2')
     wdir.joinpath('PyPPL.pConsoleProc1.clean2.suffix').mkdir()
     cmd = pyppl.clean(wdir=wdir, one=True, error=False, force=True)
-    assert cmd.stderr.count('Removed!') == 1  # only one for each remained
+    assert out.count('Removed!') == 1  # only one for each remained
 
 
-def test_logo():
+def test_logo(pyppl):
     assert 'Loaded plugins:' in pyppl.logo().stderr
 
 
-def test_plugins():
+def test_plugins(pyppl):
     assert 'Plugin pyppl.console.clean' in pyppl.plugins().stderr

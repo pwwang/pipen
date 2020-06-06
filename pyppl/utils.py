@@ -5,7 +5,6 @@ from copy import deepcopy
 from queue import PriorityQueue
 from threading import Thread
 import shutil
-import cmdy
 from transitions import Transition, Machine
 from liquid.stream import safe_split
 from . import _fsutil as fs
@@ -294,9 +293,6 @@ class ThreadEx(Thread):
     def run(self):
         try:
             Thread.run(self)
-        except cmdy.CmdyReturnCodeException:
-            #from traceback import format_exc
-            self.ex = RuntimeError('cmdy.CmdyReturnCodeException')
         except Exception as ex:  # pylint: disable=broad-except
             #from traceback import format_exc
             self.ex = ex

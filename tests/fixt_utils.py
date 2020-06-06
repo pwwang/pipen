@@ -151,7 +151,7 @@ def fixt_threadex(request):
         def worker():
             cmdy.ls('file_not_exists', _raise=True)
 
-        return Diot(worker=worker, expt_ex=RuntimeError)
+        return Diot(worker=worker, expt_ex=cmdy.CmdyReturnCodeError)
 
 
 @pytest.fixture(params=[

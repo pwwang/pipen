@@ -199,9 +199,8 @@ class PyPPLRunnerLocal:
             job (Job): the job instance
         """
         import cmdy
-        cmd = ' '.join(cmdy._shquote(part) for part in job.script)
-        cmd = cmdy.bash(c=cmd, _raise=False, _bg=True)
-        cmd.rc = 0
+        cmd = cmdy._(*job.script[1:], _exe=job.script[0], _raise=False).iter
+        cmd._rc = 0
         job.pid = cmd.pid
         return cmd
 

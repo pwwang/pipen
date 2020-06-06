@@ -123,7 +123,7 @@ def test_hook():
     action = Action(Job())
     assert not action.isrunning()
     assert action.kill()
-    assert action.submit().cmd == 'bash -c ls'
+    assert action.submit().strcmd == 'ls'
     assert action.script_parts() is None
 
 
@@ -133,13 +133,13 @@ def test_hook2():
     action = Action(Job(pid=os.getpid()))
 
     assert action.isrunning()
-    assert action.submit().cmd == 'bash -c ls'
+    assert action.submit().strcmd == 'ls'
     assert action.script_parts() is None
 
 
 def test_hook_kill():
     from psutil import pid_exists
-    p = cmdy.sleep(100, _bg=True)
+    p = cmdy.sleep(100).a
     assert pid_exists(p.pid)
 
     job = Job(pid=p.pid)
@@ -147,7 +147,7 @@ def test_hook_kill():
 
     assert action.isrunning()
     assert job.pid == p.pid
-    assert action.submit().cmd == 'bash -c ls'
+    assert action.submit().strcmd == 'ls'
     job.pid = p.pid
     assert action.script_parts() is None
     assert action.kill()
