@@ -25,7 +25,8 @@ def empty_psp():
 
 @pytest.fixture
 def psp3(pProc1, pProc2, pProc3):
-    return PSProxy(procset=ProcSet(pProc1, pProc2, pProc3))
+    procset=ProcSet(pProc1, pProc2, pProc3)
+    return PSProxy(procset=procset)
 
 
 @pytest.fixture
