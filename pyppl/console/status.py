@@ -6,17 +6,17 @@ from ..logger import logger
 
 
 @hookimpl
-def cli_addcmd(commands):
+def cli_addcmd(params):
     """Add command"""
-    commands.status = 'Check the status of a running process.'
-    commands.status.ncol = 5
-    commands.status.ncol.desc = 'Number of jobs to show in a row.'
-    commands.status.proc.required = True
-    commands.status.proc.desc = ('The process working directory. If path '
-                                 'separator exists, then `-wdir` will be '
-                                 'ignored.')
-    commands.status.wdir = commands.list.wdir
-
+    print(params.params)
+    cmd = params.add_command('status', desc=__doc__)
+    cmd.add_param('ncol', default=5, desc='Number of jobs to show in a row.')
+    cmd.add_param('proc', required=True,
+                  desc=('The process working directory. If path '
+                        'separator exists, then `-wdir` will be '
+                        'ignored.'))
+    cmd.add_param('wdir', default='./workdir',
+                  desc=('The <ppldir> containing process work directories.'))
 
 @hookimpl
 def cli_execcmd(command, opts):  # pylint: disable=too-many-locals

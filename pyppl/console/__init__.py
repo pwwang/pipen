@@ -1,9 +1,7 @@
 """Command line tool for PyPPL"""
-import sys
 import importlib
 from pathlib import Path
-from diot import Diot
-from pyparam import commands
+from pyparam import Params
 from ..logger import logger
 from ..plugin import config_plugins, pluginmgr
 from .. import __version__
@@ -13,18 +11,21 @@ CONSOLE_PLUGINS = [
     for cmdfile in Path(__file__).parent.glob('*.py')
     if cmdfile.stem[:1] != '_'
 ]
+
 for console_plugin in CONSOLE_PLUGINS:
     console_plugin.__version__ = 'builtin'
 
 config_plugins(*CONSOLE_PLUGINS)
 
-commands._desc = 'Command Line Tool for PyPPL v{}'.format(__version__)
-pluginmgr.hook.cli_addcmd(commands=commands)
+# pylint: disable=invalid-name
+params = Params(desc='Command Line Tool for PyPPL v{}'.format(__version__))
+pluginmgr.hook.cli_addcmd(params=params)
 
 
 def main():
     """Entry point"""
-    command, opts, _ = commands._parse(dict_wrapper=Diot)
+    parsed = params.parse()
     pluginmgr.hook.logger_init(logger=logger)
     logger.initialize()
-    pluginmgr.hook.cli_execcmd(command=command, opts=opts)
+    pluginmgr.hook.cli_execcmd(command=parsed.__command__,
+                               opts=parsed[parsed.__command__])

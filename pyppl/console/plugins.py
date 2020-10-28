@@ -6,10 +6,9 @@ from ..logger import logger
 
 
 @hookimpl
-def cli_addcmd(commands):
+def cli_addcmd(params):
     """Add plugins command"""
-    commands.plugins._hbald = False
-    commands.plugins = __doc__
+    params.add_command('plugins', desc=__doc__, help_on_void=False)
 
 
 @hookimpl

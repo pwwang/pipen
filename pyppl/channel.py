@@ -6,7 +6,6 @@ import functools
 
 from os import path
 from glob import glob
-from liquid.stream import safe_split
 
 # pylint: disable=invalid-name
 
@@ -107,6 +106,7 @@ class Channel(list):  # pylint: disable=too-many-public-methods
         @returns:
             (Channel): The Channel created from the path
         """
+        key = None
         if sortby == 'name':
             key = str
         elif sortby == 'mtime':
@@ -114,7 +114,7 @@ class Channel(list):  # pylint: disable=too-many-public-methods
         elif sortby == 'size':
             key = path.getsize
 
-        filt = lambda afile: True
+        filt = lambda _: True
         if ftype == 'link':
             filt = path.islink
         elif ftype == 'dir':
@@ -201,40 +201,13 @@ class Channel(list):  # pylint: disable=too-many-public-methods
 
         width = None
         for arg in args:
-            items = tuple(safe_split(arg, ','))
+            items = tuple(arg.split(','))
             if width is not None and width != len(items):
                 raise ValueError(
                     'Width %s (%s) is not consistent with previous %s' %
                     (len(items), arg, width))
             width = len(items)
             ret.append(items)
-        return ret
-
-    @staticmethod
-    def fromParams(*pnames):
-        """@API
-        Create a Channel from params
-        @params:
-            *pnames (str): The names of the option
-        @returns:
-            (Channel): The Channel created from `pyparam`.
-        """
-        from pyparam import params
-        ret = Channel.create()
-        width = None
-        for pname in pnames:
-            param = getattr(params, pname)
-            data = param.value
-            if not param.type.startswith('list') or not isinstance(data, list):
-                data = [param.value]
-            if width is not None and width != len(data):
-                raise ValueError(
-                    'Width %s (%s) is not consistent with previous %s' %
-                    (len(data), data, width))
-            width = len(data)
-            ret = ret.cbind(data)
-        if ret:
-            ret.attach(*pnames)
         return ret
 
     # pylint: disable=too-many-arguments
@@ -697,7 +670,6 @@ class Channel(list):  # pylint: disable=too-many-public-methods
     from_pairs = fromPairs
     from_file = fromFile
     from_argv = fromArgv
-    from_params = fromParams
     from_channels = fromChannels
     map_col = mapCol
     filter_col = filterCol

@@ -4,6 +4,7 @@ Template adaptor for PyPPL
 @variables:
 	DEFAULT_ENVS (dict): The default environments for templates
 """
+from abc import ABC, abstractmethod
 from liquid import Liquid
 
 __all__ = ['Template', 'TemplateLiquid', 'TemplateJinja2']
@@ -11,7 +12,7 @@ __all__ = ['Template', 'TemplateLiquid', 'TemplateJinja2']
 DEFAULT_ENVS = {}
 
 
-class Template:
+class Template(ABC):
     """@API
 	Base class wrapper to wrap template for PyPPL
 	"""
@@ -53,8 +54,9 @@ class Template:
     def __repr__(self):
         return str(self)
 
+    @abstractmethod
     def _render(self, data):
-        raise NotImplementedError()
+        """Implement rendering"""
 
 
 class TemplateLiquid(Template):
@@ -68,9 +70,13 @@ class TemplateLiquid(Template):
 			`source`: The souce text
 			`envs`: The env data
 		"""
-        super(TemplateLiquid, self).__init__(source, **envs)
+        super().__init__(source, **envs)
         self.envs['__engine'] = 'liquid'
-        self.engine = Liquid(source, **self.envs)
+        self.engine = Liquid(
+            source,
+            liquid_config={'strict': False, 'mode': 'python'},
+            **self.envs
+        )
         self.source = source
 
     def _render(self, data):
@@ -96,7 +102,7 @@ class TemplateJinja2(Template):
 			`envs`: The env data
 		"""
         import jinja2
-        super(TemplateJinja2, self).__init__(source, **envs)
+        super().__init__(source, **envs)
         self.envs['__engine'] = 'jinja2'
         self.engine = jinja2.Template(source)
         self.engine.globals = self.envs

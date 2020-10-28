@@ -100,26 +100,16 @@ def get_procs(opts):  # pylint: disable=too-many-branches
 
 
 @hookimpl
-def cli_addcmd(commands):
+def cli_addcmd(params):
     """Add command"""
-    commands.list = __doc__
-    commands.list._hbald = False
-    commands.list.proc.desc = 'The process name to show or to compare.'
-    commands.list.ago.type = 'int'
-    commands.list.ago.desc = ('Work directories to be removed when '
-                              'modified N days ago.')
-    commands.list.before.desc = [
-        'Before when the work directories to be listed.',
-        'Supported format: m/d, m-d, m/d/y and y-m-d'
-    ]
-    commands.list.nocheck = False
-    commands.list.nocheck.desc = 'Don`t check failure of processes.'
-    commands.list.error = False
-    commands.list.error.desc = ('Remove directories if any job failed '
-                                'or do error check when listing them.')
-    commands.list.wdir = './workdir'
-    commands.list.wdir.desc = ('The <ppldir> containing process '
-                               'work directories.')
+    cmd = params.add_command('list', desc=__doc__, help_on_void=False)
+    cmd_clean = params.get_command('clean')
+    cmd.add_param(cmd_clean.get_param('proc'))
+    cmd.add_param(cmd_clean.get_param('ago'))
+    cmd.add_param(cmd_clean.get_param('before'))
+    cmd.add_param(cmd_clean.get_param('nocheck'))
+    cmd.add_param(cmd_clean.get_param('error'))
+    cmd.add_param(cmd_clean.get_param('wdir'))
 
 
 @hookimpl

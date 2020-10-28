@@ -132,16 +132,17 @@ def test_fromargs_exc():
     with pytest.raises(ValueError):
         Channel.fromArgv()
 
-def test_fromparams():
-    from pyparam import params
-    params._test1 = [1,2,3]
-    params._test2 = [4,4,4]
-    assert Channel.fromParams('_test1', '_test2') == [(1,4), (2,4), (3,4)]
-    params._test3 = 5
-    params._test4 = 6
-    assert Channel.fromParams('_test3', '_test4') == [(5,6)]
-    with pytest.raises(ValueError):
-        Channel.fromParams('_test3', '_test1')
+# def test_fromparams():
+#     from pyparam import Params
+#     params = Params()
+#     params.add_param('test1', default=[1,2,3])
+#     params.add_param('test2', default=[4,4,4])
+#     assert Channel.fromParams('test1', 'test2') == [(1,4), (2,4), (3,4)]
+#     params.add_param('test3', default=5)
+#     params.add_param('test4', default=6)
+#     assert Channel.fromParams('test3', 'test4') == [(5,6)]
+#     with pytest.raises(ValueError):
+#         Channel.fromParams('test3', 'test1')
 
 def test_expand(expand_dirs):
     dir1, dir2 = expand_dirs

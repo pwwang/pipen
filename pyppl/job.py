@@ -241,7 +241,7 @@ class Job:
 
             pluginmgr.hook.job_build(job=self, status='succeeded')
             return True
-        except BaseException as ex:
+        except Exception as ex:
             self.logger('Failed to build job: %s: %s' %
                         (type(ex).__name__, ex),
                         level='debug')

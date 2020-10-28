@@ -28,10 +28,10 @@ def test_formatsecs(secs, expect):
     'data,trim,expect',
     [
         ("a, b,c", True, ['a', 'b', 'c']),
-        (["a, b,c"], True, ['a', 'b', 'c']),
-        (["a, b,c", 'd'], True, ['a', 'b', 'c', 'd']),
-        (["a, b,c ", 'd'], False, ['a', ' b', 'c ', 'd']),
-        ("a,b, c, 'd,e'", True, ['a', 'b', 'c', "'d,e'"]),
+        ("a, b,c", True, ['a', 'b', 'c']),
+        (["a, b,c", "d"], True, ['a, b,c', 'd']),
+        ('a, b,c , d', False, ['a', ' b', 'c ', ' d']),
+        ("a,b, c, 'd,e'", True, ['a', 'b', 'c', "'d", "e'"]),
         ([
             "o1:var:{{c1}}",
             "o2:var:{{c2 | __import__('math').pow(float(_), 2.0)}}",
@@ -41,26 +41,14 @@ def test_formatsecs(secs, expect):
             "o2:var:{{c2 | __import__('math').pow(float(_), 2.0)}}",
             "o3:file:{{c3.fn}}2{{c3.ext}}"
         ]),
-        (
-            [
-                "o1:var:{{c1}}",
-                "o2:var:c2 | __import__('math').pow float(_), 2.0)}}",
-                "o3:file:{{c3.fn}}2{{c3.ext}}"
-            ],
-            #                                                             ^ comma is not quoted
-            True,
-            [
-                "o1:var:{{c1}}", "o2:var:c2 | __import__('math').pow float(_)",
-                "2.0)}}", "o3:file:{{c3.fn}}2{{c3.ext}}"
-            ])
     ])
 def test_always_list(data, trim, expect):
     assert always_list(data, trim) == expect
 
 
-@pytest.mark.parametrize('data', [1, (1, ), {}])
+@pytest.mark.parametrize('data', [1, {}])
 def test_always_list_raises(data):
-    with pytest.raises(ValueError):
+    with pytest.raises((AttributeError, TypeError)):
         always_list(data)
 
 

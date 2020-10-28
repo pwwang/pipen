@@ -6,7 +6,6 @@ from queue import PriorityQueue
 from threading import Thread
 import shutil
 from transitions import Transition, Machine
-from liquid.stream import safe_split
 from . import _fsutil as fs
 
 
@@ -163,15 +162,9 @@ def always_list(data, trim=True):
     @returns:
         The split list
     """
-    if isinstance(data, str):
-        return safe_split(data, ',', trim=trim)
-    if isinstance(data, list):
-        return sum(
-            (always_list(dat, trim) if isinstance(dat, (str, list)) else [dat]
-             for dat in data), [])
-    raise ValueError('Expect str/list to convert to list, but got %r.' %
-                     type(data).__name__)
-
+    if isinstance(data, (tuple, list)):
+        return list(data)
+    return [dat.strip() if trim else dat for dat in data.split(',')]
 
 def try_deepcopy(obj, depth=3):
     """@API

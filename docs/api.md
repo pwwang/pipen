@@ -8,74 +8,6 @@
 - **variables**
 
 	- `DEFAULT_ENVS (dict)`:  The default environments for templates
-
-!!! example "class: `Template`"
-
-	Base class wrapper to wrap template for PyPPL
-	
-
-	!!! abstract "method: `__init__(self, source, **envs)`"
-
-		Template construct
-		
-
-	!!! abstract "method: `register_envs(self, **envs)`"
-
-		Register extra environment
-
-		- **params**
-
-			- `**envs`:  The environment
-
-	!!! abstract "method: `render(self, data)`"
-
-		Render the template
-
-		- **parmas**
-
-			- `data (dict)`:  The data used to render
-
-!!! example "class: `TemplateJinja2`"
-
-	Jinja2 template wrapper
-	
-
-	!!! abstract "method: `register_envs(self, **envs)`"
-
-		Register extra environment
-
-		- **params**
-
-			- `**envs`:  The environment
-
-	!!! abstract "method: `render(self, data)`"
-
-		Render the template
-
-		- **parmas**
-
-			- `data (dict)`:  The data used to render
-
-!!! example "class: `TemplateLiquid`"
-
-	liquidpy template wrapper.
-	
-
-	!!! abstract "method: `register_envs(self, **envs)`"
-
-		Register extra environment
-
-		- **params**
-
-			- `**envs`:  The environment
-
-	!!! abstract "method: `render(self, data)`"
-
-		Render the template
-
-		- **parmas**
-
-			- `data (dict)`:  The data used to render
 ## pyppl.procset
 
 
@@ -896,18 +828,6 @@
 
 			- `(Channel)`:  The Channel create from every 2 files match the pattern
 
-	!!! abstract "method: `fromParams(*pnames)`"
-
-		Create a Channel from params
-
-		- **params**
-
-			- `*pnames (str)`:  The names of the option
-
-		- **returns**
-
-			- `(Channel)`:  The Channel created from `pyparam`.
-
 	!!! abstract "method: `fromPattern(pattern, ftype, sortby, reverse)`"
 
 		Create a Channel from a path pattern
@@ -987,18 +907,6 @@
 		- **returns**
 
 			- `(Channel)`:  The Channel create from every 2 files match the pattern
-
-	!!! abstract "method: `from_params(*pnames)`"
-
-		Create a Channel from params
-
-		- **params**
-
-			- `*pnames (str)`:  The names of the option
-
-		- **returns**
-
-			- `(Channel)`:  The Channel created from `pyparam`.
 
 	!!! abstract "method: `from_pattern(pattern, ftype, sortby, reverse)`"
 
@@ -1498,14 +1406,14 @@
 
 	- `hookspec (pluggy.HookspecMarker)`:  Used to mark the hooks
 
-!!! abstract "method: `cli_addcmd(commands)`"
+!!! abstract "method: `cli_addcmd(params)`"
 
 	PLUGIN API
 	Add command and options to CLI
 
 	- **params**
 
-		- `commands (Commands)`:  The Commands instance
+		- `params (params)`:  The Commands instance
 
 !!! abstract "method: `cli_execcmd(command, opts)`"
 

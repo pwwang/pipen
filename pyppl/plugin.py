@@ -216,12 +216,12 @@ def logger_init(logger):
 
 
 @hookspec
-def cli_addcmd(commands):
+def cli_addcmd(params):
     """@API
     PLUGIN API
     Add command and options to CLI
     @params:
-        commands (Commands): The Commands instance
+        params (params): The Commands instance
     """
 
 

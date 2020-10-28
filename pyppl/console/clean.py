@@ -51,23 +51,31 @@ def clean_procs(procs, nthread, force, wdir, one):
 
 
 @hookimpl
-def cli_addcmd(commands):
+def cli_addcmd(params):
     """Add command"""
-    commands.clean = __doc__
-    commands.clean.nthread = 1
-    commands.clean.nthread.desc = ('Number of threads used to clean up '
-                                   'the work directories.')
-    commands.clean.proc = commands.list.proc
-    commands.clean.ago = commands.list.ago
-    commands.clean.before = commands.list.before
-    commands.clean.nocheck = commands.list.nocheck
-    commands.clean.force = False
-    commands.clean.force.desc = 'Don`t ask when remove work directories.'
-    commands.clean.error = commands.list.error
-    commands.clean.wdir = commands.list.wdir
-    commands.clean.one = False
-    commands.clean.one.desc = 'Just keep one process under a process group.'
-
+    cmd = params.add_command('clean', desc=__doc__)
+    cmd.add_param('nthread', default=1,
+                  desc=('Number of threads used to clean up '
+                        'the work directories.'))
+    cmd.add_param('proc', desc='The process name to show or to compare.')
+    cmd.add_param('ago', type=int,
+                  desc=('Work directories to be removed when '
+                        'modified N days ago.'))
+    cmd.add_param('before', desc=[
+        'Before when the work directories to be listed.',
+        'Supported format: m/d, m-d, m/d/y and y-m-d'
+    ])
+    cmd.add_param('nocheck', default=False,
+                  desc='Don`t check failure of processes.')
+    cmd.add_param('error', default=False,
+                  desc=('Remove directories if any job failed '
+                        'or do error check when listing them.'))
+    cmd.add_param('force', default=False,
+                  desc='Don`t ask when remove work directories.')
+    cmd.add_param('wdir', default='./workdir',
+                  desc=('The <ppldir> containing process work directories.'))
+    cmd.add_param('one', default=False,
+                  desc='Just keep one process under a process group.')
 
 @hookimpl
 def cli_execcmd(command, opts):

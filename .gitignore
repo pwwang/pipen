@@ -105,3 +105,6 @@ poetry.lock
 
 # backup files
 *.bak
+
+.history/
+.xqute/

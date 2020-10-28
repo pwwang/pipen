@@ -4,7 +4,6 @@ import sys
 import uuid
 import textwrap
 from pathlib import Path
-from liquid.stream import safe_split
 from diot import OrderedDiot, Diot
 import cmdy
 from simpleconf import Config
@@ -302,7 +301,7 @@ def proc_output(this, value):
         outlist = list(filter(None, always_list(value)))
         output = OrderedDiot()
         for out in outlist:
-            outparts = safe_split(out, ':')
+            outparts = out.split(':', 2)
             lenparts = len(outparts)
             if not outparts[0].isidentifier():
                 raise ProcessOutputError(
@@ -314,9 +313,6 @@ def proc_output(this, value):
                     out,
                     'One of <key>:<type>:<value> missed for process output in'
                 )
-            if lenparts > 3:
-                raise ProcessOutputError(out,
-                                         'Too many parts for process output in')
             output[':'.join(outparts[:-1])] = outparts[-1]
     elif not (isinstance(value, OrderedDiot) or
               (isinstance(value, dict) and len(value) == 1)):

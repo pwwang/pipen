@@ -519,7 +519,7 @@ def test_force_cache(proc_factory, tmp_path):
         'pForceCache',
         input={'infile:file': [infile]},
         output=
-        'outfile:file:{{i.infile | __import__("pathlib").Path | .stem}}.txt',
+        'outfile:file:{{i.infile | @__import__("pathlib").Path | getattr:"stem"}}.txt',
         script='cat {{i.infile}} > {{o.outfile}}',
         workdir=workdir)
     proc.cache = 'force'
@@ -542,7 +542,7 @@ def test_is_cached_without_cachefile(proc_factory, tmp_path):
         'pIsCachedWithoutCacheFile',
         input={'infile:file': [infile]},
         output=
-        'outfile:file:{{i.infile | __import__("pathlib").Path | .stem}}.txt')
+        'outfile:file:{{i.infile | @__import__("pathlib").Path | getattr: "stem"}}.txt')
     job = Job(0, proc)
     job.rc = 0
     job.input

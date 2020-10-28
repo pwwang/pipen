@@ -124,6 +124,7 @@ class _TemplateFilter(object):
             return var
         frames = inspect.getouterframes(inspect.currentframe())
         data = data or {}
+        evars = {}
         for frame in frames:
             lvars = frame[0].f_locals
             if lvars.get('__engine') == 'liquid':
@@ -134,7 +135,7 @@ class _TemplateFilter(object):
                     del evars['false']
                 if 'nil' in evars:
                     del evars['nil']
-                if '_liquid_liquid_filters' in evars:
+                if '__LIQUID_FILTERS__' in evars:
                     del evars['_liquid_liquid_filters']
                 break
             if '_Context__self' in lvars:
@@ -268,45 +269,45 @@ def assertDictContains(subdict, totaldict):
     assert total == totaldict
 
 
-class TestTemplate:
-    @pytest.mark.parametrize('source, envs', [('', {}), ('{{a}}', {'a': 1})])
-    def test_Init(self, source, envs):
-        tpl = Template(source, **envs)
-        assert tpl.source == source
+# class TestTemplate:
+#     @pytest.mark.parametrize('source, envs', [('', {}), ('{{a}}', {'a': 1})])
+#     def test_Init(self, source, envs):
+#         tpl = Template(source, **envs)
+#         assert tpl.source == source
 
-        assertDictContains(DEFAULT_ENVS, tpl.envs)
-        assertDictContains(envs, tpl.envs)
+#         assertDictContains(DEFAULT_ENVS, tpl.envs)
+#         assertDictContains(envs, tpl.envs)
 
-    @pytest.mark.parametrize('source, envs, newenvs', [
-        ('', {}, {}),
-        ('{{a}}', {
-            'a': 1
-        }, {}),
-        ('{{a}}', {
-            'a': 1
-        }, {
-            'b': 2
-        }),
-    ])
-    def testRegisterEnvs(self, source, envs, newenvs):
-        tpl = Template(source, **envs)
-        tpl.register_envs(**newenvs)
-        assert tpl.source == source
-        assertDictContains(DEFAULT_ENVS, tpl.envs)
-        assertDictContains(envs, tpl.envs)
-        assertDictContains(newenvs, tpl.envs)
+#     @pytest.mark.parametrize('source, envs, newenvs', [
+#         ('', {}, {}),
+#         ('{{a}}', {
+#             'a': 1
+#         }, {}),
+#         ('{{a}}', {
+#             'a': 1
+#         }, {
+#             'b': 2
+#         }),
+#     ])
+#     def testRegisterEnvs(self, source, envs, newenvs):
+#         tpl = Template(source, **envs)
+#         tpl.register_envs(**newenvs)
+#         assert tpl.source == source
+#         assertDictContains(DEFAULT_ENVS, tpl.envs)
+#         assertDictContains(envs, tpl.envs)
+#         assertDictContains(newenvs, tpl.envs)
 
-    @pytest.mark.parametrize('t,s', [(Template(''), 'Template <  >')])
-    def testStr(self, t, s):
-        assert str(t) == s
+#     @pytest.mark.parametrize('t,s', [(Template(''), 'Template <  >')])
+#     def testStr(self, t, s):
+#         assert str(t) == s
 
-    @pytest.mark.parametrize('t,s', [(Template(''), 'Template <  >')])
-    def testRepr(self, t, s):
-        assert repr(t) == s
+#     @pytest.mark.parametrize('t,s', [(Template(''), 'Template <  >')])
+#     def testRepr(self, t, s):
+#         assert repr(t) == s
 
-    def testRender(self):
-        with pytest.raises(NotImplementedError):
-            Template('').render({})
+#     def testRender(self):
+#         with pytest.raises(NotImplementedError):
+#             Template('').render({})
 
 
 class TestTemplateLiquid:
@@ -337,21 +338,20 @@ class TestTemplateLiquid:
     @pytest.mark.parametrize(
         'source, data, out',
         [
-            ("""{% config mode=compact %}
-		whatever
+            ("""whatever
 		{%- if a in b -%}
 		{{a}}
 		{%- else -%}
-			{% for x in y %}
-			{{x-}}
-			{% endfor %}
-		{% endif %}
+			{% for x in y -%}
+			{{-x-}}
+			{% endfor -%}
+		{% endif -%}
 		""", {
                 'b': 'abc',
                 'a': 'd',
                 'y': [1, 2, 3]
-            }, """		whatever123"""),
-            ('{% python from pathlib import Path %}{{Path("/a/b/c") | R}}', {},
+            }, """whatever123"""),
+            ('{% from pathlib import Path %}{{Path("/a/b/c") | R}}', {},
              "'/a/b/c'"),
             ('{{True | R}}', {}, 'TRUE'),
             ('{{None | R}}', {}, 'NULL'),
@@ -384,9 +384,9 @@ class TestTemplateLiquid:
     def test_readlines_skip_empty(self, tmp_path, default_envs):
         tmpfile = tmp_path / 'test_readlines_skip_empty.txt'
         tmpfile.write_text("a\n\nb\n")
-        assert TemplateLiquid('{{readlines(a) | @join: "."}}',
+        assert TemplateLiquid('{{readlines(a) | join: "."}}',
                               **default_envs).render({'a': tmpfile}) == "a.b"
-        assert TemplateLiquid('{{readlines(a, False) | @join: "."}}',
+        assert TemplateLiquid('{{readlines(a, False) | join: "."}}',
                               **default_envs).render({'a': tmpfile}) == "a..b"
 
     def test_filename_no_ext(self, default_envs):
@@ -398,13 +398,13 @@ class TestTemplateLiquid:
             'x': '{{i}}',
             'i': 2
         }) == '2'
-        assert TemplateLiquid('{{x | render}}', **default_envs).render({
+        assert TemplateLiquid('{{x | str | render}}', **default_envs).render({
             'x': [],
             'i': 2
         }) == '[]'
         liquid = TemplateLiquid('{{x | render}}', **default_envs)
         with pytest.raises(LiquidRenderError):
-            liquid.render({'x': '', '__engine': None})
+            liquid.render({'x': []})
 
     def test_diot(self, default_envs):
         with pytest.raises(LiquidRenderError):

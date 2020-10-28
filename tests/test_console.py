@@ -14,13 +14,13 @@ def get_ppldir(tmp_path, tag='notag'):
     pConsoleProc1 = Proc(
         tag=tag,
         input={'infile:file': [infile] * 5},
-        output='outfile:file:{{i.infile|__import__("pathlib").Path|.stem}}.txt',
+        output='outfile:file:{{i.infile|@__import__("pathlib").Path|getattr:"stem"}}.txt',
         script="""cat {{i.infile}} > {{o.outfile}}""")
     #assert pConsoleProc1.tag == tag
     pConsoleProc2 = Proc(
         tag=tag,
         input='infile:file',
-        output='outfile:file:{{i.infile|__import__("pathlib").Path|.stem}}.txt',
+        output='outfile:file:{{i.infile|@__import__("pathlib").Path|getattr:"stem"}}.txt',
         script="""echo world >> {{o.outfile}}""",
         depends=pConsoleProc1)
     #assert pConsoleProc2.tag == tag

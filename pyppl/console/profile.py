@@ -14,15 +14,13 @@ def logger_init(logger):
 
 
 @hookimpl
-def cli_addcmd(commands):
+def cli_addcmd(params):
     """Add profile command"""
-    commands.profile._hbald = False
-    commands.profile = __doc__
-    commands.profile.name = ''
-    commands.profile.name.desc = 'The name of the profile to show'
-    commands.profile.nodefault = False
-    commands.profile.nodefault.desc = 'Hide default configuration items or not.'
-    commands.runner = commands.profile
+    cmd = params.add_command('profile, runner',
+                             desc=__doc__, help_on_void=False)
+    cmd.add_param('name', default='', desc='The name of the profile to show')
+    cmd.add_param('nodefault', default=False,
+                  desc='Hide default configuration items or not.')
 
 def _get_defaults():
     config._use('default')

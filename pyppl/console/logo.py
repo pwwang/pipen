@@ -5,10 +5,9 @@ from ..pyppl import _logo
 
 
 @hookimpl
-def cli_addcmd(commands):
+def cli_addcmd(params):
     """Add logo command"""
-    commands.logo._hbald = False
-    commands.logo = __doc__
+    params.add_command('logo', desc=__doc__, help_on_void=False)
 
 
 @hookimpl
