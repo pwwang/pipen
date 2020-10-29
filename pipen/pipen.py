@@ -149,6 +149,7 @@ class Pipen:
                 else:
                     self.pbar.update_proc_error()
                     break
+                proc.gc()
         # except Exception as exc:
             # logger.exception(exc)
             # sys.exit(1)

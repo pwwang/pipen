@@ -1,7 +1,9 @@
 """Provide ProcProperties class"""
+import inspect
 import textwrap
 from typing import Any, ClassVar, Dict, Iterable, List, Optional, Type, Union
 from pathlib import Path
+
 from diot import OrderedDiot
 from xqute import Scheduler
 from simpleconf import Config
@@ -128,7 +130,8 @@ class ProcProperties:
         # split input keys into keys and types
         input_keys = self.input_keys
         if isinstance(input_keys, str):
-            input_keys = [input_key.strip() for input_key in input_keys]
+            input_keys = [input_key.strip()
+                          for input_key in input_keys.split(',')]
 
         ret = OrderedDiot(type={})
         for input_key_type in input_keys:
@@ -193,6 +196,9 @@ class ProcProperties:
         script = self.script
         if script.startswith('file://'):
             script_file = Path(script[7:])
+            if not script_file.is_absolute():
+                dirname = Path(inspect.getfile(self.__class__)).parent
+                script_file = dirname / script_file
             if not script_file.is_file():
                 raise ProcScriptFileNotFound(
                     f'No such script file: {script_file}'

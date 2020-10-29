@@ -15,5 +15,8 @@ class ProcOutputNameError(PipenException, NameError):
 class ProcOutputTypeError(PipenException, TypeError):
     """When an unsupported output type is provided"""
 
+class ProcOutputValueError(PipenException, ValueError):
+    """When a malformatted output value is provided"""
+
 class ProcDependencyError(PipenException):
     """When there is something wrong the process dependencies"""

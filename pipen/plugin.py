@@ -1,7 +1,10 @@
 """Define hooks specifications and provide plugin manager"""
+from pathlib import Path
 from typing import Any, Dict, Optional
 from xqute import JobStatus, Scheduler
+from xqute.utils import a_read_text, a_write_text
 from simplug import Simplug, SimplugResult
+from .defaults import ProcOutputType
 
 # pylint: disable=unused-argument,invalid-name
 plugin = Simplug('pipen')
@@ -169,8 +172,22 @@ class PipenMainPlugin:
     @plugin.impl
     async def on_job_succeeded(self, proc: "Proc", job: "Job"):
         """Cache the job and update the progress bar when a job is succeeded"""
-        await job.cache()
-        proc.pbar.update_job_succeeded()
+        # now the returncode is 0, however, we need to check if output files
+        # have been created or not, this makes sure job.cache not fail
+        for outkey, outtype in job._output_types.items():
+            if outtype == ProcOutputType.VAR:
+                continue
+            if not Path(job.output[outkey]).exists():
+                job.status = JobStatus.FAILED
+                proc.pbar.update_job_failed()
+                stderr = await a_read_text(job.stderr_file)
+                stderr = (f'{stderr}\n\nOutput {outtype} {outkey!r} '
+                          'is not generated.')
+                await a_write_text(job.stderr_file, stderr)
+                break
+        else:
+            await job.cache()
+            proc.pbar.update_job_succeeded()
 
     @plugin.impl
     async def on_job_failed(self, proc: "Proc", job: "Job"):

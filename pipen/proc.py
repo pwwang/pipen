@@ -38,7 +38,7 @@ class Proc(ProcProperties, metaclass=ProcMeta):
     # pylint: disable=redefined-builtin,redefined-outer-name
     def __init__(self,
                  name: Optional[str] = None,
-                 desc: str = 'Undescribed.',
+                 desc: Optional[str] = None,
                  *,
                  input_keys: Union[List[str], str] = None,
                  input: Optional[Union[str, Iterable[str]]] = None,
@@ -85,7 +85,10 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         )
         self.desc = (
             desc if desc is not None
-            else self.__class__.desc if self.__class__.desc is not None
+            else self.__class__.desc
+            if self.__class__.desc is not None
+            else self.__doc__.lstrip().splitlines()[0]
+            if self.__doc__
             else 'Undescribed.'
         )
 
@@ -196,7 +199,6 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         self.out_channel = DataFrame((job.output for job in self.jobs))
         self.pbar.done()
         await plugin.hooks.on_proc_done(self)
-        self.gc()
 
     async def _init_job(self, worker_id: int, config: Config) -> None:
         """A worker to initialize jobs
