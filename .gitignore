@@ -108,3 +108,5 @@ poetry.lock
 
 .history/
 .xqute/
+.pipen/
+t-*.ipynb
