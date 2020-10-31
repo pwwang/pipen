@@ -1,5 +1,6 @@
 """Provide the Job class"""
 import logging
+from os import PathLike
 from pathlib import Path
 from typing import Any, Dict, Union
 
@@ -19,12 +20,13 @@ class Job(XquteJob, JobCaching):
     """The job for pipen"""
 
     # pylint: disable=redefined-outer-name
-    __slots__ = ('proc', '_output_types')
+    __slots__ = ('proc', '_output_types', '_outdir')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.proc = None
         self._output_types = {}
+        self._outdir = self.metadir / 'output'
 
     @property
     def script_file(self) -> Path:
@@ -34,8 +36,8 @@ class Job(XquteJob, JobCaching):
     @cached_property
     def outdir(self) -> Path:
         """Get the path to the output directory"""
-        ret = self.metadir / 'output'
-        ret.mkdir(exist_ok=True)
+        ret = Path(self._outdir)
+        ret.mkdir(parents=True, exist_ok=True)
         return ret
 
     @cached_property
@@ -164,6 +166,12 @@ class Job(XquteJob, JobCaching):
             proc: the process object
         """
         self.proc = proc
+        if self.proc.end and len(self.proc.jobs) == 1:
+            self._outdir = Path(self.proc.pipeline.outdir) / self.proc.name
+        elif self.proc.end:
+            self._outdir = (Path(self.proc.pipeline.outdir) /
+                            self.proc.name /
+                            str(self.index))
 
         if not proc.script:
             self.cmd = []
@@ -178,5 +186,3 @@ class Job(XquteJob, JobCaching):
         elif not self.script_file.is_file():
             self.script_file.write_text(script)
         self.cmd = [proc.lang, self.script_file]
-
-

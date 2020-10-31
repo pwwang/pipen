@@ -52,8 +52,10 @@ class ProcProperties:
     scheduler_opts: ClassVar[Dict[str, Any]] = {}
     script: ClassVar[str] = None
     template: ClassVar[str] = None
+    end: ClassVar[bool] = None
 
     def __init__(self, # pylint: disable=too-many-locals
+                 end: Optional[bool] = None,
                  input_keys: Union[List[str], str] = None,
                  input: Optional[Union[str, Iterable[str]]] = None,
                  output: Optional[Union[str, Iterable[str]]] = None,
@@ -69,6 +71,7 @@ class ProcProperties:
                  template: Optional[Union[str, Type[Template]]] = None,
                  scheduler: Optional[Union[str, Scheduler]] = None,
                  scheduler_opts: Optional[Dict[str, Any]] = None) -> None:
+        self.end = self.__class__.end if end is None else end
         self.args = self.__class__.args.copy()
         self.args.update(args or {})
         self.cache = self.__class__.cache if cache is None else cache

@@ -2,7 +2,8 @@
 import logging
 from os import PathLike
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from io import StringIO
+from typing import Any, Callable, List, Mapping, Optional, Union
 # pylint: disable=unused-import
 try:
     from functools import cached_property
@@ -10,9 +11,20 @@ except ImportError:
     from cached_property import cached_property
 # pylint: enable=unused-import
 from rich.logging import RichHandler
+from rich.console import Console, RenderableType
+from rich.highlighter import ReprHighlighter
+from rich.table import Table
+from rich.text import Text
+from rich.panel import Panel
+from rich.pretty import Pretty
+
+
 from more_itertools import consecutive_groups
 from simplug import _SimplugContextOnly
-from .defaults import LOGGER_NAME, DEFAULT_CONSOLE_WIDTH
+
+from .defaults import (LOGGER_NAME,
+                       DEFAULT_CONSOLE_WIDTH,
+                       DEFAULT_CONSOLE_WIDTH_SHIFT)
 from .plugin import plugin
 
 # pylint: disable=invalid-name
@@ -49,12 +61,19 @@ def get_logger(name: str,
 
 logger = get_logger(LOGGER_NAME)
 
-def get_console_width(default: int = DEFAULT_CONSOLE_WIDTH) -> int:
-    """Get the console width"""
+def get_console_width(default: int = DEFAULT_CONSOLE_WIDTH,
+                      shift: int = DEFAULT_CONSOLE_WIDTH_SHIFT) -> int:
+    """Get the console width
+
+    Args:
+        default: The default console width if failed to get
+        shift: The shift to subtract from the width
+            as we have time, level, plugin name in log
+    """
     try:
-        return logger.logger.handlers[0].console.width
+        return logger.logger.handlers[0].console.width - shift
     except (AttributeError, IndexError):  # pragma: no cover
-        return default
+        return default - shift
 
 def get_plugin_context(plugins: List[Any]) -> _SimplugContextOnly:
     """Get the plugin context to enable and disable plugins per pipeline
@@ -79,24 +98,75 @@ def get_plugin_context(plugins: List[Any]) -> _SimplugContextOnly:
         )
     return plugin.plugins_only_context(*plugins)
 
-def pipen_banner() -> List[str]:
+def log_rich_renderable(
+        renderable: RenderableType,
+        color: str,
+        logfunc: Callable,
+        *args,
+        **kwargs
+) -> None:
+    """Log a rich renderable to logger
+
+    Args:
+        renderable: The rich renderable
+        splitline: Whether split the lines or log the entire message
+        logfunc: The log function, if message is not the first argument,
+            use functools.partial to wrap it
+        *args: The arguments to the log function
+        **kwargs: The keyword arguments to the log function
+    """
+    console = Console(file=StringIO())
+    console.print(renderable)
+
+    for line in console.file.getvalue().splitlines():
+        logfunc(f'[{color}]{line}[/{color}]' if color else line,
+                *args,
+                **kwargs)
+
+def render_scope(scope: Mapping, title: str) -> RenderableType:
+    """Log a mapping to console
+
+    Args:
+        scope: The mapping object
+        title: The title of the scope
+    """
+    highlighter = ReprHighlighter()
+    items_table = Table.grid(padding=(0, 1), expand=False)
+    items_table.add_column(justify="left")
+
+    for key, value in sorted(scope.items()):
+        items_table.add_row(
+            Text.assemble((key, "scope.key")),
+            Text.assemble(('=', 'scope.equals')),
+            Pretty(value, highlighter=highlighter)
+        )
+
+    return Panel(
+        items_table,
+        title=title,
+        width=min(DEFAULT_CONSOLE_WIDTH, get_console_width()),
+        border_style="scope.border",
+        padding=(0, 1),
+    )
+
+def pipen_banner() -> RenderableType:
     """The banner for pipen"""
     from . import __version__
-    console_width = min(DEFAULT_CONSOLE_WIDTH, get_console_width())
-    banner = (
-        r"_____________________________________   __",
-        r"___  __ \___  _/__  __ \__  ____/__  | / /",
-        r"__  /_/ /__  / __  /_/ /_  __/  __   |/ / ",
-        r"_  ____/__/ /  _  ____/_  /___  _  /|  /  ",
-        r"/_/     /___/  /_/     /_____/  /_/ |_/   "
-    )
-    ret = []
-    for ban in banner:
-        ret.append(ban.center(console_width))
+    table = Table(width=min(DEFAULT_CONSOLE_WIDTH, get_console_width()),
+                  show_header=False,
+                  show_edge=False,
+                  show_footer=False,
+                  show_lines=False,
+                  caption=f"version: {__version__}")
+    table.add_column(justify='center')
+    table.add_row(r"  _____________________________________   __")
+    table.add_row(r"  ___  __ \___  _/__  __ \__  ____/__  | / /")
+    table.add_row(r" __  /_/ /__  / __  /_/ /_  __/  __   |/ / ")
+    table.add_row(r"_  ____/__/ /  _  ____/_  /___  _  /|  /  ")
+    table.add_row(r"/_/     /___/  /_/     /_____/  /_/ |_/   ")
+    table.add_row("")
 
-    ret.append(f"v{__version__}".center(console_width))
-    ret.append("")
-    return ret
+    return table
 
 def brief_list(blist: List[int]) -> str:
     """Briefly show an integer list, combine the continuous numbers.

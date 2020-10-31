@@ -1,10 +1,9 @@
 """Main entry module, provide the Pipen class"""
+from os import PathLike
 from typing import Any, ClassVar, List, Optional, Union
 import asyncio
-from io import StringIO
 
 from rich import box
-from rich.console import Console
 from rich.panel import Panel
 
 from .defaults import DEFAULT_CONFIG_FILES, DEFAULT_CONFIG, config
@@ -14,7 +13,8 @@ from .progressbar import PipelinePBar
 from .exceptions import ProcDependencyError
 from .utils import (
     get_console_width,
-    get_plugin_context,
+    get_plugin_context, log_rich_renderable,
+    render_scope,
     logger,
     pipen_banner,
     DEFAULT_CONSOLE_WIDTH
@@ -29,6 +29,7 @@ class Pipen:
                  starts: Union[ProcType, List[ProcType]],
                  name: Optional[str] = None,
                  desc: str = 'Undescribed.',
+                 outdir: Optional[PathLike] = None,
                  plugins: Optional[List[Any]] = None,
                  **kwargs) -> None:
 
@@ -40,20 +41,20 @@ class Pipen:
             config._load({'default': DEFAULT_CONFIG},
                          *DEFAULT_CONFIG_FILES)
             logger.setLevel(config.loglevel.upper())
-            for line in pipen_banner():
-                logger.info(line)
-            # logger.debug('Plugin setup complete.')
+            log_rich_renderable(pipen_banner(), 'magenta', logger.info)
 
         self.procs = None
         self.pbar = None
         self.name = name or f'pipeline-{Pipen.PIPELINE_COUNT}'
         self.desc = desc
+        self.outdir = outdir or f'./{self.name}-output'
         self.starts = [starts] if not isinstance(starts, list) else starts
+        self.profile = 'default'
 
         self._print_banner()
 
         self.config = config.copy()
-        self.config._load({'__init__': kwargs})
+        self.config._load({'default': kwargs})
 
         self.plugin_context = get_plugin_context(plugins)
         if self.plugin_context:
@@ -66,22 +67,32 @@ class Pipen:
             for name, plg in plugin.get_enabled_plugins().items()
         ])
 
-
         Pipen.PIPELINE_COUNT += 1
 
     def _print_banner(self) -> None:
         """Print he banner for the pipeline"""
         console_width = get_console_width()
-        stream = StringIO()
-        console = Console(file=stream)
         panel = Panel(self.desc,
                       title=self.name,
                       box=box.HEAVY,
                       width=min(DEFAULT_CONSOLE_WIDTH, console_width))
-        console.print(panel)
         logger.info('')
-        for line in console.file.getvalue().splitlines():
-            logger.info(f'[green]{line}[/green]')
+        log_rich_renderable(panel, 'green', logger.info)
+
+    def _print_config(self) -> None:
+        """Print the default configuration"""
+        if self.profile == 'default':
+            context = self.config._with('default')
+        else:
+            context = self.config._with(self.profile, 'default')
+
+        logger.info('')
+        with context as conf:
+            log_rich_renderable(
+                render_scope(conf, 'default configurations'),
+                None,
+                logger.info
+            )
 
     def _init(self) -> None:
         """Initialize the pipeline"""
@@ -130,19 +141,16 @@ class Pipen:
         logger.info('Loaded processes: %s', len(self.procs))
         return max_proc_name_len
 
-    async def async_run(self, profile: str) -> None:
-        """Run the processes one by one
-
-        Args:
-            profile: The default profile to use for the run
-                Unless the profile is defined in the processes, otherwise
-                this profile will be used
-        """
+    async def async_run(self) -> None:
+        """Run the processes one by one"""
         try:
             self._init()
+            logger.info('Running pipeline using profile: %r', self.profile)
+            logger.info('Output will be saved to: %r', str(self.outdir))
+            self._print_config()
             for proc in self.procs:
                 self.pbar.update_proc_running()
-                await proc.prepare(self, profile)
+                await proc.prepare(self, self.profile)
                 await proc.run()
                 if proc.succeeded:
                     self.pbar.update_proc_done()
@@ -167,5 +175,6 @@ class Pipen:
                 Unless the profile is defined in the processes, otherwise
                 this profile will be used
         """
-        asyncio.run(self.async_run(profile))
+        self.profile = profile
+        asyncio.run(self.async_run())
         plugin.hooks.on_complete(self)

@@ -6,15 +6,16 @@ from pathlib import Path
 from typing import Any, ClassVar, Dict, Iterable, List, Optional, Type, Union
 from io import StringIO
 
+from rich import box
+from rich.panel import Panel
+
 from varname import varname
 from simpleconf import Config
-from rich.panel import Panel
-from rich.console import Console
 from xqute import Xqute, JobStatus
 from xqute import Scheduler
 from pandas import DataFrame
 
-from .utils import brief_list, logger, get_console_width, DEFAULT_CONSOLE_WIDTH
+from .utils import brief_list, log_rich_renderable, logger, get_console_width, DEFAULT_CONSOLE_WIDTH
 from .template import Template
 from .plugin import plugin
 from ._proc_properties import ProcProperties, ProcMeta, ProcType
@@ -40,6 +41,7 @@ class Proc(ProcProperties, metaclass=ProcMeta):
                  name: Optional[str] = None,
                  desc: Optional[str] = None,
                  *,
+                 end: Optional[bool] = None,
                  input_keys: Union[List[str], str] = None,
                  input: Optional[Union[str, Iterable[str]]] = None,
                  output: Optional[Union[str, Iterable[str]]] = None,
@@ -59,6 +61,7 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             return
 
         super().__init__(
+            end,
             input_keys,
             input,
             output,
@@ -137,16 +140,19 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             pipeline: The Pipen object
             profile: The profile of the configuration
         """
+        if self.end is None and not self.nexts:
+            self.end = True
         self._print_banner()
         self._print_dependencies()
         self.pipeline = pipeline
         profile = self.profile or profile
 
         if profile == 'default':
-            config = pipeline.config._use('__init__', 'default', copy=True)
+            # no profile specified or profile is default,
+            # we should use __init__ the highest priority
+            config = pipeline.config._use('default', copy=True)
         else:
-            config = pipeline.config._use('__init__', 'default', profile,
-                                          copy=True)
+            config = pipeline.config._use(profile, 'default', copy=True)
 
         self.properties_from_config(config)
         self.compute_properties()
@@ -184,6 +190,7 @@ class Proc(ProcProperties, metaclass=ProcMeta):
 
     async def run(self) -> None:
         """Run the process"""
+
         cached_jobs = []
         for job in self.jobs:
             if await job.cached:
@@ -218,6 +225,7 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         Args:
             config: The pipeline configuration
         """
+
         for i in range(self.input.data.shape[0]):
             job = self.scheduler.job_class(i, '', self.workdir)
             self.jobs.append(job)
@@ -231,15 +239,24 @@ class Proc(ProcProperties, metaclass=ProcMeta):
     def _print_banner(self) -> None:
         """Print the banner of the process"""
         console_width = get_console_width()
-        stream = StringIO()
-        console = Console(file=stream)
-        panel = Panel(self.desc,
-                      title=self.name,
-                      width=min(DEFAULT_CONSOLE_WIDTH, console_width))
-        console.print(panel)
+        panel = Panel(
+            self.desc,
+            title=self.name,
+            box=box.Box(
+                "╭═┬╮\n"
+                "║ ║║\n"
+                "├═┼┤\n"
+                "║ ║║\n"
+                "├═┼┤\n"
+                "├═┼┤\n"
+                "║ ║║\n"
+                "╰═┴╯\n"
+            ) if self.end else box.ROUNDED,
+            width=min(DEFAULT_CONSOLE_WIDTH, console_width)
+        )
+
         logger.info('')
-        for line in console.file.getvalue().splitlines():
-            logger.info(f'[cyan]{line}[/cyan]')
+        log_rich_renderable(panel, 'cyan', logger.info)
 
     def _print_dependencies(self):
         """Print the dependencies"""

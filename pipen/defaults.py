@@ -43,11 +43,14 @@ DEFAULT_CONFIG = Diot(
     scheduler='local',
     # scheduler options
     scheduler_opts={},
-    # plugin configs
-    plugins={}
+    # plugins
+    plugins=[],
+    # plugin opts
+    plugin_opts={}
 )
 
 DEFAULT_CONSOLE_WIDTH: int = 80
+DEFAULT_CONSOLE_WIDTH_SHIFT: int = 26
 
 class ProcInputType:
     """Types for process inputs"""
