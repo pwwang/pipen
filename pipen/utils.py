@@ -3,13 +3,20 @@ import logging
 from os import PathLike
 from pathlib import Path
 from io import StringIO
-from typing import Any, Callable, List, Mapping, Optional, Union
+from typing import Any, Callable, Iterable, List, Mapping, Optional, Tuple, Union
 # pylint: disable=unused-import
-try:
+try: # pragma: no cover
     from functools import cached_property
-except ImportError:
+except ImportError: # pragma: no cover
     from cached_property import cached_property
 # pylint: enable=unused-import
+
+try: # pragma: no cover
+    import importlib_metadata
+except ImportError: # pragma: no cover
+    # pylint: disable=ungrouped-imports
+    from importlib import metadata as importlib_metadata
+
 from rich.logging import RichHandler
 from rich.console import Console, RenderableType
 from rich.highlighter import ReprHighlighter
@@ -50,7 +57,6 @@ def get_logger(name: str,
     Returns:
         The logger
     """
-    # TODO: check name
     log = logging.getLogger(f'pipen.{name}')
     log.addHandler(_logger_handler)
 
@@ -207,3 +213,19 @@ def get_mtime(path: PathLike, dir_depth: int = 1) -> float:
     for file in path.glob('*'):
         mtime = max(mtime, get_mtime(file, dir_depth-1))
     return mtime
+
+def load_entrypoints(group: str) -> Iterable[Tuple[str, Any]]:
+    """Load objects from setuptools entrypoints by given group name
+
+    Args:
+        group: The group name of the entrypoints
+
+    Returns:
+        An iterable of tuples with name and the loaded object
+    """
+    for dist in importlib_metadata.distributions():
+        for epoint in dist.entry_points:
+            if epoint.group != group:
+                continue
+            obj = epoint.load()
+            yield (epoint.name, obj)

@@ -51,6 +51,8 @@ DEFAULT_CONFIG = Diot(
 
 DEFAULT_CONSOLE_WIDTH: int = 80
 DEFAULT_CONSOLE_WIDTH_SHIFT: int = 26
+SCHEDULER_ENTRY_GROUP = 'pipen-sched'
+TEMPLATE_ENTRY_GROUP = 'pipen-tpl'
 
 class ProcInputType:
     """Types for process inputs"""

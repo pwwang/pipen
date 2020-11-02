@@ -20,3 +20,15 @@ class ProcOutputValueError(PipenException, ValueError):
 
 class ProcDependencyError(PipenException):
     """When there is something wrong the process dependencies"""
+
+class NoSuchSchedulerError(PipenException):
+    """When specified scheduler cannot be found"""
+
+class WrongSchedulerTypeError(PipenException, TypeError):
+    """When specified scheduler is not a subclass of Scheduler"""
+
+class NoSuchTemplateEngineError(PipenException):
+    """When specified template engine cannot be found"""
+
+class WrongTemplateEnginTypeError(PipenException, TypeError):
+    """When specified tempalte engine is not a subclass of Scheduler"""

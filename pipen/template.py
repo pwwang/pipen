@@ -3,6 +3,10 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional, Type, Union
 from liquid import Liquid
 
+from .utils import load_entrypoints
+from .defaults import TEMPLATE_ENTRY_GROUP
+from .exceptions import NoSuchTemplateEngineError, WrongTemplateEnginTypeError
+
 __all__ = ['Template', 'TemplateLiquid', 'TemplateJinja2']
 
 class Template(ABC):
@@ -102,11 +106,22 @@ def get_template_engine(template: Union[str, Type[Template]]) -> Type[Template]:
     Returns:
         The template engine
     """
+    if issubclass(template, Template):
+        return template
+
     if template == 'liquid':
         return TemplateLiquid
 
     if template == 'jinja2':
         return TemplateJinja2
 
-    # // TODO: otherwise load from entrypoints ?
-    return template
+    for name, obj in load_entrypoints(TEMPLATE_ENTRY_GROUP):
+        if name == template:
+            if not issubclass(obj, Template):
+                raise WrongTemplateEnginTypeError(
+                    'Template engine should be a subclass of '
+                    'pipen.templates.Template.'
+                )
+            return obj
+
+    raise NoSuchTemplateEngineError(str(template))

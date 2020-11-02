@@ -10,6 +10,9 @@ from xqute.schedulers.sge_scheduler import (
     SgeScheduler as XquteSgeScheduler
 )
 from .job import Job
+from .defaults import SCHEDULER_ENTRY_GROUP
+from .utils import load_entrypoints
+from .exceptions import NoSuchSchedulerError, WrongSchedulerTypeError
 
 class LocalJob(Job):
     """Job class for local scheduler"""
@@ -36,12 +39,21 @@ def get_scheduler(scheduler: Union[str, Type[Scheduler]]) -> Type[Scheduler]:
     Returns:
         The scheduler class
     """
-    if isinstance(scheduler, Scheduler):
+    if issubclass(scheduler, Scheduler):
         return scheduler
 
     if scheduler == 'local':
         return LocalScheduler
     if scheduler == 'sge':
         return SgeScheduler
-    # TODO: get from entrypoint
-    return None
+
+    for name, obj in load_entrypoints(SCHEDULER_ENTRY_GROUP):
+        if name == scheduler:
+            if not issubclass(obj, Scheduler):
+                raise WrongSchedulerTypeError(
+                    'Scheduler should be a subclass of '
+                    'pipen.scheduler.Scheduler.'
+                )
+            return obj
+
+    raise NoSuchSchedulerError(str(scheduler))
