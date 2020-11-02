@@ -71,9 +71,13 @@ class JobCaching:
                 await self.rc != 0 or
                 not self.signature_file.is_file()):
             self.log('debug',
-                     'Not cached (proc.cache = False or job.rc != 0 or '
+                     'Not cached (proc.cache=False or job.rc!=0 or '
                      'signature file not found)')
             return False
+
+        if self.proc.cache == 'force':
+            self.cache()
+            return True
 
         sign_str = await a_read_text(self.signature_file)
         signature = Diot(toml.loads(sign_str))
@@ -111,6 +115,19 @@ class JobCaching:
                                      'Not cached (%s is newer)',
                                      file)
                             return False
+
+            for outkey, outval in self._output_types.items():
+                if (outval == ProcOutputType.STDOUT and
+                        get_mtime(self.stdout_file) > signature.ctime):
+                    return False
+                if (outval == ProcOutputType.STDERR and
+                        get_mtime(self.stderr_file) > signature.ctime):
+                    return False
+                if (outval in (ProcOutputType.FILE, ProcOutputType.DIR) and
+                        get_mtime(self.output[outkey],
+                                  self.proc.dirsig) > signature.ctime):
+                    return False
+
         except AttributeError:
             # meaning signature is incomplete
             return False
