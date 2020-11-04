@@ -145,7 +145,16 @@ disable=print-statement,
         no-name-in-module,
         no-member,
         broad-except,
-        cyclic-import
+        cyclic-import,
+        too-few-public-methods,
+        unbalanced-tuple-unpacking,
+        no-self-use,
+        too-few-public-methods,
+        protected-access,
+        too-many-instance-attributes,
+        too-many-arguments,
+        too-many-return-statements,
+        too-many-locals
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -211,7 +220,7 @@ ignore-comments=yes
 ignore-docstrings=yes
 
 # Ignore imports when computing similarities.
-ignore-imports=no
+ignore-imports=yes
 
 # Minimum lines number of a similarity.
 min-similarity-lines=4
@@ -298,18 +307,23 @@ good-names=i,
            j,
            k,
            x,
-		   y,
+           y,
            z,
            np,
+           gc,
            nn,
+           ns,
            t,
            t0,
+           to,
            ex,
            rc,
            eq,
            do,
            by,
            tf,
+           on,
+           op,
            Run,
            _
 

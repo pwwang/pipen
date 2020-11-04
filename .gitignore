@@ -105,3 +105,9 @@ poetry.lock
 
 # backup files
 *.bak
+
+.history/
+.xqute/
+.pipen/
+t-*.ipynb
+*-output/

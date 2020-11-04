@@ -1,32 +1,18 @@
-site_name: PyPPL
+site_name: pipen
 theme:
     name: 'material'
-    font:
-      text: 'Ubuntu'
-      code: 'Ubuntu Mono'
 markdown_extensions:
     - markdown.extensions.admonition
     - pymdownx.superfences:
         preserve_tabs: true
     - toc:
         baselevel: 2
+plugins:
+    - search # necessary for search to work
+    - mkapi
+extra_css:
+    - style.css
 nav:
     - 'Introduction': 'index.md'
-    - 'Examples': 'examples.md'
-    - 'Basics and folder structure': 'basics.md'
-    - 'Defining a process': 'defining.md'
-    - 'Templating': 'templating.md'
-    - 'Channels': 'channels.md'
-    - 'Input and output of a process': 'input-output.md'
-    - 'The heart: script': 'script.md'
-    - 'Caching': 'caching.md'
-    - 'Runners': 'runners.md'
-    - 'Error handling of processes': 'error.md'
-    - 'Log configuration': 'logs.md'
-    - 'Pipeline configuration': 'configuration.md'
-    - 'Plugins': 'plugin.md'
-    - 'Process sets': 'procsets.md'
-    - 'Command line tool': 'cli.md'
-    - 'API': 'api.md'
-    #- 'FAQ': 'faq.md'
     - 'Change log': 'CHANGELOG.md'
+    - 'API': mkapi/api/pipen

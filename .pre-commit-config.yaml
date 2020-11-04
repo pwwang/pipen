@@ -22,10 +22,10 @@ repos:
     rev: v2.4.4
     hooks:
     -   id: pylint
-        files: ^pyppl/.+$
+        files: ^pipen/.+$
         pass_filenames: false
         types: [python]
-        args: [pyppl]
+        args: [pipen]
 -   repo: local
     hooks:
     -   id: poetry2setuppy
