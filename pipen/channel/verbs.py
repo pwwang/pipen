@@ -13,7 +13,7 @@ __all__ = tuple(siuba.dply.verbs.__all__) + ('expand_dir', 'collapse_files')
 
 # some useful pipe verbs
 @singledispatch2(DataFrame)
-def expand_dir(df: DataFrame,
+def expand_dir(data: DataFrame,
                col: Union[str, int] = 0,
                pattern: str = '*',
                ftype: str = 'any',
@@ -41,17 +41,17 @@ def expand_dir(df: DataFrame,
     Returns:
         The expanded channel
     """
-    assert df.shape[0] == 1, "Can only expand a single row DataFrame."
-    col_loc = col if isinstance(col, int) else df.columns.get_loc(col)
-    full_pattern = f"{df.iloc[0, col_loc]}/{pattern}"
+    assert data.shape[0] == 1, "Can only expand a single row DataFrame."
+    col_loc = col if isinstance(col, int) else data.columns.get_loc(col)
+    full_pattern = f"{data.iloc[0, col_loc]}/{pattern}"
     expanded = from_glob(full_pattern, ftype, sortby, reverse)
-    ret = pandas.concat([df] * expanded.size, axis=0)
-    ret[df.columns[col_loc]] = expanded.values
+    ret = pandas.concat([data] * expanded.size, axis=0)
+    ret[data.columns[col_loc]] = expanded.values
     ret.reset_index(drop=True)
     return ret
 
 @singledispatch2(DataFrame)
-def collapse_files(df: DataFrame,
+def collapse_files(data: DataFrame,
                    col: Union[str, int] = 0) -> DataFrame:
     """Collapse a Channel according to the files in <col>,
     other cols will use the values in row 0.
@@ -64,16 +64,16 @@ def collapse_files(df: DataFrame,
     >>> [['.', 1]]
 
     Args:
-        df: The original channel
+        data: The original channel
         col: the index or name of the column used to collapse on
 
     Returns:
         The collapsed channel
     """
-    assert df.shape[0] > 0, "Cannot collapse on an empty DataFrame."
-    col_loc = col if isinstance(col, int) else df.columns.get_loc(col)
-    paths = list(df.iloc[:, col_loc])
+    assert data.shape[0] > 0, "Cannot collapse on an empty DataFrame."
+    col_loc = col if isinstance(col, int) else data.columns.get_loc(col)
+    paths = list(data.iloc[:, col_loc])
     compx = path.dirname(path.commonprefix(paths))
-    ret = df.iloc[[0], :].copy()
+    ret = data.iloc[[0], :].copy()
     ret.iloc[0, col_loc] = compx
     return ret

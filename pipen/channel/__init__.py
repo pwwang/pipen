@@ -52,11 +52,11 @@ def from_glob(pattern,
                 else path.getsize if sortby == 'size'
                 else None)
     file_filter = (path.islink if ftype == 'link'
-                    else path.isdir if ftype == 'dir'
-                    else path.isfile if ftype == 'file'
-                    else None)
+                   else path.isdir if ftype == 'dir'
+                   else path.isfile if ftype == 'file'
+                   else None)
     files = (file for file in glob(str(pattern))
-                if not file_filter or file_filter(file))
+             if not file_filter or file_filter(file))
     return create(sorted(files, key=sort_key, reverse=reverse))
 
 def from_pairs(pattern,
@@ -80,6 +80,7 @@ def from_pairs(pattern,
         axis=1
     )
 
+# pylint: disable=invalid-name
 from_csv = pandas.read_csv
 from_csv.__doc__ = ("Create a channel from a csv file.\n\n"
                     f"{pandas.read_csv.__doc__}")

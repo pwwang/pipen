@@ -1,8 +1,0 @@
-[default]
-forks = 1
-
-[default.runner]
-runner = "local"
-
-[local5]
-forks = 5

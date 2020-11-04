@@ -9,7 +9,7 @@ from xqute import Job as XquteJob
 from xqute.utils import a_read_text
 
 from .defaults import ProcInputType, ProcOutputType
-from .utils import logger, cached_property
+from .utils import logger, cached_property # pylint: disable=unused-import
 from .exceptions import (ProcInputTypeError,
                          ProcOutputNameError,
                          ProcOutputTypeError,
@@ -188,7 +188,7 @@ class Job(XquteJob, JobCaching):
             self.proc.size - 1
         )
 
-        self.proc.log(level, job_index_indicator + msg, *args)
+        self.proc.log(level, job_index_indicator + msg, *args, logger=logger)
 
     async def prepare(self, proc: "Proc") -> None:
         """Prepare the job by given process
@@ -208,7 +208,7 @@ class Job(XquteJob, JobCaching):
                             str(self.index))
 
         if not proc.script:
-            self.cmd = []
+            self.cmd = [] # pylint: disable=attribute-defined-outside-init
             return
 
         script = proc.script.render(self.rendering_data)
@@ -219,4 +219,5 @@ class Job(XquteJob, JobCaching):
             self.script_file.write_text(script)
         elif not self.script_file.is_file():
             self.script_file.write_text(script)
+        # pylint: disable=attribute-defined-outside-init
         self.cmd = [proc.lang, self.script_file]

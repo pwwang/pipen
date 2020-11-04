@@ -65,4 +65,4 @@ class ProcOutputType:
     VAR: ClassVar[str] = 'var'
     FILE: ClassVar[str] = 'file'
 
-config = Config()
+config = Config() # pylint: disable=invalid-name

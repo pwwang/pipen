@@ -11,13 +11,9 @@ __all__ = ['Template', 'TemplateLiquid', 'TemplateJinja2',
            'get_template_engine']
 
 class Template(ABC):
-    """@API
-    Base class wrapper to wrap template for PyPPL
-    """
-    def __init__(self, source: Any, **envs):
-        """@API
-        Template construct
-        """
+    """Base class wrapper to wrap template for pipen"""
+    def __init__(self, source: Any, **envs): # pylint: disable=unused-argument
+        """Template construct"""
         self.envs = envs
 
     def update_envs(self, **envs):

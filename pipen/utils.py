@@ -3,7 +3,9 @@ import logging
 from os import PathLike
 from pathlib import Path
 from io import StringIO
-from typing import Any, Callable, Iterable, List, Mapping, Optional, Tuple, Union
+from typing import (
+    Any, Callable, Iterable, List, Mapping, Optional, Tuple, Union
+)
 # pylint: disable=unused-import
 try: # pragma: no cover
     from functools import cached_property
