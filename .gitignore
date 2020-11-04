@@ -110,3 +110,4 @@ poetry.lock
 .xqute/
 .pipen/
 t-*.ipynb
+*-output/

@@ -22,29 +22,20 @@ class JobCaching:
         for inkey, intype in self.proc.input.type.items():
             if intype == ProcInputType.VAR:
                 continue
-            if intype == ProcInputType.FILE:
+            if intype == ProcInputType.FILE and self.input[inkey] is not None:
                 max_mtime = max(
                     max_mtime,
                     get_mtime(self.input[inkey], self.proc.dirsig)
                 )
             if intype == ProcInputType.FILES:
-                for file in self.input[inkey]:
+                for file in (self.input[inkey] or ()):
                     max_mtime = max(
                         max_mtime,
                         get_mtime(file, self.proc.dirsig)
                     )
 
         for outkey, outval in self._output_types.items():
-            if outval == ProcOutputType.STDOUT:
-                max_mtime = max(max_mtime, self.stdout_file.stat().st_mtime)
-            elif outval == ProcOutputType.STDERR:
-                max_mtime = max(max_mtime, self.stderr_file.stat().st_mtime)
-            elif outval == ProcOutputType.FILE:
-                max_mtime = max(
-                    max_mtime,
-                    get_mtime(self.output[outkey], self.proc.dirsig)
-                )
-            elif outval == ProcOutputType.DIR:
+            if outval == ProcOutputType.FILE:
                 max_mtime = max(
                     max_mtime,
                     get_mtime(self.output[outkey], self.proc.dirsig)
@@ -76,7 +67,7 @@ class JobCaching:
             return False
 
         if self.proc.cache == 'force':
-            self.cache()
+            await self.cache()
             return True
 
         sign_str = await a_read_text(self.signature_file)
@@ -103,32 +94,34 @@ class JobCaching:
                     continue
                 if intype == ProcInputType.FILE:
                     if get_mtime(self.input[inkey],
-                                 self.proc.dirsig) > signature.ctime:
+                                 self.proc.dirsig) > signature.ctime + 1e-3:
                         self.log('debug',
-                                 'Not cached (%s is newer)',
-                                 self.input[inkey])
+                                 'Not cached (Input file is newer: %s)',
+                                 inkey)
                         return False
                 if intype == ProcInputType.FILES:
                     for file in self.input[inkey]:
-                        if get_mtime(file, self.proc.dirsig) > signature.ctime:
-                            self.log('debug',
-                                     'Not cached (%s is newer)',
-                                     file)
+                        if get_mtime(file,
+                                     self.proc.dirsig) > signature.ctime + 1e-3:
+                            self.log(
+                                'debug',
+                                'Not cached (One of the input files is newer: '
+                                '%s)',
+                                inkey
+                            )
                             return False
 
             for outkey, outval in self._output_types.items():
-                if (outval == ProcOutputType.STDOUT and
-                        get_mtime(self.stdout_file) > signature.ctime):
-                    return False
-                if (outval == ProcOutputType.STDERR and
-                        get_mtime(self.stderr_file) > signature.ctime):
-                    return False
-                if (outval in (ProcOutputType.FILE, ProcOutputType.DIR) and
-                        get_mtime(self.output[outkey],
-                                  self.proc.dirsig) > signature.ctime):
+                if outval != ProcOutputType.FILE:
+                    continue
+                if get_mtime(self.output[outkey],
+                             self.proc.dirsig) > signature.ctime + 1e-3:
+                    self.log('debug',
+                             'Not cached (Output file is newer: %s)',
+                             outkey)
                     return False
 
-        except AttributeError:
+        except AttributeError: # pragma: no cover
             # meaning signature is incomplete
             return False
 

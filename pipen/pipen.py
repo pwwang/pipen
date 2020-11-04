@@ -30,14 +30,13 @@ class Pipen:
                  name: Optional[str] = None,
                  desc: str = 'Undescribed.',
                  outdir: Optional[PathLike] = None,
-                 plugins: Optional[List[Any]] = None,
                  **kwargs) -> None:
 
         if Pipen.PIPELINE_COUNT == 0:
             from . import __version__
             PipenMainPlugin.__version__ = __version__
             # make sure setup is called at runtime
-            plugin.hooks.on_setup(DEFAULT_CONFIG.plugins)
+            plugin.hooks.on_setup(DEFAULT_CONFIG.plugin_opts)
             config._load({'default': DEFAULT_CONFIG},
                          *DEFAULT_CONFIG_FILES)
             logger.setLevel(config.loglevel.upper())
@@ -56,13 +55,17 @@ class Pipen:
         self.config = config.copy()
         self.config._load({'default': kwargs})
 
-        self.plugin_context = get_plugin_context(plugins)
-        if self.plugin_context:
-            self.plugin_context.__enter__()
+
+        self.plugin_context = get_plugin_context(self.config.plugins)
+        self.plugin_context.__enter__()
+
+        # make sure main plugin is enabled
+        plugin.get_plugin('main').enable()
+
         logger.info('Enabled plugins: %s', [
             '{name}{version}'.format(
                 name=name,
-                version=(f'-v{plg.__version__}' if plg.version else '')
+                version=(f'-{plg.__version__}' if plg.version else '')
             )
             for name, plg in plugin.get_enabled_plugins().items()
         ])
@@ -163,9 +166,9 @@ class Pipen:
             # sys.exit(1)
             # rich has a shift on line numbers
         finally:
-            self.pbar.done()
-            if self.plugin_context:
-                self.plugin_context.__exit__()
+            if self.pbar:
+                self.pbar.done()
+            self.plugin_context.__exit__()
 
     def run(self, profile: str = 'default') -> None:
         """Run the pipeline with the given profile

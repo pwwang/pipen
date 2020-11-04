@@ -1,3 +1,4 @@
-from pyppl.plugin import pluginmgr
-for plugin in pluginmgr.get_plugins():
-    pluginmgr.unregister(plugin)
+from pipen.plugin import plugin
+
+# disable all plugins
+# plugin.plugins_only_context([]).__enter__()

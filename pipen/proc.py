@@ -15,7 +15,14 @@ from xqute import Xqute, JobStatus
 from xqute import Scheduler
 from pandas import DataFrame
 
-from .utils import brief_list, log_rich_renderable, logger, get_console_width, DEFAULT_CONSOLE_WIDTH
+from .utils import (
+    brief_list,
+    log_rich_renderable,
+    logger,
+    get_console_width,
+    cached_property,
+    DEFAULT_CONSOLE_WIDTH
+)
 from .template import Template
 from .plugin import plugin
 from ._proc_properties import ProcProperties, ProcMeta, ProcType
@@ -31,7 +38,7 @@ class Proc(ProcProperties, metaclass=ProcMeta):
     def __new__(cls, *args, **kwargs):
         """Make sure cls() always get to the same instance"""
         if not args and not kwargs:
-            if not cls.SELF:
+            if not cls.SELF or cls.SELF.__class__ is not cls:
                 cls.SELF = super().__new__(cls)
             return cls.SELF
         return super().__new__(cls)
@@ -169,6 +176,8 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             job_num_retries=config.num_retries,
             scheduler_forks=self.forks,
             **self.scheduler_opts)
+        # for the plugin hooks to access
+        self.xqute.proc = self
 
         # init all other properties and jobs
         await self._init_jobs(config)
@@ -178,12 +187,15 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         # init pbar
         self.pbar = pipeline.pbar.proc_bar(self.size, self.name)
 
-    @property
+    def __repr__(self):
+        return f'<Proc-{hex(id(self))}({self.name}: {self.size})>'
+
+    @cached_property
     def size(self) -> int:
         """The size of the process (# of jobs)"""
         return len(self.jobs)
 
-    @property
+    @cached_property
     def succeeded(self) -> bool:
         """Check if the process is succeeded (all jobs succeeded)"""
         return all(job.status == JobStatus.FINISHED for job in self.jobs)

@@ -1,4 +1,5 @@
 """Define hooks specifications and provide plugin manager"""
+import signal
 from pathlib import Path
 from typing import Any, Dict, Optional
 from xqute import JobStatus, Scheduler
@@ -45,6 +46,20 @@ async def on_proc_init(proc: "Proc"):
 
     Args:
         proc: The process
+    """
+
+@plugin.spec(result=SimplugResult.FIRST)
+def on_proc_shutdown(proc: "Proc", sig: Optional[signal.Signals]) -> None:
+    """When pipeline is shutting down, by Ctrl-c for example.
+
+    Return False to stop shutting down, but you have to shut it down
+    by yourself, for example, `proc.xqute.task.cancel()`
+
+    Only the first return value will be used.
+
+    Args:
+        pipen: The xqute object
+        sig: The signal. `None` means a natural shutdown
     """
 
 @plugin.spec
@@ -160,6 +175,14 @@ class PipenMainPlugin:
     name = 'main'
 
     @plugin.impl
+    def on_proc_shutdown(self, proc: "Proc", sig: Optional[signal.Signals]):
+        """When a process is shutting down"""
+        if sig:
+            proc.log('warning',
+                     'Got signal %r, trying a graceful shutdown ...',
+                     sig.name)
+
+    @plugin.impl
     async def on_job_submitted(self, proc: "Proc", job: "Job"):
         """Update the progress bar when a job is submitted"""
         proc.pbar.update_job_submitted()
@@ -206,6 +229,11 @@ xqute_plugin = Simplug('xqute')
 class XqutePipenPlugin:
     """The plugin for xqute working as proxy for pipen plugin hooks"""
     name = 'xqute.pipen'
+
+    @xqute_plugin.impl
+    def on_shutdown(self, xqute: "Xqute", sig: Optional[signal.Signals]):
+        """When a process is shutting down"""
+        return plugin.hooks.on_proc_shutdown(xqute.proc, sig)
 
     @xqute_plugin.impl
     async def on_job_init(self, scheduler: Scheduler, job: "Job"):

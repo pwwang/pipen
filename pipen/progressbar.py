@@ -35,14 +35,14 @@ class ProcPBar:
         """Update the progress bar when a job is succeeded"""
         try:
             self.success_counter.update_from(self.running_counter)
-        except ValueError:
+        except ValueError: # pragma: no cover
             self.success_counter.update_from(self.submitted_counter)
 
     def update_job_failed(self):
         """Update the progress bar when a job is failed"""
         try:
             self.failure_counter.update_from(self.running_counter)
-        except ValueError:
+        except ValueError: # pragma: no cover
             self.failure_counter.update_from(self.submitted_counter)
 
     def done(self):

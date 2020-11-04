@@ -44,7 +44,7 @@ DEFAULT_CONFIG = Diot(
     # scheduler options
     scheduler_opts={},
     # plugins
-    plugins=[],
+    plugins=None,
     # plugin opts
     plugin_opts={}
 )
@@ -64,8 +64,5 @@ class ProcOutputType:
     """Types for process outputs"""
     VAR: ClassVar[str] = 'var'
     FILE: ClassVar[str] = 'file'
-    DIR: ClassVar[str] = 'dir'
-    STDOUT: ClassVar[str] = 'stdout'
-    STDERR: ClassVar[str] = 'stderr'
 
 config = Config()

@@ -1,13 +1,14 @@
 """Provide some function for creating and modifying channels(dataframes)"""
 from typing import Any, List, Union
-
 from os import path
 from glob import glob
 
 import pandas
 from pandas import DataFrame
-from siuba.dply.verbs import singledispatch2
+from siuba.siu import _
 
+__all__ = ('_', 'create', 'from_glob', 'from_pairs',
+           'from_csv', 'from_excel', 'from_table')
 
 def create(value: Union[DataFrame, List[Any]]) -> DataFrame:
     """Create a channel from a list.
@@ -88,70 +89,3 @@ from_excel.__doc__ = ("Create a channel from an excel file.\n\n"
 from_table = pandas.read_table
 from_table.__doc__ = ("Create a channel from a table file.\n\n"
                       f"{pandas.read_table.__doc__}")
-
-# some useful pipe verbs
-@singledispatch2(DataFrame)
-def expand(df: DataFrame,
-           col: Union[str, int] = 0,
-           pattern: str = '*',
-           ftype: str = 'any',
-           sortby: str = 'name',
-           reverse: bool = False) -> DataFrame:
-    """Expand a Channel according to the files in <col>,
-    other cols will keep the same.
-
-    This is only applicable to a 1-row channel.
-
-    Examples:
-    >>> ch = channel.create([('./', 1)])
-    >>> ch >> expand()
-    >>> [['./a', 1], ['./b', 1], ['./c', 1]]
-
-    Args:
-        col: the index or name of the column used to expand
-        pattern: use a pattern to filter the files/dirs, default: `*`
-        ftype: the type of the files/dirs to include
-            - 'dir', 'file', 'link' or 'any' (default)
-        sortby:  how the list is sorted
-            - 'name' (default), 'mtime', 'size'
-        reverse: reverse sort.
-
-    Returns:
-        The expanded channel
-    """
-    assert df.shape[0] == 1, "Can only expand a single row DataFrame."
-    col_loc = col if isinstance(col, int) else df.columns.get_loc(col)
-    full_pattern = f"{df.iloc[0, col_loc]}/{pattern}"
-    expanded = from_glob(full_pattern, ftype, sortby, reverse)
-    ret = pandas.concat([df] * expanded.size, axis=0)
-    ret[df.columns[col_loc]] = expanded.values
-    ret.reset_index(drop=True)
-    return ret
-
-@singledispatch2(DataFrame)
-def collapse(df: DataFrame,
-             col: Union[str, int] = 0) -> DataFrame:
-    """Collapse a Channel according to the files in <col>,
-    other cols will use the values in row 0.
-
-    Note that other values in other rows will be discarded.
-
-    Examples:
-    >>> ch = channel.create([['./a', 1], ['./b', 1], ['./c', 1]])
-    >>> ch >> collapse()
-    >>> [['.', 1]]
-
-    Args:
-        df: The original channel
-        col: the index or name of the column used to collapse on
-
-    Returns:
-        The collapsed channel
-    """
-    assert df.shape[0] > 0, "Cannot collapse on an empty DataFrame."
-    col_loc = col if isinstance(col, int) else df.columns.get_loc(col)
-    paths = list(df.iloc[:, col_loc])
-    compx = path.dirname(path.commonprefix(paths))
-    ret = df.iloc[[0], :].copy()
-    ret.iloc[0, col_loc] = compx
-    return ret

@@ -32,3 +32,6 @@ class NoSuchTemplateEngineError(PipenException):
 
 class WrongTemplateEnginTypeError(PipenException, TypeError):
     """When specified tempalte engine is not a subclass of Scheduler"""
+
+class ConfigurationError(PipenException):
+    """When something wrong set as configuration"""

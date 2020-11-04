@@ -3,6 +3,7 @@ import inspect
 import textwrap
 from typing import Any, ClassVar, Dict, Iterable, List, Optional, Type, Union
 from pathlib import Path
+from functools import lru_cache
 
 from diot import OrderedDiot
 from xqute import Scheduler
@@ -11,6 +12,7 @@ import pandas
 
 from . import channel
 from .defaults import ProcInputType
+from .utils import is_subclass
 from .template import Template, get_template_engine
 from .scheduler import get_scheduler
 from .exceptions import ProcInputTypeError, ProcScriptFileNotFound
@@ -128,6 +130,7 @@ class ProcProperties:
         self.scheduler = get_scheduler(self.scheduler)
         self.script = self._compute_script()
 
+    @lru_cache()
     def _compute_input(self) -> Dict[str, Dict[str, Any]]:
         """Calculate the input based on input_keys and input data"""
         # split input keys into keys and types
@@ -167,19 +170,22 @@ class ProcProperties:
         if ret.data.shape[1] > n_keys:
             # // TODO: match the column names?
             self.log('warning',
-                     'Wasted %s columns of input data.',
-                     n_keys - ret.data.shape[1])
+                     'Wasted %s column(s) of input data.',
+                     ret.data.shape[1] - n_keys)
             ret.data = ret.data.iloc[:, :n_keys]
             ret.data.columns = input_keys
         elif ret.data.shape[1] < n_keys:
             self.log('warning',
-                     'No data columns for input: %s',
+                     'No data columns for input: %s, using None.',
                      input_keys[ret.data.shape[1]:])
-            ret.data.columns = input_keys[:ret.data.shape[1]]
+            for input_key in input_keys[ret.data.shape[1]:]:
+                ret.data.insert(ret.data.shape[1], input_key, None, True)
+            ret.data.columns = input_keys
         else:
             ret.data.columns = input_keys
         return ret
 
+    @lru_cache()
     def _compute_output(self):
         """Compute the output for jobs to render"""
         output = self.output
@@ -190,6 +196,7 @@ class ProcProperties:
                     for oput in output]
         return self.template(output, **self.envs)
 
+    @lru_cache()
     def _compute_script(self) -> Optional[Template]:
         """Compute the script for jobs to render"""
         if not self.script:
@@ -211,6 +218,7 @@ class ProcProperties:
         script = textwrap.dedent(script)
         return self.template(script, **self.envs)
 
+    @lru_cache()
     def _compute_requires(
             self,
             requires: Optional[Union[ProcType, Iterable[ProcType]]]
@@ -236,7 +244,7 @@ class ProcProperties:
             requires = [requires]
 
         for require in requires:
-            if issubclass(require, Proc):
+            if is_subclass(require, Proc):
                 require = require()
             require.nexts.append(self)
             ret.append(require)

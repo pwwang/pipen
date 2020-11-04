@@ -27,11 +27,12 @@ from rich.pretty import Pretty
 
 
 from more_itertools import consecutive_groups
-from simplug import _SimplugContextOnly
+from simplug import SimplugContext
 
 from .defaults import (LOGGER_NAME,
                        DEFAULT_CONSOLE_WIDTH,
                        DEFAULT_CONSOLE_WIDTH_SHIFT)
+from .exceptions import ConfigurationError
 from .plugin import plugin
 
 # pylint: disable=invalid-name
@@ -81,7 +82,7 @@ def get_console_width(default: int = DEFAULT_CONSOLE_WIDTH,
     except (AttributeError, IndexError):  # pragma: no cover
         return default - shift
 
-def get_plugin_context(plugins: List[Any]) -> _SimplugContextOnly:
+def get_plugin_context(plugins: Optional[List[Any]]) -> SimplugContext:
     """Get the plugin context to enable and disable plugins per pipeline
 
     Args:
@@ -91,18 +92,21 @@ def get_plugin_context(plugins: List[Any]) -> _SimplugContextOnly:
     Returns:
         The plugin context manager
     """
-    if not plugins:
-        return None
+    if plugins is None:
+        return plugin.plugins_only_context(None)
+
     no_plugins = [isinstance(plug, str) and plug.startswith('no:')
                   for plug in plugins]
     if any(no_plugins) and not all(no_plugins):
-        raise ValueError('Either all plugin names start with "no:" or '
-                         'none of them does.')
+        raise ConfigurationError(
+            'Either all plugin names start with "no:" or '
+            'none of them does.'
+        )
     if all(no_plugins):
         return plugin.plugins_but_context(
-            *(plug[3:] for plug in plugins)
+            plug[3:] for plug in plugins
         )
-    return plugin.plugins_only_context(*plugins)
+    return plugin.plugins_only_context(plugins)
 
 def log_rich_renderable(
         renderable: RenderableType,
@@ -144,7 +148,7 @@ def render_scope(scope: Mapping, title: str) -> RenderableType:
         items_table.add_row(
             Text.assemble((key, "scope.key")),
             Text.assemble(('=', 'scope.equals')),
-            Pretty(value, highlighter=highlighter)
+            Pretty(value, highlighter=highlighter, overflow='fold')
         )
 
     return Panel(
@@ -214,6 +218,24 @@ def get_mtime(path: PathLike, dir_depth: int = 1) -> float:
         mtime = max(mtime, get_mtime(file, dir_depth-1))
     return mtime
 
+def is_subclass(obj: Any, cls: type) -> bool:
+    """Tell if obj is a subclass of cls
+
+    Differences with issubclass is that we don't raise Type error if obj
+    is not a class
+
+    Args:
+        obj: The object to check
+        cls: The class to check
+
+    Returns:
+        True if obj is a subclass of cls otherwise False
+    """
+    try:
+        return issubclass(obj, cls)
+    except TypeError:
+        return False
+
 def load_entrypoints(group: str) -> Iterable[Tuple[str, Any]]:
     """Load objects from setuptools entrypoints by given group name
 
@@ -223,7 +245,7 @@ def load_entrypoints(group: str) -> Iterable[Tuple[str, Any]]:
     Returns:
         An iterable of tuples with name and the loaded object
     """
-    for dist in importlib_metadata.distributions():
+    for dist in importlib_metadata.distributions(): # pragma: no cover
         for epoint in dist.entry_points:
             if epoint.group != group:
                 continue

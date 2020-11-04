@@ -3,11 +3,12 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional, Type, Union
 from liquid import Liquid
 
-from .utils import load_entrypoints
+from .utils import load_entrypoints, is_subclass
 from .defaults import TEMPLATE_ENTRY_GROUP
 from .exceptions import NoSuchTemplateEngineError, WrongTemplateEnginTypeError
 
-__all__ = ['Template', 'TemplateLiquid', 'TemplateJinja2']
+__all__ = ['Template', 'TemplateLiquid', 'TemplateJinja2',
+           'get_template_engine']
 
 class Template(ABC):
     """@API
@@ -106,7 +107,7 @@ def get_template_engine(template: Union[str, Type[Template]]) -> Type[Template]:
     Returns:
         The template engine
     """
-    if issubclass(template, Template):
+    if is_subclass(template, Template):
         return template
 
     if template == 'liquid':
@@ -115,9 +116,9 @@ def get_template_engine(template: Union[str, Type[Template]]) -> Type[Template]:
     if template == 'jinja2':
         return TemplateJinja2
 
-    for name, obj in load_entrypoints(TEMPLATE_ENTRY_GROUP):
+    for name, obj in load_entrypoints(TEMPLATE_ENTRY_GROUP): # pragma: no cover
         if name == template:
-            if not issubclass(obj, Template):
+            if not is_subclass(obj, Template):
                 raise WrongTemplateEnginTypeError(
                     'Template engine should be a subclass of '
                     'pipen.templates.Template.'

@@ -8,9 +8,10 @@ from diot import OrderedDiot
 from xqute import Job as XquteJob
 from xqute.utils import a_read_text
 
-from .defaults import ProcOutputType
+from .defaults import ProcInputType, ProcOutputType
 from .utils import logger, cached_property
-from .exceptions import (ProcOutputNameError,
+from .exceptions import (ProcInputTypeError,
+                         ProcOutputNameError,
                          ProcOutputTypeError,
                          ProcOutputValueError)
 from .template import Template
@@ -43,9 +44,36 @@ class Job(XquteJob, JobCaching):
     @cached_property
     def input(self) -> Dict[str, Any]:
         """Get the input data"""
-        return (self.proc.input.data.
-                iloc[[self.index], :].
-                to_dict('records')[0])
+        ret = self.proc.input.data.iloc[[self.index], :].to_dict('records')[0]
+        # check types
+        for inkey, intype in self.proc.input.type.items():
+            if intype == ProcInputType.VAR:
+                continue
+            if intype == ProcInputType.FILE:
+                if not isinstance(ret[inkey], (str, PathLike)):
+                    raise ProcInputTypeError(
+                        f"Got {type(ret[inkey])} instead of PathLike object "
+                        f"for input: {inkey + ':' + intype!r}"
+                    )
+                if not Path(ret[inkey]).exists():
+                    raise FileNotFoundError(
+                        f"Input file not found: {ret[inkey]}"
+                    )
+                # we should use it as a string
+                ret[inkey] = str(ret[inkey])
+            if intype == ProcInputType.FILES:
+                if not isinstance(ret[inkey], (list, tuple)):
+                    raise ProcInputTypeError(
+                        "Expected a list/tuple for input: "
+                        f"{inkey + ':' + intype!r}"
+                    )
+                for i, file in enumerate(ret[inkey]):
+                    if not Path(file).exists():
+                        raise FileNotFoundError(
+                            f"Input file not found: {file}"
+                        )
+                    ret[inkey][i] = str(file)
+        return ret
 
     @cached_property
     def output(self) -> Dict[str, Any]:
@@ -79,13 +107,16 @@ class Job(XquteJob, JobCaching):
         for oput in outputs:
             if ':' not in oput:
                 raise ProcOutputNameError('No name given in output.')
+
             if oput.count(':') == 1:
                 output_name, output_value = oput.split(':')
                 output_type = ProcOutputType.VAR
             else:
                 output_name, output_type, output_value = oput.split(':', 2)
                 if output_type not in ProcOutputType.__dict__.values():
-                    raise ProcOutputTypeError('Unsupported output type.')
+                    raise ProcOutputTypeError(
+                        f'Unsupported output type: {output_type}'
+                    )
 
             self._output_types[output_name] = output_type
             ret[output_name] = output_value
@@ -93,9 +124,16 @@ class Job(XquteJob, JobCaching):
             if output_type == ProcOutputType.VAR:
                 continue
 
+            if '/' in output_value and self.proc.end:
+                raise ProcOutputValueError(
+                    'Only basename allowed as output for ending process. '
+                    'If you want to redirect the output path, set `end` to '
+                    'False for the process.'
+                )
             if '/' in output_value:
-                raise ProcOutputValueError('Only basename allowed as output.')
-            ret[output_name] = str(self.outdir.resolve() / output_value)
+                ret[output_name] = output_value
+            else:
+                ret[output_name] = str(self.outdir.resolve() / output_value)
 
         return ret
 
@@ -123,7 +161,7 @@ class Job(XquteJob, JobCaching):
             msg: str,
             *args,
             limit: int = 3,
-            limit_indicator: bool = False,
+            limit_indicator: bool = True,
             logger: logging.Logger = logger) -> None:
         """Log message for the jobs
 
@@ -139,22 +177,18 @@ class Job(XquteJob, JobCaching):
         if self.index > limit:
             return
 
-        prefix = '[cyan]%s[/cyan]: [%s/%s]' % (
-            self.proc.name,
-            str(self.index).zfill(len(str(self.proc.size-1))),
-            self.proc.size
-        )
         if self.index == limit:
             if limit_indicator:
-                logger.debug('%s Not showing similar logs for further jobs.',
-                             prefix)
+                self.proc.log('debug',
+                              'Not showing similar logs for further jobs.')
             return
 
-        if not isinstance(level, int):
-            level = logging.getLevelName(level.upper())
+        job_index_indicator = '[%s/%s] ' % (
+            str(self.index).zfill(len(str(self.proc.size-1))),
+            self.proc.size - 1
+        )
 
-        msg = msg % args
-        logger.log(level, '%s %s', prefix, msg)
+        self.proc.log(level, job_index_indicator + msg, *args)
 
     async def prepare(self, proc: "Proc") -> None:
         """Prepare the job by given process
