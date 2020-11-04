@@ -1,10 +1,12 @@
 """Main entry module, provide the Pipen class"""
 from os import PathLike
-from typing import Any, ClassVar, List, Optional, Union
+from typing import ClassVar, List, Optional, Union
 import asyncio
 
 from rich import box
 from rich.panel import Panel
+
+from slugify import slugify
 
 from .defaults import DEFAULT_CONFIG_FILES, DEFAULT_CONFIG, config
 from .plugin import plugin, PipenMainPlugin
@@ -46,7 +48,7 @@ class Pipen:
         self.pbar = None
         self.name = name or f'pipeline-{Pipen.PIPELINE_COUNT}'
         self.desc = desc
-        self.outdir = outdir or f'./{self.name}-output'
+        self.outdir = outdir or f'./{slugify(self.name)}-output'
         self.starts = [starts] if not isinstance(starts, list) else starts
         self.profile = 'default'
 

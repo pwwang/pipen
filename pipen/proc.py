@@ -4,10 +4,11 @@ import asyncio
 import logging
 from pathlib import Path
 from typing import Any, ClassVar, Dict, Iterable, List, Optional, Type, Union
-from io import StringIO
 
 from rich import box
 from rich.panel import Panel
+
+from slugify import slugify
 
 from varname import varname
 from simpleconf import Config
@@ -26,6 +27,7 @@ from .utils import (
 from .template import Template
 from .plugin import plugin
 from ._proc_properties import ProcProperties, ProcMeta, ProcType
+from .exceptions import ProcWorkdirConflictException
 
 class Proc(ProcProperties, metaclass=ProcMeta):
     """The Proc class provides process assembly functionality"""
@@ -164,8 +166,17 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         self.properties_from_config(config)
         self.compute_properties()
 
-        self.workdir = Path(config.workdir) / self.name
+        self.workdir = Path(config.workdir) / slugify(self.name)
+        # check if it's the same proc using the workdir
+        proc_name_file = self.workdir / 'proc.name'
+        if proc_name_file.is_file() and proc_name_file.read_text() != self.name:
+            raise ProcWorkdirConflictException(
+                'Workdir name is conflicting with process '
+                f'{proc_name_file.read_text()!r}, use a differnt pipeline '
+                'or a different process name.'
+            )
         self.workdir.mkdir(parents=True, exist_ok=True)
+        proc_name_file.write_text(self.name)
         self.log('info', 'Workdir: %r', str(self.workdir))
 
         self.xqute = Xqute(

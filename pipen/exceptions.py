@@ -35,3 +35,6 @@ class WrongTemplateEnginTypeError(PipenException, TypeError):
 
 class ConfigurationError(PipenException):
     """When something wrong set as configuration"""
+
+class ProcWorkdirConflictException(PipenException):
+    """"When more than one processes are sharing the same workdir"""

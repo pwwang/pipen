@@ -200,4 +200,9 @@ def test_proc_killing(tmp_path, caplog):
                   workdir=tmp_path)
     pipen.run()
 
-
+def test_proc_workdir_conflict(tmp_path):
+    proc = Process('process 1')
+    proc2 = Process2('process-1', requires=proc)
+    pipen = Pipen(starts=proc, workdir=tmp_path)
+    with pytest.raises(ProcWorkdirConflictException):
+        pipen.run()
