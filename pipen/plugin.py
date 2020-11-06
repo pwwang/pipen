@@ -41,6 +41,17 @@ def on_complete(pipen: "Pipen"):
     """
 
 @plugin.spec
+async def on_proc_property_computed(proc: "Proc"):
+    """When the properties of a process is computed
+
+    This hook is called before on_proc_init. In between, workdir is created
+    and jobs are initialized.
+
+    Args:
+        proc: The process
+    """
+
+@plugin.spec
 async def on_proc_init(proc: "Proc"):
     """When a process is initialized
 

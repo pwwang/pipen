@@ -164,9 +164,12 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             config = pipeline.config._use(profile, 'default', copy=True)
 
         self.properties_from_config(config)
-        self.compute_properties()
 
         self.workdir = Path(config.workdir) / slugify(self.name)
+        self.compute_properties()
+
+        await plugin.hooks.on_proc_property_computed(self)
+
         # check if it's the same proc using the workdir
         proc_name_file = self.workdir / 'proc.name'
         if proc_name_file.is_file() and proc_name_file.read_text() != self.name:
