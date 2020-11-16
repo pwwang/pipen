@@ -11,12 +11,12 @@ from .defaults import ProcOutputType
 plugin = Simplug('pipen')
 
 @plugin.spec
-def on_setup(plugin_config: Dict[str, Any]) -> None:
+def on_setup(plugin_opts: Dict[str, Any]) -> None:
     """Setup for plugins, primarily used for the plugins to
     setup some default configurations
 
     Args:
-        plugin_config: The plugin configuration dictionary
+        plugin_opts: The plugin configuration dictionary
             One should define a configuration item either with a prefix as
             the identity for the plugin or a namespace inside the plugin config.
     """
@@ -30,7 +30,7 @@ def on_init(pipen: "Pipen") -> None:
     """
 
 @plugin.spec
-def on_complete(pipen: "Pipen"):
+async def on_complete(pipen: "Pipen"):
     """The the pipeline is complete.
 
     Note that this hook is only called when the pipeline

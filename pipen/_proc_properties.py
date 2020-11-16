@@ -52,6 +52,7 @@ class ProcProperties:
     requires: ClassVar[Union[ProcType, Iterable[ProcType]]] = None
     scheduler: ClassVar[str] = None
     scheduler_opts: ClassVar[Dict[str, Any]] = {}
+    plugin_opts: ClassVar[Dict[str, Any]] = {}
     script: ClassVar[str] = None
     template: ClassVar[str] = None
     end: ClassVar[bool] = None
@@ -72,7 +73,8 @@ class ProcProperties:
                  profile: Optional[str] = None,
                  template: Optional[Union[str, Type[Template]]] = None,
                  scheduler: Optional[Union[str, Scheduler]] = None,
-                 scheduler_opts: Optional[Dict[str, Any]] = None) -> None:
+                 scheduler_opts: Optional[Dict[str, Any]] = None,
+                 plugin_opts: Optional[Dict[str, Any]] = None) -> None:
         self.end = self.__class__.end if end is None else end
         self.args = self.__class__.args.copy()
         self.args.update(args or {})
@@ -93,6 +95,8 @@ class ProcProperties:
         self.scheduler = scheduler or self.__class__.scheduler
         self.scheduler_opts = self.__class__.scheduler_opts.copy()
         self.scheduler_opts.update(scheduler_opts or {})
+        self.plugin_opts = self.__class__.plugin_opts.copy()
+        self.plugin_opts.update(plugin_opts or {})
         self.script = script or self.__class__.script
         self.template = template or self.__class__.template
 
@@ -121,6 +125,10 @@ class ProcProperties:
         scheduler_opts = config.scheduler_opts.copy()
         scheduler_opts.update(self.scheduler_opts)
         self.scheduler_opts = scheduler_opts
+
+        plugin_opts = config.plugin_opts.copy()
+        plugin_opts.update(self.plugin_opts)
+        self.plugin_opts = plugin_opts
 
     def compute_properties(self):
         """Compute some properties"""

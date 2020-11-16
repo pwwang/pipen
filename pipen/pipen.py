@@ -163,6 +163,7 @@ class Pipen:
                     self.pbar.update_proc_error()
                     break
                 proc.gc()
+            await plugin.hooks.on_complete(self)
         # except Exception as exc:
             # logger.exception(exc)
             # sys.exit(1)
@@ -182,4 +183,3 @@ class Pipen:
         """
         self.profile = profile
         asyncio.run(self.async_run())
-        plugin.hooks.on_complete(self)

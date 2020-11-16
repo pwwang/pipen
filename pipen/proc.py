@@ -65,7 +65,8 @@ class Proc(ProcProperties, metaclass=ProcMeta):
                  profile: Optional[str] = None,
                  template: Optional[Union[str, Type[Template]]] = None,
                  scheduler: Optional[Union[str, Scheduler]] = None,
-                 scheduler_opts: Optional[Dict[str, Any]] = None) -> None:
+                 scheduler_opts: Optional[Dict[str, Any]] = None,
+                 plugin_opts: Optional[Dict[str, Any]] = None) -> None:
         if getattr(self, '_inited', False):
             return
 
@@ -85,7 +86,8 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             profile,
             template,
             scheduler,
-            scheduler_opts
+            scheduler_opts,
+            plugin_opts
         )
 
         self.nexts = []
