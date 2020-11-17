@@ -180,7 +180,6 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             )
         self.workdir.mkdir(parents=True, exist_ok=True)
         proc_name_file.write_text(self.name)
-        self.log('info', 'Workdir: %r', str(self.workdir))
 
         self.xqute = Xqute(
             self.scheduler,
@@ -218,6 +217,7 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         """Run the process"""
 
         self._print_banner()
+        self.log('info', 'Workdir: %r', str(self.workdir))
         self._print_dependencies()
 
         cached_jobs = []
@@ -289,11 +289,11 @@ class Proc(ProcProperties, metaclass=ProcMeta):
 
     def _print_dependencies(self):
         """Print the dependencies"""
-        if self.requires:
-            self.log('info',
-                     '[yellow]<<<[/yellow] %s',
-                     [proc.name for proc in self.requires])
-        if self.nexts:
-            self.log('info',
-                     '[yellow]>>>[/yellow] %s',
-                     [proc.name for proc in self.nexts])
+        self.log('info',
+                 '[yellow]<<<[/yellow] %s',
+                 [proc.name for proc in self.requires]
+                 if self.requires else '[START]')
+        self.log('info',
+                 '[yellow]>>>[/yellow] %s',
+                 [proc.name for proc in self.nexts]
+                 if self.nexts else '[END]')

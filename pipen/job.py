@@ -86,11 +86,11 @@ class Job(XquteJob, JobCaching):
         data = {
             'job': dict(
                 index=self.index,
-                metadir=self.metadir,
-                outdir=self.outdir,
-                stdout_file=self.stdout_file,
-                stderr_file=self.stderr_file,
-                lock_file=self.lock_file,
+                metadir=str(self.metadir),
+                outdir=str(self.outdir),
+                stdout_file=str(self.stdout_file),
+                stderr_file=str(self.stderr_file),
+                lock_file=str(self.lock_file),
             ),
             'in': self.input,
             'proc': self.proc,
@@ -145,11 +145,11 @@ class Job(XquteJob, JobCaching):
         return {
             'job': dict(
                 index=self.index,
-                metadir=self.metadir,
-                outdir=self.outdir,
-                stdout_file=self.stdout_file,
-                stderr_file=self.stderr_file,
-                lock_file=self.lock_file,
+                metadir=str(self.metadir),
+                outdir=str(self.outdir),
+                stdout_file=str(self.stdout_file),
+                stderr_file=str(self.stderr_file),
+                lock_file=str(self.lock_file),
             ),
             'in': self.input,
             'out': self.output,
