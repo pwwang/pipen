@@ -153,8 +153,6 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         """
         if self.end is None and not self.nexts:
             self.end = True
-        self._print_banner()
-        self._print_dependencies()
         self.pipeline = pipeline
         profile = self.profile or profile
 
@@ -218,6 +216,9 @@ class Proc(ProcProperties, metaclass=ProcMeta):
 
     async def run(self) -> None:
         """Run the process"""
+
+        self._print_banner()
+        self._print_dependencies()
 
         cached_jobs = []
         for job in self.jobs:

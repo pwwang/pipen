@@ -57,7 +57,6 @@ class Pipen:
         self.config = config.copy()
         self.config._load({'default': kwargs})
 
-
         self.plugin_context = get_plugin_context(self.config.plugins)
         self.plugin_context.__enter__()
 
@@ -99,14 +98,18 @@ class Pipen:
                 logger.info
             )
 
-    def _init(self) -> None:
+    async def _init(self) -> None:
         """Initialize the pipeline"""
         max_proc_name_len = self._init_procs(self.starts)
         desc_len = max(len(self.name), max_proc_name_len)
         self.pbar = PipelinePBar(len(self.procs), self.name, desc_len)
 
         # logger.debug('Calling hook: on_init ...')
-        plugin.hooks.on_init(self)
+        # prepare procs first then they'll be accessed in on_init
+        for proc in self.procs:
+            await proc.prepare(self, self.profile)
+
+        await plugin.hooks.on_init(self)
 
     def _init_procs(self, starts: List[ProcType]) -> int:
         """Instantiate all processes
@@ -149,13 +152,12 @@ class Pipen:
     async def async_run(self) -> None:
         """Run the processes one by one"""
         try:
-            self._init()
+            await self._init()
             logger.info('Running pipeline using profile: %r', self.profile)
             logger.info('Output will be saved to: %r', str(self.outdir))
             self._print_config()
             for proc in self.procs:
                 self.pbar.update_proc_running()
-                await proc.prepare(self, self.profile)
                 await proc.run()
                 if proc.succeeded:
                     self.pbar.update_proc_done()

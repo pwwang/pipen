@@ -5,7 +5,7 @@ from typing import Any, ClassVar, Dict, Iterable, List, Optional, Type, Union
 from pathlib import Path
 from functools import lru_cache
 
-from diot import OrderedDiot
+from diot import OrderedDiot, Diot
 from xqute import Scheduler
 from simpleconf import Config
 import pandas
@@ -76,12 +76,12 @@ class ProcProperties:
                  scheduler_opts: Optional[Dict[str, Any]] = None,
                  plugin_opts: Optional[Dict[str, Any]] = None) -> None:
         self.end = self.__class__.end if end is None else end
-        self.args = self.__class__.args.copy()
-        self.args.update(args or {})
+        self.args = Diot(self.__class__.args.copy())
+        self.args |= args or {}
         self.cache = self.__class__.cache if cache is None else cache
         self.dirsig = self.__class__.dirsig if dirsig is None else dirsig
-        self.envs = self.__class__.envs.copy()
-        self.envs.update(envs or {})
+        self.envs = Diot(self.__class__.envs.copy())
+        self.envs |= envs or {}
         self.forks = forks or self.__class__.forks
         self.input_keys = input_keys or self.__class__.input_keys
         self.input = input or self.__class__.input
@@ -93,10 +93,10 @@ class ProcProperties:
                 requires or self.__class__.requires
             )
         self.scheduler = scheduler or self.__class__.scheduler
-        self.scheduler_opts = self.__class__.scheduler_opts.copy()
-        self.scheduler_opts.update(scheduler_opts or {})
-        self.plugin_opts = self.__class__.plugin_opts.copy()
-        self.plugin_opts.update(plugin_opts or {})
+        self.scheduler_opts = Diot(self.__class__.scheduler_opts.copy())
+        self.scheduler_opts |= scheduler_opts or {}
+        self.plugin_opts = Diot(self.__class__.plugin_opts.copy())
+        self.plugin_opts |= plugin_opts or {}
         self.script = script or self.__class__.script
         self.template = template or self.__class__.template
 
@@ -118,17 +118,14 @@ class ProcProperties:
         if self.dirsig is None:
             self.dirsig = config.dirsig
 
-        envs = (config.envs or {}).copy()
-        envs.update(self.envs)
-        self.envs = envs
+        envs = Diot((config.envs or {}).copy())
+        self.envs = envs | self.envs
 
-        scheduler_opts = config.scheduler_opts.copy()
-        scheduler_opts.update(self.scheduler_opts)
-        self.scheduler_opts = scheduler_opts
+        scheduler_opts = Diot(config.scheduler_opts.copy())
+        self.scheduler_opts = scheduler_opts | self.scheduler_opts
 
-        plugin_opts = config.plugin_opts.copy()
-        plugin_opts.update(self.plugin_opts)
-        self.plugin_opts = plugin_opts
+        plugin_opts = Diot(config.plugin_opts.copy())
+        self.plugin_opts = plugin_opts | self.plugin_opts
 
     def compute_properties(self):
         """Compute some properties"""

@@ -22,7 +22,7 @@ def on_setup(plugin_opts: Dict[str, Any]) -> None:
     """
 
 @plugin.spec
-def on_init(pipen: "Pipen") -> None:
+async def on_init(pipen: "Pipen") -> None:
     """The the pipeline is initialized.
 
     Args:
