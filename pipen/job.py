@@ -1,5 +1,6 @@
 """Provide the Job class"""
 import logging
+import shlex
 from os import PathLike
 from pathlib import Path
 from typing import Any, Dict, Union
@@ -220,4 +221,4 @@ class Job(XquteJob, JobCaching):
         elif not self.script_file.is_file():
             self.script_file.write_text(script)
         # pylint: disable=attribute-defined-outside-init
-        self.cmd = [proc.lang, self.script_file]
+        self.cmd = shlex.split(proc.lang) + [self.script_file]

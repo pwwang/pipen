@@ -12,7 +12,7 @@ import pandas
 
 from . import channel
 from .defaults import ProcInputType
-from .utils import is_subclass
+from .utils import is_subclass, get_shebang
 from .template import Template, get_template_engine
 from .scheduler import get_scheduler
 from .exceptions import ProcInputTypeError, ProcScriptFileNotFound
@@ -221,6 +221,8 @@ class ProcProperties:
             script = script_file.read_text()
 
         script = textwrap.dedent(script)
+        self.lang = get_shebang(script) or self.lang
+
         return self.template(script, **self.envs)
 
     @lru_cache()

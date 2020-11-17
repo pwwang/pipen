@@ -253,3 +253,21 @@ def load_entrypoints(group: str) -> Iterable[Tuple[str, Any]]:
                 continue
             obj = epoint.load()
             yield (epoint.name, obj)
+
+def get_shebang(script: str) -> Optional[str]:
+    """Get the shebang of the script
+
+    Args:
+        script: The script string
+
+    Returns:
+        None if the script does not contain a shebang, otherwise the shebang
+        without `#!` prefix
+    """
+    if '\n' not in script:
+        script += '\n'
+
+    shebang_line, _ = script.split('\n', 1)
+    if not shebang_line.startswith('#!'):
+        return None
+    return shebang_line[2:].strip()
