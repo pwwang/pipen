@@ -18,7 +18,7 @@ class Process(Proc):
 
 def test_caching(tmp_path, caplog):
     proc = Process()
-    pipen = Pipen(starts=proc, workdir=tmp_path, loglevel='debug')
+    pipen = Pipen(workdir=tmp_path, loglevel='debug').starts(proc)
     pipen.run()
 
     # trigger caching
@@ -35,11 +35,11 @@ def test_caching(tmp_path, caplog):
 
 def test_not_cached(tmp_path, caplog):
     proc1 = Process('proc1')
-    pipen = Pipen(starts=proc1, workdir=tmp_path, loglevel='debug')
+    pipen = Pipen(workdir=tmp_path, loglevel='debug').starts(proc1)
     pipen.run()
 
     proc2 = Process('proc1', output=['outfile:file:f', 'outdir:file:d'])
-    pipen = Pipen(starts=proc2, workdir=tmp_path, loglevel='debug')
+    pipen = Pipen(workdir=tmp_path, loglevel='debug').starts(proc2)
     pipen.run()
     assert 'Not cached (input or output is different)' in caplog.text
     caplog.clear()
@@ -66,7 +66,7 @@ def test_input_type_error():
         input_keys = 'infile:file'
         input = [1]
 
-    pipen = Pipen(starts=Process2, loglevel='debug')
+    pipen = Pipen(loglevel='debug').starts(Process2)
     with pytest.raises(ProcInputTypeError):
         pipen.run()
 
@@ -74,7 +74,7 @@ def test_input_type_error():
         input_keys = 'infiles:files'
         input = [1]
 
-    pipen = Pipen(starts=Process3, loglevel='debug')
+    pipen = Pipen(loglevel='debug').starts(Process3)
     with pytest.raises(ProcInputTypeError):
         pipen.run()
 
@@ -82,13 +82,13 @@ def test_input_type_error():
     class Process4(Process2):
         input = ['nosuchfile']
 
-    pipen = Pipen(starts=Process4, loglevel='debug')
+    pipen = Pipen(loglevel='debug').starts(Process4)
     with pytest.raises(FileNotFoundError):
         pipen.run()
     # not exist
     class Process5(Process3):
         input = [['nosuchfile']]
 
-    pipen = Pipen(starts=Process5, loglevel='debug')
+    pipen = Pipen(loglevel='debug').starts(Process5)
     with pytest.raises(FileNotFoundError):
         pipen.run()

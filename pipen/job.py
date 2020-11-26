@@ -65,7 +65,7 @@ class Job(XquteJob, JobCaching):
             if intype == ProcInputType.FILES:
                 if not isinstance(ret[inkey], (list, tuple)):
                     raise ProcInputTypeError(
-                        "Expected a list/tuple for input: "
+                        f"[{self.proc.name}] Expected a list/tuple for input: "
                         f"{inkey + ':' + intype!r}"
                     )
                 for i, file in enumerate(ret[inkey]):

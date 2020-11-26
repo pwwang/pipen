@@ -194,6 +194,7 @@ class Proc(ProcProperties, metaclass=ProcMeta):
 
         # init all other properties and jobs
         await self._init_jobs(config)
+        self.out_channel = DataFrame((job.output for job in self.jobs))
 
         await plugin.hooks.on_proc_init(self)
 
@@ -232,7 +233,6 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         if cached_jobs:
             self.log('info', 'Cached jobs: %s', brief_list(cached_jobs))
         await self.xqute.run_until_complete()
-        self.out_channel = DataFrame((job.output for job in self.jobs))
         self.pbar.done()
         await plugin.hooks.on_proc_done(self)
 

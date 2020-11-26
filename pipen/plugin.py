@@ -22,8 +22,16 @@ def on_setup(plugin_opts: Dict[str, Any]) -> None:
     """
 
 @plugin.spec
-async def on_init(pipen: "Pipen") -> None:
-    """The the pipeline is initialized.
+def on_init(pipen: "Pipen") -> None:
+    """When the pipeline is initialized.
+
+    Args:
+        pipen: The Pipen object
+    """
+
+@plugin.spec
+async def on_start(pipen: "Pipen") -> None:
+    """Right before the pipeline starts running
 
     Args:
         pipen: The Pipen object

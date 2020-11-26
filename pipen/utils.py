@@ -19,7 +19,7 @@ except ImportError: # pragma: no cover
     # pylint: disable=ungrouped-imports
     from importlib import metadata as importlib_metadata
 
-from rich.logging import RichHandler
+from rich.logging import RichHandler as _RichHandler
 from rich.console import Console, RenderableType
 from rich.highlighter import ReprHighlighter
 from rich.table import Table
@@ -39,16 +39,29 @@ from .plugin import plugin
 
 # pylint: disable=invalid-name
 
+class RichHandler(_RichHandler):
+    """Subclass of rich.logging.RichHandler, showing log levels as a single
+    character"""
+    def get_level_text(self, record: logging.LogRecord) -> Text:
+        """Get the level name from the record.
+
+        Args:
+            record (LogRecord): LogRecord instance.
+
+        Returns:
+            Text: A tuple of the style and level name.
+        """
+        level_name = record.levelname
+        level_text = Text.styled(
+            level_name[0].upper(), f"logging.level.{level_name.lower()}"
+        )
+        return level_text
+
 _logger_handler = RichHandler(show_path=False,
-                              show_level=False,
+                              show_level=True,
+                              console=Console(),
                               rich_tracebacks=True,
                               markup=True)
-_logger_format = logging.Formatter(
-    '[logging.level.%(levelname)s]%(levelname).1s[/logging.level.%(levelname)s]'
-    ' /%(plugin_name)-7s %(message)s',
-    '%m-%d %H:%M:%S'
-)
-_logger_handler.setFormatter(_logger_format)
 
 def get_logger(name: str,
                level: Optional[Union[str, int]] = None) -> logging.Logger:

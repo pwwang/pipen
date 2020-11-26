@@ -225,7 +225,6 @@ class ProcProperties:
 
         return self.template(script, **self.envs)
 
-    @lru_cache()
     def _compute_requires(
             self,
             requires: Optional[Union[ProcType, Iterable[ProcType]]]
