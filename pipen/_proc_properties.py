@@ -10,12 +10,14 @@ from xqute import Scheduler
 from simpleconf import Config
 import pandas
 
-from . import channel
 from .defaults import ProcInputType
 from .utils import is_subclass, get_shebang
+from .channel import Channel
 from .template import Template, get_template_engine
 from .scheduler import get_scheduler
-from .exceptions import ProcInputTypeError, ProcScriptFileNotFound
+from .exceptions import (
+    ProcInputTypeError, ProcScriptFileNotFound, ProcInputKeyError
+)
 
 ProcType = Union["Proc", Type["Proc"]]
 
@@ -143,6 +145,8 @@ class ProcProperties:
         if isinstance(input_keys, str):
             input_keys = [input_key.strip()
                           for input_key in input_keys.split(',')]
+        if not input_keys:
+            raise ProcInputKeyError(f'[{self.name}] No input_keys provided')
 
         ret = OrderedDiot(type={})
         for input_key_type in input_keys:
@@ -157,7 +161,7 @@ class ProcProperties:
 
         # get the data
         if not self.requires:
-            ret.data = channel.create(self.input)
+            ret.data = Channel.create(self.input)
         else:
             ret.data = pandas.concat(
                 (req.out_channel for req in self.requires),

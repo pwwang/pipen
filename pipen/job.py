@@ -56,10 +56,11 @@ class Job(XquteJob, JobCaching):
                         f"Got {type(ret[inkey])} instead of PathLike object "
                         f"for input: {inkey + ':' + intype!r}"
                     )
-                if not Path(ret[inkey]).exists():
-                    raise FileNotFoundError(
-                        f"Input file not found: {ret[inkey]}"
-                    )
+                # if not Path(ret[inkey]).exists():
+                #     raise FileNotFoundError(
+                #         f"[{self.proc.name}] Input file not found: "
+                #         f"{ret[inkey]}"
+                #     )
                 # we should use it as a string
                 ret[inkey] = str(ret[inkey])
             if intype == ProcInputType.FILES:
@@ -69,10 +70,10 @@ class Job(XquteJob, JobCaching):
                         f"{inkey + ':' + intype!r}"
                     )
                 for i, file in enumerate(ret[inkey]):
-                    if not Path(file).exists():
-                        raise FileNotFoundError(
-                            f"Input file not found: {file}"
-                        )
+                    # if not Path(file).exists():
+                    #     raise FileNotFoundError(
+                    #         f"[{self.proc.name}] Input file not found: {file}"
+                    #     )
                     ret[inkey][i] = str(file)
         return ret
 

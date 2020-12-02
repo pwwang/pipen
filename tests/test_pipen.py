@@ -8,8 +8,7 @@ from pipen.defaults import config
 from pipen.exceptions import *
 from pipen.plugin import plugin
 from pipen.channel import *
-from pipen.channel.verbs import *
-from pipen.channel.vector import *
+from plyrda.all import *
 
 class Process(Proc):
     input_keys = ['a', 'b:file']
@@ -87,7 +86,9 @@ def test_proc_input_callbacks(tmp_path, caplog):
     script2 = tmp_path / 'proc2.script'
     script2.write_text('echo 1')
     proc = Process('proc1')
-    proc2 = Process2(input=lambda ch: ch >> mutate(b=2), requires=proc,
+    def input_callback(ch):
+        return ch >> mutate(b=2)
+    proc2 = Process2(input=input_callback, requires=proc,
                      output=['c:1', 'd:2'], script='file://%s' % script2)
     # invoke job script updated
     proc2_orig_script = tmp_path / proc2.name / '0' / 'job.script'
@@ -140,7 +141,7 @@ def test_proc_output_path_redirected(tmp_path):
         output = 'b:file:bfile'
     proc1 = ProcessOutputFile('proc1', output='b:file:%s/bfile' % tmp_path)
     proc2 = ProcessOutputFile('proc2', output='b:file:bfile_end',
-                              input=lambda ch: ch >> filter(row_number(_) == 1),
+                              input=lambda ch: ch >> filter(row_number() == 0),
                               requires=proc1)
 
     pipen = Pipen(workdir=tmp_path).starts(proc1)

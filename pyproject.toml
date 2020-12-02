@@ -29,12 +29,13 @@ simplug = "*"
 enlighten = "1.*"
 cached-property = "1.*"
 more-itertools = "8.*"
-siuba = "0.*"
+pipda = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
 pytest-cov = "*"
 jinja2 = "^2.0.0"
+plyrda = "*"
 
 [tool.poetry.scripts]
 pipen = "pipen.cli:main"

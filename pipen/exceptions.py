@@ -6,6 +6,9 @@ class PipenException(Exception):
 class ProcInputTypeError(PipenException, TypeError):
     """When an unsupported input type is provided"""
 
+class ProcInputKeyError(PipenException, KeyError):
+    """When an unsupported input value is provided"""
+
 class ProcScriptFileNotFound(PipenException, FileNotFoundError):
     """When script file specified as 'file://' cannot be found"""
 

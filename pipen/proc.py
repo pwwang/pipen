@@ -198,9 +198,6 @@ class Proc(ProcProperties, metaclass=ProcMeta):
 
         await plugin.hooks.on_proc_init(self)
 
-        # init pbar
-        self.pbar = pipeline.pbar.proc_bar(self.size, self.name)
-
     def __repr__(self):
         return f'<Proc-{hex(id(self))}({self.name}: {self.size})>'
 
@@ -220,6 +217,8 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         self._print_banner()
         self.log('info', 'Workdir: %r', str(self.workdir))
         self._print_dependencies()
+        # init pbar
+        self.pbar = self.pipeline.pbar.proc_bar(self.size, self.name)
 
         cached_jobs = []
         for job in self.jobs:
