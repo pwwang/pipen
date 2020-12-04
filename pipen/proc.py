@@ -220,6 +220,8 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         # init pbar
         self.pbar = self.pipeline.pbar.proc_bar(self.size, self.name)
 
+        await plugin.hooks.on_proc_start(self)
+
         cached_jobs = []
         for job in self.jobs:
             if await job.cached:
@@ -233,7 +235,13 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             self.log('info', 'Cached jobs: %s', brief_list(cached_jobs))
         await self.xqute.run_until_complete()
         self.pbar.done()
-        await plugin.hooks.on_proc_done(self)
+        await plugin.hooks.on_proc_done(
+            self,
+            False if not self.succeeded
+            # pylint: disable=comparison-with-callable
+            else 'cached' if len(cached_jobs) == self.size
+            else True
+        )
 
     async def _init_job(self, worker_id: int, config: Config) -> None:
         """A worker to initialize jobs

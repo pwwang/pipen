@@ -14,7 +14,8 @@ from .utils import logger, cached_property # pylint: disable=unused-import
 from .exceptions import (ProcInputTypeError,
                          ProcOutputNameError,
                          ProcOutputTypeError,
-                         ProcOutputValueError)
+                         ProcOutputValueError,
+                         TemplateRenderingError)
 from .template import Template
 from ._job_caching import JobCaching
 
@@ -213,7 +214,12 @@ class Job(XquteJob, JobCaching):
             self.cmd = [] # pylint: disable=attribute-defined-outside-init
             return
 
-        script = proc.script.render(self.rendering_data)
+        try:
+            script = proc.script.render(self.rendering_data)
+        except Exception as exc:
+            raise TemplateRenderingError(
+                f'[{self.proc.name}] Failed to render script.'
+            ) from exc
         if self.script_file.is_file() and await a_read_text(
                 self.script_file
         ) != script:

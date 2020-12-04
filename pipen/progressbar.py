@@ -1,5 +1,11 @@
 """Provide the PipelinePBar and ProcPBar classes"""
 import enlighten
+from .utils import truncate_text
+
+# [12/02/20 12:44:06] I /main
+#        pipeline: 100%|
+# |   desc_len  |
+PBAR_DESC_LEN = 14
 
 class ProcPBar:
     """The progress bar for processes"""
@@ -53,11 +59,14 @@ class PipelinePBar:
     """Progress bar for the pipeline"""
 
     def __init__(self, n_procs: int, ppln_name: str, desc_len: int) -> None:
+        # // TODO: get rid of desc_len argument
+        desc_len = PBAR_DESC_LEN
+        ppln_name = truncate_text(ppln_name, desc_len)
         self.manager = enlighten.get_manager()
         self.running_counter = self.manager.counter(
             total=n_procs,
             color='yellow',
-            desc=f'{ppln_name:<{desc_len}}:',
+            desc=f'{ppln_name:>{desc_len}}:',
             unit='procs'
         )
         self.success_counter = self.running_counter.add_subcounter('green')
@@ -74,7 +83,8 @@ class PipelinePBar:
         Returns:
             The progress bar for the given process
         """
-        proc_name = f'{proc_name:<{self.desc_len}}:'
+        proc_name = truncate_text(proc_name, self.desc_len)
+        proc_name = f'{proc_name:>{self.desc_len}}:'
         return ProcPBar(self.manager, proc_size, proc_name)
 
     def update_proc_running(self):

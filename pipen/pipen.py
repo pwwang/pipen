@@ -169,6 +169,8 @@ class Pipen:
             logger.info('Running pipeline using profile: %r', self.profile)
             logger.info('Output will be saved to: %r', str(self.outdir))
             self._print_config()
+
+            succeeded = True
             for proc in self.procs:
                 self.pbar.update_proc_running()
                 await proc.run()
@@ -176,9 +178,10 @@ class Pipen:
                     self.pbar.update_proc_done()
                 else:
                     self.pbar.update_proc_error()
+                    succeeded = False
                     break
                 proc.gc()
-            await plugin.hooks.on_complete(self)
+            await plugin.hooks.on_complete(self, succeeded)
         # except Exception as exc:
             # logger.exception(exc)
             # sys.exit(1)

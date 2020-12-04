@@ -66,7 +66,7 @@ _logger_handler.setFormatter(
     logging.Formatter('/%(plugin_name)-7s %(message)s')
 )
 
-def get_logger(name: str,
+def get_logger(name: str = LOGGER_NAME,
                level: Optional[Union[str, int]] = None) -> logging.Logger:
     """Get the logger by given plugin name
 
@@ -84,7 +84,7 @@ def get_logger(name: str,
 
     return logging.LoggerAdapter(log, {'plugin_name': name})
 
-logger = get_logger(LOGGER_NAME)
+logger = get_logger()
 
 def get_console_width(default: int = DEFAULT_CONSOLE_WIDTH,
                       shift: int = DEFAULT_CONSOLE_WIDTH_SHIFT) -> int:
@@ -287,3 +287,20 @@ def get_shebang(script: str) -> Optional[str]:
     if not shebang_line.startswith('#!'):
         return None
     return shebang_line[2:].strip()
+
+def truncate_text(text: str, width: int, end: str = '…') -> str:
+    """Truncate a text not based on words/whitespaces
+    Otherwise, we could use textwrap.shorten.
+
+    Args:
+        text: The text to be truncated
+        width: The max width of the the truncated text
+        end: The end string of the truncated text
+
+    Returns:
+        The truncated text with end appended.
+    """
+    if len(text) <= width:
+        return text
+
+    return text[:(width - len(end))] + end

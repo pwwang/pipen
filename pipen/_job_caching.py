@@ -121,8 +121,9 @@ class JobCaching:
                              outkey)
                     return False
 
-        except AttributeError: # pragma: no cover
+        except (AttributeError, FileNotFoundError): # pragma: no cover
             # meaning signature is incomplete
+            # or any file is deleted
             return False
 
         return True

@@ -1,7 +1,7 @@
 """Define hooks specifications and provide plugin manager"""
 import signal
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 from xqute import JobStatus, Scheduler
 from xqute.utils import a_read_text, a_write_text
 from simplug import Simplug, SimplugResult
@@ -38,7 +38,7 @@ async def on_start(pipen: "Pipen") -> None:
     """
 
 @plugin.spec
-async def on_complete(pipen: "Pipen"):
+async def on_complete(pipen: "Pipen", succeeded: bool):
     """The the pipeline is complete.
 
     Note that this hook is only called when the pipeline
@@ -46,6 +46,7 @@ async def on_complete(pipen: "Pipen"):
 
     Args:
         pipen: The Pipen object
+        succeeded: Whether the pipeline has successfully completed.
     """
 
 @plugin.spec
@@ -67,6 +68,14 @@ async def on_proc_init(proc: "Proc"):
         proc: The process
     """
 
+@plugin.spec
+async def on_proc_start(proc: "Proc"):
+    """When a process is starting
+
+    Args:
+        proc: The process
+    """
+
 @plugin.spec(result=SimplugResult.FIRST)
 def on_proc_shutdown(proc: "Proc", sig: Optional[signal.Signals]) -> None:
     """When pipeline is shutting down, by Ctrl-c for example.
@@ -82,7 +91,7 @@ def on_proc_shutdown(proc: "Proc", sig: Optional[signal.Signals]) -> None:
     """
 
 @plugin.spec
-async def on_proc_done(proc: "Proc"):
+async def on_proc_done(proc: "Proc", succeeded: Union[bool, str]) -> None:
     """When a process is done
 
     This hook will be called anyway when a proc is succeeded or failed.
@@ -90,6 +99,8 @@ async def on_proc_done(proc: "Proc"):
 
     Args:
         proc: The process
+        succeeded: Whether the process succeeded or not. 'cached' if all jobs
+            are cached.
     """
 
 @plugin.spec
