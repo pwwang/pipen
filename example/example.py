@@ -29,5 +29,5 @@ class Plot(Proc):
     """
 
 if __name__ == '__main__':
-    pipen = Pipen(name='plot-mpg', starts=Subset)
+    pipen = Pipen(name='plot-mpg').starts(Subset)
     pipen.run()

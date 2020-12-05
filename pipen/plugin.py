@@ -1,7 +1,7 @@
 """Define hooks specifications and provide plugin manager"""
 import signal
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 from xqute import JobStatus, Scheduler
 from xqute.utils import a_read_text, a_write_text
 from simplug import Simplug, SimplugResult
@@ -11,26 +11,34 @@ from .defaults import ProcOutputType
 plugin = Simplug('pipen')
 
 @plugin.spec
-def on_setup(plugin_config: Dict[str, Any]) -> None:
+def on_setup(plugin_opts: Dict[str, Any]) -> None:
     """Setup for plugins, primarily used for the plugins to
     setup some default configurations
 
     Args:
-        plugin_config: The plugin configuration dictionary
+        plugin_opts: The plugin configuration dictionary
             One should define a configuration item either with a prefix as
             the identity for the plugin or a namespace inside the plugin config.
     """
 
 @plugin.spec
 def on_init(pipen: "Pipen") -> None:
-    """The the pipeline is initialized.
+    """When the pipeline is initialized.
 
     Args:
         pipen: The Pipen object
     """
 
 @plugin.spec
-def on_complete(pipen: "Pipen"):
+async def on_start(pipen: "Pipen") -> None:
+    """Right before the pipeline starts running
+
+    Args:
+        pipen: The Pipen object
+    """
+
+@plugin.spec
+async def on_complete(pipen: "Pipen", succeeded: bool):
     """The the pipeline is complete.
 
     Note that this hook is only called when the pipeline
@@ -38,11 +46,31 @@ def on_complete(pipen: "Pipen"):
 
     Args:
         pipen: The Pipen object
+        succeeded: Whether the pipeline has successfully completed.
+    """
+
+@plugin.spec
+async def on_proc_property_computed(proc: "Proc"):
+    """When the properties of a process is computed
+
+    This hook is called before on_proc_init. In between, workdir is created
+    and jobs are initialized.
+
+    Args:
+        proc: The process
     """
 
 @plugin.spec
 async def on_proc_init(proc: "Proc"):
     """When a process is initialized
+
+    Args:
+        proc: The process
+    """
+
+@plugin.spec
+async def on_proc_start(proc: "Proc"):
+    """When a process is starting
 
     Args:
         proc: The process
@@ -63,7 +91,7 @@ def on_proc_shutdown(proc: "Proc", sig: Optional[signal.Signals]) -> None:
     """
 
 @plugin.spec
-async def on_proc_done(proc: "Proc"):
+async def on_proc_done(proc: "Proc", succeeded: Union[bool, str]) -> None:
     """When a process is done
 
     This hook will be called anyway when a proc is succeeded or failed.
@@ -71,6 +99,8 @@ async def on_proc_done(proc: "Proc"):
 
     Args:
         proc: The process
+        succeeded: Whether the process succeeded or not. 'cached' if all jobs
+            are cached.
     """
 
 @plugin.spec

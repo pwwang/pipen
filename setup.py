@@ -21,7 +21,7 @@ if os.path.exists(readme_path):
 setup(
     long_description=readme,
     name='pipen',
-    version='0.0.1',
+    version='0.0.2',
     description='A pipeline framework for python',
     python_requires='==3.*,>=3.7.0',
     project_urls={
@@ -32,14 +32,16 @@ setup(
     author_email='pwwang@pwwang.com',
     license='MIT',
     entry_points={"console_scripts": ["pipen = pipen.cli:main"]},
-    packages=['pipen', 'pipen.channel'],
+    packages=['pipen'],
     package_dir={"": "."},
     package_data={},
     install_requires=[
         'cached-property==1.*', 'diot', 'enlighten==1.*', 'liquidpy',
-        'more-itertools==8.*', 'pandas==1.*', 'pyparam', 'python-simpleconf',
-        'python-slugify==4.*', 'rich==9.*', 'simplug', 'siuba==0.*',
+        'more-itertools==8.*', 'pandas==1.*', 'pipda', 'pyparam',
+        'python-simpleconf', 'python-slugify==4.*', 'rich==9.*', 'simplug',
         'toml==0.*,>=0.10.0', 'uvloop==0.*', 'varname', 'xqute'
     ],
-    extras_require={"dev": ["jinja2==2.*,>=2.0.0", "pytest", "pytest-cov"]},
+    extras_require={
+        "dev": ["jinja2==2.*,>=2.0.0", "plyrda", "pytest", "pytest-cov"]
+    },
 )

@@ -19,7 +19,7 @@ except ImportError: # pragma: no cover
     # pylint: disable=ungrouped-imports
     from importlib import metadata as importlib_metadata
 
-from rich.logging import RichHandler
+from rich.logging import RichHandler as _RichHandler
 from rich.console import Console, RenderableType
 from rich.highlighter import ReprHighlighter
 from rich.table import Table
@@ -39,18 +39,34 @@ from .plugin import plugin
 
 # pylint: disable=invalid-name
 
+class RichHandler(_RichHandler):
+    """Subclass of rich.logging.RichHandler, showing log levels as a single
+    character"""
+    def get_level_text(self, record: logging.LogRecord) -> Text:
+        """Get the level name from the record.
+
+        Args:
+            record (LogRecord): LogRecord instance.
+
+        Returns:
+            Text: A tuple of the style and level name.
+        """
+        level_name = record.levelname
+        level_text = Text.styled(
+            level_name[0].upper(), f"logging.level.{level_name.lower()}"
+        )
+        return level_text
+
 _logger_handler = RichHandler(show_path=False,
-                              show_level=False,
+                              show_level=True,
+                              console=Console(),
                               rich_tracebacks=True,
                               markup=True)
-_logger_format = logging.Formatter(
-    '[logging.level.%(levelname)s]%(levelname).1s[/logging.level.%(levelname)s]'
-    ' /%(plugin_name)-7s %(message)s',
-    '%m-%d %H:%M:%S'
+_logger_handler.setFormatter(
+    logging.Formatter('/%(plugin_name)-7s %(message)s')
 )
-_logger_handler.setFormatter(_logger_format)
 
-def get_logger(name: str,
+def get_logger(name: str = LOGGER_NAME,
                level: Optional[Union[str, int]] = None) -> logging.Logger:
     """Get the logger by given plugin name
 
@@ -68,7 +84,7 @@ def get_logger(name: str,
 
     return logging.LoggerAdapter(log, {'plugin_name': name})
 
-logger = get_logger(LOGGER_NAME)
+logger = get_logger()
 
 def get_console_width(default: int = DEFAULT_CONSOLE_WIDTH,
                       shift: int = DEFAULT_CONSOLE_WIDTH_SHIFT) -> int:
@@ -253,3 +269,38 @@ def load_entrypoints(group: str) -> Iterable[Tuple[str, Any]]:
                 continue
             obj = epoint.load()
             yield (epoint.name, obj)
+
+def get_shebang(script: str) -> Optional[str]:
+    """Get the shebang of the script
+
+    Args:
+        script: The script string
+
+    Returns:
+        None if the script does not contain a shebang, otherwise the shebang
+        without `#!` prefix
+    """
+    if '\n' not in script:
+        script += '\n'
+
+    shebang_line, _ = script.split('\n', 1)
+    if not shebang_line.startswith('#!'):
+        return None
+    return shebang_line[2:].strip()
+
+def truncate_text(text: str, width: int, end: str = '…') -> str:
+    """Truncate a text not based on words/whitespaces
+    Otherwise, we could use textwrap.shorten.
+
+    Args:
+        text: The text to be truncated
+        width: The max width of the the truncated text
+        end: The end string of the truncated text
+
+    Returns:
+        The truncated text with end appended.
+    """
+    if len(text) <= width:
+        return text
+
+    return text[:(width - len(end))] + end

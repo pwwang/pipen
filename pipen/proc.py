@@ -65,7 +65,8 @@ class Proc(ProcProperties, metaclass=ProcMeta):
                  profile: Optional[str] = None,
                  template: Optional[Union[str, Type[Template]]] = None,
                  scheduler: Optional[Union[str, Scheduler]] = None,
-                 scheduler_opts: Optional[Dict[str, Any]] = None) -> None:
+                 scheduler_opts: Optional[Dict[str, Any]] = None,
+                 plugin_opts: Optional[Dict[str, Any]] = None) -> None:
         if getattr(self, '_inited', False):
             return
 
@@ -85,7 +86,8 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             profile,
             template,
             scheduler,
-            scheduler_opts
+            scheduler_opts,
+            plugin_opts
         )
 
         self.nexts = []
@@ -151,8 +153,6 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         """
         if self.end is None and not self.nexts:
             self.end = True
-        self._print_banner()
-        self._print_dependencies()
         self.pipeline = pipeline
         profile = self.profile or profile
 
@@ -164,9 +164,12 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             config = pipeline.config._use(profile, 'default', copy=True)
 
         self.properties_from_config(config)
-        self.compute_properties()
 
         self.workdir = Path(config.workdir) / slugify(self.name)
+        self.compute_properties()
+
+        await plugin.hooks.on_proc_property_computed(self)
+
         # check if it's the same proc using the workdir
         proc_name_file = self.workdir / 'proc.name'
         if proc_name_file.is_file() and proc_name_file.read_text() != self.name:
@@ -177,7 +180,6 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             )
         self.workdir.mkdir(parents=True, exist_ok=True)
         proc_name_file.write_text(self.name)
-        self.log('info', 'Workdir: %r', str(self.workdir))
 
         self.xqute = Xqute(
             self.scheduler,
@@ -192,11 +194,9 @@ class Proc(ProcProperties, metaclass=ProcMeta):
 
         # init all other properties and jobs
         await self._init_jobs(config)
+        self.out_channel = DataFrame((job.output for job in self.jobs))
 
         await plugin.hooks.on_proc_init(self)
-
-        # init pbar
-        self.pbar = pipeline.pbar.proc_bar(self.size, self.name)
 
     def __repr__(self):
         return f'<Proc-{hex(id(self))}({self.name}: {self.size})>'
@@ -214,6 +214,14 @@ class Proc(ProcProperties, metaclass=ProcMeta):
     async def run(self) -> None:
         """Run the process"""
 
+        self._print_banner()
+        self.log('info', 'Workdir: %r', str(self.workdir))
+        self._print_dependencies()
+        # init pbar
+        self.pbar = self.pipeline.pbar.proc_bar(self.size, self.name)
+
+        await plugin.hooks.on_proc_start(self)
+
         cached_jobs = []
         for job in self.jobs:
             if await job.cached:
@@ -226,9 +234,14 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         if cached_jobs:
             self.log('info', 'Cached jobs: %s', brief_list(cached_jobs))
         await self.xqute.run_until_complete()
-        self.out_channel = DataFrame((job.output for job in self.jobs))
         self.pbar.done()
-        await plugin.hooks.on_proc_done(self)
+        await plugin.hooks.on_proc_done(
+            self,
+            False if not self.succeeded
+            # pylint: disable=comparison-with-callable
+            else 'cached' if len(cached_jobs) == self.size
+            else True
+        )
 
     async def _init_job(self, worker_id: int, config: Config) -> None:
         """A worker to initialize jobs
@@ -283,11 +296,11 @@ class Proc(ProcProperties, metaclass=ProcMeta):
 
     def _print_dependencies(self):
         """Print the dependencies"""
-        if self.requires:
-            self.log('info',
-                     '[yellow]<<<[/yellow] %s',
-                     [proc.name for proc in self.requires])
-        if self.nexts:
-            self.log('info',
-                     '[yellow]>>>[/yellow] %s',
-                     [proc.name for proc in self.nexts])
+        self.log('info',
+                 '[yellow]<<<[/yellow] %s',
+                 [proc.name for proc in self.requires]
+                 if self.requires else '[START]')
+        self.log('info',
+                 '[yellow]>>>[/yellow] %s',
+                 [proc.name for proc in self.nexts]
+                 if self.nexts else '[END]')

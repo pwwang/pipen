@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "pipen"
-version = "0.0.1"
+version = "0.0.2"
 description = "A pipeline framework for python"
 authors = [ "pwwang <pwwang@pwwang.com>",]
 license = "MIT"
@@ -29,12 +29,13 @@ simplug = "*"
 enlighten = "1.*"
 cached-property = "1.*"
 more-itertools = "8.*"
-siuba = "0.*"
+pipda = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
 pytest-cov = "*"
 jinja2 = "^2.0.0"
+plyrda = "*"
 
 [tool.poetry.scripts]
 pipen = "pipen.cli:main"

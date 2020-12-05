@@ -1,6 +1,6 @@
 """Main entry module, provide the Pipen class"""
 from os import PathLike
-from typing import ClassVar, List, Optional, Union
+from typing import ClassVar, List, Optional, Union, Iterable
 import asyncio
 
 from rich import box
@@ -28,7 +28,6 @@ class Pipen:
     PIPELINE_COUNT: ClassVar[int] = 0
 
     def __init__(self,
-                 starts: Union[ProcType, List[ProcType]],
                  name: Optional[str] = None,
                  desc: str = 'Undescribed.',
                  outdir: Optional[PathLike] = None,
@@ -49,14 +48,14 @@ class Pipen:
         self.name = name or f'pipeline-{Pipen.PIPELINE_COUNT}'
         self.desc = desc
         self.outdir = outdir or f'./{slugify(self.name)}-output'
-        self.starts = [starts] if not isinstance(starts, list) else starts
         self.profile = 'default'
+
+        self._starts = []
 
         self._print_banner()
 
         self.config = config.copy()
         self.config._load({'default': kwargs})
-
 
         self.plugin_context = get_plugin_context(self.config.plugins)
         self.plugin_context.__enter__()
@@ -73,6 +72,17 @@ class Pipen:
         ])
 
         Pipen.PIPELINE_COUNT += 1
+        plugin.hooks.on_init(self)
+
+    def starts(self, *procs: Union[ProcType, Iterable[ProcType]]):
+        """Set the starts"""
+        for proc in procs:
+            if isinstance(proc, (list, tuple)):
+                self._starts.extend(proc)
+            else:
+                self._starts.append(proc)
+
+        return self
 
     def _print_banner(self) -> None:
         """Print he banner for the pipeline"""
@@ -99,14 +109,19 @@ class Pipen:
                 logger.info
             )
 
-    def _init(self) -> None:
+    async def _init(self) -> None:
         """Initialize the pipeline"""
-        max_proc_name_len = self._init_procs(self.starts)
+        if not self._starts:
+            raise ProcDependencyError('No start processes specified.')
+
+        max_proc_name_len = self._init_procs(self._starts)
         desc_len = max(len(self.name), max_proc_name_len)
         self.pbar = PipelinePBar(len(self.procs), self.name, desc_len)
 
         # logger.debug('Calling hook: on_init ...')
-        plugin.hooks.on_init(self)
+        # prepare procs first then they'll be accessed in on_init
+        for proc in self.procs:
+            await proc.prepare(self, self.profile)
 
     def _init_procs(self, starts: List[ProcType]) -> int:
         """Instantiate all processes
@@ -149,20 +164,24 @@ class Pipen:
     async def async_run(self) -> None:
         """Run the processes one by one"""
         try:
-            self._init()
+            await self._init()
+            await plugin.hooks.on_start(self)
             logger.info('Running pipeline using profile: %r', self.profile)
             logger.info('Output will be saved to: %r', str(self.outdir))
             self._print_config()
+
+            succeeded = True
             for proc in self.procs:
                 self.pbar.update_proc_running()
-                await proc.prepare(self, self.profile)
                 await proc.run()
                 if proc.succeeded:
                     self.pbar.update_proc_done()
                 else:
                     self.pbar.update_proc_error()
+                    succeeded = False
                     break
                 proc.gc()
+            await plugin.hooks.on_complete(self, succeeded)
         # except Exception as exc:
             # logger.exception(exc)
             # sys.exit(1)
@@ -182,4 +201,3 @@ class Pipen:
         """
         self.profile = profile
         asyncio.run(self.async_run())
-        plugin.hooks.on_complete(self)

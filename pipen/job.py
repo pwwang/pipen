@@ -1,5 +1,6 @@
 """Provide the Job class"""
 import logging
+import shlex
 from os import PathLike
 from pathlib import Path
 from typing import Any, Dict, Union
@@ -13,7 +14,8 @@ from .utils import logger, cached_property # pylint: disable=unused-import
 from .exceptions import (ProcInputTypeError,
                          ProcOutputNameError,
                          ProcOutputTypeError,
-                         ProcOutputValueError)
+                         ProcOutputValueError,
+                         TemplateRenderingError)
 from .template import Template
 from ._job_caching import JobCaching
 
@@ -55,23 +57,24 @@ class Job(XquteJob, JobCaching):
                         f"Got {type(ret[inkey])} instead of PathLike object "
                         f"for input: {inkey + ':' + intype!r}"
                     )
-                if not Path(ret[inkey]).exists():
-                    raise FileNotFoundError(
-                        f"Input file not found: {ret[inkey]}"
-                    )
+                # if not Path(ret[inkey]).exists():
+                #     raise FileNotFoundError(
+                #         f"[{self.proc.name}] Input file not found: "
+                #         f"{ret[inkey]}"
+                #     )
                 # we should use it as a string
                 ret[inkey] = str(ret[inkey])
             if intype == ProcInputType.FILES:
                 if not isinstance(ret[inkey], (list, tuple)):
                     raise ProcInputTypeError(
-                        "Expected a list/tuple for input: "
+                        f"[{self.proc.name}] Expected a list/tuple for input: "
                         f"{inkey + ':' + intype!r}"
                     )
                 for i, file in enumerate(ret[inkey]):
-                    if not Path(file).exists():
-                        raise FileNotFoundError(
-                            f"Input file not found: {file}"
-                        )
+                    # if not Path(file).exists():
+                    #     raise FileNotFoundError(
+                    #         f"[{self.proc.name}] Input file not found: {file}"
+                    #     )
                     ret[inkey][i] = str(file)
         return ret
 
@@ -85,11 +88,11 @@ class Job(XquteJob, JobCaching):
         data = {
             'job': dict(
                 index=self.index,
-                metadir=self.metadir,
-                outdir=self.outdir,
-                stdout_file=self.stdout_file,
-                stderr_file=self.stderr_file,
-                lock_file=self.lock_file,
+                metadir=str(self.metadir),
+                outdir=str(self.outdir),
+                stdout_file=str(self.stdout_file),
+                stderr_file=str(self.stderr_file),
+                lock_file=str(self.lock_file),
             ),
             'in': self.input,
             'proc': self.proc,
@@ -144,11 +147,11 @@ class Job(XquteJob, JobCaching):
         return {
             'job': dict(
                 index=self.index,
-                metadir=self.metadir,
-                outdir=self.outdir,
-                stdout_file=self.stdout_file,
-                stderr_file=self.stderr_file,
-                lock_file=self.lock_file,
+                metadir=str(self.metadir),
+                outdir=str(self.outdir),
+                stdout_file=str(self.stdout_file),
+                stderr_file=str(self.stderr_file),
+                lock_file=str(self.lock_file),
             ),
             'in': self.input,
             'out': self.output,
@@ -211,13 +214,18 @@ class Job(XquteJob, JobCaching):
             self.cmd = [] # pylint: disable=attribute-defined-outside-init
             return
 
-        script = proc.script.render(self.rendering_data)
+        try:
+            script = proc.script.render(self.rendering_data)
+        except Exception as exc:
+            raise TemplateRenderingError(
+                f'[{self.proc.name}] Failed to render script.'
+            ) from exc
         if self.script_file.is_file() and await a_read_text(
                 self.script_file
         ) != script:
-            self.log('debug', 'Job script updated.')
+            # self.log('debug', 'Job script updated.')
             self.script_file.write_text(script)
         elif not self.script_file.is_file():
             self.script_file.write_text(script)
         # pylint: disable=attribute-defined-outside-init
-        self.cmd = [proc.lang, self.script_file]
+        self.cmd = shlex.split(proc.lang) + [self.script_file]

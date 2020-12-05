@@ -5,6 +5,8 @@ jinja2==2.*,>=2.0.0
 liquidpy
 more-itertools==8.*
 pandas==1.*
+pipda
+plyrda
 pyparam
 pytest
 pytest-cov
@@ -12,7 +14,6 @@ python-simpleconf
 python-slugify==4.*
 rich==9.*
 simplug
-siuba==0.*
 toml==0.*,>=0.10.0
 uvloop==0.*
 varname

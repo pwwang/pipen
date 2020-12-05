@@ -6,6 +6,9 @@ class PipenException(Exception):
 class ProcInputTypeError(PipenException, TypeError):
     """When an unsupported input type is provided"""
 
+class ProcInputKeyError(PipenException, KeyError):
+    """When an unsupported input value is provided"""
+
 class ProcScriptFileNotFound(PipenException, FileNotFoundError):
     """When script file specified as 'file://' cannot be found"""
 
@@ -32,6 +35,9 @@ class NoSuchTemplateEngineError(PipenException):
 
 class WrongTemplateEnginTypeError(PipenException, TypeError):
     """When specified tempalte engine is not a subclass of Scheduler"""
+
+class TemplateRenderingError(PipenException):
+    """Failed to render a template"""
 
 class ConfigurationError(PipenException):
     """When something wrong set as configuration"""
