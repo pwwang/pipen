@@ -21,7 +21,7 @@ if os.path.exists(readme_path):
 setup(
     long_description=readme,
     name='pipen',
-    version='0.0.1',
+    version='0.0.2',
     description='A pipeline framework for python',
     python_requires='==3.*,>=3.7.0',
     project_urls={
