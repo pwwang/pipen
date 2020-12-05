@@ -104,7 +104,7 @@ def test_proc_input_callbacks(tmp_path, caplog):
     pipen = Pipen(workdir=tmp_path, loglevel='debug').starts(proc)
     pipen.run()
     assert 'proc2:[/cyan] Wasted 1 column(s) of input data' in caplog.text
-    assert 'proc2:[/cyan] [0/1] Job script updated' in caplog.text
+    # assert 'proc2:[/cyan] [0/1] Job script updated' in caplog.text
     assert "proc3:[/cyan] No data columns for input: ['b']" in caplog.text
     assert "proc4:[/cyan] Ignoring input data" in caplog.text
 
@@ -117,19 +117,19 @@ def test_proc_script_notfound(tmp_path):
 def test_proc_output_noname_given(tmp_path):
     proc = Process('proc1', output='a,b')
     pipen = Pipen(workdir=tmp_path).starts(proc)
-    with pytest.raises(ProcOutputNameError):
+    with pytest.raises(TemplateRenderingError):
         pipen.run()
 
 def test_proc_output_type_not_supported(tmp_path):
     proc = Process('proc1', output='a:int:1,b:int:2')
     pipen = Pipen(workdir=tmp_path).starts(proc)
-    with pytest.raises(ProcOutputTypeError):
+    with pytest.raises(TemplateRenderingError):
         pipen.run()
 
 def test_proc_output_path_redirected_error(tmp_path):
     proc = Process('proc1', output='a:file:a/b/c')
     pipen = Pipen(workdir=tmp_path).starts(proc)
-    with pytest.raises(ProcOutputValueError):
+    with pytest.raises(TemplateRenderingError):
         pipen.run()
 
 def test_proc_output_path_redirected(tmp_path):
