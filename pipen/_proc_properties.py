@@ -90,7 +90,7 @@ class ProcProperties:
         self.lang = lang or self.__class__.lang
         self.output = output or self.__class__.output
         self.profile = profile or self.__class__.profile
-        if self is not self.__class__.SELF:
+        if self is not self.__class__.SELF or self.singleton:
             self.requires = self._compute_requires(
                 requires or self.__class__.requires
             )

@@ -18,7 +18,7 @@ class JobCaching:
 
     async def cache(self) -> None:
         """write signature to signature file"""
-        max_mtime = 0
+        max_mtime = self.script_file.stat().st_mtime
         for inkey, intype in self.proc.input.type.items():
             if intype == ProcInputType.VAR:
                 continue
@@ -84,9 +84,11 @@ class JobCaching:
                 return False
 
             # check if any script file is newer
-            if self.script_file.stat().st_mtime > signature.ctime:
+            if self.script_file.stat().st_mtime > signature.ctime + 1e-3:
                 self.log('debug',
-                         'Not cached (script file is newer)')
+                         'Not cached (script file is newer: %s > %s)',
+                         self.script_file.stat().st_mtime,
+                         signature.ctime)
                 return False
 
             for inkey, intype in self.proc.input.type.items():

@@ -34,14 +34,18 @@ class Proc(ProcProperties, metaclass=ProcMeta):
 
     name: ClassVar[str] = None
     desc: ClassVar[str] = None
+    singleton: ClassVar[bool] = None
 
-    SELF: ClassVar["Proc"] = None
+    SELF: ClassVar["Proc"] = False
 
     def __new__(cls, *args, **kwargs):
         """Make sure cls() always get to the same instance"""
-        if not args and not kwargs:
+        if (not args and not kwargs) or kwargs.get('singleton', cls.singleton):
             if not cls.SELF or cls.SELF.__class__ is not cls:
                 cls.SELF = super().__new__(cls)
+            if args or kwargs:
+                cls.SELF._inited = False
+                cls.__init__(cls.SELF, *args, **kwargs)
             return cls.SELF
         return super().__new__(cls)
 
@@ -66,9 +70,13 @@ class Proc(ProcProperties, metaclass=ProcMeta):
                  template: Optional[Union[str, Type[Template]]] = None,
                  scheduler: Optional[Union[str, Scheduler]] = None,
                  scheduler_opts: Optional[Dict[str, Any]] = None,
-                 plugin_opts: Optional[Dict[str, Any]] = None) -> None:
+                 plugin_opts: Optional[Dict[str, Any]] = None,
+                 singleton: Optional[bool] = None) -> None:
         if getattr(self, '_inited', False):
             return
+
+        if singleton is None:
+            singleton = self.__class__.singleton
 
         super().__init__(
             end,

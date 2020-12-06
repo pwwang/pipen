@@ -63,7 +63,7 @@ _logger_handler = RichHandler(show_path=False,
                               rich_tracebacks=True,
                               markup=True)
 _logger_handler.setFormatter(
-    logging.Formatter('/%(plugin_name)-7s %(message)s')
+    logging.Formatter('[purple]%(plugin_name)-7s[/purple] %(message)s')
 )
 
 def get_logger(name: str = LOGGER_NAME,
