@@ -181,6 +181,7 @@ class Pipen:
                     succeeded = False
                     break
                 proc.gc()
+            logger.info('')
             await plugin.hooks.on_complete(self, succeeded)
         # except Exception as exc:
             # logger.exception(exc)
