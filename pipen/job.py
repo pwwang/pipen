@@ -223,7 +223,7 @@ class Job(XquteJob, JobCaching):
         if self.script_file.is_file() and await a_read_text(
                 self.script_file
         ) != script:
-            # self.log('debug', 'Job script updated.')
+            self.log('debug', 'Job script updated.')
             self.script_file.write_text(script)
         elif not self.script_file.is_file():
             self.script_file.write_text(script)

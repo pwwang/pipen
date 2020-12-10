@@ -152,17 +152,16 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         del self.pbar
         self.pbar = None
 
-    async def prepare(self, pipeline: "Pipen", profile: str) -> None:
+    async def prepare(self, pipeline: "Pipen") -> None:
         """Prepare the process
 
         Args:
             pipeline: The Pipen object
-            profile: The profile of the configuration
         """
         if self.end is None and not self.nexts:
             self.end = True
         self.pipeline = pipeline
-        profile = self.profile or profile
+        profile = self.profile or pipeline.profile
 
         if profile == 'default':
             # no profile specified or profile is default,

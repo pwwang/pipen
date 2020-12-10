@@ -120,8 +120,11 @@ class Pipen:
 
         # logger.debug('Calling hook: on_init ...')
         # prepare procs first then they'll be accessed in on_init
-        for proc in self.procs:
-            await proc.prepare(self, self.profile)
+        # for proc in self.procs:
+        #     await proc.prepare(self, self.profile)
+        # Update:
+        # Can't prepare here, as if the input is a callback, it needs
+        # required processes to be completed
 
     def _init_procs(self, starts: List[ProcType]) -> int:
         """Instantiate all processes
@@ -165,14 +168,15 @@ class Pipen:
         """Run the processes one by one"""
         try:
             await self._init()
-            await plugin.hooks.on_start(self)
             logger.info('Running pipeline using profile: %r', self.profile)
             logger.info('Output will be saved to: %r', str(self.outdir))
             self._print_config()
+            await plugin.hooks.on_start(self)
 
             succeeded = True
             for proc in self.procs:
                 self.pbar.update_proc_running()
+                await proc.prepare(self)
                 await proc.run()
                 if proc.succeeded:
                     self.pbar.update_proc_done()
