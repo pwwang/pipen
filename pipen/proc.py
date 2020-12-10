@@ -173,7 +173,10 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         self.properties_from_config(config)
 
         self.workdir = Path(config.workdir) / slugify(self.name)
+        self._print_banner()
+        self.log('info', 'Workdir: %r', str(self.workdir))
         self.compute_properties()
+        self._print_dependencies()
 
         await plugin.hooks.on_proc_property_computed(self)
 
@@ -220,10 +223,6 @@ class Proc(ProcProperties, metaclass=ProcMeta):
 
     async def run(self) -> None:
         """Run the process"""
-
-        self._print_banner()
-        self.log('info', 'Workdir: %r', str(self.workdir))
-        self._print_dependencies()
         # init pbar
         self.pbar = self.pipeline.pbar.proc_bar(self.size, self.name)
 
