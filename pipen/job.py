@@ -49,7 +49,7 @@ class Job(XquteJob, JobCaching):
         ret = self.proc.input.data.iloc[[self.index], :].to_dict('records')[0]
         # check types
         for inkey, intype in self.proc.input.type.items():
-            if intype == ProcInputType.VAR:
+            if intype == ProcInputType.VAR or ret[inkey] is None:
                 continue
             if intype == ProcInputType.FILE:
                 if not isinstance(ret[inkey], (str, PathLike)):
