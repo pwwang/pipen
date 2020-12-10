@@ -5,10 +5,10 @@ from typing import Any, ClassVar, Dict, Iterable, List, Optional, Type, Union
 from pathlib import Path
 from functools import lru_cache
 
+import pandas
 from diot import OrderedDiot, Diot
 from xqute import Scheduler
 from simpleconf import Config
-import pandas
 
 from .defaults import ProcInputType
 from .utils import is_subclass, get_shebang
@@ -16,7 +16,9 @@ from .channel import Channel
 from .template import Template, get_template_engine
 from .scheduler import get_scheduler
 from .exceptions import (
-    ProcInputTypeError, ProcScriptFileNotFound, ProcInputKeyError
+    ProcInputTypeError,
+    ProcScriptFileNotFound,
+    ProcInputKeyError
 )
 
 ProcType = Union["Proc", Type["Proc"]]
@@ -148,7 +150,7 @@ class ProcProperties:
         if not input_keys:
             raise ProcInputKeyError(f'[{self.name}] No input_keys provided')
 
-        ret = OrderedDiot(type={})
+        ret = OrderedDiot(type={}, data=None)
         for input_key_type in input_keys:
             if ':' not in input_key_type:
                 input_key_type = f'{input_key_type}:{ProcInputType.VAR}'
@@ -162,17 +164,19 @@ class ProcProperties:
         # get the data
         if not self.requires:
             ret.data = Channel.create(self.input)
+        elif callable(self.input):
+            ret.data = self.input(*(req.out_channel for req in self.requires))
         else:
+            if self.input:
+                self.log('warning',
+                         'Ignoring input data, '
+                         'as process depends on other processes.')
+
             ret.data = pandas.concat(
                 (req.out_channel for req in self.requires),
                 axis=1
             )
-            if callable(self.input):
-                ret.data = self.input(ret.data)
-            elif self.input:
-                self.log('warning',
-                         'Ignoring input data, '
-                         'as process depends on other processes.')
+
         n_keys = len(ret.type)
         # key names
         input_keys = list(ret.type.keys())

@@ -18,7 +18,10 @@ class JobCaching:
 
     async def cache(self) -> None:
         """write signature to signature file"""
-        max_mtime = self.script_file.stat().st_mtime
+        try:
+            max_mtime = self.script_file.stat().st_mtime
+        except FileNotFoundError:
+            max_mtime = 0
         for inkey, intype in self.proc.input.type.items():
             if intype == ProcInputType.VAR:
                 continue
