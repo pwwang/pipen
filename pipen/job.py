@@ -127,13 +127,13 @@ class Job(XquteJob, JobCaching):
             if output_type == ProcOutputType.VAR:
                 continue
 
-            if '/' in output_value and self.proc.end:
+            if Path(output_value).is_absolute() and self.proc.end:
                 raise ProcOutputValueError(
-                    'Only basename allowed as output for ending process. '
+                    'Only relative path allowed as output for ending process. '
                     'If you want to redirect the output path, set `end` to '
                     'False for the process.'
                 )
-            if '/' in output_value:
+            if Path(output_value).is_absolute():
                 ret[output_name] = output_value
             else:
                 ret[output_name] = str(self.outdir.resolve() / output_value)

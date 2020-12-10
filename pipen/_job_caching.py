@@ -79,7 +79,10 @@ class JobCaching:
         try:
             # check if inputs/outputs are still the same
             if (signature.input.type != self.proc.input.type or
-                    signature.input.data != self.input or
+                    signature.input.data != {
+                        key: val for key, val in self.input.items()
+                        if val is not None
+                    } or
                     signature.output.type != self._output_types or
                     signature.output.data != self.output):
                 self.log('debug',
@@ -95,7 +98,7 @@ class JobCaching:
                 return False
 
             for inkey, intype in self.proc.input.type.items():
-                if intype == ProcInputType.VAR:
+                if intype == ProcInputType.VAR or self.input[inkey] is None:
                     continue
                 if intype == ProcInputType.FILE:
                     if get_mtime(self.input[inkey],
