@@ -63,7 +63,7 @@ class Job(XquteJob, JobCaching):
                 #         f"{ret[inkey]}"
                 #     )
                 # we should use it as a string
-                ret[inkey] = str(ret[inkey])
+                ret[inkey] = str(Path(ret[inkey]).resolve())
             if intype == ProcInputType.FILES:
                 if not isinstance(ret[inkey], (list, tuple)):
                     raise ProcInputTypeError(
@@ -75,7 +75,7 @@ class Job(XquteJob, JobCaching):
                     #     raise FileNotFoundError(
                     #         f"[{self.proc.name}] Input file not found: {file}"
                     #     )
-                    ret[inkey][i] = str(file)
+                    ret[inkey][i] = str(Path(file).resolve())
         return ret
 
     @cached_property
