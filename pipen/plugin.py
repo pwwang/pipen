@@ -252,6 +252,12 @@ class PipenMainPlugin:
                     job.trial_count + 1)
             proc.pbar.update_job_retrying()
 
+    @plugin.impl
+    async def on_job_killed(self, proc: "Proc", job: "Job"):
+        """Update the status of a killed job"""
+        # instead of FINISHED to force the whole pipeline to quit
+        job.status = JobStatus.FAILED
+
 plugin.register(PipenMainPlugin)
 
 xqute_plugin = Simplug('xqute')
