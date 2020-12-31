@@ -157,8 +157,8 @@ class Pipen:
             else:
                 if nexts:
                     raise ProcDependencyError(
-                        'No available next process. '
-                        'Did you forget to start with some processes?'
+                        f'No available next process for {nexts}. '
+                        'Did you forget to start with their required processes?'
                     )
 
         logger.info('Loaded processes: %s', len(self.procs))
