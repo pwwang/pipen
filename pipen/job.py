@@ -99,12 +99,17 @@ class Job(XquteJob, JobCaching):
             'args': self.proc.args
         }
 
-        if isinstance(output_template, Template):
-            # // TODO: check ',' in output value?
-            outputs = [oput.strip()
-                       for oput in output_template.render(data).split(',')]
-        else:
-            outputs = [oput.render(data) for oput in output_template]
+        try:
+            if isinstance(output_template, Template):
+                # // TODO: check ',' in output value?
+                outputs = [oput.strip()
+                        for oput in output_template.render(data).split(',')]
+            else:
+                outputs = [oput.render(data) for oput in output_template]
+        except Exception as exc:
+            raise TemplateRenderingError(
+                f'[{self.proc.name}] Failed to render output.'
+            ) from exc
 
         ret = OrderedDiot()
         for oput in outputs:
@@ -214,8 +219,9 @@ class Job(XquteJob, JobCaching):
             self.cmd = [] # pylint: disable=attribute-defined-outside-init
             return
 
+        rendering_data = self.rendering_data
         try:
-            script = proc.script.render(self.rendering_data)
+            script = proc.script.render(rendering_data)
         except Exception as exc:
             raise TemplateRenderingError(
                 f'[{self.proc.name}] Failed to render script.'
