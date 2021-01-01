@@ -180,6 +180,9 @@ class ProcProperties:
         n_keys = len(ret.type)
         # key names
         input_keys = list(ret.type.keys())
+        if not isinstance(ret.data, pandas.DataFrame):
+            ret.data = Channel.create(ret.data)
+
         if ret.data.shape[1] > n_keys:
             # // TODO: match the column names?
             self.log('warning',

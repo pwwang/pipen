@@ -5,6 +5,7 @@ from os import PathLike
 from pathlib import Path
 from typing import Any, Dict, Union
 
+import pandas
 from diot import OrderedDiot
 from xqute import Job as XquteJob
 from xqute.utils import a_read_text
@@ -65,11 +66,15 @@ class Job(XquteJob, JobCaching):
                 # we should use it as a string
                 ret[inkey] = str(Path(ret[inkey]).resolve())
             if intype == ProcInputType.FILES:
+                if isinstance(ret[inkey], pandas.DataFrame):
+                    ret[inkey] = ret[inkey].iloc[0, 0]
+
                 if not isinstance(ret[inkey], (list, tuple)):
                     raise ProcInputTypeError(
                         f"[{self.proc.name}] Expected a list/tuple for input: "
-                        f"{inkey + ':' + intype!r}"
+                        f"{inkey + ':' + intype!r}, got {type(ret[inkey])}"
                     )
+
                 for i, file in enumerate(ret[inkey]):
                     # if not Path(file).exists():
                     #     raise FileNotFoundError(
