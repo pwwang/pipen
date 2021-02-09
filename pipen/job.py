@@ -107,8 +107,10 @@ class Job(XquteJob, JobCaching):
         try:
             if isinstance(output_template, Template):
                 # // TODO: check ',' in output value?
-                outputs = [oput.strip()
-                        for oput in output_template.render(data).split(',')]
+                outputs = [
+                    oput.strip()
+                    for oput in output_template.render(data).split(',')
+                ]
             else:
                 outputs = [oput.render(data) for oput in output_template]
         except Exception as exc:

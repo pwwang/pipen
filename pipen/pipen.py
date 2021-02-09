@@ -197,7 +197,7 @@ class Pipen:
                 self.pbar.done()
             self.plugin_context.__exit__()
 
-    def run(self, profile: str = 'default') -> None:
+    def run(self, profile: Optional[str] = None) -> None:
         """Run the pipeline with the given profile
 
         Args:
@@ -205,5 +205,6 @@ class Pipen:
                 Unless the profile is defined in the processes, otherwise
                 this profile will be used
         """
-        self.profile = profile
+        if profile:
+            self.profile = profile
         asyncio.run(self.async_run())

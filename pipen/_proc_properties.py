@@ -88,7 +88,7 @@ class ProcProperties:
         self.envs |= envs or {}
         self.forks = forks or self.__class__.forks
         self.input_keys = input_keys or self.__class__.input_keys
-        self.input = input or self.__class__.input
+        self.input = self.__class__.input if input is None else input
         self.lang = lang or self.__class__.lang
         self.output = output or self.__class__.output
         self.profile = profile or self.__class__.profile

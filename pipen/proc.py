@@ -10,11 +10,11 @@ from rich.panel import Panel
 
 from slugify import slugify
 
-from varname import varname
+from pandas import DataFrame
 from simpleconf import Config
 from xqute import Xqute, JobStatus
 from xqute import Scheduler
-from pandas import DataFrame
+from varname import varname
 
 from .utils import (
     brief_list,
@@ -198,6 +198,7 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             job_error_strategy=config.error_strategy,
             job_num_retries=config.num_retries,
             scheduler_forks=self.forks,
+            scheduler_jobprefix=self.name,
             **self.scheduler_opts)
         # for the plugin hooks to access
         self.xqute.proc = self
