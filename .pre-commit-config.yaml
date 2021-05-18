@@ -53,7 +53,8 @@ repos:
         language: system
         pass_filenames: false
         files: pyproject.toml
-        entry: curl -fsSL https://raw.githubusercontent.com/sdss/flicamera/main/create_setup.py | python
+        entry: bash -c
+        args: ['curl -fsSL https://raw.githubusercontent.com/sdss/flicamera/main/create_setup.py | python']
     -   id: pytest
         name: Run pytest
         entry: pytest
