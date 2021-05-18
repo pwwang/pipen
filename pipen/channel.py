@@ -10,7 +10,7 @@ from pipda import register_verb
 
 # ----------------------------------------------------------------
 # Creators
-class Channel(DataFrame):
+class Channel(DataFrame): # pylint: disable=too-many-ancestors
     """A DataFrame wrapper with creators"""
     @classmethod
     def create(cls, value: Union[DataFrame, List[Any]]) -> DataFrame:
