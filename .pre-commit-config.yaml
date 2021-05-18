@@ -47,6 +47,14 @@ repos:
     #     language: system
     #     pass_filenames: false
     #     files: ^pyppl/.+$
+    # dephell does support latest pip and it's archived.
+    -   id: create_setuppy
+        name: Create setup.py from pyproject.toml
+        language: system
+        pass_filenames: false
+        files: pyproject.toml
+        entry: bash -c
+        args: ['curl -fsSL https://raw.githubusercontent.com/sdss/flicamera/main/create_setup.py | python']
     -   id: pytest
         name: Run pytest
         entry: pytest
