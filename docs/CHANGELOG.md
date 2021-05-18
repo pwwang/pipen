@@ -1,3 +1,20 @@
+## 0.0.3
+- Fix caching issue
+- Add singleton to proc to force singleton
+- Log an empty line after all processes finish
+- Allow input to be None
+- Separate channels from different required procs
+- Move proc prepare before run
+- Change the order proc banner printing, making sure it prints before other logs for the proc
+- FIx job not cached if input is missing
+- Don't redirect output only if absolute path specified
+- Make input files resolved(absolute path)
+- Give more detailed ProcDependencyError
+- Force job status to be failed when Ctrl + c
+- Fix files for input when it is a pandas dataframe
+- Add job name prefix for scheduler
+- Adopt datar for channels
+
 ## 0.0.2
 - Add on_proc_property_computed hook
 - Add plugin options for pipen construct
