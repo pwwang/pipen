@@ -13,7 +13,7 @@ homepage = "https://github.com/pwwang/pipen"
 repository = "https://github.com/pwwang/pipen"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.7.1" # align with datar/pandas
 toml = "^0.10"
 varname = "*"
 liquidpy = "*"
