@@ -10,11 +10,11 @@ from rich.panel import Panel
 
 from slugify import slugify
 
-from varname import varname
+from pandas import DataFrame
 from simpleconf import Config
 from xqute import Xqute, JobStatus
 from xqute import Scheduler
-from pandas import DataFrame
+from varname import varname
 
 from .utils import (
     brief_list,
@@ -34,14 +34,18 @@ class Proc(ProcProperties, metaclass=ProcMeta):
 
     name: ClassVar[str] = None
     desc: ClassVar[str] = None
+    singleton: ClassVar[bool] = None
 
-    SELF: ClassVar["Proc"] = None
+    SELF: ClassVar["Proc"] = False
 
     def __new__(cls, *args, **kwargs):
         """Make sure cls() always get to the same instance"""
-        if not args and not kwargs:
+        if (not args and not kwargs) or kwargs.get('singleton', cls.singleton):
             if not cls.SELF or cls.SELF.__class__ is not cls:
                 cls.SELF = super().__new__(cls)
+            if args or kwargs:
+                cls.SELF._inited = False
+                cls.__init__(cls.SELF, *args, **kwargs)
             return cls.SELF
         return super().__new__(cls)
 
@@ -66,9 +70,13 @@ class Proc(ProcProperties, metaclass=ProcMeta):
                  template: Optional[Union[str, Type[Template]]] = None,
                  scheduler: Optional[Union[str, Scheduler]] = None,
                  scheduler_opts: Optional[Dict[str, Any]] = None,
-                 plugin_opts: Optional[Dict[str, Any]] = None) -> None:
+                 plugin_opts: Optional[Dict[str, Any]] = None,
+                 singleton: Optional[bool] = None) -> None:
         if getattr(self, '_inited', False):
             return
+
+        if singleton is None:
+            singleton = self.__class__.singleton
 
         super().__init__(
             end,
@@ -144,17 +152,16 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         del self.pbar
         self.pbar = None
 
-    async def prepare(self, pipeline: "Pipen", profile: str) -> None:
+    async def prepare(self, pipeline: "Pipen") -> None:
         """Prepare the process
 
         Args:
             pipeline: The Pipen object
-            profile: The profile of the configuration
         """
         if self.end is None and not self.nexts:
             self.end = True
         self.pipeline = pipeline
-        profile = self.profile or profile
+        profile = self.profile or pipeline.profile
 
         if profile == 'default':
             # no profile specified or profile is default,
@@ -166,7 +173,10 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         self.properties_from_config(config)
 
         self.workdir = Path(config.workdir) / slugify(self.name)
+        self._print_banner()
+        self.log('info', 'Workdir: %r', str(self.workdir))
         self.compute_properties()
+        self._print_dependencies()
 
         await plugin.hooks.on_proc_property_computed(self)
 
@@ -188,6 +198,7 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             job_error_strategy=config.error_strategy,
             job_num_retries=config.num_retries,
             scheduler_forks=self.forks,
+            scheduler_jobprefix=self.name,
             **self.scheduler_opts)
         # for the plugin hooks to access
         self.xqute.proc = self
@@ -213,10 +224,6 @@ class Proc(ProcProperties, metaclass=ProcMeta):
 
     async def run(self) -> None:
         """Run the process"""
-
-        self._print_banner()
-        self.log('info', 'Workdir: %r', str(self.workdir))
-        self._print_dependencies()
         # init pbar
         self.pbar = self.pipeline.pbar.proc_bar(self.size, self.name)
 

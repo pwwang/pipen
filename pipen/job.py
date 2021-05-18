@@ -5,6 +5,7 @@ from os import PathLike
 from pathlib import Path
 from typing import Any, Dict, Union
 
+import pandas
 from diot import OrderedDiot
 from xqute import Job as XquteJob
 from xqute.utils import a_read_text
@@ -49,7 +50,7 @@ class Job(XquteJob, JobCaching):
         ret = self.proc.input.data.iloc[[self.index], :].to_dict('records')[0]
         # check types
         for inkey, intype in self.proc.input.type.items():
-            if intype == ProcInputType.VAR:
+            if intype == ProcInputType.VAR or ret[inkey] is None:
                 continue
             if intype == ProcInputType.FILE:
                 if not isinstance(ret[inkey], (str, PathLike)):
@@ -63,19 +64,23 @@ class Job(XquteJob, JobCaching):
                 #         f"{ret[inkey]}"
                 #     )
                 # we should use it as a string
-                ret[inkey] = str(ret[inkey])
+                ret[inkey] = str(Path(ret[inkey]).resolve())
             if intype == ProcInputType.FILES:
+                if isinstance(ret[inkey], pandas.DataFrame):
+                    ret[inkey] = ret[inkey].iloc[0, 0]
+
                 if not isinstance(ret[inkey], (list, tuple)):
                     raise ProcInputTypeError(
                         f"[{self.proc.name}] Expected a list/tuple for input: "
-                        f"{inkey + ':' + intype!r}"
+                        f"{inkey + ':' + intype!r}, got {type(ret[inkey])}"
                     )
+
                 for i, file in enumerate(ret[inkey]):
                     # if not Path(file).exists():
                     #     raise FileNotFoundError(
                     #         f"[{self.proc.name}] Input file not found: {file}"
                     #     )
-                    ret[inkey][i] = str(file)
+                    ret[inkey][i] = str(Path(file).resolve())
         return ret
 
     @cached_property
@@ -99,12 +104,19 @@ class Job(XquteJob, JobCaching):
             'args': self.proc.args
         }
 
-        if isinstance(output_template, Template):
-            # // TODO: check ',' in output value?
-            outputs = [oput.strip()
-                       for oput in output_template.render(data).split(',')]
-        else:
-            outputs = [oput.render(data) for oput in output_template]
+        try:
+            if isinstance(output_template, Template):
+                # // TODO: check ',' in output value?
+                outputs = [
+                    oput.strip()
+                    for oput in output_template.render(data).split(',')
+                ]
+            else:
+                outputs = [oput.render(data) for oput in output_template]
+        except Exception as exc:
+            raise TemplateRenderingError(
+                f'[{self.proc.name}] Failed to render output.'
+            ) from exc
 
         ret = OrderedDiot()
         for oput in outputs:
@@ -127,13 +139,13 @@ class Job(XquteJob, JobCaching):
             if output_type == ProcOutputType.VAR:
                 continue
 
-            if '/' in output_value and self.proc.end:
+            if Path(output_value).is_absolute() and self.proc.end:
                 raise ProcOutputValueError(
-                    'Only basename allowed as output for ending process. '
+                    'Only relative path allowed as output for ending process. '
                     'If you want to redirect the output path, set `end` to '
                     'False for the process.'
                 )
-            if '/' in output_value:
+            if Path(output_value).is_absolute():
                 ret[output_name] = output_value
             else:
                 ret[output_name] = str(self.outdir.resolve() / output_value)
@@ -214,8 +226,9 @@ class Job(XquteJob, JobCaching):
             self.cmd = [] # pylint: disable=attribute-defined-outside-init
             return
 
+        rendering_data = self.rendering_data
         try:
-            script = proc.script.render(self.rendering_data)
+            script = proc.script.render(rendering_data)
         except Exception as exc:
             raise TemplateRenderingError(
                 f'[{self.proc.name}] Failed to render script.'
@@ -223,7 +236,7 @@ class Job(XquteJob, JobCaching):
         if self.script_file.is_file() and await a_read_text(
                 self.script_file
         ) != script:
-            # self.log('debug', 'Job script updated.')
+            self.log('debug', 'Job script updated.')
             self.script_file.write_text(script)
         elif not self.script_file.is_file():
             self.script_file.write_text(script)

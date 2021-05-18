@@ -8,7 +8,7 @@ from pipen.defaults import config
 from pipen.exceptions import *
 from pipen.plugin import plugin
 from pipen.channel import *
-from plyrda.all import *
+from datar.all import *
 
 class Process(Proc):
     input_keys = ['a', 'b:file']
@@ -117,19 +117,19 @@ def test_proc_script_notfound(tmp_path):
 def test_proc_output_noname_given(tmp_path):
     proc = Process('proc1', output='a,b')
     pipen = Pipen(workdir=tmp_path).starts(proc)
-    with pytest.raises(TemplateRenderingError):
+    with pytest.raises(ProcOutputNameError):
         pipen.run()
 
 def test_proc_output_type_not_supported(tmp_path):
     proc = Process('proc1', output='a:int:1,b:int:2')
     pipen = Pipen(workdir=tmp_path).starts(proc)
-    with pytest.raises(TemplateRenderingError):
+    with pytest.raises(ProcOutputTypeError):
         pipen.run()
 
 def test_proc_output_path_redirected_error(tmp_path):
-    proc = Process('proc1', output='a:file:a/b/c')
+    proc = Process('proc1', output='a:file:/a/b/c')
     pipen = Pipen(workdir=tmp_path).starts(proc)
-    with pytest.raises(TemplateRenderingError):
+    with pytest.raises(ProcOutputValueError):
         pipen.run()
 
 def test_proc_output_path_redirected(tmp_path):
@@ -141,7 +141,7 @@ def test_proc_output_path_redirected(tmp_path):
         output = 'b:file:bfile'
     proc1 = ProcessOutputFile('proc1', output='b:file:%s/bfile' % tmp_path)
     proc2 = ProcessOutputFile('proc2', output='b:file:bfile_end',
-                              input=lambda ch: ch >> filter(row_number() == 0),
+                              input=lambda ch: ch >> filter(row_number() == 1),
                               requires=proc1)
 
     pipen = Pipen(workdir=tmp_path).starts(proc1)

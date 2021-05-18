@@ -13,7 +13,7 @@ homepage = "https://github.com/pwwang/pipen"
 repository = "https://github.com/pwwang/pipen"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.7.1" # align with datar/pandas
 toml = "^0.10"
 varname = "*"
 liquidpy = "*"
@@ -35,7 +35,7 @@ pipda = "*"
 pytest = "*"
 pytest-cov = "*"
 jinja2 = "^2.0.0"
-plyrda = "*"
+datar = "*"
 
 [tool.poetry.scripts]
 pipen = "pipen.cli:main"

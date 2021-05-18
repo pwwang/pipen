@@ -120,8 +120,11 @@ class Pipen:
 
         # logger.debug('Calling hook: on_init ...')
         # prepare procs first then they'll be accessed in on_init
-        for proc in self.procs:
-            await proc.prepare(self, self.profile)
+        # for proc in self.procs:
+        #     await proc.prepare(self, self.profile)
+        # Update:
+        # Can't prepare here, as if the input is a callback, it needs
+        # required processes to be completed
 
     def _init_procs(self, starts: List[ProcType]) -> int:
         """Instantiate all processes
@@ -154,8 +157,8 @@ class Pipen:
             else:
                 if nexts:
                     raise ProcDependencyError(
-                        'No available next process. '
-                        'Did you forget to start with some processes?'
+                        f'No available next process for {nexts}. '
+                        'Did you forget to start with their required processes?'
                     )
 
         logger.info('Loaded processes: %s', len(self.procs))
@@ -165,14 +168,15 @@ class Pipen:
         """Run the processes one by one"""
         try:
             await self._init()
-            await plugin.hooks.on_start(self)
             logger.info('Running pipeline using profile: %r', self.profile)
             logger.info('Output will be saved to: %r', str(self.outdir))
             self._print_config()
+            await plugin.hooks.on_start(self)
 
             succeeded = True
             for proc in self.procs:
                 self.pbar.update_proc_running()
+                await proc.prepare(self)
                 await proc.run()
                 if proc.succeeded:
                     self.pbar.update_proc_done()
@@ -181,6 +185,8 @@ class Pipen:
                     succeeded = False
                     break
                 proc.gc()
+
+            logger.info('')
             await plugin.hooks.on_complete(self, succeeded)
         # except Exception as exc:
             # logger.exception(exc)
@@ -191,7 +197,7 @@ class Pipen:
                 self.pbar.done()
             self.plugin_context.__exit__()
 
-    def run(self, profile: str = 'default') -> None:
+    def run(self, profile: Optional[str] = None) -> None:
         """Run the pipeline with the given profile
 
         Args:
@@ -199,5 +205,6 @@ class Pipen:
                 Unless the profile is defined in the processes, otherwise
                 this profile will be used
         """
-        self.profile = profile
+        if profile:
+            self.profile = profile
         asyncio.run(self.async_run())
