@@ -1,5 +1,5 @@
 """Provide some function for creating and modifying channels(dataframes)"""
-from typing import Any, List, Union, Optional
+from typing import Any, List, Union
 from os import path
 from glob import glob
 
@@ -168,10 +168,3 @@ def collapse_files(data: DataFrame,
     ret = data.iloc[[0], :].copy()
     ret.iloc[0, col_loc] = compx
     return ret
-
-@register_verb(DataFrame, context='name')
-def flatten(data: DataFrame, column: Optional[Union[int, str]] = None):
-    """Flatten the whole channel or a certain column"""
-    if not column:
-        return Channel.create([data.values.flatten().tolist()])
-    return Channel.create([data[column].values.tolist()])

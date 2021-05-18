@@ -35,7 +35,7 @@ pipda = "*"
 pytest = "*"
 pytest-cov = "*"
 jinja2 = "^2.0.0"
-plyrda = "*"
+datar = "*"
 
 [tool.poetry.scripts]
 pipen = "pipen.cli:main"

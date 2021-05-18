@@ -2,7 +2,7 @@ from pathlib import Path
 from math import ceil
 import pytest
 from pipen.channel import *
-from plyrda.all import *
+from datar.all import *
 
 from pandas import DataFrame
 
