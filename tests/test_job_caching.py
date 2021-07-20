@@ -1,6 +1,7 @@
 from pathlib import Path
-import pytest
+import datetime, os
 from time import sleep
+import pytest
 from pipen import Proc, Pipen
 from pipen.exceptions import ProcInputTypeError
 
@@ -54,8 +55,11 @@ def test_not_cached(tmp_path, caplog):
     assert 'Not cached (One of the input files is newer' in caplog.text
     caplog.clear()
 
-    sleep(1e-2)
-    (Path(pipen.outdir) / proc2.name / 'f').touch()
+    outfile = Path(pipen.outdir) / proc2.name / 'f'
+    os.utime(
+        outfile,
+        (datetime.datetime.now().timestamp() + 1000,) * 2
+    )
     pipen.run()
     assert 'Not cached (Output file is newer' in caplog.text
     caplog.clear()
