@@ -143,7 +143,7 @@ class Pipen:
         nexts = set(sum((proc.nexts for proc in self.procs), []))
         while nexts:
             # pick up one that can be added to procs
-            for proc in nexts:
+            for proc in sorted(nexts, key=lambda prc: prc.name):
                 if proc in self.procs:
                     raise ProcDependencyError(
                         f'Cyclic dependency: {proc.name}'
