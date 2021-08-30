@@ -1,3 +1,7 @@
+## 0.0.4
+- Clear output if not cached.
+- Make process running order fixed
+
 ## 0.0.3
 - Fix caching issue
 - Add singleton to proc to force singleton
