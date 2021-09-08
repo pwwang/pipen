@@ -208,9 +208,9 @@ class ProcProperties:
         if not output:
             return None
         if isinstance(output, (list, tuple)):
-            return [self.template(oput, **self.envs)
+            return [self.template(oput, self.envs)
                     for oput in output]
-        return self.template(output, **self.envs)
+        return self.template(output, self.envs)
 
     @lru_cache()
     def _compute_script(self) -> Optional[Template]:
@@ -234,7 +234,7 @@ class ProcProperties:
         script = textwrap.dedent(script)
         self.lang = get_shebang(script) or self.lang
 
-        return self.template(script, **self.envs)
+        return self.template(script, self.envs)
 
     def _compute_requires(
             self,

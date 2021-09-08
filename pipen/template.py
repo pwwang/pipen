@@ -1,6 +1,6 @@
 """Template adaptor for pipen"""
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, Type, Union
+from typing import Any, Mapping, Type, Union
 from liquid import Liquid
 
 from .utils import load_entrypoints, is_subclass
@@ -12,19 +12,25 @@ __all__ = ['Template', 'TemplateLiquid', 'TemplateJinja2',
 
 class Template(ABC):
     """Base class wrapper to wrap template for pipen"""
-    def __init__(self, source: Any, **envs): # pylint: disable=unused-argument
+    def __init__(  # pylint: disable=unused-argument
+        self,
+        source: Any,
+        envs: Mapping[str, Any] = None,
+        **kwargs: Any,
+    ):
         """Template construct"""
-        self.envs = envs
+        self.envs = envs or {}
+        self.engine = None
 
-    def update_envs(self, **envs):
+    def update_envs(self, envs):
         """@API
         Register extra environment
         @params:
-            **envs: The environment
+            envs: The environment
         """
         self.envs.update(envs)
 
-    def render(self, data: Optional[Dict[str, Any]] = None) -> str:
+    def render(self, data: Mapping[str, Any] = None) -> str:
         """@API
         Render the template
         @parmas:
@@ -33,7 +39,7 @@ class Template(ABC):
         return self._render(data or {})
 
     @abstractmethod
-    def _render(self, data: Dict[str, Any]) -> str:
+    def _render(self, data: Mapping[str, Any]) -> str:
         """Implement rendering"""
 
 
@@ -41,21 +47,29 @@ class TemplateLiquid(Template):
     """Liquidpy template wrapper."""
     name = 'liquid'
 
-    def __init__(self, source: Any, **envs):
+    def __init__(
+        self,
+        source: Any,
+        envs: Mapping[str, Any] = None,
+        **kwargs: Any,
+    ):
         """Initiate the engine with source and envs
 
         Args:
             source: The souce text
             envs: The env data
+            **kwargs: Other arguments for Liquid
         """
-        super().__init__(source, **envs)
+        super().__init__(source, envs)
         self.engine = Liquid(
             source,
-            liquid_config={'strict': False, 'mode': 'python'},
-            **self.envs
+            from_file=False,
+            mode='wild',
+            globals=envs,
+            **kwargs
         )
 
-    def _render(self, data: Dict[str, Any]) -> str:
+    def _render(self, data: Mapping[str, Any]) -> str:
         """Render the template
 
         Args:
@@ -64,26 +78,34 @@ class TemplateLiquid(Template):
         Returns
             The rendered string
         """
-        return self.engine.render(**data)
+        return self.engine.render(data)
 
 
 class TemplateJinja2(Template):
     """Jinja2 template wrapper"""
     name = 'jinja2'
 
-    def __init__(self, source: Any, **envs):
+    def __init__(
+        self,
+        source: Any,
+        envs: Mapping[str, Any] = None,
+        **kwargs: Any,
+    ):
         """Initiate the engine with source and envs
 
         Args:
             source: The souce text
             envs: The env data
+            **kwargs: Other arguments for jinja2.Template
         """
         import jinja2
-        super().__init__(source, **envs)
-        self.engine = jinja2.Template(source)
-        self.engine.globals = self.envs
+        super().__init__(source, envs)
+        filters = kwargs.pop('filters', {})
+        self.engine = jinja2.Template(source, **kwargs)
+        self.engine.globals.update(self.envs)
+        self.engine.environment.filters.update(filters)
 
-    def _render(self, data: Dict[str, Any]) -> str:
+    def _render(self, data: Mapping[str, Any]) -> str:
         """Render the template
 
         Args:
