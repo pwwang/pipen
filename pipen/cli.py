@@ -3,4 +3,4 @@
 # pragma: no cover
 def main():
     """Main entry point for cli"""
-    print('TODO')
+    print("TODO")

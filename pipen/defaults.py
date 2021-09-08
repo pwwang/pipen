@@ -1,9 +1,11 @@
 """Provide some default values/objects"""
 from pathlib import Path
 from typing import ClassVar
+
 from diot import Diot
 from simpleconf import Config
-from xqute import logger as xqute_logger, JobErrorStrategy
+from xqute import JobErrorStrategy
+from xqute import logger as xqute_logger
 
 # turn xqute's logger off
 xqute_logger.setLevel(100)
@@ -67,4 +69,4 @@ class ProcOutputType:
     FILE: ClassVar[str] = "file"
 
 
-config = Config()  # pylint: disable=invalid-name
+config = Config()

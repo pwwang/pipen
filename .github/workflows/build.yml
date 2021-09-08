@@ -22,10 +22,9 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install poetry
           poetry config virtualenvs.create false
-          python -m pip install pylint
           poetry install -v
-      - name: Run pylint
-        run: pylint pipen
+      # - name: Run pylint
+      #   run: pylint pipen
       - name: Test with pytest
         run: pytest tests/ --junitxml=junit/test-results-${{ matrix.python-version }}.xml
       - name: Upload pytest test results

@@ -10,23 +10,18 @@ from diot import OrderedDiot
 from xqute import Job as XquteJob
 from xqute.utils import a_read_text
 
-from .defaults import ProcInputType, ProcOutputType
-from .utils import logger, cached_property  # pylint: disable=unused-import
-from .exceptions import (
-    ProcInputTypeError,
-    ProcOutputNameError,
-    ProcOutputTypeError,
-    ProcOutputValueError,
-    TemplateRenderingError,
-)
-from .template import Template
 from ._job_caching import JobCaching
+from .defaults import ProcInputType, ProcOutputType
+from .exceptions import (ProcInputTypeError, ProcOutputNameError,
+                         ProcOutputTypeError, ProcOutputValueError,
+                         TemplateRenderingError)
+from .template import Template
+from .utils import cached_property, logger
 
 
 class Job(XquteJob, JobCaching):
     """The job for pipen"""
 
-    # pylint: disable=redefined-outer-name
     __slots__ = ("proc", "_output_types", "_outdir")
 
     def __init__(self, *args, **kwargs):
@@ -111,7 +106,8 @@ class Job(XquteJob, JobCaching):
             if isinstance(output_template, Template):
                 # // TODO: check ',' in output value?
                 outputs = [
-                    oput.strip() for oput in output_template.render(data).split(",")
+                    oput.strip()
+                    for oput in output_template.render(data).split(",")
                 ]
             else:
                 outputs = [oput.render(data) for oput in output_template]
@@ -131,7 +127,9 @@ class Job(XquteJob, JobCaching):
             else:
                 output_name, output_type, output_value = oput.split(":", 2)
                 if output_type not in ProcOutputType.__dict__.values():
-                    raise ProcOutputTypeError(f"Unsupported output type: {output_type}")
+                    raise ProcOutputTypeError(
+                        f"Unsupported output type: {output_type}"
+                    )
 
             self._output_types[output_name] = output_type
             ret[output_name] = output_value
@@ -195,7 +193,9 @@ class Job(XquteJob, JobCaching):
 
         if self.index == limit:
             if limit_indicator:
-                self.proc.log("debug", "Not showing similar logs for further jobs.")
+                self.proc.log(
+                    "debug", "Not showing similar logs for further jobs."
+                )
             return
 
         job_index_indicator = "[%s/%s] " % (
@@ -219,11 +219,13 @@ class Job(XquteJob, JobCaching):
             self._outdir = Path(self.proc.pipeline.outdir) / self.proc.name
         elif self.proc.end:
             self._outdir = (
-                Path(self.proc.pipeline.outdir) / self.proc.name / str(self.index)
+                Path(self.proc.pipeline.outdir)
+                / self.proc.name
+                / str(self.index)
             )
 
         if not proc.script:
-            self.cmd = []  # pylint: disable=attribute-defined-outside-init
+            self.cmd = []
             return
 
         rendering_data = self.rendering_data
@@ -233,10 +235,12 @@ class Job(XquteJob, JobCaching):
             raise TemplateRenderingError(
                 f"[{self.proc.name}] Failed to render script."
             ) from exc
-        if self.script_file.is_file() and await a_read_text(self.script_file) != script:
+        if (
+            self.script_file.is_file()
+            and await a_read_text(self.script_file) != script
+        ):
             self.log("debug", "Job script updated.")
             self.script_file.write_text(script)
         elif not self.script_file.is_file():
             self.script_file.write_text(script)
-        # pylint: disable=attribute-defined-outside-init
         self.cmd = shlex.split(proc.lang) + [self.script_file]

@@ -2,12 +2,13 @@
 import signal
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
+
+from simplug import Simplug, SimplugResult
 from xqute import JobStatus, Scheduler
 from xqute.utils import a_read_text, a_write_text
-from simplug import Simplug, SimplugResult
+
 from .defaults import ProcOutputType
 
-# pylint: disable=unused-argument,invalid-name
 plugin = Simplug("pipen")
 
 
@@ -230,7 +231,9 @@ class PipenMainPlugin:
         """When a process is shutting down"""
         if sig:
             proc.log(
-                "warning", "Got signal %r, trying a graceful shutdown ...", sig.name
+                "warning",
+                "Got signal %r, trying a graceful shutdown ...",
+                sig.name,
             )
 
     @plugin.impl
@@ -255,7 +258,10 @@ class PipenMainPlugin:
                 job.status = JobStatus.FAILED
                 proc.pbar.update_job_failed()
                 stderr = await a_read_text(job.stderr_file)
-                stderr = f"{stderr}\n\nOutput {outtype} {outkey!r} " "is not generated."
+                stderr = (
+                    f"{stderr}\n\nOutput {outtype} {outkey!r} "
+                    "is not generated."
+                )
                 await a_write_text(job.stderr_file, stderr)
                 break
         else:

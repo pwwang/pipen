@@ -1,19 +1,25 @@
 """Template adaptor for pipen"""
 from abc import ABC, abstractmethod
 from typing import Any, Mapping, Type, Union
+
 from liquid import Liquid
 
-from .utils import load_entrypoints, is_subclass
 from .defaults import TEMPLATE_ENTRY_GROUP
 from .exceptions import NoSuchTemplateEngineError, WrongTemplateEnginTypeError
+from .utils import is_subclass, load_entrypoints
 
-__all__ = ["Template", "TemplateLiquid", "TemplateJinja2", "get_template_engine"]
+__all__ = [
+    "Template",
+    "TemplateLiquid",
+    "TemplateJinja2",
+    "get_template_engine",
+]
 
 
 class Template(ABC):
     """Base class wrapper to wrap template for pipen"""
 
-    def __init__(  # pylint: disable=unused-argument
+    def __init__(
         self,
         source: Any,
         envs: Mapping[str, Any] = None,

@@ -1,16 +1,16 @@
 """Provide some function for creating and modifying channels(dataframes)"""
-from typing import Any, List, Union
-from os import path
 from glob import glob
+from os import path
+from typing import Any, List, Union
 
 import pandas
 from pandas import DataFrame
-
 from pipda import register_verb
+
 
 # ----------------------------------------------------------------
 # Creators
-class Channel(DataFrame):  # pylint: disable=too-many-ancestors
+class Channel(DataFrame):
     """A DataFrame wrapper with creators"""
 
     @classmethod
@@ -74,7 +74,9 @@ class Channel(DataFrame):  # pylint: disable=too-many-ancestors
             else None
         )
         files = (
-            file for file in glob(str(pattern)) if not file_filter or file_filter(file)
+            file
+            for file in glob(str(pattern))
+            if not file_filter or file_filter(file)
         )
         return cls.create(sorted(files, key=sort_key, reverse=reverse))
 

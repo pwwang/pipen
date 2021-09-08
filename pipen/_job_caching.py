@@ -33,7 +33,9 @@ class JobCaching:
                 )
             if intype == ProcInputType.FILES:
                 for file in self.input[inkey] or ():
-                    max_mtime = max(max_mtime, get_mtime(file, self.proc.dirsig))
+                    max_mtime = max(
+                        max_mtime, get_mtime(file, self.proc.dirsig)
+                    )
 
         for outkey, outval in self._output_types.items():
             if outval == ProcOutputType.FILE:
@@ -83,7 +85,11 @@ class JobCaching:
             if (
                 signature.input.type != self.proc.input.type
                 or signature.input.data
-                != {key: val for key, val in self.input.items() if val is not None}
+                != {
+                    key: val
+                    for key, val in self.input.items()
+                    if val is not None
+                }
                 or signature.output.type != self._output_types
                 or signature.output.data != self.output
             ):
@@ -108,14 +114,22 @@ class JobCaching:
                         get_mtime(self.input[inkey], self.proc.dirsig)
                         > signature.ctime + 1e-3
                     ):
-                        self.log("debug", "Not cached (Input file is newer: %s)", inkey)
+                        self.log(
+                            "debug",
+                            "Not cached (Input file is newer: %s)",
+                            inkey,
+                        )
                         return False
                 if intype == ProcInputType.FILES:
                     for file in self.input[inkey]:
-                        if get_mtime(file, self.proc.dirsig) > signature.ctime + 1e-3:
+                        if (
+                            get_mtime(file, self.proc.dirsig)
+                            > signature.ctime + 1e-3
+                        ):
                             self.log(
                                 "debug",
-                                "Not cached (One of the input files " "is newer: %s)",
+                                "Not cached (One of the input files "
+                                "is newer: %s)",
                                 inkey,
                             )
                             return False
@@ -127,7 +141,9 @@ class JobCaching:
                     get_mtime(self.output[outkey], self.proc.dirsig)
                     > signature.ctime + 1.0e-3
                 ):
-                    self.log("debug", "Not cached (Output file is newer: %s)", outkey)
+                    self.log(
+                        "debug", "Not cached (Output file is newer: %s)", outkey
+                    )
                     return False
 
         except (AttributeError, FileNotFoundError):  # pragma: no cover
@@ -137,7 +153,7 @@ class JobCaching:
         return True
 
     @property
-    async def cached(self) -> bool:  # pylint: disable=too-many-branches
+    async def cached(self) -> bool:
         """check if a job is cached"""
         out = True
         if (

@@ -5,29 +5,20 @@ import logging
 from pathlib import Path
 from typing import Any, ClassVar, Dict, Iterable, List, Optional, Type, Union
 
+from pandas import DataFrame
 from rich import box
 from rich.panel import Panel
-
-from slugify import slugify
-
-from pandas import DataFrame
 from simpleconf import Config
-from xqute import Xqute, JobStatus
-from xqute import Scheduler
+from slugify import slugify
 from varname import varname
+from xqute import JobStatus, Scheduler, Xqute
 
-from .utils import (
-    brief_list,
-    log_rich_renderable,
-    logger,
-    get_console_width,
-    cached_property,
-    DEFAULT_CONSOLE_WIDTH,
-)
-from .template import Template
-from .plugin import plugin
-from ._proc_properties import ProcProperties, ProcMeta, ProcType
+from ._proc_properties import ProcMeta, ProcProperties, ProcType
 from .exceptions import ProcWorkdirConflictException
+from .plugin import plugin
+from .template import Template
+from .utils import (DEFAULT_CONSOLE_WIDTH, brief_list, cached_property,
+                    get_console_width, log_rich_renderable, logger)
 
 
 class Proc(ProcProperties, metaclass=ProcMeta):
@@ -50,7 +41,6 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             return cls.SELF
         return super().__new__(cls)
 
-    # pylint: disable=redefined-builtin,redefined-outer-name
     def __init__(
         self,
         name: Optional[str] = None,
@@ -131,7 +121,11 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         self._inited = True
 
     def log(
-        self, level: Union[int, str], msg: str, *args, logger: logging.Logger = logger
+        self,
+        level: Union[int, str],
+        msg: str,
+        *args,
+        logger: logging.Logger = logger,
     ) -> None:
         """Log message for the process
 
@@ -250,9 +244,11 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         self.pbar.done()
         await plugin.hooks.on_proc_done(
             self,
-            False if not self.succeeded
-            # pylint: disable=comparison-with-callable
-            else "cached" if len(cached_jobs) == self.size else True,
+            False
+            if not self.succeeded
+            else "cached"
+            if len(cached_jobs) == self.size
+            else True,
         )
 
     async def _init_job(self, worker_id: int, config: Config) -> None:
@@ -289,7 +285,14 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             self.desc,
             title=self.name,
             box=box.Box(
-                "╭═┬╮\n" "║ ║║\n" "├═┼┤\n" "║ ║║\n" "├═┼┤\n" "├═┼┤\n" "║ ║║\n" "╰═┴╯\n"
+                "╭═┬╮\n"
+                "║ ║║\n"
+                "├═┼┤\n"
+                "║ ║║\n"
+                "├═┼┤\n"
+                "├═┼┤\n"
+                "║ ║║\n"
+                "╰═┴╯\n"
             )
             if self.end
             else box.ROUNDED,
@@ -304,7 +307,9 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         self.log(
             "info",
             "[yellow]<<<[/yellow] %s",
-            [proc.name for proc in self.requires] if self.requires else "[START]",
+            [proc.name for proc in self.requires]
+            if self.requires
+            else "[START]",
         )
         self.log(
             "info",

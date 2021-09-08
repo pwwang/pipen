@@ -1,9 +1,10 @@
 """Provide some utilities"""
 import logging
+from io import StringIO
 from os import PathLike
 from pathlib import Path
-from io import StringIO
-from typing import Any, Callable, Iterable, List, Mapping, Optional, Tuple, Union
+from typing import (Any, Callable, Iterable, List, Mapping, Optional, Tuple,
+                    Union)
 
 try:  # pragma: no cover
     from functools import cached_property
@@ -15,19 +16,18 @@ try:  # pragma: no cover
 except ImportError:  # pragma: no cover
     from importlib import metadata as importlib_metadata
 
-from rich.logging import RichHandler as _RichHandler
+from more_itertools import consecutive_groups
 from rich.console import Console, RenderableType
 from rich.highlighter import ReprHighlighter
-from rich.table import Table
-from rich.text import Text
+from rich.logging import RichHandler as _RichHandler
 from rich.panel import Panel
 from rich.pretty import Pretty
-
-
-from more_itertools import consecutive_groups
+from rich.table import Table
+from rich.text import Text
 from simplug import SimplugContext
 
-from .defaults import LOGGER_NAME, DEFAULT_CONSOLE_WIDTH, DEFAULT_CONSOLE_WIDTH_SHIFT
+from .defaults import (DEFAULT_CONSOLE_WIDTH, DEFAULT_CONSOLE_WIDTH_SHIFT,
+                       LOGGER_NAME)
 from .exceptions import ConfigurationError
 from .plugin import plugin
 
@@ -89,7 +89,8 @@ logger = get_logger()
 
 
 def get_console_width(
-    default: int = DEFAULT_CONSOLE_WIDTH, shift: int = DEFAULT_CONSOLE_WIDTH_SHIFT
+    default: int = DEFAULT_CONSOLE_WIDTH,
+    shift: int = DEFAULT_CONSOLE_WIDTH_SHIFT,
 ) -> int:
     """Get the console width
 
@@ -117,7 +118,9 @@ def get_plugin_context(plugins: Optional[List[Any]]) -> SimplugContext:
     if plugins is None:
         return plugin.plugins_only_context(None)
 
-    no_plugins = [isinstance(plug, str) and plug.startswith("no:") for plug in plugins]
+    no_plugins = [
+        isinstance(plug, str) and plug.startswith("no:") for plug in plugins
+    ]
     if any(no_plugins) and not all(no_plugins):
         raise ConfigurationError(
             'Either all plugin names start with "no:" or ' "none of them does."
@@ -144,7 +147,9 @@ def log_rich_renderable(
     console.print(renderable)
 
     for line in console.file.getvalue().splitlines():
-        logfunc(f"[{color}]{line}[/{color}]" if color else line, *args, **kwargs)
+        logfunc(
+            f"[{color}]{line}[/{color}]" if color else line, *args, **kwargs
+        )
 
 
 def render_scope(scope: Mapping, title: str) -> RenderableType:

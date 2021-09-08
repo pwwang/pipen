@@ -22,9 +22,8 @@ pyparam = "*"
 xqute = "*"
 python-simpleconf = "*"
 pandas = "1.*"
-uvloop = "0.*"
 rich = "10.*"
-python-slugify = "4.*"
+python-slugify = "5.*"
 simplug = "*"
 enlighten = "1.*"
 cached-property = "1.*"
@@ -39,3 +38,20 @@ datar = "*"
 
 [tool.poetry.scripts]
 pipen = "pipen.cli:main"
+
+[tool.pytest.ini_options]
+addopts = "-vv -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
+console_output_style = "progress"
+junit_family = "xunit1"
+
+[tool.mypy]
+ignore_missing_imports = true
+allow_redefinition = true
+disable_error_code = ["attr-defined", "no-redef"]
+show_error_codes = true
+strict_optional = false
+
+[tool.black]
+line-length = 80
+target-version = ['py37', 'py38', 'py39']
+include = '\.pyi?$'

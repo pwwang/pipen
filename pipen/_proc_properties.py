@@ -1,21 +1,22 @@
 """Provide ProcProperties class"""
 import inspect
 import textwrap
-from typing import Any, ClassVar, Dict, Iterable, List, Optional, Type, Union
-from pathlib import Path
 from functools import lru_cache
+from pathlib import Path
+from typing import Any, ClassVar, Dict, Iterable, List, Optional, Type, Union
 
 import pandas
-from diot import OrderedDiot, Diot
-from xqute import Scheduler
+from diot import Diot, OrderedDiot
 from simpleconf import Config
+from xqute import Scheduler
 
-from .defaults import ProcInputType
-from .utils import is_subclass, get_shebang
 from .channel import Channel
-from .template import Template, get_template_engine
+from .defaults import ProcInputType
+from .exceptions import (ProcInputKeyError, ProcInputTypeError,
+                         ProcScriptFileNotFound)
 from .scheduler import get_scheduler
-from .exceptions import ProcInputTypeError, ProcScriptFileNotFound, ProcInputKeyError
+from .template import Template, get_template_engine
+from .utils import get_shebang, is_subclass
 
 ProcType = Union["Proc", Type["Proc"]]
 
@@ -38,8 +39,6 @@ class ProcMeta(type):
 class ProcProperties:
     """Initiate proc properties and update them from configuration if necessary"""
 
-    # pylint: disable=redefined-builtin
-
     args: ClassVar[Dict[str, Any]] = {}
     cache: ClassVar[bool] = None
     dirsig: ClassVar[int] = None
@@ -59,7 +58,7 @@ class ProcProperties:
     end: ClassVar[bool] = None
 
     def __init__(
-        self,  # pylint: disable=too-many-locals
+        self,
         end: Optional[bool] = None,
         input_keys: Union[List[str], str] = None,
         input: Optional[Union[str, Iterable[str]]] = None,
@@ -92,7 +91,9 @@ class ProcProperties:
         self.output = output or self.__class__.output
         self.profile = profile or self.__class__.profile
         if self is not self.__class__.SELF or self.singleton:
-            self.requires = self._compute_requires(requires or self.__class__.requires)
+            self.requires = self._compute_requires(
+                requires or self.__class__.requires
+            )
         self.scheduler = scheduler or self.__class__.scheduler
         self.scheduler_opts = Diot(self.__class__.scheduler_opts.copy())
         self.scheduler_opts |= scheduler_opts or {}
@@ -142,7 +143,9 @@ class ProcProperties:
         # split input keys into keys and types
         input_keys = self.input_keys
         if isinstance(input_keys, str):
-            input_keys = [input_key.strip() for input_key in input_keys.split(",")]
+            input_keys = [
+                input_key.strip() for input_key in input_keys.split(",")
+            ]
         if not input_keys:
             raise ProcInputKeyError(f"[{self.name}] No input_keys provided")
 
@@ -152,7 +155,9 @@ class ProcProperties:
                 input_key_type = f"{input_key_type}:{ProcInputType.VAR}"
             input_key, input_type = input_key_type.split(":", 1)
             if input_type not in ProcInputType.__dict__.values():
-                raise ProcInputTypeError(f"Unsupported input type: {input_type}")
+                raise ProcInputTypeError(
+                    f"Unsupported input type: {input_type}"
+                )
             ret.type[input_key] = input_type
 
         # get the data
@@ -164,10 +169,13 @@ class ProcProperties:
             if self.input:
                 self.log(
                     "warning",
-                    "Ignoring input data, " "as process depends on other processes.",
+                    "Ignoring input data, "
+                    "as process depends on other processes.",
                 )
 
-            ret.data = pandas.concat((req.out_channel for req in self.requires), axis=1)
+            ret.data = pandas.concat(
+                (req.out_channel for req in self.requires), axis=1
+            )
 
         n_keys = len(ret.type)
         # key names
@@ -221,7 +229,9 @@ class ProcProperties:
                 dirname = Path(inspect.getfile(self.__class__)).parent
                 script_file = dirname / script_file
             if not script_file.is_file():
-                raise ProcScriptFileNotFound(f"No such script file: {script_file}")
+                raise ProcScriptFileNotFound(
+                    f"No such script file: {script_file}"
+                )
             script = script_file.read_text()
 
         script = textwrap.dedent(script)

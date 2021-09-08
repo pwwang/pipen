@@ -1,5 +1,6 @@
 """Provide the PipelinePBar and ProcPBar classes"""
 import enlighten
+
 from .utils import truncate_text
 
 # [12/02/20 12:44:06] I /main
@@ -7,22 +8,23 @@ from .utils import truncate_text
 # |   desc_len  |
 PBAR_DESC_LEN = 14
 
+
 class ProcPBar:
     """The progress bar for processes"""
-    def __init__(self,
-                 manager: enlighten.Manager,
-                 proc_size: int,
-                 proc_name: str) -> None:
+
+    def __init__(
+        self, manager: enlighten.Manager, proc_size: int, proc_name: str
+    ) -> None:
         self.submitted_counter = manager.counter(
             total=proc_size,
-            color='cyan',
+            color="cyan",
             desc=proc_name,
-            unit='jobs',
-            leave=False
+            unit="jobs",
+            leave=False,
         )
-        self.running_counter = self.submitted_counter.add_subcounter('yellow')
-        self.success_counter = self.submitted_counter.add_subcounter('green')
-        self.failure_counter = self.submitted_counter.add_subcounter('red')
+        self.running_counter = self.submitted_counter.add_subcounter("yellow")
+        self.success_counter = self.submitted_counter.add_subcounter("green")
+        self.failure_counter = self.submitted_counter.add_subcounter("red")
 
     def update_job_submitted(self):
         """Update the progress bar when a job is submitted"""
@@ -41,19 +43,20 @@ class ProcPBar:
         """Update the progress bar when a job is succeeded"""
         try:
             self.success_counter.update_from(self.running_counter)
-        except ValueError: # pragma: no cover
+        except ValueError:  # pragma: no cover
             self.success_counter.update_from(self.submitted_counter)
 
     def update_job_failed(self):
         """Update the progress bar when a job is failed"""
         try:
             self.failure_counter.update_from(self.running_counter)
-        except ValueError: # pragma: no cover
+        except ValueError:  # pragma: no cover
             self.failure_counter.update_from(self.submitted_counter)
 
     def done(self):
         """The process is done"""
         self.submitted_counter.close()
+
 
 class PipelinePBar:
     """Progress bar for the pipeline"""
@@ -65,12 +68,12 @@ class PipelinePBar:
         self.manager = enlighten.get_manager()
         self.running_counter = self.manager.counter(
             total=n_procs,
-            color='yellow',
-            desc=f'{ppln_name:>{desc_len}}:',
-            unit='procs'
+            color="yellow",
+            desc=f"{ppln_name:>{desc_len}}:",
+            unit="procs",
         )
-        self.success_counter = self.running_counter.add_subcounter('green')
-        self.failure_counter = self.running_counter.add_subcounter('red')
+        self.success_counter = self.running_counter.add_subcounter("green")
+        self.failure_counter = self.running_counter.add_subcounter("red")
         self.desc_len = desc_len
 
     def proc_bar(self, proc_size: int, proc_name: str) -> ProcPBar:
@@ -84,7 +87,7 @@ class PipelinePBar:
             The progress bar for the given process
         """
         proc_name = truncate_text(proc_name, self.desc_len)
-        proc_name = f'{proc_name:>{self.desc_len}}:'
+        proc_name = f"{proc_name:>{self.desc_len}}:"
         return ProcPBar(self.manager, proc_size, proc_name)
 
     def update_proc_running(self):
