@@ -8,7 +8,8 @@ from simplug import Simplug, SimplugResult
 from .defaults import ProcOutputType
 
 # pylint: disable=unused-argument,invalid-name
-plugin = Simplug('pipen')
+plugin = Simplug("pipen")
+
 
 @plugin.spec
 def on_setup(plugin_opts: Dict[str, Any]) -> None:
@@ -21,6 +22,7 @@ def on_setup(plugin_opts: Dict[str, Any]) -> None:
             the identity for the plugin or a namespace inside the plugin config.
     """
 
+
 @plugin.spec
 def on_init(pipen: "Pipen") -> None:
     """When the pipeline is initialized.
@@ -29,6 +31,7 @@ def on_init(pipen: "Pipen") -> None:
         pipen: The Pipen object
     """
 
+
 @plugin.spec
 async def on_start(pipen: "Pipen") -> None:
     """Right before the pipeline starts running
@@ -36,6 +39,7 @@ async def on_start(pipen: "Pipen") -> None:
     Args:
         pipen: The Pipen object
     """
+
 
 @plugin.spec
 async def on_complete(pipen: "Pipen", succeeded: bool):
@@ -49,6 +53,7 @@ async def on_complete(pipen: "Pipen", succeeded: bool):
         succeeded: Whether the pipeline has successfully completed.
     """
 
+
 @plugin.spec
 async def on_proc_property_computed(proc: "Proc"):
     """When the properties of a process is computed
@@ -60,6 +65,7 @@ async def on_proc_property_computed(proc: "Proc"):
         proc: The process
     """
 
+
 @plugin.spec
 async def on_proc_init(proc: "Proc"):
     """When a process is initialized
@@ -68,6 +74,7 @@ async def on_proc_init(proc: "Proc"):
         proc: The process
     """
 
+
 @plugin.spec
 async def on_proc_start(proc: "Proc"):
     """When a process is starting
@@ -75,6 +82,7 @@ async def on_proc_start(proc: "Proc"):
     Args:
         proc: The process
     """
+
 
 @plugin.spec(result=SimplugResult.FIRST)
 def on_proc_shutdown(proc: "Proc", sig: Optional[signal.Signals]) -> None:
@@ -90,6 +98,7 @@ def on_proc_shutdown(proc: "Proc", sig: Optional[signal.Signals]) -> None:
         sig: The signal. `None` means a natural shutdown
     """
 
+
 @plugin.spec
 async def on_proc_done(proc: "Proc", succeeded: Union[bool, str]) -> None:
     """When a process is done
@@ -103,6 +112,7 @@ async def on_proc_done(proc: "Proc", succeeded: Union[bool, str]) -> None:
             are cached.
     """
 
+
 @plugin.spec
 async def on_job_init(proc: "Proc", job: "Job"):
     """When a job is initialized
@@ -111,6 +121,7 @@ async def on_job_init(proc: "Proc", job: "Job"):
         proc: The process
         job: The job
     """
+
 
 @plugin.spec
 async def on_job_queued(proc: "Proc", job: "Job"):
@@ -121,6 +132,7 @@ async def on_job_queued(proc: "Proc", job: "Job"):
         proc: The process
         job: The job
     """
+
 
 @plugin.spec(result=SimplugResult.FIRST)
 async def on_job_submitting(proc: "Proc", job: "Job") -> Optional[bool]:
@@ -137,6 +149,7 @@ async def on_job_submitting(proc: "Proc", job: "Job") -> Optional[bool]:
         False to cancel submission
     """
 
+
 @plugin.spec
 async def on_job_submitted(proc: "Proc", job: "Job"):
     """When a job is submitted in the scheduler system.
@@ -146,6 +159,7 @@ async def on_job_submitted(proc: "Proc", job: "Job"):
         job: The job
     """
 
+
 @plugin.spec
 async def on_job_running(proc: "Proc", job: "Job"):
     """When a job starts to run in scheduler system.
@@ -154,6 +168,7 @@ async def on_job_running(proc: "Proc", job: "Job"):
         proc: The process
         job: The job
     """
+
 
 @plugin.spec(result=SimplugResult.FIRST)
 async def on_job_killing(proc: "Proc", job: "Job") -> Optional[bool]:
@@ -170,6 +185,7 @@ async def on_job_killing(proc: "Proc", job: "Job") -> Optional[bool]:
         False to cancel killing
     """
 
+
 @plugin.spec
 async def on_job_killed(proc: "Proc", job: "Job"):
     """When a job is killed
@@ -178,6 +194,7 @@ async def on_job_killed(proc: "Proc", job: "Job"):
         proc: The process
         job: The job
     """
+
 
 @plugin.spec
 async def on_job_succeeded(proc: "Proc", job: "Job"):
@@ -188,6 +205,7 @@ async def on_job_succeeded(proc: "Proc", job: "Job"):
         job: The job
     """
 
+
 @plugin.spec
 async def on_job_failed(proc: "Proc", job: "Job"):
     """When a job is done but failed.
@@ -197,20 +215,23 @@ async def on_job_failed(proc: "Proc", job: "Job"):
         job: The job
     """
 
+
 plugin.load_entrypoints()
+
 
 class PipenMainPlugin:
     """The builtin main plugin, used to update the progress bar and
     cache the job"""
-    name = 'main'
+
+    name = "main"
 
     @plugin.impl
     def on_proc_shutdown(self, proc: "Proc", sig: Optional[signal.Signals]):
         """When a process is shutting down"""
         if sig:
-            proc.log('warning',
-                     'Got signal %r, trying a graceful shutdown ...',
-                     sig.name)
+            proc.log(
+                "warning", "Got signal %r, trying a graceful shutdown ...", sig.name
+            )
 
     @plugin.impl
     async def on_job_submitted(self, proc: "Proc", job: "Job"):
@@ -234,8 +255,7 @@ class PipenMainPlugin:
                 job.status = JobStatus.FAILED
                 proc.pbar.update_job_failed()
                 stderr = await a_read_text(job.stderr_file)
-                stderr = (f'{stderr}\n\nOutput {outtype} {outkey!r} '
-                          'is not generated.')
+                stderr = f"{stderr}\n\nOutput {outtype} {outkey!r} " "is not generated."
                 await a_write_text(job.stderr_file, stderr)
                 break
         else:
@@ -247,9 +267,7 @@ class PipenMainPlugin:
         """Update the progress bar when a job is failed"""
         proc.pbar.update_job_failed()
         if job.status == JobStatus.RETRYING:
-            job.log('debug',
-                    'Retrying #%s',
-                    job.trial_count + 1)
+            job.log("debug", "Retrying #%s", job.trial_count + 1)
             proc.pbar.update_job_retrying()
 
     @plugin.impl
@@ -258,13 +276,16 @@ class PipenMainPlugin:
         # instead of FINISHED to force the whole pipeline to quit
         job.status = JobStatus.FAILED
 
+
 plugin.register(PipenMainPlugin)
 
-xqute_plugin = Simplug('xqute')
+xqute_plugin = Simplug("xqute")
+
 
 class XqutePipenPlugin:
     """The plugin for xqute working as proxy for pipen plugin hooks"""
-    name = 'xqute.pipen'
+
+    name = "xqute.pipen"
 
     @xqute_plugin.impl
     def on_shutdown(self, xqute: "Xqute", sig: Optional[signal.Signals]):

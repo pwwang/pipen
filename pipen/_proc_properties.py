@@ -15,13 +15,10 @@ from .utils import is_subclass, get_shebang
 from .channel import Channel
 from .template import Template, get_template_engine
 from .scheduler import get_scheduler
-from .exceptions import (
-    ProcInputTypeError,
-    ProcScriptFileNotFound,
-    ProcInputKeyError
-)
+from .exceptions import ProcInputTypeError, ProcScriptFileNotFound, ProcInputKeyError
 
 ProcType = Union["Proc", Type["Proc"]]
+
 
 class ProcMeta(type):
     """The metaclass for Proc class
@@ -29,18 +26,18 @@ class ProcMeta(type):
     We need it to invoke _compute_requires so that the class variable
     requires can chain the processes.
     """
+
     def __new__(cls, name, bases, dct):
         proc_class = super().__new__(cls, name, bases, dct)
         if proc_class.requires:
             inst = proc_class()
-            inst.requires = inst._compute_requires(
-                proc_class.requires
-            )
+            inst.requires = inst._compute_requires(proc_class.requires)
         return proc_class
 
+
 class ProcProperties:
-    """Initiate proc properties and update them from configuration if necessary
-    """
+    """Initiate proc properties and update them from configuration if necessary"""
+
     # pylint: disable=redefined-builtin
 
     args: ClassVar[Dict[str, Any]] = {}
@@ -61,24 +58,26 @@ class ProcProperties:
     template: ClassVar[str] = None
     end: ClassVar[bool] = None
 
-    def __init__(self, # pylint: disable=too-many-locals
-                 end: Optional[bool] = None,
-                 input_keys: Union[List[str], str] = None,
-                 input: Optional[Union[str, Iterable[str]]] = None,
-                 output: Optional[Union[str, Iterable[str]]] = None,
-                 lang: Optional[str] = None,
-                 script: Optional[str] = None,
-                 forks: Optional[int] = None,
-                 requires: Optional[Union[ProcType, Iterable[ProcType]]] = None,
-                 args: Optional[Dict[str, Any]] = None,
-                 envs: Optional[Dict[str, Any]] = None,
-                 cache: Optional[bool] = None,
-                 dirsig: Optional[int] = None,
-                 profile: Optional[str] = None,
-                 template: Optional[Union[str, Type[Template]]] = None,
-                 scheduler: Optional[Union[str, Scheduler]] = None,
-                 scheduler_opts: Optional[Dict[str, Any]] = None,
-                 plugin_opts: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(
+        self,  # pylint: disable=too-many-locals
+        end: Optional[bool] = None,
+        input_keys: Union[List[str], str] = None,
+        input: Optional[Union[str, Iterable[str]]] = None,
+        output: Optional[Union[str, Iterable[str]]] = None,
+        lang: Optional[str] = None,
+        script: Optional[str] = None,
+        forks: Optional[int] = None,
+        requires: Optional[Union[ProcType, Iterable[ProcType]]] = None,
+        args: Optional[Dict[str, Any]] = None,
+        envs: Optional[Dict[str, Any]] = None,
+        cache: Optional[bool] = None,
+        dirsig: Optional[int] = None,
+        profile: Optional[str] = None,
+        template: Optional[Union[str, Type[Template]]] = None,
+        scheduler: Optional[Union[str, Scheduler]] = None,
+        scheduler_opts: Optional[Dict[str, Any]] = None,
+        plugin_opts: Optional[Dict[str, Any]] = None,
+    ) -> None:
         self.end = self.__class__.end if end is None else end
         self.args = Diot(self.__class__.args.copy())
         self.args |= args or {}
@@ -93,9 +92,7 @@ class ProcProperties:
         self.output = output or self.__class__.output
         self.profile = profile or self.__class__.profile
         if self is not self.__class__.SELF or self.singleton:
-            self.requires = self._compute_requires(
-                requires or self.__class__.requires
-            )
+            self.requires = self._compute_requires(requires or self.__class__.requires)
         self.scheduler = scheduler or self.__class__.scheduler
         self.scheduler_opts = Diot(self.__class__.scheduler_opts.copy())
         self.scheduler_opts |= scheduler_opts or {}
@@ -145,20 +142,17 @@ class ProcProperties:
         # split input keys into keys and types
         input_keys = self.input_keys
         if isinstance(input_keys, str):
-            input_keys = [input_key.strip()
-                          for input_key in input_keys.split(',')]
+            input_keys = [input_key.strip() for input_key in input_keys.split(",")]
         if not input_keys:
-            raise ProcInputKeyError(f'[{self.name}] No input_keys provided')
+            raise ProcInputKeyError(f"[{self.name}] No input_keys provided")
 
         ret = OrderedDiot(type={}, data=None)
         for input_key_type in input_keys:
-            if ':' not in input_key_type:
-                input_key_type = f'{input_key_type}:{ProcInputType.VAR}'
-            input_key, input_type = input_key_type.split(':', 1)
+            if ":" not in input_key_type:
+                input_key_type = f"{input_key_type}:{ProcInputType.VAR}"
+            input_key, input_type = input_key_type.split(":", 1)
             if input_type not in ProcInputType.__dict__.values():
-                raise ProcInputTypeError(
-                    f'Unsupported input type: {input_type}'
-                )
+                raise ProcInputTypeError(f"Unsupported input type: {input_type}")
             ret.type[input_key] = input_type
 
         # get the data
@@ -168,14 +162,12 @@ class ProcProperties:
             ret.data = self.input(*(req.out_channel for req in self.requires))
         else:
             if self.input:
-                self.log('warning',
-                         'Ignoring input data, '
-                         'as process depends on other processes.')
+                self.log(
+                    "warning",
+                    "Ignoring input data, " "as process depends on other processes.",
+                )
 
-            ret.data = pandas.concat(
-                (req.out_channel for req in self.requires),
-                axis=1
-            )
+            ret.data = pandas.concat((req.out_channel for req in self.requires), axis=1)
 
         n_keys = len(ret.type)
         # key names
@@ -185,16 +177,20 @@ class ProcProperties:
 
         if ret.data.shape[1] > n_keys:
             # // TODO: match the column names?
-            self.log('warning',
-                     'Wasted %s column(s) of input data.',
-                     ret.data.shape[1] - n_keys)
+            self.log(
+                "warning",
+                "Wasted %s column(s) of input data.",
+                ret.data.shape[1] - n_keys,
+            )
             ret.data = ret.data.iloc[:, :n_keys]
             ret.data.columns = input_keys
         elif ret.data.shape[1] < n_keys:
-            self.log('warning',
-                     'No data columns for input: %s, using None.',
-                     input_keys[ret.data.shape[1]:])
-            for input_key in input_keys[ret.data.shape[1]:]:
+            self.log(
+                "warning",
+                "No data columns for input: %s, using None.",
+                input_keys[ret.data.shape[1] :],
+            )
+            for input_key in input_keys[ret.data.shape[1] :]:
                 ret.data.insert(ret.data.shape[1], input_key, None, True)
             ret.data.columns = input_keys
         else:
@@ -208,27 +204,24 @@ class ProcProperties:
         if not output:
             return None
         if isinstance(output, (list, tuple)):
-            return [self.template(oput, self.envs)
-                    for oput in output]
+            return [self.template(oput, self.envs) for oput in output]
         return self.template(output, self.envs)
 
     @lru_cache()
     def _compute_script(self) -> Optional[Template]:
         """Compute the script for jobs to render"""
         if not self.script:
-            self.log('warning', 'No script specified.')
+            self.log("warning", "No script specified.")
             return None
 
         script = self.script
-        if script.startswith('file://'):
+        if script.startswith("file://"):
             script_file = Path(script[7:])
             if not script_file.is_absolute():
                 dirname = Path(inspect.getfile(self.__class__)).parent
                 script_file = dirname / script_file
             if not script_file.is_file():
-                raise ProcScriptFileNotFound(
-                    f'No such script file: {script_file}'
-                )
+                raise ProcScriptFileNotFound(f"No such script file: {script_file}")
             script = script_file.read_text()
 
         script = textwrap.dedent(script)
@@ -237,8 +230,7 @@ class ProcProperties:
         return self.template(script, self.envs)
 
     def _compute_requires(
-            self,
-            requires: Optional[Union[ProcType, Iterable[ProcType]]]
+        self, requires: Optional[Union[ProcType, Iterable[ProcType]]]
     ) -> List["Proc"]:
         """Prepare the requirements for a process.
 
@@ -253,6 +245,7 @@ class ProcProperties:
             A list of Proc instances as requirements.
         """
         from .proc import Proc
+
         ret = []
         if not requires:
             return ret

@@ -10,8 +10,9 @@ from pipda import register_verb
 
 # ----------------------------------------------------------------
 # Creators
-class Channel(DataFrame): # pylint: disable=too-many-ancestors
+class Channel(DataFrame):  # pylint: disable=too-many-ancestors
     """A DataFrame wrapper with creators"""
+
     @classmethod
     def create(cls, value: Union[DataFrame, List[Any]]) -> DataFrame:
         """Create a channel from a list.
@@ -34,14 +35,16 @@ class Channel(DataFrame): # pylint: disable=too-many-ancestors
             return value
         if all(isinstance(elem, tuple) for elem in value):
             return cls(value)
-        return cls((val, ) for val in value)
+        return cls((val,) for val in value)
 
     @classmethod
-    def from_glob(cls,
-                  pattern: str,
-                  ftype: str = 'any',
-                  sortby: str = 'name',
-                  reverse: bool = False) -> DataFrame:
+    def from_glob(
+        cls,
+        pattern: str,
+        ftype: str = "any",
+        sortby: str = "name",
+        reverse: bool = False,
+    ) -> DataFrame:
         """Create a channel with a glob pattern
 
         Args:
@@ -52,24 +55,37 @@ class Channel(DataFrame): # pylint: disable=too-many-ancestors
         Returns:
             The channel
         """
-        sort_key = (str if sortby == 'name'
-                    else path.getmtime if sortby == 'mtime'
-                    else path.getsize if sortby == 'size'
-                    else None)
-        file_filter = (path.islink if ftype == 'link'
-                       else path.isdir if ftype == 'dir'
-                       else path.isfile if ftype == 'file'
-                       else None)
-        files = (file for file in glob(str(pattern))
-                 if not file_filter or file_filter(file))
+        sort_key = (
+            str
+            if sortby == "name"
+            else path.getmtime
+            if sortby == "mtime"
+            else path.getsize
+            if sortby == "size"
+            else None
+        )
+        file_filter = (
+            path.islink
+            if ftype == "link"
+            else path.isdir
+            if ftype == "dir"
+            else path.isfile
+            if ftype == "file"
+            else None
+        )
+        files = (
+            file for file in glob(str(pattern)) if not file_filter or file_filter(file)
+        )
         return cls.create(sorted(files, key=sort_key, reverse=reverse))
 
     @classmethod
-    def from_pairs(cls,
-                   pattern: str,
-                   ftype: str = 'any',
-                   sortby: str = 'name',
-                   reverse: bool = False) -> DataFrame:
+    def from_pairs(
+        cls,
+        pattern: str,
+        ftype: str = "any",
+        sortby: str = "name",
+        reverse: bool = False,
+    ) -> DataFrame:
         """Create a width=2 channel with a glob pattern
 
         Args:
@@ -82,9 +98,11 @@ class Channel(DataFrame): # pylint: disable=too-many-ancestors
         """
         mates = cls.from_glob(pattern, ftype, sortby, reverse)
         return pandas.concat(
-            (mates.iloc[::2].reset_index(drop=True),
-             mates.iloc[1::2].reset_index(drop=True)),
-            axis=1
+            (
+                mates.iloc[::2].reset_index(drop=True),
+                mates.iloc[1::2].reset_index(drop=True),
+            ),
+            axis=1,
         )
 
     @classmethod
@@ -102,15 +120,18 @@ class Channel(DataFrame): # pylint: disable=too-many-ancestors
         """Create a channel from a table file."""
         return pandas.read_table(*args, **kwargs)
 
+
 # ----------------------------------------------------------------
 # Verbs
 @register_verb(DataFrame)
-def expand_dir(data: DataFrame,
-               col: Union[str, int] = 0,
-               pattern: str = '*',
-               ftype: str = 'any',
-               sortby: str = 'name',
-               reverse: bool = False) -> DataFrame:
+def expand_dir(
+    data: DataFrame,
+    col: Union[str, int] = 0,
+    pattern: str = "*",
+    ftype: str = "any",
+    sortby: str = "name",
+    reverse: bool = False,
+) -> DataFrame:
     """Expand a Channel according to the files in <col>,
     other cols will keep the same.
 
@@ -141,9 +162,9 @@ def expand_dir(data: DataFrame,
     ret[data.columns[col_loc]] = expanded.values
     return ret.reset_index(drop=True)
 
+
 @register_verb(DataFrame)
-def collapse_files(data: DataFrame,
-                   col: Union[str, int] = 0) -> DataFrame:
+def collapse_files(data: DataFrame, col: Union[str, int] = 0) -> DataFrame:
     """Collapse a Channel according to the files in <col>,
     other cols will use the values in row 0.
 

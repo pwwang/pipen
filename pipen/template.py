@@ -7,11 +7,12 @@ from .utils import load_entrypoints, is_subclass
 from .defaults import TEMPLATE_ENTRY_GROUP
 from .exceptions import NoSuchTemplateEngineError, WrongTemplateEnginTypeError
 
-__all__ = ['Template', 'TemplateLiquid', 'TemplateJinja2',
-           'get_template_engine']
+__all__ = ["Template", "TemplateLiquid", "TemplateJinja2", "get_template_engine"]
+
 
 class Template(ABC):
     """Base class wrapper to wrap template for pipen"""
+
     def __init__(  # pylint: disable=unused-argument
         self,
         source: Any,
@@ -45,7 +46,8 @@ class Template(ABC):
 
 class TemplateLiquid(Template):
     """Liquidpy template wrapper."""
-    name = 'liquid'
+
+    name = "liquid"
 
     def __init__(
         self,
@@ -62,11 +64,7 @@ class TemplateLiquid(Template):
         """
         super().__init__(source, envs)
         self.engine = Liquid(
-            source,
-            from_file=False,
-            mode='wild',
-            globals=envs,
-            **kwargs
+            source, from_file=False, mode="wild", globals=envs, **kwargs
         )
 
     def _render(self, data: Mapping[str, Any]) -> str:
@@ -83,7 +81,8 @@ class TemplateLiquid(Template):
 
 class TemplateJinja2(Template):
     """Jinja2 template wrapper"""
-    name = 'jinja2'
+
+    name = "jinja2"
 
     def __init__(
         self,
@@ -99,8 +98,9 @@ class TemplateJinja2(Template):
             **kwargs: Other arguments for jinja2.Template
         """
         import jinja2
+
         super().__init__(source, envs)
-        filters = kwargs.pop('filters', {})
+        filters = kwargs.pop("filters", {})
         self.engine = jinja2.Template(source, **kwargs)
         self.engine.globals.update(self.envs)
         self.engine.environment.filters.update(filters)
@@ -116,6 +116,7 @@ class TemplateJinja2(Template):
         """
         return self.engine.render(data)
 
+
 def get_template_engine(template: Union[str, Type[Template]]) -> Type[Template]:
     """Get the template engine by name or the template engine itself
 
@@ -128,18 +129,18 @@ def get_template_engine(template: Union[str, Type[Template]]) -> Type[Template]:
     if is_subclass(template, Template):
         return template
 
-    if template == 'liquid':
+    if template == "liquid":
         return TemplateLiquid
 
-    if template == 'jinja2':
+    if template == "jinja2":
         return TemplateJinja2
 
-    for name, obj in load_entrypoints(TEMPLATE_ENTRY_GROUP): # pragma: no cover
+    for name, obj in load_entrypoints(TEMPLATE_ENTRY_GROUP):  # pragma: no cover
         if name == template:
             if not is_subclass(obj, Template):
                 raise WrongTemplateEnginTypeError(
-                    'Template engine should be a subclass of '
-                    'pipen.templates.Template.'
+                    "Template engine should be a subclass of "
+                    "pipen.templates.Template."
                 )
             return obj
 
