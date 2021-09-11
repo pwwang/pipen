@@ -53,7 +53,9 @@ CONFIG = Diot(
 
 CONSOLE_WIDTH: int = 80
 CONSOLE_WIDTH_SHIFT: int = 26
+# For pipen scheduler plugins
 SCHEDULER_ENTRY_GROUP = "pipen-sched"
+# For pipen template plugins
 TEMPLATE_ENTRY_GROUP = "pipen-tpl"
 
 

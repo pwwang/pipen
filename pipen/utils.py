@@ -39,7 +39,7 @@ from simplug import SimplugContext
 
 from .defaults import CONSOLE_WIDTH, CONSOLE_WIDTH_SHIFT, LOGGER_NAME
 from .exceptions import ConfigurationError
-from .plugin import plugin
+from .pluginmgr import plugin
 
 
 class RichHandler(_RichHandler):
@@ -273,7 +273,7 @@ def get_plugin_context(plugins: List[Any]) -> SimplugContext:
     if all(no_plugins):
         return plugin.plugins_but_context(plug[3:] for plug in plugins)
 
-    return plugin.plugins_only_context(plugins)  # pragma: no cover
+    return plugin.plugins_only_context(plugins)
 
 
 def log_rich_renderable(

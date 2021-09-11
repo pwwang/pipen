@@ -1,5 +1,6 @@
-"""Entrance of the package."""
+"""A pipeline framework for python"""
 from .pipen import Pipen
 from .proc import Proc
+from .pluginmgr import plugin
 
-__version__ = "0.0.4"
+__version__ = "0.1.0"

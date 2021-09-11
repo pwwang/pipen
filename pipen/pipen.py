@@ -15,8 +15,8 @@ from simpleconf import Config
 from slugify import slugify  # type: ignore
 
 from .defaults import CONFIG, CONFIG_FILES, CONSOLE_WIDTH
-from .exceptions import ProcDependencyError, PipenException
-from .plugin import plugin
+from .exceptions import ProcDependencyError
+from .pluginmgr import plugin
 from .proc import Proc
 from .progressbar import PipelinePBar
 from .utils import (
@@ -32,6 +32,20 @@ from .utils import (
 class Pipen:
     """The Pipen class provides interface to assemble and run the pipeline
 
+    Attributes:
+        name: The name of the pipeline
+        desc: The description of the pipeline
+        outdir: The output directory of the results
+        procs: The processes
+        pbar: The progress bar
+        starts: The start processes
+        config: The configurations
+        workdir: The workdir for the pipeline
+        _kwargs: The extra configrations passed to overwrite the default ones
+
+        PIPELINE_COUNT: How many pipelines are loaded
+        SETUP: Whether the one-time setup hook is called
+
     Args:
         name: The name of the pipeline
         desc: The description of the pipeline
@@ -40,6 +54,7 @@ class Pipen:
     """
 
     PIPELINE_COUNT: ClassVar[int] = 0
+    SETUP: ClassVar[bool] = False
 
     def __init__(
         self,
@@ -48,20 +63,27 @@ class Pipen:
         outdir: PathLike = None,
         **kwargs,
     ) -> None:
-        """constructor"""
+        """Constructor"""
         self.procs: List[Proc] = None
         self.pbar: PipelinePBar = None
-        self.name = name or f"pipen-{Pipen.PIPELINE_COUNT}"
+        self.name = name or f"pipen-{self.__class__.PIPELINE_COUNT}"
         self.desc = desc
         self.outdir = Path(outdir or f"./{slugify(self.name)}_results")
-        self._done = False
+        self.workdir: Path = None
 
         self.starts: List[Proc] = []
-        self.config = Diot(copy_dict(CONFIG, 3)) | kwargs
+        self.config = Diot(copy_dict(CONFIG, 3))
+        # We shouldn't update the config here, since we don't know
+        # the profile yet
+        self._kwargs = kwargs
+
         # make sure main plugin is enabled
         plugin.get_plugin("main").enable()
 
-        plugin.hooks.on_init(self)
+        if not self.__class__.SETUP:
+            plugin.hooks.on_setup(self.config.plugin_opts)
+
+        self.__class__.PIPELINE_COUNT += 1
 
     async def async_run(self, profile: str = "default") -> bool:
         """Run the processes one by one
@@ -72,28 +94,16 @@ class Pipen:
         Returns:
             True if the pipeline ends successfully else False
         """
-        if self._done:
-            raise PipenException(
-                "Cannot run a pipeline twice. "
-                "If it is intentional, make a new Pipen instance."
-            )
-
-        config = Config()
-        config._load(*CONFIG_FILES)
-        config._use(profile)
-        self.config.update(config)
-        self.config.workdir = Path(self.config.workdir) / slugify(self.name)
-        logger.setLevel(self.config.loglevel.upper())
-
-        log_rich_renderable(pipen_banner(), "magenta", logger.info)
-        if self.__class__.PIPELINE_COUNT == 0:
-            plugin.hooks.on_setup(self.config.plugin_opts)
-        self.__class__.PIPELINE_COUNT += 1
+        self.workdir = Path(self.config.workdir) / slugify(self.name)
 
         succeeded = True
+        self._init(profile)
+        logger.setLevel(self.config.loglevel.upper())
+        log_rich_renderable(pipen_banner(), "magenta", logger.info)
         with get_plugin_context(self.config.plugins):
             try:
-                await self._init()
+                await plugin.hooks.on_init(self)
+                self._build_proc_relationships()
                 self._log_pipeline_info(profile)
                 await plugin.hooks.on_start(self)
 
@@ -116,7 +126,6 @@ class Pipen:
                 if self.pbar:
                     self.pbar.done()
 
-        self._done = True
         return succeeded
 
     def run(
@@ -209,14 +218,40 @@ class Pipen:
             logger.info,
         )
 
-    async def _init(self) -> None:
-        """Initialize the pipeline"""
+    def _init(self, profile: str) -> None:
+        """Compute the configurations for the pipeline based on the priorities
+
+        Configurations (priority from low to high)
+        1. The default config in .defaults
+        2. The plugin_opts defined in plugins (via on_setup() hook)
+           (see __init__())
+        3. Configuration files
+        4. **kwargs from Pipen(..., **kwargs)
+        5. Those defined in each Proc class
+        """
+
+        # Then load the configurations from config files
+        config = Config()
+        config._load(*CONFIG_FILES)
+        config._use(profile)
+        self.config.update(config)
+
+        # Then load the extra configurations passed from __init__(**kwargs)
+        # Make sure dict options get inherited
+        self.config.template_opts.update(self._kwargs.pop("template_opts", {}))
+        self.config.scheduler_opts.update(
+            self._kwargs.pop("scheduler_opts", {})
+        )
+        self.config.plugin_opts.update(self._kwargs.pop("plugin_opts", {}))
+        self.config.update(self._kwargs)
+
+    def _build_proc_relationships(self) -> None:
+        """Build the proc relationships for the pipeline"""
         if not self.starts:
             raise ProcDependencyError("No start processes specified.")
 
         # build proc relationships
         self.procs = self.starts[:]
-        max_proc_name_len = max(len(proc.name) for proc in self.procs)
         nexts = set(sum((proc.nexts or [] for proc in self.procs), []))
         logger.debug("")
         logger.debug("Building process relationships:")
@@ -235,7 +270,6 @@ class Pipen:
                 # meaning some requires of those procs cannot run before
                 # those procs.
                 if not set(proc.requires) - set(self.procs):  # type: ignore
-                    max_proc_name_len = max(max_proc_name_len, len(proc.name))
                     self.procs.append(proc)  # type: ignore
                     nexts.remove(proc)
                     nexts |= set(proc.nexts or ())
@@ -247,5 +281,4 @@ class Pipen:
                         "Did you forget to start with their required processes?"
                     )
 
-        desc_len = max(len(self.name), max_proc_name_len)
-        self.pbar = PipelinePBar(len(self.procs), self.name.upper(), desc_len)
+        self.pbar = PipelinePBar(len(self.procs), self.name.upper())

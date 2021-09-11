@@ -69,7 +69,11 @@ class Job(XquteJob, JobCaching):
 
     @cached_property
     def input(self) -> Mapping[str, Any]:
-        """Get the input data"""
+        """Get the input data for this job
+
+        Returns:
+            A key-value map, where keys are the input keys
+        """
         ret = self.proc.input.data.iloc[self.index, :].to_dict()
         # check types
         for inkey, intype in self.proc.input.type.items():
@@ -104,7 +108,11 @@ class Job(XquteJob, JobCaching):
 
     @cached_property
     def output(self) -> Mapping[str, Any]:
-        """Get the output data"""
+        """Get the output data of the job
+
+        Returns:
+            The key-value map where the keys are the output keys
+        """
         output_template = self.proc.output
         if not output_template:
             return {}
@@ -173,7 +181,11 @@ class Job(XquteJob, JobCaching):
 
     @cached_property
     def template_data(self) -> Mapping[str, Any]:
-        """Get the data for template rendering"""
+        """Get the data for template rendering
+
+        Returns:
+            The data for template rendering
+        """
 
         return {
             "job": dict(

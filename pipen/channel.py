@@ -1,4 +1,4 @@
-"""Provide some function for creating and modifying channels(dataframes)"""
+"""Provide some function for creating and modifying channels (dataframes)"""
 from glob import glob
 from os import path
 from typing import Any, List, Union
@@ -111,17 +111,38 @@ class Channel(DataFrame):
 
     @classmethod
     def from_csv(cls, *args, **kwargs):
-        """Create a channel from a csv file"""
+        """Create a channel from a csv file
+
+        Uses pandas.read_csv() to create a channel
+
+        Args:
+            *args: and
+            **kwargs: Arguments passing to pandas.read_csv()
+        """
         return pandas.read_csv(*args, **kwargs)
 
     @classmethod
     def from_excel(cls, *args, **kwargs):
-        """Create a channel from an excel file."""
+        """Create a channel from an excel file.
+
+        Uses pandas.read_excel() to create a channel
+
+        Args:
+            *args: and
+            **kwargs: Arguments passing to pandas.read_excel()
+        """
         return pandas.read_excel(*args, **kwargs)
 
     @classmethod
     def from_table(cls, *args, **kwargs):
-        """Create a channel from a table file."""
+        """Create a channel from a table file.
+
+        Uses pandas.read_table() to create a channel
+
+        Args:
+            *args: and
+            **kwargs: Arguments passing to pandas.read_table()
+        """
         return pandas.read_table(*args, **kwargs)
 
 
@@ -175,9 +196,9 @@ def collapse_files(data: DataFrame, col: Union[str, int] = 0) -> DataFrame:
     Note that other values in other rows will be discarded.
 
     Examples:
-    >>> ch = channel.create([['./a', 1], ['./b', 1], ['./c', 1]])
-    >>> ch >> collapse()
-    >>> [['.', 1]]
+        >>> ch = channel.create([['./a', 1], ['./b', 1], ['./c', 1]])
+        >>> ch >> collapse()
+        >>> [['.', 1]]
 
     Args:
         data: The original channel

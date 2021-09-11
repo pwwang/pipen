@@ -32,7 +32,7 @@ from .exceptions import (
     ProcScriptFileNotFound,
     ProcWorkdirConflictException,
 )
-from .plugin import plugin
+from .pluginmgr import plugin
 from .scheduler import get_scheduler
 from .template import Template, get_template_engine
 from .utils import (
@@ -262,20 +262,20 @@ class Proc(ABC, metaclass=ProcMeta):
         if cls.name is None:
             cls.name = cls.__name__
 
-    def __init__(self, pipeline: "Pipen") -> None:
+    def __init__(self, pipeline: "Pipen" = None) -> None:
         """Constructor
 
         This is called only at runtime.
 
         Args:
-            config: The base configuration
+            pipeline: The Pipen object
         """
         # instance properties
         self.pipeline = pipeline
         self.pbar = None
         self.jobs: List[Any] = []
         self.xqute = None
-        self.__class__.workdir = Path(self.pipeline.config.workdir) / slugify(
+        self.__class__.workdir = Path(self.pipeline.workdir) / slugify(
             self.name
         )
 

@@ -3,7 +3,7 @@ from pathlib import Path
 import pipen
 from pipen.utils import brief_list, desc_from_docstring, get_logger, get_mtime, get_plugin_context, get_shebang, ignore_firstline_dedent, strsplit, truncate_text, update_dict
 from pipen.exceptions import ConfigurationError
-from pipen.plugin import plugin
+from pipen.pluginmgr import plugin
 
 def test_get_logger(caplog):
     logger = get_logger('test', 'info')

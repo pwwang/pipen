@@ -12,6 +12,13 @@ repos:
     -   id: check-added-large-files
 -   repo: local
     hooks:
+    -   id: mypy
+        name: Run mypy type check
+        entry: mypy
+        language: system
+        args: [-p, pipen]
+        pass_filenames: false
+        files: ^/pipen.+$
     -   id: pytest
         name: Run pytest
         entry: pytest

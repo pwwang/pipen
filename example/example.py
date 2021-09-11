@@ -29,9 +29,8 @@ class Plot(Proc):
     """
 
 if __name__ == '__main__':
-    pipen = Pipen(
+    Pipen(
         name='plot-mpg',
         desc='xx',
         loglevel='debug'
-    ).starts(Subset)
-    pipen.run()
+    ).run(Subset)

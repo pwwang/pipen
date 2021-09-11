@@ -32,7 +32,7 @@ def on_setup(plugin_opts: Dict[str, Any]) -> None:
 
 
 @plugin.spec
-def on_init(pipen: "Pipen") -> None:
+async def on_init(pipen: "Pipen") -> None:
     """When the pipeline is initialized.
 
     Args:
@@ -224,10 +224,10 @@ class PipenMainPlugin:
     @plugin.impl
     def on_proc_shutdown(self, proc: "Proc", sig: Optional[signal.Signals]):
         """When a process is shutting down"""
-        if sig:
+        if sig:  # pragma: no cover
             proc.log(
                 "warning",
-                "Got signal %r, trying a graceful shutdown ...",
+                "Got signal %r, trying a graceful11 shutdown ...",
                 sig.name,
             )
 
@@ -275,7 +275,7 @@ class PipenMainPlugin:
     async def on_job_killed(self, proc: "Proc", job: "Job"):
         """Update the status of a killed job"""
         # instead of FINISHED to force the whole pipeline to quit
-        job.status = JobStatus.FAILED
+        job.status = JobStatus.FAILED  # pragma: no cover
 
 
 plugin.register(PipenMainPlugin)
@@ -321,12 +321,18 @@ class XqutePipenPlugin:
     @xqute_plugin.impl
     async def on_job_killing(self, scheduler: Scheduler, job: "Job"):
         """When a job is being killed"""
-        return await plugin.hooks.on_job_killing(job.proc, job)
+        return await plugin.hooks.on_job_killing(  # pragma: no cover
+            job.proc,
+            job,
+        )
 
     @xqute_plugin.impl
     async def on_job_killed(self, scheduler: Scheduler, job: "Job"):
         """When a job is killed"""
-        await plugin.hooks.on_job_killed(job.proc, job)
+        await plugin.hooks.on_job_killed(  # pragma: no cover
+            job.proc,
+            job,
+        )
 
     @xqute_plugin.impl
     async def on_job_succeeded(self, scheduler: Scheduler, job: "Job"):

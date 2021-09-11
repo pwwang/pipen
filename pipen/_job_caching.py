@@ -1,4 +1,4 @@
-"""Provide JobCaching class"""
+"""Provide JobCaching class that implements caching for jobs"""
 import shutil
 from pathlib import Path
 
