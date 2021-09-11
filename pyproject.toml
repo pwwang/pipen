@@ -33,7 +33,6 @@ pipda = "*"
 [tool.poetry.dev-dependencies]
 pytest = "*"
 pytest-cov = "*"
-jinja2 = "^2.0.0"
 datar = "*"
 openpyxl = "3.*"
 
