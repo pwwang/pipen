@@ -16,7 +16,7 @@ repository = "https://github.com/pwwang/pipen"
 python = "^3.7.1" # align with datar/pandas
 toml = "^0.10"
 varname = "*"
-liquidpy = "^0.6"
+liquidpy = "^0.7"
 diot = "*"
 pyparam = "*"
 xqute = "*"
@@ -35,12 +35,14 @@ pytest = "*"
 pytest-cov = "*"
 jinja2 = "^2.0.0"
 datar = "*"
+openpyxl = "3.*"
 
 [tool.poetry.scripts]
 pipen = "pipen.cli:main"
 
 [tool.pytest.ini_options]
 addopts = "-vv -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
+# addopts = "-vv -W error::UserWarning --cov-config=.coveragerc --cov-report xml:.coverage.xml --cov-report term-missing"
 console_output_style = "progress"
 junit_family = "xunit1"
 

@@ -1,13 +1,20 @@
 """Define hooks specifications and provide plugin manager"""
 import signal
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 from simplug import Simplug, SimplugResult
 from xqute import JobStatus, Scheduler
 from xqute.utils import a_read_text, a_write_text
 
 from .defaults import ProcOutputType
+
+
+if TYPE_CHECKING:  # pragma: no cover
+    from xqute import Xqute
+    from .job import Job
+    from .proc import Proc
+    from .pipen import Pipen
 
 plugin = Simplug("pipen")
 
@@ -52,18 +59,6 @@ async def on_complete(pipen: "Pipen", succeeded: bool):
     Args:
         pipen: The Pipen object
         succeeded: Whether the pipeline has successfully completed.
-    """
-
-
-@plugin.spec
-async def on_proc_property_computed(proc: "Proc"):
-    """When the properties of a process is computed
-
-    This hook is called before on_proc_init. In between, workdir is created
-    and jobs are initialized.
-
-    Args:
-        proc: The process
     """
 
 

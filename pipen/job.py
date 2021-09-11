@@ -3,7 +3,8 @@ import logging
 import shlex
 from os import PathLike
 from pathlib import Path
-from typing import Any, Dict, Union
+import shutil
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Union
 
 import pandas
 from diot import OrderedDiot
@@ -12,11 +13,18 @@ from xqute.utils import a_read_text
 
 from ._job_caching import JobCaching
 from .defaults import ProcInputType, ProcOutputType
-from .exceptions import (ProcInputTypeError, ProcOutputNameError,
-                         ProcOutputTypeError, ProcOutputValueError,
-                         TemplateRenderingError)
+from .exceptions import (
+    ProcInputTypeError,
+    ProcOutputNameError,
+    ProcOutputTypeError,
+    ProcOutputValueError,
+    TemplateRenderingError,
+)
 from .template import Template
-from .utils import cached_property, logger
+from .utils import cached_property, logger, strsplit
+
+if TYPE_CHECKING:  # pragma: no cover
+    from .proc import Proc
 
 
 class Job(XquteJob, JobCaching):
@@ -24,65 +32,78 @@ class Job(XquteJob, JobCaching):
 
     __slots__ = ("proc", "_output_types", "_outdir")
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.proc = None
-        self._output_types = {}
+        self.proc: "Proc" = None
+        self._output_types: Dict[str, str] = {}
         self._outdir = self.metadir / "output"
 
     @property
     def script_file(self) -> Path:
-        """Get the path to script file"""
+        """Get the path to script file
+
+        Returns:
+            The path to the script file
+        """
         return self.metadir / "job.script"
 
     @cached_property
     def outdir(self) -> Path:
-        """Get the path to the output directory"""
+        """Get the path to the output directory
+
+        Returns:
+            The path to the job output directory
+        """
         ret = Path(self._outdir)
+        # May raise a FileExistsError if ret is a dead link
         ret.mkdir(parents=True, exist_ok=True)
+        # If it is somewhere else, make a symbolic link to the metadir
+        metaout = self.metadir / "output"
+        if ret != metaout:
+            if metaout.is_symlink() or metaout.is_file():
+                metaout.unlink()
+            elif metaout.is_dir():
+                shutil.rmtree(metaout)
+            metaout.symlink_to(ret)
         return ret
 
     @cached_property
-    def input(self) -> Dict[str, Any]:
+    def input(self) -> Mapping[str, Any]:
         """Get the input data"""
-        ret = self.proc.input.data.iloc[[self.index], :].to_dict("records")[0]
+        ret = self.proc.input.data.iloc[self.index, :].to_dict()
         # check types
         for inkey, intype in self.proc.input.type.items():
+
             if intype == ProcInputType.VAR or ret[inkey] is None:
-                continue
-            if intype == ProcInputType.FILE:
+                continue  # pragma: no cover, covered actually
+
+            if intype in (ProcInputType.FILE, ProcInputType.DIR):
                 if not isinstance(ret[inkey], (str, PathLike)):
                     raise ProcInputTypeError(
                         f"Got {type(ret[inkey])} instead of PathLike object "
                         f"for input: {inkey + ':' + intype!r}"
                     )
-                # if not Path(ret[inkey]).exists():
-                #     raise FileNotFoundError(
-                #         f"[{self.proc.name}] Input file not found: "
-                #         f"{ret[inkey]}"
-                #     )
+
                 # we should use it as a string
                 ret[inkey] = str(Path(ret[inkey]).resolve())
-            if intype == ProcInputType.FILES:
+
+            if intype in (ProcInputType.FILES, ProcInputType.DIRS):
                 if isinstance(ret[inkey], pandas.DataFrame):
-                    ret[inkey] = ret[inkey].iloc[0, 0]
+                    # // todo: nested dataframe
+                    ret[inkey] = ret[inkey].iloc[0, 0]  # pragma: no cover
 
                 if not isinstance(ret[inkey], (list, tuple)):
                     raise ProcInputTypeError(
-                        f"[{self.proc.name}] Expected a list/tuple for input: "
+                        f"[{self.proc.name}] Expected a sequence for input: "
                         f"{inkey + ':' + intype!r}, got {type(ret[inkey])}"
                     )
 
                 for i, file in enumerate(ret[inkey]):
-                    # if not Path(file).exists():
-                    #     raise FileNotFoundError(
-                    #         f"[{self.proc.name}] Input file not found: {file}"
-                    #     )
                     ret[inkey][i] = str(Path(file).resolve())
         return ret
 
     @cached_property
-    def output(self) -> Dict[str, Any]:
+    def output(self) -> Mapping[str, Any]:
         """Get the output data"""
         output_template = self.proc.output
         if not output_template:
@@ -101,14 +122,10 @@ class Job(XquteJob, JobCaching):
             "proc": self.proc,
             "args": self.proc.args,
         }
-
         try:
             if isinstance(output_template, Template):
                 # // TODO: check ',' in output value?
-                outputs = [
-                    oput.strip()
-                    for oput in output_template.render(data).split(",")
-                ]
+                outputs = strsplit(output_template.render(data), ",")
             else:
                 outputs = [oput.render(data) for oput in output_template]
         except Exception as exc:
@@ -119,7 +136,9 @@ class Job(XquteJob, JobCaching):
         ret = OrderedDiot()
         for oput in outputs:
             if ":" not in oput:
-                raise ProcOutputNameError("No name given in output.")
+                raise ProcOutputNameError(
+                    f"[{self.proc.name}] No name given in output."
+                )
 
             if oput.count(":") == 1:
                 output_name, output_value = oput.split(":")
@@ -128,6 +147,7 @@ class Job(XquteJob, JobCaching):
                 output_name, output_type, output_value = oput.split(":", 2)
                 if output_type not in ProcOutputType.__dict__.values():
                     raise ProcOutputTypeError(
+                        f"[{self.proc.name}] "
                         f"Unsupported output type: {output_type}"
                     )
 
@@ -137,22 +157,24 @@ class Job(XquteJob, JobCaching):
             if output_type == ProcOutputType.VAR:
                 continue
 
-            if Path(output_value).is_absolute() and self.proc.end:
-                raise ProcOutputValueError(
-                    "Only relative path allowed as output for ending process. "
-                    "If you want to redirect the output path, set `end` to "
-                    "False for the process."
-                )
             if Path(output_value).is_absolute():
-                ret[output_name] = output_value
-            else:
-                ret[output_name] = str(self.outdir.resolve() / output_value)
+                raise ProcOutputValueError(
+                    f"[{self.proc.name}] Path in output should be relative."
+                )
+
+            ret[output_name] = self.outdir.resolve() / output_value
+
+            if output_type == ProcOutputType.DIR:
+                ret[output_name].mkdir(parents=True, exist_ok=True)
+
+            ret[output_name] = str(ret[output_name])
 
         return ret
 
     @cached_property
-    def rendering_data(self) -> Dict[str, Any]:
+    def template_data(self) -> Mapping[str, Any]:
         """Get the data for template rendering"""
+
         return {
             "job": dict(
                 index=self.index,
@@ -175,7 +197,7 @@ class Job(XquteJob, JobCaching):
         *args,
         limit: int = 3,
         limit_indicator: bool = True,
-        logger: logging.Logger = logger,
+        logger: logging.LoggerAdapter = logger,
     ) -> None:
         """Log message for the jobs
 
@@ -214,9 +236,13 @@ class Job(XquteJob, JobCaching):
         Args:
             proc: the process object
         """
+        # Attach the process
         self.proc = proc
+
         if self.proc.end and len(self.proc.jobs) == 1:
+            # Don't put index if it is a single-job process
             self._outdir = Path(self.proc.pipeline.outdir) / self.proc.name
+
         elif self.proc.end:
             self._outdir = (
                 Path(self.proc.pipeline.outdir)
@@ -228,9 +254,9 @@ class Job(XquteJob, JobCaching):
             self.cmd = []
             return
 
-        rendering_data = self.rendering_data
+        template_data = self.template_data
         try:
-            script = proc.script.render(rendering_data)
+            script = proc.script.render(template_data)
         except Exception as exc:
             raise TemplateRenderingError(
                 f"[{self.proc.name}] Failed to render script."
@@ -243,4 +269,6 @@ class Job(XquteJob, JobCaching):
             self.script_file.write_text(script)
         elif not self.script_file.is_file():
             self.script_file.write_text(script)
-        self.cmd = shlex.split(proc.lang) + [self.script_file]
+
+        lang = proc.lang or proc.pipeline.config.lang
+        self.cmd = shlex.split(lang) + [self.script_file]  # type: ignore

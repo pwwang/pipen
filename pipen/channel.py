@@ -78,7 +78,9 @@ class Channel(DataFrame):
             for file in glob(str(pattern))
             if not file_filter or file_filter(file)
         )
-        return cls.create(sorted(files, key=sort_key, reverse=reverse))
+        return cls.create(
+            sorted(files, key=sort_key, reverse=reverse),  # type: ignore
+        )
 
     @classmethod
     def from_pairs(

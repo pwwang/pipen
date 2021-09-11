@@ -111,3 +111,4 @@ poetry.lock
 .pipen/
 t-*.ipynb
 *-output/
+*_results/

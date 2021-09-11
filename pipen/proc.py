@@ -1,144 +1,354 @@
-"""Provide the Proc class"""
-
+"""Provides the process class: Proc"""
 import asyncio
+import inspect
+from abc import ABC, ABCMeta
 import logging
+from os import PathLike
 from pathlib import Path
-from typing import Any, ClassVar, Dict, Iterable, List, Optional, Type, Union
+from typing import (
+    Any,
+    Dict,
+    List,
+    Mapping,
+    Sequence,
+    Type,
+    Union,
+    TYPE_CHECKING,
+)
 
-from pandas import DataFrame
+import pandas
+from diot import Diot
 from rich import box
 from rich.panel import Panel
-from simpleconf import Config
-from slugify import slugify
-from varname import varname
-from xqute import JobStatus, Scheduler, Xqute
+from slugify import slugify  # type: ignore
+from varname import VarnameException, varname
+from xqute import JobStatus, Xqute
 
-from ._proc_properties import ProcMeta, ProcProperties, ProcType
-from .exceptions import ProcWorkdirConflictException
+from .channel import Channel
+from .defaults import CONSOLE_WIDTH, ProcInputType
+from .exceptions import (
+    ProcInputKeyError,
+    ProcInputTypeError,
+    ProcScriptFileNotFound,
+    ProcWorkdirConflictException,
+)
 from .plugin import plugin
-from .template import Template
-from .utils import (DEFAULT_CONSOLE_WIDTH, brief_list, cached_property,
-                    get_console_width, log_rich_renderable, logger)
+from .scheduler import get_scheduler
+from .template import Template, get_template_engine
+from .utils import (
+    brief_list,
+    cached_property,
+    copy_dict,
+    desc_from_docstring,
+    get_console_width,
+    ignore_firstline_dedent,
+    is_subclass,
+    log_rich_renderable,
+    logger,
+    make_df_colnames_unique_inplace,
+    strsplit,
+    update_dict,
+    get_shebang,
+)
+
+if TYPE_CHECKING:  # pragma: no cover
+    from .pipen import Pipen
 
 
-class Proc(ProcProperties, metaclass=ProcMeta):
-    """The Proc class provides process assembly functionality"""
+class ProcMeta(ABCMeta):
+    """Meta class for Proc"""
 
-    name: ClassVar[str] = None
-    desc: ClassVar[str] = None
-    singleton: ClassVar[bool] = None
+    _INSTANCES: Dict[Type, "Proc"] = {}
 
-    SELF: ClassVar["Proc"] = False
+    def __repr__(cls) -> str:
+        """Representation for the Proc subclasses"""
+        return f"<Proc:{cls.name}>"
 
-    def __new__(cls, *args, **kwargs):
-        """Make sure cls() always get to the same instance"""
-        if (not args and not kwargs) or kwargs.get("singleton", cls.singleton):
-            if not cls.SELF or cls.SELF.__class__ is not cls:
-                cls.SELF = super().__new__(cls)
-            if args or kwargs:
-                cls.SELF._inited = False
-                cls.__init__(cls.SELF, *args, **kwargs)
-            return cls.SELF
-        return super().__new__(cls)
-
-    def __init__(
-        self,
-        name: Optional[str] = None,
-        desc: Optional[str] = None,
-        *,
-        end: Optional[bool] = None,
-        input_keys: Union[List[str], str] = None,
-        input: Optional[Union[str, Iterable[str]]] = None,
-        output: Optional[Union[str, Iterable[str]]] = None,
-        requires: Optional[Union[ProcType, Iterable[ProcType]]] = None,
-        lang: Optional[str] = None,
-        script: Optional[str] = None,
-        forks: Optional[int] = None,
-        cache: Optional[bool] = None,
-        args: Optional[Dict[str, Any]] = None,
-        envs: Optional[Dict[str, Any]] = None,
-        dirsig: Optional[bool] = None,
-        profile: Optional[str] = None,
-        template: Optional[Union[str, Type[Template]]] = None,
-        scheduler: Optional[Union[str, Scheduler]] = None,
-        scheduler_opts: Optional[Dict[str, Any]] = None,
-        plugin_opts: Optional[Dict[str, Any]] = None,
-        singleton: Optional[bool] = None,
-    ) -> None:
-        if getattr(self, "_inited", False):
-            return
-
-        if singleton is None:
-            singleton = self.__class__.singleton
-
-        super().__init__(
-            end,
-            input_keys,
-            input,
-            output,
-            lang,
-            script,
-            forks,
-            requires,
-            args,
-            envs,
-            cache,
-            dirsig,
-            profile,
-            template,
-            scheduler,
-            scheduler_opts,
-            plugin_opts,
-        )
-
-        self.nexts = []
-        self.name = (
-            name
-            if name is not None
-            else self.__class__.name
-            if self.__class__.name is not None
-            else self.__class__.__name__
-            if self is self.__class__.SELF
-            else varname()
-        )
-        self.desc = (
-            desc
-            if desc is not None
-            else self.__class__.desc
-            if self.__class__.desc is not None
-            else self.__doc__.lstrip().splitlines()[0]
-            if self.__doc__
-            else "Undescribed."
-        )
-
-        self.pipeline = None
-        self.pbar = None
-        self.jobs = []
-        self.xqute = None
-        self.workdir = None
-        self.out_channel = None
-
-        self._inited = True
-
-    def log(
-        self,
-        level: Union[int, str],
-        msg: str,
-        *args,
-        logger: logging.Logger = logger,
-    ) -> None:
-        """Log message for the process
+    def __call__(cls, *args: Any, **kwds: Any) -> "Proc":
+        """Make sure Proc subclasses are singletons
 
         Args:
-            level: The log level of the record
-            msg: The message to log
-            *args: The arguments to format the message
-            logger: The logging logger
+            *args: and
+            **kwds: Arguments for the constructor
+
+        Returns:
+            The Proc instance
         """
-        msg = msg % args
-        if not isinstance(level, int):
-            level = logging.getLevelName(level.upper())
-        logger.log(level, "[cyan]%s:[/cyan] %s", self.name, msg)
+        if cls not in cls._INSTANCES:
+            cls._INSTANCES[cls] = super().__call__(*args, **kwds)
+
+        return cls._INSTANCES[cls]
+
+
+class Proc(ABC, metaclass=ProcMeta):
+
+    """The abstract class for processes.
+
+    It's an abstract class. You can't instantise a process using it directly.
+    You have to subclass it. The subclass itself can be used as a process
+    directly.
+
+    Each subclass is a singleton, so to intantise a new process, each subclass
+    an existing `Proc` subclass, or use `Proc.from_proc()`.
+
+    Never use the constructor directly. The Proc is designed
+    as a singleton class, and is instansiated internally.
+
+    Attributes:
+        name: The name of the process. Will use the class name by default.
+        desc: The description of the process. Will use the summary from
+            the docstring by default.
+        args: The arguments that are job-independent, useful for common options
+            across jobs.
+        cache: Should we detect whether the jobs are cached?
+        dirsig: When checking the signature for caching, whether should we walk
+            through the content of the directory? This is sometimes
+            time-consuming if the directory is big.
+        end: When False, force the process not to be the end process, meaning
+            results will not be saved to the output directory of the pipeline.
+        error_strategy: How to deal with the errors
+            - retry, ignore, halt
+            - halt to halt the whole pipeline, no submitting new jobs
+            - terminate to just terminate the job itself
+        num_retries: How many times to retry to jobs once error occurs
+        template: Define the template engine to use.
+            This could be either a template engine or a dict with key `engine`
+            indicating the template engine and the rest the arguments passed
+            to the constructor of the `pipen.template.Template` object.
+            The template engine could be either the name of the engine,
+            currently jinja2 and liquidpy are supported, or a subclass of
+            `pipen.template.Template`.
+            You can subclass `pipen.template.Template` to use your own template
+            engine.
+        forks: How many jobs to run simultaneously?
+        input: The keys for the input channel
+        input_data: The input data (will be computed for dependent processes)
+        lang: The language for the script to run. Should be the path to the
+            interpreter if `lang` is not in `$PATH`.
+        output: The output keys for the output channel
+            (the data will be computed)
+        plugin_opts: Options for process-level plugins
+        requires: The dependency processes
+        scheduler: The scheduler to run the jobs
+        scheduler_opts: The options for the scheduler
+        script: The script template for the process
+        submission_batch: How many jobs to be submited simultaneously
+
+        nexts: Computed from `requires` to build the process relationships
+        output_data: The output data (to pass to the next processes)
+    """
+
+    name: str = None
+    desc: str = None
+    args: Mapping[str, Any] = None
+    cache: bool = None
+    dirsig: bool = None
+    end: bool = None
+    error_strategy: str = None
+    num_retries: int = None
+    template: Union[str, Type[Template]] = None
+    template_opts: Mapping[str, Any] = None
+    forks: int = None
+    input: Union[str, Sequence[str]] = None
+    input_data: Any = None
+    lang: str = None
+    output: Union[str, Sequence[str]] = None
+    plugin_opts: Mapping[str, Any] = None
+    requires: Union[Type["Proc"], Sequence[Type["Proc"]]] = None
+    scheduler: str = None
+    scheduler_opts: Mapping[str, Any] = None
+    script: str = None
+    submission_batch: int = None
+
+    nexts: Sequence[Type["Proc"]] = None
+    output_data: Any = None
+    workdir: PathLike = None
+
+    @classmethod
+    def from_proc(
+        cls,
+        proc: Type["Proc"],
+        name: str = None,
+        desc: str = None,
+        args: Mapping[str, Any] = None,
+        cache: bool = None,
+        end: bool = None,
+        error_strategy: str = None,
+        num_retries: int = None,
+        forks: int = None,
+        input_data: Any = None,
+        plugin_opts: Mapping[str, Any] = None,
+        requires: Sequence[Type["Proc"]] = None,
+        scheduler: str = None,
+        scheduler_opts: Mapping[str, Any] = None,
+        submission_batch: int = None,
+    ) -> Type["Proc"]:
+        """Create a subclass of Proc using another Proc subclass or Proc itself
+
+        Args:
+            proc: The Proc subclass
+            name: The new name of the process
+            desc: The new description of the process
+            args: The arguments of the process, will overwrite parent one
+                The items that are specified will be inherited
+            cache: Whether we should check the cache for the jobs
+            end: When False, force the process not to be an end process
+                if it is a terminal process
+            error_strategy: How to deal with the errors
+                - retry, ignore, halt
+                - halt to halt the whole pipeline, no submitting new jobs
+                - terminate to just terminate the job itself
+            num_retries: How many times to retry to jobs once error occurs
+            forks: New forks for the new process
+            input_data: The input data for the process. Only when this process
+                is a start process
+            plugin_opts: The new plugin options, unspecified items will be
+                inherited.
+            requires: The required processes for the new process
+            scheduler: The new shedular to run the new process
+            scheduler_opts: The new scheduler options, unspecified items will
+                be inherited.
+            submission_batch: How many jobs to be submited simultaneously
+
+        Returns:
+            The new process class
+        """
+        if not name:
+            try:
+                name = varname()
+            except VarnameException as vexc:
+                raise ValueError(
+                    "Process name cannot be detected from assignment, "
+                    "pass one explicitly to `Proc.from_proc(..., name=...)`"
+                ) from vexc
+
+        kwargs: Dict[str, Any] = {"name": name}
+        if desc is not None:
+            kwargs["desc"] = desc
+        if args is not None:
+            kwargs["args"] = update_dict(proc.args, args)
+        if cache is not None:
+            kwargs["cache"] = cache
+        if forks is not None:
+            kwargs["forks"] = forks
+        if plugin_opts is not None:
+            kwargs["plugin_opts"] = update_dict(proc.plugin_opts, plugin_opts)
+        if scheduler is not None:
+            kwargs["scheduler"] = scheduler
+        if scheduler_opts is not None:
+            kwargs["scheduler_opts"] = update_dict(
+                proc.scheduler_opts,
+                scheduler_opts,
+            )
+        if error_strategy is not None:
+            kwargs["error_strategy"] = error_strategy
+        if num_retries is not None:
+            kwargs["num_retries"] = num_retries
+        if submission_batch is not None:
+            kwargs["submission_batch"] = submission_batch
+
+        kwargs["end"] = end
+        kwargs["input_data"] = input_data
+        kwargs["requires"] = requires
+        kwargs["nexts"] = None
+        kwargs["output_data"] = None
+        return type(name, (proc,), kwargs)
+
+    def __init_subclass__(cls) -> None:
+        """Do the requirements inferring since we need them to build up the
+        process relationship
+        """
+        cls.requires = cls._compute_requires()
+        if cls.name is None:
+            cls.name = cls.__name__
+
+    def __init__(self, pipeline: "Pipen") -> None:
+        """Constructor
+
+        This is called only at runtime.
+
+        Args:
+            config: The base configuration
+        """
+        # instance properties
+        self.pipeline = pipeline
+        self.pbar = None
+        self.jobs: List[Any] = []
+        self.xqute = None
+        self.__class__.workdir = Path(self.pipeline.config.workdir) / slugify(
+            self.name
+        )
+
+        # Compute the properties
+        # otherwise, the property can be accessed directly from class vars
+        if self.desc is None:
+            self.desc: str = desc_from_docstring(self.__class__)
+
+        if self.end is None:
+            self.end = bool(not self.nexts)
+
+        # log the basic information
+        self._log_info()
+
+        # template
+        self.template = get_template_engine(
+            self.template or self.pipeline.config.template
+        )
+        template_opts = copy_dict(self.pipeline.config.template_opts)
+        template_opts.update(self.template_opts or {})
+        self.template_opts = template_opts
+
+        # input
+        self.input = self._compute_input()  # type: ignore
+        # output
+        self.output = self._compute_output()
+        # scheduler
+        self.scheduler = get_scheduler(  # type: ignore
+            self.scheduler or self.pipeline.config.scheduler
+        )
+        # script
+        self.script = self._compute_script()  # type: ignore
+
+        # check if it's the same proc using the workdir
+        # since the directory name is slugified
+        proc_name_file = self.workdir / "proc.name"  # type: ignore
+        if proc_name_file.is_file() and proc_name_file.read_text() != self.name:
+            raise ProcWorkdirConflictException(
+                "Workdir name is conflicting with process "
+                f"{proc_name_file.read_text()!r}, use a differnt pipeline "
+                "workdir or a different process name."
+            )
+        self.workdir.mkdir(parents=True, exist_ok=True)
+        proc_name_file.write_text(self.name)
+
+        if self.submission_batch is None:
+            self.submission_batch = self.pipeline.config.submission_batch
+
+    async def _init(self) -> None:
+        """Init all other properties and jobs"""
+        scheduler_opts = copy_dict(self.pipeline.config.scheduler_opts, 2) or {}
+        scheduler_opts.update(self.scheduler_opts or {})
+        self.xqute = Xqute(
+            self.scheduler,
+            job_metadir=self.workdir,
+            job_submission_batch=self.submission_batch,
+            job_error_strategy=self.error_strategy
+            or self.pipeline.config.error_strategy,
+            job_num_retries=self.pipeline.config.num_retries
+            if self.num_retries is None
+            else self.num_retries,
+            scheduler_forks=self.forks or self.pipeline.config.forks,
+            scheduler_jobprefix=self.name,
+            **scheduler_opts,
+        )
+        # for the plugin hooks to access
+        self.xqute.proc = self
+
+        await self._init_jobs()
+        self.__class__.output_data = pandas.DataFrame(
+            (job.output for job in self.jobs)
+        )
+        await plugin.hooks.on_proc_init(self)
 
     def gc(self):
         """GC process for the process to save memory after it's done"""
@@ -151,76 +361,25 @@ class Proc(ProcProperties, metaclass=ProcMeta):
         del self.pbar
         self.pbar = None
 
-    async def prepare(self, pipeline: "Pipen") -> None:
-        """Prepare the process
+    def log(
+        self,
+        level: Union[int, str],
+        msg: str,
+        *args,
+        logger: logging.LoggerAdapter = logger,
+    ) -> None:
+        """Log message for the process
 
         Args:
-            pipeline: The Pipen object
+            level: The log level of the record
+            msg: The message to log
+            *args: The arguments to format the message
+            logger: The logging logger
         """
-        if self.end is None and not self.nexts:
-            self.end = True
-        self.pipeline = pipeline
-        profile = self.profile or pipeline.profile
-
-        if profile == "default":
-            # no profile specified or profile is default,
-            # we should use __init__ the highest priority
-            config = pipeline.config._use("default", copy=True)
-        else:
-            config = pipeline.config._use(profile, "default", copy=True)
-
-        self.properties_from_config(config)
-
-        self.workdir = Path(config.workdir) / slugify(self.name)
-        self._print_banner()
-        self.log("info", "Workdir: %r", str(self.workdir))
-        self.compute_properties()
-        self._print_dependencies()
-
-        await plugin.hooks.on_proc_property_computed(self)
-
-        # check if it's the same proc using the workdir
-        proc_name_file = self.workdir / "proc.name"
-        if proc_name_file.is_file() and proc_name_file.read_text() != self.name:
-            raise ProcWorkdirConflictException(
-                "Workdir name is conflicting with process "
-                f"{proc_name_file.read_text()!r}, use a differnt pipeline "
-                "or a different process name."
-            )
-        self.workdir.mkdir(parents=True, exist_ok=True)
-        proc_name_file.write_text(self.name)
-
-        self.xqute = Xqute(
-            self.scheduler,
-            job_metadir=self.workdir,
-            job_submission_batch=config.submission_batch,
-            job_error_strategy=config.error_strategy,
-            job_num_retries=config.num_retries,
-            scheduler_forks=self.forks,
-            scheduler_jobprefix=self.name,
-            **self.scheduler_opts,
-        )
-        # for the plugin hooks to access
-        self.xqute.proc = self
-
-        # init all other properties and jobs
-        await self._init_jobs(config)
-        self.out_channel = DataFrame((job.output for job in self.jobs))
-
-        await plugin.hooks.on_proc_init(self)
-
-    def __repr__(self):
-        return f"<Proc-{hex(id(self))}({self.name}: {self.size})>"
-
-    @cached_property
-    def size(self) -> int:
-        """The size of the process (# of jobs)"""
-        return len(self.jobs)
-
-    @cached_property
-    def succeeded(self) -> bool:
-        """Check if the process is succeeded (all jobs succeeded)"""
-        return all(job.status == JobStatus.FINISHED for job in self.jobs)
+        msg = msg % args
+        if not isinstance(level, int):
+            level = logging.getLevelName(level.upper())
+        logger.log(level, "[cyan]%s:[/cyan] %s", self.name, msg)  # type: ignore
 
     async def run(self) -> None:
         """Run the process"""
@@ -251,19 +410,60 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             else True,
         )
 
-    async def _init_job(self, worker_id: int, config: Config) -> None:
+    # properties
+    @cached_property
+    def size(self) -> int:
+        """The size of the process (# of jobs)"""
+        return len(self.jobs)
+
+    @cached_property
+    def succeeded(self) -> bool:
+        """Check if the process is succeeded (all jobs succeeded)"""
+        return all(job.status == JobStatus.FINISHED for job in self.jobs)
+
+    # Private methods
+    @classmethod
+    def _compute_requires(
+        cls,
+        requires: Union[Type["Proc"], Sequence[Type["Proc"]]] = None,
+    ) -> Sequence[Type["Proc"]]:
+        """Compute the required processes and fill the nexts
+
+        Args:
+            requires: The required processes. If None, will use `cls.requires`
+
+        Returns:
+            None or sequence of Proc subclasses
+        """
+        if requires is None:
+            requires = cls.requires
+
+        if requires is None:
+            return requires
+
+        if is_subclass(requires, Proc):
+            requires = [requires]  # type: ignore
+
+        for req in requires:  # type: ignore
+            if req.nexts is None:
+                req.nexts = [cls]
+            else:
+                req.nexts.append(cls)  # type: ignore
+
+        return requires  # type: ignore
+
+    async def _init_job(self, worker_id: int) -> None:
         """A worker to initialize jobs
 
         Args:
             worker_id: The worker id
-            config: The pipeline configuration
         """
         for job in self.jobs:
-            if job.index % config.submission_batch != worker_id:
+            if job.index % self.submission_batch != worker_id:
                 continue
             await job.prepare(self)
 
-    async def _init_jobs(self, config: Config) -> None:
+    async def _init_jobs(self) -> None:
         """Initialize all jobs
 
         Args:
@@ -275,14 +475,135 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             self.jobs.append(job)
 
         await asyncio.gather(
-            *(self._init_job(i, config) for i in range(config.submission_batch))
+            *(self._init_job(i) for i in range(self.submission_batch))
         )
 
-    def _print_banner(self) -> None:
-        """Print the banner of the process"""
+    def _compute_input(self) -> Mapping[str, Mapping[str, Any]]:
+        """Calculate the input based on input and input data
+
+        Returns:
+            A dict with type and data
+        """
+        # split input keys into keys and types
+        input_keys = self.input
+        if input_keys and isinstance(input_keys, str):
+            input_keys = strsplit(input_keys, ",")
+
+        if not input_keys:
+            raise ProcInputKeyError(f"[{self.name}] No input provided")
+
+        out = Diot(type={}, data=None)
+        for input_key_type in input_keys:
+            if ":" not in input_key_type:
+                out.type[input_key_type] = ProcInputType.VAR
+                continue
+
+            input_key, input_type = strsplit(input_key_type, ":", 1)
+            if input_type not in ProcInputType.__dict__.values():
+                raise ProcInputTypeError(
+                    f"[{self.name}] Unsupported input type: {input_type}"
+                )
+            out.type[input_key] = input_type
+
+        # get the data
+        if not self.requires and self.input_data is None:
+            out.data = pandas.DataFrame([[None] * len(out.type)])
+        elif not self.requires:
+            out.data = Channel.create(self.input_data)
+        elif callable(self.input_data):
+            out.data = Channel.create(
+                self.__class__.input_data(
+                    *(req.output_data for req in self.requires)  # type: ignore
+                )
+            )
+        else:
+            if self.input_data:
+                self.log(
+                    "warning",
+                    "Ignoring input data, this is not a start process.",
+                )
+
+            out.data = pandas.concat(
+                (req.output_data for req in self.requires),  # type: ignore
+                axis=1,
+            )
+
+        make_df_colnames_unique_inplace(out.data)
+
+        # try match the column names
+        # if none matched, use the first columns
+        rest_cols = out.data.columns.difference(out.type)
+        len_rest_cols = len(rest_cols)
+        matched_cols = out.data.columns.intersection(out.type)
+        needed_cols = [col for col in out.type if col not in matched_cols]
+        len_needed_cols = len(needed_cols)
+
+        if len_rest_cols > len_needed_cols:
+            self.log(
+                "warning",
+                "Wasted %s column(s) of input data.",
+                len_rest_cols - len_needed_cols,
+            )
+        elif len_rest_cols < len_needed_cols:
+            self.log(
+                "warning",
+                "No data column for input: %s, using None.",
+                needed_cols[-len_rest_cols:],
+            )
+            # Add None
+            for needed_col in needed_cols[len_rest_cols:]:
+                out.data[needed_col] = None
+            len_needed_cols = len_rest_cols
+
+        out.data = out.data.rename(
+            columns=dict(zip(rest_cols[:len_needed_cols], needed_cols))
+        ).loc[:, out.type]
+
+        return out
+
+    def _compute_output(self) -> Union[str, List[str]]:
+        """Compute the output for jobs to render"""
+        if not self.output:
+            return None
+
+        if isinstance(self.output, (list, tuple)):
+            return [
+                self.template(oput, **self.template_opts)  # type: ignore
+                for oput in self.output
+            ]
+
+        return self.template(self.output, **self.template_opts)  # type: ignore
+
+    def _compute_script(self) -> Template:
+        """Compute the script for jobs to render"""
+        if not self.script:
+            self.log("warning", "No script specified.")
+            return None
+
+        script = self.script
+        if script.startswith("file://"):
+            script_file = Path(script[7:])
+            if not script_file.is_absolute():
+                script_file = (
+                    Path(inspect.getfile(self.__class__)).parent / script_file
+                )
+            if not script_file.is_file():
+                raise ProcScriptFileNotFound(
+                    f"No such script file: {script_file}"
+                )
+            script = script_file.read_text()
+
+        script = ignore_firstline_dedent(script)
+        if not self.lang:
+            self.lang = get_shebang(script)
+
+        return self.template(script, **self.template_opts)  # type: ignore
+
+    def _log_info(self):
+        """Log some basic information of the process"""
         console_width = get_console_width()
         panel = Panel(
-            self.desc,
+            self.desc or "Undescribed",
             title=self.name,
             box=box.Box(
                 "╭═┬╮\n"
@@ -296,14 +617,12 @@ class Proc(ProcProperties, metaclass=ProcMeta):
             )
             if self.end
             else box.ROUNDED,
-            width=min(DEFAULT_CONSOLE_WIDTH, console_width),
+            width=min(CONSOLE_WIDTH, console_width),
         )
 
         logger.info("")
         log_rich_renderable(panel, "cyan", logger.info)
-
-    def _print_dependencies(self):
-        """Print the dependencies"""
+        self.log("info", "Workdir: %r", str(self.workdir))
         self.log(
             "info",
             "[yellow]<<<[/yellow] %s",

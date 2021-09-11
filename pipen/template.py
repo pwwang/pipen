@@ -22,20 +22,10 @@ class Template(ABC):
     def __init__(
         self,
         source: Any,
-        envs: Mapping[str, Any] = None,
         **kwargs: Any,
     ):
         """Template construct"""
-        self.envs = envs or {}
-        self.engine = None
-
-    def update_envs(self, envs):
-        """@API
-        Register extra environment
-        @params:
-            envs: The environment
-        """
-        self.envs.update(envs)
+        self.engine: Any = None
 
     def render(self, data: Mapping[str, Any] = None) -> str:
         """@API
@@ -58,7 +48,6 @@ class TemplateLiquid(Template):
     def __init__(
         self,
         source: Any,
-        envs: Mapping[str, Any] = None,
         **kwargs: Any,
     ):
         """Initiate the engine with source and envs
@@ -68,9 +57,12 @@ class TemplateLiquid(Template):
             envs: The env data
             **kwargs: Other arguments for Liquid
         """
-        super().__init__(source, envs)
+        super().__init__(source)
         self.engine = Liquid(
-            source, from_file=False, mode="wild", globals=envs, **kwargs
+            source,
+            from_file=False,
+            mode="wild",
+            **kwargs,
         )
 
     def _render(self, data: Mapping[str, Any]) -> str:
@@ -93,7 +85,6 @@ class TemplateJinja2(Template):
     def __init__(
         self,
         source: Any,
-        envs: Mapping[str, Any] = None,
         **kwargs: Any,
     ):
         """Initiate the engine with source and envs
@@ -105,10 +96,12 @@ class TemplateJinja2(Template):
         """
         import jinja2
 
-        super().__init__(source, envs)
+        super().__init__(source)
+        filters = kwargs.pop("filters", {})
+        envs = kwargs.pop("globals", {})
         filters = kwargs.pop("filters", {})
         self.engine = jinja2.Template(source, **kwargs)
-        self.engine.globals.update(self.envs)
+        self.engine.globals.update(envs)
         self.engine.environment.filters.update(filters)
 
     def _render(self, data: Mapping[str, Any]) -> str:
@@ -133,7 +126,7 @@ def get_template_engine(template: Union[str, Type[Template]]) -> Type[Template]:
         The template engine
     """
     if is_subclass(template, Template):
-        return template
+        return template  # type: ignore
 
     if template == "liquid":
         return TemplateLiquid

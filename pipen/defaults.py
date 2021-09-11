@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import ClassVar
 
 from diot import Diot
-from simpleconf import Config
 from xqute import JobErrorStrategy
 from xqute import logger as xqute_logger
 
@@ -12,9 +11,13 @@ xqute_logger.setLevel(100)
 xqute_logger.removeHandler(xqute_logger.handlers[0])
 
 LOGGER_NAME = "main"
-DEFAULT_CONFIG_FILES = (Path("~/.pipen.toml"), "./.pipen.toml", "PIPEN.osenv")
-DEFAULT_CONFIG = Diot(
-    loglevel="debug",
+CONFIG_FILES = (
+    Path("~/.pipen.toml"),
+    "./.pipen.toml",
+    "PIPEN.osenv",
+)
+CONFIG = Diot(
+    loglevel="info",
     # The cache option, True/False/export
     cache=True,
     # Whether expand directory to check signature
@@ -36,8 +39,8 @@ DEFAULT_CONFIG = Diot(
     workdir="./.pipen",
     # template engine
     template="liquid",
-    # template envs
-    envs={},
+    # template options
+    template_opts={},
     # scheduler
     scheduler="local",
     # scheduler options
@@ -48,8 +51,8 @@ DEFAULT_CONFIG = Diot(
     plugin_opts={},
 )
 
-DEFAULT_CONSOLE_WIDTH: int = 80
-DEFAULT_CONSOLE_WIDTH_SHIFT: int = 26
+CONSOLE_WIDTH: int = 80
+CONSOLE_WIDTH_SHIFT: int = 26
 SCHEDULER_ENTRY_GROUP = "pipen-sched"
 TEMPLATE_ENTRY_GROUP = "pipen-tpl"
 
@@ -59,14 +62,14 @@ class ProcInputType:
 
     VAR: ClassVar[str] = "var"
     FILE: ClassVar[str] = "file"
+    DIR: ClassVar[str] = "dir"
     FILES: ClassVar[str] = "files"
+    DIRS: ClassVar[str] = "dirs"
 
 
 class ProcOutputType:
     """Types for process outputs"""
 
     VAR: ClassVar[str] = "var"
+    DIR: ClassVar[str] = "dir"
     FILE: ClassVar[str] = "file"
-
-
-config = Config()

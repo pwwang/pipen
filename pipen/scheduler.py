@@ -3,8 +3,9 @@ from typing import Type, Union
 
 from xqute import Scheduler
 from xqute.schedulers.local_scheduler import LocalJob as XquteLocalJob
-from xqute.schedulers.local_scheduler import \
-				LocalScheduler as XquteLocalScheduler
+from xqute.schedulers.local_scheduler import (
+    LocalScheduler as XquteLocalScheduler,
+)
 from xqute.schedulers.sge_scheduler import SgeJob as XquteSgeJob
 from xqute.schedulers.sge_scheduler import SgeScheduler as XquteSgeScheduler
 
@@ -48,7 +49,7 @@ def get_scheduler(scheduler: Union[str, Type[Scheduler]]) -> Type[Scheduler]:
         The scheduler class
     """
     if is_subclass(scheduler, Scheduler):
-        return scheduler
+        return scheduler  # type: ignore
 
     if scheduler == "local":
         return LocalScheduler

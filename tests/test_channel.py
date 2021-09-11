@@ -1,3 +1,4 @@
+from io import StringIO
 from pathlib import Path
 from math import ceil
 import pytest
@@ -29,3 +30,24 @@ def test_expand_dir_collapse_files():
 
     ch2 = ch1 >> collapse_files()
     assert ch2.equals(ch0)
+
+def test_from_csv(tmp_path):
+    df = tibble(a=[1,2], b=[3,4])
+    df.to_csv(tmp_path / 'input.csv', index=False)
+    ch = Channel.from_csv(tmp_path / 'input.csv')
+    assert ch.equals(df)
+
+def test_from_excel(tmp_path):
+    df = tibble(a=[1,2], b=[3,4])
+    df.to_excel(tmp_path / 'input.xls', index=False)
+    ch = Channel.from_excel(tmp_path / 'input.xls')
+    assert ch.equals(df)
+
+def test_from_table():
+    df = StringIO("""a b
+1 3
+2 4
+""")
+    ch = Channel.from_table(df, sep=" ")
+    exp = tibble(a=[1,2], b=[3,4])
+    assert ch.equals(exp)

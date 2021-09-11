@@ -2,8 +2,8 @@ from pipen import Proc, Pipen
 
 class Subset(Proc):
     """Subset the input data using pandas"""
-    input_keys = 'datafile'
-    input = ['https://raw.githubusercontent.com/tidyverse/ggplot2/master/data-raw/mpg.csv']
+    input = 'datafile'
+    input_data = ['https://raw.githubusercontent.com/tidyverse/ggplot2/master/data-raw/mpg.csv']
     output = 'outfile:file:mpg-subset.csv'
     lang = 'python'
     script = """
@@ -16,7 +16,7 @@ class Subset(Proc):
 class Plot(Proc):
     """Plot the data with ggplot2 in R"""
     requires = Subset
-    input_keys = 'datafile:file'
+    input = 'datafile:file'
     output = 'plotfile:file:mpg.png'
     lang = 'Rscript'
     script = """
@@ -29,5 +29,9 @@ class Plot(Proc):
     """
 
 if __name__ == '__main__':
-    pipen = Pipen(name='plot-mpg').starts(Subset)
+    pipen = Pipen(
+        name='plot-mpg',
+        desc='xx',
+        loglevel='debug'
+    ).starts(Subset)
     pipen.run()

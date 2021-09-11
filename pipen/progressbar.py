@@ -4,9 +4,9 @@ import enlighten
 from .utils import truncate_text
 
 # [12/02/20 12:44:06] I /main
-#        pipeline: 100%|
-# |   desc_len  |
-PBAR_DESC_LEN = 14
+#                 pipeline: 100%|
+# |        desc_len      |
+PBAR_DESC_LEN = 23
 
 
 class ProcPBar:

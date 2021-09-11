@@ -2,7 +2,7 @@
 import shutil
 from pathlib import Path
 
-import toml
+import toml  # type: ignore
 from diot import Diot
 from xqute.utils import a_read_text, a_write_text, asyncify
 
@@ -15,32 +15,47 @@ class JobCaching:
 
     @property
     def signature_file(self) -> Path:
-        """Get the path to the signature file"""
+        """Get the path to the signature file
+
+        Returns:
+            The path to the signature file
+        """
         return self.metadir / "job.signature.toml"
 
     async def cache(self) -> None:
         """write signature to signature file"""
+        dirsig = (
+            self.proc.pipeline.config.dirsig
+            if self.proc.dirsig is None
+            else self.proc.dirsig
+        )
+        # Check if mtimes of input is greater than those of output
         try:
             max_mtime = self.script_file.stat().st_mtime
         except FileNotFoundError:
             max_mtime = 0
+
         for inkey, intype in self.proc.input.type.items():
             if intype == ProcInputType.VAR:
                 continue
-            if intype == ProcInputType.FILE and self.input[inkey] is not None:
-                max_mtime = max(
-                    max_mtime, get_mtime(self.input[inkey], self.proc.dirsig)
-                )
-            if intype == ProcInputType.FILES:
-                for file in self.input[inkey] or ():
-                    max_mtime = max(
-                        max_mtime, get_mtime(file, self.proc.dirsig)
-                    )
+
+            if (
+                intype in (ProcInputType.FILE, ProcInputType.DIR)
+                and self.input[inkey] is not None
+            ):
+                max_mtime = max(max_mtime, get_mtime(self.input[inkey], dirsig))
+
+            if (
+                intype in (ProcInputType.FILES, ProcInputType.DIRS)
+                and self.input[inkey] is not None
+            ):
+                for file in self.input[inkey]:
+                    max_mtime = max(max_mtime, get_mtime(file, dirsig))
 
         for outkey, outval in self._output_types.items():
-            if outval == ProcOutputType.FILE:
+            if outval in (ProcOutputType.FILE, ProcInputType.DIR):
                 max_mtime = max(
-                    max_mtime, get_mtime(self.output[outkey], self.proc.dirsig)
+                    max_mtime, get_mtime(self.output[outkey], dirsig)
                 )
 
         signature = {
@@ -58,27 +73,37 @@ class JobCaching:
         """Clear output if not cached"""
         self.log("debug", "Clearing previous output files.")
         for outkey, outval in self._output_types.items():
-            if outval != ProcOutputType.FILE:
+            if outval not in (ProcOutputType.FILE, ProcOutputType.DIR):
                 continue
 
             outfile = Path(self.output[outkey])
+
             # dead link
             if not outfile.exists():
                 if outfile.is_symlink():
-                    await asyncify(Path.unlink)(
-                        outfile,
-                    )
-            elif not outfile.is_dir():
-                await asyncify(Path.unlink)(
-                    outfile,
-                )
-            else:
+                    await asyncify(Path.unlink)(outfile)
+
+            elif outval == ProcOutputType.FILE:
+                await asyncify(Path.unlink)(outfile)
+
+            else:  # DIR
                 await asyncify(shutil.rmtree)(outfile)
+                # Get the directory back
+                outfile.mkdir()
 
     async def _check_cached(self) -> bool:
-        """Check if the job is cached based on signature"""
+        """Check if the job is cached based on signature
+
+        Returns:
+            True if the job is cached otherwise False
+        """
         sign_str = await a_read_text(self.signature_file)
         signature = Diot(toml.loads(sign_str))
+        dirsig = (
+            self.proc.pipeline.config.dirsig
+            if self.proc.dirsig is None
+            else self.proc.dirsig
+        )
 
         try:
             # check if inputs/outputs are still the same
@@ -107,11 +132,13 @@ class JobCaching:
                 return False
 
             for inkey, intype in self.proc.input.type.items():
+
                 if intype == ProcInputType.VAR or self.input[inkey] is None:
-                    continue
+                    continue  # pragma: no cover, covered, a bug of pytest-cov
+
                 if intype == ProcInputType.FILE:
                     if (
-                        get_mtime(self.input[inkey], self.proc.dirsig)
+                        get_mtime(self.input[inkey], dirsig)
                         > signature.ctime + 1e-3
                     ):
                         self.log(
@@ -120,12 +147,10 @@ class JobCaching:
                             inkey,
                         )
                         return False
+
                 if intype == ProcInputType.FILES:
                     for file in self.input[inkey]:
-                        if (
-                            get_mtime(file, self.proc.dirsig)
-                            > signature.ctime + 1e-3
-                        ):
+                        if get_mtime(file, dirsig) > signature.ctime + 1e-3:
                             self.log(
                                 "debug",
                                 "Not cached (One of the input files "
@@ -135,14 +160,14 @@ class JobCaching:
                             return False
 
             for outkey, outval in self._output_types.items():
-                if outval != ProcOutputType.FILE:
+                if outval not in (ProcOutputType.FILE, ProcOutputType.DIR):
                     continue
-                if (
-                    get_mtime(self.output[outkey], self.proc.dirsig)
-                    > signature.ctime + 1.0e-3
-                ):
+
+                if not Path(self.output[outkey]).exists():
                     self.log(
-                        "debug", "Not cached (Output file is newer: %s)", outkey
+                        "debug",
+                        "Not cached (Output file removed: %s)",
+                        outkey,
                     )
                     return False
 
@@ -154,24 +179,38 @@ class JobCaching:
 
     @property
     async def cached(self) -> bool:
-        """check if a job is cached"""
+        """Check if a job is cached
+
+        Returns:
+            True if the job is cached otherwise False
+        """
         out = True
-        if (
-            not self.proc.cache
-            or await self.rc != 0
-            or not self.signature_file.is_file()
-        ):
+        proc_cache = (
+            self.proc.pipeline.config.cache
+            if self.proc.cache is None
+            else self.proc.cache
+        )
+        if not proc_cache:
             self.log(
                 "debug",
-                "Not cached (proc.cache=False or job.rc!=0 or "
-                "signature file not found)",
+                "Not cached (proc.cache is False)",
             )
             out = False
-
-        elif self.proc.cache == "force":
+        elif await self.rc != 0:
+            self.log(
+                "debug",
+                "Not cached (job.rc != 0)",
+            )
+            out = False
+        elif not self.signature_file.is_file():
+            self.log(
+                "debug",
+                "Not cached (signature file not found)",
+            )
+            out = False
+        elif proc_cache == "force":
             await self.cache()
             out = True
-
         else:
             out = await self._check_cached()
 
