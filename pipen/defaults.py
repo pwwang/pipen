@@ -57,6 +57,8 @@ CONSOLE_WIDTH_SHIFT: int = 26
 SCHEDULER_ENTRY_GROUP = "pipen-sched"
 # For pipen template plugins
 TEMPLATE_ENTRY_GROUP = "pipen-tpl"
+# For pipen template cli plugins
+CLI_ENTRY_GROUP = "pipen-cli"
 
 
 class ProcInputType:

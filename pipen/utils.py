@@ -40,6 +40,7 @@ from simplug import SimplugContext
 from .defaults import CONSOLE_WIDTH, CONSOLE_WIDTH_SHIFT, LOGGER_NAME
 from .exceptions import ConfigurationError
 from .pluginmgr import plugin
+from .version import __version__
 
 
 class RichHandler(_RichHandler):
@@ -329,8 +330,6 @@ def pipen_banner() -> RenderableType:
     Returns:
         The banner renderable
     """
-    from . import __version__
-
     table = Table(
         width=min(CONSOLE_WIDTH, get_console_width()),
         show_header=False,

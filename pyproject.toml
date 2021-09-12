@@ -37,7 +37,7 @@ datar = "*"
 openpyxl = "3.*"
 
 [tool.poetry.scripts]
-pipen = "pipen.cli:main"
+pipen = "pipen.cli._main:main"
 
 [tool.pytest.ini_options]
 addopts = "-vv -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
