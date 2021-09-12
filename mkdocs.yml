@@ -14,5 +14,19 @@ extra_css:
     - style.css
 nav:
     - 'Introduction': 'index.md'
+    - 'Basics': 'basics.md'
+    - 'Defining a process': 'defining-proc.md'
+    - 'Templating': 'templating.md'
+    - 'Channels': 'channels.md'
+    - 'Input and output': 'input-output.md'
+    - 'Script': 'script.md'
+    - 'Caching': 'caching.md'
+    - 'Error handling': 'error.md'
+    - 'Configurations': 'configurations.md'
+    - 'Plugins': 'plugin.md'
+    - 'Scheduler': 'scheduler.md'
+    - 'Command line iterface': 'cli.md'
+    - 'Examples': 'examples.md'
+    - 'API': 'api.md'
     - 'Change log': 'CHANGELOG.md'
     - 'API': mkapi/api/pipen
