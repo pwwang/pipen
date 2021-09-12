@@ -1,7 +1,7 @@
 """List available profiles."""
 from typing import TYPE_CHECKING, Any, Mapping
 
-import toml
+import toml  # type: ignore
 from rich import print
 from rich.panel import Panel
 from rich.syntax import Syntax

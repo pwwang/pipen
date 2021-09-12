@@ -16,9 +16,10 @@ repos:
         name: Run mypy type check
         entry: mypy
         language: system
-        args: [-p, pipen]
+        args: ["-p", "pipen"]
         pass_filenames: false
-        files: ^/pipen.+$
+        always_run: true
+        files: ^/pipen/.+$
     -   id: pytest
         name: Run pytest
         entry: pytest
