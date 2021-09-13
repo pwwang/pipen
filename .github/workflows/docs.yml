@@ -28,6 +28,7 @@ jobs:
           cd docs
           cp ../README.md index.md
           cp ../pipen.png pipen.png
+          cd ..
           mkdocs gh-deploy --clean --force
         if: success()
 
