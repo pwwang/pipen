@@ -1,3 +1,7 @@
+## 0.1.0
+
+It's now fully documented. See documentations.
+
 ## 0.0.4
 - Clear output if not cached.
 - Make process running order fixed
