@@ -25,7 +25,7 @@ class MyProcess(Proc):
 Besides specifying the name of a template engine, you can also specify a subclass `pipen.template.Template` as a template engine. This enables us to use our own template engine. You just have to wrap then use a subclass of `pipen.template.Template`. For example, if you want to use [`mako`][3]:
 
 ```python
-from mako.template import MakoTemplate
+from mako.template import Template as MakoTemplate
 from pipen.template import Template
 
 class TemplateMako(Template):
@@ -114,3 +114,4 @@ With input data ["a"], the script is rendered as `echo a > <job.outdir>/a.txt`
 
 [1]: https://github.com/pwwang/liquidpy
 [2]: https://github.com/pallets/jinja
+[3]: https://www.makotemplates.org/

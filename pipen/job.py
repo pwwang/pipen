@@ -130,6 +130,7 @@ class Job(XquteJob, JobCaching):
                 lock_file=str(self.lock_file),
             ),
             "in": self.input,
+            "in_": self.input,
             "proc": self.proc,
             "args": self.proc.args,
         }
@@ -200,6 +201,7 @@ class Job(XquteJob, JobCaching):
                 lock_file=str(self.lock_file),
             ),
             "in": self.input,
+            "in_": self.input,
             "out": self.output,
             "proc": self.proc,
             "args": self.proc.args,

@@ -27,9 +27,7 @@ jobs:
           python -m pip install -r docs/requirements.txt
           cd docs
           cp ../README.md index.md
-          mkdir example
-          cp ../example/example.png example/
-          cd ..
+          cp ../pipen.png pipen.png
           mkdocs gh-deploy --clean --force
         if: success()
 
