@@ -36,7 +36,7 @@ jobs:
         if: ${{ always() }}
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@master
-        if: matrix.python-version == 3.8
+        if: matrix.python-version == 3.9
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: .coverage.xml
@@ -47,7 +47,7 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     strategy:
       matrix:
-        python-version: [3.8]
+        python-version: [3.9]
     steps:
       - uses: actions/checkout@v2
       - name: Setup Python # Set Python version

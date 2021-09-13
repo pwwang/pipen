@@ -27,6 +27,5 @@ nav:
     - 'Scheduler': 'scheduler.md'
     - 'Command line iterface': 'cli.md'
     - 'Examples': 'examples.md'
-    - 'API': 'api.md'
     - 'Change log': 'CHANGELOG.md'
     - 'API': mkapi/api/pipen

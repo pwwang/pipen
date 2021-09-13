@@ -81,6 +81,9 @@ class Pipen:
         plugin.get_plugin("main").enable()
 
         if not self.__class__.SETUP:
+            # Load plugins from entrypotins at runtime to avoid
+            # cyclic imports
+            plugin.load_entrypoints()
             plugin.hooks.on_setup(self.config.plugin_opts)
 
         self.__class__.PIPELINE_COUNT += 1

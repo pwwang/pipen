@@ -201,10 +201,6 @@ async def on_job_failed(proc: "Proc", job: "Job"):
         job: The job
     """
 
-
-plugin.load_entrypoints()
-
-
 class PipenMainPlugin:
     """The builtin main plugin, used to update the progress bar and
     cache the job"""
