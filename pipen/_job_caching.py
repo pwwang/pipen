@@ -136,7 +136,7 @@ class JobCaching:
                 if intype == ProcInputType.VAR or self.input[inkey] is None:
                     continue  # pragma: no cover, covered, a bug of pytest-cov
 
-                if intype == ProcInputType.FILE:
+                if intype in (ProcInputType.FILE, ProcInputType.DIR):
                     if (
                         get_mtime(self.input[inkey], dirsig)
                         > signature.ctime + 1e-3
@@ -148,7 +148,7 @@ class JobCaching:
                         )
                         return False
 
-                if intype == ProcInputType.FILES:
+                if intype in (ProcInputType.FILES, ProcInputType.DIRS):
                     for file in self.input[inkey]:
                         if get_mtime(file, dirsig) > signature.ctime + 1e-3:
                             self.log(

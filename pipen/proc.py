@@ -348,7 +348,6 @@ class Proc(ABC, metaclass=ProcMeta):
         self.__class__.output_data = pandas.DataFrame(
             (job.output for job in self.jobs)
         )
-        await plugin.hooks.on_proc_init(self)
 
     def gc(self):
         """GC process for the process to save memory after it's done"""

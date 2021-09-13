@@ -22,7 +22,9 @@ plugin = Simplug("pipen")
 @plugin.spec
 def on_setup(plugin_opts: Dict[str, Any]) -> None:
     """Setup for plugins, primarily used for the plugins to
-    setup some default configurations
+    setup some default configurations.
+
+    This is only called only per python session.
 
     Args:
         plugin_opts: The plugin configuration dictionary
@@ -33,7 +35,8 @@ def on_setup(plugin_opts: Dict[str, Any]) -> None:
 
 @plugin.spec
 async def on_init(pipen: "Pipen") -> None:
-    """When the pipeline is initialized.
+    """When the pipeline is initialized, and pipeline-level configuration
+    items are calculated.
 
     Args:
         pipen: The Pipen object
@@ -42,7 +45,9 @@ async def on_init(pipen: "Pipen") -> None:
 
 @plugin.spec
 async def on_start(pipen: "Pipen") -> None:
-    """Right before the pipeline starts running
+    """Right before the pipeline starts running.
+
+    Process relationships are inferred.
 
     Args:
         pipen: The Pipen object
@@ -51,23 +56,11 @@ async def on_start(pipen: "Pipen") -> None:
 
 @plugin.spec
 async def on_complete(pipen: "Pipen", succeeded: bool):
-    """The the pipeline is complete.
-
-    Note that this hook is only called when the pipeline
-    is successfully completed
+    """The the pipeline is completed.
 
     Args:
         pipen: The Pipen object
         succeeded: Whether the pipeline has successfully completed.
-    """
-
-
-@plugin.spec
-async def on_proc_init(proc: "Proc"):
-    """When a process is initialized
-
-    Args:
-        proc: The process
     """
 
 
@@ -98,9 +91,6 @@ def on_proc_shutdown(proc: "Proc", sig: Optional[signal.Signals]) -> None:
 @plugin.spec
 async def on_proc_done(proc: "Proc", succeeded: Union[bool, str]) -> None:
     """When a process is done
-
-    This hook will be called anyway when a proc is succeeded or failed.
-    To check if the process is succeeded, use `proc.succeeded`
 
     Args:
         proc: The process
@@ -158,7 +148,7 @@ async def on_job_submitted(proc: "Proc", job: "Job"):
 
 @plugin.spec
 async def on_job_running(proc: "Proc", job: "Job"):
-    """When a job starts to run in scheduler system.
+    """When a job starts to run in then scheduler system.
 
     Args:
         proc: The process

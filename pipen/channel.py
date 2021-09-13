@@ -22,8 +22,8 @@ class Channel(DataFrame):
         to tuples first and channels are created then.
 
         Examples:
-        >>> Channel.create([1, 2, 3]) # 3 rows, 1 column
-        >>> Channel.create([(1,2,3)]) # 1 row, 3 columns
+            >>> Channel.create([1, 2, 3]) # 3 rows, 1 column
+            >>> Channel.create([(1,2,3)]) # 1 row, 3 columns
 
         Args:
             value: The value to create a channel
@@ -163,9 +163,9 @@ def expand_dir(
     This is only applicable to a 1-row channel.
 
     Examples:
-    >>> ch = channel.create([('./', 1)])
-    >>> ch >> expand()
-    >>> [['./a', 1], ['./b', 1], ['./c', 1]]
+        >>> ch = channel.create([('./', 1)])
+        >>> ch >> expand()
+        >>> [['./a', 1], ['./b', 1], ['./c', 1]]
 
     Args:
         col: the index or name of the column used to expand
