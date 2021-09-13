@@ -3,12 +3,13 @@
 
 **A pipeline framework for python**
 
-[Documentation][1] | [ChangeLog][2] | [Examples][3] | [API][4]
-
-[![Pypi][6]][7] [![Github][8]][9] ![Building][10] [![Docs and API][11]][1] [![Codacy][12]][13] [![Codacy coverage][14]][13]
 </div>
 
 ______________________________________________________________________
+
+[![Pypi][6]][7] [![Github][8]][9] ![Building][10] [![Docs and API][11]][1] [![Codacy][12]][13] [![Codacy coverage][14]][13]
+
+[Documentation][1] | [ChangeLog][2] | [Examples][3] | [API][4]
 
 ## Features
 
