@@ -1,4 +1,4 @@
-"""A example using python as interpreter for the script"""
+"""An example using python as interpreter for the script"""
 
 from pipen import Pipen, Proc
 
