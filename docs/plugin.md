@@ -183,4 +183,4 @@ The above code will produce some logging on the console like this:
 [2]: https://packaging.python.org/specifications/entry-points/
 [3]: https://github.com/pwwang/pipen-verbose
 [4]: https://github.com/pwwang/pipen-report
-[4]: https://github.com/pwwang/pipen-diagram
+[5]: https://github.com/pwwang/pipen-diagram
