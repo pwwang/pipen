@@ -261,7 +261,7 @@ def get_plugin_context(plugins: List[Any]) -> SimplugContext:
     Returns:
         The plugin context manager
     """
-    if plugins is None:
+    if plugins is None:  # pragma: no cover
         return plugin.plugins_only_context(None)
 
     no_plugins = [

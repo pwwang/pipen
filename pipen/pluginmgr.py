@@ -24,7 +24,7 @@ def on_setup(plugin_opts: Dict[str, Any]) -> None:
     """Setup for plugins, primarily used for the plugins to
     setup some default configurations.
 
-    This is only called only per python session.
+    This is only called once per python session.
 
     Args:
         plugin_opts: The plugin configuration dictionary

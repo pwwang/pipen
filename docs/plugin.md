@@ -175,6 +175,7 @@ The above code will produce some logging on the console like this:
 
 - [`pipen-verbose`][3]: Add verbosal information in logs for pipen.
 - [`pipen-report`][4]: Generate report for pipen
+- [`pipen-diagram`][5]: Draw pipeline diagrams for pipen
 - More to add ...
 
 
@@ -182,3 +183,4 @@ The above code will produce some logging on the console like this:
 [2]: https://packaging.python.org/specifications/entry-points/
 [3]: https://github.com/pwwang/pipen-verbose
 [4]: https://github.com/pwwang/pipen-report
+[4]: https://github.com/pwwang/pipen-diagram

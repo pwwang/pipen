@@ -55,7 +55,10 @@ class Job(XquteJob, JobCaching):
             The path to the job output directory
         """
         ret = Path(self._outdir)
-        # May raise a FileExistsError if ret is a dead link
+        # if ret is a dead link
+        # when switching a proc from end/nonend to nonend/end
+        if ret.is_symlink() and not ret.exists():
+            ret.unlink()  # pragma: no cover
         ret.mkdir(parents=True, exist_ok=True)
         # If it is somewhere else, make a symbolic link to the metadir
         metaout = self.metadir / "output"

@@ -259,7 +259,7 @@ class Proc(ABC, metaclass=ProcMeta):
         process relationship
         """
         cls.requires = cls._compute_requires()
-        if cls.name is None:
+        if cls.name is None or cls.name == cls.__bases__[0].name:
             cls.name = cls.__name__
 
     def __init__(self, pipeline: "Pipen" = None) -> None:

@@ -52,6 +52,10 @@ Like pipen [plugins][2], [templates][3], and [schedulers][4], there are two ways
 
 It is used to list the configurations/profiles in current directory. Run `pipen profile` or `pipen help profile` to get more information.
 
+## The `plugins` subcommand
+
+This subcommand is used to list the plugins for `pipen` itself, templates, scheduler and cli. Run `pipen plugins` or `pipen help plugins` to get more information.
+
 
 [1]: https://github.com/pwwang/pyparam
 [2]: ../plugin

@@ -77,14 +77,21 @@ class Pipen:
         # the profile yet
         self._kwargs = kwargs
 
-        # make sure main plugin is enabled
-        plugin.get_plugin("main").enable()
-
         if not self.__class__.SETUP:
             # Load plugins from entrypotins at runtime to avoid
             # cyclic imports
             plugin.load_entrypoints()
+
+        plugins = self.config.plugins or self._kwargs.get("plugins", [])
+        self.plugin_context = get_plugin_context(plugins)
+        self.plugin_context.__enter__()
+
+        # make sure main plugin is enabled
+        plugin.get_plugin("main").enable()
+
+        if not self.__class__.SETUP:
             plugin.hooks.on_setup(self.config.plugin_opts)
+            self.__class__.SETUP = True
 
         self.__class__.PIPELINE_COUNT += 1
 
@@ -103,31 +110,31 @@ class Pipen:
         self._init(profile)
         logger.setLevel(self.config.loglevel.upper())
         log_rich_renderable(pipen_banner(), "magenta", logger.info)
-        with get_plugin_context(self.config.plugins):
-            try:
-                await plugin.hooks.on_init(self)
-                self._build_proc_relationships()
-                self._log_pipeline_info(profile)
-                await plugin.hooks.on_start(self)
+        try:
+            await plugin.hooks.on_init(self)
+            self._build_proc_relationships()
+            self._log_pipeline_info(profile)
+            await plugin.hooks.on_start(self)
 
-                for proc in self.procs:
-                    self.pbar.update_proc_running()
-                    proc_obj = proc(self)  # type: ignore
-                    await proc_obj._init()
-                    await proc_obj.run()
-                    if proc_obj.succeeded:
-                        self.pbar.update_proc_done()
-                    else:
-                        self.pbar.update_proc_error()
-                        succeeded = False
-                        break
-                    proc_obj.gc()
+            for proc in self.procs:
+                self.pbar.update_proc_running()
+                proc_obj = proc(self)  # type: ignore
+                await proc_obj._init()
+                await proc_obj.run()
+                if proc_obj.succeeded:
+                    self.pbar.update_proc_done()
+                else:
+                    self.pbar.update_proc_error()
+                    succeeded = False
+                    break
+                proc_obj.gc()
 
-                logger.info("")
-                await plugin.hooks.on_complete(self, succeeded)
-            finally:
-                if self.pbar:
-                    self.pbar.done()
+            logger.info("")
+        finally:
+            if self.pbar:
+                self.pbar.done()
+            await plugin.hooks.on_complete(self, succeeded)
+            self.plugin_context.__exit__()
 
         return succeeded
 
