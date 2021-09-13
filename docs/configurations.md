@@ -28,12 +28,16 @@ Following items are at process level. They can be set changed at process level s
 ## Configuration priorities
 
 There are different places to set values for the configuration items (priorities from low to high):
+
 - The configuration files (priorities from low to high):
+
   - `~/.pipen.toml`
   - `./.pipen.toml`
   - `PIPEN.osenv`
+
   See [here][6] for how the configuration files are loaded.
   `pipen` uses `TOML` as configuration language, see [here][7] for more information about `toml` format.
+
 - The arguments of `Pipen` constructor
 - The process definition
 
@@ -57,6 +61,38 @@ There are different places to set values for the configuration items (priorities
     PIPEN_DEFAULT_cache=0 python ./pipeline.py ...
     ```
 
+## Profiles
+
+You can have different profiles in configuration files:
+
+`~/.pipen.toml`
+```toml
+[default]
+scheduler = "local"
+
+[sge]
+scheduler = "sge"
+
+[sge.schduler_opts]
+sge_q = "1-day"
+```
+
+
+To use the `sge` profile:
+
+```python
+Pipen().run(P1, profile="sge")
+```
+
+You can also have a configuration in current directory:
+
+`./.pipen.toml`
+```toml
+[sge.scheduler_opts]
+sge_q = "7-days"
+```
+
+Then the queue to run the jobs will be `7-days`. Note that we didn't specify the `scheduler` in `./.pipen.toml`, which is inherited from `~/.pipen.toml`.
 
 [1]: ../defining-proc
 [2]: ../caching

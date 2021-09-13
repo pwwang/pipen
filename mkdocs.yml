@@ -16,6 +16,7 @@ nav:
     - 'Introduction': 'index.md'
     - 'Basics': 'basics.md'
     - 'Defining a process': 'defining-proc.md'
+    - 'Starting a pipeline': 'starting.md'
     - 'Templating': 'templating.md'
     - 'Channels': 'channels.md'
     - 'Input and output': 'input-output.md'

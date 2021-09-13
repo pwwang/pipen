@@ -1,0 +1,4 @@
+[run]
+omit =
+    # need plugins to be installed to test
+    pipen/cli/plugins.py
