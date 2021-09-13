@@ -1,11 +1,11 @@
 <div align="center">
     <img src="./pipen.png" width="320px">
 
-<font size=4>**A pipeline framework for python**</font>
+<font size=5>**A pipeline framework for python**</font>
 
 [Documentation][1] | [ChangeLog][2] | [Examples][3] | [API][4]
 
-
+[![Pypi][6]][7] [![Github][8]][9] ![Building][10] [![Docs and API][11]][1] [![Codacy][12]][13] [![Codacy coverage][14]][13]
 </div>
 
 ______________________________________________________________________
@@ -14,6 +14,7 @@ ______________________________________________________________________
 
 - Easy to use
 - Nearly zero-configuration
+- Nice logging
 - Highly extendable
 
 ## Installation
@@ -116,6 +117,15 @@ Pipen().run(P1)
 ```
 
 [1]: https://pwwang.github.io/pipen
-[2]: https://pwwang.github.io/pipen/changelog
+[2]: https://pwwang.github.io/pipen/CHANGELOG
 [3]: https://pwwang.github.io/pipen/examples
-[4]: https://pwwang.github.io/pipen/API
+[4]: https://pwwang.github.io/pipen/api/pipen
+[6]: https://img.shields.io/pypi/v/pipen?style=flat-square
+[7]: https://pypi.org/project/pipen/
+[8]: https://img.shields.io/github/v/tag/pwwang/pipen?style=flat-square
+[9]: https://github.com/pwwang/pipen
+[10]: https://img.shields.io/github/workflow/status/pwwang/pipen/Build%20and%20Deploy?style=flat-square
+[11]: https://img.shields.io/github/workflow/status/pwwang/pipen/Build%20Docs?label=Docs&style=flat-square
+[12]: https://img.shields.io/codacy/grade/cf1c6c97e5c4480386a05b42dec10c6e?style=flat-square
+[13]: https://app.codacy.com/gh/pwwang/pipen
+[14]: https://img.shields.io/codacy/coverage/cf1c6c97e5c4480386a05b42dec10c6e?style=flat-square
