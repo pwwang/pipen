@@ -1,4 +1,6 @@
 site_name: pipen
+repo_url: https://github.com/pwwang/pipen
+repo_name: pwwang/pipen
 theme:
     name: 'material'
 markdown_extensions:
