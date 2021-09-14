@@ -90,7 +90,7 @@ class Pipen:
         plugin.get_plugin("main").enable()
 
         if not self.__class__.SETUP:
-            plugin.hooks.on_setup(self.config.plugin_opts)
+            plugin.hooks.on_setup(self.config)
             self.__class__.SETUP = True
 
         self.__class__.PIPELINE_COUNT += 1

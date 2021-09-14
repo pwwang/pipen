@@ -9,7 +9,7 @@ class NotifyPlugin:
     version = "0.0.0"
 
     @plugin.impl
-    def on_setup(plugin_opts):
+    def on_setup(config):
         logger.info("Calling on_setup")
 
     @plugin.impl

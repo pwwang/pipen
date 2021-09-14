@@ -20,14 +20,15 @@ plugin = Simplug("pipen")
 
 
 @plugin.spec
-def on_setup(plugin_opts: Dict[str, Any]) -> None:
+def on_setup(config: Dict[str, Any]) -> None:
     """Setup for plugins, primarily used for the plugins to
     setup some default configurations.
 
-    This is only called once per python session.
+    This is only called once for all pipelines.
 
     Args:
-        plugin_opts: The plugin configuration dictionary
+        config: The configuration dictionary
+            plugin options should be defined under "plugin_opts"
             One should define a configuration item either with a prefix as
             the identity for the plugin or a namespace inside the plugin config.
     """
