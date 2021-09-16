@@ -131,10 +131,10 @@ class Pipen:
 
             logger.info("")
         finally:
-            if self.pbar:
-                self.pbar.done()
             await plugin.hooks.on_complete(self, succeeded)
             self.plugin_context.__exit__()
+            if self.pbar:
+                self.pbar.done()
 
         return succeeded
 

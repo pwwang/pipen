@@ -214,7 +214,7 @@ class PipenMainPlugin:
         if sig:  # pragma: no cover
             proc.log(
                 "warning",
-                "Got signal %r, trying a graceful11 shutdown ...",
+                "Got signal %r, trying a graceful shutdown ...",
                 sig.name,
             )
 
