@@ -1,7 +1,7 @@
-# from pipen.plugin import plugin
+from pipen import Pipen
 
 # disable all plugins
-# plugin.plugins_only_context([]).__enter__()
+Pipen.SETUP = True
 
 # Don't delete the following, which is used for relative path script testing
 # AbCdEf

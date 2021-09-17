@@ -318,7 +318,7 @@ class Proc(ABC, metaclass=ProcMeta):
                 f"{proc_name_file.read_text()!r}, use a differnt pipeline "
                 "workdir or a different process name."
             )
-        self.workdir.mkdir(parents=True, exist_ok=True)
+        self.workdir.mkdir(exist_ok=True)
         proc_name_file.write_text(self.name)
 
         if self.submission_batch is None:

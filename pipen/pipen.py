@@ -68,7 +68,9 @@ class Pipen:
         self.pbar: PipelinePBar = None
         self.name = name or f"pipen-{self.__class__.PIPELINE_COUNT}"
         self.desc = desc
-        self.outdir = Path(outdir or f"./{slugify(self.name)}_results")
+        self.outdir = Path(
+            outdir or f"./{slugify(self.name)}_results"
+        ).resolve()
         self.workdir: Path = None
 
         self.starts: List[Proc] = []
@@ -77,7 +79,7 @@ class Pipen:
         # the profile yet
         self._kwargs = kwargs
 
-        if not self.__class__.SETUP:
+        if not self.__class__.SETUP:  # pragma: no cover
             # Load plugins from entrypotins at runtime to avoid
             # cyclic imports
             plugin.load_entrypoints()
@@ -89,7 +91,7 @@ class Pipen:
         # make sure main plugin is enabled
         plugin.get_plugin("main").enable()
 
-        if not self.__class__.SETUP:
+        if not self.__class__.SETUP:  # pragma: no cover
             plugin.hooks.on_setup(self.config)
             self.__class__.SETUP = True
 
@@ -105,6 +107,7 @@ class Pipen:
             True if the pipeline ends successfully else False
         """
         self.workdir = Path(self.config.workdir) / slugify(self.name)
+        self.workdir.mkdir(parents=True, exist_ok=True)
 
         succeeded = True
         self._init(profile)
@@ -162,6 +165,10 @@ class Pipen:
             if isinstance(proc, (list, tuple)):
                 self._set_starts(*proc)
             elif proc not in self.starts:
+                if proc.input_data is None:  # type: ignore
+                    logger.warning(
+                        "No `input_data` for start process: %s", proc
+                    )
                 self.starts.append(proc)  # type: ignore
 
     def _log_pipeline_info(self, profile: str) -> None:

@@ -117,6 +117,11 @@ Pipen().run(P1)
 3       3
 ```
 
+## Examples
+
+See more examples at `examples/` and a more realcase example at:
+https://github.com/pwwang/pipen-report/tree/master/example
+
 [1]: https://pwwang.github.io/pipen
 [2]: https://pwwang.github.io/pipen/CHANGELOG
 [3]: https://pwwang.github.io/pipen/examples
