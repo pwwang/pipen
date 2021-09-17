@@ -41,6 +41,7 @@ class Pipen:
         starts: The start processes
         config: The configurations
         workdir: The workdir for the pipeline
+        profile: The profile of the configurations to run the pipeline
         _kwargs: The extra configrations passed to overwrite the default ones
 
         PIPELINE_COUNT: How many pipelines are loaded
@@ -72,6 +73,7 @@ class Pipen:
             outdir or f"./{slugify(self.name)}_results"
         ).resolve()
         self.workdir: Path = None
+        self.profile: str = "default"
 
         self.starts: List[Proc] = []
         self.config = Diot(copy_dict(CONFIG, 3))
@@ -97,11 +99,8 @@ class Pipen:
 
         self.__class__.PIPELINE_COUNT += 1
 
-    async def async_run(self, profile: str = "default") -> bool:
+    async def async_run(self) -> bool:
         """Run the processes one by one
-
-        Args:
-            profile: The profile to use
 
         Returns:
             True if the pipeline ends successfully else False
@@ -110,18 +109,23 @@ class Pipen:
         self.workdir.mkdir(parents=True, exist_ok=True)
 
         succeeded = True
-        self._init(profile)
+        await self._init()
         logger.setLevel(self.config.loglevel.upper())
         log_rich_renderable(pipen_banner(), "magenta", logger.info)
         try:
-            await plugin.hooks.on_init(self)
             self._build_proc_relationships()
-            self._log_pipeline_info(profile)
+            self._log_pipeline_info()
             await plugin.hooks.on_start(self)
 
             for proc in self.procs:
                 self.pbar.update_proc_running()
                 proc_obj = proc(self)  # type: ignore
+                if proc in self.starts and proc.input_data is None:
+                    proc_obj.log(
+                        "warning",
+                        "This is a start process, "
+                        "but no 'input_data' specified."
+                    )
                 await proc_obj._init()
                 await proc_obj.run()
                 if proc_obj.succeeded:
@@ -150,14 +154,13 @@ class Pipen:
 
         Args:
             profile: The default profile to use for the run
-                Unless the profile is defined in the processes, otherwise
-                this profile will be used
 
         Returns:
             True if the pipeline ends successfully else False
         """
+        self.profile = profile
         self._set_starts(*starts)
-        return asyncio.run(self.async_run(profile))
+        return asyncio.run(self.async_run())
 
     def _set_starts(self, *procs: Union[Type[Proc], Sequence[Type[Proc]]]):
         """Set the starts"""
@@ -165,18 +168,10 @@ class Pipen:
             if isinstance(proc, (list, tuple)):
                 self._set_starts(*proc)
             elif proc not in self.starts:
-                if proc.input_data is None:  # type: ignore
-                    logger.warning(
-                        "No `input_data` for start process: %s", proc
-                    )
                 self.starts.append(proc)  # type: ignore
 
-    def _log_pipeline_info(self, profile: str) -> None:
-        """Print the information of the pipeline
-
-        Args:
-            profile: The profile to print
-        """
+    def _log_pipeline_info(self) -> None:
+        """Print the information of the pipeline"""
         items = (
             [
                 Panel(
@@ -203,7 +198,12 @@ class Pipen:
         for key, value in chain(
             zip(
                 ["# procs", "plugins", "profile", "outdir"],
-                [str(len(self.procs)), enabled_plugins, profile, self.outdir],
+                [
+                    str(len(self.procs)),
+                    enabled_plugins,
+                    self.profile,
+                    self.outdir,
+                ],
             ),
             sorted(self.config.items()),
         ):
@@ -235,7 +235,7 @@ class Pipen:
             logger.info,
         )
 
-    def _init(self, profile: str) -> None:
+    async def _init(self) -> None:
         """Compute the configurations for the pipeline based on the priorities
 
         Configurations (priority from low to high)
@@ -250,9 +250,12 @@ class Pipen:
         # Then load the configurations from config files
         config = Config()
         config._load(*CONFIG_FILES)
-        config._use(profile)
+        config._use(self.profile)
         self.config.update(config)
 
+        # configs from files and CONFIG are loaded
+        # allow plugins to change the default configs
+        await plugin.hooks.on_init(self)
         # Then load the extra configurations passed from __init__(**kwargs)
         # Make sure dict options get inherited
         self.config.template_opts.update(self._kwargs.pop("template_opts", {}))

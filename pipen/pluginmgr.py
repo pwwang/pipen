@@ -36,8 +36,7 @@ def on_setup(config: Dict[str, Any]) -> None:
 
 @plugin.spec
 async def on_init(pipen: "Pipen") -> None:
-    """When the pipeline is initialized, and pipeline-level configuration
-    items are calculated.
+    """When the pipeline is initialized, and default configs are loaded
 
     Args:
         pipen: The Pipen object
