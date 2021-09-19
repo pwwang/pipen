@@ -31,14 +31,14 @@ For `setup.py`, you will need:
 ```python
 setup(
 	# ...
-	entry_points={"pipen-sched": ["slurm = pipen_slurm"]},
+	entry_points={"pipen_sched": ["slurm = pipen_slurm"]},
 	# ...
 )
 ```
 
 For `pyproject.toml`:
 ```toml
-[tool.poetry.plugins.pipen-sched]
+[tool.poetry.plugins.pipen_sched]
 slurm = "pipen_slurm"
 ```
 

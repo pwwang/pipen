@@ -20,7 +20,7 @@ def add_commands(params: "Params") -> None:
     """
 
 @cli_plugin.spec
-def exec_cmd(command: str, args: Mapping[str, Any]) -> None:
+def exec_command(command: str, args: Mapping[str, Any]) -> None:
     """Execute the command with given sub-command and parsed arguments
 
     Args:

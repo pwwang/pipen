@@ -30,7 +30,7 @@ def main(args: List[str] = None) -> None:
         args: Provide arguments to parse. Only for testing.
     """
     parsed = params.parse(args)
-    cli_plugin.hooks.exec_cmd(
+    cli_plugin.hooks.exec_command(
         command=parsed.__command__,
         args=parsed[parsed.__command__],
     )

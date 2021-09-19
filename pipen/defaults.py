@@ -54,11 +54,11 @@ CONFIG = Diot(
 CONSOLE_WIDTH: int = 80
 CONSOLE_WIDTH_SHIFT: int = 26
 # For pipen scheduler plugins
-SCHEDULER_ENTRY_GROUP = "pipen-sched"
+SCHEDULER_ENTRY_GROUP = "pipen_sched"
 # For pipen template plugins
-TEMPLATE_ENTRY_GROUP = "pipen-tpl"
+TEMPLATE_ENTRY_GROUP = "pipen_tpl"
 # For pipen template cli plugins
-CLI_ENTRY_GROUP = "pipen-cli"
+CLI_ENTRY_GROUP = "pipen_cli"
 
 
 class ProcInputType:

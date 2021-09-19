@@ -53,7 +53,7 @@ You can also register the template as a plugin of pipen:
 In `pyproject.toml`:
 
 ```toml
-[tool.poetry.plugins.pipen-tpl]
+[tool.poetry.plugins.pipen_tpl]
 mako = "pipen_mako:pipen_mako"
 ```
 
@@ -62,7 +62,7 @@ Or in `setup.py`:
 ```python
 setup(
     ...,
-    entry_points={"pipen-tpl": ["pipen_mako:pipen_mako"]},
+    entry_points={"pipen_tpl": ["pipen_mako:pipen_mako"]},
 )
 ```
 
