@@ -194,7 +194,8 @@ class Proc(ABC, metaclass=ProcMeta):
             args: The arguments of the process, will overwrite parent one
                 The items that are specified will be inherited
             cache: Whether we should check the cache for the jobs
-            export: When True, the results will be exported to `<pipeline.outdir>`
+            export: When True, the results will be exported to
+                `<pipeline.outdir>`
                 Defaults to None, meaning only end processes will export.
                 You can set it to True/False to enable or disable exporting
                 for processes
@@ -316,7 +317,10 @@ class Proc(ABC, metaclass=ProcMeta):
         # check if it's the same proc using the workdir
         # since the directory name is slugified
         proc_name_file = self.workdir / "proc.name"  # type: ignore
-        if proc_name_file.is_file() and proc_name_file.read_text() != self.name:
+        if (
+            proc_name_file.is_file()
+            and proc_name_file.read_text() != self.name
+        ):
             raise ProcWorkdirConflictException(
                 "Workdir name is conflicting with process "
                 f"{proc_name_file.read_text()!r}, use a differnt pipeline "
@@ -330,7 +334,9 @@ class Proc(ABC, metaclass=ProcMeta):
 
     async def _init(self) -> None:
         """Init all other properties and jobs"""
-        scheduler_opts = copy_dict(self.pipeline.config.scheduler_opts, 2) or {}
+        scheduler_opts = (
+            copy_dict(self.pipeline.config.scheduler_opts, 2) or {}
+        )
         scheduler_opts.update(self.scheduler_opts or {})
         self.xqute = Xqute(
             self.scheduler,
@@ -382,7 +388,12 @@ class Proc(ABC, metaclass=ProcMeta):
         msg = msg % args
         if not isinstance(level, int):
             level = logging.getLevelName(level.upper())
-        logger.log(level, "[cyan]%s:[/cyan] %s", self.name, msg)  # type: ignore
+        logger.log(
+            level,  # type: ignore
+            "[cyan]%s:[/cyan] %s",
+            self.name,
+            msg,
+        )
 
     async def run(self) -> None:
         """Run the process"""

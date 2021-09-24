@@ -116,7 +116,9 @@ class TemplateJinja2(Template):
         return self.engine.render(data)
 
 
-def get_template_engine(template: Union[str, Type[Template]]) -> Type[Template]:
+def get_template_engine(
+    template: Union[str, Type[Template]],
+) -> Type[Template]:
     """Get the template engine by name or the template engine itself
 
     Args:
@@ -134,7 +136,9 @@ def get_template_engine(template: Union[str, Type[Template]]) -> Type[Template]:
     if template == "jinja2":
         return TemplateJinja2
 
-    for name, obj in load_entrypoints(TEMPLATE_ENTRY_GROUP):  # pragma: no cover
+    for name, obj in load_entrypoints(
+        TEMPLATE_ENTRY_GROUP
+    ):  # pragma: no cover
         if name == template:
             if not is_subclass(obj, Template):
                 raise WrongTemplateEnginTypeError(

@@ -16,13 +16,19 @@ if TYPE_CHECKING:  # pragma: no cover
     from pyparam import Params
 
 COMMAND = "plugins"
-GROUPS = ["pipen", SCHEDULER_ENTRY_GROUP, TEMPLATE_ENTRY_GROUP, CLI_ENTRY_GROUP]
+GROUPS = [
+    "pipen",
+    SCHEDULER_ENTRY_GROUP,
+    TEMPLATE_ENTRY_GROUP,
+    CLI_ENTRY_GROUP,
+]
 GROUP_NAMES = {
     "pipen": "Pipen",
     SCHEDULER_ENTRY_GROUP: "Scheduler",
     TEMPLATE_ENTRY_GROUP: "Template",
     CLI_ENTRY_GROUP: "CLI",
 }
+
 
 def _get_plugins_by_group(group: str) -> Iterable[Tuple[str, Any]]:
     """Get plugins from entry points by group name
@@ -59,6 +65,7 @@ def _list_group_plugins(
                 ver = "unknown"
         print(f"- {name}: (version: {ver})")
 
+
 def _list_plugins(plugins: List[Tuple[str, str, Any]]) -> None:
     """List plugins
 
@@ -66,9 +73,7 @@ def _list_plugins(plugins: List[Tuple[str, str, Any]]) -> None:
         plugins: A list of tuples with group, name and plugin
     """
     pipen_plugins = [
-        (name, plugin)
-        for group, name, plugin in plugins
-        if group == "pipen"
+        (name, plugin) for group, name, plugin in plugins if group == "pipen"
     ]
     sched_plugins = [
         (name, plugin)
@@ -102,6 +107,7 @@ def add_commands(params: "Params"):
         "If not provided, show all plugins. "
         f"Avaiable groups are: {' '.join(GROUPS)}",
     )
+
 
 @cli_plugin.impl
 def exec_command(command: str, args: Mapping[str, Any]) -> None:

@@ -124,7 +124,7 @@ class Pipen:
                     proc_obj.log(
                         "warning",
                         "This is a start process, "
-                        "but no 'input_data' specified."
+                        "but no 'input_data' specified.",
                     )
                 await proc_obj._init()
                 await proc_obj.run()
@@ -281,7 +281,9 @@ class Pipen:
             # pick up one that can be added to procs
             for proc in sorted(nexts, key=lambda prc: prc.name):
                 if proc in self.procs:
-                    raise ProcDependencyError(f"Cyclic dependency: {proc.name}")
+                    raise ProcDependencyError(
+                        f"Cyclic dependency: {proc.name}"
+                    )
 
                 # Add proc to self.procs if all their requires
                 # are added to self.procs
@@ -298,7 +300,8 @@ class Pipen:
                 if nexts:
                     raise ProcDependencyError(
                         f"No available next processes for {nexts}. "
-                        "Did you forget to start with their required processes?"
+                        "Did you forget to start with their "
+                        "required processes?"
                     )
 
         self.pbar = PipelinePBar(len(self.procs), self.name.upper())

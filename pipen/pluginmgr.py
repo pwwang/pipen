@@ -30,7 +30,7 @@ def on_setup(config: Dict[str, Any]) -> None:
         config: The configuration dictionary
             plugin options should be defined under "plugin_opts"
             One should define a configuration item either with a prefix as
-            the identity for the plugin or a namespace inside the plugin config.
+            the identity for the plugin or a namespace inside the plugin config
     """
 
 
@@ -200,6 +200,7 @@ async def on_job_failed(proc: "Proc", job: "Job"):
         proc: The process
         job: The job
     """
+
 
 class PipenMainPlugin:
     """The builtin main plugin, used to update the progress bar and
