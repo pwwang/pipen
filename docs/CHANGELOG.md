@@ -1,3 +1,13 @@
+## 0.1.1
+
+- 💥 Allow plugins to modify other configs via on_setup() hook
+- 🎨 Move progress bar to the last
+- 🩹 Warn when no input_data specified for start process
+- 💬 Change end to export
+- 🚚 Move on_init() so it's able to redefine default configs
+- 💥 Change `exec_cmd` hook of cli plugin to `exec_command`
+
+
 ## 0.1.0
 
 It's now fully documented. See documentations.
