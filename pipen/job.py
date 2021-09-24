@@ -256,11 +256,11 @@ class Job(XquteJob, JobCaching):
         # Attach the process
         self.proc = proc
 
-        if self.proc.end and len(self.proc.jobs) == 1:
+        if self.proc.export and len(self.proc.jobs) == 1:
             # Don't put index if it is a single-job process
             self._outdir = Path(self.proc.pipeline.outdir) / self.proc.name
 
-        elif self.proc.end:
+        elif self.proc.export:
             self._outdir = (
                 Path(self.proc.pipeline.outdir)
                 / self.proc.name

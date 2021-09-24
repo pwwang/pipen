@@ -12,6 +12,17 @@ repos:
     -   id: check-added-large-files
 -   repo: local
     hooks:
+    -   id: versionchecker
+        name: Check version agreement in pyproject and __version__
+        entry: bash -c
+        language: system
+        args:
+            - get_ver() { echo $(egrep "^__version|^version" $1 | cut -d= -f2 | sed 's/\"\| //g'); };
+              v1=`get_ver pyproject.toml`;
+              v2=`get_ver pipen/version.py`;
+              if [[ $v1 == $v2 ]]; then exit 0; else exit 1; fi
+        pass_filenames: false
+        files: ^pyproject\.toml|pipen/version\.py$
     -   id: mypy
         name: Run mypy type check
         entry: mypy
@@ -27,3 +38,10 @@ repos:
         args: [tests/]
         pass_filenames: false
         files: ^tests/.+$|^pipen/.+$
+    -   id: flake8
+        name: Run flake8
+        entry: flake8
+        language: system
+        args: [pipen]
+        pass_filenames: false
+        files: ^pipen/.+$

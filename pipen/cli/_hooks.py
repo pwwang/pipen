@@ -11,6 +11,7 @@ if TYPE_CHECKING:  # pragma: no cover
 
 cli_plugin = Simplug(CLI_ENTRY_GROUP)
 
+
 @cli_plugin.spec
 def add_commands(params: "Params") -> None:
     """Add options for the command
@@ -19,8 +20,9 @@ def add_commands(params: "Params") -> None:
         params: The params to add commands and options to
     """
 
+
 @cli_plugin.spec
-def exec_cmd(command: str, args: Mapping[str, Any]) -> None:
+def exec_command(command: str, args: Mapping[str, Any]) -> None:
     """Execute the command with given sub-command and parsed arguments
 
     Args:

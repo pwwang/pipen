@@ -27,7 +27,7 @@ COMMANDS:
 
     Add commands and options to the params object. We use [`pyparam`][1] to parse the CLI arguments, see more details on how to add commands/options to `params` object.
 
-- `exec_cmd(command, args)`
+- `exec_command(command, args)`
 
     Execute the subcommand with the command and parsed arguments.
 
@@ -45,7 +45,7 @@ Like pipen [plugins][2], [templates][3], and [schedulers][4], there are two ways
     cli_plugin.register(<your plugin>)
     ```
 
-2. Use the entry points with group name `pipen-cli`
+2. Use the entry points with group name `pipen_cli`
 
 
 ## The `profile` subcommand

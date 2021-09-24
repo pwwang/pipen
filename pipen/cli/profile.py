@@ -29,7 +29,7 @@ def add_commands(params: "Params"):
 
 
 @cli_plugin.impl
-def exec_cmd(command: str, args: Mapping[str, Any]) -> None:
+def exec_command(command: str, args: Mapping[str, Any]) -> None:
     """Run the command"""
     if command != COMMAND:
         return  # pragma: no cover, need more sub-commands to test

@@ -104,8 +104,10 @@ class Proc(ABC, metaclass=ProcMeta):
         dirsig: When checking the signature for caching, whether should we walk
             through the content of the directory? This is sometimes
             time-consuming if the directory is big.
-        end: When False, force the process not to be the end process, meaning
-            results will not be saved to the output directory of the pipeline.
+        export: When True, the results will be exported to `<pipeline.outdir>`
+            Defaults to None, meaning only end processes will export.
+            You can set it to True/False to enable or disable exporting
+            for processes
         error_strategy: How to deal with the errors
             - retry, ignore, halt
             - halt to halt the whole pipeline, no submitting new jobs
@@ -143,7 +145,7 @@ class Proc(ABC, metaclass=ProcMeta):
     args: Mapping[str, Any] = None
     cache: bool = None
     dirsig: bool = None
-    end: bool = None
+    export: bool = None
     error_strategy: str = None
     num_retries: int = None
     template: Union[str, Type[Template]] = None
@@ -172,7 +174,7 @@ class Proc(ABC, metaclass=ProcMeta):
         desc: str = None,
         args: Mapping[str, Any] = None,
         cache: bool = None,
-        end: bool = None,
+        export: bool = None,
         error_strategy: str = None,
         num_retries: int = None,
         forks: int = None,
@@ -192,8 +194,11 @@ class Proc(ABC, metaclass=ProcMeta):
             args: The arguments of the process, will overwrite parent one
                 The items that are specified will be inherited
             cache: Whether we should check the cache for the jobs
-            end: When False, force the process not to be an end process
-                if it is a terminal process
+            export: When True, the results will be exported to
+                `<pipeline.outdir>`
+                Defaults to None, meaning only end processes will export.
+                You can set it to True/False to enable or disable exporting
+                for processes
             error_strategy: How to deal with the errors
                 - retry, ignore, halt
                 - halt to halt the whole pipeline, no submitting new jobs
@@ -247,7 +252,7 @@ class Proc(ABC, metaclass=ProcMeta):
         if submission_batch is not None:
             kwargs["submission_batch"] = submission_batch
 
-        kwargs["end"] = end
+        kwargs["export"] = export
         kwargs["input_data"] = input_data
         kwargs["requires"] = requires
         kwargs["nexts"] = None
@@ -284,8 +289,8 @@ class Proc(ABC, metaclass=ProcMeta):
         if self.desc is None:
             self.desc: str = desc_from_docstring(self.__class__)
 
-        if self.end is None:
-            self.end = bool(not self.nexts)
+        if self.export is None:
+            self.export = bool(not self.nexts)
 
         # log the basic information
         self._log_info()
@@ -312,13 +317,16 @@ class Proc(ABC, metaclass=ProcMeta):
         # check if it's the same proc using the workdir
         # since the directory name is slugified
         proc_name_file = self.workdir / "proc.name"  # type: ignore
-        if proc_name_file.is_file() and proc_name_file.read_text() != self.name:
+        if (
+            proc_name_file.is_file()
+            and proc_name_file.read_text() != self.name
+        ):
             raise ProcWorkdirConflictException(
                 "Workdir name is conflicting with process "
                 f"{proc_name_file.read_text()!r}, use a differnt pipeline "
                 "workdir or a different process name."
             )
-        self.workdir.mkdir(parents=True, exist_ok=True)
+        self.workdir.mkdir(exist_ok=True)
         proc_name_file.write_text(self.name)
 
         if self.submission_batch is None:
@@ -326,7 +334,9 @@ class Proc(ABC, metaclass=ProcMeta):
 
     async def _init(self) -> None:
         """Init all other properties and jobs"""
-        scheduler_opts = copy_dict(self.pipeline.config.scheduler_opts, 2) or {}
+        scheduler_opts = (
+            copy_dict(self.pipeline.config.scheduler_opts, 2) or {}
+        )
         scheduler_opts.update(self.scheduler_opts or {})
         self.xqute = Xqute(
             self.scheduler,
@@ -378,7 +388,12 @@ class Proc(ABC, metaclass=ProcMeta):
         msg = msg % args
         if not isinstance(level, int):
             level = logging.getLevelName(level.upper())
-        logger.log(level, "[cyan]%s:[/cyan] %s", self.name, msg)  # type: ignore
+        logger.log(
+            level,  # type: ignore
+            "[cyan]%s:[/cyan] %s",
+            self.name,
+            msg,
+        )
 
     async def run(self) -> None:
         """Run the process"""
@@ -614,7 +629,7 @@ class Proc(ABC, metaclass=ProcMeta):
                 "║ ║║\n"
                 "╰═┴╯\n"
             )
-            if self.end
+            if self.export
             else box.ROUNDED,
             width=min(CONSOLE_WIDTH, console_width),
         )

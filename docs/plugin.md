@@ -18,7 +18,7 @@ See [`simplug`][1] for more details.
 
 ### Pipeline-level hooks
 
-- `on_setup(plugin_opts)` (sync):
+- `on_setup(config)` (sync):
 
     Setup for the plugin, mainly used for initalization and set the default values for the plugin configuration items.
 
@@ -26,9 +26,7 @@ See [`simplug`][1] for more details.
 
 - `on_init(pipen)` (async)
 
-    Called when all pipeline-level configurations are calculated. You can access the configurations by `pipen.config.xxx`.
-
-    Be careful to use the process-level configurations here, as they can be overridden by process definition.
+    Called when pipeline is initialized. Note that here only default configurations are loaded (from defaults.CONFIG and config files). The configurations from `Pipen` constructor and the processes are not loaded yet. It's useful for plugins to change the default configurations.
 
 - `on_start(pipen)` (async)
 
@@ -176,6 +174,7 @@ The above code will produce some logging on the console like this:
 - [`pipen-verbose`][3]: Add verbosal information in logs for pipen.
 - [`pipen-report`][4]: Generate report for pipen
 - [`pipen-diagram`][5]: Draw pipeline diagrams for pipen
+- [`pipen-args`][6]: Command line argument parser for pipen
 - More to add ...
 
 
@@ -183,4 +182,5 @@ The above code will produce some logging on the console like this:
 [2]: https://packaging.python.org/specifications/entry-points/
 [3]: https://github.com/pwwang/pipen-verbose
 [4]: https://github.com/pwwang/pipen-report
-[4]: https://github.com/pwwang/pipen-diagram
+[5]: https://github.com/pwwang/pipen-diagram
+[6]: https://github.com/pwwang/pipen-args

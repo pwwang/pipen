@@ -95,7 +95,7 @@ The configurations of a process are specified as class variables of subclasses o
 |`args`|The arguments that are job-independent, useful for common options across jobs.|Yes, and old ones will be inherited|
 |`cache`|Should we detect whether the jobs are cached?|Yes|
 |`dirsig`|When checking the signature for caching, whether should we walk through the content of the directory? This is sometimes time-consuming if the directory is big.|Yes|
-|`end`|When False, force the process not to be the end process, meaning results will not be saved to the output directory of the pipeline.|Yes|
+|`export`|When True, the results will be exported to `<pipeline.outdir>` Defaults to None, meaning only end processes will export. You can set it to True/False to enable or disable exporting for processes|Yes|
 |`error_strategy`|How to deal with the errors: retry, ignore, halt|Yes|
 |`num_retries`|How many times to retry to jobs once error occurs|Yes|
 |`template`|Define the template engine to use.|No|

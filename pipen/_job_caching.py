@@ -43,7 +43,9 @@ class JobCaching:
                 intype in (ProcInputType.FILE, ProcInputType.DIR)
                 and self.input[inkey] is not None
             ):
-                max_mtime = max(max_mtime, get_mtime(self.input[inkey], dirsig))
+                max_mtime = max(
+                    max_mtime, get_mtime(self.input[inkey], dirsig)
+                )
 
             if (
                 intype in (ProcInputType.FILES, ProcInputType.DIRS)
