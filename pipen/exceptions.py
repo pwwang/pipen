@@ -5,6 +5,11 @@ class PipenException(Exception):
     """Base exception class for pipen"""
 
 
+class PipenSetDataError(PipenException, ValueError):
+    """When trying to set input data to processes with input_data already set
+    using Pipen.set_data()."""
+
+
 class ProcInputTypeError(PipenException, TypeError):
     """When an unsupported input type is provided"""
 

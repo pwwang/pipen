@@ -1,6 +1,10 @@
 import pytest
 from pipen import Proc, Pipen
-from pipen.exceptions import PipenException, ProcDependencyError
+from pipen.exceptions import (
+    PipenException,
+    ProcDependencyError,
+    PipenSetDataError,
+)
 
 from .helpers import (
     ErrorProc,
@@ -17,10 +21,10 @@ def test_init(pipen):
 
 
 def test_run(pipen):
-    ret = pipen.run(SimpleProc)
+    ret = pipen.set_starts(SimpleProc).run()
     assert ret
 
-    ret = pipen.run([ErrorProc])
+    ret = pipen.set_starts([ErrorProc]).run()
     assert not ret
 
 
@@ -42,7 +46,7 @@ def test_cyclic_dependency(pipen):
     proc2.__init_subclass__()
 
     with pytest.raises(ProcDependencyError, match="Cyclic dependency"):
-        pipen.run(proc1, proc3)
+        pipen.set_starts(proc1, proc3).run()
 
 
 def test_no_next_procs(pipen):
@@ -61,14 +65,28 @@ def test_no_next_procs(pipen):
         ProcDependencyError,
         match="No available next processes",
     ):
-        pipen.run(proc1)
+        pipen.set_starts(proc1).run()
 
 
 def test_plugins_are_pipeline_dependent(pipen, pipen_with_plugin, caplog):
     simproc = Proc.from_proc(SimpleProc)
-    pipen_with_plugin.run(simproc)
+    pipen_with_plugin.set_starts(simproc).run()
     assert "SimplePlugin" in caplog.text
 
     caplog.clear()
-    pipen.run(simproc)  # No simple plugin enabled
+    pipen.set_starts(simproc).run()  # No simple plugin enabled
     assert "SimplePlugin" not in caplog.text
+
+
+def test_set_starts_error(pipen):
+    with pytest.raises(ProcDependencyError):
+        pipen.set_starts(SimpleProc, SimpleProc)
+
+
+def test_set_data(pipen):
+    simproc = Proc.from_proc(SimpleProc, input_data=[1])
+    pipen.set_starts(simproc).set_data(None)
+    assert simproc.input_data == [1]
+
+    with pytest.raises(PipenSetDataError):
+        pipen.set_data([2])

@@ -3,7 +3,7 @@ import asyncio
 from itertools import chain
 from os import PathLike
 from pathlib import Path
-from typing import ClassVar, List, Sequence, Type, Union
+from typing import ClassVar, Iterable, List, Sequence, Type, Union
 
 from diot import Diot
 from rich import box
@@ -15,7 +15,7 @@ from simpleconf import Config
 from slugify import slugify  # type: ignore
 
 from .defaults import CONFIG, CONFIG_FILES, CONSOLE_WIDTH
-from .exceptions import ProcDependencyError
+from .exceptions import ProcDependencyError, PipenSetDataError
 from .pluginmgr import plugin
 from .proc import Proc
 from .progressbar import PipelinePBar
@@ -99,12 +99,16 @@ class Pipen:
 
         self.__class__.PIPELINE_COUNT += 1
 
-    async def async_run(self) -> bool:
+    async def async_run(self, profile: str = "default") -> bool:
         """Run the processes one by one
+
+        Args:
+            profile: The default profile to use for the run
 
         Returns:
             True if the pipeline ends successfully else False
         """
+        self.profile = profile
         self.workdir = Path(self.config.workdir) / slugify(self.name)
         self.workdir.mkdir(parents=True, exist_ok=True)
 
@@ -147,10 +151,11 @@ class Pipen:
 
     def run(
         self,
-        *starts: Union[Type[Proc], Sequence[Type[Proc]]],
         profile: str = "default",
     ) -> int:
         """Run the pipeline with the given profile
+        This is just a sync wrapper for the async `async_run` function using
+        `asyncio.run()`
 
         Args:
             profile: The default profile to use for the run
@@ -158,17 +163,71 @@ class Pipen:
         Returns:
             True if the pipeline ends successfully else False
         """
-        self.profile = profile
-        self._set_starts(*starts)
-        return asyncio.run(self.async_run())
+        return asyncio.run(self.async_run(profile))
 
-    def _set_starts(self, *procs: Union[Type[Proc], Sequence[Type[Proc]]]):
-        """Set the starts"""
+    def set_data(self, *indata: Iterable) -> "Pipen":
+        """Set the input_data for start processes
+
+        Args:
+            *indata: The input data for the start processes
+                The data will set for the processes in the order determined by
+                `set_starts()`.
+                If a process has input_data set, an error will be raised.
+                To use that input_data, set None here in the corresponding
+                position for the process
+
+        Raises:
+            ProcInputDataError: When trying to set input data to
+                processes with input_data already set
+
+        Returns:
+            `self` to chain the operations
+        """
+        for start, data in zip(self.starts, indata):
+            if data is None:
+                continue
+            if start.input_data is not None:
+                raise PipenSetDataError(
+                    f"`input_data` has already set for {start}. "
+                    "If you want to use it, set `None` at the position of "
+                    "this process for `Pipen.set_data()`."
+                )
+            start.input_data = data
+        return self
+
+    def set_starts(
+        self,
+        *procs: Union[Type[Proc], Sequence[Type[Proc]]],
+        clear: bool = True
+    ):
+        """Set the starts
+
+        Args:
+            *procs: The processes to set as starts of the pipeline.
+            clear: Wether to clear previous set starts
+
+        Raises:
+            ProcDependencyError: When processes set as starts repeatedly
+
+        Returns:
+            `self` to chain the operations
+        """
+        if clear:
+            self.starts = []
+
         for proc in procs:
             if isinstance(proc, (list, tuple)):
-                self._set_starts(*proc)
+                self.set_starts(*proc, clear=False)
             elif proc not in self.starts:
                 self.starts.append(proc)  # type: ignore
+            else:
+                raise ProcDependencyError(
+                    f"{proc} is already a start process."
+                )
+        return self
+
+    # In case people forget the "s"
+    set_start = set_starts
 
     def _log_pipeline_info(self) -> None:
         """Print the information of the pipeline"""
@@ -268,7 +327,10 @@ class Pipen:
     def _build_proc_relationships(self) -> None:
         """Build the proc relationships for the pipeline"""
         if not self.starts:
-            raise ProcDependencyError("No start processes specified.")
+            raise ProcDependencyError(
+                "No start processes specified. "
+                "Did you forget to call `Pipen.set_starts()`?"
+            )
 
         # build proc relationships
         self.procs = self.starts[:]
