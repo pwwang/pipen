@@ -13,4 +13,5 @@ class PythonScriptProc(Proc):
         Path("{{out.outfile}}").write_text("{{in.a}}")
     """
 
-Pipen().run(PythonScriptProc)
+if __name__ == "__main__":
+    Pipen().set_starts(PythonScriptProc).run()

@@ -17,5 +17,6 @@ class RetryProc(Proc):
         fi
     """
 
-# Show debug information so we see the retrying message
-Pipen(loglevel="debug").run(RetryProc)
+if __name__ == "__main__":
+    # Show debug information so we see the retrying message
+    Pipen(loglevel="debug").set_starts(RetryProc).run()

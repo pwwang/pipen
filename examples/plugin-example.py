@@ -31,5 +31,5 @@ class NotifyPlugin:
 class AProcess(Proc):
     input = "a"
 
-Pipen(plugins=[NotifyPlugin]).run(AProcess)
-
+if __name__ == "__main__":
+    Pipen(plugins=[NotifyPlugin]).set_starts(AProcess).run()

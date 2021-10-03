@@ -24,4 +24,5 @@ class MakoProcess(Proc):
     output = "outfile:file:${in_['a']}.txt"
     script = "touch ${out['outfile']}"
 
-Pipen().run(MakoProcess)
+if __name__ == "__main__":
+    Pipen(plugins=["no:filters"]).set_starts(MakoProcess).run()

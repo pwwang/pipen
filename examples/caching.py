@@ -9,15 +9,20 @@ class AProcess(Proc):
     output = "outfile:file:{{in.infile.split('/')[-1]}}"
     script = "cat {{in.infile}} > {{out.outfile}}"
 
-infile = "/tmp/pipen_example_caching.txt"
-if not Path(infile).exists():
-    Path(infile).write_text("123")
 
-AProcess.input_data = [infile]
+if __name__ == "__main__":
 
-# Enable debugging information so you will see why jobs are not cached
-# if you are not
-Pipen(loglevel="debug").run(AProcess)
+    infile = "/tmp/pipen_example_caching.txt"
+    if not Path(infile).exists():
+        Path(infile).write_text("123")
+
+    # Enable debugging information so you will see why jobs are not cached
+    (
+        Pipen(loglevel="debug")
+        .set_starts(AProcess)
+        .set_data([infile])
+        .run()
+    )
 
 
 # Run this script the repeatedly, you will see the jobs are cached

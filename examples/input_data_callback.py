@@ -49,6 +49,5 @@ def prepare_input_data():
 
     return Channel.from_glob(f"{tmpdir}/*.txt")
 
-
-P1.input_data = prepare_input_data()
-Pipen(forks=3).run(P1)
+if __name__ == "__main__":
+    Pipen(forks=3).set_starts(P1).set_data(prepare_input_data()).run()

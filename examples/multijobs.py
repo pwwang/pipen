@@ -12,4 +12,5 @@ class MultiJobProc(Proc):
     # Let the job takes long the see the parallelization from the progressbar
     script = "sleep 1; echo {{in.i}} > {{out.outfile}}"
 
-Pipen().run(MultiJobProc)
+if __name__ == "__main__":
+    Pipen().set_starts(MultiJobProc).run()
