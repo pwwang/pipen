@@ -1,3 +1,7 @@
+## 0.1.2
+
+- 💥 Use `set_starts()` and `set_data()` to set start processes of a pipeline.
+
 ## 0.1.1
 
 - 💥 Allow plugins to modify other configs via on_setup() hook

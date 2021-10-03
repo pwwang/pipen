@@ -36,6 +36,7 @@ MyOtherProcess = Proc.from_proc(MyProcess, ...)
 Note that `Proc.from_proc()` cannot override all configurations/class variables, because we assume that there are some shared configurations if you want to "copy" from another process.
 
 These shared configurations are:
+
 1. Template engine and its options (`template` and `template_opts`)
 2. Script template (`script`)
 3. Input keys (`input`)

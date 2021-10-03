@@ -34,7 +34,7 @@ class P3(Proc):
 Pipen().run(P1, P2)
 ```
 
-!!! hint:
+!!! Tip
 
     The direct `input_data` is ignore, but you can use a callback to modify the input channel.
     For example:

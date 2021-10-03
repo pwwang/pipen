@@ -9,5 +9,5 @@ from .helpers import pipen, OutputNotGeneratedProc
 
 def test_job_succeeded(pipen, caplog):
 
-    out = pipen.run(OutputNotGeneratedProc)
+    out = pipen.set_starts(OutputNotGeneratedProc).run()
     assert not out

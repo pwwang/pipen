@@ -21,6 +21,7 @@ class MyProcess(Proc):
 Then:
 
 |Job index|Template|Rendered to|
+|-|-|-|
 |0|`{{in.v1}}`|`a1`|
 |0|`{{in.v2}}`|`b1`|
 |0|`{{in.v3}}`|`c1`|
