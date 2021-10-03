@@ -2,6 +2,7 @@
 ## Creating a `Pipen` object
 
 The arguments for the constrctor are:
+
 - `name`: The name of the pipeline
 - `desc`: The description of the pipeline
 - `outdir`: The output directory of the pipeline. If not provided, defaults to `<pipeline-name>_results`.

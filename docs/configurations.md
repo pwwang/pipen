@@ -4,6 +4,7 @@
 There are two levels of configuration items in `pipen`: pipeline level and process level.
 
 There are only 3 configuration items at pipeline level:
+
 - `loglevel`: The logging level for the logger (Default: `"info"`)
 - `workdir`: Where the metadata and intermediate files are saved for the pipeline (Default: `./.pipen`)
 - `plugins`: The plugins to be enabled or disabled for the pipeline
