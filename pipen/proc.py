@@ -416,7 +416,7 @@ class Proc(ABC, metaclass=ProcMeta):
                 job.status = JobStatus.FINISHED
             await self.xqute.put(job)
         if cached_jobs:
-            self.log("info", "Cached jobs: %s", brief_list(cached_jobs))
+            self.log("info", "Cached jobs: [%s]", brief_list(cached_jobs))
         await self.xqute.run_until_complete()
         self.pbar.done()
         await plugin.hooks.on_proc_done(
