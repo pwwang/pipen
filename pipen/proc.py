@@ -462,11 +462,15 @@ class Proc(ABC, metaclass=ProcMeta):
         if is_subclass(requires, Proc):
             requires = [requires]  # type: ignore
 
+        # if req is in cls.__bases__, then cls.nexts will be affected by
+        # req.nexts
+        my_nexts = None if cls.nexts is None else cls.nexts[:]
         for req in requires:  # type: ignore
             if req.nexts is None:
                 req.nexts = [cls]
             else:
                 req.nexts.append(cls)  # type: ignore
+        cls.nexts = my_nexts
 
         return requires  # type: ignore
 
