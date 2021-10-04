@@ -278,15 +278,15 @@ class Proc(ABC, metaclass=ProcMeta):
         # instance properties
         self.pipeline = pipeline
 
-        # plugins can modify some default attributes
-        plugin.hooks.on_proc_init(self)
-
         self.pbar = None
         self.jobs: List[Any] = []
         self.xqute = None
         self.__class__.workdir = Path(self.pipeline.workdir) / slugify(
             self.name
         )
+
+        # plugins can modify some default attributes
+        plugin.hooks.on_proc_init(self)
 
         # Compute the properties
         # otherwise, the property can be accessed directly from class vars
