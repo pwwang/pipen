@@ -39,7 +39,7 @@ def test_from_proc():
         SimpleProc,
         name="new_proc",
         desc="new desc",
-        args={"a": 1},
+        envs={"a": 1},
         cache=True,
         forks=2,
         plugin_opts={"p": 1},
@@ -51,7 +51,7 @@ def test_from_proc():
     )
     assert proc.name == "new_proc"
     assert proc.desc == "new desc"
-    assert proc.args == {"a": 1}
+    assert proc.envs == {"a": 1}
     assert proc.cache
     assert proc.forks == 2
     assert proc.plugin_opts == {"p": 1}

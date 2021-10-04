@@ -1,6 +1,7 @@
 ## 0.1.3
 
-- ✨Add `on_proc_init()` hook to enables plugins to modify the default attributes of processes
+- ✨ Add `on_proc_init()` hook to enables plugins to modify the default attributes of processes
+- 💥 Rename `Proc.args` to `Proc.envs`
 
 ## 0.1.2
 

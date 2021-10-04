@@ -92,7 +92,7 @@ The data to render the `output`:
 |`job.lock_file`|The file lock of the job, prevent the same job to run simultaneously so that they are "thread-safe"|
 |`in`|The input data of the job. You can use `in.<input-key>` to access the data for each input key|
 |`proc`|The process object, used to access their properties, such as `proc.workdir`|
-|`args`|The `args` of the process|
+|`envs`|The `envs` of the process|
 
 `*`: If the process is an end process, it will be a symbolic link to `<pipeline-outdir>/<process-name>/<job.index>`. When the process has only a single job, the `<job.index>` is also omitted.
 

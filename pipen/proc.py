@@ -98,7 +98,7 @@ class Proc(ABC, metaclass=ProcMeta):
         name: The name of the process. Will use the class name by default.
         desc: The description of the process. Will use the summary from
             the docstring by default.
-        args: The arguments that are job-independent, useful for common options
+        envs: The arguments that are job-independent, useful for common options
             across jobs.
         cache: Should we detect whether the jobs are cached?
         dirsig: When checking the signature for caching, whether should we walk
@@ -142,7 +142,7 @@ class Proc(ABC, metaclass=ProcMeta):
 
     name: str = None
     desc: str = None
-    args: Mapping[str, Any] = None
+    envs: Mapping[str, Any] = None
     cache: bool = None
     dirsig: bool = None
     export: bool = None
@@ -172,7 +172,7 @@ class Proc(ABC, metaclass=ProcMeta):
         proc: Type["Proc"],
         name: str = None,
         desc: str = None,
-        args: Mapping[str, Any] = None,
+        envs: Mapping[str, Any] = None,
         cache: bool = None,
         export: bool = None,
         error_strategy: str = None,
@@ -191,7 +191,7 @@ class Proc(ABC, metaclass=ProcMeta):
             proc: The Proc subclass
             name: The new name of the process
             desc: The new description of the process
-            args: The arguments of the process, will overwrite parent one
+            envs: The arguments of the process, will overwrite parent one
                 The items that are specified will be inherited
             cache: Whether we should check the cache for the jobs
             export: When True, the results will be exported to
@@ -230,8 +230,8 @@ class Proc(ABC, metaclass=ProcMeta):
         kwargs: Dict[str, Any] = {"name": name}
         if desc is not None:
             kwargs["desc"] = desc
-        if args is not None:
-            kwargs["args"] = update_dict(proc.args, args)
+        if envs is not None:
+            kwargs["envs"] = update_dict(proc.envs, envs)
         if cache is not None:
             kwargs["cache"] = cache
         if forks is not None:

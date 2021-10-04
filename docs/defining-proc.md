@@ -93,7 +93,7 @@ The configurations of a process are specified as class variables of subclasses o
 |-|-|-|
 |`name`|The name of the process. Will use the class name by default.|Yes|
 |`desc`|The description of the process. Will use the summary from the docstring by default.|Yes|
-|`args`|The arguments that are job-independent, useful for common options across jobs.|Yes, and old ones will be inherited|
+|`envs`|The env variables that are job-independent, useful for common options across jobs.|Yes, and old ones will be inherited|
 |`cache`|Should we detect whether the jobs are cached?|Yes|
 |`dirsig`|When checking the signature for caching, whether should we walk through the content of the directory? This is sometimes time-consuming if the directory is big.|Yes|
 |`export`|When True, the results will be exported to `<pipeline.outdir>` Defaults to None, meaning only end processes will export. You can set it to True/False to enable or disable exporting for processes|Yes|

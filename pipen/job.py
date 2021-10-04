@@ -132,7 +132,7 @@ class Job(XquteJob, JobCaching):
             "in": self.input,
             "in_": self.input,
             "proc": self.proc,
-            "args": self.proc.args,
+            "envs": self.proc.envs,
         }
         try:
             if isinstance(output_template, Template):
@@ -204,7 +204,7 @@ class Job(XquteJob, JobCaching):
             "in_": self.input,
             "out": self.output,
             "proc": self.proc,
-            "args": self.proc.args,
+            "envs": self.proc.envs,
         }
 
     def log(
