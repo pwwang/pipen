@@ -178,9 +178,12 @@ The above code will produce some logging on the console like this:
 
 - [`pipen-verbose`][3]: Add verbosal information in logs for pipen.
 - [`pipen-report`][4]: Generate report for pipen
+- [`pipen-filters`][8]: Add a set of useful filters for pipen templates.
 - [`pipen-diagram`][5]: Draw pipeline diagrams for pipen
 - [`pipen-args`][6]: Command line argument parser for pipen
-- More to add ...
+- [`pipen-dry`][7]: Dry runner for pipen pipelines
+- [`pipen-cli-init`][9]: A pipen CLI plugin to create a pipen project (pipeline)
+
 
 
 [1]: https://github.com/pwwang/simplug
@@ -189,3 +192,6 @@ The above code will produce some logging on the console like this:
 [4]: https://github.com/pwwang/pipen-report
 [5]: https://github.com/pwwang/pipen-diagram
 [6]: https://github.com/pwwang/pipen-args
+[7]: https://github.com/pwwang/pipen-dry
+[8]: https://github.com/pwwang/pipen-filters
+[9]: https://github.com/pwwang/pipen-cli-init

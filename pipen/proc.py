@@ -278,15 +278,15 @@ class Proc(ABC, metaclass=ProcMeta):
         # instance properties
         self.pipeline = pipeline
 
-        # plugins can modify some default attributes
-        plugin.hooks.on_proc_init(self)
-
         self.pbar = None
         self.jobs: List[Any] = []
         self.xqute = None
         self.__class__.workdir = Path(self.pipeline.workdir) / slugify(
             self.name
         )
+
+        # plugins can modify some default attributes
+        plugin.hooks.on_proc_init(self)
 
         # Compute the properties
         # otherwise, the property can be accessed directly from class vars
@@ -416,7 +416,7 @@ class Proc(ABC, metaclass=ProcMeta):
                 job.status = JobStatus.FINISHED
             await self.xqute.put(job)
         if cached_jobs:
-            self.log("info", "Cached jobs: %s", brief_list(cached_jobs))
+            self.log("info", "Cached jobs: [%s]", brief_list(cached_jobs))
         await self.xqute.run_until_complete()
         self.pbar.done()
         await plugin.hooks.on_proc_done(
@@ -462,11 +462,15 @@ class Proc(ABC, metaclass=ProcMeta):
         if is_subclass(requires, Proc):
             requires = [requires]  # type: ignore
 
+        # if req is in cls.__bases__, then cls.nexts will be affected by
+        # req.nexts
+        my_nexts = None if cls.nexts is None else cls.nexts[:]
         for req in requires:  # type: ignore
             if req.nexts is None:
                 req.nexts = [cls]
             else:
                 req.nexts.append(cls)  # type: ignore
+        cls.nexts = my_nexts
 
         return requires  # type: ignore
 

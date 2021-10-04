@@ -141,8 +141,11 @@ class Pipen:
                 proc_obj.gc()
 
             logger.info("")
-        finally:
+        except Exception:
+            raise
+        else:
             await plugin.hooks.on_complete(self, succeeded)
+        finally:
             self.plugin_context.__exit__()
             if self.pbar:
                 self.pbar.done()

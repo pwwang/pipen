@@ -1,3 +1,10 @@
+## 0.1.4
+
+- 🩹 Use brackets to indicate cached jobs
+- 🩹 Run on_complete hook only when no exception happened
+- 🩹 Let `on_proc_init` to modify process `workdir`
+- 🐛 Fix when `nexts` affected by parent `nexts` assignment when parent in `__bases__`
+
 ## 0.1.3
 
 - ✨ Add `on_proc_init()` hook to enables plugins to modify the default attributes of processes
