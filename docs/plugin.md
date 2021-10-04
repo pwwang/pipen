@@ -39,6 +39,11 @@ See [`simplug`][1] for more details.
 
 ### Process-level hooks
 
+- `on_proc_init(proc)` (sync)
+
+    Called before proc get instantiated.
+    Enables plugins to modify the default attributes of processes
+
 - `on_proc_start(proc)` (async)
 
     When process object initialization completes, including the `xqute` and job initialization. The `output_data` is also accessible here. The process is ready to run.

@@ -277,6 +277,10 @@ class Proc(ABC, metaclass=ProcMeta):
         """
         # instance properties
         self.pipeline = pipeline
+
+        # plugins can modify some default attributes
+        plugin.hooks.on_proc_init(self)
+
         self.pbar = None
         self.jobs: List[Any] = []
         self.xqute = None

@@ -65,6 +65,17 @@ async def on_complete(pipen: "Pipen", succeeded: bool):
 
 
 @plugin.spec
+def on_proc_init(proc: "Proc"):
+    """Called before proc get instantiated.
+
+    Enables plugins to modify the default attributes of processes
+
+    Args:
+        proc: The Proc object
+    """
+
+
+@plugin.spec
 async def on_proc_start(proc: "Proc"):
     """When a process is starting
 

@@ -1,3 +1,7 @@
+## 0.1.3
+
+- ✨Add `on_proc_init()` hook to enables plugins to modify the default attributes of processes
+
 ## 0.1.2
 
 - 💥 Use `set_starts()` and `set_data()` to set start processes of a pipeline.
