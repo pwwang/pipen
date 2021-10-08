@@ -6,32 +6,33 @@ To run it:
 ❯ pipen
 
 DESCRIPTION:
-  CLI Tool for pipen v0.1.0
+  CLI Tool for pipen v0.1.4
 
 USAGE:
   pipen [OPTIONS] COMMAND [OPTIONS]
 
 OPTIONAL OPTIONS:
-  -h, --help                      - Print help information for this command
+  -h, --help                      - Print help information for the CLI tool.
 
 COMMANDS:
   profile                         - List available profiles.
-  help                            - Print help of sub-commands
+  plugins                         - List installed plugins
+  help                            - Print help for commands
 ```
 
 ## Writing a plugin to extend the cli
 
-### hooks
+### CLI plugin abstract class
 
-- `add_commands(params)`
+A CLI plugin has to be a subclass of `pipen.cli.CLIPlugin`.
 
-    Add commands and options to the params object. We use [`pyparam`][1] to parse the CLI arguments, see more details on how to add commands/options to `params` object.
+A CLI plugin has to define a `name` property, which also is the sub-command of the plugin.
 
-- `exec_command(command, args)`
+Then a `params` property is also needed to define the commands and arguments of this plugin. To see how to define a `Params` object, see `pyparam`'s [documentation][5].
 
-    Execute the subcommand with the command and parsed arguments.
+You may also define a method `parse_args()` to parse CLI arguments by yourself. By default, it just calls `Params.parse()` to parse the arguments.
 
-    Note that you need to check the `command` to write specific code for that command. You can add and execute multiple commands in a plugin.
+Finally, define `exec_command()`, which takes the parsed arguments as argument, to execute the command as you wish.
 
 ### loading CLI plugins
 
@@ -61,3 +62,4 @@ This subcommand is used to list the plugins for `pipen` itself, templates, sched
 [2]: ../plugin
 [3]: ../templating
 [4]: ../scheduler
+[5]: https://pwwang.github.io/pyparam
