@@ -29,16 +29,16 @@ load_builtin_clis()
 params = Params(desc=f"CLI Tool for pipen v{__version__}")
 
 
-def _print_help(commands: Iterable[str]) -> None:
+def _print_help(plugin_names: Iterable[str]) -> None:
     """Print help of pipen CLI"""
     params.add_param(
         params.help_keys,
         desc="Print help information for the CLI tool.",
     )
-    for command in commands:
-        plugin = cli_plugin.get_plugin(command, raw=True)
+    for name in plugin_names:
+        plugin = cli_plugin.get_plugin(name, raw=True)
         params.add_command(
-            command,
+            plugin.name,
             re.sub(r"\s+", " ", plugin.__doc__.strip()),
             force=True,
         )
@@ -48,27 +48,32 @@ def _print_help(commands: Iterable[str]) -> None:
 def main() -> None:
     """Main function of pipen CLI"""
     args = sys.argv
-    commands = sorted(
+    plugin_names = sorted(
         cli_plugin.get_enabled_plugin_names(),
         key=lambda cmd: 999 if cmd == "help" else 0,
     )
     if len(args) == 1:
-        _print_help(commands)
+        _print_help(plugin_names)
 
     command = sys.argv[1]
     help_keys = [
-        f"-{key}" if len(key) == 1 else f"--{key}" for key in params.help_keys
+        f"-{key}" if len(key) == 1 else f"--{key}"
+        for key in params.help_keys
     ]
     if command in help_keys:
-        _print_help(commands)
+        _print_help(plugin_names)
 
-    if command not in commands:
-        print(
-            "[red][b]ERROR: [/b][/red]No such command: "
-            f"[green]{command}[/green]"
-        )
-        _print_help(commands)
+    for name in plugin_names:
+        plg = cli_plugin.get_plugin(name, raw=True)
+        if plg.name != command:
+            continue
+        plg = plg()
+        parsed = plg.parse_args(sys.argv[2:])
+        plg.exec_command(parsed)
+        return
 
-    plg = cli_plugin.get_plugin(command, raw=True)()
-    parsed = plg.parse_args(sys.argv[2:])
-    plg.exec_command(parsed)
+    print(
+        "[red][b]ERROR: [/b][/red]No such command: "
+        f"[green]{command}[/green]"
+    )
+    _print_help(plugin_names)
