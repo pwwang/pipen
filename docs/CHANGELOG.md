@@ -1,3 +1,7 @@
+## 0.2.0
+
+- 💥 Restructure CLI plugins
+
 ## 0.1.4
 
 - 🩹 Use brackets to indicate cached jobs

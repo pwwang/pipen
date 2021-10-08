@@ -1,10 +1,11 @@
 """List plugins"""
 
-from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, Tuple
+from typing import Any, Iterable, List, Mapping, Tuple
 
+from pyparam import Params
 from rich import print
 
-from ._hooks import cli_plugin
+from ._hooks import CLIPlugin
 from ..defaults import (
     CLI_ENTRY_GROUP,
     SCHEDULER_ENTRY_GROUP,
@@ -12,8 +13,6 @@ from ..defaults import (
 )
 from ..utils import load_entrypoints
 
-if TYPE_CHECKING:  # pragma: no cover
-    from pyparam import Params
 
 COMMAND = "plugins"
 GROUPS = [
@@ -28,6 +27,8 @@ GROUP_NAMES = {
     TEMPLATE_ENTRY_GROUP: "Template",
     CLI_ENTRY_GROUP: "CLI",
 }
+
+__all__ = ("CliPluginsPlugin", )
 
 
 def _get_plugins_by_group(group: str) -> Iterable[Tuple[str, Any]]:
@@ -96,34 +97,39 @@ def _list_plugins(plugins: List[Tuple[str, str, Any]]) -> None:
     _list_group_plugins(CLI_ENTRY_GROUP, cli_plugins)
 
 
-@cli_plugin.impl
-def add_commands(params: "Params"):
-    """Add plugins command"""
-    cmd = params.add_command(COMMAND, desc=__doc__, help_on_void=False)
-    cmd.add_param(
-        "g,group",
-        default="",
-        desc="The name of the entry point group. "
-        "If not provided, show all plugins. "
-        f"Avaiable groups are: {' '.join(GROUPS)}",
-    )
+class CliPluginsPlugin(CLIPlugin):
+    """List installed plugins"""
 
+    name = "plugins"
 
-@cli_plugin.impl
-def exec_command(command: str, args: Mapping[str, Any]) -> None:
-    """Run the command"""
-    if command != COMMAND:
-        return  # pragma: no cover, need more sub-commands to test
+    @property
+    def params(self) -> Params:
+        """Define the params"""
+        pms = Params(
+            desc=self.__class__.__doc__,
+            help_on_void=False
+        )
+        pms.add_param(
+            "g,group",
+            default="",
+            desc="The name of the entry point group. "
+            "If not provided, show all plugins. "
+            f"Avaiable groups are: {' '.join(GROUPS)}",
+        )
+        return pms
 
-    plugins: List[Tuple[str, str, Any]] = []
+    def exec_command(self, args: Mapping[str, Any]) -> None:
+        """Execute the command"""
 
-    if args.group:
-        for name, plugin in _get_plugins_by_group(args.group):
-            plugins.append((args.group, name, plugin))
+        plugins: List[Tuple[str, str, Any]] = []
 
-    else:  # args.name
-        for group in GROUPS:
-            for name, plugin in _get_plugins_by_group(group):
-                plugins.append((group, name, plugin))
+        if args.group:
+            for name, plugin in _get_plugins_by_group(args.group):
+                plugins.append((args.group, name, plugin))
 
-    _list_plugins(plugins)
+        else:  # args.name
+            for group in GROUPS:
+                for name, plugin in _get_plugins_by_group(group):
+                    plugins.append((group, name, plugin))
+
+        _list_plugins(plugins)

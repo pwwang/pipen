@@ -1,6 +1,7 @@
 """Provide Cli class"""
 
-from typing import TYPE_CHECKING, Any, Mapping
+from abc import ABC, abstractmethod, abstractproperty
+from typing import TYPE_CHECKING, Any, List, Mapping
 
 from simplug import Simplug
 
@@ -12,21 +13,21 @@ if TYPE_CHECKING:  # pragma: no cover
 cli_plugin = Simplug(CLI_ENTRY_GROUP)
 
 
-@cli_plugin.spec
-def add_commands(params: "Params") -> None:
-    """Add options for the command
+class CLIPlugin(ABC):
+    """The abc for cli plugin"""
 
-    Args:
-        params: The params to add commands and options to
-    """
+    @abstractproperty
+    def name(self) -> str:
+        """The name/command of this plugin"""
 
+    @abstractproperty
+    def params(self) -> "Params":
+        """Define parameters"""
 
-@cli_plugin.spec
-def exec_command(command: str, args: Mapping[str, Any]) -> None:
-    """Execute the command with given sub-command and parsed arguments
+    @abstractmethod
+    def exec_command(self, args: Mapping[str, Any]) -> None:
+        """Execute the command"""
 
-    Args:
-        command: The sub-command, should be one of those added by
-            `add_commands()`
-        args: The parsed arguments
-    """
+    def parse_args(self, args: List[str]) -> Mapping[str, Any]:
+        """Parse the arguments"""
+        return self.params.parse(args)
