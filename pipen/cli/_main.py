@@ -11,6 +11,8 @@ from rich import print
 from ._hooks import cli_plugin
 from ..version import __version__
 
+params = Params(desc=f"CLI Tool for pipen v{__version__}")
+
 
 def load_builtin_clis() -> None:
     """Load builtin cli plugins in this directory"""
@@ -20,13 +22,6 @@ def load_builtin_clis() -> None:
         cli = importlib.import_module(f".{clifile.stem}", __package__)
         plg = getattr(cli, cli.__all__[0])
         cli_plugin.register(plg)
-
-
-cli_plugin.load_entrypoints()
-# builtin plugins have the highest priority
-load_builtin_clis()
-
-params = Params(desc=f"CLI Tool for pipen v{__version__}")
 
 
 def _print_help(plugin_names: Iterable[str]) -> None:
@@ -47,6 +42,10 @@ def _print_help(plugin_names: Iterable[str]) -> None:
 
 def main() -> None:
     """Main function of pipen CLI"""
+    cli_plugin.load_entrypoints()
+    # builtin plugins have the highest priority
+    load_builtin_clis()
+
     args = sys.argv
     plugin_names = sorted(
         cli_plugin.get_enabled_plugin_names(),
