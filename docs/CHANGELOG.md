@@ -1,3 +1,7 @@
+## 0.2.1
+
+- 🎨 Allow CLI plugin to have different name than the command
+
 ## 0.2.0
 
 - 💥 Restructure CLI plugins
