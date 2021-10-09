@@ -31,17 +31,23 @@ class CLIHelpPlugin(CLIPlugin):
     def exec_command(self, args: Mapping[str, Any]) -> None:
         """Run the command"""
         command = args[POSITIONAL]
-        commands = sorted(
+        plugin_names = sorted(
             cli_plugin.get_enabled_plugin_names(),
             key=lambda cmd: 999 if cmd == "help" else 0,
         )
-        if command not in commands:
-            from ._main import _print_help
+
+        plg = None
+        for name in plugin_names:
+            plg = cli_plugin.get_plugin(name, raw=True)
+            if command != plg.name:
+                continue
+
+            plg().params.print_help()
+
+        from ._main import _print_help
+        if command:
             print(
                 "[red][b]ERROR: [/b][/red]No such command: "
                 f"[green]{command}[/green]"
             )
-            _print_help(commands)
-
-        plg = cli_plugin.get_plugin(args[POSITIONAL], raw=True)()
-        plg.params.print_help()
+        _print_help(plugin_names)
