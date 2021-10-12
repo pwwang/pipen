@@ -1,3 +1,8 @@
+## 0.2.2
+
+- 🐛 Load CLI plugins at runtime
+
+
 ## 0.2.1
 
 - 🎨 Allow CLI plugin to have different name than the command
