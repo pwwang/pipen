@@ -1,3 +1,7 @@
+## 0.2.3
+
+- ⚡️Speed up package importing
+
 ## 0.2.2
 
 - 🐛 Load CLI plugins at runtime
