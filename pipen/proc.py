@@ -16,7 +16,8 @@ from typing import (
     TYPE_CHECKING,
 )
 
-import pandas
+# Slow down the import, try do it at runtime
+# import pandas
 from diot import Diot
 from rich import box
 from rich.panel import Panel
@@ -24,7 +25,6 @@ from slugify import slugify  # type: ignore
 from varname import VarnameException, varname
 from xqute import JobStatus, Xqute
 
-from .channel import Channel
 from .defaults import CONSOLE_WIDTH, ProcInputType
 from .exceptions import (
     ProcInputKeyError,
@@ -338,6 +338,7 @@ class Proc(ABC, metaclass=ProcMeta):
 
     async def _init(self) -> None:
         """Init all other properties and jobs"""
+        import pandas
         scheduler_opts = (
             copy_dict(self.pipeline.config.scheduler_opts, 2) or {}
         )
@@ -506,6 +507,8 @@ class Proc(ABC, metaclass=ProcMeta):
         Returns:
             A dict with type and data
         """
+        import pandas
+        from .channel import Channel
         # split input keys into keys and types
         input_keys = self.input
         if input_keys and isinstance(input_keys, str):

@@ -6,7 +6,6 @@ from pathlib import Path
 import shutil
 from typing import TYPE_CHECKING, Any, Dict, Mapping, Union
 
-import pandas
 from diot import OrderedDiot
 from xqute import Job as XquteJob
 from xqute.utils import a_read_text
@@ -77,6 +76,7 @@ class Job(XquteJob, JobCaching):
         Returns:
             A key-value map, where keys are the input keys
         """
+        import pandas
         ret = self.proc.input.data.iloc[self.index, :].to_dict()
         # check types
         for inkey, intype in self.proc.input.type.items():
