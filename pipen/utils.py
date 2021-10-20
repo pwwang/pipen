@@ -6,6 +6,7 @@ from os import PathLike
 from collections import defaultdict
 from pathlib import Path
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     DefaultDict,
@@ -16,7 +17,8 @@ from typing import (
     Union,
 )
 
-import pandas
+if TYPE_CHECKING:
+    import pandas
 
 try:  # pragma: no cover
     from functools import cached_property
@@ -417,7 +419,7 @@ def truncate_text(text: str, width: int, end: str = "…") -> str:
     return text[: (width - len(end))] + end
 
 
-def make_df_colnames_unique_inplace(thedf: pandas.DataFrame) -> None:
+def make_df_colnames_unique_inplace(thedf: "pandas.DataFrame") -> None:
     """Make the columns of a data frame unique
 
     Args:

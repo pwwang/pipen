@@ -4,7 +4,8 @@ It's a more complete example from README.md
 """
 from pathlib import Path
 import random
-from pipen import Proc, Pipen, Channel
+from pipen import Proc, Pipen
+from pipen.channel import Channel
 
 
 def wc(path):

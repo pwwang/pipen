@@ -1,7 +1,10 @@
 """Provide the PipelinePBar and ProcPBar classes"""
-import enlighten
+from typing import TYPE_CHECKING
 
 from .utils import truncate_text
+
+if TYPE_CHECKING:
+    import enlighten
 
 # [12/02/20 12:44:06] I /main
 #                 pipeline: 100%|
@@ -13,7 +16,7 @@ class ProcPBar:
     """The progress bar for processes"""
 
     def __init__(
-        self, manager: enlighten.Manager, proc_size: int, proc_name: str
+        self, manager: "enlighten.Manager", proc_size: int, proc_name: str
     ) -> None:
         self.submitted_counter = manager.counter(
             total=proc_size,
@@ -63,6 +66,7 @@ class PipelinePBar:
 
     def __init__(self, n_procs: int, ppln_name: str) -> None:
         """Initialize progress bar for pipeline"""
+        import enlighten
         desc_len = PBAR_DESC_LEN
         ppln_name = truncate_text(ppln_name, desc_len)
         self.manager = enlighten.get_manager()
