@@ -43,7 +43,7 @@ class P2(Proc):
     output = "outfile:file:result.txt"
     script = "paste <(seq 1 3) {{in.infile}} > {{out.outfile}}"
 
-Pipen().run(P1)
+Pipen().set_starts(P1).run()
 ```
 
 ```shell
