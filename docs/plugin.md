@@ -183,6 +183,7 @@ The above code will produce some logging on the console like this:
 - [`pipen-args`][6]: Command line argument parser for pipen
 - [`pipen-dry`][7]: Dry runner for pipen pipelines
 - [`pipen-cli-init`][9]: A pipen CLI plugin to create a pipen project (pipeline)
+- [`pipen-cli-run`][10]: A pipen cli plugin to run a process or a pipeline
 
 
 
@@ -195,3 +196,4 @@ The above code will produce some logging on the console like this:
 [7]: https://github.com/pwwang/pipen-dry
 [8]: https://github.com/pwwang/pipen-filters
 [9]: https://github.com/pwwang/pipen-cli-init
+[10]: https://github.com/pwwang/pipen-cli-run
