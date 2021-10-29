@@ -17,37 +17,43 @@ CONFIG_FILES = (
     "PIPEN.osenv",
 )
 CONFIG = Diot(
+    # pipeline level: The logging level
     loglevel="info",
-    # The cache option, True/False/export
+    # process level: The cache option, True/False/export
     cache=True,
-    # Whether expand directory to check signature
+    # process level: Whether expand directory to check signature
     dirsig=1,
+    # process level:
     # How to deal with the errors
     # retry, ignore, halt
     # halt to halt the whole pipeline, no submitting new jobs
     # terminate to just terminate the job itself
     error_strategy=JobErrorStrategy.IGNORE,
+    # process level:
     # How many times to retry to jobs once error occurs
     num_retries=3,
+    # process level:
     # The directory to export the output files
     forks=1,
-    # Default shell/language
+    # process level: Default shell/language
     lang="bash",
+    # process level:
     # How many jobs to be submitted in a batch
     submission_batch=8,
+    # pipeline level:
     # The working directory for the pipeline
     workdir="./.pipen",
-    # template engine
+    # process level: template engine
     template="liquid",
-    # template options
+    # process level: template options
     template_opts={},
-    # scheduler
+    # process level: scheduler
     scheduler="local",
-    # scheduler options
+    # process level: scheduler options
     scheduler_opts={},
-    # plugins
+    # pipeline level: plugins
     plugins=None,
-    # plugin opts
+    # pipeline level: plugin opts
     plugin_opts={},
 )
 

@@ -17,7 +17,7 @@ from typing import (
     Union,
 )
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     import pandas
 
 try:  # pragma: no cover

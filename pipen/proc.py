@@ -127,6 +127,11 @@ class Proc(ABC, metaclass=ProcMeta):
         input_data: The input data (will be computed for dependent processes)
         lang: The language for the script to run. Should be the path to the
             interpreter if `lang` is not in `$PATH`.
+        order: The execution order for this process. The bigger the number
+            is, the later the process will be executed. Default: 0.
+            Note that the dependent processes will always be executed first.
+            This doesn't work for start processes either, whose orders are
+            determined by `Pipen.set_starts()`
         output: The output keys for the output channel
             (the data will be computed)
         plugin_opts: Options for process-level plugins
@@ -154,6 +159,7 @@ class Proc(ABC, metaclass=ProcMeta):
     input: Union[str, Sequence[str]] = None
     input_data: Any = None
     lang: str = None
+    order: int = None
     output: Union[str, Sequence[str]] = None
     plugin_opts: Mapping[str, Any] = None
     requires: Union[Type["Proc"], Sequence[Type["Proc"]]] = None
@@ -179,6 +185,7 @@ class Proc(ABC, metaclass=ProcMeta):
         num_retries: int = None,
         forks: int = None,
         input_data: Any = None,
+        order: int = None,
         plugin_opts: Mapping[str, Any] = None,
         requires: Sequence[Type["Proc"]] = None,
         scheduler: str = None,
@@ -207,6 +214,7 @@ class Proc(ABC, metaclass=ProcMeta):
             forks: New forks for the new process
             input_data: The input data for the process. Only when this process
                 is a start process
+            order: The order to execute the new process
             plugin_opts: The new plugin options, unspecified items will be
                 inherited.
             requires: The required processes for the new process
@@ -236,6 +244,8 @@ class Proc(ABC, metaclass=ProcMeta):
             kwargs["cache"] = cache
         if forks is not None:
             kwargs["forks"] = forks
+        if order is not None:
+            kwargs["order"] = order
         if plugin_opts is not None:
             kwargs["plugin_opts"] = update_dict(proc.plugin_opts, plugin_opts)
         if scheduler is not None:

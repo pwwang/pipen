@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from .utils import truncate_text
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     import enlighten
 
 # [12/02/20 12:44:06] I /main
