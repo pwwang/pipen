@@ -344,7 +344,10 @@ class Pipen:
         while nexts:
             logger.debug("- Next processes: %s", nexts)
             # pick up one that can be added to procs
-            for proc in sorted(nexts, key=lambda prc: prc.name):
+            for proc in sorted(
+                nexts,
+                key=lambda prc: (prc.order or 0, prc.name)
+            ):
                 if proc in self.procs:
                     raise ProcDependencyError(
                         f"Cyclic dependency: {proc.name}"

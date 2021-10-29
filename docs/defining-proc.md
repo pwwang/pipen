@@ -105,6 +105,7 @@ The configurations of a process are specified as class variables of subclasses o
 |`input`|The keys and types for the input channel|No|
 |`input_data`|The input data (will be computed for dependent processes)|Yes|
 |`lang`|The language for the script to run.|No|
+|`order`|The execution order for the same dependency-level processes|Yes|
 |`output`|The output keys for the output channel|No|
 |`plugin_opts`|Options for process-level plugins|Yes|
 |`requires`|The dependency processes|Yes|

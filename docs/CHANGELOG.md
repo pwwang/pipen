@@ -1,3 +1,8 @@
+## 0.2.4
+
+- ✨ Add execution order for processes
+
+
 ## 0.2.3
 
 - ⚡️Speed up package importing
