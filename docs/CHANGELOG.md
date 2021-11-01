@@ -1,3 +1,9 @@
+## 0.2.5
+
+- 🩹 Allow relative script path to be inherited
+- 🐛 Fix column order from depedency processes
+- 🩹 Fix __doc__ not inherited for processes
+
 ## 0.2.4
 
 - ✨ Add execution order for processes

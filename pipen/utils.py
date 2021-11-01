@@ -14,6 +14,7 @@ from typing import (
     List,
     Mapping,
     Tuple,
+    Type,
     Union,
 )
 
@@ -113,7 +114,7 @@ def desc_from_docstring(obj: Any) -> str:
     Returns:
         The summary as desc
     """
-    if not obj.__doc__:
+    if not obj.__doc__:  # pragma: no cover
         return None
 
     started: bool = False
@@ -434,3 +435,30 @@ def make_df_colnames_unique_inplace(thedf: "pandas.DataFrame") -> None:
             new_cols.append(f"{col}_{col_counts[col]}")
         col_counts[col] += 1
     thedf.columns = new_cols
+
+
+def get_base(
+    klass: Type,
+    abc_base: Type,
+    value: Any,
+    value_getter: Callable,
+) -> Type:
+    """Get the base class where the value was first defined
+
+    Args:
+        klass: The class
+        abc_base: The very base class to check in __bases__
+        value: The value to check
+        value_getter: How to get the value from the class
+
+    Returns:
+        The base class
+    """
+    bases = [
+        base for base in klass.__bases__
+        if issubclass(base, abc_base) and value_getter(base) == value
+    ]
+    if not bases:
+        return klass
+
+    return get_base(bases[0], abc_base, value, value_getter)
