@@ -567,7 +567,7 @@ class Proc(ABC, metaclass=ProcMeta):
 
         # try match the column names
         # if none matched, use the first columns
-        rest_cols = out.data.columns.difference(out.type)
+        rest_cols = out.data.columns.difference(out.type, False)
         len_rest_cols = len(rest_cols)
         matched_cols = out.data.columns.intersection(out.type)
         needed_cols = [col for col in out.type if col not in matched_cols]
