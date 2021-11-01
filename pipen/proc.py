@@ -619,8 +619,18 @@ class Proc(ABC, metaclass=ProcMeta):
         if script.startswith("file://"):
             script_file = Path(script[7:])
             if not script_file.is_absolute():
+                klass = self.__class__
+                if klass.__bases__:
+                    for kls in klass.__bases__:
+                        if not issubclass(kls, Proc):
+                            continue
+                        if script == kls.script:
+                            klass = kls
+                            continue
+                        break
+
                 script_file = (
-                    Path(inspect.getfile(self.__class__)).parent / script_file
+                    Path(inspect.getfile(klass)).parent / script_file
                 )
             if not script_file.is_file():
                 raise ProcScriptFileNotFound(
