@@ -10,6 +10,7 @@ from .helpers import (
     ErrorProc,
     NormalProc,
     SimpleProc,
+    RelPathScriptProc,
     pipen,
     SimplePlugin,
     pipen_with_plugin,
@@ -98,3 +99,9 @@ def test_proc_order(pipen):
 
     pipen.set_starts(proc1).run()
     assert pipen.procs == [proc1, proc3, proc2]
+
+def test_proc_inherited(pipen):
+    proc1 = Proc.from_proc(RelPathScriptProc)
+    proc2 = Proc.from_proc(proc1)
+    pipen.set_starts(proc2).set_data([1]).run()
+    assert proc2.__doc__ == RelPathScriptProc.__doc__

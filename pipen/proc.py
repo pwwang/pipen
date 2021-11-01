@@ -49,6 +49,7 @@ from .utils import (
     strsplit,
     update_dict,
     get_shebang,
+    get_base,
 )
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -276,6 +277,8 @@ class Proc(ABC, metaclass=ProcMeta):
         cls.requires = cls._compute_requires()
         if cls.name is None or cls.name == cls.__bases__[0].name:
             cls.name = cls.__name__
+        if cls.__doc__ is None:
+            cls.__doc__ = cls.__bases__[0].__doc__
 
     def __init__(self, pipeline: "Pipen" = None) -> None:
         """Constructor
@@ -349,6 +352,7 @@ class Proc(ABC, metaclass=ProcMeta):
     async def _init(self) -> None:
         """Init all other properties and jobs"""
         import pandas
+
         scheduler_opts = (
             copy_dict(self.pipeline.config.scheduler_opts, 2) or {}
         )
@@ -519,6 +523,7 @@ class Proc(ABC, metaclass=ProcMeta):
         """
         import pandas
         from .channel import Channel
+
         # split input keys into keys and types
         input_keys = self.input
         if input_keys and isinstance(input_keys, str):
@@ -619,19 +624,13 @@ class Proc(ABC, metaclass=ProcMeta):
         if script.startswith("file://"):
             script_file = Path(script[7:])
             if not script_file.is_absolute():
-                klass = self.__class__
-                if klass.__bases__:
-                    for kls in klass.__bases__:
-                        if not issubclass(kls, Proc):
-                            continue
-                        if script == kls.script:
-                            klass = kls
-                            continue
-                        break
-
-                script_file = (
-                    Path(inspect.getfile(klass)).parent / script_file
+                base = get_base(
+                    self.__class__,
+                    Proc,
+                    script,
+                    lambda klass: getattr(klass, "script", None),
                 )
+                script_file = Path(inspect.getfile(base)).parent / script_file
             if not script_file.is_file():
                 raise ProcScriptFileNotFound(
                     f"No such script file: {script_file}"
