@@ -117,6 +117,7 @@ def test_check_cached_input_or_output_different(
 
     caplog.clear()
     pipen.set_starts(proc_io_diff2).run()
+    pipen.build_proc_relationships() # not redoing it.
     assert "Not cached (input or output is different)" in caplog.text
 
 

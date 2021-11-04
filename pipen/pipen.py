@@ -117,7 +117,7 @@ class Pipen:
         logger.setLevel(self.config.loglevel.upper())
         log_rich_renderable(pipen_banner(), "magenta", logger.info)
         try:
-            self._build_proc_relationships()
+            self.build_proc_relationships()
             self._log_pipeline_info()
             await plugin.hooks.on_start(self)
 
@@ -217,6 +217,7 @@ class Pipen:
         """
         if clear:
             self.starts = []
+            self.procs = None
 
         for proc in procs:
             if isinstance(proc, (list, tuple)):
@@ -327,8 +328,11 @@ class Pipen:
         self.config.plugin_opts.update(self._kwargs.pop("plugin_opts", {}))
         self.config.update(self._kwargs)
 
-    def _build_proc_relationships(self) -> None:
+    def build_proc_relationships(self) -> None:
         """Build the proc relationships for the pipeline"""
+        if self.procs:
+            return
+
         if not self.starts:
             raise ProcDependencyError(
                 "No start processes specified. "
