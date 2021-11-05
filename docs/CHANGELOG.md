@@ -1,3 +1,8 @@
+## 0.2.6
+
+- 🎨 Make `pipen._build_proc_relationships()` public and don't rebuild the relations
+- ✨ Allow pipenline name to be obtained from assignment
+
 ## 0.2.5
 
 - 🩹 Allow relative script path to be inherited

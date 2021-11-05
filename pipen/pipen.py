@@ -13,6 +13,7 @@ from rich.text import Text
 from rich.console import Group
 from simpleconf import Config
 from slugify import slugify  # type: ignore
+from varname import varname, VarnameException
 
 from .defaults import CONFIG, CONFIG_FILES, CONSOLE_WIDTH
 from .exceptions import ProcDependencyError, PipenSetDataError
@@ -67,7 +68,14 @@ class Pipen:
         """Constructor"""
         self.procs: List[Proc] = None
         self.pbar: PipelinePBar = None
-        self.name = name or f"pipen-{self.__class__.PIPELINE_COUNT}"
+        if name is not None:
+            self.name = name
+        else:
+            try:
+                self.name = varname()
+            except VarnameException:
+                self.name = f"pipen-{self.__class__.PIPELINE_COUNT}"
+
         self.desc = desc
         self.outdir = Path(
             outdir or f"./{slugify(self.name)}_results"
