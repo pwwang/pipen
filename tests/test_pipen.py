@@ -21,6 +21,13 @@ def test_init(pipen):
     assert isinstance(pipen, Pipen)
 
 
+def test_name():
+    p = Pipen()
+    assert p.name == "p"
+    [p] = [Pipen()]
+    assert p.name.startswith("pipen-")
+
+
 def test_run(pipen):
     ret = pipen.set_starts(SimpleProc).run()
     assert ret
