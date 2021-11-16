@@ -320,6 +320,10 @@ class Proc(ABC, metaclass=ProcMeta):
         template_opts.update(self.template_opts or {})
         self.template_opts = template_opts
 
+        plugin_opts = copy_dict(self.pipeline.config.plugin_opts)
+        plugin_opts.update(self.plugin_opts or {})
+        self.plugin_opts = plugin_opts
+
         # input
         self.input = self._compute_input()  # type: ignore
         # output
