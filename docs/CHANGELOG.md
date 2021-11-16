@@ -1,3 +1,7 @@
+## 0.2.7
+
+- 🩹 Fix process plugin_opts not inherited from pipeline
+
 ## 0.2.6
 
 - 🎨 Make `pipen._build_proc_relationships()` public and don't rebuild the relations
