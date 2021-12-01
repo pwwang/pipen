@@ -1,3 +1,7 @@
+## 0.2.8
+
+- 🩹 Forward fill na for input data
+
 ## 0.2.7
 
 - 🩹 Fix process plugin_opts not inherited from pipeline
