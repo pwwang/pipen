@@ -333,6 +333,7 @@ class Proc(ABC, metaclass=ProcMeta):
 
         # input
         self.input = self._compute_input()  # type: ignore
+        plugin.hooks.on_proc_input_computed(self)
         # output
         self.output = self._compute_output()
         # scheduler
