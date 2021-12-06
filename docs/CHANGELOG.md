@@ -1,3 +1,7 @@
+## 0.2.9
+
+- ✨ Allow `requires` to be set by `__setattr__()`
+
 ## 0.2.8
 
 - 🩹 Forward fill na for input data
