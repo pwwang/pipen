@@ -65,6 +65,11 @@ class ProcMeta(ABCMeta):
         """Representation for the Proc subclasses"""
         return f"<Proc:{cls.name}>"
 
+    def __setattr__(cls, name: str, value: Any) -> None:
+        if name == "requires":
+            value = cls._compute_requires(value)
+        return super().__setattr__(name, value)
+
     def __call__(cls, *args: Any, **kwds: Any) -> "Proc":
         """Make sure Proc subclasses are singletons
 
@@ -274,7 +279,9 @@ class Proc(ABC, metaclass=ProcMeta):
         """Do the requirements inferring since we need them to build up the
         process relationship
         """
-        cls.requires = cls._compute_requires()
+        # cls.requires = cls._compute_requires()
+        # triggers cls.__setattr__() to compute requires
+        cls.requires = cls.requires
         if cls.name is None or cls.name == cls.__bases__[0].name:
             cls.name = cls.__name__
         if cls.__doc__ is None:
