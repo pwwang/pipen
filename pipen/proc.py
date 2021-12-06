@@ -285,7 +285,11 @@ class Proc(ABC, metaclass=ProcMeta):
         if cls.name is None or cls.name == cls.__bases__[0].name:
             cls.name = cls.__name__
         if cls.__doc__ is None:
-            cls.__doc__ = cls.__bases__[0].__doc__
+            cls.__doc__ = (
+                cls.__bases__[0].__doc__
+                if cls.__bases__[0] is not Proc
+                else "Undescribed process."
+            )
 
     def __init__(self, pipeline: "Pipen" = None) -> None:
         """Constructor
