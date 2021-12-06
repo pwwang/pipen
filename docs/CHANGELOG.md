@@ -1,3 +1,8 @@
+## 0.2.10
+
+- ✨ Add hook `on_proc_input_computed`
+- 🩹 Default new process docstring to "Undescribed process."
+
 ## 0.2.9
 
 - ✨ Allow `requires` to be set by `__setattr__()`
