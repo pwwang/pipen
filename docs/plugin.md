@@ -44,6 +44,10 @@ See [`simplug`][1] for more details.
     Called before proc get instantiated.
     Enables plugins to modify the default attributes of processes
 
+- `on_proc_input_computed(proc)` (sync)
+
+    Called after process input data is computed.
+
 - `on_proc_start(proc)` (async)
 
     When process object initialization completes, including the `xqute` and job initialization. The `output_data` is also accessible here. The process is ready to run.
