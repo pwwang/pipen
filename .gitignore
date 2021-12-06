@@ -112,3 +112,4 @@ poetry.lock
 t-*.ipynb
 *-output/
 *_results/
+t.py
