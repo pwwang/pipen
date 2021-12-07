@@ -1,3 +1,7 @@
+## 0.2.11
+
+- 🩹 Update `envs`, `plugin_opts` and `scheduler_opts` while subclassing processes.
+
 ## 0.2.10
 
 - ✨ Add hook `on_proc_input_computed`
