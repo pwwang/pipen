@@ -1,3 +1,7 @@
+## 0.2.12
+
+- 🐛 Hotfix for typos in `Proc.__init_subclass__()`
+
 ## 0.2.11
 
 - 🩹 Update `envs`, `plugin_opts` and `scheduler_opts` while subclassing processes.

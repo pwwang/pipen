@@ -289,8 +289,11 @@ class Proc(ABC, metaclass=ProcMeta):
             )
 
         cls.envs = update_dict(parent.envs, cls.envs)
-        cls.plugin_opts = update_dict(parent.envs, cls.plugin_opts)
-        cls.scheduler_opts = update_dict(parent.envs, cls.scheduler_opts)
+        cls.plugin_opts = update_dict(parent.plugin_opts, cls.plugin_opts)
+        cls.scheduler_opts = update_dict(
+            parent.scheduler_opts,
+            cls.scheduler_opts
+        )
 
     def __init__(self, pipeline: "Pipen" = None) -> None:
         """Constructor
