@@ -241,55 +241,56 @@ class Proc(ABC, metaclass=ProcMeta):
                     "pass one explicitly to `Proc.from_proc(..., name=...)`"
                 ) from vexc
 
-        kwargs: Dict[str, Any] = {"name": name}
-        if desc is not None:
-            kwargs["desc"] = desc
-        if envs is not None:
-            kwargs["envs"] = update_dict(proc.envs, envs)
-        if cache is not None:
-            kwargs["cache"] = cache
-        if forks is not None:
-            kwargs["forks"] = forks
-        if order is not None:
-            kwargs["order"] = order
-        if plugin_opts is not None:
-            kwargs["plugin_opts"] = update_dict(proc.plugin_opts, plugin_opts)
-        if scheduler is not None:
-            kwargs["scheduler"] = scheduler
-        if scheduler_opts is not None:
-            kwargs["scheduler_opts"] = update_dict(
-                proc.scheduler_opts,
-                scheduler_opts,
-            )
-        if error_strategy is not None:
-            kwargs["error_strategy"] = error_strategy
-        if num_retries is not None:
-            kwargs["num_retries"] = num_retries
-        if submission_batch is not None:
-            kwargs["submission_batch"] = submission_batch
+        kwargs: Dict[str, Any] = {
+            "name": name,
+            "export": export,
+            "input_data": input_data,
+            "requires": requires,
+            "nexts": None,
+            "output_data": None,
+        }
 
-        kwargs["export"] = export
-        kwargs["input_data"] = input_data
-        kwargs["requires"] = requires
-        kwargs["nexts"] = None
-        kwargs["output_data"] = None
+        locs = locals()
+        for key in (
+            "desc",
+            "envs",
+            "cache",
+            "forks",
+            "order",
+            "plugin_opts",
+            "scheduler",
+            "scheduler_opts",
+            "error_strategy",
+            "num_retries",
+            "submission_batch",
+        ):
+            if locs[key] is not None:
+                kwargs[key] = locs[key]
+
         return type(name, (proc,), kwargs)
 
     def __init_subclass__(cls) -> None:
         """Do the requirements inferring since we need them to build up the
         process relationship
         """
+        parent = cls.__bases__[-1]
         # cls.requires = cls._compute_requires()
         # triggers cls.__setattr__() to compute requires
         cls.requires = cls.requires
-        if cls.name is None or cls.name == cls.__bases__[0].name:
+
+        if cls.name is None or cls.name == parent.name:
             cls.name = cls.__name__
+
         if cls.__doc__ is None:
             cls.__doc__ = (
-                cls.__bases__[0].__doc__
-                if cls.__bases__[0] is not Proc
+                parent.__doc__
+                if parent is not Proc
                 else "Undescribed process."
             )
+
+        cls.envs = update_dict(parent.envs, cls.envs)
+        cls.plugin_opts = update_dict(parent.envs, cls.plugin_opts)
+        cls.scheduler_opts = update_dict(parent.envs, cls.scheduler_opts)
 
     def __init__(self, pipeline: "Pipen" = None) -> None:
         """Constructor
