@@ -28,7 +28,7 @@ class Template(ABC):
         self.engine: Any = None
 
     def render(self, data: Mapping[str, Any] = None) -> str:
-        """@API
+        """
         Render the template
         @parmas:
             data (dict): The data used to render
