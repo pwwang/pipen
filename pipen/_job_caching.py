@@ -204,15 +204,15 @@ class JobCaching:
                 "Not cached (job.rc != 0)",
             )
             out = False
+        elif proc_cache == "force":
+            await self.cache()
+            out = True
         elif not self.signature_file.is_file():
             self.log(
                 "debug",
                 "Not cached (signature file not found)",
             )
             out = False
-        elif proc_cache == "force":
-            await self.cache()
-            out = True
         else:
             out = await self._check_cached()
 

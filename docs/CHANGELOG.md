@@ -1,3 +1,7 @@
+## 0.2.13
+
+- 🩹 Don't require `job.signature.toml` to force cache a job
+
 ## 0.2.12
 
 - 🐛 Hotfix for typos in `Proc.__init_subclass__()`
