@@ -316,7 +316,7 @@ class Pipen:
                             for key, val in self.config.template_opts.items()
                         },
                         indent=1,
-                        sort_dicts=False,
+                        # sort_dicts=False,
                     ),
                 ),
             ),
