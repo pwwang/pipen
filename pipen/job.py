@@ -232,10 +232,7 @@ class Job(XquteJob, JobCaching):
 
         if self.index == limit:
             if limit_indicator:
-                self.proc.log(
-                    "debug", "Not showing similar logs for further jobs."
-                )
-            return
+                msg = f"{msg} (not showing similar logs)"
 
         job_index_indicator = "[%s/%s] " % (
             str(self.index).zfill(len(str(self.proc.size - 1))),

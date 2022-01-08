@@ -263,7 +263,7 @@ def test_job_log_limit(caplog, pipen):
 
     caplog.clear()
     pipen.set_starts(proc2).run()
-    assert "Not showing similar logs" in caplog.text
+    assert "showing similar logs" in caplog.text
 
 
 def test_wrong_input_type(pipen):
