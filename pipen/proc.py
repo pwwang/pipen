@@ -449,7 +449,8 @@ class Proc(ABC, metaclass=ProcMeta):
                 self.pbar.update_job_running()
                 self.pbar.update_job_succeeded()
                 job.status = JobStatus.FINISHED
-            await self.xqute.put(job)
+            else:
+                await self.xqute.put(job)
         if cached_jobs:
             self.log("info", "Cached jobs: [%s]", brief_list(cached_jobs))
         await self.xqute.run_until_complete()

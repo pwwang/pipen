@@ -1,3 +1,10 @@
+## 0.2.14
+
+- 🩹 Shorten pipeline info in log for long config options
+- 🐛 Fix cached jobs being put into queue
+- 🩹 Shorten job debug messages when hit limits
+- 🚑 Remove sort_dicts for pprint.pformat for py3.7
+
 ## 0.2.13
 
 - 🩹 Don't require `job.signature.toml` to force cache a job

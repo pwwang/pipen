@@ -3,6 +3,8 @@ import asyncio
 from itertools import chain
 from os import PathLike
 from pathlib import Path
+import pprint
+import textwrap
 from typing import ClassVar, Iterable, List, Sequence, Type, Union
 
 from diot import Diot
@@ -209,7 +211,7 @@ class Pipen:
     def set_starts(
         self,
         *procs: Union[Type[Proc], Sequence[Type[Proc]]],
-        clear: bool = True
+        clear: bool = True,
     ):
         """Set the starts
 
@@ -276,12 +278,53 @@ class Pipen:
                     self.outdir,
                 ],
             ),
-            sorted(self.config.items()),
+            sorted(
+                (key, val)
+                for key, val in self.config.items()
+                if not key.endswith("_opts")
+            ),
+            (
+                (
+                    "plugin_opts",
+                    pprint.pformat(self.config.plugin_opts, indent=1),
+                ),
+                (
+                    "scheduler_opts",
+                    pprint.pformat(self.config.scheduler_opts, indent=1),
+                ),
+                (
+                    "template_opts",
+                    pprint.pformat(
+                        {
+                            key: (
+                                {
+                                    ckey: textwrap.shorten(
+                                        str(cval),
+                                        width=30 - len(key),
+                                        placeholder=" …",
+                                    )
+                                    for ckey, cval in chain(
+                                        list(val.items())[:3],
+                                        []
+                                        if len(val) <= 3
+                                        else [("...", "...")],
+                                    )
+                                }
+                                if isinstance(val, dict)
+                                else val
+                            )
+                            for key, val in self.config.template_opts.items()
+                        },
+                        indent=1,
+                        # sort_dicts=False,
+                    ),
+                ),
+            ),
         ):
             items_table.add_row(
                 Text.assemble((key, "scope.key")),
                 Text.assemble(("=", "scope.equals")),
-                str(value),
+                Text(str(value), overflow="fold"),
             )
 
         logger.info("")
@@ -357,8 +400,7 @@ class Pipen:
             logger.debug("- Next processes: %s", nexts)
             # pick up one that can be added to procs
             for proc in sorted(
-                nexts,
-                key=lambda prc: (prc.order or 0, prc.name)
+                nexts, key=lambda prc: (prc.order or 0, prc.name)
             ):
                 if proc in self.procs:
                     raise ProcDependencyError(
