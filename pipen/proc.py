@@ -618,7 +618,7 @@ class Proc(ABC, metaclass=ProcMeta):
 
         out.data = out.data.rename(
             columns=dict(zip(rest_cols[:len_needed_cols], needed_cols))
-        ).loc[:, out.type]
+        ).loc[:, list(out.type)]
 
         return out
 
