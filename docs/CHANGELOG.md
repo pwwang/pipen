@@ -1,3 +1,9 @@
+## 0.2.15
+
+- 🩹 Fix `FutureWarning` in `Proc._compute_input()`
+- 🩹 Add `__doc__` for `Proc.from_proc()`
+- 📌 Pin deps for docs
+
 ## 0.2.14
 
 - 🩹 Shorten pipeline info in log for long config options

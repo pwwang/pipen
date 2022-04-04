@@ -267,6 +267,7 @@ class Proc(ABC, metaclass=ProcMeta):
             if locs[key] is not None:
                 kwargs[key] = locs[key]
 
+        kwargs["__doc__"] = proc.__doc__
         return type(name, (proc,), kwargs)
 
     def __init_subclass__(cls) -> None:
@@ -618,7 +619,7 @@ class Proc(ABC, metaclass=ProcMeta):
 
         out.data = out.data.rename(
             columns=dict(zip(rest_cols[:len_needed_cols], needed_cols))
-        ).loc[:, out.type]
+        ).loc[:, list(out.type)]
 
         return out
 
