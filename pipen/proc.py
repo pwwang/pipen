@@ -267,6 +267,7 @@ class Proc(ABC, metaclass=ProcMeta):
             if locs[key] is not None:
                 kwargs[key] = locs[key]
 
+        kwargs["__doc__"] = proc.__doc__
         return type(name, (proc,), kwargs)
 
     def __init_subclass__(cls) -> None:
