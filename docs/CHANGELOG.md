@@ -1,3 +1,8 @@
+## 0.2.16
+
+- 📌 Pin dep versions
+- 🩹 Allow to set workdir from Pipen constructor
+
 ## 0.2.15
 
 - 🩹 Fix `FutureWarning` in `Proc._compute_input()`
