@@ -8,10 +8,6 @@ from multiprocessing import Process
 import pytest
 from pipen import Proc, Pipen, plugin
 
-TEST_TMPDIR = Path(gettempdir()) / "pipen_tests"
-rmtree(TEST_TMPDIR, ignore_errors=True)
-TEST_TMPDIR.mkdir(parents=True, exist_ok=True)
-
 
 class SimpleProc(Proc):
     """A very simple process for testing"""
@@ -167,7 +163,7 @@ class SimplePlugin:
         print("SimplePlugin")
 
 @pytest.fixture
-def pipen():
+def pipen(tmp_path):
     """Get a simple Pipen object each time"""
     index = Pipen.PIPELINE_COUNT + 1
     pipen_simple = Pipen(
@@ -175,13 +171,14 @@ def pipen():
         desc="No description",
         loglevel="debug",
         cache=True,
-        outdir=TEST_TMPDIR / f"pipen_simple_{index}",
+        workdir=tmp_path / ".pipen",
+        outdir=tmp_path / f"pipen_simple_{index}",
     )
 
     return pipen_simple
 
 @pytest.fixture
-def pipen_with_plugin():
+def pipen_with_plugin(tmp_path):
     """Get a simple Pipen object each time"""
     index = Pipen.PIPELINE_COUNT + 1
     pipen_simple = Pipen(
@@ -190,7 +187,8 @@ def pipen_with_plugin():
         loglevel="debug",
         cache=True,
         plugins=[SimplePlugin()],
-        outdir=TEST_TMPDIR / f"pipen_simple_{index}",
+        workdir=tmp_path / ".pipen",
+        outdir=tmp_path / f"pipen_simple_{index}",
     )
 
     return pipen_simple

@@ -77,7 +77,7 @@ def test_proc_workdir_conflicts(pipen):
 def test_cached_run(caplog, pipen):
     NormalProc.nexts = []
     # force uncache NormalProc
-    shutil.rmtree(pipen.config.workdir)
+    # shutil.rmtree(pipen.config.workdir)
     ret = pipen.set_start(NormalProc).run()
     assert ret
 
@@ -123,6 +123,7 @@ def test_proc_with_input_callable(pipen):
     assert proc2.output_data.equals(pandas.DataFrame({"output": ["2"]}))
 
 def test_proc_is_singleton(pipen):
+    pipen.workdir = ".pipen/"
     p1 = SimpleProc(pipen)
     p2 = SimpleProc(pipen)
     assert p1 is p2

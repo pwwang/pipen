@@ -34,14 +34,14 @@ pipda = "^0.5"
 openpyxl = "^3"
 pytest = "^7.1"
 pytest-cov = "^3"
+pytest-xdist = "^2"
 datar = "^0.8"
 
 [tool.poetry.scripts]
 pipen = "pipen.cli:main"
 
 [tool.pytest.ini_options]
-addopts = "-vv -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
-# addopts = "-vv -W error::UserWarning --cov-config=.coveragerc --cov-report xml:.coverage.xml --cov-report term-missing"
+addopts = "-vv -n auto -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
 console_output_style = "progress"
 junit_family = "xunit1"
 
