@@ -99,6 +99,7 @@ def test_set_data(pipen):
     with pytest.raises(PipenSetDataError):
         pipen.set_data([2])
 
+
 def test_proc_order(pipen):
     proc1 = Proc.from_proc(NormalProc, input_data=[1])
     proc2 = Proc.from_proc(NormalProc, requires=proc1)
@@ -106,6 +107,7 @@ def test_proc_order(pipen):
 
     pipen.set_starts(proc1).run()
     assert pipen.procs == [proc1, proc3, proc2]
+
 
 def test_proc_inherited(pipen):
     proc1 = Proc.from_proc(RelPathScriptProc)

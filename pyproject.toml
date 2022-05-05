@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "pipen"
-version = "0.2.15"
+version = "0.2.16"
 description = "A pipeline framework for python"
 authors = [ "pwwang <pwwang@pwwang.com>",]
 license = "MIT"
@@ -15,33 +15,33 @@ repository = "https://github.com/pwwang/pipen"
 [tool.poetry.dependencies]
 python = "^3.7.1" # align with datar/pandas
 toml = "^0.10"
-varname = "*"
 liquidpy = "^0.7"
-diot = "*"
-pyparam = "*"
-xqute = "*"
-python-simpleconf = "*"
-pandas = "1.*"
-rich = "10.*"
-python-slugify = "5.*"
-simplug = "*"
-enlighten = "1.*"
-cached-property = "1.*"
-more-itertools = "8.*"
-pipda = "*"
+pandas = "^1"
+rich = "^12"
+python-slugify = "^6"
+enlighten = "^1"
+cached-property = "^1"
+more-itertools = "^8"
+varname = "^0.8"
+diot = "^0.1"
+pyparam = "^0.4"
+xqute = "^0.0"
+python-simpleconf = "^0.4"
+simplug = "^0.0"
+pipda = "^0.5"
 
 [tool.poetry.dev-dependencies]
-pytest = "*"
-pytest-cov = "*"
-datar = "*"
-openpyxl = "3.*"
+openpyxl = "^3"
+pytest = "^7.1"
+pytest-cov = "^3"
+pytest-xdist = "^2"
+datar = "^0.8"
 
 [tool.poetry.scripts]
 pipen = "pipen.cli:main"
 
 [tool.pytest.ini_options]
-addopts = "-vv -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
-# addopts = "-vv -W error::UserWarning --cov-config=.coveragerc --cov-report xml:.coverage.xml --cov-report term-missing"
+addopts = "-vv -n auto -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
 console_output_style = "progress"
 junit_family = "xunit1"
 

@@ -90,6 +90,11 @@ class Pipen:
         # We shouldn't update the config here, since we don't know
         # the profile yet
         self._kwargs = kwargs
+        # Initialize the workdir, as workdir is created before _init()
+        # But the config is updated in _init()
+        # Here we hack it to have the workdir passed in.
+        if "workdir" in kwargs:
+            self.config.workdir = kwargs["workdir"]
 
         if not self.__class__.SETUP:  # pragma: no cover
             # Load plugins from entrypotins at runtime to avoid
