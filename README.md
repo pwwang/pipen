@@ -7,7 +7,7 @@
 
 ______________________________________________________________________
 
-[![Pypi][6]][7] [![Github][8]][9] ![Building][10] [![Docs and API][11]][1] [![Codacy][12]][13] [![Codacy coverage][14]][13]
+[![Pypi][6]][7] [![Github][8]][9] ![Building][10] [![Docs and API][11]][1] [![Codacy][12]][13] [![Codacy coverage][14]][13] [![Deps][5]][23]
 
 [Documentation][1] | [ChangeLog][2] | [Examples][3] | [API][4]
 
@@ -141,6 +141,7 @@ Plugins make `pipen` even better.
 [2]: https://pwwang.github.io/pipen/CHANGELOG
 [3]: https://pwwang.github.io/pipen/examples
 [4]: https://pwwang.github.io/pipen/api/pipen
+[5]: https://img.shields.io/librariesio/release/pypi/pipen?style=flat-square
 [6]: https://img.shields.io/pypi/v/pipen?style=flat-square
 [7]: https://pypi.org/project/pipen/
 [8]: https://img.shields.io/github/v/tag/pwwang/pipen?style=flat-square
@@ -158,3 +159,4 @@ Plugins make `pipen` even better.
 [20]: https://github.com/pwwang/pipen-dry
 [21]: https://github.com/pwwang/pipen-cli-init
 [22]: https://github.com/pwwang/pipen-cli-run
+[23]: https://libraries.io/github/pwwang/pipen#repository_dependencies
