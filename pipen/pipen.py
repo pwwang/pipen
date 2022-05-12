@@ -13,7 +13,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 from rich.console import Group
-from simpleconf import Config
+from simpleconf import ProfileConfig
 from slugify import slugify  # type: ignore
 from varname import varname, VarnameException
 
@@ -365,12 +365,14 @@ class Pipen:
         4. **kwargs from Pipen(..., **kwargs)
         5. Those defined in each Proc class
         """
-
         # Then load the configurations from config files
-        config = Config()
-        config._load(*CONFIG_FILES)
-        config._use(self.profile)
-        self.config.update(config)
+        config = ProfileConfig.load(
+            {"default": self.config},
+            *CONFIG_FILES,
+            ignore_nonexist=True,
+        )
+        self.config = ProfileConfig.use_profile(
+            config, self.profile, copy=True)
 
         # configs from files and CONFIG are loaded
         # allow plugins to change the default configs

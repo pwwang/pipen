@@ -1,11 +1,11 @@
 """List available profiles."""
 from typing import Any, Mapping
 
-import toml  # type: ignore
+import rtoml  # type: ignore
 from rich import print
 from rich.panel import Panel
 from rich.syntax import Syntax
-from simpleconf import Config
+from simpleconf import ProfileConfig
 
 from ._hooks import CLIPlugin
 from ..defaults import CONFIG, CONFIG_FILES
@@ -38,11 +38,14 @@ class CLIProfilePlugin(CLIPlugin):
     def exec_command(self, args: Mapping[str, Any]) -> None:
         """Run the command"""
 
-        config = Config()
-        config._load({"default": CONFIG})
-        config._load(*CONFIG_FILES)
+        config = ProfileConfig.load(
+            {"default": CONFIG},
+            *CONFIG_FILES,
+            ignore_nonexist=True,
+        )
 
         print("Configurations loaded from:")
+        print("- pipen.defaults.CONFIG (python dictionary)")
         for conffile in reversed(CONFIG_FILES):
             print(f"- {conffile}")
         print("")
@@ -59,24 +62,26 @@ class CLIProfilePlugin(CLIPlugin):
         print("")
 
         if not args.name:
-            for profile in config._profiles:
-                with config._with(profile, "default"):
+            for profile in ProfileConfig.profiles(config):
+                with ProfileConfig.with_profile(config, profile):
+                    conf = ProfileConfig.detach(config)
                     print(
                         Panel(
-                            Syntax(toml.dumps(config), "toml"),
+                            Syntax(rtoml.dumps(conf), "toml"),
                             title=f"Profile: {profile}",
                             title_align="left",
                         )
                     )
 
         else:
-            if args.name not in config._profiles:
+            if not ProfileConfig.has_profile(config, args.name):
                 raise ValueError(f"No such profile: {args.name}")
 
-            config._use(args.name)
+            ProfileConfig.use_profile(config, args.name)
+            conf = ProfileConfig.detach(config)
             print(
                 Panel(
-                    Syntax(toml.dumps(config), "toml"),
+                    Syntax(rtoml.dumps(conf), "toml"),
                     title=f"Profile: {args.name}",
                     title_align="left",
                 )

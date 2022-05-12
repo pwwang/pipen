@@ -2,9 +2,9 @@
 import shutil
 from pathlib import Path
 
-import toml  # type: ignore
-from diot import Diot
-from xqute.utils import a_read_text, a_write_text, asyncify
+import rtoml
+from simpleconf import Config
+from xqute.utils import a_write_text, asyncify
 
 from .defaults import ProcInputType, ProcOutputType
 from .utils import get_mtime
@@ -68,7 +68,7 @@ class JobCaching:
             "output": {"type": self._output_types, "data": self.output},
             "ctime": float("inf") if max_mtime == 0 else max_mtime,
         }
-        sign_str = toml.dumps(signature)
+        sign_str = rtoml.dumps(signature)
         await a_write_text(self.signature_file, sign_str)
 
     async def _clear_output(self) -> None:
@@ -99,8 +99,7 @@ class JobCaching:
         Returns:
             True if the job is cached otherwise False
         """
-        sign_str = await a_read_text(self.signature_file)
-        signature = Diot(toml.loads(sign_str))
+        signature = Config.load(self.signature_file)
         dirsig = (
             self.proc.pipeline.config.dirsig
             if self.proc.dirsig is None
@@ -111,12 +110,7 @@ class JobCaching:
             # check if inputs/outputs are still the same
             if (
                 signature.input.type != self.proc.input.type
-                or signature.input.data
-                != {
-                    key: val
-                    for key, val in self.input.items()
-                    if val is not None
-                }
+                or signature.input.data != self.input
                 or signature.output.type != self._output_types
                 or signature.output.data != self.output
             ):
