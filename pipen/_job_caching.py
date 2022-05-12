@@ -4,7 +4,7 @@ from pathlib import Path
 
 import rtoml
 from simpleconf import Config
-from xqute.utils import a_write_text, asyncify
+from xqute.utils import asyncify
 
 from .defaults import ProcInputType, ProcOutputType
 from .utils import get_mtime
@@ -68,8 +68,7 @@ class JobCaching:
             "output": {"type": self._output_types, "data": self.output},
             "ctime": float("inf") if max_mtime == 0 else max_mtime,
         }
-        sign_str = rtoml.dumps(signature)
-        await a_write_text(self.signature_file, sign_str)
+        rtoml.dump(signature, self.signature_file)
 
     async def _clear_output(self) -> None:
         """Clear output if not cached"""
