@@ -106,35 +106,35 @@ toml = ["tomli"]
 
 [[package]]
 name = "datar"
-version = "0.8.1"
+version = "0.8.2"
 description = "Port of dplyr and other related R packages in python, using pipda."
 category = "dev"
 optional = false
 python-versions = ">=3.7.1,<4.0.0"
 
 [package.dependencies]
-diot = ">=0.1.1,<0.2.0"
+diot = ">=0.1,<0.2"
 pandas = ">=1.3,<2.0"
-pipda = ">=0.5.9,<0.6.0"
+pipda = ">=0.5,<0.6"
+python-simpleconf = {version = ">=0.5,<0.6", extras = ["toml"]}
 python-slugify = ">=6,<7"
 scipy = ">=1.6,<2.0"
-toml = ">=0.10.2,<0.11.0"
 wcwidth = ">=0.2,<0.3"
 
 [package.extras]
-pdtypes = ["pdtypes (>=0.0.4,<0.0.5)"]
-modin = ["modin (>=0.10.2,<0.11.0)"]
+pdtypes = ["pdtypes (>=0.0,<0.1)"]
+modin = ["modin (>=0.10,<0.11)"]
 
 [[package]]
 name = "diot"
-version = "0.1.5"
+version = "0.1.6"
 description = "Python dictionary with dot notation."
 category = "main"
 optional = false
-python-versions = ">=3.6,<4.0"
+python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
-inflection = "<1.0.0"
+inflection = ">=0.5,<0.6"
 
 [[package]]
 name = "enlighten"
@@ -257,7 +257,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "more-itertools"
-version = "8.12.0"
+version = "8.13.0"
 description = "More routines for operating on iterables, beyond itertools"
 category = "main"
 optional = false
@@ -399,20 +399,20 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "pyparam"
-version = "0.4.17"
+version = "0.5.1"
 description = "Powerful parameter processing."
 category = "main"
 optional = false
-python-versions = ">=3.6.2,<4.0.0"
+python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
-diot = "*"
-python-simpleconf = "*"
-rich = "*"
+diot = ">=0.1,<0.2"
+python-simpleconf = ">=0.5,<0.6"
+rich = ">=12,<13"
 
 [[package]]
 name = "pyparsing"
-version = "3.0.8"
+version = "3.0.9"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
 category = "dev"
 optional = false
@@ -501,19 +501,22 @@ six = ">=1.5"
 
 [[package]]
 name = "python-simpleconf"
-version = "0.4.2"
+version = "0.5.4"
 description = "Simple configuration management with python."
 category = "main"
 optional = false
-python-versions = ">=3.6,<4.0"
+python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
-diot = "*"
-tomli = ">=1.2.2,<2.0.0"
+diot = ">=0.1,<0.2"
+rtoml = {version = ">=0.7,<0.8", optional = true, markers = "extra == \"toml\" or extra == \"all\""}
 
 [package.extras]
-dotenv = ["python-dotenv"]
-yaml = ["pyyaml"]
+env = ["python-dotenv (>=0.20,<0.21)"]
+all = ["python-dotenv (>=0.20,<0.21)", "pyyaml (>=6,<7)", "rtoml (>=0.7,<0.8)", "iniconfig (>=1.1.1,<2.0.0)"]
+yaml = ["pyyaml (>=6,<7)"]
+toml = ["rtoml (>=0.7,<0.8)"]
+ini = ["iniconfig (>=1.1.1,<2.0.0)"]
 
 [[package]]
 name = "python-slugify"
@@ -539,7 +542,7 @@ python-versions = "*"
 
 [[package]]
 name = "rich"
-version = "12.3.0"
+version = "12.4.1"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 category = "main"
 optional = false
@@ -552,6 +555,14 @@ typing-extensions = {version = ">=4.0.0,<5.0", markers = "python_version < \"3.9
 
 [package.extras]
 jupyter = ["ipywidgets (>=7.5.1,<8.0.0)"]
+
+[[package]]
+name = "rtoml"
+version = "0.7.1"
+description = "A better TOML library for python implemented in rust."
+category = "main"
+optional = false
+python-versions = ">=3.7"
 
 [[package]]
 name = "scipy"
@@ -592,20 +603,12 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "toml"
-version = "0.10.2"
-description = "Python Library for Tom's Obvious, Minimal Language"
-category = "main"
-optional = false
-python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
-
-[[package]]
 name = "tomli"
-version = "1.2.3"
+version = "2.0.1"
 description = "A lil' TOML parser"
-category = "main"
+category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [[package]]
 name = "typing-extensions"
@@ -680,7 +683,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7.1" # align with datar/pandas
-content-hash = "7027ba0a698bda7f2c09914a61dc56351b72297789469772669145866c7aba1e"
+content-hash = "72c9dfca9a3c32ca81f0f4497313a008242a0afd91887c0a2dd13217c5552708"
 
 [metadata.files]
 aiofiles = [
@@ -763,12 +766,12 @@ coverage = [
     {file = "coverage-6.3.2.tar.gz", hash = "sha256:03e2a7826086b91ef345ff18742ee9fc47a6839ccd517061ef8fa1976e652ce9"},
 ]
 datar = [
-    {file = "datar-0.8.1-py3-none-any.whl", hash = "sha256:12ae513f3bb19fdc66be2c2d60125394dede015d10a5f5ea8cea95dae2f4a709"},
-    {file = "datar-0.8.1.tar.gz", hash = "sha256:ff07aa385f1198f63da22d3cad18b690522cd09aeafd86f90e9b856a1a914a16"},
+    {file = "datar-0.8.2-py3-none-any.whl", hash = "sha256:fb8c08973a0ca18a3569dc6f27a97dc0ee32bf4cb35e857de6dcadd55feda74c"},
+    {file = "datar-0.8.2.tar.gz", hash = "sha256:7552e9225b25b0e79daf3365a74779cde7ee5cffc054a6db0243f1b107a19d4b"},
 ]
 diot = [
-    {file = "diot-0.1.5-py3-none-any.whl", hash = "sha256:f5e90a405064c09873130240b0c3a2ba9a480e754611a74f93599f84ec0a28b9"},
-    {file = "diot-0.1.5.tar.gz", hash = "sha256:a8adc50e2d8e2a1d03ed017ecae98eb09a7ebb3bd0a5fbd44cbfb222e5a71bb4"},
+    {file = "diot-0.1.6-py3-none-any.whl", hash = "sha256:1e7f97bbc92cbbdd51d8c535885f5e2a71762b364c1b2410dfc84f3a4572d551"},
+    {file = "diot-0.1.6.tar.gz", hash = "sha256:1dcfc37dff406c96020d14350c05f920cb7446c3e5abf3477cf2ae0587f72066"},
 ]
 enlighten = [
     {file = "enlighten-1.10.2-py2.py3-none-any.whl", hash = "sha256:b237fe562b320bf9f1d4bb76d0c98e0daf914372a76ab87c35cd02f57aa9d8c1"},
@@ -853,8 +856,8 @@ markupsafe = [
     {file = "MarkupSafe-2.1.1.tar.gz", hash = "sha256:7f91197cc9e48f989d12e4e6fbc46495c446636dfc81b9ccf50bb0ec74b91d4b"},
 ]
 more-itertools = [
-    {file = "more-itertools-8.12.0.tar.gz", hash = "sha256:7dc6ad46f05f545f900dd59e8dfb4e84a4827b97b3cfecb175ea0c7d247f6064"},
-    {file = "more_itertools-8.12.0-py3-none-any.whl", hash = "sha256:43e6dd9942dffd72661a2c4ef383ad7da1e6a3e968a927ad7a6083ab410a688b"},
+    {file = "more-itertools-8.13.0.tar.gz", hash = "sha256:a42901a0a5b169d925f6f217cd5a190e32ef54360905b9c39ee7db5313bfec0f"},
+    {file = "more_itertools-8.13.0-py3-none-any.whl", hash = "sha256:c5122bffc5f104d37c1626b8615b511f3427aa5389b94d61e5ef8236bfbc3ddb"},
 ]
 numpy = [
     {file = "numpy-1.21.6-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:8737609c3bbdd48e380d463134a35ffad3b22dc56295eff6f79fd85bd0eeeb25"},
@@ -1003,12 +1006,12 @@ pygments = [
     {file = "Pygments-2.12.0.tar.gz", hash = "sha256:5eb116118f9612ff1ee89ac96437bb6b49e8f04d8a13b514ba26f620208e26eb"},
 ]
 pyparam = [
-    {file = "pyparam-0.4.17-py3-none-any.whl", hash = "sha256:58b7ba22c2d72160b38092b9f174f3c18d43fffbe75152381948058d1ca942f4"},
-    {file = "pyparam-0.4.17.tar.gz", hash = "sha256:17be473262414f86dcf8fa519f0ea2a52eb18b0c9d73d7df0ea647b983dee3ff"},
+    {file = "pyparam-0.5.1-py3-none-any.whl", hash = "sha256:62c72bb4a1f55cb62ed88132cbd54e785cac9c12586958012deae94fb4123049"},
+    {file = "pyparam-0.5.1.tar.gz", hash = "sha256:2771512baa05c279d693a805233acf1894d4ad05b7f46b714ce74b1ac3ca96a8"},
 ]
 pyparsing = [
-    {file = "pyparsing-3.0.8-py3-none-any.whl", hash = "sha256:ef7b523f6356f763771559412c0d7134753f037822dad1b16945b7b846f7ad06"},
-    {file = "pyparsing-3.0.8.tar.gz", hash = "sha256:7bf433498c016c4314268d95df76c81b842a4cb2b276fa3312cfb1e1d85f6954"},
+    {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
+    {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
 ]
 pytest = [
     {file = "pytest-7.1.2-py3-none-any.whl", hash = "sha256:13d0e3ccfc2b6e26be000cb6568c832ba67ba32e719443bfe725814d3c42433c"},
@@ -1031,8 +1034,8 @@ python-dateutil = [
     {file = "python_dateutil-2.8.2-py2.py3-none-any.whl", hash = "sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9"},
 ]
 python-simpleconf = [
-    {file = "python-simpleconf-0.4.2.tar.gz", hash = "sha256:a05d3a9f4181cab7c09d87e80b6f6da406eb62695a03b27a81fc9003922c0e01"},
-    {file = "python_simpleconf-0.4.2-py3-none-any.whl", hash = "sha256:8408b57015932e9e985641668022d183230033c067e2d351d1fa2763b82c0f62"},
+    {file = "python-simpleconf-0.5.4.tar.gz", hash = "sha256:e95f811f66beadc62d2d1b1bce680bebf6261af692bc94a608c3f29051da5e5a"},
+    {file = "python_simpleconf-0.5.4-py3-none-any.whl", hash = "sha256:83b6cfbadf8e90133fa78d966942c50302dfc5889a1c2d19a0c2074d71b638db"},
 ]
 python-slugify = [
     {file = "python-slugify-6.1.2.tar.gz", hash = "sha256:272d106cb31ab99b3496ba085e3fea0e9e76dcde967b5e9992500d1f785ce4e1"},
@@ -1043,8 +1046,35 @@ pytz = [
     {file = "pytz-2022.1.tar.gz", hash = "sha256:1e760e2fe6a8163bc0b3d9a19c4f84342afa0a2affebfaa84b01b978a02ecaa7"},
 ]
 rich = [
-    {file = "rich-12.3.0-py3-none-any.whl", hash = "sha256:0eb63013630c6ee1237e0e395d51cb23513de6b5531235e33889e8842bdf3a6f"},
-    {file = "rich-12.3.0.tar.gz", hash = "sha256:7e8700cda776337036a712ff0495b04052fb5f957c7dfb8df997f88350044b64"},
+    {file = "rich-12.4.1-py3-none-any.whl", hash = "sha256:d13c6c90c42e24eb7ce660db397e8c398edd58acb7f92a2a88a95572b838aaa4"},
+    {file = "rich-12.4.1.tar.gz", hash = "sha256:d239001c0fb7de985e21ec9a4bb542b5150350330bbc1849f835b9cbc8923b91"},
+]
+rtoml = [
+    {file = "rtoml-0.7.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:fae1eee36fa08ab7590f492ee1ffbd94b18a07f4199515feb62e02d44eb61b81"},
+    {file = "rtoml-0.7.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e1d8404f91dc6addfa70ebbfdb1ee1d7392d580677f2f43370e79548710d1302"},
+    {file = "rtoml-0.7.1-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:3fee9dc92056c3dcd870d6727ea7e4d05b46175d4054bacd52df8d366291237b"},
+    {file = "rtoml-0.7.1-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:b83c53a854097395554e1392f1041789e8925019d4b12848d29727d7fd9d2d5c"},
+    {file = "rtoml-0.7.1-cp310-cp310-win32.whl", hash = "sha256:d8c844fd0ac5b0b0cae121b46f6103fbcb15d4c786687a18cc5b0cc30f1f4007"},
+    {file = "rtoml-0.7.1-cp310-cp310-win_amd64.whl", hash = "sha256:177fd55dc5cd329f2fa41f3a6943fd3bc43c6e3b04ee6a46f8430414199a00f0"},
+    {file = "rtoml-0.7.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:3024de7114a23aac3cefef5286ff22f6686d0b167c6767d45ea3842e8ec91333"},
+    {file = "rtoml-0.7.1-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1c48819b034813007d48aa1fbceb478d9b6dc4f8f277036082e7e98a1d97dff4"},
+    {file = "rtoml-0.7.1-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:80cf3ea694407bbdd13cd3beeb2e8a8394168b0e3164ec509aa3f29e84162ec1"},
+    {file = "rtoml-0.7.1-cp37-cp37m-musllinux_1_1_x86_64.whl", hash = "sha256:19b7f0d16718086dfc2c8f244d0f7254788343fb5ecee2a871bdf45efd3e679b"},
+    {file = "rtoml-0.7.1-cp37-cp37m-win32.whl", hash = "sha256:b27afda8c18e65ad98b39a977ef37742410b3a126c2ce7eb9c1abe001da349e2"},
+    {file = "rtoml-0.7.1-cp37-cp37m-win_amd64.whl", hash = "sha256:866614518934a9e7ddf30f2a24922397c2aa0d7548dc100648c6bf4f82f9d2dd"},
+    {file = "rtoml-0.7.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:93600edc8d0be10b7f6532b580fa6ab31e7aa7673454a9e7569a116839fdf2d1"},
+    {file = "rtoml-0.7.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:454e02542492c4458981ce57235a892e37cc6bf99e06bf30ddbd4029a78e6395"},
+    {file = "rtoml-0.7.1-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:bf0c8f9b10f4da83a69cf249bc6b7d3ed7f1de6b4f84f548e8f2f9683eab9b8c"},
+    {file = "rtoml-0.7.1-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:b59aa478a4bbf5481feb8a00d08e7d38e8d25139b851463c0474284ed1fdac32"},
+    {file = "rtoml-0.7.1-cp38-cp38-win32.whl", hash = "sha256:3fac7e06d7b9bdbca5fc729799f7abdaaa002edc4b0cbbdb3fc93de4739804cb"},
+    {file = "rtoml-0.7.1-cp38-cp38-win_amd64.whl", hash = "sha256:81819b661f7429d468c305caf781e9aee715316a23898a0196cefc4a867a8483"},
+    {file = "rtoml-0.7.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:da9b6a3980a01102eb742b1e4efb45e35df0b34d0fcfa3ec19cc71cf2989ba0f"},
+    {file = "rtoml-0.7.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f9f8a5d671cbed209e7a6801921fdd78186334f8c58bb9618d5782f483bbeebf"},
+    {file = "rtoml-0.7.1-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:e41a0d63d6392d33761a2e67db6a8a9246c4c6f38d2b93c2e762d765a1d50070"},
+    {file = "rtoml-0.7.1-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:2abd34db201796e6b49cf16677829c86c0543f2399c9bd392bd3499daedf8d32"},
+    {file = "rtoml-0.7.1-cp39-cp39-win32.whl", hash = "sha256:19508eb58d465e5faa0116e9cd6393aa944ac1bf4b3f035aacdc8325ae7c2b2f"},
+    {file = "rtoml-0.7.1-cp39-cp39-win_amd64.whl", hash = "sha256:4b765e4b940371df3668bd7f13be33f80fcd5c4e673f3eee9d74d637d6b34558"},
+    {file = "rtoml-0.7.1.tar.gz", hash = "sha256:b19f3f7e9961e262825570bd550cb120aa1e5305951648eb901b5307f58690c8"},
 ]
 scipy = [
     {file = "scipy-1.6.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:a15a1f3fc0abff33e792d6049161b7795909b40b97c6cc2934ed54384017ab76"},
@@ -1079,13 +1109,9 @@ text-unidecode = [
     {file = "text-unidecode-1.3.tar.gz", hash = "sha256:bad6603bb14d279193107714b288be206cac565dfa49aa5b105294dd5c4aab93"},
     {file = "text_unidecode-1.3-py2.py3-none-any.whl", hash = "sha256:1311f10e8b895935241623731c2ba64f4c455287888b18189350b67134a822e8"},
 ]
-toml = [
-    {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
-    {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
-]
 tomli = [
-    {file = "tomli-1.2.3-py3-none-any.whl", hash = "sha256:e3069e4be3ead9668e21cb9b074cd948f7b3113fd9c8bba083f48247aab8b11c"},
-    {file = "tomli-1.2.3.tar.gz", hash = "sha256:05b6166bff487dc068d322585c7ea4ef78deed501cc124060e0f238e89a9231f"},
+    {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
+    {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.2.0-py3-none-any.whl", hash = "sha256:6657594ee297170d19f67d55c05852a874e7eb634f4f753dbd667855e07c1708"},

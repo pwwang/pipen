@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "pipen"
-version = "0.2.16"
+version = "0.3.0"
 description = "A pipeline framework for python"
 authors = [ "pwwang <pwwang@pwwang.com>",]
 license = "MIT"
@@ -14,7 +14,7 @@ repository = "https://github.com/pwwang/pipen"
 
 [tool.poetry.dependencies]
 python = "^3.7.1" # align with datar/pandas
-toml = "^0.10"
+rtoml = "^0.7"
 liquidpy = "^0.7"
 pandas = "^1"
 rich = "^12"
@@ -24,15 +24,15 @@ cached-property = "^1"
 more-itertools = "^8"
 varname = "^0.8"
 diot = "^0.1"
-pyparam = "^0.4"
+pyparam = "^0.5"
 xqute = "^0.0"
-python-simpleconf = "^0.4"
+python-simpleconf = "^0.5"
 simplug = "^0.0"
 pipda = "^0.5"
 
 [tool.poetry.dev-dependencies]
 openpyxl = "^3"
-pytest = "^7.1"
+pytest = "^7"
 pytest-cov = "^3"
 pytest-xdist = "^2"
 datar = "^0.8"

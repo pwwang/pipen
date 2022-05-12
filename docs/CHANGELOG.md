@@ -1,3 +1,11 @@
+## 0.3.0
+
+- ⬆️ Upgrade dependencies
+- 📌 Use `rtoml` instead of `toml` (see https://github.com/pwwang/toml-bench)
+- 🩹 Dump job signature to file directly instead of dump to a string first
+- 👷 Add python 3.10 to CI
+- 📝 Add dependencies badge to README.md
+
 ## 0.2.16
 
 - 📌 Pin dep versions
