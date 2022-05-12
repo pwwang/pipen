@@ -1,3 +1,7 @@
+## 0.3.1
+
+- 🩹 Hide config meta data in pipeline information
+
 ## 0.3.0
 
 - ⬆️ Upgrade dependencies

@@ -273,6 +273,7 @@ class Pipen:
             )
             for name, plg in plugin.get_enabled_plugins().items()
         ]
+        config = ProfileConfig.detach(self.config)
         for key, value in chain(
             zip(
                 ["# procs", "plugins", "profile", "outdir"],
@@ -285,17 +286,17 @@ class Pipen:
             ),
             sorted(
                 (key, val)
-                for key, val in self.config.items()
+                for key, val in config.items()
                 if not key.endswith("_opts")
             ),
             (
                 (
                     "plugin_opts",
-                    pprint.pformat(self.config.plugin_opts, indent=1),
+                    pprint.pformat(config.plugin_opts, indent=1),
                 ),
                 (
                     "scheduler_opts",
-                    pprint.pformat(self.config.scheduler_opts, indent=1),
+                    pprint.pformat(config.scheduler_opts, indent=1),
                 ),
                 (
                     "template_opts",
@@ -318,7 +319,7 @@ class Pipen:
                                 if isinstance(val, dict)
                                 else val
                             )
-                            for key, val in self.config.template_opts.items()
+                            for key, val in config.template_opts.items()
                         },
                         indent=1,
                         # sort_dicts=False,
