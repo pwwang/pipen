@@ -1,6 +1,7 @@
 ## 0.3.2
 
 - ⬆️ Upgrade rtoml to v0.8
+- ⬆️ Upgrade pipda to v0.6
 
 ## 0.3.1
 

@@ -28,7 +28,7 @@ xqute = "^0.1"
 # simplug = "^0.0"
 ## including rtoml
 python-simpleconf = {version = "^0.5", extras = ["toml"]}
-pipda = "^0.5"
+pipda = "^0.6"
 ## included in pipda
 # varname = "^0.8"
 
