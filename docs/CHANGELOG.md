@@ -1,3 +1,7 @@
+## 0.3.2
+
+- ⬆️ Upgrade rtoml to v0.8
+
 ## 0.3.1
 
 - 🩹 Hide config meta data in pipeline information
