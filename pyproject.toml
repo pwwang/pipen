@@ -15,7 +15,7 @@ repository = "https://github.com/pwwang/pipen"
 [tool.poetry.dependencies]
 python = "^3.7.1" # align with datar/pandas
 liquidpy = "^0.7"
-pandas = "^1"
+pandas = "^1.4"
 rich = "^12"
 python-slugify = "^6"
 enlighten = "^1"
