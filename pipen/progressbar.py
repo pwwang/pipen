@@ -67,6 +67,7 @@ class PipelinePBar:
     def __init__(self, n_procs: int, ppln_name: str) -> None:
         """Initialize progress bar for pipeline"""
         import enlighten
+
         desc_len = PBAR_DESC_LEN
         ppln_name = truncate_text(ppln_name, desc_len)
         self.manager = enlighten.get_manager()

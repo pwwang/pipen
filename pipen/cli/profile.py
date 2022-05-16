@@ -12,7 +12,7 @@ from ..defaults import CONFIG, CONFIG_FILES
 
 from pyparam import Params
 
-__all__ = ("CLIProfilePlugin", )
+__all__ = ("CLIProfilePlugin",)
 
 
 class CLIProfilePlugin(CLIPlugin):

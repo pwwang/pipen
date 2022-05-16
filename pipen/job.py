@@ -77,6 +77,7 @@ class Job(XquteJob, JobCaching):
             A key-value map, where keys are the input keys
         """
         import pandas
+
         ret = self.proc.input.data.iloc[self.index, :].to_dict()
         # check types
         for inkey, intype in self.proc.input.type.items():

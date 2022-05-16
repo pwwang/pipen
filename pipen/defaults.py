@@ -57,8 +57,11 @@ CONFIG = Diot(
     plugin_opts={},
 )
 
-CONSOLE_WIDTH: int = 80
-CONSOLE_WIDTH_SHIFT: int = 26
+CONSOLE_WIDTH: int = 100
+# [05/16/22 11:46:40] I
+# The markup code is included
+# Don't modify this unless the logger formatter is changed
+CONSOLE_WIDTH_SHIFT: int = 30
 # For pipen scheduler plugins
 SCHEDULER_ENTRY_GROUP = "pipen_sched"
 # For pipen template plugins

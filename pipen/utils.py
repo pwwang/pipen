@@ -66,10 +66,12 @@ class RichHandler(_RichHandler):
         return level_text
 
 
+logger_console = Console(_environ={"COLUMNS": str(CONSOLE_WIDTH)})
+
 _logger_handler = RichHandler(
     show_path=False,
     show_level=True,
-    console=Console(),
+    console=logger_console,
     rich_tracebacks=True,
     omit_repeated_times=False,  # rich 10+
     markup=True,
@@ -234,24 +236,27 @@ def copy_dict(dic: Mapping[str, Any], depth: int = 1) -> Mapping[str, Any]:
     }
 
 
-def get_console_width(
-    default: int = CONSOLE_WIDTH,
-    shift: int = CONSOLE_WIDTH_SHIFT,
-) -> int:
-    """Get the console width
+def get_logcontent_width(max_width: int = None) -> int:
+    """Get the width of the log content
 
     Args:
-        default: The default console width if failed to get
-        shift: The shift to subtract from the width
-            as we have time, level, plugin name in log
+        max_width: The maximum width to return
+            Note that it's not the console width. With console width, you
+            have to subtract the width of the log meta info
+            (CONSOLE_WIDTH_SHIFT).
 
     Returns:
-        The width of the console
+        The width of the log content
     """
     try:
-        return logger.logger.handlers[0].console.width - shift
+        out = logger_console.width - CONSOLE_WIDTH_SHIFT
     except (AttributeError, IndexError):  # pragma: no cover
-        return default - shift
+        out = CONSOLE_WIDTH - CONSOLE_WIDTH_SHIFT
+
+    if max_width is not None and out > max_width:
+        out = max_width
+
+    return out
 
 
 def get_plugin_context(plugins: List[Any]) -> SimplugContext:
@@ -297,7 +302,10 @@ def log_rich_renderable(
         *args: The arguments to the log function
         **kwargs: The keyword arguments to the log function
     """
-    console = Console(file=StringIO())
+    console = Console(
+        file=StringIO(),
+        width=logger_console.width - CONSOLE_WIDTH_SHIFT,
+    )
     console.print(renderable)
 
     for line in console.file.getvalue().splitlines():
@@ -334,7 +342,9 @@ def pipen_banner() -> RenderableType:
         The banner renderable
     """
     table = Table(
-        width=min(CONSOLE_WIDTH, get_console_width()),
+        width=get_logcontent_width(
+            max_width=CONSOLE_WIDTH - CONSOLE_WIDTH_SHIFT
+        ),
         show_header=False,
         show_edge=False,
         show_footer=False,
@@ -455,7 +465,8 @@ def get_base(
         The base class
     """
     bases = [
-        base for base in klass.__bases__
+        base
+        for base in klass.__bases__
         if issubclass(base, abc_base) and value_getter(base) == value
     ]
     if not bases:

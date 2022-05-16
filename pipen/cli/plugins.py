@@ -28,7 +28,7 @@ GROUP_NAMES = {
     CLI_ENTRY_GROUP: "CLI",
 }
 
-__all__ = ("CliPluginsPlugin", )
+__all__ = ("CliPluginsPlugin",)
 
 
 def _get_plugins_by_group(group: str) -> Iterable[Tuple[str, Any]]:
@@ -105,10 +105,7 @@ class CliPluginsPlugin(CLIPlugin):
     @property
     def params(self) -> Params:
         """Define the params"""
-        pms = Params(
-            desc=self.__class__.__doc__,
-            help_on_void=False
-        )
+        pms = Params(desc=self.__class__.__doc__, help_on_void=False)
         pms.add_param(
             "g,group",
             default="",
