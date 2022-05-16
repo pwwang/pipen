@@ -1,3 +1,8 @@
+## 0.3.3
+
+- ♿️ Change default log width to 100
+- 🩹 Fix broken panel in log content with console width cannot be detected
+
 ## 0.3.2
 
 - ⬆️ Upgrade rtoml to v0.8
