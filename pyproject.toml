@@ -43,10 +43,9 @@ datar = "^0.8"
 pipen = "pipen.cli:main"
 
 [tool.pytest.ini_options]
-addopts = "-vv -n auto -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
+addopts = "-vv -n auto -p 'no:asyncio' -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
 console_output_style = "progress"
 junit_family = "xunit1"
-asyncio_mode = "auto"
 
 [tool.mypy]
 ignore_missing_imports = true

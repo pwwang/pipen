@@ -253,7 +253,7 @@ def get_logcontent_width(max_width: int = None) -> int:
     except (AttributeError, IndexError):  # pragma: no cover
         out = CONSOLE_WIDTH - CONSOLE_WIDTH_SHIFT
 
-    if max_width is not None and out > max_width:
+    if max_width is not None and out > max_width:  # pragma: no cover
         out = max_width
 
     return out
