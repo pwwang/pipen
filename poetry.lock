@@ -106,7 +106,7 @@ toml = ["tomli"]
 
 [[package]]
 name = "datar"
-version = "0.8.3"
+version = "0.8.4"
 description = "Port of dplyr and other related R packages in python, using pipda."
 category = "dev"
 optional = false
@@ -116,12 +116,12 @@ python-versions = ">=3.7.1,<4.0.0"
 pandas = ">=1.3,<2.0"
 pipda = ">=0.6,<0.7"
 python-simpleconf = {version = ">=0.5,<0.6", extras = ["toml"]}
-python-slugify = ">=6,<7"
-scipy = ">=1.6,<2.0"
-wcwidth = ">=0.2,<0.3"
 
 [package.extras]
 pdtypes = ["pdtypes (>=0.0,<0.1)"]
+scipy = ["scipy (>=1.6,<2.0)"]
+wcwidth = ["wcwidth (>=0.2,<0.3)"]
+slugify = ["python-slugify (>=6,<7)"]
 modin = ["modin (>=0.10,<0.11)"]
 
 [[package]]
@@ -223,7 +223,7 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "jinxed"
-version = "1.1.0"
+version = "1.2.0"
 description = "Jinxed Terminal Library"
 category = "main"
 optional = false
@@ -562,17 +562,6 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
-name = "scipy"
-version = "1.6.1"
-description = "SciPy: Scientific Library for Python"
-category = "dev"
-optional = false
-python-versions = ">=3.7"
-
-[package.dependencies]
-numpy = ">=1.16.5"
-
-[[package]]
 name = "simplug"
 version = "0.1.0"
 description = "A simple plugin system for python with async hooks supported"
@@ -764,8 +753,8 @@ coverage = [
     {file = "coverage-6.3.3.tar.gz", hash = "sha256:2781c43bffbbec2b8867376d4d61916f5e9c4cc168232528562a61d1b4b01879"},
 ]
 datar = [
-    {file = "datar-0.8.3-py3-none-any.whl", hash = "sha256:05c94a1018d0c3c0e164d9d9cb060ae5f4ace05ce34df02ab7442378ef0337f4"},
-    {file = "datar-0.8.3.tar.gz", hash = "sha256:646c68d51a130618969fd1cb6436a446c7465e074c29c8028ce932a8b9299260"},
+    {file = "datar-0.8.4-py3-none-any.whl", hash = "sha256:5a9fdc42930ac4904e8572dd2ef155884b31b4c24faf4e0b642c846db75b2895"},
+    {file = "datar-0.8.4.tar.gz", hash = "sha256:8f2365efdff924ecd1052351a5865cbca12a61374e973a2e2aeec71f03df8451"},
 ]
 diot = [
     {file = "diot-0.1.6-py3-none-any.whl", hash = "sha256:1e7f97bbc92cbbdd51d8c535885f5e2a71762b364c1b2410dfc84f3a4572d551"},
@@ -804,8 +793,8 @@ jinja2 = [
     {file = "Jinja2-3.1.2.tar.gz", hash = "sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852"},
 ]
 jinxed = [
-    {file = "jinxed-1.1.0-py2.py3-none-any.whl", hash = "sha256:6a61ccf963c16aa885304f27e6e5693783676897cea0c7f223270c8b8e78baf8"},
-    {file = "jinxed-1.1.0.tar.gz", hash = "sha256:d8f1731f134e9e6b04d95095845ae6c10eb15cb223a5f0cabdea87d4a279c305"},
+    {file = "jinxed-1.2.0-py2.py3-none-any.whl", hash = "sha256:cfc2b2e4e3b4326954d546ba6d6b9a7a796ddcb0aef8d03161d005177eb0d48b"},
+    {file = "jinxed-1.2.0.tar.gz", hash = "sha256:032acda92d5c57cd216033cbbd53de731e6ed50deb63eb4781336ca55f72cda5"},
 ]
 liquidpy = [
     {file = "liquidpy-0.7.4-py3-none-any.whl", hash = "sha256:61c07d3be108bd811b310fd1cb6ed35a10cd3721cce22677011060b87e0205ab"},
@@ -1084,27 +1073,6 @@ rtoml = [
     {file = "rtoml-0.8.0-cp39-cp39-win32.whl", hash = "sha256:fb106a90e1dc55e9fe2774b41d57074f02a716aac864a58fedca2cf399114f29"},
     {file = "rtoml-0.8.0-cp39-cp39-win_amd64.whl", hash = "sha256:333e5e1fc257b1302f589b662fd2405ec4b3b68a032e125011bcf86ea52b19eb"},
     {file = "rtoml-0.8.0.tar.gz", hash = "sha256:6d55fa9df88256c6762f01f18b8bd3f6dc1836600ea8655eb3719a2b8f3df764"},
-]
-scipy = [
-    {file = "scipy-1.6.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:a15a1f3fc0abff33e792d6049161b7795909b40b97c6cc2934ed54384017ab76"},
-    {file = "scipy-1.6.1-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:e79570979ccdc3d165456dd62041d9556fb9733b86b4b6d818af7a0afc15f092"},
-    {file = "scipy-1.6.1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:a423533c55fec61456dedee7b6ee7dce0bb6bfa395424ea374d25afa262be261"},
-    {file = "scipy-1.6.1-cp37-cp37m-manylinux2014_aarch64.whl", hash = "sha256:33d6b7df40d197bdd3049d64e8e680227151673465e5d85723b3b8f6b15a6ced"},
-    {file = "scipy-1.6.1-cp37-cp37m-win32.whl", hash = "sha256:6725e3fbb47da428794f243864f2297462e9ee448297c93ed1dcbc44335feb78"},
-    {file = "scipy-1.6.1-cp37-cp37m-win_amd64.whl", hash = "sha256:5fa9c6530b1661f1370bcd332a1e62ca7881785cc0f80c0d559b636567fab63c"},
-    {file = "scipy-1.6.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:bd50daf727f7c195e26f27467c85ce653d41df4358a25b32434a50d8870fc519"},
-    {file = "scipy-1.6.1-cp38-cp38-manylinux1_i686.whl", hash = "sha256:f46dd15335e8a320b0fb4685f58b7471702234cba8bb3442b69a3e1dc329c345"},
-    {file = "scipy-1.6.1-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:0e5b0ccf63155d90da576edd2768b66fb276446c371b73841e3503be1d63fb5d"},
-    {file = "scipy-1.6.1-cp38-cp38-manylinux2014_aarch64.whl", hash = "sha256:2481efbb3740977e3c831edfd0bd9867be26387cacf24eb5e366a6a374d3d00d"},
-    {file = "scipy-1.6.1-cp38-cp38-win32.whl", hash = "sha256:68cb4c424112cd4be886b4d979c5497fba190714085f46b8ae67a5e4416c32b4"},
-    {file = "scipy-1.6.1-cp38-cp38-win_amd64.whl", hash = "sha256:5f331eeed0297232d2e6eea51b54e8278ed8bb10b099f69c44e2558c090d06bf"},
-    {file = "scipy-1.6.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:0c8a51d33556bf70367452d4d601d1742c0e806cd0194785914daf19775f0e67"},
-    {file = "scipy-1.6.1-cp39-cp39-manylinux1_i686.whl", hash = "sha256:83bf7c16245c15bc58ee76c5418e46ea1811edcc2e2b03041b804e46084ab627"},
-    {file = "scipy-1.6.1-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:794e768cc5f779736593046c9714e0f3a5940bc6dcc1dba885ad64cbfb28e9f0"},
-    {file = "scipy-1.6.1-cp39-cp39-manylinux2014_aarch64.whl", hash = "sha256:5da5471aed911fe7e52b86bf9ea32fb55ae93e2f0fac66c32e58897cfb02fa07"},
-    {file = "scipy-1.6.1-cp39-cp39-win32.whl", hash = "sha256:8e403a337749ed40af60e537cc4d4c03febddcc56cd26e774c9b1b600a70d3e4"},
-    {file = "scipy-1.6.1-cp39-cp39-win_amd64.whl", hash = "sha256:a5193a098ae9f29af283dcf0041f762601faf2e595c0db1da929875b7570353f"},
-    {file = "scipy-1.6.1.tar.gz", hash = "sha256:c4fceb864890b6168e79b0e714c585dbe2fd4222768ee90bc1aa0f8218691b11"},
 ]
 simplug = [
     {file = "simplug-0.1.0-py3-none-any.whl", hash = "sha256:cdef3ed9cad60daab9f0b17c3ffcaf04a0f8d760b3f723817aabb911f18b8d95"},

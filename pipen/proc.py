@@ -25,7 +25,7 @@ from slugify import slugify  # type: ignore
 from varname import VarnameException, varname
 from xqute import JobStatus, Xqute
 
-from .defaults import CONSOLE_WIDTH, ProcInputType
+from .defaults import CONSOLE_WIDTH, CONSOLE_WIDTH_SHIFT, ProcInputType
 from .exceptions import (
     ProcInputKeyError,
     ProcInputTypeError,
@@ -40,7 +40,7 @@ from .utils import (
     cached_property,
     copy_dict,
     desc_from_docstring,
-    get_console_width,
+    get_logcontent_width,
     ignore_firstline_dedent,
     is_subclass,
     log_rich_renderable,
@@ -292,8 +292,7 @@ class Proc(ABC, metaclass=ProcMeta):
         cls.envs = update_dict(parent.envs, cls.envs)
         cls.plugin_opts = update_dict(parent.plugin_opts, cls.plugin_opts)
         cls.scheduler_opts = update_dict(
-            parent.scheduler_opts,
-            cls.scheduler_opts
+            parent.scheduler_opts, cls.scheduler_opts
         )
 
     def __init__(self, pipeline: "Pipen" = None) -> None:
@@ -667,7 +666,6 @@ class Proc(ABC, metaclass=ProcMeta):
 
     def _log_info(self):
         """Log some basic information of the process"""
-        console_width = get_console_width()
         panel = Panel(
             self.desc or "Undescribed",
             title=self.name,
@@ -683,7 +681,9 @@ class Proc(ABC, metaclass=ProcMeta):
             )
             if self.export
             else box.ROUNDED,
-            width=min(CONSOLE_WIDTH, console_width),
+            width=get_logcontent_width(
+                max_width=CONSOLE_WIDTH - CONSOLE_WIDTH_SHIFT
+            ),
         )
 
         logger.info("")

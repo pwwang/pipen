@@ -6,7 +6,7 @@ from pyparam import Params, POSITIONAL
 
 from ._hooks import CLIPlugin, cli_plugin
 
-__all__ = ("CLIHelpPlugin", )
+__all__ = ("CLIHelpPlugin",)
 
 
 class CLIHelpPlugin(CLIPlugin):
@@ -45,6 +45,7 @@ class CLIHelpPlugin(CLIPlugin):
             plg().params.print_help()
 
         from ._main import _print_help
+
         if command:
             print(
                 "[red][b]ERROR: [/b][/red]No such command: "

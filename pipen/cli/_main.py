@@ -56,8 +56,7 @@ def main() -> None:
 
     command = sys.argv[1]
     help_keys = [
-        f"-{key}" if len(key) == 1 else f"--{key}"
-        for key in params.help_keys
+        f"-{key}" if len(key) == 1 else f"--{key}" for key in params.help_keys
     ]
     if command in help_keys:
         _print_help(plugin_names)
