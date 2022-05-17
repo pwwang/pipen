@@ -79,11 +79,11 @@ def test_no_next_procs(pipen):
 def test_plugins_are_pipeline_dependent(pipen, pipen_with_plugin, caplog):
     simproc = Proc.from_proc(SimpleProc)
     pipen_with_plugin.set_starts(simproc).run()
-    assert "SimplePlugin" in caplog.text
+    assert "simpleplugin" in caplog.text
 
     caplog.clear()
     pipen.set_starts(simproc).run()  # No simple plugin enabled
-    assert "SimplePlugin" not in caplog.text
+    assert "simpleplugin" not in caplog.text
 
 
 def test_set_starts_error(pipen):

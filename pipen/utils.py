@@ -66,7 +66,7 @@ class RichHandler(_RichHandler):
         return level_text
 
 
-logger_console = Console(_environ={"COLUMNS": str(CONSOLE_WIDTH)})
+logger_console = Console()
 
 _logger_handler = RichHandler(
     show_path=False,
