@@ -1,3 +1,9 @@
+## 0.3.4
+
+- ✨ Print pipen version in CLI: pipen plugins
+- 🩹 Make use of full terminal width for non-panel elements in log
+- 🩹 Extend width to 256 when terminal width cannot be detected while logging (most likely logging to a text file)
+
 ## 0.3.3
 
 - ♿️ Change default log width to 100

@@ -113,3 +113,5 @@ t-*.ipynb
 *-output/
 *_results/
 t.py
+
+nohup.out

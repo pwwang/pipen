@@ -117,6 +117,8 @@ class CliPluginsPlugin(CLIPlugin):
 
     def exec_command(self, args: Mapping[str, Any]) -> None:
         """Execute the command"""
+        from ..version import __version__
+        print("Pipen version:", __version__)
 
         plugins: List[Tuple[str, str, Any]] = []
 

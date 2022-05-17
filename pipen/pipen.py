@@ -17,14 +17,14 @@ from simpleconf import ProfileConfig
 from slugify import slugify  # type: ignore
 from varname import varname, VarnameException
 
-from .defaults import CONFIG, CONFIG_FILES, CONSOLE_WIDTH, CONSOLE_WIDTH_SHIFT
+from .defaults import CONFIG, CONFIG_FILES
 from .exceptions import ProcDependencyError, PipenSetDataError
 from .pluginmgr import plugin
 from .proc import Proc
 from .progressbar import PipelinePBar
 from .utils import (
     copy_dict,
-    get_logcontent_width,
+    get_logpanel_width,
     get_plugin_context,
     log_rich_renderable,
     logger,
@@ -338,9 +338,7 @@ class Pipen:
             Panel(
                 Group(*items),
                 title=self.name.upper(),
-                width=get_logcontent_width(
-                    max_width=CONSOLE_WIDTH - CONSOLE_WIDTH_SHIFT
-                ),
+                width=get_logpanel_width(),
                 box=box.Box(
                     "╭═┬╮\n"
                     "║ ║║\n"

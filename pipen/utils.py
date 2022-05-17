@@ -2,7 +2,7 @@
 import logging
 import textwrap
 from io import StringIO
-from os import PathLike
+from os import PathLike, get_terminal_size
 from collections import defaultdict
 from pathlib import Path
 from typing import (
@@ -34,16 +34,24 @@ except ImportError:  # pragma: no cover
     import importlib_metadata
 
 from more_itertools import consecutive_groups
-from rich.console import Console, RenderableType
+from rich.console import Console
 from rich.logging import RichHandler as _RichHandler
 from rich.table import Table
 from rich.text import Text
 from simplug import SimplugContext
 
-from .defaults import CONSOLE_WIDTH, CONSOLE_WIDTH_SHIFT, LOGGER_NAME
+from .defaults import (
+    CONSOLE_DEFAULT_WIDTH,
+    CONSOLE_WIDTH_WITH_PANEL,
+    CONSOLE_WIDTH_SHIFT,
+    LOGGER_NAME,
+)
 from .exceptions import ConfigurationError
 from .pluginmgr import plugin
 from .version import __version__
+
+if TYPE_CHECKING:  # pragma: no cover
+    from rich.console import RenderableType, ConsoleRenderable
 
 
 class RichHandler(_RichHandler):
@@ -54,7 +62,7 @@ class RichHandler(_RichHandler):
         """Get the level name from the record.
 
         Args:
-            record (LogRecord): LogRecord instance.
+            record: LogRecord instance.
 
         Returns:
             Text: A tuple of the style and level name.
@@ -66,7 +74,12 @@ class RichHandler(_RichHandler):
         return level_text
 
 
-logger_console = Console(_environ={"COLUMNS": str(CONSOLE_WIDTH)})
+logger_console = Console()
+try:
+    get_terminal_size()
+except (AttributeError, ValueError, OSError):  # maybe not a terminal
+    if logger_console._environ.get("COLUMNS") is None:
+        logger_console.width = CONSOLE_DEFAULT_WIDTH
 
 _logger_handler = RichHandler(
     show_path=False,
@@ -75,6 +88,7 @@ _logger_handler = RichHandler(
     rich_tracebacks=True,
     omit_repeated_times=False,  # rich 10+
     markup=True,
+    log_time_format="%m-%d %H:%M:%S",
 )
 _logger_handler.setFormatter(
     logging.Formatter("[purple]%(plugin_name)-7s[/purple] %(message)s")
@@ -236,7 +250,7 @@ def copy_dict(dic: Mapping[str, Any], depth: int = 1) -> Mapping[str, Any]:
     }
 
 
-def get_logcontent_width(max_width: int = None) -> int:
+def get_logpanel_width() -> int:
     """Get the width of the log content
 
     Args:
@@ -248,15 +262,13 @@ def get_logcontent_width(max_width: int = None) -> int:
     Returns:
         The width of the log content
     """
-    try:
-        out = logger_console.width - CONSOLE_WIDTH_SHIFT
-    except (AttributeError, IndexError):  # pragma: no cover
-        out = CONSOLE_WIDTH - CONSOLE_WIDTH_SHIFT
-
-    if max_width is not None and out > max_width:  # pragma: no cover
-        out = max_width
-
-    return out
+    return (
+        min(
+            logger_console.width,
+            CONSOLE_WIDTH_WITH_PANEL,
+        )
+        - CONSOLE_WIDTH_SHIFT
+    )
 
 
 def get_plugin_context(plugins: List[Any]) -> SimplugContext:
@@ -286,7 +298,7 @@ def get_plugin_context(plugins: List[Any]) -> SimplugContext:
 
 
 def log_rich_renderable(
-    renderable: RenderableType,
+    renderable: "RenderableType",
     color: str,
     logfunc: Callable,
     *args: Any,
@@ -335,16 +347,14 @@ def brief_list(blist: List[int]) -> str:
     return ", ".join(ret)
 
 
-def pipen_banner() -> RenderableType:
+def pipen_banner() -> "RenderableType":
     """The banner for pipen
 
     Returns:
         The banner renderable
     """
     table = Table(
-        width=get_logcontent_width(
-            max_width=CONSOLE_WIDTH - CONSOLE_WIDTH_SHIFT
-        ),
+        width=get_logpanel_width(),
         show_header=False,
         show_edge=False,
         show_footer=False,

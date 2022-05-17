@@ -25,7 +25,7 @@ from slugify import slugify  # type: ignore
 from varname import VarnameException, varname
 from xqute import JobStatus, Xqute
 
-from .defaults import CONSOLE_WIDTH, CONSOLE_WIDTH_SHIFT, ProcInputType
+from .defaults import ProcInputType
 from .exceptions import (
     ProcInputKeyError,
     ProcInputTypeError,
@@ -40,7 +40,7 @@ from .utils import (
     cached_property,
     copy_dict,
     desc_from_docstring,
-    get_logcontent_width,
+    get_logpanel_width,
     ignore_firstline_dedent,
     is_subclass,
     log_rich_renderable,
@@ -681,9 +681,7 @@ class Proc(ABC, metaclass=ProcMeta):
             )
             if self.export
             else box.ROUNDED,
-            width=get_logcontent_width(
-                max_width=CONSOLE_WIDTH - CONSOLE_WIDTH_SHIFT
-            ),
+            width=get_logpanel_width(),
         )
 
         logger.info("")
