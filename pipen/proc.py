@@ -277,6 +277,7 @@ class Proc(ABC, metaclass=ProcMeta):
         parent = cls.__bases__[-1]
         # cls.requires = cls._compute_requires()
         # triggers cls.__setattr__() to compute requires
+        cls.nexts = []
         cls.requires = cls.requires
 
         if cls.name is None or cls.name == parent.name:
