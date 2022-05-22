@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "pipen"
-version = "0.3.4"
+version = "0.3.5"
 description = "A pipeline framework for python"
 authors = [ "pwwang <pwwang@pwwang.com>",]
 license = "MIT"
@@ -43,7 +43,8 @@ datar = "^0.8"
 pipen = "pipen.cli:main"
 
 [tool.pytest.ini_options]
-addopts = "-vv -n auto -p 'no:asyncio' -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
+addopts = "-vv -n auto -p no:asyncio -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
+# addopts = "-vv -n auto -p no:asyncio -W error::UserWarning"
 console_output_style = "progress"
 junit_family = "xunit1"
 

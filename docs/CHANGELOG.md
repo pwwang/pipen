@@ -1,3 +1,7 @@
+## 0.3.5
+
+- 🐛 Fix `nexts` being inherited for `Proc` subclasses
+
 ## 0.3.4
 
 - ✨ Print pipen version in CLI: pipen plugins
