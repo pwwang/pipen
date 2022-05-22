@@ -50,11 +50,18 @@ def test_cyclic_dependency(pipen):
     proc2 = Proc.from_proc(NormalProc)
     proc3 = Proc.from_proc(NormalProc, requires=proc2)
     proc2.requires = [proc1, proc3]
-    # trigger requires/nexts computation
-    proc2.__init_subclass__()
 
     with pytest.raises(ProcDependencyError, match="Cyclic dependency"):
         pipen.set_starts(proc1, proc3).run()
+
+
+def test_not_cyclic_for_subclass_of_proc_in_pipeline(pipen):
+    proc1 = Proc.from_proc(NormalProc, input_data=[1])
+    proc2 = Proc.from_proc(NormalProc, requires=proc1)
+    class proc3(proc1):
+        requires = proc2
+    pipen.set_starts(proc1).run()
+    assert pipen.procs == [proc1, proc2, proc3]
 
 
 def test_no_next_procs(pipen):

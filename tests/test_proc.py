@@ -1,6 +1,5 @@
+import os
 import pytest
-
-import shutil
 
 import pandas
 from pipen import Proc
@@ -124,6 +123,7 @@ def test_proc_with_input_callable(pipen):
 
 def test_proc_is_singleton(pipen):
     pipen.workdir = ".pipen/"
+    os.makedirs(pipen.workdir, exist_ok=True)
     p1 = SimpleProc(pipen)
     p2 = SimpleProc(pipen)
     assert p1 is p2
