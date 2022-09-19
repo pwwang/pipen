@@ -28,16 +28,15 @@ xqute = "^0.1"
 # simplug = "^0.0"
 ## including rtoml
 python-simpleconf = {version = "^0.5", extras = ["toml"]}
-pipda = "^0.6"
-## included in pipda
-# varname = "^0.8"
+pipda = "^0.7.1"
+varname = "^0.9.1"
 
 [tool.poetry.dev-dependencies]
 openpyxl = "^3"
 pytest = "^7"
 pytest-cov = "^3"
 pytest-xdist = "^2"
-datar = "^0.8"
+datar = "^0.9"
 
 [tool.poetry.scripts]
 pipen = "pipen.cli:main"
