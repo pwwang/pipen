@@ -401,7 +401,9 @@ class Pipen:
 
         # build proc relationships
         self.procs = self.starts[:]
-        nexts = set(sum((proc.nexts or [] for proc in self.procs), []))
+        nexts = set(
+            sum((proc.nexts or [] for proc in self.procs), [])  # type: ignore
+        )
         logger.debug("")
         logger.debug("Building process relationships:")
         logger.debug("- Start processes: %s", self.procs)

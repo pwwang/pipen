@@ -1,3 +1,7 @@
+## 0.3.6
+
+- ⬆️ Upgrade pipda to 0.7.2, varname to 0.9.1, datar to 0.9
+
 ## 0.3.5
 
 - 🐛 Fix `nexts` being inherited for `Proc` subclasses
