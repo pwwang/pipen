@@ -312,7 +312,7 @@ pandas = ">=1.2,<2.0"
 
 [[package]]
 name = "pipda"
-version = "0.7.1"
+version = "0.7.2"
 description = "A framework for data piping in python"
 category = "main"
 optional = false
@@ -650,7 +650,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7.1" # align with datar/pandas
-content-hash = "cf12a8230dffdaa6fa734a1ed4f88df90209be454ee2542dcc7c02ab364998f4"
+content-hash = "783066c5db8b7a900f4ec8711390fa2bbf9e7e42292225f7ed183ab39779a22a"
 
 [metadata.files]
 aiofiles = [
@@ -928,8 +928,8 @@ pdtypes = [
     {file = "pdtypes-0.0.4.tar.gz", hash = "sha256:4f76fac05a785d558b809aa59d2ec13ee22e105267f2bde025007242fe8f4983"},
 ]
 pipda = [
-    {file = "pipda-0.7.1-py3-none-any.whl", hash = "sha256:11a58e0de948a90cd3b73fc579773604500d8df2a4aa5fb5788dfaf8be2dbd39"},
-    {file = "pipda-0.7.1.tar.gz", hash = "sha256:3a389371363c5c2674a93f31533e3fed8a999ecf9df97f3ef1e0d7cec3b42a4e"},
+    {file = "pipda-0.7.2-py3-none-any.whl", hash = "sha256:46848308d9cc54a72631bb8502fca97dda7f751b538428b718f0300cf7fb3358"},
+    {file = "pipda-0.7.2.tar.gz", hash = "sha256:2a82508f32cd12ad0856a6e95c8362550085fef2d7e0c7d3a000e9e5f6b86ffa"},
 ]
 pluggy = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
