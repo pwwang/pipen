@@ -1,3 +1,9 @@
+# Change Log
+
+## 0.3.7
+
+- ⬆️ Upgrade varname to 0.10
+
 ## 0.3.6
 
 - ⬆️ Upgrade pipda to 0.7.2, varname to 0.9.1, datar to 0.9
