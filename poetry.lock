@@ -146,11 +146,14 @@ testing = ["pre-commit"]
 
 [[package]]
 name = "executing"
-version = "1.0.0"
+version = "1.1.0"
 description = "Get the currently executing AST node of a frame, and other information"
 category = "main"
 optional = false
 python-versions = "*"
+
+[package.extras]
+tests = ["asttokens", "littleutils", "pytest", "rich"]
 
 [[package]]
 name = "importlib-metadata"
@@ -312,7 +315,7 @@ pandas = ">=1.2,<2.0"
 
 [[package]]
 name = "pipda"
-version = "0.7.2"
+version = "0.7.3"
 description = "A framework for data piping in python"
 category = "main"
 optional = false
@@ -599,14 +602,14 @@ test = ["Cython (>=0.29.32,<0.30.0)", "aiohttp", "flake8 (>=3.9.2,<3.10.0)", "my
 
 [[package]]
 name = "varname"
-version = "0.9.1"
+version = "0.10.0"
 description = "Dark magics about variable names in python."
 category = "main"
 optional = false
 python-versions = ">=3.6,<4.0"
 
 [package.dependencies]
-executing = ">=1.0,<2.0"
+executing = ">=1.1,<2.0"
 
 [package.extras]
 all = ["asttokens (>=2.0.0,<3.0.0)", "pure_eval (<1.0.0)"]
@@ -650,7 +653,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7.1" # align with datar/pandas
-content-hash = "783066c5db8b7a900f4ec8711390fa2bbf9e7e42292225f7ed183ab39779a22a"
+content-hash = "93643b3f2672d89fef39ec46d40f51e2b5ddbd004cbedb1b90510734d45d45d8"
 
 [metadata.files]
 aiofiles = [
@@ -754,8 +757,8 @@ execnet = [
     {file = "execnet-1.9.0.tar.gz", hash = "sha256:8f694f3ba9cc92cab508b152dcfe322153975c29bda272e2fd7f3f00f36e47c5"},
 ]
 executing = [
-    {file = "executing-1.0.0-py2.py3-none-any.whl", hash = "sha256:550d581b497228b572235e633599133eeee67073c65914ca346100ad56775349"},
-    {file = "executing-1.0.0.tar.gz", hash = "sha256:98daefa9d1916a4f0d944880d5aeaf079e05585689bebd9ff9b32e31dd5e1017"},
+    {file = "executing-1.1.0-py2.py3-none-any.whl", hash = "sha256:4a6d96ba89eb3dcc11483471061b42b9006d8c9f81c584dd04246944cd022530"},
+    {file = "executing-1.1.0.tar.gz", hash = "sha256:2c2c07d1ec4b2d8f9676b25170f1d8445c0ee2eb78901afb075a4b8d83608c6a"},
 ]
 importlib-metadata = [
     {file = "importlib_metadata-4.12.0-py3-none-any.whl", hash = "sha256:7401a975809ea1fdc658c3aa4f78cc2195a0e019c5cbc4c06122884e9ae80c23"},
@@ -928,8 +931,8 @@ pdtypes = [
     {file = "pdtypes-0.0.4.tar.gz", hash = "sha256:4f76fac05a785d558b809aa59d2ec13ee22e105267f2bde025007242fe8f4983"},
 ]
 pipda = [
-    {file = "pipda-0.7.2-py3-none-any.whl", hash = "sha256:46848308d9cc54a72631bb8502fca97dda7f751b538428b718f0300cf7fb3358"},
-    {file = "pipda-0.7.2.tar.gz", hash = "sha256:2a82508f32cd12ad0856a6e95c8362550085fef2d7e0c7d3a000e9e5f6b86ffa"},
+    {file = "pipda-0.7.3-py3-none-any.whl", hash = "sha256:c79e4fb28b599bb89ed6548625c6b1683336263b6142537a082f0451b8f32d7b"},
+    {file = "pipda-0.7.3.tar.gz", hash = "sha256:72d5fe18675035904643a6a46332de8d31e623fd6d22b7fc96c2b8a72063b3e0"},
 ]
 pluggy = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
@@ -1116,8 +1119,8 @@ uvloop = [
     {file = "uvloop-0.17.0.tar.gz", hash = "sha256:0ddf6baf9cf11a1a22c71487f39f15b2cf78eb5bde7e5b45fbb99e8a9d91b9e1"},
 ]
 varname = [
-    {file = "varname-0.9.1-py3-none-any.whl", hash = "sha256:01a2a812177c8535a224846d6d7bbdff6a983185151d2e710ed6d39bf55c1d99"},
-    {file = "varname-0.9.1.tar.gz", hash = "sha256:b3a7f58a6254be33a2bc167edd2419d3e4479723963315f5b0723c1269a33fd2"},
+    {file = "varname-0.10.0-py3-none-any.whl", hash = "sha256:20748d5cd3e125350726cd39d2cbd0e3000f30b3e0d3d5fe827efa0e71729809"},
+    {file = "varname-0.10.0.tar.gz", hash = "sha256:045f7a409b3e91a760ab10a5539aabbb292db9d685f3011920b85fd4dbc5b9e3"},
 ]
 wcwidth = [
     {file = "wcwidth-0.2.5-py2.py3-none-any.whl", hash = "sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784"},

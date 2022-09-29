@@ -29,7 +29,7 @@ xqute = "^0.1"
 ## including rtoml
 python-simpleconf = {version = "^0.5", extras = ["toml"]}
 pipda = "^0.7.2"
-varname = "^0.9.1"
+varname = "^0.10"
 
 [tool.poetry.dev-dependencies]
 openpyxl = "^3"
