@@ -93,7 +93,7 @@ async def on_proc_start(proc: "Proc"):
     """
 
 
-@plugin.spec(result=SimplugResult.FIRST)
+@plugin.spec(result=SimplugResult.TRY_ALL_FIRST_AVAIL)
 def on_proc_shutdown(proc: "Proc", sig: Optional[signal.Signals]) -> None:
     """When pipeline is shutting down, by Ctrl-c for example.
 
@@ -140,7 +140,7 @@ async def on_job_queued(proc: "Proc", job: "Job"):
     """
 
 
-@plugin.spec(result=SimplugResult.FIRST)
+@plugin.spec(result=SimplugResult.TRY_ALL_FIRST_AVAIL)
 async def on_job_submitting(proc: "Proc", job: "Job") -> Optional[bool]:
     """When a job is submitting.
 
@@ -176,7 +176,7 @@ async def on_job_running(proc: "Proc", job: "Job"):
     """
 
 
-@plugin.spec(result=SimplugResult.FIRST)
+@plugin.spec(result=SimplugResult.TRY_ALL_FIRST_AVAIL)
 async def on_job_killing(proc: "Proc", job: "Job") -> Optional[bool]:
     """When a job is being killed.
 
