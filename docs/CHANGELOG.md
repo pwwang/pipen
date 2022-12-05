@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.8
+
+- ⬆️ Pump xqute to 0.1.1
+
 ## 0.3.7
 
 - ⬆️ Upgrade varname to 0.10
