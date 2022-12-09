@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.3.9
+
+- ⬆️ Pump pipda to 0.11
+- ⬆️ Pump xqute to 0.1.2
+
 ## 0.3.8
 
 - ⬆️ Pump xqute to 0.1.1

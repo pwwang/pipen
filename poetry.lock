@@ -644,7 +644,7 @@ python-versions = "*"
 
 [[package]]
 name = "xqute"
-version = "0.1.1"
+version = "0.1.2"
 description = "A job management system for python"
 category = "main"
 optional = false
@@ -1137,8 +1137,8 @@ wcwidth = [
     {file = "wcwidth-0.2.5.tar.gz", hash = "sha256:c4d647b99872929fdb7bdcaa4fbe7f01413ed3d98077df798530e5b04f116c83"},
 ]
 xqute = [
-    {file = "xqute-0.1.1-py3-none-any.whl", hash = "sha256:7b478ff0ff8e45c69a3b3cd32d79cbdac054b35e896227f651a5587849d042de"},
-    {file = "xqute-0.1.1.tar.gz", hash = "sha256:02a20b92284000fc5dea46493bf0bb396394a0f1d17d11f51b8e8cd9fb7d14a4"},
+    {file = "xqute-0.1.2-py3-none-any.whl", hash = "sha256:de4b0f3d28b2d0cb68688b83652dc9bf473101e431ae1e4aea6935a1aa1989c7"},
+    {file = "xqute-0.1.2.tar.gz", hash = "sha256:c2573f30011a05c461567f40f42fb178ae9856ced4fc501664f84282355f4c5e"},
 ]
 zipp = [
     {file = "zipp-3.11.0-py3-none-any.whl", hash = "sha256:83a28fcb75844b5c0cdaf5aa4003c2d728c77e05f5aeabe8e95e56727005fbaa"},
