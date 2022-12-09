@@ -28,7 +28,7 @@ xqute = "^0.1"
 # simplug = "^0.0"
 ## including rtoml
 python-simpleconf = {version = "^0.5", extras = ["toml"]}
-pipda = "^0.10"
+pipda = "^0.11"
 varname = "^0.10"
 
 [tool.poetry.dev-dependencies]
