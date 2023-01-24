@@ -42,3 +42,10 @@ def test_profile_default():
 def test_profile_nosuch():
     out = cmdoutput(["pipen", "profile", "-n", "nosuch"])
     assert "Profile: nosuch" not in out
+
+
+def test_version():
+    out = cmdoutput(["pipen", "version"])
+    assert "pipen" in out
+    assert "python" in out
+    assert "liquidpy" in out
