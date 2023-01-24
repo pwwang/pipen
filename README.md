@@ -19,6 +19,7 @@ ______________________________________________________________________
 - Highly extendable
 
 ## Installation
+
 ```bash
 pip install -U pipen
 ```
@@ -26,6 +27,7 @@ pip install -U pipen
 ## Quickstart
 
 `example.py`
+
 ```python
 from pipen import Proc, Pipen
 
@@ -58,7 +60,7 @@ Pipen().set_starts(P1).run()
 [09/13/21 04:23:37] I main                    _  ____/__/ /  _  ____/_  /___  _  /|  /
 [09/13/21 04:23:37] I main                    /_/     /___/  /_/     /_____/  /_/ |_/
 [09/13/21 04:23:37] I main
-[09/13/21 04:23:37] I main                                 version: 0.3.2
+[09/13/21 04:23:37] I main                                 version: 0.3.10
 [09/13/21 04:23:37] I main
 [09/13/21 04:23:37] I main    ╭══════════════════════════════ PIPEN-0 ════════════════════════════════╮
 [09/13/21 04:23:37] I main    ║  # procs          = 2                                                 ║
@@ -135,6 +137,7 @@ Plugins make `pipen` even better.
 - [`pipen-dry`][20]: Dry runner for pipen pipelines
 - [`pipen-cli-init`][21]: A pipen CLI plugin to create a pipen project (pipeline)
 - [`pipen-cli-run`][22]: A pipen cli plugin to run a process or a pipeline
+- [`pipen-cli-require`][24]: A pipen cli plugin check the requirements of a pipeline
 
 
 [1]: https://pwwang.github.io/pipen
@@ -146,8 +149,8 @@ Plugins make `pipen` even better.
 [7]: https://pypi.org/project/pipen/
 [8]: https://img.shields.io/github/v/tag/pwwang/pipen?style=flat-square
 [9]: https://github.com/pwwang/pipen
-[10]: https://img.shields.io/github/workflow/status/pwwang/pipen/Build%20and%20Deploy?style=flat-square
-[11]: https://img.shields.io/github/workflow/status/pwwang/pipen/Build%20Docs?label=Docs&style=flat-square
+[10]: https://img.shields.io/github/actions/workflow/status/pwwang/pipen/build.yml?style=flat-square
+[11]: https://img.shields.io/github/actions/workflow/status/pwwang/pipen/docs.yml?label=docs&style=flat-square
 [12]: https://img.shields.io/codacy/grade/cf1c6c97e5c4480386a05b42dec10c6e?style=flat-square
 [13]: https://app.codacy.com/gh/pwwang/pipen
 [14]: https://img.shields.io/codacy/coverage/cf1c6c97e5c4480386a05b42dec10c6e?style=flat-square
@@ -160,3 +163,4 @@ Plugins make `pipen` even better.
 [21]: https://github.com/pwwang/pipen-cli-init
 [22]: https://github.com/pwwang/pipen-cli-run
 [23]: https://libraries.io/github/pwwang/pipen#repository_dependencies
+[24]: https://github.com/pwwang/pipen-cli-require
