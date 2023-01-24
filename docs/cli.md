@@ -2,7 +2,7 @@
 
 To run it:
 
-```
+```shell
 ❯ pipen
 
 DESCRIPTION:
@@ -15,6 +15,7 @@ OPTIONAL OPTIONS:
   -h, --help                      - Print help information for the CLI tool.
 
 COMMANDS:
+  version                         - Print versions of pipen and its dependencies
   profile                         - List available profiles.
   plugins                         - List installed plugins
   help                            - Print help for commands
@@ -57,6 +58,9 @@ It is used to list the configurations/profiles in current directory. Run `pipen 
 
 This subcommand is used to list the plugins for `pipen` itself, templates, scheduler and cli. Run `pipen plugins` or `pipen help plugins` to get more information.
 
+## The `version` subcommand
+
+This command prints the versions of `pipen` and its dependencies.
 
 [1]: https://github.com/pwwang/pyparam
 [2]: ../plugin
