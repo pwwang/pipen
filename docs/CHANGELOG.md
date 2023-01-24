@@ -1,9 +1,16 @@
 # Change Log
 
+## 0.3.10
+
+- ⬆️ Upgrade xqute to 0.1.3
+- ⬆️ Upgrade datar to 0.11 and format test files
+- ✨ Add cli command version to show versions of deps
+- ➖ Remove rich as it is required by xqute already
+
 ## 0.3.9
 
-- ⬆️ Pump pipda to 0.11
-- ⬆️ Pump xqute to 0.1.2
+- ⬆️ Bump pipda to 0.11
+- ⬆️ Bump xqute to 0.1.2
 
 ## 0.3.8
 
