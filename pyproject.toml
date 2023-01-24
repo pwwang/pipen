@@ -35,17 +35,20 @@ varname = "^0.10"
 openpyxl = "^3"
 pytest = "^7"
 pytest-cov = "^4"
-pytest-xdist = "^2"
-datar = { version = "^0.10", extras = ["pandas"] }
+pytest-xdist = "^3"
+datar = { version = "^0.11", extras = ["pandas"] }
 
 [tool.poetry.scripts]
 pipen = "pipen.cli:main"
 
 [tool.pytest.ini_options]
-addopts = "-vv -n auto -p no:asyncio -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
+addopts = "-vv -n auto -p no:asyncio -p no:benchmark -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
 # addopts = "-vv -n auto -p no:asyncio -W error::UserWarning"
 console_output_style = "progress"
 junit_family = "xunit1"
+filterwarnings = [
+   "ignore:The --rsyncdir command line argument and rsyncdirs config variable are deprecated.:DeprecationWarning",
+]
 
 [tool.mypy]
 ignore_missing_imports = true

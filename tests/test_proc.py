@@ -114,12 +114,11 @@ def test_proc_with_input_data(pipen):
 def test_proc_with_input_callable(pipen):
     proc = Proc.from_proc(NormalProc, input_data=[1])
     proc2 = Proc.from_proc(
-        NormalProc,
-        requires=proc,
-        input_data=lambda ch: ch >> mutate(output=2)
+        NormalProc, requires=proc, input_data=lambda ch: ch >> mutate(output=2)
     )
     pipen.set_starts(proc).run()
     assert proc2.output_data.equals(pandas.DataFrame({"output": ["2"]}))
+
 
 def test_proc_is_singleton(pipen):
     pipen.workdir = ".pipen/"
@@ -128,12 +127,14 @@ def test_proc_is_singleton(pipen):
     p2 = SimpleProc(pipen)
     assert p1 is p2
 
+
 def test_ignore_input_data_of_start_proc(caplog, pipen):
     proc = Proc.from_proc(NormalProc, input_data=[1])
     proc2 = Proc.from_proc(NormalProc, requires=proc, input_data=[2])
     pipen.set_starts(proc).run()
     assert "Ignoring input data" in caplog.text
     assert proc2.output_data.equals(pandas.DataFrame({"output": ["1"]}))
+
 
 def test_proc_wasted_input_columns(caplog, pipen):
     proc1 = Proc.from_proc(NormalProc, input_data=[1])
@@ -142,6 +143,7 @@ def test_proc_wasted_input_columns(caplog, pipen):
     pipen.set_starts(proc1, proc2).run()
     assert "Wasted 1 column" in caplog.text
 
+
 def test_proc_not_enough_input_columns(caplog, pipen):
     proc1 = Proc.from_proc(NormalProc, input_data=[1])
     proc2 = Proc.from_proc(In2Out1Proc, requires=proc1)
@@ -149,10 +151,12 @@ def test_proc_not_enough_input_columns(caplog, pipen):
     assert "No data column for input: ['in2'], using None" in caplog.text
     assert proc2.output_data.equals(pandas.DataFrame({"out": ["1_None"]}))
 
+
 def test_proc_relative_path_script(pipen):
     pipen.set_starts(RelPathScriptProc).run()
     script = RelPathScriptProc().script.render()
     assert "AbCdEf" in script
+
 
 def test_script_file_exists(pipen):
     with pytest.raises(ProcScriptFileNotFound):

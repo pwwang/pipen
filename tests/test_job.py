@@ -117,7 +117,7 @@ def test_check_cached_input_or_output_different(
 
     caplog.clear()
     pipen.set_starts(proc_io_diff2).run()
-    pipen.build_proc_relationships() # not redoing it.
+    pipen.build_proc_relationships()  # not redoing it.
     assert "Not cached (input or output is different)" in caplog.text
 
 
@@ -175,7 +175,9 @@ def test_check_cached_force_cache(caplog, pipen, infile):
 
 
 def test_check_cached_infile_newer(caplog, pipen, infile):
-    proc_infile_newer = Proc.from_proc(MixedInputProc, input_data=[(1, infile)])
+    proc_infile_newer = Proc.from_proc(
+        MixedInputProc, input_data=[(1, infile)]
+    )
     pipen.set_starts(proc_infile_newer).run()
 
     caplog.clear()

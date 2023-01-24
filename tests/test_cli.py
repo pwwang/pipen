@@ -1,5 +1,6 @@
 from subprocess import check_output, CalledProcessError
-import pytest
+import pytest  # noqa: F401
+
 
 def cmdoutput(cmd):
     try:
@@ -15,15 +16,18 @@ def test_main():
     out = cmdoutput(["pipen", "--help"])
     assert "CLI Tool for pipen" in out
 
+
 def test_nosuch_command():
     out = cmdoutput(["pipen", "x"])
     assert "No such command" in out
+
 
 def test_help():
     out = cmdoutput(["pipen", "help", "x"])
     assert "No such command" in out
     out = cmdoutput(["pipen", "help", "profile"])
     assert "List available profiles" in out
+
 
 def test_profile_all():
     out = cmdoutput(["pipen", "profile"])
