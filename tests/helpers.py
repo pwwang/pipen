@@ -1,9 +1,9 @@
 import sys
-import signal
+# import signal
 from tempfile import gettempdir
 from pathlib import Path
-from shutil import rmtree
-from multiprocessing import Process
+# from shutil import rmtree
+# from multiprocessing import Process
 
 import pytest
 from pipen import Proc, Pipen, plugin
@@ -76,7 +76,10 @@ class RetryProc(ErrorProc):
     error_strategy = "retry"
     num_retries = 10
     lang = sys.executable  # python
-    script = "import sys, time; sys.exit(1 if time.time() < {{in.starttime}} + 3 else 0)"
+    script = """
+        import sys, time
+        sys.exit(1 if time.time() < {{in.starttime}} + 3 else 0)
+    """
 
 
 class OutputRenderErrorProc(Proc):
@@ -124,6 +127,7 @@ class FileInputProc(Proc):
     output = "out:file:{{in.in.split('/')[-1]}}"
     script = "cat {{in.in}} > {{out.out}}"
 
+
 class OutputNotGeneratedProc(Proc):
     """Process with output file not generated intentionally"""
 
@@ -157,10 +161,10 @@ class DirOutputProc(Proc):
 
 
 class SimplePlugin:
-
     @plugin.impl
     async def on_init(pipen):
         print("SimplePlugin")
+
 
 @pytest.fixture
 def pipen(tmp_path):
@@ -176,6 +180,7 @@ def pipen(tmp_path):
     )
 
     return pipen_simple
+
 
 @pytest.fixture
 def pipen_with_plugin(tmp_path):

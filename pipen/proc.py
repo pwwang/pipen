@@ -503,7 +503,7 @@ class Proc(ABC, metaclass=ProcMeta):
         # req.nexts
         my_nexts = None if cls.nexts is None else cls.nexts[:]
         for req in requires:  # type: ignore
-            if req.nexts is None:
+            if not req.nexts:
                 req.nexts = [cls]
             else:
                 req.nexts.append(cls)  # type: ignore

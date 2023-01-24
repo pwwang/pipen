@@ -58,8 +58,10 @@ def test_cyclic_dependency(pipen):
 def test_not_cyclic_for_subclass_of_proc_in_pipeline(pipen):
     proc1 = Proc.from_proc(NormalProc, input_data=[1])
     proc2 = Proc.from_proc(NormalProc, requires=proc1)
+
     class proc3(proc1):
         requires = proc2
+
     pipen.set_starts(proc1).run()
     assert pipen.procs == [proc1, proc2, proc3]
 

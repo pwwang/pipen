@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "pipen"
-version = "0.3.9"
+version = "0.3.10"
 description = "A pipeline framework for python"
 authors = [ "pwwang <pwwang@pwwang.com>",]
 license = "MIT"
@@ -16,7 +16,6 @@ repository = "https://github.com/pwwang/pipen"
 python = "^3.7.1" # align with datar/pandas
 liquidpy = "^0.7"
 pandas = "^1.3"
-rich = "^12"
 python-slugify = "^6"
 enlighten = "^1"
 cached-property = "^1"
@@ -24,6 +23,7 @@ more-itertools = "^8"
 pyparam = "^0.5"
 xqute = "^0.1"
 ## included in xqute
+# rich = "^12"
 # diot = "^0.1"
 # simplug = "^0.0"
 ## including rtoml
@@ -35,17 +35,20 @@ varname = "^0.10"
 openpyxl = "^3"
 pytest = "^7"
 pytest-cov = "^4"
-pytest-xdist = "^2"
-datar = { version = "^0.10", extras = ["pandas"] }
+pytest-xdist = "^3"
+datar = { version = "^0.11", extras = ["pandas"] }
 
 [tool.poetry.scripts]
 pipen = "pipen.cli:main"
 
 [tool.pytest.ini_options]
-addopts = "-vv -n auto -p no:asyncio -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
+addopts = "-vv -n auto -p no:asyncio -p no:benchmark -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
 # addopts = "-vv -n auto -p no:asyncio -W error::UserWarning"
 console_output_style = "progress"
 junit_family = "xunit1"
+filterwarnings = [
+   "ignore:The --rsyncdir command line argument and rsyncdirs config variable are deprecated.:DeprecationWarning",
+]
 
 [tool.mypy]
 ignore_missing_imports = true
