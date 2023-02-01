@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.3.11
+
+- 📝 Fix github workflow badges in README
+- 🩹 Fix pandas warning when less-column data passed to channel
+
 ## 0.3.10
 
 - ⬆️ Upgrade xqute to 0.1.3

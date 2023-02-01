@@ -610,11 +610,12 @@ class Proc(ABC, metaclass=ProcMeta):
             self.log(
                 "warning",
                 "No data column for input: %s, using None.",
-                needed_cols[-len_rest_cols:],
+                needed_cols[len_rest_cols:],
             )
             # Add None
+            # Use loop to keep order
             for needed_col in needed_cols[len_rest_cols:]:
-                out.data[needed_col] = None
+                out.data.insert(out.data.shape[1], needed_col, None)
             len_needed_cols = len_rest_cols
 
         out.data = out.data.rename(
