@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.12
+
+- ⬆️ Upgrade python-slugify to ^7
+
 ## 0.3.11
 
 - 📝 Fix github workflow badges in README
