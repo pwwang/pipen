@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.4.1
+
+- 🐛 Fix cli plugin name
+
 ## 0.4.0
 
 - ⬆️ Upgrade python-slugify to ^0.8
