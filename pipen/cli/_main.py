@@ -42,7 +42,7 @@ def main() -> None:
             plg.name,
             help=re.sub(r"\s+", " ", plg.__doc__.strip().split("\n\n")[0]),
         )
-        plugins[name] = plg(parser, subparser)
+        plugins[plg.name] = plg(parser, subparser)
 
     parsed = parser.parse_args()
     plugins[parsed.COMMAND].exec_command(parsed)
