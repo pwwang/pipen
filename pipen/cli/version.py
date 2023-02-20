@@ -1,10 +1,13 @@
 """Print help for commands"""
-from typing import Any, Mapping
+from __future__ import annotations
+from typing import TYPE_CHECKING
 
 from rich import print
-from pyparam import Params
 
 from ._hooks import CLIPlugin
+
+if TYPE_CHECKING:
+    from argparse import Namespace
 
 __all__ = ("CLIVersionPlugin",)
 
@@ -23,16 +26,7 @@ class CLIVersionPlugin(CLIPlugin):
 
     name = "version"
 
-    @property
-    def params(self) -> Params:
-        """Define the params"""
-        pms = Params(
-            desc=self.__class__.__doc__,
-            help_on_void=False,
-        )
-        return pms
-
-    def exec_command(self, args: Mapping[str, Any]) -> None:
+    def exec_command(self, args: Namespace) -> None:
         """Run the command"""
         import sys
         from .. import __version__
@@ -44,7 +38,7 @@ class CLIVersionPlugin(CLIPlugin):
             "pandas",
             "python-slugify",
             "enlighten",
-            "pyparam",
+            "argx",
             "xqute",
             "python-simpleconf",
             "pipda",

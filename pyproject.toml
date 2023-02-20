@@ -20,7 +20,7 @@ python-slugify = "^8"
 enlighten = "^1"
 cached-property = "^1"
 more-itertools = "^8"
-pyparam = "^0.5"
+argx = "^0.1"
 xqute = "^0.1"
 ## included in xqute
 # rich = "^12"
@@ -29,7 +29,10 @@ xqute = "^0.1"
 ## including rtoml
 python-simpleconf = {version = "^0.5", extras = ["toml"]}
 pipda = "^0.11"
-varname = "^0.10"
+varname = [
+   {version = "^0.10", python = "<3.8"},
+   {version = "^0.11", python = "^3.8"},
+]
 
 [tool.poetry.dev-dependencies]
 openpyxl = "^3"
