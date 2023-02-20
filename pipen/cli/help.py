@@ -20,9 +20,8 @@ class CLIHelpPlugin(CLIPlugin):
         super().__init__(parser, subparser)
         subparser.add_argument(
             "cmd",
-            default="",
             nargs="?",
-            choices=cli_plugin.get_enabled_plugin_names() + [""],
+            choices=cli_plugin.get_enabled_plugin_names(),
             help="The command to show help for",
         )
 
@@ -31,6 +30,5 @@ class CLIHelpPlugin(CLIPlugin):
 
         if not args.cmd:
             self.parser.parse_args(["--help"])
-            return
-
-        self.parser.parse_args([args.cmd, "--help"])
+        else:
+            self.parser.parse_args([args.cmd, "--help"])

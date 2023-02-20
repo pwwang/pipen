@@ -1,32 +1,37 @@
-from subprocess import check_output, CalledProcessError
+import sys
 import pytest  # noqa: F401
+
+from subprocess import check_output, CalledProcessError, STDOUT
 
 
 def cmdoutput(cmd):
     try:
-        return check_output(cmd, encoding="utf-8")
+        return check_output(
+            [sys.executable, "-m"] + cmd,
+            stderr=STDOUT,
+            encoding="utf-8",
+        )
     except CalledProcessError as err:
-        return err.stdout
+        return err.output
 
 
 def test_main():
-    out = cmdoutput(["pipen"])
-    assert "CLI Tool for pipen" in out
-
     out = cmdoutput(["pipen", "--help"])
     assert "CLI Tool for pipen" in out
 
 
 def test_nosuch_command():
     out = cmdoutput(["pipen", "x"])
-    assert "No such command" in out
+    assert "invalid choice" in out
 
 
 def test_help():
     out = cmdoutput(["pipen", "help", "x"])
-    assert "No such command" in out
+    assert "invalid choice" in out
     out = cmdoutput(["pipen", "help", "profile"])
-    assert "List available profiles" in out
+    assert "The name of the profile to show" in out
+    out = cmdoutput(["pipen", "help"])
+    assert "CLI Tool for pipen" in out
 
 
 def test_profile_all():

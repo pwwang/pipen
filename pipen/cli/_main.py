@@ -8,7 +8,10 @@ from argx import ArgumentParser
 from ._hooks import cli_plugin
 from ..version import __version__
 
-parser = ArgumentParser(description=f"CLI Tool for pipen v{__version__}")
+parser = ArgumentParser(
+    prog="pipen",
+    description=f"CLI Tool for pipen v{__version__}",
+)
 
 
 def load_builtin_clis() -> None:
