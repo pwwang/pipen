@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.4.0
+
+- ⬆️ Upgrade python-slugify to ^0.8
+- ⬆️ Upgrade xqute to 0.1.4
+- ⬆️ Upgrade varname to 0.11
+- 💥 Use argx instead of pyparam
+
 ## 0.3.12
 
 - ⬆️ Upgrade python-slugify to ^7

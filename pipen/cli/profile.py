@@ -1,5 +1,6 @@
 """List available profiles."""
-from typing import Any, Mapping
+from __future__ import annotations
+from typing import TYPE_CHECKING
 
 import rtoml  # type: ignore
 from rich import print
@@ -10,7 +11,9 @@ from simpleconf import ProfileConfig
 from ._hooks import CLIPlugin
 from ..defaults import CONFIG, CONFIG_FILES
 
-from pyparam import Params
+if TYPE_CHECKING:
+    from argx import ArgumentParser
+    from argparse import Namespace
 
 __all__ = ("CLIProfilePlugin",)
 
@@ -20,22 +23,20 @@ class CLIProfilePlugin(CLIPlugin):
 
     name = "profile"
 
-    @property
-    def params(self) -> Params:
-        """Define the params"""
-        pms = Params(
-            desc=self.__class__.__doc__,
-            help_on_void=False,
-        )
-        pms.add_param(
-            "n,name",
+    def __init__(
+        self,
+        parser: ArgumentParser,
+        subparser: ArgumentParser,
+    ) -> None:
+        super().__init__(parser, subparser)
+        subparser.add_argument(
+            "-n",
+            "--name",
             default="",
-            desc="The name of the profile to show. "
-            "If not provided, show all profiles.",
+            help="The name of the profile to show. Show all if not provided.",
         )
-        return pms
 
-    def exec_command(self, args: Mapping[str, Any]) -> None:
+    def exec_command(self, args: Namespace) -> None:
         """Run the command"""
 
         config = ProfileConfig.load(

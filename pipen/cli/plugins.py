@@ -1,8 +1,7 @@
 """List plugins"""
+from __future__ import annotations
+from typing import TYPE_CHECKING, Any, Iterable, List, Tuple
 
-from typing import Any, Iterable, List, Mapping, Tuple
-
-from pyparam import Params
 from rich import print
 
 from ._hooks import CLIPlugin
@@ -12,6 +11,10 @@ from ..defaults import (
     TEMPLATE_ENTRY_GROUP,
 )
 from ..utils import load_entrypoints
+
+if TYPE_CHECKING:
+    from argx import ArgumentParser
+    from argparse import Namespace
 
 
 COMMAND = "plugins"
@@ -102,20 +105,21 @@ class CliPluginsPlugin(CLIPlugin):
 
     name = "plugins"
 
-    @property
-    def params(self) -> Params:
-        """Define the params"""
-        pms = Params(desc=self.__class__.__doc__, help_on_void=False)
-        pms.add_param(
-            "g,group",
-            default="",
-            desc="The name of the entry point group. "
-            "If not provided, show all plugins. "
-            f"Avaiable groups are: {' '.join(GROUPS)}",
+    def __init__(
+        self,
+        parser: ArgumentParser,
+        subparser: ArgumentParser,
+    ) -> None:
+        super().__init__(parser, subparser)
+        subparser.add_argument(
+            "-g",
+            "--group",
+            choices=GROUPS + ["all"],
+            default="all",
+            help="The name of the entry point group. Show all if not provided",
         )
-        return pms
 
-    def exec_command(self, args: Mapping[str, Any]) -> None:
+    def exec_command(self, args: Namespace) -> None:
         """Execute the command"""
         from ..version import __version__
         print("Pipen version:", __version__)
