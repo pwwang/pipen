@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.4.2
+
+- ⬆️ Bump `argx` to 0.2
+
 ## 0.4.1
 
 - 🐛 Fix cli plugin name

@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "pipen"
-version = "0.4.1"
+version = "0.4.2"
 description = "A pipeline framework for python"
 authors = [ "pwwang <pwwang@pwwang.com>",]
 license = "MIT"
@@ -20,7 +20,7 @@ python-slugify = "^8"
 enlighten = "^1"
 cached-property = "^1"
 more-itertools = "^8"
-argx = "^0.1"
+argx = "^0.2"
 xqute = "^0.1"
 ## included in xqute
 # rich = "^12"
