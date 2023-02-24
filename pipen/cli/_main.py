@@ -38,9 +38,19 @@ def main() -> None:
     plugins = {}
     for name in plugin_names:
         plg = cli_plugin.get_plugin(name, raw=True)
+
+        docstr = plg.__doc__
+        if docstr is not None:
+            docstr = docstr.strip()
+
         subparser = parser.add_command(
             plg.name,
-            help=re.sub(r"\s+", " ", plg.__doc__.strip().split("\n\n")[0]),
+            help=(
+                None
+                if docstr is None
+                else re.sub(r"\s+", " ", docstr.splitlines()[0])
+            ),
+            description=docstr,
         )
         plugins[plg.name] = plg(parser, subparser)
 
