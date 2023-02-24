@@ -3,22 +3,19 @@
 To run it:
 
 ```shell
-❯ pipen
+❯ pipen --help
+Usage: pipen [-h] {version,profile,plugins,help} ...
 
-DESCRIPTION:
-  CLI Tool for pipen v0.1.4
+CLI Tool for pipen v0.4.2
 
-USAGE:
-  pipen [OPTIONS] COMMAND [OPTIONS]
+Optional Arguments:
+  -h, --help            show help message and exit
 
-OPTIONAL OPTIONS:
-  -h, --help                      - Print help information for the CLI tool.
-
-COMMANDS:
-  version                         - Print versions of pipen and its dependencies
-  profile                         - List available profiles.
-  plugins                         - List installed plugins
-  help                            - Print help for commands
+Subcommands:
+    version             Print versions of pipen and its dependencies
+    profile             List available profiles.
+    plugins             List installed plugins
+    help                Print help for commands
 ```
 
 ## Writing a plugin to extend the cli
@@ -29,11 +26,18 @@ A CLI plugin has to be a subclass of `pipen.cli.CLIPlugin`.
 
 A CLI plugin has to define a `name` property, which also is the sub-command of the plugin.
 
-Then a `params` property is also needed to define the commands and arguments of this plugin. To see how to define a `Params` object, see `pyparam`'s [documentation][5].
+There are a couple of methods of `pipen.cli.CLIPlugin` to extend for a plugin:
 
-You may also define a method `parse_args()` to parse CLI arguments by yourself. By default, it just calls `Params.parse()` to parse the arguments.
+- `__init__(self, parser, subparser)`: initialize the plugin
+  It takes the main parser and the subparser of the sub-command as arguments. You can add arguments to the parser or subparser here.
+  Check [argx][1] for more information about how to define arguments.
 
-Finally, define `exec_command()`, which takes the parsed arguments as argument, to execute the command as you wish.
+- `parse_args(self)`: parse the arguments
+  It takes no arguments. It should parse the arguments and return the parsed arguments (Namespace), which are used to execute the command.
+  By default, `self.parser.parse_args()` is called to parse the arguments.
+
+- `exec_command(self, args)`: execute the command
+  It takes the parsed arguments as argument. It should execute the command as you wish.
 
 ### loading CLI plugins
 
@@ -62,8 +66,7 @@ This subcommand is used to list the plugins for `pipen` itself, templates, sched
 
 This command prints the versions of `pipen` and its dependencies.
 
-[1]: https://github.com/pwwang/pyparam
+[1]: https://github.com/pwwang/argx
 [2]: ../plugin
 [3]: ../templating
 [4]: ../scheduler
-[5]: https://pwwang.github.io/pyparam

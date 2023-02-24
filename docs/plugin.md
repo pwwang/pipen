@@ -76,7 +76,6 @@ See [`simplug`][1] for more details.
 
     The first plugin (based on priority) have this hook return `False` will cancel the submission
 
-
 - `on_job_submitted(proc, job)` (async)
 
     When a job is submitted in the scheduler system.
@@ -99,11 +98,9 @@ See [`simplug`][1] for more details.
 
     When a job completes successfully
 
-
 - `on_job_failed(proc, job)` (async)
 
     When a job is done but failed (i.e. return_code == 1).
-
 
 ## Loading plugins
 
@@ -140,13 +137,14 @@ You can also use the entry point to register your plugin using the group name `p
 For `setup.py`, you will need:
 ```python
 setup(
-	# ...
-	entry_points={"pipen": ["pipen_verbose = pipen_verbose"]},
-	# ...
+    # ...
+    entry_points={"pipen": ["pipen_verbose = pipen_verbose"]},
+    # ...
 )
 ```
 
 For `pyproject.toml`:
+
 ```toml
 [tool.poetry.plugins.pipen]
 pipen_verbose = "pipen_verbose"
@@ -168,7 +166,7 @@ logger = get_logger("verbose", "info")
 
 The above code will produce some logging on the console like this:
 
-```
+```shell
 11-04 12:00:19 I main    ╭═══════════════════════════ Process ═══════════════════════════╮
 11-04 12:00:19 I main    ║ Undescribed.                                                  ║
 11-04 12:00:19 I main    ╰═══════════════════════════════════════════════════════════════╯
@@ -177,6 +175,10 @@ The above code will produce some logging on the console like this:
 11-04 12:00:19 I verbose Process: [0/9] in.a: 0
 11-04 12:00:19 I verbose Process: [0/9] out.b: pipeline-0-output/Process/0/a.txt
 ```
+
+## CLI plugins
+
+See [CLI][11] for more details.
 
 ## Plugin gallery
 
@@ -189,8 +191,6 @@ The above code will produce some logging on the console like this:
 - [`pipen-cli-init`][9]: A pipen CLI plugin to create a pipen project (pipeline)
 - [`pipen-cli-run`][10]: A pipen cli plugin to run a process or a pipeline
 
-
-
 [1]: https://github.com/pwwang/simplug
 [2]: https://packaging.python.org/specifications/entry-points/
 [3]: https://github.com/pwwang/pipen-verbose
@@ -201,3 +201,4 @@ The above code will produce some logging on the console like this:
 [8]: https://github.com/pwwang/pipen-filters
 [9]: https://github.com/pwwang/pipen-cli-init
 [10]: https://github.com/pwwang/pipen-cli-run
+[11]: ../cli
