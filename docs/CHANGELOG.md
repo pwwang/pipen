@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.4.4
+
+- 🐛 Fix when cli plugin has no docstring
+- 🚑 Exclude help from help sub-command itself
+- 🚑 Add cli plugin docstring as sub-command description
+
 ## 0.4.3
 
 - ⬆️ Bump `argx` to 0.2.2
