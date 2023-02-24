@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from ._hooks import CLIPlugin, cli_plugin
+from ._hooks import CLIPlugin
 
 if TYPE_CHECKING:
     from argx import ArgumentParser
@@ -21,7 +21,11 @@ class CLIHelpPlugin(CLIPlugin):
         subparser.add_argument(
             "cmd",
             nargs="?",
-            choices=cli_plugin.get_enabled_plugin_names(),
+            choices=[
+                n
+                for n in parser._subparsers._group_actions[0].choices
+                if n != "help"
+            ],
             help="The command to show help for",
         )
 
