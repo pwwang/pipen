@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.4.3
+
+- ⬆️ Bump `argx` to 0.2.2
+- 🎨 Expose `parse_args()` to cli plugins
+
 ## 0.4.2
 
 - ⬆️ Bump `argx` to 0.2

@@ -30,8 +30,9 @@ class CLIPlugin(ABC):
     def name(self) -> str:
         """The name/command of this plugin"""
 
-    def define_args(self, parser: ArgumentParser):
+    def parse_args(self) -> Namespace:
         """Define arguments for the command"""
+        return self.parser.parse_args()
 
     @abstractmethod
     def exec_command(self, args: Namespace) -> None:

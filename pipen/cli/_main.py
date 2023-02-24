@@ -44,5 +44,6 @@ def main() -> None:
         )
         plugins[plg.name] = plg(parser, subparser)
 
-    parsed = parser.parse_args()
-    plugins[parsed.COMMAND].exec_command(parsed)
+    known_parsed, _ = parser.parse_known_args()
+    parsed = plugins[known_parsed.COMMAND].parse_args()
+    plugins[known_parsed.COMMAND].exec_command(parsed)
