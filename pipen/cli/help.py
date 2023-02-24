@@ -21,7 +21,11 @@ class CLIHelpPlugin(CLIPlugin):
         subparser.add_argument(
             "cmd",
             nargs="?",
-            choices=cli_plugin.get_enabled_plugin_names(),
+            choices=[
+                n
+                for n in cli_plugin.get_enabled_plugin_names()
+                if n != "help"
+            ],
             help="The command to show help for",
         )
 
