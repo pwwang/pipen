@@ -51,7 +51,7 @@ from .pluginmgr import plugin
 from .version import __version__
 
 if TYPE_CHECKING:  # pragma: no cover
-    from rich.console import RenderableType, ConsoleRenderable
+    from rich.console import RenderableType
 
 
 class RichHandler(_RichHandler):
@@ -362,10 +362,10 @@ def pipen_banner() -> "RenderableType":
         caption=f"version: {__version__}",
     )
     table.add_column(justify="center")
-    table.add_row(r"  _____________________________________   __")
-    table.add_row(r"  ___  __ \___  _/__  __ \__  ____/__  | / /")
-    table.add_row(r" __  /_/ /__  / __  /_/ /_  __/  __   |/ / ")
-    table.add_row(r"_  ____/__/ /  _  ____/_  /___  _  /|  /  ")
+    table.add_row(r"   _____________________________________   __")
+    table.add_row(r"   ___  __ \___  _/__  __ \__  ____/__  | / /")
+    table.add_row(r"  __  /_/ /__  / __  /_/ /_  __/  __   |/ / ")
+    table.add_row(r" _  ____/__/ /  _  ____/_  /___  _  /|  /  ")
     table.add_row(r"/_/     /___/  /_/     /_____/  /_/ |_/   ")
     table.add_row("")
 
