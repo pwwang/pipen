@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.4.5
+
+- 🚑 Fix banner alignment in terminal
+
 ## 0.4.4
 
 - 🐛 Fix when cli plugin has no docstring
