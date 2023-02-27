@@ -58,7 +58,8 @@ def _list_group_plugins(
         plugins: A list of tuples with name and plugin
     """
     print("")
-    print(f"{GROUP_NAMES[group]} plugins:")
+    print(f"[bold][u]{GROUP_NAMES[group]} plugins:[/u][/bold]")
+    namelen = max(len(name) for name, _ in plugins) if plugins else 0
     for name, plugin in plugins:
         try:
             ver = plugin.version
@@ -67,7 +68,7 @@ def _list_group_plugins(
                 ver = plugin.__version__
             except AttributeError:
                 ver = "unknown"
-        print(f"- {name}: (version: {ver})")
+        print(f"- {name.ljust(namelen)}: (version: {ver})")
 
 
 def _list_plugins(plugins: List[Tuple[str, str, Any]]) -> None:
@@ -126,7 +127,7 @@ class CliPluginsPlugin(CLIPlugin):
 
         plugins: List[Tuple[str, str, Any]] = []
 
-        if args.group:
+        if args.group and args.group != "all":
             for name, plugin in _get_plugins_by_group(args.group):
                 plugins.append((args.group, name, plugin))
 
