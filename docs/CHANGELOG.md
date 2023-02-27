@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.4.6
+
+- 🐛 Fix plugins command not listing plugins
+
 ## 0.4.5
 
 - 🚑 Fix banner alignment in terminal
