@@ -10,49 +10,34 @@ Runs directly:
 Integrated into a larger pipeline
 >>> proc_group = ProcGroup(<options>)
 >>> # proc could be a process within the larger pipeline
->>> proc.requires = prog_group.build()
+>>> proc.requires = prog_group.<proc>
 
 To add a process to the proc group, use the `add_proc` method:
 >>> class MyProcGroup(ProcGroup):
->>>     def build(self):
->>>         return [self.MyProc]
+>>>     ...
 >>>
 >>> proc_group = MyProcGroup(...)
 >>> @proc_group.add_proc
 >>> class MyProc(Proc):
 >>>     ...
 
-Or use the define_proc decorator:
+Or add a process at runtime:
 >>> class MyProcGroup(ProcGroup):
->>>     def build(self):
->>>         return [self.MyProc]
+>>>     ...
 >>>
->>>     @define_proc
+>>>     @ProcGroup.add_proc
 >>>     def my_proc(self):
 >>>         class MyProc(Proc):
 >>>             # You may use self.options here
 >>>             ...
 >>>         return MyProc
 >>> proc_group = MyProcGroup(...)
-
-You should define the relationship between processes in the `build` method:
->>> class MyProcGroup(ProcGroup):
->>>     def build(self):
->>>         self.MyProc1.requires = [self.MyProc2]
->>>         return [self.MyProc1]
-
-When run directly, the `build` method will be called automatically. But
-when integrated into a larger pipeline, you should call it manually:
->>> proc_group = MyProcGroup(...)
->>> # proc could be a process within the larger pipeline
->>> proc.requires = proc_group.build()
 """
 from __future__ import annotations
-from functools import wraps
 
 from os import PathLike
-from types import MethodType
-from typing import Callable, Type, List
+from functools import wraps
+from typing import Callable, Type
 from abc import ABC, ABCMeta
 from diot import Diot
 
@@ -92,57 +77,66 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
     PRESERVED = {
         "opts",
         "name",
-        "build",
         "add_proc",
         "as_pipen",
         "procs",
+        "starts",
+        "DEFAULTS",
+        "PRESERVED",
+        "_INST",
     }
 
     def __init__(self, **opts) -> None:
         self.opts = Diot(self.__class__.DEFAULTS or {}) | (opts or {})
         self.name = self.__class__.name or self.__class__.__name__
+        self.starts = []
+        self.procs = Diot()
 
-    def build(self) -> List[Type[Proc]] | Type[Proc]:
-        """Build the pipeline"""
-
-    @property
-    def procs(self) -> Diot:
-        """Get all processes"""
-        return Diot(
-            {
-                k: v
-                for k, v in
-                self.__dict__.items()
-                if isinstance(v, Proc) or (
-                    isinstance(v, type) and issubclass(v, Proc)
-                )
-            }
-        )
+        # Load all processes if they are decorated by ProcGroup.add_proc
+        for name, attr in self.__class__.__dict__.items():
+            if isinstance(attr, cached_property):
+                getattr(self, name)
 
     def add_proc(
-        self,
+        self_or_method: ProcGroup | Callable[[ProcGroup], Type[Proc]],
         proc: Type[Proc] | None = None,
     ) -> Type[Proc] | Callable[[Type[Proc]], Type[Proc]]:
         """Add a process to the proc group
 
+        It works either as a decorator to the process directly or as a
+        decorator to a method that returns the process.
+
         Args:
-            proc: The process to add
-            start: Whether the process is a start process
-            end: Whether the process is an end process
+            self_or_method: The proc group instance or a method that
+                returns the process
+            proc: The process class if `self_or_method` is the proc group
 
         Returns:
-            The process added
+            The process class if `self_or_method` is the proc group, or
+            a cached property that returns the process class
         """
-        if proc is None:
-            return self.add_proc  # type: ignore
+        if isinstance(self_or_method, ProcGroup):
+            if proc.name in self_or_method.__class__.PRESERVED:
+                raise ValueError(
+                    f"Process name `{proc.name}` is reserved for ProcGroup"
+                )
+            setattr(self_or_method, proc.name, proc)
+            proc.__procgroup__ = self_or_method
+            if not proc.requires:
+                self_or_method.starts.append(proc)
+            self_or_method.procs[proc.name] = proc
+            return proc
 
-        if proc.name in self.__class__.PRESERVED:
-            raise ValueError(
-                f"Process name `{proc.name}` is reserved for ProcGroup"
-            )
-        setattr(self, proc.name, proc)
-        proc.__procgroup__ = self
-        return proc
+        @wraps(self_or_method)
+        def wrapper(self):
+            proc = self_or_method(self)
+            proc.__procgroup__ = self
+            if not proc.requires:
+                self.starts.append(proc)
+            self.procs[proc.name] = proc
+            return proc
+
+        return cached_property(wrapper)
 
     def as_pipen(
         self,
@@ -167,33 +161,5 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
             desc = desc or self.__doc__.lstrip().splitlines()[0]
 
         pipe = Pipen(name=name, desc=desc, outdir=outdir, **kwargs)
-        pipe.set_start(self.build())
+        pipe.set_start(self.starts)
         return pipe
-
-    def define_proc(
-        method: MethodType | None = None,
-    ) -> property | Callable[[MethodType], property]:
-        """Define a process by a method of ProcGroup and add it to the
-        proc group
-
-        This is used to decorate a method of ProcGroup that returns a process.
-        Different from procgroup.add_proc(), this allows you to create the
-        process at runtime.
-
-        Args:
-            method: The method to define the process. It will finally work as a
-                property, so it should not have any arguments.
-
-        Returns:
-            The process defined
-        """
-        if method is None:
-            return ProcGroup.define_proc  # type: ignore
-
-        @wraps(method)
-        def wrapper(self):
-            proc = method(self)
-            proc.__procgroup__ = self
-            return proc
-
-        return cached_property(wrapper)
