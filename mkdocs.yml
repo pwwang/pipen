@@ -28,6 +28,7 @@ nav:
     - 'Configurations': 'configurations.md'
     - 'Plugins': 'plugin.md'
     - 'Scheduler': 'scheduler.md'
+    - 'Process group': 'proc-group.md'
     - 'Command line iterface': 'cli.md'
     - 'Examples': 'examples.md'
     - 'Change log': 'CHANGELOG.md'

@@ -268,12 +268,15 @@ class Proc(ABC, metaclass=ProcMeta):
                 kwargs[key] = locs[key]
 
         kwargs["__doc__"] = proc.__doc__
-        return type(name, (proc,), kwargs)
+        out = type(name, (proc,), kwargs)
+        out.__procgroup__ = None
+        return out
 
     def __init_subclass__(cls) -> None:
         """Do the requirements inferring since we need them to build up the
         process relationship
         """
+        # Use __mro__?
         parent = cls.__bases__[-1]
         # cls.requires = cls._compute_requires()
         # triggers cls.__setattr__() to compute requires
@@ -295,6 +298,7 @@ class Proc(ABC, metaclass=ProcMeta):
         cls.scheduler_opts = update_dict(
             parent.scheduler_opts, cls.scheduler_opts
         )
+        cls.__procgroup__ = None
 
     def __init__(self, pipeline: "Pipen" = None) -> None:
         """Constructor
