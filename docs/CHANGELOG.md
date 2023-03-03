@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.5.1
+
+- 🚑 Remove remaining more-itertools
+
 ## 0.5.0
 
 - ➖ Remove more-itertools
