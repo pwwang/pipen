@@ -672,9 +672,14 @@ class Proc(ABC, metaclass=ProcMeta):
 
     def _log_info(self):
         """Log some basic information of the process"""
+        title = (
+            f"{self.__procgroup__.name}/{self.name}"
+            if getattr(self, "__procgroup__", None)
+            else self.name
+        )
         panel = Panel(
             self.desc or "Undescribed",
-            title=self.name,
+            title=title,
             box=box.Box(
                 "╭═┬╮\n"
                 "║ ║║\n"

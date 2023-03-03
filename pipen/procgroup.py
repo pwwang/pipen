@@ -92,6 +92,10 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
         self.starts = []
         self.procs = Diot()
 
+        self._load_runtime_procs()
+
+    def _load_runtime_procs(self):
+        """Load all processes that are added at runtime"""
         # Load all processes if they are decorated by ProcGroup.add_proc
         for name, attr in self.__class__.__dict__.items():
             if isinstance(attr, cached_property):
