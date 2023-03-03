@@ -1,6 +1,8 @@
 """Provide some utilities"""
 import logging
 import textwrap
+from itertools import groupby
+from operator import itemgetter
 from io import StringIO
 from os import PathLike, get_terminal_size
 from collections import defaultdict
@@ -338,8 +340,8 @@ def brief_list(blist: List[int]) -> str:
         The string to show for the briefed list.
     """
     ret = []
-    for group in consecutive_groups(blist):
-        list_group = list(group)
+    for _, g in groupby(enumerate(blist), lambda x: x[0] - x[1]):
+        list_group = list(map(itemgetter(1), g))
         if len(list_group) > 1:
             ret.append(f"{list_group[0]}-{list_group[-1]}")
         else:

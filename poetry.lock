@@ -86,14 +86,14 @@ trio = ["trio (>=0.16,<0.22)"]
 
 [[package]]
 name = "argx"
-version = "0.2.3"
+version = "0.2.4"
 description = "Super-charged argparse for python"
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "argx-0.2.3-py3-none-any.whl", hash = "sha256:516199922dc4ebb78a1821d7db3b3bd981361f3daf27735a35f550b7b22cca98"},
-    {file = "argx-0.2.3.tar.gz", hash = "sha256:452983b1e9f22fd00fa02cf2a34532b3cc37e324f4f5c6e03beff2d8189c9084"},
+    {file = "argx-0.2.4-py3-none-any.whl", hash = "sha256:91b7fa8aad3b770c4fe159bf37d84ba85535b73f16a25067855477fbf9d3ef1d"},
+    {file = "argx-0.2.4.tar.gz", hash = "sha256:8e56650b67ff6f00c4564906e628a6efb865534351f85512b6dd5b0f9ebff8fb"},
 ]
 
 [package.dependencies]
@@ -612,18 +612,6 @@ python-versions = ">=3.7"
 files = [
     {file = "mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"},
     {file = "mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba"},
-]
-
-[[package]]
-name = "more-itertools"
-version = "8.14.0"
-description = "More routines for operating on iterables, beyond itertools"
-category = "main"
-optional = false
-python-versions = ">=3.5"
-files = [
-    {file = "more-itertools-8.14.0.tar.gz", hash = "sha256:c09443cd3d5438b8dafccd867a6bc1cb0894389e90cb53d227456b0b0bccb750"},
-    {file = "more_itertools-8.14.0-py3-none-any.whl", hash = "sha256:1bc4f91ee5b1b31ac7ceacc17c09befe6a40a503907baf9c839c229b5095cfd2"},
 ]
 
 [[package]]
@@ -1293,4 +1281,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7.1" # align with datar/pandas
-content-hash = "b1c4f0265d552da3235469b87d2064a3357df32dbed194ad5321b0b422fd4e25"
+content-hash = "593b9f1c723f44f0538dcc4e492e69b345b00a618c3196dd6b7a7adcecd16cc4"
