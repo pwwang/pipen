@@ -35,7 +35,6 @@ except ImportError:  # pragma: no cover
     # python 3.7
     import importlib_metadata
 
-from more_itertools import consecutive_groups
 from rich.console import Console
 from rich.logging import RichHandler as _RichHandler
 from rich.table import Table
