@@ -37,7 +37,7 @@ from __future__ import annotations
 
 from os import PathLike
 from functools import wraps
-from typing import Callable, Type
+from typing import Callable, Type, List
 from abc import ABC, ABCMeta
 from diot import Diot
 
@@ -89,7 +89,7 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
     def __init__(self, **opts) -> None:
         self.opts = Diot(self.__class__.DEFAULTS or {}) | (opts or {})
         self.name = self.__class__.name or self.__class__.__name__
-        self.starts = []
+        self.starts: List[Type[Proc]] = []
         self.procs = Diot()
 
         self._load_runtime_procs()
@@ -104,7 +104,7 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
     def add_proc(
         self_or_method: ProcGroup | Callable[[ProcGroup], Type[Proc]],
         proc: Type[Proc] | None = None,
-    ) -> Type[Proc] | Callable[[Type[Proc]], Type[Proc]]:
+    ) -> Type[Proc] | cached_property:
         """Add a process to the proc group
 
         It works either as a decorator to the process directly or as a

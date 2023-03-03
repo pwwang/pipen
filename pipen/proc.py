@@ -1,4 +1,6 @@
 """Provides the process class: Proc"""
+from __future__ import annotations
+
 import asyncio
 import inspect
 from abc import ABC, ABCMeta
@@ -12,7 +14,6 @@ from typing import (
     Mapping,
     Sequence,
     Type,
-    Union,
     TYPE_CHECKING,
 )
 
@@ -54,12 +55,13 @@ from .utils import (
 
 if TYPE_CHECKING:  # pragma: no cover
     from .pipen import Pipen
+    from .procgroup import ProcGroup
 
 
 class ProcMeta(ABCMeta):
     """Meta class for Proc"""
 
-    _INSTANCES: Dict[Type, "Proc"] = {}
+    _INSTANCES: Dict[Type, Proc] = {}
 
     def __repr__(cls) -> str:
         """Representation for the Proc subclasses"""
@@ -70,7 +72,7 @@ class ProcMeta(ABCMeta):
             value = cls._compute_requires(value)
         return super().__setattr__(name, value)
 
-    def __call__(cls, *args: Any, **kwds: Any) -> "Proc":
+    def __call__(cls, *args: Any, **kwds: Any) -> Proc:
         """Make sure Proc subclasses are singletons
 
         Args:
@@ -159,29 +161,30 @@ class Proc(ABC, metaclass=ProcMeta):
     export: bool = None
     error_strategy: str = None
     num_retries: int = None
-    template: Union[str, Type[Template]] = None
+    template: str | Type[Template] = None
     template_opts: Mapping[str, Any] = None
     forks: int = None
-    input: Union[str, Sequence[str]] = None
+    input: str | Sequence[str] = None
     input_data: Any = None
     lang: str = None
     order: int = None
-    output: Union[str, Sequence[str]] = None
+    output: str | Sequence[str] = None
     plugin_opts: Mapping[str, Any] = None
-    requires: Union[Type["Proc"], Sequence[Type["Proc"]]] = None
+    requires: Type[Proc] | Sequence[Type[Proc]] = None
     scheduler: str = None
     scheduler_opts: Mapping[str, Any] = None
     script: str = None
     submission_batch: int = None
 
-    nexts: Sequence[Type["Proc"]] = None
+    nexts: Sequence[Type[Proc]] = None
     output_data: Any = None
     workdir: PathLike = None
+    __procgroup__: ProcGroup | None = None
 
     @classmethod
     def from_proc(
         cls,
-        proc: Type["Proc"],
+        proc: Type[Proc],
         name: str = None,
         desc: str = None,
         envs: Mapping[str, Any] = None,
@@ -193,11 +196,11 @@ class Proc(ABC, metaclass=ProcMeta):
         input_data: Any = None,
         order: int = None,
         plugin_opts: Mapping[str, Any] = None,
-        requires: Sequence[Type["Proc"]] = None,
+        requires: Sequence[Type[Proc]] = None,
         scheduler: str = None,
         scheduler_opts: Mapping[str, Any] = None,
         submission_batch: int = None,
-    ) -> Type["Proc"]:
+    ) -> Type[Proc]:
         """Create a subclass of Proc using another Proc subclass or Proc itself
 
         Args:
@@ -416,7 +419,7 @@ class Proc(ABC, metaclass=ProcMeta):
 
     def log(
         self,
-        level: Union[int, str],
+        level: int | str,
         msg: str,
         *args,
         logger: logging.LoggerAdapter = logger,
@@ -484,8 +487,8 @@ class Proc(ABC, metaclass=ProcMeta):
     @classmethod
     def _compute_requires(
         cls,
-        requires: Union[Type["Proc"], Sequence[Type["Proc"]]] = None,
-    ) -> Sequence[Type["Proc"]]:
+        requires: Type[Proc] | Sequence[Type[Proc]] = None,
+    ) -> Sequence[Type[Proc]]:
         """Compute the required processes and fill the nexts
 
         Args:
@@ -628,7 +631,7 @@ class Proc(ABC, metaclass=ProcMeta):
 
         return out
 
-    def _compute_output(self) -> Union[str, List[str]]:
+    def _compute_output(self) -> str | List[str]:
         """Compute the output for jobs to render"""
         if not self.output:
             return None
@@ -674,7 +677,7 @@ class Proc(ABC, metaclass=ProcMeta):
         """Log some basic information of the process"""
         title = (
             f"{self.__procgroup__.name}/{self.name}"
-            if getattr(self, "__procgroup__", None)
+            if self.__procgroup__
             else self.name
         )
         panel = Panel(
