@@ -1,5 +1,36 @@
 # Change Log
 
+## 0.5.0
+
+- ➖ Remove more-itertools
+- ✨ Add `ProcGroup` to manage groups of processes.
+
+    ```python
+    from pipen import Proc, ProcGroup
+
+    class MyGroup(ProcGroup):
+
+        @ProcGroup.add_proc
+        def my_proc(self):
+            class MyProc(Proc):
+                ...
+            return MyProc
+
+        @ProcGroup.add_proc
+        def my_proc2(self):
+            class MyProc2(Proc):
+                requires = self.my_proc
+                ...
+            return MyProc2
+
+    pg = MyGroup()
+    # Run as a pipeline
+    pg.as_pipen().set_data(...).run()
+
+    # Integrate into a pipeline
+    <proc_of_a_pipeline>.requires = pg.my_proc2
+    ```
+
 ## 0.4.6
 
 - 🐛 Fix plugins command not listing plugins
