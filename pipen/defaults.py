@@ -59,16 +59,16 @@ CONFIG = Diot(
 
 # Just the total width of the terminal
 # when logging with a rich.Panel()
-CONSOLE_WIDTH_WITH_PANEL: int = 100
+CONSOLE_WIDTH_WITH_PANEL = 100
 # The width of the terminal when the width cannot be detected,
 # we are probably logging into a file
-CONSOLE_DEFAULT_WIDTH: int = 256
+CONSOLE_DEFAULT_WIDTH = 256
 # [05/16/22 11:46:40] I
 # v0.3.4:
 # 05-16 11:11:11 I
 # The markup code is included
 # Don't modify this unless the logger formatter is changed
-CONSOLE_WIDTH_SHIFT: int = 25
+CONSOLE_WIDTH_SHIFT = 25
 # For pipen scheduler plugins
 SCHEDULER_ENTRY_GROUP = "pipen_sched"
 # For pipen template plugins

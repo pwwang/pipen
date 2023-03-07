@@ -120,10 +120,15 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
             a cached property that returns the process class
         """
         if isinstance(self_or_method, ProcGroup):
+            # Called as self.add_proc or pg.add_proc
+            if proc is None:
+                return self_or_method.add_proc  # type: ignore
+
             if proc.name in self_or_method.__class__.PRESERVED:
                 raise ValueError(
                     f"Process name `{proc.name}` is reserved for ProcGroup"
                 )
+
             setattr(self_or_method, proc.name, proc)
             proc.__procgroup__ = self_or_method
             if not proc.requires:
@@ -144,9 +149,9 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
 
     def as_pipen(
         self,
-        name: str = None,
-        desc: str = None,
-        outdir: PathLike = None,
+        name: str | None = None,
+        desc: str | None = None,
+        outdir: str | PathLike | None = None,
         **kwargs,
     ) -> Pipen:
         """Convert the pipeline to a Pipen instance

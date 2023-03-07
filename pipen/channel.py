@@ -1,7 +1,9 @@
 """Provide some function for creating and modifying channels (dataframes)"""
+from __future__ import annotations
+
 from glob import glob
 from os import path
-from typing import Any, List, Union
+from typing import Any, List
 
 import pandas
 from pandas import DataFrame
@@ -14,7 +16,7 @@ class Channel(DataFrame):
     """A DataFrame wrapper with creators"""
 
     @classmethod
-    def create(cls, value: Union[DataFrame, List[Any]]) -> DataFrame:
+    def create(cls, value: DataFrame | List[Any]) -> DataFrame:
         """Create a channel from a list.
 
         The second dimension is identified by tuple. if all elements are tuple,
@@ -151,7 +153,7 @@ class Channel(DataFrame):
 @register_verb(DataFrame)
 def expand_dir(
     data: DataFrame,
-    col: Union[str, int] = 0,
+    col: str | int = 0,
     pattern: str = "*",
     ftype: str = "any",
     sortby: str = "name",
@@ -189,7 +191,7 @@ def expand_dir(
 
 
 @register_verb(DataFrame)
-def collapse_files(data: DataFrame, col: Union[str, int] = 0) -> DataFrame:
+def collapse_files(data: DataFrame, col: str | int = 0) -> DataFrame:
     """Collapse a Channel according to the files in <col>,
     other cols will use the values in row 0.
 

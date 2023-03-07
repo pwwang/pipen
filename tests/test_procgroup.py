@@ -26,7 +26,7 @@ def test_add_proc():
 
     pg = PG()
 
-    @pg.add_proc
+    @pg.add_proc()
     class P1(Proc):
         pass
 

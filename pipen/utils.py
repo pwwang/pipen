@@ -1,4 +1,6 @@
 """Provide some utilities"""
+from __future__ import annotations
+
 import logging
 import textwrap
 from itertools import groupby
@@ -17,23 +19,7 @@ from typing import (
     Mapping,
     Tuple,
     Type,
-    Union,
 )
-
-if TYPE_CHECKING:  # pragma: no cover
-    import pandas
-
-try:  # pragma: no cover
-    from functools import cached_property
-except ImportError:  # pragma: no cover
-    # python 3.7
-    from cached_property import cached_property
-
-try:  # pragma: no cover
-    from importlib import metadata as importlib_metadata
-except ImportError:  # pragma: no cover
-    # python 3.7
-    import importlib_metadata
 
 from rich.console import Console
 from rich.logging import RichHandler as _RichHandler
@@ -51,7 +37,20 @@ from .exceptions import ConfigurationError
 from .pluginmgr import plugin
 from .version import __version__
 
+try:  # pragma: no cover
+    from functools import cached_property
+except ImportError:  # pragma: no cover
+    # python 3.7
+    from cached_property import cached_property
+
+try:  # pragma: no cover
+    from importlib import metadata as importlib_metadata
+except ImportError:  # pragma: no cover
+    # python 3.7
+    import importlib_metadata
+
 if TYPE_CHECKING:  # pragma: no cover
+    import pandas
     from rich.console import RenderableType
 
 
@@ -98,7 +97,7 @@ _logger_handler.setFormatter(
 
 def get_logger(
     name: str = LOGGER_NAME,
-    level: Union[str, int] = None,
+    level: str | int = None,
 ) -> logging.LoggerAdapter:
     """Get the logger by given plugin name
 
@@ -299,8 +298,8 @@ def get_plugin_context(plugins: List[Any]) -> SimplugContext:
 
 
 def log_rich_renderable(
-    renderable: "RenderableType",
-    color: str,
+    renderable: RenderableType,
+    color: str | None,
     logfunc: Callable,
     *args: Any,
     **kwargs: Any,
@@ -348,7 +347,7 @@ def brief_list(blist: List[int]) -> str:
     return ", ".join(ret)
 
 
-def pipen_banner() -> "RenderableType":
+def pipen_banner() -> RenderableType:
     """The banner for pipen
 
     Returns:
@@ -441,7 +440,7 @@ def truncate_text(text: str, width: int, end: str = "…") -> str:
     return text[: (width - len(end))] + end
 
 
-def make_df_colnames_unique_inplace(thedf: "pandas.DataFrame") -> None:
+def make_df_colnames_unique_inplace(thedf: pandas.DataFrame) -> None:
     """Make the columns of a data frame unique
 
     Args:

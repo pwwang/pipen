@@ -1,11 +1,13 @@
 """Main entry module, provide the Pipen class"""
+from __future__ import annotations
+
 import asyncio
 from itertools import chain
 from os import PathLike
 from pathlib import Path
 import pprint
 import textwrap
-from typing import ClassVar, Iterable, List, Sequence, Type, Union
+from typing import ClassVar, Iterable, List, Sequence, Type
 
 from diot import Diot
 from rich import box
@@ -64,7 +66,7 @@ class Pipen:
         self,
         name: str = None,
         desc: str = None,
-        outdir: PathLike = None,
+        outdir: str | PathLike = None,
         **kwargs,
     ) -> None:
         """Constructor"""
@@ -215,7 +217,7 @@ class Pipen:
 
     def set_starts(
         self,
-        *procs: Union[Type[Proc], Sequence[Type[Proc]]],
+        *procs: Type[Proc] | Sequence[Type[Proc]],
         clear: bool = True,
     ):
         """Set the starts

@@ -1,4 +1,6 @@
 """Provide the PipelinePBar and ProcPBar classes"""
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from .utils import truncate_text
@@ -16,7 +18,7 @@ class ProcPBar:
     """The progress bar for processes"""
 
     def __init__(
-        self, manager: "enlighten.Manager", proc_size: int, proc_name: str
+        self, manager: enlighten.Manager, proc_size: int, proc_name: str
     ) -> None:
         self.submitted_counter = manager.counter(
             total=proc_size,
