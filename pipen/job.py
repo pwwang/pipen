@@ -1,10 +1,12 @@
 """Provide the Job class"""
+from __future__ import annotations
+
 import logging
 import shlex
 from os import PathLike
 from pathlib import Path
 import shutil
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Union
+from typing import TYPE_CHECKING, Any, Dict, Mapping
 
 from diot import OrderedDiot
 from xqute import Job as XquteJob
@@ -210,7 +212,7 @@ class Job(XquteJob, JobCaching):
 
     def log(
         self,
-        level: Union[int, str],
+        level: int | str,
         msg: str,
         *args,
         limit: int = 3,

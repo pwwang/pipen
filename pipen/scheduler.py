@@ -1,5 +1,7 @@
 """Provide builting schedulers"""
-from typing import Type, Union
+from __future__ import annotations
+
+from typing import Type
 
 from xqute import Scheduler
 from xqute.schedulers.local_scheduler import LocalJob as XquteLocalJob
@@ -39,7 +41,7 @@ class SgeScheduler(XquteSgeScheduler):
     job_class = SgeJob
 
 
-def get_scheduler(scheduler: Union[str, Type[Scheduler]]) -> Type[Scheduler]:
+def get_scheduler(scheduler: str | Type[Scheduler]) -> Type[Scheduler]:
     """Get the scheduler by name of the scheduler class itself
 
     Args:

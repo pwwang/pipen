@@ -26,7 +26,7 @@ def test_add_proc():
 
     pg = PG()
 
-    @pg.add_proc
+    @pg.add_proc()
     class P1(Proc):
         pass
 
@@ -59,12 +59,27 @@ def test_define_proc():
             return P3
 
     pg = PG()
+
     assert pg.starts == [P1]
 
     assert pg.p1 is P1
     assert pg.p2 is P2
     assert pg.p3 is P3
     assert pg.procs == {"P1": P1, "P2": P2, "P3": P3}
+
+
+def test_define_proc_wrong_return():
+    class PG(ProcGroup):
+        @ProcGroup.add_proc
+        def p1(self):
+            return None
+
+        @ProcGroup.add_proc
+        def p2(self):
+            return 1
+
+    with pytest.raises(ValueError):
+        PG()
 
 
 def test_as_pipen():

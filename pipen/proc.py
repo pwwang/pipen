@@ -303,7 +303,7 @@ class Proc(ABC, metaclass=ProcMeta):
         )
         cls.__procgroup__ = None
 
-    def __init__(self, pipeline: "Pipen" = None) -> None:
+    def __init__(self, pipeline: Pipen = None) -> None:
         """Constructor
 
         This is called only at runtime.

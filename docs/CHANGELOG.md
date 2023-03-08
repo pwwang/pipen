@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.5.2
+
+- 📝 Refactor codebase: unify type annotations and import future features
+- 🐛 Allow methods decorated by @ProcGroup.add_proc to return None
+
 ## 0.5.1
 
 - 🚑 Remove remaining more-itertools

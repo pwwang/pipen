@@ -1,7 +1,8 @@
 """Define hooks specifications and provide plugin manager"""
-import signal
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Any, Dict, Optional, Union, TYPE_CHECKING
+from typing import Any, Dict, TYPE_CHECKING
 
 from simplug import Simplug, SimplugResult
 from xqute import JobStatus, Scheduler
@@ -11,6 +12,7 @@ from .defaults import ProcOutputType
 
 
 if TYPE_CHECKING:  # pragma: no cover
+    import signal
     from xqute import Xqute
     from .job import Job
     from .proc import Proc
@@ -35,7 +37,7 @@ def on_setup(config: Dict[str, Any]) -> None:
 
 
 @plugin.spec
-async def on_init(pipen: "Pipen") -> None:
+async def on_init(pipen: Pipen) -> None:
     """When the pipeline is initialized, and default configs are loaded
 
     Args:
@@ -44,7 +46,7 @@ async def on_init(pipen: "Pipen") -> None:
 
 
 @plugin.spec
-async def on_start(pipen: "Pipen") -> None:
+async def on_start(pipen: Pipen) -> None:
     """Right before the pipeline starts running.
 
     Process relationships are inferred.
@@ -55,7 +57,7 @@ async def on_start(pipen: "Pipen") -> None:
 
 
 @plugin.spec
-async def on_complete(pipen: "Pipen", succeeded: bool):
+async def on_complete(pipen: Pipen, succeeded: bool):
     """The the pipeline is completed.
 
     Args:
@@ -65,7 +67,7 @@ async def on_complete(pipen: "Pipen", succeeded: bool):
 
 
 @plugin.spec
-def on_proc_init(proc: "Proc"):
+def on_proc_init(proc: Proc):
     """Called before proc get instantiated.
 
     Enables plugins to modify the default attributes of processes
@@ -76,7 +78,7 @@ def on_proc_init(proc: "Proc"):
 
 
 @plugin.spec
-def on_proc_input_computed(proc: "Proc"):
+def on_proc_input_computed(proc: Proc):
     """Called after process input data is computed.
 
     Args:
@@ -85,7 +87,7 @@ def on_proc_input_computed(proc: "Proc"):
 
 
 @plugin.spec
-async def on_proc_start(proc: "Proc"):
+async def on_proc_start(proc: Proc):
     """When a process is starting
 
     Args:
@@ -94,7 +96,7 @@ async def on_proc_start(proc: "Proc"):
 
 
 @plugin.spec(result=SimplugResult.TRY_ALL_FIRST_AVAIL)
-def on_proc_shutdown(proc: "Proc", sig: Optional[signal.Signals]) -> None:
+def on_proc_shutdown(proc: Proc, sig: signal.Signals) -> None:
     """When pipeline is shutting down, by Ctrl-c for example.
 
     Return False to stop shutting down, but you have to shut it down
@@ -109,7 +111,7 @@ def on_proc_shutdown(proc: "Proc", sig: Optional[signal.Signals]) -> None:
 
 
 @plugin.spec
-async def on_proc_done(proc: "Proc", succeeded: Union[bool, str]) -> None:
+async def on_proc_done(proc: Proc, succeeded: bool | str) -> None:
     """When a process is done
 
     Args:
@@ -120,7 +122,7 @@ async def on_proc_done(proc: "Proc", succeeded: Union[bool, str]) -> None:
 
 
 @plugin.spec
-async def on_job_init(proc: "Proc", job: "Job"):
+async def on_job_init(proc: Proc, job: Job):
     """When a job is initialized
 
     Args:
@@ -130,7 +132,7 @@ async def on_job_init(proc: "Proc", job: "Job"):
 
 
 @plugin.spec
-async def on_job_queued(proc: "Proc", job: "Job"):
+async def on_job_queued(proc: Proc, job: Job):
     """When a job is queued in xqute. Note it might not be queued yet in
     the scheduler system.
 
@@ -141,7 +143,7 @@ async def on_job_queued(proc: "Proc", job: "Job"):
 
 
 @plugin.spec(result=SimplugResult.TRY_ALL_FIRST_AVAIL)
-async def on_job_submitting(proc: "Proc", job: "Job") -> Optional[bool]:
+async def on_job_submitting(proc: Proc, job: Job) -> bool:
     """When a job is submitting.
 
     The first plugin (based on priority) have this hook return False will
@@ -157,7 +159,7 @@ async def on_job_submitting(proc: "Proc", job: "Job") -> Optional[bool]:
 
 
 @plugin.spec
-async def on_job_submitted(proc: "Proc", job: "Job"):
+async def on_job_submitted(proc: Proc, job: Job):
     """When a job is submitted in the scheduler system.
 
     Args:
@@ -167,7 +169,7 @@ async def on_job_submitted(proc: "Proc", job: "Job"):
 
 
 @plugin.spec
-async def on_job_running(proc: "Proc", job: "Job"):
+async def on_job_running(proc: Proc, job: Job):
     """When a job starts to run in then scheduler system.
 
     Args:
@@ -177,7 +179,7 @@ async def on_job_running(proc: "Proc", job: "Job"):
 
 
 @plugin.spec(result=SimplugResult.TRY_ALL_FIRST_AVAIL)
-async def on_job_killing(proc: "Proc", job: "Job") -> Optional[bool]:
+async def on_job_killing(proc: Proc, job: Job) -> bool:
     """When a job is being killed.
 
     The first plugin (based on priority) have this hook return False will
@@ -193,7 +195,7 @@ async def on_job_killing(proc: "Proc", job: "Job") -> Optional[bool]:
 
 
 @plugin.spec
-async def on_job_killed(proc: "Proc", job: "Job"):
+async def on_job_killed(proc: Proc, job: Job):
     """When a job is killed
 
     Args:
@@ -203,7 +205,7 @@ async def on_job_killed(proc: "Proc", job: "Job"):
 
 
 @plugin.spec
-async def on_job_succeeded(proc: "Proc", job: "Job"):
+async def on_job_succeeded(proc: Proc, job: Job):
     """When a job completes successfully.
 
     Args:
@@ -213,7 +215,7 @@ async def on_job_succeeded(proc: "Proc", job: "Job"):
 
 
 @plugin.spec
-async def on_job_failed(proc: "Proc", job: "Job"):
+async def on_job_failed(proc: Proc, job: Job):
     """When a job is done but failed.
 
     Args:
@@ -229,7 +231,7 @@ class PipenMainPlugin:
     name = "main"
 
     @plugin.impl
-    def on_proc_shutdown(self, proc: "Proc", sig: Optional[signal.Signals]):
+    def on_proc_shutdown(self, proc: Proc, sig: signal.Signals):
         """When a process is shutting down"""
         if sig:  # pragma: no cover
             proc.log(
@@ -239,17 +241,17 @@ class PipenMainPlugin:
             )
 
     @plugin.impl
-    async def on_job_submitted(self, proc: "Proc", job: "Job"):
+    async def on_job_submitted(self, proc: Proc, job: Job):
         """Update the progress bar when a job is submitted"""
         proc.pbar.update_job_submitted()
 
     @plugin.impl
-    async def on_job_running(self, proc: "Proc", job: "Job"):
+    async def on_job_running(self, proc: Proc, job: Job):
         """Update the progress bar when a job starts to run"""
         proc.pbar.update_job_running()
 
     @plugin.impl
-    async def on_job_succeeded(self, proc: "Proc", job: "Job"):
+    async def on_job_succeeded(self, proc: Proc, job: Job):
         """Cache the job and update the progress bar when a job is succeeded"""
         # now the returncode is 0, however, we need to check if output files
         # have been created or not, this makes sure job.cache not fail
@@ -271,7 +273,7 @@ class PipenMainPlugin:
             proc.pbar.update_job_succeeded()
 
     @plugin.impl
-    async def on_job_failed(self, proc: "Proc", job: "Job"):
+    async def on_job_failed(self, proc: Proc, job: Job):
         """Update the progress bar when a job is failed"""
         proc.pbar.update_job_failed()
         if job.status == JobStatus.RETRYING:
@@ -279,7 +281,7 @@ class PipenMainPlugin:
             proc.pbar.update_job_retrying()
 
     @plugin.impl
-    async def on_job_killed(self, proc: "Proc", job: "Job"):
+    async def on_job_killed(self, proc: Proc, job: Job):
         """Update the status of a killed job"""
         # instead of FINISHED to force the whole pipeline to quit
         job.status = JobStatus.FAILED  # pragma: no cover
@@ -296,37 +298,37 @@ class XqutePipenPlugin:
     name = "xqute.pipen"
 
     @xqute_plugin.impl
-    def on_shutdown(self, xqute: "Xqute", sig: Optional[signal.Signals]):
+    def on_shutdown(self, xqute: Xqute, sig: signal.Signals):
         """When a process is shutting down"""
         return plugin.hooks.on_proc_shutdown(xqute.proc, sig)
 
     @xqute_plugin.impl
-    async def on_job_init(self, scheduler: Scheduler, job: "Job"):
+    async def on_job_init(self, scheduler: Scheduler, job: Job):
         """When a job is initialized"""
         await plugin.hooks.on_job_init(job.proc, job)
 
     @xqute_plugin.impl
-    async def on_job_queued(self, scheduler: Scheduler, job: "Job"):
+    async def on_job_queued(self, scheduler: Scheduler, job: Job):
         """When a job is queued"""
         await plugin.hooks.on_job_queued(job.proc, job)
 
     @xqute_plugin.impl
-    async def on_job_submitting(self, scheduler: Scheduler, job: "Job"):
+    async def on_job_submitting(self, scheduler: Scheduler, job: Job):
         """When a job is being submitted"""
         return await plugin.hooks.on_job_submitting(job.proc, job)
 
     @xqute_plugin.impl
-    async def on_job_submitted(self, scheduler: Scheduler, job: "Job"):
+    async def on_job_submitted(self, scheduler: Scheduler, job: Job):
         """When a job is submitted"""
         await plugin.hooks.on_job_submitted(job.proc, job)
 
     @xqute_plugin.impl
-    async def on_job_running(self, scheduler: Scheduler, job: "Job"):
+    async def on_job_running(self, scheduler: Scheduler, job: Job):
         """When a job starts to run"""
         await plugin.hooks.on_job_running(job.proc, job)
 
     @xqute_plugin.impl
-    async def on_job_killing(self, scheduler: Scheduler, job: "Job"):
+    async def on_job_killing(self, scheduler: Scheduler, job: Job):
         """When a job is being killed"""
         return await plugin.hooks.on_job_killing(  # pragma: no cover
             job.proc,
@@ -334,7 +336,7 @@ class XqutePipenPlugin:
         )
 
     @xqute_plugin.impl
-    async def on_job_killed(self, scheduler: Scheduler, job: "Job"):
+    async def on_job_killed(self, scheduler: Scheduler, job: Job):
         """When a job is killed"""
         await plugin.hooks.on_job_killed(  # pragma: no cover
             job.proc,
@@ -342,12 +344,12 @@ class XqutePipenPlugin:
         )
 
     @xqute_plugin.impl
-    async def on_job_succeeded(self, scheduler: Scheduler, job: "Job"):
+    async def on_job_succeeded(self, scheduler: Scheduler, job: Job):
         """When a job is succeeded"""
         await plugin.hooks.on_job_succeeded(job.proc, job)
 
     @xqute_plugin.impl
-    async def on_job_failed(self, scheduler: Scheduler, job: "Job"):
+    async def on_job_failed(self, scheduler: Scheduler, job: Job):
         """When a job is failed"""
         await plugin.hooks.on_job_failed(job.proc, job)
 

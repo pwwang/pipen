@@ -1,6 +1,8 @@
 """Template adaptor for pipen"""
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Any, Mapping, Type, Union
+from typing import Any, Mapping, Type
 
 from liquid import Liquid
 
@@ -116,9 +118,7 @@ class TemplateJinja2(Template):
         return self.engine.render(data)
 
 
-def get_template_engine(
-    template: Union[str, Type[Template]],
-) -> Type[Template]:
+def get_template_engine(template: str | Type[Template]) -> Type[Template]:
     """Get the template engine by name or the template engine itself
 
     Args:
