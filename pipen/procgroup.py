@@ -139,6 +139,19 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
         @wraps(self_or_method)
         def wrapper(self):
             proc = self_or_method(self)
+
+            if proc is None:
+                return None
+
+            if (
+                not isinstance(proc, Proc)
+                and (not isinstance(proc, type) or not issubclass(proc, Proc))
+            ):
+                raise ValueError(
+                    f"`{proc}` is not a process "
+                    "(either a subclass or an instance of Proc)"
+                )
+
             proc.__procgroup__ = self
             if not proc.requires:
                 self.starts.append(proc)
