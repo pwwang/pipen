@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.6.1
+
+- 🐛 Fix path expansion for `~/.pipen.toml` in defaults.
+
 ## 0.6.0
 
 - ✨ Allow subclassing Pipen to create a pipeline (#151)
