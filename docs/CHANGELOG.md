@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.6.0
+
+- ✨ Allow subclassing Pipen to create a pipeline (#151)
+
 ## 0.5.2
 
 - 📝 Refactor codebase: unify type annotations and import future features

@@ -217,7 +217,7 @@ class Pipen:
         """
         return asyncio.run(self.async_run(profile))
 
-    def set_data(self, *indata: Any) -> "Pipen":
+    def set_data(self, *indata: Any) -> Pipen:
         """Set the input_data for start processes
 
         Args:

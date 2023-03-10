@@ -35,7 +35,7 @@ class Job(XquteJob, JobCaching):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.proc: "Proc" = None
+        self.proc: Proc = None
         self._output_types: Dict[str, str] = {}
         self._outdir = self.metadir / "output"
 
@@ -244,7 +244,7 @@ class Job(XquteJob, JobCaching):
 
         self.proc.log(level, job_index_indicator + msg, *args, logger=logger)
 
-    async def prepare(self, proc: "Proc") -> None:
+    async def prepare(self, proc: Proc) -> None:
         """Prepare the job by given process
 
         Primarily prepare the script, and provide cmd to the job for xqute
