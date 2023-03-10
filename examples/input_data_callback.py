@@ -50,5 +50,11 @@ def prepare_input_data():
 
     return Channel.from_glob(f"{tmpdir}/*.txt")
 
+
+class MyPipeline(Pipen):
+    starts = [P1]
+    data = [prepare_input_data()]
+    forks = 3
+
 if __name__ == "__main__":
-    Pipen(forks=3).set_starts(P1).set_data(prepare_input_data()).run()
+    MyPipeline().run()

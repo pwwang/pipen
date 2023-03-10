@@ -7,7 +7,7 @@ from os import PathLike
 from pathlib import Path
 import pprint
 import textwrap
-from typing import ClassVar, Iterable, List, Sequence, Type
+from typing import Any, ClassVar, Iterable, List, Sequence, Type
 
 from diot import Diot
 from rich import box
@@ -62,6 +62,13 @@ class Pipen:
     PIPELINE_COUNT: ClassVar[int] = 0
     SETUP: ClassVar[bool] = False
 
+    name: str = None
+    desc: str = None
+    outdir: str | PathLike = None
+    starts: List[Proc] = []
+    data: Iterable = None
+    # other configs
+
     def __init__(
         self,
         name: str = None,
@@ -74,24 +81,47 @@ class Pipen:
         self.pbar: PipelinePBar = None
         if name is not None:
             self.name = name
+        elif self.__class__.name is not None:
+            self.name = self.__class__.name
+        elif self.__class__.__name__ != "Pipen":
+            self.name = self.__class__.__name__
         else:
             try:
                 self.name = varname()
             except VarnameException:
                 self.name = f"pipen-{self.__class__.PIPELINE_COUNT}"
 
-        self.desc = desc
+        self.desc = desc or self.__class__.desc
         self.outdir = Path(
-            outdir or f"./{slugify(self.name)}_results"
+            outdir
+            or self.__class__.outdir
+            or f"./{slugify(self.name)}_results"
         ).resolve()
         self.workdir: Path = None
         self.profile: str = "default"
 
-        self.starts: List[Proc] = []
+        self.starts: List[Proc] = self.__class__.starts
+        if self.starts and not isinstance(self.starts, (tuple, list)):
+            self.starts = [self.starts]
+
         self.config = Diot(copy_dict(CONFIG, 3))
         # We shouldn't update the config here, since we don't know
         # the profile yet
-        self._kwargs = kwargs
+        self._kwargs = {
+            key: value
+            for key, value in self.__class__.__dict__.items()
+            if key in self.config
+        }
+        self._kwargs.setdefault("plugin_opts", {}).update(
+            kwargs.pop("plugin_opts", {})
+        )
+        self._kwargs.setdefault("template_opts", {}).update(
+            kwargs.pop("template_opts", {})
+        )
+        self._kwargs.setdefault("scheduler_opts", {}).update(
+            kwargs.pop("scheduler_opts", {})
+        )
+        self._kwargs.update(kwargs)
         # Initialize the workdir, as workdir is created before _init()
         # But the config is updated in _init()
         # Here we hack it to have the workdir passed in.
@@ -116,6 +146,9 @@ class Pipen:
 
         self.__class__.PIPELINE_COUNT += 1
 
+        if self.__class__.data is not None:
+            self.set_data(*self.__class__.data)
+
     async def async_run(self, profile: str = "default") -> bool:
         """Run the processes one by one
 
@@ -137,7 +170,6 @@ class Pipen:
             self.build_proc_relationships()
             self._log_pipeline_info()
             await plugin.hooks.on_start(self)
-
             for proc in self.procs:
                 self.pbar.update_proc_running()
                 proc_obj = proc(self)  # type: ignore
@@ -185,7 +217,7 @@ class Pipen:
         """
         return asyncio.run(self.async_run(profile))
 
-    def set_data(self, *indata: Iterable) -> "Pipen":
+    def set_data(self, *indata: Any) -> "Pipen":
         """Set the input_data for start processes
 
         Args:
