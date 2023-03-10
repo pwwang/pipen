@@ -3,11 +3,18 @@
 from pathlib import Path
 from pipen import Pipen, Proc
 
+
 class AProcess(Proc):
     """A normal process"""
     input = "infile:file"
     output = "outfile:file:{{in.infile.split('/')[-1]}}"
     script = "cat {{in.infile}} > {{out.outfile}}"
+
+
+class MyPipeline(Pipen):
+    starts = AProcess
+    # Enable debugging information so you will see why jobs are not cached
+    loglevel = "debug"
 
 
 if __name__ == "__main__":
@@ -16,13 +23,7 @@ if __name__ == "__main__":
     if not Path(infile).exists():
         Path(infile).write_text("123")
 
-    # Enable debugging information so you will see why jobs are not cached
-    (
-        Pipen(loglevel="debug")
-        .set_starts(AProcess)
-        .set_data([infile])
-        .run()
-    )
+    MyPipeline().set_data([infile]).run()
 
 
 # Run this script the repeatedly, you will see the jobs are cached

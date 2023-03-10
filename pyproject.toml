@@ -12,6 +12,9 @@ readme = "README.md"
 homepage = "https://github.com/pwwang/pipen"
 repository = "https://github.com/pwwang/pipen"
 
+[tool.poetry.build]
+generate-setup-file = true
+
 [tool.poetry.dependencies]
 python = "^3.7.1" # align with datar/pandas
 liquidpy = "^0.7"

@@ -45,7 +45,11 @@ class P2(Proc):
     output = "outfile:file:result.txt"
     script = "paste <(seq 1 3) {{in.infile}} > {{out.outfile}}"
 
-Pipen().set_starts(P1).run()
+class MyPipeline(Pipen):
+    starts = P1
+
+if __name__ == "__main__":
+    MyPipeline().run()
 ```
 
 ```shell
@@ -60,13 +64,13 @@ Pipen().set_starts(P1).run()
 [09/13/21 04:23:37] I main                    _  ____/__/ /  _  ____/_  /___  _  /|  /
 [09/13/21 04:23:37] I main                    /_/     /___/  /_/     /_____/  /_/ |_/
 [09/13/21 04:23:37] I main
-[09/13/21 04:23:37] I main                                 version: 0.4.0
+[09/13/21 04:23:37] I main                                 version: 0.6.0
 [09/13/21 04:23:37] I main
-[09/13/21 04:23:37] I main    ╭══════════════════════════════ PIPEN-0 ════════════════════════════════╮
+[09/13/21 04:23:37] I main    ╭═════════════════════════════ MYPIPELIN ═══════════════════════════════╮
 [09/13/21 04:23:37] I main    ║  # procs          = 2                                                 ║
 [09/13/21 04:23:37] I main    ║  plugins          = ['main', 'verbose-0.0.1']                         ║
 [09/13/21 04:23:37] I main    ║  profile          = default                                           ║
-[09/13/21 04:23:37] I main    ║  outdir           = pipen-0_results                                   ║
+[09/13/21 04:23:37] I main    ║  outdir           = mypipeline_results                                ║
 [09/13/21 04:23:37] I main    ║  cache            = True                                              ║
 [09/13/21 04:23:37] I main    ║  dirsig           = 1                                                 ║
 [09/13/21 04:23:37] I main    ║  error_strategy   = ignore                                            ║
@@ -87,26 +91,26 @@ Pipen().set_starts(P1).run()
 [09/13/21 04:23:37] I main    ╭───────────────────────────────── P1 ──────────────────────────────────╮
 [09/13/21 04:23:37] I main    │ Sort input file                                                       │
 [09/13/21 04:23:37] I main    ╰───────────────────────────────────────────────────────────────────────╯
-[09/13/21 04:23:37] I main    P1: Workdir: '.pipen/pipen-0/p1'
+[09/13/21 04:23:37] I main    P1: Workdir: '.pipen/mypipeline/p1'
 [09/13/21 04:23:37] I main    P1: <<< [START]
 [09/13/21 04:23:37] I main    P1: >>> ['P2']
 [09/13/21 04:23:37] I verbose P1: size: 1
 [09/13/21 04:23:37] I verbose P1: [0/0] in.infile: /tmp/data.txt
 [09/13/21 04:23:37] I verbose P1: [0/0] out.outfile:
-                      /home/pwwang/github/pipen/.pipen/pipen-0/p1/0/output/intermediate.txt
+                      /home/pwwang/github/pipen/.pipen/mypipeline/p1/0/output/intermediate.txt
 [09/13/21 04:23:38] I verbose P1: Time elapsed: 00:00:01.039s
 [09/13/21 04:23:38] I main
 [09/13/21 04:23:38] I main    ╭═════════════════════════════════ P2 ══════════════════════════════════╮
 [09/13/21 04:23:38] I main    ║ Paste line number                                                     ║
 [09/13/21 04:23:38] I main    ╰═══════════════════════════════════════════════════════════════════════╯
-[09/13/21 04:23:38] I main    P2: Workdir: '.pipen/pipen-0/p2'
+[09/13/21 04:23:38] I main    P2: Workdir: '.pipen/mypipeline/p2'
 [09/13/21 04:23:38] I main    P2: <<< ['P1']
 [09/13/21 04:23:38] I main    P2: >>> [END]
 [09/13/21 04:23:38] I verbose P2: size: 1
 [09/13/21 04:23:38] I verbose P2: [0/0] in.infile:
-                      /home/pwwang/github/pipen/.pipen/pipen-0/p1/0/output/intermediate.txt
+                      /home/pwwang/github/pipen/.pipen/mypipeline/p1/0/output/intermediate.txt
 [09/13/21 04:23:38] I verbose P2: [0/0] out.outfile:
-                      /home/pwwang/github/pipen/pipen-0_results/P2/result.txt
+                      /home/pwwang/github/pipen/mypipeline_results/P2/result.txt
 [09/13/21 04:23:40] I verbose P2: Time elapsed: 00:00:02.074s
 [09/13/21 04:23:40] I main
 
@@ -114,7 +118,7 @@ Pipen().set_starts(P1).run()
 ```
 
 ```shell
-> cat ./pipen-0_results/P2/result.txt
+> cat ./mypipeline_results/P2/result.txt
 1       1
 2       2
 3       3

@@ -24,5 +24,11 @@ class MakoProcess(Proc):
     output = "outfile:file:${in_['a']}.txt"
     script = "touch ${out['outfile']}"
 
+
+class MyPipeline(Pipen):
+    starts = MakoProcess
+    plugins = ["no:filters"]
+
+
 if __name__ == "__main__":
-    Pipen(plugins=["no:filters"]).set_starts(MakoProcess).run()
+    MyPipeline().run()

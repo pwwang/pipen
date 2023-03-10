@@ -123,3 +123,36 @@ def test_proc_inherited(pipen):
     proc2 = Proc.from_proc(proc1)
     pipen.set_starts(proc2).set_data([1]).run()
     assert proc2.__doc__ == RelPathScriptProc.__doc__
+
+
+def test_subclass_pipen(tmp_path, caplog):
+    class Proc1(Proc):
+        input = "a"
+        output = "b:var:{{in.a}}"
+
+    class Proc2(Proc):
+        requires = Proc1
+        input = "b"
+        output = "c:file:{{in.b}}"
+        script = "touch {{out.c}}"
+
+    class MyPipen(Pipen):
+        name = "MyAwesomePipeline"
+        starts = Proc1
+        data = [1],
+        outdir = tmp_path / "outdir"
+        workdir = tmp_path
+        loglevel = "DEBUG"
+        plugin_opts = {"x": 1}
+
+    MyPipen(plugin_opts={"y": 2}).run()
+
+    assert (tmp_path / "outdir" / "Proc2" / "1").is_file()
+    assert "MYAWESOMEPIPELINE" in caplog.text
+    assert "'x': 1" in caplog.text
+    assert "'y': 2" in caplog.text
+
+    class MyPipe2(Pipen):
+        ...
+
+    assert MyPipe2().name == "MyPipe2"

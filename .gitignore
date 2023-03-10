@@ -115,3 +115,4 @@ t-*.ipynb
 t.py
 
 nohup.out
+test.py
