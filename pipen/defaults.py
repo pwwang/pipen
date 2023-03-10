@@ -12,7 +12,7 @@ xqute_logger.removeHandler(xqute_logger.handlers[0])
 
 LOGGER_NAME = "main"
 CONFIG_FILES = (
-    Path("~/.pipen.toml"),
+    Path("~/.pipen.toml").expanduser(),
     "./.pipen.toml",
     "PIPEN.osenv",
 )
