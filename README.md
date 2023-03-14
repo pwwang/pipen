@@ -134,9 +134,11 @@ https://github.com/pwwang/pipen-report/tree/master/example
 Plugins make `pipen` even better.
 
 - [`pipen-verbose`][15]: Add verbosal information in logs for pipen.
+- [`pipen-lock`][25]: Process lock for pipen to prevent multiple runs at the same time.
 - [`pipen-report`][16]: Generate report for pipen
 - [`pipen-filters`][17]: Add a set of useful filters for pipen templates.
 - [`pipen-diagram`][18]: Draw pipeline diagrams for pipen
+- [`pipen-annotate`][26]: Use docstring to annotate pipen processes
 - [`pipen-args`][19]: Command line argument parser for pipen
 - [`pipen-dry`][20]: Dry runner for pipen pipelines
 - [`pipen-cli-init`][21]: A pipen CLI plugin to create a pipen project (pipeline)
@@ -168,3 +170,5 @@ Plugins make `pipen` even better.
 [22]: https://github.com/pwwang/pipen-cli-run
 [23]: https://libraries.io/github/pwwang/pipen#repository_dependencies
 [24]: https://github.com/pwwang/pipen-cli-require
+[25]: https://github.com/pwwang/pipen-lock
+[26]: https://github.com/pwwang/pipen-annotate
