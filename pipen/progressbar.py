@@ -42,7 +42,10 @@ class ProcPBar:
 
     def update_job_running(self):
         """Update the progress bar when a job is running"""
-        self.running_counter.update_from(self.submitted_counter)
+        try:
+            self.running_counter.update_from(self.submitted_counter)
+        except ValueError:  # pragma: no cover
+            pass
 
     def update_job_succeeded(self):
         """Update the progress bar when a job is succeeded"""
@@ -50,6 +53,8 @@ class ProcPBar:
             self.success_counter.update_from(self.running_counter)
         except ValueError:  # pragma: no cover
             self.success_counter.update_from(self.submitted_counter)
+        except:  # noqa: E722  # pragma: no cover
+            pass
 
     def update_job_failed(self):
         """Update the progress bar when a job is failed"""
@@ -57,6 +62,8 @@ class ProcPBar:
             self.failure_counter.update_from(self.running_counter)
         except ValueError:  # pragma: no cover
             self.failure_counter.update_from(self.submitted_counter)
+        except:  # noqa: E722  # pragma: no cover
+            pass
 
     def done(self):
         """The process is done"""
