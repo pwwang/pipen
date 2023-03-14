@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.6.2
+
+- ⬆️ Adopt xqute 0.1.5
+
 ## 0.6.1
 
 - 🐛 Fix path expansion for `~/.pipen.toml` in defaults.
