@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.6.3
+
+- 🔊 Trim right spaces of logs
+
 ## 0.6.2
 
 - ⬆️ Adopt xqute 0.1.5
