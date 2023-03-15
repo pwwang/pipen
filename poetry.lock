@@ -86,14 +86,14 @@ trio = ["trio (>=0.16,<0.22)"]
 
 [[package]]
 name = "argx"
-version = "0.2.5"
+version = "0.2.6"
 description = "Super-charged argparse for python"
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "argx-0.2.5-py3-none-any.whl", hash = "sha256:a2e97ddf3d95ed79f27d38958ec7db4cc0585242fae9036aed0545594b566c3a"},
-    {file = "argx-0.2.5.tar.gz", hash = "sha256:b594d6eef0a77917113e32849e174c33dbb914edddb3589c539a1a693d226ed2"},
+    {file = "argx-0.2.6-py3-none-any.whl", hash = "sha256:8f86ce9040b57e5e24b48f02710b31671e342fce0af56e0a990593e3b35bbdff"},
+    {file = "argx-0.2.6.tar.gz", hash = "sha256:d4a9107558b392686f5828932d39b3f4d00cd4134ecdf481c076d564ff0ec767"},
 ]
 
 [package.dependencies]
