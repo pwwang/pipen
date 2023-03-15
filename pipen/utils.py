@@ -6,7 +6,7 @@ import textwrap
 from itertools import groupby
 from operator import itemgetter
 from io import StringIO
-from os import PathLike, get_terminal_size
+from os import PathLike, get_terminal_size, environ
 from collections import defaultdict
 from pathlib import Path
 from typing import (
@@ -51,6 +51,7 @@ except ImportError:  # pragma: no cover
 
 if TYPE_CHECKING:  # pragma: no cover
     import pandas
+    from rich.segment import Segment
     from rich.console import RenderableType
 
 
@@ -74,12 +75,26 @@ class RichHandler(_RichHandler):
         return level_text
 
 
-logger_console = Console()
-try:
-    get_terminal_size()
-except (AttributeError, ValueError, OSError):  # maybe not a terminal
-    if logger_console._environ.get("COLUMNS") is None:
-        logger_console.width = CONSOLE_DEFAULT_WIDTH
+class RichConsole(Console):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        try:
+            self._width = get_terminal_size().columns
+        except (AttributeError, ValueError, OSError):  # maybe not a terminal
+            if environ.get("JUPYTER_COLUMNS") is not None:  # pragma: no cover
+                self._width = int(environ.get("JUPYTER_COLUMNS"))
+            elif environ.get("COLUMNS") is not None:  # pragma: no cover
+                self._width = int(environ.get("COLUMNS"))
+            else:
+                self._width = CONSOLE_DEFAULT_WIDTH
+
+    def _render_buffer(self, buffer: Iterable[Segment]) -> str:
+        out = super()._render_buffer(buffer)
+        return out.rstrip() + "\n"
+
+
+logger_console = RichConsole()
 
 _logger_handler = RichHandler(
     show_path=False,

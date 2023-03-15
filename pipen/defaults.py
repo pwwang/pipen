@@ -62,7 +62,7 @@ CONFIG = Diot(
 CONSOLE_WIDTH_WITH_PANEL = 100
 # The width of the terminal when the width cannot be detected,
 # we are probably logging into a file
-CONSOLE_DEFAULT_WIDTH = 256
+CONSOLE_DEFAULT_WIDTH = 2048
 # [05/16/22 11:46:40] I
 # v0.3.4:
 # 05-16 11:11:11 I
