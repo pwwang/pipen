@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.6.4
+
+- 🔀 Set desc from docstring if not given for pipelines
+
 ## 0.6.3
 
 - 🔊 Trim right spaces of logs
