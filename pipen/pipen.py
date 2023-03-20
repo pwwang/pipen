@@ -26,6 +26,7 @@ from .proc import Proc
 from .progressbar import PipelinePBar
 from .utils import (
     copy_dict,
+    desc_from_docstring,
     get_logpanel_width,
     get_plugin_context,
     log_rich_renderable,
@@ -91,7 +92,11 @@ class Pipen:
             except VarnameException:
                 self.name = f"pipen-{self.__class__.PIPELINE_COUNT}"
 
-        self.desc = desc or self.__class__.desc
+        self.desc = (
+            desc
+            or self.__class__.desc
+            or desc_from_docstring(self.__class__)
+        )
         self.outdir = Path(
             outdir
             or self.__class__.outdir
