@@ -1,5 +1,13 @@
 # Change Log
 
+## 0.7.0
+
+- ⬆️ Update liquidpy to 0.8
+- ✨ Add `Proc.__meta__` that will not be inherited when subclassing
+- 🎨 Put `procgroup` in `Proc.__meta__`
+- ⚡️ Do not mutate `Proc.__doc__` when subclassing
+- ⚡️ Use mro to detect parent class of a Proc
+
 ## 0.6.4
 
 - 🔀 Set desc from docstring if not given for pipelines
