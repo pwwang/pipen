@@ -55,7 +55,6 @@ from .utils import (
 
 if TYPE_CHECKING:  # pragma: no cover
     from .pipen import Pipen
-    from .procgroup import ProcGroup
 
 
 class ProcMeta(ABCMeta):
@@ -179,7 +178,10 @@ class Proc(ABC, metaclass=ProcMeta):
     nexts: Sequence[Type[Proc]] = None
     output_data: Any = None
     workdir: PathLike = None
-    __procgroup__: ProcGroup | None = None
+    # metadata that marks the process
+    # Can also be used for plugins
+    # It's not inheirted
+    __meta__: Mapping[str, Any] = None
 
     @classmethod
     def from_proc(
@@ -272,7 +274,6 @@ class Proc(ABC, metaclass=ProcMeta):
 
         kwargs["__doc__"] = proc.__doc__
         out = type(name, (proc,), kwargs)
-        out.__procgroup__ = None
         return out
 
     def __init_subclass__(cls) -> None:
@@ -301,7 +302,7 @@ class Proc(ABC, metaclass=ProcMeta):
         cls.scheduler_opts = update_dict(
             parent.scheduler_opts, cls.scheduler_opts
         )
-        cls.__procgroup__ = None
+        cls.__meta__ = {"procgroup": None}
 
     def __init__(self, pipeline: Pipen = None) -> None:
         """Constructor
@@ -676,8 +677,8 @@ class Proc(ABC, metaclass=ProcMeta):
     def _log_info(self):
         """Log some basic information of the process"""
         title = (
-            f"{self.__procgroup__.name}/{self.name}"
-            if self.__procgroup__
+            f"{self.__meta__['procgroup'].name}/{self.name}"
+            if self.__meta__["procgroup"]
             else self.name
         )
         panel = Panel(

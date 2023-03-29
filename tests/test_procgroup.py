@@ -110,12 +110,12 @@ def test_procgroup_cleared_when_subclassed():
     class P1(Proc):
         ...
 
-    assert P1.__procgroup__ is pg
+    assert P1.__meta__["procgroup"] is pg
 
     class P2(P1):
         ...
 
-    assert P2.__procgroup__ is None
+    assert P2.__meta__["procgroup"] is None
 
 
 def test_name():

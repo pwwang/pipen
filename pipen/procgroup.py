@@ -130,7 +130,7 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
                 )
 
             setattr(self_or_method, proc.name, proc)
-            proc.__procgroup__ = self_or_method
+            proc.__meta__["procgroup"] = self_or_method  # type: ignore
             if not proc.requires:
                 self_or_method.starts.append(proc)
             self_or_method.procs[proc.name] = proc
@@ -152,7 +152,7 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
                     "(either a subclass or an instance of Proc)"
                 )
 
-            proc.__procgroup__ = self
+            proc.__meta__["procgroup"] = self
             if not proc.requires:
                 self.starts.append(proc)
             self.procs[proc.name] = proc
