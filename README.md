@@ -143,6 +143,7 @@ Plugins make `pipen` even better.
 - [`pipen-dry`][20]: Dry runner for pipen pipelines
 - [`pipen-cli-init`][21]: A pipen CLI plugin to create a pipen project (pipeline)
 - [`pipen-cli-run`][22]: A pipen cli plugin to run a process or a pipeline
+- [`pipen-cli-config`][27]: UI wizard to generate configuration for pipen pipelines
 - [`pipen-cli-require`][24]: A pipen cli plugin check the requirements of a pipeline
 
 
@@ -172,3 +173,4 @@ Plugins make `pipen` even better.
 [24]: https://github.com/pwwang/pipen-cli-require
 [25]: https://github.com/pwwang/pipen-lock
 [26]: https://github.com/pwwang/pipen-annotate
+[27]: https://github.com/pwwang/pipen-cli-config

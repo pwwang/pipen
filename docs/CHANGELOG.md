@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.7.1
+
+- ⬆️ Upgrade simplug to 0.2.3
+- 📝 Add pipen-cli-config to plugin gallery
+
 ## 0.7.0
 
 - ⬆️ Update liquidpy to 0.8
