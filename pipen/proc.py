@@ -280,20 +280,28 @@ class Proc(ABC, metaclass=ProcMeta):
         """Do the requirements inferring since we need them to build up the
         process relationship
         """
-        # Use __mro__?
-        parent = cls.__bases__[-1]
+        base = [
+            mro
+            for mro in cls.__mro__
+            if issubclass(mro, Proc) and mro is not Proc and mro is not cls
+        ]
+        parent = base[0] if base else None
         # cls.requires = cls._compute_requires()
         # triggers cls.__setattr__() to compute requires
         cls.nexts = []
         cls.requires = cls.requires
 
-        if cls.name is None or cls.name == parent.name:
+        if cls.name is None or (parent and cls.name == parent.name):
             cls.name = cls.__name__
 
-        cls.envs = update_dict(parent.envs, cls.envs)
-        cls.plugin_opts = update_dict(parent.plugin_opts, cls.plugin_opts)
+        cls.envs = update_dict(parent.envs if parent else None, cls.envs)
+        cls.plugin_opts = update_dict(
+            parent.plugin_opts if parent else None,
+            cls.plugin_opts,
+        )
         cls.scheduler_opts = update_dict(
-            parent.scheduler_opts, cls.scheduler_opts
+            parent.scheduler_opts if parent else {},
+            cls.scheduler_opts,
         )
         cls.__meta__ = {"procgroup": None}
 
