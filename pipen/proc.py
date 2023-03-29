@@ -290,13 +290,6 @@ class Proc(ABC, metaclass=ProcMeta):
         if cls.name is None or cls.name == parent.name:
             cls.name = cls.__name__
 
-        if cls.__doc__ is None:
-            cls.__doc__ = (
-                parent.__doc__
-                if parent is not Proc
-                else "Undescribed process."
-            )
-
         cls.envs = update_dict(parent.envs, cls.envs)
         cls.plugin_opts = update_dict(parent.plugin_opts, cls.plugin_opts)
         cls.scheduler_opts = update_dict(
