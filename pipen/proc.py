@@ -55,7 +55,6 @@ from .utils import (
 
 if TYPE_CHECKING:  # pragma: no cover
     from .pipen import Pipen
-    from .procgroup import ProcGroup
 
 
 class ProcMeta(ABCMeta):
@@ -179,7 +178,10 @@ class Proc(ABC, metaclass=ProcMeta):
     nexts: Sequence[Type[Proc]] = None
     output_data: Any = None
     workdir: PathLike = None
-    __procgroup__: ProcGroup | None = None
+    # metadata that marks the process
+    # Can also be used for plugins
+    # It's not inheirted
+    __meta__: Mapping[str, Any] = None
 
     @classmethod
     def from_proc(
@@ -272,36 +274,36 @@ class Proc(ABC, metaclass=ProcMeta):
 
         kwargs["__doc__"] = proc.__doc__
         out = type(name, (proc,), kwargs)
-        out.__procgroup__ = None
         return out
 
     def __init_subclass__(cls) -> None:
         """Do the requirements inferring since we need them to build up the
         process relationship
         """
-        # Use __mro__?
-        parent = cls.__bases__[-1]
+        base = [
+            mro
+            for mro in cls.__mro__
+            if issubclass(mro, Proc) and mro is not Proc and mro is not cls
+        ]
+        parent = base[0] if base else None
         # cls.requires = cls._compute_requires()
         # triggers cls.__setattr__() to compute requires
         cls.nexts = []
         cls.requires = cls.requires
 
-        if cls.name is None or cls.name == parent.name:
+        if cls.name is None or (parent and cls.name == parent.name):
             cls.name = cls.__name__
 
-        if cls.__doc__ is None:
-            cls.__doc__ = (
-                parent.__doc__
-                if parent is not Proc
-                else "Undescribed process."
-            )
-
-        cls.envs = update_dict(parent.envs, cls.envs)
-        cls.plugin_opts = update_dict(parent.plugin_opts, cls.plugin_opts)
-        cls.scheduler_opts = update_dict(
-            parent.scheduler_opts, cls.scheduler_opts
+        cls.envs = update_dict(parent.envs if parent else None, cls.envs)
+        cls.plugin_opts = update_dict(
+            parent.plugin_opts if parent else None,
+            cls.plugin_opts,
         )
-        cls.__procgroup__ = None
+        cls.scheduler_opts = update_dict(
+            parent.scheduler_opts if parent else {},
+            cls.scheduler_opts,
+        )
+        cls.__meta__ = {"procgroup": None}
 
     def __init__(self, pipeline: Pipen = None) -> None:
         """Constructor
@@ -676,8 +678,8 @@ class Proc(ABC, metaclass=ProcMeta):
     def _log_info(self):
         """Log some basic information of the process"""
         title = (
-            f"{self.__procgroup__.name}/{self.name}"
-            if self.__procgroup__
+            f"{self.__meta__['procgroup'].name}/{self.name}"
+            if self.__meta__["procgroup"]
             else self.name
         )
         panel = Panel(
