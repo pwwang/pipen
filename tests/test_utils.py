@@ -12,6 +12,8 @@ from pipen.utils import (
     strsplit,
     truncate_text,
     update_dict,
+    mark,
+    get_marked,
 )
 from pipen.exceptions import ConfigurationError
 from pipen.pluginmgr import plugin
@@ -88,3 +90,19 @@ def test_ignore_firstline_dedent():
 
 def test_truncate_text():
     assert truncate_text("abcd", 2) == "a…"
+
+
+def test_mark():
+    @mark(a=1)
+    class P1(pipen.Proc):
+        ...
+
+    assert get_marked(P1, "a") == 1
+
+    class P2(P1):
+        ...
+
+    assert get_marked(P2, "a", None) is None
+
+    P3 = pipen.Proc.from_proc(P1)
+    assert get_marked(P3, "a") is None

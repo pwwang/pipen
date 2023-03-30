@@ -54,6 +54,8 @@ if TYPE_CHECKING:  # pragma: no cover
     from rich.segment import Segment
     from rich.console import RenderableType
 
+    from .proc import Proc
+
 
 class RichHandler(_RichHandler):
     """Subclass of rich.logging.RichHandler, showing log levels as a single
@@ -498,3 +500,36 @@ def get_base(
         return klass
 
     return get_base(bases[0], abc_base, value, value_getter)
+
+
+def mark(**kwargs) -> Callable[[Type[Proc]], Type[Proc]]:
+    """Mark a proc with given kwargs as metadata
+
+    These marks will not be inherited by the subclasses.
+
+    Args:
+        **kwargs: The kwargs to mark the proc
+
+    Returns:
+        The decorator
+    """
+
+    def decorator(proc: Type[Proc]) -> Type[Proc]:
+        proc.__meta__.update(kwargs)
+        return proc
+
+    return decorator
+
+
+def get_marked(proc: Type[Proc], mark_name: str, default: Any = None) -> Any:
+    """Get the marked value from a proc
+
+    Args:
+        proc: The proc
+        mark_name: The mark name
+        default: The default value if the mark is not found
+
+    Returns:
+        The marked value
+    """
+    return proc.__meta__.get(mark_name, default)
