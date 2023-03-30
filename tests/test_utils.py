@@ -103,3 +103,6 @@ def test_mark():
         ...
 
     assert get_marked(P2, "a", None) is None
+
+    P3 = pipen.Proc.from_proc(P1)
+    assert get_marked(P3, "a") is None
