@@ -37,6 +37,8 @@ def test_help():
 def test_profile_all():
     out = cmdoutput(["pipen", "profile"])
     assert "Note:" in out
+    out = cmdoutput(["pipen", "profile", "--list"])
+    assert "default" in out
 
 
 def test_profile_default():

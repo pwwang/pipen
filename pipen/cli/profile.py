@@ -35,6 +35,13 @@ class CLIProfilePlugin(CLIPlugin):
             default="",
             help="The name of the profile to show. Show all if not provided.",
         )
+        subparser.add_argument(
+            "-l",
+            "--list",
+            action="store_true",
+            default=False,
+            help="List the names of all available profiles (-n won't work).",
+        )
 
     def exec_command(self, args: Namespace) -> None:
         """Run the command"""
@@ -44,6 +51,10 @@ class CLIProfilePlugin(CLIPlugin):
             *CONFIG_FILES,
             ignore_nonexist=True,
         )
+
+        if args.list:
+            print("\n".join(ProfileConfig.profiles(config)))
+            return
 
         print("Configurations loaded from:")
         print("- pipen.defaults.CONFIG (python dictionary)")
