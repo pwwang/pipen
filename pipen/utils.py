@@ -1,8 +1,10 @@
 """Provide some utilities"""
 from __future__ import annotations
 
+import sys
 import logging
 import textwrap
+import typing
 from itertools import groupby
 from operator import itemgetter
 from io import StringIO
@@ -21,6 +23,8 @@ from typing import (
     Type,
 )
 
+import diot
+import simplug
 from rich.console import Console
 from rich.logging import RichHandler as _RichHandler
 from rich.table import Table
@@ -106,10 +110,31 @@ _logger_handler = RichHandler(
     omit_repeated_times=False,  # rich 10+
     markup=True,
     log_time_format="%m-%d %H:%M:%S",
+    tracebacks_extra_lines=0,
+    tracebacks_suppress=[simplug, diot, typing],
 )
 _logger_handler.setFormatter(
     logging.Formatter("[purple]%(plugin_name)-7s[/purple] %(message)s")
 )
+
+
+def _excepthook(
+    type_: Type[BaseException],
+    value: BaseException,
+    traceback: Any,
+) -> None:
+    """The excepthook for pipen, to show rich traceback"""
+    if type_ is KeyboardInterrupt:
+        logger.error("Interrupted by user")
+        return
+
+    logger.exception(
+        f"{type_.__name__}: {value}",
+        exc_info=(type_, value, traceback),
+    )
+
+
+sys.excepthook = _excepthook
 
 
 def get_logger(
