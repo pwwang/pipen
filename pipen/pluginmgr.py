@@ -215,6 +215,16 @@ async def on_job_succeeded(proc: Proc, job: Job):
 
 
 @plugin.spec
+async def on_job_cached(proc: Proc, job: Job):
+    """When a job is cached.
+
+    Args:
+        proc: The process
+        job: The job
+    """
+
+
+@plugin.spec
 async def on_job_failed(proc: Proc, job: Job):
     """When a job is done but failed.
 
