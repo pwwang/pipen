@@ -459,6 +459,7 @@ class Proc(ABC, metaclass=ProcMeta):
                 self.pbar.update_job_running()
                 self.pbar.update_job_succeeded()
                 job.status = JobStatus.FINISHED
+                await plugin.hooks.on_job_cached(self, job)
             else:
                 await self.xqute.put(job)
         if cached_jobs:
