@@ -22,7 +22,6 @@ from typing import (
 from diot import Diot
 from rich import box
 from rich.panel import Panel
-from slugify import slugify  # type: ignore
 from varname import VarnameException, varname
 from xqute import JobStatus, Xqute
 
@@ -31,7 +30,7 @@ from .exceptions import (
     ProcInputKeyError,
     ProcInputTypeError,
     ProcScriptFileNotFound,
-    ProcWorkdirConflictException,
+    PipenOrProcNameError,
 )
 from .pluginmgr import plugin
 from .scheduler import get_scheduler
@@ -44,6 +43,7 @@ from .utils import (
     get_logpanel_width,
     ignore_firstline_dedent,
     is_subclass,
+    is_valid_name,
     log_rich_renderable,
     logger,
     make_df_colnames_unique_inplace,
@@ -294,6 +294,12 @@ class Proc(ABC, metaclass=ProcMeta):
         if cls.name is None or (parent and cls.name == parent.name):
             cls.name = cls.__name__
 
+        if not is_valid_name(cls.name):
+            raise PipenOrProcNameError(
+                f"{cls.name} is not a valid process name, expecting "
+                r"'^[\w.-]+$'"
+            )
+
         cls.envs = update_dict(parent.envs if parent else None, cls.envs)
         cls.plugin_opts = update_dict(
             parent.plugin_opts if parent else None,
@@ -319,10 +325,7 @@ class Proc(ABC, metaclass=ProcMeta):
         self.pbar = None
         self.jobs: List[Any] = []
         self.xqute = None
-        self.__class__.workdir = Path(self.pipeline.workdir) / slugify(
-            self.name
-        )
-
+        self.__class__.workdir = Path(self.pipeline.workdir) / self.name
         # plugins can modify some default attributes
         plugin.hooks.on_proc_init(self)
 
@@ -360,21 +363,7 @@ class Proc(ABC, metaclass=ProcMeta):
         )
         # script
         self.script = self._compute_script()  # type: ignore
-
-        # check if it's the same proc using the workdir
-        # since the directory name is slugified
-        proc_name_file = self.workdir / "proc.name"  # type: ignore
-        if (
-            proc_name_file.is_file()
-            and proc_name_file.read_text() != self.name
-        ):
-            raise ProcWorkdirConflictException(
-                "Workdir name is conflicting with process "
-                f"{proc_name_file.read_text()!r}, use a differnt pipeline "
-                "workdir or a different process name."
-            )
         self.workdir.mkdir(exist_ok=True)
-        proc_name_file.write_text(self.name)
 
         if self.submission_batch is None:
             self.submission_batch = self.pipeline.config.submission_batch

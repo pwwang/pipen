@@ -19,7 +19,6 @@ generate-setup-file = true
 python = "^3.7.1" # align with datar/pandas
 liquidpy = "^0.8"
 pandas = "^1.3"
-python-slugify = "^8"
 enlighten = "^1"
 cached-property = "^1"
 argx = "^0.2"

@@ -5,6 +5,7 @@ from pipen.exceptions import (
     ProcDependencyError,
     PipenSetDataError,
 )
+from pipen.proc import PipenOrProcNameError
 
 from .helpers import (
     ErrorProc,
@@ -156,3 +157,11 @@ def test_subclass_pipen(tmp_path, caplog):
         ...
 
     assert MyPipe2().name == "MyPipe2"
+
+
+def test_invalid_name():
+    class MyPipe3(Pipen):
+        name = "a+"
+
+    with pytest.raises(PipenOrProcNameError, match="Invalid pipeline name"):
+        MyPipe3().run()

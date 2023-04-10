@@ -7,7 +7,7 @@ from pipen.exceptions import (
     ProcInputKeyError,
     ProcInputTypeError,
     ProcScriptFileNotFound,
-    ProcWorkdirConflictException,
+    PipenOrProcNameError,
 )
 from datar.dplyr import mutate
 
@@ -59,18 +59,6 @@ def test_from_proc():
     assert proc.error_strategy == "retry"
     assert proc.num_retries == 10
     assert proc.submission_batch == 3
-
-
-# def test_from_proc_name_from_assignment():
-#     proc = Proc.from_proc(SimpleProc)
-#     assert proc.name == "proc"
-
-
-def test_proc_workdir_conflicts(pipen):
-    proc1 = Proc.from_proc(NormalProc, name="proc.1")
-    Proc.from_proc(NormalProc, name="proc-1", requires=proc1)
-    with pytest.raises(ProcWorkdirConflictException):
-        pipen.set_starts(proc1).run()
 
 
 def test_cached_run(caplog, pipen):
@@ -161,3 +149,8 @@ def test_proc_relative_path_script(pipen):
 def test_script_file_exists(pipen):
     with pytest.raises(ProcScriptFileNotFound):
         pipen.set_starts(ScriptNotExistsProc).run()
+
+
+def test_invalid_name():
+    with pytest.raises(PipenOrProcNameError):
+        Proc.from_proc(SimpleProc, name="a b")

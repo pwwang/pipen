@@ -36,7 +36,6 @@ class CLIVersionPlugin(CLIPlugin):
         for pkg in (
             "liquidpy",
             "pandas",
-            "python-slugify",
             "enlighten",
             "argx",
             "xqute",
