@@ -467,6 +467,11 @@ class Pipen:
                         f"Cyclic dependency: {proc.name}"
                     )
 
+                if proc.name in [p.name for p in self.procs]:
+                    raise PipenOrProcNameError(
+                        f"'{proc.name}' is already used by another process."
+                    )
+
                 # Add proc to self.procs if all their requires
                 # are added to self.procs
                 # Then remove proc from nexts

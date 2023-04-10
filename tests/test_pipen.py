@@ -165,3 +165,18 @@ def test_invalid_name():
 
     with pytest.raises(PipenOrProcNameError, match="Invalid pipeline name"):
         MyPipe3().run()
+
+
+def test_duplicate_proc_name():
+    class MyProc1(Proc):
+        ...
+
+    class MyProc2(Proc):
+        requires = MyProc1
+        name = "MyProc1"
+
+    class MyPipe4(Pipen):
+        starts = MyProc1
+
+    with pytest.raises(PipenOrProcNameError, match="already used by another"):
+        MyPipe4().run()
