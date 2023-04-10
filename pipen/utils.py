@@ -124,7 +124,7 @@ def _excepthook(
     traceback: Any,
 ) -> None:
     """The excepthook for pipen, to show rich traceback"""
-    if type_ is KeyboardInterrupt:
+    if type_ is KeyboardInterrupt:  # pragma: no cover
         logger.error("Interrupted by user")
         return
 

@@ -1,5 +1,16 @@
 # Change Log
 
+## 0.7.3
+
+- ✨ Add `--list` for `pipen profile` to list the names of available profiles
+- ✨ Add exception hook to show uncaught in log
+- ✨ Add `on_job_cached` hook
+
+## 0.7.2
+
+- ✨ Add `utils.mark` and `get_marked` to mark a process
+    Unlike plugin_opts, template_opts or envs, these marks are not inherited in subclasses
+
 ## 0.7.1
 
 - ⬆️ Upgrade simplug to 0.2.3
