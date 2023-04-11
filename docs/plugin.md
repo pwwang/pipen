@@ -98,6 +98,10 @@ See [`simplug`][1] for more details.
 
     When a job completes successfully
 
+- `on_job_cached(proc, job)` (async)
+
+    When a job is cached
+
 - `on_job_failed(proc, job)` (async)
 
     When a job is done but failed (i.e. return_code == 1).

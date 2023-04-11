@@ -10,8 +10,8 @@ jobs:
     strategy:
       matrix:
         # 3.11 is slow to install
-        python-version: [3.7, 3.8, 3.9, "3.10"]
-        # python-version: [3.7, 3.8, 3.9, "3.10", "3.11"]
+        python-version: [3.8, 3.9, "3.10"]
+        # python-version: [3.8, 3.9, "3.10", "3.11"]
 
     steps:
       - uses: actions/checkout@v3

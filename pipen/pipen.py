@@ -16,11 +16,14 @@ from rich.table import Table
 from rich.text import Text
 from rich.console import Group
 from simpleconf import ProfileConfig
-from slugify import slugify  # type: ignore
 from varname import varname, VarnameException
 
 from .defaults import CONFIG, CONFIG_FILES
-from .exceptions import ProcDependencyError, PipenSetDataError
+from .exceptions import (
+    PipenOrProcNameError,
+    ProcDependencyError,
+    PipenSetDataError,
+)
 from .pluginmgr import plugin
 from .proc import Proc
 from .progressbar import PipelinePBar
@@ -29,6 +32,7 @@ from .utils import (
     desc_from_docstring,
     get_logpanel_width,
     get_plugin_context,
+    is_valid_name,
     log_rich_renderable,
     logger,
     pipen_banner,
@@ -92,6 +96,12 @@ class Pipen:
             except VarnameException:
                 self.name = f"pipen-{self.__class__.PIPELINE_COUNT}"
 
+        if not is_valid_name(self.name):
+            raise PipenOrProcNameError(
+                f"Invalid pipeline name: {self.name}, "
+                r"expecting '^[\w.-]$'"
+            )
+
         self.desc = (
             desc
             or self.__class__.desc
@@ -100,7 +110,7 @@ class Pipen:
         self.outdir = Path(
             outdir
             or self.__class__.outdir
-            or f"./{slugify(self.name)}_results"
+            or f"./{self.name}_results"
         ).resolve()
         self.workdir: Path = None
         self.profile: str = "default"
@@ -164,7 +174,7 @@ class Pipen:
             True if the pipeline ends successfully else False
         """
         self.profile = profile
-        self.workdir = Path(self.config.workdir) / slugify(self.name)
+        self.workdir = Path(self.config.workdir) / self.name
         self.workdir.mkdir(parents=True, exist_ok=True)
 
         succeeded = True
@@ -455,6 +465,11 @@ class Pipen:
                 if proc in self.procs:
                     raise ProcDependencyError(
                         f"Cyclic dependency: {proc.name}"
+                    )
+
+                if proc.name in [p.name for p in self.procs]:
+                    raise PipenOrProcNameError(
+                        f"'{proc.name}' is already used by another process."
                     )
 
                 # Add proc to self.procs if all their requires

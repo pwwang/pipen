@@ -239,6 +239,9 @@ class PipenMainPlugin:
     cache the job"""
 
     name = "main"
+    # The priority is set to -1000 to make sure it is the first plugin
+    # to be called
+    order = -1000
 
     @plugin.impl
     def on_proc_shutdown(self, proc: Proc, sig: signal.Signals):
@@ -259,6 +262,14 @@ class PipenMainPlugin:
     async def on_job_running(self, proc: Proc, job: Job):
         """Update the progress bar when a job starts to run"""
         proc.pbar.update_job_running()
+
+    @plugin.impl
+    async def on_job_cached(self, proc: Proc, job: Job):
+        """Update the progress bar when a job is cached"""
+        proc.pbar.update_job_submitted()
+        proc.pbar.update_job_running()
+        proc.pbar.update_job_succeeded()
+        job.status = JobStatus.FINISHED
 
     @plugin.impl
     async def on_job_succeeded(self, proc: Proc, job: Job):

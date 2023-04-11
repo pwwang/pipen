@@ -1,6 +1,7 @@
 """Provide some utilities"""
 from __future__ import annotations
 
+import re
 import sys
 import logging
 import textwrap
@@ -558,3 +559,15 @@ def get_marked(proc: Type[Proc], mark_name: str, default: Any = None) -> Any:
         The marked value
     """
     return proc.__meta__.get(mark_name, default)
+
+
+def is_valid_name(name: str) -> bool:
+    """Check if a name is valid for a proc or pipen
+
+    Args:
+        name: The name to check
+
+    Returns:
+        True if valid, otherwise False
+    """
+    return re.match(r"^[\w.-]+$", name) is not None

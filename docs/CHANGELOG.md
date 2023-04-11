@@ -1,5 +1,13 @@
 # Change Log
 
+## 0.8.0
+
+- ⬆️ Drop support for python3.7
+- 🎨 Don't slugify pipen or proc names anymore but require them to be valid filenames
+- 🐛 Fix process names being reused
+- 📝 Update documentation with new job caching callback.
+- 🎨 Move actions to on_job_cached hook for cached jobs
+
 ## 0.7.3
 
 - ✨ Add `--list` for `pipen profile` to list the names of available profiles
