@@ -194,7 +194,7 @@ class Pipen:
                         "This is a start process, "
                         "but no 'input_data' specified.",
                     )
-                await proc_obj._init()
+                await proc_obj.init()
                 await proc_obj.run()
                 if proc_obj.succeeded:
                     self.pbar.update_proc_done()
