@@ -20,16 +20,15 @@ python = "^3.8" # align with datar/pandas
 liquidpy = "^0.8"
 pandas = "^1.4"
 enlighten = "^1"
-cached-property = "^1"
 argx = "^0.2"
-xqute = "^0.1"
+xqute = "^0.2"
 ## included in xqute
 # rich = "^12"
 # diot = "^0.1"
 # simplug = "^0.0"
 ## including rtoml
 python-simpleconf = {version = "^0.5", extras = ["toml"]}
-pipda = "^0.11"
+pipda = "^0.12"
 varname = "^0.11"
 
 [tool.poetry.dev-dependencies]
@@ -37,7 +36,7 @@ openpyxl = "^3"
 pytest = "^7"
 pytest-cov = "^4"
 pytest-xdist = "^3"
-datar = { version = "^0.11", extras = ["pandas"] }
+datar = { version = "^0.12", extras = ["pandas"] }
 
 [tool.poetry.scripts]
 pipen = "pipen.cli:main"

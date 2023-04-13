@@ -36,12 +36,11 @@ Or add a process at runtime:
 from __future__ import annotations
 
 from os import PathLike
-from functools import wraps
+from functools import wraps, cached_property
 from typing import Callable, Type, List
 from abc import ABC, ABCMeta
 from diot import Diot
 
-from .utils import cached_property
 from .pipen import Pipen
 from .proc import Proc
 

@@ -3,9 +3,10 @@ from __future__ import annotations
 
 import logging
 import shlex
+import shutil
+from functools import cached_property
 from os import PathLike
 from pathlib import Path
-import shutil
 from typing import TYPE_CHECKING, Any, Dict, Mapping
 
 from diot import OrderedDiot
@@ -22,7 +23,7 @@ from .exceptions import (
     TemplateRenderingError,
 )
 from .template import Template
-from .utils import cached_property, logger, strsplit
+from .utils import logger, strsplit
 
 if TYPE_CHECKING:  # pragma: no cover
     from .proc import Proc

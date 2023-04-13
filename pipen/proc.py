@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-from abc import ABC, ABCMeta
 import logging
+from abc import ABC, ABCMeta
+from functools import cached_property
 from os import PathLike
 from pathlib import Path
 from typing import (
@@ -17,8 +18,6 @@ from typing import (
     TYPE_CHECKING,
 )
 
-# Slow down the import, try do it at runtime
-# import pandas
 from diot import Diot
 from rich import box
 from rich.panel import Panel
@@ -37,7 +36,6 @@ from .scheduler import get_scheduler
 from .template import Template, get_template_engine
 from .utils import (
     brief_list,
-    cached_property,
     copy_dict,
     desc_from_docstring,
     get_logpanel_width,
@@ -368,7 +366,7 @@ class Proc(ABC, metaclass=ProcMeta):
         if self.submission_batch is None:
             self.submission_batch = self.pipeline.config.submission_batch
 
-    async def _init(self) -> None:
+    async def init(self) -> None:
         """Init all other properties and jobs"""
         import pandas
 
@@ -379,6 +377,7 @@ class Proc(ABC, metaclass=ProcMeta):
         self.xqute = Xqute(
             self.scheduler,
             job_metadir=self.workdir,
+            loglevel="NOTSET",
             job_submission_batch=self.submission_batch,
             job_error_strategy=self.error_strategy
             or self.pipeline.config.error_strategy,

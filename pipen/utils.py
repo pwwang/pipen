@@ -42,17 +42,7 @@ from .exceptions import ConfigurationError
 from .pluginmgr import plugin
 from .version import __version__
 
-try:  # pragma: no cover
-    from functools import cached_property
-except ImportError:  # pragma: no cover
-    # python 3.7
-    from cached_property import cached_property
-
-try:  # pragma: no cover
-    from importlib import metadata as importlib_metadata
-except ImportError:  # pragma: no cover
-    # python 3.7
-    import importlib_metadata
+from importlib import metadata as importlib_metadata
 
 if TYPE_CHECKING:  # pragma: no cover
     import pandas

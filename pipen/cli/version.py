@@ -12,15 +12,6 @@ if TYPE_CHECKING:
 __all__ = ("CLIVersionPlugin",)
 
 
-def get_pkg_version(pkg: str) -> str:
-    try:
-        from importlib.metadata import version
-        return version(pkg)
-    except ImportError:  # pragma: no cover
-        from pkg_resources import get_distribution  # type: ignore
-        return get_distribution(pkg).version
-
-
 class CLIVersionPlugin(CLIPlugin):
     """Print versions of pipen and its dependencies"""
 
@@ -29,6 +20,7 @@ class CLIVersionPlugin(CLIPlugin):
     def exec_command(self, args: Namespace) -> None:
         """Run the command"""
         import sys
+        from importlib.metadata import version
         from .. import __version__
 
         versions = {"python": sys.version, "pipen": __version__}
@@ -43,7 +35,7 @@ class CLIVersionPlugin(CLIPlugin):
             "pipda",
             "varname",
         ):
-            versions[pkg] = get_pkg_version(pkg)
+            versions[pkg] = version(pkg)
 
         keylen = max(map(len, versions))
         for key in versions:

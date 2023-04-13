@@ -4,11 +4,6 @@ from typing import ClassVar
 
 from diot import Diot
 from xqute import JobErrorStrategy
-from xqute import logger as xqute_logger
-
-# turn xqute's logger off
-xqute_logger.setLevel(100)
-xqute_logger.removeHandler(xqute_logger.handlers[0])
 
 LOGGER_NAME = "main"
 CONFIG_FILES = (
