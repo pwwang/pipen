@@ -4,12 +4,22 @@ from __future__ import annotations
 from typing import Type
 
 from xqute import Scheduler
-from xqute.schedulers.local_scheduler import LocalJob as XquteLocalJob
 from xqute.schedulers.local_scheduler import (
+    LocalJob as XquteLocalJob,
     LocalScheduler as XquteLocalScheduler,
 )
-from xqute.schedulers.sge_scheduler import SgeJob as XquteSgeJob
-from xqute.schedulers.sge_scheduler import SgeScheduler as XquteSgeScheduler
+from xqute.schedulers.sge_scheduler import (
+    SgeJob as XquteSgeJob,
+    SgeScheduler as XquteSgeScheduler
+)
+from xqute.schedulers.slurm_scheduler import (
+    SlurmJob as XquteSlurmJob,
+    SlurmScheduler as XquteSlurmScheduler,
+)
+from xqute.schedulers.ssh_scheduler import (
+    SshJob as XquteSshJob,
+    SshScheduler as XquteSshScheduler,
+)
 
 from .defaults import SCHEDULER_ENTRY_GROUP
 from .exceptions import NoSuchSchedulerError, WrongSchedulerTypeError
@@ -17,28 +27,40 @@ from .job import Job
 from .utils import is_subclass, load_entrypoints
 
 
-class LocalJob(Job):
+class LocalJob(XquteLocalJob, Job):
     """Job class for local scheduler"""
-
-    wrap_cmd = XquteLocalJob.wrap_cmd
 
 
 class LocalScheduler(XquteLocalScheduler):
     """Local scheduler"""
-
     job_class = LocalJob
 
 
-class SgeJob(Job):
-    """Job class for sge scheduler"""
-
-    wrap_cmd = XquteSgeJob.wrap_cmd
+class SgeJob(XquteSgeJob, Job):
+    """Job class for SGE scheduler"""
 
 
 class SgeScheduler(XquteSgeScheduler):
-    """Sge scheduler"""
-
+    """SGE scheduler"""
     job_class = SgeJob
+
+
+class SlurmJob(XquteSlurmJob, Job):
+    """Job class for Slurm scheduler"""
+
+
+class SlurmScheduler(XquteSlurmScheduler):
+    """Slurm scheduler"""
+    job_class = SlurmJob
+
+
+class SshJob(XquteSshJob, Job):
+    """Job class for SSH scheduler"""
+
+
+class SshScheduler(XquteSshScheduler):
+    """SSH scheduler"""
+    job_class = SshJob
 
 
 def get_scheduler(scheduler: str | Type[Scheduler]) -> Type[Scheduler]:
@@ -55,13 +77,18 @@ def get_scheduler(scheduler: str | Type[Scheduler]) -> Type[Scheduler]:
 
     if scheduler == "local":
         return LocalScheduler
+
     if scheduler == "sge":
         return SgeScheduler
 
-    for name, obj in load_entrypoints(
-        SCHEDULER_ENTRY_GROUP
-    ):  # pragma: no cover
-        if name == scheduler:
+    if scheduler == "slurm":
+        return SlurmScheduler
+
+    if scheduler == "ssh":
+        return SshScheduler
+
+    for n, obj in load_entrypoints(SCHEDULER_ENTRY_GROUP):  # pragma: no cover
+        if n == scheduler:
             if not is_subclass(obj, Scheduler):
                 raise WrongSchedulerTypeError(
                     "Scheduler should be a subclass of "

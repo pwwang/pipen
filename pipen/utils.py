@@ -429,9 +429,11 @@ def is_subclass(obj: Any, cls: type) -> bool:
     """Tell if obj is a subclass of cls
     Differences with issubclass is that we don't raise Type error if obj
     is not a class
+
     Args:
         obj: The object to check
         cls: The class to check
+
     Returns:
         True if obj is a subclass of cls otherwise False
     """
@@ -441,19 +443,23 @@ def is_subclass(obj: Any, cls: type) -> bool:
         return False
 
 
-def load_entrypoints(group: str) -> Iterable[Tuple[str, Any]]:
+def load_entrypoints(
+    group: str
+) -> Iterable[Tuple[str, Any]]:  # pragma: no cover
     """Load objects from setuptools entrypoints by given group name
+
     Args:
         group: The group name of the entrypoints
+
     Returns:
         An iterable of tuples with name and the loaded object
     """
-    for dist in importlib_metadata.distributions():  # pragma: no cover
-        for epoint in dist.entry_points:
-            if epoint.group != group:
-                continue
-            obj = epoint.load()
-            yield (epoint.name, obj)
+    try:
+        eps = importlib_metadata.entry_points(group=group)
+    except TypeError:
+        eps = importlib_metadata.entry_points().get(group, [])  # type: ignore
+
+    yield from ((ep.name, ep.load()) for ep in eps)
 
 
 def truncate_text(text: str, width: int, end: str = "…") -> str:
