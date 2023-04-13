@@ -1,5 +1,13 @@
 # Change Log
 
+## 0.9.0
+
+- ⬆️ Bump xqute to 0.2 so we can have slurm and ssh schedulers available
+- ✨ Add ssh and slurm scheduers
+- 🎨 Improve code for dropping python 3.7
+- 👷 Use 3.10 as main python version in CI
+- 📝 Update docs for slurm and ssh schedulers
+
 ## 0.8.0
 
 - ⬆️ Drop support for python3.7
