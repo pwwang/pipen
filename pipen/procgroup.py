@@ -99,6 +99,8 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
         for name, attr in self.__class__.__dict__.items():
             if isinstance(attr, cached_property):
                 getattr(self, name)
+            elif isinstance(attr, type) and issubclass(attr, Proc):
+                self.add_proc(attr)
 
     def add_proc(
         self_or_method: ProcGroup | Callable[[ProcGroup], Type[Proc]],
@@ -142,14 +144,8 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
             if proc is None:
                 return None
 
-            if (
-                not isinstance(proc, Proc)
-                and (not isinstance(proc, type) or not issubclass(proc, Proc))
-            ):
-                raise ValueError(
-                    f"`{proc}` is not a process "
-                    "(either a subclass or an instance of Proc)"
-                )
+            if (not isinstance(proc, type) or not issubclass(proc, Proc)):
+                raise ValueError(f"`{proc}` is not a Proc subclass")
 
             proc.__meta__["procgroup"] = self
             if not proc.requires:
