@@ -235,10 +235,10 @@ async def on_job_failed(proc: Proc, job: Job):
 
 
 class PipenMainPlugin:
-    """The builtin main plugin, used to update the progress bar and
+    """The builtin core plugin, used to update the progress bar and
     cache the job"""
 
-    name = "main"
+    name = "core"
     # The priority is set to -1000 to make sure it is the first plugin
     # to be called
     order = -1000

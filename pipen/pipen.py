@@ -152,8 +152,8 @@ class Pipen:
         self.plugin_context = get_plugin_context(plugins)
         self.plugin_context.__enter__()
 
-        # make sure main plugin is enabled
-        plugin.get_plugin("main").enable()
+        # make sure core plugin is enabled
+        plugin.get_plugin("core").enable()
 
         if not self.__class__.SETUP:  # pragma: no cover
             plugin.hooks.on_setup(self.config)

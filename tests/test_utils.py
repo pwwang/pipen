@@ -29,13 +29,13 @@ def test_plugin_context():
     with pytest.raises(ConfigurationError):
         get_plugin_context(["a", "no:b"])
 
-    plugin.get_plugin("main").enable()
-    context = get_plugin_context(["no:main"])
+    plugin.get_plugin("core").enable()
+    context = get_plugin_context(["no:core"])
 
     with context:
-        assert plugin.get_plugin("main").enabled is False
+        assert plugin.get_plugin("core").enabled is False
 
-    assert plugin.get_plugin("main").enabled is True
+    assert plugin.get_plugin("core").enabled is True
 
 
 def test_brief_list():
