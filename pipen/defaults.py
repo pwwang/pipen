@@ -12,7 +12,7 @@ if _xqute_handlers:
     # The very first handler is the rich handler
     xqute_logger.removeHandler(_xqute_handlers[0])
 
-LOGGER_NAME = "main"
+LOGGER_NAME = "core"
 CONFIG_FILES = (
     Path("~/.pipen.toml").expanduser(),
     "./.pipen.toml",

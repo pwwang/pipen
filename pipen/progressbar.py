@@ -8,7 +8,7 @@ from .utils import truncate_text
 if TYPE_CHECKING:  # pragma: no cover
     import enlighten
 
-# [12/02/20 12:44:06] I /main
+# [12/02/20 12:44:06] I core
 #                 pipeline: 100%|
 # |        desc_len      |
 PBAR_DESC_LEN = 23

@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.9.2
+
+- 🎨 Rename to main plugin to core
+- 🎨 Reformat log of pipeline info so that paths won't be truncated
+
 ## 0.9.1
 
 - ⬆️ Bump xqute to 0.2.1

@@ -1,3 +1,4 @@
+from re import template
 import pytest
 from pipen import Proc, Pipen
 from pipen.exceptions import (
@@ -145,13 +146,15 @@ def test_subclass_pipen(tmp_path, caplog):
         workdir = tmp_path
         loglevel = "DEBUG"
         plugin_opts = {"x": 1}
+        scheduler_opts = {"n": 1}
+        template_opts = {"a": 1}
 
     MyPipen(plugin_opts={"y": 2}).run()
 
     assert (tmp_path / "outdir" / "Proc2" / "1").is_file()
     assert "MYAWESOMEPIPELINE" in caplog.text
-    assert "'x': 1" in caplog.text
-    assert "'y': 2" in caplog.text
+    assert "x=1" in caplog.text
+    assert "y=2" in caplog.text
 
     class MyPipe2(Pipen):
         ...
