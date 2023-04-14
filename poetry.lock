@@ -1062,14 +1062,14 @@ files = [
 
 [[package]]
 name = "xqute"
-version = "0.2.0"
+version = "0.2.1"
 description = "A job management system for python"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "xqute-0.2.0-py3-none-any.whl", hash = "sha256:568a653841616fcdab5325522b110b5527ba1f4e686b7f33725db58f10a9d4bb"},
-    {file = "xqute-0.2.0.tar.gz", hash = "sha256:097c3083444c130a08478f9e677ea253f0c2d46d353492c010a6222d64e6cf07"},
+    {file = "xqute-0.2.1-py3-none-any.whl", hash = "sha256:41e78083870ffd07d7e37db2c440b31f8cb3f4d492f90f3d1c2e023bfd6fc587"},
+    {file = "xqute-0.2.1.tar.gz", hash = "sha256:4c336389e600c657f9d97416fcb69b6fcb100a43f715ee73525ebf71c4d8b008"},
 ]
 
 [package.dependencies]
@@ -1085,4 +1085,4 @@ uvloop = ">=0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8" # align with datar/pandas
-content-hash = "e82cfb2863dc2089e8cdc3acd4149f3bd2bcb8d6fe5dbf2da7edf15fd13b4b05"
+content-hash = "1f528038e232379ceb87d6bdfae0bb242c13f5090df92c3ef723e2819e8cff41"
