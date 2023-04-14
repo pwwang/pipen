@@ -2,19 +2,14 @@
 from __future__ import annotations
 
 import asyncio
-from itertools import chain
 from os import PathLike
 from pathlib import Path
-import pprint
-import textwrap
 from typing import Any, ClassVar, Iterable, List, Sequence, Type
 
 from diot import Diot
 from rich import box
 from rich.panel import Panel
-from rich.table import Table
 from rich.text import Text
-from rich.console import Group
 from simpleconf import ProfileConfig
 from varname import varname, VarnameException
 
@@ -98,19 +93,14 @@ class Pipen:
 
         if not is_valid_name(self.name):
             raise PipenOrProcNameError(
-                f"Invalid pipeline name: {self.name}, "
-                r"expecting '^[\w.-]$'"
+                fr"Invalid pipeline name: {self.name}, expecting '^[\w.-]$'"
             )
 
         self.desc = (
-            desc
-            or self.__class__.desc
-            or desc_from_docstring(self.__class__)
+            desc or self.__class__.desc or desc_from_docstring(self.__class__)
         )
         self.outdir = Path(
-            outdir
-            or self.__class__.outdir
-            or f"./{self.name}_results"
+            outdir or self.__class__.outdir or f"./{self.name}_results"
         ).resolve()
         self.workdir: Path = None
         self.profile: str = "default"
@@ -299,110 +289,52 @@ class Pipen:
 
     def _log_pipeline_info(self) -> None:
         """Print the information of the pipeline"""
-        items = (
-            [
-                Panel(
-                    self.desc,
-                    box=box.Box(
-                        "    \n    \n    \n    \n    \n    \n    \n────\n",
-                    ),
-                    padding=(0, 0),
-                )
-            ]
-            if self.desc
-            else []
-        )
-
-        items_table = Table.grid(padding=(0, 1), pad_edge=True)
-        items.append(items_table)  # type: ignore
-        enabled_plugins = [
-            "{name}{version}".format(
-                name=name,
-                version=(f"-{plg.__version__}" if plg.version else ""),
-            )
-            for name, plg in plugin.get_enabled_plugins().items()
-        ]
-        config = ProfileConfig.detach(self.config)
-        for key, value in chain(
-            zip(
-                ["# procs", "plugins", "profile", "outdir"],
-                [
-                    str(len(self.procs)),
-                    enabled_plugins,
-                    self.profile,
-                    self.outdir,
-                ],
-            ),
-            sorted(
-                (key, val)
-                for key, val in config.items()
-                if not key.endswith("_opts")
-            ),
-            (
-                (
-                    "plugin_opts",
-                    pprint.pformat(config.plugin_opts, indent=1),
-                ),
-                (
-                    "scheduler_opts",
-                    pprint.pformat(config.scheduler_opts, indent=1),
-                ),
-                (
-                    "template_opts",
-                    pprint.pformat(
-                        {
-                            key: (
-                                {
-                                    ckey: textwrap.shorten(
-                                        str(cval),
-                                        width=30 - len(key),
-                                        placeholder=" …",
-                                    )
-                                    for ckey, cval in chain(
-                                        list(val.items())[:3],
-                                        []
-                                        if len(val) <= 3
-                                        else [("...", "...")],
-                                    )
-                                }
-                                if isinstance(val, dict)
-                                else val
-                            )
-                            for key, val in config.template_opts.items()
-                        },
-                        indent=1,
-                        # sort_dicts=False,
-                    ),
-                ),
-            ),
-        ):
-            items_table.add_row(
-                Text.assemble((key, "scope.key")),
-                Text.assemble(("=", "scope.equals")),
-                Text(str(value), overflow="fold"),
-            )
-
         logger.info("")
+        # Pipeline line and description
         log_rich_renderable(
             Panel(
-                Group(*items),
-                title=self.name.upper(),
+                self.desc or Text(self.name.upper(), justify="center"),
                 width=get_logpanel_width(),
-                box=box.Box(
-                    "╭═┬╮\n"
-                    "║ ║║\n"
-                    "├═┼┤\n"
-                    "║ ║║\n"
-                    "├═┼┤\n"
-                    "├═┼┤\n"
-                    "║ ║║\n"
-                    "╰═┴╯\n"
-                ),
-                padding=(0, 1),
+                # padding=(0, 1),
+                box=box.DOUBLE_EDGE,
+                title=self.name.upper() if self.desc else None,
             ),
-            None,
+            "magenta",
             logger.info,
         )
+        fmt = "[bold][magenta]%-16s:[/magenta][/bold] %s"
+        enabled_plugins = (
+            "{name} [cyan]{version}[/cyan]".format(
+                name=name,
+                version=(f"v{plg.version}" if plg.version else ""),
+            )
+            for name, plg in plugin.get_enabled_plugins().items()
+            if name != "core"
+        )
+        for i, plug in enumerate(enabled_plugins):
+            logger.info(fmt, "plugins" if i == 0 else "", plug)
+        logger.info(fmt, "# procs", len(self.procs))
+        logger.info(fmt, "profile", self.profile)
+        logger.info(fmt, "outdir", self.outdir)
+        logger.info(fmt, "cache", self.config.cache)
+        logger.info(fmt, "dirsig", self.config.dirsig)
+        logger.info(fmt, "error_strategy", self.config.error_strategy)
+        logger.info(fmt, "forks", self.config.forks)
+        logger.info(fmt, "lang", self.config.lang)
+        logger.info(fmt, "loglevel", self.config.loglevel)
+        logger.info(fmt, "num_retries", self.config.num_retries)
+        logger.info(fmt, "scheduler", self.config.scheduler)
+        logger.info(fmt, "submission_batch", self.config.submission_batch)
+        logger.info(fmt, "template", self.config.template)
+        logger.info(fmt, "workdir", self.config.workdir)
+        for i, (key, val) in enumerate(self.config.plugin_opts.items()):
+            logger.info(fmt, "plugin_opts" if i == 0 else "", f"{key}={val}")
+        for i, (key, val) in enumerate(self.config.scheduler_opts.items()):
+            logger.info(
+                fmt, "scheduler_opts" if i == 0 else "", f"{key}={val}"
+            )
+        for i, (key, val) in enumerate(self.config.template_opts.items()):
+            logger.info(fmt, "template_opts" if i == 0 else "", f"{key}={val}")
 
     async def _init(self) -> None:
         """Compute the configurations for the pipeline based on the priorities
