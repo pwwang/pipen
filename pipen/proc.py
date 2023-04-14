@@ -377,7 +377,6 @@ class Proc(ABC, metaclass=ProcMeta):
         self.xqute = Xqute(
             self.scheduler,
             job_metadir=self.workdir,
-            loglevel="NOTSET",
             job_submission_batch=self.submission_batch,
             job_error_strategy=self.error_strategy
             or self.pipeline.config.error_strategy,

@@ -4,6 +4,13 @@ from typing import ClassVar
 
 from diot import Diot
 from xqute import JobErrorStrategy
+from xqute.utils import logger as xqute_logger
+
+# Remove the rich handler
+_xqute_handlers = xqute_logger.handlers
+if _xqute_handlers:
+    # The very first handler is the rich handler
+    xqute_logger.removeHandler(_xqute_handlers[0])
 
 LOGGER_NAME = "main"
 CONFIG_FILES = (

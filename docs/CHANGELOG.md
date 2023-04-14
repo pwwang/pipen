@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.9.1
+
+- ⬆️ Bump xqute to 0.2.1
+
 ## 0.9.0
 
 - ⬆️ Bump xqute to 0.2 so we can have slurm and ssh schedulers available
