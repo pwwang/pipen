@@ -11,7 +11,7 @@ if TYPE_CHECKING:  # pragma: no cover
 # [12/02/20 12:44:06] I core
 #                 pipeline: 100%|
 # |        desc_len      |
-PBAR_DESC_LEN = 23
+PBAR_DESC_LEN = 24
 
 
 class ProcPBar:

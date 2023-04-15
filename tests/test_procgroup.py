@@ -142,3 +142,17 @@ def test_invliad_proc_name():
         @pg.add_proc
         class opts(Proc):
             ...
+
+
+def test_add_proc_directly():
+    class P1(Proc):
+        ...
+
+    class PG(ProcGroup):
+        p1 = P1
+
+    pg = PG()
+
+    assert pg.p1 is P1
+    assert pg.procs == {"P1": P1}
+    assert pg.starts == [P1]

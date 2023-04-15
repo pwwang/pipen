@@ -91,8 +91,8 @@ class RichConsole(Console):
         return out.rstrip() + "\n"
 
 
+logging.lastResort = logging.NullHandler()  # type: ignore
 logger_console = RichConsole()
-
 _logger_handler = RichHandler(
     show_path=False,
     show_level=True,
