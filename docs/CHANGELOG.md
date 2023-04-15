@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.9.3
+
+- 🐛 Set logging.lastResort to null handler
+- ✨ Allow to assign process directly to proc groups
+- 🔧 Change progress bar description length to 24
+
 ## 0.9.2
 
 - 🎨 Rename to main plugin to core
