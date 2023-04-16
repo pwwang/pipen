@@ -83,13 +83,17 @@ class Pipen:
             self.name = name
         elif self.__class__.name is not None:
             self.name = self.__class__.name
-        elif self.__class__.__name__ != "Pipen":
-            self.name = self.__class__.__name__
         else:
             try:
                 self.name = varname()
             except VarnameException:
-                self.name = f"pipen-{self.__class__.PIPELINE_COUNT}"
+                if self.__class__.PIPELINE_COUNT == 0:
+                    self.name = self.__class__.__name__
+                else:
+                    self.name = (
+                        f"{self.__class__.__name__}-"
+                        f"{self.__class__.PIPELINE_COUNT}"
+                    )
 
         if not is_valid_name(self.name):
             raise PipenOrProcNameError(
@@ -153,6 +157,9 @@ class Pipen:
 
         if self.__class__.data is not None:
             self.set_data(*self.__class__.data)
+
+    def __init_subclass__(cls) -> None:
+        cls.PIPELINE_COUNT = 0
 
     async def async_run(self, profile: str = "default") -> bool:
         """Run the processes one by one

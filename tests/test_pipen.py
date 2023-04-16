@@ -27,7 +27,7 @@ def test_name():
     p = Pipen()
     assert p.name == "p"
     [p] = [Pipen()]
-    assert p.name.startswith("pipen-")
+    assert p.name.startswith("Pipen-")
 
 
 def test_run(pipen):
