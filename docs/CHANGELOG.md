@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.9.5
+
+- 🔧 Fix workdir in log
+
 ## 0.9.4
 
 - 🐛 Use class name as pipeline name
