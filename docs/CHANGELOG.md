@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.9.4
+
+- 🐛 Use class name as pipeline name
+
 ## 0.9.3
 
 - 🐛 Set logging.lastResort to null handler
