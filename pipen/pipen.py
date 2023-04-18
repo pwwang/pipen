@@ -104,7 +104,7 @@ class Pipen:
             desc or self.__class__.desc or desc_from_docstring(self.__class__)
         )
         self.outdir = Path(
-            outdir or self.__class__.outdir or f"./{self.name}_results"
+            outdir or self.__class__.outdir or f"./{self.name}-output"
         ).resolve()
         self.workdir: Path = None
         self.profile: str = "default"
@@ -172,7 +172,7 @@ class Pipen:
         """
         self.profile = profile
         self.workdir = Path(self.config.workdir) / self.name
-        self.workdir.mkdir(parents=True, exist_ok=True)
+        # self.workdir.mkdir(parents=True, exist_ok=True)
 
         succeeded = True
         await self._init()
@@ -367,6 +367,7 @@ class Pipen:
         # configs from files and CONFIG are loaded
         # allow plugins to change the default configs
         await plugin.hooks.on_init(self)
+        self.workdir.mkdir(parents=True, exist_ok=True)
         # Then load the extra configurations passed from __init__(**kwargs)
         # Make sure dict options get inherited
         self.config.template_opts.update(self._kwargs.pop("template_opts", {}))
