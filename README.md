@@ -66,11 +66,11 @@ if __name__ == "__main__":
 [09/13/21 04:23:37] I main
 [09/13/21 04:23:37] I main                                 version: 0.9.0
 [09/13/21 04:23:37] I main
-[09/13/21 04:23:37] I main    ╭═════════════════════════════ MYPIPELIN ═══════════════════════════════╮
+[09/13/21 04:23:37] I main    ╭═════════════════════════════ MYPIPELINE ══════════════════════════════╮
 [09/13/21 04:23:37] I main    ║  # procs          = 2                                                 ║
 [09/13/21 04:23:37] I main    ║  plugins          = ['main', 'verbose-0.0.1']                         ║
 [09/13/21 04:23:37] I main    ║  profile          = default                                           ║
-[09/13/21 04:23:37] I main    ║  outdir           = mypipeline_results                                ║
+[09/13/21 04:23:37] I main    ║  outdir           = MyPipeline-output                                 ║
 [09/13/21 04:23:37] I main    ║  cache            = True                                              ║
 [09/13/21 04:23:37] I main    ║  dirsig           = 1                                                 ║
 [09/13/21 04:23:37] I main    ║  error_strategy   = ignore                                            ║
@@ -91,26 +91,26 @@ if __name__ == "__main__":
 [09/13/21 04:23:37] I main    ╭───────────────────────────────── P1 ──────────────────────────────────╮
 [09/13/21 04:23:37] I main    │ Sort input file                                                       │
 [09/13/21 04:23:37] I main    ╰───────────────────────────────────────────────────────────────────────╯
-[09/13/21 04:23:37] I main    P1: Workdir: '.pipen/mypipeline/p1'
+[09/13/21 04:23:37] I main    P1: Workdir: '.pipen/MyPipeline/p1'
 [09/13/21 04:23:37] I main    P1: <<< [START]
 [09/13/21 04:23:37] I main    P1: >>> ['P2']
 [09/13/21 04:23:37] I verbose P1: size: 1
 [09/13/21 04:23:37] I verbose P1: [0/0] in.infile: /tmp/data.txt
 [09/13/21 04:23:37] I verbose P1: [0/0] out.outfile:
-                      /home/pwwang/github/pipen/.pipen/mypipeline/p1/0/output/intermediate.txt
+                      /home/pwwang/github/pipen/.pipen/MyPipeline/p1/0/output/intermediate.txt
 [09/13/21 04:23:38] I verbose P1: Time elapsed: 00:00:01.039s
 [09/13/21 04:23:38] I main
 [09/13/21 04:23:38] I main    ╭═════════════════════════════════ P2 ══════════════════════════════════╮
 [09/13/21 04:23:38] I main    ║ Paste line number                                                     ║
 [09/13/21 04:23:38] I main    ╰═══════════════════════════════════════════════════════════════════════╯
-[09/13/21 04:23:38] I main    P2: Workdir: '.pipen/mypipeline/p2'
+[09/13/21 04:23:38] I main    P2: Workdir: '.pipen/MyPipeline/p2'
 [09/13/21 04:23:38] I main    P2: <<< ['P1']
 [09/13/21 04:23:38] I main    P2: >>> [END]
 [09/13/21 04:23:38] I verbose P2: size: 1
 [09/13/21 04:23:38] I verbose P2: [0/0] in.infile:
-                      /home/pwwang/github/pipen/.pipen/mypipeline/p1/0/output/intermediate.txt
+                      /home/pwwang/github/pipen/.pipen/MyPipeline/p1/0/output/intermediate.txt
 [09/13/21 04:23:38] I verbose P2: [0/0] out.outfile:
-                      /home/pwwang/github/pipen/mypipeline_results/P2/result.txt
+                      /home/pwwang/github/pipen/MyPipeline-output/P2/result.txt
 [09/13/21 04:23:40] I verbose P2: Time elapsed: 00:00:02.074s
 [09/13/21 04:23:40] I main
 
@@ -118,7 +118,7 @@ if __name__ == "__main__":
 ```
 
 ```shell
-> cat ./mypipeline_results/P2/result.txt
+> cat ./MyPipeline-output/P2/result.txt
 1       1
 2       2
 3       3
@@ -141,9 +141,10 @@ Plugins make `pipen` even better.
 - [`pipen-annotate`][26]: Use docstring to annotate pipen processes
 - [`pipen-args`][19]: Command line argument parser for pipen
 - [`pipen-dry`][20]: Dry runner for pipen pipelines
+- [`pipen-log2file`][28]: Save running logs to file for pipen
+- [`pipen-board`][27]: Visualize configuration and running of pipen pipelines on the web
 - [`pipen-cli-init`][21]: A pipen CLI plugin to create a pipen project (pipeline)
 - [`pipen-cli-run`][22]: A pipen cli plugin to run a process or a pipeline
-- [`pipen-cli-config`][27]: UI wizard to generate configuration for pipen pipelines
 - [`pipen-cli-require`][24]: A pipen cli plugin check the requirements of a pipeline
 
 
@@ -173,4 +174,5 @@ Plugins make `pipen` even better.
 [24]: https://github.com/pwwang/pipen-cli-require
 [25]: https://github.com/pwwang/pipen-lock
 [26]: https://github.com/pwwang/pipen-annotate
-[27]: https://github.com/pwwang/pipen-cli-config
+[27]: https://github.com/pwwang/pipen-board
+[28]: https://github.com/pwwang/pipen-log2file

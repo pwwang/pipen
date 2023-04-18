@@ -24,7 +24,7 @@ When run the script the second time, you may see from the logs that jobs are cac
 [09/13/21 06:10:03] I main    ║  # procs          = 1                                                        ║
 [09/13/21 06:10:03] I main    ║  plugins          = ['main', 'verbose-0.0.1']                                ║
 [09/13/21 06:10:03] I main    ║  profile          = default                                                  ║
-[09/13/21 06:10:03] I main    ║  outdir           = pipen-0_results                                          ║
+[09/13/21 06:10:03] I main    ║  outdir           = Pipen-output                                          ║
 [09/13/21 06:10:03] I main    ║  cache            = True                                                     ║
 [09/13/21 06:10:03] I main    ║  dirsig           = 1                                                        ║
 [09/13/21 06:10:03] I main    ║  error_strategy   = ignore                                                   ║
@@ -50,7 +50,7 @@ When run the script the second time, you may see from the logs that jobs are cac
 [09/13/21 06:10:03] I main    AProcess: >>> [END]
 [09/13/21 06:10:03] I verbose AProcess: size: 1
 [09/13/21 06:10:03] I verbose AProcess: [0/0] in.infile: /tmp/pipen_example_caching.txt
-[09/13/21 06:10:03] I verbose AProcess: [0/0] out.outfile: /home/pwwang/github/pipen/pipen-0_results/AProcess/pipen_example_caching.txt
+[09/13/21 06:10:03] I verbose AProcess: [0/0] out.outfile: /home/pwwang/github/pipen/Pipen-output/AProcess/pipen_example_caching.txt
 [09/13/21 06:10:03] I main    AProcess: Cached jobs: 0
 [09/13/21 06:10:03] I verbose AProcess: Time elapsed: 00:00:00.040s
 [09/13/21 06:10:03] I main
@@ -75,7 +75,7 @@ To "de-cache" the jobs:
 [09/13/21 06:11:55] I main    ║  # procs          = 1                                                        ║
 [09/13/21 06:11:55] I main    ║  plugins          = ['main', 'verbose-0.0.1']                                ║
 [09/13/21 06:11:55] I main    ║  profile          = default                                                  ║
-[09/13/21 06:11:55] I main    ║  outdir           = pipen-0_results                                          ║
+[09/13/21 06:11:55] I main    ║  outdir           = Pipen-output                                          ║
 [09/13/21 06:11:55] I main    ║  cache            = 0                                                        ║
 [09/13/21 06:11:55] I main    ║  dirsig           = 1                                                        ║
 [09/13/21 06:11:55] I main    ║  error_strategy   = ignore                                                   ║
@@ -103,7 +103,7 @@ To "de-cache" the jobs:
 [09/13/21 06:11:55] D main    AProcess: [0/0] Not cached (proc.cache is False)
 [09/13/21 06:11:55] D main    AProcess: [0/0] Clearing previous output files.
 [09/13/21 06:11:55] I verbose AProcess: [0/0] in.infile: /tmp/pipen_example_caching.txt
-[09/13/21 06:11:55] I verbose AProcess: [0/0] out.outfile: /home/pwwang/github/pipen/pipen-0_results/AProcess/pipen_example_caching.txt
+[09/13/21 06:11:55] I verbose AProcess: [0/0] out.outfile: /home/pwwang/github/pipen/Pipen-output/AProcess/pipen_example_caching.txt
 [09/13/21 06:11:56] I verbose AProcess: Time elapsed: 00:00:01.060s
 [09/13/21 06:11:56] I main
 ```
@@ -124,7 +124,7 @@ To "de-cache" the jobs:
 [09/13/21 06:13:12] I main    ║  # procs          = 2                                                        ║
 [09/13/21 06:13:12] I main    ║  plugins          = ['main', 'verbose-0.0.1']                                ║
 [09/13/21 06:13:12] I main    ║  profile          = default                                                  ║
-[09/13/21 06:13:12] I main    ║  outdir           = pipen-0_results                                          ║
+[09/13/21 06:13:12] I main    ║  outdir           = Pipen-output                                             ║
 [09/13/21 06:13:12] I main    ║  cache            = True                                                     ║
 [09/13/21 06:13:12] I main    ║  dirsig           = 1                                                        ║
 [09/13/21 06:13:12] I main    ║  error_strategy   = ignore                                                   ║
@@ -162,13 +162,13 @@ To "de-cache" the jobs:
 [09/13/21 06:13:15] I verbose P2: size: 10
 [09/13/21 06:13:15] I verbose P2: [0/9] in.infile: /home/pwwang/github/pipen/.pipen/pipen-0/p1/0/output/intermediate.txt
 [09/13/21 06:13:15] I verbose P2: [0/9] in.nlines: 2
-[09/13/21 06:13:15] I verbose P2: [0/9] out.outfile: /home/pwwang/github/pipen/pipen-0_results/P2/0/result.txt
+[09/13/21 06:13:15] I verbose P2: [0/9] out.outfile: /home/pwwang/github/pipen/Pipen-output/P2/0/result.txt
 [09/13/21 06:13:17] I verbose P2: Time elapsed: 00:00:02.192s
 [09/13/21 06:13:17] I main
 ```
 
 ```shell
-❯ cat /home/pwwang/github/pipen/pipen-0_results/P2/0/result.txt
+❯ cat /home/pwwang/github/pipen/Pipen-output/P2/0/result.txt
 1       0_0
 2       0_1
 ```
@@ -189,7 +189,7 @@ To "de-cache" the jobs:
 [09/13/21 06:14:57] I main    ║  # procs          = 1                                                        ║
 [09/13/21 06:14:57] I main    ║  plugins          = ['main', 'verbose-0.0.1']                                ║
 [09/13/21 06:14:57] I main    ║  profile          = default                                                  ║
-[09/13/21 06:14:57] I main    ║  outdir           = pipen-0_results                                          ║
+[09/13/21 06:14:57] I main    ║  outdir           = Pipen-output                                             ║
 [09/13/21 06:14:57] I main    ║  cache            = True                                                     ║
 [09/13/21 06:14:57] I main    ║  dirsig           = 1                                                        ║
 [09/13/21 06:14:57] I main    ║  error_strategy   = ignore                                                   ║
@@ -216,7 +216,7 @@ To "de-cache" the jobs:
 [09/13/21 06:14:57] I verbose MakoProcess: size    : 1
 [09/13/21 06:14:57] I verbose MakoProcess: template: mako
 [09/13/21 06:14:57] I verbose MakoProcess: [0/0] in.a: 1
-[09/13/21 06:14:57] I verbose MakoProcess: [0/0] out.outfile: /home/pwwang/github/pipen/pipen-0_results/MakoProcess/1.txt
+[09/13/21 06:14:57] I verbose MakoProcess: [0/0] out.outfile: /home/pwwang/github/pipen/Pipen-output/MakoProcess/1.txt
 [09/13/21 06:14:58] I verbose MakoProcess: Time elapsed: 00:00:01.019s
 [09/13/21 06:14:58] I main
 ```
@@ -237,7 +237,7 @@ To "de-cache" the jobs:
 [09/13/21 06:16:09] I main    ║  # procs          = 1                                                        ║
 [09/13/21 06:16:09] I main    ║  plugins          = ['main', 'verbose-0.0.1']                                ║
 [09/13/21 06:16:09] I main    ║  profile          = default                                                  ║
-[09/13/21 06:16:09] I main    ║  outdir           = pipen-0_results                                          ║
+[09/13/21 06:16:09] I main    ║  outdir           = Pipen-output                                             ║
 [09/13/21 06:16:09] I main    ║  cache            = True                                                     ║
 [09/13/21 06:16:09] I main    ║  dirsig           = 1                                                        ║
 [09/13/21 06:16:09] I main    ║  error_strategy   = ignore                                                   ║
@@ -265,7 +265,7 @@ To "de-cache" the jobs:
 [09/13/21 06:16:10] I verbose MultiJobProc: cache: False
 [09/13/21 06:16:10] I verbose MultiJobProc: size : 10
 [09/13/21 06:16:10] I verbose MultiJobProc: [0/9] in.i: 0
-[09/13/21 06:16:10] I verbose MultiJobProc: [0/9] out.outfile: /home/pwwang/github/pipen/pipen-0_results/MultiJobProc/0/0.txt
+[09/13/21 06:16:10] I verbose MultiJobProc: [0/9] out.outfile: /home/pwwang/github/pipen/Pipen-output/MultiJobProc/0/0.txt
 [09/13/21 06:16:16] I verbose MultiJobProc: Time elapsed: 00:00:06.139s
 [09/13/21 06:16:16] I main
 ```
@@ -287,7 +287,7 @@ To "de-cache" the jobs:
 [09/13/21 06:18:18] I main    ║  # procs          = 1                                                        ║
 [09/13/21 06:18:18] I main    ║  plugins          = ['main', 'notifyplugin-0.0.0']                           ║
 [09/13/21 06:18:18] I main    ║  profile          = default                                                  ║
-[09/13/21 06:18:18] I main    ║  outdir           = pipen-0_results                                          ║
+[09/13/21 06:18:18] I main    ║  outdir           = Pipen-output                                             ║
 [09/13/21 06:18:18] I main    ║  cache            = True                                                     ║
 [09/13/21 06:18:18] I main    ║  dirsig           = 1                                                        ║
 [09/13/21 06:18:18] I main    ║  error_strategy   = ignore                                                   ║
@@ -338,7 +338,7 @@ To "de-cache" the jobs:
 [09/13/21 06:19:45] I main    ║  # procs          = 1                                                        ║
 [09/13/21 06:19:45] I main    ║  plugins          = ['main', 'verbose-0.0.1']                                ║
 [09/13/21 06:19:45] I main    ║  profile          = default                                                  ║
-[09/13/21 06:19:45] I main    ║  outdir           = pipen-0_results                                          ║
+[09/13/21 06:19:45] I main    ║  outdir           = Pipen-output                                             ║
 [09/13/21 06:19:46] I main    ║  cache            = True                                                     ║
 [09/13/21 06:19:46] I main    ║  dirsig           = 1                                                        ║
 [09/13/21 06:19:46] I main    ║  error_strategy   = ignore                                                   ║
@@ -366,7 +366,7 @@ To "de-cache" the jobs:
 [09/13/21 06:19:46] I verbose PythonScriptProc: size: 1
 [09/13/21 06:19:46] I verbose PythonScriptProc: [0/0] in.a: 1
 [09/13/21 06:19:46] I verbose PythonScriptProc: [0/0] out.outfile:
-                      /home/pwwang/github/pipen/pipen-0_results/PythonScriptProc/1.txt
+                      /home/pwwang/github/pipen/Pipen-output/PythonScriptProc/1.txt
 [09/13/21 06:19:48] I verbose PythonScriptProc: Time elapsed: 00:00:02.031s
 [09/13/21 06:19:48] I main
 ```
@@ -390,7 +390,7 @@ To "de-cache" the jobs:
 [09/13/21 06:20:38] I main    ║  # procs          = 1                                                        ║
 [09/13/21 06:20:38] I main    ║  plugins          = ['main', 'verbose-0.0.1']                                ║
 [09/13/21 06:20:38] I main    ║  profile          = default                                                  ║
-[09/13/21 06:20:38] I main    ║  outdir           = pipen-0_results                                          ║
+[09/13/21 06:20:38] I main    ║  outdir           = Pipen-output                                             ║
 [09/13/21 06:20:38] I main    ║  cache            = True                                                     ║
 [09/13/21 06:20:38] I main    ║  dirsig           = 1                                                        ║
 [09/13/21 06:20:38] I main    ║  error_strategy   = ignore                                                   ║
