@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.9.6
+
+- 🎨 Let plugins change and create workdir
+- 🔧 Change the default outdir suffix from `_results` to `-output`
+- 📖 Update README file and add new plugins
+
 ## 0.9.5
 
 - 🔧 Fix workdir in log
