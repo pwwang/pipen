@@ -104,7 +104,7 @@ class Pipen:
             desc or self.__class__.desc or desc_from_docstring(self.__class__)
         )
         self.outdir = Path(
-            outdir or self.__class__.outdir or f"./{self.name}_results"
+            outdir or self.__class__.outdir or f"./{self.name}-output"
         ).resolve()
         self.workdir: Path = None
         self.profile: str = "default"
