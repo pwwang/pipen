@@ -49,6 +49,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from rich.segment import Segment
     from rich.console import RenderableType
 
+    from .pipen import Pipen
     from .proc import Proc
 
 
@@ -152,7 +153,10 @@ def get_logger(
 logger = get_logger()
 
 
-def desc_from_docstring(obj: Any) -> str:
+def desc_from_docstring(
+    obj: Type[Pipen | Proc],
+    base: Type[Pipen | Proc],
+) -> str:
     """Get the description from docstring
 
     Only extract the summary.
@@ -163,8 +167,18 @@ def desc_from_docstring(obj: Any) -> str:
     Returns:
         The summary as desc
     """
-    if not obj.__doc__:  # pragma: no cover
-        return None
+    if not obj.__doc__:
+        # If the docstring is empty, use the base's docstring
+        # Get the base from mro
+        bases = [
+            cls
+            for cls in obj.__mro__
+            if is_subclass(cls, base) and cls != base and cls != obj
+        ]
+        if not bases:
+            return None
+
+        return desc_from_docstring(bases[0], base)
 
     started: bool = False
     out: List[str] = []

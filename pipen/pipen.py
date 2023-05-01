@@ -101,7 +101,9 @@ class Pipen:
             )
 
         self.desc = (
-            desc or self.__class__.desc or desc_from_docstring(self.__class__)
+            desc
+            or self.__class__.desc
+            or desc_from_docstring(self.__class__, Pipen)
         )
         self.outdir = Path(
             outdir or self.__class__.outdir or f"./{self.name}-output"
