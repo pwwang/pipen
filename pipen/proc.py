@@ -330,7 +330,7 @@ class Proc(ABC, metaclass=ProcMeta):
         # Compute the properties
         # otherwise, the property can be accessed directly from class vars
         if self.desc is None:
-            self.desc: str = desc_from_docstring(self.__class__)
+            self.desc: str = desc_from_docstring(self.__class__, Proc)
 
         if self.export is None:
             self.export = bool(not self.nexts)

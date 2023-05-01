@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.9.7
+
+- 🔧 Allow to inherit doc from base class for Pipen/Proc
+
 ## 0.9.6
 
 - 🎨 Let plugins change and create workdir

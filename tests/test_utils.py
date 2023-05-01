@@ -50,7 +50,10 @@ def test_get_mtime_dir():
 
 
 def test_desc_from_docstring():
-    def obj1():
+    class Base:
+        ...
+
+    class Obj1(Base):
         """
 
         abc
@@ -58,7 +61,7 @@ def test_desc_from_docstring():
 
         """
 
-    desc = desc_from_docstring(obj1)
+    desc = desc_from_docstring(Obj1, Base)
     assert desc == "abc def"
 
 
