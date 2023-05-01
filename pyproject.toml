@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "pipen"
-version = "0.9.6"
+version = "0.9.7"
 description = "A pipeline framework for python"
 authors = [ "pwwang <pwwang@pwwang.com>",]
 license = "MIT"
@@ -16,7 +16,7 @@ repository = "https://github.com/pwwang/pipen"
 generate-setup-file = true
 
 [tool.poetry.dependencies]
-python = "^3.8" # align with datar/pandas
+python = "^3.8"
 liquidpy = "^0.8"
 pandas = "^1.4"
 enlighten = "^1"
