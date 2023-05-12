@@ -241,7 +241,7 @@ class PipenMainPlugin:
     name = "core"
     # The priority is set to -1000 to make sure it is the first plugin
     # to be called
-    order = -1000
+    priority = -1000
 
     @plugin.impl
     def on_proc_shutdown(self, proc: Proc, sig: signal.Signals):
