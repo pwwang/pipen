@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.9.8
+
+- 🐛 Fix priority of core plugin
+
 ## 0.9.7
 
 - 🔧 Allow to inherit doc from base class for Pipen/Proc
