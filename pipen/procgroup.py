@@ -37,7 +37,7 @@ from __future__ import annotations
 
 from os import PathLike
 from functools import wraps, cached_property
-from typing import Callable, Type, List
+from typing import Any, Callable, Mapping, Type, List
 from abc import ABC, ABCMeta
 from diot import Diot
 
@@ -72,6 +72,7 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
     """
 
     name: str | None = None
+    __meta__: Mapping[str, Any] = {}
     DEFAULTS = Diot()
     PRESERVED = {
         "opts",
@@ -84,6 +85,10 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
         "PRESERVED",
         "_INST",
     }
+
+    def __init_subclass__(cls) -> None:
+        # Clear the meta
+        cls.__meta__ = {}
 
     def __init__(self, **opts) -> None:
         self.opts = Diot(self.__class__.DEFAULTS or {}) | (opts or {})

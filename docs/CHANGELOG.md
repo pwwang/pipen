@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.9.9
+
+- ⚡️ `utils.mark` and `get_marked` now work with `ProcGroup` and other classes
+
 ## 0.9.8
 
 - 🐛 Fix priority of core plugin
