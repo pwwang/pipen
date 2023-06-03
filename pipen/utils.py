@@ -538,10 +538,11 @@ def get_base(
     return get_base(bases[0], abc_base, value, value_getter)
 
 
-def mark(**kwargs) -> Callable[[Type[Proc]], Type[Proc]]:
-    """Mark a proc with given kwargs as metadata
+def mark(**kwargs) -> Callable[[type], type]:
+    """Mark a class (e.g. Proc) with given kwargs as metadata
 
-    These marks will not be inherited by the subclasses.
+    These marks will not be inherited by the subclasses if the class is
+    a subclass of `Proc` or `ProcGroup`.
 
     Args:
         **kwargs: The kwargs to mark the proc
@@ -549,26 +550,31 @@ def mark(**kwargs) -> Callable[[Type[Proc]], Type[Proc]]:
     Returns:
         The decorator
     """
+    def decorator(cls: type) -> type:
+        if not hasattr(cls, "__meta__"):
+            cls.__meta__ = {}
 
-    def decorator(proc: Type[Proc]) -> Type[Proc]:
-        proc.__meta__.update(kwargs)
-        return proc
+        cls.__meta__.update(kwargs)
+        return cls
 
     return decorator
 
 
-def get_marked(proc: Type[Proc], mark_name: str, default: Any = None) -> Any:
+def get_marked(cls: type, mark_name: str, default: Any = None) -> Any:
     """Get the marked value from a proc
 
     Args:
-        proc: The proc
+        cls: The proc
         mark_name: The mark name
         default: The default value if the mark is not found
 
     Returns:
         The marked value
     """
-    return proc.__meta__.get(mark_name, default)
+    if not hasattr(cls, "__meta__"):
+        return default
+
+    return cls.__meta__.get(mark_name, default)
 
 
 def is_valid_name(name: str) -> bool:

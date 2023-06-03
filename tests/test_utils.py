@@ -109,3 +109,20 @@ def test_mark():
 
     P3 = pipen.Proc.from_proc(P1)
     assert get_marked(P3, "a") is None
+
+    class X:
+        ...
+
+    assert get_marked(X, "a", None) is None
+
+    @mark(a=1)
+    class Y:
+        ...
+
+    assert get_marked(Y, "a") == 1
+
+    class Z(Y):
+        ...
+
+    # Marks inherited, as Y/Z are not Proc nor ProcGroup
+    assert get_marked(Z, "a", None) == 1
