@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.9.10
+
+- 🐛 Fix `utils.mark` and `get_marked` when `__meta__` is `None`
+
 ## 0.9.9
 
 - ⚡️ `utils.mark` and `get_marked` now work with `ProcGroup` and other classes
