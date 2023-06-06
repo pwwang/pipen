@@ -551,7 +551,7 @@ def mark(**kwargs) -> Callable[[type], type]:
         The decorator
     """
     def decorator(cls: type) -> type:
-        if not hasattr(cls, "__meta__"):
+        if not getattr(cls, "__meta__", None):
             cls.__meta__ = {}
 
         cls.__meta__.update(kwargs)
@@ -571,7 +571,7 @@ def get_marked(cls: type, mark_name: str, default: Any = None) -> Any:
     Returns:
         The marked value
     """
-    if not hasattr(cls, "__meta__"):
+    if not getattr(cls, "__meta__", None):
         return default
 
     return cls.__meta__.get(mark_name, default)
