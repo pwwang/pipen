@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.9.11
+
+- 🐛 Make sure .envs of Proc subclasses are Diot objects
+
 ## 0.9.10
 
 - 🐛 Fix `utils.mark` and `get_marked` when `__meta__` is `None`
