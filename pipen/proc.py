@@ -298,7 +298,8 @@ class Proc(ABC, metaclass=ProcMeta):
                 r"'^[\w.-]+$'"
             )
 
-        cls.envs = update_dict(parent.envs if parent else None, cls.envs)
+        envs = update_dict(parent.envs if parent else None, cls.envs)
+        cls.envs = envs if isinstance(envs, Diot) else Diot(envs or {})
         cls.plugin_opts = update_dict(
             parent.plugin_opts if parent else None,
             cls.plugin_opts,
