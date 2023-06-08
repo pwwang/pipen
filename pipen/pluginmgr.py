@@ -78,6 +78,18 @@ def on_proc_create(proc: Proc):
 
 
 @plugin.spec
+async def on_proc_init(proc: Proc):
+    """Called when a process is initialized.
+
+    Allows plugins to modify the process attributes after initialization, but
+    before the jobs are initialized.
+
+    Args:
+        proc: The Proc object
+    """
+
+
+@plugin.spec
 def on_proc_input_computed(proc: Proc):
     """Called after process input data is computed.
 

@@ -391,6 +391,7 @@ class Proc(ABC, metaclass=ProcMeta):
         # for the plugin hooks to access
         self.xqute.proc = self
 
+        await plugin.hooks.on_proc_init(self)
         await self._init_jobs()
         self.__class__.output_data = pandas.DataFrame(
             (job.output for job in self.jobs)
