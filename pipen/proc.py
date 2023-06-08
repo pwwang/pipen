@@ -326,7 +326,7 @@ class Proc(ABC, metaclass=ProcMeta):
         self.xqute = None
         self.__class__.workdir = Path(self.pipeline.workdir) / self.name
         # plugins can modify some default attributes
-        plugin.hooks.on_proc_init(self)
+        plugin.hooks.on_proc_create(self)
 
         # Compute the properties
         # otherwise, the property can be accessed directly from class vars
