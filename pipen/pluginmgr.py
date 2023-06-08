@@ -67,10 +67,22 @@ async def on_complete(pipen: Pipen, succeeded: bool):
 
 
 @plugin.spec
-def on_proc_init(proc: Proc):
-    """Called before proc get instantiated.
+def on_proc_create(proc: Proc):
+    """Called Proc constructor when a process is created.
 
     Enables plugins to modify the default attributes of processes
+
+    Args:
+        proc: The Proc object
+    """
+
+
+@plugin.spec
+async def on_proc_init(proc: Proc):
+    """Called when a process is initialized.
+
+    Allows plugins to modify the process attributes after initialization, but
+    before the jobs are initialized.
 
     Args:
         proc: The Proc object

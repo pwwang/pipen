@@ -326,7 +326,7 @@ class Proc(ABC, metaclass=ProcMeta):
         self.xqute = None
         self.__class__.workdir = Path(self.pipeline.workdir) / self.name
         # plugins can modify some default attributes
-        plugin.hooks.on_proc_init(self)
+        plugin.hooks.on_proc_create(self)
 
         # Compute the properties
         # otherwise, the property can be accessed directly from class vars
@@ -391,6 +391,7 @@ class Proc(ABC, metaclass=ProcMeta):
         # for the plugin hooks to access
         self.xqute.proc = self
 
+        await plugin.hooks.on_proc_init(self)
         await self._init_jobs()
         self.__class__.output_data = pandas.DataFrame(
             (job.output for job in self.jobs)

@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.10.0
+
+- 💥 Change hook `on_proc_init` to `on_proc_create`
+- ✨ Add `on_proc_init` hook back but after the process initialized insteadl of before
+- 👷 Add python 3.11 to CI
+- 📝 Update documentation about updated hooks⏎
+
 ## 0.9.11
 
 - 🐛 Make sure .envs of Proc subclasses are Diot objects

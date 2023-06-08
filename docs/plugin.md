@@ -39,7 +39,7 @@ See [`simplug`][1] for more details.
 
 ### Process-level hooks
 
-- `on_proc_init(proc)` (sync)
+- `on_proc_create(proc)` (sync)
 
     Called before proc get instantiated.
     Enables plugins to modify the default attributes of processes
@@ -47,6 +47,12 @@ See [`simplug`][1] for more details.
 - `on_proc_input_computed(proc)` (sync)
 
     Called after process input data is computed.
+
+- `on_proc_init(proc)` (async)
+
+    When process object is initialized.
+    Allows plugins to modify the process attributes after initialization, but
+    before the jobs are initialized.
 
 - `on_proc_start(proc)` (async)
 
