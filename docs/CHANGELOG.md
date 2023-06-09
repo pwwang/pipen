@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.10.1
+
+- ✨ Add `on_proc_script_computed` hook
+
 ## 0.10.0
 
 - 💥 Change hook `on_proc_init` to `on_proc_create`

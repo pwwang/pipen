@@ -48,6 +48,13 @@ See [`simplug`][1] for more details.
 
     Called after process input data is computed.
 
+- `on_proc_script_computed(proc)` (sync)
+
+    Called after process script is computed.
+
+    The script is computed as a string that is about to compiled into a
+    template. You can modify the script here.
+
 - `on_proc_init(proc)` (async)
 
     When process object is initialized.

@@ -99,6 +99,18 @@ def on_proc_input_computed(proc: Proc):
 
 
 @plugin.spec
+def on_proc_script_computed(proc: Proc):
+    """Called after process script is computed.
+
+    The script is computed as a string that is about to compiled into a
+    template.
+
+    Args:
+        proc: The Proc object
+    """
+
+
+@plugin.spec
 async def on_proc_start(proc: Proc):
     """When a process is starting
 
