@@ -655,11 +655,12 @@ class Proc(ABC, metaclass=ProcMeta):
                 )
             script = script_file.read_text()
 
-        script = ignore_firstline_dedent(script)
+        self.script = ignore_firstline_dedent(script)
         if not self.lang:
-            self.lang = get_shebang(script)
+            self.lang = get_shebang(self.script)
 
-        return self.template(script, **self.template_opts)  # type: ignore
+        plugin.hooks.on_proc_script_computed(self)
+        return self.template(self.script, **self.template_opts)  # type: ignore
 
     def _log_info(self):
         """Log some basic information of the process"""
