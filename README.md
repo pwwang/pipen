@@ -58,63 +58,62 @@ if __name__ == "__main__":
 ```
 
 ```log
-[09/13/21 04:23:37] I main                    _____________________________________   __
-[09/13/21 04:23:37] I main                    ___  __ \___  _/__  __ \__  ____/__  | / /
-[09/13/21 04:23:37] I main                    __  /_/ /__  / __  /_/ /_  __/  __   |/ /
-[09/13/21 04:23:37] I main                    _  ____/__/ /  _  ____/_  /___  _  /|  /
-[09/13/21 04:23:37] I main                    /_/     /___/  /_/     /_____/  /_/ |_/
-[09/13/21 04:23:37] I main
-[09/13/21 04:23:37] I main                                 version: 0.9.0
-[09/13/21 04:23:37] I main
-[09/13/21 04:23:37] I main    ╭═════════════════════════════ MYPIPELINE ══════════════════════════════╮
-[09/13/21 04:23:37] I main    ║  # procs          = 2                                                 ║
-[09/13/21 04:23:37] I main    ║  plugins          = ['main', 'verbose-0.0.1']                         ║
-[09/13/21 04:23:37] I main    ║  profile          = default                                           ║
-[09/13/21 04:23:37] I main    ║  outdir           = MyPipeline-output                                 ║
-[09/13/21 04:23:37] I main    ║  cache            = True                                              ║
-[09/13/21 04:23:37] I main    ║  dirsig           = 1                                                 ║
-[09/13/21 04:23:37] I main    ║  error_strategy   = ignore                                            ║
-[09/13/21 04:23:37] I main    ║  forks            = 1                                                 ║
-[09/13/21 04:23:37] I main    ║  lang             = bash                                              ║
-[09/13/21 04:23:37] I main    ║  loglevel         = info                                              ║
-[09/13/21 04:23:37] I main    ║  num_retries      = 3                                                 ║
-[09/13/21 04:23:37] I main    ║  plugin_opts      = {}                                                ║
-[09/13/21 04:23:37] I main    ║  plugins          = None                                              ║
-[09/13/21 04:23:37] I main    ║  scheduler        = local                                             ║
-[09/13/21 04:23:37] I main    ║  scheduler_opts   = {}                                                ║
-[09/13/21 04:23:37] I main    ║  submission_batch = 8                                                 ║
-[09/13/21 04:23:37] I main    ║  template         = liquid                                            ║
-[09/13/21 04:23:37] I main    ║  template_opts    = {}                                                ║
-[09/13/21 04:23:37] I main    ║  workdir          = ./.pipen                                          ║
-[09/13/21 04:23:37] I main    ╰═══════════════════════════════════════════════════════════════════════╯
-[09/13/21 04:23:37] I main
-[09/13/21 04:23:37] I main    ╭───────────────────────────────── P1 ──────────────────────────────────╮
-[09/13/21 04:23:37] I main    │ Sort input file                                                       │
-[09/13/21 04:23:37] I main    ╰───────────────────────────────────────────────────────────────────────╯
-[09/13/21 04:23:37] I main    P1: Workdir: '.pipen/MyPipeline/p1'
-[09/13/21 04:23:37] I main    P1: <<< [START]
-[09/13/21 04:23:37] I main    P1: >>> ['P2']
-[09/13/21 04:23:37] I verbose P1: size: 1
-[09/13/21 04:23:37] I verbose P1: [0/0] in.infile: /tmp/data.txt
-[09/13/21 04:23:37] I verbose P1: [0/0] out.outfile:
-                      /home/pwwang/github/pipen/.pipen/MyPipeline/p1/0/output/intermediate.txt
-[09/13/21 04:23:38] I verbose P1: Time elapsed: 00:00:01.039s
-[09/13/21 04:23:38] I main
-[09/13/21 04:23:38] I main    ╭═════════════════════════════════ P2 ══════════════════════════════════╮
-[09/13/21 04:23:38] I main    ║ Paste line number                                                     ║
-[09/13/21 04:23:38] I main    ╰═══════════════════════════════════════════════════════════════════════╯
-[09/13/21 04:23:38] I main    P2: Workdir: '.pipen/MyPipeline/p2'
-[09/13/21 04:23:38] I main    P2: <<< ['P1']
-[09/13/21 04:23:38] I main    P2: >>> [END]
-[09/13/21 04:23:38] I verbose P2: size: 1
-[09/13/21 04:23:38] I verbose P2: [0/0] in.infile:
-                      /home/pwwang/github/pipen/.pipen/MyPipeline/p1/0/output/intermediate.txt
-[09/13/21 04:23:38] I verbose P2: [0/0] out.outfile:
-                      /home/pwwang/github/pipen/MyPipeline-output/P2/result.txt
-[09/13/21 04:23:40] I verbose P2: Time elapsed: 00:00:02.074s
-[09/13/21 04:23:40] I main
+06-09 23:15:29 I core                  _____________________________________   __
+06-09 23:15:29 I core                  ___  __ \___  _/__  __ \__  ____/__  | / /
+06-09 23:15:29 I core                  __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+06-09 23:15:29 I core                  _  ____/__/ /  _  ____/_  /___  _  /|  /
+06-09 23:15:29 I core                  /_/     /___/  /_/     /_____/  /_/ |_/
+06-09 23:15:29 I core
+06-09 23:15:29 I core                              version: 0.10.2
+06-09 23:15:29 I core
+06-09 23:15:29 I core    ╔══════════════════════════════════════════════════════════════════╗
+06-09 23:15:29 I core    ║                            MYPIPELINE                            ║
+06-09 23:15:29 I core    ╚══════════════════════════════════════════════════════════════════╝
+06-09 23:15:29 I core    plugins         : verbose v0.7.0
+06-09 23:15:29 I core    # procs         : 2
+06-09 23:15:29 I core    profile         : default
+06-09 23:15:29 I core    outdir          : /home/pwwang/github/pipen/MyPipeline-output
+06-09 23:15:29 I core    cache           : True
+06-09 23:15:29 I core    dirsig          : 1
+06-09 23:15:29 I core    error_strategy  : ignore
+06-09 23:15:29 I core    forks           : 1
+06-09 23:15:29 I core    lang            : bash
+06-09 23:15:29 I core    loglevel        : info
+06-09 23:15:29 I core    num_retries     : 3
+06-09 23:15:29 I core    scheduler       : local
+06-09 23:15:29 I core    submission_batch: 8
+06-09 23:15:29 I core    template        : liquid
+06-09 23:15:29 I core    workdir         : /home/pwwang/github/pipen/.pipen/MyPipeline
+06-09 23:15:29 I core    plugin_opts     :
+06-09 23:15:29 I core    template_opts   :
+06-09 23:15:31 I core
+06-09 23:15:31 I core    ╭─────────────────────────────── P1 ───────────────────────────────╮
+06-09 23:15:31 I core    │ Sort input file                                                  │
+06-09 23:15:31 I core    ╰──────────────────────────────────────────────────────────────────╯
+06-09 23:15:31 I core    P1: Workdir: '/home/pwwang/github/pipen/.pipen/MyPipeline/P1'
+06-09 23:15:31 I core    P1: <<< [START]
+06-09 23:15:31 I core    P1: >>> ['P2']
+06-09 23:15:31 I verbose P1: size: 1
+06-09 23:15:31 I verbose P1: [0/0] in.infile: /tmp/data.txt
+06-09 23:15:31 I verbose P1: [0/0] out.outfile:
+                 /home/pwwang/github/pipen/.pipen/MyPipeline/P1/0/output/intermediate.txt
+06-09 23:15:33 I verbose P1: Time elapsed: 00:00:02.018s
+06-09 23:15:33 I core
+06-09 23:15:33 I core    ╭═══════════════════════════════ P2 ═══════════════════════════════╮
+06-09 23:15:33 I core    ║ Paste line number                                                ║
+06-09 23:15:33 I core    ╰══════════════════════════════════════════════════════════════════╯
+06-09 23:15:33 I core    P2: Workdir: '/home/pwwang/github/pipen/.pipen/MyPipeline/P2'
+06-09 23:15:33 I core    P2: <<< ['P1']
+06-09 23:15:33 I core    P2: >>> [END]
+06-09 23:15:33 I verbose P2: size: 1
+06-09 23:15:33 I verbose P2: [0/0] in.infile:
+                 /home/pwwang/github/pipen/.pipen/MyPipeline/P1/0/output/intermediate.txt
+06-09 23:15:33 I verbose P2: [0/0] out.outfile:
+                 /home/pwwang/github/pipen/MyPipeline-output/P2/result.txt
+06-09 23:15:35 I verbose P2: Time elapsed: 00:00:02.009s
+06-09 23:15:35 I core
 
-                PIPEN-0: 100%|████████████████████████████████████████| 2/2 [00:04<00:00, 0.56 procs/s]
+              MYPIPELINE: 100%|█████████████████████████████| 2/2 [00:06<00:00, 0.36 procs/s]
 ```
 
 ```shell
@@ -143,6 +142,7 @@ Plugins make `pipen` even better.
 - [`pipen-dry`][20]: Dry runner for pipen pipelines
 - [`pipen-log2file`][28]: Save running logs to file for pipen
 - [`pipen-board`][27]: Visualize configuration and running of pipen pipelines on the web
+- [`pipen-runinfo`][29]: Save running information to file for pipen
 - [`pipen-cli-init`][21]: A pipen CLI plugin to create a pipen project (pipeline)
 - [`pipen-cli-run`][22]: A pipen cli plugin to run a process or a pipeline
 - [`pipen-cli-require`][24]: A pipen cli plugin check the requirements of a pipeline
@@ -176,3 +176,4 @@ Plugins make `pipen` even better.
 [26]: https://github.com/pwwang/pipen-annotate
 [27]: https://github.com/pwwang/pipen-board
 [28]: https://github.com/pwwang/pipen-log2file
+[29]: https://github.com/pwwang/pipen-runinfo
