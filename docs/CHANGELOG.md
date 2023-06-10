@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.10.2
+
+- 🐛 Fix exception handling in ProcPBar class update method
+
 ## 0.10.1
 
 - ✨ Add `on_proc_script_computed` hook
