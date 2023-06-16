@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.10.3
+
+- ⬆️ Bump xqute to 0.2.2
+
 ## 0.10.2
 
 - 🐛 Fix exception handling in ProcPBar class update method
