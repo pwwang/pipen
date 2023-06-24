@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.10.4
+
+- ⬆️ Bump xqute to 0.2.3
+
 ## 0.10.3
 
 - ⬆️ Bump xqute to 0.2.2
