@@ -391,7 +391,8 @@ class Pipen:
             )
 
         # build proc relationships
-        self.procs = self.starts[:]
+        # Allow starts to be set as a tuple
+        self.procs = list(self.starts)
         nexts = set(
             sum((proc.nexts or [] for proc in self.procs), [])  # type: ignore
         )
