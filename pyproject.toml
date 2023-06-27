@@ -26,7 +26,8 @@ xqute = "^0.2.4"
 # rich = "^12"
 # diot = "^0.1"
 # simplug = "^0.0"
-## including rtoml
+rtoml = "^0.8"
+# May not be rtoml
 python-simpleconf = {version = "^0.6", extras = ["toml"]}
 pipda = "^0.12"
 varname = "^0.11"
