@@ -87,18 +87,18 @@ trio = ["trio (<0.22)"]
 
 [[package]]
 name = "argx"
-version = "0.2.8"
+version = "0.2.9"
 description = "Super-charged argparse for python"
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "argx-0.2.8-py3-none-any.whl", hash = "sha256:0d7f5f8cc73f4bcbdc7b9598ebd8c1c80b8c85824d56a731b32280d72b333884"},
-    {file = "argx-0.2.8.tar.gz", hash = "sha256:067b2dddb1bf03b80acf905525869f7225f1b9007c48db14f73cc918c982d9a0"},
+    {file = "argx-0.2.9-py3-none-any.whl", hash = "sha256:33c6b2d4c9da42f429ba78dc38b1ba1c95e19fdf41e1adfb36d907734ed45f5a"},
+    {file = "argx-0.2.9.tar.gz", hash = "sha256:a018ab7c997e331b32523bfb87429c3fa93a7d26a4204f84135659ee1dae7e92"},
 ]
 
 [package.dependencies]
-python-simpleconf = ">=0.5.7,<0.6.0"
+python-simpleconf = ">=0.6,<0.7"
 
 [[package]]
 name = "blessed"
@@ -241,23 +241,24 @@ toml = ["tomli"]
 
 [[package]]
 name = "datar"
-version = "0.12.1"
+version = "0.12.2"
 description = "A Grammar of Data Manipulation in python"
 category = "dev"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "datar-0.12.1-py3-none-any.whl", hash = "sha256:d34ee67ab05dfa35aad1fb65b744538536b4d90d400360f57a84029911e88336"},
-    {file = "datar-0.12.1.tar.gz", hash = "sha256:d83010f0202648f98ba5584543c23e78b2a34787768e7e32ecc0d9fe832781ae"},
+    {file = "datar-0.12.2-py3-none-any.whl", hash = "sha256:26a1024bdbd08c9bb69b0d065e417aabcafb33a5cc7c795e156b1b7f12e5ef47"},
+    {file = "datar-0.12.2.tar.gz", hash = "sha256:bc8fe40936a3604afe9e6a8766db6c24d726a34c9ac4701aab0694c0fc50a475"},
 ]
 
 [package.dependencies]
 datar-pandas = {version = ">=0.3,<0.4", optional = true, markers = "extra == \"pandas\""}
 pipda = ">=0.12,<0.13"
-python-simpleconf = {version = ">=0.5,<0.6", extras = ["toml"]}
+python-simpleconf = {version = ">=0.6,<0.7", extras = ["toml"]}
 simplug = ">=0.3,<0.4"
 
 [package.extras]
+arrow = ["datar-arrow (>=0.0,<0.1)"]
 numpy = ["datar-numpy (>=0.2,<0.3)"]
 pandas = ["datar-pandas (>=0.3,<0.4)"]
 
@@ -296,14 +297,14 @@ pdtypes = ">=0.0.4,<0.0.5"
 
 [[package]]
 name = "diot"
-version = "0.2.0"
+version = "0.2.1"
 description = "Python dictionary with dot notation."
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "diot-0.2.0-py3-none-any.whl", hash = "sha256:9e869127cd798694f5ae7b193ec78fd5f329395b2763f823d50d12c32211ee63"},
-    {file = "diot-0.2.0.tar.gz", hash = "sha256:cbf7f76a77b7dced9935ca72785bc5d06d5f645f363feb231aa5cb2d74427880"},
+    {file = "diot-0.2.1-py3-none-any.whl", hash = "sha256:d37bf5df36a257386e4836ab33f393f7ee945f262587b8c5b88ad86e1d3eb261"},
+    {file = "diot-0.2.1.tar.gz", hash = "sha256:e8767e712f29886d7dcff1866a383a2ed9eeb9699ae58486ec58f3e6247afa06"},
 ]
 
 [package.dependencies]
@@ -568,40 +569,40 @@ files = [
 
 [[package]]
 name = "numpy"
-version = "1.24.3"
+version = "1.24.4"
 description = "Fundamental package for array computing in Python"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "numpy-1.24.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:3c1104d3c036fb81ab923f507536daedc718d0ad5a8707c6061cdfd6d184e570"},
-    {file = "numpy-1.24.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:202de8f38fc4a45a3eea4b63e2f376e5f2dc64ef0fa692838e31a808520efaf7"},
-    {file = "numpy-1.24.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:8535303847b89aa6b0f00aa1dc62867b5a32923e4d1681a35b5eef2d9591a463"},
-    {file = "numpy-1.24.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2d926b52ba1367f9acb76b0df6ed21f0b16a1ad87c6720a1121674e5cf63e2b6"},
-    {file = "numpy-1.24.3-cp310-cp310-win32.whl", hash = "sha256:f21c442fdd2805e91799fbe044a7b999b8571bb0ab0f7850d0cb9641a687092b"},
-    {file = "numpy-1.24.3-cp310-cp310-win_amd64.whl", hash = "sha256:ab5f23af8c16022663a652d3b25dcdc272ac3f83c3af4c02eb8b824e6b3ab9d7"},
-    {file = "numpy-1.24.3-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:9a7721ec204d3a237225db3e194c25268faf92e19338a35f3a224469cb6039a3"},
-    {file = "numpy-1.24.3-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:d6cc757de514c00b24ae8cf5c876af2a7c3df189028d68c0cb4eaa9cd5afc2bf"},
-    {file = "numpy-1.24.3-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:76e3f4e85fc5d4fd311f6e9b794d0c00e7002ec122be271f2019d63376f1d385"},
-    {file = "numpy-1.24.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a1d3c026f57ceaad42f8231305d4653d5f05dc6332a730ae5c0bea3513de0950"},
-    {file = "numpy-1.24.3-cp311-cp311-win32.whl", hash = "sha256:c91c4afd8abc3908e00a44b2672718905b8611503f7ff87390cc0ac3423fb096"},
-    {file = "numpy-1.24.3-cp311-cp311-win_amd64.whl", hash = "sha256:5342cf6aad47943286afa6f1609cad9b4266a05e7f2ec408e2cf7aea7ff69d80"},
-    {file = "numpy-1.24.3-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:7776ea65423ca6a15255ba1872d82d207bd1e09f6d0894ee4a64678dd2204078"},
-    {file = "numpy-1.24.3-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:ae8d0be48d1b6ed82588934aaaa179875e7dc4f3d84da18d7eae6eb3f06c242c"},
-    {file = "numpy-1.24.3-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ecde0f8adef7dfdec993fd54b0f78183051b6580f606111a6d789cd14c61ea0c"},
-    {file = "numpy-1.24.3-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4749e053a29364d3452c034827102ee100986903263e89884922ef01a0a6fd2f"},
-    {file = "numpy-1.24.3-cp38-cp38-win32.whl", hash = "sha256:d933fabd8f6a319e8530d0de4fcc2e6a61917e0b0c271fded460032db42a0fe4"},
-    {file = "numpy-1.24.3-cp38-cp38-win_amd64.whl", hash = "sha256:56e48aec79ae238f6e4395886b5eaed058abb7231fb3361ddd7bfdf4eed54289"},
-    {file = "numpy-1.24.3-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:4719d5aefb5189f50887773699eaf94e7d1e02bf36c1a9d353d9f46703758ca4"},
-    {file = "numpy-1.24.3-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:0ec87a7084caa559c36e0a2309e4ecb1baa03b687201d0a847c8b0ed476a7187"},
-    {file = "numpy-1.24.3-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ea8282b9bcfe2b5e7d491d0bf7f3e2da29700cec05b49e64d6246923329f2b02"},
-    {file = "numpy-1.24.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:210461d87fb02a84ef243cac5e814aad2b7f4be953b32cb53327bb49fd77fbb4"},
-    {file = "numpy-1.24.3-cp39-cp39-win32.whl", hash = "sha256:784c6da1a07818491b0ffd63c6bbe5a33deaa0e25a20e1b3ea20cf0e43f8046c"},
-    {file = "numpy-1.24.3-cp39-cp39-win_amd64.whl", hash = "sha256:d5036197ecae68d7f491fcdb4df90082b0d4960ca6599ba2659957aafced7c17"},
-    {file = "numpy-1.24.3-pp38-pypy38_pp73-macosx_10_9_x86_64.whl", hash = "sha256:352ee00c7f8387b44d19f4cada524586f07379c0d49270f87233983bc5087ca0"},
-    {file = "numpy-1.24.3-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1a7d6acc2e7524c9955e5c903160aa4ea083736fde7e91276b0e5d98e6332812"},
-    {file = "numpy-1.24.3-pp38-pypy38_pp73-win_amd64.whl", hash = "sha256:35400e6a8d102fd07c71ed7dcadd9eb62ee9a6e84ec159bd48c28235bbb0f8e4"},
-    {file = "numpy-1.24.3.tar.gz", hash = "sha256:ab344f1bf21f140adab8e47fdbc7c35a477dc01408791f8ba00d018dd0bc5155"},
+    {file = "numpy-1.24.4-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:c0bfb52d2169d58c1cdb8cc1f16989101639b34c7d3ce60ed70b19c63eba0b64"},
+    {file = "numpy-1.24.4-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:ed094d4f0c177b1b8e7aa9cba7d6ceed51c0e569a5318ac0ca9a090680a6a1b1"},
+    {file = "numpy-1.24.4-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:79fc682a374c4a8ed08b331bef9c5f582585d1048fa6d80bc6c35bc384eee9b4"},
+    {file = "numpy-1.24.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7ffe43c74893dbf38c2b0a1f5428760a1a9c98285553c89e12d70a96a7f3a4d6"},
+    {file = "numpy-1.24.4-cp310-cp310-win32.whl", hash = "sha256:4c21decb6ea94057331e111a5bed9a79d335658c27ce2adb580fb4d54f2ad9bc"},
+    {file = "numpy-1.24.4-cp310-cp310-win_amd64.whl", hash = "sha256:b4bea75e47d9586d31e892a7401f76e909712a0fd510f58f5337bea9572c571e"},
+    {file = "numpy-1.24.4-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:f136bab9c2cfd8da131132c2cf6cc27331dd6fae65f95f69dcd4ae3c3639c810"},
+    {file = "numpy-1.24.4-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:e2926dac25b313635e4d6cf4dc4e51c8c0ebfed60b801c799ffc4c32bf3d1254"},
+    {file = "numpy-1.24.4-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:222e40d0e2548690405b0b3c7b21d1169117391c2e82c378467ef9ab4c8f0da7"},
+    {file = "numpy-1.24.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7215847ce88a85ce39baf9e89070cb860c98fdddacbaa6c0da3ffb31b3350bd5"},
+    {file = "numpy-1.24.4-cp311-cp311-win32.whl", hash = "sha256:4979217d7de511a8d57f4b4b5b2b965f707768440c17cb70fbf254c4b225238d"},
+    {file = "numpy-1.24.4-cp311-cp311-win_amd64.whl", hash = "sha256:b7b1fc9864d7d39e28f41d089bfd6353cb5f27ecd9905348c24187a768c79694"},
+    {file = "numpy-1.24.4-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:1452241c290f3e2a312c137a9999cdbf63f78864d63c79039bda65ee86943f61"},
+    {file = "numpy-1.24.4-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:04640dab83f7c6c85abf9cd729c5b65f1ebd0ccf9de90b270cd61935eef0197f"},
+    {file = "numpy-1.24.4-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a5425b114831d1e77e4b5d812b69d11d962e104095a5b9c3b641a218abcc050e"},
+    {file = "numpy-1.24.4-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:dd80e219fd4c71fc3699fc1dadac5dcf4fd882bfc6f7ec53d30fa197b8ee22dc"},
+    {file = "numpy-1.24.4-cp38-cp38-win32.whl", hash = "sha256:4602244f345453db537be5314d3983dbf5834a9701b7723ec28923e2889e0bb2"},
+    {file = "numpy-1.24.4-cp38-cp38-win_amd64.whl", hash = "sha256:692f2e0f55794943c5bfff12b3f56f99af76f902fc47487bdfe97856de51a706"},
+    {file = "numpy-1.24.4-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:2541312fbf09977f3b3ad449c4e5f4bb55d0dbf79226d7724211acc905049400"},
+    {file = "numpy-1.24.4-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:9667575fb6d13c95f1b36aca12c5ee3356bf001b714fc354eb5465ce1609e62f"},
+    {file = "numpy-1.24.4-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f3a86ed21e4f87050382c7bc96571755193c4c1392490744ac73d660e8f564a9"},
+    {file = "numpy-1.24.4-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d11efb4dbecbdf22508d55e48d9c8384db795e1b7b51ea735289ff96613ff74d"},
+    {file = "numpy-1.24.4-cp39-cp39-win32.whl", hash = "sha256:6620c0acd41dbcb368610bb2f4d83145674040025e5536954782467100aa8835"},
+    {file = "numpy-1.24.4-cp39-cp39-win_amd64.whl", hash = "sha256:befe2bf740fd8373cf56149a5c23a0f601e82869598d41f8e188a0e9869926f8"},
+    {file = "numpy-1.24.4-pp38-pypy38_pp73-macosx_10_9_x86_64.whl", hash = "sha256:31f13e25b4e304632a4619d0e0777662c2ffea99fcae2029556b17d8ff958aef"},
+    {file = "numpy-1.24.4-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:95f7ac6540e95bc440ad77f56e520da5bf877f87dca58bd095288dce8940532a"},
+    {file = "numpy-1.24.4-pp38-pypy38_pp73-win_amd64.whl", hash = "sha256:e98f220aa76ca2a977fe435f5b04d7b3470c0a2e6312907b37ba6068f26787f2"},
+    {file = "numpy-1.24.4.tar.gz", hash = "sha256:80f5e3a4e498641401868df4208b74581206afbee7cf7b8329daae82676d9463"},
 ]
 
 [[package]]
@@ -868,25 +869,26 @@ six = ">=1.5"
 
 [[package]]
 name = "python-simpleconf"
-version = "0.5.8"
+version = "0.6.0"
 description = "Simple configuration management with python."
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "python_simpleconf-0.5.8-py3-none-any.whl", hash = "sha256:5523b72087dba6ed981d67850f2ff9eefef582e11ff08aea3a652e6c92545bd4"},
-    {file = "python_simpleconf-0.5.8.tar.gz", hash = "sha256:0bfff64450ce5965a31ca73e8e996ee1a5d7168c7c43b56d3017564fd7b4c59f"},
+    {file = "python_simpleconf-0.6.0-py3-none-any.whl", hash = "sha256:40e73fbd60d84ff45d22fcd8f7e2ade5fcca65559f8d9865e7750d8bcfadd209"},
+    {file = "python_simpleconf-0.6.0.tar.gz", hash = "sha256:06c29e0c08e22a41024028c46cd845bdfe3cbba402730fa65fb007fa89315801"},
 ]
 
 [package.dependencies]
-diot = ">=0.2,<0.3"
-rtoml = {version = ">=0.8,<0.9", optional = true, markers = "extra == \"toml\" or extra == \"all\""}
+diot = ">=0.2.1,<0.3.0"
+rtoml = {version = ">=0.8,<0.9", optional = true, markers = "python_version < \"3.11\" and sys_platform == \"linux\" and extra == \"toml\" or python_version < \"3.11\" and sys_platform == \"linux\" and extra == \"all\""}
+tomli = {version = ">=2.0,<3.0", optional = true, markers = "sys_platform != \"linux\" and python_version < \"3.11\" and extra == \"toml\" or sys_platform != \"linux\" and python_version < \"3.11\" and extra == \"all\""}
 
 [package.extras]
-all = ["iniconfig (>=2.0,<3.0)", "python-dotenv (>=0.21,<0.22)", "pyyaml (>=6,<7)", "rtoml (>=0.8,<0.9)"]
+all = ["iniconfig (>=2.0,<3.0)", "python-dotenv (>=0.21,<0.22)", "pyyaml (>=6,<7)", "rtoml (>=0.8,<0.9)", "tomli (>=2.0,<3.0)"]
 env = ["python-dotenv (>=0.21,<0.22)"]
 ini = ["iniconfig (>=2.0,<3.0)"]
-toml = ["rtoml (>=0.8,<0.9)"]
+toml = ["rtoml (>=0.8,<0.9)", "tomli (>=2.0,<3.0)"]
 yaml = ["pyyaml (>=6,<7)"]
 
 [[package]]
@@ -969,14 +971,14 @@ files = [
 
 [[package]]
 name = "simplug"
-version = "0.3.1"
+version = "0.3.2"
 description = "A simple plugin system for python with async hooks supported"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "simplug-0.3.1-py3-none-any.whl", hash = "sha256:3cedd433bd91520f42192d2bb3f34032880c78e100b656b847b5994ae379ea84"},
-    {file = "simplug-0.3.1.tar.gz", hash = "sha256:41d2ce5bdf135554ed18b82a080258a0375587b648087b53bda257aee0944d94"},
+    {file = "simplug-0.3.2-py3-none-any.whl", hash = "sha256:8897b7bb41c0527bc58cdad11d19d6b4bc9efe4e5076363eb25b514e6f83beaa"},
+    {file = "simplug-0.3.2.tar.gz", hash = "sha256:a940503e3ce4bb8f381403383eb47ba1b38fc2360c66f6c3b930da03bcb841c0"},
 ]
 
 [package.dependencies]
@@ -1010,7 +1012,7 @@ files = [
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1107,14 +1109,14 @@ files = [
 
 [[package]]
 name = "xqute"
-version = "0.2.3"
+version = "0.2.4"
 description = "A job management system for python"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "xqute-0.2.3-py3-none-any.whl", hash = "sha256:7904f68fc14676512301ea28d3d3aeb6b3690a2572ea1cce38c9200a5761b76f"},
-    {file = "xqute-0.2.3.tar.gz", hash = "sha256:e6910fc371c6d23895d2c61aa8bbf61016d4d0755a269065fe97fe5800c5b52d"},
+    {file = "xqute-0.2.4-py3-none-any.whl", hash = "sha256:074ff02b0ff3ea0231deebb31db43f79bd120afe81fc2e64e955e0c66c3a2167"},
+    {file = "xqute-0.2.4.tar.gz", hash = "sha256:a226641f97455e25781bb1a1b549a79a0082cb3da90625c1d69b14e21afc8941"},
 ]
 
 [package.dependencies]
@@ -1130,4 +1132,4 @@ uvloop = ">=0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "fb39f626f03b1fbd963a8a3a5214050871f4417e609d60882978d2ff8a4705b6"
+content-hash = "20e11d71d88e3033aa1ae5c9451f5d90c0723da3570c51dc9e1724f579f52049"
