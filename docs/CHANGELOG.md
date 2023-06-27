@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.10.5
+
+- 🎨 Allow starts to be set as a tuple
+- ⬆️ Bump python-simpleconf to 0.6 and other deps to latest versions
+- ➕ Add rtoml to deps (as python-simpleconf 0.6 may not depend on rtoml)
+
 ## 0.10.4
 
 - ⬆️ Bump xqute to 0.2.3
