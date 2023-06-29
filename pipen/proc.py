@@ -589,9 +589,11 @@ class Proc(ABC, metaclass=ProcMeta):
 
         # try match the column names
         # if none matched, use the first columns
-        rest_cols = out.data.columns.difference(out.type, False)
+        # rest_cols = out.data.columns.difference(out.type, False)
+        rest_cols = [col for col in out.data.columns if col not in out.type]
         len_rest_cols = len(rest_cols)
-        matched_cols = out.data.columns.intersection(out.type)
+        # matched_cols = out.data.columns.intersection(out.type)
+        matched_cols = [col for col in out.data.columns if col in out.type]
         needed_cols = [col for col in out.type if col not in matched_cols]
         len_needed_cols = len(needed_cols)
 

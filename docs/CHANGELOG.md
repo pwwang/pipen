@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.10.6
+
+- 🐛 Fix "DeprecationWarning: np.find_common_type is deprecated" from pandas (due to numpy 1.25 update)
+
 ## 0.10.5
 
 - 🎨 Allow starts to be set as a tuple
