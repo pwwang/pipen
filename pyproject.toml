@@ -20,7 +20,7 @@ python = "^3.8"
 liquidpy = "^0.8.1"
 pandas = "^1.4"
 enlighten = "^1"
-argx = "^0.2.9"
+argx = "^0.2.10"
 xqute = "^0.2.4"
 ## included in xqute
 # rich = "^12"
