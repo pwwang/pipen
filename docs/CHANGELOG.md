@@ -2,7 +2,9 @@
 
 ## 0.11.0
 
-
+- Add Dockerfile for codesandbox
+- Bump pandas to v2
+- Bump argx to 0.2.10
 
 ## 0.10.6
 
