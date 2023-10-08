@@ -184,9 +184,14 @@ def expand_dir(
     assert data.shape[0] == 1, "Can only expand a single row DataFrame."
     col_loc = col if isinstance(col, int) else data.columns.get_loc(col)
     full_pattern = f"{data.iloc[0, col_loc]}/{pattern}"
-    expanded = Channel.from_glob(full_pattern, ftype, sortby, reverse)
-    ret = pandas.concat([data] * expanded.size, axis=0)
-    ret[data.columns[col_loc]] = expanded.values
+    expanded = Channel.from_glob(
+        full_pattern,
+        ftype,
+        sortby,
+        reverse,
+    ).iloc[:, 0]
+    ret = pandas.concat([data] * expanded.size, axis=0, ignore_index=True)
+    ret.loc[:, col_loc] = expanded.values
     return ret.reset_index(drop=True)
 
 

@@ -32,33 +32,33 @@ jobs:
           mkdocs gh-deploy --clean --force
         if: success()
 
-  fix-index:
-    needs: docs
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.10"]
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: gh-pages
-      - name: Fix index.html
-        run: |
-          echo ':: head of index.html - before ::'
-          head index.html
-          sed -i '1,5{/^$/d}' index.html
-          echo ':: head of index.html - after ::'
-          head index.html
-        if: success()
-      - name: Commit changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git commit -m "Add changes" -a
-        if: success()
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: gh-pages
-        if: success()
+  # fix-index:
+  #   needs: docs
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       python-version: ["3.10"]
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         ref: gh-pages
+  #     - name: Fix index.html
+  #       run: |
+  #         echo ':: head of index.html - before ::'
+  #         head index.html
+  #         sed -i '1,5{/^$/d}' index.html
+  #         echo ':: head of index.html - after ::'
+  #         head index.html
+  #       if: success()
+  #     - name: Commit changes
+  #       run: |
+  #         git config --local user.email "action@github.com"
+  #         git config --local user.name "GitHub Action"
+  #         git commit -m "Add changes" -a
+  #       if: success()
+  #     - name: Push changes
+  #       uses: ad-m/github-push-action@master
+  #       with:
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}
+  #         branch: gh-pages
+  #       if: success()

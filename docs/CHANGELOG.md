@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.11.0
+
+- Add Dockerfile for codesandbox
+- Bump pandas to v2
+- Bump argx to 0.2.10
+
 ## 0.10.6
 
 - 🐛 Fix "DeprecationWarning: np.find_common_type is deprecated" from pandas (due to numpy 1.25 update)
