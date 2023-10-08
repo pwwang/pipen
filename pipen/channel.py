@@ -185,9 +185,9 @@ def expand_dir(
     col_loc = col if isinstance(col, int) else data.columns.get_loc(col)
     full_pattern = f"{data.iloc[0, col_loc]}/{pattern}"
     expanded = Channel.from_glob(
-        full_pattern, 
-        ftype, 
-        sortby, 
+        full_pattern,
+        ftype,
+        sortby,
         reverse,
     ).iloc[:, 0]
     ret = pandas.concat([data] * expanded.size, axis=0, ignore_index=True)
