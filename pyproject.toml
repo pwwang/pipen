@@ -18,26 +18,29 @@ generate-setup-file = true
 [tool.poetry.dependencies]
 python = "^3.8"
 liquidpy = "^0.8.1"
-pandas = "^1.4"
+pandas = "^2"
 enlighten = "^1"
 argx = "^0.2.10"
 xqute = "^0.2.4"
 ## included in xqute
-# rich = "^12"
+# rich = "^13"
 # diot = "^0.1"
 # simplug = "^0.0"
 rtoml = "^0.8"
 # May not be rtoml
 python-simpleconf = {version = "^0.6", extras = ["toml"]}
-pipda = "^0.12"
-varname = "^0.11"
+pipda = "^0.13"
+varname = "^0.12"
 
 [tool.poetry.dev-dependencies]
 openpyxl = "^3"
 pytest = "^7"
 pytest-cov = "^4"
 pytest-xdist = "^3"
-datar = { version = "^0.12", extras = ["pandas"] }
+# This also installs scipy and wcwidth
+# datar = { version = "^0.15", extras = ["pandas"] }
+datar-pandas = "^0.5"
+datar = "^0.15"
 
 [tool.poetry.scripts]
 pipen = "pipen.cli:main"
