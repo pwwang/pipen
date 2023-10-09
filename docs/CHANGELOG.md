@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.11.1
+
+- Dismiss warning for fillna method for pandas 2.1
+
 ## 0.11.0
 
 - Add Dockerfile for codesandbox
