@@ -3,6 +3,7 @@
 ## 0.11.1
 
 - Dismiss warning for fillna method for pandas 2.1
+- Fix channel.expand_dir() may add new column
 
 ## 0.11.0
 
