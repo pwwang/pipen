@@ -191,7 +191,7 @@ def expand_dir(
         reverse,
     ).iloc[:, 0]
     ret = pandas.concat([data] * expanded.size, axis=0, ignore_index=True)
-    ret.loc[:, col_loc] = expanded.values
+    ret.iloc[:, col_loc] = expanded.values
     return ret.reset_index(drop=True)
 
 
