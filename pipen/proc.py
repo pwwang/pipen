@@ -583,7 +583,7 @@ class Proc(ABC, metaclass=ProcMeta):
             out.data = pandas.concat(
                 (req.output_data for req in self.requires),  # type: ignore
                 axis=1,
-            ).fillna(method="ffill")
+            ).ffill()
 
         make_df_colnames_unique_inplace(out.data)
 
