@@ -1,6 +1,6 @@
 import pytest
-from pathlib import Path
 import pipen
+from pathlib import Path
 from pipen.utils import (
     brief_list,
     desc_from_docstring,
@@ -14,9 +14,15 @@ from pipen.utils import (
     update_dict,
     mark,
     get_marked,
+    _get_obj_from_spec,
+    load_pipeline,
 )
+from pipen.proc import Proc
+from pipen.procgroup import ProcGroup
 from pipen.exceptions import ConfigurationError
 from pipen.pluginmgr import plugin
+
+HERE = Path(__file__).parent.resolve()
 
 
 def test_get_logger(caplog):
@@ -126,3 +132,50 @@ def test_mark():
 
     # Marks inherited, as Y/Z are not Proc nor ProcGroup
     assert get_marked(Z, "a", None) == 1
+
+
+def test_get_obj_from_spec():
+    with pytest.raises(ValueError):
+        _get_obj_from_spec("a.b.c")
+
+    obj = _get_obj_from_spec(f"{HERE}/helpers.py:SimpleProc")
+    assert obj.name == "SimpleProc"
+
+    obj = _get_obj_from_spec(f"pipen:Pipen")
+    assert obj is pipen.Pipen
+
+
+@pytest.mark.asyncio
+async def test_load_pipeline(tmp_path):
+    with pytest.raises(TypeError):
+        await load_pipeline(f"{HERE}/helpers.py:create_dead_link")
+    with pytest.raises(TypeError):
+        await load_pipeline(ConfigurationError)
+
+    # Proc
+    pipeline = await load_pipeline(f"{HERE}/helpers.py:SimpleProc")
+    assert pipeline.name == "SimpleProcPipeline"
+
+    # ProcGroup
+    class PG(ProcGroup):
+        ...
+
+    pg = PG()
+
+    @pg.add_proc()
+    class P1(Proc):
+        pass
+
+    pipeline = await load_pipeline(PG)
+    assert pipeline.name == "PG"
+
+    # Pipen
+    obj = _get_obj_from_spec(f"{HERE}/helpers.py:pipen")
+    proc = _get_obj_from_spec(f"{HERE}/helpers.py:SimpleProc")
+    # Use the original function instead of fixture
+    p = obj.__wrapped__(tmp_path).__class__
+    p.starts = [proc]
+    pipeline = await load_pipeline(p, name="LoadedPipeline")
+    assert pipeline.name == "LoadedPipeline"
+    assert pipeline.starts[0].name == "SimpleProc"
+    assert len(pipeline.procs) == 1
