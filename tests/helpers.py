@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 from pipen import Proc, Pipen, plugin
+from pipen.utils import is_loading_pipeline
 
 
 class SimpleProc(Proc):
@@ -163,6 +164,8 @@ class DirOutputProc(Proc):
 class SimplePlugin:
     @plugin.impl
     async def on_init(pipen):
+        if getattr(pipen.__class__, "loading", False):
+            assert is_loading_pipeline()
         print("SimplePlugin")
 
 
@@ -197,6 +200,13 @@ def pipen_with_plugin(tmp_path):
     )
 
     return pipen_simple
+
+
+class PipenIsLoading(Pipen):
+    name = "PipenIsLoading"
+    loading = True
+    plugins = [SimplePlugin()]
+    starts = SimpleProc
 
 
 @pytest.fixture
