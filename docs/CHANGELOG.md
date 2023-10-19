@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.12.0
+
+- ✨ Add utils.load_pipeline() to load pipeline
+
 ## 0.11.1
 
 - Dismiss warning for fillna method for pandas 2.1
