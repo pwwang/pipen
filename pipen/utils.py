@@ -56,6 +56,8 @@ if TYPE_CHECKING:  # pragma: no cover
     from .proc import Proc
     from .procgroup import ProcGroup
 
+LOADING_ARGV0 = "@pipen"
+
 
 class RichHandler(_RichHandler):
     """Subclass of rich.logging.RichHandler, showing log levels as a single
@@ -689,7 +691,7 @@ async def load_pipeline(
         )
 
     old_argv = sys.argv
-    sys.argv = ["@pipen"] + list(cli_args)
+    sys.argv = [LOADING_ARGV0] + list(cli_args)
     try:
         # Initialize the pipeline so that the arguments definied by
         # other plugins (i.e. pipen-args) to take in place.
@@ -703,3 +705,13 @@ async def load_pipeline(
         sys.argv = old_argv
 
     return pipeline
+
+
+def is_loading_pipeline() -> bool:
+    """Check if we are loading the pipeline
+
+    Returns:
+        True if we are loading the pipeline (argv[0] == "@pipen"),
+        otherwise False
+    """
+    return sys.argv[0] == LOADING_ARGV0

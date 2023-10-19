@@ -170,12 +170,7 @@ async def test_load_pipeline(tmp_path):
     assert pipeline.name == "PG"
 
     # Pipen
-    obj = _get_obj_from_spec(f"{HERE}/helpers.py:pipen")
-    proc = _get_obj_from_spec(f"{HERE}/helpers.py:SimpleProc")
-    # Use the original function instead of fixture
-    p = obj.__wrapped__(tmp_path).__class__
-    p.starts = [proc]
-    pipeline = await load_pipeline(p, name="LoadedPipeline")
-    assert pipeline.name == "LoadedPipeline"
+    pipeline = await load_pipeline(f"{HERE}/helpers.py:PipenIsLoading")
+    assert pipeline.name == "PipenIsLoading"
     assert pipeline.starts[0].name == "SimpleProc"
     assert len(pipeline.procs) == 1
