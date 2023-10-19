@@ -654,7 +654,8 @@ async def load_pipeline(
         The loaded Pipen object
 
     Raises:
-        TypeError: If obj or loaded obj is not a Pipen, Proc or ProcGroup object
+        TypeError: If obj or loaded obj is not a Pipen, Proc or ProcGroup
+        object
     """
     from .pipen import Pipen
     from .proc import Proc
