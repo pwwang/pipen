@@ -629,7 +629,7 @@ def _get_obj_from_spec(spec: str) -> Any:
 
 async def load_pipeline(
     obj: str | Type[Proc] | Type[ProcGroup] | Type[Pipen],
-    cli_args: Sequence[str] = (),
+    cli_args: Sequence[str] = None,
     **kwargs: Any,
 ) -> Pipen:
     """Load a pipeline from a Pipen, Proc or ProcGroup object
@@ -691,6 +691,8 @@ async def load_pipeline(
         )
 
     old_argv = sys.argv
+    if cli_args is None:
+        cli_args = sys.argv[1:]
     sys.argv = [LOADING_ARGV0] + list(cli_args)
     try:
         # Initialize the pipeline so that the arguments definied by
