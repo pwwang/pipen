@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.12.1
+
+- Add utils.is_loading_pipeline() to check if pipeline is loading
+
 ## 0.12.0
 
 - ✨ Add utils.load_pipeline() to load pipeline
