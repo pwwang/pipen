@@ -629,7 +629,8 @@ def _get_obj_from_spec(spec: str) -> Any:
 
 async def load_pipeline(
     obj: str | Type[Proc] | Type[ProcGroup] | Type[Pipen],
-    cli_args: Sequence[str] = None,
+    argv0: str = None,
+    argv1p: Sequence[str] = None,
     **kwargs: Any,
 ) -> Pipen:
     """Load a pipeline from a Pipen, Proc or ProcGroup object
@@ -648,8 +649,9 @@ async def load_pipeline(
             of the proc, procgroup or pipeline to load.
             It should be able to be loaded by `getattr(module, part2)`, where
             module is loaded from `part1`.
-        cli_args: The cli arguments, in case the pipeline or some plugins use
-            to parse the relationship of the processes.
+        argv0: The value to replace sys.argv[0]. "@pipen" will be used
+            by default.
+        argv1p: The values to replace sys.argv[1:]. Do not replace by default.
         kwargs: The kwargs to pass to the Pipen constructor
 
     Returns:
@@ -691,9 +693,11 @@ async def load_pipeline(
         )
 
     old_argv = sys.argv
-    if cli_args is None:
-        cli_args = sys.argv[1:]
-    sys.argv = [LOADING_ARGV0] + list(cli_args)
+    if argv0 is None:
+        argv0 = LOADING_ARGV0
+    if argv1p is None:
+        argv1p = sys.argv[1:]
+    sys.argv = [argv0] + list(argv1p)
     try:
         # Initialize the pipeline so that the arguments definied by
         # other plugins (i.e. pipen-args) to take in place.
@@ -710,7 +714,8 @@ async def load_pipeline(
 
 
 def is_loading_pipeline() -> bool:
-    """Check if we are loading the pipeline
+    """Check if we are loading the pipeline. Works only when
+    `argv0` is "@pipen" while loading the pipeline.
 
     Returns:
         True if we are loading the pipeline (argv[0] == "@pipen"),
