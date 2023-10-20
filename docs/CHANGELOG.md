@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.12.4
+
+- Modify sys.argv before the module is loaded in `utils.load_pipeline()`
+
 ## 0.12.3
 
 - Change cli_args to argv0 and argv1p for utils.load_pipeline
