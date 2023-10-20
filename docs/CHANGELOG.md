@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.12.3
+
+- Change cli_args to argv0 and argv1p for utils.load_pipeline
+
 ## 0.12.2
 
 - Append `sys.argv[1:]` by default when `cli_args` is `None` in `utils.load_pipeline()`
