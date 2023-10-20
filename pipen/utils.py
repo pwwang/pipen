@@ -665,40 +665,42 @@ async def load_pipeline(
     from .proc import Proc
     from .procgroup import ProcGroup
 
-    if isinstance(obj, str):
-        obj = _get_obj_from_spec(obj)
-        if (
-            not isinstance(obj, type)
-            or not issubclass(obj, (Pipen, Proc, ProcGroup))
-        ):
-            raise TypeError(
-                f"Expected a Pipen, Proc or ProcGroup class, got {type(obj)}"
-            )
-
-    pipeline = obj
-    if isinstance(obj, type) and issubclass(obj, Proc):
-        kwargs.setdefault("name", f"{obj.name}Pipeline")
-        pipeline = Pipen(**kwargs).set_starts(obj)
-
-    if isinstance(obj, type) and issubclass(obj, ProcGroup):
-        pipeline = obj().as_pipen(**kwargs)
-
-    if isinstance(obj, type) and issubclass(obj, Pipen):
-        # Avoid "pipeline" to be used as pipeline name by varname
-        (pipeline, ) = (obj(**kwargs), )
-
-    if not isinstance(pipeline, Pipen):
-        raise TypeError(
-            f"Expected a Pipen, Proc or ProcGroup class, got {type(pipeline)}"
-        )
-
     old_argv = sys.argv
     if argv0 is None:
         argv0 = LOADING_ARGV0
     if argv1p is None:
         argv1p = sys.argv[1:]
     sys.argv = [argv0] + list(argv1p)
+
     try:
+        if isinstance(obj, str):
+            obj = _get_obj_from_spec(obj)
+            if (
+                not isinstance(obj, type)
+                or not issubclass(obj, (Pipen, Proc, ProcGroup))
+            ):
+                raise TypeError(
+                    f"Expected a Pipen, Proc or ProcGroup class, got {type(obj)}"
+                )
+
+        pipeline = obj
+        if isinstance(obj, type) and issubclass(obj, Proc):
+            kwargs.setdefault("name", f"{obj.name}Pipeline")
+            pipeline = Pipen(**kwargs).set_starts(obj)
+
+        if isinstance(obj, type) and issubclass(obj, ProcGroup):
+            pipeline = obj().as_pipen(**kwargs)
+
+        if isinstance(obj, type) and issubclass(obj, Pipen):
+            # Avoid "pipeline" to be used as pipeline name by varname
+            (pipeline, ) = (obj(**kwargs), )
+
+        if not isinstance(pipeline, Pipen):
+            raise TypeError(
+                "Expected a Pipen, Proc or ProcGroup class, "
+                f"got {type(pipeline)}"
+            )
+
         # Initialize the pipeline so that the arguments definied by
         # other plugins (i.e. pipen-args) to take in place.
         pipeline.workdir = Path(pipeline.config.workdir).joinpath(
@@ -716,6 +718,10 @@ async def load_pipeline(
 def is_loading_pipeline() -> bool:
     """Check if we are loading the pipeline. Works only when
     `argv0` is "@pipen" while loading the pipeline.
+
+    Note if you are using this function at compile time, make
+    sure you load your pipeline using the string form (`part1:part2`)
+    See more with `load_pipline()`.
 
     Returns:
         True if we are loading the pipeline (argv[0] == "@pipen"),
