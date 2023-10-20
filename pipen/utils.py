@@ -680,7 +680,8 @@ async def load_pipeline(
                 or not issubclass(obj, (Pipen, Proc, ProcGroup))
             ):
                 raise TypeError(
-                    f"Expected a Pipen, Proc or ProcGroup class, got {type(obj)}"
+                    "Expected a Pipen, Proc or ProcGroup class, "
+                    f"got {type(obj)}"
                 )
 
         pipeline = obj
