@@ -21,7 +21,7 @@ liquidpy = "^0.8.1"
 pandas = "^2"
 enlighten = "^1"
 argx = "^0.2.10"
-xqute = "^0.2.4"
+xqute = "^0.2.5"
 ## included in xqute
 # rich = "^13"
 # diot = "^0.1"
