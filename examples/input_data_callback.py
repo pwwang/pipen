@@ -56,5 +56,6 @@ class MyPipeline(Pipen):
     data = [prepare_input_data()]
     forks = 3
 
+
 if __name__ == "__main__":
     MyPipeline().run()

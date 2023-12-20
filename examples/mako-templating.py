@@ -4,6 +4,7 @@ from mako.template import Template as Mako
 from pipen.template import Template
 from pipen import Proc, Pipen
 
+
 class TemplateMako(Template):
 
     name = "mako"

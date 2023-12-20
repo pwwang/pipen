@@ -5,6 +5,7 @@ from pipen.utils import get_logger
 
 logger = get_logger("notify", "info")
 
+
 class NotifyPlugin:
     version = "0.0.0"
 
@@ -28,8 +29,10 @@ class NotifyPlugin:
     async def on_proc_done(proc, succeeded):
         logger.info("Calling on_proc_done, succeeded = %s", succeeded)
 
+
 class AProcess(Proc):
     input = "a"
+
 
 if __name__ == "__main__":
     Pipen(plugins=[NotifyPlugin]).set_starts(AProcess).run()
