@@ -122,16 +122,16 @@ def _excepthook(
     traceback: Any,
 ) -> None:
     """The excepthook for pipen, to show rich traceback"""
-    if type_ is KeyboardInterrupt:  # pragma: no cover
+    if issubclass(type_, KeyboardInterrupt):  # pragma: no cover
+        logger.error("")
         logger.error("Interrupted by user")
         return
 
-    logger.exception(
-        f"{type_.__name__}: {value}",
-        exc_info=(type_, value, traceback),
-    )
+    print("", file=sys.stderr)
+    _excepthook.oldhook(type_, value, traceback)
 
 
+_excepthook.oldhook = sys.excepthook
 sys.excepthook = _excepthook
 
 
