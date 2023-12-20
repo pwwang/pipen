@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.12.5
+
+- deps: bump xqute to 0.2.5
+- chore: make utils._excepthook only handle KeyboardInterrupt
+- chore: update examples
+
 ## 0.12.4
 
 - Modify sys.argv before the module is loaded in `utils.load_pipeline()`
