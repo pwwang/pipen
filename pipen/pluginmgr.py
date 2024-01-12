@@ -193,8 +193,20 @@ async def on_job_submitted(proc: Proc, job: Job):
 
 
 @plugin.spec
-async def on_job_running(proc: Proc, job: Job):
+async def on_job_started(proc: Proc, job: Job):
     """When a job starts to run in then scheduler system.
+
+    Note that the job might not be running yet in the scheduler system.
+
+    Args:
+        proc: The process
+        job: The job
+    """
+
+
+@plugin.spec
+async def on_job_polling(proc: Proc, job: Job):
+    """When status of a job is being polled.
 
     Args:
         proc: The process
@@ -283,7 +295,7 @@ class PipenMainPlugin:
         proc.pbar.update_job_submitted()
 
     @plugin.impl
-    async def on_job_running(self, proc: Proc, job: Job):
+    async def on_job_started(self, proc: Proc, job: Job):
         """Update the progress bar when a job starts to run"""
         proc.pbar.update_job_running()
 
@@ -368,9 +380,14 @@ class XqutePipenPlugin:
         await plugin.hooks.on_job_submitted(job.proc, job)
 
     @xqute_plugin.impl
-    async def on_job_running(self, scheduler: Scheduler, job: Job):
+    async def on_job_started(self, scheduler: Scheduler, job: Job):
         """When a job starts to run"""
-        await plugin.hooks.on_job_running(job.proc, job)
+        await plugin.hooks.on_job_started(job.proc, job)
+
+    @xqute_plugin.impl
+    async def on_job_polling(self, scheduler: Scheduler, job: Job):
+        """When a job starts to run"""
+        await plugin.hooks.on_job_polling(job.proc, job)
 
     @xqute_plugin.impl
     async def on_job_killing(self, scheduler: Scheduler, job: Job):

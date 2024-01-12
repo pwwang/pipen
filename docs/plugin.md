@@ -93,9 +93,13 @@ See [`simplug`][1] for more details.
 
     When a job is submitted in the scheduler system.
 
-- `on_job_running(proc, job)` (async)
+- `on_job_started(proc, job)` (async)
 
     When a job starts to run in then scheduler system.
+
+- `on_job_polling(proc, job)` (async)
+
+    When status of a job is being polled.
 
 - `on_job_killing(proc, job)` (async)
 
