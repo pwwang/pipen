@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.13.0
+
+- deps: bump xqute to 0.3.0 and liquidpy to 0.8.2
+- breaking: change hook `on_job_running` to `on_job_started` and add `on_job_polling`
+
 ## 0.12.5
 
 - deps: bump xqute to 0.2.5
