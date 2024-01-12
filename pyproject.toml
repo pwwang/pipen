@@ -17,11 +17,11 @@ generate-setup-file = true
 
 [tool.poetry.dependencies]
 python = "^3.8"
-liquidpy = "^0.8.1"
+liquidpy = "^0.8.2"
 pandas = "^2"
 enlighten = "^1"
 argx = "^0.2.10"
-xqute = "^0.2.5"
+xqute = "^0.3.0"
 ## included in xqute
 # rich = "^13"
 # diot = "^0.1"
@@ -35,7 +35,7 @@ varname = "^0.12"
 [tool.poetry.dev-dependencies]
 openpyxl = "^3"
 pytest = "^7"
-pytest-asyncio = "^0.21"
+pytest-asyncio = "^0.23"
 pytest-cov = "^4"
 pytest-xdist = "^3"
 # This also installs scipy and wcwidth
