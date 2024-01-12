@@ -29,10 +29,15 @@ class NotifyPlugin:
     async def on_proc_done(proc, succeeded):
         logger.info("Calling on_proc_done, succeeded = %s", succeeded)
 
+    @plugin.impl
+    async def on_job_polling(proc, job):
+        logger.info("Calling on_job_polling")
+
 
 class AProcess(Proc):
     input = "a"
+    script = 'sleep 2'
 
 
 if __name__ == "__main__":
-    Pipen(plugins=[NotifyPlugin]).set_starts(AProcess).run()
+    Pipen(plugins=[NotifyPlugin], cache=False).set_starts(AProcess).run()
