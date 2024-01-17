@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.13.1
+
+- test: cover `on_job_polling`
+- fix: update envs recursively for subclasses
+- test: make sure class envs kept intact when subclassed
+
 ## 0.13.0
 
 - deps: bump xqute to 0.3.1 and liquidpy to 0.8.2
