@@ -164,3 +164,4 @@ def test_inherit_proc_envs():
         envs = {"a": {"b": 2}}
 
     assert Proc2.envs == {"a": {"b": 2, "c": 2}}
+    assert Proc1.envs == {"a": {"b": 1, "c": 2}}
