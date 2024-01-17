@@ -105,6 +105,7 @@ class Proc(ABC, metaclass=ProcMeta):
             the docstring by default.
         envs: The arguments that are job-independent, useful for common options
             across jobs.
+        envs_depth: How deep to update the envs when subclassed.
         cache: Should we detect whether the jobs are cached?
         dirsig: When checking the signature for caching, whether should we walk
             through the content of the directory? This is sometimes
@@ -153,6 +154,7 @@ class Proc(ABC, metaclass=ProcMeta):
     name: str = None
     desc: str = None
     envs: Mapping[str, Any] = None
+    envs_depth: int = None
     cache: bool = None
     dirsig: bool = None
     export: bool = None
@@ -188,6 +190,7 @@ class Proc(ABC, metaclass=ProcMeta):
         name: str = None,
         desc: str = None,
         envs: Mapping[str, Any] = None,
+        envs_depth: int = None,
         cache: bool = None,
         export: bool = None,
         error_strategy: str = None,
@@ -209,6 +212,7 @@ class Proc(ABC, metaclass=ProcMeta):
             desc: The new description of the process
             envs: The arguments of the process, will overwrite parent one
                 The items that are specified will be inherited
+            envs_depth: How deep to update the envs when subclassed.
             cache: Whether we should check the cache for the jobs
             export: When True, the results will be exported to
                 `<pipeline.outdir>`
@@ -257,6 +261,7 @@ class Proc(ABC, metaclass=ProcMeta):
         for key in (
             "desc",
             "envs",
+            "envs_depth",
             "cache",
             "forks",
             "order",
@@ -298,7 +303,12 @@ class Proc(ABC, metaclass=ProcMeta):
                 r"'^[\w.-]+$'"
             )
 
-        envs = update_dict(parent.envs if parent else None, cls.envs)
+        envs = update_dict(
+            parent.envs if parent else None,
+            cls.envs,
+            depth=0 if not parent or parent.envs_depth is None else parent.envs_depth,
+        )
+        # So values can be accessed like Proc.envs.a.b
         cls.envs = envs if isinstance(envs, Diot) else Diot(envs or {})
         cls.plugin_opts = update_dict(
             parent.plugin_opts if parent else None,

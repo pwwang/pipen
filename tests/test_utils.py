@@ -80,6 +80,25 @@ def test_update_dict():
     assert update_dict({"a": {"b": 1}}, {"a": {"c": 2}}) == {
         "a": {"b": 1, "c": 2}
     }
+    assert update_dict({"a": {"b": 1}}, {"a": {"c": 2}}, depth=1) == {
+        "a": {"c": 2}
+    }
+    assert update_dict(
+        {"a": {"b1": {"c": 1, "d": 2}, "b2": {"c": 1, "d": 2}}},
+        {"a": {"b1": {"c": 2}}},
+    ) == {"a": {"b1": {"c": 2, "d": 2}, "b2": {"c": 1, "d": 2}}}
+
+    assert update_dict(
+        {"a": {"b1": {"c": 1, "d": 2}, "b2": {"c": 1, "d": 2}}},
+        {"a": {"b1": {"c": 2}}},
+        depth=2,
+    ) == {"a": {"b1": {"c": 2}, "b2": {"c": 1, "d": 2}}}
+
+    assert update_dict(
+        {"a": {"b1": {"c": 1, "d": 2}, "b2": {"c": 1, "d": 2}}},
+        {"a": {"b1": {"c": 2}}},
+        depth=1,
+    ) == {"a": {"b1": {"c": 2}}}
 
 
 def test_strsplit():
@@ -146,7 +165,7 @@ def test_get_obj_from_spec():
     obj = _get_obj_from_spec(f"{HERE}/helpers.py:SimpleProc")
     assert obj.name == "SimpleProc"
 
-    obj = _get_obj_from_spec(f"pipen:Pipen")
+    obj = _get_obj_from_spec("pipen:Pipen")
     assert obj is pipen.Pipen
 
 

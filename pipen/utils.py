@@ -206,13 +206,14 @@ def desc_from_docstring(
 def update_dict(
     parent: Mapping[str, Any],
     new: Mapping[str, Any],
+    depth: int = 0,
 ) -> Mapping[str, Any]:
     """Update the new dict to the parent, but make sure parent does not change
 
     Args:
         parent: The parent dictionary
         new: The new dictionary
-        depth: The depth to be copied.
+        depth: The depth to be copied. 0 for updating to the deepest level.
 
     Examples:
         >>> parent = {"a": {"b": 1}}
@@ -232,10 +233,11 @@ def update_dict(
             key not in out
             or not isinstance(val, dict)
             or not isinstance(out[key], dict)
+            or depth == 1
         ):
             out[key] = val
         else:
-            out[key] = update_dict(out[key], val)
+            out[key] = update_dict(out[key], val, depth - 1)
 
     return out
 

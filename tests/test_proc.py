@@ -157,11 +157,34 @@ def test_invalid_name():
 
 
 def test_inherit_proc_envs():
-    class Proc1(Proc):
+    class Proc1_1(Proc):
+        envs_depth = 1
         envs = {"a": {"b": 1, "c": 2}}
 
-    class Proc2(Proc1):
+    class Proc2(Proc1_1):
         envs = {"a": {"b": 2}}
 
-    assert Proc2.envs == {"a": {"b": 2, "c": 2}}
-    assert Proc1.envs == {"a": {"b": 1, "c": 2}}
+    class Proc1_2(Proc):
+        envs_depth = 2
+        envs = {"a": {"b": 1, "c": 2}}
+
+    class Proc3(Proc1_2):
+        envs_depth = 2
+        envs = {"a": {"b": 3}}
+
+    class Proc1_3(Proc):
+        envs_depth = 3
+        envs = {"a": {"b": 1, "c": 2}}
+
+    class Proc4(Proc1_3):
+        envs = {"a": {"b": 4}}
+
+    Proc5 = Proc.from_proc(Proc1_3, envs={"a": {"b": 5}})
+
+    assert Proc5.envs == {"a": {"b": 5, "c": 2}}
+    assert Proc4.envs == {"a": {"b": 4, "c": 2}}
+    assert Proc3.envs == {"a": {"b": 3, "c": 2}}
+    assert Proc2.envs == {"a": {"b": 2}}
+    assert Proc1_1.envs == {"a": {"b": 1, "c": 2}}
+    assert Proc1_2.envs == {"a": {"b": 1, "c": 2}}
+    assert Proc1_3.envs == {"a": {"b": 1, "c": 2}}
