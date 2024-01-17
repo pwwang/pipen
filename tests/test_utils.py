@@ -75,6 +75,11 @@ def test_update_dict():
     assert update_dict(None, None) is None
     assert update_dict({}, None) == {}
     assert update_dict(None, {}) == {}
+    assert update_dict({"a": 1}, {"b": 2}) == {"a": 1, "b": 2}
+    assert update_dict({"a": 1}, {"a": 2}) == {"a": 2}
+    assert update_dict({"a": {"b": 1}}, {"a": {"c": 2}}) == {
+        "a": {"b": 1, "c": 2}
+    }
 
 
 def test_strsplit():

@@ -154,3 +154,13 @@ def test_script_file_exists(pipen):
 def test_invalid_name():
     with pytest.raises(PipenOrProcNameError):
         Proc.from_proc(SimpleProc, name="a b")
+
+
+def test_inherit_proc_envs():
+    class Proc1(Proc):
+        envs = {"a": {"b": 1, "c": 2}}
+
+    class Proc2(Proc1):
+        envs = {"a": {"b": 2}}
+
+    assert Proc2.envs == {"a": {"b": 2, "c": 2}}

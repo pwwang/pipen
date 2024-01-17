@@ -212,6 +212,13 @@ def update_dict(
     Args:
         parent: The parent dictionary
         new: The new dictionary
+        depth: The depth to be copied.
+
+    Examples:
+        >>> parent = {"a": {"b": 1}}
+        >>> new = {"a": {"c": 2}}
+        >>> update_dict(parent, new)
+        >>> # {"a": {"b": 1, "c": 2}}
 
     Returns:
         The updated dictionary or None if both parent and new are None.
@@ -220,7 +227,16 @@ def update_dict(
         return None
 
     out = (parent or {}).copy()
-    out.update(new or {})
+    for key, val in (new or {}).items():
+        if (
+            key not in out
+            or not isinstance(val, dict)
+            or not isinstance(out[key], dict)
+        ):
+            out[key] = val
+        else:
+            out[key] = update_dict(out[key], val)
+
     return out
 
 
