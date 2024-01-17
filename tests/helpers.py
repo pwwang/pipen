@@ -14,6 +14,7 @@ class SimpleProc(Proc):
     """A very simple process for testing"""
 
     input = ["input"]
+    script = "sleep 1.5"  # let on_job_polling run
 
 
 class NormalProc(Proc):
@@ -167,6 +168,10 @@ class SimplePlugin:
         if getattr(pipen.__class__, "loading", False):
             assert is_loading_pipeline()
         print("SimplePlugin")
+
+    @plugin.impl
+    async def on_job_polling(proc, job):
+        print("SimplePlugin on_job_polling")
 
 
 @pytest.fixture
