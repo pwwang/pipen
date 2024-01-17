@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.13.2
+
+- style: change max line length to 88
+- feat: add `envs_depth` to procs to control the depth of envs to be inherited by subclasses
+
 ## 0.13.1
 
 - test: cover `on_job_polling`
