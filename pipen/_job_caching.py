@@ -198,8 +198,12 @@ class JobCaching:
             )
             out = False
         elif proc_cache == "force":
-            await self.cache()
-            out = True
+            try:
+                await self.cache()
+            except FileNotFoundError:
+                out = False
+            else:
+                out = True
         elif not self.signature_file.is_file():
             self.log(
                 "debug",
