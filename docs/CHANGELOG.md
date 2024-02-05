@@ -1,6 +1,12 @@
 # Change Log
 
-## 0.13.3
+## 0.14.0
+
+- deps: drop support for python 3.8
+- deps: bump `varname` to 0.13
+- docs: update readme for more plugins
+
+## 0.13.3 (yanked)
 
 - deps: bump `varname` to 0.13
 
