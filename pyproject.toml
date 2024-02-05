@@ -16,7 +16,7 @@ repository = "https://github.com/pwwang/pipen"
 generate-setup-file = true
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 liquidpy = "^0.8.2"
 pandas = "^2"
 enlighten = "^1"
