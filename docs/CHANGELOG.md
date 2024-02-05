@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.13.3
+
+- deps: bump `varname` to 0.13
+
 ## 0.13.2
 
 - style: change max line length to 88
