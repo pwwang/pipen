@@ -30,7 +30,7 @@ rtoml = "^0.8"
 # May not be rtoml
 python-simpleconf = {version = "^0.6", extras = ["toml"]}
 pipda = "^0.13"
-varname = "^0.12"
+varname = "^0.13"
 
 [tool.poetry.dev-dependencies]
 openpyxl = "^3"

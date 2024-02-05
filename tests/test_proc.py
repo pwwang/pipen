@@ -10,7 +10,6 @@ from pipen.exceptions import (
     PipenOrProcNameError,
 )
 from datar.dplyr import mutate
-
 from .helpers import (
     In2Out1Proc,
     NoInputProc,
@@ -19,7 +18,7 @@ from .helpers import (
     ScriptNotExistsProc,
     SimpleProc,
     InputTypeUnsupportedProc,
-    pipen,
+    pipen,  # noqa: F401
 )
 
 
@@ -29,7 +28,7 @@ def test_proc_repr():
 
 def test_from_proc_no_name():
     procs = [None]
-    with pytest.raises(ValueError, match="Process name cannot"):
+    with pytest.raises(PipenOrProcNameError):
         procs[0] = Proc.from_proc(SimpleProc)
 
 

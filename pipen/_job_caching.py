@@ -200,7 +200,7 @@ class JobCaching:
         elif proc_cache == "force":
             try:
                 await self.cache()
-            except FileNotFoundError:
+            except FileNotFoundError:  # pragma: no cover
                 out = False
             else:
                 out = True

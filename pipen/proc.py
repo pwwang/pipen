@@ -242,7 +242,7 @@ class Proc(ABC, metaclass=ProcMeta):
         if not name:
             try:
                 name = varname()
-            except VarnameException as vexc:
+            except VarnameException as vexc:  # pragma: no cover
                 raise ValueError(
                     "Process name cannot be detected from assignment, "
                     "pass one explicitly to `Proc.from_proc(..., name=...)`"
