@@ -64,12 +64,12 @@ if __name__ == "__main__":
 06-09 23:15:29 I core                  _  ____/__/ /  _  ____/_  /___  _  /|  /
 06-09 23:15:29 I core                  /_/     /___/  /_/     /_____/  /_/ |_/
 06-09 23:15:29 I core
-06-09 23:15:29 I core                              version: 0.12.1
+06-09 23:15:29 I core                              version: 0.14.0
 06-09 23:15:29 I core
 06-09 23:15:29 I core    ╔═══════════════════════════════════════════════════╗
 06-09 23:15:29 I core    ║                            MYPIPELINE                            ║
 06-09 23:15:29 I core    ╚═══════════════════════════════════════════════════╝
-06-09 23:15:29 I core    plugins         : verbose v0.9.0
+06-09 23:15:29 I core    plugins         : verbose v0.10.0
 06-09 23:15:29 I core    # procs         : 2
 06-09 23:15:29 I core    profile         : default
 06-09 23:15:29 I core    outdir          : /home/pwwang/github/pipen/MyPipeline-output
@@ -132,20 +132,22 @@ https://github.com/pwwang/pipen-report/tree/master/example
 
 Plugins make `pipen` even better.
 
-- [`pipen-verbose`][15]: Add verbosal information in logs for pipen.
-- [`pipen-lock`][25]: Process lock for pipen to prevent multiple runs at the same time.
-- [`pipen-report`][16]: Generate report for pipen
-- [`pipen-filters`][17]: Add a set of useful filters for pipen templates.
-- [`pipen-diagram`][18]: Draw pipeline diagrams for pipen
 - [`pipen-annotate`][26]: Use docstring to annotate pipen processes
 - [`pipen-args`][19]: Command line argument parser for pipen
-- [`pipen-dry`][20]: Dry runner for pipen pipelines
-- [`pipen-log2file`][28]: Save running logs to file for pipen
 - [`pipen-board`][27]: Visualize configuration and running of pipen pipelines on the web
+- [`pipen-diagram`][18]: Draw pipeline diagrams for pipen
+- [`pipen-dry`][20]: Dry runner for pipen pipelines
+- [`pipen-filters`][17]: Add a set of useful filters for pipen templates.
+- [`pipen-lock`][25]: Process lock for pipen to prevent multiple runs at the same time.
+- [`pipen-log2file`][28]: Save running logs to file for pipen
+- [`pipen-poplog`][30]: Populate logs from jobs to running log of the pipeline
+- [`pipen-report`][16]: Generate report for pipen
 - [`pipen-runinfo`][29]: Save running information to file for pipen
+- [`pipen-verbose`][15]: Add verbosal information in logs for pipen.
 - [`pipen-cli-init`][21]: A pipen CLI plugin to create a pipen project (pipeline)
-- [`pipen-cli-run`][22]: A pipen cli plugin to run a process or a pipeline
+- [`pipen-cli-ref`][31]: Make reference documentation for processes
 - [`pipen-cli-require`][24]: A pipen cli plugin check the requirements of a pipeline
+- [`pipen-cli-run`][22]: A pipen cli plugin to run a process or a pipeline
 
 
 [1]: https://pwwang.github.io/pipen
@@ -177,3 +179,5 @@ Plugins make `pipen` even better.
 [27]: https://github.com/pwwang/pipen-board
 [28]: https://github.com/pwwang/pipen-log2file
 [29]: https://github.com/pwwang/pipen-runinfo
+[30]: https://github.com/pwwang/pipen-poplog
+[31]: https://github.com/pwwang/pipen-cli-ref
