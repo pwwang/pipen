@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.14.1
+
+- feat: add flags (e.g. `--help`) to `utils.is_loading_pipeline` to check arguments in `sys.argv`
+
 ## 0.14.0
 
 - deps: drop support for python 3.8
