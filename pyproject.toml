@@ -45,7 +45,7 @@ datar = { version = "^0.15", extras = ["pandas"] }
 pipen = "pipen.cli:main"
 
 [tool.pytest.ini_options]
-addopts = "-vv -n auto -p no:benchmark -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
+addopts = "-vv -n auto --dist loadgroup -p no:benchmark -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
 # addopts = "-vv -n auto -p no:asyncio -W error::UserWarning"
 console_output_style = "progress"
 junit_family = "xunit1"
