@@ -193,8 +193,21 @@ async def test_load_pipeline(tmp_path):
     pipeline = await load_pipeline(PG)
     assert pipeline.name == "PG"
 
-    # Pipen
     pipeline = await load_pipeline(f"{HERE}/helpers.py:PipenIsLoading")
+    assert pipeline.name == "PipenIsLoading"
+    assert pipeline.starts[0].name == "SimpleProc"
+    assert len(pipeline.procs) == 1
+
+
+@pytest.mark.xdist_group(name="separated")
+# To avoid: Another plugin named simpleplugin has already been registered.
+@pytest.mark.asyncio
+async def test_is_load_pipeline_with_help(tmp_path):
+    pipeline = await load_pipeline(
+        f"{HERE}/helpers.py:PipenIsLoading",
+        "pipen",  # not @pipen
+        ["--help"],
+    )
     assert pipeline.name == "PipenIsLoading"
     assert pipeline.starts[0].name == "SimpleProc"
     assert len(pipeline.procs) == 1

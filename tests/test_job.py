@@ -7,6 +7,7 @@ from pipen.exceptions import (
 )
 import pytest
 import os
+import time
 from pathlib import Path
 
 from pipen import Proc
@@ -194,6 +195,8 @@ def test_check_cached_infiles_newer(caplog, pipen, infile):
 
     caplog.clear()
     os.utime(infile, (infile.stat().st_mtime + 10,) * 2)
+    # wait for 1 second to make sure the new mtime is different
+    time.sleep(1)
     pipen.set_starts(proc_infile_newer).run()
     assert "Not cached (One of the input files is newer:" in caplog.text
 

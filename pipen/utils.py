@@ -734,7 +734,7 @@ async def load_pipeline(
     return pipeline
 
 
-def is_loading_pipeline() -> bool:
+def is_loading_pipeline(*flags: str) -> bool:
     """Check if we are loading the pipeline. Works only when
     `argv0` is "@pipen" while loading the pipeline.
 
@@ -742,8 +742,16 @@ def is_loading_pipeline() -> bool:
     sure you load your pipeline using the string form (`part1:part2`)
     See more with `load_pipline()`.
 
+    Args:
+        *flags: Additional flags to check in sys.argv (e.g. "-h", "--help")
+            to determine if we are loading the pipeline
+
     Returns:
         True if we are loading the pipeline (argv[0] == "@pipen"),
         otherwise False
     """
-    return sys.argv[0] == LOADING_ARGV0
+    if sys.argv[0] == LOADING_ARGV0:
+        return True
+
+    if flags:
+        return any(flag in sys.argv for flag in flags)

@@ -166,7 +166,7 @@ class SimplePlugin:
     @plugin.impl
     async def on_init(pipen):
         if getattr(pipen.__class__, "loading", False):
-            assert is_loading_pipeline()
+            assert is_loading_pipeline("--help")
         print("SimplePlugin")
 
     @plugin.impl
