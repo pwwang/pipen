@@ -38,6 +38,7 @@ pytest = "^7"
 pytest-asyncio = "^0.23"
 pytest-cov = "^4"
 pytest-xdist = "^3"
+pytest-forked = "^1.6"
 # This also installs scipy and wcwidth
 datar = { version = "^0.15", extras = ["pandas"] }
 
