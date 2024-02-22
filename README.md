@@ -64,12 +64,12 @@ if __name__ == "__main__":
 06-09 23:15:29 I core                  _  ____/__/ /  _  ____/_  /___  _  /|  /
 06-09 23:15:29 I core                  /_/     /___/  /_/     /_____/  /_/ |_/
 06-09 23:15:29 I core
-06-09 23:15:29 I core                              version: 0.14.0
+06-09 23:15:29 I core                              version: 0.14.2
 06-09 23:15:29 I core
 06-09 23:15:29 I core    ╔═══════════════════════════════════════════════════╗
 06-09 23:15:29 I core    ║                            MYPIPELINE                            ║
 06-09 23:15:29 I core    ╚═══════════════════════════════════════════════════╝
-06-09 23:15:29 I core    plugins         : verbose v0.10.0
+06-09 23:15:29 I core    plugins         : verbose v0.11.0
 06-09 23:15:29 I core    # procs         : 2
 06-09 23:15:29 I core    profile         : default
 06-09 23:15:29 I core    outdir          : /home/pwwang/github/pipen/MyPipeline-output

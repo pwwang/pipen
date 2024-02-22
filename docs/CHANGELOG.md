@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.14.2
+
+- feat: allow passing arguments to `utils.is_loading_pipeline()`
+
 ## 0.14.1
 
 - feat: add flags (e.g. `--help`) to `utils.is_loading_pipeline` to check arguments in `sys.argv`
