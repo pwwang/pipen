@@ -734,7 +734,7 @@ async def load_pipeline(
     return pipeline
 
 
-def is_loading_pipeline(*flags: str, args: Sequence[str] | None = None) -> bool:
+def is_loading_pipeline(*flags: str, argv: Sequence[str] | None = None) -> bool:
     """Check if we are loading the pipeline. Works only when
     `argv0` is "@pipen" while loading the pipeline.
 
@@ -745,7 +745,7 @@ def is_loading_pipeline(*flags: str, args: Sequence[str] | None = None) -> bool:
     Args:
         *flags: Additional flags to check in sys.argv (e.g. "-h", "--help")
             to determine if we are loading the pipeline
-        args: The arguments to check. sys.argv is used by default.
+        argv: The arguments to check. sys.argv is used by default.
             Note that the first argument should be included in the check.
             You could typically pass `[sys.argv[0], *your_args]` to this if you want
             to check if `sys.argv[0]` is "@pipen" or `your_args` contains some flags.
@@ -754,11 +754,11 @@ def is_loading_pipeline(*flags: str, args: Sequence[str] | None = None) -> bool:
         True if we are loading the pipeline (argv[0] == "@pipen"),
         otherwise False
     """
-    if args is None:
-        args = sys.argv
+    if argv is None:
+        argv = sys.argv
 
-    if len(args) > 0 and args[0] == LOADING_ARGV0:
+    if len(argv) > 0 and argv[0] == LOADING_ARGV0:
         return True
 
     if flags:
-        return any(flag in args for flag in flags)
+        return any(flag in argv for flag in flags)
