@@ -342,32 +342,6 @@ def get_logpanel_width() -> int:
     )
 
 
-def get_plugin_context(plugins: List[Any]) -> SimplugContext:
-    """Get the plugin context to enable and disable plugins per pipeline
-
-    Args:
-        plugins: A list of plugins to enable or a list of names with 'no:'
-            as prefix to disable
-
-    Returns:
-        The plugin context manager
-    """
-    if plugins is None:  # pragma: no cover
-        return plugin.plugins_only_context(None)
-
-    no_plugins = [
-        isinstance(plug, str) and plug.startswith("no:") for plug in plugins
-    ]
-    if any(no_plugins) and not all(no_plugins):
-        raise ConfigurationError(
-            'Either all plugin names start with "no:" or ' "none of them does."
-        )
-    if all(no_plugins):
-        return plugin.plugins_but_context(plug[3:] for plug in plugins)
-
-    return plugin.plugins_only_context(plugins)
-
-
 def log_rich_renderable(
     renderable: RenderableType,
     color: str | None,

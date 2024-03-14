@@ -26,7 +26,6 @@ from .utils import (
     copy_dict,
     desc_from_docstring,
     get_logpanel_width,
-    get_plugin_context,
     is_valid_name,
     log_rich_renderable,
     logger,
@@ -145,7 +144,7 @@ class Pipen:
             plugin.load_entrypoints()
 
         plugins = self.config.plugins or self._kwargs.get("plugins", [])
-        self.plugin_context = get_plugin_context(plugins)
+        self.plugin_context = plugin.plugins_context(plugins)
         self.plugin_context.__enter__()
 
         # make sure core plugin is enabled
