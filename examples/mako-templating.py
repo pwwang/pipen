@@ -28,7 +28,7 @@ class MakoProcess(Proc):
 
 class MyPipeline(Pipen):
     starts = MakoProcess
-    plugins = ["no:filters"]
+    plugins = ["-filters"]
 
 
 if __name__ == "__main__":
