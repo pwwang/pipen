@@ -34,7 +34,7 @@ varname = "^0.13"
 
 [tool.poetry.dev-dependencies]
 openpyxl = "^3"
-pytest = "^7"
+pytest = "^8.0"
 pytest-asyncio = "^0.23"
 pytest-cov = "^4"
 pytest-xdist = "^3"
