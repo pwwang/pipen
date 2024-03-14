@@ -1,5 +1,15 @@
 # Change Log
 
+## 0.14.4
+
+- deps: bump xqute to 0.4 (simplug to 0.4.1)
+- refactor: refactor `pipen.plugin_context` due to simplug upgrade
+- docs: update docs for specifiying plugins due to simplug upgrade
+- examples: update examples for specifiying plugins due to simplug upgrade
+- tests: add tests for plugins specification
+- tests: use pytest v8
+- ci: use latest actions
+
 ## 0.14.3
 
 - choir: rename argument `args` to `argv` for `utils.is_loading_pipeline()`
