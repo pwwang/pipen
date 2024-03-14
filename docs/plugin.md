@@ -130,12 +130,12 @@ You can specify the plugins to be loaded by specifying the names or the plugin i
 You can also disable some plugins if they are set in the lower-priority configurations. For example, you want to disable `pipen_verbose` (enabled in a configuration file) for a pipeline:
 
 ```python
-Pipen(..., plugins=["no:pipen_verbose"])
+Pipen(..., plugins=["-pipen_verbose"])
 ```
 
 !!! note
 
-    When use `no:` in `plugins`, it should be all negated or positive. The best practice is that, enabled many plugins in configuration files and disable some for specific pipelines, or enable as few as possible plugins in configuration files, and enable some for specific pipelines.
+    You can use `+` as prefix to enable a disabled plugin, or `-` as prefix to disable an enabled plugin. If no prefix is used, only the specified plugins will be enabled and all other plugins will be disabled. You should either use `+` or `-` for all plugins or none of them. If a plugin is not given as a string, it will be treated as `+plugin`.
 
 ## Writing a plugin
 
@@ -171,7 +171,7 @@ For `pyproject.toml`:
 pipen_verbose = "pipen_verbose"
 ```
 
-Then the plugin `pipen_verbose` can be loaded by `plugins=["pipen_verbose"]` or disabled by `plugins=["no:pipen_verbose"]`
+Then the plugin `pipen_verbose` can be loaded by `plugins=["+pipen_verbose"]` or disabled by `plugins=["-pipen_verbose"]`
 
 ### Logging to the console from a plugin
 
