@@ -18,10 +18,10 @@ generate-setup-file = true
 [tool.poetry.dependencies]
 python = "^3.9"
 liquidpy = "^0.8.2"
-pandas = "^2"
+pandas = "^2.0"
 enlighten = "^1"
 argx = "^0.2.10"
-xqute = "^0.3.1"
+xqute = "^0.4.0"
 ## included in xqute
 # rich = "^13"
 # diot = "^0.1"
