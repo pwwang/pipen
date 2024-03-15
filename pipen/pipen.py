@@ -143,7 +143,9 @@ class Pipen:
             # cyclic imports
             plugin.load_entrypoints()
 
-        plugins = self.config.plugins or self._kwargs.get("plugins", [])
+        plugins = self._kwargs.get("plugins", None)
+        if plugins is None:
+            plugins = self.config.plugins
         self.plugin_context = plugin.plugins_context(plugins)
         self.plugin_context.__enter__()
 
