@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.14.5
+
+- fix: fix all plugins being disabled by default
+
 ## 0.14.4
 
 - deps: bump xqute to 0.4 (simplug to 0.4.1)
