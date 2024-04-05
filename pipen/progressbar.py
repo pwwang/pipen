@@ -52,7 +52,10 @@ class ProcPBar:
         try:
             self.success_counter.update_from(self.running_counter)
         except ValueError:  # pragma: no cover
-            self.success_counter.update_from(self.submitted_counter)
+            try:
+                self.success_counter.update_from(self.submitted_counter)
+            except ValueError:  # pragma: no cover
+                pass
         except:  # noqa: E722  # pragma: no cover
             pass
 
