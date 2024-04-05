@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.14.6
+
+- fix: fix error handling in ProcPBar class
+- deps: bump up dev deps
+
 ## 0.14.5
 
 - fix: fix all plugins being disabled by default
