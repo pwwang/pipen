@@ -41,8 +41,6 @@ from .defaults import (
     CONSOLE_WIDTH_SHIFT,
     LOGGER_NAME,
 )
-from .exceptions import ConfigurationError
-from .pluginmgr import plugin
 from .version import __version__
 
 from importlib import metadata as importlib_metadata
@@ -417,7 +415,7 @@ def pipen_banner() -> RenderableType:
     return table
 
 
-def get_mtime(path: PathLike, dir_depth: int = 1) -> float:
+def get_mtime(path: str | PathLike, dir_depth: int = 1) -> float:
     """Get the modification time of a path.
     If path is a directory, try to get the last modification time of the
     contents in the directory at given dir_depth
@@ -429,7 +427,7 @@ def get_mtime(path: PathLike, dir_depth: int = 1) -> float:
     """
     path = Path(path)
     if not path.is_dir() or dir_depth == 0:
-        return path.stat().st_mtime
+        return path.lstat().st_mtime if path.is_symlink() else path.stat().st_mtime
 
     mtime = 0.0
     for file in path.glob("*"):
@@ -610,9 +608,9 @@ def _get_obj_from_spec(spec: str) -> Any:
 
     path = Path(modpath)
     if path.is_file():
-        spec = importlib.util.spec_from_file_location(path.stem, modpath)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
+        mspec = importlib.util.spec_from_file_location(path.stem, modpath)
+        module = importlib.util.module_from_spec(mspec)
+        mspec.loader.exec_module(module)
     else:
         module = importlib.import_module(modpath)
 
@@ -682,11 +680,11 @@ async def load_pipeline(
             pipeline = Pipen(**kwargs).set_starts(obj)
 
         if isinstance(obj, type) and issubclass(obj, ProcGroup):
-            pipeline = obj().as_pipen(**kwargs)
+            pipeline = obj().as_pipen(**kwargs)  # type: ignore
 
         if isinstance(obj, type) and issubclass(obj, Pipen):
             # Avoid "pipeline" to be used as pipeline name by varname
-            (pipeline, ) = (obj(**kwargs), )
+            (pipeline, ) = (obj(**kwargs), )  # type: ignore
 
         if not isinstance(pipeline, Pipen):
             raise TypeError(
@@ -736,3 +734,5 @@ def is_loading_pipeline(*flags: str, argv: Sequence[str] | None = None) -> bool:
 
     if flags:
         return any(flag in argv for flag in flags)
+
+    return False  # pragma: no cover

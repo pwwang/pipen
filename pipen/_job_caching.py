@@ -1,13 +1,14 @@
 """Provide JobCaching class that implements caching for jobs"""
-import shutil
+from __future__ import annotations
+
+from os import PathLike
 from pathlib import Path
 
 import rtoml
 from simpleconf import Config
-from xqute.utils import asyncify
 
 from .defaults import ProcInputType, ProcOutputType
-from .utils import get_mtime
+from .pluginmgr import ioplugin
 
 
 class JobCaching:
@@ -44,7 +45,7 @@ class JobCaching:
                 and self.input[inkey] is not None
             ):
                 max_mtime = max(
-                    max_mtime, get_mtime(self.input[inkey], dirsig)
+                    max_mtime, ioplugin.hooks.get_mtime(self.input[inkey], dirsig)
                 )
 
             if (
@@ -52,12 +53,12 @@ class JobCaching:
                 and self.input[inkey] is not None
             ):
                 for file in self.input[inkey]:
-                    max_mtime = max(max_mtime, get_mtime(file, dirsig))
+                    max_mtime = max(max_mtime, ioplugin.hooks.get_mtime(file, dirsig))
 
         for outkey, outval in self._output_types.items():
             if outval in (ProcOutputType.FILE, ProcInputType.DIR):
                 max_mtime = max(
-                    max_mtime, get_mtime(self.output[outkey], dirsig)
+                    max_mtime, ioplugin.hooks.get_mtime(self.output[outkey], dirsig)
                 )
 
         signature = {
@@ -77,20 +78,10 @@ class JobCaching:
             if outval not in (ProcOutputType.FILE, ProcOutputType.DIR):
                 continue
 
-            outfile = Path(self.output[outkey])
-
-            # dead link
-            if not outfile.exists():
-                if outfile.is_symlink():
-                    await asyncify(Path.unlink)(outfile)
-
-            elif outval == ProcOutputType.FILE:
-                await asyncify(Path.unlink)(outfile)
-
-            else:  # DIR
-                await asyncify(shutil.rmtree)(outfile)
-                # Get the directory back
-                outfile.mkdir()
+            await ioplugin.hooks.clear_path(
+                self.output[outkey],
+                outval == ProcOutputType.DIR,
+            )
 
     async def _check_cached(self) -> bool:
         """Check if the job is cached based on signature
@@ -133,7 +124,7 @@ class JobCaching:
 
                 if intype in (ProcInputType.FILE, ProcInputType.DIR):
                     if (
-                        get_mtime(self.input[inkey], dirsig)
+                        ioplugin.hooks.get_mtime(self.input[inkey], dirsig)
                         > signature.ctime + 1e-3
                     ):
                         self.log(
@@ -145,7 +136,10 @@ class JobCaching:
 
                 if intype in (ProcInputType.FILES, ProcInputType.DIRS):
                     for file in self.input[inkey]:
-                        if get_mtime(file, dirsig) > signature.ctime + 1e-3:
+                        if (
+                            ioplugin.hooks.get_mtime(file, dirsig)
+                            > signature.ctime + 1e-3
+                        ):
                             self.log(
                                 "debug",
                                 "Not cached (One of the input files "
@@ -158,7 +152,11 @@ class JobCaching:
                 if outval not in (ProcOutputType.FILE, ProcOutputType.DIR):
                     continue
 
-                if not Path(self.output[outkey]).exists():
+                output_exists = await ioplugin.hooks.output_exists(
+                    self.output[outkey],
+                    outval == ProcOutputType.DIR,
+                )
+                if not output_exists:
                     self.log(
                         "debug",
                         "Not cached (Output file removed: %s)",

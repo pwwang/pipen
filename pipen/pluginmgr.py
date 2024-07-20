@@ -1,18 +1,24 @@
 """Define hooks specifications and provide plugin manager"""
 from __future__ import annotations
 
+import shutil
+from os import PathLike
 from pathlib import Path
-from typing import Any, Dict, TYPE_CHECKING
+from functools import partial
+from typing import Any, Dict, Callable, TYPE_CHECKING
 
-from simplug import Simplug, SimplugResult
+from simplug import Simplug, SimplugResult, makecall
 from xqute import JobStatus, Scheduler
-from xqute.utils import a_read_text, a_write_text
+from xqute.utils import a_read_text, a_write_text, asyncify
 
 from .defaults import ProcOutputType
+from .exceptions import ProcInputValueError, ProcOutputValueError
+from .utils import get_mtime as _get_mtime
 
 
 if TYPE_CHECKING:  # pragma: no cover
     import signal
+    from simplug import SimplugImplCall
     from xqute import Xqute
     from .job import Job
     from .proc import Proc
@@ -345,6 +351,215 @@ class PipenMainPlugin:
 
 
 plugin.register(PipenMainPlugin)
+
+ioplugin = Simplug("pipen.io")
+
+
+def _collect_io_results(
+    calls: list[SimplugImplCall],
+    exc: Callable[[list[SimplugImplCall]], Exception],
+    convert: Callable = None,
+) -> Any:
+    for call in calls:
+        out = makecall(call)
+        if out is not None:
+            return convert(out) if convert else out
+
+    raise exc  # pragma: no cover
+
+
+async def _acollect_io_results(
+    calls: list[SimplugImplCall],
+    exc: Callable[[list[SimplugImplCall]], Exception],
+    convert: Callable = None,
+) -> Any:
+    for call in calls:
+        out = await makecall(call, True)
+        if out is not None:
+            return convert(out) if convert else out
+
+    raise exc  # pragma: no cover
+
+
+@ioplugin.spec(
+    result=partial(
+        _collect_io_results,
+        exc=lambda calls: ProcInputValueError(
+            f"Unsupported protocol for input path: {calls[0].args[0]}"
+        ),
+        convert=str,
+    )
+)
+def norm_inpath(inpath: str | PathLike, is_dir: bool) -> str:
+    """Normalize the input path
+
+    Args:
+        inpath: The input path
+        is_dir: Whether the path is a directory
+
+    Returns:
+        The normalized path
+    """
+
+
+@ioplugin.spec(
+    result=partial(
+        _collect_io_results,
+        exc=lambda calls: ProcOutputValueError(
+            f"Unsupported protocol for output path: {calls[0].args[1]}"
+        ),
+        convert=str,
+    )
+)
+def norm_outpath(outdir: Path, outpath: str, is_dir: bool) -> str:
+    """Normalize the output path
+
+    Args:
+        outdir: The job output directory
+        outpath: The output path
+        is_dir: Whether the path is a directory
+
+    Returns:
+        The normalized path
+    """
+
+
+@ioplugin.spec(
+    result=partial(
+        _collect_io_results,
+        exc=lambda calls: NotImplementedError(
+            f"Unsupported protocol in path to get mtime: {calls[0].args[0]}"
+        ),
+    )
+)
+def get_mtime(path: str | PathLike, dirsig: int) -> float:
+    """Get the mtime of a path, either a file or a directory
+
+    Args:
+        path: The path to get mtime
+        dirsig: The depth of the directory to check the last modification time
+
+    Returns:
+        The last modification time
+    """
+
+
+@ioplugin.spec(
+    result=partial(
+        _acollect_io_results,
+        exc=lambda calls: NotImplementedError(
+            f"Unsupported protocol in path to clear: {calls[0].args[0]}"
+        ),
+    )
+)
+async def clear_path(path: str | PathLike, is_dir: bool) -> bool:
+    """Clear the path, either a file or a directory
+
+    Args:
+        path: The path to clear
+        is_dir: Whether the path is a directory
+
+    Returns:
+        Whether the path is cleared successfully
+    """
+
+
+@ioplugin.spec(
+    result=partial(
+        _acollect_io_results,
+        exc=lambda calls: NotImplementedError(
+            f"Unsupported protocol in path to test existence: {calls[0].args[0]}"
+        ),
+    )
+)
+async def output_exists(path: str, is_dir: bool) -> bool:
+    """Check if the output exists
+
+    Args:
+        path: The path to check
+        is_dir: Whether the path is a directory
+
+    Returns:
+        Whether the output exists
+    """
+
+
+class PipenMainIOPlugin:
+    """The builtin core plugin for IO"""
+
+    name = "core"
+    # The priority is set to 9999 to make sure it is the last plugin
+    # to be called
+    priority = 9999
+
+    @ioplugin.impl
+    def norm_inpath(
+        self,
+        inpath: str | PathLike,
+        is_dir: bool,
+    ):
+        """Normalize the input path"""
+        return str(Path(inpath).expanduser().resolve())
+
+    @ioplugin.impl
+    def norm_outpath(
+        self,
+        outdir: Path,
+        outpath: str,
+        is_dir: bool,
+    ):
+        """Normalize the output path"""
+        if Path(outpath).is_absolute():
+            raise ProcOutputValueError("Process output should be a relative path")
+
+        out = outdir.resolve() / outpath
+        if is_dir:
+            out.mkdir(parents=True, exist_ok=True)
+
+        return str(out)
+
+    @ioplugin.impl
+    def get_mtime(
+        self,
+        path: str | PathLike,
+        dirsig: int,
+    ):
+        """Get the mtime of a path"""
+        return _get_mtime(path, dirsig)
+
+    @ioplugin.impl
+    async def clear_path(self, path: str | PathLike, is_dir: bool):
+        """Clear the path"""
+        # dead link
+
+        path = Path(path)
+        try:
+            if not path.exists():
+                if path.is_symlink():
+                    await asyncify(Path.unlink)(path)
+
+            elif not is_dir:
+                await asyncify(Path.unlink)(path)
+
+            else:
+                await asyncify(shutil.rmtree)(path)
+                path.mkdir()
+        except Exception:  # pragma: no cover
+            return False
+        return True
+
+    @ioplugin.impl
+    async def output_exists(self, path: str, is_dir: bool):
+        """Check if the output exists"""
+        path: Path = Path(path)
+        if not path.exists():
+            return False
+        if is_dir:
+            return len(list(path.iterdir())) > 0  # pragma: no cover
+        return True
+
+
+ioplugin.register(PipenMainIOPlugin)
 
 xqute_plugin = Simplug("xqute")
 

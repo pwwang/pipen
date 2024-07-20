@@ -17,6 +17,7 @@ from ._job_caching import JobCaching
 from .defaults import ProcInputType, ProcOutputType
 from .exceptions import (
     ProcInputTypeError,
+    ProcInputValueError,
     ProcOutputNameError,
     ProcOutputTypeError,
     ProcOutputValueError,
@@ -24,6 +25,7 @@ from .exceptions import (
 )
 from .template import Template
 from .utils import logger, strsplit
+from .pluginmgr import ioplugin
 
 if TYPE_CHECKING:  # pragma: no cover
     from .proc import Proc
@@ -91,12 +93,15 @@ class Job(XquteJob, JobCaching):
             if intype in (ProcInputType.FILE, ProcInputType.DIR):
                 if not isinstance(ret[inkey], (str, PathLike)):
                     raise ProcInputTypeError(
-                        f"Got {type(ret[inkey])} instead of PathLike object "
+                        f"[{self.proc.name}] Got {type(ret[inkey])} instead of PathLike object "
                         f"for input: {inkey + ':' + intype!r}"
                     )
 
                 # we should use it as a string
-                ret[inkey] = str(Path(ret[inkey]).resolve())
+                ret[inkey] = ioplugin.hooks.norm_inpath(
+                    ret[inkey],
+                    intype == ProcInputType.DIR,
+                )
 
             if intype in (ProcInputType.FILES, ProcInputType.DIRS):
                 if isinstance(ret[inkey], pandas.DataFrame):
@@ -110,7 +115,11 @@ class Job(XquteJob, JobCaching):
                     )
 
                 for i, file in enumerate(ret[inkey]):
-                    ret[inkey][i] = str(Path(file).resolve())
+                    ret[inkey][i] = ioplugin.hooks.norm_inpath(
+                        file,
+                        intype == ProcInputType.DIRS,
+                    )
+
         return ret
 
     @cached_property
@@ -168,22 +177,15 @@ class Job(XquteJob, JobCaching):
                     )
 
             self._output_types[output_name] = output_type
-            ret[output_name] = output_value
 
             if output_type == ProcOutputType.VAR:
-                continue
-
-            if Path(output_value).is_absolute():
-                raise ProcOutputValueError(
-                    f"[{self.proc.name}] Path in output should be relative."
+                ret[output_name] = output_value
+            else:
+                ret[output_name] = ioplugin.hooks.norm_outpath(
+                    self.outdir,
+                    output_value,
+                    output_type == ProcOutputType.DIR,
                 )
-
-            ret[output_name] = self.outdir.resolve() / output_value
-
-            if output_type == ProcOutputType.DIR:
-                ret[output_name].mkdir(parents=True, exist_ok=True)
-
-            ret[output_name] = str(ret[output_name])
 
         return ret
 

@@ -15,6 +15,10 @@ class ProcInputTypeError(PipenException, TypeError):
 
 
 class ProcInputKeyError(PipenException, KeyError):
+    """When an unsupported input key is provided"""
+
+
+class ProcInputValueError(PipenException, ValueError):
     """When an unsupported input value is provided"""
 
 
