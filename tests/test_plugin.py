@@ -76,7 +76,7 @@ def test_plugin_context_mixed(tmp_path, capsys):
 
 
 @pytest.mark.forked
-def test_ioplugin(tmp_path):
+def test_ioplugin(tmp_path, pipen):
     test_file = tmp_path / "test.txt"
     test_outdir = tmp_path / "output"
     test_file.write_text("abcd")
@@ -103,7 +103,7 @@ def test_ioplugin(tmp_path):
         output = "outfile:file:myio://out.txt"
         script = "cp {{in.infile}} {{out.outfile}}"
 
-    pipen = Pipen().set_starts(IOProc)
+    pipen.set_starts(IOProc)
     assert pipen.run()
     assert test_outdir.joinpath("out.txt").exists()
     assert test_outdir.joinpath("out.txt").read_text() == "abcd"
