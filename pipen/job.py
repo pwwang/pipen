@@ -17,10 +17,8 @@ from ._job_caching import JobCaching
 from .defaults import ProcInputType, ProcOutputType
 from .exceptions import (
     ProcInputTypeError,
-    ProcInputValueError,
     ProcOutputNameError,
     ProcOutputTypeError,
-    ProcOutputValueError,
     TemplateRenderingError,
 )
 from .template import Template
@@ -93,8 +91,8 @@ class Job(XquteJob, JobCaching):
             if intype in (ProcInputType.FILE, ProcInputType.DIR):
                 if not isinstance(ret[inkey], (str, PathLike)):
                     raise ProcInputTypeError(
-                        f"[{self.proc.name}] Got {type(ret[inkey])} instead of PathLike object "
-                        f"for input: {inkey + ':' + intype!r}"
+                        f"[{self.proc.name}] Got {type(ret[inkey])} instead of "
+                        f"PathLike object for input: {inkey + ':' + intype!r}"
                     )
 
                 # we should use it as a string

@@ -1,7 +1,6 @@
 """Provide JobCaching class that implements caching for jobs"""
 from __future__ import annotations
 
-from os import PathLike
 from pathlib import Path
 
 import rtoml
