@@ -1,7 +1,7 @@
 """Provide Cli class"""
 from __future__ import annotations
 
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from simplug import Simplug
@@ -26,7 +26,8 @@ class CLIPlugin(ABC):
         self.parser = parser
         self.subparser = subparser
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def name(self) -> str:
         """The name/command of this plugin"""
 
