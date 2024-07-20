@@ -33,6 +33,7 @@ from .helpers import (
 )
 
 
+@pytest.mark.forked
 def test_caching(caplog, pipen, infile):
     proc = Proc.from_proc(FileInputProc, input_data=[infile])
     pipen.set_starts(proc).run()
@@ -42,6 +43,7 @@ def test_caching(caplog, pipen, infile):
     assert caplog.text.count("Cached jobs:") == 1
 
 
+@pytest.mark.forked
 def test_input_files_caching(caplog, pipen, infile):
     proc = Proc.from_proc(FileInputsProc, input_data=[[infile, infile]])
     pipen.set_starts(proc).run()
@@ -50,6 +52,7 @@ def test_input_files_caching(caplog, pipen, infile):
     assert caplog.text.count("Cached jobs:") == 1
 
 
+@pytest.mark.forked
 def test_mixed_input_caching(caplog, pipen, infile):
     proc = Proc.from_proc(MixedInputProc, input_data=[("in", infile)])
     pipen.set_starts(proc).run()
@@ -58,6 +61,7 @@ def test_mixed_input_caching(caplog, pipen, infile):
     assert caplog.text.count("Cached jobs:") == 1
 
 
+@pytest.mark.forked
 def test_clear_output_dead_link(pipen, infile):
     outfile = Path(pipen.outdir) / "proc" / "infile"
     outfile.parent.mkdir(parents=True, exist_ok=True)
@@ -70,6 +74,7 @@ def test_clear_output_dead_link(pipen, infile):
     assert outfile.is_file() and outfile.exists()
 
 
+@pytest.mark.forked
 def test_clear_outfile(pipen, infile):
     outfile = Path(pipen.outdir) / "proc" / "infile"
     outfile.parent.mkdir(parents=True, exist_ok=True)
@@ -81,6 +86,7 @@ def test_clear_outfile(pipen, infile):
     assert outfile.read_text() == "in"
 
 
+@pytest.mark.forked
 def test_dir_output_auto_created(pipen):
     proc = Proc.from_proc(DirOutputProc, input_data=[1])
     pipen.set_starts(proc).run()
@@ -88,6 +94,7 @@ def test_dir_output_auto_created(pipen):
     assert outdir.is_dir()
 
 
+@pytest.mark.forked
 def test_clear_outdir(pipen):
 
     outdir = Path(pipen.outdir) / "proc_job_clear_outdir" / "outdir"
@@ -106,6 +113,7 @@ def test_clear_outdir(pipen):
     assert outdir.joinpath("outfile").read_text().strip() == "abc"
 
 
+@pytest.mark.forked
 def test_check_cached_input_or_output_different(
     caplog, pipen, infile1, infile2
 ):
@@ -122,6 +130,7 @@ def test_check_cached_input_or_output_different(
     assert "Not cached (input or output is different)" in caplog.text
 
 
+@pytest.mark.forked
 def test_check_cached_script_file_newer(caplog, pipen, infile):
 
     proc_script_newer = Proc.from_proc(NormalProc, input_data=[(1, infile)])
@@ -133,12 +142,14 @@ def test_check_cached_script_file_newer(caplog, pipen, infile):
     assert "Not cached (script file is newer" in caplog.text
 
 
+@pytest.mark.forked
 def test_check_cached_cache_false(caplog, pipen):
     proc = Proc.from_proc(SimpleProc, cache=False)
     pipen.set_starts(proc).run()
     assert "Not cached (proc.cache is False)" in caplog.text
 
 
+@pytest.mark.forked
 def test_check_cached_rc_ne_0(caplog, pipen):
     proc = Proc.from_proc(ErrorProc)
     pipen.set_starts(proc).run()
@@ -147,6 +158,7 @@ def test_check_cached_rc_ne_0(caplog, pipen):
     assert "Not cached (job.rc != 0)" in caplog.text
 
 
+@pytest.mark.forked
 def test_check_cached_sigfile_notfound(caplog, pipen):
     proc = Proc.from_proc(SimpleProc, input_data=[1])
     # run to generate signature file
@@ -158,6 +170,7 @@ def test_check_cached_sigfile_notfound(caplog, pipen):
     assert "Not cached (signature file not found)" in caplog.text
 
 
+@pytest.mark.forked
 def test_check_cached_force_cache(caplog, pipen, infile):
     proc_script_newer2 = Proc.from_proc(NormalProc, input_data=[(1, infile)])
     proc_script_newer3 = Proc.from_proc(
@@ -175,6 +188,7 @@ def test_check_cached_force_cache(caplog, pipen, infile):
     assert "Cached jobs:" in caplog.text
 
 
+@pytest.mark.forked
 def test_check_cached_infile_newer(caplog, pipen, infile):
     proc_infile_newer = Proc.from_proc(
         MixedInputProc, input_data=[(1, infile)]
@@ -187,6 +201,7 @@ def test_check_cached_infile_newer(caplog, pipen, infile):
     assert "Not cached (Input file is newer:" in caplog.text
 
 
+@pytest.mark.forked
 def test_check_cached_infiles_newer(caplog, pipen, infile):
     proc_infile_newer = Proc.from_proc(
         FileInputsProc, input_data=[[infile, infile]]
@@ -201,6 +216,7 @@ def test_check_cached_infiles_newer(caplog, pipen, infile):
     assert "Not cached (One of the input files is newer:" in caplog.text
 
 
+@pytest.mark.forked
 def test_check_cached_outfile_removed(caplog, pipen, infile):
     proc_outfile_removed = Proc.from_proc(FileInputProc, input_data=[infile])
     pipen.set_starts(proc_outfile_removed).run()
@@ -212,6 +228,7 @@ def test_check_cached_outfile_removed(caplog, pipen, infile):
     assert "Not cached (Output file removed:" in caplog.text
 
 
+@pytest.mark.forked
 def test_metaout_was_dir(pipen):
     proc1 = Proc.from_proc(NormalProc)
     proc2 = Proc.from_proc(NormalProc, requires=proc1)
@@ -227,36 +244,42 @@ def test_metaout_was_dir(pipen):
     metaout.unlink()
 
 
+@pytest.mark.forked
 def test_script_failed_to_render(pipen):
     proc = Proc.from_proc(ScriptRenderErrorProc, input_data=[1])
     with pytest.raises(TemplateRenderingError, match="script"):
         pipen.set_starts(proc).run()
 
 
+@pytest.mark.forked
 def test_output_failed_to_render(pipen):
     proc = Proc.from_proc(OutputRenderErrorProc, input_data=[1])
     with pytest.raises(TemplateRenderingError, match="output"):
         pipen.set_starts(proc).run()
 
 
+@pytest.mark.forked
 def test_output_no_name_type(pipen):
     proc = Proc.from_proc(OutputNoNameErrorProc, input_data=[1])
     with pytest.raises(ProcOutputNameError, match="output"):
         pipen.set_starts(proc).run()
 
 
+@pytest.mark.forked
 def test_output_wrong_type(pipen):
     proc = Proc.from_proc(OutputWrongTypeProc, input_data=[1])
     with pytest.raises(ProcOutputTypeError, match="output"):
         pipen.set_starts(proc).run()
 
 
+@pytest.mark.forked
 def test_output_abspath(pipen):
     proc = Proc.from_proc(OutputAbsPathProc, input_data=[1])
     with pytest.raises(ProcOutputValueError, match="output"):
         pipen.set_starts(proc).run()
 
 
+@pytest.mark.forked
 def test_job_log_limit(caplog, pipen):
     proc = Proc.from_proc(SimpleProc, input_data=[1] * 5)
     pipen.set_starts(proc).run()
@@ -271,12 +294,14 @@ def test_job_log_limit(caplog, pipen):
     assert "showing similar logs" in caplog.text
 
 
+@pytest.mark.forked
 def test_wrong_input_type(pipen):
     proc = Proc.from_proc(MixedInputProc, input_data=[(1, 1)])
     with pytest.raises(ProcInputTypeError):
         pipen.set_starts(proc).run()
 
 
+@pytest.mark.forked
 def test_wrong_input_type_for_files(pipen):
     proc = Proc.from_proc(FileInputsProc, input_data=[1])
     with pytest.raises(ProcInputTypeError):
