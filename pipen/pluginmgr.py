@@ -352,7 +352,7 @@ class PipenMainPlugin:
 
 plugin.register(PipenMainPlugin)
 
-ioplugin = Simplug("pipen.io")
+ioplugin = Simplug("pipen_io")
 
 
 def _collect_io_results(
