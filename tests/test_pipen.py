@@ -19,10 +19,12 @@ from .helpers import (
 )
 
 
+@pytest.mark.forked
 def test_init(pipen):
     assert isinstance(pipen, Pipen)
 
 
+@pytest.mark.forked
 def test_name():
     p = Pipen()
     assert p.name == "p"
@@ -30,6 +32,7 @@ def test_name():
     assert p.name.startswith("Pipen-")
 
 
+@pytest.mark.forked
 def test_run(pipen):
     ret = pipen.set_starts(SimpleProc).run()
     assert ret
@@ -38,11 +41,13 @@ def test_run(pipen):
     assert not ret
 
 
+@pytest.mark.forked
 def test_no_start_procs(pipen):
     with pytest.raises(ProcDependencyError):
         pipen.run()
 
 
+@pytest.mark.forked
 def test_cyclic_dependency(pipen):
     """
     proc1(start) --> proc2 --> proc3(start)
@@ -57,6 +62,7 @@ def test_cyclic_dependency(pipen):
         pipen.set_starts(proc1, proc3).run()
 
 
+@pytest.mark.forked
 def test_not_cyclic_for_subclass_of_proc_in_pipeline(pipen):
     proc1 = Proc.from_proc(NormalProc, input_data=[1])
     proc2 = Proc.from_proc(NormalProc, requires=proc1)
@@ -68,6 +74,7 @@ def test_not_cyclic_for_subclass_of_proc_in_pipeline(pipen):
     assert pipen.procs == [proc1, proc2, proc3]
 
 
+@pytest.mark.forked
 def test_no_next_procs(pipen):
     """
     proc1 --> proc2 --> proc3
@@ -87,6 +94,7 @@ def test_no_next_procs(pipen):
         pipen.set_starts(proc1).run()
 
 
+@pytest.mark.forked
 def test_plugins_are_pipeline_dependent(pipen, pipen_with_plugin, caplog):
     simproc = Proc.from_proc(SimpleProc)
     pipen_with_plugin.set_starts(simproc).run()
@@ -97,11 +105,13 @@ def test_plugins_are_pipeline_dependent(pipen, pipen_with_plugin, caplog):
     assert "simpleplugin" not in caplog.text
 
 
+@pytest.mark.forked
 def test_set_starts_error(pipen):
     with pytest.raises(ProcDependencyError):
         pipen.set_starts(SimpleProc, SimpleProc)
 
 
+@pytest.mark.forked
 def test_set_data(pipen):
     simproc = Proc.from_proc(SimpleProc, input_data=[1])
     pipen.set_starts(simproc).set_data(None)
@@ -111,6 +121,7 @@ def test_set_data(pipen):
         pipen.set_data([2])
 
 
+@pytest.mark.forked
 def test_proc_order(pipen):
     proc1 = Proc.from_proc(NormalProc, input_data=[1])
     proc2 = Proc.from_proc(NormalProc, requires=proc1)
@@ -120,6 +131,7 @@ def test_proc_order(pipen):
     assert pipen.procs == [proc1, proc3, proc2]
 
 
+@pytest.mark.forked
 def test_proc_inherited(pipen):
     proc1 = Proc.from_proc(RelPathScriptProc)
     proc2 = Proc.from_proc(proc1)
@@ -127,6 +139,7 @@ def test_proc_inherited(pipen):
     assert proc2.__doc__ == RelPathScriptProc.__doc__
 
 
+@pytest.mark.forked
 def test_subclass_pipen(tmp_path, caplog):
     class Proc1(Proc):
         input = "a"
@@ -162,6 +175,7 @@ def test_subclass_pipen(tmp_path, caplog):
     assert MyPipe2().name == "MyPipe2"
 
 
+@pytest.mark.forked
 def test_invalid_name():
     class MyPipe3(Pipen):
         name = "a+"
@@ -170,6 +184,7 @@ def test_invalid_name():
         MyPipe3().run()
 
 
+@pytest.mark.forked
 def test_duplicate_proc_name():
     class MyProc1(Proc):
         ...

@@ -74,6 +74,7 @@ def test_cached_run(caplog, pipen):
     assert caplog.text.count("Cached jobs:") == 1
 
 
+@pytest.mark.forked
 def test_more_nexts(pipen):
     proc1 = Proc.from_proc(NormalProc)
     Proc.from_proc(NormalProc, "proc2", requires=proc1)
@@ -82,22 +83,26 @@ def test_more_nexts(pipen):
     assert ret
 
 
+@pytest.mark.forked
 def test_proc_no_input(pipen):
     with pytest.raises(ProcInputKeyError):
         pipen.set_starts(NoInputProc).run()
 
 
+@pytest.mark.forked
 def test_unsupported_input_type(pipen):
     with pytest.raises(ProcInputTypeError):
         pipen.set_starts(InputTypeUnsupportedProc).run()
 
 
+@pytest.mark.forked
 def test_proc_with_input_data(pipen):
     proc = Proc.from_proc(NormalProc, input_data=[1])
     pipen.set_starts(proc).run()
     assert proc.output_data.equals(pandas.DataFrame({"output": ["1"]}))
 
 
+@pytest.mark.forked
 def test_proc_with_input_callable(pipen):
     proc = Proc.from_proc(NormalProc, input_data=[1])
     proc2 = Proc.from_proc(
@@ -115,6 +120,7 @@ def test_proc_is_singleton(pipen):
     assert p1 is p2
 
 
+@pytest.mark.forked
 def test_ignore_input_data_of_start_proc(caplog, pipen):
     proc = Proc.from_proc(NormalProc, input_data=[1])
     proc2 = Proc.from_proc(NormalProc, requires=proc, input_data=[2])
@@ -123,6 +129,7 @@ def test_ignore_input_data_of_start_proc(caplog, pipen):
     assert proc2.output_data.equals(pandas.DataFrame({"output": ["1"]}))
 
 
+@pytest.mark.forked
 def test_proc_wasted_input_columns(caplog, pipen):
     proc1 = Proc.from_proc(NormalProc, input_data=[1])
     proc2 = Proc.from_proc(NormalProc, input_data=[1])
@@ -131,6 +138,7 @@ def test_proc_wasted_input_columns(caplog, pipen):
     assert "Wasted 1 column" in caplog.text
 
 
+@pytest.mark.forked
 def test_proc_not_enough_input_columns(caplog, pipen):
     proc1 = Proc.from_proc(NormalProc, input_data=[1])
     proc2 = Proc.from_proc(In2Out1Proc, requires=proc1)
@@ -139,12 +147,14 @@ def test_proc_not_enough_input_columns(caplog, pipen):
     assert proc2.output_data.equals(pandas.DataFrame({"out": ["1_None"]}))
 
 
+@pytest.mark.forked
 def test_proc_relative_path_script(pipen):
     pipen.set_starts(RelPathScriptProc).run()
     script = RelPathScriptProc().script.render()
     assert "AbCdEf" in script
 
 
+@pytest.mark.forked
 def test_script_file_exists(pipen):
     with pytest.raises(ProcScriptFileNotFound):
         pipen.set_starts(ScriptNotExistsProc).run()
