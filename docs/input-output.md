@@ -89,7 +89,7 @@ class P1(Proc):
 
 For `file`/`files`, when checking whether a job is cached, their last modified time will be checked.
 
-For `dir`/`dirs`, if `dirsig` is True, then the files inside the directories will be checked. Otherwise, the directories themselves are checked for last modified time.
+For `dir`/`dirs`, if `dirsig > 0`, then the files inside the directories will be checked. Otherwise, the directories themselves are checked for last modified time.
 
 
 ### Output

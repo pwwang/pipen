@@ -18,8 +18,7 @@ The signature of a job consists of input types and data, output types and data, 
 3. Any changes to `script`
 4. Any touches to input files (since they will make the last modified time > `lastest_time`)
 5. Any touches to input directories
-   - If `dirsig` is `True`, then the files inside the directories are checked recursively
-   - Otherwise, only the directories themselves are checked. Note that modify a file inside a directory may not change the last modified time of the directory itself.
-   - By setting `dirsig` to `True`, it may take time to check when a directory is deep and large
+   - Use `dirsig` as the depth to check the files under the directories
+   - Otherwise if it is `0`, only the directories themselves are checked. Note that modify a file inside a directory may not change the last modified time of the directory itself.
 6. Any deletions to the output files/directories
    Note that only the files/directories specified by `output` are checked. Files or subdirectories in the output directories will NOT be checked.
