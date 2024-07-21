@@ -356,6 +356,7 @@ def get_mtime(job: Job, path: str | PathLike, dirsig: int) -> float:
         The last modification time
     """
 
+
 async def _collect_clear_path(calls: list[SimplugImplCall]) -> bool:
     for call in calls:
         out = await makecall(call)
