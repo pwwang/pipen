@@ -66,7 +66,18 @@ This subcommand is used to list the plugins for `pipen` itself, templates, sched
 
 This command prints the versions of `pipen` and its dependencies.
 
+## CLI plugin gallery
+
+- [`pipen-cli-init`][5]: A pipen CLI plugin to create a pipen project (pipeline)
+- [`pipen-cli-ref`][6]: Make reference documentation for processes
+- [`pipen-cli-require`][7]: A pipen cli plugin check the requirements of a pipeline
+- [`pipen-cli-run`][8]: A pipen cli plugin to run a process or a pipeline
+
 [1]: https://github.com/pwwang/argx
 [2]: ../plugin
 [3]: ../templating
 [4]: ../scheduler
+[5]: https://github.com/pwwang/pipen-cli-init
+[6]: https://github.com/pwwang/pipen-cli-ref
+[7]: https://github.com/pwwang/pipen-cli-require
+[8]: https://github.com/pwwang/pipen-cli-run

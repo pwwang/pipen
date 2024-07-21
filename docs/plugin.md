@@ -1,6 +1,8 @@
 `pipen` uses [`simplug`][1] for plugin support. There are very enriched hooks available for you to write your own plugins to extend `pipen`.
 
-## Plugin hooks
+## Runtime plugins
+
+### Plugin hooks
 
 To implement a function in your plugin, just simply:
 
@@ -16,7 +18,7 @@ Note that you have to use keyword-arguments and they have to match the hook sign
 
 See [`simplug`][1] for more details.
 
-### Pipeline-level hooks
+#### Pipeline-level hooks
 
 - `on_setup(config)` (sync):
 
@@ -37,7 +39,7 @@ See [`simplug`][1] for more details.
 
     After all processes finish. `succeeded` indicates whether all processes/jobs finish successfully.
 
-### Process-level hooks
+#### Process-level hooks
 
 - `on_proc_create(proc)` (sync)
 
@@ -73,7 +75,7 @@ See [`simplug`][1] for more details.
 
     When a process is done.
 
-### Job-level hooks
+#### Job-level hooks
 
 - `on_job_init(proc, job)` (async)
 
@@ -123,7 +125,7 @@ See [`simplug`][1] for more details.
 
     When a job is done but failed (i.e. return_code == 1).
 
-## Loading plugins
+### Loading plugins
 
 You can specify the plugins to be loaded by specifying the names or the plugin itself in `plugins` configuration. With names, the plugins will be loaded from [entry points][2].
 
@@ -137,7 +139,7 @@ Pipen(..., plugins=["-pipen_verbose"])
 
     You can use `+` as prefix to enable a disabled plugin, or `-` as prefix to disable an enabled plugin. If no prefix is used, only the specified plugins will be enabled and all other plugins will be disabled. You should either use `+` or `-` for all plugins or none of them. If a plugin is not given as a string, it will be treated as `+plugin`.
 
-## Writing a plugin
+### Writing a plugin
 
 You can write your own plugin by implementing some of the above hooks. You can import the plugin directly and add it to `Pipen(..., plugins=[...]). For example:
 
@@ -173,7 +175,7 @@ pipen_verbose = "pipen_verbose"
 
 Then the plugin `pipen_verbose` can be loaded by `plugins=["+pipen_verbose"]` or disabled by `plugins=["-pipen_verbose"]`
 
-### Logging to the console from a plugin
+#### Logging to the console from a plugin
 
 Of course you can do arbitrary logging from a plugin. However, to keep the consistency with main logger of `pipen`, The best practice is:
 
@@ -201,6 +203,38 @@ The above code will produce some logging on the console like this:
 
 See [CLI][11] for more details.
 
+## IO plugins
+
+The io plugins are used to handle the input/output files/directories. The idea is to provide more flexibility to fetch the last modified time of the files/directories, and remove the files/directories when the job restarts. The APIs of these types of plugins are primarily used to generate the cache signature for the jobs. There are 4 APIs that need to be implemented:
+
+- `norm_inpath(inpath: str | PathLike, is_dir: bool) -> str`: Normalize/Transform the input path.
+    This is helpful when you want to download the file from a remote server or cloud storage, or you want to use a different path to represent the same file, and provide the local path to the job, so that the job can access the file locally and we don't need to handle them in the job script. The `is_dir` indicates whether the path is a directory.
+- `norm_outpath(outdir: Path, outpath: str, is_dir: bool) -> str`: Normalize/Transform the output path.
+    Note that this is different from `norm_inpath` because when this is called, the output files/directories are not created yet. So we can't use it to upload the files to a remote server or cloud storage yet. To do that, you can use the `on_job_succeeded` hook to upload the files.
+- `def get_mtime(path: str | PathLike, dirsig: int) -> float`: Get the last modified time of the file/directory.
+    The `dirsig` is the depth to check the files under the directory. If it's `0`, only the directory itself is checked. Note that modify a file inside a directory may not change the last modified time of the directory itself.
+- `async def clear_path(path: str | PathLike, is_dir: bool) -> bool`: Clear the file/directory.
+    This is used to remove the files/directories when the job restarts. The `is_dir` indicates whether the path is a directory.
+- `async def output_exists(path: str, is_dir: bool) -> bool`: Check if the output file/directory exists.
+    This is used to check if the output file/directory exists.
+
+It's recommanded to define a protocol for your plugin. For example: `gs://` for Google Cloud Storage, `s3://` for AWS S3, etc. When implementing the above APIs, check if the path starts with the protocol, and handle the path accordingly, otherwise, return `None` for the next available plugin to handle.
+
+!!! note
+
+    IO plugins, like CLI plugins, can not be specified at runtime. For example, `Pipen(..., plugins=[...])` won't work.
+    You have to either register the plugin using:
+
+    ```python
+    from pipen import ioplugin
+
+    ioplugin.register(MyIOPlugin)
+    ```
+
+    Or use the entry point to register the plugin by installing the plugin package.
+
+    The io plugin package should use the entry point group `pipen_io` to register the plugin.
+
 ## Plugin gallery
 
 - [`pipen-verbose`][3]: Add verbosal information in logs for pipen.
@@ -209,8 +243,12 @@ See [CLI][11] for more details.
 - [`pipen-diagram`][5]: Draw pipeline diagrams for pipen
 - [`pipen-args`][6]: Command line argument parser for pipen
 - [`pipen-dry`][7]: Dry runner for pipen pipelines
-- [`pipen-cli-init`][9]: A pipen CLI plugin to create a pipen project (pipeline)
-- [`pipen-cli-run`][10]: A pipen cli plugin to run a process or a pipeline
+- [`pipen-annotate`][12]: Use docstring to annotate pipen processes
+- [`pipen-board`][13]: Visualize configuration and running of pipen pipelines on the web
+- [`pipen-lock`][14]: Process lock for pipen to prevent multiple runs at the same time.
+- [`pipen-log2file`][15]: Save running logs to file for pipen
+- [`pipen-poplog`][16]: Populate logs from jobs to running log of the pipeline
+- [`pipen-runinfo`][17]: Save running information to file for pipen
 
 [1]: https://github.com/pwwang/simplug
 [2]: https://packaging.python.org/specifications/entry-points/
@@ -223,3 +261,9 @@ See [CLI][11] for more details.
 [9]: https://github.com/pwwang/pipen-cli-init
 [10]: https://github.com/pwwang/pipen-cli-run
 [11]: ../cli
+[12]: https://github.com/pwwang/pipen-annotate
+[13]: https://github.com/pwwang/pipen-board
+[14]: https://github.com/pwwang/pipen-lock
+[15]: https://github.com/pwwang/pipen-log2file
+[16]: https://github.com/pwwang/pipen-poplog
+[17]: https://github.com/pwwang/pipen-runinfo
