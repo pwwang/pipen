@@ -797,13 +797,13 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pytest"
-version = "8.2.2"
+version = "8.3.1"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest-8.2.2-py3-none-any.whl", hash = "sha256:c434598117762e2bd304e526244f67bf66bbd7b5d6cf22138be51ff661980343"},
-    {file = "pytest-8.2.2.tar.gz", hash = "sha256:de4bb8104e201939ccdc688b27a89a7be2079b22e2bd2b07f806b6ba71117977"},
+    {file = "pytest-8.3.1-py3-none-any.whl", hash = "sha256:e9600ccf4f563976e2c99fa02c7624ab938296551f280835ee6516df8bc4ae8c"},
+    {file = "pytest-8.3.1.tar.gz", hash = "sha256:7e8e5c5abd6e93cb1cc151f23e57adc31fcf8cfd2a3ff2da63e23f732de35db6"},
 ]
 
 [package.dependencies]
@@ -811,7 +811,7 @@ colorama = {version = "*", markers = "sys_platform == \"win32\""}
 exceptiongroup = {version = ">=1.0.0rc8", markers = "python_version < \"3.11\""}
 iniconfig = "*"
 packaging = "*"
-pluggy = ">=1.5,<2.0"
+pluggy = ">=1.5,<2"
 tomli = {version = ">=1", markers = "python_version < \"3.11\""}
 
 [package.extras]
@@ -1001,13 +1001,13 @@ files = [
 
 [[package]]
 name = "simplug"
-version = "0.4.2"
+version = "0.4.3"
 description = "A simple plugin system for python with async hooks supported"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "simplug-0.4.2-py3-none-any.whl", hash = "sha256:8f71e186ddb23560663c77835ccba5f9bb7c60927a95d767c327055faf600f71"},
-    {file = "simplug-0.4.2.tar.gz", hash = "sha256:141885b6feb90549dfa79a93aa9140908a1dd28ee821cb28ffe4861ca5ce7ae4"},
+    {file = "simplug-0.4.3-py3-none-any.whl", hash = "sha256:393087afb99e3df83054a967ebf57a2b6fda8addda084d241ddd6470f06de78a"},
+    {file = "simplug-0.4.3.tar.gz", hash = "sha256:2a3332af56ecc1addc72d9950ecb17b7f9e08f04a8a766540946798f8b428672"},
 ]
 
 [package.dependencies]

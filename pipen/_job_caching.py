@@ -7,7 +7,7 @@ import rtoml
 from simpleconf import Config
 
 from .defaults import ProcInputType, ProcOutputType
-from .pluginmgr import ioplugin
+from .pluginmgr import plugin
 
 
 class JobCaching:
@@ -44,7 +44,7 @@ class JobCaching:
                 and self.input[inkey] is not None
             ):
                 max_mtime = max(
-                    max_mtime, ioplugin.hooks.get_mtime(self.input[inkey], dirsig)
+                    max_mtime, plugin.hooks.get_mtime(self, self.input[inkey], dirsig)
                 )
 
             if (
@@ -52,12 +52,16 @@ class JobCaching:
                 and self.input[inkey] is not None
             ):
                 for file in self.input[inkey]:
-                    max_mtime = max(max_mtime, ioplugin.hooks.get_mtime(file, dirsig))
+                    max_mtime = max(
+                        max_mtime,
+                        plugin.hooks.get_mtime(self, file, dirsig),
+                    )
 
         for outkey, outval in self._output_types.items():
             if outval in (ProcOutputType.FILE, ProcInputType.DIR):
                 max_mtime = max(
-                    max_mtime, ioplugin.hooks.get_mtime(self.output[outkey], dirsig)
+                    max_mtime,
+                    plugin.hooks.get_mtime(self, self.output[outkey], dirsig),
                 )
 
         signature = {
@@ -77,7 +81,8 @@ class JobCaching:
             if outval not in (ProcOutputType.FILE, ProcOutputType.DIR):
                 continue
 
-            await ioplugin.hooks.clear_path(
+            await plugin.hooks.clear_path(
+                self,
                 self.output[outkey],
                 outval == ProcOutputType.DIR,
             )
@@ -123,7 +128,7 @@ class JobCaching:
 
                 if intype in (ProcInputType.FILE, ProcInputType.DIR):
                     if (
-                        ioplugin.hooks.get_mtime(self.input[inkey], dirsig)
+                        plugin.hooks.get_mtime(self, self.input[inkey], dirsig)
                         > signature.ctime + 1e-3
                     ):
                         self.log(
@@ -136,7 +141,7 @@ class JobCaching:
                 if intype in (ProcInputType.FILES, ProcInputType.DIRS):
                     for file in self.input[inkey]:
                         if (
-                            ioplugin.hooks.get_mtime(file, dirsig)
+                            plugin.hooks.get_mtime(self, file, dirsig)
                             > signature.ctime + 1e-3
                         ):
                             self.log(
@@ -151,7 +156,8 @@ class JobCaching:
                 if outval not in (ProcOutputType.FILE, ProcOutputType.DIR):
                     continue
 
-                output_exists = await ioplugin.hooks.output_exists(
+                output_exists = await plugin.hooks.output_exists(
+                    self,
                     self.output[outkey],
                     outval == ProcOutputType.DIR,
                 )

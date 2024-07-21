@@ -235,6 +235,17 @@ def infile2(tmp_path):
     return out
 
 
+@pytest.fixture
+def ioproc(tmp_path):
+    class IOProc(Proc):
+        input = "infile:file"
+        input_data = ["myio://in/test.txt"]
+        output = "outfile:file:myio://out/out.txt"
+        script = "cp {{in.infile}} {{out.outfile}}"
+
+    return IOProc
+
+
 def create_dead_link(path):
     target = Path(gettempdir()) / "__NoSuchFile__"
     target.write_text("")

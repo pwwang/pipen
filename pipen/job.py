@@ -23,7 +23,7 @@ from .exceptions import (
 )
 from .template import Template
 from .utils import logger, strsplit
-from .pluginmgr import ioplugin
+from .pluginmgr import plugin
 
 if TYPE_CHECKING:  # pragma: no cover
     from .proc import Proc
@@ -96,7 +96,8 @@ class Job(XquteJob, JobCaching):
                     )
 
                 # we should use it as a string
-                ret[inkey] = ioplugin.hooks.norm_inpath(
+                ret[inkey] = plugin.hooks.norm_inpath(
+                    self,
                     ret[inkey],
                     intype == ProcInputType.DIR,
                 )
@@ -113,7 +114,8 @@ class Job(XquteJob, JobCaching):
                     )
 
                 for i, file in enumerate(ret[inkey]):
-                    ret[inkey][i] = ioplugin.hooks.norm_inpath(
+                    ret[inkey][i] = plugin.hooks.norm_inpath(
+                        self,
                         file,
                         intype == ProcInputType.DIRS,
                     )
@@ -179,8 +181,8 @@ class Job(XquteJob, JobCaching):
             if output_type == ProcOutputType.VAR:
                 ret[output_name] = output_value
             else:
-                ret[output_name] = ioplugin.hooks.norm_outpath(
-                    self.outdir,
+                ret[output_name] = plugin.hooks.norm_outpath(
+                    self,
                     output_value,
                     output_type == ProcOutputType.DIR,
                 )

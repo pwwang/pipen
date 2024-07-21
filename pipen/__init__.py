@@ -7,5 +7,5 @@ from .procgroup import ProcGroup
 # from pipen import Channel
 # This slows down import
 # from .channel import Channel
-from .pluginmgr import plugin, ioplugin
+from .pluginmgr import plugin
 from .version import __version__

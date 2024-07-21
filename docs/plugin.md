@@ -125,6 +125,23 @@ See [`simplug`][1] for more details.
 
     When a job is done but failed (i.e. return_code == 1).
 
+#### IO hooks
+
+The io hooks are used to handle the input/output files/directories. The idea is to provide more flexibility to fetch the last modified time of the files/directories, and remove the files/directories when the job restarts. The APIs of these types of plugins are primarily used to generate the cache signature for the jobs. There are 5 APIs that need to be implemented:
+
+- `norm_inpath(job: Job, inpath: str | PathLike, is_dir: bool) -> str`: Normalize/Transform the input path.
+    This is helpful when you want to download the file from a remote server or cloud storage, or you want to use a different path to represent the same file, and provide the local path to the job, so that the job can access the file locally and we don't need to handle them in the job script. The `is_dir` indicates whether the path is a directory.
+- `norm_outpath(job: Job, outdir: Path, outpath: str, is_dir: bool) -> str`: Normalize/Transform the output path.
+    Note that this is different from `norm_inpath` because when this is called, the output files/directories are not created yet. So we can't use it to upload the files to a remote server or cloud storage yet. To do that, you can use the `on_job_succeeded` hook to upload the files.
+- `def get_mtime(job: Job, path: str | PathLike, dirsig: int) -> float`: Get the last modified time of the file/directory.
+    The `dirsig` is the depth to check the files under the directory. If it's `0`, only the directory itself is checked. Note that modify a file inside a directory may not change the last modified time of the directory itself.
+- `async def clear_path(job: Job, path: str | PathLike, is_dir: bool) -> bool`: Clear the file/directory.
+    This is used to remove the files/directories when the job restarts. The `is_dir` indicates whether the path is a directory.
+- `async def output_exists(job: Job, path: str, is_dir: bool) -> bool`: Check if the output file/directory exists.
+    This is used to check if the output file/directory exists.
+
+It's required to define a protocol for your plugin. For example: `gs://` for Google Cloud Storage, `s3://` for AWS S3, etc. When implementing the above APIs, check if the path starts with the protocol, and handle the path accordingly, otherwise, return `None` for the next available plugin to handle. If no `://` in the path, then a local path is assumed. The built-in plugin will handle the local paths.
+
 ### Loading plugins
 
 You can specify the plugins to be loaded by specifying the names or the plugin itself in `plugins` configuration. With names, the plugins will be loaded from [entry points][2].
@@ -202,38 +219,6 @@ The above code will produce some logging on the console like this:
 ## CLI plugins
 
 See [CLI][11] for more details.
-
-## IO plugins
-
-The io plugins are used to handle the input/output files/directories. The idea is to provide more flexibility to fetch the last modified time of the files/directories, and remove the files/directories when the job restarts. The APIs of these types of plugins are primarily used to generate the cache signature for the jobs. There are 4 APIs that need to be implemented:
-
-- `norm_inpath(inpath: str | PathLike, is_dir: bool) -> str`: Normalize/Transform the input path.
-    This is helpful when you want to download the file from a remote server or cloud storage, or you want to use a different path to represent the same file, and provide the local path to the job, so that the job can access the file locally and we don't need to handle them in the job script. The `is_dir` indicates whether the path is a directory.
-- `norm_outpath(outdir: Path, outpath: str, is_dir: bool) -> str`: Normalize/Transform the output path.
-    Note that this is different from `norm_inpath` because when this is called, the output files/directories are not created yet. So we can't use it to upload the files to a remote server or cloud storage yet. To do that, you can use the `on_job_succeeded` hook to upload the files.
-- `def get_mtime(path: str | PathLike, dirsig: int) -> float`: Get the last modified time of the file/directory.
-    The `dirsig` is the depth to check the files under the directory. If it's `0`, only the directory itself is checked. Note that modify a file inside a directory may not change the last modified time of the directory itself.
-- `async def clear_path(path: str | PathLike, is_dir: bool) -> bool`: Clear the file/directory.
-    This is used to remove the files/directories when the job restarts. The `is_dir` indicates whether the path is a directory.
-- `async def output_exists(path: str, is_dir: bool) -> bool`: Check if the output file/directory exists.
-    This is used to check if the output file/directory exists.
-
-It's recommanded to define a protocol for your plugin. For example: `gs://` for Google Cloud Storage, `s3://` for AWS S3, etc. When implementing the above APIs, check if the path starts with the protocol, and handle the path accordingly, otherwise, return `None` for the next available plugin to handle.
-
-!!! note
-
-    IO plugins, like CLI plugins, can not be specified at runtime. For example, `Pipen(..., plugins=[...])` won't work.
-    You have to either register the plugin using:
-
-    ```python
-    from pipen import ioplugin
-
-    ioplugin.register(MyIOPlugin)
-    ```
-
-    Or use the entry point to register the plugin by installing the plugin package.
-
-    The io plugin package should use the entry point group `pipen_io` to register the plugin.
 
 ## Plugin gallery
 

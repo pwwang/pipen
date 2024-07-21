@@ -4,7 +4,7 @@
 
 - deps: bump up dev deps
 - refactor: remove `abstractproperty` decorator from `CLIPlugin` class
-- feat: Add `ioplugin` to support handling files from other platforms (e.g. the cloud)
+- feat: add 5 more APIs for plugins to handle files from other platforms (e.g. the cloud)
 - ci: add python3.12 to CI
 - test: fork each test in test_job.py
 - test: fork tests in test_pipen.py and test_proc.py

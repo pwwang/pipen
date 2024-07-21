@@ -1,8 +1,9 @@
 import pytest
 
-from pipen import plugin, ioplugin, Pipen, Proc
+from pipen import plugin, Pipen, Proc
+from pipen.exceptions import ProcInputValueError, ProcOutputValueError
 
-from .helpers import pipen, OutputNotGeneratedProc, SimpleProc
+from .helpers import pipen, ioproc, OutputNotGeneratedProc, SimpleProc
 
 
 class Plugin:
@@ -76,34 +77,149 @@ def test_plugin_context_mixed(tmp_path, capsys):
 
 
 @pytest.mark.forked
-def test_ioplugin(tmp_path, pipen):
+def test_io_hooks_unsupported_in_protocol(pipen, ioproc):
+
+    pipen.set_starts(ioproc)
+    with pytest.raises(
+        ProcInputValueError,
+        match="Unsupported protocol for input path: myio://",
+    ):
+        pipen.run()
+
+
+@pytest.mark.forked
+def test_io_hooks_unsupported_out_protocol(pipen, ioproc, tmp_path):
+
+    class MyIOPlugin:
+        @plugin.impl
+        def norm_inpath(self, job, inpath, is_dir):
+            if not inpath.startswith("myio://"):
+                return None
+            return tmp_path / inpath[7:]
+
+        # no outpath handled, should raise error
+
+    plugin.register(MyIOPlugin)
+
+    pipen.set_starts(ioproc)
+    with pytest.raises(
+        ProcOutputValueError,
+        match="Unsupported protocol for output path: myio://",
+    ):
+        pipen.run()
+
+
+@pytest.mark.forked
+def test_io_hooks_localized(tmp_path, pipen, ioproc):
     test_file = tmp_path / "test.txt"
     test_outdir = tmp_path / "output"
     test_file.write_text("abcd")
     test_outdir.mkdir()
 
     class MyIOPlugin:
-        @ioplugin.impl
-        def norm_inpath(self, inpath, is_dir):
+        @plugin.impl
+        def norm_inpath(self, job, inpath, is_dir):
             if not inpath.startswith("myio://"):
                 return None
-            return tmp_path / inpath[7:]
+            return tmp_path / inpath.split("/")[-1]
 
-        @ioplugin.impl
-        def norm_outpath(self, outdir, outpath, is_dir):
+        @plugin.impl
+        def norm_outpath(self, job, outpath, is_dir):
             if not outpath.startswith("myio://"):
                 return None
-            return test_outdir / outpath[7:]
+            return test_outdir / outpath.split("/")[-1]
 
-    ioplugin.register(MyIOPlugin)
+    plugin.register(MyIOPlugin)
 
-    class IOProc(Proc):
-        input = "infile:file"
-        input_data = ["myio://test.txt"]
-        output = "outfile:file:myio://out.txt"
-        script = "cp {{in.infile}} {{out.outfile}}"
+    pipen.set_starts(ioproc)
+    assert pipen.run()
+    # run again to trigger cache
+    # won't raise error even when get_mtime, clear_path and output_exists
+    # are not implemented, because the inpath and outpath are localized
+    assert pipen.run()
+    assert test_outdir.joinpath("out.txt").exists()
+    assert test_outdir.joinpath("out.txt").read_text() == "abcd"
+
+
+@pytest.mark.forked
+def test_io_hooks_nonlocalized(tmp_path, pipen, ioproc):
+    test_file = tmp_path / "test.txt"
+    test_outdir = tmp_path / "output"
+    test_file.write_text("abcd")
+    test_outdir.mkdir()
+
+    class IOProc(ioproc):
+        script = (
+            f"cp {tmp_path}/{{{{in.infile.split('/')[-1]}}}} "
+            f"{test_outdir}/{{{{out.outfile.split('/')[-1]}}}}"
+        )
+
+    @plugin.register
+    class MyIOPlugin:
+        @plugin.impl
+        def norm_inpath(self, job, inpath, is_dir):
+            if not inpath.startswith("myio://"):
+                return None
+            return inpath
+
+        @plugin.impl
+        def norm_outpath(self, job, outpath, is_dir):
+            if not outpath.startswith("myio://"):
+                return None
+            return outpath
 
     pipen.set_starts(IOProc)
+    with pytest.raises(
+        NotImplementedError,
+        match="Unsupported protocol in path to clear: myio://",
+    ):
+        pipen.run()
+
+    @plugin.register
+    class MyIOPlugin2(MyIOPlugin):
+        @plugin.impl
+        async def clear_path(self, job, path, is_dir):
+            return False
+
+    class IOProc2(IOProc):
+        ...
+
+    pipen.set_starts(IOProc2)
+    with pytest.raises(
+        NotImplementedError,
+        match="Unsupported protocol in path to test existence: myio://",
+    ):
+        pipen.run()
+
+    @plugin.register
+    class MyIOPlugin3(MyIOPlugin2):
+
+        @plugin.impl
+        async def output_exists(self, job, path, is_dir):
+            # check if the remote file exists
+            return test_outdir.joinpath(path.split("/")[-1]).exists()
+
+    class IOProc3(IOProc2):
+        ...
+
+    pipen.set_starts(IOProc3)
+    with pytest.raises(
+        NotImplementedError,
+        match="Unsupported protocol in path to get mtime: myio://",
+    ):
+        pipen.run()
+
+    @plugin.register
+    class MyIOPlugin4(MyIOPlugin3):
+        @plugin.impl
+        def get_mtime(self, job, path, dirsig):
+            return 0
+
+    class IOProc4(IOProc3):
+        ...
+
+    pipen.set_starts(IOProc4)
     assert pipen.run()
+    # # assert pipen.run()
     assert test_outdir.joinpath("out.txt").exists()
     assert test_outdir.joinpath("out.txt").read_text() == "abcd"
