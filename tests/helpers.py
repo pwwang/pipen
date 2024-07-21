@@ -170,7 +170,7 @@ class SimplePlugin:
         print("SimplePlugin")
 
     @plugin.impl
-    async def on_job_polling(proc, job):
+    async def on_job_polling(job):
         print("SimplePlugin on_job_polling")
 
 

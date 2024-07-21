@@ -77,51 +77,51 @@ See [`simplug`][1] for more details.
 
 #### Job-level hooks
 
-- `on_job_init(proc, job)` (async)
+- `on_job_init(job)` (async)
 
     When a job is initialized
 
-- `on_job_queued(proc, job)` (async)
+- `on_job_queued(job)` (async)
 
     When a job is queued in xqute. Note it might not be queued yet in the scheduler system.
 
-- `on_job_submitting(proc, job)` (async)
+- `on_job_submitting(job)` (async)
 
     When a job is submitting.
 
     The first plugin (based on priority) have this hook return `False` will cancel the submission
 
-- `on_job_submitted(proc, job)` (async)
+- `on_job_submitted(job)` (async)
 
     When a job is submitted in the scheduler system.
 
-- `on_job_started(proc, job)` (async)
+- `on_job_started(job)` (async)
 
     When a job starts to run in then scheduler system.
 
-- `on_job_polling(proc, job)` (async)
+- `on_job_polling(job)` (async)
 
     When status of a job is being polled.
 
-- `on_job_killing(proc, job)` (async)
+- `on_job_killing(job)` (async)
 
     When a job is being killed.
 
     The first plugin (based on priority) have this hook return `False` will cancel the killing
 
-- `on_job_killed(proc, job)` (async)
+- `on_job_killed(job)` (async)
 
     When a job is killed
 
-- `on_job_succeeded(proc, job)` (async)
+- `on_job_succeeded(job)` (async)
 
     When a job completes successfully
 
-- `on_job_cached(proc, job)` (async)
+- `on_job_cached(job)` (async)
 
     When a job is cached
 
-- `on_job_failed(proc, job)` (async)
+- `on_job_failed(job)` (async)
 
     When a job is done but failed (i.e. return_code == 1).
 

@@ -454,7 +454,7 @@ class Proc(ABC, metaclass=ProcMeta):
         for job in self.jobs:
             if await job.cached:
                 cached_jobs.append(job.index)
-                await plugin.hooks.on_job_cached(self, job)
+                await plugin.hooks.on_job_cached(job)
             else:
                 await self.xqute.put(job)
         if cached_jobs:

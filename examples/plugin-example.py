@@ -30,7 +30,7 @@ class NotifyPlugin:
         logger.info("Calling on_proc_done, succeeded = %s", succeeded)
 
     @plugin.impl
-    async def on_job_polling(proc, job):
+    async def on_job_polling(job):
         logger.info("Calling on_job_polling")
 
 
