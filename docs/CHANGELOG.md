@@ -2,6 +2,7 @@
 
 ## 0.15.0
 
+- BREAKING: remove redundant argument `proc` for job plugin APIs
 - deps: bump up dev deps
 - refactor: remove `abstractproperty` decorator from `CLIPlugin` class
 - feat: add 5 more APIs for plugins to handle files from other platforms (e.g. the cloud)
