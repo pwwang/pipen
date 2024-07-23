@@ -286,6 +286,10 @@ class Pipen:
         for proc in procs:
             if isinstance(proc, (list, tuple)):
                 self.set_starts(*proc, clear=False)
+            elif not isinstance(proc, type) or not issubclass(proc, Proc):
+                raise ProcDependencyError(
+                    f"{proc!r} is not a subclass of 'pipen.Proc'."
+                )
             elif proc not in self.starts:
                 self.starts.append(proc)  # type: ignore
             else:

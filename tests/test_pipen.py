@@ -63,6 +63,15 @@ def test_cyclic_dependency(pipen):
 
 
 @pytest.mark.forked
+def test_wrong_type_starts(pipen):
+    with pytest.raises(ProcDependencyError, match="is not a subclass of"):
+        pipen.set_starts(1)
+
+    with pytest.raises(ProcDependencyError, match="is not a subclass of"):
+        pipen.set_starts(lambda: 1)
+
+
+@pytest.mark.forked
 def test_not_cyclic_for_subclass_of_proc_in_pipeline(pipen):
     proc1 = Proc.from_proc(NormalProc, input_data=[1])
     proc2 = Proc.from_proc(NormalProc, requires=proc1)
