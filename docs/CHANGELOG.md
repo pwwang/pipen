@@ -4,12 +4,15 @@
 
 - BREAKING: remove redundant argument `proc` for job plugin APIs
 - deps: bump up dev deps
+- deps: bump xqute to version 0.4.1
 - refactor: remove `abstractproperty` decorator from `CLIPlugin` class
 - feat: add 5 more APIs for plugins to handle files from other platforms (e.g. the cloud)
 - ci: add python3.12 to CI
 - test: fork each test in test_job.py
 - test: fork tests in test_pipen.py and test_proc.py
 - docs: correct the documentation about `dirsig`
+- enh: make better error message when set wrong type of starts for a pipeline
+- docs: add pipen-gcs in plugin gallery
 
 ## 0.14.6
 
