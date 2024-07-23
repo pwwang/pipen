@@ -131,7 +131,7 @@ The io hooks are used to handle the input/output files/directories. The idea is 
 
 - `norm_inpath(job: Job, inpath: str | PathLike, is_dir: bool) -> str`: Normalize/Transform the input path.
     This is helpful when you want to download the file from a remote server or cloud storage, or you want to use a different path to represent the same file, and provide the local path to the job, so that the job can access the file locally and we don't need to handle them in the job script. The `is_dir` indicates whether the path is a directory.
-- `norm_outpath(job: Job, outdir: Path, outpath: str, is_dir: bool) -> str`: Normalize/Transform the output path.
+- `norm_outpath(job: Job, outpath: str, is_dir: bool) -> str`: Normalize/Transform the output path.
     Note that this is different from `norm_inpath` because when this is called, the output files/directories are not created yet. So we can't use it to upload the files to a remote server or cloud storage yet. To do that, you can use the `on_job_succeeded` hook to upload the files.
 - `def get_mtime(job: Job, path: str | PathLike, dirsig: int) -> float`: Get the last modified time of the file/directory.
     The `dirsig` is the depth to check the files under the directory. If it's `0`, only the directory itself is checked. Note that modify a file inside a directory may not change the last modified time of the directory itself.
