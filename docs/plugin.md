@@ -234,6 +234,7 @@ See [CLI][11] for more details.
 - [`pipen-log2file`][15]: Save running logs to file for pipen
 - [`pipen-poplog`][16]: Populate logs from jobs to running log of the pipeline
 - [`pipen-runinfo`][17]: Save running information to file for pipen
+- [`pipen-gcs`][9]: A plugin for pipen to handle files in Google Cloud Storage.
 
 [1]: https://github.com/pwwang/simplug
 [2]: https://packaging.python.org/specifications/entry-points/
@@ -243,8 +244,7 @@ See [CLI][11] for more details.
 [6]: https://github.com/pwwang/pipen-args
 [7]: https://github.com/pwwang/pipen-dry
 [8]: https://github.com/pwwang/pipen-filters
-[9]: https://github.com/pwwang/pipen-cli-init
-[10]: https://github.com/pwwang/pipen-cli-run
+[9]: https://github.com/pwwang/pipen-gcs
 [11]: ../cli
 [12]: https://github.com/pwwang/pipen-annotate
 [13]: https://github.com/pwwang/pipen-board
