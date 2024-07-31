@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.15.1
+
+- deps: bump xqute to 0.5.0
+  - xqute v0.5.0 provides 3 more hooks for the plugins to inject bash code to the job wrapper scripts.
+  - see <https://github.com/pwwang/xqute?tab=readme-ov-file#plugins>.
+
 ## 0.15.0
 
 - BREAKING: remove redundant argument `proc` for job plugin APIs
