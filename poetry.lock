@@ -440,13 +440,13 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "jinxed"
-version = "1.2.1"
+version = "1.3.0"
 description = "Jinxed Terminal Library"
 optional = false
 python-versions = "*"
 files = [
-    {file = "jinxed-1.2.1-py2.py3-none-any.whl", hash = "sha256:37422659c4925969c66148c5e64979f553386a4226b9484d910d3094ced37d30"},
-    {file = "jinxed-1.2.1.tar.gz", hash = "sha256:30c3f861b73279fea1ed928cfd4dfb1f273e16cd62c8a32acfac362da0f78f3f"},
+    {file = "jinxed-1.3.0-py2.py3-none-any.whl", hash = "sha256:b993189f39dc2d7504d802152671535b06d380b26d78070559551cbf92df4fc5"},
+    {file = "jinxed-1.3.0.tar.gz", hash = "sha256:1593124b18a41b7a3da3b078471442e51dbad3d77b4d4f2b0c26ab6f7d660dbf"},
 ]
 
 [package.dependencies]
@@ -797,13 +797,13 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pytest"
-version = "8.3.1"
+version = "8.3.2"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest-8.3.1-py3-none-any.whl", hash = "sha256:e9600ccf4f563976e2c99fa02c7624ab938296551f280835ee6516df8bc4ae8c"},
-    {file = "pytest-8.3.1.tar.gz", hash = "sha256:7e8e5c5abd6e93cb1cc151f23e57adc31fcf8cfd2a3ff2da63e23f732de35db6"},
+    {file = "pytest-8.3.2-py3-none-any.whl", hash = "sha256:4ba08f9ae7dcf84ded419494d229b48d0903ea6407b030eaec46df5e6a73bba5"},
+    {file = "pytest-8.3.2.tar.gz", hash = "sha256:c132345d12ce551242c87269de812483f5bcc87cdbb4722e48487ba194f9fdce"},
 ]
 
 [package.dependencies]
@@ -1142,13 +1142,13 @@ files = [
 
 [[package]]
 name = "xqute"
-version = "0.4.1"
+version = "0.5.0"
 description = "A job management system for python"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "xqute-0.4.1-py3-none-any.whl", hash = "sha256:44876fdd7d02f3e9e5f38156bb5887f8e9e130401c04d8f6a7b7dec763696ee7"},
-    {file = "xqute-0.4.1.tar.gz", hash = "sha256:14d47399a61d622025b3d8d3674f9cd56b79902904a8cfa8d5cf73f8ca7ca658"},
+    {file = "xqute-0.5.0-py3-none-any.whl", hash = "sha256:5097ab8ee6db30f5ca4253ca2e56ee11a93c32a31730573c90f83b00f0f13cd3"},
+    {file = "xqute-0.5.0.tar.gz", hash = "sha256:d8afb8934829b4e7391898673843be6986875932e25d3b289cac6a6fab925c74"},
 ]
 
 [package.dependencies]
@@ -1165,4 +1165,4 @@ uvloop = ">=0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "c46dea7a32d9cef23dcb6847925aaddd389b2d2667cd8e20542a5b2cb0030719"
+content-hash = "efa588d34661908013e459bf4326f3561603796fdf9f8c908f55fc1920fa9af4"
