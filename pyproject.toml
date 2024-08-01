@@ -47,11 +47,10 @@ pipen = "pipen.cli:main"
 
 [tool.pytest.ini_options]
 addopts = "-vv -n auto --dist loadgroup -p no:benchmark -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
-# addopts = "-vv -n auto -p no:asyncio -W error::UserWarning"
 console_output_style = "progress"
 junit_family = "xunit1"
 filterwarnings = [
-   "ignore:The --rsyncdir command line argument and rsyncdirs config variable are deprecated.:DeprecationWarning",
+   "ignore:.+may lead to deadlocks in the child:DeprecationWarning",
 ]
 
 [tool.mypy]
