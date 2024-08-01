@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.15.2
+
+- deps: update xqute dependency to version 0.5.1
+- chore: update pytest options in pyproject.toml to ignore deadlock warnings
+- feat: expose on_jobcmd_* hooks for plugins to modify the job wrapper script
+
 ## 0.15.1
 
 - deps: bump xqute to 0.5.0
