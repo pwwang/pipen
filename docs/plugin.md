@@ -125,6 +125,55 @@ See [`simplug`][1] for more details.
 
     When a job is done but failed (i.e. return_code == 1).
 
+- `on_jobcmd_init(job) -> str` (sync)
+
+    When the job command wrapper script is initialized before the prescript is run
+
+    This should return a piece of bash code to be inserted in the wrapped job
+    script (template), which is a python template string, with the following
+    variables available: `status` and `job`. `status` is the class `JobStatus` from
+    `xqute.defaults.py` and `job` is the `Job` instance.
+
+    For multiple plugins, the code will be inserted in the order of the plugin priority.
+
+    The code will replace the `#![jobcmd_init]` placeholder in the wrapped job script.
+    See also <https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95>
+
+- `on_jobcmd_prep(job) -> str` (sync)
+
+    When the job command right about to be run
+
+    This should return a piece of bash code to be inserted in the wrapped job
+    script (template), which is a python template string, with the following
+    variables available: `status` and `job`. `status` is the class `JobStatus` from
+    `xqute.defaults.py` and `job` is the `Job` instance.
+
+    The bash variable `$cmd` is accessible in the context. It is also possible to
+    modify the `cmd` variable. Just remember to assign the modified value to `cmd`.
+
+    For multiple plugins, the code will be inserted in the order of the plugin priority.
+    Keep in mind that the `$cmd` may be modified by other plugins.
+
+    The code will replace the `#![jobcmd_prep]` placeholder in the wrapped job script.
+    See also <https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95>
+
+- `on_jobcmd_end(job) -> str` (sync):
+
+    When the job command finishes and after the postscript is run
+
+    This should return a piece of bash code to be inserted in the wrapped job
+    script (template), which is a python template string, with the following
+    variables available: `status` and `job`. `status` is the class `JobStatus` from
+    `xqute.defaults.py` and `job` is the `Job` instance.
+
+    The bash variable `$rc` is accessible in the context, which is the return code
+    of the job command.
+
+    For multiple plugins, the code will be inserted in the order of the plugin priority.
+
+    The code will replace the `#![jobcmd_end]` placeholder in the wrapped job script.
+    See also <https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95>
+
 #### IO hooks
 
 The io hooks are used to handle the input/output files/directories. The idea is to provide more flexibility to fetch the last modified time of the files/directories, and remove the files/directories when the job restarts. The APIs of these types of plugins are primarily used to generate the cache signature for the jobs. There are 5 APIs that need to be implemented:

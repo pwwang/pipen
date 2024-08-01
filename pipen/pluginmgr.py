@@ -419,6 +419,79 @@ async def output_exists(job: Job, path: str, is_dir: bool) -> bool:
     """
 
 
+@plugin.spec(result=SimplugResult.ALL_AVAILS)
+def on_jobcmd_init(job: Job) -> str:
+    """When the job command wrapper script is initialized before the prescript is run
+
+    This should return a piece of bash code to be inserted in the wrapped job
+    script (template), which is a python template string, with the following
+    variables available: `status` and `job`. `status` is the class `JobStatus` from
+    `xqute.defaults.py` and `job` is the `Job` instance.
+
+    For multiple plugins, the code will be inserted in the order of the plugin priority.
+
+    The code will replace the `#![jobcmd_init]` placeholder in the wrapped job script.
+    See also <https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95>
+
+    Args:
+        job: The job object
+
+    Returns:
+        The bash code to be inserted
+    """
+
+
+@plugin.spec(result=SimplugResult.ALL_AVAILS)
+def on_jobcmd_prep(job: Job) -> str:
+    """When the job command right about to be run
+
+    This should return a piece of bash code to be inserted in the wrapped job
+    script (template), which is a python template string, with the following
+    variables available: `status` and `job`. `status` is the class `JobStatus` from
+    `xqute.defaults.py` and `job` is the `Job` instance.
+
+    The bash variable `$cmd` is accessible in the context. It is also possible to
+    modify the `cmd` variable. Just remember to assign the modified value to `cmd`.
+
+    For multiple plugins, the code will be inserted in the order of the plugin priority.
+    Keep in mind that the `$cmd` may be modified by other plugins.
+
+    The code will replace the `#![jobcmd_prep]` placeholder in the wrapped job script.
+    See also <https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95>
+
+    Args:
+        job: The job object
+
+    Returns:
+        The bash code to be inserted
+    """
+
+
+@plugin.spec(result=SimplugResult.ALL_AVAILS)
+def on_jobcmd_end(job: Job) -> str:
+    """When the job command finishes and after the postscript is run
+
+    This should return a piece of bash code to be inserted in the wrapped job
+    script (template), which is a python template string, with the following
+    variables available: `status` and `job`. `status` is the class `JobStatus` from
+    `xqute.defaults.py` and `job` is the `Job` instance.
+
+    The bash variable `$rc` is accessible in the context, which is the return code
+    of the job command.
+
+    For multiple plugins, the code will be inserted in the order of the plugin priority.
+
+    The code will replace the `#![jobcmd_end]` placeholder in the wrapped job script.
+    See also <https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95>
+
+    Args:
+        job: The job object
+
+    Returns:
+        The bash code to be inserted
+    """
+
+
 class PipenMainPlugin:
     """The builtin core plugin, used to update the progress bar and
     cache the job"""
@@ -652,6 +725,30 @@ class XqutePipenPlugin:
     async def on_job_failed(self, scheduler: Scheduler, job: Job):
         """When a job is failed"""
         await plugin.hooks.on_job_failed(job)
+
+    @xqute_plugin.impl
+    def on_jobcmd_init(self, scheduler: Scheduler, job: Job):
+        """When the job command wrapper script is initialized"""
+        codes = plugin.hooks.on_jobcmd_init(job)
+        if not codes:
+            return None
+        return "\n\n".join(codes)
+
+    @xqute_plugin.impl
+    def on_jobcmd_prep(self, scheduler: Scheduler, job: Job):
+        """When the job command is about to be run"""
+        codes = plugin.hooks.on_jobcmd_prep(job)
+        if not codes:
+            return None
+        return "\n\n".join(codes)
+
+    @xqute_plugin.impl
+    def on_jobcmd_end(self, scheduler: Scheduler, job: Job):
+        """When the job command finishes"""
+        codes = plugin.hooks.on_jobcmd_end(job)
+        if not codes:
+            return None
+        return "\n\n".join(codes)
 
 
 xqute_plugin.register(XqutePipenPlugin)

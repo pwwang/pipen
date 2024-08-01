@@ -223,3 +223,37 @@ def test_io_hooks_nonlocalized(tmp_path, pipen, ioproc):
     # # assert pipen.run()
     assert test_outdir.joinpath("out.txt").exists()
     assert test_outdir.joinpath("out.txt").read_text() == "abcd"
+
+
+@pytest.mark.forked
+def test_jobcmd_hooks(pipen):
+
+    @plugin.register
+    class MyJobCmdPlugin:
+        @plugin.impl
+        def on_jobcmd_init(job):
+            return "# on_jobcmd_init from myjobcmdplugin"
+
+        @plugin.impl
+        def on_jobcmd_prep(job):
+            return "# on_jobcmd_prep from myjobcmdplugin"
+
+        @plugin.impl
+        def on_jobcmd_end(job):
+            return "# on_jobcmd_end from myjobcmdplugin"
+
+    class MyProc(Proc):
+        input = "in:var"
+        input_data = [1]
+        output = "out:var:{{in.in}}"
+        script = "echo {{proc.name}}"
+
+    pipen.set_starts(MyProc).run()
+    assert pipen.run()
+
+    wrapper_script = pipen.workdir / "MyProc" / "0" / "job.wrapped.local"
+    assert wrapper_script.exists()
+    content = wrapper_script.read_text()
+    assert "# on_jobcmd_init from myjobcmdplugin" in content
+    assert "# on_jobcmd_prep from myjobcmdplugin" in content
+    assert "# on_jobcmd_end from myjobcmdplugin" in content
