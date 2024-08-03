@@ -1,8 +1,7 @@
 from re import template
 import pytest
-from pipen import Proc, Pipen
+from pipen import Proc, Pipen, run
 from pipen.exceptions import (
-    PipenException,
     ProcDependencyError,
     PipenSetDataError,
 )
@@ -207,3 +206,18 @@ def test_duplicate_proc_name():
 
     with pytest.raises(PipenOrProcNameError, match="already used by another"):
         MyPipe4().run()
+
+
+@pytest.mark.forked
+def test_run():
+    class RProc1(Proc):
+        input = "a"
+        output = "b:var:{{in.a}}"
+
+    class RProc2(Proc):
+        requires = RProc1
+        input = "b"
+        output = "c:file:{{in.b}}"
+        script = "touch {{out.c}}"
+
+    assert run("MyPipe", RProc1)

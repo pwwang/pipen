@@ -29,7 +29,7 @@ pip install -U pipen
 `example.py`
 
 ```python
-from pipen import Proc, Pipen
+from pipen import Proc, Pipen, run
 
 class P1(Proc):
     """Sort input file"""
@@ -45,11 +45,12 @@ class P2(Proc):
     output = "outfile:file:result.txt"
     script = "paste <(seq 1 3) {{in.infile}} > {{out.outfile}}"
 
-class MyPipeline(Pipen):
-    starts = P1
+# class MyPipeline(Pipen):
+#     starts = P1
 
 if __name__ == "__main__":
-    MyPipeline().run()
+    # MyPipeline().run()
+    run("MyPipeline", starts=P1)
 ```
 
 ```shell
@@ -64,12 +65,12 @@ if __name__ == "__main__":
 06-09 23:15:29 I core                  _  ____/__/ /  _  ____/_  /___  _  /|  /
 06-09 23:15:29 I core                  /_/     /___/  /_/     /_____/  /_/ |_/
 06-09 23:15:29 I core
-06-09 23:15:29 I core                              version: 0.14.5
+06-09 23:15:29 I core                              version: 0.15.3
 06-09 23:15:29 I core
 06-09 23:15:29 I core    ╔═══════════════════════════════════════════════════╗
 06-09 23:15:29 I core    ║                            MYPIPELINE                            ║
 06-09 23:15:29 I core    ╚═══════════════════════════════════════════════════╝
-06-09 23:15:29 I core    plugins         : verbose v0.11.0
+06-09 23:15:29 I core    plugins         : verbose v0.12.0
 06-09 23:15:29 I core    # procs         : 2
 06-09 23:15:29 I core    profile         : default
 06-09 23:15:29 I core    outdir          : /home/pwwang/github/pipen/MyPipeline-output
@@ -126,7 +127,8 @@ if __name__ == "__main__":
 ## Examples
 
 See more examples at `examples/` and a more realcase example at:
-https://github.com/pwwang/pipen-report/tree/master/example
+
+<https://github.com/pwwang/pipen-report/tree/master/example>
 
 ## Plugin gallery
 
@@ -149,7 +151,6 @@ Plugins make `pipen` even better.
 - [`pipen-cli-ref`][31]: Make reference documentation for processes
 - [`pipen-cli-require`][24]: A pipen cli plugin check the requirements of a pipeline
 - [`pipen-cli-run`][22]: A pipen cli plugin to run a process or a pipeline
-
 
 [1]: https://pwwang.github.io/pipen
 [2]: https://pwwang.github.io/pipen/CHANGELOG
