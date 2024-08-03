@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.15.3
+
+- feat: add `pipen.run()` as a function to run a pipeline
+- docs: fix the decorations in the logs in README
+
 ## 0.15.2
 
 - deps: update xqute dependency to version 0.5.1
