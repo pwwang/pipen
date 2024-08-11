@@ -619,8 +619,8 @@ def _get_obj_from_spec(spec: str) -> Any:
 
 async def load_pipeline(
     obj: str | Type[Proc] | Type[ProcGroup] | Type[Pipen],
-    argv0: str = None,
-    argv1p: Sequence[str] = None,
+    argv0: str | None = None,
+    argv1p: Sequence[str] | None = None,
     **kwargs: Any,
 ) -> Pipen:
     """Load a pipeline from a Pipen, Proc or ProcGroup object
@@ -657,20 +657,23 @@ async def load_pipeline(
 
     old_argv = sys.argv
     if argv0 is None:
+        # Set it at runtime to allow LOADING_ARGV0 to be monkey-patched
         argv0 = LOADING_ARGV0
     if argv1p is None:
+        # Set it at runtime to adopt sys.argv changes
         argv1p = sys.argv[1:]
     sys.argv = [argv0] + list(argv1p)
 
     try:
         if isinstance(obj, str):
             obj = _get_obj_from_spec(obj)
-            if (
-                not isinstance(obj, type)
-                or not issubclass(obj, (Pipen, Proc, ProcGroup))
+            if isinstance(obj, Pipen) or (
+                isinstance(obj, type) and issubclass(obj, (Pipen, Proc, ProcGroup))
             ):
+                pass
+            else:
                 raise TypeError(
-                    "Expected a Pipen, Proc or ProcGroup class, "
+                    "Expected a Pipen, Proc, ProcGroup class, or a Pipen object, "
                     f"got {type(obj)}"
                 )
 
