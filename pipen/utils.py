@@ -682,12 +682,15 @@ async def load_pipeline(
             kwargs.setdefault("name", f"{obj.name}Pipeline")
             pipeline = Pipen(**kwargs).set_starts(obj)
 
-        if isinstance(obj, type) and issubclass(obj, ProcGroup):
+        elif isinstance(obj, type) and issubclass(obj, ProcGroup):
             pipeline = obj().as_pipen(**kwargs)  # type: ignore
 
-        if isinstance(obj, type) and issubclass(obj, Pipen):
+        elif isinstance(obj, type) and issubclass(obj, Pipen):
             # Avoid "pipeline" to be used as pipeline name by varname
             (pipeline, ) = (obj(**kwargs), )  # type: ignore
+
+        else:  # obj is a Pipen instance
+            pipeline._kwargs.update(kwargs)
 
         if not isinstance(pipeline, Pipen):
             raise TypeError(
