@@ -667,15 +667,15 @@ async def load_pipeline(
     try:
         if isinstance(obj, str):
             obj = _get_obj_from_spec(obj)
-            if isinstance(obj, Pipen) or (
-                isinstance(obj, type) and issubclass(obj, (Pipen, Proc, ProcGroup))
-            ):
-                pass
-            else:
-                raise TypeError(
-                    "Expected a Pipen, Proc, ProcGroup class, or a Pipen object, "
-                    f"got {type(obj)}"
-                )
+        if isinstance(obj, Pipen) or (
+            isinstance(obj, type) and issubclass(obj, (Pipen, Proc, ProcGroup))
+        ):
+            pass
+        else:
+            raise TypeError(
+                "Expected a Pipen, Proc, ProcGroup class, or a Pipen object, "
+                f"got {type(obj)}"
+            )
 
         pipeline = obj
         if isinstance(obj, type) and issubclass(obj, Proc):
@@ -689,14 +689,8 @@ async def load_pipeline(
             # Avoid "pipeline" to be used as pipeline name by varname
             (pipeline, ) = (obj(**kwargs), )  # type: ignore
 
-        else:  # obj is a Pipen instance
+        elif isinstance(obj, Pipen):
             pipeline._kwargs.update(kwargs)
-
-        if not isinstance(pipeline, Pipen):
-            raise TypeError(
-                "Expected a Pipen, Proc or ProcGroup class, "
-                f"got {type(pipeline)}"
-            )
 
         # Initialize the pipeline so that the arguments definied by
         # other plugins (i.e. pipen-args) to take in place.

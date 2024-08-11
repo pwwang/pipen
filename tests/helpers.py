@@ -254,3 +254,14 @@ def create_dead_link(path):
         link.unlink()
     link.symlink_to(target)
     target.unlink()
+
+
+# for load_pipeline tests
+pipeline = Pipen(
+    name=f"simple_pipeline_{Pipen.PIPELINE_COUNT + 1}",
+    desc="No description",
+    loglevel="debug",
+    cache=True,
+    workdir=gettempdir() + "/.pipen",
+    outdir=gettempdir() + f"/pipen_simple_{Pipen.PIPELINE_COUNT}",
+).set_starts(SimpleProc)

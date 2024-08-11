@@ -197,6 +197,13 @@ async def test_load_pipeline(tmp_path):
 
 
 @pytest.mark.forked
+@pytest.mark.asyncio
+async def test_load_pipeline_pipen_object(tmp_path):
+    p = await load_pipeline(f"{HERE}/helpers.py:pipeline", a=1)
+    assert p._kwargs["a"] == 1
+
+
+@pytest.mark.forked
 # To avoid: Another plugin named simpleplugin has already been registered.
 @pytest.mark.asyncio
 async def test_is_load_pipeline_with_help(tmp_path):
