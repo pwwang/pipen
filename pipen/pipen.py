@@ -61,17 +61,17 @@ class Pipen:
     PIPELINE_COUNT: ClassVar[int] = 0
     SETUP: ClassVar[bool] = False
 
-    name: str = None
-    desc: str = None
+    name: str | None = None
+    desc: str | None = None
     outdir: str | PathLike = None
     starts: List[Proc] = []
-    data: Iterable = None
+    data: Iterable | None = None
     # other configs
 
     def __init__(
         self,
-        name: str = None,
-        desc: str = None,
+        name: str | None = None,
+        desc: str | None = None,
         outdir: str | PathLike = None,
         **kwargs,
     ) -> None:
@@ -84,7 +84,7 @@ class Pipen:
             self.name = self.__class__.name
         else:
             try:
-                self.name = varname()
+                self.name = varname()  # type: ignore
             except VarnameException:
                 if self.__class__.PIPELINE_COUNT == 0:
                     self.name = self.__class__.__name__
@@ -219,7 +219,7 @@ class Pipen:
     def run(
         self,
         profile: str = "default",
-    ) -> int:
+    ) -> bool:
         """Run the pipeline with the given profile
         This is just a sync wrapper for the async `async_run` function using
         `asyncio.run()`

@@ -241,7 +241,7 @@ class Proc(ABC, metaclass=ProcMeta):
         """
         if not name:
             try:
-                name = varname()
+                name = varname()  # type: ignore
             except VarnameException as vexc:  # pragma: no cover
                 raise ValueError(
                     "Process name cannot be detected from assignment, "
