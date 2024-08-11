@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.15.4
+
+- fix: fix Pipen object not recognized by `utils.load_pipeline()`
+- style: fix type annotations in Pipen class
+- deps: bump argx to 0.2.11
+
 ## 0.15.3
 
 - feat: add `pipen.run()` as a function to run a pipeline
