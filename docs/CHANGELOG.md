@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.15.6
+
+- chore(deps): bump python-varname to 0.14
+- ci: update GitHub Actions to use ubuntu-24.04
+- style: fix style issues in test files
+
 ## 0.15.5
 
 - fix: fix `kwargs` not updated when pipeline is a `Pipen` object in `utils.load_pipeline()`
