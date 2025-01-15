@@ -12,7 +12,7 @@ from pathlib import Path
 
 from pipen import Proc
 
-from .helpers import (
+from .helpers import (  # noqa: F401
     ErrorProc,
     FileInputProc,
     FileInputsProc,
@@ -231,7 +231,7 @@ def test_check_cached_outfile_removed(caplog, pipen, infile):
 @pytest.mark.forked
 def test_metaout_was_dir(pipen):
     proc1 = Proc.from_proc(NormalProc)
-    proc2 = Proc.from_proc(NormalProc, requires=proc1)
+    proc2 = Proc.from_proc(NormalProc, requires=proc1)  # noqa: F841
     # proc1's metadir/output will be directory
     pipen.set_starts(proc1).run()
     metaout = proc1.workdir / "0" / "output"

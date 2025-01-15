@@ -1,4 +1,3 @@
-from re import template
 import pytest
 from pipen import Proc, Pipen, run
 from pipen.exceptions import (
@@ -7,7 +6,7 @@ from pipen.exceptions import (
 )
 from pipen.proc import PipenOrProcNameError
 
-from .helpers import (
+from .helpers import (  # noqa: F401
     ErrorProc,
     NormalProc,
     SimpleProc,
@@ -209,7 +208,7 @@ def test_duplicate_proc_name():
 
 
 @pytest.mark.forked
-def test_run():
+def test_run2():
     class RProc1(Proc):
         input = "a"
         output = "b:var:{{in.a}}"

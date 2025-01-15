@@ -3,7 +3,7 @@ import pytest
 from pipen import plugin, Pipen, Proc
 from pipen.exceptions import ProcInputValueError, ProcOutputValueError
 
-from .helpers import pipen, ioproc, OutputNotGeneratedProc, SimpleProc
+from .helpers import pipen, ioproc, OutputNotGeneratedProc, SimpleProc  # noqa: F401
 
 
 class Plugin:
