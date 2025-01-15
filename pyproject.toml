@@ -17,7 +17,7 @@ generate-setup-file = true
 
 [tool.poetry.dependencies]
 python = "^3.9"
-liquidpy = "^0.8.2"
+liquidpy = "^0.8.3"
 pandas = "^2.0"
 enlighten = "^1"
 argx = "^0.2.10"
@@ -30,13 +30,13 @@ rtoml = "^0.8"
 # May not be rtoml
 python-simpleconf = {version = "^0.6", extras = ["toml"]}
 pipda = "^0.13"
-varname = "^0.13"
+varname = "^0.14"
 
 [tool.poetry.dev-dependencies]
 openpyxl = "^3"
 pytest = "^8"
 pytest-asyncio = "^0.23"
-pytest-cov = "^5"
+pytest-cov = "^6"
 pytest-xdist = "^3"
 pytest-forked = "^1.6"
 # This also installs scipy and wcwidth
