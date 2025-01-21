@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.15.7
+
+- chore(deps): update xqute to version 0.5.5
+- chore(deps): update pytest-asyncio to version 0.25.2
+- chore: add logging for plugin initialization
+
 ## 0.15.6
 
 - chore(deps): bump python-varname to 0.14
