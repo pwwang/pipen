@@ -35,7 +35,7 @@ varname = "^0.14"
 [tool.poetry.dev-dependencies]
 openpyxl = "^3"
 pytest = "^8"
-pytest-asyncio = "^0.23"
+pytest-asyncio = "^0.25"
 pytest-cov = "^6"
 pytest-xdist = "^3"
 pytest-forked = "^1.6"
@@ -49,6 +49,7 @@ pipen = "pipen.cli:main"
 addopts = "-vv -n auto --dist loadgroup -p no:benchmark -W error::UserWarning --cov-config=.coveragerc --cov=pipen --cov-report xml:.coverage.xml --cov-report term-missing"
 console_output_style = "progress"
 junit_family = "xunit1"
+asyncio_default_fixture_loop_scope = "function"
 filterwarnings = [
    "ignore:.+may lead to deadlocks in the child:DeprecationWarning",
 ]
