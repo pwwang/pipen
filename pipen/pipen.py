@@ -184,6 +184,7 @@ class Pipen:
         try:
             self.build_proc_relationships()
             self._log_pipeline_info()
+            logger.info("Initializing plugins ...")
             await plugin.hooks.on_start(self)
             for proc in self.procs:
                 self.pbar.update_proc_running()
