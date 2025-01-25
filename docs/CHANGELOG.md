@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.15.8
+
+- chore(deps): update package versions for executing, and xqute
+- fix: change the input/output path from resolved to absolute for symlinks
+- style(tests): update imports and add noqa comment for unused variable
+
 ## 0.15.7
 
 - chore(deps): update xqute to version 0.5.5
