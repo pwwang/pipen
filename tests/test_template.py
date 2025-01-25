@@ -1,6 +1,6 @@
 import pytest
 
-from pipen.template import *
+from pipen.template import get_template_engine
 from pipen.template import NoSuchTemplateEngineError
 
 

@@ -86,7 +86,7 @@ def test_ignore_input_data_of_start_proc(caplog, pipen):
 def test_proc_wasted_input_columns(caplog, pipen):
     proc1 = Proc.from_proc(NormalProc, input_data=[1])
     proc2 = Proc.from_proc(NormalProc, input_data=[1])
-    proc3 = Proc.from_proc(NormalProc, requires=[proc1, proc2])
+    proc3 = Proc.from_proc(NormalProc, requires=[proc1, proc2])  # noqa: F841
     pipen.set_starts(proc1, proc2).run()
     assert "Wasted 1 column" in caplog.text
 
