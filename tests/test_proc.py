@@ -10,15 +10,16 @@ from pipen.exceptions import (
     PipenOrProcNameError,
 )
 from datar.dplyr import mutate
-from .helpers import (
+from .helpers import (  # noqa: F401
     In2Out1Proc,
     NoInputProc,
     NormalProc,
+    FileInputProc,
     RelPathScriptProc,
     ScriptNotExistsProc,
     SimpleProc,
     InputTypeUnsupportedProc,
-    pipen,  # noqa: F401
+    pipen,
 )
 
 
@@ -48,6 +49,18 @@ def test_proc_with_input_data(pipen):
     proc = Proc.from_proc(NormalProc, input_data=[1])
     pipen.set_starts(proc).run()
     assert proc.output_data.equals(pandas.DataFrame({"output": ["1"]}))
+
+
+@pytest.mark.forked
+def test_proc_with_symlink_input(pipen, tmp_path):
+    infile_orig = tmp_path / "a.txt"
+    infile_orig.write_text("1")
+    infile_symlink = tmp_path / "b.txt"
+    infile_symlink.symlink_to(infile_orig)
+    proc = Proc.from_proc(FileInputProc, input_data=[infile_symlink])
+    pipen.set_starts(proc).run()
+    outfile = proc.output_data["out"].iloc[0]
+    assert outfile.endswith("b.txt")
 
 
 @pytest.mark.forked

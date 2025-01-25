@@ -106,7 +106,7 @@ class Pipen:
         )
         self.outdir = Path(
             outdir or self.__class__.outdir or f"./{self.name}-output"
-        ).resolve()
+        ).absolute()
         self.workdir: Path = None
         self.profile: str = "default"
 

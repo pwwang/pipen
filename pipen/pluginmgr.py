@@ -583,7 +583,7 @@ class PipenMainPlugin:
             # Let the plugins handle the protocol
             return None
 
-        return str(Path(inpath).expanduser().resolve())
+        return str(Path(inpath).expanduser().absolute())
 
     @plugin.impl
     def norm_outpath(
@@ -602,7 +602,7 @@ class PipenMainPlugin:
                 f"[{job.proc.name}] Process output should be a relative path: {outpath}"
             )
 
-        out = job.outdir.resolve() / outpath
+        out = job.outdir.absolute() / outpath
         if is_dir:
             out.mkdir(parents=True, exist_ok=True)
 
