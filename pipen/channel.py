@@ -1,13 +1,19 @@
 """Provide some function for creating and modifying channels (dataframes)"""
+
 from __future__ import annotations
 
 from glob import glob
 from os import path
+from itertools import chain
+from pathlib import Path
 from typing import Any, List
 
 import pandas
+from cloudpathlib import AnyPath, CloudPath
 from pandas import DataFrame
 from pipda import register_verb
+
+from .utils import path_is_symlink
 
 
 # ----------------------------------------------------------------
@@ -57,31 +63,54 @@ class Channel(DataFrame):
         Returns:
             The channel
         """
-        sort_key = (
-            str
-            if sortby == "name"
-            else path.getmtime
-            if sortby == "mtime"
-            else path.getsize
-            if sortby == "size"
-            else None
-        )
-        file_filter = (
-            path.islink
-            if ftype == "link"
-            else path.isdir
-            if ftype == "dir"
-            else path.isfile
-            if ftype == "file"
-            else None
-        )
-        files = (
-            file
-            for file in glob(str(pattern))
-            if not file_filter or file_filter(file)
-        )
+
+        def sort_key(file: Path | CloudPath) -> Any:
+            if sortby == "mtime":
+                return file.stat().st_mtime
+            if sortby == "size":
+                return file.stat().st_size
+
+            return str(file)  # sort by name
+
+        def file_filter(file: Path | CloudPath) -> bool:
+            if ftype == "link":
+                return path_is_symlink(file)
+            if ftype == "dir":
+                return file.is_dir()
+            if ftype == "file":
+                return file.is_file()
+            return True
+
+        pattern = AnyPath(pattern)
+        if isinstance(pattern, CloudPath):
+            parts = pattern.parts
+            bucket = CloudPath("".join(parts[:2]))  # gs://bucket
+            # CloudPath.glob() does not support a/b/*.txt
+            # we have to do it part by part
+            parts = parts[2:]
+            files = [bucket]
+            for i, part in enumerate(parts):
+                tmp = chain(*[base.glob(part) for base in files])
+                tmp = list(tmp)
+                files = [
+                    base for base in tmp
+                    if (i < len(parts) - 1 and base.is_dir())
+                    or (i == len(parts) - 1 and file_filter(base))
+                ]
+        else:  # local path
+            files = (
+                Path(file) for file in glob(str(pattern)) if file_filter(Path(file))
+            )
+
         return cls.create(
-            sorted(files, key=sort_key, reverse=reverse),  # type: ignore
+            [
+                str(file)
+                for file in sorted(
+                    files,
+                    key=sort_key if sortby in ("name", "mtime", "size") else None,
+                    reverse=reverse,
+                )  # type: ignore
+            ]
         )
 
     @classmethod

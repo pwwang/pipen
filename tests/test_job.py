@@ -33,7 +33,7 @@ from .helpers import (  # noqa: F401
 )
 
 
-@pytest.mark.forked
+# @pytest.mark.forked
 def test_caching(caplog, pipen, infile):
     proc = Proc.from_proc(FileInputProc, input_data=[infile])
     pipen.set_starts(proc).run()

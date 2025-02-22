@@ -1,23 +1,17 @@
 """Define hooks specifications and provide plugin manager"""
 from __future__ import annotations
 
-import shutil
-from os import PathLike
-from pathlib import Path
 from typing import Any, Dict, TYPE_CHECKING
 
-from simplug import Simplug, SimplugResult, makecall
+from cloudpathlib import AnyPath
+from simplug import Simplug, SimplugResult
 from xqute import JobStatus, Scheduler
-from xqute.utils import a_read_text, a_write_text, asyncify
 
 from .defaults import ProcOutputType
-from .exceptions import ProcInputValueError, ProcOutputValueError
-from .utils import get_mtime as _get_mtime
 
 
 if TYPE_CHECKING:  # pragma: no cover
     import signal
-    from simplug import SimplugImplCall
     from xqute import Xqute
     from .job import Job
     from .proc import Proc
@@ -264,161 +258,6 @@ async def on_job_failed(job: Job):
     """
 
 
-def _collect_norm_inpath(calls: list[SimplugImplCall]) -> str:
-    for call in calls:
-        out = makecall(call)
-        if out is not None:
-            return str(out)
-
-    from .job import Job
-    # The first argument could be self in implementation
-    idx = 0 if isinstance(calls[0].args[0], Job) else 1
-    job = calls[0].kwargs.pop("job", calls[0].args[idx])
-    inpath = calls[0].kwargs.pop("inpath", calls[0].args[idx + 1])
-    raise ProcInputValueError(
-        f"[{job.proc.name}] Unsupported protocol for input path: "
-        f"{inpath.split('://')[0]}://"
-    )
-
-
-@plugin.spec(result=_collect_norm_inpath)
-def norm_inpath(job: Job, inpath: str | PathLike, is_dir: bool) -> str:
-    """Normalize the input path
-
-    Args:
-        job: The job
-        inpath: The input path
-        is_dir: Whether the path is a directory
-
-    Returns:
-        The normalized path
-    """
-
-
-def _collect_norm_outpath(calls: list[SimplugImplCall]) -> str:
-    for call in calls:
-        out = makecall(call)
-        if out is not None:
-            return str(out)
-
-    from .job import Job
-    # The first argument could be self in implementation
-    idx = 0 if isinstance(calls[0].args[0], Job) else 1
-    job = calls[0].kwargs.pop("job", calls[0].args[idx])
-    outpath = calls[0].kwargs.pop("outpath", calls[0].args[idx + 1])
-    raise ProcOutputValueError(
-        f"[{job.proc.name}] Unsupported protocol for output path: "
-        f"{outpath.split('://')[0]}://"
-    )
-
-
-@plugin.spec(result=_collect_norm_outpath)
-def norm_outpath(job: Job, outpath: str, is_dir: bool) -> str:
-    """Normalize the output path
-
-    Args:
-        job: The job
-        outpath: The output path
-        is_dir: Whether the path is a directory
-
-    Returns:
-        The normalized path
-    """
-
-
-def _collect_get_mtime(calls: list[SimplugImplCall]) -> float:
-    for call in calls:
-        out = makecall(call)
-        if out is not None:
-            return float(out)
-
-    from .job import Job
-    # The first argument could be self in implementation
-    idx = 0 if isinstance(calls[0].args[0], Job) else 1
-    job = calls[0].kwargs.pop("job", calls[0].args[idx])
-    path = calls[0].kwargs.pop("path", calls[0].args[idx + 1])
-    raise NotImplementedError(
-        f"[{job.proc.name}] Unsupported protocol in path to get mtime: "
-        f"{path.split('://')[0]}://"
-    )
-
-
-@plugin.spec(result=_collect_get_mtime)
-def get_mtime(job: Job, path: str | PathLike, dirsig: int) -> float:
-    """Get the mtime of a path, either a file or a directory
-
-    Args:
-        job: The job
-        path: The path to get mtime
-        dirsig: The depth of the directory to check the last modification time
-
-    Returns:
-        The last modification time
-    """
-
-
-async def _collect_clear_path(calls: list[SimplugImplCall]) -> bool:
-    for call in calls:
-        out = await makecall(call)
-        if out is not None:
-            return out
-
-    from .job import Job
-    # The first argument could be self in implementation
-    idx = 0 if isinstance(calls[0].args[0], Job) else 1
-    job = calls[0].kwargs.pop("job", calls[0].args[idx])
-    path = calls[0].kwargs.pop("path", calls[0].args[idx + 1])
-    raise NotImplementedError(
-        f"[{job.proc.name}] Unsupported protocol in path to clear: "
-        f"{path.split('://')[0]}://"
-    )
-
-
-@plugin.spec(result=_collect_clear_path)
-async def clear_path(job: Job, path: str | PathLike, is_dir: bool) -> bool:
-    """Clear the path, either a file or a directory
-
-    Args:
-        job: The job
-        path: The path to clear
-        is_dir: Whether the path is a directory
-
-    Returns:
-        Whether the path is cleared successfully
-    """
-
-
-async def _collect_output_exists(calls: list[SimplugImplCall]) -> bool:
-    for call in calls:
-        out = await makecall(call)
-        if out is not None:
-            return out
-
-    from .job import Job
-    # The first argument could be self in implementation
-    idx = 0 if isinstance(calls[0].args[0], Job) else 1
-    job = calls[0].kwargs.pop("job", calls[0].args[idx])
-    path = calls[0].kwargs.pop("path", calls[0].args[idx + 1])
-    raise NotImplementedError(
-        f"[{job.proc.name}] Unsupported protocol in path to test existence: "
-        f"{path.split('://')[0]}://"
-    )
-
-
-@plugin.spec(result=_collect_output_exists)
-async def output_exists(job: Job, path: str, is_dir: bool) -> bool:
-    """Check if the output exists
-
-    Args:
-        job: The job
-        path: The path to check
-        is_dir: Whether the path is a directory
-
-    Returns:
-        Whether the output exists
-    """
-
-
 @plugin.spec(result=SimplugResult.ALL_AVAILS)
 def on_jobcmd_init(job: Job) -> str:
     """When the job command wrapper script is initialized before the prescript is run
@@ -538,20 +377,20 @@ class PipenMainPlugin:
             if outtype == ProcOutputType.VAR:
                 continue
 
-            output_exists = await plugin.hooks.output_exists(
-                job,
-                job.output[outkey],
-                outtype == ProcOutputType.DIR,
-            )
+            path = AnyPath(job.output[outkey])
+            output_exists = path.exists()
+            if outtype == ProcOutputType.DIR:
+                output_exists = len(list(path.iterdir())) > 0
+
             if not output_exists:
                 job.status = JobStatus.FAILED
                 job.proc.pbar.update_job_failed()
-                stderr = await a_read_text(job.stderr_file)
+                stderr = job.stderr_file.read_text()
                 stderr = (
                     f"{stderr}\n\nOutput {outtype} {outkey!r} "
                     "is not generated."
                 )
-                await a_write_text(job.stderr_file, stderr)
+                job.stderr_file.write_text(stderr)
                 break
         else:
             await job.cache()
@@ -570,95 +409,6 @@ class PipenMainPlugin:
         """Update the status of a killed job"""
         # instead of FINISHED to force the whole pipeline to quit
         job.status = JobStatus.FAILED  # pragma: no cover
-
-    @plugin.impl
-    def norm_inpath(
-        self,
-        job: Job,
-        inpath: str | PathLike,
-        is_dir: bool,
-    ) -> str:
-        """Normalize the input path"""
-        if "://" in str(inpath):
-            # Let the plugins handle the protocol
-            return None
-
-        return str(Path(inpath).expanduser().absolute())
-
-    @plugin.impl
-    def norm_outpath(
-        self,
-        job: Job,
-        outpath: str,
-        is_dir: bool,
-    ) -> str:
-        """Normalize the output path"""
-        if "://" in outpath:
-            # Let the plugins handle the protocol
-            return None
-
-        if Path(outpath).is_absolute():
-            raise ProcOutputValueError(
-                f"[{job.proc.name}] Process output should be a relative path: {outpath}"
-            )
-
-        out = job.outdir.absolute() / outpath
-        if is_dir:
-            out.mkdir(parents=True, exist_ok=True)
-
-        return str(out)
-
-    @plugin.impl
-    def get_mtime(
-        self,
-        job: Job,
-        path: str | PathLike,
-        dirsig: int,
-    ):
-        """Get the mtime of a path"""
-        if "://" in str(path):
-            # Let the plugins handle the protocol
-            return None
-
-        return _get_mtime(path, dirsig)
-
-    @plugin.impl
-    async def clear_path(self, job: Job, path: str | PathLike, is_dir: bool):
-        """Clear the path"""
-        if "://" in str(path):
-            # Let the plugins handle the protocol
-            return None
-
-        path = Path(path)
-        try:
-            # dead link
-            if not path.exists():
-                if path.is_symlink():
-                    await asyncify(Path.unlink)(path)
-
-            elif not is_dir:
-                await asyncify(Path.unlink)(path)
-
-            else:
-                await asyncify(shutil.rmtree)(path)
-                path.mkdir()
-        except Exception:  # pragma: no cover
-            return False
-        return True
-
-    @plugin.impl
-    async def output_exists(self, job: Job, path: str, is_dir: bool):
-        """Check if the output exists"""
-        if "://" in path:
-            # Let the plugins handle the protocol
-            return None
-
-        path = Path(path)
-        if not path.exists():
-            return False
-        if is_dir:
-            return len(list(path.iterdir())) > 0  # pragma: no cover
-        return True
 
 
 plugin.register(PipenMainPlugin)

@@ -3,11 +3,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import rtoml
+from cloudpathlib import AnyPath
+from diot import Diot
 from simpleconf import Config
 
 from .defaults import ProcInputType, ProcOutputType
-from .pluginmgr import plugin
+from .utils import get_mtime, path_rmtree, path_is_symlink
 
 
 class JobCaching:
@@ -31,8 +32,8 @@ class JobCaching:
         )
         # Check if mtimes of input is greater than those of output
         try:
-            max_mtime = self.script_file.stat().st_mtime
-        except FileNotFoundError:
+            max_mtime = get_mtime(self.script_file, 0)
+        except Exception:  # pragma: no cover
             max_mtime = 0
 
         for inkey, intype in self.proc.input.type.items():
@@ -43,26 +44,18 @@ class JobCaching:
                 intype in (ProcInputType.FILE, ProcInputType.DIR)
                 and self.input[inkey] is not None
             ):
-                max_mtime = max(
-                    max_mtime, plugin.hooks.get_mtime(self, self.input[inkey], dirsig)
-                )
+                max_mtime = max(max_mtime, get_mtime(self.input[inkey], dirsig))
 
             if (
                 intype in (ProcInputType.FILES, ProcInputType.DIRS)
                 and self.input[inkey] is not None
             ):
                 for file in self.input[inkey]:
-                    max_mtime = max(
-                        max_mtime,
-                        plugin.hooks.get_mtime(self, file, dirsig),
-                    )
+                    max_mtime = max(max_mtime, get_mtime(file, dirsig))
 
         for outkey, outval in self._output_types.items():
             if outval in (ProcOutputType.FILE, ProcInputType.DIR):
-                max_mtime = max(
-                    max_mtime,
-                    plugin.hooks.get_mtime(self, self.output[outkey], dirsig),
-                )
+                max_mtime = max(max_mtime, get_mtime(self.output[outkey], dirsig))
 
         signature = {
             "input": {
@@ -72,7 +65,8 @@ class JobCaching:
             "output": {"type": self._output_types, "data": self.output},
             "ctime": float("inf") if max_mtime == 0 else max_mtime,
         }
-        rtoml.dump(signature, self.signature_file)
+        with self.signature_file.open("w") as f:
+            f.write(Diot(signature).to_toml())
 
     async def _clear_output(self) -> None:
         """Clear output if not cached"""
@@ -81,11 +75,15 @@ class JobCaching:
             if outval not in (ProcOutputType.FILE, ProcOutputType.DIR):
                 continue
 
-            await plugin.hooks.clear_path(
-                self,
-                self.output[outkey],
-                outval == ProcOutputType.DIR,
-            )
+            path = AnyPath(self.output[outkey])
+            if not path.exists() and path_is_symlink(path):  # dead link
+                path.unlink()
+            elif path.exists():
+                if not path.is_dir():
+                    path.unlink()
+                else:
+                    path_rmtree(path)
+                    path.mkdir()
 
     async def _check_cached(self) -> bool:
         """Check if the job is cached based on signature
@@ -93,7 +91,9 @@ class JobCaching:
         Returns:
             True if the job is cached otherwise False
         """
-        signature = Config.load(self.signature_file)
+        with self.signature_file.open("r") as sf:
+            signature = Config.load(sf, loader="toml")
+
         dirsig = (
             self.proc.pipeline.config.dirsig
             if self.proc.dirsig is None
@@ -112,11 +112,12 @@ class JobCaching:
                 return False
 
             # check if any script file is newer
-            if self.script_file.stat().st_mtime > signature.ctime + 1e-3:
+            script_mtime = get_mtime(self.script_file, 0)
+            if script_mtime > signature.ctime + 1e-3:
                 self.log(
                     "debug",
                     "Not cached (script file is newer: %s > %s)",
-                    self.script_file.stat().st_mtime,
+                    script_mtime,
                     signature.ctime,
                 )
                 return False
@@ -127,10 +128,7 @@ class JobCaching:
                     continue  # pragma: no cover, covered, a bug of pytest-cov
 
                 if intype in (ProcInputType.FILE, ProcInputType.DIR):
-                    if (
-                        plugin.hooks.get_mtime(self, self.input[inkey], dirsig)
-                        > signature.ctime + 1e-3
-                    ):
+                    if get_mtime(self.input[inkey], dirsig) > signature.ctime + 1e-3:
                         self.log(
                             "debug",
                             "Not cached (Input file is newer: %s)",
@@ -140,10 +138,7 @@ class JobCaching:
 
                 if intype in (ProcInputType.FILES, ProcInputType.DIRS):
                     for file in self.input[inkey]:
-                        if (
-                            plugin.hooks.get_mtime(self, file, dirsig)
-                            > signature.ctime + 1e-3
-                        ):
+                        if get_mtime(file, dirsig) > signature.ctime + 1e-3:
                             self.log(
                                 "debug",
                                 "Not cached (One of the input files "
@@ -156,12 +151,7 @@ class JobCaching:
                 if outval not in (ProcOutputType.FILE, ProcOutputType.DIR):
                     continue
 
-                output_exists = await plugin.hooks.output_exists(
-                    self,
-                    self.output[outkey],
-                    outval == ProcOutputType.DIR,
-                )
-                if not output_exists:
+                if not AnyPath(self.output[outkey]).exists():
                     self.log(
                         "debug",
                         "Not cached (Output file removed: %s)",
@@ -194,7 +184,7 @@ class JobCaching:
                 "Not cached (proc.cache is False)",
             )
             out = False
-        elif await self.rc != 0:
+        elif self.rc != 0:
             self.log(
                 "debug",
                 "Not cached (job.rc != 0)",

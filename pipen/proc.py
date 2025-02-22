@@ -1,4 +1,5 @@
 """Provides the process class: Proc"""
+
 from __future__ import annotations
 
 import asyncio
@@ -22,6 +23,7 @@ from diot import Diot
 from rich import box
 from rich.panel import Panel
 from varname import VarnameException, varname
+from cloudpathlib import AnyPath
 from xqute import JobStatus, Xqute
 
 from .defaults import ProcInputType
@@ -86,7 +88,6 @@ class ProcMeta(ABCMeta):
 
 
 class Proc(ABC, metaclass=ProcMeta):
-
     """The abstract class for processes.
 
     It's an abstract class. You can't instantise a process using it directly.
@@ -299,8 +300,7 @@ class Proc(ABC, metaclass=ProcMeta):
 
         if not is_valid_name(cls.name):
             raise PipenOrProcNameError(
-                f"{cls.name} is not a valid process name, expecting "
-                r"'^[\w.-]+$'"
+                f"{cls.name} is not a valid process name, expecting " r"'^[\w.-]+$'"
             )
 
         envs = update_dict(
@@ -334,7 +334,7 @@ class Proc(ABC, metaclass=ProcMeta):
         self.pbar = None
         self.jobs: List[Any] = []
         self.xqute = None
-        self.__class__.workdir = Path(self.pipeline.workdir) / self.name
+        self.__class__.workdir = AnyPath(self.pipeline.workdir) / self.name
         # plugins can modify some default attributes
         plugin.hooks.on_proc_create(self)
 
@@ -363,9 +363,9 @@ class Proc(ABC, metaclass=ProcMeta):
 
         # input
         self.input = self._compute_input()  # type: ignore
-        plugin.hooks.on_proc_input_computed(self)
         # output
         self.output = self._compute_output()
+        plugin.hooks.on_proc_input_computed(self)
         # scheduler
         self.scheduler = get_scheduler(  # type: ignore
             self.scheduler or self.pipeline.config.scheduler
@@ -381,34 +381,34 @@ class Proc(ABC, metaclass=ProcMeta):
         """Init all other properties and jobs"""
         import pandas
 
-        scheduler_opts = (
-            copy_dict(self.pipeline.config.scheduler_opts, 2) or {}
-        )
+        scheduler_opts = copy_dict(self.pipeline.config.scheduler_opts, 2) or {}
         scheduler_opts.update(self.scheduler_opts or {})
         self.xqute = Xqute(
             self.scheduler,
-            job_metadir=self.workdir,
-            job_submission_batch=self.submission_batch,
-            job_error_strategy=self.error_strategy
-            or self.pipeline.config.error_strategy,
-            job_num_retries=self.pipeline.config.num_retries
-            if self.num_retries is None
-            else self.num_retries,
-            scheduler_forks=self.forks or self.pipeline.config.forks,
-            scheduler_jobprefix=self.name,
-            **scheduler_opts,
+            workdir=self.workdir,
+            submission_batch=self.submission_batch,
+            error_strategy=self.error_strategy or self.pipeline.config.error_strategy,
+            num_retries=(
+                self.pipeline.config.num_retries
+                if self.num_retries is None
+                else self.num_retries
+            ),
+            forks=self.forks or self.pipeline.config.forks,
+            jobname_prefix=self.name,
+            scheduler_opts=scheduler_opts,
         )
         # for the plugin hooks to access
         self.xqute.proc = self
 
         await plugin.hooks.on_proc_init(self)
         await self._init_jobs()
-        self.__class__.output_data = pandas.DataFrame(
-            (job.output for job in self.jobs)
-        )
+        self.__class__.output_data = pandas.DataFrame((job.output for job in self.jobs))
 
     def gc(self):
         """GC process for the process to save memory after it's done"""
+        del self.xqute.jobs[:]
+        self.xqute.jobs = []
+
         del self.xqute
         self.xqute = None
 
@@ -463,11 +463,11 @@ class Proc(ABC, metaclass=ProcMeta):
         self.pbar.done()
         await plugin.hooks.on_proc_done(
             self,
-            False
-            if not self.succeeded
-            else "cached"
-            if len(cached_jobs) == self.size
-            else True,
+            (
+                False
+                if not self.succeeded
+                else "cached" if len(cached_jobs) == self.size else True
+            ),
         )
 
     # properties
@@ -535,12 +535,10 @@ class Proc(ABC, metaclass=ProcMeta):
         """
 
         for i in range(self.input.data.shape[0]):
-            job = self.scheduler.job_class(i, "", self.workdir)
+            job = self.xqute.scheduler.create_job(i, "")
             self.jobs.append(job)
 
-        await asyncio.gather(
-            *(self._init_job(i) for i in range(self.submission_batch))
-        )
+        await asyncio.gather(*(self._init_job(i) for i in range(self.submission_batch)))
 
     def _compute_input(self) -> Mapping[str, Mapping[str, Any]]:
         """Calculate the input based on input and input data
@@ -662,9 +660,7 @@ class Proc(ABC, metaclass=ProcMeta):
                 )
                 script_file = Path(inspect.getfile(base)).parent / script_file
             if not script_file.is_file():
-                raise ProcScriptFileNotFound(
-                    f"No such script file: {script_file}"
-                )
+                raise ProcScriptFileNotFound(f"No such script file: {script_file}")
             script = script_file.read_text()
 
         self.script = ignore_firstline_dedent(script)
@@ -684,18 +680,20 @@ class Proc(ABC, metaclass=ProcMeta):
         panel = Panel(
             self.desc or "Undescribed",
             title=title,
-            box=box.Box(
-                "╭═┬╮\n"
-                "║ ║║\n"
-                "├═┼┤\n"
-                "║ ║║\n"
-                "├═┼┤\n"
-                "├═┼┤\n"
-                "║ ║║\n"
-                "╰═┴╯\n"
-            )
-            if self.export
-            else box.ROUNDED,
+            box=(
+                box.Box(
+                    "╭═┬╮\n"
+                    "║ ║║\n"
+                    "├═┼┤\n"
+                    "║ ║║\n"
+                    "├═┼┤\n"
+                    "├═┼┤\n"
+                    "║ ║║\n"
+                    "╰═┴╯\n"
+                )
+                if self.export
+                else box.ROUNDED
+            ),
             width=get_logpanel_width(),
         )
 
@@ -705,9 +703,7 @@ class Proc(ABC, metaclass=ProcMeta):
         self.log(
             "info",
             "[yellow]<<<[/yellow] %s",
-            [proc.name for proc in self.requires]
-            if self.requires
-            else "[START]",
+            [proc.name for proc in self.requires] if self.requires else "[START]",
         )
         self.log(
             "info",

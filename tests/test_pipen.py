@@ -14,6 +14,7 @@ from .helpers import (  # noqa: F401
     pipen,
     SimplePlugin,
     pipen_with_plugin,
+    BUCKET,
 )
 
 
@@ -161,7 +162,7 @@ def test_subclass_pipen(tmp_path, caplog):
     class MyPipen(Pipen):
         name = "MyAwesomePipeline"
         starts = Proc1
-        data = [1],
+        data = ([1],)
         outdir = tmp_path / "outdir"
         workdir = tmp_path
         loglevel = "DEBUG"
@@ -220,3 +221,39 @@ def test_run2():
         script = "touch {{out.c}}"
 
     assert run("MyPipe", RProc1)
+
+
+def test_only_one_workdir_outdir_is_cloud(tmp_path):
+    class Proc1(Proc):
+        input = "a"
+        output = "b:var:{{in.a}}"
+
+    class MyPipe5(Pipen):
+        workdir = "gs://mybucket"
+        outdir = tmp_path
+        starts = Proc1
+
+    with pytest.raises(
+        ValueError, match="workdir and outdir should be both cloud paths or local paths"
+    ):
+        MyPipe5().run()
+
+
+@pytest.mark.forked
+def test_cloud_workdir_outdir():
+    class RProc1(Proc):
+        input = "a"
+        output = "b:var:{{in.a}}"
+
+    class RProc2(Proc):
+        requires = RProc1
+        input = "b"
+        output = "c:file:{{in.b}}"
+        script = "cloudsh touch {{out.c}}"
+
+    assert run(
+        "MyCloudPipe",
+        RProc1,
+        workdir=f"{BUCKET}/pipen-test/test-pipeline/workdir",
+        outdir=f"{BUCKET}/pipen-test/test-pipeline/outdir",
+    )

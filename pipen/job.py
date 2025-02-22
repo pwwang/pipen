@@ -3,15 +3,15 @@ from __future__ import annotations
 
 import logging
 import shlex
-import shutil
 from functools import cached_property
 from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Mapping
 
+from cloudpathlib import AnyPath
 from diot import OrderedDiot
 from xqute import Job as XquteJob
-from xqute.utils import a_read_text
+from xqute.utils import localize
 
 from ._job_caching import JobCaching
 from .defaults import ProcInputType, ProcOutputType
@@ -19,13 +19,14 @@ from .exceptions import (
     ProcInputTypeError,
     ProcOutputNameError,
     ProcOutputTypeError,
+    ProcOutputValueError,
     TemplateRenderingError,
 )
 from .template import Template
-from .utils import logger, strsplit
-from .pluginmgr import plugin
+from .utils import logger, strsplit, path_is_symlink, path_rmtree, path_symlink_to
 
 if TYPE_CHECKING:  # pragma: no cover
+    from xqute.utils import PathType
     from .proc import Proc
 
 
@@ -41,7 +42,7 @@ class Job(XquteJob, JobCaching):
         self._outdir = self.metadir / "output"
 
     @property
-    def script_file(self) -> Path:
+    def script_file(self) -> PathType:
         """Get the path to script file
 
         Returns:
@@ -50,26 +51,28 @@ class Job(XquteJob, JobCaching):
         return self.metadir / "job.script"
 
     @cached_property
-    def outdir(self) -> Path:
+    def outdir(self) -> PathType:
         """Get the path to the output directory
 
         Returns:
             The path to the job output directory
         """
-        ret = Path(self._outdir)
+        ret = self._outdir
         # if ret is a dead link
         # when switching a proc from end/nonend to nonend/end
-        if ret.is_symlink() and not ret.exists():
+        if path_is_symlink(ret) and not ret.exists():
             ret.unlink()  # pragma: no cover
+
         ret.mkdir(parents=True, exist_ok=True)
         # If it is somewhere else, make a symbolic link to the metadir
         metaout = self.metadir / "output"
         if ret != metaout:
-            if metaout.is_symlink() or metaout.is_file():
+            if path_is_symlink(metaout) or metaout.is_file():
                 metaout.unlink()
             elif metaout.is_dir():
-                shutil.rmtree(metaout)
-            metaout.symlink_to(ret)
+                path_rmtree(metaout)
+
+            path_symlink_to(metaout, ret)
         return ret
 
     @cached_property
@@ -96,11 +99,9 @@ class Job(XquteJob, JobCaching):
                     )
 
                 # we should use it as a string
-                ret[inkey] = plugin.hooks.norm_inpath(
-                    self,
-                    ret[inkey],
-                    intype == ProcInputType.DIR,
-                )
+                path = AnyPath(ret[inkey])
+                if isinstance(path, Path):
+                    ret[inkey] = str(path.expanduser().absolute())
 
             if intype in (ProcInputType.FILES, ProcInputType.DIRS):
                 if isinstance(ret[inkey], pandas.DataFrame):
@@ -114,11 +115,9 @@ class Job(XquteJob, JobCaching):
                     )
 
                 for i, file in enumerate(ret[inkey]):
-                    ret[inkey][i] = plugin.hooks.norm_inpath(
-                        self,
-                        file,
-                        intype == ProcInputType.DIRS,
-                    )
+                    path = AnyPath(file)
+                    if isinstance(path, Path):
+                        ret[inkey][i] = str(path.expanduser().absolute())
 
         return ret
 
@@ -181,11 +180,18 @@ class Job(XquteJob, JobCaching):
             if output_type == ProcOutputType.VAR:
                 ret[output_name] = output_value
             else:
-                ret[output_name] = plugin.hooks.norm_outpath(
-                    self,
-                    output_value,
-                    output_type == ProcOutputType.DIR,
-                )
+                ov = AnyPath(output_value)
+                if isinstance(ov, Path) and ov.is_absolute():
+                    raise ProcOutputValueError(
+                        f"[{self.proc.name}] "
+                        f"output path must be relative: {output_value}"
+                    )
+
+                out = self.outdir / output_value
+                if output_type == ProcOutputType.DIR:
+                    out.mkdir(parents=True, exist_ok=True)
+
+                ret[output_name] = str(out)
 
         return ret
 
@@ -196,7 +202,6 @@ class Job(XquteJob, JobCaching):
         Returns:
             The data for template rendering
         """
-
         return {
             "job": dict(
                 index=self.index,
@@ -261,11 +266,11 @@ class Job(XquteJob, JobCaching):
 
         if self.proc.export and len(self.proc.jobs) == 1:
             # Don't put index if it is a single-job process
-            self._outdir = Path(self.proc.pipeline.outdir) / self.proc.name
+            self._outdir = AnyPath(self.proc.pipeline.outdir) / self.proc.name
 
         elif self.proc.export:
             self._outdir = (
-                Path(self.proc.pipeline.outdir)
+                AnyPath(self.proc.pipeline.outdir)
                 / self.proc.name
                 / str(self.index)
             )
@@ -283,7 +288,7 @@ class Job(XquteJob, JobCaching):
             ) from exc
         if (
             self.script_file.is_file()
-            and await a_read_text(self.script_file) != script
+            and self.script_file.read_text() != script
         ):
             self.log("debug", "Job script updated.")
             self.script_file.write_text(script)
@@ -291,4 +296,4 @@ class Job(XquteJob, JobCaching):
             self.script_file.write_text(script)
 
         lang = proc.lang or proc.pipeline.config.lang
-        self.cmd = shlex.split(lang) + [self.script_file]  # type: ignore
+        self.cmd = shlex.split(lang) + [localize(self.script_file)]

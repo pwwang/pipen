@@ -9,6 +9,8 @@ import pytest
 from pipen import Proc, Pipen, plugin
 from pipen.utils import is_loading_pipeline
 
+BUCKET = "gs://handy-buffer-287000.appspot.com"
+
 
 class SimpleProc(Proc):
     """A very simple process for testing"""
@@ -233,17 +235,6 @@ def infile2(tmp_path):
     out = tmp_path / "infile2"
     out.write_text("in2")
     return out
-
-
-@pytest.fixture
-def ioproc(tmp_path):
-    class IOProc(Proc):
-        input = "infile:file"
-        input_data = ["myio://in/test.txt"]
-        output = "outfile:file:myio://out/out.txt"
-        script = "cp {{in.infile}} {{out.outfile}}"
-
-    return IOProc
 
 
 def create_dead_link(path):

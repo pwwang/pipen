@@ -4,22 +4,11 @@ from __future__ import annotations
 from typing import Type
 
 from xqute import Scheduler
-from xqute.schedulers.local_scheduler import (
-    LocalJob as XquteLocalJob,
-    LocalScheduler as XquteLocalScheduler,
-)
-from xqute.schedulers.sge_scheduler import (
-    SgeJob as XquteSgeJob,
-    SgeScheduler as XquteSgeScheduler
-)
-from xqute.schedulers.slurm_scheduler import (
-    SlurmJob as XquteSlurmJob,
-    SlurmScheduler as XquteSlurmScheduler,
-)
-from xqute.schedulers.ssh_scheduler import (
-    SshJob as XquteSshJob,
-    SshScheduler as XquteSshScheduler,
-)
+from xqute.schedulers.local_scheduler import LocalScheduler as XquteLocalScheduler
+from xqute.schedulers.sge_scheduler import SgeScheduler as XquteSgeScheduler
+from xqute.schedulers.slurm_scheduler import SlurmScheduler as XquteSlurmScheduler
+from xqute.schedulers.ssh_scheduler import SshScheduler as XquteSshScheduler
+from xqute.schedulers.gbatch_scheduler import GbatchScheduler as XquteGbatchScheduler
 
 from .defaults import SCHEDULER_ENTRY_GROUP
 from .exceptions import NoSuchSchedulerError, WrongSchedulerTypeError
@@ -27,40 +16,29 @@ from .job import Job
 from .utils import is_subclass, load_entrypoints
 
 
-class LocalJob(XquteLocalJob, Job):
-    """Job class for local scheduler"""
-
-
 class LocalScheduler(XquteLocalScheduler):
     """Local scheduler"""
-    job_class = LocalJob
-
-
-class SgeJob(XquteSgeJob, Job):
-    """Job class for SGE scheduler"""
+    job_class = Job
 
 
 class SgeScheduler(XquteSgeScheduler):
     """SGE scheduler"""
-    job_class = SgeJob
-
-
-class SlurmJob(XquteSlurmJob, Job):
-    """Job class for Slurm scheduler"""
+    job_class = Job
 
 
 class SlurmScheduler(XquteSlurmScheduler):
     """Slurm scheduler"""
-    job_class = SlurmJob
-
-
-class SshJob(XquteSshJob, Job):
-    """Job class for SSH scheduler"""
+    job_class = Job
 
 
 class SshScheduler(XquteSshScheduler):
     """SSH scheduler"""
-    job_class = SshJob
+    job_class = Job
+
+
+class GbatchScheduler(XquteGbatchScheduler):
+    """Google Cloud Batch scheduler"""
+    job_class = Job
 
 
 def get_scheduler(scheduler: str | Type[Scheduler]) -> Type[Scheduler]:

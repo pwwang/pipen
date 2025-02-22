@@ -6,6 +6,7 @@ import sys
 import importlib
 import importlib.util
 import logging
+import shutil
 import textwrap
 import typing
 from itertools import groupby
@@ -29,6 +30,7 @@ from typing import (
 
 import diot
 import simplug
+from cloudpathlib import AnyPath, CloudPath
 from rich.console import Console
 from rich.logging import RichHandler as _RichHandler
 from rich.table import Table
@@ -415,7 +417,7 @@ def pipen_banner() -> RenderableType:
     return table
 
 
-def get_mtime(path: str | PathLike, dir_depth: int = 1) -> float:
+def get_mtime(path: str | PathLike | CloudPath, dir_depth: int = 1) -> float:
     """Get the modification time of a path.
     If path is a directory, try to get the last modification time of the
     contents in the directory at given dir_depth
@@ -425,12 +427,40 @@ def get_mtime(path: str | PathLike, dir_depth: int = 1) -> float:
     Returns:
         The last modification time of path
     """
-    path = Path(path)
-    if not path.is_dir() or dir_depth == 0:
-        return path.lstat().st_mtime if path.is_symlink() else path.stat().st_mtime
-
     mtime = 0.0
-    for file in path.glob("*"):
+    path = AnyPath(path)
+    if not path.exists():
+        return mtime
+
+    if not path_is_symlink(path):
+        if dir_depth == 0 or not path.is_dir():
+            return path.stat().st_mtime
+
+        for file in path.glob("*"):
+            mtime = max(mtime, get_mtime(file, dir_depth - 1))
+
+        return mtime
+
+    # Is it a real symlink or fake
+    if isinstance(path, Path) and path.is_symlink():
+        if dir_depth == 0 or not path.is_dir():
+            return path.lstat().st_mtime
+
+        for file in path.glob("*"):
+            mtime = max(mtime, get_mtime(file, dir_depth - 1))
+
+        return mtime
+
+    # Fake symlink
+    dest = path.read_text().removeprefix("symlink:")
+    dpath = AnyPath(dest)
+    if dir_depth == 0 or not dpath.is_dir():
+        try:
+            return dpath.stat().st_mtime
+        except Exception:
+            return path.stat().st_mtime
+
+    for file in dpath.glob("*"):
         mtime = max(mtime, get_mtime(file, dir_depth - 1))
     return mtime
 
@@ -736,3 +766,60 @@ def is_loading_pipeline(*flags: str, argv: Sequence[str] | None = None) -> bool:
         return any(flag in argv for flag in flags)
 
     return False  # pragma: no cover
+
+
+def path_is_symlink(path: Path | CloudPath) -> bool:
+    """Check if a path is a symlink.
+
+    CloudPath.is_symlink() is not implemented yet, so we need to check
+    it manually.
+
+    Args:
+        path: The path to check
+
+    Returns:
+        True if the path is a symlink, otherwise False
+    """
+    if isinstance(path, Path):
+        if path.is_symlink():
+            return True
+
+    if not path.exists():
+        return False
+
+    # Check if the path is a fake symlink file
+    try:
+        return path.read_text().startswith("symlink:")
+    except Exception:
+        return False
+
+
+def path_symlink_to(
+    src: Path | CloudPath,
+    dst: Path | CloudPath,
+    target_is_directory: bool = False,
+) -> None:
+    """Create a symbolic link pointing to src named dst.
+
+    Args:
+        src: The source path
+        dst: The destination path
+        target_is_directory: If True, the symbolic link will be to a directory.
+    """
+    if isinstance(dst, CloudPath) or isinstance(src, CloudPath):
+        # Create a fake symlink file for cloud paths
+        src.write_text(f"symlink:{dst}")
+    else:
+        src.symlink_to(dst, target_is_directory=target_is_directory)
+
+
+def path_rmtree(path: Path | CloudPath) -> None:
+    """Remove a directory tree for both local and cloud paths.
+
+    Args:
+        path: The path to remove
+    """
+    if isinstance(path, CloudPath):
+        path.rmtree()
+    else:
+        shutil.rmtree(path)

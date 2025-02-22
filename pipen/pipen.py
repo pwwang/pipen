@@ -1,4 +1,5 @@
 """Main entry module, provide the Pipen class"""
+
 from __future__ import annotations
 
 import asyncio
@@ -12,6 +13,8 @@ from rich.panel import Panel
 from rich.text import Text
 from simpleconf import ProfileConfig
 from varname import varname, VarnameException
+from cloudpathlib import AnyPath, CloudPath
+from xqute.utils import PathType
 
 from .defaults import CONFIG, CONFIG_FILES
 from .exceptions import (
@@ -90,24 +93,24 @@ class Pipen:
                     self.name = self.__class__.__name__
                 else:
                     self.name = (
-                        f"{self.__class__.__name__}-"
-                        f"{self.__class__.PIPELINE_COUNT}"
+                        f"{self.__class__.__name__}-" f"{self.__class__.PIPELINE_COUNT}"
                     )
 
         if not is_valid_name(self.name):
             raise PipenOrProcNameError(
-                fr"Invalid pipeline name: {self.name}, expecting '^[\w.-]$'"
+                rf"Invalid pipeline name: {self.name}, expecting '^[\w.-]$'"
             )
 
         self.desc = (
-            desc
-            or self.__class__.desc
-            or desc_from_docstring(self.__class__, Pipen)
+            desc or self.__class__.desc or desc_from_docstring(self.__class__, Pipen)
         )
-        self.outdir = Path(
+        self.outdir: PathType = AnyPath(
             outdir or self.__class__.outdir or f"./{self.name}-output"
-        ).absolute()
-        self.workdir: Path = None
+        )
+        if isinstance(self.outdir, Path):
+            self.outdir = self.outdir.absolute()
+
+        self.workdir: PathType | None = None
         self.profile: str = "default"
 
         self.starts: List[Proc] = self.__class__.starts
@@ -122,9 +125,7 @@ class Pipen:
             for key, value in self.__class__.__dict__.items()
             if key in self.config
         }
-        self._kwargs.setdefault("plugin_opts", {}).update(
-            kwargs.pop("plugin_opts", {})
-        )
+        self._kwargs.setdefault("plugin_opts", {}).update(kwargs.pop("plugin_opts", {}))
         self._kwargs.setdefault("template_opts", {}).update(
             kwargs.pop("template_opts", {})
         )
@@ -174,7 +175,7 @@ class Pipen:
             True if the pipeline ends successfully else False
         """
         self.profile = profile
-        self.workdir = Path(self.config.workdir) / self.name
+        self.workdir = AnyPath(str(self.config.workdir)) / self.name
         # self.workdir.mkdir(parents=True, exist_ok=True)
 
         succeeded = True
@@ -192,8 +193,7 @@ class Pipen:
                 if proc in self.starts and proc.input_data is None:
                     proc_obj.log(
                         "warning",
-                        "This is a start process, "
-                        "but no 'input_data' specified.",
+                        "This is a start process, " "but no 'input_data' specified.",
                     )
                 await proc_obj.init()
                 await proc_obj.run()
@@ -294,9 +294,7 @@ class Pipen:
             elif proc not in self.starts:
                 self.starts.append(proc)  # type: ignore
             else:
-                raise ProcDependencyError(
-                    f"{proc} is already a start process."
-                )
+                raise ProcDependencyError(f"{proc} is already a start process.")
         return self
 
     # In case people forget the "s"
@@ -345,9 +343,7 @@ class Pipen:
         for i, (key, val) in enumerate(self.config.plugin_opts.items()):
             logger.info(fmt, "plugin_opts" if i == 0 else "", f"{key}={val}")
         for i, (key, val) in enumerate(self.config.scheduler_opts.items()):
-            logger.info(
-                fmt, "scheduler_opts" if i == 0 else "", f"{key}={val}"
-            )
+            logger.info(fmt, "scheduler_opts" if i == 0 else "", f"{key}={val}")
         for i, (key, val) in enumerate(self.config.template_opts.items()):
             logger.info(fmt, "template_opts" if i == 0 else "", f"{key}={val}")
 
@@ -368,22 +364,31 @@ class Pipen:
             *CONFIG_FILES,
             ignore_nonexist=True,
         )
-        self.config = ProfileConfig.use_profile(
-            config, self.profile, copy=True
-        )
+        self.config = ProfileConfig.use_profile(config, self.profile, copy=True)
 
         # configs from files and CONFIG are loaded
         # allow plugins to change the default configs
         await plugin.hooks.on_init(self)
-        self.workdir.mkdir(parents=True, exist_ok=True)
         # Then load the extra configurations passed from __init__(**kwargs)
         # Make sure dict options get inherited
         self.config.template_opts.update(self._kwargs.pop("template_opts", {}))
-        self.config.scheduler_opts.update(
-            self._kwargs.pop("scheduler_opts", {})
-        )
+        self.config.scheduler_opts.update(self._kwargs.pop("scheduler_opts", {}))
         self.config.plugin_opts.update(self._kwargs.pop("plugin_opts", {}))
         self.config.update(self._kwargs)
+
+        if "workdir" in self._kwargs:
+            self.workdir = AnyPath(self._kwargs["workdir"])
+
+        if (
+            int(isinstance(self.workdir, CloudPath))
+            + int(isinstance(self.outdir, CloudPath))
+            == 1
+        ):
+            raise ValueError(
+                "workdir and outdir should be both cloud paths or local paths."
+            )
+
+        self.workdir.mkdir(parents=True, exist_ok=True)
 
     def build_proc_relationships(self) -> None:
         """Build the proc relationships for the pipeline"""
@@ -399,22 +404,16 @@ class Pipen:
         # build proc relationships
         # Allow starts to be set as a tuple
         self.procs = list(self.starts)
-        nexts = set(
-            sum((proc.nexts or [] for proc in self.procs), [])  # type: ignore
-        )
+        nexts = set(sum((proc.nexts or [] for proc in self.procs), []))  # type: ignore
         logger.debug("")
         logger.debug("Building process relationships:")
         logger.debug("- Start processes: %s", self.procs)
         while nexts:
             logger.debug("- Next processes: %s", nexts)
             # pick up one that can be added to procs
-            for proc in sorted(
-                nexts, key=lambda prc: (prc.order or 0, prc.name)
-            ):
+            for proc in sorted(nexts, key=lambda prc: (prc.order or 0, prc.name)):
                 if proc in self.procs:
-                    raise ProcDependencyError(
-                        f"Cyclic dependency: {proc.name}"
-                    )
+                    raise ProcDependencyError(f"Cyclic dependency: {proc.name}")
 
                 if proc.name in [p.name for p in self.procs]:
                     raise PipenOrProcNameError(
@@ -449,7 +448,7 @@ def run(
     data: Iterable = None,
     *,
     desc: str = None,
-    outdir: str | PathLike = None,
+    outdir: PathType | None = None,
     profile: str = "default",
     **kwargs,
 ) -> bool:

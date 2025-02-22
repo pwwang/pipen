@@ -1,6 +1,9 @@
+from unittest.mock import MagicMock
+from pathlib import Path
+
 import pytest
 import pipen
-from pathlib import Path
+from cloudpathlib import CloudPath
 from pipen.utils import (
     brief_list,
     desc_from_docstring,
@@ -15,10 +18,15 @@ from pipen.utils import (
     get_marked,
     _get_obj_from_spec,
     load_pipeline,
+    path_is_symlink,
+    path_rmtree,
+    path_symlink_to,
 )
 from pipen.proc import Proc
 from pipen.procgroup import ProcGroup
 from pipen.exceptions import ConfigurationError
+
+from .helpers import BUCKET
 
 HERE = Path(__file__).parent.resolve()
 
@@ -41,6 +49,34 @@ def test_get_mtime_dir():
     package_dir = Path(pipen.__file__).parent
     mtime = get_mtime(package_dir, 2)
     assert mtime > 0
+
+
+@pytest.mark.forked
+def test_get_mtime_symlink_dir(tmp_path):
+    dir = tmp_path / "dir"
+    dir.mkdir()
+    file = dir / "file"
+    file.touch()
+    link = tmp_path / "link"
+    link.symlink_to(dir)
+    mtime = get_mtime(link, 2)
+    assert mtime > 0
+
+
+@pytest.mark.forked
+def test_get_mtime_cloud_file():
+    file = CloudPath(f"{BUCKET}/pipen-test/channel/test1.txt")
+    mtime = get_mtime(file)
+    assert mtime > 0
+
+
+@pytest.mark.forked
+def test_get_mtime_symlink_to_cloud_dir(tmp_path):
+    link = tmp_path / "link"
+    path_symlink_to(link, CloudPath(f"{BUCKET}/pipen-test/channel"))
+    lmtime = get_mtime(link, 0)
+    mtime = get_mtime(link)
+    assert mtime < lmtime
 
 
 @pytest.mark.forked
@@ -215,3 +251,35 @@ async def test_is_load_pipeline_with_help(tmp_path):
     assert pipeline.name == "PipenIsLoading"
     assert pipeline.starts[0].name == "SimpleProc"
     assert len(pipeline.procs) == 1
+
+
+def test_path_is_symlink(tmp_path):
+    link = tmp_path / "link"
+    path_symlink_to(link, tmp_path / "target")
+    assert path_is_symlink(link)
+
+    fake_symlink = tmp_path / "fake_symlink"
+    path_symlink_to(fake_symlink, CloudPath(f"{BUCKET}/target"))
+    assert path_is_symlink(fake_symlink)
+
+    nonexist_file = tmp_path / "nonexist"
+    assert not path_is_symlink(nonexist_file)
+
+    dir = tmp_path / "dir"
+    dir.mkdir()
+    assert not path_is_symlink(dir)
+
+
+def test_path_rmtree_local(tmp_path):
+    dir = tmp_path / "dir"
+    dir.mkdir()
+    file = dir / "file"
+    file.touch()
+    path_rmtree(dir)
+    assert not dir.exists()
+
+
+def test_path_rmtree_cloud():
+    path = MagicMock(spec=CloudPath)
+    path.rmtree.return_value = None
+    path_rmtree(path)

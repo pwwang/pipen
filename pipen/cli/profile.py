@@ -2,7 +2,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-import rtoml  # type: ignore
 from rich import print
 from rich.panel import Panel
 from rich.syntax import Syntax
@@ -79,7 +78,7 @@ class CLIProfilePlugin(CLIPlugin):
                     conf = ProfileConfig.detach(config)
                     print(
                         Panel(
-                            Syntax(rtoml.dumps(conf), "toml"),
+                            Syntax(conf.to_toml(), "toml"),
                             title=f"Profile: {profile}",
                             title_align="left",
                         )
@@ -93,7 +92,7 @@ class CLIProfilePlugin(CLIPlugin):
             conf = ProfileConfig.detach(config)
             print(
                 Panel(
-                    Syntax(rtoml.dumps(conf), "toml"),
+                    Syntax(conf.to_toml(), "toml"),
                     title=f"Profile: {args.name}",
                     title_align="left",
                 )
