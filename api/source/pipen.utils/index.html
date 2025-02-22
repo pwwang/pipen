@@ -1,0 +1,2064 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.5">
+    
+    
+      
+        <title>pipen.utils - pipen</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8608ea7d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../../../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../../../style.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pipenutils" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="pipen" class="md-header__button md-logo" aria-label="pipen" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            pipen
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              pipen.utils
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pwwang/pipen" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pwwang/pipen
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="pipen" class="md-nav__button md-logo" aria-label="pipen" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    pipen
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pwwang/pipen" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pwwang/pipen
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Introduction
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../basics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Basics
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../defining-proc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Defining a process
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../running/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Defining and running a pipeline
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../templating/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Templating
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../channels/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Channels
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../input-output/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Input and output
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../script/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Script
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../caching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Caching
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../error/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Error handling
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../configurations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configurations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../plugin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Plugins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Scheduler
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../proc-group/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Process group
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Command line iterface
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Change log
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    API
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            API
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_18_1" id="__nav_18_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    pipen
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_18_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18_1">
+            <span class="md-nav__icon md-icon"></span>
+            pipen
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.procgroup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.procgroup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.progressbar/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.progressbar
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.channel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.channel
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.version/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.version
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.scheduler
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.exceptions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.exceptions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.job/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.job
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.defaults/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.defaults
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.pluginmgr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.pluginmgr
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.utils/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.utils
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.template/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.template
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.proc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.proc
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.pipen/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.pipen
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_18_2" id="__nav_18_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    pipen.cli
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_18_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18_2">
+            <span class="md-nav__icon md-icon"></span>
+            pipen.cli
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.cli.profile/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.profile
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.cli.version/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.version
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.cli.plugins/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.plugins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.cli.help/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.help
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pipenutils" class="md-nav__link">
+    <span class="md-ellipsis">
+      pipen.utils
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<div class="mkapi-node">
+<h1 id="" class="mkapi-object mkapi-object-code plain">
+<span class="mkapi-object-kind mkapi-object-kind-code">SOURCE CODE</span>
+<span class="mkapi-object-prefix">pipen.</span><span class="mkapi-object-name">utils</span>
+<span id="pipen.utils"></span><a class="mkapi-docs-link" href="../../pipen.utils">DOCS</a>
+</h1>
+
+<div class="mkapi-code">
+<div class="codehilite"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Provide some utilities&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib.util</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">typing</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">groupby</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">operator</span><span class="w"> </span><span class="kn">import</span> <span class="n">itemgetter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="kn">import</span> <span class="n">PathLike</span><span class="p">,</span> <span class="n">get_terminal_size</span><span class="p">,</span> <span class="n">environ</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">DefaultDict</span><span class="p">,</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Mapping</span><span class="p">,</span>
+    <span class="n">Sequence</span><span class="p">,</span>
+    <span class="n">Tuple</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">diot</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">simplug</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cloudpathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">AnyPath</span><span class="p">,</span> <span class="n">CloudPath</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">RichHandler</span> <span class="k">as</span> <span class="n">_RichHandler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Text</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">simplug</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimplugContext</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.defaults</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CONSOLE_DEFAULT_WIDTH</span><span class="p">,</span>
+    <span class="n">CONSOLE_WIDTH_WITH_PANEL</span><span class="p">,</span>
+    <span class="n">CONSOLE_WIDTH_SHIFT</span><span class="p">,</span>
+    <span class="n">LOGGER_NAME</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.version</span><span class="w"> </span><span class="kn">import</span> <span class="n">__version__</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">importlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">metadata</span> <span class="k">as</span> <span class="n">importlib_metadata</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.segment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Segment</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">RenderableType</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.pipen</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipen</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.proc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Proc</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.procgroup</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProcGroup</span>
+
+<span class="n">LOADING_ARGV0</span> <span class="o">=</span> <span class="s2">&quot;@pipen&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">RichHandler</span><span class="p">(</span><span class="n">_RichHandler</span><span class="p">):</span><span id="pipen.utils.RichHandler"></span><a class="mkapi-docs-link" title="pipen.utils.RichHandler" href="../../pipen.utils/#pipen.utils.RichHandler">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Subclass of rich.logging.RichHandler, showing log levels as a single</span>
+<span class="sd">    character&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_level_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">LogRecord</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Text</span><span class="p">:</span><span id="pipen.utils.RichHandler.get_level_text"></span><a class="mkapi-docs-link" title="pipen.utils.RichHandler.get_level_text" href="../../pipen.utils/#pipen.utils.RichHandler.get_level_text">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the level name from the record.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            record: LogRecord instance.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Text: A tuple of the style and level name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">level_name</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">levelname</span>
+        <span class="n">level_text</span> <span class="o">=</span> <span class="n">Text</span><span class="o">.</span><span class="n">styled</span><span class="p">(</span>
+            <span class="n">level_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;logging.level.</span><span class="si">{</span><span class="n">level_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">level_text</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">RichConsole</span><span class="p">(</span><span class="n">Console</span><span class="p">):</span><span id="pipen.utils.RichConsole"></span><a class="mkapi-docs-link" title="pipen.utils.RichConsole" href="../../pipen.utils/#pipen.utils.RichConsole">DOCS</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_width</span> <span class="o">=</span> <span class="n">get_terminal_size</span><span class="p">()</span><span class="o">.</span><span class="n">columns</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>  <span class="c1"># maybe not a terminal</span>
+            <span class="k">if</span> <span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;JUPYTER_COLUMNS&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;JUPYTER_COLUMNS&quot;</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;COLUMNS&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;COLUMNS&quot;</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_width</span> <span class="o">=</span> <span class="n">CONSOLE_DEFAULT_WIDTH</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_render_buffer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Segment</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_render_buffer</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+
+<span class="n">logging</span><span class="o">.</span><span class="n">lastResort</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">NullHandler</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+<span class="n">logger_console</span> <span class="o">=</span> <span class="n">RichConsole</span><span class="p">()</span>
+<span class="n">_logger_handler</span> <span class="o">=</span> <span class="n">RichHandler</span><span class="p">(</span>
+    <span class="n">show_path</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">show_level</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">console</span><span class="o">=</span><span class="n">logger_console</span><span class="p">,</span>
+    <span class="n">rich_tracebacks</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">omit_repeated_times</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># rich 10+</span>
+    <span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">log_time_format</span><span class="o">=</span><span class="s2">&quot;%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">,</span>
+    <span class="n">tracebacks_extra_lines</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">tracebacks_suppress</span><span class="o">=</span><span class="p">[</span><span class="n">simplug</span><span class="p">,</span> <span class="n">diot</span><span class="p">,</span> <span class="n">typing</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">_logger_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s2">&quot;[purple]</span><span class="si">%(plugin_name)-7s</span><span class="s2">[/purple] </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_excepthook</span><span class="p">(</span>
+    <span class="n">type_</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="ne">BaseException</span><span class="p">],</span>
+    <span class="n">value</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span>
+    <span class="n">traceback</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The excepthook for pipen, to show rich traceback&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">type_</span><span class="p">,</span> <span class="ne">KeyboardInterrupt</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Interrupted by user&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+    <span class="n">_excepthook</span><span class="o">.</span><span class="n">oldhook</span><span class="p">(</span><span class="n">type_</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">)</span>
+
+
+<span class="n">_excepthook</span><span class="o">.</span><span class="n">oldhook</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span> <span class="o">=</span> <span class="n">_excepthook</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_logger</span><span class="p">(</span><span id="pipen.utils.get_logger"></span><a class="mkapi-docs-link" title="pipen.utils.get_logger" href="../../pipen.utils/#pipen.utils.get_logger">DOCS</a>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">LOGGER_NAME</span><span class="p">,</span>
+    <span class="n">level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">logging</span><span class="o">.</span><span class="n">LoggerAdapter</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the logger by given plugin name</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        level: The initial level of the logger</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The logger</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pipen.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">_logger_handler</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">level</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">logging</span><span class="o">.</span><span class="n">LoggerAdapter</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;plugin_name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">desc_from_docstring</span><span class="p">(</span><span id="pipen.utils.desc_from_docstring"></span><a class="mkapi-docs-link" title="pipen.utils.desc_from_docstring" href="../../pipen.utils/#pipen.utils.desc_from_docstring">DOCS</a>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Pipen</span> <span class="o">|</span> <span class="n">Proc</span><span class="p">],</span>
+    <span class="n">base</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Pipen</span> <span class="o">|</span> <span class="n">Proc</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the description from docstring</span>
+
+<span class="sd">    Only extract the summary.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        obj: The object with docstring</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The summary as desc</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">:</span>
+        <span class="c1"># If the docstring is empty, use the base&#39;s docstring</span>
+        <span class="c1"># Get the base from mro</span>
+        <span class="n">bases</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">cls</span>
+            <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__mro__</span>
+            <span class="k">if</span> <span class="n">is_subclass</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">base</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">cls</span> <span class="o">!=</span> <span class="n">base</span> <span class="ow">and</span> <span class="bp">cls</span> <span class="o">!=</span> <span class="n">obj</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">bases</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">desc_from_docstring</span><span class="p">(</span><span class="n">bases</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">base</span><span class="p">)</span>
+
+    <span class="n">started</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">out</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__doc__</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">started</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">started</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="n">started</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">line</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">update_dict</span><span class="p">(</span><span id="pipen.utils.update_dict"></span><a class="mkapi-docs-link" title="pipen.utils.update_dict" href="../../pipen.utils/#pipen.utils.update_dict">DOCS</a>
+    <span class="n">parent</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">new</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update the new dict to the parent, but make sure parent does not change</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        parent: The parent dictionary</span>
+<span class="sd">        new: The new dictionary</span>
+<span class="sd">        depth: The depth to be copied. 0 for updating to the deepest level.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; parent = {&quot;a&quot;: {&quot;b&quot;: 1}}</span>
+<span class="sd">        &gt;&gt;&gt; new = {&quot;a&quot;: {&quot;c&quot;: 2}}</span>
+<span class="sd">        &gt;&gt;&gt; update_dict(parent, new)</span>
+<span class="sd">        &gt;&gt;&gt; # {&quot;a&quot;: {&quot;b&quot;: 1, &quot;c&quot;: 2}}</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The updated dictionary or None if both parent and new are None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">new</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="n">parent</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="p">(</span><span class="n">new</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">out</span>
+            <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="n">depth</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="p">):</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">update_dict</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">val</span><span class="p">,</span> <span class="n">depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">out</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">strsplit</span><span class="p">(</span><span id="pipen.utils.strsplit"></span><a class="mkapi-docs-link" title="pipen.utils.strsplit" href="../../pipen.utils/#pipen.utils.strsplit">DOCS</a>
+    <span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">maxsplit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">trim</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Split the string, with the ability to trim each part.&quot;&quot;&quot;</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="n">maxsplit</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">trim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">parts</span>
+    <span class="k">if</span> <span class="n">trim</span> <span class="o">==</span> <span class="s2">&quot;left&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">part</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">trim</span> <span class="o">==</span> <span class="s2">&quot;right&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">part</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="n">part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_shebang</span><span class="p">(</span><span class="n">script</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="pipen.utils.get_shebang"></span><a class="mkapi-docs-link" title="pipen.utils.get_shebang" href="../../pipen.utils/#pipen.utils.get_shebang">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the shebang of the script</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        script: The script string</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None if the script does not contain a shebang, otherwise the shebang</span>
+<span class="sd">        without `#!` prefix</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="n">script</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">script</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;#!&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">script</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">script</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="n">shebang_line</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">strsplit</span><span class="p">(</span><span class="n">script</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">shebang_line</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">ignore_firstline_dedent</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="pipen.utils.ignore_firstline_dedent"></span><a class="mkapi-docs-link" title="pipen.utils.ignore_firstline_dedent" href="../../pipen.utils/#pipen.utils.ignore_firstline_dedent">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Like textwrap.dedent(), but ignore first empty lines</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text: The text the be dedented</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The dedented text</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">started</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">started</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">started</span><span class="p">:</span>
+            <span class="n">started</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">copy_dict</span><span class="p">(</span><span class="n">dic</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span><span id="pipen.utils.copy_dict"></span><a class="mkapi-docs-link" title="pipen.utils.copy_dict" href="../../pipen.utils/#pipen.utils.copy_dict">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Deep copy a dict</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dic: The dict to be copied</span>
+<span class="sd">        depth: The depth to be deep copied</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The deep-copied dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">depth</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dic</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">copy_dict</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="n">val</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">dic</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_logpanel_width</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span><span id="pipen.utils.get_logpanel_width"></span><a class="mkapi-docs-link" title="pipen.utils.get_logpanel_width" href="../../pipen.utils/#pipen.utils.get_logpanel_width">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the width of the log content</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        max_width: The maximum width to return</span>
+<span class="sd">            Note that it&#39;s not the console width. With console width, you</span>
+<span class="sd">            have to subtract the width of the log meta info</span>
+<span class="sd">            (CONSOLE_WIDTH_SHIFT).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The width of the log content</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="nb">min</span><span class="p">(</span>
+            <span class="n">logger_console</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
+            <span class="n">CONSOLE_WIDTH_WITH_PANEL</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="o">-</span> <span class="n">CONSOLE_WIDTH_SHIFT</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">log_rich_renderable</span><span class="p">(</span><span id="pipen.utils.log_rich_renderable"></span><a class="mkapi-docs-link" title="pipen.utils.log_rich_renderable" href="../../pipen.utils/#pipen.utils.log_rich_renderable">DOCS</a>
+    <span class="n">renderable</span><span class="p">:</span> <span class="n">RenderableType</span><span class="p">,</span>
+    <span class="n">color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">logfunc</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Log a rich renderable to logger</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        renderable: The rich renderable</span>
+<span class="sd">        splitline: Whether split the lines or log the entire message</span>
+<span class="sd">        logfunc: The log function, if message is not the first argument,</span>
+<span class="sd">            use functools.partial to wrap it</span>
+<span class="sd">        *args: The arguments to the log function</span>
+<span class="sd">        **kwargs: The keyword arguments to the log function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">(</span>
+        <span class="n">file</span><span class="o">=</span><span class="n">StringIO</span><span class="p">(),</span>
+        <span class="n">width</span><span class="o">=</span><span class="n">logger_console</span><span class="o">.</span><span class="n">width</span> <span class="o">-</span> <span class="n">CONSOLE_WIDTH_SHIFT</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">renderable</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">console</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="n">logfunc</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">color</span><span class="si">}</span><span class="s2">]</span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">[/</span><span class="si">{</span><span class="n">color</span><span class="si">}</span><span class="s2">]&quot;</span> <span class="k">if</span> <span class="n">color</span> <span class="k">else</span> <span class="n">line</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">brief_list</span><span class="p">(</span><span class="n">blist</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="pipen.utils.brief_list"></span><a class="mkapi-docs-link" title="pipen.utils.brief_list" href="../../pipen.utils/#pipen.utils.brief_list">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Briefly show an integer list, combine the continuous numbers.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        blist: The list</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The string to show for the briefed list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">groupby</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">blist</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="n">list_group</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">g</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_group</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">list_group</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">list_group</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">list_group</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">pipen_banner</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">RenderableType</span><span class="p">:</span><span id="pipen.utils.pipen_banner"></span><a class="mkapi-docs-link" title="pipen.utils.pipen_banner" href="../../pipen.utils/#pipen.utils.pipen_banner">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The banner for pipen</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The banner renderable</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span>
+        <span class="n">width</span><span class="o">=</span><span class="n">get_logpanel_width</span><span class="p">(),</span>
+        <span class="n">show_header</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">show_edge</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">show_footer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">show_lines</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">caption</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;version: </span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">add_column</span><span class="p">(</span><span class="n">justify</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;   _____________________________________   __&quot;</span><span class="p">)</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;   ___  __ \___  _/__  __ \__  ____/__  | / /&quot;</span><span class="p">)</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;  __  /_/ /__  / __  /_/ /_  __/  __   |/ / &quot;</span><span class="p">)</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot; _  ____/__/ /  _  ____/_  /___  _  /|  /  &quot;</span><span class="p">)</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;/_/     /___/  /_/     /_____/  /_/ |_/   &quot;</span><span class="p">)</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">table</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_mtime</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">PathLike</span> <span class="o">|</span> <span class="n">CloudPath</span><span class="p">,</span> <span class="n">dir_depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span><span id="pipen.utils.get_mtime"></span><a class="mkapi-docs-link" title="pipen.utils.get_mtime" href="../../pipen.utils/#pipen.utils.get_mtime">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the modification time of a path.</span>
+<span class="sd">    If path is a directory, try to get the last modification time of the</span>
+<span class="sd">    contents in the directory at given dir_depth</span>
+<span class="sd">    Args:</span>
+<span class="sd">        dir_depth: The depth of the directory to check the</span>
+<span class="sd">            last modification time</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        The last modification time of path</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mtime</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">AnyPath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">mtime</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path_is_symlink</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">dir_depth</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span>
+
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">):</span>
+            <span class="n">mtime</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">mtime</span><span class="p">,</span> <span class="n">get_mtime</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">dir_depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">mtime</span>
+
+    <span class="c1"># Is it a real symlink or fake</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">Path</span><span class="p">)</span> <span class="ow">and</span> <span class="n">path</span><span class="o">.</span><span class="n">is_symlink</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">dir_depth</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">lstat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span>
+
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">):</span>
+            <span class="n">mtime</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">mtime</span><span class="p">,</span> <span class="n">get_mtime</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">dir_depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">mtime</span>
+
+    <span class="c1"># Fake symlink</span>
+    <span class="n">dest</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">&quot;symlink:&quot;</span><span class="p">)</span>
+    <span class="n">dpath</span> <span class="o">=</span> <span class="n">AnyPath</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dir_depth</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">dpath</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">dpath</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span>
+
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">dpath</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">):</span>
+        <span class="n">mtime</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">mtime</span><span class="p">,</span> <span class="n">get_mtime</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">dir_depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">mtime</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_subclass</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span><span id="pipen.utils.is_subclass"></span><a class="mkapi-docs-link" title="pipen.utils.is_subclass" href="../../pipen.utils/#pipen.utils.is_subclass">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tell if obj is a subclass of cls</span>
+<span class="sd">    Differences with issubclass is that we don&#39;t raise Type error if obj</span>
+<span class="sd">    is not a class</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        obj: The object to check</span>
+<span class="sd">        cls: The class to check</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        True if obj is a subclass of cls otherwise False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">load_entrypoints</span><span class="p">(</span><span id="pipen.utils.load_entrypoints"></span><a class="mkapi-docs-link" title="pipen.utils.load_entrypoints" href="../../pipen.utils/#pipen.utils.load_entrypoints">DOCS</a>
+    <span class="n">group</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load objects from setuptools entrypoints by given group name</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        group: The group name of the entrypoints</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        An iterable of tuples with name and the loaded object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">eps</span> <span class="o">=</span> <span class="n">importlib_metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="n">eps</span> <span class="o">=</span> <span class="n">importlib_metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="p">[])</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">yield from</span> <span class="p">((</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">ep</span><span class="o">.</span><span class="n">load</span><span class="p">())</span> <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="n">eps</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">truncate_text</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;…&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="pipen.utils.truncate_text"></span><a class="mkapi-docs-link" title="pipen.utils.truncate_text" href="../../pipen.utils/#pipen.utils.truncate_text">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Truncate a text not based on words/whitespaces</span>
+<span class="sd">    Otherwise, we could use textwrap.shorten.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text: The text to be truncated</span>
+<span class="sd">        width: The max width of the the truncated text</span>
+<span class="sd">        end: The end string of the truncated text</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        The truncated text with end appended.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">width</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">text</span>
+
+    <span class="k">return</span> <span class="n">text</span><span class="p">[:</span> <span class="p">(</span><span class="n">width</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">end</span><span class="p">))]</span> <span class="o">+</span> <span class="n">end</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">make_df_colnames_unique_inplace</span><span class="p">(</span><span class="n">thedf</span><span class="p">:</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span><span id="pipen.utils.make_df_colnames_unique_inplace"></span><a class="mkapi-docs-link" title="pipen.utils.make_df_colnames_unique_inplace" href="../../pipen.utils/#pipen.utils.make_df_colnames_unique_inplace">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make the columns of a data frame unique</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        thedf: The data frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">col_counts</span><span class="p">:</span> <span class="n">DefaultDict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">new_cols</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">thedf</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">col_counts</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">new_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">col_counts</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">col_counts</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">thedf</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">new_cols</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_base</span><span class="p">(</span><span id="pipen.utils.get_base"></span><a class="mkapi-docs-link" title="pipen.utils.get_base" href="../../pipen.utils/#pipen.utils.get_base">DOCS</a>
+    <span class="n">klass</span><span class="p">:</span> <span class="n">Type</span><span class="p">,</span>
+    <span class="n">abc_base</span><span class="p">:</span> <span class="n">Type</span><span class="p">,</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="n">value_getter</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the base class where the value was first defined</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        klass: The class</span>
+<span class="sd">        abc_base: The very base class to check in __bases__</span>
+<span class="sd">        value: The value to check</span>
+<span class="sd">        value_getter: How to get the value from the class</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The base class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bases</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">base</span>
+        <span class="k">for</span> <span class="n">base</span> <span class="ow">in</span> <span class="n">klass</span><span class="o">.</span><span class="vm">__bases__</span>
+        <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">abc_base</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value_getter</span><span class="p">(</span><span class="n">base</span><span class="p">)</span> <span class="o">==</span> <span class="n">value</span>
+    <span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">bases</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">klass</span>
+
+    <span class="k">return</span> <span class="n">get_base</span><span class="p">(</span><span class="n">bases</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">abc_base</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">value_getter</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">mark</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">type</span><span class="p">],</span> <span class="nb">type</span><span class="p">]:</span><span id="pipen.utils.mark"></span><a class="mkapi-docs-link" title="pipen.utils.mark" href="../../pipen.utils/#pipen.utils.mark">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mark a class (e.g. Proc) with given kwargs as metadata</span>
+
+<span class="sd">    These marks will not be inherited by the subclasses if the class is</span>
+<span class="sd">    a subclass of `Proc` or `ProcGroup`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        **kwargs: The kwargs to mark the proc</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The decorator</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;__meta__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__meta__</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__meta__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span>
+
+    <span class="k">return</span> <span class="n">decorator</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_marked</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">mark_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span><span id="pipen.utils.get_marked"></span><a class="mkapi-docs-link" title="pipen.utils.get_marked" href="../../pipen.utils/#pipen.utils.get_marked">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the marked value from a proc</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cls: The proc</span>
+<span class="sd">        mark_name: The mark name</span>
+<span class="sd">        default: The default value if the mark is not found</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The marked value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;__meta__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">default</span>
+
+    <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__meta__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mark_name</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_valid_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span><span id="pipen.utils.is_valid_name"></span><a class="mkapi-docs-link" title="pipen.utils.is_valid_name" href="../../pipen.utils/#pipen.utils.is_valid_name">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if a name is valid for a proc or pipen</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name: The name to check</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        True if valid, otherwise False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[\w.-]+$&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_obj_from_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the object from a spec like `&lt;module[.submodule]&gt;:name` or</span>
+<span class="sd">    `/path/to/script.py:name`</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        spec: The spec</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The object</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AttributeError: If name cannot be found in the module</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">modpath</span><span class="p">,</span> <span class="n">sep</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sep</span> <span class="o">!=</span> <span class="s2">&quot;:&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Invalid specification: </span><span class="si">{</span><span class="n">spec</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;It must be in the format &#39;&lt;module[.submodule]&gt;:name&#39; or </span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;&#39;/path/to/spec.py:name&#39;&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">modpath</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="n">mspec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">spec_from_file_location</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span> <span class="n">modpath</span><span class="p">)</span>
+        <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">module_from_spec</span><span class="p">(</span><span class="n">mspec</span><span class="p">)</span>
+        <span class="n">mspec</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">exec_module</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">modpath</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">load_pipeline</span><span class="p">(</span><span id="pipen.utils.load_pipeline"></span><a class="mkapi-docs-link" title="pipen.utils.load_pipeline" href="../../pipen.utils/#pipen.utils.load_pipeline">DOCS</a>
+    <span class="n">obj</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Type</span><span class="p">[</span><span class="n">Proc</span><span class="p">]</span> <span class="o">|</span> <span class="n">Type</span><span class="p">[</span><span class="n">ProcGroup</span><span class="p">]</span> <span class="o">|</span> <span class="n">Type</span><span class="p">[</span><span class="n">Pipen</span><span class="p">],</span>
+    <span class="n">argv0</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">argv1p</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pipen</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a pipeline from a Pipen, Proc or ProcGroup object</span>
+
+<span class="sd">    It does not only load the Pipen object or convert the Proc/ProcGroup</span>
+<span class="sd">    object to Pipen, but also build the process relationships. So that we</span>
+<span class="sd">    can access `pipeline.procs` and `requires/nexts` of each proc.</span>
+
+<span class="sd">    To avoid running the pipeline and notify the plugins that this is just</span>
+<span class="sd">    for loading the pipeline, `sys.argv[0]` is set to `@pipen`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        obj: The Pipen, Proc or ProcGroup object. It can also be a string in</span>
+<span class="sd">            the format of `part1:part2` to load the pipeline, where part1 is</span>
+<span class="sd">            a path to a python file or package directory, and part2 is the name</span>
+<span class="sd">            of the proc, procgroup or pipeline to load.</span>
+<span class="sd">            It should be able to be loaded by `getattr(module, part2)`, where</span>
+<span class="sd">            module is loaded from `part1`.</span>
+<span class="sd">        argv0: The value to replace sys.argv[0]. &quot;@pipen&quot; will be used</span>
+<span class="sd">            by default.</span>
+<span class="sd">        argv1p: The values to replace sys.argv[1:]. Do not replace by default.</span>
+<span class="sd">        kwargs: The kwargs to pass to the Pipen constructor</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The loaded Pipen object</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: If obj or loaded obj is not a Pipen, Proc or ProcGroup</span>
+<span class="sd">        object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.pipen</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipen</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.proc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Proc</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.procgroup</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProcGroup</span>
+
+    <span class="n">old_argv</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span>
+    <span class="k">if</span> <span class="n">argv0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Set it at runtime to allow LOADING_ARGV0 to be monkey-patched</span>
+        <span class="n">argv0</span> <span class="o">=</span> <span class="n">LOADING_ARGV0</span>
+    <span class="k">if</span> <span class="n">argv1p</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Set it at runtime to adopt sys.argv changes</span>
+        <span class="n">argv1p</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="n">argv0</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">argv1p</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">_get_obj_from_spec</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Pipen</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="n">Pipen</span><span class="p">,</span> <span class="n">Proc</span><span class="p">,</span> <span class="n">ProcGroup</span><span class="p">))</span>
+        <span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;Expected a Pipen, Proc, ProcGroup class, or a Pipen object, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">pipeline</span> <span class="o">=</span> <span class="n">obj</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Proc</span><span class="p">):</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">Pipeline&quot;</span><span class="p">)</span>
+            <span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">set_starts</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ProcGroup</span><span class="p">):</span>
+            <span class="n">pipeline</span> <span class="o">=</span> <span class="n">obj</span><span class="p">()</span><span class="o">.</span><span class="n">as_pipen</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Pipen</span><span class="p">):</span>
+            <span class="c1"># Avoid &quot;pipeline&quot; to be used as pipeline name by varname</span>
+            <span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">obj</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Pipen</span><span class="p">):</span>
+            <span class="n">pipeline</span><span class="o">.</span><span class="n">_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Initialize the pipeline so that the arguments definied by</span>
+        <span class="c1"># other plugins (i.e. pipen-args) to take in place.</span>
+        <span class="n">pipeline</span><span class="o">.</span><span class="n">workdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">pipeline</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">workdir</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">_init</span><span class="p">()</span>
+        <span class="n">pipeline</span><span class="o">.</span><span class="n">workdir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">pipeline</span><span class="o">.</span><span class="n">build_proc_relationships</span><span class="p">()</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">argv</span> <span class="o">=</span> <span class="n">old_argv</span>
+
+    <span class="k">return</span> <span class="n">pipeline</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_loading_pipeline</span><span class="p">(</span><span class="o">*</span><span class="n">flags</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">argv</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span><span id="pipen.utils.is_loading_pipeline"></span><a class="mkapi-docs-link" title="pipen.utils.is_loading_pipeline" href="../../pipen.utils/#pipen.utils.is_loading_pipeline">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if we are loading the pipeline. Works only when</span>
+<span class="sd">    `argv0` is &quot;@pipen&quot; while loading the pipeline.</span>
+
+<span class="sd">    Note if you are using this function at compile time, make</span>
+<span class="sd">    sure you load your pipeline using the string form (`part1:part2`)</span>
+<span class="sd">    See more with `load_pipline()`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        *flags: Additional flags to check in sys.argv (e.g. &quot;-h&quot;, &quot;--help&quot;)</span>
+<span class="sd">            to determine if we are loading the pipeline</span>
+<span class="sd">        argv: The arguments to check. sys.argv is used by default.</span>
+<span class="sd">            Note that the first argument should be included in the check.</span>
+<span class="sd">            You could typically pass `[sys.argv[0], *your_args]` to this if you want</span>
+<span class="sd">            to check if `sys.argv[0]` is &quot;@pipen&quot; or `your_args` contains some flags.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        True if we are loading the pipeline (argv[0] == &quot;@pipen&quot;),</span>
+<span class="sd">        otherwise False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">argv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">LOADING_ARGV0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">if</span> <span class="n">flags</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">flag</span> <span class="ow">in</span> <span class="n">argv</span> <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="n">flags</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># pragma: no cover</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">path_is_symlink</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="n">CloudPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span><span id="pipen.utils.path_is_symlink"></span><a class="mkapi-docs-link" title="pipen.utils.path_is_symlink" href="../../pipen.utils/#pipen.utils.path_is_symlink">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if a path is a symlink.</span>
+
+<span class="sd">    CloudPath.is_symlink() is not implemented yet, so we need to check</span>
+<span class="sd">    it manually.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path: The path to check</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        True if the path is a symlink, otherwise False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">is_symlink</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># Check if the path is a fake symlink file</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;symlink:&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">path_symlink_to</span><span class="p">(</span><span id="pipen.utils.path_symlink_to"></span><a class="mkapi-docs-link" title="pipen.utils.path_symlink_to" href="../../pipen.utils/#pipen.utils.path_symlink_to">DOCS</a>
+    <span class="n">src</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="n">CloudPath</span><span class="p">,</span>
+    <span class="n">dst</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="n">CloudPath</span><span class="p">,</span>
+    <span class="n">target_is_directory</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a symbolic link pointing to src named dst.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        src: The source path</span>
+<span class="sd">        dst: The destination path</span>
+<span class="sd">        target_is_directory: If True, the symbolic link will be to a directory.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">CloudPath</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">CloudPath</span><span class="p">):</span>
+        <span class="c1"># Create a fake symlink file for cloud paths</span>
+        <span class="n">src</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;symlink:</span><span class="si">{</span><span class="n">dst</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">src</span><span class="o">.</span><span class="n">symlink_to</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">target_is_directory</span><span class="o">=</span><span class="n">target_is_directory</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">path_rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="n">CloudPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span><span id="pipen.utils.path_rmtree"></span><a class="mkapi-docs-link" title="pipen.utils.path_rmtree" href="../../pipen.utils/#pipen.utils.path_rmtree">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove a directory tree for both local and cloud paths.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path: The path to remove</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">CloudPath</span><span class="p">):</span>
+        <span class="n">path</span><span class="o">.</span><span class="n">rmtree</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      
+        <script src="../../../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>

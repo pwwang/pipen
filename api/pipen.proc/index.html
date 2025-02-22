@@ -1,0 +1,2405 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../pipen.template/">
+      
+      
+        <link rel="next" href="../pipen.pipen/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.5">
+    
+    
+      
+        <title>pipen.proc - pipen</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8608ea7d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../../style.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pipenproc" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="pipen" class="md-header__button md-logo" aria-label="pipen" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            pipen
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              pipen.proc
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pwwang/pipen" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pwwang/pipen
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="pipen" class="md-nav__button md-logo" aria-label="pipen" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    pipen
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pwwang/pipen" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pwwang/pipen
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Introduction
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Basics
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../defining-proc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Defining a process
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Defining and running a pipeline
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../templating/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Templating
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../channels/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Channels
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../input-output/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Input and output
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../script/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Script
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../caching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Caching
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../error/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Error handling
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configurations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configurations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plugin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Plugins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Scheduler
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../proc-group/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Process group
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Command line iterface
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Change log
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    API
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            API
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_18_1" id="__nav_18_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    pipen
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_18_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_18_1">
+            <span class="md-nav__icon md-icon"></span>
+            pipen
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.procgroup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.procgroup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.progressbar/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.progressbar
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.channel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.channel
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.version/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.version
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.scheduler
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.exceptions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.exceptions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.job/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.job
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.defaults/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.defaults
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.pluginmgr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.pluginmgr
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.utils/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.utils
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.template/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.template
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    pipen.proc
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    pipen.proc
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pipenproc" class="md-nav__link">
+    <span class="md-ellipsis">
+      proc
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="proc">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocmeta" class="md-nav__link">
+    <span class="md-ellipsis">
+      ProcMeta
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ProcMeta">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#abcabcmetaregister" class="md-nav__link">
+    <span class="md-ellipsis">
+      register
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#abcabcmetainstancecheck" class="md-nav__link">
+    <span class="md-ellipsis">
+      instancecheck
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#abcabcmetasubclasscheck" class="md-nav__link">
+    <span class="md-ellipsis">
+      subclasscheck
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocmetarepr" class="md-nav__link">
+    <span class="md-ellipsis">
+      repr
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocmetacall" class="md-nav__link">
+    <span class="md-ellipsis">
+      call
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocproc" class="md-nav__link">
+    <span class="md-ellipsis">
+      Proc
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Proc">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocmeta_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      ProcMeta
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocfrom_proc" class="md-nav__link">
+    <span class="md-ellipsis">
+      from_proc
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocinit_subclass" class="md-nav__link">
+    <span class="md-ellipsis">
+      init_subclass
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocinit" class="md-nav__link">
+    <span class="md-ellipsis">
+      init
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocgc" class="md-nav__link">
+    <span class="md-ellipsis">
+      gc
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocproclog" class="md-nav__link">
+    <span class="md-ellipsis">
+      log
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocrun" class="md-nav__link">
+    <span class="md-ellipsis">
+      run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.pipen/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.pipen
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_18_2" id="__nav_18_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    pipen.cli
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_18_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18_2">
+            <span class="md-nav__icon md-icon"></span>
+            pipen.cli
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.cli.profile/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.profile
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.cli.version/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.version
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.cli.plugins/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.plugins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.cli.help/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.help
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pipenproc" class="md-nav__link">
+    <span class="md-ellipsis">
+      proc
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="proc">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocmeta" class="md-nav__link">
+    <span class="md-ellipsis">
+      ProcMeta
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ProcMeta">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#abcabcmetaregister" class="md-nav__link">
+    <span class="md-ellipsis">
+      register
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#abcabcmetainstancecheck" class="md-nav__link">
+    <span class="md-ellipsis">
+      instancecheck
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#abcabcmetasubclasscheck" class="md-nav__link">
+    <span class="md-ellipsis">
+      subclasscheck
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocmetarepr" class="md-nav__link">
+    <span class="md-ellipsis">
+      repr
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocmetacall" class="md-nav__link">
+    <span class="md-ellipsis">
+      call
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocproc" class="md-nav__link">
+    <span class="md-ellipsis">
+      Proc
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Proc">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocmeta_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      ProcMeta
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocfrom_proc" class="md-nav__link">
+    <span class="md-ellipsis">
+      from_proc
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocinit_subclass" class="md-nav__link">
+    <span class="md-ellipsis">
+      init_subclass
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocinit" class="md-nav__link">
+    <span class="md-ellipsis">
+      init
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocgc" class="md-nav__link">
+    <span class="md-ellipsis">
+      gc
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocproclog" class="md-nav__link">
+    <span class="md-ellipsis">
+      log
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenprocprocrun" class="md-nav__link">
+    <span class="md-ellipsis">
+      run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>pipen.proc</h1>
+
+<div class="mkapi-node" id="pipen.proc">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object module plain top">
+    <div class="mkapi-object-kind module top">module</div>
+    <h2 id="pipenproc" class="mkapi-object-body module top"><span class="mkapi-object-prefix"><a href="../pipen/#pipen">pipen</a>.</span><span class="mkapi-object-name">proc</span></h2>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc" title="Source for pipen.proc">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Provides the process class: Proc</p></div>
+    </div>
+  <div class="mkapi-section classes">
+      <div class="mkapi-section-name classes">
+          <span class="mkapi-section-name-body classes">Classes</span> 
+        </div>
+      <div class="mkapi-section-body classes"><ul class="mkapi-items">
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.proc.ProcMeta">ProcMeta</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Meta class for Proc<a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.ProcMeta" title="Source for pipen.proc.ProcMeta">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.proc.Proc">Proc</a></code>
+<span class="mkapi-item-type">(<a href="./#pipen.proc.Proc">Proc</a>)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The abstract class for processes.<a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.Proc" title="Source for pipen.proc.Proc">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.proc.ProcMeta">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenprocprocmeta" class="mkapi-object-body class top"><code class="mkapi-object-prefix"><a href="#pipen.proc">pipen.proc</a>.</code><code class="mkapi-object-name">ProcMeta</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">name</code>, <code class="mkapi-object-signature">bases</code>, <code class="mkapi-object-signature">namespace</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.ProcMeta" title="Source for pipen.proc.ProcMeta">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base">abc.ABCMeta</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Meta class for Proc</p></div>
+    </div>
+  <div class="mkapi-section methods">
+      <div class="mkapi-section-name methods">
+          <span class="mkapi-section-name-body methods">Methods</span> 
+        </div>
+      <div class="mkapi-section-body methods"><ul class="mkapi-items">
+<li class="staticmethod"><code class="mkapi-item-name"><a href="#pipen.proc.ProcMeta.__call__">__call__</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">**kwds</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(<a href="./#pipen.proc.Proc">Proc</a>)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Make sure Proc subclasses are singletons<a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.ProcMeta.__call__" title="Source for pipen.proc.ProcMeta.__call__">&lt;/&gt;</a></span></li>
+
+<li class="staticmethod"><code class="mkapi-item-name"><a href="#abc.ABCMeta.__instancecheck__">__instancecheck__</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code>, <code class="mkapi-object-signature">instance</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Override for isinstance(instance, cls).<a class="mkapi-src-link" href="../source/abc/#abc.ABCMeta.__instancecheck__" title="Source for abc.ABCMeta.__instancecheck__">&lt;/&gt;</a></span></li>
+
+<li class="staticmethod"><code class="mkapi-item-name"><a href="#pipen.proc.ProcMeta.__repr__">__repr__</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Representation for the Proc subclasses<a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.ProcMeta.__repr__" title="Source for pipen.proc.ProcMeta.__repr__">&lt;/&gt;</a></span></li>
+
+<li class="staticmethod"><code class="mkapi-item-name"><a href="#abc.ABCMeta.__subclasscheck__">__subclasscheck__</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code>, <code class="mkapi-object-signature">subclass</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Override for issubclass(subclass, cls).<a class="mkapi-src-link" href="../source/abc/#abc.ABCMeta.__subclasscheck__" title="Source for abc.ABCMeta.__subclasscheck__">&lt;/&gt;</a></span></li>
+
+<li class="staticmethod"><code class="mkapi-item-name"><a href="#abc.ABCMeta.register">register</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code>, <code class="mkapi-object-signature">subclass</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Register a virtual subclass of an ABC.<a class="mkapi-src-link" href="../source/abc/#abc.ABCMeta.register" title="Source for abc.ABCMeta.register">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+  <div class="mkapi-members">
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="abc.ABCMeta.register">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object staticmethod code">
+    <div class="mkapi-object-kind staticmethod">staticmethod</div>
+    <h4 id="abcabcmetaregister" class="mkapi-object-body staticmethod"><code class="mkapi-object-name">register</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code>, <code class="mkapi-object-signature">subclass</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/abc/#abc.ABCMeta.register" title="Source for abc.ABCMeta.register">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Register a virtual subclass of an ABC.</p><p>Returns the subclass, to allow usage as a class decorator.</p>
+</div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="abc.ABCMeta.__instancecheck__">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object staticmethod code">
+    <div class="mkapi-object-kind staticmethod">staticmethod</div>
+    <h4 id="abcabcmetainstancecheck" class="mkapi-object-body staticmethod"><code class="mkapi-object-name">__instancecheck__</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code>, <code class="mkapi-object-signature">instance</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/abc/#abc.ABCMeta.__instancecheck__" title="Source for abc.ABCMeta.__instancecheck__">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Override for isinstance(instance, cls).</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="abc.ABCMeta.__subclasscheck__">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object staticmethod code">
+    <div class="mkapi-object-kind staticmethod">staticmethod</div>
+    <h4 id="abcabcmetasubclasscheck" class="mkapi-object-body staticmethod"><code class="mkapi-object-name">__subclasscheck__</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code>, <code class="mkapi-object-signature">subclass</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/abc/#abc.ABCMeta.__subclasscheck__" title="Source for abc.ABCMeta.__subclasscheck__">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Override for issubclass(subclass, cls).</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="pipen.proc.ProcMeta.__repr__">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object staticmethod code">
+    <div class="mkapi-object-kind staticmethod">staticmethod</div>
+    <h4 id="pipenprocprocmetarepr" class="mkapi-object-body staticmethod"><code class="mkapi-object-name">__repr__</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; str</span></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.ProcMeta.__repr__" title="Source for pipen.proc.ProcMeta.__repr__">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Representation for the Proc subclasses</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="pipen.proc.ProcMeta.__call__">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object staticmethod code">
+    <div class="mkapi-object-kind staticmethod">staticmethod</div>
+    <h4 id="pipenprocprocmetacall" class="mkapi-object-body staticmethod"><code class="mkapi-object-name">__call__</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">**kwds</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.ProcMeta.__call__" title="Source for pipen.proc.ProcMeta.__call__">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Make sure Proc subclasses are singletons</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+<li><code class="mkapi-item-name">*args</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">and</span></li>
+
+<li><code class="mkapi-item-name">**kwds</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Arguments for the constructor</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(<a href="./#pipen.proc.Proc">Proc</a>)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The Proc instance</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.proc.Proc">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenprocproc" class="mkapi-object-body class top"><code class="mkapi-object-prefix"><a href="#pipen.proc">pipen.proc</a>.</code><code class="mkapi-object-name">Proc</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">**kwds</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; <a href="./#pipen.proc.Proc">Proc</a></span></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.Proc" title="Source for pipen.proc.Proc">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>The abstract class for processes.</p><p>It's an abstract class. You can't instantise a process using it directly.
+You have to subclass it. The subclass itself can be used as a process
+directly.</p>
+<p>Each subclass is a singleton, so to intantise a new process, each subclass
+an existing <code>Proc</code> subclass, or use <code>Proc.from_proc()</code>.</p>
+<p>Never use the constructor directly. The Proc is designed
+as a singleton class, and is instansiated internally.</p>
+</div>
+    </div>
+  <div class="mkapi-section attributes">
+      <div class="mkapi-section-name attributes">
+          <span class="mkapi-section-name-body attributes">Attributes</span> 
+        </div>
+      <div class="mkapi-section-body attributes"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">cache</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Should we detect whether the jobs are cached?</span></li>
+
+<li><code class="mkapi-item-name">desc</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The description of the process. Will use the summary fromthe docstring by default.
+</span></li>
+
+<li><code class="mkapi-item-name">dirsig</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When checking the signature for caching, whether should we walkthrough the content of the directory? This is sometimes
+time-consuming if the directory is big.
+</span></li>
+
+<li><code class="mkapi-item-name">envs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The arguments that are job-independent, useful for common optionsacross jobs.
+</span></li>
+
+<li><code class="mkapi-item-name">envs_depth</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">How deep to update the envs when subclassed.</span></li>
+
+<li><code class="mkapi-item-name">error_strategy</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">How to deal with the errors<ul><li>- retry, ignore, halt</li><li>- halt to halt the whole pipeline, no submitting new jobs</li><li>- terminate to just terminate the job itself</li></ul></span></li>
+
+<li><code class="mkapi-item-name">export</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When True, the results will be exported to <code>&lt;pipeline.outdir&gt;</code>Defaults to None, meaning only end processes will export.
+You can set it to True/False to enable or disable exporting
+for processes
+</span></li>
+
+<li><code class="mkapi-item-name">forks</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">How many jobs to run simultaneously?</span></li>
+
+<li><code class="mkapi-item-name">input</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The keys for the input channel</span></li>
+
+<li><code class="mkapi-item-name">input_data</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The input data (will be computed for dependent processes)</span></li>
+
+<li><code class="mkapi-item-name">lang</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The language for the script to run. Should be the path to theinterpreter if <code>lang</code> is not in <code>$PATH</code>.
+</span></li>
+
+<li><code class="mkapi-item-name">name</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The name of the process. Will use the class name by default.</span></li>
+
+<li><code class="mkapi-item-name">nexts</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Computed from <code>requires</code> to build the process relationships</span></li>
+
+<li><code class="mkapi-item-name">num_retries</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">How many times to retry to jobs once error occurs</span></li>
+
+<li><code class="mkapi-item-name">order</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The execution order for this process. The bigger the numberis, the later the process will be executed. Default: 0.
+Note that the dependent processes will always be executed first.
+This doesn't work for start processes either, whose orders are
+determined by <code>Pipen.set_starts()</code>
+</span></li>
+
+<li><code class="mkapi-item-name">output</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The output keys for the output channel(the data will be computed)
+</span></li>
+
+<li><code class="mkapi-item-name">output_data</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The output data (to pass to the next processes)</span></li>
+
+<li><code class="mkapi-item-name">plugin_opts</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Options for process-level plugins</span></li>
+
+<li><code class="mkapi-item-name">requires</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The dependency processes</span></li>
+
+<li><code class="mkapi-item-name">scheduler</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The scheduler to run the jobs</span></li>
+
+<li><code class="mkapi-item-name">scheduler_opts</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The options for the scheduler</span></li>
+
+<li><code class="mkapi-item-name">script</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The script template for the process</span></li>
+
+<li><code class="mkapi-item-name">submission_batch</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">How many jobs to be submited simultaneously</span></li>
+
+<li><code class="mkapi-item-name">template</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Define the template engine to use.This could be either a template engine or a dict with key <code>engine</code>
+indicating the template engine and the rest the arguments passed
+to the constructor of the <code>pipen.template.Template</code> object.
+The template engine could be either the name of the engine,
+currently jinja2 and liquidpy are supported, or a subclass of
+<code>pipen.template.Template</code>.
+You can subclass <code>pipen.template.Template</code> to use your own template
+engine.
+</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section classes">
+      <div class="mkapi-section-name classes">
+          <span class="mkapi-section-name-body classes">Classes</span> 
+        </div>
+      <div class="mkapi-section-body classes"><ul class="mkapi-items">
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.proc.ProcMeta">ProcMeta</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Meta class for Proc<a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.ProcMeta" title="Source for pipen.proc.ProcMeta">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section methods">
+      <div class="mkapi-section-name methods">
+          <span class="mkapi-section-name-body methods">Methods</span> 
+        </div>
+      <div class="mkapi-section-body methods"><ul class="mkapi-items">
+<li class="classmethod"><code class="mkapi-item-name"><a href="#pipen.proc.Proc.__init_subclass__">__init_subclass__</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Do the requirements inferring since we need them to build up theprocess relationship
+<a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.Proc.__init_subclass__" title="Source for pipen.proc.Proc.__init_subclass__">&lt;/&gt;</a></span></li>
+
+<li class="classmethod"><code class="mkapi-item-name"><a href="#pipen.proc.Proc.from_proc">from_proc</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code>, <code class="mkapi-object-signature">name</code>, <code class="mkapi-object-signature">desc</code>, <code class="mkapi-object-signature">envs</code>, <code class="mkapi-object-signature">envs_depth</code>, <code class="mkapi-object-signature">cache</code>, <code class="mkapi-object-signature">export</code>, <code class="mkapi-object-signature">error_strategy</code>, <code class="mkapi-object-signature">num_retries</code>, <code class="mkapi-object-signature">forks</code>, <code class="mkapi-object-signature">input_data</code>, <code class="mkapi-object-signature">order</code>, <code class="mkapi-object-signature">plugin_opts</code>, <code class="mkapi-object-signature">requires</code>, <code class="mkapi-object-signature">scheduler</code>, <code class="mkapi-object-signature">scheduler_opts</code>, <code class="mkapi-object-signature">submission_batch</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Type)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Create a subclass of Proc using another Proc subclass or Proc itself<a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.Proc.from_proc" title="Source for pipen.proc.Proc.from_proc">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#pipen.proc.Proc.gc">gc</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">GC process for the process to save memory after it's done<a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.Proc.gc" title="Source for pipen.proc.Proc.gc">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#pipen.proc.Proc.init">init</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Init all other properties and jobs<a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.Proc.init" title="Source for pipen.proc.Proc.init">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#pipen.proc.Proc.log">log</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">level</code>, <code class="mkapi-object-signature">msg</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">logger</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Log message for the process<a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.Proc.log" title="Source for pipen.proc.Proc.log">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#pipen.proc.Proc.run">run</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Run the process<a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.Proc.run" title="Source for pipen.proc.Proc.run">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+  <div class="mkapi-members">
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="pipen.proc.ProcMeta">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h4 id="pipenprocprocmeta_1" class="mkapi-object-body class top"><code class="mkapi-object-prefix"><a href="#pipen.proc">pipen.proc</a>.</code><code class="mkapi-object-name">ProcMeta</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">name</code>, <code class="mkapi-object-signature">bases</code>, <code class="mkapi-object-signature">namespace</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.ProcMeta" title="Source for pipen.proc.ProcMeta">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base">abc.ABCMeta</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Meta class for Proc</p></div>
+    </div>
+  <div class="mkapi-section methods">
+      <div class="mkapi-section-name methods">
+          <span class="mkapi-section-name-body methods">Methods</span> 
+        </div>
+      <div class="mkapi-section-body methods"><ul class="mkapi-items">
+<li class="staticmethod"><code class="mkapi-item-name"><a href="#pipen.proc.ProcMeta.__call__">__call__</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">**kwds</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(<a href="./#pipen.proc.Proc">Proc</a>)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Make sure Proc subclasses are singletons<a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.ProcMeta.__call__" title="Source for pipen.proc.ProcMeta.__call__">&lt;/&gt;</a></span></li>
+
+<li class="staticmethod"><code class="mkapi-item-name"><a href="#abc.ABCMeta.__instancecheck__">__instancecheck__</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code>, <code class="mkapi-object-signature">instance</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Override for isinstance(instance, cls).<a class="mkapi-src-link" href="../source/abc/#abc.ABCMeta.__instancecheck__" title="Source for abc.ABCMeta.__instancecheck__">&lt;/&gt;</a></span></li>
+
+<li class="staticmethod"><code class="mkapi-item-name"><a href="#pipen.proc.ProcMeta.__repr__">__repr__</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Representation for the Proc subclasses<a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.ProcMeta.__repr__" title="Source for pipen.proc.ProcMeta.__repr__">&lt;/&gt;</a></span></li>
+
+<li class="staticmethod"><code class="mkapi-item-name"><a href="#abc.ABCMeta.__subclasscheck__">__subclasscheck__</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code>, <code class="mkapi-object-signature">subclass</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Override for issubclass(subclass, cls).<a class="mkapi-src-link" href="../source/abc/#abc.ABCMeta.__subclasscheck__" title="Source for abc.ABCMeta.__subclasscheck__">&lt;/&gt;</a></span></li>
+
+<li class="staticmethod"><code class="mkapi-item-name"><a href="#abc.ABCMeta.register">register</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code>, <code class="mkapi-object-signature">subclass</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Register a virtual subclass of an ABC.<a class="mkapi-src-link" href="../source/abc/#abc.ABCMeta.register" title="Source for abc.ABCMeta.register">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+  <div class="mkapi-members">
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="abc.ABCMeta.register">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object staticmethod code">
+    <div class="mkapi-object-kind staticmethod">staticmethod</div>
+    <div class="mkapi-object-body staticmethod"><code class="mkapi-object-name">register</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code>, <code class="mkapi-object-signature">subclass</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/abc/#abc.ABCMeta.register" title="Source for abc.ABCMeta.register">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Register a virtual subclass of an ABC.</p><p>Returns the subclass, to allow usage as a class decorator.</p>
+</div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="abc.ABCMeta.__instancecheck__">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object staticmethod code">
+    <div class="mkapi-object-kind staticmethod">staticmethod</div>
+    <div class="mkapi-object-body staticmethod"><code class="mkapi-object-name">__instancecheck__</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code>, <code class="mkapi-object-signature">instance</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/abc/#abc.ABCMeta.__instancecheck__" title="Source for abc.ABCMeta.__instancecheck__">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Override for isinstance(instance, cls).</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="abc.ABCMeta.__subclasscheck__">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object staticmethod code">
+    <div class="mkapi-object-kind staticmethod">staticmethod</div>
+    <div class="mkapi-object-body staticmethod"><code class="mkapi-object-name">__subclasscheck__</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code>, <code class="mkapi-object-signature">subclass</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/abc/#abc.ABCMeta.__subclasscheck__" title="Source for abc.ABCMeta.__subclasscheck__">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Override for issubclass(subclass, cls).</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="pipen.proc.ProcMeta.__repr__">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object staticmethod code">
+    <div class="mkapi-object-kind staticmethod">staticmethod</div>
+    <div class="mkapi-object-body staticmethod"><code class="mkapi-object-name">__repr__</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; str</span></div>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.ProcMeta.__repr__" title="Source for pipen.proc.ProcMeta.__repr__">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Representation for the Proc subclasses</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="pipen.proc.ProcMeta.__call__">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object staticmethod code">
+    <div class="mkapi-object-kind staticmethod">staticmethod</div>
+    <div class="mkapi-object-body staticmethod"><code class="mkapi-object-name">__call__</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">cls</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">**kwds</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.ProcMeta.__call__" title="Source for pipen.proc.ProcMeta.__call__">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Make sure Proc subclasses are singletons</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+<li><code class="mkapi-item-name">*args</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">and</span></li>
+
+<li><code class="mkapi-item-name">**kwds</code>
+<span class="mkapi-item-type">(Any)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Arguments for the constructor</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(<a href="./#pipen.proc.Proc">Proc</a>)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The Proc instance</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="pipen.proc.Proc.from_proc">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object classmethod code">
+    <div class="mkapi-object-kind classmethod">classmethod</div>
+    <h4 id="pipenprocprocfrom_proc" class="mkapi-object-body classmethod"><code class="mkapi-object-name">from_proc</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code>, <code class="mkapi-object-signature">name=None</code>, <code class="mkapi-object-signature">desc=None</code>, <code class="mkapi-object-signature">envs=None</code>, <code class="mkapi-object-signature">envs_depth=None</code>, <code class="mkapi-object-signature">cache=None</code>, <code class="mkapi-object-signature">export=None</code>, <code class="mkapi-object-signature">error_strategy=None</code>, <code class="mkapi-object-signature">num_retries=None</code>, <code class="mkapi-object-signature">forks=None</code>, <code class="mkapi-object-signature">input_data=None</code>, <code class="mkapi-object-signature">order=None</code>, <code class="mkapi-object-signature">plugin_opts=None</code>, <code class="mkapi-object-signature">requires=None</code>, <code class="mkapi-object-signature">scheduler=None</code>, <code class="mkapi-object-signature">scheduler_opts=None</code>, <code class="mkapi-object-signature">submission_batch=None</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.Proc.from_proc" title="Source for pipen.proc.Proc.from_proc">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Create a subclass of Proc using another Proc subclass or Proc itself</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">proc</code>
+<span class="mkapi-item-type">(Type)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The Proc subclass</span></li>
+
+<li><code class="mkapi-item-name">name</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The new name of the process</span></li>
+
+<li><code class="mkapi-item-name">desc</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The new description of the process</span></li>
+
+<li><code class="mkapi-item-name">envs</code>
+<span class="mkapi-item-type">(Mapping, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The arguments of the process, will overwrite parent oneThe items that are specified will be inherited
+</span></li>
+
+<li><code class="mkapi-item-name">envs_depth</code>
+<span class="mkapi-item-type">(int, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">How deep to update the envs when subclassed.</span></li>
+
+<li><code class="mkapi-item-name">cache</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Whether we should check the cache for the jobs</span></li>
+
+<li><code class="mkapi-item-name">export</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When True, the results will be exported to<code>&lt;pipeline.outdir&gt;</code>
+Defaults to None, meaning only end processes will export.
+You can set it to True/False to enable or disable exporting
+for processes
+</span></li>
+
+<li><code class="mkapi-item-name">error_strategy</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">How to deal with the errors<ul><li>- retry, ignore, halt</li><li>- halt to halt the whole pipeline, no submitting new jobs</li><li>- terminate to just terminate the job itself</li></ul></span></li>
+
+<li><code class="mkapi-item-name">num_retries</code>
+<span class="mkapi-item-type">(int, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">How many times to retry to jobs once error occurs</span></li>
+
+<li><code class="mkapi-item-name">forks</code>
+<span class="mkapi-item-type">(int, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">New forks for the new process</span></li>
+
+<li><code class="mkapi-item-name">input_data</code>
+<span class="mkapi-item-type">(Any, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The input data for the process. Only when this processis a start process
+</span></li>
+
+<li><code class="mkapi-item-name">order</code>
+<span class="mkapi-item-type">(int, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The order to execute the new process</span></li>
+
+<li><code class="mkapi-item-name">plugin_opts</code>
+<span class="mkapi-item-type">(Mapping, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The new plugin options, unspecified items will beinherited.
+</span></li>
+
+<li><code class="mkapi-item-name">requires</code>
+<span class="mkapi-item-type">(Sequence, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The required processes for the new process</span></li>
+
+<li><code class="mkapi-item-name">scheduler</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The new shedular to run the new process</span></li>
+
+<li><code class="mkapi-item-name">scheduler_opts</code>
+<span class="mkapi-item-type">(Mapping, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The new scheduler options, unspecified items willbe inherited.
+</span></li>
+
+<li><code class="mkapi-item-name">submission_batch</code>
+<span class="mkapi-item-type">(int, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">How many jobs to be submited simultaneously</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Type)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The new process class</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="pipen.proc.Proc.__init_subclass__">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object classmethod code">
+    <div class="mkapi-object-kind classmethod">classmethod</div>
+    <h4 id="pipenprocprocinit_subclass" class="mkapi-object-body classmethod"><code class="mkapi-object-name">__init_subclass__</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.Proc.__init_subclass__" title="Source for pipen.proc.Proc.__init_subclass__">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Do the requirements inferring since we need them to build up theprocess relationship</p>
+</div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="pipen.proc.Proc.init">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h4 id="pipenprocprocinit" class="mkapi-object-body method"><code class="mkapi-object-name">init</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.Proc.init" title="Source for pipen.proc.Proc.init">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Init all other properties and jobs</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="pipen.proc.Proc.gc">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h4 id="pipenprocprocgc" class="mkapi-object-body method"><code class="mkapi-object-name">gc</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.Proc.gc" title="Source for pipen.proc.Proc.gc">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>GC process for the process to save memory after it's done</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="pipen.proc.Proc.log">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h4 id="pipenprocproclog" class="mkapi-object-body method"><code class="mkapi-object-name">log</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">level</code>, <code class="mkapi-object-signature">msg</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">logger=&lt;LoggerAdapter pipen.core (WARNING)&gt;</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.Proc.log" title="Source for pipen.proc.Proc.log">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Log message for the process</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">level</code>
+<span class="mkapi-item-type">(int | str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The log level of the record</span></li>
+
+<li><code class="mkapi-item-name">msg</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The message to log</span></li>
+
+<li><code class="mkapi-item-name">*args</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The arguments to format the message</span></li>
+
+<li><code class="mkapi-item-name">logger</code>
+<span class="mkapi-item-type">(LoggerAdapter, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The logging logger</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="pipen.proc.Proc.run">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h4 id="pipenprocprocrun" class="mkapi-object-body method"><code class="mkapi-object-name">run</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.proc/#pipen.proc.Proc.run" title="Source for pipen.proc.Proc.run">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Run the process</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+  </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      
+        <script src="../../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>

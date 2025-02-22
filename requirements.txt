@@ -1,0 +1,5 @@
+mkdocs
+jinja2
+mkdocs-material
+pymdown-extensions
+mkapi-fix

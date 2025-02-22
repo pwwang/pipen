@@ -1,0 +1,2803 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../pipen.defaults/">
+      
+      
+        <link rel="next" href="../pipen.utils/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.5">
+    
+    
+      
+        <title>pipen.pluginmgr - pipen</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8608ea7d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../../style.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pipenpluginmgr" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="pipen" class="md-header__button md-logo" aria-label="pipen" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            pipen
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              pipen.pluginmgr
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pwwang/pipen" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pwwang/pipen
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="pipen" class="md-nav__button md-logo" aria-label="pipen" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    pipen
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pwwang/pipen" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pwwang/pipen
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Introduction
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Basics
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../defining-proc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Defining a process
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../running/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Defining and running a pipeline
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../templating/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Templating
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../channels/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Channels
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../input-output/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Input and output
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../script/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Script
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../caching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Caching
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../error/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Error handling
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configurations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configurations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plugin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Plugins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Scheduler
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../proc-group/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Process group
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Command line iterface
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Change log
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    API
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            API
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_18_1" id="__nav_18_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    pipen
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_18_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_18_1">
+            <span class="md-nav__icon md-icon"></span>
+            pipen
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.procgroup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.procgroup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.progressbar/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.progressbar
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.channel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.channel
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.version/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.version
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.scheduler
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.exceptions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.exceptions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.job/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.job
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.defaults/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.defaults
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    pipen.pluginmgr
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    pipen.pluginmgr
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pipenpluginmgr" class="md-nav__link">
+    <span class="md-ellipsis">
+      pluginmgr
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="pluginmgr">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_init" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_init
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_start" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_start
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_complete
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_proc_create" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_proc_create
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_proc_init" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_proc_init
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_proc_input_computed" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_proc_input_computed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_proc_script_computed" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_proc_script_computed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_proc_start" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_proc_start
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_proc_shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_proc_shutdown
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_proc_done" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_proc_done
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_init" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_init
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_queued" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_queued
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_submitting" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_submitting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_submitted" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_submitted
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_started" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_started
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_polling" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_polling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_killing" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_killing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_killed" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_killed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_succeeded" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_succeeded
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_cached" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_cached
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_failed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_jobcmd_init" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_jobcmd_init
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_jobcmd_prep" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_jobcmd_prep
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_jobcmd_end" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_jobcmd_end
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgrpipenmainplugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      PipenMainPlugin
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgrxqutepipenplugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      XqutePipenPlugin
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.utils/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.utils
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.template/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.template
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.proc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.proc
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.pipen/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.pipen
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_18_2" id="__nav_18_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    pipen.cli
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_18_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18_2">
+            <span class="md-nav__icon md-icon"></span>
+            pipen.cli
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.cli.profile/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.profile
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.cli.version/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.version
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.cli.plugins/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.plugins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipen.cli.help/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.help
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pipenpluginmgr" class="md-nav__link">
+    <span class="md-ellipsis">
+      pluginmgr
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="pluginmgr">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_init" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_init
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_start" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_start
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_complete
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_proc_create" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_proc_create
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_proc_init" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_proc_init
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_proc_input_computed" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_proc_input_computed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_proc_script_computed" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_proc_script_computed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_proc_start" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_proc_start
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_proc_shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_proc_shutdown
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_proc_done" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_proc_done
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_init" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_init
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_queued" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_queued
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_submitting" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_submitting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_submitted" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_submitted
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_started" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_started
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_polling" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_polling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_killing" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_killing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_killed" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_killed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_succeeded" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_succeeded
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_cached" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_cached
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_job_failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_job_failed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_jobcmd_init" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_jobcmd_init
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_jobcmd_prep" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_jobcmd_prep
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgron_jobcmd_end" class="md-nav__link">
+    <span class="md-ellipsis">
+      on_jobcmd_end
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgrpipenmainplugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      PipenMainPlugin
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipenpluginmgrxqutepipenplugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      XqutePipenPlugin
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>pipen.pluginmgr</h1>
+
+<div class="mkapi-node" id="pipen.pluginmgr">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object module plain top">
+    <div class="mkapi-object-kind module top">module</div>
+    <h2 id="pipenpluginmgr" class="mkapi-object-body module top"><span class="mkapi-object-prefix"><a href="../pipen/#pipen">pipen</a>.</span><span class="mkapi-object-name">pluginmgr</span></h2>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr" title="Source for pipen.pluginmgr">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Define hooks specifications and provide plugin manager</p></div>
+    </div>
+  <div class="mkapi-section classes">
+      <div class="mkapi-section-name classes">
+          <span class="mkapi-section-name-body classes">Classes</span> 
+        </div>
+      <div class="mkapi-section-body classes"><ul class="mkapi-items">
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.PipenMainPlugin">PipenMainPlugin</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The builtin core plugin, used to update the progress bar andcache the job
+<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.PipenMainPlugin" title="Source for pipen.pluginmgr.PipenMainPlugin">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.XqutePipenPlugin">XqutePipenPlugin</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The plugin for xqute working as proxy for pipen plugin hooks<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.XqutePipenPlugin" title="Source for pipen.pluginmgr.XqutePipenPlugin">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section functions">
+      <div class="mkapi-section-name functions">
+          <span class="mkapi-section-name-body functions">Functions</span> 
+        </div>
+      <div class="mkapi-section-body functions"><ul class="mkapi-items">
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_complete">on_complete</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">pipen</code>, <code class="mkapi-object-signature">succeeded</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The the pipeline is completed.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_complete" title="Source for pipen.pluginmgr.on_complete">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_init">on_init</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">pipen</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When the pipeline is initialized, and default configs are loaded<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_init" title="Source for pipen.pluginmgr.on_init">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_cached">on_job_cached</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job is cached.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_cached" title="Source for pipen.pluginmgr.on_job_cached">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_failed">on_job_failed</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job is done but failed.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_failed" title="Source for pipen.pluginmgr.on_job_failed">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_init">on_job_init</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job is initialized<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_init" title="Source for pipen.pluginmgr.on_job_init">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_killed">on_job_killed</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job is killed<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_killed" title="Source for pipen.pluginmgr.on_job_killed">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_killing">on_job_killing</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(bool)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job is being killed.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_killing" title="Source for pipen.pluginmgr.on_job_killing">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_polling">on_job_polling</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When status of a job is being polled.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_polling" title="Source for pipen.pluginmgr.on_job_polling">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_queued">on_job_queued</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job is queued in xqute. Note it might not be queued yet inthe scheduler system.
+<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_queued" title="Source for pipen.pluginmgr.on_job_queued">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_started">on_job_started</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job starts to run in then scheduler system.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_started" title="Source for pipen.pluginmgr.on_job_started">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_submitted">on_job_submitted</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job is submitted in the scheduler system.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_submitted" title="Source for pipen.pluginmgr.on_job_submitted">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_submitting">on_job_submitting</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(bool)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job is submitting.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_submitting" title="Source for pipen.pluginmgr.on_job_submitting">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_succeeded">on_job_succeeded</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job completes successfully.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_succeeded" title="Source for pipen.pluginmgr.on_job_succeeded">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_jobcmd_end">on_jobcmd_end</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When the job command finishes and after the postscript is run<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_jobcmd_end" title="Source for pipen.pluginmgr.on_jobcmd_end">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_jobcmd_init">on_jobcmd_init</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When the job command wrapper script is initialized before the prescript is run<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_jobcmd_init" title="Source for pipen.pluginmgr.on_jobcmd_init">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_jobcmd_prep">on_jobcmd_prep</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When the job command right about to be run<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_jobcmd_prep" title="Source for pipen.pluginmgr.on_jobcmd_prep">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_proc_create">on_proc_create</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Called Proc constructor when a process is created.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_create" title="Source for pipen.pluginmgr.on_proc_create">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_proc_done">on_proc_done</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code>, <code class="mkapi-object-signature">succeeded</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a process is done<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_done" title="Source for pipen.pluginmgr.on_proc_done">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_proc_init">on_proc_init</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Called when a process is initialized.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_init" title="Source for pipen.pluginmgr.on_proc_init">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_proc_input_computed">on_proc_input_computed</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Called after process input data is computed.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_input_computed" title="Source for pipen.pluginmgr.on_proc_input_computed">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_proc_script_computed">on_proc_script_computed</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Called after process script is computed.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_script_computed" title="Source for pipen.pluginmgr.on_proc_script_computed">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_proc_shutdown">on_proc_shutdown</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code>, <code class="mkapi-object-signature">sig</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When pipeline is shutting down, by Ctrl-c for example.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_shutdown" title="Source for pipen.pluginmgr.on_proc_shutdown">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_proc_start">on_proc_start</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a process is starting<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_start" title="Source for pipen.pluginmgr.on_proc_start">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_setup">on_setup</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">config</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Setup for plugins, primarily used for the plugins tosetup some default configurations.
+<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_setup" title="Source for pipen.pluginmgr.on_setup">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_start">on_start</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">pipen</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Right before the pipeline starts running.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_start" title="Source for pipen.pluginmgr.on_start">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_setup">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_setup" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_setup</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">config</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_setup" title="Source for pipen.pluginmgr.on_setup">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Setup for plugins, primarily used for the plugins tosetup some default configurations.</p>
+<p>This is only called once for all pipelines.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">config</code>
+<span class="mkapi-item-type">(Dict)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The configuration dictionaryplugin options should be defined under "plugin_opts"
+One should define a configuration item either with a prefix as
+the identity for the plugin or a namespace inside the plugin config
+</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_init">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_init" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_init</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">pipen</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_init" title="Source for pipen.pluginmgr.on_init">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When the pipeline is initialized, and default configs are loaded</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">pipen</code>
+<span class="mkapi-item-type">(Pipen)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The Pipen object</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_start">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_start" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_start</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">pipen</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_start" title="Source for pipen.pluginmgr.on_start">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Right before the pipeline starts running.</p><p>Process relationships are inferred.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">pipen</code>
+<span class="mkapi-item-type">(Pipen)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The Pipen object</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_complete">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_complete" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_complete</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">pipen</code>, <code class="mkapi-object-signature">succeeded</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_complete" title="Source for pipen.pluginmgr.on_complete">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>The the pipeline is completed.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">pipen</code>
+<span class="mkapi-item-type">(Pipen)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The Pipen object</span></li>
+
+<li><code class="mkapi-item-name">succeeded</code>
+<span class="mkapi-item-type">(bool)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Whether the pipeline has successfully completed.</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_proc_create">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_proc_create" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_proc_create</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_create" title="Source for pipen.pluginmgr.on_proc_create">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Called Proc constructor when a process is created.</p><p>Enables plugins to modify the default attributes of processes</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">proc</code>
+<span class="mkapi-item-type">(Proc)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The Proc object</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_proc_init">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_proc_init" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_proc_init</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_init" title="Source for pipen.pluginmgr.on_proc_init">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Called when a process is initialized.</p><p>Allows plugins to modify the process attributes after initialization, but
+before the jobs are initialized.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">proc</code>
+<span class="mkapi-item-type">(Proc)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The Proc object</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_proc_input_computed">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_proc_input_computed" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_proc_input_computed</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_input_computed" title="Source for pipen.pluginmgr.on_proc_input_computed">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Called after process input data is computed.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">proc</code>
+<span class="mkapi-item-type">(Proc)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The Proc object</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_proc_script_computed">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_proc_script_computed" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_proc_script_computed</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_script_computed" title="Source for pipen.pluginmgr.on_proc_script_computed">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Called after process script is computed.</p><p>The script is computed as a string that is about to compiled into a
+template.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">proc</code>
+<span class="mkapi-item-type">(Proc)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The Proc object</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_proc_start">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_proc_start" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_proc_start</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_start" title="Source for pipen.pluginmgr.on_proc_start">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a process is starting</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">proc</code>
+<span class="mkapi-item-type">(Proc)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The process</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_proc_shutdown">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_proc_shutdown" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_proc_shutdown</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code>, <code class="mkapi-object-signature">sig</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_shutdown" title="Source for pipen.pluginmgr.on_proc_shutdown">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When pipeline is shutting down, by Ctrl-c for example.</p><p>Return False to stop shutting down, but you have to shut it down
+by yourself, for example, <code>proc.xqute.task.cancel()</code></p>
+<p>Only the first return value will be used.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+<li><code class="mkapi-item-name">sig</code>
+<span class="mkapi-item-type">(signal.Signals)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The signal. <code>None</code> means a natural shutdown</span></li>
+
+<li><code class="mkapi-item-name">pipen</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The xqute object</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_proc_done">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_proc_done" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_proc_done</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code>, <code class="mkapi-object-signature">succeeded</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_done" title="Source for pipen.pluginmgr.on_proc_done">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a process is done</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">proc</code>
+<span class="mkapi-item-type">(Proc)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The process</span></li>
+
+<li><code class="mkapi-item-name">succeeded</code>
+<span class="mkapi-item-type">(bool | str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Whether the process succeeded or not. 'cached' if all jobsare cached.
+</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_init">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_init" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_job_init</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_init" title="Source for pipen.pluginmgr.on_job_init">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job is initialized</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_queued">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_queued" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_job_queued</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_queued" title="Source for pipen.pluginmgr.on_job_queued">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job is queued in xqute. Note it might not be queued yet inthe scheduler system.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_submitting">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_submitting" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_job_submitting</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_submitting" title="Source for pipen.pluginmgr.on_job_submitting">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job is submitting.</p><p>The first plugin (based on priority) have this hook return False will
+cancel the submission</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(bool)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>False to cancel submission</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_submitted">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_submitted" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_job_submitted</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_submitted" title="Source for pipen.pluginmgr.on_job_submitted">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job is submitted in the scheduler system.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_started">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_started" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_job_started</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_started" title="Source for pipen.pluginmgr.on_job_started">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job starts to run in then scheduler system.</p><p>Note that the job might not be running yet in the scheduler system.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_polling">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_polling" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_job_polling</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_polling" title="Source for pipen.pluginmgr.on_job_polling">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When status of a job is being polled.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_killing">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_killing" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_job_killing</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_killing" title="Source for pipen.pluginmgr.on_job_killing">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job is being killed.</p><p>The first plugin (based on priority) have this hook return False will
+cancel the killing</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(bool)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>False to cancel killing</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_killed">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_killed" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_job_killed</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_killed" title="Source for pipen.pluginmgr.on_job_killed">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job is killed</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_succeeded">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_succeeded" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_job_succeeded</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_succeeded" title="Source for pipen.pluginmgr.on_job_succeeded">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job completes successfully.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_cached">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_cached" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_job_cached</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_cached" title="Source for pipen.pluginmgr.on_job_cached">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job is cached.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_failed">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_failed" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_job_failed</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_failed" title="Source for pipen.pluginmgr.on_job_failed">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job is done but failed.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_jobcmd_init">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_jobcmd_init" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_jobcmd_init</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_jobcmd_init" title="Source for pipen.pluginmgr.on_jobcmd_init">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When the job command wrapper script is initialized before the prescript is run</p><p>This should return a piece of bash code to be inserted in the wrapped job
+script (template), which is a python template string, with the following
+variables available: <code>status</code> and <code>job</code>. <code>status</code> is the class <code>JobStatus</code> from
+<code>xqute.defaults.py</code> and <code>job</code> is the <code>Job</code> instance.</p>
+<p>For multiple plugins, the code will be inserted in the order of the plugin priority.</p>
+<p>The code will replace the <code>#![jobcmd_init]</code> placeholder in the wrapped job script.
+See also <a href="https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95">https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95</a></p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job object</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The bash code to be inserted</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_jobcmd_prep">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_jobcmd_prep" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_jobcmd_prep</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_jobcmd_prep" title="Source for pipen.pluginmgr.on_jobcmd_prep">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When the job command right about to be run</p><p>This should return a piece of bash code to be inserted in the wrapped job
+script (template), which is a python template string, with the following
+variables available: <code>status</code> and <code>job</code>. <code>status</code> is the class <code>JobStatus</code> from
+<code>xqute.defaults.py</code> and <code>job</code> is the <code>Job</code> instance.</p>
+<p>The bash variable <code>$cmd</code> is accessible in the context. It is also possible to
+modify the <code>cmd</code> variable. Just remember to assign the modified value to <code>cmd</code>.</p>
+<p>For multiple plugins, the code will be inserted in the order of the plugin priority.
+Keep in mind that the <code>$cmd</code> may be modified by other plugins.</p>
+<p>The code will replace the <code>#![jobcmd_prep]</code> placeholder in the wrapped job script.
+See also <a href="https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95">https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95</a></p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job object</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The bash code to be inserted</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_jobcmd_end">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_jobcmd_end" class="mkapi-object-body function top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">on_jobcmd_end</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_jobcmd_end" title="Source for pipen.pluginmgr.on_jobcmd_end">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When the job command finishes and after the postscript is run</p><p>This should return a piece of bash code to be inserted in the wrapped job
+script (template), which is a python template string, with the following
+variables available: <code>status</code> and <code>job</code>. <code>status</code> is the class <code>JobStatus</code> from
+<code>xqute.defaults.py</code> and <code>job</code> is the <code>Job</code> instance.</p>
+<p>The bash variable <code>$rc</code> is accessible in the context, which is the return code
+of the job command.</p>
+<p>For multiple plugins, the code will be inserted in the order of the plugin priority.</p>
+<p>The code will replace the <code>#![jobcmd_end]</code> placeholder in the wrapped job script.
+See also <a href="https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95">https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95</a></p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job object</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The bash code to be inserted</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.PipenMainPlugin">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenpluginmgrpipenmainplugin" class="mkapi-object-body class top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">PipenMainPlugin</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.PipenMainPlugin" title="Source for pipen.pluginmgr.PipenMainPlugin">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>The builtin core plugin, used to update the progress bar andcache the job</p>
+</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.XqutePipenPlugin">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenpluginmgrxqutepipenplugin" class="mkapi-object-body class top"><code class="mkapi-object-prefix"><a href="#pipen.pluginmgr">pipen.pluginmgr</a>.</code><code class="mkapi-object-name">XqutePipenPlugin</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.XqutePipenPlugin" title="Source for pipen.pluginmgr.XqutePipenPlugin">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>The plugin for xqute working as proxy for pipen plugin hooks</p></div>
+    </div>
+  </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      
+        <script src="../../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>

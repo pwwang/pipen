@@ -1,0 +1,1951 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.5">
+    
+    
+      
+        <title>pipen.proc - pipen</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8608ea7d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../../../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../../../style.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pipenproc" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="pipen" class="md-header__button md-logo" aria-label="pipen" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            pipen
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              pipen.proc
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pwwang/pipen" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pwwang/pipen
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="pipen" class="md-nav__button md-logo" aria-label="pipen" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    pipen
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pwwang/pipen" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pwwang/pipen
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Introduction
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../basics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Basics
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../defining-proc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Defining a process
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../running/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Defining and running a pipeline
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../templating/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Templating
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../channels/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Channels
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../input-output/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Input and output
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../script/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Script
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../caching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Caching
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../error/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Error handling
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../configurations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configurations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../plugin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Plugins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Scheduler
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../proc-group/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Process group
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Command line iterface
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CHANGELOG/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Change log
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    API
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            API
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_18_1" id="__nav_18_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    pipen
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_18_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18_1">
+            <span class="md-nav__icon md-icon"></span>
+            pipen
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.procgroup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.procgroup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.progressbar/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.progressbar
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.channel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.channel
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.version/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.version
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.scheduler
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.exceptions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.exceptions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.job/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.job
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.defaults/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.defaults
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.pluginmgr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.pluginmgr
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.utils/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.utils
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.template/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.template
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.proc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.proc
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.pipen/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.pipen
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_18_2" id="__nav_18_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    pipen.cli
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_18_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18_2">
+            <span class="md-nav__icon md-icon"></span>
+            pipen.cli
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.cli.profile/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.profile
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.cli.version/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.version
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.cli.plugins/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.plugins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipen.cli.help/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.help
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pipenproc" class="md-nav__link">
+    <span class="md-ellipsis">
+      pipen.proc
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<div class="mkapi-node">
+<h1 id="" class="mkapi-object mkapi-object-code plain">
+<span class="mkapi-object-kind mkapi-object-kind-code">SOURCE CODE</span>
+<span class="mkapi-object-prefix">pipen.</span><span class="mkapi-object-name">proc</span>
+<span id="pipen.proc"></span><a class="mkapi-docs-link" href="../../pipen.proc">DOCS</a>
+</h1>
+
+<div class="mkapi-code">
+<div class="codehilite"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Provides the process class: Proc&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">ABCMeta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="kn">import</span> <span class="n">PathLike</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Mapping</span><span class="p">,</span>
+    <span class="n">Sequence</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">diot</span><span class="w"> </span><span class="kn">import</span> <span class="n">Diot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich</span><span class="w"> </span><span class="kn">import</span> <span class="n">box</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich.panel</span><span class="w"> </span><span class="kn">import</span> <span class="n">Panel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">varname</span><span class="w"> </span><span class="kn">import</span> <span class="n">VarnameException</span><span class="p">,</span> <span class="n">varname</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cloudpathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">AnyPath</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">JobStatus</span><span class="p">,</span> <span class="n">Xqute</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.defaults</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProcInputType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ProcInputKeyError</span><span class="p">,</span>
+    <span class="n">ProcInputTypeError</span><span class="p">,</span>
+    <span class="n">ProcScriptFileNotFound</span><span class="p">,</span>
+    <span class="n">PipenOrProcNameError</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.pluginmgr</span><span class="w"> </span><span class="kn">import</span> <span class="n">plugin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.scheduler</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_scheduler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.template</span><span class="w"> </span><span class="kn">import</span> <span class="n">Template</span><span class="p">,</span> <span class="n">get_template_engine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">brief_list</span><span class="p">,</span>
+    <span class="n">copy_dict</span><span class="p">,</span>
+    <span class="n">desc_from_docstring</span><span class="p">,</span>
+    <span class="n">get_logpanel_width</span><span class="p">,</span>
+    <span class="n">ignore_firstline_dedent</span><span class="p">,</span>
+    <span class="n">is_subclass</span><span class="p">,</span>
+    <span class="n">is_valid_name</span><span class="p">,</span>
+    <span class="n">log_rich_renderable</span><span class="p">,</span>
+    <span class="n">logger</span><span class="p">,</span>
+    <span class="n">make_df_colnames_unique_inplace</span><span class="p">,</span>
+    <span class="n">strsplit</span><span class="p">,</span>
+    <span class="n">update_dict</span><span class="p">,</span>
+    <span class="n">get_shebang</span><span class="p">,</span>
+    <span class="n">get_base</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.pipen</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipen</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ProcMeta</span><span class="p">(</span><span class="n">ABCMeta</span><span class="p">):</span><span id="pipen.proc.ProcMeta"></span><a class="mkapi-docs-link" title="pipen.proc.ProcMeta" href="../../pipen.proc/#pipen.proc.ProcMeta">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Meta class for Proc&quot;&quot;&quot;</span>
+
+    <span class="n">_INSTANCES</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Type</span><span class="p">,</span> <span class="n">Proc</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="pipen.proc.ProcMeta.__repr__"></span><a class="mkapi-docs-link" title="pipen.proc.ProcMeta.__repr__" href="../../pipen.proc/#pipen.proc.ProcMeta.__repr__">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Representation for the Proc subclasses&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;Proc:</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;requires&quot;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_compute_requires</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Proc</span><span class="p">:</span><span id="pipen.proc.ProcMeta.__call__"></span><a class="mkapi-docs-link" title="pipen.proc.ProcMeta.__call__" href="../../pipen.proc/#pipen.proc.ProcMeta.__call__">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make sure Proc subclasses are singletons</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *args: and</span>
+<span class="sd">            **kwds: Arguments for the constructor</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The Proc instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">cls</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_INSTANCES</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_INSTANCES</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_INSTANCES</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Proc</span><span class="p">(</span><span class="n">ABC</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ProcMeta</span><span class="p">):</span><span id="pipen.proc.Proc"></span><a class="mkapi-docs-link" title="pipen.proc.Proc" href="../../pipen.proc/#pipen.proc.Proc">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The abstract class for processes.</span>
+
+<span class="sd">    It&#39;s an abstract class. You can&#39;t instantise a process using it directly.</span>
+<span class="sd">    You have to subclass it. The subclass itself can be used as a process</span>
+<span class="sd">    directly.</span>
+
+<span class="sd">    Each subclass is a singleton, so to intantise a new process, each subclass</span>
+<span class="sd">    an existing `Proc` subclass, or use `Proc.from_proc()`.</span>
+
+<span class="sd">    Never use the constructor directly. The Proc is designed</span>
+<span class="sd">    as a singleton class, and is instansiated internally.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        name: The name of the process. Will use the class name by default.</span>
+<span class="sd">        desc: The description of the process. Will use the summary from</span>
+<span class="sd">            the docstring by default.</span>
+<span class="sd">        envs: The arguments that are job-independent, useful for common options</span>
+<span class="sd">            across jobs.</span>
+<span class="sd">        envs_depth: How deep to update the envs when subclassed.</span>
+<span class="sd">        cache: Should we detect whether the jobs are cached?</span>
+<span class="sd">        dirsig: When checking the signature for caching, whether should we walk</span>
+<span class="sd">            through the content of the directory? This is sometimes</span>
+<span class="sd">            time-consuming if the directory is big.</span>
+<span class="sd">        export: When True, the results will be exported to `&lt;pipeline.outdir&gt;`</span>
+<span class="sd">            Defaults to None, meaning only end processes will export.</span>
+<span class="sd">            You can set it to True/False to enable or disable exporting</span>
+<span class="sd">            for processes</span>
+<span class="sd">        error_strategy: How to deal with the errors</span>
+<span class="sd">            - retry, ignore, halt</span>
+<span class="sd">            - halt to halt the whole pipeline, no submitting new jobs</span>
+<span class="sd">            - terminate to just terminate the job itself</span>
+<span class="sd">        num_retries: How many times to retry to jobs once error occurs</span>
+<span class="sd">        template: Define the template engine to use.</span>
+<span class="sd">            This could be either a template engine or a dict with key `engine`</span>
+<span class="sd">            indicating the template engine and the rest the arguments passed</span>
+<span class="sd">            to the constructor of the `pipen.template.Template` object.</span>
+<span class="sd">            The template engine could be either the name of the engine,</span>
+<span class="sd">            currently jinja2 and liquidpy are supported, or a subclass of</span>
+<span class="sd">            `pipen.template.Template`.</span>
+<span class="sd">            You can subclass `pipen.template.Template` to use your own template</span>
+<span class="sd">            engine.</span>
+<span class="sd">        forks: How many jobs to run simultaneously?</span>
+<span class="sd">        input: The keys for the input channel</span>
+<span class="sd">        input_data: The input data (will be computed for dependent processes)</span>
+<span class="sd">        lang: The language for the script to run. Should be the path to the</span>
+<span class="sd">            interpreter if `lang` is not in `$PATH`.</span>
+<span class="sd">        order: The execution order for this process. The bigger the number</span>
+<span class="sd">            is, the later the process will be executed. Default: 0.</span>
+<span class="sd">            Note that the dependent processes will always be executed first.</span>
+<span class="sd">            This doesn&#39;t work for start processes either, whose orders are</span>
+<span class="sd">            determined by `Pipen.set_starts()`</span>
+<span class="sd">        output: The output keys for the output channel</span>
+<span class="sd">            (the data will be computed)</span>
+<span class="sd">        plugin_opts: Options for process-level plugins</span>
+<span class="sd">        requires: The dependency processes</span>
+<span class="sd">        scheduler: The scheduler to run the jobs</span>
+<span class="sd">        scheduler_opts: The options for the scheduler</span>
+<span class="sd">        script: The script template for the process</span>
+<span class="sd">        submission_batch: How many jobs to be submited simultaneously</span>
+
+<span class="sd">        nexts: Computed from `requires` to build the process relationships</span>
+<span class="sd">        output_data: The output data (to pass to the next processes)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">desc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">envs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">envs_depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">dirsig</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">export</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">error_strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">num_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">template</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Type</span><span class="p">[</span><span class="n">Template</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">template_opts</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">forks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="nb">input</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">input_data</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">lang</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">output</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">plugin_opts</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">requires</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Proc</span><span class="p">]</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Proc</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">scheduler</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">scheduler_opts</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">script</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">submission_batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">nexts</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Proc</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">output_data</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">workdir</span><span class="p">:</span> <span class="n">PathLike</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1"># metadata that marks the process</span>
+    <span class="c1"># Can also be used for plugins</span>
+    <span class="c1"># It&#39;s not inheirted</span>
+    <span class="n">__meta__</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@classmethod</span><span id="pipen.proc.Proc.from_proc"></span><a class="mkapi-docs-link" title="pipen.proc.Proc.from_proc" href="../../pipen.proc/#pipen.proc.Proc.from_proc">DOCS</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_proc</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">proc</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Proc</span><span class="p">],</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">desc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">envs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">envs_depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">export</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">error_strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">forks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">input_data</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">plugin_opts</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">requires</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Proc</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">scheduler</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">scheduler_opts</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">submission_batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">[</span><span class="n">Proc</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a subclass of Proc using another Proc subclass or Proc itself</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            proc: The Proc subclass</span>
+<span class="sd">            name: The new name of the process</span>
+<span class="sd">            desc: The new description of the process</span>
+<span class="sd">            envs: The arguments of the process, will overwrite parent one</span>
+<span class="sd">                The items that are specified will be inherited</span>
+<span class="sd">            envs_depth: How deep to update the envs when subclassed.</span>
+<span class="sd">            cache: Whether we should check the cache for the jobs</span>
+<span class="sd">            export: When True, the results will be exported to</span>
+<span class="sd">                `&lt;pipeline.outdir&gt;`</span>
+<span class="sd">                Defaults to None, meaning only end processes will export.</span>
+<span class="sd">                You can set it to True/False to enable or disable exporting</span>
+<span class="sd">                for processes</span>
+<span class="sd">            error_strategy: How to deal with the errors</span>
+<span class="sd">                - retry, ignore, halt</span>
+<span class="sd">                - halt to halt the whole pipeline, no submitting new jobs</span>
+<span class="sd">                - terminate to just terminate the job itself</span>
+<span class="sd">            num_retries: How many times to retry to jobs once error occurs</span>
+<span class="sd">            forks: New forks for the new process</span>
+<span class="sd">            input_data: The input data for the process. Only when this process</span>
+<span class="sd">                is a start process</span>
+<span class="sd">            order: The order to execute the new process</span>
+<span class="sd">            plugin_opts: The new plugin options, unspecified items will be</span>
+<span class="sd">                inherited.</span>
+<span class="sd">            requires: The required processes for the new process</span>
+<span class="sd">            scheduler: The new shedular to run the new process</span>
+<span class="sd">            scheduler_opts: The new scheduler options, unspecified items will</span>
+<span class="sd">                be inherited.</span>
+<span class="sd">            submission_batch: How many jobs to be submited simultaneously</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The new process class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">varname</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+            <span class="k">except</span> <span class="n">VarnameException</span> <span class="k">as</span> <span class="n">vexc</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Process name cannot be detected from assignment, &quot;</span>
+                    <span class="s2">&quot;pass one explicitly to `Proc.from_proc(..., name=...)`&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">vexc</span>
+
+        <span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;export&quot;</span><span class="p">:</span> <span class="n">export</span><span class="p">,</span>
+            <span class="s2">&quot;input_data&quot;</span><span class="p">:</span> <span class="n">input_data</span><span class="p">,</span>
+            <span class="s2">&quot;requires&quot;</span><span class="p">:</span> <span class="n">requires</span><span class="p">,</span>
+            <span class="s2">&quot;nexts&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;output_data&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">locs</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="s2">&quot;desc&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;envs&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;envs_depth&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;cache&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;forks&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;order&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;plugin_opts&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;scheduler&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;scheduler_opts&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;error_strategy&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;num_retries&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;submission_batch&quot;</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">locs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">locs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;__doc__&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="vm">__doc__</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">proc</span><span class="p">,),</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__init_subclass__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span><span id="pipen.proc.Proc.__init_subclass__"></span><a class="mkapi-docs-link" title="pipen.proc.Proc.__init_subclass__" href="../../pipen.proc/#pipen.proc.Proc.__init_subclass__">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Do the requirements inferring since we need them to build up the</span>
+<span class="sd">        process relationship</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">mro</span>
+            <span class="k">for</span> <span class="n">mro</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__mro__</span>
+            <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">mro</span><span class="p">,</span> <span class="n">Proc</span><span class="p">)</span> <span class="ow">and</span> <span class="n">mro</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Proc</span> <span class="ow">and</span> <span class="n">mro</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">cls</span>
+        <span class="p">]</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">base</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">base</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="c1"># cls.requires = cls._compute_requires()</span>
+        <span class="c1"># triggers cls.__setattr__() to compute requires</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">nexts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">requires</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">requires</span>
+
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span><span class="n">parent</span> <span class="ow">and</span> <span class="bp">cls</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid_name</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">PipenOrProcNameError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is not a valid process name, expecting &quot;</span> <span class="sa">r</span><span class="s2">&quot;&#39;^[\w.-]+$&#39;&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">envs</span> <span class="o">=</span> <span class="n">update_dict</span><span class="p">(</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">envs</span> <span class="k">if</span> <span class="n">parent</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">envs</span><span class="p">,</span>
+            <span class="n">depth</span><span class="o">=</span><span class="mi">0</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">parent</span> <span class="ow">or</span> <span class="n">parent</span><span class="o">.</span><span class="n">envs_depth</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">parent</span><span class="o">.</span><span class="n">envs_depth</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># So values can be accessed like Proc.envs.a.b</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">envs</span> <span class="o">=</span> <span class="n">envs</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">envs</span><span class="p">,</span> <span class="n">Diot</span><span class="p">)</span> <span class="k">else</span> <span class="n">Diot</span><span class="p">(</span><span class="n">envs</span> <span class="ow">or</span> <span class="p">{})</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">plugin_opts</span> <span class="o">=</span> <span class="n">update_dict</span><span class="p">(</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">plugin_opts</span> <span class="k">if</span> <span class="n">parent</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">plugin_opts</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">scheduler_opts</span> <span class="o">=</span> <span class="n">update_dict</span><span class="p">(</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">scheduler_opts</span> <span class="k">if</span> <span class="n">parent</span> <span class="k">else</span> <span class="p">{},</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">scheduler_opts</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__meta__</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;procgroup&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">:</span> <span class="n">Pipen</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor</span>
+
+<span class="sd">        This is called only at runtime.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pipeline: The Pipen object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># instance properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">pipeline</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pbar</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jobs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xqute</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">workdir</span> <span class="o">=</span> <span class="n">AnyPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">workdir</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="c1"># plugins can modify some default attributes</span>
+        <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_proc_create</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># Compute the properties</span>
+        <span class="c1"># otherwise, the property can be accessed directly from class vars</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">desc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">desc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">desc_from_docstring</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">Proc</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">export</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">export</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">nexts</span><span class="p">)</span>
+
+        <span class="c1"># log the basic information</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_info</span><span class="p">()</span>
+
+        <span class="c1"># template</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="n">get_template_engine</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">template</span>
+        <span class="p">)</span>
+        <span class="n">template_opts</span> <span class="o">=</span> <span class="n">copy_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">template_opts</span><span class="p">)</span>
+        <span class="n">template_opts</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_opts</span> <span class="ow">or</span> <span class="p">{})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_opts</span> <span class="o">=</span> <span class="n">template_opts</span>
+
+        <span class="n">plugin_opts</span> <span class="o">=</span> <span class="n">copy_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">plugin_opts</span><span class="p">)</span>
+        <span class="n">plugin_opts</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plugin_opts</span> <span class="ow">or</span> <span class="p">{})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plugin_opts</span> <span class="o">=</span> <span class="n">plugin_opts</span>
+
+        <span class="c1"># input</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_input</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+        <span class="c1"># output</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_output</span><span class="p">()</span>
+        <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_proc_input_computed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="c1"># scheduler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">get_scheduler</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scheduler</span>
+        <span class="p">)</span>
+        <span class="c1"># script</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">script</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_script</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workdir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submission_batch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">submission_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">submission_batch</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span><span id="pipen.proc.Proc.init"></span><a class="mkapi-docs-link" title="pipen.proc.Proc.init" href="../../pipen.proc/#pipen.proc.Proc.init">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Init all other properties and jobs&quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span>
+
+        <span class="n">scheduler_opts</span> <span class="o">=</span> <span class="n">copy_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scheduler_opts</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">scheduler_opts</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler_opts</span> <span class="ow">or</span> <span class="p">{})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xqute</span> <span class="o">=</span> <span class="n">Xqute</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span>
+            <span class="n">workdir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span>
+            <span class="n">submission_batch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">submission_batch</span><span class="p">,</span>
+            <span class="n">error_strategy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">error_strategy</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">error_strategy</span><span class="p">,</span>
+            <span class="n">num_retries</span><span class="o">=</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">num_retries</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_retries</span> <span class="ow">is</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_retries</span>
+            <span class="p">),</span>
+            <span class="n">forks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">forks</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">forks</span><span class="p">,</span>
+            <span class="n">jobname_prefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">scheduler_opts</span><span class="o">=</span><span class="n">scheduler_opts</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># for the plugin hooks to access</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xqute</span><span class="o">.</span><span class="n">proc</span> <span class="o">=</span> <span class="bp">self</span>
+
+        <span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_proc_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_jobs</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">output_data</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">((</span><span class="n">job</span><span class="o">.</span><span class="n">output</span> <span class="k">for</span> <span class="n">job</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jobs</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">gc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span><span id="pipen.proc.Proc.gc"></span><a class="mkapi-docs-link" title="pipen.proc.Proc.gc" href="../../pipen.proc/#pipen.proc.Proc.gc">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;GC process for the process to save memory after it&#39;s done&quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">xqute</span><span class="o">.</span><span class="n">jobs</span><span class="p">[:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xqute</span><span class="o">.</span><span class="n">jobs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">xqute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xqute</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">jobs</span><span class="p">[:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jobs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">pbar</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pbar</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span id="pipen.proc.Proc.log"></span><a class="mkapi-docs-link" title="pipen.proc.Proc.log" href="../../pipen.proc/#pipen.proc.Proc.log">DOCS</a>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">LoggerAdapter</span> <span class="o">=</span> <span class="n">logger</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Log message for the process</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            level: The log level of the record</span>
+<span class="sd">            msg: The message to log</span>
+<span class="sd">            *args: The arguments to format the message</span>
+<span class="sd">            logger: The logging logger</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span> <span class="o">%</span> <span class="n">args</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLevelName</span><span class="p">(</span><span class="n">level</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+            <span class="n">level</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+            <span class="s2">&quot;[cyan]</span><span class="si">%s</span><span class="s2">:[/cyan] </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">msg</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span><span id="pipen.proc.Proc.run"></span><a class="mkapi-docs-link" title="pipen.proc.Proc.run" href="../../pipen.proc/#pipen.proc.Proc.run">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the process&quot;&quot;&quot;</span>
+        <span class="c1"># init pbar</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pbar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">pbar</span><span class="o">.</span><span class="n">proc_bar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_proc_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="n">cached_jobs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">job</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jobs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">cached</span><span class="p">:</span>
+                <span class="n">cached_jobs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+                <span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_job_cached</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">xqute</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cached_jobs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;Cached jobs: [</span><span class="si">%s</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">brief_list</span><span class="p">(</span><span class="n">cached_jobs</span><span class="p">))</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">xqute</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pbar</span><span class="o">.</span><span class="n">done</span><span class="p">()</span>
+        <span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_proc_done</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="p">(</span>
+                <span class="kc">False</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">succeeded</span>
+                <span class="k">else</span> <span class="s2">&quot;cached&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cached_jobs</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="k">else</span> <span class="kc">True</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="c1"># properties</span>
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The size of the process (# of jobs)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">jobs</span><span class="p">)</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">succeeded</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the process is succeeded (all jobs succeeded)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">FINISHED</span> <span class="k">for</span> <span class="n">job</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jobs</span><span class="p">)</span>
+
+    <span class="c1"># Private methods</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_requires</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">requires</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Proc</span><span class="p">]</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Proc</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Proc</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the required processes and fill the nexts</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            requires: The required processes. If None, will use `cls.requires`</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None or sequence of Proc subclasses</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">requires</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">requires</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">requires</span>
+
+        <span class="k">if</span> <span class="n">requires</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">requires</span>
+
+        <span class="k">if</span> <span class="n">is_subclass</span><span class="p">(</span><span class="n">requires</span><span class="p">,</span> <span class="n">Proc</span><span class="p">):</span>
+            <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="n">requires</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
+
+        <span class="c1"># if req is in cls.__bases__, then cls.nexts will be affected by</span>
+        <span class="c1"># req.nexts</span>
+        <span class="n">my_nexts</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">nexts</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">cls</span><span class="o">.</span><span class="n">nexts</span><span class="p">[:]</span>
+        <span class="k">for</span> <span class="n">req</span> <span class="ow">in</span> <span class="n">requires</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">req</span><span class="o">.</span><span class="n">nexts</span><span class="p">:</span>
+                <span class="n">req</span><span class="o">.</span><span class="n">nexts</span> <span class="o">=</span> <span class="p">[</span><span class="bp">cls</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">req</span><span class="o">.</span><span class="n">nexts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">nexts</span> <span class="o">=</span> <span class="n">my_nexts</span>
+
+        <span class="k">return</span> <span class="n">requires</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_init_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worker_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A worker to initialize jobs</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            worker_id: The worker id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">job</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jobs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">index</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">submission_batch</span> <span class="o">!=</span> <span class="n">worker_id</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_init_jobs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize all jobs</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config: The pipeline configuration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">job</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xqute</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">create_job</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">jobs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_job</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">submission_batch</span><span class="p">)))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_input</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the input based on input and input data</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dict with type and data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.channel</span><span class="w"> </span><span class="kn">import</span> <span class="n">Channel</span>
+
+        <span class="c1"># split input keys into keys and types</span>
+        <span class="n">input_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span>
+        <span class="k">if</span> <span class="n">input_keys</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_keys</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">input_keys</span> <span class="o">=</span> <span class="n">strsplit</span><span class="p">(</span><span class="n">input_keys</span><span class="p">,</span> <span class="s2">&quot;,&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">input_keys</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ProcInputKeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">] No input provided&quot;</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">Diot</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="p">{},</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">input_key_type</span> <span class="ow">in</span> <span class="n">input_keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;:&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">input_key_type</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">type</span><span class="p">[</span><span class="n">input_key_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">ProcInputType</span><span class="o">.</span><span class="n">VAR</span>
+                <span class="k">continue</span>
+
+            <span class="n">input_key</span><span class="p">,</span> <span class="n">input_type</span> <span class="o">=</span> <span class="n">strsplit</span><span class="p">(</span><span class="n">input_key_type</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">input_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ProcInputType</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="n">ProcInputTypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">] Unsupported input type: </span><span class="si">{</span><span class="n">input_type</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">type</span><span class="p">[</span><span class="n">input_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_type</span>
+
+        <span class="c1"># get the data</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">requires</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">type</span><span class="p">)])</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">requires</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_data</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_data</span><span class="p">):</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">input_data</span><span class="p">(</span>
+                    <span class="o">*</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">output_data</span> <span class="k">for</span> <span class="n">req</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">requires</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_data</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+                    <span class="s2">&quot;warning&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;Ignoring input data, this is not a start process.&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="n">out</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">output_data</span> <span class="k">for</span> <span class="n">req</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">requires</span><span class="p">),</span>  <span class="c1"># type: ignore</span>
+                <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">ffill</span><span class="p">()</span>
+
+        <span class="n">make_df_colnames_unique_inplace</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="c1"># try match the column names</span>
+        <span class="c1"># if none matched, use the first columns</span>
+        <span class="c1"># rest_cols = out.data.columns.difference(out.type, False)</span>
+        <span class="n">rest_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">out</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">out</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
+        <span class="n">len_rest_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rest_cols</span><span class="p">)</span>
+        <span class="c1"># matched_cols = out.data.columns.intersection(out.type)</span>
+        <span class="n">matched_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">out</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">out</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
+        <span class="n">needed_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">out</span><span class="o">.</span><span class="n">type</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">matched_cols</span><span class="p">]</span>
+        <span class="n">len_needed_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">needed_cols</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">len_rest_cols</span> <span class="o">&gt;</span> <span class="n">len_needed_cols</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+                <span class="s2">&quot;warning&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Wasted </span><span class="si">%s</span><span class="s2"> column(s) of input data.&quot;</span><span class="p">,</span>
+                <span class="n">len_rest_cols</span> <span class="o">-</span> <span class="n">len_needed_cols</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">len_rest_cols</span> <span class="o">&lt;</span> <span class="n">len_needed_cols</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+                <span class="s2">&quot;warning&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;No data column for input: </span><span class="si">%s</span><span class="s2">, using None.&quot;</span><span class="p">,</span>
+                <span class="n">needed_cols</span><span class="p">[</span><span class="n">len_rest_cols</span><span class="p">:],</span>
+            <span class="p">)</span>
+            <span class="c1"># Add None</span>
+            <span class="c1"># Use loop to keep order</span>
+            <span class="k">for</span> <span class="n">needed_col</span> <span class="ow">in</span> <span class="n">needed_cols</span><span class="p">[</span><span class="n">len_rest_cols</span><span class="p">:]:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">needed_col</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">len_needed_cols</span> <span class="o">=</span> <span class="n">len_rest_cols</span>
+
+        <span class="n">out</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+            <span class="n">columns</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">rest_cols</span><span class="p">[:</span><span class="n">len_needed_cols</span><span class="p">],</span> <span class="n">needed_cols</span><span class="p">))</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="nb">list</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">type</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_output</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the output for jobs to render&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="p">(</span><span class="n">oput</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">template_opts</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+                <span class="k">for</span> <span class="n">oput</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span>
+            <span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">template_opts</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_script</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Template</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the script for jobs to render&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">script</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;warning&quot;</span><span class="p">,</span> <span class="s2">&quot;No script specified.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">script</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">script</span>
+        <span class="k">if</span> <span class="n">script</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;file://&quot;</span><span class="p">):</span>
+            <span class="n">script_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">script</span><span class="p">[</span><span class="mi">7</span><span class="p">:])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">script_file</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
+                <span class="n">base</span> <span class="o">=</span> <span class="n">get_base</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span>
+                    <span class="n">Proc</span><span class="p">,</span>
+                    <span class="n">script</span><span class="p">,</span>
+                    <span class="k">lambda</span> <span class="n">klass</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="s2">&quot;script&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="n">script_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getfile</span><span class="p">(</span><span class="n">base</span><span class="p">))</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="n">script_file</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">script_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="n">ProcScriptFileNotFound</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No such script file: </span><span class="si">{</span><span class="n">script_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">script</span> <span class="o">=</span> <span class="n">script_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">script</span> <span class="o">=</span> <span class="n">ignore_firstline_dedent</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">lang</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lang</span> <span class="o">=</span> <span class="n">get_shebang</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">script</span><span class="p">)</span>
+
+        <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_proc_script_computed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">script</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">template_opts</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Log some basic information of the process&quot;&quot;&quot;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__meta__</span><span class="p">[</span><span class="s1">&#39;procgroup&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__meta__</span><span class="p">[</span><span class="s2">&quot;procgroup&quot;</span><span class="p">]</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="p">)</span>
+        <span class="n">panel</span> <span class="o">=</span> <span class="n">Panel</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">desc</span> <span class="ow">or</span> <span class="s2">&quot;Undescribed&quot;</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+            <span class="n">box</span><span class="o">=</span><span class="p">(</span>
+                <span class="n">box</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span>
+                    <span class="s2">&quot;╭═┬╮</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="s2">&quot;║ ║║</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="s2">&quot;├═┼┤</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="s2">&quot;║ ║║</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="s2">&quot;├═┼┤</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="s2">&quot;├═┼┤</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="s2">&quot;║ ║║</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="s2">&quot;╰═┴╯</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">export</span>
+                <span class="k">else</span> <span class="n">box</span><span class="o">.</span><span class="n">ROUNDED</span>
+            <span class="p">),</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">get_logpanel_width</span><span class="p">(),</span>
+        <span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">log_rich_renderable</span><span class="p">(</span><span class="n">panel</span><span class="p">,</span> <span class="s2">&quot;cyan&quot;</span><span class="p">,</span> <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;Workdir: </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workdir</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+            <span class="s2">&quot;info&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;[yellow]&lt;&lt;&lt;[/yellow] </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">proc</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">proc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">requires</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">requires</span> <span class="k">else</span> <span class="s2">&quot;[START]&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+            <span class="s2">&quot;info&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;[yellow]&gt;&gt;&gt;[/yellow] </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">proc</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">proc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nexts</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nexts</span> <span class="k">else</span> <span class="s2">&quot;[END]&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      
+        <script src="../../../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>

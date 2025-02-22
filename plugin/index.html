@@ -1,0 +1,1739 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../configurations/">
+      
+      
+        <link rel="next" href="../scheduler/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.5">
+    
+    
+      
+        <title>Plugins - pipen</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.8608ea7d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../style.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#runtime-plugins" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="pipen" class="md-header__button md-logo" aria-label="pipen" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            pipen
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Plugins
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pwwang/pipen" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pwwang/pipen
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="pipen" class="md-nav__button md-logo" aria-label="pipen" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    pipen
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pwwang/pipen" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pwwang/pipen
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Introduction
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../basics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Basics
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../defining-proc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Defining a process
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../running/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Defining and running a pipeline
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../templating/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Templating
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../channels/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Channels
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../input-output/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Input and output
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../script/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Script
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../caching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Caching
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Error handling
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configurations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configurations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Plugins
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Plugins
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#runtime-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      Runtime plugins
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Runtime plugins">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plugin-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Plugin hooks
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Plugin hooks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-level-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pipeline-level hooks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#process-level-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Process-level hooks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-level-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Job-level hooks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#io-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      IO hooks
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loading-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      Loading plugins
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#writing-a-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      Writing a plugin
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Writing a plugin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#logging-to-the-console-from-a-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logging to the console from a plugin
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      CLI plugins
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugin-gallery" class="md-nav__link">
+    <span class="md-ellipsis">
+      Plugin gallery
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Scheduler
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc-group/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Process group
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Command line iterface
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CHANGELOG/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Change log
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    API
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            API
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_18_1" id="__nav_18_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    pipen
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_18_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18_1">
+            <span class="md-nav__icon md-icon"></span>
+            pipen
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.procgroup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.procgroup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.progressbar/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.progressbar
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.channel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.channel
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.version/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.version
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.scheduler
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.exceptions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.exceptions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.job/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.job
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.defaults/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.defaults
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.pluginmgr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.pluginmgr
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.utils/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.utils
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.template/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.template
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.proc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.proc
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.pipen/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.pipen
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_18_2" id="__nav_18_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    pipen.cli
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_18_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18_2">
+            <span class="md-nav__icon md-icon"></span>
+            pipen.cli
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.cli.profile/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.profile
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.cli.version/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.version
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.cli.plugins/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.plugins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.cli.help/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.help
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#runtime-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      Runtime plugins
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Runtime plugins">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plugin-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Plugin hooks
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Plugin hooks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-level-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pipeline-level hooks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#process-level-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Process-level hooks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-level-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Job-level hooks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#io-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      IO hooks
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loading-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      Loading plugins
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#writing-a-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      Writing a plugin
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Writing a plugin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#logging-to-the-console-from-a-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logging to the console from a plugin
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      CLI plugins
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugin-gallery" class="md-nav__link">
+    <span class="md-ellipsis">
+      Plugin gallery
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Plugins</h1>
+
+<p><code>pipen</code> uses <a href="https://github.com/pwwang/simplug"><code>simplug</code></a> for plugin support. There are very enriched hooks available for you to write your own plugins to extend <code>pipen</code>.</p>
+<h3 id="runtime-plugins">Runtime plugins</h3>
+<h4 id="plugin-hooks">Plugin hooks</h4>
+<p>To implement a function in your plugin, just simply:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pipen</span><span class="w"> </span><span class="kn">import</span> <span class="n">plugin</span>
+
+<span class="nd">@plugin</span><span class="o">.</span><span class="n">impl</span>
+<span class="p">[</span><span class="k">async</span> <span class="p">]</span><span class="k">def</span><span class="w"> </span><span class="nf">hook</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="o">...</span>
+</code></pre></div>
+<p>Note that you have to use keyword-arguments and they have to match the hook signature.</p>
+<p>See <a href="https://github.com/pwwang/simplug"><code>simplug</code></a> for more details.</p>
+<h5 id="pipeline-level-hooks">Pipeline-level hooks</h5>
+<ul>
+<li>
+<p><code>on_setup(config)</code> (sync):</p>
+<p>Setup for the plugin, mainly used for initalization and set the default values for the plugin configuration items.</p>
+<p>This is only called once even when you have multiple pipelines (<code>Pipen</code> objects) in a python session.</p>
+</li>
+<li>
+<p><code>on_init(pipen)</code> (async)</p>
+<p>Called when pipeline is initialized. Note that here only default configurations are loaded (from defaults.CONFIG and config files). The configurations from <code>Pipen</code> constructor and the processes are not loaded yet. It's useful for plugins to change the default configurations.</p>
+</li>
+<li>
+<p><code>on_start(pipen)</code> (async)</p>
+<p>Right before the pipeline starts to run. The process relationships are inferred here.
+You can access the start processes by <code>pipen.starts</code> and all processes by <code>pipen.procs</code> in the sequence of the execution order.</p>
+</li>
+<li>
+<p><code>on_complete(pipen, succeeded)</code> (async)</p>
+<p>After all processes finish. <code>succeeded</code> indicates whether all processes/jobs finish successfully.</p>
+</li>
+</ul>
+<h5 id="process-level-hooks">Process-level hooks</h5>
+<ul>
+<li>
+<p><code>on_proc_create(proc)</code> (sync)</p>
+<p>Called before proc get instantiated.
+Enables plugins to modify the default attributes of processes</p>
+</li>
+<li>
+<p><code>on_proc_input_computed(proc)</code> (sync)</p>
+<p>Called after process input data is computed.</p>
+</li>
+<li>
+<p><code>on_proc_script_computed(proc)</code> (sync)</p>
+<p>Called after process script is computed.</p>
+<p>The script is computed as a string that is about to compiled into a
+template. You can modify the script here.</p>
+</li>
+<li>
+<p><code>on_proc_init(proc)</code> (async)</p>
+<p>When process object is initialized.
+Allows plugins to modify the process attributes after initialization, but
+before the jobs are initialized.</p>
+</li>
+<li>
+<p><code>on_proc_start(proc)</code> (async)</p>
+<p>When process object initialization completes, including the <code>xqute</code> and job initialization. The <code>output_data</code> is also accessible here. The process is ready to run.</p>
+</li>
+<li>
+<p><code>on_proc_shutdown(proc, sig)</code> (sync)</p>
+<p>When the process is shut down (i.e. by <code>&lt;ctrl-c&gt;</code>). You can access the signal that shuts the process down by <code>sig</code>. Only first plugin (based on the priority) that implements this hook will get called.</p>
+</li>
+<li>
+<p><code>on_proc_done(proc, succeeded)</code> (async)</p>
+<p>When a process is done.</p>
+</li>
+</ul>
+<h5 id="job-level-hooks">Job-level hooks</h5>
+<ul>
+<li>
+<p><code>on_job_init(job)</code> (async)</p>
+<p>When a job is initialized</p>
+</li>
+<li>
+<p><code>on_job_queued(job)</code> (async)</p>
+<p>When a job is queued in xqute. Note it might not be queued yet in the scheduler system.</p>
+</li>
+<li>
+<p><code>on_job_submitting(job)</code> (async)</p>
+<p>When a job is submitting.</p>
+<p>The first plugin (based on priority) have this hook return <code>False</code> will cancel the submission</p>
+</li>
+<li>
+<p><code>on_job_submitted(job)</code> (async)</p>
+<p>When a job is submitted in the scheduler system.</p>
+</li>
+<li>
+<p><code>on_job_started(job)</code> (async)</p>
+<p>When a job starts to run in then scheduler system.</p>
+</li>
+<li>
+<p><code>on_job_polling(job)</code> (async)</p>
+<p>When status of a job is being polled.</p>
+</li>
+<li>
+<p><code>on_job_killing(job)</code> (async)</p>
+<p>When a job is being killed.</p>
+<p>The first plugin (based on priority) have this hook return <code>False</code> will cancel the killing</p>
+</li>
+<li>
+<p><code>on_job_killed(job)</code> (async)</p>
+<p>When a job is killed</p>
+</li>
+<li>
+<p><code>on_job_succeeded(job)</code> (async)</p>
+<p>When a job completes successfully</p>
+</li>
+<li>
+<p><code>on_job_cached(job)</code> (async)</p>
+<p>When a job is cached</p>
+</li>
+<li>
+<p><code>on_job_failed(job)</code> (async)</p>
+<p>When a job is done but failed (i.e. return_code == 1).</p>
+</li>
+<li>
+<p><code>on_jobcmd_init(job) -&gt; str</code> (sync)</p>
+<p>When the job command wrapper script is initialized before the prescript is run</p>
+<p>This should return a piece of bash code to be inserted in the wrapped job
+script (template), which is a python template string, with the following
+variables available: <code>status</code> and <code>job</code>. <code>status</code> is the class <code>JobStatus</code> from
+<code>xqute.defaults.py</code> and <code>job</code> is the <code>Job</code> instance.</p>
+<p>For multiple plugins, the code will be inserted in the order of the plugin priority.</p>
+<p>The code will replace the <code>#![jobcmd_init]</code> placeholder in the wrapped job script.
+See also <a href="https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95">https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95</a></p>
+</li>
+<li>
+<p><code>on_jobcmd_prep(job) -&gt; str</code> (sync)</p>
+<p>When the job command right about to be run</p>
+<p>This should return a piece of bash code to be inserted in the wrapped job
+script (template), which is a python template string, with the following
+variables available: <code>status</code> and <code>job</code>. <code>status</code> is the class <code>JobStatus</code> from
+<code>xqute.defaults.py</code> and <code>job</code> is the <code>Job</code> instance.</p>
+<p>The bash variable <code>$cmd</code> is accessible in the context. It is also possible to
+modify the <code>cmd</code> variable. Just remember to assign the modified value to <code>cmd</code>.</p>
+<p>For multiple plugins, the code will be inserted in the order of the plugin priority.
+Keep in mind that the <code>$cmd</code> may be modified by other plugins.</p>
+<p>The code will replace the <code>#![jobcmd_prep]</code> placeholder in the wrapped job script.
+See also <a href="https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95">https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95</a></p>
+</li>
+<li>
+<p><code>on_jobcmd_end(job) -&gt; str</code> (sync):</p>
+<p>When the job command finishes and after the postscript is run</p>
+<p>This should return a piece of bash code to be inserted in the wrapped job
+script (template), which is a python template string, with the following
+variables available: <code>status</code> and <code>job</code>. <code>status</code> is the class <code>JobStatus</code> from
+<code>xqute.defaults.py</code> and <code>job</code> is the <code>Job</code> instance.</p>
+<p>The bash variable <code>$rc</code> is accessible in the context, which is the return code
+of the job command.</p>
+<p>For multiple plugins, the code will be inserted in the order of the plugin priority.</p>
+<p>The code will replace the <code>#![jobcmd_end]</code> placeholder in the wrapped job script.
+See also <a href="https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95">https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95</a></p>
+</li>
+</ul>
+<h5 id="io-hooks">IO hooks</h5>
+<p>The io hooks are used to handle the input/output files/directories. The idea is to provide more flexibility to fetch the last modified time of the files/directories, and remove the files/directories when the job restarts. The APIs of these types of plugins are primarily used to generate the cache signature for the jobs. There are 5 APIs that need to be implemented:</p>
+<ul>
+<li><code>norm_inpath(job: Job, inpath: str | PathLike, is_dir: bool) -&gt; str</code>: Normalize/Transform the input path.
+    This is helpful when you want to download the file from a remote server or cloud storage, or you want to use a different path to represent the same file, and provide the local path to the job, so that the job can access the file locally and we don't need to handle them in the job script. The <code>is_dir</code> indicates whether the path is a directory.</li>
+<li><code>norm_outpath(job: Job, outpath: str, is_dir: bool) -&gt; str</code>: Normalize/Transform the output path.
+    Note that this is different from <code>norm_inpath</code> because when this is called, the output files/directories are not created yet. So we can't use it to upload the files to a remote server or cloud storage yet. To do that, you can use the <code>on_job_succeeded</code> hook to upload the files.</li>
+<li><code>def get_mtime(job: Job, path: str | PathLike, dirsig: int) -&gt; float</code>: Get the last modified time of the file/directory.
+    The <code>dirsig</code> is the depth to check the files under the directory. If it's <code>0</code>, only the directory itself is checked. Note that modify a file inside a directory may not change the last modified time of the directory itself.</li>
+<li><code>async def clear_path(job: Job, path: str | PathLike, is_dir: bool) -&gt; bool</code>: Clear the file/directory.
+    This is used to remove the files/directories when the job restarts. The <code>is_dir</code> indicates whether the path is a directory.</li>
+<li><code>async def output_exists(job: Job, path: str, is_dir: bool) -&gt; bool</code>: Check if the output file/directory exists.
+    This is used to check if the output file/directory exists.</li>
+</ul>
+<p>It's required to define a protocol for your plugin. For example: <code>gs://</code> for Google Cloud Storage, <code>s3://</code> for AWS S3, etc. When implementing the above APIs, check if the path starts with the protocol, and handle the path accordingly, otherwise, return <code>None</code> for the next available plugin to handle. If no <code>://</code> in the path, then a local path is assumed. The built-in plugin will handle the local paths.</p>
+<h4 id="loading-plugins">Loading plugins</h4>
+<p>You can specify the plugins to be loaded by specifying the names or the plugin itself in <code>plugins</code> configuration. With names, the plugins will be loaded from <a href="https://packaging.python.org/specifications/entry-points/">entry points</a>.</p>
+<p>You can also disable some plugins if they are set in the lower-priority configurations. For example, you want to disable <code>pipen_verbose</code> (enabled in a configuration file) for a pipeline:</p>
+<div class="highlight"><pre><span></span><code><span class="n">Pipen</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">plugins</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;-pipen_verbose&quot;</span><span class="p">])</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can use <code>+</code> as prefix to enable a disabled plugin, or <code>-</code> as prefix to disable an enabled plugin. If no prefix is used, only the specified plugins will be enabled and all other plugins will be disabled. You should either use <code>+</code> or <code>-</code> for all plugins or none of them. If a plugin is not given as a string, it will be treated as <code>+plugin</code>.</p>
+</div>
+<h4 id="writing-a-plugin">Writing a plugin</h4>
+<p>You can write your own plugin by implementing some of the above hooks. You can import the plugin directly and add it to `Pipen(..., plugins=[...]). For example:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pipen</span><span class="w"> </span><span class="kn">import</span> <span class="n">plugin</span><span class="p">,</span> <span class="n">Pipen</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">PipenPlugin</span><span class="p">:</span>
+
+    <span class="nd">@plugin</span><span class="o">.</span><span class="n">impl</span>
+    <span class="p">[</span><span class="k">async</span> <span class="p">]</span><span class="k">def</span><span class="w"> </span><span class="nf">hook</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+        <span class="o">...</span>
+
+<span class="n">Pipen</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">plugins</span><span class="o">=</span><span class="p">[</span><span class="n">PipenPlugin</span><span class="p">])</span>
+
+
+<span class="n">You</span> <span class="n">can</span> <span class="n">also</span> <span class="n">use</span> <span class="n">the</span> <span class="n">entry</span> <span class="n">point</span> <span class="n">to</span> <span class="n">register</span> <span class="n">your</span> <span class="n">plugin</span> <span class="n">using</span> <span class="n">the</span> <span class="n">group</span> <span class="n">name</span> <span class="err">`</span><span class="n">pipen</span><span class="err">`</span>
+
+<span class="n">For</span> <span class="err">`</span><span class="n">setup</span><span class="o">.</span><span class="n">py</span><span class="err">`</span><span class="p">,</span> <span class="n">you</span> <span class="n">will</span> <span class="n">need</span><span class="p">:</span>
+<span class="err">```</span><span class="n">python</span>
+<span class="n">setup</span><span class="p">(</span>
+    <span class="c1"># ...</span>
+    <span class="n">entry_points</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;pipen&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;pipen_verbose = pipen_verbose&quot;</span><span class="p">]},</span>
+    <span class="c1"># ...</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>For <code>pyproject.toml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[tool.poetry.plugins.pipen]</span>
+<span class="n">pipen_verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;pipen_verbose&quot;</span>
+</code></pre></div>
+<p>Then the plugin <code>pipen_verbose</code> can be loaded by <code>plugins=["+pipen_verbose"]</code> or disabled by <code>plugins=["-pipen_verbose"]</code></p>
+<h5 id="logging-to-the-console-from-a-plugin">Logging to the console from a plugin</h5>
+<p>Of course you can do arbitrary logging from a plugin. However, to keep the consistency with main logger of <code>pipen</code>, The best practice is:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pipen.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">)</span>
+
+<span class="c1"># do some logging inside the hooks</span>
+</code></pre></div>
+<p>The above code will produce some logging on the console like this:</p>
+<div class="highlight"><pre><span></span><code><span class="m">11</span>-04<span class="w"> </span><span class="m">12</span>:00:19<span class="w"> </span>I<span class="w"> </span>main<span class="w">    </span>╭═══════════════════════════<span class="w"> </span>Process<span class="w"> </span>═══════════════════════════╮
+<span class="m">11</span>-04<span class="w"> </span><span class="m">12</span>:00:19<span class="w"> </span>I<span class="w"> </span>main<span class="w">    </span>║<span class="w"> </span>Undescribed.<span class="w">                                                  </span>║
+<span class="m">11</span>-04<span class="w"> </span><span class="m">12</span>:00:19<span class="w"> </span>I<span class="w"> </span>main<span class="w">    </span>╰═══════════════════════════════════════════════════════════════╯
+<span class="m">11</span>-04<span class="w"> </span><span class="m">12</span>:00:19<span class="w"> </span>I<span class="w"> </span>main<span class="w">    </span>Process:<span class="w"> </span>Workdir:<span class="w"> </span><span class="s1">&#39;.pipen/process&#39;</span>
+<span class="m">11</span>-04<span class="w"> </span><span class="m">12</span>:00:19<span class="w"> </span>I<span class="w"> </span>verbose<span class="w"> </span>Process:<span class="w"> </span>size:<span class="w"> </span><span class="m">10</span>
+<span class="m">11</span>-04<span class="w"> </span><span class="m">12</span>:00:19<span class="w"> </span>I<span class="w"> </span>verbose<span class="w"> </span>Process:<span class="w"> </span><span class="o">[</span><span class="m">0</span>/9<span class="o">]</span><span class="w"> </span><span class="k">in</span>.a:<span class="w"> </span><span class="m">0</span>
+<span class="m">11</span>-04<span class="w"> </span><span class="m">12</span>:00:19<span class="w"> </span>I<span class="w"> </span>verbose<span class="w"> </span>Process:<span class="w"> </span><span class="o">[</span><span class="m">0</span>/9<span class="o">]</span><span class="w"> </span>out.b:<span class="w"> </span>pipeline-0-output/Process/0/a.txt
+</code></pre></div>
+<h3 id="cli-plugins">CLI plugins</h3>
+<p>See <a href="../cli">CLI</a> for more details.</p>
+<h3 id="plugin-gallery">Plugin gallery</h3>
+<ul>
+<li><a href="https://github.com/pwwang/pipen-verbose"><code>pipen-verbose</code></a>: Add verbosal information in logs for pipen.</li>
+<li><a href="https://github.com/pwwang/pipen-report"><code>pipen-report</code></a>: Generate report for pipen</li>
+<li><a href="https://github.com/pwwang/pipen-filters"><code>pipen-filters</code></a>: Add a set of useful filters for pipen templates.</li>
+<li><a href="https://github.com/pwwang/pipen-diagram"><code>pipen-diagram</code></a>: Draw pipeline diagrams for pipen</li>
+<li><a href="https://github.com/pwwang/pipen-args"><code>pipen-args</code></a>: Command line argument parser for pipen</li>
+<li><a href="https://github.com/pwwang/pipen-dry"><code>pipen-dry</code></a>: Dry runner for pipen pipelines</li>
+<li><a href="https://github.com/pwwang/pipen-annotate"><code>pipen-annotate</code></a>: Use docstring to annotate pipen processes</li>
+<li><a href="https://github.com/pwwang/pipen-board"><code>pipen-board</code></a>: Visualize configuration and running of pipen pipelines on the web</li>
+<li><a href="https://github.com/pwwang/pipen-lock"><code>pipen-lock</code></a>: Process lock for pipen to prevent multiple runs at the same time.</li>
+<li><a href="https://github.com/pwwang/pipen-log2file"><code>pipen-log2file</code></a>: Save running logs to file for pipen</li>
+<li><a href="https://github.com/pwwang/pipen-poplog"><code>pipen-poplog</code></a>: Populate logs from jobs to running log of the pipeline</li>
+<li><a href="https://github.com/pwwang/pipen-runinfo"><code>pipen-runinfo</code></a>: Save running information to file for pipen</li>
+<li><a href="https://github.com/pwwang/pipen-gcs"><code>pipen-gcs</code></a>: A plugin for pipen to handle files in Google Cloud Storage.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      
+        <script src="../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>

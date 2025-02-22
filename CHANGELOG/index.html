@@ -1,0 +1,3784 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../examples/">
+      
+      
+        <link rel="next" href="../api/pipen/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.5">
+    
+    
+      
+        <title>Change log - pipen</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.8608ea7d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../css/mkapi-common.css">
+    
+      <link rel="stylesheet" href="../style.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#change-log" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="pipen" class="md-header__button md-logo" aria-label="pipen" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            pipen
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Change log
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pwwang/pipen" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pwwang/pipen
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="pipen" class="md-nav__button md-logo" aria-label="pipen" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    pipen
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pwwang/pipen" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pwwang/pipen
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Introduction
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../basics/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Basics
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../defining-proc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Defining a process
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../running/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Defining and running a pipeline
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../templating/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Templating
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../channels/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Channels
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../input-output/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Input and output
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../script/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Script
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../caching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Caching
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Error handling
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configurations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configurations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Plugins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Scheduler
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc-group/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Process group
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Command line iterface
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Change log
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Change log
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#change-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      Change Log
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Change Log">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#0158" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.8
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0157" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.7
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0156" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0155" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0154" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0153" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0152" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0151" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0150" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0146" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.14.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0145" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.14.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0144" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.14.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0143" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.14.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0142" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.14.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0141" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.14.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0140" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.14.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0133-yanked" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.13.3 (yanked)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0132" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.13.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0131" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.13.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0130" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.13.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0125" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0124" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0123" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0122" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0121" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0120" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0111" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.11.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0110" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.11.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0106" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0105" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0104" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0103" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0102" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0101" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0100" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0911" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.11
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0910" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.10
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#099" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.9
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#098" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.8
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#097" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.7
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#096" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#095" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#094" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#093" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#092" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#091" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#090" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#080" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.8.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#073" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.7.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#072" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.7.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#071" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.7.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#070" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.7.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#064" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#063" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#062" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#061" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#060" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#052" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#051" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#050" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#046" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#045" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#044" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#043" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#042" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#041" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#040" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0312" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.12
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0311" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.11
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0310" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.10
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#039" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.9
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#038" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.8
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#037" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.7
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#036" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#035" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#034" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#033" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#032" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#031" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#030" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0216" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.16
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0215" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.15
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0214" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.14
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0213" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.13
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0212" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.12
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0211" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.11
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0210" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.10
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#029" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.9
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#028" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.8
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#027" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.7
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#026" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#025" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#024" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#023" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#022" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#021" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#020" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#014" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#013" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#012" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#011" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#010" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#004" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#003" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#002" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#001" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.1
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    API
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            API
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_18_1" id="__nav_18_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    pipen
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_18_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18_1">
+            <span class="md-nav__icon md-icon"></span>
+            pipen
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.procgroup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.procgroup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.progressbar/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.progressbar
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.channel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.channel
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.version/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.version
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.scheduler
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.exceptions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.exceptions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.job/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.job
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.defaults/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.defaults
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.pluginmgr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.pluginmgr
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.utils/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.utils
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.template/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.template
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.proc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.proc
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.pipen/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.pipen
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_18_2" id="__nav_18_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    pipen.cli
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_18_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18_2">
+            <span class="md-nav__icon md-icon"></span>
+            pipen.cli
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.cli.profile/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.profile
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.cli.version/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.version
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.cli.plugins/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.plugins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pipen.cli.help/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pipen.cli.help
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#change-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      Change Log
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Change Log">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#0158" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.8
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0157" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.7
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0156" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0155" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0154" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0153" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0152" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0151" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0150" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.15.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0146" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.14.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0145" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.14.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0144" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.14.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0143" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.14.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0142" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.14.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0141" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.14.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0140" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.14.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0133-yanked" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.13.3 (yanked)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0132" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.13.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0131" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.13.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0130" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.13.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0125" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0124" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0123" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0122" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0121" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0120" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.12.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0111" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.11.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0110" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.11.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0106" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0105" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0104" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0103" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0102" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0101" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0100" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.10.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0911" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.11
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0910" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.10
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#099" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.9
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#098" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.8
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#097" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.7
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#096" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#095" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#094" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#093" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#092" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#091" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#090" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.9.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#080" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.8.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#073" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.7.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#072" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.7.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#071" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.7.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#070" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.7.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#064" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#063" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#062" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#061" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#060" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.6.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#052" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#051" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#050" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.5.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#046" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#045" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#044" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#043" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#042" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#041" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#040" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0312" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.12
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0311" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.11
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0310" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.10
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#039" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.9
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#038" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.8
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#037" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.7
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#036" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#035" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#034" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#033" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#032" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#031" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#030" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0216" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.16
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0215" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.15
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0214" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.14
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0213" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.13
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0212" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.12
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0211" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.11
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0210" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.10
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#029" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.9
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#028" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.8
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#027" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.7
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#026" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.6
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#025" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#024" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#023" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#022" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#021" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#020" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#014" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#013" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#012" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#011" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#010" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.0
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#004" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#003" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#002" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#001" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.1
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Change log</h1>
+
+<h2 id="change-log">Change Log</h2>
+<h3 id="0158">0.15.8</h3>
+<ul>
+<li>chore(deps): update package versions for executing, and xqute</li>
+<li>fix: change the input/output path from resolved to absolute for symlinks</li>
+<li>style(tests): update imports and add noqa comment for unused variable</li>
+</ul>
+<h3 id="0157">0.15.7</h3>
+<ul>
+<li>chore(deps): update xqute to version 0.5.5</li>
+<li>chore(deps): update pytest-asyncio to version 0.25.2</li>
+<li>chore: add logging for plugin initialization</li>
+</ul>
+<h3 id="0156">0.15.6</h3>
+<ul>
+<li>chore(deps): bump python-varname to 0.14</li>
+<li>ci: update GitHub Actions to use ubuntu-24.04</li>
+<li>style: fix style issues in test files</li>
+</ul>
+<h3 id="0155">0.15.5</h3>
+<ul>
+<li>fix: fix <code>kwargs</code> not updated when pipeline is a <code>Pipen</code> object in <code>utils.load_pipeline()</code></li>
+<li>fix: fix type checking in <code>utils.load_pipeline()</code></li>
+</ul>
+<h3 id="0154">0.15.4</h3>
+<ul>
+<li>fix: fix Pipen object not recognized by <code>utils.load_pipeline()</code></li>
+<li>style: fix type annotations in Pipen class</li>
+<li>deps: bump argx to 0.2.11</li>
+</ul>
+<h3 id="0153">0.15.3</h3>
+<ul>
+<li>feat: add <code>pipen.run()</code> as a function to run a pipeline</li>
+<li>docs: fix the decorations in the logs in README</li>
+</ul>
+<h3 id="0152">0.15.2</h3>
+<ul>
+<li>deps: update xqute dependency to version 0.5.1</li>
+<li>chore: update pytest options in pyproject.toml to ignore deadlock warnings</li>
+<li>feat: expose on_jobcmd_* hooks for plugins to modify the job wrapper script</li>
+</ul>
+<h3 id="0151">0.15.1</h3>
+<ul>
+<li>deps: bump xqute to 0.5.0</li>
+<li>xqute v0.5.0 provides 3 more hooks for the plugins to inject bash code to the job wrapper scripts.</li>
+<li>see <a href="https://github.com/pwwang/xqute?tab=readme-ov-file#plugins">https://github.com/pwwang/xqute?tab=readme-ov-file#plugins</a>.</li>
+</ul>
+<h3 id="0150">0.15.0</h3>
+<ul>
+<li>BREAKING: remove redundant argument <code>proc</code> for job plugin APIs</li>
+<li>deps: bump up dev deps</li>
+<li>deps: bump xqute to version 0.4.1</li>
+<li>refactor: remove <code>abstractproperty</code> decorator from <code>CLIPlugin</code> class</li>
+<li>feat: add 5 more APIs for plugins to handle files from other platforms (e.g. the cloud)</li>
+<li>ci: add python3.12 to CI</li>
+<li>test: fork each test in test_job.py</li>
+<li>test: fork tests in test_pipen.py and test_proc.py</li>
+<li>docs: correct the documentation about <code>dirsig</code></li>
+<li>enh: make better error message when set wrong type of starts for a pipeline</li>
+<li>docs: add pipen-gcs in plugin gallery</li>
+</ul>
+<h3 id="0146">0.14.6</h3>
+<ul>
+<li>fix: fix error handling in ProcPBar class</li>
+<li>deps: bump up dev deps</li>
+</ul>
+<h3 id="0145">0.14.5</h3>
+<ul>
+<li>fix: fix all plugins being disabled by default</li>
+</ul>
+<h3 id="0144">0.14.4</h3>
+<ul>
+<li>deps: bump xqute to 0.4 (simplug to 0.4.1)</li>
+<li>refactor: refactor <code>pipen.plugin_context</code> due to simplug upgrade</li>
+<li>docs: update docs for specifiying plugins due to simplug upgrade</li>
+<li>examples: update examples for specifiying plugins due to simplug upgrade</li>
+<li>tests: add tests for plugins specification</li>
+<li>tests: use pytest v8</li>
+<li>ci: use latest actions</li>
+</ul>
+<h3 id="0143">0.14.3</h3>
+<ul>
+<li>choir: rename argument <code>args</code> to <code>argv</code> for <code>utils.is_loading_pipeline()</code></li>
+</ul>
+<h3 id="0142">0.14.2</h3>
+<ul>
+<li>feat: allow passing arguments to <code>utils.is_loading_pipeline()</code></li>
+</ul>
+<h3 id="0141">0.14.1</h3>
+<ul>
+<li>feat: add flags (e.g. <code>--help</code>) to <code>utils.is_loading_pipeline</code> to check arguments in <code>sys.argv</code></li>
+</ul>
+<h3 id="0140">0.14.0</h3>
+<ul>
+<li>deps: drop support for python 3.8</li>
+<li>deps: bump <code>varname</code> to 0.13</li>
+<li>docs: update readme for more plugins</li>
+</ul>
+<h3 id="0133-yanked">0.13.3 (yanked)</h3>
+<ul>
+<li>deps: bump <code>varname</code> to 0.13</li>
+</ul>
+<h3 id="0132">0.13.2</h3>
+<ul>
+<li>style: change max line length to 88</li>
+<li>feat: add <code>envs_depth</code> to procs to control the depth of envs to be inherited by subclasses</li>
+</ul>
+<h3 id="0131">0.13.1</h3>
+<ul>
+<li>test: cover <code>on_job_polling</code></li>
+<li>fix: update envs recursively for subclasses</li>
+<li>test: make sure class envs kept intact when subclassed</li>
+</ul>
+<h3 id="0130">0.13.0</h3>
+<ul>
+<li>deps: bump xqute to 0.3.1 and liquidpy to 0.8.2</li>
+<li>breaking: change hook <code>on_job_running</code> to <code>on_job_started</code> and add <code>on_job_polling</code></li>
+</ul>
+<h3 id="0125">0.12.5</h3>
+<ul>
+<li>deps: bump xqute to 0.2.5</li>
+<li>chore: make utils._excepthook only handle KeyboardInterrupt</li>
+<li>chore: update examples</li>
+</ul>
+<h3 id="0124">0.12.4</h3>
+<ul>
+<li>Modify sys.argv before the module is loaded in <code>utils.load_pipeline()</code></li>
+</ul>
+<h3 id="0123">0.12.3</h3>
+<ul>
+<li>Change cli_args to argv0 and argv1p for utils.load_pipeline</li>
+</ul>
+<h3 id="0122">0.12.2</h3>
+<ul>
+<li>Append <code>sys.argv[1:]</code> by default when <code>cli_args</code> is <code>None</code> in <code>utils.load_pipeline()</code></li>
+</ul>
+<h3 id="0121">0.12.1</h3>
+<ul>
+<li>Add utils.is_loading_pipeline() to check if pipeline is loading</li>
+</ul>
+<h3 id="0120">0.12.0</h3>
+<ul>
+<li>✨ Add utils.load_pipeline() to load pipeline</li>
+</ul>
+<h3 id="0111">0.11.1</h3>
+<ul>
+<li>Dismiss warning for fillna method for pandas 2.1</li>
+<li>Fix channel.expand_dir() may add new column</li>
+</ul>
+<h3 id="0110">0.11.0</h3>
+<ul>
+<li>Add Dockerfile for codesandbox</li>
+<li>Bump pandas to v2</li>
+<li>Bump argx to 0.2.10</li>
+</ul>
+<h3 id="0106">0.10.6</h3>
+<ul>
+<li>🐛 Fix "DeprecationWarning: np.find_common_type is deprecated" from pandas (due to numpy 1.25 update)</li>
+</ul>
+<h3 id="0105">0.10.5</h3>
+<ul>
+<li>🎨 Allow starts to be set as a tuple</li>
+<li>⬆️ Bump python-simpleconf to 0.6 and other deps to latest versions</li>
+<li>➕ Add rtoml to deps (as python-simpleconf 0.6 may not depend on rtoml)</li>
+</ul>
+<h3 id="0104">0.10.4</h3>
+<ul>
+<li>⬆️ Bump xqute to 0.2.3</li>
+</ul>
+<h3 id="0103">0.10.3</h3>
+<ul>
+<li>⬆️ Bump xqute to 0.2.2</li>
+</ul>
+<h3 id="0102">0.10.2</h3>
+<ul>
+<li>🐛 Fix exception handling in ProcPBar class update method</li>
+</ul>
+<h3 id="0101">0.10.1</h3>
+<ul>
+<li>✨ Add <code>on_proc_script_computed</code> hook</li>
+</ul>
+<h3 id="0100">0.10.0</h3>
+<ul>
+<li>💥 Change hook <code>on_proc_init</code> to <code>on_proc_create</code></li>
+<li>✨ Add <code>on_proc_init</code> hook back but after the process initialized insteadl of before</li>
+<li>👷 Add python 3.11 to CI</li>
+<li>📝 Update documentation about updated hooks⏎</li>
+</ul>
+<h3 id="0911">0.9.11</h3>
+<ul>
+<li>🐛 Make sure .envs of Proc subclasses are Diot objects</li>
+</ul>
+<h3 id="0910">0.9.10</h3>
+<ul>
+<li>🐛 Fix <code>utils.mark</code> and <code>get_marked</code> when <code>__meta__</code> is <code>None</code></li>
+</ul>
+<h3 id="099">0.9.9</h3>
+<ul>
+<li>⚡️ <code>utils.mark</code> and <code>get_marked</code> now work with <code>ProcGroup</code> and other classes</li>
+</ul>
+<h3 id="098">0.9.8</h3>
+<ul>
+<li>🐛 Fix priority of core plugin</li>
+</ul>
+<h3 id="097">0.9.7</h3>
+<ul>
+<li>🔧 Allow to inherit doc from base class for Pipen/Proc</li>
+</ul>
+<h3 id="096">0.9.6</h3>
+<ul>
+<li>🎨 Let plugins change and create workdir</li>
+<li>🔧 Change the default outdir suffix from <code>_results</code> to <code>-output</code></li>
+<li>📖 Update README file and add new plugins</li>
+</ul>
+<h3 id="095">0.9.5</h3>
+<ul>
+<li>🔧 Fix workdir in log</li>
+</ul>
+<h3 id="094">0.9.4</h3>
+<ul>
+<li>🐛 Use class name as pipeline name</li>
+</ul>
+<h3 id="093">0.9.3</h3>
+<ul>
+<li>🐛 Set logging.lastResort to null handler</li>
+<li>✨ Allow to assign process directly to proc groups</li>
+<li>🔧 Change progress bar description length to 24</li>
+</ul>
+<h3 id="092">0.9.2</h3>
+<ul>
+<li>🎨 Rename to main plugin to core</li>
+<li>🎨 Reformat log of pipeline info so that paths won't be truncated</li>
+</ul>
+<h3 id="091">0.9.1</h3>
+<ul>
+<li>⬆️ Bump xqute to 0.2.1</li>
+</ul>
+<h3 id="090">0.9.0</h3>
+<ul>
+<li>⬆️ Bump xqute to 0.2 so we can have slurm and ssh schedulers available</li>
+<li>✨ Add ssh and slurm scheduers</li>
+<li>🎨 Improve code for dropping python 3.7</li>
+<li>👷 Use 3.10 as main python version in CI</li>
+<li>📝 Update docs for slurm and ssh schedulers</li>
+</ul>
+<h3 id="080">0.8.0</h3>
+<ul>
+<li>⬆️ Drop support for python3.7</li>
+<li>🎨 Don't slugify pipen or proc names anymore but require them to be valid filenames</li>
+<li>🐛 Fix process names being reused</li>
+<li>📝 Update documentation with new job caching callback.</li>
+<li>🎨 Move actions to on_job_cached hook for cached jobs</li>
+</ul>
+<h3 id="073">0.7.3</h3>
+<ul>
+<li>✨ Add <code>--list</code> for <code>pipen profile</code> to list the names of available profiles</li>
+<li>✨ Add exception hook to show uncaught in log</li>
+<li>✨ Add <code>on_job_cached</code> hook</li>
+</ul>
+<h3 id="072">0.7.2</h3>
+<ul>
+<li>✨ Add <code>utils.mark</code> and <code>get_marked</code> to mark a process
+    Unlike plugin_opts, template_opts or envs, these marks are not inherited in subclasses</li>
+</ul>
+<h3 id="071">0.7.1</h3>
+<ul>
+<li>⬆️ Upgrade simplug to 0.2.3</li>
+<li>📝 Add pipen-cli-config to plugin gallery</li>
+</ul>
+<h3 id="070">0.7.0</h3>
+<ul>
+<li>⬆️ Update liquidpy to 0.8</li>
+<li>✨ Add <code>Proc.__meta__</code> that will not be inherited when subclassing</li>
+<li>🎨 Put <code>procgroup</code> in <code>Proc.__meta__</code></li>
+<li>⚡️ Do not mutate <code>Proc.__doc__</code> when subclassing</li>
+<li>⚡️ Use mro to detect parent class of a Proc</li>
+</ul>
+<h3 id="064">0.6.4</h3>
+<ul>
+<li>🔀 Set desc from docstring if not given for pipelines</li>
+</ul>
+<h3 id="063">0.6.3</h3>
+<ul>
+<li>🔊 Trim right spaces of logs</li>
+</ul>
+<h3 id="062">0.6.2</h3>
+<ul>
+<li>⬆️ Adopt xqute 0.1.5</li>
+</ul>
+<h3 id="061">0.6.1</h3>
+<ul>
+<li>🐛 Fix path expansion for <code>~/.pipen.toml</code> in defaults.</li>
+</ul>
+<h3 id="060">0.6.0</h3>
+<ul>
+<li>✨ Allow subclassing Pipen to create a pipeline (#151)</li>
+</ul>
+<h3 id="052">0.5.2</h3>
+<ul>
+<li>📝 Refactor codebase: unify type annotations and import future features</li>
+<li>🐛 Allow methods decorated by @ProcGroup.add_proc to return None</li>
+</ul>
+<h3 id="051">0.5.1</h3>
+<ul>
+<li>🚑 Remove remaining more-itertools</li>
+</ul>
+<h3 id="050">0.5.0</h3>
+<ul>
+<li>➖ Remove more-itertools</li>
+<li>
+<p>✨ Add <code>ProcGroup</code> to manage groups of processes.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pipen</span><span class="w"> </span><span class="kn">import</span> <span class="n">Proc</span><span class="p">,</span> <span class="n">ProcGroup</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyGroup</span><span class="p">(</span><span class="n">ProcGroup</span><span class="p">):</span>
+
+    <span class="nd">@ProcGroup</span><span class="o">.</span><span class="n">add_proc</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">my_proc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+            <span class="o">...</span>
+        <span class="k">return</span> <span class="n">MyProc</span>
+
+    <span class="nd">@ProcGroup</span><span class="o">.</span><span class="n">add_proc</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">my_proc2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">MyProc2</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+            <span class="n">requires</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">my_proc</span>
+            <span class="o">...</span>
+        <span class="k">return</span> <span class="n">MyProc2</span>
+
+<span class="n">pg</span> <span class="o">=</span> <span class="n">MyGroup</span><span class="p">()</span>
+<span class="c1"># Run as a pipeline</span>
+<span class="n">pg</span><span class="o">.</span><span class="n">as_pipen</span><span class="p">()</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="c1"># Integrate into a pipeline</span>
+<span class="o">&lt;</span><span class="n">proc_of_a_pipeline</span><span class="o">&gt;.</span><span class="n">requires</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">my_proc2</span>
+</code></pre></div>
+</li>
+</ul>
+<h3 id="046">0.4.6</h3>
+<ul>
+<li>🐛 Fix plugins command not listing plugins</li>
+</ul>
+<h3 id="045">0.4.5</h3>
+<ul>
+<li>🚑 Fix banner alignment in terminal</li>
+</ul>
+<h3 id="044">0.4.4</h3>
+<ul>
+<li>🐛 Fix when cli plugin has no docstring</li>
+<li>🚑 Exclude help from help sub-command itself</li>
+<li>🚑 Add cli plugin docstring as sub-command description</li>
+</ul>
+<h3 id="043">0.4.3</h3>
+<ul>
+<li>⬆️ Bump <code>argx</code> to 0.2.2</li>
+<li>🎨 Expose <code>parse_args()</code> to cli plugins</li>
+</ul>
+<h3 id="042">0.4.2</h3>
+<ul>
+<li>⬆️ Bump <code>argx</code> to 0.2</li>
+</ul>
+<h3 id="041">0.4.1</h3>
+<ul>
+<li>🐛 Fix cli plugin name</li>
+</ul>
+<h3 id="040">0.4.0</h3>
+<ul>
+<li>⬆️ Upgrade python-slugify to ^0.8</li>
+<li>⬆️ Upgrade xqute to 0.1.4</li>
+<li>⬆️ Upgrade varname to 0.11</li>
+<li>💥 Use argx instead of pyparam</li>
+</ul>
+<h3 id="0312">0.3.12</h3>
+<ul>
+<li>⬆️ Upgrade python-slugify to ^7</li>
+</ul>
+<h3 id="0311">0.3.11</h3>
+<ul>
+<li>📝 Fix github workflow badges in README</li>
+<li>🩹 Fix pandas warning when less-column data passed to channel</li>
+</ul>
+<h3 id="0310">0.3.10</h3>
+<ul>
+<li>⬆️ Upgrade xqute to 0.1.3</li>
+<li>⬆️ Upgrade datar to 0.11 and format test files</li>
+<li>✨ Add cli command version to show versions of deps</li>
+<li>➖ Remove rich as it is required by xqute already</li>
+</ul>
+<h3 id="039">0.3.9</h3>
+<ul>
+<li>⬆️ Bump pipda to 0.11</li>
+<li>⬆️ Bump xqute to 0.1.2</li>
+</ul>
+<h3 id="038">0.3.8</h3>
+<ul>
+<li>⬆️ Pump xqute to 0.1.1</li>
+</ul>
+<h3 id="037">0.3.7</h3>
+<ul>
+<li>⬆️ Upgrade varname to 0.10</li>
+</ul>
+<h3 id="036">0.3.6</h3>
+<ul>
+<li>⬆️ Upgrade pipda to 0.7.2, varname to 0.9.1, datar to 0.9</li>
+</ul>
+<h3 id="035">0.3.5</h3>
+<ul>
+<li>🐛 Fix <code>nexts</code> being inherited for <code>Proc</code> subclasses</li>
+</ul>
+<h3 id="034">0.3.4</h3>
+<ul>
+<li>✨ Print pipen version in CLI: pipen plugins</li>
+<li>🩹 Make use of full terminal width for non-panel elements in log</li>
+<li>🩹 Extend width to 256 when terminal width cannot be detected while logging (most likely logging to a text file)</li>
+</ul>
+<h3 id="033">0.3.3</h3>
+<ul>
+<li>♿️ Change default log width to 100</li>
+<li>🩹 Fix broken panel in log content with console width cannot be detected</li>
+</ul>
+<h3 id="032">0.3.2</h3>
+<ul>
+<li>⬆️ Upgrade rtoml to v0.8</li>
+<li>⬆️ Upgrade pipda to v0.6</li>
+</ul>
+<h3 id="031">0.3.1</h3>
+<ul>
+<li>🩹 Hide config meta data in pipeline information</li>
+</ul>
+<h3 id="030">0.3.0</h3>
+<ul>
+<li>⬆️ Upgrade dependencies</li>
+<li>📌 Use <code>rtoml</code> instead of <code>toml</code> (see https://github.com/pwwang/toml-bench)</li>
+<li>🩹 Dump job signature to file directly instead of dump to a string first</li>
+<li>👷 Add python 3.10 to CI</li>
+<li>📝 Add dependencies badge to README.md</li>
+</ul>
+<h3 id="0216">0.2.16</h3>
+<ul>
+<li>📌 Pin dep versions</li>
+<li>🩹 Allow to set workdir from Pipen constructor</li>
+</ul>
+<h3 id="0215">0.2.15</h3>
+<ul>
+<li>🩹 Fix <code>FutureWarning</code> in <code>Proc._compute_input()</code></li>
+<li>🩹 Add <code>__doc__</code> for <code>Proc.from_proc()</code></li>
+<li>📌 Pin deps for docs</li>
+</ul>
+<h3 id="0214">0.2.14</h3>
+<ul>
+<li>🩹 Shorten pipeline info in log for long config options</li>
+<li>🐛 Fix cached jobs being put into queue</li>
+<li>🩹 Shorten job debug messages when hit limits</li>
+<li>🚑 Remove sort_dicts for pprint.pformat for py3.7</li>
+</ul>
+<h3 id="0213">0.2.13</h3>
+<ul>
+<li>🩹 Don't require <code>job.signature.toml</code> to force cache a job</li>
+</ul>
+<h3 id="0212">0.2.12</h3>
+<ul>
+<li>🐛 Hotfix for typos in <code>Proc.__init_subclass__()</code></li>
+</ul>
+<h3 id="0211">0.2.11</h3>
+<ul>
+<li>🩹 Update <code>envs</code>, <code>plugin_opts</code> and <code>scheduler_opts</code> while subclassing processes.</li>
+</ul>
+<h3 id="0210">0.2.10</h3>
+<ul>
+<li>✨ Add hook <code>on_proc_input_computed</code></li>
+<li>🩹 Default new process docstring to "Undescribed process."</li>
+</ul>
+<h3 id="029">0.2.9</h3>
+<ul>
+<li>✨ Allow <code>requires</code> to be set by <code>__setattr__()</code></li>
+</ul>
+<h3 id="028">0.2.8</h3>
+<ul>
+<li>🩹 Forward fill na for input data</li>
+</ul>
+<h3 id="027">0.2.7</h3>
+<ul>
+<li>🩹 Fix process plugin_opts not inherited from pipeline</li>
+</ul>
+<h3 id="026">0.2.6</h3>
+<ul>
+<li>🎨 Make <code>pipen._build_proc_relationships()</code> public and don't rebuild the relations</li>
+<li>✨ Allow pipenline name to be obtained from assignment</li>
+</ul>
+<h3 id="025">0.2.5</h3>
+<ul>
+<li>🩹 Allow relative script path to be inherited</li>
+<li>🐛 Fix column order from depedency processes</li>
+<li>🩹 Fix <strong>doc</strong> not inherited for processes</li>
+</ul>
+<h3 id="024">0.2.4</h3>
+<ul>
+<li>✨ Add execution order for processes</li>
+</ul>
+<h3 id="023">0.2.3</h3>
+<ul>
+<li>⚡️Speed up package importing</li>
+</ul>
+<h3 id="022">0.2.2</h3>
+<ul>
+<li>🐛 Load CLI plugins at runtime</li>
+</ul>
+<h3 id="021">0.2.1</h3>
+<ul>
+<li>🎨 Allow CLI plugin to have different name than the command</li>
+</ul>
+<h3 id="020">0.2.0</h3>
+<ul>
+<li>💥 Restructure CLI plugins</li>
+</ul>
+<h3 id="014">0.1.4</h3>
+<ul>
+<li>🩹 Use brackets to indicate cached jobs</li>
+<li>🩹 Run on_complete hook only when no exception happened</li>
+<li>🩹 Let <code>on_proc_init</code> to modify process <code>workdir</code></li>
+<li>🐛 Fix when <code>nexts</code> affected by parent <code>nexts</code> assignment when parent in <code>__bases__</code></li>
+</ul>
+<h3 id="013">0.1.3</h3>
+<ul>
+<li>✨ Add <code>on_proc_init()</code> hook to enables plugins to modify the default attributes of processes</li>
+<li>💥 Rename <code>Proc.args</code> to <code>Proc.envs</code></li>
+</ul>
+<h3 id="012">0.1.2</h3>
+<ul>
+<li>💥 Use <code>set_starts()</code> and <code>set_data()</code> to set start processes of a pipeline.</li>
+</ul>
+<h3 id="011">0.1.1</h3>
+<ul>
+<li>💥 Allow plugins to modify other configs via on_setup() hook</li>
+<li>🎨 Move progress bar to the last</li>
+<li>🩹 Warn when no input_data specified for start process</li>
+<li>💬 Change end to export</li>
+<li>🚚 Move on_init() so it's able to redefine default configs</li>
+<li>💥 Change <code>exec_cmd</code> hook of cli plugin to <code>exec_command</code></li>
+</ul>
+<h3 id="010">0.1.0</h3>
+<p>It's now fully documented. See documentations.</p>
+<h3 id="004">0.0.4</h3>
+<ul>
+<li>Clear output if not cached.</li>
+<li>Make process running order fixed</li>
+</ul>
+<h3 id="003">0.0.3</h3>
+<ul>
+<li>Fix caching issue</li>
+<li>Add singleton to proc to force singleton</li>
+<li>Log an empty line after all processes finish</li>
+<li>Allow input to be None</li>
+<li>Separate channels from different required procs</li>
+<li>Move proc prepare before run</li>
+<li>Change the order proc banner printing, making sure it prints before other logs for the proc</li>
+<li>FIx job not cached if input is missing</li>
+<li>Don't redirect output only if absolute path specified</li>
+<li>Make input files resolved(absolute path)</li>
+<li>Give more detailed ProcDependencyError</li>
+<li>Force job status to be failed when Ctrl + c</li>
+<li>Fix files for input when it is a pandas dataframe</li>
+<li>Add job name prefix for scheduler</li>
+<li>Adopt datar for channels</li>
+</ul>
+<h3 id="002">0.0.2</h3>
+<ul>
+<li>Add on_proc_property_computed hook</li>
+<li>Add plugin options for pipen construct</li>
+<li>Keep args, envs, scheduler_opts and plugin_opts as Diot object for procs</li>
+<li>Fix shebang not working in script</li>
+<li>Make sure job rendering data are stringified.</li>
+<li>Move starts as a method so that pipelines can be initialized before processes.</li>
+<li>Use plyrda instead of siuba for channel</li>
+<li>Add template rendering error to indicate where the rendering error happens;</li>
+<li>Add succeeded to on_complete hook;</li>
+<li>Add hook on_proc_start;</li>
+<li>Add argument succedded for hook on_proc_done;</li>
+<li>Realign pipeline and proc names in progress bars</li>
+<li>Remove debug log in job preparing, which will appear on the top of the logs</li>
+</ul>
+<h3 id="001">0.0.1</h3>
+<ul>
+<li>Reimplement PyPPL using asyncio</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      
+        <script src="../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>
