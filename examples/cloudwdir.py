@@ -1,12 +1,10 @@
 """An example using cloud workdir/outdiur"""
 
-from pathlib import Path
-
 from dotenv import load_dotenv
 from pipen import Proc, Pipen
 
+load_dotenv()
 BUCKET = "gs://handy-buffer-287000.appspot.com"
-load_dotenv(Path(__file__).parent.parent / ".env")
 
 
 class MyProcess(Proc):

@@ -1,11 +1,10 @@
 import os
-from pathlib import Path
 
 from dotenv import load_dotenv
 from pipen import Proc, Pipen
 
+load_dotenv()
 BUCKET = f"gs://{os.environ['GBATCH_EXAMPLE_BUCKET']}"
-load_dotenv(Path(__file__).parent.parent / ".env")
 
 
 class MyProcess(Proc):
