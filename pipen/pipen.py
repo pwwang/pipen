@@ -13,7 +13,7 @@ from rich.panel import Panel
 from rich.text import Text
 from simpleconf import ProfileConfig
 from varname import varname, VarnameException
-from yunpath import AnyPath, CloudPath
+from yunpath import AnyPath
 
 from .defaults import CONFIG, CONFIG_FILES
 from .exceptions import (
@@ -178,7 +178,6 @@ class Pipen:
         """
         self.profile = profile
         self.workdir = AnyPath(str(self.config.workdir)) / self.name  # type: ignore
-        # self.workdir.mkdir(parents=True, exist_ok=True)
 
         succeeded = True
         await self._init()
@@ -380,15 +379,6 @@ class Pipen:
 
         if "workdir" in self._kwargs:
             self.workdir = AnyPath(self._kwargs["workdir"])
-
-        if (
-            int(isinstance(self.workdir, CloudPath))
-            + int(isinstance(self.outdir, CloudPath))
-            == 1
-        ):
-            raise ValueError(
-                "workdir and outdir should be both cloud paths or local paths."
-            )
 
         self.workdir.mkdir(parents=True, exist_ok=True)
 

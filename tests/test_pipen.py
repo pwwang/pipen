@@ -231,23 +231,6 @@ def test_run2():
 
 
 @pytest.mark.forked
-def test_only_one_workdir_outdir_is_cloud(tmp_path):
-    class Proc1(Proc):
-        input = "a"
-        output = "b:var:{{in.a}}"
-
-    class MyPipe5(Pipen):
-        workdir = "gs://mybucket"
-        outdir = tmp_path
-        starts = Proc1
-
-    with pytest.raises(
-        ValueError, match="workdir and outdir should be both cloud paths or local paths"
-    ):
-        MyPipe5().run()
-
-
-@pytest.mark.forked
 def test_cloud_workdir_outdir(uid):
     class RProc1(Proc):
         input = "a"
