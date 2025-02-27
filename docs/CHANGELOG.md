@@ -15,6 +15,10 @@
 - test: add fixture for unique ID and update cloud test to support parallel execution
 - fix: remove fake symlink output when necessary
 - docs: add cloud support documentation
+- feat: support mounted paths (e.g. path1:path2) as input
+- refactor: remove redundant validation for workdir and outdir path types
+- feat: enforce GSPath type for 'gbatch' scheduler as pipeline outdir
+- feat: add fast_mount option to GbatchScheduler for cloud directory mounting
 
 ## 0.15.8
 
