@@ -10,8 +10,9 @@ import os
 import time
 from pathlib import Path
 
-from xqute.path import DualPath
+from xqute.path import DualPath, MountedPath, CloudPath
 from pipen import Proc
+from pipen.job import _process_input_file_or_dir
 
 from .helpers import (  # noqa: F401
     BUCKET,
@@ -415,3 +416,35 @@ def test_wrong_input_type_for_files(pipen):
         pipen.set_starts(proc).run()
 
     assert isinstance(exc_info.value.__cause__, ProcInputTypeError)
+
+
+def test_process_input_file_or_dir_error():
+    with pytest.raises(ProcInputTypeError):
+        _process_input_file_or_dir("a", "b", 1, index=1, proc_name="proc")
+
+    with pytest.raises(ProcInputTypeError, match="too many"):
+        _process_input_file_or_dir("a", "b", "v:w:x:y:z", index=1, proc_name="proc")
+
+
+@pytest.mark.parametrize(
+    "inval,expected",
+    [
+        ("/local/path", DualPath("/local/path")),
+        ("gs://bucket/path", DualPath("gs://bucket/path")),
+        ("/local/path1:/local/path2", DualPath("/local/path1", mounted="/local/path2")),
+        (
+            "gs://bucket/path1:gs://bucket/path2",
+            DualPath("gs://bucket/path1", mounted="gs://bucket/path2"),
+        ),
+        (
+            "/local/path:gs://bucket/path",
+            DualPath("/local/path", mounted="gs://bucket/path"),
+        ),
+    ],
+)
+def test_process_input_file_or_dir(inval, expected):
+    expected = expected.mounted
+    out = _process_input_file_or_dir("a", "b", inval, index=1, proc_name="proc")
+    assert out == expected
+    assert isinstance(out, MountedPath) or isinstance(out, CloudPath)
+    assert out.spec == expected.spec

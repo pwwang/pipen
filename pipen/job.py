@@ -30,6 +30,82 @@ if TYPE_CHECKING:  # pragma: no cover
     from .proc import Proc
 
 
+def _process_input_file_or_dir(
+    inkey: str,
+    intype: str,
+    inval: Any,
+    index: int | None = None,
+    proc_name: str | None = None,
+) -> CloudPath | MountedPath:
+    """Process the input value for file or dir"""
+    if (
+        inval is None
+        or not isinstance(inval, (str, PathLike, MountedPath, CloudPath, DualPath))
+    ):
+        msg = (
+            f"[{proc_name}] Got <{type(inval).__name__}> instead of "
+            f"PathLike object for input: {inkey + ':' + intype!r}"
+        )
+        if index is not None:
+            msg = f"{msg} at index {index}"
+
+        raise ProcInputTypeError(msg)
+
+    if isinstance(inval, MountedPath):
+        return inval
+
+    if isinstance(inval, DualPath):
+        return inval.mounted
+
+    if isinstance(inval, CloudPath):
+        return DualPath(inval).mounted
+
+    if not isinstance(inval, str):  # other PathLike types, should be all local
+        return DualPath(Path(inval).expanduser().absolute()).mounted
+
+    # str
+    # Let's see if it a DualPath in str format, which is path1:path2
+    # However, there is also a colon in cloud paths
+    colon_count = inval.count(":")
+    if colon_count == 0:  # a/b
+        return DualPath(Path(inval).expanduser().absolute()).mounted
+
+    if colon_count > 3:  # a:b:c:d
+        msg = (
+            f"[{proc_name}] Invalid input value: {inkey + ':' + intype!r} "
+            "(too many ':')"
+        )
+        if index is not None:
+            msg = f"{msg} at index {index}"
+
+        raise ProcInputTypeError(msg)
+
+    if colon_count == 1:  # gs://a/b or a/b:c/d
+        if isinstance(AnyPath(inval), CloudPath):  # gs://a/b
+            return DualPath(inval).mounted
+
+        path1, path2 = inval.split(":")
+
+    elif inval.count(":") == 3:  # gs://a/b:gs://c/d
+        p1, p2, path2 = inval.split(":", 2)
+        path1 = p1 + ":" + p2
+
+    else:  # gs://a/b:c/d or a/b:gs://c/d
+        p1, p2, p3 = inval.split(":", 2)
+        path1, path2 = p1 + ":" + p2, p3
+        if not isinstance(AnyPath(path1), CloudPath):
+            path1, path2 = p1, p2 + ":" + p3
+
+    path1 = AnyPath(path1)
+    path2 = AnyPath(path2)
+    if isinstance(path1, Path):
+        path1 = path1.expanduser().absolute()
+    if isinstance(path2, Path):
+        path2 = path2.expanduser().absolute()
+
+    return DualPath(path1, mounted=path2).mounted
+
+
 class Job(XquteJob, JobCaching):
     """The job for pipen"""
 
@@ -166,34 +242,14 @@ class Job(XquteJob, JobCaching):
                 continue  # pragma: no cover, covered actually
 
             if intype in (ProcInputType.FILE, ProcInputType.DIR):
-                if not isinstance(ret[inkey], (str, PathLike, CloudPath, DualPath)):
-                    raise ProcInputTypeError(
-                        f"[{self.proc.name}] Got {type(ret[inkey])} instead of "
-                        f"PathLike object for input: {inkey + ':' + intype!r}"
-                    )
-
-                if isinstance(ret[inkey], DualPath):
-                    # if it is a dualpath, it means it is a mounted path
-                    # we should use the mounted path to access the file
-                    ret[inkey] = ret[inkey].mounted
-
-                elif not isinstance(ret[inkey], MountedPath):
-                    # str, Path, CloudPath
-                    path = AnyPath(ret[inkey])
-                    if isinstance(path, Path):
-                        # Same as:
-                        # p = MountedPath(path.expanduser().absolute())
-                        # p.spec = path.expanduser().absolute()
-                        ret[inkey] = DualPath(path.expanduser().absolute()).mounted
-                    else:
-                        ret[inkey] = DualPath(path).mounted
-
-                # already a MountedPath
+                ret[inkey] = _process_input_file_or_dir(
+                    inkey, intype, ret[inkey], None, self.proc.name
+                )
 
             if intype in (ProcInputType.FILES, ProcInputType.DIRS):
-                if isinstance(ret[inkey], pandas.DataFrame):
+                if isinstance(ret[inkey], pandas.DataFrame):  # pragma: no cover
                     # // todo: nested dataframe
-                    ret[inkey] = ret[inkey].iloc[0, 0]  # pragma: no cover
+                    ret[inkey] = ret[inkey].iloc[0, 0]
 
                 if not isinstance(ret[inkey], (list, tuple)):
                     raise ProcInputTypeError(
@@ -202,27 +258,9 @@ class Job(XquteJob, JobCaching):
                     )
 
                 for i, file in enumerate(ret[inkey]):
-                    if not isinstance(file, (str, PathLike, CloudPath, DualPath)):
-                        raise ProcInputTypeError(
-                            f"[{self.proc.name}] Got {type(file)} instead of "
-                            f"PathLike object for input: {inkey + ':' + intype!r} "
-                            f"at index {i}"
-                        )
-
-                    if isinstance(file, DualPath):
-                        # if it is a dualpath, it means it is a mounted path
-                        # we should use the mounted path to access the file
-                        ret[inkey][i] = file.mounted
-
-                    elif not isinstance(file, MountedPath):
-                        # str, Path, CloudPath
-                        path = AnyPath(file)
-                        if isinstance(path, Path):
-                            ret[inkey][i] = DualPath(
-                                path.expanduser().absolute()
-                            ).mounted
-                        else:
-                            ret[inkey][i] = DualPath(path).mounted
+                    ret[inkey][i] = _process_input_file_or_dir(
+                        inkey, intype, file, i, self.proc.name
+                    )
 
         return ret
 
