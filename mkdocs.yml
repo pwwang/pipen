@@ -24,6 +24,7 @@ nav:
     - 'Input and output': 'input-output.md'
     - 'Script': 'script.md'
     - 'Caching': 'caching.md'
+    - 'Cloud support': 'cloud.md'
     - 'Error handling': 'error.md'
     - 'Configurations': 'configurations.md'
     - 'Plugins': 'plugin.md'

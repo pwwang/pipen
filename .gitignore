@@ -117,3 +117,5 @@ t.py
 nohup.out
 test.py
 gac_key.json
+examples/.pipen.toml
+docs/api/

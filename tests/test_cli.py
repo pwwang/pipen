@@ -15,16 +15,19 @@ def cmdoutput(cmd):
         return err.output
 
 
+@pytest.mark.forked
 def test_main():
     out = cmdoutput(["pipen", "--help"])
     assert "CLI Tool for pipen" in out
 
 
+@pytest.mark.forked
 def test_nosuch_command():
     out = cmdoutput(["pipen", "x"])
     assert "invalid choice" in out
 
 
+@pytest.mark.forked
 def test_help():
     out = cmdoutput(["pipen", "help", "x"])
     assert "invalid choice" in out
@@ -34,6 +37,7 @@ def test_help():
     assert "CLI Tool for pipen" in out
 
 
+@pytest.mark.forked
 def test_profile_all():
     out = cmdoutput(["pipen", "profile"])
     assert "Note:" in out
@@ -41,16 +45,19 @@ def test_profile_all():
     assert "default" in out
 
 
+@pytest.mark.forked
 def test_profile_default():
     out = cmdoutput(["pipen", "profile", "--name", "default"])
     assert "Profile: default" in out
 
 
+@pytest.mark.forked
 def test_profile_nosuch():
     out = cmdoutput(["pipen", "profile", "-n", "nosuch"])
     assert "Profile: nosuch" not in out
 
 
+@pytest.mark.forked
 def test_version():
     out = cmdoutput(["pipen", "version"])
     assert "pipen" in out

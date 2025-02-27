@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, List
 
 import pandas
-from cloudpathlib import AnyPath, CloudPath
+from yunpath import AnyPath, CloudPath
 from pandas import DataFrame
 from pipda import register_verb
 
@@ -81,7 +81,7 @@ class Channel(DataFrame):
                 return file.is_file()
             return True
 
-        pattern = AnyPath(pattern)
+        pattern: Path | CloudPath = AnyPath(pattern)
         if isinstance(pattern, CloudPath):
             parts = pattern.parts
             bucket = CloudPath("".join(parts[:2]))  # gs://bucket

@@ -1,9 +1,9 @@
 """Define hooks specifications and provide plugin manager"""
+
 from __future__ import annotations
 
 from typing import Any, Dict, TYPE_CHECKING
 
-from cloudpathlib import AnyPath
 from simplug import Simplug, SimplugResult
 from xqute import JobStatus, Scheduler
 
@@ -377,7 +377,7 @@ class PipenMainPlugin:
             if outtype == ProcOutputType.VAR:
                 continue
 
-            path = AnyPath(job.output[outkey])
+            path = job.output[outkey].spec
             output_exists = path.exists()
             if outtype == ProcOutputType.DIR:
                 output_exists = len(list(path.iterdir())) > 0
@@ -386,10 +386,7 @@ class PipenMainPlugin:
                 job.status = JobStatus.FAILED
                 job.proc.pbar.update_job_failed()
                 stderr = job.stderr_file.read_text()
-                stderr = (
-                    f"{stderr}\n\nOutput {outtype} {outkey!r} "
-                    "is not generated."
-                )
+                stderr = f"{stderr}\n\nOutput {outtype} {outkey!r} is not generated."
                 job.stderr_file.write_text(stderr)
                 break
         else:

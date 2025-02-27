@@ -1,9 +1,8 @@
-from unittest.mock import MagicMock
 from pathlib import Path
 
 import pytest
 import pipen
-from cloudpathlib import CloudPath
+from yunpath import CloudPath
 from pipen.utils import (
     brief_list,
     desc_from_docstring,
@@ -19,7 +18,6 @@ from pipen.utils import (
     _get_obj_from_spec,
     load_pipeline,
     path_is_symlink,
-    path_rmtree,
     path_symlink_to,
 )
 from pipen.proc import Proc
@@ -268,18 +266,3 @@ def test_path_is_symlink(tmp_path):
     dir = tmp_path / "dir"
     dir.mkdir()
     assert not path_is_symlink(dir)
-
-
-def test_path_rmtree_local(tmp_path):
-    dir = tmp_path / "dir"
-    dir.mkdir()
-    file = dir / "file"
-    file.touch()
-    path_rmtree(dir)
-    assert not dir.exists()
-
-
-def test_path_rmtree_cloud():
-    path = MagicMock(spec=CloudPath)
-    path.rmtree.return_value = None
-    path_rmtree(path)

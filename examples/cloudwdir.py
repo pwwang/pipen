@@ -10,12 +10,20 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 
 
 class MyProcess(Proc):
-    """A process using mako templating"""
+    """A process"""
 
     input = "a"
     input_data = [1]
     output = "outfile:file:{{in.a}}.txt"
     script = "cloudsh touch {{out.outfile}}"
+
+
+class MyProcess2(Proc):
+    """Another process"""
+    requires = MyProcess
+    input = "infile:file"
+    output = "outfile:file:{{in.infile.stem}}2.txt"
+    script = "cloudsh cat {{in.infile}} | cloudsh sink {{out.outfile}}"
 
 
 class MyCloudDirPipeline(Pipen):

@@ -1,4 +1,5 @@
 """Provide the Job class"""
+
 from __future__ import annotations
 
 import logging
@@ -8,10 +9,10 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Mapping
 
-from cloudpathlib import AnyPath
+from yunpath import AnyPath, CloudPath
 from diot import OrderedDiot
 from xqute import Job as XquteJob
-from xqute.utils import localize
+from xqute.path import DualPath, MountedPath
 
 from ._job_caching import JobCaching
 from .defaults import ProcInputType, ProcOutputType
@@ -23,26 +24,84 @@ from .exceptions import (
     TemplateRenderingError,
 )
 from .template import Template
-from .utils import logger, strsplit, path_is_symlink, path_rmtree, path_symlink_to
+from .utils import logger, strsplit, path_is_symlink, path_symlink_to
 
 if TYPE_CHECKING:  # pragma: no cover
-    from xqute.utils import PathType
     from .proc import Proc
 
 
 class Job(XquteJob, JobCaching):
     """The job for pipen"""
 
-    __slots__ = ("proc", "_output_types", "_outdir")
+    __slots__ = XquteJob.__slots__ + ("proc", "_output_types", "_outdir")
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.proc: Proc = None
         self._output_types: Dict[str, str] = {}
-        self._outdir = self.metadir / "output"
+        # Where the real output directory is
+        self._outdir: DualPath = None
+
+    async def prepare(self, proc: Proc) -> None:
+        """Prepare the job by given process
+
+        Primarily prepare the script, and provide cmd to the job for xqute
+        to wrap and run
+
+        Args:
+            proc: the process object
+        """
+        # Attach the process
+        self.proc = proc
+
+        # Where the jobs of "export" process should put their outputs
+        export_outdir = proc.pipeline.outdir / proc.name  # type: ignore
+
+        # Where the jobs of "export" process should put their outputs
+        # (in the mounted filesystem)
+        mounted_outdir = getattr(proc.xqute.scheduler, "MOUNTED_OUTDIR", None)
+        if mounted_outdir is not None:  # pragma: no cover
+            mounted_outdir = Path(mounted_outdir) / proc.name
+
+        if self.proc.export:
+            # Don't put index if it is a single-job process
+            self._outdir = DualPath(export_outdir, mounted=mounted_outdir)
+
+            # Put job output in a subdirectory with index
+            # if it is a multi-job process
+            if len(self.proc.jobs) > 1:
+                self._outdir = self._outdir / str(self.index)
+
+        else:
+            # For non-export process, the output directory is the metadir
+            self._outdir = self.metadir / "output"
+
+        if not proc.script:
+            self.cmd = []
+            return
+
+        try:
+            script = proc.script.render(self.template_data)
+        except Exception as exc:
+            raise TemplateRenderingError(
+                f"[{self.proc.name}] Failed to render script."
+            ) from exc
+
+        if self.script_file.is_file() and self.script_file.read_text() != script:
+            self.log("debug", "Job script updated.")
+            self.script_file.write_text(script)
+        elif not self.script_file.is_file():
+            self.script_file.write_text(script)
+
+        lang = proc.lang or proc.pipeline.config.lang
+        self.cmd = shlex.split(lang) + [self.script_file.mounted.fspath]
 
     @property
-    def script_file(self) -> PathType:
+    def script_file(self) -> DualPath:
         """Get the path to script file
 
         Returns:
@@ -51,29 +110,44 @@ class Job(XquteJob, JobCaching):
         return self.metadir / "job.script"
 
     @cached_property
-    def outdir(self) -> PathType:
-        """Get the path to the output directory
+    def outdir(self) -> DualPath:
+        """Get the path to the output directory.
+
+        When proc.export is True, the output directory is based on the
+        pipeline.outdir and the process name. Otherwise, it is based on
+        the metadir.
+
+        When the job is running in a detached system (a VM, typically),
+        this will return the mounted path to the output directory.
+
+        To access the real path, use self._outdir
 
         Returns:
             The path to the job output directory
         """
-        ret = self._outdir
         # if ret is a dead link
         # when switching a proc from end/nonend to nonend/end
-        if path_is_symlink(ret) and not ret.exists():
-            ret.unlink()  # pragma: no cover
+        # if path_is_symlink(self._outdir) and not self._outdir.exists():
+        if path_is_symlink(self._outdir) and (
+            # A local deak link
+            not self._outdir.exists()
+            # A cloud fake link
+            or isinstance(getattr(self._outdir, "path", self._outdir), CloudPath)
+        ):
+            self._outdir.unlink()  # pragma: no cover
 
-        ret.mkdir(parents=True, exist_ok=True)
+        self._outdir.mkdir(parents=True, exist_ok=True)
         # If it is somewhere else, make a symbolic link to the metadir
         metaout = self.metadir / "output"
-        if ret != metaout:
+        if self._outdir != metaout:
             if path_is_symlink(metaout) or metaout.is_file():
                 metaout.unlink()
             elif metaout.is_dir():
-                path_rmtree(metaout)
+                metaout.rmtree()
 
-            path_symlink_to(metaout, ret)
-        return ret
+            path_symlink_to(metaout, self._outdir)
+
+        return self._outdir
 
     @cached_property
     def input(self) -> Mapping[str, Any]:
@@ -92,16 +166,29 @@ class Job(XquteJob, JobCaching):
                 continue  # pragma: no cover, covered actually
 
             if intype in (ProcInputType.FILE, ProcInputType.DIR):
-                if not isinstance(ret[inkey], (str, PathLike)):
+                if not isinstance(ret[inkey], (str, PathLike, CloudPath, DualPath)):
                     raise ProcInputTypeError(
                         f"[{self.proc.name}] Got {type(ret[inkey])} instead of "
                         f"PathLike object for input: {inkey + ':' + intype!r}"
                     )
 
-                # we should use it as a string
-                path = AnyPath(ret[inkey])
-                if isinstance(path, Path):
-                    ret[inkey] = str(path.expanduser().absolute())
+                if isinstance(ret[inkey], DualPath):
+                    # if it is a dualpath, it means it is a mounted path
+                    # we should use the mounted path to access the file
+                    ret[inkey] = ret[inkey].mounted
+
+                elif not isinstance(ret[inkey], MountedPath):
+                    # str, Path, CloudPath
+                    path = AnyPath(ret[inkey])
+                    if isinstance(path, Path):
+                        # Same as:
+                        # p = MountedPath(path.expanduser().absolute())
+                        # p.spec = path.expanduser().absolute()
+                        ret[inkey] = DualPath(path.expanduser().absolute()).mounted
+                    else:
+                        ret[inkey] = DualPath(path).mounted
+
+                # already a MountedPath
 
             if intype in (ProcInputType.FILES, ProcInputType.DIRS):
                 if isinstance(ret[inkey], pandas.DataFrame):
@@ -115,9 +202,27 @@ class Job(XquteJob, JobCaching):
                     )
 
                 for i, file in enumerate(ret[inkey]):
-                    path = AnyPath(file)
-                    if isinstance(path, Path):
-                        ret[inkey][i] = str(path.expanduser().absolute())
+                    if not isinstance(file, (str, PathLike, CloudPath, DualPath)):
+                        raise ProcInputTypeError(
+                            f"[{self.proc.name}] Got {type(file)} instead of "
+                            f"PathLike object for input: {inkey + ':' + intype!r} "
+                            f"at index {i}"
+                        )
+
+                    if isinstance(file, DualPath):
+                        # if it is a dualpath, it means it is a mounted path
+                        # we should use the mounted path to access the file
+                        ret[inkey][i] = file.mounted
+
+                    elif not isinstance(file, MountedPath):
+                        # str, Path, CloudPath
+                        path = AnyPath(file)
+                        if isinstance(path, Path):
+                            ret[inkey][i] = DualPath(
+                                path.expanduser().absolute()
+                            ).mounted
+                        else:
+                            ret[inkey][i] = DualPath(path).mounted
 
         return ret
 
@@ -135,11 +240,11 @@ class Job(XquteJob, JobCaching):
         data = {
             "job": dict(
                 index=self.index,
-                metadir=str(self.metadir),
-                outdir=str(self.outdir),
-                stdout_file=str(self.stdout_file),
-                stderr_file=str(self.stderr_file),
-                jid_file=str(self.jid_file),
+                metadir=self.metadir.mounted,
+                outdir=self.outdir.mounted,
+                stdout_file=self.stdout_file.mounted,
+                stderr_file=self.stderr_file.mounted,
+                jid_file=self.jid_file.mounted,
             ),
             "in": self.input,
             "in_": self.input,
@@ -171,8 +276,7 @@ class Job(XquteJob, JobCaching):
                 output_name, output_type, output_value = oput.split(":", 2)
                 if output_type not in ProcOutputType.__dict__.values():
                     raise ProcOutputTypeError(
-                        f"[{self.proc.name}] "
-                        f"Unsupported output type: {output_type}"
+                        f"[{self.proc.name}] " f"Unsupported output type: {output_type}"
                     )
 
             self._output_types[output_name] = output_type
@@ -181,17 +285,19 @@ class Job(XquteJob, JobCaching):
                 ret[output_name] = output_value
             else:
                 ov = AnyPath(output_value)
-                if isinstance(ov, Path) and ov.is_absolute():
+                if isinstance(ov, CloudPath) or (
+                    isinstance(ov, Path) and ov.is_absolute()
+                ):
                     raise ProcOutputValueError(
                         f"[{self.proc.name}] "
-                        f"output path must be relative: {output_value}"
+                        f"output path must be a segment: {output_value}"
                     )
 
                 out = self.outdir / output_value
                 if output_type == ProcOutputType.DIR:
                     out.mkdir(parents=True, exist_ok=True)
 
-                ret[output_name] = str(out)
+                ret[output_name] = out.mounted
 
         return ret
 
@@ -205,11 +311,11 @@ class Job(XquteJob, JobCaching):
         return {
             "job": dict(
                 index=self.index,
-                metadir=str(self.metadir),
-                outdir=str(self.outdir),
-                stdout_file=str(self.stdout_file),
-                stderr_file=str(self.stderr_file),
-                jid_file=str(self.jid_file),
+                metadir=self.metadir.mounted,
+                outdir=self.outdir.mounted,
+                stdout_file=self.stdout_file.mounted,
+                stderr_file=self.stderr_file.mounted,
+                jid_file=self.jid_file.mounted,
             ),
             "in": self.input,
             "in_": self.input,
@@ -251,49 +357,3 @@ class Job(XquteJob, JobCaching):
         )
 
         self.proc.log(level, job_index_indicator + msg, *args, logger=logger)
-
-    async def prepare(self, proc: Proc) -> None:
-        """Prepare the job by given process
-
-        Primarily prepare the script, and provide cmd to the job for xqute
-        to wrap and run
-
-        Args:
-            proc: the process object
-        """
-        # Attach the process
-        self.proc = proc
-
-        if self.proc.export and len(self.proc.jobs) == 1:
-            # Don't put index if it is a single-job process
-            self._outdir = AnyPath(self.proc.pipeline.outdir) / self.proc.name
-
-        elif self.proc.export:
-            self._outdir = (
-                AnyPath(self.proc.pipeline.outdir)
-                / self.proc.name
-                / str(self.index)
-            )
-
-        if not proc.script:
-            self.cmd = []
-            return
-
-        template_data = self.template_data
-        try:
-            script = proc.script.render(template_data)
-        except Exception as exc:
-            raise TemplateRenderingError(
-                f"[{self.proc.name}] Failed to render script."
-            ) from exc
-        if (
-            self.script_file.is_file()
-            and self.script_file.read_text() != script
-        ):
-            self.log("debug", "Job script updated.")
-            self.script_file.write_text(script)
-        elif not self.script_file.is_file():
-            self.script_file.write_text(script)
-
-        lang = proc.lang or proc.pipeline.config.lang
-        self.cmd = shlex.split(lang) + [localize(self.script_file)]

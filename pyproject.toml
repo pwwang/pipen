@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "pipen"
-version = "0.15.8"
+version = "0.16.0a1"
 description = "A pipeline framework for python"
 authors = [ "pwwang <pwwang@pwwang.com>",]
 license = "MIT"
@@ -15,14 +15,23 @@ repository = "https://github.com/pwwang/pipen"
 [tool.poetry.build]
 generate-setup-file = true
 
+# fix ssl certificate issue on gcp head nodes
+[[tool.poetry.source]]
+name = "fpho"
+url = "https://files.pythonhosted.org"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
+
 [tool.poetry.dependencies]
 python = "^3.9"
 liquidpy = "^0.8.3"
 pandas = "^2.0"
 enlighten = "^1"
 argx = "^0.3"
-xqute = "^0.7.5"
-# xqute = { git = "https://github.com/pwwang/xqute.git" }
+xqute = "^0.8"
 ## included in xqute
 # rich = "^13"
 # diot = "^0.1"
@@ -42,13 +51,21 @@ pytest-forked = "^1.6"
 datar = { version = "^0.15", extras = ["pandas"] }
 flake8 = "^7.1.2"
 python-dotenv = "^1"
-cloudsh = {version = "^0.0.5", extras = ["gs"]}
+cloudsh = {version = "^0.1", extras = ["gs"]}
 
 # dependencies for pipelines in ./examples
 [tool.poetry.group.example.dependencies]
 mako = "^1.3"
 python-dotenv = "^1"
-cloudsh = {version = "^0.0.5", extras = ["gs"]}
+cloudsh = {version = "^0.1", extras = ["gs"]}
+
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.6.1"
+jinja2 = "^3.1.5"
+mkdocs-material = "^9.6.5"
+pymdown-extensions = "^10.14.3"
+mkapi-fix = "^0.1.1"
 
 [tool.poetry.scripts]
 pipen = "pipen.cli:main"

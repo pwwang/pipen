@@ -128,8 +128,17 @@ class FileInputProc(Proc):
     """Process with file input"""
 
     input = "in:file"
-    output = "out:file:{{in.in.split('/')[-1]}}"
+    output = "out:file:{{in.in.name}}"
     script = "cat {{in.in}} > {{out.out}}"
+
+
+class FileInputProcToDiff(Proc):
+    """Process with file input to different output"""
+
+    input = "in:file"
+    output = "out:var:output"
+    # script does not rely on input or output
+    script = "echo output"
 
 
 class OutputNotGeneratedProc(Proc):
@@ -144,8 +153,8 @@ class FileInputsProc(Proc):
     """Process with files input"""
 
     input = "in:files"
-    output = "out:file:{{in.in[0].split('/')[-1]}}"
-    script = "echo {{in.in}} > {{out.out}}"
+    output = "out:file:{{in.in[0].name}}"
+    script = "echo {{in.in[0].name}} > {{out.out}}"
 
 
 class MixedInputProc(Proc):

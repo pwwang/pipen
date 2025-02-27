@@ -26,6 +26,9 @@ jobs:
           poetry install -v --with dev
       - name: Run flake8
         run: flake8 pipen
+      - uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
       - name: Test with pytest
         run: pytest tests/ --junitxml=junit/test-results-${{ matrix.python-version }}.xml
       - name: Upload pytest test results

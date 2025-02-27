@@ -1,5 +1,21 @@
 # Change Log
 
+## 0.16.0
+
+- ci: update build workflow conditions and improve dependency versions
+- feat: support gbatch scheduler and cloud workdir/outdir
+- refactor: replace cloudpathlib with yunpath and update related code
+- refactor: adopt xqute 0.8.0
+- chore: add more processes in examples/gbatch.py
+- fix: make sure spec is carried for cloud output files so mtime can be check for next processes
+- chore(deps): use xqute 0.8.0a1
+- ci: add Google authentication step to CI workflow
+- fix: fix specified path not carries to the next processes
+- fix: handle missing MOUNTED_OUTDIR gracefully and remove unused test
+- test: add fixture for unique ID and update cloud test to support parallel execution
+- fix: remove fake symlink output when necessary
+- docs: add cloud support documentation
+
 ## 0.15.8
 
 - chore(deps): update package versions for executing, and xqute

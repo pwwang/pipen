@@ -60,7 +60,7 @@ def test_proc_with_symlink_input(pipen, tmp_path):
     proc = Proc.from_proc(FileInputProc, input_data=[infile_symlink])
     pipen.set_starts(proc).run()
     outfile = proc.output_data["out"].iloc[0]
-    assert outfile.endswith("b.txt")
+    assert outfile.name == "b.txt"
 
 
 @pytest.mark.forked
@@ -113,6 +113,21 @@ def test_script_file_exists(pipen):
         pipen.set_starts(ScriptNotExistsProc).run()
 
 
+@pytest.mark.forked
+def test_cached_run(caplog, pipen):
+    NormalProc.nexts = []
+    # force uncache NormalProc
+    # shutil.rmtree(pipen.config.workdir)
+    ret = pipen.set_start(NormalProc).run()
+    assert ret
+
+    # trigger caching
+    ret = pipen.set_start(NormalProc).run()
+    assert ret
+
+    assert caplog.text.count("Cached jobs:") == 1
+
+
 def test_proc_repr():
     assert repr(SimpleProc) == "<Proc:SimpleProc>"
 
@@ -149,20 +164,6 @@ def test_from_proc():
     assert proc.error_strategy == "retry"
     assert proc.num_retries == 10
     assert proc.submission_batch == 3
-
-
-def test_cached_run(caplog, pipen):
-    NormalProc.nexts = []
-    # force uncache NormalProc
-    # shutil.rmtree(pipen.config.workdir)
-    ret = pipen.set_start(NormalProc).run()
-    assert ret
-
-    # trigger caching
-    ret = pipen.set_start(NormalProc).run()
-    assert ret
-
-    assert caplog.text.count("Cached jobs:") == 1
 
 
 def test_proc_is_singleton(pipen):

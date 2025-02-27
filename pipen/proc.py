@@ -23,7 +23,7 @@ from diot import Diot
 from rich import box
 from rich.panel import Panel
 from varname import VarnameException, varname
-from cloudpathlib import AnyPath
+from yunpath import AnyPath
 from xqute import JobStatus, Xqute
 
 from .defaults import ProcInputType
@@ -55,6 +55,7 @@ from .utils import (
 
 if TYPE_CHECKING:  # pragma: no cover
     from .pipen import Pipen
+    from .scheduler import Scheduler
 
 
 class ProcMeta(ABCMeta):
@@ -334,7 +335,9 @@ class Proc(ABC, metaclass=ProcMeta):
         self.pbar = None
         self.jobs: List[Any] = []
         self.xqute = None
-        self.__class__.workdir = AnyPath(self.pipeline.workdir) / self.name
+        self.__class__.workdir = (
+            AnyPath(self.pipeline.workdir) / self.name  # type: ignore
+        )
         # plugins can modify some default attributes
         plugin.hooks.on_proc_create(self)
 
@@ -367,7 +370,7 @@ class Proc(ABC, metaclass=ProcMeta):
         self.output = self._compute_output()
         plugin.hooks.on_proc_input_computed(self)
         # scheduler
-        self.scheduler = get_scheduler(  # type: ignore
+        self.scheduler: Type[Scheduler] = get_scheduler(  # type: ignore
             self.scheduler or self.pipeline.config.scheduler
         )
         # script
@@ -383,6 +386,7 @@ class Proc(ABC, metaclass=ProcMeta):
 
         scheduler_opts = copy_dict(self.pipeline.config.scheduler_opts, 2) or {}
         scheduler_opts.update(self.scheduler_opts or {})
+
         self.xqute = Xqute(
             self.scheduler,
             workdir=self.workdir,
@@ -397,6 +401,7 @@ class Proc(ABC, metaclass=ProcMeta):
             jobname_prefix=self.name,
             scheduler_opts=scheduler_opts,
         )
+        self.xqute.scheduler.post_init(self)
         # for the plugin hooks to access
         self.xqute.proc = self
 
@@ -533,7 +538,6 @@ class Proc(ABC, metaclass=ProcMeta):
         Args:
             config: The pipeline configuration
         """
-
         for i in range(self.input.data.shape[0]):
             job = self.xqute.scheduler.create_job(i, "")
             self.jobs.append(job)

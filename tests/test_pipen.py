@@ -1,4 +1,6 @@
 import pytest
+from uuid import uuid4
+from yunpath import AnyPath
 from pipen import Proc, Pipen, run
 from pipen.exceptions import (
     ProcDependencyError,
@@ -16,6 +18,11 @@ from .helpers import (  # noqa: F401
     pipen_with_plugin,
     BUCKET,
 )
+
+
+@pytest.fixture
+def uid():
+    return uuid4()
 
 
 @pytest.mark.forked
@@ -223,6 +230,7 @@ def test_run2():
     assert run("MyPipe", RProc1)
 
 
+@pytest.mark.forked
 def test_only_one_workdir_outdir_is_cloud(tmp_path):
     class Proc1(Proc):
         input = "a"
@@ -240,20 +248,28 @@ def test_only_one_workdir_outdir_is_cloud(tmp_path):
 
 
 @pytest.mark.forked
-def test_cloud_workdir_outdir():
+def test_cloud_workdir_outdir(uid):
     class RProc1(Proc):
         input = "a"
-        output = "b:var:{{in.a}}"
+        input_data = [1]
+        output = "b:file:{{in.a}}.txt"
+        script = "cloudsh touch {{out.b}}"
 
     class RProc2(Proc):
         requires = RProc1
-        input = "b"
-        output = "c:file:{{in.b}}"
-        script = "cloudsh touch {{out.c}}"
+        input = "b:file"
+        output = "c:file:{{in.b.stem}}2.txt"
+        script = "echo 123 | cloudsh sink {{out.c}}"
+
+    # make sure multiple tests can run in parallel
+    # e.g. for python3.9, python3.10, etc.
+    cloud_dir = AnyPath(f"{BUCKET}/pipen-test/test-pipeline/{uid}")
 
     assert run(
         "MyCloudPipe",
         RProc1,
-        workdir=f"{BUCKET}/pipen-test/test-pipeline/workdir",
-        outdir=f"{BUCKET}/pipen-test/test-pipeline/outdir",
+        workdir=f"{cloud_dir}/workdir",
+        outdir=f"{cloud_dir}/outdir",
     )
+
+    cloud_dir.rmtree()

@@ -10,11 +10,14 @@ import os
 import time
 from pathlib import Path
 
+from xqute.path import DualPath
 from pipen import Proc
 
 from .helpers import (  # noqa: F401
+    BUCKET,
     ErrorProc,
     FileInputProc,
+    FileInputProcToDiff,
     FileInputsProc,
     MixedInputProc,
     DirOutputProc,
@@ -33,7 +36,7 @@ from .helpers import (  # noqa: F401
 )
 
 
-# @pytest.mark.forked
+@pytest.mark.forked
 def test_caching(caplog, pipen, infile):
     proc = Proc.from_proc(FileInputProc, input_data=[infile])
     pipen.set_starts(proc).run()
@@ -114,20 +117,84 @@ def test_clear_outdir(pipen):
 
 
 @pytest.mark.forked
-def test_check_cached_input_or_output_different(
-    caplog, pipen, infile1, infile2
-):
+def test_check_cached_input_or_output_different(caplog, pipen, infile1, infile2):
 
-    proc_io_diff1 = Proc.from_proc(FileInputProc, input_data=[infile1])
+    proc_io_diff1 = Proc.from_proc(FileInputProcToDiff, input_data=[infile1])
     proc_io_diff2 = Proc.from_proc(
-        FileInputProc, name="proc_io_diff1", input_data=[infile2]
+        FileInputProcToDiff, name="proc_io_diff1", input_data=[infile2]
     )
     pipen.set_starts(proc_io_diff1).run()
 
     caplog.clear()
     pipen.set_starts(proc_io_diff2).run()
     pipen.build_proc_relationships()  # not redoing it.
-    assert "Not cached (input or output is different)" in caplog.text
+    assert "Not cached (input in:file is different)" in caplog.text
+
+
+@pytest.mark.forked
+def test_check_cached_input_or_output_types_different(caplog, pipen, infile1):
+    class FileInputProcToDiff2(FileInputProcToDiff):
+        input = "in:var"
+
+    proc_io_diff1 = Proc.from_proc(FileInputProcToDiff, input_data=[str(infile1)])
+    proc_io_diff2 = Proc.from_proc(
+        FileInputProcToDiff2, name="proc_io_diff1", input_data=[str(infile1)]
+    )
+    pipen.set_starts(proc_io_diff1).run()
+
+    caplog.clear()
+    pipen.set_starts(proc_io_diff2).run()
+    pipen.build_proc_relationships()
+    assert "Not cached (input or output types are different)" in caplog.text
+
+
+@pytest.mark.forked
+def test_check_cached_input_variable_different(caplog, pipen):
+    class FileInputProcToDiff2(FileInputProcToDiff):
+        input = "in:var"
+
+    proc_io_diff1 = Proc.from_proc(FileInputProcToDiff2, input_data=["x"])
+    proc_io_diff2 = Proc.from_proc(
+        FileInputProcToDiff2, name="proc_io_diff1", input_data=["y"]
+    )
+    pipen.set_starts(proc_io_diff1).run()
+
+    caplog.clear()
+    pipen.set_starts(proc_io_diff2).run()
+    pipen.build_proc_relationships()
+    assert "Not cached (input in:var is different)" in caplog.text
+
+
+@pytest.mark.forked
+def test_check_cached_input_either_none(caplog, pipen, infile1):
+    proc_io_diff1 = Proc.from_proc(FileInputProcToDiff, input_data=[None])
+    proc_io_diff2 = Proc.from_proc(
+        FileInputProcToDiff, name="proc_io_diff1", input_data=[infile1]
+    )
+    pipen.set_starts(proc_io_diff1).run()
+
+    caplog.clear()
+    pipen.set_starts(proc_io_diff2).run()
+    pipen.build_proc_relationships()
+    assert (
+        "Not cached (input in:file is different; "
+        "it is <NoneType> in signature, but <MountedPath> in data)" in caplog.text
+    )
+
+
+@pytest.mark.forked
+def test_script_changed(caplog, pipen):
+    pipen.set_starts(NormalProc).run()
+
+    class NormalProc2(NormalProc):
+        script = "echo something changed"
+
+    caplog.clear()
+
+    proc = Proc.from_proc(NormalProc2, name="NormalProc")
+    pipen.set_starts(proc).run()
+    pipen.build_proc_relationships()
+    assert "Job script updated." in caplog.text
 
 
 @pytest.mark.forked
@@ -190,9 +257,7 @@ def test_check_cached_force_cache(caplog, pipen, infile):
 
 @pytest.mark.forked
 def test_check_cached_infile_newer(caplog, pipen, infile):
-    proc_infile_newer = Proc.from_proc(
-        MixedInputProc, input_data=[(1, infile)]
-    )
+    proc_infile_newer = Proc.from_proc(MixedInputProc, input_data=[(1, infile)])
     pipen.set_starts(proc_infile_newer).run()
 
     caplog.clear()
@@ -203,9 +268,7 @@ def test_check_cached_infile_newer(caplog, pipen, infile):
 
 @pytest.mark.forked
 def test_check_cached_infiles_newer(caplog, pipen, infile):
-    proc_infile_newer = Proc.from_proc(
-        FileInputsProc, input_data=[[infile, infile]]
-    )
+    proc_infile_newer = Proc.from_proc(FileInputsProc, input_data=[[infile, infile]])
     pipen.set_starts(proc_infile_newer).run()
 
     caplog.clear()
@@ -213,7 +276,7 @@ def test_check_cached_infiles_newer(caplog, pipen, infile):
     # wait for 1 second to make sure the new mtime is different
     time.sleep(1)
     pipen.set_starts(proc_infile_newer).run()
-    assert "Not cached (One of the input files is newer:" in caplog.text
+    assert "Not cached (input in:files at index 0 is newer)" in caplog.text
 
 
 @pytest.mark.forked
@@ -225,7 +288,7 @@ def test_check_cached_outfile_removed(caplog, pipen, infile):
     out_file = proc_outfile_removed.workdir / "0" / "output" / "infile"
     out_file.unlink()
     pipen.set_starts(proc_outfile_removed).run()
-    assert "Not cached (Output file removed:" in caplog.text
+    assert "Not cached (output out:file was removed)" in caplog.text
 
 
 @pytest.mark.forked
@@ -295,14 +358,60 @@ def test_job_log_limit(caplog, pipen):
 
 
 @pytest.mark.forked
+def test_dualpath_input(pipen, infile1, tmp_path):
+    mounted_file = tmp_path / "infile"
+    mounted_file.write_text("infile content")
+    infile = DualPath(infile1, mounted=mounted_file)
+    proc = Proc.from_proc(FileInputProc, input_data=[infile])
+    pipen.set_starts(proc).run()
+    assert pipen.outdir.joinpath("proc", "infile").read_text() == "infile content"
+
+
+@pytest.mark.forked
+def test_dualpath_input_files(pipen, infile1):
+    infile = DualPath(infile1, mounted=infile1)
+    proc = Proc.from_proc(FileInputsProc, input_data=[[infile, infile]])
+    pipen.set_starts(proc).run()
+    assert pipen.outdir.joinpath("proc", "infile1").read_text().strip() == "infile1"
+
+
+@pytest.mark.forked
+def test_input_files_wrong_data_type(pipen):
+    proc = Proc.from_proc(FileInputsProc, input_data=[[1]])
+    with pytest.raises(TemplateRenderingError) as exc_info:
+        pipen.set_starts(proc).run()
+
+    assert isinstance(exc_info.value.__cause__, ProcInputTypeError)
+
+
+@pytest.mark.forked
+def test_cloudpath_input(pipen):
+    proc = Proc.from_proc(FileInputProc, input_data=["gs://test-bucket/test.txt"])
+    assert pipen.set_starts(proc).run() is False
+
+
+@pytest.mark.forked
+def test_cloudpath_input_files(pipen):
+    proc = Proc.from_proc(
+        FileInputsProc, input_data=[[f"{BUCKET}/pipen-test/channel/test1.txt"]]
+    )
+    pipen.set_starts(proc).run()
+    assert pipen.outdir.joinpath("proc", "test1.txt").read_text().strip() == "test1.txt"
+
+
+@pytest.mark.forked
 def test_wrong_input_type(pipen):
     proc = Proc.from_proc(MixedInputProc, input_data=[(1, 1)])
-    with pytest.raises(ProcInputTypeError):
+    with pytest.raises(TemplateRenderingError) as exc_info:
         pipen.set_starts(proc).run()
+
+    assert isinstance(exc_info.value.__cause__, ProcInputTypeError)
 
 
 @pytest.mark.forked
 def test_wrong_input_type_for_files(pipen):
     proc = Proc.from_proc(FileInputsProc, input_data=[1])
-    with pytest.raises(ProcInputTypeError):
+    with pytest.raises(TemplateRenderingError) as exc_info:
         pipen.set_starts(proc).run()
+
+    assert isinstance(exc_info.value.__cause__, ProcInputTypeError)

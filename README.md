@@ -17,6 +17,7 @@ ______________________________________________________________________
 - Nearly zero-configuration
 - Nice logging
 - Highly extendable
+- Cloud support naively
 
 ## Installation
 
@@ -65,7 +66,7 @@ if __name__ == "__main__":
 06-09 23:15:29 I core                  _  ____/__/ /  _  ____/_  /___  _  /|  /
 06-09 23:15:29 I core                  /_/     /___/  /_/     /_____/  /_/ |_/
 06-09 23:15:29 I core
-06-09 23:15:29 I core                              version: 0.15.3
+06-09 23:15:29 I core                              version: 0.16.0
 06-09 23:15:29 I core
 06-09 23:15:29 I core    ╔══════════════════════════════════════════════════════════════════╗
 06-09 23:15:29 I core    ║                            MYPIPELINE                            ║

@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from os import PathLike
 from pathlib import Path
-from typing import Any, ClassVar, Iterable, List, Sequence, Type
+from typing import TYPE_CHECKING, Any, ClassVar, Iterable, List, Sequence, Type
 
 from diot import Diot
 from rich import box
@@ -13,8 +13,7 @@ from rich.panel import Panel
 from rich.text import Text
 from simpleconf import ProfileConfig
 from varname import varname, VarnameException
-from cloudpathlib import AnyPath, CloudPath
-from xqute.utils import PathType
+from yunpath import AnyPath, CloudPath
 
 from .defaults import CONFIG, CONFIG_FILES
 from .exceptions import (
@@ -34,6 +33,9 @@ from .utils import (
     logger,
     pipen_banner,
 )
+
+if TYPE_CHECKING:
+    from xqute.path import PathType
 
 
 class Pipen:
@@ -104,7 +106,7 @@ class Pipen:
         self.desc = (
             desc or self.__class__.desc or desc_from_docstring(self.__class__, Pipen)
         )
-        self.outdir: PathType = AnyPath(
+        self.outdir: PathType = AnyPath(  # type: ignore
             outdir or self.__class__.outdir or f"./{self.name}-output"
         )
         if isinstance(self.outdir, Path):
@@ -175,7 +177,7 @@ class Pipen:
             True if the pipeline ends successfully else False
         """
         self.profile = profile
-        self.workdir = AnyPath(str(self.config.workdir)) / self.name
+        self.workdir = AnyPath(str(self.config.workdir)) / self.name  # type: ignore
         # self.workdir.mkdir(parents=True, exist_ok=True)
 
         succeeded = True
