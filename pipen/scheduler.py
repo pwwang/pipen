@@ -60,8 +60,35 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):
     MOUNTED_METADIR: str = "/mnt/pipen-pipeline/workdir"
     MOUNTED_OUTDIR: str = "/mnt/pipen-pipeline/outdir"
 
-    def __init__(self, *args, project, location, **kwargs):
+    # fast mount is used to add a volume taskGroups[0].taskSpec.volumes
+    # to mount additional cloud directory to the VM
+    # For example: fast_mount="gs://bucket/path:/mnt/path"
+    # will add a volume: {
+    #   "gcs": {"remotePath": "bucket/path"},
+    #   "mountPath": "/mnt/path"
+    # }
+    def __init__(self, *args, project, location, fast_mount: str = None, **kwargs):
         super().__init__(*args, project=project, location=location, **kwargs)
+        if not fast_mount:
+            return
+
+        if fast_mount.count(":") != 2:
+            raise ValueError(
+                "'fast_mount' should be in the format of 'gs://bucket/path:/mnt/path'"
+            )
+
+        if not fast_mount.startswith("gs://"):
+            raise ValueError("'fast_mount' should be a Google Cloud Storage path")
+
+        remote_path, mount_path = fast_mount[5:].split(":", 1)
+        self.config.taskGroups[0].taskSpec.volumes.append(
+            Diot(
+                {
+                    "gcs": {"remotePath": remote_path},
+                    "mountPath": mount_path,
+                }
+            )
+        )
 
     def post_init(self, proc: Proc):
         super().post_init(proc)
@@ -82,9 +109,7 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):
         self.config.taskGroups[0].taskSpec.volumes.append(
             Diot(
                 {
-                    "gcs": {
-                        "remotePath": proc.pipeline.outdir._no_prefix,  # type: ignore
-                    },
+                    "gcs": {"remotePath": proc.pipeline.outdir._no_prefix},
                     "mountPath": self.MOUNTED_OUTDIR,
                 }
             )

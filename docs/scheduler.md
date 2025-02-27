@@ -40,6 +40,8 @@ The `scheduler_opts` will be used to construct the job configuration (json) file
 By default, `taskGroups[0].taskSpec.runnables[0].script.text` is set to run the job script, and `taskGroups[0].taskSpec.volumes[0]` and `taskGroups[0].taskSpec.volumes[1]` will be set to mount the workdir and output directory to the VM.
 The `scheduler_opts` will be used to set the other fields in the job configuration file.
 
+`gbatch` scheduler also supports a `fast_mount` option to speed up the mounting a cloud directory to the VM. For example, `scheduler_opts={"fast_mount": "gs://bucket/path:/mnt/dir"}` will mount `gs://bucket/path` to `/mnt/dir` on the VM.
+
 ## Writing your own scheduler plugin
 
 To write a scheduler plugin, you need to subclass both `xqute.schedulers.scheduler.Scheduler` and `pipen.scheduler.SchedulerPostInit`.

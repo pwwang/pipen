@@ -49,6 +49,42 @@ def test_get_scheduler():
         get_scheduler("nosuchscheduler")
 
 
+def test_gbatch_scheduler_init():
+    gbatch_sched = get_scheduler("gbatch")
+
+    with pytest.raises(ValueError, match="'fast_mount' should be in the format"):
+        gbatch_sched(
+            project="test_project",
+            location="test_location",
+            workdir="gs://test-bucket/workdir",
+            fast_mount="test",
+        )
+
+    with pytest.raises(
+        ValueError, match="'fast_mount' should be a Google Cloud Storage"
+    ):
+        gbatch_sched(
+            project="test_project",
+            location="test_location",
+            workdir="gs://test-bucket/workdir",
+            fast_mount="file:///tmp/test:/mnt/test",
+        )
+
+    gbatch = gbatch_sched(
+        project="test_project",
+        location="test_location",
+        workdir="gs://test-bucket/workdir",
+        fast_mount="gs://test-bucket/path:/mnt/path",
+    )
+    assert gbatch.project == "test_project"
+    assert gbatch.location == "test_location"
+    assert gbatch.config.taskGroups[0].taskSpec.volumes[-1].mountPath == "/mnt/path"
+    assert (
+        gbatch.config.taskGroups[0].taskSpec.volumes[-1].gcs.remotePath
+        == "test-bucket/path"
+    )
+
+
 def test_gbatch_scheduler_post_init_non_gs_outdir():
     gbatch = get_scheduler("gbatch")(
         project="test_project",
