@@ -5,6 +5,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Type
 
 from diot import Diot
+
+# Use cloudpathlib.GSPath instead of yunpath.GSPath,
+# the latter is a subclass of the former.
+# (_GSPath is cloudpathlib.GSPath)
+from yunpath.patch import _GSPath
 from xqute import Scheduler
 from xqute.schedulers.local_scheduler import LocalScheduler as XquteLocalScheduler
 from xqute.schedulers.sge_scheduler import SgeScheduler as XquteSgeScheduler
@@ -30,8 +35,7 @@ class SchedulerPostInit:
     MOUNTED_METADIR: str
     MOUNTED_OUTDIR: str
 
-    def post_init(self, proc: Proc) -> None:
-        ...
+    def post_init(self, proc: Proc) -> None: ...  # noqa: E704
 
 
 class LocalScheduler(SchedulerPostInit, XquteLocalScheduler):
@@ -56,8 +60,17 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):
     MOUNTED_METADIR: str = "/mnt/pipen-pipeline/workdir"
     MOUNTED_OUTDIR: str = "/mnt/pipen-pipeline/outdir"
 
+    def __init__(self, *args, project, location, **kwargs):
+        super().__init__(*args, project=project, location=location, **kwargs)
+
     def post_init(self, proc: Proc):
         super().post_init(proc)
+
+        # Check if pipeline outdir is a GSPath
+        if not isinstance(proc.pipeline.outdir, _GSPath):
+            raise ValueError(
+                "'gbatch' scheduler requires google cloud storage 'outdir'."
+            )
 
         mounted_workdir = f"{self.MOUNTED_METADIR}/{proc.name}"
         self.workdir: DualPath = DualPath(self.workdir.path, mounted=mounted_workdir)

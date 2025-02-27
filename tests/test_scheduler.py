@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock
 
-
+from yunpath import AnyPath
 from pipen.scheduler import (
     get_scheduler,
     LocalScheduler,
@@ -49,13 +49,26 @@ def test_get_scheduler():
         get_scheduler("nosuchscheduler")
 
 
+def test_gbatch_scheduler_post_init_non_gs_outdir():
+    gbatch = get_scheduler("gbatch")(
+        project="test_project",
+        location="test_location",
+        workdir="gs://test-bucket/workdir",
+    )
+    pipeline = MagicMock(outdir="/local/outdir")
+    proc = MagicMock(pipeline=pipeline)
+    proc.name = "test_proc"
+    with pytest.raises(ValueError):
+        gbatch.post_init(proc)
+
+
 def test_gbatch_scheduler_post_init():
     gbatch = get_scheduler("gbatch")(
         project="test_project",
         location="test_location",
         workdir="gs://test-bucket/workdir",
     )
-    pipeline_outdir = MagicMock(_no_prefix="a/b/c")
+    pipeline_outdir = AnyPath("gs://test-bucket/outdir")
     pipeline = MagicMock(outdir=pipeline_outdir)
     proc = MagicMock(pipeline=pipeline)
     proc.name = "test_proc"
@@ -71,7 +84,7 @@ def test_gbatch_scheduler_post_init():
     )
     assert (
         gbatch.config.taskGroups[0].taskSpec.volumes[-1].gcs.remotePath
-        == "a/b/c"
+        == "test-bucket/outdir"
     )
     assert (
         gbatch.config.taskGroups[0].taskSpec.volumes[-2].mountPath
