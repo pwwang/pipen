@@ -96,8 +96,8 @@ def _process_input_file_or_dir(
         if not isinstance(AnyPath(path1), CloudPath):
             path1, path2 = p1, p2 + ":" + p3
 
-    path1 = AnyPath(path1)
-    path2 = AnyPath(path2)
+    path1 = AnyPath(path1)  # type: ignore
+    path2 = AnyPath(path2)  # type: ignore
     if isinstance(path1, Path):
         path1 = path1.expanduser().absolute()
     if isinstance(path2, Path):
