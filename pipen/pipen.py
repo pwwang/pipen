@@ -378,7 +378,7 @@ class Pipen:
         self.config.update(self._kwargs)
 
         if "workdir" in self._kwargs:
-            self.workdir = AnyPath(self._kwargs["workdir"])
+            self.workdir = AnyPath(self._kwargs["workdir"]) / self.name
 
         self.workdir.mkdir(parents=True, exist_ok=True)
 
