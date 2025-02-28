@@ -19,6 +19,7 @@
 - refactor: remove redundant validation for workdir and outdir path types
 - feat: enforce GSPath type for 'gbatch' scheduler as pipeline outdir
 - feat: add fast_mount option to GbatchScheduler for cloud directory mounting
+- fix: update workdir path to include pipeline name in Pipen class
 
 ## 0.15.8
 
