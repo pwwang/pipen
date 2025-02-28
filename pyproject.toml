@@ -36,7 +36,7 @@ xqute = "^0.8"
 # rich = "^13"
 # diot = "^0.1"
 # simplug = "^0.0"
-python-simpleconf = {version = "^0.6.2", extras = ["toml"]}
+python-simpleconf = {version = "^0.7", extras = ["toml"]}
 pipda = "^0.13"
 varname = "^0.14"
 
