@@ -8,7 +8,6 @@
 - refactor: adopt xqute 0.8.0
 - chore: add more processes in examples/gbatch.py
 - fix: make sure spec is carried for cloud output files so mtime can be check for next processes
-- chore(deps): use xqute 0.8.0a1
 - ci: add Google authentication step to CI workflow
 - fix: fix specified path not carries to the next processes
 - fix: handle missing MOUNTED_OUTDIR gracefully and remove unused test
@@ -20,6 +19,7 @@
 - feat: enforce GSPath type for 'gbatch' scheduler as pipeline outdir
 - feat: add fast_mount option to GbatchScheduler for cloud directory mounting
 - fix: update workdir path to include pipeline name in Pipen class
+- chore(deps): bump python-simpleconf to v0.7
 
 ## 0.15.8
 
