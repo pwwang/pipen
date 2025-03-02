@@ -173,7 +173,7 @@ class Job(XquteJob, JobCaching):
             self._outdir = self.metadir / "output"
 
         if not proc.script:
-            self.cmd = []
+            self.cmd = ["true"]
             return
 
         try:
