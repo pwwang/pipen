@@ -21,6 +21,7 @@
 - fix: update workdir path to include pipeline name in Pipen class
 - chore(deps): bump python-simpleconf to v0.7
 - feat: support DualPath output directory in Job class and ensure mounted directory creation
+- fix: initialize cmd with a default value to prevent errors when no script is provided
 
 ## 0.15.8
 
