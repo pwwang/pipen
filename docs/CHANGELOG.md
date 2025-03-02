@@ -20,6 +20,7 @@
 - feat: add fast_mount option to GbatchScheduler for cloud directory mounting
 - fix: update workdir path to include pipeline name in Pipen class
 - chore(deps): bump python-simpleconf to v0.7
+- feat: support DualPath output directory in Job class and ensure mounted directory creation
 
 ## 0.15.8
 
