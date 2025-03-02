@@ -136,12 +136,26 @@ class Job(XquteJob, JobCaching):
 
         # Where the jobs of "export" process should put their outputs
         export_outdir = proc.pipeline.outdir / proc.name  # type: ignore
-
         # Where the jobs of "export" process should put their outputs
         # (in the mounted filesystem)
         mounted_outdir = getattr(proc.xqute.scheduler, "MOUNTED_OUTDIR", None)
         if mounted_outdir is not None:  # pragma: no cover
+            if (
+                isinstance(proc.pipeline.outdir, DualPath)
+                and proc.pipeline.outdir.mounted != proc.pipeline.outdir.path
+            ):
+                raise ValueError(
+                    "The pipeline outdir is a DualPath, "
+                    "but the MOUNTED_OUTDIR is provided by the scheduler "
+                    f"<{proc.xqute.scheduler.__class__.__name__}>. "
+                )
+
             mounted_outdir = Path(mounted_outdir) / proc.name
+
+        elif isinstance(proc.pipeline.outdir, DualPath):  # pragma: no cover
+            # In the case it is modified by a plugin
+            # A dual path can not be specified as outdir of a pipeline
+            mounted_outdir = proc.pipeline.outdir.mounted / proc.name
 
         if self.proc.export:
             # Don't put index if it is a single-job process
@@ -151,6 +165,8 @@ class Job(XquteJob, JobCaching):
             # if it is a multi-job process
             if len(self.proc.jobs) > 1:
                 self._outdir = self._outdir / str(self.index)
+
+            self._outdir.mounted.mkdir(parents=True, exist_ok=True)
 
         else:
             # For non-export process, the output directory is the metadir

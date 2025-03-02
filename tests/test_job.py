@@ -1,10 +1,3 @@
-from pipen.exceptions import (
-    ProcInputTypeError,
-    ProcOutputNameError,
-    ProcOutputTypeError,
-    ProcOutputValueError,
-    TemplateRenderingError,
-)
 import pytest
 import os
 import time
@@ -13,6 +6,13 @@ from pathlib import Path
 from xqute.path import DualPath, MountedPath, CloudPath
 from pipen import Proc
 from pipen.job import _process_input_file_or_dir
+from pipen.exceptions import (
+    ProcInputTypeError,
+    ProcOutputNameError,
+    ProcOutputTypeError,
+    ProcOutputValueError,
+    TemplateRenderingError,
+)
 
 from .helpers import (  # noqa: F401
     BUCKET,
