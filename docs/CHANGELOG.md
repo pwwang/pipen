@@ -25,6 +25,7 @@
 - chore(deps): bump xqute to 0.8.1
 - fix: only create mounted output directory when no MOUNTED_OUTDIR with scheduler
 - fix: update mountPath index for taskSpec volumes in GbatchScheduler
+- feat: support fast_mount to be a list for gbatch scheduler
 
 ## 0.15.8
 
