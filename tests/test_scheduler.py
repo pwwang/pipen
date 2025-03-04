@@ -52,7 +52,9 @@ def test_get_scheduler():
 def test_gbatch_scheduler_init():
     gbatch_sched = get_scheduler("gbatch")
 
-    with pytest.raises(ValueError, match="'fast_mount' should be in the format"):
+    with pytest.raises(
+        ValueError, match="'fast_mount' for gbatch scheduler should be in the format"
+    ):
         gbatch_sched(
             project="test_project",
             location="test_location",
@@ -61,7 +63,8 @@ def test_gbatch_scheduler_init():
         )
 
     with pytest.raises(
-        ValueError, match="'fast_mount' should be a Google Cloud Storage"
+        ValueError,
+        match="'fast_mount' for gbatch scheduler should be a Google Cloud Storage",
     ):
         gbatch_sched(
             project="test_project",

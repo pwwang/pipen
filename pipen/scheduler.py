@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING, Sequence, Type
 
 from diot import Diot
 
@@ -67,28 +67,43 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):
     #   "gcs": {"remotePath": "bucket/path"},
     #   "mountPath": "/mnt/path"
     # }
-    def __init__(self, *args, project, location, fast_mount: str = None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        project,
+        location,
+        fast_mount: str | Sequence[str] = None,
+        **kwargs,
+    ):
         super().__init__(*args, project=project, location=location, **kwargs)
         if not fast_mount:
             return
 
-        if fast_mount.count(":") != 2:
-            raise ValueError(
-                "'fast_mount' should be in the format of 'gs://bucket/path:/mnt/path'"
-            )
+        if isinstance(fast_mount, str):
+            fast_mount = [fast_mount]
 
-        if not fast_mount.startswith("gs://"):
-            raise ValueError("'fast_mount' should be a Google Cloud Storage path")
+        for fm in fast_mount:
+            if fm.count(":") != 2:
+                raise ValueError(
+                    "'fast_mount' for gbatch scheduler should be in the format of "
+                    "'gs://bucket/path:/mnt/path'"
+                )
 
-        remote_path, mount_path = fast_mount[5:].split(":", 1)
-        self.config.taskGroups[0].taskSpec.volumes.append(
-            Diot(
-                {
-                    "gcs": {"remotePath": remote_path},
-                    "mountPath": mount_path,
-                }
+            if not fm.startswith("gs://"):
+                raise ValueError(
+                    "'fast_mount' for gbatch scheduler should be "
+                    "a Google Cloud Storage path (begins with 'gs://')"
+                )
+
+            remote_path, mount_path = fm[5:].split(":", 1)
+            self.config.taskGroups[0].taskSpec.volumes.append(
+                Diot(
+                    {
+                        "gcs": {"remotePath": remote_path},
+                        "mountPath": mount_path,
+                    }
+                )
             )
-        )
 
     def post_init(self, proc: Proc):
         super().post_init(proc)
