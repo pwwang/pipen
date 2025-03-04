@@ -22,6 +22,9 @@
 - chore(deps): bump python-simpleconf to v0.7
 - feat: support DualPath output directory in Job class and ensure mounted directory creation
 - fix: initialize cmd with a default value to prevent errors when no script is provided
+- chore(deps): bump xqute to 0.8.1
+- fix: only create mounted output directory when no MOUNTED_OUTDIR with scheduler
+- fix: update mountPath index for taskSpec volumes in GbatchScheduler
 
 ## 0.15.8
 
