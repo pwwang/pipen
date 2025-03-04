@@ -103,7 +103,7 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):
         self.workdir: DualPath = DualPath(self.workdir.path, mounted=mounted_workdir)
 
         # update the mounted metadir
-        self.config.taskGroups[0].taskSpec.volumes[-1].mountPath = mounted_workdir
+        self.config.taskGroups[0].taskSpec.volumes[0].mountPath = mounted_workdir
 
         # update the config to map the outdir to vm
         self.config.taskGroups[0].taskSpec.volumes.append(
