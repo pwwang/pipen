@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "pipen"
-version = "0.16.0a8"
+version = "0.16.0"
 description = "A pipeline framework for python"
 authors = [ "pwwang <pwwang@pwwang.com>",]
 license = "MIT"
@@ -14,16 +14,6 @@ repository = "https://github.com/pwwang/pipen"
 
 [tool.poetry.build]
 generate-setup-file = true
-
-# fix ssl certificate issue on gcp head nodes
-[[tool.poetry.source]]
-name = "fpho"
-url = "https://files.pythonhosted.org"
-priority = "primary"
-
-[[tool.poetry.source]]
-name = "PyPI"
-priority = "primary"
 
 [tool.poetry.dependencies]
 python = "^3.9"
