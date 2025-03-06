@@ -268,6 +268,16 @@ def test_check_cached_infile_newer(caplog, pipen, infile):
 
 
 @pytest.mark.forked
+def test_check_cached_infile_none(caplog, pipen, infile):
+    proc_infile_none = Proc.from_proc(MixedInputProc, input_data=[(1, None)])
+    pipen.set_starts(proc_infile_none).run()
+
+    caplog.clear()
+    pipen.set_starts(proc_infile_none).run()
+    assert "Cached jobs:" in caplog.text
+
+
+@pytest.mark.forked
 def test_check_cached_infiles_newer(caplog, pipen, infile):
     proc_infile_newer = Proc.from_proc(FileInputsProc, input_data=[[infile, infile]])
     pipen.set_starts(proc_infile_newer).run()

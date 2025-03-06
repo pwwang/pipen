@@ -163,6 +163,9 @@ class JobCaching:
                     )
                     return False
 
+                elif self.input[inkey] is None and sig_indata is None:
+                    continue
+
                 elif intype in (ProcInputType.FILE, ProcInputType.DIR):
                     if sig_indata != str(self.input[inkey].spec):
                         self.log(
@@ -268,6 +271,7 @@ class JobCaching:
             # meaning signature is incomplete
             # or any file is deleted
             self.log("debug", "Not cached (%s)", exc)
+            raise
             return False
 
         return True
