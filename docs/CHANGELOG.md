@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.17.0
+
+- fix: handle None input case in job caching logic
+- chore(deps): update liquidpy to 0.8.4
+- refactor: replace DualPath with SpecPath in codebase to adopt xqute 0.9
+
 ## 0.16.0
 
 - ci: update build workflow conditions and improve dependency versions
