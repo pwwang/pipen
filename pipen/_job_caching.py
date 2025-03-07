@@ -10,14 +10,14 @@ from .defaults import ProcInputType, ProcOutputType
 from .utils import get_mtime, path_is_symlink
 
 if TYPE_CHECKING:
-    from xqute.path import DualPath
+    from xqute.path import SpecPath
 
 
 class JobCaching:
     """Provide caching functionality of jobs"""
 
     @property
-    def signature_file(self) -> DualPath:
+    def signature_file(self) -> SpecPath:
         """Get the path to the signature file
 
         Returns:

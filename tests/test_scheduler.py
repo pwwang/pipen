@@ -113,7 +113,7 @@ def test_gbatch_scheduler_post_init():
     proc.name = "test_proc"
     gbatch.post_init(proc)
 
-    assert str(gbatch.workdir.path) == "gs://test-bucket/workdir"
+    assert str(gbatch.workdir) == "gs://test-bucket/workdir"
     assert (
         str(gbatch.workdir.mounted) == f"{GbatchScheduler.MOUNTED_METADIR}/{proc.name}"
     )

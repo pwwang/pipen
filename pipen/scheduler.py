@@ -16,7 +16,7 @@ from xqute.schedulers.sge_scheduler import SgeScheduler as XquteSgeScheduler
 from xqute.schedulers.slurm_scheduler import SlurmScheduler as XquteSlurmScheduler
 from xqute.schedulers.ssh_scheduler import SshScheduler as XquteSshScheduler
 from xqute.schedulers.gbatch_scheduler import GbatchScheduler as XquteGbatchScheduler
-from xqute.path import DualPath
+from xqute.path import SpecPath
 
 from .defaults import SCHEDULER_ENTRY_GROUP
 from .exceptions import NoSuchSchedulerError, WrongSchedulerTypeError
@@ -115,7 +115,7 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):
             )
 
         mounted_workdir = f"{self.MOUNTED_METADIR}/{proc.name}"
-        self.workdir: DualPath = DualPath(self.workdir.path, mounted=mounted_workdir)
+        self.workdir: SpecPath = SpecPath(self.workdir, mounted=mounted_workdir)
 
         # update the mounted metadir
         self.config.taskGroups[0].taskSpec.volumes[0].mountPath = mounted_workdir

@@ -52,7 +52,7 @@ if TYPE_CHECKING:  # pragma: no cover
     import pandas
     from rich.segment import Segment
     from rich.console import RenderableType
-    from xqute.path import DualPath
+    from xqute.path import SpecPath
 
     from .pipen import Pipen
     from .proc import Proc
@@ -420,7 +420,7 @@ def pipen_banner() -> RenderableType:
 
 
 def get_mtime(
-    path: str | PathLike | CloudPath | DualPath,
+    path: str | PathLike | CloudPath | SpecPath,
     dir_depth: int = 1,
 ) -> float:
     """Get the modification time of a path.
@@ -774,7 +774,7 @@ def is_loading_pipeline(*flags: str, argv: Sequence[str] | None = None) -> bool:
     return False  # pragma: no cover
 
 
-def path_is_symlink(path: Path | CloudPath | DualPath) -> bool:
+def path_is_symlink(path: Path | CloudPath | SpecPath) -> bool:
     """Check if a path is a symlink.
 
     CloudPath.is_symlink() is not implemented yet, so we need to check
@@ -802,8 +802,8 @@ def path_is_symlink(path: Path | CloudPath | DualPath) -> bool:
 
 
 def path_symlink_to(
-    src: Path | CloudPath | DualPath,
-    dst: Path | CloudPath | DualPath,
+    src: Path | CloudPath | SpecPath,
+    dst: Path | CloudPath | SpecPath,
     target_is_directory: bool = False,
 ) -> None:
     """Create a symbolic link pointing to src named dst.

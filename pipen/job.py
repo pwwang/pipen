@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Dict, Mapping
 from yunpath import AnyPath, CloudPath
 from diot import OrderedDiot
 from xqute import Job as XquteJob
-from xqute.path import DualPath, MountedPath
+from xqute.path import SpecPath, MountedPath
 
 from ._job_caching import JobCaching
 from .defaults import ProcInputType, ProcOutputType
@@ -38,10 +38,7 @@ def _process_input_file_or_dir(
     proc_name: str | None = None,
 ) -> CloudPath | MountedPath:
     """Process the input value for file or dir"""
-    if (
-        inval is None
-        or not isinstance(inval, (str, PathLike, MountedPath, CloudPath, DualPath))
-    ):
+    if inval is None or not isinstance(inval, (str, PathLike, Path, CloudPath)):
         msg = (
             f"[{proc_name}] Got <{type(inval).__name__}> instead of "
             f"PathLike object for input: {inkey + ':' + intype!r}"
@@ -54,21 +51,21 @@ def _process_input_file_or_dir(
     if isinstance(inval, MountedPath):
         return inval
 
-    if isinstance(inval, DualPath):
+    if isinstance(inval, SpecPath):
         return inval.mounted
 
-    if isinstance(inval, CloudPath):
-        return DualPath(inval).mounted
+    if isinstance(inval, CloudPath):  # pragma: no cover
+        return MountedPath(inval)
 
     if not isinstance(inval, str):  # other PathLike types, should be all local
-        return DualPath(Path(inval).expanduser().absolute()).mounted
+        return MountedPath(Path(inval).expanduser().absolute())
 
     # str
-    # Let's see if it a DualPath in str format, which is path1:path2
+    # Let's see if it a path in str format, which is path1:path2
     # However, there is also a colon in cloud paths
     colon_count = inval.count(":")
     if colon_count == 0:  # a/b
-        return DualPath(Path(inval).expanduser().absolute()).mounted
+        return MountedPath(Path(inval).expanduser().absolute())
 
     if colon_count > 3:  # a:b:c:d
         msg = (
@@ -82,7 +79,7 @@ def _process_input_file_or_dir(
 
     if colon_count == 1:  # gs://a/b or a/b:c/d
         if isinstance(AnyPath(inval), CloudPath):  # gs://a/b
-            return DualPath(inval).mounted
+            return MountedPath(inval)
 
         path1, path2 = inval.split(":")
 
@@ -103,7 +100,7 @@ def _process_input_file_or_dir(
     if isinstance(path2, Path):
         path2 = path2.expanduser().absolute()
 
-    return DualPath(path1, mounted=path2).mounted
+    return MountedPath(path2, spec=path1)
 
 
 class Job(XquteJob, JobCaching):
@@ -120,7 +117,7 @@ class Job(XquteJob, JobCaching):
         self.proc: Proc = None
         self._output_types: Dict[str, str] = {}
         # Where the real output directory is
-        self._outdir: DualPath = None
+        self._outdir: SpecPath = None
 
     async def prepare(self, proc: Proc) -> None:
         """Prepare the job by given process
@@ -141,18 +138,18 @@ class Job(XquteJob, JobCaching):
         sched_mounted_outdir = getattr(proc.xqute.scheduler, "MOUNTED_OUTDIR", None)
         if sched_mounted_outdir is not None:  # pragma: no cover
             if (
-                isinstance(proc.pipeline.outdir, DualPath)
-                and proc.pipeline.outdir.mounted != proc.pipeline.outdir.path
+                isinstance(proc.pipeline.outdir, SpecPath)
+                and proc.pipeline.outdir.mounted.is_mounted()
             ):
                 raise ValueError(
-                    "The pipeline outdir is a DualPath, "
+                    "The pipeline outdir is a SpecPath, "
                     "but the MOUNTED_OUTDIR is provided by the scheduler "
                     f"<{proc.xqute.scheduler.__class__.__name__}>. "
                 )
 
             mounted_outdir = Path(sched_mounted_outdir) / proc.name
 
-        elif isinstance(proc.pipeline.outdir, DualPath):  # pragma: no cover
+        elif isinstance(proc.pipeline.outdir, SpecPath):  # pragma: no cover
             # In the case it is modified by a plugin
             # A dual path can not be specified as outdir of a pipeline
             mounted_outdir = proc.pipeline.outdir.mounted / proc.name
@@ -162,7 +159,7 @@ class Job(XquteJob, JobCaching):
 
         if self.proc.export:
             # Don't put index if it is a single-job process
-            self._outdir = DualPath(export_outdir, mounted=mounted_outdir)
+            self._outdir = SpecPath(export_outdir, mounted=mounted_outdir)
 
             # Put job output in a subdirectory with index
             # if it is a multi-job process
@@ -198,7 +195,7 @@ class Job(XquteJob, JobCaching):
         self.cmd = shlex.split(lang) + [self.script_file.mounted.fspath]
 
     @property
-    def script_file(self) -> DualPath:
+    def script_file(self) -> SpecPath:
         """Get the path to script file
 
         Returns:
@@ -207,7 +204,7 @@ class Job(XquteJob, JobCaching):
         return self.metadir / "job.script"
 
     @cached_property
-    def outdir(self) -> DualPath:
+    def outdir(self) -> SpecPath:
         """Get the path to the output directory.
 
         When proc.export is True, the output directory is based on the

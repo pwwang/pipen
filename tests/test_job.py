@@ -3,7 +3,7 @@ import os
 import time
 from pathlib import Path
 
-from xqute.path import DualPath, MountedPath, CloudPath
+from xqute.path import SpecPath, MountedPath, CloudPath
 from pipen import Proc
 from pipen.job import _process_input_file_or_dir
 from pipen.exceptions import (
@@ -179,7 +179,7 @@ def test_check_cached_input_either_none(caplog, pipen, infile1):
     pipen.build_proc_relationships()
     assert (
         "Not cached (input in:file is different; "
-        "it is <NoneType> in signature, but <MountedPath> in data)" in caplog.text
+        "it is <NoneType> in signature, but <MountedLocalPath> in data)" in caplog.text
     )
 
 
@@ -372,7 +372,7 @@ def test_job_log_limit(caplog, pipen):
 def test_dualpath_input(pipen, infile1, tmp_path):
     mounted_file = tmp_path / "infile"
     mounted_file.write_text("infile content")
-    infile = DualPath(infile1, mounted=mounted_file)
+    infile = SpecPath(infile1, mounted=mounted_file)
     proc = Proc.from_proc(FileInputProc, input_data=[infile])
     pipen.set_starts(proc).run()
     assert pipen.outdir.joinpath("proc", "infile").read_text() == "infile content"
@@ -380,7 +380,7 @@ def test_dualpath_input(pipen, infile1, tmp_path):
 
 @pytest.mark.forked
 def test_dualpath_input_files(pipen, infile1):
-    infile = DualPath(infile1, mounted=infile1)
+    infile = SpecPath(infile1, mounted=infile1)
     proc = Proc.from_proc(FileInputsProc, input_data=[[infile, infile]])
     pipen.set_starts(proc).run()
     assert pipen.outdir.joinpath("proc", "infile1").read_text().strip() == "infile1"
@@ -439,16 +439,16 @@ def test_process_input_file_or_dir_error():
 @pytest.mark.parametrize(
     "inval,expected",
     [
-        ("/local/path", DualPath("/local/path")),
-        ("gs://bucket/path", DualPath("gs://bucket/path")),
-        ("/local/path1:/local/path2", DualPath("/local/path1", mounted="/local/path2")),
+        ("/local/path", SpecPath("/local/path")),
+        ("gs://bucket/path", SpecPath("gs://bucket/path")),
+        ("/local/path1:/local/path2", SpecPath("/local/path1", mounted="/local/path2")),
         (
             "gs://bucket/path1:gs://bucket/path2",
-            DualPath("gs://bucket/path1", mounted="gs://bucket/path2"),
+            SpecPath("gs://bucket/path1", mounted="gs://bucket/path2"),
         ),
         (
             "/local/path:gs://bucket/path",
-            DualPath("/local/path", mounted="gs://bucket/path"),
+            SpecPath("/local/path", mounted="gs://bucket/path"),
         ),
     ],
 )
