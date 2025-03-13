@@ -85,12 +85,11 @@ The data to render the `output`:
 |Name|Description|
 |-|-|
 |`job.index`|The index of the job, 0-based|
-|`job.metadir`|The directory where job metadata is saved, typically `<pipeline-workdir>/<pipeline-name>/<proc-name>/<job.index>/`|
-|`job.outdir`|*The output directory of the job: `<pipeline-workdir>/<pipeline-name>/<proc-name>/<job.index>/output`|
-|`job.stdout_file`|The file that saves the stdout of the job|
-|`job.stderr_file`|The file that saves the stderr of the job|
-|`job.lock_file`|The file lock of the job, prevent the same job to run simultaneously so that they are "thread-safe"|
-|`in`|The input data of the job. You can use `in.<input-key>` to access the data for each input key|
+|`job.metadir`<sup>1</sup>|The directory where job metadata is saved, typically `<pipeline-workdir>/<pipeline-name>/<proc-name>/<job.index>/`|
+|`job.outdir`<sup>1</sup>|*The output directory of the job: `<pipeline-workdir>/<pipeline-name>/<proc-name>/<job.index>/output`|
+|`job.stdout_file`<sup>1</sup>|The file that saves the stdout of the job|
+|`job.stderr_file`<sup>1</sup>|The file that saves the stderr of the job|
+|`in`|The input data of the job. You can use `in.<input-key>`<sup>1</sup> to access the data for each input key|
 |`proc`|The process object, used to access their properties, such as `proc.workdir`|
 |`envs`|The `envs` of the process|
 
@@ -111,7 +110,9 @@ class MyProcess(Proc):
 
 With input data ["a"], the script is rendered as `echo a > <job.outdir>/a.txt`
 
+> <sup>1</sup> The paths are [`MountedPath`][4] objects, which represent paths of jobs and it is useful when a job is running in a remote system (a VM, a container, etc.), where we need to mount the paths into the remote system. It has an attribute `spec` to get the specified path. When there is no mountings, it is the same as the path itself.
 
 [1]: https://github.com/pwwang/liquidpy
 [2]: https://github.com/pallets/jinja
 [3]: https://www.makotemplates.org/
+[4]: https://pwwang.github.io/xqute/api/xqute.path/
