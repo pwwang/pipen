@@ -73,7 +73,10 @@ class ProcPBar:
 
     def done(self):
         """The process is done"""
-        self.submitted_counter.close()
+        try:
+            self.submitted_counter.close()
+        except:  # noqa: E722  # pragma: no cover
+            pass
 
 
 class PipelinePBar:
@@ -124,5 +127,8 @@ class PipelinePBar:
 
     def done(self) -> None:
         """When the pipeline is done"""
-        self.running_counter.close()
-        self.manager.stop()
+        try:
+            self.running_counter.close()
+            self.manager.stop()
+        except:  # noqa: E722  # pragma: no cover
+            pass
