@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.17.1
+
+- docs: update templating documentation to clarify job metadata paths
+- fix: ensure iterables other than list/tuple are treated correctly as files/dirs
+
 ## 0.17.0
 
 - fix: handle None input case in job caching logic
