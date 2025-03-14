@@ -57,6 +57,15 @@ def test_input_files_caching(caplog, pipen, infile):
 
 
 @pytest.mark.forked
+def test_input_files_caching_single_file(caplog, pipen, infile):
+    proc = Proc.from_proc(FileInputsProc, input_data=[infile])
+    pipen.set_starts(proc).run()
+
+    pipen.set_starts(proc).run()
+    assert caplog.text.count("Cached jobs:") == 1
+
+
+@pytest.mark.forked
 def test_mixed_input_caching(caplog, pipen, infile):
     proc = Proc.from_proc(MixedInputProc, input_data=[("in", infile)])
     pipen.set_starts(proc).run()

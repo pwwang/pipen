@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import shlex
+from collections.abc import Iterable
 from functools import cached_property
 from os import PathLike
 from pathlib import Path
@@ -269,9 +270,13 @@ class Job(XquteJob, JobCaching):
                     # // todo: nested dataframe
                     ret[inkey] = ret[inkey].iloc[0, 0]
 
-                if not isinstance(ret[inkey], (list, tuple)):
+                if isinstance(ret[inkey], (str, PathLike, Path, CloudPath)):
+                    # if a single file, convert to list
+                    ret[inkey] = [ret[inkey]]
+
+                if not isinstance(ret[inkey], Iterable):
                     raise ProcInputTypeError(
-                        f"[{self.proc.name}] Expected a sequence for input: "
+                        f"[{self.proc.name}] Expected an iterable for input: "
                         f"{inkey + ':' + intype!r}, got {type(ret[inkey])}"
                     )
 
