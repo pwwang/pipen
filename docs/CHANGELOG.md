@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.17.2
+
+- fix: handle exceptions (KeyboardInterrupt) when closing counters in progress bar (enlighten v1.14)
+
 ## 0.17.1
 
 - docs: update templating documentation to clarify job metadata paths
