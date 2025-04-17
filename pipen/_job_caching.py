@@ -271,7 +271,6 @@ class JobCaching:
             # meaning signature is incomplete
             # or any file is deleted
             self.log("debug", "Not cached (%s)", exc)
-            raise
             return False
 
         return True
