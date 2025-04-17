@@ -7,7 +7,7 @@ from pipen import Pipen, Proc
 class AProcess(Proc):
     """A normal process"""
     input = "infile:file"
-    output = "outfile:file:{{in.infile.split('/')[-1]}}"
+    output = "outfile:file:{{in.infile.name}}"
     script = "cat {{in.infile}} > {{out.outfile}}"
 
 
