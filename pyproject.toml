@@ -39,7 +39,7 @@ pytest-xdist = "^3"
 pytest-forked = "^1.6"
 # This also installs scipy and wcwidth
 datar = { version = "^0.15", extras = ["pandas"] }
-flake8 = "^7.1.2"
+flake8 = "^7"
 python-dotenv = "^1"
 cloudsh = {version = "^0.1", extras = ["gs"]}
 
