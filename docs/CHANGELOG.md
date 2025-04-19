@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.17.3
+
+- chore: hide job index prefix in log messages for single-job processes
+- chore(deps): update flake8 and other dependencies in pyproject.toml
+- docs: fix outfile in the caching example
+- docs: add example in README as an example pipeline in the examples folder
+
 ## 0.17.2
 
 - fix: handle exceptions (KeyboardInterrupt) when closing counters in progress bar (enlighten v1.14)
