@@ -137,7 +137,7 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
 
             setattr(self_or_method, proc.name, proc)
             proc.__meta__["procgroup"] = self_or_method  # type: ignore
-            if not proc.requires:
+            if not proc.requires and proc not in self_or_method.starts:
                 self_or_method.starts.append(proc)
             self_or_method.procs[proc.name] = proc
             return proc
@@ -153,7 +153,7 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
                 raise ValueError(f"`{proc}` is not a Proc subclass")
 
             proc.__meta__["procgroup"] = self
-            if not proc.requires:
+            if not proc.requires and proc not in self.starts:
                 self.starts.append(proc)
             self.procs[proc.name] = proc
             return proc
