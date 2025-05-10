@@ -546,19 +546,19 @@ all = ["scipy (>=1.8,<2.0)", "wcwidth (>=0.2,<0.3)"]
 
 [[package]]
 name = "datar-pandas"
-version = "0.5.6"
+version = "0.5.5"
 description = "The pandas backend for datar"
 optional = false
-python-versions = "<4.0,>=3.9"
+python-versions = ">=3.8,<4.0"
 groups = ["dev"]
 files = [
-    {file = "datar_pandas-0.5.6-py3-none-any.whl", hash = "sha256:2bf5224e80fd741f6cf7451973233f1f42f9f3bdd4fe3f31476a81fa4199d955"},
-    {file = "datar_pandas-0.5.6.tar.gz", hash = "sha256:b0a9f3df046cc11e2c6fde86ae686ae18a604c7dab1375493d076b8a0611a489"},
+    {file = "datar_pandas-0.5.5-py3-none-any.whl", hash = "sha256:f5c691eba6a5bcfbae41dd25301514b96192dc5b969e904a78b69459943f2309"},
+    {file = "datar_pandas-0.5.5.tar.gz", hash = "sha256:267290841994761d133d35a7abebc6317478ed23641698d9e41dc75abde0f6ca"},
 ]
 
 [package.dependencies]
-datar = ">=0.15.9,<0.16.0"
-datar-numpy = ">=0.3.6,<0.4.0"
+datar = ">=0.15.3,<0.16.0"
+datar-numpy = ">=0.3.2,<0.4.0"
 pdtypes = ">=0.2.3,<0.3.0"
 
 [package.extras]
@@ -757,8 +757,8 @@ files = [
 google-auth = ">=2.14.1,<3.0.0"
 googleapis-common-protos = ">=1.56.2,<2.0.0"
 proto-plus = [
-    {version = ">=1.22.3,<2.0.0"},
     {version = ">=1.25.0,<2.0.0", markers = "python_version >= \"3.13\""},
+    {version = ">=1.22.3,<2.0.0", markers = "python_version < \"3.13\""},
 ]
 protobuf = ">=3.19.5,<3.20.0 || >3.20.0,<3.20.1 || >3.20.1,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<7.0.0"
 requests = ">=2.18.0,<3.0.0"
@@ -1752,9 +1752,9 @@ files = [
 
 [package.dependencies]
 numpy = [
+    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
     {version = ">=1.22.4", markers = "python_version < \"3.11\""},
     {version = ">=1.23.2", markers = "python_version == \"3.11\""},
-    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -2983,4 +2983,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "dd0ae55e4d66fda5001ab160fbd2cda4528c500c7376f25d4161f6f7437bf84b"
+content-hash = "f5f4751c2a2516412e3494fbdbb0c162fd64db9b55e5eec4350d52b2aba3e799"

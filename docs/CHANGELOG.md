@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.17.4
+
+- chore: add ipykernel dependency for example pipelines
+- chore(deps): bump datar to 0.15.9 (numpy v2)
+- fix: prevent adding processes to starts if already included
+
 ## 0.17.3
 
 - chore: hide job index prefix in log messages for single-job processes
