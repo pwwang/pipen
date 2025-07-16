@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.17.5
+
+- chore: bump xqute to 0.9.3
+- fix: update mounted directory paths for GbatchScheduler
+- feat: add fast_container for GbatchScheduler
+
 ## 0.17.4
 
 - chore: add ipykernel dependency for example pipelines
