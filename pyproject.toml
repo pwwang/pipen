@@ -21,14 +21,14 @@ liquidpy = "^0.8"
 pandas = "^2.0"
 enlighten = "^1"
 argx = "^0.3"
-xqute = "^0.9"
+xqute = "^0.9.2"
 ## included in xqute
 # rich = "^13"
 # diot = "^0.1"
 # simplug = "^0.0"
 python-simpleconf = {version = "^0.7", extras = ["toml"]}
 pipda = "^0.13"
-varname = "^0.14"
+varname = "^0.15"
 
 [tool.poetry.group.dev.dependencies]
 openpyxl = "^3"
