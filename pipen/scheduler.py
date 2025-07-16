@@ -55,27 +55,54 @@ class SshScheduler(SchedulerPostInit, XquteSshScheduler):
 
 
 class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):
-    """Google Cloud Batch scheduler"""
+    """Google Cloud Batch scheduler
+
+    Args:
+        *args: Positional arguments for the base class
+        project: Google Cloud project ID
+        location: Google Cloud region or zone
+        fast_mount: Optional; a string or a sequence of strings to mount additional
+            Google Cloud Storage paths to the VM. The format should be
+            "gs://bucket/path:/mnt/path". This will add a volume to the VM
+            with the specified remote path mounted at the specified mount path.
+            The configuration will be expanded to the `taskGroups[0].taskSpec.volumes`.
+        fast_container: Optional; a dictionary to configure the container, a shortcut
+            for `taskGroups[0].taskSpec.runnables[0].container`.
+            When both provided, `fast_container` will override the configuration
+            specified in `taskGroups[0].taskSpec.runnables[0].container` in `kwargs`.
+        **kwargs: Keyword arguments for the configuration of a job (e.g. taskGroups).
+            See more details at <https://cloud.google.com/batch/docs/get-started>.
+    """
 
     MOUNTED_METADIR: str = "/mnt/disks/pipen-pipeline/workdir"
     MOUNTED_OUTDIR: str = "/mnt/disks/pipen-pipeline/outdir"
 
-    # fast mount is used to add a volume taskGroups[0].taskSpec.volumes
-    # to mount additional cloud directory to the VM
-    # For example: fast_mount="gs://bucket/path:/mnt/path"
-    # will add a volume: {
-    #   "gcs": {"remotePath": "bucket/path"},
-    #   "mountPath": "/mnt/disks/path"
-    # }
     def __init__(
         self,
         *args,
         project,
         location,
         fast_mount: str | Sequence[str] = None,
+        fast_container: dict | None = None,
         **kwargs,
     ):
+        fast_container = fast_container or {}
+        # we need to let kwargs know that we have container
+        # so the Scheduler can handle it properly (specify the script to
+        # the container, instead of script.text)
+        if fast_container:
+            try:
+                task_groups = kwargs.setdefault("taskGroups", [{}])
+                task_spec = task_groups[0].setdefault("taskSpec", {})
+                runnables = task_spec.setdefault("runnables", [{}])
+                container = runnables[0].setdefault("container", {})
+                container.update(fast_container)
+            except (AttributeError, TypeError, IndexError, KeyError):
+                # Let super().__init__ handle the error
+                pass
+
         super().__init__(*args, project=project, location=location, **kwargs)
+
         if not fast_mount:
             return
 

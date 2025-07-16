@@ -2937,14 +2937,14 @@ files = [
 
 [[package]]
 name = "xqute"
-version = "0.9.2"
+version = "0.9.3"
 description = "A job management system for python"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "xqute-0.9.2-py3-none-any.whl", hash = "sha256:cb7f9583e27c22541fa727fe11b555460b579d581cd41a2caebb22ff81f2952b"},
-    {file = "xqute-0.9.2.tar.gz", hash = "sha256:78224875d81934d58bd0bc9e560d8d43622c40aa93410b44696a0cc06ddb0f46"},
+    {file = "xqute-0.9.3-py3-none-any.whl", hash = "sha256:d03a8d04e3e7024cb819e35a17ba8fe9fdba546abb7db21c8e1b2c1b9d83c459"},
+    {file = "xqute-0.9.3.tar.gz", hash = "sha256:6ee08aabe4c7184597550a35a5af5f8b202340ed0d9a1b1c3ecf25804aa4071d"},
 ]
 
 [package.dependencies]
@@ -2998,4 +2998,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "2b82655d729a52ca9961b4c181778feea3fca3d030b449b1938599b1b3ce2a02"
+content-hash = "068efc82bf1554218ade768bec979b7dd11c6d73888bceb452823984e4a64db9"

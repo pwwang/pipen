@@ -73,21 +73,34 @@ def test_gbatch_scheduler_init():
             fast_mount="file:///tmp/test:/mnt/disks//test",
         )
 
+    with pytest.raises(TypeError):
+        gbatch_sched(
+            project="test_project",
+            location="test_location",
+            workdir="gs://test-bucket/workdir",
+            fast_container={"image_uri": "some-image"},
+            taskGroups=1,
+        )
+
     gbatch = gbatch_sched(
         project="test_project",
         location="test_location",
         workdir="gs://test-bucket/workdir",
         fast_mount="gs://test-bucket/path:/mnt/disks/path",
+        fast_container={
+            "image_uri": "some-image",
+            "entrypoint": "/bin/bashx",
+            "commands": ["-c"],
+        }
     )
+    task_spec = gbatch.config.taskGroups[0].taskSpec
     assert gbatch.project == "test_project"
     assert gbatch.location == "test_location"
-    assert (
-        gbatch.config.taskGroups[0].taskSpec.volumes[-1].mountPath == "/mnt/disks/path"
-    )
-    assert (
-        gbatch.config.taskGroups[0].taskSpec.volumes[-1].gcs.remotePath
-        == "test-bucket/path"
-    )
+    assert task_spec.volumes[-1].mountPath == "/mnt/disks/path"
+    assert task_spec.volumes[-1].gcs.remotePath == "test-bucket/path"
+    assert task_spec.runnables[0].container.image_uri == "some-image"
+    assert task_spec.runnables[0].container.entrypoint == "/bin/bashx"
+    assert task_spec.runnables[0].container.commands == ["-c"]
 
 
 def test_gbatch_scheduler_post_init_non_gs_outdir():
