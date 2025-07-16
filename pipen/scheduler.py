@@ -57,15 +57,15 @@ class SshScheduler(SchedulerPostInit, XquteSshScheduler):
 class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):
     """Google Cloud Batch scheduler"""
 
-    MOUNTED_METADIR: str = "/mnt/pipen-pipeline/workdir"
-    MOUNTED_OUTDIR: str = "/mnt/pipen-pipeline/outdir"
+    MOUNTED_METADIR: str = "/mnt/disks/pipen-pipeline/workdir"
+    MOUNTED_OUTDIR: str = "/mnt/disks/pipen-pipeline/outdir"
 
     # fast mount is used to add a volume taskGroups[0].taskSpec.volumes
     # to mount additional cloud directory to the VM
     # For example: fast_mount="gs://bucket/path:/mnt/path"
     # will add a volume: {
     #   "gcs": {"remotePath": "bucket/path"},
-    #   "mountPath": "/mnt/path"
+    #   "mountPath": "/mnt/disks/path"
     # }
     def __init__(
         self,

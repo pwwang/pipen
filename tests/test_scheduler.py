@@ -70,18 +70,20 @@ def test_gbatch_scheduler_init():
             project="test_project",
             location="test_location",
             workdir="gs://test-bucket/workdir",
-            fast_mount="file:///tmp/test:/mnt/test",
+            fast_mount="file:///tmp/test:/mnt/disks//test",
         )
 
     gbatch = gbatch_sched(
         project="test_project",
         location="test_location",
         workdir="gs://test-bucket/workdir",
-        fast_mount="gs://test-bucket/path:/mnt/path",
+        fast_mount="gs://test-bucket/path:/mnt/disks/path",
     )
     assert gbatch.project == "test_project"
     assert gbatch.location == "test_location"
-    assert gbatch.config.taskGroups[0].taskSpec.volumes[-1].mountPath == "/mnt/path"
+    assert (
+        gbatch.config.taskGroups[0].taskSpec.volumes[-1].mountPath == "/mnt/disks/path"
+    )
     assert (
         gbatch.config.taskGroups[0].taskSpec.volumes[-1].gcs.remotePath
         == "test-bucket/path"
