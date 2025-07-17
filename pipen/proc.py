@@ -334,7 +334,7 @@ class Proc(ABC, metaclass=ProcMeta):
 
         self.pbar = None
         self.jobs: List[Any] = []
-        self.xqute = None
+        self.xqute: Xqute | None = None
         self.__class__.workdir = (
             AnyPath(self.pipeline.workdir) / self.name  # type: ignore
         )

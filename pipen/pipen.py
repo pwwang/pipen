@@ -69,7 +69,7 @@ class Pipen:
     name: str | None = None
     desc: str | None = None
     outdir: str | PathLike = None
-    starts: List[Proc] = []
+    starts: Type[Proc] | List[Type[Proc]] = []
     data: Iterable | None = None
     # other configs
 
@@ -81,7 +81,7 @@ class Pipen:
         **kwargs,
     ) -> None:
         """Constructor"""
-        self.procs: List[Proc] = None
+        self.procs: List[Type[Proc]] = None
         self.pbar: PipelinePBar = None
         if name is not None:
             self.name = name
@@ -115,7 +115,7 @@ class Pipen:
         self.workdir: PathType | None = None
         self.profile: str = "default"
 
-        self.starts: List[Proc] = self.__class__.starts
+        self.starts: List[Type[Proc]] = self.__class__.starts
         if self.starts and not isinstance(self.starts, (tuple, list)):
             self.starts = [self.starts]
 
@@ -191,10 +191,10 @@ class Pipen:
             for proc in self.procs:
                 self.pbar.update_proc_running()
                 proc_obj = proc(self)  # type: ignore
-                if proc in self.starts and proc.input_data is None:
+                if proc in self.starts and proc.input_data is None:  # type: ignore
                     proc_obj.log(
                         "warning",
-                        "This is a start process, " "but no 'input_data' specified.",
+                        "This is a start process, but no 'input_data' specified.",
                     )
                 await proc_obj.init()
                 await proc_obj.run()
@@ -252,7 +252,7 @@ class Pipen:
         Returns:
             `self` to chain the operations
         """
-        for start, data in zip(self.starts, indata):
+        for start, data in zip(self.starts, indata):  # type: ignore
             if data is None:
                 continue
             if start.input_data is not None:
@@ -292,7 +292,7 @@ class Pipen:
                 raise ProcDependencyError(
                     f"{proc!r} is not a subclass of 'pipen.Proc'."
                 )
-            elif proc not in self.starts:
+            elif proc not in self.starts:  # type: ignore
                 self.starts.append(proc)  # type: ignore
             else:
                 raise ProcDependencyError(f"{proc} is already a start process.")
@@ -378,7 +378,7 @@ class Pipen:
         self.config.update(self._kwargs)
 
         if "workdir" in self._kwargs:
-            self.workdir = AnyPath(self._kwargs["workdir"]) / self.name
+            self.workdir = AnyPath(self._kwargs["workdir"]) / self.name  # type: ignore
 
         self.workdir.mkdir(parents=True, exist_ok=True)
 
@@ -395,7 +395,7 @@ class Pipen:
 
         # build proc relationships
         # Allow starts to be set as a tuple
-        self.procs = list(self.starts)
+        self.procs = list(self.starts)  # type: ignore
         nexts = set(sum((proc.nexts or [] for proc in self.procs), []))  # type: ignore
         logger.debug("")
         logger.debug("Building process relationships:")

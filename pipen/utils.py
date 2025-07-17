@@ -7,7 +7,6 @@ import sys
 import importlib
 import importlib.util
 import logging
-import shutil
 import textwrap
 import typing
 from itertools import groupby
@@ -36,7 +35,6 @@ from rich.console import Console
 from rich.logging import RichHandler as _RichHandler
 from rich.table import Table
 from rich.text import Text
-from simplug import SimplugContext
 
 from .defaults import (
     CONSOLE_DEFAULT_WIDTH,
@@ -52,7 +50,6 @@ if TYPE_CHECKING:  # pragma: no cover
     import pandas
     from rich.segment import Segment
     from rich.console import RenderableType
-    from xqute.path import SpecPath
 
     from .pipen import Pipen
     from .proc import Proc
@@ -420,7 +417,7 @@ def pipen_banner() -> RenderableType:
 
 
 def get_mtime(
-    path: str | PathLike | CloudPath | SpecPath,
+    path: str | PathLike | CloudPath,
     dir_depth: int = 1,
 ) -> float:
     """Get the modification time of a path.
@@ -435,7 +432,7 @@ def get_mtime(
     path = getattr(path, "path", path)
 
     mtime = 0.0
-    path = AnyPath(path)
+    path: Path | CloudPath = AnyPath(path)  # type: ignore[assignment]
     if not path.exists():
         return mtime
 
@@ -774,7 +771,7 @@ def is_loading_pipeline(*flags: str, argv: Sequence[str] | None = None) -> bool:
     return False  # pragma: no cover
 
 
-def path_is_symlink(path: Path | CloudPath | SpecPath) -> bool:
+def path_is_symlink(path: Path | CloudPath) -> bool:
     """Check if a path is a symlink.
 
     CloudPath.is_symlink() is not implemented yet, so we need to check
@@ -802,8 +799,8 @@ def path_is_symlink(path: Path | CloudPath | SpecPath) -> bool:
 
 
 def path_symlink_to(
-    src: Path | CloudPath | SpecPath,
-    dst: Path | CloudPath | SpecPath,
+    src: Path | CloudPath,
+    dst: Path | CloudPath,
     target_is_directory: bool = False,
 ) -> None:
     """Create a symbolic link pointing to src named dst.

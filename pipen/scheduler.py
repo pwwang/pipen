@@ -38,23 +38,23 @@ class SchedulerPostInit:
     def post_init(self, proc: Proc) -> None: ...  # noqa: E704
 
 
-class LocalScheduler(SchedulerPostInit, XquteLocalScheduler):
+class LocalScheduler(SchedulerPostInit, XquteLocalScheduler):  # type: ignore[misc]
     """Local scheduler"""
 
 
-class SgeScheduler(SchedulerPostInit, XquteSgeScheduler):
+class SgeScheduler(SchedulerPostInit, XquteSgeScheduler):  # type: ignore[misc]
     """SGE scheduler"""
 
 
-class SlurmScheduler(SchedulerPostInit, XquteSlurmScheduler):
+class SlurmScheduler(SchedulerPostInit, XquteSlurmScheduler):  # type: ignore[misc]
     """Slurm scheduler"""
 
 
-class SshScheduler(SchedulerPostInit, XquteSshScheduler):
+class SshScheduler(SchedulerPostInit, XquteSshScheduler):  # type: ignore[misc]
     """SSH scheduler"""
 
 
-class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):
+class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[misc]
     """Google Cloud Batch scheduler
 
     Args:
@@ -142,7 +142,10 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):
             )
 
         mounted_workdir = f"{self.MOUNTED_METADIR}/{proc.name}"
-        self.workdir: SpecPath = SpecPath(self.workdir, mounted=mounted_workdir)
+        self.workdir = SpecPath(
+            self.workdir,  # type: ignore
+            mounted=mounted_workdir,
+        )
 
         # update the mounted metadir
         self.config.taskGroups[0].taskSpec.volumes[0].mountPath = mounted_workdir

@@ -153,7 +153,7 @@ class Job(XquteJob, JobCaching):
         elif isinstance(proc.pipeline.outdir, SpecPath):  # pragma: no cover
             # In the case it is modified by a plugin
             # A dual path can not be specified as outdir of a pipeline
-            mounted_outdir = proc.pipeline.outdir.mounted / proc.name
+            mounted_outdir = proc.pipeline.outdir.mounted / proc.name  # type: ignore
 
         else:
             mounted_outdir = None
@@ -165,7 +165,7 @@ class Job(XquteJob, JobCaching):
             # Put job output in a subdirectory with index
             # if it is a multi-job process
             if len(self.proc.jobs) > 1:
-                self._outdir = self._outdir / str(self.index)
+                self._outdir = self._outdir / str(self.index)  # type: ignore
 
             if sched_mounted_outdir is None:
                 # Create the output directory if it is not mounted by the scheduler
@@ -176,7 +176,7 @@ class Job(XquteJob, JobCaching):
             self._outdir = self.metadir / "output"
 
         if not proc.script:
-            self.cmd = ["true"]
+            self.cmd = ("true", )
             return
 
         try:
@@ -193,7 +193,7 @@ class Job(XquteJob, JobCaching):
             self.script_file.write_text(script)
 
         lang = proc.lang or proc.pipeline.config.lang
-        self.cmd = shlex.split(lang) + [self.script_file.mounted.fspath]
+        self.cmd = tuple(shlex.split(lang) + [self.script_file.mounted.fspath])
 
     @property
     def script_file(self) -> SpecPath:
@@ -223,7 +223,7 @@ class Job(XquteJob, JobCaching):
         # if ret is a dead link
         # when switching a proc from end/nonend to nonend/end
         # if path_is_symlink(self._outdir) and not self._outdir.exists():
-        if path_is_symlink(self._outdir) and (
+        if path_is_symlink(self._outdir) and (  # type: ignore
             # A local deak link
             not self._outdir.exists()
             # A cloud fake link
@@ -240,7 +240,7 @@ class Job(XquteJob, JobCaching):
             elif metaout.is_dir():
                 metaout.rmtree()
 
-            path_symlink_to(metaout, self._outdir)
+            path_symlink_to(metaout, self._outdir)  # type: ignore
 
         return self._outdir
 
@@ -354,7 +354,7 @@ class Job(XquteJob, JobCaching):
                         f"output path must be a segment: {output_value}"
                     )
 
-                out = self.outdir / output_value
+                out = self.outdir / output_value  # type: ignore
                 if output_type == ProcOutputType.DIR:
                     out.mkdir(parents=True, exist_ok=True)
 
