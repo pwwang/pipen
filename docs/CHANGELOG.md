@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.17.6
+
+- style: update type hints
+
 ## 0.17.5
 
 - chore: bump xqute to 0.9.3
