@@ -793,8 +793,10 @@ def path_is_symlink(path: Path | CloudPath) -> bool:
 
     # Check if the path is a fake symlink file
     try:
-        return path.read_text().startswith("symlink:")
+        with path.open("rb") as f:
+            return f.read(8) == b"symlink:"
     except Exception:
+        # If we cannot read the file, it is not a symlink
         return False
 
 
