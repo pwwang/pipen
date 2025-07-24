@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.17.7
+
+- chore(deps): bump up xqute to 0.9.4
+- fix: optimize path_is_symlink function to check fake symlink faster
+
 ## 0.17.6
 
 - style: update type hints
