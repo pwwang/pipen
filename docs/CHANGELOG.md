@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.17.8
+
+- chore(deps): bump up xqute to 0.10.0
+- feat: add container scheduler support for Docker/Podman/Apptainer
+
 ## 0.17.7
 
 - chore(deps): bump up xqute to 0.9.4
