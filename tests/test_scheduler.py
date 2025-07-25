@@ -9,6 +9,7 @@ from pipen.scheduler import (
     SshScheduler,
     SlurmScheduler,
     GbatchScheduler,
+    ContainerScheduler,
     NoSuchSchedulerError,
 )
 
@@ -45,8 +46,31 @@ def test_get_scheduler():
     gbatch = get_scheduler(gbatch)
     assert gbatch is GbatchScheduler
 
+    container = get_scheduler("container")
+    assert container is ContainerScheduler
+
+    container = get_scheduler(container)
+    assert container is ContainerScheduler
+
     with pytest.raises(NoSuchSchedulerError):
         get_scheduler("nosuchscheduler")
+
+
+def test_container_scheduler_init(tmp_path):
+    scheduler = get_scheduler("container")(
+        image="bash:latest",
+        entrypoint="/usr/local/bin/bash",
+        workdir=tmp_path / "workdir",
+        bin="true",
+    )
+    pipeline = MagicMock(outdir=tmp_path / "outdir")
+    proc = MagicMock(pipeline=pipeline)
+    proc.name = "test_proc"
+    scheduler.post_init(proc)
+    assert (
+        scheduler.volumes[-1]
+        == f"{tmp_path}/outdir:/mnt/disks/pipen-pipeline/outdir"
+    )
 
 
 def test_gbatch_scheduler_init():

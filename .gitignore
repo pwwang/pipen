@@ -120,3 +120,5 @@ test.ipynb
 gac_key.json
 examples/.pipen.toml
 docs/api/
+# apptainer images
+*.sif

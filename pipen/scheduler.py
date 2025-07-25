@@ -16,6 +16,9 @@ from xqute.schedulers.sge_scheduler import SgeScheduler as XquteSgeScheduler
 from xqute.schedulers.slurm_scheduler import SlurmScheduler as XquteSlurmScheduler
 from xqute.schedulers.ssh_scheduler import SshScheduler as XquteSshScheduler
 from xqute.schedulers.gbatch_scheduler import GbatchScheduler as XquteGbatchScheduler
+from xqute.schedulers.container_scheduler import (
+    ContainerScheduler as XquteContainerScheduler,
+)
 from xqute.path import SpecPath
 
 from .defaults import SCHEDULER_ENTRY_GROUP
@@ -161,6 +164,28 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
         )
 
 
+class ContainerScheduler(  # type: ignore[misc]
+    SchedulerPostInit,
+    XquteContainerScheduler,
+):
+    """Scheduler to run jobs via containers (Docker/Podman/Apptainer)"""
+
+    MOUNTED_METADIR: str = "/mnt/disks/pipen-pipeline/workdir"
+    MOUNTED_OUTDIR: str = "/mnt/disks/pipen-pipeline/outdir"
+
+    def post_init(self, proc: Proc):
+        super().post_init(proc)
+
+        mounted_workdir = f"{self.MOUNTED_METADIR}/{proc.name}"
+        self.workdir = SpecPath(
+            str(self.workdir),  # ignore the mounted_workdir by xqute
+            mounted=mounted_workdir,
+        )
+        self.volumes[-1] = f"{self.workdir}:{self.workdir.mounted}"  # type: ignore
+        proc.pipeline.outdir.mkdir(parents=True, exist_ok=True)  # type: ignore
+        self.volumes.append(f"{proc.pipeline.outdir}:{self.MOUNTED_OUTDIR}")
+
+
 def get_scheduler(scheduler: str | Type[Scheduler]) -> Type[Scheduler]:
     """Get the scheduler by name of the scheduler class itself
 
@@ -187,6 +212,9 @@ def get_scheduler(scheduler: str | Type[Scheduler]) -> Type[Scheduler]:
 
     if scheduler == "gbatch":
         return GbatchScheduler
+
+    if scheduler == "container":
+        return ContainerScheduler
 
     for n, obj in load_entrypoints(SCHEDULER_ENTRY_GROUP):  # pragma: no cover
         if n == scheduler:

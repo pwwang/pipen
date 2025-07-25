@@ -31,6 +31,23 @@ The `scheduler_opts` will be the ones supported by `ssh`.
 
 See also [xqute][1].
 
+### `container`
+
+Send the jobs to run in a container (Docker/Podman/Apptainer).
+The `scheduler_opts` will be used to construct the container command.
+
+They include:
+- `image`: The container image to use.
+- `entrypoint`: The entrypoint of the container to run the wrapped job script. If not specified, the default entrypoint `/bin/sh` will be used.
+- `bin`: The container command to use. If not specified, it will use `docker`.
+- `volumes`: A list of volumes to mount to the container. The default volumes are:
+  - `workdir`: The working directory of the pipeline, mounted to `/mnt/disks/pipen-pipeline/workdir`.
+  - `outdir`: The output directory of the pipeline, mounted to `/mnt/disks/pipen-pipeline/outdir`.
+- `envs`: A dictionary of environment variables to set in the container.
+- `remove`: Whether to remove the container after the job is done. Default is `True`. Only supported by Docker and Podman.
+- `user`: The user to run the container as. Default is the current user. Only supported by Docker and Podman.
+- `bin_args`: Additional arguments to pass to the container command. For example, `{"bin_args": ["--privileged"]}` will run the container in privileged mode. Only supported by Docker and Podman.
+
 ### `gbatch`
 
 Send the jobs to run using Google Batch Jobs.
