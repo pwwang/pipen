@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.17.10
+
+- fix: lowercase labels in GbatchScheduler
+
 ## 0.17.9
 
 - feat: add pipeline and proc names to labels for GbatchScheduler
