@@ -703,7 +703,7 @@ class Proc(ABC, metaclass=ProcMeta):
 
         logger.info("")
         log_rich_renderable(panel, "cyan", logger.info)
-        self.log("info", "Workdir: %r", str(self.workdir))
+        self.log("info", "workdir: %r", str(self.workdir))
         self.log(
             "info",
             "[yellow]<<<[/yellow] %s",
