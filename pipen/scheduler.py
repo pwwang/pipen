@@ -163,6 +163,10 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
             )
         )
 
+        # add labels
+        self.config.labels["pipeline"] = proc.pipeline.name
+        self.config.labels["proc"] = proc.name
+
 
 class ContainerScheduler(  # type: ignore[misc]
     SchedulerPostInit,
