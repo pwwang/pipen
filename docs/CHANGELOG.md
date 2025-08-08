@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.17.9
+
+- feat: add pipeline and proc names to labels for GbatchScheduler
+- chore(deps): bump xqute to 0.10.1
+- chore: standardize log message for workdir
+
 ## 0.17.8
 
 - chore(deps): bump up xqute to 0.10.0
