@@ -1,5 +1,13 @@
 # Change Log
 
+## 0.17.11
+
+- fix: mapping the pipeline workdir for gbatch scheduler instead of process workdir to enable communications between processes
+- chore: fix no argument ignore errors for path.rmtree
+- tests: update gbatch scheduler volume paths
+- chore(deps): bump xqute to 0.10.3
+- chore: update .gitignore to include git bundle files
+
 ## 0.17.10
 
 - fix: lowercase labels in GbatchScheduler
