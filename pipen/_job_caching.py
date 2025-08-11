@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING
+from contextlib import suppress
 
 from diot import Diot
 from simpleconf import Config
@@ -98,7 +99,8 @@ class JobCaching:
                 if not path.is_dir():
                     path.unlink()
                 else:
-                    path.rmtree(ignore_errors=True)
+                    with suppress(Exception):
+                        path.rmtree()
                     path.mkdir()
 
     async def _check_cached(self) -> bool:
