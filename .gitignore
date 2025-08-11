@@ -122,3 +122,5 @@ examples/.pipen.toml
 docs/api/
 # apptainer images
 *.sif
+# git bundle files
+*.bundle
