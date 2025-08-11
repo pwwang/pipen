@@ -151,7 +151,13 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
         )
 
         # update the mounted metadir
-        self.config.taskGroups[0].taskSpec.volumes[0].mountPath = mounted_workdir
+        # instead of mounting the workdir of this specific proc,
+        # we mount the parent dir (the pipeline workdir), because the procs
+        # of the pipeline may share files (e.g. input files from output of other procs)
+        self.config.taskGroups[0].taskSpec.volumes[0].gcs[
+            "remotePath"
+        ] = self.workdir.parent._no_prefix
+        self.config.taskGroups[0].taskSpec.volumes[0].mountPath = self.MOUNTED_METADIR
 
         # update the config to map the outdir to vm
         self.config.taskGroups[0].taskSpec.volumes.append(
