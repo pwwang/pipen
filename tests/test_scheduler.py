@@ -166,9 +166,9 @@ def test_gbatch_scheduler_post_init():
     )
     assert (
         gbatch.config.taskGroups[0].taskSpec.volumes[-2].mountPath
-        == f"{GbatchScheduler.MOUNTED_METADIR}/{proc.name}"
+        == GbatchScheduler.MOUNTED_METADIR
     )
     assert (
         gbatch.config.taskGroups[0].taskSpec.volumes[-2].gcs.remotePath
-        == "test-bucket/workdir"
+        == "test-bucket"
     )
