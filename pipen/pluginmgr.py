@@ -199,7 +199,7 @@ async def on_job_started(job: Job):
 
 
 @plugin.spec
-async def on_job_polling(job: Job):
+async def on_job_polling(job: Job, counter: int):
     """When status of a job is being polled.
 
     Args:
