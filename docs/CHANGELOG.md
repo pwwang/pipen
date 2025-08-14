@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.17.12
+
+- chore(deps): bump xqute to 0.10.4
+
 ## 0.17.11
 
 - fix: mapping the pipeline workdir for gbatch scheduler instead of process workdir to enable communications between processes
