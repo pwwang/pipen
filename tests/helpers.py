@@ -181,7 +181,7 @@ class SimplePlugin:
         print("SimplePlugin")
 
     @plugin.impl
-    async def on_job_polling(job):
+    async def on_job_polling(job, counter):
         print("SimplePlugin on_job_polling")
 
 
