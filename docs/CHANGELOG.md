@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.17.13
+
+- fix: update on_job_polling signature to include counter parameter
+
 ## 0.17.12
 
 - chore(deps): bump xqute to 0.10.4
