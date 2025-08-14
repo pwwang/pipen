@@ -449,9 +449,9 @@ class XqutePipenPlugin:
         await plugin.hooks.on_job_started(job)
 
     @xqute_plugin.impl
-    async def on_job_polling(self, scheduler: Scheduler, job: Job):
+    async def on_job_polling(self, scheduler: Scheduler, job: Job, counter: int):
         """When a job starts to run"""
-        await plugin.hooks.on_job_polling(job)
+        await plugin.hooks.on_job_polling(job, counter)
 
     @xqute_plugin.impl
     async def on_job_killing(self, scheduler: Scheduler, job: Job):
