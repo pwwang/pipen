@@ -31,7 +31,7 @@ class P2(Proc):
     requires = P1
     input = "infile:file, nlines"
     # use the callback to add number of lines for each file
-    input_data = lambda ch: ch.assign(nlines=ch.outfile.apply(wc))
+    input_data = lambda ch: ch.assign(nlines=ch.outfile.apply(wc))  # noqa: E731
     output = "outfile:file:result.txt"
     script = "paste <(seq 1 {{in.nlines}}) {{in.infile}} > {{out.outfile}}"
 
