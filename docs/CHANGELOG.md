@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.17.14
+
+- fix: fix scheduler_opts of processes not full inheriting from pipeline
+- style: fix styles in example scripts
+
 ## 0.17.13
 
 - fix: update on_job_polling signature to include counter parameter
