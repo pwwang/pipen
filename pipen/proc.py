@@ -314,10 +314,12 @@ class Proc(ABC, metaclass=ProcMeta):
         cls.plugin_opts = update_dict(
             parent.plugin_opts if parent else None,
             cls.plugin_opts,
+            try_list=True,
         )
         cls.scheduler_opts = update_dict(
             parent.scheduler_opts if parent else {},
             cls.scheduler_opts,
+            try_list=True,
         )
         cls.__meta__ = {"procgroup": None}
 
@@ -384,8 +386,12 @@ class Proc(ABC, metaclass=ProcMeta):
         """Init all other properties and jobs"""
         import pandas
 
-        scheduler_opts = copy_dict(self.pipeline.config.scheduler_opts, 2) or {}
-        scheduler_opts.update(self.scheduler_opts or {})
+        scheduler_opts = copy_dict(self.pipeline.config.scheduler_opts or {}, -1)
+        scheduler_opts = update_dict(
+            scheduler_opts,
+            self.scheduler_opts or {},
+            try_list=True,
+        )
 
         self.xqute = Xqute(
             self.scheduler,

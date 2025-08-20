@@ -13,6 +13,7 @@ from pipen.utils import (
     strsplit,
     truncate_text,
     update_dict,
+    copy_dict,
     mark,
     get_marked,
     _get_obj_from_spec,
@@ -123,6 +124,58 @@ def test_update_dict():
         {"a": {"b1": {"c": 2}}},
         depth=1,
     ) == {"a": {"b1": {"c": 2}}}
+
+    assert update_dict(
+        {"a": [{"b": 1}]},
+        {"a": [{"c": 2}]},
+        try_list=True,
+    ) == {"a": [{"b": 1, "c": 2}]}
+
+    assert update_dict(
+        {"a": [{"b": 1}, {"b": 2}]},
+        {"a": [{"c": 2}]},
+        try_list=True,
+    ) == {"a": [{"b": 1, "c": 2}, {"b": 2}]}
+
+    assert update_dict(
+        {"a": [{"b": 1}]},
+        {"a": 2},
+        try_list=True,
+    ) == {"a": 2}
+
+    assert update_dict(
+        {"a": {"b": 1}},
+        {"a": [2]},
+        try_list=True,
+    ) == {"a": [2]}
+
+    assert update_dict(
+        {"a": [1, 2]},
+        {"a": [2]},
+        try_list=True,
+    ) == {"a": [2, 2]}
+
+    assert update_dict(
+        {"a": [1, 2]},
+        {"a": [2, 3, 4]},
+        try_list=True,
+    ) == {"a": [2, 3, 4]}
+
+
+@pytest.mark.forked
+def test_copy_dict():
+    dic = {"a": {"b": 1, "c": 2}, "d": [3, 4]}
+    copied = copy_dict(dic, depth=1)
+    assert copied == {"a": {"b": 1, "c": 2}, "d": [3, 4]}
+    assert copied is not dic
+    assert copied["a"] is dic["a"]
+    assert copied["d"] is dic["d"]
+
+    copied = copy_dict(dic, depth=2)
+    assert copied == {"a": {"b": 1, "c": 2}, "d": [3, 4]}
+    assert copied is not dic
+    assert copied["a"] is not dic["a"]
+    assert copied["d"] is dic["d"]
 
 
 @pytest.mark.forked

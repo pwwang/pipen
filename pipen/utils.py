@@ -9,6 +9,7 @@ import importlib.util
 import logging
 import textwrap
 import typing
+from copy import deepcopy
 from itertools import groupby
 from operator import itemgetter
 from io import StringIO
@@ -206,6 +207,7 @@ def update_dict(
     parent: Mapping[str, Any],
     new: Mapping[str, Any],
     depth: int = 0,
+    try_list: bool = False,
 ) -> Mapping[str, Any]:
     """Update the new dict to the parent, but make sure parent does not change
 
@@ -213,12 +215,17 @@ def update_dict(
         parent: The parent dictionary
         new: The new dictionary
         depth: The depth to be copied. 0 for updating to the deepest level.
+        try_list: If True, try to also update the dict in the list
 
     Examples:
         >>> parent = {"a": {"b": 1}}
         >>> new = {"a": {"c": 2}}
         >>> update_dict(parent, new)
         >>> # {"a": {"b": 1, "c": 2}}
+        >>> parent = {"a": [{"b": 1}]}
+        >>> new = {"a": [{"c": 2}]}
+        >>> update_dict(parent, new, try_list=True)
+        >>> # {"a": [{"b": 1, "c": 2}]}
 
     Returns:
         The updated dictionary or None if both parent and new are None.
@@ -228,6 +235,26 @@ def update_dict(
 
     out = (parent or {}).copy()
     for key, val in (new or {}).items():
+        if (
+            try_list
+            and isinstance(out.get(key), list)
+            and isinstance(val, list)
+            and depth != 1
+        ):
+            # If the value is a list, try to update the dict in the list
+            for i, item in enumerate(val):
+                if (
+                    isinstance(item, dict)
+                    and i < len(out[key])
+                    and isinstance(out[key][i], dict)
+                ):
+                    out[key][i] = update_dict(out[key][i], item, depth - 1, True)
+                elif i < len(out[key]):
+                    out[key][i] = item
+                else:
+                    out[key].append(item)
+            continue
+
         if (
             key not in out
             or not isinstance(val, dict)
@@ -239,6 +266,28 @@ def update_dict(
             out[key] = update_dict(out[key], val, depth - 1)
 
     return out
+
+
+def copy_dict(dic: Mapping[str, Any], depth: int = 1) -> Mapping[str, Any]:
+    """Deep copy a dict
+
+    Args:
+        dic: The dict to be copied
+        depth: The depth to be deep copied
+
+    Returns:
+        The deep-copied dict
+    """
+    if depth <= 0:
+        return deepcopy(dic)
+
+    if depth <= 1:
+        return dic.copy()
+
+    return {
+        key: copy_dict(val, depth - 1) if isinstance(val, dict) else val
+        for key, val in dic.items()
+    }
 
 
 def strsplit(
@@ -299,25 +348,6 @@ def ignore_firstline_dedent(text: str) -> str:
         out.append(line)
 
     return textwrap.dedent("\n".join(out))
-
-
-def copy_dict(dic: Mapping[str, Any], depth: int = 1) -> Mapping[str, Any]:
-    """Deep copy a dict
-
-    Args:
-        dic: The dict to be copied
-        depth: The depth to be deep copied
-
-    Returns:
-        The deep-copied dict
-    """
-    if depth <= 1:
-        return dic.copy()
-
-    return {
-        key: copy_dict(val, depth - 1) if isinstance(val, dict) else val
-        for key, val in dic.items()
-    }
 
 
 def get_logpanel_width() -> int:
