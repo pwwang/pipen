@@ -3,7 +3,7 @@
 
 ## Default supported schedulers
 
-`pipen` uses [`xqute`][1] for scheduler backend support. By default, the `local` and `sge` schedulers are supported by `xqute`. They are also the supported schedulers supported by `pipen`.
+`pipen` uses [`xqute`][1] for scheduler backend support. The following schedulers are supported by `pipen`:
 
 ### `local`
 
@@ -50,14 +50,40 @@ They include:
 
 ### `gbatch`
 
-Send the jobs to run using Google Batch Jobs.
+Send the jobs to run using Google Cloud Batch.
 
-The `scheduler_opts` will be used to construct the job configuration (json) file.
+The `scheduler_opts` will be used to construct the job configuration. This scheduler requires that the pipeline's `outdir` is a Google Cloud Storage path (e.g., `gs://bucket/path`).
 
-By default, `taskGroups[0].taskSpec.runnables[0].script.text` is set to run the job script, and `taskGroups[0].taskSpec.volumes[0]` and `taskGroups[0].taskSpec.volumes[1]` will be set to mount the workdir and output directory to the VM.
-The `scheduler_opts` will be used to set the other fields in the job configuration file.
+The scheduler options include:
+- `project`: Google Cloud project ID
+- `location`: Google Cloud region or zone
+- `mount`: GCS path to mount (e.g. `gs://my-bucket:/mnt/my-bucket`). You can pass a list of mounts.
+- `service_account`: GCP service account email (e.g. `test-account@example.com`)
+- `network`: GCP network (e.g. `default-network`)
+- `subnetwork`: GCP subnetwork (e.g. `regions/us-central1/subnetworks/default`)
+- `no_external_ip_address`: Whether to disable external IP address
+- `machine_type`: GCP machine type (e.g. `e2-standard-4`)
+- `provisioning_model`: GCP provisioning model (e.g. `SPOT`)
+- `image_uri`: Container image URI (e.g. `ubuntu-2004-lts`)
+- `entrypoint`: Container entrypoint (e.g. `/bin/bash`)
+- `commands`: The command list to run in the container.
+	There are three ways to specify the commands:
+	1. If no entrypoint is specified, the final command will be
+	[commands, wrapped_script], where the entrypoint is the wrapper script
+	interpreter that is determined by `JOBCMD_WRAPPER_LANG` (e.g. /bin/bash),
+	commands is the list you provided, and wrapped_script is the path to the
+	wrapped job script.
+	2. You can specify something like "-c", then the final command
+	will be ["-c", "wrapper_script_interpreter, wrapper_script"]
+	3. You can use the placeholders `{lang}` and `{script}` in the commands
+	list, where `{lang}` will be replaced with the interpreter (e.g. /bin/bash)
+	and `{script}` will be replaced with the path to the wrapped job script.
+	For example, you can specify ["{lang} {script}"] and the final command
+	will be ["wrapper_interpreter, wrapper_script"]
 
-`gbatch` scheduler also supports a `fast_mount` option to speed up the mounting a cloud directory to the VM. For example, `scheduler_opts={"fast_mount": "gs://bucket/path:/mnt/dir"}` will mount `gs://bucket/path` to `/mnt/dir` on the VM.
+Additional keyword arguments can be used for job configuration (e.g. `taskGroups`). See more details at [Google Cloud Batch documentation](https://cloud.google.com/batch/docs/get-started).
+
+By default, the pipeline's workdir is mounted to `/mnt/disks/pipen-pipeline/workdir` and the outdir is mounted to `/mnt/disks/pipen-pipeline/outdir` on the VM.
 
 ## Writing your own scheduler plugin
 

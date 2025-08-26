@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Sequence, Type
+from typing import TYPE_CHECKING, Type
 
 from diot import Diot
 
@@ -64,76 +64,36 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
         *args: Positional arguments for the base class
         project: Google Cloud project ID
         location: Google Cloud region or zone
-        fast_mount: Optional; a string or a sequence of strings to mount additional
-            Google Cloud Storage paths to the VM. The format should be
-            "gs://bucket/path:/mnt/path". This will add a volume to the VM
-            with the specified remote path mounted at the specified mount path.
-            The configuration will be expanded to the `taskGroups[0].taskSpec.volumes`.
-        fast_container: Optional; a dictionary to configure the container, a shortcut
-            for `taskGroups[0].taskSpec.runnables[0].container`.
-            When both provided, `fast_container` will override the configuration
-            specified in `taskGroups[0].taskSpec.runnables[0].container` in `kwargs`.
+        mount: GCS path to mount (e.g. gs://my-bucket:/mnt/my-bucket)
+            You can pass a list of mounts.
+        service_account: GCP service account email (e.g. test-account@example.com)
+        network: GCP network (e.g. default-network)
+        subnetwork: GCP subnetwork (e.g. regions/us-central1/subnetworks/default)
+        no_external_ip_address: Whether to disable external IP address
+        machine_type: GCP machine type (e.g. e2-standard-4)
+        provisioning_model: GCP provisioning model (e.g. SPOT)
+        image_uri: Container image URI (e.g. ubuntu-2004-lts)
+        entrypoint: Container entrypoint (e.g. /bin/bash)
+        commands: The command list to run in the container.
+            There are three ways to specify the commands:
+            1. If no entrypoint is specified, the final command will be
+            [commands, wrapped_script], where the entrypoint is the wrapper script
+            interpreter that is determined by `JOBCMD_WRAPPER_LANG` (e.g. /bin/bash),
+            commands is the list you provided, and wrapped_script is the path to the
+            wrapped job script.
+            2. You can specify something like "-c", then the final command
+            will be ["-c", "wrapper_script_interpreter, wrapper_script"]
+            3. You can use the placeholders `{lang}` and `{script}` in the commands
+            list, where `{lang}` will be replaced with the interpreter (e.g. /bin/bash)
+            and `{script}` will be replaced with the path to the wrapped job script.
+            For example, you can specify ["{lang} {script}"] and the final command
+            will be ["wrapper_interpreter, wrapper_script"]
         **kwargs: Keyword arguments for the configuration of a job (e.g. taskGroups).
             See more details at <https://cloud.google.com/batch/docs/get-started>.
     """
 
     MOUNTED_METADIR: str = "/mnt/disks/pipen-pipeline/workdir"
     MOUNTED_OUTDIR: str = "/mnt/disks/pipen-pipeline/outdir"
-
-    def __init__(
-        self,
-        *args,
-        project,
-        location,
-        fast_mount: str | Sequence[str] = None,
-        fast_container: dict | None = None,
-        **kwargs,
-    ):
-        fast_container = fast_container or {}
-        # we need to let kwargs know that we have container
-        # so the Scheduler can handle it properly (specify the script to
-        # the container, instead of script.text)
-        if fast_container:
-            try:
-                task_groups = kwargs.setdefault("taskGroups", [{}])
-                task_spec = task_groups[0].setdefault("taskSpec", {})
-                runnables = task_spec.setdefault("runnables", [{}])
-                container = runnables[0].setdefault("container", {})
-                container.update(fast_container)
-            except (AttributeError, TypeError, IndexError, KeyError):
-                # Let super().__init__ handle the error
-                pass
-
-        super().__init__(*args, project=project, location=location, **kwargs)
-
-        if not fast_mount:
-            return
-
-        if isinstance(fast_mount, str):
-            fast_mount = [fast_mount]
-
-        for fm in fast_mount:
-            if fm.count(":") != 2:
-                raise ValueError(
-                    "'fast_mount' for gbatch scheduler should be in the format of "
-                    "'gs://bucket/path:/mnt/path'"
-                )
-
-            if not fm.startswith("gs://"):
-                raise ValueError(
-                    "'fast_mount' for gbatch scheduler should be "
-                    "a Google Cloud Storage path (begins with 'gs://')"
-                )
-
-            remote_path, mount_path = fm[5:].split(":", 1)
-            self.config.taskGroups[0].taskSpec.volumes.append(
-                Diot(
-                    {
-                        "gcs": {"remotePath": remote_path},
-                        "mountPath": mount_path,
-                    }
-                )
-            )
 
     def post_init(self, proc: Proc):
         super().post_init(proc)
@@ -154,13 +114,15 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
         # instead of mounting the workdir of this specific proc,
         # we mount the parent dir (the pipeline workdir), because the procs
         # of the pipeline may share files (e.g. input files from output of other procs)
-        self.config.taskGroups[0].taskSpec.volumes[0].gcs[
+        self.config["taskGroups"][0]["taskSpec"]["volumes"][0]["gcs"][
             "remotePath"
         ] = self.workdir.parent._no_prefix
-        self.config.taskGroups[0].taskSpec.volumes[0].mountPath = self.MOUNTED_METADIR
+        self.config["taskGroups"][0]["taskSpec"]["volumes"][0][
+            "mountPath"
+        ] = self.MOUNTED_METADIR
 
         # update the config to map the outdir to vm
-        self.config.taskGroups[0].taskSpec.volumes.append(
+        self.config["taskGroups"][0]["taskSpec"]["volumes"].append(
             Diot(
                 {
                     "gcs": {"remotePath": proc.pipeline.outdir._no_prefix},
@@ -170,8 +132,8 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
         )
 
         # add labels
-        self.config.labels["pipeline"] = proc.pipeline.name.lower()
-        self.config.labels["proc"] = proc.name.lower()
+        self.config["labels"]["pipeline"] = proc.pipeline.name.lower()
+        self.config["labels"]["proc"] = proc.name.lower()
 
 
 class ContainerScheduler(  # type: ignore[misc]

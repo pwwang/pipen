@@ -76,25 +76,12 @@ def test_container_scheduler_init(tmp_path):
 def test_gbatch_scheduler_init():
     gbatch_sched = get_scheduler("gbatch")
 
-    with pytest.raises(
-        ValueError, match="'fast_mount' for gbatch scheduler should be in the format"
-    ):
+    with pytest.raises(ValueError):
         gbatch_sched(
             project="test_project",
             location="test_location",
             workdir="gs://test-bucket/workdir",
-            fast_mount="test",
-        )
-
-    with pytest.raises(
-        ValueError,
-        match="'fast_mount' for gbatch scheduler should be a Google Cloud Storage",
-    ):
-        gbatch_sched(
-            project="test_project",
-            location="test_location",
-            workdir="gs://test-bucket/workdir",
-            fast_mount="file:///tmp/test:/mnt/disks//test",
+            mount="test",
         )
 
     with pytest.raises(TypeError):
@@ -102,7 +89,7 @@ def test_gbatch_scheduler_init():
             project="test_project",
             location="test_location",
             workdir="gs://test-bucket/workdir",
-            fast_container={"image_uri": "some-image"},
+            image_uri="some-image",
             taskGroups=1,
         )
 
@@ -110,21 +97,20 @@ def test_gbatch_scheduler_init():
         project="test_project",
         location="test_location",
         workdir="gs://test-bucket/workdir",
-        fast_mount="gs://test-bucket/path:/mnt/disks/path",
-        fast_container={
-            "image_uri": "some-image",
-            "entrypoint": "/bin/bashx",
-            "commands": ["-c"],
-        }
+        mount="gs://test-bucket/path:/mnt/disks/path",
+        image_uri="some-image",
+        entrypoint="/bin/bashx",
+        commands=["-c"],
     )
-    task_spec = gbatch.config.taskGroups[0].taskSpec
+    task_spec = gbatch.config["taskGroups"][0]["taskSpec"]
     assert gbatch.project == "test_project"
     assert gbatch.location == "test_location"
-    assert task_spec.volumes[-1].mountPath == "/mnt/disks/path"
-    assert task_spec.volumes[-1].gcs.remotePath == "test-bucket/path"
-    assert task_spec.runnables[0].container.image_uri == "some-image"
-    assert task_spec.runnables[0].container.entrypoint == "/bin/bashx"
-    assert task_spec.runnables[0].container.commands == ["-c"]
+
+    assert task_spec["volumes"][-1]["mountPath"] == "/mnt/disks/path"
+    assert task_spec["volumes"][-1]["gcs"]["remotePath"] == "test-bucket/path"
+    assert task_spec["runnables"][0]["container"]["image_uri"] == "some-image"
+    assert task_spec["runnables"][0]["container"]["entrypoint"] == "/bin/bashx"
+    assert task_spec["runnables"][0]["container"]["commands"] == ["-c"]
 
 
 def test_gbatch_scheduler_post_init_non_gs_outdir():
@@ -157,18 +143,18 @@ def test_gbatch_scheduler_post_init():
         str(gbatch.workdir.mounted) == f"{GbatchScheduler.MOUNTED_METADIR}/{proc.name}"
     )
     assert (
-        gbatch.config.taskGroups[0].taskSpec.volumes[-1].mountPath
+        gbatch.config["taskGroups"][0]["taskSpec"]["volumes"][-1]["mountPath"]
         == f"{GbatchScheduler.MOUNTED_OUTDIR}"
     )
     assert (
-        gbatch.config.taskGroups[0].taskSpec.volumes[-1].gcs.remotePath
+        gbatch.config["taskGroups"][0]["taskSpec"]["volumes"][-1]["gcs"]["remotePath"]
         == "test-bucket/outdir"
     )
     assert (
-        gbatch.config.taskGroups[0].taskSpec.volumes[-2].mountPath
+        gbatch.config["taskGroups"][0]["taskSpec"]["volumes"][-2]["mountPath"]
         == GbatchScheduler.MOUNTED_METADIR
     )
     assert (
-        gbatch.config.taskGroups[0].taskSpec.volumes[-2].gcs.remotePath
+        gbatch.config["taskGroups"][0]["taskSpec"]["volumes"][-2]["gcs"]["remotePath"]
         == "test-bucket"
     )
