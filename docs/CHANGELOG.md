@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.17.16
+
+- fix: handle potential error when reading stderr file
+- chore: update xqute version to 0.10.7
+
 ## 0.17.15
 
 - chore(deps): update xqute dependency version to 0.10.6 in pyproject.toml
