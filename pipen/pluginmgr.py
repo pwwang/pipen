@@ -385,7 +385,12 @@ class PipenMainPlugin:
             if not output_exists:
                 job.status = JobStatus.FAILED
                 job.proc.pbar.update_job_failed()
-                stderr = job.stderr_file.read_text()
+                try:
+                    # in case the stderr file in the cloud not being synced yet
+                    stderr = job.stderr_file.read_text()
+                except Exception:  # pragma: no cover
+                    stderr = ""
+
                 stderr = f"{stderr}\n\nOutput {outtype} {outkey!r} is not generated."
                 job.stderr_file.write_text(stderr)
                 break
