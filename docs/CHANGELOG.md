@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.17.15
+
+- chore(deps): update xqute dependency version to 0.10.6 in pyproject.toml
+- feat: adopt xqute 0.10.6
+
 ## 0.17.14
 
 - fix: fix scheduler_opts of processes not full inheriting from pipeline
