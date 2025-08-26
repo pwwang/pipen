@@ -88,9 +88,17 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
             and `{script}` will be replaced with the path to the wrapped job script.
             For example, you can specify ["{lang} {script}"] and the final command
             will be ["wrapper_interpreter, wrapper_script"]
+        runnables: Additional runnables to run before or after the main job.
+            Each runnable should be a dictionary that follows the
+            [GCP Batch API specification](https://cloud.google.com/batch/docs/reference/rest/v1/projects.locations.jobs#runnable).
+            You can also specify an "order" key in the dictionary to control the
+            execution order of the runnables. Runnables with negative order
+            will be executed before the main job, and those with non-negative
+            order will be executed after the main job. The main job runnable
+            will always be executed in the order it is defined in the list.
         **kwargs: Keyword arguments for the configuration of a job (e.g. taskGroups).
             See more details at <https://cloud.google.com/batch/docs/get-started>.
-    """
+    """  # noqa: E501
 
     MOUNTED_METADIR: str = "/mnt/disks/pipen-pipeline/workdir"
     MOUNTED_OUTDIR: str = "/mnt/disks/pipen-pipeline/outdir"
