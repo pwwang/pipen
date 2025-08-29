@@ -43,14 +43,14 @@ test = ["coverage", "mypy", "pexpect", "ruff", "wheel"]
 
 [[package]]
 name = "argx"
-version = "0.3.2"
+version = "0.3.3"
 description = "Super-charged argparse for python"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main", "dev", "example"]
 files = [
-    {file = "argx-0.3.2-py3-none-any.whl", hash = "sha256:64b6d49442396c3e1d9d9a1fcbc66c22e1055d7d1dc0a51e7d4989ace6060dde"},
-    {file = "argx-0.3.2.tar.gz", hash = "sha256:994253e89958cda38841947fbbd943a9356af65a237609dcfe392a7e260b153d"},
+    {file = "argx-0.3.3-py3-none-any.whl", hash = "sha256:92816987c00dc9a77d389aa7b9174fc3255f042b69fc56236c628ec8d0845329"},
+    {file = "argx-0.3.3.tar.gz", hash = "sha256:ecaae92b567dce8c4c88d8ec912f0949324885885e9983388dfdba2427cd81f7"},
 ]
 
 [package.dependencies]
@@ -1985,14 +1985,14 @@ files = [
 
 [[package]]
 name = "prompt-toolkit"
-version = "3.0.51"
+version = "3.0.52"
 description = "Library for building powerful interactive command lines in Python"
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
 files = [
-    {file = "prompt_toolkit-3.0.51-py3-none-any.whl", hash = "sha256:52742911fde84e2d423e2f9a4cf1de7d7ac4e51958f648d9540e0fb8db077b07"},
-    {file = "prompt_toolkit-3.0.51.tar.gz", hash = "sha256:931a162e3b27fc90c86f1b48bb1fb2c528c2761475e57c9c06de13311c7b54ed"},
+    {file = "prompt_toolkit-3.0.52-py3-none-any.whl", hash = "sha256:9aac639a3bbd33284347de5ad8d68ecc044b91a762dc39b7c21095fcd6a19955"},
+    {file = "prompt_toolkit-3.0.52.tar.gz", hash = "sha256:28cde192929c8e7321de85de1ddbe736f1375148b02f2e17edd840042b1be855"},
 ]
 
 [package.dependencies]
@@ -3007,14 +3007,14 @@ files = [
 
 [[package]]
 name = "xqute"
-version = "0.10.7"
+version = "0.10.9"
 description = "A job management system for python"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "xqute-0.10.7-py3-none-any.whl", hash = "sha256:cdd3f449cac8283b6709aec4590b399dab4faf04bb0ec834ddf4a8c47bbd0ad4"},
-    {file = "xqute-0.10.7.tar.gz", hash = "sha256:1e582cf13908a5cfb6cb65bb2cf1e413e99a6140fefc6a3cca3cc9c4706cc59c"},
+    {file = "xqute-0.10.9-py3-none-any.whl", hash = "sha256:83c506fe0117d2c5de6c9607ca63d31d6cb998a647d5f386ce4a1f22bb0043c7"},
+    {file = "xqute-0.10.9.tar.gz", hash = "sha256:c7194e76fac1cc1b76b718d375f058c41503ea810513aef48978255e525522f3"},
 ]
 
 [package.dependencies]
