@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.17.17
+
+- feat: enhance argument parsing in CLI
+
 ## 0.17.16
 
 - fix: handle potential error when reading stderr file
