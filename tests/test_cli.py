@@ -63,3 +63,9 @@ def test_version():
     assert "pipen" in out
     assert "python" in out
     assert "liquidpy" in out
+
+
+@pytest.mark.forked
+def test_unparsed_args():
+    out = cmdoutput(["pipen", "version", "--x"])
+    assert "unrecognized arguments: --x" in out

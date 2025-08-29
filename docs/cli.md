@@ -32,9 +32,10 @@ There are a couple of methods of `pipen.cli.CLIPlugin` to extend for a plugin:
   It takes the main parser and the subparser of the sub-command as arguments. You can add arguments to the parser or subparser here.
   Check [argx][1] for more information about how to define arguments.
 
-- `parse_args(self)`: parse the arguments
-  It takes no arguments. It should parse the arguments and return the parsed arguments (Namespace), which are used to execute the command.
-  By default, `self.parser.parse_args()` is called to parse the arguments.
+- `parse_args(self, known_parsed, unparsed_argv)`: parse the arguments
+  It takes the known parsed arguments and the unparsed argument vector as arguments, allowing
+  you to do custom parsing. It should return the parsed arguments.
+  By default, `known_parsed` is returned.
 
 - `exec_command(self, args)`: execute the command
   It takes the parsed arguments as argument. It should execute the command as you wish.

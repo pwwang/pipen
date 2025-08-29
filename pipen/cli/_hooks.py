@@ -1,4 +1,5 @@
 """Provide Cli class"""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -31,9 +32,17 @@ class CLIPlugin(ABC):
     def name(self) -> str:
         """The name/command of this plugin"""
 
-    def parse_args(self) -> Namespace:
+    def parse_args(
+        self,
+        known_parsed: Namespace,
+        unparsed_argv: list[str],
+    ) -> Namespace:
         """Define arguments for the command"""
-        return self.parser.parse_args()
+        if unparsed_argv:
+            # Let parser raise error for unknown args
+            return self.parser.parse_args()
+
+        return known_parsed
 
     @abstractmethod
     def exec_command(self, args: Namespace) -> None:
