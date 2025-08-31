@@ -467,7 +467,14 @@ class Proc(ABC, metaclass=ProcMeta):
                 cached_jobs.append(job.index)
                 await plugin.hooks.on_job_cached(job)
             else:
-                await self.xqute.put(job)
+                envs = {
+                    "PIPEN_JOB_INDEX": job.index,
+                    "PIPEN_JOB_METADIR_SPEC": str(job.metadir),
+                    "PIPEN_JOB_OUTDIR_SPEC": str(job._outdir),
+                    "PIPEN_JOB_METADIR": str(job.metadir.mounted),
+                    "PIPEN_JOB_OUTDIR": str(job._outdir.mounted),
+                }
+                await self.xqute.put(job, envs=envs)
         if cached_jobs:
             self.log("info", "Cached jobs: [%s]", brief_list(cached_jobs))
         await self.xqute.run_until_complete()
