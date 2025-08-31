@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.17.19
+
+- chore: update xqute version to 0.10.11
+
 ## 0.17.18
 
 - chore: update xqute version to 0.10.10
