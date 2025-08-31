@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.17.18
+
+- chore: update xqute version to 0.10.10
+- feat: add environment variables to job submission
+
 ## 0.17.17
 
 - feat: enhance argument parsing in CLI
