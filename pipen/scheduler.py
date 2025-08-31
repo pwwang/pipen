@@ -15,7 +15,10 @@ from xqute.schedulers.local_scheduler import LocalScheduler as XquteLocalSchedul
 from xqute.schedulers.sge_scheduler import SgeScheduler as XquteSgeScheduler
 from xqute.schedulers.slurm_scheduler import SlurmScheduler as XquteSlurmScheduler
 from xqute.schedulers.ssh_scheduler import SshScheduler as XquteSshScheduler
-from xqute.schedulers.gbatch_scheduler import GbatchScheduler as XquteGbatchScheduler
+from xqute.schedulers.gbatch_scheduler import (
+    GbatchScheduler as XquteGbatchScheduler,
+    DEFAULT_MOUNTED_ROOT,
+)
 from xqute.schedulers.container_scheduler import (
     ContainerScheduler as XquteContainerScheduler,
 )
@@ -100,8 +103,8 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
             See more details at <https://cloud.google.com/batch/docs/get-started>.
     """  # noqa: E501
 
-    MOUNTED_METADIR: str = "/mnt/disks/pipen-pipeline/workdir"
-    MOUNTED_OUTDIR: str = "/mnt/disks/pipen-pipeline/outdir"
+    MOUNTED_METADIR: str = f"{DEFAULT_MOUNTED_ROOT}/pipen-pipeline/workdir"
+    MOUNTED_OUTDIR: str = f"{DEFAULT_MOUNTED_ROOT}/pipen-pipeline/outdir"
 
     def post_init(self, proc: Proc):
         super().post_init(proc)
@@ -150,8 +153,8 @@ class ContainerScheduler(  # type: ignore[misc]
 ):
     """Scheduler to run jobs via containers (Docker/Podman/Apptainer)"""
 
-    MOUNTED_METADIR: str = "/mnt/disks/pipen-pipeline/workdir"
-    MOUNTED_OUTDIR: str = "/mnt/disks/pipen-pipeline/outdir"
+    MOUNTED_METADIR: str = f"{DEFAULT_MOUNTED_ROOT}/pipen-pipeline/workdir"
+    MOUNTED_OUTDIR: str = f"{DEFAULT_MOUNTED_ROOT}/pipen-pipeline/outdir"
 
     def post_init(self, proc: Proc):
         super().post_init(proc)
