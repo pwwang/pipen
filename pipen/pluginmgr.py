@@ -341,7 +341,7 @@ class PipenMainPlugin:
     priority = -1000
 
     @plugin.impl
-    def on_proc_shutdown(self, proc: Proc, sig: signal.Signals):
+    def on_proc_shutdown(proc: Proc, sig: signal.Signals):
         """When a process is shutting down"""
         if sig:  # pragma: no cover
             proc.log(
@@ -351,17 +351,17 @@ class PipenMainPlugin:
             )
 
     @plugin.impl
-    async def on_job_submitted(self, job: Job):
+    async def on_job_submitted(job: Job):
         """Update the progress bar when a job is submitted"""
         job.proc.pbar.update_job_submitted()
 
     @plugin.impl
-    async def on_job_started(self, job: Job):
+    async def on_job_started(job: Job):
         """Update the progress bar when a job starts to run"""
         job.proc.pbar.update_job_running()
 
     @plugin.impl
-    async def on_job_cached(self, job: Job):
+    async def on_job_cached(job: Job):
         """Update the progress bar when a job is cached"""
         job.proc.pbar.update_job_submitted()
         job.proc.pbar.update_job_running()
@@ -369,7 +369,7 @@ class PipenMainPlugin:
         job.status = JobStatus.FINISHED
 
     @plugin.impl
-    async def on_job_succeeded(self, job: Job):
+    async def on_job_succeeded(job: Job):
         """Cache the job and update the progress bar when a job is succeeded"""
         # now the returncode is 0, however, we need to check if output files
         # have been created or not, this makes sure job.cache not fail
@@ -399,7 +399,7 @@ class PipenMainPlugin:
             job.proc.pbar.update_job_succeeded()
 
     @plugin.impl
-    async def on_job_failed(self, job: Job):
+    async def on_job_failed(job: Job):
         """Update the progress bar when a job is failed"""
         job.proc.pbar.update_job_failed()
         if job.status == JobStatus.RETRYING:
@@ -407,7 +407,7 @@ class PipenMainPlugin:
             job.proc.pbar.update_job_retrying()
 
     @plugin.impl
-    async def on_job_killed(self, job: Job):
+    async def on_job_killed(job: Job):
         """Update the status of a killed job"""
         # instead of FINISHED to force the whole pipeline to quit
         job.status = JobStatus.FAILED  # pragma: no cover
@@ -424,62 +424,62 @@ class XqutePipenPlugin:
     name = "xqute.pipen"
 
     @xqute_plugin.impl
-    def on_shutdown(self, xqute: Xqute, sig: signal.Signals):
+    def on_shutdown(xqute: Xqute, sig: signal.Signals):
         """When a process is shutting down"""
         return plugin.hooks.on_proc_shutdown(xqute.proc, sig)
 
     @xqute_plugin.impl
-    async def on_job_init(self, scheduler: Scheduler, job: Job):
+    async def on_job_init(scheduler: Scheduler, job: Job):
         """When a job is initialized"""
         await plugin.hooks.on_job_init(job)
 
     @xqute_plugin.impl
-    async def on_job_queued(self, scheduler: Scheduler, job: Job):
+    async def on_job_queued(scheduler: Scheduler, job: Job):
         """When a job is queued"""
         await plugin.hooks.on_job_queued(job)
 
     @xqute_plugin.impl
-    async def on_job_submitting(self, scheduler: Scheduler, job: Job):
+    async def on_job_submitting(scheduler: Scheduler, job: Job):
         """When a job is being submitted"""
         return await plugin.hooks.on_job_submitting(job)
 
     @xqute_plugin.impl
-    async def on_job_submitted(self, scheduler: Scheduler, job: Job):
+    async def on_job_submitted(scheduler: Scheduler, job: Job):
         """When a job is submitted"""
         await plugin.hooks.on_job_submitted(job)
 
     @xqute_plugin.impl
-    async def on_job_started(self, scheduler: Scheduler, job: Job):
+    async def on_job_started(scheduler: Scheduler, job: Job):
         """When a job starts to run"""
         await plugin.hooks.on_job_started(job)
 
     @xqute_plugin.impl
-    async def on_job_polling(self, scheduler: Scheduler, job: Job, counter: int):
+    async def on_job_polling(scheduler: Scheduler, job: Job, counter: int):
         """When a job starts to run"""
         await plugin.hooks.on_job_polling(job, counter)
 
     @xqute_plugin.impl
-    async def on_job_killing(self, scheduler: Scheduler, job: Job):
+    async def on_job_killing(scheduler: Scheduler, job: Job):
         """When a job is being killed"""
         return await plugin.hooks.on_job_killing(job)  # pragma: no cover
 
     @xqute_plugin.impl
-    async def on_job_killed(self, scheduler: Scheduler, job: Job):
+    async def on_job_killed(scheduler: Scheduler, job: Job):
         """When a job is killed"""
         await plugin.hooks.on_job_killed(job)  # pragma: no cover
 
     @xqute_plugin.impl
-    async def on_job_succeeded(self, scheduler: Scheduler, job: Job):
+    async def on_job_succeeded(scheduler: Scheduler, job: Job):
         """When a job is succeeded"""
         await plugin.hooks.on_job_succeeded(job)
 
     @xqute_plugin.impl
-    async def on_job_failed(self, scheduler: Scheduler, job: Job):
+    async def on_job_failed(scheduler: Scheduler, job: Job):
         """When a job is failed"""
         await plugin.hooks.on_job_failed(job)
 
     @xqute_plugin.impl
-    def on_jobcmd_init(self, scheduler: Scheduler, job: Job):
+    def on_jobcmd_init(scheduler: Scheduler, job: Job):
         """When the job command wrapper script is initialized"""
         codes = plugin.hooks.on_jobcmd_init(job)
         if not codes:
@@ -487,7 +487,7 @@ class XqutePipenPlugin:
         return "\n\n".join(codes)
 
     @xqute_plugin.impl
-    def on_jobcmd_prep(self, scheduler: Scheduler, job: Job):
+    def on_jobcmd_prep(scheduler: Scheduler, job: Job):
         """When the job command is about to be run"""
         codes = plugin.hooks.on_jobcmd_prep(job)
         if not codes:
@@ -495,7 +495,7 @@ class XqutePipenPlugin:
         return "\n\n".join(codes)
 
     @xqute_plugin.impl
-    def on_jobcmd_end(self, scheduler: Scheduler, job: Job):
+    def on_jobcmd_end(scheduler: Scheduler, job: Job):
         """When the job command finishes"""
         codes = plugin.hooks.on_jobcmd_end(job)
         if not codes:
