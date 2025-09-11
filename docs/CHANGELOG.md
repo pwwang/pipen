@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.17.20
+
+- chore: remove unnecessary self argument for the plugin for xqute and the main plugin for pipen itself
+
 ## 0.17.19
 
 - chore: update xqute version to 0.10.11
