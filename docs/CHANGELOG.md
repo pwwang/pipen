@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.17.21
+
+- chore: update fake symlink prefix to 'pipen-symlink'
+- chore: update xqute version to 0.10.16
+
 ## 0.17.20
 
 - chore: remove unnecessary self argument for the plugin for xqute and the main plugin for pipen itself
