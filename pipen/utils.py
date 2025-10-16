@@ -486,7 +486,7 @@ def get_mtime(
         return mtime
 
     # Fake symlink
-    dest = path.read_text().removeprefix("symlink:")
+    dest = path.read_text().removeprefix("symlink:").removeprefix("pipen-symlink:")
     dpath = AnyPath(dest)
     if dir_depth == 0 or not dpath.is_dir():
         try:
@@ -824,7 +824,8 @@ def path_is_symlink(path: Path | CloudPath) -> bool:
     # Check if the path is a fake symlink file
     try:
         with path.open("rb") as f:
-            return f.read(8) == b"symlink:"
+            prefix = f.read(14)
+            return prefix == b"pipen-symlink:" or prefix.startswith(b"symlink:")
     except Exception:
         # If we cannot read the file, it is not a symlink
         return False
@@ -846,6 +847,6 @@ def path_symlink_to(
     dst = getattr(dst, "path", dst)
     if isinstance(dst, CloudPath) or isinstance(src, CloudPath):
         # Create a fake symlink file for cloud paths
-        src.write_text(f"symlink:{dst}")
+        src.write_text(f"pipen-symlink:{dst}")
     else:
         src.symlink_to(dst, target_is_directory=target_is_directory)
