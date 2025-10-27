@@ -157,10 +157,12 @@ Plugins make `pipen` even better.
 - [`pipen-runinfo`][29]: Save running information to file for pipen
 - [`pipen-verbose`][15]: Add verbosal information in logs for pipen.
 - [`pipen-gcs`][32]: A plugin for pipen to handle files in Google Cloud Storage.
+- [`pipen-deprecated`][34]: A pipen plugin to mark processes as deprecated.
 - [`pipen-cli-init`][21]: A pipen CLI plugin to create a pipen project (pipeline)
 - [`pipen-cli-ref`][31]: Make reference documentation for processes
 - [`pipen-cli-require`][24]: A pipen cli plugin check the requirements of a pipeline
 - [`pipen-cli-run`][22]: A pipen cli plugin to run a process or a pipeline
+- [`pipen-cli-gbatch`][33]: A pipen cli plugin to submit pipeline to Google Batch Jobs
 
 [1]: https://pwwang.github.io/pipen
 [2]: https://pwwang.github.io/pipen/CHANGELOG
@@ -194,3 +196,5 @@ Plugins make `pipen` even better.
 [30]: https://github.com/pwwang/pipen-poplog
 [31]: https://github.com/pwwang/pipen-cli-ref
 [32]: https://github.com/pwwang/pipen-gcs
+[33]: https://github.com/pwwang/pipen-cli-gbatch
+[34]: https://github.com/pwwang/pipen-deprecated
