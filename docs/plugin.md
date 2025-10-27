@@ -20,7 +20,7 @@ See [`simplug`][1] for more details.
 
 #### Pipeline-level hooks
 
-- `on_setup(config)` (sync):
+- `on_setup(pipen)` (sync):
 
     Setup for the plugin, mainly used for initalization and set the default values for the plugin configuration items.
 
