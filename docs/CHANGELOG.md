@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.17.22
+
+- BREAKING: change on_setup hook parameter from config to pipen
+- chore: upgrade dependencies and bump datar to 0.15.12
+- chore: update README with new plugins
+- ci: add python 3.13 in build workflow
+
 ## 0.17.21
 
 - chore: update fake symlink prefix to 'pipen-symlink'
