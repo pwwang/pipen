@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from simplug import Simplug, SimplugResult
 from xqute import JobStatus, Scheduler
