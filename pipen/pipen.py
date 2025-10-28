@@ -155,9 +155,9 @@ class Pipen:
         # make sure core plugin is enabled
         plugin.get_plugin("core").enable()
 
-        if not self.__class__.SETUP:  # pragma: no cover
+        if not Pipen.SETUP:  # pragma: no cover
             plugin.hooks.on_setup(self)
-            self.__class__.SETUP = True
+            Pipen.SETUP = True
 
         self.__class__.PIPELINE_COUNT += 1
 
