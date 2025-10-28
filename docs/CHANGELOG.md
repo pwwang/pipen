@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.17.23
+
+- fix: update class reference for setup state to make sure on_setup hook only executes once
+
 ## 0.17.22
 
 - BREAKING: change on_setup hook parameter from config to pipen
