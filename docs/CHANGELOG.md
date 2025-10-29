@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.17.24
+
+- chore: improve error message for missing output generation
+
 ## 0.17.23
 
 - fix: update class reference for setup state to make sure on_setup hook only executes once
