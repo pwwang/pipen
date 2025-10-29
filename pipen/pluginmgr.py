@@ -388,7 +388,11 @@ class PipenMainPlugin:
                 except Exception:  # pragma: no cover
                     stderr = ""
 
-                stderr = f"{stderr}\n\nOutput {outtype} {outkey!r} is not generated."
+                stderr = f"{stderr}\n\nOutput {outtype} {outkey!r} is not generated"
+                if outtype == ProcOutputType.DIR:
+                    stderr += " or is empty."
+                else:
+                    stderr += "."
                 job.stderr_file.write_text(stderr)
                 break
         else:
