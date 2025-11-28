@@ -92,4 +92,13 @@ As shown in the following figure, the pipeline is run on the cloud platform, and
 
 ![pipen-cloud2](./pipen-cloud2.png)
 
+
+!!! tip
+
+    While the workdir and output dir are on the cloud, `pipen` needs to communicate with the cloud storage to get and save the meta information of the pipeline (workdir) and also upload/download files if needed. We are using [`yunpath`][2] to manage the cloud paths, which is a wrapper of [`cloudpathlib`][3]. `cloudpathlib` uses a cache mechanism to reduce the communication with the cloud storage, which can greatly improve the performance. If you are running into issues with the local cache (e.g. no space left), you can set the environment variable `CLOUDPATHLIB_LOCAL_CACHE_DIR` to change the cache directory. See more details in the [`cloudpathlib` documentation][4].
+
+
 [1]: https://cloud.google.com/sdk?hl=en
+[2]: https://github.com/pwwang/yunpath
+[3]: https://github.com/drivendataorg/cloudpathlib
+[4]: https://cloudpathlib.drivendata.org/stable/caching/
