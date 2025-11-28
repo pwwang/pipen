@@ -101,7 +101,8 @@ class JobCaching:
                 else:
                     with suppress(Exception):
                         path.rmtree()
-                    path.mkdir()
+                    # in case rmtree fails anyhow
+                    path.mkdir(exist_ok=True)
 
     async def _check_cached(self) -> bool:
         """Check if the job is cached based on signature
