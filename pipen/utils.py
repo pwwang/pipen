@@ -822,6 +822,15 @@ def path_is_symlink(path: Path | CloudPath) -> bool:
         return False
 
     # Check if the path is a fake symlink file
+    # Get the size first, to avoid the large files being downloaded
+    try:
+        path_stat = path.stat()
+    except Exception:
+        return False
+
+    if path_stat.st_size > 4096 or path_stat.st_size < 8:
+        return False
+
     try:
         with path.open("rb") as f:
             prefix = f.read(14)
