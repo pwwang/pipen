@@ -311,13 +311,14 @@ class JobCaching:
                 out = False
             else:
                 out = True
-        elif not self.signature_file.is_file():
-            self.log(
-                "debug",
-                "Not cached (signature file not found)",
-            )
-            out = False
         else:
+            if not self.signature_file.is_file():
+                self.log(
+                    "debug",
+                    "Signature file not found, this is probably an obselete job."
+                )
+                await self.cache()
+
             out = await self._check_cached()
 
         if not out:

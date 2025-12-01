@@ -244,7 +244,7 @@ def test_check_cached_sigfile_notfound(caplog, pipen):
     sigfile = proc.workdir / "0" / "job.signature.toml"
     sigfile.unlink()
     pipen.set_starts(proc).run()
-    assert "Not cached (signature file not found)" in caplog.text
+    assert sigfile.is_file()
 
 
 @pytest.mark.forked
