@@ -393,6 +393,7 @@ class PipenMainPlugin:
                     stderr += " or is empty."
                 else:
                     stderr += "."
+
                 job.stderr_file.write_text(stderr)
                 break
         else:

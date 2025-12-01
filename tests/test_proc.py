@@ -14,6 +14,7 @@ from .helpers import (  # noqa: F401
     In2Out1Proc,
     NoInputProc,
     NormalProc,
+    DirOutputEmptyProc,
     FileInputProc,
     RelPathScriptProc,
     ScriptNotExistsProc,
@@ -49,6 +50,17 @@ def test_proc_with_input_data(pipen):
     proc = Proc.from_proc(NormalProc, input_data=[1])
     pipen.set_starts(proc).run()
     assert proc.output_data.equals(pandas.DataFrame({"output": ["1"]}))
+
+
+@pytest.mark.forked
+def test_proc_with_empty_dir_output(pipen):
+    proc = Proc.from_proc(DirOutputEmptyProc, input_data=["data"])
+    pipen.set_starts(proc).run()
+
+    joberrfile = proc.workdir / "0" / "job.stderr"
+    with open(joberrfile, "r") as f:
+        errtxt = f.read()
+    assert "Output dir 'outfile' is not generated or is empty" in errtxt
 
 
 @pytest.mark.forked

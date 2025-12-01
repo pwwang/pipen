@@ -173,6 +173,14 @@ class DirOutputProc(Proc):
     script = "echo {{in.in}} > {{out.outfile}}/outfile; "
 
 
+class DirOutputEmptyProc(Proc):
+    """Process with empty directory output"""
+
+    input = "in"
+    output = "outfile:dir:outdir"
+    script = ""
+
+
 class SimplePlugin:
     @plugin.impl
     async def on_init(pipen):
