@@ -238,6 +238,7 @@ class Job(XquteJob, JobCaching):
             if path_is_symlink(metaout) or metaout.is_file():
                 metaout.unlink()
             elif metaout.is_dir():
+                # Remove the directory, it is inconsistent with current setting
                 metaout.rmtree()
 
             path_symlink_to(metaout, self._outdir)  # type: ignore

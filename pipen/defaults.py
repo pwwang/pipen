@@ -41,7 +41,8 @@ CONFIG = Diot(
     lang="bash",
     # process level:
     # How many jobs to be submitted in a batch
-    submission_batch=8,
+    # Use the default value from the scheduler itself if None
+    submission_batch=None,
     # pipeline level:
     # The working directory for the pipeline
     workdir="./.pipen",

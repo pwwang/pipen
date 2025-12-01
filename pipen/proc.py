@@ -147,7 +147,10 @@ class Proc(ABC, metaclass=ProcMeta):
         scheduler: The scheduler to run the jobs
         scheduler_opts: The options for the scheduler
         script: The script template for the process
-        submission_batch: How many jobs to be submited simultaneously
+        submission_batch: How many jobs to be submited simultaneously.
+            The program entrance for some schedulers may take too much resources
+            when submitting a job or checking the job status. So we may use a
+            smaller number here to limit the simultaneous submissions.
 
         nexts: Computed from `requires` to build the process relationships
         output_data: The output data (to pass to the next processes)
@@ -236,7 +239,10 @@ class Proc(ABC, metaclass=ProcMeta):
             scheduler: The new shedular to run the new process
             scheduler_opts: The new scheduler options, unspecified items will
                 be inherited.
-            submission_batch: How many jobs to be submited simultaneously
+            submission_batch: How many jobs to be submited simultaneously.
+            The program entrance for some schedulers may take too much resources
+            when submitting a job or checking the job status. So we may use a
+            smaller number here to limit the simultaneous submissions.
 
         Returns:
             The new process class
@@ -407,6 +413,7 @@ class Proc(ABC, metaclass=ProcMeta):
             jobname_prefix=self.name,
             scheduler_opts=scheduler_opts,
         )
+        self.submission_batch = self.xqute.scheduler.subm_batch
         self.xqute.scheduler.post_init(self)
         # for the plugin hooks to access
         self.xqute.proc = self
