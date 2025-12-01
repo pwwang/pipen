@@ -1,5 +1,16 @@
 # Change Log
 
+## 0.17.25
+
+- chore: update dependencies
+- chore: update xqute dependency version to 0.10.19 to use per-scheduler submission_batch by default
+- docs: add tip about cloud communication and caching in pipen
+- fix: ensure directory creation does not fail if rmtree encounters an error
+- fix: enhance symlink check by validating file size before download
+- fix: update build system requirements to use poetry-core
+- fix: update caching logic to handle missing signature files more gracefully
+- test: add DirOutputEmptyProc to handle empty directory output and corresponding test
+
 ## 0.17.24
 
 - chore: improve error message for missing output generation
