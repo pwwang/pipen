@@ -3283,14 +3283,14 @@ test = ["aiohttp (>=3.10.5)", "flake8 (>=6.1,<7.0)", "mypy (>=0.800)", "psutil",
 
 [[package]]
 name = "varname"
-version = "0.15.0"
+version = "0.15.1"
 description = "Dark magics about variable names in python."
 optional = false
 python-versions = "<4.0,>=3.8"
 groups = ["main"]
 files = [
-    {file = "varname-0.15.0-py3-none-any.whl", hash = "sha256:9ce9d5a4435930b426ebbbc992ef31b10d4350392a28a91fa3c1c1eb02a081a1"},
-    {file = "varname-0.15.0.tar.gz", hash = "sha256:86e66d59adf97ed301169ab0cb9b33a2f08f3184cd9c3b14901a09d1972dbfee"},
+    {file = "varname-0.15.1-py3-none-any.whl", hash = "sha256:291a71ea6f88328a9a2ee2f7badcc9075dd69afa93f1463ccc2657aef54d2ea1"},
+    {file = "varname-0.15.1.tar.gz", hash = "sha256:cf1b9aa38197f4df5ad9bd9db32ce0439aa6b43e24456fe5d20ad352a8014ade"},
 ]
 
 [package.dependencies]
