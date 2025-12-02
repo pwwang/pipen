@@ -20,20 +20,20 @@ class ProcPBar:
     def __init__(
         self, manager: enlighten.Manager, proc_size: int, proc_name: str
     ) -> None:
-        self.submitted_counter = manager.counter(
+        self.counter = manager.counter(
             total=proc_size,
             color="cyan",
             desc=proc_name,
             unit="jobs",
             leave=False,
         )
-        self.running_counter = self.submitted_counter.add_subcounter("yellow")
-        self.success_counter = self.submitted_counter.add_subcounter("green")
-        self.failure_counter = self.submitted_counter.add_subcounter("red")
+        self.running_counter = self.counter.add_subcounter("yellow")
+        self.success_counter = self.counter.add_subcounter("green")
+        self.failure_counter = self.counter.add_subcounter("red")
 
-    def update_job_submitted(self):
-        """Update the progress bar when a job is submitted"""
-        self.submitted_counter.update()
+    def update_job_inited(self):
+        """Update the progress bar when a job is init'ed"""
+        self.counter.update()
 
     def update_job_retrying(self):
         """Update the progress bar when a job is retrying"""
@@ -43,7 +43,7 @@ class ProcPBar:
     def update_job_running(self):
         """Update the progress bar when a job is running"""
         try:
-            self.running_counter.update_from(self.submitted_counter)
+            self.running_counter.update_from(self.counter)
         except ValueError:  # pragma: no cover
             pass
 
@@ -53,7 +53,7 @@ class ProcPBar:
             self.success_counter.update_from(self.running_counter)
         except ValueError:  # pragma: no cover
             try:
-                self.success_counter.update_from(self.submitted_counter)
+                self.success_counter.update_from(self.counter)
             except ValueError:  # pragma: no cover
                 pass
         except:  # noqa: E722  # pragma: no cover
@@ -65,7 +65,7 @@ class ProcPBar:
             self.failure_counter.update_from(self.running_counter)
         except ValueError:  # pragma: no cover
             try:
-                self.failure_counter.update_from(self.submitted_counter)
+                self.failure_counter.update_from(self.counter)
             except ValueError:  # pragma: no cover
                 pass
         except:  # noqa: E722  # pragma: no cover
@@ -74,7 +74,7 @@ class ProcPBar:
     def done(self):
         """The process is done"""
         try:
-            self.submitted_counter.close()
+            self.counter.close()
         except:  # noqa: E722  # pragma: no cover
             pass
 
