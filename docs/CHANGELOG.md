@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.17.26
+
+- fix: fix progress bar for jobs with submission skipped
+
 ## 0.17.25
 
 - chore: update dependencies
