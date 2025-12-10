@@ -412,6 +412,7 @@ def brief_list(blist: List[int]) -> str:
         The string to show for the briefed list.
     """
     ret = []
+    blist.sort()
     for _, g in groupby(enumerate(blist), lambda x: x[0] - x[1]):
         list_group = list(map(itemgetter(1), g))
         if len(list_group) > 1:
