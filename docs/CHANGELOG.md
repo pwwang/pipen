@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.17.27
+
+- fix: sort input list in brief_list function for consistent output
+
 ## 0.17.26
 
 - fix: fix progress bar for jobs with submission skipped
