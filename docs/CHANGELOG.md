@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.17.28
+
+- fix: fix job progress bar not showing when jobs are being prepared
+
 ## 0.17.27
 
 - fix: sort input list in brief_list function for consistent output
