@@ -360,7 +360,6 @@ class PipenMainPlugin:
     @plugin.impl
     async def on_job_cached(job: Job):
         """Update the progress bar when a job is cached"""
-        job.proc.pbar.update_job_inited()
         job.proc.pbar.update_job_running()
         job.proc.pbar.update_job_succeeded()
         job.status = JobStatus.FINISHED
@@ -430,10 +429,10 @@ class XqutePipenPlugin:
         """When a process is shutting down"""
         return plugin.hooks.on_proc_shutdown(xqute.proc, sig)
 
-    @xqute_plugin.impl
-    async def on_job_init(scheduler: Scheduler, job: Job):
-        """When a job is initialized"""
-        await plugin.hooks.on_job_init(job)
+    # @xqute_plugin.impl
+    # async def on_job_init(scheduler: Scheduler, job: Job):
+    #     """When a job is initialized"""
+    #     await plugin.hooks.on_job_init(job)
 
     @xqute_plugin.impl
     async def on_job_queued(scheduler: Scheduler, job: Job):

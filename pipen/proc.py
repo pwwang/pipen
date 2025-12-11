@@ -417,6 +417,8 @@ class Proc(ABC, metaclass=ProcMeta):
         self.xqute.scheduler.post_init(self)
         # for the plugin hooks to access
         self.xqute.proc = self
+        # init pbar
+        self.pbar = self.pipeline.pbar.proc_bar(self.input.data.shape[0], self.name)
 
         await plugin.hooks.on_proc_init(self)
         await self._init_jobs()
@@ -463,8 +465,6 @@ class Proc(ABC, metaclass=ProcMeta):
 
     async def run(self) -> None:
         """Run the process"""
-        # init pbar
-        self.pbar = self.pipeline.pbar.proc_bar(self.size, self.name)
 
         await plugin.hooks.on_proc_start(self)
 
@@ -551,6 +551,7 @@ class Proc(ABC, metaclass=ProcMeta):
             if job.index % self.submission_batch != worker_id:
                 continue
             await job.prepare(self)
+            await plugin.hooks.on_job_init(job)
 
     async def _init_jobs(self) -> None:
         """Initialize all jobs
