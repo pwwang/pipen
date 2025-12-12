@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.17.29
+
+- feat: add job submission progress update to progress bar
+- docs: add progress bar section to running documentation
+
 ## 0.17.28
 
 - fix: fix job progress bar not showing when jobs are being prepared
