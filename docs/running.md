@@ -110,4 +110,25 @@ run(
         True if the pipeline ends successfully else False
 ```
 
+## Progress bars
+
+When running a pipeline, a progress bar will be shown in the console to indicate the progress of the pipeline. You will see two progress bars: one for the overall progress of the pipeline (running processes vs total processes), and one for the current running process (prepared/running/failed/succeeded/cached jobs vs total jobs).
+
+![alt text](pbar1.png)
+
+The above progress bars indicate that the pipeline has 2 processes in total, and 1 process is currently running. The running process has 11 jobs in total, and all jobs are prepared, where none of them have started running, 1 has succeeded/cached, and 2 are submitted.
+
+![alt text](pbar2.png)
+
+And the above progress bars indicate that the running process has 11 jobs in total, and 1 jobs have succeeded/cached, 2 jobs started running, and the rest are still prepared.
+
+Colors are used to indicate different job statuses:
+
+- <span style="color:grey;">■</span> grey: initiated
+- <span style="color:cyan;">■</span> cyan: prepared
+- <span style="color:yellow;">■</span> yellow: running
+- <span style="color:green;">■</span> green: succeeded/cached
+- <span style="color:red;">■</span> red: failed
+
+
 [1]: ../configurations
