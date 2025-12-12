@@ -358,8 +358,14 @@ class PipenMainPlugin:
         job.proc.pbar.update_job_running()
 
     @plugin.impl
+    async def on_job_submitted(job: Job):
+        """Update the progress bar when a job is submitted"""
+        job.proc.pbar.update_job_submitted()
+
+    @plugin.impl
     async def on_job_cached(job: Job):
         """Update the progress bar when a job is cached"""
+        job.proc.pbar.update_job_submitted()
         job.proc.pbar.update_job_running()
         job.proc.pbar.update_job_succeeded()
         job.status = JobStatus.FINISHED

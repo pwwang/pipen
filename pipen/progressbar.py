@@ -22,11 +22,12 @@ class ProcPBar:
     ) -> None:
         self.counter = manager.counter(
             total=proc_size,
-            color="cyan",
+            color="grey",
             desc=proc_name,
             unit="jobs",
             leave=False,
         )
+        self.submitted_counter = self.counter.add_subcounter("cyan")
         self.running_counter = self.counter.add_subcounter("yellow")
         self.success_counter = self.counter.add_subcounter("green")
         self.failure_counter = self.counter.add_subcounter("red")
@@ -34,6 +35,13 @@ class ProcPBar:
     def update_job_inited(self):
         """Update the progress bar when a job is init'ed"""
         self.counter.update()
+
+    def update_job_submitted(self):
+        """Update the progress bar when a job is init'ed"""
+        try:
+            self.submitted_counter.update_from(self.counter)
+        except ValueError:  # pragma: no cover
+            pass
 
     def update_job_retrying(self):
         """Update the progress bar when a job is retrying"""
@@ -43,7 +51,7 @@ class ProcPBar:
     def update_job_running(self):
         """Update the progress bar when a job is running"""
         try:
-            self.running_counter.update_from(self.counter)
+            self.running_counter.update_from(self.submitted_counter)
         except ValueError:  # pragma: no cover
             pass
 
