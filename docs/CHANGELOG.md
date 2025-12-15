@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.0.0
+
+- chore: adopt xqute 1.0.0
+- feat: optimize the job submission (individual job submitted to scheduler right after initiation instead of waiting for all jobs to finish initiation)
+- feat: update documentation links and styles, add script for collapsible sections
+- feat: enhance progress bar to display job status counts and update formatting
+
 ## 0.17.29
 
 - feat: add job submission progress update to progress bar

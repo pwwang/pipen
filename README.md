@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="./pipen.png" width="320px">
+    <img src="./docs/rtd-logo.png" width="320px">
 
 **A pipeline framework for python**
 
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 04-17 16:19:35 I core                   _  ____/__/ /  _  ____/_  /___  _  /|  /
 04-17 16:19:35 I core                   /_/     /___/  /_/     /_____/  /_/ |_/
 04-17 16:19:35 I core
-04-17 16:19:35 I core                               version: 0.17.3
+04-17 16:19:35 I core                               version: 1.0.0
 04-17 16:19:35 I core
 04-17 16:19:35 I core    ╔═══════════════════════════ MYPIPELINE ════════════════════════════╗
 04-17 16:19:35 I core    ║ My pipeline                                                       ║
@@ -74,8 +74,7 @@ if __name__ == "__main__":
 04-17 16:19:35 I core    plugins         : verbose v0.14.1
 04-17 16:19:35 I core    # procs         : 2
 04-17 16:19:35 I core    profile         : default
-04-17 16:19:35 I core    outdir          :
-                /home/pwwang/github/pipen/examples/MyPipeline-output
+04-17 16:19:35 I core    outdir          : /path/to/cwd/MyPipeline-output
 04-17 16:19:35 I core    cache           : True
 04-17 16:19:35 I core    dirsig          : 1
 04-17 16:19:35 I core    error_strategy  : ignore
@@ -86,45 +85,34 @@ if __name__ == "__main__":
 04-17 16:19:35 I core    scheduler       : local
 04-17 16:19:35 I core    submission_batch: 8
 04-17 16:19:35 I core    template        : liquid
-04-17 16:19:35 I core    workdir         :
-                 /home/pwwang/github/pipen/examples/.pipen/MyPipeline
+04-17 16:19:35 I core    workdir         : /path/to/cwd/.pipen/MyPipeline
 04-17 16:19:35 I core    plugin_opts     :
-04-17 16:19:35 I core    template_opts   : filters={'realpath': <function realpath at
-                 0x7fc3eba12...
-04-17 16:19:35 I core                    : globals={'realpath': <function realpath at
-                 0x7fc3eba12...
+04-17 16:19:35 I core    template_opts   : filters={'realpath': <function realpath at 0x7fc3eba12...
+04-17 16:19:35 I core                    : globals={'realpath': <function realpath at 0x7fc3eba12...
 04-17 16:19:35 I core    Initializing plugins ...
 04-17 16:19:36 I core
 04-17 16:19:36 I core    ╭─────────────────────────────── P1 ────────────────────────────────╮
 04-17 16:19:36 I core    │ Sort input file                                                   │
 04-17 16:19:36 I core    ╰───────────────────────────────────────────────────────────────────╯
-04-17 16:19:36 I core    P1: Workdir:
-                 '/home/pwwang/github/pipen/examples/.pipen/MyPipeline/P1'
+04-17 16:19:36 I core    P1: Workdir: '/path/to/cwd/.pipen/MyPipeline/P1'
 04-17 16:19:36 I core    P1: <<< [START]
 04-17 16:19:36 I core    P1: >>> ['P2']
 04-17 16:19:36 I verbose P1: in.infile: /tmp/data.txt
-04-17 16:19:36 I verbose P1: out.outfile:
-                 /home/pwwang/github/pipen/examples/.pipen/MyPipeline/P1/0/output/intermediate
-                 .txt
+04-17 16:19:36 I verbose P1: out.outfile: /path/to/cwd/.pipen/MyPipeline/P1/0/output/intermediate.txt
 04-17 16:19:38 I verbose P1: Time elapsed: 00:00:02.051s
 04-17 16:19:38 I core
 04-17 16:19:38 I core    ╭═══════════════════════════════ P2 ════════════════════════════════╮
 04-17 16:19:38 I core    ║ Paste line number                                                 ║
 04-17 16:19:38 I core    ╰═══════════════════════════════════════════════════════════════════╯
-04-17 16:19:38 I core    P2: Workdir:
-                 '/home/pwwang/github/pipen/examples/.pipen/MyPipeline/P2'
+04-17 16:19:38 I core    P2: Workdir: '/path/to/cwd/.pipen/MyPipeline/P2'
 04-17 16:19:38 I core    P2: <<< ['P1']
 04-17 16:19:38 I core    P2: >>> [END]
-04-17 16:19:38 I verbose P2: in.infile:
-                 /home/pwwang/github/pipen/examples/.pipen/MyPipeline/P1/0/output/intermediate
-                 .txt
-04-17 16:19:38 I verbose P2: out.outfile:
-                 /home/pwwang/github/pipen/examples/MyPipeline-output/P2/result.txt
+04-17 16:19:38 I verbose P2: in.infile: /path/to/cwd/.pipen/MyPipeline/P1/0/output/intermediate.txt
+04-17 16:19:38 I verbose P2: out.outfile: /path/to/cwd/MyPipeline-output/P2/result.txt
 04-17 16:19:41 I verbose P2: Time elapsed: 00:00:02.051s
 04-17 16:19:41 I core
 
-
-              MYPIPELINE: 100%|██████████████████████████████| 2/2 [00:06<00:00, 0.35 procs/s]
+             MYPIPELINE: 100%|██████████████████████████████| 2/2 [00:06<00:00, 0.35 procs/s]
 ```
 
 ```shell
