@@ -131,14 +131,14 @@ docs = ["Pillow", "Sphinx (>3)", "sphinx-paramlinks", "sphinx_rtd_theme", "sphin
 
 [[package]]
 name = "cachetools"
-version = "6.2.2"
+version = "6.2.3"
 description = "Extensible memoizing collections and decorators"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev", "example"]
 files = [
-    {file = "cachetools-6.2.2-py3-none-any.whl", hash = "sha256:6c09c98183bf58560c97b2abfcedcbaf6a896a490f534b031b661d3723b45ace"},
-    {file = "cachetools-6.2.2.tar.gz", hash = "sha256:8e6d266b25e539df852251cfd6f990b4bc3a141db73b939058d809ebd2590fc6"},
+    {file = "cachetools-6.2.3-py3-none-any.whl", hash = "sha256:3fde34f7033979efb1e79b07ae529c2c40808bdd23b0b731405a48439254fba5"},
+    {file = "cachetools-6.2.3.tar.gz", hash = "sha256:64e0a4ddf275041dd01f5b873efa87c91ea49022b844b8c5d1ad3407c0f42f1f"},
 ]
 
 [[package]]
@@ -3215,14 +3215,14 @@ markers = {main = "python_version < \"3.11\"", dev = "python_version <= \"3.11\"
 
 [[package]]
 name = "tzdata"
-version = "2025.2"
+version = "2025.3"
 description = "Provider of IANA time zone data"
 optional = false
 python-versions = ">=2"
 groups = ["main", "dev"]
 files = [
-    {file = "tzdata-2025.2-py2.py3-none-any.whl", hash = "sha256:1a403fada01ff9221ca8044d701868fa132215d84beb92242d9acd2147f667a8"},
-    {file = "tzdata-2025.2.tar.gz", hash = "sha256:b60a638fcc0daffadf82fe0f57e53d06bdec2f36c4df66280ae79bce6bd6f2b9"},
+    {file = "tzdata-2025.3-py2.py3-none-any.whl", hash = "sha256:06a47e5700f3081aab02b2e513160914ff0694bce9947d6b76ebd6bf57cfc5d1"},
+    {file = "tzdata-2025.3.tar.gz", hash = "sha256:de39c2ca5dc7b0344f2eba86f49d614019d29f060fc4ebc8a417896a620b56a7"},
 ]
 
 [[package]]
@@ -3383,14 +3383,14 @@ files = [
 
 [[package]]
 name = "xqute"
-version = "0.10.19"
+version = "1.0.0rc1"
 description = "A job management system for python"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "xqute-0.10.19-py3-none-any.whl", hash = "sha256:bdf6202909e29efac20e7dcd878a648e426f3ce9681101616fef6e62c6179c51"},
-    {file = "xqute-0.10.19.tar.gz", hash = "sha256:7f588c500416cfbe2f5aae65c39e1451008107347663561d99327cfe69c6d552"},
+    {file = "xqute-1.0.0rc1-py3-none-any.whl", hash = "sha256:258e927844ffc58a584359a1b7232919df4bbe24c9b9d8e95be3b23aa0900e15"},
+    {file = "xqute-1.0.0rc1.tar.gz", hash = "sha256:a513f6f941916a023a2a2aa99b727eba157f79fb32528e6d874af2050893526b"},
 ]
 
 [package.dependencies]
@@ -3444,4 +3444,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "ce3b931b6d9e83e7d52ac9eadaf5b212e1e7ae3d24d6824b0628e2786580945b"
+content-hash = "69eb205c810d08332109ee6e48a4c2c8d91e9b59bc31489d65f69b0ac547b22f"

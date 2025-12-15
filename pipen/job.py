@@ -26,6 +26,7 @@ from .exceptions import (
 )
 from .template import Template
 from .utils import logger, strsplit, path_is_symlink, path_symlink_to
+from .pluginmgr import plugin
 
 if TYPE_CHECKING:  # pragma: no cover
     from .proc import Proc
@@ -194,6 +195,7 @@ class Job(XquteJob, JobCaching):
 
         lang = proc.lang or proc.pipeline.config.lang
         self.cmd = tuple(shlex.split(lang) + [self.script_file.mounted.fspath])
+        await plugin.hooks.on_job_init(self)
 
     @property
     def script_file(self) -> SpecPath:

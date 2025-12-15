@@ -57,15 +57,10 @@ See [`simplug`][1] for more details.
     The script is computed as a string that is about to compiled into a
     template. You can modify the script here.
 
-- `on_proc_init(proc)` (async)
-
-    When process object is initialized.
-    Allows plugins to modify the process attributes after initialization, but
-    before the jobs are initialized.
-
 - `on_proc_start(proc)` (async)
 
-    When process object initialization completes, including the `xqute` and job initialization. The `output_data` is also accessible here. The process is ready to run.
+    When process object initialization completes, including the `xqute`. The process is ready to run.
+    The jobs will be then initialized and fed to the scheduler.
 
 - `on_proc_shutdown(proc, sig)` (sync)
 

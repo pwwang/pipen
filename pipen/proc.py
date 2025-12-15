@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import inspect
 import logging
 from abc import ABC, ABCMeta
@@ -388,10 +387,8 @@ class Proc(ABC, metaclass=ProcMeta):
         if self.submission_batch is None:
             self.submission_batch = self.pipeline.config.submission_batch
 
-    async def init(self) -> None:
+    async def run(self) -> None:
         """Init all other properties and jobs"""
-        import pandas
-
         scheduler_opts = copy_dict(self.pipeline.config.scheduler_opts or {}, -1)
         scheduler_opts = update_dict(
             scheduler_opts,
@@ -420,12 +417,50 @@ class Proc(ABC, metaclass=ProcMeta):
         # init pbar
         self.pbar = self.pipeline.pbar.proc_bar(self.input.data.shape[0], self.name)
 
-        await plugin.hooks.on_proc_init(self)
-        await self._init_jobs()
-        self.__class__.output_data = pandas.DataFrame((job.output for job in self.jobs))
+        await plugin.hooks.on_proc_start(self)
+        await self.xqute.run_until_complete(keep_feeding=True)
+
+        cached_jobs = []
+        for i in range(self.input.data.shape[0]):
+            job = self.xqute.scheduler.create_job(i, "")
+            self.jobs.append(job)
+            await job.prepare(self)
+            # compute the output
+            job.output
+            if await job.cached:
+                cached_jobs.append(job.index)
+                await plugin.hooks.on_job_cached(job)
+            else:
+                envs = {
+                    "PIPEN_JOB_INDEX": job.index,
+                    "PIPEN_JOB_METADIR_SPEC": str(job.metadir),
+                    "PIPEN_JOB_OUTDIR_SPEC": str(job._outdir),
+                    "PIPEN_JOB_METADIR": str(job.metadir.mounted),
+                    "PIPEN_JOB_OUTDIR": str(job._outdir.mounted),
+                }
+                await self.xqute.put(job, envs=envs)
+
+        if cached_jobs:
+            self.log("info", "Cached jobs: %s", brief_list(cached_jobs))
+
+        await self.xqute.stop_feeding()
+        self.pbar.done()
+        await plugin.hooks.on_proc_done(
+            self,
+            (
+                False
+                if not self.succeeded
+                else "cached" if len(cached_jobs) == self.size
+                else True
+            )
+        )
 
     def gc(self):
         """GC process for the process to save memory after it's done"""
+        import pandas
+        # store the output data for the next processes
+        self.__class__.output_data = pandas.DataFrame((job.output for job in self.jobs))
+
         del self.xqute.jobs[:]
         self.xqute.jobs = []
 
@@ -463,43 +498,11 @@ class Proc(ABC, metaclass=ProcMeta):
             msg,
         )
 
-    async def run(self) -> None:
-        """Run the process"""
-
-        await plugin.hooks.on_proc_start(self)
-
-        cached_jobs = []
-        for job in self.jobs:
-            if await job.cached:
-                cached_jobs.append(job.index)
-                await plugin.hooks.on_job_cached(job)
-            else:
-                envs = {
-                    "PIPEN_JOB_INDEX": job.index,
-                    "PIPEN_JOB_METADIR_SPEC": str(job.metadir),
-                    "PIPEN_JOB_OUTDIR_SPEC": str(job._outdir),
-                    "PIPEN_JOB_METADIR": str(job.metadir.mounted),
-                    "PIPEN_JOB_OUTDIR": str(job._outdir.mounted),
-                }
-                await self.xqute.put(job, envs=envs)
-        if cached_jobs:
-            self.log("info", "Cached jobs: [%s]", brief_list(cached_jobs))
-        await self.xqute.run_until_complete()
-        self.pbar.done()
-        await plugin.hooks.on_proc_done(
-            self,
-            (
-                False
-                if not self.succeeded
-                else "cached" if len(cached_jobs) == self.size else True
-            ),
-        )
-
     # properties
     @cached_property
     def size(self) -> int:
         """The size of the process (# of jobs)"""
-        return len(self.jobs)
+        return self.input.data.shape[0]
 
     @cached_property
     def succeeded(self) -> bool:
@@ -540,30 +543,6 @@ class Proc(ABC, metaclass=ProcMeta):
         cls.nexts = my_nexts
 
         return requires  # type: ignore
-
-    async def _init_job(self, worker_id: int) -> None:
-        """A worker to initialize jobs
-
-        Args:
-            worker_id: The worker id
-        """
-        for job in self.jobs:
-            if job.index % self.submission_batch != worker_id:
-                continue
-            await job.prepare(self)
-            await plugin.hooks.on_job_init(job)
-
-    async def _init_jobs(self) -> None:
-        """Initialize all jobs
-
-        Args:
-            config: The pipeline configuration
-        """
-        for i in range(self.input.data.shape[0]):
-            job = self.xqute.scheduler.create_job(i, "")
-            self.jobs.append(job)
-
-        await asyncio.gather(*(self._init_job(i) for i in range(self.submission_batch)))
 
     def _compute_input(self) -> Mapping[str, Mapping[str, Any]]:
         """Calculate the input based on input and input data
