@@ -130,5 +130,13 @@ Colors are used to indicate different job statuses:
 - <span style="color:green;">■</span> green: succeeded/cached
 - <span style="color:red;">■</span> red: failed
 
+Since v1.0.0, the progress bars also show the number of jobs in different statuses:
+
+- I: initiated
+- Sbm: submitted
+- R: running
+- S: succeeded/cached
+- F: failed
+
 
 [1]: configurations.md

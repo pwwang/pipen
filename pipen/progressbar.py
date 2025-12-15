@@ -11,7 +11,7 @@ if TYPE_CHECKING:  # pragma: no cover
 # [12/02/20 12:44:06] I core
 #                 pipeline: 100%|
 # |        desc_len      |
-PBAR_DESC_LEN = 24
+PBAR_DESC_LEN = 23
 
 
 class ProcPBar:
@@ -24,8 +24,17 @@ class ProcPBar:
             total=proc_size,
             color="grey",
             desc=proc_name,
-            unit="jobs",
+            unit="jobs ",
             leave=False,
+            bar_format=(
+                '{desc}{desc_pad}{percentage:3.0f}%|{bar}| '
+                'I:{count_0:{len_total}d} '
+                'Sbm:{count_1:{len_total}d} '
+                'R:{count_2:{len_total}d} '
+                'S:{count_3:{len_total}d} '
+                'F:{count_4:{len_total}d} '
+                '[{rate:5.2f}{unit_pad}{unit}/s]'
+            )
         )
         self.submitted_counter = self.counter.add_subcounter("cyan")
         self.running_counter = self.counter.add_subcounter("yellow")
@@ -102,6 +111,11 @@ class PipelinePBar:
             color="yellow",
             desc=f"{ppln_name:>{desc_len}}:",
             unit="procs",
+            bar_format=(
+                '{desc}{desc_pad}{percentage:3.0f}%|{bar}| '
+                f'{{count:{{len_total}}d}}/{n_procs} '
+                '[{rate:5.2f}{unit_pad}{unit}/s]'
+            )
         )
         self.success_counter = self.running_counter.add_subcounter("green")
         self.failure_counter = self.running_counter.add_subcounter("red")
