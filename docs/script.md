@@ -64,5 +64,5 @@ Job results get automatically cached previous run is successful and input/output
 However, there are cases when you want to cache some results even when the job fails. For example, there is a very time-consuming chunk of code in your script that you don't want to run that part each time if it finishes once. In that case, you can save the intermediate results in a directory under `<job.outdir>`, where the directory is not specified in `output`. This keeps that directory untouched each time when the running data get purged if previous run fails.
 
 [1]: https://en.wikipedia.org/wiki/Shebang_(Unix)
-[2]: ../templating
-[3]: ../caching
+[2]: templating.md
+[3]: caching.md

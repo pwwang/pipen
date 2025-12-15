@@ -1,19 +1,28 @@
 site_name: pipen
+edit_uri: blob/master/docs/
 repo_url: https://github.com/pwwang/pipen
 repo_name: pwwang/pipen
 theme:
-    name: 'material'
+    name: 'rtd'
+    logo: 'rtd-logo.png'
 markdown_extensions:
-    - markdown.extensions.admonition
+    - attr_list
+    - pymdownx.blocks.admonition
+    - pymdownx.blocks.details
+    - pymdownx.blocks.tab:
+        alternate_style: true
     - pymdownx.superfences:
         preserve_tabs: true
     - toc:
         baselevel: 2
+        permalink: true
 plugins:
     - search # necessary for search to work
     - mkapi
 extra_css:
-    - style.css
+    - assets/style.css
+extra_javascript:
+    - assets/script.js
 nav:
     - 'Introduction': 'index.md'
     - 'Basics': 'basics.md'

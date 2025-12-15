@@ -131,4 +131,4 @@ Colors are used to indicate different job statuses:
 - <span style="color:red;">■</span> red: failed
 
 
-[1]: ../configurations
+[1]: configurations.md

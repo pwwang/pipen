@@ -100,4 +100,4 @@ For `dir`/`dirs`, if `dirsig > 0`, then the files inside the directories will be
 |`dir`|Use the data as a directory path|The directory will be created directly|
 |`file`|Use the data as a file path||
 
-[1]: ../templating
+[1]: templating.md

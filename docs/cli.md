@@ -75,9 +75,9 @@ This command prints the versions of `pipen` and its dependencies.
 - [`pipen-cli-run`][8]: A pipen cli plugin to run a process or a pipeline
 
 [1]: https://github.com/pwwang/argx
-[2]: ../plugin
-[3]: ../templating
-[4]: ../scheduler
+[2]: plugin.md
+[3]: templating.md
+[4]: scheduler.md
 [5]: https://github.com/pwwang/pipen-cli-init
 [6]: https://github.com/pwwang/pipen-cli-ref
 [7]: https://github.com/pwwang/pipen-cli-require

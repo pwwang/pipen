@@ -272,7 +272,7 @@ See [CLI][11] for more details.
 [7]: https://github.com/pwwang/pipen-dry
 [8]: https://github.com/pwwang/pipen-filters
 [9]: https://github.com/pwwang/pipen-gcs
-[11]: ../cli
+[11]: cli.md
 [12]: https://github.com/pwwang/pipen-annotate
 [13]: https://github.com/pwwang/pipen-board
 [14]: https://github.com/pwwang/pipen-lock

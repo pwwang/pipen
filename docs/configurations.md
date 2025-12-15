@@ -95,10 +95,10 @@ sge_q = "7-days"
 
 Then the queue to run the jobs will be `7-days`. Note that we didn't specify the `scheduler` in `./.pipen.toml`, which is inherited from `~/.pipen.toml`.
 
-[1]: ../defining-proc
-[2]: ../caching
-[3]: ../error
-[4]: ../templating
-[5]: ../script
+[1]: defining-proc.md
+[2]: caching.md
+[3]: error.md
+[4]: templating.md
+[5]: script.md
 [6]: https://github.com/pwwang/python-simpleconf#loading-configurations
 [7]: https://github.com/toml-lang/toml

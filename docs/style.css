@@ -113,3 +113,14 @@
 .mkapi-object-body.module.top * {
     font-size: .75rem !important;
 }
+
+button.ns-fold {
+    font-size: 0.6rem;
+    padding: 0.16rem 0.24rem;
+    margin-left: 0.36rem;
+    background-color: #e5f7ff;
+    border: 1px solid #a2c7df;
+    color: #6b99b8;
+    border-radius: 0.2rem;
+    vertical-align: middle;
+}
