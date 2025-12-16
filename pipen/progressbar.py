@@ -55,7 +55,6 @@ class ProcPBar:
             desc=proc_name,
             unit="jobs ",
             leave=False,
-            bar_format=bar_format,
         )
         self.proc_size = proc_size
         self.submitted_counter: enlighten.SubCounter = self.counter.add_subcounter(
@@ -70,6 +69,10 @@ class ProcPBar:
         self.failure_counter: enlighten.SubCounter = self.counter.add_subcounter(
             "red"
         )
+        # defer setting the bar_format, in case self.counter is rendered too early
+        # ValueError: Reserve field 'count_0' specified in format,
+        # but no subcounters are configured
+        self.counter.bar_format = bar_format
 
     def update_job_inited(self):
         """Update the progress bar when a job is init'ed"""
