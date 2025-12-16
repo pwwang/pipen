@@ -21,6 +21,7 @@ class ProcPBar:
         "counter",
         "proc_size",
         "bar_format",
+        "queued_counter",
         "submitted_counter",
         "running_counter",
         "success_counter",
@@ -36,10 +37,10 @@ class ProcPBar:
             bar_format = (
                 '{desc}{desc_pad}{percentage:3.0f}%|{bar}| '
                 'I:{count_0:{len_total}d} '
-                'Sbm:{count_1:{len_total}d} '
-                'R:{count_2:{len_total}d} '
-                'S:{count_3:{len_total}d} '
-                'F:{count_4:{len_total}d} '
+                'Q:{count_1:{len_total}d} '
+                'S:{count_2:{len_total}d} '
+                'R:{count_3:{len_total}d} '
+                'D:{count_4:>{len_total}d}|{count_5:<{len_total}d} '
                 '[{rate:5.2f}{unit_pad}{unit}/s]'
             )
         else:
@@ -57,6 +58,9 @@ class ProcPBar:
             leave=False,
         )
         self.proc_size = proc_size
+        self.queued_counter: enlighten.SubCounter = self.counter.add_subcounter(
+            "lightblue"
+        )
         self.submitted_counter: enlighten.SubCounter = self.counter.add_subcounter(
             "cyan"
         )
@@ -81,12 +85,21 @@ class ProcPBar:
 
         self.counter.update()
 
+    def update_job_queued(self):
+        """Update the progress bar when a job is queued"""
+        if self.bar_format:
+            self.counter.bar_format = self.bar_format.format('Queued')
+        try:
+            self.queued_counter.update_from(self.counter)
+        except ValueError:  # pragma: no cover
+            pass
+
     def update_job_submitted(self):
         """Update the progress bar when a job is init'ed"""
         if self.bar_format:
             self.counter.bar_format = self.bar_format.format('Submitted')
         try:
-            self.submitted_counter.update_from(self.counter)
+            self.submitted_counter.update_from(self.queued_counter)
         except ValueError:  # pragma: no cover
             pass
 

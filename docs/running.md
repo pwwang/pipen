@@ -125,7 +125,8 @@ And the above progress bars indicate that the running process has 11 jobs in tot
 Colors are used to indicate different job statuses:
 
 - <span style="color:grey;">■</span> grey: initiated
-- <span style="color:cyan;">■</span> cyan: prepared
+- <span style="color:lightblue;">■</span> light blue: queued (added in v1.0.3)
+- <span style="color:cyan;">■</span> cyan: submitted
 - <span style="color:yellow;">■</span> yellow: running
 - <span style="color:green;">■</span> green: succeeded/cached
 - <span style="color:red;">■</span> red: failed
@@ -133,10 +134,10 @@ Colors are used to indicate different job statuses:
 Since v1.0.0, the progress bars also show the number of jobs in different statuses:
 
 - I: initiated
-- Sbm: submitted
+- Q: queued (added in v1.0.3)
+- S: submitted
 - R: running
-- S: succeeded/cached
-- F: failed
+- D: succeeded/cached | failed
 
 For single-job processes, the job progress bar will be simplified to show the status of the job directly.
 
