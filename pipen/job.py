@@ -178,6 +178,8 @@ class Job(XquteJob, JobCaching):
 
         if not proc.script:
             self.cmd = ("true", )
+            # compute the output
+            self.output
             return
 
         try:
@@ -195,6 +197,8 @@ class Job(XquteJob, JobCaching):
 
         lang = proc.lang or proc.pipeline.config.lang
         self.cmd = tuple(shlex.split(lang) + [self.script_file.mounted.fspath])
+        # compute the output
+        self.output
         await plugin.hooks.on_job_init(self)
 
     @property

@@ -399,8 +399,7 @@ class Proc(ABC, metaclass=ProcMeta):
             job = self.xqute.scheduler.create_job(i, "")
             self.jobs.append(job)
             await job.prepare(self)
-            # compute the output
-            job.output
+
             if await job.cached:
                 cached_jobs.append(job.index)
                 await plugin.hooks.on_job_cached(job)
