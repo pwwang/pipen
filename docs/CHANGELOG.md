@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.2
+
+- fix: make sure on_job_init() hook is called when no script was specified
+
 ## 1.0.1
 
 - fix: make sure job.output is computed before on_job_init() hook
