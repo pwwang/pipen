@@ -7,7 +7,7 @@ from typing import Any, Mapping, Type
 from liquid import Liquid
 
 from .defaults import TEMPLATE_ENTRY_GROUP
-from .exceptions import NoSuchTemplateEngineError, WrongTemplateEnginTypeError
+from .exceptions import NoSuchTemplateEngineError, WrongTemplateEngineTypeError
 from .utils import is_subclass, load_entrypoints
 
 __all__ = [
@@ -141,7 +141,7 @@ def get_template_engine(template: str | Type[Template]) -> Type[Template]:
     ):  # pragma: no cover
         if name == template:
             if not is_subclass(obj, Template):
-                raise WrongTemplateEnginTypeError(
+                raise WrongTemplateEngineTypeError(
                     "Template engine should be a subclass of "
                     "pipen.templates.Template."
                 )

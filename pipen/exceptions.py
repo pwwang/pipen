@@ -54,7 +54,7 @@ class NoSuchTemplateEngineError(PipenException):
     """When specified template engine cannot be found"""
 
 
-class WrongTemplateEnginTypeError(PipenException, TypeError):
+class WrongTemplateEngineTypeError(PipenException, TypeError):
     """When specified tempalte engine is not a subclass of Scheduler"""
 
 
