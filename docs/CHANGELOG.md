@@ -2,7 +2,9 @@
 
 ## 1.0.3
 
+- chore: bump xqute to 1.0.1
 - fix: defer setting bar_format to prevent ValueError when rendering counter
+- feat: add queued job status to progress bar and update related hooks
 
 ## 1.0.2
 
