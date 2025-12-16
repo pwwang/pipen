@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.0.1
+
+- fix: make sure job.output is computed before on_job_init() hook
+- feat: show direct job status for single-job process
+- chore: add __slots__ to Template class for improved memory efficiency
+- feat: enhance job progress bar to indicate cached jobs for single-job processes
+
 ## 1.0.0
 
 - chore: adopt xqute 1.0.0
