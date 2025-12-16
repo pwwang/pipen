@@ -36,10 +36,10 @@ class ProcPBar:
             self.bar_format = None
             bar_format = (
                 '{desc}{desc_pad}{percentage:3.0f}%|{bar}| '
-                'I:{count_0:{len_total}d} '
-                'Q:{count_1:{len_total}d} '
-                'S:{count_2:{len_total}d} '
-                'R:{count_3:{len_total}d} '
+                'I:{count_0:<{len_total}d} '
+                'Q:{count_1:<{len_total}d} '
+                'S:{count_2:<{len_total}d} '
+                'R:{count_3:<{len_total}d} '
                 'D:{count_4:>{len_total}d}|{count_5:<{len_total}d} '
                 '[{rate:5.2f}{unit_pad}{unit}/s]'
             )
