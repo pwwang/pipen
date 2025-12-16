@@ -355,7 +355,7 @@ class PipenMainPlugin:
         """Update the progress bar when a job is cached"""
         job.proc.pbar.update_job_submitted()
         job.proc.pbar.update_job_running()
-        job.proc.pbar.update_job_succeeded()
+        job.proc.pbar.update_job_succeeded(cached=True)
         job.status = JobStatus.FINISHED
 
     @plugin.impl

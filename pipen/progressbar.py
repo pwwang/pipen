@@ -102,10 +102,12 @@ class ProcPBar:
         except ValueError:  # pragma: no cover
             pass
 
-    def update_job_succeeded(self):
+    def update_job_succeeded(self, cached: bool = False):
         """Update the progress bar when a job is succeeded"""
         if self.bar_format:
-            self.counter.bar_format = self.bar_format.format('Succeeded')
+            self.counter.bar_format = self.bar_format.format(
+                'Cached' if cached else 'Succeeded'
+            )
         try:
             self.success_counter.update_from(self.running_counter)
         except ValueError:  # pragma: no cover

@@ -138,5 +138,7 @@ Since v1.0.0, the progress bars also show the number of jobs in different status
 - S: succeeded/cached
 - F: failed
 
+For single-job processes, the job progress bar will be simplified to show the status of the job directly.
+
 
 [1]: configurations.md
