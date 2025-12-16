@@ -2320,14 +2320,14 @@ wcwidth = "*"
 
 [[package]]
 name = "proto-plus"
-version = "1.26.1"
+version = "1.27.0"
 description = "Beautiful, Pythonic protocol buffers"
 optional = false
 python-versions = ">=3.7"
 groups = ["dev", "example"]
 files = [
-    {file = "proto_plus-1.26.1-py3-none-any.whl", hash = "sha256:13285478c2dcf2abb829db158e1047e2f1e8d63a077d94263c2b88b043c75a66"},
-    {file = "proto_plus-1.26.1.tar.gz", hash = "sha256:21a515a4c4c0088a773899e23c7bbade3d18f9c66c73edd4c7ee3816bc96a012"},
+    {file = "proto_plus-1.27.0-py3-none-any.whl", hash = "sha256:1baa7f81cf0f8acb8bc1f6d085008ba4171eaf669629d1b6d1673b21ed1c0a82"},
+    {file = "proto_plus-1.27.0.tar.gz", hash = "sha256:873af56dd0d7e91836aee871e5799e1c6f1bda86ac9a983e0bb9f0c266a568c4"},
 ]
 
 [package.dependencies]
@@ -3380,14 +3380,14 @@ files = [
 
 [[package]]
 name = "xqute"
-version = "1.0.0"
+version = "1.0.1"
 description = "A job management system for python"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "xqute-1.0.0-py3-none-any.whl", hash = "sha256:5e2310dfb2ba9567d24e899da74196958d96a204da5e36ad5724757c4039eb98"},
-    {file = "xqute-1.0.0.tar.gz", hash = "sha256:c12f6b99759593cb87f9dd750704c0510edbf255d5a445c3caefc6a835884b7d"},
+    {file = "xqute-1.0.1-py3-none-any.whl", hash = "sha256:7a9ec63e877a29f25a848a46b2ae4031619fe81f737d3fdb61367e8eed335b06"},
+    {file = "xqute-1.0.1.tar.gz", hash = "sha256:0d0f8cf195a05501a49c19d4b2af5fd71f18ccb93708d9ebf7e8bf979b2b113e"},
 ]
 
 [package.dependencies]
