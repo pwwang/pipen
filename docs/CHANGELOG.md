@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.3
+
+- fix: defer setting bar_format to prevent ValueError when rendering counter
+
 ## 1.0.2
 
 - fix: make sure on_job_init() hook is called when no script was specified
