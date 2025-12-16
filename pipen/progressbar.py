@@ -17,16 +17,23 @@ PBAR_DESC_LEN = 23
 class ProcPBar:
     """The progress bar for processes"""
 
+    __slots__ = (
+        "counter",
+        "proc_size",
+        "bar_format",
+        "submitted_counter",
+        "running_counter",
+        "success_counter",
+        "failure_counter",
+    )
+
     def __init__(
         self, manager: enlighten.Manager, proc_size: int, proc_name: str
     ) -> None:
-        self.counter = manager.counter(
-            total=proc_size,
-            color="grey",
-            desc=proc_name,
-            unit="jobs ",
-            leave=False,
-            bar_format=(
+        """Initialize the progress bar for a process"""
+        if proc_size > 1:
+            self.bar_format = None
+            bar_format = (
                 '{desc}{desc_pad}{percentage:3.0f}%|{bar}| '
                 'I:{count_0:{len_total}d} '
                 'Sbm:{count_1:{len_total}d} '
@@ -35,18 +42,46 @@ class ProcPBar:
                 'F:{count_4:{len_total}d} '
                 '[{rate:5.2f}{unit_pad}{unit}/s]'
             )
+        else:
+            self.bar_format = (
+                '{{desc}}{{desc_pad}}{{percentage:3.0f}}%|{{bar}}| '
+                '{:^9} [{{rate:5.2f}}{{unit_pad}}{{unit}}/s]'
+            )
+            bar_format = self.bar_format.format('-----------')
+
+        self.counter: enlighten.Counter = manager.counter(
+            total=proc_size,
+            color="grey",
+            desc=proc_name,
+            unit="jobs ",
+            leave=False,
+            bar_format=bar_format,
         )
-        self.submitted_counter = self.counter.add_subcounter("cyan")
-        self.running_counter = self.counter.add_subcounter("yellow")
-        self.success_counter = self.counter.add_subcounter("green")
-        self.failure_counter = self.counter.add_subcounter("red")
+        self.proc_size = proc_size
+        self.submitted_counter: enlighten.SubCounter = self.counter.add_subcounter(
+            "cyan"
+        )
+        self.running_counter: enlighten.SubCounter = self.counter.add_subcounter(
+            "yellow"
+        )
+        self.success_counter: enlighten.SubCounter = self.counter.add_subcounter(
+            "green"
+        )
+        self.failure_counter: enlighten.SubCounter = self.counter.add_subcounter(
+            "red"
+        )
 
     def update_job_inited(self):
         """Update the progress bar when a job is init'ed"""
+        if self.bar_format:
+            self.counter.bar_format = self.bar_format.format("Init'ed")
+
         self.counter.update()
 
     def update_job_submitted(self):
         """Update the progress bar when a job is init'ed"""
+        if self.bar_format:
+            self.counter.bar_format = self.bar_format.format('Submitted')
         try:
             self.submitted_counter.update_from(self.counter)
         except ValueError:  # pragma: no cover
@@ -54,11 +89,14 @@ class ProcPBar:
 
     def update_job_retrying(self):
         """Update the progress bar when a job is retrying"""
-        # self.running_counter.count -= 1
+        if self.bar_format:
+            self.counter.bar_format = self.bar_format.format('Retrying')
         self.failure_counter.update(-1)
 
     def update_job_running(self):
         """Update the progress bar when a job is running"""
+        if self.bar_format:
+            self.counter.bar_format = self.bar_format.format('Running')
         try:
             self.running_counter.update_from(self.submitted_counter)
         except ValueError:  # pragma: no cover
@@ -66,6 +104,8 @@ class ProcPBar:
 
     def update_job_succeeded(self):
         """Update the progress bar when a job is succeeded"""
+        if self.bar_format:
+            self.counter.bar_format = self.bar_format.format('Succeeded')
         try:
             self.success_counter.update_from(self.running_counter)
         except ValueError:  # pragma: no cover
@@ -78,6 +118,8 @@ class ProcPBar:
 
     def update_job_failed(self):
         """Update the progress bar when a job is failed"""
+        if self.bar_format:
+            self.counter.bar_format = self.bar_format.format('Failed')
         try:
             self.failure_counter.update_from(self.running_counter)
         except ValueError:  # pragma: no cover
@@ -98,6 +140,14 @@ class ProcPBar:
 
 class PipelinePBar:
     """Progress bar for the pipeline"""
+
+    __slots__ = (
+        "manager",
+        "running_counter",
+        "success_counter",
+        "failure_counter",
+        "desc_len",
+    )
 
     def __init__(self, n_procs: int, ppln_name: str) -> None:
         """Initialize progress bar for pipeline"""
