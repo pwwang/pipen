@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.4
+
+- chore: adjust bar_format alignment for better readability
+
 ## 1.0.3
 
 - chore: bump xqute to 1.0.1
