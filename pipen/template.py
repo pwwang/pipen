@@ -21,6 +21,8 @@ __all__ = [
 class Template(ABC):
     """Base class wrapper to wrap template for pipen"""
 
+    __slots__ = ("engine",)
+
     def __init__(
         self,
         source: Any,
