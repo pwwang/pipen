@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import inspect
 import logging
 from abc import ABC, ABCMeta
@@ -387,6 +388,34 @@ class Proc(ABC, metaclass=ProcMeta):
         if self.submission_batch is None:
             self.submission_batch = self.pipeline.config.submission_batch
 
+    async def _prepare_jobs_in_batch(self, indexes: Sequence[int]) -> List[int]:
+        """Prepare jobs in batch
+
+        Args:
+            indexes: The job indexes to prepare
+        """
+        cached_jobs = []
+        for i in indexes:
+            job = self.xqute.scheduler.create_job(i, "")
+            self.jobs.append(job)
+            await job.prepare(self)
+            # compute the output
+            job.output
+            if await job.cached:
+                cached_jobs.append(job.index)
+                await plugin.hooks.on_job_cached(job)
+            else:
+                envs = {
+                    "PIPEN_JOB_INDEX": job.index,
+                    "PIPEN_JOB_METADIR_SPEC": str(job.metadir),
+                    "PIPEN_JOB_OUTDIR_SPEC": str(job._outdir),
+                    "PIPEN_JOB_METADIR": str(job.metadir.mounted),
+                    "PIPEN_JOB_OUTDIR": str(job._outdir.mounted),
+                }
+                await self.xqute.put(job, envs=envs)
+
+        return cached_jobs
+
     async def run(self) -> None:
         """Init all other properties and jobs"""
         scheduler_opts = copy_dict(self.pipeline.config.scheduler_opts or {}, -1)
@@ -420,26 +449,23 @@ class Proc(ABC, metaclass=ProcMeta):
         await plugin.hooks.on_proc_start(self)
         await self.xqute.run_until_complete(keep_feeding=True)
 
-        cached_jobs = []
+        # split job preparation into batches (self.submission_batch)
+        # for example, job indexes: 0-9 and submission_batch=3
+        # will be split into [0,3,6,9], [1,4,7], [2,5,8]
+        job_indexes_batches: List[List[int]] = [
+            [] for _ in range(self.submission_batch)
+        ]
         for i in range(self.input.data.shape[0]):
-            job = self.xqute.scheduler.create_job(i, "")
-            self.jobs.append(job)
-            await job.prepare(self)
-            # compute the output
-            job.output
-            if await job.cached:
-                cached_jobs.append(job.index)
-                await plugin.hooks.on_job_cached(job)
-            else:
-                envs = {
-                    "PIPEN_JOB_INDEX": job.index,
-                    "PIPEN_JOB_METADIR_SPEC": str(job.metadir),
-                    "PIPEN_JOB_OUTDIR_SPEC": str(job._outdir),
-                    "PIPEN_JOB_METADIR": str(job.metadir.mounted),
-                    "PIPEN_JOB_OUTDIR": str(job._outdir.mounted),
-                }
-                await self.xqute.put(job, envs=envs)
+            job_indexes_batches[i % self.submission_batch].append(i)
 
+        cached_job_list = await asyncio.gather(
+            *(
+                self._prepare_jobs_in_batch(batch)
+                for batch in job_indexes_batches
+            )
+        )
+
+        cached_jobs = [i for sublist in cached_job_list for i in sublist]
         if cached_jobs:
             self.log("info", "Cached jobs: %s", brief_list(cached_jobs))
 
