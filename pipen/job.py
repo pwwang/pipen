@@ -178,25 +178,23 @@ class Job(XquteJob, JobCaching):
 
         if not proc.script:
             self.cmd = ("true", )
-            # compute the output
-            self.output
-            return
+        else:
+            try:
+                script = proc.script.render(self.template_data)
+            except Exception as exc:
+                raise TemplateRenderingError(
+                    f"[{self.proc.name}] Failed to render script."
+                ) from exc
 
-        try:
-            script = proc.script.render(self.template_data)
-        except Exception as exc:
-            raise TemplateRenderingError(
-                f"[{self.proc.name}] Failed to render script."
-            ) from exc
+            if self.script_file.is_file() and self.script_file.read_text() != script:
+                self.log("debug", "Job script updated.")
+                self.script_file.write_text(script)
+            elif not self.script_file.is_file():
+                self.script_file.write_text(script)
 
-        if self.script_file.is_file() and self.script_file.read_text() != script:
-            self.log("debug", "Job script updated.")
-            self.script_file.write_text(script)
-        elif not self.script_file.is_file():
-            self.script_file.write_text(script)
+            lang = proc.lang or proc.pipeline.config.lang
+            self.cmd = tuple(shlex.split(lang) + [self.script_file.mounted.fspath])
 
-        lang = proc.lang or proc.pipeline.config.lang
-        self.cmd = tuple(shlex.split(lang) + [self.script_file.mounted.fspath])
         # compute the output
         self.output
         await plugin.hooks.on_job_init(self)
