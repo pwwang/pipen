@@ -362,7 +362,7 @@ class PipenMainPlugin:
         job.proc.pbar.update_job_submitted()
         job.proc.pbar.update_job_running()
         job.proc.pbar.update_job_succeeded(cached=True)
-        job.status = JobStatus.FINISHED
+        await job.set_status(JobStatus.FINISHED)
 
     @plugin.impl
     async def on_job_succeeded(job: Job):
@@ -374,16 +374,21 @@ class PipenMainPlugin:
                 continue
 
             path = job.output[outkey].spec
-            output_exists = path.exists()
+            output_exists = await path.a_exists()
             if outtype == ProcOutputType.DIR:
-                output_exists = len(list(path.iterdir())) > 0
+                is_empty = True
+                async for _ in path.a_iterdir():
+                    is_empty = False
+                    break
+
+                output_exists = output_exists and (not is_empty)
 
             if not output_exists:
-                job.status = JobStatus.FAILED
+                await job.set_status(JobStatus.FAILED)
                 job.proc.pbar.update_job_failed()
                 try:
                     # in case the stderr file in the cloud not being synced yet
-                    stderr = job.stderr_file.read_text()
+                    stderr = await job.stderr_file.a_read_text()
                 except Exception:  # pragma: no cover
                     stderr = ""
 
@@ -393,7 +398,7 @@ class PipenMainPlugin:
                 else:
                     stderr += "."
 
-                job.stderr_file.write_text(stderr)
+                await job.stderr_file.a_write_text(stderr)
                 break
         else:
             await job.cache()
@@ -403,7 +408,7 @@ class PipenMainPlugin:
     async def on_job_failed(job: Job):
         """Update the progress bar when a job is failed"""
         job.proc.pbar.update_job_failed()
-        if job.status == JobStatus.RETRYING:
+        if job._error_retry and job.trial_count < job._num_retries:
             job.log("debug", "Retrying #%s", job.trial_count + 1)
             job.proc.pbar.update_job_retrying()
 
@@ -411,7 +416,7 @@ class PipenMainPlugin:
     async def on_job_killed(job: Job):
         """Update the status of a killed job"""
         # instead of FINISHED to force the whole pipeline to quit
-        job.status = JobStatus.FAILED  # pragma: no cover
+        await job.set_status(JobStatus.FAILED)  # pragma: no cover
 
 
 plugin.register(PipenMainPlugin)

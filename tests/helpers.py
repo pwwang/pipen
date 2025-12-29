@@ -1,11 +1,10 @@
 import sys
 # import signal
 from tempfile import gettempdir
-from pathlib import Path
-# from shutil import rmtree
-# from multiprocessing import Process
 
 import pytest
+from hashlib import md5
+from panpath import PanPath
 from pipen import Proc, Pipen, plugin
 from pipen.utils import is_loading_pipeline
 
@@ -202,8 +201,8 @@ def pipen(tmp_path):
         desc="No description",
         loglevel="debug",
         cache=True,
-        workdir=tmp_path / ".pipen",
-        outdir=tmp_path / f"pipen_simple_{index}",
+        workdir=PanPath(tmp_path) / ".pipen",
+        outdir=PanPath(tmp_path) / f"pipen_simple_{index}",
     )
 
     return pipen_simple
@@ -219,8 +218,8 @@ def pipen_with_plugin(tmp_path):
         loglevel="debug",
         cache=True,
         plugins=[SimplePlugin()],
-        workdir=tmp_path / ".pipen",
-        outdir=tmp_path / f"pipen_simple_{index}",
+        workdir=PanPath(tmp_path) / ".pipen",
+        outdir=PanPath(tmp_path) / f"pipen_simple_{index}",
     )
 
     return pipen_simple
@@ -235,33 +234,34 @@ class PipenIsLoading(Pipen):
 
 @pytest.fixture
 def infile(tmp_path):
-    out = tmp_path / "infile"
+    out = PanPath(tmp_path) / "infile"
     out.write_text("in")
     return out
 
 
 @pytest.fixture
 def infile1(tmp_path):
-    out = tmp_path / "infile1"
+    out = PanPath(tmp_path) / "infile1"
     out.write_text("in1")
     return out
 
 
 @pytest.fixture
 def infile2(tmp_path):
-    out = tmp_path / "infile2"
+    out = PanPath(tmp_path) / "infile2"
     out.write_text("in2")
     return out
 
 
-def create_dead_link(path):
-    target = Path(gettempdir()) / "__NoSuchFile__"
-    target.write_text("")
-    link = Path(path)
-    if link.exists() or link.is_symlink():
-        link.unlink()
-    link.symlink_to(target)
-    target.unlink()
+async def create_dead_link(path):
+    prefix = md5(str(path).encode()).hexdigest()[:8]
+    target = PanPath(gettempdir()) / f"NoSuchFile.{prefix}"
+    await target.a_touch()
+    link = PanPath(path)
+    if await link.a_exists() or await link.a_is_symlink():
+        await link.a_unlink()
+    await link.a_symlink_to(target)
+    await target.a_unlink()
 
 
 # for load_pipeline tests

@@ -7,8 +7,6 @@ import inspect
 import logging
 from abc import ABC, ABCMeta
 from functools import cached_property
-from os import PathLike
-from pathlib import Path
 from typing import (
     Any,
     Dict,
@@ -23,7 +21,7 @@ from diot import Diot
 from rich import box
 from rich.panel import Panel
 from varname import VarnameException, varname
-from yunpath import AnyPath
+from panpath import PanPath
 from xqute import JobStatus, Xqute
 
 from .defaults import ProcInputType
@@ -54,6 +52,7 @@ from .utils import (
 )
 
 if TYPE_CHECKING:  # pragma: no cover
+    from pathlib import Path
     from .pipen import Pipen
     from .scheduler import Scheduler
 
@@ -182,7 +181,7 @@ class Proc(ABC, metaclass=ProcMeta):
 
     nexts: Sequence[Type[Proc]] = None
     output_data: Any = None
-    workdir: PathLike = None
+    workdir: str | Path = None
     # metadata that marks the process
     # Can also be used for plugins
     # It's not inheirted
@@ -344,7 +343,7 @@ class Proc(ABC, metaclass=ProcMeta):
         self.jobs: List[Any] = []
         self.xqute: Xqute | None = None
         self.__class__.workdir = (
-            AnyPath(self.pipeline.workdir) / self.name  # type: ignore
+            PanPath(self.pipeline.workdir) / self.name  # type: ignore
         )
         # plugins can modify some default attributes
         plugin.hooks.on_proc_create(self)
@@ -381,9 +380,9 @@ class Proc(ABC, metaclass=ProcMeta):
         self.scheduler: Type[Scheduler] = get_scheduler(  # type: ignore
             self.scheduler or self.pipeline.config.scheduler
         )
-        # script
-        self.script = self._compute_script()  # type: ignore
-        self.workdir.mkdir(exist_ok=True)
+        # run them asynchronously later in Pipen.async_run()
+        # self.script = self._compute_script()  # type: ignore
+        # self.workdir.mkdir(exist_ok=True)
 
         if self.submission_batch is None:
             self.submission_batch = self.pipeline.config.submission_batch
@@ -396,7 +395,7 @@ class Proc(ABC, metaclass=ProcMeta):
         """
         cached_jobs = []
         for i in indexes:
-            job = self.xqute.scheduler.create_job(i, "")
+            job = await self.xqute.scheduler.create_job(i, "")
             self.jobs.append(job)
             await job.prepare(self)
 
@@ -407,11 +406,11 @@ class Proc(ABC, metaclass=ProcMeta):
                 envs = {
                     "PIPEN_JOB_INDEX": job.index,
                     "PIPEN_JOB_METADIR_SPEC": str(job.metadir),
-                    "PIPEN_JOB_OUTDIR_SPEC": str(job._outdir),
+                    "PIPEN_JOB_OUTDIR_SPEC": str(job.outdir),
                     "PIPEN_JOB_METADIR": str(job.metadir.mounted),
-                    "PIPEN_JOB_OUTDIR": str(job._outdir.mounted),
+                    "PIPEN_JOB_OUTDIR": str(job.outdir.mounted),
                 }
-                await self.xqute.put(job, envs=envs)
+                await self.xqute.feed(job, envs=envs)
 
         return cached_jobs
 
@@ -439,7 +438,7 @@ class Proc(ABC, metaclass=ProcMeta):
             scheduler_opts=scheduler_opts,
         )
         self.submission_batch = self.xqute.scheduler.subm_batch
-        self.xqute.scheduler.post_init(self)
+        await self.xqute.scheduler.post_init(self)
         # for the plugin hooks to access
         self.xqute.proc = self
         # init pbar
@@ -532,7 +531,8 @@ class Proc(ABC, metaclass=ProcMeta):
     @cached_property
     def succeeded(self) -> bool:
         """Check if the process is succeeded (all jobs succeeded)"""
-        return all(job.status == JobStatus.FINISHED for job in self.jobs)
+        # _status was updated by xqute
+        return all(job._status == JobStatus.FINISHED for job in self.jobs)
 
     # Private methods
     @classmethod
@@ -671,15 +671,15 @@ class Proc(ABC, metaclass=ProcMeta):
 
         return self.template(self.output, **self.template_opts)  # type: ignore
 
-    def _compute_script(self) -> Template:
+    async def _compute_script(self) -> Template:
         """Compute the script for jobs to render"""
-        if not self.script:
+        if not self.__class__.script:
             self.log("warning", "No script specified.")
             return None
 
-        script = self.script
+        script = self.__class__.script
         if script.startswith("file://"):
-            script_file = Path(script[7:])
+            script_file = PanPath(script)
             if not script_file.is_absolute():
                 base = get_base(
                     self.__class__,
@@ -687,10 +687,10 @@ class Proc(ABC, metaclass=ProcMeta):
                     script,
                     lambda klass: getattr(klass, "script", None),
                 )
-                script_file = Path(inspect.getfile(base)).parent / script_file
-            if not script_file.is_file():
+                script_file = PanPath(inspect.getfile(base)).parent / script_file
+            if not await script_file.a_is_file():
                 raise ProcScriptFileNotFound(f"No such script file: {script_file}")
-            script = script_file.read_text()
+            script = await script_file.a_read_text()
 
         self.script = ignore_firstline_dedent(script)
         if not self.lang:

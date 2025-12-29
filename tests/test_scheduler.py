@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock
 
-from yunpath import AnyPath
+from panpath import PanPath
 from pipen.scheduler import (
     get_scheduler,
     LocalScheduler,
@@ -56,7 +56,8 @@ def test_get_scheduler():
         get_scheduler("nosuchscheduler")
 
 
-def test_container_scheduler_init(tmp_path):
+async def test_container_scheduler_init(tmp_path):
+    tmp_path = PanPath(tmp_path)
     scheduler = get_scheduler("container")(
         image="bash:latest",
         entrypoint="/usr/local/bin/bash",
@@ -66,7 +67,7 @@ def test_container_scheduler_init(tmp_path):
     pipeline = MagicMock(outdir=tmp_path / "outdir")
     proc = MagicMock(pipeline=pipeline)
     proc.name = "test_proc"
-    scheduler.post_init(proc)
+    await scheduler.post_init(proc)
     assert (
         scheduler.volumes[-1]
         == f"{tmp_path}/outdir:/mnt/disks/pipen-pipeline/outdir"
@@ -113,7 +114,7 @@ def test_gbatch_scheduler_init():
     assert task_spec["runnables"][0]["container"]["commands"] == ["-c"]
 
 
-def test_gbatch_scheduler_post_init_non_gs_outdir():
+async def test_gbatch_scheduler_post_init_non_gs_outdir():
     gbatch = get_scheduler("gbatch")(
         project="test_project",
         location="test_location",
@@ -123,20 +124,20 @@ def test_gbatch_scheduler_post_init_non_gs_outdir():
     proc = MagicMock(pipeline=pipeline)
     proc.name = "test_proc"
     with pytest.raises(ValueError):
-        gbatch.post_init(proc)
+        await gbatch.post_init(proc)
 
 
-def test_gbatch_scheduler_post_init():
+async def test_gbatch_scheduler_post_init():
     gbatch = get_scheduler("gbatch")(
         project="test_project",
         location="test_location",
         workdir="gs://test-bucket/workdir",
     )
-    pipeline_outdir = AnyPath("gs://test-bucket/outdir")
+    pipeline_outdir = PanPath("gs://test-bucket/outdir")
     pipeline = MagicMock(outdir=pipeline_outdir)
     proc = MagicMock(pipeline=pipeline)
     proc.name = "test_proc"
-    gbatch.post_init(proc)
+    await gbatch.post_init(proc)
 
     assert str(gbatch.workdir) == "gs://test-bucket/workdir"
     assert (

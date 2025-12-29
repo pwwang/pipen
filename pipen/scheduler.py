@@ -6,10 +6,7 @@ from typing import TYPE_CHECKING, Type
 
 from diot import Diot
 
-# Use cloudpathlib.GSPath instead of yunpath.GSPath,
-# the latter is a subclass of the former.
-# (_GSPath is cloudpathlib.GSPath)
-from yunpath.patch import _GSPath
+from panpath import GSPath
 from xqute import Scheduler
 from xqute.schedulers.local_scheduler import LocalScheduler as XquteLocalScheduler
 from xqute.schedulers.sge_scheduler import SgeScheduler as XquteSgeScheduler
@@ -41,7 +38,7 @@ class SchedulerPostInit:
     MOUNTED_METADIR: str
     MOUNTED_OUTDIR: str
 
-    def post_init(self, proc: Proc) -> None: ...  # noqa: E704
+    async def post_init(self, proc: Proc) -> None: ...  # noqa: E704
 
 
 class LocalScheduler(SchedulerPostInit, XquteLocalScheduler):  # type: ignore[misc]
@@ -106,11 +103,11 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
     MOUNTED_METADIR: str = f"{DEFAULT_MOUNTED_ROOT}/pipen-pipeline/workdir"
     MOUNTED_OUTDIR: str = f"{DEFAULT_MOUNTED_ROOT}/pipen-pipeline/outdir"
 
-    def post_init(self, proc: Proc):
-        super().post_init(proc)
+    async def post_init(self, proc: Proc):
+        await super().post_init(proc)
 
         # Check if pipeline outdir is a GSPath
-        if not isinstance(proc.pipeline.outdir, _GSPath):
+        if not isinstance(proc.pipeline.outdir, GSPath):
             raise ValueError(
                 "'gbatch' scheduler requires google cloud storage 'outdir'."
             )
@@ -127,7 +124,7 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
         # of the pipeline may share files (e.g. input files from output of other procs)
         self.config["taskGroups"][0]["taskSpec"]["volumes"][0]["gcs"][
             "remotePath"
-        ] = self.workdir.parent._no_prefix
+        ] = "/".join(self.workdir.parent.parts[1:])  # remove 'gs://'
         self.config["taskGroups"][0]["taskSpec"]["volumes"][0][
             "mountPath"
         ] = self.MOUNTED_METADIR
@@ -136,7 +133,7 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
         self.config["taskGroups"][0]["taskSpec"]["volumes"].append(
             Diot(
                 {
-                    "gcs": {"remotePath": proc.pipeline.outdir._no_prefix},
+                    "gcs": {"remotePath": "/".join(proc.pipeline.outdir.parts[1:])},
                     "mountPath": self.MOUNTED_OUTDIR,
                 }
             )
@@ -156,8 +153,8 @@ class ContainerScheduler(  # type: ignore[misc]
     MOUNTED_METADIR: str = f"{DEFAULT_MOUNTED_ROOT}/pipen-pipeline/workdir"
     MOUNTED_OUTDIR: str = f"{DEFAULT_MOUNTED_ROOT}/pipen-pipeline/outdir"
 
-    def post_init(self, proc: Proc):
-        super().post_init(proc)
+    async def post_init(self, proc: Proc):
+        await super().post_init(proc)
 
         mounted_workdir = f"{self.MOUNTED_METADIR}/{proc.name}"
         self.workdir = SpecPath(
@@ -165,7 +162,7 @@ class ContainerScheduler(  # type: ignore[misc]
             mounted=mounted_workdir,
         )
         self.volumes[-1] = f"{self.workdir}:{self.workdir.mounted}"  # type: ignore
-        proc.pipeline.outdir.mkdir(parents=True, exist_ok=True)  # type: ignore
+        await proc.pipeline.outdir.a_mkdir(parents=True, exist_ok=True)  # type: ignore
         self.volumes.append(f"{proc.pipeline.outdir}:{self.MOUNTED_OUTDIR}")
 
 

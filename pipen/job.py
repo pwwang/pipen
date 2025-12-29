@@ -6,11 +6,10 @@ import logging
 import shlex
 from collections.abc import Iterable
 from functools import cached_property
-from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Mapping
 
-from yunpath import AnyPath, CloudPath
+from panpath import PanPath, CloudPath, LocalPath
 from diot import OrderedDiot
 from xqute import Job as XquteJob
 from xqute.path import SpecPath, MountedPath
@@ -40,10 +39,10 @@ def _process_input_file_or_dir(
     proc_name: str | None = None,
 ) -> CloudPath | MountedPath:
     """Process the input value for file or dir"""
-    if inval is None or not isinstance(inval, (str, PathLike, Path, CloudPath)):
+    if inval is None or not isinstance(inval, (str, Path)):
         msg = (
             f"[{proc_name}] Got <{type(inval).__name__}> instead of "
-            f"PathLike object for input: {inkey + ':' + intype!r}"
+            f"path-like object for input: {inkey + ':' + intype!r}"
         )
         if index is not None:
             msg = f"{msg} at index {index}"
@@ -59,15 +58,15 @@ def _process_input_file_or_dir(
     if isinstance(inval, CloudPath):  # pragma: no cover
         return MountedPath(inval)
 
-    if not isinstance(inval, str):  # other PathLike types, should be all local
-        return MountedPath(Path(inval).expanduser().absolute())
+    if not isinstance(inval, str):  # other path-like types, should be all local
+        return MountedPath(PanPath(inval).expanduser().absolute())
 
     # str
     # Let's see if it a path in str format, which is path1:path2
     # However, there is also a colon in cloud paths
     colon_count = inval.count(":")
     if colon_count == 0:  # a/b
-        return MountedPath(Path(inval).expanduser().absolute())
+        return MountedPath(PanPath(inval).expanduser().absolute())
 
     if colon_count > 3:  # a:b:c:d
         msg = (
@@ -80,7 +79,7 @@ def _process_input_file_or_dir(
         raise ProcInputTypeError(msg)
 
     if colon_count == 1:  # gs://a/b or a/b:c/d
-        if isinstance(AnyPath(inval), CloudPath):  # gs://a/b
+        if isinstance(PanPath(inval), CloudPath):  # gs://a/b
             return MountedPath(inval)
 
         path1, path2 = inval.split(":")
@@ -92,14 +91,14 @@ def _process_input_file_or_dir(
     else:  # gs://a/b:c/d or a/b:gs://c/d
         p1, p2, p3 = inval.split(":", 2)
         path1, path2 = p1 + ":" + p2, p3
-        if not isinstance(AnyPath(path1), CloudPath):
+        if not isinstance(PanPath(path1), CloudPath):
             path1, path2 = p1, p2 + ":" + p3
 
-    path1 = AnyPath(path1)  # type: ignore
-    path2 = AnyPath(path2)  # type: ignore
-    if isinstance(path1, Path):
+    path1 = PanPath(path1)  # type: ignore
+    path2 = PanPath(path2)  # type: ignore
+    if isinstance(path1, LocalPath):
         path1 = path1.expanduser().absolute()
-    if isinstance(path2, Path):
+    if isinstance(path2, LocalPath):
         path2 = path2.expanduser().absolute()
 
     return MountedPath(path2, spec=path1)
@@ -108,7 +107,7 @@ def _process_input_file_or_dir(
 class Job(XquteJob, JobCaching):
     """The job for pipen"""
 
-    __slots__ = XquteJob.__slots__ + ("proc", "_output_types", "_outdir")
+    __slots__ = XquteJob.__slots__ + ("proc", "_output_types", "outdir", "output")
 
     def __init__(
         self,
@@ -119,7 +118,8 @@ class Job(XquteJob, JobCaching):
         self.proc: Proc = None
         self._output_types: Dict[str, str] = {}
         # Where the real output directory is
-        self._outdir: SpecPath = None
+        self.outdir: SpecPath = None
+        self.output: Mapping[str, Any] = None
 
     async def prepare(self, proc: Proc) -> None:
         """Prepare the job by given process
@@ -149,7 +149,7 @@ class Job(XquteJob, JobCaching):
                     f"<{proc.xqute.scheduler.__class__.__name__}>. "
                 )
 
-            mounted_outdir = Path(sched_mounted_outdir) / proc.name
+            mounted_outdir = PanPath(sched_mounted_outdir) / proc.name
 
         elif isinstance(proc.pipeline.outdir, SpecPath):  # pragma: no cover
             # In the case it is modified by a plugin
@@ -161,23 +161,27 @@ class Job(XquteJob, JobCaching):
 
         if self.proc.export:
             # Don't put index if it is a single-job process
-            self._outdir = SpecPath(export_outdir, mounted=mounted_outdir)
+            self.outdir = SpecPath(export_outdir, mounted=mounted_outdir)
 
             # Put job output in a subdirectory with index
             # if it is a multi-job process
             if len(self.proc.jobs) > 1:
-                self._outdir = self._outdir / str(self.index)  # type: ignore
+                self.outdir = self.outdir / str(self.index)  # type: ignore
 
             if sched_mounted_outdir is None:
                 # Create the output directory if it is not mounted by the scheduler
-                self._outdir.mounted.mkdir(parents=True, exist_ok=True)
+                await self.outdir.mounted.a_mkdir(parents=True, exist_ok=True)
 
         else:
             # For non-export process, the output directory is the metadir
-            self._outdir = self.metadir / "output"
+            self.outdir = self.metadir / "output"
+
+        # compute the output
+        await self.prepare_output()
+        await self.prepare_outdir()
 
         if not proc.script:
-            self.cmd = ("true", )
+            self.cmd = ("true",)
         else:
             try:
                 script = proc.script.render(self.template_data)
@@ -186,17 +190,21 @@ class Job(XquteJob, JobCaching):
                     f"[{self.proc.name}] Failed to render script."
                 ) from exc
 
-            if self.script_file.is_file() and self.script_file.read_text() != script:
+            if (
+                await self.script_file.a_is_file()
+                and await self.script_file.a_read_text() != script
+            ):
                 self.log("debug", "Job script updated.")
-                self.script_file.write_text(script)
-            elif not self.script_file.is_file():
-                self.script_file.write_text(script)
+                await self.script_file.a_write_text(script)
+            elif not await self.script_file.a_is_file():
+                await self.script_file.a_write_text(script)
 
             lang = proc.lang or proc.pipeline.config.lang
-            self.cmd = tuple(shlex.split(lang) + [self.script_file.mounted.fspath])
+            script_file = self.script_file.mounted
+            script_file = await script_file.get_fspath()
+            self.cmd = tuple((*shlex.split(lang), script_file))
+            # self.cmd = tuple(shlex.split(lang) + [self.script_file.mounted.fspath])
 
-        # compute the output
-        self.output
         await plugin.hooks.on_job_init(self)
 
     @property
@@ -208,8 +216,7 @@ class Job(XquteJob, JobCaching):
         """
         return self.metadir / "job.script"
 
-    @cached_property
-    def outdir(self) -> SpecPath:
+    async def prepare_outdir(self) -> SpecPath:
         """Get the path to the output directory.
 
         When proc.export is True, the output directory is based on the
@@ -219,35 +226,35 @@ class Job(XquteJob, JobCaching):
         When the job is running in a detached system (a VM, typically),
         this will return the mounted path to the output directory.
 
-        To access the real path, use self._outdir
+        To access the real path, use self.outdir
 
         Returns:
             The path to the job output directory
         """
         # if ret is a dead link
         # when switching a proc from end/nonend to nonend/end
-        # if path_is_symlink(self._outdir) and not self._outdir.exists():
-        if path_is_symlink(self._outdir) and (  # type: ignore
+        # if path_is_symlink(self.outdir) and not self.outdir.exists():
+        if await path_is_symlink(self.outdir) and (  # type: ignore
             # A local deak link
-            not self._outdir.exists()
+            not await self.outdir.a_exists()
             # A cloud fake link
-            or isinstance(getattr(self._outdir, "path", self._outdir), CloudPath)
+            or isinstance(getattr(self.outdir, "path", self.outdir), CloudPath)
         ):
-            self._outdir.unlink()  # pragma: no cover
+            await self.outdir.a_unlink()  # pragma: no cover
 
-        self._outdir.mkdir(parents=True, exist_ok=True)
+        await self.outdir.a_mkdir(parents=True, exist_ok=True)
         # If it is somewhere else, make a symbolic link to the metadir
         metaout = self.metadir / "output"
-        if self._outdir != metaout:
-            if path_is_symlink(metaout) or metaout.is_file():
-                metaout.unlink()
-            elif metaout.is_dir():
+        if self.outdir != metaout:
+            if await path_is_symlink(metaout) or await metaout.a_is_file():
+                await metaout.a_unlink()
+            elif await metaout.a_is_dir():
                 # Remove the directory, it is inconsistent with current setting
-                metaout.rmtree()
+                await metaout.a_rmtree()
 
-            path_symlink_to(metaout, self._outdir)  # type: ignore
+            await path_symlink_to(metaout, self.outdir)  # type: ignore
 
-        return self._outdir
+        return self.outdir
 
     @cached_property
     def input(self) -> Mapping[str, Any]:
@@ -275,7 +282,7 @@ class Job(XquteJob, JobCaching):
                     # // todo: nested dataframe
                     ret[inkey] = ret[inkey].iloc[0, 0]
 
-                if isinstance(ret[inkey], (str, PathLike, Path, CloudPath)):
+                if isinstance(ret[inkey], (str, Path)):
                     # if a single file, convert to list
                     ret[inkey] = [ret[inkey]]
 
@@ -292,8 +299,7 @@ class Job(XquteJob, JobCaching):
 
         return ret
 
-    @cached_property
-    def output(self) -> Mapping[str, Any]:
+    async def prepare_output(self) -> Mapping[str, Any]:
         """Get the output data of the job
 
         Returns:
@@ -301,7 +307,8 @@ class Job(XquteJob, JobCaching):
         """
         output_template = self.proc.output
         if not output_template:
-            return {}
+            self.output = {}
+            return
 
         data = {
             "job": dict(
@@ -328,7 +335,7 @@ class Job(XquteJob, JobCaching):
                 f"[{self.proc.name}] Failed to render output."
             ) from exc
 
-        ret = OrderedDiot()
+        self.output = ret = OrderedDiot()
         for oput in outputs:
             if ":" not in oput:
                 raise ProcOutputNameError(
@@ -350,22 +357,21 @@ class Job(XquteJob, JobCaching):
             if output_type == ProcOutputType.VAR:
                 ret[output_name] = output_value
             else:
-                ov = AnyPath(output_value)
+                ov = PanPath(output_value)
                 if isinstance(ov, CloudPath) or (
-                    isinstance(ov, Path) and ov.is_absolute()
+                    isinstance(ov, LocalPath) and ov.is_absolute()
                 ):
                     raise ProcOutputValueError(
                         f"[{self.proc.name}] "
                         f"output path must be a segment: {output_value}"
                     )
 
+                # self.outdir is already awaited
                 out = self.outdir / output_value  # type: ignore
                 if output_type == ProcOutputType.DIR:
-                    out.mkdir(parents=True, exist_ok=True)
+                    await out.a_mkdir(parents=True, exist_ok=True)
 
                 ret[output_name] = out.mounted
-
-        return ret
 
     @cached_property
     def template_data(self) -> Mapping[str, Any]:

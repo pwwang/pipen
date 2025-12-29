@@ -300,7 +300,7 @@ class JobCaching:
                 "Not cached (proc.cache is False)",
             )
             out = False
-        elif self.rc != 0:
+        elif await self.get_rc() != 0:
             self.log(
                 "debug",
                 "Not cached (job.rc != 0)",
@@ -315,10 +315,10 @@ class JobCaching:
             else:
                 out = True
         else:
-            if not self.signature_file.is_file():
+            if not await self.signature_file.a_is_file():
                 self.log(
                     "debug",
-                    "Signature file not found, this is probably an obselete job."
+                    "Signature file not found, this is probably an obselete job.",
                 )
                 await self.cache()
 

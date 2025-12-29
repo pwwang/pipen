@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import asyncio
-from os import PathLike
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Iterable, List, Sequence, Type
+from typing import Any, ClassVar, Iterable, List, Sequence, Type
 
 from diot import Diot
 from rich import box
@@ -13,7 +12,7 @@ from rich.panel import Panel
 from rich.text import Text
 from simpleconf import ProfileConfig
 from varname import varname, VarnameException
-from yunpath import AnyPath
+from panpath import PanPath, LocalPath
 
 from .defaults import CONFIG, CONFIG_FILES
 from .exceptions import (
@@ -33,9 +32,6 @@ from .utils import (
     logger,
     pipen_banner,
 )
-
-if TYPE_CHECKING:
-    from xqute.path import PathType
 
 
 class Pipen:
@@ -68,7 +64,7 @@ class Pipen:
 
     name: str | None = None
     desc: str | None = None
-    outdir: str | PathLike = None
+    outdir: str | Path = None
     starts: Type[Proc] | List[Type[Proc]] = []
     data: Iterable | None = None
     # other configs
@@ -77,7 +73,7 @@ class Pipen:
         self,
         name: str | None = None,
         desc: str | None = None,
-        outdir: str | PathLike = None,
+        outdir: str | Path = None,
         **kwargs,
     ) -> None:
         """Constructor"""
@@ -106,13 +102,13 @@ class Pipen:
         self.desc = (
             desc or self.__class__.desc or desc_from_docstring(self.__class__, Pipen)
         )
-        self.outdir: PathType = AnyPath(  # type: ignore
+        self.outdir = PanPath(  # type: ignore
             outdir or self.__class__.outdir or f"./{self.name}-output"
         )
-        if isinstance(self.outdir, Path):
+        if isinstance(self.outdir, LocalPath):
             self.outdir = self.outdir.absolute()
 
-        self.workdir: PathType | None = None
+        self.workdir: str | Path | None = None
         self.profile: str = "default"
 
         self.starts: List[Type[Proc]] = self.__class__.starts
@@ -177,7 +173,7 @@ class Pipen:
             True if the pipeline ends successfully else False
         """
         self.profile = profile
-        self.workdir = AnyPath(str(self.config.workdir)) / self.name  # type: ignore
+        self.workdir = PanPath(str(self.config.workdir)) / self.name  # type: ignore
 
         succeeded = True
         await self._init()
@@ -191,6 +187,8 @@ class Pipen:
             for proc in self.procs:
                 self.pbar.update_proc_running()
                 proc_obj = proc(self)  # type: ignore
+                proc_obj.script = await proc_obj._compute_script()
+                await proc_obj.workdir.a_mkdir(parents=True, exist_ok=True)
                 if proc in self.starts and proc.input_data is None:  # type: ignore
                     proc_obj.log(
                         "warning",
@@ -378,9 +376,9 @@ class Pipen:
         self.config.update(self._kwargs)
 
         if "workdir" in self._kwargs:
-            self.workdir = AnyPath(self._kwargs["workdir"]) / self.name  # type: ignore
+            self.workdir = PanPath(self._kwargs["workdir"]) / self.name  # type: ignore
 
-        self.workdir.mkdir(parents=True, exist_ok=True)
+        await self.workdir.a_mkdir(parents=True, exist_ok=True)
 
     def build_proc_relationships(self) -> None:
         """Build the proc relationships for the pipeline"""

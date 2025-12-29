@@ -1,7 +1,7 @@
 import pytest
 from uuid import uuid4
-from yunpath import AnyPath
-from pipen import Proc, Pipen, run
+from panpath import PanPath
+from pipen import Proc, Pipen, run, async_run
 from pipen.exceptions import (
     ProcDependencyError,
     PipenSetDataError,
@@ -231,7 +231,7 @@ def test_run2():
 
 
 @pytest.mark.forked
-def test_cloud_workdir_outdir(uid):
+async def test_cloud_workdir_outdir(uid):
     class RProc1(Proc):
         input = "a"
         input_data = [1]
@@ -246,13 +246,14 @@ def test_cloud_workdir_outdir(uid):
 
     # make sure multiple tests can run in parallel
     # e.g. for python3.9, python3.10, etc.
-    cloud_dir = AnyPath(f"{BUCKET}/pipen-test/test-pipeline/{uid}")
+    cloud_dir = PanPath(f"{BUCKET}/pipen-test/test-pipeline/{uid}")
 
-    assert run(
-        "MyCloudPipe",
-        RProc1,
-        workdir=f"{cloud_dir}/workdir",
-        outdir=f"{cloud_dir}/outdir",
-    )
-
-    cloud_dir.rmtree()
+    try:
+        assert await async_run(
+            "MyCloudPipe",
+            RProc1,
+            workdir=f"{cloud_dir}/workdir",
+            outdir=f"{cloud_dir}/outdir",
+        )
+    finally:
+        await cloud_dir.a_rmtree()
