@@ -434,13 +434,13 @@ class Pipen:
         self.pbar = PipelinePBar(len(self.procs), self.name.upper())
 
 
-def run(
+async def async_run(
     name: str,
     starts: Type[Proc] | List[Type[Proc]],
     data: Iterable = None,
     *,
     desc: str = None,
-    outdir: PathType | None = None,
+    outdir: str | Path | None = None,
     profile: str = "default",
     **kwargs,
 ) -> bool:
@@ -465,4 +465,41 @@ def run(
         **kwargs,
     )
     pipeline.set_starts(starts).set_data(data)
-    return pipeline.run(profile)
+    return await pipeline.async_run(profile)
+
+
+def run(
+    name: str,
+    starts: Type[Proc] | List[Type[Proc]],
+    data: Iterable = None,
+    *,
+    desc: str = None,
+    outdir: str | Path | None = None,
+    profile: str = "default",
+    **kwargs,
+) -> bool:
+    """Shortcut to run a pipeline
+
+    Args:
+        name: The name of the pipeline
+        starts: The start processes
+        data: The input data for the start processes
+        desc: The description of the pipeline
+        outdir: The output directory of the results
+        profile: The profile to use
+        **kwargs: Other options pass to Pipen to create the pipeline
+
+    Returns:
+        True if the pipeline ends successfully else False
+    """
+    return asyncio.run(
+        async_run(
+            name,
+            starts,
+            data,
+            desc=desc,
+            outdir=outdir,
+            profile=profile,
+            **kwargs,
+        )
+    )
