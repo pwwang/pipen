@@ -408,7 +408,7 @@ class PipenMainPlugin:
     async def on_job_failed(job: Job):
         """Update the progress bar when a job is failed"""
         job.proc.pbar.update_job_failed()
-        if job._error_retry and job.trial_count < job._num_retries:
+        if job._error_retry and job.trial_count < job._num_retries:  # pragma: no cover
             job.log("debug", "Retrying #%s", job.trial_count + 1)
             job.proc.pbar.update_job_retrying()
 

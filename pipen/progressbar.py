@@ -103,7 +103,7 @@ class ProcPBar:
         except ValueError:  # pragma: no cover
             pass
 
-    def update_job_retrying(self):
+    def update_job_retrying(self):  # pragma: no cover
         """Update the progress bar when a job is retrying"""
         if self.bar_format:
             self.counter.bar_format = self.bar_format.format('Retrying')
