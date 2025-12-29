@@ -21,7 +21,7 @@ liquidpy = "^0.8"
 pandas = "^2.0"
 enlighten = "^1"
 argx = "^0.3"
-xqute = "^1.0.0"
+xqute = "^2.0"
 ## included in xqute
 # rich = "^13"
 # diot = "^0.1"
@@ -41,14 +41,14 @@ pytest-forked = "^1.6"
 datar = { version = "^0.15", extras = ["pandas"] }
 flake8 = "^7"
 python-dotenv = "^1"
-cloudsh = {version = "^0.1", extras = ["gs"]}
+cloudsh = {version = "^0.3", extras = ["gs"]}
 
 # dependencies for pipelines in ./examples
 ipykernel = "^6.29.5"
 [tool.poetry.group.example.dependencies]
 mako = "^1.3"
 python-dotenv = "^1"
-cloudsh = {version = "^0.1", extras = ["gs"]}
+cloudsh = {version = "^0.3", extras = ["gs"]}
 
 
 [tool.poetry.group.docs.dependencies]
@@ -66,6 +66,7 @@ addopts = "-vv -n auto --dist loadgroup -p no:benchmark -W error::UserWarning --
 console_output_style = "progress"
 junit_family = "xunit1"
 asyncio_default_fixture_loop_scope = "function"
+asyncio_mode = "auto"
 filterwarnings = [
    "ignore:.+may lead to deadlocks in the child:DeprecationWarning",
 ]
