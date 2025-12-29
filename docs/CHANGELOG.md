@@ -5,6 +5,7 @@
 - refactor: migrate to panpath from cloudpatlib (so that path operations can be async)
 - refactor: convert get_mtime to async and update related methods and tests
 - chore: bump xqute to 2.0
+- chore: bump argx to 0.4
 - feat: add async versions of from_glob and from_pairs methods in Channel class
 - feat: add async_run function and update run to support async execution
 - feat: update path handling to use PanPath and add async support for symlink functions
