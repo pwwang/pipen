@@ -3,6 +3,7 @@ import os
 import time
 from pathlib import Path
 
+from panpath import PanPath
 from xqute.path import SpecPath, MountedPath, CloudPath
 from pipen import Proc
 from pipen.job import _process_input_file_or_dir
@@ -75,15 +76,15 @@ def test_mixed_input_caching(caplog, pipen, infile):
 
 
 @pytest.mark.forked
-def test_clear_output_dead_link(pipen, infile):
-    outfile = Path(pipen.outdir) / "proc" / "infile"
-    outfile.parent.mkdir(parents=True, exist_ok=True)
-    create_dead_link(outfile)
+async def test_clear_output_dead_link(pipen, infile):
+    outfile = PanPath(pipen.outdir) / "proc" / "infile"
+    await outfile.parent.a_mkdir(parents=True, exist_ok=True)
+    await create_dead_link(outfile)
     assert not outfile.is_file() and outfile.is_symlink()
 
     proc = Proc.from_proc(FileInputProc, input_data=[infile])
     # dead link can be cleared!
-    pipen.set_starts(proc).run()
+    await pipen.set_starts(proc).async_run()
     assert outfile.is_file() and outfile.exists()
 
 
@@ -398,10 +399,8 @@ def test_dualpath_input_files(pipen, infile1):
 @pytest.mark.forked
 def test_input_files_wrong_data_type(pipen):
     proc = Proc.from_proc(FileInputsProc, input_data=[[1]])
-    with pytest.raises(TemplateRenderingError) as exc_info:
+    with pytest.raises(ProcInputTypeError):
         pipen.set_starts(proc).run()
-
-    assert isinstance(exc_info.value.__cause__, ProcInputTypeError)
 
 
 @pytest.mark.forked
@@ -422,19 +421,15 @@ def test_cloudpath_input_files(pipen):
 @pytest.mark.forked
 def test_wrong_input_type(pipen):
     proc = Proc.from_proc(MixedInputProc, input_data=[(1, 1)])
-    with pytest.raises(TemplateRenderingError) as exc_info:
+    with pytest.raises(ProcInputTypeError):
         pipen.set_starts(proc).run()
-
-    assert isinstance(exc_info.value.__cause__, ProcInputTypeError)
 
 
 @pytest.mark.forked
 def test_wrong_input_type_for_files(pipen):
     proc = Proc.from_proc(FileInputsProc, input_data=[1])
-    with pytest.raises(TemplateRenderingError) as exc_info:
+    with pytest.raises(ProcInputTypeError):
         pipen.set_starts(proc).run()
-
-    assert isinstance(exc_info.value.__cause__, ProcInputTypeError)
 
 
 def test_process_input_file_or_dir_error():

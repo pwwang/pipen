@@ -10,6 +10,7 @@ import logging
 import textwrap
 import typing
 from copy import deepcopy
+from datetime import datetime
 from itertools import groupby
 from operator import itemgetter
 from io import StringIO
@@ -31,7 +32,7 @@ from typing import (
 
 import diot
 import simplug
-from yunpath import AnyPath, CloudPath
+from panpath import PanPath, CloudPath, LocalPath
 from rich.console import Console
 from rich.logging import RichHandler as _RichHandler
 from rich.table import Table
@@ -768,11 +769,11 @@ async def load_pipeline(
 
         # Initialize the pipeline so that the arguments definied by
         # other plugins (i.e. pipen-args) to take in place.
-        pipeline.workdir = Path(pipeline.config.workdir).joinpath(  # type: ignore
+        pipeline.workdir = PanPath(pipeline.config.workdir).joinpath(  # type: ignore
             kwargs.get("name", pipeline.name)
         )
         await pipeline._init()  # type: ignore
-        pipeline.workdir.mkdir(parents=True, exist_ok=True)  # type: ignore
+        await pipeline.workdir.a_mkdir(parents=True, exist_ok=True)  # type: ignore
         pipeline.build_proc_relationships()  # type: ignore
     finally:
         sys.argv = old_argv
@@ -812,11 +813,11 @@ def is_loading_pipeline(*flags: str, argv: Sequence[str] | None = None) -> bool:
     return False  # pragma: no cover
 
 
-def path_is_symlink(path: Path | CloudPath) -> bool:
-    """Check if a path is a symlink.
+def path_is_symlink_sync(path: PanPath) -> bool:
+    """Check if a path is a symlink synchronously.
 
-    CloudPath.is_symlink() is not implemented yet, so we need to check
-    it manually.
+    We don't only check the real symlink, but also the fake symlink files
+    created by `path_symlink_to()`.
 
     Args:
         path: The path to check
@@ -836,7 +837,7 @@ def path_is_symlink(path: Path | CloudPath) -> bool:
     # Get the size first, to avoid the large files being downloaded
     try:
         path_stat = path.stat()
-    except Exception:
+    except Exception:  # pragma: no cover
         return False
 
     if path_stat.st_size > 4096 or path_stat.st_size < 8:
@@ -846,14 +847,53 @@ def path_is_symlink(path: Path | CloudPath) -> bool:
         with path.open("rb") as f:
             prefix = f.read(14)
             return prefix == b"pipen-symlink:" or prefix.startswith(b"symlink:")
+    except Exception:  # pragma: no cover
+        # If we cannot read the file, it is not a symlink
+        return False
+
+
+async def path_is_symlink(path: PanPath) -> bool:
+    """Check if a path is a symlink.
+
+    We don't only check the real symlink, but also the fake symlink files
+    created by `path_symlink_to()`.
+
+    Args:
+        path: The path to check
+
+    Returns:
+        True if the path is a symlink, otherwise False
+    """
+    path = getattr(path, "path", path)
+    if isinstance(path, Path):
+        if await path.a_is_symlink():
+            return True
+
+    if not await path.a_exists():
+        return False
+
+    # Check if the path is a fake symlink file
+    # Get the size first, to avoid the large files being downloaded
+    try:
+        path_stat = await path.a_stat()
+    except Exception:  # pragma: no cover
+        return False
+
+    if path_stat.st_size > 4096 or path_stat.st_size < 8:
+        return False
+
+    try:
+        async with path.a_open("rb") as f:
+            prefix = await f.read(14)
+            return prefix == b"pipen-symlink:" or prefix.startswith(b"symlink:")
     except Exception:
         # If we cannot read the file, it is not a symlink
         return False
 
 
-def path_symlink_to(
-    src: Path | CloudPath,
-    dst: Path | CloudPath,
+async def path_symlink_to(
+    src: PanPath,
+    dst: PanPath,
     target_is_directory: bool = False,
 ) -> None:
     """Create a symbolic link pointing to src named dst.
@@ -867,6 +907,6 @@ def path_symlink_to(
     dst = getattr(dst, "path", dst)
     if isinstance(dst, CloudPath) or isinstance(src, CloudPath):
         # Create a fake symlink file for cloud paths
-        src.write_text(f"pipen-symlink:{dst}")
+        await src.a_write_text(f"pipen-symlink:{dst}")
     else:
-        src.symlink_to(dst, target_is_directory=target_is_directory)
+        await src.a_symlink_to(dst, target_is_directory=target_is_directory)

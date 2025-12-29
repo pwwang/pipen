@@ -1,8 +1,8 @@
-from pathlib import Path
-
 import pytest
 import pipen
-from yunpath import CloudPath
+from uuid import uuid4
+from pathlib import Path
+from panpath import PanPath
 from pipen.utils import (
     brief_list,
     desc_from_docstring,
@@ -19,6 +19,7 @@ from pipen.utils import (
     _get_obj_from_spec,
     load_pipeline,
     path_is_symlink,
+    path_is_symlink_sync,
     path_symlink_to,
 )
 from pipen.proc import Proc
@@ -27,7 +28,12 @@ from pipen.exceptions import ConfigurationError
 
 from .helpers import BUCKET
 
-HERE = Path(__file__).parent.resolve()
+HERE = PanPath(__file__).parent.resolve()
+
+
+@pytest.fixture
+def uid():
+    return uuid4()
 
 
 @pytest.mark.forked
@@ -268,7 +274,6 @@ def test_get_obj_from_spec():
 
 
 @pytest.mark.forked
-@pytest.mark.asyncio
 async def test_load_pipeline(tmp_path):
     with pytest.raises(TypeError):
         await load_pipeline(f"{HERE}/helpers.py:create_dead_link")
@@ -299,7 +304,6 @@ async def test_load_pipeline(tmp_path):
 
 
 @pytest.mark.forked
-@pytest.mark.asyncio
 async def test_load_pipeline_pipen_object(tmp_path):
     p = await load_pipeline(f"{HERE}/helpers.py:pipeline", a=1)
     assert p._kwargs["a"] == 1
@@ -307,7 +311,6 @@ async def test_load_pipeline_pipen_object(tmp_path):
 
 @pytest.mark.forked
 # To avoid: Another plugin named simpleplugin has already been registered.
-@pytest.mark.asyncio
 async def test_is_load_pipeline_with_help(tmp_path):
     pipeline = await load_pipeline(
         f"{HERE}/helpers.py:PipenIsLoading",
@@ -319,18 +322,20 @@ async def test_is_load_pipeline_with_help(tmp_path):
     assert len(pipeline.procs) == 1
 
 
-def test_path_is_symlink(tmp_path):
-    link = tmp_path / "link"
-    path_symlink_to(link, tmp_path / "target")
-    assert path_is_symlink(link)
+async def test_path_is_symlink(tmp_path):
+    link = PanPath(tmp_path) / "link"
+    await path_symlink_to(link, tmp_path / "target")
+    assert await path_is_symlink(link)
 
-    fake_symlink = tmp_path / "fake_symlink"
-    path_symlink_to(fake_symlink, CloudPath(f"{BUCKET}/target"))
-    assert path_is_symlink(fake_symlink)
+    fake_symlink = PanPath(tmp_path) / "fake_symlink"
+    await path_symlink_to(fake_symlink, PanPath(f"{BUCKET}/target"))
+    assert await path_is_symlink(fake_symlink)
+    assert path_is_symlink_sync(fake_symlink)
 
-    nonexist_file = tmp_path / "nonexist"
-    assert not path_is_symlink(nonexist_file)
+    nonexist_file = PanPath(tmp_path) / "nonexist"
+    assert not await path_is_symlink(nonexist_file)
+    assert not path_is_symlink_sync(nonexist_file)
 
-    dir = tmp_path / "dir"
-    dir.mkdir()
-    assert not path_is_symlink(dir)
+    d = PanPath(tmp_path) / "dir"
+    await d.a_mkdir()
+    assert not await path_is_symlink(d)
