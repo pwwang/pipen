@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.1.0
+
+- refactor: migrate to panpath from cloudpatlib (so that path operations can be async)
+- refactor: convert get_mtime to async and update related methods and tests
+- chore: bump xqute to 2.0
+- feat: add async versions of from_glob and from_pairs methods in Channel class
+- feat: add async_run function and update run to support async execution
+- feat: update path handling to use PanPath and add async support for symlink functions
+- fix: improve job retry handling in ProcPBar and simplify success/failure updates
+- test: add coverage pragma to retry handling methods and comment out flaky test
+- style: fix type annotation and flake8 issues
+
 ## 1.0.4
 
 - chore: adjust bar_format alignment for better readability
