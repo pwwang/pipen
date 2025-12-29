@@ -14,7 +14,7 @@ from datetime import datetime
 from itertools import groupby
 from operator import itemgetter
 from io import StringIO
-from os import PathLike, get_terminal_size, environ
+from os import get_terminal_size, environ
 from collections import defaultdict
 from pathlib import Path
 from typing import (
@@ -449,7 +449,7 @@ def pipen_banner() -> RenderableType:
 
 
 async def get_mtime(
-    path: str | PathLike | CloudPath,
+    path: str | Path,
     dir_depth: int = 1,
 ) -> float:
     """Get the modification time of a path.
@@ -468,12 +468,12 @@ async def get_mtime(
     path = getattr(path, "path", path)
 
     mtime = 0.0
-    path: Path = PanPath(path)  # type: ignore[assignment]
+    path: Path = PanPath(path)  # type: ignore[assignment,abstract]
     if not await path.a_exists():
         return mtime
 
     # If it is not any kind of symlink
-    if not await path_is_symlink(path):
+    if not await path_is_symlink(path):  # type: ignore[arg-type]
         if dir_depth == 0 or not await path.a_is_dir():
             out = (await path.a_stat()).st_mtime
             return out.timestamp() if isinstance(out, datetime) else out
@@ -500,7 +500,7 @@ async def get_mtime(
         .removeprefix("symlink:")
         .removeprefix("pipen-symlink:")
     )
-    dpath = PanPath(dest)
+    dpath = PanPath(dest)  # type: ignore[abstract]
     if dir_depth == 0 or not await dpath.a_is_dir():
         out = (await path.a_stat(follow_symlinks=False)).st_mtime
         return out.timestamp() if isinstance(out, datetime) else out
@@ -869,13 +869,13 @@ async def path_is_symlink(path: PanPath) -> bool:
         if await path.a_is_symlink():
             return True
 
-    if not await path.a_exists():
+    if not await path.a_exists():  # type: ignore[union-attr]
         return False
 
     # Check if the path is a fake symlink file
     # Get the size first, to avoid the large files being downloaded
     try:
-        path_stat = await path.a_stat()
+        path_stat = await path.a_stat()  # type: ignore[union-attr]
     except Exception:  # pragma: no cover
         return False
 
@@ -883,7 +883,7 @@ async def path_is_symlink(path: PanPath) -> bool:
         return False
 
     try:
-        async with path.a_open("rb") as f:
+        async with path.a_open("rb") as f:  # type: ignore[union-attr]
             prefix = await f.read(14)
             return prefix == b"pipen-symlink:" or prefix.startswith(b"symlink:")
     except Exception:

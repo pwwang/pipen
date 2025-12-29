@@ -55,6 +55,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from pathlib import Path
     from .pipen import Pipen
     from .scheduler import Scheduler
+    from .progressbar import ProcPBar
 
 
 class ProcMeta(ABCMeta):
@@ -339,7 +340,7 @@ class Proc(ABC, metaclass=ProcMeta):
         # instance properties
         self.pipeline = pipeline
 
-        self.pbar = None
+        self.pbar: ProcPBar | None = None
         self.jobs: List[Any] = []
         self.xqute: Xqute | None = None
         self.__class__.workdir = (
@@ -679,7 +680,7 @@ class Proc(ABC, metaclass=ProcMeta):
 
         script = self.__class__.script
         if script.startswith("file://"):
-            script_file = PanPath(script)
+            script_file = PanPath(script)  # type: ignore[abstract]
             if not script_file.is_absolute():
                 base = get_base(
                     self.__class__,
@@ -687,7 +688,10 @@ class Proc(ABC, metaclass=ProcMeta):
                     script,
                     lambda klass: getattr(klass, "script", None),
                 )
-                script_file = PanPath(inspect.getfile(base)).parent / script_file
+                script_file = (
+                    PanPath(inspect.getfile(base)).parent   # type: ignore[abstract]
+                    / script_file
+                )
             if not await script_file.a_is_file():
                 raise ProcScriptFileNotFound(f"No such script file: {script_file}")
             script = await script_file.a_read_text()

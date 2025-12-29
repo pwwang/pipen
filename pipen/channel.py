@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 from os import path
-from pathlib import Path
-from typing import Any, List
+from typing import Any, Iterable, List
 
 import pandas
-from panpath import PanPath, CloudPath
+from panpath import PanPath
 from pandas import DataFrame
 from pipda import register_verb
 
@@ -62,7 +61,7 @@ class Channel(DataFrame):
             The channel
         """
 
-        def sort_key(file: Path | CloudPath) -> Any:
+        def sort_key(file: PanPath) -> Any:
             if sortby == "mtime":
                 return file.stat().st_mtime
             if sortby == "size":
@@ -70,7 +69,7 @@ class Channel(DataFrame):
 
             return str(file)  # sort by name
 
-        def file_filter(file: Path | CloudPath) -> bool:
+        def file_filter(file: PanPath) -> bool:
             if ftype == "link":
                 return path_is_symlink_sync(file)
             if ftype == "dir":
@@ -87,16 +86,20 @@ class Channel(DataFrame):
                 wildcard_index = i
                 break
         if wildcard_index == -1:
-            files = [PanPath(pattern)] if file_filter(PanPath(pattern)) else []
+            files: Iterable[PanPath] = (
+                [PanPath(pattern)]  # type: ignore[abstract]
+                if file_filter(PanPath(pattern))  # type: ignore[abstract]
+                else []
+            )
             return cls.create([str(file) for file in files])
 
-        base_path = PanPath("/".join(parts[:wildcard_index]))
+        base_path = PanPath("/".join(parts[:wildcard_index]))  # type: ignore[abstract]
         sub_pattern = "/".join(parts[wildcard_index:])
 
         files = (
-            PanPath(file)
+            PanPath(file)  # type: ignore[abstract]
             for file in base_path.glob(sub_pattern)
-            if file_filter(PanPath(file))
+            if file_filter(PanPath(file))  # type: ignore[abstract]
         )
 
         return cls.create(
@@ -155,30 +158,44 @@ class Channel(DataFrame):
                 wildcard_index = i
                 break
         if wildcard_index == -1:
-            files = [PanPath(pattern)] if await file_filter(PanPath(pattern)) else []
+            files = (
+                [PanPath(pattern)]  # type: ignore[abstract]
+                if await file_filter(PanPath(pattern))  # type: ignore[abstract]
+                else []
+            )
             return cls.create([str(file) for file in files])
 
-        base_path = PanPath("/".join(parts[:wildcard_index]))
+        base_path = PanPath("/".join(parts[:wildcard_index]))  # type: ignore[abstract]
         sub_pattern = "/".join(parts[wildcard_index:])
 
         files = [
-            str(file)
+            PanPath(file)  # type: ignore[abstract]
             async for file in base_path.a_glob(sub_pattern)
-            if await file_filter(PanPath(file))
+            if await file_filter(PanPath(file))  # type: ignore[abstract]
         ]
 
-        sort_keys = {
-            file: await get_sort_key(PanPath(file), sortby) for file in files
-        }
+        sort_keys = dict(
+            [
+                (
+                    file,
+                    await get_sort_key(file, sortby),  # type: ignore[abstract]
+                )
+                for file in files
+            ]
+        )
 
         return cls.create(
             [
                 str(file)
                 for file in sorted(
                     files,
-                    key=sort_keys.get if sortby in ("name", "mtime", "size") else None,
+                    key=(
+                        sort_keys.get  # type: ignore[arg-type]
+                        if sortby in ("name", "mtime", "size")
+                        else None
+                    ),
                     reverse=reverse,
-                )  # type: ignore
+                )
             ]
         )
 

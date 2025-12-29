@@ -186,9 +186,12 @@ class Pipen:
             await plugin.hooks.on_start(self)
             for proc in self.procs:
                 self.pbar.update_proc_running()
-                proc_obj = proc(self)  # type: ignore
-                proc_obj.script = await proc_obj._compute_script()
-                await proc_obj.workdir.a_mkdir(parents=True, exist_ok=True)
+                proc_obj = proc(self)
+                proc_obj.script = await proc_obj._compute_script()  # type: ignore
+                await proc_obj.workdir.a_mkdir(  # type: ignore[union-attr]
+                    parents=True,
+                    exist_ok=True,
+                )
                 if proc in self.starts and proc.input_data is None:  # type: ignore
                     proc_obj.log(
                         "warning",
@@ -378,7 +381,10 @@ class Pipen:
         if "workdir" in self._kwargs:
             self.workdir = PanPath(self._kwargs["workdir"]) / self.name  # type: ignore
 
-        await self.workdir.a_mkdir(parents=True, exist_ok=True)
+        await self.workdir.a_mkdir(  # type: ignore[union-attr]
+            parents=True,
+            exist_ok=True,
+        )
 
     def build_proc_relationships(self) -> None:
         """Build the proc relationships for the pipeline"""

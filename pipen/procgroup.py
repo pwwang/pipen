@@ -35,7 +35,7 @@ Or add a process at runtime:
 """
 from __future__ import annotations
 
-from os import PathLike
+from pathlib import Path
 from functools import wraps, cached_property
 from typing import Any, Callable, Mapping, Type, List
 from abc import ABC, ABCMeta
@@ -164,7 +164,7 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
         self,
         name: str | None = None,
         desc: str | None = None,
-        outdir: str | PathLike | None = None,
+        outdir: str | Path | None = None,
         **kwargs,
     ) -> Pipen:
         """Convert the pipeline to a Pipen instance

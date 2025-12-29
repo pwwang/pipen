@@ -157,7 +157,7 @@ class ContainerScheduler(  # type: ignore[misc]
         await super().post_init(proc)
 
         mounted_workdir = f"{self.MOUNTED_METADIR}/{proc.name}"
-        self.workdir = SpecPath(
+        self.workdir = SpecPath(  # type: ignore[abstract]
             str(self.workdir),  # ignore the mounted_workdir by xqute
             mounted=mounted_workdir,
         )

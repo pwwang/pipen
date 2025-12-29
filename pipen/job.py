@@ -56,17 +56,21 @@ def _process_input_file_or_dir(
         return inval.mounted
 
     if isinstance(inval, CloudPath):  # pragma: no cover
-        return MountedPath(inval)
+        return MountedPath(inval)  # type: ignore[abstract]
 
     if not isinstance(inval, str):  # other path-like types, should be all local
-        return MountedPath(PanPath(inval).expanduser().absolute())
+        return MountedPath(
+            PanPath(inval).expanduser().absolute()  # type: ignore[abstract]
+        )
 
     # str
     # Let's see if it a path in str format, which is path1:path2
     # However, there is also a colon in cloud paths
     colon_count = inval.count(":")
     if colon_count == 0:  # a/b
-        return MountedPath(PanPath(inval).expanduser().absolute())
+        return MountedPath(
+            PanPath(inval).expanduser().absolute()  # type: ignore[abstract]
+        )
 
     if colon_count > 3:  # a:b:c:d
         msg = (
@@ -79,8 +83,8 @@ def _process_input_file_or_dir(
         raise ProcInputTypeError(msg)
 
     if colon_count == 1:  # gs://a/b or a/b:c/d
-        if isinstance(PanPath(inval), CloudPath):  # gs://a/b
-            return MountedPath(inval)
+        if isinstance(PanPath(inval), CloudPath):  # type: ignore[abstract] # gs://a/b
+            return MountedPath(inval)  # type: ignore[abstract]
 
         path1, path2 = inval.split(":")
 
@@ -91,7 +95,7 @@ def _process_input_file_or_dir(
     else:  # gs://a/b:c/d or a/b:gs://c/d
         p1, p2, p3 = inval.split(":", 2)
         path1, path2 = p1 + ":" + p2, p3
-        if not isinstance(PanPath(path1), CloudPath):
+        if not isinstance(PanPath(path1), CloudPath):  # type: ignore[abstract]
             path1, path2 = p1, p2 + ":" + p3
 
     path1 = PanPath(path1)  # type: ignore
@@ -101,7 +105,7 @@ def _process_input_file_or_dir(
     if isinstance(path2, LocalPath):
         path2 = path2.expanduser().absolute()
 
-    return MountedPath(path2, spec=path1)
+    return MountedPath(path2, spec=path1)  # type: ignore[abstract]
 
 
 class Job(XquteJob, JobCaching):
@@ -149,7 +153,9 @@ class Job(XquteJob, JobCaching):
                     f"<{proc.xqute.scheduler.__class__.__name__}>. "
                 )
 
-            mounted_outdir = PanPath(sched_mounted_outdir) / proc.name
+            mounted_outdir = (
+                PanPath(sched_mounted_outdir) / proc.name  # type: ignore[abstract]
+            )
 
         elif isinstance(proc.pipeline.outdir, SpecPath):  # pragma: no cover
             # In the case it is modified by a plugin
@@ -161,7 +167,10 @@ class Job(XquteJob, JobCaching):
 
         if self.proc.export:
             # Don't put index if it is a single-job process
-            self.outdir = SpecPath(export_outdir, mounted=mounted_outdir)
+            self.outdir = SpecPath(  # type: ignore[abstract]
+                export_outdir,
+                mounted=mounted_outdir,
+            )
 
             # Put job output in a subdirectory with index
             # if it is a multi-job process
@@ -299,7 +308,7 @@ class Job(XquteJob, JobCaching):
 
         return ret
 
-    async def prepare_output(self) -> Mapping[str, Any]:
+    async def prepare_output(self) -> None:
         """Get the output data of the job
 
         Returns:
@@ -357,7 +366,7 @@ class Job(XquteJob, JobCaching):
             if output_type == ProcOutputType.VAR:
                 ret[output_name] = output_value
             else:
-                ov = PanPath(output_value)
+                ov = PanPath(output_value)  # type: ignore[abstract]
                 if isinstance(ov, CloudPath) or (
                     isinstance(ov, LocalPath) and ov.is_absolute()
                 ):
