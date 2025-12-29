@@ -107,7 +107,12 @@ class ProcPBar:
         """Update the progress bar when a job is retrying"""
         if self.bar_format:
             self.counter.bar_format = self.bar_format.format('Retrying')
+
         self.failure_counter.update(-1)
+        self.running_counter.update(0, force=True)
+        self.submitted_counter.update(0, force=True)
+        self.queued_counter.update(0, force=True)
+        self.counter.update(1, force=True)
 
     def update_job_running(self):
         """Update the progress bar when a job is running"""
@@ -127,11 +132,6 @@ class ProcPBar:
         try:
             self.success_counter.update_from(self.running_counter)
         except ValueError:  # pragma: no cover
-            try:
-                self.success_counter.update_from(self.counter)
-            except ValueError:  # pragma: no cover
-                pass
-        except:  # noqa: E722  # pragma: no cover
             pass
 
     def update_job_failed(self):
@@ -141,11 +141,6 @@ class ProcPBar:
         try:
             self.failure_counter.update_from(self.running_counter)
         except ValueError:  # pragma: no cover
-            try:
-                self.failure_counter.update_from(self.counter)
-            except ValueError:  # pragma: no cover
-                pass
-        except:  # noqa: E722  # pragma: no cover
             pass
 
     def done(self):
