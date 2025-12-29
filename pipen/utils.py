@@ -447,56 +447,66 @@ def pipen_banner() -> RenderableType:
     return table
 
 
-def get_mtime(
+async def get_mtime(
     path: str | PathLike | CloudPath,
     dir_depth: int = 1,
 ) -> float:
     """Get the modification time of a path.
     If path is a directory, try to get the last modification time of the
     contents in the directory at given dir_depth
+
     Args:
         dir_depth: The depth of the directory to check the
             last modification time
+            0 means only check the path itself
+            (don't go into directory or follow symlink)
+
     Returns:
         The last modification time of path
     """
     path = getattr(path, "path", path)
 
     mtime = 0.0
-    path: Path | CloudPath = AnyPath(path)  # type: ignore[assignment]
-    if not path.exists():
+    path: Path = PanPath(path)  # type: ignore[assignment]
+    if not await path.a_exists():
         return mtime
 
-    if not path_is_symlink(path):
-        if dir_depth == 0 or not path.is_dir():
-            return path.stat().st_mtime
+    # If it is not any kind of symlink
+    if not await path_is_symlink(path):
+        if dir_depth == 0 or not await path.a_is_dir():
+            out = (await path.a_stat()).st_mtime
+            return out.timestamp() if isinstance(out, datetime) else out
 
-        for file in path.iterdir():
-            mtime = max(mtime, get_mtime(file, dir_depth - 1))
+        async for file in path.a_iterdir():
+            mtime = max(mtime, await get_mtime(file, dir_depth - 1))
 
         return mtime
 
-    # Is it a real symlink or fake
-    if isinstance(path, Path) and path.is_symlink():
-        if dir_depth == 0 or not path.is_dir():
-            return path.lstat().st_mtime
+    # It is a real symlink
+    if isinstance(path, LocalPath) and await path.a_is_symlink():
+        if dir_depth == 0 or not await path.a_is_dir():
+            out = (await path.a_stat(follow_symlinks=False)).st_mtime
+            return out.timestamp() if isinstance(out, datetime) else out
 
-        for file in path.iterdir():
-            mtime = max(mtime, get_mtime(file, dir_depth - 1))
+        async for file in path.a_iterdir():
+            mtime = max(mtime, await get_mtime(file, dir_depth - 1))
 
         return mtime
 
     # Fake symlink
-    dest = path.read_text().removeprefix("symlink:").removeprefix("pipen-symlink:")
-    dpath = AnyPath(dest)
-    if dir_depth == 0 or not dpath.is_dir():
-        try:
-            return dpath.stat().st_mtime
-        except Exception:
-            return path.stat().st_mtime
+    dest = (
+        (await path.a_read_text())
+        .removeprefix("symlink:")
+        .removeprefix("pipen-symlink:")
+    )
+    dpath = PanPath(dest)
+    if dir_depth == 0 or not await dpath.a_is_dir():
+        out = (await path.a_stat(follow_symlinks=False)).st_mtime
+        return out.timestamp() if isinstance(out, datetime) else out
 
-    for file in dpath.iterdir():
-        mtime = max(mtime, get_mtime(file, dir_depth - 1))
+    async for file in dpath.a_iterdir():
+        mtime = max(mtime, await get_mtime(file, dir_depth - 1))
+
     return mtime
 
 

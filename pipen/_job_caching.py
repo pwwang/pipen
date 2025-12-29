@@ -35,7 +35,7 @@ class JobCaching:
         )
         # Check if mtimes of input is greater than those of output
         try:
-            max_mtime = get_mtime(self.script_file, 0)
+            max_mtime = await get_mtime(self.script_file, 0)
         except Exception:  # pragma: no cover
             max_mtime = 0
 
@@ -53,7 +53,7 @@ class JobCaching:
                     input_data[inkey] = str(self.input[inkey].spec)
                     max_mtime = max(
                         max_mtime,
-                        get_mtime(self.input[inkey].spec, dirsig),
+                        await get_mtime(self.input[inkey].spec, dirsig),
                     )
 
             if intype in (ProcInputType.FILES, ProcInputType.DIRS):
@@ -63,14 +63,17 @@ class JobCaching:
                     input_data[inkey] = []
                     for file in self.input[inkey]:
                         input_data[inkey].append(str(file.spec))
-                        max_mtime = max(max_mtime, get_mtime(file.spec, dirsig))
+                        max_mtime = max(max_mtime, await get_mtime(file.spec, dirsig))
 
         # Make self.output serializable
         output_data = {}
         for outkey, outval in self._output_types.items():
             if outval in (ProcOutputType.FILE, ProcInputType.DIR):
                 output_data[outkey] = str(self.output[outkey].spec)
-                max_mtime = max(max_mtime, get_mtime(self.output[outkey].spec, dirsig))
+                max_mtime = max(
+                    max_mtime,
+                    await get_mtime(self.output[outkey].spec, dirsig),
+                )
             else:
                 output_data[outkey] = self.output[outkey]
 
@@ -82,8 +85,8 @@ class JobCaching:
             "output": {"type": self._output_types, "data": output_data},
             "ctime": float("inf") if max_mtime == 0 else max_mtime,
         }
-        with self.signature_file.open("w") as f:
-            f.write(Diot(signature).to_toml())
+        async with self.signature_file.a_open("w") as f:
+            await f.write(Diot(signature).to_toml())
 
     async def _clear_output(self) -> None:
         """Clear output if not cached"""
@@ -93,16 +96,16 @@ class JobCaching:
                 continue
 
             path = self.output[outkey].spec
-            if not path.exists() and path_is_symlink(path):  # dead link
-                path.unlink()
-            elif path.exists():
-                if not path.is_dir():
-                    path.unlink()
+            if not await path.a_exists() and await path_is_symlink(path):  # dead link
+                await path.a_unlink()
+            elif await path.a_exists():
+                if not await path.a_is_dir():
+                    await path.a_unlink()
                 else:
                     with suppress(Exception):
-                        path.rmtree()
+                        await path.a_rmtree()
                     # in case rmtree fails anyhow
-                    path.mkdir(exist_ok=True)
+                    await path.a_mkdir(exist_ok=True)
 
     async def _check_cached(self) -> bool:
         """Check if the job is cached based on signature
@@ -110,8 +113,8 @@ class JobCaching:
         Returns:
             True if the job is cached otherwise False
         """
-        with self.signature_file.open("r") as sf:
-            signature = Config.load(sf, loader="toml")
+        async with self.signature_file.a_open("r") as sf:
+            signature = Config.load(await sf.read(), loader="tomls")
 
         dirsig = (
             self.proc.pipeline.config.dirsig
@@ -129,7 +132,7 @@ class JobCaching:
                 return False
 
             # check if any script file is newer
-            script_mtime = get_mtime(self.script_file, 0)
+            script_mtime = await get_mtime(self.script_file, 0)
             if script_mtime > signature.ctime + 1e-3:
                 self.log(
                     "debug",
@@ -180,7 +183,7 @@ class JobCaching:
                         return False
 
                     if (
-                        get_mtime(self.input[inkey].spec, dirsig)
+                        await get_mtime(self.input[inkey].spec, dirsig)
                         > signature.ctime + 1e-3
                     ):
                         self.log(
@@ -228,7 +231,7 @@ class JobCaching:
                             )
                             return False
 
-                        if get_mtime(file.spec, dirsig) > signature.ctime + 1e-3:
+                        if await get_mtime(file.spec, dirsig) > signature.ctime + 1e-3:
                             self.log(
                                 "debug",
                                 "Not cached (input %s:%s at index %s is newer)",
@@ -261,7 +264,7 @@ class JobCaching:
                         )
                         return False
 
-                    if not self.output[outkey].spec.exists():
+                    if not await self.output[outkey].spec.a_exists():
                         self.log(
                             "debug",
                             "Not cached (output %s:%s was removed)",

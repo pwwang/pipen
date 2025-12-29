@@ -44,37 +44,52 @@ def test_brief_list():
 
 
 @pytest.mark.forked
-def test_get_mtime_dir():
+async def test_get_mtime_dir():
     package_dir = Path(pipen.__file__).parent
-    mtime = get_mtime(package_dir, 2)
+    mtime = await get_mtime(package_dir, 2)
     assert mtime > 0
 
 
 @pytest.mark.forked
-def test_get_mtime_symlink_dir(tmp_path):
+async def test_get_mtime_symlink_dir(tmp_path):
+    tmp_path = PanPath(tmp_path)
     dir = tmp_path / "dir"
     dir.mkdir()
     file = dir / "file"
     file.touch()
     link = tmp_path / "link"
     link.symlink_to(dir)
-    mtime = get_mtime(link, 2)
+    mtime = await get_mtime(link, 2)
     assert mtime > 0
 
 
 @pytest.mark.forked
-def test_get_mtime_cloud_file():
-    file = CloudPath(f"{BUCKET}/pipen-test/channel/test1.txt")
-    mtime = get_mtime(file)
+async def test_get_mtime_cloud_file():
+    file = PanPath(f"{BUCKET}/pipen-test/channel/test1.txt")
+    mtime = await get_mtime(file)
     assert mtime > 0
 
 
 @pytest.mark.forked
-def test_get_mtime_symlink_to_cloud_dir(tmp_path):
+async def test_get_mtime_symlink_to_cloud_dir(tmp_path):
+    tmp_path = PanPath(tmp_path)
     link = tmp_path / "link"
-    path_symlink_to(link, CloudPath(f"{BUCKET}/pipen-test/channel"))
-    lmtime = get_mtime(link, 0)
-    mtime = get_mtime(link)
+    await path_symlink_to(link, PanPath(f"{BUCKET}/pipen-test/channel"))
+    # get the mtime of the link itself
+    lmtime = await get_mtime(link, 0)
+    # get the mtime of the target dir, this should be older than the link mtime
+    mtime = await get_mtime(link)
+    assert mtime < lmtime
+
+
+# @pytest.mark.forked
+async def test_get_mtime_cloud_symlink_to_cloud_dir():
+    link = PanPath(f"{BUCKET}/pipen-test/link_to_channel")
+    await path_symlink_to(link, PanPath(f"{BUCKET}/pipen-test/channel"))
+    # get the mtime of the link itself
+    lmtime = await get_mtime(link, 0)
+    # get the mtime of the target dir, this should be older than the link mtime
+    mtime = await get_mtime(link)
     assert mtime < lmtime
 
 
