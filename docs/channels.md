@@ -71,7 +71,7 @@ Since channels are just data frames, so whatever creates a pandas data frame, ca
 
     The `input_data` is passed to this class method to create the input channel.
 
-- `Channel.from_glob(...)`
+- `Channel.from_glob(...)` (async version: `Channel.a_from_glob(...)`)
 
     This takes a glob pattern to match the files to create a single-column channel.
 
@@ -88,7 +88,7 @@ Since channels are just data frames, so whatever creates a pandas data frame, ca
 
     When `reverse` is True, the above sortings are reversed.
 
-- `Channel.from_pairs(...)`
+- `Channel.from_pairs(...)`  (async version: `Channel.a_from_pairs(...)`)
 
     Like `Channel.from_glob()` but create a double-column channel.
 

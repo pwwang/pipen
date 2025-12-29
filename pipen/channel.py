@@ -2,18 +2,16 @@
 
 from __future__ import annotations
 
-from glob import glob
 from os import path
-from itertools import chain
 from pathlib import Path
 from typing import Any, List
 
 import pandas
-from yunpath import AnyPath, CloudPath
+from panpath import PanPath, CloudPath
 from pandas import DataFrame
 from pipda import register_verb
 
-from .utils import path_is_symlink
+from .utils import path_is_symlink, path_is_symlink_sync
 
 
 # ----------------------------------------------------------------
@@ -74,33 +72,32 @@ class Channel(DataFrame):
 
         def file_filter(file: Path | CloudPath) -> bool:
             if ftype == "link":
-                return path_is_symlink(file)
+                return path_is_symlink_sync(file)
             if ftype == "dir":
                 return file.is_dir()
             if ftype == "file":
                 return file.is_file()
             return True
 
-        pattern: Path | CloudPath = AnyPath(pattern)
-        if isinstance(pattern, CloudPath):
-            parts = pattern.parts
-            bucket = CloudPath("".join(parts[:2]))  # gs://bucket
-            # CloudPath.glob() does not support a/b/*.txt
-            # we have to do it part by part
-            parts = parts[2:]
-            files = [bucket]
-            for i, part in enumerate(parts):
-                tmp = chain(*[base.glob(part) for base in files])
-                tmp = list(tmp)
-                files = [
-                    base for base in tmp
-                    if (i < len(parts) - 1 and base.is_dir())
-                    or (i == len(parts) - 1 and file_filter(base))
-                ]
-        else:  # local path
-            files = (
-                Path(file) for file in glob(str(pattern)) if file_filter(Path(file))
-            )
+        pattern = str(pattern)
+        parts = pattern.split("/")
+        wildcard_index = -1
+        for i, part in enumerate(parts):
+            if "*" in part or "?" in part or "[" in part:
+                wildcard_index = i
+                break
+        if wildcard_index == -1:
+            files = [PanPath(pattern)] if file_filter(PanPath(pattern)) else []
+            return cls.create([str(file) for file in files])
+
+        base_path = PanPath("/".join(parts[:wildcard_index]))
+        sub_pattern = "/".join(parts[wildcard_index:])
+
+        files = (
+            PanPath(file)
+            for file in base_path.glob(sub_pattern)
+            if file_filter(PanPath(file))
+        )
 
         return cls.create(
             [
@@ -108,6 +105,78 @@ class Channel(DataFrame):
                 for file in sorted(
                     files,
                     key=sort_key if sortby in ("name", "mtime", "size") else None,
+                    reverse=reverse,
+                )  # type: ignore
+            ]
+        )
+
+    @classmethod
+    async def a_from_glob(
+        cls,
+        pattern: str,
+        ftype: str = "any",
+        sortby: str = "name",
+        reverse: bool = False,
+    ) -> DataFrame:
+        """Create a channel with a glob pattern asynchronously
+
+        Args:
+            pattern: The glob pattern, supported: "dir1/dir2/*.txt"
+            ftype: The file type, one of any, link, dir and file
+            sortby: How the files should be sorted. One of name, mtime and size
+            reverse: Whether sort them in a reversed way.
+
+        Returns:
+            The channel
+        """
+
+        async def get_sort_key(file: PanPath, sort_by: str) -> Any:
+            if sortby == "mtime":  # pragma: no cover
+                return (await file.a_stat()).st_mtime
+            if sortby == "size":
+                return (await file.a_stat()).st_size
+
+            return str(file)  # sort by name
+
+        async def file_filter(file: PanPath) -> bool:
+            if ftype == "link":  # pragma: no cover
+                return await path_is_symlink(file)
+            if ftype == "dir":  # pragma: no cover
+                return await file.a_is_dir()
+            if ftype == "file":
+                return await file.a_is_file()
+            return True
+
+        pattern = str(pattern)
+        parts = pattern.split("/")
+        wildcard_index = -1
+        for i, part in enumerate(parts):
+            if "*" in part or "?" in part or "[" in part:
+                wildcard_index = i
+                break
+        if wildcard_index == -1:
+            files = [PanPath(pattern)] if await file_filter(PanPath(pattern)) else []
+            return cls.create([str(file) for file in files])
+
+        base_path = PanPath("/".join(parts[:wildcard_index]))
+        sub_pattern = "/".join(parts[wildcard_index:])
+
+        files = [
+            str(file)
+            async for file in base_path.a_glob(sub_pattern)
+            if await file_filter(PanPath(file))
+        ]
+
+        sort_keys = {
+            file: await get_sort_key(PanPath(file), sortby) for file in files
+        }
+
+        return cls.create(
+            [
+                str(file)
+                for file in sorted(
+                    files,
+                    key=sort_keys.get if sortby in ("name", "mtime", "size") else None,
                     reverse=reverse,
                 )  # type: ignore
             ]
@@ -132,6 +201,33 @@ class Channel(DataFrame):
             The channel
         """
         mates = cls.from_glob(pattern, ftype, sortby, reverse)
+        return pandas.concat(
+            (
+                mates.iloc[::2].reset_index(drop=True),
+                mates.iloc[1::2].reset_index(drop=True),
+            ),
+            axis=1,
+        )
+
+    @classmethod
+    async def a_from_pairs(
+        cls,
+        pattern: str,
+        ftype: str = "any",
+        sortby: str = "name",
+        reverse: bool = False,
+    ) -> DataFrame:
+        """Create a width=2 channel with a glob pattern
+
+        Args:
+            ftype: The file type, one of any, link, dir and file
+            sortby: How the files should be sorted. One of name, mtime and size
+            reverse: Whether sort them in a reversed way.
+
+        Returns:
+            The channel
+        """
+        mates = await cls.a_from_glob(pattern, ftype, sortby, reverse)
         return pandas.concat(
             (
                 mates.iloc[::2].reset_index(drop=True),

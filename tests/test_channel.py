@@ -78,23 +78,44 @@ def test_from_glob_filter_dir_file(tmp_path):
     assert ch.iloc[0, 0] == str(file1)
     assert ch.iloc[1, 0] == str(file3)
 
+    ch = Channel.from_glob(tmp_path / "file1.txt", ftype="dir")
+    assert ch.shape == (1, 1)
+    assert ch.iloc[0, 0] == str(file1)
+
     ch = Channel.from_glob(tmp_path / "*.txt", ftype="file")
     assert ch.shape == (1, 1)
     assert ch.iloc[0, 0] == str(file2)
 
 
-def test_from_glob_cloudpath():
-    ch = Channel.from_glob(f"{BUCKET}/pipen-test/channel/test*.txt")
+async def test_from_glob_cloudpath():
+    ch = await Channel.a_from_glob(
+        f"{BUCKET}/pipen-test/channel/test*.txt",
+        sortby="size",
+    )
     assert ch.shape == (3, 1)
     assert ch.iloc[0, 0] == f"{BUCKET}/pipen-test/channel/test1.txt"
     assert ch.iloc[1, 0] == f"{BUCKET}/pipen-test/channel/test2.txt"
     assert ch.iloc[2, 0] == f"{BUCKET}/pipen-test/channel/test3.txt"
+
+    ch = await Channel.a_from_glob(
+        f"{BUCKET}/pipen-test/channel/test1.txt",
+        ftype="file",
+    )
+    assert ch.shape == (1, 1)
+    assert ch.iloc[0, 0] == f"{BUCKET}/pipen-test/channel/test1.txt"
 
 
 def test_from_pairs():
     glob = Path(__file__).parent / "test_*.py"
     glob_files = list(Path(__file__).parent.glob("test_*.py"))
     ch = Channel.from_pairs(glob)
+    assert ch.shape == (ceil(len(glob_files) / 2.0), 2)
+
+
+async def test_a_from_pairs():
+    glob = Path(__file__).parent / "test_*.py"
+    glob_files = list(Path(__file__).parent.glob("test_*.py"))
+    ch = await Channel.a_from_pairs(glob)
     assert ch.shape == (ceil(len(glob_files) / 2.0), 2)
 
 
