@@ -1,4 +1,5 @@
 """Template adaptor for pipen"""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -138,9 +139,7 @@ def get_template_engine(template: str | Type[Template]) -> Type[Template]:
     if template == "jinja2":
         return TemplateJinja2
 
-    for name, obj in load_entrypoints(
-        TEMPLATE_ENTRY_GROUP
-    ):  # pragma: no cover
+    for name, obj in load_entrypoints(TEMPLATE_ENTRY_GROUP):  # pragma: no cover
         if name == template:
             if not is_subclass(obj, Template):
                 raise WrongTemplateEngineTypeError(

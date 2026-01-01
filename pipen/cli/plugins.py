@@ -1,4 +1,5 @@
 """List plugins"""
+
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Iterable, List, Tuple
 
@@ -91,9 +92,7 @@ def _list_plugins(plugins: List[Tuple[str, str, Any]]) -> None:
         if group == TEMPLATE_ENTRY_GROUP
     ]
     cli_plugins = [
-        (name, plugin)
-        for group, name, plugin in plugins
-        if group == CLI_ENTRY_GROUP
+        (name, plugin) for group, name, plugin in plugins if group == CLI_ENTRY_GROUP
     ]
     _list_group_plugins("pipen", pipen_plugins)
     _list_group_plugins(SCHEDULER_ENTRY_GROUP, sched_plugins)
@@ -123,6 +122,7 @@ class CliPluginsPlugin(CLIPlugin):
     def exec_command(self, args: Namespace) -> None:
         """Execute the command"""
         from ..version import __version__
+
         print("Pipen version:", __version__)
 
         plugins: List[Tuple[str, str, Any]] = []

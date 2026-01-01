@@ -1,4 +1,5 @@
 """Provide some default values/objects"""
+
 from pathlib import Path
 from typing import ClassVar
 

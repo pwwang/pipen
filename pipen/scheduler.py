@@ -122,9 +122,9 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
         # instead of mounting the workdir of this specific proc,
         # we mount the parent dir (the pipeline workdir), because the procs
         # of the pipeline may share files (e.g. input files from output of other procs)
-        self.config["taskGroups"][0]["taskSpec"]["volumes"][0]["gcs"][
-            "remotePath"
-        ] = "/".join(self.workdir.parent.parts[1:])  # remove 'gs://'
+        self.config["taskGroups"][0]["taskSpec"]["volumes"][0]["gcs"]["remotePath"] = (
+            "/".join(self.workdir.parent.parts[1:])
+        )  # remove 'gs://'
         self.config["taskGroups"][0]["taskSpec"]["volumes"][0][
             "mountPath"
         ] = self.MOUNTED_METADIR
@@ -157,7 +157,7 @@ class ContainerScheduler(  # type: ignore[misc]
         await super().post_init(proc)
 
         mounted_workdir = f"{self.MOUNTED_METADIR}/{proc.name}"
-        self.workdir = SpecPath(  # type: ignore[abstract]
+        self.workdir = SpecPath(
             str(self.workdir),  # ignore the mounted_workdir by xqute
             mounted=mounted_workdir,
         )

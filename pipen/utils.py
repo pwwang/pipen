@@ -500,7 +500,7 @@ async def get_mtime(
         .removeprefix("symlink:")
         .removeprefix("pipen-symlink:")
     )
-    dpath = PanPath(dest)  # type: ignore[abstract]
+    dpath = PanPath(dest)
     if dir_depth == 0 or not await dpath.a_is_dir():
         out = (await path.a_stat(follow_symlinks=False)).st_mtime
         return out.timestamp() if isinstance(out, datetime) else out

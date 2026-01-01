@@ -458,10 +458,7 @@ class Proc(ABC, metaclass=ProcMeta):
             job_indexes_batches[i % self.submission_batch].append(i)
 
         cached_job_list = await asyncio.gather(
-            *(
-                self._prepare_jobs_in_batch(batch)
-                for batch in job_indexes_batches
-            )
+            *(self._prepare_jobs_in_batch(batch) for batch in job_indexes_batches)
         )
 
         cached_jobs = [i for sublist in cached_job_list for i in sublist]
@@ -475,14 +472,14 @@ class Proc(ABC, metaclass=ProcMeta):
             (
                 False
                 if not self.succeeded
-                else "cached" if len(cached_jobs) == self.size
-                else True
-            )
+                else "cached" if len(cached_jobs) == self.size else True
+            ),
         )
 
     def gc(self):
         """GC process for the process to save memory after it's done"""
         import pandas
+
         # store the output data for the next processes
         self.__class__.output_data = pandas.DataFrame((job.output for job in self.jobs))
 
@@ -680,7 +677,7 @@ class Proc(ABC, metaclass=ProcMeta):
 
         script = self.__class__.script
         if script.startswith("file://"):
-            script_file = PanPath(script)  # type: ignore[abstract]
+            script_file = PanPath(script)
             if not script_file.is_absolute():
                 base = get_base(
                     self.__class__,
@@ -688,10 +685,7 @@ class Proc(ABC, metaclass=ProcMeta):
                     script,
                     lambda klass: getattr(klass, "script", None),
                 )
-                script_file = (
-                    PanPath(inspect.getfile(base)).parent   # type: ignore[abstract]
-                    / script_file
-                )
+                script_file = PanPath(inspect.getfile(base)).parent / script_file
             if not await script_file.a_is_file():
                 raise ProcScriptFileNotFound(f"No such script file: {script_file}")
             script = await script_file.a_read_text()

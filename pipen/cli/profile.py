@@ -1,4 +1,5 @@
 """List available profiles."""
+
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -62,10 +63,7 @@ class CLIProfilePlugin(CLIPlugin):
         print("")
 
         print("Note:")
-        print(
-            "- The same profile from different configuration files "
-            "are inherited."
-        )
+        print("- The same profile from different configuration files " "are inherited.")
         print(
             "- These configurations can still be overriden by "
             "Pipen constructor and process definition."

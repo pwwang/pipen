@@ -33,6 +33,7 @@ Or add a process at runtime:
 >>>         return MyProc
 >>> proc_group = MyProcGroup(...)
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -149,7 +150,7 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
             if proc is None:
                 return None
 
-            if (not isinstance(proc, type) or not issubclass(proc, Proc)):
+            if not isinstance(proc, type) or not issubclass(proc, Proc):
                 raise ValueError(f"`{proc}` is not a Proc subclass")
 
             proc.__meta__["procgroup"] = self

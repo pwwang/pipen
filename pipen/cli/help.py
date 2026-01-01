@@ -1,4 +1,5 @@
 """Print help for commands"""
+
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -22,9 +23,7 @@ class CLIHelpPlugin(CLIPlugin):
             "cmd",
             nargs="?",
             choices=[
-                n
-                for n in parser._subparsers._group_actions[0].choices
-                if n != "help"
+                n for n in parser._subparsers._group_actions[0].choices if n != "help"
             ],
             help="The command to show help for",
         )

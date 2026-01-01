@@ -1,4 +1,5 @@
 """Provide the PipelinePBar and ProcPBar classes"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -35,20 +36,20 @@ class ProcPBar:
         if proc_size > 1:
             self.bar_format = None
             bar_format = (
-                '{desc}{desc_pad}{percentage:3.0f}%|{bar}| '
-                'I:{count_0:<{len_total}d} '
-                'Q:{count_1:<{len_total}d} '
-                'S:{count_2:<{len_total}d} '
-                'R:{count_3:<{len_total}d} '
-                'D:{count_4:>{len_total}d}|{count_5:<{len_total}d} '
-                '[{rate:5.2f}{unit_pad}{unit}/s]'
+                "{desc}{desc_pad}{percentage:3.0f}%|{bar}| "
+                "I:{count_0:<{len_total}d} "
+                "Q:{count_1:<{len_total}d} "
+                "S:{count_2:<{len_total}d} "
+                "R:{count_3:<{len_total}d} "
+                "D:{count_4:>{len_total}d}|{count_5:<{len_total}d} "
+                "[{rate:5.2f}{unit_pad}{unit}/s]"
             )
         else:
             self.bar_format = (
-                '{{desc}}{{desc_pad}}{{percentage:3.0f}}%|{{bar}}| '
-                '{:^9} [{{rate:5.2f}}{{unit_pad}}{{unit}}/s]'
+                "{{desc}}{{desc_pad}}{{percentage:3.0f}}%|{{bar}}| "
+                "{:^9} [{{rate:5.2f}}{{unit_pad}}{{unit}}/s]"
             )
-            bar_format = self.bar_format.format('-----------')
+            bar_format = self.bar_format.format("-----------")
 
         self.counter: enlighten.Counter = manager.counter(
             total=proc_size,
@@ -70,9 +71,7 @@ class ProcPBar:
         self.success_counter: enlighten.SubCounter = self.counter.add_subcounter(
             "green"
         )
-        self.failure_counter: enlighten.SubCounter = self.counter.add_subcounter(
-            "red"
-        )
+        self.failure_counter: enlighten.SubCounter = self.counter.add_subcounter("red")
         # defer setting the bar_format, in case self.counter is rendered too early
         # ValueError: Reserve field 'count_0' specified in format,
         # but no subcounters are configured
@@ -88,7 +87,7 @@ class ProcPBar:
     def update_job_queued(self):
         """Update the progress bar when a job is queued"""
         if self.bar_format:
-            self.counter.bar_format = self.bar_format.format('Queued')
+            self.counter.bar_format = self.bar_format.format("Queued")
         try:
             self.queued_counter.update_from(self.counter)
         except ValueError:  # pragma: no cover
@@ -97,7 +96,7 @@ class ProcPBar:
     def update_job_submitted(self):
         """Update the progress bar when a job is init'ed"""
         if self.bar_format:
-            self.counter.bar_format = self.bar_format.format('Submitted')
+            self.counter.bar_format = self.bar_format.format("Submitted")
         try:
             self.submitted_counter.update_from(self.queued_counter)
         except ValueError:  # pragma: no cover
@@ -106,7 +105,7 @@ class ProcPBar:
     def update_job_retrying(self):  # pragma: no cover
         """Update the progress bar when a job is retrying"""
         if self.bar_format:
-            self.counter.bar_format = self.bar_format.format('Retrying')
+            self.counter.bar_format = self.bar_format.format("Retrying")
 
         self.failure_counter.update(-1)
         self.running_counter.update(0, force=True)
@@ -117,7 +116,7 @@ class ProcPBar:
     def update_job_running(self):
         """Update the progress bar when a job is running"""
         if self.bar_format:
-            self.counter.bar_format = self.bar_format.format('Running')
+            self.counter.bar_format = self.bar_format.format("Running")
         try:
             self.running_counter.update_from(self.submitted_counter)
         except ValueError:  # pragma: no cover
@@ -127,7 +126,7 @@ class ProcPBar:
         """Update the progress bar when a job is succeeded"""
         if self.bar_format:
             self.counter.bar_format = self.bar_format.format(
-                'Cached' if cached else 'Succeeded'
+                "Cached" if cached else "Succeeded"
             )
         try:
             self.success_counter.update_from(self.running_counter)
@@ -137,7 +136,7 @@ class ProcPBar:
     def update_job_failed(self):
         """Update the progress bar when a job is failed"""
         if self.bar_format:
-            self.counter.bar_format = self.bar_format.format('Failed')
+            self.counter.bar_format = self.bar_format.format("Failed")
         try:
             self.failure_counter.update_from(self.running_counter)
         except ValueError:  # pragma: no cover
@@ -175,10 +174,10 @@ class PipelinePBar:
             desc=f"{ppln_name:>{desc_len}}:",
             unit="procs",
             bar_format=(
-                '{desc}{desc_pad}{percentage:3.0f}%|{bar}| '
-                f'{{count:{{len_total}}d}}/{n_procs} '
-                '[{rate:5.2f}{unit_pad}{unit}/s]'
-            )
+                "{desc}{desc_pad}{percentage:3.0f}%|{bar}| "
+                f"{{count:{{len_total}}d}}/{n_procs} "
+                "[{rate:5.2f}{unit_pad}{unit}/s]"
+            ),
         )
         self.success_counter = self.running_counter.add_subcounter("green")
         self.failure_counter = self.running_counter.add_subcounter("red")

@@ -1,4 +1,5 @@
 """CLI main entrance"""
+
 import re
 import importlib
 from pathlib import Path
@@ -46,9 +47,7 @@ def main() -> None:
         subparser = parser.add_command(
             plg.name,
             help=(
-                None
-                if docstr is None
-                else re.sub(r"\s+", " ", docstr.splitlines()[0])
+                None if docstr is None else re.sub(r"\s+", " ", docstr.splitlines()[0])
             ),
             description=docstr,
         )

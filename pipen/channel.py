@@ -87,19 +87,17 @@ class Channel(DataFrame):
                 break
         if wildcard_index == -1:
             files: Iterable[PanPath] = (
-                [PanPath(pattern)]  # type: ignore[abstract]
-                if file_filter(PanPath(pattern))  # type: ignore[abstract]
-                else []
+                [PanPath(pattern)] if file_filter(PanPath(pattern)) else []
             )
             return cls.create([str(file) for file in files])
 
-        base_path = PanPath("/".join(parts[:wildcard_index]))  # type: ignore[abstract]
+        base_path = PanPath("/".join(parts[:wildcard_index]))
         sub_pattern = "/".join(parts[wildcard_index:])
 
         files = (
-            PanPath(file)  # type: ignore[abstract]
+            PanPath(file)
             for file in base_path.glob(sub_pattern)
-            if file_filter(PanPath(file))  # type: ignore[abstract]
+            if file_filter(PanPath(file))
         )
 
         return cls.create(
@@ -158,27 +156,23 @@ class Channel(DataFrame):
                 wildcard_index = i
                 break
         if wildcard_index == -1:
-            files = (
-                [PanPath(pattern)]  # type: ignore[abstract]
-                if await file_filter(PanPath(pattern))  # type: ignore[abstract]
-                else []
-            )
+            files = [PanPath(pattern)] if await file_filter(PanPath(pattern)) else []
             return cls.create([str(file) for file in files])
 
-        base_path = PanPath("/".join(parts[:wildcard_index]))  # type: ignore[abstract]
+        base_path = PanPath("/".join(parts[:wildcard_index]))
         sub_pattern = "/".join(parts[wildcard_index:])
 
         files = [
-            PanPath(file)  # type: ignore[abstract]
+            PanPath(file)
             async for file in base_path.a_glob(sub_pattern)
-            if await file_filter(PanPath(file))  # type: ignore[abstract]
+            if await file_filter(PanPath(file))
         ]
 
         sort_keys = dict(
             [
                 (
                     file,
-                    await get_sort_key(file, sortby),  # type: ignore[abstract]
+                    await get_sort_key(file, sortby),
                 )
                 for file in files
             ]
