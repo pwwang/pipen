@@ -74,7 +74,7 @@ def on_proc_create(proc: Proc):
 
 
 @plugin.spec
-def on_proc_input_computed(proc: Proc):
+async def on_proc_input_computed(proc: Proc):
     """Called after process input data is computed.
 
     Args:
@@ -83,7 +83,7 @@ def on_proc_input_computed(proc: Proc):
 
 
 @plugin.spec
-def on_proc_script_computed(proc: Proc):
+async def on_proc_script_computed(proc: Proc):
     """Called after process script is computed.
 
     The script is computed as a string that is about to compiled into a

@@ -382,7 +382,7 @@ class Proc(ABC, metaclass=ProcMeta):
         self.input = self._compute_input()  # type: ignore
         # output
         self.output = self._compute_output()
-        plugin.hooks.on_proc_input_computed(self)
+        await plugin.hooks.on_proc_input_computed(self)
 
         # scheduler
         self.scheduler: Type[Scheduler] = get_scheduler(  # type: ignore
@@ -705,7 +705,7 @@ class Proc(ABC, metaclass=ProcMeta):
         if not self.lang:
             self.lang = get_shebang(self.script)
 
-        plugin.hooks.on_proc_script_computed(self)
+        await plugin.hooks.on_proc_script_computed(self)
         return self.template(self.script, **self.template_opts)  # type: ignore
 
     def _log_info(self):

@@ -46,11 +46,11 @@ See [`simplug`][1] for more details.
     Called before proc get instantiated.
     Enables plugins to modify the default attributes of processes
 
-- `on_proc_input_computed(proc)` (sync)
+- `on_proc_input_computed(proc)` (async)
 
     Called after process input data is computed.
 
-- `on_proc_script_computed(proc)` (sync)
+- `on_proc_script_computed(proc)` (async)
 
     Called after process script is computed.
 
