@@ -2,8 +2,10 @@
 
 ## 1.1.0
 
+- BREAKING: change on_proc_input_computed and on_proc_script_computed to async
 - refactor: migrate to panpath from cloudpatlib (so that path operations can be async)
 - refactor: convert get_mtime to async and update related methods and tests
+- refactor: streamline process initialization and script computation
 - chore: bump xqute to 2.0
 - chore: bump argx to 0.4
 - feat: add async versions of from_glob and from_pairs methods in Channel class
