@@ -187,11 +187,7 @@ class Pipen:
             for proc in self.procs:
                 self.pbar.update_proc_running()
                 proc_obj = proc(self)
-                proc_obj.script = await proc_obj._compute_script()  # type: ignore
-                await proc_obj.workdir.a_mkdir(  # type: ignore[union-attr]
-                    parents=True,
-                    exist_ok=True,
-                )
+                await proc_obj._init()
                 if proc in self.starts and proc.input_data is None:  # type: ignore
                     proc_obj.log(
                         "warning",

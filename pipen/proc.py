@@ -372,21 +372,31 @@ class Proc(ABC, metaclass=ProcMeta):
         plugin_opts.update(self.plugin_opts or {})
         self.plugin_opts = plugin_opts
 
+        # run them asynchronously later in Pipen.async_run()
+        # self.script = self._compute_script()  # type: ignore
+        # self.workdir.mkdir(exist_ok=True)
+
+    async def _init(self) -> None:
+        """Async init for the process"""
         # input
         self.input = self._compute_input()  # type: ignore
         # output
         self.output = self._compute_output()
         plugin.hooks.on_proc_input_computed(self)
+
         # scheduler
         self.scheduler: Type[Scheduler] = get_scheduler(  # type: ignore
             self.scheduler or self.pipeline.config.scheduler
         )
-        # run them asynchronously later in Pipen.async_run()
-        # self.script = self._compute_script()  # type: ignore
-        # self.workdir.mkdir(exist_ok=True)
 
         if self.submission_batch is None:
             self.submission_batch = self.pipeline.config.submission_batch
+
+        self.script = await self._compute_script()  # type: ignore
+        await self.workdir.a_mkdir(  # type: ignore[union-attr]
+            parents=True,
+            exist_ok=True,
+        )
 
     async def _prepare_jobs_in_batch(self, indexes: Sequence[int]) -> List[int]:
         """Prepare jobs in batch
@@ -577,7 +587,7 @@ class Proc(ABC, metaclass=ProcMeta):
         from .channel import Channel
 
         # split input keys into keys and types
-        input_keys = self.input
+        input_keys = self.__class__.input
         if input_keys and isinstance(input_keys, str):
             input_keys = strsplit(input_keys, ",")
 
@@ -656,18 +666,19 @@ class Proc(ABC, metaclass=ProcMeta):
 
         return out
 
-    def _compute_output(self) -> str | List[str]:
+    def _compute_output(self) -> Template | List[Template]:
         """Compute the output for jobs to render"""
-        if not self.output:
-            return None
+        output = self.__class__.output
+        if not output or isinstance(self.output, Template):
+            return self.output
 
-        if isinstance(self.output, (list, tuple)):
+        if isinstance(output, (list, tuple)):
             return [
-                self.template(oput, **self.template_opts)  # type: ignore
-                for oput in self.output
+                self.template(oput, **self.template_opts)
+                for oput in output
             ]
 
-        return self.template(self.output, **self.template_opts)  # type: ignore
+        return self.template(output, **self.template_opts)
 
     async def _compute_script(self) -> Template:
         """Compute the script for jobs to render"""
