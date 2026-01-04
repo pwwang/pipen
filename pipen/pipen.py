@@ -357,7 +357,7 @@ class Pipen:
         5. Those defined in each Proc class
         """
         # Then load the configurations from config files
-        config = ProfileConfig.load(
+        config = await ProfileConfig.a_load(
             {"default": self.config},
             *CONFIG_FILES,
             ignore_nonexist=True,
