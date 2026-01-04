@@ -2750,6 +2750,21 @@ files = [
 executing = ">=2.0,<3.0"
 
 [[package]]
+name = "pipen-verbose"
+version = "1.1.1"
+description = "Add verbosal information in logs for pipen."
+optional = false
+python-versions = "<4.0,>=3.9"
+groups = ["example"]
+files = [
+    {file = "pipen_verbose-1.1.1-py3-none-any.whl", hash = "sha256:fb8ec860e401065a95969b4a6ca1d01e750eeaeb3f8ca2f69b673f60af3cee0f"},
+    {file = "pipen_verbose-1.1.1.tar.gz", hash = "sha256:5d07c1b637259243ad87cd3718cf687958dc92f2999948c075233ce398c3f376"},
+]
+
+[package.dependencies]
+pipen = "==1.1.*"
+
+[[package]]
 name = "platformdirs"
 version = "4.4.0"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`."
@@ -4195,4 +4210,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "ef138807ee7fd389f0992f5f7689b24e80c8ab89f97ed2e9fed60bcc5a336ec2"
+content-hash = "10202676335bef399d1edeb1d1e6c991ffbda0d77213e013ecc03731d2c5d885"
