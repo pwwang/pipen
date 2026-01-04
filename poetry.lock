@@ -226,18 +226,18 @@ test = ["coverage", "mypy", "pexpect", "ruff", "wheel"]
 
 [[package]]
 name = "argx"
-version = "0.4.0"
+version = "0.4.1"
 description = "Super-charged argparse for python"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main", "dev", "example"]
 files = [
-    {file = "argx-0.4.0-py3-none-any.whl", hash = "sha256:0856b7af4728a6c6d21162172612ef3a316a44eafe41859b94adba1d6d2e2676"},
-    {file = "argx-0.4.0.tar.gz", hash = "sha256:20892280b7386ab540f0e39a4c380cbef53a899d8b3c79c9528c79e7e7c560c2"},
+    {file = "argx-0.4.1-py3-none-any.whl", hash = "sha256:30eba009c5f4fa67b8024db614f0488ba3c732b726e0b78c1b16357b71c26667"},
+    {file = "argx-0.4.1.tar.gz", hash = "sha256:42e1ba973799071e88ce724220b33009411e97b6c70cbea5220c70f91dbccdd3"},
 ]
 
 [package.dependencies]
-python-simpleconf = ">=0.7,<0.8"
+python-simpleconf = ">=0.8,<0.9"
 
 [package.extras]
 anypath = ["panpath (>=0.4,<0.5)"]
@@ -628,14 +628,14 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
 name = "cloudsh"
-version = "0.3.5"
+version = "0.3.6"
 description = "A Python CLI wrapping common Linux commands for local/cloud files."
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["dev", "example"]
 files = [
-    {file = "cloudsh-0.3.5-py3-none-any.whl", hash = "sha256:7c5d995c3a9e06ddde870bafea82b6968ded66ddecacc2b5fef209f80e989cd9"},
-    {file = "cloudsh-0.3.5.tar.gz", hash = "sha256:a5be88bf2e05aad5b6e0660ba391efee10bff34ee24235ba7b8f476c58db584e"},
+    {file = "cloudsh-0.3.6-py3-none-any.whl", hash = "sha256:b346e5fc16b92b5ce9aa8c64578ffe2ddf81a0bab91a511ceb9fd87477cf2207"},
+    {file = "cloudsh-0.3.6.tar.gz", hash = "sha256:ec8c4880afdc6a8d856dca6f82259900e90c9fa96d73b9901d873360f5ade105"},
 ]
 
 [package.dependencies]
@@ -643,9 +643,9 @@ aiofiles = ">=23.0.0,<24.0.0"
 argcomplete = ">=3.5.3,<4.0.0"
 argx = ">=0.4,<0.5"
 gcloud-aio-storage = {version = ">=9.5", optional = true, markers = "extra == \"gs\" or extra == \"gcs\" or extra == \"all\""}
-panpath = ">=0.4.7,<0.5.0"
+panpath = ">=0.4.8,<0.5.0"
 python-dateutil = ">=2.9.0.post0,<3.0.0"
-python-simpleconf = {version = ">=0.7,<0.8", extras = ["toml"]}
+python-simpleconf = {version = ">=0.8,<0.9", extras = ["toml"]}
 
 [package.extras]
 all = ["aioboto3 (>=11.0.0)", "azure-storage-blob (>=12,<13)", "gcloud-aio-storage (>=9.5)"]
@@ -1041,20 +1041,20 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "datar"
-version = "0.15.13"
+version = "0.15.14"
 description = "A Grammar of Data Manipulation in python"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["dev"]
 files = [
-    {file = "datar-0.15.13-py3-none-any.whl", hash = "sha256:c869435621b6d5026ca9f956c9a67c580ac84a2dd4be00bbada788b80e49b7d2"},
-    {file = "datar-0.15.13.tar.gz", hash = "sha256:d7ff86d61c69a4a71fc295e75f2da506a2b1acea4aac442b01fd30d771d7d856"},
+    {file = "datar-0.15.14-py3-none-any.whl", hash = "sha256:47a7fa901b99e6c49830afb9c4d79cec8b0fa2f2c010d1dcc61f8a2defeda4e3"},
+    {file = "datar-0.15.14.tar.gz", hash = "sha256:5b0b2e64efca40624b05595fcda9ef4f7098dd42df3717da692b7ff92ee04fab"},
 ]
 
 [package.dependencies]
 datar-pandas = {version = ">=0.6,<0.7", optional = true, markers = "extra == \"pandas\""}
 pipda = ">=0.13.1,<0.14.0"
-python-simpleconf = {version = ">=0.7,<0.8", extras = ["toml"]}
+python-simpleconf = {version = ">=0.8,<0.9", extras = ["toml"]}
 simplug = ">=0.5,<0.6"
 
 [package.extras]
@@ -3298,24 +3298,25 @@ cli = ["click (>=5.0)"]
 
 [[package]]
 name = "python-simpleconf"
-version = "0.7.2"
+version = "0.8.0"
 description = "Simple configuration management with python."
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main", "dev", "example"]
 files = [
-    {file = "python_simpleconf-0.7.2-py3-none-any.whl", hash = "sha256:7d0ce8febd1e0826084ad32c96ffa531c1ec40e7632b2abb67c02c41157bd4ab"},
-    {file = "python_simpleconf-0.7.2.tar.gz", hash = "sha256:03b01c6235f5f288f00ba590564b6bda56c0c1baba71fcf4612caa7c9e63de6f"},
+    {file = "python_simpleconf-0.8.0-py3-none-any.whl", hash = "sha256:2f8b550aa7d9b871516a8264541870036492367d2907c265aa8297d4297558cd"},
+    {file = "python_simpleconf-0.8.0.tar.gz", hash = "sha256:c96d51fd635a410f295c65ddccf5023a24cb1d35df69654a98874a0d37a67791"},
 ]
 
 [package.dependencies]
 diot = ">=0.3.2,<0.4.0"
+panpath = ">=0.4.8,<0.5.0"
 rtoml = {version = ">=0.12,<0.13", optional = true, markers = "sys_platform == \"linux\" and (extra == \"toml\" or extra == \"all\")"}
 tomli = {version = ">=2.0,<3.0", optional = true, markers = "sys_platform != \"linux\" and (extra == \"toml\" or extra == \"all\")"}
 
 [package.extras]
 all = ["iniconfig (>=2.0,<3.0)", "python-dotenv (>=1.1,<2.0)", "pyyaml (>=6,<7)", "rtoml (>=0.12,<0.13) ; sys_platform == \"linux\"", "tomli (>=2.0,<3.0) ; sys_platform != \"linux\""]
-cloud = ["yunpath (>=0.0.4,<0.0.5)"]
+async = ["aiofiles (>=23.0.0)"]
 env = ["python-dotenv (>=1.1,<2.0)"]
 ini = ["iniconfig (>=2.0,<3.0)"]
 toml = ["rtoml (>=0.12,<0.13) ; sys_platform == \"linux\"", "tomli (>=2.0,<3.0) ; sys_platform != \"linux\""]
@@ -4210,4 +4211,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "10202676335bef399d1edeb1d1e6c991ffbda0d77213e013ecc03731d2c5d885"
+content-hash = "6c949dc955bcd6e6bf8fa5d37696f2c8181ea6e316f3cd79d78f7ac9216d79fc"
