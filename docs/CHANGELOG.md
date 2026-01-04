@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.1.1
+
+- chore: bump python-simpleconf to 0.8
+- chore: update ProfileConfig loading to async method
+
 ## 1.1.0
 
 - BREAKING: change on_proc_input_computed and on_proc_script_computed to async
