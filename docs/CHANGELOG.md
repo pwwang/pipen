@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.1.2
+
+- feat: implement AsyncCLIPlugin for asynchronous command execution
+
 ## 1.1.1
 
 - chore: bump python-simpleconf to 0.8
