@@ -8,7 +8,7 @@ from rich.panel import Panel
 from rich.syntax import Syntax
 from simpleconf import ProfileConfig
 
-from ._hooks import CLIPlugin
+from ._hooks import AsyncCLIPlugin
 from ..defaults import CONFIG, CONFIG_FILES
 
 if TYPE_CHECKING:
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 __all__ = ("CLIProfilePlugin",)
 
 
-class CLIProfilePlugin(CLIPlugin):
+class CLIProfilePlugin(AsyncCLIPlugin):
     """List available profiles."""
 
     name = "profile"
@@ -43,10 +43,10 @@ class CLIProfilePlugin(CLIPlugin):
             help="List the names of all available profiles (-n won't work).",
         )
 
-    def exec_command(self, args: Namespace) -> None:
+    async def exec_command(self, args: Namespace) -> None:
         """Run the command"""
 
-        config = ProfileConfig.load(
+        config = await ProfileConfig.a_load(
             {"default": CONFIG},
             *CONFIG_FILES,
             ignore_nonexist=True,

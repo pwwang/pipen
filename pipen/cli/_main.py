@@ -1,12 +1,13 @@
 """CLI main entrance"""
 
 import re
+import asyncio
 import importlib
 from pathlib import Path
 
 from argx import ArgumentParser
 
-from ._hooks import cli_plugin
+from ._hooks import cli_plugin, AsyncCLIPlugin
 from ..version import __version__
 
 parser = ArgumentParser(
@@ -25,7 +26,7 @@ def load_builtin_clis() -> None:
         cli_plugin.register(plg)
 
 
-def main() -> None:
+async def _main() -> None:
     """Main function of pipen CLI"""
     cli_plugin.load_entrypoints()
     # builtin plugins have the highest priority
@@ -54,5 +55,19 @@ def main() -> None:
         plugins[plg.name] = plg(parser, subparser)
 
     known_parsed, unparsed_argv = parser.parse_known_args()
-    parsed = plugins[known_parsed.COMMAND].parse_args(known_parsed, unparsed_argv)
-    plugins[known_parsed.COMMAND].exec_command(parsed)
+    plugin = plugins[known_parsed.COMMAND]
+    if isinstance(plugin, AsyncCLIPlugin):
+        await plugin.post_init()
+
+    parsed = plugin.parse_args(known_parsed, unparsed_argv)
+    if isinstance(plugin, AsyncCLIPlugin):
+        parsed = await parsed
+
+    exected = plugin.exec_command(parsed)
+    if isinstance(plugin, AsyncCLIPlugin):
+        await exected
+
+
+def main() -> None:
+    """The main function of pipen CLI"""
+    asyncio.run(_main())
