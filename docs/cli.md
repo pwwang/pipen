@@ -20,9 +20,9 @@ Subcommands:
 
 ## Writing a plugin to extend the cli
 
-### CLI plugin abstract class
+### CLI plugin super class
 
-A CLI plugin has to be a subclass of `pipen.cli.CLIPlugin`.
+A CLI plugin has to be a subclass of `pipen.cli.CLIPlugin` or `pipen.cli.AsyncCLIPlugin` for async commands (see below).
 
 A CLI plugin has to define a `name` property, which also is the sub-command of the plugin.
 
@@ -39,6 +39,10 @@ There are a couple of methods of `pipen.cli.CLIPlugin` to extend for a plugin:
 
 - `exec_command(self, args)`: execute the command
   It takes the parsed arguments as argument. It should execute the command as you wish.
+
+### Async CLI plugin
+
+Same as `pipen.cli.CLIPlugin`, but the `parse_args` and `exec_command` methods are async methods. In addition, in order to run some async code post initialization, you may also implement an async method `post_init(self)` that will be called after the plugin is initialized.
 
 ### loading CLI plugins
 
@@ -73,6 +77,7 @@ This command prints the versions of `pipen` and its dependencies.
 - [`pipen-cli-ref`][6]: Make reference documentation for processes
 - [`pipen-cli-require`][7]: A pipen cli plugin check the requirements of a pipeline
 - [`pipen-cli-run`][8]: A pipen cli plugin to run a process or a pipeline
+- [`pipen-cli-gbatch`][9]: A pipen cli plugin to run pipeline with Google Batch Jobs
 
 [1]: https://github.com/pwwang/argx
 [2]: plugin.md
@@ -82,3 +87,4 @@ This command prints the versions of `pipen` and its dependencies.
 [6]: https://github.com/pwwang/pipen-cli-ref
 [7]: https://github.com/pwwang/pipen-cli-require
 [8]: https://github.com/pwwang/pipen-cli-run
+[9]: https://github.com/pwwang/pipen-cli-gbatch
