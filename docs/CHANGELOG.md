@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.1.5
+
+- feat: allow passing 'self' to input_data callback in Proc class
+
 ## 1.1.4
 
 - fix: sort jobs by index before storing output data in DataFrame
