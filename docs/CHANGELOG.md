@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.1.6
+
+- feat: deprecate input_data taking self argument (yank v1.1.5)
+
 ## 1.1.5
 
 - feat: allow passing 'self' to input_data callback in Proc class
