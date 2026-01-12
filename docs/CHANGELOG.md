@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.1.3
+
+- docs: update CLI plugin documentation to include AsyncCLIPlugin
+- fix: use proc.size instead of len(jobs) to detect the size of procs to accruately detect it due to async operations
+
 ## 1.1.2
 
 - feat: implement AsyncCLIPlugin for asynchronous command execution
