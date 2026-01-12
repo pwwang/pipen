@@ -491,7 +491,9 @@ class Proc(ABC, metaclass=ProcMeta):
         import pandas
 
         # store the output data for the next processes
-        self.__class__.output_data = pandas.DataFrame((job.output for job in self.jobs))
+        self.__class__.output_data = pandas.DataFrame(
+            (job.output for job in sorted(self.jobs, key=lambda j: j.index))
+        )
 
         del self.xqute.jobs[:]
         self.xqute.jobs = []
