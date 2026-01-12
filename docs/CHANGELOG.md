@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.1.4
+
+- fix: sort jobs by index before storing output data in DataFrame
+
 ## 1.1.3
 
 - docs: update CLI plugin documentation to include AsyncCLIPlugin
