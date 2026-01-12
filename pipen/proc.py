@@ -327,6 +327,9 @@ class Proc(ABC, metaclass=ProcMeta):
             cls.scheduler_opts,
             try_list=True,
         )
+        if callable(cls.input_data):
+            cls.input_data = staticmethod(cls.input_data)
+
         cls.__meta__ = {"procgroup": None}
 
     def __init__(self, pipeline: Pipen = None) -> None:
@@ -615,11 +618,17 @@ class Proc(ABC, metaclass=ProcMeta):
         elif not self.requires:
             out.data = Channel.create(self.input_data)
         elif callable(self.input_data):
-            out.data = Channel.create(
-                self.__class__.input_data(
-                    *(req.output_data for req in self.requires)  # type: ignore
-                )
-            )
+            idata_args = (req.output_data for req in self.requires)
+            # allow to pass self as well
+            params = list(inspect.signature(self.input_data).parameters)
+            if params and params[0] == "self":
+                idata_args = (self, *idata_args)
+
+            out_data = self.__class__.input_data(*idata_args)
+            if isinstance(out_data, (str, bytes)):
+                out_data = [out_data]
+
+            out.data = Channel.create(out_data)
         else:
             if self.input_data:
                 self.log(
@@ -675,10 +684,7 @@ class Proc(ABC, metaclass=ProcMeta):
             return self.output
 
         if isinstance(output, (list, tuple)):
-            return [
-                self.template(oput, **self.template_opts)
-                for oput in output
-            ]
+            return [self.template(oput, **self.template_opts) for oput in output]
 
         return self.template(output, **self.template_opts)
 
