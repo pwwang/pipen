@@ -47,23 +47,6 @@ Pipen().run(P1, P2)
         output = "o3:{{in.i1}}_{{in.i2}}" # will be "A_B"
     ```
 
-!!! Tip
-
-    You can also pass `self`, which is the process instance itself, to the `input_data` callback.
-
-    For example:
-
-    ```python
-    class P4(Proc):
-        requires = [P1, P2]
-        input = "i1, i2"
-        input_data = lambda self, ch: [
-            (f"{self.workdir}/{item[0]}", item[1])
-            for item in ch.applymap(str.upper)
-        ]
-        output = "o3:{{in.i1}}_{{in.i2}}" # will be "</path/to/<P4 workdir>/A_B"
-    ```
-
 !!! Note
 
     When the input data does have enough columns, `None` will be used with warnings. And when the input data has more columns than the input keys, the extra columns are dropped and ignored, also with warnings

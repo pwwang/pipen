@@ -91,25 +91,11 @@ def test_proc_with_input_callable_construct(pipen):
 
     class proc2(NormalProc):
         requires = proc
-        input_data = lambda self, ch: f"{self.workdir}/{ch.iloc[0, 0]}"  # noqa: E731
+        input_data = lambda ch: "x"  # noqa: E731
 
     pipen.set_starts(proc).run()
     assert proc2.output_data.equals(
-        pandas.DataFrame({"output": [f"{proc2.workdir}/1"]})
-    )
-
-
-@pytest.mark.forked
-def test_proc_with_input_callable_self(pipen):
-    proc = Proc.from_proc(NormalProc, input_data=[1])
-    proc2 = Proc.from_proc(
-        NormalProc,
-        requires=proc,
-        input_data=lambda self, ch: f"{self.workdir}/{ch.iloc[0, 0]}",
-    )
-    pipen.set_starts(proc).run()
-    assert proc2.output_data.equals(
-        pandas.DataFrame({"output": [f"{proc2.workdir}/1"]})
+        pandas.DataFrame({"output": ["x"]})
     )
 
 

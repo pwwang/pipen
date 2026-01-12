@@ -619,11 +619,6 @@ class Proc(ABC, metaclass=ProcMeta):
             out.data = Channel.create(self.input_data)
         elif callable(self.input_data):
             idata_args = (req.output_data for req in self.requires)
-            # allow to pass self as well
-            params = list(inspect.signature(self.input_data).parameters)
-            if params and params[0] == "self":
-                idata_args = (self, *idata_args)
-
             out_data = self.__class__.input_data(*idata_args)
             if isinstance(out_data, (str, bytes)):
                 out_data = [out_data]
