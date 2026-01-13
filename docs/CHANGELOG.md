@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.1.7
+
+- fix: handle potential rate limit errors when creating output directories
+- style: add type ignore comments for output computation and input data handling
+
 ## 1.1.6
 
 - feat: deprecate input_data taking self argument (yank v1.1.5)
