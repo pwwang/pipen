@@ -384,7 +384,7 @@ class Proc(ABC, metaclass=ProcMeta):
         # input
         self.input = self._compute_input()  # type: ignore
         # output
-        self.output = self._compute_output()
+        self.output = self._compute_output()  # type: ignore
         await plugin.hooks.on_proc_input_computed(self)
 
         # scheduler
@@ -618,7 +618,7 @@ class Proc(ABC, metaclass=ProcMeta):
         elif not self.requires:
             out.data = Channel.create(self.input_data)
         elif callable(self.input_data):
-            idata_args = (req.output_data for req in self.requires)
+            idata_args = (req.output_data for req in self.requires)  # type: ignore
             out_data = self.__class__.input_data(*idata_args)
             if isinstance(out_data, (str, bytes)):
                 out_data = [out_data]
@@ -676,12 +676,15 @@ class Proc(ABC, metaclass=ProcMeta):
         """Compute the output for jobs to render"""
         output = self.__class__.output
         if not output or isinstance(self.output, Template):
-            return self.output
+            return self.output  # type: ignore[return-value]
 
         if isinstance(output, (list, tuple)):
-            return [self.template(oput, **self.template_opts) for oput in output]
+            return [
+                self.template(oput, **self.template_opts)  # type: ignore[operator]
+                for oput in output
+            ]
 
-        return self.template(output, **self.template_opts)
+        return self.template(output, **self.template_opts)  # type: ignore[operator]
 
     async def _compute_script(self) -> Template:
         """Compute the script for jobs to render"""
