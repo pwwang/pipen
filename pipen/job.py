@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import shlex
+from contextlib import suppress
 from collections.abc import Iterable
 from functools import cached_property
 from pathlib import Path
@@ -372,7 +373,12 @@ class Job(XquteJob, JobCaching):
                 # self.outdir is already awaited
                 out = self.outdir / output_value  # type: ignore
                 if output_type == ProcOutputType.DIR:
-                    await out.a_mkdir(parents=True, exist_ok=True)
+                    with suppress(Exception):  # pragma: no cover
+                        # Likely aiohttp.ClientResponseError
+                        # In case we have many jobs and this is running in parallel
+                        # Parallelly creating the same directory may cause
+                        # a rate limit error in cloud storages
+                        await out.a_mkdir(parents=True, exist_ok=True)
 
                 ret[output_name] = out.mounted
 
