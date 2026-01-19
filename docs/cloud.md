@@ -47,7 +47,7 @@ No local files are generated.
 For the output files, if a process is a non-export process, the output files are saved to the workdir.
 If a process is an export process, the output files are saved to the output directory (export dir).
 
-![pipen-cloud1](./pipen-cloud1.png)
+![Architecture diagram showing how pipen runs pipelines on Google Cloud Batch, with pipeline definitions uploaded to cloud storage and jobs submitted as batch jobs with automatic status tracking.](./pipen-cloud1.png)
 
 ## Run the pipeline on the cloud
 
@@ -90,7 +90,7 @@ The only difference is that we need to set `scheduler` to `gbatch` (google batch
 
 As shown in the following figure, the pipeline is run on the cloud platform, and the workdir and export dir will be mounted to the VM. So the process script can directly access the cloud files, no `cloudsh` or `gcloud` tools are needed.
 
-![pipen-cloud2](./pipen-cloud2.png)
+![Cloud execution diagram showing pipeline workdir and output directory mounted to a Google Cloud VM instance, with the process script accessing cloud files directly and pipen managing metadata through cloudpathlib's cache mechanism.](./pipen-cloud2.png)
 
 
 !!! tip

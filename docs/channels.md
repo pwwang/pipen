@@ -117,7 +117,7 @@ channel >> verb(...)
 
 Sometimes we prepare files in one process (for example, split a big file into small ones in a directory), then handle these files by different jobs in another process, so that they can be processed simultaneously.
 
-![channel.expand_dir](./channel-expand_dir.png)
+![Flow diagram showing how expand_dir() takes a directory path as input and expands it into individual file paths, which are then distributed across multiple parallel jobs.](./channel-expand_dir.png)
 
 For example:
 ```python
@@ -159,7 +159,7 @@ You can also filter and sort the expanded files using arguments `ftype`, `sortby
 
 It's basically the reverse process of `expand_dir()`. It applies when you deal with different files and in next process you need them all involved (i.e. combine the results):
 
-![channel.collapse_files](./channel-collapse_files.png)
+![Flow diagram showing how collapse_files() takes multiple file paths from different directories and groups them into a common ancestor directory path, enabling aggregation of distributed results.](./channel-collapse_files.png)
 
 For example:
 ```python

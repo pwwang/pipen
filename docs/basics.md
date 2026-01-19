@@ -2,7 +2,7 @@
 
 ## Layers of a pipeline
 
-![Layers](./layers.png)
+![Diagram showing the three layers of a pipen pipeline: Pipeline, Process, and Job, with arrows showing the flow of data between layers. The Pipeline layer manages multiple Processes, and each Process contains multiple Jobs that process individual data items.](./layers.png)
 
 The pipeline consists of channels and processes. A process may have many jobs. Each job uses the corresponding elements from the input channel of the process (a row of the input channel/dataframe), and generates values for output channel.
 Actually, what you need to do is just specify the first input channel, and then tell `pipen` the dependencies of the processes. The later processes will use the output channel of the processes they depend on. Of course, you can also modify the output channel to match the input of the next processes, using functions.

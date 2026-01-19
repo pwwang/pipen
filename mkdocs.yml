@@ -24,22 +24,31 @@ extra_css:
 extra_javascript:
     - assets/script.js
 nav:
-    - 'Introduction': 'index.md'
-    - 'Basics': 'basics.md'
-    - 'Defining a process': 'defining-proc.md'
-    - 'Defining and running a pipeline': 'running.md'
-    - 'Templating': 'templating.md'
-    - 'Channels': 'channels.md'
-    - 'Input and output': 'input-output.md'
-    - 'Script': 'script.md'
-    - 'Caching': 'caching.md'
-    - 'Cloud support': 'cloud.md'
-    - 'Error handling': 'error.md'
-    - 'Configurations': 'configurations.md'
-    - 'Plugins': 'plugin.md'
-    - 'Scheduler': 'scheduler.md'
-    - 'Process group': 'proc-group.md'
-    - 'Command line iterface': 'cli.md'
-    - 'Examples': 'examples.md'
-    - 'Change log': 'CHANGELOG.md'
+    - 'Introduction':
+      - 'Overview': 'index.md'
+    - 'Tutorials':
+      - 'Beginner Tutorial': 'tutorials/beginner.md'
+      - 'Defining a process': 'defining-proc.md'
+      - 'Defining and running a pipeline': 'running.md'
+    - 'How-to Guides':
+      - 'Templating': 'templating.md'
+      - 'Channels': 'channels.md'
+      - 'Input and output': 'input-output.md'
+      - 'Script': 'script.md'
+      - 'Caching': 'caching.md'
+      - 'Cloud support': 'cloud.md'
+      - 'Error handling': 'error.md'
+      - 'Configurations': 'configurations.md'
+      - 'Plugins': 'plugin.md'
+      - 'Scheduler': 'scheduler.md'
+      - 'Process group': 'proc-group.md'
+      - 'Command line interface': 'cli.md'
     - 'API': mkapi/api/pipen
+    - 'Reference':
+      - 'Examples': 'examples.md'
+      - 'Change Log': 'CHANGELOG.md'
+      - 'Troubleshooting': 'troubleshooting.md'
+      - 'Contributing': 'CONTRIBUTING.md'
+      - 'Glossary': 'glossary.md'
+    - 'Explanation':
+      - 'Architecture': 'architecture.md'
