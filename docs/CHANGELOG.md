@@ -1,5 +1,15 @@
 # Change Log
 
+## 1.1.8
+
+- chore: bump up xqute to 2.0.6
+- feat: include script_file in Job template_data
+- chore: update version to 1.1.8 and plugin to v1.1.1 in README
+- docs: add development guidelines for agentic coding agents
+- docs: add contributing guidelines and development workflow
+- docs: enhance README with detailed features, target audience, and comparison table
+- docs: enhance documentation and examples
+
 ## 1.1.7
 
 - fix: handle potential rate limit errors when creating output directories
