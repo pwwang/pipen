@@ -333,19 +333,19 @@ extras = ["regex"]
 
 [[package]]
 name = "blessed"
-version = "1.25.0"
+version = "1.26.0"
 description = "Easy, practical library for making terminal apps, by providing an elegant, well-documented interface to Colors, Keyboard input, and screen Positioning capabilities."
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "blessed-1.25.0-py3-none-any.whl", hash = "sha256:e52b9f778b9e10c30b3f17f6b5f5d2208d1e9b53b270f1d94fc61a243fc4708f"},
-    {file = "blessed-1.25.0.tar.gz", hash = "sha256:606aebfea69f85915c7ca6a96eb028e0031d30feccc5688e13fd5cec8277b28d"},
+    {file = "blessed-1.26.0-py3-none-any.whl", hash = "sha256:13a715ab6fba4c082343a3fbce30df343ac32d4c652c4cd9b2e72cc4a7f2fed5"},
+    {file = "blessed-1.26.0.tar.gz", hash = "sha256:e56d7c643b19c2de5333f131249fc3a317dce9681659fbc09f9f4e94b43698d0"},
 ]
 
 [package.dependencies]
 jinxed = {version = ">=1.1.0", markers = "platform_system == \"Windows\""}
-wcwidth = ">=0.1.4"
+wcwidth = ">=0.2.14"
 
 [package.extras]
 docs = ["Pillow", "Sphinx (>3)", "sphinx-paramlinks", "sphinx_rtd_theme", "sphinxcontrib-manpage"]
@@ -3060,14 +3060,14 @@ files = [
 
 [[package]]
 name = "pyasn1"
-version = "0.6.1"
+version = "0.6.2"
 description = "Pure-Python implementation of ASN.1 types and DER/BER/CER codecs (X.208)"
 optional = false
 python-versions = ">=3.8"
 groups = ["dev", "example"]
 files = [
-    {file = "pyasn1-0.6.1-py3-none-any.whl", hash = "sha256:0d632f46f2ba09143da3a8afe9e33fb6f92fa2320ab7e886e2d0f7672af84629"},
-    {file = "pyasn1-0.6.1.tar.gz", hash = "sha256:6f580d2bdd84365380830acf45550f2511469f673cb4a5ae3857a3170128b034"},
+    {file = "pyasn1-0.6.2-py3-none-any.whl", hash = "sha256:1eb26d860996a18e9b6ed05e7aae0e9fc21619fcee6af91cca9bad4fbea224bf"},
+    {file = "pyasn1-0.6.2.tar.gz", hash = "sha256:9b59a2b25ba7e4f8197db7686c09fb33e658b98339fadb826e9512629017833b"},
 ]
 
 [[package]]
@@ -4032,14 +4032,14 @@ files = [
 
 [[package]]
 name = "xqute"
-version = "2.0.4"
+version = "2.0.6"
 description = "A job management system for python"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "xqute-2.0.4-py3-none-any.whl", hash = "sha256:bd5f41f60c8b927da3d224491c4836d96b709cc3a77deacec373e0add1453e68"},
-    {file = "xqute-2.0.4.tar.gz", hash = "sha256:cbb666311109eac3d65dd8b1830f223d325693a56894ac7d6bdc012e70901306"},
+    {file = "xqute-2.0.6-py3-none-any.whl", hash = "sha256:c4ccf92325c2e9d1a92abb488e0357030a03340339397827d283ca800b86f41f"},
+    {file = "xqute-2.0.6.tar.gz", hash = "sha256:aae9e0266f6af50b3ba6982f74d8f9c2486cb3ec6c4e3ad54f807132f60712a8"},
 ]
 
 [package.dependencies]
