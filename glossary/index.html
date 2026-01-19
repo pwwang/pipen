@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Glossary - pipen</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Glossary";
+        var mkdocs_page_input_path = "glossary.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Glossary</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#a">A</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#args">Args</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#b">B</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#c">C</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#cache">Cache</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#c-continued">C (continued)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#channel">Channel</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#d">D</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#e">E</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#f">F</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#g">G</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#h">H</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#i">I</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#j">J</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#job">Job</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#k">K</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#l">L</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#m">M</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#n">N</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#o">O</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#p">P</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#pipeline">Pipeline</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#process">Process</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#proc">Proc</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#procgroup">ProcGroup</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#q">Q</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#r">R</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#raises">Raises</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#returns">Returns</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#s">S</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#scheduler">Scheduler</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#t">T</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#u">U</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#v">V</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#w">W</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#x">X</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#y">Y</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#z">Z</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#related-documentation">Related Documentation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#common-patterns">Common Patterns</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#inputoutput-types">Input/Output Types</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#error-strategies">Error Strategies</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#template-variables">Template Variables</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+      <li class="breadcrumb-item active">Glossary</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/glossary.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="glossary">Glossary<a class="headerlink" href="#glossary" title="Permanent link">&para;</a></h2>
+<p>This glossary defines key terms used throughout the pipen documentation.</p>
+<h3 id="a">A<a class="headerlink" href="#a" title="Permanent link">&para;</a></h3>
+<h4 id="args">Args<a class="headerlink" href="#args" title="Permanent link">&para;</a></h4>
+<p>Short for <strong>arguments</strong>. The parameters that a function or method accepts. In docstrings, this section lists input parameters with their types and descriptions.</p>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_data</span><span class="p">(</span><span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process a data file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_file: Path to the input data file.</span>
+<span class="sd">        output_dir: Directory where processed results will be saved.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</code></pre></div></p>
+<hr />
+<h3 id="b">B<a class="headerlink" href="#b" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="c">C<a class="headerlink" href="#c" title="Permanent link">&para;</a></h3>
+<h4 id="cache">Cache<a class="headerlink" href="#cache" title="Permanent link">&para;</a></h4>
+<p>A mechanism that stores the results of completed jobs to avoid recomputing them when the same inputs are used again. pipen automatically computes a cache key (signature) based on input data, script content, and configuration.</p>
+<p><strong>Related:</strong> <a href="../caching/">Caching</a></p>
+<hr />
+<h3 id="c-continued">C (continued)<a class="headerlink" href="#c-continued" title="Permanent link">&para;</a></h3>
+<h4 id="channel">Channel<a class="headerlink" href="#channel" title="Permanent link">&para;</a></h4>
+<p>A pandas DataFrame that structures data flow between processes. Each row in a channel represents an independent job, and each column represents a piece of data that the job needs.</p>
+<p><strong>Types of channels:</strong>
+- <strong>Input channel</strong>: Data fed into a process
+- <strong>Output channel</strong>: Data produced by a process</p>
+<p><strong>Channel operations:</strong> <code>create()</code>, <code>from_glob()</code>, <code>expand_dir()</code>, <code>collapse_files()</code></p>
+<p><strong>Related:</strong> <a href="../channels/">Channels</a></p>
+<hr />
+<h3 id="d">D<a class="headerlink" href="#d" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="e">E<a class="headerlink" href="#e" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="f">F<a class="headerlink" href="#f" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="g">G<a class="headerlink" href="#g" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="h">H<a class="headerlink" href="#h" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="i">I<a class="headerlink" href="#i" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="j">J<a class="headerlink" href="#j" title="Permanent link">&para;</a></h3>
+<h4 id="job">Job<a class="headerlink" href="#job" title="Permanent link">&para;</a></h4>
+<p>An individual execution of a process. When a process has input data with multiple rows, pipen creates multiple jobs (one for each row) that can run in parallel.</p>
+<p><strong>Job lifecycle:</strong>
+1. <strong>Initiated</strong>: Job created
+2. <strong>Queued</strong>: Waiting to run
+3. <strong>Submitted</strong>: Submitted to scheduler
+4. <strong>Running</strong>: Currently executing
+5. <strong>Succeeded</strong>: Completed successfully
+6. <strong>Failed</strong>: Completed with errors
+7. <strong>Cached</strong>: Used cached results instead of running</p>
+<p><strong>Related:</strong> <a href="../caching/">Job Caching</a></p>
+<hr />
+<h3 id="k">K<a class="headerlink" href="#k" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="l">L<a class="headerlink" href="#l" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="m">M<a class="headerlink" href="#m" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="n">N<a class="headerlink" href="#n" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="o">O<a class="headerlink" href="#o" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="p">P<a class="headerlink" href="#p" title="Permanent link">&para;</a></h3>
+<h4 id="pipeline">Pipeline<a class="headerlink" href="#pipeline" title="Permanent link">&para;</a></h4>
+<p>The main orchestrator that manages a workflow. A pipeline consists of multiple processes connected by dependencies. The <code>Pipen</code> class handles:
+- Process discovery and dependency resolution
+- Configuration management
+- Progress tracking
+- Plugin initialization</p>
+<p><strong>Pipeline structure:</strong>
+<div class="highlight"><pre><span></span><code>Pipeline (orchestrator)
+├── Process 1 (first step)
+│   └── Jobs (parallel execution)
+├── Process 2 (depends on Process 1)
+│   └── Jobs
+└── Process N (depends on previous steps)
+    └── Jobs
+</code></pre></div></p>
+<p><strong>Related:</strong> <a href="../basics/">Basics</a>, <a href="../architecture/">Architecture</a></p>
+<hr />
+<h4 id="process">Process<a class="headerlink" href="#process" title="Permanent link">&para;</a></h4>
+<p>A class that inherits from <code>Proc</code> and defines a single step in a pipeline. A process specifies:
+- <strong>Input</strong>: What data it needs (<code>input</code> attribute)
+- <strong>Output</strong>: What data it produces (<code>output</code> attribute)
+- <strong>Script</strong>: How to transform input to output (<code>script</code> attribute)
+- <strong>Dependencies</strong>: Which processes must complete first (<code>requires</code> attribute)</p>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MyProcess</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process data files.&quot;&quot;&quot;</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;infile:file&quot;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;outfile:file:result.txt&quot;</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;cat {{ in.infile }} &gt; {{ out.outfile }}&quot;</span>
+</code></pre></div></p>
+<p><strong>Related:</strong> <a href="../defining-proc/">Defining a Process</a></p>
+<hr />
+<h4 id="proc">Proc<a class="headerlink" href="#proc" title="Permanent link">&para;</a></h4>
+<p>Abbreviation for <strong>Process</strong>. The base class <code>Proc</code> is the foundation for defining pipeline steps.</p>
+<hr />
+<h4 id="procgroup">ProcGroup<a class="headerlink" href="#procgroup" title="Permanent link">&para;</a></h4>
+<p>A collection of related processes that can be managed together. ProcGroups allow you to organize processes logically and apply configurations to multiple processes at once.</p>
+<p><strong>Related:</strong> <a href="../proc-group/">Process Group</a></p>
+<hr />
+<h3 id="q">Q<a class="headerlink" href="#q" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="r">R<a class="headerlink" href="#r" title="Permanent link">&para;</a></h3>
+<h4 id="raises">Raises<a class="headerlink" href="#raises" title="Permanent link">&para;</a></h4>
+<p>A section in docstrings that lists exceptions that a function or method can raise. This helps users understand what errors to expect and how to handle them.</p>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_data</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process data string.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data: The data string to process.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dictionary with processing results.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If data is empty.</span>
+<span class="sd">        TypeError: If data is not a string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Data cannot be empty&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Data must be a string&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;processed&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">}</span>
+</code></pre></div></p>
+<hr />
+<h4 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<p>A section in docstrings that describes what a function or method returns. This includes the return type and description of the returned value.</p>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_sum</span><span class="p">(</span><span class="n">numbers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the sum of a list of numbers.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        numbers: List of integers to sum.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The sum of all numbers in the list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">numbers</span><span class="p">)</span>
+</code></pre></div></p>
+<hr />
+<h3 id="s">S<a class="headerlink" href="#s" title="Permanent link">&para;</a></h3>
+<h4 id="scheduler">Scheduler<a class="headerlink" href="#scheduler" title="Permanent link">&para;</a></h4>
+<p>A backend that manages job execution. pipen supports multiple schedulers:
+- <strong>Local</strong>: Execute jobs on the local machine
+- <strong>SGE</strong>: Submit jobs to Sun Grid Engine
+- <strong>SLURM</strong>: Submit jobs to SLURM workload manager
+- <strong>SSH</strong>: Execute jobs on remote servers via SSH
+- <strong>Container</strong>: Run jobs in containers
+- <strong>Gbatch</strong>: Submit jobs to Google Cloud Batch</p>
+<p><strong>Related:</strong> <a href="../scheduler/">Scheduler</a></p>
+<hr />
+<h3 id="t">T<a class="headerlink" href="#t" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="u">U<a class="headerlink" href="#u" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="v">V<a class="headerlink" href="#v" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="w">W<a class="headerlink" href="#w" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="x">X<a class="headerlink" href="#x" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="y">Y<a class="headerlink" href="#y" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="z">Z<a class="headerlink" href="#z" title="Permanent link">&para;</a></h3>
+<hr />
+<h3 id="related-documentation">Related Documentation<a class="headerlink" href="#related-documentation" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="../architecture/">Architecture</a> - Understanding how pipen components interact</li>
+<li><a href="../basics/">Basics</a> - Pipeline layers and folder structure</li>
+<li><a href="../defining-proc/">Defining a Process</a> - Creating process classes</li>
+<li><a href="../channels/">Channels</a> - Data flow between processes</li>
+<li><a href="../caching/">Caching</a> - How job caching works</li>
+<li><a href="../scheduler/">Scheduler</a> - Available scheduler backends</li>
+</ul>
+<h3 id="common-patterns">Common Patterns<a class="headerlink" href="#common-patterns" title="Permanent link">&para;</a></h3>
+<h4 id="inputoutput-types">Input/Output Types<a class="headerlink" href="#inputoutput-types" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Syntax</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>var</code></td>
+<td><code>"name:var"</code></td>
+<td>In-memory variable</td>
+</tr>
+<tr>
+<td><code>file</code></td>
+<td><code>"name:file"</code></td>
+<td>Single file path</td>
+</tr>
+<tr>
+<td><code>dir</code></td>
+<td><code>"name:dir"</code></td>
+<td>Single directory path</td>
+</tr>
+<tr>
+<td><code>files</code></td>
+<td><code>"name:files"</code></td>
+<td>Multiple file paths</td>
+</tr>
+<tr>
+<td><code>dirs</code></td>
+<td><code>"name:dirs"</code></td>
+<td>Multiple directory paths</td>
+</tr>
+</tbody>
+</table>
+<h4 id="error-strategies">Error Strategies<a class="headerlink" href="#error-strategies" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>halt</code></td>
+<td>Stop entire pipeline on any failure</td>
+</tr>
+<tr>
+<td><code>ignore</code></td>
+<td>Continue pipeline, ignoring failed jobs</td>
+</tr>
+<tr>
+<td><code>retry</code></td>
+<td>Retry failed jobs up to <code>num_retries</code> times</td>
+</tr>
+</tbody>
+</table>
+<h4 id="template-variables">Template Variables<a class="headerlink" href="#template-variables" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>in.*</code></td>
+<td>Input variables</td>
+<td><code>{{ in.input_data }}</code></td>
+</tr>
+<tr>
+<td><code>out.*</code></td>
+<td>Output placeholders</td>
+<td><code>{{ out.result_file }}</code></td>
+</tr>
+<tr>
+<td><code>proc.*</code></td>
+<td>Process metadata</td>
+<td><code>{{ proc.name }}</code>, <code>{{ proc.workdir }}</code></td>
+</tr>
+<tr>
+<td><code>envs.*</code></td>
+<td>Template options (NOT shell env vars)</td>
+<td><code>{{ envs.my_option }}</code></td>
+</tr>
+<tr>
+<td></td>
+<td>Defined via <code>proc.envs</code> attribute. These are custom options passed to template rendering context. They are NOT shell environment variables like PATH or HOME.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../CONTRIBUTING/" class="btn btn-neutral float-left" title="Contributing"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../architecture/" class="btn btn-neutral float-right" title="Architecture">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../CONTRIBUTING/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../architecture/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+    <script src="../js/version-select.js"></script>
+      <script src="../js/mkapi.js"></script>
+      <script src="../assets/script.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Input and output - pipen</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Input and output";
+        var mkdocs_page_input_path = "input-output.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Input and output</a>
+    <ul class="current">
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">How-to Guides</li>
+      <li class="breadcrumb-item active">Input and output</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/input-output.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h3 id="specify-input-of-a-process">Specify input of a process<a class="headerlink" href="#specify-input-of-a-process" title="Permanent link">&para;</a></h3>
+<p>The input of a process is specified with <code>input</code>, the keys of the input data, and <code>input_data</code>, the real input data</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Why separate the keys and data?</p>
+<p>Because the keys and data are not always combined, for example, we need the keys to infer the <code>output</code> and <code>script</code> (using them in the template), but the data may be deferred to obtain from the output of dependency processes.</p>
+</div>
+<p>The complete form of an input key (<code>input</code>) is <code>&lt;key&gt;:&lt;type&gt;</code>. The <code>&lt;type&gt;</code> could be <code>var</code>, <code>file</code>, <code>dir</code>, <code>files</code> and <code>dirs</code>. <strong>A type of <code>var</code> can be omitted.</strong> So <code>ph1, ph2</code> is the same as <code>ph1:var, ph2:var</code></p>
+<p>If a process is requiring other processes, the specified <code>input_data</code> will be ignored, and will use the output data of their required processes:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">P1</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;v1&quot;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;o1:{{in.v1}}&quot;</span> <span class="c1"># pass by v1 as output variable</span>
+    <span class="n">input_data</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">P2</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;v2&quot;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;o2:{{in.v2}}&quot;</span>
+    <span class="n">input_data</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">]</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">P3</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="n">P1</span><span class="p">,</span> <span class="n">P2</span><span class="p">]</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;i1, i2&quot;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;o3:{{in.i1}}_{{in.i2}}&quot;</span> <span class="c1"># will be &quot;a_b&quot;</span>
+    <span class="c1"># input_data = []  # ignored with a warning</span>
+
+<span class="n">Pipen</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P1</span><span class="p">,</span> <span class="n">P2</span><span class="p">)</span>
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The direct <code>input_data</code> is ignore, but you can use a callback to modify the input channel.
+For example:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">P4</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="n">P1</span><span class="p">,</span> <span class="n">P2</span><span class="p">]</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;i1, i2&quot;</span>
+    <span class="n">input_data</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">ch</span><span class="p">:</span> <span class="n">ch</span><span class="o">.</span><span class="n">applymap</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;o3:{{in.i1}}_{{in.i2}}&quot;</span> <span class="c1"># will be &quot;A_B&quot;</span>
+</code></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When the input data does have enough columns, <code>None</code> will be used with warnings. And when the input data has more columns than the input keys, the extra columns are dropped and ignored, also with warnings</p>
+</div>
+<h3 id="specify-output-of-a-process">Specify output of a process<a class="headerlink" href="#specify-output-of-a-process" title="Permanent link">&para;</a></h3>
+<p>Different from input, instead of channels, you have to tell <code>pipen</code> how to compute the output channel. The output can be a <code>list</code> or <code>str</code>. If it's <code>str</code>, a comma (<code>,</code>) is used to separate different keys:</p>
+<p>To use templating in <code>output</code>, see <a href="../templating/"><code>templating</code></a>.</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">P1</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;invar, infile&quot;</span>
+    <span class="n">input_data</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;/a/b/c.txt&quot;</span><span class="p">)]</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;outvar:{{in.invar}}2, &quot;</span>
+        <span class="s2">&quot;outfile:file:{{in.infile.split(&#39;/&#39;)[-1]}}2, &quot;</span>
+        <span class="s2">&quot;outdir:dir:{{in.infile.split(&#39;/&#39;)[-1].split(&#39;.&#39;)[0]}}-dir&quot;</span>
+    <span class="p">)</span>
+
+<span class="c1"># The type &#39;var&#39; is omitted in the first element.</span>
+<span class="c1"># The output channel will be:</span>
+<span class="c1">#</span>
+<span class="c1">#    outvar    outfile                 outdir</span>
+<span class="c1">#    &lt;object&gt;  &lt;object&gt;                &lt;object&gt;</span>
+<span class="c1"># 0  &quot;12&quot;      &quot;&lt;job.outdir&gt;/c.text2&quot;  &quot;&lt;job.outdir&gt;/c-dir&quot;</span>
+</code></pre></div>
+<h3 id="types-of-input-and-output">Types of input and output<a class="headerlink" href="#types-of-input-and-output" title="Permanent link">&para;</a></h3>
+<h4 id="input">Input<a class="headerlink" href="#input" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>var</code></td>
+<td>Use the values directly</td>
+</tr>
+<tr>
+<td><code>file</code></td>
+<td>Treat the data as a file path</td>
+</tr>
+<tr>
+<td><code>dir</code></td>
+<td>Treat the data as a directory path</td>
+</tr>
+<tr>
+<td><code>files</code></td>
+<td>Treat the data as a list of file paths</td>
+</tr>
+<tr>
+<td><code>dirs</code></td>
+<td>Treat the data as a list of directory paths</td>
+</tr>
+</tbody>
+</table>
+<p>For <code>file</code>/<code>files</code>, when checking whether a job is cached, their last modified time will be checked.</p>
+<p>For <code>dir</code>/<code>dirs</code>, if <code>dirsig &gt; 0</code>, then the files inside the directories will be checked. Otherwise, the directories themselves are checked for last modified time.</p>
+<h4 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Meaning</th>
+<th>Memo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>var</code></td>
+<td>Use the values directly</td>
+<td></td>
+</tr>
+<tr>
+<td><code>dir</code></td>
+<td>Use the data as a directory path</td>
+<td>The directory will be created directly</td>
+</tr>
+<tr>
+<td><code>file</code></td>
+<td>Use the data as a file path</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../channels/" class="btn btn-neutral float-left" title="Channels"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../script/" class="btn btn-neutral float-right" title="Script">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../channels/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../script/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+    <script src="../js/version-select.js"></script>
+      <script src="../js/mkapi.js"></script>
+      <script src="../assets/script.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

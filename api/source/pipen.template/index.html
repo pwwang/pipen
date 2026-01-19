@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>pipen.template - pipen</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../../../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../../../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "pipen.template";
+        var mkdocs_page_input_path = "api/source/pipen.template.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../..">
+          <img src="../../../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">pipen.template</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/api/source/pipen.template.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <div class="mkapi-node">
+<h1 id="" class="mkapi-object mkapi-object-code plain">
+<span class="mkapi-object-kind mkapi-object-kind-code">SOURCE CODE</span>
+<span class="mkapi-object-prefix">pipen.</span><span class="mkapi-object-name">template</span>
+<span id="pipen.template"></span><a class="mkapi-docs-link" href="../../pipen.template">DOCS</a>
+</h1>
+
+<div class="mkapi-code">
+<div class="codehilite"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Template adaptor for pipen&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Type</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">liquid</span><span class="w"> </span><span class="kn">import</span> <span class="n">Liquid</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.defaults</span><span class="w"> </span><span class="kn">import</span> <span class="n">TEMPLATE_ENTRY_GROUP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">NoSuchTemplateEngineError</span><span class="p">,</span> <span class="n">WrongTemplateEngineTypeError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_subclass</span><span class="p">,</span> <span class="n">load_entrypoints</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;Template&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TemplateLiquid&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TemplateJinja2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_template_engine&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Template</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span><span id="pipen.template.Template"></span><a class="mkapi-docs-link" title="pipen.template.Template" href="../../pipen.template/#pipen.template.Template">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class wrapper to wrap template for pipen&quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;engine&quot;</span><span class="p">,)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">source</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Template construct&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span><span id="pipen.template.Template.render"></span><a class="mkapi-docs-link" title="pipen.template.Template.render" href="../../pipen.template/#pipen.template.Template.render">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Render the template</span>
+<span class="sd">        @parmas:</span>
+<span class="sd">            data (dict): The data used to render</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render</span><span class="p">(</span><span class="n">data</span> <span class="ow">or</span> <span class="p">{})</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Implement rendering&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TemplateLiquid</span><span class="p">(</span><span class="n">Template</span><span class="p">):</span><span id="pipen.template.TemplateLiquid"></span><a class="mkapi-docs-link" title="pipen.template.TemplateLiquid" href="../../pipen.template/#pipen.template.TemplateLiquid">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Liquidpy template wrapper.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;liquid&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">source</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initiate the engine with source and envs</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            source: The souce text</span>
+<span class="sd">            envs: The env data</span>
+<span class="sd">            **kwargs: Other arguments for Liquid</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">Liquid</span><span class="p">(</span>
+            <span class="n">source</span><span class="p">,</span>
+            <span class="n">from_file</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;wild&quot;</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Render the template</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: The data used for rendering</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">            The rendered string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TemplateJinja2</span><span class="p">(</span><span class="n">Template</span><span class="p">):</span><span id="pipen.template.TemplateJinja2"></span><a class="mkapi-docs-link" title="pipen.template.TemplateJinja2" href="../../pipen.template/#pipen.template.TemplateJinja2">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Jinja2 template wrapper&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;jinja2&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">source</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initiate the engine with source and envs</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            source: The souce text</span>
+<span class="sd">            envs: The env data</span>
+<span class="sd">            **kwargs: Other arguments for jinja2.Template</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">jinja2</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+        <span class="n">filters</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filters&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">envs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;globals&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">filters</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filters&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">jinja2</span><span class="o">.</span><span class="n">Template</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">globals</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">envs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">environment</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Render the template</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: The data used for rendering</span>
+
+<span class="sd">        Retuens:</span>
+<span class="sd">            The rendered string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_template_engine</span><span class="p">(</span><span class="n">template</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Type</span><span class="p">[</span><span class="n">Template</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">[</span><span class="n">Template</span><span class="p">]:</span><span id="pipen.template.get_template_engine"></span><a class="mkapi-docs-link" title="pipen.template.get_template_engine" href="../../pipen.template/#pipen.template.get_template_engine">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the template engine by name or the template engine itself</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        template: The name of the template engine or the template engine itself</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The template engine</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">is_subclass</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">Template</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">template</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">if</span> <span class="n">template</span> <span class="o">==</span> <span class="s2">&quot;liquid&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">TemplateLiquid</span>
+
+    <span class="k">if</span> <span class="n">template</span> <span class="o">==</span> <span class="s2">&quot;jinja2&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">TemplateJinja2</span>
+
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">load_entrypoints</span><span class="p">(</span><span class="n">TEMPLATE_ENTRY_GROUP</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="n">template</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_subclass</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Template</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">WrongTemplateEngineTypeError</span><span class="p">(</span>
+                    <span class="s2">&quot;Template engine should be a subclass of &quot;</span>
+                    <span class="s2">&quot;pipen.templates.Template.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="k">raise</span> <span class="n">NoSuchTemplateEngineError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">template</span><span class="p">))</span>
+</code></pre></div>
+</div>
+</div>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../../..";</script>
+    <script src="../../../js/theme_extra.js"></script>
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/version-select.js"></script>
+      <script src="../../../js/mkapi.js"></script>
+      <script src="../../../assets/script.js"></script>
+      <script src="../../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

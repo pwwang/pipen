@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Change Log - pipen</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Change Log";
+        var mkdocs_page_input_path = "CHANGELOG.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Change Log</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#118">1.1.8</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#117">1.1.7</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#116">1.1.6</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#115">1.1.5</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#114">1.1.4</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#113">1.1.3</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#112">1.1.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#111">1.1.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#110">1.1.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#104">1.0.4</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#103">1.0.3</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#102">1.0.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#101">1.0.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#100">1.0.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01729">0.17.29</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01728">0.17.28</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01727">0.17.27</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01726">0.17.26</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01725">0.17.25</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01724">0.17.24</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01723">0.17.23</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01722">0.17.22</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01721">0.17.21</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01720">0.17.20</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01719">0.17.19</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01718">0.17.18</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01717">0.17.17</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01716">0.17.16</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01715">0.17.15</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01714">0.17.14</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01713">0.17.13</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01712">0.17.12</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01711">0.17.11</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#01710">0.17.10</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0179">0.17.9</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0178">0.17.8</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0177">0.17.7</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0176">0.17.6</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0175">0.17.5</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0174">0.17.4</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0173">0.17.3</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0172">0.17.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0171">0.17.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0170">0.17.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0160">0.16.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0158">0.15.8</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0157">0.15.7</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0156">0.15.6</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0155">0.15.5</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0154">0.15.4</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0153">0.15.3</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0152">0.15.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0151">0.15.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0150">0.15.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0146">0.14.6</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0145">0.14.5</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0144">0.14.4</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0143">0.14.3</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0142">0.14.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0141">0.14.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0140">0.14.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0133-yanked">0.13.3 (yanked)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0132">0.13.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0131">0.13.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0130">0.13.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0125">0.12.5</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0124">0.12.4</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0123">0.12.3</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0122">0.12.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0121">0.12.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0120">0.12.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0111">0.11.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0110">0.11.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0106">0.10.6</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0105">0.10.5</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0104">0.10.4</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0103">0.10.3</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0102">0.10.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0101">0.10.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0100">0.10.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0911">0.9.11</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0910">0.9.10</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#099">0.9.9</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#098">0.9.8</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#097">0.9.7</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#096">0.9.6</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#095">0.9.5</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#094">0.9.4</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#093">0.9.3</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#092">0.9.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#091">0.9.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#090">0.9.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#080">0.8.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#073">0.7.3</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#072">0.7.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#071">0.7.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#070">0.7.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#064">0.6.4</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#063">0.6.3</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#062">0.6.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#061">0.6.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#060">0.6.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#052">0.5.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#051">0.5.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#050">0.5.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#046">0.4.6</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#045">0.4.5</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#044">0.4.4</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#043">0.4.3</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#042">0.4.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#041">0.4.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#040">0.4.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0312">0.3.12</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0311">0.3.11</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0310">0.3.10</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#039">0.3.9</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#038">0.3.8</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#037">0.3.7</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#036">0.3.6</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#035">0.3.5</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#034">0.3.4</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#033">0.3.3</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#032">0.3.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#031">0.3.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#030">0.3.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0216">0.2.16</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0215">0.2.15</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0214">0.2.14</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0213">0.2.13</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0212">0.2.12</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0211">0.2.11</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#0210">0.2.10</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#029">0.2.9</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#028">0.2.8</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#027">0.2.7</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#026">0.2.6</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#025">0.2.5</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#024">0.2.4</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#023">0.2.3</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#022">0.2.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#021">0.2.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#020">0.2.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#014">0.1.4</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#013">0.1.3</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#012">0.1.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#011">0.1.1</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#010">0.1.0</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#004">0.0.4</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#003">0.0.3</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#002">0.0.2</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#001">0.0.1</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+      <li class="breadcrumb-item active">Change Log</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/CHANGELOG.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="change-log">Change Log<a class="headerlink" href="#change-log" title="Permanent link">&para;</a></h2>
+<h3 id="118">1.1.8<a class="headerlink" href="#118" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore: bump up xqute to 2.0.6</li>
+<li>feat: include script_file in Job template_data</li>
+<li>chore: update version to 1.1.8 and plugin to v1.1.1 in README</li>
+<li>docs: add development guidelines for agentic coding agents</li>
+<li>docs: add contributing guidelines and development workflow</li>
+<li>docs: enhance README with detailed features, target audience, and comparison table</li>
+<li>docs: enhance documentation and examples</li>
+</ul>
+<h3 id="117">1.1.7<a class="headerlink" href="#117" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: handle potential rate limit errors when creating output directories</li>
+<li>style: add type ignore comments for output computation and input data handling</li>
+</ul>
+<h3 id="116">1.1.6<a class="headerlink" href="#116" title="Permanent link">&para;</a></h3>
+<ul>
+<li>feat: deprecate input_data taking self argument (yank v1.1.5)</li>
+</ul>
+<h3 id="115">1.1.5<a class="headerlink" href="#115" title="Permanent link">&para;</a></h3>
+<ul>
+<li>feat: allow passing 'self' to input_data callback in Proc class</li>
+</ul>
+<h3 id="114">1.1.4<a class="headerlink" href="#114" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: sort jobs by index before storing output data in DataFrame</li>
+</ul>
+<h3 id="113">1.1.3<a class="headerlink" href="#113" title="Permanent link">&para;</a></h3>
+<ul>
+<li>docs: update CLI plugin documentation to include AsyncCLIPlugin</li>
+<li>fix: use proc.size instead of len(jobs) to detect the size of procs to accruately detect it due to async operations</li>
+</ul>
+<h3 id="112">1.1.2<a class="headerlink" href="#112" title="Permanent link">&para;</a></h3>
+<ul>
+<li>feat: implement AsyncCLIPlugin for asynchronous command execution</li>
+</ul>
+<h3 id="111">1.1.1<a class="headerlink" href="#111" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore: bump python-simpleconf to 0.8</li>
+<li>chore: update ProfileConfig loading to async method</li>
+</ul>
+<h3 id="110">1.1.0<a class="headerlink" href="#110" title="Permanent link">&para;</a></h3>
+<ul>
+<li>BREAKING: change on_proc_input_computed and on_proc_script_computed to async</li>
+<li>refactor: migrate to panpath from cloudpatlib (so that path operations can be async)</li>
+<li>refactor: convert get_mtime to async and update related methods and tests</li>
+<li>refactor: streamline process initialization and script computation</li>
+<li>feat: add async versions of from_glob and from_pairs methods in Channel class</li>
+<li>feat: add async_run function and update run to support async execution</li>
+<li>feat: update path handling to use PanPath and add async support for symlink functions</li>
+<li>fix: improve job retry handling in ProcPBar and simplify success/failure updates</li>
+<li>test: add coverage pragma to retry handling methods and comment out flaky test</li>
+<li>style: fix type annotation and flake8 issues</li>
+<li>chore: bump xqute to 2.0</li>
+<li>chore: bump argx to 0.4</li>
+<li>chore: add pipen-verbose dependency to example group</li>
+<li>chore: update multijob example  for increased parallelism and debugging</li>
+</ul>
+<h3 id="104">1.0.4<a class="headerlink" href="#104" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore: adjust bar_format alignment for better readability</li>
+</ul>
+<h3 id="103">1.0.3<a class="headerlink" href="#103" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore: bump xqute to 1.0.1</li>
+<li>fix: defer setting bar_format to prevent ValueError when rendering counter</li>
+<li>feat: add queued job status to progress bar and update related hooks</li>
+</ul>
+<h3 id="102">1.0.2<a class="headerlink" href="#102" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: make sure on_job_init() hook is called when no script was specified</li>
+</ul>
+<h3 id="101">1.0.1<a class="headerlink" href="#101" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: make sure job.output is computed before on_job_init() hook</li>
+<li>feat: show direct job status for single-job process</li>
+<li>chore: add <strong>slots</strong> to Template class for improved memory efficiency</li>
+<li>feat: enhance job progress bar to indicate cached jobs for single-job processes</li>
+</ul>
+<h3 id="100">1.0.0<a class="headerlink" href="#100" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore: adopt xqute 1.0.0</li>
+<li>feat: optimize the job submission (individual job submitted to scheduler right after initiation instead of waiting for all jobs to finish initiation)</li>
+<li>feat: update documentation links and styles, add script for collapsible sections</li>
+<li>feat: enhance progress bar to display job status counts and update formatting</li>
+</ul>
+<h3 id="01729">0.17.29<a class="headerlink" href="#01729" title="Permanent link">&para;</a></h3>
+<ul>
+<li>feat: add job submission progress update to progress bar</li>
+<li>docs: add progress bar section to running documentation</li>
+</ul>
+<h3 id="01728">0.17.28<a class="headerlink" href="#01728" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: fix job progress bar not showing when jobs are being prepared</li>
+</ul>
+<h3 id="01727">0.17.27<a class="headerlink" href="#01727" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: sort input list in brief_list function for consistent output</li>
+</ul>
+<h3 id="01726">0.17.26<a class="headerlink" href="#01726" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: fix progress bar for jobs with submission skipped</li>
+</ul>
+<h3 id="01725">0.17.25<a class="headerlink" href="#01725" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore: update dependencies</li>
+<li>chore: update xqute dependency version to 0.10.19 to use per-scheduler submission_batch by default</li>
+<li>docs: add tip about cloud communication and caching in pipen</li>
+<li>fix: ensure directory creation does not fail if rmtree encounters an error</li>
+<li>fix: enhance symlink check by validating file size before download</li>
+<li>fix: update build system requirements to use poetry-core</li>
+<li>fix: update caching logic to handle missing signature files more gracefully</li>
+<li>test: add DirOutputEmptyProc to handle empty directory output and corresponding test</li>
+</ul>
+<h3 id="01724">0.17.24<a class="headerlink" href="#01724" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore: improve error message for missing output generation</li>
+</ul>
+<h3 id="01723">0.17.23<a class="headerlink" href="#01723" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: update class reference for setup state to make sure on_setup hook only executes once</li>
+</ul>
+<h3 id="01722">0.17.22<a class="headerlink" href="#01722" title="Permanent link">&para;</a></h3>
+<ul>
+<li>BREAKING: change on_setup hook parameter from config to pipen</li>
+<li>chore: upgrade dependencies and bump datar to 0.15.12</li>
+<li>chore: update README with new plugins</li>
+<li>ci: add python 3.13 in build workflow</li>
+</ul>
+<h3 id="01721">0.17.21<a class="headerlink" href="#01721" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore: update fake symlink prefix to 'pipen-symlink'</li>
+<li>chore: update xqute version to 0.10.16</li>
+</ul>
+<h3 id="01720">0.17.20<a class="headerlink" href="#01720" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore: remove unnecessary self argument for the plugin for xqute and the main plugin for pipen itself</li>
+</ul>
+<h3 id="01719">0.17.19<a class="headerlink" href="#01719" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore: update xqute version to 0.10.11</li>
+</ul>
+<h3 id="01718">0.17.18<a class="headerlink" href="#01718" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore: update xqute version to 0.10.10</li>
+<li>feat: add environment variables to job submission</li>
+</ul>
+<h3 id="01717">0.17.17<a class="headerlink" href="#01717" title="Permanent link">&para;</a></h3>
+<ul>
+<li>feat: enhance argument parsing in CLI</li>
+</ul>
+<h3 id="01716">0.17.16<a class="headerlink" href="#01716" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: handle potential error when reading stderr file</li>
+<li>chore: update xqute version to 0.10.7</li>
+</ul>
+<h3 id="01715">0.17.15<a class="headerlink" href="#01715" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore(deps): update xqute dependency version to 0.10.6 in pyproject.toml</li>
+<li>feat: adopt xqute 0.10.6</li>
+</ul>
+<h3 id="01714">0.17.14<a class="headerlink" href="#01714" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: fix scheduler_opts of processes not full inheriting from pipeline</li>
+<li>style: fix styles in example scripts</li>
+</ul>
+<h3 id="01713">0.17.13<a class="headerlink" href="#01713" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: update on_job_polling signature to include counter parameter</li>
+</ul>
+<h3 id="01712">0.17.12<a class="headerlink" href="#01712" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore(deps): bump xqute to 0.10.4</li>
+</ul>
+<h3 id="01711">0.17.11<a class="headerlink" href="#01711" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: mapping the pipeline workdir for gbatch scheduler instead of process workdir to enable communications between processes</li>
+<li>chore: fix no argument ignore errors for path.rmtree</li>
+<li>tests: update gbatch scheduler volume paths</li>
+<li>chore(deps): bump xqute to 0.10.3</li>
+<li>chore: update .gitignore to include git bundle files</li>
+</ul>
+<h3 id="01710">0.17.10<a class="headerlink" href="#01710" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: lowercase labels in GbatchScheduler</li>
+</ul>
+<h3 id="0179">0.17.9<a class="headerlink" href="#0179" title="Permanent link">&para;</a></h3>
+<ul>
+<li>feat: add pipeline and proc names to labels for GbatchScheduler</li>
+<li>chore(deps): bump xqute to 0.10.1</li>
+<li>chore: standardize log message for workdir</li>
+</ul>
+<h3 id="0178">0.17.8<a class="headerlink" href="#0178" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore(deps): bump up xqute to 0.10.0</li>
+<li>feat: add container scheduler support for Docker/Podman/Apptainer</li>
+</ul>
+<h3 id="0177">0.17.7<a class="headerlink" href="#0177" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore(deps): bump up xqute to 0.9.4</li>
+<li>fix: optimize path_is_symlink function to check fake symlink faster</li>
+</ul>
+<h3 id="0176">0.17.6<a class="headerlink" href="#0176" title="Permanent link">&para;</a></h3>
+<ul>
+<li>style: update type hints</li>
+</ul>
+<h3 id="0175">0.17.5<a class="headerlink" href="#0175" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore: bump xqute to 0.9.3</li>
+<li>fix: update mounted directory paths for GbatchScheduler</li>
+<li>feat: add fast_container for GbatchScheduler</li>
+</ul>
+<h3 id="0174">0.17.4<a class="headerlink" href="#0174" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore: add ipykernel dependency for example pipelines</li>
+<li>chore(deps): bump datar to 0.15.9 (numpy v2)</li>
+<li>fix: prevent adding processes to starts if already included</li>
+</ul>
+<h3 id="0173">0.17.3<a class="headerlink" href="#0173" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore: hide job index prefix in log messages for single-job processes</li>
+<li>chore(deps): update flake8 and other dependencies in pyproject.toml</li>
+<li>docs: fix outfile in the caching example</li>
+<li>docs: add example in README as an example pipeline in the examples folder</li>
+</ul>
+<h3 id="0172">0.17.2<a class="headerlink" href="#0172" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: handle exceptions (KeyboardInterrupt) when closing counters in progress bar (enlighten v1.14)</li>
+</ul>
+<h3 id="0171">0.17.1<a class="headerlink" href="#0171" title="Permanent link">&para;</a></h3>
+<ul>
+<li>docs: update templating documentation to clarify job metadata paths</li>
+<li>fix: ensure iterables other than list/tuple are treated correctly as files/dirs</li>
+</ul>
+<h3 id="0170">0.17.0<a class="headerlink" href="#0170" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: handle None input case in job caching logic</li>
+<li>chore(deps): update liquidpy to 0.8.4</li>
+<li>refactor: replace DualPath with SpecPath in codebase to adopt xqute 0.9</li>
+</ul>
+<h3 id="0160">0.16.0<a class="headerlink" href="#0160" title="Permanent link">&para;</a></h3>
+<ul>
+<li>ci: update build workflow conditions and improve dependency versions</li>
+<li>feat: support gbatch scheduler and cloud workdir/outdir</li>
+<li>refactor: replace cloudpathlib with yunpath and update related code</li>
+<li>refactor: adopt xqute 0.8.0</li>
+<li>chore: add more processes in examples/gbatch.py</li>
+<li>fix: make sure spec is carried for cloud output files so mtime can be check for next processes</li>
+<li>ci: add Google authentication step to CI workflow</li>
+<li>fix: fix specified path not carries to the next processes</li>
+<li>fix: handle missing MOUNTED_OUTDIR gracefully and remove unused test</li>
+<li>test: add fixture for unique ID and update cloud test to support parallel execution</li>
+<li>fix: remove fake symlink output when necessary</li>
+<li>docs: add cloud support documentation</li>
+<li>feat: support mounted paths (e.g. path1:path2) as input</li>
+<li>refactor: remove redundant validation for workdir and outdir path types</li>
+<li>feat: enforce GSPath type for 'gbatch' scheduler as pipeline outdir</li>
+<li>feat: add fast_mount option to GbatchScheduler for cloud directory mounting</li>
+<li>fix: update workdir path to include pipeline name in Pipen class</li>
+<li>chore(deps): bump python-simpleconf to v0.7</li>
+<li>feat: support DualPath output directory in Job class and ensure mounted directory creation</li>
+<li>fix: initialize cmd with a default value to prevent errors when no script is provided</li>
+<li>chore(deps): bump xqute to 0.8.1</li>
+<li>fix: only create mounted output directory when no MOUNTED_OUTDIR with scheduler</li>
+<li>fix: update mountPath index for taskSpec volumes in GbatchScheduler</li>
+<li>feat: support fast_mount to be a list for gbatch scheduler</li>
+</ul>
+<h3 id="0158">0.15.8<a class="headerlink" href="#0158" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore(deps): update package versions for executing, and xqute</li>
+<li>fix: change the input/output path from resolved to absolute for symlinks</li>
+<li>style(tests): update imports and add noqa comment for unused variable</li>
+</ul>
+<h3 id="0157">0.15.7<a class="headerlink" href="#0157" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore(deps): update xqute to version 0.5.5</li>
+<li>chore(deps): update pytest-asyncio to version 0.25.2</li>
+<li>chore: add logging for plugin initialization</li>
+</ul>
+<h3 id="0156">0.15.6<a class="headerlink" href="#0156" title="Permanent link">&para;</a></h3>
+<ul>
+<li>chore(deps): bump python-varname to 0.14</li>
+<li>ci: update GitHub Actions to use ubuntu-24.04</li>
+<li>style: fix style issues in test files</li>
+</ul>
+<h3 id="0155">0.15.5<a class="headerlink" href="#0155" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: fix <code>kwargs</code> not updated when pipeline is a <code>Pipen</code> object in <code>utils.load_pipeline()</code></li>
+<li>fix: fix type checking in <code>utils.load_pipeline()</code></li>
+</ul>
+<h3 id="0154">0.15.4<a class="headerlink" href="#0154" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: fix Pipen object not recognized by <code>utils.load_pipeline()</code></li>
+<li>style: fix type annotations in Pipen class</li>
+<li>deps: bump argx to 0.2.11</li>
+</ul>
+<h3 id="0153">0.15.3<a class="headerlink" href="#0153" title="Permanent link">&para;</a></h3>
+<ul>
+<li>feat: add <code>pipen.run()</code> as a function to run a pipeline</li>
+<li>docs: fix the decorations in the logs in README</li>
+</ul>
+<h3 id="0152">0.15.2<a class="headerlink" href="#0152" title="Permanent link">&para;</a></h3>
+<ul>
+<li>deps: update xqute dependency to version 0.5.1</li>
+<li>chore: update pytest options in pyproject.toml to ignore deadlock warnings</li>
+<li>feat: expose on_jobcmd_* hooks for plugins to modify the job wrapper script</li>
+</ul>
+<h3 id="0151">0.15.1<a class="headerlink" href="#0151" title="Permanent link">&para;</a></h3>
+<ul>
+<li>deps: bump xqute to 0.5.0</li>
+<li>xqute v0.5.0 provides 3 more hooks for the plugins to inject bash code to the job wrapper scripts.</li>
+<li>see <a href="https://github.com/pwwang/xqute?tab=readme-ov-file#plugins">https://github.com/pwwang/xqute?tab=readme-ov-file#plugins</a>.</li>
+</ul>
+<h3 id="0150">0.15.0<a class="headerlink" href="#0150" title="Permanent link">&para;</a></h3>
+<ul>
+<li>BREAKING: remove redundant argument <code>proc</code> for job plugin APIs</li>
+<li>deps: bump up dev deps</li>
+<li>deps: bump xqute to version 0.4.1</li>
+<li>refactor: remove <code>abstractproperty</code> decorator from <code>CLIPlugin</code> class</li>
+<li>feat: add 5 more APIs for plugins to handle files from other platforms (e.g. the cloud)</li>
+<li>ci: add python3.12 to CI</li>
+<li>test: fork each test in test_job.py</li>
+<li>test: fork tests in test_pipen.py and test_proc.py</li>
+<li>docs: correct the documentation about <code>dirsig</code></li>
+<li>enh: make better error message when set wrong type of starts for a pipeline</li>
+<li>docs: add pipen-gcs in plugin gallery</li>
+</ul>
+<h3 id="0146">0.14.6<a class="headerlink" href="#0146" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: fix error handling in ProcPBar class</li>
+<li>deps: bump up dev deps</li>
+</ul>
+<h3 id="0145">0.14.5<a class="headerlink" href="#0145" title="Permanent link">&para;</a></h3>
+<ul>
+<li>fix: fix all plugins being disabled by default</li>
+</ul>
+<h3 id="0144">0.14.4<a class="headerlink" href="#0144" title="Permanent link">&para;</a></h3>
+<ul>
+<li>deps: bump xqute to 0.4 (simplug to 0.4.1)</li>
+<li>refactor: refactor <code>pipen.plugin_context</code> due to simplug upgrade</li>
+<li>docs: update docs for specifiying plugins due to simplug upgrade</li>
+<li>examples: update examples for specifiying plugins due to simplug upgrade</li>
+<li>tests: add tests for plugins specification</li>
+<li>tests: use pytest v8</li>
+<li>ci: use latest actions</li>
+</ul>
+<h3 id="0143">0.14.3<a class="headerlink" href="#0143" title="Permanent link">&para;</a></h3>
+<ul>
+<li>choir: rename argument <code>args</code> to <code>argv</code> for <code>utils.is_loading_pipeline()</code></li>
+</ul>
+<h3 id="0142">0.14.2<a class="headerlink" href="#0142" title="Permanent link">&para;</a></h3>
+<ul>
+<li>feat: allow passing arguments to <code>utils.is_loading_pipeline()</code></li>
+</ul>
+<h3 id="0141">0.14.1<a class="headerlink" href="#0141" title="Permanent link">&para;</a></h3>
+<ul>
+<li>feat: add flags (e.g. <code>--help</code>) to <code>utils.is_loading_pipeline</code> to check arguments in <code>sys.argv</code></li>
+</ul>
+<h3 id="0140">0.14.0<a class="headerlink" href="#0140" title="Permanent link">&para;</a></h3>
+<ul>
+<li>deps: drop support for python 3.8</li>
+<li>deps: bump <code>varname</code> to 0.13</li>
+<li>docs: update readme for more plugins</li>
+</ul>
+<h3 id="0133-yanked">0.13.3 (yanked)<a class="headerlink" href="#0133-yanked" title="Permanent link">&para;</a></h3>
+<ul>
+<li>deps: bump <code>varname</code> to 0.13</li>
+</ul>
+<h3 id="0132">0.13.2<a class="headerlink" href="#0132" title="Permanent link">&para;</a></h3>
+<ul>
+<li>style: change max line length to 88</li>
+<li>feat: add <code>envs_depth</code> to procs to control the depth of envs to be inherited by subclasses</li>
+</ul>
+<h3 id="0131">0.13.1<a class="headerlink" href="#0131" title="Permanent link">&para;</a></h3>
+<ul>
+<li>test: cover <code>on_job_polling</code></li>
+<li>fix: update envs recursively for subclasses</li>
+<li>test: make sure class envs kept intact when subclassed</li>
+</ul>
+<h3 id="0130">0.13.0<a class="headerlink" href="#0130" title="Permanent link">&para;</a></h3>
+<ul>
+<li>deps: bump xqute to 0.3.1 and liquidpy to 0.8.2</li>
+<li>breaking: change hook <code>on_job_running</code> to <code>on_job_started</code> and add <code>on_job_polling</code></li>
+</ul>
+<h3 id="0125">0.12.5<a class="headerlink" href="#0125" title="Permanent link">&para;</a></h3>
+<ul>
+<li>deps: bump xqute to 0.2.5</li>
+<li>chore: make utils._excepthook only handle KeyboardInterrupt</li>
+<li>chore: update examples</li>
+</ul>
+<h3 id="0124">0.12.4<a class="headerlink" href="#0124" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Modify sys.argv before the module is loaded in <code>utils.load_pipeline()</code></li>
+</ul>
+<h3 id="0123">0.12.3<a class="headerlink" href="#0123" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Change cli_args to argv0 and argv1p for utils.load_pipeline</li>
+</ul>
+<h3 id="0122">0.12.2<a class="headerlink" href="#0122" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Append <code>sys.argv[1:]</code> by default when <code>cli_args</code> is <code>None</code> in <code>utils.load_pipeline()</code></li>
+</ul>
+<h3 id="0121">0.12.1<a class="headerlink" href="#0121" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add utils.is_loading_pipeline() to check if pipeline is loading</li>
+</ul>
+<h3 id="0120">0.12.0<a class="headerlink" href="#0120" title="Permanent link">&para;</a></h3>
+<ul>
+<li>✨ Add utils.load_pipeline() to load pipeline</li>
+</ul>
+<h3 id="0111">0.11.1<a class="headerlink" href="#0111" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Dismiss warning for fillna method for pandas 2.1</li>
+<li>Fix channel.expand_dir() may add new column</li>
+</ul>
+<h3 id="0110">0.11.0<a class="headerlink" href="#0110" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add Dockerfile for codesandbox</li>
+<li>Bump pandas to v2</li>
+<li>Bump argx to 0.2.10</li>
+</ul>
+<h3 id="0106">0.10.6<a class="headerlink" href="#0106" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🐛 Fix "DeprecationWarning: np.find_common_type is deprecated" from pandas (due to numpy 1.25 update)</li>
+</ul>
+<h3 id="0105">0.10.5<a class="headerlink" href="#0105" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🎨 Allow starts to be set as a tuple</li>
+<li>⬆️ Bump python-simpleconf to 0.6 and other deps to latest versions</li>
+<li>➕ Add rtoml to deps (as python-simpleconf 0.6 may not depend on rtoml)</li>
+</ul>
+<h3 id="0104">0.10.4<a class="headerlink" href="#0104" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Bump xqute to 0.2.3</li>
+</ul>
+<h3 id="0103">0.10.3<a class="headerlink" href="#0103" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Bump xqute to 0.2.2</li>
+</ul>
+<h3 id="0102">0.10.2<a class="headerlink" href="#0102" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🐛 Fix exception handling in ProcPBar class update method</li>
+</ul>
+<h3 id="0101">0.10.1<a class="headerlink" href="#0101" title="Permanent link">&para;</a></h3>
+<ul>
+<li>✨ Add <code>on_proc_script_computed</code> hook</li>
+</ul>
+<h3 id="0100">0.10.0<a class="headerlink" href="#0100" title="Permanent link">&para;</a></h3>
+<ul>
+<li>💥 Change hook <code>on_proc_init</code> to <code>on_proc_create</code></li>
+<li>✨ Add <code>on_proc_init</code> hook back but after the process initialized insteadl of before</li>
+<li>👷 Add python 3.11 to CI</li>
+<li>📝 Update documentation about updated hooks⏎</li>
+</ul>
+<h3 id="0911">0.9.11<a class="headerlink" href="#0911" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🐛 Make sure .envs of Proc subclasses are Diot objects</li>
+</ul>
+<h3 id="0910">0.9.10<a class="headerlink" href="#0910" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🐛 Fix <code>utils.mark</code> and <code>get_marked</code> when <code>__meta__</code> is <code>None</code></li>
+</ul>
+<h3 id="099">0.9.9<a class="headerlink" href="#099" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⚡️ <code>utils.mark</code> and <code>get_marked</code> now work with <code>ProcGroup</code> and other classes</li>
+</ul>
+<h3 id="098">0.9.8<a class="headerlink" href="#098" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🐛 Fix priority of core plugin</li>
+</ul>
+<h3 id="097">0.9.7<a class="headerlink" href="#097" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🔧 Allow to inherit doc from base class for Pipen/Proc</li>
+</ul>
+<h3 id="096">0.9.6<a class="headerlink" href="#096" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🎨 Let plugins change and create workdir</li>
+<li>🔧 Change the default outdir suffix from <code>_results</code> to <code>-output</code></li>
+<li>📖 Update README file and add new plugins</li>
+</ul>
+<h3 id="095">0.9.5<a class="headerlink" href="#095" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🔧 Fix workdir in log</li>
+</ul>
+<h3 id="094">0.9.4<a class="headerlink" href="#094" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🐛 Use class name as pipeline name</li>
+</ul>
+<h3 id="093">0.9.3<a class="headerlink" href="#093" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🐛 Set logging.lastResort to null handler</li>
+<li>✨ Allow to assign process directly to proc groups</li>
+<li>🔧 Change progress bar description length to 24</li>
+</ul>
+<h3 id="092">0.9.2<a class="headerlink" href="#092" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🎨 Rename to main plugin to core</li>
+<li>🎨 Reformat log of pipeline info so that paths won't be truncated</li>
+</ul>
+<h3 id="091">0.9.1<a class="headerlink" href="#091" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Bump xqute to 0.2.1</li>
+</ul>
+<h3 id="090">0.9.0<a class="headerlink" href="#090" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Bump xqute to 0.2 so we can have slurm and ssh schedulers available</li>
+<li>✨ Add ssh and slurm scheduers</li>
+<li>🎨 Improve code for dropping python 3.7</li>
+<li>👷 Use 3.10 as main python version in CI</li>
+<li>📝 Update docs for slurm and ssh schedulers</li>
+</ul>
+<h3 id="080">0.8.0<a class="headerlink" href="#080" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Drop support for python3.7</li>
+<li>🎨 Don't slugify pipen or proc names anymore but require them to be valid filenames</li>
+<li>🐛 Fix process names being reused</li>
+<li>📝 Update documentation with new job caching callback.</li>
+<li>🎨 Move actions to on_job_cached hook for cached jobs</li>
+</ul>
+<h3 id="073">0.7.3<a class="headerlink" href="#073" title="Permanent link">&para;</a></h3>
+<ul>
+<li>✨ Add <code>--list</code> for <code>pipen profile</code> to list the names of available profiles</li>
+<li>✨ Add exception hook to show uncaught in log</li>
+<li>✨ Add <code>on_job_cached</code> hook</li>
+</ul>
+<h3 id="072">0.7.2<a class="headerlink" href="#072" title="Permanent link">&para;</a></h3>
+<ul>
+<li>✨ Add <code>utils.mark</code> and <code>get_marked</code> to mark a process
+    Unlike plugin_opts, template_opts or envs, these marks are not inherited in subclasses</li>
+</ul>
+<h3 id="071">0.7.1<a class="headerlink" href="#071" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Upgrade simplug to 0.2.3</li>
+<li>📝 Add pipen-cli-config to plugin gallery</li>
+</ul>
+<h3 id="070">0.7.0<a class="headerlink" href="#070" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Update liquidpy to 0.8</li>
+<li>✨ Add <code>Proc.__meta__</code> that will not be inherited when subclassing</li>
+<li>🎨 Put <code>procgroup</code> in <code>Proc.__meta__</code></li>
+<li>⚡️ Do not mutate <code>Proc.__doc__</code> when subclassing</li>
+<li>⚡️ Use mro to detect parent class of a Proc</li>
+</ul>
+<h3 id="064">0.6.4<a class="headerlink" href="#064" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🔀 Set desc from docstring if not given for pipelines</li>
+</ul>
+<h3 id="063">0.6.3<a class="headerlink" href="#063" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🔊 Trim right spaces of logs</li>
+</ul>
+<h3 id="062">0.6.2<a class="headerlink" href="#062" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Adopt xqute 0.1.5</li>
+</ul>
+<h3 id="061">0.6.1<a class="headerlink" href="#061" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🐛 Fix path expansion for <code>~/.pipen.toml</code> in defaults.</li>
+</ul>
+<h3 id="060">0.6.0<a class="headerlink" href="#060" title="Permanent link">&para;</a></h3>
+<ul>
+<li>✨ Allow subclassing Pipen to create a pipeline (#151)</li>
+</ul>
+<h3 id="052">0.5.2<a class="headerlink" href="#052" title="Permanent link">&para;</a></h3>
+<ul>
+<li>📝 Refactor codebase: unify type annotations and import future features</li>
+<li>🐛 Allow methods decorated by @ProcGroup.add_proc to return None</li>
+</ul>
+<h3 id="051">0.5.1<a class="headerlink" href="#051" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🚑 Remove remaining more-itertools</li>
+</ul>
+<h3 id="050">0.5.0<a class="headerlink" href="#050" title="Permanent link">&para;</a></h3>
+<ul>
+<li>➖ Remove more-itertools</li>
+<li>
+<p>✨ Add <code>ProcGroup</code> to manage groups of processes.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pipen</span><span class="w"> </span><span class="kn">import</span> <span class="n">Proc</span><span class="p">,</span> <span class="n">ProcGroup</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyGroup</span><span class="p">(</span><span class="n">ProcGroup</span><span class="p">):</span>
+
+    <span class="nd">@ProcGroup</span><span class="o">.</span><span class="n">add_proc</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">my_proc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+            <span class="o">...</span>
+        <span class="k">return</span> <span class="n">MyProc</span>
+
+    <span class="nd">@ProcGroup</span><span class="o">.</span><span class="n">add_proc</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">my_proc2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">MyProc2</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+            <span class="n">requires</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">my_proc</span>
+            <span class="o">...</span>
+        <span class="k">return</span> <span class="n">MyProc2</span>
+
+<span class="n">pg</span> <span class="o">=</span> <span class="n">MyGroup</span><span class="p">()</span>
+<span class="c1"># Run as a pipeline</span>
+<span class="n">pg</span><span class="o">.</span><span class="n">as_pipen</span><span class="p">()</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="c1"># Integrate into a pipeline</span>
+<span class="o">&lt;</span><span class="n">proc_of_a_pipeline</span><span class="o">&gt;.</span><span class="n">requires</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">my_proc2</span>
+</code></pre></div>
+</li>
+</ul>
+<h3 id="046">0.4.6<a class="headerlink" href="#046" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🐛 Fix plugins command not listing plugins</li>
+</ul>
+<h3 id="045">0.4.5<a class="headerlink" href="#045" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🚑 Fix banner alignment in terminal</li>
+</ul>
+<h3 id="044">0.4.4<a class="headerlink" href="#044" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🐛 Fix when cli plugin has no docstring</li>
+<li>🚑 Exclude help from help sub-command itself</li>
+<li>🚑 Add cli plugin docstring as sub-command description</li>
+</ul>
+<h3 id="043">0.4.3<a class="headerlink" href="#043" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Bump <code>argx</code> to 0.2.2</li>
+<li>🎨 Expose <code>parse_args()</code> to cli plugins</li>
+</ul>
+<h3 id="042">0.4.2<a class="headerlink" href="#042" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Bump <code>argx</code> to 0.2</li>
+</ul>
+<h3 id="041">0.4.1<a class="headerlink" href="#041" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🐛 Fix cli plugin name</li>
+</ul>
+<h3 id="040">0.4.0<a class="headerlink" href="#040" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Upgrade python-slugify to ^0.8</li>
+<li>⬆️ Upgrade xqute to 0.1.4</li>
+<li>⬆️ Upgrade varname to 0.11</li>
+<li>💥 Use argx instead of pyparam</li>
+</ul>
+<h3 id="0312">0.3.12<a class="headerlink" href="#0312" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Upgrade python-slugify to ^7</li>
+</ul>
+<h3 id="0311">0.3.11<a class="headerlink" href="#0311" title="Permanent link">&para;</a></h3>
+<ul>
+<li>📝 Fix github workflow badges in README</li>
+<li>🩹 Fix pandas warning when less-column data passed to channel</li>
+</ul>
+<h3 id="0310">0.3.10<a class="headerlink" href="#0310" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Upgrade xqute to 0.1.3</li>
+<li>⬆️ Upgrade datar to 0.11 and format test files</li>
+<li>✨ Add cli command version to show versions of deps</li>
+<li>➖ Remove rich as it is required by xqute already</li>
+</ul>
+<h3 id="039">0.3.9<a class="headerlink" href="#039" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Bump pipda to 0.11</li>
+<li>⬆️ Bump xqute to 0.1.2</li>
+</ul>
+<h3 id="038">0.3.8<a class="headerlink" href="#038" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Pump xqute to 0.1.1</li>
+</ul>
+<h3 id="037">0.3.7<a class="headerlink" href="#037" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Upgrade varname to 0.10</li>
+</ul>
+<h3 id="036">0.3.6<a class="headerlink" href="#036" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Upgrade pipda to 0.7.2, varname to 0.9.1, datar to 0.9</li>
+</ul>
+<h3 id="035">0.3.5<a class="headerlink" href="#035" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🐛 Fix <code>nexts</code> being inherited for <code>Proc</code> subclasses</li>
+</ul>
+<h3 id="034">0.3.4<a class="headerlink" href="#034" title="Permanent link">&para;</a></h3>
+<ul>
+<li>✨ Print pipen version in CLI: pipen plugins</li>
+<li>🩹 Make use of full terminal width for non-panel elements in log</li>
+<li>🩹 Extend width to 256 when terminal width cannot be detected while logging (most likely logging to a text file)</li>
+</ul>
+<h3 id="033">0.3.3<a class="headerlink" href="#033" title="Permanent link">&para;</a></h3>
+<ul>
+<li>♿️ Change default log width to 100</li>
+<li>🩹 Fix broken panel in log content with console width cannot be detected</li>
+</ul>
+<h3 id="032">0.3.2<a class="headerlink" href="#032" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Upgrade rtoml to v0.8</li>
+<li>⬆️ Upgrade pipda to v0.6</li>
+</ul>
+<h3 id="031">0.3.1<a class="headerlink" href="#031" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🩹 Hide config meta data in pipeline information</li>
+</ul>
+<h3 id="030">0.3.0<a class="headerlink" href="#030" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⬆️ Upgrade dependencies</li>
+<li>📌 Use <code>rtoml</code> instead of <code>toml</code> (see https://github.com/pwwang/toml-bench)</li>
+<li>🩹 Dump job signature to file directly instead of dump to a string first</li>
+<li>👷 Add python 3.10 to CI</li>
+<li>📝 Add dependencies badge to README.md</li>
+</ul>
+<h3 id="0216">0.2.16<a class="headerlink" href="#0216" title="Permanent link">&para;</a></h3>
+<ul>
+<li>📌 Pin dep versions</li>
+<li>🩹 Allow to set workdir from Pipen constructor</li>
+</ul>
+<h3 id="0215">0.2.15<a class="headerlink" href="#0215" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🩹 Fix <code>FutureWarning</code> in <code>Proc._compute_input()</code></li>
+<li>🩹 Add <code>__doc__</code> for <code>Proc.from_proc()</code></li>
+<li>📌 Pin deps for docs</li>
+</ul>
+<h3 id="0214">0.2.14<a class="headerlink" href="#0214" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🩹 Shorten pipeline info in log for long config options</li>
+<li>🐛 Fix cached jobs being put into queue</li>
+<li>🩹 Shorten job debug messages when hit limits</li>
+<li>🚑 Remove sort_dicts for pprint.pformat for py3.7</li>
+</ul>
+<h3 id="0213">0.2.13<a class="headerlink" href="#0213" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🩹 Don't require <code>job.signature.toml</code> to force cache a job</li>
+</ul>
+<h3 id="0212">0.2.12<a class="headerlink" href="#0212" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🐛 Hotfix for typos in <code>Proc.__init_subclass__()</code></li>
+</ul>
+<h3 id="0211">0.2.11<a class="headerlink" href="#0211" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🩹 Update <code>envs</code>, <code>plugin_opts</code> and <code>scheduler_opts</code> while subclassing processes.</li>
+</ul>
+<h3 id="0210">0.2.10<a class="headerlink" href="#0210" title="Permanent link">&para;</a></h3>
+<ul>
+<li>✨ Add hook <code>on_proc_input_computed</code></li>
+<li>🩹 Default new process docstring to "Undescribed process."</li>
+</ul>
+<h3 id="029">0.2.9<a class="headerlink" href="#029" title="Permanent link">&para;</a></h3>
+<ul>
+<li>✨ Allow <code>requires</code> to be set by <code>__setattr__()</code></li>
+</ul>
+<h3 id="028">0.2.8<a class="headerlink" href="#028" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🩹 Forward fill na for input data</li>
+</ul>
+<h3 id="027">0.2.7<a class="headerlink" href="#027" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🩹 Fix process plugin_opts not inherited from pipeline</li>
+</ul>
+<h3 id="026">0.2.6<a class="headerlink" href="#026" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🎨 Make <code>pipen._build_proc_relationships()</code> public and don't rebuild the relations</li>
+<li>✨ Allow pipenline name to be obtained from assignment</li>
+</ul>
+<h3 id="025">0.2.5<a class="headerlink" href="#025" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🩹 Allow relative script path to be inherited</li>
+<li>🐛 Fix column order from depedency processes</li>
+<li>🩹 Fix <strong>doc</strong> not inherited for processes</li>
+</ul>
+<h3 id="024">0.2.4<a class="headerlink" href="#024" title="Permanent link">&para;</a></h3>
+<ul>
+<li>✨ Add execution order for processes</li>
+</ul>
+<h3 id="023">0.2.3<a class="headerlink" href="#023" title="Permanent link">&para;</a></h3>
+<ul>
+<li>⚡️Speed up package importing</li>
+</ul>
+<h3 id="022">0.2.2<a class="headerlink" href="#022" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🐛 Load CLI plugins at runtime</li>
+</ul>
+<h3 id="021">0.2.1<a class="headerlink" href="#021" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🎨 Allow CLI plugin to have different name than the command</li>
+</ul>
+<h3 id="020">0.2.0<a class="headerlink" href="#020" title="Permanent link">&para;</a></h3>
+<ul>
+<li>💥 Restructure CLI plugins</li>
+</ul>
+<h3 id="014">0.1.4<a class="headerlink" href="#014" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🩹 Use brackets to indicate cached jobs</li>
+<li>🩹 Run on_complete hook only when no exception happened</li>
+<li>🩹 Let <code>on_proc_init</code> to modify process <code>workdir</code></li>
+<li>🐛 Fix when <code>nexts</code> affected by parent <code>nexts</code> assignment when parent in <code>__bases__</code></li>
+</ul>
+<h3 id="013">0.1.3<a class="headerlink" href="#013" title="Permanent link">&para;</a></h3>
+<ul>
+<li>✨ Add <code>on_proc_init()</code> hook to enables plugins to modify the default attributes of processes</li>
+<li>💥 Rename <code>Proc.args</code> to <code>Proc.envs</code></li>
+</ul>
+<h3 id="012">0.1.2<a class="headerlink" href="#012" title="Permanent link">&para;</a></h3>
+<ul>
+<li>💥 Use <code>set_starts()</code> and <code>set_data()</code> to set start processes of a pipeline.</li>
+</ul>
+<h3 id="011">0.1.1<a class="headerlink" href="#011" title="Permanent link">&para;</a></h3>
+<ul>
+<li>💥 Allow plugins to modify other configs via on_setup() hook</li>
+<li>🎨 Move progress bar to the last</li>
+<li>🩹 Warn when no input_data specified for start process</li>
+<li>💬 Change end to export</li>
+<li>🚚 Move on_init() so it's able to redefine default configs</li>
+<li>💥 Change <code>exec_cmd</code> hook of cli plugin to <code>exec_command</code></li>
+</ul>
+<h3 id="010">0.1.0<a class="headerlink" href="#010" title="Permanent link">&para;</a></h3>
+<p>It's now fully documented. See documentations.</p>
+<h3 id="004">0.0.4<a class="headerlink" href="#004" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Clear output if not cached.</li>
+<li>Make process running order fixed</li>
+</ul>
+<h3 id="003">0.0.3<a class="headerlink" href="#003" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fix caching issue</li>
+<li>Add singleton to proc to force singleton</li>
+<li>Log an empty line after all processes finish</li>
+<li>Allow input to be None</li>
+<li>Separate channels from different required procs</li>
+<li>Move proc prepare before run</li>
+<li>Change the order proc banner printing, making sure it prints before other logs for the proc</li>
+<li>FIx job not cached if input is missing</li>
+<li>Don't redirect output only if absolute path specified</li>
+<li>Make input files resolved(absolute path)</li>
+<li>Give more detailed ProcDependencyError</li>
+<li>Force job status to be failed when Ctrl + c</li>
+<li>Fix files for input when it is a pandas dataframe</li>
+<li>Add job name prefix for scheduler</li>
+<li>Adopt datar for channels</li>
+</ul>
+<h3 id="002">0.0.2<a class="headerlink" href="#002" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add on_proc_property_computed hook</li>
+<li>Add plugin options for pipen construct</li>
+<li>Keep args, envs, scheduler_opts and plugin_opts as Diot object for procs</li>
+<li>Fix shebang not working in script</li>
+<li>Make sure job rendering data are stringified.</li>
+<li>Move starts as a method so that pipelines can be initialized before processes.</li>
+<li>Use plyrda instead of siuba for channel</li>
+<li>Add template rendering error to indicate where the rendering error happens;</li>
+<li>Add succeeded to on_complete hook;</li>
+<li>Add hook on_proc_start;</li>
+<li>Add argument succedded for hook on_proc_done;</li>
+<li>Realign pipeline and proc names in progress bars</li>
+<li>Remove debug log in job preparing, which will appear on the top of the logs</li>
+</ul>
+<h3 id="001">0.0.1<a class="headerlink" href="#001" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Reimplement PyPPL using asyncio</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../examples/" class="btn btn-neutral float-left" title="Examples"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../troubleshooting/" class="btn btn-neutral float-right" title="Troubleshooting">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../examples/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../troubleshooting/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+    <script src="../js/version-select.js"></script>
+      <script src="../js/mkapi.js"></script>
+      <script src="../assets/script.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

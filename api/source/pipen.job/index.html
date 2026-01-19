@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>pipen.job - pipen</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../../../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../../../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "pipen.job";
+        var mkdocs_page_input_path = "api/source/pipen.job.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../..">
+          <img src="../../../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">pipen.job</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/api/source/pipen.job.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <div class="mkapi-node">
+<h1 id="" class="mkapi-object mkapi-object-code plain">
+<span class="mkapi-object-kind mkapi-object-kind-code">SOURCE CODE</span>
+<span class="mkapi-object-prefix">pipen.</span><span class="mkapi-object-name">job</span>
+<span id="pipen.job"></span><a class="mkapi-docs-link" href="../../pipen.job">DOCS</a>
+</h1>
+
+<div class="mkapi-code">
+<div class="codehilite"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Provide the Job class&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">suppress</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Mapping</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">panpath</span><span class="w"> </span><span class="kn">import</span> <span class="n">PanPath</span><span class="p">,</span> <span class="n">CloudPath</span><span class="p">,</span> <span class="n">LocalPath</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">diot</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDiot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Job</span> <span class="k">as</span> <span class="n">XquteJob</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpecPath</span><span class="p">,</span> <span class="n">MountedPath</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._job_caching</span><span class="w"> </span><span class="kn">import</span> <span class="n">JobCaching</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.defaults</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProcInputType</span><span class="p">,</span> <span class="n">ProcOutputType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ProcInputTypeError</span><span class="p">,</span>
+    <span class="n">ProcOutputNameError</span><span class="p">,</span>
+    <span class="n">ProcOutputTypeError</span><span class="p">,</span>
+    <span class="n">ProcOutputValueError</span><span class="p">,</span>
+    <span class="n">TemplateRenderingError</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.template</span><span class="w"> </span><span class="kn">import</span> <span class="n">Template</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">strsplit</span><span class="p">,</span> <span class="n">path_is_symlink</span><span class="p">,</span> <span class="n">path_symlink_to</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.pluginmgr</span><span class="w"> </span><span class="kn">import</span> <span class="n">plugin</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.proc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Proc</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_process_input_file_or_dir</span><span class="p">(</span>
+    <span class="n">inkey</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">intype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">inval</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">proc_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CloudPath</span> <span class="o">|</span> <span class="n">MountedPath</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process the input value for file or dir&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">inval</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inval</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">proc_name</span><span class="si">}</span><span class="s2">] Got &lt;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">inval</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&gt; instead of &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;path-like object for input: </span><span class="si">{</span><span class="n">inkey</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s1">&#39;:&#39;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">intype</span><span class="si">!r}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2"> at index </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">raise</span> <span class="n">ProcInputTypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inval</span><span class="p">,</span> <span class="n">MountedPath</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">inval</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inval</span><span class="p">,</span> <span class="n">SpecPath</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">inval</span><span class="o">.</span><span class="n">mounted</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inval</span><span class="p">,</span> <span class="n">CloudPath</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+        <span class="k">return</span> <span class="n">MountedPath</span><span class="p">(</span><span class="n">inval</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inval</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>  <span class="c1"># other path-like types, should be all local</span>
+        <span class="k">return</span> <span class="n">MountedPath</span><span class="p">(</span><span class="n">PanPath</span><span class="p">(</span><span class="n">inval</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">absolute</span><span class="p">())</span>
+
+    <span class="c1"># str</span>
+    <span class="c1"># Let&#39;s see if it a path in str format, which is path1:path2</span>
+    <span class="c1"># However, there is also a colon in cloud paths</span>
+    <span class="n">colon_count</span> <span class="o">=</span> <span class="n">inval</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">colon_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># a/b</span>
+        <span class="k">return</span> <span class="n">MountedPath</span><span class="p">(</span><span class="n">PanPath</span><span class="p">(</span><span class="n">inval</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">absolute</span><span class="p">())</span>
+
+    <span class="k">if</span> <span class="n">colon_count</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># a:b:c:d</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">proc_name</span><span class="si">}</span><span class="s2">] Invalid input value: </span><span class="si">{</span><span class="n">inkey</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s1">&#39;:&#39;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">intype</span><span class="si">!r}</span><span class="s2"> &quot;</span>
+            <span class="s2">&quot;(too many &#39;:&#39;)&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2"> at index </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">raise</span> <span class="n">ProcInputTypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">colon_count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># gs://a/b or a/b:c/d</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">PanPath</span><span class="p">(</span><span class="n">inval</span><span class="p">),</span> <span class="n">CloudPath</span><span class="p">):</span>  <span class="c1"># gs://a/b</span>
+            <span class="k">return</span> <span class="n">MountedPath</span><span class="p">(</span><span class="n">inval</span><span class="p">)</span>
+
+        <span class="n">path1</span><span class="p">,</span> <span class="n">path2</span> <span class="o">=</span> <span class="n">inval</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">inval</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># gs://a/b:gs://c/d</span>
+        <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">path2</span> <span class="o">=</span> <span class="n">inval</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">path1</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">p2</span>
+
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># gs://a/b:c/d or a/b:gs://c/d</span>
+        <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span> <span class="o">=</span> <span class="n">inval</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">path1</span><span class="p">,</span> <span class="n">path2</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">PanPath</span><span class="p">(</span><span class="n">path1</span><span class="p">),</span> <span class="n">CloudPath</span><span class="p">):</span>
+            <span class="n">path1</span><span class="p">,</span> <span class="n">path2</span> <span class="o">=</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">p3</span>
+
+    <span class="n">path1</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="n">path1</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+    <span class="n">path2</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="n">path2</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path1</span><span class="p">,</span> <span class="n">LocalPath</span><span class="p">):</span>
+        <span class="n">path1</span> <span class="o">=</span> <span class="n">path1</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path2</span><span class="p">,</span> <span class="n">LocalPath</span><span class="p">):</span>
+        <span class="n">path2</span> <span class="o">=</span> <span class="n">path2</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">MountedPath</span><span class="p">(</span><span class="n">path2</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="n">path1</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Job</span><span class="p">(</span><span class="n">XquteJob</span><span class="p">,</span> <span class="n">JobCaching</span><span class="p">):</span><span id="pipen.job.Job"></span><a class="mkapi-docs-link" title="pipen.job.Job" href="../../pipen.job/#pipen.job.Job">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The job for pipen&quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="n">XquteJob</span><span class="o">.</span><span class="vm">__slots__</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;proc&quot;</span><span class="p">,</span> <span class="s2">&quot;_output_types&quot;</span><span class="p">,</span> <span class="s2">&quot;outdir&quot;</span><span class="p">,</span> <span class="s2">&quot;output&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="p">:</span> <span class="n">Proc</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_types</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Where the real output directory is</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="p">:</span> <span class="n">SpecPath</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proc</span><span class="p">:</span> <span class="n">Proc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span><span id="pipen.job.Job.prepare"></span><a class="mkapi-docs-link" title="pipen.job.Job.prepare" href="../../pipen.job/#pipen.job.Job.prepare">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare the job by given process</span>
+
+<span class="sd">        Primarily prepare the script, and provide cmd to the job for xqute</span>
+<span class="sd">        to wrap and run</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            proc: the process object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Attach the process</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proc</span> <span class="o">=</span> <span class="n">proc</span>
+
+        <span class="c1"># Where the jobs of &quot;export&quot; process should put their outputs</span>
+        <span class="n">export_outdir</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">outdir</span> <span class="o">/</span> <span class="n">proc</span><span class="o">.</span><span class="n">name</span>  <span class="c1"># type: ignore</span>
+        <span class="c1"># Where the jobs of &quot;export&quot; process should put their outputs</span>
+        <span class="c1"># (in the mounted filesystem)</span>
+        <span class="n">sched_mounted_outdir</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">proc</span><span class="o">.</span><span class="n">xqute</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span> <span class="s2">&quot;MOUNTED_OUTDIR&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sched_mounted_outdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">proc</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">outdir</span><span class="p">,</span> <span class="n">SpecPath</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">proc</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">outdir</span><span class="o">.</span><span class="n">mounted</span><span class="o">.</span><span class="n">is_mounted</span><span class="p">()</span>
+            <span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;The pipeline outdir is a SpecPath, &quot;</span>
+                    <span class="s2">&quot;but the MOUNTED_OUTDIR is provided by the scheduler &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">proc</span><span class="o">.</span><span class="n">xqute</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&gt;. &quot;</span>
+                <span class="p">)</span>
+
+            <span class="n">mounted_outdir</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="n">sched_mounted_outdir</span><span class="p">)</span> <span class="o">/</span> <span class="n">proc</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">proc</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">outdir</span><span class="p">,</span> <span class="n">SpecPath</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+            <span class="c1"># In the case it is modified by a plugin</span>
+            <span class="c1"># A dual path can not be specified as outdir of a pipeline</span>
+            <span class="n">mounted_outdir</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">outdir</span><span class="o">.</span><span class="n">mounted</span> <span class="o">/</span> <span class="n">proc</span><span class="o">.</span><span class="n">name</span>  <span class="c1"># type: ignore</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mounted_outdir</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">export</span><span class="p">:</span>
+            <span class="c1"># Don&#39;t put index if it is a single-job process</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">=</span> <span class="n">SpecPath</span><span class="p">(</span>
+                <span class="n">export_outdir</span><span class="p">,</span>
+                <span class="n">mounted</span><span class="o">=</span><span class="n">mounted_outdir</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Put job output in a subdirectory with index</span>
+            <span class="c1"># if it is a multi-job process</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">/</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+            <span class="k">if</span> <span class="n">sched_mounted_outdir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Create the output directory if it is not mounted by the scheduler</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="o">.</span><span class="n">mounted</span><span class="o">.</span><span class="n">a_mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># For non-export process, the output directory is the metadir</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadir</span> <span class="o">/</span> <span class="s2">&quot;output&quot;</span>
+
+        <span class="c1"># compute the output</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_output</span><span class="p">()</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_outdir</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">proc</span><span class="o">.</span><span class="n">script</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;true&quot;</span><span class="p">,)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">script</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">script</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">TemplateRenderingError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">] Failed to render script.&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">script_file</span><span class="o">.</span><span class="n">a_is_file</span><span class="p">()</span>
+                <span class="ow">and</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">script_file</span><span class="o">.</span><span class="n">a_read_text</span><span class="p">()</span> <span class="o">!=</span> <span class="n">script</span>
+            <span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;debug&quot;</span><span class="p">,</span> <span class="s2">&quot;Job script updated.&quot;</span><span class="p">)</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">script_file</span><span class="o">.</span><span class="n">a_write_text</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">script_file</span><span class="o">.</span><span class="n">a_is_file</span><span class="p">():</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">script_file</span><span class="o">.</span><span class="n">a_write_text</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+
+            <span class="n">lang</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">lang</span> <span class="ow">or</span> <span class="n">proc</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">lang</span>
+            <span class="n">script_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">script_file</span><span class="o">.</span><span class="n">mounted</span>
+            <span class="n">script_file</span> <span class="o">=</span> <span class="k">await</span> <span class="n">script_file</span><span class="o">.</span><span class="n">get_fspath</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cmd</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="o">*</span><span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">lang</span><span class="p">),</span> <span class="n">script_file</span><span class="p">))</span>
+            <span class="c1"># self.cmd = tuple(shlex.split(lang) + [self.script_file.mounted.fspath])</span>
+
+        <span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">on_job_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="nd">@property</span><span id="pipen.job.Job.script_file"></span><a class="mkapi-docs-link" title="pipen.job.Job.script_file" href="../../pipen.job/#pipen.job.Job.script_file">DOCS</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">script_file</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpecPath</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the path to script file</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The path to the script file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadir</span> <span class="o">/</span> <span class="s2">&quot;job.script&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_outdir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpecPath</span><span class="p">:</span><span id="pipen.job.Job.prepare_outdir"></span><a class="mkapi-docs-link" title="pipen.job.Job.prepare_outdir" href="../../pipen.job/#pipen.job.Job.prepare_outdir">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the path to the output directory.</span>
+
+<span class="sd">        When proc.export is True, the output directory is based on the</span>
+<span class="sd">        pipeline.outdir and the process name. Otherwise, it is based on</span>
+<span class="sd">        the metadir.</span>
+
+<span class="sd">        When the job is running in a detached system (a VM, typically),</span>
+<span class="sd">        this will return the mounted path to the output directory.</span>
+
+<span class="sd">        To access the real path, use self.outdir</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The path to the job output directory</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># if ret is a dead link</span>
+        <span class="c1"># when switching a proc from end/nonend to nonend/end</span>
+        <span class="c1"># if path_is_symlink(self.outdir) and not self.outdir.exists():</span>
+        <span class="k">if</span> <span class="k">await</span> <span class="n">path_is_symlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>  <span class="c1"># type: ignore</span>
+            <span class="c1"># A local deak link</span>
+            <span class="ow">not</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="o">.</span><span class="n">a_exists</span><span class="p">()</span>
+            <span class="c1"># A cloud fake link</span>
+            <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="p">,</span> <span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="p">),</span> <span class="n">CloudPath</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="o">.</span><span class="n">a_unlink</span><span class="p">()</span>  <span class="c1"># pragma: no cover</span>
+
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="o">.</span><span class="n">a_mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># If it is somewhere else, make a symbolic link to the metadir</span>
+        <span class="n">metaout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadir</span> <span class="o">/</span> <span class="s2">&quot;output&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">!=</span> <span class="n">metaout</span><span class="p">:</span>
+            <span class="k">if</span> <span class="k">await</span> <span class="n">path_is_symlink</span><span class="p">(</span><span class="n">metaout</span><span class="p">)</span> <span class="ow">or</span> <span class="k">await</span> <span class="n">metaout</span><span class="o">.</span><span class="n">a_is_file</span><span class="p">():</span>
+                <span class="k">await</span> <span class="n">metaout</span><span class="o">.</span><span class="n">a_unlink</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="k">await</span> <span class="n">metaout</span><span class="o">.</span><span class="n">a_is_dir</span><span class="p">():</span>
+                <span class="c1"># Remove the directory, it is inconsistent with current setting</span>
+                <span class="k">await</span> <span class="n">metaout</span><span class="o">.</span><span class="n">a_rmtree</span><span class="p">()</span>
+
+            <span class="k">await</span> <span class="n">path_symlink_to</span><span class="p">(</span><span class="n">metaout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">input</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the input data for this job</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A key-value map, where keys are the input keys</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="c1"># check types</span>
+        <span class="k">for</span> <span class="n">inkey</span><span class="p">,</span> <span class="n">intype</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">input</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+            <span class="k">if</span> <span class="n">intype</span> <span class="o">==</span> <span class="n">ProcInputType</span><span class="o">.</span><span class="n">VAR</span> <span class="ow">or</span> <span class="n">ret</span><span class="p">[</span><span class="n">inkey</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>  <span class="c1"># pragma: no cover, covered actually</span>
+
+            <span class="k">if</span> <span class="n">intype</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ProcInputType</span><span class="o">.</span><span class="n">FILE</span><span class="p">,</span> <span class="n">ProcInputType</span><span class="o">.</span><span class="n">DIR</span><span class="p">):</span>
+                <span class="n">ret</span><span class="p">[</span><span class="n">inkey</span><span class="p">]</span> <span class="o">=</span> <span class="n">_process_input_file_or_dir</span><span class="p">(</span>
+                    <span class="n">inkey</span><span class="p">,</span> <span class="n">intype</span><span class="p">,</span> <span class="n">ret</span><span class="p">[</span><span class="n">inkey</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">name</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">intype</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ProcInputType</span><span class="o">.</span><span class="n">FILES</span><span class="p">,</span> <span class="n">ProcInputType</span><span class="o">.</span><span class="n">DIRS</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="n">inkey</span><span class="p">],</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+                    <span class="c1"># // todo: nested dataframe</span>
+                    <span class="n">ret</span><span class="p">[</span><span class="n">inkey</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="n">inkey</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="n">inkey</span><span class="p">],</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
+                    <span class="c1"># if a single file, convert to list</span>
+                    <span class="n">ret</span><span class="p">[</span><span class="n">inkey</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">ret</span><span class="p">[</span><span class="n">inkey</span><span class="p">]]</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="n">inkey</span><span class="p">],</span> <span class="n">Iterable</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">ProcInputTypeError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">] Expected an iterable for input: &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">inkey</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s1">&#39;:&#39;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">intype</span><span class="si">!r}</span><span class="s2">, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="n">inkey</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">file</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="n">inkey</span><span class="p">]):</span>
+                    <span class="n">ret</span><span class="p">[</span><span class="n">inkey</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">_process_input_file_or_dir</span><span class="p">(</span>
+                        <span class="n">inkey</span><span class="p">,</span> <span class="n">intype</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">name</span>
+                    <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ret</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_output</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span><span id="pipen.job.Job.prepare_output"></span><a class="mkapi-docs-link" title="pipen.job.Job.prepare_output" href="../../pipen.job/#pipen.job.Job.prepare_output">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the output data of the job</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The key-value map where the keys are the output keys</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">output_template</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">output</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">output_template</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">return</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;job&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                <span class="n">metadir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadir</span><span class="o">.</span><span class="n">mounted</span><span class="p">,</span>
+                <span class="n">outdir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="o">.</span><span class="n">mounted</span><span class="p">,</span>
+                <span class="n">stdout_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout_file</span><span class="o">.</span><span class="n">mounted</span><span class="p">,</span>
+                <span class="n">stderr_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr_file</span><span class="o">.</span><span class="n">mounted</span><span class="p">,</span>
+                <span class="n">jid_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">jid_file</span><span class="o">.</span><span class="n">mounted</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;in&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">,</span>
+            <span class="s2">&quot;in_&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">,</span>
+            <span class="s2">&quot;proc&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="p">,</span>
+            <span class="s2">&quot;envs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">envs</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output_template</span><span class="p">,</span> <span class="n">Template</span><span class="p">):</span>
+                <span class="c1"># // TODO: check &#39;,&#39; in output value?</span>
+                <span class="n">outputs</span> <span class="o">=</span> <span class="n">strsplit</span><span class="p">(</span><span class="n">output_template</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">oput</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="k">for</span> <span class="n">oput</span> <span class="ow">in</span> <span class="n">output_template</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">TemplateRenderingError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">] Failed to render output.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">OrderedDiot</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">oput</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;:&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">oput</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ProcOutputNameError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">] No name given in output.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">oput</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">output_name</span><span class="p">,</span> <span class="n">output_value</span> <span class="o">=</span> <span class="n">oput</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+                <span class="n">output_type</span> <span class="o">=</span> <span class="n">ProcOutputType</span><span class="o">.</span><span class="n">VAR</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">output_name</span><span class="p">,</span> <span class="n">output_type</span><span class="p">,</span> <span class="n">output_value</span> <span class="o">=</span> <span class="n">oput</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">output_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ProcOutputType</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="k">raise</span> <span class="n">ProcOutputTypeError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">] &quot;</span> <span class="sa">f</span><span class="s2">&quot;Unsupported output type: </span><span class="si">{</span><span class="n">output_type</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_types</span><span class="p">[</span><span class="n">output_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_type</span>
+
+            <span class="k">if</span> <span class="n">output_type</span> <span class="o">==</span> <span class="n">ProcOutputType</span><span class="o">.</span><span class="n">VAR</span><span class="p">:</span>
+                <span class="n">ret</span><span class="p">[</span><span class="n">output_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_value</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ov</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="n">output_value</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ov</span><span class="p">,</span> <span class="n">CloudPath</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+                    <span class="nb">isinstance</span><span class="p">(</span><span class="n">ov</span><span class="p">,</span> <span class="n">LocalPath</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ov</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">()</span>
+                <span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">ProcOutputValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">] &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;output path must be a segment: </span><span class="si">{</span><span class="n">output_value</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+
+                <span class="c1"># self.outdir is already awaited</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outdir</span> <span class="o">/</span> <span class="n">output_value</span>  <span class="c1"># type: ignore</span>
+                <span class="k">if</span> <span class="n">output_type</span> <span class="o">==</span> <span class="n">ProcOutputType</span><span class="o">.</span><span class="n">DIR</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+                        <span class="c1"># Likely aiohttp.ClientResponseError</span>
+                        <span class="c1"># In case we have many jobs and this is running in parallel</span>
+                        <span class="c1"># Parallelly creating the same directory may cause</span>
+                        <span class="c1"># a rate limit error in cloud storages</span>
+                        <span class="k">await</span> <span class="n">out</span><span class="o">.</span><span class="n">a_mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+                <span class="n">ret</span><span class="p">[</span><span class="n">output_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">mounted</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">template_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the data for template rendering</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The data for template rendering</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;job&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                <span class="n">metadir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadir</span><span class="o">.</span><span class="n">mounted</span><span class="p">,</span>
+                <span class="n">outdir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">outdir</span><span class="o">.</span><span class="n">mounted</span><span class="p">,</span>
+                <span class="n">script_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">script_file</span><span class="o">.</span><span class="n">mounted</span><span class="p">,</span>
+                <span class="n">stdout_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout_file</span><span class="o">.</span><span class="n">mounted</span><span class="p">,</span>
+                <span class="n">stderr_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr_file</span><span class="o">.</span><span class="n">mounted</span><span class="p">,</span>
+                <span class="n">jid_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">jid_file</span><span class="o">.</span><span class="n">mounted</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;in&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">,</span>
+            <span class="s2">&quot;in_&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">,</span>
+            <span class="s2">&quot;out&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">,</span>
+            <span class="s2">&quot;proc&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="p">,</span>
+            <span class="s2">&quot;envs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">envs</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span id="pipen.job.Job.log"></span><a class="mkapi-docs-link" title="pipen.job.Job.log" href="../../pipen.job/#pipen.job.Job.log">DOCS</a>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">limit_indicator</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">LoggerAdapter</span> <span class="o">=</span> <span class="n">logger</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Log message for the jobs</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            level: The log level of the record</span>
+<span class="sd">            msg: The message to log</span>
+<span class="sd">            *args: The arguments to format the message</span>
+<span class="sd">            limit: limitation of the log (don&#39;t log for all jobs)</span>
+<span class="sd">            limit_indicator: Whether to show an indicator saying the log</span>
+<span class="sd">                has been limited (the level of the indicator will be DEBUG)</span>
+<span class="sd">            logger: The logger used to log</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">&gt;</span> <span class="n">limit</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">==</span> <span class="n">limit</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">limit_indicator</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2"> (not showing similar logs)&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">job_index_indicator</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">job_index_indicator</span> <span class="o">=</span> <span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">] &quot;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">job_index_indicator</span> <span class="o">+</span> <span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../../..";</script>
+    <script src="../../../js/theme_extra.js"></script>
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/version-select.js"></script>
+      <script src="../../../js/mkapi.js"></script>
+      <script src="../../../assets/script.js"></script>
+      <script src="../../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Contributing - pipen</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Contributing";
+        var mkdocs_page_input_path = "CONTRIBUTING.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Contributing</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#table-of-contents">Table of Contents</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#development-setup">Development Setup</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#setting-up-the-development-environment">Setting Up the Development Environment</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#development-workflow">Development Workflow</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#code-style">Code Style</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#formatting">Formatting</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#linting">Linting</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#type-checking">Type Checking</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#docstring-format">Docstring Format</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pre-commit-hooks">Pre-commit Hooks</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#running-tests">Running Tests</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#test-configuration">Test Configuration</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#writing-tests">Writing Tests</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#test-coverage">Test Coverage</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#building-documentation">Building Documentation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#documentation-structure">Documentation Structure</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#api-documentation">API Documentation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#adding-new-documentation">Adding New Documentation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#documentation-requirements">Documentation Requirements</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#pull-request-process">Pull Request Process</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#before-submitting-a-pr">Before Submitting a PR</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#submitting-a-pr">Submitting a PR</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pr-review-process">PR Review Process</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#merge-criteria">Merge Criteria</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#reporting-issues">Reporting Issues</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#bug-reports">Bug Reports</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#feature-requests">Feature Requests</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#documentation-issues">Documentation Issues</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#getting-help">Getting Help</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#license">License</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+      <li class="breadcrumb-item active">Contributing</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/CONTRIBUTING.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="contributing-to-pipen">Contributing to pipen<a class="headerlink" href="#contributing-to-pipen" title="Permanent link">&para;</a></h2>
+<p>Thank you for your interest in contributing to pipen! This document provides guidelines and instructions for contributing to the project.</p>
+<h3 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="#development-setup">Development Setup</a></li>
+<li><a href="#code-style">Code Style</a></li>
+<li><a href="#testing">Testing</a></li>
+<li><a href="#documentation">Documentation</a></li>
+<li><a href="#pull-request-process">Pull Request Process</a></li>
+<li><a href="#reporting-issues">Reporting Issues</a></li>
+</ul>
+<h3 id="development-setup">Development Setup<a class="headerlink" href="#development-setup" title="Permanent link">&para;</a></h3>
+<h4 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Python 3.9 or higher</li>
+<li><a href="https://python-poetry.org/">Poetry</a> for dependency management</li>
+<li>Git</li>
+</ul>
+<h4 id="setting-up-the-development-environment">Setting Up the Development Environment<a class="headerlink" href="#setting-up-the-development-environment" title="Permanent link">&para;</a></h4>
+<ol>
+<li><strong>Fork and clone the repository</strong></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># Fork the repository on GitHub first</span>
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/YOUR_USERNAME/pipen.git
+<span class="nb">cd</span><span class="w"> </span>pipen
+</code></pre></div>
+<ol>
+<li><strong>Install development dependencies</strong></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># Install using Poetry</span>
+poetry<span class="w"> </span>install<span class="w"> </span>--all-extras
+
+<span class="c1"># Or install the development group specifically</span>
+poetry<span class="w"> </span>install<span class="w"> </span>--with<span class="w"> </span>dev,docs,example
+</code></pre></div>
+<ol>
+<li><strong>Activate the virtual environment</strong></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># Using Poetry shell</span>
+poetry<span class="w"> </span>shell
+
+<span class="c1"># Or use the virtual environment path</span>
+<span class="nb">source</span><span class="w"> </span><span class="k">$(</span>poetry<span class="w"> </span>env<span class="w"> </span>info<span class="w"> </span>--path<span class="k">)</span>/bin/activate
+</code></pre></div>
+<ol>
+<li><strong>Install pre-commit hooks</strong></li>
+</ol>
+<div class="highlight"><pre><span></span><code>pre-commit<span class="w"> </span>install
+</code></pre></div>
+<ol>
+<li><strong>Verify the setup</strong></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># Run tests to ensure everything is working</span>
+pytest<span class="w"> </span>tests/
+
+<span class="c1"># Build documentation</span>
+<span class="nb">cd</span><span class="w"> </span>docs<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>mkdocs<span class="w"> </span>build
+</code></pre></div>
+<h4 id="development-workflow">Development Workflow<a class="headerlink" href="#development-workflow" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Create a new branch for your changes</span>
+git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>feature/your-feature-name
+
+<span class="c1"># Make your changes</span>
+<span class="c1"># ...</span>
+
+<span class="c1"># Run tests</span>
+pytest<span class="w"> </span>tests/
+
+<span class="c1"># Run linting</span>
+flake8<span class="w"> </span>pipen
+mypy<span class="w"> </span>-p<span class="w"> </span>pipen
+
+<span class="c1"># Format code</span>
+black<span class="w"> </span>pipen
+
+<span class="c1"># Commit changes</span>
+git<span class="w"> </span>add<span class="w"> </span>.
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Add your feature&quot;</span>
+
+<span class="c1"># Push to your fork</span>
+git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>feature/your-feature-name
+</code></pre></div>
+<h3 id="code-style">Code Style<a class="headerlink" href="#code-style" title="Permanent link">&para;</a></h3>
+<h4 id="formatting">Formatting<a class="headerlink" href="#formatting" title="Permanent link">&para;</a></h4>
+<p>We use <a href="https://black.readthedocs.io/">Black</a> for code formatting:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Format code</span>
+black<span class="w"> </span>pipen
+
+<span class="c1"># Check formatting without making changes</span>
+black<span class="w"> </span>--check<span class="w"> </span>pipen
+</code></pre></div>
+<p>Configuration:
+- Line length: 88 characters
+- Target Python versions: 3.9, 3.10, 3.11, 3.12</p>
+<h4 id="linting">Linting<a class="headerlink" href="#linting" title="Permanent link">&para;</a></h4>
+<p>We use <a href="https://flake8.pycqa.org/">flake8</a> for code linting:</p>
+<div class="highlight"><pre><span></span><code>flake8<span class="w"> </span>pipen
+</code></pre></div>
+<h4 id="type-checking">Type Checking<a class="headerlink" href="#type-checking" title="Permanent link">&para;</a></h4>
+<p>We use <a href="https://mypy.readthedocs.io/">mypy</a> for static type checking:</p>
+<div class="highlight"><pre><span></span><code>mypy<span class="w"> </span>-p<span class="w"> </span>pipen
+</code></pre></div>
+<p>Configuration:
+- Ignore missing imports from external packages
+- Allow redefinition in some cases
+- Strict optional mode is disabled for flexibility</p>
+<h4 id="docstring-format">Docstring Format<a class="headerlink" href="#docstring-format" title="Permanent link">&para;</a></h4>
+<p>We use <strong>Google-style docstrings</strong> with Args, Returns, Raises, and Attributes sections:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_data</span><span class="p">(</span><span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process a data file and save results to output directory.</span>
+
+<span class="sd">    This function reads the input file, processes the data, and saves</span>
+<span class="sd">    the results to the specified output directory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_file: Path to the input data file.</span>
+<span class="sd">        output_dir: Directory where processed results will be saved.</span>
+<span class="sd">        verbose: If True, print detailed progress information.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dictionary containing processing statistics and output file paths.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        FileNotFoundError: If input_file does not exist.</span>
+<span class="sd">        ValueError: If input_file is malformed.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; result = process_data(&quot;data.csv&quot;, &quot;output&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; result[&#39;processed_count&#39;]</span>
+<span class="sd">        100</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+</code></pre></div>
+<p>For classes, include a description and list important attributes:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DataProcessor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process and transform data files.</span>
+
+<span class="sd">    This class provides methods for reading, transforming, and saving</span>
+<span class="sd">    data in various formats.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        processed_count: Number of files processed.</span>
+<span class="sd">        errors: List of errors encountered during processing.</span>
+<span class="sd">        config: Configuration dictionary for processing parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+</code></pre></div>
+<h4 id="pre-commit-hooks">Pre-commit Hooks<a class="headerlink" href="#pre-commit-hooks" title="Permanent link">&para;</a></h4>
+<p>We use pre-commit hooks to automatically run checks before committing:</p>
+<ul>
+<li><strong>trailing-whitespace</strong>: Remove trailing whitespace</li>
+<li><strong>end-of-file-fixer</strong>: Ensure files end with a newline</li>
+<li><strong>check-yaml</strong>: Validate YAML syntax</li>
+<li><strong>check-added-large-files</strong>: Prevent large files from being committed</li>
+<li><strong>versionchecker</strong>: Ensure version consistency between <code>pyproject.toml</code> and <code>pipen/version.py</code></li>
+<li><strong>mypy</strong>: Run type checking</li>
+<li><strong>pytest</strong>: Run tests</li>
+<li><strong>flake8</strong>: Run linting</li>
+</ul>
+<p>Pre-commit hooks are configured in <code>.pre-commit-config.yaml</code> and automatically
+run on commits for files in <code>pipen/</code> directory (excludes <code>tests/</code>, <code>examples/</code>, and <code>docs/</code>).</p>
+<h3 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h3>
+<h4 id="running-tests">Running Tests<a class="headerlink" href="#running-tests" title="Permanent link">&para;</a></h4>
+<p>We use <a href="https://docs.pytest.org/">pytest</a> for testing:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Run all tests</span>
+pytest<span class="w"> </span>tests/
+
+<span class="c1"># Run tests with coverage</span>
+pytest<span class="w"> </span>--cov<span class="o">=</span>pipen<span class="w"> </span>--cov-report<span class="o">=</span>term-missing
+
+<span class="c1"># Run specific test file</span>
+pytest<span class="w"> </span>tests/test_pipen.py
+
+<span class="c1"># Run with verbose output</span>
+pytest<span class="w"> </span>-vv<span class="w"> </span>tests/
+
+<span class="c1"># Run specific test</span>
+pytest<span class="w"> </span>tests/test_pipen.py::test_pipen_init
+</code></pre></div>
+<h4 id="test-configuration">Test Configuration<a class="headerlink" href="#test-configuration" title="Permanent link">&para;</a></h4>
+<p>Our test configuration (from <code>pyproject.toml</code>):</p>
+<ul>
+<li><strong>Parallel execution</strong>: <code>pytest-xdist</code> with <code>-n auto</code> for automatic parallelization</li>
+<li><strong>Distribution mode</strong>: <code>--dist loadgroup</code> to run dependent tests together</li>
+<li><strong>Coverage</strong>: <code>pytest-cov</code> for code coverage reporting</li>
+<li><strong>Async support</strong>: <code>pytest-asyncio</code> for async test cases</li>
+<li><strong>Warnings</strong>: Treat <code>UserWarning</code> as errors (<code>-W error::UserWarning</code>)</li>
+</ul>
+<h4 id="writing-tests">Writing Tests<a class="headerlink" href="#writing-tests" title="Permanent link">&para;</a></h4>
+<p>Place tests in the <code>tests/</code> directory following the structure:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># tests/test_pipen.py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pipen</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipen</span><span class="p">,</span> <span class="n">Proc</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_pipen_init</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test that Pipen initializes correctly.&quot;&quot;&quot;</span>
+    <span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Pipen&quot;</span>
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_async_pipeline</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test async pipeline execution.&quot;&quot;&quot;</span>
+    <span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">run_async</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">True</span>
+</code></pre></div>
+<h4 id="test-coverage">Test Coverage<a class="headerlink" href="#test-coverage" title="Permanent link">&para;</a></h4>
+<p>We aim for high test coverage. The current coverage is tracked on <a href="https://app.codacy.com/gh/pwwang/pipen">Codacy</a>.</p>
+<p>To check coverage locally:</p>
+<div class="highlight"><pre><span></span><code>pytest<span class="w"> </span>--cov<span class="o">=</span>pipen<span class="w"> </span>--cov-report<span class="o">=</span>html
+open<span class="w"> </span>htmlcov/index.html<span class="w">  </span><span class="c1"># macOS</span>
+<span class="c1"># or</span>
+xdg-open<span class="w"> </span>htmlcov/index.html<span class="w">  </span><span class="c1"># Linux</span>
+</code></pre></div>
+<h3 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h3>
+<h4 id="building-documentation">Building Documentation<a class="headerlink" href="#building-documentation" title="Permanent link">&para;</a></h4>
+<p>Documentation is built with <a href="https://www.mkdocs.org/">MkDocs</a>:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>docs
+mkdocs<span class="w"> </span>build<span class="w">        </span><span class="c1"># Build to site/</span>
+mkdocs<span class="w"> </span>serve<span class="w">        </span><span class="c1"># Serve at http://127.0.0.1:8000</span>
+mkdocs<span class="w"> </span>gh-deploy<span class="w">    </span><span class="c1"># Deploy to GitHub Pages</span>
+</code></pre></div>
+<h4 id="documentation-structure">Documentation Structure<a class="headerlink" href="#documentation-structure" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>docs/
+├── index.md              # Symlink to ../README.md
+├── basics.md             # Pipeline layers and folder structure
+├── defining-proc.md      # Process definition guide
+├── running.md            # Pipeline execution guide
+├── configurations.md     # Configuration documentation
+├── caching.md            # Job caching mechanism
+├── channels.md           # Channel system documentation
+├── input-output.md      # Input/output specification
+├── error.md             # Error handling strategies
+├── templating.md        # Template engine documentation
+├── script.md            # Script configuration
+├── scheduler.md         # Scheduler backends
+├── cloud.md             # Cloud support
+├── proc-group.md        # Process groups
+├── plugin.md            # Plugin development
+├── cli.md               # CLI tool documentation
+├── examples.md          # Example documentation
+├── CHANGELOG.md         # Version history
+├── style.css            # Custom styling
+└── script.js            # Custom JavaScript
+</code></pre></div>
+<h4 id="api-documentation">API Documentation<a class="headerlink" href="#api-documentation" title="Permanent link">&para;</a></h4>
+<p>API documentation is auto-generated from docstrings using the <code>mkapi-fix</code> plugin.</p>
+<p>To ensure your API documentation is properly generated:</p>
+<ol>
+<li>Write Google-style docstrings for all public classes, functions, and methods</li>
+<li>Include <code>Args</code>, <code>Returns</code>, <code>Raises</code>, and <code>Attributes</code> sections where applicable</li>
+<li>Add <code>Examples</code> sections for complex functions</li>
+<li>Ensure type hints are present in function signatures</li>
+</ol>
+<h4 id="adding-new-documentation">Adding New Documentation<a class="headerlink" href="#adding-new-documentation" title="Permanent link">&para;</a></h4>
+<ol>
+<li>Create a new <code>.md</code> file in the <code>docs/</code> directory</li>
+<li>Update the <code>nav</code> section in <code>mkdocs.yml</code> to include your new page</li>
+<li>Add cross-references using <code>[](#anchor)</code> syntax</li>
+<li>Use code blocks with language identifiers: <code>python,</code>bash, etc.</li>
+<li>Use admonition blocks for notes, warnings, and tips:</li>
+</ol>
+<div class="highlight"><pre><span></span><code>!!! note
+    This is a note block.
+
+!!! warning
+    This is a warning.
+
+!!! tip
+    This is a tip.
+</code></pre></div>
+<h4 id="documentation-requirements">Documentation Requirements<a class="headerlink" href="#documentation-requirements" title="Permanent link">&para;</a></h4>
+<ul>
+<li>All new public APIs must have docstrings</li>
+<li>Breaking changes must be documented in <code>CHANGELOG.md</code></li>
+<li>New features should include examples in the documentation</li>
+<li>Visual diagrams should have descriptive alt text for accessibility</li>
+</ul>
+<h3 id="pull-request-process">Pull Request Process<a class="headerlink" href="#pull-request-process" title="Permanent link">&para;</a></h3>
+<h4 id="before-submitting-a-pr">Before Submitting a PR<a class="headerlink" href="#before-submitting-a-pr" title="Permanent link">&para;</a></h4>
+<ol>
+<li><strong>Update documentation</strong></li>
+<li>Add or update docstrings for changed code</li>
+<li>Update relevant documentation files</li>
+<li>
+<p>Add examples for new features</p>
+</li>
+<li>
+<p><strong>Run all tests</strong>
+   <div class="highlight"><pre><span></span><code>pytest<span class="w"> </span>tests/
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Run linting and type checking</strong>
+   <div class="highlight"><pre><span></span><code>flake8<span class="w"> </span>pipen
+mypy<span class="w"> </span>-p<span class="w"> </span>pipen
+black<span class="w"> </span>--check<span class="w"> </span>pipen
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Build documentation</strong>
+   <div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>docs<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>mkdocs<span class="w"> </span>build
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Update CHANGELOG.md</strong></p>
+</li>
+<li>Add an entry under the appropriate version section</li>
+<li>Use the format: <code>[&lt;type&gt;] &lt;description&gt; ([#issue])</code></li>
+<li>Types: <code>added</code>, <code>changed</code>, <code>deprecated</code>, <code>removed</code>, <code>fixed</code>, <code>security</code></li>
+</ol>
+<h4 id="submitting-a-pr">Submitting a PR<a class="headerlink" href="#submitting-a-pr" title="Permanent link">&para;</a></h4>
+<ol>
+<li>Push your branch to your fork</li>
+<li>Open a pull request on GitHub</li>
+<li>Fill in the PR template with:</li>
+<li>A clear description of changes</li>
+<li>Related issues (if any)</li>
+<li>Screenshots for UI changes (if applicable)</li>
+<li>Testing performed</li>
+<li>Documentation updates</li>
+</ol>
+<h4 id="pr-review-process">PR Review Process<a class="headerlink" href="#pr-review-process" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Maintainers will review your PR</li>
+<li>Address review comments by pushing additional commits</li>
+<li>Keep the PR focused on a single change</li>
+<li>Squash commits if requested by maintainers</li>
+<li>Update based on review feedback</li>
+</ul>
+<h4 id="merge-criteria">Merge Criteria<a class="headerlink" href="#merge-criteria" title="Permanent link">&para;</a></h4>
+<p>A PR can be merged when:</p>
+<ul>
+<li>[ ] All tests pass</li>
+<li>[ ] Code is properly formatted (Black)</li>
+<li>[ ] No linting errors (flake8)</li>
+<li>[ ] No type checking errors (mypy)</li>
+<li>[ ] Documentation is updated</li>
+<li>[ ] CHANGELOG.md is updated for breaking changes</li>
+<li>[ ] At least one maintainer approves</li>
+</ul>
+<h3 id="reporting-issues">Reporting Issues<a class="headerlink" href="#reporting-issues" title="Permanent link">&para;</a></h3>
+<h4 id="bug-reports">Bug Reports<a class="headerlink" href="#bug-reports" title="Permanent link">&para;</a></h4>
+<p>When reporting a bug, include:</p>
+<ol>
+<li><strong>Python version</strong>: <code>python --version</code></li>
+<li><strong>pipen version</strong>: <code>pipen --version</code></li>
+<li><strong>Minimal reproducible example</strong>: Code that demonstrates the issue</li>
+<li><strong>Expected behavior</strong>: What you expected to happen</li>
+<li><strong>Actual behavior</strong>: What actually happened (with error messages)</li>
+<li><strong>Environment details</strong>: OS, scheduler used, etc.</li>
+</ol>
+<h4 id="feature-requests">Feature Requests<a class="headerlink" href="#feature-requests" title="Permanent link">&para;</a></h4>
+<p>When requesting a feature:</p>
+<ol>
+<li><strong>Use case</strong>: Explain what problem this feature solves</li>
+<li><strong>Proposed solution</strong>: How you envision the feature working</li>
+<li><strong>Alternatives considered</strong>: Other approaches you've thought of</li>
+<li><strong>Additional context</strong>: Any relevant context about the request</li>
+</ol>
+<h4 id="documentation-issues">Documentation Issues<a class="headerlink" href="#documentation-issues" title="Permanent link">&para;</a></h4>
+<p>For documentation issues:</p>
+<ol>
+<li><strong>Page location</strong>: Which documentation page has the issue</li>
+<li><strong>Problem</strong>: What is incorrect, unclear, or missing</li>
+<li><strong>Suggestion</strong>: How it should be improved (if you have ideas)</li>
+</ol>
+<h3 id="getting-help">Getting Help<a class="headerlink" href="#getting-help" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>GitHub Issues</strong>: For bug reports and feature requests</li>
+<li><strong>GitHub Discussions</strong>: For questions and general discussion</li>
+<li><strong>Documentation</strong>: https://pwwang.github.io/pipen</li>
+<li><strong>Examples</strong>: See the <code>examples/</code> directory for usage examples</li>
+</ul>
+<h3 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h3>
+<p>By contributing to pipen, you agree that your contributions will be licensed under the MIT License.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../troubleshooting/" class="btn btn-neutral float-left" title="Troubleshooting"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../glossary/" class="btn btn-neutral float-right" title="Glossary">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../troubleshooting/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../glossary/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+    <script src="../js/version-select.js"></script>
+      <script src="../js/mkapi.js"></script>
+      <script src="../assets/script.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

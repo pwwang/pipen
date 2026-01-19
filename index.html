@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="img/favicon.ico" />
+    <title>Overview - pipen</title>
+    <link rel="stylesheet" href="css/theme.css" />
+    <link rel="stylesheet" href="css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="css/mkapi-common.css" rel="stylesheet" />
+        <link href="assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Overview";
+        var mkdocs_page_input_path = "index.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".">
+          <img src="rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href=".">Overview</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#target-audience">Target Audience</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#key-benefits">Key Benefits</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#comparison-with-alternatives">Comparison with Alternatives</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="api/pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href=".">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Introduction</li>
+      <li class="breadcrumb-item active">Overview</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/index.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <div align="center">
+    <img src="./docs/rtd-logo.png" width="320px" alt="pipen logo showing a stylized pipeline diagram with interconnected nodes">
+
+**A pipeline framework for python**
+
+</div>
+
+<hr />
+<p><a href="https://pypi.org/project/pipen/"><img alt="Pypi" src="https://img.shields.io/pypi/v/pipen?style=flat-square" /></a> <a href="https://github.com/pwwang/pipen"><img alt="Github" src="https://img.shields.io/github/v/tag/pwwang/pipen?style=flat-square" /></a> <img alt="Building" src="https://img.shields.io/github/actions/workflow/status/pwwang/pipen/build.yml?style=flat-square" /> [<img alt="Docs and API" src="https://img.shields.io/github/actions/workflow/status/pwwang/pipen/docs.yml?label=docs&amp;style=flat-square" />]<a href="https://pwwang.github.io/pipen">1</a> [<img alt="Codacy" src="https://img.shields.io/codacy/grade/cf1c6c97e5c4480386a05b42dec10c6e?style=flat-square" />]<a href="https://app.codacy.com/gh/pwwang/pipen">13</a> [<img alt="Codacy coverage" src="https://img.shields.io/codacy/coverage/cf1c6c97e5c4480386a05b42dec10c6e?style=flat-square" />]<a href="https://app.codacy.com/gh/pwwang/pipen">13</a> [<img alt="Deps" src="https://img.shields.io/librariesio/release/pypi/pipen?style=flat-square" />]<a href="https://libraries.io/github/pwwang/pipen#repository_dependencies">23</a></p>
+<p><a href="https://pwwang.github.io/pipen">Documentation</a> | <a href="https://pwwang.github.io/pipen/CHANGELOG">ChangeLog</a> | <a href="https://pwwang.github.io/pipen/examples">Examples</a> | <a href="https://pwwang.github.io/pipen/api/pipen">API</a></p>
+<h3 id="why-pipen">Why pipen?<a class="headerlink" href="#why-pipen" title="Permanent link">&para;</a></h3>
+<p><strong>pipen</strong> is designed for data scientists, bioinformaticians, and researchers who need to create reproducible, scalable computational pipelines without the complexity of traditional workflow systems.</p>
+<h4 id="target-audience">Target Audience<a class="headerlink" href="#target-audience" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Data Scientists</strong>: Process large datasets with automatic parallelization and caching</li>
+<li><strong>Bioinformaticians</strong>: Build reproducible analysis pipelines for genomics data</li>
+<li><strong>Researchers</strong>: Create transparent, reproducible workflows for computational research</li>
+<li><strong>DevOps Engineers</strong>: Orchestrate batch jobs across different schedulers (SLURM, SGE, Google Cloud)</li>
+</ul>
+<h4 id="key-benefits">Key Benefits<a class="headerlink" href="#key-benefits" title="Permanent link">&para;</a></h4>
+<p><strong>1. Zero Configuration</strong>
+- Get started immediately with sensible defaults
+- Configure only what you need, when you need it
+- Profile-based configuration for different environments</p>
+<p><strong>2. Reproducibility Built-In</strong>
+- Automatic job caching based on input/output signatures
+- Full audit trail of pipeline runs and parameters
+- Dependency tracking ensures processes run in correct order</p>
+<p><strong>3. Flexible Scheduling</strong>
+- Run locally for development
+- Scale to HPC clusters (SLURM, SGE)
+- Deploy to cloud (Google Cloud Batch, SSH)
+- Run in containers for reproducibility</p>
+<p><strong>4. Developer-Friendly</strong>
+- Define pipelines as Python classes
+- Use familiar Python syntax and tools
+- Extensible plugin system for custom functionality
+- Rich, informative logging and progress tracking</p>
+<p><strong>5. Data Flow Management</strong>
+- Automatic data passing between pipeline stages
+- Support for files, directories, and in-memory data
+- Built-in operations for transforming and aggregating data</p>
+<h4 id="comparison-with-alternatives">Comparison with Alternatives<a class="headerlink" href="#comparison-with-alternatives" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>pipen</th>
+<th>Snakemake</th>
+<th>Nextflow</th>
+<th>Airflow</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Target Audience</strong></td>
+<td>Data Scientists, Bioinformaticians, Researchers, DevOps</td>
+<td>Bioinformaticians</td>
+<td>Bioinformaticians</td>
+<td>Data Engineers</td>
+</tr>
+<tr>
+<td><strong>Learning Curve</strong></td>
+<td>Low</td>
+<td>Medium</td>
+<td>High</td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Python Integration</strong></td>
+<td>Native</td>
+<td>Limited</td>
+<td>Limited</td>
+<td>Native</td>
+</tr>
+<tr>
+<td><strong>Scheduler Support</strong></td>
+<td>6+ (Local, SGE, SLURM, SSH, Container, Gbatch)</td>
+<td>Limited</td>
+<td>Limited</td>
+<td>Plugin-based</td>
+</tr>
+<tr>
+<td><strong>Caching</strong></td>
+<td>Built-in, automatic</td>
+<td>Manual</td>
+<td>Manual</td>
+<td>Plugin-based</td>
+</tr>
+<tr>
+<td><strong>Cloud Native Support</strong></td>
+<td>Yes (Google Cloud Batch)</td>
+<td>Partial</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><strong>Interactive Debugging</strong></td>
+<td>Yes</td>
+<td>Limited</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr>
+<td><strong>Easy to Use</strong></td>
+<td>Define pipelines as Python classes, familiar syntax</td>
+<td>Workflow DSL, separate config files</td>
+<td>DAG definition in Python, complex UI</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Zero Configuration</strong></td>
+<td>Sensible defaults, configure only what needed</td>
+<td>Many configuration options</td>
+<td>Heavy configuration required</td>
+<td>Complex setup</td>
+</tr>
+<tr>
+<td><strong>Nice Logging</strong></td>
+<td>Rich, informative, color-coded, progress bars</td>
+<td>Text-based</td>
+<td>Text-based</td>
+<td>Basic logging</td>
+</tr>
+<tr>
+<td><strong>Highly Extensible</strong></td>
+<td>Simple plugin system, hook-based</td>
+<td>Custom rules/scripts</td>
+<td>Custom operators</td>
+<td>Custom operators/providers</td>
+</tr>
+<tr>
+<td><strong>Data Flow Management</strong></td>
+<td>Built-in channel operations (expand_dir, collapse_files)</td>
+<td>Manual handling</td>
+<td>Channel system</td>
+<td>XCom system</td>
+</tr>
+<tr>
+<td><strong>Reproducibility</strong></td>
+<td>Built-in caching, full audit trail</td>
+<td>Manual</td>
+<td>Versioned containers</td>
+<td>DAG versioning</td>
+</tr>
+<tr>
+<td><strong>Flexible Scheduling</strong></td>
+<td>Switch schedulers without code changes</td>
+<td>Config-based</td>
+<td>Config-based</td>
+<td>Config-based</td>
+</tr>
+</tbody>
+</table>
+<h3 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>pipen
+</code></pre></div>
+<h3 id="quickstart">Quickstart<a class="headerlink" href="#quickstart" title="Permanent link">&para;</a></h3>
+<p><code>example.py</code></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pipen</span><span class="w"> </span><span class="kn">import</span> <span class="n">Proc</span><span class="p">,</span> <span class="n">Pipen</span><span class="p">,</span> <span class="n">run</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">P1</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sort input file&quot;&quot;&quot;</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;infile&quot;</span>
+    <span class="n">input_data</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;/tmp/data.txt&quot;</span><span class="p">]</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;outfile:file:intermediate.txt&quot;</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;cat {{in.infile}} | sort &gt; {{out.outfile}}&quot;</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">P2</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Paste line number&quot;&quot;&quot;</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="n">P1</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;infile:file&quot;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;outfile:file:result.txt&quot;</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;paste &lt;(seq 1 3) {{in.infile}} &gt; {{out.outfile}}&quot;</span>
+
+<span class="c1"># class MyPipeline(Pipen):</span>
+<span class="c1">#     starts = P1</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># MyPipeline().run()</span>
+    <span class="n">run</span><span class="p">(</span><span class="s2">&quot;MyPipeline&quot;</span><span class="p">,</span> <span class="n">starts</span><span class="o">=</span><span class="n">P1</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>&gt;<span class="w"> </span><span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;3\n2\n1&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>/tmp/data.txt
+&gt;<span class="w"> </span>python<span class="w"> </span>example.py
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>04-17 16:19:35 I core                   _____________________________________   __
+04-17 16:19:35 I core                   ___  __ \___  _/__  __ \__  ____/__  | / /
+04-17 16:19:35 I core                   __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+04-17 16:19:35 I core                   _  ____/__/ /  _  ____/_  /___  _  /|  /
+04-17 16:19:35 I core                   /_/     /___/  /_/     /_____/  /_/ |_/
+04-17 16:19:35 I core
+04-17 16:19:35 I core                               version: 1.1.8
+04-17 16:19:35 I core
+04-17 16:19:35 I core    ╔═══════════════════════════ MYPIPELINE ════════════════════════════╗
+04-17 16:19:35 I core    ║ My pipeline                                                       ║
+04-17 16:19:35 I core    ╚═══════════════════════════════════════════════════════════════════╝
+04-17 16:19:35 I core    plugins         : verbose v1.1.1
+04-17 16:19:35 I core    # procs         : 2
+04-17 16:19:35 I core    profile         : default
+04-17 16:19:35 I core    outdir          : /path/to/cwd/MyPipeline-output
+04-17 16:19:35 I core    cache           : True
+04-17 16:19:35 I core    dirsig          : 1
+04-17 16:19:35 I core    error_strategy  : ignore
+04-17 16:19:35 I core    forks           : 1
+04-17 16:19:35 I core    lang            : bash
+04-17 16:19:35 I core    loglevel        : info
+04-17 16:19:35 I core    num_retries     : 3
+04-17 16:19:35 I core    scheduler       : local
+04-17 16:19:35 I core    submission_batch: 8
+04-17 16:19:35 I core    template        : liquid
+04-17 16:19:35 I core    workdir         : /path/to/cwd/.pipen/MyPipeline
+04-17 16:19:35 I core    plugin_opts     :
+04-17 16:19:35 I core    template_opts   : filters={&#39;realpath&#39;: &lt;function realpath at 0x7fc3eba12...
+04-17 16:19:35 I core                    : globals={&#39;realpath&#39;: &lt;function realpath at 0x7fc3eba12...
+04-17 16:19:35 I core    Initializing plugins ...
+04-17 16:19:36 I core
+04-17 16:19:36 I core    ╭─────────────────────────────── P1 ────────────────────────────────╮
+04-17 16:19:36 I core    │ Sort input file                                                   │
+04-17 16:19:36 I core    ╰───────────────────────────────────────────────────────────────────╯
+04-17 16:19:36 I core    P1: Workdir: &#39;/path/to/cwd/.pipen/MyPipeline/P1&#39;
+04-17 16:19:36 I core    P1: &lt;&lt;&lt; [START]
+04-17 16:19:36 I core    P1: &gt;&gt;&gt; [&#39;P2&#39;]
+04-17 16:19:36 I verbose P1: in.infile: /tmp/data.txt
+04-17 16:19:36 I verbose P1: out.outfile: /path/to/cwd/.pipen/MyPipeline/P1/0/output/intermediate.txt
+04-17 16:19:38 I verbose P1: Time elapsed: 00:00:02.051s
+04-17 16:19:38 I core
+04-17 16:19:38 I core    ╭═══════════════════════════════ P2 ════════════════════════════════╮
+04-17 16:19:38 I core    ║ Paste line number                                                 ║
+04-17 16:19:38 I core    ╰═══════════════════════════════════════════════════════════════════╯
+04-17 16:19:38 I core    P2: Workdir: &#39;/path/to/cwd/.pipen/MyPipeline/P2&#39;
+04-17 16:19:38 I core    P2: &lt;&lt;&lt; [&#39;P1&#39;]
+04-17 16:19:38 I core    P2: &gt;&gt;&gt; [END]
+04-17 16:19:38 I verbose P2: in.infile: /path/to/cwd/.pipen/MyPipeline/P1/0/output/intermediate.txt
+04-17 16:19:38 I verbose P2: out.outfile: /path/to/cwd/MyPipeline-output/P2/result.txt
+04-17 16:19:41 I verbose P2: Time elapsed: 00:00:02.051s
+04-17 16:19:41 I core
+
+             MYPIPELINE: 100%|██████████████████████████████| 2/2 [00:06&lt;00:00, 0.35 procs/s]
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>&gt;<span class="w"> </span>cat<span class="w"> </span>./MyPipeline-output/P2/result.txt
+<span class="m">1</span><span class="w">       </span><span class="m">1</span>
+<span class="m">2</span><span class="w">       </span><span class="m">2</span>
+<span class="m">3</span><span class="w">       </span><span class="m">3</span>
+</code></pre></div>
+<h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h3>
+<p>See more examples at <code>examples/</code> and a more realcase example at:</p>
+<p><a href="https://github.com/pwwang/pipen-report/tree/master/example">https://github.com/pwwang/pipen-report/tree/master/example</a></p>
+<h3 id="plugin-gallery">Plugin gallery<a class="headerlink" href="#plugin-gallery" title="Permanent link">&para;</a></h3>
+<p>Plugins make <code>pipen</code> even better.</p>
+<ul>
+<li><a href="https://github.com/pwwang/pipen-annotate"><code>pipen-annotate</code></a>: Use docstring to annotate pipen processes</li>
+<li><a href="https://github.com/pwwang/pipen-args"><code>pipen-args</code></a>: Command line argument parser for pipen</li>
+<li><a href="https://github.com/pwwang/pipen-board"><code>pipen-board</code></a>: Visualize configuration and running of pipen pipelines on the web</li>
+<li><a href="https://github.com/pwwang/pipen-diagram"><code>pipen-diagram</code></a>: Draw pipeline diagrams for pipen</li>
+<li><a href="https://github.com/pwwang/pipen-dry"><code>pipen-dry</code></a>: Dry runner for pipen pipelines</li>
+<li><a href="https://github.com/pwwang/pipen-filters"><code>pipen-filters</code></a>: Add a set of useful filters for pipen templates.</li>
+<li><a href="https://github.com/pwwang/pipen-lock"><code>pipen-lock</code></a>: Process lock for pipen to prevent multiple runs at the same time.</li>
+<li><a href="https://github.com/pwwang/pipen-log2file"><code>pipen-log2file</code></a>: Save running logs to file for pipen</li>
+<li><a href="https://github.com/pwwang/pipen-poplog"><code>pipen-poplog</code></a>: Populate logs from jobs to running log of the pipeline</li>
+<li><a href="https://github.com/pwwang/pipen-report"><code>pipen-report</code></a>: Generate report for pipen</li>
+<li><a href="https://github.com/pwwang/pipen-runinfo"><code>pipen-runinfo</code></a>: Save running information to file for pipen</li>
+<li><a href="https://github.com/pwwang/pipen-verbose"><code>pipen-verbose</code></a>: Add verbosal information in logs for pipen.</li>
+<li><a href="https://github.com/pwwang/pipen-gcs"><code>pipen-gcs</code></a>: A plugin for pipen to handle files in Google Cloud Storage.</li>
+<li><a href="https://github.com/pwwang/pipen-deprecated"><code>pipen-deprecated</code></a>: A pipen plugin to mark processes as deprecated.</li>
+<li><a href="https://github.com/pwwang/pipen-cli-init"><code>pipen-cli-init</code></a>: A pipen CLI plugin to create a pipen project (pipeline)</li>
+<li><a href="https://github.com/pwwang/pipen-cli-ref"><code>pipen-cli-ref</code></a>: Make reference documentation for processes</li>
+<li><a href="https://github.com/pwwang/pipen-cli-require"><code>pipen-cli-require</code></a>: A pipen cli plugin check the requirements of a pipeline</li>
+<li><a href="https://github.com/pwwang/pipen-cli-run"><code>pipen-cli-run</code></a>: A pipen cli plugin to run a process or a pipeline</li>
+<li><a href="https://github.com/pwwang/pipen-cli-gbatch"><code>pipen-cli-gbatch</code></a>: A pipen cli plugin to submit pipeline to Google Batch Jobs</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="tutorials/beginner/" class="btn btn-neutral float-right" title="Beginner Tutorial">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+      <span><a href="tutorials/beginner/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = ".";</script>
+    <script src="js/theme_extra.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/version-select.js"></script>
+      <script src="js/mkapi.js"></script>
+      <script src="assets/script.js"></script>
+      <script src="search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

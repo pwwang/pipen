@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>pipen.progressbar - pipen</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../../../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../../../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "pipen.progressbar";
+        var mkdocs_page_input_path = "api/source/pipen.progressbar.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../..">
+          <img src="../../../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">pipen.progressbar</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/api/source/pipen.progressbar.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <div class="mkapi-node">
+<h1 id="" class="mkapi-object mkapi-object-code plain">
+<span class="mkapi-object-kind mkapi-object-kind-code">SOURCE CODE</span>
+<span class="mkapi-object-prefix">pipen.</span><span class="mkapi-object-name">progressbar</span>
+<span id="pipen.progressbar"></span><a class="mkapi-docs-link" href="../../pipen.progressbar">DOCS</a>
+</h1>
+
+<div class="mkapi-code">
+<div class="codehilite"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Provide the PipelinePBar and ProcPBar classes&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">truncate_text</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">enlighten</span>
+
+<span class="c1"># [12/02/20 12:44:06] I core</span>
+<span class="c1">#                 pipeline: 100%|</span>
+<span class="c1"># |        desc_len      |</span>
+<span class="n">PBAR_DESC_LEN</span> <span class="o">=</span> <span class="mi">23</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ProcPBar</span><span class="p">:</span><span id="pipen.progressbar.ProcPBar"></span><a class="mkapi-docs-link" title="pipen.progressbar.ProcPBar" href="../../pipen.progressbar/#pipen.progressbar.ProcPBar">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The progress bar for processes&quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;counter&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;proc_size&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;bar_format&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;queued_counter&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;submitted_counter&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;running_counter&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;success_counter&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;failure_counter&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">manager</span><span class="p">:</span> <span class="n">enlighten</span><span class="o">.</span><span class="n">Manager</span><span class="p">,</span> <span class="n">proc_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">proc_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the progress bar for a process&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">proc_size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">bar_format</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">{desc}{desc_pad}{percentage:3.0f}</span><span class="s2">%|</span><span class="si">{bar}</span><span class="s2">| &quot;</span>
+                <span class="s2">&quot;I:{count_0:&lt;</span><span class="si">{len_total}</span><span class="s2">d} &quot;</span>
+                <span class="s2">&quot;Q:{count_1:&lt;</span><span class="si">{len_total}</span><span class="s2">d} &quot;</span>
+                <span class="s2">&quot;S:{count_2:&lt;</span><span class="si">{len_total}</span><span class="s2">d} &quot;</span>
+                <span class="s2">&quot;R:{count_3:&lt;</span><span class="si">{len_total}</span><span class="s2">d} &quot;</span>
+                <span class="s2">&quot;D:{count_4:&gt;</span><span class="si">{len_total}</span><span class="s2">d}|{count_5:&lt;</span><span class="si">{len_total}</span><span class="s2">d} &quot;</span>
+                <span class="s2">&quot;[</span><span class="si">{rate:5.2f}{unit_pad}{unit}</span><span class="s2">/s]&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;{{desc}}{{desc_pad}}{{percentage:3.0f}}%|{{bar}}| &quot;</span>
+                <span class="s2">&quot;</span><span class="si">{:^9}</span><span class="s2"> [{{rate:5.2f}}{{unit_pad}}{{unit}}/s]&quot;</span>
+            <span class="p">)</span>
+            <span class="n">bar_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;-----------&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="p">:</span> <span class="n">enlighten</span><span class="o">.</span><span class="n">Counter</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">counter</span><span class="p">(</span>
+            <span class="n">total</span><span class="o">=</span><span class="n">proc_size</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span>
+            <span class="n">desc</span><span class="o">=</span><span class="n">proc_name</span><span class="p">,</span>
+            <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;jobs &quot;</span><span class="p">,</span>
+            <span class="n">leave</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proc_size</span> <span class="o">=</span> <span class="n">proc_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queued_counter</span><span class="p">:</span> <span class="n">enlighten</span><span class="o">.</span><span class="n">SubCounter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">add_subcounter</span><span class="p">(</span>
+            <span class="s2">&quot;lightblue&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">submitted_counter</span><span class="p">:</span> <span class="n">enlighten</span><span class="o">.</span><span class="n">SubCounter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">add_subcounter</span><span class="p">(</span>
+            <span class="s2">&quot;cyan&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">running_counter</span><span class="p">:</span> <span class="n">enlighten</span><span class="o">.</span><span class="n">SubCounter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">add_subcounter</span><span class="p">(</span>
+            <span class="s2">&quot;yellow&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">success_counter</span><span class="p">:</span> <span class="n">enlighten</span><span class="o">.</span><span class="n">SubCounter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">add_subcounter</span><span class="p">(</span>
+            <span class="s2">&quot;green&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">failure_counter</span><span class="p">:</span> <span class="n">enlighten</span><span class="o">.</span><span class="n">SubCounter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">add_subcounter</span><span class="p">(</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
+        <span class="c1"># defer setting the bar_format, in case self.counter is rendered too early</span>
+        <span class="c1"># ValueError: Reserve field &#39;count_0&#39; specified in format,</span>
+        <span class="c1"># but no subcounters are configured</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">bar_format</span> <span class="o">=</span> <span class="n">bar_format</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_job_inited</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span><span id="pipen.progressbar.ProcPBar.update_job_inited"></span><a class="mkapi-docs-link" title="pipen.progressbar.ProcPBar.update_job_inited" href="../../pipen.progressbar/#pipen.progressbar.ProcPBar.update_job_inited">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the progress bar when a job is init&#39;ed&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">bar_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;Init&#39;ed&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_job_queued</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span><span id="pipen.progressbar.ProcPBar.update_job_queued"></span><a class="mkapi-docs-link" title="pipen.progressbar.ProcPBar.update_job_queued" href="../../pipen.progressbar/#pipen.progressbar.ProcPBar.update_job_queued">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the progress bar when a job is queued&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">bar_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;Queued&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">queued_counter</span><span class="o">.</span><span class="n">update_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">pass</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_job_submitted</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span><span id="pipen.progressbar.ProcPBar.update_job_submitted"></span><a class="mkapi-docs-link" title="pipen.progressbar.ProcPBar.update_job_submitted" href="../../pipen.progressbar/#pipen.progressbar.ProcPBar.update_job_submitted">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the progress bar when a job is init&#39;ed&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">bar_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;Submitted&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">submitted_counter</span><span class="o">.</span><span class="n">update_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queued_counter</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">pass</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_job_retrying</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span><span id="pipen.progressbar.ProcPBar.update_job_retrying"></span><a class="mkapi-docs-link" title="pipen.progressbar.ProcPBar.update_job_retrying" href="../../pipen.progressbar/#pipen.progressbar.ProcPBar.update_job_retrying">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the progress bar when a job is retrying&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">bar_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;Retrying&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">failure_counter</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">running_counter</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">submitted_counter</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queued_counter</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_job_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span><span id="pipen.progressbar.ProcPBar.update_job_running"></span><a class="mkapi-docs-link" title="pipen.progressbar.ProcPBar.update_job_running" href="../../pipen.progressbar/#pipen.progressbar.ProcPBar.update_job_running">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the progress bar when a job is running&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">bar_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;Running&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">running_counter</span><span class="o">.</span><span class="n">update_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">submitted_counter</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">pass</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_job_succeeded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cached</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span><span id="pipen.progressbar.ProcPBar.update_job_succeeded"></span><a class="mkapi-docs-link" title="pipen.progressbar.ProcPBar.update_job_succeeded" href="../../pipen.progressbar/#pipen.progressbar.ProcPBar.update_job_succeeded">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the progress bar when a job is succeeded&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">bar_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="s2">&quot;Cached&quot;</span> <span class="k">if</span> <span class="n">cached</span> <span class="k">else</span> <span class="s2">&quot;Succeeded&quot;</span>
+            <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">success_counter</span><span class="o">.</span><span class="n">update_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">running_counter</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">pass</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_job_failed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span><span id="pipen.progressbar.ProcPBar.update_job_failed"></span><a class="mkapi-docs-link" title="pipen.progressbar.ProcPBar.update_job_failed" href="../../pipen.progressbar/#pipen.progressbar.ProcPBar.update_job_failed">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the progress bar when a job is failed&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">bar_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bar_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;Failed&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">failure_counter</span><span class="o">.</span><span class="n">update_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">running_counter</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">pass</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">done</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span><span id="pipen.progressbar.ProcPBar.done"></span><a class="mkapi-docs-link" title="pipen.progressbar.ProcPBar.done" href="../../pipen.progressbar/#pipen.progressbar.ProcPBar.done">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The process is done&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722  # pragma: no cover</span>
+            <span class="k">pass</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">PipelinePBar</span><span class="p">:</span><span id="pipen.progressbar.PipelinePBar"></span><a class="mkapi-docs-link" title="pipen.progressbar.PipelinePBar" href="../../pipen.progressbar/#pipen.progressbar.PipelinePBar">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Progress bar for the pipeline&quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;manager&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;running_counter&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;success_counter&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;failure_counter&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;desc_len&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_procs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ppln_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize progress bar for pipeline&quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">enlighten</span>
+
+        <span class="n">desc_len</span> <span class="o">=</span> <span class="n">PBAR_DESC_LEN</span>
+        <span class="n">ppln_name</span> <span class="o">=</span> <span class="n">truncate_text</span><span class="p">(</span><span class="n">ppln_name</span><span class="p">,</span> <span class="n">desc_len</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">enlighten</span><span class="o">.</span><span class="n">get_manager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">running_counter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">counter</span><span class="p">(</span>
+            <span class="n">total</span><span class="o">=</span><span class="n">n_procs</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;yellow&quot;</span><span class="p">,</span>
+            <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ppln_name</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">desc_len</span><span class="si">}}</span><span class="s2">:&quot;</span><span class="p">,</span>
+            <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;procs&quot;</span><span class="p">,</span>
+            <span class="n">bar_format</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">{desc}{desc_pad}{percentage:3.0f}</span><span class="s2">%|</span><span class="si">{bar}</span><span class="s2">| &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2">count:</span><span class="se">{{</span><span class="s2">len_total</span><span class="se">}}</span><span class="s2">d</span><span class="se">}}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_procs</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;[</span><span class="si">{rate:5.2f}{unit_pad}{unit}</span><span class="s2">/s]&quot;</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">success_counter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">running_counter</span><span class="o">.</span><span class="n">add_subcounter</span><span class="p">(</span><span class="s2">&quot;green&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">failure_counter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">running_counter</span><span class="o">.</span><span class="n">add_subcounter</span><span class="p">(</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">desc_len</span> <span class="o">=</span> <span class="n">desc_len</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">proc_bar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proc_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">proc_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProcPBar</span><span class="p">:</span><span id="pipen.progressbar.PipelinePBar.proc_bar"></span><a class="mkapi-docs-link" title="pipen.progressbar.PipelinePBar.proc_bar" href="../../pipen.progressbar/#pipen.progressbar.PipelinePBar.proc_bar">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the progress bar for a process</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            proc_size: The size of the process</span>
+<span class="sd">            proc_name: The name of the process</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The progress bar for the given process</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">proc_name</span> <span class="o">=</span> <span class="n">truncate_text</span><span class="p">(</span><span class="n">proc_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">desc_len</span><span class="p">)</span>
+        <span class="n">proc_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">proc_name</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">desc_len</span><span class="si">}}</span><span class="s2">:&quot;</span>
+        <span class="k">return</span> <span class="n">ProcPBar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="p">,</span> <span class="n">proc_size</span><span class="p">,</span> <span class="n">proc_name</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_proc_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span><span id="pipen.progressbar.PipelinePBar.update_proc_running"></span><a class="mkapi-docs-link" title="pipen.progressbar.PipelinePBar.update_proc_running" href="../../pipen.progressbar/#pipen.progressbar.PipelinePBar.update_proc_running">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the progress bar when a process is running&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">running_counter</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_proc_done</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span><span id="pipen.progressbar.PipelinePBar.update_proc_done"></span><a class="mkapi-docs-link" title="pipen.progressbar.PipelinePBar.update_proc_done" href="../../pipen.progressbar/#pipen.progressbar.PipelinePBar.update_proc_done">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the progress bar when a process is done&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">success_counter</span><span class="o">.</span><span class="n">update_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">running_counter</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_proc_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span><span id="pipen.progressbar.PipelinePBar.update_proc_error"></span><a class="mkapi-docs-link" title="pipen.progressbar.PipelinePBar.update_proc_error" href="../../pipen.progressbar/#pipen.progressbar.PipelinePBar.update_proc_error">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the progress bar when a process is errored&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">failure_counter</span><span class="o">.</span><span class="n">update_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">running_counter</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">done</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span><span id="pipen.progressbar.PipelinePBar.done"></span><a class="mkapi-docs-link" title="pipen.progressbar.PipelinePBar.done" href="../../pipen.progressbar/#pipen.progressbar.PipelinePBar.done">DOCS</a>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;When the pipeline is done&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">running_counter</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722  # pragma: no cover</span>
+            <span class="k">pass</span>
+</code></pre></div>
+</div>
+</div>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../../..";</script>
+    <script src="../../../js/theme_extra.js"></script>
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/version-select.js"></script>
+      <script src="../../../js/mkapi.js"></script>
+      <script src="../../../assets/script.js"></script>
+      <script src="../../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

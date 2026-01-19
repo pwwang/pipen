@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Command line interface - pipen</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Command line interface";
+        var mkdocs_page_input_path = "cli.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Command line interface</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#cli-plugin-super-class">CLI plugin super class</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#async-cli-plugin">Async CLI plugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#loading-cli-plugins">loading CLI plugins</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">How-to Guides</li>
+      <li class="breadcrumb-item active">Command line interface</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/cli.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <p><code>pipen</code> has a CLI tool that you can run from command line.</p>
+<p>To run it:</p>
+<div class="highlight"><pre><span></span><code>❯<span class="w"> </span>pipen<span class="w"> </span>--help
+Usage:<span class="w"> </span>pipen<span class="w"> </span><span class="o">[</span>-h<span class="o">]</span><span class="w"> </span><span class="o">{</span>version,profile,plugins,help<span class="o">}</span><span class="w"> </span>...
+
+CLI<span class="w"> </span>Tool<span class="w"> </span><span class="k">for</span><span class="w"> </span>pipen<span class="w"> </span>v0.4.2
+
+Optional<span class="w"> </span>Arguments:
+<span class="w">  </span>-h,<span class="w"> </span>--help<span class="w">            </span>show<span class="w"> </span><span class="nb">help</span><span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span><span class="nb">exit</span>
+
+Subcommands:
+<span class="w">    </span>version<span class="w">             </span>Print<span class="w"> </span>versions<span class="w"> </span>of<span class="w"> </span>pipen<span class="w"> </span>and<span class="w"> </span>its<span class="w"> </span>dependencies
+<span class="w">    </span>profile<span class="w">             </span>List<span class="w"> </span>available<span class="w"> </span>profiles.
+<span class="w">    </span>plugins<span class="w">             </span>List<span class="w"> </span>installed<span class="w"> </span>plugins
+<span class="w">    </span><span class="nb">help</span><span class="w">                </span>Print<span class="w"> </span><span class="nb">help</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>commands
+</code></pre></div>
+<h3 id="writing-a-plugin-to-extend-the-cli">Writing a plugin to extend the cli<a class="headerlink" href="#writing-a-plugin-to-extend-the-cli" title="Permanent link">&para;</a></h3>
+<h4 id="cli-plugin-super-class">CLI plugin super class<a class="headerlink" href="#cli-plugin-super-class" title="Permanent link">&para;</a></h4>
+<p>A CLI plugin has to be a subclass of <code>pipen.cli.CLIPlugin</code> or <code>pipen.cli.AsyncCLIPlugin</code> for async commands (see below).</p>
+<p>A CLI plugin has to define a <code>name</code> property, which also is the sub-command of the plugin.</p>
+<p>There are a couple of methods of <code>pipen.cli.CLIPlugin</code> to extend for a plugin:</p>
+<ul>
+<li>
+<p><code>__init__(self, parser, subparser)</code>: initialize the plugin
+  It takes the main parser and the subparser of the sub-command as arguments. You can add arguments to the parser or subparser here.
+  Check <a href="https://github.com/pwwang/argx">argx</a> for more information about how to define arguments.</p>
+</li>
+<li>
+<p><code>parse_args(self, known_parsed, unparsed_argv)</code>: parse the arguments
+  It takes the known parsed arguments and the unparsed argument vector as arguments, allowing
+  you to do custom parsing. It should return the parsed arguments.
+  By default, <code>known_parsed</code> is returned.</p>
+</li>
+<li>
+<p><code>exec_command(self, args)</code>: execute the command
+  It takes the parsed arguments as argument. It should execute the command as you wish.</p>
+</li>
+</ul>
+<h4 id="async-cli-plugin">Async CLI plugin<a class="headerlink" href="#async-cli-plugin" title="Permanent link">&para;</a></h4>
+<p>Same as <code>pipen.cli.CLIPlugin</code>, but the <code>parse_args</code> and <code>exec_command</code> methods are async methods. In addition, in order to run some async code post initialization, you may also implement an async method <code>post_init(self)</code> that will be called after the plugin is initialized.</p>
+<h4 id="loading-cli-plugins">loading CLI plugins<a class="headerlink" href="#loading-cli-plugins" title="Permanent link">&para;</a></h4>
+<p>Like pipen <a href="../plugin/">plugins</a>, <a href="../templating/">templates</a>, and <a href="../scheduler/">schedulers</a>, there are two ways to load the CLI plugins:</p>
+<ol>
+<li>
+<p>Use the plugin directly:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pipen.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">cli_plugin</span>
+
+<span class="n">cli_plugin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="o">&lt;</span><span class="n">your</span> <span class="n">plugin</span><span class="o">&gt;</span><span class="p">)</span>
+</code></pre></div>
+</li>
+<li>
+<p>Use the entry points with group name <code>pipen_cli</code></p>
+</li>
+</ol>
+<h3 id="the-profile-subcommand">The <code>profile</code> subcommand<a class="headerlink" href="#the-profile-subcommand" title="Permanent link">&para;</a></h3>
+<p>It is used to list the configurations/profiles in current directory. Run <code>pipen profile</code> or <code>pipen help profile</code> to get more information.</p>
+<h3 id="the-plugins-subcommand">The <code>plugins</code> subcommand<a class="headerlink" href="#the-plugins-subcommand" title="Permanent link">&para;</a></h3>
+<p>This subcommand is used to list the plugins for <code>pipen</code> itself, templates, scheduler and cli. Run <code>pipen plugins</code> or <code>pipen help plugins</code> to get more information.</p>
+<h3 id="the-version-subcommand">The <code>version</code> subcommand<a class="headerlink" href="#the-version-subcommand" title="Permanent link">&para;</a></h3>
+<p>This command prints the versions of <code>pipen</code> and its dependencies.</p>
+<h3 id="cli-plugin-gallery">CLI plugin gallery<a class="headerlink" href="#cli-plugin-gallery" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://github.com/pwwang/pipen-cli-init"><code>pipen-cli-init</code></a>: A pipen CLI plugin to create a pipen project (pipeline)</li>
+<li><a href="https://github.com/pwwang/pipen-cli-ref"><code>pipen-cli-ref</code></a>: Make reference documentation for processes</li>
+<li><a href="https://github.com/pwwang/pipen-cli-require"><code>pipen-cli-require</code></a>: A pipen cli plugin check the requirements of a pipeline</li>
+<li><a href="https://github.com/pwwang/pipen-cli-run"><code>pipen-cli-run</code></a>: A pipen cli plugin to run a process or a pipeline</li>
+<li><a href="https://github.com/pwwang/pipen-cli-gbatch"><code>pipen-cli-gbatch</code></a>: A pipen cli plugin to run pipeline with Google Batch Jobs</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../proc-group/" class="btn btn-neutral float-left" title="Process group"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../api/pipen/" class="btn btn-neutral float-right" title="pipen">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../proc-group/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../api/pipen/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+    <script src="../js/version-select.js"></script>
+      <script src="../js/mkapi.js"></script>
+      <script src="../assets/script.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

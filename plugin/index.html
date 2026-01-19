@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Plugins - pipen</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Plugins";
+        var mkdocs_page_input_path = "plugin.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Plugins</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#plugin-hooks">Plugin hooks</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#pipeline-level-hooks">Pipeline-level hooks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#process-level-hooks">Process-level hooks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#job-level-hooks">Job-level hooks</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#loading-plugins">Loading plugins</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#writing-a-plugin">Writing a plugin</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#logging-to-the-console-from-a-plugin">Logging to the console from a plugin</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">How-to Guides</li>
+      <li class="breadcrumb-item active">Plugins</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/plugin.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <p><code>pipen</code> uses <a href="https://github.com/pwwang/simplug"><code>simplug</code></a> for plugin support. There are very enriched hooks available for you to write your own plugins to extend <code>pipen</code>.</p>
+<h3 id="runtime-plugins">Runtime plugins<a class="headerlink" href="#runtime-plugins" title="Permanent link">&para;</a></h3>
+<h4 id="plugin-hooks">Plugin hooks<a class="headerlink" href="#plugin-hooks" title="Permanent link">&para;</a></h4>
+<p>To implement a function in your plugin, just simply:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pipen</span><span class="w"> </span><span class="kn">import</span> <span class="n">plugin</span>
+
+<span class="nd">@plugin</span><span class="o">.</span><span class="n">impl</span>
+<span class="p">[</span><span class="k">async</span> <span class="p">]</span><span class="k">def</span><span class="w"> </span><span class="nf">hook</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="o">...</span>
+</code></pre></div>
+<p>Note that you have to use keyword-arguments and they have to match the hook signature.</p>
+<p>See <a href="https://github.com/pwwang/simplug"><code>simplug</code></a> for more details.</p>
+<h5 id="pipeline-level-hooks">Pipeline-level hooks<a class="headerlink" href="#pipeline-level-hooks" title="Permanent link">&para;</a></h5>
+<ul>
+<li>
+<p><code>on_setup(pipen)</code> (sync):</p>
+<p>Setup for the plugin, mainly used for initalization and set the default values for the plugin configuration items.</p>
+<p>This is only called once even when you have multiple pipelines (<code>Pipen</code> objects) in a python session.</p>
+</li>
+<li>
+<p><code>on_init(pipen)</code> (async)</p>
+<p>Called when pipeline is initialized. Note that here only default configurations are loaded (from defaults.CONFIG and config files). The configurations from <code>Pipen</code> constructor and the processes are not loaded yet. It's useful for plugins to change the default configurations.</p>
+</li>
+<li>
+<p><code>on_start(pipen)</code> (async)</p>
+<p>Right before the pipeline starts to run. The process relationships are inferred here.
+You can access the start processes by <code>pipen.starts</code> and all processes by <code>pipen.procs</code> in the sequence of the execution order.</p>
+</li>
+<li>
+<p><code>on_complete(pipen, succeeded)</code> (async)</p>
+<p>After all processes finish. <code>succeeded</code> indicates whether all processes/jobs finish successfully.</p>
+</li>
+</ul>
+<h5 id="process-level-hooks">Process-level hooks<a class="headerlink" href="#process-level-hooks" title="Permanent link">&para;</a></h5>
+<ul>
+<li>
+<p><code>on_proc_create(proc)</code> (sync)</p>
+<p>Called before proc get instantiated.
+Enables plugins to modify the default attributes of processes</p>
+</li>
+<li>
+<p><code>on_proc_input_computed(proc)</code> (async)</p>
+<p>Called after process input data is computed.</p>
+</li>
+<li>
+<p><code>on_proc_script_computed(proc)</code> (async)</p>
+<p>Called after process script is computed.</p>
+<p>The script is computed as a string that is about to compiled into a
+template. You can modify the script here.</p>
+</li>
+<li>
+<p><code>on_proc_start(proc)</code> (async)</p>
+<p>When process object initialization completes, including the <code>xqute</code>. The process is ready to run.
+The jobs will be then initialized and fed to the scheduler.</p>
+</li>
+<li>
+<p><code>on_proc_shutdown(proc, sig)</code> (sync)</p>
+<p>When the process is shut down (i.e. by <code>&lt;ctrl-c&gt;</code>). You can access the signal that shuts the process down by <code>sig</code>. Only first plugin (based on the priority) that implements this hook will get called.</p>
+</li>
+<li>
+<p><code>on_proc_done(proc, succeeded)</code> (async)</p>
+<p>When a process is done.</p>
+</li>
+</ul>
+<h5 id="job-level-hooks">Job-level hooks<a class="headerlink" href="#job-level-hooks" title="Permanent link">&para;</a></h5>
+<ul>
+<li>
+<p><code>on_job_init(job)</code> (async)</p>
+<p>When a job is initialized</p>
+</li>
+<li>
+<p><code>on_job_queued(job)</code> (async)</p>
+<p>When a job is queued in xqute. Note it might not be queued yet in the scheduler system.</p>
+</li>
+<li>
+<p><code>on_job_submitting(job)</code> (async)</p>
+<p>When a job is submitting.</p>
+<p>The first plugin (based on priority) have this hook return <code>False</code> will cancel the submission</p>
+</li>
+<li>
+<p><code>on_job_submitted(job)</code> (async)</p>
+<p>When a job is submitted in the scheduler system.</p>
+</li>
+<li>
+<p><code>on_job_started(job)</code> (async)</p>
+<p>When a job starts to run in then scheduler system.</p>
+</li>
+<li>
+<p><code>on_job_polling(job)</code> (async)</p>
+<p>When status of a job is being polled.</p>
+</li>
+<li>
+<p><code>on_job_killing(job)</code> (async)</p>
+<p>When a job is being killed.</p>
+<p>The first plugin (based on priority) have this hook return <code>False</code> will cancel the killing</p>
+</li>
+<li>
+<p><code>on_job_killed(job)</code> (async)</p>
+<p>When a job is killed</p>
+</li>
+<li>
+<p><code>on_job_succeeded(job)</code> (async)</p>
+<p>When a job completes successfully</p>
+</li>
+<li>
+<p><code>on_job_cached(job)</code> (async)</p>
+<p>When a job is cached</p>
+</li>
+<li>
+<p><code>on_job_failed(job)</code> (async)</p>
+<p>When a job is done but failed (i.e. return_code == 1).</p>
+</li>
+<li>
+<p><code>on_jobcmd_init(job) -&gt; str</code> (sync)</p>
+<p>When the job command wrapper script is initialized before the prescript is run</p>
+<p>This should return a piece of bash code to be inserted in the wrapped job
+script (template), which is a python template string, with the following
+variables available: <code>status</code> and <code>job</code>. <code>status</code> is the class <code>JobStatus</code> from
+<code>xqute.defaults.py</code> and <code>job</code> is the <code>Job</code> instance.</p>
+<p>For multiple plugins, the code will be inserted in the order of the plugin priority.</p>
+<p>The code will replace the <code>#![jobcmd_init]</code> placeholder in the wrapped job script.
+See also <a href="https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95">https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95</a></p>
+</li>
+<li>
+<p><code>on_jobcmd_prep(job) -&gt; str</code> (sync)</p>
+<p>When the job command right about to be run</p>
+<p>This should return a piece of bash code to be inserted in the wrapped job
+script (template), which is a python template string, with the following
+variables available: <code>status</code> and <code>job</code>. <code>status</code> is the class <code>JobStatus</code> from
+<code>xqute.defaults.py</code> and <code>job</code> is the <code>Job</code> instance.</p>
+<p>The bash variable <code>$cmd</code> is accessible in the context. It is also possible to
+modify the <code>cmd</code> variable. Just remember to assign the modified value to <code>cmd</code>.</p>
+<p>For multiple plugins, the code will be inserted in the order of the plugin priority.
+Keep in mind that the <code>$cmd</code> may be modified by other plugins.</p>
+<p>The code will replace the <code>#![jobcmd_prep]</code> placeholder in the wrapped job script.
+See also <a href="https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95">https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95</a></p>
+</li>
+<li>
+<p><code>on_jobcmd_end(job) -&gt; str</code> (sync):</p>
+<p>When the job command finishes and after the postscript is run</p>
+<p>This should return a piece of bash code to be inserted in the wrapped job
+script (template), which is a python template string, with the following
+variables available: <code>status</code> and <code>job</code>. <code>status</code> is the class <code>JobStatus</code> from
+<code>xqute.defaults.py</code> and <code>job</code> is the <code>Job</code> instance.</p>
+<p>The bash variable <code>$rc</code> is accessible in the context, which is the return code
+of the job command.</p>
+<p>For multiple plugins, the code will be inserted in the order of the plugin priority.</p>
+<p>The code will replace the <code>#![jobcmd_end]</code> placeholder in the wrapped job script.
+See also <a href="https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95">https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95</a></p>
+</li>
+</ul>
+<h4 id="loading-plugins">Loading plugins<a class="headerlink" href="#loading-plugins" title="Permanent link">&para;</a></h4>
+<p>You can specify the plugins to be loaded by specifying the names or the plugin itself in <code>plugins</code> configuration. With names, the plugins will be loaded from <a href="https://packaging.python.org/specifications/entry-points/">entry points</a>.</p>
+<p>You can also disable some plugins if they are set in the lower-priority configurations. For example, you want to disable <code>pipen_verbose</code> (enabled in a configuration file) for a pipeline:</p>
+<div class="highlight"><pre><span></span><code><span class="n">Pipen</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">plugins</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;-pipen_verbose&quot;</span><span class="p">])</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can use <code>+</code> as prefix to enable a disabled plugin, or <code>-</code> as prefix to disable an enabled plugin. If no prefix is used, only the specified plugins will be enabled and all other plugins will be disabled. You should either use <code>+</code> or <code>-</code> for all plugins or none of them. If a plugin is not given as a string, it will be treated as <code>+plugin</code>.</p>
+</div>
+<h4 id="writing-a-plugin">Writing a plugin<a class="headerlink" href="#writing-a-plugin" title="Permanent link">&para;</a></h4>
+<p>You can write your own plugin by implementing some of the above hooks. You can import the plugin directly and add it to `Pipen(..., plugins=[...]). For example:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pipen</span><span class="w"> </span><span class="kn">import</span> <span class="n">plugin</span><span class="p">,</span> <span class="n">Pipen</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">PipenPlugin</span><span class="p">:</span>
+
+    <span class="nd">@plugin</span><span class="o">.</span><span class="n">impl</span>
+    <span class="p">[</span><span class="k">async</span> <span class="p">]</span><span class="k">def</span><span class="w"> </span><span class="nf">hook</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+        <span class="o">...</span>
+
+<span class="n">Pipen</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">plugins</span><span class="o">=</span><span class="p">[</span><span class="n">PipenPlugin</span><span class="p">])</span>
+
+
+<span class="n">You</span> <span class="n">can</span> <span class="n">also</span> <span class="n">use</span> <span class="n">the</span> <span class="n">entry</span> <span class="n">point</span> <span class="n">to</span> <span class="n">register</span> <span class="n">your</span> <span class="n">plugin</span> <span class="n">using</span> <span class="n">the</span> <span class="n">group</span> <span class="n">name</span> <span class="err">`</span><span class="n">pipen</span><span class="err">`</span>
+
+<span class="n">For</span> <span class="err">`</span><span class="n">setup</span><span class="o">.</span><span class="n">py</span><span class="err">`</span><span class="p">,</span> <span class="n">you</span> <span class="n">will</span> <span class="n">need</span><span class="p">:</span>
+<span class="err">```</span><span class="n">python</span>
+<span class="n">setup</span><span class="p">(</span>
+    <span class="c1"># ...</span>
+    <span class="n">entry_points</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;pipen&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;pipen_verbose = pipen_verbose&quot;</span><span class="p">]},</span>
+    <span class="c1"># ...</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>For <code>pyproject.toml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[tool.poetry.plugins.pipen]</span>
+<span class="n">pipen_verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;pipen_verbose&quot;</span>
+</code></pre></div>
+<p>Then the plugin <code>pipen_verbose</code> can be loaded by <code>plugins=["+pipen_verbose"]</code> or disabled by <code>plugins=["-pipen_verbose"]</code></p>
+<h5 id="logging-to-the-console-from-a-plugin">Logging to the console from a plugin<a class="headerlink" href="#logging-to-the-console-from-a-plugin" title="Permanent link">&para;</a></h5>
+<p>Of course you can do arbitrary logging from a plugin. However, to keep the consistency with main logger of <code>pipen</code>, The best practice is:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pipen.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">)</span>
+
+<span class="c1"># do some logging inside the hooks</span>
+</code></pre></div>
+<p>The above code will produce some logging on the console like this:</p>
+<div class="highlight"><pre><span></span><code><span class="m">11</span>-04<span class="w"> </span><span class="m">12</span>:00:19<span class="w"> </span>I<span class="w"> </span>main<span class="w">    </span>╭═══════════════════════════<span class="w"> </span>Process<span class="w"> </span>═══════════════════════════╮
+<span class="m">11</span>-04<span class="w"> </span><span class="m">12</span>:00:19<span class="w"> </span>I<span class="w"> </span>main<span class="w">    </span>║<span class="w"> </span>Undescribed.<span class="w">                                                  </span>║
+<span class="m">11</span>-04<span class="w"> </span><span class="m">12</span>:00:19<span class="w"> </span>I<span class="w"> </span>main<span class="w">    </span>╰═══════════════════════════════════════════════════════════════╯
+<span class="m">11</span>-04<span class="w"> </span><span class="m">12</span>:00:19<span class="w"> </span>I<span class="w"> </span>main<span class="w">    </span>Process:<span class="w"> </span>Workdir:<span class="w"> </span><span class="s1">&#39;.pipen/process&#39;</span>
+<span class="m">11</span>-04<span class="w"> </span><span class="m">12</span>:00:19<span class="w"> </span>I<span class="w"> </span>verbose<span class="w"> </span>Process:<span class="w"> </span>size:<span class="w"> </span><span class="m">10</span>
+<span class="m">11</span>-04<span class="w"> </span><span class="m">12</span>:00:19<span class="w"> </span>I<span class="w"> </span>verbose<span class="w"> </span>Process:<span class="w"> </span><span class="o">[</span><span class="m">0</span>/9<span class="o">]</span><span class="w"> </span><span class="k">in</span>.a:<span class="w"> </span><span class="m">0</span>
+<span class="m">11</span>-04<span class="w"> </span><span class="m">12</span>:00:19<span class="w"> </span>I<span class="w"> </span>verbose<span class="w"> </span>Process:<span class="w"> </span><span class="o">[</span><span class="m">0</span>/9<span class="o">]</span><span class="w"> </span>out.b:<span class="w"> </span>pipeline-0-output/Process/0/a.txt
+</code></pre></div>
+<h3 id="cli-plugins">CLI plugins<a class="headerlink" href="#cli-plugins" title="Permanent link">&para;</a></h3>
+<p>See <a href="../cli/">CLI</a> for more details.</p>
+<h3 id="plugin-gallery">Plugin gallery<a class="headerlink" href="#plugin-gallery" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://github.com/pwwang/pipen-verbose"><code>pipen-verbose</code></a>: Add verbosal information in logs for pipen.</li>
+<li><a href="https://github.com/pwwang/pipen-report"><code>pipen-report</code></a>: Generate report for pipen</li>
+<li><a href="https://github.com/pwwang/pipen-filters"><code>pipen-filters</code></a>: Add a set of useful filters for pipen templates.</li>
+<li><a href="https://github.com/pwwang/pipen-diagram"><code>pipen-diagram</code></a>: Draw pipeline diagrams for pipen</li>
+<li><a href="https://github.com/pwwang/pipen-args"><code>pipen-args</code></a>: Command line argument parser for pipen</li>
+<li><a href="https://github.com/pwwang/pipen-dry"><code>pipen-dry</code></a>: Dry runner for pipen pipelines</li>
+<li><a href="https://github.com/pwwang/pipen-annotate"><code>pipen-annotate</code></a>: Use docstring to annotate pipen processes</li>
+<li><a href="https://github.com/pwwang/pipen-board"><code>pipen-board</code></a>: Visualize configuration and running of pipen pipelines on the web</li>
+<li><a href="https://github.com/pwwang/pipen-lock"><code>pipen-lock</code></a>: Process lock for pipen to prevent multiple runs at the same time.</li>
+<li><a href="https://github.com/pwwang/pipen-log2file"><code>pipen-log2file</code></a>: Save running logs to file for pipen</li>
+<li><a href="https://github.com/pwwang/pipen-poplog"><code>pipen-poplog</code></a>: Populate logs from jobs to running log of the pipeline</li>
+<li><a href="https://github.com/pwwang/pipen-runinfo"><code>pipen-runinfo</code></a>: Save running information to file for pipen</li>
+<li><a href="https://github.com/pwwang/pipen-gcs"><code>pipen-gcs</code></a>: A plugin for pipen to handle files in Google Cloud Storage.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../configurations/" class="btn btn-neutral float-left" title="Configurations"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../scheduler/" class="btn btn-neutral float-right" title="Scheduler">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../configurations/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../scheduler/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+    <script src="../js/version-select.js"></script>
+      <script src="../js/mkapi.js"></script>
+      <script src="../assets/script.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Architecture - pipen</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Architecture";
+        var mkdocs_page_input_path = "architecture.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Architecture</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#pipeline-execution-flow">Pipeline Execution Flow</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#1-initialization">1. Initialization</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#2-dependency-resolution">2. Dependency Resolution</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#3-input-data-computation">3. Input Data Computation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#4-job-generation">4. Job Generation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#5-script-rendering">5. Script Rendering</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#6-job-submission-and-execution">6. Job Submission and Execution</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#7-output-collection">7. Output Collection</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#8-pipeline-completion">8. Pipeline Completion</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#channel-data-flow">Channel Data Flow</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#channel-structure">Channel Structure</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#row-based-parallelism">Row-Based Parallelism</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#channel-operations">Channel Operations</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#creating-channels">Creating Channels</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#transforming-channels">Transforming Channels</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#channel-data-types">Channel Data Types</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#plugin-system">Plugin System</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#plugin-hooks">Plugin Hooks</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#pipeline-level-hooks">Pipeline-Level Hooks</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#process-level-hooks">Process-Level Hooks</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#job-level-hooks">Job-Level Hooks</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#creating-a-plugin">Creating a Plugin</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#caching-mechanism">Caching Mechanism</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#cache-key-computation">Cache Key Computation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cache-check-process">Cache Check Process</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cache-invalidation">Cache Invalidation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#directory-signatures">Directory Signatures</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#template-engine">Template Engine</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#supported-template-engines">Supported Template Engines</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#template-variables">Template Variables</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#example-templates">Example Templates</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#bash-template">Bash Template</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#python-template">Python Template</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#using-filters">Using Filters</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#using-template-options-procenvs">Using Template Options (proc.envs)</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#scheduler-architecture">Scheduler Architecture</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#scheduler-interface">Scheduler Interface</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#scheduler-selection">Scheduler Selection</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#custom-schedulers">Custom Schedulers</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#error-handling">Error Handling</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#error-strategies">Error Strategies</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#error-propagation">Error Propagation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#custom-error-handling">Custom Error Handling</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#performance-considerations">Performance Considerations</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#parallel-execution">Parallel Execution</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#memory-management">Memory Management</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#io-optimization">I/O Optimization</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#further-reading">Further Reading</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Explanation</li>
+      <li class="breadcrumb-item active">Architecture</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/architecture.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
+<p>This document explains the internal architecture of pipen, including how pipelines execute, how data flows through channels, the plugin system, caching mechanism, and template engine.</p>
+<h3 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h3>
+<p>pipen is built on a layered architecture with three main components:</p>
+<ol>
+<li><strong>Pipeline Layer</strong>: Orchestrates the overall workflow</li>
+<li><strong>Process Layer</strong>: Defines individual computational steps</li>
+<li><strong>Job Layer</strong>: Executes individual tasks</li>
+</ol>
+<div class="highlight"><pre><span></span><code>graph TD
+    A[Pipeline] --&gt; B[Process 1]
+    A --&gt; C[Process 2]
+    A --&gt; D[Process N]
+    B --&gt; E[Job 1.1]
+    B --&gt; F[Job 1.2]
+    B --&gt; G[Job 1.N]
+    C --&gt; H[Job 2.1]
+    C --&gt; I[Job 2.2]
+    D --&gt; J[Job N.1]
+</code></pre></div>
+<h3 id="pipeline-execution-flow">Pipeline Execution Flow<a class="headerlink" href="#pipeline-execution-flow" title="Permanent link">&para;</a></h3>
+<h4 id="1-initialization">1. Initialization<a class="headerlink" href="#1-initialization" title="Permanent link">&para;</a></h4>
+<p>When a pipeline is created, the following sequence occurs:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Pipeline creation</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;MyPipeline&quot;</span><span class="p">,</span> <span class="n">starts</span><span class="o">=</span><span class="p">[</span><span class="n">Proc1</span><span class="p">,</span> <span class="n">Proc2</span><span class="p">])</span>
+
+<span class="c1"># Triggers plugin hooks:</span>
+<span class="c1"># 1. on_setup() - Called once when first pipeline is loaded</span>
+<span class="c1"># 2. on_init() - Called for each pipeline initialization</span>
+</code></pre></div>
+<h4 id="2-dependency-resolution">2. Dependency Resolution<a class="headerlink" href="#2-dependency-resolution" title="Permanent link">&para;</a></h4>
+<p>pipen automatically infers process dependencies based on the <code>requires</code> attribute:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">P1</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;First process&quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">P2</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Second process&quot;&quot;&quot;</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="n">P1</span>  <span class="c1"># P2 depends on P1&#39;s output</span>
+</code></pre></div>
+<p>The pipeline builds a directed acyclic graph (DAG) of processes and validates that:
+- No circular dependencies exist
+- All dependencies are satisfied
+- Processes can be topologically sorted</p>
+<h4 id="3-input-data-computation">3. Input Data Computation<a class="headerlink" href="#3-input-data-computation" title="Permanent link">&para;</a></h4>
+<p>For each process, pipen computes the input channel:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Plugin hook called</span>
+<span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">on_proc_input_computed</span><span class="p">(</span><span class="n">proc</span><span class="p">)</span>
+</code></pre></div>
+<p>The input channel is built from:
+- <code>input_data</code> attribute (static data)
+- Output channel from required processes
+- Transformed input via custom functions</p>
+<h4 id="4-job-generation">4. Job Generation<a class="headerlink" href="#4-job-generation" title="Permanent link">&para;</a></h4>
+<p>For each row in the input channel, pipen creates a job:</p>
+<div class="highlight"><pre><span></span><code>graph LR
+    A[Input Channel] --&gt; B[Process]
+    B --&gt; C[Job 1]
+    B --&gt; D[Job 2]
+    B --&gt; E[Job N]
+    C --&gt; F[Output Channel]
+    D --&gt; F
+    E --&gt; F
+</code></pre></div>
+<p>Each job receives:
+- A subset of input data (one row from the channel)
+- A working directory
+- A script template to execute</p>
+<h4 id="5-script-rendering">5. Script Rendering<a class="headerlink" href="#5-script-rendering" title="Permanent link">&para;</a></h4>
+<p>The process script template is rendered with job-specific data:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Plugin hook called</span>
+<span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">on_proc_script_computed</span><span class="p">(</span><span class="n">proc</span><span class="p">)</span>
+</code></pre></div>
+<p>Template variables include:
+- <code>in.*</code>: Input variables and their values
+- <code>out.*</code>: Output variable placeholders
+- <code>proc.*</code>: Process metadata
+- <code>envs</code>: Environment variables (options, not shell Environment Variables) that are shared across all jobs of the process</p>
+<h4 id="6-job-submission-and-execution">6. Job Submission and Execution<a class="headerlink" href="#6-job-submission-and-execution" title="Permanent link">&para;</a></h4>
+<p>Jobs are submitted to the configured scheduler:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Built-in schedulers:</span>
+<span class="c1"># - Local: Execute jobs on the local machine</span>
+<span class="c1"># - SGE: Submit to Sun Grid Engine</span>
+<span class="c1"># - SLURM: Submit to SLURM workload manager</span>
+<span class="c1"># - SSH: Execute jobs on remote servers</span>
+<span class="c1"># - Container: Run jobs in containers</span>
+<span class="c1"># - Gbatch: Submit to Google Cloud Batch</span>
+</code></pre></div>
+<p>Job lifecycle:</p>
+<div class="highlight"><pre><span></span><code>stateDiagram-v2
+    [*] --&gt; Initiated
+    Initiated --&gt; Queued
+    Queued --&gt; Submitted
+    Submitted --&gt; Running
+    Running --&gt; Succeeded
+    Running --&gt; Failed
+    Succeeded --&gt; Cached: Job was cached
+    Failed --&gt; Retrying: If num_retries &gt; 0
+    Retrying --&gt; Submitted
+    Failed --&gt; [*]
+    Succeeded --&gt; [*]
+</code></pre></div>
+<h4 id="7-output-collection">7. Output Collection<a class="headerlink" href="#7-output-collection" title="Permanent link">&para;</a></h4>
+<p>When a job completes:
+- Output files are collected
+- Output signature is computed
+- Results are added to the output channel</p>
+<h4 id="8-pipeline-completion">8. Pipeline Completion<a class="headerlink" href="#8-pipeline-completion" title="Permanent link">&para;</a></h4>
+<p>After all jobs complete:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Plugin hook called</span>
+<span class="k">await</span> <span class="n">plugin</span><span class="o">.</span><span class="n">on_complete</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">succeeded</span><span class="p">)</span>
+</code></pre></div>
+<p>The pipeline:
+- Reports final status
+- Generates output summary
+- Cleans up temporary resources</p>
+<h3 id="channel-data-flow">Channel Data Flow<a class="headerlink" href="#channel-data-flow" title="Permanent link">&para;</a></h3>
+<p>Channels are pandas DataFrames that structure data flow between processes.</p>
+<h4 id="channel-structure">Channel Structure<a class="headerlink" href="#channel-structure" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># A channel with 3 rows and 2 columns</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pipen</span><span class="w"> </span><span class="kn">import</span> <span class="n">Channel</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s1">&#39;file&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;data1.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data2.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data3.txt&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;sample&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sample1&#39;</span><span class="p">,</span> <span class="s1">&#39;sample2&#39;</span><span class="p">,</span> <span class="s1">&#39;sample3&#39;</span><span class="p">]</span>
+<span class="p">})</span>
+
+<span class="n">channel</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="row-based-parallelism">Row-Based Parallelism<a class="headerlink" href="#row-based-parallelism" title="Permanent link">&para;</a></h4>
+<p>Each row in a channel becomes an independent job:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Input channel:</span>
+<span class="c1">#    file        sample</span>
+<span class="c1"># 0  data1.txt   sample1</span>
+<span class="c1"># 1  data2.txt   sample2</span>
+<span class="c1"># 2  data3.txt   sample3</span>
+
+<span class="c1"># Generates 3 jobs, each with:</span>
+<span class="c1"># Job 1: in.file = &quot;data1.txt&quot;, in.sample = &quot;sample1&quot;</span>
+<span class="c1"># Job 2: in.file = &quot;data2.txt&quot;, in.sample = &quot;sample2&quot;</span>
+<span class="c1"># Job 3: in.file = &quot;data3.txt&quot;, in.sample = &quot;sample3&quot;</span>
+</code></pre></div>
+<h4 id="channel-operations">Channel Operations<a class="headerlink" href="#channel-operations" title="Permanent link">&para;</a></h4>
+<h5 id="creating-channels">Creating Channels<a class="headerlink" href="#creating-channels" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code><span class="c1"># From list</span>
+<span class="n">Channel</span><span class="o">.</span><span class="n">create</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>  <span class="c1"># 3 rows, 1 column</span>
+
+<span class="c1"># From glob pattern</span>
+<span class="n">Channel</span><span class="o">.</span><span class="n">from_glob</span><span class="p">(</span><span class="s2">&quot;data/*.txt&quot;</span><span class="p">,</span> <span class="n">sortby</span><span class="o">=</span><span class="s2">&quot;mtime&quot;</span><span class="p">)</span>
+
+<span class="c1"># From existing DataFrame</span>
+<span class="n">Channel</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">my_dataframe</span><span class="p">)</span>
+</code></pre></div>
+<h5 id="transforming-channels">Transforming Channels<a class="headerlink" href="#transforming-channels" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code><span class="c1"># Expand directory to files</span>
+<span class="n">expanded</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">expand_dir</span><span class="p">(</span><span class="s1">&#39;file&#39;</span><span class="p">)</span>
+
+<span class="c1"># Collapse files to directory</span>
+<span class="n">collapsed</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">collapse_files</span><span class="p">(</span><span class="s1">&#39;file&#39;</span><span class="p">)</span>
+
+<span class="c1"># Select columns</span>
+<span class="n">selected</span> <span class="o">=</span> <span class="n">channel</span><span class="p">[[</span><span class="s1">&#39;file&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">]]</span>
+
+<span class="c1"># Filter rows</span>
+<span class="n">filtered</span> <span class="o">=</span> <span class="n">channel</span><span class="p">[</span><span class="n">channel</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;A&#39;</span><span class="p">]</span>
+</code></pre></div>
+<h4 id="channel-data-types">Channel Data Types<a class="headerlink" href="#channel-data-types" title="Permanent link">&para;</a></h4>
+<p>pipen supports several input/output types:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Syntax</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>var</code></td>
+<td><code>input = "name"</code></td>
+<td>In-memory variable</td>
+</tr>
+<tr>
+<td><code>file</code></td>
+<td><code>input = "name:file"</code></td>
+<td>Single file path</td>
+</tr>
+<tr>
+<td><code>dir</code></td>
+<td><code>input = "name:dir"</code></td>
+<td>Single directory path</td>
+</tr>
+<tr>
+<td><code>files</code></td>
+<td><code>input = "name:files"</code></td>
+<td>Multiple file paths</td>
+</tr>
+<tr>
+<td><code>dirs</code></td>
+<td><code>input = "name:dirs"</code></td>
+<td>Multiple directory paths</td>
+</tr>
+</tbody>
+</table>
+<h3 id="plugin-system">Plugin System<a class="headerlink" href="#plugin-system" title="Permanent link">&para;</a></h3>
+<p>pipen uses the <a href="https://github.com/pwwang/simplug">simplug</a> library for a flexible plugin system with hook-based extensibility.</p>
+<h4 id="plugin-hooks">Plugin Hooks<a class="headerlink" href="#plugin-hooks" title="Permanent link">&para;</a></h4>
+<h5 id="pipeline-level-hooks">Pipeline-Level Hooks<a class="headerlink" href="#pipeline-level-hooks" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code><span class="nd">@plugin</span><span class="o">.</span><span class="n">spec</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_setup</span><span class="p">(</span><span class="n">pipen</span><span class="p">:</span> <span class="n">Pipen</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called once when first pipeline is loaded.</span>
+<span class="sd">    Use this to set default configurations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="nd">@plugin</span><span class="o">.</span><span class="n">spec</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_init</span><span class="p">(</span><span class="n">pipen</span><span class="p">:</span> <span class="n">Pipen</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when a pipeline is initialized.</span>
+<span class="sd">    Use this to access pipeline configuration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="nd">@plugin</span><span class="o">.</span><span class="n">spec</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_start</span><span class="p">(</span><span class="n">pipen</span><span class="p">:</span> <span class="n">Pipen</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called right before pipeline starts.</span>
+<span class="sd">    Process relationships are already inferred.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="nd">@plugin</span><span class="o">.</span><span class="n">spec</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_complete</span><span class="p">(</span><span class="n">pipen</span><span class="p">:</span> <span class="n">Pipen</span><span class="p">,</span> <span class="n">succeeded</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when pipeline finishes.</span>
+<span class="sd">    succeeded indicates whether pipeline succeeded.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</code></pre></div>
+<h5 id="process-level-hooks">Process-Level Hooks<a class="headerlink" href="#process-level-hooks" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code><span class="nd">@plugin</span><span class="o">.</span><span class="n">spec</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_proc_create</span><span class="p">(</span><span class="n">proc</span><span class="p">:</span> <span class="n">Proc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when a process is created.</span>
+<span class="sd">    Use this to modify default attributes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="nd">@plugin</span><span class="o">.</span><span class="n">spec</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_proc_input_computed</span><span class="p">(</span><span class="n">proc</span><span class="p">:</span> <span class="n">Proc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called after process input data is computed.</span>
+<span class="sd">    Use this to transform input data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="nd">@plugin</span><span class="o">.</span><span class="n">spec</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_proc_script_computed</span><span class="p">(</span><span class="n">proc</span><span class="p">:</span> <span class="n">Proc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called after process script is computed.</span>
+<span class="sd">    Use this to modify the script template.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="nd">@plugin</span><span class="o">.</span><span class="n">spec</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_proc_start</span><span class="p">(</span><span class="n">proc</span><span class="p">:</span> <span class="n">Proc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when a process starts running.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="nd">@plugin</span><span class="o">.</span><span class="n">spec</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_proc_end</span><span class="p">(</span><span class="n">proc</span><span class="p">:</span> <span class="n">Proc</span><span class="p">,</span> <span class="n">succeeded</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when a process finishes.</span>
+<span class="sd">    succeeded indicates whether process succeeded.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</code></pre></div>
+<h5 id="job-level-hooks">Job-Level Hooks<a class="headerlink" href="#job-level-hooks" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code><span class="nd">@plugin</span><span class="o">.</span><span class="n">spec</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_init</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when a job is created.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="nd">@plugin</span><span class="o">.</span><span class="n">spec</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_submitted</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when a job is submitted to scheduler.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="nd">@plugin</span><span class="o">.</span><span class="n">spec</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_running</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when a job starts running.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="nd">@plugin</span><span class="o">.</span><span class="n">spec</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_succeeded</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when a job succeeds.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="nd">@plugin</span><span class="o">.</span><span class="n">spec</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_job_failed</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">,</span> <span class="n">error</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when a job fails.</span>
+<span class="sd">    error contains the exception.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</code></pre></div>
+<h4 id="creating-a-plugin">Creating a Plugin<a class="headerlink" href="#creating-a-plugin" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># myplugin/__init__.py</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pipen.pluginmgr</span><span class="w"> </span><span class="kn">import</span> <span class="n">plugin</span>
+
+<span class="nd">@plugin</span><span class="o">.</span><span class="n">impl</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_proc_create</span><span class="p">(</span><span class="n">proc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Modify process attributes on creation.&quot;&quot;&quot;</span>
+    <span class="n">proc</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">forks</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># Set default to 4 parallel jobs</span>
+
+<span class="c1"># In pyproject.toml:</span>
+<span class="c1"># [tool.poetry.plugins.&quot;pipen&quot;]</span>
+<span class="c1"># myplugin = &quot;myplugin:main&quot;</span>
+</code></pre></div>
+<h3 id="caching-mechanism">Caching Mechanism<a class="headerlink" href="#caching-mechanism" title="Permanent link">&para;</a></h3>
+<p>pipen implements intelligent job caching to avoid redundant computations.</p>
+<h4 id="cache-key-computation">Cache Key Computation<a class="headerlink" href="#cache-key-computation" title="Permanent link">&para;</a></h4>
+<p>The cache key (signature) is computed from:</p>
+<ol>
+<li><strong>Input data</strong>: File paths, directory paths, or in-memory values</li>
+<li><strong>Script content</strong>: Hash of the rendered script</li>
+<li><strong>Process metadata</strong>: Configuration values that affect output</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># Signature file location</span>
+<span class="p">{</span><span class="n">workdir</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">proc</span><span class="o">.</span><span class="n">name</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">job</span><span class="o">.</span><span class="n">index</span><span class="p">}</span><span class="o">/</span><span class="n">job</span><span class="o">.</span><span class="n">signature</span><span class="o">.</span><span class="n">toml</span>
+
+<span class="c1"># Example signature:</span>
+<span class="p">[</span><span class="n">signature</span><span class="p">]</span>
+<span class="n">input_hash</span> <span class="o">=</span> <span class="s2">&quot;a1b2c3d4...&quot;</span>
+<span class="n">script_hash</span> <span class="o">=</span> <span class="s2">&quot;e5f6g7h8...&quot;</span>
+<span class="n">config_hash</span> <span class="o">=</span> <span class="s2">&quot;i9j0k1l2...&quot;</span>
+</code></pre></div>
+<h4 id="cache-check-process">Cache Check Process<a class="headerlink" href="#cache-check-process" title="Permanent link">&para;</a></h4>
+<p>When a job starts:</p>
+<div class="highlight"><pre><span></span><code>graph TD
+    A[Job Starts] --&gt; B{Cached?}
+    B --&gt;|Yes| C[Load Cached Output]
+    B --&gt;|No| D[Execute Script]
+    D --&gt; E[Compute Output Signature]
+    E --&gt; F[Write Cache]
+    C --&gt; G[Return Results]
+    F --&gt; G
+</code></pre></div>
+<h4 id="cache-invalidation">Cache Invalidation<a class="headerlink" href="#cache-invalidation" title="Permanent link">&para;</a></h4>
+<p>A cache is invalid if:</p>
+<ol>
+<li>Input files are modified (based on modification time)</li>
+<li>Script content changes</li>
+<li>Process configuration changes</li>
+<li>Output files are missing or corrupted</li>
+</ol>
+<h4 id="directory-signatures">Directory Signatures<a class="headerlink" href="#directory-signatures" title="Permanent link">&para;</a></h4>
+<p>pipen supports directory-level signatures (<code>dirsig</code>):</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># If dirsig is set:</span>
+<span class="c1"># - Cache considers all files in the directory</span>
+<span class="c1"># - Any file modification invalidates cache</span>
+<span class="c1"># - Useful for directory outputs with multiple files</span>
+
+<span class="n">proc</span><span class="o">.</span><span class="n">dirsig</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Enable directory signature</span>
+</code></pre></div>
+<h3 id="template-engine">Template Engine<a class="headerlink" href="#template-engine" title="Permanent link">&para;</a></h3>
+<p>pipen uses template engines to render job scripts dynamically.</p>
+<h4 id="supported-template-engines">Supported Template Engines<a class="headerlink" href="#supported-template-engines" title="Permanent link">&para;</a></h4>
+<ol>
+<li><strong>Liquid</strong> (default): Safe, production-ready templating</li>
+<li><strong>Jinja2</strong>: Feature-rich Python templating</li>
+<li><strong>Mako</strong>: High-performance Python templating</li>
+</ol>
+<h4 id="template-variables">Template Variables<a class="headerlink" href="#template-variables" title="Permanent link">&para;</a></h4>
+<p>Inside a script template, you have access to:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Input variables</span>
+<span class="p">{{</span> <span class="ow">in</span><span class="o">.</span><span class="n">input_file</span> <span class="p">}}</span>      <span class="c1"># Value of &#39;input_file&#39; input</span>
+<span class="p">{{</span> <span class="ow">in</span><span class="o">.</span><span class="n">config_value</span> <span class="p">}}</span>   <span class="c1"># Value of &#39;config_value&#39; input</span>
+
+<span class="c1"># Output placeholders</span>
+<span class="p">{{</span> <span class="n">out</span><span class="o">.</span><span class="n">output_file</span> <span class="p">}}</span>    <span class="c1"># Where to save output</span>
+
+<span class="c1"># Process metadata</span>
+<span class="p">{{</span> <span class="n">proc</span><span class="o">.</span><span class="n">name</span> <span class="p">}}</span>          <span class="c1"># Process name</span>
+<span class="p">{{</span> <span class="n">proc</span><span class="o">.</span><span class="n">workdir</span> <span class="p">}}</span>       <span class="c1"># Process workdir</span>
+<span class="p">{{</span> <span class="n">proc</span><span class="o">.</span><span class="n">index</span> <span class="p">}}</span>         <span class="c1"># Job index</span>
+
+<span class="c1"># Template options (defined in proc.envs)</span>
+<span class="c1"># Note: These are NOT shell environment variables like PATH or HOME</span>
+<span class="c1"># They are custom options passed to template rendering context</span>
+<span class="p">{{</span> <span class="n">envs</span><span class="o">.*</span> <span class="p">}}</span>
+</code></pre></div>
+<h4 id="example-templates">Example Templates<a class="headerlink" href="#example-templates" title="Permanent link">&para;</a></h4>
+<h5 id="bash-template">Bash Template<a class="headerlink" href="#bash-template" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code><span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2"># Process {{ in.input_file }}</span>
+<span class="s2">cat {{ in.input_file }} &gt; {{ out.output_file }}</span>
+
+<span class="s2"># Report progress</span>
+<span class="s2">echo &quot;Processed: {{ in.input_file }}&quot;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div>
+<h5 id="python-template">Python Template<a class="headerlink" href="#python-template" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code><span class="n">lang</span> <span class="o">=</span> <span class="s2">&quot;python&quot;</span>
+<span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">import pandas as pd</span>
+
+<span class="s2"># Read input</span>
+<span class="s2">df = pd.read_csv(&#39;{{ in.input_file }}&#39;)</span>
+
+<span class="s2"># Process data</span>
+<span class="s2">df[&#39;processed&#39;] = df[&#39;value&#39;] * 2</span>
+
+<span class="s2"># Save output</span>
+<span class="s2">df.to_csv(&#39;{{ out.output_file }}&#39;, index=False)</span>
+<span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div>
+<h5 id="using-filters">Using Filters<a class="headerlink" href="#using-filters" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code><span class="c1"># Built-in filters</span>
+<span class="p">{{</span> <span class="ow">in</span><span class="o">.</span><span class="n">path</span> <span class="o">|</span> <span class="n">basename</span> <span class="p">}}</span>   <span class="c1"># Get filename from path</span>
+<span class="p">{{</span> <span class="ow">in</span><span class="o">.</span><span class="n">path</span> <span class="o">|</span> <span class="n">dirname</span> <span class="p">}}</span>    <span class="c1"># Get directory from path</span>
+<span class="p">{{</span> <span class="ow">in</span><span class="o">.</span><span class="n">value</span> <span class="o">|</span> <span class="n">upper</span> <span class="p">}}</span>     <span class="c1"># Convert to uppercase</span>
+</code></pre></div>
+<h5 id="using-template-options-procenvs">Using Template Options (proc.envs)<a class="headerlink" href="#using-template-options-procenvs" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code><span class="c1"># Define template options in process</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="n">envs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;custom_var&quot;</span><span class="p">:</span> <span class="s2">&quot;my_value&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;threshold&quot;</span><span class="p">:</span> <span class="mi">100</span>
+    <span class="p">}</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    echo &quot;Custom value: {{ envs.custom_var }}&quot;</span>
+<span class="s2">    echo &quot;Threshold: {{ envs.threshold }}&quot;</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+<span class="c1"># Note: envs are NOT shell environment variables (PATH, HOME, etc.)</span>
+<span class="c1"># They are custom options passed to the template rendering context</span>
+</code></pre></div>
+<h3 id="scheduler-architecture">Scheduler Architecture<a class="headerlink" href="#scheduler-architecture" title="Permanent link">&para;</a></h3>
+<p>pipen supports multiple schedulers through a unified interface.</p>
+<h4 id="scheduler-interface">Scheduler Interface<a class="headerlink" href="#scheduler-interface" title="Permanent link">&para;</a></h4>
+<p>All schedulers implement the <code>xqute.Scheduler</code> interface:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Scheduler</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for schedulers&quot;&quot;&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">submit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit a job for execution&quot;&quot;&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Kill a running job&quot;&quot;&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">poll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JobStatus</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check job status&quot;&quot;&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clean up job resources&quot;&quot;&quot;</span>
+</code></pre></div>
+<h4 id="scheduler-selection">Scheduler Selection<a class="headerlink" href="#scheduler-selection" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Via configuration</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">)</span>     <span class="c1"># Local execution</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;sge&quot;</span><span class="p">)</span>       <span class="c1"># Sun Grid Engine</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;slurm&quot;</span><span class="p">)</span>     <span class="c1"># SLURM</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;gbatch&quot;</span><span class="p">)</span>     <span class="c1"># Google Cloud Batch</span>
+
+<span class="c1"># Via profile</span>
+<span class="c1"># .pipen.toml:</span>
+<span class="c1"># [default]</span>
+<span class="c1"># scheduler = &quot;slurm&quot;</span>
+</code></pre></div>
+<h4 id="custom-schedulers">Custom Schedulers<a class="headerlink" href="#custom-schedulers" title="Permanent link">&para;</a></h4>
+<p>To create a custom scheduler:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># myscheduler.py</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scheduler</span><span class="p">,</span> <span class="n">JobStatus</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyScheduler</span><span class="p">(</span><span class="n">Scheduler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom scheduler implementation&quot;&quot;&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">submit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Submit job to your system</span>
+        <span class="k">pass</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">poll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JobStatus</span><span class="p">:</span>
+        <span class="c1"># Check job status</span>
+        <span class="k">return</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">RUNNING</span>
+</code></pre></div>
+<h3 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h3>
+<p>pipen provides multiple error handling strategies:</p>
+<h4 id="error-strategies">Error Strategies<a class="headerlink" href="#error-strategies" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># ignore: Continue with next job (default)</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">error_strategy</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+
+<span class="c1"># halt: Stop the entire pipeline</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">error_strategy</span><span class="o">=</span><span class="s2">&quot;halt&quot;</span><span class="p">)</span>
+
+<span class="c1"># retry: Retry failed jobs</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">error_strategy</span><span class="o">=</span><span class="s2">&quot;retry&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="error-propagation">Error Propagation<a class="headerlink" href="#error-propagation" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>graph TD
+    A[Job Fails] --&gt; B{Error Strategy}
+    B --&gt;|ignore| C[Mark Job Failed]
+    C --&gt; D[Continue Next Job]
+    B --&gt;|halt| E[Stop Pipeline]
+    B --&gt;|retry| F{Retries Left?}
+    F --&gt;|Yes| G[Resubmit Job]
+    F --&gt;|No| C
+    G --&gt; H{Succeeds?}
+    H --&gt;|No| F
+    H --&gt;|Yes| I[Mark Job Succeeded]
+</code></pre></div>
+<h4 id="custom-error-handling">Custom Error Handling<a class="headerlink" href="#custom-error-handling" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process with custom error handling&quot;&quot;&quot;</span>
+
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;data&quot;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;result:file&quot;</span>
+
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    python process.py {{ in.data }} {{ out.result }}</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Custom error handling in script</span>
+    <span class="c1"># Check exit code and handle accordingly</span>
+</code></pre></div>
+<h3 id="performance-considerations">Performance Considerations<a class="headerlink" href="#performance-considerations" title="Permanent link">&para;</a></h3>
+<h4 id="parallel-execution">Parallel Execution<a class="headerlink" href="#parallel-execution" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Forks: Number of concurrent jobs</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>  <span class="c1"># Run 4 jobs in parallel</span>
+
+<span class="c1"># Submission batch: Jobs to submit at once</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">submission_batch</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>  <span class="c1"># Submit 8 jobs per batch</span>
+</code></pre></div>
+<h4 id="memory-management">Memory Management<a class="headerlink" href="#memory-management" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Each job runs in its own directory</li>
+<li>Output files are cleaned up after processing</li>
+<li>Cache files are stored in workdir</li>
+</ul>
+<h4 id="io-optimization">I/O Optimization<a class="headerlink" href="#io-optimization" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Use cloud storage caching</span>
+<span class="n">export</span> <span class="n">CLOUDPATHLIB_LOCAL_CACHE_DIR</span><span class="o">=/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">cache</span>
+
+<span class="c1"># Enable directory signatures for large outputs</span>
+<span class="n">proc</span><span class="o">.</span><span class="n">dirsig</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1"># Use appropriate scheduler for workload</span>
+<span class="c1"># Local: Small jobs, rapid iteration</span>
+<span class="c1"># SLURM/SGE: Large compute jobs</span>
+<span class="c1"># Gbatch: Cloud-scale processing</span>
+</code></pre></div>
+<h3 id="further-reading">Further Reading<a class="headerlink" href="#further-reading" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="../basics/">Basics</a> - Pipeline layers and folder structure</li>
+<li><a href="../channels/">Channels</a> - Data flow between processes</li>
+<li><a href="../configurations/">Configuration</a> - Pipeline and process configuration</li>
+<li><a href="../plugin/">Plugins</a> - Plugin development guide</li>
+<li><a href="../scheduler/">Scheduler</a> - Scheduler backends</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../glossary/" class="btn btn-neutral float-left" title="Glossary"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../glossary/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+    <script src="../js/version-select.js"></script>
+      <script src="../js/mkapi.js"></script>
+      <script src="../assets/script.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

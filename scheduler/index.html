@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Scheduler - pipen</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Scheduler";
+        var mkdocs_page_input_path = "scheduler.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Scheduler</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#local">local</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#sge">sge</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#slurm">slurm</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ssh">ssh</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#container">container</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gbatch">gbatch</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">How-to Guides</li>
+      <li class="breadcrumb-item active">Scheduler</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/scheduler.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <p><code>pipen</code> can send jobs to different scheduler system to run. To specify the scheduler, use <code>scheduler</code> and <code>scheduler_opts</code> configurations.</p>
+<h3 id="default-supported-schedulers">Default supported schedulers<a class="headerlink" href="#default-supported-schedulers" title="Permanent link">&para;</a></h3>
+<p><code>pipen</code> uses <a href="https://github.com/pwwang/xqute"><code>xqute</code></a> for scheduler backend support. The following schedulers are supported by <code>pipen</code>:</p>
+<h4 id="local"><code>local</code><a class="headerlink" href="#local" title="Permanent link">&para;</a></h4>
+<p>This is the default scheduler used by <code>pipen</code>. The jobs will be run on the local machine.</p>
+<p>No scheduler-specific options are available.</p>
+<h4 id="sge"><code>sge</code><a class="headerlink" href="#sge" title="Permanent link">&para;</a></h4>
+<p>Send the jobs to run on <code>sge</code> scheduler.</p>
+<p>The <code>scheduler_opts</code> will be the ones supported by <code>qsub</code>.</p>
+<h4 id="slurm"><code>slurm</code><a class="headerlink" href="#slurm" title="Permanent link">&para;</a></h4>
+<p>Send the jobs to run on <code>slurm</code> scheduler.</p>
+<p>The <code>scheduler_opts</code> will be the ones supported by <code>sbatch</code>.</p>
+<h4 id="ssh"><code>ssh</code><a class="headerlink" href="#ssh" title="Permanent link">&para;</a></h4>
+<p>Send the jobs to run on a remote machine via <code>ssh</code>.</p>
+<p>The <code>scheduler_opts</code> will be the ones supported by <code>ssh</code>.</p>
+<p>See also <a href="https://github.com/pwwang/xqute">xqute</a>.</p>
+<h4 id="container"><code>container</code><a class="headerlink" href="#container" title="Permanent link">&para;</a></h4>
+<p>Send the jobs to run in a container (Docker/Podman/Apptainer).
+The <code>scheduler_opts</code> will be used to construct the container command.</p>
+<p>They include:
+- <code>image</code>: The container image to use.
+- <code>entrypoint</code>: The entrypoint of the container to run the wrapped job script. If not specified, the default entrypoint <code>/bin/sh</code> will be used.
+- <code>bin</code>: The container command to use. If not specified, it will use <code>docker</code>.
+- <code>volumes</code>: A list of volumes to mount to the container. The default volumes are:
+  - <code>workdir</code>: The working directory of the pipeline, mounted to <code>/mnt/disks/pipen-pipeline/workdir</code>.
+  - <code>outdir</code>: The output directory of the pipeline, mounted to <code>/mnt/disks/pipen-pipeline/outdir</code>.
+- <code>envs</code>: A dictionary of environment variables to set in the container.
+- <code>remove</code>: Whether to remove the container after the job is done. Default is <code>True</code>. Only supported by Docker and Podman.
+- <code>user</code>: The user to run the container as. Default is the current user. Only supported by Docker and Podman.
+- <code>bin_args</code>: Additional arguments to pass to the container command. For example, <code>{"bin_args": ["--privileged"]}</code> will run the container in privileged mode. Only supported by Docker and Podman.</p>
+<h4 id="gbatch"><code>gbatch</code><a class="headerlink" href="#gbatch" title="Permanent link">&para;</a></h4>
+<p>Send the jobs to run using Google Cloud Batch.</p>
+<p>The <code>scheduler_opts</code> will be used to construct the job configuration. This scheduler requires that the pipeline's <code>outdir</code> is a Google Cloud Storage path (e.g., <code>gs://bucket/path</code>).</p>
+<p>The scheduler options include:
+- <code>project</code>: Google Cloud project ID
+- <code>location</code>: Google Cloud region or zone
+- <code>mount</code>: GCS path to mount (e.g. <code>gs://my-bucket:/mnt/my-bucket</code>). You can pass a list of mounts.
+- <code>service_account</code>: GCP service account email (e.g. <code>test-account@example.com</code>)
+- <code>network</code>: GCP network (e.g. <code>default-network</code>)
+- <code>subnetwork</code>: GCP subnetwork (e.g. <code>regions/us-central1/subnetworks/default</code>)
+- <code>no_external_ip_address</code>: Whether to disable external IP address
+- <code>machine_type</code>: GCP machine type (e.g. <code>e2-standard-4</code>)
+- <code>provisioning_model</code>: GCP provisioning model (e.g. <code>SPOT</code>)
+- <code>image_uri</code>: Container image URI (e.g. <code>ubuntu-2004-lts</code>)
+- <code>entrypoint</code>: Container entrypoint (e.g. <code>/bin/bash</code>)
+- <code>commands</code>: The command list to run in the container.
+    There are three ways to specify the commands:
+    1. If no entrypoint is specified, the final command will be
+    [commands, wrapped_script], where the entrypoint is the wrapper script
+    interpreter that is determined by <code>JOBCMD_WRAPPER_LANG</code> (e.g. /bin/bash),
+    commands is the list you provided, and wrapped_script is the path to the
+    wrapped job script.
+    2. You can specify something like "-c", then the final command
+    will be ["-c", "wrapper_script_interpreter, wrapper_script"]
+    3. You can use the placeholders <code>{lang}</code> and <code>{script}</code> in the commands
+    list, where <code>{lang}</code> will be replaced with the interpreter (e.g. /bin/bash)
+    and <code>{script}</code> will be replaced with the path to the wrapped job script.
+    For example, you can specify ["{lang} {script}"] and the final command
+    will be ["wrapper_interpreter, wrapper_script"]</p>
+<p>Additional keyword arguments can be used for job configuration (e.g. <code>taskGroups</code>). See more details at <a href="https://cloud.google.com/batch/docs/get-started">Google Cloud Batch documentation</a>.</p>
+<p>By default, the pipeline's workdir is mounted to <code>/mnt/disks/pipen-pipeline/workdir</code> and the outdir is mounted to <code>/mnt/disks/pipen-pipeline/outdir</code> on the VM.</p>
+<h3 id="writing-your-own-scheduler-plugin">Writing your own scheduler plugin<a class="headerlink" href="#writing-your-own-scheduler-plugin" title="Permanent link">&para;</a></h3>
+<p>To write a scheduler plugin, you need to subclass both <code>xqute.schedulers.scheduler.Scheduler</code> and <code>pipen.scheduler.SchedulerPostInit</code>.</p>
+<p>For examples of a scheduler plugin, see <a href="https://github.com/pwwang/xqute/blob/master/xqute/schedulers/local_scheduler.py">local_scheduler</a>, <a href="https://github.com/pwwang/xqute/blob/master/xqute/schedulers/sge_scheduler.py">sge_scheduler</a>, <a href="https://github.com/pwwang/xqute/blob/master/xqute/schedulers/gbatch_scheduler.py">slurm_scheduler</a>, <a href="https://github.com/pwwang/xqute/blob/master/xqute/schedulers/ssh_scheduler/">ssh_scheduler</a>, and [gbatch_scheduler][6], and also <code>pipen.scheduler</code>.</p>
+<p>A scheduler class can be passed to <code>scheduler</code> configuration directly to be used as a scheduler. But you can also register it with entry points:</p>
+<p>For <code>setup.py</code>, you will need:
+<div class="highlight"><pre><span></span><code><span class="n">setup</span><span class="p">(</span>
+	<span class="c1"># ...</span>
+	<span class="n">entry_points</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;pipen_sched&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mysched = pipen_mysched&quot;</span><span class="p">]},</span>
+	<span class="c1"># ...</span>
+<span class="p">)</span>
+</code></pre></div></p>
+<p>For <code>pyproject.toml</code>:
+<div class="highlight"><pre><span></span><code><span class="k">[tool.poetry.plugins.pipen_sched]</span>
+<span class="n">mysched</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;pipen_mysched&quot;</span>
+</code></pre></div></p>
+<p>Then you can switch the scheduler to <code>mysched</code> by <code>scheduler="mysched"</code></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../plugin/" class="btn btn-neutral float-left" title="Plugins"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../proc-group/" class="btn btn-neutral float-right" title="Process group">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../plugin/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../proc-group/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+    <script src="../js/version-select.js"></script>
+      <script src="../js/mkapi.js"></script>
+      <script src="../assets/script.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

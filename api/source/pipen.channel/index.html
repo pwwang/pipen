@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>pipen.channel - pipen</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../../../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../../../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "pipen.channel";
+        var mkdocs_page_input_path = "api/source/pipen.channel.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../..">
+          <img src="../../../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">pipen.channel</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/api/source/pipen.channel.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <div class="mkapi-node">
+<h1 id="" class="mkapi-object mkapi-object-code plain">
+<span class="mkapi-object-kind mkapi-object-kind-code">SOURCE CODE</span>
+<span class="mkapi-object-prefix">pipen.</span><span class="mkapi-object-name">channel</span>
+<span id="pipen.channel"></span><a class="mkapi-docs-link" href="../../pipen.channel">DOCS</a>
+</h1>
+
+<div class="mkapi-code">
+<div class="codehilite"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Provide some function for creating and modifying channels (dataframes)&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="kn">import</span> <span class="n">path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">panpath</span><span class="w"> </span><span class="kn">import</span> <span class="n">PanPath</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pipda</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_verb</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">path_is_symlink</span><span class="p">,</span> <span class="n">path_is_symlink_sync</span>
+
+
+<span class="c1"># ----------------------------------------------------------------</span>
+<span class="c1"># Creators</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Channel</span><span class="p">(</span><span class="n">DataFrame</span><span class="p">):</span><span id="pipen.channel.Channel"></span><a class="mkapi-docs-link" title="pipen.channel.Channel" href="../../pipen.channel/#pipen.channel.Channel">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A DataFrame wrapper with creators&quot;&quot;&quot;</span>
+
+    <span class="nd">@classmethod</span><span id="pipen.channel.Channel.create"></span><a class="mkapi-docs-link" title="pipen.channel.Channel.create" href="../../pipen.channel/#pipen.channel.Channel.create">DOCS</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">DataFrame</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a channel from a list.</span>
+
+<span class="sd">        The second dimension is identified by tuple. if all elements are tuple,</span>
+<span class="sd">        then a channel is created directly. Otherwise, elements are converted</span>
+<span class="sd">        to tuples first and channels are created then.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; Channel.create([1, 2, 3]) # 3 rows, 1 column</span>
+<span class="sd">            &gt;&gt;&gt; Channel.create([(1,2,3)]) # 1 row, 3 columns</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value: The value to create a channel</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A channel (dataframe)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">value</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">((</span><span class="n">val</span><span class="p">,)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span><span id="pipen.channel.Channel.from_glob"></span><a class="mkapi-docs-link" title="pipen.channel.Channel.from_glob" href="../../pipen.channel/#pipen.channel.Channel.from_glob">DOCS</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_glob</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">ftype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;any&quot;</span><span class="p">,</span>
+        <span class="n">sortby</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+        <span class="n">reverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a channel with a glob pattern</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ftype: The file type, one of any, link, dir and file</span>
+<span class="sd">            sortby: How the files should be sorted. One of name, mtime and size</span>
+<span class="sd">            reverse: Whether sort them in a reversed way.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The channel</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">sort_key</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">PanPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sortby</span> <span class="o">==</span> <span class="s2">&quot;mtime&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">file</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span>
+            <span class="k">if</span> <span class="n">sortby</span> <span class="o">==</span> <span class="s2">&quot;size&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">file</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span>
+
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>  <span class="c1"># sort by name</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">file_filter</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">PanPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ftype</span> <span class="o">==</span> <span class="s2">&quot;link&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">path_is_symlink_sync</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ftype</span> <span class="o">==</span> <span class="s2">&quot;dir&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">file</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">ftype</span> <span class="o">==</span> <span class="s2">&quot;file&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">file</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="n">pattern</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+        <span class="n">wildcard_index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parts</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;*&quot;</span> <span class="ow">in</span> <span class="n">part</span> <span class="ow">or</span> <span class="s2">&quot;?&quot;</span> <span class="ow">in</span> <span class="n">part</span> <span class="ow">or</span> <span class="s2">&quot;[&quot;</span> <span class="ow">in</span> <span class="n">part</span><span class="p">:</span>
+                <span class="n">wildcard_index</span> <span class="o">=</span> <span class="n">i</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">wildcard_index</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">files</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">PanPath</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">[</span><span class="n">PanPath</span><span class="p">(</span><span class="n">pattern</span><span class="p">)]</span> <span class="k">if</span> <span class="n">file_filter</span><span class="p">(</span><span class="n">PanPath</span><span class="p">(</span><span class="n">pattern</span><span class="p">))</span> <span class="k">else</span> <span class="p">[]</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">create</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">])</span>
+
+        <span class="n">base_path</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">[:</span><span class="n">wildcard_index</span><span class="p">]))</span>
+        <span class="n">sub_pattern</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="n">wildcard_index</span><span class="p">:])</span>
+
+        <span class="n">files</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">PanPath</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">base_path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">sub_pattern</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">file_filter</span><span class="p">(</span><span class="n">PanPath</span><span class="p">(</span><span class="n">file</span><span class="p">))</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span>
+                    <span class="n">files</span><span class="p">,</span>
+                    <span class="n">key</span><span class="o">=</span><span class="n">sort_key</span> <span class="k">if</span> <span class="n">sortby</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;mtime&quot;</span><span class="p">,</span> <span class="s2">&quot;size&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">reverse</span><span class="o">=</span><span class="n">reverse</span><span class="p">,</span>
+                <span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span><span id="pipen.channel.Channel.a_from_glob"></span><a class="mkapi-docs-link" title="pipen.channel.Channel.a_from_glob" href="../../pipen.channel/#pipen.channel.Channel.a_from_glob">DOCS</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">a_from_glob</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">ftype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;any&quot;</span><span class="p">,</span>
+        <span class="n">sortby</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+        <span class="n">reverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a channel with a glob pattern asynchronously</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pattern: The glob pattern, supported: &quot;dir1/dir2/*.txt&quot;</span>
+<span class="sd">            ftype: The file type, one of any, link, dir and file</span>
+<span class="sd">            sortby: How the files should be sorted. One of name, mtime and size</span>
+<span class="sd">            reverse: Whether sort them in a reversed way.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The channel</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_sort_key</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">PanPath</span><span class="p">,</span> <span class="n">sort_by</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sortby</span> <span class="o">==</span> <span class="s2">&quot;mtime&quot;</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+                <span class="k">return</span> <span class="p">(</span><span class="k">await</span> <span class="n">file</span><span class="o">.</span><span class="n">a_stat</span><span class="p">())</span><span class="o">.</span><span class="n">st_mtime</span>
+            <span class="k">if</span> <span class="n">sortby</span> <span class="o">==</span> <span class="s2">&quot;size&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="k">await</span> <span class="n">file</span><span class="o">.</span><span class="n">a_stat</span><span class="p">())</span><span class="o">.</span><span class="n">st_size</span>
+
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>  <span class="c1"># sort by name</span>
+
+        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">file_filter</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">PanPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ftype</span> <span class="o">==</span> <span class="s2">&quot;link&quot;</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+                <span class="k">return</span> <span class="k">await</span> <span class="n">path_is_symlink</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ftype</span> <span class="o">==</span> <span class="s2">&quot;dir&quot;</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+                <span class="k">return</span> <span class="k">await</span> <span class="n">file</span><span class="o">.</span><span class="n">a_is_dir</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">ftype</span> <span class="o">==</span> <span class="s2">&quot;file&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="k">await</span> <span class="n">file</span><span class="o">.</span><span class="n">a_is_file</span><span class="p">()</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="n">pattern</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+        <span class="n">wildcard_index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parts</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;*&quot;</span> <span class="ow">in</span> <span class="n">part</span> <span class="ow">or</span> <span class="s2">&quot;?&quot;</span> <span class="ow">in</span> <span class="n">part</span> <span class="ow">or</span> <span class="s2">&quot;[&quot;</span> <span class="ow">in</span> <span class="n">part</span><span class="p">:</span>
+                <span class="n">wildcard_index</span> <span class="o">=</span> <span class="n">i</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">wildcard_index</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">PanPath</span><span class="p">(</span><span class="n">pattern</span><span class="p">)]</span> <span class="k">if</span> <span class="k">await</span> <span class="n">file_filter</span><span class="p">(</span><span class="n">PanPath</span><span class="p">(</span><span class="n">pattern</span><span class="p">))</span> <span class="k">else</span> <span class="p">[]</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">create</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">])</span>
+
+        <span class="n">base_path</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">[:</span><span class="n">wildcard_index</span><span class="p">]))</span>
+        <span class="n">sub_pattern</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="n">wildcard_index</span><span class="p">:])</span>
+
+        <span class="n">files</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">PanPath</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">base_path</span><span class="o">.</span><span class="n">a_glob</span><span class="p">(</span><span class="n">sub_pattern</span><span class="p">)</span>
+            <span class="k">if</span> <span class="k">await</span> <span class="n">file_filter</span><span class="p">(</span><span class="n">PanPath</span><span class="p">(</span><span class="n">file</span><span class="p">))</span>
+        <span class="p">]</span>
+
+        <span class="n">sort_keys</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">(</span>
+                    <span class="n">file</span><span class="p">,</span>
+                    <span class="k">await</span> <span class="n">get_sort_key</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">sortby</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span>
+                    <span class="n">files</span><span class="p">,</span>
+                    <span class="n">key</span><span class="o">=</span><span class="p">(</span>
+                        <span class="n">sort_keys</span><span class="o">.</span><span class="n">get</span>  <span class="c1"># type: ignore[arg-type]</span>
+                        <span class="k">if</span> <span class="n">sortby</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;mtime&quot;</span><span class="p">,</span> <span class="s2">&quot;size&quot;</span><span class="p">)</span>
+                        <span class="k">else</span> <span class="kc">None</span>
+                    <span class="p">),</span>
+                    <span class="n">reverse</span><span class="o">=</span><span class="n">reverse</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span><span id="pipen.channel.Channel.from_pairs"></span><a class="mkapi-docs-link" title="pipen.channel.Channel.from_pairs" href="../../pipen.channel/#pipen.channel.Channel.from_pairs">DOCS</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_pairs</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">ftype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;any&quot;</span><span class="p">,</span>
+        <span class="n">sortby</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+        <span class="n">reverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a width=2 channel with a glob pattern</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ftype: The file type, one of any, link, dir and file</span>
+<span class="sd">            sortby: How the files should be sorted. One of name, mtime and size</span>
+<span class="sd">            reverse: Whether sort them in a reversed way.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The channel</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mates</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">ftype</span><span class="p">,</span> <span class="n">sortby</span><span class="p">,</span> <span class="n">reverse</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">mates</span><span class="o">.</span><span class="n">iloc</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="n">mates</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span><span id="pipen.channel.Channel.a_from_pairs"></span><a class="mkapi-docs-link" title="pipen.channel.Channel.a_from_pairs" href="../../pipen.channel/#pipen.channel.Channel.a_from_pairs">DOCS</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">a_from_pairs</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">ftype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;any&quot;</span><span class="p">,</span>
+        <span class="n">sortby</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+        <span class="n">reverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a width=2 channel with a glob pattern</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ftype: The file type, one of any, link, dir and file</span>
+<span class="sd">            sortby: How the files should be sorted. One of name, mtime and size</span>
+<span class="sd">            reverse: Whether sort them in a reversed way.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The channel</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mates</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">cls</span><span class="o">.</span><span class="n">a_from_glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">ftype</span><span class="p">,</span> <span class="n">sortby</span><span class="p">,</span> <span class="n">reverse</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">mates</span><span class="o">.</span><span class="n">iloc</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="n">mates</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span><span id="pipen.channel.Channel.from_csv"></span><a class="mkapi-docs-link" title="pipen.channel.Channel.from_csv" href="../../pipen.channel/#pipen.channel.Channel.from_csv">DOCS</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_csv</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a channel from a csv file</span>
+
+<span class="sd">        Uses pandas.read_csv() to create a channel</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *args: and</span>
+<span class="sd">            **kwargs: Arguments passing to pandas.read_csv()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span><span id="pipen.channel.Channel.from_excel"></span><a class="mkapi-docs-link" title="pipen.channel.Channel.from_excel" href="../../pipen.channel/#pipen.channel.Channel.from_excel">DOCS</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_excel</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a channel from an excel file.</span>
+
+<span class="sd">        Uses pandas.read_excel() to create a channel</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *args: and</span>
+<span class="sd">            **kwargs: Arguments passing to pandas.read_excel()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span><span id="pipen.channel.Channel.from_table"></span><a class="mkapi-docs-link" title="pipen.channel.Channel.from_table" href="../../pipen.channel/#pipen.channel.Channel.from_table">DOCS</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_table</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a channel from a table file.</span>
+
+<span class="sd">        Uses pandas.read_table() to create a channel</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *args: and</span>
+<span class="sd">            **kwargs: Arguments passing to pandas.read_table()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="c1"># ----------------------------------------------------------------</span>
+<span class="c1"># Verbs</span>
+<span class="nd">@register_verb</span><span class="p">(</span><span class="n">DataFrame</span><span class="p">)</span><span id="pipen.channel.expand_dir"></span><a class="mkapi-docs-link" title="pipen.channel.expand_dir" href="../../pipen.channel/#pipen.channel.expand_dir">DOCS</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">expand_dir</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+    <span class="n">ftype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;any&quot;</span><span class="p">,</span>
+    <span class="n">sortby</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+    <span class="n">reverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Expand a Channel according to the files in &lt;col&gt;,</span>
+<span class="sd">    other cols will keep the same.</span>
+
+<span class="sd">    This is only applicable to a 1-row channel.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; ch = channel.create([(&#39;./&#39;, 1)])</span>
+<span class="sd">        &gt;&gt;&gt; ch &gt;&gt; expand()</span>
+<span class="sd">        &gt;&gt;&gt; [[&#39;./a&#39;, 1], [&#39;./b&#39;, 1], [&#39;./c&#39;, 1]]</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        col: the index or name of the column used to expand</span>
+<span class="sd">        pattern: use a pattern to filter the files/dirs, default: `*`</span>
+<span class="sd">        ftype: the type of the files/dirs to include</span>
+<span class="sd">            - &#39;dir&#39;, &#39;file&#39;, &#39;link&#39; or &#39;any&#39; (default)</span>
+<span class="sd">        sortby:  how the list is sorted</span>
+<span class="sd">            - &#39;name&#39; (default), &#39;mtime&#39;, &#39;size&#39;</span>
+<span class="sd">        reverse: reverse sort.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The expanded channel</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Can only expand a single row DataFrame.&quot;</span>
+    <span class="n">col_loc</span> <span class="o">=</span> <span class="n">col</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_loc</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+    <span class="n">full_pattern</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">col_loc</span><span class="p">]</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">pattern</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">expanded</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">from_glob</span><span class="p">(</span>
+        <span class="n">full_pattern</span><span class="p">,</span>
+        <span class="n">ftype</span><span class="p">,</span>
+        <span class="n">sortby</span><span class="p">,</span>
+        <span class="n">reverse</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">data</span><span class="p">]</span> <span class="o">*</span> <span class="n">expanded</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ret</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">col_loc</span><span class="p">]</span> <span class="o">=</span> <span class="n">expanded</span><span class="o">.</span><span class="n">values</span>
+    <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<span class="nd">@register_verb</span><span class="p">(</span><span class="n">DataFrame</span><span class="p">)</span><span id="pipen.channel.collapse_files"></span><a class="mkapi-docs-link" title="pipen.channel.collapse_files" href="../../pipen.channel/#pipen.channel.collapse_files">DOCS</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">collapse_files</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collapse a Channel according to the files in &lt;col&gt;,</span>
+<span class="sd">    other cols will use the values in row 0.</span>
+
+<span class="sd">    Note that other values in other rows will be discarded.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; ch = channel.create([[&#39;./a&#39;, 1], [&#39;./b&#39;, 1], [&#39;./c&#39;, 1]])</span>
+<span class="sd">        &gt;&gt;&gt; ch &gt;&gt; collapse()</span>
+<span class="sd">        &gt;&gt;&gt; [[&#39;.&#39;, 1]]</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data: The original channel</span>
+<span class="sd">        col: the index or name of the column used to collapse on</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The collapsed channel</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Cannot collapse on an empty DataFrame.&quot;</span>
+    <span class="n">col_loc</span> <span class="o">=</span> <span class="n">col</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_loc</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">col_loc</span><span class="p">])</span>
+    <span class="n">compx</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">commonprefix</span><span class="p">(</span><span class="n">paths</span><span class="p">))</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">ret</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col_loc</span><span class="p">]</span> <span class="o">=</span> <span class="n">compx</span>
+    <span class="k">return</span> <span class="n">ret</span>
+</code></pre></div>
+</div>
+</div>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../../..";</script>
+    <script src="../../../js/theme_extra.js"></script>
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/version-select.js"></script>
+      <script src="../../../js/mkapi.js"></script>
+      <script src="../../../assets/script.js"></script>
+      <script src="../../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Troubleshooting - pipen</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Troubleshooting";
+        var mkdocs_page_input_path = "troubleshooting.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Troubleshooting</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#table-of-contents">Table of Contents</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#common-errors">Common Errors</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#procdependencyerror">ProcDependencyError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#procinputtypeerror">ProcInputTypeError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#procinputkeyerror">ProcInputKeyError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#procscriptfilenotfound">ProcScriptFileNotFound</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#procoutputnameerror">ProcOutputNameError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#nosuchschedulererror">NoSuchSchedulerError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#nosuchtemplateengineerror">NoSuchTemplateEngineError</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#pipeline-issues">Pipeline Issues</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#pipeline-fails-to-start">Pipeline Fails to Start</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipeline-stops-unexpectedly">Pipeline Stops Unexpectedly</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#import-errors">Import Errors</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#process-issues">Process Issues</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#process-runs-but-produces-no-output">Process Runs but Produces No Output</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#process-input-not-matching-expected-data">Process Input Not Matching Expected Data</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#job-and-caching-issues">Job and Caching Issues</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#jobs-running-with-old-results">Jobs Running with Old Results</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cache-not-working">Cache Not Working</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#jobs-hanging-or-failing-intermittently">Jobs Hanging or Failing Intermittently</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#scheduler-issues">Scheduler Issues</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#local-scheduler-issues">Local Scheduler Issues</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#slurm-issues">SLURM Issues</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#sge-issues">SGE Issues</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#google-cloud-batch-issues">Google Cloud Batch Issues</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#performance-tips">Performance Tips</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#slow-pipeline-execution">Slow Pipeline Execution</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#high-memory-usage">High Memory Usage</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#disk-space-issues">Disk Space Issues</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#cloud-deployment-issues">Cloud Deployment Issues</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#authentication-failures">Authentication Failures</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cloud-storage-issues">Cloud Storage Issues</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#network-timeouts">Network Timeouts</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#template-issues">Template Issues</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#template-rendering-errors">Template Rendering Errors</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#filter-not-working">Filter Not Working</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#getting-help">Getting Help</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#further-reading">Further Reading</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+      <li class="breadcrumb-item active">Troubleshooting</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/troubleshooting.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<p>This guide helps you resolve common issues when using pipen.</p>
+<h3 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="#common-errors">Common Errors</a></li>
+<li><a href="#pipeline-issues">Pipeline Issues</a></li>
+<li><a href="#process-issues">Process Issues</a></li>
+<li><a href="#job-and-caching-issues">Job and Caching Issues</a></li>
+<li><a href="#scheduler-issues">Scheduler Issues</a></li>
+<li><a href="#performance-tips">Performance Tips</a></li>
+<li><a href="#cloud-deployment-issues">Cloud Deployment Issues</a></li>
+<li><a href="#template-issues">Template Issues</a></li>
+</ul>
+<h3 id="common-errors">Common Errors<a class="headerlink" href="#common-errors" title="Permanent link">&para;</a></h3>
+<h4 id="procdependencyerror"><code>ProcDependencyError</code><a class="headerlink" href="#procdependencyerror" title="Permanent link">&para;</a></h4>
+<p><strong>Error:</strong>
+<div class="highlight"><pre><span></span><code>pipen.exceptions.ProcDependencyError: Cycle detected in process dependencies
+</code></pre></div></p>
+<p><strong>Cause:</strong> You have created circular dependencies between processes.</p>
+<p><strong>Solution:</strong>
+<div class="highlight"><pre><span></span><code><span class="c1"># WRONG: Creates a cycle</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">P1</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="n">P2</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">P2</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="n">P1</span>
+
+<span class="c1"># CORRECT: Linear dependency</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">P1</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;First process&quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">P2</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Second process&quot;&quot;&quot;</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="n">P1</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">P3</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Third process&quot;&quot;&quot;</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="n">P2</span>
+</code></pre></div></p>
+<hr />
+<h4 id="procinputtypeerror"><code>ProcInputTypeError</code><a class="headerlink" href="#procinputtypeerror" title="Permanent link">&para;</a></h4>
+<p><strong>Error:</strong>
+<div class="highlight"><pre><span></span><code>pipen.exceptions.ProcInputTypeError: Unsupported input type &#39;invalid_type&#39;
+</code></pre></div></p>
+<p><strong>Cause:</strong> You specified an invalid input type in the type definition.</p>
+<p><strong>Solution:</strong>
+<div class="highlight"><pre><span></span><code><span class="c1"># WRONG</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;data:invalid_type&quot;</span>
+
+<span class="c1"># CORRECT - Valid types are: var, file, dir, files, dirs</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;data:var&quot;</span>  <span class="c1"># In-memory variable</span>
+    <span class="c1"># or</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;data:file&quot;</span>  <span class="c1"># Single file</span>
+    <span class="c1"># or</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;data:files&quot;</span>  <span class="c1"># Multiple files</span>
+</code></pre></div></p>
+<hr />
+<h4 id="procinputkeyerror"><code>ProcInputKeyError</code><a class="headerlink" href="#procinputkeyerror" title="Permanent link">&para;</a></h4>
+<p><strong>Error:</strong>
+<div class="highlight"><pre><span></span><code>pipen.exceptions.ProcInputKeyError: Input &#39;invalid_key&#39; not found in process
+</code></pre></div></p>
+<p><strong>Cause:</strong> The input key in your script template doesn't match any defined input.</p>
+<p><strong>Solution:</strong>
+<div class="highlight"><pre><span></span><code><span class="c1"># WRONG</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;var&quot;</span><span class="p">}</span>  <span class="c1"># Key is &#39;filename&#39;</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;cat {{ in.wrong_name }}&quot;</span>
+
+<span class="c1"># CORRECT</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;var&quot;</span><span class="p">}</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;cat {{ in.filename }}&quot;</span>
+</code></pre></div></p>
+<hr />
+<h4 id="procscriptfilenotfound"><code>ProcScriptFileNotFound</code><a class="headerlink" href="#procscriptfilenotfound" title="Permanent link">&para;</a></h4>
+<p><strong>Error:</strong>
+<div class="highlight"><pre><span></span><code>pipen.exceptions.ProcScriptFileNotFound: Script file not found: file://missing.py
+</code></pre></div></p>
+<p><strong>Cause:</strong> Script file specified with <code>file://</code> protocol doesn't exist.</p>
+<p><strong>Solution:</strong>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check file exists</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="n">script_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;my_script.py&quot;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">script_file</span><span class="o">.</span><span class="n">exists</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;Script file </span><span class="si">{</span><span class="n">script_file</span><span class="si">}</span><span class="s2"> not found&quot;</span>
+
+<span class="c1"># Then use in process</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;file://</span><span class="si">{</span><span class="n">script_file</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div></p>
+<hr />
+<h4 id="procoutputnameerror"><code>ProcOutputNameError</code><a class="headerlink" href="#procoutputnameerror" title="Permanent link">&para;</a></h4>
+<p><strong>Error:</strong>
+<div class="highlight"><pre><span></span><code>pipen.exceptions.ProcOutputNameError: No output name specified
+</code></pre></div></p>
+<p><strong>Cause:</strong> Output definition is missing or malformed.</p>
+<p><strong>Solution:</strong>
+<div class="highlight"><pre><span></span><code><span class="c1"># WRONG</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;var&quot;</span>  <span class="c1"># Missing output name</span>
+
+<span class="c1"># CORRECT</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;result:var&quot;</span>  <span class="c1"># &#39;result&#39; is the name</span>
+
+<span class="c1"># Or for files</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;result:file:output.txt&quot;</span>
+</code></pre></div></p>
+<hr />
+<h4 id="nosuchschedulererror"><code>NoSuchSchedulerError</code><a class="headerlink" href="#nosuchschedulererror" title="Permanent link">&para;</a></h4>
+<p><strong>Error:</strong>
+<div class="highlight"><pre><span></span><code>pipen.exceptions.NoSuchSchedulerError: Scheduler &#39;invalid_scheduler&#39; not found
+</code></pre></div></p>
+<p><strong>Cause:</strong> Specified scheduler name is incorrect or not installed.</p>
+<p><strong>Solution:</strong>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check available schedulers</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pipen.scheduler</span><span class="w"> </span><span class="kn">import</span> <span class="n">SCHEDULERS</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">SCHEDULERS</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+<span class="c1"># Output: [&#39;local&#39;, &#39;sge&#39;, &#39;slurm&#39;, &#39;ssh&#39;, &#39;container&#39;, &#39;gbatch&#39;]</span>
+
+<span class="c1"># Use valid scheduler</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">)</span>  <span class="c1"># or &quot;sge&quot;, &quot;slurm&quot;, &quot;ssh&quot;, &quot;container&quot;, &quot;gbatch&quot;</span>
+</code></pre></div></p>
+<hr />
+<h4 id="nosuchtemplateengineerror"><code>NoSuchTemplateEngineError</code><a class="headerlink" href="#nosuchtemplateengineerror" title="Permanent link">&para;</a></h4>
+<p><strong>Error:</strong>
+<div class="highlight"><pre><span></span><code>pipen.exceptions.NoSuchTemplateEngineError: Template engine &#39;invalid&#39; not found
+</code></pre></div></p>
+<p><strong>Cause:</strong> Specified template engine is not available.</p>
+<p><strong>Solution:</strong>
+<div class="highlight"><pre><span></span><code><span class="c1"># Available engines: liquid (default), jinja2, mako</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">template</span><span class="o">=</span><span class="s2">&quot;liquid&quot;</span><span class="p">)</span>   <span class="c1"># Default</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">template</span><span class="o">=</span><span class="s2">&quot;jinja2&quot;</span><span class="p">)</span>  <span class="c1"># Install: pip install jinja2</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">template</span><span class="o">=</span><span class="s2">&quot;mako&quot;</span><span class="p">)</span>     <span class="c1"># Install: pip install mako</span>
+</code></pre></div></p>
+<hr />
+<h3 id="pipeline-issues">Pipeline Issues<a class="headerlink" href="#pipeline-issues" title="Permanent link">&para;</a></h3>
+<h4 id="pipeline-fails-to-start">Pipeline Fails to Start<a class="headerlink" href="#pipeline-fails-to-start" title="Permanent link">&para;</a></h4>
+<p><strong>Symptom:</strong> Pipeline doesn't start or hangs indefinitely.</p>
+<p><strong>Possible Causes:</strong></p>
+<ol>
+<li>
+<p><strong>Process definition errors</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Check process classes are properly defined</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Always include docstring&quot;&quot;&quot;</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;data:var&quot;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;result:var&quot;</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;echo {{ in.data }}&quot;</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Dependency issues</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Verify all required processes are defined</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">P1</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">P2</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="n">P1</span>  <span class="c1"># P1 must be defined before P2</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Configuration conflicts</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Check for conflicting configurations</span>
+<span class="c1"># Try with minimal config first</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Test&quot;</span><span class="p">)</span>  <span class="c1"># Minimal config</span>
+<span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h4 id="pipeline-stops-unexpectedly">Pipeline Stops Unexpectedly<a class="headerlink" href="#pipeline-stops-unexpectedly" title="Permanent link">&para;</a></h4>
+<p><strong>Symptom:</strong> Pipeline stops without completing all processes.</p>
+<p><strong>Possible Causes:</strong></p>
+<ol>
+<li>
+<p><strong>Error strategy is set to 'halt'</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># If a job fails, pipeline stops</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">error_strategy</span><span class="o">=</span><span class="s2">&quot;halt&quot;</span><span class="p">)</span>
+
+<span class="c1"># Change to ignore or retry for robustness</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">error_strategy</span><span class="o">=</span><span class="s2">&quot;retry&quot;</span><span class="p">,</span> <span class="n">num_retries</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Unhandled exception</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Check the full error message</span>
+<span class="c1"># Use verbose logging</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">loglevel</span><span class="o">=</span><span class="s2">&quot;debug&quot;</span><span class="p">)</span>
+<span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h4 id="import-errors">Import Errors<a class="headerlink" href="#import-errors" title="Permanent link">&para;</a></h4>
+<p><strong>Symptom:</strong> <code>ImportError</code> or <code>ModuleNotFoundError</code> when importing pipen.</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li>
+<p><strong>Reinstall pipen</strong>
+   <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>uninstall<span class="w"> </span>pipen
+pip<span class="w"> </span>install<span class="w"> </span>pipen
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Install with all extras</strong>
+   <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>pipen<span class="o">[</span>all<span class="o">]</span><span class="w">  </span><span class="c1"># Installs all optional dependencies</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Check Python version</strong>
+   <div class="highlight"><pre><span></span><code>python<span class="w"> </span>--version<span class="w">  </span><span class="c1"># Must be 3.9 or higher</span>
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h3 id="process-issues">Process Issues<a class="headerlink" href="#process-issues" title="Permanent link">&para;</a></h3>
+<h4 id="process-runs-but-produces-no-output">Process Runs but Produces No Output<a class="headerlink" href="#process-runs-but-produces-no-output" title="Permanent link">&para;</a></h4>
+<p><strong>Symptom:</strong> Jobs complete successfully but output files are missing.</p>
+<p><strong>Possible Causes:</strong></p>
+<ol>
+<li>
+<p><strong>Script doesn't write to output path</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># WRONG - Script writes to wrong location</span>
+<span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;echo &#39;result&#39; &gt; /tmp/output.txt&quot;</span>
+
+<span class="c1"># CORRECT - Write to template output variable</span>
+<span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;echo &#39;result&#39; &gt; {{ out.output_file }}&quot;</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Output path not resolved</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Debug output paths</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;data:var&quot;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;result:file:result.txt&quot;</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    # Debug input/output</span>
+<span class="s2">    echo &quot;Input: {{ in.data }}&quot;</span>
+<span class="s2">    echo &quot;Output: {{ out.result }}&quot;</span>
+<span class="s2">    echo &quot;Output path: {{ out.result | realpath }}&quot;</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Permission issues</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Check write permissions in workdir</span>
+ls<span class="w"> </span>-la<span class="w"> </span>~/.pipen/
+chmod<span class="w"> </span>+w<span class="w"> </span>~/.pipen/
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h4 id="process-input-not-matching-expected-data">Process Input Not Matching Expected Data<a class="headerlink" href="#process-input-not-matching-expected-data" title="Permanent link">&para;</a></h4>
+<p><strong>Symptom:</strong> Input values are None or incorrect type.</p>
+<p><strong>Possible Causes:</strong></p>
+<ol>
+<li>
+<p><strong>Channel data structure mismatch</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># WRONG - Column names don&#39;t match</span>
+<span class="n">channel</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">create</span><span class="p">([</span>
+    <span class="p">(</span><span class="s2">&quot;value1&quot;</span><span class="p">,</span> <span class="s2">&quot;value2&quot;</span><span class="p">,</span> <span class="s2">&quot;value3&quot;</span><span class="p">)</span>  <span class="c1"># 1 row, 3 columns</span>
+<span class="p">])</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;wrong_name&quot;</span><span class="p">:</span> <span class="s2">&quot;var&quot;</span><span class="p">}</span>  <span class="c1"># Wrong column name</span>
+
+<span class="c1"># CORRECT</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;value1&quot;</span><span class="p">:</span> <span class="s2">&quot;var&quot;</span><span class="p">,</span> <span class="s2">&quot;value2&quot;</span><span class="p">:</span> <span class="s2">&quot;var&quot;</span><span class="p">,</span> <span class="s2">&quot;value3&quot;</span><span class="p">:</span> <span class="s2">&quot;var&quot;</span><span class="p">}</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Type mismatch in transform functions</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Transform input data correctly</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">transform_input</span><span class="p">(</span><span class="n">input_data</span><span class="p">):</span>
+    <span class="c1"># input_data is a DataFrame row</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;processed&#39;</span><span class="p">:</span> <span class="n">input_data</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+    <span class="p">}</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;data:var&quot;</span>
+    <span class="n">input_data</span> <span class="o">=</span> <span class="n">transform_input</span>  <span class="c1"># Apply transform</span>
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h3 id="job-and-caching-issues">Job and Caching Issues<a class="headerlink" href="#job-and-caching-issues" title="Permanent link">&para;</a></h3>
+<h4 id="jobs-running-with-old-results">Jobs Running with Old Results<a class="headerlink" href="#jobs-running-with-old-results" title="Permanent link">&para;</a></h4>
+<p><strong>Symptom:</strong> Jobs run but use cached results from previous runs.</p>
+<p><strong>Cause:</strong> Cache signature hasn't changed.</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li>
+<p><strong>Force cache invalidation</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Delete cache directory</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">()</span>
+<span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="c1"># Or manually delete workdir</span>
+<span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="o">~/.</span><span class="n">pipen</span><span class="o">/</span><span class="n">MyPipeline</span><span class="o">/</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Modify input data or script</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Changing either input or script invalidates cache</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;data:var&quot;</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;echo &#39;{{ in.data }}&#39; &gt; {{ out.result }}&quot;</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Disable caching temporarily</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Disable caching for debugging</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h4 id="cache-not-working">Cache Not Working<a class="headerlink" href="#cache-not-working" title="Permanent link">&para;</a></h4>
+<p><strong>Symptom:</strong> Jobs rerun even when input hasn't changed.</p>
+<p><strong>Cause:</strong> Signature computation not matching expected behavior.</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li>
+<p><strong>Check signature file</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># View job signature</span>
+cat<span class="w"> </span>~/.pipen/MyPipeline/MyProc/0/job.signature.toml
+
+<span class="c1"># Should contain:</span>
+<span class="c1"># [signature]</span>
+<span class="c1"># input_hash = &quot;...&quot;</span>
+<span class="c1"># script_hash = &quot;...&quot;</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Enable directory signatures</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># For directory outputs</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;indir:dir&quot;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;outdir:dir&quot;</span>
+    <span class="n">dirsig</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Enable directory signature</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Check file modification times</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># View file timestamps</span>
+ls<span class="w"> </span>-la<span class="w"> </span>input_dir/
+
+<span class="c1"># Cache invalidates if input files are modified</span>
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h4 id="jobs-hanging-or-failing-intermittently">Jobs Hanging or Failing Intermittently<a class="headerlink" href="#jobs-hanging-or-failing-intermittently" title="Permanent link">&para;</a></h4>
+<p><strong>Symptom:</strong> Jobs hang or fail randomly.</p>
+<p><strong>Possible Causes:</strong></p>
+<ol>
+<li>
+<p><strong>Resource limits</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Reduce parallelization</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Lower concurrency</span>
+
+<span class="c1"># Reduce submission batch size</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">submission_batch</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Network issues (for remote schedulers)</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Increase retry count</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">num_retries</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Memory issues</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Profile memory usage</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    # Add memory monitoring</span>
+<span class="s2">    /usr/bin/time -v echo &#39;{{ in.data }}&#39; &gt; {{ out.result }}&#39;</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h3 id="scheduler-issues">Scheduler Issues<a class="headerlink" href="#scheduler-issues" title="Permanent link">&para;</a></h3>
+<h4 id="local-scheduler-issues">Local Scheduler Issues<a class="headerlink" href="#local-scheduler-issues" title="Permanent link">&para;</a></h4>
+<p><strong>Jobs not running:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check if any processes are running</span>
+ps<span class="w"> </span>aux<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>python
+
+<span class="c1"># Check workdir permissions</span>
+ls<span class="w"> </span>-la<span class="w"> </span>~/.pipen/
+</code></pre></div>
+<hr />
+<h4 id="slurm-issues">SLURM Issues<a class="headerlink" href="#slurm-issues" title="Permanent link">&para;</a></h4>
+<p><strong>Jobs not submitted:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check SLURM configuration</span>
+sinfo<span class="w">  </span><span class="c1"># View cluster status</span>
+squeue<span class="w"> </span>-u<span class="w"> </span><span class="nv">$USER</span><span class="w">  </span><span class="c1"># View your jobs</span>
+
+<span class="c1"># Test SLURM submission manually</span>
+sbatch<span class="w"> </span>--test<span class="w"> </span>job_script.sh
+</code></pre></div>
+<p><strong>Common solutions:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Set SLURM-specific options</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;slurm&quot;</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;partition&quot;</span><span class="p">:</span> <span class="s2">&quot;compute&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;01:00:00&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mem&quot;</span><span class="p">:</span> <span class="s2">&quot;4G&quot;</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div>
+<hr />
+<h4 id="sge-issues">SGE Issues<a class="headerlink" href="#sge-issues" title="Permanent link">&para;</a></h4>
+<p><strong>Jobs not submitted:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check SGE status</span>
+qstat
+
+<span class="c1"># Test SGE submission manually</span>
+qsub<span class="w"> </span>job_script.sh
+</code></pre></div>
+<p><strong>Common solutions:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Set SGE-specific options</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;sge&quot;</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="s2">&quot;all.q&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pe&quot;</span><span class="p">:</span> <span class="s2">&quot;smp 4&quot;</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div>
+<hr />
+<h4 id="google-cloud-batch-issues">Google Cloud Batch Issues<a class="headerlink" href="#google-cloud-batch-issues" title="Permanent link">&para;</a></h4>
+<p><strong>Jobs not running:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check Cloud Batch status</span>
+gcloud<span class="w"> </span>batch<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>list
+
+<span class="c1"># Check logs</span>
+gcloud<span class="w"> </span>batch<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>describe<span class="w"> </span>&lt;job-id&gt;<span class="w"> </span>--format<span class="o">=</span>json
+
+<span class="c1"># Check bucket permissions</span>
+gsutil<span class="w"> </span>ls<span class="w"> </span>gs://your-bucket/
+</code></pre></div>
+<p><strong>Common solutions:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Set GBatch-specific options</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;gbatch&quot;</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;project&quot;</span><span class="p">:</span> <span class="s2">&quot;your-project&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;region&quot;</span><span class="p">:</span> <span class="s2">&quot;us-central1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;us-central1&quot;</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Ensure cloud paths are correct</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cloudsh</span><span class="w"> </span><span class="kn">import</span> <span class="n">CloudPath</span>
+<span class="n">input_path</span> <span class="o">=</span> <span class="n">CloudPath</span><span class="p">(</span><span class="s2">&quot;gs://your-bucket/input/&quot;</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h3 id="performance-tips">Performance Tips<a class="headerlink" href="#performance-tips" title="Permanent link">&para;</a></h3>
+<h4 id="slow-pipeline-execution">Slow Pipeline Execution<a class="headerlink" href="#slow-pipeline-execution" title="Permanent link">&para;</a></h4>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li>
+<p><strong>Increase parallelization</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Run more jobs concurrently</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>  <span class="c1"># Default is 1</span>
+
+<span class="c1"># Increase submission batch size</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">submission_batch</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>  <span class="c1"># Default is 8</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Use appropriate scheduler</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># For many small jobs: Local</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">)</span>
+
+<span class="c1"># For large compute jobs: SLURM or SGE</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;slurm&quot;</span><span class="p">)</span>
+
+<span class="c1"># For cloud-scale: Google Cloud Batch</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;gbatch&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Optimize data flow</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Use channel operations effectively</span>
+<span class="c1"># Filter data early to reduce job count</span>
+<span class="n">channel</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">from_glob</span><span class="p">(</span><span class="s2">&quot;data/*.txt&quot;</span><span class="p">)</span>
+<span class="n">filtered</span> <span class="o">=</span> <span class="n">channel</span><span class="p">[</span><span class="n">channel</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">1000</span><span class="p">]</span>
+
+<span class="c1"># Use expand_dir/collapse_files for file operations</span>
+<span class="n">channel</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">expand_dir</span><span class="p">(</span><span class="s1">&#39;file&#39;</span><span class="p">)</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Enable caching</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Caching is enabled by default</span>
+<span class="c1"># Ensure it&#39;s working</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h4 id="high-memory-usage">High Memory Usage<a class="headerlink" href="#high-memory-usage" title="Permanent link">&para;</a></h4>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li>
+<p><strong>Reduce job concurrency</strong>
+   <div class="highlight"><pre><span></span><code><span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Reduce from default</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Stream data instead of loading all</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Process files individually</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;infile:file&quot;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;outfile:file&quot;</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    # Stream line by line</span>
+<span class="s2">    while IFS= read -r line; do</span>
+<span class="s2">        echo &quot;$line&quot; &gt;&gt; {{ out.outfile }}</span>
+<span class="s2">    done &lt; {{ in.infile }}</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Use batch processing</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Group files into batches</span>
+<span class="n">channel</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">from_glob</span><span class="p">(</span><span class="s2">&quot;data/*.txt&quot;</span><span class="p">,</span> <span class="n">sortby</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+<span class="c1"># Process multiple files per job</span>
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h4 id="disk-space-issues">Disk Space Issues<a class="headerlink" href="#disk-space-issues" title="Permanent link">&para;</a></h4>
+<p><strong>Symptom:</strong> Workdir fills up disk space.</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li>
+<p><strong>Change workdir location</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Use a directory with more space</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">workdir</span><span class="o">=</span><span class="s2">&quot;/scratch/pipen_workdir&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Clean up old runs</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Remove old pipeline runs</span>
+rm<span class="w"> </span>-rf<span class="w"> </span>~/.pipen/MyPipeline-*/
+
+<span class="c1"># Keep only cache</span>
+rm<span class="w"> </span>-rf<span class="w"> </span>~/.pipen/MyPipeline/*/input
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Use cloud storage for outputs</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Set output directory to cloud</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span>
+    <span class="n">outdir</span><span class="o">=</span><span class="s2">&quot;gs://your-bucket/output/&quot;</span><span class="p">,</span>
+    <span class="n">export</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Mark as export process</span>
+<span class="p">)</span>
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h3 id="cloud-deployment-issues">Cloud Deployment Issues<a class="headerlink" href="#cloud-deployment-issues" title="Permanent link">&para;</a></h3>
+<h4 id="authentication-failures">Authentication Failures<a class="headerlink" href="#authentication-failures" title="Permanent link">&para;</a></h4>
+<p><strong>Symptom:</strong> <code>AuthenticationError</code> when accessing cloud resources.</p>
+<p><strong>Solutions:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Authenticate with Google Cloud</span>
+gcloud<span class="w"> </span>auth<span class="w"> </span>login
+gcloud<span class="w"> </span>auth<span class="w"> </span>application-default<span class="w"> </span>login
+
+<span class="c1"># Check credentials</span>
+gcloud<span class="w"> </span>auth<span class="w"> </span>list
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># Ensure cloud paths are properly configured</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cloudsh</span><span class="w"> </span><span class="kn">import</span> <span class="n">CloudPath</span>
+
+<span class="c1"># Check authentication works</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">CloudPath</span><span class="p">(</span><span class="s2">&quot;gs://your-bucket/&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()))</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Authentication failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h4 id="cloud-storage-issues">Cloud Storage Issues<a class="headerlink" href="#cloud-storage-issues" title="Permanent link">&para;</a></h4>
+<p><strong>Symptom:</strong> File operations fail on cloud storage.</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li>
+<p><strong>Use cloudpathlib cache</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Set cache directory to local disk</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">CLOUDPATHLIB_LOCAL_CACHE_DIR</span><span class="o">=</span>/path/to/cache
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Check bucket permissions</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Verify bucket access</span>
+gsutil<span class="w"> </span>ls<span class="w"> </span>gs://your-bucket/
+gsutil<span class="w"> </span>acl<span class="w"> </span>get<span class="w"> </span>gs://your-bucket/
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Use appropriate path types</strong>
+   <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">cloudsh</span><span class="w"> </span><span class="kn">import</span> <span class="n">CloudPath</span><span class="p">,</span> <span class="n">LocalPath</span>
+
+<span class="c1"># Local paths</span>
+<span class="n">local_path</span> <span class="o">=</span> <span class="n">LocalPath</span><span class="p">(</span><span class="s2">&quot;/local/data.txt&quot;</span><span class="p">)</span>
+
+<span class="c1"># Cloud paths</span>
+<span class="n">cloud_path</span> <span class="o">=</span> <span class="n">CloudPath</span><span class="p">(</span><span class="s2">&quot;gs://bucket/data.txt&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h4 id="network-timeouts">Network Timeouts<a class="headerlink" href="#network-timeouts" title="Permanent link">&para;</a></h4>
+<p><strong>Symptom:</strong> Jobs fail with timeout errors.</p>
+<p><strong>Solutions:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Increase retry count for network operations</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">num_retries</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="c1"># Increase timeout (if scheduler supports it)</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;gbatch&quot;</span><span class="p">,</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="s2">&quot;3600&quot;</span>  <span class="c1"># 1 hour timeout</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div>
+<hr />
+<h3 id="template-issues">Template Issues<a class="headerlink" href="#template-issues" title="Permanent link">&para;</a></h3>
+<h4 id="template-rendering-errors">Template Rendering Errors<a class="headerlink" href="#template-rendering-errors" title="Permanent link">&para;</a></h4>
+<p><strong>Error:</strong>
+<div class="highlight"><pre><span></span><code>pipen.exceptions.TemplateRenderingError: Failed to render template
+</code></pre></div></p>
+<p><strong>Cause:</strong> Invalid template syntax or undefined variables.</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li>
+<p><strong>Check variable names</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Ensure variables are referenced correctly</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;var&quot;</span><span class="p">}</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;cat {{ in.filename }}&quot;</span>  <span class="c1"># Double braces</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Use correct template syntax</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Liquid template (default)</span>
+<span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Liquid: {{ in.data | upper }}</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1"># Jinja2 template</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">template</span><span class="o">=</span><span class="s2">&quot;jinja2&quot;</span><span class="p">)</span>
+<span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Jinja2: {{ in.data.upper() }}</span>
+<span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Debug template rendering</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Add debug output</span>
+<span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">echo &quot;Input data: {{ in.data }}&quot;</span>
+<span class="s2">echo &quot;Input type: {{ in.data | type }}&quot;</span>
+<span class="s2">echo &quot;Processing...&quot;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h4 id="filter-not-working">Filter Not Working<a class="headerlink" href="#filter-not-working" title="Permanent link">&para;</a></h4>
+<p><strong>Symptom:</strong> Template filters don't produce expected output.</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li>
+<p><strong>Check filter availability</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Built-in filters</span>
+<span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">{{ in.path | basename }}   # Get filename</span>
+<span class="s2">{{ in.path | dirname }}    # Get directory</span>
+<span class="s2">{{ in.value | upper }}     # Uppercase</span>
+<span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Register custom filters</strong>
+   <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">my_filter</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span>
+    <span class="n">template_opts</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;filters&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;my_filter&#39;</span><span class="p">:</span> <span class="n">my_filter</span><span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProc</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;{{ in.data | my_filter }}&quot;</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Debug filter application</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># Test filters in Python first</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">my_filter</span><span class="p">(</span><span class="s2">&quot;  Test String  &quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>  <span class="c1"># Should be &quot;test string&quot;</span>
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h3 id="getting-help">Getting Help<a class="headerlink" href="#getting-help" title="Permanent link">&para;</a></h3>
+<p>If you encounter an issue not covered here:</p>
+<ol>
+<li>
+<p><strong>Enable debug logging</strong>
+   <div class="highlight"><pre><span></span><code><span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="n">loglevel</span><span class="o">=</span><span class="s2">&quot;debug&quot;</span><span class="p">)</span>
+<span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Check the logs</strong>
+   <div class="highlight"><pre><span></span><code><span class="c1"># View pipeline logs</span>
+cat<span class="w"> </span>~/.pipen/MyPipeline/*.log
+
+<span class="c1"># View job logs</span>
+cat<span class="w"> </span>~/.pipen/MyPipeline/*/job.log
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Search existing issues</strong></p>
+</li>
+<li>Check <a href="https://github.com/pwwang/pipen/issues">GitHub Issues</a></li>
+<li>
+<p>Search for your error message</p>
+</li>
+<li>
+<p><strong>Create a new issue</strong>
+   Include:</p>
+</li>
+<li>Full error message and traceback</li>
+<li>Python version: <code>python --version</code></li>
+<li>pipen version: <code>pipen --version</code></li>
+<li>Minimal reproducible example</li>
+<li>
+<p>System information: OS, scheduler type</p>
+</li>
+<li>
+<p><strong>Ask for help</strong></p>
+</li>
+<li><a href="https://github.com/pwwang/pipen/discussions">GitHub Discussions</a></li>
+<li><a href="https://pwwang.github.io/pipen">Documentation</a></li>
+</ol>
+<h3 id="further-reading">Further Reading<a class="headerlink" href="#further-reading" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="../error/">Error Handling</a> - Error strategies</li>
+<li><a href="../configurations/">Configuration</a> - Pipeline and process configuration</li>
+<li><a href="../scheduler/">Scheduler</a> - Scheduler-specific options</li>
+<li><a href="../architecture/">Architecture</a> - Internal architecture details</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../CHANGELOG/" class="btn btn-neutral float-left" title="Change Log"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../CONTRIBUTING/" class="btn btn-neutral float-right" title="Contributing">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../CHANGELOG/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../CONTRIBUTING/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+    <script src="../js/version-select.js"></script>
+      <script src="../js/mkapi.js"></script>
+      <script src="../assets/script.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

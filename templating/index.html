@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Templating - pipen</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Templating";
+        var mkdocs_page_input_path = "templating.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Templating</a>
+    <ul class="current">
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">How-to Guides</li>
+      <li class="breadcrumb-item active">Templating</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/templating.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <p>Templates are used in <code>output</code> and <code>script</code> in process definition.</p>
+<h3 id="template-engines">Template engines<a class="headerlink" href="#template-engines" title="Permanent link">&para;</a></h3>
+<p>By default, <code>pipen</code> uses <a href="https://github.com/pwwang/liquidpy"><code>liquid</code></a> template engine to render the <code>output</code> and <code>script</code>. You can also switch the template engine to <a href="https://github.com/pallets/jinja"><code>jinja2</code></a> by specifying:</p>
+<div class="highlight"><pre><span></span><code><span class="n">template</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;jinja2&quot;</span>
+</code></pre></div>
+<p>in one of the configuration files, or in the <code>Pipen</code> constructor:</p>
+<div class="highlight"><pre><span></span><code><span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipen</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="s2">&quot;jinja2&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+</code></pre></div>
+<p>or in the process definition</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MyProcess</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="s2">&quot;jinja2&quot;</span> <span class="c1"># overwrite the global template engine</span>
+</code></pre></div>
+<p>Besides specifying the name of a template engine, you can also specify a subclass <code>pipen.template.Template</code> as a template engine. This enables us to use our own template engine. You just have to wrap then use a subclass of <code>pipen.template.Template</code>. For example, if you want to use <a href="https://www.makotemplates.org/"><code>mako</code></a>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">mako.template</span><span class="w"> </span><span class="kn">import</span> <span class="n">Template</span> <span class="k">as</span> <span class="n">MakoTemplate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pipen.template</span><span class="w"> </span><span class="kn">import</span> <span class="n">Template</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TemplateMako</span><span class="p">(</span><span class="n">Template</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">MakoTemplate</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">)</span>
+
+<span class="c1"># Use it for a process</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pipen</span><span class="w"> </span><span class="kn">import</span> <span class="n">Proc</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyProcess</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">TemplateMako</span>
+    <span class="o">...</span> <span class="c1"># other configurations</span>
+</code></pre></div>
+<p>The <code>template_opts</code> configuration is used to pass to <code>TemplateMako</code> constructor. The values is passed by to the <code>MakoTemplate</code> constructor.</p>
+<p>You can also register the template as a plugin of pipen:</p>
+<p>In <code>pyproject.toml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[tool.poetry.plugins.pipen_tpl]</span>
+<span class="n">mako</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;pipen_mako:pipen_mako&quot;</span>
+</code></pre></div>
+<p>Or in <code>setup.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">setup</span><span class="p">(</span>
+    <span class="o">...</span><span class="p">,</span>
+    <span class="n">entry_points</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;pipen_tpl&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;pipen_mako:pipen_mako&quot;</span><span class="p">]},</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Then in <code>pipen_mako.py</code> of your package:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pipen_mako</span><span class="p">():</span>
+    <span class="c1"># TemplateMako is defined as the above</span>
+    <span class="k">return</span> <span class="n">TemplateMako</span>
+</code></pre></div>
+<h3 id="rendering-data">Rendering data<a class="headerlink" href="#rendering-data" title="Permanent link">&para;</a></h3>
+<p>There are some data shared to render both <code>output</code> and <code>script</code>. However, there are some different. One of the obvious reasons is that, the <code>script</code> template can use the <code>output</code> data to render.</p>
+<h4 id="output"><code>output</code><a class="headerlink" href="#output" title="Permanent link">&para;</a></h4>
+<p>The data to render the <code>output</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>job.index</code></td>
+<td>The index of the job, 0-based</td>
+</tr>
+<tr>
+<td><code>job.metadir</code><sup>1</sup></td>
+<td>The directory where job metadata is saved, typically <code>&lt;pipeline-workdir&gt;/&lt;pipeline-name&gt;/&lt;proc-name&gt;/&lt;job.index&gt;/</code></td>
+</tr>
+<tr>
+<td><code>job.outdir</code><sup>1</sup></td>
+<td>*The output directory of the job: <code>&lt;pipeline-workdir&gt;/&lt;pipeline-name&gt;/&lt;proc-name&gt;/&lt;job.index&gt;/output</code></td>
+</tr>
+<tr>
+<td><code>job.stdout_file</code><sup>1</sup></td>
+<td>The file that saves the stdout of the job</td>
+</tr>
+<tr>
+<td><code>job.stderr_file</code><sup>1</sup></td>
+<td>The file that saves the stderr of the job</td>
+</tr>
+<tr>
+<td><code>in</code></td>
+<td>The input data of the job. You can use <code>in.&lt;input-key&gt;</code><sup>1</sup> to access the data for each input key</td>
+</tr>
+<tr>
+<td><code>proc</code></td>
+<td>The process object, used to access their properties, such as <code>proc.workdir</code></td>
+</tr>
+<tr>
+<td><code>envs</code></td>
+<td>The <code>envs</code> of the process</td>
+</tr>
+</tbody>
+</table>
+<p><code>*</code>: If the process is an end process, it will be a symbolic link to <code>&lt;pipeline-outdir&gt;/&lt;process-name&gt;/&lt;job.index&gt;</code>. When the process has only a single job, the <code>&lt;job.index&gt;</code> is also omitted.</p>
+<h4 id="script"><code>script</code><a class="headerlink" href="#script" title="Permanent link">&para;</a></h4>
+<p>All the data used to render <code>output</code> can also be used to render <code>script</code>. Addtionally, the rendered <code>output</code> can also be used to render <code>script</code>. For example:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MyProcess</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;in&quot;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;outfile:file:{{in.in}}.txt&quot;</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;echo {{in.in}} &gt; {{out.outfile}}&quot;</span>
+    <span class="o">...</span> <span class="c1"># other configurations</span>
+</code></pre></div>
+<p>With input data ["a"], the script is rendered as <code>echo a &gt; &lt;job.outdir&gt;/a.txt</code></p>
+<blockquote>
+<p><sup>1</sup> The paths are <a href="https://pwwang.github.io/xqute/api/xqute.path/"><code>MountedPath</code></a> objects, which represent paths of jobs and it is useful when a job is running in a remote system (a VM, a container, etc.), where we need to mount the paths into the remote system. It has an attribute <code>spec</code> to get the specified path. When there is no mountings, it is the same as the path itself.</p>
+</blockquote>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../running/" class="btn btn-neutral float-left" title="Defining and running a pipeline"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../channels/" class="btn btn-neutral float-right" title="Channels">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../running/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../channels/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+    <script src="../js/version-select.js"></script>
+      <script src="../js/mkapi.js"></script>
+      <script src="../assets/script.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

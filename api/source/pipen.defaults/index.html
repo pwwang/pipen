@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>pipen.defaults - pipen</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../../../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../../../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "pipen.defaults";
+        var mkdocs_page_input_path = "api/source/pipen.defaults.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../..">
+          <img src="../../../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">pipen.defaults</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/api/source/pipen.defaults.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <div class="mkapi-node">
+<h1 id="" class="mkapi-object mkapi-object-code plain">
+<span class="mkapi-object-kind mkapi-object-kind-code">SOURCE CODE</span>
+<span class="mkapi-object-prefix">pipen.</span><span class="mkapi-object-name">defaults</span>
+<span id="pipen.defaults"></span><a class="mkapi-docs-link" href="../../pipen.defaults">DOCS</a>
+</h1>
+
+<div class="mkapi-code">
+<div class="codehilite"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Provide some default values/objects&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">diot</span><span class="w"> </span><span class="kn">import</span> <span class="n">Diot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">JobErrorStrategy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span> <span class="k">as</span> <span class="n">xqute_logger</span>
+
+<span class="c1"># Remove the rich handler</span>
+<span class="n">_xqute_handlers</span> <span class="o">=</span> <span class="n">xqute_logger</span><span class="o">.</span><span class="n">handlers</span>
+<span class="k">if</span> <span class="n">_xqute_handlers</span><span class="p">:</span>
+    <span class="c1"># The very first handler is the rich handler</span>
+    <span class="n">xqute_logger</span><span class="o">.</span><span class="n">removeHandler</span><span class="p">(</span><span class="n">_xqute_handlers</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="n">LOGGER_NAME</span> <span class="o">=</span> <span class="s2">&quot;core&quot;</span>
+<span class="n">CONFIG_FILES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;~/.pipen.toml&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(),</span>
+    <span class="s2">&quot;./.pipen.toml&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PIPEN.osenv&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">CONFIG</span> <span class="o">=</span> <span class="n">Diot</span><span class="p">(</span>
+    <span class="c1"># pipeline level: The logging level</span>
+    <span class="n">loglevel</span><span class="o">=</span><span class="s2">&quot;info&quot;</span><span class="p">,</span>
+    <span class="c1"># process level: The cache option, True/False/export</span>
+    <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># process level: Whether expand directory to check signature</span>
+    <span class="n">dirsig</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="c1"># process level:</span>
+    <span class="c1"># How to deal with the errors</span>
+    <span class="c1"># retry, ignore, halt</span>
+    <span class="c1"># halt to halt the whole pipeline, no submitting new jobs</span>
+    <span class="c1"># terminate to just terminate the job itself</span>
+    <span class="n">error_strategy</span><span class="o">=</span><span class="n">JobErrorStrategy</span><span class="o">.</span><span class="n">IGNORE</span><span class="p">,</span>
+    <span class="c1"># process level:</span>
+    <span class="c1"># How many times to retry to jobs once error occurs</span>
+    <span class="n">num_retries</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="c1"># process level:</span>
+    <span class="c1"># The directory to export the output files</span>
+    <span class="n">forks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="c1"># process level: Default shell/language</span>
+    <span class="n">lang</span><span class="o">=</span><span class="s2">&quot;bash&quot;</span><span class="p">,</span>
+    <span class="c1"># process level:</span>
+    <span class="c1"># How many jobs to be submitted in a batch</span>
+    <span class="c1"># Use the default value from the scheduler itself if None</span>
+    <span class="n">submission_batch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># pipeline level:</span>
+    <span class="c1"># The working directory for the pipeline</span>
+    <span class="n">workdir</span><span class="o">=</span><span class="s2">&quot;./.pipen&quot;</span><span class="p">,</span>
+    <span class="c1"># process level: template engine</span>
+    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;liquid&quot;</span><span class="p">,</span>
+    <span class="c1"># process level: template options</span>
+    <span class="n">template_opts</span><span class="o">=</span><span class="p">{},</span>
+    <span class="c1"># process level: scheduler</span>
+    <span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">,</span>
+    <span class="c1"># process level: scheduler options</span>
+    <span class="n">scheduler_opts</span><span class="o">=</span><span class="p">{},</span>
+    <span class="c1"># pipeline level: plugins</span>
+    <span class="n">plugins</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># pipeline level: plugin opts</span>
+    <span class="n">plugin_opts</span><span class="o">=</span><span class="p">{},</span>
+<span class="p">)</span>
+
+<span class="c1"># Just the total width of the terminal</span>
+<span class="c1"># when logging with a rich.Panel()</span>
+<span class="n">CONSOLE_WIDTH_WITH_PANEL</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="c1"># The width of the terminal when the width cannot be detected,</span>
+<span class="c1"># we are probably logging into a file</span>
+<span class="n">CONSOLE_DEFAULT_WIDTH</span> <span class="o">=</span> <span class="mi">2048</span>
+<span class="c1"># [05/16/22 11:46:40] I</span>
+<span class="c1"># v0.3.4:</span>
+<span class="c1"># 05-16 11:11:11 I</span>
+<span class="c1"># The markup code is included</span>
+<span class="c1"># Don&#39;t modify this unless the logger formatter is changed</span>
+<span class="n">CONSOLE_WIDTH_SHIFT</span> <span class="o">=</span> <span class="mi">25</span>
+<span class="c1"># For pipen scheduler plugins</span>
+<span class="n">SCHEDULER_ENTRY_GROUP</span> <span class="o">=</span> <span class="s2">&quot;pipen_sched&quot;</span>
+<span class="c1"># For pipen template plugins</span>
+<span class="n">TEMPLATE_ENTRY_GROUP</span> <span class="o">=</span> <span class="s2">&quot;pipen_tpl&quot;</span>
+<span class="c1"># For pipen template cli plugins</span>
+<span class="n">CLI_ENTRY_GROUP</span> <span class="o">=</span> <span class="s2">&quot;pipen_cli&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ProcInputType</span><span class="p">:</span><span id="pipen.defaults.ProcInputType"></span><a class="mkapi-docs-link" title="pipen.defaults.ProcInputType" href="../../pipen.defaults/#pipen.defaults.ProcInputType">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Types for process inputs&quot;&quot;&quot;</span>
+
+    <span class="n">VAR</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;var&quot;</span>
+    <span class="n">FILE</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;file&quot;</span>
+    <span class="n">DIR</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;dir&quot;</span>
+    <span class="n">FILES</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;files&quot;</span>
+    <span class="n">DIRS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;dirs&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ProcOutputType</span><span class="p">:</span><span id="pipen.defaults.ProcOutputType"></span><a class="mkapi-docs-link" title="pipen.defaults.ProcOutputType" href="../../pipen.defaults/#pipen.defaults.ProcOutputType">DOCS</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Types for process outputs&quot;&quot;&quot;</span>
+
+    <span class="n">VAR</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;var&quot;</span>
+    <span class="n">DIR</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;dir&quot;</span>
+    <span class="n">FILE</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;file&quot;</span>
+</code></pre></div>
+</div>
+</div>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../../..";</script>
+    <script src="../../../js/theme_extra.js"></script>
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/version-select.js"></script>
+      <script src="../../../js/mkapi.js"></script>
+      <script src="../../../assets/script.js"></script>
+      <script src="../../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

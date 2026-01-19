@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Channels - pipen</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Channels";
+        var mkdocs_page_input_path = "channels.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Channels</a>
+    <ul class="current">
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">How-to Guides</li>
+      <li class="breadcrumb-item active">Channels</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/channels.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <p>Channels are used to pass data from one process to another. It is actually a <code>pandas.DataFrame</code> object, where each column corresponds to an input key and each row corresponds to a job.</p>
+<p>The values for different variables in different jobs wil be:</p>
+<table>
+<thead>
+<tr>
+<th>Job Index</th>
+<th>v1</th>
+<th>v2</th>
+<th>v3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>a1</td>
+<td>b1</td>
+<td>c1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>a2</td>
+<td>b2</td>
+<td>c2</td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<p>With a process definition:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MyProcess</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;v1, v2, v3&quot;</span>
+    <span class="n">input_data</span> <span class="o">=</span> <span class="n">df</span> <span class="c1">#  The above data frame</span>
+</code></pre></div>
+<p>Then:</p>
+<table>
+<thead>
+<tr>
+<th>Job index</th>
+<th>Template</th>
+<th>Rendered to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>{{in.v1}}</code></td>
+<td><code>a1</code></td>
+</tr>
+<tr>
+<td>0</td>
+<td><code>{{in.v2}}</code></td>
+<td><code>b1</code></td>
+</tr>
+<tr>
+<td>0</td>
+<td><code>{{in.v3}}</code></td>
+<td><code>c1</code></td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>{{in.v1}}</code></td>
+<td><code>a2</code></td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>{{in.v2}}</code></td>
+<td><code>b2</code></td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>{{in.v3}}</code></td>
+<td><code>c2</code></td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<p>The column names don't have to match the exact input keys. If <code>pipen</code> finds any of the input keys present in the data, just use them. However, if any input keys cannot find in the data frame, we will use the first couple of columns.</p>
+<p>For example:
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MyProcess2</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;v4, v3&quot;</span>
+    <span class="n">input_data</span> <span class="o">=</span> <span class="n">df</span> <span class="c1">#  The above data frame</span>
+</code></pre></div></p>
+<p>The for job#0, <code>{{in.v4}}</code> will be rendered as <code>a1</code> (using column <code>v1</code> in the data), and <code>{{in.v3}}</code> as <code>c1</code> (using column <code>v3</code>).</p>
+<h3 id="creating-channels">Creating channels<a class="headerlink" href="#creating-channels" title="Permanent link">&para;</a></h3>
+<p>Since channels are just data frames, so whatever creates a pandas data frame, can be used to create a channel. Besides, a couple of class methods are avaible to create channels:</p>
+<ul>
+<li>
+<p><code>Channel.create(...)</code></p>
+<p>This takes a list of values to create a channel. If a data frame is passed, will return that data frame.</p>
+<p>If each element in the list is a tuple, the list is used to create a data frame directly, just like:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="n">ch</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">create</span><span class="p">([(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)])</span>
+<span class="c1"># ch = DataFrame([(1,2), (3,4)])</span>
+<span class="c1">#         0       1</span>
+<span class="c1">#   &lt;int64&gt; &lt;int64&gt;</span>
+<span class="c1"># 0       1       2</span>
+<span class="c1"># 1       3       4</span>
+</code></pre></div>
+<p>If each element is not a tuple (even it is a list), it is converted to tuple:
+<div class="highlight"><pre><span></span><code><span class="n">ch</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">create</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="c1"># equvalent to:</span>
+<span class="c1"># ch = Channel.create([(1, ), (2, )])</span>
+</code></pre></div></p>
+<p>The <code>input_data</code> is passed to this class method to create the input channel.</p>
+</li>
+<li>
+<p><code>Channel.from_glob(...)</code> (async version: <code>Channel.a_from_glob(...)</code>)</p>
+<p>This takes a glob pattern to match the files to create a single-column channel.</p>
+<p>You can also filter the types of files by <code>ftype</code>:
+- <code>any</code>: to match any files (default)
+- <code>link</code>: to mach any links
+- <code>dir</code>: to match any directories
+- <code>file</code>: to match any files</p>
+<p>You may also sort the files using <code>sortby</code>:
+- <code>name</code>: sort the files by their basename (default)
+- <code>mtime</code>: sort the files by their last modified time
+- <code>size</code>: sort by file size</p>
+<p>When <code>reverse</code> is True, the above sortings are reversed.</p>
+</li>
+<li>
+<p><code>Channel.from_pairs(...)</code>  (async version: <code>Channel.a_from_pairs(...)</code>)</p>
+<p>Like <code>Channel.from_glob()</code> but create a double-column channel.</p>
+</li>
+<li>
+<p><code>Channel.from_csv(...)</code></p>
+<p>Uses <code>pandas.read_csv()</code> to create a channel</p>
+</li>
+<li>
+<p><code>Channel.from_excel(...)</code></p>
+<p>Uses <code>pandas.read_excel()</code> to create a channel</p>
+</li>
+<li>
+<p><code>Channel.from_table(...)</code></p>
+<p>Uses <code>pandas.read_table()</code> to create a channel</p>
+</li>
+</ul>
+<h3 id="builtin-verbsfunctions-to-transform-channels">Builtin verbs/functions to transform channels<a class="headerlink" href="#builtin-verbsfunctions-to-transform-channels" title="Permanent link">&para;</a></h3>
+<p><code>pipen</code> uses <a href="https://github.com/pwwang/pipda"><code>pipda</code></a> to create some verbs/functions to transform channels, so that you can use them with piping syntax:</p>
+<div class="highlight"><pre><span></span><code><span class="n">channel</span> <span class="o">&gt;&gt;</span> <span class="n">verb</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="expanding-a-channel-by-directory-expand_dir">Expanding a channel by directory: <code>expand_dir()</code><a class="headerlink" href="#expanding-a-channel-by-directory-expand_dir" title="Permanent link">&para;</a></h4>
+<p>Sometimes we prepare files in one process (for example, split a big file into small ones in a directory), then handle these files by different jobs in another process, so that they can be processed simultaneously.</p>
+<p><img alt="Flow diagram showing how expand_dir() takes a directory path as input and expands it into individual file paths, which are then distributed across multiple parallel jobs." src="../channel-expand_dir.png" /></p>
+<p>For example:
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">P1</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="c1"># the original file: a.txt</span>
+    <span class="nb">input</span>  <span class="o">=</span> <span class="s2">&quot;infile:file&quot;</span>
+    <span class="n">input_data</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;a.txt&quot;</span><span class="p">]</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;outdir:dir:outdir&quot;</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;# the script to split a.txt to 1.txt, 2.txt, 3.txt ... to {{out.outdir}}&quot;</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">P2</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="n">P1</span>
+    <span class="c1"># expand channel [(&quot;outdir/a/&quot;,)] to channel:</span>
+    <span class="c1"># [(&quot;outdir/a/1.txt&quot;,), (&quot;outdir/a/2.txt&quot;,), (&quot;outdir/a/3.txt&quot;,), ...]</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;infile:file&quot;</span>
+    <span class="n">input_data</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">ch</span><span class="p">:</span> <span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="n">expand_dir</span><span class="p">(</span><span class="n">pattern</span><span class="o">=</span><span class="s2">&quot;*.txt&quot;</span><span class="p">)</span>
+    <span class="c1"># outfile: 1.result, 2.result, ...</span>
+    <span class="n">output</span>  <span class="o">=</span> <span class="s2">&quot;outfile:file:{{in.infile.split(&#39;/&#39;)[-1].split(&#39;.&#39;)[0]}}.result&quot;</span>
+    <span class="n">script</span>  <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    # work on {{in.infile}} (1.txt, 2.txt, 3.txt, ...)</span>
+<span class="s2">    # to result file {{out.outfile}} (1.result, 2.result, 3.result, ...)</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+<span class="c1"># Run 3 jobs in a batch simultaneously</span>
+<span class="n">Pipen</span><span class="p">(</span><span class="n">forks</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P1</span><span class="p">)</span>
+</code></pre></div></p>
+<p>If the channel is a multi-column channel, you can also specify <code>col</code> to expand only on that column, values of other columns will be copied to the expanded rows/jobs.</p>
+<p>You can also filter and sort the expanded files using arguments <code>ftype</code>, <code>sortby</code> and <code>reverse</code>, just like when we use <code>Channel.from_glob(...)</code></p>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<ul>
+<li><code>expand_dir(...)</code> only works for single-row channels, which will be expanded to <code>N</code> (number of files included). If original channel has more than 1 row, only first row will be used, and other rows will be ignored.</li>
+<li>Only the value of the column to be expanded will be changed, values of other columns remain the same.</li>
+</ul>
+</div>
+<h4 id="collapsing-a-channel-by-files-in-a-common-ancestor-directory-collapse_files">Collapsing a channel by files in a common ancestor directory: <code>collapse_files(...)</code><a class="headerlink" href="#collapsing-a-channel-by-files-in-a-common-ancestor-directory-collapse_files" title="Permanent link">&para;</a></h4>
+<p>It's basically the reverse process of <code>expand_dir()</code>. It applies when you deal with different files and in next process you need them all involved (i.e. combine the results):</p>
+<p><img alt="Flow diagram showing how collapse_files() takes multiple file paths from different directories and groups them into a common ancestor directory path, enabling aggregation of distributed results." src="../channel-collapse_files.png" /></p>
+<p>For example:
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">P1</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="s2">&quot;infile:file&quot;</span>
+    <span class="n">input_data</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;/a/b/1.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;/a/b/2.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;/a/b/3.txt&quot;</span><span class="p">]</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;outfile:file:{{in.infile.split(&#39;/&#39;)[-1].split(&#39;.&#39;)[0] | append: &#39;.txt2&#39;}}&quot;</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    # the script to deal with each input file:</span>
+<span class="s2">    # {{in.infile}} -&gt; {{out.outfile}}</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">P2</span><span class="p">(</span><span class="n">Proc</span><span class="p">):</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="n">P1</span>
+    <span class="c1"># collapse channel [(&quot;&lt;outdir&gt;/1.txt2&quot;,), (&quot;&lt;outdir&gt;/2.txt2&quot;,), (&quot;&lt;outdir&gt;/3.txt2&quot;,)]</span>
+    <span class="c1"># to channel: [(&quot;&lt;outdir&gt;/&quot;, )]</span>
+    <span class="nb">input</span>   <span class="o">=</span> <span class="s2">&quot;indir:file&quot;</span>
+    <span class="n">input_data</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">ch</span><span class="p">:</span> <span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="n">collapse_files</span><span class="p">()</span>
+    <span class="n">output</span>  <span class="o">=</span> <span class="s2">&quot;outfile:file:{{in.indir.split(&#39;/&#39;)[-1]}}.result&quot;</span>
+    <span class="n">script</span>  <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    # combine 1.txt2, 2.txt2, 3.txt3 in {{in.indir}} to {{out.outfile}}</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+<span class="n">Pipen</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">P1</span><span class="p">)</span>
+</code></pre></div></p>
+<p>Similarly, if we have multiple columns, you may specify the column by index or name to collapse by:
+<code>ch &gt;&gt; collapse_files(col=...)</code></p>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<ul>
+<li><code>os.path.dirname(os.path.commonprefix(...))</code> is used to detect the common ancestor directory, so the files could be <code>['/a/1/1.file', '/a/2/1.file']</code>. In this case <code>/a/</code> will be returned.</li>
+<li>values at other columns should be the same. They will NOT be checked! The values at the first row will be used.</li>
+</ul>
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../templating/" class="btn btn-neutral float-left" title="Templating"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../input-output/" class="btn btn-neutral float-right" title="Input and output">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../templating/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../input-output/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+    <script src="../js/version-select.js"></script>
+      <script src="../js/mkapi.js"></script>
+      <script src="../assets/script.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>pipen.job - pipen</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "pipen.job";
+        var mkdocs_page_input_path = "api/pipen.job.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../..">
+          <img src="../../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">pipen</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="../pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="./">pipen.job</a>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#pipenjobjob">Job</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#pipen_job_cachingjobcachingcache">cache</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#xqutejobjobrepr">repr</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#xqutejobjobget_jid">get_jid</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#xqutejobjobget_status">get_status</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#xqutejobjobset_status">set_status</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#xqutejobjobget_rc">get_rc</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#xqutejobjobset_rc">set_rc</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#xqutejobjobclean">clean</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#pipenjobjobprepare">prepare</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#pipenjobjobprepare_outdir">prepare_outdir</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#pipenjobjobprepare_output">prepare_output</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#pipenjobjoblog">log</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">API</li>
+          <li class="breadcrumb-item">pipen</li>
+      <li class="breadcrumb-item active">pipen.job</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/api/pipen.job.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <div class="mkapi-node" id="pipen.job">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object module plain top">
+    <div class="mkapi-object-kind module top">module</div>
+    <h2 id="pipenjob" class="mkapi-object-body module top"><span class="mkapi-object-prefix">pipen.</span><span class="mkapi-object-name">job</span></h2>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.job/#pipen.job" title="Source for pipen.job">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Provide the Job class</p></div>
+    </div>
+  <div class="mkapi-section classes">
+      <div class="mkapi-section-name classes">
+          <span class="mkapi-section-name-body classes">Classes</span> 
+        </div>
+      <div class="mkapi-section-body classes"><ul class="mkapi-items">
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.job.Job">Job</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job for pipen<a class="mkapi-src-link" href="../source/pipen.job/#pipen.job.Job" title="Source for pipen.job.Job">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.job.Job">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenjobjob" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.job.</code><code class="mkapi-object-name">Job</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.job/#pipen.job.Job" title="Source for pipen.job.Job">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base">xqute.job.Job</span>
+
+<span class="mkapi-base"><a href="../pipen/#pipen._job_caching.JobCaching">pipen._job_caching.JobCaching</a></span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>The job for pipen</p></div>
+    </div>
+  <div class="mkapi-section attributes">
+      <div class="mkapi-section-name attributes">
+          <span class="mkapi-section-name-body attributes">Attributes</span> 
+        </div>
+      <div class="mkapi-section-body attributes"><ul class="mkapi-items">
+
+
+<li class="readonly-property"><code class="mkapi-item-name">cached</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Check if a job is cached<span id="pipen._job_caching.JobCaching.cached"></span><a class="mkapi-src-link" href="../source/pipen._job_caching/#pipen._job_caching.JobCaching.cached" title="Source for pipen._job_caching.JobCaching.cached">&lt;/&gt;</a></span></li>
+
+
+
+<li class="readonly-property"><code class="mkapi-item-name">jid_file</code>
+<span class="mkapi-item-type">(SpecPath)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The jid file of the job<span id="xqute.job.Job.jid_file"></span><a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.jid_file" title="Source for xqute.job.Job.jid_file">&lt;/&gt;</a></span></li>
+
+
+
+
+
+<li class="readonly-property"><code class="mkapi-item-name">rc_file</code>
+<span class="mkapi-item-type">(SpecPath)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The rc file of the job<span id="xqute.job.Job.rc_file"></span><a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.rc_file" title="Source for xqute.job.Job.rc_file">&lt;/&gt;</a></span></li>
+
+<li class="readonly-property"><code class="mkapi-item-name">retry_dir</code>
+<span class="mkapi-item-type">(SpecPath)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The retry directory of the job<span id="xqute.job.Job.retry_dir"></span><a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.retry_dir" title="Source for xqute.job.Job.retry_dir">&lt;/&gt;</a></span></li>
+
+
+<li class="readonly-property"><code class="mkapi-item-name">script_file</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the path to script file<span id="pipen.job.Job.script_file"></span><a class="mkapi-src-link" href="../source/pipen.job/#pipen.job.Job.script_file" title="Source for pipen.job.Job.script_file">&lt;/&gt;</a></span></li>
+
+<li class="readonly-property"><code class="mkapi-item-name">signature_file</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the path to the signature file<span id="pipen._job_caching.JobCaching.signature_file"></span><a class="mkapi-src-link" href="../source/pipen._job_caching/#pipen._job_caching.JobCaching.signature_file" title="Source for pipen._job_caching.JobCaching.signature_file">&lt;/&gt;</a></span></li>
+
+<li class="readonly-property"><code class="mkapi-item-name">status_file</code>
+<span class="mkapi-item-type">(SpecPath)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The status file of the job<span id="xqute.job.Job.status_file"></span><a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.status_file" title="Source for xqute.job.Job.status_file">&lt;/&gt;</a></span></li>
+
+<li class="readonly-property"><code class="mkapi-item-name">stderr_file</code>
+<span class="mkapi-item-type">(SpecPath)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The stderr file of the job<span id="xqute.job.Job.stderr_file"></span><a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.stderr_file" title="Source for xqute.job.Job.stderr_file">&lt;/&gt;</a></span></li>
+
+<li class="readonly-property"><code class="mkapi-item-name">stdout_file</code>
+<span class="mkapi-item-type">(SpecPath)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The stdout file of the job<span id="xqute.job.Job.stdout_file"></span><a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.stdout_file" title="Source for xqute.job.Job.stdout_file">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section methods">
+      <div class="mkapi-section-name methods">
+          <span class="mkapi-section-name-body methods">Methods</span> 
+        </div>
+      <div class="mkapi-section-body methods"><ul class="mkapi-items">
+<li class="method"><code class="mkapi-item-name"><a href="#xqute.job.Job.__repr__">__repr__</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">repr of the job<a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.__repr__" title="Source for xqute.job.Job.__repr__">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#pipen._job_caching.JobCaching.cache">cache</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">write signature to signature file<a class="mkapi-src-link" href="../source/pipen._job_caching/#pipen._job_caching.JobCaching.cache" title="Source for pipen._job_caching.JobCaching.cache">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#xqute.job.Job.clean">clean</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">retry</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Clean up the meta files<a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.clean" title="Source for xqute.job.Job.clean">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#xqute.job.Job.get_jid">get_jid</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(int | str | none)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the jid of the job in scheduler system<a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.get_jid" title="Source for xqute.job.Job.get_jid">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#xqute.job.Job.get_rc">get_rc</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(int)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The return code of the job<a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.get_rc" title="Source for xqute.job.Job.get_rc">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#xqute.job.Job.get_status">get_status</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">refresh</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(int)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Query the status of the job<a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.get_status" title="Source for xqute.job.Job.get_status">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#pipen.job.Job.log">log</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">level</code>, <code class="mkapi-object-signature">msg</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">limit</code>, <code class="mkapi-object-signature">limit_indicator</code>, <code class="mkapi-object-signature">logger</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Log message for the jobs<a class="mkapi-src-link" href="../source/pipen.job/#pipen.job.Job.log" title="Source for pipen.job.Job.log">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#pipen.job.Job.prepare">prepare</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Prepare the job by given process<a class="mkapi-src-link" href="../source/pipen.job/#pipen.job.Job.prepare" title="Source for pipen.job.Job.prepare">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#pipen.job.Job.prepare_outdir">prepare_outdir</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(SpecPath)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the path to the output directory.<a class="mkapi-src-link" href="../source/pipen.job/#pipen.job.Job.prepare_outdir" title="Source for pipen.job.Job.prepare_outdir">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#pipen.job.Job.prepare_output">prepare_output</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get the output data of the job<a class="mkapi-src-link" href="../source/pipen.job/#pipen.job.Job.prepare_output" title="Source for pipen.job.Job.prepare_output">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#xqute.job.Job.set_rc">set_rc</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">rc</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Set the return code of the job<a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.set_rc" title="Source for xqute.job.Job.set_rc">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#xqute.job.Job.set_status">set_status</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">stat</code>, <code class="mkapi-object-signature">flush</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Set the status manually<a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.set_status" title="Source for xqute.job.Job.set_status">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+  <div class="mkapi-members">
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="pipen._job_caching.JobCaching.cache">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h4 id="pipen_job_cachingjobcachingcache" class="mkapi-object-body method"><code class="mkapi-object-name">cache</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen._job_caching/#pipen._job_caching.JobCaching.cache" title="Source for pipen._job_caching.JobCaching.cache">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>write signature to signature file</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="xqute.job.Job.__repr__">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h4 id="xqutejobjobrepr" class="mkapi-object-body method"><code class="mkapi-object-name"><a href="#xqutejobjobrepr">__repr__</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; str</span></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.__repr__" title="Source for xqute.job.Job.__repr__">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>repr of the job</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="xqute.job.Job.get_jid">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h4 id="xqutejobjobget_jid" class="mkapi-object-body method"><code class="mkapi-object-name"><a href="#xqutejobjobget_jid">get_jid</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; int | str | none</span></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.get_jid" title="Source for xqute.job.Job.get_jid">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get the jid of the job in scheduler system</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="xqute.job.Job.get_status">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h4 id="xqutejobjobget_status" class="mkapi-object-body method"><code class="mkapi-object-name"><a href="#xqutejobjobget_status">get_status</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">refresh=False</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; int</span></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.get_status" title="Source for xqute.job.Job.get_status">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Query the status of the job</p><p>If the job is submitted, try to query it from the status file
+Make sure the status is updated by trap in wrapped script</p>
+<p>Uses caching to avoid excessive file I/O. Cache is invalidated
+when status is explicitly set.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">refresh</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Whether to refresh the status from file</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="xqute.job.Job.set_status">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h4 id="xqutejobjobset_status" class="mkapi-object-body method"><code class="mkapi-object-name"><a href="#xqutejobjobset_status">set_status</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">stat</code>, <code class="mkapi-object-signature">flush=True</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.set_status" title="Source for xqute.job.Job.set_status">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Set the status manually</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">stat</code>
+<span class="mkapi-item-type">(int)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The status to set</span></li>
+
+<li><code class="mkapi-item-name">flush</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Whether to flush the status to file</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="xqute.job.Job.get_rc">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h4 id="xqutejobjobget_rc" class="mkapi-object-body method"><code class="mkapi-object-name"><a href="#xqutejobjobget_rc">get_rc</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; int</span></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.get_rc" title="Source for xqute.job.Job.get_rc">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>The return code of the job</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="xqute.job.Job.set_rc">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h4 id="xqutejobjobset_rc" class="mkapi-object-body method"><code class="mkapi-object-name"><a href="#xqutejobjobset_rc">set_rc</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">rc</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.set_rc" title="Source for xqute.job.Job.set_rc">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Set the return code of the job</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">rc</code>
+<span class="mkapi-item-type">(int | str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The return code</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="xqute.job.Job.clean">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h4 id="xqutejobjobclean" class="mkapi-object-body method"><code class="mkapi-object-name"><a href="#xqutejobjobclean">clean</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">retry=False</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/xqute.job/#xqute.job.Job.clean" title="Source for xqute.job.Job.clean">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Clean up the meta files</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">retry</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Whether clean it for retrying</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="pipen.job.Job.prepare">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h4 id="pipenjobjobprepare" class="mkapi-object-body method"><code class="mkapi-object-name">prepare</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.job/#pipen.job.Job.prepare" title="Source for pipen.job.Job.prepare">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Prepare the job by given process</p><p>Primarily prepare the script, and provide cmd to the job for xqute
+to wrap and run</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">proc</code>
+<span class="mkapi-item-type">(Proc)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">the process object</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="pipen.job.Job.prepare_outdir">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h4 id="pipenjobjobprepare_outdir" class="mkapi-object-body method"><code class="mkapi-object-name">prepare_outdir</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.job/#pipen.job.Job.prepare_outdir" title="Source for pipen.job.Job.prepare_outdir">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get the path to the output directory.</p><p>When proc.export is True, the output directory is based on the
+pipeline.outdir and the process name. Otherwise, it is based on
+the metadir.</p>
+<p>When the job is running in a detached system (a VM, typically),
+this will return the mounted path to the output directory.</p>
+<p>To access the real path, use self.outdir</p>
+</div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(SpecPath)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The path to the job output directory</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="pipen.job.Job.prepare_output">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h4 id="pipenjobjobprepare_output" class="mkapi-object-body method"><code class="mkapi-object-name">prepare_output</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.job/#pipen.job.Job.prepare_output" title="Source for pipen.job.Job.prepare_output">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get the output data of the job</p></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> 
+        </div>
+      <div class="mkapi-section-body returns"><p>The key-value map where the keys are the output keys</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="pipen.job.Job.log">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h4 id="pipenjobjoblog" class="mkapi-object-body method"><code class="mkapi-object-name">log</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">level</code>, <code class="mkapi-object-signature">msg</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">limit=3</code>, <code class="mkapi-object-signature">limit_indicator=True</code>, <code class="mkapi-object-signature">logger=&lt;LoggerAdapter pipen.core (WARNING)&gt;</code><code class="mkapi-object-parenthesis">)</code></h4>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.job/#pipen.job.Job.log" title="Source for pipen.job.Job.log">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Log message for the jobs</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">level</code>
+<span class="mkapi-item-type">(int | str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The log level of the record</span></li>
+
+<li><code class="mkapi-item-name">msg</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The message to log</span></li>
+
+<li><code class="mkapi-item-name">*args</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The arguments to format the message</span></li>
+
+<li><code class="mkapi-item-name">limit</code>
+<span class="mkapi-item-type">(int, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">limitation of the log (don't log for all jobs)</span></li>
+
+<li><code class="mkapi-item-name">limit_indicator</code>
+<span class="mkapi-item-type">(bool, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Whether to show an indicator saying the loghas been limited (the level of the indicator will be DEBUG)
+</span></li>
+
+<li><code class="mkapi-item-name">logger</code>
+<span class="mkapi-item-type">(LoggerAdapter, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The logger used to log</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+  </div>
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../pipen.version/" class="btn btn-neutral float-left" title="pipen.version"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../pipen.scheduler/" class="btn btn-neutral float-right" title="pipen.scheduler">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../pipen.version/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../pipen.scheduler/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+    <script src="../../js/version-select.js"></script>
+      <script src="../../js/mkapi.js"></script>
+      <script src="../../assets/script.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Examples - pipen</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Examples";
+        var mkdocs_page_input_path = "examples.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../api/pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Examples</a>
+    <ul class="current">
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+      <li class="breadcrumb-item active">Examples</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/examples.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <p>You can find the source code of the examples under directory <code>examples/</code> in the github repository.</p>
+<p>Theses examples including:</p>
+<h3 id="caching">Caching<a class="headerlink" href="#caching" title="Permanent link">&para;</a></h3>
+<p>When run the script the second time, you may see from the logs that jobs are cached:</p>
+<div class="highlight"><pre><span></span><code>❯ python examples/caching.py
+[09/13/21 06:10:03] I main                        _____________________________________   __
+[09/13/21 06:10:03] I main                        ___  __ \___  _/__  __ \__  ____/__  | / /
+[09/13/21 06:10:03] I main                        __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+[09/13/21 06:10:03] I main                        _  ____/__/ /  _  ____/_  /___  _  /|  /
+[09/13/21 06:10:03] I main                        /_/     /___/  /_/     /_____/  /_/ |_/
+[09/13/21 06:10:03] I main
+[09/13/21 06:10:03] I main                                     version: 0.1.0
+[09/13/21 06:10:03] D main
+[09/13/21 06:10:03] D main    Building process relationships:
+[09/13/21 06:10:03] D main    - Start processes: [&lt;Proc:AProcess&gt;]
+[09/13/21 06:10:03] I main
+[09/13/21 06:10:03] I main    ╭══════════════════════════════════ PIPEN-0 ═══════════════════════════════════╮
+[09/13/21 06:10:03] I main    ║  # procs          = 1                                                        ║
+[09/13/21 06:10:03] I main    ║  plugins          = [&#39;main&#39;, &#39;verbose-0.0.1&#39;]                                ║
+[09/13/21 06:10:03] I main    ║  profile          = default                                                  ║
+[09/13/21 06:10:03] I main    ║  outdir           = Pipen-output                                          ║
+[09/13/21 06:10:03] I main    ║  cache            = True                                                     ║
+[09/13/21 06:10:03] I main    ║  dirsig           = 1                                                        ║
+[09/13/21 06:10:03] I main    ║  error_strategy   = ignore                                                   ║
+[09/13/21 06:10:03] I main    ║  forks            = 1                                                        ║
+[09/13/21 06:10:03] I main    ║  lang             = bash                                                     ║
+[09/13/21 06:10:03] I main    ║  loglevel         = debug                                                    ║
+[09/13/21 06:10:03] I main    ║  num_retries      = 3                                                        ║
+[09/13/21 06:10:03] I main    ║  plugin_opts      = {}                                                       ║
+[09/13/21 06:10:03] I main    ║  plugins          = None                                                     ║
+[09/13/21 06:10:03] I main    ║  scheduler        = local                                                    ║
+[09/13/21 06:10:03] I main    ║  scheduler_opts   = {}                                                       ║
+[09/13/21 06:10:03] I main    ║  submission_batch = 8                                                        ║
+[09/13/21 06:10:03] I main    ║  template         = liquid                                                   ║
+[09/13/21 06:10:03] I main    ║  template_opts    = {}                                                       ║
+[09/13/21 06:10:03] I main    ║  workdir          = ./.pipen                                                 ║
+[09/13/21 06:10:03] I main    ╰══════════════════════════════════════════════════════════════════════════════╯
+[09/13/21 06:10:03] I main
+[09/13/21 06:10:03] I main    ╭══════════════════════════════════ AProcess ══════════════════════════════════╮
+[09/13/21 06:10:03] I main    ║ A normal process                                                             ║
+[09/13/21 06:10:03] I main    ╰══════════════════════════════════════════════════════════════════════════════╯
+[09/13/21 06:10:03] I main    AProcess: Workdir: &#39;.pipen/pipen-0/aprocess&#39;
+[09/13/21 06:10:03] I main    AProcess: &lt;&lt;&lt; [START]
+[09/13/21 06:10:03] I main    AProcess: &gt;&gt;&gt; [END]
+[09/13/21 06:10:03] I verbose AProcess: size: 1
+[09/13/21 06:10:03] I verbose AProcess: [0/0] in.infile: /tmp/pipen_example_caching.txt
+[09/13/21 06:10:03] I verbose AProcess: [0/0] out.outfile: /home/pwwang/github/pipen/Pipen-output/AProcess/pipen_example_caching.txt
+[09/13/21 06:10:03] I main    AProcess: Cached jobs: 0
+[09/13/21 06:10:03] I verbose AProcess: Time elapsed: 00:00:00.040s
+[09/13/21 06:10:03] I main
+</code></pre></div>
+<p>To "de-cache" the jobs:</p>
+<div class="highlight"><pre><span></span><code>❯ PIPEN_default_cache=0 python examples/caching.py
+[09/13/21 06:11:55] I main                        _____________________________________   __
+[09/13/21 06:11:55] I main                        ___  __ \___  _/__  __ \__  ____/__  | / /
+[09/13/21 06:11:55] I main                        __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+[09/13/21 06:11:55] I main                        _  ____/__/ /  _  ____/_  /___  _  /|  /
+[09/13/21 06:11:55] I main                        /_/     /___/  /_/     /_____/  /_/ |_/
+[09/13/21 06:11:55] I main
+[09/13/21 06:11:55] I main                                     version: 0.1.0
+[09/13/21 06:11:55] D main
+[09/13/21 06:11:55] D main    Building process relationships:
+[09/13/21 06:11:55] D main    - Start processes: [&lt;Proc:AProcess&gt;]
+[09/13/21 06:11:55] I main
+[09/13/21 06:11:55] I main    ╭══════════════════════════════════ PIPEN-0 ═══════════════════════════════════╮
+[09/13/21 06:11:55] I main    ║  # procs          = 1                                                        ║
+[09/13/21 06:11:55] I main    ║  plugins          = [&#39;main&#39;, &#39;verbose-0.0.1&#39;]                                ║
+[09/13/21 06:11:55] I main    ║  profile          = default                                                  ║
+[09/13/21 06:11:55] I main    ║  outdir           = Pipen-output                                          ║
+[09/13/21 06:11:55] I main    ║  cache            = 0                                                        ║
+[09/13/21 06:11:55] I main    ║  dirsig           = 1                                                        ║
+[09/13/21 06:11:55] I main    ║  error_strategy   = ignore                                                   ║
+[09/13/21 06:11:55] I main    ║  forks            = 1                                                        ║
+[09/13/21 06:11:55] I main    ║  lang             = bash                                                     ║
+[09/13/21 06:11:55] I main    ║  loglevel         = debug                                                    ║
+[09/13/21 06:11:55] I main    ║  num_retries      = 3                                                        ║
+[09/13/21 06:11:55] I main    ║  plugin_opts      = {}                                                       ║
+[09/13/21 06:11:55] I main    ║  plugins          = None                                                     ║
+[09/13/21 06:11:55] I main    ║  scheduler        = local                                                    ║
+[09/13/21 06:11:55] I main    ║  scheduler_opts   = {}                                                       ║
+[09/13/21 06:11:55] I main    ║  submission_batch = 8                                                        ║
+[09/13/21 06:11:55] I main    ║  template         = liquid                                                   ║
+[09/13/21 06:11:55] I main    ║  template_opts    = {}                                                       ║
+[09/13/21 06:11:55] I main    ║  workdir          = ./.pipen                                                 ║
+[09/13/21 06:11:55] I main    ╰══════════════════════════════════════════════════════════════════════════════╯
+[09/13/21 06:11:55] I main
+[09/13/21 06:11:55] I main    ╭══════════════════════════════════ AProcess ══════════════════════════════════╮
+[09/13/21 06:11:55] I main    ║ A normal process                                                             ║
+[09/13/21 06:11:55] I main    ╰══════════════════════════════════════════════════════════════════════════════╯
+[09/13/21 06:11:55] I main    AProcess: Workdir: &#39;.pipen/pipen-0/aprocess&#39;
+[09/13/21 06:11:55] I main    AProcess: &lt;&lt;&lt; [START]
+[09/13/21 06:11:55] I main    AProcess: &gt;&gt;&gt; [END]
+[09/13/21 06:11:55] I verbose AProcess: size: 1
+[09/13/21 06:11:55] D main    AProcess: [0/0] Not cached (proc.cache is False)
+[09/13/21 06:11:55] D main    AProcess: [0/0] Clearing previous output files.
+[09/13/21 06:11:55] I verbose AProcess: [0/0] in.infile: /tmp/pipen_example_caching.txt
+[09/13/21 06:11:55] I verbose AProcess: [0/0] out.outfile: /home/pwwang/github/pipen/Pipen-output/AProcess/pipen_example_caching.txt
+[09/13/21 06:11:56] I verbose AProcess: Time elapsed: 00:00:01.060s
+[09/13/21 06:11:56] I main
+</code></pre></div>
+<h3 id="input-data-callback">Input data callback<a class="headerlink" href="#input-data-callback" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>❯ python examples/input_data_callback.py
+[09/13/21 06:13:12] I main                        _____________________________________   __
+[09/13/21 06:13:12] I main                        ___  __ \___  _/__  __ \__  ____/__  | / /
+[09/13/21 06:13:12] I main                        __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+[09/13/21 06:13:12] I main                        _  ____/__/ /  _  ____/_  /___  _  /|  /
+[09/13/21 06:13:12] I main                        /_/     /___/  /_/     /_____/  /_/ |_/
+[09/13/21 06:13:12] I main
+[09/13/21 06:13:12] I main                                     version: 0.1.0
+[09/13/21 06:13:12] I main
+[09/13/21 06:13:12] I main    ╭══════════════════════════════════ PIPEN-0 ═══════════════════════════════════╮
+[09/13/21 06:13:12] I main    ║  # procs          = 2                                                        ║
+[09/13/21 06:13:12] I main    ║  plugins          = [&#39;main&#39;, &#39;verbose-0.0.1&#39;]                                ║
+[09/13/21 06:13:12] I main    ║  profile          = default                                                  ║
+[09/13/21 06:13:12] I main    ║  outdir           = Pipen-output                                             ║
+[09/13/21 06:13:12] I main    ║  cache            = True                                                     ║
+[09/13/21 06:13:12] I main    ║  dirsig           = 1                                                        ║
+[09/13/21 06:13:12] I main    ║  error_strategy   = ignore                                                   ║
+[09/13/21 06:13:13] I main    ║  forks            = 3                                                        ║
+[09/13/21 06:13:13] I main    ║  lang             = bash                                                     ║
+[09/13/21 06:13:13] I main    ║  loglevel         = info                                                     ║
+[09/13/21 06:13:13] I main    ║  num_retries      = 3                                                        ║
+[09/13/21 06:13:13] I main    ║  plugin_opts      = {}                                                       ║
+[09/13/21 06:13:13] I main    ║  plugins          = None                                                     ║
+[09/13/21 06:13:13] I main    ║  scheduler        = local                                                    ║
+[09/13/21 06:13:13] I main    ║  scheduler_opts   = {}                                                       ║
+[09/13/21 06:13:13] I main    ║  submission_batch = 8                                                        ║
+[09/13/21 06:13:13] I main    ║  template         = liquid                                                   ║
+[09/13/21 06:13:13] I main    ║  template_opts    = {}                                                       ║
+[09/13/21 06:13:13] I main    ║  workdir          = ./.pipen                                                 ║
+[09/13/21 06:13:13] I main    ╰══════════════════════════════════════════════════════════════════════════════╯
+[09/13/21 06:13:13] I main
+[09/13/21 06:13:13] I main    ╭───────────────────────────────────── P1 ─────────────────────────────────────╮
+[09/13/21 06:13:13] I main    │ Sort input file                                                              │
+[09/13/21 06:13:13] I main    ╰──────────────────────────────────────────────────────────────────────────────╯
+[09/13/21 06:13:13] I main    P1: Workdir: &#39;.pipen/pipen-0/p1&#39;
+[09/13/21 06:13:13] I main    P1: &lt;&lt;&lt; [START]
+[09/13/21 06:13:13] I main    P1: &gt;&gt;&gt; [&#39;P2&#39;]
+[09/13/21 06:13:13] I verbose P1: size: 10
+[09/13/21 06:13:13] I verbose P1: [0/9] in.infile: /tmp/pipen_example_input_data_callback/0.txt
+[09/13/21 06:13:13] I verbose P1: [0/9] out.outfile: /home/pwwang/github/pipen/.pipen/pipen-0/p1/0/output/intermediate.txt
+[09/13/21 06:13:15] I verbose P1: Time elapsed: 00:00:02.224s
+[09/13/21 06:13:15] I main
+[09/13/21 06:13:15] I main    ╭═════════════════════════════════════ P2 ═════════════════════════════════════╮
+[09/13/21 06:13:15] I main    ║ Paste line number                                                            ║
+[09/13/21 06:13:15] I main    ╰══════════════════════════════════════════════════════════════════════════════╯
+[09/13/21 06:13:15] I main    P2: Workdir: &#39;.pipen/pipen-0/p2&#39;
+[09/13/21 06:13:15] I main    P2: &lt;&lt;&lt; [&#39;P1&#39;]
+[09/13/21 06:13:15] I main    P2: &gt;&gt;&gt; [END]
+[09/13/21 06:13:15] I verbose P2: size: 10
+[09/13/21 06:13:15] I verbose P2: [0/9] in.infile: /home/pwwang/github/pipen/.pipen/pipen-0/p1/0/output/intermediate.txt
+[09/13/21 06:13:15] I verbose P2: [0/9] in.nlines: 2
+[09/13/21 06:13:15] I verbose P2: [0/9] out.outfile: /home/pwwang/github/pipen/Pipen-output/P2/0/result.txt
+[09/13/21 06:13:17] I verbose P2: Time elapsed: 00:00:02.192s
+[09/13/21 06:13:17] I main
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>❯<span class="w"> </span>cat<span class="w"> </span>/home/pwwang/github/pipen/Pipen-output/P2/0/result.txt
+<span class="m">1</span><span class="w">       </span>0_0
+<span class="m">2</span><span class="w">       </span>0_1
+</code></pre></div>
+<h3 id="mako-templating">mako templating<a class="headerlink" href="#mako-templating" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>❯ python examples/mako-templating.py
+[09/13/21 06:14:57] I main                        _____________________________________   __
+[09/13/21 06:14:57] I main                        ___  __ \___  _/__  __ \__  ____/__  | / /
+[09/13/21 06:14:57] I main                        __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+[09/13/21 06:14:57] I main                        _  ____/__/ /  _  ____/_  /___  _  /|  /
+[09/13/21 06:14:57] I main                        /_/     /___/  /_/     /_____/  /_/ |_/
+[09/13/21 06:14:57] I main
+[09/13/21 06:14:57] I main                                     version: 0.1.0
+[09/13/21 06:14:57] I main
+[09/13/21 06:14:57] I main    ╭══════════════════════════════════ PIPEN-0 ═══════════════════════════════════╮
+[09/13/21 06:14:57] I main    ║  # procs          = 1                                                        ║
+[09/13/21 06:14:57] I main    ║  plugins          = [&#39;main&#39;, &#39;verbose-0.0.1&#39;]                                ║
+[09/13/21 06:14:57] I main    ║  profile          = default                                                  ║
+[09/13/21 06:14:57] I main    ║  outdir           = Pipen-output                                             ║
+[09/13/21 06:14:57] I main    ║  cache            = True                                                     ║
+[09/13/21 06:14:57] I main    ║  dirsig           = 1                                                        ║
+[09/13/21 06:14:57] I main    ║  error_strategy   = ignore                                                   ║
+[09/13/21 06:14:57] I main    ║  forks            = 1                                                        ║
+[09/13/21 06:14:57] I main    ║  lang             = bash                                                     ║
+[09/13/21 06:14:57] I main    ║  loglevel         = info                                                     ║
+[09/13/21 06:14:57] I main    ║  num_retries      = 3                                                        ║
+[09/13/21 06:14:57] I main    ║  plugin_opts      = {}                                                       ║
+[09/13/21 06:14:57] I main    ║  plugins          = None                                                     ║
+[09/13/21 06:14:57] I main    ║  scheduler        = local                                                    ║
+[09/13/21 06:14:57] I main    ║  scheduler_opts   = {}                                                       ║
+[09/13/21 06:14:57] I main    ║  submission_batch = 8                                                        ║
+[09/13/21 06:14:57] I main    ║  template         = liquid                                                   ║
+[09/13/21 06:14:57] I main    ║  template_opts    = {}                                                       ║
+[09/13/21 06:14:57] I main    ║  workdir          = ./.pipen                                                 ║
+[09/13/21 06:14:57] I main    ╰══════════════════════════════════════════════════════════════════════════════╯
+[09/13/21 06:14:57] I main
+[09/13/21 06:14:57] I main    ╭════════════════════════════════ MakoProcess ═════════════════════════════════╮
+[09/13/21 06:14:57] I main    ║ A process using mako templating                                              ║
+[09/13/21 06:14:57] I main    ╰══════════════════════════════════════════════════════════════════════════════╯
+[09/13/21 06:14:57] I main    MakoProcess: Workdir: &#39;.pipen/pipen-0/makoprocess&#39;
+[09/13/21 06:14:57] I main    MakoProcess: &lt;&lt;&lt; [START]
+[09/13/21 06:14:57] I main    MakoProcess: &gt;&gt;&gt; [END]
+[09/13/21 06:14:57] I verbose MakoProcess: size    : 1
+[09/13/21 06:14:57] I verbose MakoProcess: template: mako
+[09/13/21 06:14:57] I verbose MakoProcess: [0/0] in.a: 1
+[09/13/21 06:14:57] I verbose MakoProcess: [0/0] out.outfile: /home/pwwang/github/pipen/Pipen-output/MakoProcess/1.txt
+[09/13/21 06:14:58] I verbose MakoProcess: Time elapsed: 00:00:01.019s
+[09/13/21 06:14:58] I main
+</code></pre></div>
+<h3 id="multile-jobs">multile jobs<a class="headerlink" href="#multile-jobs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>&gt; python examples/multijobs.py
+[09/13/21 06:16:09] I main                        _____________________________________   __
+[09/13/21 06:16:09] I main                        ___  __ \___  _/__  __ \__  ____/__  | / /
+[09/13/21 06:16:09] I main                        __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+[09/13/21 06:16:09] I main                        _  ____/__/ /  _  ____/_  /___  _  /|  /
+[09/13/21 06:16:09] I main                        /_/     /___/  /_/     /_____/  /_/ |_/
+[09/13/21 06:16:09] I main
+[09/13/21 06:16:09] I main                                     version: 0.1.0
+[09/13/21 06:16:09] I main
+[09/13/21 06:16:09] I main    ╭══════════════════════════════════ PIPEN-0 ═══════════════════════════════════╮
+[09/13/21 06:16:09] I main    ║  # procs          = 1                                                        ║
+[09/13/21 06:16:09] I main    ║  plugins          = [&#39;main&#39;, &#39;verbose-0.0.1&#39;]                                ║
+[09/13/21 06:16:09] I main    ║  profile          = default                                                  ║
+[09/13/21 06:16:09] I main    ║  outdir           = Pipen-output                                             ║
+[09/13/21 06:16:09] I main    ║  cache            = True                                                     ║
+[09/13/21 06:16:09] I main    ║  dirsig           = 1                                                        ║
+[09/13/21 06:16:09] I main    ║  error_strategy   = ignore                                                   ║
+[09/13/21 06:16:09] I main    ║  forks            = 1                                                        ║
+[09/13/21 06:16:09] I main    ║  lang             = bash                                                     ║
+[09/13/21 06:16:09] I main    ║  loglevel         = info                                                     ║
+[09/13/21 06:16:09] I main    ║  num_retries      = 3                                                        ║
+[09/13/21 06:16:09] I main    ║  plugin_opts      = {}                                                       ║
+[09/13/21 06:16:09] I main    ║  plugins          = None                                                     ║
+[09/13/21 06:16:09] I main    ║  scheduler        = local                                                    ║
+[09/13/21 06:16:09] I main    ║  scheduler_opts   = {}                                                       ║
+[09/13/21 06:16:09] I main    ║  submission_batch = 8                                                        ║
+[09/13/21 06:16:09] I main    ║  template         = liquid                                                   ║
+[09/13/21 06:16:09] I main    ║  template_opts    = {}                                                       ║
+[09/13/21 06:16:09] I main    ║  workdir          = ./.pipen                                                 ║
+[09/13/21 06:16:09] I main    ╰══════════════════════════════════════════════════════════════════════════════╯
+[09/13/21 06:16:09] I main
+[09/13/21 06:16:09] I main    ╭════════════════════════════════ MultiJobProc ════════════════════════════════╮
+[09/13/21 06:16:09] I main    ║ A process with multiple jobs                                                 ║
+[09/13/21 06:16:09] I main    ╰══════════════════════════════════════════════════════════════════════════════╯
+[09/13/21 06:16:09] I main    MultiJobProc: Workdir: &#39;.pipen/pipen-0/multijobproc&#39;
+[09/13/21 06:16:09] I main    MultiJobProc: &lt;&lt;&lt; [START]
+[09/13/21 06:16:09] I main    MultiJobProc: &gt;&gt;&gt; [END]
+[09/13/21 06:16:10] I verbose MultiJobProc: forks: 3
+[09/13/21 06:16:10] I verbose MultiJobProc: cache: False
+[09/13/21 06:16:10] I verbose MultiJobProc: size : 10
+[09/13/21 06:16:10] I verbose MultiJobProc: [0/9] in.i: 0
+[09/13/21 06:16:10] I verbose MultiJobProc: [0/9] out.outfile: /home/pwwang/github/pipen/Pipen-output/MultiJobProc/0/0.txt
+[09/13/21 06:16:16] I verbose MultiJobProc: Time elapsed: 00:00:06.139s
+[09/13/21 06:16:16] I main
+</code></pre></div>
+<h3 id="plugin">plugin<a class="headerlink" href="#plugin" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>❯ python examples/plugin-example.py
+[09/13/21 06:18:18] I notify  Calling on_setup
+[09/13/21 06:18:18] I main                        _____________________________________   __
+[09/13/21 06:18:18] I main                        ___  __ \___  _/__  __ \__  ____/__  | / /
+[09/13/21 06:18:18] I main                        __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+[09/13/21 06:18:18] I main                        _  ____/__/ /  _  ____/_  /___  _  /|  /
+[09/13/21 06:18:18] I main                        /_/     /___/  /_/     /_____/  /_/ |_/
+[09/13/21 06:18:18] I main
+[09/13/21 06:18:18] I main                                     version: 0.1.0
+[09/13/21 06:18:18] I main
+[09/13/21 06:18:18] I main    ╭══════════════════════════════════ PIPEN-0 ═══════════════════════════════════╮
+[09/13/21 06:18:18] I main    ║  # procs          = 1                                                        ║
+[09/13/21 06:18:18] I main    ║  plugins          = [&#39;main&#39;, &#39;notifyplugin-0.0.0&#39;]                           ║
+[09/13/21 06:18:18] I main    ║  profile          = default                                                  ║
+[09/13/21 06:18:18] I main    ║  outdir           = Pipen-output                                             ║
+[09/13/21 06:18:18] I main    ║  cache            = True                                                     ║
+[09/13/21 06:18:18] I main    ║  dirsig           = 1                                                        ║
+[09/13/21 06:18:18] I main    ║  error_strategy   = ignore                                                   ║
+[09/13/21 06:18:18] I main    ║  forks            = 1                                                        ║
+[09/13/21 06:18:18] I main    ║  lang             = bash                                                     ║
+[09/13/21 06:18:18] I main    ║  loglevel         = info                                                     ║
+[09/13/21 06:18:18] I main    ║  num_retries      = 3                                                        ║
+[09/13/21 06:18:18] I main    ║  plugin_opts      = {}                                                       ║
+[09/13/21 06:18:18] I main    ║  plugins          = [&lt;class &#39;__main__.NotifyPlugin&#39;&gt;]                        ║
+[09/13/21 06:18:18] I main    ║  scheduler        = local                                                    ║
+[09/13/21 06:18:18] I main    ║  scheduler_opts   = {}                                                       ║
+[09/13/21 06:18:18] I main    ║  submission_batch = 8                                                        ║
+[09/13/21 06:18:18] I main    ║  template         = liquid                                                   ║
+[09/13/21 06:18:18] I main    ║  template_opts    = {}                                                       ║
+[09/13/21 06:18:18] I main    ║  workdir          = ./.pipen                                                 ║
+[09/13/21 06:18:18] I main    ╰══════════════════════════════════════════════════════════════════════════════╯
+[09/13/21 06:18:18] I notify  Calling on_start
+[09/13/21 06:18:18] I main
+[09/13/21 06:18:18] I main    ╭══════════════════════════════════ AProcess ══════════════════════════════════╮
+[09/13/21 06:18:18] I main    ║ Undescribed                                                                  ║
+[09/13/21 06:18:18] I main    ╰══════════════════════════════════════════════════════════════════════════════╯
+[09/13/21 06:18:18] I main    AProcess: Workdir: &#39;.pipen/pipen-0/aprocess&#39;
+[09/13/21 06:18:18] I main    AProcess: &lt;&lt;&lt; [START]
+[09/13/21 06:18:18] I main    AProcess: &gt;&gt;&gt; [END]
+[09/13/21 06:18:18] W main    AProcess: No script specified.
+[09/13/21 06:18:18] I notify  Calling on_proc_start
+[09/13/21 06:18:18] I main    AProcess: Cached jobs: 0
+[09/13/21 06:18:18] I notify  Calling on_proc_done, succeeded = cached
+[09/13/21 06:18:18] I main
+
+                PIPEN-0: 100%|█████████████████████████████████████████████████| 1/1 [00:00&lt;00:00, 2.91 procs/s]
+[09/13/21 06:18:18] I notify  Calling on_complete, succeeded = True
+</code></pre></div>
+<h3 id="using-python-interpreter">Using python interpreter<a class="headerlink" href="#using-python-interpreter" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>❯ python examples/python-script.py
+[09/13/21 06:19:45] I main                        _____________________________________   __
+[09/13/21 06:19:45] I main                        ___  __ \___  _/__  __ \__  ____/__  | / /
+[09/13/21 06:19:45] I main                        __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+[09/13/21 06:19:45] I main                        _  ____/__/ /  _  ____/_  /___  _  /|  /
+[09/13/21 06:19:45] I main                        /_/     /___/  /_/     /_____/  /_/ |_/
+[09/13/21 06:19:45] I main
+[09/13/21 06:19:45] I main                                     version: 0.1.0
+[09/13/21 06:19:45] I main
+[09/13/21 06:19:45] I main    ╭══════════════════════════════════ PIPEN-0 ═══════════════════════════════════╮
+[09/13/21 06:19:45] I main    ║  # procs          = 1                                                        ║
+[09/13/21 06:19:45] I main    ║  plugins          = [&#39;main&#39;, &#39;verbose-0.0.1&#39;]                                ║
+[09/13/21 06:19:45] I main    ║  profile          = default                                                  ║
+[09/13/21 06:19:45] I main    ║  outdir           = Pipen-output                                             ║
+[09/13/21 06:19:46] I main    ║  cache            = True                                                     ║
+[09/13/21 06:19:46] I main    ║  dirsig           = 1                                                        ║
+[09/13/21 06:19:46] I main    ║  error_strategy   = ignore                                                   ║
+[09/13/21 06:19:46] I main    ║  forks            = 1                                                        ║
+[09/13/21 06:19:46] I main    ║  lang             = bash                                                     ║
+[09/13/21 06:19:46] I main    ║  loglevel         = info                                                     ║
+[09/13/21 06:19:46] I main    ║  num_retries      = 3                                                        ║
+[09/13/21 06:19:46] I main    ║  plugin_opts      = {}                                                       ║
+[09/13/21 06:19:46] I main    ║  plugins          = None                                                     ║
+[09/13/21 06:19:46] I main    ║  scheduler        = local                                                    ║
+[09/13/21 06:19:46] I main    ║  scheduler_opts   = {}                                                       ║
+[09/13/21 06:19:46] I main    ║  submission_batch = 8                                                        ║
+[09/13/21 06:19:46] I main    ║  template         = liquid                                                   ║
+[09/13/21 06:19:46] I main    ║  template_opts    = {}                                                       ║
+[09/13/21 06:19:46] I main    ║  workdir          = ./.pipen                                                 ║
+[09/13/21 06:19:46] I main    ╰══════════════════════════════════════════════════════════════════════════════╯
+[09/13/21 06:19:46] I main
+[09/13/21 06:19:46] I main    ╭══════════════════════════════ PythonScriptProc ══════════════════════════════╮
+[09/13/21 06:19:46] I main    ║ A process using python interpreter for script                                ║
+[09/13/21 06:19:46] I main    ╰══════════════════════════════════════════════════════════════════════════════╯
+[09/13/21 06:19:46] I main    PythonScriptProc: Workdir: &#39;.pipen/pipen-0/pythonscriptproc&#39;
+[09/13/21 06:19:46] I main    PythonScriptProc: &lt;&lt;&lt; [START]
+[09/13/21 06:19:46] I main    PythonScriptProc: &gt;&gt;&gt; [END]
+[09/13/21 06:19:46] I verbose PythonScriptProc: lang: python
+[09/13/21 06:19:46] I verbose PythonScriptProc: size: 1
+[09/13/21 06:19:46] I verbose PythonScriptProc: [0/0] in.a: 1
+[09/13/21 06:19:46] I verbose PythonScriptProc: [0/0] out.outfile:
+                      /home/pwwang/github/pipen/Pipen-output/PythonScriptProc/1.txt
+[09/13/21 06:19:48] I verbose PythonScriptProc: Time elapsed: 00:00:02.031s
+[09/13/21 06:19:48] I main
+</code></pre></div>
+<h3 id="error-handling-retry">Error-handling: retry<a class="headerlink" href="#error-handling-retry" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>❯ python examples/retry.py
+[09/13/21 06:20:38] I main                        _____________________________________   __
+[09/13/21 06:20:38] I main                        ___  __ \___  _/__  __ \__  ____/__  | / /
+[09/13/21 06:20:38] I main                        __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+[09/13/21 06:20:38] I main                        _  ____/__/ /  _  ____/_  /___  _  /|  /
+[09/13/21 06:20:38] I main                        /_/     /___/  /_/     /_____/  /_/ |_/
+[09/13/21 06:20:38] I main
+[09/13/21 06:20:38] I main                                     version: 0.1.0
+[09/13/21 06:20:38] D main
+[09/13/21 06:20:38] D main    Building process relationships:
+[09/13/21 06:20:38] D main    - Start processes: [&lt;Proc:RetryProc&gt;]
+[09/13/21 06:20:38] I main
+[09/13/21 06:20:38] I main    ╭══════════════════════════════════ PIPEN-0 ═══════════════════════════════════╮
+[09/13/21 06:20:38] I main    ║  # procs          = 1                                                        ║
+[09/13/21 06:20:38] I main    ║  plugins          = [&#39;main&#39;, &#39;verbose-0.0.1&#39;]                                ║
+[09/13/21 06:20:38] I main    ║  profile          = default                                                  ║
+[09/13/21 06:20:38] I main    ║  outdir           = Pipen-output                                             ║
+[09/13/21 06:20:38] I main    ║  cache            = True                                                     ║
+[09/13/21 06:20:38] I main    ║  dirsig           = 1                                                        ║
+[09/13/21 06:20:38] I main    ║  error_strategy   = ignore                                                   ║
+[09/13/21 06:20:38] I main    ║  forks            = 1                                                        ║
+[09/13/21 06:20:38] I main    ║  lang             = bash                                                     ║
+[09/13/21 06:20:38] I main    ║  loglevel         = debug                                                    ║
+[09/13/21 06:20:38] I main    ║  num_retries      = 3                                                        ║
+[09/13/21 06:20:38] I main    ║  plugin_opts      = {}                                                       ║
+[09/13/21 06:20:38] I main    ║  plugins          = None                                                     ║
+[09/13/21 06:20:38] I main    ║  scheduler        = local                                                    ║
+[09/13/21 06:20:38] I main    ║  scheduler_opts   = {}                                                       ║
+[09/13/21 06:20:38] I main    ║  submission_batch = 8                                                        ║
+[09/13/21 06:20:38] I main    ║  template         = liquid                                                   ║
+[09/13/21 06:20:38] I main    ║  template_opts    = {}                                                       ║
+[09/13/21 06:20:38] I main    ║  workdir          = ./.pipen                                                 ║
+[09/13/21 06:20:38] I main    ╰══════════════════════════════════════════════════════════════════════════════╯
+[09/13/21 06:20:38] I main
+[09/13/21 06:20:38] I main    ╭═════════════════════════════════ RetryProc ══════════════════════════════════╮
+[09/13/21 06:20:38] I main    ║ Retry the jobs when fail                                                     ║
+[09/13/21 06:20:38] I main    ╰══════════════════════════════════════════════════════════════════════════════╯
+[09/13/21 06:20:38] I main    RetryProc: Workdir: &#39;.pipen/pipen-0/retryproc&#39;
+[09/13/21 06:20:38] I main    RetryProc: &lt;&lt;&lt; [START]
+[09/13/21 06:20:38] I main    RetryProc: &gt;&gt;&gt; [END]
+[09/13/21 06:20:38] I verbose RetryProc: size: 1
+[09/13/21 06:20:38] D main    RetryProc: [0/0] Not cached (job.rc != 0)
+[09/13/21 06:20:38] D main    RetryProc: [0/0] Clearing previous output files.
+[09/13/21 06:20:38] I verbose RetryProc: [0/0] in.starttime: 1631539238
+[09/13/21 06:20:39] D main    RetryProc: [0/0] Retrying #1
+[09/13/21 06:20:40] D main    RetryProc: [0/0] Retrying #2
+[09/13/21 06:20:41] D main    RetryProc: [0/0] Retrying #3
+[09/13/21 06:20:42] D main    RetryProc: [0/0] Retrying #4
+[09/13/21 06:20:43] I verbose RetryProc: Time elapsed: 00:00:05.203s
+[09/13/21 06:20:43] I main
+</code></pre></div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../api/pipen.cli.plugins/" class="btn btn-neutral float-left" title="pipen.cli.plugins"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../CHANGELOG/" class="btn btn-neutral float-right" title="Change Log">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../api/pipen.cli.plugins/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../CHANGELOG/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+    <script src="../js/version-select.js"></script>
+      <script src="../js/mkapi.js"></script>
+      <script src="../assets/script.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

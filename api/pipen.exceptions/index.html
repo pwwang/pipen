@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>pipen.exceptions - pipen</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "pipen.exceptions";
+        var mkdocs_page_input_path = "api/pipen.exceptions.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../..">
+          <img src="../../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">pipen</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="../pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="./">pipen.exceptions</a>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionspipenexception">PipenException</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionspipensetdataerror">PipenSetDataError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionsprocinputtypeerror">ProcInputTypeError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionsprocinputkeyerror">ProcInputKeyError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionsprocinputvalueerror">ProcInputValueError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionsprocscriptfilenotfound">ProcScriptFileNotFound</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionsprocoutputnameerror">ProcOutputNameError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionsprocoutputtypeerror">ProcOutputTypeError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionsprocoutputvalueerror">ProcOutputValueError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionsprocdependencyerror">ProcDependencyError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionsnosuchschedulererror">NoSuchSchedulerError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionswrongschedulertypeerror">WrongSchedulerTypeError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionsnosuchtemplateengineerror">NoSuchTemplateEngineError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionswrongtemplateenginetypeerror">WrongTemplateEngineTypeError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionstemplaterenderingerror">TemplateRenderingError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionsconfigurationerror">ConfigurationError</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenexceptionspipenorprocnameerror">PipenOrProcNameError</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">API</li>
+          <li class="breadcrumb-item">pipen</li>
+      <li class="breadcrumb-item active">pipen.exceptions</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/api/pipen.exceptions.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <div class="mkapi-node" id="pipen.exceptions">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object module plain top">
+    <div class="mkapi-object-kind module top">module</div>
+    <h2 id="pipenexceptions" class="mkapi-object-body module top"><span class="mkapi-object-prefix">pipen.</span><span class="mkapi-object-name">exceptions</span></h2>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions" title="Source for pipen.exceptions">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Provide exception classes</p></div>
+    </div>
+  <div class="mkapi-section classes">
+      <div class="mkapi-section-name classes">
+          <span class="mkapi-section-name-body classes">Classes</span> 
+        </div>
+      <div class="mkapi-section-body classes"><ul class="mkapi-items">
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.PipenException">PipenException</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Base exception class for pipen<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.PipenException" title="Source for pipen.exceptions.PipenException">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.PipenSetDataError">PipenSetDataError</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When trying to set input data to processes with input_data already setusing Pipen.set_data().
+<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.PipenSetDataError" title="Source for pipen.exceptions.PipenSetDataError">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.ProcInputTypeError">ProcInputTypeError</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When an unsupported input type is provided<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ProcInputTypeError" title="Source for pipen.exceptions.ProcInputTypeError">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.ProcInputKeyError">ProcInputKeyError</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When an unsupported input key is provided<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ProcInputKeyError" title="Source for pipen.exceptions.ProcInputKeyError">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.ProcInputValueError">ProcInputValueError</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When an unsupported input value is provided<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ProcInputValueError" title="Source for pipen.exceptions.ProcInputValueError">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.ProcScriptFileNotFound">ProcScriptFileNotFound</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When script file specified as 'file://' cannot be found<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ProcScriptFileNotFound" title="Source for pipen.exceptions.ProcScriptFileNotFound">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.ProcOutputNameError">ProcOutputNameError</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When no name or malformatted output is provided<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ProcOutputNameError" title="Source for pipen.exceptions.ProcOutputNameError">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.ProcOutputTypeError">ProcOutputTypeError</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When an unsupported output type is provided<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ProcOutputTypeError" title="Source for pipen.exceptions.ProcOutputTypeError">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.ProcOutputValueError">ProcOutputValueError</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a malformatted output value is provided<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ProcOutputValueError" title="Source for pipen.exceptions.ProcOutputValueError">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.ProcDependencyError">ProcDependencyError</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When there is something wrong the process dependencies<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ProcDependencyError" title="Source for pipen.exceptions.ProcDependencyError">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.NoSuchSchedulerError">NoSuchSchedulerError</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When specified scheduler cannot be found<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.NoSuchSchedulerError" title="Source for pipen.exceptions.NoSuchSchedulerError">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.WrongSchedulerTypeError">WrongSchedulerTypeError</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When specified scheduler is not a subclass of Scheduler<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.WrongSchedulerTypeError" title="Source for pipen.exceptions.WrongSchedulerTypeError">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.NoSuchTemplateEngineError">NoSuchTemplateEngineError</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When specified template engine cannot be found<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.NoSuchTemplateEngineError" title="Source for pipen.exceptions.NoSuchTemplateEngineError">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.WrongTemplateEngineTypeError">WrongTemplateEngineTypeError</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When specified tempalte engine is not a subclass of Scheduler<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.WrongTemplateEngineTypeError" title="Source for pipen.exceptions.WrongTemplateEngineTypeError">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.TemplateRenderingError">TemplateRenderingError</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Failed to render a template<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.TemplateRenderingError" title="Source for pipen.exceptions.TemplateRenderingError">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.ConfigurationError">ConfigurationError</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When something wrong set as configuration<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ConfigurationError" title="Source for pipen.exceptions.ConfigurationError">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.exceptions.PipenOrProcNameError">PipenOrProcNameError</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">"When more than one processes are sharing the same workdir<a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.PipenOrProcNameError" title="Source for pipen.exceptions.PipenOrProcNameError">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.PipenException">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionspipenexception" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">PipenException</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.PipenException" title="Source for pipen.exceptions.PipenException">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Base exception class for pipen</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.PipenSetDataError">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionspipensetdataerror" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">PipenSetDataError</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.PipenSetDataError" title="Source for pipen.exceptions.PipenSetDataError">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base"><a href="./#pipen.exceptions.PipenException">pipen.exceptions.PipenException</a></span>
+
+<span class="mkapi-base">ValueError</span>
+
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When trying to set input data to processes with input_data already setusing Pipen.set_data().</p>
+</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.ProcInputTypeError">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionsprocinputtypeerror" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">ProcInputTypeError</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ProcInputTypeError" title="Source for pipen.exceptions.ProcInputTypeError">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base"><a href="./#pipen.exceptions.PipenException">pipen.exceptions.PipenException</a></span>
+
+<span class="mkapi-base">TypeError</span>
+
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When an unsupported input type is provided</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.ProcInputKeyError">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionsprocinputkeyerror" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">ProcInputKeyError</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ProcInputKeyError" title="Source for pipen.exceptions.ProcInputKeyError">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base"><a href="./#pipen.exceptions.PipenException">pipen.exceptions.PipenException</a></span>
+
+<span class="mkapi-base">KeyError</span>
+
+<span class="mkapi-base">LookupError</span>
+
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When an unsupported input key is provided</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.ProcInputValueError">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionsprocinputvalueerror" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">ProcInputValueError</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ProcInputValueError" title="Source for pipen.exceptions.ProcInputValueError">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base"><a href="./#pipen.exceptions.PipenException">pipen.exceptions.PipenException</a></span>
+
+<span class="mkapi-base">ValueError</span>
+
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When an unsupported input value is provided</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.ProcScriptFileNotFound">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionsprocscriptfilenotfound" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">ProcScriptFileNotFound</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ProcScriptFileNotFound" title="Source for pipen.exceptions.ProcScriptFileNotFound">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base"><a href="./#pipen.exceptions.PipenException">pipen.exceptions.PipenException</a></span>
+
+<span class="mkapi-base">FileNotFoundError</span>
+
+<span class="mkapi-base">OSError</span>
+
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When script file specified as 'file://' cannot be found</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.ProcOutputNameError">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionsprocoutputnameerror" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">ProcOutputNameError</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ProcOutputNameError" title="Source for pipen.exceptions.ProcOutputNameError">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base"><a href="./#pipen.exceptions.PipenException">pipen.exceptions.PipenException</a></span>
+
+<span class="mkapi-base">NameError</span>
+
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When no name or malformatted output is provided</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.ProcOutputTypeError">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionsprocoutputtypeerror" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">ProcOutputTypeError</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ProcOutputTypeError" title="Source for pipen.exceptions.ProcOutputTypeError">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base"><a href="./#pipen.exceptions.PipenException">pipen.exceptions.PipenException</a></span>
+
+<span class="mkapi-base">TypeError</span>
+
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When an unsupported output type is provided</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.ProcOutputValueError">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionsprocoutputvalueerror" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">ProcOutputValueError</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ProcOutputValueError" title="Source for pipen.exceptions.ProcOutputValueError">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base"><a href="./#pipen.exceptions.PipenException">pipen.exceptions.PipenException</a></span>
+
+<span class="mkapi-base">ValueError</span>
+
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a malformatted output value is provided</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.ProcDependencyError">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionsprocdependencyerror" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">ProcDependencyError</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ProcDependencyError" title="Source for pipen.exceptions.ProcDependencyError">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base"><a href="./#pipen.exceptions.PipenException">pipen.exceptions.PipenException</a></span>
+
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When there is something wrong the process dependencies</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.NoSuchSchedulerError">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionsnosuchschedulererror" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">NoSuchSchedulerError</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.NoSuchSchedulerError" title="Source for pipen.exceptions.NoSuchSchedulerError">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base"><a href="./#pipen.exceptions.PipenException">pipen.exceptions.PipenException</a></span>
+
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When specified scheduler cannot be found</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.WrongSchedulerTypeError">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionswrongschedulertypeerror" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">WrongSchedulerTypeError</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.WrongSchedulerTypeError" title="Source for pipen.exceptions.WrongSchedulerTypeError">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base"><a href="./#pipen.exceptions.PipenException">pipen.exceptions.PipenException</a></span>
+
+<span class="mkapi-base">TypeError</span>
+
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When specified scheduler is not a subclass of Scheduler</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.NoSuchTemplateEngineError">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionsnosuchtemplateengineerror" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">NoSuchTemplateEngineError</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.NoSuchTemplateEngineError" title="Source for pipen.exceptions.NoSuchTemplateEngineError">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base"><a href="./#pipen.exceptions.PipenException">pipen.exceptions.PipenException</a></span>
+
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When specified template engine cannot be found</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.WrongTemplateEngineTypeError">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionswrongtemplateenginetypeerror" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">WrongTemplateEngineTypeError</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.WrongTemplateEngineTypeError" title="Source for pipen.exceptions.WrongTemplateEngineTypeError">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base"><a href="./#pipen.exceptions.PipenException">pipen.exceptions.PipenException</a></span>
+
+<span class="mkapi-base">TypeError</span>
+
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When specified tempalte engine is not a subclass of Scheduler</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.TemplateRenderingError">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionstemplaterenderingerror" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">TemplateRenderingError</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.TemplateRenderingError" title="Source for pipen.exceptions.TemplateRenderingError">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base"><a href="./#pipen.exceptions.PipenException">pipen.exceptions.PipenException</a></span>
+
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Failed to render a template</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.ConfigurationError">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionsconfigurationerror" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">ConfigurationError</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.ConfigurationError" title="Source for pipen.exceptions.ConfigurationError">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base"><a href="./#pipen.exceptions.PipenException">pipen.exceptions.PipenException</a></span>
+
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When something wrong set as configuration</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.exceptions.PipenOrProcNameError">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenexceptionspipenorprocnameerror" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.exceptions.</code><code class="mkapi-object-name">PipenOrProcNameError</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.exceptions/#pipen.exceptions.PipenOrProcNameError" title="Source for pipen.exceptions.PipenOrProcNameError">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base"><a href="./#pipen.exceptions.PipenException">pipen.exceptions.PipenException</a></span>
+
+<span class="mkapi-base">Exception</span>
+
+<span class="mkapi-base">BaseException</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>"When more than one processes are sharing the same workdir</p></div>
+    </div>
+  </div>
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../pipen.scheduler/" class="btn btn-neutral float-left" title="pipen.scheduler"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../pipen.pipen/" class="btn btn-neutral float-right" title="pipen.pipen">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../pipen.scheduler/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../pipen.pipen/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+    <script src="../../js/version-select.js"></script>
+      <script src="../../js/mkapi.js"></script>
+      <script src="../../assets/script.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

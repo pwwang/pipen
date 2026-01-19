@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>pipen.pluginmgr - pipen</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "pipen.pluginmgr";
+        var mkdocs_page_input_path = "api/pipen.pluginmgr.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../..">
+          <img src="../../rtd-logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">pipen</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="../pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="./">pipen.pluginmgr</a>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_setup">on_setup</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_init">on_init</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_start">on_start</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_complete">on_complete</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_proc_create">on_proc_create</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_proc_input_computed">on_proc_input_computed</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_proc_script_computed">on_proc_script_computed</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_proc_start">on_proc_start</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_proc_shutdown">on_proc_shutdown</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_proc_done">on_proc_done</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_job_init">on_job_init</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_job_queued">on_job_queued</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_job_submitting">on_job_submitting</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_job_submitted">on_job_submitted</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_job_started">on_job_started</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_job_polling">on_job_polling</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_job_killing">on_job_killing</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_job_killed">on_job_killed</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_job_succeeded">on_job_succeeded</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_job_cached">on_job_cached</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_job_failed">on_job_failed</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_jobcmd_init">on_jobcmd_init</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_jobcmd_prep">on_jobcmd_prep</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgron_jobcmd_end">on_jobcmd_end</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgrpipenmainplugin">PipenMainPlugin</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pipenpluginmgrxqutepipenplugin">XqutePipenPlugin</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.scheduler/">pipen.scheduler</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.defaults/">pipen.defaults</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">API</li>
+          <li class="breadcrumb-item">pipen</li>
+      <li class="breadcrumb-item active">pipen.pluginmgr</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/api/pipen.pluginmgr.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <div class="mkapi-node" id="pipen.pluginmgr">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object module plain top">
+    <div class="mkapi-object-kind module top">module</div>
+    <h2 id="pipenpluginmgr" class="mkapi-object-body module top"><span class="mkapi-object-prefix">pipen.</span><span class="mkapi-object-name">pluginmgr</span></h2>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr" title="Source for pipen.pluginmgr">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Define hooks specifications and provide plugin manager</p></div>
+    </div>
+  <div class="mkapi-section classes">
+      <div class="mkapi-section-name classes">
+          <span class="mkapi-section-name-body classes">Classes</span> 
+        </div>
+      <div class="mkapi-section-body classes"><ul class="mkapi-items">
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.PipenMainPlugin">PipenMainPlugin</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The builtin core plugin, used to update the progress bar andcache the job
+<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.PipenMainPlugin" title="Source for pipen.pluginmgr.PipenMainPlugin">&lt;/&gt;</a></span></li>
+
+<li class="class"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.XqutePipenPlugin">XqutePipenPlugin</a></code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The plugin for xqute working as proxy for pipen plugin hooks<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.XqutePipenPlugin" title="Source for pipen.pluginmgr.XqutePipenPlugin">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section functions">
+      <div class="mkapi-section-name functions">
+          <span class="mkapi-section-name-body functions">Functions</span> 
+        </div>
+      <div class="mkapi-section-body functions"><ul class="mkapi-items">
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_complete">on_complete</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">pipen</code>, <code class="mkapi-object-signature">succeeded</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The the pipeline is completed.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_complete" title="Source for pipen.pluginmgr.on_complete">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_init">on_init</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">pipen</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When the pipeline is initialized, and default configs are loaded<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_init" title="Source for pipen.pluginmgr.on_init">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_cached">on_job_cached</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job is cached.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_cached" title="Source for pipen.pluginmgr.on_job_cached">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_failed">on_job_failed</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job is done but failed.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_failed" title="Source for pipen.pluginmgr.on_job_failed">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_init">on_job_init</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job is initialized<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_init" title="Source for pipen.pluginmgr.on_job_init">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_killed">on_job_killed</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job is killed<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_killed" title="Source for pipen.pluginmgr.on_job_killed">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_killing">on_job_killing</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(bool)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job is being killed.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_killing" title="Source for pipen.pluginmgr.on_job_killing">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_polling">on_job_polling</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code>, <code class="mkapi-object-signature">counter</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When status of a job is being polled.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_polling" title="Source for pipen.pluginmgr.on_job_polling">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_queued">on_job_queued</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job is queued in xqute. Note it might not be queued yet inthe scheduler system.
+<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_queued" title="Source for pipen.pluginmgr.on_job_queued">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_started">on_job_started</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job starts to run in then scheduler system.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_started" title="Source for pipen.pluginmgr.on_job_started">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_submitted">on_job_submitted</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job is submitted in the scheduler system.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_submitted" title="Source for pipen.pluginmgr.on_job_submitted">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_submitting">on_job_submitting</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(bool)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job is submitting.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_submitting" title="Source for pipen.pluginmgr.on_job_submitting">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_job_succeeded">on_job_succeeded</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a job completes successfully.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_succeeded" title="Source for pipen.pluginmgr.on_job_succeeded">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_jobcmd_end">on_jobcmd_end</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When the job command finishes and after the postscript is run<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_jobcmd_end" title="Source for pipen.pluginmgr.on_jobcmd_end">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_jobcmd_init">on_jobcmd_init</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When the job command wrapper script is initialized before the prescript is run<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_jobcmd_init" title="Source for pipen.pluginmgr.on_jobcmd_init">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_jobcmd_prep">on_jobcmd_prep</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When the job command right about to be run<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_jobcmd_prep" title="Source for pipen.pluginmgr.on_jobcmd_prep">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_proc_create">on_proc_create</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Called Proc constructor when a process is created.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_create" title="Source for pipen.pluginmgr.on_proc_create">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_proc_done">on_proc_done</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code>, <code class="mkapi-object-signature">succeeded</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a process is done<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_done" title="Source for pipen.pluginmgr.on_proc_done">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_proc_input_computed">on_proc_input_computed</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Called after process input data is computed.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_input_computed" title="Source for pipen.pluginmgr.on_proc_input_computed">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_proc_script_computed">on_proc_script_computed</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Called after process script is computed.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_script_computed" title="Source for pipen.pluginmgr.on_proc_script_computed">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_proc_shutdown">on_proc_shutdown</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code>, <code class="mkapi-object-signature">sig</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When pipeline is shutting down, by Ctrl-c for example.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_shutdown" title="Source for pipen.pluginmgr.on_proc_shutdown">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_proc_start">on_proc_start</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">When a process is starting<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_start" title="Source for pipen.pluginmgr.on_proc_start">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_setup">on_setup</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">pipen</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Setup for plugins, primarily used for the plugins tosetup some default configurations.
+<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_setup" title="Source for pipen.pluginmgr.on_setup">&lt;/&gt;</a></span></li>
+
+<li class="function"><code class="mkapi-item-name"><a href="#pipen.pluginmgr.on_start">on_start</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">pipen</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Right before the pipeline starts running.<a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_start" title="Source for pipen.pluginmgr.on_start">&lt;/&gt;</a></span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_setup">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_setup" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_setup</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">pipen</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_setup" title="Source for pipen.pluginmgr.on_setup">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Setup for plugins, primarily used for the plugins tosetup some default configurations.</p>
+<p>This is only called once for all pipelines.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">pipen</code>
+<span class="mkapi-item-type">(Pipen)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The Pipen object</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_init">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_init" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_init</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">pipen</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_init" title="Source for pipen.pluginmgr.on_init">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When the pipeline is initialized, and default configs are loaded</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">pipen</code>
+<span class="mkapi-item-type">(Pipen)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The Pipen object</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_start">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_start" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_start</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">pipen</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_start" title="Source for pipen.pluginmgr.on_start">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Right before the pipeline starts running.</p><p>Process relationships are inferred.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">pipen</code>
+<span class="mkapi-item-type">(Pipen)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The Pipen object</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_complete">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_complete" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_complete</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">pipen</code>, <code class="mkapi-object-signature">succeeded</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_complete" title="Source for pipen.pluginmgr.on_complete">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>The the pipeline is completed.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">pipen</code>
+<span class="mkapi-item-type">(Pipen)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The Pipen object</span></li>
+
+<li><code class="mkapi-item-name">succeeded</code>
+<span class="mkapi-item-type">(bool)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Whether the pipeline has successfully completed.</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_proc_create">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_proc_create" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_proc_create</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_create" title="Source for pipen.pluginmgr.on_proc_create">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Called Proc constructor when a process is created.</p><p>Enables plugins to modify the default attributes of processes</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">proc</code>
+<span class="mkapi-item-type">(Proc)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The Proc object</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_proc_input_computed">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_proc_input_computed" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_proc_input_computed</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_input_computed" title="Source for pipen.pluginmgr.on_proc_input_computed">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Called after process input data is computed.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">proc</code>
+<span class="mkapi-item-type">(Proc)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The Proc object</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_proc_script_computed">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_proc_script_computed" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_proc_script_computed</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_script_computed" title="Source for pipen.pluginmgr.on_proc_script_computed">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Called after process script is computed.</p><p>The script is computed as a string that is about to compiled into a
+template.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">proc</code>
+<span class="mkapi-item-type">(Proc)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The Proc object</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_proc_start">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_proc_start" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_proc_start</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_start" title="Source for pipen.pluginmgr.on_proc_start">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a process is starting</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">proc</code>
+<span class="mkapi-item-type">(Proc)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The process</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_proc_shutdown">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_proc_shutdown" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_proc_shutdown</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code>, <code class="mkapi-object-signature">sig</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_shutdown" title="Source for pipen.pluginmgr.on_proc_shutdown">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When pipeline is shutting down, by Ctrl-c for example.</p><p>Return False to stop shutting down, but you have to shut it down
+by yourself, for example, <code>proc.xqute.task.cancel()</code></p>
+<p>Only the first return value will be used.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+
+<li><code class="mkapi-item-name">sig</code>
+<span class="mkapi-item-type">(signal.Signals)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The signal. <code>None</code> means a natural shutdown</span></li>
+
+<li><code class="mkapi-item-name">pipen</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The xqute object</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_proc_done">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_proc_done" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_proc_done</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">proc</code>, <code class="mkapi-object-signature">succeeded</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_proc_done" title="Source for pipen.pluginmgr.on_proc_done">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a process is done</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">proc</code>
+<span class="mkapi-item-type">(Proc)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The process</span></li>
+
+<li><code class="mkapi-item-name">succeeded</code>
+<span class="mkapi-item-type">(bool | str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Whether the process succeeded or not. 'cached' if all jobsare cached.
+</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_init">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_init" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_job_init</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_init" title="Source for pipen.pluginmgr.on_job_init">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job is initialized</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_queued">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_queued" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_job_queued</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_queued" title="Source for pipen.pluginmgr.on_job_queued">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job is queued in xqute. Note it might not be queued yet inthe scheduler system.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_submitting">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_submitting" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_job_submitting</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_submitting" title="Source for pipen.pluginmgr.on_job_submitting">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job is submitting.</p><p>The first plugin (based on priority) have this hook return False will
+cancel the submission</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(bool)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>False to cancel submission</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_submitted">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_submitted" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_job_submitted</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_submitted" title="Source for pipen.pluginmgr.on_job_submitted">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job is submitted in the scheduler system.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_started">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_started" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_job_started</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_started" title="Source for pipen.pluginmgr.on_job_started">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job starts to run in then scheduler system.</p><p>Note that the job might not be running yet in the scheduler system.</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_polling">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_polling" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_job_polling</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code>, <code class="mkapi-object-signature">counter</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_polling" title="Source for pipen.pluginmgr.on_job_polling">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When status of a job is being polled.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_killing">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_killing" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_job_killing</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_killing" title="Source for pipen.pluginmgr.on_job_killing">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job is being killed.</p><p>The first plugin (based on priority) have this hook return False will
+cancel the killing</p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(bool)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>False to cancel killing</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_killed">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_killed" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_job_killed</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_killed" title="Source for pipen.pluginmgr.on_job_killed">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job is killed</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_succeeded">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_succeeded" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_job_succeeded</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_succeeded" title="Source for pipen.pluginmgr.on_job_succeeded">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job completes successfully.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_cached">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_cached" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_job_cached</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_cached" title="Source for pipen.pluginmgr.on_job_cached">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job is cached.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_job_failed">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_job_failed" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_job_failed</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_job_failed" title="Source for pipen.pluginmgr.on_job_failed">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When a job is done but failed.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_jobcmd_init">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_jobcmd_init" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_jobcmd_init</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_jobcmd_init" title="Source for pipen.pluginmgr.on_jobcmd_init">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When the job command wrapper script is initialized before the prescript is run</p><p>This should return a piece of bash code to be inserted in the wrapped job
+script (template), which is a python template string, with the following
+variables available: <code>status</code> and <code>job</code>. <code>status</code> is the class <code>JobStatus</code> from
+<code>xqute.defaults.py</code> and <code>job</code> is the <code>Job</code> instance.</p>
+<p>For multiple plugins, the code will be inserted in the order of the plugin priority.</p>
+<p>The code will replace the <code>#![jobcmd_init]</code> placeholder in the wrapped job script.
+See also <a href="https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95">https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95</a></p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job object</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The bash code to be inserted</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_jobcmd_prep">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_jobcmd_prep" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_jobcmd_prep</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_jobcmd_prep" title="Source for pipen.pluginmgr.on_jobcmd_prep">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When the job command right about to be run</p><p>This should return a piece of bash code to be inserted in the wrapped job
+script (template), which is a python template string, with the following
+variables available: <code>status</code> and <code>job</code>. <code>status</code> is the class <code>JobStatus</code> from
+<code>xqute.defaults.py</code> and <code>job</code> is the <code>Job</code> instance.</p>
+<p>The bash variable <code>$cmd</code> is accessible in the context. It is also possible to
+modify the <code>cmd</code> variable. Just remember to assign the modified value to <code>cmd</code>.</p>
+<p>For multiple plugins, the code will be inserted in the order of the plugin priority.
+Keep in mind that the <code>$cmd</code> may be modified by other plugins.</p>
+<p>The code will replace the <code>#![jobcmd_prep]</code> placeholder in the wrapped job script.
+See also <a href="https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95">https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95</a></p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job object</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The bash code to be inserted</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.on_jobcmd_end">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object function code top">
+    <div class="mkapi-object-kind function top">function</div>
+    <h3 id="pipenpluginmgron_jobcmd_end" class="mkapi-object-body function top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">on_jobcmd_end</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">job</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.on_jobcmd_end" title="Source for pipen.pluginmgr.on_jobcmd_end">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>When the job command finishes and after the postscript is run</p><p>This should return a piece of bash code to be inserted in the wrapped job
+script (template), which is a python template string, with the following
+variables available: <code>status</code> and <code>job</code>. <code>status</code> is the class <code>JobStatus</code> from
+<code>xqute.defaults.py</code> and <code>job</code> is the <code>Job</code> instance.</p>
+<p>The bash variable <code>$rc</code> is accessible in the context, which is the return code
+of the job command.</p>
+<p>For multiple plugins, the code will be inserted in the order of the plugin priority.</p>
+<p>The code will replace the <code>#![jobcmd_end]</code> placeholder in the wrapped job script.
+See also <a href="https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95">https://github.com/pwwang/xqute/blob/master/xqute/defaults.py#L95</a></p>
+</div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">job</code>
+<span class="mkapi-item-type">(Job)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">The job object</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>The bash code to be inserted</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.PipenMainPlugin">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenpluginmgrpipenmainplugin" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">PipenMainPlugin</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.PipenMainPlugin" title="Source for pipen.pluginmgr.PipenMainPlugin">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>The builtin core plugin, used to update the progress bar andcache the job</p>
+</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="pipen.pluginmgr.XqutePipenPlugin">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <h3 id="pipenpluginmgrxqutepipenplugin" class="mkapi-object-body class top"><code class="mkapi-object-prefix">pipen.pluginmgr.</code><code class="mkapi-object-name">XqutePipenPlugin</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/pipen.pluginmgr/#pipen.pluginmgr.XqutePipenPlugin" title="Source for pipen.pluginmgr.XqutePipenPlugin">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>The plugin for xqute working as proxy for pipen plugin hooks</p></div>
+    </div>
+  </div>
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../pipen/" class="btn btn-neutral float-left" title="pipen"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../pipen.utils/" class="btn btn-neutral float-right" title="pipen.utils">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../pipen/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../pipen.utils/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+    <script src="../../js/version-select.js"></script>
+      <script src="../../js/mkapi.js"></script>
+      <script src="../../assets/script.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
