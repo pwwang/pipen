@@ -394,6 +394,7 @@ class Job(XquteJob, JobCaching):
                 index=self.index,
                 metadir=self.metadir.mounted,
                 outdir=self.outdir.mounted,
+                script_file=self.script_file.mounted,
                 stdout_file=self.stdout_file.mounted,
                 stderr_file=self.stderr_file.mounted,
                 jid_file=self.jid_file.mounted,
