@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="./docs/rtd-logo.png" width="320px">
+    <img src="./docs/rtd-logo.png" width="320px" alt="pipen logo showing a stylized pipeline diagram with interconnected nodes">
 
 **A pipeline framework for python**
 
@@ -11,13 +11,64 @@ ______________________________________________________________________
 
 [Documentation][1] | [ChangeLog][2] | [Examples][3] | [API][4]
 
-## Features
+## Why pipen?
 
-- Easy to use
-- Nearly zero-configuration
-- Nice logging
-- Highly extendable
-- Cloud support naively
+**pipen** is designed for data scientists, bioinformaticians, and researchers who need to create reproducible, scalable computational pipelines without the complexity of traditional workflow systems.
+
+### Target Audience
+
+- **Data Scientists**: Process large datasets with automatic parallelization and caching
+- **Bioinformaticians**: Build reproducible analysis pipelines for genomics data
+- **Researchers**: Create transparent, reproducible workflows for computational research
+- **DevOps Engineers**: Orchestrate batch jobs across different schedulers (SLURM, SGE, Google Cloud)
+
+### Key Benefits
+
+**1. Zero Configuration**
+- Get started immediately with sensible defaults
+- Configure only what you need, when you need it
+- Profile-based configuration for different environments
+
+**2. Reproducibility Built-In**
+- Automatic job caching based on input/output signatures
+- Full audit trail of pipeline runs and parameters
+- Dependency tracking ensures processes run in correct order
+
+**3. Flexible Scheduling**
+- Run locally for development
+- Scale to HPC clusters (SLURM, SGE)
+- Deploy to cloud (Google Cloud Batch, SSH)
+- Run in containers for reproducibility
+
+**4. Developer-Friendly**
+- Define pipelines as Python classes
+- Use familiar Python syntax and tools
+- Extensible plugin system for custom functionality
+- Rich, informative logging and progress tracking
+
+**5. Data Flow Management**
+- Automatic data passing between pipeline stages
+- Support for files, directories, and in-memory data
+- Built-in operations for transforming and aggregating data
+
+### Comparison with Alternatives
+
+| Feature | pipen | Snakemake | Nextflow | Airflow |
+|----------|---------|------------|-----------|----------|
+| **Target Audience** | Data Scientists, Bioinformaticians, Researchers, DevOps | Bioinformaticians | Bioinformaticians | Data Engineers |
+| **Learning Curve** | Low | Medium | High | High |
+| **Python Integration** | Native | Limited | Limited | Native |
+| **Scheduler Support** | 6+ (Local, SGE, SLURM, SSH, Container, Gbatch) | Limited | Limited | Plugin-based |
+| **Caching** | Built-in, automatic | Manual | Manual | Plugin-based |
+| **Cloud Native Support** | Yes (Google Cloud Batch) | Partial | Yes | Yes |
+| **Interactive Debugging** | Yes | Limited | No | No |
+| **Easy to Use** | Define pipelines as Python classes, familiar syntax | Workflow DSL, separate config files | DAG definition in Python, complex UI |
+| **Zero Configuration** | Sensible defaults, configure only what needed | Many configuration options | Heavy configuration required | Complex setup |
+| **Nice Logging** | Rich, informative, color-coded, progress bars | Text-based | Text-based | Basic logging |
+| **Highly Extensible** | Simple plugin system, hook-based | Custom rules/scripts | Custom operators | Custom operators/providers |
+| **Data Flow Management** | Built-in channel operations (expand_dir, collapse_files) | Manual handling | Channel system | XCom system |
+| **Reproducibility** | Built-in caching, full audit trail | Manual | Versioned containers | DAG versioning |
+| **Flexible Scheduling** | Switch schedulers without code changes | Config-based | Config-based | Config-based |
 
 ## Installation
 
