@@ -66,12 +66,12 @@ if __name__ == "__main__":
 04-17 16:19:35 I core                   _  ____/__/ /  _  ____/_  /___  _  /|  /
 04-17 16:19:35 I core                   /_/     /___/  /_/     /_____/  /_/ |_/
 04-17 16:19:35 I core
-04-17 16:19:35 I core                               version: 1.0.2
+04-17 16:19:35 I core                               version: 1.1.8
 04-17 16:19:35 I core
 04-17 16:19:35 I core    ╔═══════════════════════════ MYPIPELINE ════════════════════════════╗
 04-17 16:19:35 I core    ║ My pipeline                                                       ║
 04-17 16:19:35 I core    ╚═══════════════════════════════════════════════════════════════════╝
-04-17 16:19:35 I core    plugins         : verbose v0.14.1
+04-17 16:19:35 I core    plugins         : verbose v1.1.1
 04-17 16:19:35 I core    # procs         : 2
 04-17 16:19:35 I core    profile         : default
 04-17 16:19:35 I core    outdir          : /path/to/cwd/MyPipeline-output
