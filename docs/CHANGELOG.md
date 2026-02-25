@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.1.9
+
+- deps: update python-simpleconf to version 0.9 (support templated config files)
+
 ## 1.1.8
 
 - chore: bump up xqute to 2.0.6
