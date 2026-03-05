@@ -302,8 +302,10 @@ class Proc(ABC, metaclass=ProcMeta):
         cls.nexts = []
         cls.requires = cls.requires
 
-        if cls.name is None or (parent and cls.name == parent.name):
-            cls.name = cls.__name__
+        if cls.name is None or (
+            parent and cls.name == parent.name and "name" not in cls.__dict__
+        ):
+            cls.name = cls.__dict__.get("__name__") or cls.__name__
 
         if not is_valid_name(cls.name):
             raise PipenOrProcNameError(
