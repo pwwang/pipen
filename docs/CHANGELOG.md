@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.1.10
+
+- fix: ensure `Proc` class name is set correctly when parent name matches
+- chore: update dependencies
+
 ## 1.1.9
 
 - deps: update python-simpleconf to version 0.9 (support templated config files)
