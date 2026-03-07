@@ -433,38 +433,6 @@ def test_wrong_input_type_for_files(pipen):
         pipen.set_starts(proc).run()
 
 
-def test_process_input_file_or_dir_error():
-    with pytest.raises(ProcInputTypeError):
-        _process_input_file_or_dir("a", "b", 1, index=1, proc_name="proc")
-
-    with pytest.raises(ProcInputTypeError, match="too many"):
-        _process_input_file_or_dir("a", "b", "v:w:x:y:z", index=1, proc_name="proc")
-
-
-@pytest.mark.parametrize(
-    "inval,expected",
-    [
-        ("/local/path", SpecPath("/local/path")),
-        ("gs://bucket/path", SpecPath("gs://bucket/path")),
-        ("/local/path1:/local/path2", SpecPath("/local/path1", mounted="/local/path2")),
-        (
-            "gs://bucket/path1:gs://bucket/path2",
-            SpecPath("gs://bucket/path1", mounted="gs://bucket/path2"),
-        ),
-        (
-            "/local/path:gs://bucket/path",
-            SpecPath("/local/path", mounted="gs://bucket/path"),
-        ),
-    ],
-)
-def test_process_input_file_or_dir(inval, expected):
-    expected = expected.mounted
-    out = _process_input_file_or_dir("a", "b", inval, index=1, proc_name="proc")
-    assert out == expected
-    assert isinstance(out, MountedPath) or isinstance(out, CloudPath)
-    assert out.spec == expected.spec
-
-
 @pytest.mark.forked
 def test_output_flatten_default_single_job(pipen, tmp_path):
     """output_flatten=None for single-job export process → no index subdir"""
@@ -543,3 +511,35 @@ def test_output_flatten_duplicate_warning(caplog, pipen):
     )
     pipen.set_starts(proc).run()
     assert "duplicate values" in caplog.text
+
+
+def test_process_input_file_or_dir_error():
+    with pytest.raises(ProcInputTypeError):
+        _process_input_file_or_dir("a", "b", 1, index=1, proc_name="proc")
+
+    with pytest.raises(ProcInputTypeError, match="too many"):
+        _process_input_file_or_dir("a", "b", "v:w:x:y:z", index=1, proc_name="proc")
+
+
+@pytest.mark.parametrize(
+    "inval,expected",
+    [
+        ("/local/path", SpecPath("/local/path")),
+        ("gs://bucket/path", SpecPath("gs://bucket/path")),
+        ("/local/path1:/local/path2", SpecPath("/local/path1", mounted="/local/path2")),
+        (
+            "gs://bucket/path1:gs://bucket/path2",
+            SpecPath("gs://bucket/path1", mounted="gs://bucket/path2"),
+        ),
+        (
+            "/local/path:gs://bucket/path",
+            SpecPath("/local/path", mounted="gs://bucket/path"),
+        ),
+    ],
+)
+def test_process_input_file_or_dir(inval, expected):
+    expected = expected.mounted
+    out = _process_input_file_or_dir("a", "b", inval, index=1, proc_name="proc")
+    assert out == expected
+    assert isinstance(out, MountedPath) or isinstance(out, CloudPath)
+    assert out.spec == expected.spec
