@@ -21,6 +21,7 @@ from .helpers import (  # noqa: F401
     FileInputProc,
     FileInputProcToDiff,
     FileInputsProc,
+    FixedOutputFileProc,
     MixedInputProc,
     DirOutputProc,
     NormalProc,
@@ -462,3 +463,83 @@ def test_process_input_file_or_dir(inval, expected):
     assert out == expected
     assert isinstance(out, MountedPath) or isinstance(out, CloudPath)
     assert out.spec == expected.spec
+
+
+@pytest.mark.forked
+def test_output_flatten_default_single_job(pipen, tmp_path):
+    """output_flatten=None for single-job export process → no index subdir"""
+    infile = tmp_path / "testfile.txt"
+    infile.write_text("test")
+    proc = Proc.from_proc(
+        FileInputProc, name="flatten_single", input_data=[infile]
+    )
+    pipen.set_starts(proc).run()
+    # Default: single-job export → output_flatten computed as True (no subdir)
+    assert pipen.outdir.joinpath("flatten_single", "testfile.txt").is_file()
+    assert not pipen.outdir.joinpath("flatten_single", "0").exists()
+
+
+@pytest.mark.forked
+def test_output_flatten_default_multi_job(pipen, tmp_path):
+    """output_flatten=None for multi-job export process → per-job index subdirs"""
+    infile1 = tmp_path / "file1.txt"
+    infile1.write_text("content1")
+    infile2 = tmp_path / "file2.txt"
+    infile2.write_text("content2")
+    proc = Proc.from_proc(
+        FileInputProc, name="flatten_multi", input_data=[infile1, infile2]
+    )
+    pipen.set_starts(proc).run()
+    # Default: multi-job export → output_flatten computed as False (with subdirs)
+    assert pipen.outdir.joinpath("flatten_multi", "0", "file1.txt").is_file()
+    assert pipen.outdir.joinpath("flatten_multi", "1", "file2.txt").is_file()
+
+
+@pytest.mark.forked
+def test_output_flatten_true_multi_job(pipen, tmp_path):
+    """output_flatten=True for multi-job: all outputs go directly in proc outdir"""
+    infile1 = tmp_path / "file1.txt"
+    infile1.write_text("content1")
+    infile2 = tmp_path / "file2.txt"
+    infile2.write_text("content2")
+    proc = Proc.from_proc(
+        FileInputProc,
+        name="flatten_true",
+        input_data=[infile1, infile2],
+        output_flatten=True,
+    )
+    pipen.set_starts(proc).run()
+    # output_flatten=True: no index subdirs, outputs go directly into proc outdir
+    assert pipen.outdir.joinpath("flatten_true", "file1.txt").is_file()
+    assert pipen.outdir.joinpath("flatten_true", "file2.txt").is_file()
+    assert not pipen.outdir.joinpath("flatten_true", "0").exists()
+
+
+@pytest.mark.forked
+def test_output_flatten_false_single_job(pipen, tmp_path):
+    """output_flatten=False for single-job process → index subdir even for single job"""
+    infile = tmp_path / "single.txt"
+    infile.write_text("test")
+    proc = Proc.from_proc(
+        FileInputProc,
+        name="no_flatten_single",
+        input_data=[infile],
+        output_flatten=False,
+    )
+    pipen.set_starts(proc).run()
+    # output_flatten=False: subdir is always created
+    assert pipen.outdir.joinpath("no_flatten_single", "0", "single.txt").is_file()
+    assert not pipen.outdir.joinpath("no_flatten_single", "single.txt").exists()
+
+
+@pytest.mark.forked
+def test_output_flatten_duplicate_warning(caplog, pipen):
+    """Warning raised when output_flatten=True and jobs produce duplicate paths"""
+    proc = Proc.from_proc(
+        FixedOutputFileProc,
+        name="flatten_warn",
+        input_data=[1, 2],
+        output_flatten=True,
+    )
+    pipen.set_starts(proc).run()
+    assert "duplicate values" in caplog.text

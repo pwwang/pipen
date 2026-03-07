@@ -142,6 +142,20 @@ class Proc(ABC, metaclass=ProcMeta):
             determined by `Pipen.set_starts()`
         output: The output keys for the output channel
             (the data will be computed)
+        output_flatten: Whether to flatten the output when saving to the output
+            directory. Normally, the output will be saved in a subdirectory named
+            after the job index (e.g. `<outdir>/0`, `<outdir>/1`, etc.).
+            If `output_flatten` is True, the output will be saved directly in the
+            output directory without the subdirectories.
+            This is useful when you want the job outputs to be directly revealed
+            in the output directory.
+            Note that this only works for processes with export=True or end processes
+            and make sure the name of the output files won't conflict
+            for jobs with each other when flattening.
+            It takes 3 possible values
+            - None (default): flatten the output for single-job processes only
+            - True: flatten the output for all processes
+            - False: never flatten the output
         plugin_opts: Options for process-level plugins
         requires: The dependency processes
         scheduler: The scheduler to run the jobs
@@ -173,6 +187,7 @@ class Proc(ABC, metaclass=ProcMeta):
     lang: str = None
     order: int = None
     output: str | Sequence[str] = None
+    output_flatten: bool | None = None
     plugin_opts: Mapping[str, Any] = None
     requires: Type[Proc] | Sequence[Type[Proc]] = None
     scheduler: str = None
@@ -198,6 +213,7 @@ class Proc(ABC, metaclass=ProcMeta):
         envs_depth: int = None,
         cache: bool = None,
         export: bool = None,
+        output_flatten: bool | None = None,
         error_strategy: str = None,
         num_retries: int = None,
         forks: int = None,
@@ -224,6 +240,20 @@ class Proc(ABC, metaclass=ProcMeta):
                 Defaults to None, meaning only end processes will export.
                 You can set it to True/False to enable or disable exporting
                 for processes
+            output_flatten: Whether to flatten the output when saving to the output
+                directory. Normally, the output will be saved in a subdirectory named
+                after the job index (e.g. `<outdir>/0`, `<outdir>/1`, etc.).
+                If `output_flatten` is True, the output will be saved directly in the
+                output directory without the subdirectories.
+                This is useful when you want the job outputs to be directly revealed
+                in the output directory.
+                Note that this only works for processes with export=True or
+                end processes and make sure the name of the output files won't conflict
+                for jobs with each other when flattening.
+                It takes 3 possible values
+                - None (default): flatten the output for single-job processes only
+                - True: flatten the output for all processes
+                - False: never flatten the output
             error_strategy: How to deal with the errors
                 - retry, ignore, halt
                 - halt to halt the whole pipeline, no submitting new jobs
@@ -273,6 +303,7 @@ class Proc(ABC, metaclass=ProcMeta):
             "cache",
             "forks",
             "order",
+            "output_flatten",
             "plugin_opts",
             "scheduler",
             "scheduler_opts",
@@ -389,6 +420,9 @@ class Proc(ABC, metaclass=ProcMeta):
         self.output = self._compute_output()  # type: ignore
         await plugin.hooks.on_proc_input_computed(self)
 
+        if self.output_flatten is None:
+            self.output_flatten = self.export and self.size == 1
+
         # scheduler
         self.scheduler: Type[Scheduler] = get_scheduler(  # type: ignore
             self.scheduler or self.pipeline.config.scheduler
@@ -496,9 +530,25 @@ class Proc(ABC, metaclass=ProcMeta):
         import pandas
 
         # store the output data for the next processes
-        self.__class__.output_data = pandas.DataFrame(
+        output_data = self.__class__.output_data = pandas.DataFrame(
             (job.output for job in sorted(self.jobs, key=lambda j: j.index))
         )
+        # warning that if output_flatten is True and any non-None values in the str
+        # columns in the output_data across rows have same values.
+        # Because the output files will be saved directly
+        # in the output directory without subdirectories, which may cause conflicts.
+        if self.output_flatten:
+            str_cols = output_data.select_dtypes(include="object").columns
+            for col in str_cols:
+                if output_data[col].nunique(dropna=True) < len(
+                    output_data[col].dropna()
+                ):
+                    self.log(
+                        "warning",
+                        "Output %r has duplicate values across jobs, "
+                        "which may cause conflicts when output_flatten is True.",
+                        col,
+                    )
 
         del self.xqute.jobs[:]
         self.xqute.jobs = []

@@ -180,6 +180,14 @@ class DirOutputEmptyProc(Proc):
     script = ""
 
 
+class FixedOutputFileProc(Proc):
+    """Process with a fixed output filename (not based on input)"""
+
+    input = "in:var"
+    output = "out:file:fixed_output.txt"
+    script = "echo {{in.in}} > {{out.out}}"
+
+
 class SimplePlugin:
     @plugin.impl
     async def on_init(pipen):

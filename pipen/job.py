@@ -169,7 +169,7 @@ class Job(XquteJob, JobCaching):
 
             # Put job output in a subdirectory with index
             # if it is a multi-job process
-            if self.proc.size > 1:
+            if not self.proc.output_flatten:
                 self.outdir = self.outdir / str(self.index)  # type: ignore
 
             if sched_mounted_outdir is None:

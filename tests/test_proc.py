@@ -172,6 +172,7 @@ def test_from_proc():
         envs={"a": 1},
         cache=True,
         forks=2,
+        output_flatten=True,
         plugin_opts={"p": 1},
         scheduler="sge",
         scheduler_opts={"s": 1},
@@ -184,12 +185,26 @@ def test_from_proc():
     assert proc.envs == {"a": 1}
     assert proc.cache
     assert proc.forks == 2
+    assert proc.output_flatten is True
     assert proc.plugin_opts == {"p": 1}
     assert proc.scheduler == "sge"
     assert proc.scheduler_opts == {"s": 1}
     assert proc.error_strategy == "retry"
     assert proc.num_retries == 10
     assert proc.submission_batch == 3
+
+
+def test_from_proc_output_flatten_false():
+    proc = Proc.from_proc(
+        SimpleProc, name="proc_output_flatten_false", output_flatten=False
+    )
+    assert proc.output_flatten is False
+
+
+def test_from_proc_output_flatten_default():
+    proc = Proc.from_proc(SimpleProc, name="proc_output_flatten_default")
+    # output_flatten=None means it will be computed at runtime
+    assert proc.output_flatten is None
 
 
 def test_proc_is_singleton(pipen):
