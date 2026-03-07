@@ -22,6 +22,7 @@ Following items are at process level. They can be set changed at process level s
 - `forks`: How many jobs to run simultaneously?
 - `lang`: The language for the script to run. See also [here][5]
 - `plugin_opts`: Options for process-level plugins, will inherit from pipeline level
+- `output_flatten`: Whether to flatten the output directory structure for export processes. `None` (default): flatten only for single-job export processes; `True`: always place all job outputs directly in `<pipeline.outdir>/<proc>/` without per-job subdirectories; `False`: always create per-job index subdirectories. Make sure output filenames don't conflict across jobs when set to `True`.
 - `scheduler`: The scheduler to run the jobs
 - `scheduler_opts`: The options for the scheduler, will inherit from pipeline level
 - `submission_batch`: How many jobs to be submited simultaneously

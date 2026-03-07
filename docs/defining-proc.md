@@ -107,6 +107,7 @@ The configurations of a process are specified as class variables of subclasses o
 |`lang`|The language for the script to run.|No|
 |`order`|The execution order for the same dependency-level processes|Yes|
 |`output`|The output keys for the output channel|No|
+|`output_flatten`|Whether to flatten the output directory structure. `None` (default): flatten only for single-job export processes; `True`: always place outputs directly in `<pipeline.outdir>/<proc>/` without per-job index subdirectories; `False`: always create per-job index subdirectories (e.g. `<pipeline.outdir>/<proc>/0/`). Only effective for export processes. Make sure output filenames are unique across jobs when `True`.|Yes|
 |`plugin_opts`|Options for process-level plugins|Yes|
 |`requires`|The dependency processes|Yes|
 |`scheduler`|The scheduler to run the jobs|Yes|
