@@ -1,5 +1,12 @@
 # Change Log
 
+
+## 1.1.11
+
+- feat: add Makefile for version management and changelog updates
+- chore: bump diot to 0.3.3 and simpleconf to 0.9.2
+- feat(proc): add output_flatten option to control job output directory structure
+
 ## 1.1.10
 
 - fix: ensure `Proc` class name is set correctly when parent name matches
