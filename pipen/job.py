@@ -361,6 +361,17 @@ class Job(XquteJob, JobCaching):
             if output_type == ProcOutputType.VAR:
                 ret[output_name] = output_value
             else:
+                if self.proc.export and self.proc.output_flatten:
+                    self.proc._duplicate_fields_check.setdefault(output_name, set())
+                    if output_value in self.proc._duplicate_fields_check[output_name]:
+                        raise ProcOutputValueError(
+                            f"[{self.proc.name}] The output value {output_value!r} for "
+                            f"{output_name!r} (job #{self.index}) is duplicated with "
+                            "another job, and you have output_flatten=True for this "
+                            "process, which may cause conflicts."
+                        )
+                    self.proc._duplicate_fields_check[output_name].add(output_value)
+
                 ov = PanPath(output_value)
                 if isinstance(ov, CloudPath) or (
                     isinstance(ov, LocalPath) and ov.is_absolute()

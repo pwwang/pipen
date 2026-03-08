@@ -412,6 +412,11 @@ class Proc(ABC, metaclass=ProcMeta):
         # self.script = self._compute_script()  # type: ignore
         # self.workdir.mkdir(exist_ok=True)
 
+        # Save the file/directory output values to check if they are duplicated
+        # when output_flatten is True, since they will be saved in the same directory
+        # and there will be conflicts if they have the same name
+        self._duplicate_fields_check = {}
+
     async def _init(self) -> None:
         """Async init for the process"""
         # input
@@ -530,25 +535,11 @@ class Proc(ABC, metaclass=ProcMeta):
         import pandas
 
         # store the output data for the next processes
-        output_data = self.__class__.output_data = pandas.DataFrame(
+        self.__class__.output_data = pandas.DataFrame(
             (job.output for job in sorted(self.jobs, key=lambda j: j.index))
         )
-        # warning that if output_flatten is True and any non-None values in the str
-        # columns in the output_data across rows have same values.
-        # Because the output files will be saved directly
-        # in the output directory without subdirectories, which may cause conflicts.
-        if self.output_flatten:
-            str_cols = output_data.select_dtypes(include="object").columns
-            for col in str_cols:
-                if output_data[col].nunique(dropna=True) < len(
-                    output_data[col].dropna()
-                ):
-                    self.log(
-                        "warning",
-                        "Output %r has duplicate values across jobs, "
-                        "which may cause conflicts when output_flatten is True.",
-                        col,
-                    )
+
+        self._duplicate_fields_check = {}
 
         del self.xqute.jobs[:]
         self.xqute.jobs = []

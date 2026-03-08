@@ -501,16 +501,16 @@ def test_output_flatten_false_single_job(pipen, tmp_path):
 
 
 @pytest.mark.forked
-def test_output_flatten_duplicate_warning(caplog, pipen):
-    """Warning raised when output_flatten=True and jobs produce duplicate paths"""
+def test_output_flatten_duplicate_warning(pipen):
+    """Error raised when output_flatten=True and jobs produce duplicate paths"""
     proc = Proc.from_proc(
         FixedOutputFileProc,
         name="flatten_warn",
         input_data=[1, 2],
         output_flatten=True,
     )
-    pipen.set_starts(proc).run()
-    assert "duplicate values" in caplog.text
+    with pytest.raises(ProcOutputValueError):
+        pipen.set_starts(proc).run()
 
 
 def test_process_input_file_or_dir_error():
