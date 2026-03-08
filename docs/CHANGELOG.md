@@ -1,6 +1,11 @@
 # Change Log
 
 
+## 1.1.12
+
+- feat: implement duplicate fields check for output_flatten in Job and Proc classes
+
+
 ## 1.1.11
 
 - feat: add Makefile for version management and changelog updates
