@@ -209,6 +209,7 @@ def update_dict(
     new: Mapping[str, Any],
     depth: int = 0,
     try_list: bool = False,
+    null_in_list: Any = None,
 ) -> Mapping[str, Any]:
     """Update the new dict to the parent, but make sure parent does not change
 
@@ -217,6 +218,8 @@ def update_dict(
         new: The new dictionary
         depth: The depth to be copied. 0 for updating to the deepest level.
         try_list: If True, try to also update the dict in the list
+        null_in_list: The value in the list that is considered as null and will not
+            update the original value. Only works when try_list is True.
 
     Examples:
         >>> parent = {"a": {"b": 1}}
@@ -249,8 +252,16 @@ def update_dict(
                     and i < len(out[key])
                     and isinstance(out[key][i], dict)
                 ):
-                    out[key][i] = update_dict(out[key][i], item, depth - 1, True)
+                    out[key][i] = update_dict(
+                        out[key][i],
+                        item,
+                        depth - 1,
+                        True,
+                        null_in_list
+                    )
                 elif i < len(out[key]):
+                    if item is null_in_list:
+                        continue
                     out[key][i] = item
                 else:
                     out[key].append(item)
@@ -264,7 +275,7 @@ def update_dict(
         ):
             out[key] = val
         else:
-            out[key] = update_dict(out[key], val, depth - 1)
+            out[key] = update_dict(out[key], val, depth - 1, try_list, null_in_list)
 
     return out
 

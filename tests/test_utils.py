@@ -182,6 +182,14 @@ def test_update_dict():
         try_list=True,
     ) == {"a": [2, 3, 4]}
 
+    null = object()
+    assert update_dict(
+        {"a": [1, 2]},
+        {"a": [null, null, 4]},
+        try_list=True,
+        null_in_list=null,
+    ) == {"a": [1, 2, 4]}
+
 
 @pytest.mark.forked
 def test_copy_dict():
