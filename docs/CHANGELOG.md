@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.1.13
+
+- chore: bump xqute to 2.0.8
+- feat: add null_in_list parameter to update_dict for better list handling
 
 ## 1.1.12
 
