@@ -10,3 +10,13 @@ from .procgroup import ProcGroup
 # from .channel import Channel
 from .pluginmgr import plugin
 from .version import __version__
+
+__all__ = (
+    "Pipen",
+    "Proc",
+    "ProcGroup",
+    "run",
+    "async_run",
+    "plugin",
+    "__version__",
+)
