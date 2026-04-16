@@ -1,5 +1,13 @@
 # Change Log
 
+
+## 1.1.14
+
+- chore: update setup-uv and auth actions to latest versions in workflows
+- chore: update __all__ exports in __init__.py for consistency
+- chore: update dependency version constraints for improved compatibility
+- chore: migrate from Poetry to Hatch for build system and dependency management
+
 ## 1.1.13
 
 - chore: bump xqute to 2.0.8

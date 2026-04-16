@@ -27,6 +27,7 @@ version:
 		mv docs/CHANGELOG.md.new docs/CHANGELOG.md; \
 		rm -f docs/CHANGELOG.md.tmp; \
 	fi; \
+	uv lock -U; \
 	echo "Version updated to $$NEW_VERSION";
 
 # Catch-all rule to ignore version number argument
