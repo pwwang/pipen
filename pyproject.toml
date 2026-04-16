@@ -13,8 +13,8 @@ license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-    "liquidpy>=0.8,<0.9",
-    "pandas>=2.0,<3",
+    "liquidpy>=0.8,<1",
+    "pandas>=2.0,<4",
     "enlighten>=1,<2",
     "argx>=0.4,<0.5",
     "xqute>=2.0,<3",
@@ -23,8 +23,8 @@ dependencies = [
     # "diot>=0.1,<0.2",
     # "simplug>=0.0,<0.1",
     "python-simpleconf[toml]>=0.9,<1",
-    "pipda>=0.13,<0.14",
-    "varname>=0.15,<0.16",
+    "pipda>=0.13,<1",
+    "varname>=1.0",
 ]
 
 [project.urls]
@@ -46,7 +46,7 @@ dev = [
     "pytest-xdist>=3,<4",
     "pytest-forked>=1.6,<2",
     # This also installs scipy and wcwidth
-    "datar[pandas]>=0.15,<0.16",
+    "datar[pandas]>=0",
     "flake8>=7,<8",
     "python-dotenv>=1,<2",
     "cloudsh[gs]>=0.3,<0.4",
