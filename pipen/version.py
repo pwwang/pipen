@@ -1,3 +1,3 @@
 """Provide version of pipen"""
 
-__version__ = "1.1.14a1"
+__version__ = "1.1.14"
