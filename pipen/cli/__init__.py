@@ -2,3 +2,5 @@
 
 from ._hooks import CLIPlugin, AsyncCLIPlugin
 from ._main import main
+
+__all__ = ("main", "CLIPlugin", "AsyncCLIPlugin")
