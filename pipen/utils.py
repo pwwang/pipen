@@ -57,6 +57,37 @@ if TYPE_CHECKING:  # pragma: no cover
     from .proc import Proc
     from .procgroup import ProcGroup
 
+
+__all__ = (
+    "logger",
+    "get_logger",
+    "desc_from_docstring",
+    "update_dict",
+    "copy_dict",
+    "strsplit",
+    "get_shebang",
+    "ignore_firstline_dedent",
+    "get_logpanel_width",
+    "log_rich_renderable",
+    "brief_list",
+    "pipen_banner",
+    "get_mtime",
+    "is_subclass",
+    "load_entrypoints",
+    "truncate_text",
+    "make_df_colnames_unique_inplace",
+    "get_base",
+    "mark",
+    "get_marked",
+    "is_valid_name",
+    "load_pipeline",
+    "is_loading_pipeline",
+    "path_is_symlink_sync",
+    "path_is_symlink",
+    "path_symlink_to",
+    "LOADING_ARGV0",
+)
+
 LOADING_ARGV0 = "@pipen"
 
 
