@@ -1,6 +1,14 @@
 # Change Log
 
 
+## 1.1.15
+
+- chore: update __all__ exports in exceptions.py for consistency
+- chore: update __all__ exports in defaults.py for consistency
+- chore: update __all__ exports in channel.py for consistency
+- chore: update __all__ exports in utils.py for consistency
+- chore: ensure __all__ exports are defined for CLI components
+
 ## 1.1.14
 
 - chore: update setup-uv and auth actions to latest versions in workflows
