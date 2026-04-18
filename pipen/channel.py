@@ -12,6 +12,12 @@ from pipda import register_verb
 
 from .utils import path_is_symlink, path_is_symlink_sync
 
+__all__ = [
+    "Channel",
+    "expand_dir",
+    "collapse_files",
+]
+
 
 # ----------------------------------------------------------------
 # Creators
