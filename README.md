@@ -117,7 +117,7 @@ if __name__ == "__main__":
 04-17 16:19:35 I core                   _  ____/__/ /  _  ____/_  /___  _  /|  /
 04-17 16:19:35 I core                   /_/     /___/  /_/     /_____/  /_/ |_/
 04-17 16:19:35 I core
-04-17 16:19:35 I core                               version: 1.1.8
+04-17 16:19:35 I core                               version: 1.1.16
 04-17 16:19:35 I core
 04-17 16:19:35 I core    ╔═══════════════════════════ MYPIPELINE ════════════════════════════╗
 04-17 16:19:35 I core    ║ My pipeline                                                       ║
@@ -197,6 +197,7 @@ Plugins make `pipen` even better.
 - [`pipen-verbose`][15]: Add verbosal information in logs for pipen.
 - [`pipen-gcs`][32]: A plugin for pipen to handle files in Google Cloud Storage.
 - [`pipen-deprecated`][34]: A pipen plugin to mark processes as deprecated.
+- [`pipen-mcp`][35]: A pipen plugin to turn pipen processes into MCP (model context protocol) processes.
 - [`pipen-cli-init`][21]: A pipen CLI plugin to create a pipen project (pipeline)
 - [`pipen-cli-ref`][31]: Make reference documentation for processes
 - [`pipen-cli-require`][24]: A pipen cli plugin check the requirements of a pipeline
@@ -237,3 +238,4 @@ Plugins make `pipen` even better.
 [32]: https://github.com/pwwang/pipen-gcs
 [33]: https://github.com/pwwang/pipen-cli-gbatch
 [34]: https://github.com/pwwang/pipen-deprecated
+[35]: https://github.com/pwwang/pipen-mcp
