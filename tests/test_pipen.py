@@ -86,6 +86,14 @@ def test_wrong_len_data(pipen):
 
 
 @pytest.mark.forked
+def test_string_data(pipen):
+    proc1 = Proc.from_proc(NormalProc)
+    pipen = pipen.set_starts(proc1)
+    pipen.set_data("abc").run()
+    assert pipen.procs[0].input_data == ["abc"]  # not "abc"
+
+
+@pytest.mark.forked
 def test_not_cyclic_for_subclass_of_proc_in_pipeline(pipen):
     proc1 = Proc.from_proc(NormalProc, input_data=[1])
     proc2 = Proc.from_proc(NormalProc, requires=proc1)

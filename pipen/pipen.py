@@ -268,6 +268,12 @@ class Pipen:
                     "this process for `Pipen.set_data()`."
                 )
             start.input_data = data
+
+            if isinstance(data, (str, bytes)):
+                start.input_data = [data]
+            else:
+                start.input_data = data
+
         return self
 
     def set_starts(
