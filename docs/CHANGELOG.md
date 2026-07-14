@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.1.17
+
+- fix: handle string and bytes input in set_data method
+- fix: validate input data length in set_data method
+- chore: bump xqute to v2.1.1
 
 ## 1.1.15
 
