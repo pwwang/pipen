@@ -78,6 +78,14 @@ def test_wrong_type_starts(pipen):
 
 
 @pytest.mark.forked
+def test_wrong_len_data(pipen):
+    proc1 = Proc.from_proc(NormalProc)
+    pipen = pipen.set_starts(proc1)
+    with pytest.raises(PipenSetDataError):
+        pipen.set_data(1, 2)
+
+
+@pytest.mark.forked
 def test_not_cyclic_for_subclass_of_proc_in_pipeline(pipen):
     proc1 = Proc.from_proc(NormalProc, input_data=[1])
     proc2 = Proc.from_proc(NormalProc, requires=proc1)

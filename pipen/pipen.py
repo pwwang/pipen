@@ -243,15 +243,24 @@ class Pipen:
                 position for the process
 
         Raises:
-            ProcInputDataError: When trying to set input data to
-                processes with input_data already set
+            PipenSetDataError: When the number of input data does not match
+                the number of start processes
 
         Returns:
             `self` to chain the operations
         """
+        # zip(..., strict=True) is introduced in Python 3.10,
+        # so we use len() to check the length instead
+        if len(indata) != len(self.starts):
+            raise PipenSetDataError(
+                f"Number of input data ({len(indata)}) does not match "
+                f"the number of start processes ({len(self.starts)})."
+            )
+
         for start, data in zip(self.starts, indata):  # type: ignore
             if data is None:
                 continue
+
             if start.input_data is not None:
                 raise PipenSetDataError(
                     f"`input_data` has already set for {start}. "
