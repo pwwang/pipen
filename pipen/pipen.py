@@ -254,9 +254,10 @@ class Pipen:
         Returns:
             `self` to chain the operations
         """
+        starts: List[Type[Proc]] = self.starts  # type: ignore[assignment]
         args_data = {
             start.name: data
-            for start, data in zip(self.starts, args)
+            for start, data in zip(starts, args)
         }
         for name, data in kwargs.items():
             if name in args_data:
@@ -266,13 +267,13 @@ class Pipen:
             args_data[name] = data
 
         for name in args_data:
-            if name not in [start.name for start in self.starts]:
+            if name not in [start.name for start in starts]:
                 raise PipenSetDataError(
                     f"Start process '{name}' does not exist. "
                     "Did you forget to call `set_starts()`?"
                 )
 
-        for start in self.starts:  # type: ignore
+        for start in starts:
             data = args_data.get(start.name)
             if data is None:
                 continue

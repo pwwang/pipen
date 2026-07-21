@@ -415,7 +415,7 @@ class Proc(ABC, metaclass=ProcMeta):
         # Save the file/directory output values to check if they are duplicated
         # when output_flatten is True, since they will be saved in the same directory
         # and there will be conflicts if they have the same name
-        self._duplicate_fields_check = {}
+        self._duplicate_fields_check: dict[str, set] = {}
 
     async def _init(self) -> None:
         """Async init for the process"""
@@ -539,7 +539,7 @@ class Proc(ABC, metaclass=ProcMeta):
             (job.output for job in sorted(self.jobs, key=lambda j: j.index))
         )
 
-        self._duplicate_fields_check = {}
+        self._duplicate_fields_check: dict[str, set] = {}
 
         del self.xqute.jobs[:]
         self.xqute.jobs = []

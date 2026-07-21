@@ -81,7 +81,7 @@ filterwarnings = [
 [tool.mypy]
 ignore_missing_imports = true
 allow_redefinition = true
-disable_error_code = ["attr-defined", "no-redef"]
+disable_error_code = ["attr-defined", "no-redef", "annotation-unchecked"]
 show_error_codes = true
 strict_optional = false
 
