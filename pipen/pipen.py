@@ -231,16 +231,21 @@ class Pipen:
         """
         return asyncio.run(self.async_run(profile))
 
-    def set_data(self, *indata: Any) -> Pipen:
+    def set_data(self, *args: Any, **kwargs: Any) -> Pipen:
         """Set the input_data for start processes
 
         Args:
-            *indata: The input data for the start processes
-                The data will set for the processes in the order determined by
-                `set_starts()`.
-                If a process has input_data set, an error will be raised.
-                To use that input_data, set None here in the corresponding
-                position for the process
+            *args: The unnamed input data for the start processes
+            **kwargs: The named input data for the start processes
+                The data will be distributed to the start processes like
+                a python function is called. The function is like
+                `def func(start1, start2, ...)`, where `startN` is
+                the name of the N-th start process.
+                `set_data(data1, start2=data2, ...)` will set `data1` to
+                the first start process, and `data2` to the start process named
+                `start2`.
+                `set_data(data1, start1=data2, ...)` will error, since
+                multiple data are set for the same start process `start1`.
 
         Raises:
             PipenSetDataError: When the number of input data does not match
@@ -249,23 +254,34 @@ class Pipen:
         Returns:
             `self` to chain the operations
         """
-        # zip(..., strict=True) is introduced in Python 3.10,
-        # so we use len() to check the length instead
-        if len(indata) != len(self.starts):
-            raise PipenSetDataError(
-                f"Number of input data ({len(indata)}) does not match "
-                f"the number of start processes ({len(self.starts)})."
-            )
+        args_data = {
+            start.name: data
+            for start, data in zip(self.starts, args)
+        }
+        for name, data in kwargs.items():
+            if name in args_data:
+                raise PipenSetDataError(
+                    f"Multiple data are set for the same start process '{name}'."
+                )
+            args_data[name] = data
 
-        for start, data in zip(self.starts, indata):  # type: ignore
+        for name in args_data:
+            if name not in [start.name for start in self.starts]:
+                raise PipenSetDataError(
+                    f"Start process '{name}' does not exist. "
+                    "Did you forget to call `set_starts()`?"
+                )
+
+        for start in self.starts:  # type: ignore
+            data = args_data.get(start.name)
             if data is None:
                 continue
 
             if start.input_data is not None:
                 raise PipenSetDataError(
-                    f"`input_data` has already set for {start}. "
-                    "If you want to use it, set `None` at the position of "
-                    "this process for `Pipen.set_data()`."
+                    f"`input_data` has already set for {start}. \n"
+                    "If you want to use this data, use `input_data` in "
+                    "the start process class instead of `set_data()`."
                 )
             start.input_data = data
 

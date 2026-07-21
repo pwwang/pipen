@@ -78,11 +78,19 @@ def test_wrong_type_starts(pipen):
 
 
 @pytest.mark.forked
-def test_wrong_len_data(pipen):
+def test_set_data_nonexisting_start(pipen):
     proc1 = Proc.from_proc(NormalProc)
     pipen = pipen.set_starts(proc1)
     with pytest.raises(PipenSetDataError):
-        pipen.set_data(1, 2)
+        pipen.set_data(proc2=2)
+
+
+@pytest.mark.forked
+def test_set_data_multiple_data(pipen):
+    proc1 = Proc.from_proc(NormalProc)
+    pipen = pipen.set_starts(proc1)
+    with pytest.raises(PipenSetDataError):
+        pipen.set_data(1, proc1=2)
 
 
 @pytest.mark.forked
@@ -166,7 +174,7 @@ def test_proc_order(pipen):
 def test_proc_inherited(pipen):
     proc1 = Proc.from_proc(RelPathScriptProc)
     proc2 = Proc.from_proc(proc1)
-    pipen.set_starts(proc2).set_data([1]).run()
+    pipen.set_starts(proc2).set_data(proc2=[1]).run()
     assert proc2.__doc__ == RelPathScriptProc.__doc__
 
 
