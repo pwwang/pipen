@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.1.18
+
+- style: update type hint for _duplicate_fields_check and enhance mypy configuration
+- feat: update set_data method to support named arguments and improve error handling
+
 ## 1.1.17
 
 - fix: handle string and bytes input in set_data method
