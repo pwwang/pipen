@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.1.19
+
+- feat: enhance expand_dir and collapse_files to support MountedPath with spec
+- chore: bump xqute==2.1.2
+
 ## 1.1.18
 
 - style: update type hint for _duplicate_fields_check and enhance mypy configuration

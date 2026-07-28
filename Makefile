@@ -22,7 +22,7 @@ version:
 	fi; \
 	if [ -n "$$COMMITS" ]; then \
 		printf "\n## %s\n\n%s\n\n" "$$NEW_VERSION" "$$COMMITS" | cat - <(tail -n +3 docs/CHANGELOG.md) > docs/CHANGELOG.md.tmp; \
-		head -n 2 docs/CHANGELOG.md > docs/CHANGELOG.md.new; \
+		head -n 1 docs/CHANGELOG.md > docs/CHANGELOG.md.new; \
 		cat docs/CHANGELOG.md.tmp >> docs/CHANGELOG.md.new; \
 		mv docs/CHANGELOG.md.new docs/CHANGELOG.md; \
 		rm -f docs/CHANGELOG.md.tmp; \
