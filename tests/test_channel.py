@@ -6,6 +6,7 @@ from math import ceil
 import pytest  # noqa
 from pipen.channel import Channel, expand_dir, collapse_files
 from datar.tibble import tibble
+from xqute.path import MountedPath
 
 from pandas import DataFrame
 
@@ -124,6 +125,21 @@ def test_expand_dir_collapse_files():
     ch1 = ch0 >> expand_dir(pattern="test_*.py")
     glob_files = list(Path(__file__).parent.glob("test_*.py"))
     assert ch1.shape == (len(glob_files), 2)
+
+    ch2 = ch1 >> collapse_files()
+    assert ch2.equals(ch0)
+
+
+def test_expand_dir_collapse_files_with_spec():
+    p = MountedPath("/mnt/disks/mounted", spec=Path(__file__).parent.as_posix())
+    ch0 = Channel.create([(p, 1)])
+    ch1 = ch0 >> expand_dir(pattern="test_*.py")
+    glob_files = list(Path(p.spec).glob("test_*.py"))
+    assert ch1.shape == (len(glob_files), 2)
+    assert all(isinstance(x, MountedPath) for x in ch1.iloc[:, 0])
+    assert all(str(x.spec).startswith(str(p.spec)) for x in ch1.iloc[:, 0])
+    assert all(str(x.spec).endswith(".py") for x in ch1.iloc[:, 0])
+    assert all(str(x).startswith(str(p)) for x in ch1.iloc[:, 0])
 
     ch2 = ch1 >> collapse_files()
     assert ch2.equals(ch0)

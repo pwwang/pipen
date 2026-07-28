@@ -9,6 +9,7 @@ import pandas
 from panpath import PanPath
 from pandas import DataFrame
 from pipda import register_verb
+from xqute.path import MountedPath
 
 from .utils import path_is_symlink, path_is_symlink_sync
 
@@ -300,6 +301,7 @@ def expand_dir(
     ftype: str = "any",
     sortby: str = "name",
     reverse: bool = False,
+    spec: bool = True,
 ) -> DataFrame:
     """Expand a Channel according to the files in <col>,
     other cols will keep the same.
@@ -325,7 +327,15 @@ def expand_dir(
     """
     assert data.shape[0] == 1, "Can only expand a single row DataFrame."
     col_loc = col if isinstance(col, int) else data.columns.get_loc(col)
-    full_pattern = f"{data.iloc[0, col_loc]}/{pattern}"
+    given_path = data.iloc[0, col_loc]
+    use_spec = False
+    if spec and isinstance(given_path, MountedPath):
+        use_spec = True
+        spec_path = given_path.spec
+    else:
+        spec_path = given_path
+
+    full_pattern = f"{spec_path}/{pattern}"
     expanded = Channel.from_glob(
         full_pattern,
         ftype,
@@ -333,12 +343,21 @@ def expand_dir(
         reverse,
     ).iloc[:, 0]
     ret = pandas.concat([data] * expanded.size, axis=0, ignore_index=True)
-    ret.iloc[:, col_loc] = expanded.values
+    if use_spec:
+        ret.iloc[:, col_loc] = [
+            MountedPath(
+                f"{given_path}/{path.basename(p)}",
+                spec=f"{given_path.spec}/{path.basename(p)}",
+            )
+            for p in expanded
+        ]
+    else:
+        ret.iloc[:, col_loc] = expanded.values
     return ret.reset_index(drop=True)
 
 
 @register_verb(DataFrame)
-def collapse_files(data: DataFrame, col: str | int = 0) -> DataFrame:
+def collapse_files(data: DataFrame, col: str | int = 0, spec: bool = True) -> DataFrame:
     """Collapse a Channel according to the files in <col>,
     other cols will use the values in row 0.
 
@@ -359,7 +378,19 @@ def collapse_files(data: DataFrame, col: str | int = 0) -> DataFrame:
     assert data.shape[0] > 0, "Cannot collapse on an empty DataFrame."
     col_loc = col if isinstance(col, int) else data.columns.get_loc(col)
     paths = list(data.iloc[:, col_loc])
-    compx = path.dirname(path.commonprefix(paths))
+    use_spec = False
+    if spec and all(isinstance(p, MountedPath) for p in paths):
+        use_spec = True
+        spec_paths = [p.spec for p in paths]
+    else:
+        spec_paths = paths
+
+    compx = path.dirname(path.commonprefix(spec_paths))
     ret = data.iloc[[0], :].copy()
-    ret.iloc[0, col_loc] = compx
+    if use_spec:
+        mounted = str(paths[0])[:len(compx) - len(str(paths[0].spec))]
+        ret.iloc[0, col_loc] = MountedPath(mounted, spec=compx)
+    else:
+        ret.iloc[0, col_loc] = compx
+
     return ret
