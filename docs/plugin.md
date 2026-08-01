@@ -262,6 +262,9 @@ See [CLI][11] for more details.
 - [`pipen-poplog`][16]: Populate logs from jobs to running log of the pipeline
 - [`pipen-runinfo`][17]: Save running information to file for pipen
 - [`pipen-gcs`][9]: A plugin for pipen to handle files in Google Cloud Storage.
+- [`pipen-deprecated`][18]: A pipen plugin to mark processes as deprecated.
+- [`pipen-mcp`][19]: A pipen plugin to turn pipen processes into MCP (model context protocol) processes.
+- [`pipen-email`][20]: Send email notification for pipeline status changes.
 
 [1]: https://github.com/pwwang/simplug
 [2]: https://packaging.python.org/specifications/entry-points/
@@ -279,3 +282,6 @@ See [CLI][11] for more details.
 [15]: https://github.com/pwwang/pipen-log2file
 [16]: https://github.com/pwwang/pipen-poplog
 [17]: https://github.com/pwwang/pipen-runinfo
+[18]: https://github.com/pwwang/pipen-deprecated
+[19]: https://github.com/pwwang/pipen-mcp
+[20]: https://github.com/pwwang/pipen-email

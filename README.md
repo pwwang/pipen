@@ -195,6 +195,7 @@ Plugins make `pipen` even better.
 - [`pipen-report`][16]: Generate report for pipen
 - [`pipen-runinfo`][29]: Save running information to file for pipen
 - [`pipen-verbose`][15]: Add verbosal information in logs for pipen.
+- [`pipen-email`][36]: Send email notification for pipeline status changes.
 - [`pipen-gcs`][32]: A plugin for pipen to handle files in Google Cloud Storage.
 - [`pipen-deprecated`][34]: A pipen plugin to mark processes as deprecated.
 - [`pipen-mcp`][35]: A pipen plugin to turn pipen processes into MCP (model context protocol) processes.
@@ -239,3 +240,4 @@ Plugins make `pipen` even better.
 [33]: https://github.com/pwwang/pipen-cli-gbatch
 [34]: https://github.com/pwwang/pipen-deprecated
 [35]: https://github.com/pwwang/pipen-mcp
+[36]: https://github.com/pwwang/pipen-email
