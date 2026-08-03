@@ -1,7 +1,7 @@
 <div align="center">
-    <img src="./docs/rtd-logo.png" width="320px" alt="pipen logo showing a stylized pipeline diagram with interconnected nodes">
+    <img src="./pipen.png" width="320px" alt="pipen logo showing a stylized pipeline diagram with interconnected nodes">
 
-**A pipeline framework for python**
+   <p style="font-weight:bold;">A pipeline framework for Python</p>
 
 </div>
 

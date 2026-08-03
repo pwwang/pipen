@@ -4,7 +4,7 @@ repo_url: https://github.com/pwwang/pipen
 repo_name: pwwang/pipen
 theme:
     name: 'rtd'
-    logo: 'rtd-logo.png'
+    logo: 'pipen.png'
 markdown_extensions:
     - attr_list
     - pymdownx.blocks.admonition
