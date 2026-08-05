@@ -820,7 +820,7 @@ async def load_pipeline(
             kwargs.get("name", pipeline.name)
         )
         await pipeline._init()  # type: ignore
-        await pipeline.workdir.a_mkdir(parents=True, exist_ok=True)  # type: ignore
+        # await pipeline.workdir.a_mkdir(parents=True, exist_ok=True)  # type: ignore
         pipeline.build_proc_relationships()  # type: ignore
     finally:
         sys.argv = old_argv

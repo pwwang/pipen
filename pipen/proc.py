@@ -444,10 +444,6 @@ class Proc(ABC, metaclass=ProcMeta):
             self.submission_batch = self.pipeline.config.submission_batch
 
         self.script = await self._compute_script()  # type: ignore
-        await self.workdir.a_mkdir(  # type: ignore[union-attr]
-            parents=True,
-            exist_ok=True,
-        )
 
     async def _prepare_jobs_in_batch(self, indexes: Sequence[int]) -> List[int]:
         """Prepare jobs in batch

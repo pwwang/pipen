@@ -240,7 +240,7 @@ def test_duplicate_proc_name():
 
 
 @pytest.mark.forked
-def test_run2():
+def test_run2(tmp_path):
     class RProc1(Proc):
         input = "a"
         output = "b:var:{{in.a}}"
@@ -251,7 +251,13 @@ def test_run2():
         output = "c:file:{{in.b}}"
         script = "touch {{out.c}}"
 
-    assert run("MyPipe", RProc1, cache=False)
+    assert run(
+        "MyPipe",
+        RProc1,
+        workdir=tmp_path / "workdir",
+        outdir=tmp_path / "outdir",
+        cache=False,
+    )
 
 
 @pytest.mark.forked

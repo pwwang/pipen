@@ -410,11 +410,6 @@ class Pipen:
         if "workdir" in self._kwargs:
             self.workdir = PanPath(self._kwargs["workdir"]) / self.name  # type: ignore
 
-        await self.workdir.a_mkdir(  # type: ignore[union-attr]
-            parents=True,
-            exist_ok=True,
-        )
-
     def build_proc_relationships(self) -> None:
         """Build the proc relationships for the pipeline"""
         if self.procs:
