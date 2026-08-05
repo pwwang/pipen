@@ -251,7 +251,7 @@ def test_run2():
         output = "c:file:{{in.b}}"
         script = "touch {{out.c}}"
 
-    assert run("MyPipe", RProc1)
+    assert run("MyPipe", RProc1, cache=False)
 
 
 @pytest.mark.forked

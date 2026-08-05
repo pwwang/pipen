@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import MagicMock
 
+from pathlib import Path
 from panpath import PanPath
 from pipen.scheduler import (
     get_scheduler,
@@ -12,6 +13,7 @@ from pipen.scheduler import (
     ContainerScheduler,
     NoSuchSchedulerError,
 )
+from .helpers import SimpleProc, pipen_container
 
 
 def test_get_scheduler():
@@ -65,12 +67,13 @@ async def test_container_scheduler_init(tmp_path):
         bin="true",
     )
     pipeline = MagicMock(outdir=tmp_path / "outdir")
+    pipeline.name = "test_pipeline"
     proc = MagicMock(pipeline=pipeline)
     proc.name = "test_proc"
     await scheduler.post_init(proc)
     assert (
         scheduler.volumes[-1]
-        == f"{tmp_path}/outdir:/mnt/disks/pipen-pipeline/outdir"
+        == f"{tmp_path}/outdir:/mnt/disks/.pipen-test_pipeline-output"
     )
 
 
@@ -120,7 +123,7 @@ async def test_gbatch_scheduler_post_init_non_gs_outdir():
         location="test_location",
         workdir="gs://test-bucket/workdir",
     )
-    pipeline = MagicMock(outdir="/local/outdir")
+    pipeline = MagicMock(outdir=PanPath("/local/outdir"))
     proc = MagicMock(pipeline=pipeline)
     proc.name = "test_proc"
     with pytest.raises(ValueError):
@@ -135,27 +138,108 @@ async def test_gbatch_scheduler_post_init():
     )
     pipeline_outdir = PanPath("gs://test-bucket/outdir")
     pipeline = MagicMock(outdir=pipeline_outdir)
+    pipeline.name = "test_pipeline"
     proc = MagicMock(pipeline=pipeline)
     proc.name = "test_proc"
     await gbatch.post_init(proc)
 
     assert str(gbatch.workdir) == "gs://test-bucket/workdir"
-    assert (
-        str(gbatch.workdir.mounted) == f"{GbatchScheduler.MOUNTED_METADIR}/{proc.name}"
+    assert str(gbatch.workdir.mounted) == "/mnt/disks/.pipen/workdir"
+    volumes = gbatch.config["taskGroups"][0]["taskSpec"]["volumes"]
+    assert volumes[-1]["mountPath"] == "/mnt/disks/.pipen-test_pipeline-output"
+    assert volumes[-1]["gcs"]["remotePath"] == "test-bucket/outdir"
+    assert volumes[-2]["mountPath"] == "/mnt/disks/.pipen"
+    assert volumes[-2]["gcs"]["remotePath"] == "test-bucket"
+
+
+async def test_gbatch_scheduler_mount_as_cwd():
+    gbatch = get_scheduler("gbatch")(
+        project="test_project",
+        location="test_location",
+        workdir=".pipen/Process",
+        mount_as_cwd="gs://test-bucket/cwd",
     )
-    assert (
-        gbatch.config["taskGroups"][0]["taskSpec"]["volumes"][-1]["mountPath"]
-        == f"{GbatchScheduler.MOUNTED_OUTDIR}"
+    pipeline_outdir = PanPath("Pipeline-output")
+    pipeline = MagicMock(outdir=pipeline_outdir)
+    pipeline.name = "Pipeline"
+    proc = MagicMock(pipeline=pipeline, _export_dir=PanPath("Pipeline-output"))
+    proc.name = "Process"
+    await gbatch.post_init(proc)
+
+    assert str(gbatch.workdir) == "gs://test-bucket/cwd/.pipen/Process"
+    assert str(gbatch.workdir.mounted) == "/mnt/disks/.cwd/.pipen/Process"
+    volumes = gbatch.config["taskGroups"][0]["taskSpec"]["volumes"]
+    assert len(volumes) == 1
+    assert volumes[0]["mountPath"] == "/mnt/disks/.cwd"
+    assert volumes[0]["gcs"]["remotePath"] == "test-bucket/cwd"
+    assert str(proc._export_dir.mounted) == "/mnt/disks/.cwd/Pipeline-output"
+
+
+async def test_gbatch_scheduler_mount_as_cwd_with_abs_workdir_outdir():
+    gbatch = get_scheduler("gbatch")(
+        project="test_project",
+        location="test_location",
+        workdir="gs://test-bucket/.pipen/Process",
+        mount_as_cwd="gs://test-bucket/cwd",
     )
-    assert (
-        gbatch.config["taskGroups"][0]["taskSpec"]["volumes"][-1]["gcs"]["remotePath"]
-        == "test-bucket/outdir"
+    pipeline_outdir = PanPath("gs://test-bucket/Pipeline-output")
+    pipeline = MagicMock(outdir=pipeline_outdir)
+    pipeline.name = "Pipeline"
+    proc = MagicMock(pipeline=pipeline)
+    proc.name = "Process"
+    await gbatch.post_init(proc)
+
+    assert str(gbatch.workdir) == "gs://test-bucket/.pipen/Process"
+    assert str(gbatch.workdir.mounted) == "/mnt/disks/.pipen/Process"
+    volumes = gbatch.config["taskGroups"][0]["taskSpec"]["volumes"]
+    assert len(volumes) == 3
+    assert volumes[0]["mountPath"] == "/mnt/disks/.cwd"
+    assert volumes[0]["gcs"]["remotePath"] == "test-bucket/cwd"
+    assert volumes[1]["mountPath"] == "/mnt/disks/.pipen"
+    assert volumes[1]["gcs"]["remotePath"] == "test-bucket/.pipen"
+    assert volumes[2]["mountPath"] == "/mnt/disks/.pipen-Pipeline-output"
+    assert volumes[2]["gcs"]["remotePath"] == "test-bucket/Pipeline-output"
+
+
+async def test_container_scheduler_mount_as_cwd(tmp_path):
+    tmp_path = PanPath(tmp_path)
+    scheduler = get_scheduler("container")(
+        image="bash:latest",
+        entrypoint="/usr/local/bin/bash",
+        workdir=".pipen/Process",
+        bin="true",
+        mount_as_cwd=tmp_path / "cwd",
     )
-    assert (
-        gbatch.config["taskGroups"][0]["taskSpec"]["volumes"][-2]["mountPath"]
-        == GbatchScheduler.MOUNTED_METADIR
+    pipeline = MagicMock(outdir=Path("Pipeline-output"))
+    pipeline.name = "test_pipeline"
+    proc = MagicMock(pipeline=pipeline)
+    proc.name = "test_proc"
+    await scheduler.post_init(proc)
+
+    assert str(scheduler.workdir) == str(tmp_path / "cwd/.pipen/Process")
+    assert str(scheduler.workdir.mounted) == "/mnt/disks/.cwd/.pipen/Process"
+    assert len(scheduler.volumes) == 1
+    assert scheduler.volumes[0] == f"{tmp_path}/cwd:/mnt/disks/.cwd"
+
+
+async def test_container_scheduler_mount_as_cwd_with_abs_workdir_outdir(tmp_path):
+    tmp_path = PanPath(tmp_path)
+    scheduler = get_scheduler("container")(
+        image="bash:latest",
+        entrypoint="/usr/local/bin/bash",
+        workdir=tmp_path / ".pipen/Process",
+        bin="true",
+        mount_as_cwd=tmp_path / "cwd",
     )
-    assert (
-        gbatch.config["taskGroups"][0]["taskSpec"]["volumes"][-2]["gcs"]["remotePath"]
-        == "test-bucket"
-    )
+    pipeline = MagicMock(outdir=tmp_path / "Pipeline-output")
+    pipeline.name = "Pipeline"
+    proc = MagicMock(pipeline=pipeline)
+    proc.name = "test_proc"
+    await scheduler.post_init(proc)
+
+    assert str(scheduler.workdir) == str(tmp_path / ".pipen/Process")
+    assert str(scheduler.workdir.mounted) == "/mnt/disks/.pipen/Process"
+    assert len(scheduler.volumes) == 3
+    assert scheduler.volumes[0] == f"{tmp_path}/cwd:/mnt/disks/.cwd"
+    assert scheduler.volumes[1] == f"{tmp_path}/.pipen:/mnt/disks/.pipen"
+    assert scheduler.volumes[2] == f"{tmp_path}/Pipeline-output:/mnt/disks/.pipen-Pipeline-output"

@@ -2,11 +2,12 @@ import pytest
 import os
 import time
 from pathlib import Path
+from unittest.mock import MagicMock
 
 from panpath import PanPath
 from xqute.path import SpecPath, MountedPath, CloudPath
 from pipen import Proc
-from pipen.job import _process_input_file_or_dir
+from pipen.job import Job, _process_input_file_or_dir
 from pipen.exceptions import (
     ProcInputTypeError,
     ProcOutputNameError,
@@ -543,3 +544,27 @@ def test_process_input_file_or_dir(inval, expected):
     assert out == expected
     assert isinstance(out, MountedPath) or isinstance(out, CloudPath)
     assert out.spec == expected.spec
+
+
+async def test_prepare_export_dir_specpath(tmp_path):
+    """prepare() uses _export_dir as-is when it is already a SpecPath
+
+    e.g. set by gbatch/container schedulers via post_init()
+    """
+    workdir = SpecPath(tmp_path / "workdir")
+    outdir = SpecPath(tmp_path / "outdir")
+    # mimic what the scheduler does before submitting a job
+    await (workdir / "0").a_mkdir(parents=True, exist_ok=True)
+
+    job = Job(index=0, cmd=(), workdir=workdir)
+    proc = MagicMock(
+        export=True,
+        _export_dir=outdir,
+        output_flatten=True,
+        script=None,
+        output=None,
+    )
+    await job.prepare(proc)
+
+    assert job.outdir is outdir
+    assert await outdir.a_exists()

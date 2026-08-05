@@ -217,6 +217,27 @@ def pipen(tmp_path):
 
 
 @pytest.fixture
+def pipen_container(tmp_path):
+    """Get a simple Pipen object each time"""
+    index = Pipen.PIPELINE_COUNT + 1
+    pipen_simple = Pipen(
+        name=f"simple_pipeline_{index}",
+        desc="No description",
+        loglevel="debug",
+        cache=True,
+        workdir=PanPath(tmp_path) / ".pipen",
+        outdir=PanPath(tmp_path) / f"pipen_simple_{index}",
+        scheduler="container",
+        scheduler_opts={
+            "image": "bash:latest",
+            "entrypoint": "/usr/local/bin/bash",
+        },
+    )
+
+    return pipen_simple
+
+
+@pytest.fixture
 def pipen_with_plugin(tmp_path):
     """Get a simple Pipen object each time"""
     index = Pipen.PIPELINE_COUNT + 1
