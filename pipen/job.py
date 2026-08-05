@@ -134,47 +134,19 @@ class Job(XquteJob, JobCaching):
         # Attach the process
         self.proc = proc
 
-        # Where the jobs of "export" process should put their outputs
-        export_outdir = proc.pipeline.outdir / proc.name  # type: ignore
-        # Where the jobs of "export" process should put their outputs
-        # (in the mounted filesystem)
-        sched_mounted_outdir = getattr(proc.xqute.scheduler, "MOUNTED_OUTDIR", None)
-        if sched_mounted_outdir is not None:  # pragma: no cover
-            if (
-                isinstance(proc.pipeline.outdir, SpecPath)
-                and proc.pipeline.outdir.mounted.is_mounted()
-            ):
-                raise ValueError(
-                    "The pipeline outdir is a SpecPath, "
-                    "but the MOUNTED_OUTDIR is provided by the scheduler "
-                    f"<{proc.xqute.scheduler.__class__.__name__}>. "
-                )
-
-            mounted_outdir = PanPath(sched_mounted_outdir) / proc.name
-
-        elif isinstance(proc.pipeline.outdir, SpecPath):  # pragma: no cover
-            # In the case it is modified by a plugin
-            # A dual path can not be specified as outdir of a pipeline
-            mounted_outdir = proc.pipeline.outdir.mounted / proc.name  # type: ignore
-
-        else:
-            mounted_outdir = None
-
-        if self.proc.export:
+        if proc.export:
             # Don't put index if it is a single-job process
-            self.outdir = SpecPath(
-                export_outdir,
-                mounted=mounted_outdir,
-            )
+            if not isinstance(proc._export_dir, SpecPath):
+                self.outdir = SpecPath(proc._export_dir)
+            else:
+                self.outdir = proc._export_dir
 
             # Put job output in a subdirectory with index
             # if it is a multi-job process
-            if not self.proc.output_flatten:
+            if not proc.output_flatten:
                 self.outdir = self.outdir / str(self.index)  # type: ignore
 
-            if sched_mounted_outdir is None:
-                # Create the output directory if it is not mounted by the scheduler
-                await self.outdir.mounted.a_mkdir(parents=True, exist_ok=True)
+            await self.outdir.a_mkdir(parents=True, exist_ok=True)
 
         else:
             # For non-export process, the output directory is the metadir
