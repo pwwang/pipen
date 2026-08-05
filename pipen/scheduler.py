@@ -98,11 +98,6 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
                 "'gbatch' scheduler requires google cloud storage 'outdir'."
             )
 
-        proc._export_dir = SpecPath(  # type: ignore
-            proc._export_dir,  # type: ignore
-            mounted=mounted_outdir,
-        )
-
         if outdir_mount_needed:
             # update the config to map the outdir to vm
             volumes.append(
@@ -119,6 +114,9 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
         # add labels
         self.config["labels"]["pipeline"] = proc.pipeline.name.lower()  # type: ignore
         self.config["labels"]["proc"] = proc.name.lower()  # type: ignore
+
+        export_dir = SpecPath(outdir, mounted=mounted_outdir)  # type: ignore
+        proc._export_dir = export_dir / proc.name  # type: ignore
 
 
 class ContainerScheduler(  # type: ignore[misc]
@@ -145,23 +143,17 @@ class ContainerScheduler(  # type: ignore[misc]
 
         outdir = proc.pipeline.outdir
         if self._mount_as_cwd and not outdir.is_absolute():  # type: ignore
-            outdir_mount_needed = False
-            mounted_outdir = f"{self._mount_as_cwd}/{outdir}"
+            mounted_outdir = f"{self.cwd}/{outdir}"
             outdir = PanPath(self._mount_as_cwd) / str(outdir)
         else:
-            outdir_mount_needed = True
             mounted_outdir = (
                 f"{self.DEFAULT_MOUNTED_ROOT}/"
                 f"{DEFAULT_WORKDIR_NAME}-{proc.pipeline.name}-output"
             )
-
-        if outdir_mount_needed:
             self.volumes.append(f"{outdir}:{mounted_outdir}")  # type: ignore
 
-        proc._export_dir = SpecPath(  # type: ignore
-            proc._export_dir,  # type: ignore
-            mounted=mounted_outdir,
-        )
+        export_dir = SpecPath(outdir, mounted=mounted_outdir)  # type: ignore
+        proc._export_dir = export_dir / proc.name  # type: ignore
 
 
 def get_scheduler(scheduler: str | Type[Scheduler]) -> Type[Scheduler]:

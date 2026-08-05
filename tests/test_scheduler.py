@@ -172,7 +172,7 @@ async def test_gbatch_scheduler_mount_as_cwd():
     assert len(volumes) == 1
     assert volumes[0]["mountPath"] == "/mnt/disks/.cwd"
     assert volumes[0]["gcs"]["remotePath"] == "test-bucket/cwd"
-    assert str(proc._export_dir.mounted) == "/mnt/disks/.cwd/Pipeline-output"
+    assert str(proc._export_dir.mounted) == "/mnt/disks/.cwd/Pipeline-output/Process"
 
 
 async def test_gbatch_scheduler_mount_as_cwd_with_abs_workdir_outdir():
