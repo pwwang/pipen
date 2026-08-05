@@ -382,8 +382,32 @@ wheels = [
 
 [[package]]
 name = "argcomplete"
+version = "3.6.3"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version < '3.10'",
+]
+sdist = { url = "https://files.pythonhosted.org/packages/38/61/0b9ae6399dd4a58d8c1b1dc5a27d6f2808023d0b5dd3104bb99f45a33ff6/argcomplete-3.6.3.tar.gz", hash = "sha256:62e8ed4fd6a45864acc8235409461b72c9a28ee785a2011cc5eb78318786c89c", size = 73754, upload-time = "2025-10-20T03:33:34.741Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/74/f5/9373290775639cb67a2fce7f629a1c240dce9f12fe927bc32b2736e16dfc/argcomplete-3.6.3-py3-none-any.whl", hash = "sha256:f5007b3a600ccac5d25bbce33089211dfd49eab4a7718da3f10e3082525a92ce", size = 43846, upload-time = "2025-10-20T03:33:33.021Z" },
+]
+
+[[package]]
+name = "argcomplete"
 version = "3.7.1"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.14' and sys_platform == 'win32'",
+    "python_full_version >= '3.14' and sys_platform == 'emscripten'",
+    "python_full_version >= '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'win32'",
+    "python_full_version == '3.11.*' and sys_platform == 'win32'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'emscripten'",
+    "python_full_version == '3.11.*' and sys_platform == 'emscripten'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version == '3.10.*'",
+]
 sdist = { url = "https://files.pythonhosted.org/packages/d1/40/8a867253c9b8afa296ac22e426a157eebbe41dcac66f7f50bbbef931afed/argcomplete-3.7.1.tar.gz", hash = "sha256:6926a3a70ae70dce1f3dfb5cf1fc984278cd163e78ec18ad2ed7fa4fabd8f281", size = 74457, upload-time = "2026-08-04T15:03:59.399Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/11/56/1935d0692656f0bfc0c2336d4ce599dcf166abe4ec786ce1abdaefa19589/argcomplete-3.7.1-py3-none-any.whl", hash = "sha256:0bed095030f295599b1018a622a53ea22f4f253e134b87be396b51e59ee00954", size = 43301, upload-time = "2026-08-04T15:03:58.02Z" },
@@ -937,19 +961,20 @@ wheels = [
 
 [[package]]
 name = "cloudsh"
-version = "0.3.9"
+version = "0.3.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
-    { name = "argcomplete" },
+    { name = "argcomplete", version = "3.6.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "argcomplete", version = "3.7.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "argx" },
     { name = "panpath" },
     { name = "python-dateutil" },
     { name = "python-simpleconf", extra = ["toml"] },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4f/18/2c237e032bdd7badc6e00e7b96e8b781dda0300742a7f0e3c7668efb49fa/cloudsh-0.3.9.tar.gz", hash = "sha256:a66eae729abb05f99f15cc57793afa4eb42b56b08feb9d6cfa1f6f174bd414d9", size = 56772, upload-time = "2026-04-16T22:26:22.982Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d2/3a/571618dc13fb7ea9d9b749fd84e1562867fdab6bad45b95e35f84eb66a96/cloudsh-0.3.10.tar.gz", hash = "sha256:c6b61d98a637332de6e92744f789854cea1d6195f06433223fb4c34e9f1bb2ab", size = 253505, upload-time = "2026-08-05T06:53:19.213Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8e/29/23fd62ff3e6b6b7528506c4215cc8f7a75e5a697dadb319a342fe09d8620/cloudsh-0.3.9-py3-none-any.whl", hash = "sha256:5ecc5b62a729d27a126beeca13fb96019c2378aa120074399da5aeaed194d4c8", size = 42709, upload-time = "2026-04-16T22:26:24.23Z" },
+    { url = "https://files.pythonhosted.org/packages/e3/b4/b18a08918590e8de7b3da1bed4aeec7cd01c6fa91c19f9c81c88d045233b/cloudsh-0.3.10-py3-none-any.whl", hash = "sha256:7727e3de54757231753fd05529d61d0d057d535864bc698998a955d039c5242e", size = 42513, upload-time = "2026-08-05T06:53:17.948Z" },
 ]
 
 [package.optional-dependencies]
@@ -2122,7 +2147,7 @@ wheels = [
 
 [[package]]
 name = "mako"
-version = "1.4.0"
+version = "1.4.1"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -2139,9 +2164,9 @@ resolution-markers = [
 dependencies = [
     { name = "markupsafe", marker = "python_full_version >= '3.10'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/73/b2/3c025fc185ce755ab39dd88b1971ba9f4bec0a897bda0acc29b6e7676153/mako-1.4.0.tar.gz", hash = "sha256:61aac9619e1325fa6e7be2f8dd463caef61247b3cd32a41a8692684548269ce3", size = 409686, upload-time = "2026-08-04T18:20:35.254Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2a/12/b5fa2353e2754cd67fb9f83793fa48ff42c213a5da7e719869d2301f6ab8/mako-1.4.1.tar.gz", hash = "sha256:d7904710b662996425a21627710c4777c45053146942cf8a7aebf757c92b8c27", size = 410165, upload-time = "2026-08-05T06:10:56.611Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/be/db/1f950cb923f6ba523aa46143d8417d932261952dea635563e52ab4bce885/mako-1.4.0-py3-none-any.whl", hash = "sha256:49473fd7145702c7b6f5c61ada3967c42ced4b1d27fb24deb43d61ffee2e8fca", size = 83630, upload-time = "2026-08-04T18:20:36.653Z" },
+    { url = "https://files.pythonhosted.org/packages/a5/54/12ed58d458474aaab5c3d180173e745a4fe131bb330370596876d19ff60f/mako-1.4.1-py3-none-any.whl", hash = "sha256:a359d9a94a541213958742b2698d0a7757bb83551767bc468a74b9905aba9617", size = 80010, upload-time = "2026-08-05T06:10:58.248Z" },
 ]
 
 [[package]]
@@ -3160,7 +3185,7 @@ docs = [
 example = [
     { name = "cloudsh", extra = ["gs"] },
     { name = "mako", version = "1.3.12", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
-    { name = "mako", version = "1.4.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "mako", version = "1.4.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "pipen-verbose" },
     { name = "python-dotenv", version = "1.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "python-dotenv", version = "1.2.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
@@ -4577,7 +4602,7 @@ wheels = [
 
 [[package]]
 name = "xqute"
-version = "2.2.0a4"
+version = "2.2.0a6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
@@ -4587,9 +4612,9 @@ dependencies = [
     { name = "simplug" },
     { name = "uvloop" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/be/84/f9725ad1929825efc8b5cbe3778d06949d6f242f93a05ba02d31dffffd74/xqute-2.2.0a4.tar.gz", hash = "sha256:dfdf30757d0c459834e1b6c032db674bf31cd8ab29da96d803e90956bb19dc89", size = 610405, upload-time = "2026-08-05T03:43:29.003Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0b/0f/6770df3a290473931d7597fb87b87e8de2db6fb9a4a0c1640a41bdad8022/xqute-2.2.0a6.tar.gz", hash = "sha256:c72a31085a5419d6ca48fbbdac23445399fc9464cf1f85768feb066b8bf9e6e0", size = 612752, upload-time = "2026-08-05T15:59:22.757Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a9/94/11266fb40f57a5db38217875eb700cc0e69c927115d771bb51f65ece2a5c/xqute-2.2.0a4-py3-none-any.whl", hash = "sha256:0420b8a5432180590a5cdb67b0b635c8928b61fd96ab0f43d3c7619d7a3a5735", size = 45042, upload-time = "2026-08-05T03:43:26.635Z" },
+    { url = "https://files.pythonhosted.org/packages/52/af/134289c3590eb9dd7b1d3b5f93f075c53b428377dc47e86955baee4ea0c8/xqute-2.2.0a6-py3-none-any.whl", hash = "sha256:9c31b4da251a84543e3cc2eaa773f2624a0e3a658e717c4ae5c4884e09b8ccc0", size = 46410, upload-time = "2026-08-05T15:59:20.524Z" },
 ]
 
 [[package]]
