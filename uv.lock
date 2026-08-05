@@ -382,11 +382,11 @@ wheels = [
 
 [[package]]
 name = "argcomplete"
-version = "3.7.0"
+version = "3.7.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/95/c0/c8e94135e66fabf89a120d9b4b123fe6993506beca6c1938a74c24cfa5fd/argcomplete-3.7.0.tar.gz", hash = "sha256:afde224f753f874807b1dc1414e883ab8fe0cda9c04807b6047dcb8e1ac23913", size = 73284, upload-time = "2026-06-30T22:28:22.249Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d1/40/8a867253c9b8afa296ac22e426a157eebbe41dcac66f7f50bbbef931afed/argcomplete-3.7.1.tar.gz", hash = "sha256:6926a3a70ae70dce1f3dfb5cf1fc984278cd163e78ec18ad2ed7fa4fabd8f281", size = 74457, upload-time = "2026-08-04T15:03:59.399Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/12/f6/5b8ec087cd9cfa9449491ec83f76fb6b7006b4dff57d2ba8aaab330fe8e4/argcomplete-3.7.0-py3-none-any.whl", hash = "sha256:d8f0f22d2a8a7caa383be1e22b6caf1ecaf0ebd10d8f83cc125e36540c95830c", size = 42575, upload-time = "2026-06-30T22:28:20.547Z" },
+    { url = "https://files.pythonhosted.org/packages/11/56/1935d0692656f0bfc0c2336d4ce599dcf166abe4ec786ce1abdaefa19589/argcomplete-3.7.1-py3-none-any.whl", hash = "sha256:0bed095030f295599b1018a622a53ea22f4f253e134b87be396b51e59ee00954", size = 43301, upload-time = "2026-08-04T15:03:58.02Z" },
 ]
 
 [[package]]
@@ -2109,12 +2109,39 @@ wheels = [
 name = "mako"
 version = "1.3.12"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version < '3.10'",
+]
 dependencies = [
-    { name = "markupsafe" },
+    { name = "markupsafe", marker = "python_full_version < '3.10'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/00/62/791b31e69ae182791ec67f04850f2f062716bbd205483d63a215f3e062d3/mako-1.3.12.tar.gz", hash = "sha256:9f778e93289bd410bb35daadeb4fc66d95a746f0b75777b942088b7fd7af550a", size = 400219, upload-time = "2026-04-28T19:01:08.512Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/bc/b1/a0ec7a5a9db730a08daef1fdfb8090435b82465abbf758a596f0ea88727e/mako-1.3.12-py3-none-any.whl", hash = "sha256:8f61569480282dbf557145ce441e4ba888be453c30989f879f0d652e39f53ea9", size = 78521, upload-time = "2026-04-28T19:01:10.393Z" },
+]
+
+[[package]]
+name = "mako"
+version = "1.4.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.14' and sys_platform == 'win32'",
+    "python_full_version >= '3.14' and sys_platform == 'emscripten'",
+    "python_full_version >= '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'win32'",
+    "python_full_version == '3.11.*' and sys_platform == 'win32'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'emscripten'",
+    "python_full_version == '3.11.*' and sys_platform == 'emscripten'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version == '3.10.*'",
+]
+dependencies = [
+    { name = "markupsafe", marker = "python_full_version >= '3.10'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/73/b2/3c025fc185ce755ab39dd88b1971ba9f4bec0a897bda0acc29b6e7676153/mako-1.4.0.tar.gz", hash = "sha256:61aac9619e1325fa6e7be2f8dd463caef61247b3cd32a41a8692684548269ce3", size = 409686, upload-time = "2026-08-04T18:20:35.254Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/be/db/1f950cb923f6ba523aa46143d8417d932261952dea635563e52ab4bce885/mako-1.4.0-py3-none-any.whl", hash = "sha256:49473fd7145702c7b6f5c61ada3967c42ced4b1d27fb24deb43d61ffee2e8fca", size = 83630, upload-time = "2026-08-04T18:20:36.653Z" },
 ]
 
 [[package]]
@@ -2870,11 +2897,11 @@ wheels = [
 
 [[package]]
 name = "packaging"
-version = "26.2"
+version = "26.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d7/f1/e7a6dd94a8d4a5626c03e4e99c87f241ba9e350cd9e6d75123f992427270/packaging-26.2.tar.gz", hash = "sha256:ff452ff5a3e828ce110190feff1178bb1f2ea2281fa2075aadb987c2fb221661", size = 228134, upload-time = "2026-04-24T20:15:23.917Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7d/fa/3944b40b07da9ce895c0e6303a5ab7d53da063554f534556b134a54d6093/packaging-26.3.tar.gz", hash = "sha256:94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79", size = 313412, upload-time = "2026-08-04T18:15:28.737Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/df/b2/87e62e8c3e2f4b32e5fe99e0b86d576da1312593b39f47d8ceef365e95ed/packaging-26.2-py3-none-any.whl", hash = "sha256:5fc45236b9446107ff2415ce77c807cee2862cb6fac22b8a73826d0693b0980e", size = 100195, upload-time = "2026-04-24T20:15:22.081Z" },
+    { url = "https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl", hash = "sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c", size = 129956, upload-time = "2026-08-04T18:15:27.159Z" },
 ]
 
 [[package]]
@@ -3132,7 +3159,8 @@ docs = [
 ]
 example = [
     { name = "cloudsh", extra = ["gs"] },
-    { name = "mako" },
+    { name = "mako", version = "1.3.12", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "mako", version = "1.4.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "pipen-verbose" },
     { name = "python-dotenv", version = "1.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "python-dotenv", version = "1.2.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
@@ -4549,7 +4577,7 @@ wheels = [
 
 [[package]]
 name = "xqute"
-version = "2.2.0a1"
+version = "2.2.0a4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
@@ -4559,9 +4587,9 @@ dependencies = [
     { name = "simplug" },
     { name = "uvloop" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/03/e0/195a608688d03e7192e720164da724206952ffd85216b4b9ab4cf943219f/xqute-2.2.0a1.tar.gz", hash = "sha256:3a9ef861d48d9402aadff3c943b692795f08fa92a1ce754198b7bfd413ce021d", size = 662174, upload-time = "2026-08-03T23:51:53.949Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/be/84/f9725ad1929825efc8b5cbe3778d06949d6f242f93a05ba02d31dffffd74/xqute-2.2.0a4.tar.gz", hash = "sha256:dfdf30757d0c459834e1b6c032db674bf31cd8ab29da96d803e90956bb19dc89", size = 610405, upload-time = "2026-08-05T03:43:29.003Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a7/37/0cf74796eeee227f4ae6eb6c759b9a0210c512940937a263943e117ff380/xqute-2.2.0a1-py3-none-any.whl", hash = "sha256:8510e4249abf1b94cbda8583e4abab3fb9475f1b9f27c567824ab06fb19acc11", size = 45684, upload-time = "2026-08-03T23:51:52.228Z" },
+    { url = "https://files.pythonhosted.org/packages/a9/94/11266fb40f57a5db38217875eb700cc0e69c927115d771bb51f65ece2a5c/xqute-2.2.0a4-py3-none-any.whl", hash = "sha256:0420b8a5432180590a5cdb67b0b635c8928b61fd96ab0f43d3c7619d7a3a5735", size = 45042, upload-time = "2026-08-05T03:43:26.635Z" },
 ]
 
 [[package]]
