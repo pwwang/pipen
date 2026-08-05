@@ -105,8 +105,8 @@ class Pipen:
         self.outdir = PanPath(  # type: ignore
             outdir or self.__class__.outdir or f"./{self.name}-output"
         )
-        if isinstance(self.outdir, LocalPath):
-            self.outdir = self.outdir.absolute()
+        # if isinstance(self.outdir, LocalPath):
+        #     self.outdir = self.outdir.absolute()
 
         self.workdir: str | Path | None = None
         self.profile: str = "default"

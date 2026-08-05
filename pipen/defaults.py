@@ -4,8 +4,10 @@ from pathlib import Path
 from typing import ClassVar
 
 from diot import Diot
-from xqute import JobErrorStrategy
+from xqute import JobErrorStrategy, defaults as _xqute_defaults
 from xqute.utils import logger as xqute_logger
+
+_xqute_defaults.DEFAULT_WORKDIR_NAME = ".pipen"
 
 # Remove the rich handler
 _xqute_handlers = xqute_logger.handlers

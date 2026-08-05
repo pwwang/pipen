@@ -416,6 +416,8 @@ class Proc(ABC, metaclass=ProcMeta):
         # when output_flatten is True, since they will be saved in the same directory
         # and there will be conflicts if they have the same name
         self._duplicate_fields_check: dict[str, set] = {}
+        # allow scheduler to modify it
+        self._export_dir = self.pipeline.outdir / self.name  # type: ignore
 
     async def _init(self) -> None:
         """Async init for the process"""

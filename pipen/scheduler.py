@@ -6,20 +6,22 @@ from typing import TYPE_CHECKING, Type
 
 from diot import Diot
 
-from panpath import GSPath
+from panpath import GSPath, PanPath
 from xqute import Scheduler
+from xqute.path import SpecPath
+from xqute.defaults import DEFAULT_WORKDIR_NAME
 from xqute.schedulers.local_scheduler import LocalScheduler as XquteLocalScheduler
 from xqute.schedulers.sge_scheduler import SgeScheduler as XquteSgeScheduler
 from xqute.schedulers.slurm_scheduler import SlurmScheduler as XquteSlurmScheduler
-from xqute.schedulers.ssh_scheduler import SshScheduler as XquteSshScheduler
+from xqute.schedulers.ssh_scheduler import (
+    SshScheduler as XquteSshScheduler,  # type: ignore[misc]
+)
 from xqute.schedulers.gbatch_scheduler import (
     GbatchScheduler as XquteGbatchScheduler,
-    DEFAULT_MOUNTED_ROOT,
 )
 from xqute.schedulers.container_scheduler import (
     ContainerScheduler as XquteContainerScheduler,
 )
-from xqute.path import SpecPath
 
 from .defaults import SCHEDULER_ENTRY_GROUP
 from .exceptions import NoSuchSchedulerError, WrongSchedulerTypeError
@@ -34,9 +36,6 @@ class SchedulerPostInit:
     """Provides post init function for all schedulers"""
 
     job_class = Job
-
-    MOUNTED_METADIR: str
-    MOUNTED_OUTDIR: str
 
     async def post_init(self, proc: Proc) -> None: ...  # noqa: E704
 
@@ -58,89 +57,64 @@ class SshScheduler(SchedulerPostInit, XquteSshScheduler):  # type: ignore[misc]
 
 
 class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[misc]
-    """Google Cloud Batch scheduler
+    __doc__ = XquteGbatchScheduler.__doc__
 
-    Args:
-        *args: Positional arguments for the base class
-        project: Google Cloud project ID
-        location: Google Cloud region or zone
-        mount: GCS path to mount (e.g. gs://my-bucket:/mnt/my-bucket)
-            You can pass a list of mounts.
-        service_account: GCP service account email (e.g. test-account@example.com)
-        network: GCP network (e.g. default-network)
-        subnetwork: GCP subnetwork (e.g. regions/us-central1/subnetworks/default)
-        no_external_ip_address: Whether to disable external IP address
-        machine_type: GCP machine type (e.g. e2-standard-4)
-        provisioning_model: GCP provisioning model (e.g. SPOT)
-        image_uri: Container image URI (e.g. ubuntu-2004-lts)
-        entrypoint: Container entrypoint (e.g. /bin/bash)
-        commands: The command list to run in the container.
-            There are three ways to specify the commands:
-            1. If no entrypoint is specified, the final command will be
-            [commands, wrapped_script], where the entrypoint is the wrapper script
-            interpreter that is determined by `JOBCMD_WRAPPER_LANG` (e.g. /bin/bash),
-            commands is the list you provided, and wrapped_script is the path to the
-            wrapped job script.
-            2. You can specify something like "-c", then the final command
-            will be ["-c", "wrapper_script_interpreter, wrapper_script"]
-            3. You can use the placeholders `{lang}` and `{script}` in the commands
-            list, where `{lang}` will be replaced with the interpreter (e.g. /bin/bash)
-            and `{script}` will be replaced with the path to the wrapped job script.
-            For example, you can specify ["{lang} {script}"] and the final command
-            will be ["wrapper_interpreter, wrapper_script"]
-        runnables: Additional runnables to run before or after the main job.
-            Each runnable should be a dictionary that follows the
-            [GCP Batch API specification](https://cloud.google.com/batch/docs/reference/rest/v1/projects.locations.jobs#runnable).
-            You can also specify an "order" key in the dictionary to control the
-            execution order of the runnables. Runnables with negative order
-            will be executed before the main job, and those with non-negative
-            order will be executed after the main job. The main job runnable
-            will always be executed in the order it is defined in the list.
-        **kwargs: Keyword arguments for the configuration of a job (e.g. taskGroups).
-            See more details at <https://cloud.google.com/batch/docs/get-started>.
-    """  # noqa: E501
+    def __init__(self, *args, **kwargs):
+        workdir = PanPath(kwargs["workdir"])
+        proc_name = workdir.name
+        # instead of mounting the workdir of this specific proc,
+        # we mount the parent dir (the pipeline workdir), because the procs
+        # of the pipeline may share files (e.g. input files from output of other procs)
+        kwargs["workdir"] = str(workdir.parent)
+        super().__init__(*args, **kwargs)
 
-    MOUNTED_METADIR: str = f"{DEFAULT_MOUNTED_ROOT}/pipen-pipeline/workdir"
-    MOUNTED_OUTDIR: str = f"{DEFAULT_MOUNTED_ROOT}/pipen-pipeline/outdir"
+        self._mount_as_cwd = kwargs.get("mount_as_cwd") or kwargs.get("volume_as_cwd")
+        self.workdir = self.workdir / proc_name
 
     async def post_init(self, proc: Proc):
         await super().post_init(proc)
+        proc.workdir = self.workdir
+
+        volumes = self.config["taskGroups"][0]["taskSpec"]["volumes"]
+        # Check mount_as_cwd was given and workdir_set
+        # if mount_as_cwd is given, and the first volume must be the mount_as_cwd
+        outdir = proc.pipeline.outdir
+        outdir_mount_needed = False
+        mounted_outdir = None
+        if outdir.is_absolute():  # type: ignore
+            outdir_mount_needed = True
+            mounted_outdir = (
+                f"{self.DEFAULT_MOUNTED_ROOT}/"
+                f"{DEFAULT_WORKDIR_NAME}-{proc.pipeline.name}-output"
+            )
+        elif self._mount_as_cwd:
+            outdir_mount_needed = False
+            mounted_outdir = f"{self.cwd}/{outdir}"
+            outdir = PanPath(self._mount_as_cwd) / str(outdir)
 
         # Check if pipeline outdir is a GSPath
-        if not isinstance(proc.pipeline.outdir, GSPath):
+        if not isinstance(outdir, GSPath):
             raise ValueError(
                 "'gbatch' scheduler requires google cloud storage 'outdir'."
             )
 
-        mounted_workdir = f"{self.MOUNTED_METADIR}/{proc.name}"
-        self.workdir = SpecPath(
-            self.workdir,  # type: ignore
-            mounted=mounted_workdir,
-        )
+        proc._export_dir = SpecPath(proc._export_dir, mounted=mounted_outdir)
 
-        # update the mounted metadir
-        # instead of mounting the workdir of this specific proc,
-        # we mount the parent dir (the pipeline workdir), because the procs
-        # of the pipeline may share files (e.g. input files from output of other procs)
-        self.config["taskGroups"][0]["taskSpec"]["volumes"][0]["gcs"]["remotePath"] = (
-            "/".join(self.workdir.parent.parts[1:])
-        )  # remove 'gs://'
-        self.config["taskGroups"][0]["taskSpec"]["volumes"][0][
-            "mountPath"
-        ] = self.MOUNTED_METADIR
-
-        # update the config to map the outdir to vm
-        self.config["taskGroups"][0]["taskSpec"]["volumes"].append(
-            Diot(
-                {
-                    "gcs": {"remotePath": "/".join(proc.pipeline.outdir.parts[1:])},
-                    "mountPath": self.MOUNTED_OUTDIR,
-                }
+        if outdir_mount_needed:
+            # update the config to map the outdir to vm
+            volumes.append(
+                Diot(
+                    {
+                        "gcs": {
+                            "remotePath": str(proc.pipeline.outdir).split("://", 1)[1]
+                        },
+                        "mountPath": mounted_outdir,
+                    }
+                )
             )
-        )
 
         # add labels
-        self.config["labels"]["pipeline"] = proc.pipeline.name.lower()
+        self.config["labels"]["pipeline"] = proc.pipeline.name.lower()  # type: ignore
         self.config["labels"]["proc"] = proc.name.lower()
 
 
@@ -148,22 +122,40 @@ class ContainerScheduler(  # type: ignore[misc]
     SchedulerPostInit,
     XquteContainerScheduler,
 ):
-    """Scheduler to run jobs via containers (Docker/Podman/Apptainer)"""
+    __doc__ = XquteContainerScheduler.__doc__
 
-    MOUNTED_METADIR: str = f"{DEFAULT_MOUNTED_ROOT}/pipen-pipeline/workdir"
-    MOUNTED_OUTDIR: str = f"{DEFAULT_MOUNTED_ROOT}/pipen-pipeline/outdir"
+    def __init__(self, *args, **kwargs):
+        workdir = PanPath(kwargs["workdir"])
+        proc_name = workdir.name
+        # instead of mounting the workdir of this specific proc,
+        # we mount the parent dir (the pipeline workdir), because the procs
+        # of the pipeline may share files (e.g. input files from output of other procs)
+        kwargs["workdir"] = str(workdir.parent)
+        super().__init__(*args, **kwargs)
+
+        self._mount_as_cwd = kwargs.get("mount_as_cwd") or kwargs.get("volume_as_cwd")
+        self.workdir = self.workdir / proc_name
 
     async def post_init(self, proc: Proc):
         await super().post_init(proc)
+        proc.workdir = self.workdir
 
-        mounted_workdir = f"{self.MOUNTED_METADIR}/{proc.name}"
-        self.workdir = SpecPath(
-            str(self.workdir),  # ignore the mounted_workdir by xqute
-            mounted=mounted_workdir,
-        )
-        self.volumes[-1] = f"{self.workdir}:{self.workdir.mounted}"  # type: ignore
-        await proc.pipeline.outdir.a_mkdir(parents=True, exist_ok=True)  # type: ignore
-        self.volumes.append(f"{proc.pipeline.outdir}:{self.MOUNTED_OUTDIR}")
+        outdir = proc.pipeline.outdir
+        if self._mount_as_cwd and not outdir.is_absolute():  # type: ignore
+            outdir_mount_needed = False
+            mounted_outdir = f"{self._mount_as_cwd}/{outdir}"
+            outdir = PanPath(self._mount_as_cwd) / str(outdir)
+        else:
+            outdir_mount_needed = True
+            mounted_outdir = (
+                f"{self.DEFAULT_MOUNTED_ROOT}/"
+                f"{DEFAULT_WORKDIR_NAME}-{proc.pipeline.name}-output"
+            )
+
+        if outdir_mount_needed:
+            self.volumes.append(f"{outdir}:{mounted_outdir}")  # type: ignore
+
+        proc._export_dir = SpecPath(proc._export_dir, mounted=mounted_outdir)
 
 
 def get_scheduler(scheduler: str | Type[Scheduler]) -> Type[Scheduler]:
