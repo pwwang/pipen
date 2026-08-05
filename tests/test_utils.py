@@ -88,7 +88,7 @@ async def test_get_mtime_symlink_to_cloud_dir(tmp_path):
     assert mtime < lmtime
 
 
-# @pytest.mark.forked
+@pytest.mark.forked
 async def test_get_mtime_cloud_symlink_to_cloud_dir():
     link = PanPath(f"{BUCKET}/pipen-test/link_to_channel")
     await path_symlink_to(link, PanPath(f"{BUCKET}/pipen-test/channel"))
