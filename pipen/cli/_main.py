@@ -1,5 +1,6 @@
 """CLI main entrance"""
-
+# pyright: reportCallIssue=false
+# pyright: reportArgumentType=false
 import re
 import asyncio
 import importlib
@@ -52,7 +53,7 @@ async def _main() -> None:
             ),
             description=docstr,
         )
-        plugins[plg.name] = plg(parser, subparser)
+        plugins[plg.name] = plg(parser, subparser)  # type: ignore
 
     known_parsed, unparsed_argv = parser.parse_known_args()
     plugin = plugins[known_parsed.COMMAND]

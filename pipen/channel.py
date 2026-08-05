@@ -1,5 +1,8 @@
 """Provide some function for creating and modifying channels (dataframes)"""
-
+# pyright: reportCallIssue=false
+# pyright: reportArgumentType=false
+# pyright: reportGeneralTypeIssues=false
+# pyright: reportAttributeAccessIssue=false
 from __future__ import annotations
 
 from os import path

@@ -1,5 +1,7 @@
 """Provide the Job class"""
-
+# pyright: reportCallIssue=false
+# pyright: reportAttributeAccessIssue=false
+# pyright: reportOptionalMemberAccess=false
 from __future__ import annotations
 
 import logging
@@ -116,11 +118,11 @@ class Job(XquteJob, JobCaching):
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.proc: Proc = None
+        self.proc: Proc | None = None
         self._output_types: Dict[str, str] = {}
         # Where the real output directory is
-        self.outdir: SpecPath = None
-        self.output: Mapping[str, Any] = None
+        self.outdir: SpecPath | None = None
+        self.output: Mapping[str, Any] | None = None
 
     async def prepare(self, proc: Proc) -> None:
         """Prepare the job by given process
@@ -136,10 +138,10 @@ class Job(XquteJob, JobCaching):
 
         if proc.export:
             # Don't put index if it is a single-job process
-            if not isinstance(proc._export_dir, SpecPath):
-                self.outdir = SpecPath(proc._export_dir)
+            if not isinstance(proc._export_dir, SpecPath):  # type: ignore
+                self.outdir = SpecPath(proc._export_dir)  # type: ignore
             else:
-                self.outdir = proc._export_dir
+                self.outdir = proc._export_dir  # type: ignore
 
             # Put job output in a subdirectory with index
             # if it is a multi-job process
@@ -230,7 +232,7 @@ class Job(XquteJob, JobCaching):
 
             await path_symlink_to(metaout, self.outdir)  # type: ignore
 
-        return self.outdir
+        return self.outdir  # type: ignore
 
     @cached_property
     def input(self) -> Mapping[str, Any]:

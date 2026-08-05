@@ -195,7 +195,7 @@ class PipelinePBar:
         """
         proc_name = truncate_text(proc_name, self.desc_len)
         proc_name = f"{proc_name:>{self.desc_len}}:"
-        return ProcPBar(self.manager, proc_size, proc_name)
+        return ProcPBar(self.manager, proc_size, proc_name)  # type: ignore
 
     def update_proc_running(self):
         """Update the progress bar when a process is running"""

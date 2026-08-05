@@ -1,5 +1,10 @@
 """Provides the process class: Proc"""
-
+# pyright: reportAttributeAccessIssue=false
+# pyright: reportArgumentType=false
+# pyright: reportOptionalMemberAccess=false
+# pyright: reportOptionalSubscript=false
+# pyright: reportOptionalCall=false
+# pyright: reportGeneralTypeIssues=false
 from __future__ import annotations
 
 import asyncio
@@ -170,60 +175,60 @@ class Proc(ABC, metaclass=ProcMeta):
         output_data: The output data (to pass to the next processes)
     """
 
-    name: str = None
-    desc: str = None
-    envs: Mapping[str, Any] = None
-    envs_depth: int = None
-    cache: bool = None
-    dirsig: bool = None
-    export: bool = None
-    error_strategy: str = None
-    num_retries: int = None
-    template: str | Type[Template] = None
-    template_opts: Mapping[str, Any] = None
-    forks: int = None
-    input: str | Sequence[str] = None
-    input_data: Any = None
-    lang: str = None
-    order: int = None
-    output: str | Sequence[str] = None
+    name: str | None = None
+    desc: str | None = None  # type: ignore
+    envs: Mapping[str, Any] | None = None
+    envs_depth: int | None = None
+    cache: bool | None = None
+    dirsig: bool | None = None
+    export: bool | None = None
+    error_strategy: str | None = None
+    num_retries: int | None = None
+    template: str | Type[Template] | None = None
+    template_opts: Mapping[str, Any] | None = None
+    forks: int | None = None
+    input: str | Sequence[str] | None = None
+    input_data: Any | None = None
+    lang: str | None = None
+    order: int | None = None
+    output: str | Sequence[str] | None = None
     output_flatten: bool | None = None
-    plugin_opts: Mapping[str, Any] = None
-    requires: Type[Proc] | Sequence[Type[Proc]] = None
-    scheduler: str = None
-    scheduler_opts: Mapping[str, Any] = None
-    script: str = None
-    submission_batch: int = None
+    plugin_opts: Mapping[str, Any] | None = None
+    requires: Type[Proc] | Sequence[Type[Proc]] | None = None
+    scheduler: str | None = None  # type: ignore
+    scheduler_opts: Mapping[str, Any] | None = None
+    script: str | None = None
+    submission_batch: int | None = None
 
-    nexts: Sequence[Type[Proc]] = None
-    output_data: Any = None
-    workdir: str | Path = None
+    nexts: Sequence[Type[Proc]] | None = None
+    output_data: Any | None = None
+    workdir: str | Path | None = None
     # metadata that marks the process
     # Can also be used for plugins
     # It's not inheirted
-    __meta__: Mapping[str, Any] = None
+    __meta__: Mapping[str, Any] | None = None
 
     @classmethod
     def from_proc(
         cls,
         proc: Type[Proc],
-        name: str = None,
-        desc: str = None,
-        envs: Mapping[str, Any] = None,
-        envs_depth: int = None,
-        cache: bool = None,
-        export: bool = None,
+        name: str | None = None,
+        desc: str | None = None,
+        envs: Mapping[str, Any] | None = None,
+        envs_depth: int | None = None,
+        cache: bool | None = None,
+        export: bool | None = None,
         output_flatten: bool | None = None,
-        error_strategy: str = None,
-        num_retries: int = None,
-        forks: int = None,
-        input_data: Any = None,
-        order: int = None,
-        plugin_opts: Mapping[str, Any] = None,
-        requires: Sequence[Type[Proc]] = None,
-        scheduler: str = None,
-        scheduler_opts: Mapping[str, Any] = None,
-        submission_batch: int = None,
+        error_strategy: str | None = None,
+        num_retries: int | None = None,
+        forks: int | None = None,
+        input_data: Any | None = None,
+        order: int | None = None,
+        plugin_opts: Mapping[str, Any] | None = None,
+        requires: Sequence[Type[Proc]] | None = None,
+        scheduler: str | None = None,
+        scheduler_opts: Mapping[str, Any] | None = None,
+        submission_batch: int | None = None,
     ) -> Type[Proc]:
         """Create a subclass of Proc using another Proc subclass or Proc itself
 
@@ -731,7 +736,7 @@ class Proc(ABC, metaclass=ProcMeta):
 
         return self.template(output, **self.template_opts)  # type: ignore[operator]
 
-    async def _compute_script(self) -> Template:
+    async def _compute_script(self) -> Template | None:
         """Compute the script for jobs to render"""
         if not self.__class__.script:
             self.log("warning", "No script specified.")

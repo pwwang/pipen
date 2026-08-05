@@ -1,5 +1,12 @@
 """Define hooks specifications and provide plugin manager"""
-
+# pyright: reportReturnType=false
+# pyright: reportOptionalMemberAccess=false
+# pyright: reportOptionalSubscript=false
+# pyright: reportCallIssue=false
+# pyright: reportArgumentType=false
+# pyright: reportGeneralTypeIssues=false
+# pyright: reportAttributeAccessIssue=false
+# pyright: reportOperatorIssue=false
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -494,7 +501,7 @@ class XqutePipenPlugin:
         codes = plugin.hooks.on_jobcmd_init(job)
         if not codes:
             return None
-        return "\n\n".join(codes)
+        return "\n\n".join(codes)  # type: ignore
 
     @xqute_plugin.impl
     def on_jobcmd_prep(scheduler: Scheduler, job: Job):  # type: ignore[misc]
@@ -502,7 +509,7 @@ class XqutePipenPlugin:
         codes = plugin.hooks.on_jobcmd_prep(job)
         if not codes:
             return None
-        return "\n\n".join(codes)
+        return "\n\n".join(codes)  # type: ignore
 
     @xqute_plugin.impl
     def on_jobcmd_end(scheduler: Scheduler, job: Job):  # type: ignore[misc]
@@ -510,7 +517,7 @@ class XqutePipenPlugin:
         codes = plugin.hooks.on_jobcmd_end(job)
         if not codes:
             return None
-        return "\n\n".join(codes)
+        return "\n\n".join(codes)  # type: ignore
 
 
 xqute_plugin.register(XqutePipenPlugin)

@@ -1,5 +1,5 @@
 """Print help for commands"""
-
+# pyright: reportIncompatibleMethodOverride=false
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -16,7 +16,7 @@ __all__ = ("CLIVersionPlugin",)
 class CLIVersionPlugin(CLIPlugin):
     """Print versions of pipen and its dependencies"""
 
-    name = "version"
+    name: str = "version"
 
     def exec_command(self, args: Namespace) -> None:
         """Run the command"""

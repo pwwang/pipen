@@ -1,5 +1,5 @@
 """List plugins"""
-
+# pyright: reportIncompatibleMethodOverride=false
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Iterable, List, Tuple
 
@@ -103,7 +103,7 @@ def _list_plugins(plugins: List[Tuple[str, str, Any]]) -> None:
 class CliPluginsPlugin(CLIPlugin):
     """List installed plugins"""
 
-    name = "plugins"
+    name: str = "plugins"
 
     def __init__(
         self,

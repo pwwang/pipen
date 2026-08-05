@@ -1,5 +1,6 @@
 """List available profiles."""
-
+# pyright: reportIncompatibleMethodOverride=false
+# pyright: reportArgumentType=false
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -21,7 +22,7 @@ __all__ = ("CLIProfilePlugin",)
 class CLIProfilePlugin(AsyncCLIPlugin):
     """List available profiles."""
 
-    name = "profile"
+    name: str = "profile"
 
     def __init__(
         self,

@@ -13,7 +13,7 @@ from pipen.scheduler import (
     ContainerScheduler,
     NoSuchSchedulerError,
 )
-from .helpers import SimpleProc, pipen_container
+from .helpers import SimpleProc, pipen_container  # noqa: F401
 
 
 def test_get_scheduler():
@@ -242,4 +242,6 @@ async def test_container_scheduler_mount_as_cwd_with_abs_workdir_outdir(tmp_path
     assert len(scheduler.volumes) == 3
     assert scheduler.volumes[0] == f"{tmp_path}/cwd:/mnt/disks/.cwd"
     assert scheduler.volumes[1] == f"{tmp_path}/.pipen:/mnt/disks/.pipen"
-    assert scheduler.volumes[2] == f"{tmp_path}/Pipeline-output:/mnt/disks/.pipen-Pipeline-output"
+    assert scheduler.volumes[2] == (
+        f"{tmp_path}/Pipeline-output:/mnt/disks/.pipen-Pipeline-output"
+    )

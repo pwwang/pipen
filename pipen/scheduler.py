@@ -98,7 +98,10 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
                 "'gbatch' scheduler requires google cloud storage 'outdir'."
             )
 
-        proc._export_dir = SpecPath(proc._export_dir, mounted=mounted_outdir)
+        proc._export_dir = SpecPath(  # type: ignore
+            proc._export_dir,  # type: ignore
+            mounted=mounted_outdir,
+        )
 
         if outdir_mount_needed:
             # update the config to map the outdir to vm
@@ -115,7 +118,7 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
 
         # add labels
         self.config["labels"]["pipeline"] = proc.pipeline.name.lower()  # type: ignore
-        self.config["labels"]["proc"] = proc.name.lower()
+        self.config["labels"]["proc"] = proc.name.lower()  # type: ignore
 
 
 class ContainerScheduler(  # type: ignore[misc]
@@ -155,7 +158,10 @@ class ContainerScheduler(  # type: ignore[misc]
         if outdir_mount_needed:
             self.volumes.append(f"{outdir}:{mounted_outdir}")  # type: ignore
 
-        proc._export_dir = SpecPath(proc._export_dir, mounted=mounted_outdir)
+        proc._export_dir = SpecPath(  # type: ignore
+            proc._export_dir,  # type: ignore
+            mounted=mounted_outdir,
+        )
 
 
 def get_scheduler(scheduler: str | Type[Scheduler]) -> Type[Scheduler]:

@@ -1,5 +1,6 @@
 """Main entry module, provide the Pipen class"""
-
+# pyright: reportArgumentType=false
+# pyright: reportOptionalMemberAccess=false
 from __future__ import annotations
 
 import asyncio
@@ -12,7 +13,7 @@ from rich.panel import Panel
 from rich.text import Text
 from simpleconf import ProfileConfig
 from varname import varname, VarnameException
-from panpath import PanPath, LocalPath
+from panpath import PanPath
 
 from .defaults import CONFIG, CONFIG_FILES
 from .exceptions import (
@@ -64,8 +65,8 @@ class Pipen:
 
     name: str | None = None
     desc: str | None = None
-    outdir: str | Path = None
-    starts: Type[Proc] | List[Type[Proc]] = []
+    outdir: str | Path | None = None
+    starts: Type[Proc] | List[Type[Proc]] = []  # type: ignore
     data: Iterable | None = None
     # other configs
 
@@ -73,12 +74,12 @@ class Pipen:
         self,
         name: str | None = None,
         desc: str | None = None,
-        outdir: str | Path = None,
+        outdir: str | Path | None = None,
         **kwargs,
     ) -> None:
         """Constructor"""
-        self.procs: List[Type[Proc]] = None
-        self.pbar: PipelinePBar = None
+        self.procs: List[Type[Proc]] | None = None
+        self.pbar: PipelinePBar | None = None
         if name is not None:
             self.name = name
         elif self.__class__.name is not None:
@@ -184,7 +185,7 @@ class Pipen:
             self._log_pipeline_info()
             logger.info("Initializing plugins ...")
             await plugin.hooks.on_start(self)
-            for proc in self.procs:
+            for proc in self.procs:  # type: ignore
                 self.pbar.update_proc_running()
                 proc_obj = proc(self)
                 await proc_obj._init()
@@ -503,9 +504,9 @@ async def async_run(
 def run(
     name: str,
     starts: Type[Proc] | List[Type[Proc]],
-    data: Iterable = None,
+    data: Iterable | None = None,
     *,
-    desc: str = None,
+    desc: str | None = None,
     outdir: str | Path | None = None,
     profile: str = "default",
     **kwargs,

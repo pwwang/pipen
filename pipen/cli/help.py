@@ -1,5 +1,7 @@
 """Print help for commands"""
-
+# pyright: reportIncompatibleMethodOverride=false
+# pyright: reportOptionalIterable=false
+# pyright: reportOptionalMemberAccess=false
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -15,7 +17,7 @@ __all__ = ("CLIHelpPlugin",)
 class CLIHelpPlugin(CLIPlugin):
     """Print help for commands"""
 
-    name = "help"
+    name: str = "help"
 
     def __init__(self, parser: ArgumentParser, subparser: ArgumentParser):
         super().__init__(parser, subparser)

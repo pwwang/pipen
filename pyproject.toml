@@ -92,3 +92,6 @@ include = '\.pyi?$'
 
 [tool.uv]
 prerelease = "allow"
+
+[tool.pyright]
+ignore = ["tests/", "examples/"]

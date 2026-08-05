@@ -32,7 +32,7 @@ class Template(ABC):
         """Template construct"""
         self.engine: Any = None
 
-    def render(self, data: Mapping[str, Any] = None) -> str:
+    def render(self, data: Mapping[str, Any] | None = None) -> str:
         """
         Render the template
         @parmas:

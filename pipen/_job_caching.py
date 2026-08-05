@@ -1,5 +1,6 @@
 """Provide JobCaching class that implements caching for jobs"""
-
+# pyright: reportAttributeAccessIssue=false
+# pyright: reportArgumentType=false
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from contextlib import suppress

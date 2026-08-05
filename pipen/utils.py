@@ -1,5 +1,10 @@
 """Provide some utilities"""
-
+# pyright: reportFunctionMemberAccess=false
+# pyright: reportArgumentType=false
+# pyright: reportAssignmentType=false
+# pyright: reportAttributeAccessIssue=false
+# pyright: reportOptionalMemberAccess=false
+# pyright: reportGeneralTypeIssues=false
 from __future__ import annotations
 
 import re
@@ -194,7 +199,7 @@ logger = get_logger()
 def desc_from_docstring(
     obj: Type[Pipen | Proc],
     base: Type[Pipen | Proc],
-) -> str:
+) -> str | None:
     """Get the description from docstring
 
     Only extract the summary.
@@ -351,7 +356,7 @@ def strsplit(
     return [part.strip() for part in parts]
 
 
-def get_shebang(script: str) -> str:
+def get_shebang(script: str) -> str | None:
     """Get the shebang of the script
 
     Args:
@@ -491,7 +496,7 @@ def pipen_banner() -> RenderableType:
 
 
 async def get_mtime(
-    path: str | Path,
+    path: str | Path,  # type: ignore
     dir_depth: int = 1,
 ) -> float:
     """Get the modification time of a path.

@@ -109,7 +109,7 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
                 self.add_proc(attr)
 
     def add_proc(
-        self_or_method: ProcGroup | Callable[[ProcGroup], Type[Proc]],
+        self_or_method: ProcGroup | Callable[[ProcGroup], Type[Proc]],  # type: ignore
         proc: Type[Proc] | None = None,
     ) -> Type[Proc] | cached_property:
         """Add a process to the proc group
@@ -136,11 +136,11 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
                     f"Process name `{proc.name}` is reserved for ProcGroup"
                 )
 
-            setattr(self_or_method, proc.name, proc)
+            setattr(self_or_method, proc.name, proc)  # type: ignore
             proc.__meta__["procgroup"] = self_or_method  # type: ignore
             if not proc.requires and proc not in self_or_method.starts:
                 self_or_method.starts.append(proc)
-            self_or_method.procs[proc.name] = proc
+            self_or_method.procs[proc.name] = proc  # type: ignore
             return proc
 
         @wraps(self_or_method)
@@ -153,7 +153,7 @@ class ProcGroup(ABC, metaclass=ProcGropuMeta):
             if not isinstance(proc, type) or not issubclass(proc, Proc):
                 raise ValueError(f"`{proc}` is not a Proc subclass")
 
-            proc.__meta__["procgroup"] = self
+            proc.__meta__["procgroup"] = self  # type: ignore
             if not proc.requires and proc not in self.starts:
                 self.starts.append(proc)
             self.procs[proc.name] = proc
