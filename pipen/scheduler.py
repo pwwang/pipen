@@ -36,7 +36,7 @@ class SchedulerPostInit:
     """Provides post init function for all schedulers"""
 
     job_class = Job
-
+    fs_shared = True
     async def post_init(self, proc: Proc) -> None: ...  # noqa: E704
 
 
@@ -58,6 +58,7 @@ class SshScheduler(SchedulerPostInit, XquteSshScheduler):  # type: ignore[misc]
 
 class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[misc]
     __doc__ = XquteGbatchScheduler.__doc__
+    fs_shared = False  # Gbatch scheduler does not share file system with the host
 
     def __init__(self, *args, **kwargs):
         workdir = PanPath(kwargs["workdir"])
@@ -124,6 +125,7 @@ class ContainerScheduler(  # type: ignore[misc]
     XquteContainerScheduler,
 ):
     __doc__ = XquteContainerScheduler.__doc__
+    fs_shared = False  # Container scheduler does not share file system with the host
 
     def __init__(self, *args, **kwargs):
         workdir = PanPath(kwargs["workdir"])

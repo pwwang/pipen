@@ -148,7 +148,8 @@ class Job(XquteJob, JobCaching):
             if not proc.output_flatten:
                 self.outdir = self.outdir / str(self.index)  # type: ignore
 
-            await self.outdir.a_mkdir(parents=True, exist_ok=True)
+            if proc.scheduler.fs_shared:
+                await self.outdir.mounted.a_mkdir(parents=True, exist_ok=True)
 
         else:
             # For non-export process, the output directory is the metadir
