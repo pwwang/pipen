@@ -371,11 +371,11 @@ class Pipen:
         logger.info(fmt, "submission_batch", self.config.submission_batch)
         logger.info(fmt, "template", self.config.template)
         logger.info(fmt, "workdir", self.workdir)
-        for i, (key, val) in enumerate(self.config.plugin_opts.items()):
+        for i, (key, val) in enumerate(sorted(self.config.plugin_opts.items())):
             logger.info(fmt, "plugin_opts" if i == 0 else "", f"{key}={val}")
-        for i, (key, val) in enumerate(self.config.scheduler_opts.items()):
+        for i, (key, val) in enumerate(sorted(self.config.scheduler_opts.items())):
             logger.info(fmt, "scheduler_opts" if i == 0 else "", f"{key}={val}")
-        for i, (key, val) in enumerate(self.config.template_opts.items()):
+        for i, (key, val) in enumerate(sorted(self.config.template_opts.items())):
             logger.info(fmt, "template_opts" if i == 0 else "", f"{key}={val}")
 
     async def _init(self) -> None:
