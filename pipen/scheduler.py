@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Type
+from pathlib import Path
 
 from diot import Diot
-
 from panpath import GSPath, PanPath
 from xqute import Scheduler
 from xqute.path import SpecPath
@@ -37,7 +37,16 @@ class SchedulerPostInit:
 
     job_class = Job
     fs_shared = True
-    async def post_init(self, proc: Proc) -> None: ...  # noqa: E704
+    async def init_proc(self, proc: Proc) -> None:
+        """Initialize the proc for the scheduler
+
+        Args:
+            proc: The proc to initialize
+        """
+        await self.post_init()  # type: ignore
+        self._post_init_called = True
+
+        proc.workdir = self.workdir = self.workdir / proc.name  # type: ignore
 
 
 class LocalScheduler(SchedulerPostInit, XquteLocalScheduler):  # type: ignore[misc]
@@ -60,38 +69,49 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
     __doc__ = XquteGbatchScheduler.__doc__
     fs_shared = False  # Gbatch scheduler does not share file system with the host
 
-    def __init__(self, *args, **kwargs):
-        workdir = PanPath(kwargs["workdir"])
-        proc_name = workdir.name
-        # instead of mounting the workdir of this specific proc,
-        # we mount the parent dir (the pipeline workdir), because the procs
-        # of the pipeline may share files (e.g. input files from output of other procs)
-        kwargs["workdir"] = str(workdir.parent)
-        super().__init__(*args, **kwargs)
-
-        self._mount_as_cwd = kwargs.get("mount_as_cwd") or kwargs.get("volume_as_cwd")
-        self.workdir = self.workdir / proc_name
-
-    async def post_init(self, proc: Proc):
-        await super().post_init(proc)
-        proc.workdir = self.workdir
+    async def init_proc(self, proc: Proc):
+        await super().init_proc(proc)
 
         volumes = self.config["taskGroups"][0]["taskSpec"]["volumes"]
         # Check mount_as_cwd was given and workdir_set
         # if mount_as_cwd is given, and the first volume must be the mount_as_cwd
         outdir = proc.pipeline.outdir
         outdir_mount_needed = False
-        mounted_outdir = None
-        if outdir.is_absolute():  # type: ignore
+        mounted_outdir = (
+            f"{self.DEFAULT_MOUNTED_ROOT}/"
+            f"{DEFAULT_WORKDIR_NAME}-{proc.pipeline.name}-output"
+        )
+        if self._kwargs["mount_as_cwd"]:
+            outdir_mount_needed = outdir.is_absolute()  # type: ignore
+            if not outdir_mount_needed:
+                mounted_outdir = f"{self.cwd}/{outdir}"
+                outdir = PanPath(self._kwargs['mount_as_cwd']) / outdir  # type: ignore
+
+        elif self.cwd:
+            cwd = Path(self.cwd)
+            outdir_mount_needed = outdir.is_absolute()  # type: ignore
+            if not outdir_mount_needed:
+                cloud_cwd = None
+                for vol in volumes:
+                    if cwd.is_relative_to(vol["mountPath"]):
+                        cloud_cwd = (
+                            PanPath(f"gs://{vol['gcs']['remotePath']}")
+                            / cwd.relative_to(vol["mountPath"]),
+                            Path(vol["mountPath"]) / cwd.relative_to(vol["mountPath"]),
+                        )
+                        break
+
+                if cloud_cwd is None:
+                    raise ValueError(
+                        "Can't determine outdir with a relative path to "
+                        "the mounted cwd. Use an absolute path for outdir or ensure "
+                        "`cwd` is under one of the mounted paths."
+                    )
+
+                mounted_outdir = cloud_cwd[1] / outdir  # type: ignore
+                outdir = cloud_cwd[0] / outdir  # type: ignore
+        else:
             outdir_mount_needed = True
-            mounted_outdir = (
-                f"{self.DEFAULT_MOUNTED_ROOT}/"
-                f"{DEFAULT_WORKDIR_NAME}-{proc.pipeline.name}-output"
-            )
-        elif self._mount_as_cwd:
-            outdir_mount_needed = False
-            mounted_outdir = f"{self.cwd}/{outdir}"
-            outdir = PanPath(self._mount_as_cwd) / str(outdir)
 
         # Check if pipeline outdir is a GSPath
         if not isinstance(outdir, GSPath):
@@ -105,7 +125,7 @@ class GbatchScheduler(SchedulerPostInit, XquteGbatchScheduler):  # type: ignore[
                 Diot(
                     {
                         "gcs": {
-                            "remotePath": str(proc.pipeline.outdir).split("://", 1)[1]
+                            "remotePath": "/".join(outdir.parts[1:]),
                         },
                         "mountPath": mounted_outdir,
                     }
@@ -127,31 +147,51 @@ class ContainerScheduler(  # type: ignore[misc]
     __doc__ = XquteContainerScheduler.__doc__
     fs_shared = False  # Container scheduler does not share file system with the host
 
-    def __init__(self, *args, **kwargs):
-        workdir = PanPath(kwargs["workdir"])
-        proc_name = workdir.name
-        # instead of mounting the workdir of this specific proc,
-        # we mount the parent dir (the pipeline workdir), because the procs
-        # of the pipeline may share files (e.g. input files from output of other procs)
-        kwargs["workdir"] = str(workdir.parent)
-        super().__init__(*args, **kwargs)
+    async def init_proc(self, proc: Proc):
+        await super().init_proc(proc)
 
-        self._mount_as_cwd = kwargs.get("mount_as_cwd") or kwargs.get("volume_as_cwd")
-        self.workdir = self.workdir / proc_name
-
-    async def post_init(self, proc: Proc):
-        await super().post_init(proc)
-        proc.workdir = self.workdir
-
+        volues = self.volumes
         outdir = proc.pipeline.outdir
-        if self._mount_as_cwd and not outdir.is_absolute():  # type: ignore
-            mounted_outdir = f"{self.cwd}/{outdir}"
-            outdir = PanPath(self._mount_as_cwd) / str(outdir)
+        outdir_mount_needed = False
+        mounted_outdir =  (
+            f"{self.DEFAULT_MOUNTED_ROOT}/"
+            f"{DEFAULT_WORKDIR_NAME}-{proc.pipeline.name}-output"
+        )
+        if self._kwargs["volume_as_cwd"]:
+            outdir_mount_needed = outdir.is_absolute()  # type: ignore
+            if not outdir_mount_needed:
+                mounted_outdir = f"{self.cwd}/{outdir}"
+                outdir = Path(f"{self._kwargs['volume_as_cwd']}/{outdir}")
+
+        elif self.cwd:
+            cwd = Path(self.cwd)
+            outdir_mount_needed = outdir.is_absolute()  # type: ignore
+            if not outdir_mount_needed:
+                host_cwd = None
+                for vol in volues:
+                    host, mount = vol.rpartition(":")[::2]
+                    if cwd.is_relative_to(mount):
+                        host_cwd = (
+                            Path(host) / cwd.relative_to(mount),
+                            Path(mount) / cwd.relative_to(mount),
+                        )
+                        break
+
+                if not host_cwd:
+                    raise ValueError(
+                        "Can't determine outdir with a relative path to "
+                        "the mounted cwd. Use an absolute path for outdir or ensure "
+                        "`cwd` is under one of the mounted paths."
+                    )
+
+                mounted_outdir = host_cwd[1] / outdir  # type: ignore
+                outdir = host_cwd[0] / outdir  # type: ignore
+
         else:
-            mounted_outdir = (
-                f"{self.DEFAULT_MOUNTED_ROOT}/"
-                f"{DEFAULT_WORKDIR_NAME}-{proc.pipeline.name}-output"
-            )
+            outdir = outdir.resolve()  # type: ignore
+            outdir_mount_needed = True
+
+        if outdir_mount_needed:
             self.volumes.append(f"{outdir}:{mounted_outdir}")  # type: ignore
 
         export_dir = SpecPath(outdir, mounted=mounted_outdir)  # type: ignore

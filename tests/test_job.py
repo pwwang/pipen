@@ -549,7 +549,7 @@ def test_process_input_file_or_dir(inval, expected):
 async def test_prepare_export_dir_specpath(tmp_path):
     """prepare() uses _export_dir as-is when it is already a SpecPath
 
-    e.g. set by gbatch/container schedulers via post_init()
+    e.g. set by gbatch/container schedulers via init_proc()
     """
     workdir = SpecPath(tmp_path / "workdir")
     outdir = SpecPath(tmp_path / "outdir")

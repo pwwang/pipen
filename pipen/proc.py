@@ -483,7 +483,8 @@ class Proc(ABC, metaclass=ProcMeta):
 
         self.xqute = Xqute(
             self.scheduler,
-            workdir=self.workdir,
+            # init_proc will make it self.workdir finally
+            workdir=self.workdir.parent,
             submission_batch=self.submission_batch,
             error_strategy=self.error_strategy or self.pipeline.config.error_strategy,
             num_retries=(
@@ -496,7 +497,7 @@ class Proc(ABC, metaclass=ProcMeta):
             scheduler_opts=scheduler_opts,
         )
         self.submission_batch = self.xqute.scheduler.subm_batch
-        await self.xqute.scheduler.post_init(self)
+        await self.xqute.scheduler.init_proc(self)
         # for the plugin hooks to access
         self.xqute.proc = self
         # init pbar
