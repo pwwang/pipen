@@ -37,6 +37,7 @@ class SchedulerPostInit:
 
     job_class = Job
     fs_shared = True
+
     async def init_proc(self, proc: Proc) -> None:
         """Initialize the proc for the scheduler
 
@@ -153,7 +154,7 @@ class ContainerScheduler(  # type: ignore[misc]
         volues = self.volumes
         outdir = proc.pipeline.outdir
         outdir_mount_needed = False
-        mounted_outdir =  (
+        mounted_outdir = (
             f"{self.DEFAULT_MOUNTED_ROOT}/"
             f"{DEFAULT_WORKDIR_NAME}-{proc.pipeline.name}-output"
         )
