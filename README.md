@@ -111,59 +111,59 @@ if __name__ == "__main__":
 ```
 
 ```log
-04-17 16:19:35 I core                   _____________________________________   __
-04-17 16:19:35 I core                   ___  __ \___  _/__  __ \__  ____/__  | / /
-04-17 16:19:35 I core                   __  /_/ /__  / __  /_/ /_  __/  __   |/ /
-04-17 16:19:35 I core                   _  ____/__/ /  _  ____/_  /___  _  /|  /
-04-17 16:19:35 I core                   /_/     /___/  /_/     /_____/  /_/ |_/
-04-17 16:19:35 I core
-04-17 16:19:35 I core                               version: 1.1.16
-04-17 16:19:35 I core
-04-17 16:19:35 I core    ╔═══════════════════════════ MYPIPELINE ════════════════════════════╗
-04-17 16:19:35 I core    ║ My pipeline                                                       ║
-04-17 16:19:35 I core    ╚═══════════════════════════════════════════════════════════════════╝
-04-17 16:19:35 I core    plugins         : verbose v1.1.1
-04-17 16:19:35 I core    # procs         : 2
-04-17 16:19:35 I core    profile         : default
-04-17 16:19:35 I core    outdir          : /path/to/cwd/MyPipeline-output
-04-17 16:19:35 I core    cache           : True
-04-17 16:19:35 I core    dirsig          : 1
-04-17 16:19:35 I core    error_strategy  : ignore
-04-17 16:19:35 I core    forks           : 1
-04-17 16:19:35 I core    lang            : bash
-04-17 16:19:35 I core    loglevel        : info
-04-17 16:19:35 I core    num_retries     : 3
-04-17 16:19:35 I core    scheduler       : local
-04-17 16:19:35 I core    submission_batch: 8
-04-17 16:19:35 I core    template        : liquid
-04-17 16:19:35 I core    workdir         : /path/to/cwd/.pipen/MyPipeline
-04-17 16:19:35 I core    plugin_opts     :
-04-17 16:19:35 I core    template_opts   : filters={'realpath': <function realpath at 0x7fc3eba12...
-04-17 16:19:35 I core                    : globals={'realpath': <function realpath at 0x7fc3eba12...
-04-17 16:19:35 I core    Initializing plugins ...
-04-17 16:19:36 I core
-04-17 16:19:36 I core    ╭─────────────────────────────── P1 ────────────────────────────────╮
-04-17 16:19:36 I core    │ Sort input file                                                   │
-04-17 16:19:36 I core    ╰───────────────────────────────────────────────────────────────────╯
-04-17 16:19:36 I core    P1: Workdir: '/path/to/cwd/.pipen/MyPipeline/P1'
-04-17 16:19:36 I core    P1: <<< [START]
-04-17 16:19:36 I core    P1: >>> ['P2']
-04-17 16:19:36 I verbose P1: in.infile: /tmp/data.txt
-04-17 16:19:36 I verbose P1: out.outfile: /path/to/cwd/.pipen/MyPipeline/P1/0/output/intermediate.txt
-04-17 16:19:38 I verbose P1: Time elapsed: 00:00:02.051s
-04-17 16:19:38 I core
-04-17 16:19:38 I core    ╭═══════════════════════════════ P2 ════════════════════════════════╮
-04-17 16:19:38 I core    ║ Paste line number                                                 ║
-04-17 16:19:38 I core    ╰═══════════════════════════════════════════════════════════════════╯
-04-17 16:19:38 I core    P2: Workdir: '/path/to/cwd/.pipen/MyPipeline/P2'
-04-17 16:19:38 I core    P2: <<< ['P1']
-04-17 16:19:38 I core    P2: >>> [END]
-04-17 16:19:38 I verbose P2: in.infile: /path/to/cwd/.pipen/MyPipeline/P1/0/output/intermediate.txt
-04-17 16:19:38 I verbose P2: out.outfile: /path/to/cwd/MyPipeline-output/P2/result.txt
-04-17 16:19:41 I verbose P2: Time elapsed: 00:00:02.051s
-04-17 16:19:41 I core
+16:19:35 I core                   _____________________________________   __
+16:19:35 I core                   ___  __ \___  _/__  __ \__  ____/__  | / /
+16:19:35 I core                   __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+16:19:35 I core                   _  ____/__/ /  _  ____/_  /___  _  /|  /
+16:19:35 I core                   /_/     /___/  /_/     /_____/  /_/ |_/
+16:19:35 I core
+16:19:35 I core                               version: 1.2.0
+16:19:35 I core
+16:19:35 I core    ╔═══════════════════════════ MYPIPELINE ════════════════════════════╗
+16:19:35 I core    ║ My pipeline                                                       ║
+16:19:35 I core    ╚═══════════════════════════════════════════════════════════════════╝
+16:19:35 I core    plugins         : verbose v1.1.4
+16:19:35 I core    # procs         : 2
+16:19:35 I core    profile         : default
+16:19:35 I core    outdir          : /path/to/cwd/MyPipeline-output
+16:19:35 I core    cache           : True
+16:19:35 I core    dirsig          : 1
+16:19:35 I core    error_strategy  : ignore
+16:19:35 I core    forks           : 1
+16:19:35 I core    lang            : bash
+16:19:35 I core    loglevel        : info
+16:19:35 I core    num_retries     : 3
+16:19:35 I core    scheduler       : local
+16:19:35 I core    submission_batch: 8
+16:19:35 I core    template        : liquid
+16:19:35 I core    workdir         : /path/to/cwd/.pipen/MyPipeline
+16:19:35 I core    plugin_opts     :
+16:19:35 I core    template_opts   : filters={'realpath': <function realpath at 0x7fc3eba12...
+16:19:35 I core                    : globals={'realpath': <function realpath at 0x7fc3eba12...
+16:19:35 I core    Initializing plugins ...
+16:19:36 I core
+16:19:36 I core    ╭─────────────────────────────── P1 ────────────────────────────────╮
+16:19:36 I core    │ Sort input file                                                   │
+16:19:36 I core    ╰───────────────────────────────────────────────────────────────────╯
+16:19:36 I core    P1: Workdir: '/path/to/cwd/.pipen/MyPipeline/P1'
+16:19:36 I core    P1: <<< [START]
+16:19:36 I core    P1: >>> ['P2']
+16:19:36 I verbose P1: in.infile: /tmp/data.txt
+16:19:36 I verbose P1: out.outfile: /path/to/cwd/.pipen/MyPipeline/P1/0/output/intermediate.txt
+16:19:38 I verbose P1: Time elapsed: 00:00:02.051s
+16:19:38 I core
+16:19:38 I core    ╭═══════════════════════════════ P2 ════════════════════════════════╮
+16:19:38 I core    ║ Paste line number                                                 ║
+16:19:38 I core    ╰═══════════════════════════════════════════════════════════════════╯
+16:19:38 I core    P2: Workdir: '/path/to/cwd/.pipen/MyPipeline/P2'
+16:19:38 I core    P2: <<< ['P1']
+16:19:38 I core    P2: >>> [END]
+16:19:38 I verbose P2: in.infile: /path/to/cwd/.pipen/MyPipeline/P1/0/output/intermediate.txt
+16:19:38 I verbose P2: out.outfile: /path/to/cwd/MyPipeline-output/P2/result.txt
+16:19:41 I verbose P2: Time elapsed: 00:00:02.051s
+16:19:41 I core
 
-             MYPIPELINE: 100%|██████████████████████████████| 2/2 [00:06<00:00, 0.35 procs/s]
+       MYPIPELINE: 100%|██████████████████████████████| 2/2 [00:06<00:00, 0.35 procs/s]
 ```
 
 ```shell

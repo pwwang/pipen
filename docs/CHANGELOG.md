@@ -1,5 +1,25 @@
 # Change Log
 
+## 1.2.0
+
+- feat(schedulers): support mount_as_cwd and pipeline workdir mounting
+- fix: refactor export directory handling for GbatchScheduler and ContainerScheduler
+- fix: update output directory creation for shared file systems in Job class
+- refactor(job): use proc._export_dir as export outdir
+- refactor: adopt xqute 2.2.0
+- style: fix coding styles and typings
+- style: add missing newline and correct formatting in ContainerScheduler
+- chore(deps): update cloudsh to 0.3.10 with conditional argcomplete pin
+- chore(version): bump to 1.2.0a1
+- chore: don't create workdir in pipeline preparation
+- chore: sort plugin, scheduler, and template options in logging output
+- test(schedulers): add tests for workdir mounting and mount_as_cwd
+- test(utils): re-enable forked marker for cloud symlink test
+- docs: add pipen-email plugin for email notifications on pipeline status changes
+- docs: update logo
+- docs: correct img tag self-closing syntax in README
+- ci: ensure caching is enabled for uv setup in deployment
+
 ## 1.1.19
 
 - feat: enhance expand_dir and collapse_files to support MountedPath with spec
