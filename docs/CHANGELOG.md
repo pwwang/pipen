@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.2.1
+
+- chore: update dependencies
+- fix: improve error handling for log message formatting
+
 ## 1.2.0
 
 - feat(schedulers): support mount_as_cwd and pipeline workdir mounting
