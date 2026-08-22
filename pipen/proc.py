@@ -572,7 +572,13 @@ class Proc(ABC, metaclass=ProcMeta):
             *args: The arguments to format the message
             logger: The logging logger
         """
-        msg = msg % args
+        try:
+            msg = msg % args
+        except TypeError:
+            raise TypeError(
+                f"Failed to format log message: {msg} with args: {args}"
+            ) from None
+
         if not isinstance(level, int):
             level = logging.getLevelName(level.upper())
         logger.log(
