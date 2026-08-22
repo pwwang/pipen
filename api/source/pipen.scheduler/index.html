@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>pipen.scheduler - pipen</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet" />
+        <link href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css" rel="stylesheet" />
+        <link href="../../../css/mkapi-common.css" rel="stylesheet" />
+        <link href="../../../assets/style.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "pipen.scheduler";
+        var mkdocs_page_input_path = "api/source/pipen.scheduler.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../..">
+          <img src="../../../pipen.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="nav-scrollable-wrapper">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../..">Overview</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../tutorials/beginner/">Beginner Tutorial</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../defining-proc/">Defining a process</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../running/">Defining and running a pipeline</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../templating/">Templating</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../channels/">Channels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../input-output/">Input and output</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../script/">Script</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../caching/">Caching</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../cloud/">Cloud support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../error/">Error handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../configurations/">Configurations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../plugin/">Plugins</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../scheduler/">Scheduler</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../proc-group/">Process group</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../cli/">Command line interface</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen/">pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.channel/">pipen.channel</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.utils/">pipen.utils</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.version/">pipen.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.defaults/">pipen.defaults</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.procgroup/">pipen.procgroup</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.exceptions/">pipen.exceptions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.pipen/">pipen.pipen</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.template/">pipen.template</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.job/">pipen.job</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.pluginmgr/">pipen.pluginmgr</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.progressbar/">pipen.progressbar</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.proc/">pipen.proc</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.scheduler/">pipen.scheduler</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="#">pipen.cli</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli/">pipen.cli</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.plugins/">pipen.cli.plugins</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.version/">pipen.cli.version</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.help/">pipen.cli.help</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../pipen.cli.profile/">pipen.cli.profile</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../CHANGELOG/">Change Log</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting/">Troubleshooting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../CONTRIBUTING/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../architecture/">Architecture</a>
+                  </li>
+              </ul>
+      </div>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">pipen</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">pipen.scheduler</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/pwwang/pipen/blob/master/docs/api/source/pipen.scheduler.md">Edit on pwwang/pipen</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <div class="mkapi-node">
+<h1 id="" class="mkapi-object mkapi-object-code plain">
+<span class="mkapi-object-kind mkapi-object-kind-code">SOURCE CODE</span>
+<span class="mkapi-object-prefix">pipen.</span><span class="mkapi-object-name">scheduler</span>
+<span id="pipen.scheduler"></span><a class="mkapi-docs-link" href="../../pipen.scheduler">DOCS</a>
+</h1>
+
+<div class="mkapi-code">
+<div class="codehilite"><pre><span></span><code><span class="sd">"""Provide builting schedulers"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Type</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">diot</span><span class="w"> </span><span class="kn">import</span> <span class="n">Diot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">panpath</span><span class="w"> </span><span class="kn">import</span> <span class="n">GSPath</span><span class="p">,</span> <span class="n">PanPath</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scheduler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpecPath</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute.defaults</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_WORKDIR_NAME</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute.schedulers.local_scheduler</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocalScheduler</span> <span class="k">as</span> <span class="n">XquteLocalScheduler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute.schedulers.sge_scheduler</span><span class="w"> </span><span class="kn">import</span> <span class="n">SgeScheduler</span> <span class="k">as</span> <span class="n">XquteSgeScheduler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute.schedulers.slurm_scheduler</span><span class="w"> </span><span class="kn">import</span> <span class="n">SlurmScheduler</span> <span class="k">as</span> <span class="n">XquteSlurmScheduler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute.schedulers.ssh_scheduler</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SshScheduler</span> <span class="k">as</span> <span class="n">XquteSshScheduler</span><span class="p">,</span>  <span class="c1"># type: ignore[misc]</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute.schedulers.gbatch_scheduler</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GbatchScheduler</span> <span class="k">as</span> <span class="n">XquteGbatchScheduler</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xqute.schedulers.container_scheduler</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ContainerScheduler</span> <span class="k">as</span> <span class="n">XquteContainerScheduler</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.defaults</span><span class="w"> </span><span class="kn">import</span> <span class="n">SCHEDULER_ENTRY_GROUP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">NoSuchSchedulerError</span><span class="p">,</span> <span class="n">WrongSchedulerTypeError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.job</span><span class="w"> </span><span class="kn">import</span> <span class="n">Job</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_subclass</span><span class="p">,</span> <span class="n">load_entrypoints</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.proc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Proc</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SchedulerPostInit</span><span class="p">:</span><span id="pipen.scheduler.SchedulerPostInit"></span><a class="mkapi-docs-link" title="pipen.scheduler.SchedulerPostInit" href="../../pipen.scheduler/#pipen.scheduler.SchedulerPostInit">DOCS</a>
+<span class="w">    </span><span class="sd">"""Provides post init function for all schedulers"""</span>
+
+    <span class="n">job_class</span> <span class="o">=</span> <span class="n">Job</span>
+    <span class="n">fs_shared</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">init_proc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proc</span><span class="p">:</span> <span class="n">Proc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span><span id="pipen.scheduler.SchedulerPostInit.init_proc"></span><a class="mkapi-docs-link" title="pipen.scheduler.SchedulerPostInit.init_proc" href="../../pipen.scheduler/#pipen.scheduler.SchedulerPostInit.init_proc">DOCS</a>
+<span class="w">        </span><span class="sd">"""Initialize the proc for the scheduler</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            proc: The proc to initialize</span>
+<span class="sd">        """</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_init</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_post_init_called</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">proc</span><span class="o">.</span><span class="n">workdir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workdir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workdir</span> <span class="o">/</span> <span class="n">proc</span><span class="o">.</span><span class="n">name</span>  <span class="c1"># type: ignore</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">LocalScheduler</span><span class="p">(</span><span class="n">SchedulerPostInit</span><span class="p">,</span> <span class="n">XquteLocalScheduler</span><span class="p">):</span>  <span class="c1"># type: ignore[misc]</span><span id="pipen.scheduler.LocalScheduler"></span><a class="mkapi-docs-link" title="pipen.scheduler.LocalScheduler" href="../../pipen.scheduler/#pipen.scheduler.LocalScheduler">DOCS</a>
+<span class="w">    </span><span class="sd">"""Local scheduler"""</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SgeScheduler</span><span class="p">(</span><span class="n">SchedulerPostInit</span><span class="p">,</span> <span class="n">XquteSgeScheduler</span><span class="p">):</span>  <span class="c1"># type: ignore[misc]</span><span id="pipen.scheduler.SgeScheduler"></span><a class="mkapi-docs-link" title="pipen.scheduler.SgeScheduler" href="../../pipen.scheduler/#pipen.scheduler.SgeScheduler">DOCS</a>
+<span class="w">    </span><span class="sd">"""SGE scheduler"""</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SlurmScheduler</span><span class="p">(</span><span class="n">SchedulerPostInit</span><span class="p">,</span> <span class="n">XquteSlurmScheduler</span><span class="p">):</span>  <span class="c1"># type: ignore[misc]</span><span id="pipen.scheduler.SlurmScheduler"></span><a class="mkapi-docs-link" title="pipen.scheduler.SlurmScheduler" href="../../pipen.scheduler/#pipen.scheduler.SlurmScheduler">DOCS</a>
+<span class="w">    </span><span class="sd">"""Slurm scheduler"""</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SshScheduler</span><span class="p">(</span><span class="n">SchedulerPostInit</span><span class="p">,</span> <span class="n">XquteSshScheduler</span><span class="p">):</span>  <span class="c1"># type: ignore[misc]</span><span id="pipen.scheduler.SshScheduler"></span><a class="mkapi-docs-link" title="pipen.scheduler.SshScheduler" href="../../pipen.scheduler/#pipen.scheduler.SshScheduler">DOCS</a>
+<span class="w">    </span><span class="sd">"""SSH scheduler"""</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GbatchScheduler</span><span class="p">(</span><span class="n">SchedulerPostInit</span><span class="p">,</span> <span class="n">XquteGbatchScheduler</span><span class="p">):</span>  <span class="c1"># type: ignore[misc]</span><span id="pipen.scheduler.GbatchScheduler"></span><a class="mkapi-docs-link" title="pipen.scheduler.GbatchScheduler" href="../../pipen.scheduler/#pipen.scheduler.GbatchScheduler">DOCS</a>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">XquteGbatchScheduler</span><span class="o">.</span><span class="vm">__doc__</span>
+    <span class="n">fs_shared</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Gbatch scheduler does not share file system with the host</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">init_proc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proc</span><span class="p">:</span> <span class="n">Proc</span><span class="p">):</span><span id="pipen.scheduler.GbatchScheduler.init_proc"></span><a class="mkapi-docs-link" title="pipen.scheduler.GbatchScheduler.init_proc" href="../../pipen.scheduler/#pipen.scheduler.GbatchScheduler.init_proc">DOCS</a>
+        <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init_proc</span><span class="p">(</span><span class="n">proc</span><span class="p">)</span>
+
+        <span class="n">volumes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">"taskGroups"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">"taskSpec"</span><span class="p">][</span><span class="s2">"volumes"</span><span class="p">]</span>
+        <span class="c1"># Check mount_as_cwd was given and workdir_set</span>
+        <span class="c1"># if mount_as_cwd is given, and the first volume must be the mount_as_cwd</span>
+        <span class="n">outdir</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">outdir</span>
+        <span class="n">outdir_mount_needed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">mounted_outdir</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_MOUNTED_ROOT</span><span class="si">}</span><span class="s2">/"</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">DEFAULT_WORKDIR_NAME</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">proc</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">-output"</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span><span class="p">[</span><span class="s2">"mount_as_cwd"</span><span class="p">]:</span>
+            <span class="n">outdir_mount_needed</span> <span class="o">=</span> <span class="n">outdir</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">outdir_mount_needed</span><span class="p">:</span>
+                <span class="n">mounted_outdir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cwd</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">outdir</span><span class="si">}</span><span class="s2">"</span>
+                <span class="n">outdir</span> <span class="o">=</span> <span class="n">PanPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span><span class="p">[</span><span class="s1">'mount_as_cwd'</span><span class="p">])</span> <span class="o">/</span> <span class="n">outdir</span>  <span class="c1"># type: ignore</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cwd</span><span class="p">:</span>
+            <span class="n">cwd</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cwd</span><span class="p">)</span>
+            <span class="n">outdir_mount_needed</span> <span class="o">=</span> <span class="n">outdir</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">outdir_mount_needed</span><span class="p">:</span>
+                <span class="n">cloud_cwd</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">for</span> <span class="n">vol</span> <span class="ow">in</span> <span class="n">volumes</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">cwd</span><span class="o">.</span><span class="n">is_relative_to</span><span class="p">(</span><span class="n">vol</span><span class="p">[</span><span class="s2">"mountPath"</span><span class="p">]):</span>
+                        <span class="n">cloud_cwd</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">PanPath</span><span class="p">(</span><span class="sa">f</span><span class="s2">"gs://</span><span class="si">{</span><span class="n">vol</span><span class="p">[</span><span class="s1">'gcs'</span><span class="p">][</span><span class="s1">'remotePath'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                            <span class="o">/</span> <span class="n">cwd</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">vol</span><span class="p">[</span><span class="s2">"mountPath"</span><span class="p">]),</span>
+                            <span class="n">Path</span><span class="p">(</span><span class="n">vol</span><span class="p">[</span><span class="s2">"mountPath"</span><span class="p">])</span> <span class="o">/</span> <span class="n">cwd</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">vol</span><span class="p">[</span><span class="s2">"mountPath"</span><span class="p">]),</span>
+                        <span class="p">)</span>
+                        <span class="k">break</span>
+
+                <span class="k">if</span> <span class="n">cloud_cwd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">"Can't determine outdir with a relative path to "</span>
+                        <span class="s2">"the mounted cwd. Use an absolute path for outdir or ensure "</span>
+                        <span class="s2">"`cwd` is under one of the mounted paths."</span>
+                    <span class="p">)</span>
+
+                <span class="n">mounted_outdir</span> <span class="o">=</span> <span class="n">cloud_cwd</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">outdir</span>  <span class="c1"># type: ignore</span>
+                <span class="n">outdir</span> <span class="o">=</span> <span class="n">cloud_cwd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">outdir</span>  <span class="c1"># type: ignore</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">outdir_mount_needed</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># Check if pipeline outdir is a GSPath</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">GSPath</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"'gbatch' scheduler requires google cloud storage 'outdir'."</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">outdir_mount_needed</span><span class="p">:</span>
+            <span class="c1"># update the config to map the outdir to vm</span>
+            <span class="n">volumes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">Diot</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">"gcs"</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">"remotePath"</span><span class="p">:</span> <span class="s2">"/"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span>
+                        <span class="p">},</span>
+                        <span class="s2">"mountPath"</span><span class="p">:</span> <span class="n">mounted_outdir</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="c1"># add labels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">"labels"</span><span class="p">][</span><span class="s2">"pipeline"</span><span class="p">]</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">"labels"</span><span class="p">][</span><span class="s2">"proc"</span><span class="p">]</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+
+        <span class="n">export_dir</span> <span class="o">=</span> <span class="n">SpecPath</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">mounted</span><span class="o">=</span><span class="n">mounted_outdir</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="n">proc</span><span class="o">.</span><span class="n">_export_dir</span> <span class="o">=</span> <span class="n">export_dir</span> <span class="o">/</span> <span class="n">proc</span><span class="o">.</span><span class="n">name</span>  <span class="c1"># type: ignore</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ContainerScheduler</span><span class="p">(</span>  <span class="c1"># type: ignore[misc]</span><span id="pipen.scheduler.ContainerScheduler"></span><a class="mkapi-docs-link" title="pipen.scheduler.ContainerScheduler" href="../../pipen.scheduler/#pipen.scheduler.ContainerScheduler">DOCS</a>
+    <span class="n">SchedulerPostInit</span><span class="p">,</span>
+    <span class="n">XquteContainerScheduler</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">XquteContainerScheduler</span><span class="o">.</span><span class="vm">__doc__</span>
+    <span class="n">fs_shared</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Container scheduler does not share file system with the host</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">init_proc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proc</span><span class="p">:</span> <span class="n">Proc</span><span class="p">):</span><span id="pipen.scheduler.ContainerScheduler.init_proc"></span><a class="mkapi-docs-link" title="pipen.scheduler.ContainerScheduler.init_proc" href="../../pipen.scheduler/#pipen.scheduler.ContainerScheduler.init_proc">DOCS</a>
+        <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init_proc</span><span class="p">(</span><span class="n">proc</span><span class="p">)</span>
+
+        <span class="n">volues</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volumes</span>
+        <span class="n">outdir</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">outdir</span>
+        <span class="n">outdir_mount_needed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">mounted_outdir</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_MOUNTED_ROOT</span><span class="si">}</span><span class="s2">/"</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">DEFAULT_WORKDIR_NAME</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">proc</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">-output"</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span><span class="p">[</span><span class="s2">"volume_as_cwd"</span><span class="p">]:</span>
+            <span class="n">outdir_mount_needed</span> <span class="o">=</span> <span class="n">outdir</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">outdir_mount_needed</span><span class="p">:</span>
+                <span class="n">mounted_outdir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cwd</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">outdir</span><span class="si">}</span><span class="s2">"</span>
+                <span class="n">outdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span><span class="p">[</span><span class="s1">'volume_as_cwd'</span><span class="p">]</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">outdir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cwd</span><span class="p">:</span>
+            <span class="n">cwd</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cwd</span><span class="p">)</span>
+            <span class="n">outdir_mount_needed</span> <span class="o">=</span> <span class="n">outdir</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">outdir_mount_needed</span><span class="p">:</span>
+                <span class="n">host_cwd</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">for</span> <span class="n">vol</span> <span class="ow">in</span> <span class="n">volues</span><span class="p">:</span>
+                    <span class="n">host</span><span class="p">,</span> <span class="n">mount</span> <span class="o">=</span> <span class="n">vol</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s2">":"</span><span class="p">)[::</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">cwd</span><span class="o">.</span><span class="n">is_relative_to</span><span class="p">(</span><span class="n">mount</span><span class="p">):</span>
+                        <span class="n">host_cwd</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">Path</span><span class="p">(</span><span class="n">host</span><span class="p">)</span> <span class="o">/</span> <span class="n">cwd</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">mount</span><span class="p">),</span>
+                            <span class="n">Path</span><span class="p">(</span><span class="n">mount</span><span class="p">)</span> <span class="o">/</span> <span class="n">cwd</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">mount</span><span class="p">),</span>
+                        <span class="p">)</span>
+                        <span class="k">break</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">host_cwd</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">"Can't determine outdir with a relative path to "</span>
+                        <span class="s2">"the mounted cwd. Use an absolute path for outdir or ensure "</span>
+                        <span class="s2">"`cwd` is under one of the mounted paths."</span>
+                    <span class="p">)</span>
+
+                <span class="n">mounted_outdir</span> <span class="o">=</span> <span class="n">host_cwd</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">outdir</span>  <span class="c1"># type: ignore</span>
+                <span class="n">outdir</span> <span class="o">=</span> <span class="n">host_cwd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">outdir</span>  <span class="c1"># type: ignore</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">outdir</span> <span class="o">=</span> <span class="n">outdir</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+            <span class="n">outdir_mount_needed</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">outdir_mount_needed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">outdir</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">mounted_outdir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+        <span class="n">export_dir</span> <span class="o">=</span> <span class="n">SpecPath</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">mounted</span><span class="o">=</span><span class="n">mounted_outdir</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="n">proc</span><span class="o">.</span><span class="n">_export_dir</span> <span class="o">=</span> <span class="n">export_dir</span> <span class="o">/</span> <span class="n">proc</span><span class="o">.</span><span class="n">name</span>  <span class="c1"># type: ignore</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_scheduler</span><span class="p">(</span><span class="n">scheduler</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Type</span><span class="p">[</span><span class="n">Scheduler</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">[</span><span class="n">Scheduler</span><span class="p">]:</span><span id="pipen.scheduler.get_scheduler"></span><a class="mkapi-docs-link" title="pipen.scheduler.get_scheduler" href="../../pipen.scheduler/#pipen.scheduler.get_scheduler">DOCS</a>
+<span class="w">    </span><span class="sd">"""Get the scheduler by name of the scheduler class itself</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        scheduler: The scheduler class or name</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The scheduler class</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">is_subclass</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">Scheduler</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">scheduler</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">if</span> <span class="n">scheduler</span> <span class="o">==</span> <span class="s2">"local"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">LocalScheduler</span>
+
+    <span class="k">if</span> <span class="n">scheduler</span> <span class="o">==</span> <span class="s2">"sge"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">SgeScheduler</span>
+
+    <span class="k">if</span> <span class="n">scheduler</span> <span class="o">==</span> <span class="s2">"slurm"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">SlurmScheduler</span>
+
+    <span class="k">if</span> <span class="n">scheduler</span> <span class="o">==</span> <span class="s2">"ssh"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">SshScheduler</span>
+
+    <span class="k">if</span> <span class="n">scheduler</span> <span class="o">==</span> <span class="s2">"gbatch"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">GbatchScheduler</span>
+
+    <span class="k">if</span> <span class="n">scheduler</span> <span class="o">==</span> <span class="s2">"container"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ContainerScheduler</span>
+
+    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">load_entrypoints</span><span class="p">(</span><span class="n">SCHEDULER_ENTRY_GROUP</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="n">scheduler</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_subclass</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Scheduler</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">WrongSchedulerTypeError</span><span class="p">(</span>
+                    <span class="s2">"Scheduler should be a subclass of "</span> <span class="s2">"pipen.scheduler.Scheduler."</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="k">raise</span> <span class="n">NoSuchSchedulerError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">scheduler</span><span class="p">))</span>
+</code></pre></div>
+</div>
+</div>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  <div class="footer-notes">
+    <a href="https://github.com/pwwang/pipen" title="Open repository in GitHub">Github Repo</a>
+    <div class="footer-sep"></div>Built with <a href="https://www.mkdocs.org/">MkDocs</a> using theme <a href="https://github.com/pwwang/mkdocs-rtd">mkdocs-rtd</a>.
+  </div>
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../../..";</script>
+    <script src="../../../js/theme_extra.js"></script>
+    <script src="../../../js/theme.js"></script>
+    <script src="../../../js/version-select.js"></script>
+      <script src="../../../js/mkapi.js"></script>
+      <script src="../../../assets/script.js"></script>
+      <script src="../../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

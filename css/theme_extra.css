@@ -1,0 +1,473 @@
+/*
+ * Wrap inline code samples otherwise they shoot of the side and
+ * can't be read at all.
+ *
+ * https://github.com/mkdocs/mkdocs/issues/313
+ * https://github.com/mkdocs/mkdocs/issues/233
+ * https://github.com/mkdocs/mkdocs/issues/834
+ */
+.rst-content code {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    padding: 2px 5px;
+}
+
+/**
+ * Make code blocks display as blocks and give them the appropriate
+ * font size and padding.
+ *
+ * https://github.com/mkdocs/mkdocs/issues/855
+ * https://github.com/mkdocs/mkdocs/issues/834
+ * https://github.com/mkdocs/mkdocs/issues/233
+ */
+.rst-content pre code {
+    white-space: pre;
+    word-wrap: normal;
+    display: block;
+    padding: 12px;
+    font-size: 12px;
+}
+
+/**
+ * Fix code colors
+ *
+ * https://github.com/mkdocs/mkdocs/issues/2027
+ */
+.rst-content code {
+    color: #E74C3C;
+}
+
+.rst-content pre code {
+    color: #000;
+    background: #f8f8f8;
+}
+
+/*
+ * Fix link colors when the link text is inline code.
+ *
+ * https://github.com/mkdocs/mkdocs/issues/718
+ */
+a code {
+    color: #2980B9;
+}
+
+a:hover code {
+    color: #3091d1;
+}
+
+a:visited code {
+    color: #9B59B6;
+}
+
+/*
+ * The CSS classes from highlight.js seem to clash with the
+ * ReadTheDocs theme causing some code to be incorrectly made
+ * bold and italic.
+ *
+ * https://github.com/mkdocs/mkdocs/issues/411
+ */
+pre .cs,
+pre .c {
+    font-weight: inherit;
+    font-style: inherit;
+}
+
+/*
+ * Fix some issues with the theme and non-highlighted code
+ * samples. Without and highlighting styles attached the
+ * formatting is broken.
+ *
+ * https://github.com/mkdocs/mkdocs/issues/319
+ */
+.rst-content .no-highlight {
+    display: block;
+    padding: 0.5em;
+    color: #333;
+}
+
+
+/*
+ * Additions specific to the search functionality provided by MkDocs
+ */
+
+.search-results {
+    margin-top: 23px;
+}
+
+.search-results article {
+    border-top: 1px solid #E1E4E5;
+    padding-top: 24px;
+}
+
+.search-results article:first-child {
+    border-top: none;
+}
+
+form .search-query {
+    width: 100%;
+    border-radius: 50px;
+    padding: 6px 12px;
+    /* csslint allow: box-model */
+    border-color: #D1D4D5;
+}
+
+/*
+ * Improve inline code blocks within admonitions.
+ *
+ * https://github.com/mkdocs/mkdocs/issues/656
+ */
+.rst-content .admonition code {
+    color: #404040;
+    border: 1px solid #c7c9cb;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    background: #f8fbfd;
+    background: rgba(255, 255, 255, 0.7);
+}
+
+/*
+ * Account for wide tables which go off the side.
+ * Override borders to avoid weirdness on narrow tables.
+ *
+ * https://github.com/mkdocs/mkdocs/issues/834
+ * https://github.com/mkdocs/mkdocs/pull/1034
+ */
+.rst-content .section .docutils {
+    width: 100%;
+    overflow: auto;
+    display: block;
+    border: none;
+}
+
+td,
+th {
+    border: 1px solid #e1e4e5 !important;
+    /* csslint allow: important */
+    border-collapse: collapse;
+}
+
+/*
+ * Without the following amendments, the navigation in the theme will be
+ * slightly cut off. This is due to the fact that the .wy-nav-side has a
+ * padding-bottom of 2em, which must not necessarily align with the font-size of
+ * 90 % on the .rst-current-version container, combined with the padding of 12px
+ * above and below. These amendments fix this in two steps: First, make sure the
+ * .rst-current-version container has a fixed height of 40px, achieved using
+ * line-height, and then applying a padding-bottom of 40px to this container. In
+ * a second step, the items within that container are re-aligned using flexbox.
+ *
+ * https://github.com/mkdocs/mkdocs/issues/2012
+ */
+.wy-nav-side {
+    padding-bottom: 40px;
+}
+
+/*
+ * The second step of above amendment: Here we make sure the items are aligned
+ * correctly within the .rst-current-version container. Using flexbox, we
+ * achieve it in such a way that it will look like the following:
+ *
+ * [No repo_name]
+ *         Next >>                    // On the first page
+ * << Previous     Next >>            // On all subsequent pages
+ *
+ * [With repo_name]
+ *    <repo_name>        Next >>      // On the first page
+ * <repo_name>  << Previous  Next >>  // On all subsequent pages
+ *
+ * https://github.com/mkdocs/mkdocs/issues/2012
+ */
+.rst-versions .rst-current-version {
+    padding: 0 12px;
+    display: flex;
+    font-size: initial;
+    justify-content: space-between;
+    align-items: center;
+    line-height: 40px;
+}
+
+/*
+ * Please note that this amendment also involves removing certain inline-styles
+ * from the file ./mkdocs/themes/readthedocs/versions.html.
+ *
+ * https://github.com/mkdocs/mkdocs/issues/2012
+ */
+.rst-content a[href^="http"]::after {
+    content: "↗";
+    font-size: 0.6rem;
+    padding: 0.1rem 0.16rem;
+    margin-left: 0.16rem;
+    background-color: #e5f7ff;
+    border: 1px solid #a2c7df;
+    color: #6b99b8;
+    border-radius: 0.2rem;
+    vertical-align: middle;
+}
+
+.rst-current-version span {
+    flex: 1;
+    text-align: center;
+}
+
+.rst-content div[class^=highlight] pre {
+    padding: 0 !important;
+}
+
+div.wy-side-scroll div.wy-side-nav-search {
+    position: fixed;
+}
+
+div.wy-side-scroll div.wy-menu.wy-menu-vertical {
+    margin-bottom: 1rem;
+    padding-top: .5rem;
+    direction: ltr;
+}
+
+div.wy-side-scroll p.caption+ul>li>a::before {
+    content: "▪";
+    padding-right: 0.5rem;
+}
+
+div.wy-side-scroll p.caption+ul>li>a.current,
+div.wy-side-scroll p.caption+ul>li.current>a {
+    padding-left: 2.375rem;
+}
+
+div.wy-side-scroll p.caption+ul>li>a.current::before,
+div.wy-side-scroll p.caption+ul>li.current>a::before {
+    display: none;
+}
+
+div.wy-side-scroll p.caption+ul>li>a>button {
+    display: none;
+}
+
+div.wy-side-scroll p.caption+ul li.toctree-l2 {
+    padding-left: .75rem;
+}
+
+div.document ul {
+    margin-top: 2px !important;
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+    font-size: .7rem !important;
+}
+
+.md-typeset table:not([class]) td {
+    padding: .55em 1.25em !important;
+}
+
+.md-typeset table:not([class]) th {
+    padding: .75em 1.25em !important;
+}
+
+.md-typeset code {
+    background-color: var(--mkapi-code-bg);
+}
+
+.md-typeset {
+    font-size: .75rem !important;
+    line-height: 1.5 !important;
+}
+
+.md-typeset pre>code {
+    overflow: visible;
+    line-height: 1.2;
+}
+
+@media screen and (max-width: 768px) {
+    nav.wy-nav-side.shift .wy-side-nav-search {
+        width: 85%;
+    }
+}
+
+/** markdown tabs: pymdownx.blocks.tab **/
+.tabbed-alternate {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    margin: 1rem 0;
+    border-radius: 0.1rem;
+}
+
+.tabbed-alternate>input {
+    display: none;
+}
+
+.tabbed-labels {
+    display: flex;
+    width: 100%;
+    overflow: auto;
+    box-shadow: 0 -0.1rem #5ab0de inset;
+    scrollbar-width: none;
+}
+
+.tabbed-labels::-webkit-scrollbar {
+    display: none;
+}
+
+.tabbed-labels>label {
+    width: auto;
+    padding: 0.5rem 1rem;
+    font-weight: 700;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    border-bottom: 0.1rem solid transparent;
+    scroll-snap-align: start;
+    border-top-left-radius: 0.1rem;
+    border-top-right-radius: 0.1rem;
+    cursor: pointer;
+    transition: background-color 250ms, color 250ms;
+    margin-bottom: 0;
+}
+
+.tabbed-labels>label:hover {
+    color: #6ab0de;
+}
+
+.tabbed-labels.tabbed-scroll-left::before {
+    display: inline-block;
+    font-size: 0.9em;
+    position: absolute;
+    top: 0.75em;
+    left: 0;
+    padding-right: 0.64em;
+    color: gray;
+    background: linear-gradient(to right, rgb(255, 255, 255) 75%, rgba(255, 255, 255, 0));
+    content: "\25C0";
+    cursor: pointer;
+}
+
+.tabbed-labels.tabbed-scroll-right::after {
+    display: inline-block;
+    font-size: 0.9em;
+    position: absolute;
+    top: 0.75em;
+    right: 0;
+    padding-left: 0.64em;
+    color: gray;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0), rgb(255, 255, 255) 25%);
+    content: "\25B6";
+    cursor: pointer;
+}
+
+.tabbed-alternate .tabbed-content {
+    width: 100%;
+    background-color: #e7f2fa;
+    padding: 1rem;
+}
+
+.tabbed-alternate input:nth-child(1):checked~.tabbed-content> :nth-child(1),
+.tabbed-alternate input:nth-child(2):checked~.tabbed-content> :nth-child(2),
+.tabbed-alternate input:nth-child(3):checked~.tabbed-content> :nth-child(3) {
+    display: block;
+}
+
+.tabbed-alternate .tabbed-block {
+    display: none;
+}
+
+
+.tabbed-alternate .tabbed-block .admonition {
+    filter: drop-shadow(1px 1px 1px #5187ae);
+    border-left: 1px solid #ddd;
+}
+
+.tabbed-alternate .tabbed-block>div[class^=highlight]:last-child {
+    margin-bottom: .5rem;
+}
+
+@media screen {
+
+    .tabbed-alternate input:nth-child(1):checked~.tabbed-labels> :nth-child(1),
+    .tabbed-alternate input:nth-child(2):checked~.tabbed-labels> :nth-child(2),
+    .tabbed-alternate input:nth-child(3):checked~.tabbed-labels> :nth-child(3) {
+        color: white;
+        background-color: #6ab0de;
+    }
+}
+
+@media print {
+    .tabbed-labels {
+        display: contents;
+    }
+
+    .tabbed-labels>label:nth-child(1) {
+        order: 1;
+    }
+
+    .tabbed-labels>label:nth-child(2) {
+        order: 2;
+    }
+
+    .tabbed-labels>label:nth-child(3) {
+        order: 3;
+    }
+
+    .tabbed-alternate .tabbed-content {
+        display: contents;
+    }
+
+    .tabbed-alternate .tabbed-block {
+        display: block;
+    }
+
+    .tabbed-alternate .tabbed-block:nth-child(1) {
+        order: 1;
+    }
+
+    .tabbed-alternate .tabbed-block:nth-child(2) {
+        order: 2;
+    }
+
+    .tabbed-alternate .tabbed-block:nth-child(3) {
+        order: 3;
+    }
+}
+
+/* add scrollbar to side nav */
+div.nav-scrollable-wrapper {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    direction: rtl;
+    /* Firefox */
+    scrollbar-width: auto;
+    scrollbar-color: #fcfcfc transparent;
+}
+
+/* Chrome, Edge, and Safari */
+div.nav-scrollable-wrapper::-webkit-scrollbar {
+    width: 12px;
+}
+
+div.nav-scrollable-wrapper::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+div.nav-scrollable-wrapper::-webkit-scrollbar-thumb {
+    background-color: #fcfcfc;
+    border-radius: 6px;
+    border: 3px solid #343131;
+}
+
+.wy-side-nav-search .wy-dropdown>a, .wy-side-nav-search {
+    padding-top: 0.2rem;
+}
+.wy-side-nav-search .wy-dropdown>a, .wy-side-nav-search>a {
+    margin-bottom: 0;
+}
+footer .footer-notes {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+footer .footer-notes .footer-sep {
+    background-color: #a0a0a0;
+    width: 2px;
+    align-self: stretch;
+    margin: 4px 6px;
+}
