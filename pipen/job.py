@@ -8,6 +8,8 @@ import logging
 import shlex
 from contextlib import suppress
 from collections.abc import Iterable
+from datetime import datetime
+from difflib import unified_diff
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Mapping
@@ -179,9 +181,6 @@ class Job(XquteJob, JobCaching):
                 await self.script_file.a_write_text(script)
             elif script_file_exists and old_script != script:
                 self.log("debug", "Job script updated.")
-
-                from datetime import datetime
-                from difflib import unified_diff
 
                 old_mtime = await get_mtime(self.script_file, 0)
                 diff_file = self.script_file.with_name("job.script.diff")

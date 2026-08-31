@@ -276,7 +276,7 @@ def test_check_cached_infile_newer(caplog, pipen, infile):
     caplog.clear()
     os.utime(infile, (infile.stat().st_mtime + 10,) * 2)
     pipen.set_starts(proc_infile_newer).run()
-    assert "Not cached (Input file is newer:" in caplog.text
+    assert "Not cached (Input file 'infile' is newer:" in caplog.text
 
 
 @pytest.mark.forked
@@ -299,7 +299,7 @@ def test_check_cached_infiles_newer(caplog, pipen, infile):
     # wait for 1 second to make sure the new mtime is different
     time.sleep(1)
     pipen.set_starts(proc_infile_newer).run()
-    assert "Not cached (input in:files at index 0 is newer)" in caplog.text
+    assert "Not cached (input in:files at index 0 is newer:" in caplog.text
 
 
 @pytest.mark.forked

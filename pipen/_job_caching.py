@@ -4,6 +4,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from contextlib import suppress
+from datetime import datetime
+from difflib import unified_diff
 
 from diot import Diot
 from simpleconf import Config
@@ -130,6 +132,24 @@ class JobCaching:
                 or signature.output.type != self._output_types
             ):
                 self.log("debug", "Not cached (input or output types are different)")
+
+                for diff in unified_diff(
+                    Diot(
+                        input=signature.input.type,
+                        output=signature.output.type
+                    ).to_toml().splitlines(),  # type: ignore
+                    Diot(
+                        input=self.proc.input.type,
+                        output=self._output_types
+                    ).to_toml().splitlines(),  # type: ignore
+                    lineterm="",
+                ):
+                    if (
+                        (diff.startswith("+") or diff.startswith("-"))
+                        and not diff.startswith("+++") and not diff.startswith("---")
+                    ):
+                        self.log("debug", f"// {diff}")
+
                 return False
 
             # check if any script file is newer
@@ -138,8 +158,8 @@ class JobCaching:
                 self.log(
                     "debug",
                     "Not cached (script file is newer: %s > %s)",
-                    script_mtime,
-                    signature.ctime,
+                    datetime.fromtimestamp(script_mtime).isoformat(),
+                    datetime.fromtimestamp(signature.ctime).isoformat(),
                 )
                 return False
 
@@ -155,6 +175,8 @@ class JobCaching:
                             inkey,
                             intype,
                         )
+                        self.log("debug", f"// -{sig_indata}")
+                        self.log("debug", f"// +{self.input[inkey]}")
                         return False
 
                 elif int(self.input[inkey] is None) + int(sig_indata is None) == 1:
@@ -181,16 +203,18 @@ class JobCaching:
                             inkey,
                             intype,
                         )
+                        self.log("debug", f"// -{sig_indata}")
+                        self.log("debug", f"// +{self.input[inkey]}")
                         return False
 
-                    if (
-                        await get_mtime(self.input[inkey].spec, dirsig)
-                        > signature.ctime + 1e-3
-                    ):
+                    mtime = await get_mtime(self.input[inkey].spec, dirsig)
+                    if mtime > signature.ctime + 1e-3:
                         self.log(
                             "debug",
-                            "Not cached (Input file is newer: %s)",
+                            "Not cached (Input file %r is newer: %s > %s)",
                             inkey,
+                            datetime.fromtimestamp(mtime).isoformat(),
+                            datetime.fromtimestamp(signature.ctime).isoformat(),
                         )
                         return False
 
@@ -215,9 +239,11 @@ class JobCaching:
                     if len(sig_indata) != len(self.input[inkey]):  # pragma: no cover
                         self.log(
                             "debug",
-                            "Not cached (input %s:%s length is different)",
+                            "Not cached (input %s:%s length is different: %s != %s)",
                             inkey,
                             intype,
+                            len(sig_indata),
+                            len(self.input[inkey]),
                         )
                         return False
 
@@ -225,20 +251,25 @@ class JobCaching:
                         if sig_indata[i] != str(file.spec):  # pragma: no cover
                             self.log(
                                 "debug",
-                                "Not cached (input %s:%s at index %s is different)",
+                                "Not cached (input %s:%s at index %s is different: %s != %s)",
                                 inkey,
                                 intype,
                                 i,
+                                sig_indata[i],
+                                str(self.input[inkey][i].spec),
                             )
                             return False
 
-                        if await get_mtime(file.spec, dirsig) > signature.ctime + 1e-3:
+                        mtime = await get_mtime(file.spec, dirsig)
+                        if mtime > signature.ctime + 1e-3:
                             self.log(
                                 "debug",
-                                "Not cached (input %s:%s at index %s is newer)",
+                                "Not cached (input %s:%s at index %s is newer: %s > %s)",
                                 inkey,
                                 intype,
                                 i,
+                                datetime.fromtimestamp(mtime).isoformat(),
+                                datetime.fromtimestamp(signature.ctime).isoformat(),
                             )
                             return False
 
@@ -253,6 +284,8 @@ class JobCaching:
                             outkey,
                             outtype,
                         )
+                        self.log("debug", f"// -{sig_outdata}")
+                        self.log("debug", f"// +{self.output[outkey]}")
                         return False
 
                 else:  # FILE/DIR
@@ -263,6 +296,8 @@ class JobCaching:
                             outkey,
                             outtype,
                         )
+                        self.log("debug", f"// -{sig_outdata}")
+                        self.log("debug", f"// +{self.output[outkey]}")
                         return False
 
                     if not await self.output[outkey].spec.a_exists():
