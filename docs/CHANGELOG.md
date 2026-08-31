@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.2.2
+
+- chore: improve log messages for cache checks
+- feat: add job.script.diff to save the updates of the new script
+- fix: enhance log message formatting error handling and add corresponding test
+
 ## 1.2.1
 
 - chore: update dependencies
