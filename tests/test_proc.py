@@ -154,6 +154,13 @@ def test_cached_run(caplog, pipen):
     assert caplog.text.count("Cached jobs:") == 1
 
 
+@pytest.mark.forked
+def test_proc_log_format_error(pipen):
+    proc = SimpleProc(pipen)
+    with pytest.raises(ValueError):
+        proc.log("error", "This is an error log with %")
+
+
 def test_proc_repr():
     assert repr(SimpleProc) == "<Proc:SimpleProc>"
 

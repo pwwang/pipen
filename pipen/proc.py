@@ -574,9 +574,9 @@ class Proc(ABC, metaclass=ProcMeta):
         """
         try:
             msg = msg % args
-        except TypeError:
-            raise TypeError(
-                f"Failed to format log message: {msg} with args: {args}"
+        except (ValueError, TypeError) as exc:
+            raise type(exc)(
+                f"Failed to format log message: {msg!r} with args: {args!r}"
             ) from None
 
         if not isinstance(level, int):
