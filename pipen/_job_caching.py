@@ -251,7 +251,8 @@ class JobCaching:
                         if sig_indata[i] != str(file.spec):  # pragma: no cover
                             self.log(
                                 "debug",
-                                "Not cached (input %s:%s at index %s is different: %s != %s)",
+                                "Not cached "
+                                "(input %s:%s at index %s is different: %s != %s)",
                                 inkey,
                                 intype,
                                 i,
@@ -264,7 +265,8 @@ class JobCaching:
                         if mtime > signature.ctime + 1e-3:
                             self.log(
                                 "debug",
-                                "Not cached (input %s:%s at index %s is newer: %s > %s)",
+                                "Not cached "
+                                "(input %s:%s at index %s is newer: %s > %s)",
                                 inkey,
                                 intype,
                                 i,
