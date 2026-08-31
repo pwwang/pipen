@@ -18,6 +18,7 @@ class P1(Proc):
     # {{ in.infile }} will be replaced with the input file path
     # {{ out.outfile }} will be replaced with the output file path
     script = """
+    # Sort the input file and write to output file
     cat {{ in.infile }} | sort > {{ out.outfile }}
     """
 
@@ -37,6 +38,7 @@ class P2(Proc):
 
     # Script adds line numbers (1-3 in this case)
     script = """
+    # Add line numbers to the input file and write to output file
     paste <(seq 1 3) {{ in.infile }} > {{ out.outfile }}
     """
 

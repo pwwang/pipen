@@ -27,7 +27,7 @@ from .exceptions import (
     TemplateRenderingError,
 )
 from .template import Template
-from .utils import logger, strsplit, path_is_symlink, path_symlink_to
+from .utils import logger, strsplit, path_is_symlink, path_symlink_to, get_mtime
 from .pluginmgr import plugin
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -169,13 +169,34 @@ class Job(XquteJob, JobCaching):
                     f"[{self.proc.name}] Failed to render script."
                 ) from exc
 
-            if (
-                await self.script_file.a_is_file()
-                and await self.script_file.a_read_text() != script
-            ):
-                self.log("debug", "Job script updated.")
+            script_file_exists = await self.script_file.a_is_file()
+            old_script = (
+                await self.script_file.a_read_text()
+                if script_file_exists
+                else None
+            )
+            if not script_file_exists:
                 await self.script_file.a_write_text(script)
-            elif not await self.script_file.a_is_file():
+            elif script_file_exists and old_script != script:
+                self.log("debug", "Job script updated.")
+
+                from datetime import datetime
+                from difflib import unified_diff
+
+                old_mtime = await get_mtime(self.script_file, 0)
+                diff_file = self.script_file.with_name("job.script.diff")
+                diff = "\n".join(
+                    unified_diff(
+                        old_script.splitlines(),
+                        script.splitlines(),
+                        fromfile=(
+                            f"old ({datetime.fromtimestamp(old_mtime).isoformat()})"
+                        ),
+                        tofile=f"new ({datetime.now().isoformat()})",
+                        lineterm="",
+                    )
+                )
+                await diff_file.a_write_text(diff)
                 await self.script_file.a_write_text(script)
 
             lang = proc.lang or proc.pipeline.config.lang
