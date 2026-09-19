@@ -77,6 +77,13 @@ async def test_get_mtime_cloud_file():
 
 
 @pytest.mark.forked
+async def test_get_mtime_char_device():
+    p = PanPath("/dev/null")
+    mtime = await get_mtime(p)
+    assert mtime == 0.0
+
+
+@pytest.mark.forked
 async def test_get_mtime_symlink_to_cloud_dir(tmp_path):
     tmp_path = PanPath(tmp_path)
     link = tmp_path / "link"

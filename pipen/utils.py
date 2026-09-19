@@ -519,6 +519,10 @@ async def get_mtime(
     if not await path.a_exists():
         return mtime
 
+    if isinstance(path, LocalPath) and path.is_char_device():
+        # /dev/null or other character devices don't have a meaningful mtime
+        return 0.0
+
     # If it is not any kind of symlink
     if not await path_is_symlink(path):  # type: ignore[arg-type]
         if dir_depth == 0 or not await path.a_is_dir():
