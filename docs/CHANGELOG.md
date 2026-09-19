@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.2.3
+
+- fix: handle mtime for character devices in get_mtime function
+- fix(test): add google-cloud-storage dependency for development
+
 ## 1.2.2
 
 - chore: improve log messages for cache checks
